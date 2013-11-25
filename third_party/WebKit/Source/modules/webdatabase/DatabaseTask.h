@@ -36,6 +36,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
@@ -76,7 +77,7 @@ public:
 
     virtual void run() OVERRIDE;
 
-    DatabaseBackend* database() const { return m_database; }
+    DatabaseBackend* database() const { return m_database.get(); }
 #ifndef NDEBUG
     bool hasSynchronizer() const { return m_synchronizer; }
     bool hasCheckedForTermination() const { return m_synchronizer->hasCheckedForTermination(); }
@@ -88,7 +89,7 @@ protected:
 private:
     virtual void doPerformTask() = 0;
 
-    DatabaseBackend* m_database;
+    RefPtr<DatabaseBackend> m_database;
     DatabaseTaskSynchronizer* m_synchronizer;
 
 #if !LOG_DISABLED

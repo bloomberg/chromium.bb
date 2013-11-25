@@ -141,7 +141,7 @@ void DatabaseThread::databaseThread()
 
 void DatabaseThread::recordDatabaseOpen(DatabaseBackend* database)
 {
-    ASSERT(currentThread() == m_threadID);
+    ASSERT(isDatabaseThread());
     ASSERT(database);
     ASSERT(!m_openDatabaseSet.contains(database));
     m_openDatabaseSet.add(database);
@@ -149,10 +149,17 @@ void DatabaseThread::recordDatabaseOpen(DatabaseBackend* database)
 
 void DatabaseThread::recordDatabaseClosed(DatabaseBackend* database)
 {
-    ASSERT(currentThread() == m_threadID);
+    ASSERT(isDatabaseThread());
     ASSERT(database);
     ASSERT(m_queue.killed() || m_openDatabaseSet.contains(database));
     m_openDatabaseSet.remove(database);
+}
+
+bool DatabaseThread::isDatabaseOpen(DatabaseBackend* database)
+{
+    ASSERT(isDatabaseThread());
+    ASSERT(database);
+    return !m_queue.killed() && m_openDatabaseSet.contains(database);
 }
 
 void DatabaseThread::scheduleTask(PassOwnPtr<DatabaseTask> task)
@@ -161,19 +168,4 @@ void DatabaseThread::scheduleTask(PassOwnPtr<DatabaseTask> task)
     m_queue.append(task);
 }
 
-class SameDatabasePredicate {
-public:
-    SameDatabasePredicate(const DatabaseBackend* database) : m_database(database) { }
-    bool operator()(DatabaseTask* task) const { return task->database() == m_database; }
-private:
-    const DatabaseBackend* m_database;
-};
-
-void DatabaseThread::unscheduleDatabaseTasks(DatabaseBackend* database)
-{
-    // Note that the thread loop is running, so some tasks for the database
-    // may still be executed. This is unavoidable.
-    SameDatabasePredicate predicate(database);
-    m_queue.removeIf(predicate);
-}
 } // namespace WebCore

@@ -96,16 +96,7 @@ void DatabaseBackend::close()
     }
 
     closeDatabase();
-
-    // DatabaseThread keeps databases alive by referencing them in its
-    // m_openDatabaseSet. DatabaseThread::recordDatabaseClose() will remove
-    // this database from that set (which effectively deref's it). We hold on
-    // to it with a local pointer here for a liitle longer, so that we can
-    // unschedule any DatabaseTasks that refer to it before the database gets
-    // deleted.
-    RefPtr<DatabaseBackend> protect = this;
     databaseContext()->databaseThread()->recordDatabaseClosed(this);
-    databaseContext()->databaseThread()->unscheduleDatabaseTasks(this);
 }
 
 PassRefPtr<SQLTransactionBackend> DatabaseBackend::runTransaction(PassRefPtr<SQLTransaction> transaction,

@@ -58,10 +58,11 @@ public:
     bool terminationRequested(DatabaseTaskSynchronizer* taskSynchronizer = 0) const;
 
     void scheduleTask(PassOwnPtr<DatabaseTask>);
-    void unscheduleDatabaseTasks(DatabaseBackend*);
 
     void recordDatabaseOpen(DatabaseBackend*);
     void recordDatabaseClosed(DatabaseBackend*);
+    bool isDatabaseOpen(DatabaseBackend*);
+
     bool isDatabaseThread() { return currentThread() == m_threadID; }
 
     SQLTransactionClient* transactionClient() { return m_transactionClient.get(); }

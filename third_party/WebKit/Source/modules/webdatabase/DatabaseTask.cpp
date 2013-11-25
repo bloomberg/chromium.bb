@@ -30,6 +30,8 @@
 
 #include "platform/Logging.h"
 #include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/DatabaseContext.h"
+#include "modules/webdatabase/DatabaseThread.h"
 
 namespace WebCore {
 
@@ -79,6 +81,13 @@ void DatabaseTask::run()
 #if !LOG_DISABLED
     ASSERT(!m_complete);
 #endif
+
+    if (!m_synchronizer && !m_database->databaseContext()->databaseThread()->isDatabaseOpen(m_database.get())) {
+#if !LOG_DISABLED
+        m_complete = true;
+#endif
+        return;
+    }
 
     LOG(StorageAPI, "Performing %s %p\n", debugTaskName(), this);
 
