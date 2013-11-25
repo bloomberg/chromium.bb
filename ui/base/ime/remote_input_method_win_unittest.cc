@@ -12,6 +12,7 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_delegate.h"
@@ -26,16 +27,31 @@ class MockTextInputClient : public DummyTextInputClient {
  public:
   MockTextInputClient()
       : text_input_type_(TEXT_INPUT_TYPE_NONE),
-        text_input_mode_(TEXT_INPUT_MODE_DEFAULT) {
+        text_input_mode_(TEXT_INPUT_MODE_DEFAULT),
+        call_count_set_composition_text_(0),
+        call_count_insert_char_(0),
+        call_count_insert_text_(0) {
   }
 
+  size_t call_count_set_composition_text() const {
+    return call_count_set_composition_text_;
+  }
   const base::string16& inserted_text() const {
     return inserted_text_;
   }
+  size_t call_count_insert_char() const {
+    return call_count_insert_char_;
+  }
+  size_t call_count_insert_text() const {
+    return call_count_insert_text_;
+  }
   void Reset() {
-    inserted_text_.clear();
     text_input_type_ = TEXT_INPUT_TYPE_NONE;
     text_input_mode_ = TEXT_INPUT_MODE_DEFAULT;
+    call_count_set_composition_text_ = 0;
+    inserted_text_.clear();
+    call_count_insert_char_ = 0;
+    call_count_insert_text_ = 0;
     caret_bounds_ = gfx::Rect();
     composition_character_bounds_.clear();
   }
@@ -54,11 +70,18 @@ class MockTextInputClient : public DummyTextInputClient {
   }
 
  private:
+  // Overriden from DummyTextInputClient.
+  virtual void SetCompositionText(
+      const ui::CompositionText& composition) OVERRIDE {
+    ++call_count_set_composition_text_;
+  }
   virtual void InsertChar(char16 ch, int flags) OVERRIDE{
     inserted_text_.append(1, ch);
+    ++call_count_insert_char_;
   }
   virtual void InsertText(const string16& text) OVERRIDE{
-    EXPECT_TRUE(false) << "RemoteInputMethodWin does not use this method";
+    inserted_text_.append(text);
+    ++call_count_insert_text_;
   }
   virtual ui::TextInputType GetTextInputType() const OVERRIDE {
     return text_input_type_;
@@ -85,6 +108,9 @@ class MockTextInputClient : public DummyTextInputClient {
   gfx::Rect caret_bounds_;
   std::vector<gfx::Rect> composition_character_bounds_;
   base::string16 inserted_text_;
+  size_t call_count_set_composition_text_;
+  size_t call_count_insert_char_;
+  size_t call_count_insert_text_;
   DISALLOW_COPY_AND_ASSIGN(MockTextInputClient);
 };
 
@@ -629,6 +655,83 @@ TEST(RemoteInputMethodWinTest, DispatchKeyEvent_FabricatedChar) {
   EXPECT_TRUE(input_method->DispatchKeyEvent(fabricated_char));
   EXPECT_EQ(L"A", mock_text_input_client.inserted_text());
   EXPECT_TRUE(delegate_.fabricated_key_events().empty());
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+}
+
+TEST(RemoteInputMethodWinTest, OnCompositionChanged) {
+  MockInputMethodDelegate delegate_;
+  MockTextInputClient mock_text_input_client;
+  scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
+
+  RemoteInputMethodPrivateWin* private_ptr =
+      RemoteInputMethodPrivateWin::Get(input_method.get());
+  ASSERT_TRUE(private_ptr != NULL);
+  MockRemoteInputMethodDelegateWin mock_remote_delegate;
+  private_ptr->SetRemoteDelegate(&mock_remote_delegate);
+
+  CompositionText composition_text;
+
+  // TextInputClient is not focused yet here.
+
+  private_ptr->OnCompositionChanged(composition_text);
+  EXPECT_EQ(0, mock_text_input_client.call_count_set_composition_text());
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+
+  input_method->SetFocusedTextInputClient(&mock_text_input_client);
+
+  // TextInputClient is now focused here.
+
+  private_ptr->OnCompositionChanged(composition_text);
+  EXPECT_EQ(1, mock_text_input_client.call_count_set_composition_text());
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+}
+
+TEST(RemoteInputMethodWinTest, OnTextCommitted) {
+  MockInputMethodDelegate delegate_;
+  MockTextInputClient mock_text_input_client;
+  scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
+
+  RemoteInputMethodPrivateWin* private_ptr =
+      RemoteInputMethodPrivateWin::Get(input_method.get());
+  ASSERT_TRUE(private_ptr != NULL);
+  MockRemoteInputMethodDelegateWin mock_remote_delegate;
+  private_ptr->SetRemoteDelegate(&mock_remote_delegate);
+
+  base::string16 committed_text = L"Hello";
+
+  // TextInputClient is not focused yet here.
+
+  mock_text_input_client.set_text_input_type(TEXT_INPUT_TYPE_TEXT);
+  private_ptr->OnTextCommitted(committed_text);
+  EXPECT_EQ(0, mock_text_input_client.call_count_insert_char());
+  EXPECT_EQ(0, mock_text_input_client.call_count_insert_text());
+  EXPECT_EQ(L"", mock_text_input_client.inserted_text());
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+
+  input_method->SetFocusedTextInputClient(&mock_text_input_client);
+
+  // TextInputClient is now focused here.
+
+  mock_text_input_client.set_text_input_type(TEXT_INPUT_TYPE_TEXT);
+  private_ptr->OnTextCommitted(committed_text);
+  EXPECT_EQ(0, mock_text_input_client.call_count_insert_char());
+  EXPECT_EQ(1, mock_text_input_client.call_count_insert_text());
+  EXPECT_EQ(committed_text, mock_text_input_client.inserted_text());
+  delegate_.Reset();
+  mock_text_input_client.Reset();
+
+  // When TextInputType is TEXT_INPUT_TYPE_NONE, TextInputClient::InsertText
+  // should not be used.
+  mock_text_input_client.set_text_input_type(TEXT_INPUT_TYPE_NONE);
+  private_ptr->OnTextCommitted(committed_text);
+  EXPECT_EQ(committed_text.size(),
+            mock_text_input_client.call_count_insert_char());
+  EXPECT_EQ(0, mock_text_input_client.call_count_insert_text());
+  EXPECT_EQ(committed_text, mock_text_input_client.inserted_text());
   delegate_.Reset();
   mock_text_input_client.Reset();
 }

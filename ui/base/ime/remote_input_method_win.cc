@@ -343,6 +343,27 @@ class RemoteInputMethodWin : public InputMethod,
       GetTextInputClient()->OnInputMethodChanged();
   }
 
+  virtual void OnCompositionChanged(
+      const CompositionText& composition_text) OVERRIDE {
+    if (!text_input_client_)
+      return;
+    text_input_client_->SetCompositionText(composition_text);
+  }
+
+  virtual void OnTextCommitted(const base::string16& text) OVERRIDE {
+    if (!text_input_client_)
+      return;
+    if (text_input_client_->GetTextInputType() == TEXT_INPUT_TYPE_NONE) {
+      // According to the comment in text_input_client.h,
+      // TextInputClient::InsertText should never be called when the
+      // text input type is TEXT_INPUT_TYPE_NONE.
+      for (size_t i = 0; i < text.size(); ++i)
+        text_input_client_->InsertChar(text[i], 0);
+      return;
+    }
+    text_input_client_->InsertText(text);
+  }
+
   bool CanSendRemoteNotification(
       const TextInputClient* text_input_client) const {
     return text_input_client_ &&

@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -22,11 +23,12 @@ class RemoteInputMethodDelegateWin;
 }  // namespace internal
 
 class InputMethod;
+struct CompositionText;
 
 // RemoteInputMethodWin is a special implementation of ui::InputMethod that
 // works as a proxy of an IME handler running in the metro_driver process.
 // RemoteInputMethodWin works as follows.
-// - Any action to RemoteInputMethodPrivateWin should be delegated to the
+// - Any action to RemoteInputMethodWin should be delegated to the
 //   metro_driver process via RemoteInputMethodDelegateWin.
 // - Data retrieval from RemoteInputMethodPrivateWin is implemented with
 //   data cache. Whenever the IME state in the metro_driver process is changed,
@@ -34,6 +36,9 @@ class InputMethod;
 //   will call RemoteInputMethodPrivateWin::OnCandidatePopupChanged and/or
 //   RemoteInputMethodPrivateWin::OnInputSourceChanged accordingly so that
 //   the state cache should be updated.
+// - Some IPC messages that represent actions to TextInputClient should be
+//   delegated to RemoteInputMethodPrivateWin so that RemoteInputMethodWin can
+//   work as a real proxy.
 
 // Returns true if |widget| requires RemoteInputMethodWin.
 bool IsRemoteInputMethodWinRequired(gfx::AcceleratedWidget widget);
@@ -71,6 +76,21 @@ class UI_EXPORT RemoteInputMethodPrivateWin {
   // RemoteInputMethodWin::GetInputTextDirection can return the correct
   // values based on remote IME activities in the metro_driver process.
   virtual void OnInputSourceChanged(LANGID langid, bool is_ime) = 0;
+
+  // Handles composition-update events occurred in the metro_driver process.
+  // Caveats: This method is designed to be used only with
+  // metro_driver::TextService. In other words, there is no garantee that this
+  // method works a wrapper to call ui::TextInputClient::SetCompositionText.
+  virtual void OnCompositionChanged(
+      const CompositionText& composition_text) = 0;
+
+  // Handles text-commit events occurred in the metro_driver process.
+  // Caveats: This method is designed to be used only with
+  // metro_driver::TextService. In other words, there is no garantee that this
+  // method works a wrapper to call ui::TextInputClient::InsertText. In fact,
+  // this method may call ui::TextInputClient::InsertChar when the text input
+  // type of the focused text input client is TEXT_INPUT_TYPE_NONE.
+  virtual void OnTextCommitted(const base::string16& text) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoteInputMethodPrivateWin);
