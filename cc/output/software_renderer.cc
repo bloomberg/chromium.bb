@@ -395,8 +395,7 @@ void SoftwareRenderer::DrawTextureQuad(const DrawingFrame* frame,
     background_paint.setColor(quad->background_color);
     current_canvas_->drawRect(quad_rect, background_paint);
   }
-  SkShader::TileMode tile_mode = WrapModeToTileMode(
-      resource_provider_->GetWrapMode(quad->resource_id));
+  SkShader::TileMode tile_mode = WrapModeToTileMode(lock.wrap_mode());
   if (tile_mode != SkShader::kClamp_TileMode) {
     SkMatrix matrix;
     matrix.setRectToRect(sk_uv_rect, quad_rect, SkMatrix::kFill_ScaleToFit);
@@ -422,10 +421,11 @@ void SoftwareRenderer::DrawTileQuad(const DrawingFrame* frame,
                                     const TileDrawQuad* quad) {
   DCHECK(!output_surface_->ForcedDrawToSoftwareDevice());
   DCHECK(IsSoftwareResource(quad->resource_id));
-  DCHECK_EQ(GL_CLAMP_TO_EDGE,
-            resource_provider_->GetWrapMode(quad->resource_id));
+
   ResourceProvider::ScopedReadLockSoftware lock(resource_provider_,
                                                 quad->resource_id);
+  DCHECK_EQ(GL_CLAMP_TO_EDGE, lock.wrap_mode());
+
   gfx::RectF visible_tex_coord_rect = MathUtil::ScaleRectProportional(
       quad->tex_coord_rect, quad->rect, quad->visible_rect);
   gfx::RectF visible_quad_vertex_rect = MathUtil::ScaleRectProportional(
@@ -450,8 +450,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
   DCHECK(IsSoftwareResource(content_texture->id()));
   ResourceProvider::ScopedReadLockSoftware lock(resource_provider_,
                                                 content_texture->id());
-  SkShader::TileMode content_tile_mode = WrapModeToTileMode(
-      resource_provider_->GetWrapMode(content_texture->id()));
+  SkShader::TileMode content_tile_mode = WrapModeToTileMode(lock.wrap_mode());
 
   SkRect dest_rect = gfx::RectFToSkRect(QuadVertexRect());
   SkRect dest_visible_rect = gfx::RectFToSkRect(MathUtil::ScaleRectProportional(
@@ -507,7 +506,7 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
     ResourceProvider::ScopedReadLockSoftware mask_lock(resource_provider_,
                                                        quad->mask_resource_id);
     SkShader::TileMode mask_tile_mode = WrapModeToTileMode(
-        resource_provider_->GetWrapMode(quad->mask_resource_id));
+        mask_lock.wrap_mode());
 
     const SkBitmap* mask = mask_lock.sk_bitmap();
 

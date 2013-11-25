@@ -262,11 +262,13 @@ class CC_EXPORT ResourceProvider {
     ~ScopedReadLockSoftware();
 
     const SkBitmap* sk_bitmap() const { return &sk_bitmap_; }
+    GLint wrap_mode() const { return wrap_mode_; }
 
    private:
     ResourceProvider* resource_provider_;
     ResourceProvider::ResourceId resource_id_;
     SkBitmap sk_bitmap_;
+    GLint wrap_mode_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSoftware);
   };
@@ -329,8 +331,6 @@ class CC_EXPORT ResourceProvider {
   int GetImageStride(ResourceId id);
 
   base::SharedMemory* GetSharedMemory(ResourceId id);
-
-  GLint GetWrapMode(ResourceId id);
 
   // For tests only! This prevents detecting uninitialized reads.
   // Use SetPixels or LockForWrite to allocate implicitly.

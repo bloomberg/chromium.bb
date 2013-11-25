@@ -846,8 +846,9 @@ ResourceProvider::ScopedReadLockSoftware::ScopedReadLockSoftware(
     ResourceProvider::ResourceId resource_id)
     : resource_provider_(resource_provider),
       resource_id_(resource_id) {
-  ResourceProvider::PopulateSkBitmapWithResource(
-      &sk_bitmap_, resource_provider->LockForRead(resource_id));
+  const Resource* resource = resource_provider->LockForRead(resource_id);
+  wrap_mode_ = resource->wrap_mode;
+  ResourceProvider::PopulateSkBitmapWithResource(&sk_bitmap_, resource);
 }
 
 ResourceProvider::ScopedReadLockSoftware::~ScopedReadLockSoftware() {
@@ -1826,11 +1827,6 @@ base::SharedMemory* ResourceProvider::GetSharedMemory(ResourceId id) {
   if (!resource->shared_bitmap)
     return NULL;
   return resource->shared_bitmap->memory();
-}
-
-GLint ResourceProvider::GetWrapMode(ResourceId id) {
-  Resource* resource = GetResource(id);
-  return resource->wrap_mode;
 }
 
 GLint ResourceProvider::GetActiveTextureUnit(WebGraphicsContext3D* context) {
