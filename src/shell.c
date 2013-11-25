@@ -2083,6 +2083,25 @@ shell_surface_calculate_layer_link (struct shell_surface *shsurf)
 	return &ws->layer.view_list;
 }
 
+/* Update the surface’s layer. Mark both the old and new views as having dirty
+ * geometry to ensure the changes are redrawn. */
+static void
+shell_surface_update_layer(struct shell_surface *shsurf)
+{
+	struct wl_list *new_layer_link;
+
+	new_layer_link = shell_surface_calculate_layer_link(shsurf);
+
+	if (new_layer_link == &shsurf->view->layer_link)
+		return;
+
+	weston_view_geometry_dirty(shsurf->view);
+	wl_list_remove(&shsurf->view->layer_link);
+	wl_list_insert(new_layer_link, &shsurf->view->layer_link);
+	weston_view_geometry_dirty(shsurf->view);
+	weston_surface_damage(shsurf->surface);
+}
+
 static void
 shell_surface_set_parent(struct shell_surface *shsurf,
                          struct weston_surface *parent)
@@ -2175,8 +2194,6 @@ set_fullscreen(struct shell_surface *shsurf,
 static void
 unset_fullscreen(struct shell_surface *shsurf)
 {
-	struct workspace *ws;
-
 	/* Unset the fullscreen output, driver configuration and transforms. */
 	if (shsurf->fullscreen.type == WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER &&
 	    shell_surface_is_top_fullscreen(shsurf)) {
@@ -2202,9 +2219,7 @@ unset_fullscreen(struct shell_surface *shsurf)
 		shsurf->saved_rotation_valid = false;
 	}
 
-	ws = get_current_workspace(shsurf->shell);
-	wl_list_remove(&shsurf->view->layer_link);
-	wl_list_insert(&ws->layer.view_list, &shsurf->view->layer_link);
+	/* Layer is updated in set_surface_type(). */
 }
 
 static void
@@ -2286,8 +2301,6 @@ set_maximized(struct shell_surface *shsurf,
 static void
 unset_maximized(struct shell_surface *shsurf)
 {
-	struct workspace *ws;
-
 	/* undo all maximized things here */
 	shsurf->output = get_default_output(shsurf->surface->compositor);
 	weston_view_set_position(shsurf->view,
@@ -2300,9 +2313,7 @@ unset_maximized(struct shell_surface *shsurf)
 		shsurf->saved_rotation_valid = false;
 	}
 
-	ws = get_current_workspace(shsurf->shell);
-	wl_list_remove(&shsurf->view->layer_link);
-	wl_list_insert(&ws->layer.view_list, &shsurf->view->layer_link);
+	/* Layer is updated in set_surface_type(). */
 }
 
 static void
@@ -2321,6 +2332,8 @@ shell_surface_set_maximized(struct wl_client *client,
 	set_maximized(shsurf, output);
 }
 
+/* This is only ever called from set_surface_type(), so there’s no need to
+ * update layer_links here, since they’ll be updated when we return. */
 static int
 reset_surface_type(struct shell_surface *surface)
 {
@@ -2389,6 +2402,9 @@ set_surface_type(struct shell_surface *shsurf)
 	default:
 		break;
 	}
+
+	/* Update the surface’s layer. */
+	shell_surface_update_layer(shsurf);
 }
 
 static struct desktop_shell *
@@ -4359,7 +4375,6 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 	struct weston_seat *seat;
 	int panel_height = 0;
 	int32_t surf_x, surf_y;
-	struct wl_list *new_layer_link;
 
 	shsurf->view->geometry.width = width;
 	shsurf->view->geometry.height = height;
@@ -4397,14 +4412,8 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 		;
 	}
 
-	/* Surface stacking order, see also activate().
-	 *
-	 * If any child surfaces exist and are mapped, ensure they’re in the
-	 * same layer as this surface. */
-	new_layer_link = shell_surface_calculate_layer_link(shsurf);
-	wl_list_remove(&shsurf->view->layer_link);
-	wl_list_insert(new_layer_link,
-	               &shsurf->view->layer_link);
+	/* Surface stacking order, see also activate(). */
+	shell_surface_update_layer(shsurf);
 
 	if (shsurf->type != SHELL_SURFACE_NONE) {
 		weston_view_update_transform(shsurf->view);
