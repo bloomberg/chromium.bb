@@ -2034,6 +2034,22 @@ get_output_panel_height(struct desktop_shell *shell,
 }
 
 static void
+shell_surface_set_output(struct shell_surface *shsurf,
+                         struct weston_output *output)
+{
+	struct weston_surface *es = shsurf->surface;
+
+	/* get the default output, if the client set it as NULL
+	   check whether the ouput is available */
+	if (output)
+		shsurf->output = output;
+	else if (es->output)
+		shsurf->output = es->output;
+	else
+		shsurf->output = get_default_output(es->compositor);
+}
+
+static void
 set_toplevel(struct shell_surface *shsurf)
 {
 	shsurf->next_type = SHELL_SURFACE_TOPLEVEL;
@@ -2079,14 +2095,7 @@ set_fullscreen(struct shell_surface *shsurf,
 	       uint32_t framerate,
 	       struct weston_output *output)
 {
-	struct weston_surface *es = shsurf->surface;
-
-	if (output)
-		shsurf->output = output;
-	else if (es->output)
-		shsurf->output = es->output;
-	else
-		shsurf->output = get_default_output(es->compositor);
+	shell_surface_set_output(shsurf, output);
 
 	shsurf->fullscreen_output = shsurf->output;
 	shsurf->fullscreen.type = method;
@@ -2184,16 +2193,8 @@ set_maximized(struct shell_surface *shsurf,
 {
 	struct desktop_shell *shell;
 	uint32_t edges = 0, panel_height = 0;
-	struct weston_surface *es = shsurf->surface;
 
-	/* get the default output, if the client set it as NULL
-	   check whether the ouput is available */
-	if (output)
-		shsurf->output = output;
-	else if (es->output)
-		shsurf->output = es->output;
-	else
-		shsurf->output = get_default_output(es->compositor);
+	shell_surface_set_output(shsurf, output);
 
 	shell = shell_surface_get_shell(shsurf);
 	panel_height = get_output_panel_height(shell, shsurf->output);
