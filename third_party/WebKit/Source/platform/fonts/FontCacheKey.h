@@ -58,7 +58,7 @@ public:
 
     void setSynthetic(bool bold, bool  italic)
     {
-        m_options |= (bold ? 1 << 6 : 0) | (italic ? 1 << 7 : 0);
+        m_options |= (bold ? 1 << 7 : 0) | (italic ? 1 << 8 : 0);
     }
 
     unsigned hash() const
