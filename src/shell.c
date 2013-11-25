@@ -2259,6 +2259,7 @@ reset_surface_type(struct shell_surface *surface)
 	case SHELL_SURFACE_TRANSIENT:
 	case SHELL_SURFACE_POPUP:
 	case SHELL_SURFACE_XWAYLAND:
+	default:
 		break;
 	}
 
@@ -2306,6 +2307,8 @@ set_surface_type(struct shell_surface *shsurf)
 					 shsurf->transient.y);
 		break;
 
+	case SHELL_SURFACE_POPUP:
+	case SHELL_SURFACE_NONE:
 	default:
 		break;
 	}
@@ -3833,6 +3836,12 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 		shell_stack_fullscreen(get_shell_surface(main_surface));
 		shell_configure_fullscreen(get_shell_surface(main_surface));
 		return;
+	case SHELL_SURFACE_TOPLEVEL:
+	case SHELL_SURFACE_TRANSIENT:
+	case SHELL_SURFACE_MAXIMIZED:
+	case SHELL_SURFACE_POPUP:
+	case SHELL_SURFACE_XWAYLAND:
+	case SHELL_SURFACE_NONE:
 	default:
 		restore_all_output_modes(shell->compositor);
 		ws = get_current_workspace(shell);
@@ -4301,6 +4310,8 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 					 shsurf->view->geometry.x + sx,
 					 shsurf->view->geometry.y + sy);
 		break;
+	case SHELL_SURFACE_TRANSIENT:
+	case SHELL_SURFACE_XWAYLAND:
 	default:
 		;
 	}
@@ -4321,6 +4332,8 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 	case SHELL_SURFACE_NONE:
 		break;
 	case SHELL_SURFACE_XWAYLAND:
+	case SHELL_SURFACE_TOPLEVEL:
+	case SHELL_SURFACE_MAXIMIZED:
 	default:
 		ws = get_current_workspace(shell);
 		wl_list_remove(&shsurf->view->layer_link);
@@ -4351,6 +4364,8 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 				activate(shell, shsurf->surface, seat);
 		}
 		break;
+	case SHELL_SURFACE_POPUP:
+	case SHELL_SURFACE_NONE:
 	default:
 		break;
 	}
@@ -4404,7 +4419,10 @@ configure(struct desktop_shell *shell, struct weston_surface *surface,
 			get_output_panel_height(shell,shsurf->output) - surf_y;
 		break;
 	case SHELL_SURFACE_TOPLEVEL:
-		break;
+	case SHELL_SURFACE_TRANSIENT:
+	case SHELL_SURFACE_POPUP:
+	case SHELL_SURFACE_XWAYLAND:
+	case SHELL_SURFACE_NONE:
 	default:
 		break;
 	}
@@ -4884,6 +4902,10 @@ switcher_next(struct switcher *switcher)
 			weston_view_geometry_dirty(view);
 			weston_surface_damage(view->surface);
 			break;
+		case SHELL_SURFACE_TRANSIENT:
+		case SHELL_SURFACE_POPUP:
+		case SHELL_SURFACE_XWAYLAND:
+		case SHELL_SURFACE_NONE:
 		default:
 			break;
 		}
