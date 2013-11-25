@@ -2451,6 +2451,29 @@ create_black_surface(struct weston_compositor *ec,
 	return view;
 }
 
+static void
+shell_ensure_fullscreen_black_view(struct shell_surface *shsurf)
+{
+	struct weston_output *output = shsurf->fullscreen_output;
+
+	assert(shsurf->type == SHELL_SURFACE_FULLSCREEN);
+
+	if (!shsurf->fullscreen.black_view)
+		shsurf->fullscreen.black_view =
+			create_black_surface(shsurf->surface->compositor,
+			                     shsurf->surface,
+			                     output->x, output->y,
+			                     output->width,
+			                     output->height);
+
+	weston_view_geometry_dirty(shsurf->fullscreen.black_view);
+	wl_list_remove(&shsurf->fullscreen.black_view->layer_link);
+	wl_list_insert(&shsurf->view->layer_link,
+	               &shsurf->fullscreen.black_view->layer_link);
+	weston_view_geometry_dirty(shsurf->fullscreen.black_view);
+	weston_surface_damage(shsurf->surface);
+}
+
 /* Create black surface and append it to the associated fullscreen surface.
  * Handle size dismatch and positioning according to the method. */
 static void
@@ -2465,19 +2488,7 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 	if (shsurf->fullscreen.type != WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER)
 		restore_output_mode(output);
 
-	if (!shsurf->fullscreen.black_view)
-		shsurf->fullscreen.black_view =
-			create_black_surface(surface->compositor,
-					     surface,
-					     output->x, output->y,
-					     output->width,
-					     output->height);
-
-	wl_list_remove(&shsurf->fullscreen.black_view->layer_link);
-	wl_list_insert(&shsurf->view->layer_link,
-		       &shsurf->fullscreen.black_view->layer_link);
-	shsurf->fullscreen.black_view->surface->output = output;
-	shsurf->fullscreen.black_view->output = output;
+	shell_ensure_fullscreen_black_view(shsurf);
 
 	surface_subsurfaces_boundingbox(shsurf->surface, &surf_x, &surf_y,
 	                                &surf_width, &surf_height);
@@ -2553,36 +2564,9 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 	}
 }
 
-/* make the fullscreen and black surface at the top */
-static void
-shell_stack_fullscreen(struct shell_surface *shsurf)
-{
-	struct weston_output *output = shsurf->fullscreen_output;
-	struct desktop_shell *shell = shell_surface_get_shell(shsurf);
-
-	wl_list_remove(&shsurf->view->layer_link);
-	wl_list_insert(&shell->fullscreen_layer.view_list,
-		       &shsurf->view->layer_link);
-	weston_surface_damage(shsurf->surface);
-
-	if (!shsurf->fullscreen.black_view)
-		shsurf->fullscreen.black_view =
-			create_black_surface(shsurf->surface->compositor,
-					     shsurf->surface,
-					     output->x, output->y,
-					     output->width,
-					     output->height);
-
-	wl_list_remove(&shsurf->fullscreen.black_view->layer_link);
-	wl_list_insert(&shsurf->view->layer_link,
-		       &shsurf->fullscreen.black_view->layer_link);
-	weston_surface_damage(shsurf->fullscreen.black_view->surface);
-}
-
 static void
 shell_map_fullscreen(struct shell_surface *shsurf)
 {
-	shell_stack_fullscreen(shsurf);
 	shell_configure_fullscreen(shsurf);
 }
 
@@ -3940,7 +3924,6 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	switch (get_shell_surface_type(main_surface)) {
 	case SHELL_SURFACE_FULLSCREEN:
 		/* should on top of panels */
-		shell_stack_fullscreen(get_shell_surface(main_surface));
 		shell_configure_fullscreen(get_shell_surface(main_surface));
 		return;
 	case SHELL_SURFACE_TOPLEVEL:
@@ -4495,7 +4478,6 @@ configure(struct desktop_shell *shell, struct weston_surface *surface,
 
 	switch (surface_type) {
 	case SHELL_SURFACE_FULLSCREEN:
-		shell_stack_fullscreen(shsurf);
 		shell_configure_fullscreen(shsurf);
 		break;
 	case SHELL_SURFACE_MAXIMIZED:
