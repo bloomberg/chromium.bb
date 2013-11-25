@@ -2192,13 +2192,14 @@ set_popup(struct shell_surface *shsurf,
 {
 	assert(parent != NULL);
 
-	shsurf->type = SHELL_SURFACE_POPUP;
 	shsurf->popup.shseat = get_shell_seat(seat);
 	shsurf->popup.serial = serial;
 	shsurf->popup.x = x;
 	shsurf->popup.y = y;
 
 	shell_surface_set_parent(shsurf, parent);
+
+	shsurf->next_type = SHELL_SURFACE_POPUP;
 }
 
 static void
