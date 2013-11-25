@@ -141,6 +141,9 @@ class NET_EXPORT SpdySessionPool
   virtual void OnSSLConfigChanged() OVERRIDE;
 
   // CertDatabase::Observer methods:
+
+  // We perform the same flushing as described above when certificate database
+  // is changed.
   virtual void OnCertAdded(const X509Certificate* cert) OVERRIDE;
   virtual void OnCACertChanged(const X509Certificate* cert) OVERRIDE;
 

@@ -287,7 +287,7 @@ void SpdySessionPool::OnSSLConfigChanged() {
 }
 
 void SpdySessionPool::OnCertAdded(const X509Certificate* cert) {
-  CloseCurrentSessions(ERR_NETWORK_CHANGED);
+  CloseCurrentSessions(ERR_CERT_DATABASE_CHANGED);
 }
 
 void SpdySessionPool::OnCACertChanged(const X509Certificate* cert) {
@@ -295,7 +295,7 @@ void SpdySessionPool::OnCACertChanged(const X509Certificate* cert) {
   // reduced. CloseCurrentSessions now because OnCACertChanged does not
   // tell us this.
   // See comments in ClientSocketPoolManager::OnCACertChanged.
-  CloseCurrentSessions(ERR_NETWORK_CHANGED);
+  CloseCurrentSessions(ERR_CERT_DATABASE_CHANGED);
 }
 
 bool SpdySessionPool::IsSessionAvailable(

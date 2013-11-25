@@ -462,6 +462,108 @@ TEST_F(QuicStreamFactoryTest, OnIPAddressChanged) {
   EXPECT_TRUE(socket_data2.at_write_eof());
 }
 
+TEST_F(QuicStreamFactoryTest, OnCertAdded) {
+  MockRead reads[] = {
+    MockRead(ASYNC, 0, 0)  // EOF
+  };
+  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.StopAfter(1);
+
+  MockRead reads2[] = {
+    MockRead(ASYNC, 0, 0)  // EOF
+  };
+  DeterministicSocketData socket_data2(reads2, arraysize(reads2), NULL, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data2);
+  socket_data2.StopAfter(1);
+
+  QuicStreamRequest request(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
+                                            cert_verifier_.get(), net_log_,
+                                            callback_.callback()));
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  HttpRequestInfo request_info;
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info,
+                                         DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
+
+  // Add a cert and verify that stream saw the event.
+  factory_.OnCertAdded(NULL);
+  EXPECT_EQ(ERR_CERT_DATABASE_CHANGED,
+            stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_FALSE(factory_.require_confirmation());
+
+  // Now attempting to request a stream to the same origin should create
+  // a new session.
+
+  QuicStreamRequest request2(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING, request2.Request(host_port_proxy_pair_, is_https_,
+                                             cert_verifier_.get(), net_log_,
+                                             callback_.callback()));
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  stream = request2.ReleaseStream();
+  stream.reset();  // Will reset stream 3.
+
+  EXPECT_TRUE(socket_data.at_read_eof());
+  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data2.at_read_eof());
+  EXPECT_TRUE(socket_data2.at_write_eof());
+}
+
+TEST_F(QuicStreamFactoryTest, OnCACertChanged) {
+  MockRead reads[] = {
+    MockRead(ASYNC, 0, 0)  // EOF
+  };
+  DeterministicSocketData socket_data(reads, arraysize(reads), NULL, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+  socket_data.StopAfter(1);
+
+  MockRead reads2[] = {
+    MockRead(ASYNC, 0, 0)  // EOF
+  };
+  DeterministicSocketData socket_data2(reads2, arraysize(reads2), NULL, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data2);
+  socket_data2.StopAfter(1);
+
+  QuicStreamRequest request(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING, request.Request(host_port_proxy_pair_, is_https_,
+                                            cert_verifier_.get(), net_log_,
+                                            callback_.callback()));
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  HttpRequestInfo request_info;
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info,
+                                         DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
+
+  // Change the CA cert and verify that stream saw the event.
+  factory_.OnCACertChanged(NULL);
+  EXPECT_EQ(ERR_CERT_DATABASE_CHANGED,
+            stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_FALSE(factory_.require_confirmation());
+
+  // Now attempting to request a stream to the same origin should create
+  // a new session.
+
+  QuicStreamRequest request2(&factory_);
+  EXPECT_EQ(ERR_IO_PENDING, request2.Request(host_port_proxy_pair_, is_https_,
+                                             cert_verifier_.get(), net_log_,
+                                             callback_.callback()));
+
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  stream = request2.ReleaseStream();
+  stream.reset();  // Will reset stream 3.
+
+  EXPECT_TRUE(socket_data.at_read_eof());
+  EXPECT_TRUE(socket_data.at_write_eof());
+  EXPECT_TRUE(socket_data2.at_read_eof());
+  EXPECT_TRUE(socket_data2.at_write_eof());
+}
+
 TEST_F(QuicStreamFactoryTest, SharedCryptoConfig) {
   vector<string> cannoncial_suffixes;
   cannoncial_suffixes.push_back(string(".c.youtube.com"));

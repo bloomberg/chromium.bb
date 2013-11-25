@@ -15,6 +15,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_log.h"
 #include "net/base/network_change_notifier.h"
+#include "net/cert/cert_database.h"
 #include "net/proxy/proxy_server.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_crypto_stream.h"
@@ -78,7 +79,8 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
 // A factory for creating new QuicHttpStreams on top of a pool of
 // QuicClientSessions.
 class NET_EXPORT_PRIVATE QuicStreamFactory
-    : public NetworkChangeNotifier::IPAddressObserver {
+    : public NetworkChangeNotifier::IPAddressObserver,
+      public CertDatabase::Observer {
  public:
   QuicStreamFactory(
       HostResolver* host_resolver,
@@ -131,6 +133,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Until the servers support roaming, close all connections when the local
   // IP address changes.
   virtual void OnIPAddressChanged() OVERRIDE;
+
+  // CertDatabase::Observer methods:
+
+  // We close all sessions when certificate database is changed.
+  virtual void OnCertAdded(const X509Certificate* cert) OVERRIDE;
+  virtual void OnCACertChanged(const X509Certificate* cert) OVERRIDE;
 
   bool require_confirmation() const { return require_confirmation_; }
 

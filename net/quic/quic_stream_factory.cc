@@ -415,6 +415,23 @@ void QuicStreamFactory::OnIPAddressChanged() {
   require_confirmation_ = true;
 }
 
+void QuicStreamFactory::OnCertAdded(const X509Certificate* cert) {
+  CloseAllSessions(ERR_CERT_DATABASE_CHANGED);
+}
+
+void QuicStreamFactory::OnCACertChanged(const X509Certificate* cert) {
+  // We should flush the sessions if we removed trust from a
+  // cert, because a previously trusted server may have become
+  // untrusted.
+  //
+  // We should not flush the sessions if we added trust to a cert.
+  //
+  // Since the OnCACertChanged method doesn't tell us what
+  // kind of change it is, we have to flush the socket
+  // pools to be safe.
+  CloseAllSessions(ERR_CERT_DATABASE_CHANGED);
+}
+
 bool QuicStreamFactory::HasActiveSession(
     const HostPortProxyPair& host_port_proxy_pair) {
   return ContainsKey(active_sessions_, host_port_proxy_pair);
