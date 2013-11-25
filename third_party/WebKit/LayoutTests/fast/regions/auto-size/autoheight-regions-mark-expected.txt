@@ -4,43 +4,43 @@ layer at (0,0) size 800x116
   RenderBlock {HTML} at (0,0) size 800x116
     RenderBody {BODY} at (8,8) size 784x100
 layer at (8,8) size 50x50
-  RenderRegion {DIV} at (0,0) size 50x50
+  RenderBlock {DIV} at (0,0) size 50x50
+    RenderNamedFlowFragment at (0,0) size 50x50
 layer at (8,50) size 50x450
-  RenderRegion {DIV} at (8,50) size 50x450
+  RenderBlock (positioned) {DIV} at (8,50) size 50x450
+    RenderNamedFlowFragment at (0,0) size 50x450
 layer at (50,8) size 650x50
-  RenderRegion {DIV} at (50,8) size 650x50
+  RenderBlock (positioned) {DIV} at (50,8) size 650x50
+    RenderNamedFlowFragment at (0,0) size 650x50
 layer at (8,58) size 50x50
-  RenderRegion {DIV} at (0,50) size 50x50
-Flow Threads
-  Thread with flow-name 'flow'
+  RenderBlock {DIV} at (0,50) size 50x50
+    RenderNamedFlowFragment at (0,0) size 50x50
+Named flows
+  Named flow 'flow'
     layer at (0,0) size 50x50
       RenderNamedFlowThread at (0,0) size 50x50
-  Regions for flow 'flow'
-    RenderRegion {DIV} #region
-  Thread with flow-name 'flow2'
-  Regions for flow 'flow2'
-    RenderRegion {DIV} #region2 hasAutoLogicalHeight
-  Thread with flow-name 'flow3'
-    layer at (0,0) size 50x450
-      RenderNamedFlowThread at (0,0) size 50x450
-  Regions for flow 'flow3'
-    RenderRegion {DIV} #region3
-  Thread with flow-name 'flow4'
-    layer at (0,0) size 650x50
-      RenderNamedFlowThread at (0,0) size 650x50
-  Regions for flow 'flow4'
-    RenderRegion {DIV} #region4
-  Thread with flow-name 'flow5'
-  Regions for flow 'flow5'
-    RenderRegion {DIV} #region5 hasAutoLogicalHeight
-  Thread with flow-name 'flow6'
+    Regions for named flow 'flow'
+      RenderNamedFlowFragment (anonymous child of {DIV} #region)
+  Named flow 'flow2'
+    Regions for named flow 'flow2'
+      RenderNamedFlowFragment hasAutoLogicalHeight (anonymous child of {DIV} #region2)
+  Named flow 'flow3'
+    Regions for named flow 'flow3'
+      RenderNamedFlowFragment hasAutoLogicalHeight (anonymous child of {DIV} #region3)
+  Named flow 'flow4'
+    Regions for named flow 'flow4'
+      RenderNamedFlowFragment hasAutoLogicalHeight (anonymous child of {DIV} #region4)
+  Named flow 'flow5'
+    Regions for named flow 'flow5'
+      RenderNamedFlowFragment hasAutoLogicalHeight (anonymous child of {DIV} #region5)
+  Named flow 'flow6'
     layer at (0,0) size 50x50
       RenderNamedFlowThread at (0,0) size 50x50
-  Regions for flow 'flow6'
-    RenderRegion {DIV} #region6
-  Thread with flow-name 'flow8'
-  Regions for flow 'flow8'
-    RenderRegion {DIV} #region8 invalid
-  Thread with flow-name 'flow7'
-  Regions for flow 'flow7'
-    RenderRegion {DIV} #region7 hasAutoLogicalHeight
+    Regions for named flow 'flow6'
+      RenderNamedFlowFragment (anonymous child of {DIV} #region6)
+  Named flow 'flow7'
+    Invalid regions for named flow 'flow7'
+      RenderNamedFlowFragment (anonymous child of {DIV} #region7) invalid
+  Named flow 'flow8'
+    Regions for named flow 'flow8'
+      RenderNamedFlowFragment hasAutoLogicalHeight (anonymous child of {DIV} #region8)

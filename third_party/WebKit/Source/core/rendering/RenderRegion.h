@@ -147,6 +147,8 @@ public:
     Node* nodeForRegion() const;
     Node* generatingNodeForRegion() const;
 
+    virtual const char* renderName() const OVERRIDE { return "RenderRegion"; }
+
 protected:
     void setRegionObjectsRegionStyle();
     void restoreRegionObjectsOriginalStyle();
@@ -160,8 +162,6 @@ protected:
     virtual bool shouldHaveAutoLogicalHeight() const;
 
 private:
-    virtual const char* renderName() const OVERRIDE { return "RenderRegion"; }
-
     virtual void insertedIntoTree() OVERRIDE;
     virtual void willBeRemovedFromTree() OVERRIDE;
 
