@@ -676,7 +676,8 @@ void TabSpecificContentSettings::RenderViewForInterstitialPageCreated(
     RenderViewHost* render_view_host) {
   // We want to tell the renderer-side code to ignore content settings for this
   // page.
-  Send(new ChromeViewMsg_SetAsInterstitial(routing_id()));
+  render_view_host->Send(new ChromeViewMsg_SetAsInterstitial(
+      render_view_host->GetRoutingID()));
 }
 
 bool TabSpecificContentSettings::OnMessageReceived(
