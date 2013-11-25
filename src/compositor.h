@@ -408,10 +408,15 @@ void
 weston_seat_set_selection(struct weston_seat *seat,
 			  struct weston_data_source *source, uint32_t serial);
 int
-weston_seat_start_drag(struct weston_seat *seat,
+weston_pointer_start_drag(struct weston_pointer *pointer,
 		       struct weston_data_source *source,
 		       struct weston_surface *icon,
 		       struct wl_client *client);
+int
+weston_touch_start_drag(struct weston_touch *touch,
+			struct weston_data_source *source,
+			struct weston_surface *icon,
+			struct wl_client *client);
 
 struct weston_xkb_info {
 	struct xkb_keymap *keymap;

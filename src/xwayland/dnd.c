@@ -211,7 +211,7 @@ handle_enter(struct weston_wm *wm, xcb_client_message_event_t *client_message)
 	}
 
 	free(reply);
-	weston_seat_start_drag(seat, &source->base, NULL, NULL);
+	weston_pointer_start_drag(seat->pointer, &source->base, NULL, NULL);
 }
 
 int
