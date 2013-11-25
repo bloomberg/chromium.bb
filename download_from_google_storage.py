@@ -163,16 +163,17 @@ def enumerate_work_queue(input_filename, work_queue, directory,
 
 
 def _downloader_worker_thread(thread_num, q, force, base_url,
-                              gsutil, out_q, ret_codes):
+                              gsutil, out_q, ret_codes, verbose):
   while True:
     input_sha1_sum, output_filename = q.get()
     if input_sha1_sum is None:
       return
     if os.path.exists(output_filename) and not force:
       if get_sha1(output_filename) == input_sha1_sum:
-        out_q.put(
-            '%d> File %s exists and SHA1 matches. Skipping.' % (
-                thread_num, output_filename))
+        if verbose:
+          out_q.put(
+              '%d> File %s exists and SHA1 matches. Skipping.' % (
+                  thread_num, output_filename))
         continue
     # Check if file exists.
     file_url = '%s/%s' % (base_url, input_sha1_sum)
@@ -216,7 +217,7 @@ def printer_worker(output_queue):
 
 def download_from_google_storage(
     input_filename, base_url, gsutil, num_threads, directory, recursive,
-    force, output, ignore_errors, sha1_file):
+    force, output, ignore_errors, sha1_file, verbose):
   # Start up all the worker threads.
   all_threads = []
   download_start = time.time()
@@ -228,7 +229,7 @@ def download_from_google_storage(
     t = threading.Thread(
         target=_downloader_worker_thread,
         args=[thread_num, work_queue, force, base_url,
-              gsutil, stdout_queue, ret_codes])
+              gsutil, stdout_queue, ret_codes, verbose])
     t.daemon = True
     t.start()
     all_threads.append(t)
@@ -255,11 +256,12 @@ def download_from_google_storage(
     max_ret_code = max(ret_code, max_ret_code)
     if message:
       print >> sys.stderr, message
-  if not max_ret_code:
+  if verbose and not max_ret_code:
     print 'Success!'
 
-  print 'Downloading %d files took %1f second(s)' % (
-      work_queue_size, time.time() - download_start)
+  if verbose:
+    print 'Downloading %d files took %1f second(s)' % (
+        work_queue_size, time.time() - download_start)
   return max_ret_code
 
 
@@ -308,14 +310,17 @@ def main(args):
                     help='A regular expression that is compared against '
                          'Python\'s sys.platform. If this option is specified, '
                          'the download will happen only if there is a match.')
+  parser.add_option('-v', '--verbose', action='store_true',
+                    help='Output extra diagnostic and progress information.')
 
   (options, args) = parser.parse_args()
 
   # Make sure we should run at all based on platform matching.
   if options.platform:
     if not re.match(options.platform, sys.platform):
-      print('The current platform doesn\'t match "%s", skipping.' %
-            options.platform)
+      if options.verbose:
+        print('The current platform doesn\'t match "%s", skipping.' %
+              options.platform)
       return 0
 
   # Set the boto file to /dev/null if we don't need auth.
@@ -383,7 +388,7 @@ def main(args):
   return download_from_google_storage(
       input_filename, base_url, gsutil, options.num_threads, options.directory,
       options.recursive, options.force, options.output, options.ignore_errors,
-      options.sha1_file)
+      options.sha1_file, options.verbose)
 
 
 if __name__ == '__main__':

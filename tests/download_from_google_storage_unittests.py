@@ -173,7 +173,7 @@ class DownloadTests(unittest.TestCase):
     stdout_queue = Queue.Queue()
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, False, self.base_url, self.gsutil,
-        stdout_queue, self.ret_codes)
+        stdout_queue, self.ret_codes, True)
     expected_calls = [
         ('check_call',
             ('ls', input_filename)),
@@ -200,7 +200,7 @@ class DownloadTests(unittest.TestCase):
     stdout_queue = Queue.Queue()
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, False, self.base_url, self.gsutil,
-        stdout_queue, self.ret_codes)
+        stdout_queue, self.ret_codes, True)
     expected_output = [
         '0> File %s exists and SHA1 matches. Skipping.' % output_filename
     ]
@@ -217,7 +217,7 @@ class DownloadTests(unittest.TestCase):
     self.gsutil.add_expected(1, '', '')  # Return error when 'ls' is called.
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, False, self.base_url, self.gsutil,
-        stdout_queue, self.ret_codes)
+        stdout_queue, self.ret_codes, True)
     expected_output = [
         '0> File %s for %s does not exist, skipping.' % (
             input_filename, output_filename),
@@ -250,7 +250,8 @@ class DownloadTests(unittest.TestCase):
         force=True,
         output=output_filename,
         ignore_errors=False,
-        sha1_file=False)
+        sha1_file=False,
+        verbose=True)
     expected_calls = [
         ('check_call',
             ('ls', input_filename)),
@@ -280,7 +281,8 @@ class DownloadTests(unittest.TestCase):
         force=False,
         output=None,
         ignore_errors=False,
-        sha1_file=False)
+        sha1_file=False,
+        verbose=True)
     expected_calls = [
         ('check_call',
             ('ls', input_filename)),
