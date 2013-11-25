@@ -1541,8 +1541,10 @@ bool DOMWindow::addEventListener(const AtomicString& eventType, PassRefPtr<Event
     lifecycleNotifier().notifyAddEventListener(this, eventType);
 
     if (eventType == EventTypeNames::unload) {
+        UseCounter::count(this, UseCounter::DocumentUnloadRegistered);
         addUnloadEventListener(this);
     } else if (eventType == EventTypeNames::beforeunload) {
+        UseCounter::count(this, UseCounter::DocumentBeforeUnloadRegistered);
         if (allowsBeforeUnloadListeners(this)) {
             // This is confusingly named. It doesn't actually add the listener. It just increments a count
             // so that we know we have listeners registered for the purposes of determining if we can

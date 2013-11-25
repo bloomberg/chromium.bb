@@ -299,7 +299,11 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         if (DOMWindow* executingWindow = this->executingWindow()) {
             if (executingWindow->top())
                 UseCounter::count(executingWindow, UseCounter::SubFrameBeforeUnloadFired);
+            UseCounter::count(executingWindow, UseCounter::DocumentBeforeUnloadFired);
         }
+    } else if (event->type() == EventTypeNames::unload) {
+        if (DOMWindow* executingWindow = this->executingWindow())
+            UseCounter::count(executingWindow, UseCounter::DocumentUnloadFired);
     }
 
     bool userEventWasHandled = false;
