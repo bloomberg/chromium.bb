@@ -67,6 +67,8 @@ class ChromotingJniInstance
                           protocol::MouseEvent_MouseButton button,
                           bool button_down);
 
+  void PerformMouseWheelDeltaAction(int delta_x, int delta_y);
+
   // Sends the provided keyboard scan code to the host.
   void PerformKeyboardAction(int key_code, bool key_down);
 

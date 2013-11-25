@@ -141,6 +141,22 @@ void ChromotingJniInstance::PerformMouseAction(
   connection_->input_stub()->InjectMouseEvent(action);
 }
 
+void ChromotingJniInstance::PerformMouseWheelDeltaAction(int delta_x,
+                                                         int delta_y) {
+  if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
+    jni_runtime_->network_task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&ChromotingJniInstance::PerformMouseWheelDeltaAction, this,
+                   delta_x, delta_y));
+    return;
+  }
+
+  protocol::MouseEvent action;
+  action.set_wheel_delta_x(delta_x);
+  action.set_wheel_delta_y(delta_y);
+  connection_->input_stub()->InjectMouseEvent(action);
+}
+
 void ChromotingJniInstance::PerformKeyboardAction(int key_code, bool key_down) {
   if (!jni_runtime_->network_task_runner()->BelongsToCurrentThread()) {
     jni_runtime_->network_task_runner()->PostTask(

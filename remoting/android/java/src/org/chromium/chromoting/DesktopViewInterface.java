@@ -8,8 +8,11 @@ package org.chromium.chromoting;
  * Callback interface to allow the TouchInputHandler to request actions on the DesktopView.
  */
 public interface DesktopViewInterface {
-    /** Inject a mouse-move event, with optional button press/release. */
+    /** Injects a mouse-move event, with optional button press/release. */
     void injectMouseEvent(int x, int y, int button, boolean pressed);
+
+    /** Injects a mouse-wheel event with delta values. */
+    void injectMouseWheelDeltaEvent(int deltaX, int deltaY);
 
     /** Triggers a brief cursor animation to indicate a long-press event. */
     void showLongPressFeedback();

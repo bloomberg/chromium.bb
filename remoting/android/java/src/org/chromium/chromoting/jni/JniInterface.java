@@ -288,6 +288,18 @@ public class JniInterface {
     /** Passes mouse information to the native handling code. */
     private static native void nativeMouseAction(int x, int y, int whichButton, boolean buttonDown);
 
+    /** Injects a mouse-wheel event with delta values. */
+    public static void mouseWheelDeltaAction(int deltaX, int deltaY) {
+        if (!sConnected) {
+            return;
+        }
+
+        nativeMouseWheelDeltaAction(deltaX, deltaY);
+    }
+
+    /** Passes mouse-wheel information to the native handling code. */
+    private static native void nativeMouseWheelDeltaAction(int deltaX, int deltaY);
+
     /** Presses and releases the specified (nonnegative) key. */
     public static void keyboardAction(int keyCode, boolean keyDown) {
         if (!sConnected) {

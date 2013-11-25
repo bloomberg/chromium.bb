@@ -326,6 +326,11 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
     }
 
     @Override
+    public void injectMouseWheelDeltaEvent(int deltaX, int deltaY) {
+        JniInterface.mouseWheelDeltaAction(deltaX, deltaY);
+    }
+
+    @Override
     public void showLongPressFeedback() {
         mFeedbackAnimator.startAnimation();
         requestRepaint();

@@ -117,6 +117,15 @@ static void MouseAction(JNIEnv* env,
       buttonDown);
 }
 
+static void MouseWheelDeltaAction(JNIEnv* env,
+                                  jclass clazz,
+                                  jint delta_x,
+                                  jint delta_y) {
+  remoting::ChromotingJniRuntime::GetInstance()
+      ->session()
+      ->PerformMouseWheelDeltaAction(delta_x, delta_y);
+}
+
 static void KeyboardAction(JNIEnv* env,
                            jclass clazz,
                            jint keyCode,
