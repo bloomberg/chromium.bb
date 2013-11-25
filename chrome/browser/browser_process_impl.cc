@@ -286,6 +286,10 @@ void BrowserProcessImpl::StartTearDown() {
 #endif
 
   platform_part()->StartTearDown();
+
+#if defined(ENABLE_WEBRTC)
+  webrtc_log_uploader_.reset();
+#endif
 }
 
 void BrowserProcessImpl::PostDestroyThreads() {

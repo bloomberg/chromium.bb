@@ -45,21 +45,36 @@ const int kHttpResponseOk = 200;
 
 WebRtcLogUploader::WebRtcLogUploader()
     : log_count_(0),
-      post_data_(NULL) {}
+      post_data_(NULL) {
+  file_thread_checker_.DetachFromThread();
+}
 
-WebRtcLogUploader::~WebRtcLogUploader() {}
+WebRtcLogUploader::~WebRtcLogUploader() {
+  DCHECK(create_thread_checker_.CalledOnValidThread());
+  // Delete all pending URLFetcher and release all references to
+  // WebRtcLoggingHandlerHost.
+  for (UploadDoneDataMap::iterator it = upload_done_data_.begin();
+       it != upload_done_data_.end(); ++it) {
+    delete it->first;
+  }
+  upload_done_data_.clear();
+}
 
 void WebRtcLogUploader::OnURLFetchComplete(
     const net::URLFetcher* source) {
+  DCHECK(create_thread_checker_.CalledOnValidThread());
   DCHECK(upload_done_data_.find(source) != upload_done_data_.end());
   int response_code = source->GetResponseCode();
   std::string report_id;
   if (response_code == kHttpResponseOk &&
       source->GetResponseAsString(&report_id)) {
-    AddUploadedLogInfoToUploadListFile(
-        WebRtcLogUploadList::GetFilePathForProfile(
-            upload_done_data_[source].profile),
-        report_id);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&WebRtcLogUploader::AddUploadedLogInfoToUploadListFile,
+                 base::Unretained(this),
+                 WebRtcLogUploadList::GetFilePathForProfile(
+                     upload_done_data_[source].profile),
+                 report_id));
   }
   NotifyUploadDone(response_code, report_id, upload_done_data_[source]);
   upload_done_data_.erase(source);
@@ -71,7 +86,7 @@ void WebRtcLogUploader::OnURLFetchUploadProgress(
 }
 
 bool WebRtcLogUploader::ApplyForStartLogging() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(create_thread_checker_.CalledOnValidThread());
   if (log_count_ < kLogCountLimit) {
     ++log_count_;
     return true;
@@ -90,12 +105,14 @@ void WebRtcLogUploader::LoggingStoppedDoUpload(
     uint32 length,
     const std::map<std::string, std::string>& meta_data,
     const WebRtcLogUploadDoneData& upload_done_data) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
+  DCHECK(file_thread_checker_.CalledOnValidThread());
   DCHECK(shared_memory);
   DCHECK(shared_memory->memory());
 
-  std::string post_data;
-  SetupMultipart(&post_data, reinterpret_cast<uint8*>(shared_memory->memory()),
+  scoped_ptr<std::string> post_data;
+  post_data.reset(new std::string);
+  SetupMultipart(post_data.get(),
+                 reinterpret_cast<uint8*>(shared_memory->memory()),
                  length, meta_data);
 
   // If a test has set the test string pointer, write to it and skip uploading.
@@ -104,21 +121,18 @@ void WebRtcLogUploader::LoggingStoppedDoUpload(
   // TODO(grunell): Remove this when the api test for this feature is fully
   // implemented according to the test plan. http://crbug.com/257329.
   if (post_data_) {
-    *post_data_ = post_data;
+    *post_data_ = *post_data;
     NotifyUploadDone(kHttpResponseOk, "", upload_done_data);
     return;
   }
 
-  std::string content_type = kUploadContentType;
-  content_type.append("; boundary=");
-  content_type.append(kMultipartBoundary);
-
-  net::URLFetcher* url_fetcher =
-      net::URLFetcher::Create(GURL(kUploadURL), net::URLFetcher::POST, this);
-  url_fetcher->SetRequestContext(request_context);
-  url_fetcher->SetUploadData(content_type, post_data);
-  url_fetcher->Start();
-  upload_done_data_[url_fetcher] = upload_done_data;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&WebRtcLogUploader::CreateAndStartURLFetcher,
+                 base::Unretained(this),
+                 make_scoped_refptr(request_context),
+                 upload_done_data,
+                 Passed(&post_data)));
 
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
       base::Bind(&WebRtcLogUploader::DecreaseLogCount, base::Unretained(this)));
@@ -235,14 +249,32 @@ void WebRtcLogUploader::ResizeForNextOutput(std::string* post_data,
   stream->avail_out = kIntermediateCompressionBufferBytes;
 }
 
+void WebRtcLogUploader::CreateAndStartURLFetcher(
+    scoped_refptr<net::URLRequestContextGetter> request_context,
+    const WebRtcLogUploadDoneData& upload_done_data,
+    scoped_ptr<std::string> post_data) {
+  DCHECK(create_thread_checker_.CalledOnValidThread());
+  std::string content_type = kUploadContentType;
+  content_type.append("; boundary=");
+  content_type.append(kMultipartBoundary);
+
+  net::URLFetcher* url_fetcher =
+      net::URLFetcher::Create(GURL(kUploadURL), net::URLFetcher::POST, this);
+  url_fetcher->SetRequestContext(request_context);
+  url_fetcher->SetUploadData(content_type, *post_data);
+  url_fetcher->Start();
+  upload_done_data_[url_fetcher] = upload_done_data;
+}
+
 void WebRtcLogUploader::DecreaseLogCount() {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(create_thread_checker_.CalledOnValidThread());
   --log_count_;
 }
 
 void WebRtcLogUploader::AddUploadedLogInfoToUploadListFile(
     const base::FilePath& upload_list_path,
     const std::string& report_id) {
+  DCHECK(file_thread_checker_.CalledOnValidThread());
   std::string contents;
 
   if (base::PathExists(upload_list_path)) {

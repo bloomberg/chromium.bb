@@ -12,6 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
+#include "base/threading/thread_checker.h"
 #include "chrome/browser/media/webrtc_logging_handler_host.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -94,6 +95,12 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
                   uint32 log_buffer_length);
   void CompressLog(std::string* post_data, uint8* input, uint32 input_size);
   void ResizeForNextOutput(std::string* post_data, z_stream* stream);
+
+  void CreateAndStartURLFetcher(
+      scoped_refptr<net::URLRequestContextGetter> request_context,
+      const WebRtcLogUploadDoneData& upload_done_data,
+      scoped_ptr<std::string> post_data);
+
   void DecreaseLogCount();
 
   // Append information (time and report ID) about this uploaded log to a log
@@ -112,6 +119,12 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
                         const std::string& report_id,
                         const WebRtcLogUploadDoneData& upload_done_data);
 
+  // This is the UI thread for Chromium. Some other thread for tests.
+  base::ThreadChecker create_thread_checker_;
+
+  // This is the FILE thread for Chromium. Some other thread for tests.
+  base::ThreadChecker file_thread_checker_;
+
   int log_count_;
 
   // For testing purposes, see OverrideUploadWithBufferForTesting. Only accessed
@@ -120,6 +133,7 @@ class WebRtcLogUploader : public net::URLFetcherDelegate {
 
   typedef std::map<const net::URLFetcher*, WebRtcLogUploadDoneData>
       UploadDoneDataMap;
+  // Only accessed on the UI thread.
   UploadDoneDataMap upload_done_data_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLogUploader);
