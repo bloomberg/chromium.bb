@@ -291,14 +291,20 @@
     {
       'target_name': 'mojo_js',
       'type': 'shared_library',
-      'include_dirs': [
-        '..'
-      ],
       'dependencies': [
+        '../base/base.gyp:base',
+        '../gin/gin.gyp:gin',
+        'hello_world_service',
+        'mojo_common_lib',
         'mojo_js_bindings',
+        'mojo_system',
       ],
       'sources': [
+        'apps/js/bootstrap.cc',
+        'apps/js/bootstrap.h',
         'apps/js/main.cc',
+        'apps/js/mojo_runner_delegate.cc',
+        'apps/js/mojo_runner_delegate.h',
       ],
     },
     {
@@ -428,6 +434,10 @@
         'public/bindings/js/core.h',
         'public/bindings/js/handle.cc',
         'public/bindings/js/handle.h',
+        'public/bindings/js/support.cc',
+        'public/bindings/js/support.h',
+        'public/bindings/js/waiting_callback.cc',
+        'public/bindings/js/waiting_callback.h',
       ],
     },
     {

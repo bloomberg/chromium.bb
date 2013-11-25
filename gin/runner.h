@@ -23,8 +23,8 @@ class RunnerDelegate {
   // Returns the template for the global object.
   virtual v8::Handle<v8::ObjectTemplate> GetGlobalTemplate(Runner* runner);
   virtual void DidCreateContext(Runner* runner);
-  virtual void WillRunScript(Runner* runner, v8::Handle<v8::Script> script);
-  virtual void DidRunScript(Runner* runner, v8::Handle<v8::Script> script);
+  virtual void WillRunScript(Runner* runner);
+  virtual void DidRunScript(Runner* runner);
   virtual void UnhandledException(Runner* runner, TryCatch& try_catch);
 };
 
@@ -35,6 +35,11 @@ class Runner : public ContextHolder {
 
   void Run(const std::string& script);
   void Run(v8::Handle<v8::Script> script);
+
+  v8::Handle<v8::Value> Call(v8::Handle<v8::Function> function,
+                             v8::Handle<v8::Value> receiver,
+                             int argc,
+                             v8::Handle<v8::Value> argv[]);
 
   v8::Handle<v8::Object> global() const {
     return context()->Global();

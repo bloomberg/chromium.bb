@@ -12,13 +12,12 @@
 #include "gin/converter.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
-#include "gin/try_catch.h"
+#include "gin/runner.h"
 
 using v8::Context;
 using v8::External;
 using v8::Function;
 using v8::FunctionTemplate;
-using v8::Handle;
 using v8::Isolate;
 using v8::Local;
 using v8::Object;
@@ -56,7 +55,7 @@ void Define(const v8::FunctionCallbackInfo<Value>& info) {
 
   std::string id;
   std::vector<std::string> dependencies;
-  Handle<Value> factory;
+  v8::Handle<Value> factory;
 
   if (args.PeekNext()->IsString())
     args.GetNext(&id);
@@ -88,7 +87,7 @@ Local<FunctionTemplate> GetDefineTemplate(Isolate* isolate) {
   return templ;
 }
 
-Handle<String> GetHiddenValueKey(Isolate* isolate) {
+v8::Handle<String> GetHiddenValueKey(Isolate* isolate) {
   return StringToSymbol(isolate, "::gin::ModuleRegistry");
 }
 
@@ -103,15 +102,15 @@ ModuleRegistry::~ModuleRegistry() {
 }
 
 void ModuleRegistry::RegisterGlobals(Isolate* isolate,
-                                     Handle<ObjectTemplate> templ) {
+                                     v8::Handle<ObjectTemplate> templ) {
   templ->Set(StringToSymbol(isolate, "define"), GetDefineTemplate(isolate));
 }
 
-ModuleRegistry* ModuleRegistry::From(Handle<Context> context) {
+ModuleRegistry* ModuleRegistry::From(v8::Handle<Context> context) {
   Isolate* isolate = context->GetIsolate();
-  Handle<String> key = GetHiddenValueKey(isolate);
-  Handle<Value> value = context->Global()->GetHiddenValue(key);
-  Handle<External> external;
+  v8::Handle<String> key = GetHiddenValueKey(isolate);
+  v8::Handle<Value> value = context->Global()->GetHiddenValue(key);
+  v8::Handle<External> external;
   if (value.IsEmpty() || !ConvertFromV8(value, &external)) {
     PerContextData* data = PerContextData::From(context);
     if (!data)
@@ -126,7 +125,7 @@ ModuleRegistry* ModuleRegistry::From(Handle<Context> context) {
 
 void ModuleRegistry::AddBuiltinModule(Isolate* isolate,
                                       const std::string& id,
-                                      Handle<ObjectTemplate> templ) {
+                                      v8::Handle<ObjectTemplate> templ) {
   DCHECK(!id.empty());
   RegisterModule(isolate, id, templ->NewInstance());
 }
@@ -138,19 +137,19 @@ void ModuleRegistry::AddPendingModule(Isolate* isolate,
 
 void ModuleRegistry::RegisterModule(Isolate* isolate,
                                     const std::string& id,
-                                    Handle<Value> module) {
+                                    v8::Handle<Value> module) {
   if (id.empty() || module.IsEmpty())
     return;
 
   unsatisfied_dependencies_.erase(id);
   available_modules_.insert(id);
-  Handle<Object> modules = Local<Object>::New(isolate, modules_);
+  v8::Handle<Object> modules = Local<Object>::New(isolate, modules_);
   modules->Set(StringToSymbol(isolate, id), module);
 }
 
-void ModuleRegistry::Detach(Handle<Context> context) {
+void ModuleRegistry::Detach(v8::Handle<Context> context) {
   context->Global()->SetHiddenValue(GetHiddenValueKey(context->GetIsolate()),
-                                    Handle<Value>());
+                                    v8::Handle<Value>());
 }
 
 bool ModuleRegistry::CheckDependencies(PendingModule* pending) {
@@ -170,26 +169,22 @@ void ModuleRegistry::Load(Isolate* isolate, scoped_ptr<PendingModule> pending) {
   if (!pending->id.empty() && available_modules_.count(pending->id))
     return;  // We've already loaded this module.
 
-  Handle<Object> modules = Local<Object>::New(isolate, modules_);
+  v8::Handle<Object> modules = Local<Object>::New(isolate, modules_);
   uint32_t argc = static_cast<uint32_t>(pending->dependencies.size());
-  std::vector<Handle<Value> > argv(argc);
+  std::vector<v8::Handle<Value> > argv(argc);
   for (uint32_t i = 0; i < argc; ++i) {
-    Handle<String> key = StringToSymbol(isolate, pending->dependencies[i]);
+    v8::Handle<String> key = StringToSymbol(isolate, pending->dependencies[i]);
     DCHECK(modules->HasOwnProperty(key));
     argv[i] = modules->Get(key);
   }
 
-  Handle<Value> module = Local<Value>::New(isolate, pending->factory);
+  v8::Handle<Value> module = Local<Value>::New(isolate, pending->factory);
 
-  Handle<Function> factory;
+  v8::Handle<Function> factory;
   if (ConvertFromV8(module, &factory)) {
-    Handle<Object> global = isolate->GetCurrentContext()->Global();
-    {
-      gin::TryCatch try_catch;
-      module = factory->Call(global, argc, argv.data());
-      if (try_catch.HasCaught())
-        return;  // TODO(abarth): What should we do with the exception?
-    }
+    PerContextData* data = PerContextData::From(isolate->GetCurrentContext());
+    Runner* runner = data->runner();
+    module = runner->Call(factory, runner->global(), argc, argv.data());
     if (pending->id.empty())
       ConvertFromV8(factory->GetScriptOrigin().ResourceName(), &pending->id);
   }

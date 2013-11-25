@@ -41,8 +41,7 @@ void ModuleRunnerDelegate::DidCreateContext(Runner* runner) {
   }
 }
 
-void ModuleRunnerDelegate::DidRunScript(Runner* runner,
-                                        v8::Handle<v8::Script> script) {
+void ModuleRunnerDelegate::DidRunScript(Runner* runner) {
   ModuleRegistry* registry = ModuleRegistry::From(runner->context());
   registry->AttemptToLoadMoreModules(runner->isolate());
   module_provider_.AttempToLoadModules(

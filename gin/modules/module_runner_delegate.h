@@ -31,8 +31,7 @@ class ModuleRunnerDelegate : public RunnerDelegate {
   virtual v8::Handle<v8::ObjectTemplate> GetGlobalTemplate(
       Runner* runner) OVERRIDE;
   virtual void DidCreateContext(Runner* runner) OVERRIDE;
-  virtual void DidRunScript(Runner* runner,
-                            v8::Handle<v8::Script> script) OVERRIDE;
+  virtual void DidRunScript(Runner* runner) OVERRIDE;
 
   BuiltinModuleMap builtin_modules_;
   FileModuleProvider module_provider_;

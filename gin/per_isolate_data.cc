@@ -6,7 +6,6 @@
 #include "gin/public/gin_embedders.h"
 
 using v8::Eternal;
-using v8::Handle;
 using v8::Isolate;
 using v8::Local;
 using v8::Object;

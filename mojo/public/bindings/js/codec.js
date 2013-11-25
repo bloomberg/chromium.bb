@@ -428,6 +428,7 @@ define(function() {
 
   var exports = {};
   exports.align = align;
+  exports.Message = Message;
   exports.MessageBuilder = MessageBuilder;
   exports.MessageReader = MessageReader;
   exports.kArrayHeaderSize = kArrayHeaderSize;

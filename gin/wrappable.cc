@@ -16,6 +16,12 @@ Wrappable::~Wrappable() {
   wrapper_.Reset();
 }
 
+v8::Handle<v8::Object> Wrappable::GetWrapper(v8::Isolate* isolate) {
+  v8::Handle<v8::Value> wrapper = ConvertToV8(isolate, this);
+  DCHECK(wrapper->IsObject());
+  return v8::Handle<v8::Object>::Cast(wrapper);
+}
+
 void Wrappable::WeakCallback(
     const v8::WeakCallbackData<v8::Object, Wrappable>& data) {
   Wrappable* wrappable = data.GetParameter();

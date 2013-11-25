@@ -15,7 +15,8 @@ ContextSupplement::ContextSupplement() {
 ContextSupplement::~ContextSupplement() {
 }
 
-PerContextData::PerContextData(v8::Handle<v8::Context> context) {
+PerContextData::PerContextData(v8::Handle<v8::Context> context)
+    : runner_(NULL) {
   context->SetAlignedPointerInEmbedderData(kEncodedValueIndex, this);
 }
 

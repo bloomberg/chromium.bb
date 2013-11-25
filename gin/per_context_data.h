@@ -12,6 +12,8 @@
 
 namespace gin {
 
+class Runner;
+
 class ContextSupplement {
  public:
   ContextSupplement();
@@ -32,11 +34,15 @@ class PerContextData {
   static PerContextData* From(v8::Handle<v8::Context>);
   void Detach(v8::Handle<v8::Context> context);
 
+  void set_runner(Runner* runner) { runner_ = runner; }
+  Runner* runner() const { return runner_; }
+
   void AddSupplement(scoped_ptr<ContextSupplement> supplement);
 
  private:
   typedef ScopedVector<ContextSupplement> SuplementVector;
 
+  Runner* runner_;
   SuplementVector supplements_;
 
   DISALLOW_COPY_AND_ASSIGN(PerContextData);

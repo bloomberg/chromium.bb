@@ -15,6 +15,8 @@ class Wrappable : public base::RefCounted<Wrappable> {
  public:
   virtual WrapperInfo* GetWrapperInfo() = 0;
 
+  v8::Handle<v8::Object> GetWrapper(v8::Isolate* isolate);
+
  protected:
   Wrappable();
   virtual ~Wrappable();
