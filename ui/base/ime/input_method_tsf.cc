@@ -98,17 +98,16 @@ bool InputMethodTSF::OnUntranslatedIMEMessage(
 }
 
 void InputMethodTSF::OnTextInputTypeChanged(const TextInputClient* client) {
-  if (IsTextInputClientFocused(client) && IsWindowFocused(client)) {
-    ui::TSFBridge::GetInstance()->CancelComposition();
-    ui::TSFBridge::GetInstance()->OnTextInputTypeChanged(client);
-  }
-  InputMethodWin::OnTextInputTypeChanged(client);
+  if (!IsTextInputClientFocused(client) || !IsWindowFocused(client))
+    return;
+  ui::TSFBridge::GetInstance()->CancelComposition();
+  ui::TSFBridge::GetInstance()->OnTextInputTypeChanged(client);
 }
 
 void InputMethodTSF::OnCaretBoundsChanged(const TextInputClient* client) {
-  if (IsTextInputClientFocused(client) && IsWindowFocused(client))
-    ui::TSFBridge::GetInstance()->OnTextLayoutChanged();
-  InputMethodWin::OnCaretBoundsChanged(client);
+  if (!IsTextInputClientFocused(client) || !IsWindowFocused(client))
+    return;
+  ui::TSFBridge::GetInstance()->OnTextLayoutChanged();
 }
 
 void InputMethodTSF::CancelComposition(const TextInputClient* client) {

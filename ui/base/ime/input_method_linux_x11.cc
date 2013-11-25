@@ -108,26 +108,23 @@ bool InputMethodLinuxX11::DispatchKeyEvent(const ui::KeyEvent& event) {
 
 void InputMethodLinuxX11::OnTextInputTypeChanged(
     const TextInputClient* client) {
-  if (IsTextInputClientFocused(client)) {
-    input_method_context_->Reset();
-    // TODO(yoichio): Support inputmode HTML attribute.
-    input_method_context_->OnTextInputTypeChanged(client->GetTextInputType());
-  }
-  InputMethodBase::OnTextInputTypeChanged(client);
+  if (!IsTextInputClientFocused(client))
+    return;
+  input_method_context_->Reset();
+  // TODO(yoichio): Support inputmode HTML attribute.
+  input_method_context_->OnTextInputTypeChanged(client->GetTextInputType());
 }
 
 void InputMethodLinuxX11::OnCaretBoundsChanged(const TextInputClient* client) {
-  if (IsTextInputClientFocused(client)) {
-    input_method_context_->OnCaretBoundsChanged(
-        GetTextInputClient()->GetCaretBounds());
-  }
-  InputMethodBase::OnCaretBoundsChanged(client);
+  if (!IsTextInputClientFocused(client))
+    return;
+  input_method_context_->OnCaretBoundsChanged(
+      GetTextInputClient()->GetCaretBounds());
 }
 
 void InputMethodLinuxX11::CancelComposition(const TextInputClient* client) {
   if (!IsTextInputClientFocused(client))
     return;
-
   input_method_context_->Reset();
   input_method_context_->OnTextInputTypeChanged(client->GetTextInputType());
 }

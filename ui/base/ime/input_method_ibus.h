@@ -141,9 +141,6 @@ class UI_EXPORT InputMethodIBus
                            uint32 ibus_keyval, uint32 ibus_keycode,
                            uint32 ibus_state, bool is_handled);
 
-  // Processes a caret bounds changed event.
-  void OnCaretBoundsChangedInternal(const TextInputClient* client);
-
   // All pending key events. Note: we do not own these object, we just save
   // pointers to these object so that we can abandon them when necessary.
   // They will be deleted in ProcessKeyEventDone().

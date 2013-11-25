@@ -108,8 +108,6 @@ class RemoteInputMethodWin : public InputMethod,
       : delegate_(delegate),
         remote_delegate_(NULL),
         text_input_client_(NULL),
-        current_input_type_(ui::TEXT_INPUT_TYPE_NONE),
-        current_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
         is_candidate_popup_open_(false),
         is_ime_(false),
         langid_(kFallbackLangID) {
@@ -130,20 +128,12 @@ class RemoteInputMethodWin : public InputMethod,
   }
 
   virtual void Init(bool focused) OVERRIDE {
-    if (focused)
-      OnFocus();
   }
 
   virtual void OnFocus() OVERRIDE {
-    FOR_EACH_OBSERVER(InputMethodObserver,
-                      observer_list_,
-                      OnFocus());
   }
 
   virtual void OnBlur() OVERRIDE {
-    FOR_EACH_OBSERVER(InputMethodObserver,
-                      observer_list_,
-                      OnBlur());
   }
 
   virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
@@ -160,8 +150,6 @@ class RemoteInputMethodWin : public InputMethod,
       input_scopes_ = GetInputScopesAsInt(client->GetTextInputType(),
                                           client->GetTextInputMode());
       composition_character_bounds_ = GetCompositionCharacterBounds(client);
-      current_input_type_ = client->GetTextInputType();
-      current_input_mode_ = client->GetTextInputMode();
     }
 
     const bool text_input_client_changed = text_input_client_ != client;
@@ -219,11 +207,6 @@ class RemoteInputMethodWin : public InputMethod,
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE {
     if (!text_input_client_ || text_input_client_ != client)
       return;
-    const ui::TextInputType prev_type = current_input_type_;
-    const ui::TextInputMode prev_mode = current_input_mode_;
-    current_input_type_ = client->GetTextInputType();
-    current_input_mode_ = client->GetTextInputMode();
-
     std::vector<int32> prev_input_scopes;
     std::swap(input_scopes_, prev_input_scopes);
     input_scopes_ = GetInputScopesAsInt(client->GetTextInputType(),
@@ -231,11 +214,6 @@ class RemoteInputMethodWin : public InputMethod,
     if (input_scopes_ != prev_input_scopes && remote_delegate_) {
       remote_delegate_->OnTextInputClientUpdated(
           input_scopes_, composition_character_bounds_);
-    }
-    if (current_input_type_ != prev_type || current_input_mode_ != prev_mode) {
-      FOR_EACH_OBSERVER(InputMethodObserver,
-                        observer_list_,
-                        OnTextInputTypeChanged(client));
     }
   }
 
@@ -249,9 +227,6 @@ class RemoteInputMethodWin : public InputMethod,
       remote_delegate_->OnTextInputClientUpdated(
           input_scopes_, composition_character_bounds_);
     }
-    FOR_EACH_OBSERVER(InputMethodObserver,
-                      observer_list_,
-                      OnCaretBoundsChanged(client));
   }
 
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE {
@@ -377,8 +352,6 @@ class RemoteInputMethodWin : public InputMethod,
   internal::RemoteInputMethodDelegateWin* remote_delegate_;
 
   TextInputClient* text_input_client_;
-  ui::TextInputType current_input_type_;
-  ui::TextInputMode current_input_mode_;
   std::vector<int32> input_scopes_;
   std::vector<gfx::Rect> composition_character_bounds_;
   bool is_candidate_popup_open_;

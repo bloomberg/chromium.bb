@@ -192,24 +192,14 @@ class MockRemoteInputMethodDelegateWin
 class MockInputMethodObserver : public InputMethodObserver {
  public:
   MockInputMethodObserver()
-    : on_text_input_type_changed_(0),
-      on_caret_bounds_changed_(0),
-      on_text_input_state_changed_(0),
+    : on_text_input_state_changed_(0),
       on_input_method_destroyed_changed_(0) {
   }
   virtual ~MockInputMethodObserver() {
   }
   void Reset() {
-    on_text_input_type_changed_ = 0;
-    on_caret_bounds_changed_ = 0;
     on_text_input_state_changed_ = 0;
     on_input_method_destroyed_changed_ = 0;
-  }
-  size_t on_text_input_type_changed() const {
-    return on_text_input_type_changed_;
-  }
-  size_t on_caret_bounds_changed() const {
-    return on_caret_bounds_changed_;
   }
   size_t on_text_input_state_changed() const {
     return on_text_input_state_changed_;
@@ -221,14 +211,12 @@ class MockInputMethodObserver : public InputMethodObserver {
  private:
   // Overriden from InputMethodObserver.
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE {
-    ++on_text_input_type_changed_;
   }
   virtual void OnFocus() OVERRIDE {
   }
   virtual void OnBlur() OVERRIDE {
   }
   virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE {
-    ++on_caret_bounds_changed_;
   }
   virtual void OnTextInputStateChanged(const TextInputClient* client) OVERRIDE {
     ++on_text_input_state_changed_;
@@ -237,8 +225,6 @@ class MockInputMethodObserver : public InputMethodObserver {
     ++on_input_method_destroyed_changed_;
   }
 
-  size_t on_text_input_type_changed_;
-  size_t on_caret_bounds_changed_;
   size_t on_text_input_state_changed_;
   size_t on_input_method_destroyed_changed_;
   DISALLOW_COPY_AND_ASSIGN(MockInputMethodObserver);
@@ -765,52 +751,6 @@ TEST(RemoteInputMethodWinTest, OnTextInputStateChanged_Observer) {
   ASSERT_TRUE(input_method->GetTextInputClient() == NULL);
   EXPECT_EQ(1u, input_method_observer.on_text_input_state_changed());
   input_method_observer.Reset();
-}
-
-TEST(RemoteInputMethodWinTest, OnCaretBoundsChanged_Observer) {
-  DummyTextInputClient text_input_client;
-  DummyTextInputClient text_input_client_the_other;
-
-  MockInputMethodObserver input_method_observer;
-  MockInputMethodDelegate delegate_;
-  scoped_ptr<InputMethod> input_method(CreateRemoteInputMethodWin(&delegate_));
-  InputMethodScopedObserver scoped_observer(&input_method_observer);
-  scoped_observer.Add(input_method.get());
-
-  {
-    SCOPED_TRACE("OnCaretBoundsChanged callback must not be fired when no text "
-                 "input client is focused");
-    ASSERT_EQ(NULL, input_method->GetTextInputClient());
-
-    input_method_observer.Reset();
-    input_method->OnCaretBoundsChanged(&text_input_client);
-    EXPECT_EQ(0u, input_method_observer.on_caret_bounds_changed());
-    input_method->OnCaretBoundsChanged(NULL);
-    EXPECT_EQ(0u, input_method_observer.on_caret_bounds_changed());
-  }
-
-  {
-    SCOPED_TRACE("OnCaretBoundsChanged callback must be fired when and only "
-                 "the event is notified from the focused text input client");
-
-    input_method->SetFocusedTextInputClient(&text_input_client);
-    ASSERT_EQ(&text_input_client, input_method->GetTextInputClient());
-
-    // Must fire the event
-    input_method_observer.Reset();
-    input_method->OnCaretBoundsChanged(&text_input_client);
-    EXPECT_EQ(1u, input_method_observer.on_caret_bounds_changed());
-
-    // Must not fire the event
-    input_method_observer.Reset();
-    input_method->OnCaretBoundsChanged(NULL);
-    EXPECT_EQ(0u, input_method_observer.on_caret_bounds_changed());
-
-    // Must not fire the event
-    input_method_observer.Reset();
-    input_method->OnCaretBoundsChanged(&text_input_client_the_other);
-    EXPECT_EQ(0u, input_method_observer.on_caret_bounds_changed());
-  }
 }
 
 TEST(RemoteInputMethodWinTest, OnInputMethodDestroyed_Observer) {

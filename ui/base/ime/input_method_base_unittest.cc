@@ -110,11 +110,13 @@ class ClientChangeVerifier {
   DISALLOW_COPY_AND_ASSIGN(ClientChangeVerifier);
 };
 
-class SimpleMockInputMethodBase : public InputMethodBase {
+class MockInputMethodBase : public InputMethodBase {
  public:
-  SimpleMockInputMethodBase() {
+  // Note: this class does not take the ownership of |verifier|.
+  MockInputMethodBase(ClientChangeVerifier* verifier)
+      : verifier_(verifier) {
   }
-  virtual ~SimpleMockInputMethodBase() {
+  virtual ~MockInputMethodBase() {
   }
 
  private:
@@ -126,6 +128,8 @@ class SimpleMockInputMethodBase : public InputMethodBase {
   }
   virtual bool DispatchKeyEvent(const ui::KeyEvent&) OVERRIDE {
     return false;
+  }
+  virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE {
   }
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE {
   }
@@ -143,19 +147,6 @@ class SimpleMockInputMethodBase : public InputMethodBase {
   virtual bool IsCandidatePopupOpen() const OVERRIDE {
     return false;
   }
-  DISALLOW_COPY_AND_ASSIGN(SimpleMockInputMethodBase);
-};
-
-class MockInputMethodBase : public SimpleMockInputMethodBase {
- public:
-  // Note: this class does not take the ownership of |verifier|.
-  explicit MockInputMethodBase(ClientChangeVerifier* verifier)
-      : verifier_(verifier) {
-  }
-  virtual ~MockInputMethodBase() {
-  }
-
- private:
   // Overriden from InputMethodBase.
   virtual void OnWillChangeFocusedClient(TextInputClient* focused_before,
                                          TextInputClient* focused) OVERRIDE {
@@ -171,44 +162,7 @@ class MockInputMethodBase : public SimpleMockInputMethodBase {
   DISALLOW_COPY_AND_ASSIGN(MockInputMethodBase);
 };
 
-class SimpleMockInputMethodObserver : public InputMethodObserver {
- public:
-  SimpleMockInputMethodObserver()
-      : on_caret_bounds_changed_(0),
-        on_input_locale_changed_(0) {
-  }
-  virtual ~SimpleMockInputMethodObserver() {
-  }
-  void Reset() {
-    on_caret_bounds_changed_ = 0;
-    on_input_locale_changed_ = 0;
-  }
-  size_t on_caret_bounds_changed() const {
-    return on_caret_bounds_changed_;
-  }
-
- private:
-  // Overriden from InputMethodObserver.
-  virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE{
-  }
-  virtual void OnFocus() OVERRIDE{
-  }
-  virtual void OnBlur() OVERRIDE{
-  }
-  virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE{
-    ++on_caret_bounds_changed_;
-  }
-  virtual void OnTextInputStateChanged(const TextInputClient* client) OVERRIDE{
-  }
-  virtual void OnInputMethodDestroyed(const InputMethod* client) OVERRIDE{
-  }
-
-  size_t on_caret_bounds_changed_;
-  size_t on_input_locale_changed_;
-  DISALLOW_COPY_AND_ASSIGN(SimpleMockInputMethodObserver);
-};
-
-class MockInputMethodObserver : public SimpleMockInputMethodObserver {
+class MockInputMethodObserver : public InputMethodObserver {
  public:
   // Note: this class does not take the ownership of |verifier|.
   explicit MockInputMethodObserver(ClientChangeVerifier* verifier)
@@ -218,9 +172,18 @@ class MockInputMethodObserver : public SimpleMockInputMethodObserver {
   }
 
  private:
-  // Overriden from SimpleMockInputMethodObserver.
-  virtual void OnTextInputStateChanged(const TextInputClient* client) OVERRIDE{
+  virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE {
+  }
+  virtual void OnFocus() OVERRIDE {
+  }
+  virtual void OnBlur() OVERRIDE {
+  }
+  virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE {
+  }
+  virtual void OnTextInputStateChanged(const TextInputClient* client) OVERRIDE {
     verifier_->OnTextInputStateChanged(client);
+  }
+  virtual void OnInputMethodDestroyed(const InputMethod* client) OVERRIDE {
   }
 
   ClientChangeVerifier* verifier_;
@@ -329,54 +292,6 @@ TEST(InputMethodBaseTest, DetachTextInputClient) {
     input_method.DetachTextInputClient(&text_input_client);
     EXPECT_EQ(NULL, input_method.GetTextInputClient());
     verifier.Verify();
-  }
-}
-
-TEST(InputMethodBaseTest, OnCaretBoundsChanged) {
-  DummyTextInputClient text_input_client;
-  DummyTextInputClient text_input_client_the_other;
-
-  SimpleMockInputMethodBase input_method;
-  SimpleMockInputMethodObserver input_method_observer;
-  InputMethodScopedObserver scoped_observer(&input_method_observer);
-  scoped_observer.Add(&input_method);
-
-  // Assume that the top-level-widget gains focus.
-  input_method.OnFocus();
-
-  {
-    SCOPED_TRACE("OnCaretBoundsChanged callback must not be fired when no text "
-        "input client is focused");
-    ASSERT_EQ(NULL, input_method.GetTextInputClient());
-
-    input_method_observer.Reset();
-    input_method.OnCaretBoundsChanged(&text_input_client);
-    EXPECT_EQ(0u, input_method_observer.on_caret_bounds_changed());
-    input_method.OnCaretBoundsChanged(NULL);
-    EXPECT_EQ(0u, input_method_observer.on_caret_bounds_changed());
-  }
-
-  {
-    SCOPED_TRACE("OnCaretBoundsChanged callback must be fired when and only "
-        "the event is notified from the focused text input client");
-
-    input_method.SetFocusedTextInputClient(&text_input_client);
-    ASSERT_EQ(&text_input_client, input_method.GetTextInputClient());
-
-    // Must fire the event
-    input_method_observer.Reset();
-    input_method.OnCaretBoundsChanged(&text_input_client);
-    EXPECT_EQ(1u, input_method_observer.on_caret_bounds_changed());
-
-    // Must not fire the event
-    input_method_observer.Reset();
-    input_method.OnCaretBoundsChanged(NULL);
-    EXPECT_EQ(0u, input_method_observer.on_caret_bounds_changed());
-
-    // Must not fire the event
-    input_method_observer.Reset();
-    input_method.OnCaretBoundsChanged(&text_input_client_the_other);
-    EXPECT_EQ(0u, input_method_observer.on_caret_bounds_changed());
   }
 }
 
