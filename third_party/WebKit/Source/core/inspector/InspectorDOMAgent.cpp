@@ -981,11 +981,11 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
                 for (unsigned i = 0; i < numAttrs; ++i) {
                     // Add attribute pair
                     const Attribute* attribute = element->attributeItem(i);
-                    if (attribute->localName().find(whitespaceTrimmedQuery) != kNotFound) {
+                    if (attribute->localName().find(whitespaceTrimmedQuery, 0, false) != kNotFound) {
                         resultCollector.add(node);
                         break;
                     }
-                    size_t foundPosition = attribute->value().find(attributeQuery);
+                    size_t foundPosition = attribute->value().find(attributeQuery, 0, false);
                     if (foundPosition != kNotFound) {
                         if (!exactAttributeMatch || (!foundPosition && attribute->value().length() == attributeQuery.length())) {
                             resultCollector.add(node);

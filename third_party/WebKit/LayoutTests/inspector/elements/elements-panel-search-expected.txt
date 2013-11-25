@@ -48,3 +48,12 @@ Running: testXPathAttribute
 Running: testSelector
 < s p a n > F o u n d   b y   s e l e c t o r < / s p a n >
 
+Running: testCaseUpperFindsLower
+< s p a n   c l a s s = " f o o   k o o " > < / s p a n >
+
+Running: testCaseLowerFindsUpper
+< s p a n   c l a s s = " C A S E L E S S " > < / s p a n >
+
+Running: testCaseAttribute
+< s p a n   d a t a - c a m e l = " i n s e n s t i v e " > < / s p a n >
+
