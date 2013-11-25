@@ -1855,13 +1855,6 @@ handle_special_char(struct terminal *terminal, char c)
 	case '\v':
 	case '\f':
 		terminal->row++;
-		if (terminal->row + terminal->start > terminal->end)
-			terminal->end = terminal->row + terminal->start;
-		if (terminal->end == terminal->buffer_height)
-			terminal->log_size = terminal->buffer_height;
-		else if (terminal->log_size < terminal->buffer_height)
-			terminal->log_size = terminal->end;
-
 		if (terminal->row > terminal->margin_bottom) {
 			terminal->row = terminal->margin_bottom;
 			terminal_scroll(terminal, +1);
@@ -1964,6 +1957,13 @@ handle_char(struct terminal *terminal, union utf8_char utf8)
 		terminal_shift_line(terminal, +1);
 	row[terminal->column] = utf8;
 	attr_row[terminal->column++] = terminal->curr_attr;
+
+	if (terminal->row + terminal->start + 1 > terminal->end)
+		terminal->end = terminal->row + terminal->start + 1;
+	if (terminal->end == terminal->buffer_height)
+		terminal->log_size = terminal->buffer_height;
+	else if (terminal->log_size < terminal->buffer_height)
+		terminal->log_size = terminal->end;
 
 	/* cursor jump for wide character. */
 	if (is_wide(utf8))
