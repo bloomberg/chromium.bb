@@ -1809,10 +1809,11 @@ void Document::setNeedsFocusedElementCheck()
 
 void Document::recalcStyleForLayoutIgnoringPendingStylesheets()
 {
-    if (haveStylesheetsLoaded())
+    ASSERT(m_styleEngine->ignoringPendingStylesheets());
+
+    if (!m_styleEngine->hasPendingSheets())
         return;
 
-    StyleEngine::IgnoringPendingStylesheet ignoring(m_styleEngine.get());
     // FIXME: We are willing to attempt to suppress painting with outdated style info only once.
     // Our assumption is that it would be dangerous to try to stop it a second time, after page
     // content has already been loaded and displayed with accurate style information. (Our
@@ -1840,6 +1841,7 @@ void Document::recalcStyleForLayoutIgnoringPendingStylesheets()
 // to instead suspend JavaScript execution.
 void Document::updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasks runPostLayoutTasks)
 {
+    StyleEngine::IgnoringPendingStylesheet ignoring(m_styleEngine.get());
     recalcStyleForLayoutIgnoringPendingStylesheets();
     updateLayout();
     if (runPostLayoutTasks == RunPostLayoutTasksSynchronously && view())
@@ -1855,7 +1857,7 @@ void Document::partialUpdateLayoutIgnorePendingStylesheets(Node* stopLayoutAtNod
         return;
     }
 
-    StyleEngine::ProtectingPendingStylesheet protecting(m_styleEngine.get());
+    StyleEngine::IgnoringPendingStylesheet ignoring(m_styleEngine.get());
     recalcStyleForLayoutIgnoringPendingStylesheets();
 
     if (stopLayoutAtNode) {

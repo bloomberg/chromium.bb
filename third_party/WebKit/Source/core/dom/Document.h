@@ -1093,9 +1093,6 @@ private:
 
     bool m_hasNodesWithPlaceholderStyle;
     bool m_needsNotifyRemoveAllPendingStylesheet;
-    // But sometimes you need to ignore pending stylesheet count to
-    // force an immediate layout when requested by JS.
-    bool m_ignorePendingStylesheets;
     bool m_evaluateMediaQueriesOnStyleRecalc;
 
     // If we do ignore the pending stylesheet count, then we need to add a boolean

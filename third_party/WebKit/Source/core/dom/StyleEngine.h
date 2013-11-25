@@ -83,16 +83,7 @@ public:
         }
     };
 
-    class ProtectingPendingStylesheet : public TemporaryChange<bool> {
-    public:
-        ProtectingPendingStylesheet(StyleEngine* engine)
-            : TemporaryChange<bool>(engine->m_ignorePendingStylesheets, engine->m_ignorePendingStylesheets)
-        {
-        }
-    };
-
     friend class IgnoringPendingStylesheet;
-    friend class ProtectingPendingStylesheet;
 
     static PassOwnPtr<StyleEngine> create(Document& document) { return adoptPtr(new StyleEngine(document)); }
 
@@ -133,6 +124,7 @@ public:
 
     bool hasPendingSheets() const { return m_pendingStylesheets > 0; }
     bool haveStylesheetsLoaded() const { return !hasPendingSheets() || m_ignorePendingStylesheets; }
+    bool ignoringPendingStylesheets() const { return m_ignorePendingStylesheets; }
 
     unsigned maxDirectAdjacentSelectors() const { return m_maxDirectAdjacentSelectors; }
     bool usesSiblingRules() const { return m_usesSiblingRules || m_usesSiblingRulesOverride; }
