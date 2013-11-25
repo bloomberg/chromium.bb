@@ -1,12 +1,6 @@
 // Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// A wrapper that simplifies the download of an HTTP object.  The interface is
-// modeled after URLFetcher in /net/url_request/.
-//
-// The callback passed to the constructor will be called async after the
-// resource is retrieved.
 
 #ifndef CONTENT_RENDERER_FETCHERS_RESOURCE_FETCHER_H_
 #define CONTENT_RENDERER_FETCHERS_RESOURCE_FETCHER_H_
@@ -17,9 +11,8 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "content/common/content_export.h"
+#include "content/public/renderer/resource_fetcher.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
@@ -34,30 +27,22 @@ struct WebURLError;
 
 namespace content {
 
-class CONTENT_EXPORT ResourceFetcher
-    : NON_EXPORTED_BASE(public blink::WebURLLoaderClient) {
+class ResourceFetcherImpl : public ResourceFetcher,
+                            public blink::WebURLLoaderClient {
  public:
-  // This will be called when the URL has been fetched, successfully or not.
-  // If there is a failure, response and data will both be empty.  |response|
-  // and |data| are both valid until the ResourceFetcher instance is destroyed.
-  typedef base::Callback<void(const blink::WebURLResponse& response,
-                              const std::string& data)> Callback;
+  // ResourceFetcher implementation:
+  virtual void SetTimeout(const base::TimeDelta& timeout) OVERRIDE;
 
-  // A frame is needed to make requests.
-  ResourceFetcher(
+ private:
+  friend class ResourceFetcher;
+
+  ResourceFetcherImpl(
       const GURL& url, blink::WebFrame* frame,
       blink::WebURLRequest::TargetType target_type,
       const Callback& callback);
 
-  // Deleting a ResourceFetcher will safely cancel the request if it has not yet
-  // completed.
-  virtual ~ResourceFetcher();
+  virtual ~ResourceFetcherImpl();
 
-  // Sets a timeout for the request.  Request must not yet have completed
-  // or timed out when called.
-  void SetTimeout(base::TimeDelta timeout);
-
- private:
   // Start the actual download.
   void Start(const GURL& url, blink::WebFrame* frame,
              blink::WebURLRequest::TargetType target_type);
@@ -107,9 +92,9 @@ class CONTENT_EXPORT ResourceFetcher
   std::string metadata_;
 
   // Limit how long to wait for the server.
-  base::OneShotTimer<ResourceFetcher> timeout_timer_;
+  base::OneShotTimer<ResourceFetcherImpl> timeout_timer_;
 
-  DISALLOW_COPY_AND_ASSIGN(ResourceFetcher);
+  DISALLOW_COPY_AND_ASSIGN(ResourceFetcherImpl);
 };
 
 }  // namespace content

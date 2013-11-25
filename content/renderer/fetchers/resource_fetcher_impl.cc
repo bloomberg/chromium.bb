@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/fetchers/resource_fetcher.h"
+#include "content/renderer/fetchers/resource_fetcher_impl.h"
 
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -23,9 +24,16 @@ using blink::WebURLResponse;
 
 namespace content {
 
-ResourceFetcher::ResourceFetcher(const GURL& url, WebFrame* frame,
-                                 WebURLRequest::TargetType target_type,
-                                 const Callback& callback)
+// static
+ResourceFetcher* ResourceFetcher::Create(
+    const GURL& url, WebFrame* frame, WebURLRequest::TargetType target_type,
+    const Callback& callback) {
+  return new ResourceFetcherImpl(url, frame, target_type, callback);
+}
+
+ResourceFetcherImpl::ResourceFetcherImpl(const GURL& url, WebFrame* frame,
+                                         WebURLRequest::TargetType target_type,
+                                         const Callback& callback)
     : completed_(false),
       callback_(callback) {
   // Can't do anything without a frame.  However, delegate can be NULL (so we
@@ -34,20 +42,20 @@ ResourceFetcher::ResourceFetcher(const GURL& url, WebFrame* frame,
   Start(url, frame, target_type);
 }
 
-ResourceFetcher::~ResourceFetcher() {
+ResourceFetcherImpl::~ResourceFetcherImpl() {
   if (!completed_ && loader_)
     loader_->cancel();
 }
 
-void ResourceFetcher::SetTimeout(base::TimeDelta timeout) {
+void ResourceFetcherImpl::SetTimeout(const base::TimeDelta& timeout) {
   DCHECK(loader_);
   DCHECK(!completed_);
   timeout_timer_.Start(FROM_HERE, timeout, this,
-                       &ResourceFetcher::TimeoutFired);
+                       &ResourceFetcherImpl::TimeoutFired);
 }
 
-void ResourceFetcher::Start(const GURL& url, WebFrame* frame,
-                            WebURLRequest::TargetType target_type) {
+void ResourceFetcherImpl::Start(const GURL& url, WebFrame* frame,
+                                WebURLRequest::TargetType target_type) {
   WebURLRequest request(url);
   request.setTargetType(target_type);
   request.setFirstPartyForCookies(frame->document().firstPartyForCookies());
@@ -57,8 +65,8 @@ void ResourceFetcher::Start(const GURL& url, WebFrame* frame,
   loader_->loadAsynchronously(request, this);
 }
 
-void ResourceFetcher::RunCallback(const WebURLResponse& response,
-                                  const std::string& data) {
+void ResourceFetcherImpl::RunCallback(const WebURLResponse& response,
+                                      const std::string& data) {
   completed_ = true;
   timeout_timer_.Stop();
   if (callback_.is_null())
@@ -70,7 +78,7 @@ void ResourceFetcher::RunCallback(const WebURLResponse& response,
   callback.Run(response, data);
 }
 
-void ResourceFetcher::TimeoutFired() {
+void ResourceFetcherImpl::TimeoutFired() {
   DCHECK(!completed_);
   loader_->cancel();
   RunCallback(WebURLResponse(), std::string());
@@ -79,23 +87,23 @@ void ResourceFetcher::TimeoutFired() {
 /////////////////////////////////////////////////////////////////////////////
 // WebURLLoaderClient methods
 
-void ResourceFetcher::willSendRequest(
+void ResourceFetcherImpl::willSendRequest(
     WebURLLoader* loader, WebURLRequest& new_request,
     const WebURLResponse& redirect_response) {
 }
 
-void ResourceFetcher::didSendData(
+void ResourceFetcherImpl::didSendData(
     WebURLLoader* loader, unsigned long long bytes_sent,
     unsigned long long total_bytes_to_be_sent) {
 }
 
-void ResourceFetcher::didReceiveResponse(
+void ResourceFetcherImpl::didReceiveResponse(
     WebURLLoader* loader, const WebURLResponse& response) {
   DCHECK(!completed_);
   response_ = response;
 }
 
-void ResourceFetcher::didReceiveData(
+void ResourceFetcherImpl::didReceiveData(
     WebURLLoader* loader, const char* data, int data_length,
     int encoded_data_length) {
   DCHECK(!completed_);
@@ -104,7 +112,7 @@ void ResourceFetcher::didReceiveData(
   data_.append(data, data_length);
 }
 
-void ResourceFetcher::didReceiveCachedMetadata(
+void ResourceFetcherImpl::didReceiveCachedMetadata(
     WebURLLoader* loader, const char* data, int data_length) {
   DCHECK(!completed_);
   DCHECK(data_length > 0);
@@ -112,14 +120,15 @@ void ResourceFetcher::didReceiveCachedMetadata(
   metadata_.assign(data, data_length);
 }
 
-void ResourceFetcher::didFinishLoading(
+void ResourceFetcherImpl::didFinishLoading(
     WebURLLoader* loader, double finishTime) {
   DCHECK(!completed_);
 
   RunCallback(response_, data_);
 }
 
-void ResourceFetcher::didFail(WebURLLoader* loader, const WebURLError& error) {
+void ResourceFetcherImpl::didFail(WebURLLoader* loader,
+                                  const WebURLError& error) {
   DCHECK(!completed_);
 
   // Go ahead and tell our delegate that we're done.

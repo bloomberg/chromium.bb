@@ -5,19 +5,29 @@
 #ifndef CONTENT_RENDERER_FETCHERS_MULTI_RESOLUTION_IMAGE_RESOURCE_FETCHER_H_
 #define CONTENT_RENDERER_FETCHERS_MULTI_RESOLUTION_IMAGE_RESOURCE_FETCHER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "content/renderer/fetchers/resource_fetcher.h"
+#include "base/memory/scoped_ptr.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "url/gurl.h"
 
 class SkBitmap;
 
+namespace blink {
+class WebFrame;
+class WebURLResponse;
+}
+
 namespace content {
+
+class ResourceFetcher;
 
 // A resource fetcher that returns all (differently-sized) frames in
 // an image. Useful for favicons.
-class MultiResolutionImageResourceFetcher{
+class MultiResolutionImageResourceFetcher {
  public:
   typedef base::Callback<void(MultiResolutionImageResourceFetcher*,
                               const std::vector<SkBitmap>&)> Callback;

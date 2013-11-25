@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/fetchers/resource_fetcher.h"
+#include "content/public/renderer/resource_fetcher.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -142,7 +142,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
     scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcher(
+    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(
         url, frame, WebURLRequest::TargetIsMainFrame, delegate->NewCallback()));
 
     delegate->WaitForResponse();
@@ -157,7 +157,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
     scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcher(
+    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(
         url, frame, WebURLRequest::TargetIsMainFrame, delegate->NewCallback()));
 
     delegate->WaitForResponse();
@@ -173,7 +173,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
     // Try to fetch a page on a site that doesn't exist.
     GURL url("http://localhost:1339/doesnotexist");
     scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcher(
+    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(
         url, frame, WebURLRequest::TargetIsMainFrame, delegate->NewCallback()));
 
     delegate->WaitForResponse();
@@ -190,7 +190,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
     scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcher(
+    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(
         url, frame, WebURLRequest::TargetIsMainFrame,
         delegate->NewCallback()));
     fetcher->SetTimeout(base::TimeDelta());
@@ -209,7 +209,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
     scoped_ptr<EvilFetcherDelegate> delegate(new EvilFetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcher(
+    scoped_ptr<ResourceFetcher> fetcher(ResourceFetcher::Create(
         url, frame, WebURLRequest::TargetIsMainFrame,
         delegate->NewCallback()));
     fetcher->SetTimeout(base::TimeDelta());

@@ -8,6 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/debug/crash_logging.h"
 #include "content/child/image_decoder.h"
+#include "content/public/renderer/resource_fetcher.h"
+#include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/size.h"
@@ -29,7 +31,7 @@ ImageResourceFetcher::ImageResourceFetcher(
       id_(id),
       image_url_(image_url),
       image_size_(image_size) {
-  fetcher_.reset(new ResourceFetcher(
+  fetcher_.reset(ResourceFetcher::Create(
       image_url, frame, target_type,
       base::Bind(&ImageResourceFetcher::OnURLFetchComplete,
                  base::Unretained(this))));

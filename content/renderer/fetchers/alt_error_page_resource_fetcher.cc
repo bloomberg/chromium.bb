@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "content/renderer/fetchers/resource_fetcher.h"
+#include "base/time/time.h"
+#include "content/public/renderer/resource_fetcher.h"
+#include "third_party/WebKit/public/platform/WebURLResponse.h"
 
 using blink::WebFrame;
 using blink::WebURLError;
@@ -29,7 +31,7 @@ AltErrorPageResourceFetcher::AltErrorPageResourceFetcher(
       callback_(callback),
       original_request_(original_request),
       original_error_(original_error) {
-  fetcher_.reset(new ResourceFetcher(
+  fetcher_.reset(ResourceFetcher::Create(
       url, frame, WebURLRequest::TargetIsMainFrame,
       base::Bind(&AltErrorPageResourceFetcher::OnURLFetchComplete,
                  base::Unretained(this))));

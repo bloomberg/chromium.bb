@@ -7,11 +7,20 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "content/renderer/fetchers/resource_fetcher.h"
+#include "base/memory/scoped_ptr.h"
+#include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "url/gurl.h"
 
 class SkBitmap;
 
+namespace blink {
+class WebFrame;
+class WebURLResponse;
+}
+
 namespace content {
+
+class ResourceFetcher;
 
 // ImageResourceFetcher handles downloading an image for a webview. Once
 // downloading is done the supplied callback is notified. ImageResourceFetcher
