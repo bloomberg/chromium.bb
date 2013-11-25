@@ -145,6 +145,18 @@ def PushChange(stable_branch, tracking_branch, dryrun, cwd):
     cros_build_lib.Info('All changes already pushed for %s. Exiting', cwd)
     return
 
+  # Add a failsafe check here.  Only CLs from the 'chrome-bot' user should
+  # be involved here.  If any other CLs are found then complain.
+  # In dryruns extra CLs are normal, though, and can be ignored.
+  bad_cl_cmd = ['log', '--format=short', '--perl-regexp',
+                '--author', '^(?!chrome-bot)', '%s..%s' % (
+                    push_branch, stable_branch)]
+  bad_cls = git.RunGit(cwd, bad_cl_cmd).output
+  if bad_cls.strip() and not dryrun:
+    cros_build_lib.Error('The Uprev stage found changes from users other'
+                         ' than chrome-bot:\n\n%s', bad_cls)
+    raise AssertionError('Unexpected CLs found during uprev stage.')
+
   description = git.RunGit(cwd,
       ['log', '--format=format:%s%n%n%b', '%s..%s' % (
        push_branch, stable_branch)]).output

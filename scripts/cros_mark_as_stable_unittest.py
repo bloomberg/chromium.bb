@@ -29,7 +29,7 @@ class NonClassTests(cros_test_lib.MoxTestCase):
     self._branch = 'test_branch'
     self._target_manifest_branch = 'cros/master'
 
-  def testPushChange(self):
+  def _TestPushChange(self, bad_cls):
     git_log = 'Marking test_one as stable\nMarking test_two as stable\n'
     fake_description = 'Marking set of ebuilds as stable\n\n%s' % git_log
     self.mox.StubOutWithMock(cros_mark_as_stable, '_DoWeHaveLocalCommits')
@@ -41,6 +41,7 @@ class NonClassTests(cros_test_lib.MoxTestCase):
     self.mox.StubOutWithMock(git, 'CreatePushBranch')
     self.mox.StubOutWithMock(git, 'RunGit')
 
+    # Run the flow.
     cros_mark_as_stable._DoWeHaveLocalCommits(
         self._branch, self._target_manifest_branch, '.').AndReturn(True)
     git.GetTrackingBranch('.', for_push=True).AndReturn(
@@ -48,19 +49,37 @@ class NonClassTests(cros_test_lib.MoxTestCase):
     git.SyncPushBranch('.', 'gerrit', 'refs/remotes/gerrit/master')
     cros_mark_as_stable._DoWeHaveLocalCommits(
         self._branch, 'refs/remotes/gerrit/master', '.').AndReturn(True)
-    result = cros_build_lib.CommandResult(output=git_log)
-    cmd = ['log', '--format=format:%s%n%n%b',
-           'refs/remotes/gerrit/master..%s' % self._branch]
-    git.RunGit('.', cmd).AndReturn(result)
-    git.CreatePushBranch('merge_branch', '.')
-    git.RunGit('.', ['merge', '--squash', self._branch])
-    git.RunGit('.', ['commit', '-m', fake_description])
-    git.RunGit('.', ['config', 'push.default', 'tracking'])
-    git.PushWithRetry('merge_branch', '.', dryrun=False)
+
+    # Look for bad CLs.
+    cmd = ['log', '--format=short', '--perl-regexp', '--author',
+           '^(?!chrome-bot)', 'refs/remotes/gerrit/master..%s' % self._branch]
+
+    if bad_cls:
+      result = cros_build_lib.CommandResult(output='Found bad stuff')
+      git.RunGit('.', cmd).AndReturn(result)
+    else:
+      result = cros_build_lib.CommandResult(output='\n')
+      git.RunGit('.', cmd).AndReturn(result)
+      result = cros_build_lib.CommandResult(output=git_log)
+      cmd = ['log', '--format=format:%s%n%n%b',
+             'refs/remotes/gerrit/master..%s' % self._branch]
+      git.RunGit('.', cmd).AndReturn(result)
+      git.CreatePushBranch('merge_branch', '.')
+      git.RunGit('.', ['merge', '--squash', self._branch])
+      git.RunGit('.', ['commit', '-m', fake_description])
+      git.RunGit('.', ['config', 'push.default', 'tracking'])
+      git.PushWithRetry('merge_branch', '.', dryrun=False)
+
     self.mox.ReplayAll()
     cros_mark_as_stable.PushChange(self._branch, self._target_manifest_branch,
                                    False, '.')
     self.mox.VerifyAll()
+
+  def testPushChange(self):
+    self._TestPushChange(bad_cls=False)
+
+  def testPushChangeBadCls(self):
+    self.assertRaises(AssertionError, self._TestPushChange, bad_cls=True)
 
 
 class CleanStalePackagesTest(cros_build_lib_unittest.RunCommandTestCase):
