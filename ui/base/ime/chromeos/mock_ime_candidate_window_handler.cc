@@ -46,8 +46,8 @@ void MockIMECandidateWindowHandler::HidePreeditText() {
 }
 
 void MockIMECandidateWindowHandler::SetCursorBounds(
-    const ibus::Rect& cursor_bounds,
-    const ibus::Rect& composition_head) {
+    const gfx::Rect& cursor_bounds,
+    const gfx::Rect& composition_head) {
   ++set_cursor_bounds_call_count_;
 }
 

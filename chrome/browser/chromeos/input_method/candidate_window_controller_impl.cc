@@ -30,10 +30,6 @@ const int kInfolistShowDelayMilliSeconds = 500;
 // The milliseconds of the delay to hide the infolist window.
 const int kInfolistHideDelayMilliSeconds = 500;
 
-// Converts from ibus::Rect to gfx::Rect.
-gfx::Rect IBusRectToGfxRect(const ibus::Rect& rect) {
-  return gfx::Rect(rect.x, rect.y, rect.width, rect.height);
-}
 }  // namespace
 
 bool CandidateWindowControllerImpl::Init() {
@@ -112,31 +108,29 @@ void CandidateWindowControllerImpl::HidePreeditText() {
 }
 
 void CandidateWindowControllerImpl::SetCursorBounds(
-    const ibus::Rect& cursor_bounds,
-    const ibus::Rect& composition_head) {
+    const gfx::Rect& cursor_bounds,
+    const gfx::Rect& composition_head) {
   // A workaround for http://crosbug.com/6460. We should ignore very short Y
   // move to prevent the window from shaking up and down.
   const int kKeepPositionThreshold = 2;  // px
   const gfx::Rect& last_bounds =
       candidate_window_view_->cursor_bounds();
-  const int delta_y = abs(last_bounds.y() - cursor_bounds.y);
-  if ((last_bounds.x() == cursor_bounds.x) &&
+  const int delta_y = abs(last_bounds.y() - cursor_bounds.y());
+  if ((last_bounds.x() == cursor_bounds.x()) &&
       (delta_y <= kKeepPositionThreshold)) {
     DVLOG(1) << "Ignored set_cursor_bounds signal to prevent window shake";
     return;
   }
 
-  const gfx::Rect gfx_cursor_bounds = IBusRectToGfxRect(cursor_bounds);
   // Remember the cursor bounds.
-  candidate_window_view_->set_cursor_bounds(gfx_cursor_bounds);
-  candidate_window_view_->set_composition_head_bounds(
-      IBusRectToGfxRect(composition_head));
+  candidate_window_view_->set_cursor_bounds(cursor_bounds);
+  candidate_window_view_->set_composition_head_bounds(composition_head);
   // Move the window per the cursor bounds.
   candidate_window_view_->ResizeAndMoveParentFrame();
   UpdateInfolistBounds();
 
   // Mode indicator controller also needs the cursor bounds.
-  mode_indicator_controller_->SetCursorBounds(gfx_cursor_bounds);
+  mode_indicator_controller_->SetCursorBounds(cursor_bounds);
 }
 
 void CandidateWindowControllerImpl::UpdateAuxiliaryText(

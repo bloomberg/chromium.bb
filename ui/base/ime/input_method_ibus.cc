@@ -60,11 +60,6 @@ uint32 IBusStateFromXState(unsigned int state) {
                    Button1Mask | Button2Mask | Button3Mask));
 }
 
-// Converts gfx::Rect to ibus::Rect.
-chromeos::ibus::Rect GfxRectToIBusRect(const gfx::Rect& rect) {
-  return chromeos::ibus::Rect(rect.x(), rect.y(), rect.width(), rect.height());
-}
-
 chromeos::IBusEngineHandlerInterface* GetEngine() {
   return chromeos::IBusBridge::Get()->GetEngineHandler();
 }
@@ -799,9 +794,7 @@ void InputMethodIBus::OnCaretBoundsChangedInternal(
       chromeos::IBusBridge::Get()->GetCandidateWindowHandler();
   if (!candidate_window)
     return;
-  candidate_window->SetCursorBounds(
-      GfxRectToIBusRect(rect),
-      GfxRectToIBusRect(composition_head));
+  candidate_window->SetCursorBounds(rect, composition_head);
 
   gfx::Range text_range;
   gfx::Range selection_range;

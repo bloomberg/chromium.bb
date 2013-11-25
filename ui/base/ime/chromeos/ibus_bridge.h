@@ -13,6 +13,10 @@
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_export.h"
 
+namespace gfx {
+class Rect;
+}  // namespace gfx
+
 namespace chromeos {
 namespace input_method {
 class CandidateWindow;
@@ -127,8 +131,8 @@ class UI_EXPORT IBusPanelCandidateWindowHandlerInterface {
   virtual void HidePreeditText() = 0;
 
   // Called when the application changes its caret bounds.
-  virtual void SetCursorBounds(const ibus::Rect& cursor_bounds,
-                               const ibus::Rect& composition_head) = 0;
+  virtual void SetCursorBounds(const gfx::Rect& cursor_bounds,
+                               const gfx::Rect& composition_head) = 0;
 
   // Called when the text field's focus state is changed.
   // |is_focused| is true when the text field gains the focus.
