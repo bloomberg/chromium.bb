@@ -1461,6 +1461,8 @@
         'browser/ui/panels/stacked_panel_collection.h',
         'browser/ui/panels/stacked_panel_drag_handler.cc',
         'browser/ui/panels/stacked_panel_drag_handler.h',
+        'browser/ui/passwords/manage_passwords_bubble_model.cc',
+        'browser/ui/passwords/manage_passwords_bubble_model.h',
         'browser/ui/passwords/manage_passwords_icon_controller.cc',
         'browser/ui/passwords/manage_passwords_icon_controller.h',
         'browser/ui/passwords/password_manager_presenter.cc',
@@ -2023,6 +2025,8 @@
         'browser/ui/views/panels/panel_view.h',
         'browser/ui/views/panels/taskbar_window_thumbnailer_win.cc',
         'browser/ui/views/panels/taskbar_window_thumbnailer_win.h',
+        'browser/ui/views/passwords/manage_password_item_view.cc',
+        'browser/ui/views/passwords/manage_password_item_view.h',
         'browser/ui/views/password_generation_bubble_view.cc',
         'browser/ui/views/password_generation_bubble_view.h',
         'browser/ui/views/pdf_password_dialog.cc',
@@ -2737,7 +2741,7 @@
             'browser/ui/tabs/tab_strip_layout_type.h',
             'browser/ui/tabs/tab_strip_layout_type_prefs.cc',
             'browser/ui/tabs/tab_strip_layout_type_prefs.h',
-          ],        
+          ],
         }],
         ['OS=="linux"', {
           'dependencies': [

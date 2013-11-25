@@ -12,20 +12,41 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/manage_passwords_icon_view.h"
+#include "chrome/browser/ui/views/passwords/manage_password_item_view.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/canvas.h"
+#include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
+
+namespace {
+
+void UpdateBiggestWidth(const autofill::PasswordForm& password_form,
+                        bool username,
+                        int* biggest_width) {
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  gfx::FontList font_list(rb->GetFontList(ui::ResourceBundle::BaseFont));
+  string16 display_string(username ?
+      password_form.username_value :
+      ManagePasswordItemView::GetPasswordDisplayString(
+          password_form.password_value));
+  *biggest_width = std::max(
+      gfx::Canvas::GetStringWidth(display_string, font_list), *biggest_width);
+}
+
+}  // namespace
 
 // static
 ManagePasswordsBubbleView* ManagePasswordsBubbleView::manage_passwords_bubble_ =
     NULL;
 
 // static
-void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents) {
+void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
+                                           ManagePasswordsIconView* icon_view) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   DCHECK(browser);
   DCHECK(browser->window());
@@ -37,7 +58,7 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents) {
   views::View* anchor_view = is_fullscreen ?
       NULL : browser_view->GetLocationBarView()->manage_passwords_icon_view();
   manage_passwords_bubble_ =
-      new ManagePasswordsBubbleView(anchor_view, web_contents);
+      new ManagePasswordsBubbleView(anchor_view, web_contents, icon_view);
 
   if (is_fullscreen) {
     manage_passwords_bubble_->set_parent_window(
@@ -69,16 +90,42 @@ bool ManagePasswordsBubbleView::IsShowing() {
 }
 
 ManagePasswordsBubbleView::ManagePasswordsBubbleView(
-    views::View* anchor_view, content::WebContents* web_contents)
-    : BubbleDelegateView(anchor_view, anchor_view ?
-          views::BubbleBorder::TOP_RIGHT : views::BubbleBorder::NONE),
-      web_contents_(web_contents) {
+    views::View* anchor_view,
+    content::WebContents* web_contents,
+    ManagePasswordsIconView* icon_view)
+    : BubbleDelegateView(
+          anchor_view,
+          anchor_view ?
+              views::BubbleBorder::TOP_RIGHT : views::BubbleBorder::NONE),
+      manage_passwords_bubble_model_(
+          new ManagePasswordsBubbleModel(web_contents)),
+      icon_view_(icon_view) {
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(5, 0, 5, 0));
   set_notify_enter_exit_on_child(true);
 }
 
 ManagePasswordsBubbleView::~ManagePasswordsBubbleView() {}
+
+int ManagePasswordsBubbleView::GetMaximumUsernameOrPasswordWidth(
+    bool username) {
+  int biggest_width = 0;
+  if (manage_passwords_bubble_model_->manage_passwords_bubble_state() !=
+      ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED) {
+    // If we are in the PASSWORD_TO_BE_SAVED state we only display the
+    // password that was just submitted and should not take these into account.
+    for (autofill::PasswordFormMap::const_iterator i(
+             manage_passwords_bubble_model_->best_matches().begin());
+         i != manage_passwords_bubble_model_->best_matches().end(); ++i) {
+      UpdateBiggestWidth((*i->second), username, &biggest_width);
+    }
+  }
+  if (manage_passwords_bubble_model_->password_submitted()) {
+    UpdateBiggestWidth(manage_passwords_bubble_model_->pending_credentials(),
+                       username, &biggest_width);
+  }
+  return biggest_width;
+}
 
 void ManagePasswordsBubbleView::AdjustForFullscreen(
     const gfx::Rect& screen_bounds) {
@@ -98,60 +145,166 @@ void ManagePasswordsBubbleView::Close() {
   GetWidget()->Close();
 }
 
-void ManagePasswordsBubbleView::ButtonPressed(views::Button* sender,
-                                              const ui::Event& event) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents_);
-  if (sender == save_button_) {
-    content_settings->set_password_action(PasswordFormManager::SAVE);
-  } else {
-    DCHECK_EQ(cancel_button_, sender);
-    content_settings->set_password_action(PasswordFormManager::DO_NOTHING);
-  }
-  Close();
-}
-
 void ManagePasswordsBubbleView::Init() {
   using views::GridLayout;
 
   GridLayout* layout = new GridLayout(this);
   SetLayoutManager(layout);
 
+  // This calculates the necessary widths for the list of credentials in the
+  // bubble.
+
+  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  const int kPredefinedFieldMaxWidth =
+      rb->GetFont(ui::ResourceBundle::BaseFont).GetAverageCharacterWidth() * 22;
+  const int kMaxUsernameFieldWidth = std::min(
+      GetMaximumUsernameOrPasswordWidth(true), kPredefinedFieldMaxWidth);
+  const int kFirstFieldWidth = std::max(kMaxUsernameFieldWidth,
+      views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED)).
+          GetPreferredSize().width());
+
+  const int kMaxPasswordFieldWidth = GetMaximumUsernameOrPasswordWidth(false);
+  const int kSecondFieldWidth = std::max(kMaxPasswordFieldWidth,
+      views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO)).
+          GetPreferredSize().width());
+
   const int kSingleColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kSingleColumnSetId);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
+  column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
                         GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
 
   views::Label* title_label =
-      new views::Label(l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD));
+      new views::Label(manage_passwords_bubble_model_->title());
   title_label->SetMultiLine(true);
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->StartRow(0, kSingleColumnSetId);
+  title_label->SetFontList(rb->GetFontList(ui::ResourceBundle::MediumFont));
+
+  layout->StartRowWithPadding(0, kSingleColumnSetId,
+                              0, views::kRelatedControlSmallVerticalSpacing);
   layout->AddView(title_label);
+  layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
 
-  const int kDoubleColumnSetId = 1;
-  views::ColumnSet* double_column_set =
-      layout->AddColumnSet(kDoubleColumnSetId);
+  if (manage_passwords_bubble_model_->manage_passwords_bubble_state() ==
+      ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED) {
+    const int kSingleColumnCredentialsId = 1;
+    views::ColumnSet* single_column =
+        layout->AddColumnSet(kSingleColumnCredentialsId);
+    single_column->AddPaddingColumn(0, views::kPanelHorizMargin);
+    single_column->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                             GridLayout::USE_PREF, 0, 0);
+    single_column->AddPaddingColumn(0, views::kPanelHorizMargin);
 
-  double_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 1,
-                               GridLayout::USE_PREF, 0, 0);
-  double_column_set->AddPaddingColumn(
-      0, views::kRelatedControlSmallVerticalSpacing);
-  double_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
-                               GridLayout::USE_PREF, 0, 0);
+    layout->StartRow(0, kSingleColumnCredentialsId);
+    ManagePasswordItemView* item = new ManagePasswordItemView(
+        manage_passwords_bubble_model_,
+        manage_passwords_bubble_model_->pending_credentials(), kFirstFieldWidth,
+        kSecondFieldWidth);
+    item->set_border(views::Border::CreateSolidSidedBorder(
+        1, 0, 1, 0, GetNativeTheme()->GetSystemColor(
+            ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor)));
+    layout->AddView(item);
 
-  cancel_button_ = new views::LabelButton(
-      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));
-  cancel_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  save_button_ = new views::LabelButton(
-      this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
-  save_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    const int kDoubleColumnSetId = 2;
+    views::ColumnSet* double_column_set =
+        layout->AddColumnSet(kDoubleColumnSetId);
+    double_column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
+    double_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 1,
+                                 GridLayout::USE_PREF, 0, 0);
+    double_column_set->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
+    double_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
+                                 GridLayout::USE_PREF, 0, 0);
+    double_column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
 
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    cancel_button_ = new views::LabelButton(
+        this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_BUTTON));
+    cancel_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    save_button_ = new views::BlueButton(
+        this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
 
-  layout->StartRow(0, kDoubleColumnSetId);
-  layout->AddView(save_button_);
-  layout->AddView(cancel_button_);
+    layout->StartRowWithPadding(0, kDoubleColumnSetId,
+                                0, views::kRelatedControlVerticalSpacing);
+    layout->AddView(save_button_);
+    layout->AddView(cancel_button_);
+    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  } else {
+    const int kSingleButtonSetId = 3;
+    views::ColumnSet* single_column_set =
+        layout->AddColumnSet(kSingleButtonSetId);
+    single_column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
+    single_column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 1,
+                                 GridLayout::USE_PREF, 0, 0);
+    single_column_set->AddPaddingColumn(0,
+        views::kUnrelatedControlHorizontalSpacing);
+    single_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
+                                 GridLayout::USE_PREF, 0, 0);
+    single_column_set->AddPaddingColumn(0, views::kPanelHorizMargin);
+
+    const int kSingleColumnCredentialsId = 1;
+    views::ColumnSet* single_column =
+        layout->AddColumnSet(kSingleColumnCredentialsId);
+    single_column->AddPaddingColumn(0, views::kPanelHorizMargin);
+    single_column->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                             GridLayout::USE_PREF, 0, 0);
+    single_column->AddPaddingColumn(0, views::kPanelHorizMargin);
+
+    if (!manage_passwords_bubble_model_->best_matches().empty()) {
+      for (autofill::PasswordFormMap::const_iterator i(
+               manage_passwords_bubble_model_->best_matches().begin());
+           i != manage_passwords_bubble_model_->best_matches().end(); ++i) {
+        layout->StartRow(0, kSingleColumnCredentialsId);
+        ManagePasswordItemView* item = new ManagePasswordItemView(
+            manage_passwords_bubble_model_, *i->second, kFirstFieldWidth,
+            kSecondFieldWidth);
+        if (i == manage_passwords_bubble_model_->best_matches().begin()) {
+          item->set_border(views::Border::CreateSolidSidedBorder(
+              1, 0, 1, 0, GetNativeTheme()->GetSystemColor(
+                  ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor)));
+        } else {
+          item->set_border(views::Border::CreateSolidSidedBorder(
+              0, 0, 1, 0, GetNativeTheme()->GetSystemColor(
+                  ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor)));
+        }
+        layout->AddView(item);
+      }
+    } else if (!manage_passwords_bubble_model_->password_submitted()) {
+        views::Label* empty_label = new views::Label(
+            l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_NO_PASSWORDS));
+        empty_label->SetMultiLine(true);
+        layout->StartRow(0, kSingleColumnSetId);
+        layout->AddView(empty_label);
+    }
+
+    if (manage_passwords_bubble_model_->password_submitted()) {
+      layout->StartRow(0, kSingleColumnCredentialsId);
+      ManagePasswordItemView* item = new ManagePasswordItemView(
+          manage_passwords_bubble_model_,
+          manage_passwords_bubble_model_->pending_credentials(),
+          kFirstFieldWidth, kSecondFieldWidth);
+      if (manage_passwords_bubble_model_->best_matches().empty()) {
+        item->set_border(views::Border::CreateSolidSidedBorder(1, 0, 1, 0,
+            GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor)));
+      } else {
+        item->set_border(views::Border::CreateSolidSidedBorder(0, 0, 1, 0,
+            GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor)));
+      }
+      layout->AddView(item);
+    }
+
+    manage_link_ =
+        new views::Link(manage_passwords_bubble_model_->manage_link());
+    manage_link_->set_listener(this);
+    layout->StartRowWithPadding(0, kSingleButtonSetId,
+                                0, views::kRelatedControlVerticalSpacing);
+    layout->AddView(manage_link_);
+
+    done_button_ =
+        new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_DONE));
+    done_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
+    layout->AddView(done_button_);
+  }
 }
 
 void ManagePasswordsBubbleView::WindowClosing() {
@@ -159,4 +312,24 @@ void ManagePasswordsBubbleView::WindowClosing() {
   // |manage_passwords_bubble_| may have already been reset.
   if (manage_passwords_bubble_ == this)
     manage_passwords_bubble_ = NULL;
+}
+
+void ManagePasswordsBubbleView::ButtonPressed(views::Button* sender,
+                                              const ui::Event& event) {
+  if (sender == save_button_)
+    manage_passwords_bubble_model_->OnSaveClicked();
+  else if (sender == cancel_button_)
+    manage_passwords_bubble_model_->OnCancelClicked();
+  else
+    DCHECK_EQ(done_button_, sender);
+  icon_view_->SetTooltip(
+      manage_passwords_bubble_model_->manage_passwords_bubble_state() ==
+          ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED);
+  Close();
+}
+
+void ManagePasswordsBubbleView::LinkClicked(views::Link* source,
+                                            int event_flags) {
+  DCHECK_EQ(source, manage_link_);
+  manage_passwords_bubble_model_->OnManageLinkClicked();
 }

@@ -34,6 +34,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
+using autofill::PasswordFormMap;
 using content::BrowserThread;
 using content::NavigationController;
 using content::NavigationEntry;
@@ -84,8 +85,10 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
       previous_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       pending_protocol_handler_setting_(CONTENT_SETTING_DEFAULT),
       load_plugins_link_enabled_(true),
+      manage_passwords_icon_to_be_shown_(false),
       password_to_be_saved_(false),
-      manage_passwords_bubble_shown_(false) {
+      manage_passwords_bubble_needs_showing_(false),
+      password_submitted_(false) {
   ClearBlockedContentSettingsExceptForCookies();
   ClearCookieSpecificContentSettings();
 
@@ -494,8 +497,21 @@ void TabSpecificContentSettings::OnProtectedMediaIdentifierPermissionSet(
 void TabSpecificContentSettings::OnPasswordSubmitted(
     PasswordFormManager* form_manager) {
   form_manager_.reset(form_manager);
+  password_form_map_ = form_manager_->best_matches();
+  manage_passwords_icon_to_be_shown_ = true;
   password_to_be_saved_ = true;
-  manage_passwords_bubble_shown_ = false;
+  manage_passwords_bubble_needs_showing_ = true;
+  password_submitted_ = true;
+  NotifyPasswordObserver();
+}
+
+void TabSpecificContentSettings::OnPasswordAutofilled(
+    const PasswordFormMap& password_form_map) {
+  password_form_map_ = password_form_map;
+  manage_passwords_icon_to_be_shown_ = true;
+  password_to_be_saved_ = false;
+  manage_passwords_bubble_needs_showing_ = false;
+  password_submitted_ = false;
   NotifyPasswordObserver();
 }
 
@@ -676,8 +692,6 @@ bool TabSpecificContentSettings::OnMessageReceived(
 void TabSpecificContentSettings::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  if (form_manager_)
-    form_manager_->ApplyChange();
   if (!details.is_in_page) {
     // Clear "blocked" flags.
     ClearBlockedContentSettingsExceptForCookies();
@@ -685,8 +699,9 @@ void TabSpecificContentSettings::DidNavigateMainFrame(
     MIDIDidNavigate(details);
   }
   // Reset password states for next page.
+  manage_passwords_icon_to_be_shown_ = false;
   password_to_be_saved_ = false;
-  manage_passwords_bubble_shown_ = false;
+  manage_passwords_bubble_needs_showing_ = false;
   NotifySiteDataObservers();
   NotifyPasswordObserver();
 }
@@ -721,6 +736,11 @@ void TabSpecificContentSettings::AppCacheAccessed(const GURL& manifest_url,
     allowed_local_shared_objects_.appcaches()->AddAppCache(manifest_url);
     OnContentAllowed(CONTENT_SETTINGS_TYPE_COOKIES);
   }
+}
+
+void TabSpecificContentSettings::SavePassword() {
+  DCHECK(form_manager_.get());
+  form_manager_->Save();
 }
 
 void TabSpecificContentSettings::Observe(

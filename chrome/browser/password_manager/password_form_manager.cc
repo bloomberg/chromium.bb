@@ -42,8 +42,7 @@ PasswordFormManager::PasswordFormManager(Profile* profile,
       web_contents_(web_contents),
       manager_action_(kManagerActionNone),
       user_action_(kUserActionNone),
-      submit_result_(kSubmitResultNotSubmitted),
-      password_action_(DO_NOTHING) {
+      submit_result_(kSubmitResultNotSubmitted) {
   DCHECK(profile_);
   if (observed_form_.origin.is_valid())
     base::SplitString(observed_form_.origin.path(), '/', &form_path_tokens_);
@@ -54,9 +53,6 @@ PasswordFormManager::~PasswordFormManager() {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTakenWithPsl",
                             GetActionsTaken(),
                             kMaxNumActionsTaken);
-  // In case the tab is closed before the next navigation occurs this will
-  // apply outstanding changes.
-  ApplyChange();
 }
 
 int PasswordFormManager::GetActionsTaken() {
@@ -111,14 +107,6 @@ bool PasswordFormManager::DoesManage(const PasswordForm& form,
     return false;
   }
   return true;
-}
-
-void PasswordFormManager::ApplyChange() {
-  if (password_action_ == SAVE)
-    Save();
-  else if (password_action_ == BLACKLIST)
-    PermanentlyBlacklist();
-  password_action_ = DO_NOTHING;
 }
 
 bool PasswordFormManager::IsBlacklisted() {

@@ -1630,12 +1630,13 @@ void LocationBarViewGtk::UpdateManagePasswordsIcon() {
       theme_service_->GetImageNamed(IDR_SAVE_PASSWORD).ToGdkPixbuf());
 
   string16 tooltip =
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_TOOLTIP_DEFAULT);
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_TOOLTIP_SAVE);
   gtk_widget_set_tooltip_text(manage_passwords_icon_.get(),
                               UTF16ToUTF8(tooltip).c_str());
 
   gtk_widget_show(manage_passwords_icon_.get());
-  if (!manage_passwords_icon_controller->manage_passwords_bubble_shown()) {
+  if (manage_passwords_icon_controller->
+          manage_passwords_bubble_needs_showing()) {
     ShowManagePasswordsBubble();
     manage_passwords_icon_controller->OnBubbleShown();
   }

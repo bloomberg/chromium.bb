@@ -342,8 +342,12 @@ void PasswordManager::OnPasswordFormsRendered(
           switches::kEnableSavePasswordBubble)) {
       TabSpecificContentSettings* content_settings =
           TabSpecificContentSettings::FromWebContents(web_contents());
-      content_settings->OnPasswordSubmitted(
-          provisional_save_manager_.release());
+      if (content_settings) {
+        content_settings->OnPasswordSubmitted(
+            provisional_save_manager_.release());
+      } else {
+        provisional_save_manager_.reset();
+      }
     } else {
       delegate_->AddSavePasswordInfoBarIfPermitted(
           provisional_save_manager_.release());
@@ -414,7 +418,7 @@ void PasswordManager::Autofill(
                                OtherPossibleUsernamesEnabled(),
                                &fill_data);
       delegate_->FillPasswordForm(fill_data);
-      return;
+      break;
     }
     default:
       FOR_EACH_OBSERVER(
@@ -422,5 +426,11 @@ void PasswordManager::Autofill(
           observers_,
           OnAutofillDataAvailable(preferred_match.username_value,
                                   preferred_match.password_value));
+      break;
   }
+
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  if (content_settings)
+    content_settings->OnPasswordAutofilled(best_matches);
 }

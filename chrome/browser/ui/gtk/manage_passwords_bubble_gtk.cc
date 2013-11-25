@@ -124,13 +124,10 @@ void ManagePasswordsBubbleGtk::OnDestroy(GtkWidget* widget) {
 void ManagePasswordsBubbleGtk::OnSaveButtonClicked(GtkWidget* button) {
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents_);
-  content_settings->set_password_action(PasswordFormManager::SAVE);
+  content_settings->SavePassword();
   Close();
 }
 
 void ManagePasswordsBubbleGtk::OnNotNowButtonClicked(GtkWidget* button) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents_);
-  content_settings->set_password_action(PasswordFormManager::DO_NOTHING);
   Close();
 }

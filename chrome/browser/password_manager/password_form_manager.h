@@ -49,12 +49,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
     IGNORE_OTHER_POSSIBLE_USERNAMES
   };
 
-  enum PasswordAction {
-    DO_NOTHING,
-    SAVE,
-    BLACKLIST
-  };
-
   // Compare basic data of observed_form_ with argument. Only check the action
   // URL when action match is required.
   bool DoesManage(const autofill::PasswordForm& form,
@@ -76,14 +70,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // in a loop and wait for matching to complete; you're (supposed to be) on
   // the same thread!
   bool HasCompletedMatching();
-
-  // Called when navigation occurs or the tab is closed. Takes the necessary
-  // action with the form's login based on the desired |password_action_|.
-  void ApplyChange();
-
-  void set_password_action(PasswordAction password_action) {
-    password_action_ = password_action;
-  }
 
   // Determines if the user opted to 'never remember' passwords for this form.
   bool IsBlacklisted();
@@ -143,9 +129,19 @@ class PasswordFormManager : public PasswordStoreConsumer {
   void SubmitPassed();
   void SubmitFailed();
 
-  // Return the username associated with the credentials.
+  // Returns the username associated with the credentials.
   const string16& associated_username() const {
     return pending_credentials_.username_value;
+  }
+
+  // Returns the pending credentials.
+  const autofill::PasswordForm pending_credentials() const {
+    return pending_credentials_;
+  }
+
+  // Returns the best matches.
+  const autofill::PasswordFormMap best_matches() const {
+    return best_matches_;
   }
 
   // Returns the realm URL for the form managed my this manager.
@@ -315,10 +311,6 @@ class PasswordFormManager : public PasswordStoreConsumer {
   ManagerAction manager_action_;
   UserAction user_action_;
   SubmitResult submit_result_;
-
-  // Whether we should save, blacklist, or do nothing with this form's login
-  // on the next navigation or when the tab is closed.
-  PasswordAction password_action_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };

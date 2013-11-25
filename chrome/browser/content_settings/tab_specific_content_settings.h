@@ -231,16 +231,24 @@ class TabSpecificContentSettings
   // Returns the state of the camera and microphone usage.
   MicrophoneCameraState GetMicrophoneCameraState() const;
 
-  void set_manage_passwords_bubble_shown() {
-    manage_passwords_bubble_shown_ = true;
+  void unset_manage_passwords_bubble_needs_showing() {
+    manage_passwords_bubble_needs_showing_ = false;
   }
 
   bool password_to_be_saved() const {
     return password_to_be_saved_;
   }
 
-  bool manage_passwords_bubble_shown() const {
-    return manage_passwords_bubble_shown_;
+  void unset_password_to_be_saved() {
+    password_to_be_saved_ = false;
+  }
+
+  bool manage_passwords_bubble_needs_showing() const {
+    return manage_passwords_bubble_needs_showing_;
+  }
+
+  bool manage_passwords_icon_to_be_shown() const {
+    return manage_passwords_icon_to_be_shown_;
   }
 
   // Returns whether there is a password to be saved.
@@ -337,16 +345,31 @@ class TabSpecificContentSettings
   virtual void AppCacheAccessed(const GURL& manifest_url,
                                 bool blocked_by_policy) OVERRIDE;
 
-  // Called when the user chooses to save or blacklist a password. Instructs
-  // |form_manager_| to perfom the chosen action when the next navigation
-  // occurs or when the tab is closed. The change isn't applied immediately
-  // because the user can still recall the UI and change the desired action,
-  // until the next navigation, and undoing a blacklist operation is
-  // nontrivial.
-  void set_password_action(
-      PasswordFormManager::PasswordAction password_action) {
-    DCHECK(form_manager_.get());
-    form_manager_->set_password_action(password_action);
+  void SavePassword();
+
+  const autofill::PasswordForm pending_credentials() const {
+    return form_manager_->pending_credentials();
+  }
+
+  const autofill::PasswordFormMap best_matches() const {
+    return password_form_map_;
+  }
+
+  // TODO(npentrel) This ought to be changed. Best matches should be newly
+  // made when opening the ManagePasswordsBubble because there may have been
+  // changes to the best matches via the settings page. At the moment this also
+  // fails if one deletes a password when they are autofilled, as it still shows
+  // up after logging in and saving a password.
+  void remove_from_best_matches(autofill::PasswordForm password_form) {
+    password_form_map_.erase(password_form.username_value);
+  }
+
+  bool password_submitted() const {
+    return password_submitted_;
+  }
+
+  void password_submitted(bool password_submitted) {
+    password_submitted_ = password_submitted;
   }
 
   // Message handlers. Public for testing.
@@ -397,6 +420,12 @@ class TabSpecificContentSettings
   // This stores the provided object in form_manager_ and triggers the UI to
   // prompt the user about whether they would like to save the password.
   void OnPasswordSubmitted(PasswordFormManager* form_manager);
+
+  // Called when a form is autofilled with login information, so we can manage
+  // password credentials for the current site which are stored in
+  // |password_form_map|. This stores a copy of |password_form_map| and shows
+  // the manage password icon.
+  void OnPasswordAutofilled(const autofill::PasswordFormMap& password_form_map);
 
   // There methods are called to update the status about MIDI access.
   void OnMIDISysExAccessed(const GURL& reqesting_origin);
@@ -499,8 +528,14 @@ class TabSpecificContentSettings
   // associated login information in Chrome's password store.
   scoped_ptr<PasswordFormManager> form_manager_;
 
+  // All previously stored credentials for a specific site.  Set by
+  // OnPasswordSubmitted() or OnPasswordAutofilled().
+  autofill::PasswordFormMap password_form_map_;
+
+  bool manage_passwords_icon_to_be_shown_;
   bool password_to_be_saved_;
-  bool manage_passwords_bubble_shown_;
+  bool manage_passwords_bubble_needs_showing_;
+  bool password_submitted_;
 
   DISALLOW_COPY_AND_ASSIGN(TabSpecificContentSettings);
 };

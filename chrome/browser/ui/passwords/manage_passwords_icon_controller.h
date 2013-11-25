@@ -21,12 +21,16 @@ class ManagePasswordsIconController
  public:
   virtual ~ManagePasswordsIconController();
 
+  bool manage_passwords_icon_to_be_shown() const {
+    return manage_passwords_icon_to_be_shown_;
+  }
+
   bool password_to_be_saved() const {
     return password_to_be_saved_;
   }
 
-  bool manage_passwords_bubble_shown() const {
-    return manage_passwords_bubble_shown_;
+  bool manage_passwords_bubble_needs_showing() const {
+    return manage_passwords_bubble_needs_showing_;
   }
 
   // Called when the bubble is opened after the icon gets displayed. We change
@@ -41,8 +45,9 @@ class ManagePasswordsIconController
   // TabSpecificContentSettings::PasswordObserver:
   virtual void OnPasswordAction() OVERRIDE;
 
+  bool manage_passwords_icon_to_be_shown_;
   bool password_to_be_saved_;
-  bool manage_passwords_bubble_shown_;
+  bool manage_passwords_bubble_needs_showing_;
 
   content::BrowserContext* browser_context_;
 

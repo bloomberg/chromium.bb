@@ -938,9 +938,6 @@ views::View* LocationBarView::generated_credit_card_view() {
 }
 
 void LocationBarView::Update(const WebContents* contents) {
-  // UpdateManagePasswordsIconAndBubble does not need to be called here. This is
-  // handled by the PasswordObserver in ManagePasswordsIconController once we
-  // know that a password form was submitted.
   mic_search_view_->SetVisible(
       !GetToolbarModel()->input_in_progress() && browser_ &&
       browser_->search_model()->voice_search_supported());
@@ -951,6 +948,7 @@ void LocationBarView::Update(const WebContents* contents) {
   RefreshPageActionViews();
   RefreshScriptBubble();
   RefreshTranslateIcon();
+  RefreshManagePasswordsIconView();
   open_pdf_in_reader_view_->Update(
       GetToolbarModel()->input_in_progress() ? NULL : GetWebContents());
 
