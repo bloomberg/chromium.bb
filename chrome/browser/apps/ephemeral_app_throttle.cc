@@ -5,9 +5,9 @@
 #include "chrome/browser/apps/ephemeral_app_throttle.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/apps/ephemeral_app_launcher.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/webstore_ephemeral_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -25,7 +25,6 @@
 using content::BrowserThread;
 using content::WebContents;
 using extensions::Extension;
-using extensions::WebstoreEphemeralInstaller;
 
 namespace {
 
@@ -64,9 +63,9 @@ bool LaunchEphemeralApp(
 
   if (!extension) {
     // Install ephemeral app and launch.
-    scoped_refptr<WebstoreEphemeralInstaller> installer =
-        WebstoreEphemeralInstaller::CreateForLink(app_id, web_contents);
-    installer->BeginInstall();
+    scoped_refptr<EphemeralAppLauncher> installer =
+        EphemeralAppLauncher::CreateForLink(app_id, web_contents);
+    installer->Start();
     return true;
   }
 

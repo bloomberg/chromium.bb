@@ -61,7 +61,7 @@ class WebstoreStandaloneInstaller
   virtual ~WebstoreStandaloneInstaller();
 
   void AbortInstall();
-  void CompleteInstall(const std::string& error);
+  virtual void CompleteInstall(const std::string& error);
 
   // Template Method's hooks to be implemented by subclasses.
 
@@ -107,9 +107,18 @@ class WebstoreStandaloneInstaller
       const base::DictionaryValue& webstore_data,
       std::string* error) const = 0;
 
+  // Perform all necessary checks after the manifest has been parsed to make
+  // sure that the install should still proceed.
+  virtual bool CheckInstallValid(
+      const base::DictionaryValue& manifest,
+      std::string* error);
+
   // Returns an install UI to be shown. By default, this returns an install UI
   // that is a transient child of the host window for GetWebContents().
   virtual scoped_ptr<ExtensionInstallPrompt> CreateInstallUI();
+
+  // Create an approval to pass installation parameters to the CrxInstaller.
+  virtual scoped_ptr<WebstoreInstaller::Approval> CreateApproval() const;
 
   // Accessors to be used by subclasses.
   bool show_user_count() const { return show_user_count_; }

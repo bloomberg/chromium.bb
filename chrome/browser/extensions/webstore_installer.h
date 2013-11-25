@@ -151,6 +151,9 @@ class WebstoreInstaller :public content::NotificationObserver,
     // Required minimum version.
     scoped_ptr<Version> minimum_version;
 
+    // Ephemeral apps (experimental) are not permanently installed in Chrome.
+    bool is_ephemeral;
+
    private:
     Approval();
   };

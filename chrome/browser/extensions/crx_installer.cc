@@ -158,6 +158,9 @@ CrxInstaller::CrxInstaller(
   }
 
   show_dialog_callback_ = approval->show_dialog_callback;
+
+  if (approval->is_ephemeral)
+    creation_flags_ |= Extension::IS_EPHEMERAL;
 }
 
 CrxInstaller::~CrxInstaller() {

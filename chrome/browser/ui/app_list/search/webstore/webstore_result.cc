@@ -10,11 +10,11 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/apps/ephemeral_app_launcher.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
-#include "chrome/browser/extensions/webstore_ephemeral_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/common/url_icon_source.h"
@@ -31,8 +31,6 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
-
-using extensions::WebstoreEphemeralInstaller;
 
 namespace {
 
@@ -127,9 +125,12 @@ scoped_ptr<ChromeSearchResult> WebstoreResult::Duplicate() {
 void WebstoreResult::UpdateActions() {
   Actions actions;
 
+  const extensions::Extension* extension =
+      extensions::ExtensionSystem::Get(profile_)->extension_service()->
+          GetInstalledExtension(app_id_);
+
   const bool is_otr = profile_->IsOffTheRecord();
-  const bool is_installed = !!extensions::ExtensionSystem::Get(profile_)->
-      extension_service()->GetInstalledExtension(app_id_);
+  const bool is_installed = extension && !extension->is_ephemeral();
 
   if (!is_otr && !is_installed && !is_installing()) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -179,14 +180,14 @@ void WebstoreResult::StartInstall(bool launch_ephemeral_app) {
   SetIsInstalling(true);
 
   if (launch_ephemeral_app) {
-    scoped_refptr<WebstoreEphemeralInstaller> installer =
-        WebstoreEphemeralInstaller::CreateForLauncher(
+    scoped_refptr<EphemeralAppLauncher> installer =
+        EphemeralAppLauncher::CreateForLauncher(
             app_id_,
             profile_,
             controller_->GetAppListWindow(),
             base::Bind(&WebstoreResult::InstallCallback,
                        weak_factory_.GetWeakPtr()));
-    installer->BeginInstall();
+    installer->Start();
     return;
   }
 

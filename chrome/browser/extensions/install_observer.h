@@ -28,6 +28,7 @@ class InstallObserver {
     gfx::ImageSkia installing_icon;
     bool is_app;
     bool is_platform_app;
+    bool is_ephemeral;
   };
 
   virtual void OnBeginExtensionInstall(

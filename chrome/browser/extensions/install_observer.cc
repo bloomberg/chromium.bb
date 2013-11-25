@@ -16,6 +16,7 @@ InstallObserver::ExtensionInstallParams::ExtensionInstallParams(
           extension_name(extension_name),
           installing_icon(installing_icon),
           is_app(is_app),
-          is_platform_app(is_platform_app) {}
+          is_platform_app(is_platform_app),
+          is_ephemeral(false) {}
 
 }  // namespace extensions

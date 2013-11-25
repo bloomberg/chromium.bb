@@ -333,12 +333,12 @@ bool Extension::RequiresSortOrdinal() const {
 
 bool Extension::ShouldDisplayInAppLauncher() const {
   // Only apps should be displayed in the launcher.
-  return is_app() && display_in_launcher_;
+  return is_app() && display_in_launcher_ && !is_ephemeral();
 }
 
 bool Extension::ShouldDisplayInNewTabPage() const {
   // Only apps should be displayed on the NTP.
-  return is_app() && display_in_new_tab_page_;
+  return is_app() && display_in_new_tab_page_ && !is_ephemeral();
 }
 
 bool Extension::ShouldDisplayInExtensionSettings() const {

@@ -58,7 +58,7 @@ ExtensionAppModelBuilder::~ExtensionAppModelBuilder() {
 
 void ExtensionAppModelBuilder::OnBeginExtensionInstall(
     const ExtensionInstallParams& params) {
-  if (!params.is_app)
+  if (!params.is_app || params.is_ephemeral)
     return;
 
   ExtensionAppItem* existing_item = GetExtensionAppItem(params.extension_id);
