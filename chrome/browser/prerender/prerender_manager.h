@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/cancelable_callback.h"
 #include "base/containers/hash_tables.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -23,11 +24,15 @@
 #include "chrome/browser/predictors/logged_in_predictor_table.h"
 #include "chrome/browser/prerender/prerender_config.h"
 #include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/prerender/prerender_events.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_origin.h"
+#include "chrome/browser/prerender/prerender_tracker.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/session_storage_namespace.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "net/cookies/cookie_monster.h"
 #include "url/gurl.h"
 
@@ -75,7 +80,6 @@ class PrerenderHandle;
 class PrerenderHistograms;
 class PrerenderHistory;
 class PrerenderLocalPredictor;
-class PrerenderTracker;
 
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of web pages. All methods must be called on the UI thread unless
@@ -349,6 +353,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   }
 
  protected:
+  class PendingSwap;
   class PrerenderData : public base::SupportsWeakPtr<PrerenderData> {
    public:
     struct OrderByExpiryTime;
@@ -388,6 +393,13 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       expiry_time_ = expiry_time;
     }
 
+    void ClearPendingSwap();
+
+    PendingSwap* pending_swap() { return pending_swap_.get(); }
+    void set_pending_swap(PendingSwap* pending_swap) {
+      pending_swap_.reset(pending_swap);
+    }
+
    private:
     PrerenderManager* manager_;
     scoped_ptr<PrerenderContents> contents_;
@@ -403,7 +415,71 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     // removed.
     base::TimeTicks expiry_time_;
 
+    // If a session storage namespace merge is in progress for this object,
+    // we need to keep track of various state associated with it.
+    scoped_ptr<PendingSwap> pending_swap_;
+
     DISALLOW_COPY_AND_ASSIGN(PrerenderData);
+  };
+
+  // When a swap can't happen immediately, due to a sesison storage namespace
+  // merge, there will be a pending swap object while the merge is in
+  // progress. It retains all the data needed to do the merge, maintains
+  // throttles for the navigation in the target WebContents that needs to be
+  // delayed, and handles all conditions which would cancel a pending swap.
+  class PendingSwap : public content::WebContentsObserver {
+   public:
+    PendingSwap(PrerenderTracker* prerender_tracker,
+                content::WebContents* target_contents,
+                PrerenderData* prerender_data,
+                const GURL& url,
+                const base::Closure& timeout_cb,
+                const content::SessionStorageNamespace::MergeResultCallback&
+                merge_result_cb);
+    virtual ~PendingSwap();
+    const base::Closure& GetTimeoutCallback();
+    const content::SessionStorageNamespace::MergeResultCallback&
+    GetMergeResultCallback();
+
+    // content::WebContentsObserver implementation.
+    virtual void ProvisionalChangeToMainFrameUrl(
+        const GURL& url,
+        content::RenderViewHost* render_view_host) OVERRIDE;
+    virtual void DidCommitProvisionalLoadForFrame(
+        int64 frame_id,
+        const string16& frame_unique_name,
+        bool is_main_frame,
+        const GURL& validated_url,
+        content::PageTransition transition_type,
+        content::RenderViewHost* render_view_host) OVERRIDE;
+    virtual void RenderViewCreated(
+        content::RenderViewHost* render_view_host) OVERRIDE;
+    virtual void DidFailProvisionalLoad(
+        int64 frame_id,
+        const string16& frame_unique_name,
+        bool is_main_frame,
+        const GURL& validated_url,
+        int error_code,
+        const string16& error_description,
+        content::RenderViewHost* render_view_host) OVERRIDE;
+    virtual void WebContentsDestroyed(content::WebContents* web_contents)
+        OVERRIDE;
+
+    base::TimeDelta GetElapsedTime();
+    void SwapSuccessful();
+    const GURL& url() const { return url_; }
+    content::WebContents* target_contents() const { return target_contents_; }
+
+   private:
+    PrerenderTracker* prerender_tracker_;
+    content::WebContents* target_contents_;
+    PrerenderData* prerender_data_;
+    GURL url_;
+    base::CancelableClosure timeout_cb_;
+    base::CancelableCallback<
+      void(content::SessionStorageNamespace::MergeResult)> merge_result_cb_;
+    base::TimeTicks start_time_;
+    std::vector<PrerenderTracker::ChildRouteIdPair> rvh_ids_;
   };
 
   void SetPrerenderContentsFactory(
@@ -579,6 +655,24 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   void CookieChangedAnyCookiesLeftLookupResult(const std::string& domain_key,
                                                bool cookies_exist);
   void LoggedInPredictorDataReceived(scoped_ptr<LoggedInStateMap> new_map);
+
+  void ProcessMergeResult(PrerenderData* prerender_data,
+                          bool timed_out,
+                          content::SessionStorageNamespace::MergeResult result);
+
+  void RecordEvent(PrerenderEvent event) const;
+
+  // Swaps a prerender for |url| into the tab, replacing |web_contents|.
+  // Returns the new WebContents that was swapped in, or NULL if a swap-in
+  // was not possible. Optionally, a |swap_candidate| can be specified.
+  // Must be supplied if a merge has completed and we retry swap.
+  // That's because we must skip the check whether a PrerenderData object that
+  // could be swapped in is used for a pending merge, if the PrerenderData
+  // object being considered is the one for which the merge has just completed
+  // and which is intended to be swapped in.
+  content::WebContents* SwapInternal(const GURL& url,
+                                     content::WebContents* web_contents,
+                                     PrerenderData* swap_candidate);
 
   // The configuration.
   Config config_;

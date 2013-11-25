@@ -826,6 +826,21 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     NavigateToDestURLWithDisposition(CURRENT_TAB, true);
   }
 
+  void NavigateToDestURLInNewTab() const {
+    // First, open a new tab.
+    current_browser()->OpenURL(
+        content::OpenURLParams(GURL("chrome://blank"), Referrer(),
+                               NEW_FOREGROUND_TAB,
+                               content::PAGE_TRANSITION_TYPED, false));
+    // Next, navigate to the destination URL. The swap-in will not succeed,
+    // due to session storage namespace mismatch. The merge is only kicked off
+    // asynchronously.
+    NavigateToDestURLWithDisposition(CURRENT_TAB, false);
+    // Run the message loop, waiting for the merge to complete, the swapin to
+    // be reattempted, and to eventually succeed.
+    content::RunMessageLoop();
+  }
+
   // Opens the url in a new tab, with no opener.
   void NavigateToDestURLWithDisposition(
       WindowOpenDisposition disposition,
@@ -1086,8 +1101,7 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
 
   TestPrerenderContents* GetPrerenderContentsFor(const GURL& url) const {
     PrerenderManager::PrerenderData* prerender_data =
-        GetPrerenderManager()->FindPrerenderData(
-            url, GetSessionStorageNamespace());
+        GetPrerenderManager()->FindPrerenderData(url, NULL);
     return static_cast<TestPrerenderContents*>(
         prerender_data ? prerender_data->contents() : NULL);
   }
@@ -2455,21 +2469,23 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPrint) {
 }
 
 // Checks that if a page is opened in a new window by javascript and both the
-// pages are in the same domain, the prerendered page is not used.
+// pages are in the same domain, the prerendered page is not used, due to
+// window.opener.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderSameDomainWindowOpenerWindowOpen) {
   PrerenderTestURL("files/prerender/prerender_page.html",
-                   FINAL_STATUS_APP_TERMINATING,
+                   FINAL_STATUS_WINDOW_OPENER,
                    1);
   OpenDestURLViaWindowOpen();
 }
 
 // Checks that if a page is opened due to click on a href with target="_blank"
-// and both pages are in the same domain the prerendered page is not used.
+// and both pages are in the same domain the prerendered page is not used, due
+// to window.opener.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
                        PrerenderSameDomainWindowOpenerClickTarget) {
   PrerenderTestURL("files/prerender/prerender_page.html",
-                   FINAL_STATUS_APP_TERMINATING,
+                   FINAL_STATUS_WINDOW_OPENER,
                    1);
   OpenDestURLViaClickTarget();
 }
@@ -2789,14 +2805,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewWindow) {
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
-                   FINAL_STATUS_APP_TERMINATING,
+                   FINAL_STATUS_WINDOW_OPENER,
                    1);
   OpenDestURLViaClickNewWindow();
 }
 
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClickNewForegroundTab) {
   PrerenderTestURL("files/prerender/prerender_page_with_link.html",
-                   FINAL_STATUS_APP_TERMINATING,
+                   FINAL_STATUS_WINDOW_OPENER,
                    1);
   OpenDestURLViaClickNewForegroundTab();
 }
@@ -3311,6 +3327,13 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNewNavigationEntry) {
   PrerenderTestURL("files/prerender/prerender_new_entry.html",
                    FINAL_STATUS_NEW_NAVIGATION_ENTRY,
                    1);
+}
+
+// Attempt a swap-in in a new tab, verifying that session storage namespace
+// merging works.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageNewTab) {
+  PrerenderTestURL("files/prerender/prerender_page.html", FINAL_STATUS_USED, 1);
+  NavigateToDestURLInNewTab();
 }
 
 }  // namespace prerender
