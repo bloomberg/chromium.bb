@@ -126,15 +126,13 @@ class UI_EXPORT InputMethodIBus
 
   // chromeos::IBusInputContextHandlerInterface overrides:
   virtual void CommitText(const std::string& text) OVERRIDE;
-  virtual void ForwardKeyEvent(uint32 keyval,
-                               uint32 keycode,
-                               uint32 state) OVERRIDE;
-  virtual void ShowPreeditText() OVERRIDE;
-  virtual void HidePreeditText() OVERRIDE;
   virtual void UpdatePreeditText(const chromeos::IBusText& text,
                                  uint32 cursor_pos,
                                  bool visible) OVERRIDE;
   virtual void DeleteSurroundingText(int32 offset, uint32 length) OVERRIDE;
+
+  // Hides the composition text.
+  void HidePreeditText();
 
   // Callback function for IBusEngineHandlerInterface::ProcessKeyEvent.
   void ProcessKeyEventDone(uint32 id, ui::KeyEvent* key_event,

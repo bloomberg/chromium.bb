@@ -29,30 +29,15 @@ class UI_EXPORT MockIMEInputContextHandler
   virtual ~MockIMEInputContextHandler();
 
   virtual void CommitText(const std::string& text) OVERRIDE;
-  virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode,
-                               uint32 state) OVERRIDE;
   virtual void UpdatePreeditText(const IBusText& text,
                                  uint32 cursor_pos,
                                  bool visible) OVERRIDE;
-  virtual void ShowPreeditText() OVERRIDE;
-  virtual void HidePreeditText() OVERRIDE;
   virtual void DeleteSurroundingText(int32 offset, uint32 length) OVERRIDE;
 
   int commit_text_call_count() const { return commit_text_call_count_; }
-  int forward_key_event_call_count() const {
-    return forward_key_event_call_count_;
-  }
 
   int update_preedit_text_call_count() const {
     return update_preedit_text_call_count_;
-  }
-
-  int show_preedit_text_call_count() const {
-    return show_preedit_text_call_count_;
-  }
-
-  int hide_preedit_text_call_count() const {
-    return hide_preedit_text_call_count_;
   }
 
   int delete_surrounding_text_call_count() const {
@@ -76,10 +61,7 @@ class UI_EXPORT MockIMEInputContextHandler
 
  private:
   int commit_text_call_count_;
-  int forward_key_event_call_count_;
   int update_preedit_text_call_count_;
-  int show_preedit_text_call_count_;
-  int hide_preedit_text_call_count_;
   int delete_surrounding_text_call_count_;
   std::string last_commit_text_;
   UpdatePreeditTextArg last_update_preedit_arg_;

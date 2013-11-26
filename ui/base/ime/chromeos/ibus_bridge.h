@@ -38,19 +38,10 @@ class UI_EXPORT IBusInputContextHandlerInterface {
   // Called when the engine commit a text.
   virtual void CommitText(const std::string& text) = 0;
 
-  // Called when the engine forward a key event.
-  virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode, uint32 state) = 0;
-
   // Called when the engine update preedit stroing.
   virtual void UpdatePreeditText(const IBusText& text,
                                  uint32 cursor_pos,
                                  bool visible) = 0;
-
-  // Called when the engine request showing preedit string.
-  virtual void ShowPreeditText() = 0;
-
-  // Called when the engine request hiding preedit string.
-  virtual void HidePreeditText() = 0;
 
   // Called when the engine request deleting surrounding string.
   virtual void DeleteSurroundingText(int32 offset, uint32 length) = 0;

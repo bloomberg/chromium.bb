@@ -620,37 +620,6 @@ void InputMethodIBus::CommitText(const std::string& text) {
   }
 }
 
-void InputMethodIBus::ForwardKeyEvent(uint32 keyval,
-                                      uint32 keycode,
-                                      uint32 state) {
-  KeyboardCode ui_key_code = KeyboardCodeFromXKeysym(keyval);
-  if (!ui_key_code)
-    return;
-
-  const EventType event_type =
-      (state & kIBusReleaseMask) ? ET_KEY_RELEASED : ET_KEY_PRESSED;
-  const int event_flags = EventFlagsFromXState(state);
-
-  // It is not clear when the input method will forward us a fake key event.
-  // If there is a pending key event, then we may already received some input
-  // method results, so we dispatch this fake key event directly rather than
-  // calling ProcessKeyEventPostIME(), which will clear pending input method
-  // results.
-  if (event_type == ET_KEY_PRESSED) {
-    ProcessUnfilteredFabricatedKeyPressEvent(event_type, ui_key_code,
-                                             event_flags);
-  } else {
-    DispatchFabricatedKeyEventPostIME(event_type, ui_key_code, event_flags);
-  }
-}
-
-void InputMethodIBus::ShowPreeditText() {
-  if (suppress_next_result_ || IsTextInputTypeNone())
-    return;
-
-  composing_text_ = true;
-}
-
 void InputMethodIBus::UpdatePreeditText(const chromeos::IBusText& text,
                                         uint32 cursor_pos,
                                         bool visible) {

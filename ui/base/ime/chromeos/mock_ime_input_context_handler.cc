@@ -10,10 +10,7 @@ namespace chromeos {
 
 MockIMEInputContextHandler::MockIMEInputContextHandler()
     : commit_text_call_count_(0),
-      forward_key_event_call_count_(0),
       update_preedit_text_call_count_(0),
-      show_preedit_text_call_count_(0),
-      hide_preedit_text_call_count_(0),
       delete_surrounding_text_call_count_(0) {
 }
 
@@ -25,12 +22,6 @@ void MockIMEInputContextHandler::CommitText(const std::string& text) {
   last_commit_text_ = text;
 }
 
-void MockIMEInputContextHandler::ForwardKeyEvent(uint32 keyval,
-                                                 uint32 keycode,
-                                                 uint32 state) {
-  ++forward_key_event_call_count_;
-}
-
 void MockIMEInputContextHandler::UpdatePreeditText(const IBusText& text,
                                                    uint32 cursor_pos,
                                                    bool visible) {
@@ -38,14 +29,6 @@ void MockIMEInputContextHandler::UpdatePreeditText(const IBusText& text,
   last_update_preedit_arg_.ibus_text.CopyFrom(text);
   last_update_preedit_arg_.cursor_pos = cursor_pos;
   last_update_preedit_arg_.is_visible = visible;
-}
-
-void MockIMEInputContextHandler::ShowPreeditText() {
-  ++show_preedit_text_call_count_;
-}
-
-void MockIMEInputContextHandler::HidePreeditText() {
-  ++hide_preedit_text_call_count_;
 }
 
 void MockIMEInputContextHandler::DeleteSurroundingText(int32 offset,
@@ -57,10 +40,7 @@ void MockIMEInputContextHandler::DeleteSurroundingText(int32 offset,
 
 void MockIMEInputContextHandler::Reset() {
   commit_text_call_count_ = 0;
-  forward_key_event_call_count_ = 0;
   update_preedit_text_call_count_ = 0;
-  show_preedit_text_call_count_ = 0;
-  hide_preedit_text_call_count_ = 0;
   delete_surrounding_text_call_count_ = 0;
   last_commit_text_.clear();
 }
