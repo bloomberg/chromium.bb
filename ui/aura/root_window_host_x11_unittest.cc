@@ -116,35 +116,34 @@ TEST_F(RootWindowHostX11Test, DispatchTouchEventToOneRootWindow) {
   EXPECT_EQ(ui::ET_UNKNOWN, delegate->last_touch_type());
   EXPECT_EQ(-1, delegate->last_touch_id());
 
-  ui::ScopedXI2Event scoped_xevent;
 #if defined(OS_CHROMEOS)
   // This touch is out of bounds.
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchBegin, 5, gfx::Point(1500, 2500), valuators);
-  root_window_host->Dispatch(scoped_xevent);
+  ui::ScopedXI2Event event1(ui::CreateTouchEventForTest(
+      0, XI_TouchBegin, 5, gfx::Point(1500, 2500), valuators));
+  root_window_host->Dispatch(event1);
   EXPECT_EQ(ui::ET_UNKNOWN, delegate->last_touch_type());
   EXPECT_EQ(-1, delegate->last_touch_id());
   EXPECT_EQ(gfx::Point(0, 0), delegate->last_touch_location());
 #endif  // defined(OS_CHROMEOS)
 
   // Following touchs are within bounds and are passed to delegate.
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchBegin, 5, gfx::Point(1500, 1500), valuators);
-  root_window_host->Dispatch(scoped_xevent);
+  ui::ScopedXI2Event event2(ui::CreateTouchEventForTest(
+      0, XI_TouchBegin, 5, gfx::Point(1500, 1500), valuators));
+  root_window_host->Dispatch(event2);
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, delegate->last_touch_type());
   EXPECT_EQ(0, delegate->last_touch_id());
   EXPECT_EQ(gfx::Point(1500, 1500), delegate->last_touch_location());
 
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchUpdate, 5, gfx::Point(1500, 1600), valuators);
-  root_window_host->Dispatch(scoped_xevent);
+  ui::ScopedXI2Event event3(ui::CreateTouchEventForTest(
+      0, XI_TouchUpdate, 5, gfx::Point(1500, 1600), valuators));
+  root_window_host->Dispatch(event3);
   EXPECT_EQ(ui::ET_TOUCH_MOVED, delegate->last_touch_type());
   EXPECT_EQ(0, delegate->last_touch_id());
   EXPECT_EQ(gfx::Point(1500, 1600), delegate->last_touch_location());
 
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchEnd, 5, gfx::Point(1500, 1600), valuators);
-  root_window_host->Dispatch(scoped_xevent);
+  ui::ScopedXI2Event event4(ui::CreateTouchEventForTest(
+      0, XI_TouchEnd, 5, gfx::Point(1500, 1600), valuators));
+  root_window_host->Dispatch(event4);
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, delegate->last_touch_type());
   EXPECT_EQ(0, delegate->last_touch_id());
   EXPECT_EQ(gfx::Point(1500, 1600), delegate->last_touch_location());
@@ -191,11 +190,10 @@ TEST_F(RootWindowHostX11Test, DispatchTouchEventToTwoRootWindow) {
   EXPECT_EQ(-1, delegate2->last_touch_id());
 
   // 2 Touch events are targeted at the second RootWindowHost.
-  ui::ScopedXI2Event scoped_xevent;
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchBegin, 5, gfx::Point(1500, 2500), valuators);
-  root_window_host1->Dispatch(scoped_xevent);
-  root_window_host2->Dispatch(scoped_xevent);
+  ui::ScopedXI2Event touch1_begin(ui::CreateTouchEventForTest(
+      0, XI_TouchBegin, 5, gfx::Point(1500, 2500), valuators));
+  root_window_host1->Dispatch(touch1_begin);
+  root_window_host2->Dispatch(touch1_begin);
   EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
   EXPECT_EQ(-1, delegate1->last_touch_id());
   EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());
@@ -204,10 +202,10 @@ TEST_F(RootWindowHostX11Test, DispatchTouchEventToTwoRootWindow) {
   EXPECT_EQ(gfx::Point(1500, 2500 - host2_y_offset),
             delegate2->last_touch_location());
 
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchBegin, 6, gfx::Point(1600, 2600), valuators);
-  root_window_host1->Dispatch(scoped_xevent);
-  root_window_host2->Dispatch(scoped_xevent);
+  ui::ScopedXI2Event touch2_begin(ui::CreateTouchEventForTest(
+      0, XI_TouchBegin, 6, gfx::Point(1600, 2600), valuators));
+  root_window_host1->Dispatch(touch2_begin);
+  root_window_host2->Dispatch(touch2_begin);
   EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
   EXPECT_EQ(-1, delegate1->last_touch_id());
   EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());
@@ -216,10 +214,10 @@ TEST_F(RootWindowHostX11Test, DispatchTouchEventToTwoRootWindow) {
   EXPECT_EQ(gfx::Point(1600, 2600 - host2_y_offset),
             delegate2->last_touch_location());
 
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchUpdate, 5, gfx::Point(1500, 2550), valuators);
-  root_window_host1->Dispatch(scoped_xevent);
-  root_window_host2->Dispatch(scoped_xevent);
+  ui::ScopedXI2Event touch1_move(ui::CreateTouchEventForTest(
+      0, XI_TouchUpdate, 5, gfx::Point(1500, 2550), valuators));
+  root_window_host1->Dispatch(touch1_move);
+  root_window_host2->Dispatch(touch1_move);
   EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
   EXPECT_EQ(-1, delegate1->last_touch_id());
   EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());
@@ -228,10 +226,10 @@ TEST_F(RootWindowHostX11Test, DispatchTouchEventToTwoRootWindow) {
   EXPECT_EQ(gfx::Point(1500, 2550 - host2_y_offset),
             delegate2->last_touch_location());
 
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchUpdate, 6, gfx::Point(1600, 2650), valuators);
-  root_window_host1->Dispatch(scoped_xevent);
-  root_window_host2->Dispatch(scoped_xevent);
+  ui::ScopedXI2Event touch2_move(ui::CreateTouchEventForTest(
+      0, XI_TouchUpdate, 6, gfx::Point(1600, 2650), valuators));
+  root_window_host1->Dispatch(touch2_move);
+  root_window_host2->Dispatch(touch2_move);
   EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
   EXPECT_EQ(-1, delegate1->last_touch_id());
   EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());
@@ -240,10 +238,10 @@ TEST_F(RootWindowHostX11Test, DispatchTouchEventToTwoRootWindow) {
   EXPECT_EQ(gfx::Point(1600, 2650 - host2_y_offset),
             delegate2->last_touch_location());
 
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchEnd, 5, gfx::Point(1500, 2550), valuators);
-  root_window_host1->Dispatch(scoped_xevent);
-  root_window_host2->Dispatch(scoped_xevent);
+  ui::ScopedXI2Event touch1_end(ui::CreateTouchEventForTest(
+      0, XI_TouchEnd, 5, gfx::Point(1500, 2550), valuators));
+  root_window_host1->Dispatch(touch1_end);
+  root_window_host2->Dispatch(touch1_end);
   EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
   EXPECT_EQ(-1, delegate1->last_touch_id());
   EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());
@@ -252,10 +250,10 @@ TEST_F(RootWindowHostX11Test, DispatchTouchEventToTwoRootWindow) {
   EXPECT_EQ(gfx::Point(1500, 2550 - host2_y_offset),
             delegate2->last_touch_location());
 
-  scoped_xevent.InitTouchEvent(
-      0, XI_TouchEnd, 6, gfx::Point(1600, 2650), valuators);
-  root_window_host1->Dispatch(scoped_xevent);
-  root_window_host2->Dispatch(scoped_xevent);
+  ui::ScopedXI2Event touch2_end(ui::CreateTouchEventForTest(
+      0, XI_TouchEnd, 6, gfx::Point(1600, 2650), valuators));
+  root_window_host1->Dispatch(touch2_end);
+  root_window_host2->Dispatch(touch2_end);
   EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
   EXPECT_EQ(-1, delegate1->last_touch_id());
   EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());

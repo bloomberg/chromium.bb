@@ -194,25 +194,30 @@ class RenderViewImplTest : public RenderViewTest {
     CHECK(output);
     const int flags = ConvertMockKeyboardModifier(modifiers);
 
-    ui::ScopedXI2Event xevent;
-    xevent.InitKeyEvent(ui::ET_KEY_PRESSED,
-                        static_cast<ui::KeyboardCode>(key_code),
-                        flags);
-    ui::KeyEvent event1(xevent, false);
+    XEvent xevent1;
+    InitXKeyEventForTesting(ui::ET_KEY_PRESSED,
+                            static_cast<ui::KeyboardCode>(key_code),
+                            flags,
+                            &xevent1);
+    ui::KeyEvent event1(&xevent1, false);
     NativeWebKeyboardEvent keydown_event(&event1);
     SendNativeKeyEvent(keydown_event);
 
-    xevent.InitKeyEvent(ui::ET_KEY_PRESSED,
-                        static_cast<ui::KeyboardCode>(key_code),
-                        flags);
-    ui::KeyEvent event2(xevent, true);
+    XEvent xevent2;
+    InitXKeyEventForTesting(ui::ET_KEY_PRESSED,
+                            static_cast<ui::KeyboardCode>(key_code),
+                            flags,
+                            &xevent2);
+    ui::KeyEvent event2(&xevent2, true);
     NativeWebKeyboardEvent char_event(&event2);
     SendNativeKeyEvent(char_event);
 
-    xevent.InitKeyEvent(ui::ET_KEY_RELEASED,
-                        static_cast<ui::KeyboardCode>(key_code),
-                        flags);
-    ui::KeyEvent event3(xevent, false);
+    XEvent xevent3;
+    InitXKeyEventForTesting(ui::ET_KEY_RELEASED,
+                            static_cast<ui::KeyboardCode>(key_code),
+                            flags,
+                            &xevent3);
+    ui::KeyEvent event3(&xevent3, false);
     NativeWebKeyboardEvent keyup_event(&event3);
     SendNativeKeyEvent(keyup_event);
 

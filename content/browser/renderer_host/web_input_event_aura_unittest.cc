@@ -21,19 +21,25 @@ namespace content {
 // crbug.com/127142
 TEST(WebInputEventAuraTest, TestMakeWebKeyboardEvent) {
 #if defined(USE_X11)
-  ui::ScopedXI2Event xev;
+  XEvent xev;
   {
     // Press Ctrl.
-    xev.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, 0);
-    ui::KeyEvent event(xev, false /* is_char */);
+    ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED,
+                                ui::VKEY_CONTROL,
+                                0,  // X does not set ControlMask for KeyPress.
+                                &xev);
+    ui::KeyEvent event(&xev, false /* is_char */);
     blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(&event);
     // However, modifier bit for Control in |webkit_event| should be set.
     EXPECT_EQ(webkit_event.modifiers, blink::WebInputEvent::ControlKey);
   }
   {
     // Release Ctrl.
-    xev.InitKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_CONTROL, ControlMask);
-    ui::KeyEvent event(xev, false /* is_char */);
+    ui::InitXKeyEventForTesting(ui::ET_KEY_RELEASED,
+                                ui::VKEY_CONTROL,
+                                ControlMask,  // X sets the mask for KeyRelease.
+                                &xev);
+    ui::KeyEvent event(&xev, false /* is_char */);
     blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(&event);
     // However, modifier bit for Control in |webkit_event| shouldn't be set.
     EXPECT_EQ(webkit_event.modifiers, 0);
@@ -44,23 +50,27 @@ TEST(WebInputEventAuraTest, TestMakeWebKeyboardEvent) {
 // Checks that MakeWebKeyboardEvent returns a correct windowsKeyCode.
 TEST(WebInputEventAuraTest, TestMakeWebKeyboardEventWindowsKeyCode) {
 #if defined(USE_X11)
-  ui::ScopedXI2Event xev;
+  XEvent xev;
   {
     // Press left Ctrl.
-    xev.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, 0);
-    XEvent* xevent = xev;
-    xevent->xkey.keycode = XKeysymToKeycode(gfx::GetXDisplay(), XK_Control_L);
-    ui::KeyEvent event(xev, false /* is_char */);
+    ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED,
+                                ui::VKEY_CONTROL,
+                                0,  // X does not set ControlMask for KeyPress.
+                                &xev);
+    xev.xkey.keycode = XKeysymToKeycode(gfx::GetXDisplay(), XK_Control_L);
+    ui::KeyEvent event(&xev, false /* is_char */);
     blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(&event);
     // ui::VKEY_LCONTROL, instead of ui::VKEY_CONTROL, should be filled.
     EXPECT_EQ(ui::VKEY_LCONTROL, webkit_event.windowsKeyCode);
   }
   {
     // Press right Ctrl.
-    xev.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, 0);
-    XEvent* xevent = xev;
-    xevent->xkey.keycode = XKeysymToKeycode(gfx::GetXDisplay(), XK_Control_R);
-    ui::KeyEvent event(xev, false /* is_char */);
+    ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED,
+                                ui::VKEY_CONTROL,
+                                0,  // X does not set ControlMask for KeyPress.
+                                &xev);
+    xev.xkey.keycode = XKeysymToKeycode(gfx::GetXDisplay(), XK_Control_R);
+    ui::KeyEvent event(&xev, false /* is_char */);
     blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEvent(&event);
     // ui::VKEY_RCONTROL, instead of ui::VKEY_CONTROL, should be filled.
     EXPECT_EQ(ui::VKEY_RCONTROL, webkit_event.windowsKeyCode);

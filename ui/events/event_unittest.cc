@@ -26,9 +26,9 @@ TEST(EventTest, NativeEvent) {
   KeyEvent keyev(native_event, false);
   EXPECT_TRUE(keyev.HasNativeEvent());
 #elif defined(USE_X11)
-  ScopedXI2Event event;
-  event.InitKeyEvent(ET_KEY_RELEASED, VKEY_A, 0);
-  KeyEvent keyev(event, false);
+  scoped_ptr<XEvent> native_event(new XEvent);
+  InitXKeyEventForTesting(ET_KEY_RELEASED, VKEY_A, 0, native_event.get());
+  KeyEvent keyev(native_event.get(), false);
   EXPECT_TRUE(keyev.HasNativeEvent());
 #endif
 }
@@ -43,13 +43,15 @@ TEST(EventTest, GetCharacter) {
 
 #if defined(USE_X11)
   // For X11, test the functions with native_event() as well. crbug.com/107837
-  ScopedXI2Event event;
-  event.InitKeyEvent(ET_KEY_PRESSED, VKEY_RETURN, EF_CONTROL_DOWN);
-  KeyEvent keyev3(event, false);
+  scoped_ptr<XEvent> native_event(new XEvent);
+
+  InitXKeyEventForTesting(ET_KEY_PRESSED, VKEY_RETURN, EF_CONTROL_DOWN,
+                          native_event.get());
+  KeyEvent keyev3(native_event.get(), false);
   EXPECT_EQ(10, keyev3.GetCharacter());
 
-  event.InitKeyEvent(ET_KEY_PRESSED, VKEY_RETURN, 0);
-  KeyEvent keyev4(event, false);
+  InitXKeyEventForTesting(ET_KEY_PRESSED, VKEY_RETURN, 0, native_event.get());
+  KeyEvent keyev4(native_event.get(), false);
   EXPECT_EQ(13, keyev4.GetCharacter());
 #endif
 }
@@ -193,35 +195,46 @@ TEST(EventTest, KeyEventDirectUnicode) {
 TEST(EventTest, NormalizeKeyEventFlags) {
 #if defined(USE_X11)
   // Normalize flags when KeyEvent is created from XEvent.
-  ScopedXI2Event event;
   {
-    event.InitKeyEvent(ET_KEY_PRESSED, VKEY_SHIFT, EF_SHIFT_DOWN);
-    KeyEvent keyev(event, false);
+    scoped_ptr<XEvent> native_event(new XEvent);
+    InitXKeyEventForTesting(ET_KEY_PRESSED, VKEY_SHIFT, EF_SHIFT_DOWN,
+                            native_event.get());
+    KeyEvent keyev(native_event.get(), false);
     EXPECT_EQ(EF_SHIFT_DOWN, keyev.flags());
   }
   {
-    event.InitKeyEvent(ET_KEY_RELEASED, VKEY_SHIFT, EF_SHIFT_DOWN);
-    KeyEvent keyev(event, false);
+    scoped_ptr<XEvent> native_event(new XEvent);
+    InitXKeyEventForTesting(ET_KEY_RELEASED, VKEY_SHIFT, EF_SHIFT_DOWN,
+                            native_event.get());
+    KeyEvent keyev(native_event.get(), false);
     EXPECT_EQ(EF_NONE, keyev.flags());
   }
   {
-    event.InitKeyEvent(ET_KEY_PRESSED, VKEY_CONTROL, EF_CONTROL_DOWN);
-    KeyEvent keyev(event, false);
+    scoped_ptr<XEvent> native_event(new XEvent);
+    InitXKeyEventForTesting(ET_KEY_PRESSED, VKEY_CONTROL, EF_CONTROL_DOWN,
+                            native_event.get());
+    KeyEvent keyev(native_event.get(), false);
     EXPECT_EQ(EF_CONTROL_DOWN, keyev.flags());
   }
   {
-    event.InitKeyEvent(ET_KEY_RELEASED, VKEY_CONTROL, EF_CONTROL_DOWN);
-    KeyEvent keyev(event, false);
+    scoped_ptr<XEvent> native_event(new XEvent);
+    InitXKeyEventForTesting(ET_KEY_RELEASED, VKEY_CONTROL, EF_CONTROL_DOWN,
+                            native_event.get());
+    KeyEvent keyev(native_event.get(), false);
     EXPECT_EQ(EF_NONE, keyev.flags());
   }
   {
-    event.InitKeyEvent(ET_KEY_PRESSED, VKEY_MENU,  EF_ALT_DOWN);
-    KeyEvent keyev(event, false);
+    scoped_ptr<XEvent> native_event(new XEvent);
+    InitXKeyEventForTesting(ET_KEY_PRESSED, VKEY_MENU,  EF_ALT_DOWN,
+                            native_event.get());
+    KeyEvent keyev(native_event.get(), false);
     EXPECT_EQ(EF_ALT_DOWN, keyev.flags());
   }
   {
-    event.InitKeyEvent(ET_KEY_RELEASED, VKEY_MENU, EF_ALT_DOWN);
-    KeyEvent keyev(event, false);
+    scoped_ptr<XEvent> native_event(new XEvent);
+    InitXKeyEventForTesting(ET_KEY_RELEASED, VKEY_MENU, EF_ALT_DOWN,
+                            native_event.get());
+    KeyEvent keyev(native_event.get(), false);
     EXPECT_EQ(EF_NONE, keyev.flags());
   }
 #endif

@@ -365,9 +365,10 @@ void ForwardKeyEvent(content::RenderViewHost* host, ui::KeyboardCode key_code) {
 #if defined(OS_WIN)
   MSG native_key_event = { NULL, WM_KEYDOWN, key_code, 0 };
 #elif defined(USE_X11)
-  ui::ScopedXI2Event x_event;
-  x_event.InitKeyEvent(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE);
-  XEvent* native_key_event = x_event;
+  XEvent x_event;
+  ui::InitXKeyEventForTesting(
+      ui::ET_KEY_PRESSED, key_code, ui::EF_NONE, &x_event);
+  XEvent* native_key_event = &x_event;
 #endif
 
 #if defined(USE_AURA)

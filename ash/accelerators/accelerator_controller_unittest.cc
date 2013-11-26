@@ -665,18 +665,24 @@ TEST_F(AcceleratorControllerTest, MAYBE_ProcessOnce) {
   EXPECT_FALSE(dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(
       &key_event3));
 #elif defined(USE_X11)
-  ui::ScopedXI2Event key_event;
-  key_event.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
-  ui::TranslatedKeyEvent key_event1(key_event, false);
+  XEvent key_event;
+  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED,
+                              ui::VKEY_A,
+                              0,
+                              &key_event);
+  ui::TranslatedKeyEvent key_event1(&key_event, false);
   EXPECT_TRUE(dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(
       &key_event1));
 
-  ui::TranslatedKeyEvent key_event2(key_event, true);
+  ui::TranslatedKeyEvent key_event2(&key_event, true);
   EXPECT_FALSE(dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(
       &key_event2));
 
-  key_event.InitKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_A, 0);
-  ui::TranslatedKeyEvent key_event3(key_event, false);
+  ui::InitXKeyEventForTesting(ui::ET_KEY_RELEASED,
+                              ui::VKEY_A,
+                              0,
+                              &key_event);
+  ui::TranslatedKeyEvent key_event3(&key_event, false);
   EXPECT_FALSE(dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(
       &key_event3));
 #endif
