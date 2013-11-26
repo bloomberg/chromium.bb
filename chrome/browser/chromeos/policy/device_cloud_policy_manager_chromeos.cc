@@ -20,6 +20,9 @@
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/system/statistics_provider.h"
+#include "content/public/browser/browser_thread.h"
+
+using content::BrowserThread;
 
 namespace em = enterprise_management;
 
@@ -88,7 +91,9 @@ DeviceCloudPolicyManagerChromeOS::DeviceCloudPolicyManagerChromeOS(
           PolicyNamespaceKey(dm_protocol::kChromeDevicePolicyType,
                              std::string()),
           store.get(),
-          task_runner),
+          task_runner,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO)),
       device_store_(store.Pass()),
       background_task_runner_(background_task_runner),
       install_attributes_(install_attributes),

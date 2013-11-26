@@ -3243,6 +3243,7 @@
             '../third_party/libusb/libusb.gyp:libusb',
           ],
           'sources': [
+            'browser/policy/cloud/component_cloud_policy_service_stub.cc',
             'browser/sessions/in_memory_tab_restore_service.cc',
             'browser/sessions/in_memory_tab_restore_service.h',
             'browser/signin/android_profile_oauth2_token_service.cc',
@@ -3274,7 +3275,6 @@
             'browser/policy/async_policy_provider.cc',
             'browser/policy/async_policy_provider.h',
             'browser/policy/cloud/component_cloud_policy_service.cc',
-            'browser/policy/cloud/component_cloud_policy_service.h',
             'browser/policy/cloud/component_cloud_policy_store.cc',
             'browser/policy/cloud/component_cloud_policy_store.h',
             'browser/policy/cloud/component_cloud_policy_updater.cc',

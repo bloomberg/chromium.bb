@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
@@ -16,6 +17,19 @@
 #include "content/public/browser/browser_context.h"
 
 namespace policy {
+
+namespace {
+
+// Directory inside the profile directory where policy-related resources are
+// stored.
+const base::FilePath::CharType kPolicy[] = FILE_PATH_LITERAL("Policy");
+
+// Directory under kPolicy, in the user's profile dir, where policy for
+// components is cached.
+const base::FilePath::CharType kComponentsDir[] =
+    FILE_PATH_LITERAL("Components");
+
+}  // namespace
 
 // static
 UserCloudPolicyManagerFactory* UserCloudPolicyManagerFactory::GetInstance() {
@@ -33,9 +47,15 @@ scoped_ptr<UserCloudPolicyManager>
 UserCloudPolicyManagerFactory::CreateForOriginalBrowserContext(
     content::BrowserContext* context,
     bool force_immediate_load,
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
+    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
   return GetInstance()->CreateManagerForOriginalBrowserContext(
-      context, force_immediate_load, background_task_runner);
+      context,
+      force_immediate_load,
+      background_task_runner,
+      file_task_runner,
+      io_task_runner);
 }
 
 // static
@@ -70,17 +90,27 @@ scoped_ptr<UserCloudPolicyManager>
 UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
     content::BrowserContext* context,
     bool force_immediate_load,
-    scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
+    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
   DCHECK(!context->IsOffTheRecord());
+
   scoped_ptr<UserCloudPolicyStore> store(
       UserCloudPolicyStore::Create(context->GetPath(), background_task_runner));
   if (force_immediate_load)
     store->LoadImmediately();
+
+  const base::FilePath component_policy_cache_dir =
+      context->GetPath().Append(kPolicy).Append(kComponentsDir);
+
   scoped_ptr<UserCloudPolicyManager> manager(
       new UserCloudPolicyManager(context,
                                  store.Pass(),
+                                 component_policy_cache_dir,
                                  scoped_ptr<CloudExternalDataManager>(),
-                                 base::MessageLoopProxy::current()));
+                                 base::MessageLoopProxy::current(),
+                                 file_task_runner,
+                                 io_task_runner));
   manager->Init(SchemaRegistryServiceFactory::GetForContext(context));
   return manager.Pass();
 }

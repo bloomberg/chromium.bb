@@ -765,7 +765,10 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       dmtoken_chars.append(random.choice('0123456789abcdef'))
     dmtoken = ''.join(dmtoken_chars)
     allowed_policy_types = {
-      dm.DeviceRegisterRequest.BROWSER: ['google/chrome/user'],
+      dm.DeviceRegisterRequest.BROWSER: [
+          'google/chrome/user',
+          'google/chrome/extension'
+      ],
       dm.DeviceRegisterRequest.USER: [
           'google/chromeos/user',
           'google/chrome/extension'
@@ -909,7 +912,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     """
     base_url = self.server_base_url
     if base_url is None:
-      base_url = 'http://%s:%s' % (self.server_name, self.server_port)
+      base_url = 'http://%s:%s' % self.server_address[:2]
 
     return base_url
 

@@ -54,10 +54,18 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
   //
   // If |force_immediate_load| is true, policy is loaded synchronously from
   // UserCloudPolicyStore at startup.
+  //
+  // |background_task_runner| is used for the cloud policy store.
+  // |file_task_runner| is used for file operations. Currently this must be the
+  // FILE BrowserThread.
+  // |io_task_runner| is used for network IO. Currently this must be the IO
+  // BrowserThread.
   static scoped_ptr<UserCloudPolicyManager> CreateForOriginalBrowserContext(
       content::BrowserContext* context,
       bool force_immediate_load,
-      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
 
   static UserCloudPolicyManager* RegisterForOffTheRecordBrowserContext(
       content::BrowserContext* original_context,
@@ -77,7 +85,9 @@ class UserCloudPolicyManagerFactory : public BrowserContextKeyedBaseFactory {
   scoped_ptr<UserCloudPolicyManager> CreateManagerForOriginalBrowserContext(
       content::BrowserContext* context,
       bool force_immediate_load,
-      scoped_refptr<base::SequencedTaskRunner> background_task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
 
   UserCloudPolicyManager* RegisterManagerForOffTheRecordBrowserContext(
       content::BrowserContext* original_context,

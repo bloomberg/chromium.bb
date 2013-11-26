@@ -78,6 +78,8 @@ ConfigurationPolicyProvider* TestHarness::CreateProvider(
   ConfigurationPolicyProvider* provider = new CloudPolicyManager(
       PolicyNamespaceKey(dm_protocol::kChromeUserPolicyType, std::string()),
       &store_,
+      task_runner,
+      task_runner,
       task_runner);
   Mock::VerifyAndClearExpectations(&store_);
   return provider;
@@ -142,6 +144,8 @@ class TestCloudPolicyManager : public CloudPolicyManager {
                                dm_protocol::kChromeUserPolicyType,
                                std::string()),
                            store,
+                           task_runner,
+                           task_runner,
                            task_runner) {}
   virtual ~TestCloudPolicyManager() {}
 

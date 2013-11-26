@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
@@ -26,6 +27,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/policy/core/common/schema_registry.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -163,8 +165,12 @@ class UserPolicySigninServiceTest : public testing::Test {
     manager_.reset(new UserCloudPolicyManager(
         profile_.get(),
         scoped_ptr<UserCloudPolicyStore>(mock_store_),
+        base::FilePath(),
         scoped_ptr<CloudExternalDataManager>(),
+        base::MessageLoopProxy::current(),
+        base::MessageLoopProxy::current(),
         base::MessageLoopProxy::current()));
+    manager_->Init(&schema_registry_);
 
     AddProfile();
 
@@ -320,6 +326,7 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   scoped_ptr<TestingProfile> profile_;
   MockUserCloudPolicyStore* mock_store_;  // Not owned.
+  SchemaRegistry schema_registry_;
   scoped_ptr<UserCloudPolicyManager> manager_;
 
   // BrowserPolicyConnector and UrlFetcherFactory want to initialize and free

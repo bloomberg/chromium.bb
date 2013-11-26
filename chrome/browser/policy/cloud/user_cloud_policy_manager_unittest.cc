@@ -52,7 +52,10 @@ class UserCloudPolicyManagerTest : public testing::Test {
     manager_.reset(new UserCloudPolicyManager(
         NULL,
         scoped_ptr<UserCloudPolicyStore>(store_),
+        base::FilePath(),
         scoped_ptr<CloudExternalDataManager>(),
+        loop_.message_loop_proxy(),
+        loop_.message_loop_proxy(),
         loop_.message_loop_proxy()));
     manager_->Init(&schema_registry_);
     manager_->AddObserver(&observer_);

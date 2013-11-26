@@ -34,7 +34,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
-#include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_switches.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
@@ -67,7 +66,6 @@ const char kTestPolicy[] =
     "  }"
     "}";
 
-#if defined(OS_CHROMEOS)
 const char kTestExtension2[] = "behllobkkfkfnphdnhnkndlbkcpglgmj";
 const base::FilePath::CharType kTestExtension2Path[] =
     FILE_PATH_LITERAL("extensions/managed_extension2");
@@ -82,7 +80,6 @@ const char kTestPolicy2[] =
     "}";
 
 const char kTestPolicy2JSON[] = "{\"Another\":\"turn_it_off\"}";
-#endif  // defined(OS_CHROMEOS)
 
 class ComponentCloudPolicyTest : public ExtensionBrowserTest {
  protected:
@@ -201,9 +198,6 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
   scoped_ptr<ExtensionTestMessageListener> event_listener_;
 };
 
-// TODO(joaodasilva): enable these for other platforms once ready.
-#if defined(OS_CHROMEOS)
-
 IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, FetchExtensionPolicy) {
   // Read the initial policy.
   ExtensionTestMessageListener policy_listener(kTestPolicyJSON, true);
@@ -253,7 +247,5 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, InstallNewExtension) {
   // and after verifying it has the expected value. Otherwise it sends 'fail'.
   EXPECT_TRUE(result_listener.WaitUntilSatisfied());
 }
-
-#endif  // OS_CHROMEOS
 
 }  // namespace policy

@@ -23,14 +23,20 @@ namespace policy {
 UserCloudPolicyManager::UserCloudPolicyManager(
     content::BrowserContext* context,
     scoped_ptr<UserCloudPolicyStore> store,
+    const base::FilePath& component_policy_cache_path,
     scoped_ptr<CloudExternalDataManager> external_data_manager,
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
+    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
     : CloudPolicyManager(
           PolicyNamespaceKey(GetChromeUserPolicyType(), std::string()),
           store.get(),
-          task_runner),
+          task_runner,
+          file_task_runner,
+          io_task_runner),
       context_(context),
       store_(store.Pass()),
+      component_policy_cache_path_(component_policy_cache_path),
       external_data_manager_(external_data_manager.Pass()) {
   UserCloudPolicyManagerFactory::GetInstance()->Register(context_, this);
 }
@@ -60,6 +66,8 @@ void UserCloudPolicyManager::Connect(
                                 policy_prefs::kUserPolicyRefreshRate);
   if (external_data_manager_)
     external_data_manager_->Connect(request_context);
+  CreateComponentCloudPolicyService(component_policy_cache_path_,
+                                    request_context);
 }
 
 // static

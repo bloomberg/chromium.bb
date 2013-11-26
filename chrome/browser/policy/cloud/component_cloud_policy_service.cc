@@ -224,6 +224,7 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
       backend_task_runner_(backend_task_runner),
       io_task_runner_(io_task_runner),
       current_schema_map_(new SchemaMap),
+      started_loading_initial_policy_(false),
       loaded_initial_policy_(false),
       is_registered_for_cloud_policy_(false),
       weak_ptr_factory_(this) {
@@ -421,19 +422,23 @@ void ComponentCloudPolicyService::OnClientError(CloudPolicyClient* client) {
 
 void ComponentCloudPolicyService::InitializeIfReady() {
   DCHECK(CalledOnValidThread());
-  if (!schema_registry_->IsReady() || !core_->store()->is_initialized())
+  if (started_loading_initial_policy_ || !schema_registry_->IsReady() ||
+      !core_->store()->is_initialized()) {
     return;
+  }
   // The initial list of components is ready. Initialize the backend now, which
   // will call back to OnBackendInitialized.
   backend_task_runner_->PostTask(FROM_HERE,
                                  base::Bind(&Backend::Init,
                                             base::Unretained(backend_.get()),
                                             schema_registry_->schema_map()));
+  started_loading_initial_policy_ = true;
 }
 
 void ComponentCloudPolicyService::OnBackendInitialized(
     scoped_ptr<PolicyBundle> initial_policy) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!loaded_initial_policy_);
 
   loaded_initial_policy_ = true;
 

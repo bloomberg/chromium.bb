@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/cloud/cloud_policy_manager.h"
@@ -40,11 +41,18 @@ class UserCloudPolicyManager : public CloudPolicyManager,
                                public BrowserContextKeyedService {
  public:
   // |task_runner| is the runner for policy refresh tasks.
+  // |file_task_runner| is used for file operations. Currently this must be
+  // the FILE BrowserThread.
+  // |io_task_runner| is used for network IO. Currently this must be the IO
+  // BrowserThread.
   UserCloudPolicyManager(
       content::BrowserContext* context,
       scoped_ptr<UserCloudPolicyStore> store,
+      const base::FilePath& component_policy_cache_path,
       scoped_ptr<CloudExternalDataManager> external_data_manager,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
   virtual ~UserCloudPolicyManager();
 
   virtual void Shutdown() OVERRIDE;
@@ -82,6 +90,9 @@ class UserCloudPolicyManager : public CloudPolicyManager,
   // Typed pointer to the store owned by UserCloudPolicyManager. Note that
   // CloudPolicyManager only keeps a plain CloudPolicyStore pointer.
   scoped_ptr<UserCloudPolicyStore> store_;
+
+  // Path where policy for components will be cached.
+  base::FilePath component_policy_cache_path_;
 
   // Manages external data referenced by policies.
   scoped_ptr<CloudExternalDataManager> external_data_manager_;

@@ -16,8 +16,7 @@ const char kCloudPolicyInvalidationDelay[]  = "cloud-policy-invalidation-delay";
 // Disables pushing cloud policy to Chrome using an invalidation service.
 const char kDisableCloudPolicyPush[]        = "disable-cloud-policy-push";
 
-// Enables fetching and storing cloud policy for components. This currently
-// supports policy for extensions on Chrome OS.
+// Enables fetching and storing cloud policy for components.
 const char kEnableComponentCloudPolicy[]    = "enable-component-cloud-policy";
 
 #if defined(OS_ANDROID) || defined(OS_IOS)

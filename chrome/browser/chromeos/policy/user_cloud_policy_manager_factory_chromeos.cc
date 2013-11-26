@@ -42,15 +42,20 @@ namespace {
 // Subdirectory in the user's profile for storing legacy user policies.
 const base::FilePath::CharType kDeviceManagementDir[] =
     FILE_PATH_LITERAL("Device Management");
+
 // File in the above directory for storing legacy user policy dmtokens.
 const base::FilePath::CharType kToken[] = FILE_PATH_LITERAL("Token");
+
 // This constant is used to build two different paths. It can be a file inside
 // kDeviceManagementDir where legacy user policy data is stored, and it can be
 // a directory inside the profile directory where other resources are stored.
 const base::FilePath::CharType kPolicy[] = FILE_PATH_LITERAL("Policy");
-// Directory under kPolicy, in the user's profile dir, where external policy
-// resources are stored.
-const base::FilePath::CharType kResourceDir[] = FILE_PATH_LITERAL("Resources");
+
+// Directory under kPolicy, in the user's profile dir, where policy for
+// components is cached.
+const base::FilePath::CharType kComponentsDir[] =
+    FILE_PATH_LITERAL("Components");
+
 // Directory in which to store external policy data. This is specified relative
 // to kPolicy.
 const base::FilePath::CharType kPolicyExternalDataDir[] =
@@ -151,8 +156,8 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   const base::FilePath legacy_dir = profile_dir.Append(kDeviceManagementDir);
   const base::FilePath policy_cache_file = legacy_dir.Append(kPolicy);
   const base::FilePath token_cache_file = legacy_dir.Append(kToken);
-  const base::FilePath resource_cache_dir =
-      profile_dir.Append(kPolicy).Append(kResourceDir);
+  const base::FilePath component_policy_cache_dir =
+      profile_dir.Append(kPolicy).Append(kComponentsDir);
   const base::FilePath external_data_dir =
         profile_dir.Append(kPolicy).Append(kPolicyExternalDataDir);
   base::FilePath policy_key_dir;
@@ -180,14 +185,20 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
   if (force_immediate_load)
     store->LoadImmediately();
 
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner =
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::FILE);
+
   scoped_ptr<UserCloudPolicyManagerChromeOS> manager(
       new UserCloudPolicyManagerChromeOS(
           store.PassAs<CloudPolicyStore>(),
           external_data_manager.Pass(),
-          base::MessageLoopProxy::current(),
-          resource_cache_dir,
+          component_policy_cache_dir,
           wait_for_initial_policy,
-          base::TimeDelta::FromSeconds(kInitialPolicyFetchTimeoutSeconds)));
+          base::TimeDelta::FromSeconds(kInitialPolicyFetchTimeoutSeconds),
+          base::MessageLoopProxy::current(),
+          file_task_runner,
+          io_task_runner));
   manager->Init(SchemaRegistryServiceFactory::GetForContext(profile));
   manager->Connect(g_browser_process->local_state(),
                    device_management_service,

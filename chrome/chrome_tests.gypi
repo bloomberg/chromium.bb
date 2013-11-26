@@ -1930,6 +1930,11 @@
             'common/time_format_browsertest.cc',
           ],
         }],
+        ['OS=="android"', {
+          'sources!': [
+            'browser/policy/cloud/component_cloud_policy_browsertest.cc',
+          ],
+        }],
         ['os_posix == 1 and OS != "mac" and OS != "android"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {

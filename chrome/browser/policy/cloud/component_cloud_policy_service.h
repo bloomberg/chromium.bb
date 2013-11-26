@@ -74,7 +74,9 @@ class ComponentCloudPolicyService : public CloudPolicyClient::Observer,
       Delegate* delegate,
       SchemaRegistry* schema_registry,
       CloudPolicyCore* core,
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
       scoped_ptr<ResourceCache> cache,
+#endif
       scoped_refptr<net::URLRequestContextGetter> request_context,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner);
@@ -109,6 +111,7 @@ class ComponentCloudPolicyService : public CloudPolicyClient::Observer,
   virtual void OnClientError(CloudPolicyClient* client) OVERRIDE;
 
  private:
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
   class Backend;
 
   void InitializeIfReady();
@@ -141,9 +144,15 @@ class ComponentCloudPolicyService : public CloudPolicyClient::Observer,
   // determine which components changed when a new SchemaMap becomes
   // available.
   scoped_refptr<SchemaMap> current_schema_map_;
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
   // Contains all the current policies for components.
   PolicyBundle policy_;
+
+  // Whether the backend has started initializing asynchronously. Used to
+  // prevent double initialization, since both OnSchemaRegistryUpdated() and
+  // OnStoreLoaded() can happen while the backend is initializing.
+  bool started_loading_initial_policy_;
 
   // Whether the backend has been initialized with the initial credentials and
   // schemas, and this provider is serving the initial policies loaded from the

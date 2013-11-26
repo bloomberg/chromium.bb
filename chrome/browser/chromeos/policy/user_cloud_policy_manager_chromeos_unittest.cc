@@ -158,10 +158,12 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     manager_.reset(new UserCloudPolicyManagerChromeOS(
         scoped_ptr<CloudPolicyStore>(store_),
         scoped_ptr<CloudExternalDataManager>(external_data_manager_),
-        task_runner_,
         base::FilePath(),
         wait_for_fetch,
-        base::TimeDelta::FromSeconds(fetch_timeout)));
+        base::TimeDelta::FromSeconds(fetch_timeout),
+        task_runner_,
+        task_runner_,
+        task_runner_));
     manager_->Init(&schema_registry_);
     manager_->AddObserver(&observer_);
     manager_->Connect(&prefs_, &device_management_service_, NULL,
