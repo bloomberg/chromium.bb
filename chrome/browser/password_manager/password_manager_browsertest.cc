@@ -394,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForSubmitFromIframe) {
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
                        PromptForInputElementWithoutName) {
-  // Check that the prompt is shown for forms where input elements miss the
+  // Check that the prompt is shown for forms where input elements lack the
   // "name" attribute but the "id" is present.
   NavigateToFile("/password/password_form.html");
 
@@ -406,6 +406,41 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   EXPECT_TRUE(observer.infobar_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       PromptForInputElementWithoutId) {
+  // Check that the prompt is shown for forms where input elements lack the
+  // "id" attribute but the "name" attribute is present.
+  NavigateToFile("/password/password_form.html");
+
+  NavigationObserver observer(WebContents());
+  std::string fill_and_submit =
+      "document.getElementsByName('username_field_no_id')[0].value = 'temp';"
+      "document.getElementsByName('password_field_no_id')[0].value = 'random';"
+      "document.getElementsByName('input_submit_button_no_id')[0].click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_TRUE(observer.infobar_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       NoPromptForInputElementWithoutIdAndName) {
+  // Check that no prompt is shown for forms where the input fields lack both
+  // the "id" and the "name" attributes.
+  NavigateToFile("/password/password_form.html");
+
+  NavigationObserver observer(WebContents());
+  std::string fill_and_submit =
+      "var form = document.getElementById('testform_elements_no_id_no_name');"
+      "var username = form.children[0];"
+      "username.value = 'temp';"
+      "var password = form.children[1];"
+      "password.value = 'random';"
+      "form.children[2].click()";  // form.children[2] is the submit button.
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_FALSE(observer.infobar_shown());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, DeleteFrameBeforeSubmit) {
