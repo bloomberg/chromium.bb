@@ -23,7 +23,6 @@
 #include "content/common/sandbox_seccomp_bpf_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_linux.h"
-#include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 
 namespace {
@@ -61,6 +60,61 @@ bool IsRunningTSAN() {
 #else
   return false;
 #endif
+}
+
+struct DIRDeleter {
+  void operator()(DIR* d) {
+    PCHECK(closedir(d) == 0);
+  }
+};
+
+// |proc_fd| should be a file descriptor to /proc (useful if the process
+// is sandboxed) or -1.
+// If |proc_fd| is -1, this function will return false if /proc/self/fd
+// cannot be opened.
+bool CurrentProcessHasOpenDirectories(int proc_fd) {
+  int proc_self_fd = -1;
+  if (proc_fd >= 0) {
+    proc_self_fd = openat(proc_fd, "self/fd", O_DIRECTORY | O_RDONLY);
+  } else {
+    proc_self_fd = openat(AT_FDCWD, "/proc/self/fd", O_DIRECTORY | O_RDONLY);
+    if (proc_self_fd < 0) {
+      // If not available, guess false.
+      // TODO(mostynb@opera.com): add a CHECK_EQ(ENOENT, errno); Figure out what
+      // other situations are here. http://crbug.com/314985
+      return false;
+    }
+  }
+  CHECK_GE(proc_self_fd, 0);
+
+  // Ownership of proc_self_fd is transferred here, it must not be closed
+  // or modified afterwards except via dir.
+  scoped_ptr<DIR, DIRDeleter> dir(fdopendir(proc_self_fd));
+  CHECK(dir);
+
+  struct dirent e;
+  struct dirent* de;
+  while (!readdir_r(dir.get(), &e, &de) && de) {
+    if (strcmp(e.d_name, ".") == 0 || strcmp(e.d_name, "..") == 0) {
+      continue;
+    }
+
+    int fd_num;
+    CHECK(base::StringToInt(e.d_name, &fd_num));
+    if (fd_num == proc_fd || fd_num == proc_self_fd) {
+      continue;
+    }
+
+    struct stat s;
+    // It's OK to use proc_self_fd here, fstatat won't modify it.
+    CHECK(fstatat(proc_self_fd, e.d_name, &s, 0) == 0);
+    if (S_ISDIR(s.st_mode)) {
+      return true;
+    }
+  }
+
+  // No open unmanaged directories found.
+  return false;
 }
 
 }  // namespace
@@ -284,7 +338,7 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
 }
 
 bool LinuxSandbox::HasOpenDirectories() {
-  return sandbox::Credentials().HasOpenDirectory(proc_fd_);
+  return CurrentProcessHasOpenDirectories(proc_fd_);
 }
 
 void LinuxSandbox::SealSandbox() {

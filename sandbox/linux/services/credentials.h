@@ -26,20 +26,6 @@ class Credentials {
   Credentials();
   ~Credentials();
 
-  // Checks whether the current process has any directory file descriptor open.
-  // Directory file descriptors are "capabilities" that would let a process use
-  // system calls such as openat() to bypass restrictions such as
-  // DropFileSystemAccess().
-  // Sometimes it's useful to call HasOpenDirectory() after file system access
-  // has been dropped. In this case, |proc_fd| should be a file descriptor to
-  // /proc. The file descriptor in |proc_fd| will be ignored by
-  // HasOpenDirectory() and remains owned by the caller. It is very important
-  // for the caller to close it.
-  // If /proc is available, |proc_fd| can be passed as -1.
-  // If |proc_fd| is -1 and /proc is not available, this function will return
-  // false.
-  bool HasOpenDirectory(int proc_fd);
-
   // Drop all capabilities in the effective, inheritable and permitted sets for
   // the current process.
   bool DropAllCapabilities();
@@ -66,8 +52,9 @@ class Credentials {
   // CAP_SYS_CHROOT can be acquired by using the MoveToNewUserNS() API.
   // Make sure to call DropAllCapabilities() after this call to prevent
   // escapes.
-  // To be secure, it's very important for this API to not be called while the
-  // process has any directory file descriptor open.
+  // To be secure, it's very important for this API to not be called with any
+  // directory file descriptor present. TODO(jln): integrate with
+  // crbug.com/269806 when available.
   bool DropFileSystemAccess();
 
  private:

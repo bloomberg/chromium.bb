@@ -4,13 +4,9 @@
 
 #include "sandbox/linux/services/credentials.h"
 
-#include <dirent.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <stdio.h>
 #include <sys/capability.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 
 #include "base/basictypes.h"
@@ -52,15 +48,6 @@ struct FILECloser {
 // Don't use ScopedFILE in base/file_util.h since it doesn't check fclose().
 // TODO(jln): fix base/.
 typedef scoped_ptr<FILE, FILECloser> ScopedFILE;
-
-struct DIRCloser {
-  void operator()(DIR* d) const {
-    DCHECK(d);
-    PCHECK(0 == closedir(d));
-  }
-};
-
-typedef scoped_ptr<DIR, DIRCloser> ScopedDIR;
 
 COMPILE_ASSERT((base::is_same<uid_t, gid_t>::value), UidAndGidAreSameType);
 // generic_id_t can be used for either uid_t or gid_t.
@@ -156,51 +143,6 @@ Credentials::Credentials() {
 Credentials::~Credentials() {
 }
 
-bool Credentials::HasOpenDirectory(int proc_fd) {
-  int proc_self_fd = -1;
-  if (proc_fd >= 0) {
-    proc_self_fd = openat(proc_fd, "self/fd", O_DIRECTORY | O_RDONLY);
-  } else {
-    proc_self_fd = openat(AT_FDCWD, "/proc/self/fd", O_DIRECTORY | O_RDONLY);
-    if (proc_self_fd < 0) {
-      // If not available, guess false.
-      // TODO(mostynb@opera.com): add a CHECK_EQ(ENOENT, errno); Figure out what
-      // other situations are here. http://crbug.com/314985
-      return false;
-    }
-  }
-  CHECK_GE(proc_self_fd, 0);
-
-  // Ownership of proc_self_fd is transferred here, it must not be closed
-  // or modified afterwards except via dir.
-  ScopedDIR dir(fdopendir(proc_self_fd));
-  CHECK(dir);
-
-  struct dirent e;
-  struct dirent* de;
-  while (!readdir_r(dir.get(), &e, &de) && de) {
-    if (strcmp(e.d_name, ".") == 0 || strcmp(e.d_name, "..") == 0) {
-      continue;
-    }
-
-    int fd_num;
-    CHECK(base::StringToInt(e.d_name, &fd_num));
-    if (fd_num == proc_fd || fd_num == proc_self_fd) {
-      continue;
-    }
-
-    struct stat s;
-    // It's OK to use proc_self_fd here, fstatat won't modify it.
-    CHECK(fstatat(proc_self_fd, e.d_name, &s, 0) == 0);
-    if (S_ISDIR(s.st_mode)) {
-      return true;
-    }
-  }
-
-  // No open unmanaged directories found.
-  return false;
-}
-
 bool Credentials::DropAllCapabilities() {
   ScopedCap cap(cap_init());
   CHECK(cap);
@@ -257,9 +199,6 @@ bool Credentials::MoveToNewUserNS() {
 }
 
 bool Credentials::DropFileSystemAccess() {
-  // Chrooting to a safe empty dir will only be safe if no directory file
-  // descriptor is available to the process.
-  DCHECK(!HasOpenDirectory(-1));
   return ChrootToSafeEmptyDir();
 }
 
