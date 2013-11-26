@@ -5,12 +5,12 @@
 #include "chrome/browser/invalidation/fake_invalidation_service.h"
 
 #include "chrome/browser/invalidation/invalidation_service_util.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace invalidation {
 
 FakeInvalidationService::FakeInvalidationService()
-    : client_id_(GenerateInvalidatorClientId()),
-      received_invalid_acknowledgement_(false) {
+    : client_id_(GenerateInvalidatorClientId()) {
   invalidator_registrar_.UpdateInvalidatorState(syncer::INVALIDATIONS_ENABLED);
 }
 
@@ -33,25 +33,6 @@ void FakeInvalidationService::UnregisterInvalidationHandler(
   invalidator_registrar_.UnregisterHandler(handler);
 }
 
-void FakeInvalidationService::AcknowledgeInvalidation(
-      const invalidation::ObjectId& id,
-      const syncer::AckHandle& ack_handle) {
-  // Try to find the given handle and object id in the unacknowledged list.
-  AckHandleList::iterator handle;
-  AckHandleList::iterator begin = unacknowledged_handles_.begin();
-  AckHandleList::iterator end = unacknowledged_handles_.end();
-  for (handle = begin; handle != end; ++handle)
-    if (handle->first.Equals(ack_handle) && handle->second == id)
-      break;
-  if (handle == end)
-    received_invalid_acknowledgement_ = false;
-  else
-    unacknowledged_handles_.erase(handle);
-
-  // Add to the acknowledged list.
-  acknowledged_handles_.push_back(AckHandleList::value_type(ack_handle, id));
-}
-
 syncer::InvalidatorState FakeInvalidationService::GetInvalidatorState() const {
   return invalidator_registrar_.GetInvalidatorState();
 }
@@ -67,26 +48,28 @@ void FakeInvalidationService::SetInvalidatorState(
 
 void FakeInvalidationService::EmitInvalidationForTest(
     const syncer::Invalidation& invalidation) {
+  // This function might need to modify the invalidator, so we start by making
+  // an identical copy of it.
+  syncer::Invalidation invalidation_copy(invalidation);
+
+  // If no one is listening to this invalidation, do not send it out.
+  syncer::ObjectIdSet registered_ids =
+      invalidator_registrar_.GetAllRegisteredIds();
+  if (registered_ids.find(invalidation.object_id()) == registered_ids.end()) {
+    mock_ack_handler_.RegisterUnsentInvalidation(&invalidation_copy);
+    return;
+  }
+
+  // Otherwise, register the invalidation with the mock_ack_handler_ and deliver
+  // it to the appropriate consumer.
+  mock_ack_handler_.RegisterInvalidation(&invalidation_copy);
   syncer::ObjectIdInvalidationMap invalidation_map;
-
-  invalidation_map.Insert(invalidation);
-  unacknowledged_handles_.push_back(
-      AckHandleList::value_type(
-          invalidation.ack_handle(),
-          invalidation.object_id()));
-
+  invalidation_map.Insert(invalidation_copy);
   invalidator_registrar_.DispatchInvalidationsToHandlers(invalidation_map);
 }
 
-bool FakeInvalidationService::IsInvalidationAcknowledged(
-    const syncer::AckHandle& ack_handle) const {
-  // Try to find the given handle in the acknowledged list.
-  AckHandleList::const_iterator begin = acknowledged_handles_.begin();
-  AckHandleList::const_iterator end = acknowledged_handles_.end();
-  for (AckHandleList::const_iterator handle = begin; handle != end; ++handle)
-    if (handle->first.Equals(ack_handle))
-      return true;
-  return false;
+syncer::MockAckHandler* FakeInvalidationService::GetMockAckHandler() {
+  return &mock_ack_handler_;
 }
 
 }  // namespace invalidation

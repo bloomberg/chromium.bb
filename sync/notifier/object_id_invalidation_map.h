@@ -49,6 +49,9 @@ class SYNC_EXPORT ObjectIdInvalidationMap {
    // Returns the contents of this map in a single vector.
    void GetAllInvalidations(std::vector<syncer::Invalidation>* out) const;
 
+   // Call Acknowledge() on all contained Invalidations.
+   void AcknowledgeAll() const;
+
    // Serialize this map to a value.
    scoped_ptr<base::ListValue> ToValue() const;
 

@@ -19,7 +19,7 @@ class Invalidation;
 
 // This AckHandler implementation colaborates with the FakeInvalidationService
 // to enable unit tests to assert that invalidations are being acked properly.
-class MockAckHandler
+class SYNC_EXPORT MockAckHandler
   : public AckHandler,
     public base::SupportsWeakPtr<MockAckHandler> {
  public:

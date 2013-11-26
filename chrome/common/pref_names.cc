@@ -1853,10 +1853,6 @@ const char kSyncSuppressStart[] = "sync.suppress_start";
 // if a new sync type has rolled out so we can notify the user.
 const char kSyncAcknowledgedSyncTypes[] = "sync.acknowledged_types";
 
-// Dictionary from sync model type (as an int) to max invalidation
-// version (int64 represented as a string).
-const char kSyncMaxInvalidationVersions[] = "sync.max_invalidation_versions";
-
 // The GUID session sync will use to identify this client, even across sync
 // disable/enable events.
 const char kSyncSessionsGUID[] = "sync.session_sync_guid";
@@ -1868,11 +1864,9 @@ const char kInvalidatorClientId[] = "invalidator.client_id";
 // The value is base 64 encoded.
 const char kInvalidatorInvalidationState[] = "invalidator.invalidation_state";
 
-// List of {source, name, max invalidation version} tuples. source is an int,
-// while max invalidation version is an int64; both are stored as string
-// representations though.
-const char kInvalidatorMaxInvalidationVersions[] =
-    "invalidator.max_invalidation_versions";
+// List of received invalidations that have not been acted on by any clients
+// yet.  Used to keep invalidation clients in sync in case of a restart.
+const char kInvalidatorSavedInvalidations[] = "invalidator.saved_invalidations";
 
 // A string that can be used to restore sync encryption infrastructure on
 // startup so that the user doesn't need to provide credentials on each start.

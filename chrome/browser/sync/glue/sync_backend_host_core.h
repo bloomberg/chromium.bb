@@ -125,7 +125,7 @@ class SyncBackendHostCore
 
   // Forwards an invalidation to the sync manager.
   void DoOnIncomingInvalidation(
-      syncer::ObjectIdInvalidationMap invalidation_map);
+      const syncer::ObjectIdInvalidationMap& invalidation_map);
 
   // Note:
   //

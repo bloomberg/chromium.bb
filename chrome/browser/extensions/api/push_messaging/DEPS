@@ -1,5 +1,5 @@
 include_rules = [
   "+google/cacheinvalidation/types.pb.h",
-  "+sync/internal_api/public/base/invalidation_test_util.h",
+  "+sync/internal_api/public/base/invalidation.h",
   "+sync/notifier/sync_notifier_observer.h",
 ]

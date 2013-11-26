@@ -4,6 +4,8 @@
 
 #include "sync/notifier/fake_invalidator.h"
 
+#include "sync/notifier/object_id_invalidation_map.h"
+
 namespace syncer {
 
 FakeInvalidator::FakeInvalidator() {}
@@ -47,11 +49,6 @@ void FakeInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
 
 void FakeInvalidator::UnregisterHandler(InvalidationHandler* handler) {
   registrar_.UnregisterHandler(handler);
-}
-
-void FakeInvalidator::Acknowledge(const invalidation::ObjectId& id,
-                                  const AckHandle& ack_handle) {
-  // Do nothing.
 }
 
 InvalidatorState FakeInvalidator::GetInvalidatorState() const {

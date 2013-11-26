@@ -9,6 +9,7 @@
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "chrome/browser/invalidation/invalidation_service_factory.h"
 #include "google/cacheinvalidation/types.pb.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace drive {
 
@@ -75,12 +76,10 @@ void DriveNotificationManager::OnIncomingInvalidation(
       kDriveInvalidationObjectId);
   DCHECK_EQ(1U, ids.count(object_id));
 
-  // TODO(dcheng): Only acknowledge the invalidation once the fetch has
-  // completed. http://crbug.com/156843
-  DCHECK(invalidation_service_);
-  syncer::Invalidation inv = invalidation_map.ForObject(object_id).back();
-  invalidation_service_->AcknowledgeInvalidation(object_id, inv.ack_handle());
-
+  // This effectively disables 'local acks'.  It tells the invalidations system
+  // to not bother saving invalidations across restarts for us.
+  // See crbug.com/320878.
+  invalidation_map.AcknowledgeAll();
   NotifyObserversToUpdate(NOTIFICATION_XMPP);
 }
 

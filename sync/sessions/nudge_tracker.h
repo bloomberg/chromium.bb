@@ -13,11 +13,13 @@
 #include "base/compiler_specific.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/sessions/data_type_tracker.h"
 
 namespace syncer {
+
+class ObjectIdInvalidationMap;
+
 namespace sessions {
 
 class SYNC_EXPORT_PRIVATE NudgeTracker {

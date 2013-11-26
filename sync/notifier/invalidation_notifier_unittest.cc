@@ -40,7 +40,7 @@ class InvalidationNotifierTestDelegate {
         new InvalidationNotifier(
             scoped_ptr<notifier::PushClient>(new notifier::FakePushClient()),
             invalidator_client_id,
-            InvalidationStateMap(),
+            UnackedInvalidationsMap(),
             initial_state,
             MakeWeakHandle(invalidation_state_tracker),
             "fake_client_info"));

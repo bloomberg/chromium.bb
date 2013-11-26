@@ -17,26 +17,6 @@ namespace syncer {
 NullInvalidationStateTracker::NullInvalidationStateTracker() {}
 NullInvalidationStateTracker::~NullInvalidationStateTracker() {}
 
-InvalidationStateMap
-NullInvalidationStateTracker::GetAllInvalidationStates() const {
-  return InvalidationStateMap();
-}
-
-void NullInvalidationStateTracker::SetMaxVersionAndPayload(
-    const invalidation::ObjectId& id,
-    int64 max_invalidation_version,
-    const std::string& payload) {
-  LOG(INFO) << "Setting max invalidation version for "
-          << ObjectIdToString(id) << " to " << max_invalidation_version
-          << " with payload " << payload;
-}
-
-void NullInvalidationStateTracker::Forget(const ObjectIdSet& ids) {
-  for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
-    LOG(INFO) << "Forgetting invalidation state for " << ObjectIdToString(*it);
-  }
-}
-
 void NullInvalidationStateTracker::SetInvalidatorClientId(
     const std::string& data) {
   LOG(INFO) << "Setting invalidator client ID to: " << data;
@@ -66,20 +46,14 @@ void NullInvalidationStateTracker::Clear() {
   // We have no members to clear.
 }
 
-void NullInvalidationStateTracker::GenerateAckHandles(
-    const ObjectIdSet& ids,
-    const scoped_refptr<base::TaskRunner>& task_runner,
-    base::Callback<void(const AckHandleMap&)> callback) {
-  AckHandleMap ack_handles;
-  for (ObjectIdSet::const_iterator it = ids.begin(); it != ids.end(); ++it) {
-    ack_handles.insert(std::make_pair(*it, AckHandle::InvalidAckHandle()));
-  }
-  CHECK(task_runner->PostTask(FROM_HERE, base::Bind(callback, ack_handles)));
+void NullInvalidationStateTracker::SetSavedInvalidations(
+    const UnackedInvalidationsMap& states) {
+  // Do nothing.
 }
 
-void NullInvalidationStateTracker::Acknowledge(const invalidation::ObjectId& id,
-                                               const AckHandle& ack_handle) {
-  LOG(INFO) << "Received ack for " << ObjectIdToString(id);
+UnackedInvalidationsMap
+NullInvalidationStateTracker::GetSavedInvalidations() const {
+  return UnackedInvalidationsMap();
 }
 
 }  // namespace syncer

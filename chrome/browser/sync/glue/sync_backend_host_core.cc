@@ -324,7 +324,7 @@ void SyncBackendHostCore::DoOnInvalidatorStateChange(
 }
 
 void SyncBackendHostCore::DoOnIncomingInvalidation(
-    syncer::ObjectIdInvalidationMap invalidation_map) {
+    const syncer::ObjectIdInvalidationMap& invalidation_map) {
   DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
   sync_manager_->OnIncomingInvalidation(invalidation_map);
 }

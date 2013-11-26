@@ -33,6 +33,7 @@
 #include "grit/generated_resources.h"
 #include "jni/ProfileSyncService_jni.h"
 #include "sync/internal_api/public/read_transaction.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::android::AttachCurrentThread;

@@ -51,20 +51,43 @@ class SYNC_EXPORT Invalidation {
 
   const AckHandle& ack_handle() const;
 
-  // TODO(rlarocque): Remove this method and use AckHandlers instead.
-  void set_ack_handle(const AckHandle& ack_handle);
-
-  // Functions from the alternative ack tracking framework.
-  // Currently unused.
+  // Sets the AckHandler to be used to track this Invalidation.
+  //
+  // This should be set by the class that generates the invalidation.  Clients
+  // of the Invalidations API should not need to call this.
+  //
+  // Note that some sources of invalidations do not support ack tracking, and do
+  // not set the ack_handler.  This will be hidden from users of this class.
   void set_ack_handler(syncer::WeakHandle<AckHandler> ack_handler);
+
+  // Returns whether or not this instance supports ack tracking.  This will
+  // depend on whether or not the source of invaliadations supports
+  // invalidations.
+  //
+  // Clients can safely ignore this flag.  They can assume that all
+  // invalidations support ack tracking.  If they're wrong, then invalidations
+  // will be less reliable, but their behavior will be no less correct.
   bool SupportsAcknowledgement() const;
+
+  // Acknowledges the receipt of this invalidation.
+  //
+  // Clients should call this on a received invalidation when they have fully
+  // processed the invalidation and persisted the results to disk.  Once this
+  // function is called, the invalidations system is under no obligation to
+  // re-deliver this invalidation in the event of a crash or restart.
   void Acknowledge() const;
 
-  // Drops an invalidation.
+  // Informs the ack tracker that this invalidation will not be serviced.
+  //
+  // If a client's buffer reaches its limit and it is forced to start dropping
+  // invalidations, it should call this function before dropping its
+  // invalidations in order to allow the ack tracker to drop the invalidation,
+  // too.
   //
   // The drop record will be tracked by the specified
   // DroppedInvalidationTracker.  The caller should hang on to this tracker.  It
-  // will need to use it when it recovers from this drop event.  See the
+  // will need to use it when it recovers from this drop event, or if it needs
+  // to record another drop event for the same ObjectID.  Refer to the
   // documentation of DroppedInvalidationTracker for more details.
   void Drop(DroppedInvalidationTracker* tracker) const;
 

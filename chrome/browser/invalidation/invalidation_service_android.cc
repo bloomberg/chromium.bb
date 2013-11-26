@@ -7,6 +7,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/invalidation_controller_android.h"
 #include "content/public/browser/notification_service.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace invalidation {
 
@@ -42,13 +43,6 @@ void InvalidationServiceAndroid::UnregisterInvalidationHandler(
     syncer::InvalidationHandler* handler) {
   DCHECK(CalledOnValidThread());
   invalidator_registrar_.UnregisterHandler(handler);
-}
-
-void InvalidationServiceAndroid::AcknowledgeInvalidation(
-    const invalidation::ObjectId& id,
-    const syncer::AckHandle& ack_handle) {
-  DCHECK(CalledOnValidThread());
-  // Do nothing.  The Android invalidator does not support ack tracking.
 }
 
 syncer::InvalidatorState

@@ -81,7 +81,6 @@
 #include "base/compiler_specific.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "google/cacheinvalidation/types.pb.h"
-#include "sync/internal_api/public/base/invalidation_test_util.h"
 #include "sync/internal_api/public/base/object_id_invalidation_map_test_util.h"
 #include "sync/notifier/fake_invalidation_handler.h"
 #include "sync/notifier/fake_invalidation_state_tracker.h"

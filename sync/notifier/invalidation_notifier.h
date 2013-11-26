@@ -18,7 +18,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
-#include "base/time/default_tick_clock.h"
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/internal_api/public/util/weak_handle.h"
@@ -34,7 +33,6 @@ class PushClient;
 namespace syncer {
 
 // This class must live on the IO thread.
-// TODO(dcheng): Think of a name better than InvalidationInvalidator.
 class SYNC_EXPORT_PRIVATE InvalidationNotifier
     : public Invalidator,
       public SyncInvalidationListener::Delegate,
@@ -44,7 +42,7 @@ class SYNC_EXPORT_PRIVATE InvalidationNotifier
   InvalidationNotifier(
       scoped_ptr<notifier::PushClient> push_client,
       const std::string& invalidator_client_id,
-      const InvalidationStateMap& initial_invalidation_state_map,
+      const UnackedInvalidationsMap& saved_invalidations,
       const std::string& invalidation_bootstrap_data,
       const WeakHandle<InvalidationStateTracker>&
           invalidation_state_tracker,
@@ -57,8 +55,6 @@ class SYNC_EXPORT_PRIVATE InvalidationNotifier
   virtual void UpdateRegisteredIds(InvalidationHandler* handler,
                                    const ObjectIdSet& ids) OVERRIDE;
   virtual void UnregisterHandler(InvalidationHandler* handler) OVERRIDE;
-  virtual void Acknowledge(const invalidation::ObjectId& id,
-                           const AckHandle& ack_handle) OVERRIDE;
   virtual InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual void UpdateCredentials(
       const std::string& email, const std::string& token) OVERRIDE;
@@ -83,7 +79,7 @@ class SYNC_EXPORT_PRIVATE InvalidationNotifier
   InvalidatorRegistrar registrar_;
 
   // Passed to |invalidation_listener_|.
-  const InvalidationStateMap initial_invalidation_state_map_;
+  const UnackedInvalidationsMap saved_invalidations_;
 
   // Passed to |invalidation_listener_|.
   const WeakHandle<InvalidationStateTracker>
@@ -97,10 +93,6 @@ class SYNC_EXPORT_PRIVATE InvalidationNotifier
 
   // The initial bootstrap data to pass to |invalidation_listener_|.
   const std::string invalidation_bootstrap_data_;
-
-  // TODO(akalin): Clean up this reference to DefaultTickClock. Ideally, we
-  // should simply be using TaskRunner's tick clock. See http://crbug.com/179211
-  base::DefaultTickClock tick_clock_;
 
   // The invalidation listener.
   SyncInvalidationListener invalidation_listener_;

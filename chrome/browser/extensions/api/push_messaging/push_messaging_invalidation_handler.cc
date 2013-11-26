@@ -125,13 +125,14 @@ void PushMessagingInvalidationHandler::OnInvalidatorStateChange(
 void PushMessagingInvalidationHandler::OnIncomingInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  invalidation_map.AcknowledgeAll();
+
   syncer::ObjectIdSet ids = invalidation_map.GetObjectIds();
   for (syncer::ObjectIdSet::const_iterator it = ids.begin();
        it != ids.end(); ++it) {
     const syncer::SingleObjectInvalidationSet& list =
         invalidation_map.ForObject(*it);
     const syncer::Invalidation& invalidation = list.back();
-    service_->AcknowledgeInvalidation(*it, invalidation.ack_handle());
 
     std::string payload;
     if (invalidation.is_unknown_version()) {
@@ -140,8 +141,7 @@ void PushMessagingInvalidationHandler::OnIncomingInvalidation(
       payload = list.back().payload();
     }
 
-    syncer::ObjectIdSet::iterator suppressed_id =
-        suppressed_ids_.find(*it);
+    syncer::ObjectIdSet::iterator suppressed_id = suppressed_ids_.find(*it);
     if (suppressed_id != suppressed_ids_.end()) {
       suppressed_ids_.erase(suppressed_id);
       continue;
@@ -153,10 +153,29 @@ void PushMessagingInvalidationHandler::OnIncomingInvalidation(
     std::string extension_id;
     int subchannel;
     if (ObjectIdToExtensionAndSubchannel(*it, &extension_id, &subchannel)) {
-      DVLOG(2) << "Sending push message to reciever, extension is "
-               << extension_id << ", subchannel is " << subchannel
-               << ", and payload is " << payload;
-      delegate_->OnMessage(extension_id, subchannel, payload);
+      const syncer::SingleObjectInvalidationSet& invalidation_list =
+          invalidation_map.ForObject(*it);
+
+      // We always forward unknown version invalidation when we receive one.
+      if (invalidation_list.StartsWithUnknownVersion()) {
+        DVLOG(2) << "Sending push message to reciever, extension is "
+            << extension_id << ", subchannel is " << subchannel
+            << "and payload was lost";
+        delegate_->OnMessage(extension_id, subchannel, std::string());
+      }
+
+      // If we receive a new max version for this object, forward its payload.
+      const syncer::Invalidation& max_invalidation = invalidation_list.back();
+      if (!max_invalidation.is_unknown_version() &&
+          max_invalidation.version() > max_object_version_map_[*it]) {
+        max_object_version_map_[*it] = max_invalidation.version();
+        DVLOG(2) << "Sending push message to reciever, extension is "
+            << extension_id << ", subchannel is " << subchannel
+            << ", and payload is " << max_invalidation.payload();
+        delegate_->OnMessage(extension_id,
+                             subchannel,
+                             max_invalidation.payload());
+      }
     }
   }
 }

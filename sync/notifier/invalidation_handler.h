@@ -7,9 +7,10 @@
 
 #include "sync/base/sync_export.h"
 #include "sync/notifier/invalidator_state.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace syncer {
+
+class ObjectIdInvalidationMap;
 
 class SYNC_EXPORT InvalidationHandler {
  public:

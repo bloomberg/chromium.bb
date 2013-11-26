@@ -18,6 +18,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "google/cacheinvalidation/types.pb.h"
+#include "sync/internal_api/public/base/invalidation.h"
 #include "sync/notifier/fake_invalidator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_PUSH_MESSAGING_PUSH_MESSAGING_INVALIDATION_HANDLER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_PUSH_MESSAGING_PUSH_MESSAGING_INVALIDATION_HANDLER_H_
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -13,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_mapper.h"
 #include "sync/notifier/invalidation_handler.h"
+#include "sync/notifier/invalidation_util.h"
 
 namespace invalidation {
 class InvalidationService;
@@ -60,6 +62,9 @@ class PushMessagingInvalidationHandler : public PushMessagingInvalidationMapper,
   std::set<std::string> registered_extensions_;
   syncer::ObjectIdSet suppressed_ids_;
   PushMessagingInvalidationHandlerDelegate* const delegate_;
+  std::map<invalidation::ObjectId,
+           int64,
+           syncer::ObjectIdLessThan> max_object_version_map_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingInvalidationHandler);
 };

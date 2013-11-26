@@ -22,6 +22,7 @@
 #include "sync/base/sync_export.h"
 #include "sync/internal_api/public/base/invalidation.h"
 #include "sync/notifier/invalidation_util.h"
+#include "sync/notifier/unacked_invalidation_set.h"
 
 namespace base {
 class TaskRunner;
@@ -29,38 +30,9 @@ class TaskRunner;
 
 namespace syncer {
 
-struct SYNC_EXPORT InvalidationState {
-  InvalidationState();
-  ~InvalidationState();
-
-  int64 version;
-  std::string payload;
-  AckHandle expected;
-  AckHandle current;
-};
-
-// TODO(dcheng): Remove this in favor of adding an Equals() method.
-SYNC_EXPORT_PRIVATE bool operator==(const InvalidationState& lhs,
-                                    const InvalidationState& rhs);
-
-typedef std::map<invalidation::ObjectId, InvalidationState, ObjectIdLessThan>
-    InvalidationStateMap;
-typedef std::map<invalidation::ObjectId, AckHandle, ObjectIdLessThan>
-    AckHandleMap;
-
 class InvalidationStateTracker {
  public:
   InvalidationStateTracker() {}
-
-  virtual InvalidationStateMap GetAllInvalidationStates() const = 0;
-
-  // |max_version| should be strictly greater than any existing max
-  // version for |model_type|.
-  virtual void SetMaxVersionAndPayload(const invalidation::ObjectId& id,
-                                       int64 max_version,
-                                       const std::string& payload) = 0;
-  // Removes all state tracked for |ids|.
-  virtual void Forget(const ObjectIdSet& ids) = 0;
 
   // The per-client unique ID used to register the invalidation client with the
   // server.  This is used to squelch invalidation notifications that originate
@@ -75,23 +47,14 @@ class InvalidationStateTracker {
   virtual void SetBootstrapData(const std::string& data) = 0;
   virtual std::string GetBootstrapData() const = 0;
 
+  // Used to store invalidations that have been acked to the server, but not yet
+  // handled by our clients.  We store these invalidations on disk so we won't
+  // lose them if we need to restart.
+  virtual void SetSavedInvalidations(const UnackedInvalidationsMap& states) = 0;
+  virtual UnackedInvalidationsMap GetSavedInvalidations() const = 0;
+
   // Erases invalidation versions, client ID, and state stored on disk.
   virtual void Clear() = 0;
-
-  // Used for generating our own local ack handles. Generates a new ack handle
-  // for each object id in |ids|. The result is returned via |callback| posted
-  // to |task_runner|.
-  virtual void GenerateAckHandles(
-      const ObjectIdSet& ids,
-      const scoped_refptr<base::TaskRunner>& task_runner,
-      base::Callback<void(const AckHandleMap&)> callback) = 0;
-
-  // Records an acknowledgement for |id|. Note that no attempt at ordering is
-  // made. Acknowledge() only records the last ack_handle it received, even if
-  // the last ack_handle it received was generated before the value currently
-  // recorded.
-  virtual void Acknowledge(const invalidation::ObjectId& id,
-                           const AckHandle& ack_handle) = 0;
 
  protected:
   virtual ~InvalidationStateTracker() {}

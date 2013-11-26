@@ -28,7 +28,6 @@
     'notifier/dropped_invalidation_tracker.cc',
     'notifier/dropped_invalidation_tracker.h',
     'notifier/invalidation_handler.h',
-    'notifier/invalidation_state_tracker.cc',
     'notifier/invalidation_state_tracker.h',
     'notifier/invalidation_util.cc',
     'notifier/invalidation_util.h',
@@ -39,6 +38,8 @@
     'notifier/invalidator_registrar.h',
     'notifier/invalidator_state.cc',
     'notifier/invalidator_state.h',
+    'notifier/mock_ack_handler.cc',
+    'notifier/mock_ack_handler.h',
     'notifier/object_id_invalidation_map.cc',
     'notifier/object_id_invalidation_map.h',
     'notifier/single_object_invalidation_set.cc',
@@ -47,8 +48,6 @@
   'conditions': [
     ['OS != "android"', {
       'sources': [
-        'notifier/ack_tracker.cc',
-        'notifier/ack_tracker.h',
         'notifier/invalidation_notifier.cc',
         'notifier/invalidation_notifier.h',
         'notifier/non_blocking_invalidator.cc',

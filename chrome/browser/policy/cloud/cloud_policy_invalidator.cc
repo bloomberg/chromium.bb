@@ -42,7 +42,6 @@ CloudPolicyInvalidator::CloudPolicyInvalidator(
       invalid_(false),
       invalidation_version_(0),
       unknown_version_invalidation_count_(0),
-      ack_handle_(syncer::AckHandle::InvalidAckHandle()),
       weak_factory_(this),
       max_fetch_delay_(kMaxFetchDelayDefault),
       policy_hash_value_(0) {
@@ -98,6 +97,16 @@ void CloudPolicyInvalidator::OnIncomingInvalidation(
     NOTREACHED();
     return;
   }
+
+  // Acknowledge all except the invalidation with the highest version.
+  syncer::SingleObjectInvalidationSet::const_reverse_iterator it =
+      list.rbegin();
+  ++it;
+  for ( ; it != list.rend(); ++it) {
+    it->Acknowledge();
+  }
+
+  // Handle the highest version invalidation.
   HandleInvalidation(list.back());
 }
 
@@ -154,10 +163,12 @@ void CloudPolicyInvalidator::OnStoreError(CloudPolicyStore* store) {}
 
 void CloudPolicyInvalidator::HandleInvalidation(
     const syncer::Invalidation& invalidation) {
-  // The invalidation service may send an invalidation more than once if there
-  // is a delay in acknowledging it. Duplicate invalidations are ignored.
-  if (invalid_ && ack_handle_.Equals(invalidation.ack_handle()))
+  // Ignore old invalidations.
+  if (invalid_ &&
+      !invalidation.is_unknown_version() &&
+      invalidation.version() <= invalidation_version_) {
     return;
+  }
 
   // If there is still a pending invalidation, acknowledge it, since we only
   // care about the latest invalidation.
@@ -166,7 +177,7 @@ void CloudPolicyInvalidator::HandleInvalidation(
 
   // Update invalidation state.
   invalid_ = true;
-  ack_handle_ = invalidation.ack_handle();
+  invalidation_.reset(new syncer::Invalidation(invalidation));
 
   // When an invalidation with unknown version is received, use negative
   // numbers based on the number of such invalidations received. This
@@ -322,7 +333,8 @@ void CloudPolicyInvalidator::AcknowledgeInvalidation() {
   DCHECK(invalid_);
   invalid_ = false;
   core_->client()->SetInvalidationInfo(0, std::string());
-  invalidation_service_->AcknowledgeInvalidation(object_id_, ack_handle_);
+  invalidation_->Acknowledge();
+  invalidation_.reset();
   // Cancel any scheduled policy refreshes.
   weak_factory_.InvalidateWeakPtrs();
 }

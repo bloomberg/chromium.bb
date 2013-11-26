@@ -244,12 +244,6 @@ class SyncBackendHostImpl
   void HandleConnectionStatusChangeOnFrontendLoop(
       syncer::ConnectionStatus status);
 
-  // syncer::InvalidationHandler-like functions.
-  void HandleInvalidatorStateChangeOnFrontendLoop(
-      syncer::InvalidatorState state);
-  void HandleIncomingInvalidationOnFrontendLoop(
-      const syncer::ObjectIdInvalidationMap& invalidation_map);
-
   // NotificationObserver implementation.
   virtual void Observe(
     int type,

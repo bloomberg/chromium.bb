@@ -26,6 +26,7 @@
 #include "sync/internal_api/public/sync_manager_factory.h"
 #include "sync/internal_api/public/util/experiments.h"
 #include "sync/internal_api/public/util/sync_string_conversions.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncers involved.
@@ -652,14 +653,7 @@ void SyncBackendHostImpl::OnIncomingInvalidation(
     const syncer::ObjectIdInvalidationMap& invalidation_map) {
   // TODO(rlarocque): Acknowledge these invalidations only after the syncer has
   // acted on them and saved the results to disk.
-  syncer::ObjectIdSet ids = invalidation_map.GetObjectIds();
-  for (syncer::ObjectIdSet::const_iterator it = ids.begin();
-       it != ids.end(); ++it) {
-    const syncer::AckHandle& handle =
-        invalidation_map.ForObject(*it).back().ack_handle();
-    invalidator_->AcknowledgeInvalidation(*it, handle);
-  }
-
+  invalidation_map.AcknowledgeAll();
   registrar_->sync_thread()->message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&SyncBackendHostCore::DoOnIncomingInvalidation,

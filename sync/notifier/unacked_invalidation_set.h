@@ -18,6 +18,10 @@ class DictionaryValue;
 
 namespace syncer {
 
+namespace test_util {
+class UnackedInvalidationSetEqMatcher;
+}  // test_util
+
 class SingleObjectInvalidationSet;
 class ObjectIdInvalidationMap;
 class AckHandle;
@@ -88,7 +92,7 @@ class SYNC_EXPORT UnackedInvalidationSet {
 
  private:
   // Allow this test helper to have access to our internals.
-  friend class UnackedInvalidationSetEqMatcher;
+  friend class test_util::UnackedInvalidationSetEqMatcher;
 
   typedef std::set<Invalidation, InvalidationVersionLessThan> InvalidationsSet;
 

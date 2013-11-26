@@ -111,10 +111,6 @@ const AckHandle& Invalidation::ack_handle() const {
   return ack_handle_;
 }
 
-void Invalidation::set_ack_handle(const AckHandle& ack_handle) {
-  ack_handle_ = ack_handle;
-}
-
 void Invalidation::set_ack_handler(syncer::WeakHandle<AckHandler> handler) {
   ack_handler_ = handler;
 }
@@ -135,10 +131,12 @@ void Invalidation::Acknowledge() const {
 void Invalidation::Drop(DroppedInvalidationTracker* tracker) const {
   DCHECK(tracker->object_id() == object_id());
   tracker->RecordDropEvent(ack_handler_, ack_handle_);
-  ack_handler_.Call(FROM_HERE,
-                    &AckHandler::Drop,
-                    id_,
-                    ack_handle_);
+  if (SupportsAcknowledgement()) {
+    ack_handler_.Call(FROM_HERE,
+                      &AckHandler::Drop,
+                      id_,
+                      ack_handle_);
+  }
 }
 
 bool Invalidation::Equals(const Invalidation& other) const {

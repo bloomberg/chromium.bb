@@ -28,6 +28,7 @@
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/invalidator.h"
 #include "sync/notifier/non_blocking_invalidator.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/tools/null_invalidation_state_tracker.h"
 
 #if defined(OS_MACOSX)
@@ -182,7 +183,7 @@ int SyncListenNotificationsMain(int argc, char* argv[]) {
       new NonBlockingInvalidator(
           notifier_options,
           base::RandBytesAsString(8),
-          null_invalidation_state_tracker.GetAllInvalidationStates(),
+          null_invalidation_state_tracker.GetSavedInvalidations(),
           null_invalidation_state_tracker.GetBootstrapData(),
           WeakHandle<InvalidationStateTracker>(
               null_invalidation_state_tracker.AsWeakPtr()),

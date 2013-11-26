@@ -275,7 +275,7 @@ int SyncClientMain(int argc, char* argv[]) {
   scoped_ptr<Invalidator> invalidator(new NonBlockingInvalidator(
       notifier_options,
       invalidator_id,
-      null_invalidation_state_tracker.GetAllInvalidationStates(),
+      null_invalidation_state_tracker.GetSavedInvalidations(),
       null_invalidation_state_tracker.GetBootstrapData(),
       WeakHandle<InvalidationStateTracker>(
           null_invalidation_state_tracker.AsWeakPtr()),

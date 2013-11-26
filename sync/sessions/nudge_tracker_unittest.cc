@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "sync/internal_api/public/base/model_type_test_util.h"
+#include "sync/notifier/invalidation_util.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/sessions/nudge_tracker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

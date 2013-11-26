@@ -178,7 +178,8 @@ TEST_F(P2PInvalidatorTest, P2PNotificationDataDefault) {
 // non-default-constructed P2PNotificationData.
 TEST_F(P2PInvalidatorTest, P2PNotificationDataNonDefault) {
   ObjectIdInvalidationMap invalidation_map =
-      MakeInvalidationMap(ModelTypeSet(BOOKMARKS, THEMES));
+      ObjectIdInvalidationMap::InvalidateAll(
+          ModelTypeSetToObjectIdSet(ModelTypeSet(BOOKMARKS, THEMES)));
   const P2PNotificationData notification_data("sender",
                                               NOTIFY_ALL,
                                               invalidation_map);

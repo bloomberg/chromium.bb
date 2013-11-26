@@ -14,6 +14,7 @@
 #include "base/threading/thread.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "sync/notifier/invalidation_notifier.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace syncer {
 
@@ -31,14 +32,12 @@ class NonBlockingInvalidator::Core
   void Initialize(
       const notifier::NotifierOptions& notifier_options,
       const std::string& invalidator_client_id,
-      const InvalidationStateMap& initial_invalidation_state_map,
+      const UnackedInvalidationsMap& saved_invalidations,
       const std::string& invalidation_bootstrap_data,
       const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
       const std::string& client_info);
   void Teardown();
   void UpdateRegisteredIds(const ObjectIdSet& ids);
-  void Acknowledge(const invalidation::ObjectId& id,
-                   const AckHandle& ack_handle);
   void UpdateCredentials(const std::string& email, const std::string& token);
 
   // InvalidationHandler implementation (all called on I/O thread by
@@ -73,7 +72,7 @@ NonBlockingInvalidator::Core::~Core() {
 void NonBlockingInvalidator::Core::Initialize(
     const notifier::NotifierOptions& notifier_options,
     const std::string& invalidator_client_id,
-    const InvalidationStateMap& initial_invalidation_state_map,
+    const UnackedInvalidationsMap& saved_invalidations,
     const std::string& invalidation_bootstrap_data,
     const WeakHandle<InvalidationStateTracker>& invalidation_state_tracker,
     const std::string& client_info) {
@@ -87,7 +86,7 @@ void NonBlockingInvalidator::Core::Initialize(
       new InvalidationNotifier(
           notifier::PushClient::CreateDefaultOnIOThread(notifier_options),
           invalidator_client_id,
-          initial_invalidation_state_map,
+          saved_invalidations,
           invalidation_bootstrap_data,
           invalidation_state_tracker,
           client_info));
@@ -104,12 +103,6 @@ void NonBlockingInvalidator::Core::Teardown() {
 void NonBlockingInvalidator::Core::UpdateRegisteredIds(const ObjectIdSet& ids) {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
   invalidation_notifier_->UpdateRegisteredIds(this, ids);
-}
-
-void NonBlockingInvalidator::Core::Acknowledge(const invalidation::ObjectId& id,
-                                               const AckHandle& ack_handle) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-  invalidation_notifier_->Acknowledge(id, ack_handle);
 }
 
 void NonBlockingInvalidator::Core::UpdateCredentials(const std::string& email,
@@ -136,7 +129,7 @@ void NonBlockingInvalidator::Core::OnIncomingInvalidation(
 NonBlockingInvalidator::NonBlockingInvalidator(
     const notifier::NotifierOptions& notifier_options,
     const std::string& invalidator_client_id,
-    const InvalidationStateMap& initial_invalidation_state_map,
+    const UnackedInvalidationsMap& saved_invalidations,
     const std::string& invalidation_bootstrap_data,
     const WeakHandle<InvalidationStateTracker>&
         invalidation_state_tracker,
@@ -154,7 +147,7 @@ NonBlockingInvalidator::NonBlockingInvalidator(
               core_.get(),
               notifier_options,
               invalidator_client_id,
-              initial_invalidation_state_map,
+              saved_invalidations,
               invalidation_bootstrap_data,
               invalidation_state_tracker,
               client_info))) {
@@ -194,20 +187,6 @@ void NonBlockingInvalidator::UpdateRegisteredIds(InvalidationHandler* handler,
 void NonBlockingInvalidator::UnregisterHandler(InvalidationHandler* handler) {
   DCHECK(parent_task_runner_->BelongsToCurrentThread());
   registrar_.UnregisterHandler(handler);
-}
-
-void NonBlockingInvalidator::Acknowledge(const invalidation::ObjectId& id,
-                                         const AckHandle& ack_handle) {
-  DCHECK(parent_task_runner_->BelongsToCurrentThread());
-  if (!network_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(
-              &NonBlockingInvalidator::Core::Acknowledge,
-              core_.get(),
-              id,
-              ack_handle))) {
-    NOTREACHED();
-  }
 }
 
 InvalidatorState NonBlockingInvalidator::GetInvalidatorState() const {

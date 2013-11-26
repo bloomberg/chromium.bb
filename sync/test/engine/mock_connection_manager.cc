@@ -497,18 +497,6 @@ void MockConnectionManager::ProcessGetUpdates(
               gu.caller_info().source());
   }
 
-  // Verify that the GetUpdates filter sent by the Syncer matches the test
-  // expectation.
-  ModelTypeSet protocol_types = ProtocolTypes();
-  for (ModelTypeSet::Iterator iter = protocol_types.First(); iter.Good();
-       iter.Inc()) {
-    ModelType model_type = iter.Get();
-    sync_pb::DataTypeProgressMarker const* progress_marker =
-        GetProgressMarkerForType(gu.from_progress_marker(), model_type);
-    EXPECT_EQ(expected_filter_.Has(model_type), (progress_marker != NULL))
-        << "Syncer requested_types differs from test expectation.";
-  }
-
   // Verify that the items we're about to send back to the client are of
   // the types requested by the client.  If this fails, it probably indicates
   // a test bug.

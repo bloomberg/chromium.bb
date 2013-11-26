@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "sync/base/sync_export.h"
 #include "sync/engine/nudge_source.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/sessions/sync_session.h"
 
 namespace tracked_objects {
@@ -22,6 +21,7 @@ class Location;
 
 namespace syncer {
 
+class ObjectIdInvalidationMap;
 struct ServerConnectionEvent;
 
 struct SYNC_EXPORT_PRIVATE ConfigurationParams {

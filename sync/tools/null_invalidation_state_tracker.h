@@ -18,26 +18,17 @@ class NullInvalidationStateTracker
   NullInvalidationStateTracker();
   virtual ~NullInvalidationStateTracker();
 
-  virtual InvalidationStateMap GetAllInvalidationStates() const OVERRIDE;
-  virtual void SetMaxVersionAndPayload(const invalidation::ObjectId& id,
-                                       int64 max_invalidation_version,
-                                       const std::string& payload) OVERRIDE;
-  virtual void Forget(const ObjectIdSet& ids) OVERRIDE;
-
   virtual void SetInvalidatorClientId(const std::string& data) OVERRIDE;
   virtual std::string GetInvalidatorClientId() const OVERRIDE;
 
   virtual std::string GetBootstrapData() const OVERRIDE;
   virtual void SetBootstrapData(const std::string& data) OVERRIDE;
 
-  virtual void Clear() OVERRIDE;
+  virtual void SetSavedInvalidations(
+      const UnackedInvalidationsMap& states) OVERRIDE;
+  virtual UnackedInvalidationsMap GetSavedInvalidations() const OVERRIDE;
 
-  virtual void GenerateAckHandles(
-      const ObjectIdSet& ids,
-      const scoped_refptr<base::TaskRunner>& task_runner,
-      base::Callback<void(const AckHandleMap&)> callback) OVERRIDE;
-  virtual void Acknowledge(const invalidation::ObjectId& id,
-                           const AckHandle& ack_handle) OVERRIDE;
+  virtual void Clear() OVERRIDE;
 };
 
 }  // namespace syncer

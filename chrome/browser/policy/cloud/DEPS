@@ -37,6 +37,10 @@ specific_include_rules = {
     "+sync/internal_api/public/base/invalidation.h",
   ],
 
+  r"cloud_policy_invalidator.h": [
+    "+sync/internal_api/public/base/invalidation.h",
+  ],
+
   # TODO(joaodasilva): remove these exceptions.
   r"cloud_policy_invalidator\.cc": [
     "+chrome/browser/invalidation/invalidation_service.h",

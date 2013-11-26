@@ -642,13 +642,11 @@ extern const char kSyncUsingSecondaryPassphrase[];
 extern const char kSyncEncryptionBootstrapToken[];
 extern const char kSyncKeystoreEncryptionBootstrapToken[];
 extern const char kSyncAcknowledgedSyncTypes[];
-// Deprecated in favor of kInvalidatorMaxInvalidationVersions.
-extern const char kSyncMaxInvalidationVersions[];
 extern const char kSyncSessionsGUID[];
 
 extern const char kInvalidatorClientId[];
 extern const char kInvalidatorInvalidationState[];
-extern const char kInvalidatorMaxInvalidationVersions[];
+extern const char kInvalidatorSavedInvalidations[];
 
 extern const char kSignInPromoStartupCount[];
 extern const char kSignInPromoUserSkipped[];

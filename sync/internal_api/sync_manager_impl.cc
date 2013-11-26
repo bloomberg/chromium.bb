@@ -40,6 +40,7 @@
 #include "sync/js/js_reply_handler.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/invalidator.h"
+#include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/protocol/proto_value_conversions.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/syncable/directory.h"
@@ -933,8 +934,8 @@ void SyncManagerImpl::OnSyncEngineEvent(const SyncEngineEvent& event) {
   // whether we should sync again.
   if (event.what_happened == SyncEngineEvent::SYNC_CYCLE_ENDED) {
     if (!initialized_) {
-      LOG(INFO) << "OnSyncCycleCompleted not sent because sync api is not "
-                << "initialized";
+      DVLOG(1) << "OnSyncCycleCompleted not sent because sync api is not "
+               << "initialized";
       return;
     }
 

@@ -11,6 +11,11 @@
 #include "base/basictypes.h"
 #include "chrome/browser/invalidation/invalidation_service.h"
 #include "sync/notifier/invalidator_registrar.h"
+#include "sync/notifier/mock_ack_handler.h"
+
+namespace syncer {
+class Invalidation;
+}
 
 namespace invalidation {
 
@@ -29,10 +34,6 @@ class FakeInvalidationService : public InvalidationService {
   virtual void UnregisterInvalidationHandler(
       syncer::InvalidationHandler* handler) OVERRIDE;
 
-  virtual void AcknowledgeInvalidation(
-      const invalidation::ObjectId& id,
-      const syncer::AckHandle& ack_handle) OVERRIDE;
-
   virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual std::string GetInvalidatorClientId() const OVERRIDE;
 
@@ -41,25 +42,17 @@ class FakeInvalidationService : public InvalidationService {
   const syncer::InvalidatorRegistrar& invalidator_registrar() const {
     return invalidator_registrar_;
   }
+
   void EmitInvalidationForTest(const syncer::Invalidation& invalidation);
 
-  // Determines if the given AckHandle has been acknowledged.
-  bool IsInvalidationAcknowledged(const syncer::AckHandle& ack_handle) const;
-
-  // Determines if AcknowledgeInvalidation was ever called with an invalid
-  // ObjectId/AckHandle pair.
-  bool ReceivedInvalidAcknowledgement() {
-    return received_invalid_acknowledgement_;
-  }
+  // Emitted invalidations will be hooked up to this AckHandler.  Clients can
+  // query it to assert the invalidaitons are being acked properly.
+  syncer::MockAckHandler* GetMockAckHandler();
 
  private:
   std::string client_id_;
   syncer::InvalidatorRegistrar invalidator_registrar_;
-  typedef std::list<std::pair<syncer::AckHandle, invalidation::ObjectId> >
-      AckHandleList;
-  AckHandleList unacknowledged_handles_;
-  AckHandleList acknowledged_handles_;
-  bool received_invalid_acknowledgement_;
+  syncer::MockAckHandler mock_ack_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeInvalidationService);
 };

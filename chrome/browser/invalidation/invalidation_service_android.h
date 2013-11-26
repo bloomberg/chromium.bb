@@ -48,9 +48,6 @@ class InvalidationServiceAndroid
       const syncer::ObjectIdSet& ids) OVERRIDE;
   virtual void UnregisterInvalidationHandler(
       syncer::InvalidationHandler* handler) OVERRIDE;
-  virtual void AcknowledgeInvalidation(
-      const invalidation::ObjectId& id,
-      const syncer::AckHandle& ack_handle) OVERRIDE;
   virtual syncer::InvalidatorState GetInvalidatorState() const OVERRIDE;
   virtual std::string GetInvalidatorClientId() const OVERRIDE;
 

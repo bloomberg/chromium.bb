@@ -7,182 +7,10 @@
 #include "base/json/json_string_value_serializer.h"
 #include "sync/notifier/object_id_invalidation_map.h"
 #include "sync/notifier/single_object_invalidation_set.h"
-#include "testing/gmock/include/gmock/gmock-matchers.h"
+#include "sync/notifier/unacked_invalidation_set_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
-
-// Start with some helper functions and classes.
-
-using ::testing::MakeMatcher;
-using ::testing::MatchResultListener;
-using ::testing::Matcher;
-using ::testing::MatcherInterface;
-using ::testing::PrintToString;
-
-void PrintTo(
-    const UnackedInvalidationSet& invalidations, ::std::ostream* os);
-
-void PrintTo(
-    const UnackedInvalidationsMap& map, ::std::ostream* os);
-
-::testing::Matcher<const UnackedInvalidationSet&> Eq(
-    const UnackedInvalidationSet& expected);
-
-::testing::Matcher<const UnackedInvalidationsMap&> Eq(
-    const UnackedInvalidationsMap& expected);
-
-class UnackedInvalidationSetEqMatcher
-    : public testing::MatcherInterface<const UnackedInvalidationSet&> {
- public:
-  explicit UnackedInvalidationSetEqMatcher(
-      const UnackedInvalidationSet& expected);
-
-  virtual bool MatchAndExplain(
-      const UnackedInvalidationSet& actual,
-      MatchResultListener* listener) const OVERRIDE;
-  virtual void DescribeTo(::std::ostream* os) const OVERRIDE;
-  virtual void DescribeNegationTo(::std::ostream* os) const OVERRIDE;
-
- private:
-  const UnackedInvalidationSet expected_;
-
-  DISALLOW_COPY_AND_ASSIGN(UnackedInvalidationSetEqMatcher);
-};
-
-UnackedInvalidationSetEqMatcher::UnackedInvalidationSetEqMatcher(
-    const UnackedInvalidationSet& expected)
-  : expected_(expected) {}
-
-namespace {
-
-struct InvalidationEq {
-  bool operator()(const syncer::Invalidation& a,
-                  const syncer::Invalidation& b) const {
-    return a.Equals(b);
-  }
-};
-
-}  // namespace
-
-bool UnackedInvalidationSetEqMatcher::MatchAndExplain(
-    const UnackedInvalidationSet& actual,
-    MatchResultListener* listener) const {
-  // Use our friendship with this class to compare the internals of two
-  // instances.
-  //
-  // Note that the registration status is intentionally not considered
-  // when performing this comparison.
-  return expected_.object_id_ == actual.object_id_
-      && std::equal(expected_.invalidations_.begin(),
-                    expected_.invalidations_.end(),
-                    actual.invalidations_.begin(),
-                    InvalidationEq());
-}
-
-void UnackedInvalidationSetEqMatcher::DescribeTo(::std::ostream* os) const {
-  *os << " is equal to " << PrintToString(expected_);
-}
-
-void UnackedInvalidationSetEqMatcher::DescribeNegationTo(
-    ::std::ostream* os) const {
-  *os << " isn't equal to " << PrintToString(expected_);
-}
-
-namespace {
-
-ObjectIdInvalidationMap UnackedInvalidationsMapToObjectIdInvalidationMap(
-    const UnackedInvalidationsMap& state_map) {
-  ObjectIdInvalidationMap object_id_invalidation_map;
-  for (UnackedInvalidationsMap::const_iterator it = state_map.begin();
-       it != state_map.end(); ++it) {
-    it->second.ExportInvalidations(syncer::WeakHandle<AckHandler>(),
-                                   &object_id_invalidation_map);
-  }
-  return object_id_invalidation_map;
-}
-
-class UnackedInvalidationsMapEqMatcher
-    : public testing::MatcherInterface<const UnackedInvalidationsMap&> {
- public:
-  explicit UnackedInvalidationsMapEqMatcher(
-      const UnackedInvalidationsMap& expected);
-
-  virtual bool MatchAndExplain(const UnackedInvalidationsMap& actual,
-                               MatchResultListener* listener) const;
-  virtual void DescribeTo(::std::ostream* os) const;
-  virtual void DescribeNegationTo(::std::ostream* os) const;
-
- private:
-  const UnackedInvalidationsMap expected_;
-
-  DISALLOW_COPY_AND_ASSIGN(UnackedInvalidationsMapEqMatcher);
-};
-
-UnackedInvalidationsMapEqMatcher::UnackedInvalidationsMapEqMatcher(
-    const UnackedInvalidationsMap& expected)
-    : expected_(expected) {
-}
-
-bool UnackedInvalidationsMapEqMatcher::MatchAndExplain(
-    const UnackedInvalidationsMap& actual,
-    MatchResultListener* listener) const {
-  ObjectIdInvalidationMap expected_inv =
-      UnackedInvalidationsMapToObjectIdInvalidationMap(expected_);
-  ObjectIdInvalidationMap actual_inv =
-      UnackedInvalidationsMapToObjectIdInvalidationMap(actual);
-
-  return expected_inv == actual_inv;
-}
-
-void UnackedInvalidationsMapEqMatcher::DescribeTo(
-    ::std::ostream* os) const {
-  *os << " is equal to " << PrintToString(expected_);
-}
-
-void UnackedInvalidationsMapEqMatcher::DescribeNegationTo(
-    ::std::ostream* os) const {
-  *os << " isn't equal to " << PrintToString(expected_);
-}
-
-}  // namespace
-
-void PrintTo(const UnackedInvalidationSet& invalidations,
-             ::std::ostream* os) {
-  scoped_ptr<base::DictionaryValue> value = invalidations.ToValue();
-
-  std::string output;
-  JSONStringValueSerializer serializer(&output);
-  serializer.set_pretty_print(true);
-  serializer.Serialize(*value.get());
-
-  (*os) << output;
-}
-
-void PrintTo(const UnackedInvalidationsMap& map, ::std::ostream* os) {
-  scoped_ptr<base::ListValue> list(new base::ListValue);
-  for (UnackedInvalidationsMap::const_iterator it = map.begin();
-       it != map.end(); ++it) {
-    list->Append(it->second.ToValue().release());
-  }
-
-  std::string output;
-  JSONStringValueSerializer serializer(&output);
-  serializer.set_pretty_print(true);
-  serializer.Serialize(*list.get());
-
-  (*os) << output;
-}
-
-Matcher<const UnackedInvalidationSet&> Eq(
-    const UnackedInvalidationSet& expected) {
-  return MakeMatcher(new UnackedInvalidationSetEqMatcher(expected));
-}
-
-Matcher<const UnackedInvalidationsMap&> Eq(
-    const UnackedInvalidationsMap& expected) {
-  return MakeMatcher(new UnackedInvalidationsMapEqMatcher(expected));
-}
 
 class UnackedInvalidationSetTest : public testing::Test {
  public:
@@ -363,7 +191,7 @@ class UnackedInvalidationSetSerializationTest
 
 TEST_F(UnackedInvalidationSetSerializationTest, Empty) {
   UnackedInvalidationSet deserialized = SerializeDeserialize();
-  EXPECT_THAT(unacked_invalidations_, Eq(deserialized));
+  EXPECT_THAT(unacked_invalidations_, test_util::Eq(deserialized));
 }
 
 TEST_F(UnackedInvalidationSetSerializationTest, OneInvalidation) {
@@ -371,7 +199,7 @@ TEST_F(UnackedInvalidationSetSerializationTest, OneInvalidation) {
   unacked_invalidations_.Add(inv);
 
   UnackedInvalidationSet deserialized = SerializeDeserialize();
-  EXPECT_THAT(unacked_invalidations_, Eq(deserialized));
+  EXPECT_THAT(unacked_invalidations_, test_util::Eq(deserialized));
 }
 
 TEST_F(UnackedInvalidationSetSerializationTest, WithUnknownVersion) {
@@ -383,7 +211,7 @@ TEST_F(UnackedInvalidationSetSerializationTest, WithUnknownVersion) {
   unacked_invalidations_.Add(inv3);
 
   UnackedInvalidationSet deserialized = SerializeDeserialize();
-  EXPECT_THAT(unacked_invalidations_, Eq(deserialized));
+  EXPECT_THAT(unacked_invalidations_, test_util::Eq(deserialized));
 }
 
 }  // namespace

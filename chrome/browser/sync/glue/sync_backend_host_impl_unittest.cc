@@ -62,10 +62,6 @@ class MockSyncFrontend : public SyncFrontend {
  public:
   virtual ~MockSyncFrontend() {}
 
-  MOCK_METHOD1(OnInvalidatorStateChange,
-               void(syncer::InvalidatorState));
-  MOCK_METHOD1(OnIncomingInvalidation,
-               void(const syncer::ObjectIdInvalidationMap&));
   MOCK_METHOD3(
       OnBackendInitialized,
       void(const syncer::WeakHandle<syncer::JsBackend>&,

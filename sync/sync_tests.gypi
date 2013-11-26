@@ -121,8 +121,10 @@
         'notifier/fake_invalidator.h',
         'notifier/invalidator_test_template.cc',
         'notifier/invalidator_test_template.h',
-        'notifier/mock_ack_handler.cc',
-        'notifier/mock_ack_handler.h',
+        'notifier/unacked_invalidation_set_test_util.cc',
+        'notifier/unacked_invalidation_set_test_util.h',
+        'internal_api/public/base/object_id_invalidation_map_test_util.h',
+        'internal_api/public/base/object_id_invalidation_map_test_util.cc',
       ],
     },
 
@@ -151,8 +153,6 @@
       'sources': [
         'internal_api/public/base/invalidation_test_util.cc',
         'internal_api/public/base/invalidation_test_util.h',
-        'internal_api/public/base/object_id_invalidation_map_test_util.cc',
-        'internal_api/public/base/object_id_invalidation_map_test_util.h',
         'internal_api/public/test/fake_sync_manager.h',
         'internal_api/public/test/sync_manager_factory_for_profile_sync_test.h',
         'internal_api/public/test/test_entry_factory.h',
@@ -318,7 +318,6 @@
         'conditions': [
           ['OS != "android"', {
             'sources': [
-              'notifier/ack_tracker_unittest.cc',
               'notifier/fake_invalidator_unittest.cc',
               'notifier/invalidation_notifier_unittest.cc',
               'notifier/invalidator_registrar_unittest.cc',

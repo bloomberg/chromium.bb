@@ -133,15 +133,6 @@ void TiclInvalidationService::UnregisterInvalidationHandler(
   }
 }
 
-void TiclInvalidationService::AcknowledgeInvalidation(
-    const invalidation::ObjectId& id,
-    const syncer::AckHandle& ack_handle) {
-  DCHECK(CalledOnValidThread());
-  if (invalidator_) {
-    invalidator_->Acknowledge(id, ack_handle);
-  }
-}
-
 syncer::InvalidatorState TiclInvalidationService::GetInvalidatorState() const {
   DCHECK(CalledOnValidThread());
   if (invalidator_) {
@@ -360,7 +351,7 @@ void TiclInvalidationService::StartInvalidator() {
   invalidator_.reset(new syncer::NonBlockingInvalidator(
           options,
           invalidator_storage_->GetInvalidatorClientId(),
-          invalidator_storage_->GetAllInvalidationStates(),
+          invalidator_storage_->GetSavedInvalidations(),
           invalidator_storage_->GetBootstrapData(),
           syncer::WeakHandle<syncer::InvalidationStateTracker>(
               invalidator_storage_->AsWeakPtr()),

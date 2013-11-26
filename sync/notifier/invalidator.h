@@ -15,7 +15,6 @@
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/notifier/invalidation_util.h"
 #include "sync/notifier/invalidator_state.h"
-#include "sync/notifier/object_id_invalidation_map.h"
 
 namespace syncer {
 class InvalidationHandler;
@@ -68,10 +67,6 @@ class SYNC_EXPORT Invalidator {
   // it must already be registered.  Note that this doesn't unregister the IDs
   // associated with |handler|.
   virtual void UnregisterHandler(InvalidationHandler* handler) = 0;
-
-  // Acknowledge that an invalidation for |id| was handled.
-  virtual void Acknowledge(const invalidation::ObjectId& id,
-                           const AckHandle& ack_handle) = 0;
 
   // Returns the current invalidator state.  When called from within
   // InvalidationHandler::OnInvalidatorStateChange(), this must return
