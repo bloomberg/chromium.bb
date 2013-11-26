@@ -53,6 +53,7 @@
 #endif
 
 #include "compositor.h"
+#include "scaler-server-protocol.h"
 #include "../shared/os-compatibility.h"
 #include "git-version.h"
 #include "version.h"
@@ -3402,6 +3403,104 @@ weston_output_transform_coordinate(struct weston_output *output,
 }
 
 static void
+destroy_surface_scaler(struct wl_resource *resource)
+{
+}
+
+static void
+surface_scaler_destroy(struct wl_client *client,
+		       struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static void
+surface_scaler_set(struct wl_client *client,
+		   struct wl_resource *resource,
+		   wl_fixed_t src_x,
+		   wl_fixed_t src_y,
+		   wl_fixed_t src_width,
+		   wl_fixed_t src_height,
+		   int32_t dst_width,
+		   int32_t dst_height)
+{
+	if (wl_fixed_to_double(src_width) < 0 ||
+	    wl_fixed_to_double(src_height) < 0) {
+		wl_resource_post_error(resource,
+			WL_SURFACE_SCALER_ERROR_BAD_VALUE,
+			"source dimensions must be non-negative (%fx%f)",
+			wl_fixed_to_double(src_width),
+			wl_fixed_to_double(src_height));
+		return;
+	}
+
+	if (dst_width <= 0 || dst_height <= 0) {
+		wl_resource_post_error(resource,
+			WL_SURFACE_SCALER_ERROR_BAD_VALUE,
+			"destination dimensions must be positive (%dx%d)",
+			dst_width, dst_height);
+		return;
+	}
+
+	/* TODO */
+}
+
+static const struct wl_surface_scaler_interface surface_scaler_interface = {
+	surface_scaler_destroy,
+	surface_scaler_set
+};
+
+static void
+scaler_destroy(struct wl_client *client,
+	       struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static void
+scaler_get_surface_scaler(struct wl_client *client,
+			  struct wl_resource *scaler,
+			  uint32_t id,
+			  struct wl_resource *surface_resource)
+{
+	struct weston_surface *surface = wl_resource_get_user_data(surface_resource);
+	struct wl_resource *resource;
+
+	/* TODO: check we don't already have one for this surface */
+	resource = wl_resource_create(client, &wl_surface_scaler_interface,
+				      1, id);
+	if (resource == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	wl_resource_set_implementation(resource, &surface_scaler_interface,
+				       surface, destroy_surface_scaler);
+}
+
+static const struct wl_scaler_interface scaler_interface = {
+	scaler_destroy,
+	scaler_get_surface_scaler
+};
+
+static void
+bind_scaler(struct wl_client *client,
+	    void *data, uint32_t version, uint32_t id)
+{
+	struct wl_resource *resource;
+
+	resource = wl_resource_create(client, &wl_scaler_interface,
+				      1, id);
+	if (resource == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
+
+	wl_resource_set_implementation(resource, &scaler_interface,
+				       NULL, NULL);
+}
+
+static void
 compositor_bind(struct wl_client *client,
 		void *data, uint32_t version, uint32_t id)
 {
@@ -3487,6 +3586,10 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	if (!wl_global_create(display, &wl_subcompositor_interface, 1,
 			      ec, bind_subcompositor))
+		return -1;
+
+	if (!wl_global_create(ec->wl_display, &wl_scaler_interface, 1,
+			      ec, bind_scaler))
 		return -1;
 
 	wl_list_init(&ec->view_list);

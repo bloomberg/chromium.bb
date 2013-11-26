@@ -13,3 +13,5 @@ workspaces-protocol.c
 workspaces-server-protocol.h
 input-method-protocol.c
 input-method-server-protocol.h
+scaler-server-protocol.h
+scaler-protocol.c
