@@ -151,7 +151,7 @@ public class PrintingControllerImpl extends PrintDocumentAdapter implements Prin
 
     @Override
     public int[] getPageNumbers() {
-        return mPages.clone();
+        return mPages == null ? null : mPages.clone();
     }
 
     @Override
