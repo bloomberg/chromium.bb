@@ -4,10 +4,12 @@
 # gclient in the earlier version of this file, with the exception that
 # underscores in this file become dashes in the directory name (that means this
 # file can be 'source'ed in a shell script).
+#
+# You can auto-update this file with ./pnacl/deps_update.py
 
 binutils=c926f7f27f42ae8bfda0fe3aefc51d6401f979e7
 clang=a963b803407c9d1cac644cc425004e0ccd28fa45
-llvm=d6e87c3d8b372206f9037575deafec3a60c7fac8
+llvm=0c72d438ee891b1c8b6a434d90841fb885d90c58
 gcc=2bc500cdd4812d3797d3b1eec7de733b3c970045
 libcxx=611cf8f8011c77f2f840858e8c9c1d804ad15fd9
 libcxxabi=865117c8c09377d35e3ffadd7a649a44120ece56
