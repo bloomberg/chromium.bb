@@ -11,7 +11,7 @@
 #include "base/path_service.h"
 #include "base/values.h"
 #include "chrome/browser/policy/policy_load_status.h"
-#include "chrome/browser/policy/registry_dict_win.h"
+#include "components/policy/core/common/registry_dict_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {

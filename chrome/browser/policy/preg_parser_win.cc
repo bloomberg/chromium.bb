@@ -21,7 +21,7 @@
 #include "base/sys_byteorder.h"
 #include "base/values.h"
 #include "chrome/browser/policy/policy_load_status.h"
-#include "chrome/browser/policy/registry_dict_win.h"
+#include "components/policy/core/common/registry_dict_win.h"
 
 namespace policy {
 namespace preg_parser {

@@ -35,6 +35,8 @@
             'policy/core/common/policy_switches.cc',
             'policy/core/common/policy_switches.h',
             'policy/core/common/policy_types.h',
+            'policy/core/common/registry_dict_win.cc',
+            'policy/core/common/registry_dict_win.h',
             'policy/core/common/schema.cc',
             'policy/core/common/schema.h',
             'policy/core/common/schema_internal.h',

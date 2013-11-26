@@ -29,11 +29,11 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/policy/policy_load_status.h"
 #include "chrome/browser/policy/preg_parser_win.h"
-#include "chrome/browser/policy/registry_dict_win.h"
 #include "components/json_schema/json_schema_constants.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/registry_dict_win.h"
 #include "components/policy/core/common/schema.h"
 
 namespace schema = json_schema_constants;

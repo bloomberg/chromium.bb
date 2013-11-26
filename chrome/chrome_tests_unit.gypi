@@ -1135,7 +1135,6 @@
         'browser/policy/policy_statistics_collector_unittest.cc',
         'browser/policy/policy_transformations_unittest.cc',
         'browser/policy/preg_parser_win_unittest.cc',
-        'browser/policy/registry_dict_win_unittest.cc',
         'browser/policy/url_blacklist_manager_unittest.cc',
         'browser/policy/url_blacklist_policy_handler_unittest.cc',
         'browser/predictors/autocomplete_action_predictor_table_unittest.cc',

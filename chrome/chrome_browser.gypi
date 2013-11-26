@@ -1587,8 +1587,6 @@
         'browser/policy/profile_policy_connector.h',
         'browser/policy/profile_policy_connector_factory.cc',
         'browser/policy/profile_policy_connector_factory.h',
-        'browser/policy/registry_dict_win.cc',
-        'browser/policy/registry_dict_win.h',
         'browser/policy/schema_registry_service.cc',
         'browser/policy/schema_registry_service.h',
         'browser/policy/schema_registry_service_factory.cc',

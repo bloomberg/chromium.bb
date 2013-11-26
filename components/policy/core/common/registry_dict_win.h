@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_REGISTRY_DICT_WIN_H_
-#define CHROME_BROWSER_POLICY_REGISTRY_DICT_WIN_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_REGISTRY_DICT_WIN_H_
+#define COMPONENTS_POLICY_CORE_COMMON_REGISTRY_DICT_WIN_H_
 
 #include <windows.h>
 
@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "components/policy/policy_export.h"
 
 namespace base {
 class DictionaryValue;
@@ -22,14 +23,14 @@ class Value;
 namespace policy {
 
 // A case-insensitive string comparison functor.
-struct CaseInsensitiveStringCompare {
+struct POLICY_EXPORT CaseInsensitiveStringCompare {
   bool operator()(const std::string& a, const std::string& b) const;
 };
 
 // In-memory representation of a registry subtree. Using a
 // base::DictionaryValue directly seems tempting, but that doesn't handle the
 // registry's case-insensitive-but-case-preserving semantics properly.
-class RegistryDict {
+class POLICY_EXPORT RegistryDict {
  public:
   typedef std::map<std::string, RegistryDict*,
       CaseInsensitiveStringCompare> KeyMap;
@@ -87,4 +88,4 @@ class RegistryDict {
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_REGISTRY_DICT_WIN_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_REGISTRY_DICT_WIN_H_

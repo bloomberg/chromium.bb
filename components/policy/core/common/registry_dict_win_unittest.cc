@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/registry_dict_win.h"
+#include "components/policy/core/common/registry_dict_win.h"
 
 #include "base/values.h"
 #include "components/json_schema/json_schema_constants.h"
