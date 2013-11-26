@@ -22,7 +22,7 @@ PASS a.href is 'file:///some%20path#hash value'
 Set hash to '#'
 PASS a.href is 'http://mydomain.com/#'
 Add hash to non-standard protocol
-PASS a.href is 'foo:bar#hash'
+FAIL a.href should be foo:bar#hash. Was foo:bar.
 PASS successfullyParsed is true
 
 TEST COMPLETE
