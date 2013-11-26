@@ -112,7 +112,6 @@ class APIPermission {
     kNativeMessaging,
     kNetworkingPrivate,
     kNotification,
-    kOverrideEscFullscreen,
     kPageCapture,
     kPointerLock,
     kPlugin,
