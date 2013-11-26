@@ -48,7 +48,7 @@ namespace chromeos {
 
 namespace {
 
-// Increase logging level for Guest mode to avoid INFO messages in logs.
+// Increase logging level for Guest mode to avoid LOG(INFO) messages in logs.
 const char kGuestModeLoggingLevel[] = "1";
 
 // Format of command line switch.
@@ -147,7 +147,6 @@ std::string DeriveCommandLine(const GURL& start_url,
 #if defined(ENABLE_WEBRTC)
       ::switches::kDisableWebRtcHWDecoding,
       ::switches::kDisableWebRtcHWEncoding,
-      ::switches::kEnableAudioTrackProcessing,
       ::switches::kEnableWebRtcHWVp8Encoding,
 #endif
       ash::switches::kAshDefaultWallpaperLarge,
