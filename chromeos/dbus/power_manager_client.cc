@@ -485,10 +485,23 @@ class PowerManagerClientImpl : public PowerManagerClient {
     switch (proto.type()) {
       case power_manager::InputEvent_Type_POWER_BUTTON_DOWN:
       case power_manager::InputEvent_Type_POWER_BUTTON_UP: {
-        bool down =
+        const bool down =
             (proto.type() == power_manager::InputEvent_Type_POWER_BUTTON_DOWN);
         FOR_EACH_OBSERVER(PowerManagerClient::Observer, observers_,
                           PowerButtonEventReceived(down, timestamp));
+
+        // Tell powerd that Chrome has handled power button presses.
+        if (down) {
+          dbus::MethodCall method_call(
+              power_manager::kPowerManagerInterface,
+              power_manager::kHandlePowerButtonAcknowledgmentMethod);
+          dbus::MessageWriter writer(&method_call);
+          writer.AppendInt64(proto.timestamp());
+          power_manager_proxy_->CallMethod(
+              &method_call,
+              dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+              dbus::ObjectProxy::EmptyResponseCallback());
+        }
         break;
       }
       case power_manager::InputEvent_Type_LID_OPEN:
