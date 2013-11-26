@@ -1,0 +1,6 @@
+PASS No main thread scrolling reasons.
+PASS Found main thread scrolling reasons: Has non-layer viewport-constrained objects.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

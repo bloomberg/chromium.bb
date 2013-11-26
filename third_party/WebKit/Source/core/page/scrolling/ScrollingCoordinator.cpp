@@ -90,6 +90,8 @@ ScrollingCoordinator::ScrollingCoordinator(Page* page)
     : m_page(page)
     , m_scrollGestureRegionIsDirty(false)
     , m_touchEventTargetRectsAreDirty(false)
+    , m_wasFrameScrollable(false)
+    , m_lastMainThreadScrollingReasons(0)
 {
 }
 
@@ -150,6 +152,12 @@ void ScrollingCoordinator::updateAfterCompositingChange()
         updateTouchEventTargetRectsIfNeeded();
         m_touchEventTargetRectsAreDirty = false;
     }
+
+    FrameView* frameView = m_page->mainFrame()->view();
+    bool frameIsScrollable = frameView && frameView->isScrollable();
+    if (m_wasFrameScrollable != frameIsScrollable)
+        updateShouldUpdateScrollLayerPositionOnMainThread();
+    m_wasFrameScrollable = frameIsScrollable;
 
     const FrameTree& tree = m_page->mainFrame()->tree();
     for (const Frame* child = tree.firstChild(); child; child = child->tree().nextSibling()) {
@@ -493,6 +501,18 @@ void ScrollingCoordinator::updateTouchEventTargetRectsIfNeeded()
     setTouchEventTargetRects(touchEventTargetRects);
 }
 
+void ScrollingCoordinator::reset()
+{
+    m_horizontalScrollbars.clear();
+    m_verticalScrollbars.clear();
+    m_layersWithTouchRects.clear();
+    m_wasFrameScrollable = false;
+
+    // This is retained for testing.
+    m_lastMainThreadScrollingReasons = 0;
+    setShouldUpdateScrollLayerPositionOnMainThread(m_lastMainThreadScrollingReasons);
+}
+
 // Note that in principle this could be called more often than computeTouchEventTargetRects, for
 // example during a non-composited scroll (although that's not yet implemented - crbug.com/261307).
 void ScrollingCoordinator::setTouchEventTargetRects(const LayerHitTestRects& layerRects)
@@ -593,8 +613,10 @@ void ScrollingCoordinator::recomputeWheelEventHandlerCountForFrameView(FrameView
 
 void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainThreadScrollingReasons reasons)
 {
-    if (WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(m_page->mainFrame()->view()))
+    if (WebLayer* scrollLayer = scrollingWebLayerForScrollableArea(m_page->mainFrame()->view())) {
+        m_lastMainThreadScrollingReasons = reasons;
         scrollLayer->setShouldScrollOnMainThread(reasons);
+    }
 }
 
 void ScrollingCoordinator::pageDestroyed()
@@ -859,8 +881,11 @@ bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(Frame
 
 MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() const
 {
+    // The main thread scrolling reasons are applicable to scrolls of the main
+    // frame. If it does not exist or if it is not scrollable, there is no
+    // reason to force main thread scrolling.
     FrameView* frameView = m_page->mainFrame()->view();
-    if (!frameView)
+    if (!frameView || !frameView->isScrollable())
         return static_cast<MainThreadScrollingReasons>(0);
 
     MainThreadScrollingReasons mainThreadScrollingReasons = (MainThreadScrollingReasons)0;
@@ -896,7 +921,14 @@ String ScrollingCoordinator::mainThreadScrollingReasonsAsText(MainThreadScrollin
 
 String ScrollingCoordinator::mainThreadScrollingReasonsAsText() const
 {
-    return mainThreadScrollingReasonsAsText(mainThreadScrollingReasons());
+    return mainThreadScrollingReasonsAsText(m_lastMainThreadScrollingReasons);
+}
+
+bool ScrollingCoordinator::frameViewIsScrollableIsDirty() const
+{
+    FrameView* frameView = m_page->mainFrame()->view();
+    bool frameIsScrollable = frameView && frameView->isScrollable();
+    return frameIsScrollable != m_wasFrameScrollable;
 }
 
 } // namespace WebCore

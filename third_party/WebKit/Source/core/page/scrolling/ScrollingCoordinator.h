@@ -66,7 +66,7 @@ public:
     // Should be called after compositing has been updated.
     void updateAfterCompositingChange();
 
-    bool needsToUpdateAfterCompositingChange() const { return m_scrollGestureRegionIsDirty || m_touchEventTargetRectsAreDirty; }
+    bool needsToUpdateAfterCompositingChange() const { return m_scrollGestureRegionIsDirty || m_touchEventTargetRectsAreDirty || frameViewIsScrollableIsDirty(); }
 
     // Should be called whenever a wheel event handler is added or removed in the
     // frame view's underlying document.
@@ -115,6 +115,10 @@ public:
 
     void updateTouchEventTargetRectsIfNeeded();
 
+    // For testing purposes only. This ScrollingCoordinator is reused between layout test, and must be reset
+    // for the results to be valid.
+    void reset();
+
 protected:
     explicit ScrollingCoordinator(Page*);
 
@@ -152,11 +156,16 @@ private:
     blink::WebScrollbarLayer* getWebScrollbarLayer(ScrollableArea*, ScrollbarOrientation);
     void removeWebScrollbarLayer(ScrollableArea*, ScrollbarOrientation);
 
+    bool frameViewIsScrollableIsDirty() const;
 
     typedef HashMap<ScrollableArea*, OwnPtr<blink::WebScrollbarLayer> > ScrollbarMap;
     ScrollbarMap m_horizontalScrollbars;
     ScrollbarMap m_verticalScrollbars;
     HashSet<const RenderLayer*> m_layersWithTouchRects;
+    bool m_wasFrameScrollable;
+
+    // This is retained for testing.
+    MainThreadScrollingReasons m_lastMainThreadScrollingReasons;
 };
 
 } // namespace WebCore

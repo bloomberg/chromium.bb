@@ -204,6 +204,11 @@ void Internals::resetToConsistentState(Page* page)
         page->mainFrame()->spellChecker().toggleContinuousSpellChecking();
     if (page->mainFrame()->editor().isOverwriteModeEnabled())
         page->mainFrame()->editor().toggleOverwriteModeEnabled();
+
+    if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
+        scrollingCoordinator->reset();
+
+    page->mainFrame()->view()->clear();
 }
 
 Internals::Internals(Document* document)

@@ -286,6 +286,7 @@ void FrameView::reset()
     m_firstVisuallyNonEmptyLayoutCallbackPending = true;
     m_maintainScrollPositionAnchor = 0;
     m_partialLayout.reset();
+    m_viewportConstrainedObjects.clear();
 }
 
 void FrameView::removeFromAXObjectCache()
