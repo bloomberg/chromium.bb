@@ -518,6 +518,7 @@ Page::PageClients::PageClients()
     , dragClient(0)
     , inspectorClient(0)
     , backForwardClient(0)
+    , spellCheckerClient(0)
 {
 }
 
