@@ -71,7 +71,7 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
                              QuicPacketSequenceNumber new_sequence_number);
 
   // Processes the ReceivedPacketInfo data from the incoming ack.
-  void OnIncomingAck(const ReceivedPacketInfo& received_info,
+  void OnPacketAcked(const ReceivedPacketInfo& received_info,
                      bool is_truncated_ack);
 
   // Discards any information for the packet corresponding to |sequence_number|.

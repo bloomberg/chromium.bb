@@ -173,6 +173,11 @@ QuicAlarm* QuicConnectionPeer::GetRetransmissionAlarm(
 }
 
 // static
+QuicAlarm* QuicConnectionPeer::GetAbandonFecAlarm(QuicConnection* connection) {
+  return connection->abandon_fec_alarm_.get();
+}
+
+// static
 QuicAlarm* QuicConnectionPeer::GetSendAlarm(QuicConnection* connection) {
   return connection->send_alarm_.get();
 }

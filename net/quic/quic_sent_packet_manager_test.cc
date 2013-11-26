@@ -150,7 +150,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAck) {
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 2;
   received_info.missing_packets.insert(1);
-  manager_.OnIncomingAck(received_info, false);
+  manager_.OnPacketAcked(received_info, false);
 
   // No unacked packets remain.
   VerifyUnackedPackets(NULL, 0);
@@ -167,7 +167,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckBeforeSend) {
   // Ack 1.
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 1;
-  manager_.OnIncomingAck(received_info, false);
+  manager_.OnPacketAcked(received_info, false);
 
   // There should no longer be a pending retransmission.
   EXPECT_FALSE(manager_.HasPendingRetransmissions());
@@ -187,7 +187,7 @@ TEST_F(QuicSentPacketManagerTest, RetransmitThenAckPrevious) {
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 2;
   received_info.missing_packets.insert(2);
-  manager_.OnIncomingAck(received_info, false);
+  manager_.OnPacketAcked(received_info, false);
 
   // 2 remains unacked, but no packets have retransmittable data.
   QuicPacketSequenceNumber unacked[] = { 2 };
@@ -208,7 +208,7 @@ TEST_F(QuicSentPacketManagerTest, TruncatedAck) {
   received_info.largest_observed = 2;
   received_info.missing_packets.insert(1);
   received_info.missing_packets.insert(2);
-  manager_.OnIncomingAck(received_info, true);
+  manager_.OnPacketAcked(received_info, true);
 
   // High water mark will be raised.
   QuicPacketSequenceNumber unacked[] = { 2, 3, 4 };
@@ -227,7 +227,7 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
     ReceivedPacketInfo received_info;
     received_info.largest_observed = 3;
     received_info.missing_packets.insert(2);
-    manager_.OnIncomingAck(received_info, false);
+    manager_.OnPacketAcked(received_info, false);
 
     QuicPacketSequenceNumber unacked[] = { 2 };
     VerifyUnackedPackets(unacked, arraysize(unacked));
@@ -244,7 +244,7 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
     received_info.largest_observed = 5;
     received_info.missing_packets.insert(2);
     received_info.missing_packets.insert(4);
-    manager_.OnIncomingAck(received_info, false);
+    manager_.OnPacketAcked(received_info, false);
 
     QuicPacketSequenceNumber unacked[] = { 2, 4 };
     VerifyUnackedPackets(unacked, arraysize(unacked));
@@ -262,7 +262,7 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
     received_info.missing_packets.insert(2);
     received_info.missing_packets.insert(4);
     received_info.missing_packets.insert(6);
-    manager_.OnIncomingAck(received_info, false);
+    manager_.OnPacketAcked(received_info, false);
 
     QuicPacketSequenceNumber unacked[] = { 2, 4, 6 };
     VerifyUnackedPackets(unacked, arraysize(unacked));
@@ -283,7 +283,7 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
     received_info.missing_packets.insert(6);
     received_info.missing_packets.insert(8);
     received_info.missing_packets.insert(9);
-    manager_.OnIncomingAck(received_info, false);
+    manager_.OnPacketAcked(received_info, false);
 
     QuicPacketSequenceNumber unacked[] = { 2, 4, 6, 8, 9 };
     VerifyUnackedPackets(unacked, arraysize(unacked));
@@ -307,7 +307,7 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
     received_info.missing_packets.insert(9);
     received_info.missing_packets.insert(11);
     received_info.missing_packets.insert(12);
-    manager_.OnIncomingAck(received_info, false);
+    manager_.OnPacketAcked(received_info, false);
 
     QuicPacketSequenceNumber unacked[] = { 2, 4, 6, 8, 9, 11, 12 };
     VerifyUnackedPackets(unacked, arraysize(unacked));
@@ -330,7 +330,7 @@ TEST_F(QuicSentPacketManagerTest, SendDropAckRetransmitManyPackets) {
     received_info.missing_packets.insert(9);
     received_info.missing_packets.insert(11);
     received_info.missing_packets.insert(12);
-    manager_.OnIncomingAck(received_info, true);
+    manager_.OnPacketAcked(received_info, true);
 
     // Truncated ack raises the high water mark by clearing out 2, 4, and 6.
     QuicPacketSequenceNumber unacked[] = { 8, 9, 11, 12, 14, 15, 16 };
@@ -394,7 +394,7 @@ TEST_F(QuicSentPacketManagerTest, GetLeastUnackedFecPacketAndDiscard) {
   // Ack 2.
   ReceivedPacketInfo received_info;
   received_info.largest_observed = 2;
-  manager_.OnIncomingAck(received_info, false);
+  manager_.OnPacketAcked(received_info, false);
 
   EXPECT_EQ(3u, manager_.GetLeastUnackedFecPacket());
 

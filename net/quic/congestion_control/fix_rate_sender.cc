@@ -54,7 +54,7 @@ void FixRateSender::OnIncomingQuicCongestionFeedbackFrame(
   // Silently ignore invalid messages in release mode.
 }
 
-void FixRateSender::OnIncomingAck(
+void FixRateSender::OnPacketAcked(
     QuicPacketSequenceNumber /*acked_sequence_number*/,
     QuicByteCount bytes_acked,
     QuicTime::Delta rtt) {
@@ -68,8 +68,8 @@ void FixRateSender::OnIncomingAck(
   latest_rtt_ = rtt;
 }
 
-void FixRateSender::OnIncomingLoss(QuicPacketSequenceNumber /*sequence_number*/,
-                                   QuicTime /*ack_receive_time*/) {
+void FixRateSender::OnPacketLost(QuicPacketSequenceNumber /*sequence_number*/,
+                                 QuicTime /*ack_receive_time*/) {
   // Ignore losses for fix rate sender.
 }
 

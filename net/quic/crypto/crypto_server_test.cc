@@ -7,6 +7,7 @@
 #include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/crypto/quic_crypto_server_config.h"
 #include "net/quic/crypto/quic_random.h"
+#include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/delayed_verify_strike_register_client.h"
 #include "net/quic/test_tools/mock_clock.h"
@@ -27,6 +28,7 @@ class CryptoServerTest : public ::testing::Test {
         addr_(ParseIPLiteralToNumber("192.0.2.33", &ip_) ?
               ip_ : IPAddressNumber(), 1) {
     config_.SetProofSource(CryptoTestUtils::ProofSourceForTesting());
+    supported_versions_ = QuicSupportedVersions();
   }
 
   virtual void SetUp() {
@@ -136,8 +138,9 @@ class CryptoServerTest : public ::testing::Test {
                                const char* error_substr) {
     string error_details;
     QuicErrorCode error = config_.ProcessClientHello(
-        result, 1 /* GUID */, addr_, &clock_,
-        rand_, &params_, &out_, &error_details);
+        result, 1 /* GUID */, addr_,
+        supported_versions_.front(), supported_versions_, &clock_, rand_,
+        &params_, &out_, &error_details);
 
     if (should_succeed) {
       ASSERT_EQ(error, QUIC_NO_ERROR)
@@ -176,6 +179,7 @@ class CryptoServerTest : public ::testing::Test {
  protected:
   QuicRandom* const rand_;
   MockClock clock_;
+  QuicVersionVector supported_versions_;
   QuicCryptoServerConfig config_;
   QuicCryptoServerConfig::ConfigOptions config_options_;
   QuicCryptoNegotiatedParameters params_;
@@ -270,6 +274,22 @@ TEST_F(CryptoServerTest, BadClientNonce) {
   }
 }
 
+TEST_F(CryptoServerTest, DowngradeAttack) {
+  if (supported_versions_.size() == 1) {
+    // No downgrade attack is possible if the server only supports one version.
+    return;
+  }
+  // Set the client's preferred version to a supported version that
+  // is not the "current" version (supported_versions_.front()).
+  string client_version = QuicUtils::TagToString(
+      QuicVersionToQuicTag(supported_versions_.back()));
+
+  ShouldFailMentioning("Downgrade", InchoateClientHello(
+      "CHLO",
+      "VER\0", client_version.data(),
+      NULL));
+}
+
 TEST_F(CryptoServerTest, ReplayProtection) {
   // This tests that disabling replay protection works.
   CryptoHandshakeMessage msg = CryptoTestUtils::Message(
@@ -296,6 +316,13 @@ TEST_F(CryptoServerTest, ReplayProtection) {
   ShouldSucceed(msg);
   // The message should accepted twice when replay protection is off.
   ASSERT_EQ(kSHLO, out_.tag());
+  const QuicTag* versions;
+  size_t num_versions;
+  out_.GetTaglist(kVER, &versions, &num_versions);
+  ASSERT_EQ(QuicSupportedVersions().size(), num_versions);
+  for (size_t i = 0; i < num_versions; ++i) {
+    EXPECT_EQ(QuicVersionToQuicTag(QuicSupportedVersions()[i]), versions[i]);
+  }
 }
 
 TEST(CryptoServerConfigGenerationTest, Determinism) {

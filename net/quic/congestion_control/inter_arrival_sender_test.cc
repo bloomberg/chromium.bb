@@ -53,7 +53,7 @@ class InterArrivalSenderTest : public ::testing::Test {
 
   void AckNPackets(int n) {
     for (int i = 0; i < n; ++i) {
-      sender_.OnIncomingAck(
+      sender_.OnPacketAcked(
           acked_sequence_number_++, kDefaultMaxPacketSize, rtt_);
     }
   }
@@ -540,8 +540,8 @@ TEST_F(InterArrivalSenderTest, MinBitrateDueToLoss) {
     send_clock_.AdvanceTime(time_until_send);
     EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
-    sender_.OnIncomingLoss(acked_sequence_number_ - 1, send_clock_.Now());
-    sender_.OnIncomingAck(acked_sequence_number_, kDefaultMaxPacketSize, rtt_);
+    sender_.OnPacketLost(acked_sequence_number_ - 1, send_clock_.Now());
+    sender_.OnPacketAcked(acked_sequence_number_, kDefaultMaxPacketSize, rtt_);
     acked_sequence_number_ += 2;  // Create a loss by not acking both packets.
     SendFeedbackMessageNPackets(2, nine_ms_, nine_ms_);
   }
@@ -555,8 +555,8 @@ TEST_F(InterArrivalSenderTest, MinBitrateDueToLoss) {
     send_clock_.AdvanceTime(time_until_send);
     EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
-    sender_.OnIncomingLoss(acked_sequence_number_ - 1, send_clock_.Now());
-    sender_.OnIncomingAck(acked_sequence_number_, kDefaultMaxPacketSize, rtt_);
+    sender_.OnPacketLost(acked_sequence_number_ - 1, send_clock_.Now());
+    sender_.OnPacketAcked(acked_sequence_number_, kDefaultMaxPacketSize, rtt_);
     acked_sequence_number_ += 2;  // Create a loss by not acking both packets.
     SendFeedbackMessageNPackets(2, nine_ms_, nine_ms_);
 

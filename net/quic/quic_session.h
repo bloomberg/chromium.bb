@@ -147,11 +147,9 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   void MarkWriteBlocked(QuicStreamId id, QuicPriority priority);
 
-  // Returns the number of streams with more data the connection can't
-  // write yet.
-  size_t NumWriteBlockedStreams() const {
-    return write_blocked_streams_.NumBlockedStreams();
-  }
+  // Returns true if the session has data to be sent, either queued in the
+  // connection, or in a write-blocked stream.
+  bool HasQueuedData() const;
 
   // Marks that |stream_id| is blocked waiting to decompress the
   // headers identified by |decompression_id|.

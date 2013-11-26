@@ -9,7 +9,6 @@
 
 #include "base/basictypes.h"
 #include "net/quic/crypto/crypto_handshake.h"
-#include "net/quic/crypto/crypto_utils.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_time.h"
 #include "net/quic/quic_utils.h"

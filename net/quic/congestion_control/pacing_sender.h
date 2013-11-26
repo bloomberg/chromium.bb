@@ -37,11 +37,11 @@ class NET_EXPORT_PRIVATE PacingSender : public SendAlgorithmInterface {
       const QuicCongestionFeedbackFrame& feedback,
       QuicTime feedback_receive_time,
       const SendAlgorithmInterface::SentPacketsMap& sent_packets) OVERRIDE;
-  virtual void OnIncomingAck(QuicPacketSequenceNumber acked_sequence_number,
+  virtual void OnPacketAcked(QuicPacketSequenceNumber acked_sequence_number,
                              QuicByteCount acked_bytes,
                              QuicTime::Delta rtt) OVERRIDE;
-  virtual void OnIncomingLoss(QuicPacketSequenceNumber sequence_number,
-                              QuicTime ack_receive_time) OVERRIDE;
+  virtual void OnPacketLost(QuicPacketSequenceNumber sequence_number,
+                            QuicTime ack_receive_time) OVERRIDE;
   virtual bool OnPacketSent(QuicTime sent_time,
                             QuicPacketSequenceNumber sequence_number,
                             QuicByteCount bytes,

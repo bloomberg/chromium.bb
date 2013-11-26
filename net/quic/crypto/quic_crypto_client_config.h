@@ -123,8 +123,11 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // source-address token or SCFG from a server. If |cached| is non-NULL, the
   // source-address token will be taken from it. |out_params| is used in order
   // to store the cached certs that were sent as hints to the server in
-  // |out_params->cached_certs|.
+  // |out_params->cached_certs|. |preferred_version| is the version of the QUIC
+  // protocol that this client chose to use initially. This allows the server to
+  // detect downgrade attacks.
   void FillInchoateClientHello(const std::string& server_hostname,
+                               const QuicVersion preferred_version,
                                const CachedState* cached,
                                QuicCryptoNegotiatedParameters* out_params,
                                CryptoHandshakeMessage* out) const;
@@ -136,9 +139,12 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   //
   // |clock| and |rand| are used to generate the nonce and |out_params| is
   // filled with the results of the handshake that the server is expected to
-  // accept.
+  // accept. |preferred_version| is the version of the QUIC protocol that this
+  // client chose to use initially. This allows the server to detect downgrade
+  // attacks.
   QuicErrorCode FillClientHello(const std::string& server_hostname,
                                 QuicGuid guid,
+                                const QuicVersion preferred_version,
                                 const CachedState* cached,
                                 QuicWallTime now,
                                 QuicRandom* rand,
@@ -162,9 +168,13 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // cached information about that server, writes the negotiated parameters to
   // |out_params| and returns QUIC_NO_ERROR. If |server_hello| is unacceptable
   // then it puts an error message in |error_details| and returns an error
-  // code.
+  // code. |negotiated_versions| contains the list of version, if any, that were
+  // present in a version negotiation packet previously recevied from the
+  // server. The contents of this list will be compared against the list of
+  // versions provided in the VER tag of the server hello.
   QuicErrorCode ProcessServerHello(const CryptoHandshakeMessage& server_hello,
                                    QuicGuid guid,
+                                   const QuicVersionVector& negotiated_versions,
                                    CachedState* cached,
                                    QuicCryptoNegotiatedParameters* out_params,
                                    std::string* error_details);

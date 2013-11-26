@@ -386,6 +386,7 @@ void QuicConnection::OnVersionNegotiationPacket(
   }
 
   DVLOG(1) << ENDPOINT << "negotiating version " << version();
+  server_supported_versions_ = packet.versions;
   version_negotiation_state_ = NEGOTIATION_IN_PROGRESS;
   RetransmitUnackedPackets(ALL_PACKETS);
 }
@@ -525,7 +526,7 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
   sent_entropy_manager_.ClearEntropyBefore(
       received_packet_manager_.least_packet_awaited_by_peer() - 1);
 
-  sent_packet_manager_.OnIncomingAck(incoming_ack.received_info,
+  sent_packet_manager_.OnPacketAcked(incoming_ack.received_info,
                                      received_truncated_ack_);
 
   // Get the updated least unacked sequence number.
@@ -1119,6 +1120,7 @@ void QuicConnection::RetransmitUnackedPackets(
       // TODO(satyamshekhar): Think about congestion control here.
       // Specifically, about the retransmission count of packets being sent
       // proactively to achieve 0 (minimal) RTT.
+      congestion_manager_.OnPacketAbandoned(*unacked_it);
       RetransmitPacket(*unacked_it, NACK_RETRANSMISSION);
     }
   }
@@ -1128,11 +1130,6 @@ void QuicConnection::RetransmitPacket(
     QuicPacketSequenceNumber sequence_number,
     TransmissionType transmission_type) {
   DCHECK(sent_packet_manager_.IsUnacked(sequence_number));
-
-  // TODO(pwestin): Need to fix potential issue with FEC and a 1 packet
-  // congestion window see b/8331807 for details.
-  congestion_manager_.OnPacketAbandoned(sequence_number);
-
   // If we have received an ACK for an old version of this packet, then
   // we should not retransmit the data.
   if (!sent_packet_manager_.MarkForRetransmission(sequence_number,
@@ -1513,8 +1510,6 @@ void QuicConnection::OnRetransmissionTimeout() {
     return;
   }
 
-  // TODO(ianswett): When an RTO fires, but the connection has not been
-  // established as forward secure, re-send the client hello first.
   ++stats_.rto_count;
 
   congestion_manager_.OnRetransmissionTimeout();
@@ -1527,18 +1522,11 @@ void QuicConnection::OnRetransmissionTimeout() {
   DVLOG(1) << "OnRetransmissionTimeout() fired with "
              << unacked_packets.size() << " unacked packets.";
 
-  // Abandon all unacked packets to ensure the congestion window
-  // opens up before we attempt to retransmit the packet.
-  for (SequenceNumberSet::const_iterator it = unacked_packets.begin();
-       it != unacked_packets.end(); ++it) {
-    congestion_manager_.OnPacketAbandoned(*it);
-  }
-
   // Retransmit any packet with retransmittable frames.
   for (SequenceNumberSet::const_iterator it = unacked_packets.begin();
        it != unacked_packets.end(); ++it) {
-    if (sent_packet_manager_.IsUnacked(*it) &&
-        sent_packet_manager_.HasRetransmittableFrames(*it)) {
+    DCHECK(sent_packet_manager_.IsUnacked(*it));
+    if (sent_packet_manager_.HasRetransmittableFrames(*it)) {
       RetransmitPacket(*it, RTO_RETRANSMISSION);
     }
   }

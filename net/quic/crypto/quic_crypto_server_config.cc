@@ -240,6 +240,7 @@ QuicServerConfigProtobuf* QuicCryptoServerConfig::DefaultConfig(
     msg.SetTaglist(kKEXS, kC255, 0);
   }
   msg.SetTaglist(kAEAD, kAESG, 0);
+  // TODO(rch): Remove once we remove QUIC_VERSION_12.
   msg.SetValue(kVERS, static_cast<uint16>(0));
   msg.SetStringPiece(kPUBS, encoded_public_values);
 
@@ -455,6 +456,8 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
     const ValidateClientHelloResultCallback::Result& validate_chlo_result,
     QuicGuid guid,
     IPEndPoint client_ip,
+    QuicVersion version,
+    const QuicVersionVector& supported_versions,
     const QuicClock* clock,
     QuicRandom* rand,
     QuicCryptoNegotiatedParameters *params,
@@ -465,6 +468,27 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   const CryptoHandshakeMessage& client_hello =
       validate_chlo_result.client_hello;
   const ClientHelloInfo& info = validate_chlo_result.info;
+
+  // If the client's preferred version is not the version we are currently
+  // speaking, then the client went through a version negotiation.  In this
+  // case, we need to make sure that we actually do not support this version
+  // and that it wasn't a downgrade attack.
+  QuicTag client_version_tag;
+  // TODO(rch): Make this check mandatory when we remove QUIC_VERSION_12.
+  if (client_hello.GetUint32(kVER, &client_version_tag) == QUIC_NO_ERROR) {
+    QuicVersion client_version = QuicTagToQuicVersion(client_version_tag);
+    if (client_version != version) {
+      // Just because client_version is a valid version enum doesn't mean that
+      // this server actually supports that version, so we check to see if
+      // it's actually in the supported versions list.
+      for (size_t i = 0; i < supported_versions.size(); ++i) {
+        if (client_version == supported_versions[i]) {
+          *error_details = "Downgrade attack detected";
+          return QUIC_VERSION_NEGOTIATION_MISMATCH;
+        }
+      }
+    }
+  }
 
   StringPiece requested_scid;
   client_hello.GetStringPiece(kSCID, &requested_scid);
@@ -667,6 +691,12 @@ QuicErrorCode QuicCryptoServerConfig::ProcessClientHello(
   }
 
   out->set_tag(kSHLO);
+  QuicTagVector supported_version_tags;
+  for (size_t i = 0; i < supported_versions.size(); ++i) {
+    supported_version_tags.push_back
+        (QuicVersionToQuicTag(supported_versions[i]));
+  }
+  out->SetVector(kVER, supported_version_tags);
   out->SetStringPiece(kSourceAddressTokenTag,
                       NewSourceAddressToken(client_ip, rand, info.now));
   out->SetStringPiece(kPUBS, forward_secure_public_value);
@@ -1063,16 +1093,6 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
     }
 
     config->key_exchanges.push_back(ka.release());
-  }
-
-  if (msg->GetUint16(kVERS, &config->version) != QUIC_NO_ERROR) {
-    LOG(WARNING) << "Server config message is missing version";
-    return NULL;
-  }
-
-  if (config->version != QuicCryptoConfig::CONFIG_VERSION) {
-    LOG(WARNING) << "Server config specifies an unsupported version";
-    return NULL;
   }
 
   return config;

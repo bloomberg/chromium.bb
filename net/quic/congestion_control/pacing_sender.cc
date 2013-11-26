@@ -34,16 +34,16 @@ void PacingSender::OnIncomingQuicCongestionFeedbackFrame(
       feedback, feedback_receive_time, sent_packets);
 }
 
-void PacingSender::OnIncomingAck(
+void PacingSender::OnPacketAcked(
     QuicPacketSequenceNumber acked_sequence_number,
     QuicByteCount acked_bytes,
     QuicTime::Delta rtt) {
-  sender_->OnIncomingAck(acked_sequence_number, acked_bytes, rtt);
+  sender_->OnPacketAcked(acked_sequence_number, acked_bytes, rtt);
 }
 
-void PacingSender::OnIncomingLoss(QuicPacketSequenceNumber sequence_number,
-                                  QuicTime ack_receive_time) {
-  sender_->OnIncomingLoss(sequence_number, ack_receive_time);
+void PacingSender::OnPacketLost(QuicPacketSequenceNumber sequence_number,
+                                QuicTime ack_receive_time) {
+  sender_->OnPacketLost(sequence_number, ack_receive_time);
 }
 
 bool PacingSender::OnPacketSent(

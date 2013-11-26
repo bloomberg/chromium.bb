@@ -25,8 +25,8 @@ class QuicCryptoClientStreamTest : public ::testing::Test {
  public:
   QuicCryptoClientStreamTest()
       : addr_(),
-        connection_(new PacketSavingConnection(1, addr_, true)),
-        session_(new TestSession(connection_, DefaultQuicConfig(), true)),
+        connection_(new PacketSavingConnection(1, addr_, false)),
+        session_(new TestSession(connection_, DefaultQuicConfig(), false)),
         stream_(new QuicCryptoClientStream(kServerHostname, session_.get(),
                                            &crypto_config_)) {
     session_->SetCryptoStream(stream_.get());

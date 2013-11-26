@@ -263,6 +263,7 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
       case kAEAD:
       case kCGST:
       case kPDMD:
+      case kVER:
         // tag lists
         if (it->second.size() % sizeof(QuicTag) == 0) {
           for (size_t j = 0; j < it->second.size(); j += sizeof(QuicTag)) {
@@ -330,8 +331,7 @@ const char QuicCryptoConfig::kForwardSecureLabel[] =
     "QUIC forward secure key expansion";
 
 QuicCryptoConfig::QuicCryptoConfig()
-    : version(0),
-      common_cert_sets(CommonCertSets::GetInstanceQUIC()) {
+    : common_cert_sets(CommonCertSets::GetInstanceQUIC()) {
 }
 
 QuicCryptoConfig::~QuicCryptoConfig() {}

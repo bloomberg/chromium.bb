@@ -209,7 +209,7 @@ bool InterArrivalSender::ProbingPhase(QuicTime feedback_receive_time) {
   return false;
 }
 
-void InterArrivalSender::OnIncomingAck(
+void InterArrivalSender::OnPacketAcked(
     QuicPacketSequenceNumber /*acked_sequence_number*/,
     QuicByteCount acked_bytes,
     QuicTime::Delta rtt) {
@@ -234,7 +234,7 @@ void InterArrivalSender::OnIncomingAck(
   state_machine_->set_rtt(smoothed_rtt_);
 }
 
-void InterArrivalSender::OnIncomingLoss(
+void InterArrivalSender::OnPacketLost(
     QuicPacketSequenceNumber /*sequence_number*/,
     QuicTime ack_receive_time) {
   // Packet loss was reported.

@@ -305,9 +305,7 @@ void QuicTestClient::ResetConnection() {
 }
 
 void QuicTestClient::Disconnect() {
-  if (client_->connected()) {
-    client_->Disconnect();
-  }
+  client_->Disconnect();
   connect_attempted_ = false;
 }
 
@@ -432,8 +430,7 @@ void QuicTestClient::UseGuid(QuicGuid guid) {
 }
 
 void QuicTestClient::WaitForWriteToFlush() {
-  while (connected() &&
-         client()->session()->NumWriteBlockedStreams() != 0) {
+  while (connected() && client()->session()->HasQueuedData()) {
     client_->WaitForEvents();
   }
 }

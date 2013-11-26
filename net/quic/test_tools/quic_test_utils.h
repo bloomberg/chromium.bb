@@ -376,9 +376,9 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
                void(const QuicCongestionFeedbackFrame&,
                     QuicTime feedback_receive_time,
                     const SentPacketsMap&));
-  MOCK_METHOD3(OnIncomingAck,
+  MOCK_METHOD3(OnPacketAcked,
                void(QuicPacketSequenceNumber, QuicByteCount, QuicTime::Delta));
-  MOCK_METHOD2(OnIncomingLoss, void(QuicPacketSequenceNumber, QuicTime));
+  MOCK_METHOD2(OnPacketLost, void(QuicPacketSequenceNumber, QuicTime));
   MOCK_METHOD5(OnPacketSent,
                bool(QuicTime sent_time, QuicPacketSequenceNumber, QuicByteCount,
                     TransmissionType, HasRetransmittableData));

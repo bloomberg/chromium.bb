@@ -270,6 +270,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   // The version of the protocol this connection is using.
   QuicVersion version() const { return framer_.version(); }
 
+  // The versions of the protocol that this connection supports.
+  const QuicVersionVector& supported_versions() const {
+    return framer_.supported_versions();
+  }
+
   // From QuicFramerVisitorInterface
   virtual void OnError(QuicFramer* framer) OVERRIDE;
   virtual bool OnProtocolVersionMismatch(QuicVersion received_version) OVERRIDE;
@@ -326,6 +331,12 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicPacketCreator::Options* options() { return packet_creator_.options(); }
 
   bool connected() const { return connected_; }
+
+  // Must only be called on client connections.
+  const QuicVersionVector& server_supported_versions() const {
+    DCHECK(!is_server_);
+    return server_supported_versions_;
+  }
 
   size_t NumFecGroups() const { return group_map_.size(); }
 
@@ -776,6 +787,10 @@ class NET_EXPORT_PRIVATE QuicConnection
   // all packets that a given block of data was sent in. The AckNotifierManager
   // maintains the currently active notifiers.
   AckNotifierManager ack_notifier_manager_;
+
+  // If non-empty this contains the set of versions received in a
+  // version negotiation packet.
+  QuicVersionVector server_supported_versions_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };

@@ -163,6 +163,8 @@ QuicErrorCode QuicCryptoServerStream::ProcessClientHello(
       result,
       session()->connection()->guid(),
       session()->connection()->peer_address(),
+      session()->connection()->version(),
+      session()->connection()->supported_versions(),
       session()->connection()->clock(),
       session()->connection()->random_generator(),
       &crypto_negotiated_params_, reply, error_details);

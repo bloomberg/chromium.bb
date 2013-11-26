@@ -113,6 +113,16 @@ void QuicCongestionManager::OnPacketSent(
 void QuicCongestionManager::OnRetransmissionTimeout() {
   ++consecutive_rto_count_;
   send_algorithm_->OnRetransmissionTimeout();
+  // Abandon all pending packets to ensure the congestion window
+  // opens up before we attempt to retransmit packets.
+  for (SequenceNumberSet::const_iterator it = pending_packets_.begin();
+       it != pending_packets_.end(); ++it) {
+    QuicPacketSequenceNumber sequence_number = *it;
+    DCHECK(ContainsKey(packet_history_map_, sequence_number));
+    send_algorithm_->OnPacketAbandoned(
+        sequence_number, packet_history_map_[sequence_number]->bytes_sent());
+  }
+  pending_packets_.clear();
 }
 
 void QuicCongestionManager::OnLeastUnackedIncreased() {
@@ -167,12 +177,13 @@ SequenceNumberSet QuicCongestionManager::OnIncomingAckFrame(
       pending_packets_.upper_bound(frame.received_info.largest_observed);
 
   SequenceNumberSet retransmission_packets;
+  SequenceNumberSet lost_packets;
   while (it != it_upper) {
     QuicPacketSequenceNumber sequence_number = *it;
     if (!IsAwaitingPacket(frame.received_info, sequence_number)) {
       // Not missing, hence implicitly acked.
       size_t bytes_sent = packet_history_map_[sequence_number]->bytes_sent();
-      send_algorithm_->OnIncomingAck(sequence_number, bytes_sent, rtt_sample_);
+      send_algorithm_->OnPacketAcked(sequence_number, bytes_sent, rtt_sample_);
       pending_packets_.erase(it++);  // Must be incremented post to work.
       continue;
     }
@@ -183,10 +194,24 @@ SequenceNumberSet QuicCongestionManager::OnIncomingAckFrame(
     DCHECK(ContainsKey(packet_history_map_, sequence_number));
     const SendAlgorithmInterface::SentPacket* sent_packet =
         packet_history_map_[sequence_number];
-    packet_history_map_[sequence_number]->Nack();
+    // Consider it multiple nacks when there is a gap between the missing packet
+    // and the largest observed, since the purpose of a nack threshold is to
+    // tolerate re-ordering.  This handles both StretchAcks and Forward Acks.
+    // TODO(ianswett): This relies heavily on sequential reception of packets,
+    // and makes an assumption that the congestion control uses TCP style nacks.
+    size_t min_nacks = frame.received_info.largest_observed - sequence_number;
+    packet_history_map_[sequence_number]->Nack(min_nacks);
 
-    // If the nack count hasn't been reached, continue.
-    if (sent_packet->nack_count() < kNumberOfNacksBeforeRetransmission) {
+    size_t num_nacks_needed = kNumberOfNacksBeforeRetransmission;
+    // Check for early retransmit(RFC5827) when the last packet gets acked and
+    // the there are fewer than 4 pending packets.
+    if (pending_packets_.size() <= kNumberOfNacksBeforeRetransmission &&
+        sent_packet->has_retransmittable_data() == HAS_RETRANSMITTABLE_DATA &&
+        *pending_packets_.rbegin() == frame.received_info.largest_observed) {
+      num_nacks_needed = frame.received_info.largest_observed - sequence_number;
+    }
+
+    if (sent_packet->nack_count() < num_nacks_needed) {
       ++it;
       continue;
     }
@@ -198,19 +223,25 @@ SequenceNumberSet QuicCongestionManager::OnIncomingAckFrame(
       continue;
     }
 
-    // TODO(ianswett): OnIncomingLoss is also called from TCPCubicSender when
-    // an FEC packet is lost, but FEC loss information should be shared among
-    // congestion managers.  Additionally, if it's expected the FEC packet may
-    // repair the loss, it should be recorded as a loss to the congestion
-    // manager, but not retransmitted until it's known whether the FEC packet
-    // arrived.
-    send_algorithm_->OnIncomingLoss(sequence_number, ack_receive_time);
-
+    lost_packets.insert(sequence_number);
     if (sent_packet->has_retransmittable_data() == HAS_RETRANSMITTABLE_DATA) {
       retransmission_packets.insert(sequence_number);
     }
 
     ++it;
+  }
+  // Abandon packets after the loop over pending packets, because otherwise it
+  // changes the early retransmit logic and iteration.
+  for (SequenceNumberSet::const_iterator it = lost_packets.begin();
+       it != lost_packets.end(); ++it) {
+    // TODO(ianswett): OnPacketLost is also called from TCPCubicSender when
+    // an FEC packet is lost, but FEC loss information should be shared among
+    // congestion managers.  Additionally, if it's expected the FEC packet may
+    // repair the loss, it should be recorded as a loss to the congestion
+    // manager, but not retransmitted until it's known whether the FEC packet
+    // arrived.
+    send_algorithm_->OnPacketLost(*it, ack_receive_time);
+    OnPacketAbandoned(*it);
   }
 
   return retransmission_packets;

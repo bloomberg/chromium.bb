@@ -505,6 +505,11 @@ void QuicSession::MarkWriteBlocked(QuicStreamId id, QuicPriority priority) {
   write_blocked_streams_.PushBack(id, priority);
 }
 
+bool QuicSession::HasQueuedData() const {
+  return write_blocked_streams_.NumBlockedStreams() ||
+      connection_->HasQueuedData();
+}
+
 void QuicSession::MarkDecompressionBlocked(QuicHeaderId header_id,
                                            QuicStreamId stream_id) {
   decompression_blocked_streams_[header_id] = stream_id;

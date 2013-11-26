@@ -7,6 +7,7 @@
 #ifndef NET_QUIC_CONGESTION_CONTROL_SEND_ALGORITHM_INTERFACE_H_
 #define NET_QUIC_CONGESTION_CONTROL_SEND_ALGORITHM_INTERFACE_H_
 
+#include <algorithm>
 #include <map>
 
 #include "base/basictypes.h"
@@ -38,8 +39,8 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
     }
     size_t nack_count() const { return nack_count_; }
 
-    void Nack() {
-      ++nack_count_;
+    void Nack(size_t min_nacks) {
+      nack_count_ = std::max(min_nacks, nack_count_ + 1);
     }
 
    private:
@@ -68,14 +69,14 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
       const SentPacketsMap& sent_packets) = 0;
 
   // Called for each received ACK, with sequence number from remote peer.
-  virtual void OnIncomingAck(QuicPacketSequenceNumber acked_sequence_number,
+  virtual void OnPacketAcked(QuicPacketSequenceNumber acked_sequence_number,
                              QuicByteCount acked_bytes,
                              QuicTime::Delta rtt) = 0;
 
   // Indicates a loss event of one packet. |sequence_number| is the
   // sequence number of the lost packet.
-  virtual void OnIncomingLoss(QuicPacketSequenceNumber sequence_number,
-                              QuicTime ack_receive_time) = 0;
+  virtual void OnPacketLost(QuicPacketSequenceNumber sequence_number,
+                            QuicTime ack_receive_time) = 0;
 
   // Inform that we sent x bytes to the wire, and if that was a retransmission.
   // Returns true if the packet should be tracked by the congestion manager,

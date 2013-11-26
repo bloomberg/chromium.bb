@@ -81,13 +81,13 @@ void TcpCubicSender::OnIncomingQuicCongestionFeedbackFrame(
         feedback.tcp.accumulated_number_of_lost_packets;
     if (recovered_lost_packets > 0) {
       // Assume the loss could be as late as the last acked packet.
-      OnIncomingLoss(largest_acked_sequence_number_, feedback_receive_time);
+      OnPacketLost(largest_acked_sequence_number_, feedback_receive_time);
     }
   }
   receive_window_ = feedback.tcp.receive_window;
 }
 
-void TcpCubicSender::OnIncomingAck(
+void TcpCubicSender::OnPacketAcked(
     QuicPacketSequenceNumber acked_sequence_number,
     QuicByteCount acked_bytes,
     QuicTime::Delta rtt) {
@@ -103,8 +103,8 @@ void TcpCubicSender::OnIncomingAck(
   }
 }
 
-void TcpCubicSender::OnIncomingLoss(QuicPacketSequenceNumber sequence_number,
-                                    QuicTime /*ack_receive_time*/) {
+void TcpCubicSender::OnPacketLost(QuicPacketSequenceNumber sequence_number,
+                                  QuicTime /*ack_receive_time*/) {
   // TCP NewReno (RFC6582) says that once a loss occurs, any losses in packets
   // already sent should be treated as a single loss event, since it's expected.
   if (sequence_number <= largest_sent_at_last_cutback_) {

@@ -116,7 +116,7 @@ void QuicSentPacketManager::OnRetransmittedPacket(
   DCHECK(HasRetransmittableFrames(new_sequence_number));
 }
 
-void QuicSentPacketManager::OnIncomingAck(
+void QuicSentPacketManager::OnPacketAcked(
     const ReceivedPacketInfo& received_info,
     bool is_truncated_ack) {
   HandleAckForSentPackets(received_info, is_truncated_ack);

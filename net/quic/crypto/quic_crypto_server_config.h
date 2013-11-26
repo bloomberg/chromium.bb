@@ -170,6 +170,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // guid: the GUID for the connection, which is used in key derivation.
   // client_ip: the IP address of the client, which is used to generate and
   //     validate source-address tokens.
+  // version: version of the QUIC protocol in use for this connection
+  // supported_versions: versions of the QUIC protocol that this server
+  //     supports.
   // clock: used to validate client nonces and ephemeral keys.
   // rand: an entropy source
   // params: the state of the handshake. This may be updated with a server
@@ -181,6 +184,8 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
       const ValidateClientHelloResultCallback::Result& validate_chlo_result,
       QuicGuid guid,
       IPEndPoint client_ip,
+      QuicVersion version,
+      const QuicVersionVector& supported_versions,
       const QuicClock* clock,
       QuicRandom* rand,
       QuicCryptoNegotiatedParameters* params,

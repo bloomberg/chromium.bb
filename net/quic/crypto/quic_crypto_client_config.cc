@@ -211,10 +211,6 @@ void QuicCryptoClientConfig::CachedState::InitializeFrom(
 }
 
 void QuicCryptoClientConfig::SetDefaults() {
-  // Version must be 0.
-  // TODO(agl): this version stuff is obsolete now.
-  version = QuicCryptoConfig::CONFIG_VERSION;
-
   // Key exchange methods.
   kexs.resize(2);
   kexs[0] = kC255;
@@ -240,6 +236,7 @@ QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
 
 void QuicCryptoClientConfig::FillInchoateClientHello(
     const string& server_hostname,
+    const QuicVersion preferred_version,
     const CachedState* cached,
     QuicCryptoNegotiatedParameters* out_params,
     CryptoHandshakeMessage* out) const {
@@ -251,7 +248,9 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
   if (CryptoUtils::IsValidSNI(server_hostname)) {
     out->SetStringPiece(kSNI, server_hostname);
   }
-  out->SetValue(kVERS, version);
+  // TODO(rch): Remove once we remove QUIC_VERSION_12.
+  out->SetValue(kVERS, static_cast<uint16>(0));
+  out->SetValue(kVER, QuicVersionToQuicTag(preferred_version));
 
   if (!cached->source_address_token().empty()) {
     out->SetStringPiece(kSourceAddressTokenTag, cached->source_address_token());
@@ -296,6 +295,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
 QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     const string& server_hostname,
     QuicGuid guid,
+    const QuicVersion preferred_version,
     const CachedState* cached,
     QuicWallTime now,
     QuicRandom* rand,
@@ -304,7 +304,8 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     string* error_details) const {
   DCHECK(error_details != NULL);
 
-  FillInchoateClientHello(server_hostname, cached, out_params, out);
+  FillInchoateClientHello(server_hostname, preferred_version, cached,
+                          out_params, out);
 
   const CryptoHandshakeMessage* scfg = cached->GetServerConfig();
   if (!scfg) {
@@ -546,6 +547,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
 QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
     const CryptoHandshakeMessage& server_hello,
     QuicGuid guid,
+    const QuicVersionVector& negotiated_versions,
     CachedState* cached,
     QuicCryptoNegotiatedParameters* out_params,
     string* error_details) {
@@ -554,6 +556,28 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
   if (server_hello.tag() != kSHLO) {
     *error_details = "Bad tag";
     return QUIC_INVALID_CRYPTO_MESSAGE_TYPE;
+  }
+
+  const QuicTag* supported_version_tags;
+  size_t num_supported_versions;
+  // TODO(rch): Once QUIC_VERSION_12 is removed, then make it a failure
+  // if the server does not have a version list.
+  if (server_hello.GetTaglist(kVER, &supported_version_tags,
+                              &num_supported_versions) == QUIC_NO_ERROR) {
+    if (!negotiated_versions.empty()) {
+      bool mismatch = num_supported_versions != negotiated_versions.size();
+      for (size_t i = 0; i < num_supported_versions && !mismatch; ++i) {
+        mismatch = QuicTagToQuicVersion(supported_version_tags[i]) !=
+            negotiated_versions[i];
+      }
+      // The server sent a list of supported versions, and the connection
+      // reports that there was a version negotiation during the handshake.
+      // Ensure that these two lists are identical.
+      if (mismatch) {
+        *error_details = "Downgrade attack detected";
+        return QUIC_VERSION_NEGOTIATION_MISMATCH;
+      }
+    }
   }
 
   // Learn about updated source address tokens.

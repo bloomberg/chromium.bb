@@ -179,9 +179,11 @@ bool QuicClient::EncryptionBeingEstablished() {
 }
 
 void QuicClient::Disconnect() {
-  DCHECK(connected());
+  DCHECK(initialized_);
 
-  session()->connection()->SendConnectionClose(QUIC_PEER_GOING_AWAY);
+  if (connected()) {
+    session()->connection()->SendConnectionClose(QUIC_PEER_GOING_AWAY);
+  }
   epoll_server_.UnregisterFD(fd_);
   close(fd_);
   fd_ = -1;
