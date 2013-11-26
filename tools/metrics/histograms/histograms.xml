@@ -23969,6 +23969,23 @@ other types of suffix sets.
   <int value="184" label="input[type=email][multiple]"/>
   <int value="185" label="input[type=email][maxlength]"/>
   <int value="186" label="input[type=email][multiple][maxlength]"/>
+  <int value="187" label="TextTrackCueConstructor"/>
+  <int value="188" label="CSSStyleDeclarationPropertyName"/>
+  <int value="189" label="CSSStyleDeclarationFloatPropertyName"/>
+  <int value="190" label="InputTypeText"/>
+  <int value="191" label="InputTypeTextMaxLength"/>
+  <int value="192" label="InputTypePassword"/>
+  <int value="193" label="InputTypePasswordMaxLength"/>
+  <int value="194" label="SVGInstanceRoot"/>
+  <int value="195" label="ShowModalDialog"/>
+  <int value="196" label="PrefixedPageVisibility"/>
+  <int value="197" label="HTMLFrameElementLocation"/>
+  <int value="198" label="CSSStyleSheetInsertRuleOptionalArg"/>
+  <int value="199" label="CSSWebkitRegionAtRule"/>
+  <int value="200" label="DocumentBeforeUnloadRegistered"/>
+  <int value="201" label="DocumentBeforeUnloadFired"/>
+  <int value="202" label="DocumentUnloadRegistered"/>
+  <int value="203" label="DocumentUnloadFired"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
