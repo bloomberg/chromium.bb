@@ -24,6 +24,9 @@ class TtsExtensionLoaderChromeOs
   // extension finishes loading.
   bool LoadTtsExtension();
 
+  // Implementation of BrowserContextKeyedService.
+  virtual void Shutdown() OVERRIDE;
+
   // Implementation of extensions::EventRouter::Observer.
   virtual void OnListenerAdded(const extensions::EventListenerInfo& details)
       OVERRIDE;

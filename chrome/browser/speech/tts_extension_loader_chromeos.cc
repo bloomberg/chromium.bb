@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
@@ -38,8 +39,9 @@ class TtsExtensionLoaderChromeOsFactory
 
   TtsExtensionLoaderChromeOsFactory() : BrowserContextKeyedServiceFactory(
       "TtsExtensionLoaderChromeOs",
-      BrowserContextDependencyManager::GetInstance())
-  {}
+      BrowserContextDependencyManager::GetInstance()) {
+    DependsOn(extensions::ExtensionSystemFactory::GetInstance());
+  }
 
   virtual ~TtsExtensionLoaderChromeOsFactory() {}
 
@@ -90,6 +92,11 @@ bool TtsExtensionLoaderChromeOs::LoadTtsExtension() {
   extension_service->component_loader()->Add(IDR_SPEECH_SYNTHESIS_MANIFEST,
                                              path);
   return true;
+}
+
+void TtsExtensionLoaderChromeOs::Shutdown() {
+  extensions::ExtensionSystem::Get(profile_)->
+      event_router()->UnregisterObserver(this);
 }
 
 bool TtsExtensionLoaderChromeOs::IsTtsLoadedInThisProfile() {
