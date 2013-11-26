@@ -1417,9 +1417,6 @@ class ValidationPool(object):
       TreeIsClosedException: if the tree is closed (or throttled, if not
                              |throttled_ok|).
     """
-
-    if changes_query is None:
-      changes_query = constants.DEFAULT_CQ_READY_QUERY
     if change_filter is None:
       change_filter = lambda _, x, y: (x, y)
 
@@ -1429,11 +1426,27 @@ class ValidationPool(object):
     while True:
       time_left = end_time - time.time()
 
-      # Wait until the tree opens.
-      if check_tree_open and not timeout_util.IsTreeOpen(
-          cls.STATUS_URL, cls.SLEEP_TIMEOUT, timeout=time_left,
-          throttled_ok=throttled_ok):
-        raise TreeIsClosedException(closed_or_throttled=not throttled_ok)
+      # Wait until the tree becomes open (or throttled, if |throttled_ok|,
+      # and record the tree status in tree_status).
+      if check_tree_open:
+        try:
+          tree_status = timeout_util.WaitForTreeStatus(
+              cls.STATUS_URL, cls.SLEEP_TIMEOUT, timeout=time_left,
+              throttled_ok=throttled_ok)
+        except timeout_util.TimeoutError:
+          raise TreeIsClosedException(closed_or_throttled=not throttled_ok)
+      else:
+        tree_status = constants.TREE_OPEN
+
+      # Select the right default gerrit query based on the the tree
+      # status, or use custom |changes_query| if it was provided.
+      using_default_query = (changes_query is None)
+      if not using_default_query:
+        query = changes_query
+      elif tree_status == constants.TREE_THROTTLED:
+        query = constants.THROTTLED_CQ_READY_QUERY
+      else:
+        query = constants.DEFAULT_CQ_READY_QUERY
 
       # Sync so that we are up-to-date on what is committed.
       repo.Sync()
@@ -1444,11 +1457,18 @@ class ValidationPool(object):
 
       # Iterate through changes from all gerrit instances we care about.
       for helper in cls.GetGerritHelpersForOverlays(overlays):
-        raw_changes = helper.Query(changes_query, sort='lastUpdated')
+        raw_changes = helper.Query(query, sort='lastUpdated')
         raw_changes.reverse()
 
-        # Verify the results match the query, to prevent race conditions.
-        if changes_query == constants.DEFAULT_CQ_READY_QUERY:
+        # If we used a default query, verify the results match the query, to
+        # prevent race conditions. Note, this filters using the conditions
+        # of DEFAULT_CQ_READY_QUERY even if the tree is throttled. Since that
+        # query is strictly more permissive than the throttled query, we are
+        # not at risk of incorrectly losing any patches here. We only expose
+        # ourselves to the minor race condititon that a CQ+2 patch could have
+        # been marked as CQ+1 out from under us, but still end up being picked
+        # up in a throttled CQ run.
+        if using_default_query:
           raw_changes = cls.FilterNonMatchingChanges(raw_changes)
 
         changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(

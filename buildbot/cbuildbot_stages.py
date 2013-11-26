@@ -1124,8 +1124,7 @@ class CommitQueueSyncStage(MasterSlaveSyncStage):
             check_tree_open=not self._run.options.debug or
                             self._run.options.mock_tree_status,
             changes_query=self._run.options.cq_gerrit_override,
-            change_filter=self.ChangeFilter, throttled_ok=False)
-
+            change_filter=self.ChangeFilter, throttled_ok=True)
       except validation_pool.TreeIsClosedException as e:
         cros_build_lib.Warning(str(e))
         return None

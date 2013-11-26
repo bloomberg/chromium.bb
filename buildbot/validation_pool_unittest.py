@@ -92,6 +92,8 @@ class Base(cros_test_lib.MockTestCase):
     self.PatchObject(gob_util, 'CreateHttpConn',
                      side_effect=AssertionError('Test should not contact GoB'))
     self.PatchObject(timeout_util, 'IsTreeOpen', return_value=True)
+    self.PatchObject(timeout_util, 'WaitForTreeStatus',
+                     return_value=constants.TREE_OPEN)
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
                 project='chromiumos/chromite', remote=constants.EXTERNAL_REMOTE,

@@ -1985,7 +1985,8 @@ class BaseCQTest(StageTest):
     self.sync_stage = stages.CommitQueueSyncStage(self.run)
 
   def PerformSync(self, remote='cros', committed=False, tree_open=True,
-                  tracking_branch='master', num_patches=1, runs=0):
+                  tree_throttled=False, tracking_branch='master',
+                  num_patches=1, runs=0):
     """Helper to perform a basic sync for master commit queue."""
     p = MockPatch(remote=remote, tracking_branch=tracking_branch)
     my_patches = [p] * num_patches
@@ -1993,8 +1994,16 @@ class BaseCQTest(StageTest):
                      return_value=committed, autospec=True)
     self.PatchObject(gerrit.GerritHelper, 'Query',
                      return_value=my_patches, autospec=True)
-    self.PatchObject(timeout_util, 'IsTreeOpen', return_value=tree_open,
-                     autospec=True)
+    if tree_throttled:
+      self.PatchObject(timeout_util, 'WaitForTreeStatus',
+                       return_value=constants.TREE_THROTTLED, autospec=True)
+    elif tree_open:
+      self.PatchObject(timeout_util, 'WaitForTreeStatus',
+                       return_value=constants.TREE_OPEN, autospec=True)
+    else:
+      self.PatchObject(timeout_util, 'WaitForTreeStatus',
+                       side_effect=timeout_util.TimeoutError())
+
     exit_it = itertools.chain([False] * runs, itertools.repeat(True))
     self.PatchObject(validation_pool.ValidationPool, 'ShouldExitEarly',
                      side_effect=exit_it)
@@ -2075,6 +2084,13 @@ class ExtendedMasterCQSyncTest(MasterCQSyncTest):
     """Test that tree closures block commits."""
     self.assertRaises(SystemExit, self.testCommitNonManifestChange,
                       tree_open=False)
+
+  def testTreeThrottleUsesAlternateGerritQuery(self):
+    """Test that if the tree is throttled, we use an alternate gerrit query."""
+    self.PerformSync(tree_throttled=True)
+    gerrit.GerritHelper.Query.assert_called_with(
+        mock.ANY, constants.THROTTLED_CQ_READY_QUERY,
+        sort='lastUpdated')
 
 
 class CLStatusMock(partial_mock.PartialMock):

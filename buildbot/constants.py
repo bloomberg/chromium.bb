@@ -299,6 +299,10 @@ _GERRIT_QUERY_TEMPLATE = ('status:open AND '
 # Permits CQ+1 or CQ+2 changes.
 DEFAULT_CQ_READY_QUERY = _GERRIT_QUERY_TEMPLATE % 1
 
+# Gerrit query used to find changes for CQ when tree is throttled.
+# Permits only CQ+2 changes.
+THROTTLED_CQ_READY_QUERY = _GERRIT_QUERY_TEMPLATE % 2
+
 # Default filter rules for verifying that Gerrit returned results that matched
 # our query. This used for working around Gerrit bugs.
 DEFAULT_CQ_READY_FIELDS = {
