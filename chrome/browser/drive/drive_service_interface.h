@@ -231,19 +231,20 @@ class DriveServiceInterface {
       const std::string& new_title,
       const google_apis::GetResourceEntryCallback& callback) = 0;
 
-  // Moves a resource with |resource_id| to the directory of
+  // Updates a resource with |resource_id| to the directory of
   // |parent_resource_id| with renaming to |new_title|.
-  // If |last_modified| is not null, the modified date of the resource on the
-  // server will be set to the date.
+  // If |last_modified| or |last_accessed| is not null, the modified/accessed
+  // date of the resource on the server will be set to the date.
   // This request is supported only on DriveAPIService, because GData WAPI
   // doesn't support the function unfortunately.
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
-  virtual google_apis::CancelCallback MoveResource(
+  virtual google_apis::CancelCallback UpdateResource(
       const std::string& resource_id,
       const std::string& parent_resource_id,
       const std::string& new_title,
       const base::Time& last_modified,
+      const base::Time& last_viewed_by_me,
       const google_apis::GetResourceEntryCallback& callback) = 0;
 
   // Renames a document or collection identified by its |resource_id|

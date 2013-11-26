@@ -63,9 +63,9 @@ class MoveOperation {
                         scoped_ptr<ResourceEntry> dest_parent_entry,
                         FileError error);
 
-  // Part of Move(). Called after MoveResource is completed. This is only for
+  // Part of Move(). Called after UpdateResource is completed. This is only for
   // Drive API v2.
-  void MoveAfterMoveResource(
+  void MoveAfterUpdateResource(
       const MoveParams& params,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);

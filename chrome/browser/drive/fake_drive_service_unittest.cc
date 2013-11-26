@@ -1118,8 +1118,9 @@ TEST_F(FakeDriveServiceTest, CopyHostedDocument_Offline) {
   EXPECT_FALSE(resource_entry);
 }
 
-TEST_F(FakeDriveServiceTest, MoveResource) {
+TEST_F(FakeDriveServiceTest, UpdateResource) {
   const base::Time::Exploded kModifiedDate = {2012, 7, 0, 19, 15, 59, 13, 123};
+  const base::Time::Exploded kViewedDate = {2013, 8, 1, 20, 16, 00, 14, 234};
 
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
@@ -1132,11 +1133,12 @@ TEST_F(FakeDriveServiceTest, MoveResource) {
   const std::string kParentResourceId = "folder:2_folder_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceEntry> resource_entry;
-  fake_service_.MoveResource(
+  fake_service_.UpdateResource(
       kResourceId,
       kParentResourceId,
       "new title",
       base::Time::FromUTCExploded(kModifiedDate),
+      base::Time::FromUTCExploded(kViewedDate),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
 
@@ -1147,23 +1149,26 @@ TEST_F(FakeDriveServiceTest, MoveResource) {
   EXPECT_EQ("new title", resource_entry->title());
   EXPECT_EQ(base::Time::FromUTCExploded(kModifiedDate),
             resource_entry->updated_time());
+  EXPECT_EQ(base::Time::FromUTCExploded(kViewedDate),
+            resource_entry->last_viewed_time());
   EXPECT_TRUE(HasParent(kResourceId, kParentResourceId));
   // Should be incremented as a new hosted document was created.
   EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
   EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
 }
 
-TEST_F(FakeDriveServiceTest, MoveResource_NonExisting) {
+TEST_F(FakeDriveServiceTest, UpdateResource_NonExisting) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
 
   const std::string kResourceId = "document:nonexisting_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceEntry> resource_entry;
-  fake_service_.MoveResource(
+  fake_service_.UpdateResource(
       kResourceId,
       "folder:1_folder_resource_id",
       "new title",
+      base::Time(),
       base::Time(),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
@@ -1171,7 +1176,7 @@ TEST_F(FakeDriveServiceTest, MoveResource_NonExisting) {
   EXPECT_EQ(HTTP_NOT_FOUND, error);
 }
 
-TEST_F(FakeDriveServiceTest, MoveResource_EmptyParentResourceId) {
+TEST_F(FakeDriveServiceTest, UpdateResource_EmptyParentResourceId) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
   ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
@@ -1186,10 +1191,11 @@ TEST_F(FakeDriveServiceTest, MoveResource_EmptyParentResourceId) {
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceEntry> resource_entry;
-  fake_service_.MoveResource(
+  fake_service_.UpdateResource(
       kResourceId,
       std::string(),
       "new title",
+      base::Time(),
       base::Time(),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();
@@ -1205,7 +1211,7 @@ TEST_F(FakeDriveServiceTest, MoveResource_EmptyParentResourceId) {
   EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
 }
 
-TEST_F(FakeDriveServiceTest, MoveResource_Offline) {
+TEST_F(FakeDriveServiceTest, UpdateResource_Offline) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));
   fake_service_.set_offline(true);
@@ -1213,10 +1219,11 @@ TEST_F(FakeDriveServiceTest, MoveResource_Offline) {
   const std::string kResourceId = "file:2_file_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceEntry> resource_entry;
-  fake_service_.CopyResource(
+  fake_service_.UpdateResource(
       kResourceId,
-      "folder:1_folder_resource_id",
+      std::string(),
       "new title",
+      base::Time(),
       base::Time(),
       test_util::CreateCopyResultCallback(&error, &resource_entry));
   base::RunLoop().RunUntilIdle();

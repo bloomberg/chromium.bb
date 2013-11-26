@@ -770,11 +770,12 @@ CancelCallback FakeDriveService::CopyHostedDocument(
       resource_id, std::string(), new_title, base::Time(), callback);
 }
 
-CancelCallback FakeDriveService::MoveResource(
+CancelCallback FakeDriveService::UpdateResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
     const std::string& new_title,
     const base::Time& last_modified,
+    const base::Time& last_viewed_by_me,
     const google_apis::GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -826,6 +827,12 @@ CancelCallback FakeDriveService::MoveResource(
           google_apis::util::FormatTimeAsString(last_modified));
     }
 
+    if (!last_viewed_by_me.is_null()) {
+      entry->SetString(
+          "gd$lastViewed.$t",
+          google_apis::util::FormatTimeAsString(last_viewed_by_me));
+    }
+
     AddNewChangestampAndETag(entry);
 
     // Parse the new entry.
@@ -851,8 +858,8 @@ CancelCallback FakeDriveService::RenameResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  return MoveResource(
-      resource_id, std::string(), new_title, base::Time(),
+  return UpdateResource(
+      resource_id, std::string(), new_title, base::Time(), base::Time(),
       base::Bind(&EntryActionCallbackAdapter, callback));
 }
 

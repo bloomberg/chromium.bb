@@ -622,11 +622,12 @@ CancelCallback DriveAPIService::CopyHostedDocument(
   return sender_->StartRequestWithRetry(request);
 }
 
-CancelCallback DriveAPIService::MoveResource(
+CancelCallback DriveAPIService::UpdateResource(
     const std::string& resource_id,
     const std::string& parent_resource_id,
     const std::string& new_title,
     const base::Time& last_modified,
+    const base::Time& last_viewed_by_me,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -639,8 +640,15 @@ CancelCallback DriveAPIService::MoveResource(
   if (!parent_resource_id.empty())
     request->add_parent(parent_resource_id);
   if (!last_modified.is_null()) {
+    // Need to set setModifiedDate to true to overwrite modifiedDate.
     request->set_set_modified_date(true);
     request->set_modified_date(last_modified);
+  }
+  if (!last_viewed_by_me.is_null()) {
+    // Need to set updateViewedDate to false, otherwise the lastViewedByMeDate
+    // will be set to the request time (not the specified time via request).
+    request->set_update_viewed_date(false);
+    request->set_last_viewed_by_me_date(last_viewed_by_me);
   }
   request->set_fields(kFileResourceFields);
   return sender_->StartRequestWithRetry(request);

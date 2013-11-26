@@ -183,10 +183,10 @@ void MoveOperation::MoveAfterPrepare(
         base::Time::FromInternalValue(src_entry->file_info().last_modified()) :
         base::Time();
 
-    scheduler_->MoveResource(
+    scheduler_->UpdateResource(
         src_entry->resource_id(), dest_parent_entry->resource_id(),
-        new_title, last_modified,
-        base::Bind(&MoveOperation::MoveAfterMoveResource,
+        new_title, last_modified, base::Time(),
+        base::Bind(&MoveOperation::MoveAfterUpdateResource,
                    weak_ptr_factory_.GetWeakPtr(), params));
     return;
   }
@@ -201,7 +201,7 @@ void MoveOperation::MoveAfterPrepare(
                     base::Passed(&dest_parent_entry)));
 }
 
-void MoveOperation::MoveAfterMoveResource(
+void MoveOperation::MoveAfterUpdateResource(
     const MoveParams& params,
     google_apis::GDataErrorCode status,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
