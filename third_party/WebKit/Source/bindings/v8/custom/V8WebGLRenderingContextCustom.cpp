@@ -683,7 +683,7 @@ static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& info,
     //
     // FIXME: need to change to accept Float32Array as well.
     if (info.Length() != 3) {
-        throwTypeError(ExceptionMessages::failedToExecute(method, "WebGLRenderingContext", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute(method, "WebGLRenderingContext", ExceptionMessages::notEnoughArguments(3, info.Length())), info.GetIsolate());
         return;
     }
 
