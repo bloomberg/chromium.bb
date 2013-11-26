@@ -155,9 +155,9 @@ class WebCryptoImplTest : public testing::Test {
       blink::WebCryptoKeyFormat format,
       const std::vector<uint8>& key_data,
       const blink::WebCryptoAlgorithm& algorithm,
+      bool extractable,
       blink::WebCryptoKeyUsageMask usage_mask,
       blink::WebCryptoKey* key) {
-    bool extractable = true;
     return crypto_.ImportKeyInternal(format,
                                      Start(key_data),
                                      key_data.size(),
@@ -165,6 +165,13 @@ class WebCryptoImplTest : public testing::Test {
                                      extractable,
                                      usage_mask,
                                      key);
+  }
+
+  bool ExportKeyInternal(
+      blink::WebCryptoKeyFormat format,
+      const blink::WebCryptoKey& key,
+      blink::WebArrayBuffer* buffer) {
+    return crypto_.ExportKeyInternal(format, key, buffer);
   }
 
   bool SignInternal(
@@ -506,9 +513,14 @@ TEST_F(WebCryptoImplTest, AesCbcFailures) {
     EXPECT_FALSE(ImportKeyInternal(blink::WebCryptoKeyFormatRaw,
                                    key_raw,
                                    CreateAesCbcAlgorithm(iv),
-                                   blink::WebCryptoKeyUsageDecrypt,
+                                   true,
+                                   blink::WebCryptoKeyUsageEncrypt,
                                    &key));
   }
+
+  // Fail exporting the key in SPKI format (SPKI export not allowed for secret
+  // keys)
+  EXPECT_FALSE(ExportKeyInternal(blink::WebCryptoKeyFormatSpki, key, &output));
 }
 
 TEST_F(WebCryptoImplTest, AesCbcSampleSets) {
@@ -684,11 +696,101 @@ TEST_F(WebCryptoImplTest, ImportSecretKeyNoAlgorithm) {
       blink::WebCryptoKeyFormatRaw,
       HexStringToBytes("00000000000000000000"),
       blink::WebCryptoAlgorithm::createNull(),
-      blink::WebCryptoKeyUsageSign,
+      true,
+      blink::WebCryptoKeyUsageEncrypt,
       &key));
 }
 
 #if !defined(USE_OPENSSL)
+
+TEST_F(WebCryptoImplTest, ImportExportSpki) {
+  // openssl genrsa -out pair.pem 2048
+  // openssl rsa -in pair.pem -out pubkey.der -outform DER -pubout
+  // xxd -p pubkey.der
+  const std::string hex_rsa_spki_der =
+      "30820122300d06092a864886f70d01010105000382010f003082010a0282"
+      "010100f19e40f94e3780858701577a571cca000cb9795db89ddf8e98ab0e"
+      "5eecfa47516cb08dc591cae5ab7fa43d6db402e95991d4a2de52e7cd3a66"
+      "4f58284be2eb4675d5a849a2582c585d2b3c6c225a8f2c53a0414d5dbd06"
+      "172371cefdf953e9ec3000fc9ad000743023f74e82d12aa93917a2c9b832"
+      "696085ee0711154cf98a6d098f44cee00ea3b7584236503a5483ba8b6792"
+      "fee588d1a8f4a0618333c4cb3447d760b43d5a0d9ed6ef79763df670cd8b"
+      "5eb869a20833f1e3e6d8b88240a5d4335c73fd20487f2a7d112af8692357"
+      "6425e44a273e5ad2e93d6b50a28e65f9e133958e4f0c7d12e0adc90fedd4"
+      "f6b6848e7b6900666642a08b520a6534a35d4f0203010001";
+
+  // Passing case: Import a valid RSA key in SPKI format.
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  ASSERT_TRUE(ImportKeyInternal(
+      blink::WebCryptoKeyFormatSpki,
+      HexStringToBytes(hex_rsa_spki_der),
+      CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5),
+      true,
+      blink::WebCryptoKeyUsageEncrypt,
+      &key));
+  EXPECT_TRUE(key.handle());
+  EXPECT_EQ(blink::WebCryptoKeyTypePublic, key.type());
+  EXPECT_TRUE(key.extractable());
+  EXPECT_EQ(blink::WebCryptoKeyUsageEncrypt, key.usages());
+
+  // Failing case: Empty SPKI data
+  EXPECT_FALSE(ImportKeyInternal(
+      blink::WebCryptoKeyFormatSpki,
+      std::vector<uint8>(),
+      blink::WebCryptoAlgorithm::createNull(),
+      true,
+      blink::WebCryptoKeyUsageEncrypt,
+      &key));
+
+  // Failing case: Import RSA key with NULL input algorithm. This is not
+  // allowed because the SPKI ASN.1 format for RSA keys is not specific enough
+  // to map to a Web Crypto algorithm.
+  EXPECT_FALSE(ImportKeyInternal(
+      blink::WebCryptoKeyFormatSpki,
+      HexStringToBytes(hex_rsa_spki_der),
+      blink::WebCryptoAlgorithm::createNull(),
+      true,
+      blink::WebCryptoKeyUsageEncrypt,
+      &key));
+
+  // Failing case: Bad DER encoding.
+  EXPECT_FALSE(ImportKeyInternal(
+      blink::WebCryptoKeyFormatSpki,
+      HexStringToBytes("618333c4cb"),
+      CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5),
+      true,
+      blink::WebCryptoKeyUsageEncrypt,
+      &key));
+
+  // Failing case: Import RSA key but provide an inconsistent input algorithm.
+  EXPECT_FALSE(ImportKeyInternal(
+      blink::WebCryptoKeyFormatSpki,
+      HexStringToBytes(hex_rsa_spki_der),
+      CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
+      true,
+      blink::WebCryptoKeyUsageEncrypt,
+      &key));
+
+  // Passing case: Export a previously imported RSA public key in SPKI format
+  // and compare to original data.
+  blink::WebArrayBuffer output;
+  ASSERT_TRUE(ExportKeyInternal(blink::WebCryptoKeyFormatSpki, key, &output));
+  ExpectArrayBufferMatchesHex(hex_rsa_spki_der, output);
+
+  // Failing case: Try to export a non-extractable key
+  ASSERT_TRUE(ImportKeyInternal(
+      blink::WebCryptoKeyFormatSpki,
+      HexStringToBytes(hex_rsa_spki_der),
+      CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5),
+      false,
+      blink::WebCryptoKeyUsageEncrypt,
+      &key));
+  EXPECT_TRUE(key.handle());
+  EXPECT_FALSE(key.extractable());
+  EXPECT_FALSE(ExportKeyInternal(blink::WebCryptoKeyFormatSpki, key, &output));
+
+  // TODO(padolph): Import a RSA SPKI key and verify it works with an operation.
+}
 
 TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
   // Note: using unrealistic short key lengths here to avoid bogging down tests.
@@ -700,7 +802,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
       CreateRsaAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
                          modulus_length,
                          public_exponent);
-  bool extractable = false;
+  bool extractable = true;
   const blink::WebCryptoKeyUsageMask usage_mask = 0;
   blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
   blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
@@ -792,6 +894,13 @@ TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
   EXPECT_EQ(extractable, private_key.extractable());
   EXPECT_EQ(usage_mask, public_key.usages());
   EXPECT_EQ(usage_mask, private_key.usages());
+
+  // Fail SPKI export of private key. This is an ExportKey test, but do it here
+  // since it is expensive to generate an RSA key pair and we already have a
+  // private key here.
+  blink::WebArrayBuffer output;
+  EXPECT_FALSE(
+      ExportKeyInternal(blink::WebCryptoKeyFormatSpki, private_key, &output));
 }
 
 #endif  // #if !defined(USE_OPENSSL)

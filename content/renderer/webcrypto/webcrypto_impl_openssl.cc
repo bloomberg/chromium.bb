@@ -330,13 +330,8 @@ bool WebCryptoImpl::ImportKeyInternal(
     return false;
   }
 
-  // TODO(padolph): Need to split handling for symmetric (raw or jwk format) and
-  // asymmetric (jwk, spki, or pkcs8 format) keys.
+  // TODO(padolph): Need to split handling for symmetric
   // Currently only supporting symmetric.
-
-  // TODO(padolph): jwk handling. Define precedence between jwk contents and
-  // this method's parameters, e.g. 'alg' in jwk vs algorithm.id(). Who wins if
-  // they differ? (jwk, probably)
 
   // Symmetric keys are always type secret
   blink::WebCryptoKeyType type = blink::WebCryptoKeyTypeSecret;
@@ -367,6 +362,17 @@ bool WebCryptoImpl::ImportKeyInternal(
       type, extractable, algorithm, usage_mask);
 
   return true;
+}
+
+bool WebCryptoImpl::ExportKeyInternal(
+    blink::WebCryptoKeyFormat format,
+    const blink::WebCryptoKey& key,
+    blink::WebArrayBuffer* buffer) {
+  // TODO(padolph): Implement raw export
+  // TODO(padolph): Implement spki export
+  // TODO(padolph): Implement pkcs8 export
+  // TODO(padolph): Implement jwk export
+  return false;
 }
 
 bool WebCryptoImpl::SignInternal(

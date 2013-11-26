@@ -47,6 +47,10 @@ class CONTENT_EXPORT WebCryptoImpl
       bool extractable,
       blink::WebCryptoKeyUsageMask usage_mask,
       blink::WebCryptoResult result);
+  virtual void exportKey(
+      blink::WebCryptoKeyFormat format,
+      const blink::WebCryptoKey& key,
+      blink::WebCryptoResult result);
   virtual void sign(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,
@@ -105,6 +109,10 @@ class CONTENT_EXPORT WebCryptoImpl
       bool extractable,
       blink::WebCryptoKeyUsageMask usage_mask,
       blink::WebCryptoKey* key);
+  bool ExportKeyInternal(
+      blink::WebCryptoKeyFormat format,
+      const blink::WebCryptoKey& key,
+      blink::WebArrayBuffer* buffer);
   bool SignInternal(
       const blink::WebCryptoAlgorithm& algorithm,
       const blink::WebCryptoKey& key,

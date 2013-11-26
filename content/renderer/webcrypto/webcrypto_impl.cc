@@ -156,6 +156,18 @@ void WebCryptoImpl::importKey(
   result.completeWithKey(key);
 }
 
+void WebCryptoImpl::exportKey(
+    blink::WebCryptoKeyFormat format,
+    const blink::WebCryptoKey& key,
+    blink::WebCryptoResult result) {
+  blink::WebArrayBuffer buffer;
+  if (!ExportKeyInternal(format, key, &buffer)) {
+    result.completeWithError();
+    return;
+  }
+  result.completeWithBuffer(buffer);
+}
+
 void WebCryptoImpl::sign(
     const blink::WebCryptoAlgorithm& algorithm,
     const blink::WebCryptoKey& key,

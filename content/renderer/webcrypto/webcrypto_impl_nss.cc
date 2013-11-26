@@ -238,6 +238,197 @@ bool BigIntegerToLong(const uint8* data,
   return true;
 }
 
+bool IsAlgorithmRsa(const blink::WebCryptoAlgorithm& algorithm) {
+  return algorithm.id() == blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5 ||
+         algorithm.id() == blink::WebCryptoAlgorithmIdRsaOaep ||
+         algorithm.id() == blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5;
+}
+
+bool ImportKeyInternalRaw(
+    const unsigned char* key_data,
+    unsigned key_data_size,
+    const blink::WebCryptoAlgorithm& algorithm,
+    bool extractable,
+    blink::WebCryptoKeyUsageMask usage_mask,
+    blink::WebCryptoKey* key) {
+
+  DCHECK(!algorithm.isNull());
+
+  blink::WebCryptoKeyType type;
+  switch (algorithm.id()) {
+    case blink::WebCryptoAlgorithmIdHmac:
+    case blink::WebCryptoAlgorithmIdAesCbc:
+      type = blink::WebCryptoKeyTypeSecret;
+      break;
+    // TODO(bryaneyler): Support more key types.
+    default:
+      return false;
+  }
+
+  // TODO(bryaneyler): Need to split handling for symmetric and asymmetric keys.
+  // Currently only supporting symmetric.
+  CK_MECHANISM_TYPE mechanism = CKM_INVALID_MECHANISM;
+  // Flags are verified at the Blink layer; here the flags are set to all
+  // possible operations for this key type.
+  CK_FLAGS flags = 0;
+
+  switch (algorithm.id()) {
+    case blink::WebCryptoAlgorithmIdHmac: {
+      const blink::WebCryptoHmacParams* params = algorithm.hmacParams();
+      if (!params) {
+        return false;
+      }
+
+      mechanism = WebCryptoAlgorithmToHMACMechanism(params->hash());
+      if (mechanism == CKM_INVALID_MECHANISM) {
+        return false;
+      }
+
+      flags |= CKF_SIGN | CKF_VERIFY;
+
+      break;
+    }
+    case blink::WebCryptoAlgorithmIdAesCbc: {
+      mechanism = CKM_AES_CBC;
+      flags |= CKF_ENCRYPT | CKF_DECRYPT;
+      break;
+    }
+    default:
+      return false;
+  }
+
+  DCHECK_NE(CKM_INVALID_MECHANISM, mechanism);
+  DCHECK_NE(0ul, flags);
+
+  SECItem key_item = {
+      siBuffer,
+      const_cast<unsigned char*>(key_data),
+      key_data_size
+  };
+
+  crypto::ScopedPK11SymKey pk11_sym_key(
+      PK11_ImportSymKeyWithFlags(PK11_GetInternalSlot(),
+                                 mechanism,
+                                 PK11_OriginUnwrap,
+                                 CKA_FLAGS_ONLY,
+                                 &key_item,
+                                 flags,
+                                 false,
+                                 NULL));
+  if (!pk11_sym_key.get()) {
+    return false;
+  }
+
+  *key = blink::WebCryptoKey::create(new SymKeyHandle(pk11_sym_key.Pass()),
+                                      type, extractable, algorithm, usage_mask);
+  return true;
+}
+
+typedef scoped_ptr_malloc<
+    CERTSubjectPublicKeyInfo,
+    crypto::NSSDestroyer<CERTSubjectPublicKeyInfo,
+                         SECKEY_DestroySubjectPublicKeyInfo> >
+    ScopedCERTSubjectPublicKeyInfo;
+
+bool ImportKeyInternalSpki(
+    const unsigned char* key_data,
+    unsigned key_data_size,
+    const blink::WebCryptoAlgorithm& algorithm_or_null,
+    bool extractable,
+    blink::WebCryptoKeyUsageMask usage_mask,
+    blink::WebCryptoKey* key) {
+
+  DCHECK(key);
+
+  if (!key_data_size)
+    return false;
+
+  DCHECK(key_data);
+
+  // The binary blob 'key_data' is expected to be a DER-encoded ASN.1 Subject
+  // Public Key Info. Decode this to a CERTSubjectPublicKeyInfo.
+  SECItem spki_item = {
+      siBuffer,
+      const_cast<uint8*>(key_data),
+      key_data_size
+  };
+  const ScopedCERTSubjectPublicKeyInfo spki(
+      SECKEY_DecodeDERSubjectPublicKeyInfo(&spki_item));
+  if (!spki)
+    return false;
+
+  crypto::ScopedSECKEYPublicKey sec_public_key(
+      SECKEY_ExtractPublicKey(spki.get()));
+  if (!sec_public_key)
+    return false;
+
+  const KeyType sec_key_type = SECKEY_GetPublicKeyType(sec_public_key.get());
+
+  // Validate the sec_key_type against the input algorithm. Some NSS KeyType's
+  // contain enough information to fabricate a Web Crypto Algorithm, which will
+  // be used if the input algorithm isNull(). Others like 'rsaKey' do not (see
+  // below).
+  blink::WebCryptoAlgorithm algorithm =
+      blink::WebCryptoAlgorithm::createNull();
+  switch (sec_key_type) {
+    case rsaKey:
+      // NSS's rsaKey KeyType maps to keys with SEC_OID_PKCS1_RSA_ENCRYPTION and
+      // according to RFC 4055 this can be used for both encryption and
+      // signatures. However, this is not specific enough to build a compatible
+      // Web Crypto algorithm, since in Web Crypto RSA encryption and signature
+      // algorithms are distinct. So if the input algorithm isNull() here, we
+      // have to fail.
+      if (algorithm_or_null.isNull() || !IsAlgorithmRsa(algorithm_or_null))
+        return false;
+      algorithm = algorithm_or_null;
+      break;
+    case dsaKey:
+    case ecKey:
+    case rsaPssKey:
+    case rsaOaepKey:
+      // TODO(padolph): Handle other key types.
+      return false;
+    default:
+      return false;
+  }
+
+  *key = blink::WebCryptoKey::create(
+      new PublicKeyHandle(sec_public_key.Pass()),
+      blink::WebCryptoKeyTypePublic,
+      extractable,
+      algorithm,
+      usage_mask);
+
+  return true;
+}
+
+bool ExportKeyInternalSpki(
+    const blink::WebCryptoKey& key,
+    blink::WebArrayBuffer* buffer) {
+
+  DCHECK(key.handle());
+  DCHECK(buffer);
+
+  if (key.type() != blink::WebCryptoKeyTypePublic || !key.extractable())
+    return false;
+
+  PublicKeyHandle* const pub_key =
+      reinterpret_cast<PublicKeyHandle*>(key.handle());
+
+  const crypto::ScopedSECItem spki_der(
+      SECKEY_EncodeDERSubjectPublicKeyInfo(pub_key->key()));
+  if (!spki_der)
+    return false;
+
+  DCHECK(spki_der->data);
+  DCHECK(spki_der->len);
+
+  *buffer = blink::WebArrayBuffer::create(spki_der->len, 1);
+  memcpy(buffer->data(), spki_der->data, spki_der->len);
+
+  return true;
+}
+
 }  // namespace
 
 void WebCryptoImpl::Init() {
@@ -444,7 +635,7 @@ bool WebCryptoImpl::GenerateKeyPairInternal(
       *public_key = blink::WebCryptoKey::create(
           new PublicKeyHandle(crypto::ScopedSECKEYPublicKey(sec_public_key)),
           blink::WebCryptoKeyTypePublic,
-          extractable,   // probably should be 'true' always
+          extractable,  // probably should be 'true' always
           algorithm,
           usage_mask);
       *private_key = blink::WebCryptoKey::create(
@@ -469,86 +660,49 @@ bool WebCryptoImpl::ImportKeyInternal(
     bool extractable,
     blink::WebCryptoKeyUsageMask usage_mask,
     blink::WebCryptoKey* key) {
-  // TODO(eroman): Currently expects algorithm to always be specified, as it is
-  //               required for raw format.
-  if (algorithm_or_null.isNull())
-    return false;
-  const blink::WebCryptoAlgorithm& algorithm = algorithm_or_null;
-
-  blink::WebCryptoKeyType type;
-  switch (algorithm.id()) {
-    case blink::WebCryptoAlgorithmIdHmac:
-    case blink::WebCryptoAlgorithmIdAesCbc:
-      type = blink::WebCryptoKeyTypeSecret;
-      break;
-    // TODO(bryaneyler): Support more key types.
-    default:
-      return false;
-  }
-
-  // TODO(bryaneyler): Need to split handling for symmetric and asymmetric keys.
-  // Currently only supporting symmetric.
-  CK_MECHANISM_TYPE mechanism = CKM_INVALID_MECHANISM;
-  // Flags are verified at the Blink layer; here the flags are set to all
-  // possible operations for this key type.
-  CK_FLAGS flags = 0;
-
-  switch(algorithm.id()) {
-    case blink::WebCryptoAlgorithmIdHmac: {
-      const blink::WebCryptoHmacParams* params = algorithm.hmacParams();
-      if (!params) {
-        return false;
-      }
-
-      mechanism = WebCryptoAlgorithmToHMACMechanism(params->hash());
-      if (mechanism == CKM_INVALID_MECHANISM) {
-        return false;
-      }
-
-      flags |= CKF_SIGN | CKF_VERIFY;
-
-      break;
-    }
-    case blink::WebCryptoAlgorithmIdAesCbc: {
-      mechanism = CKM_AES_CBC;
-      flags |= CKF_ENCRYPT | CKF_DECRYPT;
-      break;
-    }
-    default:
-      return false;
-  }
-
-  DCHECK_NE(CKM_INVALID_MECHANISM, mechanism);
-  DCHECK_NE(0ul, flags);
-
-  SECItem key_item = { siBuffer, NULL, 0 };
 
   switch (format) {
     case blink::WebCryptoKeyFormatRaw:
-      key_item.data = const_cast<unsigned char*>(key_data);
-      key_item.len = key_data_size;
-      break;
-    // TODO(bryaneyler): Handle additional formats.
+      // A 'raw'-formatted key import requires an input algorithm.
+      if (algorithm_or_null.isNull())
+        return false;
+      return ImportKeyInternalRaw(key_data,
+                                  key_data_size,
+                                  algorithm_or_null,
+                                  extractable,
+                                  usage_mask,
+                                  key);
+    case blink::WebCryptoKeyFormatSpki:
+      return ImportKeyInternalSpki(key_data,
+                                   key_data_size,
+                                   algorithm_or_null,
+                                   extractable,
+                                   usage_mask,
+                                   key);
+    case blink::WebCryptoKeyFormatPkcs8:
+      // TODO(padolph): Handle PKCS#8 private key import
+      return false;
     default:
       return false;
   }
+}
 
-  crypto::ScopedPK11SymKey pk11_sym_key(
-      PK11_ImportSymKeyWithFlags(PK11_GetInternalSlot(),
-                                 mechanism,
-                                 PK11_OriginUnwrap,
-                                 CKA_FLAGS_ONLY,
-                                 &key_item,
-                                 flags,
-                                 false,
-                                 NULL));
-  if (!pk11_sym_key.get()) {
-    return false;
+bool WebCryptoImpl::ExportKeyInternal(
+    blink::WebCryptoKeyFormat format,
+    const blink::WebCryptoKey& key,
+    blink::WebArrayBuffer* buffer) {
+  switch (format) {
+    case blink::WebCryptoKeyFormatRaw:
+      // TODO(padolph): Implement raw export
+      return false;
+    case blink::WebCryptoKeyFormatSpki:
+      return ExportKeyInternalSpki(key, buffer);
+    case blink::WebCryptoKeyFormatPkcs8:
+      // TODO(padolph): Implement pkcs8 export
+      return false;
+    default:
+      return false;
   }
-
-  *key = blink::WebCryptoKey::create(new SymKeyHandle(pk11_sym_key.Pass()),
-                                      type, extractable, algorithm, usage_mask);
-  return true;
 }
 
 bool WebCryptoImpl::SignInternal(
