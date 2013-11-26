@@ -38,6 +38,35 @@ using namespace WebCore;
 
 namespace blink {
 
+class WebUserGestureHandlerHolder : public UserGestureHandler {
+public:
+    WebUserGestureHandlerHolder()
+        : m_handler(0)
+    {
+        UserGestureIndicator::setHandler(this);
+    }
+
+    virtual void onGesture()
+    {
+        if (m_handler)
+            m_handler->onGesture();
+    }
+
+    void setHandler(WebUserGestureHandler* handler)
+    {
+        m_handler = handler;
+    }
+
+private:
+    WebUserGestureHandler* m_handler;
+};
+
+WebUserGestureHandlerHolder* gestureHandler()
+{
+    DEFINE_STATIC_LOCAL(WebUserGestureHandlerHolder, handler, ());
+    return &handler;
+}
+
 bool WebUserGestureIndicator::isProcessingUserGesture()
 {
     return UserGestureIndicator::processingUserGesture();
@@ -51,6 +80,11 @@ bool WebUserGestureIndicator::consumeUserGesture()
 WebUserGestureToken WebUserGestureIndicator::currentUserGestureToken()
 {
     return WebUserGestureToken(UserGestureIndicator::currentToken());
+}
+
+void WebUserGestureIndicator::setHandler(WebUserGestureHandler* handler)
+{
+    gestureHandler()->setHandler(handler);
 }
 
 } // namespace blink

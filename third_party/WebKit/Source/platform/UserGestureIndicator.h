@@ -42,6 +42,12 @@ enum ProcessingUserGestureState {
     DefinitelyNotProcessingUserGesture
 };
 
+class UserGestureHandler {
+public:
+    virtual ~UserGestureHandler() { }
+    virtual void onGesture() = 0;
+};
+
 class PLATFORM_EXPORT UserGestureToken : public RefCounted<UserGestureToken> {
 public:
     virtual ~UserGestureToken() { }
@@ -68,6 +74,7 @@ public:
     static bool processingUserGesture();
     static bool consumeUserGesture();
     static UserGestureToken* currentToken();
+    static void setHandler(UserGestureHandler*);
 
     explicit UserGestureIndicator(ProcessingUserGestureState);
     explicit UserGestureIndicator(PassRefPtr<UserGestureToken>);
@@ -77,6 +84,7 @@ public:
 private:
     static ProcessingUserGestureState s_state;
     static UserGestureIndicator* s_topmostIndicator;
+    static UserGestureHandler* s_handler;
     ProcessingUserGestureState m_previousState;
     RefPtr<UserGestureToken> m_token;
 };
