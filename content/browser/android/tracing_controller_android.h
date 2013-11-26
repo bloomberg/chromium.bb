@@ -6,7 +6,8 @@
 #define CONTENT_BROWSER_ANDROID_TRACING_CONTROLLER_ANDROID_H_
 
 #include "base/android/jni_helper.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 
 namespace content {
 
@@ -25,12 +26,11 @@ class TracingControllerAndroid {
 
  private:
   ~TracingControllerAndroid();
-  void OnTracingStopped();
+  void OnTracingStopped(const base::FilePath& file_path);
 
   JavaObjectWeakGlobalRef weak_java_object_;
-
-  class Subscriber;
-  scoped_ptr<Subscriber> subscriber_;
+  base::FilePath file_path_;
+  base::WeakPtrFactory<TracingControllerAndroid> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TracingControllerAndroid);
 };
