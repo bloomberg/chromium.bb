@@ -27,6 +27,9 @@
         ],
       },
       'xcode_settings': {
+        'OTHER_CFLAGS': [
+          '-fobjc-abi-version=2',
+        ],
         'SDKROOT': 'iphonesimulator',  # -isysroot
         'TARGETED_DEVICE_FAMILY': '1,2',
         'INFOPLIST_FILE': 'TestApp/TestApp-Info.plist',
@@ -55,6 +58,9 @@
         ],
       },
       'xcode_settings': {
+        'OTHER_CFLAGS': [
+          '-fobjc-abi-version=2',
+        ],
         'SDKROOT': 'iphonesimulator',  # -isysroot
         'TARGETED_DEVICE_FAMILY': '1,2',
         'INFOPLIST_FILE': 'TestApp/TestApp-Info.plist',
@@ -84,6 +90,9 @@
         ],
       },
       'xcode_settings': {
+        'OTHER_CFLAGS': [
+          '-fobjc-abi-version=2',
+        ],
         'SDKROOT': 'iphonesimulator',  # -isysroot
         'TARGETED_DEVICE_FAMILY': '1,2',
         'INFOPLIST_FILE': 'TestApp/TestApp-Info.plist',
