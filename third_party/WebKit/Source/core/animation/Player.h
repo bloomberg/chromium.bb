@@ -91,6 +91,7 @@ private:
     double m_playbackRate;
     double m_timeDrift;
     double m_startTime;
+    double m_lastUpdateTime;
 
     RefPtr<TimedItem> m_content;
     DocumentTimeline& m_timeline;

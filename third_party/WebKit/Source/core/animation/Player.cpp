@@ -54,6 +54,7 @@ Player::Player(DocumentTimeline& timeline, TimedItem* content)
     , m_playbackRate(1)
     , m_timeDrift(0)
     , m_startTime(nullValue())
+    , m_lastUpdateTime(nullValue())
     , m_content(content)
     , m_timeline(timeline)
     , m_isPausedForTesting(false)
@@ -134,7 +135,12 @@ bool Player::update(double* timeToEffectChange, bool* didTriggerStyleRecalc)
     }
 
     double newTime = isNull(m_timeline.currentTime()) ? nullValue() : currentTime();
-    bool didTriggerStyleRecalcLocal = m_content->updateInheritedTime(newTime);
+    bool didTriggerStyleRecalcLocal = false;
+    // FIXME: Further checks will be required once the animation tree can be mutated.
+    if (newTime != m_lastUpdateTime) {
+        didTriggerStyleRecalcLocal = m_content->updateInheritedTime(newTime);
+        m_lastUpdateTime = newTime;
+    }
     if (timeToEffectChange)
         *timeToEffectChange = m_content->timeToEffectChange();
     if (didTriggerStyleRecalc)
