@@ -5275,10 +5275,20 @@ exposay_button(struct weston_pointer_grab *grab, uint32_t time, uint32_t button,
 		shell->exposay.clicked = NULL;
 }
 
+static void
+exposay_pointer_grab_cancel(struct weston_pointer_grab *grab)
+{
+	struct desktop_shell *shell =
+		container_of(grab, struct desktop_shell, exposay.grab_ptr);
+
+	exposay_set_state(shell, EXPOSAY_TARGET_CANCEL, shell->exposay.seat);
+}
+
 static const struct weston_pointer_grab_interface exposay_ptr_grab = {
 	noop_grab_focus,
 	exposay_motion,
 	exposay_button,
+	exposay_pointer_grab_cancel,
 };
 
 static int
