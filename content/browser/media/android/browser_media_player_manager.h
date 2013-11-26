@@ -220,6 +220,9 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // The player ID pending to enter fullscreen.
   int pending_fullscreen_player_id_;
 
+  // Whether the fullscreen player has been Release()-d.
+  bool fullscreen_player_is_released_;
+
   WebContents* web_contents_;
 
   // Object for retrieving resources media players.

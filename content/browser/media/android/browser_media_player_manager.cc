@@ -94,6 +94,7 @@ BrowserMediaPlayerManager::BrowserMediaPlayerManager(
     : WebContentsObserver(WebContents::FromRenderViewHost(render_view_host)),
       fullscreen_player_id_(-1),
       pending_fullscreen_player_id_(-1),
+      fullscreen_player_is_released_(false),
       web_contents_(WebContents::FromRenderViewHost(render_view_host)),
       weak_ptr_factory_(this) {
 }
@@ -133,6 +134,10 @@ bool BrowserMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
 void BrowserMediaPlayerManager::FullscreenPlayerPlay() {
   MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (player) {
+    if (fullscreen_player_is_released_) {
+      video_view_->OpenVideo();
+      fullscreen_player_is_released_ = false;
+    }
     player->Start();
     Send(new MediaPlayerMsg_DidMediaPlayerPlay(
         routing_id(), fullscreen_player_id_));
@@ -151,6 +156,9 @@ void BrowserMediaPlayerManager::FullscreenPlayerPause() {
 void BrowserMediaPlayerManager::FullscreenPlayerSeek(int msec) {
   MediaPlayerAndroid* player = GetFullscreenPlayer();
   if (player) {
+    // TODO(kbalazs): if |fullscreen_player_is_released_| is true
+    // at this point, player->GetCurrentTime() will be wrong until
+    // FullscreenPlayerPlay (http://crbug.com/322798).
     OnSeekRequest(fullscreen_player_id_,
                   base::TimeDelta::FromMilliseconds(msec));
   }
@@ -501,11 +509,10 @@ void BrowserMediaPlayerManager::OnSetVolume(int player_id, double volume) {
 
 void BrowserMediaPlayerManager::OnReleaseResources(int player_id) {
   MediaPlayerAndroid* player = GetPlayer(player_id);
-  // Don't release the fullscreen player when tab visibility changes,
-  // it will be released when user hit the back/home button or when
-  // OnDestroyPlayer is called.
-  if (player && player_id != fullscreen_player_id_)
+  if (player)
     player->Release();
+  if (player_id == fullscreen_player_id_)
+    fullscreen_player_is_released_ = true;
 
 #if defined(GOOGLE_TV)
   WebContentsViewAndroid* view =
