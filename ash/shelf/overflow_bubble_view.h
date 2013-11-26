@@ -5,18 +5,25 @@
 #ifndef ASH_SHELF_OVERFLOW_BUBBLE_VIEW_H_
 #define ASH_SHELF_OVERFLOW_BUBBLE_VIEW_H_
 
+#include "ash/ash_export.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
 namespace ash {
+
+namespace test {
+class OverflowBubbleViewTestAPI;
+}
+
 namespace internal {
 
 class ShelfLayoutManager;
 class ShelfView;
 
 // OverflowBubbleView hosts a ShelfView to display overflown items.
-class OverflowBubbleView : public views::BubbleDelegateView {
+// Exports to access this class from OverflowBubbleViewTestAPI.
+class ASH_EXPORT OverflowBubbleView : public views::BubbleDelegateView {
  public:
   OverflowBubbleView();
   virtual ~OverflowBubbleView();
@@ -27,6 +34,8 @@ class OverflowBubbleView : public views::BubbleDelegateView {
   virtual gfx::Rect GetBubbleBounds() OVERRIDE;
 
  private:
+  friend class test::OverflowBubbleViewTestAPI;
+
   bool IsHorizontalAlignment() const;
 
   const gfx::Size GetContentsSize() const;

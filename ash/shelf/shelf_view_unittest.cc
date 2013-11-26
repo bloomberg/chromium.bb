@@ -13,6 +13,7 @@
 #include "ash/launcher/launcher_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/overflow_bubble.h"
+#include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -23,6 +24,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/launcher_test_api.h"
+#include "ash/test/overflow_bubble_view_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
@@ -1413,6 +1415,66 @@ TEST_F(ShelfViewLegacyShelfLayoutTest, CheckFittsLaw) {
   gfx::Rect ideal_bounds_0 = test_api_->GetIdealBoundsByIndex(0);
   gfx::Rect ideal_bounds_1 = test_api_->GetIdealBoundsByIndex(1);
   EXPECT_GT(ideal_bounds_0.width(), ideal_bounds_1.width());
+}
+
+// Check the drag insertion bounds of scrolled overflow bubble.
+TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
+  UpdateDisplay("400x300");
+
+  EXPECT_EQ(2, model_->item_count());
+
+  // Add buttons until overflow.
+  int items_added = 0;
+  while (!test_api_->IsOverflowButtonVisible()) {
+    AddAppShortcut();
+    ++items_added;
+    ASSERT_LT(items_added, 10000);
+  }
+
+  // Show overflow bubble.
+  test_api_->ShowOverflowBubble();
+  ASSERT_TRUE(test_api_->overflow_bubble() &&
+              test_api_->overflow_bubble()->IsShowing());
+
+  int item_width = test_api_->GetButtonSize() +
+      test_api_->GetButtonSpacing();
+  internal::OverflowBubbleView* bubble_view =
+      test_api_->overflow_bubble()->bubble_view();
+  test::OverflowBubbleViewTestAPI bubble_view_api(bubble_view);
+
+  // Add more buttons until OverflowBubble is scrollable and it has 3 invisible
+  // items.
+  while (bubble_view_api.GetContentsSize().width() <
+         (bubble_view->GetContentsBounds().width() + 3 * item_width))
+    AddAppShortcut();
+
+  ASSERT_TRUE(test_api_->overflow_bubble() &&
+              test_api_->overflow_bubble()->IsShowing());
+
+  ash::test::ShelfViewTestAPI test_for_overflow_view(
+      test_api_->overflow_bubble()->shelf_view());
+  int first_index = test_for_overflow_view.GetFirstVisibleIndex();
+  int last_index = test_for_overflow_view.GetLastVisibleIndex();
+
+  ash::internal::ShelfButton* first_button =
+      test_for_overflow_view.GetButton(first_index);
+  ash::internal::ShelfButton* last_button =
+      test_for_overflow_view.GetButton(last_index);
+  gfx::Point first_point = first_button->GetBoundsInScreen().CenterPoint();
+  gfx::Point last_point = last_button->GetBoundsInScreen().CenterPoint();
+  gfx::Rect drag_reinsert_bounds =
+      test_for_overflow_view.GetBoundsForDragInsertInScreen();
+  EXPECT_TRUE(drag_reinsert_bounds.Contains(first_point));
+  EXPECT_FALSE(drag_reinsert_bounds.Contains(last_point));
+
+  // Scrolls sufficiently to show last item.
+  bubble_view_api.ScrollByXOffset(3 * item_width);
+  drag_reinsert_bounds =
+      test_for_overflow_view.GetBoundsForDragInsertInScreen();
+  first_point = first_button->GetBoundsInScreen().CenterPoint();
+  last_point = last_button->GetBoundsInScreen().CenterPoint();
+  EXPECT_FALSE(drag_reinsert_bounds.Contains(first_point));
+  EXPECT_TRUE(drag_reinsert_bounds.Contains(last_point));
 }
 
 // Check the drag insertion bounds of shelf view in multi monitor environment.

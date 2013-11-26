@@ -69,10 +69,6 @@ void OverflowBubble::HideBubbleAndRefreshButton() {
   anchor->SchedulePaint();
 }
 
-gfx::Rect OverflowBubble::GetBubbleBounds() {
-  return bubble_->GetBubbleBounds();
-}
-
 void OverflowBubble::ProcessPressedEvent(ui::LocatedEvent* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   gfx::Point event_location_in_screen = event->location();

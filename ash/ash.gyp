@@ -661,6 +661,8 @@
         'test/launcher_item_delegate_manager_test_api.h',
         'test/mirror_window_test_api.cc',
         'test/mirror_window_test_api.h',
+        'test/overflow_bubble_view_test_api.cc',
+        'test/overflow_bubble_view_test_api.h',
         'test/shell_test_api.cc',
         'test/shell_test_api.h',
         'test/test_activation_delegate.cc',

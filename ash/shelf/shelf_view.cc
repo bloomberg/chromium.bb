@@ -17,6 +17,7 @@
 #include "ash/shelf/alternate_app_list_button.h"
 #include "ash/shelf/app_list_button.h"
 #include "ash/shelf/overflow_bubble.h"
+#include "ash/shelf/overflow_bubble_view.h"
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shelf/shelf_icon_observer.h"
@@ -1341,7 +1342,8 @@ gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
   gfx::Size preferred_size;
   if (is_overflow_mode()) {
     DCHECK(owner_overflow_bubble_);
-    gfx::Rect bubble_bounds = owner_overflow_bubble_->GetBubbleBounds();
+    gfx::Rect bubble_bounds =
+        owner_overflow_bubble_->bubble_view()->GetBubbleBounds();
     preferred_size = bubble_bounds.size();
   } else {
     const int preferred_shelf_size = layout_manager_->GetPreferredShelfSize();
@@ -1365,7 +1367,16 @@ gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
     }
   }
   gfx::Point origin(GetMirroredXWithWidthInView(0, preferred_size.width()), 0);
-  ConvertPointToScreen(this, &origin);
+
+  // In overflow mode, we should use OverflowBubbleView as a source for
+  // converting |origin| to screen coordinates. When a scroll operation is
+  // occurred in OverflowBubble, the bounds of ShelfView in OverflowBubble can
+  // be changed.
+  if (is_overflow_mode())
+    ConvertPointToScreen(owner_overflow_bubble_->bubble_view(), &origin);
+  else
+    ConvertPointToScreen(this, &origin);
+
   return gfx::Rect(origin, preferred_size);
 }
 

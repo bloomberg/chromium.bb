@@ -44,9 +44,7 @@ class OverflowBubble : public ui::EventHandler,
 
   bool IsShowing() const { return !!bubble_; }
   ShelfView* shelf_view() { return shelf_view_; }
-
-  // Returns overflow bubble bounds in screen coordinate.
-  gfx::Rect GetBubbleBounds();
+  OverflowBubbleView* bubble_view() { return bubble_; }
 
  private:
   void ProcessPressedEvent(ui::LocatedEvent* event);
