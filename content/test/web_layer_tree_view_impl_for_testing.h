@@ -49,8 +49,6 @@ class WebLayerTreeViewImplForTesting
                                        float new_page_scale,
                                        double duration_sec);
   virtual void setNeedsAnimate();
-  // Merged into setNeedsAnimate. Staged for removal.
-  virtual void setNeedsRedraw();
   virtual bool commitRequested() const;
   virtual void composite();
   virtual void didStopFlinging();

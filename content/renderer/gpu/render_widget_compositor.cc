@@ -506,9 +506,6 @@ void RenderWidgetCompositor::setNeedsAnimate() {
   layer_tree_host_->SetNeedsAnimate();
 }
 
-// Merged into setNeedsAnimate. Staged for removal.
-void RenderWidgetCompositor::setNeedsRedraw() { setNeedsAnimate(); }
-
 bool RenderWidgetCompositor::commitRequested() const {
   return layer_tree_host_->CommitRequested();
 }
