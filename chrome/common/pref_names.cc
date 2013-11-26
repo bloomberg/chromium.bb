@@ -1267,6 +1267,10 @@ const char kLocalDiscoveryNotificationsEnabled[] =
 // actually a dictionary that maps profile keys to before-mentioned strings.
 const char kProfileResetPromptMemento[] = "profile.reset_prompt_memento";
 
+// Stores the check-in info retrieved from the GCM server.
+const char kGCMUserAccountID[] = "gcm.user.account_id";
+const char kGCMUserToken[] = "gcm.user.token";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

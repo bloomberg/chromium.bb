@@ -19,7 +19,7 @@ class GCMClientMock : public GCMClient {
 
   // Overridden from GCMClient:
   // Called on IO thread.
-  virtual void AddUser(const std::string& username,
+  virtual void CheckIn(const std::string& username,
                        Delegate* delegate) OVERRIDE;
   virtual void Register(const std::string& username,
                         const std::string& app_id,
@@ -40,6 +40,10 @@ class GCMClientMock : public GCMClient {
                       const IncomingMessage& message);
   void DeleteMessages(const std::string& username, const std::string& app_id);
 
+  void set_checkin_failure_enabled(bool checkin_failure_enabled) {
+    checkin_failure_enabled_ = checkin_failure_enabled;
+  }
+
   CheckInInfo GetCheckInInfoFromUsername(const std::string& username) const;
   std::string GetRegistrationIdFromSenderIds(
       const std::vector<std::string>& sender_ids) const;
@@ -48,7 +52,7 @@ class GCMClientMock : public GCMClient {
   Delegate* GetDelegate(const std::string& username) const;
 
   // Called on IO thread.
-  void AddUserFinished(std::string username, CheckInInfo checkin_info);
+  void CheckInFinished(std::string username, CheckInInfo checkin_info);
   void RegisterFinished(std::string username,
                         std::string app_id,
                         std::string registrion_id);
@@ -64,6 +68,10 @@ class GCMClientMock : public GCMClient {
                         std::string message_id);
 
   std::map<std::string, Delegate*> delegates_;
+
+  // The testing code could set this to force the check-in failure in order to
+  // test the error scenario.
+  bool checkin_failure_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMClientMock);
 };

@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
@@ -21,6 +22,10 @@ class Profile;
 
 namespace extensions {
 class Extension;
+}
+
+namespace user_prefs {
+class PrefRegistrySyncable;
 }
 
 namespace gcm {
@@ -48,7 +53,12 @@ class GCMProfileService : public BrowserContextKeyedService,
   // Returns true if the GCM support is enabled.
   static bool IsGCMEnabled();
 
+  // Register profile-specific prefs for GCM.
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
   explicit GCMProfileService(Profile* profile);
+  // Constructor for testing purpose.
+  GCMProfileService(Profile* profile, TestingDelegate* testing_delegate);
   virtual ~GCMProfileService();
 
   // Registers |sender_id| for an app. A registration ID will be returned by
@@ -76,22 +86,28 @@ class GCMProfileService : public BrowserContextKeyedService,
 
  private:
   friend class GCMProfileServiceTest;
+  FRIEND_TEST_ALL_PREFIXES(GCMProfileServiceTest, CheckInFromPrefsStore);
+  FRIEND_TEST_ALL_PREFIXES(GCMProfileServiceTest, CheckOut);
 
   class IOWorker;
-
-  // For testing purpose.
-  void set_testing_delegate(TestingDelegate* delegate) {
-    testing_delegate_ = delegate;
-  }
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  void CheckIn();
-  void CheckOut();
-  void AddUserFinished(GCMClient::CheckInInfo checkin_info,
+  void Init();
+
+  // Allows a signed-in user to use the GCM. If the check-in info can be found
+  // in the prefs store, use it directly. Otherwise, a check-in communication
+  // will be made with the GCM.
+  void AddUser();
+
+  // Stops the user from using the GCM after the user signs out. This simply
+  // removes the cached and persisted check-in info.
+  void RemoveUser();
+
+  void CheckInFinished(GCMClient::CheckInInfo checkin_info,
                        GCMClient::Result result);
   void RegisterFinished(std::string app_id,
                         std::string registration_id,

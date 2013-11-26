@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/prefs/pref_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/services/gcm/gcm_client_mock.h"
 #include "chrome/browser/services/gcm/gcm_event_router.h"
@@ -11,7 +12,9 @@
 #include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/webdata/encryptor/encryptor.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,6 +66,12 @@ class GCMEventRouterMock : public GCMEventRouter {
 class GCMProfileServiceTest : public testing::Test,
                               public GCMProfileService::TestingDelegate {
  public:
+  static BrowserContextKeyedService* BuildGCMProfileService(
+      content::BrowserContext* profile) {
+    return new GCMProfileService(
+        static_cast<Profile*>(profile), gps_testing_delegate_);
+  }
+
   GCMProfileServiceTest() {
   }
 
@@ -82,6 +91,12 @@ class GCMProfileServiceTest : public testing::Test,
         SigninManagerFactory::GetForProfile(profile());
     signin_manager->SetAuthenticatedUsername(kTestingUsername);
 
+    // Encryptor ends up needing access to the keychain on OS X. So use the mock
+    // keychain to prevent prompts.
+#if defined(OS_MACOSX)
+    Encryptor::UseMockKeychain(true);
+#endif
+
     // Mock a GCMClient.
     gcm_client_mock_.reset(new GCMClientMock());
     GCMClient::SetForTesting(gcm_client_mock_.get());
@@ -89,8 +104,13 @@ class GCMProfileServiceTest : public testing::Test,
     // Mock a GCMEventRouter.
     gcm_event_router_mock_.reset(new GCMEventRouterMock(this));
 
-    // Pass delegate to observe some events.
-    GetGCMProfileService()->set_testing_delegate(this);
+    // Set |gps_testing_delegate_| for it to be picked up by
+    // BuildGCMProfileService and pass it to GCMProfileService.
+    gps_testing_delegate_ = this;
+
+    // This will create GCMProfileService that causes check-in to be initiated.
+    GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+        profile(), &GCMProfileServiceTest::BuildGCMProfileService);
 
     // Wait till the asynchronous check-in is done.
     WaitForCompleted();
@@ -137,8 +157,13 @@ class GCMProfileServiceTest : public testing::Test,
   GCMClient::CheckInInfo checkin_info_;
 
  private:
+  static GCMProfileService::TestingDelegate* gps_testing_delegate_;
+
   DISALLOW_COPY_AND_ASSIGN(GCMProfileServiceTest);
 };
+
+GCMProfileService::TestingDelegate*
+GCMProfileServiceTest::gps_testing_delegate_ = NULL;
 
 GCMEventRouterMock::GCMEventRouterMock(GCMProfileServiceTest* test)
     : test_(test),
@@ -180,6 +205,33 @@ TEST_F(GCMProfileServiceTest, CheckIn) {
       gcm_client_mock_->GetCheckInInfoFromUsername(kTestingUsername);
   EXPECT_EQ(expected_checkin_info.android_id, checkin_info_.android_id);
   EXPECT_EQ(expected_checkin_info.secret, checkin_info_.secret);
+}
+
+TEST_F(GCMProfileServiceTest, CheckInFromPrefsStore) {
+  // The first check-in should be successful.
+  EXPECT_TRUE(checkin_info_.IsValid());
+  GCMClient::CheckInInfo saved_checkin_info = checkin_info_;
+  checkin_info_.Reset();
+
+  gcm_client_mock_->set_checkin_failure_enabled(true);
+
+  // Recreate GCMProfileService to test reading the check-in info from the
+  // prefs store.
+  GCMProfileServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile(), &GCMProfileServiceTest::BuildGCMProfileService);
+
+  EXPECT_EQ(saved_checkin_info.android_id, checkin_info_.android_id);
+  EXPECT_EQ(saved_checkin_info.secret, checkin_info_.secret);
+}
+
+TEST_F(GCMProfileServiceTest, CheckOut) {
+  EXPECT_TRUE(profile()->GetPrefs()->HasPrefPath(prefs::kGCMUserAccountID));
+  EXPECT_TRUE(profile()->GetPrefs()->HasPrefPath(prefs::kGCMUserToken));
+
+  GetGCMProfileService()->RemoveUser();
+
+  EXPECT_FALSE(profile()->GetPrefs()->HasPrefPath(prefs::kGCMUserAccountID));
+  EXPECT_FALSE(profile()->GetPrefs()->HasPrefPath(prefs::kGCMUserToken));
 }
 
 class GCMProfileServiceRegisterTest : public GCMProfileServiceTest {

@@ -25,24 +25,26 @@ uint64 HashToUInt64(const std::string& hash) {
 
 }  // namespace
 
-GCMClientMock::GCMClientMock() {
+GCMClientMock::GCMClientMock() : checkin_failure_enabled_(false) {
 }
 
 GCMClientMock::~GCMClientMock() {
 }
 
-void GCMClientMock::AddUser(const std::string& username, Delegate* delegate) {
+void GCMClientMock::CheckIn(const std::string& username, Delegate* delegate) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   DCHECK(delegates_.find(username) == delegates_.end());
   delegates_[username] = delegate;
 
   // Simulate the android_id and secret by some sort of hashing.
-  CheckInInfo checkin_info = GetCheckInInfoFromUsername(username);
+  CheckInInfo checkin_info;
+  if (!checkin_failure_enabled_)
+    checkin_info = GetCheckInInfoFromUsername(username);
 
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
-      base::Bind(&GCMClientMock::AddUserFinished,
+      base::Bind(&GCMClientMock::CheckInFinished,
                  base::Unretained(this),
                  username,
                  checkin_info));
@@ -149,9 +151,9 @@ GCMClient::Delegate* GCMClientMock::GetDelegate(
   return iter->second;
 }
 
-void GCMClientMock::AddUserFinished(std::string username,
+void GCMClientMock::CheckInFinished(std::string username,
                                     CheckInInfo checkin_info) {
-  GetDelegate(username)->OnAddUserFinished(
+  GetDelegate(username)->OnCheckInFinished(
       checkin_info, checkin_info.IsValid() ? SUCCESS : SERVER_ERROR);
 }
 

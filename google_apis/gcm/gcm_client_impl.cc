@@ -12,7 +12,7 @@ GCMClientImpl::GCMClientImpl() {
 GCMClientImpl::~GCMClientImpl() {
 }
 
-void GCMClientImpl::AddUser(const std::string& username,
+void GCMClientImpl::CheckIn(const std::string& username,
                             Delegate* delegate) {
 }
 
