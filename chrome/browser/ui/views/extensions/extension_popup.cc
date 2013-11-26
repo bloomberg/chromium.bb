@@ -8,8 +8,8 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_host_factory.h"
+#include "chrome/browser/extensions/extension_view_host.h"
+#include "chrome/browser/extensions/extension_view_host_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -62,12 +62,12 @@ const int ExtensionPopup::kMinHeight = 25;
 const int ExtensionPopup::kMaxWidth = 800;
 const int ExtensionPopup::kMaxHeight = 600;
 
-ExtensionPopup::ExtensionPopup(extensions::ExtensionHost* host,
+ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
                                views::View* anchor_view,
                                views::BubbleBorder::Arrow arrow,
                                ShowAction show_action)
     : BubbleDelegateView(anchor_view, arrow),
-      extension_host_(host),
+      host_(host),
       devtools_callback_(base::Bind(
           &ExtensionPopup::OnDevToolsStateChanged, base::Unretained(this))) {
   inspect_with_devtools_ = show_action == SHOW_AND_INSPECT;
@@ -167,8 +167,8 @@ ExtensionPopup* ExtensionPopup::ShowPopup(const GURL& url,
                                           views::View* anchor_view,
                                           views::BubbleBorder::Arrow arrow,
                                           ShowAction show_action) {
-  extensions::ExtensionHost* host =
-      extensions::ExtensionHostFactory::CreatePopupHost(url, browser);
+  extensions::ExtensionViewHost* host =
+      extensions::ExtensionViewHostFactory::CreatePopupHost(url, browser);
   ExtensionPopup* popup = new ExtensionPopup(host, anchor_view, arrow,
       show_action);
   views::BubbleDelegateView::CreateBubble(popup);

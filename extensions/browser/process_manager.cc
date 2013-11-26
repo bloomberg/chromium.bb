@@ -40,10 +40,6 @@
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/switches.h"
 
-#if defined(OS_MACOSX)
-#include "chrome/browser/extensions/extension_host_mac.h"
-#endif
-
 using content::BrowserContext;
 using content::RenderViewHost;
 using content::SiteInstance;
@@ -238,7 +234,6 @@ const ProcessManager::ViewSet ProcessManager::GetAllViews() const {
 
 ExtensionHost* ProcessManager::CreateBackgroundHost(const Extension* extension,
                                                     const GURL& url) {
-  DVLOG(1) << "CreateBackgroundHost " << url.spec();
   // Hosted apps are taken care of from BackgroundContentsService. Ignore them
   // here.
   if (extension->is_hosted_app())
@@ -249,15 +244,8 @@ ExtensionHost* ProcessManager::CreateBackgroundHost(const Extension* extension,
     return host;  // TODO(kalman): return NULL here? It might break things...
 
   ExtensionHost* host =
-#if defined(OS_MACOSX)
-      new ExtensionHostMac(
-          extension, GetSiteInstanceForURL(url), url,
-          VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
-#else
       new ExtensionHost(extension, GetSiteInstanceForURL(url), url,
                         VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
-#endif
-
   host->CreateRenderViewSoon();
   OnBackgroundHostCreated(host);
   return host;

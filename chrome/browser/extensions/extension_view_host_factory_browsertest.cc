@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_host_factory.h"
+#include "chrome/browser/extensions/extension_view_host_factory.h"
 
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/common/view_type.h"
 
@@ -23,29 +24,34 @@ IN_PROC_BROWSER_TEST_F(ExtensionHostFactoryTest, CreateExtensionHosts) {
 
   {
     // Popup hosts are created with the correct type and profile.
-    scoped_ptr<ExtensionHost> host(
-        ExtensionHostFactory::CreatePopupHost(extension->url(), browser()));
+    scoped_ptr<ExtensionViewHost> host(
+        ExtensionViewHostFactory::CreatePopupHost(extension->url(), browser()));
     EXPECT_EQ(extension.get(), host->extension());
     EXPECT_EQ(browser()->profile(), host->profile());
     EXPECT_EQ(VIEW_TYPE_EXTENSION_POPUP, host->extension_host_type());
+    EXPECT_TRUE(host->view());
   }
 
   {
     // Infobar hosts are created with the correct type and profile.
-    scoped_ptr<ExtensionHost> host(
-        ExtensionHostFactory::CreateInfobarHost(extension->url(), browser()));
+    scoped_ptr<ExtensionViewHost> host(
+        ExtensionViewHostFactory::CreateInfobarHost(extension->url(),
+                                                    browser()));
     EXPECT_EQ(extension.get(), host->extension());
     EXPECT_EQ(browser()->profile(), host->profile());
     EXPECT_EQ(VIEW_TYPE_EXTENSION_INFOBAR, host->extension_host_type());
+    EXPECT_TRUE(host->view());
   }
 
   {
     // Dialog hosts are created with the correct type and profile.
-    scoped_ptr<ExtensionHost> host(ExtensionHostFactory::CreateDialogHost(
-        extension->url(), browser()->profile()));
+    scoped_ptr<ExtensionViewHost> host(
+        ExtensionViewHostFactory::CreateDialogHost(extension->url(),
+                                                   browser()->profile()));
     EXPECT_EQ(extension.get(), host->extension());
     EXPECT_EQ(browser()->profile(), host->profile());
     EXPECT_EQ(VIEW_TYPE_EXTENSION_DIALOG, host->extension_host_type());
+    EXPECT_TRUE(host->view());
   }
 }
 
@@ -68,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionHostFactoryTest,
   // The ExtensionHost for a regular extension in an incognito window is
   // associated with the original window's profile.
   scoped_ptr<ExtensionHost> regular_host(
-      ExtensionHostFactory::CreatePopupHost(
+      ExtensionViewHostFactory::CreatePopupHost(
             regular_extension->url(), incognito_browser));
   EXPECT_EQ(browser()->profile(), regular_host->profile());
 
@@ -82,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionHostFactoryTest,
   // The ExtensionHost for a split-mode extension is associated with the
   // incognito profile.
   scoped_ptr<ExtensionHost> split_mode_host(
-      ExtensionHostFactory::CreatePopupHost(
+      ExtensionViewHostFactory::CreatePopupHost(
           split_mode_extension->url(), incognito_browser));
   EXPECT_EQ(incognito_browser->profile(), split_mode_host->profile());
 }

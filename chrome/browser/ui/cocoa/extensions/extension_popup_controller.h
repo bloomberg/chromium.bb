@@ -22,7 +22,7 @@ class NotificationRegistrar;
 }
 
 namespace extensions {
-class ExtensionHost;
+class ExtensionViewHost;
 }
 
 // This controller manages a single browser action popup that can appear once a
@@ -42,7 +42,7 @@ class ExtensionHost;
   NSRect extensionFrame_;
 
   // The extension host object.
-  scoped_ptr<extensions::ExtensionHost> host_;
+  scoped_ptr<extensions::ExtensionViewHost> host_;
 
   scoped_ptr<content::NotificationRegistrar> registrar_;
   scoped_ptr<DevtoolsNotificationBridge> notificationBridge_;
@@ -59,8 +59,8 @@ class ExtensionHost;
   NSSize pendingSize_;
 }
 
-// Returns the ExtensionHost object associated with this popup.
-- (extensions::ExtensionHost*)extensionHost;
+// Returns the ExtensionViewHost object associated with this popup.
+- (extensions::ExtensionViewHost*)extensionViewHost;
 
 // Starts the process of showing the given popup URL. Instantiates an
 // ExtensionPopupController with the parent window retrieved from |browser|, a

@@ -15,8 +15,8 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_host_factory.h"
+#include "chrome/browser/extensions/extension_view_host.h"
+#include "chrome/browser/extensions/extension_view_host_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -42,7 +42,7 @@ const int ExtensionPopupGtk::kMaxWidth = 800;
 const int ExtensionPopupGtk::kMaxHeight = 600;
 
 ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
-                                     extensions::ExtensionHost* host,
+                                     extensions::ExtensionViewHost* host,
                                      GtkWidget* anchor,
                                      ShowAction show_action)
     : browser_(browser),
@@ -78,8 +78,8 @@ ExtensionPopupGtk::~ExtensionPopupGtk() {
 // static
 void ExtensionPopupGtk::Show(const GURL& url, Browser* browser,
     GtkWidget* anchor, ShowAction show_action) {
-  extensions::ExtensionHost* host =
-      extensions::ExtensionHostFactory::CreatePopupHost(url, browser);
+  extensions::ExtensionViewHost* host =
+      extensions::ExtensionViewHostFactory::CreatePopupHost(url, browser);
   // This object will delete itself when the bubble is closed.
   new ExtensionPopupGtk(browser, host, anchor, show_action);
 }

@@ -51,6 +51,10 @@ class TemplateURLService;
 class TranslateIconView;
 class ZoomView;
 
+namespace content {
+struct SSLStatus;
+}
+
 namespace views {
 class BubbleDelegateView;
 class ImageButton;

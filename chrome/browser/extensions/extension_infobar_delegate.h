@@ -16,7 +16,7 @@ class InfoBarService;
 
 namespace extensions {
 class Extension;
-class ExtensionHost;
+class ExtensionViewHost;
 }
 
 // The InfobarDelegate for creating and managing state for the ExtensionInfobar
@@ -43,7 +43,9 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
                      int height);
 
   const extensions::Extension* extension() { return extension_; }
-  extensions::ExtensionHost* extension_host() { return extension_host_.get(); }
+  extensions::ExtensionViewHost* extension_view_host() {
+    return extension_view_host_.get();
+  }
   int height() { return height_; }
 
   void set_observer(DelegateObserver* observer) { observer_ = observer; }
@@ -78,7 +80,7 @@ class ExtensionInfoBarDelegate : public InfoBarDelegate,
   // own this since the InfoBar gets deleted and recreated when you switch tabs
   // and come back (and we don't want the user's interaction with the InfoBar to
   // get lost at that point).
-  scoped_ptr<extensions::ExtensionHost> extension_host_;
+  scoped_ptr<extensions::ExtensionViewHost> extension_view_host_;
 
   // The observer monitoring when the delegate dies.
   DelegateObserver* observer_;

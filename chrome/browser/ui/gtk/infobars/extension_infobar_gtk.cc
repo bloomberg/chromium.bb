@@ -6,7 +6,7 @@
 
 #include "base/debug/trace_event.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
-#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/gtk/browser_window_gtk.h"
@@ -88,8 +88,9 @@ void ExtensionInfoBarGtk::InitWidgets() {
   icon_ = gtk_image_new();
   gtk_misc_set_alignment(GTK_MISC(icon_), 0.5, 0.5);
 
-  extensions::ExtensionHost* extension_host = GetDelegate()->extension_host();
-  const extensions::Extension* extension = extension_host->extension();
+  extensions::ExtensionViewHost* extension_view_host =
+      GetDelegate()->extension_view_host();
+  const extensions::Extension* extension = extension_view_host->extension();
 
   if (extension->ShowConfigureContextMenus()) {
     button_ = gtk_chrome_button_new();
@@ -111,7 +112,7 @@ void ExtensionInfoBarGtk::InitWidgets() {
           ExtensionIconSet::MATCH_EXACTLY);
   // Load image asynchronously, calling back OnImageLoaded.
   extensions::ImageLoader* loader =
-      extensions::ImageLoader::Get(extension_host->profile());
+      extensions::ImageLoader::Get(extension_view_host->profile());
   loader->LoadImageAsync(extension, icon_resource,
                          gfx::Size(extension_misc::EXTENSION_ICON_BITTY,
                                    extension_misc::EXTENSION_ICON_BITTY),
@@ -123,7 +124,7 @@ void ExtensionInfoBarGtk::InitWidgets() {
   gtk_alignment_set_padding(GTK_ALIGNMENT(alignment_), 0, 1, 0, 0);
   gtk_box_pack_start(GTK_BOX(hbox()), alignment_, TRUE, TRUE, 0);
 
-  view_ = extension_host->view();
+  view_ = extension_view_host->view();
 
   if (gtk_widget_get_parent(view_->native_view())) {
     gtk_widget_reparent(view_->native_view(), alignment_);
@@ -215,7 +216,7 @@ void ExtensionInfoBarGtk::OnSizeAllocate(GtkWidget* widget,
                                          GtkAllocation* allocation) {
   gfx::Size new_size(allocation->width, allocation->height);
 
-  GetDelegate()->extension_host()->view()->render_view_host()->GetView()->
+  GetDelegate()->extension_view_host()->view()->render_view_host()->GetView()->
       SetSize(new_size);
 }
 

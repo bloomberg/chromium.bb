@@ -5,8 +5,8 @@
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
 
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_host_factory.h"
+#include "chrome/browser/extensions/extension_view_host.h"
+#include "chrome/browser/extensions/extension_view_host_factory.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -45,9 +45,9 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
       observer_(NULL),
       extension_(extension),
       closing_(false) {
-  extension_host_.reset(
-      extensions::ExtensionHostFactory::CreateInfobarHost(url, browser));
-  extension_host_->SetAssociatedWebContents(web_contents);
+  extension_view_host_.reset(
+      extensions::ExtensionViewHostFactory::CreateInfobarHost(url, browser));
+  extension_view_host_->SetAssociatedWebContents(web_contents);
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(browser->profile()));
@@ -81,8 +81,8 @@ bool ExtensionInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
     return false;
 
   // Only allow one InfoBar at a time per extension.
-  return extension_delegate->extension_host()->extension() ==
-         extension_host_->extension();
+  return extension_delegate->extension_view_host()->extension() ==
+         extension_view_host_->extension();
 }
 
 void ExtensionInfoBarDelegate::InfoBarDismissed() {
@@ -103,7 +103,7 @@ void ExtensionInfoBarDelegate::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE) {
-    if (extension_host_.get() ==
+    if (extension_view_host_.get() ==
         content::Details<extensions::ExtensionHost>(details).ptr())
       RemoveSelf();
   } else {

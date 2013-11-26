@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
 
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_host_factory.h"
+#include "chrome/browser/extensions/extension_view_host.h"
+#include "chrome/browser/extensions/extension_view_host_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
@@ -24,9 +24,9 @@
 
 using content::WebContents;
 
-ExtensionDialog::ExtensionDialog(extensions::ExtensionHost* host,
+ExtensionDialog::ExtensionDialog(extensions::ExtensionViewHost* host,
                                  ExtensionDialogObserver* observer)
-    : extension_host_(host),
+    : host_(host),
       observer_(observer) {
   AddRef();  // Balanced in DeleteDelegate();
 
@@ -55,8 +55,8 @@ ExtensionDialog* ExtensionDialog::Show(
     int min_height,
     const string16& title,
     ExtensionDialogObserver* observer) {
-  extensions::ExtensionHost* host =
-      extensions::ExtensionHostFactory::CreateDialogHost(url, profile);
+  extensions::ExtensionViewHost* host =
+      extensions::ExtensionViewHostFactory::CreateDialogHost(url, profile);
   if (!host)
     return NULL;
   // Preferred size must be set before views::Widget::CreateWindowWithParent
@@ -132,11 +132,11 @@ int ExtensionDialog::GetDialogButtons() const {
 
 bool ExtensionDialog::CanResize() const {
   // Can resize only if minimum contents size set.
-  return extension_host_->view()->GetPreferredSize() != gfx::Size();
+  return host_->view()->GetPreferredSize() != gfx::Size();
 }
 
 void ExtensionDialog::SetMinimumContentsSize(int width, int height) {
-  extension_host_->view()->SetPreferredSize(gfx::Size(width, height));
+  host_->view()->SetPreferredSize(gfx::Size(width, height));
 }
 
 ui::ModalType ExtensionDialog::GetModalType() const {
@@ -162,15 +162,15 @@ void ExtensionDialog::DeleteDelegate() {
 }
 
 views::Widget* ExtensionDialog::GetWidget() {
-  return extension_host_->view()->GetWidget();
+  return host_->view()->GetWidget();
 }
 
 const views::Widget* ExtensionDialog::GetWidget() const {
-  return extension_host_->view()->GetWidget();
+  return host_->view()->GetWidget();
 }
 
 views::View* ExtensionDialog::GetContentsView() {
-  return extension_host_->view();
+  return host_->view();
 }
 
 bool ExtensionDialog::UseNewStyleForThisDialog() const {
@@ -187,7 +187,7 @@ void ExtensionDialog::Observe(int type,
     case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING:
       // Avoid potential overdraw by removing the temporary background after
       // the extension finishes loading.
-      extension_host_->view()->set_background(NULL);
+      host_->view()->set_background(NULL);
       // The render view is created during the LoadURL(), so we should
       // set the focus to the view if nobody else takes the focus.
       if (content::Details<extensions::ExtensionHost>(host()) == details)

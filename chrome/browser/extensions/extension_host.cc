@@ -21,15 +21,11 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
-#include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/common/chrome_constants.h"
@@ -150,6 +146,11 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       extension_function_dispatcher_(profile_, this),
       extension_host_type_(host_type),
       associated_web_contents_(NULL) {
+  // Not used for panels, see PanelHost.
+  DCHECK(host_type == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE ||
+         host_type == VIEW_TYPE_EXTENSION_DIALOG ||
+         host_type == VIEW_TYPE_EXTENSION_INFOBAR ||
+         host_type == VIEW_TYPE_EXTENSION_POPUP);
   host_contents_.reset(WebContents::Create(
       WebContents::CreateParams(profile_, site_instance))),
   content::WebContentsObserver::Observe(host_contents_.get());
@@ -180,24 +181,6 @@ ExtensionHost::~ExtensionHost() {
   ProcessCreationQueue::GetInstance()->Remove(this);
 }
 
-void ExtensionHost::CreateView(Browser* browser) {
-#if defined(TOOLKIT_VIEWS)
-  view_.reset(new ExtensionViewViews(this, browser));
-  // We own |view_|, so don't auto delete when it's removed from the view
-  // hierarchy.
-  view_->set_owned_by_client();
-#elif defined(OS_MACOSX)
-  view_.reset(new ExtensionViewMac(this, browser));
-  view_->Init();
-#elif defined(TOOLKIT_GTK)
-  view_.reset(new ExtensionViewGtk(this, browser));
-  view_->Init();
-#else
-  // TODO(port)
-  NOTREACHED();
-#endif
-}
-
 WebContents* ExtensionHost::GetAssociatedWebContents() const {
   return associated_web_contents_;
 }
@@ -205,12 +188,13 @@ WebContents* ExtensionHost::GetAssociatedWebContents() const {
 WebContents* ExtensionHost::GetVisibleWebContents() const {
   if (associated_web_contents_)
     return associated_web_contents_;
-  if ((extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP) ||
-      (extension_host_type_ == VIEW_TYPE_PANEL))
+  if (extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP)
     return host_contents_.get();
   return NULL;
 }
 
+// TODO(jamescook): Move this to ExtensionViewHost, as it is only used by
+// dialogs and infobars.
 void ExtensionHost::SetAssociatedWebContents(
     content::WebContents* web_contents) {
   associated_web_contents_ = web_contents;
@@ -246,16 +230,11 @@ void ExtensionHost::CreateRenderViewSoon() {
 
 void ExtensionHost::CreateRenderViewNow() {
   LoadInitialURL();
-  if (is_background_page()) {
+  if (IsBackgroundPage()) {
     DCHECK(IsRenderViewLive());
     ExtensionSystem::Get(profile_)->extension_service()->
         DidCreateRenderViewForBackgroundPage(this);
   }
-}
-
-WindowController* ExtensionHost::GetExtensionWindowController() const {
-  return view() && view()->browser() ?
-      view()->browser()->extension_window_controller() : NULL;
 }
 
 content::BrowserContext* ExtensionHost::browser_context() {
@@ -267,7 +246,7 @@ const GURL& ExtensionHost::GetURL() const {
 }
 
 void ExtensionHost::LoadInitialURL() {
-  if (!is_background_page() &&
+  if (!IsBackgroundPage() &&
       !ExtensionSystem::Get(profile_)->extension_service()->
           IsBackgroundPageReady(extension_)) {
     // Make sure the background page loads before any others.
@@ -277,8 +256,8 @@ void ExtensionHost::LoadInitialURL() {
   }
 
 #if !defined(OS_ANDROID)
-  if ((extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP) ||
-      (extension_host_type_ == VIEW_TYPE_PANEL)) {
+  // TODO(jamescook): Move this to ExtensionViewHost, which handles popups.
+  if (extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP) {
     web_modal::WebContentsModalDialogManager::CreateForWebContents(
         host_contents_.get());
     web_modal::WebContentsModalDialogManager::FromWebContents(
@@ -289,6 +268,11 @@ void ExtensionHost::LoadInitialURL() {
   host_contents_->GetController().LoadURL(
       initial_url_, content::Referrer(), content::PAGE_TRANSITION_LINK,
       std::string());
+}
+
+bool ExtensionHost::IsBackgroundPage() const {
+  DCHECK(extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
+  return true;
 }
 
 void ExtensionHost::Close() {
@@ -305,7 +289,7 @@ ExtensionHost::GetWebContentsModalDialogHost() {
 }
 
 gfx::NativeView ExtensionHost::GetHostView() const {
-  return view_ ? view_->native_view() : NULL;
+  return NULL;
 }
 
 gfx::Point ExtensionHost::GetDialogPosition(const gfx::Size& size) {
@@ -363,12 +347,6 @@ void ExtensionHost::Observe(int type,
   }
 }
 
-void ExtensionHost::ResizeDueToAutoResize(WebContents* source,
-                                          const gfx::Size& new_size) {
-  if (view())
-    view()->ResizeDueToAutoResize(new_size);
-}
-
 void ExtensionHost::RenderProcessGone(base::TerminationStatus status) {
   // During browser shutdown, we may use sudden termination on an extension
   // process, so it is expected to lose our connection to the render view.
@@ -394,8 +372,9 @@ void ExtensionHost::RenderProcessGone(base::TerminationStatus status) {
       content::Details<ExtensionHost>(this));
 }
 
+// TODO(jamescook): Move to ExtensionViewHost, which handles infobars.
 void ExtensionHost::InsertInfobarCSS() {
-  DCHECK(!is_background_page());
+  DCHECK(!IsBackgroundPage());
 
   static const base::StringPiece css(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -407,15 +386,7 @@ void ExtensionHost::InsertInfobarCSS() {
 void ExtensionHost::DidStopLoading(content::RenderViewHost* render_view_host) {
   bool notify = !did_stop_loading_;
   did_stop_loading_ = true;
-  if (extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP ||
-      extension_host_type_ == VIEW_TYPE_EXTENSION_DIALOG ||
-      extension_host_type_ == VIEW_TYPE_EXTENSION_INFOBAR ||
-      extension_host_type_ == VIEW_TYPE_PANEL) {
-#if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
-    if (view())
-      view()->DidStopLoading();
-#endif
-  }
+  OnDidStopLoading();
   if (notify) {
     if (extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
       if (extension_ && BackgroundInfo::HasLazyBackgroundPage(extension_)) {
@@ -434,8 +405,6 @@ void ExtensionHost::DidStopLoading(content::RenderViewHost* render_view_host) {
     } else if (extension_host_type_ == VIEW_TYPE_EXTENSION_INFOBAR) {
       UMA_HISTOGRAM_TIMES("Extensions.InfobarLoadTime",
         since_created_.Elapsed());
-    } else if (extension_host_type_ == VIEW_TYPE_PANEL) {
-      UMA_HISTOGRAM_TIMES("Extensions.PanelLoadTime", since_created_.Elapsed());
     }
 
     // Send the notification last, because it might result in this being
@@ -447,6 +416,11 @@ void ExtensionHost::DidStopLoading(content::RenderViewHost* render_view_host) {
   }
 }
 
+void ExtensionHost::OnDidStopLoading() {
+  DCHECK(extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
+  // Nothing to do for background pages.
+}
+
 void ExtensionHost::DocumentAvailableInMainFrame() {
   // If the document has already been marked as available for this host, then
   // bail. No need for the redundant setup. http://crbug.com/31170
@@ -454,7 +428,7 @@ void ExtensionHost::DocumentAvailableInMainFrame() {
     return;
 
   document_element_available_ = true;
-  if (is_background_page()) {
+  if (IsBackgroundPage()) {
     ExtensionSystem::Get(profile_)->extension_service()->
         SetBackgroundPageReady(extension_);
   } else {
@@ -469,14 +443,7 @@ void ExtensionHost::DocumentAvailableInMainFrame() {
 }
 
 void ExtensionHost::CloseContents(WebContents* contents) {
-  // TODO(mpcomplete): is this check really necessary?
-  if (extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP ||
-      extension_host_type_ == VIEW_TYPE_EXTENSION_DIALOG ||
-      extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE ||
-      extension_host_type_ == VIEW_TYPE_EXTENSION_INFOBAR ||
-      extension_host_type_ == VIEW_TYPE_PANEL) {
-    Close();
-  }
+  Close();
 }
 
 void ExtensionHost::WillRunJavaScriptDialog() {
@@ -489,59 +456,6 @@ void ExtensionHost::DidCloseJavaScriptDialog() {
   ProcessManager* pm = ExtensionSystem::Get(profile_)->process_manager();
   if (pm)
     pm->DecrementLazyKeepaliveCount(extension());
-}
-
-WebContents* ExtensionHost::OpenURLFromTab(WebContents* source,
-                                           const OpenURLParams& params) {
-  // Whitelist the dispositions we will allow to be opened.
-  switch (params.disposition) {
-    case SINGLETON_TAB:
-    case NEW_FOREGROUND_TAB:
-    case NEW_BACKGROUND_TAB:
-    case NEW_POPUP:
-    case NEW_WINDOW:
-    case SAVE_TO_DISK:
-    case OFF_THE_RECORD: {
-      // Only allow these from hosts that are bound to a browser (e.g. popups).
-      // Otherwise they are not driven by a user gesture.
-      Browser* browser = view() ? view()->browser() : NULL;
-      return browser ? browser->OpenURL(params) : NULL;
-    }
-    default:
-      return NULL;
-  }
-}
-
-bool ExtensionHost::PreHandleKeyboardEvent(WebContents* source,
-                                           const NativeWebKeyboardEvent& event,
-                                           bool* is_keyboard_shortcut) {
-  if (extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP &&
-      event.type == NativeWebKeyboardEvent::RawKeyDown &&
-      event.windowsKeyCode == ui::VKEY_ESCAPE) {
-    DCHECK(is_keyboard_shortcut != NULL);
-    *is_keyboard_shortcut = true;
-    return false;
-  }
-
-  // Handle higher priority browser shortcuts such as Ctrl-w.
-  Browser* browser = view() ? view()->browser() : NULL;
-  if (browser)
-    return browser->PreHandleKeyboardEvent(source, event, is_keyboard_shortcut);
-
-  *is_keyboard_shortcut = false;
-  return false;
-}
-
-void ExtensionHost::HandleKeyboardEvent(WebContents* source,
-                                        const NativeWebKeyboardEvent& event) {
-  if (extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP) {
-    if (event.type == NativeWebKeyboardEvent::RawKeyDown &&
-        event.windowsKeyCode == ui::VKEY_ESCAPE) {
-      Close();
-      return;
-    }
-  }
-  UnhandledKeyboardEvent(source, event);
 }
 
 bool ExtensionHost::OnMessageReceived(const IPC::Message& message) {
@@ -608,38 +522,10 @@ void ExtensionHost::OnDetailedConsoleMessageAdded(
   }
 }
 
-void ExtensionHost::UnhandledKeyboardEvent(
-    WebContents* source,
-    const content::NativeWebKeyboardEvent& event) {
-  Browser* browser = view() ? view()->browser() : NULL;
-  if (browser) {
-    // Handle lower priority browser shortcuts such as Ctrl-f.
-    return browser->HandleKeyboardEvent(source, event);
-  } else {
-#if defined(TOOLKIT_VIEWS)
-    // In case there's no Browser (e.g. for dialogs), pass it to
-    // ExtensionViewViews to handle acceleratos. The view's FocusManager does
-    // not know anything about Browser accelerators, but might know others such
-    // as Ash's.
-    if (view())
-      view()->HandleKeyboardEvent(event);
-#endif
-  }
-}
+// content::WebContentsObserver
 
 void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   render_view_host_ = render_view_host;
-
-  if (view())
-    view()->RenderViewCreated();
-
-  // If the host is bound to a window, then extract its id. Extensions hosted
-  // in ExternalTabContainer objects may not have an associated window.
-  WindowController* window = GetExtensionWindowController();
-  if (window) {
-    render_view_host->Send(new ExtensionMsg_UpdateBrowserWindowId(
-        render_view_host->GetRoutingID(), window->GetWindowId()));
-  }
 }
 
 void ExtensionHost::RenderViewDeleted(RenderViewHost* render_view_host) {

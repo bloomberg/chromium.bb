@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_host_mac.h"
+#include "chrome/browser/extensions/extension_view_host_mac.h"
 
 #import "chrome/browser/ui/cocoa/chrome_event_processing_window.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
@@ -13,18 +13,18 @@ using content::NativeWebKeyboardEvent;
 
 namespace extensions {
 
-ExtensionHostMac::~ExtensionHostMac() {
+ExtensionViewHostMac::~ExtensionViewHostMac() {
   // If there is a popup open for this host's extension, close it.
   ExtensionPopupController* popup = [ExtensionPopupController popup];
   if ([[popup window] isVisible] &&
-      [popup extensionHost]->extension() == this->extension()) {
+      [popup extensionViewHost]->extension() == this->extension()) {
     InfoBubbleWindow* window = (InfoBubbleWindow*)[popup window];
     [window setAllowedAnimations:info_bubble::kAnimateNone];
     [popup close];
   }
 }
 
-void ExtensionHostMac::UnhandledKeyboardEvent(
+void ExtensionViewHostMac::UnhandledKeyboardEvent(
     content::WebContents* source,
     const NativeWebKeyboardEvent& event) {
   if (event.skip_in_browser || event.type == NativeWebKeyboardEvent::Char ||

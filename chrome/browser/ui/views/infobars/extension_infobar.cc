@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/infobars/extension_infobar.h"
 
 #include "chrome/browser/extensions/extension_context_menu_model.h"
-#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_infobar_delegate.h"
+#include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -106,7 +106,7 @@ void ExtensionInfoBar::Layout() {
   infobar_icon_->SetBounds(StartX(), OffsetY(size), size.width(),
                            size.height());
 
-  GetDelegate()->extension_host()->view()->SetBounds(
+  GetDelegate()->extension_view_host()->view()->SetBounds(
       infobar_icon_->bounds().right() + kIconHorizontalMargin,
       arrow_height(),
       std::max(0, EndX() - StartX() - ContentMinimumWidth()),
@@ -120,9 +120,10 @@ void ExtensionInfoBar::ViewHierarchyChanged(
     return;
   }
 
-  extensions::ExtensionHost* extension_host = GetDelegate()->extension_host();
+  extensions::ExtensionViewHost* extension_view_host =
+      GetDelegate()->extension_view_host();
 
-  if (extension_host->extension()->ShowConfigureContextMenus()) {
+  if (extension_view_host->extension()->ShowConfigureContextMenus()) {
     icon_as_menu_ = new views::MenuButton(NULL, string16(), this, false);
     icon_as_menu_->set_focusable(true);
     infobar_icon_ = icon_as_menu_;
@@ -135,7 +136,7 @@ void ExtensionInfoBar::ViewHierarchyChanged(
   infobar_icon_->SetVisible(false);
   AddChildView(infobar_icon_);
 
-  AddChildView(extension_host->view());
+  AddChildView(extension_view_host->view());
 
   // This must happen after adding all other children so InfoBarView can ensure
   // the close button is the last child.
@@ -144,14 +145,14 @@ void ExtensionInfoBar::ViewHierarchyChanged(
   // This must happen after adding all children because it can trigger layout,
   // which assumes that particular children (e.g. the close button) have already
   // been added.
-  const extensions::Extension* extension = extension_host->extension();
+  const extensions::Extension* extension = extension_view_host->extension();
   extension_misc::ExtensionIcons image_size =
       extension_misc::EXTENSION_ICON_BITTY;
   extensions::ExtensionResource icon_resource =
       extensions::IconsInfo::GetIconResource(
           extension, image_size, ExtensionIconSet::MATCH_EXACTLY);
   extensions::ImageLoader* loader =
-      extensions::ImageLoader::Get(extension_host->profile());
+      extensions::ImageLoader::Get(extension_view_host->profile());
   loader->LoadImageAsync(
       extension,
       icon_resource,
@@ -174,7 +175,7 @@ void ExtensionInfoBar::OnMenuButtonClicked(views::View* source,
   if (!owner())
     return;  // We're closing; don't call anything, it might access the owner.
   const extensions::Extension* extension =
-      GetDelegate()->extension_host()->extension();
+      GetDelegate()->extension_view_host()->extension();
   DCHECK(icon_as_menu_);
 
   scoped_refptr<ExtensionContextMenuModel> options_menu_contents =

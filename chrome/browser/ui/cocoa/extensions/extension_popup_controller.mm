@@ -9,8 +9,8 @@
 #include "base/callback.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_host_factory.h"
+#include "chrome/browser/extensions/extension_view_host.h"
+#include "chrome/browser/extensions/extension_view_host_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
@@ -44,7 +44,7 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
 @interface ExtensionPopupController (Private)
 // Callers should be using the public static method for initialization.
 // NOTE: This takes ownership of |host|.
-- (id)initWithHost:(extensions::ExtensionHost*)host
+- (id)initWithHost:(extensions::ExtensionViewHost*)host
       parentWindow:(NSWindow*)parentWindow
         anchoredAt:(NSPoint)anchoredAt
      arrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation
@@ -85,7 +85,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
  public:
   explicit DevtoolsNotificationBridge(ExtensionPopupController* controller)
     : controller_(controller),
-      render_view_host_([controller_ extensionHost]->render_view_host()),
+      render_view_host_([controller_ extensionViewHost]->render_view_host()),
       devtools_callback_(base::Bind(
           &DevtoolsNotificationBridge::OnDevToolsStateChanged,
           base::Unretained(this))) {
@@ -121,8 +121,8 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
       const content::NotificationDetails& details) OVERRIDE {
     switch (type) {
       case chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING: {
-        if (content::Details<extensions::ExtensionHost>(
-                [controller_ extensionHost]) == details) {
+        if (content::Details<extensions::ExtensionViewHost>(
+                [controller_ extensionViewHost]) == details) {
           [controller_ showDevTools];
         }
         break;
@@ -137,14 +137,15 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
  private:
   ExtensionPopupController* controller_;
   // RenderViewHost for controller. Hold onto this separately because we need to
-  // know what it is for notifications, but our ExtensionHost may not be valid.
+  // know what it is for notifications, but our ExtensionViewHost may not be
+  // valid.
   RenderViewHost* render_view_host_;
   base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
 };
 
 @implementation ExtensionPopupController
 
-- (id)initWithHost:(extensions::ExtensionHost*)host
+- (id)initWithHost:(extensions::ExtensionViewHost*)host
       parentWindow:(NSWindow*)parentWindow
         anchoredAt:(NSPoint)anchoredAt
      arrowLocation:(info_bubble::BubbleArrowLocation)arrowLocation
@@ -252,7 +253,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   return [static_cast<InfoBubbleWindow*>([self window]) isClosing];
 }
 
-- (extensions::ExtensionHost*)extensionHost {
+- (extensions::ExtensionViewHost*)extensionViewHost {
   return host_.get();
 }
 
@@ -271,8 +272,8 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   if (!browser)
     return nil;
 
-  extensions::ExtensionHost* host =
-      extensions::ExtensionHostFactory::CreatePopupHost(url, browser);
+  extensions::ExtensionViewHost* host =
+      extensions::ExtensionViewHostFactory::CreatePopupHost(url, browser);
   DCHECK(host);
   if (!host)
     return nil;

@@ -20,22 +20,11 @@
 #include "extensions/common/stack_frame.h"
 #include "extensions/common/view_type.h"
 
-#if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/ui/views/extensions/extension_view_views.h"
-#elif defined(OS_MACOSX)
-#include "chrome/browser/ui/cocoa/extensions/extension_view_mac.h"
-#elif defined(TOOLKIT_GTK)
-#include "chrome/browser/ui/gtk/extensions/extension_view_gtk.h"
-#elif defined(OS_ANDROID)
-#include "chrome/browser/ui/android/extensions/extension_view_android.h"
-#endif
-
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #endif
 
-class Browser;
 class PrefsTabHelper;
 
 namespace content {
@@ -53,6 +42,8 @@ class WindowController;
 // It handles setting up the renderer process, if needed, with special
 // privileges available to extensions.  It may have a view to be shown in the
 // browser UI, or it may be hidden.
+// TODO(jamescook): Move the ChromeWebModalDialogManagerDelegate interface to
+// ExtensionViewHost.
 class ExtensionHost : public content::WebContentsDelegate,
 #if !defined(OS_ANDROID)
                       public ChromeWebModalDialogManagerDelegate,
@@ -64,45 +55,10 @@ class ExtensionHost : public content::WebContentsDelegate,
  public:
   class ProcessCreationQueue;
 
-#if defined(TOOLKIT_VIEWS)
-  typedef ExtensionViewViews PlatformExtensionView;
-#elif defined(OS_MACOSX)
-  typedef ExtensionViewMac PlatformExtensionView;
-#elif defined(TOOLKIT_GTK)
-  typedef ExtensionViewGtk PlatformExtensionView;
-#elif defined(OS_ANDROID)
-  // Android does not support extensions.
-  typedef ExtensionViewAndroid PlatformExtensionView;
-#endif
-
   ExtensionHost(const Extension* extension,
                 content::SiteInstance* site_instance,
                 const GURL& url, ViewType host_type);
   virtual ~ExtensionHost();
-
-#if defined(TOOLKIT_VIEWS)
-  void set_view(PlatformExtensionView* view) { view_.reset(view); }
-#endif
-
-  const PlatformExtensionView* view() const {
-#if defined(OS_ANDROID)
-    NOTREACHED();
-#endif
-    return view_.get();
-  }
-
-  PlatformExtensionView* view() {
-#if defined(OS_ANDROID)
-    NOTREACHED();
-#endif
-    return view_.get();
-  }
-
-  // Create an ExtensionView and tie it to this host and |browser|.  Note NULL
-  // is a valid argument for |browser|.  Extension views may be bound to
-  // tab-contents hosted in ExternalTabContainer objects, which do not
-  // instantiate Browser objects.
-  void CreateView(Browser* browser);
 
   const Extension* extension() const { return extension_; }
   const std::string& extension_id() const { return extension_id_; }
@@ -157,18 +113,6 @@ class ExtensionHost : public content::WebContentsDelegate,
       content::RenderViewHost* render_view_host) OVERRIDE;
 
   // content::WebContentsDelegate
-  virtual content::WebContents* OpenURLFromTab(
-      content::WebContents* source,
-      const content::OpenURLParams& params) OVERRIDE;
-  virtual bool PreHandleKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event,
-      bool* is_keyboard_shortcut) OVERRIDE;
-  virtual void HandleKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event) OVERRIDE;
-  virtual void ResizeDueToAutoResize(content::WebContents* source,
-                                     const gfx::Size& new_size) OVERRIDE;
   virtual content::JavaScriptDialogManager*
       GetJavaScriptDialogManager() OVERRIDE;
   virtual content::ColorChooser* OpenColorChooser(
@@ -193,6 +137,16 @@ class ExtensionHost : public content::WebContentsDelegate,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+ protected:
+  // Called before the EXTENSION_HOST_DID_STOP_LOADING notification is sent.
+  virtual void OnDidStopLoading();
+
+  // Returns true if we're hosting a background page.
+  virtual bool IsBackgroundPage() const;
+
+  // Closes this host (results in deletion).
+  void Close();
+
  private:
   friend class ProcessCreationQueue;
 
@@ -202,10 +156,8 @@ class ExtensionHost : public content::WebContentsDelegate,
   // Navigates to the initial page.
   void LoadInitialURL();
 
-  // Closes this host (results in deletion).
-  void Close();
-
 #if !defined(OS_ANDROID)
+  // TODO(jamescook): Move this to ExtensionViewHost.
   // ChromeWebModalDialogManagerDelegate
   virtual web_modal::WebContentsModalDialogHost*
       GetWebContentsModalDialogHost() OVERRIDE;
@@ -220,9 +172,6 @@ class ExtensionHost : public content::WebContentsDelegate,
       web_modal::ModalDialogHostObserver* observer) OVERRIDE;
 #endif
 
-  // ExtensionFunctionDispatcher::Delegate
-  virtual WindowController* GetExtensionWindowController() const OVERRIDE;
-
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
   void OnEventAck();
@@ -234,17 +183,6 @@ class ExtensionHost : public content::WebContentsDelegate,
       const StackTrace& stack_trace,
       int32 severity_level);
 
-  // Handles keyboard events that were not handled by HandleKeyboardEvent().
-  // Platform specific implementation may override this method to handle the
-  // event in platform specific way.
-  virtual void UnhandledKeyboardEvent(
-      content::WebContents* source,
-      const content::NativeWebKeyboardEvent& event);
-
-  // Returns true if we're hosting a background page.
-  // This isn't valid until CreateRenderView is called.
-  bool is_background_page() const { return !view(); }
-
   // The extension that we're hosting in this view.
   const Extension* extension_;
 
@@ -253,9 +191,6 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   // The profile that this host is tied to.
   Profile* profile_;
-
-  // Optional view that shows the rendered content in the UI.
-  scoped_ptr<PlatformExtensionView> view_;
 
   // Used to create dialog boxes.
   // It must outlive host_contents_ as host_contents_ will access it
