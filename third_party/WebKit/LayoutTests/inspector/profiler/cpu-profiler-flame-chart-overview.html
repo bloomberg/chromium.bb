@@ -809,12 +809,13 @@ function test()
     WebInspector.showPanel("profiles");
     var cpuProfileView = new WebInspector.CPUProfileView(profileAndExpectations);
     var dataProvider = new WebInspector.CPUFlameChartDataProvider(cpuProfileView);
-    var flameChart = new WebInspector.FlameChart(dataProvider);
-    console.log(Object.values(flameChart._overviewPane._calculateDrawData(16)));
-    console.log(Object.values(flameChart._overviewPane._calculateDrawData(8)));
-    console.log(Object.values(flameChart._overviewPane._calculateDrawData(4)));
-    console.log(Object.values(flameChart._overviewPane._calculateDrawData(2)));
-    console.log(Object.values(flameChart._overviewPane._calculateDrawData(1)));
+    var colorGenerator = new WebInspector.FlameChart.ColorGenerator();
+    var timelineData = dataProvider.timelineData(colorGenerator);
+    console.log(Object.values(WebInspector.FlameChart.OverviewPane.calculateDrawData(timelineData, 16)));
+    console.log(Object.values(WebInspector.FlameChart.OverviewPane.calculateDrawData(timelineData, 8)));
+    console.log(Object.values(WebInspector.FlameChart.OverviewPane.calculateDrawData(timelineData, 4)));
+    console.log(Object.values(WebInspector.FlameChart.OverviewPane.calculateDrawData(timelineData, 2)));
+    console.log(Object.values(WebInspector.FlameChart.OverviewPane.calculateDrawData(timelineData, 1)));
     InspectorTest.completeTest();
 }
 
