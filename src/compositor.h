@@ -647,6 +647,14 @@ struct weston_buffer_reference {
 	struct wl_listener destroy_listener;
 };
 
+struct weston_buffer_viewport {
+	/* wl_surface.set_buffer_transform */
+	uint32_t transform;
+
+	/* wl_surface.set_scaling_factor */
+	int32_t scale;
+};
+
 struct weston_region {
 	struct wl_resource *resource;
 	pixman_region32_t region;
@@ -693,10 +701,8 @@ struct weston_subsurface {
 		struct wl_list frame_callback_list;
 
 		/* wl_surface.set_buffer_transform */
-		uint32_t buffer_transform;
-
 		/* wl_surface.set_buffer_scale */
-		int32_t buffer_scale;
+		struct weston_buffer_viewport buffer_viewport;
 	} cached;
 
 	int synchronized;
@@ -835,8 +841,7 @@ struct weston_surface {
 	struct wl_list frame_callback_list;
 
 	struct weston_buffer_reference buffer_ref;
-	uint32_t buffer_transform;
-	int32_t buffer_scale;
+	struct weston_buffer_viewport buffer_viewport;
 	int keep_buffer; /* bool for backends to prevent early release */
 
 	/* All the pending state, that wl_surface.commit will apply. */
@@ -861,10 +866,8 @@ struct weston_surface {
 		struct wl_list frame_callback_list;
 
 		/* wl_surface.set_buffer_transform */
-		uint32_t buffer_transform;
-
 		/* wl_surface.set_scaling_factor */
-		int32_t buffer_scale;
+		struct weston_buffer_viewport buffer_viewport;
 	} pending;
 
 	/*
