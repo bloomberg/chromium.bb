@@ -223,8 +223,6 @@ TEST(CoreCppTest, Basic) {
       // |handles[0]| should actually be invalid now.
       EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(handles[0]));
 
-      // TODO(vtl): Bug (in code): if the scope ended here, the test crashes.
-
       // Read "hello" and the sent handle.
       EXPECT_EQ(MOJO_RESULT_OK,
                 Wait(h_0, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE));
@@ -268,6 +266,102 @@ TEST(CoreCppTest, Basic) {
 
   // TODO(vtl): Test |CloseRaw()|.
   // TODO(vtl): Test |reset()| more thoroughly?
+}
+
+TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
+  // Tear down a |MessagePipe| which still has a message enqueued, with the
+  // message also having a valid |MessagePipe| handle.
+  {
+    ScopedMessagePipeHandle h_0;
+    ScopedMessagePipeHandle h_1;
+    CreateMessagePipe(&h_0, &h_1);
+
+    // Send a handle over the previously-establish |MessagePipe|.
+    ScopedMessagePipeHandle h_2;
+    ScopedMessagePipeHandle h_3;
+    CreateMessagePipe(&h_2, &h_3);
+
+    // Write a message to |h_2|, before we send |h_3|.
+    const char kWorld[] = "world!";
+    const uint32_t kWorldSize = static_cast<uint32_t>(sizeof(kWorld));
+    EXPECT_EQ(MOJO_RESULT_OK,
+              WriteMessageRaw(h_2,
+                              kWorld, kWorldSize,
+                              NULL, 0,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
+    // And also a message to |h_3|.
+    EXPECT_EQ(MOJO_RESULT_OK,
+              WriteMessageRaw(h_3,
+                              kWorld, kWorldSize,
+                              NULL, 0,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+    // Send |h_3| over |h_1| to |h_0|.
+    const char kHello[] = "hello";
+    const uint32_t kHelloSize = static_cast<uint32_t>(sizeof(kHello));
+    MojoHandle h_3_value;
+    h_3_value = h_3.release().value();
+    EXPECT_NE(kInvalidHandleValue, h_3_value);
+    EXPECT_FALSE(h_3.get().is_valid());
+    EXPECT_EQ(MOJO_RESULT_OK,
+              WriteMessageRaw(h_1,
+                              kHello, kHelloSize,
+                              &h_3_value, 1,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
+    // |h_3_value| should actually be invalid now.
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(h_3_value));
+
+    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h_0.release().value()));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h_1.release().value()));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h_2.release().value()));
+  }
+
+  // Do this in a different order: make the enqueued |MessagePipe| handle only
+  // half-alive.
+  {
+    ScopedMessagePipeHandle h_0;
+    ScopedMessagePipeHandle h_1;
+    CreateMessagePipe(&h_0, &h_1);
+
+    // Send a handle over the previously-establish |MessagePipe|.
+    ScopedMessagePipeHandle h_2;
+    ScopedMessagePipeHandle h_3;
+    CreateMessagePipe(&h_2, &h_3);
+
+    // Write a message to |h_2|, before we send |h_3|.
+    const char kWorld[] = "world!";
+    const uint32_t kWorldSize = static_cast<uint32_t>(sizeof(kWorld));
+    EXPECT_EQ(MOJO_RESULT_OK,
+              WriteMessageRaw(h_2,
+                              kWorld, kWorldSize,
+                              NULL, 0,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
+    // And also a message to |h_3|.
+    EXPECT_EQ(MOJO_RESULT_OK,
+              WriteMessageRaw(h_3,
+                              kWorld, kWorldSize,
+                              NULL, 0,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+    // Send |h_3| over |h_1| to |h_0|.
+    const char kHello[] = "hello";
+    const uint32_t kHelloSize = static_cast<uint32_t>(sizeof(kHello));
+    MojoHandle h_3_value;
+    h_3_value = h_3.release().value();
+    EXPECT_NE(kInvalidHandleValue, h_3_value);
+    EXPECT_FALSE(h_3.get().is_valid());
+    EXPECT_EQ(MOJO_RESULT_OK,
+              WriteMessageRaw(h_1,
+                              kHello, kHelloSize,
+                              &h_3_value, 1,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
+    // |h_3_value| should actually be invalid now.
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(h_3_value));
+
+    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h_2.release().value()));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h_0.release().value()));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h_1.release().value()));
+  }
 }
 
 }  // namespace

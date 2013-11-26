@@ -28,6 +28,13 @@ LocalMessagePipeEndpoint::MessageQueueEntry::MessageQueueEntry(
 LocalMessagePipeEndpoint::MessageQueueEntry::~MessageQueueEntry() {
   if (message)
     message->Destroy();
+  // Close all the dispatchers.
+  for (size_t i = 0; i < dispatchers.size(); i++) {
+    // Note: Taking the |Dispatcher| locks is okay, since no one else should
+    // have a reference to the dispatchers (and the locks shouldn't be held).
+    DCHECK(dispatchers[i]->HasOneRef());
+    dispatchers[i]->Close();
+  }
 }
 
 LocalMessagePipeEndpoint::LocalMessagePipeEndpoint()
@@ -79,8 +86,17 @@ void LocalMessagePipeEndpoint::EnqueueMessage(
   bool was_empty = message_queue_.empty();
   message_queue_.push_back(MessageQueueEntry());
   message_queue_.back().message = message;
-  if (dispatchers)
+  if (dispatchers) {
+#ifndef NDEBUG
+    // It's important that we're taking "ownership" of the dispatchers. In
+    // particular, they must not be in the global handle table (i.e., have live
+    // handles referring to them). If we need to destroy any queued messages, we
+    // need to know that any handles in them should be closed.
+    for (size_t i = 0; i < dispatchers->size(); i++)
+      DCHECK((*dispatchers)[i]->HasOneRef());
+#endif
     message_queue_.back().dispatchers.swap(*dispatchers);
+  }
   if (was_empty) {
     waiter_list_.AwakeWaitersForStateChange(SatisfiedFlags(),
                                             SatisfiableFlags());
