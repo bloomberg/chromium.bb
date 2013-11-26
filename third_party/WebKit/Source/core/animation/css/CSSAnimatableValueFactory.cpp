@@ -446,6 +446,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromShapeValue(style.shapeOutside());
     case CSSPropertyShapeMargin:
         return createFromLength(style.shapeMargin(), style);
+    case CSSPropertyShapeImageThreshold:
+        return createFromDouble(style.shapeImageThreshold());
     case CSSPropertyWebkitTextStrokeColor:
         return createFromColor(property, style);
     case CSSPropertyWebkitTransform: {

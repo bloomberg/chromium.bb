@@ -888,6 +888,7 @@ bool CSSAnimations::isAnimatableProperty(CSSPropertyID property)
     case CSSPropertyShapeInside:
     case CSSPropertyShapeOutside:
     case CSSPropertyShapeMargin:
+    case CSSPropertyShapeImageThreshold:
     case CSSPropertyWebkitTextStrokeColor:
     case CSSPropertyWebkitTransform:
     case CSSPropertyWebkitTransformOriginX:
