@@ -1667,7 +1667,7 @@ static int si_surface_init_2d(struct radeon_surface_manager *surf_man,
             return si_surface_init_1d(surf_man, surf, level, bpe, tile_mode, offset, i);
         }
         /* level0 and first mipmap need to have alignment */
-        aligned_offset = surf->bo_size;
+        aligned_offset = offset = surf->bo_size;
         if ((i == 0)) {
             aligned_offset = ALIGN(aligned_offset, surf->bo_alignment);
         }
