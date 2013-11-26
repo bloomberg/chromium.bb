@@ -114,7 +114,7 @@ public:
     {
         m_data.access()->imageSlices = LengthBox(0);
         m_data.access()->fill = true;
-        m_data.access()->borderSlices = BorderImageLengthBox();
+        m_data.access()->borderSlices = BorderImageLengthBox(Length(Auto));
     }
 
     static LayoutUnit computeOutset(const BorderImageLength& outsetSide, LayoutUnit borderSide)

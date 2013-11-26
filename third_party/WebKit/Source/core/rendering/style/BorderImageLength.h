@@ -41,13 +41,6 @@ namespace WebCore {
 // http://www.w3.org/TR/css3-background/#border-image-outset
 class BorderImageLength {
 public:
-    BorderImageLength()
-        : m_length(Auto)
-        , m_number(0)
-        , m_type(LengthType)
-    {
-    }
-
     BorderImageLength(double number)
         : m_length(Undefined)
         , m_number(number)

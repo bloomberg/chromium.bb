@@ -41,23 +41,19 @@ namespace WebCore {
 // http://www.w3.org/TR/css3-background/#border-image-outset
 class BorderImageLengthBox {
 public:
-    BorderImageLengthBox()
+    BorderImageLengthBox(Length length)
+        : m_left(length)
+        , m_right(length)
+        , m_top(length)
+        , m_bottom(length)
     {
     }
 
-    BorderImageLengthBox(Length top, Length right, Length bottom, Length left)
-        : m_left(left)
-        , m_right(right)
-        , m_top(top)
-        , m_bottom(bottom)
-    {
-    }
-
-    BorderImageLengthBox(double top, double right, double bottom, double left)
-        : m_left(left)
-        , m_right(right)
-        , m_top(top)
-        , m_bottom(bottom)
+    BorderImageLengthBox(double number)
+        : m_left(number)
+        , m_right(number)
+        , m_top(number)
+        , m_bottom(number)
     {
     }
 
@@ -74,11 +70,6 @@ public:
     const BorderImageLength& right() const { return m_right; }
     const BorderImageLength& top() const { return m_top; }
     const BorderImageLength& bottom() const { return m_bottom; }
-
-    void setLeft(const BorderImageLength& left) { m_left = left; }
-    void setRight(const BorderImageLength& right) { m_right = right; }
-    void setTop(const BorderImageLength& top) { m_top = top; }
-    void setBottom(const BorderImageLength& bottom) { m_bottom = bottom; }
 
     bool operator==(const BorderImageLengthBox& other) const
     {
