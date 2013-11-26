@@ -13827,6 +13827,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Prerender.Event" enum="PrerenderEvent">
+  <summary>
+    Enumeration of what events related to prerendering have occurred.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.Events" enum="PrerenderHoverEvent">
   <obsolete>
     deprecated May 10 2012
@@ -14348,6 +14354,11 @@ other types of suffix sets.
     deprecated Nov 16 2012
   </obsolete>
   <summary>Enumeration of how prerender was used per session.</summary>
+</histogram>
+
+<histogram name="Prerender.SessionStorageNamespaceMergeTime"
+    units="milliseconds">
+  <summary>Time to perform the session storage namespace merge.</summary>
 </histogram>
 
 <histogram name="Prerender.SimulatedLocalBrowsingBaselinePLT"
@@ -27656,6 +27667,32 @@ other types of suffix sets.
   <int value="3" label="canceled in-flight"/>
 </enum>
 
+<enum name="PrerenderEvent" type="int">
+  <int value="0" label="Swapin no delegate"/>
+  <int value="1" label="Swapin candidate"/>
+  <int value="2" label="Swapin candidate namespace matces"/>
+  <int value="3" label="Swapin no merge pending"/>
+  <int value="4" label="Swapin merging disabled"/>
+  <int value="5" label="Swapin issuing merge"/>
+  <int value="6" label="Merge for swapin candidate"/>
+  <int value="7" label="Merge result no pending swapin"/>
+  <int value="8" label="Merge result timeout cb"/>
+  <int value="9" label="Merge result result cb"/>
+  <int value="10" label="Merge result timed out"/>
+  <int value="11" label="Merge result merge done"/>
+  <int value="12" label="Merge result: namespace not found"/>
+  <int value="13" label="Merge result: namespace not alias"/>
+  <int value="14" label="Merge result: not logging"/>
+  <int value="15" label="Merge result: no transactions"/>
+  <int value="16" label="Merge result: too many transactions"/>
+  <int value="17" label="Merge result: not mergeable"/>
+  <int value="18" label="Merge result: mergeable"/>
+  <int value="19" label="Merge result merge failed"/>
+  <int value="20" label="Merge result swapping in"/>
+  <int value="21" label="Merge result swapin successful"/>
+  <int value="22" label="Merge result swapin failed"/>
+</enum>
+
 <enum name="PrerenderFinalStatus" type="int">
   <int value="0" label="USED"/>
   <int value="1" label="TIMED_OUT"/>
@@ -27801,6 +27838,10 @@ other types of suffix sets.
       label="Namespace mismatch: merge result too many transactions"/>
   <int value="80" label="Namespace mismatch: merge result not mergeable"/>
   <int value="81" label="Namespace mismatch: merge result mergeable"/>
+  <int value="82" label="Init failed unencrypted sync not enabled"/>
+  <int value="83" label="Continue prerender check next URL not skipped"/>
+  <int value="84" label="Prerender Service returned hinting candidates"/>
+  <int value="85" label="Namespace mismatch: merge result namespace not alias"/>
 </enum>
 
 <enum name="PrerenderLocalVisitCoreTransition" type="int">
