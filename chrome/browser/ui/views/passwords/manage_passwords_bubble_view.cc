@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/location_bar/manage_passwords_bubble_view.h"
+#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/browser.h"
@@ -11,8 +11,8 @@
 #include "chrome/browser/ui/passwords/manage_passwords_icon_controller.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/location_bar/manage_passwords_icon_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_item_view.h"
+#include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents_view.h"
 #include "grit/generated_resources.h"

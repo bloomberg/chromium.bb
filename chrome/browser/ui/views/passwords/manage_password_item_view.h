@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_ITEM_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORD_ITEM_VIEW_H_
 
-#include "chrome/browser/ui/views/location_bar/manage_passwords_bubble_view.h"
+#include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "components/autofill/core/common/password_form.h"
 #include "ui/base/resource/resource_bundle.h"
 
