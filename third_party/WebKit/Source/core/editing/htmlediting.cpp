@@ -486,7 +486,7 @@ Position positionAfterContainingSpecialElement(const Position& pos, Node **conta
 Node* isFirstPositionAfterTable(const VisiblePosition& visiblePosition)
 {
     Position upstream(visiblePosition.deepEquivalent().upstream());
-    if (upstream.deprecatedNode() && upstream.deprecatedNode()->renderer() && upstream.deprecatedNode()->renderer()->isTable() && upstream.atLastEditingPositionForNode())
+    if (isRenderedTable(upstream.deprecatedNode()) && upstream.atLastEditingPositionForNode())
         return upstream.deprecatedNode();
 
     return 0;
@@ -495,7 +495,7 @@ Node* isFirstPositionAfterTable(const VisiblePosition& visiblePosition)
 Node* isLastPositionBeforeTable(const VisiblePosition& visiblePosition)
 {
     Position downstream(visiblePosition.deepEquivalent().downstream());
-    if (downstream.deprecatedNode() && downstream.deprecatedNode()->renderer() && downstream.deprecatedNode()->renderer()->isTable() && downstream.atFirstEditingPositionForNode())
+    if (isRenderedTable(downstream.deprecatedNode()) && downstream.atFirstEditingPositionForNode())
         return downstream.deprecatedNode();
 
     return 0;
