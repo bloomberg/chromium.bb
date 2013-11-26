@@ -71,8 +71,14 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
       ContentViewCoreImpl* content_view_core_impl =
           static_cast<ContentViewCoreImpl*>(ContentViewCore::FromWebContents(
               browser_media_player_manager->web_contents_));
-      if (content_view_core_impl &&
-          !content_view_core_impl->ShouldBlockMediaRequest(url)) {
+      if (!content_view_core_impl) {
+        // May reach here due to prerendering. Don't extract the metadata
+        // since it is expensive.
+        // TODO(qinmin): extract the metadata once the user decided to load
+        // the page.
+        browser_media_player_manager->OnMediaMetadataChanged(
+            player_id, base::TimeDelta(), 0, 0, false);
+      } else if (!content_view_core_impl->ShouldBlockMediaRequest(url)) {
         media_player_bridge->Initialize();
       }
       return media_player_bridge;
