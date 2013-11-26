@@ -370,6 +370,15 @@ IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
       "haveMoreFramesToSend()", "no-more-frames", right_tab,
       polling_interval_msec));
 
+  // Shut everything down to avoid having the javascript race with the analysis
+  // tools. For instance, dont have console log printouts interleave with the
+  // RESULT lines from the analysis tools (crbug.com/323200).
+  ASSERT_TRUE(peerconnection_server_.Stop());
+  ASSERT_TRUE(ShutdownPyWebSocketServer());
+
+  chrome::CloseWebContents(browser(), left_tab, false);
+  chrome::CloseWebContents(browser(), right_tab, false);
+
   RunARGBtoI420Converter(
       kVgaWidth, kVgaHeight, GetWorkingDir().Append(kCapturedYuvFileName));
   ASSERT_TRUE(
@@ -378,7 +387,4 @@ IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
                                   GetWorkingDir().Append(kCapturedYuvFileName),
                                   GetWorkingDir().Append(kReferenceYuvFileName),
                                   GetWorkingDir().Append(kStatsFileName)));
-
-  ASSERT_TRUE(peerconnection_server_.Stop());
-  ASSERT_TRUE(ShutdownPyWebSocketServer());
 }
