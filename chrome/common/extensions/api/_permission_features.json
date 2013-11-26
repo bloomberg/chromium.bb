@@ -277,7 +277,11 @@
   "screenlockPrivate": {
     "channel": "dev",
     "extension_types":["platform_app"],
-    "whitelist": ["4C91771D9DB6DCCEE66373DB165A5DE8A0B9B603"]
+    "whitelist": [
+      "lkegkdgachcnekllcdfkijonogckdnjo",  // API test
+      "190C131D270994E7330E9A3CD48224061CB10E2D",  // dogfood 1
+      "7FDDD1C0CB0052596657FDEC92841D509DC8D404"  // dogfood 2
+    ]
   },
   "downloads": {
     "channel": "stable",
