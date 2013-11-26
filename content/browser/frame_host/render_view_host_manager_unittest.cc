@@ -134,9 +134,10 @@ class RenderViewHostManagerTest
   }
 
   bool ShouldSwapProcesses(RenderViewHostManager* manager,
-                           const NavigationEntryImpl* cur_entry,
+                           const NavigationEntryImpl* current_entry,
                            const NavigationEntryImpl* new_entry) const {
-    return manager->ShouldSwapProcessesForNavigation(cur_entry, new_entry);
+    return manager->ShouldSwapBrowsingInstancesForNavigation(current_entry,
+                                                             new_entry);
   }
 
   // Creates a test RenderViewHost that's swapped out.

@@ -299,27 +299,29 @@ class CONTENT_EXPORT RenderViewHostManager
   // switch.  Can be overridden in unit tests.
   bool ShouldTransitionCrossSite();
 
-  // Returns true if the two navigation entries are incompatible in some way
-  // other than site instances. Cases where this can happen include Web UI
-  // to regular web pages. It will cause us to swap RenderViewHosts (and hence
-  // RenderProcessHosts) even if the site instance would otherwise be the same.
-  // As part of this, we'll also force new SiteInstances and BrowsingInstances.
+  // Returns true if for the navigation from |current_entry| to |new_entry|,
+  // a new SiteInstance and BrowsingInstance should be created (even if we are
+  // in a process model that doesn't usually swap).  This forces a process swap
+  // and severs script connections with existing tabs.  Cases where this can
+  // happen include transitions between WebUI and regular web pages.
   // Either of the entries may be NULL.
-  // TODO(creis): Rename to ShouldSwapBrowsingInstancesForNavigation.
-  bool ShouldSwapProcessesForNavigation(
-      const NavigationEntry* curr_entry,
+  bool ShouldSwapBrowsingInstancesForNavigation(
+      const NavigationEntry* current_entry,
       const NavigationEntryImpl* new_entry) const;
 
+  // Returns true if it is safe to reuse the current WebUI when navigating from
+  // |current_entry| to |new_entry|.
   bool ShouldReuseWebUI(
-      const NavigationEntry* curr_entry,
+      const NavigationEntry* current_entry,
       const NavigationEntryImpl* new_entry) const;
 
   // Returns an appropriate SiteInstance object for the given NavigationEntry,
   // possibly reusing the current SiteInstance.  If --process-per-tab is used,
-  // this is only called when ShouldSwapProcessesForNavigation returns true.
+  // this is only called when ShouldSwapBrowsingInstancesForNavigation returns
+  // true.
   SiteInstance* GetSiteInstanceForEntry(
       const NavigationEntryImpl& entry,
-      SiteInstance* curr_instance,
+      SiteInstance* current_instance,
       bool force_browsing_instance_swap);
 
   // Sets up the necessary state for a new RenderViewHost with the given opener.

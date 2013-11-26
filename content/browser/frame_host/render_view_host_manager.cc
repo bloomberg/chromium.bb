@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -491,8 +492,8 @@ bool RenderViewHostManager::ShouldTransitionCrossSite() {
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerTab);
 }
 
-bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
-    const NavigationEntry* curr_entry,
+bool RenderViewHostManager::ShouldSwapBrowsingInstancesForNavigation(
+    const NavigationEntry* current_entry,
     const NavigationEntryImpl* new_entry) const {
   DCHECK(new_entry);
 
@@ -501,16 +502,18 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
     return false;
 
   // Check for reasons to swap processes even if we are in a process model that
-  // doesn't usually swap (e.g., process-per-tab).
+  // doesn't usually swap (e.g., process-per-tab).  Any time we return true,
+  // the new_entry will be rendered in a new SiteInstance AND BrowsingInstance.
 
   // We use the effective URL here, since that's what is used in the
   // SiteInstance's site and when we later call IsSameWebSite.  If there is no
-  // curr_entry, check the current SiteInstance's site, which might already be
-  // committed to a Web UI URL (such as the NTP).
+  // current_entry, check the current SiteInstance's site, which might already
+  // be committed to a Web UI URL (such as the NTP).
   BrowserContext* browser_context =
       delegate_->GetControllerForRenderManager().GetBrowserContext();
-  const GURL& current_url = (curr_entry) ?
-      SiteInstanceImpl::GetEffectiveURL(browser_context, curr_entry->GetURL()) :
+  const GURL& current_url = (current_entry) ?
+      SiteInstanceImpl::GetEffectiveURL(browser_context,
+                                        current_entry->GetURL()) :
       render_view_host_->GetSiteInstance()->GetSiteURL();
   const GURL& new_url = SiteInstanceImpl::GetEffectiveURL(browser_context,
                                                           new_entry->GetURL());
@@ -519,14 +522,14 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
   // page and one isn't.
   if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
           browser_context, current_url)) {
-    // Force swap if it's not an acceptable URL for Web UI.
+    // If so, force a swap if destination is not an acceptable URL for Web UI.
     // Here, data URLs are never allowed.
     if (!WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
             browser_context, new_url, false)) {
       return true;
     }
   } else {
-    // Force swap if it's a Web UI URL.
+    // Force a swap if it's a Web UI URL.
     if (WebUIControllerFactoryRegistry::GetInstance()->UseWebUIForURL(
             browser_context, new_url)) {
       return true;
@@ -534,40 +537,38 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
   }
 
   // Check with the content client as well.  Important to pass current_url here,
-  // which uses the SiteInstance's site if there is no curr_entry.
-  if (GetContentClient()->browser()->ShouldSwapProcessesForNavigation(
+  // which uses the SiteInstance's site if there is no current_entry.
+  if (GetContentClient()->browser()->ShouldSwapBrowsingInstancesForNavigation(
           render_view_host_->GetSiteInstance(), current_url, new_url)) {
     return true;
   }
 
-  if (!curr_entry)
-    return false;
-
   // We can't switch a RenderView between view source and non-view source mode
   // without screwing up the session history sometimes (when navigating between
-  // "view-source:http://foo.com/" and "http://foo.com/", WebKit doesn't treat
-  // it as a new navigation). So require a view switch.
-  if (curr_entry->IsViewSourceMode() != new_entry->IsViewSourceMode())
+  // "view-source:http://foo.com/" and "http://foo.com/", Blink doesn't treat
+  // it as a new navigation). So require a BrowsingInstance switch.
+  if (current_entry &&
+      current_entry->IsViewSourceMode() != new_entry->IsViewSourceMode())
     return true;
 
   return false;
 }
 
 bool RenderViewHostManager::ShouldReuseWebUI(
-    const NavigationEntry* curr_entry,
+    const NavigationEntry* current_entry,
     const NavigationEntryImpl* new_entry) const {
   NavigationControllerImpl& controller =
       delegate_->GetControllerForRenderManager();
-  return curr_entry && web_ui_.get() &&
+  return current_entry && web_ui_.get() &&
       (WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
-          controller.GetBrowserContext(), curr_entry->GetURL()) ==
+          controller.GetBrowserContext(), current_entry->GetURL()) ==
        WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
           controller.GetBrowserContext(), new_entry->GetURL()));
 }
 
 SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     const NavigationEntryImpl& entry,
-    SiteInstance* curr_instance,
+    SiteInstance* current_instance,
     bool force_browsing_instance_swap) {
   // Determine which SiteInstance to use for navigating to |entry|.
   const GURL& dest_url = entry.GetURL();
@@ -600,23 +601,23 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerSite) &&
       PageTransitionCoreTypeIs(entry.GetTransitionType(),
                                PAGE_TRANSITION_GENERATED)) {
-    return curr_instance;
+    return current_instance;
   }
 
-  SiteInstanceImpl* curr_site_instance =
-      static_cast<SiteInstanceImpl*>(curr_instance);
+  SiteInstanceImpl* current_site_instance =
+      static_cast<SiteInstanceImpl*>(current_instance);
 
   // If we haven't used our SiteInstance (and thus RVH) yet, then we can use it
   // for this entry.  We won't commit the SiteInstance to this site until the
   // navigation commits (in DidNavigate), unless the navigation entry was
   // restored or it's a Web UI as described below.
-  if (!curr_site_instance->HasSite()) {
+  if (!current_site_instance->HasSite()) {
     // If we've already created a SiteInstance for our destination, we don't
     // want to use this unused SiteInstance; use the existing one.  (We don't
-    // do this check if the curr_instance has a site, because for now, we want
-    // to compare against the current URL and not the SiteInstance's site.  In
-    // this case, there is no current URL, so comparing against the site is ok.
-    // See additional comments below.)
+    // do this check if the current_instance has a site, because for now, we
+    // want to compare against the current URL and not the SiteInstance's site.
+    // In this case, there is no current URL, so comparing against the site is
+    // ok.  See additional comments below.)
     //
     // Also, if the URL should use process-per-site mode and there is an
     // existing process for the site, we should use it.  We can call
@@ -625,17 +626,17 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     bool use_process_per_site =
         RenderProcessHost::ShouldUseProcessPerSite(browser_context, dest_url) &&
         RenderProcessHostImpl::GetProcessHostForSite(browser_context, dest_url);
-    if (curr_site_instance->HasRelatedSiteInstance(dest_url) ||
+    if (current_site_instance->HasRelatedSiteInstance(dest_url) ||
         use_process_per_site) {
-      return curr_site_instance->GetRelatedSiteInstance(dest_url);
+      return current_site_instance->GetRelatedSiteInstance(dest_url);
     }
 
     // For extensions, Web UI URLs (such as the new tab page), and apps we do
-    // not want to use the curr_instance if it has no site, since it will have a
-    // RenderProcessHost of PRIV_NORMAL.  Create a new SiteInstance for this
-    // URL instead (with the correct process type).
-    if (curr_site_instance->HasWrongProcessForURL(dest_url))
-      return curr_site_instance->GetRelatedSiteInstance(dest_url);
+    // not want to use the current_instance if it has no site, since it will
+    // have a RenderProcessHost of PRIV_NORMAL.  Create a new SiteInstance for
+    // this URL instead (with the correct process type).
+    if (current_site_instance->HasWrongProcessForURL(dest_url))
+      return current_site_instance->GetRelatedSiteInstance(dest_url);
 
     // View-source URLs must use a new SiteInstance and BrowsingInstance.
     // TODO(nasko): This is the same condition as later in the function. This
@@ -660,28 +661,28 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
     // we need to set the site first, otherwise after a restore none of the
     // pages would share renderers in process-per-site.
     if (entry.restore_type() != NavigationEntryImpl::RESTORE_NONE)
-      curr_site_instance->SetSite(dest_url);
+      current_site_instance->SetSite(dest_url);
 
-    return curr_site_instance;
+    return current_site_instance;
   }
 
-  // Otherwise, only create a new SiteInstance for cross-site navigation.
+  // Otherwise, only create a new SiteInstance for a cross-site navigation.
 
   // TODO(creis): Once we intercept links and script-based navigations, we
   // will be able to enforce that all entries in a SiteInstance actually have
   // the same site, and it will be safe to compare the URL against the
   // SiteInstance's site, as follows:
-  // const GURL& current_url = curr_instance->site();
+  // const GURL& current_url = current_instance->site();
   // For now, though, we're in a hybrid model where you only switch
   // SiteInstances if you type in a cross-site URL.  This means we have to
   // compare the entry's URL to the last committed entry's URL.
-  NavigationEntry* curr_entry = controller.GetLastCommittedEntry();
+  NavigationEntry* current_entry = controller.GetLastCommittedEntry();
   if (interstitial_page_) {
     // The interstitial is currently the last committed entry, but we want to
     // compare against the last non-interstitial entry.
-    curr_entry = controller.GetEntryAtOffset(-1);
+    current_entry = controller.GetEntryAtOffset(-1);
   }
-  // If there is no last non-interstitial entry (and curr_instance already
+  // If there is no last non-interstitial entry (and current_instance already
   // has a site), then we must have been opened from another tab.  We want
   // to compare against the URL of the page that opened us, but we can't
   // get to it directly.  The best we can do is check against the site of
@@ -691,14 +692,14 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   // to open a new tab to an interstitial-inducing URL, and then navigates
   // the page to a different same-site URL.  (This seems very unlikely in
   // practice.)
-  const GURL& current_url = (curr_entry) ? curr_entry->GetURL() :
-      curr_instance->GetSiteURL();
+  const GURL& current_url = (current_entry) ? current_entry->GetURL() :
+      current_instance->GetSiteURL();
 
   // View-source URLs must use a new SiteInstance and BrowsingInstance.
   // TODO(creis): Refactor this method so this duplicated code isn't needed.
   // See http://crbug.com/123007.
-  if (curr_entry &&
-      curr_entry->IsViewSourceMode() != entry.IsViewSourceMode()) {
+  if (current_entry &&
+      current_entry->IsViewSourceMode() != entry.IsViewSourceMode()) {
     return SiteInstance::CreateForURL(browser_context, dest_url);
   }
 
@@ -706,9 +707,8 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   // process type is correct.  (The URL may have been installed as an app since
   // the last time we visited it.)
   if (SiteInstance::IsSameWebSite(browser_context, current_url, dest_url) &&
-      !static_cast<SiteInstanceImpl*>(curr_instance)->HasWrongProcessForURL(
-          dest_url)) {
-    return curr_instance;
+      !current_site_instance->HasWrongProcessForURL(dest_url)) {
+    return current_instance;
   }
 
   // Start the new renderer in a new SiteInstance, but in the current
@@ -716,7 +716,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   // SiteInstance to a RenderViewHost (if it is different than our current
   // SiteInstance), so that it is ref counted.  This will happen in
   // CreateRenderView.
-  return curr_instance->GetRelatedSiteInstance(dest_url);
+  return current_instance->GetRelatedSiteInstance(dest_url);
 }
 
 int RenderViewHostManager::CreateRenderView(
@@ -779,8 +779,14 @@ bool RenderViewHostManager::InitRenderView(RenderViewHost* render_view_host,
                                            int opener_route_id) {
   // If the pending navigation is to a WebUI and the RenderView is not in a
   // guest process, tell the RenderView about any bindings it will need enabled.
-  if (pending_web_ui() && !render_view_host->GetProcess()->IsGuest())
+  if (pending_web_ui() && !render_view_host->GetProcess()->IsGuest()) {
     render_view_host->AllowBindings(pending_web_ui()->GetBindings());
+  } else {
+    // Ensure that we don't create an unprivileged RenderView in a WebUI-enabled
+    // process.
+    CHECK(!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+              render_view_host->GetProcess()->GetID()));
+  }
 
   return delegate_->CreateRenderViewForRenderManager(render_view_host,
                                                      opener_route_id);
@@ -911,38 +917,43 @@ void RenderViewHostManager::ShutdownRenderViewHostsInSiteInstance(
 
 RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
     const NavigationEntryImpl& entry) {
-  // If we are cross-navigating, then we want to get back to normal and navigate
-  // as usual.
+  // If we are currently navigating cross-process, we want to get back to normal
+  // and then navigate as usual.
   if (cross_navigation_pending_) {
     if (pending_render_view_host_)
       CancelPending();
     cross_navigation_pending_ = false;
   }
 
-  // render_view_host_ will not be deleted before the end of this method, so we
-  // don't have to worry about this SiteInstance's ref count dropping to zero.
-  SiteInstance* curr_instance = render_view_host_->GetSiteInstance();
+  // render_view_host_'s SiteInstance and new_instance will not be deleted
+  // before the end of this method, so we don't have to worry about their ref
+  // counts dropping to zero.
+  SiteInstance* current_instance = render_view_host_->GetSiteInstance();
+  SiteInstance* new_instance = current_instance;
 
-  // Determine if we need a new SiteInstance for this entry.
-  // Again, new_instance won't be deleted before the end of this method, so it
-  // is safe to use a normal pointer here.
-  SiteInstance* new_instance = curr_instance;
-  const NavigationEntry* curr_entry =
+  // We do not currently swap processes for navigations in webview tag guests.
+  bool is_guest_scheme = current_instance->GetSiteURL().SchemeIs(kGuestScheme);
+
+  // Determine if we need a new BrowsingInstance for this entry.  If true, this
+  // implies that it will get a new SiteInstance (and likely process), and that
+  // other tabs in the current BrosingInstance will be unalbe to script it.
+  // This is used for cases that require a process swap even in the
+  // process-per-tab model, such as WebUI pages.
+  const NavigationEntry* current_entry =
       delegate_->GetLastCommittedNavigationEntryForRenderManager();
-  bool is_guest_scheme = curr_instance->GetSiteURL().SchemeIs(kGuestScheme);
   bool force_swap = !is_guest_scheme &&
-      ShouldSwapProcessesForNavigation(curr_entry, &entry);
+      ShouldSwapBrowsingInstancesForNavigation(current_entry, &entry);
   if (!is_guest_scheme && (ShouldTransitionCrossSite() || force_swap))
-    new_instance = GetSiteInstanceForEntry(entry, curr_instance, force_swap);
+    new_instance = GetSiteInstanceForEntry(entry, current_instance, force_swap);
 
   // If force_swap is true, we must use a different SiteInstance.  If we didn't,
   // we would have two RenderViewHosts in the same SiteInstance and the same
   // tab, resulting in page_id conflicts for their NavigationEntries.
   if (force_swap)
-    CHECK_NE(new_instance, curr_instance);
+    CHECK_NE(new_instance, current_instance);
 
-  if (new_instance != curr_instance) {
-    // New SiteInstance.
+  if (new_instance != current_instance) {
+    // New SiteInstance: create a pending RVH to navigate.
     DCHECK(!cross_navigation_pending_);
 
     // This will possibly create (set to NULL) a Web UI object for the pending
@@ -957,7 +968,7 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
     // we are staying in the same BrowsingInstance. This allows the pending RVH
     // to send cross-process script calls to its opener(s).
     int opener_route_id = MSG_ROUTING_NONE;
-    if (new_instance->IsRelatedSiteInstance(curr_instance)) {
+    if (new_instance->IsRelatedSiteInstance(current_instance)) {
       opener_route_id =
           delegate_->CreateOpenerRenderViewsForRenderManager(new_instance);
     }
@@ -1028,32 +1039,31 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
       render_view_host_->FirePageBeforeUnload(true);
 
     return pending_render_view_host_;
-  } else {
-    if (ShouldReuseWebUI(curr_entry, &entry)) {
-      pending_web_ui_.reset();
-      pending_and_current_web_ui_ = web_ui_->AsWeakPtr();
-    } else {
-      SetPendingWebUI(entry);
-
-      // Make sure the new RenderViewHost has the right bindings.
-      if (pending_web_ui() && !render_view_host_->GetProcess()->IsGuest())
-        render_view_host_->AllowBindings(pending_web_ui()->GetBindings());
-    }
-
-    if (pending_web_ui() && render_view_host_->IsRenderViewLive())
-      pending_web_ui()->GetController()->RenderViewReused(render_view_host_);
-
-    // The renderer can exit view source mode when any error or cancellation
-    // happen. We must overwrite to recover the mode.
-    if (entry.IsViewSourceMode()) {
-      render_view_host_->Send(
-          new ViewMsg_EnableViewSourceMode(render_view_host_->GetRoutingID()));
-    }
   }
 
-  // Same SiteInstance can be used.  Navigate render_view_host_ if we are not
-  // cross navigating.
+  // Otherwise the same SiteInstance can be used.  Navigate render_view_host_.
   DCHECK(!cross_navigation_pending_);
+  if (ShouldReuseWebUI(current_entry, &entry)) {
+    pending_web_ui_.reset();
+    pending_and_current_web_ui_ = web_ui_->AsWeakPtr();
+  } else {
+    SetPendingWebUI(entry);
+
+    // Make sure the new RenderViewHost has the right bindings.
+    if (pending_web_ui() && !render_view_host_->GetProcess()->IsGuest())
+      render_view_host_->AllowBindings(pending_web_ui()->GetBindings());
+  }
+
+  if (pending_web_ui() && render_view_host_->IsRenderViewLive())
+    pending_web_ui()->GetController()->RenderViewReused(render_view_host_);
+
+  // The renderer can exit view source mode when any error or cancellation
+  // happen. We must overwrite to recover the mode.
+  if (entry.IsViewSourceMode()) {
+    render_view_host_->Send(
+        new ViewMsg_EnableViewSourceMode(render_view_host_->GetRoutingID()));
+  }
+
   return render_view_host_;
 }
 

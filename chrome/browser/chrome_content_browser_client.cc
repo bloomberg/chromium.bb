@@ -1322,7 +1322,7 @@ void ChromeContentBrowserClient::SiteInstanceDeleting(
                  site_instance->GetId()));
 }
 
-bool ChromeContentBrowserClient::ShouldSwapProcessesForNavigation(
+bool ChromeContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
     SiteInstance* site_instance,
     const GURL& current_url,
     const GURL& new_url) {
