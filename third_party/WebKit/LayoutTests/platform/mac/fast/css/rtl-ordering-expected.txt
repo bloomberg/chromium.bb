@@ -6,15 +6,15 @@ layer at (0,0) size 800x600
       RenderBlock {P} at (0,0) size 784x36
         RenderText {#text} at (0,0) size 212x18
           text run at (0,0) width 212 LTR override: "This tests for a regression against "
-        RenderInline {I} at (0,0) size 712x36
-          RenderInline {A} at (0,0) size 348x18 [color=#0000EE]
-            RenderText {#text} at (212,0) size 348x18
-              text run at (212,0) width 348 LTR override: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6334"
-          RenderText {#text} at (560,0) size 712x36
-            text run at (560,0) width 152 LTR override: " REGRESSION: <input"
-            text run at (0,18) width 371 LTR override: "type=\"button\"> text is reversed on \"visual Hebrew\" pages"
-        RenderText {#text} at (371,18) size 4x18
-          text run at (371,18) width 4 LTR override: "."
+        RenderInline {I} at (0,0) size 709x36
+          RenderInline {A} at (0,0) size 343x18 [color=#0000EE]
+            RenderText {#text} at (212,0) size 343x18
+              text run at (212,0) width 343 LTR override: "http://bugzilla.opendarwin.org/show_bug.cgi?id=6334"
+          RenderText {#text} at (555,0) size 709x36
+            text run at (555,0) width 154 LTR override: " REGRESSION: <input"
+            text run at (0,18) width 367 LTR override: "type=\"button\"> text is reversed on \"visual Hebrew\" pages"
+        RenderText {#text} at (367,18) size 4x18
+          text run at (367,18) width 4 LTR override: "."
       RenderBlock {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {P} at (0,70) size 784x19
         RenderText {#text} at (0,1) size 304x18
