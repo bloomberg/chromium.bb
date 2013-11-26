@@ -159,6 +159,7 @@ class FileSystem : public FileSystemInterface,
       const base::FilePath& directory_path) OVERRIDE;
   virtual void OnCacheFileUploadNeededByOperation(
       const std::string& local_id) OVERRIDE;
+  virtual void OnEntryRemovedByOperation(const std::string& local_id) OVERRIDE;
 
   // ChangeListLoader::Observer overrides.
   // Used to propagate events from ChangeListLoader.

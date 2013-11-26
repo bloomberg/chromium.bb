@@ -297,7 +297,6 @@ void FileSystem::ResetComponents() {
   remove_operation_.reset(
       new file_system::RemoveOperation(blocking_task_runner_.get(),
                                        observer,
-                                       scheduler_,
                                        resource_metadata_,
                                        cache_));
   touch_operation_.reset(new file_system::TouchOperation(
@@ -884,6 +883,10 @@ void FileSystem::OnDirectoryChangedByOperation(
 void FileSystem::OnCacheFileUploadNeededByOperation(
     const std::string& local_id) {
   sync_client_->AddUploadTask(ClientContext(USER_INITIATED), local_id);
+}
+
+void FileSystem::OnEntryRemovedByOperation(const std::string& local_id) {
+  sync_client_->AddRemoveTask(local_id);
 }
 
 void FileSystem::OnDirectoryChanged(const base::FilePath& directory_path) {

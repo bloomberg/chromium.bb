@@ -126,13 +126,15 @@ void RemovePerformer::DeleteResourceAfterUpdateRemoteState(
   DCHECK(!callback.is_null());
 
   FileError error = GDataToFileError(status);
-  if (error != FILE_ERROR_OK && error != FILE_ERROR_NOT_FOUND) {
-    callback.Run(error);
+  if (error == FILE_ERROR_NOT_FOUND) {  // Remove local entry when not found.
+    RemoveEntryOnUIThread(blocking_task_runner_.get(), metadata_, local_id,
+                          callback);
     return;
   }
 
-  RemoveEntryOnUIThread(blocking_task_runner_.get(), metadata_, local_id,
-                        callback);
+  // Now we're done. If the entry is deleted on the server, it'll be also
+  // deleted locally on the next update.
+  callback.Run(error);
 }
 
 void RemovePerformer::UnparentResource(

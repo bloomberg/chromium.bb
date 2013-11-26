@@ -19,7 +19,6 @@ class SequencedTaskRunner;
 
 namespace drive {
 
-class JobScheduler;
 class ResourceEntry;
 
 namespace internal {
@@ -32,13 +31,11 @@ namespace file_system {
 class OperationObserver;
 
 // This class encapsulates the drive Remove function.  It is responsible for
-// sending the request to the drive API, then updating the local state and
-// metadata to reflect the new state.
+// moving the removed entry to the trash.
 class RemoveOperation {
  public:
   RemoveOperation(base::SequencedTaskRunner* blocking_task_runner,
                   OperationObserver* observer,
-                  JobScheduler* scheduler,
                   internal::ResourceMetadata* metadata,
                   internal::FileCache* cache);
   ~RemoveOperation();
@@ -53,26 +50,14 @@ class RemoveOperation {
               const FileOperationCallback& callback);
 
  private:
-  // Part of Remove(). Called after CheckLocalState() completion.
-  void RemoveAfterCheckLocalState(const FileOperationCallback& callback,
-                                  const std::string* parent_resource_id,
-                                  const ResourceEntry* entry,
-                                  FileError error);
-
-  // Part of Remove(). Called after server-side removal is done.
-  void RemoveAfterUpdateRemoteState(
-      const FileOperationCallback& callback,
-      const base::Callback<FileError(base::FilePath*)>& local_update_task,
-      google_apis::GDataErrorCode status);
-
   // Part of Remove(). Called after UpdateLocalState() completion.
   void RemoveAfterUpdateLocalState(const FileOperationCallback& callback,
+                                   const std::string* local_id,
                                    const base::FilePath* changed_directory_path,
                                    FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
-  JobScheduler* scheduler_;
   internal::ResourceMetadata* metadata_;
   internal::FileCache* cache_;
 

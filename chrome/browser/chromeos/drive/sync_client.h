@@ -34,6 +34,7 @@ class UpdateOperation;
 namespace internal {
 
 class FileCache;
+class RemovePerformer;
 class ResourceMetadata;
 
 // The SyncClient is used to synchronize pinned files on Drive and the
@@ -71,6 +72,9 @@ class SyncClient {
   void AddUploadTask(const ClientContext& context,
                      const std::string& local_id);
 
+  // Adds a remove task to the queue.
+  void AddRemoveTask(const std::string& local_id);
+
   // Starts processing the backlog (i.e. pinned-but-not-filed files and
   // dirty-but-not-uploaded files). Kicks off retrieval of the local
   // IDs of these files, and then starts the sync loop.
@@ -104,7 +108,8 @@ class SyncClient {
 
   // Called when the local IDs of files in the backlog are obtained.
   void OnGetLocalIdsOfBacklog(const std::vector<std::string>* to_fetch,
-                              const std::vector<std::string>* to_upload);
+                              const std::vector<std::string>* to_upload,
+                              const std::vector<std::string>* to_remove);
 
   // Adds fetch tasks.
   void AddFetchTasks(const std::vector<std::string>* local_ids);
@@ -120,6 +125,9 @@ class SyncClient {
   // Calls DoSyncLoop() to go back to the sync loop.
   void OnUploadFileComplete(const std::string& local_id, FileError error);
 
+  // Called when the entry is removed.
+  void OnRemoveComplete(const std::string& local_id, FileError error);
+
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   ResourceMetadata* metadata_;
   FileCache* cache_;
@@ -129,6 +137,9 @@ class SyncClient {
 
   // Used to upload committed files.
   scoped_ptr<file_system::UpdateOperation> update_operation_;
+
+  // Used to remove entries from the trash.
+  scoped_ptr<RemovePerformer> remove_performer_;
 
   // List of the local ids of resources which have a fetch task created.
   std::set<std::string> fetch_list_;

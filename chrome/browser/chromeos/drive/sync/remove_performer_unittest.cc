@@ -29,7 +29,6 @@ TEST_F(RemovePerformerTest, RemoveFile) {
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND, GetLocalResourceEntry(file_in_root, &entry));
 
   // Remove a file in subdirectory.
   error = FILE_ERROR_FAILED;
@@ -40,8 +39,6 @@ TEST_F(RemovePerformerTest, RemoveFile) {
                    google_apis::test_util::CreateCopyResultCallback(&error));
   test_util::RunBlockingPoolTask();
   EXPECT_EQ(FILE_ERROR_OK, error);
-  EXPECT_EQ(FILE_ERROR_NOT_FOUND,
-            GetLocalResourceEntry(file_in_subdir, &entry));
 
   // Verify the file is indeed removed in the server.
   google_apis::GDataErrorCode gdata_error = google_apis::GDATA_OTHER_ERROR;

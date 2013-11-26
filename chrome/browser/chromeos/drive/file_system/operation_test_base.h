@@ -51,6 +51,8 @@ class OperationTestBase : public testing::Test {
         const base::FilePath& path) OVERRIDE;
     virtual void OnCacheFileUploadNeededByOperation(
         const std::string& local_id) OVERRIDE;
+    virtual void OnEntryRemovedByOperation(
+        const std::string& local_id) OVERRIDE;
 
     // Gets the set of changed paths.
     const std::set<base::FilePath>& get_changed_paths() {
@@ -62,9 +64,15 @@ class OperationTestBase : public testing::Test {
       return upload_needed_local_ids_;
     }
 
+    // Gets the set of removed local IDs.
+    const std::set<std::string>& removed_local_ids() const {
+      return removed_local_ids_;
+    }
+
    private:
     std::set<base::FilePath> changed_paths_;
     std::set<std::string> upload_needed_local_ids_;
+    std::set<std::string> removed_local_ids_;
   };
 
   OperationTestBase();
@@ -81,6 +89,11 @@ class OperationTestBase : public testing::Test {
   // ResourceMetadta.
   FileError GetLocalResourceEntry(const base::FilePath& path,
                                   ResourceEntry* entry);
+
+  // Synchronously gets the resource entry corresponding to the ID from local
+  // ResourceMetadta.
+  FileError GetLocalResourceEntryById(const std::string& local_id,
+                                      ResourceEntry* entry);
 
   // Gets the local ID of the entry specified by the path.
   std::string GetLocalId(const base::FilePath& path);

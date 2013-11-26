@@ -24,6 +24,9 @@ class OperationObserver {
   // Sent when a cache file is modified and upload is needed.
   virtual void OnCacheFileUploadNeededByOperation(
       const std::string& local_id) = 0;
+
+  // Sent when metadata entry is removed and sync is needed.
+  virtual void OnEntryRemovedByOperation(const std::string& local_id) {}
 };
 
 }  // namespace file_system
