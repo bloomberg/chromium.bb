@@ -10,7 +10,7 @@ function dispatchKeyEventTo(type, key, target) {
 }
 
 function partOfFocused() {
-    return internals.youngestShadowRoot(timeInput).activeElement.getAttribute("part");
+    return internals.youngestShadowRoot(timeInput).activeElement.getAttribute("pseudo");
 }
 
 description('Check if focus() for focused input does not change focused sub-field.');

@@ -70,7 +70,7 @@ class MeterValueElement FINAL : public MeterShadowElement {
 public:
     static PassRefPtr<MeterValueElement> create(Document&);
     void setWidthPercentage(double);
-    void updatePseudo() { setPart(valuePseudoId()); }
+    void updatePseudo() { setPseudo(valuePseudoId()); }
 
 private:
     MeterValueElement(Document&);

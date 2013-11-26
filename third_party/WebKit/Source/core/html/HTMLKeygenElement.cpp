@@ -58,7 +58,7 @@ void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 
     // Create a select element with one option element for each key size.
     RefPtr<HTMLSelectElement> select = HTMLSelectElement::create(document());
-    select->setPart(keygenSelectPseudoId);
+    select->setPseudo(keygenSelectPseudoId);
     for (size_t i = 0; i < keys.size(); ++i) {
         RefPtr<HTMLOptionElement> option = HTMLOptionElement::create(document());
         option->appendChild(Text::create(document(), keys[i]));

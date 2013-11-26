@@ -57,7 +57,7 @@ void RenderTextControl::addChild(RenderObject* newChild, RenderObject* beforeChi
     // FIXME: This is a terrible hack to get the caret over the placeholder text since it'll
     // make us paint the placeholder first. (See https://trac.webkit.org/changeset/118733)
     Node* node = newChild->node();
-    if (node && node->isElementNode() && toElement(node)->part() == "-webkit-input-placeholder")
+    if (node && node->isElementNode() && toElement(node)->pseudo() == "-webkit-input-placeholder")
         RenderBlock::addChild(newChild, firstChild());
     else
         RenderBlock::addChild(newChild, beforeChild);

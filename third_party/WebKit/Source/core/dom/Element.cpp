@@ -2344,14 +2344,9 @@ const AtomicString& Element::pseudo() const
     return getAttribute(pseudoAttr);
 }
 
-const AtomicString& Element::part() const
+void Element::setPseudo(const AtomicString& value)
 {
-    return getAttribute(partAttr);
-}
-
-void Element::setPart(const AtomicString& value)
-{
-    setAttribute(partAttr, value);
+    setAttribute(pseudoAttr, value);
 }
 
 bool Element::isInDescendantTreeOf(const Element* shadowHost) const

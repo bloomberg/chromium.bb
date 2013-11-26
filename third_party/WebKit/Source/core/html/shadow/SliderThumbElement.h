@@ -55,7 +55,7 @@ public:
     virtual bool willRespondToMouseMoveEvents() OVERRIDE;
     virtual bool willRespondToMouseClickEvents() OVERRIDE;
     virtual void detach(const AttachContext& = AttachContext()) OVERRIDE;
-    virtual const AtomicString& part() const OVERRIDE;
+    virtual const AtomicString& pseudo() const OVERRIDE;
     HTMLInputElement* hostInput() const;
     void setPositionFromPoint(const LayoutPoint&);
 
@@ -105,7 +105,7 @@ public:
 private:
     SliderContainerElement(Document&);
     virtual RenderObject* createRenderer(RenderStyle*);
-    virtual const AtomicString& part() const;
+    virtual const AtomicString& pseudo() const;
 };
 
 }

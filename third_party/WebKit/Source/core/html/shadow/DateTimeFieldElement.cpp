@@ -157,7 +157,7 @@ void DateTimeFieldElement::initialize(const AtomicString& pseudo, const String& 
     setAttribute(aria_valuemaxAttr, String::number(axMaximum));
 
     setAttribute(aria_helpAttr, axHelpText);
-    setPart(pseudo);
+    setPseudo(pseudo);
     appendChild(Text::create(document(), visibleValue()));
 }
 

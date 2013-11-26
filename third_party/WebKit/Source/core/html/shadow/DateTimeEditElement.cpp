@@ -403,7 +403,7 @@ void DateTimeEditBuilder::visitLiteral(const String& text)
     DEFINE_STATIC_LOCAL(AtomicString, textPseudoId, ("-webkit-datetime-edit-text", AtomicString::ConstructFromLiteral));
     ASSERT(text.length());
     RefPtr<HTMLDivElement> element = HTMLDivElement::create(m_editElement.document());
-    element->setPart(textPseudoId);
+    element->setPseudo(textPseudoId);
     if (m_parameters.locale.isRTL() && text.length()) {
         Direction dir = direction(text[0]);
         if (dir == SegmentSeparator || dir == WhiteSpaceNeutral || dir == OtherNeutral)
@@ -485,7 +485,7 @@ void DateTimeEditElement::blurByOwner()
 PassRefPtr<DateTimeEditElement> DateTimeEditElement::create(Document& document, EditControlOwner& editControlOwner)
 {
     RefPtr<DateTimeEditElement> container = adoptRef(new DateTimeEditElement(document, editControlOwner));
-    container->setPart(AtomicString("-webkit-datetime-edit", AtomicString::ConstructFromLiteral));
+    container->setPseudo(AtomicString("-webkit-datetime-edit", AtomicString::ConstructFromLiteral));
     container->setAttribute(idAttr, ShadowElementNames::dateTimeEdit());
     return container.release();
 }
@@ -653,7 +653,7 @@ void DateTimeEditElement::layout(const LayoutParameters& layoutParameters, const
     DEFINE_STATIC_LOCAL(AtomicString, fieldsWrapperPseudoId, ("-webkit-datetime-edit-fields-wrapper", AtomicString::ConstructFromLiteral));
     if (!firstChild()) {
         RefPtr<HTMLDivElement> element = HTMLDivElement::create(document());
-        element->setPart(fieldsWrapperPseudoId);
+        element->setPseudo(fieldsWrapperPseudoId);
         appendChild(element.get());
     }
     Element* fieldsWrapper = fieldsWrapperElement();

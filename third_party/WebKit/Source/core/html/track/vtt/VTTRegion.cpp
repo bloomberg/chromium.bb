@@ -444,11 +444,11 @@ void VTTRegion::prepareRegionDisplayTree()
         0.0,
         CSSPrimitiveValue::CSS_PX);
 
-    m_cueContainer->setPart(textTrackCueContainerShadowPseudoId());
+    m_cueContainer->setPseudo(textTrackCueContainerShadowPseudoId());
     m_regionDisplayTree->appendChild(m_cueContainer);
 
     // 7.5 Every WebVTT region object is initialised with the following CSS
-    m_regionDisplayTree->setPart(textTrackRegionShadowPseudoId());
+    m_regionDisplayTree->setPseudo(textTrackRegionShadowPseudoId());
 }
 
 void VTTRegion::startTimer()

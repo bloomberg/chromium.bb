@@ -403,9 +403,8 @@ public:
 
     virtual String title() const { return String(); }
 
-    const AtomicString& pseudo() const;
-    virtual const AtomicString& part() const;
-    void setPart(const AtomicString&);
+    virtual const AtomicString& pseudo() const;
+    void setPseudo(const AtomicString&);
 
     LayoutSize minimumSizeForResizing() const;
     void setMinimumSizeForResizing(const LayoutSize&);
@@ -738,10 +737,6 @@ inline const AtomicString& Element::idForStyleResolution() const
 
 inline const AtomicString& Element::shadowPseudoId() const
 {
-    // FIXME: We should remove both part() and pseudo(), neither are in the new spec.
-    const AtomicString& part = this->part();
-    if (!part.isEmpty())
-        return part;
     return pseudo();
 }
 

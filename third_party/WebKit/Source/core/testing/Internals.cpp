@@ -695,7 +695,7 @@ void Internals::setShadowPseudoId(Element* element, const String& id, ExceptionS
         return;
     }
 
-    return element->setPart(id);
+    return element->setPseudo(id);
 }
 
 String Internals::visiblePlaceholder(Element* element)

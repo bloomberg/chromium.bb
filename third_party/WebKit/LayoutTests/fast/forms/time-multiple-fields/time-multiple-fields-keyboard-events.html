@@ -28,7 +28,7 @@ var input = document.getElementById("input");
 
 function partOfFocusedSubField(host)
 {
-    return internals.youngestShadowRoot(host).activeElement.getAttribute("part")
+    return internals.youngestShadowRoot(host).activeElement.getAttribute("pseudo")
 }
 
 function keyDown(key, modifiers)
