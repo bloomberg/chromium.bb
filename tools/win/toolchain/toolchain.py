@@ -57,10 +57,11 @@ def DeleteAllTempDirs():
 def Download(url, local_path):
   """Download a large-ish binary file and print some status information while
   doing so."""
-  sys.stdout.write('Downloading %s...' % url)
+  sys.stdout.write('Downloading %s...\n' % url)
   req = urllib2.urlopen(url)
   content_length = int(req.headers.get('Content-Length', 0))
   bytes_read = 0
+  terminator = '\r' if sys.stdout.isatty() else '\n'
   with open(local_path, 'wb') as file:
     while True:
       chunk = req.read(1024 * 1024)
@@ -68,7 +69,8 @@ def Download(url, local_path):
         break
       bytes_read += len(chunk)
       file.write(chunk)
-      sys.stdout.write('.')
+      sys.stdout.write('... %d/%d%s' % (bytes_read, content_length, terminator))
+      sys.stdout.flush()
   sys.stdout.write('\n')
   if content_length and content_length != bytes_read:
     raise SystemExit('Got incorrect number of bytes downloading %s' % url)
@@ -224,6 +226,7 @@ def ExtractIso(iso_path):
   .exe)."""
   target_path = TempDir()
   sys.stdout.write('Extracting %s...\n' % iso_path)
+  sys.stdout.flush()
   # TODO(scottmg): Do this (and exe) manually with python code.
   # Note that at the beginning of main() we set the working directory to 7z's
   # location.
