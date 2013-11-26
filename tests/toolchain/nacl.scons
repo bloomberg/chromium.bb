@@ -264,6 +264,7 @@ for tag, env_to_try in EH_ENVIRONMENTS_TO_TRY:
               'eh_loop_break.cc',
               'eh_floating_point.cc',
               'eh_uncaught_exception.cc',
+              'eh_throw_tests.cc',
               ]:
 
     if not env.Bit('bitcode') and src in ['eh_return.c']:
@@ -292,10 +293,15 @@ for tag, env_to_try in EH_ENVIRONMENTS_TO_TRY:
     if tag == 'sjlj' and src in non_abi_stable_tests:
       continue
 
-    if (src == 'eh_uncaught_exception.cc' and
-        '--pnacl-exceptions=sjlj' in env_to_try['LINKFLAGS'] and
-        env_to_try['TOOLCHAIN_FEATURE_VERSION'] < 2):
-      is_broken = True
+    if '--pnacl-exceptions=sjlj' in env_to_try['LINKFLAGS']:
+      if (src == 'eh_uncaught_exception.cc' and
+          env_to_try['TOOLCHAIN_FEATURE_VERSION'] < 2):
+        is_broken = True
+      # test_dtor() in eh_throw_tests.cc currently fails with SJLJ EH
+      # because of a bug in the PNaClSjLjEH pass's use of setjmp().
+      # TODO(mseaborn): Fix this and enable the test.
+      if src == 'eh_throw_tests.cc':
+        is_broken = True
 
     name = src.split('.')[0] + '_' + tag
     nobj = env_to_try.ComponentObject(name + '.o', src)
