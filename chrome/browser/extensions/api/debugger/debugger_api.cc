@@ -414,7 +414,7 @@ void ExtensionDevToolsClientHost::Observe(
     Close();
   } else {
     DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
-    if (content::Details<InfoBarRemovedDetails>(details)->first == infobar_) {
+    if (content::Details<InfoBar::RemovedDetails>(details)->first == infobar_) {
       infobar_ = NULL;
       SendDetachedEvent();
       Close();

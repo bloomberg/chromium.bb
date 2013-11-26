@@ -241,7 +241,7 @@ void PermissionQueueController::Observe(
   // the NotificationService's call to InfoBarContainer::Observe and this
   // method.
   InfoBarDelegate* infobar =
-      content::Details<InfoBarRemovedDetails>(details)->first;
+      content::Details<InfoBar::RemovedDetails>(details)->first;
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ++i) {
     if (i->infobar() == infobar) {

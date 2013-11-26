@@ -100,7 +100,7 @@ MediaStreamInfoBarDelegate* WebRtcTestBase::GetUserMediaAndWaitForInfoBar(
 
   // Wait for the bar to pop up, then return it.
   infobar_added.Wait();
-  content::Details<InfoBarAddedDetails> details(infobar_added.details());
+  content::Details<InfoBar::AddedDetails> details(infobar_added.details());
   MediaStreamInfoBarDelegate* infobar = details->AsMediaStreamInfoBarDelegate();
   EXPECT_TRUE(infobar);
   return infobar;
@@ -118,7 +118,7 @@ content::WebContents* WebRtcTestBase::OpenPageAndAcceptUserMedia(
 
   content::WebContents* tab_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  content::Details<InfoBarAddedDetails> details(infobar_added.details());
+  content::Details<InfoBar::AddedDetails> details(infobar_added.details());
   MediaStreamInfoBarDelegate* infobar =
       details->AsMediaStreamInfoBarDelegate();
   EXPECT_TRUE(infobar);

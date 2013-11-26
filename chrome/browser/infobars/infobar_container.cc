@@ -115,21 +115,21 @@ void InfoBarContainer::Observe(int type,
   switch (type) {
     case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED:
       AddInfoBar(
-          content::Details<InfoBarAddedDetails>(details)->CreateInfoBar(
+          content::Details<InfoBar::AddedDetails>(details)->CreateInfoBar(
               infobar_service_),
           infobars_.size(), true, WANT_CALLBACK);
       break;
 
     case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED: {
-      InfoBarRemovedDetails* removed_details =
-          content::Details<InfoBarRemovedDetails>(details).ptr();
+      InfoBar::RemovedDetails* removed_details =
+          content::Details<InfoBar::RemovedDetails>(details).ptr();
       HideInfoBar(FindInfoBar(removed_details->first), removed_details->second);
       break;
     }
 
     case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED: {
-      InfoBarReplacedDetails* replaced_details =
-          content::Details<InfoBarReplacedDetails>(details).ptr();
+      InfoBar::ReplacedDetails* replaced_details =
+          content::Details<InfoBar::ReplacedDetails>(details).ptr();
       ReplaceInfoBar(replaced_details->first, replaced_details->second);
       break;
     }

@@ -214,7 +214,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
                        const content::NotificationDetails& details) {
     DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
     removed_infobars_.insert(
-        content::Details<InfoBarRemovedDetails>(details)->first);
+        content::Details<InfoBar::RemovedDetails>(details)->first);
   }
 
   MOCK_METHOD1(OnPreferenceChanged, void(const std::string&));

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/startup/session_crashed_infobar_delegate.h"
 
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_restore.h"
@@ -107,8 +108,7 @@ void SessionCrashedInfoBarDelegate::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED);
-  if (content::Details<std::pair<InfoBarDelegate*, bool> >(details)->first !=
-      this)
+  if (content::Details<InfoBar::RemovedDetails>(details)->first != this)
     return;
   if (!accepted_) {
     content::BrowserContext::GetDefaultStoragePartition(profile_)->

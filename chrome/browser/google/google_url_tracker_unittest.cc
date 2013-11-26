@@ -266,15 +266,16 @@ class GoogleURLTrackerTest : public testing::Test {
 void GoogleURLTrackerTest::OnInfoBarClosed(scoped_ptr<InfoBarDelegate> infobar,
                                            InfoBarService* infobar_service) {
   // First, simulate the InfoBarService firing INFOBAR_REMOVED.
-  InfoBarRemovedDetails removed_details(infobar.get(), false);
+  InfoBar::RemovedDetails removed_details(infobar.get(), false);
   GoogleURLTracker::EntryMap::const_iterator i =
       google_url_tracker_->entry_map_.find(infobar_service);
   ASSERT_FALSE(i == google_url_tracker_->entry_map_.end());
   GoogleURLTrackerMapEntry* map_entry = i->second;
   ASSERT_EQ(infobar, map_entry->infobar_delegate());
-  map_entry->Observe(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-                     content::Source<InfoBarService>(infobar_service),
-                     content::Details<InfoBarRemovedDetails>(&removed_details));
+  map_entry->Observe(
+      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
+      content::Source<InfoBarService>(infobar_service),
+      content::Details<InfoBar::RemovedDetails>(&removed_details));
 
   // Second, simulate the infobar container closing the infobar in response.
   // This happens automatically as |infobar| goes out of scope.

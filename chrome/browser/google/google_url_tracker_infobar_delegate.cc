@@ -44,10 +44,11 @@ void GoogleURLTrackerInfoBarDelegate::Update(const GURL& search_url) {
 }
 
 void GoogleURLTrackerInfoBarDelegate::Close(bool redo_search) {
-  // It's not obvious whether calling OpenURL() with a search URL would
-  // auto-close us or not.  If it did, we wouldn't want to try to
-  // RemoveInfoBar() afterwards.  So for safety, we always call RemoveInfoBar()
-  // directly, and then navigate if necessary afterwards.
+  // Calling OpenURL() will auto-close us asynchronously.  It's easier for
+  // various classes (e.g. GoogleURLTrackerMapEntry) to reason about things if
+  // the closure always happens synchronously, so we always call RemoveInfoBar()
+  // directly, then OpenURL() if desirable.  (This calling order is safer if
+  // for some reason in the future OpenURL() were to close us synchronously.)
   GURL new_search_url;
   if (redo_search) {
     // Re-do the user's search on the new domain.

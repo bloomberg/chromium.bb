@@ -334,7 +334,7 @@ void HungPluginTabHelper::Observe(
   // TODO(pkasting): This comment will be incorrect and should be removed once
   // InfoBars own their delegates.
   InfoBarDelegate* infobar =
-      content::Details<InfoBarRemovedDetails>(details)->first;
+      content::Details<InfoBar::RemovedDetails>(details)->first;
   for (PluginStateMap::iterator i = hung_plugins_.begin();
        i != hung_plugins_.end(); ++i) {
     PluginState* state = i->second.get();

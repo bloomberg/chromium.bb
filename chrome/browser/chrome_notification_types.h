@@ -122,21 +122,19 @@ enum NotificationType {
   // This message is sent when a new InfoBar has been added to an
   // InfoBarService.  The source is a Source<InfoBarService> with a pointer to
   // the InfoBarService the InfoBar was added to.  The details is a
-  // Details<InfoBarDelegate> with a pointer to the delegate that was added.
+  // Details<InfoBar::AddedDetails>.
   NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
 
   // This message is sent when an InfoBar is about to be removed from an
   // InfoBarService.  The source is a Source<InfoBarService> with a pointer to
   // the InfoBarService the InfoBar was removed from.  The details is a
-  // Details<std::pair<InfoBarDelegate*, bool> > with a pointer to the removed
-  // delegate and whether the removal should be animated.
+  // Details<InfoBar::RemovedDetails>.
   NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
 
   // This message is sent when an InfoBar is replacing another infobar in an
   // InfoBarService.  The source is a Source<InfoBarService> with a pointer to
   // the InfoBarService the InfoBar was removed from.  The details is a
-  // Details<std::pair<InfoBarDelegate*, InfoBarDelegate*> > with pointers to
-  // the old and new delegates, respectively.
+  // Details<InfoBar::ReplacedDetails>.
   NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
 
   // This is sent when an externally hosted tab is closed.  No details are

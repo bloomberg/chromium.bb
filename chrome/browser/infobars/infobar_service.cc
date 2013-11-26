@@ -38,7 +38,7 @@ InfoBarDelegate* InfoBarService::AddInfoBar(
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
       content::Source<InfoBarService>(this),
-      content::Details<InfoBarAddedDetails>(infobar_ptr));
+      content::Details<InfoBar::AddedDetails>(infobar_ptr));
   return infobar_ptr;
 }
 
@@ -60,7 +60,7 @@ InfoBarDelegate* InfoBarService::ReplaceInfoBar(
 
   InfoBarDelegate* new_infobar_ptr = new_infobar.release();
   i = infobars_.insert(i, new_infobar_ptr);
-  InfoBarReplacedDetails replaced_details(old_infobar, new_infobar_ptr);
+  InfoBar::ReplacedDetails replaced_details(old_infobar, new_infobar_ptr);
 
   // Remove the old infobar before notifying, so that if any observers call
   // back to AddInfoBar() or similar, we don't dupe-check against this infobar.
@@ -70,7 +70,7 @@ InfoBarDelegate* InfoBarService::ReplaceInfoBar(
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
       content::Source<InfoBarService>(this),
-      content::Details<InfoBarReplacedDetails>(&replaced_details));
+      content::Details<InfoBar::ReplacedDetails>(&replaced_details));
   return new_infobar_ptr;
 }
 
@@ -143,11 +143,11 @@ void InfoBarService::RemoveInfoBarInternal(InfoBarDelegate* infobar,
   // AddInfoBar() or similar, we don't dupe-check against this infobar.
   infobars_.erase(i);
 
-  InfoBarRemovedDetails removed_details(infobar, animate);
+  InfoBar::RemovedDetails removed_details(infobar, animate);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
       content::Source<InfoBarService>(this),
-      content::Details<InfoBarRemovedDetails>(&removed_details));
+      content::Details<InfoBar::RemovedDetails>(&removed_details));
 }
 
 void InfoBarService::RemoveAllInfoBars(bool animate) {

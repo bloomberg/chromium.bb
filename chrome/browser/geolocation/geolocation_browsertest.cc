@@ -183,7 +183,7 @@ void GeolocationNotificationObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED) {
-    infobar_ = content::Details<InfoBarAddedDetails>(details).ptr();
+    infobar_ = content::Details<InfoBar::AddedDetails>(details).ptr();
     ASSERT_FALSE(infobar_->GetIcon().IsEmpty());
     ASSERT_TRUE(infobar_->AsConfirmInfoBarDelegate());
   } else if (type == content::NOTIFICATION_DOM_OPERATION_RESPONSE) {

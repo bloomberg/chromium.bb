@@ -57,7 +57,7 @@ class PermissionQueueControllerTests : public ChromeRenderViewHostTestHarness,
     // PermissionQueueController::Observe().
     // TODO(pkasting): This will no longer be necessary once the InfoBarService
     // truly owns infobars.
-    delete content::Details<InfoBarRemovedDetails>(details)->first;
+    delete content::Details<InfoBar::RemovedDetails>(details)->first;
   }
 
   content::NotificationRegistrar registrar_;

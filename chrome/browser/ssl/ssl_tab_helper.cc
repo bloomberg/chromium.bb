@@ -180,8 +180,8 @@ void SSLTabHelper::SSLAddCertData::Observe(
          type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED);
   if (infobar_ ==
       ((type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED) ?
-          content::Details<InfoBarRemovedDetails>(details)->first :
-          content::Details<InfoBarReplacedDetails>(details)->first))
+          content::Details<InfoBar::RemovedDetails>(details)->first :
+          content::Details<InfoBar::ReplacedDetails>(details)->first))
     infobar_ = NULL;
 }
 

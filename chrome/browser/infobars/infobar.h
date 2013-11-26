@@ -16,16 +16,16 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/size.h"
 
-// TODO(sail): These typedefs should be in the InfoBar class below.
-typedef InfoBarDelegate InfoBarAddedDetails;
-typedef std::pair<InfoBarDelegate*, bool> InfoBarRemovedDetails;
-typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> InfoBarReplacedDetails;
-
 class InfoBarContainer;
 class InfoBarService;
 
 class InfoBar : public gfx::AnimationDelegate {
  public:
+  // These are the types passed as Details for infobar-related notifications.
+  typedef InfoBarDelegate AddedDetails;
+  typedef std::pair<InfoBarDelegate*, bool> RemovedDetails;
+  typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> ReplacedDetails;
+
   InfoBar(InfoBarService* owner, InfoBarDelegate* delegate);
   virtual ~InfoBar();
 

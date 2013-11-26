@@ -79,7 +79,7 @@ void ClosedInfoBarTracker::Observe(
     const content::NotificationDetails& details) {
   DCHECK(type == chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED);
   removed_infobars_.insert(
-      content::Details<InfoBarRemovedDetails>(details)->first);
+      content::Details<InfoBar::RemovedDetails>(details)->first);
 }
 
 bool ClosedInfoBarTracker::Contains(InfoBarDelegate* infobar) const {
