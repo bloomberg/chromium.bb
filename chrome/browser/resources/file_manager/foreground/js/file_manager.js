@@ -2215,17 +2215,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     if (this.commandHandler)
       this.commandHandler.updateAvailability();
-    this.updateUnformattedDriveStatus_();
+    this.updateUnformattedVolumeStatus_();
     this.updateTitle_();
     this.updateGearMenu_();
     this.previewPanel_.currentPath_ = this.getCurrentDirectory();
   };
 
-  // TODO(haruki): Rename this method. "Drive" here does not refer
-  // "Google Drive".
-  FileManager.prototype.updateUnformattedDriveStatus_ = function() {
+  FileManager.prototype.updateUnformattedVolumeStatus_ = function() {
     var volumeInfo = this.volumeManager_.getVolumeInfo(
-        PathUtil.getRootPath(this.directoryModel_.getCurrentRootPath()));
+        this.directoryModel_.getCurrentDirPath());
 
     if (volumeInfo && volumeInfo.error) {
       this.dialogDom_.setAttribute('unformatted', '');

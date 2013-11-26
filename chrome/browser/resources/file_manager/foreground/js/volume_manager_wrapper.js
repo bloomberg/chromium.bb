@@ -222,7 +222,8 @@ VolumeManagerWrapper.prototype.getVolumeInfo = function(mountPath) {
     return null;
 
   var volumeInfo = this.volumeManager_.getVolumeInfo(mountPath);
-  if (!this.driveEnabled_ && volumeInfo.volumeType === util.VolumeType.DRIVE)
+  if (!this.driveEnabled_ && volumeInfo &&
+      volumeInfo.volumeType === util.VolumeType.DRIVE)
     return null;
 
   return volumeInfo;
