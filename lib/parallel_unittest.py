@@ -189,7 +189,6 @@ class TestHelloWorld(TestBackgroundWrapper):
     out = self.wrapOutputTest(self._ParallelHelloWorld)
     self.assertEquals(out, _GREETING)
 
-  @unittest.skipIf(_SKIP_FLAKY_TESTS, 'Occasionally fails on buildbots')
   def testMultipleHelloWorlds(self):
     """Test that multiple threads can be created."""
     parallel.RunParallelSteps([self.testParallelHelloWorld] * 2)
@@ -238,7 +237,6 @@ class TestBackgroundTaskRunnerArgs(TestBackgroundWrapper):
       self.assertEquals(results.empty(), True)
 
 
-@unittest.skipIf(_SKIP_FLAKY_TESTS, 'Occasionally fails on buildbots')
 class TestFastPrinting(TestBackgroundWrapper):
 
   def _FastPrinter(self):
@@ -360,7 +358,6 @@ class TestExceptions(cros_test_lib.MockOutputTestCase):
       parallel.RunParallelSteps([self._BadPickler], return_values=True)
 
 
-@unittest.skipIf(_SKIP_FLAKY_TESTS, 'Fails often on buildbots')
 class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
   """Test that child processes are halted when exceptions occur."""
 
@@ -397,6 +394,7 @@ class TestHalting(cros_test_lib.MockOutputTestCase, TestBackgroundWrapper):
     self.assertEqual(output_str, _GREETING)
     self.assertFalse(self.failed.is_set())
 
+  @unittest.skipIf(_SKIP_FLAKY_TESTS, 'Occasionally fails.')
   def testTempFileCleanup(self):
     """Test that all temp files are cleaned up."""
     with osutils.TempDir() as tempdir:
