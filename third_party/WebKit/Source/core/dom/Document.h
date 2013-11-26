@@ -892,8 +892,9 @@ public:
     bool containsValidityStyleRules() const { return m_containsValidityStyleRules; }
     void setContainsValidityStyleRules() { m_containsValidityStyleRules = true; }
 
+    void enqueueResizeEvent();
     void enqueueScrollEventForNode(Node*);
-    void scheduleAnimationFrameEvent(PassRefPtr<Event>);
+    void enqueueAnimationFrameEvent(PassRefPtr<Event>);
 
     const QualifiedName& idAttributeName() const { return m_idAttributeName; }
 

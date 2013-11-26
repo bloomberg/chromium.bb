@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-std::pair<EventTarget*, StringImpl*> scheduledEventTargetKey(const Event* event)
+std::pair<EventTarget*, StringImpl*> eventTargetKey(const Event* event)
 {
     return std::make_pair(event->target(), event->type().impl());
 }
@@ -95,11 +95,13 @@ void ScriptedAnimationController::dispatchEvents()
 {
     Vector<RefPtr<Event> > events;
     events.swap(m_eventQueue);
-    m_scheduledEventTargets.clear();
+    m_perFrameEvents.clear();
 
     for (size_t i = 0; i < events.size(); ++i) {
         EventTarget* eventTarget = events[i]->target();
-        // FIXME: we should figure out how to make dispatchEvent properly virtual to avoid this.
+        // FIXME: we should figure out how to make dispatchEvent properly virtual to avoid
+        // special casting window.
+        // FIXME: We should not fire events for nodes that are no longer in the tree.
         if (DOMWindow* window = eventTarget->toDOMWindow())
             window->dispatchEvent(events[i], 0);
         else
@@ -158,12 +160,17 @@ void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTime
     scheduleAnimationIfNeeded();
 }
 
-void ScriptedAnimationController::scheduleEvent(PassRefPtr<Event> event)
+void ScriptedAnimationController::enqueueEvent(PassRefPtr<Event> event)
 {
-    if (!m_scheduledEventTargets.add(scheduledEventTargetKey(event.get())).isNewEntry)
-        return;
     m_eventQueue.append(event);
     scheduleAnimationIfNeeded();
+}
+
+void ScriptedAnimationController::enqueuePerFrameEvent(PassRefPtr<Event> event)
+{
+    if (!m_perFrameEvents.add(eventTargetKey(event.get())).isNewEntry)
+        return;
+    enqueueEvent(event);
 }
 
 void ScriptedAnimationController::scheduleAnimationIfNeeded()

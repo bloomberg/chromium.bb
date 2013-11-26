@@ -54,7 +54,8 @@ public:
     void cancelCallback(CallbackId);
     void serviceScriptedAnimations(double monotonicTimeNow);
 
-    void scheduleEvent(PassRefPtr<Event>);
+    void enqueueEvent(PassRefPtr<Event>);
+    void enqueuePerFrameEvent(PassRefPtr<Event>);
 
     void suspend();
     void resume();
@@ -74,7 +75,7 @@ private:
     CallbackId m_nextCallbackId;
     int m_suspendCount;
     Vector<RefPtr<Event> > m_eventQueue;
-    ListHashSet<std::pair<const EventTarget*, const StringImpl*> > m_scheduledEventTargets;
+    ListHashSet<std::pair<const EventTarget*, const StringImpl*> > m_perFrameEvents;
 };
 
 }

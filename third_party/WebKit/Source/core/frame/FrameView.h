@@ -44,7 +44,6 @@ class FloatSize;
 class Frame;
 class KURL;
 class Node;
-class OverflowEvent;
 class Page;
 class RenderBox;
 class RenderEmbeddedObject;
@@ -206,10 +205,6 @@ public:
     void updateControlTints();
 
     void restoreScrollbar();
-
-    void suspendOverflowEvents();
-    void resumeOverflowEvents();
-    void scheduleOverflowEvent(PassRefPtr<OverflowEvent>);
 
     void postLayoutTimerFired(Timer<FrameView>*);
 
@@ -497,9 +492,6 @@ private:
 
     AtomicString m_mediaType;
     AtomicString m_mediaTypeWhenNotPrinting;
-
-    unsigned m_overflowEventSuspendCount;
-    Vector<RefPtr<OverflowEvent> > m_overflowEventQueue;
 
     bool m_overflowStatusDirty;
     bool m_horizontalOverflow;

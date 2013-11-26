@@ -3433,13 +3433,6 @@ void EventHandler::capsLockStateMayHaveChanged()
     }
 }
 
-void EventHandler::sendResizeEvent()
-{
-    RefPtr<Event> event = Event::create(EventTypeNames::resize);
-    event->setTarget(m_frame->document()->domWindow());
-    m_frame->document()->scheduleAnimationFrameEvent(event.release());
-}
-
 void EventHandler::sendScrollEvent()
 {
     setFrameWasScrolledByUser();

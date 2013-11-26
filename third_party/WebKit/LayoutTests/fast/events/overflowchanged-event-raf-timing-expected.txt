@@ -1,0 +1,9 @@
+Tests that overflowchanged events are deferred until raf.
+
+layout
+layout
+layout
+overflowchanged
+overflowchanged
+overflowchanged
+requestAnimationFrame

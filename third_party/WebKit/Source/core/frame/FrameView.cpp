@@ -174,7 +174,6 @@ FrameView::FrameView(Frame* frame)
     , m_isTransparent(false)
     , m_baseBackgroundColor(Color::white)
     , m_mediaType("screen")
-    , m_overflowEventSuspendCount(0)
     , m_overflowStatusDirty(true)
     , m_viewportRenderer(0)
     , m_wasScrolledByUser(false)
@@ -224,10 +223,8 @@ PassRefPtr<FrameView> FrameView::create(Frame* frame, const IntSize& initialSize
 
 FrameView::~FrameView()
 {
-    if (m_postLayoutTasksTimer.isActive()) {
+    if (m_postLayoutTasksTimer.isActive())
         m_postLayoutTasksTimer.stop();
-        m_overflowEventQueue.clear();
-    }
 
     removeFromAXObjectCache();
     resetScrollbars();
@@ -240,7 +237,6 @@ FrameView::~FrameView()
     setHasVerticalScrollbar(false);
 
     ASSERT(!m_scrollCorner);
-    ASSERT(m_overflowEventQueue.isEmpty());
 
     ASSERT(m_frame);
     ASSERT(m_frame->view() != this || !m_frame->contentRenderer());
@@ -927,10 +923,8 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
 
 void FrameView::scheduleOrPerformPostLayoutTasks()
 {
-    if (m_postLayoutTasksTimer.isActive()) {
-        resumeOverflowEvents();
+    if (m_postLayoutTasksTimer.isActive())
         return;
-    }
 
     // Partial layouts should not happen with synchronous post layouts.
     ASSERT(!(m_inSynchronousPostLayout && partialLayout().isStopping()));
@@ -953,10 +947,8 @@ void FrameView::scheduleOrPerformPostLayoutTasks()
         // can make us need to update again, and we can get stuck in a nasty cycle unless
         // we call it through the timer here.
         m_postLayoutTasksTimer.startOneShot(0);
-        if (!partialLayout().isStopping() && needsLayout()) {
-            suspendOverflowEvents();
+        if (!partialLayout().isStopping() && needsLayout())
             layout();
-        }
     }
 }
 
@@ -1087,8 +1079,6 @@ void FrameView::layout(bool allowSubtree)
         }
 
         layer = rootForThisLayout->enclosingLayer();
-
-        suspendOverflowEvents();
 
         performLayout(rootForThisLayout, inSubtreeLayout);
 
@@ -2131,34 +2121,6 @@ bool FrameView::shouldUpdate() const
     return true;
 }
 
-void FrameView::suspendOverflowEvents()
-{
-    ++m_overflowEventSuspendCount;
-}
-
-void FrameView::resumeOverflowEvents()
-{
-    // FIXME: We should assert here but it makes several tests fail. See http://crbug.com/299788
-    // ASSERT(m_overflowEventSuspendCount > 0);
-
-    if (--m_overflowEventSuspendCount)
-        return;
-
-    Vector<RefPtr<OverflowEvent> > events;
-    m_overflowEventQueue.swap(events);
-
-    for (Vector<RefPtr<OverflowEvent> >::iterator it = events.begin(); it != events.end(); ++it) {
-        Node* target = (*it)->target()->toNode();
-        if (target->inDocument())
-            target->dispatchEvent(*it, IGNORE_EXCEPTION);
-    }
-}
-
-void FrameView::scheduleOverflowEvent(PassRefPtr<OverflowEvent> event)
-{
-    m_overflowEventQueue.append(event);
-}
-
 void FrameView::scrollToAnchor()
 {
     RefPtr<Node> anchorNode = m_maintainScrollPositionAnchor;
@@ -2273,8 +2235,7 @@ void FrameView::flushAnyPendingPostLayoutTasks()
 void FrameView::performPostLayoutTasks()
 {
     TRACE_EVENT0("webkit", "FrameView::performPostLayoutTasks");
-    // FontFaceSet::didLayout() and resumeOverflowEvents() calls below can blow
-    // us away from underneath.
+    // FontFaceSet::didLayout() calls below can blow us away from underneath.
     // FIXME: We should not run any JavaScript code in this function.
     RefPtr<FrameView> protect(this);
 
@@ -2317,8 +2278,6 @@ void FrameView::performPostLayoutTasks()
 
     scrollToAnchor();
 
-    resumeOverflowEvents();
-
     sendResizeEventIfNeeded();
 }
 
@@ -2341,7 +2300,7 @@ void FrameView::sendResizeEventIfNeeded()
     if (!shouldSendResizeEvent)
         return;
 
-    m_frame->eventHandler().sendResizeEvent();
+    m_frame->document()->enqueueResizeEvent();
 
     if (isMainFrame())
         InspectorInstrumentation::didResizeMainFrame(m_frame->page());
@@ -2484,7 +2443,7 @@ void FrameView::updateOverflowStatus(bool horizontalOverflow, bool verticalOverf
 
         RefPtr<OverflowEvent> event = OverflowEvent::create(horizontalOverflowChanged, horizontalOverflow, verticalOverflowChanged, verticalOverflow);
         event->setTarget(m_viewportRenderer->node());
-        scheduleOverflowEvent(event);
+        m_frame->document()->enqueueAnimationFrameEvent(event.release());
     }
 
 }

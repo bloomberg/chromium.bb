@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<style>
+    #scrollable { overflow: auto; height: 100px; width: 100px; }
+    #inside.scroll { height: 2000px; }
+</style>
+
+<p>Tests that overflowchanged events are deferred until raf.</p>
+
+<div id="scrollable">
+    <div id="inside"></div>
+</div>
+
+<div id="output"></div>
+
+<script>
+var scrollable = document.getElementById('scrollable');
+var output = document.getElementById('output');
+var inside = document.getElementById('inside');
+
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+function log(text)
+{
+    output.appendChild(document.createElement('div')).textContent = text;
+}
+
+onload = function() {
+    scrollable.addEventListener('overflowchanged', function() {
+        log('overflowchanged');
+    });
+
+    document.body.offsetTop;
+
+    inside.classList.toggle('scroll');
+    document.body.offsetTop;
+    log('layout');
+
+    inside.classList.toggle('scroll');
+    document.body.offsetTop;
+    log('layout');
+
+    inside.classList.toggle('scroll');
+    document.body.offsetTop;
+    log('layout');
+
+    requestAnimationFrame(function() {
+        log('requestAnimationFrame');
+        if (window.testRunner)
+            testRunner.notifyDone();
+    });
+}
+</script>

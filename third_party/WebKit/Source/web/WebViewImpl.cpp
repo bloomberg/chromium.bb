@@ -3362,7 +3362,7 @@ void WebViewImpl::sendResizeEventAndRepaint()
     // to the embedder. This method and all callers may be wrong. -- eseidel.
     if (mainFrameImpl()->frameView()) {
         // Enqueues the resize event.
-        mainFrameImpl()->frame()->eventHandler().sendResizeEvent();
+        mainFrameImpl()->frame()->document()->enqueueResizeEvent();
     }
 
     if (m_client) {

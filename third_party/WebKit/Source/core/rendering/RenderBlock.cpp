@@ -128,11 +128,9 @@ public:
         if (!horizontalLayoutOverflowChanged && !verticalLayoutOverflowChanged)
             return;
 
-        if (FrameView* frameView = m_block->frameView()) {
-            RefPtr<OverflowEvent> event = OverflowEvent::create(horizontalLayoutOverflowChanged, hasHorizontalLayoutOverflow, verticalLayoutOverflowChanged, hasVerticalLayoutOverflow);
-            event->setTarget(m_block->node());
-            frameView->scheduleOverflowEvent(event);
-        }
+        RefPtr<OverflowEvent> event = OverflowEvent::create(horizontalLayoutOverflowChanged, hasHorizontalLayoutOverflow, verticalLayoutOverflowChanged, hasVerticalLayoutOverflow);
+        event->setTarget(m_block->node());
+        m_block->document().enqueueAnimationFrameEvent(event.release());
     }
 
 private:

@@ -170,8 +170,7 @@ public:
 
     void capsLockStateMayHaveChanged(); // Only called by FrameSelection
 
-    void sendResizeEvent(); // Only called in FrameView
-    void sendScrollEvent(); // Ditto
+    void sendScrollEvent(); // Only called in FrameView
 
     bool handleTouchEvent(const PlatformTouchEvent&);
 
