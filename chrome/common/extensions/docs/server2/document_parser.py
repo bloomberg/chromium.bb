@@ -8,21 +8,28 @@ import logging
 
 class ParseResult(object):
   '''The result of |ParseDocument|:
-  |title|              The title of the page, as pulled from the first <h1>.
-  |title_attributes|   The attributes of the <h1> tag the title is derived from.
-  |document_structure| A list of DocumentStringEntry objects.
-  |warnings|           Any warnings while parsing the document.
+  |title|             The title of the page, as pulled from the first <h1>.
+  |title_attributes|  The attributes of the <h1> tag the title is derived from.
+  |sections|          The list of Sections within this document.
+  |warnings|          Any warnings while parsing the document.
   '''
 
-  def __init__(self,
-               title,
-               title_attributes,
-               document_structure,
-               warnings):
+  def __init__(self, title, title_attributes, sections, warnings):
     self.title = title
     self.title_attributes = title_attributes
-    self.document_structure = document_structure
+    self.sections = sections
     self.warnings = warnings
+
+
+class DocumentSection(object):
+  '''A section of the document as grouped by <section>...</section>. Any content
+  not within section tags is considered an implicit section, so:
+  "Foo <section>Bar</section> Baz" is 3 sections.
+  |structure|  A list of DocumentStructureEntry for each top-level heading.
+  '''
+
+  def __init__(self):
+    self.structure = []
 
 
 class DocumentStructureEntry(object):
@@ -100,11 +107,16 @@ class _DocumentParser(HTMLParser):
     # Private.
     self._expect_title = expect_title
     self._title_entry = None
-    self._document_structure = []
-    self._warnings = []
+    self._sections = []
+    self._processing_section = DocumentSection()
     self._processing_entry = None
+    self._warnings = []
 
   def handle_starttag(self, tag, attrs):
+    if tag == 'section':
+      self._OnSectionBoundary()
+      return
+
     if tag != 'h1' and tag not in _HEADER_TAGS:
       return
 
@@ -124,7 +136,7 @@ class _DocumentParser(HTMLParser):
     if tag == 'h1':
       self._title_entry = self._processing_entry
     else:
-      belongs_to = self._document_structure
+      belongs_to = self._processing_section.structure
       for header in _HEADER_TAGS[:_HEADER_TAGS.index(tag)]:
         if len(belongs_to) == 0:
           self._WarnWithPosition('Found <%s> without any preceding <%s>' %
@@ -134,6 +146,10 @@ class _DocumentParser(HTMLParser):
       belongs_to.append(self._processing_entry)
 
   def handle_endtag(self, tag):
+    if tag == 'section':
+      self._OnSectionBoundary()
+      return
+
     if tag != 'h1' and tag not in _HEADER_TAGS:
       return
 
@@ -159,6 +175,8 @@ class _DocumentParser(HTMLParser):
   def close(self):
     HTMLParser.close(self)
 
+    self._OnSectionBoundary()
+
     if self._processing_entry is not None:
       self._warnings.append('Finished parsing while still processing a <%s>' %
                             parser._processing_entry._tag)
@@ -177,7 +195,13 @@ class _DocumentParser(HTMLParser):
       title, title_attributes = None, None
 
     self.parse_result = ParseResult(
-        title, title_attributes, self._document_structure, self._warnings)
+        title, title_attributes, self._sections, self._warnings)
+
+  def _OnSectionBoundary(self):
+    # Only start a new section if the previous section was non-empty.
+    if self._processing_section.structure:
+      self._sections.append(self._processing_section)
+      self._processing_section = DocumentSection()
 
   def _WarnWithPosition(self, message):
     line, col = self.getpos()

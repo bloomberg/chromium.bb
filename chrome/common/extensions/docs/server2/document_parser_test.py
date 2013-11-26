@@ -86,13 +86,13 @@ class DocumentParserUnittest(unittest.TestCase):
     result = ParseDocument('')
     self.assertEqual(None, result.title)
     self.assertEqual(None, result.title_attributes)
-    self.assertEqual([], result.document_structure)
+    self.assertEqual([], result.sections)
     self.assertEqual([], result.warnings)
 
     result = ParseDocument('', expect_title=True)
     self.assertEqual('', result.title)
     self.assertEqual({}, result.title_attributes)
-    self.assertEqual([], result.document_structure)
+    self.assertEqual([], result.sections)
     self.assertEqual(['Expected a title'], result.warnings)
 
   def testRemoveTitle(self):
@@ -124,13 +124,13 @@ class DocumentParserUnittest(unittest.TestCase):
     result = ParseDocument(document)
     self.assertEqual(None, result.title)
     self.assertEqual(None, result.title_attributes)
-    self.assertEqual([], result.document_structure)
+    self.assertEqual([], result.sections)
     self.assertEqual(['Found unexpected title "heading"'], result.warnings)
 
     result = ParseDocument(document, expect_title=True)
     self.assertEqual('heading', result.title)
     self.assertEqual({'id': 'header'}, result.title_attributes)
-    self.assertEqual([], result.document_structure)
+    self.assertEqual([], result.sections)
     self.assertEqual([], result.warnings)
 
   def testWholeDocument(self):
@@ -147,7 +147,8 @@ class DocumentParserUnittest(unittest.TestCase):
     ], result.warnings)
 
     # The non-trivial table of contents assertions...
-    entries = result.document_structure
+    self.assertEqual(1, len(result.sections))
+    entries = result.sections[0].structure
 
     self.assertEqual(5, len(entries), entries)
     entry0, entry1, entry2, entry3, entry4 = entries
@@ -184,6 +185,52 @@ class DocumentParserUnittest(unittest.TestCase):
     self.assertEqual('Plantains', entry4_1.name)
     self.assertEqual({}, entry4_1.attributes)
     self.assertEqual([], entry4_1.entries)
+
+  def testSingleExplicitSection(self):
+    def test(document):
+      result = ParseDocument(document, expect_title=True)
+      self.assertEqual([], result.warnings)
+      self.assertEqual('Header', result.title)
+      self.assertEqual(1, len(result.sections))
+      section0, = result.sections
+      entry0, = section0.structure
+      self.assertEqual('An inner header', entry0.name)
+    # A single section, one with the title inside the section, the other out.
+    test('<h1>Header</h1>'
+         '<section>'
+         'Just a single section here.'
+         '<h2>An inner header</h2>'
+         '</section>')
+    test('<section>'
+         'Another single section here.'
+         '<h1>Header</h1>'
+         '<h2>An inner header</h2>'
+         '</section>')
+
+  def testMultipleSections(self):
+    result = ParseDocument(
+        '<h1>Header</h1>'
+        '<h2>First header</h2>'
+        'This content outside a section is the first section.'
+        '<section>'
+        'Second section'
+        '<h2>Second header</h2>'
+        '</section>'
+        '<section>'
+        'Third section'
+        '<h2>Third header</h2>'
+        '</section>',
+        expect_title=True)
+    self.assertEqual([], result.warnings)
+    self.assertEqual('Header', result.title)
+    self.assertEqual(3, len(result.sections))
+    section0, section1, section2 = result.sections
+    def assert_single_header(section, name):
+      self.assertEqual(1, len(section.structure))
+      self.assertEqual(name, section.structure[0].name)
+    assert_single_header(section0, 'First header')
+    assert_single_header(section1, 'Second header')
+    assert_single_header(section2, 'Third header')
 
 
 if __name__ == '__main__':

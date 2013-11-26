@@ -84,9 +84,15 @@ class IntroDataSource(DataSource):
       if warning:
         logging.warning('%s: %s' % (intro_path, warning))
 
+    if parse_result.sections:
+      # Only use the first section for now.
+      toc = make_toc(parse_result.sections[0].structure)
+    else:
+      toc = []
+
     return _HandlebarWithContext(intro_with_links, intro_path, {
       'title': parse_result.title,
-      'toc': make_toc(parse_result.document_structure),
+      'toc': toc
     })
 
   def get(self, key):
