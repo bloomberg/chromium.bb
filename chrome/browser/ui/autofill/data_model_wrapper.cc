@@ -361,10 +361,9 @@ DetailOutputWrapper::DetailOutputWrapper(const DetailOutputMap& outputs)
 DetailOutputWrapper::~DetailOutputWrapper() {}
 
 base::string16 DetailOutputWrapper::GetInfo(const AutofillType& type) const {
-  ServerFieldType storable_type = type.GetStorableType();
   for (DetailOutputMap::const_iterator it = outputs_.begin();
        it != outputs_.end(); ++it) {
-    if (storable_type == AutofillType(it->first->type).GetStorableType())
+    if (type.server_type() == it->first->type)
       return it->second;
   }
   return base::string16();
