@@ -543,18 +543,19 @@ public class AwContents {
             ContentViewCore.GestureStateListener pinchGestureStateListener,
             ContentViewClient contentViewClient,
             ContentViewCore.ZoomControlsDelegate zoomControlsDelegate) {
-      Context context = containerView.getContext();
-      ContentViewCore contentViewCore = new ContentViewCore(context);
-      // Note INPUT_EVENTS_DELIVERED_IMMEDIATELY is passed to avoid triggering vsync in the
-      // compositor, not because input events are delivered immediately.
-      contentViewCore.initialize(containerView, internalDispatcher, nativeWebContents,
-              context instanceof Activity ?
-                      new ActivityWindowAndroid((Activity) context) : new WindowAndroid(context),
+        Context context = containerView.getContext();
+        ContentViewCore contentViewCore = new ContentViewCore(context);
+        // Note INPUT_EVENTS_DELIVERED_IMMEDIATELY is passed to avoid triggering vsync in the
+        // compositor, not because input events are delivered immediately.
+        contentViewCore.initialize(containerView, internalDispatcher, nativeWebContents,
+                context instanceof Activity ?
+                        new ActivityWindowAndroid((Activity) context) :
+                        new WindowAndroid(context.getApplicationContext()),
                 ContentViewCore.INPUT_EVENTS_DELIVERED_IMMEDIATELY);
-      contentViewCore.setGestureStateListener(pinchGestureStateListener);
-      contentViewCore.setContentViewClient(contentViewClient);
-      contentViewCore.setZoomControlsDelegate(zoomControlsDelegate);
-      return contentViewCore;
+        contentViewCore.setGestureStateListener(pinchGestureStateListener);
+        contentViewCore.setContentViewClient(contentViewClient);
+        contentViewCore.setZoomControlsDelegate(zoomControlsDelegate);
+        return contentViewCore;
     }
 
     /**
