@@ -12,7 +12,7 @@
 #include "chrome/browser/policy/configuration_policy_handler_android.h"
 #include "chrome/common/pref_names.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "grit/generated_resources.h"
+#include "grit/component_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using policy::ManagedBookmarksPolicyHandler;

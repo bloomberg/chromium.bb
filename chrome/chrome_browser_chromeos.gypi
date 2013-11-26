@@ -56,6 +56,7 @@
         # transitively via the common target because the proto sources need to
         # be generated before code in this target can start building.
         '../components/components.gyp:variations',
+        '../components/component_strings.gyp:component_strings',
         '../content/content.gyp:content_browser',
         '../content/content.gyp:content_common',
         '../crypto/crypto.gyp:crypto',

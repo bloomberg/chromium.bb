@@ -10,6 +10,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         'json_schema',
+        'component_strings.gyp:component_strings',
       ],
       'defines': [
         'POLICY_COMPONENT_IMPLEMENTATION',

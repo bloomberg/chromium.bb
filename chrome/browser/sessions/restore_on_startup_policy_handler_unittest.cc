@@ -16,7 +16,7 @@
 #include "chrome/browser/sessions/restore_on_startup_policy_handler.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"
-#include "grit/generated_resources.h"
+#include "grit/component_strings.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"

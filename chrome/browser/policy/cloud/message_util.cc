@@ -5,7 +5,7 @@
 #include "chrome/browser/policy/cloud/message_util.h"
 
 #include "base/logging.h"
-#include "grit/generated_resources.h"
+#include "grit/component_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace policy {

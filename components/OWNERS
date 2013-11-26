@@ -38,13 +38,13 @@ per-file onc.gypi=stevenjb@chromium.org
 per-file precache*=bengr@chromium.org
 per-file precache*=sclittle@chromium.org
 
-per-file policy.gypi=mnissler@chromium.org
-per-file policy.gypi=pastarmovj@chromium.org
-per-file policy.gypi=joaodasilva@chromium.org
-per-file policy.gypi=bartfab@chromium.org
-per-file policy.gypi=atwilson@chromium.org
-per-file policy.gypi=pneubeck@chromium.org
-per-file policy.gypi=dconnelly@chromium.org
+per-file policy*=mnissler@chromium.org
+per-file policy*=pastarmovj@chromium.org
+per-file policy*=joaodasilva@chromium.org
+per-file policy*=bartfab@chromium.org
+per-file policy*=atwilson@chromium.org
+per-file policy*=pneubeck@chromium.org
+per-file policy*=dconnelly@chromium.org
 
 per-file sessions.gypi=marja@chromium.org
 per-file sessions.gypi=sky@chromium.org

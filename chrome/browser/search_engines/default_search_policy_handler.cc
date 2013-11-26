@@ -14,7 +14,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_map.h"
 #include "content/public/browser/notification_service.h"
-#include "grit/generated_resources.h"
+#include "grit/component_strings.h"
 #include "policy/policy_constants.h"
 
 namespace policy {

@@ -27,6 +27,7 @@
         'in_memory_url_index_cache_proto',
         'installer_util',
         'sync_file_system_proto',
+        '../components/component_strings.gyp:component_strings',
         '../components/components.gyp:onc_component',
         '../components/components.gyp:wifi_component',
         '../content/content.gyp:content_browser',

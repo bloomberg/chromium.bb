@@ -26,6 +26,7 @@
         'probe_message_proto',
         'safe_browsing_proto',
         'safe_browsing_report_proto',
+        '../components/component_strings.gyp:component_strings',
         '../components/components.gyp:browser_context_keyed_service',
         '../components/components.gyp:encryptor',
         '../components/components.gyp:navigation_metrics',

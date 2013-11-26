@@ -898,6 +898,7 @@
         '../base/base.gyp:test_support_base',
         '../components/components.gyp:autofill_content_risk_proto',
         '../components/components.gyp:autofill_content_test_support',
+        '../components/component_strings.gyp:component_strings',
         '../device/bluetooth/bluetooth.gyp:device_bluetooth_mocks',
         '../google_apis/google_apis.gyp:google_apis_test_support',
         '../net/net.gyp:net',
