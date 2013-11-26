@@ -38,7 +38,6 @@
 #include "chrome/common/extensions/manifest_handlers/requirements_handler.h"
 #include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
 #include "chrome/common/extensions/manifest_handlers/settings_overrides_handler.h"
-#include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/mime_types_handler.h"
@@ -46,6 +45,7 @@
 #include "chrome/common/extensions/webview_handler.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
+#include "extensions/common/manifest_handlers/shared_module_info.h"
 
 namespace extensions {
 

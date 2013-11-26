@@ -6,11 +6,11 @@
 
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/test_management_policy.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/browser/test_management_policy.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"

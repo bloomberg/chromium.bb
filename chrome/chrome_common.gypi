@@ -226,8 +226,6 @@
         'common/extensions/manifest_handlers/sandboxed_page_info.h',
         'common/extensions/manifest_handlers/settings_overrides_handler.cc',
         'common/extensions/manifest_handlers/settings_overrides_handler.h',
-        'common/extensions/manifest_handlers/shared_module_info.cc',
-        'common/extensions/manifest_handlers/shared_module_info.h',
         'common/extensions/manifest_handlers/theme_handler.cc',
         'common/extensions/manifest_handlers/theme_handler.h',
         'common/extensions/manifest_url_handler.cc',

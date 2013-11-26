@@ -16,3 +16,11 @@ include_rules = [
   # TODO(jamescook): Extract extensions-related strings from this file.
   "+grit/generated_resources.h",
 ]
+
+specific_include_rules = {
+  ".*test\.cc": [
+    # Temporarily allowed testing includes.  See above.
+    # TODO(benwells): Remove these. http://crbug.com/162530
+    "+chrome/common/extensions/manifest_tests/extension_manifest_test.h",
+  ]
+}

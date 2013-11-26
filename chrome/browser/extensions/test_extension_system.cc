@@ -15,7 +15,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/install_verifier.h"
-#include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/user_script_master.h"
@@ -26,6 +25,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/management_policy.h"
 #include "extensions/browser/process_manager.h"
 
 using content::BrowserThread;

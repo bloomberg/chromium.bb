@@ -1,11 +1,11 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/version.h"
-#include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -19,7 +19,7 @@ const char* kImportId1 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char* kImportId2 = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 const char* kNoImport = "cccccccccccccccccccccccccccccccc";
 
-}
+}  // namespace
 
 namespace extensions {
 

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_STANDARD_MANAGEMENT_POLICY_PROVIDER_H_
 #define CHROME_BROWSER_EXTENSIONS_STANDARD_MANAGEMENT_POLICY_PROVIDER_H_
 
-#include "chrome/browser/extensions/management_policy.h"
+#include "extensions/browser/management_policy.h"
 
 namespace extensions {
 

@@ -28,7 +28,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/platform_util.h"
@@ -50,6 +49,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/management_policy.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_resource.h"
@@ -962,7 +962,7 @@ bool DeveloperPrivateExportSyncfsFolderToLocalfsFunction::RunImpl() {
   base::FilePath::StringType project_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &project_name));
   if (!ValidateFolderName(project_name)) {
-    DLOG(INFO) << "Invalid project_name : [" << project_name << "]";
+    DVLOG(0) << "Invalid project_name : [" << project_name << "]";
     return false;
   }
 
@@ -1125,7 +1125,7 @@ bool DeveloperPrivateLoadProjectFunction::RunImpl() {
   base::FilePath::StringType project_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &project_name));
   if (!ValidateFolderName(project_name)) {
-    DLOG(INFO) << "Invalid project_name : [" << project_name << "]";
+    DVLOG(0) << "Invalid project_name : [" << project_name << "]";
     return false;
   }
 

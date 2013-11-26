@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/extensions/management_policy.h"
+#include "extensions/browser/management_policy.h"
 
 namespace chromeos {
 

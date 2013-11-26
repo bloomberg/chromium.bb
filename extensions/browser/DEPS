@@ -26,7 +26,7 @@ include_rules = [
 specific_include_rules = {
   ".*test\.cc": [
     # Temporarily allowed testing includes.  See above.
-    # TODO(jamescook): Remove these. http://crbug.com/159366
+    # TODO(jamescook): Remove these. http://crbug.com/162530
     "+chrome/browser/extensions/extension_service_unittest.h",
     "+chrome/browser/extensions/test_extension_system.h",
     "+chrome/common/chrome_paths.h",

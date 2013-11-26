@@ -7,10 +7,9 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/external_provider_interface.h"
-
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/external_loader.h"
+#include "extensions/browser/external_provider_interface.h"
 #include "extensions/common/manifest.h"
 
 class Profile;

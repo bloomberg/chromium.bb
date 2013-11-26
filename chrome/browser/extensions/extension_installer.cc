@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/management_policy.h"
 
 namespace extensions {
 
