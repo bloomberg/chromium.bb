@@ -8,11 +8,6 @@
 OUTPUT="$(uname | grep 'MINGW')"
 MINGW=$?
 
-echo ''
-echo "Yo Dawg, are you sure you don't want git cl try?"
-echo 'Check it out!  http://goo.gl/mOxXEj'
-echo ''
-
 if [ $MINGW = 0 ]; then
   base_dir="${0%\\*}"
 else
