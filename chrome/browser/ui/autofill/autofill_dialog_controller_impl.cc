@@ -2744,6 +2744,9 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     }
 
     const std::vector<AutofillProfile*>& profiles = manager->GetProfiles();
+    std::vector<base::string16> labels;
+    AutofillProfile::CreateDifferentiatingLabels(profiles, &labels);
+    DCHECK_EQ(labels.size(), profiles.size());
     const std::string app_locale = g_browser_process->GetApplicationLocale();
     for (size_t i = 0; i < profiles.size(); ++i) {
       const AutofillProfile& profile = *profiles[i];
@@ -2754,10 +2757,10 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
 
       // Don't add variants for addresses: name is part of credit card and we'll
       // just ignore email and phone number variants.
-      suggested_shipping_.AddKeyedItem(profile.guid(), profile.Label());
+      suggested_shipping_.AddKeyedItem(profile.guid(), labels[i]);
       if (!profile.GetRawInfo(EMAIL_ADDRESS).empty() &&
           !profile.IsPresentButInvalid(EMAIL_ADDRESS)) {
-        suggested_billing_.AddKeyedItem(profile.guid(), profile.Label());
+        suggested_billing_.AddKeyedItem(profile.guid(), labels[i]);
       }
     }
 

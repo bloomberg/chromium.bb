@@ -68,11 +68,6 @@ class AutofillProfile : public AutofillDataModel {
                     const std::string& app_locale,
                     std::vector<base::string16>* values) const;
 
-  // The user-visible label of the profile, generated in relation to other
-  // profiles. Shows at least 2 fields that differentiate profile from other
-  // profiles. See AdjustInferredLabels() further down for more description.
-  const base::string16 Label() const;
-
   // Returns true if there are no values (field types) set.
   bool IsEmpty(const std::string& app_locale) const;
 
@@ -112,19 +107,16 @@ class AutofillProfile : public AutofillDataModel {
   // Returns |true| if |type| accepts multi-values.
   static bool SupportsMultiValue(ServerFieldType type);
 
-  // Adjusts the labels according to profile data.
-  // Labels contain minimal different combination of:
+  // Creates a differentiating label for each of the |profiles|.
+  // Labels consist of the minimal differentiating combination of:
   // 1. Full name.
   // 2. Address.
   // 3. E-mail.
   // 4. Phone.
   // 5. Company name.
-  // Profile labels are changed accordingly to these rules.
-  // Returns true if any of the profiles were updated.
-  // This function is useful if you want to adjust unique labels for all
-  // profiles. For non permanent situations (selection of profile, when user
-  // started typing in the field, for example) use CreateInferredLabels().
-  static bool AdjustInferredLabels(std::vector<AutofillProfile*>* profiles);
+  static void CreateDifferentiatingLabels(
+      const std::vector<AutofillProfile*>& profiles,
+      std::vector<base::string16>* labels);
 
   // Creates inferred labels for |profiles|, according to the rules above and
   // stores them in |created_labels|. If |suggested_fields| is not NULL, the
@@ -134,11 +126,11 @@ class AutofillProfile : public AutofillDataModel {
   // |UNKNOWN_TYPE| when |suggested_fields| is NULL. Each label includes at
   // least |minimal_fields_shown| fields, if possible.
   static void CreateInferredLabels(
-      const std::vector<AutofillProfile*>* profiles,
+      const std::vector<AutofillProfile*>& profiles,
       const std::vector<ServerFieldType>* suggested_fields,
       ServerFieldType excluded_field,
       size_t minimal_fields_shown,
-      std::vector<base::string16>* created_labels);
+      std::vector<base::string16>* labels);
 
  private:
   typedef std::vector<const FormGroup*> FormGroupList;
@@ -171,24 +163,21 @@ class AutofillProfile : public AutofillDataModel {
 
   // Creates inferred labels for |profiles| at indices corresponding to
   // |indices|, and stores the results to the corresponding elements of
-  // |created_labels|. These labels include enough fields to differentiate among
-  // the profiles, if possible; and also at least |num_fields_to_include|
-  // fields, if possible. The label fields are drawn from |fields|.
-  static void CreateDifferentiatingLabels(
+  // |labels|. These labels include enough fields to differentiate among the
+  // profiles, if possible; and also at least |num_fields_to_include| fields, if
+  // possible. The label fields are drawn from |fields|.
+  static void CreateInferredLabelsHelper(
       const std::vector<AutofillProfile*>& profiles,
       const std::list<size_t>& indices,
       const std::vector<ServerFieldType>& fields,
       size_t num_fields_to_include,
-      std::vector<base::string16>* created_labels);
+      std::vector<base::string16>* labels);
 
   // Utilities for listing and lookup of the data members that constitute
   // user-visible profile information.
   FormGroupList FormGroups() const;
   const FormGroup* FormGroupForType(const AutofillType& type) const;
   FormGroup* MutableFormGroupForType(const AutofillType& type);
-
-  // The label presented to the user when selecting a profile.
-  base::string16 label_;
 
   // Personal information for this profile.
   std::vector<NameInfo> name_;

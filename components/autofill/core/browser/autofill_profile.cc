@@ -251,7 +251,6 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   set_guid(profile.guid());
   set_origin(profile.origin());
 
-  label_ = profile.label_;
   name_ = profile.name_;
   email_ = profile.email_;
   company_ = profile.company_;
@@ -366,10 +365,6 @@ void AutofillProfile::GetMultiInfo(const AutofillType& type,
                                    const std::string& app_locale,
                                    std::vector<base::string16>* values) const {
   GetMultiInfoImpl(type, app_locale, values);
-}
-
-const base::string16 AutofillProfile::Label() const {
-  return label_;
 }
 
 bool AutofillProfile::IsEmpty(const std::string& app_locale) const {
@@ -556,35 +551,22 @@ bool AutofillProfile::SupportsMultiValue(ServerFieldType type) {
 }
 
 // static
-bool AutofillProfile::AdjustInferredLabels(
-    std::vector<AutofillProfile*>* profiles) {
+void AutofillProfile::CreateDifferentiatingLabels(
+    const std::vector<AutofillProfile*>& profiles,
+    std::vector<base::string16>* labels) {
   const size_t kMinimalFieldsShown = 2;
-
-  std::vector<base::string16> created_labels;
   CreateInferredLabels(profiles, NULL, UNKNOWN_TYPE, kMinimalFieldsShown,
-                       &created_labels);
-  DCHECK_EQ(profiles->size(), created_labels.size());
-
-  bool updated_labels = false;
-  for (size_t i = 0; i < profiles->size(); ++i) {
-    if ((*profiles)[i]->Label() != created_labels[i]) {
-      updated_labels = true;
-      (*profiles)[i]->label_ = created_labels[i];
-    }
-  }
-  return updated_labels;
+                       labels);
+  DCHECK_EQ(profiles.size(), labels->size());
 }
 
 // static
 void AutofillProfile::CreateInferredLabels(
-    const std::vector<AutofillProfile*>* profiles,
+    const std::vector<AutofillProfile*>& profiles,
     const std::vector<ServerFieldType>* suggested_fields,
     ServerFieldType excluded_field,
     size_t minimal_fields_shown,
-    std::vector<base::string16>* created_labels) {
-  DCHECK(profiles);
-  DCHECK(created_labels);
-
+    std::vector<base::string16>* labels) {
   std::vector<ServerFieldType> fields_to_use;
   GetFieldsForDistinguishingProfiles(suggested_fields, excluded_field,
                                      &fields_to_use);
@@ -592,28 +574,28 @@ void AutofillProfile::CreateInferredLabels(
   // Construct the default label for each profile. Also construct a map that
   // associates each label with the profiles that have this label. This map is
   // then used to detect which labels need further differentiating fields.
-  std::map<base::string16, std::list<size_t> > labels;
-  for (size_t i = 0; i < profiles->size(); ++i) {
+  std::map<base::string16, std::list<size_t> > labels_to_profiles;
+  for (size_t i = 0; i < profiles.size(); ++i) {
     base::string16 label =
-        (*profiles)[i]->ConstructInferredLabel(fields_to_use,
-                                               minimal_fields_shown);
-    labels[label].push_back(i);
+        profiles[i]->ConstructInferredLabel(fields_to_use,
+                                            minimal_fields_shown);
+    labels_to_profiles[label].push_back(i);
   }
 
-  created_labels->resize(profiles->size());
+  labels->resize(profiles.size());
   for (std::map<base::string16, std::list<size_t> >::const_iterator it =
-           labels.begin();
-       it != labels.end(); ++it) {
+           labels_to_profiles.begin();
+       it != labels_to_profiles.end(); ++it) {
     if (it->second.size() == 1) {
       // This label is unique, so use it without any further ado.
       base::string16 label = it->first;
       size_t profile_index = it->second.front();
-      (*created_labels)[profile_index] = label;
+      (*labels)[profile_index] = label;
     } else {
       // We have more than one profile with the same label, so add
       // differentiating fields.
-      CreateDifferentiatingLabels(*profiles, it->second, fields_to_use,
-                                  minimal_fields_shown, created_labels);
+      CreateInferredLabelsHelper(profiles, it->second, fields_to_use,
+                                 minimal_fields_shown, labels);
     }
   }
 }
@@ -695,12 +677,12 @@ base::string16 AutofillProfile::ConstructInferredLabel(
 }
 
 // static
-void AutofillProfile::CreateDifferentiatingLabels(
+void AutofillProfile::CreateInferredLabelsHelper(
     const std::vector<AutofillProfile*>& profiles,
     const std::list<size_t>& indices,
     const std::vector<ServerFieldType>& fields,
     size_t num_fields_to_include,
-    std::vector<base::string16>* created_labels) {
+    std::vector<base::string16>* labels) {
   // For efficiency, we first construct a map of fields to their text values and
   // each value's frequency.
   std::map<ServerFieldType,
@@ -765,9 +747,8 @@ void AutofillProfile::CreateDifferentiatingLabels(
         break;
     }
 
-    (*created_labels)[*it] =
-        profile->ConstructInferredLabel(label_fields,
-                                        label_fields.size());
+    (*labels)[*it] =
+        profile->ConstructInferredLabel(label_fields, label_fields.size());
   }
 }
 
@@ -819,8 +800,6 @@ FormGroup* AutofillProfile::MutableFormGroupForType(const AutofillType& type) {
 // So we can compare AutofillProfiles with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
   return os
-      << UTF16ToUTF8(profile.Label())
-      << " "
       << profile.guid()
       << " "
       << profile.origin()

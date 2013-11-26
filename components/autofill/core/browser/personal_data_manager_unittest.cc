@@ -537,12 +537,6 @@ TEST_F(PersonalDataManagerTest, Refresh) {
   personal_data_->AddProfile(profile0);
   personal_data_->AddProfile(profile1);
 
-  // Labels depend on other profiles in the list - update labels manually.
-  std::vector<AutofillProfile *> profile_pointers;
-  profile_pointers.push_back(&profile0);
-  profile_pointers.push_back(&profile1);
-  AutofillProfile::AdjustInferredLabels(&profile_pointers);
-
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
               OnPersonalDataChanged()).WillOnce(QuitUIMessageLoop());
@@ -558,10 +552,6 @@ TEST_F(PersonalDataManagerTest, Refresh) {
       "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549");
-
-  // Adjust all labels.
-  profile_pointers.push_back(&profile2);
-  AutofillProfile::AdjustInferredLabels(&profile_pointers);
 
   autofill_database_service_->AddAutofillProfile(profile2);
 

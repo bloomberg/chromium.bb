@@ -63,11 +63,6 @@ bool FindByGUID(const C& container, const std::string& guid) {
 }
 
 template<typename T>
-T* address_of(T& v) {  // NOLINT : non-const ref
-  return &v;
-}
-
-template<typename T>
 class IsEmptyFunctor {
  public:
   explicit IsEmptyFunctor(const std::string& app_locale)
@@ -210,10 +205,6 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   // If both requests have responded, then all personal data is loaded.
   if (pending_profiles_query_ == 0 && pending_creditcards_query_ == 0) {
     is_data_loaded_ = true;
-    std::vector<AutofillProfile*> profile_pointers(web_profiles_.size());
-    std::copy(web_profiles_.begin(), web_profiles_.end(),
-              profile_pointers.begin());
-    AutofillProfile::AdjustInferredLabels(&profile_pointers);
     FOR_EACH_OBSERVER(PersonalDataManagerObserver, observers_,
                       OnPersonalDataChanged());
   }
@@ -632,7 +623,7 @@ void PersonalDataManager::GetProfileSuggestions(
 
   if (!field_is_autofilled) {
     AutofillProfile::CreateInferredLabels(
-        &matched_profiles, &other_field_types,
+        matched_profiles, &other_field_types,
         type.GetStorableType(), 1, labels);
   } else {
     // No sub-labels for previously filled fields.
@@ -777,15 +768,6 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
   profiles->erase(std::remove_if(profiles->begin(), profiles->end(),
                                  IsEmptyFunctor<AutofillProfile>(app_locale_)),
                   profiles->end());
-
-  // Ensure that profile labels are up to date.  Currently, sync relies on
-  // labels to identify a profile.
-  // TODO(dhollowa): We need to deprecate labels and update the way sync
-  // identifies profiles.
-  std::vector<AutofillProfile*> profile_pointers(profiles->size());
-  std::transform(profiles->begin(), profiles->end(), profile_pointers.begin(),
-      address_of<AutofillProfile>);
-  AutofillProfile::AdjustInferredLabels(&profile_pointers);
 
   if (!database_.get())
     return;

@@ -378,13 +378,17 @@ void AutofillOptionsHandler::LoadAutofillData() {
   if (!IsPersonalDataLoaded())
     return;
 
+  const std::vector<AutofillProfile*>& profiles =
+      personal_data_->web_profiles();
+  std::vector<base::string16> labels;
+  AutofillProfile::CreateDifferentiatingLabels(profiles, &labels);
+  DCHECK_EQ(labels.size(), profiles.size());
+
   ListValue addresses;
-  for (std::vector<AutofillProfile*>::const_iterator i =
-           personal_data_->web_profiles().begin();
-       i != personal_data_->web_profiles().end(); ++i) {
+  for (size_t i = 0; i < profiles.size(); ++i) {
     ListValue* entry = new ListValue();
-    entry->Append(new StringValue((*i)->guid()));
-    entry->Append(new StringValue((*i)->Label()));
+    entry->Append(new StringValue(profiles[i]->guid()));
+    entry->Append(new StringValue(labels[i]));
     addresses.Append(entry);
   }
 
