@@ -22,8 +22,6 @@
 #include "chrome/browser/signin/signin_names_io_thread.h"
 #include "chrome/browser/signin/signin_oauth_helper.h"
 #include "chrome/browser/signin/signin_promo.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -78,9 +76,10 @@ class InlineLoginUIOAuth2Delegate
     web_ui_->CallJavascriptFunction("inline.login.closeDialog");
 
     Profile* profile = Profile::FromWebUI(web_ui_);
-    TokenService* token_service =
-        TokenServiceFactory::GetForProfile(profile);
-    token_service->UpdateCredentialsWithOAuth2(oauth2_tokens);
+    ProfileOAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+    token_service->UpdateCredentials(token_service->GetPrimaryAccountId(),
+                                     oauth2_tokens.refresh_token);
   }
 
   virtual void OnOAuth2TokensFetchFailed() OVERRIDE {

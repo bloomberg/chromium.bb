@@ -12,7 +12,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class PrefService;
-class TokenService;
 
 namespace content {
 class NavigationController;

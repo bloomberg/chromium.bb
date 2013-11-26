@@ -8,8 +8,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/signin/chrome_signin_manager_delegate.h"
 #include "chrome/browser/signin/local_auth.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -18,7 +18,7 @@ SigninManagerFactory::SigninManagerFactory()
     : BrowserContextKeyedServiceFactory(
         "SigninManager",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(TokenServiceFactory::GetInstance());
+  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 
 SigninManagerFactory::~SigninManagerFactory() {}

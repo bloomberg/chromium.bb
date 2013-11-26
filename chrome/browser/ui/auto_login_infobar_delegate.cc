@@ -50,8 +50,8 @@ namespace {
 
 // This class is created by the AutoLoginInfoBarDelegate when the user wishes to
 // auto-login.  It holds context information needed while re-issuing service
-// tokens using the TokenService, gets the browser cookies with the TokenAuth
-// API, and finally redirects the user to the correct page.
+// tokens using the OAuth2TokenService, gets the browser cookies with the
+// TokenAuth API, and finally redirects the user to the correct page.
 class AutoLoginRedirector : public UbertokenConsumer,
                             public content::WebContentsObserver {
  public:

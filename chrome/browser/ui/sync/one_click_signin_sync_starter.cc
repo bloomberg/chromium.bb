@@ -118,9 +118,6 @@ void OneClickSigninSyncStarter::ConfirmSignin(const std::string& oauth_token) {
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
   // If this is a new signin (no authenticated username yet) try loading
   // policy for this user now, before any signed in services are initialized.
-  // This callback is only invoked for the web-based signin flow - for the old
-  // ClientLogin flow, policy will get loaded once the TokenService finishes
-  // initializing (not ideal, but it's a reasonable fallback).
   if (signin->GetAuthenticatedUsername().empty()) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
     policy::UserPolicySigninService* policy_service =

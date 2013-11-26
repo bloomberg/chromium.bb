@@ -22,7 +22,7 @@ namespace chromeos {
 
 // OAuth2TokenFetcher is used to convert authenticated cookie jar from the
 // authentication profile into OAuth2 tokens and GAIA credentials that will be
-// used to kick off other token retrieval tasks (i.e. TokenService).
+// used to kick off other token retrieval tasks.
 class OAuth2TokenFetcher : public base::SupportsWeakPtr<OAuth2TokenFetcher>,
                            public GaiaAuthConsumer {
  public:
