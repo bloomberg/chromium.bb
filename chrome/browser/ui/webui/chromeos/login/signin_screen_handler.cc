@@ -256,7 +256,7 @@ static bool SetUserInputMethodImpl(
 
   if (!users_lru_input_methods->GetStringWithoutPathExpansion(username,
                                                               &input_method)) {
-    DLOG(INFO) << "SetUserInputMethod('" << username
+    DVLOG(0) << "SetUserInputMethod('" << username
                << "'): no input method for this user";
     return false;
   }
@@ -836,7 +836,7 @@ void SigninScreenHandler::OnLoginSuccess(const std::string& username) {
 }
 
 void SigninScreenHandler::OnUserRemoved(const std::string& username) {
-  SendUserList(false);
+  CallJS("login.AccountPickerScreen.removeUser", username);
 }
 
 void SigninScreenHandler::OnUserImageChanged(const User& user) {
@@ -986,7 +986,7 @@ void SigninScreenHandler::SetUserInputMethod(const std::string& username) {
   // thus others need to be switched to default locale.
   // Otherwise they will end up using another user's locale to log in.
   if (!succeed) {
-    DLOG(INFO) << "SetUserInputMethod('" << username
+    DVLOG(0) << "SetUserInputMethod('" << username
                << "'): failed to set user layout. Switching to default.";
 
     manager->SetInputMethodDefault();
@@ -1320,7 +1320,7 @@ void SigninScreenHandler::SendUserList(bool animated) {
 }
 
 void SigninScreenHandler::HandleAccountPickerReady() {
-  LOG(INFO) << "Login WebUI >> AccountPickerReady";
+  VLOG(0) << "Login WebUI >> AccountPickerReady";
 
   if (delegate_ && !ScreenLocker::default_screen_locker() &&
       !chromeos::IsMachineHWIDCorrect() &&
@@ -1457,12 +1457,12 @@ void SigninScreenHandler::HandleResyncUserData() {
 
 void SigninScreenHandler::HandleLoginUIStateChanged(const std::string& source,
                                                     bool new_value) {
-  LOG(INFO) << "Login WebUI >> active: " << new_value << ", "
+  VLOG(0) << "Login WebUI >> active: " << new_value << ", "
             << "source: " << source;
 
   if (!KioskAppManager::Get()->GetAutoLaunchApp().empty() &&
       KioskAppManager::Get()->IsAutoLaunchRequested()) {
-    LOG(INFO) << "Showing auto-launch warning";
+    VLOG(0) << "Showing auto-launch warning";
     // On slow devices, the wallpaper animation is not shown initially, so we
     // must explicitly load the wallpaper. This is also the case for the
     // account-picker and gaia-signin UI states.

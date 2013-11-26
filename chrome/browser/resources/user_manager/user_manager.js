@@ -93,6 +93,7 @@ cr.define('UserManager', function() {
   'use strict';
 
   function initialize() {
+    cr.ui.login.DisplayManager.initialize();
     login.AccountPickerScreen.register();
     cr.ui.Bubble.decorate($('bubble'));
     login.HeaderBar.decorate($('login-header-bar'));

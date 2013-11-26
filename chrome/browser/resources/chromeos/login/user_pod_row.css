@@ -6,26 +6,12 @@
  */
 
 podrow {
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
   /* Temporarily disabled because animation interferes with updating screen's
    size. */
-  /* -webkit-transition: width 180ms ease; */
-  display: -webkit-box;
-  max-height: 650px;
+  height: 100%;
   overflow: visible;
-}
-
-podrow[ncolumns='4'] {
-  width: 880px;
-}
-
-podrow[ncolumns='5'] {
-  width: 1100px;
-}
-
-podrow[ncolumns='6'] {
-  width: 1152px;
+  position: absolute;
+  width: 100%;
 }
 
 /* Hide the pod row while images are loading. */
@@ -36,7 +22,8 @@ podrow.images-loading {
 .pod {
   -webkit-tap-highlight-color: transparent;
   -webkit-transform: scale3d(0.9, 0.9, 0.9);
-  -webkit-transition: all 180ms ease;
+  -webkit-transition: -webkit-transform 180ms ease,
+                      opacity 180ms ease;
   background-color: white;
   border-radius: 2px;
   box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2),
@@ -44,12 +31,15 @@ podrow.images-loading {
               0 3px 0 rgba(0, 0, 0, 0.08);
   cursor: pointer;
   display: inline-block;
-  margin: 0 20px;
   padding: 10px 10px 3px;
-  position: relative;
+  position: absolute;
   vertical-align: middle;
   width: 160px;
   z-index: 0;
+}
+
+.account-picker.flying-pods .pod {
+  -webkit-transition: all 180ms ease;
 }
 
 .pod .main-pane {
@@ -60,7 +50,6 @@ podrow.images-loading {
 
 podrow[ncolumns='6'] .pod {
   -webkit-transform: scale3d(0.8, 0.8, 0.8);
-  margin: 0 6px;
 }
 
 .pod.focused {

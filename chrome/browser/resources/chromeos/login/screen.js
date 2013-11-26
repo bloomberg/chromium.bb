@@ -8,11 +8,26 @@
 cr.define('login', function() {
   var Screen = cr.ui.define('div');
 
+  function doNothing() {};
+
   Screen.prototype = {
     __proto__: HTMLDivElement.prototype,
 
-    decorate: function() {
-    }
+    decorate: doNothing,
+
+    /**
+     * Returns minimal size that screen prefers to have. Default implementation
+     * returns current screen size.
+     * @return {{width: number, height: number}}
+     */
+    getPreferredSize: function() {
+      return {width: this.offsetWidth, height: this.offsetHeight};
+    },
+
+    /**
+     * Called for currently active screen when screen size changed.
+     */
+    onWindowResize: doNothing
   };
 
   return {

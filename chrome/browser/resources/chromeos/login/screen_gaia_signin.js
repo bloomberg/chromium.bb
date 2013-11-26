@@ -16,6 +16,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
   // Maximum Gaia loading time in seconds.
   /** @const */ var MAX_GAIA_LOADING_TIME_SEC = 60;
 
+  /** @const */ var HELP_TOPIC_ENTERPRISE_REPORTING = 2535613;
+
   return {
     EXTERNAL_API: [
       'loadAuthExtension',
@@ -76,6 +78,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
           this.onAuthNoPassword_.bind(this);
       this.gaiaAuthHost_.authPageLoadedCallback =
           this.onAuthPageLoaded_.bind(this);
+
+      $('enterprise-info-hint-link').addEventListener('click', function(e) {
+        chrome.send('launchHelpApp', [HELP_TOPIC_ENTERPRISE_REPORTING]);
+        e.preventDefault();
+      });
+
 
       this.updateLocalizedContent();
     },
@@ -427,15 +435,18 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
             'createLocallyManagedUser',
             '<a id="createManagedUserLink" class="signin-link" href="#">',
             '</a>');
-      $('createAccountLink').onclick = function() {
+      $('createAccountLink').addEventListener('click', function(e) {
         chrome.send('createAccount');
-      };
-      $('guestSigninLink').onclick = function() {
+        e.preventDefault();
+      });
+      $('guestSigninLink').addEventListener('click', function(e) {
         chrome.send('launchIncognito');
-      };
-      $('createManagedUserLink').onclick = function() {
+        e.preventDefault();
+      });
+      $('createManagedUserLink').addEventListener('click', function(e) {
         chrome.send('showLocallyManagedUserCreationScreen');
-      };
+        e.preventDefault();
+      });
     },
 
     /**

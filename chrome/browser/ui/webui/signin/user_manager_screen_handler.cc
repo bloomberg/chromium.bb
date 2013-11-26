@@ -120,6 +120,8 @@ class UserManagerScreenHandler::ProfileUpdateObserver
 
   virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
                                    const string16& profile_name) OVERRIDE {
+    // TODO(noms): Change 'SendUserList' to 'removeUser' JS-call when
+    // UserManager is able to find pod belonging to removed user.
     user_manager_handler_->SendUserList();
   }
 

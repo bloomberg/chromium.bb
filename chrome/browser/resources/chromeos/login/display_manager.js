@@ -37,9 +37,6 @@
     'device_requisition_remora';
 /** @const */ var ACCELERATOR_APP_LAUNCH_BAILOUT = 'app_launch_bailout';
 
-/* Help topic identifiers. */
-/** @const */ var HELP_TOPIC_ENTERPRISE_REPORTING = 2535613;
-
 /* Signin UI state constants. Used to control header bar UI. */
 /** @const */ var SIGNIN_UI_STATE = {
   HIDDEN: 0,
@@ -66,7 +63,8 @@
   LOGIN: 'login',
   LOCK: 'lock',
   USER_ADDING: 'user-adding',
-  APP_LAUNCH_SPLASH: 'app-launch-splash'
+  APP_LAUNCH_SPLASH: 'app-launch-splash',
+  DESKTOP_USER_MANAGER: 'login-add-user'
 };
 
 cr.define('cr.ui.login', function() {
@@ -137,6 +135,16 @@ cr.define('cr.ui.login', function() {
 
     set displayType(displayType) {
       this.displayType_ = displayType;
+      document.documentElement.setAttribute('screen', displayType);
+    },
+
+    /**
+     * Returns dimensions of screen exluding header bar.
+     * @type {Object}
+     */
+    get clientAreaSize() {
+      var container = $('outer-container');
+      return {width: container.offsetWidth, height: container.offsetHeight};
     },
 
     /**
@@ -312,18 +320,12 @@ cr.define('cr.ui.login', function() {
       if (oldStep.onBeforeHide)
         oldStep.onBeforeHide();
 
+      $('oobe').className = nextStepId;
+
       if (newStep.onBeforeShow)
         newStep.onBeforeShow(screenData);
 
       newStep.classList.remove('hidden');
-
-      if (newStep.onAfterShow)
-        newStep.onAfterShow(screenData);
-
-      this.disableButtons_(newStep, false);
-
-      // Default control to be focused (if specified).
-      var defaultControl = newStep.defaultControl;
 
       if (this.isOobeUI()) {
         // Start gliding animation for OOBE steps.
@@ -342,8 +344,16 @@ cr.define('cr.ui.login', function() {
         newStep.classList.remove('faded');
       }
 
+      this.disableButtons_(newStep, false);
+
       // Adjust inner container height based on new step's height.
       this.updateScreenSize(newStep);
+
+      if (newStep.onAfterShow)
+        newStep.onAfterShow(screenData);
+
+      // Default control to be focused (if specified).
+      var defaultControl = newStep.defaultControl;
 
       var innerContainer = $('inner-container');
       if (this.currentStep_ != nextStepIndex &&
@@ -392,7 +402,6 @@ cr.define('cr.ui.login', function() {
         }
       }
       this.currentStep_ = nextStepIndex;
-      $('oobe').className = nextStepId;
 
       $('step-logo').hidden = newStep.classList.contains('no-logo');
 
@@ -485,8 +494,7 @@ cr.define('cr.ui.login', function() {
      */
     updateScreenSize: function(screen) {
       // Have to reset any previously predefined screen size first
-      // so that screen contents would define it instead (offsetHeight/width).
-      // http://crbug.com/146539
+      // so that screen contents would define it instead.
       $('inner-container').style.height = '';
       $('inner-container').style.width = '';
       screen.style.width = '';
@@ -495,14 +503,14 @@ cr.define('cr.ui.login', function() {
      $('outer-container').classList.toggle(
         'fullscreen', screen.classList.contains('fullscreen'));
 
-      var height = screen.offsetHeight;
-      var width = screen.offsetWidth;
+      var width = screen.getPreferredSize().width;
+      var height = screen.getPreferredSize().height;
       for (var i = 0, screenGroup; screenGroup = SCREEN_GROUPS[i]; i++) {
         if (screenGroup.indexOf(screen.id) != -1) {
           // Set screen dimensions to maximum dimensions within this group.
           for (var j = 0, screen2; screen2 = $(screenGroup[j]); j++) {
-            height = Math.max(height, screen2.offsetHeight);
-            width = Math.max(width, screen2.offsetWidth);
+            width = Math.max(width, screen2.getPreferredSize().width);
+            height = Math.max(height, screen2.getPreferredSize().height);
           }
           break;
         }
@@ -573,10 +581,22 @@ cr.define('cr.ui.login', function() {
     /**
      * Confirmation handle for the device requisition prompt.
      * @param {string} value The value entered by the user.
+     * @private
      */
     onConfirmDeviceRequisitionPrompt_: function(value) {
       this.deviceRequisition_ = value;
       chrome.send('setDeviceRequisition', [value]);
+    },
+
+    /**
+     * Called when window size changed. Notifies current screen about change.
+     * @private
+     */
+    onWindowResize_: function() {
+      var currentScreenId = this.screens_[this.currentStep_];
+      var currentScreen = $(currentScreenId);
+      if (currentScreen)
+        currentScreen.onWindowResize();
     },
 
     /*
@@ -621,31 +641,45 @@ cr.define('cr.ui.login', function() {
     shouldLoadWallpaperOnBoot: function() {
       return loadTimeData.getString('bootIntoWallpaper') == 'on';
     },
+
+    /**
+     * Sets or unsets given |className| for top-level container. Useful for
+     * customizing #inner-container with CSS rules. All classes set with with
+     * this method will be removed after screen change.
+     * @param {string} className Class to toggle.
+     * @param {boolean} enabled Whether class should be enabled or disabled.
+     */
+    toggleClass: function(className, enabled) {
+      $('oobe').classList.toggle(className, enabled);
+    }
   };
 
   /**
    * Initializes display manager.
    */
   DisplayManager.initialize = function() {
-    // Extracting display type from URL.
-    var path = window.location.pathname.substr(1);
-    var displayType = DISPLAY_TYPE.UNKNOWN;
+    var givenDisplayType = DISPLAY_TYPE.UNKNOWN;
+    if (document.documentElement.hasAttribute('screen')) {
+      // Display type set in HTML property.
+      givenDisplayType = document.documentElement.getAttribute('screen');
+    } else {
+      // Extracting display type from URL.
+      givenDisplayType = window.location.pathname.substr(1);
+    }
+    var instance = Oobe.getInstance();
     Object.getOwnPropertyNames(DISPLAY_TYPE).forEach(function(type) {
-      if (DISPLAY_TYPE[type] == path) {
-        displayType = path;
+      if (DISPLAY_TYPE[type] == givenDisplayType) {
+        instance.displayType = givenDisplayType;
       }
     });
-    if (displayType == DISPLAY_TYPE.UNKNOWN) {
-      console.error("Unknown display type '" + path + "'. Setting default.");
-      displayType = DISPLAY_TYPE.LOGIN;
+    if (instance.displayType == DISPLAY_TYPE.UNKNOWN) {
+      console.error("Unknown display type '" + givenDisplayType +
+          "'. Setting default.");
+      instance.displayType = DISPLAY_TYPE.LOGIN;
     }
-    Oobe.getInstance().displayType = displayType;
-    document.documentElement.setAttribute('screen', displayType);
 
-    var link = $('enterprise-info-hint-link');
-    link.addEventListener(
-        'click', DisplayManager.handleEnterpriseHintLinkClick);
-  },
+    window.addEventListener('resize', instance.onWindowResize_.bind(instance));
+  };
 
   /**
    * Returns offset (top, left) of the element.
@@ -782,15 +816,6 @@ cr.define('cr.ui.login', function() {
   DisplayManager.setLabelText = function(labelId, labelText) {
     $(labelId).textContent = labelText;
   };
-
-  /**
-   * Shows help topic about enrolled devices.
-   * @param {MouseEvent} Event object.
-   */
-  DisplayManager.handleEnterpriseHintLinkClick = function(e) {
-    chrome.send('launchHelpApp', [HELP_TOPIC_ENTERPRISE_REPORTING]);
-    e.preventDefault();
-  }
 
   /**
    * Sets the text content of the enterprise info message.
