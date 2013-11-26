@@ -99,7 +99,7 @@ def _main():
       'fail': lambda x: bbmsg('FAILURE', x),
       'warn': lambda x: bbmsg('WARNINGS', x),
       'abend': lambda x: bbmsg('EXCEPTIONS', x),
-      'ok': lambda x: bbmsg('SUCCESS', x),
+      'ok': lambda x: bbmsg(None, x),
     }
 
   forbidden_regexp = re.compile(string.join(map(re.escape,
