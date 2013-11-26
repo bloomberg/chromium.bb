@@ -58,6 +58,17 @@
       ],
     },
     {
+      'target_name': 'mojo_run_all_perftests',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:test_support_base',
+        'mojo_system',
+      ],
+      'sources': [
+        'common/test/run_all_perftests.cc',
+      ],
+    },
+    {
       'target_name': 'mojo_common_lib',
       'type': '<(component)',
       'defines': [
@@ -135,10 +146,9 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/base.gyp:test_support_perf',
         '../testing/gtest.gyp:gtest',
         'mojo_public_test_support',
-        'mojo_run_all_unittests',
+        'mojo_run_all_perftests',
         'mojo_system',
       ],
       'sources': [
