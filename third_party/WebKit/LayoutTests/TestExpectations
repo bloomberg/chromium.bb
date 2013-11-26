@@ -20,8 +20,6 @@ crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pas
 
 crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Pass ImageOnlyFailure ]
 
-crbug.com/258896 virtual/threaded/animations/keyframe-multiple-timing-functions-transform.html [ NeedsRebaseline ]
-
 # -----------------------------------------------------------------
 # Inspector tests
 # -----------------------------------------------------------------
