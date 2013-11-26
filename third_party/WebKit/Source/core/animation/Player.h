@@ -77,13 +77,13 @@ public:
 
     bool maybeStartAnimationOnCompositor();
     void cancelAnimationOnCompositor();
+    bool hasActiveAnimationsOnCompositor();
 
 private:
     Player(DocumentTimeline&, TimedItem*);
     inline double pausedTimeDrift() const;
     inline double currentTimeBeforeDrift() const;
 
-    bool hasActiveAnimationsOnCompositor();
 
     void setPausedImpl(bool);
 

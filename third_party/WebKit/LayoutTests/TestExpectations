@@ -209,7 +209,6 @@ crbug.com/318980 [ Linux ] virtual/deferred/fast/images/imagemap-focus-ring-zoom
 crbug.com/318980 [ Linux ] editing/input/reveal-caret-of-multiline-input.html [ ImageOnlyFailure Pass ]
 
 crbug.com/322272 virtual/threaded/transitions/interrupted-accelerated-transition.html [ Pass Timeout ]
-crbug.com/322272 virtual/threaded/transitions/remove-accelerated-transition.html [ Timeout ]
 crbug.com/322272 compositing/repaint/opacity-between-absolute.html [ Pass Failure ]
 crbug.com/322272 compositing/repaint/opacity-between-absolute2.html [ Pass Failure ]
 crbug.com/322272 virtual/softwarecompositing/repaint/opacity-between-absolute.html [ Pass Failure ]

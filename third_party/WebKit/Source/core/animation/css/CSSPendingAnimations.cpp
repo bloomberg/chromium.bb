@@ -45,9 +45,9 @@ void CSSPendingAnimations::add(Player* player)
     // is started on the compositor.
     const double defaultStartTime = player->timeline().currentTime();
     m_pending.append(std::make_pair(player, defaultStartTime));
-};
+}
 
-void CSSPendingAnimations::startPendingAnimations()
+bool CSSPendingAnimations::startPendingAnimations()
 {
     bool startedOnCompositor = false;
     for (size_t i = 0; i < m_pending.size(); ++i) {
@@ -66,6 +66,19 @@ void CSSPendingAnimations::startPendingAnimations()
             m_pending[i].first->setStartTime(m_pending[i].second);
     }
     m_pending.clear();
+
+    if (startedOnCompositor || m_waitingForCompositorAnimationStart.isEmpty())
+        return !m_waitingForCompositorAnimationStart.isEmpty();
+
+    // Check if we're still waiting for any compositor animations to start.
+    for (size_t i = 0; i < m_waitingForCompositorAnimationStart.size(); ++i) {
+        if (m_waitingForCompositorAnimationStart[i].get()->hasActiveAnimationsOnCompositor())
+            return true;
+    }
+
+    // If not, go ahead and start any animations that were waiting.
+    notifyCompositorAnimationStarted(monotonicallyIncreasingTime());
+    return false;
 }
 
 void CSSPendingAnimations::notifyCompositorAnimationStarted(double monotonicAnimationStartTime)

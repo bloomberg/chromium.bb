@@ -98,7 +98,9 @@ void DocumentAnimations::serviceAfterStyleRecalc(Document& document)
     if (!RuntimeEnabledFeatures::webAnimationsEnabled())
         return;
 
-    document.cssPendingAnimations().startPendingAnimations();
+    if (document.cssPendingAnimations().startPendingAnimations() && document.view())
+        document.view()->scheduleAnimation();
+
     document.animationClock().unfreeze();
     dispatchAnimationEventsAsync(document);
 }

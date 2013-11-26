@@ -41,7 +41,9 @@ namespace WebCore {
 class CSSPendingAnimations FINAL {
 public:
     void add(Player*);
-    void startPendingAnimations();
+    // Returns whether we are waiting for an animation to start and should
+    // service again on the next frame.
+    bool startPendingAnimations();
     void notifyCompositorAnimationStarted(double monotonicAnimationStartTime);
 
 private:
