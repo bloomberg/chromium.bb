@@ -519,8 +519,7 @@ NSDictionary *Breakpad::GenerateReport(NSDictionary *server_parameters) {
 
   // Handle results.
   NSMutableDictionary *result = [NSMutableDictionary dictionary];
-  NSString *dumpFullPath = [dumpDirAsNSString stringByAppendingPathComponent:
-      [NSString stringWithUTF8String:dumpFilename.c_str()]];
+  NSString *dumpFullPath = [NSString stringWithUTF8String:dumpFilename.c_str()];
   [result setValue:dumpFullPath
             forKey:@BREAKPAD_OUTPUT_DUMP_FILE];
   [result setValue:[NSString stringWithUTF8String:config_file.GetFilePath()]
