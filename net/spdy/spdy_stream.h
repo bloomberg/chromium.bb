@@ -404,7 +404,7 @@ class NET_EXPORT_PRIVATE SpdyStream {
   // TODO(akalin): Remove this, as it's only used in tests.
   bool HasUrlFromHeaders() const;
 
-  int GetProtocolVersion() const;
+  SpdyMajorVersion GetProtocolVersion() const;
 
  private:
   class SynStreamBufferProducer;

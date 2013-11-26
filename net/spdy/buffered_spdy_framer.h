@@ -154,7 +154,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
 
   // SpdyFramer methods.
   size_t ProcessInput(const char* data, size_t len);
-  int protocol_version();
+  SpdyMajorVersion protocol_version();
   void Reset();
   SpdyFramer::SpdyError error_code() const;
   SpdyFramer::SpdyState state() const;

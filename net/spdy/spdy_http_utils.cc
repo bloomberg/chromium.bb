@@ -21,10 +21,11 @@
 namespace net {
 
 bool SpdyHeadersToHttpResponse(const SpdyHeaderBlock& headers,
-                               int protocol_version,
+                               SpdyMajorVersion protocol_version,
                                HttpResponseInfo* response) {
-  std::string status_key = (protocol_version >= 3) ? ":status" : "status";
-  std::string version_key = (protocol_version >= 3) ? ":version" : "version";
+  std::string status_key = (protocol_version >= SPDY3) ? ":status" : "status";
+  std::string version_key =
+      (protocol_version >= SPDY3) ? ":version" : "version";
   std::string version;
   std::string status;
 
@@ -82,7 +83,7 @@ bool SpdyHeadersToHttpResponse(const SpdyHeaderBlock& headers,
 void CreateSpdyHeadersFromHttpRequest(const HttpRequestInfo& info,
                                       const HttpRequestHeaders& request_headers,
                                       SpdyHeaderBlock* headers,
-                                      int protocol_version,
+                                      SpdyMajorVersion protocol_version,
                                       bool direct) {
 
   HttpRequestHeaders::Iterator it(request_headers);
@@ -103,7 +104,7 @@ void CreateSpdyHeadersFromHttpRequest(const HttpRequestInfo& info,
   }
   static const char kHttpProtocolVersion[] = "HTTP/1.1";
 
-  if (protocol_version < 3) {
+  if (protocol_version < SPDY3) {
     (*headers)["version"] = kHttpProtocolVersion;
     (*headers)["method"] = info.method;
     (*headers)["host"] = GetHostAndOptionalPort(info.url);
@@ -129,10 +130,10 @@ COMPILE_ASSERT(HIGHEST - LOWEST < 4 &&
 
 SpdyPriority ConvertRequestPriorityToSpdyPriority(
     const RequestPriority priority,
-    int protocol_version) {
+    SpdyMajorVersion protocol_version) {
   DCHECK_GE(priority, MINIMUM_PRIORITY);
   DCHECK_LE(priority, MAXIMUM_PRIORITY);
-  if (protocol_version == 2) {
+  if (protocol_version == SPDY2) {
     // SPDY 2 only has 2 bits of priority, but we have 5 RequestPriorities.
     // Map IDLE => 3, LOWEST => 2, LOW => 2, MEDIUM => 1, HIGHEST => 0.
     if (priority > LOWEST) {
@@ -147,19 +148,19 @@ SpdyPriority ConvertRequestPriorityToSpdyPriority(
 
 NET_EXPORT_PRIVATE RequestPriority ConvertSpdyPriorityToRequestPriority(
     SpdyPriority priority,
-    int protocol_version) {
+    SpdyMajorVersion protocol_version) {
   // Handle invalid values gracefully, and pick LOW to map 2 back
   // to for SPDY/2.
-  SpdyPriority idle_cutoff = (protocol_version == 2) ? 3 : 5;
+  SpdyPriority idle_cutoff = (protocol_version == SPDY2) ? 3 : 5;
   return (priority >= idle_cutoff) ?
       IDLE : static_cast<RequestPriority>(HIGHEST - priority);
 }
 
 GURL GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers,
-                           int protocol_version,
+                           SpdyMajorVersion protocol_version,
                            bool pushed) {
   // SPDY 2 server push urls are specified in a single "url" header.
-  if (pushed && protocol_version == 2) {
+  if (pushed && protocol_version == SPDY2) {
       std::string url;
       SpdyHeaderBlock::const_iterator it;
       it = headers.find("url");
@@ -168,9 +169,9 @@ GURL GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers,
       return GURL(url);
   }
 
-  const char* scheme_header = protocol_version >= 3 ? ":scheme" : "scheme";
-  const char* host_header = protocol_version >= 3 ? ":host" : "host";
-  const char* path_header = protocol_version >= 3 ? ":path" : "url";
+  const char* scheme_header = protocol_version >= SPDY3 ? ":scheme" : "scheme";
+  const char* host_header = protocol_version >= SPDY3 ? ":host" : "host";
+  const char* path_header = protocol_version >= SPDY3 ? ":path" : "url";
 
   std::string scheme;
   std::string host_port;

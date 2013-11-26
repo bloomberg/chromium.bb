@@ -433,7 +433,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     return pooled_aliases_;
   }
 
-  int GetProtocolVersion() const;
+  SpdyMajorVersion GetProtocolVersion() const;
 
   size_t GetDataFrameMinimumSize() const {
     return buffered_spdy_framer_->GetDataFrameMinimumSize();

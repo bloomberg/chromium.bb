@@ -217,7 +217,7 @@ void BufferedSpdyFramer::OnPushPromise(SpdyStreamId stream_id,
   visitor_->OnPushPromise(stream_id, promised_stream_id);
 }
 
-int BufferedSpdyFramer::protocol_version() {
+SpdyMajorVersion BufferedSpdyFramer::protocol_version() {
   return spdy_framer_.protocol_version();
 }
 

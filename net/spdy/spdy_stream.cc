@@ -520,7 +520,7 @@ void SpdyStream::OnFrameWriteComplete(SpdyFrameType frame_type,
   DoLoop(OK);
 }
 
-int SpdyStream::GetProtocolVersion() const {
+SpdyMajorVersion SpdyStream::GetProtocolVersion() const {
   return session_->GetProtocolVersion();
 }
 

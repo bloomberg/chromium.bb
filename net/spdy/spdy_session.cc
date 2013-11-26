@@ -760,7 +760,7 @@ void SpdySession::AddPooledAlias(const SpdySessionKey& alias_key) {
   pooled_aliases_.insert(alias_key);
 }
 
-int SpdySession::GetProtocolVersion() const {
+SpdyMajorVersion SpdySession::GetProtocolVersion() const {
   DCHECK(buffered_spdy_framer_.get());
   return buffered_spdy_framer_->protocol_version();
 }
