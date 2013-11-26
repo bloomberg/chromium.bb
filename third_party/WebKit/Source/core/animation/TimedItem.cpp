@@ -54,12 +54,10 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
         : intrinsicIterationDuration();
     ASSERT(iterationDuration >= 0);
 
-    // When iterationDuration = 0 and iterationCount = infinity,
-    // repeatedDuration should be 0, not NaN as operator*() would give.
+    // When iterationDuration = 0 and iterationCount = infinity, or vice-
+    // versa, repeatedDuration should be 0, not NaN as operator*() would give.
     // FIXME: The spec is unclear about this.
-    const double repeatedDuration = iterationDuration
-        ? iterationDuration * m_specified.iterationCount
-        : 0;
+    const double repeatedDuration = multiplyZeroAlwaysGivesZero(iterationDuration, m_specified.iterationCount);
     ASSERT(repeatedDuration >= 0);
     const double activeDuration = m_specified.playbackRate
         ? repeatedDuration / abs(m_specified.playbackRate)
@@ -75,7 +73,7 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
     double timeFraction;
     double timeToNextIteration = nullValue();
     if (iterationDuration) {
-        const double startOffset = m_specified.iterationStart * iterationDuration;
+        const double startOffset = multiplyZeroAlwaysGivesZero(m_specified.iterationStart, iterationDuration);
         ASSERT(startOffset >= 0);
         const double scaledActiveTime = calculateScaledActiveTime(activeDuration, activeTime, startOffset, m_specified);
         const double iterationTime = calculateIterationTime(iterationDuration, repeatedDuration, scaledActiveTime, startOffset, m_specified);

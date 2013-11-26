@@ -38,6 +38,13 @@
 
 namespace WebCore {
 
+static inline double multiplyZeroAlwaysGivesZero(double x, double y)
+{
+    ASSERT(!isNull(x));
+    ASSERT(!isNull(y));
+    return x && y ? x * y : 0;
+}
+
 static inline TimedItem::Phase calculatePhase(double activeDuration, double localTime, const Timing& specified)
 {
     ASSERT(activeDuration >= 0);
@@ -101,7 +108,7 @@ static inline double calculateScaledActiveTime(double activeDuration, double act
         return nullValue();
 
     ASSERT(activeTime >= 0 && activeTime <= activeDuration);
-    return (specified.playbackRate < 0 ? activeTime - activeDuration : activeTime) * specified.playbackRate + startOffset;
+    return multiplyZeroAlwaysGivesZero(specified.playbackRate < 0 ? activeTime - activeDuration : activeTime, specified.playbackRate) + startOffset;
 }
 
 static inline bool endsOnIterationBoundary(double iterationCount, double iterationStart)
@@ -113,7 +120,7 @@ static inline bool endsOnIterationBoundary(double iterationCount, double iterati
 static inline double calculateIterationTime(double iterationDuration, double repeatedDuration, double scaledActiveTime, double startOffset, const Timing& specified)
 {
     ASSERT(iterationDuration > 0);
-    ASSERT(repeatedDuration == iterationDuration * specified.iterationCount);
+    ASSERT(repeatedDuration == multiplyZeroAlwaysGivesZero(iterationDuration, specified.iterationCount));
 
     if (isNull(scaledActiveTime))
         return nullValue();
@@ -179,9 +186,15 @@ static inline double calculateTransformedTime(double currentIteration, double it
     double directedTime = calculateDirectedTime(currentIteration, iterationDuration, iterationTime, specified);
     if (isNull(directedTime))
         return nullValue();
-    return specified.timingFunction ?
-        iterationDuration * specified.timingFunction->evaluate(directedTime / iterationDuration, accuracyForDuration(iterationDuration)) :
-        directedTime;
+    if (!std::isfinite(directedTime)) {
+        ASSERT(!std::isfinite(iterationDuration));
+        return directedTime;
+    }
+    double timeFraction = directedTime / iterationDuration;
+    ASSERT(timeFraction >= 0 && timeFraction <= 1);
+    return specified.timingFunction
+        ? multiplyZeroAlwaysGivesZero(iterationDuration, specified.timingFunction->evaluate(timeFraction, accuracyForDuration(iterationDuration)))
+        : directedTime;
 }
 
 } // namespace WebCore

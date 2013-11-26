@@ -41,7 +41,7 @@ TEST(AnimationTimedItemCalculationsTest, ActiveTime)
 {
     Timing timing;
 
-    // calculateActiveTime(activeDuration, localTime, startTime)
+    // calculateActiveTime(activeDuration, localTime, parentPhase, phase, timing)
 
     // Before Phase
     timing.startDelay = 10;
@@ -89,7 +89,7 @@ TEST(AnimationTimedItemCalculationsTest, ScaledActiveTime)
 {
     Timing timing;
 
-    // calculateScaledActiveTime(activeDuration, activeTime, startOffset)
+    // calculateScaledActiveTime(activeDuration, activeTime, startOffset, timing)
 
     // if the active time is null
     ASSERT_TRUE(isNull(calculateScaledActiveTime(4, nullValue(), 5, timing)));
@@ -103,13 +103,19 @@ TEST(AnimationTimedItemCalculationsTest, ScaledActiveTime)
     ASSERT_EQ(5, calculateScaledActiveTime(40, 10, 5, timing));
     timing.playbackRate = 1;
     ASSERT_EQ(15, calculateScaledActiveTime(40, 10, 5, timing));
+
+    // infinte activeTime
+    timing.playbackRate = 0;
+    ASSERT_EQ(0, calculateScaledActiveTime(std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), 0, timing));
+    timing.playbackRate = 1;
+    ASSERT_EQ(std::numeric_limits<double>::infinity(), calculateScaledActiveTime(std::numeric_limits<double>::infinity(), std::numeric_limits<double>::infinity(), 0, timing));
 }
 
 TEST(AnimationTimedItemCalculationsTest, IterationTime)
 {
     Timing timing;
 
-    // calculateIterationTime(iterationDuration, repeatedDuration, scaledActiveTime, startOffset)
+    // calculateIterationTime(iterationDuration, repeatedDuration, scaledActiveTime, startOffset, timing)
 
     // if the scaled active time is null
     ASSERT_TRUE(isNull(calculateIterationTime(1, 1, nullValue(), 1, timing)));
@@ -129,7 +135,7 @@ TEST(AnimationTimedItemCalculationsTest, CurrentIteration)
 {
     Timing timing;
 
-    // calculateCurrentIteration(iterationDuration, iterationTime, scaledActiveTime)
+    // calculateCurrentIteration(iterationDuration, iterationTime, scaledActiveTime, timing)
 
     // if the scaled active time is null
     ASSERT_TRUE(isNull(calculateCurrentIteration(1, 1, nullValue(), timing)));
@@ -150,7 +156,7 @@ TEST(AnimationTimedItemCalculationsTest, DirectedTime)
 {
     Timing timing;
 
-    // calculateDirectedTime(currentIteration, iterationDuration, iterationTime)
+    // calculateDirectedTime(currentIteration, iterationDuration, iterationTime, timing)
 
     // if the iteration time is null
     ASSERT_TRUE(isNull(calculateDirectedTime(1, 2, nullValue(), timing)));
@@ -181,7 +187,7 @@ TEST(AnimationTimedItemCalculationsTest, TransformedTime)
 {
     Timing timing;
 
-    // calculateTransformedTime(currentIteration, iterationDuration, iterationTime)
+    // calculateTransformedTime(currentIteration, iterationDuration, iterationTime, timing)
 
     // Iteration time is null
     ASSERT_TRUE(isNull(calculateTransformedTime(1, 2, nullValue(), timing)));
@@ -208,6 +214,14 @@ TEST(AnimationTimedItemCalculationsTest, TransformedTime)
 
     // Timing function when directed time is null.
     ASSERT_TRUE(isNull(calculateTransformedTime(1, 2, nullValue(), timing)));
+
+    // Timing function when iterationDuration is infinity
+    timing.direction = Timing::PlaybackDirectionNormal;
+    ASSERT_EQ(0, calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 0, timing));
+    ASSERT_EQ(0, calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 1, timing));
+    timing.direction = Timing::PlaybackDirectionReverse;
+    ASSERT_EQ(std::numeric_limits<double>::infinity(), calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 0, timing));
+    ASSERT_EQ(std::numeric_limits<double>::infinity(), calculateTransformedTime(0, std::numeric_limits<double>::infinity(), 1, timing));
 }
 
 }
