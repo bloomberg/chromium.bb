@@ -1437,10 +1437,7 @@ bool CompositedLayerMapping::isDirectlyCompositedImage() const
             return false;
 
         Image* image = cachedImage->imageForRenderer(imageRenderer);
-        if (!image->isBitmapImage())
-            return false;
-
-        return m_graphicsLayer->shouldDirectlyCompositeImage(image);
+        return image->isBitmapImage();
     }
 
     return false;

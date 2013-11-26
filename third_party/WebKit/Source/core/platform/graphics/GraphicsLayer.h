@@ -224,7 +224,6 @@ public:
     // Layer contents
     void setContentsToImage(Image*);
     void setContentsToNinePatch(Image*, const IntRect& aperture);
-    bool shouldDirectlyCompositeImage(Image*) const { return true; }
     // Pass an invalid color to remove the contents layer.
     void setContentsToSolidColor(const Color&) { }
     void setContentsToPlatformLayer(blink::WebLayer* layer) { setContentsTo(layer); }
