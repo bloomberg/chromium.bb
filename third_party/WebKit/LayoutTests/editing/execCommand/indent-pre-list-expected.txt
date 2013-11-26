@@ -41,7 +41,8 @@ yields:
 |     <ul>
 |       <li>
 |         "<#selection-anchor>hello"
-|       <li>
+|         "
+"
 |         "world<#selection-focus>"
 |     "
 "

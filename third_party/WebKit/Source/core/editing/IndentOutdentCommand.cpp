@@ -72,13 +72,18 @@ bool IndentOutdentCommand::tryIndentingAsListItem(const Position& start, const P
     // We should calculate visible range in list item because inserting new
     // list element will change visibility of list item, e.g. :first-child
     // CSS selector.
-    VisiblePosition startOfMove(start);
-    VisiblePosition endOfMove(end);
-
     RefPtr<Element> newList = document().createElement(listNode->tagQName(), false);
     insertNodeBefore(newList, selectedListItem.get());
 
-    moveParagraphWithClones(startOfMove, endOfMove, newList.get(), selectedListItem.get());
+    // We should clone all the children of the list item for indenting purposes. However, in case the current
+    // selection does not encompass all its children, we need to explicitally handle the same. The original
+    // list item too would require proper deletion in that case.
+    if (end.anchorNode() == selectedListItem.get() || end.anchorNode()->isDescendantOf(selectedListItem->lastChild())) {
+        moveParagraphWithClones(start, end, newList.get(), selectedListItem.get());
+    } else {
+        moveParagraphWithClones(start, positionAfterNode(selectedListItem->lastChild()), newList.get(), selectedListItem.get());
+        removeNode(selectedListItem.get());
+    }
 
     if (canMergeLists(previousList.get(), newList.get()))
         mergeIdenticalElements(previousList.get(), newList.get());
