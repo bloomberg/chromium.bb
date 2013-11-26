@@ -11,23 +11,21 @@
       'target_name': 'mojo',
       'type': 'none',
       'dependencies': [
+        'mojo_bindings',
+        'mojo_bindings_unittests',
         'mojo_common_lib',
         'mojo_common_unittests',
-        'mojo_public_test_support',
-        'mojo_public_unittests',
-        'mojo_public_perftests',
-        'mojo_system',
-        'mojo_system_unittests',
-        'mojo_shell_lib',
-        'mojo_shell',
         'mojo_js',
-        'sample_app',
-        'mojo_bindings',
-        'mojom_test',
-        'mojo_bindings_test',
         'mojo_js_bindings',
         'mojo_js_bindings_unittests',
-        'mojo_bindings',
+        'mojo_public_perftests',
+        'mojo_public_test_support',
+        'mojo_public_unittests',
+        'mojo_shell',
+        'mojo_shell_lib',
+        'mojo_system',
+        'mojo_system_unittests',
+        'sample_app',
       ],
     },
     {
@@ -334,20 +332,28 @@
       ],
     },
     {
-      'target_name': 'hello_world_service',
+      'target_name': 'sample_service',
       'type': 'static_library',
-      'dependencies': [
-        'mojo_bindings',
-        'mojo_system',
+      'sources': [
+        'public/bindings/sample/sample_service.mojom',
       ],
+      'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
       'export_dependent_settings': [
         'mojo_bindings',
         'mojo_system',
       ],
+    },
+    {
+      'target_name': 'hello_world_service',
+      'type': 'static_library',
       'sources': [
         'examples/hello_world_service/hello_world_service.mojom',
       ],
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_bindings',
+        'mojo_system',
+      ],
     },
     {
       'target_name': 'hello_world_service_impl',
@@ -390,41 +396,6 @@
       ],
     },
     {
-      'target_name': 'mojom_test',
-      'type': 'executable',
-      'sources': [
-        'public/bindings/sample/sample_test.cc',
-        'public/bindings/sample/sample_service.mojom',
-      ],
-      'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
-      'dependencies': [
-        '../testing/gtest.gyp:gtest',
-        'mojo_bindings',
-        'mojo_run_all_unittests',
-        'mojo_system',
-      ],
-    },
-    {
-      'target_name': 'mojo_bindings_test',
-      'type': 'executable',
-      'include_dirs': [
-        '..',
-        '<(DEPTH)/mojo/public/bindings/sample',
-      ],
-      'dependencies': [
-        '../testing/gtest.gyp:gtest',
-        'mojo_bindings',
-        'mojo_run_all_unittests',
-        'mojo_system',
-      ],
-      'sources': [
-        'public/bindings/sample/mojom/sample_service.cc',
-        'public/bindings/sample/mojom/sample_service.h',
-        'public/bindings/sample/mojom/sample_service_internal.h',
-        'public/bindings/sample/sample_test.cc',
-      ],
-    },
-     {
       'target_name': 'mojo_js_bindings',
       'type': 'static_library',
       'include_dirs': [
@@ -449,16 +420,27 @@
       ],
     },
     {
+      'target_name': 'mojo_bindings_unittests',
+      'type': 'executable',
+      'sources': [
+        'public/bindings/sample/sample_service_unittests.cc',
+      ],
+      'dependencies': [
+        '../testing/gtest.gyp:gtest',
+        'mojo_run_all_unittests',
+        'sample_service',
+      ],
+    },
+    {
       'target_name': 'mojo_js_bindings_unittests',
       'type': 'executable',
       'dependencies': [
-        '../base/base.gyp:run_all_unittests',
         '../gin/gin.gyp:gin_test',
-        'mojom_test',
         'mojo_js_bindings',
+        'mojo_run_all_unittests',
+        'sample_service',
       ],
       'sources': [
-        'public/bindings/js/test/run_all_unittests.cc',
         'public/bindings/js/test/run_js_tests.cc',
       ],
     },

@@ -6,12 +6,8 @@ define([
     "console",
     "mojo/public/bindings/js/test/hexdump",
     "gin/test/expect",
-    // TODO(abarth): We shouldn't need to depend on codec, but there seems to
-    // be a bug in the module loading system whereby this test doesn't run if
-    // we don't import codec here.
-    "mojo/public/bindings/js/codec",
     "mojom/sample_service"
-  ], function(console, hexdump, expect, codec, sample) {
+  ], function(console, hexdump, expect, sample) {
 
   var global = this;
 

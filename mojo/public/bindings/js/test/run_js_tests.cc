@@ -52,7 +52,7 @@ TEST(JSTest, sample_test) {
              .AppendASCII("public")
              .AppendASCII("bindings")
              .AppendASCII("sample")
-             .AppendASCII("sample_test.js");
+             .AppendASCII("sample_service_unittests.js");
   TestRunnerDelegate delegate;
   gin::RunTestFromFile(path, &delegate);
 }

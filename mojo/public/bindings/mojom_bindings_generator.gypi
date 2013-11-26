@@ -44,6 +44,10 @@
       'process_outputs_as_sources': 1,
     }
   ],
+  'dependencies': [
+    'mojo_bindings',
+    'mojo_system',
+  ],
   'include_dirs': [
     '<(DEPTH)',
     '<(SHARED_INTERMEDIATE_DIR)',
