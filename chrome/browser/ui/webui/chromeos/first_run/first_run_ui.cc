@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_ui.h"
 
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/first_run/first_run_handler.h"
 #include "chrome/common/url_constants.h"
@@ -19,9 +20,19 @@ namespace {
 const char kFirstRunJSPath[] = "first_run.js";
 
 void SetLocalizedStrings(base::DictionaryValue* localized_strings) {
-  localized_strings->SetString(
-      "greetingHeader",
-      l10n_util::GetStringUTF16(IDS_FIRST_RUN_GREETING_STEP_HEADER_GENERAL));
+  const string16& given_name =
+    chromeos::UserManager::Get()->GetActiveUser()->given_name();
+  if (given_name.empty()) {
+    localized_strings->SetString(
+        "greetingHeader",
+        l10n_util::GetStringUTF16(IDS_FIRST_RUN_GREETING_STEP_HEADER_GENERAL));
+  } else {
+    localized_strings->SetString(
+        "greetingHeader",
+        l10n_util::GetStringFUTF16(IDS_FIRST_RUN_GREETING_STEP_HEADER,
+                                   given_name));
+  }
+
   localized_strings->SetString(
       "greetingText1",
       l10n_util::GetStringUTF16(IDS_FIRST_RUN_GREETING_STEP_TEXT_1));

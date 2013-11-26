@@ -48,10 +48,11 @@ class FakeUserManager : public UserManager {
   virtual void SwitchActiveUser(const std::string& email) OVERRIDE;
   virtual void SaveUserDisplayName(const std::string& username,
       const string16& display_name) OVERRIDE;
-  virtual void UpdateUserAccountData(const std::string&, const string16&,
-                                     const std::string&) OVERRIDE;
 
   // Not implemented.
+  virtual void UpdateUserAccountData(
+      const std::string& user_id,
+      const UserAccountData& account_data) OVERRIDE {}
   virtual void Shutdown() OVERRIDE {}
   virtual UserImageManager* GetUserImageManager() OVERRIDE;
   virtual SupervisedUserManager* GetSupervisedUserManager() OVERRIDE;

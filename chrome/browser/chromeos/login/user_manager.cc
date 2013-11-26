@@ -52,6 +52,16 @@ PendingUserSessionsRestoreFinished() {
 UserManager::UserSessionStateObserver::~UserSessionStateObserver() {
 }
 
+UserManager::UserAccountData::UserAccountData(const string16& display_name,
+                                              const string16& given_name,
+                                              const std::string& locale)
+    : display_name_(display_name),
+      given_name_(given_name),
+      locale_(locale) {
+}
+
+UserManager::UserAccountData::~UserAccountData() {}
+
 // static
 void UserManager::Initialize() {
   CHECK(!g_user_manager);

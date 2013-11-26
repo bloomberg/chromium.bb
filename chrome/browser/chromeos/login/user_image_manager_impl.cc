@@ -533,7 +533,7 @@ void UserImageManagerImpl::UserLoggedIn(const std::string& user_id,
         linked_ptr<Job>& job = jobs_[user_id];
         job.reset(new Job(this, user_id));
         if (!image_path.empty()) {
-          LOG(INFO) << "Loading old user image, then migrating it.";
+          VLOG(0) << "Loading old user image, then migrating it.";
           job->SetToPath(base::FilePath(image_path),
                          user->image_index(),
                          user->image_url(),
@@ -719,13 +719,15 @@ void UserImageManagerImpl::OnProfileDownloadSuccess(
       profile_downloader_.release());
   DCHECK_EQ(downloader, profile_downloader.get());
 
-  const User* user = UserManager::Get()->GetLoggedInUser();
+  UserManager* user_manager = UserManager::Get();
+  const User* user = user_manager->GetLoggedInUser();
   const std::string& user_id = user->email();
 
-  UserManager::Get()->UpdateUserAccountData(user_id,
-                                            downloader->GetProfileFullName(),
-                                            downloader->GetProfileLocale());
-
+  user_manager->UpdateUserAccountData(user_id,
+                                      UserManager::UserAccountData(
+                                          downloader->GetProfileFullName(),
+                                          downloader->GetProfileGivenName(),
+                                          downloader->GetProfileLocale()));
   if (!downloading_profile_image_)
     return;
 
@@ -814,11 +816,6 @@ void UserImageManagerImpl::OnProfileDownloadFailure(
         profile_image_download_reason_,
         base::TimeTicks::Now() - profile_image_load_start_time_);
   }
-
-  UserManager* user_manager = UserManager::Get();
-  const User* user = user_manager->GetLoggedInUser();
-
-  user_manager->UpdateUserAccountData(user->email(), string16(), "");
 
   if (reason == ProfileDownloaderDelegate::NETWORK_ERROR) {
     // Retry download after a delay if a network error occurred.

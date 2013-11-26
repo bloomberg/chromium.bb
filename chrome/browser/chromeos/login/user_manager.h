@@ -56,6 +56,25 @@ class UserManager {
     virtual ~UserSessionStateObserver();
   };
 
+  // Data retrieved from user account.
+  class UserAccountData {
+   public:
+    UserAccountData(const string16& display_name,
+                    const string16& given_name,
+                    const std::string& locale);
+    ~UserAccountData();
+    const string16& display_name() const { return display_name_; }
+    const string16& given_name() const { return given_name_; }
+    const std::string& locale() const { return locale_; }
+
+   private:
+    const string16 display_name_;
+    const string16 given_name_;
+    const std::string locale_;
+
+    DISALLOW_COPY_AND_ASSIGN(UserAccountData);
+  };
+
   // Username for stub login when not running on ChromeOS.
   static const char kStubUser[];
 
@@ -213,8 +232,7 @@ class UserManager {
 
   // Updates data upon User Account download.
   virtual void UpdateUserAccountData(const std::string& user_id,
-                                     const string16& display_name,
-                                     const std::string& locale) = 0;
+                                     const UserAccountData& account_data) = 0;
 
   // Returns the display name for user |user_id| if it is known (was
   // previously set by a |SaveUserDisplayName| call).

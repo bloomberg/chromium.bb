@@ -118,11 +118,6 @@ void FakeUserManager::SaveUserDisplayName(
   }
 }
 
-void FakeUserManager::UpdateUserAccountData(const std::string&, const string16&,
-                           const std::string&) {
-  // Not implemented
-}
-
 SupervisedUserManager* FakeUserManager::GetSupervisedUserManager() {
   return supervised_user_manager_.get();
 }

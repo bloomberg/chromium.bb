@@ -108,6 +108,9 @@ class User {
   // Returns the human name to display for this user.
   string16 GetDisplayName() const;
 
+  // Returns given name of user, or empty string if given name is unknown.
+  const string16& given_name() const { return given_name_; }
+
   // Returns the account name part of the email. Use the display form of the
   // email if available and use_display_name == true. Otherwise use canonical.
   std::string GetAccountName(bool use_display_email) const;
@@ -215,6 +218,8 @@ class User {
     display_name_ = display_name;
   }
 
+  void set_given_name(const string16& given_name) { given_name_ = given_name; }
+
   void set_display_email(const std::string& display_email) {
     display_email_ = display_email;
   }
@@ -243,6 +248,7 @@ class User {
  private:
   std::string email_;
   string16 display_name_;
+  string16 given_name_;
   // The displayed user email, defaults to |email_|.
   std::string display_email_;
   UserImage user_image_;

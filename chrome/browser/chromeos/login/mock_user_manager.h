@@ -44,8 +44,8 @@ class MockUserManager : public UserManager {
   MOCK_CONST_METHOD1(GetProfileByUser, Profile*(const User*));
   MOCK_METHOD2(SaveUserDisplayName, void(const std::string&,
                                          const string16&));
-  MOCK_METHOD3(UpdateUserAccountData,
-               void(const std::string&, const string16&, const std::string&));
+  MOCK_METHOD2(UpdateUserAccountData,
+               void(const std::string&, const UserAccountData&));
   MOCK_CONST_METHOD1(GetUserDisplayName, string16(const std::string&));
   MOCK_METHOD2(SaveUserDisplayEmail, void(const std::string&,
                                           const std::string&));
