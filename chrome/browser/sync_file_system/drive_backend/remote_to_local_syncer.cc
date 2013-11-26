@@ -367,10 +367,12 @@ void RemoteToLocalSyncer::DidPrepareForFolderUpdate(
 
   if (local_metadata_->file_type == SYNC_FILE_TYPE_DIRECTORY) {
     // There already exists a folder, nothing left to do.
-    if (dirty_tracker_->needs_folder_listing())
+    if (dirty_tracker_->needs_folder_listing() &&
+        !dirty_tracker_->synced_details().missing()) {
       ListFolderContent(callback);
-    else
+    } else {
       callback.Run(SYNC_STATUS_OK);
+    }
     return;
   }
 

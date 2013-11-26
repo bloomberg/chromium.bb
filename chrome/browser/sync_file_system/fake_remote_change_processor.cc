@@ -25,6 +25,11 @@ void FakeRemoteChangeProcessor::PrepareForProcessRemoteChange(
     const PrepareChangeCallback& callback) {
   SyncFileMetadata local_metadata;
 
+  URLToFileMetadata::iterator found_metadata = local_file_metadata_.find(url);
+  if (found_metadata != local_file_metadata_.end())
+    local_metadata = found_metadata->second;
+
+  // Override |local_metadata| by applied changes.
   URLToFileChangesMap::iterator found = applied_changes_.find(url);
   if (found != applied_changes_.end()) {
     DCHECK(!found->second.empty());
@@ -36,10 +41,16 @@ void FakeRemoteChangeProcessor::PrepareForProcessRemoteChange(
           base::Time::Now());
     }
   }
+
+  FileChangeList change_list;
+  URLToFileChangeList::iterator found_list = local_changes_.find(url);
+  if (found_list != local_changes_.end())
+    change_list = found_list->second;
+
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
       base::Bind(callback, SYNC_STATUS_OK,
-                 local_metadata, FileChangeList()));
+                 local_metadata, change_list));
 }
 
 void FakeRemoteChangeProcessor::ApplyRemoteChange(
@@ -63,8 +74,21 @@ void FakeRemoteChangeProcessor::RecordFakeLocalChange(
     const fileapi::FileSystemURL& url,
     const FileChange& change,
     const SyncStatusCallback& callback) {
+  local_changes_[url].Update(change);
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+}
+
+void FakeRemoteChangeProcessor::UpdateLocalFileMetadata(
+    const fileapi::FileSystemURL& url,
+    const FileChange& change) {
+  if (change.IsAddOrUpdate()) {
+    local_file_metadata_[url] = SyncFileMetadata(
+        change.file_type(), 100 /* size */, base::Time::Now());
+  } else {
+    local_file_metadata_.erase(url);
+  }
+  local_changes_[url].Update(change);
 }
 
 const FakeRemoteChangeProcessor::URLToFileChangesMap&

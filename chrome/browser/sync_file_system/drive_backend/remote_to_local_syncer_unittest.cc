@@ -30,6 +30,16 @@
 namespace sync_file_system {
 namespace drive_backend {
 
+namespace {
+
+fileapi::FileSystemURL URL(const GURL& origin,
+                           const std::string& path) {
+  return CreateSyncableFileSystemURL(
+      origin, base::FilePath::FromUTF8Unsafe(path));
+}
+
+}  // namespace
+
 class RemoteToLocalSyncerTest : public testing::Test,
                                 public SyncEngineContext {
  public:
@@ -88,44 +98,6 @@ class RemoteToLocalSyncerTest : public testing::Test,
     EXPECT_EQ(SYNC_STATUS_OK, status);
   }
 
-  fileapi::FileSystemURL BuildURLForOriginAndFileID(
-      const GURL& origin,
-      const std::string& file_id) {
-    TrackerSet trackers;
-    if (!metadata_database_->FindTrackersByFileID(file_id, &trackers) ||
-        !trackers.has_active()) {
-      return fileapi::FileSystemURL();
-    }
-
-    FileTracker* tracker = trackers.active_tracker();
-    base::FilePath path;
-    if (!metadata_database_->BuildPathForTracker(
-            tracker->tracker_id(), &path)) {
-      return fileapi::FileSystemURL();
-    }
-    return CreateSyncableFileSystemURL(origin, path);
-  }
-
-  SyncStatusCode MakeTrackerDirtyByFileID(const std::string& file_id) {
-    TrackerSet trackers;
-    bool result = metadata_database_->FindTrackersByFileID(file_id, &trackers);
-    if (!result || !trackers.has_active())
-      return SYNC_FILE_ERROR_NOT_FOUND;
-
-    FileTracker* tracker = trackers.active_tracker();
-    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
-    metadata_database_->MarkTrackerDirty(tracker->tracker_id(),
-                                         CreateResultReceiver(&status));
-    base::RunLoop().RunUntilIdle();
-    return status;
-  }
-
-  fileapi::FileSystemURL CreateURL(const GURL& origin,
-                                   const std::string& path) {
-    return CreateSyncableFileSystemURL(
-        origin, base::FilePath::FromUTF8Unsafe(path));
-  }
-
   virtual drive::DriveServiceInterface* GetDriveService() OVERRIDE {
     return fake_drive_service_.get();
   }
@@ -155,8 +127,8 @@ class RemoteToLocalSyncerTest : public testing::Test,
     return sync_root_folder_id;
   }
 
-  std::string CreateFolder(const std::string& parent_folder_id,
-                           const std::string& app_id) {
+  std::string CreateRemoteFolder(const std::string& parent_folder_id,
+                                 const std::string& app_id) {
     std::string folder_id;
     EXPECT_EQ(google_apis::HTTP_CREATED,
               fake_drive_helper_->AddFolder(
@@ -164,9 +136,9 @@ class RemoteToLocalSyncerTest : public testing::Test,
     return folder_id;
   }
 
-  std::string CreateFile(const std::string& parent_folder_id,
-                         const std::string& title,
-                         const std::string& content) {
+  std::string CreateRemoteFile(const std::string& parent_folder_id,
+                               const std::string& title,
+                               const std::string& content) {
     std::string file_id;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_helper_->AddFile(
@@ -174,9 +146,21 @@ class RemoteToLocalSyncerTest : public testing::Test,
     return file_id;
   }
 
-  void DeleteFile(const std::string& file_id) {
+  void DeleteRemoteFile(const std::string& file_id) {
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_helper_->RemoveResource(file_id));
+  }
+
+  void CreateLocalFolder(const fileapi::FileSystemURL& url) {
+    fake_remote_change_processor_->UpdateLocalFileMetadata(
+        url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                        SYNC_FILE_TYPE_DIRECTORY));
+  }
+
+  void CreateLocalFile(const fileapi::FileSystemURL& url) {
+    fake_remote_change_processor_->UpdateLocalFileMetadata(
+        url, FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                        SYNC_FILE_TYPE_FILE));
   }
 
   SyncStatusCode RunSyncer() {
@@ -202,17 +186,23 @@ class RemoteToLocalSyncerTest : public testing::Test,
     return status;
   }
 
-  void VerifyConsistency(const URLToFileChangesMap& expected_changes) {
+  void AppendExpectedChange(const fileapi::FileSystemURL& url,
+                            FileChange::ChangeType change_type,
+                            SyncFileType file_type) {
+    expected_changes_[url].push_back(FileChange(change_type, file_type));
+  }
+
+  void VerifyConsistency() {
     URLToFileChangesMap applied_changes =
         fake_remote_change_processor_->GetAppliedRemoteChanges();
-    EXPECT_EQ(expected_changes.size(), applied_changes.size());
+    EXPECT_EQ(expected_changes_.size(), applied_changes.size());
 
     for (URLToFileChangesMap::const_iterator itr = applied_changes.begin();
          itr != applied_changes.end(); ++itr) {
       const fileapi::FileSystemURL& url = itr->first;
-      URLToFileChangesMap::const_iterator found = expected_changes.find(url);
-      if (found == expected_changes.end()) {
-        EXPECT_TRUE(found != expected_changes.end());
+      URLToFileChangesMap::const_iterator found = expected_changes_.find(url);
+      if (found == expected_changes_.end()) {
+        EXPECT_TRUE(found != expected_changes_.end());
         continue;
       }
 
@@ -239,128 +229,197 @@ class RemoteToLocalSyncerTest : public testing::Test,
   scoped_ptr<MetadataDatabase> metadata_database_;
   scoped_ptr<FakeRemoteChangeProcessor> fake_remote_change_processor_;
 
+  URLToFileChangesMap expected_changes_;
+
   DISALLOW_COPY_AND_ASSIGN(RemoteToLocalSyncerTest);
 };
 
 TEST_F(RemoteToLocalSyncerTest, AddNewFile) {
   const GURL kOrigin("chrome-extension://example");
   const std::string sync_root = CreateSyncRoot();
-  const std::string app_root = CreateFolder(sync_root, kOrigin.host());
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
 
-  const std::string folder1 = CreateFolder(app_root, "folder1");
-  const std::string file1 = CreateFile(app_root, "file1", "data1");
-  const std::string folder2 = CreateFolder(folder1, "folder2");
-  const std::string file2 = CreateFile(folder1, "file2", "data2");
+  const std::string folder1 = CreateRemoteFolder(app_root, "folder1");
+  const std::string file1 = CreateRemoteFile(app_root, "file1", "data1");
+  const std::string folder2 = CreateRemoteFolder(folder1, "folder2");
+  const std::string file2 = CreateRemoteFile(folder1, "file2", "data2");
 
   RunSyncerUntilIdle();
 
-  URLToFileChangesMap expected_changes;
-
   // Create expected changes.
   // TODO(nhiroki): Clean up creating URL part.
-  expected_changes[CreateURL(kOrigin, "/")].push_back(
-      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                 SYNC_FILE_TYPE_DIRECTORY));
-  expected_changes[CreateURL(kOrigin, "/folder1")].push_back(
-      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                 SYNC_FILE_TYPE_DIRECTORY));
-  expected_changes[CreateURL(kOrigin, "/file1")].push_back(
-      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                 SYNC_FILE_TYPE_FILE));
-  expected_changes[CreateURL(kOrigin, "/folder1/folder2")].push_back(
-      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                 SYNC_FILE_TYPE_DIRECTORY));
-  expected_changes[CreateURL(kOrigin, "/folder1/file2")].push_back(
-      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                 SYNC_FILE_TYPE_FILE));
+  AppendExpectedChange(URL(kOrigin, "/"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_DIRECTORY);
+  AppendExpectedChange(URL(kOrigin, "/folder1"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_DIRECTORY);
+  AppendExpectedChange(URL(kOrigin, "/file1"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_FILE);
+  AppendExpectedChange(URL(kOrigin, "/folder1/folder2"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_DIRECTORY);
+  AppendExpectedChange(URL(kOrigin, "/folder1/file2"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_FILE);
 
-  VerifyConsistency(expected_changes);
+  VerifyConsistency();
 }
 
 TEST_F(RemoteToLocalSyncerTest, DeleteFile) {
   const GURL kOrigin("chrome-extension://example");
   const std::string sync_root = CreateSyncRoot();
-  const std::string app_root = CreateFolder(sync_root, kOrigin.host());
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
 
-  const std::string folder = CreateFolder(app_root, "folder");
-  const std::string file = CreateFile(app_root, "file", "data");
+  const std::string folder = CreateRemoteFolder(app_root, "folder");
+  const std::string file = CreateRemoteFile(app_root, "file", "data");
 
-  URLToFileChangesMap expected_changes;
-  expected_changes[CreateURL(kOrigin, "/")].push_back(
-      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                 SYNC_FILE_TYPE_DIRECTORY));
-  expected_changes[CreateURL(kOrigin, "/folder")].push_back(
-      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                 SYNC_FILE_TYPE_DIRECTORY));
-  expected_changes[CreateURL(kOrigin, "/file")].push_back(
-      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                 SYNC_FILE_TYPE_FILE));
+  AppendExpectedChange(URL(kOrigin, "/"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_DIRECTORY);
+  AppendExpectedChange(URL(kOrigin, "/folder"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_DIRECTORY);
+  AppendExpectedChange(URL(kOrigin, "/file"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_FILE);
 
   RunSyncerUntilIdle();
-  VerifyConsistency(expected_changes);
+  VerifyConsistency();
 
-  DeleteFile(folder);
-  DeleteFile(file);
+  DeleteRemoteFile(folder);
+  DeleteRemoteFile(file);
 
-  expected_changes[CreateURL(kOrigin, "/folder")].push_back(
-      FileChange(FileChange::FILE_CHANGE_DELETE,
-                 SYNC_FILE_TYPE_UNKNOWN));
-  expected_changes[CreateURL(kOrigin, "/file")].push_back(
-      FileChange(FileChange::FILE_CHANGE_DELETE,
-                 SYNC_FILE_TYPE_UNKNOWN));
+  AppendExpectedChange(URL(kOrigin, "/folder"),
+                       FileChange::FILE_CHANGE_DELETE,
+                       SYNC_FILE_TYPE_UNKNOWN);
+  AppendExpectedChange(URL(kOrigin, "/file"),
+                       FileChange::FILE_CHANGE_DELETE,
+                       SYNC_FILE_TYPE_UNKNOWN);
 
   ListChanges();
   RunSyncerUntilIdle();
-  VerifyConsistency(expected_changes);
+  VerifyConsistency();
 }
 
 TEST_F(RemoteToLocalSyncerTest, DeleteNestedFiles) {
   const GURL kOrigin("chrome-extension://example");
   const std::string sync_root = CreateSyncRoot();
-  const std::string app_root = CreateFolder(sync_root, kOrigin.host());
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
 
-  const std::string folder1 = CreateFolder(app_root, "folder1");
-  const std::string file1 = CreateFile(app_root, "file1", "data1");
-  const std::string folder2 = CreateFolder(folder1, "folder2");
-  const std::string file2 = CreateFile(folder1, "file2", "data2");
+  const std::string folder1 = CreateRemoteFolder(app_root, "folder1");
+  const std::string file1 = CreateRemoteFile(app_root, "file1", "data1");
+  const std::string folder2 = CreateRemoteFolder(folder1, "folder2");
+  const std::string file2 = CreateRemoteFile(folder1, "file2", "data2");
 
-  URLToFileChangesMap expected_changes;
-  expected_changes[CreateURL(kOrigin, "/")].push_back(
-      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                 SYNC_FILE_TYPE_DIRECTORY));
-  expected_changes[CreateURL(kOrigin, "/folder1")].push_back(
-      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                 SYNC_FILE_TYPE_DIRECTORY));
-  expected_changes[CreateURL(kOrigin, "/file1")].push_back(
-      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                 SYNC_FILE_TYPE_FILE));
-  expected_changes[CreateURL(kOrigin, "/folder1/folder2")].push_back(
-      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                 SYNC_FILE_TYPE_DIRECTORY));
-  expected_changes[CreateURL(kOrigin, "/folder1/file2")].push_back(
-      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
-                 SYNC_FILE_TYPE_FILE));
+  AppendExpectedChange(URL(kOrigin, "/"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_DIRECTORY);
+  AppendExpectedChange(URL(kOrigin, "/folder1"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_DIRECTORY);
+  AppendExpectedChange(URL(kOrigin, "/file1"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_FILE);
+  AppendExpectedChange(URL(kOrigin, "/folder1/folder2"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_DIRECTORY);
+  AppendExpectedChange(URL(kOrigin, "/folder1/file2"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_FILE);
 
   RunSyncerUntilIdle();
-  VerifyConsistency(expected_changes);
+  VerifyConsistency();
 
-  DeleteFile(folder1);
+  DeleteRemoteFile(folder1);
 
-  expected_changes[CreateURL(kOrigin, "/folder1")].push_back(
-      FileChange(FileChange::FILE_CHANGE_DELETE,
-                 SYNC_FILE_TYPE_UNKNOWN));
+  AppendExpectedChange(URL(kOrigin, "/folder1"),
+                       FileChange::FILE_CHANGE_DELETE,
+                       SYNC_FILE_TYPE_UNKNOWN);
   // Changes for descendant files ("folder2" and "file2") should be ignored.
 
   ListChanges();
   RunSyncerUntilIdle();
-  VerifyConsistency(expected_changes);
+  VerifyConsistency();
 }
+
+TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFileOnFolder) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+
+  AppendExpectedChange(URL(kOrigin, "/"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_DIRECTORY);
+
+  CreateLocalFolder(URL(kOrigin, "/folder"));
+  CreateRemoteFile(app_root, "folder", "data");
+
+  // Folder-File conflict happens. File creation should be ignored.
+
+  ListChanges();
+  RunSyncerUntilIdle();
+  VerifyConsistency();
+}
+
+TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFolderOnFile) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+
+  AppendExpectedChange(URL(kOrigin, "/"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_DIRECTORY);
+
+  RunSyncerUntilIdle();
+  VerifyConsistency();
+
+  CreateLocalFile(URL(kOrigin, "/file"));
+  CreateRemoteFolder(app_root, "file");
+
+  // File-Folder conflict happens. Folder should override the existing file.
+  AppendExpectedChange(URL(kOrigin, "/file"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_DIRECTORY);
+
+  ListChanges();
+  RunSyncerUntilIdle();
+  VerifyConsistency();
+}
+
+TEST_F(RemoteToLocalSyncerTest, Conflict_CreateFolderOnFolder) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+
+  AppendExpectedChange(URL(kOrigin, "/"),
+                       FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                       SYNC_FILE_TYPE_DIRECTORY);
+
+  CreateLocalFolder(URL(kOrigin, "/folder"));
+  CreateRemoteFolder(app_root, "folder");
+
+  // Folder-Folder conflict happens. Folder creation should be ignored.
+
+  ListChanges();
+  RunSyncerUntilIdle();
+  VerifyConsistency();
+}
+
+// TODO(nhiroki): Add file-file conflict case.
 
 }  // namespace drive_backend
 }  // namespace sync_file_system
