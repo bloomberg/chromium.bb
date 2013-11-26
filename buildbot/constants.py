@@ -294,17 +294,15 @@ INTERNAL_PATCH_TAG = 'i'
 EXTERNAL_PATCH_TAG = 'e'
 PATCH_TAGS = (INTERNAL_PATCH_TAG, EXTERNAL_PATCH_TAG)
 
+_GERRIT_QUERY_TEMPLATE = ('status:open AND '
+                          'label:Code-Review=+2 AND '
+                          'label:Verified=+1 AND '
+                          'label:Commit-Queue>=%+i AND '
+                          'NOT ( label:CodeReview=-2 OR label:Verified=-1 )')
+
 # Default gerrit query used to find changes for CQ.
-if USE_GOB:
-  DEFAULT_CQ_READY_QUERY = ('status:open AND '
-                            'label:Code-Review=+2 AND '
-                            'label:Verified=+1 AND '
-                            'label:Commit-Queue=+1 AND '
-                            'NOT ( label:CodeReview=-2 OR label:Verified=-1 )')
-else:
-  DEFAULT_CQ_READY_QUERY = ('status:open AND CodeReview=+2 AND Verified=+1 '
-                            'AND CommitQueue=+1 '
-                            'AND NOT ( CodeReview=-2 OR Verified=-1 )')
+# Permits CQ+1 or CQ+2 changes.
+DEFAULT_CQ_READY_QUERY = _GERRIT_QUERY_TEMPLATE % 1
 
 # Default filter rules for verifying that Gerrit returned results that matched
 # our query. This used for working around Gerrit bugs.
@@ -312,7 +310,7 @@ DEFAULT_CQ_READY_FIELDS = {
     'SUBM': '0',
     'CRVW': '2',
     'VRIF': '1',
-    'COMR': '1',
+    'COMR': ('1', '2'),
 }
 
 GERRIT_ON_BORG_LABELS = {

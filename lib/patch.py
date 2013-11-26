@@ -1255,11 +1255,16 @@ class GerritPatch(GitRepoPatch):
         'CRVW': Whether patch was approved.
         'COMR': Whether patch was marked ready.
         'TBVF': Whether patch was verified by trybot.
-      value: The expected value of the specified field (as str).
+      value: The expected value of the specified field (as string, or as list
+             of accepted strings).
     """
     # All approvals default to '0', so use that if there's no matches.
     type_approvals = [x['value'] for x in self._approvals if x['type'] == field]
-    return value in (type_approvals or ['0'])
+    type_approvals = type_approvals or ['0']
+    if isinstance(value, (tuple, list)):
+      return bool(set(value) & set(type_approvals))
+    else:
+      return value in type_approvals
 
   def GetLatestApproval(self, field):
     """Return most recent value of specific field on the current patchset.
