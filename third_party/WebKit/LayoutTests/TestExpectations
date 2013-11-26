@@ -295,8 +295,6 @@ crbug.com/248938 virtual/threaded/transitions/transition-end-event-window.html [
 crbug.com/248938 [ Win ] virtual/threaded/transitions/cubic-bezier-overflow-transform.html [ Pass Timeout ]
 crbug.com/248938 [ Win ] virtual/threaded/animations/keyframe-timing-functions-transform.html [ Pass Timeout ]
 
-Bug(seokju) fast/repaint/paint-caret-in-div-with-negative-indent.html [ NeedsRebaseline ]
-
 crbug.com/320477 [ Debug ] inspector/debugger/debugger-pause-in-internal.html [ Pass Crash ]
 
 # Switching to content shell failures
