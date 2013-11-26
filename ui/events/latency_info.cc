@@ -98,6 +98,7 @@ scoped_refptr<base::debug::ConvertableToTraceFormat> AsTraceableData(
     component_info->SetDouble("count", it->second.event_count);
     record_data->Set(GetComponentName(it->first.first), component_info);
   }
+  record_data->SetDouble("trace_id", latency.trace_id);
   return LatencyInfoTracedValue::FromValue(record_data.PassAs<base::Value>());
 }
 
@@ -202,6 +203,19 @@ bool LatencyInfo::FindLatency(LatencyComponentType type,
   if (output)
     *output = it->second;
   return true;
+}
+
+void LatencyInfo::RemoveLatency(LatencyComponentType type) {
+  LatencyMap::iterator it = latency_components.begin();
+  while (it != latency_components.end()) {
+    if (it->first.first == type) {
+      LatencyMap::iterator tmp = it;
+      ++it;
+      latency_components.erase(tmp);
+    } else {
+      it++;
+    }
+  }
 }
 
 void LatencyInfo::Clear() {

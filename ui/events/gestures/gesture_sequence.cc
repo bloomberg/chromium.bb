@@ -449,25 +449,27 @@ float CalibrateFlingVelocity(float velocity) {
 
 void UpdateGestureEventLatencyInfo(const TouchEvent& event,
                                    GestureSequence::Gestures* gestures) {
-  // If the touch event does not cause any rendering scheduled, then
-  // 1) If the touch event does not generate any gesture event, its
-  //    LatencyInfo ends here.
-  // 2) If the touch event generates gesture events, its latencyinfo
-  //    is copied into the gesture events.
+  // If the touch event does not cause any rendering scheduled, we first
+  // end the touch event's LatencyInfo. Then we copy the touch event's
+  // LatencyInfo into the generated gesture's LatencyInfo. Since one touch
+  // event can generate multiple gesture events, we have to clear the gesture
+  // event's trace_id, remove its ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
+  // so when the gesture event passes through RWHI, a new trace_id will be
+  // assigned and new ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT will be added.
   if (!event.latency()->FindLatency(
           ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_COMPONENT, 0, NULL)) {
-    if (gestures->empty()) {
-      ui::LatencyInfo* touch_latency =
-          const_cast<ui::LatencyInfo*>(event.latency());
-      touch_latency->AddLatencyNumber(
-          ui::INPUT_EVENT_LATENCY_TERMINATED_TOUCH_COMPONENT, 0, 0);
-    } else {
-      GestureSequence::Gestures::iterator it = gestures->begin();
-      for (; it != gestures->end(); it++) {
-        (*it)->latency()->MergeWith(*event.latency());
-        // Inheriting the trace_id from the touch event's LatencyInfo
-        (*it)->latency()->trace_id = event.latency()->trace_id;
-      }
+    ui::LatencyInfo* touch_latency =
+        const_cast<ui::LatencyInfo*>(event.latency());
+    touch_latency->AddLatencyNumber(
+        ui::INPUT_EVENT_LATENCY_TERMINATED_TOUCH_COMPONENT, 0, 0);
+    GestureSequence::Gestures::iterator it = gestures->begin();
+    for (; it != gestures->end(); it++) {
+      ui::LatencyInfo* gesture_latency = (*it)->latency();
+      *gesture_latency = *touch_latency;
+      gesture_latency->trace_id = -1;
+      gesture_latency->terminated = false;
+      gesture_latency->RemoveLatency(
+          ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT);
     }
   }
 }

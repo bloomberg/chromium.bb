@@ -107,6 +107,8 @@ struct EVENTS_BASE_EXPORT LatencyInfo {
                    int64 id,
                    LatencyComponent* output) const;
 
+  void RemoveLatency(LatencyComponentType type);
+
   void Clear();
 
   LatencyMap latency_components;
