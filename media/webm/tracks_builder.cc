@@ -118,10 +118,12 @@ TracksBuilder::~TracksBuilder() {}
 void TracksBuilder::AddTrack(
     int track_num,
     int track_type,
+    int track_uid,
     const std::string& codec_id,
     const std::string& name,
     const std::string& language) {
-  tracks_.push_back(Track(track_num, track_type, codec_id, name, language));
+  tracks_.push_back(Track(track_num, track_type, track_uid, codec_id, name,
+                          language));
 }
 
 std::vector<uint8> TracksBuilder::Finish() {
@@ -159,12 +161,13 @@ void TracksBuilder::WriteTracks(uint8* buf, int buf_size) const {
   }
 }
 
-TracksBuilder::Track::Track(int track_num, int track_type,
+TracksBuilder::Track::Track(int track_num, int track_type, int track_uid,
                             const std::string& codec_id,
                             const std::string& name,
                             const std::string& language)
     : track_num_(track_num),
       track_type_(track_type),
+      track_uid_(track_uid),
       codec_id_(codec_id),
       name_(name),
       language_(language) {
@@ -179,6 +182,7 @@ int TracksBuilder::Track::GetPayloadSize() const {
 
   size += IntElementSize(kWebMIdTrackNumber, track_num_);
   size += IntElementSize(kWebMIdTrackType, track_type_);
+  size += IntElementSize(kWebMIdTrackUID, track_uid_);
 
   if (!codec_id_.empty())
     size += StringElementSize(kWebMIdCodecID, codec_id_);
@@ -197,6 +201,7 @@ void TracksBuilder::Track::Write(uint8** buf, int* buf_size) const {
 
   WriteIntElement(buf, buf_size, kWebMIdTrackNumber, track_num_);
   WriteIntElement(buf, buf_size, kWebMIdTrackType, track_type_);
+  WriteIntElement(buf, buf_size, kWebMIdTrackUID, track_uid_);
 
   if (!codec_id_.empty())
     WriteStringElement(buf, buf_size, kWebMIdCodecID, codec_id_);

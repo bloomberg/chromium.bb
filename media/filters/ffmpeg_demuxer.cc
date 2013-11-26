@@ -482,7 +482,10 @@ void FFmpegDemuxer::AddTextStreams() {
     std::string title = stream->GetMetadata("title");
     std::string language = stream->GetMetadata("language");
 
-    host_->AddTextStream(stream, TextTrackConfig(kind, title, language));
+    // TODO: Implement "id" metadata in FFMPEG.
+    // See: http://crbug.com/323183
+    host_->AddTextStream(stream, TextTrackConfig(kind, title, language,
+        std::string()));
   }
 }
 

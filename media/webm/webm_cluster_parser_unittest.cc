@@ -376,7 +376,8 @@ TEST_F(WebMClusterParserTest, ParseTextTracks) {
   TextTracks text_tracks;
 
   text_tracks.insert(std::make_pair(TextTracks::key_type(kTextTrackNum),
-                                    TextTrackConfig(kTextSubtitles, "", "")));
+                                    TextTrackConfig(kTextSubtitles, "", "",
+                                                    "")));
 
   parser_.reset(new WebMClusterParser(kTimecodeScale,
                                       kAudioTrackNum,
@@ -411,7 +412,8 @@ TEST_F(WebMClusterParserTest, TextTracksSimpleBlock) {
   WebMTracksParser::TextTracks text_tracks;
 
   text_tracks.insert(std::make_pair(TextTracks::key_type(kTextTrackNum),
-                                    TextTrackConfig(kTextSubtitles, "", "")));
+                                    TextTrackConfig(kTextSubtitles, "", "",
+                                                    "")));
 
   parser_.reset(new WebMClusterParser(kTimecodeScale,
                                       kAudioTrackNum,
@@ -442,10 +444,12 @@ TEST_F(WebMClusterParserTest, ParseMultipleTextTracks) {
   const int kCaptionTextTrackNum = kTextTrackNum + 1;
 
   text_tracks.insert(std::make_pair(TextTracks::key_type(kSubtitleTextTrackNum),
-                                    TextTrackConfig(kTextSubtitles, "", "")));
+                                    TextTrackConfig(kTextSubtitles, "", "",
+                                                    "")));
 
   text_tracks.insert(std::make_pair(TextTracks::key_type(kCaptionTextTrackNum),
-                                    TextTrackConfig(kTextCaptions, "", "")));
+                                    TextTrackConfig(kTextCaptions, "", "",
+                                                    "")));
 
   parser_.reset(new WebMClusterParser(kTimecodeScale,
                                       kAudioTrackNum,

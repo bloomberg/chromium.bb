@@ -1005,9 +1005,11 @@ void WebMediaPlayerImpl::OnAddTextTrack(
       blink::WebString::fromUTF8(config.label());
   const blink::WebString web_language =
       blink::WebString::fromUTF8(config.language());
+  const blink::WebString web_id =
+      blink::WebString::fromUTF8(config.id());
 
   scoped_ptr<WebInbandTextTrackImpl> web_inband_text_track(
-      new WebInbandTextTrackImpl(web_kind, web_label, web_language,
+      new WebInbandTextTrackImpl(web_kind, web_label, web_language, web_id,
                                  text_track_index_++));
 
   scoped_ptr<media::TextTrack> text_track(

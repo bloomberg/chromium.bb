@@ -208,14 +208,16 @@ class ChunkDemuxerTest : public testing::Test {
       // We need it to also handle the creation of multiple text tracks.
       //
       // This is the track entry for a text track,
-      // TrackEntry [AE], size=26
+      // TrackEntry [AE], size=30
       //   TrackNum [D7], size=1, val=3
+      //   TrackUID [73] [C5], size=1, value=3
       //   TrackType [83], size=1, val=0x11
       //   CodecId [86], size=18, val="D_WEBVTT/SUBTITLES"
-      const char str[] = "\xAE\x9A\xD7\x81\x03\x83\x81\x11\x86\x92"
+      const char str[] = "\xAE\x9E\xD7\x81\x03\x73\xC5\x81\x03"
+                         "\x83\x81\x11\x86\x92"
                          "D_WEBVTT/SUBTITLES";
       const int len = strlen(str);
-      DCHECK_EQ(len, 28);
+      DCHECK_EQ(len, 32);
       const uint8* const buf = reinterpret_cast<const uint8*>(str);
       text_track_entry = DecoderBuffer::CopyFrom(buf, len);
       tracks_element_size += text_track_entry->data_size();

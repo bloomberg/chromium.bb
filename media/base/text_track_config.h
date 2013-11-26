@@ -25,7 +25,8 @@ class MEDIA_EXPORT TextTrackConfig {
   TextTrackConfig();
   TextTrackConfig(TextKind kind,
                   const std::string& label,
-                  const std::string& language);
+                  const std::string& language,
+                  const std::string& id);
 
   // Returns true if all fields in |config| match this config.
   bool Matches(const TextTrackConfig& config) const;
@@ -33,11 +34,13 @@ class MEDIA_EXPORT TextTrackConfig {
   TextKind kind() const { return kind_; }
   const std::string& label() const { return label_; }
   const std::string& language() const { return language_; }
+  const std::string& id() const { return id_; }
 
  private:
   TextKind kind_;
   std::string label_;
   std::string language_;
+  std::string id_;
 };
 
 }  // namespace media

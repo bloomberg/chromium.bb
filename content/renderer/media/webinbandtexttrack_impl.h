@@ -15,6 +15,7 @@ class WebInbandTextTrackImpl : public blink::WebInbandTextTrack {
   WebInbandTextTrackImpl(Kind kind,
                          const blink::WebString& label,
                          const blink::WebString& language,
+                         const blink::WebString& id,
                          int index);
   virtual ~WebInbandTextTrackImpl();
 
@@ -25,6 +26,7 @@ class WebInbandTextTrackImpl : public blink::WebInbandTextTrack {
 
   virtual blink::WebString label() const;
   virtual blink::WebString language() const;
+  virtual blink::WebString id() const;
 
   virtual int textTrackIndex() const;
 
@@ -33,6 +35,7 @@ class WebInbandTextTrackImpl : public blink::WebInbandTextTrack {
   Kind kind_;
   blink::WebString label_;
   blink::WebString language_;
+  blink::WebString id_;
   int index_;
   DISALLOW_COPY_AND_ASSIGN(WebInbandTextTrackImpl);
 };

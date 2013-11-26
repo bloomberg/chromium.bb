@@ -47,7 +47,7 @@ TEST_F(WebMTracksParserTest, SubtitleNoNameNoLang) {
   InSequence s;
 
   TracksBuilder tb;
-  tb.AddTrack(1, kWebMTrackTypeSubtitlesOrCaptions,
+  tb.AddTrack(1, kWebMTrackTypeSubtitlesOrCaptions, 1,
               kWebMCodecSubtitles, "", "");
 
   const std::vector<uint8> buf = tb.Finish();
@@ -58,7 +58,7 @@ TEST_F(WebMTracksParserTest, SubtitleYesNameNoLang) {
   InSequence s;
 
   TracksBuilder tb;
-  tb.AddTrack(1, kWebMTrackTypeSubtitlesOrCaptions,
+  tb.AddTrack(1, kWebMTrackTypeSubtitlesOrCaptions, 1,
               kWebMCodecSubtitles, "Spock", "");
 
   const std::vector<uint8> buf = tb.Finish();
@@ -69,7 +69,7 @@ TEST_F(WebMTracksParserTest, SubtitleNoNameYesLang) {
   InSequence s;
 
   TracksBuilder tb;
-  tb.AddTrack(1, kWebMTrackTypeSubtitlesOrCaptions,
+  tb.AddTrack(1, kWebMTrackTypeSubtitlesOrCaptions, 1,
               kWebMCodecSubtitles, "", "eng");
 
   const std::vector<uint8> buf = tb.Finish();
@@ -80,7 +80,7 @@ TEST_F(WebMTracksParserTest, SubtitleYesNameYesLang) {
   InSequence s;
 
   TracksBuilder tb;
-  tb.AddTrack(1, kWebMTrackTypeSubtitlesOrCaptions,
+  tb.AddTrack(1, kWebMTrackTypeSubtitlesOrCaptions, 1,
               kWebMCodecSubtitles, "Picard", "fre");
 
   const std::vector<uint8> buf = tb.Finish();
@@ -91,9 +91,9 @@ TEST_F(WebMTracksParserTest, IgnoringTextTracks) {
   InSequence s;
 
   TracksBuilder tb;
-  tb.AddTrack(1, kWebMTrackTypeSubtitlesOrCaptions,
+  tb.AddTrack(1, kWebMTrackTypeSubtitlesOrCaptions, 1,
               kWebMCodecSubtitles, "Subtitles", "fre");
-  tb.AddTrack(2, kWebMTrackTypeSubtitlesOrCaptions,
+  tb.AddTrack(2, kWebMTrackTypeSubtitlesOrCaptions, 2,
               kWebMCodecSubtitles, "Commentary", "fre");
 
   const std::vector<uint8> buf = tb.Finish();

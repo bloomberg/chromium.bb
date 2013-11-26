@@ -86,7 +86,7 @@ class TextRendererTest : public testing::Test {
     if (expect_read)
       ExpectRead(idx);
 
-    const TextTrackConfig config(kind, name, language);
+    const TextTrackConfig config(kind, name, language, std::string());
     text_renderer_->AddTextStream(text_track_streams_.back(), config);
     message_loop_.RunUntilIdle();
 

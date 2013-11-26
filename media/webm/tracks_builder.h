@@ -18,8 +18,9 @@ class TracksBuilder {
   TracksBuilder();
   ~TracksBuilder();
 
-  void AddTrack(int track_num, int track_type, const std::string& codec_id,
-                const std::string& name, const std::string& language);
+  void AddTrack(int track_num, int track_type, int track_uid,
+                const std::string& codec_id, const std::string& name,
+                const std::string& language);
 
   std::vector<uint8> Finish();
 
@@ -30,8 +31,9 @@ class TracksBuilder {
 
   class Track {
    public:
-    Track(int track_num, int track_type, const std::string& codec_id,
-          const std::string& name, const std::string& language);
+    Track(int track_num, int track_type, int track_uid,
+          const std::string& codec_id, const std::string& name,
+          const std::string& language);
 
     int GetSize() const;
     void Write(uint8** buf, int* buf_size) const;
@@ -40,6 +42,7 @@ class TracksBuilder {
 
     int track_num_;
     int track_type_;
+    int track_uid_;
     std::string codec_id_;
     std::string name_;
     std::string language_;

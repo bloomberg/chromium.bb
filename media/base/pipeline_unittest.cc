@@ -194,7 +194,7 @@ class PipelineTest : public ::testing::Test {
     EXPECT_CALL(*this, OnAddTextTrack(_,_))
         .WillOnce(Invoke(this, &PipelineTest::DoOnAddTextTrack));
     static_cast<DemuxerHost*>(pipeline_.get())->AddTextStream(text_stream(),
-                              TextTrackConfig(kTextSubtitles, "", ""));
+                              TextTrackConfig(kTextSubtitles, "", "", ""));
   }
 
   // Sets up expectations on the callback and initializes the pipeline.  Called
