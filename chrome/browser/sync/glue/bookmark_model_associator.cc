@@ -706,13 +706,10 @@ bool BookmarkModelAssociator::CryptoReadyIfNecessary() {
 syncer::SyncError BookmarkModelAssociator::CheckModelSyncState(
     syncer::SyncMergeResult* local_merge_result,
     syncer::SyncMergeResult* syncer_merge_result) const {
-  std::string version_str;
-  if (bookmark_model_->root_node()->GetMetaInfo(kBookmarkTransactionVersionKey,
-                                                &version_str)) {
+  int64 native_version =
+      bookmark_model_->root_node()->sync_transaction_version();
+  if (native_version != syncer::syncable::kInvalidTransactionVersion) {
     syncer::ReadTransaction trans(FROM_HERE, user_share_);
-    int64 native_version = syncer::syncable::kInvalidTransactionVersion;
-    if (!base::StringToInt64(version_str, &native_version))
-      return syncer::SyncError();
     local_merge_result->set_pre_association_version(native_version);
 
     int64 sync_version = trans.GetModelVersion(syncer::BOOKMARKS);
@@ -724,8 +721,9 @@ syncer::SyncError BookmarkModelAssociator::CheckModelSyncState(
                                 syncer::MODEL_TYPE_COUNT);
 
       // Clear version on bookmark model so that we only report error once.
-      bookmark_model_->DeleteNodeMetaInfo(bookmark_model_->root_node(),
-                                          kBookmarkTransactionVersionKey);
+      bookmark_model_->SetNodeSyncTransactionVersion(
+          bookmark_model_->root_node(),
+          syncer::syncable::kInvalidTransactionVersion);
 
       // If the native version is higher, there was a sync persistence failure,
       // and we need to delay association until after a GetUpdates.

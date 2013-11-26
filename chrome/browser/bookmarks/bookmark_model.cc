@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/i18n/string_compare.h"
-#include "base/json/json_string_value_serializer.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -76,6 +75,8 @@ const char16 kInvalidChars[] = {
 
 // BookmarkNode ---------------------------------------------------------------
 
+const int64 BookmarkNode::kInvalidSyncTransactionVersion = -1;
+
 BookmarkNode::BookmarkNode(const GURL& url)
     : url_(url) {
   Initialize(0);
@@ -103,57 +104,54 @@ bool BookmarkNode::IsVisible() const {
 
 bool BookmarkNode::GetMetaInfo(const std::string& key,
                                std::string* value) const {
-  if (meta_info_str_.empty())
+  if (!meta_info_map_)
     return false;
 
-  JSONStringValueSerializer serializer(meta_info_str_);
-  scoped_ptr<DictionaryValue> meta_dict(
-      static_cast<DictionaryValue*>(serializer.Deserialize(NULL, NULL)));
-  return meta_dict.get() ? meta_dict->GetString(key, value) : false;
+  MetaInfoMap::const_iterator it = meta_info_map_->find(key);
+  if (it == meta_info_map_->end())
+    return false;
+
+  *value = it->second;
+  return true;
 }
 
 bool BookmarkNode::SetMetaInfo(const std::string& key,
                                const std::string& value) {
-  JSONStringValueSerializer serializer(&meta_info_str_);
-  scoped_ptr<DictionaryValue> meta_dict;
-  if (!meta_info_str_.empty()) {
-    meta_dict.reset(
-        static_cast<DictionaryValue*>(serializer.Deserialize(NULL, NULL)));
+  if (!meta_info_map_)
+    meta_info_map_.reset(new MetaInfoMap);
+
+  MetaInfoMap::iterator it = meta_info_map_->find(key);
+  if (it == meta_info_map_->end()) {
+    (*meta_info_map_)[key] = value;
+    return true;
   }
-  if (!meta_dict.get()) {
-    meta_dict.reset(new DictionaryValue);
-  } else {
-    std::string old_value;
-    if (meta_dict->GetString(key, &old_value) && old_value == value)
-      return false;
-  }
-  meta_dict->SetString(key, value);
-  serializer.Serialize(*meta_dict);
-  std::string(meta_info_str_.data(), meta_info_str_.size()).swap(
-      meta_info_str_);
+  // Key already in map, check if the value has changed.
+  if (it->second == value)
+    return false;
+  it->second = value;
   return true;
 }
 
 bool BookmarkNode::DeleteMetaInfo(const std::string& key) {
-  if (meta_info_str_.empty())
+  if (!meta_info_map_)
     return false;
-
-  JSONStringValueSerializer serializer(&meta_info_str_);
-  scoped_ptr<DictionaryValue> meta_dict(
-      static_cast<DictionaryValue*>(serializer.Deserialize(NULL, NULL)));
-  if (meta_dict.get() && meta_dict->Remove(key, NULL)) {
-    if (!HasValues(*meta_dict)) {
-      meta_info_str_.clear();
-    } else {
-      serializer.Serialize(*meta_dict);
-      std::string(meta_info_str_.data(), meta_info_str_.size()).swap(
-          meta_info_str_);
-    }
-    return true;
-  } else {
-    return false;
-  }
+  bool erased = meta_info_map_->erase(key) != 0;
+  if (meta_info_map_->empty())
+    meta_info_map_.reset();
+  return erased;
 }
+
+void BookmarkNode::SetMetaInfoMap(const MetaInfoMap& meta_info_map) {
+  if (meta_info_map.empty())
+    meta_info_map_.reset();
+  else
+    meta_info_map_.reset(new MetaInfoMap(meta_info_map));
+}
+
+const BookmarkNode::MetaInfoMap* BookmarkNode::GetMetaInfoMap() const {
+  return meta_info_map_.get();
+}
+
 
 void BookmarkNode::Initialize(int64 id) {
   id_ = id;
@@ -161,7 +159,8 @@ void BookmarkNode::Initialize(int64 id) {
   date_added_ = Time::Now();
   favicon_state_ = INVALID_FAVICON;
   favicon_load_task_id_ = CancelableTaskTracker::kBadTaskId;
-  meta_info_str_.clear();
+  meta_info_map_.reset();
+  sync_transaction_version_ = kInvalidSyncTransactionVersion;
 }
 
 void BookmarkNode::InvalidateFavicon() {
@@ -496,9 +495,10 @@ void BookmarkModel::SetURL(const BookmarkNode* node, const GURL& url) {
 void BookmarkModel::SetNodeMetaInfo(const BookmarkNode* node,
                                     const std::string& key,
                                     const std::string& value) {
-  // TODO(noyau): Right now the notification is send even if the meta info
-  // doesn't change. Checking first with the current API will decode the meta
-  // info twice, a non optimal solution.
+  std::string old_value;
+  if (node->GetMetaInfo(key, &old_value) && old_value == value)
+    return;
+
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
                     OnWillChangeBookmarkMetaInfo(this, node));
 
@@ -511,6 +511,10 @@ void BookmarkModel::SetNodeMetaInfo(const BookmarkNode* node,
 
 void BookmarkModel::DeleteNodeMetaInfo(const BookmarkNode* node,
                                        const std::string& key) {
+  const BookmarkNode::MetaInfoMap* meta_info_map = node->GetMetaInfoMap();
+  if (!meta_info_map || meta_info_map->find(key) == meta_info_map->end())
+    return;
+
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
                     OnWillChangeBookmarkMetaInfo(this, node));
 
@@ -519,6 +523,17 @@ void BookmarkModel::DeleteNodeMetaInfo(const BookmarkNode* node,
 
   FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
                     BookmarkMetaInfoChanged(this, node));
+}
+
+void BookmarkModel::SetNodeSyncTransactionVersion(
+    const BookmarkNode* node,
+    int64 sync_transaction_version) {
+  if (sync_transaction_version == node->sync_transaction_version())
+    return;
+
+  AsMutable(node)->set_sync_transaction_version(sync_transaction_version);
+  if (store_.get())
+    store_->ScheduleSave();
 }
 
 void BookmarkModel::SetDateAdded(const BookmarkNode* node,
@@ -821,7 +836,8 @@ void BookmarkModel::DoneLoading(BookmarkLoadDetails* details_delete_me) {
   root_.Add(other_node_, 1);
   root_.Add(mobile_node_, 2);
 
-  root_.set_meta_info_str(details->model_meta_info());
+  root_.SetMetaInfoMap(details->model_meta_info_map());
+  root_.set_sync_transaction_version(details->model_sync_transaction_version());
 
   {
     base::AutoLock url_lock(url_lock_);

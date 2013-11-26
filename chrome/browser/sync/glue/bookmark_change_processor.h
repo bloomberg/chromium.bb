@@ -25,8 +25,6 @@ class WriteTransaction;
 
 namespace browser_sync {
 
-extern const char kBookmarkTransactionVersionKey[];
-
 // This class is responsible for taking changes from the BookmarkModel
 // and applying them to the sync API 'syncable' model, and vice versa.
 // All operations and use of this class are from the UI thread.

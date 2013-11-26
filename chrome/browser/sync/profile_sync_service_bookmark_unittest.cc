@@ -1842,10 +1842,8 @@ void GetTransactionVersions(
     const BookmarkNode* n = nodes.front();
     nodes.pop();
 
-    std::string version_str;
-    int64 version;
-    EXPECT_TRUE(n->GetMetaInfo(kBookmarkTransactionVersionKey, &version_str));
-    EXPECT_TRUE(base::StringToInt64(version_str, &version));
+    int64 version = n->sync_transaction_version();
+    EXPECT_NE(BookmarkNode::kInvalidSyncTransactionVersion, version);
 
     (*node_versions)[n->id()] = version;
     for (int i = 0; i < n->child_count(); ++i)
@@ -1960,8 +1958,7 @@ TEST_F(ProfileSyncServiceBookmarkTestWithData, PersistenceError) {
   // Now shut down sync and artificially increment the native model's version.
   StopSync();
   int64 root_version = initial_versions[model_->root_node()->id()];
-  model_->SetNodeMetaInfo(model_->root_node(), kBookmarkTransactionVersionKey,
-                          base::Int64ToString(root_version+1));
+  model_->SetNodeSyncTransactionVersion(model_->root_node(), root_version + 1);
 
   // Upon association, bookmarks should fail to associate.
   EXPECT_FALSE(AssociateModels());

@@ -8,6 +8,7 @@
 #include "base/files/important_file_writer.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 
 class BookmarkIndex;
 class BookmarkModel;
@@ -55,9 +56,18 @@ class BookmarkLoadDetails {
   BookmarkIndex* index() { return index_.get(); }
   BookmarkIndex* release_index() { return index_.release(); }
 
-  const std::string& model_meta_info() { return model_meta_info_; }
-  void set_model_meta_info(const std::string& meta_info) {
-    model_meta_info_ = meta_info;
+  const BookmarkNode::MetaInfoMap& model_meta_info_map() const {
+    return model_meta_info_map_;
+  }
+  void set_model_meta_info_map(const BookmarkNode::MetaInfoMap& meta_info_map) {
+    model_meta_info_map_ = meta_info_map;
+  }
+
+  int64 model_sync_transaction_version() const {
+    return model_sync_transaction_version_;
+  }
+  void set_model_sync_transaction_version(int64 sync_transaction_version) {
+    model_sync_transaction_version_ = sync_transaction_version;
   }
 
   // Max id of the nodes.
@@ -88,7 +98,8 @@ class BookmarkLoadDetails {
   scoped_ptr<BookmarkPermanentNode> other_folder_node_;
   scoped_ptr<BookmarkPermanentNode> mobile_folder_node_;
   scoped_ptr<BookmarkIndex> index_;
-  std::string model_meta_info_;
+  BookmarkNode::MetaInfoMap model_meta_info_map_;
+  int64 model_sync_transaction_version_;
   int64 max_id_;
   std::string computed_checksum_;
   std::string stored_checksum_;

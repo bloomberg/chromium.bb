@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_BOOKMARKS_BOOKMARK_MODEL_H_
 #define CHROME_BROWSER_BOOKMARKS_BOOKMARK_MODEL_H_
 
+#include <map>
 #include <set>
 #include <vector>
 
@@ -61,6 +62,10 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
     LOADING_FAVICON,
     LOADED_FAVICON,
   };
+
+  typedef std::map<std::string, std::string> MetaInfoMap;
+
+  static const int64 kInvalidSyncTransactionVersion;
 
   // Creates a new node with an id of 0 and |url|.
   explicit BookmarkNode(const GURL& url);
@@ -123,11 +128,16 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   bool GetMetaInfo(const std::string& key, std::string* value) const;
   bool SetMetaInfo(const std::string& key, const std::string& value);
   bool DeleteMetaInfo(const std::string& key);
-  void set_meta_info_str(const std::string& meta_info_str) {
-    meta_info_str_.reserve(meta_info_str.size());
-    meta_info_str_ = meta_info_str.substr(0);
+  void SetMetaInfoMap(const MetaInfoMap& meta_info_map);
+  // Returns NULL if there are no values in the map.
+  const MetaInfoMap* GetMetaInfoMap() const;
+
+  void set_sync_transaction_version(int64 sync_transaction_version) {
+    sync_transaction_version_ = sync_transaction_version;
   }
-  const std::string& meta_info_str() const { return meta_info_str_; }
+  int64 sync_transaction_version() const {
+    return sync_transaction_version_;
+  }
 
   // TODO(sky): Consider adding last visit time here, it'll greatly simplify
   // HistoryContentsProvider.
@@ -188,9 +198,11 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // favicon and the task is tracked by CancelabelTaskTracker.
   CancelableTaskTracker::TaskId favicon_load_task_id_;
 
-  // A JSON string representing a DictionaryValue that stores arbitrary meta
-  // information about the node. Use serialized format to save memory.
-  std::string meta_info_str_;
+  // A map that stores arbitrary meta information about the node.
+  scoped_ptr<MetaInfoMap> meta_info_map_;
+
+  // The sync transaction version. Defaults to kInvalidSyncTransactionVersion.
+  int64 sync_transaction_version_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkNode);
 };
@@ -412,6 +424,10 @@ class BookmarkModel : public content::NotificationObserver,
                        const std::string& value);
   void DeleteNodeMetaInfo(const BookmarkNode* node,
                           const std::string& key);
+
+  // Sets the sync transaction version of |node|.
+  void SetNodeSyncTransactionVersion(const BookmarkNode* node,
+                                     int64 sync_transaction_version);
 
  private:
   friend class BookmarkCodecTest;

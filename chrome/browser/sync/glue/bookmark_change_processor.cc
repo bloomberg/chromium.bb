@@ -40,9 +40,6 @@ namespace browser_sync {
 
 static const char kMobileBookmarksTag[] = "synced_bookmarks";
 
-// Key for sync transaction version in bookmark node meta info.
-const char kBookmarkTransactionVersionKey[] = "sync.transaction_version";
-
 BookmarkChangeProcessor::BookmarkChangeProcessor(
     BookmarkModelAssociator* model_associator,
     DataTypeErrorHandler* error_handler)
@@ -642,8 +639,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
     }
 
     to_reposition.insert(std::make_pair(src.GetPositionIndex(), dst));
-    bookmark_model_->SetNodeMetaInfo(dst, kBookmarkTransactionVersionKey,
-                                     base::Int64ToString(model_version));
+    bookmark_model_->SetNodeSyncTransactionVersion(dst, model_version);
   }
 
   // When we added or updated bookmarks in the previous loop, we placed them to
@@ -678,8 +674,7 @@ void BookmarkChangeProcessor::ApplyChangesFromSyncModel(
 
   // All changes are applied in bookmark model. Set transaction version on
   // bookmark model to mark as synced.
-  model->SetNodeMetaInfo(model->root_node(), kBookmarkTransactionVersionKey,
-                         base::Int64ToString(model_version));
+  model->SetNodeSyncTransactionVersion(model->root_node(), model_version);
 }
 
 // Static.
@@ -709,11 +704,9 @@ void BookmarkChangeProcessor::UpdateTransactionVersion(
     BookmarkModel* model,
     const std::vector<const BookmarkNode*>& nodes) {
   if (new_version != syncer::syncable::kInvalidTransactionVersion) {
-    model->SetNodeMetaInfo(model->root_node(), kBookmarkTransactionVersionKey,
-                           base::Int64ToString(new_version));
+    model->SetNodeSyncTransactionVersion(model->root_node(), new_version);
     for (size_t i = 0; i < nodes.size(); ++i) {
-      model->SetNodeMetaInfo(nodes[i], kBookmarkTransactionVersionKey,
-                             base::Int64ToString(new_version));
+      model->SetNodeSyncTransactionVersion(nodes[i], new_version);
     }
   }
 }

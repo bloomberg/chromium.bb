@@ -7,6 +7,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -148,7 +149,11 @@ class BookmarkCodecTest : public testing::Test {
                                 AsMutable(model->mobile_node()),
                                 &max_id, value);
     model->set_next_node_id(max_id);
-    AsMutable(model->root_node())->set_meta_info_str(codec->model_meta_info());
+    AsMutable(model->root_node())->
+        SetMetaInfoMap(codec->model_meta_info_map());
+    AsMutable(model->root_node())->
+        set_sync_transaction_version(codec->model_sync_transaction_version());
+
     return result;
   }
 
@@ -386,4 +391,62 @@ TEST_F(BookmarkCodecTest, EncodeAndDecodeMetaInfo) {
   EXPECT_TRUE(child->GetMetaInfo("node_info", &meta_value));
   EXPECT_EQ("value2", meta_value);
   EXPECT_FALSE(child->GetMetaInfo("other_key", &meta_value));
+}
+
+TEST_F(BookmarkCodecTest, EncodeAndDecodeSyncTransactionVersion) {
+  // Add sync transaction version and encode.
+  scoped_ptr<BookmarkModel> model(CreateTestModel2());
+  model->SetNodeSyncTransactionVersion(model->root_node(), 1);
+  const BookmarkNode* bbn = model->bookmark_bar_node();
+  model->SetNodeSyncTransactionVersion(bbn->GetChild(1), 42);
+
+  std::string checksum;
+  scoped_ptr<Value> value(EncodeHelper(model.get(), &checksum));
+  ASSERT_TRUE(value.get() != NULL);
+
+  // Decode and verify.
+  model.reset(DecodeHelper(*value, checksum, &checksum, false));
+  EXPECT_EQ(1, model->root_node()->sync_transaction_version());
+  bbn = model->bookmark_bar_node();
+  EXPECT_EQ(42, bbn->GetChild(1)->sync_transaction_version());
+  EXPECT_EQ(BookmarkNode::kInvalidSyncTransactionVersion,
+            bbn->GetChild(0)->sync_transaction_version());
+}
+
+// Verifies that we can still decode the old codec format after changing the
+// way meta info is stored.
+TEST_F(BookmarkCodecTest, CanDecodeMetaInfoAsString) {
+  base::FilePath test_data_directory;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory));
+  base::FilePath test_file = test_data_directory.AppendASCII(
+      "bookmarks/meta_info_as_string.json");
+  ASSERT_TRUE(base::PathExists(test_file));
+
+  JSONFileValueSerializer serializer(test_file);
+  scoped_ptr<Value> root(serializer.Deserialize(NULL, NULL));
+
+  BookmarkModel model(NULL);
+  BookmarkCodec decoder;
+  ASSERT_TRUE(Decode(&decoder, &model, *root.get()));
+
+  EXPECT_EQ(1, model.root_node()->sync_transaction_version());
+  const BookmarkNode* bbn = model.bookmark_bar_node();
+  EXPECT_EQ(BookmarkNode::kInvalidSyncTransactionVersion,
+            bbn->GetChild(0)->sync_transaction_version());
+  EXPECT_EQ(42, bbn->GetChild(1)->sync_transaction_version());
+
+  const char kSyncTransactionVersionKey[] = "sync.transaction_version";
+  const char kNormalKey[] = "key";
+  const char kNestedKey[] = "nested.key";
+  std::string meta_value;
+  EXPECT_FALSE(model.root_node()->GetMetaInfo(kSyncTransactionVersionKey,
+                                               &meta_value));
+  EXPECT_FALSE(bbn->GetChild(1)->GetMetaInfo(kSyncTransactionVersionKey,
+                                             &meta_value));
+  EXPECT_TRUE(bbn->GetChild(0)->GetMetaInfo(kNormalKey, &meta_value));
+  EXPECT_EQ("value", meta_value);
+  EXPECT_TRUE(bbn->GetChild(1)->GetMetaInfo(kNormalKey, &meta_value));
+  EXPECT_EQ("value2", meta_value);
+  EXPECT_TRUE(bbn->GetChild(0)->GetMetaInfo(kNestedKey, &meta_value));
+  EXPECT_EQ("value3", meta_value);
 }

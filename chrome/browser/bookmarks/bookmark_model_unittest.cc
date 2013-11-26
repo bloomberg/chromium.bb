@@ -1091,7 +1091,7 @@ TEST_F(BookmarkModelTest, MultipleExtensiveChangesObserver) {
 TEST(BookmarkNodeTest, NodeMetaInfo) {
   GURL url;
   BookmarkNode node(url);
-  EXPECT_TRUE(node.meta_info_str().empty());
+  EXPECT_FALSE(node.GetMetaInfoMap());
 
   EXPECT_TRUE(node.SetMetaInfo("key1", "value1"));
   std::string out_value;
@@ -1117,7 +1117,7 @@ TEST(BookmarkNodeTest, NodeMetaInfo) {
   EXPECT_FALSE(node.GetMetaInfo("key2.subkey1", &out_value));
   EXPECT_FALSE(node.GetMetaInfo("key2.subkey2", &out_value));
   EXPECT_FALSE(node.GetMetaInfo("key2.subkey2.leaf", &out_value));
-  EXPECT_TRUE(node.meta_info_str().empty());
+  EXPECT_FALSE(node.GetMetaInfoMap());
 }
 
 }  // namespace
