@@ -458,8 +458,18 @@ gfx::Rect NativeAppWindowViews::GetRestoredBounds() const {
 ui::WindowShowState NativeAppWindowViews::GetRestoredState() const {
   if (IsMaximized())
     return ui::SHOW_STATE_MAXIMIZED;
-  if (IsFullscreen())
+  if (IsFullscreen()) {
+#if defined(USE_ASH)
+    if (immersive_fullscreen_controller_.get() &&
+        immersive_fullscreen_controller_->IsEnabled()) {
+      // Restore windows which were previously in immersive fullscreen to
+      // maximized. Restoring the window to a different fullscreen type
+      // makes for a bad experience.
+      return ui::SHOW_STATE_MAXIMIZED;
+    }
+#endif
     return ui::SHOW_STATE_FULLSCREEN;
+  }
 #if defined(USE_ASH)
   // Use kRestoreShowStateKey in case a window is minimized/hidden.
   ui::WindowShowState restore_state =
