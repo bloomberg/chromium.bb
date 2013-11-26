@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
@@ -109,6 +110,10 @@ DeviceSettingsProvider::DeviceSettingsProvider(
       ownership_status_(device_settings_service_->GetOwnershipStatus()),
       store_callback_factory_(this) {
   device_settings_service_->AddObserver(this);
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->AddObserver(this,
+                                                                FROM_HERE);
+  }
 
   if (!UpdateFromService()) {
     // Make sure we have at least the cache data immediately.
@@ -118,6 +123,10 @@ DeviceSettingsProvider::DeviceSettingsProvider(
 
 DeviceSettingsProvider::~DeviceSettingsProvider() {
   device_settings_service_->RemoveObserver(this);
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
+                                                                   FROM_HERE);
+  }
 }
 
 // static
@@ -820,6 +829,9 @@ void DeviceSettingsProvider::ApplyMetricsSetting(bool use_file,
 }
 
 void DeviceSettingsProvider::ApplyRoamingSetting(bool new_value) {
+  // TODO(pneubeck): Move this application of the roaming policy to
+  // NetworkConfigurationUpdater and ManagedNetworkConfigurationHandler. See
+  // http://crbug.com/323537 .
   // TODO(armansito): Look up the device by explicitly using the device path.
   const DeviceState* cellular =
       NetworkHandler::Get()->network_state_handler()->GetDeviceStateByType(
@@ -851,6 +863,14 @@ void DeviceSettingsProvider::ApplyRoamingSetting(bool new_value) {
       base::Bind(&LogShillError));
 }
 
+void DeviceSettingsProvider::ApplyRoamingSettingFromProto(
+    const em::ChromeDeviceSettingsProto& settings) {
+  ApplyRoamingSetting(
+      settings.has_data_roaming_enabled() ?
+          settings.data_roaming_enabled().data_roaming_enabled() :
+          false);
+}
+
 void DeviceSettingsProvider::ApplySideEffects(
     const em::ChromeDeviceSettingsProto& settings) {
   // First migrate metrics settings as needed.
@@ -860,10 +880,7 @@ void DeviceSettingsProvider::ApplySideEffects(
     ApplyMetricsSetting(true, false);
 
   // Next set the roaming setting as needed.
-  ApplyRoamingSetting(
-      settings.has_data_roaming_enabled() ?
-          settings.data_roaming_enabled().data_roaming_enabled() :
-          false);
+  ApplyRoamingSettingFromProto(settings);
 }
 
 bool DeviceSettingsProvider::MitigateMissingPolicy() {
@@ -916,6 +933,10 @@ DeviceSettingsProvider::TrustedStatus
 
 bool DeviceSettingsProvider::HandlesSetting(const std::string& path) const {
   return IsDeviceSetting(path);
+}
+
+void DeviceSettingsProvider::DeviceListChanged() {
+  ApplyRoamingSettingFromProto(device_settings_);
 }
 
 DeviceSettingsProvider::TrustedStatus
