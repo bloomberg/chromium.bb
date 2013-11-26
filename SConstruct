@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 import atexit
+import json
 import os
 import platform
 import re
@@ -60,7 +61,21 @@ def PrintFinalReport():
     for k in sorted(ENV_COUNTER.keys()):
       print "%4d  %s" % (ENV_COUNTER[k], k)
 
-  failures = GetBuildFailures()
+  failures = []
+  for failure in GetBuildFailures():
+    for node in Flatten(failure.node):
+      failures.append({
+          # If this wasn't a test, "GetTestName" will return raw_name.
+          'test_name': GetTestName(node),
+          'raw_name': str(node.path),
+          'errstr': failure.errstr
+      })
+
+  json_path = ARGUMENTS.get('json_build_results_output_file')
+  if json_path:
+    with open(json_path, 'w') as f:
+      json.dump(failures, f, sort_keys=True, indent=2)
+
   if not failures:
     return
 
@@ -69,14 +84,11 @@ def PrintFinalReport():
   print 'ERROR REPORT: %d failures' % len(failures)
   print '*' * 70
   print
-  for f in failures:
-    for node in Flatten(f.node):
-      test_name = GetTestName(node)
-      raw_name = str(node.path)
-      # If this wasn't a test, "GetTestName" will return raw_name.
-      if test_name != raw_name:
-        test_name = '%s (%s)' % (test_name, raw_name)
-      print "%s failed: %s\n" % (test_name, f.errstr)
+  for failure in failures:
+    test_name = failure['test_name']
+    if test_name != failure['raw_name']:
+      test_name = '%s (%s)' % (test_name, failure['raw_name'])
+    print "%s failed: %s\n" % (test_name, failure['errstr'])
 
 atexit.register(PrintFinalReport)
 
@@ -119,6 +131,8 @@ ACCEPTABLE_ARGUMENTS = set([
     'force_sel_ldr',
     # force irt image used by tests
     'force_irt',
+    # Path to a JSON file for machine-readable output.
+    'json_build_results_output_file',
     # Replacement memcheck command for overriding the DEPS-in memcheck
     # script.  May have commas to separate separate shell args.  There
     # is no quoting, so this implies that this mechanism will fail if
