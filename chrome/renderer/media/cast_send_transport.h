@@ -91,9 +91,6 @@ class CastSendTransport {
   // Return parameters set to this transport.
   CastRtpParams GetParams();
 
-  // Return the best parameters given the capabilities of remote peer.
-  CastRtpParams CreateParams(const CastRtpCaps& remote_caps);
-
   // Begin encoding of media stream and then submit the encoded streams
   // to underlying transport.
   void Start(const CastRtpParams& params);

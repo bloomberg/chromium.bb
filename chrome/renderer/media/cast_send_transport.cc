@@ -138,13 +138,6 @@ CastRtpParams CastSendTransport::GetParams() {
   return params_;
 }
 
-CastRtpParams CastSendTransport::CreateParams(
-    const CastRtpCaps& remote_caps) {
-  // TODO(hclam): Filter out the parameters based on remote capabilities.
-  // For now always return the default caps as parameters.
-  return GetCaps();
-}
-
 void CastSendTransport::Start(const CastRtpParams& params) {
   if (IsAudio()) {
     AudioSenderConfig config;

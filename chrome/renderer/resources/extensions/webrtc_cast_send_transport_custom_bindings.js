@@ -22,10 +22,6 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
       function(transportId) {
         return webrtc.GetCapsCastSendTransport(transportId);
   });
-  apiFunctions.setHandleRequest('createParams',
-      function(transportId, remoteCaps) {
-        return webrtc.CreateParamsCastSendTransport(transportId, remoteCaps);
-  });
   apiFunctions.setHandleRequest('start',
       function(transportId, params) {
         webrtc.StartCastSendTransport(transportId, params);

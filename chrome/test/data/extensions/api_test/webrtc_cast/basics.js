@@ -8,94 +8,87 @@ var udpTransport = chrome.webrtc.castUdpTransport;
 
 chrome.test.runTests([
   function udpTransportCreate() {
-    udpTransport.create(function(info) {
+    udpTransport.create(function(udpId) {
       udpTransport.start(
-          info.transportId,
+          udpId,
           {address: "127.0.0.1", port: 60613});
-      udpTransport.stop(info.transportId);
-      udpTransport.destroy(info.transportId);
+      udpTransport.destroy(udpId);
       chrome.test.succeed();
     });
   },
   function sendTransportCreate() {
     tabCapture.capture({audio: true}, function(stream) {
       chrome.test.assertTrue(!!stream);
-      udpTransport.create(function(stream, udpInfo) {
+      udpTransport.create(function(stream, udpId) {
         sendTransport.create(
-            udpInfo.transportId,
+            udpId,
             stream.getAudioTracks()[0],
-            function(stream, udpInfo, sendTransportId) {
+            function(stream, udpId, sendTransportId) {
           sendTransport.destroy(sendTransportId);
-          udpTransport.destroy(udpInfo.transportId);
+          udpTransport.destroy(udpId);
           stream.stop();
           chrome.test.succeed();
-        }.bind(null, stream, udpInfo));
+        }.bind(null, stream, udpId));
       }.bind(null, stream));
     });
   },
   function sendTransportGetCapsAudio() {
     tabCapture.capture({audio: true}, function(stream) {
       chrome.test.assertTrue(!!stream);
-      udpTransport.create(function(stream, udpInfo) {
+      udpTransport.create(function(stream, udpId) {
         sendTransport.create(
-            udpInfo.transportId,
+            udpId,
             stream.getAudioTracks()[0],
-            function(stream, udpInfo, sendTransportId) {
+            function(stream, udpId, sendTransportId) {
           var caps = sendTransport.getCaps(sendTransportId);
           sendTransport.destroy(sendTransportId);
-          udpTransport.destroy(udpInfo.transportId);
+          udpTransport.destroy(udpId);
           stream.stop();
           chrome.test.assertEq(caps.payloads[0].codecName, "OPUS");
           chrome.test.succeed();
-        }.bind(null, stream, udpInfo));
-      }.bind(null, stream));
-    });
-  },
-  function sendTransportCreateParams() {
-    tabCapture.capture({audio: true}, function(stream) {
-      chrome.test.assertTrue(!!stream);
-      udpTransport.create(function(stream, udpInfo) {
-        sendTransport.create(
-            udpInfo.transportId,
-            stream.getAudioTracks()[0],
-            function(stream, udpInfo, sendTransportId) {
-          // TODO(hclam): Pass a valid value for |remoteCaps|.
-          var remoteCaps = {
-            payloads: [],
-            rtcpFeatures: [],
-            fecMechanisms: [],
-          };
-          var params = sendTransport.createParams(sendTransportId, remoteCaps);
-          sendTransport.destroy(sendTransportId);
-          udpTransport.destroy(udpInfo.transportId);
-          stream.stop();
-          chrome.test.assertEq(params.payloads[0].codecName, "OPUS");
-          chrome.test.succeed();
-        }.bind(null, stream, udpInfo));
+        }.bind(null, stream, udpId));
       }.bind(null, stream));
     });
   },
   function sendTransportStart() {
-    tabCapture.capture({audio: true}, function(stream) {
+    function startId(id) {
+      sendTransport.start(id,sendTransport.getCaps(id));
+    }
+    function cleanupId(id) {
+      sendTransport.stop(id);
+      sendTransport.destroy(id);
+    }
+
+    console.log("Caputre MediaStream...");
+    tabCapture.capture({audio: true, video: true}, function(stream) {
+      console.log("Got MediaStream.");
+
       chrome.test.assertTrue(!!stream);
-      udpTransport.create(function(stream, udpInfo) {
+      udpTransport.create(function(stream, udpId) {
+        console.log("Got udp transport.");
+
+        // Create a transport for audio.
         sendTransport.create(
-            udpInfo.transportId,
+            udpId,
             stream.getAudioTracks()[0],
-            function(stream, udpInfo, sendTransportId) {
-          // TODO(hclam): Pass a valid value for |params|.
-          var params = {
-            payloads: [],
-            rtcpFeatures: [],
-            fecMechanisms: [],
-          };
-          sendTransport.start(sendTransportId, params);
-          sendTransport.stop(sendTransportId);
-          sendTransport.destroy(sendTransportId);
-          udpTransport.destroy(udpInfo.transportId);
-          stream.stop();
-          chrome.test.succeed();
-        }.bind(null, stream, udpInfo));
+            function(stream, udpId, audioId) {
+          console.log("Got audio stream.");
+
+          // Create a transport for video.
+          sendTransport.create(
+              udpId,
+              stream.getVideoTracks()[0],
+              function(stream, udpId, audioId, videoId) {
+            console.log("Got video stream.");
+            startId(audioId);
+            cleanupId(audioId);
+            startId(videoId);
+            cleanupId(videoId);
+            udpTransport.destroy(udpId);
+            stream.stop();
+            chrome.test.succeed();
+          }.bind(null, stream, udpId, audioId));
+        }.bind(null, stream, udpId));
       }.bind(null, stream));
     });
   },

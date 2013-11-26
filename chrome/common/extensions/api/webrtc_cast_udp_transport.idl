@@ -14,19 +14,10 @@ namespace webrtc.castUdpTransport {
     long port;
   };
 
-  // Result of <code>create</code> call.
-  dictionary CreateInfo {
-    // The ID of the newly created UDP transport.
-    long transportId;
-
-    // The transport params.
-    UdpParams params;
-  };
-
   // Callback from the <code>create</code> method.
-  // |createInfo| : The transport info.
+  // |transportId| : The transport ID.
   // A null value indicates an error.
-  callback CreateCallback = void (CreateInfo createInfo);
+  callback CreateCallback = void (long transportId);
 
   interface Functions {
     // Creates a UDP transport.
@@ -41,9 +32,5 @@ namespace webrtc.castUdpTransport {
     // |transportId| : The transport ID.
     // |remoteParams| : The address and port to send packets to.
     [nocompile] static void start(long transportId, UdpParams remoteParams);
-
-    // Stops using the transport.
-    // |transportId| : The transport ID.
-    [nocompile] static void stop(long transportId);
   };
 };

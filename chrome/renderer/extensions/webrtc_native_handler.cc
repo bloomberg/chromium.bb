@@ -25,7 +25,6 @@ using extensions::api::webrtc_cast_send_transport::CodecSpecificParams;
 using extensions::api::webrtc_cast_send_transport::RtpCaps;
 using extensions::api::webrtc_cast_send_transport::RtpParams;
 using extensions::api::webrtc_cast_send_transport::RtpPayloadParams;
-using extensions::api::webrtc_cast_udp_transport::CreateInfo;
 using extensions::api::webrtc_cast_udp_transport::UdpParams;
 
 namespace extensions {
@@ -34,7 +33,6 @@ namespace {
 const char kSendTransportNotFound[] = "The send transport cannot be found";
 const char kUdpTransportNotFound[] = "The UDP transport cannot be found";
 const char kInvalidUdpParams[] = "Invalid UDP params";
-const char kInvalidRtpCaps[] = "Invalid value for RTP caps";
 const char kInvalidRtpParams[] = "Invalid value for RTP params";
 const char kUnableToConvertArgs[] = "Unable to convert arguments";
 const char kUnableToConvertParams[] = "Unable to convert params";
@@ -101,23 +99,9 @@ void FromCastRtpPayloadParams(const CastRtpPayloadParams& cast_params,
   }
 }
 
-void ToCastRtpCaps(const RtpCaps& ext_caps, CastRtpCaps* cast_caps) {
-  std::copy(ext_caps.rtcp_features.begin(), ext_caps.rtcp_features.end(),
-            cast_caps->rtcp_features.begin());
-  std::copy(ext_caps.fec_mechanisms.begin(), ext_caps.fec_mechanisms.end(),
-            cast_caps->fec_mechanisms.begin());
-  for (size_t i = 0; i < ext_caps.payloads.size(); ++i) {
-    CastRtpPayloadParams cast_payload_params;
-    ToCastRtpPayloadParams(*ext_caps.payloads[i], &cast_payload_params);
-    cast_caps->payloads.push_back(cast_payload_params);
-  }
-}
-
 void FromCastRtpCaps(const CastRtpCaps& cast_caps, RtpCaps* ext_caps) {
   std::copy(cast_caps.rtcp_features.begin(), cast_caps.rtcp_features.end(),
             ext_caps->rtcp_features.begin());
-  std::copy(cast_caps.fec_mechanisms.begin(), cast_caps.fec_mechanisms.end(),
-            ext_caps->fec_mechanisms.begin());
   for (size_t i = 0; i < cast_caps.payloads.size(); ++i) {
     linked_ptr<RtpPayloadParams> ext_payload_params(new RtpPayloadParams());
     FromCastRtpPayloadParams(cast_caps.payloads[i], ext_payload_params.get());
@@ -128,27 +112,10 @@ void FromCastRtpCaps(const CastRtpCaps& cast_caps, RtpCaps* ext_caps) {
 void ToCastRtpParams(const RtpParams& ext_params, CastRtpParams* cast_params) {
   std::copy(ext_params.rtcp_features.begin(), ext_params.rtcp_features.end(),
             cast_params->rtcp_features.begin());
-  std::copy(ext_params.fec_mechanisms.begin(), ext_params.fec_mechanisms.end(),
-            cast_params->fec_mechanisms.begin());
   for (size_t i = 0; i < ext_params.payloads.size(); ++i) {
     CastRtpPayloadParams cast_payload_params;
     ToCastRtpPayloadParams(*ext_params.payloads[i], &cast_payload_params);
     cast_params->payloads.push_back(cast_payload_params);
-  }
-}
-
-void FromCastRtpParams(const CastRtpParams& cast_params,
-                       RtpParams* ext_params) {
-  std::copy(cast_params.rtcp_features.begin(), cast_params.rtcp_features.end(),
-            ext_params->rtcp_features.begin());
-  std::copy(cast_params.fec_mechanisms.begin(),
-            cast_params.fec_mechanisms.end(),
-            ext_params->fec_mechanisms.begin());
-  for (size_t i = 0; i < cast_params.payloads.size(); ++i) {
-    linked_ptr<RtpPayloadParams> ext_payload_params(new RtpPayloadParams());
-    FromCastRtpPayloadParams(cast_params.payloads[i],
-                             ext_payload_params.get());
-    ext_params->payloads.push_back(ext_payload_params);
   }
 }
 
@@ -162,9 +129,6 @@ WebRtcNativeHandler::WebRtcNativeHandler(ChromeV8Context* context)
                  base::Unretained(this)));
   RouteFunction("DestroyCastSendTransport",
       base::Bind(&WebRtcNativeHandler::DestroyCastSendTransport,
-                 base::Unretained(this)));
-  RouteFunction("CreateParamsCastSendTransport",
-      base::Bind(&WebRtcNativeHandler::CreateParamsCastSendTransport,
                  base::Unretained(this)));
   RouteFunction("GetCapsCastSendTransport",
       base::Bind(&WebRtcNativeHandler::GetCapsCastSendTransport,
@@ -183,9 +147,6 @@ WebRtcNativeHandler::WebRtcNativeHandler(ChromeV8Context* context)
                  base::Unretained(this)));
   RouteFunction("StartCastUdpTransport",
       base::Bind(&WebRtcNativeHandler::StartCastUdpTransport,
-                 base::Unretained(this)));
-  RouteFunction("StopCastUdpTransport",
-      base::Bind(&WebRtcNativeHandler::StopCastUdpTransport,
                  base::Unretained(this)));
 }
 
@@ -209,7 +170,7 @@ void WebRtcNativeHandler::CreateCastSendTransport(
       blink::WebDOMMediaStreamTrack::fromV8Value(args[1]);
   if (track.isNull())
     return;
-  int transport_id = last_transport_id_++;
+  const int transport_id = last_transport_id_++;
   send_transport_map_[transport_id] =
       linked_ptr<CastSendTransport>(
           new CastSendTransport(inner_transport, track.component()));
@@ -228,44 +189,6 @@ void WebRtcNativeHandler::DestroyCastSendTransport(
   if (!GetSendTransportOrThrow(transport_id))
     return;
   send_transport_map_.erase(transport_id);
-}
-
-void WebRtcNativeHandler::CreateParamsCastSendTransport(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  CHECK_EQ(2, args.Length());
-  CHECK(args[0]->IsInt32());
-  CHECK(args[1]->IsObject());
-
-  const int transport_id = args[0]->ToInt32()->Value();
-  CastSendTransport* transport = GetSendTransportOrThrow(transport_id);
-  if (!transport)
-    return;
-
-  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  scoped_ptr<Value> remote_caps_value(
-      converter->FromV8Value(args[1], context()->v8_context()));
-  if (!remote_caps_value) {
-    v8::ThrowException(v8::Exception::TypeError(v8::String::New(
-        kUnableToConvertArgs)));
-    return;
-  }
-  scoped_ptr<RtpCaps> remote_caps =
-      RtpCaps::FromValue(*remote_caps_value);
-  if (!remote_caps) {
-    v8::ThrowException(v8::Exception::TypeError(v8::String::New(
-        kInvalidRtpCaps)));
-    return;
-  }
-
-  CastRtpCaps cast_remote_caps;
-  ToCastRtpCaps(*remote_caps, &cast_remote_caps);
-  CastRtpParams cast_params = transport->CreateParams(cast_remote_caps);
-  RtpParams params;
-  FromCastRtpParams(cast_params, &params);
-
-  scoped_ptr<base::DictionaryValue> params_value = params.ToValue();
-  args.GetReturnValue().Set(converter->ToV8Value(
-      params_value.get(), context()->v8_context()));
 }
 
 void WebRtcNativeHandler::GetCapsCastSendTransport(
@@ -336,18 +259,13 @@ void WebRtcNativeHandler::CreateCastUdpTransport(
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsFunction());
 
-  // TODO(hclam): Fill in |create_info| properly.
-  CreateInfo create_info;
-  create_info.transport_id = last_transport_id_++;
-  udp_transport_map_[create_info.transport_id] =
+  const int transport_id = last_transport_id_++;
+  udp_transport_map_[transport_id] =
       linked_ptr<CastUdpTransport>(new CastUdpTransport());
 
-  scoped_ptr<base::DictionaryValue> create_info_value = create_info.ToValue();
-  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  v8::Handle<v8::Value> create_info_v8 = converter->ToV8Value(
-      create_info_value.get(), context()->v8_context());
-  context()->CallFunction(v8::Handle<v8::Function>::Cast(
-      args[0]), 1, &create_info_v8);
+  v8::Handle<v8::Value> transport_id_v8 = v8::Integer::New(transport_id);
+  context()->CallFunction(v8::Handle<v8::Function>::Cast(args[0]), 1,
+                          &transport_id_v8);
 }
 
 void WebRtcNativeHandler::DestroyCastUdpTransport(
@@ -387,18 +305,6 @@ void WebRtcNativeHandler::StartCastUdpTransport(
     return;
   }
   transport->Start(net::HostPortPair(udp_params->address, udp_params->port));
-}
-
-void WebRtcNativeHandler::StopCastUdpTransport(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  CHECK_EQ(1, args.Length());
-  CHECK(args[0]->IsInt32());
-
-  const int transport_id = args[0]->ToInt32()->Value();
-  CastUdpTransport* transport = GetUdpTransportOrThrow(transport_id);
-  if (!transport)
-    return;
-  transport->Stop();
 }
 
 CastSendTransport* WebRtcNativeHandler::GetSendTransportOrThrow(

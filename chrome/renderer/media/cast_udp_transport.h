@@ -27,9 +27,6 @@ class CastUdpTransport {
   // The transport will use UDP.
   void Start(const net::HostPortPair& remote_address);
 
-  // Terminate the communication with the end point.
-  void Stop();
-
   scoped_refptr<CastSession> cast_session() const {
     return cast_session_;
   }

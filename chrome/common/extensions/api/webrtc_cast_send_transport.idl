@@ -46,8 +46,6 @@ namespace webrtc.castSendTransport {
     RtpPayloadParams[] payloads;
 
     DOMString[] rtcpFeatures;
-
-    DOMString[] fecMechanisms;
   };
 
   // Cast transport params.
@@ -56,8 +54,6 @@ namespace webrtc.castSendTransport {
     RtpPayloadParams[] payloads;
 
     DOMString[] rtcpFeatures;
-
-    DOMString[] fecMechanisms;
   };
 
   // Callback from the <code>create</code> method.
@@ -82,13 +78,6 @@ namespace webrtc.castSendTransport {
     // Returns capabilities of the transport.
     // |transportId| : The transport ID.
     [nocompile] static RtpCaps getCaps(long transportId);
-
-    // Returns suitable params given the capabilities.
-    // |transportId| : The transport ID.
-    // |remoteCaps| : Capabilities of remote peer.
-    [nocompile] static RtpParams createParams(
-        long transportId,
-        RtpCaps remoteCaps);
 
     // Starts to use the transport by providing remote params info.
     // |transportId| : The transport ID.

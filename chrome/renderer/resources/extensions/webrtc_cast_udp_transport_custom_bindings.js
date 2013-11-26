@@ -17,11 +17,8 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
     webrtc.DestroyCastUdpTransport(transportId);
   });
   apiFunctions.setHandleRequest('start',
-      function(transportId, remoteParams) {
-        webrtc.StartCastUdpTransport(transportId, remoteParams);
-  });
-  apiFunctions.setHandleRequest('stop', function(transportId) {
-    webrtc.StopCastUdpTransport(transportId);
+    function(transportId, remoteParams) {
+      webrtc.StartCastUdpTransport(transportId, remoteParams);
   });
 });
 
