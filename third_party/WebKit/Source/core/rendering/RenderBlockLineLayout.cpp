@@ -22,6 +22,7 @@
 
 #include "config.h"
 
+#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/RenderFlowThread.h"
@@ -1695,6 +1696,10 @@ void RenderBlockFlow::repaintDirtyFloats(Vector<FloatWithRect>& floats)
 
 void RenderBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& repaintLogicalTop, LayoutUnit& repaintLogicalBottom)
 {
+    FastTextAutosizer* textAutosizer = document().fastTextAutosizer();
+    if (textAutosizer)
+        textAutosizer->inflate(this);
+
     setLogicalHeight(borderBefore() + paddingBefore());
 
     // Lay out our hypothetical grid line as though it occurs at the top of the block.

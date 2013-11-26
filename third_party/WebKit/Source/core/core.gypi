@@ -1365,6 +1365,8 @@
             'rendering/CounterNode.h',
             'rendering/EllipsisBox.cpp',
             'rendering/EllipsisBox.h',
+            'rendering/FastTextAutosizer.cpp',
+            'rendering/FastTextAutosizer.h',
             'rendering/FilterEffectRenderer.cpp',
             'rendering/FilterEffectRenderer.h',
             'rendering/FixedTableLayout.cpp',

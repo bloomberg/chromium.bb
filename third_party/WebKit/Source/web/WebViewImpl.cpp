@@ -3029,8 +3029,11 @@ void WebViewImpl::updateMainFrameLayoutSize()
     if (settings()->viewportEnabled()) {
         layoutSize = flooredIntSize(m_pageScaleConstraintsSet.pageDefinedConstraints().layoutSize);
 
-        if (page()->settings().textAutosizingEnabled() && layoutSize.width != view->layoutSize().width())
-            page()->mainFrame()->document()->textAutosizer()->recalculateMultipliers();
+        if (page()->settings().textAutosizingEnabled() && layoutSize.width != view->layoutSize().width()) {
+            TextAutosizer* textAutosizer = page()->mainFrame()->document()->textAutosizer();
+            if (textAutosizer)
+                textAutosizer->recalculateMultipliers();
+        }
     }
 
     view->setLayoutSize(layoutSize);

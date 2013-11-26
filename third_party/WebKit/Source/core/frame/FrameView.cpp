@@ -428,8 +428,11 @@ void FrameView::setFrameRect(const IntRect& newRect)
     if (newRect.width() != oldRect.width()) {
         Page* page = m_frame->page();
         if (isMainFrame() && page->settings().textAutosizingEnabled()) {
-            for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
-                m_frame->document()->textAutosizer()->recalculateMultipliers();
+            TextAutosizer* textAutosizer = m_frame->document()->textAutosizer();
+            if (textAutosizer) {
+                for (Frame* frame = page->mainFrame(); frame; frame = frame->tree().traverseNext())
+                    textAutosizer->recalculateMultipliers();
+            }
         }
     }
 
@@ -907,7 +910,8 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
         rootForThisLayout->layout();
     }
 
-    bool autosized = frame().document()->textAutosizer()->processSubtree(rootForThisLayout);
+    TextAutosizer* textAutosizer = frame().document()->textAutosizer();
+    bool autosized = textAutosizer && textAutosizer->processSubtree(rootForThisLayout);
     if (autosized && rootForThisLayout->needsLayout()) {
         TRACE_EVENT0("webkit", "2nd layout due to Text Autosizing");
         LayoutIndicator layoutIndicator;

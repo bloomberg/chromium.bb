@@ -52,6 +52,8 @@ public:
     static float computeAutosizedFontSize(float specifiedSize, float multiplier);
 
 private:
+    friend class FastTextAutosizer;
+
     enum TraversalDirection {
         FirstToLast,
         LastToFirst

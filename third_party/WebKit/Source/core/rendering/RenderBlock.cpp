@@ -38,6 +38,7 @@
 #include "core/page/Settings.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/rendering/ColumnInfo.h"
+#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/HitTestResult.h"
@@ -232,6 +233,10 @@ void RenderBlock::willBeDestroyed()
     if (UNLIKELY(gDelayedUpdateScrollInfoSet != 0))
         gDelayedUpdateScrollInfoSet->remove(this);
 
+    FastTextAutosizer* textAutosizer = document().fastTextAutosizer();
+    if (textAutosizer)
+        textAutosizer->destroy(this);
+
     RenderBox::willBeDestroyed();
 }
 
@@ -297,6 +302,10 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
             currCont->setContinuation(nextCont);
         }
     }
+
+    FastTextAutosizer* textAutosizer = document().fastTextAutosizer();
+    if (textAutosizer)
+        textAutosizer->record(this);
 
     propagateStyleToAnonymousChildren(true);
     m_lineHeight = -1;

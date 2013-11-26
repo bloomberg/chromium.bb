@@ -96,6 +96,7 @@ class Event;
 class EventListener;
 class ExceptionState;
 class MainThreadTaskRunner;
+class FastTextAutosizer;
 class FloatQuad;
 class FloatRect;
 class FormController;
@@ -937,7 +938,10 @@ public:
 
     IntSize initialViewportSize() const;
 
-    TextAutosizer* textAutosizer() { return m_textAutosizer.get(); }
+    // There are currently two parallel autosizing implementations: TextAutosizer and FastTextAutosizer.
+    // See http://tinyurl.com/chromium-fast-autosizer for more details.
+    TextAutosizer* textAutosizer();
+    FastTextAutosizer* fastTextAutosizer();
 
     PassRefPtr<Element> createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState&);
     PassRefPtr<Element> createElementNS(const AtomicString& namespaceURI, const String& qualifiedName, const AtomicString& typeExtension, ExceptionState&);
@@ -1273,6 +1277,7 @@ private:
     RefPtr<ScriptedAnimationController> m_scriptedAnimationController;
     OwnPtr<MainThreadTaskRunner> m_taskRunner;
     OwnPtr<TextAutosizer> m_textAutosizer;
+    OwnPtr<FastTextAutosizer> m_fastTextAutosizer;
 
     RefPtr<CustomElementRegistrationContext> m_registrationContext;
 

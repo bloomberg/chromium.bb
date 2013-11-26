@@ -264,8 +264,11 @@ void Settings::setLoadWithOverviewMode(bool loadWithOverviewMode)
 void Settings::recalculateTextAutosizingMultipliers()
 {
     // FIXME: I wonder if this needs to traverse frames like in WebViewImpl::resize, or whether there is only one document per Settings instance?
-    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext())
-        frame->document()->textAutosizer()->recalculateMultipliers();
+    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        TextAutosizer* textAutosizer = frame->document()->textAutosizer();
+        if (textAutosizer)
+            textAutosizer->recalculateMultipliers();
+    }
 
     m_page->setNeedsRecalcStyleInAllFrames();
 }

@@ -162,6 +162,7 @@
 #include "core/page/Settings.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/ScrollbarTheme.h"
+#include "core/rendering/FastTextAutosizer.h"
 #include "core/rendering/HitTestRequest.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderView.h"
@@ -443,7 +444,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_writeRecursionDepth(0)
     , m_lastHandledUserGestureTimestamp(0)
     , m_taskRunner(MainThreadTaskRunner::create(this))
-    , m_textAutosizer(TextAutosizer::create(this))
     , m_registrationContext(initializer.registrationContext(this))
     , m_sharedObjectPoolClearTimer(this, &Document::sharedObjectPoolClearTimerFired)
 #ifndef NDEBUG
@@ -5212,6 +5212,20 @@ void Document::modifiedStyleSheet(StyleSheet* sheet, RecalcStyleTime when, Style
 
     styleEngine()->modifiedStyleSheet(sheet);
     styleResolverChanged(when, updateMode);
+}
+
+TextAutosizer* Document::textAutosizer()
+{
+    if (!m_textAutosizer && !RuntimeEnabledFeatures::fastTextAutosizingEnabled())
+        m_textAutosizer = TextAutosizer::create(this);
+    return m_textAutosizer.get();
+}
+
+FastTextAutosizer* Document::fastTextAutosizer()
+{
+    if (!m_fastTextAutosizer && RuntimeEnabledFeatures::fastTextAutosizingEnabled())
+        m_fastTextAutosizer = FastTextAutosizer::create(this);
+    return m_fastTextAutosizer.get();
 }
 
 } // namespace WebCore
