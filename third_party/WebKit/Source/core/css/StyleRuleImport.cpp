@@ -63,9 +63,9 @@ void StyleRuleImport::setCSSStyleSheet(const String& href, const KURL& baseURL, 
         m_styleSheet->clearOwnerRule();
 
     CSSParserContext context = m_parentStyleSheet ? m_parentStyleSheet->parserContext() : HTMLStandardMode;
-    context.charset = charset;
+    context.setCharset(charset);
     if (!baseURL.isNull())
-        context.baseURL = baseURL;
+        context.setBaseURL(baseURL);
 
     m_styleSheet = StyleSheetContents::create(this, href, context);
 

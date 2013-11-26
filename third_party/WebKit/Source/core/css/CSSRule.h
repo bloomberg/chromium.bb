@@ -28,9 +28,9 @@
 
 namespace WebCore {
 
+class CSSParserContext;
 class CSSStyleSheet;
 class StyleRuleBase;
-struct CSSParserContext;
 
 class CSSRule : public RefCounted<CSSRule> {
 public:

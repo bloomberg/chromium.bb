@@ -1210,7 +1210,7 @@ restartAfterComment:
         }
 
         // Use SVG parser for numbers on SVG presentation attributes.
-        if (isSVGNumberParsingEnabledForMode(m_parser.m_context.mode)) {
+        if (isSVGNumberParsingEnabledForMode(m_parser.m_context.mode())) {
             // We need to take care of units like 'em' or 'ex'.
             SrcCharacterType* character = currentCharacter<SrcCharacterType>();
             if (isASCIIAlphaCaselessEqual(*character, 'e')) {

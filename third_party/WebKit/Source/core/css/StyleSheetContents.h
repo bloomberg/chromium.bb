@@ -80,7 +80,7 @@ public:
     Node* singleOwnerNode() const;
     Document* singleOwnerDocument() const;
 
-    const String& charset() const { return m_parserContext.charset; }
+    const String& charset() const { return m_parserContext.charset(); }
 
     bool loadCompleted() const { return m_loadCompleted; }
     bool hasFailedOrCanceledSubresources() const;
@@ -117,7 +117,7 @@ public:
     // this style sheet. This property probably isn't useful for much except
     // the JavaScript binding (which needs to use this value for security).
     String originalURL() const { return m_originalURL; }
-    const KURL& baseURL() const { return m_parserContext.baseURL; }
+    const KURL& baseURL() const { return m_parserContext.baseURL(); }
 
     unsigned ruleCount() const;
     StyleRuleBase* ruleAt(unsigned index) const;

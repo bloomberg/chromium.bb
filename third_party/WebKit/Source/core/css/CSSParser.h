@@ -490,7 +490,7 @@ private:
 
     void setStyleSheet(StyleSheetContents* styleSheet) { m_styleSheet = styleSheet; }
 
-    bool inQuirksMode() const { return isQuirksModeBehavior(m_context.mode); }
+    bool inQuirksMode() const { return isQuirksModeBehavior(m_context.mode()); }
     bool inViewport() const { return m_inViewport; }
 
     KURL completeURL(const String& url) const;
@@ -605,7 +605,7 @@ private:
 
     bool shouldAcceptUnitLessValues(CSSParserValue*, Units, CSSParserMode);
 
-    inline bool validUnit(CSSParserValue* value, Units unitflags, ReleaseParsedCalcValueCondition releaseCalc = DoNotReleaseParsedCalcValue) { return validUnit(value, unitflags, m_context.mode, releaseCalc); }
+    inline bool validUnit(CSSParserValue* value, Units unitflags, ReleaseParsedCalcValueCondition releaseCalc = DoNotReleaseParsedCalcValue) { return validUnit(value, unitflags, m_context.mode(), releaseCalc); }
     bool validUnit(CSSParserValue*, Units, CSSParserMode, ReleaseParsedCalcValueCondition releaseCalc = DoNotReleaseParsedCalcValue);
 
     bool parseBorderImageQuad(Units, RefPtr<CSSPrimitiveValue>&);

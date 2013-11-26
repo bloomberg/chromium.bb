@@ -1073,9 +1073,9 @@ bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID p
 
     CSSParserContext context(document);
 
-    if (parseSimpleLengthValue(declaration, propertyID, string, important, context.mode))
+    if (parseSimpleLengthValue(declaration, propertyID, string, important, context.mode()))
         return true;
-    if (parseColorValue(declaration, propertyID, string, important, context.mode))
+    if (parseColorValue(declaration, propertyID, string, important, context.mode()))
         return true;
     if (parseKeywordValue(declaration, propertyID, string, important, context))
         return true;
@@ -1095,7 +1095,7 @@ bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID p
     CSSParserContext context(cssParserMode);
     if (contextStyleSheet) {
         context = contextStyleSheet->parserContext();
-        context.mode = cssParserMode;
+        context.setMode(cssParserMode);
     }
 
     if (parseKeywordValue(declaration, propertyID, string, important, context))
@@ -1206,7 +1206,7 @@ PassRefPtr<ImmutableStylePropertySet> CSSParser::parseInlineStyleDeclaration(con
 {
     Document& document = element->document();
     CSSParserContext context = document.elementSheet()->contents()->parserContext();
-    context.mode = (element->isHTMLElement() && !document.inQuirksMode()) ? HTMLStandardMode : HTMLQuirksMode;
+    context.setMode((element->isHTMLElement() && !document.inQuirksMode()) ? HTMLStandardMode : HTMLQuirksMode);
     return CSSParser(context, UseCounter::getFrom(&document)).parseDeclaration(string, document.elementSheet()->contents());
 }
 
@@ -1311,7 +1311,7 @@ PassRefPtr<ImmutableStylePropertySet> CSSParser::createStylePropertySet()
     if (unusedEntries)
         results.remove(0, unusedEntries);
 
-    CSSParserMode mode = inViewport() ? CSSViewportRuleMode : m_context.mode;
+    CSSParserMode mode = inViewport() ? CSSViewportRuleMode : m_context.mode();
 
     return ImmutableStylePropertySet::create(results.data(), results.size(), mode);
 }
@@ -1367,13 +1367,14 @@ void CSSParser::clearProperties()
     m_hasFontFaceOnlyValues = false;
 }
 
+// FIXME: Move to CSSParserContext?
 KURL CSSParser::completeURL(const CSSParserContext& context, const String& url)
 {
     if (url.isNull())
         return KURL();
-    if (context.charset.isEmpty())
-        return KURL(context.baseURL, url);
-    return KURL(context.baseURL, url, context.charset);
+    if (context.charset().isEmpty())
+        return KURL(context.baseURL(), url);
+    return KURL(context.baseURL(), url, context.charset());
 }
 
 KURL CSSParser::completeURL(const String& url) const
@@ -1610,7 +1611,7 @@ void CSSParser::setCurrentProperty(CSSPropertyID propId)
 
 bool CSSParser::parseValue(CSSPropertyID propId, bool important)
 {
-    if (!isInternalPropertyAndValueParsingEnabledForMode(m_context.mode) && isInternalProperty(propId))
+    if (!isInternalPropertyAndValueParsingEnabledForMode(m_context.mode()) && isInternalProperty(propId))
         return false;
 
     // We don't count the UA style sheet in our statistics.
@@ -1627,7 +1628,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
 
     if (inViewport()) {
         // Allow @viewport rules from UA stylesheets even if the feature is disabled.
-        if (!RuntimeEnabledFeatures::cssViewportEnabled() && !isUASheetBehavior(m_context.mode))
+        if (!RuntimeEnabledFeatures::cssViewportEnabled() && !isUASheetBehavior(m_context.mode()))
             return false;
 
         return parseViewportProperty(propId, important);
@@ -1791,7 +1792,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             return false;
 
         if ((id >= CSSValueAqua && id <= CSSValueWebkitText) || id == CSSValueMenu) {
-            validPrimitive = isValueAllowedInMode(id, m_context.mode);
+            validPrimitive = isValueAllowedInMode(id, m_context.mode());
         } else {
             parsedValue = parseColor();
             if (parsedValue)
@@ -2865,7 +2866,7 @@ static bool parseBackgroundClip(CSSParserValue* parserValue, RefPtr<CSSValue>& c
 
 bool CSSParser::useLegacyBackgroundSizeShorthandBehavior() const
 {
-    return m_context.useLegacyBackgroundSizeShorthandBehavior;
+    return m_context.useLegacyBackgroundSizeShorthandBehavior();
 }
 
 const int cMaxFillProperties = 9;
@@ -3580,7 +3581,7 @@ PassRefPtr<CSSValue> CSSParser::parseAttr(CSSParserValueList* args)
     if (attrName[0] == '-')
         return 0;
 
-    if (m_context.isHTMLDocument)
+    if (m_context.isHTMLDocument())
         attrName = attrName.lower();
 
     return cssValuePool().createValue(attrName, CSSPrimitiveValue::CSS_ATTR);
@@ -10080,7 +10081,7 @@ void CSSParser::startEndUnknownRule()
 StyleRuleBase* CSSParser::createViewportRule()
 {
     // Allow @viewport rules from UA stylesheets even if the feature is disabled.
-    if (!RuntimeEnabledFeatures::cssViewportEnabled() && !isUASheetBehavior(m_context.mode))
+    if (!RuntimeEnabledFeatures::cssViewportEnabled() && !isUASheetBehavior(m_context.mode()))
         return 0;
 
     m_allowImportRules = m_allowNamespaceDeclarations = false;
@@ -10098,7 +10099,7 @@ StyleRuleBase* CSSParser::createViewportRule()
 
 bool CSSParser::parseViewportProperty(CSSPropertyID propId, bool important)
 {
-    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled() || isUASheetBehavior(m_context.mode));
+    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled() || isUASheetBehavior(m_context.mode()));
 
     CSSParserValue* value = m_valueList->current();
     if (!value)
@@ -10158,7 +10159,7 @@ bool CSSParser::parseViewportProperty(CSSPropertyID propId, bool important)
 
 bool CSSParser::parseViewportShorthand(CSSPropertyID propId, CSSPropertyID first, CSSPropertyID second, bool important)
 {
-    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled() || isUASheetBehavior(m_context.mode));
+    ASSERT(RuntimeEnabledFeatures::cssViewportEnabled() || isUASheetBehavior(m_context.mode()));
     unsigned numValues = m_valueList->size();
 
     if (numValues > 2)

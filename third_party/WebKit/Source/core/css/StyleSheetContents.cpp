@@ -295,7 +295,7 @@ void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cach
 {
     TRACE_EVENT0("webkit", "StyleSheetContents::parseAuthorStyleSheet");
 
-    bool quirksMode = isQuirksModeBehavior(m_parserContext.mode);
+    bool quirksMode = isQuirksModeBehavior(m_parserContext.mode());
 
     bool enforceMIMEType = !quirksMode;
     bool hasValidMIMEType = false;

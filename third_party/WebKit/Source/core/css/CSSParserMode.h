@@ -88,24 +88,38 @@ inline bool isUseCounterEnabledForMode(CSSParserMode mode)
     return mode != UASheetMode;
 }
 
-struct CSSParserContext {
+class CSSParserContext {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    CSSParserContext(CSSParserMode, const KURL& baseURL = KURL());
+    CSSParserContext(CSSParserMode);
     CSSParserContext(const Document&, const KURL& baseURL = KURL(), const String& charset = emptyString());
 
-    KURL baseURL;
-    String charset;
-    CSSParserMode mode;
-    bool isHTMLDocument;
+    bool operator==(const CSSParserContext&) const;
+    bool operator!=(const CSSParserContext& other) const { return !(*this == other); }
+
+    CSSParserMode mode() const { return m_mode; }
+    const KURL& baseURL() const { return m_baseURL; }
+    const String& charset() const { return m_charset; }
+    bool isHTMLDocument() const { return m_isHTMLDocument; }
+
     // This quirk is to maintain compatibility with Android apps built on
     // the Android SDK prior to and including version 18. Presumably, this
     // can be removed any time after 2015. See http://crbug.com/277157.
-    bool useLegacyBackgroundSizeShorthandBehavior;
-};
+    bool useLegacyBackgroundSizeShorthandBehavior() const { return m_useLegacyBackgroundSizeShorthandBehavior; }
 
-bool operator==(const CSSParserContext&, const CSSParserContext&);
-inline bool operator!=(const CSSParserContext& a, const CSSParserContext& b) { return !(a == b); }
+    // FIXME: These setters shouldn't exist, however the current lifetime of CSSParserContext
+    // is not well understood and thus we sometimes need to override these fields.
+    void setMode(CSSParserMode mode) { m_mode = mode; }
+    void setBaseURL(const KURL& baseURL) { m_baseURL = baseURL; }
+    void setCharset(const String& charset) { m_charset = charset; }
+
+private:
+    KURL m_baseURL;
+    String m_charset;
+    CSSParserMode m_mode;
+    bool m_isHTMLDocument;
+    bool m_useLegacyBackgroundSizeShorthandBehavior;
+};
 
 const CSSParserContext& strictCSSParserContext();
 

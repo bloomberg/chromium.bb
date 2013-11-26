@@ -32,30 +32,29 @@
 
 namespace WebCore {
 
-CSSParserContext::CSSParserContext(CSSParserMode mode, const KURL& baseURL)
-    : baseURL(baseURL)
-    , mode(mode)
-    , isHTMLDocument(false)
-    , useLegacyBackgroundSizeShorthandBehavior(false)
+CSSParserContext::CSSParserContext(CSSParserMode mode)
+    : m_mode(mode)
+    , m_isHTMLDocument(false)
+    , m_useLegacyBackgroundSizeShorthandBehavior(false)
 {
 }
 
 CSSParserContext::CSSParserContext(const Document& document, const KURL& baseURL, const String& charset)
-    : baseURL(baseURL.isNull() ? document.baseURL() : baseURL)
-    , charset(charset)
-    , mode(document.inQuirksMode() ? HTMLQuirksMode : HTMLStandardMode)
-    , isHTMLDocument(document.isHTMLDocument())
-    , useLegacyBackgroundSizeShorthandBehavior(document.settings() ? document.settings()->useLegacyBackgroundSizeShorthandBehavior() : false)
+    : m_baseURL(baseURL.isNull() ? document.baseURL() : baseURL)
+    , m_charset(charset)
+    , m_mode(document.inQuirksMode() ? HTMLQuirksMode : HTMLStandardMode)
+    , m_isHTMLDocument(document.isHTMLDocument())
+    , m_useLegacyBackgroundSizeShorthandBehavior(document.settings() ? document.settings()->useLegacyBackgroundSizeShorthandBehavior() : false)
 {
 }
 
-bool operator==(const CSSParserContext& a, const CSSParserContext& b)
+bool CSSParserContext::operator==(const CSSParserContext& other) const
 {
-    return a.baseURL == b.baseURL
-        && a.charset == b.charset
-        && a.mode == b.mode
-        && a.isHTMLDocument == b.isHTMLDocument
-        && a.useLegacyBackgroundSizeShorthandBehavior == b.useLegacyBackgroundSizeShorthandBehavior;
+    return m_baseURL == other.m_baseURL
+        && m_charset == other.m_charset
+        && m_mode == other.m_mode
+        && m_isHTMLDocument == other.m_isHTMLDocument
+        && m_useLegacyBackgroundSizeShorthandBehavior == other.m_useLegacyBackgroundSizeShorthandBehavior;
 }
 
 const CSSParserContext& strictCSSParserContext()

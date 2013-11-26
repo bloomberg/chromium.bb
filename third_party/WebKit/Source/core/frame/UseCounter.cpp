@@ -697,7 +697,7 @@ void UseCounter::count(CSSParserContext context, CSSPropertyID feature)
     ASSERT(feature <= lastCSSProperty);
     ASSERT(!isInternalProperty(feature));
 
-    if (!isUseCounterEnabledForMode(context.mode))
+    if (!isUseCounterEnabledForMode(context.mode()))
         return;
 
     m_CSSFeatureBits.quickSet(feature);

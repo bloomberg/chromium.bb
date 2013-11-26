@@ -1284,7 +1284,7 @@ simple_selector_list:
 
 element_name:
     IDENT {
-        if (parser->m_context.isHTMLDocument)
+        if (parser->m_context.isHTMLDocument())
             parser->tokenToLowerCase($1);
         $$ = $1;
     }
@@ -1305,7 +1305,7 @@ specifier:
     IDSEL {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::Id);
-        if (isQuirksModeBehavior(parser->m_context.mode))
+        if (isQuirksModeBehavior(parser->m_context.mode()))
             parser->tokenToLowerCase($1);
         $$->setValue($1);
     }
@@ -1315,7 +1315,7 @@ specifier:
         } else {
             $$ = parser->createFloatingSelector();
             $$->setMatch(CSSSelector::Id);
-            if (isQuirksModeBehavior(parser->m_context.mode))
+            if (isQuirksModeBehavior(parser->m_context.mode()))
                 parser->tokenToLowerCase($1);
             $$->setValue($1);
         }
@@ -1329,7 +1329,7 @@ class:
     '.' IDENT {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::Class);
-        if (isQuirksModeBehavior(parser->m_context.mode))
+        if (isQuirksModeBehavior(parser->m_context.mode()))
             parser->tokenToLowerCase($2);
         $$->setValue($2);
     }
@@ -1337,7 +1337,7 @@ class:
 
 attr_name:
     IDENT maybe_space {
-        if (parser->m_context.isHTMLDocument)
+        if (parser->m_context.isHTMLDocument())
             parser->tokenToLowerCase($1);
         $$ = $1;
     }

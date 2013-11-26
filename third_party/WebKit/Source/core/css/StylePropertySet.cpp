@@ -339,7 +339,7 @@ void MutableStylePropertySet::parseDeclaration(const String& styleDeclaration, S
     CSSParserContext context(cssParserMode());
     if (contextStyleSheet) {
         context = contextStyleSheet->parserContext();
-        context.mode = cssParserMode();
+        context.setMode(cssParserMode());
     }
 
     CSSParser parser(context, UseCounter::getFrom(contextStyleSheet));

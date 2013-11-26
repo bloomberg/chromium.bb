@@ -30,10 +30,10 @@
 
 namespace WebCore {
 
+class CSSParserContext;
 class ResourceClient;
 class StyleSheetContents;
 class TextResourceDecoder;
-struct CSSParserContext;
 
 class CSSStyleSheetResource : public Resource {
 public:
