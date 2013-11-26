@@ -147,6 +147,13 @@ class UI_EXPORT TextInputClient {
   // Ensure the caret is within |rect|.  |rect| is in screen coordinates and
   // may extend beyond the bounds of this TextInputClient.
   virtual void EnsureCaretInRect(const gfx::Rect& rect) = 0;
+
+  // Called when IME shows a candidate window.
+  virtual void OnCandidateWindowShown() = 0;
+  // Called when IME updates any appearance of the current candidate window.
+  virtual void OnCandidateWindowUpdated() = 0;
+  // Called when IME hides the candidate window.
+  virtual void OnCandidateWindowHidden() = 0;
 };
 
 }  // namespace ui

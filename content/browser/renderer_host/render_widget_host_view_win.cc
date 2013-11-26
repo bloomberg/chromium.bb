@@ -1211,6 +1211,15 @@ void RenderWidgetHostViewWin::EnsureCaretInRect(const gfx::Rect& rect) {
   NOTIMPLEMENTED();
 }
 
+void RenderWidgetHostViewWin::OnCandidateWindowShown() {
+}
+
+void RenderWidgetHostViewWin::OnCandidateWindowUpdated() {
+}
+
+void RenderWidgetHostViewWin::OnCandidateWindowHidden() {
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewWin, private:
 

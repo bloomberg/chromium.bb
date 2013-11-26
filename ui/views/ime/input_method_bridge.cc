@@ -308,6 +308,15 @@ void InputMethodBridge::EnsureCaretInRect(const gfx::Rect& rect) {
     client->EnsureCaretInRect(rect);
 }
 
+void InputMethodBridge::OnCandidateWindowShown() {
+}
+
+void InputMethodBridge::OnCandidateWindowUpdated() {
+}
+
+void InputMethodBridge::OnCandidateWindowHidden() {
+}
+
 // Overridden from FocusChangeListener.
 void InputMethodBridge::OnWillChangeFocus(View* focused_before, View* focused) {
   if (HasCompositionText()) {

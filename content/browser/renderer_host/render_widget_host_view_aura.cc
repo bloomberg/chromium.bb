@@ -2385,6 +2385,15 @@ void RenderWidgetHostViewAura::EnsureCaretInRect(const gfx::Rect& rect) {
       ConvertRectFromScreen(intersected_rect));
 }
 
+void RenderWidgetHostViewAura::OnCandidateWindowShown() {
+}
+
+void RenderWidgetHostViewAura::OnCandidateWindowUpdated() {
+}
+
+void RenderWidgetHostViewAura::OnCandidateWindowHidden() {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, gfx::DisplayObserver implementation:
 

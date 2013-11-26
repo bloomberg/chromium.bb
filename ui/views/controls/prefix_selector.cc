@@ -134,6 +134,15 @@ void PrefixSelector::ExtendSelectionAndDelete(size_t before, size_t after) {
 void PrefixSelector::EnsureCaretInRect(const gfx::Rect& rect) {
 }
 
+void PrefixSelector::OnCandidateWindowShown() {
+}
+
+void PrefixSelector::OnCandidateWindowUpdated() {
+}
+
+void PrefixSelector::OnCandidateWindowHidden() {
+}
+
 void PrefixSelector::OnTextInput(const string16& text) {
   // Small hack to filter out 'tab' and 'enter' input, as the expectation is
   // that they are control characters and will not affect the currently-active

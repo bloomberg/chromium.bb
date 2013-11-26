@@ -49,6 +49,9 @@ class MockTextInputClient : public TextInputClient {
                bool(base::i18n::TextDirection));
   MOCK_METHOD2(ExtendSelectionAndDelete, void(size_t, size_t));
   MOCK_METHOD1(EnsureCaretInRect, void(const gfx::Rect&));
+  MOCK_METHOD0(OnCandidateWindowShown, void());
+  MOCK_METHOD0(OnCandidateWindowUpdated, void());
+  MOCK_METHOD0(OnCandidateWindowHidden, void());
 };
 
 class MockStoreACPSink : public ITextStoreACPSink {

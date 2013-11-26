@@ -322,6 +322,9 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   virtual void ExtendSelectionAndDelete(size_t before,
                                         size_t after) OVERRIDE { }
   virtual void EnsureCaretInRect(const gfx::Rect& rect) OVERRIDE { }
+  virtual void OnCandidateWindowShown() OVERRIDE { }
+  virtual void OnCandidateWindowUpdated() OVERRIDE { }
+  virtual void OnCandidateWindowHidden() OVERRIDE { }
 
   bool HasNativeEvent() const {
     base::NativeEvent empty;
