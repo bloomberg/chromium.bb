@@ -8,8 +8,8 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/logging.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/logging.h"
 #include "remoting/base/util.h"
 
 namespace remoting {
@@ -46,7 +46,7 @@ void XServerClipboard::Init(Display* display,
   int xfixes_error_base;
   if (!XFixesQueryExtension(display_, &xfixes_event_base_,
                             &xfixes_error_base)) {
-    LOG(INFO) << "X server does not support XFixes.";
+    HOST_LOG << "X server does not support XFixes.";
     return;
   }
 

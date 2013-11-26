@@ -8,6 +8,7 @@
 
 #include "base/message_loop/message_loop_proxy.h"
 #include "remoting/base/capabilities.h"
+#include "remoting/base/logging.h"
 #include "remoting/codec/audio_encoder.h"
 #include "remoting/codec/audio_encoder_opus.h"
 #include "remoting/codec/audio_encoder_verbatim.h"
@@ -199,7 +200,7 @@ void ClientSession::DeliverClientMessage(
     }
   }
   // No messages are currently supported.
-  LOG(INFO) << "Unexpected message received: "
+  HOST_LOG << "Unexpected message received: "
             << message.type() << ": " << message.data();
 }
 

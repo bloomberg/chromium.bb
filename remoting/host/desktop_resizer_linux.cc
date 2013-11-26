@@ -10,7 +10,7 @@
 #include <X11/Xlib.h>
 
 #include "base/command_line.h"
-#include "base/logging.h"
+#include "remoting/base/logging.h"
 
 // On Linux, we use the xrandr extension to change the desktop resolution. For
 // now, we only support resize-to-client for Xvfb-based servers that can match
@@ -253,7 +253,7 @@ void DesktopResizerLinux::SetResolution(const ScreenResolution& resolution) {
   // that we have to detach the output from any mode in order to resize it
   // (strictly speaking, this is only required when reducing the size, but it
   // seems safe to do it regardless).
-  LOG(INFO) << "Changing desktop size to " << resolution.dimensions().width()
+  HOST_LOG << "Changing desktop size to " << resolution.dimensions().width()
             << "x" << resolution.dimensions().height();
 
   // TODO(lambroslambrou): Use the DPI from client size information.

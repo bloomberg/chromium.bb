@@ -49,7 +49,7 @@ class HostNPScriptObject : public It2MeHost::Observer {
 
   // Post LogDebugInfo to the correct proxy (and thus, on the correct thread).
   // This should only be called by HostLogHandler. To log to the UI, use the
-  // standard LOG(INFO) and it will be sent to this method.
+  // standard HOST_LOG and it will be sent to this method.
   void PostLogDebugInfo(const std::string& message);
 
   void SetWindow(NPWindow* np_window);

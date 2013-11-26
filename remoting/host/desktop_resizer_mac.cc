@@ -7,10 +7,10 @@
 #include <Carbon/Carbon.h>
 
 #include "base/basictypes.h"
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "remoting/base/logging.h"
 
 namespace {
 // TODO(jamiewalch): Use the correct DPI for the mode: http://crbug.com/172405.
@@ -104,7 +104,7 @@ void DesktopResizerMac::SetResolution(const ScreenResolution& resolution) {
     }
   }
   if (best_mode) {
-    LOG(INFO) << "Changing mode to " << best_mode << " ("
+    HOST_LOG << "Changing mode to " << best_mode << " ("
               << resolution.dimensions().width() << "x"
               << "x" << resolution.dimensions().height() << "x"
               << best_depth << " @ "

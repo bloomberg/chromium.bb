@@ -832,7 +832,8 @@ def _CheckSpamLogging(input_api, output_api):
   black_list = (_EXCLUDED_PATHS +
                 _TEST_CODE_EXCLUDED_PATHS +
                 input_api.DEFAULT_BLACK_LIST +
-                (r"^base[\\\/]logging\.h$",))
+                (r"^base[\\\/]logging\.h$",
+                 r"^remoting[\\\/]base[\\\/]logging\.h$",))
   source_file_filter = lambda x: input_api.FilterSourceFile(
       x, white_list=(file_inclusion_pattern,), black_list=black_list)
 

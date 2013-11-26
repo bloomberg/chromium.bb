@@ -8,10 +8,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "build/build_config.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/logging.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_config.h"
@@ -117,7 +117,7 @@ void ChromotingHost::Start(const std::string& host_owner) {
   DCHECK(CalledOnValidThread());
   DCHECK(!started_);
 
-  LOG(INFO) << "Starting host";
+  HOST_LOG << "Starting host";
   started_ = true;
   FOR_EACH_OBSERVER(HostStatusObserver, status_observers_, OnStart(host_owner));
 
@@ -287,7 +287,7 @@ void ChromotingHost::OnIncomingSession(
 
   *response = protocol::SessionManager::ACCEPT;
 
-  LOG(INFO) << "Client connected: " << session->jid();
+  HOST_LOG << "Client connected: " << session->jid();
 
   // Create a client object.
   scoped_ptr<protocol::ConnectionToClient> connection(

@@ -10,6 +10,7 @@
 #include "base/threading/platform_thread.h"
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/auto_thread.h"
+#include "remoting/base/logging.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
@@ -180,7 +181,7 @@ void It2MeHost::FinishConnect() {
   register_request_ = register_request.Pass();
 
   // If NAT traversal is off then limit port range to allow firewall pin-holing.
-  LOG(INFO) << "NAT state: " << nat_traversal_enabled_;
+  HOST_LOG << "NAT state: " << nat_traversal_enabled_;
   NetworkSettings network_settings(
      nat_traversal_enabled_ ?
      NetworkSettings::NAT_TRAVERSAL_ENABLED :
@@ -295,7 +296,7 @@ void It2MeHost::OnClientAuthenticated(const std::string& jid) {
   if (pos != std::string::npos)
     client_username.replace(pos, std::string::npos, "");
 
-  LOG(INFO) << "Client " << client_username << " connected.";
+  HOST_LOG << "Client " << client_username << " connected.";
 
   // Pass the client user name to the script object before changing state.
   plugin_task_runner_->PostTask(

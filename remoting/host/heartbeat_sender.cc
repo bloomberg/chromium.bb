@@ -7,13 +7,13 @@
 #include <math.h>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
 #include "base/time/time.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/logging.h"
 #include "remoting/host/server_log_entry.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/signal_strategy.h"
@@ -228,7 +228,7 @@ void HeartbeatSender::SetSequenceId(int sequence_id) {
   if (!sequence_id_was_set_) {
     ResendStanza();
   } else {
-    LOG(INFO) << "The heartbeat sequence ID has been set more than once: "
+    HOST_LOG << "The heartbeat sequence ID has been set more than once: "
               << "the new value is " << sequence_id;
     double delay = pow(2.0, sequence_id_recent_set_num_) *
         (1 + base::RandDouble()) * kResendDelayMs;

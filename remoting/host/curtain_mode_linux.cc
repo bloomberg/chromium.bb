@@ -7,8 +7,8 @@
 #include <X11/extensions/XInput.h>
 
 #include "base/callback.h"
-#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
+#include "remoting/base/logging.h"
 #include "remoting/host/client_session_control.h"
 
 namespace remoting {
@@ -68,7 +68,7 @@ bool CurtainModeLinux::IsXvfbSession() {
         found_xvfb_mouse = true;
       } else if (strcmp(device_info->name, "Virtual core XTEST pointer") != 0) {
         found_other_devices = true;
-        LOG(INFO) << "Non Xvfb mouse found: " << device_info->name;
+        HOST_LOG << "Non Xvfb mouse found: " << device_info->name;
       }
     } else if (device_info->use == IsXExtensionKeyboard) {
       if (strcmp(device_info->name, "Xvfb keyboard") == 0) {
@@ -76,21 +76,21 @@ bool CurtainModeLinux::IsXvfbSession() {
       } else if (strcmp(device_info->name,
                         "Virtual core XTEST keyboard") != 0) {
         found_other_devices = true;
-        LOG(INFO) << "Non Xvfb keyboard found: " << device_info->name;
+        HOST_LOG << "Non Xvfb keyboard found: " << device_info->name;
       }
     } else if (device_info->use == IsXPointer) {
       if (strcmp(device_info->name, "Virtual core pointer") != 0) {
         found_other_devices = true;
-        LOG(INFO) << "Non Xvfb mouse found: " << device_info->name;
+        HOST_LOG << "Non Xvfb mouse found: " << device_info->name;
       }
     } else if (device_info->use == IsXKeyboard) {
       if (strcmp(device_info->name, "Virtual core keyboard") != 0) {
         found_other_devices = true;
-        LOG(INFO) << "Non Xvfb keyboard found: " << device_info->name;
+        HOST_LOG << "Non Xvfb keyboard found: " << device_info->name;
       }
     } else {
       found_other_devices = true;
-      LOG(INFO) << "Non Xvfb device found: " << device_info->name;
+      HOST_LOG << "Non Xvfb device found: " << device_info->name;
     }
   }
   XFreeDeviceList(devices);

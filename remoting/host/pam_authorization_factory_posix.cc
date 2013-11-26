@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/environment.h"
-#include "base/logging.h"
+#include "remoting/base/logging.h"
 #include "remoting/base/util.h"
 #include "remoting/protocol/channel_authenticator.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlelement.h"
@@ -115,7 +115,7 @@ bool PamAuthorizer::IsLocalLoginAllowed() {
   }
   pam_end(handle, result);
 
-  LOG(INFO) << "Local login check for " << username
+  HOST_LOG << "Local login check for " << username
             << (result == PAM_SUCCESS ? " succeeded." : " failed.");
 
   return result == PAM_SUCCESS;
@@ -140,7 +140,7 @@ int PamAuthorizer::PamConversation(int num_messages,
         LOG(ERROR) << "PAM conversation error message: " << message->msg;
         break;
       case PAM_TEXT_INFO:
-        LOG(INFO) << "PAM conversation message: " << message->msg;
+        HOST_LOG << "PAM conversation message: " << message->msg;
         break;
       default:
         LOG(FATAL) << "Unexpected PAM conversation response required: "

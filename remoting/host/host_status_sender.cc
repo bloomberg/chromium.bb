@@ -4,11 +4,11 @@
 
 #include "remoting/host/host_status_sender.h"
 
-#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringize_macros.h"
 #include "base/time/time.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/logging.h"
 #include "remoting/host/server_log_entry.h"
 #include "remoting/jingle_glue/iq_sender.h"
 #include "remoting/jingle_glue/signal_strategy.h"
@@ -79,7 +79,7 @@ void HostStatusSender::SendHostStatus(HostStatus status,
                                       HostExitCodes exit_code) {
   SignalStrategy::State state = signal_strategy_->GetState();
   if (state == SignalStrategy::CONNECTED) {
-    LOG(INFO) << "Sending host status '"
+    HOST_LOG << "Sending host status '"
               << HostStatusToString(status)
               << "' to "
               << directory_bot_jid_;
@@ -89,7 +89,7 @@ void HostStatusSender::SendHostStatus(HostStatus status,
                        CreateHostStatusMessage(status, exit_code),
                        IqSender::ReplyCallback());
   } else {
-    LOG(INFO) << "Cannot send host status to '"
+    HOST_LOG << "Cannot send host status to '"
               << directory_bot_jid_
               << " ' because the state of the SignalStrategy is "
               << state;

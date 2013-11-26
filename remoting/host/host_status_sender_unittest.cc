@@ -7,6 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/logging.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/base/test_rsa_key_pair.h"
 #include "remoting/host/host_exit_codes.h"
@@ -87,7 +88,6 @@ TEST_F(HostStatusSenderTest, SendOnlineStatus) {
   scoped_ptr<XmlElement> stanza(sent_iq);
 
   ASSERT_TRUE(stanza != NULL);
-  LOG(INFO) << stanza->Str();
 
   ValidateHostStatusStanza(stanza.get(), HostStatusSender::ONLINE);
 }
@@ -116,7 +116,6 @@ TEST_F(HostStatusSenderTest, SendOfflineStatus) {
   scoped_ptr<XmlElement> stanza(sent_iq);
 
   ASSERT_TRUE(stanza != NULL);
-  LOG(INFO) << stanza->Str();
 
   ValidateHostStatusStanza(stanza.get(), HostStatusSender::OFFLINE);
 }
@@ -192,9 +191,6 @@ void HostStatusSenderTest::ValidateSignature(
   std::string expected_signature =
       key_pair->SignMessage(message);
   EXPECT_EQ(expected_signature, signature->BodyText());
-
-  int64 now = static_cast<int64>(base::Time::Now().ToDoubleT());
-  LOG(INFO) << "SendHostStatus took " << now - time << " seconds.";
 }
 
 }  // namespace remoting

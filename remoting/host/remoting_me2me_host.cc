@@ -13,7 +13,6 @@
 #include "base/debug/alias.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -35,6 +34,7 @@
 #include "remoting/base/auto_thread_task_runner.h"
 #include "remoting/base/breakpad.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/logging.h"
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/base/util.h"
 #include "remoting/host/branding.h"
@@ -423,7 +423,7 @@ void HostProcess::OnConfigUpdated(
   if (serialized_config_ == serialized_config)
     return;
 
-  LOG(INFO) << "Processing new host configuration.";
+  HOST_LOG << "Processing new host configuration.";
 
   serialized_config_ = serialized_config;
   scoped_ptr<JsonHostConfig> config(new JsonHostConfig(base::FilePath()));
@@ -488,7 +488,7 @@ void HostProcess::StartOnNetworkThread() {
 void HostProcess::SigTermHandler(int signal_number) {
   DCHECK(signal_number == SIGTERM);
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
-  LOG(INFO) << "Caught SIGTERM: Shutting down...";
+  HOST_LOG << "Caught SIGTERM: Shutting down...";
   ShutdownHost(kSuccessExitCode);
 }
 #endif  // OS_POSIX
@@ -659,7 +659,7 @@ void HostProcess::OnUnknownHostIdError() {
 }
 
 void HostProcess::OnHeartbeatSuccessful() {
-  LOG(INFO) << "Host ready to receive connections.";
+  HOST_LOG << "Host ready to receive connections.";
 #if defined(OS_POSIX)
   if (signal_parent_) {
     kill(getppid(), SIGUSR1);
@@ -804,7 +804,7 @@ bool HostProcess::OnHostDomainPolicyUpdate(const std::string& host_domain) {
   // Returns true if the host has to be restarted after this policy update.
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  LOG(INFO) << "Policy sets host domain: " << host_domain;
+  HOST_LOG << "Policy sets host domain: " << host_domain;
 
   if (!host_domain.empty() &&
       !EndsWith(host_owner_, std::string("@") + host_domain, false)) {
@@ -819,7 +819,7 @@ bool HostProcess::OnUsernamePolicyUpdate(bool curtain_required,
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   if (host_username_match_required) {
-    LOG(INFO) << "Policy requires host username match.";
+    HOST_LOG << "Policy requires host username match.";
     std::string username = GetUsername();
     bool shutdown = username.empty() ||
         !StartsWithASCII(host_owner_, username + std::string("@"),
@@ -848,7 +848,7 @@ bool HostProcess::OnUsernamePolicyUpdate(bool curtain_required,
       ShutdownHost(kUsernameMismatchExitCode);
     }
   } else {
-    LOG(INFO) << "Policy does not require host username match.";
+    HOST_LOG << "Policy does not require host username match.";
   }
 
   return false;
@@ -860,9 +860,9 @@ bool HostProcess::OnNatPolicyUpdate(bool nat_traversal_enabled) {
 
   if (allow_nat_traversal_ != nat_traversal_enabled) {
     if (nat_traversal_enabled)
-      LOG(INFO) << "Policy enables NAT traversal.";
+      HOST_LOG << "Policy enables NAT traversal.";
     else
-      LOG(INFO) << "Policy disables NAT traversal.";
+      HOST_LOG << "Policy disables NAT traversal.";
     allow_nat_traversal_ = nat_traversal_enabled;
     return true;
   }
@@ -895,9 +895,9 @@ void HostProcess::OnCurtainPolicyUpdate(bool curtain_required) {
 
   if (curtain_required_ != curtain_required) {
     if (curtain_required)
-      LOG(INFO) << "Policy requires curtain-mode.";
+      HOST_LOG << "Policy requires curtain-mode.";
     else
-      LOG(INFO) << "Policy does not require curtain-mode.";
+      HOST_LOG << "Policy does not require curtain-mode.";
     curtain_required_ = curtain_required;
     if (host_)
       host_->SetEnableCurtaining(curtain_required_);
@@ -910,7 +910,7 @@ bool HostProcess::OnHostTalkGadgetPrefixPolicyUpdate(
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
   if (talkgadget_prefix != talkgadget_prefix_) {
-    LOG(INFO) << "Policy sets talkgadget prefix: " << talkgadget_prefix;
+    HOST_LOG << "Policy sets talkgadget prefix: " << talkgadget_prefix;
     talkgadget_prefix_ = talkgadget_prefix;
     return true;
   }
@@ -925,7 +925,7 @@ bool HostProcess::OnHostTokenUrlPolicyUpdate(
 
   if (token_url_ != token_url ||
       token_validation_url_ != token_validation_url) {
-    LOG(INFO) << "Policy sets third-party token URLs: "
+    HOST_LOG << "Policy sets third-party token URLs: "
               << "TokenUrl: " << token_url << ", "
               << "TokenValidationUrl: " << token_validation_url;
 
@@ -944,9 +944,9 @@ bool HostProcess::OnPairingPolicyUpdate(bool allow_pairing) {
     return false;
 
   if (allow_pairing)
-    LOG(INFO) << "Policy enables client pairing.";
+    HOST_LOG << "Policy enables client pairing.";
   else
-    LOG(INFO) << "Policy disables client pairing.";
+    HOST_LOG << "Policy disables client pairing.";
   allow_pairing_ = allow_pairing;
   return true;
 }
