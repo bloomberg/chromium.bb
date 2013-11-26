@@ -249,6 +249,14 @@ assertIterationTime('1s infinite linear', [
   {is: 0.4, at: 1000.4},
 ]);
 
+
+log('\nInfinite iterations, zero duration:')
+assertIterationTime('0s infinite linear', [
+  {is: null, at: -1},
+  {is: null, at: 0},
+  {is: null, at: 2},
+]);
+
 };
 
 if (window.testRunner) {

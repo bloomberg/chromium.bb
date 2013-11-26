@@ -518,7 +518,7 @@ void AnimationBase::getTimeToNextEvent(double& time, bool& isLooping) const
 
     if (m_totalDuration < 0 || nextIterationTime < m_totalDuration) {
         // We are not at the end yet
-        ASSERT(nextIterationTime > 0);
+        ASSERT(m_totalDuration < 0 || nextIterationTime > 0);
         isLooping = true;
     } else {
         // We are at the end

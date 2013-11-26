@@ -31,6 +31,8 @@
 #include "config.h"
 #include "core/animation/KeyframeAnimationEffect.h"
 
+#include "core/animation/TimedItem.h"
+
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringHash.h"
 
@@ -184,6 +186,8 @@ PropertySet KeyframeAnimationEffect::properties() const
 
 PassOwnPtr<AnimationEffect::CompositableValueMap> KeyframeAnimationEffect::sample(int iteration, double fraction) const
 {
+    ASSERT(iteration >= 0);
+    ASSERT(!isNull(fraction));
     const_cast<KeyframeAnimationEffect*>(this)->ensureKeyframeGroups();
     OwnPtr<CompositableValueMap> map = adoptPtr(new CompositableValueMap());
     for (KeyframeGroupMap::const_iterator iter = m_keyframeGroups->begin(); iter != m_keyframeGroups->end(); ++iter)
@@ -317,6 +321,7 @@ PassRefPtr<AnimationEffect::CompositableValue> KeyframeAnimationEffect::Property
 {
     // FIXME: Implement accumulation.
     ASSERT_UNUSED(iteration, iteration >= 0);
+    ASSERT(!isNull(offset));
 
     double minimumOffset = m_keyframes.first()->offset();
     double maximumOffset = m_keyframes.last()->offset();

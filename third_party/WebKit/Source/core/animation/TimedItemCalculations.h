@@ -106,12 +106,13 @@ static inline double calculateScaledActiveTime(double activeDuration, double act
 
 static inline bool endsOnIterationBoundary(double iterationCount, double iterationStart)
 {
+    ASSERT(std::isfinite(iterationCount));
     return !fmod(iterationCount + iterationStart, 1);
 }
 
 static inline double calculateIterationTime(double iterationDuration, double repeatedDuration, double scaledActiveTime, double startOffset, const Timing& specified)
 {
-    ASSERT(iterationDuration >= 0);
+    ASSERT(iterationDuration > 0);
     ASSERT(repeatedDuration == iterationDuration * specified.iterationCount);
 
     if (isNull(scaledActiveTime))
@@ -120,18 +121,17 @@ static inline double calculateIterationTime(double iterationDuration, double rep
     ASSERT(scaledActiveTime >= 0);
     ASSERT(scaledActiveTime <= repeatedDuration + startOffset);
 
-    if (!iterationDuration)
-        return 0;
-
-    if (scaledActiveTime - startOffset == repeatedDuration && specified.iterationCount && endsOnIterationBoundary(specified.iterationCount, specified.iterationStart))
+    if (!std::isfinite(scaledActiveTime)
+        || (scaledActiveTime - startOffset == repeatedDuration && specified.iterationCount && endsOnIterationBoundary(specified.iterationCount, specified.iterationStart)))
         return iterationDuration;
 
+    ASSERT(std::isfinite(scaledActiveTime));
     return fmod(scaledActiveTime, iterationDuration);
 }
 
 static inline double calculateCurrentIteration(double iterationDuration, double iterationTime, double scaledActiveTime, const Timing& specified)
 {
-    ASSERT(iterationDuration >= 0);
+    ASSERT(iterationDuration > 0);
     ASSERT(isNull(iterationTime) || iterationTime >= 0);
 
     if (isNull(scaledActiveTime))
@@ -143,9 +143,6 @@ static inline double calculateCurrentIteration(double iterationDuration, double 
 
     if (!scaledActiveTime)
         return 0;
-
-    if (!iterationDuration)
-        return floor(specified.iterationStart + specified.iterationCount);
 
     if (iterationTime == iterationDuration)
         return specified.iterationStart + specified.iterationCount - 1;

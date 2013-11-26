@@ -114,9 +114,6 @@ TEST(AnimationTimedItemCalculationsTest, IterationTime)
     // if the scaled active time is null
     ASSERT_TRUE(isNull(calculateIterationTime(1, 1, nullValue(), 1, timing)));
 
-    // if the iteration duration is zero
-    ASSERT_EQ(0, calculateIterationTime(0, 0, 0, 4, timing));
-
     // if (complex-conditions)...
     ASSERT_EQ(12, calculateIterationTime(12, 12, 12, 0, timing));
 
@@ -139,9 +136,6 @@ TEST(AnimationTimedItemCalculationsTest, CurrentIteration)
 
     // if the scaled active time is zero
     ASSERT_EQ(0, calculateCurrentIteration(1, 1, 0, timing));
-
-    // if iterationDuration is zero
-    ASSERT_EQ(1, calculateCurrentIteration(0, 0, 9, timing));
 
     // if the iteration time equals the iteration duration
     timing.iterationStart = 4;

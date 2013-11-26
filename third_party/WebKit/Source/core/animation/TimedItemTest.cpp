@@ -454,19 +454,20 @@ TEST(AnimationTimedItemTest, ZeroDurationIterationStartAndCount)
     ASSERT_DOUBLE_EQ(0.3, timedItem->timeFraction());
 }
 
-// FIXME: Needs specification work -- ASSERTION FAILED: activeDuration >= 0
-TEST(AnimationTimedItemTest, DISABLED_ZeroDurationInfiniteIteration)
+// FIXME: Needs specification work.
+TEST(AnimationTimedItemTest, ZeroDurationInfiniteIteration)
 {
     Timing timing;
     timing.iterationCount = std::numeric_limits<double>::infinity();
     RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
 
     timedItem->updateInheritedTime(-1);
+    ASSERT_EQ(0, timedItem->activeDuration());
     ASSERT_TRUE(isNull(timedItem->currentIteration()));
     ASSERT_TRUE(isNull(timedItem->timeFraction()));
-    ASSERT_TRUE(isNull(timedItem->activeDuration()));
 
     timedItem->updateInheritedTime(0);
+    ASSERT_EQ(0, timedItem->activeDuration());
     ASSERT_EQ(std::numeric_limits<double>::infinity(), timedItem->currentIteration());
     ASSERT_EQ(1, timedItem->timeFraction());
 }

@@ -136,3 +136,8 @@ PASS: [1s infinite linear] iteration time was [0] at 10s
 PASS: [1s infinite linear] iteration time was [0] at 1000s
 PASS: [1s infinite linear] iteration time was [0.4] at 1000.4s
 
+Infinite iterations, zero duration:
+PASS: [0s infinite linear] iteration time was [null] at -1s
+PASS: [0s infinite linear] iteration time was [null] at 0s
+FAIL: [0s infinite linear] iteration time was [1] at 2s expected [null]
+
