@@ -33,34 +33,23 @@
 
 namespace {
 
-void InitXKeyEvent(ui::KeyboardCode ui_keycode,
-                   int ui_flags,
-                   ui::EventType ui_type,
-                   KeyCode x_keycode,
-                   unsigned int x_state,
-                   XEvent* event) {
-  ui::InitXKeyEventForTesting(ui_type,
-                              ui_keycode,
-                              ui_flags,
-                              event);
-  event->xkey.keycode = x_keycode;
-  event->xkey.state = x_state;
-}
-
 std::string GetRewrittenEventAsString(EventRewriter* rewriter,
                                       ui::KeyboardCode ui_keycode,
                                       int ui_flags,
                                       ui::EventType ui_type,
                                       KeyCode x_keycode,
                                       unsigned int x_state) {
-  XEvent xev;
-  InitXKeyEvent(ui_keycode, ui_flags, ui_type, x_keycode, x_state, &xev);
-  ui::KeyEvent keyevent(&xev, false /* is_char */);
+  ui::ScopedXI2Event xev;
+  xev.InitKeyEvent(ui_type, ui_keycode, ui_flags);
+  XEvent* xevent = xev;
+  xevent->xkey.keycode = x_keycode;
+  xevent->xkey.state = x_state;
+  ui::KeyEvent keyevent(xev, false /* is_char */);
   rewriter->RewriteForTesting(&keyevent);
   return base::StringPrintf(
       "ui_keycode=%d ui_flags=%d ui_type=%d x_keycode=%u x_state=%u x_type=%d",
       keyevent.key_code(), keyevent.flags(), keyevent.type(),
-      xev.xkey.keycode, xev.xkey.state, xev.xkey.type);
+      xevent->xkey.keycode, xevent->xkey.state, xevent->xkey.type);
 }
 
 std::string GetExpectedResultAsString(ui::KeyboardCode ui_keycode,
@@ -2305,17 +2294,18 @@ TEST_F(EventRewriterTest, TestRewriteKeyEventSentByXSendEvent) {
   // Send left control press.
   std::string rewritten_event;
   {
-    XEvent xev;
-    InitXKeyEvent(ui::VKEY_CONTROL, 0, ui::ET_KEY_PRESSED,
-                  keycode_control_l_, 0U, &xev);
-    xev.xkey.send_event = True;  // XSendEvent() always does this.
-    ui::KeyEvent keyevent(&xev, false /* is_char */);
+    ui::ScopedXI2Event xev;
+    xev.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_CONTROL, 0);
+    XEvent* xevent = xev;
+    xevent->xkey.keycode = keycode_control_l_;
+    xevent->xkey.send_event = True;  // XSendEvent() always does this.
+    ui::KeyEvent keyevent(xev, false /* is_char */);
     rewriter.RewriteForTesting(&keyevent);
     rewritten_event = base::StringPrintf(
         "ui_keycode=%d ui_flags=%d ui_type=%d "
         "x_keycode=%u x_state=%u x_type=%d",
         keyevent.key_code(), keyevent.flags(), keyevent.type(),
-        xev.xkey.keycode, xev.xkey.state, xev.xkey.type);
+        xevent->xkey.keycode, xevent->xkey.state, xevent->xkey.type);
   }
 
   // XK_Control_L (left Control key) should NOT be remapped to Alt if send_event
@@ -2357,10 +2347,12 @@ TEST_F(EventRewriterAshTest, TopRowKeysAreFunctionKeys) {
   window_state->Activate();
 
   // Create a simulated keypress of F1 targetted at the window.
-  XEvent xev_f1;
+  ui::ScopedXI2Event xev_f1;
   KeyCode keycode_f1 = XKeysymToKeycode(gfx::GetXDisplay(), XK_F1);
-  InitXKeyEvent(ui::VKEY_F1, 0, ui::ET_KEY_PRESSED, keycode_f1, 0u, &xev_f1);
-  ui::KeyEvent press_f1(&xev_f1, false);
+  xev_f1.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_F1, 0);
+  XEvent* xevent = xev_f1;
+  xevent->xkey.keycode = keycode_f1;
+  ui::KeyEvent press_f1(xev_f1, false);
   ui::Event::DispatcherApi dispatch_helper(&press_f1);
   dispatch_helper.set_target(window.get());
 

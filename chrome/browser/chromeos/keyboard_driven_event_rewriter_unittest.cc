@@ -16,22 +16,6 @@
 
 namespace chromeos {
 
-// Creates an XKeyEvent to initialize a ui::KeyEvent that is passed to
-// KeyboardDrivenEventRewriter for processing.
-void InitXKeyEvent(ui::KeyboardCode ui_keycode,
-                   int ui_flags,
-                   ui::EventType ui_type,
-                   KeyCode x_keycode,
-                   unsigned int x_state,
-                   XEvent* event) {
-  ui::InitXKeyEventForTesting(ui_type,
-                              ui_keycode,
-                              ui_flags,
-                              event);
-  event->xkey.keycode = x_keycode;
-  event->xkey.state = x_state;
-}
-
 class KeyboardDrivenEventRewriterTest : public testing::Test {
  public:
   KeyboardDrivenEventRewriterTest()
@@ -53,13 +37,16 @@ class KeyboardDrivenEventRewriterTest : public testing::Test {
                                         ui::EventType ui_type,
                                         KeyCode x_keycode,
                                         unsigned int x_state) {
-    XEvent xev;
-    InitXKeyEvent(ui_keycode, ui_flags, ui_type, x_keycode, x_state, &xev);
-    ui::KeyEvent keyevent(&xev, false /* is_char */);
+    ui::ScopedXI2Event xev;
+    xev.InitKeyEvent(ui_type, ui_keycode, ui_flags);
+    XEvent* xevent = xev;
+    xevent->xkey.keycode = x_keycode;
+    xevent->xkey.state = x_state;
+    ui::KeyEvent keyevent(xev, false /* is_char */);
     bool changed = rewriter_.RewriteForTesting(&keyevent);
     return base::StringPrintf("ui_flags=%d x_state=%u changed=%d",
                               keyevent.flags(),
-                              xev.xkey.state,
+                              xevent->xkey.state,
                               changed);
   }
 
