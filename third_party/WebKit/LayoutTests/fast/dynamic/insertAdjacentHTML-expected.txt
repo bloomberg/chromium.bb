@@ -1,4 +1,4 @@
-Caught expected exception: SyntaxError: An invalid or illegal string was specified.
+Caught expected exception: SyntaxError: Failed to execute 'insertAdjacentHTML' on 'HTMLElement': The value provided ('blah') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.
 1 (black) 2 (green) 3 (green) 4 (black) 
 
 PASS

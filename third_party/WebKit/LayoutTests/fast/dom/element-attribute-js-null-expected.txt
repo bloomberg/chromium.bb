@@ -11,7 +11,7 @@ TEST SUCCEEDED: The value was the empty string. [tested HTMLElement.dir]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLElement.className]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLElement.innerHTML]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLElement.innerText]
-TEST SUCCEEDED: Exception (SyntaxError: An invalid or illegal string was specified.) was thrown as expected. [tested HTMLElement.contentEditable]
+TEST SUCCEEDED: Exception (SyntaxError: Failed to set the 'contentEditable' property on 'HTMLElement': The value provided ('') is not one of 'true', 'false', 'plaintext-only', or 'inherit'.) was thrown as expected. [tested HTMLElement.contentEditable]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLAnchorElement.accessKey]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAnchorElement.charset]

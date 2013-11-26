@@ -1,5 +1,5 @@
-Caught expected exception: NotSupportedError: The implementation did not support the requested type of object or operation.
-Caught expected exception: TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object.
+Caught expected exception: SyntaxError: Failed to execute 'insertAdjacent' on 'HTMLElement': The value provided ('blah') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.
+Caught expected exception: TypeError: Failed to execute 'insertAdjacentElement' on 'HTMLElement': The node provided is null.
 1 (black) 2 (green) 3 (green) 4 (black) 
 
 PASS

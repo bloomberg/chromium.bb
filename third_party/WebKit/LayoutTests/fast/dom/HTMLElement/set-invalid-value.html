@@ -11,13 +11,13 @@
 <script>
 description('When contentEditable is set to invalid string, SYNTAX_ERR exception (code: 12) must be raised.')
 
-shouldThrow("document.getElementById('div').contentEditable = 'abc'", '"SyntaxError: An invalid or illegal string was specified."');
+shouldThrow("document.getElementById('div').contentEditable = 'abc'", '"SyntaxError: Failed to set the \'contentEditable\' property on \'HTMLElement\': The value provided (\'abc\') is not one of \'true\', \'false\', \'plaintext-only\', or \'inherit\'."');
 shouldBe('document.getElementById("div").getAttribute("contentEditable")','"true"');
 shouldBe('document.getElementById("div").contentEditable', '"true"');
 shouldBe('document.getElementById("div").isContentEditable', 'true');
 shouldBe('window.getComputedStyle(div, "").getPropertyValue("-webkit-user-modify")', '"read-write"');
 
-shouldThrow("document.getElementById('div').contentEditable = ''", '"SyntaxError: An invalid or illegal string was specified."');
+shouldThrow("document.getElementById('div').contentEditable = ''", '"SyntaxError: Failed to set the \'contentEditable\' property on \'HTMLElement\': The value provided (\'\') is not one of \'true\', \'false\', \'plaintext-only\', or \'inherit\'."');
 shouldBe('document.getElementById("div").getAttribute("contentEditable")','"true"');
 shouldBe('document.getElementById("div").contentEditable', '"true"');
 shouldBe('document.getElementById("div").isContentEditable', 'true');
