@@ -45,8 +45,8 @@ class WebString;
 
 class WebSocketHandshakeResponseInfo : public WebNonCopyable {
 public:
-    WebSocketHandshakeResponseInfo();
-    ~WebSocketHandshakeResponseInfo();
+    BLINK_PLATFORM_EXPORT WebSocketHandshakeResponseInfo();
+    BLINK_PLATFORM_EXPORT ~WebSocketHandshakeResponseInfo();
 
     BLINK_PLATFORM_EXPORT void setStatusCode(int);
     BLINK_PLATFORM_EXPORT void setStatusText(const WebString&);

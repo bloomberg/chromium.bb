@@ -46,8 +46,8 @@ class WebURL;
 
 class WebSocketHandshakeRequestInfo : public WebNonCopyable {
 public:
-    WebSocketHandshakeRequestInfo();
-    ~WebSocketHandshakeRequestInfo();
+    BLINK_PLATFORM_EXPORT WebSocketHandshakeRequestInfo();
+    BLINK_PLATFORM_EXPORT ~WebSocketHandshakeRequestInfo();
 
     BLINK_PLATFORM_EXPORT void setURL(const WebURL&);
     BLINK_PLATFORM_EXPORT void addHeaderField(const WebString& name, const WebString& value);
