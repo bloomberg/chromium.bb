@@ -99,19 +99,9 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
   QuicPriority priority = ConvertRequestPriorityToQuicPriority(priority_);
   stream_->set_priority(priority);
   // Store the serialized request headers.
-  SpdyHeaderBlock headers;
-  CreateSpdyHeadersFromHttpRequest(*request_info_, request_headers,
-                                   &headers, 3, /*direct=*/true);
-  request_ = stream_->compressor()->CompressHeadersWithPriority(priority,
-                                                                headers);
-  // Log the actual request with the URL Request's net log.
-  stream_net_log_.AddEvent(
-      NetLog::TYPE_HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS,
-      base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
-  // Also log to the QuicSession's net log.
-  stream_->net_log().AddEvent(
-      NetLog::TYPE_QUIC_HTTP_STREAM_SEND_REQUEST_HEADERS,
-      base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
+  CreateSpdyHeadersFromHttpRequest(
+      *request_info_, request_headers, &request_headers_,
+      /*version=*/3, /*direct=*/true);
 
   // Store the request body.
   request_body_stream_ = request_info_->upload_data_stream;
@@ -278,18 +268,6 @@ void QuicHttpStream::SetPriority(RequestPriority priority) {
   priority_ = priority;
 }
 
-int QuicHttpStream::OnSendData() {
-  // TODO(rch): Change QUIC IO to provide notifications to the streams.
-  NOTREACHED();
-  return OK;
-}
-
-int QuicHttpStream::OnSendDataComplete(int status, bool* eof) {
-  // TODO(rch): Change QUIC IO to provide notifications to the streams.
-  NOTREACHED();
-  return OK;
-}
-
 int QuicHttpStream::OnDataReceived(const char* data, int length) {
   DCHECK_NE(0, length);
   // Are we still reading the response headers.
@@ -423,6 +401,26 @@ int QuicHttpStream::DoLoop(int rv) {
 int QuicHttpStream::DoSendHeaders() {
   if (!stream_)
     return ERR_UNEXPECTED;
+
+  if (request_.empty() && !stream_->CanWrite(
+          base::Bind(&QuicHttpStream::OnIOComplete,
+                     weak_factory_.GetWeakPtr()))) {
+    // Do not compress headers unless it is likely that they can be sent.
+    next_state_ = STATE_SEND_HEADERS;
+    return ERR_IO_PENDING;
+  }
+  request_ = stream_->compressor()->CompressHeadersWithPriority(
+      ConvertRequestPriorityToQuicPriority(priority_), request_headers_);
+
+  // Log the actual request with the URL Request's net log.
+  stream_net_log_.AddEvent(
+      NetLog::TYPE_HTTP_TRANSACTION_SPDY_SEND_REQUEST_HEADERS,
+      base::Bind(&SpdyHeaderBlockNetLogCallback, &request_headers_));
+  // Also log to the QuicSession's net log.
+  stream_->net_log().AddEvent(
+      NetLog::TYPE_QUIC_HTTP_STREAM_SEND_REQUEST_HEADERS,
+      base::Bind(&SpdyHeaderBlockNetLogCallback, &request_headers_));
+  request_headers_.clear();
 
   bool has_upload_data = request_body_stream_ != NULL;
 

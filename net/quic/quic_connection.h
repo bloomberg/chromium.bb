@@ -408,6 +408,10 @@ class NET_EXPORT_PRIVATE QuicConnection
     return congestion_manager_;
   }
 
+  bool CanWrite(TransmissionType transmission_type,
+                HasRetransmittableData retransmittable,
+                IsHandshake handshake);
+
  protected:
   // Send a packet to the peer using encryption |level|. If |sequence_number|
   // is present in the |retransmission_map_|, then contents of this packet will
@@ -473,10 +477,6 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   friend class ScopedPacketBundler;
   friend class test::QuicConnectionPeer;
-
-  bool CanWrite(TransmissionType transmission_type,
-                HasRetransmittableData retransmittable,
-                IsHandshake handshake);
 
   // Packets which have not been written to the wire.
   // Owns the QuicPacket* packet.

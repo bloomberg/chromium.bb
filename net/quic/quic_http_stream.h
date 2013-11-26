@@ -62,8 +62,6 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
   virtual void SetPriority(RequestPriority priority) OVERRIDE;
 
   // QuicReliableClientStream::Delegate implementation
-  virtual int OnSendData() OVERRIDE;
-  virtual int OnSendDataComplete(int status, bool* eof) OVERRIDE;
   virtual int OnDataReceived(const char* data, int length) OVERRIDE;
   virtual void OnClose(QuicErrorCode error) OVERRIDE;
   virtual void OnError(int error) OVERRIDE;
@@ -130,6 +128,9 @@ class NET_EXPORT_PRIVATE QuicHttpStream :
   // Once all buffered data has been returned, this will be used as the final
   // response.
   int response_status_;
+
+  // Serialized request headers.
+  SpdyHeaderBlock request_headers_;
 
   bool response_headers_received_;
 

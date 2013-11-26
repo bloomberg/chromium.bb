@@ -729,6 +729,37 @@ TEST_F(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
   reliable_stream->SetDelegate(delegate);
 }
 
+TEST_F(QuicHttpStreamTest, DontCompressHeadersWhenNotWritable) {
+  SetRequestString("GET", "/", MEDIUM);
+  AddWrite(SYNCHRONOUS, ConstructDataPacket(1, true, kFin, 0, request_data_));
+
+  Initialize();
+  request_.method = "GET";
+  request_.url = GURL("http://www.google.com/");
+
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _, _)).
+      WillRepeatedly(Return(QuicTime::Delta::Infinite()));
+  EXPECT_EQ(OK, stream_->InitializeStream(&request_, MEDIUM,
+                                          net_log_, callback_.callback()));
+  EXPECT_EQ(ERR_IO_PENDING, stream_->SendRequest(headers_, &response_,
+                                                 callback_.callback()));
+
+  // Verify that the headers have not been compressed and buffered in
+  // the stream.
+  QuicReliableClientStream* reliable_stream =
+      QuicHttpStreamPeer::GetQuicReliableClientStream(stream_.get());
+  EXPECT_FALSE(reliable_stream->HasBufferedData());
+  EXPECT_FALSE(AtEof());
+
+  EXPECT_CALL(*send_algorithm_, TimeUntilSend(_, _, _, _)).
+      WillRepeatedly(Return(QuicTime::Delta::Zero()));
+
+  // Data should flush out now.
+  connection_->OnCanWrite();
+  EXPECT_FALSE(reliable_stream->HasBufferedData());
+  EXPECT_TRUE(AtEof());
+}
+
 }  // namespace test
 
 }  // namespace net

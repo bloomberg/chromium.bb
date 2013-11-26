@@ -27,17 +27,6 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public ReliableQuicStream {
    public:
     Delegate() {}
 
-    // Called when stream is ready to send data.
-    // Returns network error code. OK when it successfully sent data.
-    // ERR_IO_PENDING when performing operation asynchronously.
-    virtual int OnSendData() = 0;
-
-    // Called when data has been sent. |status| indicates network error
-    // or number of bytes that has been sent. On return, |eof| is set to true
-    // if no more data is available to send.
-    // Returns network error code. OK when it successfully sent data.
-    virtual int OnSendDataComplete(int status, bool* eof) = 0;
-
     // Called when data is received.
     // Returns network error code. OK when it successfully receives data.
     virtual int OnDataReceived(const char* data, int length) = 0;
@@ -84,7 +73,15 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public ReliableQuicStream {
   Delegate* GetDelegate() { return delegate_; }
   void OnError(int error);
 
+  // Returns true if the stream can possible write data.  (The socket may
+  // turn out to be write blocked, of course).  If the stream can not write,
+  // this method returns false, and |callback| will be invoked when
+  // it becomes writable.
+  bool CanWrite(const CompletionCallback& callback);
+
   const BoundNetLog& net_log() const { return net_log_; }
+
+  using ReliableQuicStream::HasBufferedData;
 
  private:
   BoundNetLog net_log_;
