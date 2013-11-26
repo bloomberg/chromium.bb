@@ -582,7 +582,7 @@ void Document::dispose()
     // removeDetachedChildren() can access FormController.
     m_formController.clear();
 
-    m_markers->detach();
+    m_markers->clear();
 
     m_cssCanvasElements.clear();
 
@@ -2053,6 +2053,7 @@ void Document::detach(const AttachContext& context)
 
 void Document::prepareForDestruction()
 {
+    m_markers->prepareForDestruction();
     disconnectDescendantFrames();
 
     // The process of disconnecting descendant frames could have already detached us.
@@ -3503,8 +3504,10 @@ void Document::nodeChildrenWillBeRemoved(ContainerNode* container)
             (*it)->nodeWillBeRemoved(*n);
     }
 
-    if (Frame* frame = this->frame()) {
-        for (Node* n = container->firstChild(); n; n = n->nextSibling()) {
+    Frame* frame = this->frame();
+    for (Node* n = container->firstChild(); n; n = n->nextSibling()) {
+        m_markers->nodeWillBeRemoved(*n);
+        if (frame) {
             frame->eventHandler().nodeWillBeRemoved(*n);
             frame->selection().nodeWillBeRemoved(*n);
             frame->page()->dragCaretController().nodeWillBeRemoved(*n);
@@ -3529,6 +3532,8 @@ void Document::nodeWillBeRemoved(Node& n)
         frame->selection().nodeWillBeRemoved(n);
         frame->page()->dragCaretController().nodeWillBeRemoved(n);
     }
+
+    m_markers->nodeWillBeRemoved(n);
 }
 
 void Document::didInsertText(Node* text, unsigned offset, unsigned length)

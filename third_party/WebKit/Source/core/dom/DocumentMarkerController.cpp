@@ -75,7 +75,7 @@ DocumentMarkerController::~DocumentMarkerController()
 {
 }
 
-void DocumentMarkerController::detach()
+void DocumentMarkerController::clear()
 {
     m_markers.clear();
     m_possiblyExistingMarkerTypes = 0;
@@ -138,6 +138,20 @@ void DocumentMarkerController::addTextMatchMarker(const Range* range, bool activ
             toRenderedDocumentMarker(markers[markers.size() - 1])->setRenderedRect(range->boundingBox());
         }
     }
+}
+
+void DocumentMarkerController::nodeWillBeRemoved(const Node& node)
+{
+    if (!possiblyHasMarkers(DocumentMarker::AllMarkers()))
+        return;
+    m_markers.remove(&node);
+    if (m_markers.isEmpty())
+        m_possiblyExistingMarkerTypes = 0;
+}
+
+void DocumentMarkerController::prepareForDestruction()
+{
+    clear();
 }
 
 void DocumentMarkerController::removeMarkers(Range* range, DocumentMarker::MarkerTypes markerTypes, RemovePartiallyOverlappingMarkerOrNot shouldRemovePartiallyOverlappingMarker)
@@ -504,7 +518,7 @@ void DocumentMarkerController::removeMarkers(DocumentMarker::MarkerTypes markerT
         return;
     ASSERT(!m_markers.isEmpty());
 
-    Vector<RefPtr<Node> > nodesWithMarkers;
+    Vector<const Node*> nodesWithMarkers;
     copyKeysToVector(m_markers, nodesWithMarkers);
     unsigned size = nodesWithMarkers.size();
     for (unsigned i = 0; i < size; ++i) {
@@ -568,7 +582,7 @@ void DocumentMarkerController::repaintMarkers(DocumentMarker::MarkerTypes marker
     // outer loop: process each markered node in the document
     MarkerMap::iterator end = m_markers.end();
     for (MarkerMap::iterator i = m_markers.begin(); i != end; ++i) {
-        Node* node = i->key.get();
+        const Node* node = i->key;
 
         // inner loop: process each marker in the current node
         MarkerLists* markers = i->value.get();
@@ -712,7 +726,7 @@ void DocumentMarkerController::showMarkers() const
     fprintf(stderr, "%d nodes have markers:\n", m_markers.size());
     MarkerMap::const_iterator end = m_markers.end();
     for (MarkerMap::const_iterator nodeIterator = m_markers.begin(); nodeIterator != end; ++nodeIterator) {
-        Node* node = nodeIterator->key.get();
+        const Node* node = nodeIterator->key;
         fprintf(stderr, "%p", node);
         MarkerLists* markers = m_markers.get(node);
         for (size_t markerListIndex = 0; markerListIndex < DocumentMarker::MarkerTypeIndexesCount; ++markerListIndex) {
