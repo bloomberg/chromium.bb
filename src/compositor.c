@@ -475,9 +475,12 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	surface->buffer_viewport.transform = WL_OUTPUT_TRANSFORM_NORMAL;
 	surface->buffer_viewport.scale = 1;
+	surface->buffer_viewport.scaler_set = 0;
 	surface->pending.buffer_viewport = surface->buffer_viewport;
 	surface->output = NULL;
 	surface->pending.newly_attached = 0;
+
+	surface->surface_scaler_resource = NULL;
 
 	pixman_region32_init(&surface->damage);
 	pixman_region32_init(&surface->opaque);
@@ -705,15 +708,38 @@ weston_transformed_region(int width, int height,
 	free(dest_rects);
 }
 
+static void
+scaler_surface_to_buffer(struct weston_surface *surface,
+			 float sx, float sy, float *bx, float *by)
+{
+	if (surface->buffer_viewport.scaler_set) {
+		double a, b;
+
+		a = sx / surface->buffer_viewport.dst_width;
+		b = a * wl_fixed_to_double(surface->buffer_viewport.src_width);
+		*bx = b + wl_fixed_to_double(surface->buffer_viewport.src_x);
+
+		a = sy / surface->buffer_viewport.dst_height;
+		b = a * wl_fixed_to_double(surface->buffer_viewport.src_height);
+		*by = b + wl_fixed_to_double(surface->buffer_viewport.src_y);
+	} else {
+		*bx = sx;
+		*by = sy;
+	}
+}
+
 WL_EXPORT void
 weston_surface_to_buffer_float(struct weston_surface *surface,
 			       float sx, float sy, float *bx, float *by)
 {
+	/* first transform coordinates if the scaler is set */
+	scaler_surface_to_buffer(surface, sx, sy, bx, by);
+
 	weston_transformed_coord(surface->width,
 				 surface->height,
 				 surface->buffer_viewport.transform,
 				 surface->buffer_viewport.scale,
-				 sx, sy, bx, by);
+				 *bx, *by, bx, by);
 }
 
 WL_EXPORT void
@@ -722,11 +748,9 @@ weston_surface_to_buffer(struct weston_surface *surface,
 {
 	float bxf, byf;
 
-	weston_transformed_coord(surface->width,
-				 surface->height,
-				 surface->buffer_viewport.transform,
-				 surface->buffer_viewport.scale,
-				 sx, sy, &bxf, &byf);
+	weston_surface_to_buffer_float(surface,
+				       sx, sy, &bxf, &byf);
+
 	*bx = floorf(bxf);
 	*by = floorf(byf);
 }
@@ -735,6 +759,17 @@ WL_EXPORT pixman_box32_t
 weston_surface_to_buffer_rect(struct weston_surface *surface,
 			      pixman_box32_t rect)
 {
+	float xf, yf;
+
+	/* first transform box coordinates if the scaler is set */
+	scaler_surface_to_buffer(surface, rect.x1, rect.y1, &xf, &yf);
+	rect.x1 = floorf(xf);
+	rect.y1 = floorf(yf);
+
+	scaler_surface_to_buffer(surface, rect.x2, rect.y2, &xf, &yf);
+	rect.x2 = floorf(xf);
+	rect.y2 = floorf(yf);
+
 	return weston_transformed_rect(surface->width,
 				       surface->height,
 				       surface->buffer_viewport.transform,
@@ -1249,6 +1284,12 @@ weston_surface_set_size_from_buffer(struct weston_surface *surface)
 
 	if (!surface->buffer_ref.buffer) {
 		surface_set_size(surface, 0, 0);
+		return;
+	}
+
+	if (surface->buffer_viewport.scaler_set) {
+		surface->width = surface->buffer_viewport.dst_width;
+		surface->height = surface->buffer_viewport.dst_height;
 		return;
 	}
 
@@ -2054,6 +2095,7 @@ weston_surface_commit(struct weston_surface *surface)
 
 	/* wl_surface.set_buffer_transform */
 	/* wl_surface.set_buffer_scale */
+	/* wl_surface_scaler.set */
 	surface->buffer_viewport = surface->pending.buffer_viewport;
 
 	/* wl_surface.attach */
@@ -2279,6 +2321,7 @@ weston_subsurface_commit_from_cache(struct weston_subsurface *sub)
 
 	/* wl_surface.set_buffer_transform */
 	/* wl_surface.set_buffer_scale */
+	/* wl_surface_scaler.set */
 	surface->buffer_viewport = sub->cached.buffer_viewport;
 
 	/* wl_surface.attach */
@@ -3405,6 +3448,11 @@ weston_output_transform_coordinate(struct weston_output *output,
 static void
 destroy_surface_scaler(struct wl_resource *resource)
 {
+	struct weston_surface *surface =
+		wl_resource_get_user_data(resource);
+
+	surface->surface_scaler_resource = NULL;
+	surface->pending.buffer_viewport.scaler_set = 0;
 }
 
 static void
@@ -3424,6 +3472,11 @@ surface_scaler_set(struct wl_client *client,
 		   int32_t dst_width,
 		   int32_t dst_height)
 {
+	struct weston_surface *surface =
+		wl_resource_get_user_data(resource);
+
+	assert(surface->surface_scaler_resource != NULL);
+
 	if (wl_fixed_to_double(src_width) < 0 ||
 	    wl_fixed_to_double(src_height) < 0) {
 		wl_resource_post_error(resource,
@@ -3442,7 +3495,14 @@ surface_scaler_set(struct wl_client *client,
 		return;
 	}
 
-	/* TODO */
+	surface->pending.buffer_viewport.scaler_set = 1;
+
+	surface->pending.buffer_viewport.src_x = src_x;
+	surface->pending.buffer_viewport.src_y = src_y;
+	surface->pending.buffer_viewport.src_width = src_width;
+	surface->pending.buffer_viewport.src_height = src_height;
+	surface->pending.buffer_viewport.dst_width = dst_width;
+	surface->pending.buffer_viewport.dst_height = dst_height;
 }
 
 static const struct wl_surface_scaler_interface surface_scaler_interface = {
@@ -3466,7 +3526,13 @@ scaler_get_surface_scaler(struct wl_client *client,
 	struct weston_surface *surface = wl_resource_get_user_data(surface_resource);
 	struct wl_resource *resource;
 
-	/* TODO: check we don't already have one for this surface */
+	if (surface->surface_scaler_resource) {
+		wl_resource_post_error(scaler,
+			WL_SCALER_ERROR_SCALER_EXISTS,
+			"a surface scaler for that surface already exists");
+		return;
+	}
+
 	resource = wl_resource_create(client, &wl_surface_scaler_interface,
 				      1, id);
 	if (resource == NULL) {
@@ -3476,6 +3542,8 @@ scaler_get_surface_scaler(struct wl_client *client,
 
 	wl_resource_set_implementation(resource, &surface_scaler_interface,
 				       surface, destroy_surface_scaler);
+
+	surface->surface_scaler_resource = resource;
 }
 
 static const struct wl_scaler_interface scaler_interface = {
