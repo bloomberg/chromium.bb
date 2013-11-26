@@ -42,15 +42,11 @@ void KeyframeValue::addProperties(const StylePropertySet* propertySet)
     }
 }
 
-TimingFunction* KeyframeValue::timingFunction(const RenderStyle* keyframeStyle, const AtomicString& name)
+TimingFunction* KeyframeValue::timingFunction(const RenderStyle& keyframeStyle)
 {
-    ASSERT(keyframeStyle && keyframeStyle->animations());
-    for (size_t i = 0; i < keyframeStyle->animations()->size(); i++) {
-        if (name == keyframeStyle->animations()->animation(i)->name())
-            return keyframeStyle->animations()->animation(i)->timingFunction();
-    }
-    ASSERT_NOT_REACHED();
-    return 0;
+    const CSSAnimationDataList* animations = keyframeStyle.animations();
+    ASSERT(animations && !animations->isEmpty());
+    return animations->animation(0)->timingFunction();
 }
 
 KeyframeList::~KeyframeList()

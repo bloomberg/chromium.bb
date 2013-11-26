@@ -58,7 +58,7 @@ public:
     const RenderStyle* style() const { return m_style.get(); }
     void setStyle(PassRefPtr<RenderStyle> style) { m_style = style; }
 
-    static TimingFunction* timingFunction(const RenderStyle*, const AtomicString& name);
+    static TimingFunction* timingFunction(const RenderStyle& keyframeStyle);
 
 private:
     double m_key;

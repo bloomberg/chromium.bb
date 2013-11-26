@@ -743,7 +743,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     return state.takeStyle();
 }
 
-PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const RenderStyle& elementStyle, const StyleKeyframe* keyframe)
+PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const RenderStyle& elementStyle, const StyleKeyframe* keyframe, const AtomicString& animationName)
 {
     ASSERT(document().frame());
     ASSERT(documentSettings());
@@ -762,6 +762,18 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const Render
     // Create the style
     state.setStyle(RenderStyle::clone(&elementStyle));
     state.setLineHeightValue(0);
+
+    // Make sure that the CSSAnimationData for the animation to which this
+    // keyframe belongs is first in the list. This makes sure that if the
+    // animation-timing-function property is set for this keyframe, it will be
+    // applied to the correct CSSAnimationData object. Note that objects other
+    // than the first in the list are ignored when reading the timing function
+    // value. See KeyframeValue::timingFunction().
+    CSSAnimationDataList* animations = state.style()->accessAnimations();
+    ASSERT(animations && !animations->isEmpty());
+    while (animations->animation(0)->name() != animationName)
+        animations->remove(0);
+    ASSERT(!animations->isEmpty() && animations->animation(0)->name() == animationName);
 
     state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
 
@@ -813,13 +825,14 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle& el
         return;
 
     // Construct and populate the style for each keyframe
+    const AtomicString& name = list.animationName();
     const Vector<RefPtr<StyleKeyframe> >& keyframes = keyframesRule->keyframes();
     for (unsigned i = 0; i < keyframes.size(); ++i) {
         // Apply the declaration to the style. This is a simplified version of the logic in styleForElement
         const StyleKeyframe* keyframe = keyframes[i].get();
 
         KeyframeValue keyframeValue(0, 0);
-        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, keyframe));
+        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, keyframe, name));
         keyframeValue.addProperties(keyframe->properties());
 
         // Add this keyframe style to all the indicated key times
@@ -839,7 +852,7 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle& el
             zeroPercentKeyframe->setKeyText("0%");
         }
         KeyframeValue keyframeValue(0, 0);
-        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, zeroPercentKeyframe));
+        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, zeroPercentKeyframe, name));
         keyframeValue.addProperties(zeroPercentKeyframe->properties());
         list.insert(keyframeValue);
     }
@@ -852,7 +865,7 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle& el
             hundredPercentKeyframe->setKeyText("100%");
         }
         KeyframeValue keyframeValue(1, 0);
-        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, hundredPercentKeyframe));
+        keyframeValue.setStyle(styleForKeyframe(e, elementStyle, hundredPercentKeyframe, name));
         keyframeValue.addProperties(hundredPercentKeyframe->properties());
         list.insert(keyframeValue);
     }

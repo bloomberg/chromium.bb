@@ -123,7 +123,7 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const Re
     HashMap<double, RefPtr<TimingFunction> > perKeyframeTimingFunctions;
     for (size_t i = 0; i < styleKeyframes.size(); ++i) {
         const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
-        RefPtr<RenderStyle> keyframeStyle = resolver->styleForKeyframe(element, style, styleKeyframe);
+        RefPtr<RenderStyle> keyframeStyle = resolver->styleForKeyframe(element, style, styleKeyframe, name);
         RefPtr<Keyframe> keyframe = Keyframe::create();
         const Vector<double>& offsets = styleKeyframe->keys();
         ASSERT(!offsets.isEmpty());
@@ -133,12 +133,10 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const Re
         for (unsigned j = 0; j < properties->propertyCount(); j++) {
             CSSPropertyID property = properties->propertyAt(j).id();
             specifiedProperties.add(property);
-            if (property == CSSPropertyWebkitAnimationTimingFunction || property == CSSPropertyAnimationTimingFunction) {
-                // FIXME: This sometimes gets the wrong timing function. See crbug.com/288540.
-                timingFunction = KeyframeValue::timingFunction(keyframeStyle.get(), name);
-            } else if (CSSAnimations::isAnimatableProperty(property)) {
+            if (property == CSSPropertyWebkitAnimationTimingFunction || property == CSSPropertyAnimationTimingFunction)
+                timingFunction = KeyframeValue::timingFunction(*keyframeStyle);
+            else if (CSSAnimations::isAnimatableProperty(property))
                 keyframe->setPropertyValue(property, CSSAnimatableValueFactory::create(property, *keyframeStyle).get());
-            }
         }
         keyframes.append(keyframe);
         // The last keyframe specified at a given offset is used.

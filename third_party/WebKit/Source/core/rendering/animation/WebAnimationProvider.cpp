@@ -139,7 +139,7 @@ WebAnimations WebAnimationProvider::startAnimation(double timeOffset, const CSSA
             continue;
 
         // Get timing function.
-        RefPtr<TimingFunction> tf = KeyframeValue::timingFunction(keyframeStyle, keyframes.animationName());
+        RefPtr<TimingFunction> tf = KeyframeValue::timingFunction(*keyframeStyle);
 
         bool isFirstOrLastKeyframe = !key || key == 1;
         if ((hasTransform && isFirstOrLastKeyframe) || currentKeyframe.containsProperty(CSSPropertyWebkitTransform))
