@@ -71,9 +71,11 @@ void* LazyDecodingPixelRef::onLockPixels(SkColorTable**)
 
     // Use ImageFrameGenerator to generate the image. It will lock the cache
     // entry for us.
-    if (!m_lockedImageResource)
+    if (!m_lockedImageResource) {
+        PlatformInstrumentation::willDecodeLazyPixelRef(reinterpret_cast<unsigned long long>(this));
         m_lockedImageResource = m_frameGenerator->decodeAndScale(size, m_frameIndex);
-
+        PlatformInstrumentation::didDecodeLazyPixelRef(reinterpret_cast<unsigned long long>(this));
+    }
     if (!m_lockedImageResource)
         return 0;
 

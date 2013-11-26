@@ -212,12 +212,12 @@ private:
     void onRasterTaskBegin(const TraceEvent&);
     void onRasterTaskEnd(const TraceEvent&);
     void onPaint(const TraceEvent&);
-    void onImageDecodeTaskBegin(const TraceEvent&);
-    void onImageDecodeTaskEnd(const TraceEvent&);
     void onImageDecodeBegin(const TraceEvent&);
     void onImageDecodeEnd(const TraceEvent&);
     void onLayerDeleted(const TraceEvent&);
     void onDrawLazyPixelRef(const TraceEvent&);
+    void onDecodeLazyPixelRefBegin(const TraceEvent&);
+    void onDecodeLazyPixelRefEnd(const TraceEvent&);
     void onLazyPixelRefDeleted(const TraceEvent&);
 
     WeakPtr<InspectorTimelineAgent> m_timelineAgent;
@@ -246,7 +246,7 @@ private:
         int backendNodeId;
         String url;
 
-        ImageInfo() { }
+        ImageInfo() : backendNodeId(0) { }
         ImageInfo(int backendNodeId, String url) : backendNodeId(backendNodeId), url(url) { }
     };
     typedef HashMap<unsigned long long, ImageInfo> PixelRefToImageInfoMap;

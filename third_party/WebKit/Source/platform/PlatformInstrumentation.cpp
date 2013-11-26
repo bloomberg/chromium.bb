@@ -39,6 +39,7 @@ const char PlatformInstrumentation::CategoryName[] = "webkit";
 const char PlatformInstrumentation::ImageDecodeEvent[] = "Decode Image";
 const char PlatformInstrumentation::ImageResizeEvent[] = "Resize Image";
 const char PlatformInstrumentation::DrawLazyPixelRefEvent[] = "Draw LazyPixelRef";
+const char PlatformInstrumentation::DecodeLazyPixelRefEvent[] = "Decode LazyPixelRef";
 
 const char PlatformInstrumentation::LazyPixelRef[] = "LazyPixelRef";
 

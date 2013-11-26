@@ -61,6 +61,7 @@ public:
     static const char ImageDecodeEvent[];
     static const char ImageResizeEvent[];
     static const char DrawLazyPixelRefEvent[];
+    static const char DecodeLazyPixelRefEvent[];
 
     static const char ImageTypeArgument[];
     static const char CachedArgument[];
@@ -75,6 +76,8 @@ public:
     static void willResizeImage(bool shouldCache);
     static void didResizeImage();
     static void didDrawLazyPixelRef(unsigned long long lazyPixelRefId);
+    static void willDecodeLazyPixelRef(unsigned long long lazyPixelRefId);
+    static void didDecodeLazyPixelRef(unsigned long long lazyPixelRefId);
 
 private:
     static const char CategoryName[];
@@ -115,6 +118,16 @@ inline void PlatformInstrumentation::didResizeImage()
 inline void PlatformInstrumentation::didDrawLazyPixelRef(unsigned long long lazyPixelRefId)
 {
     TRACE_EVENT_INSTANT1(CategoryName, DrawLazyPixelRefEvent, LazyPixelRef, lazyPixelRefId);
+}
+
+inline void PlatformInstrumentation::willDecodeLazyPixelRef(unsigned long long lazyPixelRefId)
+{
+    TRACE_EVENT_BEGIN1(CategoryName, DecodeLazyPixelRefEvent, LazyPixelRef, lazyPixelRefId);
+}
+
+inline void PlatformInstrumentation::didDecodeLazyPixelRef(unsigned long long lazyPixelRefId)
+{
+    TRACE_EVENT_END1(CategoryName, DecodeLazyPixelRefEvent, LazyPixelRef, lazyPixelRefId);
 }
 
 } // namespace WebCore

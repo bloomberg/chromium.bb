@@ -239,7 +239,6 @@ namespace InstrumentationEvents {
 const char PaintSetup[] = "PaintSetup";
 const char PaintLayer[] = "PaintLayer";
 const char RasterTask[] = "RasterTask";
-const char ImageDecodeTask[] = "ImageDecodeTask";
 const char Paint[] = "Paint";
 const char Layer[] = "Layer";
 const char BeginFrame[] = "BeginFrame";
@@ -251,7 +250,6 @@ const char LayerId[] = "layerId";
 const char LayerTreeId[] = "layerTreeId";
 const char NodeId[] = "nodeId";
 const char PageId[] = "pageId";
-const char PixelRefId[] = "pixelRefId";
 };
 
 InstrumentingAgents* instrumentationForPage(Page* page)

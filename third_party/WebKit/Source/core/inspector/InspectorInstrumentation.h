@@ -125,7 +125,6 @@ namespace InstrumentationEvents {
 extern const char PaintSetup[];
 extern const char PaintLayer[];
 extern const char RasterTask[];
-extern const char ImageDecodeTask[];
 extern const char Paint[];
 extern const char Layer[];
 extern const char BeginFrame[];
@@ -137,7 +136,6 @@ extern const char LayerId[];
 extern const char LayerTreeId[];
 extern const char NodeId[];
 extern const char PageId[];
-extern const char PixelRefId[];
 };
 
 namespace InspectorInstrumentation {
