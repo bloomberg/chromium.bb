@@ -56,7 +56,7 @@
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 #include <CoreFoundation/CoreFoundation.h>
 #include "chrome/browser/policy/policy_loader_mac.h"
-#include "chrome/browser/policy/preferences_mac.h"
+#include "components/policy/core/common/preferences_mac.h"
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
 #include "chrome/browser/policy/config_dir_policy_loader.h"
 #endif

@@ -36,6 +36,8 @@
             'policy/core/common/policy_switches.cc',
             'policy/core/common/policy_switches.h',
             'policy/core/common/policy_types.h',
+            'policy/core/common/preferences_mac.cc',
+            'policy/core/common/preferences_mac.h',
             'policy/core/common/registry_dict_win.cc',
             'policy/core/common/registry_dict_win.h',
             'policy/core/common/schema.cc',
@@ -62,6 +64,20 @@
           ],
         }],
       ],
+    },
+    {
+      'target_name': 'policy_test_support',
+      'type': 'static_library',
+      'defines!': ['POLICY_COMPONENT_IMPLEMENTATION'],
+      'dependencies': [],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'policy/core/common/preferences_mock_mac.cc',
+        'policy/core/common/preferences_mock_mac.h',
+      ],
+      'conditions': [],
     },
   ],
 }
