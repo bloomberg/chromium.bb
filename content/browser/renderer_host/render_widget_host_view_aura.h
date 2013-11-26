@@ -250,6 +250,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 #if defined(OS_WIN)
   virtual void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) OVERRIDE;
+  virtual gfx::NativeViewId GetParentForWindowlessPlugin() const OVERRIDE;
 #endif
 
   // Overridden from ui::TextInputClient:
@@ -557,11 +558,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Updates the total list of cutout rects, which is the union of transient
   // windows and constrained windows.
   void UpdateCutoutRects();
-
-  // Returns the dummy HWND which corresponds to the bounds of the web page.
-  // This is passed to windowless plugins like Flash/Silverlight, etc as the
-  // container window.
-  HWND GetNativeViewIdHelper() const;
 #endif
 
   // The model object.

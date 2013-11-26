@@ -5,6 +5,7 @@
 #ifndef CONTENT_PORT_BROWSER_RENDER_WIDGET_HOST_VIEW_PORT_H_
 #define CONTENT_PORT_BROWSER_RENDER_WIDGET_HOST_VIEW_PORT_H_
 
+#include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
@@ -341,6 +342,10 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
 #if defined(OS_WIN) && defined(USE_AURA)
   virtual void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) = 0;
+
+  // Returns an HWND that's given as the parent window for windowless Flash to
+  // workaround crbug.com/301548.
+  virtual gfx::NativeViewId GetParentForWindowlessPlugin() const = 0;
 #endif
 };
 

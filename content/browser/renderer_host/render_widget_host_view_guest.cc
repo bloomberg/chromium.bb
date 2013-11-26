@@ -258,7 +258,9 @@ gfx::NativeView RenderWidgetHostViewGuest::GetNativeView() const {
 }
 
 gfx::NativeViewId RenderWidgetHostViewGuest::GetNativeViewId() const {
-  return guest_->GetEmbedderRenderWidgetHostView()->GetNativeViewId();
+  if (guest_->GetEmbedderRenderWidgetHostView())
+    return guest_->GetEmbedderRenderWidgetHostView()->GetNativeViewId();
+  return static_cast<gfx::NativeViewId>(NULL);
 }
 
 gfx::NativeViewAccessible RenderWidgetHostViewGuest::GetNativeViewAccessible() {
@@ -506,6 +508,11 @@ void RenderWidgetHostViewGuest::WillWmDestroy() {
 #if defined(OS_WIN) && defined(USE_AURA)
 void RenderWidgetHostViewGuest::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {
+}
+
+gfx::NativeViewId RenderWidgetHostViewGuest::GetParentForWindowlessPlugin()
+    const {
+  return NULL;
 }
 #endif
 

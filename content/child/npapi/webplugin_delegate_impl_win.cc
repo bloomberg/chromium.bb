@@ -88,8 +88,10 @@ base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_reg_enum_key_ex_w =
 base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_get_proc_address =
     LAZY_INSTANCE_INITIALIZER;
 
+#if defined(USE_AURA)
 base::LazyInstance<base::win::IATPatchFunction> g_iat_patch_window_from_point =
     LAZY_INSTANCE_INITIALIZER;
+#endif
 
 // http://crbug.com/16114
 // Enforces providing a valid device context in NPWindow, so that NPP_SetWindow
@@ -420,13 +422,14 @@ bool WebPluginDelegateImpl::PlatformInitialize() {
         GetProcAddressPatch);
   }
 
+#if defined(USE_AURA)
   if (windowless_ && !g_iat_patch_window_from_point.Pointer()->is_patched() &&
       (quirks_ & PLUGIN_QUIRK_FAKE_WINDOW_FROM_POINT)) {
     g_iat_patch_window_from_point.Pointer()->Patch(
         GetPluginPath().value().c_str(), "user32.dll", "WindowFromPoint",
         WebPluginDelegateImpl::WindowFromPointPatch);
   }
-
+#endif
   return true;
 }
 
@@ -447,8 +450,10 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
   if (g_iat_patch_reg_enum_key_ex_w.Pointer()->is_patched())
     g_iat_patch_reg_enum_key_ex_w.Pointer()->Unpatch();
 
+#if defined(USE_AURA)
   if (g_iat_patch_window_from_point.Pointer()->is_patched())
     g_iat_patch_window_from_point.Pointer()->Unpatch();
+#endif
 
   if (mouse_hook_) {
     UnhookWindowsHookEx(mouse_hook_);
@@ -1485,10 +1490,12 @@ FARPROC WINAPI WebPluginDelegateImpl::GetProcAddressPatch(HMODULE module,
 #if defined(USE_AURA)
 HWND WINAPI WebPluginDelegateImpl::WindowFromPointPatch(POINT point) {
   HWND window = WindowFromPoint(point);
-  HWND child = GetWindow(window, GW_CHILD);
-  if (::IsWindow(child) &&
-      ::GetProp(child, content::kPluginDummyParentProperty))
-    return child;
+  if (::ScreenToClient(window, &point)) {
+    HWND child = ChildWindowFromPoint(window, point);
+    if (::IsWindow(child) &&
+        ::GetProp(child, content::kPluginDummyParentProperty))
+      return child;
+  }
   return window;
 }
 #endif

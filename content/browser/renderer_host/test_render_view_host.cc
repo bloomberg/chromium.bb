@@ -228,6 +228,11 @@ void TestRenderWidgetHostView::UnlockMouse() {
 void TestRenderWidgetHostView::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {
 }
+
+gfx::NativeViewId TestRenderWidgetHostView::GetParentForWindowlessPlugin()
+    const {
+  return 0;
+}
 #endif
 
 TestRenderViewHost::TestRenderViewHost(

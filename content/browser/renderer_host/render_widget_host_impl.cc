@@ -1848,7 +1848,8 @@ void RenderWidgetHostImpl::OnWindowlessPluginDummyWindowCreated(
     return;
   }
 
-  SetParent(hwnd, reinterpret_cast<HWND>(GetNativeViewId()));
+  SetParent(hwnd,
+            reinterpret_cast<HWND>(view_->GetParentForWindowlessPlugin()));
   dummy_windows_for_activation_.push_back(hwnd);
 }
 
@@ -2304,10 +2305,12 @@ void RenderWidgetHostImpl::ParentChanged(gfx::NativeViewId new_parent) {
   HWND hwnd = reinterpret_cast<HWND>(new_parent);
   if (!hwnd)
     hwnd = GetDesktopWindow();
-  for (std::list<HWND>::iterator i = dummy_windows_for_activation_.begin();
-        i != dummy_windows_for_activation_.end(); ++i) {
-    SetParent(*i, hwnd);
-  }
+  // On Windows GetParentForWindowlessPlugin returns the dummy window used as
+  // the parent for windowless NPAPI plugins. Reparenting this window to the
+  // new parent should be good enough.
+  if (view_ && view_->GetParentForWindowlessPlugin())
+    SetParent(reinterpret_cast<HWND>(view_->GetParentForWindowlessPlugin()),
+              reinterpret_cast<HWND>(new_parent));
 #endif
 }
 
