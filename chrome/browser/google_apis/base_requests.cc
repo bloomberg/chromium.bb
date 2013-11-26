@@ -44,7 +44,7 @@ const char kUploadContentRange[] = "Content-Range: bytes ";
 const char kUploadResponseRange[] = "range";
 
 // Parse JSON string to base::Value object.
-scoped_ptr<base::Value> ParseJsonOnBlockingPool(const std::string& json) {
+scoped_ptr<base::Value> ParseJsonInternal(const std::string& json) {
   int error_code = -1;
   std::string error_message;
   scoped_ptr<base::Value> value(base::JSONReader::ReadAndReturnError(
@@ -88,6 +88,10 @@ std::string GetResponseHeadersAsString(
   return headers;
 }
 
+bool IsSuccessfulResponseCode(int response_code) {
+  return 200 <= response_code && response_code <= 299;
+}
+
 }  // namespace
 
 namespace google_apis {
@@ -98,15 +102,17 @@ void ParseJson(base::TaskRunner* blocking_task_runner,
   base::PostTaskAndReplyWithResult(
       blocking_task_runner,
       FROM_HERE,
-      base::Bind(&ParseJsonOnBlockingPool, json),
+      base::Bind(&ParseJsonInternal, json),
       callback);
 }
 
 //=========================== ResponseWriter ==================================
-ResponseWriter::ResponseWriter(base::SequencedTaskRunner* file_task_runner,
+ResponseWriter::ResponseWriter(net::URLFetcher* url_fetcher,
+                               base::SequencedTaskRunner* file_task_runner,
                                const base::FilePath& file_path,
                                const GetContentCallback& get_content_callback)
-    : get_content_callback_(get_content_callback) {
+    : url_fetcher_(url_fetcher),
+      get_content_callback_(get_content_callback) {
   if (!file_path.empty()) {
     file_writer_.reset(
         new net::URLFetcherFileWriter(file_task_runner, file_path));
@@ -132,14 +138,18 @@ int ResponseWriter::Initialize(const net::CompletionCallback& callback) {
 int ResponseWriter::Write(net::IOBuffer* buffer,
                           int num_bytes,
                           const net::CompletionCallback& callback) {
-  if (!get_content_callback_.is_null()) {
-    get_content_callback_.Run(
-        HTTP_SUCCESS,
-        make_scoped_ptr(new std::string(buffer->data(), num_bytes)));
-  }
+  // |get_content_callback_| and |file_writer_| are used only when the response
+  // code is successful one.
+  if (IsSuccessfulResponseCode(url_fetcher_->GetResponseCode())) {
+    if (!get_content_callback_.is_null()) {
+      get_content_callback_.Run(
+          HTTP_SUCCESS,
+          make_scoped_ptr(new std::string(buffer->data(), num_bytes)));
+    }
 
-  if (file_writer_)
-    return file_writer_->Write(buffer, num_bytes, callback);
+    if (file_writer_)
+      return file_writer_->Write(buffer, num_bytes, callback);
+  }
 
   data_.append(buffer->data(), num_bytes);
   return num_bytes;
@@ -157,6 +167,7 @@ int ResponseWriter::Finish(const net::CompletionCallback& callback) {
 UrlFetchRequestBase::UrlFetchRequestBase(RequestSender* sender)
     : re_authenticate_count_(0),
       sender_(sender),
+      error_code_(GDATA_OTHER_ERROR),
       weak_ptr_factory_(this) {
 }
 
@@ -196,7 +207,8 @@ void UrlFetchRequestBase::Start(const std::string& access_token,
   GetOutputFilePath(&output_file_path, &get_content_callback);
   if (!get_content_callback.is_null())
     get_content_callback = CreateRelayCallback(get_content_callback);
-  response_writer_ = new ResponseWriter(blocking_task_runner(),
+  response_writer_ = new ResponseWriter(url_fetcher_.get(),
+                                        blocking_task_runner(),
                                         output_file_path,
                                         get_content_callback);
   url_fetcher_->SaveResponseWithWriter(
@@ -284,19 +296,8 @@ void UrlFetchRequestBase::Cancel() {
   sender_->RequestFinished(this);
 }
 
-// static
-GDataErrorCode UrlFetchRequestBase::GetErrorCode(const URLFetcher* source) {
-  GDataErrorCode code = static_cast<GDataErrorCode>(source->GetResponseCode());
-  if (!source->GetStatus().is_success()) {
-    switch (source->GetStatus().error()) {
-      case net::ERR_NETWORK_CHANGED:
-        code = GDATA_NO_CONNECTION;
-        break;
-      default:
-        code = GDATA_OTHER_ERROR;
-    }
-  }
-  return code;
+GDataErrorCode UrlFetchRequestBase::GetErrorCode() {
+  return error_code_;
 }
 
 bool UrlFetchRequestBase::CalledOnValidThread() {
@@ -312,10 +313,59 @@ void UrlFetchRequestBase::OnProcessURLFetchResultsComplete() {
 }
 
 void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
-  GDataErrorCode code = GetErrorCode(source);
   DVLOG(1) << "Response headers:\n" << GetResponseHeadersAsString(source);
 
-  if (code == HTTP_UNAUTHORIZED) {
+  // Determine error code.
+  error_code_ = static_cast<GDataErrorCode>(source->GetResponseCode());
+  if (!source->GetStatus().is_success()) {
+    switch (source->GetStatus().error()) {
+      case net::ERR_NETWORK_CHANGED:
+        error_code_ = GDATA_NO_CONNECTION;
+        break;
+      default:
+        error_code_ = GDATA_OTHER_ERROR;
+    }
+  }
+
+  // The server may return detailed error status in JSON.
+  // See https://developers.google.com/drive/handle-errors
+  if (!IsSuccessfulResponseCode(error_code_)) {
+    DVLOG(1) << response_writer_->data();
+
+    const char kErrorKey[] = "error";
+    const char kErrorErrorsKey[] = "errors";
+    const char kErrorReasonKey[] = "reason";
+    const char kErrorMessageKey[] = "message";
+    const char kErrorReasonRateLimitExceeded[] = "rateLimitExceeded";
+    const char kErrorReasonUserRateLimitExceeded[] = "userRateLimitExceeded";
+
+    scoped_ptr<base::Value> value(ParseJsonInternal(response_writer_->data()));
+    base::DictionaryValue* dictionary = NULL;
+    base::DictionaryValue* error = NULL;
+    if (value &&
+        value->GetAsDictionary(&dictionary) &&
+        dictionary->GetDictionaryWithoutPathExpansion(kErrorKey, &error)) {
+      // Get error message.
+      std::string message;
+      error->GetStringWithoutPathExpansion(kErrorMessageKey, &message);
+      DLOG(ERROR) << "code: " << error_code_ << ", message: " << message;
+
+      // Override the error code based on the reason of the first error.
+      base::ListValue* errors = NULL;
+      base::DictionaryValue* first_error = NULL;
+      if (error->GetListWithoutPathExpansion(kErrorErrorsKey, &errors) &&
+          errors->GetDictionary(0, &first_error)) {
+        std::string reason;
+        first_error->GetStringWithoutPathExpansion(kErrorReasonKey, &reason);
+        if (reason == kErrorReasonRateLimitExceeded ||
+            reason == kErrorReasonUserRateLimitExceeded)
+          error_code_ = HTTP_SERVICE_UNAVAILABLE;
+      }
+    }
+  }
+
+  // Handle authentication failure.
+  if (error_code_ == HTTP_UNAUTHORIZED) {
     if (++re_authenticate_count_ <= kMaxReAuthenticateAttemptsPerRequest) {
       // Reset re_authenticate_callback_ so Start() can be called again.
       ReAuthenticateCallback callback = re_authenticate_callback_;
@@ -324,7 +374,7 @@ void UrlFetchRequestBase::OnURLFetchComplete(const URLFetcher* source) {
       return;
     }
 
-    OnAuthFailed(code);
+    OnAuthFailed(error_code_);
     return;
   }
 
@@ -354,7 +404,7 @@ EntryActionRequest::EntryActionRequest(RequestSender* sender,
 EntryActionRequest::~EntryActionRequest() {}
 
 void EntryActionRequest::ProcessURLFetchResults(const URLFetcher* source) {
-  callback_.Run(GetErrorCode(source));
+  callback_.Run(GetErrorCode());
   OnProcessURLFetchResultsComplete();
 }
 
@@ -388,7 +438,7 @@ void GetDataRequest::ParseResponse(GDataErrorCode fetch_error_code,
 }
 
 void GetDataRequest::ProcessURLFetchResults(const URLFetcher* source) {
-  GDataErrorCode fetch_error_code = GetErrorCode(source);
+  GDataErrorCode fetch_error_code = GetErrorCode();
 
   switch (fetch_error_code) {
     case HTTP_SUCCESS:
@@ -438,7 +488,7 @@ InitiateUploadRequestBase::~InitiateUploadRequestBase() {}
 
 void InitiateUploadRequestBase::ProcessURLFetchResults(
     const URLFetcher* source) {
-  GDataErrorCode code = GetErrorCode(source);
+  GDataErrorCode code = GetErrorCode();
 
   std::string upload_location;
   if (code == HTTP_SUCCESS) {
@@ -508,7 +558,7 @@ URLFetcher::RequestType UploadRangeRequestBase::GetRequestType() const {
 
 void UploadRangeRequestBase::ProcessURLFetchResults(
     const URLFetcher* source) {
-  GDataErrorCode code = GetErrorCode(source);
+  GDataErrorCode code = GetErrorCode();
   net::HttpResponseHeaders* hdrs = source->GetResponseHeaders();
 
   if (code == HTTP_RESUME_INCOMPLETE) {
@@ -708,7 +758,7 @@ void DownloadFileRequestBase::OnURLFetchDownloadProgress(
 }
 
 void DownloadFileRequestBase::ProcessURLFetchResults(const URLFetcher* source) {
-  GDataErrorCode code = GetErrorCode(source);
+  GDataErrorCode code = GetErrorCode();
 
   // Take over the ownership of the the downloaded temp file.
   base::FilePath temp_file;

@@ -94,7 +94,8 @@ class ResponseWriter : public net::URLFetcherResponseWriter {
  public:
   // If file_path is not empty, the response will be saved with file_writer_,
   // otherwise it will be saved to data_.
-  ResponseWriter(base::SequencedTaskRunner* file_task_runner,
+  ResponseWriter(net::URLFetcher* url_fetcher,
+                 base::SequencedTaskRunner* file_task_runner,
                  const base::FilePath& file_path,
                  const GetContentCallback& get_content_callback);
   virtual ~ResponseWriter();
@@ -112,6 +113,7 @@ class ResponseWriter : public net::URLFetcherResponseWriter {
   virtual int Finish(const net::CompletionCallback& callback) OVERRIDE;
 
  private:
+  net::URLFetcher* url_fetcher_;
   const GetContentCallback get_content_callback_;
   std::string data_;
   scoped_ptr<net::URLFetcherFileWriter> file_writer_;
@@ -184,7 +186,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
 
   // Returns an appropriate GDataErrorCode based on the HTTP response code and
   // the status of the URLFetcher.
-  static GDataErrorCode GetErrorCode(const net::URLFetcher* source);
+  GDataErrorCode GetErrorCode();
 
   // Returns true if called on the thread where the constructor was called.
   bool CalledOnValidThread();
@@ -207,6 +209,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   scoped_ptr<net::URLFetcher> url_fetcher_;
   ResponseWriter* response_writer_;  // Owned by |url_fetcher_|.
   RequestSender* sender_;
+  GDataErrorCode error_code_;
 
   base::ThreadChecker thread_checker_;
 
@@ -258,9 +261,6 @@ class GetDataRequest : public UrlFetchRequestBase {
   GetDataRequest(RequestSender* sender, const GetDataCallback& callback);
   virtual ~GetDataRequest();
 
-  // Parses JSON response.
-  void ParseResponse(GDataErrorCode fetch_error_code, const std::string& data);
-
  protected:
   // UrlFetchRequestBase overrides.
   virtual void ProcessURLFetchResults(const net::URLFetcher* source) OVERRIDE;
@@ -268,6 +268,9 @@ class GetDataRequest : public UrlFetchRequestBase {
       GDataErrorCode fetch_error_code) OVERRIDE;
 
  private:
+  // Parses JSON response.
+  void ParseResponse(GDataErrorCode fetch_error_code, const std::string& data);
+
   // Called when ParseJsonOnBlockingPool() is completed.
   void OnDataParsed(GDataErrorCode fetch_error_code,
                     scoped_ptr<base::Value> value);
