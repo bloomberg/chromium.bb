@@ -145,7 +145,6 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
     // See if we have a mapping in our FontData cache.
     AtomicString emptyFontFamily = "";
     FontCacheKey key = fontDescription.cacheKey(emptyFontFamily);
-    key.setSynthetic(fontDescription.isSyntheticBold(), fontDescription.isSyntheticItalic());
 
     RefPtr<SimpleFontData>& fontData = m_fontDataTable.add(key.hash(), 0).iterator->value;
     if (fontData)

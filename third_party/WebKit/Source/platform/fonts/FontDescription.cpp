@@ -159,7 +159,8 @@ FontCacheKey FontDescription::cacheKey(const AtomicString& familyName, FontTrait
         : traitsMask();
 
     unsigned options =
-        // synthetic bold, italics - bits 8-9
+        static_cast<unsigned>(m_syntheticItalic) << 8 | // bit 9
+        static_cast<unsigned>(m_syntheticBold) << 7 | // bit 8
         static_cast<unsigned>(m_fontSmoothing) << 5 | // bits 6-7
         static_cast<unsigned>(m_textRendering) << 3 | // bits 4-5
         static_cast<unsigned>(m_orientation) << 2 | // bit 3

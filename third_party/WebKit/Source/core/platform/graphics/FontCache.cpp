@@ -73,7 +73,6 @@ static FontPlatformDataCache* gFontPlatformDataCache = 0;
 FontPlatformData* FontCache::addFontResourcePlatformData(const FontDescription& fontDescription, const AtomicString& family)
 {
     FontCacheKey key = fontDescription.cacheKey(family);
-    key.setSynthetic(fontDescription.isSyntheticBold(), fontDescription.isSyntheticItalic());
     OwnPtr<FontPlatformData>& result = gFontPlatformDataCache->add(key, nullptr).iterator->value;
     if (!result)
         result = adoptPtr(createFontPlatformData(fontDescription, family, fontDescription.effectiveFontSize()));
@@ -108,7 +107,6 @@ FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& 
     if (!alternateName.isEmpty()) {
         if (FontPlatformData* alternateFontPlatformData = addFontResourcePlatformData(fontDescription, alternateName)) {
             FontCacheKey key = fontDescription.cacheKey(familyName);
-            key.setSynthetic(fontDescription.isSyntheticBold(), fontDescription.isSyntheticItalic());
             result = new FontPlatformData(*alternateFontPlatformData);
             gFontPlatformDataCache->set(key, adoptPtr(result));
         }
