@@ -385,7 +385,8 @@ tc-test-bot() {
   ${PNACL_BUILD} show-config
 
   ${PNACL_BUILD} clean
-  python ${TOOLCHAIN_BUILD} --sync-only # outputs its own BUILD_STEP annotation
+  echo "@@@BUILD_STEP Sync repos for build.sh@@@"
+  python ${TOOLCHAIN_BUILD} --legacy-repo-sync
   ${PNACL_BUILD} newlib-nacl-headers
 
   # Build the un-sandboxed toolchain

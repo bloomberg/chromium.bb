@@ -189,7 +189,6 @@ values.
 # with msys vs cygwin git checkouts, and make testing easier. Note that the new
 # build scripts will not share source directories with build.sh.
 def SyncPNaClRepos(revisions):
-  print '@@@BUILD_STEP sync PNaCl repos@@@'
   sys.stdout.flush()
   for repo, revision in revisions.iteritems():
     destination = os.path.join(NACL_DIR, 'pnacl', 'git', repo)
@@ -208,7 +207,8 @@ if __name__ == '__main__':
   # by the package builder based on the command-line flags.
   logging.getLogger().setLevel(logging.DEBUG)
   parser = argparse.ArgumentParser()
-  parser.add_argument('--sync-legacy-repos', action='store_true',
+  parser.add_argument('--legacy-repo-sync', action='store_true',
+                      dest='sync_legacy_repos', default=False,
                       help='Sync the git repo directories used by build.sh')
   args, leftover_args = parser.parse_known_args()
   revisions = ParseComponentRevisionsFile(GIT_DEPS_FILE)

@@ -69,8 +69,8 @@ toolchain_build_cmd = [
     '--verbose', '--sync', '--clobber']
 
 # Sync the git repos used by build.sh
-with buildbot_lib.Step('Sync legacy sources', status, halt_on_fail=True):
-  buildbot_lib.Command(context, toolchain_build_cmd + ['--sync-legacy-repos'])
+with buildbot_lib.Step('Sync build.sh repos', status, halt_on_fail=True):
+  buildbot_lib.Command(context, toolchain_build_cmd + ['--legacy-repo-sync'])
 
 # Run toolchain_build.py first. Its outputs are not actually being used yet.
 # toolchain_build outputs its own buildbot annotations, so don't use
@@ -80,7 +80,10 @@ try:
   subprocess.check_call(toolchain_build_cmd)
 except subprocess.CalledProcessError:
   # Ignore any failures and keep going (but make the bot stage red).
-  print '@@@STEP_FAILURE@@@'
+  if host_os == 'win':
+    print '@@@STEP_WARNINGS@@@'
+  else:
+    print '@@@STEP_FAILURE@@@'
   sys.stdout.flush()
 
 
