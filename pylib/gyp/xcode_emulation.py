@@ -910,8 +910,23 @@ class XcodeSettings(object):
     return items
 
   def _DefaultArch(self):
-    # The default value for ARCHS changed from ['i386'] to ['x86_64'] in
-    # Xcode 5.
+    # For Mac projects, Xcode changed the default value used when ARCHS is not
+    # set from "i386" to "x86_64".
+    #
+    # For iOS projects, if ARCHS is unset, it defaults to "armv7 armv7s" when
+    # building for a device, and the simulator binaries are always build for
+    # "i386".
+    #
+    # For new projects, ARCHS is set to $(ARCHS_STANDARD_INCLUDING_64_BIT),
+    # which correspond to "armv7 armv7s arm64", and when building the simulator
+    # the architecture is either "i386" or "x86_64" depending on the simulated
+    # device (respectively 32-bit or 64-bit device).
+    #
+    # Since the value returned by this function is only used when ARCHS is not
+    # set, then on iOS we return "i386", as the default xcode project generator
+    # does not set ARCHS if it is not set in the .gyp file.
+    if self.isIOS:
+      return 'i386'
     version, build = self._XcodeVersion()
     if version >= '0500':
       return 'x86_64'
