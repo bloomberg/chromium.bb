@@ -57,6 +57,10 @@ TEST(JSTest, sample_test) {
   gin::RunTestFromFile(path, &delegate);
 }
 
+TEST(JSTest, connector) {
+  RunTest("connector_unittests.js");
+}
+
 }  // namespace
 }  // namespace js
 }  // namespace mojo

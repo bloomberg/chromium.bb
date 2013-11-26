@@ -79,9 +79,8 @@ define([
 
   function Connection(handle, localFactory, remoteFactory) {
     this.connector_ = new Connector(handle);
-    this.local = new localFactory();
     this.remote = new remoteFactory(this.connector_);
-
+    this.local = new localFactory(this.remote);
     this.connector_.setIncomingReceiver(this.local);
   }
 
