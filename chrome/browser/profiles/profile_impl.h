@@ -167,9 +167,6 @@ class ProfileImpl : public Profile {
   void OnZoomLevelChanged(
       const content::HostZoomMap::ZoomLevelChange& change);
 
-  void OnInitializationCompleted(PrefService* pref_service,
-                                 bool succeeded);
-
   // Does final prefs initialization and calls Init().
   void OnPrefsLoaded(bool success);
 
