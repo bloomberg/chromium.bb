@@ -20,6 +20,7 @@ aura::client::WindowType GetAuraWindowTypeForWidgetType(
     case Widget::InitParams::TYPE_WINDOW_FRAMELESS:
     case Widget::InitParams::TYPE_POPUP:
     case Widget::InitParams::TYPE_BUBBLE:
+    case Widget::InitParams::TYPE_DRAG:
       return aura::client::WINDOW_TYPE_POPUP;
     case Widget::InitParams::TYPE_MENU:
       return aura::client::WINDOW_TYPE_MENU;
