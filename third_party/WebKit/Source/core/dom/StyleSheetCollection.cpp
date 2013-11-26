@@ -175,6 +175,10 @@ static bool cssStyleSheetHasFontFaceRule(const Vector<RefPtr<CSSStyleSheet> > sh
 
 void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updateMode, const StyleSheetCollectionBase& newCollection, StyleSheetChange& change)
 {
+    // No point in doing the analysis work if we're just going to recalc the whole document anyways.
+    if (document()->hasPendingForcedStyleRecalc())
+        return;
+
     if (activeLoadingStyleSheetLoaded(newCollection.activeAuthorStyleSheets()))
         return;
 
