@@ -88,4 +88,8 @@ bool SessionStorageNamespaceImpl::IsAliasOf(SessionStorageNamespace* other) {
   return persistent_id() == other->persistent_id();
 }
 
+SessionStorageNamespace* SessionStorageNamespaceImpl::CreateAlias() {
+  return new SessionStorageNamespaceImpl(this);
+}
+
 }  // namespace content

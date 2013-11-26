@@ -9,6 +9,7 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_contents.h"
+#include "chrome/browser/prerender/prerender_events.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_local_predictor.h"
 #include "chrome/browser/prerender/prerender_origin.h"
@@ -86,6 +87,9 @@ class PrerenderHistograms {
   // Record a percentage of pixels of the final page already in place at
   // swap-in.
   void RecordFractionPixelsFinalAtSwapin(Origin origin, double fraction) const;
+
+  // Records a prerender event.
+  void RecordEvent(PrerenderEvent event) const;
 
  private:
   base::TimeTicks GetCurrentTimeTicks() const;

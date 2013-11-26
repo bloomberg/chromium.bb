@@ -583,6 +583,14 @@ void Navigate(NavigateParams* params) {
       // Prerender expects |params->target_contents| to be attached to a browser
       // window, so only call for CURRENT_TAB navigations. (Others are currently
       // unsupported because of session storage namespaces anyway.)
+      // Notice that this includes middle-clicking, since middle clicking
+      // translates into a chrome::Navigate call with no URL followed by a
+      // CURRENT_TAB navigation.
+      // TODO(tburkard): We can actually swap in in non-CURRENT_TAB cases, as
+      // long as the WebContents we swap into is part of a TabStrip model.
+      // Therefore, we should swap in regardless of CURRENT_TAB, and instead,
+      // check in the swapin function whether the WebContents is not in a
+      // TabStrip model, in which case we must not swap in.
       if (!swapped_in)
         swapped_in = SwapInPrerender(url, params);
     }

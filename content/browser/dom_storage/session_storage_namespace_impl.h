@@ -55,6 +55,7 @@ class SessionStorageNamespaceImpl
                      SessionStorageNamespace* other,
                      const MergeResultCallback& callback) OVERRIDE;
   virtual bool IsAliasOf(SessionStorageNamespace* other) OVERRIDE;
+  virtual SessionStorageNamespace* CreateAlias() OVERRIDE;
 
  private:
   explicit SessionStorageNamespaceImpl(DOMStorageSession* clone);

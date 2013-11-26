@@ -37,9 +37,14 @@ class SessionStorageNamespace
   // this function has been called. Transaction logging will be restricted
   // to the processes indicated.
   virtual void AddTransactionLogProcessId(int process_id) = 0;
+
   // When transaction logging for a process is no longer required, the log
   // can be removed to save space.
   virtual void RemoveTransactionLogProcessId(int process_id) = 0;
+
+  // Creates a new session storage namespace which is an alias of the current
+  // instance.
+  virtual SessionStorageNamespace* CreateAlias() = 0;
 
   enum MergeResult {
     MERGE_RESULT_NAMESPACE_NOT_FOUND,

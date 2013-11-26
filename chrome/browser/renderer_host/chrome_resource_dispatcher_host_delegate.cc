@@ -22,6 +22,7 @@
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_pending_swap_throttle.h"
 #include "chrome/browser/prerender/prerender_resource_throttle.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/prerender/prerender_util.h"
@@ -483,6 +484,11 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
   if (prerender_tracker_->IsPrerenderingOnIOThread(info->GetChildID(),
                                                    info->GetRouteID())) {
     throttles->push_back(new prerender::PrerenderResourceThrottle(
+        request, prerender_tracker_));
+  }
+  if (prerender_tracker_->IsPendingSwapRequestOnIOThread(
+          info->GetChildID(), info->GetRouteID(), request->url())) {
+    throttles->push_back(new prerender::PrerenderPendingSwapThrottle(
         request, prerender_tracker_));
   }
 }
