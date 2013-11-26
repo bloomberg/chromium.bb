@@ -8,12 +8,14 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "webkit/common/blob/scoped_file.h"
 
 namespace google_apis {
 class ChangeResource;
 class FileResource;
+class ResourceEntry;
 }
 
 namespace leveldb {
@@ -46,6 +48,9 @@ std::string FileKindToString(FileKind file_kind);
 bool HasFileAsParent(const FileDetails& details, const std::string& file_id);
 
 std::string GetMimeTypeFromTitle(const base::FilePath& title);
+
+scoped_ptr<google_apis::ResourceEntry> GetOldestCreatedFolderResource(
+    ScopedVector<google_apis::ResourceEntry> list);
 
 }  // namespace drive_backend
 }  // namespace sync_file_system

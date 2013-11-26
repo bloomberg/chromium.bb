@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_LOCAL_TO_REMOTE_SYNCER_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_LOCAL_TO_REMOTE_SYNCER_H_
 
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/sync_file_system/file_change.h"
@@ -19,6 +21,7 @@ class DriveUploaderInterface;
 
 namespace google_apis {
 class ResourceEntry;
+class ResourceList;
 }
 
 namespace sync_file_system {
@@ -81,6 +84,14 @@ class LocalToRemoteSyncer : public SyncTask {
                                   SyncStatusCode status);
 
   void CreateRemoteFolder(const SyncStatusCallback& callback);
+  void DidCreateRemoteFolder(const SyncStatusCallback& callback,
+                             google_apis::GDataErrorCode error,
+                             scoped_ptr<google_apis::ResourceEntry> entry);
+  void DidListFolderForEnsureUniqueness(
+      const SyncStatusCallback& callback,
+      ScopedVector<google_apis::ResourceEntry> candidates,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::ResourceList> resource_list);
 
   drive::DriveServiceInterface* drive_service();
   drive::DriveUploaderInterface* drive_uploader();

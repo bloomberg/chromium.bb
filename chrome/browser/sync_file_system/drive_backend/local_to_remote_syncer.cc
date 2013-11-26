@@ -153,7 +153,7 @@ void LocalToRemoteSyncer::HandleMissingRemoteFile(
 
   DCHECK_EQ(SYNC_FILE_TYPE_DIRECTORY, local_change_.file_type());
   // Create remote folder.
-  UploadNewFile(callback);
+  CreateRemoteFolder(callback);
 }
 
 void LocalToRemoteSyncer::HandleConflict(const SyncStatusCallback& callback) {
@@ -429,8 +429,73 @@ void LocalToRemoteSyncer::DidUpdateDatabaseForUpload(
 
 void LocalToRemoteSyncer::CreateRemoteFolder(
     const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
+  base::FilePath title = fileapi::VirtualPath::BaseName(url_.path());
+  DCHECK(remote_parent_folder_tracker_);
+  drive_service()->AddNewDirectory(
+      remote_parent_folder_tracker_->file_id(),
+      title.AsUTF8Unsafe(),
+      base::Bind(&LocalToRemoteSyncer::DidCreateRemoteFolder,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void LocalToRemoteSyncer::DidCreateRemoteFolder(
+    const SyncStatusCallback& callback,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::ResourceEntry> entry) {
+  if (error != google_apis::HTTP_SUCCESS &&
+      error != google_apis::HTTP_CREATED) {
+    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+    return;
+  }
+
+  // Check if any other browser instance created the folder.
+  // TODO(tzik): Do similar in RegisterAppTask.
+  drive_service()->SearchByTitle(
+      entry->title(),
+      remote_parent_folder_tracker_->file_id(),
+      base::Bind(&LocalToRemoteSyncer::DidListFolderForEnsureUniqueness,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback,
+                 base::Passed(ScopedVector<google_apis::ResourceEntry>())));
+}
+
+void LocalToRemoteSyncer::DidListFolderForEnsureUniqueness(
+    const SyncStatusCallback& callback,
+    ScopedVector<google_apis::ResourceEntry> candidates,
+    google_apis::GDataErrorCode error,
+    scoped_ptr<google_apis::ResourceList> resource_list) {
+  if (error != google_apis::HTTP_SUCCESS) {
+    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+    return;
+  }
+
+  candidates.reserve(candidates.size() + resource_list->entries().size());
+  candidates.insert(candidates.end(),
+                    resource_list->entries().begin(),
+                    resource_list->entries().end());
+  resource_list->mutable_entries()->weak_clear();
+
+  GURL next_feed;
+  if (resource_list->GetNextFeedURL(&next_feed)) {
+    drive_service()->GetRemainingFileList(
+        next_feed,
+        base::Bind(&LocalToRemoteSyncer::DidListFolderForEnsureUniqueness,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback,
+                   base::Passed(&candidates)));
+    return;
+  }
+
+  scoped_ptr<google_apis::ResourceEntry> oldest =
+      GetOldestCreatedFolderResource(candidates.Pass());
+  if (!oldest) {
+    callback.Run(SYNC_STATUS_FAILED);
+    return;
+  }
+
+  DCHECK(oldest);
+  // TODO(tzik): Delete all remote resource but |oldest|.
+  callback.Run(SYNC_STATUS_OK);
 }
 
 drive::DriveServiceInterface* LocalToRemoteSyncer::drive_service() {

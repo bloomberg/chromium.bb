@@ -154,5 +154,22 @@ std::string GetMimeTypeFromTitle(const base::FilePath& title) {
   return mime_type;
 }
 
+scoped_ptr<google_apis::ResourceEntry> GetOldestCreatedFolderResource(
+    ScopedVector<google_apis::ResourceEntry> candidates) {
+  scoped_ptr<google_apis::ResourceEntry> oldest;
+  for (size_t i = 0; i < candidates.size(); ++i) {
+    google_apis::ResourceEntry* entry = candidates[i];
+    if (!entry->is_folder())
+      continue;
+
+    if (!oldest || oldest->published_time() > entry->published_time()) {
+      oldest.reset(entry);
+      candidates[i] = NULL;
+    }
+  }
+
+  return oldest.Pass();
+}
+
 }  // namespace drive_backend
 }  // namespace sync_file_system
