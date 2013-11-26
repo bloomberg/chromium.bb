@@ -5,6 +5,7 @@
 
 """Library containing functions to access a remote test device."""
 
+import glob
 import logging
 import os
 import shutil
@@ -216,3 +217,37 @@ class RemoteAccess(object):
     if sudo:
       rc_func = cros_build_lib.SudoRunCommand
     return rc_func(rsync_cmd, debug_level=debug_level, print_cmd=verbose)
+
+  def Scp(self, src, dest, recursive=False, verbose=False, debug_level=None,
+          sudo=False):
+    """Scp a file or directory to the remote device.
+
+    Args:
+      src: The local src file or directory.
+      dest: The remote dest location.
+      recursive: Whether to recursively copy entire directories.
+      verbose: If set, print more verbose output during scp file transfer.
+      debug_level: See cros_build_lib.RunCommand documentation.
+      sudo: If set, invoke the command via sudo.
+
+    Returns:
+      A CommandResult object containing the information and return code of
+      the scp command.
+    """
+    if not debug_level:
+      debug_level = self.debug_level
+
+    scp_cmd = ['scp', '-p'] + CompileSSHConnectSettings(ConnectTimeout=60)
+
+    if recursive:
+      scp_cmd.append('-r')
+    if verbose:
+      scp_cmd.append('-v')
+
+    scp_cmd += glob.glob(src) + ['%s:%s' % (self.target_ssh_url, dest)]
+
+    rc_func = cros_build_lib.RunCommand
+    if sudo:
+      rc_func = cros_build_lib.SudoRunCommand
+
+    return rc_func(scp_cmd, debug_level=debug_level, print_cmd=verbose)

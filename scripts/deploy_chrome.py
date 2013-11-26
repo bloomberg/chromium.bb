@@ -4,8 +4,7 @@
 # found in the LICENSE file.
 
 
-"""
-Script that deploys a Chrome build to a device.
+"""Script that deploys a Chrome build to a device.
 
 The script supports deploying Chrome from these sources:
 
@@ -21,12 +20,16 @@ device's rootfs.
 import collections
 import contextlib
 import functools
+import glob
 import logging
 import multiprocessing
 import os
 import optparse
 import shlex
+import shutil
+import tarfile
 import time
+import zipfile
 
 
 from chromite.buildbot import constants
@@ -55,11 +58,19 @@ POST_KILL_WAIT = 2
 MOUNT_RW_COMMAND = 'mount -o remount,rw /'
 LSOF_COMMAND = 'lsof %s/chrome'
 
+MOUNT_RW_COMMAND_ANDROID = 'mount -o remount,rw /system'
+
+_ANDROID_DIR = '/system/chrome'
+_ANDROID_DIR_EXTRACT_PATH = 'system/chrome/*'
+
 _CHROME_DIR = '/opt/google/chrome'
 _CHROME_DIR_MOUNT = '/mnt/stateful_partition/deploy_rootfs/opt/google/chrome'
 
 _BIND_TO_FINAL_DIR_CMD = 'mount --rbind %s %s'
 _SET_MOUNT_FLAGS_CMD = 'mount -o remount,exec,suid %s'
+
+DF_COMMAND = 'df -k %s'
+DF_COMMAND_ANDROID = 'df %s'
 
 def _UrlBaseName(url):
   """Return the last component of the URL."""
@@ -83,6 +94,7 @@ class DeployChrome(object):
       options: Optparse result structure.
       tempdir: Scratch space for the class.  Caller has responsibility to clean
         it up.
+      staging_dir: Directory to stage the files to.
     """
     self.tempdir = tempdir
     self.options = options
@@ -90,12 +102,30 @@ class DeployChrome(object):
     self.host = remote.RemoteAccess(options.to, tempdir, port=options.port)
     self._rootfs_is_still_readonly = multiprocessing.Event()
 
+    # Used to track whether deploying content_shell or chrome to a device.
+    self.content_shell = False
+    self.copy_paths = chrome_util.GetCopyPaths(False)
+    self.chrome_dir = _CHROME_DIR
+
   def _GetRemoteMountFree(self, remote_dir):
-    result = self.host.RemoteSh('df -k %s' % remote_dir)
+    result = self.host.RemoteSh((DF_COMMAND if not self.content_shell
+                                 else DF_COMMAND_ANDROID) % remote_dir)
     line = result.output.splitlines()[1]
-    return int(line.split()[3])
+    value = line.split()[3]
+    multipliers = {
+        'G': 1024 * 1024 * 1024,
+        'M': 1024 * 1024,
+        'K': 1024,
+    }
+    return int(value.rstrip('GMK')) * multipliers.get(value[-1], 1)
 
   def _GetRemoteDirSize(self, remote_dir):
+    if self.content_shell:
+      # Content Shell devices currently do not contain the du binary.
+      logging.warning('Remote host does not contain du; cannot get remote '
+                      'directory size to properly calculate available free '
+                      'space.')
+      return 0
     result = self.host.RemoteSh('du -ks %s' % remote_dir)
     return int(result.output.split()[0])
 
@@ -158,6 +188,11 @@ class DeployChrome(object):
     return result.output.split()[1].split('/')[0] == 'start'
 
   def _KillProcsIfNeeded(self):
+    if self.content_shell:
+      logging.info('Shutting down content_shell...')
+      self.host.RemoteSh('stop content_shell')
+      return
+
     if self._CheckUiJobStarted():
       logging.info('Shutting down Chrome...')
       self.host.RemoteSh('stop ui')
@@ -189,7 +224,9 @@ class DeployChrome(object):
     Args:
       error_code_ok: See remote.RemoteAccess.RemoteSh for details.
     """
-    result = self.host.RemoteSh(MOUNT_RW_COMMAND, error_code_ok=error_code_ok)
+    result = self.host.RemoteSh(MOUNT_RW_COMMAND if not self.content_shell
+                                else MOUNT_RW_COMMAND_ANDROID,
+                                error_code_ok=error_code_ok)
     if result.returncode:
       self._rootfs_is_still_readonly.set()
 
@@ -209,10 +246,19 @@ class DeployChrome(object):
     """
     effective_free = device_info.target_dir_size + device_info.target_fs_free
     staging_size = self._GetStagingDirSize()
+    # For content shell deployments, which do not contain the du binary,
+    # do not raise DeployFailure since can't get exact free space available
+    # for staging files.
     if effective_free < staging_size:
-      raise DeployFailure(
-          'Not enough free space on the device.  Required: %s MB, '
-          'actual: %s MB.' % (staging_size/1024, effective_free/1024))
+      if self.content_shell:
+        logging.warning('Not enough free space on the device.  If overwriting '
+                        'files, deployment may still succeed.  Required: %s '
+                        'MiB, actual: %s MiB.', staging_size / 1024,
+                        effective_free / 1024)
+      else:
+        raise DeployFailure(
+            'Not enough free space on the device.  Required: %s MiB, '
+            'actual: %s MiB.' % (staging_size / 1024, effective_free / 1024))
     if device_info.target_fs_free < (100 * 1024):
       logging.warning('The device has less than 100MB free.  deploy_chrome may '
                       'hang during the transfer.')
@@ -220,24 +266,99 @@ class DeployChrome(object):
   def _Deploy(self):
     logging.info('Copying Chrome to %s on device...', self.options.target_dir)
     # Show the output (status) for this command.
-    self.host.Rsync('%s/' % os.path.abspath(self.staging_dir),
-                    self.options.target_dir,
-                    inplace=True, debug_level=logging.INFO,
-                    verbose=self.options.verbose)
+    dest_path = _CHROME_DIR
+    if self.content_shell:
+      try:
+        self.host.Scp('%s/*' % os.path.abspath(self.staging_dir),
+                      '%s/' % self.options.target_dir,
+                      recursive=True,
+                      debug_level=logging.INFO,
+                      verbose=self.options.verbose)
+      except cros_build_lib.RunCommandError as ex:
+        if ex.result.returncode != 1:
+          logging.error('Scp failure [%s]', ex.result.returncode)
+          raise DeployFailure(ex)
+        else:
+          # TODO(stevefung): Update Dropbear SSHD on device.
+          # http://crbug.com/329656
+          logging.info('Potential conflict with DropBear SSHD return status')
+
+      dest_path = _ANDROID_DIR
+    else:
+      self.host.Rsync('%s/' % os.path.abspath(self.staging_dir),
+                      self.options.target_dir,
+                      inplace=True, debug_level=logging.INFO,
+                      verbose=self.options.verbose)
+
+    for p in self.copy_paths:
+      if p.owner:
+        self.host.RemoteSh('chown %s %s/%s' % (p.owner, dest_path,
+                                               p.src if not p.dest else p.dest))
+      if p.mode:
+        # Set mode if necessary.
+        self.host.RemoteSh('chmod %o %s/%s' % (p.mode, dest_path,
+                                               p.src if not p.dest else p.dest))
+
+
     if self.options.startui:
-      logging.info('Starting Chrome...')
-      self.host.RemoteSh('start ui')
+      logging.info('Starting UI...')
+      if self.content_shell:
+        self.host.RemoteSh('start content_shell')
+      else:
+        self.host.RemoteSh('start ui')
 
   def _CheckConnection(self):
     try:
       logging.info('Testing connection to the device...')
-      self.host.RemoteSh('true')
+      if self.content_shell:
+        # true command over ssh returns error code 255, so as workaround
+        #   use `sleep 0` as no-op.
+        self.host.RemoteSh('sleep 0')
+      else:
+        self.host.RemoteSh('true')
     except cros_build_lib.RunCommandError as ex:
       logging.error('Error connecting to the test device.')
       raise DeployFailure(ex)
 
+  def _CheckDeployType(self):
+    if self.options.build_dir and os.path.exists(
+        os.path.join(self.options.build_dir, 'system.unand')):
+      # Content shell deployment.
+      self.content_shell = True
+      self.options.build_dir = os.path.join(self.options.build_dir,
+                                            'system.unand/chrome/')
+      self.options.dostrip = False
+      self.options.target_dir = _ANDROID_DIR
+      self.copy_paths = chrome_util.GetCopyPaths(True)
+    elif self.options.local_pkg_path or self.options.gs_path:
+      # Package deployment.
+      pkg_path = self.options.local_pkg_path
+      if self.options.gs_path:
+        pkg_path = _FetchChromePackage(self.options.cache_dir, self.tempdir,
+                                       self.options.gs_path)
+
+      assert pkg_path
+      logging.info('Checking %s for content_shell...', pkg_path)
+      if pkg_path[-4:] == '.zip':
+        zip_pkg = zipfile.ZipFile(pkg_path)
+        if any('eureka_shell' in name for name in zip_pkg.namelist()):
+          self.content_shell = True
+        zip_pkg.close()
+      else:
+        tar = tarfile.open(pkg_path)
+        if any('eureka_shell' in member.name for member in tar.getmembers()):
+          self.content_shell = True
+        tar.close()
+
+      if self.content_shell:
+        self.options.dostrip = False
+        self.options.target_dir = _ANDROID_DIR
+        self.copy_paths = chrome_util.GetCopyPaths(True)
+        self.chrome_dir = _ANDROID_DIR
+
   def _PrepareStagingDir(self):
-    _PrepareStagingDir(self.options, self.tempdir, self.staging_dir)
+    _PrepareStagingDir(self.options, self.tempdir, self.staging_dir,
+                       self.copy_paths, self.chrome_dir)
 
   def _MountTarget(self):
     logging.info('Mounting Chrome...')
@@ -250,6 +371,8 @@ class DeployChrome(object):
     self.host.RemoteSh(_SET_MOUNT_FLAGS_CMD % (self.options.mount_dir,))
 
   def Perform(self):
+    self._CheckDeployType()
+
     # If requested, just do the staging step.
     if self.options.staging_only:
       self._PrepareStagingDir()
@@ -257,9 +380,9 @@ class DeployChrome(object):
 
     # Run setup steps in parallel. If any step fails, RunParallelSteps will
     # stop printing output at that point, and halt any running steps.
-    steps = [self._GetDeviceInfo, self._PrepareStagingDir,
-             self._CheckConnection, self._KillProcsIfNeeded,
-             self._MountRootfsAsWritable]
+    steps = [self._GetDeviceInfo, self._CheckConnection,
+             self._KillProcsIfNeeded, self._MountRootfsAsWritable,
+             self._PrepareStagingDir]
     ret = parallel.RunParallelSteps(steps, halt_on_error=True,
                                     return_values=True)
     self._CheckDeviceFreeSpace(ret[0])
@@ -411,10 +534,11 @@ def _ParseCommandLine(argv):
 
 
 def _PostParseCheck(options, _args):
-  """Perform some usage validation (after we've parsed the arguments
+  """Perform some usage validation (after we've parsed the arguments).
 
   Args:
-    options/args: The options/args object returned by optparse
+    options: The options object returned by optparse.
+    _args: The args object returned by optparse.
   """
   if options.local_pkg_path and not os.path.isfile(options.local_pkg_path):
     cros_build_lib.Die('%s is not a file.', options.local_pkg_path)
@@ -491,7 +615,8 @@ def _StripBinContext(options):
       yield strip_bin
 
 
-def _PrepareStagingDir(options, tempdir, staging_dir):
+def _PrepareStagingDir(options, tempdir, staging_dir, copy_paths=None,
+                       chrome_dir=_CHROME_DIR):
   """Place the necessary files in the staging directory.
 
   The staging directory is the directory used to rsync the build artifacts over
@@ -508,7 +633,7 @@ def _PrepareStagingDir(options, tempdir, staging_dir):
           staging_dir, options.build_dir, strip_bin, strict=options.strict,
           sloppy=options.sloppy, gyp_defines=options.gyp_defines,
           staging_flags=options.staging_flags,
-          strip_flags=strip_flags)
+          strip_flags=strip_flags, copy_paths=copy_paths)
   else:
     pkg_path = options.local_pkg_path
     if options.gs_path:
@@ -519,10 +644,18 @@ def _PrepareStagingDir(options, tempdir, staging_dir):
     logging.info('Extracting %s...', pkg_path)
     # Extract only the ./opt/google/chrome contents, directly into the staging
     # dir, collapsing the directory hierarchy.
-    cros_build_lib.DebugRunCommand(
-        ['tar', '--strip-components', '4', '--extract',
-         '--preserve-permissions', '--file', pkg_path, '.%s' % _CHROME_DIR],
-        cwd=staging_dir)
+    if pkg_path[-4:] == '.zip':
+      cros_build_lib.DebugRunCommand(
+          ['unzip', '-X', pkg_path, _ANDROID_DIR_EXTRACT_PATH, '-d',
+           staging_dir])
+      for filename in glob.glob(os.path.join(staging_dir, 'system/chrome/*')):
+        shutil.move(filename, staging_dir)
+      osutils.RmDir(os.path.join(staging_dir, 'system'), ignore_missing=True)
+    else:
+      cros_build_lib.DebugRunCommand(
+          ['tar', '--strip-components', '4', '--extract',
+           '--preserve-permissions', '--file', pkg_path, '.%s' % chrome_dir],
+          cwd=staging_dir)
 
 
 def main(argv):

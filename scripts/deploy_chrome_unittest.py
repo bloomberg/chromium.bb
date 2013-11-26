@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Unit tests for the deploy_chrome script."""
 
 import os
 import sys
@@ -109,6 +110,7 @@ class InterfaceTest(cros_test_lib.OutputTestCase):
 
 
 class DeployChromeMock(partial_mock.PartialMock):
+  """Deploy Chrome Mock Class."""
 
   TARGET = 'chromite.scripts.deploy_chrome.DeployChrome'
   ATTRS = ('_KillProcsIfNeeded', '_DisableRootfsVerification')
@@ -142,6 +144,7 @@ class DeployChromeMock(partial_mock.PartialMock):
 
 
 class MainTest(cros_test_lib.MockLoggingTestCase):
+  """Main tests."""
 
   def setUp(self):
     self.PatchObject(deploy_chrome.DeployChrome, 'Perform', autospec=True)
@@ -162,6 +165,8 @@ class MainTest(cros_test_lib.MockLoggingTestCase):
 
 
 class DeployTest(cros_test_lib.MockTempDirTestCase):
+  """Setup a deploy object with a GS-path for use in tests."""
+
   def _GetDeployChrome(self, args):
     options, _ = _ParseCommandLine(args)
     return deploy_chrome.DeployChrome(
@@ -254,20 +259,21 @@ class StagingTest(cros_test_lib.MockTempDirTestCase):
     osutils.Touch(os.path.join(self.build_dir, 'chrome'), makedirs=True)
     self.assertRaises(
         chrome_util.MissingPathError, deploy_chrome._PrepareStagingDir,
-        options, self.tempdir, self.staging_dir)
+        options, self.tempdir, self.staging_dir, chrome_util._COPY_PATHS)
 
   def testSloppyDeployFailure(self):
     """Sloppy staging enforces that at least one file is copied."""
     options, _ = _ParseCommandLine(self.common_flags + ['--sloppy'])
     self.assertRaises(
         chrome_util.MissingPathError, deploy_chrome._PrepareStagingDir,
-        options, self.tempdir, self.staging_dir)
+        options, self.tempdir, self.staging_dir, chrome_util._COPY_PATHS)
 
   def testSloppyDeploySuccess(self):
     """Sloppy staging - stage one file."""
     options, _ = _ParseCommandLine(self.common_flags + ['--sloppy'])
     osutils.Touch(os.path.join(self.build_dir, 'chrome'), makedirs=True)
-    deploy_chrome._PrepareStagingDir(options, self.tempdir, self.staging_dir)
+    deploy_chrome._PrepareStagingDir(options, self.tempdir, self.staging_dir,
+                                     chrome_util._COPY_PATHS)
 
   def testEmptyDeployStrict(self):
     """Strict staging fails when there are no files."""
@@ -276,7 +282,44 @@ class StagingTest(cros_test_lib.MockTempDirTestCase):
 
     self.assertRaises(
         chrome_util.MissingPathError, deploy_chrome._PrepareStagingDir,
-        options, self.tempdir, self.staging_dir)
+        options, self.tempdir, self.staging_dir, chrome_util._COPY_PATHS)
+
+
+class DeployTestBuildDir(cros_test_lib.MockTempDirTestCase):
+  """Setup a deploy object with a build-dir for use in Content Shell tests"""
+
+  def _GetDeployChrome(self, args):
+    options, _ = _ParseCommandLine(args)
+    return deploy_chrome.DeployChrome(
+        options, self.tempdir, os.path.join(self.tempdir, 'staging'))
+
+  def setUp(self):
+    self.staging_dir = os.path.join(self.tempdir, 'staging')
+    self.build_dir = os.path.join(self.tempdir, 'build_dir')
+    self.deploy_mock = self.StartPatcher(DeployChromeMock())
+    self.deploy = self._GetDeployChrome(
+        list(_REGULAR_TO) + ['--build-dir', self.build_dir,
+                             '--board=lumpy', '--staging-only', '--cache-dir',
+                             self.tempdir, '--sloppy'])
+
+
+class TestContentDeploymentType(DeployTestBuildDir):
+  """Test detection of deployment type using build dir."""
+
+  def testContentShellDetection(self):
+    """Check for a content_shell deployment"""
+    osutils.Touch(os.path.join(self.deploy.options.build_dir,
+                               'system.unand/chrome/eureka_shell'),
+                  makedirs=True)
+    self.deploy._CheckDeployType()
+    self.assertTrue(self.deploy.content_shell)
+
+  def testChromeDetection(self):
+    """Check for a regular chrome deployment"""
+    osutils.Touch(os.path.join(self.deploy.options.build_dir, 'chrome'),
+                  makedirs=True)
+    self.deploy._CheckDeployType()
+    self.assertFalse(self.deploy.content_shell)
 
 
 if __name__ == '__main__':

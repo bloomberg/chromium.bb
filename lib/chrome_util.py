@@ -4,9 +4,7 @@
 # found in the LICENSE file.
 
 
-"""
-Library containing utility functions used for Chrome-specific build tasks.
-"""
+"""Library containing utility functions used for Chrome-specific build tasks."""
 
 
 import functools
@@ -24,7 +22,8 @@ from chromite.lib import osutils
 
 # Taken from external/gyp.git/pylib.
 def _NameValueListToDict(name_value_list):
-  """
+  """Converts Name-Value list to dictionary.
+
   Takes an array of strings of the form 'NAME=VALUE' and creates a dictionary
   of the pairs.  If a string is simply NAME, then the value in the dictionary
   is set to True.  If VALUE can be converted to an integer, it is.
@@ -246,7 +245,7 @@ class Path(object):
   """Represents an artifact to be copied from build dir to staging dir."""
 
   def __init__(self, src, exe=False, cond=None, dest=None, mode=None,
-               optional=False, strip=True):
+               optional=False, strip=True, owner=None):
     """Initializes the object.
 
     Args:
@@ -269,6 +268,8 @@ class Path(object):
                 script errors out if the artifact does not exist.  In 'sloppy'
                 mode, the Copier class treats all artifacts as optional.
       strip: If |exe| is set, whether to strip the executable.
+      owner: The target owner for this artifact, to be used with chown on the
+             remote system.
     """
     self.src = src
     self.exe = exe
@@ -277,6 +278,7 @@ class Path(object):
     self.mode = mode
     self.optional = optional
     self.strip = strip
+    self.owner = owner
 
   def ShouldProcess(self, gyp_defines, staging_flags):
     """Tests whether this artifact should be copied."""
@@ -368,6 +370,27 @@ _COPY_PATHS = (
   Path('*.png'),
 )
 
+_COPY_PATHS_CONTENT_SHELL = (
+  Path('chrome-sandbox',
+       exe=True, mode=0o4755, owner='root:chrome'),
+  Path('dogfood/dumpstate_uploader', exe=True),
+  Path('dogfood/fake.dmp'),
+  Path('eureka_shell', exe=True, mode=0o755, owner='chrome:chrome'),
+  Path('eureka_shell.pak', owner='chrome:chrome'),
+  Path('fake_log_report.dmp', owner='chrome:chrome'),
+  Path('libck_pe.so', owner='chrome:chrome'),
+  Path('libffmpegsumo.so', owner='chrome:chrome'),
+  Path('locales/*.pak', owner='chrome:chrome'),
+  Path('osd.conf', owner='chrome:chrome'),
+  Path('osd_images/1080p/*.png', owner='chrome:chrome'),
+  Path('osd_images/720p/*.png', owner='chrome:chrome'),
+  Path('setup/http/jquery.min.js', owner='chrome:chrome'),
+  Path('setup/http/setup.html', owner='chrome:chrome'),
+  Path('setup/http/welcome-video.mp4', owner='chrome:chrome'),
+  Path('update_engine', exe=True, mode=0o755, owner='updater:updater'),
+  Path('v2mirroring', exe=True, mode=0o755, owner='chrome:chrome'),
+  Path('watchdog/wd.dmp'),
+)
 
 def _FixPermissions(dest_base):
   """Last minute permission fixes."""
@@ -376,9 +399,25 @@ def _FixPermissions(dest_base):
       ['find', dest_base, '-perm', '/110', '-exec', 'chmod', 'a+x', '{}', '+'])
 
 
+def GetCopyPaths(content_shell=False):
+  """Returns the list of copy paths used as a filter for staging files.
+
+  Args:
+    content_shell: Boolean on whether to return the copy paths used for a
+                   content shell deployment or a chrome deployment.
+
+  Returns:
+    The list of paths to use as a filter for staging files.
+  """
+  if content_shell:
+    return _COPY_PATHS_CONTENT_SHELL
+  else:
+    return _COPY_PATHS
+
+
 def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
                             sloppy=False, gyp_defines=None, staging_flags=None,
-                            strip_flags=None):
+                            strip_flags=None, copy_paths=_COPY_PATHS):
   """Populates a staging directory with necessary build artifacts.
 
   If |strict| is set, then we decide what to stage based on the |gyp_defines|
@@ -399,6 +438,7 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
     staging_flags: A list of extra staging flags.  Valid flags are specified in
       STAGING_FLAGS.
     strip_flags: A list of flags to pass to the tool used to strip binaries.
+    copy_paths: The list of paths to use as a filter for staging files.
   """
   os.mkdir(os.path.join(staging_dir, 'plugins'), 0o755)
 
@@ -409,7 +449,7 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
 
   copier = Copier(strip_bin=strip_bin, strip_flags=strip_flags)
   copied_paths = []
-  for p in _COPY_PATHS:
+  for p in copy_paths:
     if not strict or p.ShouldProcess(gyp_defines, staging_flags):
       copied_paths += copier.Copy(build_dir, staging_dir, p, strict=strict,
                                   sloppy=sloppy)
