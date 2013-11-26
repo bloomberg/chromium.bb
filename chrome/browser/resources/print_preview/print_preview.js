@@ -500,6 +500,7 @@ cr.define('print_preview', function() {
       this.destinationStore_.init(settings.systemDefaultDestinationId);
       this.appState_.setInitialized();
 
+      $('document-title').innerText = settings.documentTitle;
       setIsVisible($('system-dialog-link'),
                    !settings.hidePrintWithSystemDialogLink);
     },
