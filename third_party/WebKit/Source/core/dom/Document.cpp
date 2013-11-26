@@ -3766,6 +3766,11 @@ String Document::domain() const
 
 void Document::setDomain(const String& newDomain, ExceptionState& exceptionState)
 {
+    if (isSandboxed(SandboxDocumentDomain)) {
+        exceptionState.throwSecurityError(ExceptionMessages::failedToSet("domain", "Document", "assignment is forbidden for sandboxed iframes."));
+        return;
+    }
+
     if (SchemeRegistry::isDomainRelaxationForbiddenForURLScheme(securityOrigin()->protocol())) {
         exceptionState.throwSecurityError(ExceptionMessages::failedToSet("domain", "Document", "assignment is forbidden for the '" + securityOrigin()->protocol() + "' scheme."));
         return;
