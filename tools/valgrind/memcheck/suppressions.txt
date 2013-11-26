@@ -5817,18 +5817,6 @@
    fun:_ZN11leveldb_env19ParseMethodAndErrorEPKcPNS_8MethodIDEPi
 }
 {
-   bug_252641_b
-   Memcheck:Uninitialized
-   fun:pthread_rwlock_init$UNIX2003
-   fun:_ZN3re25MutexC2Ev
-   fun:_ZN3re25MutexC1Ev
-   ...
-   fun:_ZN11leveldb_env19ParseMethodAndErrorEPKcPNS_8MethodIDEPi
-   fun:_ZN7content23RecoveryCouldBeFruitfulEN7leveldb6StatusE
-   fun:_ZN7content21IndexedDBBackingStore4OpenERKSsRKN4base8FilePathES2_PN5blink15WebIDBCallbacks8DataLossEPNS_14LevelDBFactoryE
-   fun:_ZN12_GLOBAL__N_137IndexedDBIOErrorTest_CleanUpTest_Test8TestBodyEv
-}
-{
    bug_253797
    Memcheck:Uninitialized
    fun:_ZNSt11char_traitsIcE6lengthEPKc
@@ -6189,17 +6177,6 @@
    fun:_ZN7content12_GLOBAL__N_123WaitableCallbackResults11MaybeCreateEN5blink22WebFileSystemCallbacksE
    ...
    fun:_ZN7WebCore*SyncV8Internal*FunctionCallbackInfo*
-}
-{
-   bug_293024_a
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF24ThreadSafeRefCountedBasenwEm
-   fun:_ZN5blink30AllowIndexedDBMainThreadBridge6createEPN7WebCore17WorkerGlobalScopeEPNS_13WebWorkerBaseERKN3WTF6StringES9_
-   fun:_ZN5blink22IDBFactoryBackendProxy14allowIndexedDBEPN7WebCore22ScriptExecutionContextERKN3WTF6StringERKNS_17WebSecurityOriginENS4_10PassRefPtrINS1_12IDBCallbacksEEE
-   ...
-   fun:_ZN2v88internal25FunctionCallbackArguments4CallEPFvRKNS_20FunctionCallbackInfoINS_5ValueEEEE
 }
 {
    bug_293024_b
