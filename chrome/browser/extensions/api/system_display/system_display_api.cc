@@ -10,7 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/api/system_display/display_info_provider.h"
 #include "chrome/common/extensions/api/system_display.h"
-#include "chrome/common/extensions/manifest_handlers/kiosk_mode_info.h"
+#include "extensions/common/manifest_handlers/kiosk_mode_info.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
 

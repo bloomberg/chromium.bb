@@ -21,7 +21,6 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
-#include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
@@ -78,6 +77,7 @@
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/manifest_handlers/sandboxed_page_info.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/view_type.h"
@@ -1496,7 +1496,7 @@ void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
 
 // TODO(kalman): This is checking for the wrong thing, it should be checking if
 // the frame's security origin is unique. The extension sandbox directive is
-// checked for in chrome/common/extensions/csp_handler.cc.
+// checked for in extensions/common/manifest_handlers/csp_info.cc.
 bool Dispatcher::IsSandboxedPage(const GURL& url) const {
   if (url.SchemeIs(kExtensionScheme)) {
     const Extension* extension = extensions_.GetByID(url.host());

@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_REQUIREMENTS_HANDLER_H_
-#define CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_REQUIREMENTS_HANDLER_H_
+#ifndef EXTENSIONS_COMMON_MANIFEST_HANDLERS_REQUIREMENTS_INFO_H_
+#define EXTENSIONS_COMMON_MANIFEST_HANDLERS_REQUIREMENTS_INFO_H_
 
 #include <string>
 
@@ -46,4 +46,4 @@ class RequirementsHandler : public ManifestHandler {
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_MANIFEST_HANDLERS_REQUIREMENTS_HANDLER_H_
+#endif  // EXTENSIONS_COMMON_MANIFEST_HANDLERS_REQUIREMENTS_INFO_H_

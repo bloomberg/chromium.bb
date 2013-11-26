@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/csp_validator.h"
+#include "extensions/common/csp_validator.h"
 
 #include "base/strings/string_split.h"
 #include "base/strings/string_tokenizer.h"
