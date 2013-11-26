@@ -91,17 +91,16 @@ diff --git a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
 index 03cf05c..166022c 100644
 --- a/nss/lib/ssl/ssl3ext.c
 +++ b/nss/lib/ssl/ssl3ext.c
-@@ -812,6 +812,16 @@ ssl3_ClientSendChannelIDXtn(sslSocket * ss, PRBool append,
+@@ -812,6 +812,15 @@ ssl3_ClientSendChannelIDXtn(sslSocket * ss, PRBool append,
  	return 0;
      }
  
-+    if (ss->ssl3.hs.isResuming &&
++    if (ss->sec.ci.sid->cached != never_cached &&
 +        ss->sec.ci.sid->u.ssl3.originalHandshakeHash.len == 0) {
 +        /* We can't do ChannelID on a connection if we're resuming and didn't
 +         * do ChannelID on the original connection: without ChannelID on the
 +         * original connection we didn't record the handshake hashes needed for
 +         * the signature. */
-+	PORT_Assert(0);
 +	return 0;
 +    }
 +
