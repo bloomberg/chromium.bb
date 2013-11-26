@@ -476,12 +476,23 @@ TEST_F(TranslateManagerBrowserTest, NormalTranslate) {
   // infobar is now invalid.
   new_infobar = GetTranslateInfoBar();
   ASSERT_TRUE(new_infobar != NULL);
+  EXPECT_EQ(new_target_lang, new_infobar->target_language_code());
 
-  // Verify reload keeps the same settings.
+  // Reloading should trigger translation iff Always Translate is on.
   ReloadAndWait(true);
   new_infobar = GetTranslateInfoBar();
   ASSERT_TRUE(new_infobar != NULL);
-  ASSERT_EQ(new_target_lang, infobar->target_language_code());
+  infobar = new_infobar;
+  EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE,
+            infobar->infobar_type());
+  infobar->UpdateTargetLanguageIndex(1);
+  infobar->ToggleAlwaysTranslate();
+  ReloadAndWait(true);
+  new_infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(new_infobar != NULL);
+  infobar = new_infobar;
+  EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATING, infobar->infobar_type());
+  EXPECT_EQ(new_target_lang, infobar->target_language_code());
 }
 
 TEST_F(TranslateManagerBrowserTest, TranslateScriptNotAvailable) {
