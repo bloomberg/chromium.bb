@@ -9,6 +9,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_sign_in_delegate.h"
+#include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_cocoa.h"
 #include "components/autofill/content/browser/wallet/wallet_service_url.h"
 #include "content/public/browser/web_contents.h"
@@ -39,6 +40,7 @@
   // Prevent accidentaly empty |maxSize_|.
   if (NSEqualSizes(NSMakeSize(0, 0), maxSize_)) {
     maxSize_ = [[[self view] window] frame].size;
+    maxSize_.height -= chrome_style::kClientBottomPadding;
   }
 
   signInDelegate_.reset(
@@ -66,6 +68,11 @@
   minSize_ = minSize;
   maxSize_ = maxSize;
 
+  // Constrain the web view to be a little shorter than the given sizes, leaving
+  // room for some padding below the web view.
+  minSize_.height -= chrome_style::kClientBottomPadding;
+  maxSize_.height -= chrome_style::kClientBottomPadding;
+
   // Notify the web contents of its new auto-resize limits.
   if (signInDelegate_ && ![[self view] isHidden]) {
     signInDelegate_->UpdateLimitsAndEnableAutoResize(
@@ -75,7 +82,10 @@
 }
 
 - (void)setPreferredSize:(NSSize)size {
+  // The |size| is the preferred size requested by the web view. Tack onto that
+  // a bit of extra padding at the bottom.
   preferredSize_ = size;
+  preferredSize_.height += chrome_style::kClientBottomPadding;
 
   // Always request re-layout if preferredSize changes.
   id delegate = [[[self view] window] windowController];

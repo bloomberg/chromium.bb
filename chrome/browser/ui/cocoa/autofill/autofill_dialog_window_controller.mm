@@ -8,7 +8,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
-#include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_cocoa.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_header.h"
@@ -78,6 +77,9 @@ const CGFloat kMinimumContentsHeight = 101;
 
 // Notification that the WebContent's view frame has changed.
 - (void)onContentViewFrameDidChange:(NSNotification*)notification;
+
+// Update whether or not the main container is hidden.
+- (void)updateMainContainerVisibility;
 
 @end
 
@@ -170,11 +172,10 @@ const CGFloat kMinimumContentsHeight = 101;
 }
 
 - (void)updateSignInSizeConstraints {
-  // Adjust for the size of all decorations and paddings outside main content.
-  CGFloat decorationHeight =
-      [[header_ view] frame].size.height + chrome_style::kClientBottomPadding;
-  CGFloat minHeight = kMinimumContentsHeight - decorationHeight;
-  CGFloat maxHeight = std::max([self maxHeight] - decorationHeight, minHeight);
+  // Adjust for the size of the header.
+  CGFloat headerHeight = [[header_ view] frame].size.height;
+  CGFloat minHeight = kMinimumContentsHeight - headerHeight;
+  CGFloat maxHeight = std::max([self maxHeight] - headerHeight, minHeight);
   CGFloat width = NSWidth([[[self window] contentView] frame]);
 
   [signInContainer_ constrainSizeToMinimum:NSMakeSize(width, minHeight)
@@ -185,6 +186,14 @@ const CGFloat kMinimumContentsHeight = 101;
   [self updateSignInSizeConstraints];
   if ([[signInContainer_ view] isHidden])
     [self requestRelayout];
+}
+
+- (void)updateMainContainerVisibility {
+  BOOL visible =
+      [[loadingShieldController_ view] isHidden] &&
+      [[overlayController_ view] isHidden] &&
+      [[signInContainer_ view] isHidden];
+  [[mainContainer_ view] setHidden:!visible];
 }
 
 - (void)cancelRelayout {
@@ -210,10 +219,8 @@ const CGFloat kMinimumContentsHeight = 101;
     else
       size = [signInContainer_ preferredSize];
 
-    // Always make room for the header and bottom padding.
-    size.height +=
-        [header_ heightForWidth:size.width] +
-        chrome_style::kClientBottomPadding;
+    // Always make room for the header.
+    size.height += [header_ heightForWidth:size.width];
   }
 
   // Show as much of the main view as is possible without going past the
@@ -226,12 +233,10 @@ const CGFloat kMinimumContentsHeight = 101;
 - (void)performLayout {
   NSRect contentRect = NSZeroRect;
   contentRect.size = [self preferredSize];
-  NSRect clientRect = contentRect;
-  clientRect.size.height -= chrome_style::kClientBottomPadding;
 
-  CGFloat headerHeight = [header_ heightForWidth:NSWidth(clientRect)];
+  CGFloat headerHeight = [header_ heightForWidth:NSWidth(contentRect)];
   NSRect headerRect, mainRect;
-  NSDivideRect(clientRect, &headerRect, &mainRect, headerHeight, NSMinYEdge);
+  NSDivideRect(contentRect, &headerRect, &mainRect, headerHeight, NSMinYEdge);
 
   [[header_ view] setFrame:headerRect];
   [header_ performLayout];
@@ -295,13 +300,8 @@ const CGFloat kMinimumContentsHeight = 101;
 - (void)updateAccountChooser {
   [header_ update];
   [mainContainer_ updateLegalDocuments];
-
-  // For the duration of the loading shield, hide the main contents.
-  // This prevents the currently focused text field "shining through".
-  // No need to remember previous state, because the loading shield
-  // always flows through to the main container.
   [loadingShieldController_ update];
-  [[mainContainer_ view] setHidden:![[loadingShieldController_ view] isHidden]];
+  [self updateMainContainerVisibility];
 }
 
 - (void)updateButtonStrip {
@@ -311,7 +311,7 @@ const CGFloat kMinimumContentsHeight = 101;
   // state of the dialog.
   [overlayController_ updateState];
   [[header_ view] setHidden:![[overlayController_ view] isHidden]];
-  [[mainContainer_ view] setHidden:![[overlayController_ view] isHidden]];
+  [self updateMainContainerVisibility];
 }
 
 - (void)updateSection:(autofill::DialogSection)section {
@@ -328,8 +328,8 @@ const CGFloat kMinimumContentsHeight = 101;
 - (content::NavigationController*)showSignIn {
   [self updateSignInSizeConstraints];
   [signInContainer_ loadSignInPage];
-  [[mainContainer_ view] setHidden:YES];
   [[signInContainer_ view] setHidden:NO];
+  [self updateMainContainerVisibility];
   [self requestRelayout];
 
   return [signInContainer_ navigationController];
@@ -356,7 +356,7 @@ const CGFloat kMinimumContentsHeight = 101;
 
 - (void)hideSignIn {
   [[signInContainer_ view] setHidden:YES];
-  [[mainContainer_ view] setHidden:NO];
+  [self updateMainContainerVisibility];
   [self requestRelayout];
 }
 

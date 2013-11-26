@@ -138,7 +138,8 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
       NSMakeSize(buttonSize.width + chrome_style::kHorizontalPadding +
                      buttonStripImageSize.width,
                  std::max(buttonSize.height + kButtonVerticalPadding,
-                          buttonStripImageSize.height));
+                          buttonStripImageSize.height) +
+                     chrome_style::kClientBottomPadding);
 
   NSSize detailsSize = [detailsContainer_ preferredSize];
 
@@ -169,7 +170,7 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
   }
 
   NSRect buttonFrame = [buttonContainer_ frame];
-  buttonFrame.origin.y = currentY;
+  buttonFrame.origin.y = currentY + chrome_style::kClientBottomPadding;
   [buttonContainer_ setFrameOrigin:buttonFrame.origin];
   currentY = NSMaxY(buttonFrame) + kButtonVerticalPadding;
 

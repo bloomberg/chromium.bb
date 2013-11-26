@@ -26,8 +26,12 @@ class NavigationController;
   scoped_ptr<content::WebContents> webContents_;
   scoped_ptr<autofill::AutofillDialogSignInDelegate> signInDelegate_;
 
+  // The minimum and maximum sizes for the web view.
   NSSize maxSize_;
   NSSize minSize_;
+
+  // The preferred size for this view, including both the web view and the
+  // bottom padding.
   NSSize preferredSize_;
 }
 
