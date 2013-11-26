@@ -110,8 +110,8 @@ void CloudPolicyManager::CreateComponentCloudPolicyService(
   // Called at most once.
   DCHECK(!component_policy_service_);
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kEnableComponentCloudPolicy) ||
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableComponentCloudPolicy) ||
       policy_cache_path.empty()) {
     return;
   }
