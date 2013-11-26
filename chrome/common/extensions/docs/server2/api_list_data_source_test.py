@@ -7,12 +7,7 @@ import json
 from api_list_data_source import APIListDataSource
 from extensions_paths import EXTENSIONS
 from server_instance import ServerInstance
-from compiled_file_system import CompiledFileSystem
-from copy import deepcopy
-from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
-from file_system import FileNotFoundError
-from branch_utility import ChannelInfo
 
 def _ToTestData(obj):
   '''Transforms |obj| into test data by turning a list of files into an object
@@ -130,7 +125,8 @@ class APIListDataSourceTest(unittest.TestCase):
         server_instance.features_bundle,
         server_instance.object_store_creator,
         server_instance.api_models,
-        server_instance.availability_finder)
+        server_instance.availability_finder,
+        server_instance.api_categorizer)
 
   def testApps(self):
     api_list = self._factory.Create()

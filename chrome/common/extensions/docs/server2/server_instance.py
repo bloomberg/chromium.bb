@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from api_categorizer import APICategorizer
 from api_data_source import APIDataSource
 from api_list_data_source import APIListDataSource
 from api_models import APIModels
@@ -85,6 +86,10 @@ class ServerInstance(object):
         host_fs_at_trunk,
         object_store_creator)
 
+    self.api_categorizer = APICategorizer(
+        host_fs_at_trunk,
+        compiled_fs_factory)
+
     self.api_data_source_factory = APIDataSource.Factory(
         self.compiled_fs_factory,
         host_fs_at_trunk,
@@ -98,7 +103,8 @@ class ServerInstance(object):
         self.features_bundle,
         self.object_store_creator,
         self.api_models,
-        self.availability_finder)
+        self.availability_finder,
+        self.api_categorizer)
 
     self.ref_resolver_factory = ReferenceResolver.Factory(
         self.api_data_source_factory,

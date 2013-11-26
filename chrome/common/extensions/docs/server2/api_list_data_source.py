@@ -8,18 +8,8 @@ import posixpath
 
 import docs_server_utils as utils
 from branch_utility import ChannelInfo
-from environment import IsPreviewServer
 from extensions_paths import PUBLIC_TEMPLATES
 from file_system import FileNotFoundError
-
-def _GetAPICategory(api_name, documented_apis):
-  if (api_name.endswith('Private') or
-      api_name not in documented_apis):
-    return 'private'
-  if api_name.startswith('experimental.'):
-    return 'experimental'
-  return 'chrome'
-
 
 class APIListDataSource(object):
   """ This class creates a list of chrome.* APIs and chrome.experimental.* APIs
@@ -43,40 +33,18 @@ class APIListDataSource(object):
                  features_bundle,
                  object_store_creator,
                  api_models,
-                 availability_finder):
+                 availability_finder,
+                 api_categorizer):
       self._file_system = file_system
-      self._cache = compiled_fs_factory.Create(file_system,
-                                               self._CollectDocumentedAPIs,
-                                               APIListDataSource)
       self._features_bundle = features_bundle
+      self._api_categorizer = api_categorizer
       self._object_store_creator = object_store_creator
       self._api_models = api_models
       self._availability_finder = availability_finder
 
-    def _GetDocumentedApis(self):
-      return self._cache.GetFromFileListing(self._public_template_path).Get()
-
-    def _CollectDocumentedAPIs(self, base_dir, files):
-      def GetDocumentedAPIsForPlatform(names, platform):
-        public_templates = []
-        for root, _, files in self._file_system.Walk(posixpath.join(
-            PUBLIC_TEMPLATES, platform)):
-          public_templates.extend(
-              ('%s/%s' % (root, name)).lstrip('/') for name in files)
-        template_names = set(os.path.splitext(name)[0]
-                             for name in public_templates)
-        return [name.replace('_', '.') for name in template_names]
-      api_names = set(utils.SanitizeAPIName(name) for name in files)
-      return {
-        'apps': GetDocumentedAPIsForPlatform(api_names, 'apps'),
-        'extensions': GetDocumentedAPIsForPlatform(api_names, 'extensions')
-      }
-
     def _GenerateAPIDict(self):
-      documented_apis = self._cache.GetFromFileListing(PUBLIC_TEMPLATES).Get()
 
       def _GetChannelInfo(api_name):
-        if IsPreviewServer(): return ChannelInfo('dev', 'dev', 1000)
         return self._availability_finder.GetApiAvailability(api_name)
 
       def _GetApiPlatform(api_name):
@@ -85,7 +53,7 @@ class APIListDataSource(object):
 
       def _MakeDictForPlatform(platform):
         platform_dict = {
-          'chrome': {'stable': [], 'beta': [], 'dev': [], 'trunk': []}
+          'chrome': {'stable': [], 'beta': [], 'dev': [], 'trunk': []},
         }
         private_apis = []
         experimental_apis = []
@@ -96,12 +64,13 @@ class APIListDataSource(object):
             'description': api_model.description,
             'platforms': _GetApiPlatform(api_name),
           }
-          category = _GetAPICategory(api_name, documented_apis[platform])
+          category = self._api_categorizer.GetCategory(platform, api_name)
           if category == 'chrome':
             channel_info = _GetChannelInfo(api_name)
             channel = channel_info.channel
             if channel == 'stable':
-              api['version'] = channel_info.version
+              version = channel_info.version
+              api['version'] = version
             platform_dict[category][channel].append(api)
             all_apis.append(api)
           elif category == 'experimental':
@@ -121,6 +90,7 @@ class APIListDataSource(object):
           apis.sort(key=itemgetter('name'))
           utils.MarkLast(apis)
           platform_dict[key] = apis
+
         return platform_dict
       return {
         'apps': _MakeDictForPlatform('apps'),
