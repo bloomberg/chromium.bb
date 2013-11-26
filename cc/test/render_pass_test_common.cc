@@ -90,7 +90,8 @@ void TestRenderPass::AppendOneOfEveryQuadType(
                        rect,
                        rect,
                        false,
-                       1);
+                       1,
+                       SkXfermode::kSrcOver_Mode);
 
   scoped_ptr<cc::CheckerboardDrawQuad> checkerboard_quad =
       cc::CheckerboardDrawQuad::Create();
@@ -204,7 +205,13 @@ void TestRenderPass::AppendOneOfEveryQuadType(
   AppendQuad(transformed_tile_quad.PassAs<DrawQuad>());
 
   scoped_ptr<cc::SharedQuadState> shared_state2 = cc::SharedQuadState::Create();
-  shared_state->SetAll(gfx::Transform(), rect.size(), rect, rect, false, 1);
+  shared_state->SetAll(gfx::Transform(),
+                       rect.size(),
+                       rect,
+                       rect,
+                       false,
+                       1,
+                       SkXfermode::kSrcOver_Mode);
 
   scoped_ptr<cc::TileDrawQuad> tile_quad = cc::TileDrawQuad::Create();
   tile_quad->SetNew(shared_state2.get(),

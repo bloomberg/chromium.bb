@@ -55,6 +55,7 @@ class CCMessagesTest : public testing::Test {
     EXPECT_EQ(a->clip_rect, b->clip_rect);
     EXPECT_EQ(a->is_clipped, b->is_clipped);
     EXPECT_EQ(a->opacity, b->opacity);
+    EXPECT_EQ(a->blend_mode, b->blend_mode);
   }
 
   void Compare(const DrawQuad* a, const DrawQuad* b) {
@@ -230,6 +231,9 @@ TEST_F(CCMessagesTest, AllQuads) {
   bool arbitrary_bool3 = true;
   int arbitrary_int = 5;
   SkColor arbitrary_color = SkColorSetARGB(25, 36, 47, 58);
+  SkXfermode::Mode arbitrary_blend_mode1 = SkXfermode::kScreen_Mode;
+  SkXfermode::Mode arbitrary_blend_mode2 = SkXfermode::kLighten_Mode;
+  SkXfermode::Mode arbitrary_blend_mode3 = SkXfermode::kOverlay_Mode;
   IOSurfaceDrawQuad::Orientation arbitrary_orientation =
       IOSurfaceDrawQuad::UNFLIPPED;
   RenderPass::Id arbitrary_id(10, 14);
@@ -257,7 +261,8 @@ TEST_F(CCMessagesTest, AllQuads) {
                            arbitrary_rect1,
                            arbitrary_rect2,
                            arbitrary_bool1,
-                           arbitrary_float1);
+                           arbitrary_float1,
+                           arbitrary_blend_mode1);
   scoped_ptr<SharedQuadState> shared_state1_cmp = shared_state1_in->Copy();
 
   scoped_ptr<CheckerboardDrawQuad> checkerboard_in =
@@ -302,7 +307,8 @@ TEST_F(CCMessagesTest, AllQuads) {
                            arbitrary_rect2,
                            arbitrary_rect3,
                            arbitrary_bool1,
-                           arbitrary_float2);
+                           arbitrary_float2,
+                           arbitrary_blend_mode2);
   scoped_ptr<SharedQuadState> shared_state2_cmp = shared_state2_in->Copy();
 
   scoped_ptr<RenderPassDrawQuad> renderpass_in =
@@ -328,7 +334,8 @@ TEST_F(CCMessagesTest, AllQuads) {
                            arbitrary_rect3,
                            arbitrary_rect1,
                            arbitrary_bool1,
-                           arbitrary_float3);
+                           arbitrary_float3,
+                           arbitrary_blend_mode3);
   scoped_ptr<SharedQuadState> shared_state3_cmp = shared_state3_in->Copy();
 
   scoped_ptr<SolidColorDrawQuad> solidcolor_in =
@@ -504,8 +511,13 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
 
   // The first SharedQuadState is used.
   scoped_ptr<SharedQuadState> shared_state1_in = SharedQuadState::Create();
-  shared_state1_in->SetAll(
-      gfx::Transform(), gfx::Size(1, 1), gfx::Rect(), gfx::Rect(), false, 1.f);
+  shared_state1_in->SetAll(gfx::Transform(),
+                           gfx::Size(1, 1),
+                           gfx::Rect(),
+                           gfx::Rect(),
+                           false,
+                           1.f,
+                           SkXfermode::kSrcOver_Mode);
 
   quad = CheckerboardDrawQuad::Create();
   quad->SetAll(shared_state1_in.get(),
@@ -518,17 +530,32 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
 
   // The second and third SharedQuadStates are not used.
   scoped_ptr<SharedQuadState> shared_state2_in = SharedQuadState::Create();
-  shared_state2_in->SetAll(
-      gfx::Transform(), gfx::Size(2, 2), gfx::Rect(), gfx::Rect(), false, 1.f);
+  shared_state2_in->SetAll(gfx::Transform(),
+                           gfx::Size(2, 2),
+                           gfx::Rect(),
+                           gfx::Rect(),
+                           false,
+                           1.f,
+                           SkXfermode::kSrcOver_Mode);
 
   scoped_ptr<SharedQuadState> shared_state3_in = SharedQuadState::Create();
-  shared_state3_in->SetAll(
-      gfx::Transform(), gfx::Size(3, 3), gfx::Rect(), gfx::Rect(), false, 1.f);
+  shared_state3_in->SetAll(gfx::Transform(),
+                           gfx::Size(3, 3),
+                           gfx::Rect(),
+                           gfx::Rect(),
+                           false,
+                           1.f,
+                           SkXfermode::kSrcOver_Mode);
 
   // The fourth SharedQuadState is used.
   scoped_ptr<SharedQuadState> shared_state4_in = SharedQuadState::Create();
-  shared_state4_in->SetAll(
-      gfx::Transform(), gfx::Size(4, 4), gfx::Rect(), gfx::Rect(), false, 1.f);
+  shared_state4_in->SetAll(gfx::Transform(),
+                           gfx::Size(4, 4),
+                           gfx::Rect(),
+                           gfx::Rect(),
+                           false,
+                           1.f,
+                           SkXfermode::kSrcOver_Mode);
 
   quad = CheckerboardDrawQuad::Create();
   quad->SetAll(shared_state4_in.get(),
@@ -541,8 +568,13 @@ TEST_F(CCMessagesTest, UnusedSharedQuadStates) {
 
   // The fifth is not used again.
   scoped_ptr<SharedQuadState> shared_state5_in = SharedQuadState::Create();
-  shared_state5_in->SetAll(
-      gfx::Transform(), gfx::Size(5, 5), gfx::Rect(), gfx::Rect(), false, 1.f);
+  shared_state5_in->SetAll(gfx::Transform(),
+                           gfx::Size(5, 5),
+                           gfx::Rect(),
+                           gfx::Rect(),
+                           false,
+                           1.f,
+                           SkXfermode::kSrcOver_Mode);
 
   pass_in->shared_quad_state_list.push_back(shared_state1_in.Pass());
   pass_in->shared_quad_state_list.push_back(shared_state2_in.Pass());

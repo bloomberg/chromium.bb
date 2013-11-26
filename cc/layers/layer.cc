@@ -47,6 +47,8 @@ Layer::Layer()
       background_color_(0),
       compositing_reasons_(kCompositingReasonUnknown),
       opacity_(1.f),
+      blend_mode_(SkXfermode::kSrcOver_Mode),
+      is_root_for_isolated_group_(false),
       anchor_point_z_(0.f),
       is_container_for_fixed_position_layers_(false),
       is_drawable_(false),
@@ -125,8 +127,7 @@ void Layer::SetLayerTreeHost(LayerTreeHost* host) {
 
   if (host && layer_animation_controller_->has_any_animation())
     host->SetNeedsCommit();
-  if (host && (!filters_.IsEmpty() || !background_filters_.IsEmpty()))
-    layer_tree_host_->set_needs_filter_context();
+  SetNeedsFilterContextIfNeeded();
 }
 
 void Layer::SetNeedsUpdate() {
@@ -158,6 +159,15 @@ void Layer::SetNextCommitWaitsForActivation() {
     return;
 
   layer_tree_host_->SetNextCommitWaitsForActivation();
+}
+
+void Layer::SetNeedsFilterContextIfNeeded() {
+  if (!layer_tree_host_)
+    return;
+
+  if (!filters_.IsEmpty() || !background_filters_.IsEmpty() ||
+      !uses_default_blend_mode())
+    layer_tree_host_->set_needs_filter_context();
 }
 
 void Layer::SetNeedsPushProperties() {
@@ -471,8 +481,7 @@ void Layer::SetFilters(const FilterOperations& filters) {
     return;
   filters_ = filters;
   SetNeedsCommit();
-  if (!filters.IsEmpty() && layer_tree_host_)
-    layer_tree_host_->set_needs_filter_context();
+  SetNeedsFilterContextIfNeeded();
 }
 
 bool Layer::FilterIsAnimating() const {
@@ -485,8 +494,7 @@ void Layer::SetBackgroundFilters(const FilterOperations& filters) {
     return;
   background_filters_ = filters;
   SetNeedsCommit();
-  if (!filters.IsEmpty() && layer_tree_host_)
-    layer_tree_host_->set_needs_filter_context();
+  SetNeedsFilterContextIfNeeded();
 }
 
 void Layer::SetOpacity(float opacity) {
@@ -503,6 +511,64 @@ bool Layer::OpacityIsAnimating() const {
 
 bool Layer::OpacityCanAnimateOnImplThread() const {
   return false;
+}
+
+void Layer::SetBlendMode(SkXfermode::Mode blend_mode) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (blend_mode_ == blend_mode)
+    return;
+
+  // Allowing only blend modes that are defined in the CSS Compositing standard:
+  // http://dev.w3.org/fxtf/compositing-1/#blending
+  switch (blend_mode) {
+    case SkXfermode::kSrcOver_Mode:
+    case SkXfermode::kScreen_Mode:
+    case SkXfermode::kOverlay_Mode:
+    case SkXfermode::kDarken_Mode:
+    case SkXfermode::kLighten_Mode:
+    case SkXfermode::kColorDodge_Mode:
+    case SkXfermode::kColorBurn_Mode:
+    case SkXfermode::kHardLight_Mode:
+    case SkXfermode::kSoftLight_Mode:
+    case SkXfermode::kDifference_Mode:
+    case SkXfermode::kExclusion_Mode:
+    case SkXfermode::kMultiply_Mode:
+    case SkXfermode::kHue_Mode:
+    case SkXfermode::kSaturation_Mode:
+    case SkXfermode::kColor_Mode:
+    case SkXfermode::kLuminosity_Mode:
+      // supported blend modes
+      break;
+    case SkXfermode::kClear_Mode:
+    case SkXfermode::kSrc_Mode:
+    case SkXfermode::kDst_Mode:
+    case SkXfermode::kDstOver_Mode:
+    case SkXfermode::kSrcIn_Mode:
+    case SkXfermode::kDstIn_Mode:
+    case SkXfermode::kSrcOut_Mode:
+    case SkXfermode::kDstOut_Mode:
+    case SkXfermode::kSrcATop_Mode:
+    case SkXfermode::kDstATop_Mode:
+    case SkXfermode::kXor_Mode:
+    case SkXfermode::kPlus_Mode:
+    case SkXfermode::kModulate_Mode:
+      // Porter Duff Compositing Operators are not yet supported
+      // http://dev.w3.org/fxtf/compositing-1/#porterduffcompositingoperators
+      NOTREACHED();
+      return;
+  }
+
+  blend_mode_ = blend_mode;
+  SetNeedsCommit();
+  SetNeedsFilterContextIfNeeded();
+}
+
+void Layer::SetIsRootForIsolatedGroup(bool root) {
+  DCHECK(IsPropertyChangeAllowed());
+  if (is_root_for_isolated_group_ == root)
+    return;
+  is_root_for_isolated_group_ = root;
+  SetNeedsCommit();
 }
 
 void Layer::SetContentsOpaque(bool opaque) {
@@ -832,6 +898,8 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   if (!layer->OpacityIsAnimatingOnImplOnly() && !OpacityIsAnimating())
     layer->SetOpacity(opacity_);
   DCHECK(!(OpacityIsAnimating() && layer->OpacityIsAnimatingOnImplOnly()));
+  layer->SetBlendMode(blend_mode_);
+  layer->SetIsRootForIsolatedGroup(is_root_for_isolated_group_);
   layer->SetPosition(position_);
   layer->SetIsContainerForFixedPositionLayers(
       IsContainerForFixedPositionLayers());

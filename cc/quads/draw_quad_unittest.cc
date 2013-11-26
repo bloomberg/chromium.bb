@@ -36,6 +36,7 @@ TEST(DrawQuadTest, CopySharedQuadState) {
   gfx::Rect clip_rect(19, 21, 23, 25);
   bool is_clipped = true;
   float opacity = 0.25f;
+  SkXfermode::Mode blend_mode = SkXfermode::kMultiply_Mode;
 
   scoped_ptr<SharedQuadState> state(SharedQuadState::Create());
   state->SetAll(quad_transform,
@@ -43,7 +44,8 @@ TEST(DrawQuadTest, CopySharedQuadState) {
                 visible_content_rect,
                 clip_rect,
                 is_clipped,
-                opacity);
+                opacity,
+                blend_mode);
 
   scoped_ptr<SharedQuadState> copy(state->Copy());
   EXPECT_EQ(quad_transform, copy->content_to_target_transform);
@@ -51,6 +53,7 @@ TEST(DrawQuadTest, CopySharedQuadState) {
   EXPECT_EQ(opacity, copy->opacity);
   EXPECT_RECT_EQ(clip_rect, copy->clip_rect);
   EXPECT_EQ(is_clipped, copy->is_clipped);
+  EXPECT_EQ(blend_mode, copy->blend_mode);
 }
 
 scoped_ptr<SharedQuadState> CreateSharedQuadState() {
@@ -60,6 +63,7 @@ scoped_ptr<SharedQuadState> CreateSharedQuadState() {
   gfx::Rect clip_rect(19, 21, 23, 25);
   bool is_clipped = false;
   float opacity = 1.f;
+  SkXfermode::Mode blend_mode = SkXfermode::kSrcOver_Mode;
 
   scoped_ptr<SharedQuadState> state(SharedQuadState::Create());
   state->SetAll(quad_transform,
@@ -67,7 +71,8 @@ scoped_ptr<SharedQuadState> CreateSharedQuadState() {
                 visible_content_rect,
                 clip_rect,
                 is_clipped,
-                opacity);
+                opacity,
+                blend_mode);
   return state.Pass();
 }
 

@@ -84,6 +84,7 @@
       'trees/layer_sorter_unittest.cc',
       'trees/layer_tree_host_common_unittest.cc',
       'trees/layer_tree_host_impl_unittest.cc',
+      'trees/layer_tree_host_pixeltest_blending.cc',
       'trees/layer_tree_host_pixeltest_filters.cc',
       'trees/layer_tree_host_pixeltest_masks.cc',
       'trees/layer_tree_host_pixeltest_on_demand_raster.cc',

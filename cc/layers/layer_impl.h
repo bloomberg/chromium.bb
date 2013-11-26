@@ -213,6 +213,17 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   bool OpacityIsAnimating() const;
   bool OpacityIsAnimatingOnImplOnly() const;
 
+  void SetBlendMode(SkXfermode::Mode);
+  SkXfermode::Mode blend_mode() const { return blend_mode_; }
+  bool uses_default_blend_mode() const {
+    return blend_mode_ == SkXfermode::kSrcOver_Mode;
+  }
+
+  void SetIsRootForIsolatedGroup(bool root);
+  bool is_root_for_isolated_group() const {
+    return is_root_for_isolated_group_;
+  }
+
   void SetPosition(gfx::PointF position);
   gfx::PointF position() const { return position_; }
 
@@ -571,6 +582,8 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   bool masks_to_bounds_;
   bool contents_opaque_;
   float opacity_;
+  SkXfermode::Mode blend_mode_;
+  bool is_root_for_isolated_group_;
   gfx::PointF position_;
   bool preserves_3d_;
   bool use_parent_backface_visibility_;

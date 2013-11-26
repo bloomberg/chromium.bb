@@ -587,6 +587,19 @@ static bool SubtreeShouldRenderToSeparateSurface(
     return true;
   }
 
+  // If the layer has blending.
+  // TODO(rosca): this is temporary, until blending is implemented for other
+  // types of quads than RenderPassDrawQuad. Layers having descendants that draw
+  // content will still create a separate rendering surface.
+  if (!layer->uses_default_blend_mode()) {
+    TRACE_EVENT_INSTANT0(
+        "cc",
+        "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface blending",
+        TRACE_EVENT_SCOPE_THREAD);
+    DCHECK(!is_root);
+    return true;
+  }
+
   // If the layer clips its descendants but it is not axis-aligned with respect
   // to its parent.
   bool layer_clips_external_content =
@@ -628,6 +641,19 @@ static bool SubtreeShouldRenderToSeparateSurface(
   // These are allowed on the root surface, as they don't require the surface to
   // be used as a contributing surface in order to apply correctly.
   //
+
+  // If the layer has isolation.
+  // TODO(rosca): to be optimized - create separate rendering surface only when
+  // the blending descendants might have access to the content behind this layer
+  // (layer has transparent background or descendants overflow).
+  // https://code.google.com/p/chromium/issues/detail?id=301738
+  if (layer->is_root_for_isolated_group()) {
+    TRACE_EVENT_INSTANT0(
+        "cc",
+        "LayerTreeHostCommon::SubtreeShouldRenderToSeparateSurface isolation",
+        TRACE_EVENT_SCOPE_THREAD);
+    return true;
+  }
 
   // If we force it.
   if (layer->force_render_surface())
@@ -2033,6 +2059,16 @@ static void CalculateDrawPropertiesInternal(
       RemoveSurfaceForEarlyExit(layer, render_surface_layer_list);
       return;
     }
+
+    // Layers having a non-default blend mode will blend with the content
+    // inside its parent's render target. This render target should be
+    // either root_for_isolated_group, or the root of the layer tree.
+    // Otherwise, this layer will use an incomplete backdrop, limited to its
+    // render target and the blending result will be incorrect.
+    DCHECK(layer->uses_default_blend_mode() || IsRootLayer(layer) ||
+           !layer->parent()->render_target() ||
+           IsRootLayer(layer->parent()->render_target()) ||
+           layer->parent()->render_target()->is_root_for_isolated_group());
 
     render_surface->SetContentRect(clipped_content_rect);
 

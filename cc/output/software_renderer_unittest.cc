@@ -79,8 +79,13 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
   InitializeRenderer(make_scoped_ptr(new SoftwareOutputDevice));
 
   scoped_ptr<SharedQuadState> shared_quad_state = SharedQuadState::Create();
-  shared_quad_state->SetAll(
-      gfx::Transform(), outer_size, outer_rect, outer_rect, false, 1.0);
+  shared_quad_state->SetAll(gfx::Transform(),
+                            outer_size,
+                            outer_rect,
+                            outer_rect,
+                            false,
+                            1.0,
+                            SkXfermode::kSrcOver_Mode);
   RenderPass::Id root_render_pass_id = RenderPass::Id(1, 1);
   scoped_ptr<TestRenderPass> root_render_pass = TestRenderPass::Create();
   root_render_pass->SetNew(
@@ -162,8 +167,13 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   gfx::Rect root_rect = DeviceViewport();
 
   scoped_ptr<SharedQuadState> shared_quad_state = SharedQuadState::Create();
-  shared_quad_state->SetAll(
-      gfx::Transform(), outer_size, outer_rect, outer_rect, false, 1.0);
+  shared_quad_state->SetAll(gfx::Transform(),
+                            outer_size,
+                            outer_rect,
+                            outer_rect,
+                            false,
+                            1.0,
+                            SkXfermode::kSrcOver_Mode);
   RenderPass::Id root_render_pass_id = RenderPass::Id(1, 1);
   scoped_ptr<TestRenderPass> root_render_pass = TestRenderPass::Create();
   root_render_pass->SetNew(
@@ -241,8 +251,13 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   gfx::Rect root_rect = DeviceViewport();
 
   scoped_ptr<SharedQuadState> shared_quad_state = SharedQuadState::Create();
-  shared_quad_state->SetAll(
-      gfx::Transform(), tile_size, tile_rect, tile_rect, false, 1.0);
+  shared_quad_state->SetAll(gfx::Transform(),
+                            tile_size,
+                            tile_rect,
+                            tile_rect,
+                            false,
+                            1.0,
+                            SkXfermode::kSrcOver_Mode);
   RenderPass::Id root_render_pass_id = RenderPass::Id(1, 1);
   scoped_ptr<TestRenderPass> root_render_pass = TestRenderPass::Create();
   root_render_pass->SetNew(

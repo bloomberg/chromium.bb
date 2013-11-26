@@ -151,11 +151,12 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                             const CheckerboardDrawQuad* quad);
   void DrawDebugBorderQuad(const DrawingFrame* frame,
                            const DebugBorderDrawQuad* quad);
-  scoped_ptr<ScopedResource> DrawBackgroundFilters(
+  scoped_ptr<ScopedResource> GetBackgroundWithFilters(
       DrawingFrame* frame,
       const RenderPassDrawQuad* quad,
       const gfx::Transform& contents_device_transform,
-      const gfx::Transform& contents_device_transformInverse);
+      const gfx::Transform& contents_device_transformInverse,
+      bool* background_changed);
   void DrawRenderPassQuad(DrawingFrame* frame, const RenderPassDrawQuad* quad);
   void DrawSolidColorQuad(const DrawingFrame* frame,
                           const SolidColorDrawQuad* quad);

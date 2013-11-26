@@ -576,11 +576,129 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
   return device.accessBitmap(false);
 }
 
-scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
+static SkBitmap ApplyBlendModeWithBackdrop(
+    GLRenderer* renderer,
+    ContextProvider* offscreen_contexts,
+    SkBitmap source_bitmap_with_filters,
+    ScopedResource* source_texture_resource,
+    ScopedResource* background_texture_resource,
+    SkXfermode::Mode blend_mode) {
+  if (!offscreen_contexts || !offscreen_contexts->GrContext())
+    return source_bitmap_with_filters;
+
+  DCHECK(background_texture_resource);
+  DCHECK(source_texture_resource);
+
+  gfx::Size source_size = source_texture_resource->size();
+  gfx::Size background_size = background_texture_resource->size();
+
+  DCHECK_LE(background_size.width(), source_size.width());
+  DCHECK_LE(background_size.height(), source_size.height());
+
+  int source_texture_with_filters_id;
+  scoped_ptr<ResourceProvider::ScopedReadLockGL> lock;
+  if (source_bitmap_with_filters.getTexture()) {
+    DCHECK_EQ(source_size.width(), source_bitmap_with_filters.width());
+    DCHECK_EQ(source_size.height(), source_bitmap_with_filters.height());
+    GrTexture* texture =
+        reinterpret_cast<GrTexture*>(source_bitmap_with_filters.getTexture());
+    source_texture_with_filters_id = texture->getTextureHandle();
+  } else {
+    lock.reset(new ResourceProvider::ScopedReadLockGL(
+        renderer->resource_provider(), source_texture_resource->id()));
+    source_texture_with_filters_id = lock->texture_id();
+  }
+
+  ResourceProvider::ScopedReadLockGL lock_background(
+      renderer->resource_provider(), background_texture_resource->id());
+
+  // Flush the compositor context to ensure that textures there are available
+  // in the shared context.  Do this after locking/creating the compositor
+  // texture.
+  renderer->resource_provider()->Flush();
+
+  // Make sure skia uses the correct GL context.
+  offscreen_contexts->Context3d()->makeContextCurrent();
+
+  // Wrap the source texture in a Ganesh platform texture.
+  GrBackendTextureDesc backend_texture_description;
+  backend_texture_description.fConfig = kSkia8888_GrPixelConfig;
+  backend_texture_description.fOrigin = kBottomLeft_GrSurfaceOrigin;
+
+  backend_texture_description.fWidth = source_size.width();
+  backend_texture_description.fHeight = source_size.height();
+  backend_texture_description.fTextureHandle = source_texture_with_filters_id;
+  skia::RefPtr<GrTexture> source_texture =
+      skia::AdoptRef(offscreen_contexts->GrContext()->wrapBackendTexture(
+          backend_texture_description));
+
+  backend_texture_description.fWidth = background_size.width();
+  backend_texture_description.fHeight = background_size.height();
+  backend_texture_description.fTextureHandle = lock_background.texture_id();
+  skia::RefPtr<GrTexture> background_texture =
+      skia::AdoptRef(offscreen_contexts->GrContext()->wrapBackendTexture(
+          backend_texture_description));
+
+  // Place the platform texture inside an SkBitmap.
+  SkBitmap source;
+  source.setConfig(
+      SkBitmap::kARGB_8888_Config, source_size.width(), source_size.height());
+  skia::RefPtr<SkGrPixelRef> source_pixel_ref =
+      skia::AdoptRef(new SkGrPixelRef(source_texture.get()));
+  source.setPixelRef(source_pixel_ref.get());
+
+  SkBitmap background;
+  background.setConfig(SkBitmap::kARGB_8888_Config,
+                       background_size.width(),
+                       background_size.height());
+  skia::RefPtr<SkGrPixelRef> background_pixel_ref =
+      skia::AdoptRef(new SkGrPixelRef(background_texture.get()));
+  background.setPixelRef(background_pixel_ref.get());
+
+  // Create a scratch texture for backing store.
+  GrTextureDesc desc;
+  desc.fFlags = kRenderTarget_GrTextureFlagBit | kNoStencil_GrTextureFlagBit;
+  desc.fSampleCnt = 0;
+  desc.fWidth = source.width();
+  desc.fHeight = source.height();
+  desc.fConfig = kSkia8888_GrPixelConfig;
+  desc.fOrigin = kBottomLeft_GrSurfaceOrigin;
+  GrAutoScratchTexture scratch_texture(
+      offscreen_contexts->GrContext(), desc, GrContext::kExact_ScratchTexMatch);
+  skia::RefPtr<GrTexture> backing_store =
+      skia::AdoptRef(scratch_texture.detach());
+
+  // Create a device and canvas using that backing store.
+  SkGpuDevice device(offscreen_contexts->GrContext(), backing_store.get());
+  SkCanvas canvas(&device);
+
+  // Draw the source bitmap through the filter to the canvas.
+  canvas.clear(SK_ColorTRANSPARENT);
+  canvas.drawSprite(background, 0, 0);
+  SkPaint paint;
+  paint.setXfermodeMode(blend_mode);
+  canvas.drawSprite(source, 0, 0, &paint);
+
+  // Flush skia context so that all the rendered stuff appears on the
+  // texture.
+  offscreen_contexts->GrContext()->flush();
+
+  // Flush the GL context so rendering results from this context are
+  // visible in the compositor's context.
+  offscreen_contexts->Context3d()->flush();
+
+  // Use the compositor's GL context again.
+  renderer->Context()->makeContextCurrent();
+
+  return device.accessBitmap(false);
+}
+
+scoped_ptr<ScopedResource> GLRenderer::GetBackgroundWithFilters(
     DrawingFrame* frame,
     const RenderPassDrawQuad* quad,
     const gfx::Transform& contents_device_transform,
-    const gfx::Transform& contents_device_transform_inverse) {
+    const gfx::Transform& contents_device_transform_inverse,
+    bool* background_changed) {
   // This method draws a background filter, which applies a filter to any pixels
   // behind the quad and seen through its background.  The algorithm works as
   // follows:
@@ -607,14 +725,14 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
   // TODO(danakj): We only allow background filters on an opaque render surface
   // because other surfaces may contain translucent pixels, and the contents
   // behind those translucent pixels wouldn't have the filter applied.
-  if (frame->current_render_pass->has_transparent_background)
-    return scoped_ptr<ScopedResource>();
+  bool apply_background_filters =
+      !frame->current_render_pass->has_transparent_background;
   DCHECK(!frame->current_texture);
 
   // TODO(ajuma): Add support for reference filters once
   // FilterOperations::GetOutsets supports reference filters.
-  if (quad->background_filters.HasReferenceFilter())
-    return scoped_ptr<ScopedResource>();
+  if (apply_background_filters && quad->background_filters.HasReferenceFilter())
+    apply_background_filters = false;
 
   // TODO(danakj): Do a single readback for both the surface and replica and
   // cache the filtered results (once filter textures are not reused).
@@ -649,18 +767,28 @@ scoped_ptr<ScopedResource> GLRenderer::DrawBackgroundFilters(
   skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
       quad->background_filters, device_background_texture->size());
 
-  SkBitmap filtered_device_background =
-      ApplyImageFilter(this,
-                       frame->offscreen_context_provider,
-                       quad->rect.origin(),
-                       filter.get(),
-                       device_background_texture.get());
-  if (!filtered_device_background.getTexture())
-    return scoped_ptr<ScopedResource>();
+  SkBitmap filtered_device_background;
+  if (apply_background_filters) {
+    filtered_device_background =
+        ApplyImageFilter(this,
+                         frame->offscreen_context_provider,
+                         quad->rect.origin(),
+                         filter.get(),
+                         device_background_texture.get());
+  }
+  *background_changed = (filtered_device_background.getTexture() != NULL);
 
-  GrTexture* texture =
-      reinterpret_cast<GrTexture*>(filtered_device_background.getTexture());
-  int filtered_device_background_texture_id = texture->getTextureHandle();
+  int filtered_device_background_texture_id = 0;
+  scoped_ptr<ResourceProvider::ScopedReadLockGL> lock;
+  if (filtered_device_background.getTexture()) {
+    GrTexture* texture =
+        reinterpret_cast<GrTexture*>(filtered_device_background.getTexture());
+    filtered_device_background_texture_id = texture->getTextureHandle();
+  } else {
+    lock.reset(new ResourceProvider::ScopedReadLockGL(
+        resource_provider_, device_background_texture->id()));
+    filtered_device_background_texture_id = lock->texture_id();
+  }
 
   scoped_ptr<ScopedResource> background_texture =
       ScopedResource::create(resource_provider_);
@@ -731,19 +859,24 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   if (!contents_device_transform.GetInverse(&contents_device_transform_inverse))
     return;
 
+  bool need_background_texture =
+      quad->shared_quad_state->blend_mode != SkXfermode::kSrcOver_Mode ||
+      !quad->background_filters.IsEmpty();
+  bool background_changed = false;
   scoped_ptr<ScopedResource> background_texture;
-  if (!quad->background_filters.IsEmpty()) {
+  if (need_background_texture) {
     // The pixels from the filtered background should completely replace the
     // current pixel values.
     bool disable_blending = blend_enabled();
     if (disable_blending)
       SetBlendEnabled(false);
 
-    background_texture = DrawBackgroundFilters(
-        frame,
-        quad,
-        contents_device_transform,
-        contents_device_transform_inverse);
+    background_texture =
+        GetBackgroundWithFilters(frame,
+                                 quad,
+                                 contents_device_transform,
+                                 contents_device_transform_inverse,
+                                 &background_changed);
 
     if (disable_blending)
       SetBlendEnabled(true);
@@ -782,8 +915,19 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     }
   }
 
-  // Draw the background texture if there is one.
-  if (background_texture) {
+  if (quad->shared_quad_state->blend_mode != SkXfermode::kSrcOver_Mode &&
+      background_texture) {
+    filter_bitmap =
+        ApplyBlendModeWithBackdrop(this,
+                                   frame->offscreen_context_provider,
+                                   filter_bitmap,
+                                   contents_texture,
+                                   background_texture.get(),
+                                   quad->shared_quad_state->blend_mode);
+  }
+
+  // Draw the background texture if it has some filters applied.
+  if (background_texture && background_changed) {
     DCHECK(background_texture->size() == quad->rect.size());
     ResourceProvider::ScopedReadLockGL lock(resource_provider_,
                                             background_texture->id());

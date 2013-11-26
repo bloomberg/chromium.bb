@@ -107,10 +107,13 @@ void DelegatedRendererLayer::SetDisplaySize(gfx::Size size) {
   SetNeedsCommit();
 }
 
-static bool FrameDataHasFilter(DelegatedFrameData* frame) {
+static bool FrameDataRequiresFilterContext(const DelegatedFrameData* frame) {
   for (size_t i = 0; i < frame->render_pass_list.size(); ++i) {
     const QuadList& quad_list = frame->render_pass_list[i]->quad_list;
     for (size_t j = 0; j < quad_list.size(); ++j) {
+      if (quad_list[j]->shared_quad_state->blend_mode !=
+          SkXfermode::kSrcOver_Mode)
+        return true;
       if (quad_list[j]->material != DrawQuad::RENDER_PASS)
         continue;
       const RenderPassDrawQuad* render_pass_quad =
@@ -133,9 +136,9 @@ bool DelegatedRendererLayer::Update(ResourceUpdateQueue* queue,
       frame_provider_->GetFrameDataAndRefResources(this, &frame_damage_);
   should_collect_new_frame_ = false;
 
-  // If any quad has a filter operation, then we need a filter context to draw
-  // this layer's content.
-  if (FrameDataHasFilter(frame_data_) && layer_tree_host())
+  // If any quad has a filter operation or a blend mode other than normal,
+  // then we need an offscreen context to draw this layer's content.
+  if (FrameDataRequiresFilterContext(frame_data_))
     layer_tree_host()->set_needs_filter_context();
 
   return true;

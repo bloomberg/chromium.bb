@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -28,7 +29,8 @@ class CC_EXPORT SharedQuadState {
               gfx::Rect visible_content_rect,
               gfx::Rect clip_rect,
               bool is_clipped,
-              float opacity);
+              float opacity,
+              SkXfermode::Mode blend_mode);
   scoped_ptr<base::Value> AsValue() const;
 
   // Transforms from quad's original content space to its target content space.
@@ -41,6 +43,7 @@ class CC_EXPORT SharedQuadState {
   gfx::Rect clip_rect;
   bool is_clipped;
   float opacity;
+  SkXfermode::Mode blend_mode;
 
  private:
   SharedQuadState();

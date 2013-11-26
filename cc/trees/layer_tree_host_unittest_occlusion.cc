@@ -346,6 +346,74 @@ class LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostOcclusionTestOcclusionOpacityBelowOcclusion);
 
+class LayerTreeHostOcclusionTestOcclusionBlending
+    : public LayerTreeHostOcclusionTest {
+ public:
+  virtual void SetupTree() OVERRIDE {
+    // If the child layer has a blend mode, then it shouldn't
+    // contribute to occlusion on stuff below it
+    SetLayerPropertiesForTesting(
+        root_.get(), NULL, identity_matrix_,
+        gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
+    SetLayerPropertiesForTesting(
+        child2_.get(), root_.get(), identity_matrix_,
+        gfx::PointF(20.f, 10.f), gfx::Size(10, 500), true);
+    SetLayerPropertiesForTesting(
+        child_.get(), root_.get(), identity_matrix_,
+        gfx::PointF(10.f, 10.f), gfx::Size(500, 500), true);
+    SetLayerPropertiesForTesting(
+        grand_child_.get(), child_.get(), identity_matrix_,
+        gfx::PointF(-10.f, -10.f), gfx::Size(20, 500), true);
+
+    child_->SetMasksToBounds(true);
+    child_->SetBlendMode(SkXfermode::kMultiply_Mode);
+    child_->SetForceRenderSurface(true);
+
+    child_->set_expected_occlusion(gfx::Rect(0, 0, 10, 190));
+    root_->set_expected_occlusion(gfx::Rect(20, 10, 10, 190));
+
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeTest::SetupTree();
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostOcclusionTestOcclusionBlending);
+
+class LayerTreeHostOcclusionTestOcclusionBlendingBelowOcclusion
+    : public LayerTreeHostOcclusionTest {
+ public:
+  virtual void SetupTree() OVERRIDE {
+    // If the child layer with a blend mode is below child2, then
+    // child2 should contribute to occlusion on everything, and child shouldn't
+    // contribute to the root_.
+    SetLayerPropertiesForTesting(
+        root_.get(), NULL, identity_matrix_,
+        gfx::PointF(0.f, 0.f), gfx::Size(200, 200), true);
+    SetLayerPropertiesForTesting(
+        child_.get(), root_.get(), identity_matrix_,
+        gfx::PointF(10.f, 10.f), gfx::Size(500, 500), true);
+    SetLayerPropertiesForTesting(
+        grand_child_.get(), child_.get(), identity_matrix_,
+        gfx::PointF(-10.f, -10.f), gfx::Size(20, 500), true);
+    SetLayerPropertiesForTesting(
+        child2_.get(), root_.get(), identity_matrix_,
+        gfx::PointF(20.f, 10.f), gfx::Size(10, 500), true);
+
+    child_->SetMasksToBounds(true);
+    child_->SetBlendMode(SkXfermode::kMultiply_Mode);
+
+    grand_child_->set_expected_occlusion(gfx::Rect(10, 0, 10, 190));
+    child_->set_expected_occlusion(gfx::Rect(0, 0, 20, 190));
+    root_->set_expected_occlusion(gfx::Rect(20, 10, 10, 190));
+
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeTest::SetupTree();
+  }
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostOcclusionTestOcclusionBlendingBelowOcclusion);
+
 class LayerTreeHostOcclusionTestOcclusionOpacityFilter
     : public LayerTreeHostOcclusionTest {
  public:

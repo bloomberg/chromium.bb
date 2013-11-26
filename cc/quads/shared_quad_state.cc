@@ -10,7 +10,8 @@
 
 namespace cc {
 
-SharedQuadState::SharedQuadState() : is_clipped(false), opacity(0.f) {}
+SharedQuadState::SharedQuadState()
+    : is_clipped(false), opacity(0.f), blend_mode(SkXfermode::kSrcOver_Mode) {}
 
 SharedQuadState::~SharedQuadState() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
@@ -26,19 +27,20 @@ scoped_ptr<SharedQuadState> SharedQuadState::Copy() const {
   return make_scoped_ptr(new SharedQuadState(*this));
 }
 
-void SharedQuadState::SetAll(
-    const gfx::Transform& content_to_target_transform,
-    gfx::Size content_bounds,
-    gfx::Rect visible_content_rect,
-    gfx::Rect clip_rect,
-    bool is_clipped,
-    float opacity) {
+void SharedQuadState::SetAll(const gfx::Transform& content_to_target_transform,
+                             gfx::Size content_bounds,
+                             gfx::Rect visible_content_rect,
+                             gfx::Rect clip_rect,
+                             bool is_clipped,
+                             float opacity,
+                             SkXfermode::Mode blend_mode) {
   this->content_to_target_transform = content_to_target_transform;
   this->content_bounds = content_bounds;
   this->visible_content_rect = visible_content_rect;
   this->clip_rect = clip_rect;
   this->is_clipped = is_clipped;
   this->opacity = opacity;
+  this->blend_mode = blend_mode;
 }
 
 scoped_ptr<base::Value> SharedQuadState::AsValue() const {
@@ -52,6 +54,7 @@ scoped_ptr<base::Value> SharedQuadState::AsValue() const {
   value->SetBoolean("is_clipped", is_clipped);
   value->Set("clip_rect", MathUtil::AsValue(clip_rect).release());
   value->SetDouble("opacity", opacity);
+  value->SetString("blend_mode", SkXfermode::ModeName(blend_mode));
   TracedValue::MakeDictIntoImplicitSnapshotWithCategory(
       TRACE_DISABLED_BY_DEFAULT("cc.debug.quads"),
       value.get(), "cc::SharedQuadState", this);

@@ -626,7 +626,8 @@ static void AppendQuadsToFillScreen(
                             root_target_rect,
                             root_target_rect,
                             false,
-                            opacity);
+                            opacity,
+                            SkXfermode::kSrcOver_Mode);
 
   AppendQuadsData append_quads_data;
 

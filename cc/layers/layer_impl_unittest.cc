@@ -40,6 +40,13 @@ namespace {
   EXPECT_FALSE(child->LayerPropertyChanged());                                 \
   EXPECT_FALSE(grand_child->LayerPropertyChanged());
 
+#define EXECUTE_AND_VERIFY_ONLY_DESCENDANTS_CHANGED(code_to_test)              \
+  root->ResetAllChangeTrackingForSubtree();                                    \
+  code_to_test;                                                                \
+  EXPECT_FALSE(root->LayerPropertyChanged());                                  \
+  EXPECT_TRUE(child->LayerPropertyChanged());                                  \
+  EXPECT_TRUE(grand_child->LayerPropertyChanged());
+
 #define VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(code_to_test)                      \
   root->ResetAllChangeTrackingForSubtree();                                    \
   host_impl.ForcePrepareToDraw();                                              \
@@ -91,6 +98,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   arbitrary_transform.Scale3d(0.1f, 0.2f, 0.3f);
   FilterOperations arbitrary_filters;
   arbitrary_filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
+  SkXfermode::Mode arbitrary_blend_mode = SkXfermode::kMultiply_Mode;
 
   // These properties are internal, and should not be considered "change" when
   // they are used.
@@ -119,6 +127,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetScrollOffset(arbitrary_vector2d));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetHideLayerAndSubtree(true));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetOpacity(arbitrary_number));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBlendMode(arbitrary_blend_mode));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetTransform(arbitrary_transform));
 
   // Changing these properties only affects the layer itself.
@@ -131,13 +140,10 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   EXECUTE_AND_VERIFY_ONLY_LAYER_CHANGED(
       root->SetBackgroundFilters(arbitrary_filters));
 
-  // Special case: check that sublayer transform changes all layer's
-  // descendants, but not the layer itself.
-  root->ResetAllChangeTrackingForSubtree();
-  root->SetSublayerTransform(arbitrary_transform);
-  EXPECT_FALSE(root->LayerPropertyChanged());
-  EXPECT_TRUE(child->LayerPropertyChanged());
-  EXPECT_TRUE(grand_child->LayerPropertyChanged());
+  // Changing these properties affects all layer's descendants,
+  // but not the layer itself.
+  EXECUTE_AND_VERIFY_ONLY_DESCENDANTS_CHANGED(
+      root->SetSublayerTransform(arbitrary_transform));
 
   // Special case: check that SetBounds changes behavior depending on
   // masksToBounds.
@@ -147,6 +153,9 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   // Should be a different size than previous call, to ensure it marks tree
   // changed.
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBounds(arbitrary_size));
+
+  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
+      root->SetIsRootForIsolatedGroup(true));
 
   // After setting all these properties already, setting to the exact same
   // values again should not cause any change.
@@ -172,6 +181,10 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
       root->SetContentsScale(arbitrary_number, arbitrary_number));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetContentsOpaque(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetOpacity(arbitrary_number));
+  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
+      root->SetBlendMode(arbitrary_blend_mode));
+  EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
+      root->SetIsRootForIsolatedGroup(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(root->SetDrawsContent(true));
   EXECUTE_AND_VERIFY_SUBTREE_DID_NOT_CHANGE(
       root->SetSublayerTransform(arbitrary_transform));
@@ -199,6 +212,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   arbitrary_transform.Scale3d(0.1f, 0.2f, 0.3f);
   FilterOperations arbitrary_filters;
   arbitrary_filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
+  SkXfermode::Mode arbitrary_blend_mode = SkXfermode::kMultiply_Mode;
 
   // Related filter functions.
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(arbitrary_filters));
@@ -243,6 +257,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       root->SetBackgroundFilters(arbitrary_filters));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetOpacity(arbitrary_number));
+  VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetBlendMode(arbitrary_blend_mode));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetTransform(arbitrary_transform));
   VERIFY_NEEDS_UPDATE_DRAW_PROPERTIES(
       root->SetSublayerTransform(arbitrary_transform));
@@ -251,6 +266,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   // Unrelated functions, set to the same values, no needs update.
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       root->SetAnchorPointZ(arbitrary_number));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetIsRootForIsolatedGroup(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetFilters(arbitrary_filters));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetMasksToBounds(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetContentsOpaque(true));
@@ -268,6 +284,9 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       root->SetBackgroundFilters(arbitrary_filters));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetOpacity(arbitrary_number));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
+      root->SetBlendMode(arbitrary_blend_mode));
+  VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(root->SetIsRootForIsolatedGroup(true));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(
       root->SetTransform(arbitrary_transform));
   VERIFY_NO_NEEDS_UPDATE_DRAW_PROPERTIES(

@@ -529,13 +529,13 @@ class DelegatedRendererLayerImplTestTransform
       AppendQuadsData data(pass->id);
       SharedQuadState* shared_quad_state = quad_sink.UseSharedQuadState(
           SharedQuadState::Create());
-      shared_quad_state->SetAll(
-          child_pass_transform,
-          child_pass_content_bounds,
-          child_pass_rect,
-          child_pass_clip_rect,
-          child_pass_clipped,
-          1.f);
+      shared_quad_state->SetAll(child_pass_transform,
+                                child_pass_content_bounds,
+                                child_pass_rect,
+                                child_pass_clip_rect,
+                                child_pass_clipped,
+                                1.f,
+                                SkXfermode::kSrcOver_Mode);
 
       scoped_ptr<SolidColorDrawQuad> color_quad;
       color_quad = SolidColorDrawQuad::Create();
@@ -564,13 +564,13 @@ class DelegatedRendererLayerImplTestTransform
     AppendQuadsData data(pass->id);
     SharedQuadState* shared_quad_state =
         quad_sink.UseSharedQuadState(SharedQuadState::Create());
-    shared_quad_state->SetAll(
-        root_pass_transform,
-        root_pass_content_bounds,
-        root_pass_rect,
-        root_pass_clip_rect,
-        root_pass_clipped,
-        1.f);
+    shared_quad_state->SetAll(root_pass_transform,
+                              root_pass_content_bounds,
+                              root_pass_rect,
+                              root_pass_clip_rect,
+                              root_pass_clipped,
+                              1.f,
+                              SkXfermode::kSrcOver_Mode);
 
     scoped_ptr<RenderPassDrawQuad> render_pass_quad =
         RenderPassDrawQuad::Create();
@@ -933,13 +933,13 @@ class DelegatedRendererLayerImplTestClip
       AppendQuadsData data(pass->id);
       SharedQuadState* shared_quad_state =
           quad_sink.UseSharedQuadState(SharedQuadState::Create());
-      shared_quad_state->SetAll(
-          child_pass_transform,
-          child_pass_content_bounds,
-          child_pass_rect,
-          child_pass_clip_rect,
-          child_pass_clipped,
-          1.f);
+      shared_quad_state->SetAll(child_pass_transform,
+                                child_pass_content_bounds,
+                                child_pass_rect,
+                                child_pass_clip_rect,
+                                child_pass_clipped,
+                                1.f,
+                                SkXfermode::kSrcOver_Mode);
 
       scoped_ptr<SolidColorDrawQuad> color_quad;
       color_quad = SolidColorDrawQuad::Create();
@@ -971,7 +971,8 @@ class DelegatedRendererLayerImplTestClip
                               root_pass_rect,
                               root_pass_clip_rect,
                               root_pass_clipped,
-                              1.f);
+                              1.f,
+                              SkXfermode::kSrcOver_Mode);
 
     scoped_ptr<RenderPassDrawQuad> render_pass_quad =
         RenderPassDrawQuad::Create();

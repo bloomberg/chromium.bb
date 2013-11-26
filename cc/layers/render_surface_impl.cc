@@ -156,7 +156,8 @@ void RenderSurfaceImpl::AppendQuads(QuadSink* quad_sink,
                             content_rect_,
                             clip_rect_,
                             is_clipped_,
-                            draw_opacity_);
+                            draw_opacity_,
+                            owning_layer_->blend_mode());
 
   if (owning_layer_->ShowDebugBorders()) {
     SkColor color = for_replica ?

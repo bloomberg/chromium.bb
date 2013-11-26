@@ -224,9 +224,9 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::FinishedRenderTarget(
 
   // If the occlusion within the surface can not be applied to things outside of
   // the surface's subtree, then clear the occlusion here so it won't be used.
-  if (finished_target->mask_layer() ||
-      !SurfaceOpacityKnown(surface) ||
+  if (finished_target->mask_layer() || !SurfaceOpacityKnown(surface) ||
       surface->draw_opacity() < 1 ||
+      !finished_target->uses_default_blend_mode() ||
       target_is_only_for_copy_request ||
       finished_target->filters().HasFilterThatAffectsOpacity()) {
     stack_.back().occlusion_from_outside_target.Clear();
@@ -403,6 +403,9 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::
     return;
 
   if (!LayerOpacityKnown(layer) || layer->draw_opacity() < 1)
+    return;
+
+  if (!layer->uses_default_blend_mode())
     return;
 
   if (LayerIsInUnsorted3dRenderingContext(layer))

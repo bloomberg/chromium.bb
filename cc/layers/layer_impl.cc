@@ -53,6 +53,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       masks_to_bounds_(false),
       contents_opaque_(false),
       opacity_(1.0),
+      blend_mode_(SkXfermode::kSrcOver_Mode),
+      is_root_for_isolated_group_(false),
       preserves_3d_(false),
       use_parent_backface_visibility_(false),
       draw_checkerboard_for_missing_tiles_(false),
@@ -246,7 +248,8 @@ scoped_ptr<SharedQuadState> LayerImpl::CreateSharedQuadState() const {
                 draw_properties_.visible_content_rect,
                 draw_properties_.clip_rect,
                 draw_properties_.is_clipped,
-                draw_properties_.opacity);
+                draw_properties_.opacity,
+                blend_mode_);
   return state.Pass();
 }
 
@@ -524,6 +527,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetTouchEventHandlerRegion(touch_event_handler_region_);
   layer->SetContentsOpaque(contents_opaque_);
   layer->SetOpacity(opacity_);
+  layer->SetBlendMode(blend_mode_);
+  layer->SetIsRootForIsolatedGroup(is_root_for_isolated_group_);
   layer->SetPosition(position_);
   layer->SetIsContainerForFixedPositionLayers(
       is_container_for_fixed_position_layers_);
@@ -878,6 +883,21 @@ bool LayerImpl::OpacityIsAnimatingOnImplOnly() const {
   Animation* opacity_animation =
       layer_animation_controller_->GetAnimation(Animation::Opacity);
   return opacity_animation && opacity_animation->is_impl_only();
+}
+
+void LayerImpl::SetBlendMode(SkXfermode::Mode blend_mode) {
+  if (blend_mode_ == blend_mode)
+    return;
+
+  blend_mode_ = blend_mode;
+  NoteLayerPropertyChangedForSubtree();
+}
+
+void LayerImpl::SetIsRootForIsolatedGroup(bool root) {
+  if (is_root_for_isolated_group_ == root)
+    return;
+
+  is_root_for_isolated_group_ = root;
 }
 
 void LayerImpl::SetPosition(gfx::PointF position) {
@@ -1280,6 +1300,9 @@ CompositingReasonsAsValue(CompositingReasons reasons) {
 
   if (reasons & kCompositingReasonOutOfFlowClipping)
     reason_list->AppendString("Has clipping ancestor");
+
+  if (reasons & kCompositingReasonIsolateCompositedDescendants)
+    reason_list->AppendString("Should isolate composited descendants");
 
   return reason_list.PassAs<base::Value>();
 }

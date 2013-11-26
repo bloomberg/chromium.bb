@@ -29,6 +29,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/transform.h"
@@ -125,6 +126,22 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   float opacity() const { return opacity_; }
   bool OpacityIsAnimating() const;
   virtual bool OpacityCanAnimateOnImplThread() const;
+
+  void SetBlendMode(SkXfermode::Mode blend_mode);
+  SkXfermode::Mode blend_mode() const { return blend_mode_; }
+
+  bool uses_default_blend_mode() const {
+    return blend_mode_ == SkXfermode::kSrcOver_Mode;
+  }
+
+  // A layer is root for an isolated group when it and all its descendants are
+  // drawn over a black and fully transparent background, creating an isolated
+  // group. It should be used along with SetBlendMode(), in order to restrict
+  // layers within the group to blend with layers outside this group.
+  void SetIsRootForIsolatedGroup(bool root);
+  bool is_root_for_isolated_group() const {
+    return is_root_for_isolated_group_;
+  }
 
   void SetFilters(const FilterOperations& filters);
   const FilterOperations& filters() const { return filters_; }
@@ -459,6 +476,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // unused resources on the impl thread are returned before commit completes.
   void SetNextCommitWaitsForActivation();
 
+  // Called when the blend mode or filters have been changed.
+  void SetNeedsFilterContextIfNeeded();
+
   void SetNeedsPushProperties();
   void AddDependentNeedsPushProperties();
   void RemoveDependentNeedsPushProperties();
@@ -552,6 +572,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   SkColor background_color_;
   CompositingReasons compositing_reasons_;
   float opacity_;
+  SkXfermode::Mode blend_mode_;
+  bool is_root_for_isolated_group_;
   FilterOperations filters_;
   FilterOperations background_filters_;
   float anchor_point_z_;
