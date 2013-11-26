@@ -77,7 +77,7 @@ void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     if (V8XPathResult::hasInstance(info[4], info.GetIsolate(), worldType(info.GetIsolate())))
         inResult = V8XPathResult::toNative(v8::Handle<v8::Object>::Cast(info[4]));
 
-    V8TRYCATCH_VOID(RefPtr<XPathResult>, result, DocumentXPathEvaluator::evaluate(document.get(), expression, contextNode.get(), resolver.get(), type, inResult.get(), exceptionState));
+    V8TRYCATCH_VOID(RefPtr<XPathResult>, result, DocumentXPathEvaluator::evaluate(document.get(), expression, contextNode.get(), resolver.release(), type, inResult.get(), exceptionState));
     if (exceptionState.throwIfNeeded())
         return;
 

@@ -4286,7 +4286,7 @@ static void voidMethodNodeFilterArgMethod(const v8::FunctionCallbackInfo<v8::Val
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_VOID(RefPtr<NodeFilter>, nodeFilterArg, toNodeFilter(info[0], info.GetIsolate()));
-    imp->voidMethodNodeFilterArg(nodeFilterArg.get());
+    imp->voidMethodNodeFilterArg(nodeFilterArg.release());
 }
 
 static void voidMethodNodeFilterArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4347,7 +4347,7 @@ static void voidMethodXPathNSResolverArgMethod(const v8::FunctionCallbackInfo<v8
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_VOID(RefPtr<XPathNSResolver>, xPathNSResolverArg, toXPathNSResolver(info[0], info.GetIsolate()));
-    imp->voidMethodXPathNSResolverArg(xPathNSResolverArg.get());
+    imp->voidMethodXPathNSResolverArg(xPathNSResolverArg.release());
 }
 
 static void voidMethodXPathNSResolverArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)

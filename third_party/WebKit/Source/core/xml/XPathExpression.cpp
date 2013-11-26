@@ -41,7 +41,7 @@ namespace WebCore {
 
 using namespace XPath;
 
-PassRefPtr<XPathExpression> XPathExpression::createExpression(const String& expression, XPathNSResolver* resolver, ExceptionState& exceptionState)
+PassRefPtr<XPathExpression> XPathExpression::createExpression(const String& expression, PassRefPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)
 {
     RefPtr<XPathExpression> expr = XPathExpression::create();
     Parser parser;

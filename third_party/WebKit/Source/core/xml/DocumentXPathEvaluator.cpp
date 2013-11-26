@@ -54,7 +54,7 @@ DocumentXPathEvaluator* DocumentXPathEvaluator::from(DocumentSupplementable* doc
 }
 
 PassRefPtr<XPathExpression> DocumentXPathEvaluator::createExpression(DocumentSupplementable* document,
-    const String& expression, XPathNSResolver* resolver, ExceptionState& exceptionState)
+    const String& expression, PassRefPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)
 {
     DocumentXPathEvaluator* suplement = from(document);
     if (!suplement->m_xpathEvaluator)
@@ -71,7 +71,7 @@ PassRefPtr<XPathNSResolver> DocumentXPathEvaluator::createNSResolver(DocumentSup
 }
 
 PassRefPtr<XPathResult> DocumentXPathEvaluator::evaluate(DocumentSupplementable* document, const String& expression,
-    Node* contextNode, XPathNSResolver* resolver, unsigned short type,
+    Node* contextNode, PassRefPtr<XPathNSResolver> resolver, unsigned short type,
     XPathResult* result, ExceptionState& exceptionState)
 {
     DocumentXPathEvaluator* suplement = from(document);

@@ -48,7 +48,7 @@ public:
     static PassRefPtr<XPathExpression> create() { return adoptRef(new XPathExpression); }
     ~XPathExpression();
 
-    static PassRefPtr<XPathExpression> createExpression(const String& expression, XPathNSResolver*, ExceptionState&);
+    static PassRefPtr<XPathExpression> createExpression(const String& expression, PassRefPtr<XPathNSResolver>, ExceptionState&);
     PassRefPtr<XPathResult> evaluate(Node* contextNode, unsigned short type, XPathResult*, ExceptionState&);
 
 private:

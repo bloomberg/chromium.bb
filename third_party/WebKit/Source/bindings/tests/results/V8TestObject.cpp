@@ -3547,7 +3547,7 @@ static void methodWithCallbackArgMethod(const v8::FunctionCallbackInfo<v8::Value
         return;
     }
     RefPtr<TestCallback> callback = V8TestCallback::create(info[0], getExecutionContext());
-    imp->methodWithCallbackArg(callback);
+    imp->methodWithCallbackArg(callback.release());
 }
 
 static void methodWithCallbackArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3570,7 +3570,7 @@ static void methodWithNonCallbackArgAndCallbackArgMethod(const v8::FunctionCallb
         return;
     }
     RefPtr<TestCallback> callback = V8TestCallback::create(info[1], getExecutionContext());
-    imp->methodWithNonCallbackArgAndCallbackArg(nonCallback, callback);
+    imp->methodWithNonCallbackArgAndCallbackArg(nonCallback, callback.release());
 }
 
 static void methodWithNonCallbackArgAndCallbackArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3591,7 +3591,7 @@ static void methodWithCallbackAndOptionalArgMethod(const v8::FunctionCallbackInf
         }
         callback = V8TestCallback::create(info[0], getExecutionContext());
     }
-    imp->methodWithCallbackAndOptionalArg(callback);
+    imp->methodWithCallbackAndOptionalArg(callback.release());
 }
 
 static void methodWithCallbackAndOptionalArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3613,7 +3613,7 @@ static void methodWithNullableCallbackArgMethod(const v8::FunctionCallbackInfo<v
         return;
     }
     RefPtr<TestCallback> callback = info[0]->IsNull() ? 0 : V8TestCallback::create(info[0], getExecutionContext());
-    imp->methodWithNullableCallbackArg(callback);
+    imp->methodWithNullableCallbackArg(callback.release());
 }
 
 static void methodWithNullableCallbackArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3633,7 +3633,7 @@ static void staticMethodWithCallbackAndOptionalArgMethod(const v8::FunctionCallb
         }
         callback = V8TestCallback::create(info[0], getExecutionContext());
     }
-    TestObj::staticMethodWithCallbackAndOptionalArg(callback);
+    TestObj::staticMethodWithCallbackAndOptionalArg(callback.release());
 }
 
 static void staticMethodWithCallbackAndOptionalArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3654,7 +3654,7 @@ static void staticMethodWithCallbackArgMethod(const v8::FunctionCallbackInfo<v8:
         return;
     }
     RefPtr<TestCallback> callback = V8TestCallback::create(info[0], getExecutionContext());
-    TestObj::staticMethodWithCallbackArg(callback);
+    TestObj::staticMethodWithCallbackArg(callback.release());
 }
 
 static void staticMethodWithCallbackArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -3913,7 +3913,7 @@ static void overloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     RefPtr<TestCallback> callbackArg = V8TestCallback::create(info[0], getExecutionContext());
-    imp->overloadedMethod(callbackArg);
+    imp->overloadedMethod(callbackArg.release());
 }
 
 static void overloadedMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& info)

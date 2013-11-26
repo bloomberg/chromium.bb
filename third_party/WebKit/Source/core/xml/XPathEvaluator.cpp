@@ -40,7 +40,7 @@ namespace WebCore {
 
 using namespace XPath;
 
-PassRefPtr<XPathExpression> XPathEvaluator::createExpression(const String& expression, XPathNSResolver* resolver, ExceptionState& exceptionState)
+PassRefPtr<XPathExpression> XPathEvaluator::createExpression(const String& expression, PassRefPtr<XPathNSResolver> resolver, ExceptionState& exceptionState)
 {
     return XPathExpression::createExpression(expression, resolver, exceptionState);
 }
@@ -51,7 +51,7 @@ PassRefPtr<XPathNSResolver> XPathEvaluator::createNSResolver(Node* nodeResolver)
 }
 
 PassRefPtr<XPathResult> XPathEvaluator::evaluate(const String& expression, Node* contextNode,
-    XPathNSResolver* resolver, unsigned short type, XPathResult* result, ExceptionState& exceptionState)
+    PassRefPtr<XPathNSResolver> resolver, unsigned short type, XPathResult* result, ExceptionState& exceptionState)
 {
     if (!contextNode) {
         exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("evaluate", "XPathEvaluator", "The context node provided is null."));

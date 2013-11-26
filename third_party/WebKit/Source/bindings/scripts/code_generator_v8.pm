@@ -5194,8 +5194,6 @@ sub GenerateFunctionCallString
 
         if ($replacements{$paramName}) {
             push @arguments, $replacements{$paramName};
-        } elsif ($parameter->type eq "NodeFilter" || $parameter->type eq "XPathNSResolver") {
-            push @arguments, "$paramName.get()";
         } elsif (IsSVGTypeNeedingTearOff($parameter->type) and not $interfaceName =~ /List$/) {
             AddToImplIncludes("bindings/v8/ExceptionMessages.h");
             push @arguments, "$paramName->propertyReference()";
@@ -5209,6 +5207,8 @@ END
             push @arguments, "$paramName.get()";
         } elsif (IsNullableParameter($parameter)) {
             push @arguments, "${paramName}IsNull ? 0 : &$paramName";
+        } elsif (IsCallbackInterface($paramType) or $paramType eq "NodeFilter" or $paramType eq "XPathNSResolver") {
+            push @arguments, "$paramName.release()";
         } else {
             push @arguments, $paramName;
         }
