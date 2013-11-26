@@ -29,7 +29,7 @@ NonArrayWithLength console-format-collections.html:44
 Arguments[2] console-format-collections.html:51
 [select#sel, item: function] console-format-collections.html:15
 [script, script, script, item: function, namedItem: function] console-format-collections.html:19
-[option, option, selectedIndex: 0, namedItem: function, add: function, remove: function, item: function…] console-format-collections.html:23
+[option, option, selectedIndex: 0, namedItem: function, add: function, remove: function, item: function] console-format-collections.html:23
 [html, head, script, script, script, body, p, div, form#f, select#sel, option, option, input, input, item: function, namedItem: function, tags: function] console-format-collections.html:27
 [select#sel, input, input, namedItem: function, item: function] console-format-collections.html:31
 [input, input, item: function] console-format-collections.html:35

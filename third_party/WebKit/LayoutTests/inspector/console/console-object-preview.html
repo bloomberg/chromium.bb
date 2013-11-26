@@ -53,7 +53,7 @@ function logToConsole()
     console.log(denseArray);
 
     console.log("Object with properties containing whitespaces");
-    var obj = { $foo5_: 0 };
+    var obj = {};
     obj[" a b "] = " a b ";
     obj["c d"] = "c d";
     obj[""] = "";
@@ -67,6 +67,9 @@ function logToConsole()
     console.log("Object with special numbers");
     var obj = { nan: NaN, posInf: Infinity, negInf: -Infinity, negZero: -0 };
     console.log(obj);
+
+    console.log("Object with exactly 5 properties: expected to be lossless");
+    console.log({a:1, b:2, c:3, d:4, e:5});
 }
 
 function test()
