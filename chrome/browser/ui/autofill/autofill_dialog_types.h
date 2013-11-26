@@ -44,7 +44,7 @@ struct DetailInput {
 
   // When non-empty, indicates the starting value for this input. This will be
   // used when the user is editing existing data.
-  string16 initial_value;
+  base::string16 initial_value;
 };
 
 // Determines whether |input| and |field| match.
@@ -84,7 +84,7 @@ class DialogNotification {
   };
 
   DialogNotification();
-  DialogNotification(Type type, const string16& display_text);
+  DialogNotification(Type type, const base::string16& display_text);
   ~DialogNotification();
 
   // Returns the appropriate background, border, or text color for the view's
@@ -100,24 +100,24 @@ class DialogNotification {
   bool HasCheckbox() const;
 
   Type type() const { return type_; }
-  const string16& display_text() const { return display_text_; }
+  const base::string16& display_text() const { return display_text_; }
 
   void set_link_url(const GURL& link_url) { link_url_ = link_url; }
   const GURL& link_url() const { return link_url_; }
 
   const gfx::Range& link_range() const { return link_range_; }
 
-  void set_tooltip_text(const string16& tooltip_text) {
+  void set_tooltip_text(const base::string16& tooltip_text) {
     tooltip_text_ = tooltip_text;
   }
-  const string16& tooltip_text() const { return tooltip_text_; }
+  const base::string16& tooltip_text() const { return tooltip_text_; }
 
   void set_checked(bool checked) { checked_ = checked; }
   bool checked() const { return checked_; }
 
  private:
   Type type_;
-  string16 display_text_;
+  base::string16 display_text_;
 
   // If the notification includes a link, these describe the destination and
   // which part of |display_text_| is the anchor text.
@@ -126,7 +126,7 @@ class DialogNotification {
 
   // When non-empty, indicates that a tooltip should be shown on the end of
   // the notification.
-  string16 tooltip_text_;
+  base::string16 tooltip_text_;
 
   // Whether the dialog notification's checkbox should be checked. Only applies
   // when |HasCheckbox()| is true.
@@ -138,10 +138,10 @@ extern SkColor const kWarningColor;
 struct SuggestionState {
   SuggestionState();
   SuggestionState(bool visible,
-                  const string16& vertically_compact_text,
-                  const string16& horizontally_compact_text,
+                  const base::string16& vertically_compact_text,
+                  const base::string16& horizontally_compact_text,
                   const gfx::Image& icon,
-                  const string16& extra_text,
+                  const base::string16& extra_text,
                   const gfx::Image& extra_icon);
   ~SuggestionState();
 
@@ -156,7 +156,7 @@ struct SuggestionState {
   base::string16 horizontally_compact_text;
 
   gfx::Image icon;
-  string16 extra_text;
+  base::string16 extra_text;
   gfx::Image extra_icon;
 };
 
@@ -195,7 +195,7 @@ enum ValidationType {
 };
 
 typedef std::vector<DetailInput> DetailInputs;
-typedef std::map<const DetailInput*, string16> DetailOutputMap;
+typedef std::map<const DetailInput*, base::string16> DetailOutputMap;
 
 // A validity message for a single input field.
 struct ValidityMessage {
