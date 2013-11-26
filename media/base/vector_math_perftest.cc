@@ -17,6 +17,7 @@ using std::fill;
 namespace media {
 
 static const int kBenchmarkIterations = 200000;
+static const int kEWMABenchmarkIterations = 50000;
 static const float kScale = 0.5;
 static const int kVectorSize = 8192;
 
@@ -49,6 +50,25 @@ class VectorMathPerfTest : public testing::Test {
                            "",
                            trace_name,
                            kBenchmarkIterations / total_time_milliseconds,
+                           "runs/ms",
+                           true);
+  }
+
+  void RunBenchmark(
+      std::pair<float, float> (*fn)(float, const float[], int, float),
+      int len,
+      const std::string& test_name,
+      const std::string& trace_name) {
+    TimeTicks start = TimeTicks::HighResNow();
+    for (int i = 0; i < kEWMABenchmarkIterations; ++i) {
+      fn(0.5f, input_vector_.get(), len, 0.1f);
+    }
+    double total_time_milliseconds =
+        (TimeTicks::HighResNow() - start).InMillisecondsF();
+    perf_test::PrintResult(test_name,
+                           "",
+                           trace_name,
+                           kEWMABenchmarkIterations / total_time_milliseconds,
                            "runs/ms",
                            true);
   }
@@ -121,5 +141,41 @@ TEST_F(VectorMathPerfTest, FMUL) {
 }
 
 #undef FMUL_FUNC
+
+#if defined(ARCH_CPU_X86_FAMILY)
+#define EWMAAndMaxPower_FUNC EWMAAndMaxPower_SSE
+#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
+#define EWMAAndMaxPower_FUNC EWMAAndMaxPower_NEON
+#endif
+
+// Benchmark for each optimized vector_math::EWMAAndMaxPower() method.
+TEST_F(VectorMathPerfTest, EWMAAndMaxPower) {
+  // Benchmark EWMAAndMaxPower_C().
+  RunBenchmark(vector_math::EWMAAndMaxPower_C,
+               kVectorSize,
+               "vector_math_ewma_and_max_power",
+               "unoptimized");
+#if defined(EWMAAndMaxPower_FUNC)
+#if defined(ARCH_CPU_X86_FAMILY)
+  ASSERT_TRUE(base::CPU().has_sse());
+#endif
+  // Benchmark EWMAAndMaxPower_FUNC() with unaligned size.
+  ASSERT_NE((kVectorSize - 1) % (vector_math::kRequiredAlignment /
+                                 sizeof(float)), 0U);
+  RunBenchmark(vector_math::EWMAAndMaxPower_FUNC,
+               kVectorSize - 1,
+               "vector_math_ewma_and_max_power",
+               "optimized_unaligned");
+  // Benchmark EWMAAndMaxPower_FUNC() with aligned size.
+  ASSERT_EQ(kVectorSize % (vector_math::kRequiredAlignment / sizeof(float)),
+            0U);
+  RunBenchmark(vector_math::EWMAAndMaxPower_FUNC,
+               kVectorSize,
+               "vector_math_ewma_and_max_power",
+               "optimized_aligned");
+#endif
+}
+
+#undef EWMAAndMaxPower_FUNC
 
 } // namespace media

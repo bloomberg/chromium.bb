@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
+#include "media/base/vector_math.h"
 
 namespace media {
 
@@ -36,30 +37,19 @@ void AudioPowerMonitor::Scan(const AudioBus& buffer, int num_frames) {
     return;
 
   // Calculate a new average power by applying a first-order low-pass filter
-  // over the audio samples in |buffer|.
-  //
-  // TODO(miu): Implement optimized SSE/NEON to more efficiently compute the
-  // results (in media/base/vector_math) in soon-upcoming change.
+  // (a.k.a. an exponentially-weighted moving average) over the audio samples in
+  // each channel in |buffer|.
   float sum_power = 0.0f;
   for (int i = 0; i < num_channels; ++i) {
-    float average_power_this_channel = average_power_;
-    bool clipped = false;
-    const float* p = buffer.channel(i);
-    const float* const end_of_samples = p + num_frames;
-    for (; p < end_of_samples; ++p) {
-      const float sample = *p;
-      const float sample_squared = sample * sample;
-      clipped |= (sample_squared > 1.0f);
-      average_power_this_channel +=
-          (sample_squared - average_power_this_channel) * sample_weight_;
-    }
+    const std::pair<float, float> ewma_and_max = vector_math::EWMAAndMaxPower(
+        average_power_, buffer.channel(i), num_frames, sample_weight_);
     // If data in audio buffer is garbage, ignore its effect on the result.
-    if (base::IsNaN(average_power_this_channel)) {
-      average_power_this_channel = average_power_;
-      clipped = false;
+    if (!base::IsFinite(ewma_and_max.first)) {
+      sum_power += average_power_;
+    } else {
+      sum_power += ewma_and_max.first;
+      has_clipped_ |= (ewma_and_max.second > 1.0f);
     }
-    sum_power += average_power_this_channel;
-    has_clipped_ |= clipped;
   }
 
   // Update accumulated results, with clamping for sanity.
