@@ -62,21 +62,37 @@ int CountOccurences(const std::string& haystack, const std::string& needle) {
 class FeedbackSenderTest : public testing::Test {
  public:
   FeedbackSenderTest() : ui_thread_(content::BrowserThread::UI, &loop_) {
-    // The command-line switch and the field trial are temporary.
-    // TODO(rouslan): Remove the command-line switch and the field trial.
-    // http://crbug.com/247726
+    feedback_.reset(new FeedbackSender(NULL, kLanguage, kCountry));
+    feedback_->StartFeedbackCollection();
+  }
+
+  virtual ~FeedbackSenderTest() {}
+
+ protected:
+  // Appends the "--enable-spelling-service-feedback" switch to the
+  // command-line.
+  void AppendCommandLineSwitch() {
+    // The command-line switch is temporary.
+    // TODO(rouslan): Remove the command-line switch. http://crbug.com/247726
     CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableSpellingServiceFeedback);
+        switches::kEnableSpellingFeedbackFieldTrial);
+    feedback_.reset(new FeedbackSender(NULL, kLanguage, kCountry));
+    feedback_->StartFeedbackCollection();
+  }
+
+  // Enables the "SpellingServiceFeedback.Enabled" field trial.
+  void EnableFieldTrial() {
+    // The field trial is temporary.
+    // TODO(rouslan): Remove the field trial. http://crbug.com/247726
     field_trial_list_.reset(
         new base::FieldTrialList(new metrics::SHA1EntropyProvider("foo")));
     field_trial_ = base::FieldTrialList::CreateFieldTrial(
         kFeedbackFieldTrialName, kFeedbackFieldTrialEnabledGroupName);
     field_trial_->group();
     feedback_.reset(new FeedbackSender(NULL, kLanguage, kCountry));
+    feedback_->StartFeedbackCollection();
   }
-  virtual ~FeedbackSenderTest() {}
 
- protected:
   uint32 AddPendingFeedback() {
     std::vector<SpellCheckResult> results(1, BuildSpellCheckResult());
     feedback_->OnSpellcheckResults(kRendererProcessId,
@@ -433,6 +449,55 @@ TEST_F(FeedbackSenderTest, FeedbackAPI) {
       << "\nActual data:   " << actual_data;
 }
 
+// The default API version is "v2".
+TEST_F(FeedbackSenderTest, DefaultApiVersion) {
+  AddPendingFeedback();
+  feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
+                                      std::vector<uint32>());
+  EXPECT_TRUE(UploadDataContains("\"apiVersion\":\"v2\""));
+  EXPECT_FALSE(UploadDataContains("\"apiVersion\":\"v2-internal\""));
+}
+
+// The API version should not change for field-trial participants that do not
+// append the command-line switch.
+TEST_F(FeedbackSenderTest, FieldTrialAloneHasSameApiVersion) {
+  EnableFieldTrial();
+
+  AddPendingFeedback();
+  feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
+                                      std::vector<uint32>());
+
+  EXPECT_TRUE(UploadDataContains("\"apiVersion\":\"v2\""));
+  EXPECT_FALSE(UploadDataContains("\"apiVersion\":\"v2-internal\""));
+}
+
+// The API version should not change if the command-line switch is appended, but
+// the user is not participating in the field-trial.
+TEST_F(FeedbackSenderTest, CommandLineSwitchAloneHasSameApiVersion) {
+  AppendCommandLineSwitch();
+
+  AddPendingFeedback();
+  feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
+                                      std::vector<uint32>());
+
+  EXPECT_TRUE(UploadDataContains("\"apiVersion\":\"v2\""));
+  EXPECT_FALSE(UploadDataContains("\"apiVersion\":\"v2-internal\""));
+}
+
+// The API version should be different for field-trial participants that also
+// append the command-line switch.
+TEST_F(FeedbackSenderTest, InternalApiVersion) {
+  AppendCommandLineSwitch();
+  EnableFieldTrial();
+
+  AddPendingFeedback();
+  feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
+                                      std::vector<uint32>());
+
+  EXPECT_FALSE(UploadDataContains("\"apiVersion\":\"v2\""));
+  EXPECT_TRUE(UploadDataContains("\"apiVersion\":\"v2-internal\""));
+}
+
 // Duplicate spellcheck results should be matched to the existing markers.
 TEST_F(FeedbackSenderTest, MatchDupliateResultsWithExistingMarkers) {
   uint32 hash = AddPendingFeedback();
@@ -519,6 +584,38 @@ TEST_F(FeedbackSenderTest, IgnoreOutOfBounds) {
                                  UTF8ToUTF16(kText),
                                  std::vector<SpellCheckMarker>(),
                                  &results);
+  feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
+                                      std::vector<uint32>());
+  EXPECT_FALSE(IsUploadingData());
+}
+
+// FeedbackSender does not collect and upload feedback when instructed to stop.
+TEST_F(FeedbackSenderTest, CanStopFeedbackCollection) {
+  feedback_->StopFeedbackCollection();
+  AddPendingFeedback();
+  feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
+                                      std::vector<uint32>());
+  EXPECT_FALSE(IsUploadingData());
+}
+
+// FeedbackSender resumes collecting and uploading feedback when instructed to
+// start after stopping.
+TEST_F(FeedbackSenderTest, CanResumeFeedbackCollection) {
+  feedback_->StopFeedbackCollection();
+  feedback_->StartFeedbackCollection();
+  AddPendingFeedback();
+  feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
+                                      std::vector<uint32>());
+  EXPECT_TRUE(IsUploadingData());
+}
+
+// FeedbackSender does not collect data while being stopped and upload it later.
+TEST_F(FeedbackSenderTest, NoFeedbackCollectionWhenStopped) {
+  feedback_->StopFeedbackCollection();
+  AddPendingFeedback();
+  feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
+                                      std::vector<uint32>());
+  feedback_->StartFeedbackCollection();
   feedback_->OnReceiveDocumentMarkers(kRendererProcessId,
                                       std::vector<uint32>());
   EXPECT_FALSE(IsUploadingData());

@@ -211,7 +211,7 @@ extern const char kEnableSpdy2[];
 extern const char kDisableSpdy31[];
 extern const char kEnableSpdy4a2[];
 extern const char kEnableSpellingAutoCorrect[];
-extern const char kEnableSpellingServiceFeedback[];
+extern const char kEnableSpellingFeedbackFieldTrial[];
 extern const char kEnableStackedTabStrip[];
 extern const char kEnableStreamlinedHostedApps[];
 extern const char kEnableSuggestionsTabPage[];

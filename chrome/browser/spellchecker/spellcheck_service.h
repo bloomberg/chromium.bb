@@ -147,6 +147,10 @@ class SpellcheckService : public BrowserContextKeyedService,
   // Notification handler for changes to prefs::kSpellCheckUseSpellingService.
   void OnUseSpellingServiceChanged();
 
+  // Enables the feedback sender if spelling server is available and enabled.
+  // Otherwise disables the feedback sender.
+  void UpdateFeedbackSenderState();
+
   PrefChangeRegistrar pref_change_registrar_;
   content::NotificationRegistrar registrar_;
 
