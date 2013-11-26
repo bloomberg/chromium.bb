@@ -48,7 +48,7 @@ public:
     String wholeText() const;
     PassRefPtr<Text> replaceWholeText(const String&);
 
-    void recalcTextStyle(StyleRecalcChange);
+    void recalcTextStyle(StyleRecalcChange, Text* nextTextSibling);
     bool textRendererIsNeeded(const NodeRenderingContext&);
     virtual RenderText* createTextRenderer(RenderStyle*);
     void updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior = DoNotRecalcStyle);

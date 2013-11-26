@@ -1023,13 +1023,20 @@ void Node::detach(const AttachContext& context)
 #endif
 }
 
-void Node::reattachWhitespaceSiblings() const
+void Node::reattachWhitespaceSiblings(Text* start)
 {
-    for (Node* sibling = nextSibling(); sibling; sibling = sibling->nextSibling()) {
-        if (sibling->isTextNode() && toText(sibling)->containsOnlyWhitespace())
+    for (Node* sibling = start; sibling; sibling = sibling->nextSibling()) {
+        if (sibling->isTextNode() && toText(sibling)->containsOnlyWhitespace()) {
+            bool hadRenderer = sibling->hasRenderer();
             sibling->reattach();
-        else if (sibling->renderer())
+            // If the reattach didn't toggle the visibility of the whitespace we don't
+            // need to continue reattaching siblings since they won't toggle visibility
+            // either.
+            if (hadRenderer == sibling->hasRenderer())
+                return;
+        } else if (sibling->renderer()) {
             return;
+        }
     }
 }
 

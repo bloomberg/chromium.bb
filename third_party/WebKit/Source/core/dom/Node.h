@@ -63,8 +63,8 @@ class HTMLInputElement;
 class IntRect;
 class KeyboardEvent;
 class NSResolver;
-class NamedNodeMap;
 class NameNodeList;
+class NamedNodeMap;
 class NodeList;
 class NodeListsNodeData;
 class NodeRareData;
@@ -82,6 +82,7 @@ class RenderObject;
 class RenderStyle;
 class ShadowRoot;
 class TagNodeList;
+class Text;
 class TouchEvent;
 
 const int nodeStyleChangeShift = 14;
@@ -532,6 +533,7 @@ public:
         else
             m_data.m_renderer = renderer;
     }
+    bool hasRenderer() const { return renderer(); }
 
     // Use these two methods with caution.
     RenderBox* renderBox() const;
@@ -559,8 +561,6 @@ public:
 
     void reattach(const AttachContext& = AttachContext());
     void lazyReattachIfAttached();
-
-    void reattachWhitespaceSiblings() const;
 
     // Wrapper for nodes that don't have a renderer, but still cache the style (like HTMLOptionElement).
     RenderStyle* renderStyle() const;
@@ -793,6 +793,8 @@ protected:
     virtual void didMoveToNewDocument(Document& oldDocument);
 
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const { }
+
+    static void reattachWhitespaceSiblings(Text* start);
 
     void willBeDeletedFromDocument();
 

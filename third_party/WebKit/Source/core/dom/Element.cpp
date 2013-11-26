@@ -1508,7 +1508,7 @@ PassRefPtr<RenderStyle> Element::originalStyleForRenderer()
     return document().styleResolver()->styleForElement(this);
 }
 
-void Element::recalcStyle(StyleRecalcChange change)
+void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
 {
     ASSERT(document().inStyleRecalc());
     ASSERT(!parentOrShadowHostNode()->needsStyleRecalc());
@@ -1536,7 +1536,7 @@ void Element::recalcStyle(StyleRecalcChange change)
         didRecalcStyle(change);
 
     if (change == Reattach)
-        reattachWhitespaceSiblings();
+        reattachWhitespaceSiblings(nextTextSibling);
 }
 
 StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
@@ -1622,17 +1622,21 @@ void Element::recalcChildStyle(StyleRecalcChange change)
     // child and work our way back means in the common case, we'll find the insertion point in O(1) time.
     // See crbug.com/288225
     StyleResolver& styleResolver = *document().styleResolver();
+    Text* lastTextNode = 0;
     for (Node* child = lastChild(); child; child = child->previousSibling()) {
         if (child->isTextNode()) {
-            toText(child)->recalcTextStyle(change);
+            toText(child)->recalcTextStyle(change, lastTextNode);
+            lastTextNode = toText(child);
         } else if (child->isElementNode()) {
             Element* element = toElement(child);
             if (shouldRecalcStyle(change, element)) {
                 parentPusher.push();
-                element->recalcStyle(change);
+                element->recalcStyle(change, lastTextNode);
             } else if (element->supportsStyleSharing()) {
                 styleResolver.addToStyleSharingList(*element);
             }
+            if (element->renderer())
+                lastTextNode = 0;
         }
     }
 
@@ -2635,6 +2639,7 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
 
         // PseudoElement styles hang off their parent element's style so if we needed
         // a style recalc we should Force one on the pseudo.
+        // FIXME: We should figure out the right text sibling to pass.
         element->recalcStyle(needsStyleRecalc() ? Force : change);
 
         // Wait until our parent is not displayed or pseudoElementRendererIsNeeded
