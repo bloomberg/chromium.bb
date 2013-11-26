@@ -26,7 +26,9 @@ class NinjaBinaryTargetWriter : public NinjaTargetWriter {
   void WriteCompilerVars();
   void WriteSources(std::vector<OutputFile>* object_files);
   void WriteLinkerStuff(const std::vector<OutputFile>& object_files);
-  void WriteLinkerFlags();
+  void WriteLinkerFlags(const Toolchain::Tool& tool,
+                        const OutputFile& windows_manifest);
+  void WriteLibs(const Toolchain::Tool& tool);
 
   // Writes the build line for linking the target. Includes newline.
   void WriteLinkCommand(const OutputFile& external_output_file,

@@ -676,6 +676,17 @@ hooks = [
     ],
   },
   {
+    "name": "gn_linux32",
+    "pattern": "src/tools/gn/bin/linux/gn32.sha1",
+    "action": [ "download_from_google_storage",
+                "--no_resume",
+                "--platform=linux*",
+                "--no_auth",
+                "--bucket", "chromium-gn",
+                "-s", "src/tools/gn/bin/linux/gn32.sha1",
+    ],
+  },
+  {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     "name": "gyp",
     "pattern": ".",
