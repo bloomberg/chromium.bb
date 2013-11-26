@@ -415,7 +415,7 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
     const wchar_t* family = getFallbackFamily(codeUnits, codeUnitsLength, fontDescription.genericFamily(), &c, &script);
     FontPlatformData* data = 0;
     if (family)
-        data = getFontResourcePlatformData(font.fontDescription(),  AtomicString(family, wcslen(family)), false);
+        data = getFontResourcePlatformData(font.fontDescription(),  AtomicString(family, wcslen(family)));
 
     // Last resort font list : PanUnicode. CJK fonts have a pretty
     // large repertoire. Eventually, we need to scan all the fonts

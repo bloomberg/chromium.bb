@@ -52,6 +52,9 @@ public:
     void getVerticalTranslationsForGlyphs(const SimpleFontData*, const Glyph*, size_t, float* outXYArray) const;
     void substituteWithVerticalGlyphs(const SimpleFontData*, GlyphPage*, unsigned offset, unsigned length) const;
 
+    bool inFontCache() const { return m_inFontCache; }
+    void setInFontCache(bool inFontCache) { m_inFontCache = inFontCache; }
+
 private:
     explicit OpenTypeVerticalData(const FontPlatformData&);
 
@@ -66,7 +69,6 @@ private:
     int16_t m_defaultVertOriginY;
     HashMap<Glyph, int16_t> m_vertOriginY;
 
-    friend class FontCache;
     bool m_inFontCache; // for mark & sweep in FontCache::purgeInactiveFontData()
 };
 

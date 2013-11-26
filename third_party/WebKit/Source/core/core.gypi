@@ -2745,6 +2745,8 @@
             'platform/graphics/Extensions3D.h',
             'platform/graphics/Font.cpp',
             'platform/graphics/Font.cpp',
+            'platform/graphics/FontDataCache.cpp',
+            'platform/graphics/FontDataCache.h',
             'platform/graphics/FontCache.cpp',
             'platform/graphics/FontCache.cpp',
             'platform/graphics/FontFallbackList.cpp',

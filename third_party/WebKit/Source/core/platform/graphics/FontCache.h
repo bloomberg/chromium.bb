@@ -61,14 +61,15 @@ class FontSelector;
 class OpenTypeVerticalData;
 class SimpleFontData;
 
+enum ShouldRetain { Retain, DoNotRetain };
+enum PurgeSeverity { PurgeIfNeeded, ForcePurge };
+
 class FontCache {
     friend class FontCachePurgePreventer;
 
     WTF_MAKE_NONCOPYABLE(FontCache); WTF_MAKE_FAST_ALLOCATED;
 public:
     friend FontCache* fontCache();
-
-    enum ShouldRetain { Retain, DoNotRetain };
 
     void releaseFontData(const SimpleFontData*);
 
@@ -114,16 +115,15 @@ private:
     FontCache();
     ~FontCache();
 
+    void purge(PurgeSeverity = PurgeIfNeeded);
+
     void disablePurging() { m_purgePreventCount++; }
     void enablePurging()
     {
         ASSERT(m_purgePreventCount);
         if (!--m_purgePreventCount)
-            purgeInactiveFontDataIfNeeded();
+            purge(PurgeIfNeeded);
     }
-
-    void purgeInactiveFontData(int count = INT_MAX);
-    void purgeInactiveFontDataIfNeeded();
 
     // FIXME: This method should eventually be removed.
     FontPlatformData* getFontResourcePlatformData(const FontDescription&, const AtomicString& family, bool checkingAlternateName = false);
