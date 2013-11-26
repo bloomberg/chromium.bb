@@ -134,8 +134,6 @@ bool MultiLogCTVerifier::VerifySingleSCT(
   }
 
   // SCT verified ok, just make sure the timestamp is legitimate.
-  // Add 1 second to allow some slack for accepting SCTs which have *Just*
-  // been issued.
   if (sct->timestamp > base::Time::Now()) {
     DVLOG(1) << "SCT is from the future!";
     result->unverified_scts.push_back(sct);

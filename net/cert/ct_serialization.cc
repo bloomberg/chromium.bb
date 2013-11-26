@@ -316,7 +316,8 @@ bool DecodeSCTList(base::StringPiece* input,
   return true;
 }
 
-bool DecodeSignedCertificateTimestamp(base::StringPiece* input,
+bool DecodeSignedCertificateTimestamp(
+    base::StringPiece* input,
     scoped_refptr<SignedCertificateTimestamp>* output) {
   scoped_refptr<SignedCertificateTimestamp> result(
       new SignedCertificateTimestamp());
