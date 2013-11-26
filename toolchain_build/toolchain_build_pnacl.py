@@ -208,11 +208,11 @@ if __name__ == '__main__':
   logging.getLogger().setLevel(logging.DEBUG)
   parser = argparse.ArgumentParser()
   parser.add_argument('--legacy-repo-sync', action='store_true',
-                      dest='sync_legacy_repos', default=False,
+                      dest='legacy_repo_sync', default=False,
                       help='Sync the git repo directories used by build.sh')
   args, leftover_args = parser.parse_known_args()
   revisions = ParseComponentRevisionsFile(GIT_DEPS_FILE)
-  if args.sync_legacy_repos:
+  if args.legacy_repo_sync:
     SyncPNaClRepos(revisions)
     sys.exit(0)
   packages = HostTools(revisions)

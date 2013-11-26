@@ -337,7 +337,7 @@ ArgumentToAbsolutePath() {
 #@ sync-sources          - check out repos needed to build toolchain
 sync-sources() {
   StepBanner "SYNC SOURCES"
-  python ${TOOLCHAIN_BUILD} --sync-legacy-repos
+  python ${TOOLCHAIN_BUILD} --legacy-repo-sync
   newlib-nacl-headers
 }
 
