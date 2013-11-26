@@ -71,6 +71,7 @@ def HostTools(revisions):
   tools = {
       'binutils_pnacl_src': {
           'type': 'source',
+          'output_dirname': 'binutils',
           'commands': [
               command.SyncGitRepo(GIT_BASE_URL + GIT_REPOS['binutils'],
                                   '%(output)s',
@@ -106,9 +107,10 @@ def HostTools(revisions):
           },
       # For some reason, the llvm build using --with-clang-srcdir chokes if the
       # clang source directory is named something other than 'clang', so don't
-      # rename this target.
-      'clang': {
+      # change output_dirname for clang.
+      'clang_src': {
           'type': 'source',
+          'output_dirname': 'clang',
           'commands': [
               command.SyncGitRepo(GIT_BASE_URL + GIT_REPOS['clang'],
                                   '%(output)s',
@@ -117,6 +119,7 @@ def HostTools(revisions):
       },
       'llvm_src': {
           'type': 'source',
+          'output_dirname': 'llvm',
           'commands': [
               command.SyncGitRepo(GIT_BASE_URL + GIT_REPOS['llvm'],
                                   '%(output)s',
@@ -124,7 +127,7 @@ def HostTools(revisions):
           ],
       },
       'llvm': {
-          'dependencies': ['clang', 'llvm_src', 'binutils_pnacl_src'],
+          'dependencies': ['clang_src', 'llvm_src', 'binutils_pnacl_src'],
           'type': 'build',
           'commands': [
               command.SkipForIncrementalCommand([
@@ -139,7 +142,7 @@ def HostTools(revisions):
                    '--enable-targets=x86,arm,mips',
                    '--program-prefix=',
                    '--enable-optimized',
-                   '--with-clang-srcdir=%(abs_clang)s']),
+                   '--with-clang-srcdir=%(abs_clang_src)s']),
               command.Command(MAKE_PARALLEL_CMD + [
                   'VERBOSE=1',
                   'NACL_SANDBOX=0',
@@ -205,11 +208,12 @@ if __name__ == '__main__':
   # by the package builder based on the command-line flags.
   logging.getLogger().setLevel(logging.DEBUG)
   parser = argparse.ArgumentParser()
-  parser.add_argument('--sync-only', action='store_true')
+  parser.add_argument('--sync-legacy-repos', action='store_true',
+                      help='Sync the git repo directories used by build.sh')
   args, leftover_args = parser.parse_known_args()
   revisions = ParseComponentRevisionsFile(GIT_DEPS_FILE)
-  SyncPNaClRepos(revisions)
-  if args.sync_only:
+  if args.sync_legacy_repos:
+    SyncPNaClRepos(revisions)
     sys.exit(0)
   packages = HostTools(revisions)
   tb = toolchain_main.PackageBuilder(packages,

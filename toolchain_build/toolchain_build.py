@@ -208,6 +208,7 @@ def WithDepsOptions(options):
 # These are libraries that go into building the compiler itself.
 HOST_GCC_LIBS = {
     'gmp': {
+        'type': 'build',
         'tar_src': 'third_party/gmp/gmp-5.1.3.tar.bz2',
         'unpack_commands': UnpackSrc(False),
         'hashed_inputs': {'src': 'src'},
@@ -227,6 +228,7 @@ HOST_GCC_LIBS = {
             ]),
         },
     'mpfr': {
+        'type': 'build',
         'dependencies': ['gmp'],
         'tar_src': 'third_party/mpfr/mpfr-3.1.2.tar.bz2',
         'unpack_commands': UnpackSrc(False) + PopulateDeps(['%(gmp)s']),
@@ -240,6 +242,7 @@ HOST_GCC_LIBS = {
             ]),
         },
     'mpc': {
+        'type': 'build',
         'dependencies': ['gmp', 'mpfr'],
         'tar_src': 'third_party/mpc/mpc-1.0.1.tar.gz',
         'unpack_commands': UnpackSrc(True) + PopulateDeps(['%(gmp)s',
@@ -255,6 +258,7 @@ HOST_GCC_LIBS = {
             ]),
         },
     'isl': {
+        'type': 'build',
         'dependencies': ['gmp'],
         'tar_src': 'third_party/cloog/isl-0.12.1.tar.bz2',
         'unpack_commands': UnpackSrc(False) + PopulateDeps(['%(gmp)s']),
@@ -276,6 +280,7 @@ HOST_GCC_LIBS = {
                 ],
         },
     'cloog': {
+        'type': 'build',
         'dependencies': ['gmp', 'isl'],
         'tar_src': 'third_party/cloog/cloog-0.18.1.tar.gz',
         'unpack_commands': UnpackSrc(True) + PopulateDeps(['%(gmp)s',
@@ -340,6 +345,7 @@ def ConfigureGccCommand(target, extra_args=[]):
 def HostTools(target):
   tools = {
       'binutils_' + target: {
+          'type': 'build',
           'git_url': GIT_BASE_URL + '/nacl-binutils.git',
           'git_revision': GIT_REVISIONS['binutils'],
           'commands': ConfigureTargetPrep(target) + [
@@ -368,6 +374,7 @@ def HostTools(target):
           },
 
       'gcc_' + target: {
+          'type': 'build',
           'dependencies': HOST_GCC_LIBS_DEPS + ['binutils_' + target],
           'git_url': GCC_GIT_URL,
           'git_revision': GIT_REVISIONS['gcc'],
@@ -497,6 +504,7 @@ def TargetLibs(target):
 
   libs = {
       'newlib_' + target: {
+          'type': 'build',
           'dependencies': lib_deps,
           'git_url': GIT_BASE_URL + '/nacl-newlib.git',
           'git_revision': GIT_REVISIONS['newlib'],
@@ -529,6 +537,7 @@ def TargetLibs(target):
           },
 
       'gcc_libs_' + target: {
+          'type': 'build',
           'dependencies': lib_deps + ['newlib_' + target] + HOST_GCC_LIBS_DEPS,
           'git_url': GCC_GIT_URL,
           'git_revision': GIT_REVISIONS['gcc'],

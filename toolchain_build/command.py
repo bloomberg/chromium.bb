@@ -188,7 +188,8 @@ def Command(command, **kwargs):
 def SkipForIncrementalCommand(command, **kwargs):
   """Return a command which has the skip_for_incremental property set on it.
 
-  This will cause the command to be skipped for incremental builds.
+  This will cause the command to be skipped for incremental builds, if the
+  working directory is not empty.
   """
   cmd = Command(command, **kwargs)
   cmd.skip_for_incremental = True

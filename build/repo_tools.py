@@ -23,6 +23,7 @@ def SyncGitRepo(url, destination, revision, reclone=False, clean=False):
          Otherwise the checkout will fail if there are uncommitted changes.
   """
   if reclone:
+    logging.debug('Clobbering source directory %s' % destination)
     file_tools.RemoveDirectoryIfPresent(destination)
   if platform_tools.IsWindows():
     # On windows, we want to use the depot_tools version of git, which has

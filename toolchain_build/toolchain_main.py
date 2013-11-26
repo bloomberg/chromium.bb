@@ -70,6 +70,10 @@ class PackageBuilder(object):
                 # unpacked). Source package commands are run unconditionally
                 # unless sync is skipped via the command-line option. Source
                 # package contents are not memoized.
+            'output_dirname': # optional
+              '<directory name>', # Name of the directory to checkout sources
+              # into (a subdirectory of the global source directory); defaults
+              # to the package name.
             'commands':
               [<list of command.Runnable objects to run>],
             'inputs': # optional
@@ -94,14 +98,15 @@ class PackageBuilder(object):
             'commands':
               [<list of command.Command objects to run>],
               # Objects that have a 'skip_for_incremental' attribute that
-              # evaluates to True will not be run on incremental builds.
+              # evaluates to True will not be run on incremental builds unless
+              # the working directory is empty.
             'unpack_commands':  # optional, legacy (use source targets instead)
               [<list of command.Command objects for unpacking inputs
                 before they are hashed>'],
             'hashed_inputs':  # optional,
               {<mapping whose keys are names, and whose values are paths of
                 files or directories (relative to the working directory) to use
-                for the build signature>],
+                for the build signature>},
           },
         }
         REPO_SRC_INFO is either:
@@ -122,11 +127,7 @@ class PackageBuilder(object):
 
   def Main(self):
     """Main entry point."""
-    if self._options.clobber:
-      PrintFlush('@@@BUILD_STEP clobber@@@')
-      file_tools.RemoveDirectoryIfPresent(self._options.source)
-      file_tools.RemoveDirectoryIfPresent(self._options.output)
-    if self._options.sync:
+    if self._options.sync_sources:
       self.SyncAll()
     self.BuildAll()
 
@@ -154,14 +155,16 @@ class PackageBuilder(object):
     repo_tools.SyncGitRepo(url,
                            destination,
                            revision if self._options.pinned else None,
-                           reclone=self._options.reclone,
-                           clean=not self._options.incremental)
+                           reclone=self._options.clobber_source,
+                           clean=self._options.clobber)
     logging.info('Done syncing %s.' % package)
 
   def GetOutputDir(self, package):
-    if ('type' in self._packages[package] and
-        self._packages[package]['type'] == 'source'):
-      return os.path.join(self._options.source, package)
+    # The output dir of source packages is in the source directory, and can be
+    # overridden.
+    if self._packages[package]['type'] == 'source':
+      dirname = self._packages[package].get('output_dirname', package)
+      return os.path.join(self._options.source, dirname)
     return os.path.join(self._options.output, package + '_install')
 
   def BuildPackage(self, package):
@@ -171,16 +174,20 @@ class PackageBuilder(object):
     Args:
       package: Package to build.
     """
-    PrintFlush('@@@BUILD_STEP build %s@@@' % package)
+
     package_info = self._packages[package]
+
     # Validate the package description.
+    if 'type' not in package_info:
+      raise Exception('package %s does not have a type' % package)
+    type_text = package_info['type']
+    if type_text not in ('source', 'build'):
+      raise Execption('package %s has unrecognized type: %s' %
+                      (package, type_text))
+    is_source_target = type_text == 'source'
+
     if 'commands' not in package_info:
       raise Exception('package %s does not have any commands' % package)
-    # Default to build targets for backward compatibility.
-    if 'type' not in package_info:
-      is_source_target = False
-    else:
-      is_source_target = package_info['type'] == 'source'
     if is_source_target:
       for key in ('hashed_inputs', 'dependencies', 'tar_src', 'git_url',
                   'git_revision', 'unpack_commands'):
@@ -188,9 +195,11 @@ class PackageBuilder(object):
           raise Exception('Source package %s must not have %s keys.' %
                           (package, key))
       # Source targets do not run when skipping sync.
-      if not self._options.sync:
+      if not self._options.sync_sources:
         logging.debug('Sync skipped: not running commands for %s' % package)
         return
+
+    PrintFlush('@@@BUILD_STEP %s (%s)@@@' % (package, type_text))
 
     dependencies = package_info.get('dependencies', [])
     # Collect a dict of all the inputs.
@@ -213,13 +222,15 @@ class PackageBuilder(object):
     # Each package generates intermediate into output/<PACKAGE>_work.
     # Clobbered here explicitly.
     work_dir = os.path.join(self._options.output, package + '_work')
-    if not self._options.incremental:
+    if self._options.clobber:
+      logging.debug('Clobbering working directory %s' % work_dir)
       file_tools.RemoveDirectoryIfPresent(work_dir)
     file_tools.MakeDirectoryIfAbsent(work_dir)
 
     output = self.GetOutputDir(package)
-    # Outputs of source targets are clobbered explicitly in Main()
-    if not is_source_target:
+
+    if not is_source_target or self._options.clobber_source:
+      logging.debug('Clobbering output directory %s' % output)
       file_tools.RemoveDirectoryIfPresent(output)
       os.mkdir(output)
 
@@ -232,7 +243,7 @@ class PackageBuilder(object):
         hashed_inputs[key] = os.path.join(work_dir, value)
 
     commands = package_info.get('commands', [])
-    if self._options.incremental:
+    if not self._options.clobber and len(os.listdir(work_dir)) > 0:
       commands = [cmd for cmd in commands if
                   not (hasattr(cmd, 'skip_for_incremental') and
                        cmd.skip_for_incremental)]
@@ -306,7 +317,7 @@ class PackageBuilder(object):
     parser.add_option(
         '-c', '--clobber', dest='clobber',
         default=False, action='store_true',
-        help='Clobber source and output directories.')
+        help='Clobber working directories before building.')
     parser.add_option(
         '--cache', dest='cache',
         default=DEFAULT_CACHE_DIR,
@@ -332,10 +343,6 @@ class PackageBuilder(object):
         default=True, action='store_false',
         help='Do not cache results.')
     parser.add_option(
-        '--reclone', dest='reclone',
-        default=False, action='store_true',
-        help='Clone source trees from scratch.')
-    parser.add_option(
         '--no-pinned', dest='pinned',
         default=True, action='store_false',
         help='Do not use pinned revisions.')
@@ -347,26 +354,22 @@ class PackageBuilder(object):
         '--buildbot', dest='buildbot',
         default=False, action='store_true',
         help='Run and cache as if on a non-trybot buildbot.')
-    # TODO(dschuff): make incremental non-sync builds the default.
-    # Make -y/--sync enable sync (and maybe add --sync-only?)
-    # Rename -i to -f/--full or something else?
-    # Make --trybot and --buildbot imply -y and -f
-    # Another option would be to set different defaults for toolchain_build
-    # and toolchain_build_pnacl, if desired.
     parser.add_option(
-        '-i', '--incremental', dest='incremental',
+        '--clobber-source', dest='clobber_source',
         default=False, action='store_true',
-        help='Incremental build (do not clobber work dir or unpack src')
+        help='Clobber source directories before building')
     parser.add_option(
-        '-y', '--no-sync', dest='sync',
-        default=True, action='store_false',
-        help='Do not sync git sources or run source target commands')
+        '-y', '--sync', dest='sync_sources',
+        default=False, action='store_true',
+        help='Sync git sources and run source target commands')
     options, targets = parser.parse_args(args)
     if options.trybot and options.buildbot:
       PrintFlush('ERROR: Tried to run with both --trybot and --buildbot.')
       sys.exit(1)
     if options.trybot or options.buildbot:
       options.verbose = True
+      options.sync_sources = True
+      options.clobber = True
     if not targets:
       targets = sorted(packages.keys())
     targets = self.BuildOrder(targets)

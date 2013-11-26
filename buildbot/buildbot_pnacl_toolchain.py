@@ -62,16 +62,22 @@ with buildbot_lib.Step('Update cygwin/check bash', status, halt_on_fail=True):
     print 'Bash not found in path!'
     raise buildbot_lib.StepFailed()
 
-# Call toolchain_build_pnacl.py in trybot mode, since we aren't archiving
-# anything but we want to see all the output. toolchain_build_pnacl outputs its
-# own buildbot annotations.
+toolchain_build_cmd = [
+    sys.executable,
+    os.path.join(
+        NACL_DIR, 'toolchain_build', 'toolchain_build_pnacl.py'),
+    '--verbose', '--sync', '--clobber']
+
+# Sync the git repos used by build.sh
+with buildbot_lib.Step('Sync legacy sources', status, halt_on_fail=True):
+  buildbot_lib.Command(context, toolchain_build_cmd + ['--sync-legacy-repos'])
+
+# Run toolchain_build.py first. Its outputs are not actually being used yet.
+# toolchain_build outputs its own buildbot annotations, so don't use
+# buildbot_lib.Step to run it here.
 try:
-  command = [sys.executable,
-             os.path.join(
-                 NACL_DIR, 'toolchain_build', 'toolchain_build_pnacl.py'),
-             '-v']
-  logging.info('Running: ' + ' '.join(command))
-  subprocess.check_call(command)
+  logging.info('Running: ' + ' '.join(toolchain_build_cmd))
+  subprocess.check_call(toolchain_build_cmd)
 except subprocess.CalledProcessError:
   # Ignore any failures and keep going (but make the bot stage red).
   print '@@@STEP_FAILURE@@@'
