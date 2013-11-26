@@ -55,6 +55,12 @@ RendererAccessibilityComplete::RendererAccessibilityComplete(
 }
 
 RendererAccessibilityComplete::~RendererAccessibilityComplete() {
+  if (browser_root_) {
+    ClearBrowserTreeNode(browser_root_);
+    browser_id_map_.erase(browser_root_->id);
+    delete browser_root_;
+  }
+  DCHECK(browser_id_map_.empty());
 }
 
 bool RendererAccessibilityComplete::OnMessageReceived(
