@@ -16,6 +16,7 @@
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_test_util.h"
+#include "chrome/browser/sync_file_system/drive_backend/list_changes_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_initializer.h"
@@ -193,6 +194,14 @@ class RemoteToLocalSyncerTest : public testing::Test,
       status = RunSyncer();
   }
 
+  SyncStatusCode ListChanges() {
+    ListChangesTask list_changes(this);
+    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
+    list_changes.Run(CreateResultReceiver(&status));
+    base::RunLoop().RunUntilIdle();
+    return status;
+  }
+
   void VerifyConsistency(const URLToFileChangesMap& expected_changes) {
     URLToFileChangesMap applied_changes =
         fake_remote_change_processor_->GetAppliedRemoteChanges();
@@ -213,10 +222,10 @@ class RemoteToLocalSyncerTest : public testing::Test,
         continue;
       }
 
-      EXPECT_EQ(itr->second.back().change(),
-                found->second.back().change()) << url.DebugString();
-      EXPECT_EQ(itr->second.back().file_type(),
-                found->second.back().file_type()) << url.DebugString();
+      EXPECT_EQ(found->second.back().change(),
+                itr->second.back().change()) << url.DebugString();
+      EXPECT_EQ(found->second.back().file_type(),
+                itr->second.back().file_type()) << url.DebugString();
     }
   }
 
@@ -267,6 +276,89 @@ TEST_F(RemoteToLocalSyncerTest, AddNewFile) {
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_FILE));
 
+  VerifyConsistency(expected_changes);
+}
+
+TEST_F(RemoteToLocalSyncerTest, DeleteFile) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+
+  const std::string folder = CreateFolder(app_root, "folder");
+  const std::string file = CreateFile(app_root, "file", "data");
+
+  URLToFileChangesMap expected_changes;
+  expected_changes[CreateURL(kOrigin, "/")].push_back(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_DIRECTORY));
+  expected_changes[CreateURL(kOrigin, "/folder")].push_back(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_DIRECTORY));
+  expected_changes[CreateURL(kOrigin, "/file")].push_back(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_FILE));
+
+  RunSyncerUntilIdle();
+  VerifyConsistency(expected_changes);
+
+  DeleteFile(folder);
+  DeleteFile(file);
+
+  expected_changes[CreateURL(kOrigin, "/folder")].push_back(
+      FileChange(FileChange::FILE_CHANGE_DELETE,
+                 SYNC_FILE_TYPE_UNKNOWN));
+  expected_changes[CreateURL(kOrigin, "/file")].push_back(
+      FileChange(FileChange::FILE_CHANGE_DELETE,
+                 SYNC_FILE_TYPE_UNKNOWN));
+
+  ListChanges();
+  RunSyncerUntilIdle();
+  VerifyConsistency(expected_changes);
+}
+
+TEST_F(RemoteToLocalSyncerTest, DeleteNestedFiles) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+
+  const std::string folder1 = CreateFolder(app_root, "folder1");
+  const std::string file1 = CreateFile(app_root, "file1", "data1");
+  const std::string folder2 = CreateFolder(folder1, "folder2");
+  const std::string file2 = CreateFile(folder1, "file2", "data2");
+
+  URLToFileChangesMap expected_changes;
+  expected_changes[CreateURL(kOrigin, "/")].push_back(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_DIRECTORY));
+  expected_changes[CreateURL(kOrigin, "/folder1")].push_back(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_DIRECTORY));
+  expected_changes[CreateURL(kOrigin, "/file1")].push_back(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_FILE));
+  expected_changes[CreateURL(kOrigin, "/folder1/folder2")].push_back(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_DIRECTORY));
+  expected_changes[CreateURL(kOrigin, "/folder1/file2")].push_back(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_FILE));
+
+  RunSyncerUntilIdle();
+  VerifyConsistency(expected_changes);
+
+  DeleteFile(folder1);
+
+  expected_changes[CreateURL(kOrigin, "/folder1")].push_back(
+      FileChange(FileChange::FILE_CHANGE_DELETE,
+                 SYNC_FILE_TYPE_UNKNOWN));
+  // Changes for descendant files ("folder2" and "file2") should be ignored.
+
+  ListChanges();
+  RunSyncerUntilIdle();
   VerifyConsistency(expected_changes);
 }
 

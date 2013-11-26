@@ -1257,6 +1257,7 @@ void MetadataDatabase::CreateTrackerForParentAndFileID(
 void MetadataDatabase::RemoveTracker(int64 tracker_id,
                                      leveldb::WriteBatch* batch) {
   RemoveTrackerInternal(tracker_id, batch, false);
+  RemoveAllDescendantTrackers(tracker_id, batch);
 }
 
 void MetadataDatabase::RemoveTrackerIgnoringSameTitle(
@@ -1278,6 +1279,8 @@ void MetadataDatabase::RemoveTrackerInternal(
   if (IsAppRoot(*tracker))
     app_root_by_app_id_.erase(tracker->app_id());
   EraseTrackerFromPathIndex(tracker.get());
+  dirty_trackers_.erase(tracker.get());
+  low_priority_dirty_trackers_.erase(tracker.get());
 
   MarkTrackersDirtyByFileID(tracker->file_id(), batch);
   if (!ignoring_same_title) {
