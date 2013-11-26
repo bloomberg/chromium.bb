@@ -136,40 +136,6 @@ double GetPangoResolution() {
   return resolution;
 }
 
-void DrawTextOntoCairoSurface(cairo_t* cr,
-                              const base::string16& text,
-                              const gfx::Font& font,
-                              const gfx::Rect& bounds,
-                              const gfx::Rect& clip,
-                              SkColor text_color,
-                              int flags) {
-  PangoLayout* layout = pango_cairo_create_layout(cr);
-  base::i18n::TextDirection text_direction =
-      base::i18n::GetFirstStrongCharacterDirection(text);
-  DCHECK(!bounds.IsEmpty());
-
-  gfx::SetupPangoLayout(
-      layout, text, font, bounds.width(), text_direction, flags);
-
-  pango_layout_set_height(layout, bounds.height() * PANGO_SCALE);
-
-  cairo_save(cr);
-  cairo_rectangle(cr, clip.x(), clip.y(), clip.width(), clip.height());
-  cairo_clip(cr);
-
-  int width = 0, height = 0;
-  pango_layout_get_pixel_size(layout, &width, &height);
-  Rect text_rect(bounds.x(), bounds.y(), width, height);
-  // Vertically center |text_rect| in |bounds|.
-  text_rect += gfx::Vector2d(0, (bounds.height() - text_rect.height()) / 2);
-
-  DrawPangoLayout(cr, layout, font, bounds, text_rect,
-                  text_color, text_direction, flags);
-
-  cairo_restore(cr);
-  g_object_unref(layout);
-}
-
 // Pass a width greater than 0 to force wrapping and eliding.
 static void SetupPangoLayoutWithoutFont(
     PangoLayout* layout,
@@ -295,60 +261,6 @@ void SetupPangoLayoutWithFontDescription(
   ScopedPangoFontDescription desc(
       pango_font_description_from_string(font_description.c_str()));
   pango_layout_set_font_description(layout, desc.get());
-}
-
-void DrawPangoLayout(cairo_t* cr,
-                     PangoLayout* layout,
-                     const Font& font,
-                     const gfx::Rect& bounds,
-                     const gfx::Rect& text_rect,
-                     SkColor text_color,
-                     base::i18n::TextDirection text_direction,
-                     int flags) {
-  double r = SkColorGetR(text_color) / 255.0,
-         g = SkColorGetG(text_color) / 255.0,
-         b = SkColorGetB(text_color) / 255.0,
-         a = SkColorGetA(text_color) / 255.0;
-
-  cairo_pattern_t* pattern = NULL;
-
-  cairo_save(cr);
-
-  // Use a fixed color.
-  // Note: We do not elide (fade out the text) here, due to a bug in certain
-  // Linux environments (http://crbug.com/123104).
-  cairo_set_source_rgba(cr, r, g, b, a);
-  cairo_move_to(cr, text_rect.x(), text_rect.y());
-  pango_cairo_show_layout(cr, layout);
-
-  if (font.GetStyle() & gfx::Font::UNDERLINE) {
-    gfx::PlatformFontPango* platform_font =
-        static_cast<gfx::PlatformFontPango*>(font.platform_font());
-    DrawPangoTextUnderline(cr, platform_font, 0.0, text_rect);
-  }
-
-  if (pattern)
-    cairo_pattern_destroy(pattern);
-
-  cairo_restore(cr);
-}
-
-void DrawPangoTextUnderline(cairo_t* cr,
-                            gfx::PlatformFontPango* platform_font,
-                            double extra_edge_width,
-                            const Rect& text_rect) {
-  const double underline_y =
-      static_cast<double>(text_rect.y()) + text_rect.height() +
-      platform_font->underline_position();
-  cairo_set_line_width(
-      cr, platform_font->underline_thickness() + 2 * extra_edge_width);
-  cairo_move_to(cr,
-                text_rect.x() - extra_edge_width,
-                underline_y);
-  cairo_line_to(cr,
-                text_rect.x() + text_rect.width() + extra_edge_width,
-                underline_y);
-  cairo_stroke(cr);
 }
 
 size_t GetPangoFontSizeInPixels(PangoFontDescription* pango_font) {
