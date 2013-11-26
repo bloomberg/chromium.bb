@@ -24,12 +24,12 @@ using api::activity_log_private::ActivityResultSet;
 using api::activity_log_private::ExtensionActivity;
 using api::activity_log_private::Filter;
 
-const char kActivityLogExtensionId[] = "abjoigjokfeibfhiahiijggogladbmfm";
-const char kActivityLogTestExtensionId[] = "hhcnncjlpehbepkbgccanfpkneoejnpb";
+const char kActivityLogExtensionId[] = "fpofdchlamddhnajleknffcbmnjfahpg";
+const char kActivityLogTestExtensionId[] = "abjoigjokfeibfhiahiijggogladbmfm";
 // TODO(mvrable): Delete kActivityLogObsoleteExtensionId after ensuring that it
 // is no longer in use.
 const char kActivityLogObsoleteExtensionId[] =
-    "acldcpdepobcjbdanifkmfndkjoilgba";
+    "hhcnncjlpehbepkbgccanfpkneoejnpb";
 
 static base::LazyInstance<ProfileKeyedAPIFactory<ActivityLogAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
