@@ -80,8 +80,10 @@ public class SelectPopupDialog {
             if (mItemEnabled[position] != POPUP_ITEM_TYPE_ENABLED) {
                 if (mItemEnabled[position] == POPUP_ITEM_TYPE_GROUP) {
                     // Currently select_dialog_multichoice & select_dialog_multichoice use
-                    // CheckedTextViews. If that changes, the class cast will no longer be valid.
-                    ((CheckedTextView) convertView).setCheckMarkDrawable(null);
+                    // CheckedTextViews in chrome but not in WebView.
+                    if (convertView instanceof CheckedTextView) {
+                        ((CheckedTextView) convertView).setCheckMarkDrawable(null);
+                    }
                 } else {
                     // Draw the disabled element in a disabled state.
                     convertView.setEnabled(false);
