@@ -22,12 +22,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/win/hwnd_util.h"
 #include "url/gurl.h"
 #include "win8/util/win8_util.h"
-
-// This code doesn't compile with Aura on. TODO(avi): hook it up so that
-// win_aura can do platform integration.
-#if !defined(USE_AURA)
 
 namespace {
 
@@ -61,7 +58,7 @@ void UpdateTaskbarProgressBar(int download_count,
     BrowserWindow* window = browser->window();
     if (!window)
       continue;
-    HWND frame = window->GetNativeWindow();
+    HWND frame = views::HWNDForNativeWindow(window->GetNativeWindow());
     if (download_count == 0 || progress == 1.0f)
       taskbar->SetProgressState(frame, TBPF_NOPROGRESS);
     else if (!progress_known)
@@ -149,5 +146,3 @@ void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
                          download->GetTargetFilePath().value().c_str());
   }
 }
-
-#endif  // !USE_AURA

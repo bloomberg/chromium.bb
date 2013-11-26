@@ -133,7 +133,7 @@ void DownloadStatusUpdater::OnDownloadUpdated(
   UpdateAppIconDownloadProgress(item);
 }
 
-#if defined(USE_AURA) || defined(OS_ANDROID)
+#if defined(OS_ANDROID) || (defined(USE_AURA) && !defined(OS_WIN))
 void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
     content::DownloadItem* download) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
