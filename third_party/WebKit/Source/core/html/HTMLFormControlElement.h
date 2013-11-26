@@ -108,6 +108,8 @@ public:
 
     static HTMLFormControlElement* enclosingFormControlElement(Node*);
 
+    String nameForAutofill() const;
+
     using Node::ref;
     using Node::deref;
 

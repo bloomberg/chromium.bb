@@ -522,4 +522,15 @@ HTMLFormControlElement* HTMLFormControlElement::enclosingFormControlElement(Node
     return 0;
 }
 
+String HTMLFormControlElement::nameForAutofill() const
+{
+    String fullName = name();
+    String trimmedName = fullName.stripWhiteSpace();
+    if (!trimmedName.isEmpty())
+        return trimmedName;
+    fullName = getIdAttribute();
+    trimmedName = fullName.stripWhiteSpace();
+    return trimmedName;
+}
+
 } // namespace Webcore

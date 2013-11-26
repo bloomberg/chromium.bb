@@ -76,15 +76,7 @@ void WebFormControlElement::setAutofilled(bool autofilled)
 
 WebString WebFormControlElement::nameForAutofill() const
 {
-    String name = constUnwrap<HTMLFormControlElement>()->name();
-    String trimmedName = name.stripWhiteSpace();
-    if (!trimmedName.isEmpty())
-        return trimmedName;
-    name = constUnwrap<HTMLFormControlElement>()->getIdAttribute();
-    trimmedName = name.stripWhiteSpace();
-    if (!trimmedName.isEmpty())
-        return trimmedName;
-    return String();
+    return constUnwrap<HTMLFormControlElement>()->nameForAutofill();
 }
 
 WebFormElement WebFormControlElement::form() const
