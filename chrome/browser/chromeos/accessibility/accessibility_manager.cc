@@ -287,6 +287,7 @@ AccessibilityManager::AccessibilityManager()
       sticky_keys_enabled_(false),
       spoken_feedback_enabled_(false),
       high_contrast_enabled_(false),
+      autoclick_enabled_(false),
       autoclick_delay_ms_(ash::AutoclickController::kDefaultAutoclickDelayMs),
       spoken_feedback_notification_(ash::A11Y_NOTIFICATION_NONE),
       weak_ptr_factory_(this),
@@ -308,6 +309,10 @@ AccessibilityManager::AccessibilityManager()
 
 AccessibilityManager::~AccessibilityManager() {
   CHECK(this == g_accessibility_manager);
+  if (profile_) {
+    extensions::ExtensionSystem::Get(profile_)->
+        event_router()->UnregisterObserver(this);
+  }
 }
 
 void AccessibilityManager::EnableLargeCursor(bool enabled) {
