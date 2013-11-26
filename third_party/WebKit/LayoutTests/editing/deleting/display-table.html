@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+#tableDiv {
+    display: table;
+}
+</style>
+<script src="../../resources/js-test.js"></script>
+</head>
+<body>
+<div id="tableDiv" contenteditable="true"></div>
+<div id="log"></div>
+<script>
+function runTest(caretPosition, deleteCommand, expectedString)
+{
+    var testDiv = document.getElementById('tableDiv');
+    testDiv.innerText = 'ABCD';
+
+    var selection = window.getSelection();
+    selection.collapse(testDiv, caretPosition);
+
+    document.execCommand(deleteCommand);
+    shouldBeEqualToString("document.getElementById('tableDiv').textContent", expectedString);
+}
+
+description("This test verifies that we are able to successfully delete the first and the last characters of a contenteditable div with display: table.");
+
+runTest(0, "forwardDelete", "BCD");
+runTest(1, "Delete", "ABC");
+
+if (window.testRunner)
+    document.getElementById('tableDiv').outerHTML = '';
+
+finishJSTest();
+</script>
+</body>
+</html>

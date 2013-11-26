@@ -1004,7 +1004,7 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(Position& start, Positi
     if (outerNode->isRootEditableElement()) {
         lastNode = blockElement;
     } else {
-        lastNode = outerNode->cloneNode(isRenderedTable(outerNode.get()));
+        lastNode = outerNode->cloneNode(isTableElement(outerNode.get()));
         appendNode(lastNode, blockElement);
     }
 
@@ -1019,7 +1019,7 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(Position& start, Positi
 
         for (size_t i = ancestors.size(); i != 0; --i) {
             Node* item = ancestors[i - 1].get();
-            RefPtr<Node> child = item->cloneNode(isRenderedTable(item));
+            RefPtr<Node> child = item->cloneNode(isTableElement(item));
             appendNode(child, toElement(lastNode));
             lastNode = child.release();
         }

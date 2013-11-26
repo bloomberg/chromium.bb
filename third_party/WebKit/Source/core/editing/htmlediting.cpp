@@ -160,7 +160,7 @@ bool isEditablePosition(const Position& p, EditableType editableType, EUpdateSty
     else
         ASSERT(updateStyle == DoNotUpdateStyle);
 
-    if (node->renderer() && node->renderer()->isTable())
+    if (isTableElement(node))
         node = node->parentNode();
 
     return node->rendererIsEditable(editableType);
@@ -179,7 +179,7 @@ bool isRichlyEditablePosition(const Position& p, EditableType editableType)
     if (!node)
         return false;
 
-    if (node->renderer() && node->renderer()->isTable())
+    if (isTableElement(node))
         node = node->parentNode();
 
     return node->rendererIsRichlyEditable(editableType);
@@ -191,7 +191,7 @@ Element* editableRootForPosition(const Position& p, EditableType editableType)
     if (!node)
         return 0;
 
-    if (node->renderer() && node->renderer()->isTable())
+    if (isTableElement(node))
         node = node->parentNode();
 
     return node->rootEditableElement(editableType);
@@ -752,12 +752,20 @@ bool canMergeLists(Element* firstList, Element* secondList)
     // Make sure there is no visible content between this li and the previous list
 }
 
-bool isRenderedTable(const Node* n)
+bool isTableElement(const Node* node)
 {
-    if (!n || !n->isElementNode())
+    if (!node || !node->isElementNode())
         return false;
 
-    RenderObject* renderer = n->renderer();
+    return node->hasTagName(tableTag);
+}
+
+bool isRenderedTable(const Node* node)
+{
+    if (!node || !node->isElementNode())
+        return false;
+
+    RenderObject* renderer = node->renderer();
     return (renderer && renderer->isTable());
 }
 
