@@ -580,6 +580,10 @@
       ],
       'sources': [
         'public/renderer/webrtc_log_message_delegate.h',
+        'renderer/media/media_stream_audio_processor.cc',
+        'renderer/media/media_stream_audio_processor.h',
+        'renderer/media/media_stream_audio_processor_options.cc',
+        'renderer/media/media_stream_audio_processor_options.h',
         'renderer/media/media_stream_center.cc',
         'renderer/media/media_stream_dependency_factory.cc',
         'renderer/media/media_stream_dispatcher.cc',
