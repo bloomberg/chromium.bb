@@ -18,6 +18,7 @@
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -32,16 +33,14 @@ const int ScoredHistoryMatch::kMaxRawTermScore = 30;
 float* ScoredHistoryMatch::raw_term_score_to_topicality_score_ = NULL;
 float* ScoredHistoryMatch::days_ago_to_recency_score_ = NULL;
 bool ScoredHistoryMatch::initialized_ = false;
+int ScoredHistoryMatch::bookmark_value_ = 1;
 bool ScoredHistoryMatch::also_do_hup_like_scoring_ = false;
 int ScoredHistoryMatch::max_assigned_score_for_non_inlineable_matches_ = -1;
 
 ScoredHistoryMatch::ScoredHistoryMatch()
     : raw_score_(0),
       can_inline_(false) {
-  if (!initialized_) {
-    InitializeAlsoDoHUPLikeScoringFieldAndMaxScoreField();
-    initialized_ = true;
-  }
+  Init();
 }
 
 ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
@@ -55,10 +54,7 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
     : HistoryMatch(row, 0, false, false),
       raw_score_(0),
       can_inline_(false) {
-  if (!initialized_) {
-    InitializeAlsoDoHUPLikeScoringFieldAndMaxScoreField();
-    initialized_ = true;
-  }
+  Init();
 
   GURL gurl = row.url();
   if (!gurl.is_valid())
@@ -150,7 +146,8 @@ ScoredHistoryMatch::ScoredHistoryMatch(const URLRow& row,
 
   const float topicality_score =
       GetTopicalityScore(terms.size(), url, word_starts);
-  const float frecency_score = GetFrecency(now, visits);
+  const float frecency_score = GetFrecency(
+      now, (bookmark_service && bookmark_service->IsBookmarked(gurl)), visits);
   raw_score_ = GetFinalRelevancyScore(topicality_score, frecency_score);
   raw_score_ =
       (raw_score_ <= kint32max) ? static_cast<int>(raw_score_) : kint32max;
@@ -482,6 +479,7 @@ void ScoredHistoryMatch::FillInDaysAgoToRecencyScoreArray() {
 
 // static
 float ScoredHistoryMatch::GetFrecency(const base::Time& now,
+                                      const bool bookmarked,
                                       const VisitInfoVector& visits) {
   // Compute the weighted average |value_of_transition| over the last at
   // most kMaxVisitsToScore visits, where each visit is weighted using
@@ -494,8 +492,10 @@ float ScoredHistoryMatch::GetFrecency(const base::Time& now,
     return 0.0f;
   float summed_visit_points = 0;
   for (int i = 0; i < total_sampled_visits; ++i) {
-    const int value_of_transition =
+    int value_of_transition =
         (visits[i].second == content::PAGE_TRANSITION_TYPED) ? 20 : 1;
+    if (bookmarked)
+      value_of_transition = std::max(value_of_transition, bookmark_value_);
     const float bucket_weight =
         GetRecencyScore((now - visits[i].first).InDays());
     summed_visit_points += (value_of_transition * bucket_weight);
@@ -544,7 +544,9 @@ float ScoredHistoryMatch::GetFinalRelevancyScore(float topicality_score,
   return std::min(1399.0, 1300 + slope * (intermediate_score - 12.0));
 }
 
-void ScoredHistoryMatch::InitializeAlsoDoHUPLikeScoringFieldAndMaxScoreField() {
+void ScoredHistoryMatch::Init() {
+  if (initialized_)
+    return;
   also_do_hup_like_scoring_ = false;
   // When doing HUP-like scoring, don't allow a non-inlineable match
   // to beat the score of good inlineable matches.  This is a problem
@@ -559,6 +561,8 @@ void ScoredHistoryMatch::InitializeAlsoDoHUPLikeScoringFieldAndMaxScoreField() {
     max_assigned_score_for_non_inlineable_matches_ =
         HistoryURLProvider::kScoreForBestInlineableResult - 1;
   }
+  bookmark_value_ = OmniboxFieldTrial::HQPBookmarkValue();
+  initialized_ = true;
 }
 
 }  // namespace history

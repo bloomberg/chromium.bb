@@ -305,6 +305,20 @@ bool OmniboxFieldTrial::ReorderForLegalDefaultMatch(
       kReorderForLegalDefaultMatchRuleEnabled;
 }
 
+int OmniboxFieldTrial::HQPBookmarkValue() {
+  std::string bookmark_value_str = chrome_variations::
+      GetVariationParamValue(kBundledExperimentFieldTrialName,
+                             kHQPBookmarkValueRule);
+  if (bookmark_value_str.empty())
+    return 1;
+  // This is a best-effort conversion; we trust the hand-crafted parameters
+  // downloaded from the server to be perfect.  There's no need for handle
+  // errors smartly.
+  int bookmark_value;
+  base::StringToInt(bookmark_value_str, &bookmark_value);
+  return bookmark_value;
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kShortcutsScoringMaxRelevanceRule[] =
@@ -314,6 +328,8 @@ const char OmniboxFieldTrial::kDemoteByTypeRule[] = "DemoteByType";
 const char OmniboxFieldTrial::kUndemotableTopTypeRule[] = "UndemotableTopTypes";
 const char OmniboxFieldTrial::kReorderForLegalDefaultMatchRule[] =
     "ReorderForLegalDefaultMatch";
+const char OmniboxFieldTrial::kHQPBookmarkValueRule[] =
+    "HQPBookmarkValue";
 const char OmniboxFieldTrial::kReorderForLegalDefaultMatchRuleEnabled[] =
     "ReorderForLegalDefaultMatch";
 

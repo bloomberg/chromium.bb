@@ -175,6 +175,16 @@ class OmniboxFieldTrial {
       AutocompleteInput::PageClassification current_page_classification);
 
   // ---------------------------------------------------------
+  // For the HQPBookmarkValue experiment that's part of the
+  // bundled omnibox field trial.
+
+  // Returns the value an untyped visit to a bookmark should receive.
+  // Compare this value with the default of 1 for non-bookmarked untyped
+  // visits to pages and the default of 20 for typed visits.  Returns
+  // 1 if the bookmark value experiment isn't active.
+  static int HQPBookmarkValue();
+
+  // ---------------------------------------------------------
   // Exposed publicly for the sake of unittests.
   static const char kBundledExperimentFieldTrialName[];
   // Rule names used by the bundled experiment.
@@ -183,6 +193,7 @@ class OmniboxFieldTrial {
   static const char kDemoteByTypeRule[];
   static const char kUndemotableTopTypeRule[];
   static const char kReorderForLegalDefaultMatchRule[];
+  static const char kHQPBookmarkValueRule[];
   // Rule values.
   static const char kReorderForLegalDefaultMatchRuleEnabled[];
 

@@ -13,7 +13,7 @@
 namespace history {
 
 // Returns a VisitInfoVector that includes |num_visits| spread over the
-// last |frecency|*|num_visits| days (relative to |now|).  A frequency of
+// last |frequency|*|num_visits| days (relative to |now|).  A frequency of
 // one means one visit each day, two means every other day, etc.
 VisitInfoVector CreateVisitInfoVector(int num_visits,
                                       int frequency,
@@ -53,6 +53,9 @@ class ScoredHistoryMatchTest : public testing::Test {
   float GetTopicalityScoreOfTermAgainstURLAndTitle(const string16& term,
                                                    const string16& url,
                                                    const string16& title);
+
+  // Set ScoredHistoryMatch::bookmark_value_ to the provided |bookmark_value|.
+  void set_bookmark_value(int bookmark_value);
 };
 
 URLRow ScoredHistoryMatchTest::MakeURLRow(const char* url,
@@ -104,6 +107,13 @@ float ScoredHistoryMatchTest::GetTopicalityScoreOfTermAgainstURLAndTitle(
   String16SetFromString16(url, &word_starts.url_word_starts_);
   String16SetFromString16(title, &word_starts.title_word_starts_);
   return scored_match.GetTopicalityScore(1, url, word_starts);
+}
+
+void ScoredHistoryMatchTest::set_bookmark_value(int bookmark_value) {
+  // Make sure ScoredHistoryMatch::Init() gets called if it hasn't already.
+  ScoredHistoryMatch scored_match;
+
+  scored_match.bookmark_value_ = bookmark_value;
 }
 
 TEST_F(ScoredHistoryMatchTest, Scoring) {
@@ -173,6 +183,56 @@ TEST_F(ScoredHistoryMatchTest, Scoring) {
                               ASCIIToUTF16("cd"), Make1Term("cd"),
                               word_starts_a, now, NULL);
   EXPECT_EQ(scored_f.raw_score(), 0);
+}
+
+class BookmarkServiceMock : public BookmarkService {
+ public:
+  explicit BookmarkServiceMock(const GURL& url);
+  virtual ~BookmarkServiceMock() {}
+
+  // Returns true if the given |url| is the same as |url_|.
+  virtual bool IsBookmarked(const GURL& url) OVERRIDE;
+
+  // Required but unused.
+  virtual void GetBookmarks(std::vector<URLAndTitle>* bookmarks) OVERRIDE {}
+  virtual void BlockTillLoaded() OVERRIDE {}
+
+ private:
+  const GURL url_;
+
+  DISALLOW_COPY_AND_ASSIGN(BookmarkServiceMock);
+};
+
+BookmarkServiceMock::BookmarkServiceMock(const GURL& url)
+    : BookmarkService(),
+      url_(url) {
+}
+
+bool BookmarkServiceMock::IsBookmarked(const GURL& url) {
+  return url == url_;
+}
+
+TEST_F(ScoredHistoryMatchTest, ScoringBookmarks) {
+  // We use NowFromSystemTime() because MakeURLRow uses the same function
+  // to calculate last visit time when building a row.
+  base::Time now = base::Time::NowFromSystemTime();
+
+  std::string url_string("http://fedcba");
+  const GURL url(url_string);
+  URLRow row(MakeURLRow(url_string.c_str(), "abcd bcd", 8, 3, 1));
+  RowWordStarts word_starts;
+  PopulateWordStarts(row, &word_starts);
+  VisitInfoVector visits = CreateVisitInfoVector(8, 3, now);
+  ScoredHistoryMatch scored(row, visits, std::string(),
+                            ASCIIToUTF16("abc"), Make1Term("abc"),
+                            word_starts, now, NULL);
+  // Now bookmark that URL and make sure its score increases.
+  set_bookmark_value(5);
+  BookmarkServiceMock bookmark_model_mock(url);
+  ScoredHistoryMatch scored_with_bookmark(
+      row, visits, std::string(), ASCIIToUTF16("abc"), Make1Term("abc"),
+      word_starts, now, &bookmark_model_mock);
+  EXPECT_GT(scored_with_bookmark.raw_score(), scored.raw_score());
 }
 
 TEST_F(ScoredHistoryMatchTest, Inlining) {

@@ -13,6 +13,7 @@
 #include "chrome/browser/autocomplete/history_provider_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_url_index_types.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class BookmarkService;
 
@@ -91,7 +92,7 @@ class ScoredHistoryMatch : public history::HistoryMatch {
       const WordStarts& word_starts,
       const size_t start_pos);
 
-  // Precalculates raw_term_score_to_topicality_score, used in
+  // Precalculates raw_term_score_to_topicality_score_, used in
   // GetTopicalityScore().
   static void FillInTermScoreToTopicalityScoreArray();
 
@@ -104,10 +105,12 @@ class ScoredHistoryMatch : public history::HistoryMatch {
   static void FillInDaysAgoToRecencyScoreArray();
 
   // Examines the first kMaxVisitsToScore and return a score (higher is
-  // better) based the rate of visits and how often those visits are
-  // typed navigations (i.e., explicitly invoked by the user).
-  // |now| is passed in to avoid unnecessarily recomputing it frequently.
+  // better) based the rate of visits, whether the page is bookmarked, and
+  // how often those visits are typed navigations (i.e., explicitly
+  // invoked by the user).  |now| is passed in to avoid unnecessarily
+  // recomputing it frequently.
   static float GetFrecency(const base::Time& now,
+                           const bool bookmarked,
                            const VisitInfoVector& visits);
 
   // Combines the two component scores into a final score that's
@@ -116,10 +119,10 @@ class ScoredHistoryMatch : public history::HistoryMatch {
       float topicality_score,
       float frecency_score);
 
-  // Sets also_do_hup_like_scoring and
-  // max_assigned_score_for_non_inlineable_matches based on the field
-  // trial state.
-  static void InitializeAlsoDoHUPLikeScoringFieldAndMaxScoreField();
+  // Sets |also_do_hup_like_scoring_|,
+  // |max_assigned_score_for_non_inlineable_matches_| and |bookmark_value_|
+  // based on the field trial state.
+  static void Init();
 
   // An interim score taking into consideration location and completeness
   // of the match.
@@ -140,7 +143,7 @@ class ScoredHistoryMatch : public history::HistoryMatch {
   bool can_inline_;
 
   // Pre-computed information to speed up calculating recency scores.
-  // |days_ago_to_recency_score| is a simple array mapping how long
+  // |days_ago_to_recency_score_| is a simple array mapping how long
   // ago a page was visited (in days) to the recency score we should
   // assign it.  This allows easy lookups of scores without requiring
   // math.  This is initialized upon first use of GetRecencyScore(),
@@ -148,7 +151,7 @@ class ScoredHistoryMatch : public history::HistoryMatch {
   static float* days_ago_to_recency_score_;
 
   // Pre-computed information to speed up calculating topicality
-  // scores.  |raw_term_score_to_topicality_score| is a simple array
+  // scores.  |raw_term_score_to_topicality_score_| is a simple array
   // mapping how raw terms scores (a weighted sum of the number of
   // hits for the term, weighted by how important the hit is:
   // hostname, path, etc.) to the topicality score we should assign
@@ -159,6 +162,10 @@ class ScoredHistoryMatch : public history::HistoryMatch {
 
   // Used so we initialize static variables only once (on first use).
   static bool initialized_;
+
+  // Untyped visits to bookmarked pages score this, compared to 1 for
+  // untyped visits to non-bookmarked pages and 20 for typed visits.
+  static int bookmark_value_;
 
   // If true, assign raw scores to be max(whatever it normally would be,
   // a score that's similar to the score HistoryURL provider would assign).
