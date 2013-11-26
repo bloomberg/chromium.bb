@@ -4,8 +4,10 @@
 
 #include "mojo/public/bindings/js/support.h"
 
+#include "base/bind.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
+#include "gin/function_template.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
 #include "gin/wrappable.h"
@@ -41,14 +43,7 @@ void AsyncWait(const v8::FunctionCallbackInfo<v8::Value>& info) {
   args.Return(waiting_callback.get());
 }
 
-void CancelWait(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  gin::Arguments args(info);
-
-  WaitingCallback* waiting_callback = NULL;
-
-  if (!args.GetNext(&waiting_callback))
-    return args.ThrowError();
-
+void CancelWait(WaitingCallback* waiting_callback) {
   if (!waiting_callback->wait_id())
     return;
   BindingsSupport::Get()->CancelWait(waiting_callback->wait_id());
@@ -74,7 +69,7 @@ v8::Local<v8::ObjectTemplate> Support::GetTemplate(v8::Isolate* isolate) {
     templ->Set(gin::StringToSymbol(isolate, "asyncWait"),
                v8::FunctionTemplate::New(AsyncWait));
     templ->Set(gin::StringToSymbol(isolate, "cancelWait"),
-               v8::FunctionTemplate::New(CancelWait));
+               gin::CreateFunctionTemplate(isolate, base::Bind(CancelWait)));
 
     data->SetObjectTemplate(&g_wrapper_info, templ);
   }

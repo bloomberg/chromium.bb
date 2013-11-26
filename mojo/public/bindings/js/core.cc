@@ -4,11 +4,13 @@
 
 #include "mojo/public/bindings/js/core.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "gin/arguments.h"
 #include "gin/array_buffer.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
+#include "gin/function_template.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
 #include "mojo/public/bindings/js/handle.h"
@@ -17,48 +19,6 @@ namespace mojo {
 namespace js {
 
 namespace {
-
-void Close(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  gin::Arguments args(info);
-
-  mojo::Handle handle;
-  if (!args.GetNext(&handle))
-    return args.ThrowError();
-
-  args.Return(mojo::CloseRaw(handle));
-}
-
-void Wait(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  gin::Arguments args(info);
-
-  mojo::Handle handle;
-  MojoWaitFlags flags = MOJO_WAIT_FLAG_NONE;
-  MojoDeadline deadline = MOJO_DEADLINE_INDEFINITE;
-
-  if (!args.GetNext(&handle) ||
-      !args.GetNext(&flags) ||
-      !args.GetNext(&deadline)) {
-    return args.ThrowError();
-  }
-
-  args.Return(mojo::Wait(handle, flags, deadline));
-}
-
-void WaitMany(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  gin::Arguments args(info);
-
-  std::vector<mojo::Handle> handles;
-  std::vector<MojoWaitFlags> flags;
-  MojoDeadline deadline = MOJO_DEADLINE_INDEFINITE;
-
-  if (!args.GetNext(&handles) ||
-      !args.GetNext(&flags) ||
-      !args.GetNext(&deadline)) {
-    return args.ThrowError();
-  }
-
-  args.Return(mojo::WaitMany(handles, flags, deadline));
-}
 
 void CreateMessagePipe(const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Arguments args(info);
@@ -158,11 +118,14 @@ v8::Local<v8::ObjectTemplate> Core::GetTemplate(v8::Isolate* isolate) {
     templ = v8::ObjectTemplate::New();
 
     templ->Set(gin::StringToSymbol(isolate, "close"),
-               v8::FunctionTemplate::New(Close));
+               gin::CreateFunctionTemplate(isolate,
+                                           base::Bind(mojo::CloseRaw)));
     templ->Set(gin::StringToSymbol(isolate, "wait"),
-               v8::FunctionTemplate::New(Wait));
+               gin::CreateFunctionTemplate(isolate, base::Bind(mojo::Wait)));
     templ->Set(gin::StringToSymbol(isolate, "waitMany"),
-               v8::FunctionTemplate::New(WaitMany));
+               gin::CreateFunctionTemplate(isolate,
+                   base::Bind(mojo::WaitMany<std::vector<mojo::Handle>,
+                                             std::vector<MojoWaitFlags> >)));
     templ->Set(gin::StringToSymbol(isolate, "createMessagePipe"),
                v8::FunctionTemplate::New(CreateMessagePipe));
     templ->Set(gin::StringToSymbol(isolate, "writeMessage"),

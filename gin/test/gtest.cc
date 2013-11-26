@@ -57,11 +57,11 @@ v8::Local<v8::ObjectTemplate> GTest::GetTemplate(v8::Isolate* isolate) {
     templ->Set(StringToSymbol(isolate, "fail"),
                v8::FunctionTemplate::New(Fail));
     templ->Set(StringToSymbol(isolate, "expectTrue"),
-               CreateFunctionTempate(isolate, base::Bind(ExpectTrue)));
+               CreateFunctionTemplate(isolate, base::Bind(ExpectTrue)));
     templ->Set(StringToSymbol(isolate, "expectFalse"),
-               CreateFunctionTempate(isolate, base::Bind(ExpectFalse)));
+               CreateFunctionTemplate(isolate, base::Bind(ExpectFalse)));
     templ->Set(StringToSymbol(isolate, "expectEqual"),
-               CreateFunctionTempate(isolate, base::Bind(ExpectEqual)));
+               CreateFunctionTemplate(isolate, base::Bind(ExpectEqual)));
     data->SetObjectTemplate(&g_wrapper_info, templ);
   }
   return templ;

@@ -8,19 +8,22 @@
 
 namespace gin {
 
-WrapperInfo CallbackHolderBase::kWrapperInfo = { kEmbedderNativeGin };
+WrapperInfo internal::CallbackHolderBase::kWrapperInfo = { kEmbedderNativeGin };
 
-// static
-void CallbackHolderBase::EnsureRegistered(PerIsolateData* isolate_data) {
-  if (!isolate_data->GetObjectTemplate(&kWrapperInfo).IsEmpty())
-    return;
-  v8::Handle<v8::ObjectTemplate> templ(v8::ObjectTemplate::New());
-  templ->SetInternalFieldCount(kNumberOfInternalFields);
-  isolate_data->SetObjectTemplate(&kWrapperInfo, templ);
+WrapperInfo* internal::CallbackHolderBase::GetWrapperInfo() {
+  return &kWrapperInfo;
 }
 
-WrapperInfo* CallbackHolderBase::GetWrapperInfo() {
-  return &kWrapperInfo;
+void InitFunctionTemplates(PerIsolateData* isolate_data) {
+  if (!isolate_data->GetObjectTemplate(
+          &internal::CallbackHolderBase::kWrapperInfo).IsEmpty()) {
+    return;
+  }
+
+  v8::Handle<v8::ObjectTemplate> templ(v8::ObjectTemplate::New());
+  templ->SetInternalFieldCount(kNumberOfInternalFields);
+  isolate_data->SetObjectTemplate(&internal::CallbackHolderBase::kWrapperInfo,
+                                  templ);
 }
 
 }  // namespace gin

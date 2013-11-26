@@ -4,7 +4,9 @@
 
 #include "mojo/apps/js/bootstrap.h"
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "gin/function_template.h"
 #include "gin/per_isolate_data.h"
 #include "mojo/public/bindings/js/handle.h"
 
@@ -13,7 +15,7 @@ namespace apps {
 
 namespace {
 
-void Quit(const v8::FunctionCallbackInfo<v8::Value>& info) {
+void Quit() {
   base::MessageLoop::current()->QuitNow();
 }
 
@@ -33,7 +35,7 @@ v8::Local<v8::ObjectTemplate> Bootstrap::GetTemplate(v8::Isolate* isolate) {
   if (templ.IsEmpty()) {
     templ = v8::ObjectTemplate::New();
     templ->Set(gin::StringToSymbol(isolate, "quit"),
-               v8::FunctionTemplate::New(Quit));
+               gin::CreateFunctionTemplate(isolate, base::Bind(Quit)));
 
     // Don't forget to call SetInitialHandle before getting the template.
     DCHECK(g_initial_handle != MOJO_HANDLE_INVALID);
