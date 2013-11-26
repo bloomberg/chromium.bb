@@ -1,0 +1,121 @@
+<html>
+<head>
+<style>
+#inspected {
+    position: absolute;
+    top: 20px;
+    left: 0px;
+    width: 100px;
+    height: 100px;
+    color: black;
+    content: "Default";
+}
+
+#inspected:hover {
+    color: green;
+    content: "Hovered";
+}
+
+#inspected:focus {
+    color: blue;
+    content: "Focused";
+}
+
+#inspected:active {
+    color: red;
+    content: "Active";
+}
+</style>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function moveIntoBox()
+{
+    eventSender.mouseMoveTo(50, 50);
+}
+
+function moveOutOfBox()
+{
+    eventSender.mouseMoveTo(0, 0);
+}
+
+function pressMouseButton()
+{
+    eventSender.mouseDown();
+}
+
+function releaseMouseButton()
+{
+    eventSender.mouseUp();
+}
+
+function test()
+{
+    if (!window.eventSender) {
+        InspectorTest.addResult("This test requires eventSender");
+        InspectorTest.completeTest();
+        return;
+    }
+
+    WebInspector.showPanel("elements");
+    InspectorTest.runTestSuite([
+        function dumpDefaultStyles(next)
+        {
+            InspectorTest.selectNodeAndWaitForStyles("inspected", boundDumpAndContinue(next));
+        },
+
+        function dumpHoveredStyles(next)
+        {
+            callAndDumpStyles("moveIntoBox", next);
+        },
+
+        function dumpActiveStyles(next)
+        {
+            callAndDumpStyles("pressMouseButton", next);
+        },
+
+        function dumpFocusedStyles(next)
+        {
+            callAndDumpStyles("releaseMouseButton", next);
+        },
+
+        function dumpUnfocusedStyles(next)
+        {
+            InspectorTest.waitForStyles("inspected", callback);
+            InspectorTest.evaluateInPage("moveOutOfBox()");
+
+            function callback()
+            {
+                callAndDumpStyles("pressMouseButton", next);
+            }
+        }
+    ]);
+
+    function callAndDumpStyles(functionName, next)
+    {
+        InspectorTest.waitForStyles("inspected", boundDumpAndContinue(next));
+        InspectorTest.evaluateInPage(functionName + "()");
+    }
+
+    function boundDumpAndContinue(next)
+    {
+        return function() {
+            InspectorTest.dumpSelectedElementStyles(true, false, true);
+            next();
+        }
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests pseudoStateChanged event dispatch.
+</p>
+
+<div id="inspected" tabIndex="0">Text</div>
+
+</body>
+</html>

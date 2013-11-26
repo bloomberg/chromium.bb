@@ -813,6 +813,7 @@ void ContainerNode::focusStateChanged()
         setNeedsStyleRecalc();
     if (renderer() && renderer()->style()->hasAppearance())
         RenderTheme::theme().stateChanged(renderer(), FocusState);
+    InspectorInstrumentation::pseudoStateChanged(this);
 }
 
 void ContainerNode::setFocus(bool received)
@@ -841,6 +842,7 @@ void ContainerNode::setActive(bool down)
             setNeedsStyleRecalc();
         if (renderStyle()->hasAppearance())
             RenderTheme::theme().stateChanged(renderer(), PressedState);
+        InspectorInstrumentation::pseudoStateChanged(this);
     }
 }
 
@@ -855,6 +857,7 @@ void ContainerNode::setHovered(bool over)
     if (!renderer()) {
         if (!over)
             setNeedsStyleRecalc();
+        InspectorInstrumentation::pseudoStateChanged(this);
         return;
     }
 
@@ -863,6 +866,7 @@ void ContainerNode::setHovered(bool over)
             setNeedsStyleRecalc();
         if (renderer() && renderer()->style()->hasAppearance())
             RenderTheme::theme().stateChanged(renderer(), HoverState);
+        InspectorInstrumentation::pseudoStateChanged(this);
     }
 }
 
