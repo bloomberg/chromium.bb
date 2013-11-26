@@ -32,10 +32,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/text/CString.h"
 
-#ifndef NDEBUG
-#include <stdio.h>
-#endif
-
 namespace WebCore {
 
 static long long generateSequenceNumber()
