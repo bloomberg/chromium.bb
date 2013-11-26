@@ -12,6 +12,38 @@
     },
     "types": [
       {
+        "id": "ClearDataOptions",
+        "type": "object",
+        "description": "Options that determine what data should be cleared by <code>clearData</code>.",
+        "properties": {
+          "since": {
+            "type": "number",
+            "optional": true,
+            "description": "Clear data accumulated on or after this date, represented in milliseconds since the epoch (accessible via the getTime method of the JavaScript <code>Date</code> object). If absent, defaults to <code>0</code> (which would remove all browsing data)."
+          }
+        }
+      },
+      {
+        "id": "ClearDataTypeSet",
+        "type": "object",
+        "description": "A set of data types. Missing properties are interpreted as <code>false</code>.",
+        "properties": {
+          "appcache": { "type": "boolean", "optional": true, "description": "Websites' appcaches." },
+          "cache": { "type": "boolean", "optional": true, "description": "The partition's cache. Note: This clears the entire cache regardless of the age passed to <code>clearData</code>." },
+          "cookies": { "type": "boolean", "optional": true, "description": "The partition's cookies." },
+          "downloads": { "type": "boolean", "optional": true, "description": "The partition's download list." },
+          "fileSystems": { "type": "boolean", "optional": true, "description": "Websites' filesystems." },
+          "formData": { "type": "boolean", "optional": true, "description": "The partition's stored form data." },
+          "history": { "type": "boolean", "optional": true, "description": "The partition's history." },
+          "indexedDB": { "type": "boolean", "optional": true, "description": "Websites' IndexedDB data." },
+          "localStorage": { "type": "boolean", "optional": true, "description": "Websites' local storage data." },
+          "serverBoundCertificates": { "type": "boolean", "optional": true, "description": "Server-bound certificates." },
+          "pluginData": { "type": "boolean", "optional": true, "description": "Plugins' data." },
+          "passwords": { "type": "boolean", "optional": true, "description": "Stored passwords." },
+          "webSQL": { "type": "boolean", "optional": true, "description": "Websites' WebSQL data." }
+        }
+      },
+      {
         "id": "InjectDetails",
         "type": "object",
         "description": "Details of the script or CSS to inject. Either the code or the file property must be set, but both may not be set at the same time.",
@@ -52,6 +84,29 @@
         ]
       },
       {
+        "id": "DialogController",
+        "type": "object",
+        "description": "Interface attached to <code>dialog</code> DOM events.",
+        "functions": [
+          {
+            "name": "ok",
+            "description": "Accept the dialog. Equivalent to clicking OK in an <code>alert</code>, <code>confirm</code>, or <code>prompt</code> dialog.",
+            "parameters": [
+              {
+                "type": "string",
+                "optional": true,
+                "name": "response",
+                "description": "The response string to provide to the guest when accepting a <code>prompt</code> dialog."
+              }
+            ]
+          },
+          {
+            "name": "cancel",
+            "description": "Reject the dialog. Equivalent to clicking Cancel in a <code>confirm</code> or <code>prompt</code> dialog."
+          }
+        ]
+      },
+      {
         "id": "NewWindow",
         "type": "object",
         "description": "Interface attached to <code>newwindow</code> DOM events.",
@@ -86,7 +141,7 @@
         },
         "functions": [
           { "name": "allow", "description": "Allow the permission request." },
-          { "name": "deny", "description": "Deny the permission request." }
+          { "name": "deny", "description": "Deny the permission request. This is the default behavior if <code>allow</code> is not called." }
         ]
       },
       {
@@ -101,7 +156,7 @@
         },
         "functions": [
           { "name": "allow", "description": "Allow the permission request." },
-          { "name": "deny", "description": "Deny the permission request." }
+          { "name": "deny", "description": "Deny the permission request. This is the default behavior if <code>allow</code> is not called." }
         ]
       },
       {
@@ -124,8 +179,52 @@
         },
         "functions": [
           { "name": "allow", "description": "Allow the permission request." },
+          { "name": "deny", "description": "Deny the permission request. This is the default behavior if <code>allow</code> is not called." }
+        ]
+      },
+      {
+        "id": "DownloadPermissionRequest",
+        "type": "object",
+        "description": "The type of <code>request</code> object which accompanies a <code>download</code> <a href=\"#event-permissionrequest\">permissionrequest</a></code> DOM event.",
+        "properties": {
+          "requestMethod": {
+            "description": "The HTTP request type (e.g. <code>GET</code>) associated with the download request.",
+            "type": "string"
+          },
+          "url": {
+            "description": "The requested download URL.",
+            "type": "string"
+          }
+        },
+        "functions": [
+          { "name": "allow", "description": "Allow the permission request." },
+          { "name": "deny", "description": "Deny the permission request. This is the default behavior if <code>allow</code> is not called." }
+        ]
+      },
+      {
+        "id": "LoadPluginPermissionRequest",
+        "type": "object",
+        "description": "The type of <code>request</code> object which accompanies a <code>loadplugin</code> <a href=\"#event-permissionrequest\">permissionrequest</a> DOM event.<p>",
+        "properties": {
+          "identifier": {
+            "description": "The plugin's identifier string.",
+            "type": "string"
+          },
+          "name": {
+            "description": "The plugin's display name.",
+            "type": "string"
+          }
+        },
+        "functions": [
+          { "name": "allow", "description": "Allow the permission request. This is the default behavior if <code>deny</code> is not called.." },
           { "name": "deny", "description": "Deny the permission request." }
         ]
+      },
+      {
+        "id": "WebRequestEventInteface",
+        "type": "object",
+        "description": "Interface which provides access to webRequest events on the guest page. See the <a href=\"http://developer.chrome.com/extensions/webRequest.html\">chrome.webRequest</a> extensions API for details on webRequest life cycle and related concepts.<p>To illustrate how usage differs from the extensions webRequest API, consider the following example code which blocks any guest requests for URLs which match <code>*://www.evil.com/*</code>:</p><pre>webview.request.onBeforeRequest.addListener(\r  function(details) { return {cancel: true}; },\r  {urls: [\"*://www.evil.com/*\"]},\r  [\"blocking\"]);</pre><p>Additionally, this interface supports declarative webRequest rules through <code>onRequest</code> and <code>onMessage</code> events. See <a href=\"http://developer.chrome.com/extensions/declarativeWebRequest.html\">declarativeWebRequest</a> for API details.</p>Note that conditions and actions for declarative webview webRequests should be instantiated from their <code>chrome.webViewRequest.*</code> counterparts. The following example code declaratively blocks all requests to <code>\"example.com\"</code> on the webview <code>myWebview</code>:</p><pre>var rule = {\r  conditions: [\r    new chrome.webViewRequest.RequestMatcher({ url: { hostSuffix: 'example.com' } })\r  ],\r  actions: [ new chrome.webViewRequest.CancelRequest() ]\r};\rmyWebview.request.onRequest.addRules([rule]);</pre>",
+        "properties": {}
       }
     ],
     "functions": [
@@ -145,6 +244,30 @@
         "type": "function",
         "returns": { "type": "boolean" },
         "description": "Indicates whether or not it is possible to navigate forward through history."
+      },
+      {
+        "name": "clearData",
+        "type": "function",
+        "description": "<p>Clears browsing data for the <code>webview</code> partition.</p>",
+        "parameters": [
+          {
+            "name": "options",
+            "$ref": "ClearDataOptions",
+            "description": "Options determining exactly what data to clear."
+          },
+          {
+            "name": "types",
+            "$ref": "ClearDataTypeSet",
+            "description": "The types of data to be cleared."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called after the data has been successfully cleared.",
+            "parameters": []
+          }
+        ]
       },
       {
         "name": "executeScript",
@@ -187,6 +310,13 @@
         "parameters": []
       },
       {
+        "name": "getUserAgent",
+        "type": "function",
+        "returns": { "type": "string" },
+        "description": "Returns the user agent string used by the webview for guest page requests.",
+        "parameters": []
+      },
+      {
         "name": "go",
         "type": "function",
         "description": "Navigates to a history entry using a history index relative to the current navigation. If the requested navigation is impossible, this method has no effect.",
@@ -218,10 +348,27 @@
         ]
       },
       {
+        "name": "isUserAgentOverridden",
+        "type": "function",
+        "description": "Indicates whether or not the webview's user agent string has been overridden by $ref:setUserAgentOverride"
+      },
+      {
         "name": "reload",
         "type": "function",
         "description": "Reloads the current top-level page.",
         "parameters": []
+      },
+      {
+        "name": "setUserAgentOverride",
+        "type": "function",
+        "description": "Override the user agent string used by the webview for guest page requests.",
+        "parameters": [
+          {
+            "name": "userAgent",
+            "type": "string",
+            "description": "The user agent string to use."
+          }
+        ]
       },
       {
         "name": "stop",
@@ -275,6 +422,29 @@
         "options": { "supportsDom": true },
         "description": "Fired when the guest window fires a <code>load</code> event.<p>The following example code modifies the default font size of the guest's <code>body</code> element after the page loads:</p><pre>webview.addEventListener('contentload', function() {\r  webview.executeScript({ code: 'document.body.style.fontSize = \"42px\"' });\r});</pre>",
         "parameters": []
+      },
+      {
+        "name": "dialog",
+        "options": { "supportsDom": true },
+        "description": "Fired when the guest window attempts to open a modal dialog via <code>window.alert</code>, <code>window.confirm</code>, or <code>window.prompt</code>.<p>Handling this event will block the guest process until each event listener returns or the <code>dialog</code> object becomes unreachable (if <code>preventDefault()</code> was called.)</p><p>The default behavior is to cancel the dialog.</p>",
+        "parameters": [
+          {
+            "name": "messageType",
+            "type": "string",
+            "enum": ["alert", "confirm", "prompt"],
+            "description": "The type of modal dialog requested by the guest."
+          },
+          {
+            "name": "messageText",
+            "type": "string",
+            "description": "The text the guest attempted to display in the modal dialog."
+          },
+          {
+            "name": "dialog",
+            "$ref": "DialogController",
+            "description": "An interface that can be used to respond to the guest's modal request."
+          }
+        ]
       },
       {
         "name": "exit",
@@ -426,18 +596,18 @@
             "name": "permission",
             "description": "The type of permission being requested.",
             "type": "string",
-            "enum": ["media", "geolocation", "pointerLock"]
+            "enum": ["media", "geolocation", "pointerLock", "download", "loadplugin"]
           },
           {
             "name": "requestId",
-            "description": "An number which uniquely identifies this request from the guest.",
+            "description": "A number which uniquely identifies this request from the guest.",
             "type": "integer"
           },
           {
             "name": "request",
             "type": "object",
             "properties": {},
-            "description": "An object which holds details of the requested permission. Depending on the type of permission requested, this may be a $ref:MediaPermissionRequest, $ref:GeolocationPermissionRequest, or a $ref:PointerLockPermissionRequest."
+            "description": "An object which holds details of the requested permission. Depending on the type of permission requested, this may be a $ref:MediaPermissionRequest, $ref:GeolocationPermissionRequest, $ref:PointerLockPermissionRequest, $ref:DownloadPermissionRequest, or $ref:LoadPluginPermissionRequest."
           }
         ]
       },
@@ -497,6 +667,10 @@
       "contentWindow": {
         "$ref": "ContentWindow",
         "description": "Object reference which can be used to post messages into the guest page."
+      },
+      "request": {
+        "$ref": "WebRequestEventInteface",
+        "description": "Interface which provides access to webRequest events on the guest page."
       }
     }
   }
