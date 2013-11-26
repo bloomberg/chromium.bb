@@ -12,6 +12,7 @@
 
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
+#include "chrome/browser/storage_monitor/media_storage_util.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 
 namespace MediaGalleries = extensions::api::media_galleries;
@@ -53,6 +54,27 @@ class MediaGalleriesGetMediaFileSystemsFunction
   // A helper method that calls
   // MediaFileSystemRegistry::GetMediaFileSystemsForExtension().
   void GetMediaFileSystemsForExtension(const MediaFileSystemsCallback& cb);
+};
+
+class MediaGalleriesGetAllMediaFileSystemMetadataFunction
+    : public ChromeAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("mediaGalleries.getAllMediaFileSystemMetadata",
+                             MEDIAGALLERIES_GETALLMEDIAFILESYSTEMMETADATA)
+
+ protected:
+  virtual ~MediaGalleriesGetAllMediaFileSystemMetadataFunction();
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  // Bottom half for RunImpl, invoked after the preferences is initialized.
+  // Gets the list of permitted galleries and checks if they are available.
+  void OnPreferencesInit();
+
+  // Callback to run upon getting the list of available devices.
+  // Sends the list of media filesystem metadata back to the extension.
+  void OnGetGalleries(const MediaGalleryPrefIdSet& permitted_gallery_ids,
+                      const MediaStorageUtil::DeviceIdSet* available_devices);
 };
 
 }  // namespace extensions

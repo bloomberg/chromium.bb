@@ -163,6 +163,19 @@ function runReadGalleriesTest(expectedGalleryCount, expectSucceed,
   }
 }
 
+function checkMetadata(metadata) {
+  chrome.test.assertTrue(metadata != null);
+  chrome.test.assertTrue(metadata.name.length > 0);
+  chrome.test.assertTrue(metadata.galleryId.length > 0);
+  chrome.test.assertTrue("isAvailable" in metadata);
+  chrome.test.assertTrue("isMediaDevice" in metadata);
+  chrome.test.assertTrue("isRemovable" in metadata);
+  if (metadata.isRemovable && metadata.isAvailable) {
+    chrome.test.assertTrue("deviceId" in metadata);
+    chrome.test.assertTrue(metadata.deviceId.length > 0);
+  }
+}
+
 // Create a dummy window to prevent the ProcessManager from suspending the
 // chrome-test app. Needed because the writer.onerror and writer.onwriteend
 // events do not qualify as pending callbacks, so the app looks dormant.

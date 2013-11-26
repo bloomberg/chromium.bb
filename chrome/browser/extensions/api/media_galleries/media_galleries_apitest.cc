@@ -276,11 +276,6 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
   DetachFakeDevice();
 }
 
-IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
-                       GetFilesystemMetadata) {
-  ASSERT_TRUE(RunMediaGalleriesTest("metadata")) << message_;
-}
-
 #if defined(OS_WIN)|| defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        PicasaDefaultLocation) {

@@ -16,6 +16,7 @@
 #include "base/platform_file.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/media_galleries/media_galleries_histograms.h"
 #include "chrome/browser/media_galleries/media_galleries_preferences.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/storage_monitor/storage_info.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/extensions/api/media_galleries.h"
 #include "chrome/common/extensions/permissions/media_galleries_permission.h"
@@ -36,19 +38,13 @@
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 
-#if defined(OS_WIN)
-#include "base/strings/sys_string_conversions.h"
-#endif
-
-using apps::ShellWindow;
-using content::ChildProcessSecurityPolicy;
 using content::WebContents;
 using web_modal::WebContentsModalDialogManager;
 
-namespace MediaGalleries = extensions::api::media_galleries;
-namespace GetMediaFileSystems = MediaGalleries::GetMediaFileSystems;
-
 namespace extensions {
+
+namespace MediaGalleries = api::media_galleries;
+namespace GetMediaFileSystems = MediaGalleries::GetMediaFileSystems;
 
 namespace {
 
@@ -57,6 +53,7 @@ const char kDisallowedByPolicy[] =
 
 const char kDeviceIdKey[] = "deviceId";
 const char kGalleryIdKey[] = "galleryId";
+const char kIsAvailableKey[] = "isAvailable";
 const char kIsMediaDeviceKey[] = "isMediaDevice";
 const char kIsRemovableKey[] = "isRemovable";
 const char kNameKey[] = "name";
@@ -71,6 +68,10 @@ bool ApiIsAccessible(std::string* error) {
   }
 
   return true;
+}
+
+MediaFileSystemRegistry* media_file_system_registry() {
+  return g_browser_process->media_file_system_registry();
 }
 
 }  // namespace
@@ -93,10 +94,8 @@ bool MediaGalleriesGetMediaFileSystemsFunction::RunImpl() {
     interactive = params->details->interactive;
   }
 
-  Profile* profile = Profile::FromBrowserContext(
-      render_view_host()->GetProcess()->GetBrowserContext());
   MediaGalleriesPreferences* preferences =
-      g_browser_process->media_file_system_registry()->GetPreferences(profile);
+      media_file_system_registry()->GetPreferences(GetProfile());
   preferences->EnsureInitialized(base::Bind(
       &MediaGalleriesGetMediaFileSystemsFunction::OnPreferencesInit,
       this,
@@ -194,6 +193,8 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
         kIsRemovableKey, filesystems[i].removable);
     file_system_dict_value->SetBooleanWithoutPathExpansion(
         kIsMediaDeviceKey, filesystems[i].media_device);
+    file_system_dict_value->SetBooleanWithoutPathExpansion(
+        kIsAvailableKey, true);
 
     list->Append(file_system_dict_value.release());
 
@@ -202,7 +203,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
 
     if (has_read_permission) {
       content::ChildProcessSecurityPolicy* policy =
-          ChildProcessSecurityPolicy::GetInstance();
+          content::ChildProcessSecurityPolicy::GetInstance();
       policy->GrantReadFileSystem(child_id, filesystems[i].fsid);
       if (has_delete_permission) {
         policy->GrantDeleteFromFileSystem(child_id, filesystems[i].fsid);
@@ -213,6 +214,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
     }
   }
 
+  // The custom JS binding will use this list to create DOMFileSystem objects.
   SetResult(list);
   SendResponse(true);
 }
@@ -226,7 +228,7 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
     // If there is no WebContentsModalDialogManager, then this contents is
     // probably the background page for an app. Try to find a shell window to
     // host the dialog.
-    ShellWindow* window = apps::ShellWindowRegistry::Get(
+    apps::ShellWindow* window = apps::ShellWindowRegistry::Get(
         GetProfile())->GetCurrentShellWindowForApp(GetExtension()->id());
     if (window) {
       contents = window->web_contents();
@@ -249,11 +251,78 @@ void MediaGalleriesGetMediaFileSystemsFunction::GetMediaFileSystemsForExtension(
     cb.Run(std::vector<MediaFileSystemInfo>());
     return;
   }
-  MediaFileSystemRegistry* registry =
-      g_browser_process->media_file_system_registry();
+  MediaFileSystemRegistry* registry = media_file_system_registry();
   DCHECK(registry->GetPreferences(GetProfile())->IsInitialized());
   registry->GetMediaFileSystemsForExtension(
       render_view_host(), GetExtension(), cb);
+}
+
+MediaGalleriesGetAllMediaFileSystemMetadataFunction::
+    ~MediaGalleriesGetAllMediaFileSystemMetadataFunction() {}
+
+bool MediaGalleriesGetAllMediaFileSystemMetadataFunction::RunImpl() {
+  if (!ApiIsAccessible(&error_))
+    return false;
+
+  media_galleries::UsageCount(
+      media_galleries::GET_ALL_MEDIA_FILE_SYSTEM_METADATA);
+  MediaGalleriesPreferences* preferences =
+      media_file_system_registry()->GetPreferences(GetProfile());
+  preferences->EnsureInitialized(base::Bind(
+      &MediaGalleriesGetAllMediaFileSystemMetadataFunction::OnPreferencesInit,
+      this));
+  return true;
+}
+
+void MediaGalleriesGetAllMediaFileSystemMetadataFunction::OnPreferencesInit() {
+  MediaFileSystemRegistry* registry = media_file_system_registry();
+  MediaGalleriesPreferences* prefs = registry->GetPreferences(GetProfile());
+  DCHECK(prefs->IsInitialized());
+  MediaGalleryPrefIdSet permitted_gallery_ids =
+      prefs->GalleriesForExtension(*GetExtension());
+
+  MediaStorageUtil::DeviceIdSet* device_ids = new MediaStorageUtil::DeviceIdSet;
+  const MediaGalleriesPrefInfoMap& galleries = prefs->known_galleries();
+  for (MediaGalleryPrefIdSet::const_iterator it = permitted_gallery_ids.begin();
+       it != permitted_gallery_ids.end(); ++it) {
+    MediaGalleriesPrefInfoMap::const_iterator gallery_it = galleries.find(*it);
+    DCHECK(gallery_it != galleries.end());
+    device_ids->insert(gallery_it->second.device_id);
+  }
+
+  MediaStorageUtil::FilterAttachedDevices(
+      device_ids,
+      base::Bind(
+          &MediaGalleriesGetAllMediaFileSystemMetadataFunction::OnGetGalleries,
+          this,
+          permitted_gallery_ids,
+          base::Owned(device_ids)));
+}
+
+void MediaGalleriesGetAllMediaFileSystemMetadataFunction::OnGetGalleries(
+    const MediaGalleryPrefIdSet& permitted_gallery_ids,
+    const MediaStorageUtil::DeviceIdSet* available_devices) {
+  MediaFileSystemRegistry* registry = media_file_system_registry();
+  MediaGalleriesPreferences* prefs = registry->GetPreferences(GetProfile());
+
+  base::ListValue* list = new base::ListValue();
+  const MediaGalleriesPrefInfoMap& galleries = prefs->known_galleries();
+  for (MediaGalleryPrefIdSet::const_iterator it = permitted_gallery_ids.begin();
+       it != permitted_gallery_ids.end(); ++it) {
+    MediaGalleriesPrefInfoMap::const_iterator gallery_it = galleries.find(*it);
+    DCHECK(gallery_it != galleries.end());
+    const MediaGalleryPrefInfo& gallery = gallery_it->second;
+    MediaGalleries::MediaFileSystemMetadata metadata;
+    metadata.name = base::UTF16ToUTF8(gallery.GetGalleryDisplayName());
+    metadata.gallery_id = base::Uint64ToString(gallery.pref_id);
+    metadata.is_removable = StorageInfo::IsRemovableDevice(gallery.device_id);
+    metadata.is_media_device = StorageInfo::IsMediaDevice(gallery.device_id);
+    metadata.is_available = ContainsKey(*available_devices, gallery.device_id);
+    list->Append(metadata.ToValue().release());
+  }
+
+  SetResult(list);
+  SendResponse(true);
 }
 
 }  // namespace extensions

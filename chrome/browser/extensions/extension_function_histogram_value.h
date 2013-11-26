@@ -703,6 +703,7 @@ enum HistogramValue {
   GCM_SEND,
   SERIAL_CONNECT,
   SERIAL_DISCONNECT,
+  MEDIAGALLERIES_GETALLMEDIAFILESYSTEMMETADATA,
   ENUM_BOUNDARY // Last entry: Add new entries above.
 };
 

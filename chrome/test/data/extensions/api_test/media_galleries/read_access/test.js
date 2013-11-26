@@ -104,5 +104,31 @@ chrome.test.getConfig(function(config) {
                               mediaFileSystemsDirectoryErrorCallback);
       }
     },
+    function getMetadata() {
+      chrome.test.assertEq(expectedFileSystems, galleries.length);
+      if (expectedFileSystems == 0) {
+        chrome.test.succeed();
+        return;
+      }
+      for (var i = 0; i < galleries.length; i++) {
+        var metadata = mediaGalleries.getMediaFileSystemMetadata(galleries[i]);
+        checkMetadata(metadata);
+      }
+      chrome.test.succeed();
+    },
+    function getAllMetadata() {
+      chrome.test.assertEq(expectedFileSystems, galleries.length);
+      if (expectedFileSystems == 0) {
+        chrome.test.succeed();
+        return;
+      }
+      mediaGalleries.getAllMediaFileSystemMetadata(function(metadata) {
+        chrome.test.assertEq(galleries.length, metadata.length)
+        for (var i = 0; i < galleries.length; i++) {
+          checkMetadata(metadata[i]);
+        }
+        chrome.test.succeed();
+      });
+    },
   ]);
 })

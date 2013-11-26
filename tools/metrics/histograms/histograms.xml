@@ -23632,6 +23632,7 @@ other types of suffix sets.
   <int value="520" label="VIRTUALKEYBOARDPRIVATE_HIDEKEYBOARD"/>
   <int value="521" label="SYSTEM_STORAGE_GETAVAILABLECAPACITY"/>
   <int value="522" label="VIRTUALKEYBOARDPRIVATE_KEYBOARDLOADED"/>
+  <int value="523" label="MEDIAGALLERIES_GETALLMEDIAFILESYSTEMMETADATA"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">
@@ -26202,8 +26203,12 @@ other types of suffix sets.
   <int value="3" label="GetMediaFileSystems API invocations"/>
   <int value="4" label="Profiles With API Usage"/>
   <int value="5" label="Dialog shown"/>
-  <int value="6" label="Gallery added from WebUI"/>
-  <int value="7" label="Gallery removed from WebUI"/>
+  <int value="6" label="Dialog permissions saved"/>
+  <int value="7" label="Gallery added from WebUI"/>
+  <int value="8" label="Gallery removed from WebUI"/>
+  <int value="9" label="Preferences initialized"/>
+  <int value="10" label="Preferences initialization failed"/>
+  <int value="11" label="GetAllMediaFileSystemMetadata API invocations"/>
 </enum>
 
 <enum name="MediaKeyError" type="int">
