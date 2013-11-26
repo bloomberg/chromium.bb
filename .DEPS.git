@@ -5,7 +5,7 @@
 # FOR HOW TO ROLL DEPS
 vars = {
     'ffmpeg_hash':
-         '@0889dced5e40025c2ed0efd8e9e5e46e59d39c22',
+         '@9186343787c9fe2af1a3b0350ac556508dfbaaf6',
     'webkit_url':
          'https://chromium.googlesource.com/chromium/blink.git',
     'git_url':
