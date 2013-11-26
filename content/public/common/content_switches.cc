@@ -941,10 +941,14 @@ const char kZygoteCmdPrefix[]               = "zygote-cmd-prefix";
 const char kZygoteProcess[]                 = "zygote";
 
 #if defined(ENABLE_WEBRTC)
-// Disable WebRTC device enumeration.
+// Enables audio processing in a MediaStreamTrack. When this flag is on, AEC,
+// NS and AGC will be done per MediaStreamTrack instead of in PeerConnection.
+const char kEnableAudioTrackProcessing[]    = "enable-audio-track-processing";
+
+// Disables WebRTC device enumeration.
 const char kDisableDeviceEnumeration[]      = "disable-device-enumeration";
 
-// Disable WebRTC DataChannels SCTP wire protocol support.
+// Disables WebRTC DataChannels SCTP wire protocol support.
 const char kDisableSCTPDataChannels[]       = "disable-sctp-data-channels";
 
 // Disables HW decode acceleration for WebRTC.
@@ -960,7 +964,7 @@ const char kDisableWebRtcHWEncoding[]       = "disable-webrtc-hw-encoding";
 // Enables WebRTC AEC recordings.
 const char kEnableWebRtcAecRecordings[]     = "enable-webrtc-aec-recordings";
 
-// Enable WebRTC to open TCP server sockets.
+// Enables WebRTC to open TCP server sockets.
 const char kEnableWebRtcTcpServerSocket[]   = "enable-webrtc-tcp-server-socket";
 
 // Enables VP8 HW encode acceleration for WebRTC.
