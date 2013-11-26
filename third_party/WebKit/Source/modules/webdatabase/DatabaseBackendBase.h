@@ -83,7 +83,6 @@ public:
     bool hadDeletes();
     void resetAuthorizer();
 
-    virtual void markAsDeletedAndClose() = 0;
     virtual void closeImmediately() = 0;
 
     DatabaseContext* databaseContext() const { return m_databaseContext.get(); }

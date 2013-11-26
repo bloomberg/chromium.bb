@@ -59,7 +59,6 @@ public:
     void transaction(PassRefPtr<SQLTransactionSyncCallback>, ExceptionState&);
     void readTransaction(PassRefPtr<SQLTransactionSyncCallback>, ExceptionState&);
 
-    virtual void markAsDeletedAndClose();
     virtual void closeImmediately();
 
     const String& lastErrorMessage() const { return m_lastErrorMessage; }

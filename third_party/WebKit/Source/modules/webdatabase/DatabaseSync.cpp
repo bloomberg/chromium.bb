@@ -183,11 +183,6 @@ void DatabaseSync::runTransaction(PassRefPtr<SQLTransactionSyncCallback> callbac
     setLastErrorMessage("");
 }
 
-void DatabaseSync::markAsDeletedAndClose()
-{
-    // FIXME: need to do something similar to closeImmediately(), but in a sync way
-}
-
 void DatabaseSync::closeImmediately()
 {
     ASSERT(m_executionContext->isContextThread());

@@ -67,9 +67,6 @@ public:
 
     virtual SecurityOrigin* securityOrigin() const;
 
-    virtual void markAsDeletedAndClose();
-    bool deleted() const { return m_deleted; }
-
     virtual void closeImmediately();
 
     void scheduleTransactionCallback(SQLTransaction*);
@@ -90,8 +87,6 @@ private:
 
     RefPtr<SecurityOrigin> m_databaseThreadSecurityOrigin;
     RefPtr<DatabaseContext> m_databaseContext;
-
-    bool m_deleted;
 
     friend class DatabaseManager;
     friend class DatabaseServer; // FIXME: remove this when the backend has been split out.

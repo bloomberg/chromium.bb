@@ -53,7 +53,6 @@ public:
     bool hasStatementCallback() const { return m_hasCallback; }
     bool hasStatementErrorCallback() const { return m_hasErrorCallback; }
 
-    void setDatabaseDeletedError(DatabaseBackend*);
     void setVersionMismatchedError(DatabaseBackend*);
 
     AbstractSQLStatement* frontend();

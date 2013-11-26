@@ -71,7 +71,6 @@ Database::Database(PassRefPtr<DatabaseContext> databaseContext,
     : DatabaseBase(databaseContext->executionContext())
     , DatabaseBackend(databaseContext, name, expectedVersion, displayName, estimatedSize)
     , m_databaseContext(DatabaseBackend::databaseContext())
-    , m_deleted(false)
 {
     ScriptWrappable::init(this);
     m_databaseThreadSecurityOrigin = m_contextThreadSecurityOrigin->isolatedCopy();
@@ -128,28 +127,7 @@ PassRefPtr<DatabaseBackend> Database::backend()
 
 String Database::version() const
 {
-    if (m_deleted)
-        return String();
     return DatabaseBackendBase::version();
-}
-
-void Database::markAsDeletedAndClose()
-{
-    if (m_deleted || !databaseContext()->databaseThread())
-        return;
-
-    LOG(StorageAPI, "Marking %s (%p) as deleted", stringIdentifier().ascii().data(), this);
-    m_deleted = true;
-
-    DatabaseTaskSynchronizer synchronizer;
-    if (databaseContext()->databaseThread()->terminationRequested(&synchronizer)) {
-        LOG(StorageAPI, "Database handle %p is on a terminated DatabaseThread, cannot be marked for normal closure\n", this);
-        return;
-    }
-
-    OwnPtr<DatabaseCloseTask> task = DatabaseCloseTask::create(this, &synchronizer);
-    databaseContext()->databaseThread()->scheduleTask(task.release());
-    synchronizer.waitForTaskCompletion();
 }
 
 void Database::closeImmediately()

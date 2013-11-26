@@ -208,13 +208,6 @@ bool SQLStatementBackend::execute(DatabaseBackend* db)
     return true;
 }
 
-void SQLStatementBackend::setDatabaseDeletedError(DatabaseBackend* database)
-{
-    ASSERT(!m_error && !m_resultSet);
-    database->reportExecuteStatementResult(6, SQLError::UNKNOWN_ERR, 0);
-    m_error = SQLError::create(SQLError::UNKNOWN_ERR, "unable to execute statement, because the user deleted the database");
-}
-
 void SQLStatementBackend::setVersionMismatchedError(DatabaseBackend* database)
 {
     ASSERT(!m_error && !m_resultSet);

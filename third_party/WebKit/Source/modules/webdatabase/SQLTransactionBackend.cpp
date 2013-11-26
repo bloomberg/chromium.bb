@@ -517,10 +517,6 @@ void SQLTransactionBackend::executeSQL(PassOwnPtr<AbstractSQLStatement> statemen
 {
     RefPtr<SQLStatementBackend> statementBackend;
     statementBackend = SQLStatementBackend::create(statement, sqlStatement, arguments, permissions);
-
-    if (Database::from(m_database.get())->deleted())
-        statementBackend->setDatabaseDeletedError(m_database.get());
-
     enqueueStatementBackend(statementBackend);
 }
 
@@ -554,13 +550,6 @@ SQLTransactionState SQLTransactionBackend::openTransactionAndPreflight()
     ASSERT(m_lockAcquired);
 
     LOG(StorageAPI, "Opening and preflighting transaction %p", this);
-
-    // If the database was deleted, jump to the error callback
-    if (Database::from(m_database.get())->deleted()) {
-        m_database->reportStartTransactionResult(1, SQLError::UNKNOWN_ERR, 0);
-        m_transactionError = SQLError::create(SQLError::UNKNOWN_ERR, "unable to open a transaction, because the user deleted the database");
-        return nextStateForTransactionError();
-    }
 
     // Set the maximum usage for this transaction if this transactions is not read-only
     if (!m_readOnly)
