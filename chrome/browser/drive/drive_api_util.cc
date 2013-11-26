@@ -448,10 +448,10 @@ ConvertFileResourceToResourceEntry(
   // entry->authors_
   // entry->links_.
   ScopedVector<google_apis::Link> links;
-  if (!file_resource.parents().empty()) {
+  for (size_t i = 0; i < file_resource.parents().size(); ++i) {
     google_apis::Link* link = new google_apis::Link;
     link->set_type(google_apis::Link::LINK_PARENT);
-    link->set_href(file_resource.parents()[0]->parent_link());
+    link->set_href(file_resource.parents()[i]->parent_link());
     links.push_back(link);
   }
   if (!file_resource.self_link().is_empty()) {

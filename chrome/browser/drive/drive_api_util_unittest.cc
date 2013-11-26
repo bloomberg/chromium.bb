@@ -195,6 +195,33 @@ TEST(FileSystemUtilTest, ConvertAccountMetadataToAppList) {
   EXPECT_EQ("http://icon/url", icon.icon_url().spec());
 }
 
+TEST(FileSystemUtilTest, ConvertFileResourceToResource_Parents) {
+  google_apis::FileResource file_resource;
+
+  std::vector<GURL> expected_links;
+  expected_links.push_back(GURL("http://server/id1"));
+  expected_links.push_back(GURL("http://server/id2"));
+  expected_links.push_back(GURL("http://server/id3"));
+
+  ScopedVector<google_apis::ParentReference> parents;
+  for (size_t i = 0; i < expected_links.size(); ++i) {
+    google_apis::ParentReference* parent = new google_apis::ParentReference;
+    parent->set_parent_link(expected_links[i]);
+    parents.push_back(parent);
+  }
+  file_resource.set_parents(parents.Pass());
+
+  scoped_ptr<google_apis::ResourceEntry> entry(
+      ConvertFileResourceToResourceEntry(file_resource));
+  std::vector<GURL> actual_links;
+  for (size_t i = 0; i < entry->links().size(); ++i) {
+    if (entry->links()[i]->type() == google_apis::Link::LINK_PARENT)
+      actual_links.push_back(entry->links()[i]->href());
+  }
+
+  EXPECT_EQ(expected_links, actual_links);
+}
+
 TEST(FileSystemUtilTest, ConvertFileResourceToResourceEntryImageMediaMetadata) {
   google_apis::FileResource file_resource_all_fields;
   google_apis::FileResource file_resource_zero_fields;
