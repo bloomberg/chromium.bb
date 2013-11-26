@@ -282,10 +282,6 @@ const char kDisableBackgroundMode[]         = "disable-background-mode";
 // measurements.
 const char kDisableBackgroundNetworking[]   = "disable-background-networking";
 
-// Disables running all beforeunload handlers before closing any browser windows
-// on shutdown.
-const char kDisableBatchedShutdown[]        = "disable-batched-shutdown";
-
 // Disables the bundled PPAPI version of Flash.
 const char kDisableBundledPpapiFlash[]      = "disable-bundled-ppapi-flash";
 

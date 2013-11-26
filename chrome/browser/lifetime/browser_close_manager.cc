@@ -4,7 +4,6 @@
 
 #include "chrome/browser/lifetime/browser_close_manager.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -18,7 +17,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_contents.h"
 
 BrowserCloseManager::BrowserCloseManager() : current_browser_(NULL) {}
@@ -26,13 +24,9 @@ BrowserCloseManager::BrowserCloseManager() : current_browser_(NULL) {}
 BrowserCloseManager::~BrowserCloseManager() {}
 
 void BrowserCloseManager::StartClosingBrowsers() {
-  // If the session is ending or batch browser shutdown is disabled, skip
-  // straight to closing the browsers. In the former case, there's no time to
-  // wait for beforeunload dialogs; in the latter, the windows will manage
-  // showing their own dialogs.
-  if (browser_shutdown::GetShutdownType() == browser_shutdown::END_SESSION ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableBatchedShutdown)) {
+  // If the session is ending, skip straight to closing the browsers. There's no
+  // time to wait for beforeunload dialogs.
+  if (browser_shutdown::GetShutdownType() == browser_shutdown::END_SESSION) {
     // Tell everyone that we are shutting down.
     browser_shutdown::SetTryingToQuit(true);
     CloseBrowsers();

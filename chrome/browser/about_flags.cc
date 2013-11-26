@@ -1718,13 +1718,6 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "disable-batched-shutdown",
-    IDS_FLAGS_DISABLE_BATCHED_SHUTDOWN_NAME,
-    IDS_FLAGS_DISABLE_BATCHED_SHUTDOWN_DESCRIPTION,
-    kOsDesktop,
-    SINGLE_VALUE_TYPE(switches::kDisableBatchedShutdown)
-  },
-  {
     "map-image",
     IDS_FLAGS_MAP_IMAGE_NAME,
     IDS_FLAGS_MAP_IMAGE_DESCRIPTION,

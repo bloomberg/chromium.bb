@@ -4,10 +4,8 @@
 
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
-#include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/gfx/text_elider.h"
@@ -118,15 +116,6 @@ void JavaScriptAppModalDialog::Invalidate() {
 }
 
 void JavaScriptAppModalDialog::OnCancel(bool suppress_js_messages) {
-  // If we are shutting down and this is an onbeforeunload dialog, cancel the
-  // shutdown.
-  // TODO(sammc): Remove this when kDisableBatchedShutdown is removed.
-  if (is_before_unload_dialog_ &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableBatchedShutdown)) {
-    browser_shutdown::SetTryingToQuit(false);
-  }
-
   // We need to do this before WM_DESTROY (WindowClosing()) as any parent frame
   // will receive its activation messages before this dialog receives
   // WM_DESTROY. The parent frame would then try to activate any modal dialogs
