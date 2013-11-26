@@ -94,9 +94,9 @@ inline bool Decode(T* obj, const Message& message) {
 }
 
 // What follows is code to support the ObjectTraits<> specialization of
-// Array<T>. There are two interesting cases: arrays of primitives and arrays
-// of objects. Arrays of objects are represented as arrays of pointers to
-// objects.
+// Array_Data<T>. There are two interesting cases: arrays of primitives and
+// arrays of objects. Arrays of objects are represented as arrays of pointers
+// to objects.
 
 template <typename T>
 struct ArrayHelper {
@@ -182,31 +182,31 @@ struct ArrayHelper<P*> {
 };
 
 template <typename T>
-class ObjectTraits<Array<T> > {
+class ObjectTraits<Array_Data<T> > {
  public:
-  static size_t ComputeSizeOf(const Array<T>* array) {
+  static size_t ComputeSizeOf(const Array_Data<T>* array) {
     return Align(array->header_.num_bytes) +
         ArrayHelper<T>::ComputeSizeOfElements(&array->header_,
                                               array->storage());
   }
 
-  static Array<T>* Clone(const Array<T>* array, Buffer* buf) {
-    Array<T>* clone = Array<T>::New(buf, array->header_.num_elements);
+  static Array_Data<T>* Clone(const Array_Data<T>* array, Buffer* buf) {
+    Array_Data<T>* clone = Array_Data<T>::New(array->header_.num_elements, buf);
     memcpy(clone->storage(),
            array->storage(),
-           array->header_.num_bytes - sizeof(Array<T>));
+           array->header_.num_bytes - sizeof(Array_Data<T>));
 
     ArrayHelper<T>::CloneElements(&clone->header_, clone->storage(), buf);
     return clone;
   }
 
-  static void EncodePointersAndHandles(Array<T>* array,
+  static void EncodePointersAndHandles(Array_Data<T>* array,
                                        std::vector<Handle>* handles) {
     ArrayHelper<T>::EncodePointersAndHandles(&array->header_, array->storage(),
                                              handles);
   }
 
-  static bool DecodePointersAndHandles(Array<T>* array,
+  static bool DecodePointersAndHandles(Array_Data<T>* array,
                                        const Message& message) {
     return ArrayHelper<T>::DecodePointersAndHandles(&array->header_,
                                                     array->storage(),

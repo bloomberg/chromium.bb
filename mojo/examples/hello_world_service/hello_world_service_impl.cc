@@ -16,8 +16,8 @@ HelloWorldServiceImpl::HelloWorldServiceImpl(const MessagePipeHandle& pipe)
   client_.SetPeer(this);
 }
 
-void HelloWorldServiceImpl::Greeting(const String* greeting) {
-  LOG(INFO) << greeting->To<std::string>();
+void HelloWorldServiceImpl::Greeting(const String& greeting) {
+  LOG(INFO) << greeting.To<std::string>();
   client_->DidReceiveGreeting(42);
 }
 

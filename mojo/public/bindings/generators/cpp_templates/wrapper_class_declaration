@@ -1,0 +1,26 @@
+class $CLASS {
+ public:
+  typedef internal::${CLASS}_Data Data;
+
+  bool is_null() const { return !data_; }
+
+$GETTERS
+
+  class Builder {
+   public:
+    explicit Builder(mojo::Buffer* buf);
+
+$SETTERS
+
+    $CLASS Finish();
+
+   private:
+    $CLASS::Data* data_;
+  };
+
+ private:
+  friend class mojo::internal::WrapperHelper<$CLASS>;
+
+  explicit $CLASS(const Data* data) : data_(data) {}
+  const Data* data_;
+}; 

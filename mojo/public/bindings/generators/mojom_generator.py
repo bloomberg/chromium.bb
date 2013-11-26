@@ -15,7 +15,7 @@ def GetStructFromMethod(interface, method):
     struct.AddField(param.name, param.kind, param.ordinal)
   return struct
 
-def IsPointerKind(kind):
+def IsObjectKind(kind):
   return isinstance(kind, (mojom.Struct, mojom.Array)) or kind.spec == 's'
 
 def CamelToUnderscores(camel):

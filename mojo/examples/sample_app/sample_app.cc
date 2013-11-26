@@ -30,7 +30,7 @@ void SayHello(const MessagePipeHandle& pipe) {
   HelloWorldClientImpl client(pipe);
   ScratchBuffer buf;
   const std::string kGreeting("hello, world!");
-  String* greeting = String::NewCopyOf(&buf, kGreeting);
+  String greeting(kGreeting, &buf);
   client.service()->Greeting(greeting);
 
   // Run loop to receieve Ack. The client will quit the loop.

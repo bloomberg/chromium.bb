@@ -1,6 +1,6 @@
-    case k${CLASS}_${METHOD}_Name: {
-      ${CLASS}_${METHOD}_Params* params =
-          reinterpret_cast<${CLASS}_${METHOD}_Params*>(
+    case internal::k${CLASS}_${METHOD}_Name: {
+      internal::${CLASS}_${METHOD}_Params_Data* params =
+          reinterpret_cast<internal::${CLASS}_${METHOD}_Params_Data*>(
               message->data->payload);
 
       if (!mojo::internal::DecodePointersAndHandles(params, *message))

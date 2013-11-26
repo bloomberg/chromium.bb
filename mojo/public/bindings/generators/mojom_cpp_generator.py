@@ -58,9 +58,12 @@ class CPPGenerator(mojom_generator.Generator):
       "    return false;")
   param_set_template = Template("  params->set_$NAME($NAME);")
   param_struct_set_template = Template(
-      "  params->set_$NAME(mojo::internal::Clone($NAME, builder.buffer()));")
+      "  params->set_$NAME(\n"
+      "      mojo::internal::Clone(mojo::internal::Unwrap($NAME),\n"
+      "                            builder.buffer()));")
   param_struct_compute_template = Template(
-      "  payload_size += mojo::internal::ComputeSizeOf($NAME);")
+      "  payload_size += mojo::internal::ComputeSizeOf(\n"
+      "      mojo::internal::Unwrap($NAME));")
   field_template = Template("  $TYPE ${FIELD}_;")
   bool_field_template = Template("  uint8_t ${FIELD}_ : 1;")
   setter_template = \
@@ -71,6 +74,17 @@ class CPPGenerator(mojom_generator.Generator):
       Template("  $TYPE $FIELD() const { return ${FIELD}_; }")
   ptr_getter_template = \
       Template("  const $TYPE $FIELD() const { return ${FIELD}_.ptr; }")
+  wrapper_setter_template = \
+      Template("    void set_$FIELD($TYPE $FIELD) { " \
+               "data_->set_$FIELD($FIELD); }")
+  wrapper_obj_setter_template = \
+      Template("    void set_$FIELD($TYPE $FIELD) { " \
+               "data_->set_$FIELD(mojo::internal::Unwrap($FIELD)); }")
+  wrapper_getter_template = \
+      Template("  $TYPE $FIELD() const { return data_->$FIELD(); }")
+  wrapper_obj_getter_template = \
+      Template("  const $TYPE $FIELD() const { " \
+               "return mojo::internal::Wrap(data_->$FIELD()); }")
   pad_template = Template("  uint8_t _pad${COUNT}_[$PAD];")
   templates  = {}
   HEADER_SIZE = 8
@@ -105,27 +119,28 @@ class CPPGenerator(mojom_generator.Generator):
   @classmethod
   def GetType(cls, kind):
     if isinstance(kind, mojom.Struct):
-      return "%s*" % kind.name
+      return "%s_Data*" % kind.name
     if isinstance(kind, mojom.Array):
-      return "mojo::Array<%s>*" % cls.GetType(kind.kind)
+      return "mojo::internal::Array_Data<%s>*" % cls.GetType(kind.kind)
     if kind.spec == 's':
-      return "mojo::String*"
+      return "mojo::internal::String_Data*"
     return cls.kind_to_type[kind]
 
   @classmethod
   def GetConstType(cls, kind):
     if isinstance(kind, mojom.Struct):
-      return "const %s*" % kind.name
+      return "const %s_Data*" % kind.name
     if isinstance(kind, mojom.Array):
-      return "const mojo::Array<%s>*" % cls.GetConstType(kind.kind)
+      return "const mojo::internal::Array_Data<%s>*" % \
+          cls.GetConstType(kind.kind)
     if kind.spec == 's':
-      return "const mojo::String*"
+      return "const mojo::internal::String_Data*"
     return cls.kind_to_type[kind]
 
   @classmethod
   def GetGetterLine(cls, field):
     subs = {'FIELD': field.name, 'TYPE': cls.GetType(field.kind)}
-    if mojom_generator.IsPointerKind(field.kind):
+    if mojom_generator.IsObjectKind(field.kind):
       return cls.ptr_getter_template.substitute(subs)
     else:
       return cls.getter_template.substitute(subs)
@@ -133,10 +148,46 @@ class CPPGenerator(mojom_generator.Generator):
   @classmethod
   def GetSetterLine(cls, field):
     subs = {'FIELD': field.name, 'TYPE': cls.GetType(field.kind)}
-    if mojom_generator.IsPointerKind(field.kind):
+    if mojom_generator.IsObjectKind(field.kind):
       return cls.ptr_setter_template.substitute(subs)
     else:
       return cls.setter_template.substitute(subs)
+
+  @classmethod
+  def GetWrapperType(cls, kind):
+    if isinstance(kind, mojom.Struct):
+      return "%s" % kind.name
+    if isinstance(kind, mojom.Array):
+      return "mojo::Array<%s >" % cls.GetWrapperType(kind.kind)
+    if kind.spec == 's':
+      return "mojo::String"
+    return cls.kind_to_type[kind]
+
+  @classmethod
+  def GetConstWrapperType(cls, kind):
+    if isinstance(kind, mojom.Struct):
+      return "const %s&" % kind.name
+    if isinstance(kind, mojom.Array):
+      return "const mojo::Array<%s >&" % cls.GetWrapperType(kind.kind)
+    if kind.spec == 's':
+      return "const mojo::String&"
+    return cls.kind_to_type[kind]
+
+  @classmethod
+  def GetWrapperGetterLine(cls, field):
+    subs = {'FIELD': field.name, 'TYPE': cls.GetWrapperType(field.kind)}
+    if mojom_generator.IsObjectKind(field.kind):
+      return cls.wrapper_obj_getter_template.substitute(subs)
+    else:
+      return cls.wrapper_getter_template.substitute(subs)
+
+  @classmethod
+  def GetWrapperSetterLine(cls, field):
+    subs = {'FIELD': field.name, 'TYPE': cls.GetConstWrapperType(field.kind)}
+    if mojom_generator.IsObjectKind(field.kind):
+      return cls.wrapper_obj_setter_template.substitute(subs)
+    else:
+      return cls.wrapper_setter_template.substitute(subs)
 
   @classmethod
   def GetFieldLine(cls, field):
@@ -145,7 +196,7 @@ class CPPGenerator(mojom_generator.Generator):
       return cls.bool_field_template.substitute(FIELD=field.name)
     itype = None
     if isinstance(kind, mojom.Struct):
-      itype = "mojo::internal::StructPointer<%s>" % kind.name
+      itype = "mojo::internal::StructPointer<%s_Data>" % kind.name
     elif isinstance(kind, mojom.Array):
       itype = "mojo::internal::ArrayPointer<%s>" % cls.GetType(kind.kind)
     elif kind.spec == 's':
@@ -155,8 +206,21 @@ class CPPGenerator(mojom_generator.Generator):
     return cls.field_template.substitute(FIELD=field.name, TYPE=itype)
 
   @classmethod
+  def GetParamLine(cls, name, kind):
+    line = None
+    if mojom_generator.IsObjectKind(kind):
+      line = "mojo::internal::Wrap(params->%s())" % (name)
+    else:
+      line = "params->%s()" % name
+    return line
+
+  @classmethod
   def GetCaseLine(cls, interface, method):
-    params = map(lambda param: "params->%s()" % param.name, method.parameters)
+    params = map(
+        lambda param: cls.GetParamLine(
+            param.name,
+            param.kind),
+        method.parameters)
     method_call = "%s(%s);" % (method.name, ", ".join(params))
 
     return cls.GetTemplate("interface_stub_case").substitute(
@@ -168,7 +232,7 @@ class CPPGenerator(mojom_generator.Generator):
   def GetSerializedFields(cls, ps):
     fields = []
     for pf in ps.packed_fields:
-      if mojom_generator.IsPointerKind(pf.field.kind):
+      if mojom_generator.IsObjectKind(pf.field.kind):
         fields.append(pf.field)
     return fields
 
@@ -232,7 +296,8 @@ class CPPGenerator(mojom_generator.Generator):
         pad_count += 1
 
     subs.update(
-        CLASS = name,
+        CLASS = name + '_Data',
+        WRAPPER = name,
         SETTERS = '\n'.join(setters),
         GETTERS = '\n'.join(getters),
         FIELDS = '\n'.join(fields),
@@ -259,7 +324,8 @@ class CPPGenerator(mojom_generator.Generator):
       encode_handles.Add(substitutions)
       decode_handles.Add(substitutions)
     return template.substitute(
-        CLASS = "%s::%s" % (self.module.namespace, class_name),
+        CLASS = \
+            "%s::internal::%s" % (self.module.namespace, class_name + '_Data'),
         NAME = param_name,
         ENCODES = encodes,
         DECODES = decodes,
@@ -276,12 +342,41 @@ class CPPGenerator(mojom_generator.Generator):
         self.module.structs)
     return '\n'.join(struct_decls)
 
+  def GetWrapperDeclaration(self, name, ps, template, subs = {}):
+    setters = []
+    getters = []
+    num_fields = len(ps.packed_fields)
+    for i in xrange(num_fields):
+      field = ps.packed_fields[i].field
+      setters.append(self.GetWrapperSetterLine(field))
+      getters.append(self.GetWrapperGetterLine(field))
+    subs.update(
+        CLASS = name,
+        SETTERS = '\n'.join(setters),
+        GETTERS = '\n'.join(getters))
+    return template.substitute(subs)
+
+  def GetWrapperClassDeclarations(self):
+    wrapper_decls = map(
+        lambda s: self.GetWrapperDeclaration(
+            s.name,
+            mojom_pack.PackedStruct(s),
+            self.GetTemplate("wrapper_class_declaration"),
+            {}),
+        self.module.structs)
+    return '\n'.join(wrapper_decls)
+
+  def GetWrapperForwardDeclarations(self):
+    wrapper_fwds = map(lambda s: "class " + s.name + ";", self.module.structs)
+    return '\n'.join(wrapper_fwds)
+
   def GetInterfaceClassDeclaration(self, interface, template, method_postfix):
     methods = []
     for method in interface.methods:
       params = []
       for param in method.parameters:
-        params.append("%s %s" % (self.GetConstType(param.kind), param.name))
+        params.append("%s %s" %
+                          (self.GetConstWrapperType(param.kind), param.name))
       methods.append(
           "  virtual void %s(%s) %s;" %
               (method.name, ", ".join(params), method_postfix))
@@ -315,7 +410,8 @@ class CPPGenerator(mojom_generator.Generator):
   def GenerateModuleHeader(self):
     self.WriteTemplateToFile("module.h",
         HEADER_GUARD = self.GetHeaderGuard(self.module.name),
-        STRUCT_CLASS_DECLARARTIONS = self.GetStructClassDeclarations(),
+        INTERNAL_HEADER = self.GetHeaderFile(self.module.name, "internal"),
+        WRAPPER_CLASS_DECLARATIONS = self.GetWrapperClassDeclarations(),
         INTERFACE_CLASS_DECLARATIONS = self.GetInterfaceClassDeclarations(),
         INTERFACE_PROXY_DECLARATIONS = self.GetInterfaceProxyDeclarations(),
         INTERFACE_STUB_DECLARATIONS = self.GetInterfaceStubDeclarations())
@@ -335,8 +431,14 @@ class CPPGenerator(mojom_generator.Generator):
     template = self.GetTemplate("struct_definition")
     return '\n'.join(map(
         lambda s: template.substitute(
-            CLASS = s.name, NUM_FIELDS = len(s.fields)),
+            CLASS = s.name + '_Data',
+            NUM_FIELDS = len(s.fields)),
             self.module.structs));
+
+  def GetStructBuilderDefinitions(self):
+    template = self.GetTemplate("struct_builder_definition")
+    return '\n'.join(map(
+        lambda s: template.substitute(CLASS = s.name), self.module.structs));
 
   def GetInterfaceDefinition(self, interface):
     cases = []
@@ -347,17 +449,19 @@ class CPPGenerator(mojom_generator.Generator):
       sets = []
       computes = Lines(self.param_struct_compute_template)
       for param in method.parameters:
-        if mojom_generator.IsPointerKind(param.kind):
+        if mojom_generator.IsObjectKind(param.kind):
           sets.append(
               self.param_struct_set_template.substitute(NAME=param.name))
           computes.Add(NAME=param.name)
         else:
           sets.append(self.param_set_template.substitute(NAME=param.name))
       params_list = map(
-          lambda param: "%s %s" % (self.GetConstType(param.kind), param.name),
+          lambda param: "%s %s" %
+                            (self.GetConstWrapperType(param.kind), param.name),
           method.parameters)
-      name = "k%s_%s_Name" % (interface.name, method.name)
-      params_name = "%s_%s_Params" % (interface.name, method.name)
+      name = "internal::k%s_%s_Name" % (interface.name, method.name)
+      params_name = \
+          "internal::%s_%s_Params_Data" % (interface.name, method.name)
 
       implementations.Add(
           CLASS = interface.name,
@@ -396,7 +500,7 @@ class CPPGenerator(mojom_generator.Generator):
       struct.name, param_name, ps, self.GetTemplate("struct_serialization"))
     return self.GetTemplate("struct_serialization_definition").substitute(
         NAME = param_name,
-        CLASS = "%s::%s" % (self.module.namespace, struct.name),
+        CLASS = "%s::internal::%s_Data" % (self.module.namespace, struct.name),
         SIZES = sizes,
         CLONES = clones,
         SERIALIZATION = serialization)
@@ -431,9 +535,9 @@ class CPPGenerator(mojom_generator.Generator):
   def GenerateModuleSource(self):
     self.WriteTemplateToFile("module.cc",
         HEADER = self.GetHeaderFile(self.module.name),
-        INTERNAL_HEADER = self.GetHeaderFile(self.module.name, "internal"),
         PARAM_DEFINITIONS = self.GetParamsDefinitions(),
         STRUCT_DEFINITIONS = self.GetStructDefinitions(),
+        STRUCT_BUILDER_DEFINITIONS = self.GetStructBuilderDefinitions(),
         INTERFACE_DEFINITIONS = self.GetInterfaceDefinitions(),
         STRUCT_SERIALIZATION_DEFINITIONS =
             self.GetStructSerializationDefinitions(),
@@ -444,11 +548,13 @@ class CPPGenerator(mojom_generator.Generator):
     traits = map(
       lambda s: self.GetTemplate("struct_serialization_traits").substitute(
           NAME = mojom_generator.CamelToUnderscores(s.name),
-          FULL_CLASS = "%s::%s" % (self.module.namespace, s.name)),
+          FULL_CLASS = \
+              "%s::internal::%s" % (self.module.namespace, s.name + '_Data')),
       self.module.structs);
     self.WriteTemplateToFile("module_internal.h",
         HEADER_GUARD = self.GetHeaderGuard(self.module.name + "_INTERNAL"),
-        HEADER = self.GetHeaderFile(self.module.name),
+        WRAPPER_FORWARD_DECLARATIONS = self.GetWrapperForwardDeclarations(),
+        STRUCT_CLASS_DECLARATIONS = self.GetStructClassDeclarations(),
         TRAITS = '\n'.join(traits))
 
   def GenerateFiles(self):

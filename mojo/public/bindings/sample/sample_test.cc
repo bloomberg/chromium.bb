@@ -17,87 +17,86 @@ namespace sample {
 bool g_dump_message_as_hex = true;
 
 // Make a sample |Foo| in the given |ScratchBuffer|.
-Foo* MakeFoo(mojo::ScratchBuffer* buf) {
-  const std::string kName("foopy");
-  mojo::String* name = mojo::String::NewCopyOf(buf, kName);
+Foo MakeFoo(mojo::ScratchBuffer* buf) {
+  mojo::String name(std::string("foopy"), buf);
 
-  Bar* bar = Bar::New(buf);
-  bar->set_alpha(20);
-  bar->set_beta(40);
-  bar->set_gamma(60);
+  Bar::Builder bar(buf);
+  bar.set_alpha(20);
+  bar.set_beta(40);
+  bar.set_gamma(60);
 
-  mojo::Array<Bar*>* extra_bars = mojo::Array<Bar*>::New(buf, 3);
-  for (size_t i = 0; i < extra_bars->size(); ++i) {
-    Bar* bar = Bar::New(buf);
+  mojo::Array<Bar>::Builder extra_bars(3, buf);
+  for (size_t i = 0; i < extra_bars.size(); ++i) {
+    Bar::Builder bar(buf);
     uint8_t base = static_cast<uint8_t>(i * 100);
-    bar->set_alpha(base);
-    bar->set_beta(base + 20);
-    bar->set_gamma(base + 40);
-    (*extra_bars)[i] = bar;
+    bar.set_alpha(base);
+    bar.set_beta(base + 20);
+    bar.set_gamma(base + 40);
+    extra_bars[i] = bar.Finish();
   }
 
-  mojo::Array<uint8_t>* data = mojo::Array<uint8_t>::New(buf, 10);
-  for (size_t i = 0; i < data->size(); ++i)
-    (*data)[i] = static_cast<uint8_t>(data->size() - i);
+  mojo::Array<uint8_t>::Builder data(10, buf);
+  for (size_t i = 0; i < data.size(); ++i)
+    data[i] = static_cast<uint8_t>(data.size() - i);
 
-  mojo::Array<mojo::Handle>* files = mojo::Array<mojo::Handle>::New(buf, 4);
-  for (size_t i = 0; i < files->size(); ++i)
-    (*files)[i].set_value(static_cast<MojoHandle>(0xFFFF - i));
+  mojo::Array<mojo::Handle>::Builder files(4, buf);
+  for (size_t i = 0; i < files.size(); ++i)
+    files[i] = mojo::Handle(static_cast<MojoHandle>(0xFFFF - i));
 
-  Foo* foo = Foo::New(buf);
-  foo->set_name(name);
-  foo->set_x(1);
-  foo->set_y(2);
-  foo->set_a(false);
-  foo->set_b(true);
-  foo->set_c(false);
-  foo->set_bar(bar);
-  foo->set_extra_bars(extra_bars);
-  foo->set_data(data);
-  foo->set_files(files);
+  Foo::Builder foo(buf);
+  foo.set_name(name);
+  foo.set_x(1);
+  foo.set_y(2);
+  foo.set_a(false);
+  foo.set_b(true);
+  foo.set_c(false);
+  foo.set_bar(bar.Finish());
+  foo.set_extra_bars(extra_bars.Finish());
+  foo.set_data(data.Finish());
+  foo.set_files(files.Finish());
 
-  return foo;
+  return foo.Finish();
 }
 
 // Check that the given |Foo| is identical to the one made by |MakeFoo()|.
-void CheckFoo(const Foo* foo) {
+void CheckFoo(const Foo& foo) {
   const std::string kName("foopy");
-  EXPECT_EQ(kName.size(), foo->name()->size());
-  for (size_t i = 0; i < std::min(kName.size(), foo->name()->size()); i++) {
+  ASSERT_FALSE(foo.name().is_null());
+  EXPECT_EQ(kName.size(), foo.name().size());
+  for (size_t i = 0; i < std::min(kName.size(), foo.name().size()); i++) {
     // Test both |operator[]| and |at|.
-    EXPECT_EQ(kName[i], foo->name()->at(i)) << i;
-    EXPECT_EQ(kName[i], (*foo->name())[i]) << i;
+    EXPECT_EQ(kName[i], foo.name().at(i)) << i;
+    EXPECT_EQ(kName[i], foo.name()[i]) << i;
   }
-  EXPECT_EQ(kName, foo->name()->To<std::string>());
+  EXPECT_EQ(kName, foo.name().To<std::string>());
 
-  EXPECT_EQ(1, foo->x());
-  EXPECT_EQ(2, foo->y());
-  EXPECT_FALSE(foo->a());
-  EXPECT_TRUE(foo->b());
-  EXPECT_FALSE(foo->c());
+  EXPECT_EQ(1, foo.x());
+  EXPECT_EQ(2, foo.y());
+  EXPECT_FALSE(foo.a());
+  EXPECT_TRUE(foo.b());
+  EXPECT_FALSE(foo.c());
 
-  EXPECT_EQ(20, foo->bar()->alpha());
-  EXPECT_EQ(40, foo->bar()->beta());
-  EXPECT_EQ(60, foo->bar()->gamma());
+  EXPECT_EQ(20, foo.bar().alpha());
+  EXPECT_EQ(40, foo.bar().beta());
+  EXPECT_EQ(60, foo.bar().gamma());
 
-  EXPECT_EQ(3u, foo->extra_bars()->size());
-  for (size_t i = 0; i < foo->extra_bars()->size(); i++) {
+  EXPECT_EQ(3u, foo.extra_bars().size());
+  for (size_t i = 0; i < foo.extra_bars().size(); i++) {
     uint8_t base = static_cast<uint8_t>(i * 100);
-    EXPECT_EQ(base, (*foo->extra_bars())[i]->alpha()) << i;
-    EXPECT_EQ(base + 20, (*foo->extra_bars())[i]->beta()) << i;
-    EXPECT_EQ(base + 40, (*foo->extra_bars())[i]->gamma()) << i;
+    EXPECT_EQ(base, foo.extra_bars()[i].alpha()) << i;
+    EXPECT_EQ(base + 20, foo.extra_bars()[i].beta()) << i;
+    EXPECT_EQ(base + 40, foo.extra_bars()[i].gamma()) << i;
   }
 
-  EXPECT_EQ(10u, foo->data()->size());
-  for (size_t i = 0; i < foo->data()->size(); ++i) {
-    EXPECT_EQ(static_cast<uint8_t>(foo->data()->size() - i),
-              foo->data()->at(i)) << i;
+  EXPECT_EQ(10u, foo.data().size());
+  for (size_t i = 0; i < foo.data().size(); ++i) {
+    EXPECT_EQ(static_cast<uint8_t>(foo.data().size() - i), foo.data()[i]) << i;
   }
 
-  EXPECT_EQ(4u, foo->files()->size());
-  for (size_t i = 0; i < foo->files()->size(); ++i)
+  EXPECT_EQ(4u, foo.files().size());
+  for (size_t i = 0; i < foo.files().size(); ++i)
     EXPECT_EQ(static_cast<MojoHandle>(0xFFFF - i),
-              foo->files()->at(i).value()) << i;
+              foo.files()[i].value()) << i;
 }
 
 
@@ -126,53 +125,54 @@ static void Print(int depth, const char* name, mojo::Handle value) {
   printf("%s: 0x%x\n", name, value.value());
 }
 
-static void Print(int depth, const char* name, const mojo::String* str) {
+static void Print(int depth, const char* name, const mojo::String& str) {
+  std::string s = str.To<std::string>();
   PrintSpacer(depth);
-  printf("%s: \"%*s\"\n", name, static_cast<int>(str->size()), &str->at(0));
+  printf("%s: \"%*s\"\n", name, static_cast<int>(s.size()), s.data());
 }
 
-static void Print(int depth, const char* name, const Bar* bar) {
+static void Print(int depth, const char* name, const Bar& bar) {
   PrintSpacer(depth);
-  printf("%s: %p\n", name, bar);
-  if (bar) {
+  printf("%s:\n", name);
+  if (!bar.is_null()) {
     ++depth;
-    Print(depth, "alpha", bar->alpha());
-    Print(depth, "beta", bar->beta());
-    Print(depth, "gamma", bar->gamma());
+    Print(depth, "alpha", bar.alpha());
+    Print(depth, "beta", bar.beta());
+    Print(depth, "gamma", bar.gamma());
     --depth;
   }
 }
 
 template <typename T>
-static void Print(int depth, const char* name, const mojo::Array<T>* array) {
+static void Print(int depth, const char* name, const mojo::Array<T>& array) {
   PrintSpacer(depth);
-  printf("%s: %p\n", name, array);
-  if (array) {
+  printf("%s:\n", name);
+  if (!array.is_null()) {
     ++depth;
-    for (size_t i = 0; i < array->size(); ++i) {
+    for (size_t i = 0; i < array.size(); ++i) {
       char buf[32];
       sprintf(buf, "%lu", static_cast<unsigned long>(i));
-      Print(depth, buf, array->at(i));
+      Print(depth, buf, array.at(i));
     }
     --depth;
   }
 }
 
-static void Print(int depth, const char* name, const Foo* foo) {
+static void Print(int depth, const char* name, const Foo& foo) {
   PrintSpacer(depth);
-  printf("%s: %p\n", name, foo);
-  if (foo) {
+  printf("%s:\n", name);
+  if (!foo.is_null()) {
     ++depth;
-    Print(depth, "name", foo->name());
-    Print(depth, "x", foo->x());
-    Print(depth, "y", foo->y());
-    Print(depth, "a", foo->a());
-    Print(depth, "b", foo->b());
-    Print(depth, "c", foo->c());
-    Print(depth, "bar", foo->bar());
-    Print(depth, "extra_bars", foo->extra_bars());
-    Print(depth, "data", foo->data());
-    Print(depth, "files", foo->files());
+    Print(depth, "name", foo.name());
+    Print(depth, "x", foo.x());
+    Print(depth, "y", foo.y());
+    Print(depth, "a", foo.a());
+    Print(depth, "b", foo.b());
+    Print(depth, "c", foo.c());
+    Print(depth, "bar", foo.bar());
+    Print(depth, "extra_bars", foo.extra_bars());
+    Print(depth, "data", foo.data());
+    Print(depth, "files", foo.files());
     --depth;
   }
 }
@@ -195,7 +195,7 @@ static void DumpHex(const uint8_t* bytes, uint32_t num_bytes) {
 
 class ServiceImpl : public ServiceStub {
  public:
-  virtual void Frobinate(const Foo* foo, bool baz, mojo::Handle port)
+  virtual void Frobinate(const Foo& foo, bool baz, mojo::Handle port)
       MOJO_OVERRIDE {
     // Users code goes here to handle the incoming Frobinate message.
 
@@ -246,7 +246,7 @@ TEST(BindingsSampleTest, Basic) {
   // allocated.
 
   mojo::ScratchBuffer buf;
-  Foo* foo = MakeFoo(&buf);
+  Foo foo = MakeFoo(&buf);
   CheckFoo(foo);
 
   mojo::Handle port(static_cast<MojoHandle>(10));

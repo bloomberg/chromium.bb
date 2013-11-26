@@ -5,80 +5,76 @@
 #ifndef MOJO_PUBLIC_BINDINGS_LIB_BINDINGS_H_
 #define MOJO_PUBLIC_BINDINGS_LIB_BINDINGS_H_
 
-#include <stddef.h>
 #include <string.h>
 
-#include <new>
+#include <algorithm>
 
 #include "mojo/public/bindings/lib/bindings_internal.h"
-#include "mojo/public/bindings/lib/buffer.h"
-#include "mojo/public/system/core.h"
 
 namespace mojo {
 
+// Provides read-only access to array data.
 template <typename T>
 class Array {
  public:
-  static Array<T>* New(Buffer* buf, size_t num_elements) {
-    size_t num_bytes = sizeof(Array<T>) + sizeof(StorageType) * num_elements;
-    return new (buf->Allocate(num_bytes)) Array<T>(num_bytes, num_elements);
-  }
+  typedef internal::ArrayTraits<T, internal::TypeTraits<T>::kIsObject> Traits_;
+  typedef typename Traits_::DataType Data;
 
   template <typename U>
-  static Array<T>* NewCopyOf(Buffer* buf, const U& u) {
-    Array<T>* result = Array<T>::New(buf, u.size());
-    memcpy(result->storage(), u.data(), u.size() * sizeof(T));
-    return result;
-  }
-
-  size_t size() const { return header_.num_elements; }
-
-  T& at(size_t offset) {
-    return internal::ArrayTraits<T>::ToRef(storage()[offset]);
-  }
-
-  const T& at(size_t offset) const {
-    return internal::ArrayTraits<T>::ToConstRef(storage()[offset]);
-  }
-
-  T& operator[](size_t offset) {
-    return at(offset);
-  }
-
-  const T& operator[](size_t offset) const {
-    return at(offset);
+  Array<T>(const U& u, Buffer* buf) {
+    Data* data = Data::New(u.size(), buf);
+    memcpy(data->storage(), u.data(), u.size() * sizeof(T));
+    data_ = data;
   }
 
   template <typename U>
   U To() const {
-    return U(storage(), storage() + size());
+    assert(!internal::TypeTraits<T>::kIsObject);
+    return U(data_->storage(), data_->storage() + data_->size());
   }
 
- private:
-  friend class internal::ObjectTraits<Array<T> >;
+  bool is_null() const { return !data_; }
 
-  typedef typename internal::ArrayTraits<T>::StorageType StorageType;
+  size_t size() const { return data_->size(); }
 
-  StorageType* storage() {
-    return reinterpret_cast<StorageType*>(
-        reinterpret_cast<char*>(this) + sizeof(*this));
+  const T& at(size_t offset) const {
+    return Traits_::ToConstRef(data_->at(offset));
   }
-  const StorageType* storage() const {
-    return reinterpret_cast<const StorageType*>(
-        reinterpret_cast<const char*>(this) + sizeof(*this));
-  }
+  const T& operator[](size_t offset) const { return at(offset); }
 
-  Array(size_t num_bytes, size_t num_elements) {
-    header_.num_bytes = static_cast<uint32_t>(num_bytes);
-    header_.num_elements = static_cast<uint32_t>(num_elements);
-  }
-  ~Array() {}
+  // Provides a way to initialize an array element-by-element.
+  class Builder {
+   public:
+    typedef typename Array<T>::Data Data;
+    typedef typename Array<T>::Traits_ Traits_;
 
-  internal::ArrayHeader header_;
+    Builder(size_t num_elements, Buffer* buf)
+        : data_(Data::New(num_elements, buf)) {
+    }
 
-  // Elements of type internal::ArrayTraits<T>::StorageType follow.
+    size_t size() const { return data_->size(); }
+
+    T& at(size_t offset) {
+      return Traits_::ToRef(data_->at(offset));
+    }
+    T& operator[](size_t offset) { return at(offset); }
+
+    Array<T> Finish() {
+      Data* data = NULL;
+      std::swap(data, data_);
+      return internal::Wrap(data);
+    }
+
+   private:
+    Data* data_;
+  };
+
+ protected:
+  friend class internal::WrapperHelper<Array<T> >;
+
+  explicit Array(const Data* data) : data_(data) {}
+  const Data* data_;
 };
-MOJO_COMPILE_ASSERT(sizeof(Array<char>) == 8, bad_sizeof_Array);
 
 // UTF-8 encoded
 typedef Array<char> String;

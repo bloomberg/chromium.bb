@@ -5,9 +5,10 @@
 #include "$HEADER"
 
 #include "mojo/public/bindings/lib/message_builder.h"
-#include "$INTERNAL_HEADER"
+#include "$HEADER"
 
 namespace $NAMESPACE {
+namespace internal {
 namespace {
 
 #pragma pack(push, 1)
@@ -24,6 +25,10 @@ $PARAM_DEFINITIONS
 }  // namespace
 
 $STRUCT_DEFINITIONS
+
+}  // namespace internal
+
+$STRUCT_BUILDER_DEFINITIONS
 
 $INTERFACE_DEFINITIONS
 }  // namespace $NAMESPACE

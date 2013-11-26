@@ -15,7 +15,7 @@ class HelloWorldServiceImpl : public HelloWorldServiceStub {
  public:
   explicit HelloWorldServiceImpl(const MessagePipeHandle& pipe);
   virtual ~HelloWorldServiceImpl();
-  virtual void Greeting(const String* greeting) MOJO_OVERRIDE;
+  virtual void Greeting(const String& greeting) MOJO_OVERRIDE;
 
  private:
   RemotePtr<HelloWorldClient> client_;

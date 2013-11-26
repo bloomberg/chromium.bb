@@ -6,7 +6,20 @@
 #define $HEADER_GUARD
 
 #include "mojo/public/bindings/lib/bindings_serialization.h"
-#include "$HEADER"
+
+namespace $NAMESPACE {
+
+$WRAPPER_FORWARD_DECLARATIONS
+
+namespace internal {
+
+#pragma pack(push, 1)
+
+$STRUCT_CLASS_DECLARATIONS
+#pragma pack(pop)
+
+}  // namespace internal
+}  // namespace $NAMESPACE
 
 namespace mojo {
 namespace internal {
