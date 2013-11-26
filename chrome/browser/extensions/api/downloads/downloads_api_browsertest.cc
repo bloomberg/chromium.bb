@@ -643,6 +643,8 @@ class MockIconExtractorImpl : public DownloadFileIconExtractor {
  private:
   void RunCallback() {
     callback_.Run(response_);
+    // Drop the reference on extension function to avoid memory leaks.
+    callback_ = IconURLCallback();
   }
 
   base::FilePath             expected_path_;
