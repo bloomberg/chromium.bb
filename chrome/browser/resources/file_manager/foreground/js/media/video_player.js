@@ -152,7 +152,9 @@ function loadVideoPlayer() {
     // Request it now.
     volumeManager.ensureInitialized(reload);
     var reloadVideo = function(e) {
-      if (decodeErrorOccured) {
+      if (decodeErrorOccured &&
+          // Ignore shortcut keys
+          !e.ctrlKey && !e.altKey && !e.shiftKey && !e.metaKey) {
         reload();
         e.preventDefault();
       }
