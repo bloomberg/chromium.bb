@@ -250,9 +250,7 @@ bool AppWindowCreateFunction::RunImpl() {
 
     if (options->frame.get()) {
       if (*options->frame == kHtmlFrameOption &&
-          (GetExtension()->HasAPIPermission(APIPermission::kExperimental) ||
-           CommandLine::ForCurrentProcess()->HasSwitch(
-               switches::kEnableExperimentalExtensionApis))) {
+          GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV) {
         create_params.frame = ShellWindow::FRAME_NONE;
         inject_html_titlebar = true;
       } else if (*options->frame == kNoneFrameOption) {
@@ -263,9 +261,7 @@ bool AppWindowCreateFunction::RunImpl() {
     }
 
     if (options->transparent_background.get() &&
-        (GetExtension()->HasAPIPermission(APIPermission::kExperimental) ||
-         CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableExperimentalExtensionApis))) {
+        GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV) {
       create_params.transparent_background = *options->transparent_background;
     }
 
