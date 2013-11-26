@@ -111,6 +111,7 @@ class CC_EXPORT Tile : public RefCountedManaged<Tile> {
   friend class PrioritizedTileSet;
   friend class FakeTileManager;
   friend class BinComparator;
+  friend class FakePictureLayerImpl;
 
   // Methods called by by tile manager.
   Tile(TileManager* tile_manager,

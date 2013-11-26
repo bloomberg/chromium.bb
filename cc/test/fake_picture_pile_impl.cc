@@ -42,6 +42,19 @@ scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateEmptyPile(
   return pile;
 }
 
+scoped_refptr<FakePicturePileImpl>
+FakePicturePileImpl::CreatePileWithRecordedRegion(
+    gfx::Size tile_size,
+    gfx::Size layer_bounds,
+    const Region& recorded_region) {
+  scoped_refptr<FakePicturePileImpl> pile(new FakePicturePileImpl());
+  pile->tiling().SetTotalSize(layer_bounds);
+  pile->tiling().SetMaxTextureSize(tile_size);
+  pile->SetTileGridSize(ImplSidePaintingSettings().default_tile_size);
+  pile->SetRecordedRegionForTesting(recorded_region);
+  return pile;
+}
+
 scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreatePile() {
   scoped_refptr<FakePicturePileImpl> pile(new FakePicturePileImpl());
   gfx::Size size(std::numeric_limits<int>::max(),
