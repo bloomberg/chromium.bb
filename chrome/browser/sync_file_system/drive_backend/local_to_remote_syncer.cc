@@ -25,19 +25,11 @@ namespace drive_backend {
 
 namespace {
 
-scoped_ptr<FileTracker> FindTracker(MetadataDatabase* metadata_database,
-                                    const std::string& app_id,
-                                    const base::FilePath& full_path) {
-  DCHECK(metadata_database);
-
-  base::FilePath path;
+scoped_ptr<FileTracker> FindTrackerByID(MetadataDatabase* metadata_database,
+                                        int64 tracker_id) {
   scoped_ptr<FileTracker> tracker(new FileTracker);
-  if (metadata_database->FindNearestActiveAncestor(
-          app_id, path, tracker.get(), &path) &&
-      path == full_path) {
-    DCHECK(tracker->active());
+  if (metadata_database->FindTrackerByTrackerID(tracker_id, tracker.get()))
     return tracker.Pass();
-  }
   return scoped_ptr<FileTracker>();
 }
 
@@ -87,73 +79,124 @@ void LocalToRemoteSyncer::Run(const SyncStatusCallback& callback) {
     return;
   }
 
-  remote_file_tracker_ = FindTracker(metadata_database(),
-                                     url_.origin().host(), url_.path());
-  DCHECK(!remote_file_tracker_ || remote_file_tracker_->active());
+  SyncStatusCallback wrapped_callback = base::Bind(
+      &LocalToRemoteSyncer::SyncCompleted, weak_ptr_factory_.GetWeakPtr(),
+      callback);
 
-  if (!remote_file_tracker_ ||
-      !remote_file_tracker_->has_synced_details() ||
-      remote_file_tracker_->synced_details().missing()) {
-    // Remote file is missing, deleted or not yet synced.
-    HandleMissingRemoteFile(callback);
+  std::string app_id = url_.origin().host();
+  base::FilePath path = url_.path();
+
+  scoped_ptr<FileTracker> active_ancestor_tracker(new FileTracker);
+  base::FilePath active_ancestor_path;
+  if (!metadata_database()->FindNearestActiveAncestor(
+          app_id, path,
+          active_ancestor_tracker.get(), &active_ancestor_path)) {
+    // The app is disabled or not registered.
+    callback.Run(SYNC_STATUS_FAILED);
     return;
   }
+  DCHECK(active_ancestor_tracker->active());
+  DCHECK(active_ancestor_tracker->has_synced_details());
+  const FileDetails& active_ancestor_details =
+      active_ancestor_tracker->synced_details();
 
-  DCHECK(remote_file_tracker_);
-  DCHECK(remote_file_tracker_->active());
-  DCHECK(remote_file_tracker_->has_synced_details());
-  DCHECK(!remote_file_tracker_->synced_details().missing());
+  // TODO(tzik): Consider handling
+  // active_ancestor_tracker->synced_details().missing() case.
 
-  // An active tracker is found at the path.
-  // Check if the local change conflicts a remote change, and resolve it if
-  // needed.
-  if (remote_file_tracker_->dirty()) {
-    HandleConflict(callback);
-    return;
-  }
+  DCHECK(active_ancestor_details.file_kind() == FILE_KIND_FILE ||
+         active_ancestor_details.file_kind() == FILE_KIND_FOLDER);
 
-  DCHECK(!remote_file_tracker_->dirty());
-  HandleExistingRemoteFile(callback);
-}
-
-void LocalToRemoteSyncer::HandleMissingRemoteFile(
-    const SyncStatusCallback& callback) {
-  if (local_change_.IsDelete() ||
-      local_change_.file_type() == SYNC_FILE_TYPE_UNKNOWN) {
-    // !IsDelete() case is an error, handle the case as a local deletion case.
-    DCHECK(local_change_.IsDelete());
-
-    // Local file is deleted and remote file is missing, already deleted or not
-    // yet synced.  There is nothing to do for the file.
-    callback.Run(SYNC_STATUS_OK);
-    return;
-  }
-
-  DCHECK(local_change_.IsAddOrUpdate());
-  DCHECK(local_change_.file_type() == SYNC_FILE_TYPE_FILE ||
-         local_change_.file_type() == SYNC_FILE_TYPE_DIRECTORY);
-
-  if (PopulateRemoteParentFolder()) {
-    DCHECK(!remote_parent_folder_tracker_);
-
-    // Missing remote parent folder.
-    // TODO(tzik): Create remote parent folder and finish current sync phase as
-    // SYNC_STATUS_RETRY.
-    NOTIMPLEMENTED();
+  base::FilePath missing_entries;
+  bool should_success = active_ancestor_path.AppendRelativePath(
+      path, &missing_entries);
+  if (!should_success) {
+    NOTREACHED();
     callback.Run(SYNC_STATUS_FAILED);
     return;
   }
 
-  DCHECK(remote_parent_folder_tracker_);
-  if (local_change_.file_type() == SYNC_FILE_TYPE_FILE) {
-    // Upload local file as a new file.
-    UploadNewFile(callback);
+  std::vector<base::FilePath::StringType> missing_components;
+  fileapi::VirtualPath::GetComponents(missing_entries, &missing_components);
+
+  if (!missing_components.empty()) {
+    if (local_change_.IsDelete() ||
+        local_change_.file_type() == SYNC_FILE_TYPE_UNKNOWN) {
+      // !IsDelete() case is an error, handle the case as a local deletion case.
+      DCHECK(local_change_.IsDelete());
+
+      // Local file is deleted and remote file is missing, already deleted or
+      // not yet synced.  There is nothing to do for the file.
+      callback.Run(SYNC_STATUS_OK);
+      return;
+    }
+  }
+
+  if (missing_components.size() > 1) {
+    // The original target doesn't have remote file and parent.
+    // Try creating the parent first.
+    if (active_ancestor_details.file_kind() == FILE_KIND_FOLDER) {
+      remote_parent_folder_tracker_ = active_ancestor_tracker.Pass();
+      target_path_ = active_ancestor_path.Append(missing_components[0]);
+      CreateRemoteFolder(wrapped_callback);
+      return;
+    }
+
+    DCHECK(active_ancestor_details.file_kind() == FILE_KIND_FILE);
+    remote_parent_folder_tracker_ =
+        FindTrackerByID(metadata_database(),
+                        active_ancestor_tracker->parent_tracker_id());
+    remote_file_tracker_ = active_ancestor_tracker.Pass();
+    target_path_ = active_ancestor_path;
+    DeleteRemoteFile(base::Bind(&LocalToRemoteSyncer::DidDeleteForCreateFolder,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                wrapped_callback));
+
     return;
   }
 
-  DCHECK_EQ(SYNC_FILE_TYPE_DIRECTORY, local_change_.file_type());
-  // Create remote folder.
-  CreateRemoteFolder(callback);
+  if (missing_components.empty()) {
+    // The original target has remote active file/folder.
+    remote_parent_folder_tracker_ =
+        FindTrackerByID(metadata_database(),
+                        active_ancestor_tracker->parent_tracker_id());
+    remote_file_tracker_ = active_ancestor_tracker.Pass();
+    target_path_ = url_.path();
+    DCHECK(target_path_ == active_ancestor_path);
+
+    if (remote_file_tracker_->dirty()) {
+      // Both local and remote file has pending modification.
+      HandleConflict(wrapped_callback);
+      return;
+    }
+
+    // Non-conflicting file/folder update case.
+    HandleExistingRemoteFile(wrapped_callback);
+    return;
+  }
+
+  DCHECK(local_change_.IsAddOrUpdate());
+  DCHECK_EQ(1u, missing_components.size());
+  // The original target has remote parent folder and doesn't have remote active
+  // file.
+  // Upload the file as a new file or create a folder.
+  remote_parent_folder_tracker_ = active_ancestor_tracker.Pass();
+  target_path_ = url_.path();
+  DCHECK(target_path_ == active_ancestor_path.Append(missing_components[0]));
+  if (local_change_.file_type() == SYNC_FILE_TYPE_FILE) {
+    UploadNewFile(wrapped_callback);
+    return;
+  }
+  CreateRemoteFolder(wrapped_callback);
+}
+
+void LocalToRemoteSyncer::SyncCompleted(const SyncStatusCallback& callback,
+                                        SyncStatusCode status) {
+  if (status == SYNC_STATUS_OK && target_path_ != url_.path()) {
+    callback.Run(SYNC_STATUS_RETRY);
+    return;
+  }
+
+  callback.Run(status);
 }
 
 void LocalToRemoteSyncer::HandleConflict(const SyncStatusCallback& callback) {
@@ -362,7 +405,7 @@ void LocalToRemoteSyncer::DidDeleteForCreateFolder(
 void LocalToRemoteSyncer::UploadNewFile(const SyncStatusCallback& callback) {
   DCHECK(remote_parent_folder_tracker_);
 
-  base::FilePath title = fileapi::VirtualPath::BaseName(url_.path());
+  base::FilePath title = fileapi::VirtualPath::BaseName(target_path_);
   drive_uploader()->UploadNewFile(
       remote_parent_folder_tracker_->file_id(),
       local_path_,
@@ -429,7 +472,7 @@ void LocalToRemoteSyncer::DidUpdateDatabaseForUpload(
 
 void LocalToRemoteSyncer::CreateRemoteFolder(
     const SyncStatusCallback& callback) {
-  base::FilePath title = fileapi::VirtualPath::BaseName(url_.path());
+  base::FilePath title = fileapi::VirtualPath::BaseName(target_path_);
   DCHECK(remote_parent_folder_tracker_);
   drive_service()->AddNewDirectory(
       remote_parent_folder_tracker_->file_id(),

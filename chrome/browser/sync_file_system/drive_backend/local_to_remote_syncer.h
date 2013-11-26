@@ -45,9 +45,13 @@ class LocalToRemoteSyncer : public SyncTask {
   virtual void Run(const SyncStatusCallback& callback) OVERRIDE;
 
  private:
+  void SyncCompleted(const SyncStatusCallback& callback,
+                     SyncStatusCode status);
+
   void HandleMissingRemoteFile(const SyncStatusCallback& callback);
   void HandleConflict(const SyncStatusCallback& callback);
   void HandleExistingRemoteFile(const SyncStatusCallback& callback);
+  void HandleMissingParentCase(const SyncStatusCallback& callback);
 
   void DeleteRemoteFile(const SyncStatusCallback& callback);
   void DidDeleteRemoteFile(const SyncStatusCallback& callback,
@@ -106,6 +110,7 @@ class LocalToRemoteSyncer : public SyncTask {
 
   scoped_ptr<FileTracker> remote_file_tracker_;
   scoped_ptr<FileTracker> remote_parent_folder_tracker_;
+  base::FilePath target_path_;
 
   base::WeakPtrFactory<LocalToRemoteSyncer> weak_ptr_factory_;
 
