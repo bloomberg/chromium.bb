@@ -143,6 +143,13 @@ void TranslateBubbleView::ShowBubble(views::View* anchor_view,
                                      TranslateBubbleModel::ViewState type,
                                      Browser* browser) {
   if (IsShowing()) {
+    // When the user reads the advanced setting panel, the bubble should not be
+    // changed because he/she is focusing on the bubble.
+    if (translate_bubble_view_->web_contents() == web_contents &&
+        translate_bubble_view_->model()->GetViewState() ==
+        TranslateBubbleModel::VIEW_STATE_ADVANCED) {
+      return;
+    }
     translate_bubble_view_->SwitchView(type);
     return;
   }
