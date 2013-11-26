@@ -289,9 +289,39 @@ void ShellWindow::AddNewContents(WebContents* source,
                             initial_pos, user_gesture, was_blocked);
 }
 
+bool ShellWindow::PreHandleKeyboardEvent(
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event,
+    bool* is_keyboard_shortcut) {
+  // Here, we can handle a key event before the content gets it. When we are
+  // fullscreen, we want to allow the user to leave when ESC is pressed.
+  // However, if the application has the "overrideEscFullscreen" permission, we
+  // should let it override that behavior.
+  // ::HandleKeyboardEvent() will only be called if the KeyEvent's default
+  // action is not prevented.
+  // Thus, we should handle the KeyEvent here only if the permission is not set.
+  if (event.windowsKeyCode == ui::VKEY_ESCAPE &&
+      (fullscreen_types_ != FULLSCREEN_TYPE_NONE) &&
+      !extension_->HasAPIPermission(APIPermission::kOverrideEscFullscreen)) {
+    Restore();
+    return true;
+  }
+
+  return false;
+}
+
 void ShellWindow::HandleKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
+  // If the window is currently fullscreen, ESC should leave fullscreen.
+  // If this code is being called for ESC, that means that the KeyEvent's
+  // default behavior was not prevented by the content.
+  if (event.windowsKeyCode == ui::VKEY_ESCAPE &&
+      (fullscreen_types_ != FULLSCREEN_TYPE_NONE)) {
+    Restore();
+    return;
+  }
+
   native_app_window_->HandleKeyboardEvent(event);
 }
 

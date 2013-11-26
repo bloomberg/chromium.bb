@@ -354,6 +354,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
     { APIPermission::kFullscreen, "fullscreen" },
     { APIPermission::kAudio, "audio" },
     { APIPermission::kWebRtc, "webrtc" },
+    { APIPermission::kOverrideEscFullscreen, "overrideEscFullscreen" },
 
     // Settings override permissions.
     { APIPermission::kHomepage, "homepage",
