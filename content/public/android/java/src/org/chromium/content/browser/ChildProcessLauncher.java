@@ -221,9 +221,9 @@ public class ChildProcessLauncher {
         // Delay of 1 second used when removing the initial oom binding of a process.
         private static final long REMOVE_INITIAL_BINDING_DELAY_MILLIS = 1 * 1000;
 
-        // Delay of 5 second used when removing temporary strong binding of a process (only on
+        // Delay of 1 second used when removing temporary strong binding of a process (only on
         // non-low-memory devices).
-        private static final long DETACH_AS_ACTIVE_HIGH_END_DELAY_MILLIS = 5 * 1000;
+        private static final long DETACH_AS_ACTIVE_HIGH_END_DELAY_MILLIS = 1 * 1000;
 
         // Map from pid to the count of oom bindings bound for the service. Should be accessed with
         // mCountLock.
@@ -233,6 +233,10 @@ public class ChildProcessLauncher {
         // to drop oom bindings of a process when another one acquires them, making sure that only
         // one renderer process at a time is oom bound. Should be accessed with mCountLock.
         private int mLastOomPid = -1;
+
+        // Pid of the renderer that we bound with a strong binding for the background period. Equals
+        // -1 when the embedder is in foreground.
+        private int mBoundForBackgroundPeriodPid = -1;
 
         // Should be acquired before binding or unbinding the connections and modifying state
         // variables: mOomBindingCount and mLastOomPid.
@@ -387,6 +391,39 @@ public class ChildProcessLauncher {
                 return mOomBindingCount.get(pid) > 0;
             }
         }
+
+        /**
+         * Called when the embedding application is sent to background. We want to maintain a strong
+         * binding on the most recently used renderer while the embedder is in background, to
+         * indicate the relative importance of the renderer to system oom killer.
+         *
+         * The embedder needs to ensure that:
+         *  - every onBroughtToForeground() is followed by onSentToBackground()
+         *  - pairs of consecutive onBroughtToForeground() / onSentToBackground() calls do not
+         *    overlap
+         */
+        void onSentToBackground() {
+            assert mBoundForBackgroundPeriodPid == -1;
+            // mLastOomPid can be -1 at this point as the embedding application could be used in
+            // foreground without spawning any renderers.
+            if (mLastOomPid >= 0) {
+                bindAsHighPriority(mLastOomPid);
+                mBoundForBackgroundPeriodPid = mLastOomPid;
+            }
+        }
+
+        /**
+         * Called when the embedding application is brought to foreground. This will drop the strong
+         * binding kept on the main renderer during the background period, so the embedder should
+         * make sure that this is called after the regular strong binding is attached for the
+         * foreground session.
+         */
+        void onBroughtToForeground() {
+            if (mBoundForBackgroundPeriodPid >= 0) {
+                unbindAsHighPriority(mBoundForBackgroundPeriodPid);
+                mBoundForBackgroundPeriodPid = -1;
+            }
+        }
     }
 
     private static BindingManager sBindingManager = new BindingManager();
@@ -398,6 +435,20 @@ public class ChildProcessLauncher {
     @CalledByNative
     private static boolean isOomProtected(int pid) {
         return sBindingManager.isOomProtected(pid);
+    }
+
+    /**
+     * Called when the embedding application is sent to background.
+     */
+    public static void onSentToBackground() {
+        sBindingManager.onSentToBackground();
+    }
+
+    /**
+     * Called when the embedding application is brought to foreground.
+     */
+    public static void onBroughtToForeground() {
+        sBindingManager.onBroughtToForeground();
     }
 
     /**

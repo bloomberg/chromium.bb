@@ -704,6 +704,7 @@ public abstract class TabBase implements NavigationClient {
     /** This is currently called when committing a pre-rendered page. */
     @CalledByNative
     private void swapWebContents(final long newWebContents) {
+        if (mContentViewCore != null) mContentViewCore.onHide();
         destroyContentView(false);
         NativePage previousNativePage = mNativePage;
         mNativePage = null;
