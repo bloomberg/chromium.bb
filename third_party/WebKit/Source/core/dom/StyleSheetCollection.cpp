@@ -180,8 +180,6 @@ void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updat
 
     if (updateMode != AnalyzedStyleUpdate)
         return;
-    if (!document()->styleResolverIfExists())
-        return;
 
     // Find out which stylesheets are new.
     Vector<StyleSheetContents*> addedSheets;
