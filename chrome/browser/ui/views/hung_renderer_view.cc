@@ -41,6 +41,10 @@
 #include "ui/aura/window.h"
 #endif
 
+#if defined(OS_WIN)
+#include "ui/base/win/shell.h"
+#endif
+
 using content::WebContents;
 
 // These functions allow certain chrome platforms to override the default hung
@@ -323,6 +327,16 @@ bool HungRendererDialogView::Accept(bool window_closing) {
   if (hung_pages_table_model_->GetRenderViewHost())
     hung_pages_table_model_->GetRenderViewHost()->RestartHangMonitorTimeout();
   return true;
+}
+
+
+bool HungRendererDialogView::UseNewStyleForThisDialog() const {
+#if defined(OS_WIN)
+  // Use the old dialog style without Aero glass, otherwise the dialog will be
+  // visually constrained to browser window bounds. See http://crbug.com/323278
+  return ui::win::IsAeroGlassEnabled();
+#endif
+  return views::DialogDelegateView::UseNewStyleForThisDialog();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

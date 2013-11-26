@@ -126,6 +126,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
   virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual views::View* CreateExtraView() OVERRIDE;
   virtual bool Accept(bool window_closing)  OVERRIDE;
+  virtual bool UseNewStyleForThisDialog() const OVERRIDE;
 
   // views::ButtonListener overrides:
   virtual void ButtonPressed(views::Button* sender,
