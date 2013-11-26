@@ -50,6 +50,14 @@ Value::Value(const ParseNode* origin, const char* str_val)
 Value::~Value() {
 }
 
+void Value::RecursivelySetOrigin(const ParseNode* origin) {
+  set_origin(origin);
+  if (type_ == Value::LIST) {
+    for (size_t i = 0; i < list_value_.size(); i++)
+      list_value_[i].RecursivelySetOrigin(origin);
+  }
+}
+
 // static
 const char* Value::DescribeType(Type t) {
   switch (t) {

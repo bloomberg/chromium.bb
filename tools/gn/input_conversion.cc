@@ -48,15 +48,6 @@ Err MakeParseErr(const std::string& input,
 }
 
 // Sets the origin of the value and any nested values with the given node.
-void RecursivelySetOrigin(Value* value, const ParseNode* origin) {
-  value->set_origin(origin);
-  if (value->type() == Value::LIST) {
-    std::vector<Value>& list_value = value->list_value();
-    for (size_t i = 0; i < list_value.size(); i++)
-      RecursivelySetOrigin(&list_value[i], origin);
-  }
-}
-
 Value ParseString(const std::string& input,
                   const ParseNode* origin,
                   Err* err) {
@@ -103,7 +94,7 @@ Value ParseString(const std::string& input,
   // made on the stack. If the values are used in an error message in the
   // future, this will crash. Reset the origin of all values to be our
   // containing origin.
-  RecursivelySetOrigin(&result, origin);
+  result.RecursivelySetOrigin(origin);
   return result;
 }
 

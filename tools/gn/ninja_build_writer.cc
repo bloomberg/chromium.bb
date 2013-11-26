@@ -153,7 +153,8 @@ void NinjaBuildWriter::WriteNinjaRules() {
   out_ << "  description = ECHO $desc\n";
   out_ << "build show: echo\n";
   out_ << "  desc = build arguments:\n";
-  out_ << "  text = " << (args.empty() ? std::string("<default args>") : args)
+  out_ << "  text = "
+       << (args.empty() ? std::string("No build args, using defaults.") : args)
        << "\n";
 
   // Input build files. These go in the ".d" file. If we write them as

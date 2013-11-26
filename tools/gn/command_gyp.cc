@@ -17,14 +17,18 @@
 #include "tools/gn/gyp_helper.h"
 #include "tools/gn/gyp_target_writer.h"
 #include "tools/gn/location.h"
+#include "tools/gn/parser.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/source_file.h"
 #include "tools/gn/standard_out.h"
 #include "tools/gn/target.h"
+#include "tools/gn/tokenizer.h"
 
 namespace commands {
 
 namespace {
+
+static const char kSwitchGypVars[] = "gyp_vars";
 
 typedef GypTargetWriter::TargetGroup TargetGroup;
 typedef std::map<Label, TargetGroup> CorrelatedTargetsMap;
@@ -123,108 +127,76 @@ bool EnsureTargetsMatch(const TargetGroup& group, Err* err) {
   return true;
 }
 
-// Python uses shlex.split, which we partially emulate here.
-//
-// Advances to the next "word" in a GYP_DEFINES entry. This is something
-// separated by whitespace or '='. We allow backslash escaping and quoting.
-// The return value will be the index into the array immediately following the
-// word, and the contents of the word will be placed into |*word|.
-size_t GetNextGypDefinesWord(const std::string& defines,
-                             size_t cur,
-                             std::string* word) {
-  size_t i = cur;
-  bool is_quoted = false;
-  if (cur < defines.size() && defines[cur] == '"') {
-    i++;
-    is_quoted = true;
-  }
-
-  for (; i < defines.size(); i++) {
-    // Handle certain escape sequences: \\, \", \<space>.
-    if (defines[i] == '\\' && i < defines.size() - 1 &&
-        (defines[i + 1] == '\\' ||
-         defines[i + 1] == ' ' ||
-         defines[i + 1] == '=' ||
-         defines[i + 1] == '"')) {
-      i++;
-      word->push_back(defines[i]);
-      continue;
-    }
-    if (is_quoted && defines[i] == '"') {
-      // Got to the end of the quoted sequence.
-      return i + 1;
-    }
-    if (!is_quoted && (defines[i] == ' ' || defines[i] == '=')) {
-      return i;
-    }
-    word->push_back(defines[i]);
-  }
-  return i;
+bool IsStringValueEqualTo(const Value& v, const char* cmp) {
+  if (v.type() != Value::STRING)
+    return false;
+  return v.string_value() == cmp;
 }
 
-// Advances to the beginning of the next word, or the size of the string if
-// the end was encountered.
-size_t AdvanceToNextGypDefinesWord(const std::string& defines, size_t cur) {
-  while (cur < defines.size() && defines[cur] == ' ')
-    cur++;
-  return cur;
-}
+bool GetGypVars(Scope::KeyValueMap* values) {
+  const CommandLine* cmdline = CommandLine::ForCurrentProcess();
+  std::string args = cmdline->GetSwitchValueASCII(kSwitchGypVars);
+  if (args.empty())
+    return true;  // Nothing to set.
 
-// The GYP defines looks like:
-//   component=shared_library
-//   component=shared_library foo=1
-//   component=shared_library foo=1 windows_sdk_dir="C:\Program Files\..."
-StringStringMap GetGypDefines() {
-  StringStringMap result;
+  SourceFile empty_source_file;
+  InputFile vars_input_file(empty_source_file);
+  vars_input_file.SetContents(args);
+  vars_input_file.set_friendly_name("the command-line \"--gyp_vars\"");
 
-  scoped_ptr<base::Environment> env(base::Environment::Create());
-  std::string defines;
-  if (!env->GetVar("GYP_DEFINES", &defines) || defines.empty())
-    return result;
-
-  size_t cur = 0;
-  while (cur < defines.size()) {
-    std::string key;
-    cur = AdvanceToNextGypDefinesWord(defines, cur);
-    cur = GetNextGypDefinesWord(defines, cur, &key);
-
-    // The words should be separated by an equals.
-    cur = AdvanceToNextGypDefinesWord(defines, cur);
-    if (cur == defines.size())
-      break;
-    if (defines[cur] != '=')
-      continue;
-    cur++;  // Skip over '='.
-
-    std::string value;
-    cur = AdvanceToNextGypDefinesWord(defines, cur);
-    cur = GetNextGypDefinesWord(defines, cur, &value);
-
-    result[key] = value;
+  Err err;
+  std::vector<Token> vars_tokens = Tokenizer::Tokenize(&vars_input_file, &err);
+  if (err.has_error()) {
+    err.PrintToStdout();
+    return false;
   }
 
-  return result;
+  scoped_ptr<ParseNode> vars_root(Parser::Parse(vars_tokens, &err));
+  if (err.has_error()) {
+    err.PrintToStdout();
+    return false;
+  }
+
+  BuildSettings empty_build_settings;
+  Settings empty_settings(&empty_build_settings, std::string());
+  Scope vars_scope(&empty_settings);
+  vars_root->AsBlock()->ExecuteBlockInScope(&vars_scope, &err);
+  if (err.has_error()) {
+    err.PrintToStdout();
+    return false;
+  }
+
+  // Since our InputFile and parsing structure is going away, we need to
+  // break the dependency on those.
+  vars_scope.GetCurrentScopeValues(values);
+  for (Scope::KeyValueMap::iterator i = values->begin();
+       i != values->end(); ++i)
+    i->second.RecursivelySetOrigin(NULL);
+  return true;
 }
 
 // Returns a set of args from known GYP define values.
-Scope::KeyValueMap GetArgsFromGypDefines() {
-  StringStringMap gyp_defines = GetGypDefines();
-
-  Scope::KeyValueMap result;
+bool GetArgsFromGypDefines(Scope::KeyValueMap* args) {
+  Scope::KeyValueMap gyp_defines;
+  if (!GetGypVars(&gyp_defines))
+    return false;
 
   static const char kIsComponentBuild[] = "is_component_build";
-  if (gyp_defines["component"] == "shared_library") {
-    result[kIsComponentBuild] = Value(NULL, true);
+  Value component = gyp_defines["component"];
+  if (IsStringValueEqualTo(component, "shared_library")) {
+    (*args)[kIsComponentBuild] = Value(NULL, true);
   } else {
-    result[kIsComponentBuild] = Value(NULL, false);
+    (*args)[kIsComponentBuild] = Value(NULL, false);
   }
 
   // Windows SDK path. GYP and the GN build use the same name.
   static const char kWinSdkPath[] = "windows_sdk_path";
-  if (!gyp_defines[kWinSdkPath].empty())
-    result[kWinSdkPath] = Value(NULL, gyp_defines[kWinSdkPath]);
+  Value win_sdk_path = gyp_defines[kWinSdkPath];
+  if (win_sdk_path.type() == Value::STRING &&
+      !win_sdk_path.string_value().empty())
+    (*args)[kWinSdkPath] = win_sdk_path;
 
-  return result;
+  return true;
 }
 
 // Returns the (number of targets, number of GYP files).
@@ -323,6 +295,12 @@ const char kGyp_Help[] =
     "    of the current directory, so \"//foo/bar:baz\" would be\n"
     "    \"<(DEPTH)/foo/bar/bar.gyp:baz\".\n"
     "\n"
+    "Switches\n"
+    "  --gyp_vars\n"
+    "      The GYP variables converted to a GN-style string lookup.\n"
+    "      For example:\n"
+    "      --gyp_vars=\"component=\\\"shared_library\\\" use_aura=\\\"1\\\"\"\n"
+    "\n"
     "Example:\n"
     "  # This target is assumed to be in the GYP build in the file\n"
     "  # \"foo/foo.gyp\". This declaration tells GN where to find the GYP\n"
@@ -351,8 +329,11 @@ int RunGyp(const std::vector<std::string>& args) {
   if (!setup_debug->DoSetup())
     return 1;
   const char kIsDebug[] = "is_debug";
-  setup_debug->build_settings().build_args().AddArgOverrides(
-      GetArgsFromGypDefines());
+
+  Scope::KeyValueMap gyp_defines_args;
+  if (!GetArgsFromGypDefines(&gyp_defines_args))
+    return 1;
+  setup_debug->build_settings().build_args().AddArgOverrides(gyp_defines_args);
   setup_debug->build_settings().build_args().AddArgOverride(
       kIsDebug, Value(NULL, true));
 
