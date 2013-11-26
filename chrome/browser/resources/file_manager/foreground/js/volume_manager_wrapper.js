@@ -89,7 +89,7 @@ VolumeManagerWrapper.prototype.onReady_ = function(volumeManager) {
   for (var i = 0; i < this.volumeManager_.volumeInfoList.length; i++) {
     var volumeInfo = this.volumeManager_.volumeInfoList.item(i);
     // TODO(hidehiko): Filter mounted volumes located on Drive File System.
-    if (!this.driveEnabled_ && volumeInfo.volumeType == 'drive')
+    if (!this.driveEnabled_ && volumeInfo.volumeType === util.VolumeType.DRIVE)
       continue;
     volumeInfoList.push(volumeInfo);
   }
@@ -135,9 +135,9 @@ VolumeManagerWrapper.prototype.dispose = function() {
 VolumeManagerWrapper.prototype.onEvent_ = function(event) {
   if (!this.driveEnabled_) {
     // If the drive is disabled, ignore all drive related events.
-    if (event.type == 'drive-connection-changed' ||
-        (event.type == 'externally-unmounted' &&
-         event.volumeType == 'drive'))
+    if (event.type === 'drive-connection-changed' ||
+        (event.type === 'externally-unmounted' &&
+         event.volumeType === util.VolumeType.DRIVE))
       return;
   }
 
@@ -159,20 +159,21 @@ VolumeManagerWrapper.prototype.onVolumeInfoListUpdated_ = function(event) {
     // Filters drive related volumes.
     var index = event.index;
     for (var i = 0; i < event.index; i++) {
-      if (this.volumeManager_.volumeInfoList.item(i).volumeType == 'drive')
+      if (this.volumeManager_.volumeInfoList.item(i).volumeType ===
+          util.VolumeType.DRIVE)
         index--;
     }
 
     var numRemovedVolumes = 0;
     for (var i = 0; i < event.removed.length; i++) {
-      if (event.removed[i].volumeType != 'drive')
+      if (event.removed[i].volumeType !== util.VolumeType.DRIVE)
         numRemovedVolumes++;
     }
 
     var addedVolumes = [];
     for (var i = 0; i < event.added.length; i++) {
       var volumeInfo = event.added[i];
-      if (volumeInfo.volumeType != 'drive')
+      if (volumeInfo.volumeType !== util.VolumeType.DRIVE)
         addedVolumes.push(volumeInfo);
     }
 
@@ -221,7 +222,7 @@ VolumeManagerWrapper.prototype.getVolumeInfo = function(mountPath) {
     return null;
 
   var volumeInfo = this.volumeManager_.getVolumeInfo(mountPath);
-  if (!this.driveEnabled_ && volumeInfo.volumeType == 'drive')
+  if (!this.driveEnabled_ && volumeInfo.volumeType === util.VolumeType.DRIVE)
     return null;
 
   return volumeInfo;

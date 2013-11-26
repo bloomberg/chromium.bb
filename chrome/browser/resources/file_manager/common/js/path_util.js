@@ -6,9 +6,10 @@
 
 /**
  * Type of a root directory.
- * @enum
+ * @enum {string}
+ * @const
  */
-var RootType = {
+var RootType = Object.freeze({
   DOWNLOADS: 'downloads',
   ARCHIVE: 'archive',
   REMOVABLE: 'removable',
@@ -16,13 +17,14 @@ var RootType = {
   DRIVE_OFFLINE: 'drive_offline',  // A fake root. Not the actual filesystem.
   DRIVE_SHARED_WITH_ME: 'drive_shared_with_me',  // A fake root.
   DRIVE_RECENT: 'drive_recent'  // A fake root.
-};
+});
 
 /**
  * Top directory for each root type.
- * @type {Object.<RootType,string>}
+ * @enum {string}
+ * @const
  */
-var RootDirectory = {
+var RootDirectory = Object.freeze({
   DOWNLOADS: '/Downloads',
   ARCHIVE: '/archive',
   REMOVABLE: '/removable',
@@ -30,17 +32,18 @@ var RootDirectory = {
   DRIVE_OFFLINE: '/drive_offline',  // A fake root. Not the actual filesystem.
   DRIVE_SHARED_WITH_ME: '/drive_shared_with_me',  // A fake root.
   DRIVE_RECENT: '/drive_recent'  // A fake root.
-};
+});
 
 /**
  * Sub root directory for Drive. "root" and "other". This is not used now.
  * TODO(haruki): Add namespaces support. http://crbug.com/174233.
- * @enum
+ * @enum {string}
+ * @const
  */
-var DriveSubRootDirectory = {
+var DriveSubRootDirectory = Object.freeze({
   ROOT: 'root',
   OTHER: 'other',
-};
+});
 
 var PathUtil = {};
 

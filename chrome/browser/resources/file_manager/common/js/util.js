@@ -1156,6 +1156,7 @@ util.getCurrentLocaleOrDefault = function() {
 /**
  * Error type of VolumeManager.
  * @enum {string}
+ * @const
  */
 util.VolumeError = Object.freeze({
   /* Internal errors */
@@ -1179,6 +1180,7 @@ util.VolumeError = Object.freeze({
  * file_browser_private_api.cc.
  *
  * @enum {string}
+ * @const
  */
 util.DriveConnectionType = Object.freeze({
   OFFLINE: 'offline',  // Connection is offline or drive is unavailable.
@@ -1193,6 +1195,7 @@ util.DriveConnectionType = Object.freeze({
  * file_browser_private_api.cc.
  *
  * @enum {string}
+ * @const
  */
 util.DriveConnectionReason = Object.freeze({
   NOT_READY: 'not_ready',    // Drive is not ready or authentication is failed.
@@ -1203,6 +1206,7 @@ util.DriveConnectionReason = Object.freeze({
 /**
  * The type of each volume.
  * @enum {string}
+ * @const
  */
 util.VolumeType = Object.freeze({
   DRIVE: 'drive',
