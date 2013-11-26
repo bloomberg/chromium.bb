@@ -16,10 +16,9 @@ class InstanceHandle;
 class URLUtil_Dev {
  public:
   // This class is just a collection of random functions that aren't
-  // particularly attached to anything. So this getter returns a cached
-  // instance of this interface. This may return NULL if the browser doesn't
-  // support the URLUtil interface. Since this is a singleton, don't delete the
-  // pointer.
+  // particularly attached to anything. This may return NULL if the
+  // browser doesn't support the URLUtil interface. Since this is a
+  // singleton, don't delete the pointer.
   static const URLUtil_Dev* Get();
 
   Var Canonicalize(const Var& url,
@@ -45,13 +44,11 @@ class URLUtil_Dev {
                            PP_URLComponents_Dev* components = NULL) const;
 
  private:
-  URLUtil_Dev() : interface_(NULL) {}
+  URLUtil_Dev() {}
 
   // Copy and assignment are disallowed.
   URLUtil_Dev(const URLUtil_Dev& other);
   URLUtil_Dev& operator=(const URLUtil_Dev& other);
-
-  const PPB_URLUtil_Dev* interface_;
 };
 
 }  // namespace pp

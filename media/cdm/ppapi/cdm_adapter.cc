@@ -259,7 +259,12 @@ void CdmAdapter::GenerateKeyRequest(uint32_t reference_id,
 
 #if defined(CHECK_DOCUMENT_URL)
   PP_URLComponents_Dev url_components = {};
-  pp::Var href = pp::URLUtil_Dev::Get()->GetDocumentURL(
+  const pp::URLUtil_Dev* url_util = pp::URLUtil_Dev::Get();
+  if (!url_util) {
+    SendUnknownKeyError(reference_id);
+    return;
+  }
+  pp::Var href = url_util->GetDocumentURL(
       pp::InstanceHandle(pp_instance()), &url_components);
   PP_DCHECK(href.is_string());
   PP_DCHECK(!href.AsString().empty());
