@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdio.h>
+#include <locale>
 #include <string>
 #include <vector>
 
@@ -177,6 +178,13 @@ int main(int argc, char *argv[]) {
 
   base::AtExitManager at_exit;
   CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+
+#if defined(OS_LINUX)
+  // Select the locale from the environment by passing an empty string instead
+  // of the default "C" locale. This is particularly needed for the keycode
+  // conversion code to work.
+  std::setlocale(LC_ALL, "");
+#endif
 
   // Parse command line flags.
   int port = 9515;
