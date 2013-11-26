@@ -36,14 +36,10 @@ void ExpectFalse(bool condition, const std::string& description) {
   EXPECT_FALSE(condition) << description;
 }
 
-void ExpectEqual(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Arguments args(info);
-
-  std::string description;
-  if (!ConvertFromV8(info[2], &description))
-    return args.ThrowTypeError("Expected description.");
-
-  EXPECT_TRUE(info[0]->StrictEquals(info[1])) << description;
+void ExpectEqual(const v8::Handle<v8::Value> expected,
+                 const v8::Handle<v8::Value> actual,
+                 const std::string& description) {
+  EXPECT_TRUE(expected->StrictEquals(actual)) << description;
 }
 
 WrapperInfo g_wrapper_info = { kEmbedderNativeGin };
@@ -65,7 +61,7 @@ v8::Local<v8::ObjectTemplate> GTest::GetTemplate(v8::Isolate* isolate) {
     templ->Set(StringToSymbol(isolate, "expectFalse"),
                CreateFunctionTempate(isolate, base::Bind(ExpectFalse)));
     templ->Set(StringToSymbol(isolate, "expectEqual"),
-               v8::FunctionTemplate::New(ExpectEqual));
+               CreateFunctionTempate(isolate, base::Bind(ExpectEqual)));
     data->SetObjectTemplate(&g_wrapper_info, templ);
   }
   return templ;

@@ -1,0 +1,119 @@
+$$ This is a pump file for generating file templates.  Pump is a python
+$$ script that is part of the Google Test suite of utilities.  Description
+$$ can be found here:
+$$
+$$ http://code.google.com/p/googletest/wiki/PumpManual
+$$
+
+$var MAX_ARITY = 3
+
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/callback.h"
+#include "base/logging.h"
+#include "gin/arguments.h"
+#include "gin/converter.h"
+#include "gin/public/gin_embedders.h"
+#include "gin/public/wrapper_info.h"
+#include "gin/wrappable.h"
+
+#include "v8/include/v8.h"
+
+namespace gin {
+
+class PerIsolateData;
+
+namespace internal {
+
+template<typename T>
+struct RemoveConstRef {
+  typedef T Type;
+};
+template<typename T>
+struct RemoveConstRef<const T&> {
+  typedef T Type;
+};
+
+}  // namespace internal
+
+
+// CallbackHolder and CallbackHolderBase are used to pass a base::Callback from
+// CreateFunctionTemplate through v8 (via v8::FunctionTemplate) to 
+// DispatchCallback, where it is invoked.
+//
+// v8::FunctionTemplate only supports passing void* as data so how do we know
+// when to delete the base::Callback? That's where CallbackHolderBase comes in.
+// It inherits from Wrappable, which delete itself when both (a) the refcount
+// via base::RefCounted has dropped to zero, and (b) there are no more
+// JavaScript references in V8.
+class CallbackHolderBase : public Wrappable {
+ public:
+  static void EnsureRegistered(PerIsolateData* isolate_data);
+  virtual WrapperInfo* GetWrapperInfo() OVERRIDE;
+  static WrapperInfo kWrapperInfo;
+ protected:
+  virtual ~CallbackHolderBase() {}
+};
+
+template<>
+struct Converter<CallbackHolderBase*>
+    : public WrappableConverter<CallbackHolderBase> {};
+
+template<typename Sig>
+class CallbackHolder : public CallbackHolderBase {
+ public:
+  CallbackHolder(const base::Callback<Sig>& callback)
+      : callback(callback) {}
+  base::Callback<Sig> callback;
+ private:
+  virtual ~CallbackHolder() {}
+};
+
+$range ARITY 0..MAX_ARITY
+$for ARITY [[
+$range ARG 1..ARITY
+
+template<typename R$for ARG [[, typename P$(ARG)]]>
+static void DispatchToCallback(
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
+  Arguments args(info);
+  CallbackHolderBase* holder_base = NULL;
+  CHECK(args.GetData(&holder_base));
+
+  typedef CallbackHolder<void($for ARG , [[P$(ARG)]])> HolderT;
+  HolderT* holder = static_cast<HolderT*>(holder_base);
+
+$if ARITY != 0 [[
+
+
+$for ARG [[  typename internal::RemoveConstRef<P$(ARG)>::Type a$(ARG);
+
+]]
+  if (
+$for ARG  ||
+      [[!args.GetNext(&a$(ARG))]]) {
+    args.ThrowError();
+    return;
+  }
+
+]]
+
+  holder->callback.Run($for ARG , [[a$(ARG)]]);
+}
+
+template<typename R$for ARG [[, typename P$(ARG)]]>
+v8::Local<v8::FunctionTemplate> CreateFunctionTempate(
+    v8::Isolate* isolate,
+    const base::Callback<R($for ARG , [[P$(ARG)]])> callback) {
+  typedef CallbackHolder<void($for ARG , [[P$(ARG)]])> HolderT;
+  scoped_refptr<HolderT> holder(new HolderT(callback));
+  return v8::FunctionTemplate::New(
+      &DispatchToCallback<R$for ARG [[, P$(ARG)]]>,
+      ConvertToV8<CallbackHolderBase*>(isolate, holder.get()));
+}
+
+]]
+
+}  // namespace gin
