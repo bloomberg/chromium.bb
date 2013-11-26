@@ -1478,6 +1478,8 @@ class TestPageHandler(testserver_base.BasePageHandler):
     if not self._ShouldHandleRequest('/rangereset'):
       return False
 
+    # HTTP/1.1 is required for ETag and range support.
+    self.protocol_version = 'HTTP/1.1'
     _, _, url_path, _, query, _ = urlparse.urlparse(self.path)
 
     # Defaults

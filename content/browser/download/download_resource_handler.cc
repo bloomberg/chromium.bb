@@ -168,12 +168,15 @@ bool DownloadResourceHandler::OnResponseStarted(
   // Get the last modified time and etag.
   const net::HttpResponseHeaders* headers = request()->response_headers();
   if (headers) {
-    // TODO(asanka): Only store these if headers->HasStrongValidators() is true.
-    //     See RFC 2616 section 13.3.3.
-    if (!headers->EnumerateHeader(NULL, "Last-Modified", &info->last_modified))
-      info->last_modified.clear();
-    if (!headers->EnumerateHeader(NULL, "ETag", &info->etag))
-      info->etag.clear();
+    if (headers->HasStrongValidators()) {
+      // If we don't have strong validators as per RFC 2616 section 13.3.3, then
+      // we neither store nor use them for range requests.
+      if (!headers->EnumerateHeader(NULL, "Last-Modified",
+                                    &info->last_modified))
+        info->last_modified.clear();
+      if (!headers->EnumerateHeader(NULL, "ETag", &info->etag))
+        info->etag.clear();
+    }
 
     int status = headers->response_code();
     if (2 == status / 100  && status != net::HTTP_PARTIAL_CONTENT) {
