@@ -24,6 +24,88 @@ import mock
 Dir = cros_test_lib.Directory
 
 
+class TruthTableTest(cros_test_lib.TestCase):
+  """Test TruthTable functionality."""
+
+  def _TestTableSanity(self, tt, lines):
+    """Run the given truth table through basic sanity checks.
+
+    Args:
+      tt: A TruthTable object.
+      lines: The expect input lines, in order (list of tuples).
+    """
+    # Check that more than one iterable can be used at once.
+    iter1 = iter(tt)
+    iter2 = iter(tt)
+    self.assertEquals(lines[0], iter1.next())
+    self.assertEquals(lines[0], iter2.next())
+    self.assertEquals(lines[1], iter2.next())
+
+    # Check that iteration again works again.
+    for ix, line in enumerate(tt):
+      self.assertEquals(lines[ix], line)
+
+    # Check direct access of input lines.
+    for i in xrange(len(tt)):
+      self.assertEquals(lines[i], tt.GetInputs(i))
+
+    # Check assertions on bad input to GetInputs.
+    self.assertRaises(ValueError, tt.GetInputs, -1)
+    self.assertRaises(ValueError, tt.GetInputs, len(tt))
+
+  def testTwoDimensions(self):
+    """Test TruthTable behavior for two boolean inputs."""
+    tt = cros_test_lib.TruthTable(inputs=[(True, True), (True, False)])
+    self.assertEquals(len(tt), pow(2, 2))
+
+    # Check truth table output.
+    self.assertFalse(tt.GetOutput((False, False)))
+    self.assertFalse(tt.GetOutput((False, True)))
+    self.assertTrue(tt.GetOutput((True, False)))
+    self.assertTrue(tt.GetOutput((True, True)))
+
+    # Check assertions on bad input to GetOutput.
+    self.assertRaises(TypeError, tt.GetOutput, True)
+    self.assertRaises(ValueError, tt.GetOutput, (True, True, True))
+
+    # Check iteration over input lines.
+    lines = list(tt)
+    self.assertEquals((False, False), lines[0])
+    self.assertEquals((False, True), lines[1])
+    self.assertEquals((True, False), lines[2])
+    self.assertEquals((True, True), lines[3])
+
+    self._TestTableSanity(tt, lines)
+
+  def testFourDimensions(self):
+    """Test TruthTable behavior for four boolean inputs."""
+    false1 = (True, True, True, False)
+    false2 = (True, False, True, False)
+    true1 = (False, True, False, True)
+    true2 = (True, True, False, False)
+    tt = cros_test_lib.TruthTable(inputs=(false1, false2), input_result=False)
+    self.assertEquals(len(tt), pow(2, 4))
+
+    # Check truth table output.
+    self.assertFalse(tt.GetOutput(false1))
+    self.assertFalse(tt.GetOutput(false2))
+    self.assertTrue(tt.GetOutput(true1))
+    self.assertTrue(tt.GetOutput(true2))
+
+    # Check assertions on bad input to GetOutput.
+    self.assertRaises(TypeError, tt.GetOutput, True)
+    self.assertRaises(ValueError, tt.GetOutput, (True, True, True))
+
+    # Check iteration over input lines.
+    lines = list(tt)
+    self.assertEquals((False, False, False, False), lines[0])
+    self.assertEquals((False, False, False, True), lines[1])
+    self.assertEquals((False, True, True, True), lines[7])
+    self.assertEquals((True, True, True, True), lines[15])
+
+    self._TestTableSanity(tt, lines)
+
+
 class VerifyTarballTest(cros_test_lib.MockTempDirTestCase):
   """Test tarball verification functionality."""
 
