@@ -109,16 +109,16 @@ class SerialConnection : public ApiResource,
   virtual bool GetInfo(api::serial::ConnectionInfo* info) const;
 
   // Reads current control signals (DCD, CTS, etc.) into an existing
-  // ControlSignals structure. Returns |true| iff the signals were
+  // DeviceControlSignals structure. Returns |true| iff the signals were
   // successfully read.
-  virtual bool GetControlSignals(api::serial::ControlSignals* control_signals)
-      const;
+  virtual bool GetControlSignals(api::serial::DeviceControlSignals*
+                                 control_signals) const;
 
   // Sets one or more control signals (DTR and/or RTS). Returns |true| iff
   // the signals were successfully set. Unininitialized flags in the
-  // ControlSignals structure are left unchanged.
+  // HostControlSignals structure are left unchanged.
   virtual bool SetControlSignals(
-      const api::serial::ControlSignals& control_signals);
+      const api::serial::HostControlSignals& control_signals);
 
   static const BrowserThread::ID kThreadId = BrowserThread::IO;
 

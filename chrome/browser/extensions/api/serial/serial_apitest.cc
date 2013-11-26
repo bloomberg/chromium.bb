@@ -92,11 +92,12 @@ class FakeEchoSerialConnection : public SerialConnection {
     return true;
   }
 
-  virtual bool GetControlSignals(api::serial::ControlSignals* signals) const {
-    signals->dcd.reset(new bool(true));
-    signals->cts.reset(new bool(true));
-    signals->dtr.reset(new bool(true));
-    signals->ri.reset(new bool(true));
+  virtual bool GetControlSignals(api::serial::DeviceControlSignals* signals)
+      const {
+    signals->dcd = true;
+    signals->cts = true;
+    signals->ri = true;
+    signals->dsr = true;
     return true;
   }
 
@@ -114,7 +115,7 @@ class FakeEchoSerialConnection : public SerialConnection {
     return true;
   }
 
-  MOCK_METHOD1(SetControlSignals, bool(const api::serial::ControlSignals&));
+  MOCK_METHOD1(SetControlSignals, bool(const api::serial::HostControlSignals&));
 
  private:
   bool opened_;

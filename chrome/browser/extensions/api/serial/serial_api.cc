@@ -381,7 +381,7 @@ void SerialGetControlSignalsFunction::Work() {
     return;
   }
 
-  serial::ControlSignals signals;
+  serial::DeviceControlSignals signals;
   if (!connection->GetControlSignals(&signals)) {
     error_ = kErrorGetControlSignalsFailed;
     return;

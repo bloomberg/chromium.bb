@@ -196,22 +196,22 @@ bool SerialConnection::Flush() const {
   return tcflush(file_, TCIOFLUSH) == 0;
 }
 
-bool SerialConnection::GetControlSignals(api::serial::ControlSignals* signals)
-    const {
+bool SerialConnection::GetControlSignals(
+    api::serial::DeviceControlSignals* signals) const {
   int status;
   if (ioctl(file_, TIOCMGET, &status) == -1) {
     return false;
   }
 
-  signals->dcd.reset(new bool(status & TIOCM_CAR));
-  signals->cts.reset(new bool(status & TIOCM_CTS));
-  signals->dsr.reset(new bool(status & TIOCM_DSR));
-  signals->ri.reset(new bool(status & TIOCM_RI));
+  signals->dcd = (status & TIOCM_CAR) != 0;
+  signals->cts = (status & TIOCM_CTS) != 0;
+  signals->dsr = (status & TIOCM_DSR) != 0;
+  signals->ri = (status & TIOCM_RI) != 0;
   return true;
 }
 
 bool SerialConnection::SetControlSignals(
-    const api::serial::ControlSignals& signals) {
+    const api::serial::HostControlSignals& signals) {
   int status;
 
   if (ioctl(file_, TIOCMGET, &status) == -1) {

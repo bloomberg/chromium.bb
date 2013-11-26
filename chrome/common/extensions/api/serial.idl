@@ -160,31 +160,36 @@ namespace serial {
 
   callback FlushCallback = void (boolean result);
 
-  // Boolean true = mark signal (negative serial voltage).
-  // Boolean false = space signal (positive serial voltage).
-  //
-  // For SetControlSignals, include the sendable signals that you wish to
-  // change. Signals not included in the dictionary will be left unchanged.
-  //
-  // GetControlSignals includes all receivable signals.
-  dictionary ControlSignals {
-    // Serial control signals that your machine can send. Missing fields will
-    // not be changed.
+  // The set of control signals which may be sent to a connected serial device
+  // using <code>setControlSignals</code>. Note that support for these signals
+  // is device-dependent.
+  dictionary HostControlSignals {
+    // DTR (Data Terminal Ready).
     boolean? dtr;
-    boolean? rts;
 
-    // Serial control signals that your machine can receive.
-    //
-    // DCD (Data Carrier Detect) is equivalent to RLSD (Receive Line Signal
-    // Detect) on some platforms.
-    boolean? dcd;
-    boolean? cts;
-    boolean? ri;
-    boolean? dsr;
+    // RTS (Request To Send).
+    boolean? rts;
+  };
+
+  // The set of control signals which may be set by a connected serial device.
+  // These can be queried using <code>getControlSignals</code>. Note that
+  // support for these signals is device-dependent.
+  dictionary DeviceControlSignals {
+    // DCD (Data Carrier Detect) or RLSD (Receive Line Signal/ Detect).
+    boolean dcd;
+
+    // CTS (Clear To Send).
+    boolean cts;
+
+    // RI (Ring Indicator).
+    boolean ri;
+
+    // DSR (Data Set Ready).
+    boolean dsr;
   };
 
   // Returns a snapshot of current control signals.
-  callback GetControlSignalsCallback = void (ControlSignals signals);
+  callback GetControlSignalsCallback = void (DeviceControlSignals signals);
 
   // Returns true if operation was successful.
   callback SetControlSignalsCallback = void (boolean result);
@@ -286,9 +291,10 @@ namespace serial {
 
     // Sets the state of control signals on a given connection.
     // |connectionId| : The id of the connection.
+    // |signals| : The set of signal changes to send to the device.
     // |callback| : Called once the control signals have been set.
     static void setControlSignals(long connectionId,
-                                  ControlSignals signals,
+                                  HostControlSignals signals,
                                   SetControlSignalsCallback callback);
   };
 

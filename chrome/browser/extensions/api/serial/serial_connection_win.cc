@@ -191,21 +191,21 @@ bool SerialConnection::Flush() const {
   return PurgeComm(file_, PURGE_RXCLEAR | PURGE_TXCLEAR) != 0;
 }
 
-bool SerialConnection::GetControlSignals(api::serial::ControlSignals* signals)
-    const {
+bool SerialConnection::GetControlSignals(
+    api::serial::DeviceControlSignals* signals) const {
   DWORD status;
   if (!GetCommModemStatus(file_, &status)) {
     return false;
   }
-  signals->dcd.reset(new bool((status & MS_RLSD_ON) != 0));
-  signals->cts.reset(new bool((status & MS_CTS_ON) != 0));
-  signals->dsr.reset(new bool((status & MS_DSR_ON) != 0));
-  signals->ri.reset(new bool((status & MS_RING_ON) != 0));
+  signals->dcd = (status & MS_RLSD_ON) != 0;
+  signals->cts = (status & MS_CTS_ON) != 0;
+  signals->dsr = (status & MS_DSR_ON) != 0;
+  signals->ri = (status & MS_RING_ON) != 0;
   return true;
 }
 
 bool SerialConnection::SetControlSignals(
-    const api::serial::ControlSignals& signals) {
+    const api::serial::HostControlSignals& signals) {
   if (signals.dtr.get()) {
     if (!EscapeCommFunction(file_, *signals.dtr ? SETDTR : CLRDTR)) {
       return false;
