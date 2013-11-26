@@ -17,6 +17,10 @@ namespace chromeos {
 namespace input_method {
 
 namespace {
+InputMethodPersistence* g_input_method_persistence = NULL;
+BrowserStateMonitor* g_browser_state_monitor = NULL;
+}  // namespace
+
 void OnSessionStateChange(InputMethodManagerImpl* input_method_manager_impl,
                           InputMethodPersistence* input_method_persistence,
                           InputMethodManager::State new_state) {
@@ -24,68 +28,43 @@ void OnSessionStateChange(InputMethodManagerImpl* input_method_manager_impl,
   input_method_manager_impl->SetState(new_state);
 }
 
-class InputMethodConfiguration {
- public:
-  InputMethodConfiguration() {}
-  virtual ~InputMethodConfiguration() {}
-
-  void Initialize(
-      const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner) {
-    IBusBridge::Initialize();
-
-    InputMethodManagerImpl* impl = new InputMethodManagerImpl(
-        scoped_ptr<InputMethodDelegate>(new InputMethodDelegateImpl));
-    impl->Init(ui_task_runner.get());
-    InputMethodManager::Initialize(impl);
-
-    input_method_persistence_.reset(new InputMethodPersistence(impl));
-    browser_state_monitor_.reset(new BrowserStateMonitor(
-        base::Bind(&OnSessionStateChange,
-                   impl,
-                   input_method_persistence_.get())));
-
-    DVLOG(1) << "InputMethodManager initialized";
-  }
-
-  void InitializeForTesting(InputMethodManager* mock_manager) {
-    InputMethodManager::Initialize(mock_manager);
-    DVLOG(1) << "InputMethodManager for testing initialized";
-  }
-
-  void Shutdown() {
-    browser_state_monitor_.reset();
-    input_method_persistence_.reset();
-
-    InputMethodManager::Shutdown();
-
-    IBusBridge::Shutdown();
-
-    DVLOG(1) << "InputMethodManager shutdown";
-  }
-
- private:
-  scoped_ptr<BrowserStateMonitor> browser_state_monitor_;
-  scoped_ptr<InputMethodPersistence> input_method_persistence_;
-};
-
-InputMethodConfiguration* g_input_method_configuration = NULL;
-
-}  // namespace
-
 void Initialize(
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
-  g_input_method_configuration = new InputMethodConfiguration();
-  g_input_method_configuration->Initialize(ui_task_runner);
+  IBusBridge::Initialize();
+
+  InputMethodManagerImpl* impl = new InputMethodManagerImpl(
+      scoped_ptr<InputMethodDelegate>(new InputMethodDelegateImpl));
+  impl->Init(ui_task_runner.get());
+  InputMethodManager::Initialize(impl);
+  g_input_method_persistence = new InputMethodPersistence(impl);
+  g_browser_state_monitor = new BrowserStateMonitor(
+      base::Bind(&OnSessionStateChange, impl, g_input_method_persistence));
+
+  DVLOG(1) << "InputMethodManager initialized";
 }
 
 void InitializeForTesting(InputMethodManager* mock_manager) {
-  g_input_method_configuration = new InputMethodConfiguration();
-  g_input_method_configuration->InitializeForTesting(mock_manager);
+  InputMethodManager::Initialize(mock_manager);
+  DVLOG(1) << "InputMethodManager for testing initialized";
 }
 
 void Shutdown() {
-  g_input_method_configuration->Shutdown();
+  delete g_browser_state_monitor;
+  g_browser_state_monitor = NULL;
+
+  delete g_input_method_persistence;
+  g_input_method_persistence = NULL;
+
+  InputMethodManager::Shutdown();
+
+  IBusBridge::Shutdown();
+
+  DVLOG(1) << "InputMethodManager shutdown";
+}
+
+InputMethodManager* GetInputMethodManager() {
+  return InputMethodManager::Get();
 }
 
 }  // namespace input_method

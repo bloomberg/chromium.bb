@@ -29,7 +29,7 @@ class XKeyboard;
 
 // This class manages input methodshandles.  Classes can add themselves as
 // observers. Clients can get an instance of this library class by:
-// InputMethodManager::Get().
+// GetInputMethodManager().
 class CHROMEOS_EXPORT InputMethodManager {
  public:
   enum State {
