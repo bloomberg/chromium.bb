@@ -217,6 +217,9 @@ InotifyReader::InotifyReader()
     : thread_("inotify_reader"),
       inotify_fd_(inotify_init()),
       valid_(false) {
+  if (inotify_fd_ < 0)
+    PLOG(ERROR) << "inotify_init() failed";
+
   shutdown_pipe_[0] = -1;
   shutdown_pipe_[1] = -1;
   if (inotify_fd_ >= 0 && pipe(shutdown_pipe_) == 0 && thread_.Start()) {
