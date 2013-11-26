@@ -524,7 +524,7 @@ void MediaSourcePlayer::ProcessPendingEvents() {
     // Return early if we can't successfully configure a new video decoder job
     // yet, except continue processing other pending events if |surface_| is
     // empty.
-    if (!video_decoder_job_ && !surface_.IsEmpty())
+    if (HasVideo() && !video_decoder_job_ && !surface_.IsEmpty())
       return;
   }
 
