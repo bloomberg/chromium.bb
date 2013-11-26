@@ -357,7 +357,7 @@ void RenderBox::updateFromStyle()
             if (!s_hadOverflowClip)
                 // Erase the overflow
                 repaint();
-            setHasOverflowClip();
+            setHasOverflowClip(true);
         }
     }
 

@@ -647,21 +647,21 @@ public:
     }
     void clearPositionedState() { m_bitfields.clearPositionedState(); }
 
-    void setFloating(bool b = true) { m_bitfields.setFloating(b); }
-    void setInline(bool b = true) { m_bitfields.setIsInline(b); }
+    void setFloating(bool isFloating) { m_bitfields.setFloating(isFloating); }
+    void setInline(bool isInline) { m_bitfields.setIsInline(isInline); }
 
-    void setHasBoxDecorations(bool = true);
+    void setHasBoxDecorations(bool);
     void invalidateBackgroundObscurationStatus();
     virtual bool computeBackgroundIsKnownToBeObscured() { return false; }
 
     void setIsText() { m_bitfields.setIsText(true); }
     void setIsBox() { m_bitfields.setIsBox(true); }
-    void setReplaced(bool b = true) { m_bitfields.setIsReplaced(b); }
-    void setHorizontalWritingMode(bool b = true) { m_bitfields.setHorizontalWritingMode(b); }
-    void setHasOverflowClip(bool b = true) { m_bitfields.setHasOverflowClip(b); }
-    void setHasLayer(bool b = true) { m_bitfields.setHasLayer(b); }
-    void setHasTransform(bool b = true) { m_bitfields.setHasTransform(b); }
-    void setHasReflection(bool b = true) { m_bitfields.setHasReflection(b); }
+    void setReplaced(bool isReplaced) { m_bitfields.setIsReplaced(isReplaced); }
+    void setHorizontalWritingMode(bool hasHorizontalWritingMode) { m_bitfields.setHorizontalWritingMode(hasHorizontalWritingMode); }
+    void setHasOverflowClip(bool hasOverflowClip) { m_bitfields.setHasOverflowClip(hasOverflowClip); }
+    void setHasLayer(bool hasLayer) { m_bitfields.setHasLayer(hasLayer); }
+    void setHasTransform(bool hasTransform) { m_bitfields.setHasTransform(hasTransform); }
+    void setHasReflection(bool hasReflection) { m_bitfields.setHasReflection(hasReflection); }
 
     void scheduleRelayout();
 
