@@ -22,6 +22,10 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
+#if defined(USE_ASH)
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#endif
+
 namespace message_center {
 
 MessageCenterWidgetDelegate::MessageCenterWidgetDelegate(
@@ -135,6 +139,14 @@ void MessageCenterWidgetDelegate::InitWidget() {
   params.delegate = this;
   params.keep_on_top = true;
   params.top_level = true;
+#if defined(USE_ASH)
+  // This class is not used in Ash; there is another container for the message
+  // center that's used there.  So, we must be in a Views + Ash environment.  We
+  // want the notification center to be available on both desktops.  Setting the
+  // |native_widget| variable here ensures that the widget is hosted on the
+  // native desktop.
+  params.native_widget = new views::DesktopNativeWidgetAura(widget);
+#endif
   widget->Init(params);
 
 #if defined(OS_WIN)

@@ -98,6 +98,14 @@
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
       'conditions': [
+        # This condition is for Windows 8 Metro mode support.  We need to
+        # specify a particular desktop during widget creation in that case.
+        # This is done using the desktop aura native widget framework.
+        ['use_ash==1 and OS=="win"', {
+          'dependencies': [
+            '../aura/aura.gyp:aura',
+          ],
+        }],
         ['toolkit_views==1', {
           'dependencies': [
             '../events/events.gyp:events',
