@@ -328,7 +328,7 @@ class ManifestVersionedSyncStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
-class LKGMCandidateSyncCompletionStage(AbstractStageTest):
+class MasterSlaveSyncCompletionStage(AbstractStageTest):
   """Tests the two (heavily related) stages ManifestVersionedSync, and
      ManifestVersionedSyncCompleted.
   """
@@ -354,14 +354,14 @@ class LKGMCandidateSyncCompletionStage(AbstractStageTest):
       incr_type='branch', force=False, branch=self.branch, dry_run=True)
 
     stages.ManifestVersionedSyncStage.manifest_manager = self.manager
-    stages.LKGMCandidateSyncStage.sub_manager = self.manager
+    stages.MasterSlaveSyncStage.sub_manager = self.manager
 
   def ConstructStage(self):
-    sync_stage = stages.LKGMCandidateSyncStage(self.options, self.build_config)
-    return stages.LKGMCandidateSyncCompletionStage(self.options,
-                                                   self.build_config,
-                                                   sync_stage,
-                                                   success=True)
+    sync_stage = stages.MasterSlaveSyncStage(self.options, self.build_config)
+    return stages.MasterSlaveSyncCompletionStage(self.options,
+                                                 self.build_config,
+                                                 sync_stage,
+                                                 success=True)
 
   def _GetTestConfig(self):
     test_config = {}

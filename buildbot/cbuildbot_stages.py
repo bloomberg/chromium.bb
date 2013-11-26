@@ -294,7 +294,7 @@ class ArchivingStage(BoardSpecificBuilderStage):
       completion_instance: The stage instance that was used to wait for slave
         completion. Used to add slave build information to master builder's
         metadata. If None, no such status information will be included. It not
-        None, this should be a derivative of LKGMCandidateSyncCompletionStage.
+        None, this should be a derivative of MasterSlaveSyncCompletionStage.
     """
     config = self._build_config
 
@@ -384,7 +384,7 @@ class ArchivingStage(BoardSpecificBuilderStage):
     # builders in metadata
     if config['master']:
       if (completion_instance and
-          isinstance(completion_instance, LKGMCandidateSyncCompletionStage)):
+          isinstance(completion_instance, MasterSlaveSyncCompletionStage)):
         statuses = completion_instance.GetSlaveStatuses()
         if not statuses:
           logging.warning('completion_instance did not have any statuses '
@@ -958,13 +958,13 @@ class ManifestVersionedSyncStage(SyncStage):
       self.ManifestCheckout(new_manifest)
 
 
-class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
+class MasterSlaveSyncStage(ManifestVersionedSyncStage):
   """Stage that generates a unique manifest file candidate, and sync's to it."""
 
   sub_manager = None
 
   def __init__(self, options, build_config):
-    super(LKGMCandidateSyncStage, self).__init__(options, build_config)
+    super(MasterSlaveSyncStage, self).__init__(options, build_config)
     # lkgm_manager deals with making sure we're synced to whatever manifest
     # we get back in GetNextManifest so syncing again is redundant.
     self.skip_sync = True
@@ -994,12 +994,12 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
     if (self._build_config['master'] and
         self._GetSlavesForMaster(self._build_config)):
       assert self.internal, 'Unified masters must use an internal checkout.'
-      LKGMCandidateSyncStage.sub_manager = self._GetInitializedManager(False)
+      MasterSlaveSyncStage.sub_manager = self._GetInitializedManager(False)
 
   def ForceVersion(self, version):
-    manifest = super(LKGMCandidateSyncStage, self).ForceVersion(version)
-    if LKGMCandidateSyncStage.sub_manager:
-      LKGMCandidateSyncStage.sub_manager.BootstrapFromVersion(version)
+    manifest = super(MasterSlaveSyncStage, self).ForceVersion(version)
+    if MasterSlaveSyncStage.sub_manager:
+      MasterSlaveSyncStage.sub_manager.BootstrapFromVersion(version)
 
     return manifest
 
@@ -1012,14 +1012,14 @@ class LKGMCandidateSyncStage(ManifestVersionedSyncStage):
 
     if self._build_config['master']:
       manifest = self.manifest_manager.CreateNewCandidate()
-      if LKGMCandidateSyncStage.sub_manager:
-        LKGMCandidateSyncStage.sub_manager.CreateFromManifest(manifest)
+      if MasterSlaveSyncStage.sub_manager:
+        MasterSlaveSyncStage.sub_manager.CreateFromManifest(manifest)
       return manifest
     else:
       return self.manifest_manager.GetLatestCandidate()
 
 
-class CommitQueueSyncStage(LKGMCandidateSyncStage):
+class CommitQueueSyncStage(MasterSlaveSyncStage):
   """Commit Queue Sync stage that handles syncing and applying patches.
 
   This stage handles syncing to a manifest, passing around that manifest to
@@ -1102,8 +1102,8 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
         return None
 
       manifest = self.manifest_manager.CreateNewCandidate(validation_pool=pool)
-      if LKGMCandidateSyncStage.sub_manager:
-        LKGMCandidateSyncStage.sub_manager.CreateFromManifest(manifest)
+      if MasterSlaveSyncStage.sub_manager:
+        MasterSlaveSyncStage.sub_manager.CreateFromManifest(manifest)
 
       return manifest
     else:
@@ -1146,11 +1146,11 @@ class ImportantBuilderFailedException(results_lib.StepFailure):
   """Exception thrown when an important build fails to build."""
 
 
-class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
+class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
   """Stage that records whether we passed or failed to build/test manifest."""
 
   def __init__(self, *args, **kwargs):
-    super(LKGMCandidateSyncCompletionStage, self).__init__(*args, **kwargs)
+    super(MasterSlaveSyncCompletionStage, self).__init__(*args, **kwargs)
     self._slave_statuses = {}
 
   def _FetchSlaveStatuses(self):
@@ -1168,7 +1168,7 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     else:
       builders = self._GetSlavesForMaster(self._build_config)
       manager = ManifestVersionedSyncStage.manifest_manager
-      sub_manager = LKGMCandidateSyncStage.sub_manager
+      sub_manager = MasterSlaveSyncStage.sub_manager
       if sub_manager:
         public_builders = [b['name'] for b in builders if not b['internal']]
         statuses = sub_manager.GetBuildersStatus(public_builders)
@@ -1221,8 +1221,8 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         ManifestVersionedSyncStage.manifest_manager is not None and
         self._build_config['build_type'] != constants.CHROME_PFQ_TYPE):
       ManifestVersionedSyncStage.manifest_manager.PromoteCandidate()
-      if LKGMCandidateSyncStage.sub_manager:
-        LKGMCandidateSyncStage.sub_manager.PromoteCandidate()
+      if MasterSlaveSyncStage.sub_manager:
+        MasterSlaveSyncStage.sub_manager.PromoteCandidate()
 
   def HandleFailure(self, failing, inflight):
     """Handle a build failure.
@@ -1286,7 +1286,7 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     return self._slave_statuses
 
 
-class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
+class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
   """Commits or reports errors to CL's that failed to be validated."""
 
   def HandleSuccess(self):
@@ -1309,14 +1309,14 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
       - Push any CLs that indicate that they don't care about this failure.
       - Reject the rest of the changes.
 
-    See LKGMCandidateSyncCompletionStage.HandleFailure.
+    See MasterSlaveSyncCompletionStage.HandleFailure.
 
     Args:
       failing: Status objects for the builders that failed.
       inflight: Status objects for the builders that timed out.
     """
     # Print out the status about what builds failed or not.
-    LKGMCandidateSyncCompletionStage.HandleFailure(self, failing, inflight)
+    MasterSlaveSyncCompletionStage.HandleFailure(self, failing, inflight)
 
     # Abort hardware tests to save time if we have already seen a failure,
     # except in the case where the only failure is a hardware test failure.

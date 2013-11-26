@@ -203,7 +203,7 @@ class Builder(object):
     raise NotImplementedError()
 
   def GetCompletionInstance(self):
-    """Returns the LKGMCandidateSyncCompletionStage for this build.
+    """Returns the MasterSlaveSyncCompletionStage for this build.
 
     Subclasses may override this method.
 
@@ -579,8 +579,8 @@ class DistributedBuilder(SimpleBuilder):
       sync_stage = self._GetStageInstance(stages.CommitQueueSyncStage)
       self.completion_stage_class = stages.CommitQueueCompletionStage
     elif cbuildbot_config.IsPFQType(self.build_config['build_type']):
-      sync_stage = self._GetStageInstance(stages.LKGMCandidateSyncStage)
-      self.completion_stage_class = stages.LKGMCandidateSyncCompletionStage
+      sync_stage = self._GetStageInstance(stages.MasterSlaveSyncStage)
+      self.completion_stage_class = stages.MasterSlaveSyncCompletionStage
     else:
       sync_stage = self._GetStageInstance(stages.ManifestVersionedSyncStage)
       self.completion_stage_class = stages.ManifestVersionedSyncCompletionStage
