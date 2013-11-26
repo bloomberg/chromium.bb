@@ -107,7 +107,6 @@ public:
 
     bool needsUpdateActiveStylesheetsOnStyleRecalc() const { return m_needsUpdateActiveStylesheetsOnStyleRecalc; }
 
-    void clearMediaQueryRuleSetStyleSheets();
     bool updateActiveStyleSheets(StyleResolverUpdateMode);
 
     String preferredStylesheetSetName() const { return m_preferredStylesheetSetName; }
@@ -180,7 +179,6 @@ private:
 
     typedef ListHashSet<TreeScope*, 16> TreeScopeSet;
     static void insertTreeScopeInDocumentOrder(TreeScopeSet&, TreeScope*);
-    void clearMediaQueryRuleSetOnTreeScopeStyleSheets(TreeScopeSet treeScopes);
 
     void createResolver();
 

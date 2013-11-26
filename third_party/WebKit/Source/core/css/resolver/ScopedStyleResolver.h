@@ -51,6 +51,7 @@ public:
 
     const ContainerNode& scopingNode() const { return m_scopingNode; }
     const TreeScope& treeScope() const { return m_scopingNode.treeScope(); }
+    void prepareEmptyRuleSet() { m_authorStyle = RuleSet::create(); }
     void setParent(ScopedStyleResolver* newParent) { m_parent = newParent; }
     ScopedStyleResolver* parent() { return m_parent; }
 
@@ -74,7 +75,7 @@ private:
     ContainerNode& m_scopingNode;
     ScopedStyleResolver* m_parent;
 
-    Vector<StyleSheetContents*> m_authorStyleSheets;
+    OwnPtr<RuleSet> m_authorStyle;
 
     typedef HashMap<const StringImpl*, RefPtr<StyleRuleKeyframes> > KeyframesRuleMap;
     KeyframesRuleMap m_keyframesRuleMap;

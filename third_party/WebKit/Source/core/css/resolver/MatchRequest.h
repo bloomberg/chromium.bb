@@ -31,12 +31,11 @@ class ContainerNode;
 
 class MatchRequest {
 public:
-    MatchRequest(RuleSet* ruleSet, bool includeEmptyRules = false, const ContainerNode* scope = 0, bool elementApplyAuthorStyles = true, unsigned styleSheetIndex = 0)
+    MatchRequest(RuleSet* ruleSet, bool includeEmptyRules = false, const ContainerNode* scope = 0, bool elementApplyAuthorStyles = true)
         : ruleSet(ruleSet)
         , includeEmptyRules(includeEmptyRules)
         , scope(scope)
         , elementApplyAuthorStyles(elementApplyAuthorStyles)
-        , styleSheetIndex(styleSheetIndex)
     {
         // Now that we're about to read from the RuleSet, we're done adding more
         // rules to the set and we should make sure it's compacted.
@@ -47,7 +46,6 @@ public:
     const bool includeEmptyRules;
     const ContainerNode* scope;
     const bool elementApplyAuthorStyles;
-    const unsigned styleSheetIndex;
 };
 
 } // namespace WebCore

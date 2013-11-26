@@ -861,8 +861,6 @@ void FrameView::performPreLayoutTasks()
     Document* document = m_frame->document();
     if (!document->styleResolverIfExists() || document->styleResolverIfExists()->affectedByViewportChange()) {
         document->styleResolverChanged(RecalcStyleDeferred);
-        document->mediaQueryAffectingValueChanged();
-
         // FIXME: This instrumentation event is not strictly accurate since cached media query results
         //        do not persist across StyleResolver rebuilds.
         InspectorInstrumentation::mediaQueryResultChanged(document);
@@ -1212,8 +1210,6 @@ void FrameView::removeWidgetToUpdate(RenderObject* object)
 
 void FrameView::setMediaType(const AtomicString& mediaType)
 {
-    ASSERT(m_frame->document());
-    m_frame->document()->mediaQueryAffectingValueChanged();
     m_mediaType = mediaType;
 }
 
