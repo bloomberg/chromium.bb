@@ -45,7 +45,7 @@ class WalletSigninHelper : public net::URLFetcherDelegate {
   // fully reauthenticated with the service.
   // Either OnPassiveSigninSuccess or OnPassiveSigninFailure will be called
   // on the original thread.
-  void StartPassiveSignin();
+  void StartPassiveSignin(size_t user_index);
 
   // Initiates the fetch of the user's Google Wallet cookie.
   void StartWalletCookieValueFetch();

@@ -957,7 +957,7 @@ void AutofillDialogControllerImpl::SignedInStateUpdated() {
       signin_helper_.reset(new wallet::WalletSigninHelper(
           this,
           profile_->GetRequestContext()));
-      signin_helper_->StartPassiveSignin();
+      signin_helper_->StartPassiveSignin(GetWalletClient()->user_index());
       break;
 
     case NOT_CHECKED:
@@ -2350,8 +2350,11 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
 
   if (wallet_items_) {
     // Making sure the user index is in sync shouldn't be necessary, but is an
-    // extra precaution.
-    GetWalletClient()->set_user_index(wallet_items_->active_account_index());
+    // extra precaution. But if there is no active account (such as in the
+    // PASSIVE_AUTH case), stick with the old active account.
+    if (!wallet_items_->obfuscated_gaia_id().empty())
+      GetWalletClient()->set_user_index(wallet_items_->active_account_index());
+
     account_chooser_model_.SetWalletAccounts(
         wallet_items_->gaia_accounts(),
         wallet_items_->active_account_index());

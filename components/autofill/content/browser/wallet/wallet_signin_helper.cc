@@ -42,7 +42,7 @@ void GetGoogleCookiesCallback(
 
   // Cookies for parent domains will also be returned; we only want cookies with
   // exact host matches. TODO(estade): really?
-  std::string host = wallet::GetPassiveAuthUrl().host();
+  std::string host = wallet::GetPassiveAuthUrl(0).host();
   std::string wallet_cookie;
   for (size_t i = 0; i < cookies.size(); ++i) {
     if (LowerCaseEqualsASCII(cookies[i].Name(), kWalletCookieName) &&
@@ -80,7 +80,7 @@ void GetGoogleCookies(
   net::CookieOptions cookie_options;
   cookie_options.set_include_httponly();
   cookie_monster->GetAllCookiesForURLWithOptionsAsync(
-      wallet::GetPassiveAuthUrl().GetWithEmptyPath(),
+      wallet::GetPassiveAuthUrl(0).GetWithEmptyPath(),
       cookie_options,
       base::Bind(&GetGoogleCookiesCallback, callback));
 }
@@ -99,10 +99,10 @@ WalletSigninHelper::WalletSigninHelper(
 WalletSigninHelper::~WalletSigninHelper() {
 }
 
-void WalletSigninHelper::StartPassiveSignin() {
+void WalletSigninHelper::StartPassiveSignin(size_t user_index) {
   DCHECK(!url_fetcher_);
 
-  const GURL& url = wallet::GetPassiveAuthUrl();
+  const GURL& url = wallet::GetPassiveAuthUrl(user_index);
   url_fetcher_.reset(net::URLFetcher::Create(
       0, url, net::URLFetcher::GET, this));
   url_fetcher_->SetRequestContext(getter_);

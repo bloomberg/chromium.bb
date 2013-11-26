@@ -41,9 +41,9 @@ TEST(WalletServiceSandboxUrl, CheckSandboxUrls) {
   EXPECT_EQ("https://wallet-web.sandbox.google.com/online-secure/v2/u/1/"
             "autocheckout/v1/saveToWallet?s7e=card_number%3Bcvn",
             GetSaveToWalletUrl(1).spec());
-  EXPECT_EQ("https://wallet-web.sandbox.google.com/online/v2/u/0/"
+  EXPECT_EQ("https://wallet-web.sandbox.google.com/online/v2/u/1/"
             "passiveauth?isChromePayments=true",
-            GetPassiveAuthUrl().spec());
+            GetPassiveAuthUrl(1).spec());
 }
 
 TEST(WalletServiceSandboxUrl, CheckProdUrls) {
@@ -75,9 +75,9 @@ TEST(WalletServiceSandboxUrl, CheckProdUrls) {
   EXPECT_EQ("https://wallet.google.com/online-secure/v2/u/1/"
             "autocheckout/v1/saveToWallet?s7e=card_number%3Bcvn",
             GetSaveToWalletUrl(1).spec());
-  EXPECT_EQ("https://wallet.google.com/online/v2/u/0/"
+  EXPECT_EQ("https://wallet.google.com/online/v2/u/1/"
             "passiveauth?isChromePayments=true",
-            GetPassiveAuthUrl().spec());
+            GetPassiveAuthUrl(1).spec());
 }
 
 TEST(WalletServiceUrl, IsUsingProd) {

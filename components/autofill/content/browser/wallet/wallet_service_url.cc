@@ -132,8 +132,9 @@ GURL GetSaveToWalletUrl(size_t user_index) {
       .Resolve("saveToWallet?s7e=card_number%3Bcvn");
 }
 
-GURL GetPassiveAuthUrl() {
-  return GetBaseWalletUrl(0).Resolve("passiveauth?isChromePayments=true");
+GURL GetPassiveAuthUrl(size_t user_index) {
+  return GetBaseWalletUrl(user_index)
+      .Resolve("passiveauth?isChromePayments=true");
 }
 
 GURL GetSignInUrl() {
@@ -147,9 +148,13 @@ GURL GetSignInUrl() {
   return url;
 }
 
-// The continue url portion of the sign-in URL.
+// The continue url portion of the sign-in URL. This URL is used as a milestone
+// to determine that the sign-in process is finished. It has to be a Google
+// domain, use https://, and do almost nothing, but otherwise it's not too
+// important what the URL actually is: it's not important that this URL has the
+// ability to generate a gdToken.
 GURL GetSignInContinueUrl() {
-  return GetPassiveAuthUrl();
+  return GetPassiveAuthUrl(0);
 }
 
 bool IsSignInContinueUrl(const GURL& url, size_t* user_index) {

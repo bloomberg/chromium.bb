@@ -76,21 +76,21 @@ class WalletSigninHelperTest : public testing::Test {
   }
 
   void MockSuccessfulPassiveSignInResponse() {
-    SetUpFetcherResponseAndCompleteRequest(wallet::GetPassiveAuthUrl().spec(),
+    SetUpFetcherResponseAndCompleteRequest(wallet::GetPassiveAuthUrl(0).spec(),
                                            net::HTTP_OK,
                                            net::ResponseCookies(),
                                            "YES");
   }
 
   void MockFailedPassiveSignInResponseNo() {
-    SetUpFetcherResponseAndCompleteRequest(wallet::GetPassiveAuthUrl().spec(),
+    SetUpFetcherResponseAndCompleteRequest(wallet::GetPassiveAuthUrl(0).spec(),
                                            net::HTTP_OK,
                                            net::ResponseCookies(),
                                            "NOOOOOOOOOOOOOOO");
   }
 
   void MockFailedPassiveSignInResponse404() {
-    SetUpFetcherResponseAndCompleteRequest(wallet::GetPassiveAuthUrl().spec(),
+    SetUpFetcherResponseAndCompleteRequest(wallet::GetPassiveAuthUrl(0).spec(),
                                            net::HTTP_NOT_FOUND,
                                            net::ResponseCookies(),
                                            std::string());
@@ -107,19 +107,19 @@ class WalletSigninHelperTest : public testing::Test {
 
 TEST_F(WalletSigninHelperTest, PassiveSigninSuccessful) {
   EXPECT_CALL(mock_delegate_, OnPassiveSigninSuccess());
-  signin_helper_->StartPassiveSignin();
+  signin_helper_->StartPassiveSignin(0);
   MockSuccessfulPassiveSignInResponse();
 }
 
 TEST_F(WalletSigninHelperTest, PassiveSigninFailedSignin404) {
   EXPECT_CALL(mock_delegate_, OnPassiveSigninFailure(_));
-  signin_helper_->StartPassiveSignin();
+  signin_helper_->StartPassiveSignin(0);
   MockFailedPassiveSignInResponse404();
 }
 
 TEST_F(WalletSigninHelperTest, PassiveSigninFailedSigninNo) {
   EXPECT_CALL(mock_delegate_, OnPassiveSigninFailure(_));
-  signin_helper_->StartPassiveSignin();
+  signin_helper_->StartPassiveSignin(0);
   MockFailedPassiveSignInResponseNo();
 }
 
@@ -129,7 +129,7 @@ TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenPresent) {
   net::CookieOptions httponly_options;
   httponly_options.set_include_httponly();
   scoped_ptr<net::CanonicalCookie> cookie(
-      net::CanonicalCookie::Create(GetPassiveAuthUrl().GetWithEmptyPath(),
+      net::CanonicalCookie::Create(GetPassiveAuthUrl(0).GetWithEmptyPath(),
                                    "gdToken=gdToken; HttpOnly",
                                    base::Time::Now(),
                                    httponly_options));
@@ -149,7 +149,7 @@ TEST_F(WalletSigninHelperTest, GetWalletCookieValueWhenMissing) {
   net::CookieOptions httponly_options;
   httponly_options.set_include_httponly();
   scoped_ptr<net::CanonicalCookie> cookie(
-      net::CanonicalCookie::Create(GetPassiveAuthUrl().GetWithEmptyPath(),
+      net::CanonicalCookie::Create(GetPassiveAuthUrl(0).GetWithEmptyPath(),
                                    "fake_cookie=monkeys; HttpOnly",
                                    base::Time::Now(),
                                    httponly_options));

@@ -23,8 +23,7 @@ GURL GetAuthenticateInstrumentUrl(size_t user_index);
 GURL GetSendStatusUrl(size_t user_index);
 GURL GetSaveToWalletNoEscrowUrl(size_t user_index);
 GURL GetSaveToWalletUrl(size_t user_index);
-// This URL attempts to passively refresh all users.
-GURL GetPassiveAuthUrl();
+GURL GetPassiveAuthUrl(size_t user_index);
 
 // URL to visit for presenting the user with a sign-in dialog.
 GURL GetSignInUrl();
