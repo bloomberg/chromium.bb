@@ -1835,7 +1835,30 @@ String Internals::repaintRectsAsText(Document* document, ExceptionState& excepti
     return document->frame()->trackedRepaintRectsAsText();
 }
 
-String Internals::scrollingStateTreeAsText(Document* document, ExceptionState& es) const
+PassRefPtr<ClientRectList> Internals::repaintRects(Element* element, ExceptionState& exceptionState) const
+{
+    if (!element) {
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        return 0;
+    }
+
+    if (RenderLayer* layer = getRenderLayerForElement(element, exceptionState)) {
+        if (layer->compositingState() == PaintsIntoOwnBacking) {
+            OwnPtr<Vector<FloatRect> > rects = layer->collectTrackedRepaintRects();
+            ASSERT(rects.get());
+            Vector<FloatQuad> quads(rects->size());
+            for (size_t i = 0; i < rects->size(); ++i)
+                quads[i] = FloatRect(rects->at(i));
+            return ClientRectList::create(quads);
+        }
+    }
+
+    // It's an error to call this on an element that's not composited.
+    exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
+    return 0;
+}
+
+String Internals::scrollingStateTreeAsText(Document* document, ExceptionState& exceptionState) const
 {
     return String();
 }

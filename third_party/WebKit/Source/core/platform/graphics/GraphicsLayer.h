@@ -269,6 +269,8 @@ public:
     void resetTrackedRepaints();
     void addRepaintRect(const FloatRect&);
 
+    void collectTrackedRepaintRects(Vector<FloatRect>&) const;
+
     static bool supportsBackgroundColorContent()
     {
         return false;
