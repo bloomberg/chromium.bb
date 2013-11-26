@@ -56,7 +56,8 @@ bool injectKey(PassRefPtr<IDBKey> key, ScriptValue& value, const String& keyPath
 {
     IDBKeyPath idbKeyPath(keyPath);
     EXPECT_TRUE(idbKeyPath.isValid());
-    return injectIDBKeyIntoScriptValue(0, key, value, idbKeyPath);
+    ScriptValue keyValue = idbKeyToScriptValue(0, key);
+    return injectV8KeyIntoV8Value(keyValue.v8Value(), value.v8Value(), idbKeyPath, v8::Isolate::GetCurrent());
 }
 
 void checkInjection(PassRefPtr<IDBKey> prpKey, ScriptValue& value, const String& keyPath)

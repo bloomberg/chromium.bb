@@ -51,7 +51,7 @@ IDBOpenDBRequest::IDBOpenDBRequest(ExecutionContext* context, PassRefPtr<IDBData
     , m_transactionId(transactionId)
     , m_version(version)
 {
-    ASSERT(!m_result);
+    ASSERT(!resultAsAny());
     ScriptWrappable::init(this);
 }
 
@@ -100,7 +100,7 @@ void IDBOpenDBRequest::onUpgradeNeeded(int64_t oldVersion, PassOwnPtr<WebIDBData
     oldMetadata.intVersion = oldVersion;
 
     m_transaction = IDBTransaction::create(executionContext(), m_transactionId, idbDatabase.get(), this, oldMetadata);
-    m_result = IDBAny::create(idbDatabase.release());
+    setResult(IDBAny::create(idbDatabase.release()));
 
     if (m_version == IDBDatabaseMetadata::NoIntVersion)
         m_version = 1;
@@ -120,9 +120,10 @@ void IDBOpenDBRequest::onSuccess(PassOwnPtr<WebIDBDatabase> backend, const IDBDa
         return;
 
     RefPtr<IDBDatabase> idbDatabase;
-    if (m_result) {
+    if (resultAsAny()) {
+        // Previous onUpgradeNeeded call delivered the backend.
         ASSERT(!backend.get());
-        idbDatabase = m_result->idbDatabase();
+        idbDatabase = resultAsAny()->idbDatabase();
         ASSERT(idbDatabase);
         ASSERT(!m_databaseCallbacks);
     } else {
@@ -131,7 +132,7 @@ void IDBOpenDBRequest::onSuccess(PassOwnPtr<WebIDBDatabase> backend, const IDBDa
         idbDatabase = IDBDatabase::create(executionContext(), backend, m_databaseCallbacks);
         m_databaseCallbacks->connect(idbDatabase.get());
         m_databaseCallbacks = 0;
-        m_result = IDBAny::create(idbDatabase.get());
+        setResult(IDBAny::create(idbDatabase.get()));
     }
     idbDatabase->setMetadata(metadata);
     enqueueEvent(Event::create(EventTypeNames::success));
@@ -151,8 +152,8 @@ bool IDBOpenDBRequest::dispatchEvent(PassRefPtr<Event> event)
 {
     // If the connection closed between onUpgradeNeeded and the delivery of the "success" event,
     // an "error" event should be fired instead.
-    if (event->type() == EventTypeNames::success && m_result->type() == IDBAny::IDBDatabaseType && m_result->idbDatabase()->isClosePending()) {
-        m_result.clear();
+    if (event->type() == EventTypeNames::success && resultAsAny()->type() == IDBAny::IDBDatabaseType && resultAsAny()->idbDatabase()->isClosePending()) {
+        setResult(0);
         onError(DOMError::create(AbortError, "The connection was closed."));
         return false;
     }

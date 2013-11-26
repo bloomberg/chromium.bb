@@ -315,21 +315,21 @@ ScriptValue IDBCursor::value(ExecutionContext* context)
 {
     ASSERT(isCursorWithValue());
 
-    m_valueDirty = false;
     DOMRequestState requestState(context);
-    ScriptValue value = deserializeIDBValueBuffer(&requestState, m_value);
     RefPtr<IDBObjectStore> objectStore = effectiveObjectStore();
     const IDBObjectStoreMetadata& metadata = objectStore->metadata();
+    RefPtr<IDBAny> value;
     if (metadata.autoIncrement && !metadata.keyPath.isNull()) {
+        value = IDBAny::create(m_value, m_primaryKey, metadata.keyPath);
 #ifndef NDEBUG
-        RefPtr<IDBKey> expectedKey = createIDBKeyFromScriptValueAndKeyPath(&requestState, value, metadata.keyPath);
-        ASSERT(!expectedKey || expectedKey->isEqual(m_primaryKey.get()));
+        assertPrimaryKeyValidOrInjectable(&requestState, m_value, m_primaryKey, metadata.keyPath);
 #endif
-        bool injected = injectIDBKeyIntoScriptValue(&requestState, m_primaryKey, value, metadata.keyPath);
-        ASSERT_UNUSED(injected, injected);
+    } else {
+        value = IDBAny::create(m_value);
     }
 
-    return value;
+    m_valueDirty = false;
+    return idbAnyToScriptValue(&requestState, value);
 }
 
 void IDBCursor::setValueReady(PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value)

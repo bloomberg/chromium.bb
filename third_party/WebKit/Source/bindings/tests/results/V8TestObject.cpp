@@ -1653,6 +1653,55 @@ static void cachedAttribute2AttributeGetterCallback(v8::Local<v8::String>, const
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void cachedDirtyableAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::String> propertyName = v8::String::NewSymbol("cachedDirtyableAttribute");
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    if (!imp->isValueDirty()) {
+        v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
+        if (!jsValue.IsEmpty()) {
+            v8SetReturnValue(info, jsValue);
+            return;
+        }
+    }
+    ScriptValue jsValue = imp->cachedDirtyableAttribute();
+    info.Holder()->SetHiddenValue(propertyName, jsValue.v8Value());
+    v8SetReturnValue(info, jsValue.v8Value());
+}
+
+static void cachedDirtyableAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::cachedDirtyableAttributeAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void cachedDirtyableAttributeRaisesAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    v8::Handle<v8::String> propertyName = v8::String::NewSymbol("cachedDirtyableAttributeRaises");
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    if (!imp->isValueDirty()) {
+        v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
+        if (!jsValue.IsEmpty()) {
+            v8SetReturnValue(info, jsValue);
+            return;
+        }
+    }
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ScriptValue jsValue = imp->cachedDirtyableAttributeRaises(exceptionState);
+    if (UNLIKELY(exceptionState.throwIfNeeded()))
+        return;
+    info.Holder()->SetHiddenValue(propertyName, jsValue.v8Value());
+    v8SetReturnValue(info, jsValue.v8Value());
+}
+
+static void cachedDirtyableAttributeRaisesAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    TestObjV8Internal::cachedDirtyableAttributeRaisesAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void anyAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
@@ -5044,6 +5093,8 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[]
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
     {"cachedAttribute1", TestObjV8Internal::cachedAttribute1AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"cachedAttribute2", TestObjV8Internal::cachedAttribute2AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"cachedDirtyableAttribute", TestObjV8Internal::cachedDirtyableAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"cachedDirtyableAttributeRaises", TestObjV8Internal::cachedDirtyableAttributeRaisesAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"anyAttribute", TestObjV8Internal::anyAttributeAttributeGetterCallback, TestObjV8Internal::anyAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"callbackFunctionAttribute", TestObjV8Internal::callbackFunctionAttributeAttributeGetterCallback, TestObjV8Internal::callbackFunctionAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"floatArray", TestObjV8Internal::floatArrayAttributeGetterCallback, TestObjV8Internal::floatArrayAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

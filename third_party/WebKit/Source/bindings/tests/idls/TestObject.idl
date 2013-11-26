@@ -191,6 +191,8 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
 
     readonly attribute any cachedAttribute1;
     readonly attribute any cachedAttribute2;
+    [CachedAttribute=isValueDirty] readonly attribute any cachedDirtyableAttribute;
+    [RaisesException=Getter, CachedAttribute=isValueDirty] readonly attribute any cachedDirtyableAttributeRaises;
 
     attribute any anyAttribute;
 

@@ -321,7 +321,7 @@ private:
         EventTarget* target = event->target();
         IDBRequest* request = static_cast<IDBRequest*>(target);
 
-        RefPtr<IDBAny> cursorAny = request->result(ASSERT_NO_EXCEPTION);
+        RefPtr<IDBAny> cursorAny = request->resultAsAny();
         RefPtr<IDBCursorWithValue> cursor;
         if (cursorAny->type() == IDBAny::IDBCursorWithValueType)
             cursor = cursorAny->idbCursorWithValue();

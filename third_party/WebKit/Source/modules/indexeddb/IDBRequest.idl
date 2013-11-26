@@ -30,7 +30,7 @@
 [
     ActiveDOMObject
 ] interface IDBRequest : EventTarget {
-    [RaisesException=Getter] readonly attribute IDBAny result;
+    [RaisesException=Getter, CachedAttribute=isResultDirty] readonly attribute any result;
     [RaisesException=Getter] readonly attribute DOMError error;
 
     readonly attribute IDBAny source;

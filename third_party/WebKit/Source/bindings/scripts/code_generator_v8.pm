@@ -1699,8 +1699,12 @@ END
     v8SetReturnValue(info, jsValue);
 END
         } else {
-            $code .= <<END;
+            if (!$useExceptions && !$isNullable) {
+                $code .= <<END;
     ScriptValue jsValue = $getterString;
+END
+            }
+            $code .= <<END;
     info.Holder()->SetHiddenValue(propertyName, jsValue.v8Value());
     v8SetReturnValue(info, jsValue.v8Value());
 END

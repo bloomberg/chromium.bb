@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-PassRefPtr<IDBAny> IDBAny::createInvalid()
+PassRefPtr<IDBAny> IDBAny::createUndefined()
 {
     return adoptRef(new IDBAny(UndefinedType));
 }
@@ -111,10 +111,22 @@ IDBTransaction* IDBAny::idbTransaction()
     return m_idbTransaction.get();
 }
 
-const ScriptValue& IDBAny::scriptValue()
+IDBKey* IDBAny::key()
 {
-    ASSERT(m_type == ScriptValueType);
-    return m_scriptValue;
+    ASSERT(m_type == KeyType || m_type == BufferKeyAndKeyPathType);
+    return m_idbKey.get();
+}
+
+const IDBKeyPath& IDBAny::keyPath() const
+{
+    ASSERT(m_type == KeyPathType || m_type == BufferKeyAndKeyPathType);
+    return m_idbKeyPath;
+}
+
+SharedBuffer* IDBAny::buffer()
+{
+    ASSERT(m_type == BufferType || m_type == BufferKeyAndKeyPathType);
+    return m_buffer.get();
 }
 
 const String& IDBAny::string()
@@ -178,9 +190,25 @@ IDBAny::IDBAny(PassRefPtr<IDBObjectStore> value)
 {
 }
 
-IDBAny::IDBAny(const ScriptValue& value)
-    : m_type(ScriptValueType)
-    , m_scriptValue(value)
+IDBAny::IDBAny(PassRefPtr<SharedBuffer> value)
+    : m_type(BufferType)
+    , m_buffer(value)
+    , m_integer(0)
+{
+}
+
+IDBAny::IDBAny(PassRefPtr<SharedBuffer> value, PassRefPtr<IDBKey> key, const IDBKeyPath& keyPath)
+    : m_type(BufferKeyAndKeyPathType)
+    , m_idbKey(key)
+    , m_idbKeyPath(keyPath)
+    , m_buffer(value)
+    , m_integer(0)
+{
+}
+
+IDBAny::IDBAny(PassRefPtr<IDBKey> key)
+    : m_type(KeyType)
+    , m_idbKey(key)
     , m_integer(0)
 {
 }

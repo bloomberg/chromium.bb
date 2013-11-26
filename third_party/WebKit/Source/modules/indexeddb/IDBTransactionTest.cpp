@@ -110,7 +110,7 @@ TEST_F(IDBTransactionTest, EnsureLifetime)
     // Local reference, IDBDatabase's reference and IDBPendingTransactionMonitor's reference:
     EXPECT_EQ(3, transaction->refCount());
 
-    RefPtr<IDBRequest> request = IDBRequest::create(executionContext(), IDBAny::createInvalid(), transaction.get());
+    RefPtr<IDBRequest> request = IDBRequest::create(executionContext(), IDBAny::createUndefined(), transaction.get());
     IDBPendingTransactionMonitor::deactivateNewTransactions();
 
     // Local reference, IDBDatabase's reference, and the IDBRequest's reference

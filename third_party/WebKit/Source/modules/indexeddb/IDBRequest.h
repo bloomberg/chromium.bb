@@ -48,8 +48,6 @@ namespace WebCore {
 class ExceptionState;
 struct IDBDatabaseMetadata;
 class IDBTransaction;
-class ScriptValue;
-class SerializedScriptValue;
 class SharedBuffer;
 
 // Base class to simplify usage of event target refcounting.
@@ -66,10 +64,13 @@ public:
     static PassRefPtr<IDBRequest> create(ExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);
     virtual ~IDBRequest();
 
-    PassRefPtr<IDBAny> result(ExceptionState&) const;
+    ScriptValue result(ExceptionState&);
     PassRefPtr<DOMError> error(ExceptionState&) const;
     PassRefPtr<IDBAny> source() const;
     PassRefPtr<IDBTransaction> transaction() const;
+
+    bool isResultDirty() const { return m_resultDirty; }
+    PassRefPtr<IDBAny> resultAsAny() const { return m_result; }
 
     // Requests made during index population are implementation details and so
     // events should not be visible to script.
@@ -136,11 +137,9 @@ protected:
     IDBRequest(ExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);
     void enqueueEvent(PassRefPtr<Event>);
     virtual bool shouldEnqueueEvent() const;
-    void onSuccessInternal(PassRefPtr<SerializedScriptValue>);
-    void onSuccessInternal(const ScriptValue&);
+    void onSuccessInternal(PassRefPtr<IDBAny>);
+    void setResult(PassRefPtr<IDBAny>);
 
-    RefPtr<IDBAny> m_result;
-    RefPtr<DOMError> m_error;
     bool m_contextStopped;
     RefPtr<IDBTransaction> m_transaction;
     ReadyState m_readyState;
@@ -151,6 +150,8 @@ private:
     void checkForReferenceCycle();
 
     RefPtr<IDBAny> m_source;
+    RefPtr<IDBAny> m_result;
+    RefPtr<DOMError> m_error;
 
     bool m_hasPendingActivity;
     Vector<RefPtr<Event> > m_enqueuedEvents;
@@ -164,6 +165,7 @@ private:
     RefPtr<SharedBuffer> m_cursorValue;
     bool m_didFireUpgradeNeededEvent;
     bool m_preventPropagation;
+    bool m_resultDirty;
 
     DOMRequestState m_requestState;
 };

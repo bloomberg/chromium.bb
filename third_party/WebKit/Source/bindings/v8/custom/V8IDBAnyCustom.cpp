@@ -36,11 +36,13 @@
 #include "V8IDBIndex.h"
 #include "V8IDBObjectStore.h"
 #include "V8IDBTransaction.h"
-#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/IDBBindingUtilities.h"
+#include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
 
+// FIXME: Move this to IDBBindingUtilities
 static v8::Handle<v8::Value> toV8(const IDBKeyPath& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     switch (value.type()) {
@@ -84,14 +86,23 @@ v8::Handle<v8::Value> toV8(IDBAny* impl, v8::Handle<v8::Object> creationContext,
         return toV8(impl->idbObjectStore(), creationContext, isolate);
     case IDBAny::IDBTransactionType:
         return toV8(impl->idbTransaction(), creationContext, isolate);
-    case IDBAny::ScriptValueType:
-        return impl->scriptValue().v8Value();
+    case IDBAny::BufferType:
+        return deserializeIDBValueBuffer(impl->buffer(), isolate);
     case IDBAny::StringType:
         return v8String(impl->string(), isolate);
     case IDBAny::IntegerType:
         return v8::Number::New(isolate, impl->integer());
+    case IDBAny::KeyType:
+        return toV8(impl->key(), creationContext, isolate);
     case IDBAny::KeyPathType:
         return toV8(impl->keyPath(), creationContext, isolate);
+    case IDBAny::BufferKeyAndKeyPathType: {
+        v8::Handle<v8::Value> value = deserializeIDBValueBuffer(impl->buffer(), isolate);
+        v8::Handle<v8::Value> key = toV8(impl->key(), creationContext, isolate);
+        bool injected = injectV8KeyIntoV8Value(key, value, impl->keyPath(), isolate);
+        ASSERT_UNUSED(injected, injected);
+        return value;
+    }
     }
 
     ASSERT_NOT_REACHED();

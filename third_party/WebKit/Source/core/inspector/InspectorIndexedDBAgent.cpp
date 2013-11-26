@@ -109,12 +109,7 @@ public:
         }
 
         IDBRequest* idbRequest = static_cast<IDBRequest*>(event->target());
-        TrackExceptionState exceptionState;
-        RefPtr<IDBAny> requestResult = idbRequest->result(exceptionState);
-        if (exceptionState.hadException()) {
-            m_requestCallback->sendFailure("Could not get result in callback.");
-            return;
-        }
+        RefPtr<IDBAny> requestResult = idbRequest->resultAsAny();
         if (requestResult->type() != IDBAny::DOMStringListType) {
             m_requestCallback->sendFailure("Unexpected result type.");
             return;
@@ -171,12 +166,7 @@ public:
         }
 
         IDBOpenDBRequest* idbOpenDBRequest = static_cast<IDBOpenDBRequest*>(event->target());
-        TrackExceptionState exceptionState;
-        RefPtr<IDBAny> requestResult = idbOpenDBRequest->result(exceptionState);
-        if (exceptionState.hadException()) {
-            m_executableWithDatabase->requestCallback()->sendFailure("Could not get result in callback.");
-            return;
-        }
+        RefPtr<IDBAny> requestResult = idbOpenDBRequest->resultAsAny();
         if (requestResult->type() != IDBAny::IDBDatabaseType) {
             m_executableWithDatabase->requestCallback()->sendFailure("Unexpected result type.");
             return;
@@ -415,13 +405,8 @@ public:
         }
 
         IDBRequest* idbRequest = static_cast<IDBRequest*>(event->target());
-        TrackExceptionState exceptionState;
-        RefPtr<IDBAny> requestResult = idbRequest->result(exceptionState);
-        if (exceptionState.hadException()) {
-            m_requestCallback->sendFailure("Could not get result in callback.");
-            return;
-        }
-        if (requestResult->type() == IDBAny::ScriptValueType) {
+        RefPtr<IDBAny> requestResult = idbRequest->resultAsAny();
+        if (requestResult->type() == IDBAny::BufferType) {
             end(false);
             return;
         }
@@ -447,6 +432,7 @@ public:
         }
 
         // Continue cursor before making injected script calls, otherwise transaction might be finished.
+        TrackExceptionState exceptionState;
         idbCursor->continueFunction(0, exceptionState);
         if (exceptionState.hadException()) {
             m_requestCallback->sendFailure("Could not continue cursor.");
