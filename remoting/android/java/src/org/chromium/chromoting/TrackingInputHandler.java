@@ -51,12 +51,6 @@ public class TrackingInputHandler implements TouchInputHandler {
     private float mTotalMotionY = 0;
 
     /**
-     * Set to true during the middle of a swipe gesture to prevent the remainder of the swipe
-     * motion triggering further actions.
-     */
-    private boolean mSwipeCompleted = false;
-
-    /**
      * Distance in pixels beyond which a motion gesture is considered to be a swipe. This is
      * initialized using the Context passed into the ctor.
      */
@@ -64,6 +58,24 @@ public class TrackingInputHandler implements TouchInputHandler {
 
     /** Mouse-button currently held down, or BUTTON_UNDEFINED otherwise. */
     private int mHeldButton = BUTTON_UNDEFINED;
+
+    /**
+     * Set to true to prevent any further movement of the cursor, for example, when showing the
+     * keyboard to prevent the cursor wandering from the area where keystrokes should be sent.
+     */
+    private boolean mSuppressCursorMovement = false;
+
+    /**
+     * Set to true to suppress the fling animation at the end of a gesture, for example, when
+     * dragging whilst a button is held down.
+     */
+    private boolean mSuppressFling = false;
+
+    /**
+     * Set to true when 3-finger swipe gesture is complete, so that further movement doesn't
+     * trigger more swipe actions.
+     */
+    private boolean mSwipeCompleted = false;
 
     public TrackingInputHandler(DesktopViewInterface viewer, Context context,
                                 RenderData renderData) {
@@ -211,13 +223,17 @@ public class TrackingInputHandler implements TouchInputHandler {
         if (mTotalMotionY > mSwipeThreshold) {
             // Swipe down occurred.
             mViewer.showActionBar();
-            return true;
         } else if (mTotalMotionY < -mSwipeThreshold) {
             // Swipe up occurred.
             mViewer.showKeyboard();
-            return true;
+        } else {
+            return false;
         }
-        return false;
+
+        mSuppressCursorMovement = true;
+        mSuppressFling = true;
+        mSwipeCompleted = true;
+        return true;
     }
 
     /** Injects a button-up event if the button is currently held down (during a drag event). */
@@ -239,11 +255,13 @@ public class TrackingInputHandler implements TouchInputHandler {
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
                 mViewer.setAnimationEnabled(false);
+                mSuppressCursorMovement = false;
+                mSuppressFling = false;
+                mSwipeCompleted = false;
                 break;
 
             case MotionEvent.ACTION_POINTER_DOWN:
                 mTotalMotionY = 0;
-                mSwipeCompleted = false;
                 break;
 
             case MotionEvent.ACTION_UP:
@@ -300,18 +318,15 @@ public class TrackingInputHandler implements TouchInputHandler {
          */
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            if (e2.getPointerCount() == 3) {
+            if (e2.getPointerCount() == 3 && !mSwipeCompleted) {
                 // Note that distance values are reversed. For example, dragging a finger in the
                 // direction of increasing Y coordinate (downwards) results in distanceY being
                 // negative.
                 mTotalMotionY -= distanceY;
-                if (!mSwipeCompleted) {
-                    mSwipeCompleted = onSwipe();
-                    return mSwipeCompleted;
-                }
+                return onSwipe();
             }
 
-            if (e2.getPointerCount() != 1) {
+            if (e2.getPointerCount() != 1 || mSuppressCursorMovement) {
                 return false;
             }
 
@@ -331,6 +346,13 @@ public class TrackingInputHandler implements TouchInputHandler {
          */
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            // If cursor movement is suppressed, fling also needs to be suppressed, as the
+            // gesture-detector will still generate onFling() notifications based on movement of
+            // the fingers, which would result in unwanted cursor movement.
+            if (mSuppressCursorMovement || mSuppressFling) {
+                return false;
+            }
+
             // The fling physics calculation is based on screen coordinates, so that it will
             // behave consistently at different zoom levels (and will work nicely at high zoom
             // levels, since |mFlingScroller| outputs integer coordinates). However, the desktop
@@ -419,6 +441,7 @@ public class TrackingInputHandler implements TouchInputHandler {
             if (mHeldButton != BUTTON_UNDEFINED) {
                 injectButtonEvent(mHeldButton, true);
                 mViewer.showLongPressFeedback();
+                mSuppressFling = true;
             }
         }
     }
