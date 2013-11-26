@@ -495,8 +495,11 @@ CommandHandler.COMMANDS_['delete'] = {
     fileManager.deleteSelection();
   },
   canExecute: function(event, fileManager) {
+    var allowDeletingWhileOffline =
+        fileManager.directoryModel.getCurrentRootType() === RootType.DRIVE;
     var selection = fileManager.getSelection();
-    event.canExecute = !fileManager.isOnReadonlyDirectory() &&
+    event.canExecute = (!fileManager.isOnReadonlyDirectory() ||
+                        allowDeletingWhileOffline) &&
                        selection &&
                        selection.totalCount > 0;
   }
