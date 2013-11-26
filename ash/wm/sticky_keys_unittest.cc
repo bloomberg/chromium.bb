@@ -161,57 +161,43 @@ class StickyKeysTest : public test::AshTestBase,
     }
   }
 
-  // Generates keyboard event.
   ui::KeyEvent* GenerateKey(bool is_key_press, ui::KeyboardCode code) {
-    XEvent* xev = new XEvent();
-    ui::InitXKeyEventForTesting(
+    scoped_xevent_.InitKeyEvent(
         is_key_press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED,
         code,
-        0,
-        xev);
-    xevs_.push_back(xev);
-    ui::KeyEvent* event =  new ui::KeyEvent(xev, false);
+        0);
+    ui::KeyEvent* event =  new ui::KeyEvent(scoped_xevent_, false);
     ui::Event::DispatcherApi dispatcher(event);
     dispatcher.set_target(target_);
     return event;
   }
 
   ui::MouseEvent* GenerateMouseEvent(bool is_button_press) {
-    XEvent* xev = new XEvent();
-    ui::InitXButtonEventForTesting(
-        is_button_press ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED,
-        0,
-        xev);
-    xevs_.push_back(xev);
-    ui::MouseEvent* event = new ui::MouseEvent(xev);
+    scoped_xevent_.InitButtonEvent(
+        is_button_press ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED, 0);
+    ui::MouseEvent* event = new ui::MouseEvent(scoped_xevent_);
     ui::Event::DispatcherApi dispatcher(event);
     dispatcher.set_target(target_);
     return event;
   }
 
   ui::MouseWheelEvent* GenerateMouseWheelEvent(int wheel_delta) {
-    EXPECT_FALSE(wheel_delta == 0);
-    XEvent* xev = new XEvent();
-    ui::InitXMouseWheelEventForTesting(wheel_delta, 0, xev);
-    xevs_.push_back(xev);
-    ui::MouseWheelEvent* event = new ui::MouseWheelEvent(xev);
+    EXPECT_NE(0, wheel_delta);
+    scoped_xevent_.InitMouseWheelEvent(wheel_delta, 0);
+    ui::MouseWheelEvent* event = new ui::MouseWheelEvent(scoped_xevent_);
     ui::Event::DispatcherApi dispatcher(event);
     dispatcher.set_target(target_);
     return event;
   }
 
   ui::ScrollEvent* GenerateScrollEvent(int scroll_delta) {
-    EXPECT_FALSE(scroll_delta == 0);
-    XEvent* xev = ui::CreateScrollEventForTest(
-        kScrollDeviceId, // deviceid
-        0,               // x_offset
-        scroll_delta,    // y_offset
-        0,               // x_offset_ordinal
-        scroll_delta,    // y_offset_ordinal
-        2);              // finger_count
-    xi2_evs_.push_back(new ui::ScopedXI2Event(xev));
-
-    ui::ScrollEvent* event = new ui::ScrollEvent(xev);
+    scoped_xevent_.InitScrollEvent(kScrollDeviceId, // deviceid
+                                   0,               // x_offset
+                                   scroll_delta,    // y_offset
+                                   0,               // x_offset_ordinal
+                                   scroll_delta,    // y_offset_ordinal
+                                   2);              // finger_count
+    ui::ScrollEvent* event = new ui::ScrollEvent(scoped_xevent_);
     ui::Event::DispatcherApi dispatcher(event);
     dispatcher.set_target(target_);
     return event;
@@ -265,12 +251,9 @@ class StickyKeysTest : public test::AshTestBase,
   aura::Window* target_;
   // The root window of |target_|. Not owned.
   aura::Window* root_window_;
-  // Stores all generated XEvents.
-  ScopedVector<XEvent> xevs_;
 
-  // Stores all generated XInput2 XEvents. We use a scoped wrapper class here
-  // to properly delete these events.
-  ScopedVector<ui::ScopedXI2Event> xi2_evs_;
+  // Used to construct the various X events.
+  ui::ScopedXI2Event scoped_xevent_;
 
   DISALLOW_COPY_AND_ASSIGN(StickyKeysTest);
 };

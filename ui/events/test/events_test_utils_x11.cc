@@ -26,7 +26,6 @@ const int kScrollValuatorMap[kScrollValuatorNum][4] = {
   { 4, ui::DeviceDataManager::DT_CMT_FINGER_COUNT, 0, 3},
 };
 
-#if defined(USE_XI2_MT)
 const int kTouchValuatorNum = 3;
 const int kTouchValuatorMap[kTouchValuatorNum][4] = {
   // { valuator_index, valuator_type, min_val, max_val }
@@ -34,7 +33,6 @@ const int kTouchValuatorMap[kTouchValuatorNum][4] = {
   { 1, ui::DeviceDataManager::DT_TOUCH_ORIENTATION, 0, 1},
   { 2, ui::DeviceDataManager::DT_TOUCH_PRESSURE, 0, 1000},
 };
-#endif
 
 // Converts ui::EventType to state for X*Events.
 unsigned int XEventState(int flags) {
@@ -138,102 +136,123 @@ XEvent* CreateXInput2Event(int deviceid,
 
 namespace ui {
 
-void InitXKeyEventForTesting(EventType type,
-                             KeyboardCode key_code,
-                             int flags,
-                             XEvent* event) {
-  CHECK(event);
-  XDisplay* display = gfx::GetXDisplay();
-  XKeyEvent key_event;
-  key_event.type = XKeyEventType(type);
-  CHECK_NE(0, key_event.type);
-  key_event.serial = 0;
-  key_event.send_event = 0;
-  key_event.display = display;
-  key_event.time = 0;
-  key_event.window = 0;
-  key_event.root = 0;
-  key_event.subwindow = 0;
-  key_event.x = 0;
-  key_event.y = 0;
-  key_event.x_root = 0;
-  key_event.y_root = 0;
-  key_event.state = XEventState(flags);
-  key_event.keycode = XKeyEventKeyCode(key_code, flags, display);
-  key_event.same_screen = 1;
-  event->type = key_event.type;
-  event->xkey = key_event;
+ScopedXI2Event::ScopedXI2Event() {}
+ScopedXI2Event::~ScopedXI2Event() {
+  Cleanup();
 }
 
-void InitXButtonEventForTesting(EventType type,
-                                int flags,
-                                XEvent* event) {
-  CHECK(event);
+void ScopedXI2Event::InitKeyEvent(EventType type,
+                                  KeyboardCode key_code,
+                                  int flags) {
+  Cleanup();
   XDisplay* display = gfx::GetXDisplay();
-  XButtonEvent button_event;
-  button_event.type = XButtonEventType(type);
-  CHECK_NE(0, button_event.type);
-  button_event.serial = 0;
-  button_event.send_event = 0;
-  button_event.display = display;
-  button_event.time = 0;
-  button_event.window = 0;
-  button_event.root = 0;
-  button_event.subwindow = 0;
-  button_event.x = 0;
-  button_event.y = 0;
-  button_event.x_root = 0;
-  button_event.y_root = 0;
-  button_event.state = XEventState(flags);
-  button_event.button = XButtonEventButton(type, flags);
-  button_event.same_screen = 1;
-  event->type = button_event.type;
-  event->xbutton = button_event;
+  event_.reset(new XEvent);
+  memset(event_.get(), 0, sizeof(XEvent));
+  event_->type = XKeyEventType(type);
+  CHECK_NE(0, event_->type);
+  event_->xkey.serial = 0;
+  event_->xkey.send_event = 0;
+  event_->xkey.display = display;
+  event_->xkey.time = 0;
+  event_->xkey.window = 0;
+  event_->xkey.root = 0;
+  event_->xkey.subwindow = 0;
+  event_->xkey.x = 0;
+  event_->xkey.y = 0;
+  event_->xkey.x_root = 0;
+  event_->xkey.y_root = 0;
+  event_->xkey.state = XEventState(flags);
+  event_->xkey.keycode = XKeyEventKeyCode(key_code, flags, display);
+  event_->xkey.same_screen = 1;
 }
 
-void InitXMouseWheelEventForTesting(int wheel_delta,
-                                    int flags,
-                                    XEvent* event) {
-  InitXButtonEventForTesting(ui::ET_MOUSEWHEEL, flags, event);
+void ScopedXI2Event::InitButtonEvent(EventType type,
+                                     int flags) {
+  Cleanup();
+  event_.reset(new XEvent);
+  memset(event_.get(), 0, sizeof(XEvent));
+  event_->type = XButtonEventType(type);
+  CHECK_NE(0, event_->type);
+  event_->xbutton.serial = 0;
+  event_->xbutton.send_event = 0;
+  event_->xbutton.display = gfx::GetXDisplay();
+  event_->xbutton.time = 0;
+  event_->xbutton.window = 0;
+  event_->xbutton.root = 0;
+  event_->xbutton.subwindow = 0;
+  event_->xbutton.x = 0;
+  event_->xbutton.y = 0;
+  event_->xbutton.x_root = 0;
+  event_->xbutton.y_root = 0;
+  event_->xbutton.state = XEventState(flags);
+  event_->xbutton.button = XButtonEventButton(type, flags);
+  event_->xbutton.same_screen = 1;
+}
+
+void ScopedXI2Event::InitMouseWheelEvent(int wheel_delta,
+                                         int flags) {
+  InitButtonEvent(ui::ET_MOUSEWHEEL, flags);
   // MouseWheelEvents are not taking horizontal scrolls into account
   // at the moment.
-  event->xbutton.button = wheel_delta > 0 ? Button4 : Button5;
+  event_->xbutton.button = wheel_delta > 0 ? Button4 : Button5;
 }
 
-ScopedXI2Event::ScopedXI2Event(XEvent* event) : event_(event) {
-}
-
-ScopedXI2Event::~ScopedXI2Event() {
-  XIDeviceEvent* xiev =
-      static_cast<XIDeviceEvent*>(event_->xcookie.data);
-  if (xiev) {
-    delete[] xiev->valuators.mask;
-    delete[] xiev->valuators.values;
-    delete xiev;
-  }
-}
-
-XEvent* CreateScrollEventForTest(
-    int deviceid,
-    int x_offset,
-    int y_offset,
-    int x_offset_ordinal,
-    int y_offset_ordinal,
-    int finger_count) {
-  XEvent* event = CreateXInput2Event(
-      deviceid, XI_Motion, deviceid, gfx::Point(0, 0));
+void ScopedXI2Event::InitScrollEvent(int deviceid,
+                                     int x_offset,
+                                     int y_offset,
+                                     int x_offset_ordinal,
+                                     int y_offset_ordinal,
+                                     int finger_count) {
+  Cleanup();
+  event_.reset(CreateXInput2Event(deviceid, XI_Motion, deviceid, gfx::Point()));
 
   int valuator_data[kScrollValuatorNum] =
-      { x_offset, y_offset, x_offset_ordinal, y_offset_ordinal, finger_count };
+      { x_offset, y_offset, x_offset_ordinal, y_offset_ordinal, finger_count};
   XIDeviceEvent* xiev =
-      static_cast<XIDeviceEvent*>(event->xcookie.data);
+      static_cast<XIDeviceEvent*>(event_->xcookie.data);
+
   InitValuatorsForXIDeviceEvent(xiev, kScrollValuatorNum);
   for(int i = 0; i < kScrollValuatorNum; i++) {
     XISetMask(xiev->valuators.mask, i);
     xiev->valuators.values[i] = valuator_data[i];
   }
+}
 
-  return event;
+void ScopedXI2Event::InitTouchEvent(int deviceid,
+                                    int evtype,
+                                    int tracking_id,
+                                    const gfx::Point& location,
+                                    const std::vector<Valuator>& valuators) {
+  Cleanup();
+  event_.reset(CreateXInput2Event(
+      deviceid, evtype, tracking_id, location));
+
+  XIDeviceEvent* xiev =
+      static_cast<XIDeviceEvent*>(event_->xcookie.data);
+  InitValuatorsForXIDeviceEvent(xiev, valuators.size());
+  int val_count = 0;
+  for (int i = 0; i < kTouchValuatorNum; i++) {
+    for (size_t j = 0; j < valuators.size(); j++) {
+      if (valuators[j].data_type == kTouchValuatorMap[i][1]) {
+        XISetMask(xiev->valuators.mask, kTouchValuatorMap[i][0]);
+        xiev->valuators.values[val_count++] = valuators[j].value;
+      }
+    }
+  }
+
+}
+
+void ScopedXI2Event::Cleanup() {
+  if (event_.get() && event_->type == GenericEvent) {
+    XIDeviceEvent* xiev =
+        static_cast<XIDeviceEvent*>(event_->xcookie.data);
+    if (xiev) {
+      delete[] xiev->valuators.mask;
+      delete[] xiev->valuators.values;
+      delete xiev;
+    }
+  }
+  event_.reset();
 }
 
  void SetUpScrollDeviceForTest(unsigned int deviceid) {
@@ -254,32 +273,6 @@ XEvent* CreateScrollEventForTest(
   }
 }
 
-#if defined(USE_XI2_MT)
-
-XEvent* CreateTouchEventForTest(int deviceid,
-                                int evtype,
-                                int tracking_id,
-                                const gfx::Point& location,
-                                const std::vector<Valuator>& valuators) {
-  XEvent* event = CreateXInput2Event(
-      deviceid, evtype, tracking_id, location);
-
-  XIDeviceEvent* xiev =
-      static_cast<XIDeviceEvent*>(event->xcookie.data);
-  InitValuatorsForXIDeviceEvent(xiev, valuators.size());
-  int val_count = 0;
-  for (int i = 0; i < kTouchValuatorNum; i++) {
-    for(size_t j = 0; j < valuators.size(); j++) {
-      if (valuators[j].data_type == kTouchValuatorMap[i][1]) {
-        XISetMask(xiev->valuators.mask, kTouchValuatorMap[i][0]);
-        xiev->valuators.values[val_count++] = valuators[j].value;
-      }
-    }
-  }
-
-  return event;
-}
-
 void SetupTouchDevicesForTest(const std::vector<unsigned int>& devices) {
   std::vector<unsigned int> empty_list;
   TouchFactory::GetInstance()->SetTouchDeviceForTest(devices);
@@ -296,7 +289,5 @@ void SetupTouchDevicesForTest(const std::vector<unsigned int>& devices) {
     }
   }
 }
-
-#endif  // defined(USE_XI2_MT)
 
 }  // namespace ui

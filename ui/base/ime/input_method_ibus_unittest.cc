@@ -910,9 +910,9 @@ class InputMethodIBusKeyEventTest : public InputMethodIBusTest {
 TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseTest) {
   const int kXFlags = ShiftMask;
   const unsigned int kIbusFlags = ui::EF_SHIFT_DOWN;
-  XEvent xevent = {};
-  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED, ui::VKEY_A, kXFlags, &xevent);
-  const ui::KeyEvent event(&xevent, true);
+  ScopedXI2Event xevent;
+  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, kXFlags);
+  const ui::KeyEvent event(xevent, true);
 
   // Do key event.
   input_type_ = TEXT_INPUT_TYPE_TEXT;
@@ -938,7 +938,7 @@ TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseTest) {
   const ui::KeyEvent* stored_event =
       ime_->process_key_event_post_ime_args().event;
   EXPECT_TRUE(stored_event->HasNativeEvent());
-  EXPECT_TRUE(IsEqualXKeyEvent(xevent, *(stored_event->native_event())));
+  EXPECT_TRUE(IsEqualXKeyEvent(*xevent, *(stored_event->native_event())));
   EXPECT_TRUE(ime_->process_key_event_post_ime_args().handled);
 }
 
@@ -949,9 +949,9 @@ TEST_F(InputMethodIBusKeyEventTest, MultiKeyEventDelayResponseTest) {
 
   const int kXFlags = ShiftMask;
   const unsigned int kIbusFlags = ui::EF_SHIFT_DOWN;
-  XEvent xevent = {};
-  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED, ui::VKEY_B, kXFlags, &xevent);
-  const ui::KeyEvent event(&xevent, true);
+  ScopedXI2Event xevent;
+  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_B, kXFlags);
+  const ui::KeyEvent event(xevent, true);
 
   // Do key event.
   ime_->DispatchKeyEvent(event);
@@ -967,10 +967,9 @@ TEST_F(InputMethodIBusKeyEventTest, MultiKeyEventDelayResponseTest) {
       mock_ime_engine_handler_->last_passed_callback();
 
   // Do key event again.
-  XEvent xevent2 = {};
-  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED, ui::VKEY_C, kXFlags,
-                              &xevent2);
-  const ui::KeyEvent event2(&xevent2, true);
+  ScopedXI2Event xevent2;
+  xevent2.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_C, kXFlags);
+  const ui::KeyEvent event2(xevent2, true);
 
   ime_->DispatchKeyEvent(event2);
   EXPECT_EQ("C",
@@ -994,7 +993,7 @@ TEST_F(InputMethodIBusKeyEventTest, MultiKeyEventDelayResponseTest) {
   const ui::KeyEvent* stored_event =
       ime_->process_key_event_post_ime_args().event;
   EXPECT_TRUE(stored_event->HasNativeEvent());
-  EXPECT_TRUE(IsEqualXKeyEvent(xevent, *(stored_event->native_event())));
+  EXPECT_TRUE(IsEqualXKeyEvent(*xevent, *(stored_event->native_event())));
   EXPECT_TRUE(ime_->process_key_event_post_ime_args().handled);
 
   // Do callback for second key event.
@@ -1004,15 +1003,15 @@ TEST_F(InputMethodIBusKeyEventTest, MultiKeyEventDelayResponseTest) {
   EXPECT_EQ(2, ime_->process_key_event_post_ime_call_count());
   stored_event = ime_->process_key_event_post_ime_args().event;
   EXPECT_TRUE(stored_event->HasNativeEvent());
-  EXPECT_TRUE(IsEqualXKeyEvent(xevent2, *(stored_event->native_event())));
+  EXPECT_TRUE(IsEqualXKeyEvent(*xevent2, *(stored_event->native_event())));
   EXPECT_FALSE(ime_->process_key_event_post_ime_args().handled);
 }
 
 TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseResetTest) {
   const int kXFlags = ShiftMask;
-  XEvent xevent = {};
-  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED, ui::VKEY_A, kXFlags, &xevent);
-  const ui::KeyEvent event(&xevent, true);
+  ScopedXI2Event xevent;
+  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, kXFlags);
+  const ui::KeyEvent event(xevent, true);
 
   // Do key event.
   input_type_ = TEXT_INPUT_TYPE_TEXT;

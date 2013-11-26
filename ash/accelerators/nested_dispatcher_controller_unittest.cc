@@ -84,19 +84,13 @@ void DispatchKeyReleaseA() {
   MSG native_event_up = { NULL, WM_KEYUP, ui::VKEY_A, 0 };
   ash::Shell::GetPrimaryRootWindow()->host()->PostNativeEvent(native_event_up);
 #elif defined(USE_X11)
-  XEvent native_event;
-  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED,
-                              ui::VKEY_A,
-                              0,
-                              &native_event);
+  ui::ScopedXI2Event native_event;
+  native_event.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
   aura::WindowEventDispatcher* dispatcher =
       ash::Shell::GetPrimaryRootWindow()->GetDispatcher();
-  dispatcher->host()->PostNativeEvent(&native_event);
-  ui::InitXKeyEventForTesting(ui::ET_KEY_RELEASED,
-                              ui::VKEY_A,
-                              0,
-                              &native_event);
-  dispatcher->host()->PostNativeEvent(&native_event);
+  dispatcher->host()->PostNativeEvent(native_event);
+  native_event.InitKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_A, 0);
+  dispatcher->host()->PostNativeEvent(native_event);
 #endif
 
   // Send noop event to signal dispatcher to exit.
