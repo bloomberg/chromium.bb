@@ -28,7 +28,7 @@
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
-#include "media/filters/video_renderer_base.h"
+#include "media/filters/video_renderer_impl.h"
 #include "media/tools/player_x11/data_source_logger.h"
 
 // Include X11 headers here because X11/Xlib.h #define's Status
@@ -121,7 +121,7 @@ void InitPipeline(media::Pipeline* pipeline,
 
   ScopedVector<media::VideoDecoder> video_decoders;
   video_decoders.push_back(new media::FFmpegVideoDecoder(message_loop));
-  scoped_ptr<media::VideoRenderer> video_renderer(new media::VideoRendererBase(
+  scoped_ptr<media::VideoRenderer> video_renderer(new media::VideoRendererImpl(
       message_loop,
       video_decoders.Pass(),
       media::SetDecryptorReadyCB(),

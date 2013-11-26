@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/video_renderer_base.h"
+#include "media/filters/video_renderer_impl.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -17,11 +17,11 @@
 
 namespace media {
 
-base::TimeDelta VideoRendererBase::kMaxLastFrameDuration() {
+base::TimeDelta VideoRendererImpl::kMaxLastFrameDuration() {
   return base::TimeDelta::FromMilliseconds(250);
 }
 
-VideoRendererBase::VideoRendererBase(
+VideoRendererImpl::VideoRendererImpl(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     ScopedVector<VideoDecoder> decoders,
     const SetDecryptorReadyCB& set_decryptor_ready_cb,
@@ -47,13 +47,13 @@ VideoRendererBase::VideoRendererBase(
   DCHECK(!paint_cb_.is_null());
 }
 
-VideoRendererBase::~VideoRendererBase() {
+VideoRendererImpl::~VideoRendererImpl() {
   base::AutoLock auto_lock(lock_);
   CHECK(state_ == kStopped || state_ == kUninitialized) << state_;
   CHECK(thread_.is_null());
 }
 
-void VideoRendererBase::Play(const base::Closure& callback) {
+void VideoRendererImpl::Play(const base::Closure& callback) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(kPrerolled, state_);
@@ -61,7 +61,7 @@ void VideoRendererBase::Play(const base::Closure& callback) {
   callback.Run();
 }
 
-void VideoRendererBase::Pause(const base::Closure& callback) {
+void VideoRendererImpl::Pause(const base::Closure& callback) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK(state_ != kUninitialized || state_ == kError);
@@ -69,7 +69,7 @@ void VideoRendererBase::Pause(const base::Closure& callback) {
   callback.Run();
 }
 
-void VideoRendererBase::Flush(const base::Closure& callback) {
+void VideoRendererImpl::Flush(const base::Closure& callback) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kPaused);
@@ -81,10 +81,10 @@ void VideoRendererBase::Flush(const base::Closure& callback) {
   ready_frames_.clear();
   received_end_of_stream_ = false;
   video_frame_stream_.Reset(base::Bind(
-      &VideoRendererBase::OnVideoFrameStreamResetDone, weak_this_));
+      &VideoRendererImpl::OnVideoFrameStreamResetDone, weak_this_));
 }
 
-void VideoRendererBase::Stop(const base::Closure& callback) {
+void VideoRendererImpl::Stop(const base::Closure& callback) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   if (state_ == kUninitialized || state_ == kStopped) {
@@ -118,13 +118,13 @@ void VideoRendererBase::Stop(const base::Closure& callback) {
   video_frame_stream_.Stop(callback);
 }
 
-void VideoRendererBase::SetPlaybackRate(float playback_rate) {
+void VideoRendererImpl::SetPlaybackRate(float playback_rate) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   playback_rate_ = playback_rate;
 }
 
-void VideoRendererBase::Preroll(base::TimeDelta time,
+void VideoRendererImpl::Preroll(base::TimeDelta time,
                                 const PipelineStatusCB& cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
@@ -138,7 +138,7 @@ void VideoRendererBase::Preroll(base::TimeDelta time,
   AttemptRead_Locked();
 }
 
-void VideoRendererBase::Initialize(DemuxerStream* stream,
+void VideoRendererImpl::Initialize(DemuxerStream* stream,
                                    const PipelineStatusCB& init_cb,
                                    const StatisticsCB& statistics_cb,
                                    const TimeCB& max_time_cb,
@@ -174,11 +174,11 @@ void VideoRendererBase::Initialize(DemuxerStream* stream,
   video_frame_stream_.Initialize(
       stream,
       statistics_cb,
-      base::Bind(&VideoRendererBase::OnVideoFrameStreamInitialized,
+      base::Bind(&VideoRendererImpl::OnVideoFrameStreamInitialized,
                  weak_this_));
 }
 
-void VideoRendererBase::OnVideoFrameStreamInitialized(bool success,
+void VideoRendererImpl::OnVideoFrameStreamInitialized(bool success,
                                                       bool has_alpha) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
@@ -220,7 +220,7 @@ void VideoRendererBase::OnVideoFrameStreamInitialized(bool success,
 }
 
 // PlatformThread::Delegate implementation.
-void VideoRendererBase::ThreadMain() {
+void VideoRendererImpl::ThreadMain() {
   base::PlatformThread::SetName("CrVideoRenderer");
 
   // The number of milliseconds to idle when we do not have anything to do.
@@ -300,7 +300,7 @@ void VideoRendererBase::ThreadMain() {
   }
 }
 
-void VideoRendererBase::PaintNextReadyFrame_Locked() {
+void VideoRendererImpl::PaintNextReadyFrame_Locked() {
   lock_.AssertAcquired();
 
   scoped_refptr<VideoFrame> next_frame = ready_frames_.front();
@@ -318,11 +318,11 @@ void VideoRendererBase::PaintNextReadyFrame_Locked() {
   paint_cb_.Run(next_frame);
 
   message_loop_->PostTask(FROM_HERE, base::Bind(
-      &VideoRendererBase::AttemptRead, weak_this_));
+      &VideoRendererImpl::AttemptRead, weak_this_));
 }
 
-void VideoRendererBase::DropNextReadyFrame_Locked() {
-  TRACE_EVENT0("media", "VideoRendererBase:frameDropped");
+void VideoRendererImpl::DropNextReadyFrame_Locked() {
+  TRACE_EVENT0("media", "VideoRendererImpl:frameDropped");
 
   lock_.AssertAcquired();
 
@@ -332,10 +332,10 @@ void VideoRendererBase::DropNextReadyFrame_Locked() {
   frames_dropped_++;
 
   message_loop_->PostTask(FROM_HERE, base::Bind(
-      &VideoRendererBase::AttemptRead, weak_this_));
+      &VideoRendererImpl::AttemptRead, weak_this_));
 }
 
-void VideoRendererBase::FrameReady(VideoFrameStream::Status status,
+void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
                                    const scoped_refptr<VideoFrame>& frame) {
   base::AutoLock auto_lock(lock_);
   DCHECK_NE(state_, kUninitialized);
@@ -408,7 +408,7 @@ void VideoRendererBase::FrameReady(VideoFrameStream::Status status,
   AttemptRead_Locked();
 }
 
-void VideoRendererBase::AddReadyFrame_Locked(
+void VideoRendererImpl::AddReadyFrame_Locked(
     const scoped_refptr<VideoFrame>& frame) {
   lock_.AssertAcquired();
   DCHECK(!frame->end_of_stream());
@@ -434,12 +434,12 @@ void VideoRendererBase::AddReadyFrame_Locked(
     frame_available_.Signal();
 }
 
-void VideoRendererBase::AttemptRead() {
+void VideoRendererImpl::AttemptRead() {
   base::AutoLock auto_lock(lock_);
   AttemptRead_Locked();
 }
 
-void VideoRendererBase::AttemptRead_Locked() {
+void VideoRendererImpl::AttemptRead_Locked() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   lock_.AssertAcquired();
 
@@ -453,7 +453,7 @@ void VideoRendererBase::AttemptRead_Locked() {
     case kPrerolling:
     case kPlaying:
       pending_read_ = true;
-      video_frame_stream_.Read(base::Bind(&VideoRendererBase::FrameReady,
+      video_frame_stream_.Read(base::Bind(&VideoRendererImpl::FrameReady,
                                           weak_this_));
       return;
 
@@ -469,7 +469,7 @@ void VideoRendererBase::AttemptRead_Locked() {
   }
 }
 
-void VideoRendererBase::OnVideoFrameStreamResetDone() {
+void VideoRendererImpl::OnVideoFrameStreamResetDone() {
   base::AutoLock auto_lock(lock_);
   if (state_ == kStopped)
     return;
@@ -484,7 +484,7 @@ void VideoRendererBase::OnVideoFrameStreamResetDone() {
   base::ResetAndReturn(&flush_cb_).Run();
 }
 
-base::TimeDelta VideoRendererBase::CalculateSleepDuration(
+base::TimeDelta VideoRendererImpl::CalculateSleepDuration(
     const scoped_refptr<VideoFrame>& next_frame,
     float playback_rate) {
   // Determine the current and next presentation timestamps.
@@ -497,13 +497,13 @@ base::TimeDelta VideoRendererBase::CalculateSleepDuration(
       static_cast<int64>(sleep.InMicroseconds() / playback_rate));
 }
 
-void VideoRendererBase::DoStopOrError_Locked() {
+void VideoRendererImpl::DoStopOrError_Locked() {
   lock_.AssertAcquired();
   last_timestamp_ = kNoTimestamp();
   ready_frames_.clear();
 }
 
-void VideoRendererBase::TransitionToPrerolled_Locked() {
+void VideoRendererImpl::TransitionToPrerolled_Locked() {
   lock_.AssertAcquired();
   DCHECK_EQ(state_, kPrerolling);
 
@@ -518,7 +518,7 @@ void VideoRendererBase::TransitionToPrerolled_Locked() {
   base::ResetAndReturn(&preroll_cb_).Run(PIPELINE_OK);
 }
 
-void VideoRendererBase::UpdateStatsAndWait_Locked(
+void VideoRendererImpl::UpdateStatsAndWait_Locked(
     base::TimeDelta wait_duration) {
   lock_.AssertAcquired();
   DCHECK_GE(frames_decoded_, 0);

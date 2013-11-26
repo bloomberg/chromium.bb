@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,7 @@
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
-#include "media/filters/video_renderer_base.h"
+#include "media/filters/video_renderer_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -36,20 +36,20 @@ namespace media {
 static const int kFrameDurationInMs = 10;
 static const int kVideoDurationInMs = kFrameDurationInMs * 100;
 
-class VideoRendererBaseTest : public ::testing::Test {
+class VideoRendererImplTest : public ::testing::Test {
  public:
-  VideoRendererBaseTest()
+  VideoRendererImplTest()
       : decoder_(new MockVideoDecoder()),
         demuxer_stream_(DemuxerStream::VIDEO) {
     ScopedVector<VideoDecoder> decoders;
     decoders.push_back(decoder_);
 
-    renderer_.reset(new VideoRendererBase(
+    renderer_.reset(new VideoRendererImpl(
         message_loop_.message_loop_proxy(),
         decoders.Pass(),
         media::SetDecryptorReadyCB(),
-        base::Bind(&VideoRendererBaseTest::OnPaint, base::Unretained(this)),
-        base::Bind(&VideoRendererBaseTest::OnSetOpaque, base::Unretained(this)),
+        base::Bind(&VideoRendererImplTest::OnPaint, base::Unretained(this)),
+        base::Bind(&VideoRendererImplTest::OnSetOpaque, base::Unretained(this)),
         true));
 
     demuxer_stream_.set_video_decoder_config(TestVideoConfig::Normal());
@@ -59,7 +59,7 @@ class VideoRendererBaseTest : public ::testing::Test {
         .WillRepeatedly(RunCallback<0>(DemuxerStream::kOk,
                                        DecoderBuffer::CreateEOSBuffer()));
     EXPECT_CALL(*decoder_, Stop(_))
-        .WillRepeatedly(Invoke(this, &VideoRendererBaseTest::StopRequested));
+        .WillRepeatedly(Invoke(this, &VideoRendererImplTest::StopRequested));
     EXPECT_CALL(statistics_cb_object_, OnStatistics(_))
         .Times(AnyNumber());
     EXPECT_CALL(*this, OnTimeUpdate(_))
@@ -68,9 +68,9 @@ class VideoRendererBaseTest : public ::testing::Test {
         .Times(AnyNumber());
   }
 
-  virtual ~VideoRendererBaseTest() {}
+  virtual ~VideoRendererImplTest() {}
 
-  // Callbacks passed into VideoRendererBase().
+  // Callbacks passed into VideoRendererImpl().
   MOCK_CONST_METHOD1(OnSetOpaque, void(bool));
 
   // Callbacks passed into Initialize().
@@ -86,10 +86,10 @@ class VideoRendererBaseTest : public ::testing::Test {
 
     // Monitor decodes from the decoder.
     EXPECT_CALL(*decoder_, Decode(_, _))
-        .WillRepeatedly(Invoke(this, &VideoRendererBaseTest::FrameRequested));
+        .WillRepeatedly(Invoke(this, &VideoRendererImplTest::FrameRequested));
 
     EXPECT_CALL(*decoder_, Reset(_))
-        .WillRepeatedly(Invoke(this, &VideoRendererBaseTest::FlushRequested));
+        .WillRepeatedly(Invoke(this, &VideoRendererImplTest::FlushRequested));
 
     InSequence s;
 
@@ -124,14 +124,14 @@ class VideoRendererBaseTest : public ::testing::Test {
         status_cb,
         base::Bind(&MockStatisticsCB::OnStatistics,
                    base::Unretained(&statistics_cb_object_)),
-        base::Bind(&VideoRendererBaseTest::OnTimeUpdate,
+        base::Bind(&VideoRendererImplTest::OnTimeUpdate,
                    base::Unretained(this)),
-        base::Bind(&VideoRendererBaseTest::OnNaturalSizeChanged,
+        base::Bind(&VideoRendererImplTest::OnNaturalSizeChanged,
                    base::Unretained(this)),
         ended_event_.GetClosure(),
         error_event_.GetPipelineStatusCB(),
-        base::Bind(&VideoRendererBaseTest::GetTime, base::Unretained(this)),
-        base::Bind(&VideoRendererBaseTest::GetDuration,
+        base::Bind(&VideoRendererImplTest::GetTime, base::Unretained(this)),
+        base::Bind(&VideoRendererImplTest::GetDuration,
                    base::Unretained(this)));
   }
 
@@ -293,7 +293,7 @@ class VideoRendererBaseTest : public ::testing::Test {
 
  protected:
   // Fixture members.
-  scoped_ptr<VideoRendererBase> renderer_;
+  scoped_ptr<VideoRendererImpl> renderer_;
   MockVideoDecoder* decoder_;  // Owned by |renderer_|.
   NiceMock<MockDemuxerStream> demuxer_stream_;
   MockStatisticsCB statistics_cb_object_;
@@ -372,19 +372,19 @@ class VideoRendererBaseTest : public ::testing::Test {
   std::deque<std::pair<
       VideoDecoder::Status, scoped_refptr<VideoFrame> > > decode_results_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoRendererBaseTest);
+  DISALLOW_COPY_AND_ASSIGN(VideoRendererImplTest);
 };
 
-TEST_F(VideoRendererBaseTest, DoNothing) {
+TEST_F(VideoRendererImplTest, DoNothing) {
   // Test that creation and deletion doesn't depend on calls to Initialize()
   // and/or Stop().
 }
 
-TEST_F(VideoRendererBaseTest, StopWithoutInitialize) {
+TEST_F(VideoRendererImplTest, StopWithoutInitialize) {
   Stop();
 }
 
-TEST_F(VideoRendererBaseTest, Initialize) {
+TEST_F(VideoRendererImplTest, Initialize) {
   Initialize();
   EXPECT_EQ(0, GetCurrentTimestampInMs());
   Shutdown();
@@ -395,38 +395,38 @@ static void ExpectNotCalled(PipelineStatus) {
   ADD_FAILURE() << "Expected callback not to be called\n" << stack.ToString();
 }
 
-TEST_F(VideoRendererBaseTest, StopWhileInitializing) {
+TEST_F(VideoRendererImplTest, StopWhileInitializing) {
   EXPECT_CALL(*decoder_, Initialize(_, _))
       .WillOnce(RunCallback<1>(PIPELINE_OK));
   CallInitialize(base::Bind(&ExpectNotCalled));
   Stop();
 
-  // ~VideoRendererBase() will CHECK() if we left anything initialized.
+  // ~VideoRendererImpl() will CHECK() if we left anything initialized.
 }
 
-TEST_F(VideoRendererBaseTest, StopWhileFlushing) {
+TEST_F(VideoRendererImplTest, StopWhileFlushing) {
   Initialize();
   Pause();
   renderer_->Flush(base::Bind(&ExpectNotCalled, PIPELINE_OK));
   Stop();
 
-  // ~VideoRendererBase() will CHECK() if we left anything initialized.
+  // ~VideoRendererImpl() will CHECK() if we left anything initialized.
 }
 
-TEST_F(VideoRendererBaseTest, Play) {
+TEST_F(VideoRendererImplTest, Play) {
   Initialize();
   Play();
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, EndOfStream_DefaultFrameDuration) {
+TEST_F(VideoRendererImplTest, EndOfStream_DefaultFrameDuration) {
   Initialize();
   Play();
 
   // Verify that the ended callback fires when the default last frame duration
   // has elapsed.
   int end_timestamp = kFrameDurationInMs * limits::kMaxVideoFrames +
-      VideoRendererBase::kMaxLastFrameDuration().InMilliseconds();
+      VideoRendererImpl::kMaxLastFrameDuration().InMilliseconds();
   EXPECT_LT(end_timestamp, kVideoDurationInMs);
 
   QueueEndOfStream();
@@ -436,7 +436,7 @@ TEST_F(VideoRendererBaseTest, EndOfStream_DefaultFrameDuration) {
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, EndOfStream_ClipDuration) {
+TEST_F(VideoRendererImplTest, EndOfStream_ClipDuration) {
   int duration = kVideoDurationInMs + kFrameDurationInMs / 2;
   InitializeWithDuration(duration);
   Play();
@@ -461,7 +461,7 @@ TEST_F(VideoRendererBaseTest, EndOfStream_ClipDuration) {
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, DecodeError_Playing) {
+TEST_F(VideoRendererImplTest, DecodeError_Playing) {
   Initialize();
   Play();
 
@@ -471,7 +471,7 @@ TEST_F(VideoRendererBaseTest, DecodeError_Playing) {
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, DecodeError_DuringPreroll) {
+TEST_F(VideoRendererImplTest, DecodeError_DuringPreroll) {
   Initialize();
   Pause();
   Flush();
@@ -481,7 +481,7 @@ TEST_F(VideoRendererBaseTest, DecodeError_DuringPreroll) {
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, Preroll_Exact) {
+TEST_F(VideoRendererImplTest, Preroll_Exact) {
   Initialize();
   Pause();
   Flush();
@@ -492,7 +492,7 @@ TEST_F(VideoRendererBaseTest, Preroll_Exact) {
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, Preroll_RightBefore) {
+TEST_F(VideoRendererImplTest, Preroll_RightBefore) {
   Initialize();
   Pause();
   Flush();
@@ -503,7 +503,7 @@ TEST_F(VideoRendererBaseTest, Preroll_RightBefore) {
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, Preroll_RightAfter) {
+TEST_F(VideoRendererImplTest, Preroll_RightAfter) {
   Initialize();
   Pause();
   Flush();
@@ -514,7 +514,7 @@ TEST_F(VideoRendererBaseTest, Preroll_RightAfter) {
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, PlayAfterPreroll) {
+TEST_F(VideoRendererImplTest, PlayAfterPreroll) {
   Initialize();
   Pause();
   Flush();
@@ -530,20 +530,20 @@ TEST_F(VideoRendererBaseTest, PlayAfterPreroll) {
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, GetCurrentFrame_Initialized) {
+TEST_F(VideoRendererImplTest, GetCurrentFrame_Initialized) {
   Initialize();
   EXPECT_TRUE(GetCurrentFrame().get());  // Due to prerolling.
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, GetCurrentFrame_Playing) {
+TEST_F(VideoRendererImplTest, GetCurrentFrame_Playing) {
   Initialize();
   Play();
   EXPECT_TRUE(GetCurrentFrame().get());
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, GetCurrentFrame_Paused) {
+TEST_F(VideoRendererImplTest, GetCurrentFrame_Paused) {
   Initialize();
   Play();
   Pause();
@@ -551,7 +551,7 @@ TEST_F(VideoRendererBaseTest, GetCurrentFrame_Paused) {
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, GetCurrentFrame_Flushed) {
+TEST_F(VideoRendererImplTest, GetCurrentFrame_Flushed) {
   Initialize();
   Play();
   Pause();
@@ -564,7 +564,7 @@ TEST_F(VideoRendererBaseTest, GetCurrentFrame_Flushed) {
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, GetCurrentFrame_EndOfStream) {
+TEST_F(VideoRendererImplTest, GetCurrentFrame_EndOfStream) {
   Initialize();
   Play();
   Pause();
@@ -585,7 +585,7 @@ TEST_F(VideoRendererBaseTest, GetCurrentFrame_EndOfStream) {
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, GetCurrentFrame_Shutdown) {
+TEST_F(VideoRendererImplTest, GetCurrentFrame_Shutdown) {
   Initialize();
 
   // Frame shouldn't be updated.
@@ -595,7 +595,7 @@ TEST_F(VideoRendererBaseTest, GetCurrentFrame_Shutdown) {
 }
 
 // Stop() is called immediately during an error.
-TEST_F(VideoRendererBaseTest, GetCurrentFrame_Error) {
+TEST_F(VideoRendererImplTest, GetCurrentFrame_Error) {
   Initialize();
 
   // Frame shouldn't be updated.
@@ -605,7 +605,7 @@ TEST_F(VideoRendererBaseTest, GetCurrentFrame_Error) {
 }
 
 // Verify that a late decoder response doesn't break invariants in the renderer.
-TEST_F(VideoRendererBaseTest, StopDuringOutstandingRead) {
+TEST_F(VideoRendererImplTest, StopDuringOutstandingRead) {
   Initialize();
   Play();
 
@@ -619,7 +619,7 @@ TEST_F(VideoRendererBaseTest, StopDuringOutstandingRead) {
   event.RunAndWait();
 }
 
-TEST_F(VideoRendererBaseTest, AbortPendingRead_Playing) {
+TEST_F(VideoRendererImplTest, AbortPendingRead_Playing) {
   Initialize();
   Play();
 
@@ -638,7 +638,7 @@ TEST_F(VideoRendererBaseTest, AbortPendingRead_Playing) {
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, AbortPendingRead_Flush) {
+TEST_F(VideoRendererImplTest, AbortPendingRead_Flush) {
   Initialize();
   Play();
 
@@ -651,7 +651,7 @@ TEST_F(VideoRendererBaseTest, AbortPendingRead_Flush) {
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, AbortPendingRead_Preroll) {
+TEST_F(VideoRendererImplTest, AbortPendingRead_Preroll) {
   Initialize();
   Pause();
   Flush();
@@ -661,7 +661,7 @@ TEST_F(VideoRendererBaseTest, AbortPendingRead_Preroll) {
   Shutdown();
 }
 
-TEST_F(VideoRendererBaseTest, VideoDecoder_InitFailure) {
+TEST_F(VideoRendererImplTest, VideoDecoder_InitFailure) {
   InSequence s;
 
   EXPECT_CALL(*decoder_, Initialize(_, _))

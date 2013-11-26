@@ -237,7 +237,7 @@ PipelineIntegrationTestBase::CreateFilterCollection(
         new FFmpegVideoDecoder(message_loop_.message_loop_proxy()));
 
     // Disable frame dropping if hashing is enabled.
-    scoped_ptr<VideoRenderer> renderer(new VideoRendererBase(
+    scoped_ptr<VideoRenderer> renderer(new VideoRendererImpl(
         message_loop_.message_loop_proxy(),
         video_decoders.Pass(),
         base::Bind(&PipelineIntegrationTestBase::SetDecryptor,

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_VIDEO_RENDERER_BASE_H_
-#define MEDIA_FILTERS_VIDEO_RENDERER_BASE_H_
+#ifndef MEDIA_FILTERS_VIDEO_RENDERER_IMPL_H_
+#define MEDIA_FILTERS_VIDEO_RENDERER_IMPL_H_
 
 #include <deque>
 
@@ -27,11 +27,11 @@ class MessageLoopProxy;
 
 namespace media {
 
-// VideoRendererBase creates its own thread for the sole purpose of timing frame
+// VideoRendererImpl creates its own thread for the sole purpose of timing frame
 // presentation.  It handles reading from the VideoFrameStream and stores the
 // results in a queue of decoded frames and executing a callback when a frame is
 // ready for rendering.
-class MEDIA_EXPORT VideoRendererBase
+class MEDIA_EXPORT VideoRendererImpl
     : public VideoRenderer,
       public base::PlatformThread::Delegate {
  public:
@@ -54,13 +54,13 @@ class MEDIA_EXPORT VideoRendererBase
   // down the video thread may result in losing synchronization with audio.
   //
   // Setting |drop_frames_| to true causes the renderer to drop expired frames.
-  VideoRendererBase(const scoped_refptr<base::MessageLoopProxy>& message_loop,
+  VideoRendererImpl(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                     ScopedVector<VideoDecoder> decoders,
                     const SetDecryptorReadyCB& set_decryptor_ready_cb,
                     const PaintCB& paint_cb,
                     const SetOpaqueCB& set_opaque_cb,
                     bool drop_frames);
-  virtual ~VideoRendererBase();
+  virtual ~VideoRendererImpl();
 
   // VideoRenderer implementation.
   virtual void Initialize(DemuxerStream* stream,
@@ -135,13 +135,13 @@ class MEDIA_EXPORT VideoRendererBase
   void UpdateStatsAndWait_Locked(base::TimeDelta wait_duration);
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
-  base::WeakPtrFactory<VideoRendererBase> weak_factory_;
-  base::WeakPtr<VideoRendererBase> weak_this_;
+  base::WeakPtrFactory<VideoRendererImpl> weak_factory_;
+  base::WeakPtr<VideoRendererImpl> weak_this_;
 
   // Used for accessing data members.
   base::Lock lock_;
 
-  // Provides video frames to VideoRendererBase.
+  // Provides video frames to VideoRendererImpl.
   VideoFrameStream video_frame_stream_;
 
   // Queue of incoming frames yet to be painted.
@@ -246,9 +246,9 @@ class MEDIA_EXPORT VideoRendererBase
   int frames_decoded_;
   int frames_dropped_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoRendererBase);
+  DISALLOW_COPY_AND_ASSIGN(VideoRendererImpl);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_VIDEO_RENDERER_BASE_H_
+#endif  // MEDIA_FILTERS_VIDEO_RENDERER_IMPL_H_

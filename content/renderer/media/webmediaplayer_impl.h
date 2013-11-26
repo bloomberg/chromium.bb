@@ -251,7 +251,7 @@ class WebMediaPlayerImpl
   // Notifies WebKit of the duration change.
   void OnDurationChange();
 
-  // Called by VideoRendererBase on its internal thread with the new frame to be
+  // Called by VideoRendererImpl on its internal thread with the new frame to be
   // painted.
   void FrameReady(const scoped_refptr<media::VideoFrame>& frame);
 

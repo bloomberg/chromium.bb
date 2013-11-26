@@ -48,7 +48,7 @@
 #include "media/filters/gpu_video_accelerator_factories.h"
 #include "media/filters/gpu_video_decoder.h"
 #include "media/filters/opus_audio_decoder.h"
-#include "media/filters/video_renderer_base.h"
+#include "media/filters/video_renderer_impl.h"
 #include "media/filters/vpx_video_decoder.h"
 #include "third_party/WebKit/public/platform/WebMediaSource.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -1158,7 +1158,7 @@ void WebMediaPlayerImpl::StartPipeline() {
   video_decoders.push_back(new media::FFmpegVideoDecoder(media_loop_));
 
   scoped_ptr<media::VideoRenderer> video_renderer(
-      new media::VideoRendererBase(
+      new media::VideoRendererImpl(
           media_loop_,
           video_decoders.Pass(),
           set_decryptor_ready_cb,
