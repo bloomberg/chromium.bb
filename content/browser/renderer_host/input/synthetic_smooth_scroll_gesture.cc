@@ -62,11 +62,7 @@ SyntheticGesture::Result SyntheticSmoothScrollGesture::ForwardMouseInputEvents(
   if (HasFinished())
     return SyntheticGesture::GESTURE_FINISHED;
 
-  // Even though WebMouseWheelEvents take floating point deltas, internally the
-  // scroll position is stored as an integer. Rounding the deltas ensures that
-  // the gesture state, especially |current_y_|, is consistent with the internal
-  // state.
-  float delta = round(GetPositionDelta(interval));
+  float delta = GetPositionDelta(interval);
   current_y_ += delta;
   ForwardMouseWheelEvent(target, delta);
 
