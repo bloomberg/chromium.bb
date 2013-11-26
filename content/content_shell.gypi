@@ -234,10 +234,10 @@
           'conditions': [
             ['toolkit_views==1', {
               'dependencies': [
+                '../ui/resources/ui_resources.gyp:ui_resources',
                 '../ui/views/controls/webview/webview.gyp:webview',
                 '../ui/views/views.gyp:views',
                 '../ui/views/views.gyp:views_test_support',
-                '../ui/ui.gyp:ui_resources',
               ],
               'sources/': [
                 ['exclude', 'shell/browser/shell_aura.cc'],

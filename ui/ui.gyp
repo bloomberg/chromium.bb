@@ -8,17 +8,6 @@
   },
   'targets': [
     {
-      # TODO(tfarina): Remove this target after Blink is updated.
-      'target_name': 'ui_resources',
-      'type': 'none',
-      'dependencies': [
-        'resources/ui_resources.gyp:ui_resources',
-      ],
-      'export_dependent_settings': [
-        'resources/ui_resources.gyp:ui_resources',
-      ]
-    },
-    {
       'target_name': 'ui',
       'type': '<(component)',
       'dependencies': [
