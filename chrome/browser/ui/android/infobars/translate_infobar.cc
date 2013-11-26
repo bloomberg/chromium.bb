@@ -52,7 +52,7 @@ ScopedJavaLocalRef<jobject> TranslateInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 void TranslateInfoBar::ProcessButton(int action,
                                      const std::string& action_value) {
   if (!owner())
-     return;  // We're closing; don't call anything, it might access the owner.
+    return;  // We're closing; don't call anything, it might access the owner.
 
   TranslateInfoBarDelegate* delegate = GetDelegate();
   if (action == InfoBarAndroid::ACTION_TRANSLATE) {
@@ -124,7 +124,7 @@ bool TranslateInfoBar::ShouldDisplayNeverTranslateInfoBarOnCancel() {
   return
       (delegate->infobar_type() ==
           TranslateInfoBarDelegate::BEFORE_TRANSLATE) &&
-      (delegate->ShouldShowNeverTranslateShortcut());
+      delegate->ShouldShowNeverTranslateShortcut();
 }
 
 TranslateInfoBarDelegate* TranslateInfoBar::GetDelegate() {

@@ -239,8 +239,7 @@ void TabAndroid::SwapTabContents(content::WebContents* old_contents,
               weak_java_tab_.get(env).obj()));
   InfoBarService* new_infobar_service = new_contents ?
       InfoBarService::FromWebContents(new_contents) : NULL;
-  if (new_infobar_service)
-    infobar_container->ChangeInfoBarService(new_infobar_service);
+  infobar_container->ChangeInfoBarService(new_infobar_service);
 
   Java_TabBase_swapWebContents(
       env,

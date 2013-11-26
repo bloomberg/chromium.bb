@@ -13,6 +13,7 @@ class PopupBlockedInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a popup blocked infobar delegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service, int num_popups);
+
   virtual ~PopupBlockedInfoBarDelegate();
 
  private:
