@@ -19586,15 +19586,15 @@ other types of suffix sets.
 
 <histogram name="Translate.DeclineTranslate">
   <summary>
-    The number of times the &quot;Nope&quot; (don't translate) was clicked in
-    the translate infobar.
+    The number of times the &quot;Nope&quot; (don't translate) or the infobar's
+    X button was clicked in the translate infobar.
   </summary>
 </histogram>
 
 <histogram name="Translate.DeclineTranslateCloseInfobar">
   <summary>
-    The number of times the translate infobar was closed without the user
-    translating the page.
+    The number of times the translate infobar was closed by clicking the X
+    button without the user translating the page.
   </summary>
 </histogram>
 
