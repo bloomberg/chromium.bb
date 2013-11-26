@@ -25,7 +25,7 @@ ALGO = hashlib.sha1
 FILE_NAME = u'test.isolated'
 FILE_HASH = u'1' * 40
 TEST_NAME = u'unit_tests'
-STDOUT_FOR_TRIGGER_LEN = 180
+STDOUT_FOR_TRIGGER_LEN = 148
 
 
 TEST_CASE_SUCCESS = (
@@ -187,8 +187,12 @@ class TestCase(auto_stub.TestCase):
           break
       else:
         self.fail(
-            'Failed to find url %s\n%s\nRemaining:\n%s' %
-            (url, kwargs, self.requests))
+            'Failed to find url %s\n%s\nRemaining:\n%s' % (
+              url,
+              json.dumps(kwargs, indent=2, sort_keys=True),
+              json.dumps(
+                [(i[0], i[1]) for i in self.requests],
+                indent=2, sort_keys=True)))
     return returned
 
 
@@ -203,11 +207,11 @@ class TestGetTestKeys(TestCase):
       ) for _ in range(net.URL_OPEN_MAX_ATTEMPTS)
     ]
     try:
-      swarming.get_test_keys('http://host:9001', 'my_test')
+      swarming.get_task_keys('http://host:9001', 'my_test')
       self.fail()
     except swarming.Failure as e:
       msg = (
-          'Error: Unable to find any tests with the name, my_test, on swarm '
+          'Error: Unable to find any task with the name, my_test, on swarming '
           'server')
       self.assertEqual(msg, e.args[0])
 
@@ -226,7 +230,7 @@ class TestGetTestKeys(TestCase):
         StringIO.StringIO(json.dumps(keys)),
       ),
     ]
-    actual = swarming.get_test_keys('http://host:9001', 'my_test')
+    actual = swarming.get_task_keys('http://host:9001', 'my_test')
     self.assertEqual(keys, actual)
 
   def test_find_keys(self):
@@ -238,7 +242,7 @@ class TestGetTestKeys(TestCase):
         StringIO.StringIO(json.dumps(keys)),
       ),
     ]
-    actual = swarming.get_test_keys('http://host:9001', 'my_test')
+    actual = swarming.get_task_keys('http://host:9001', 'my_test')
     self.assertEqual(keys, actual)
 
 
@@ -378,13 +382,13 @@ class TestGetSwarmResults(TestCase):
     self.assertEqual(expected, sorted(actual))
 
   def test_collect_nothing(self):
-    self.mock(swarming, 'get_test_keys', lambda *_: [1, 2])
+    self.mock(swarming, 'get_task_keys', lambda *_: [1, 2])
     self.mock(swarming, 'yield_results', lambda *_: [])
     self.assertEqual(
         1, swarming.collect('url', 'test_name', 'timeout', 'decorate'))
 
   def test_collect_success(self):
-    self.mock(swarming, 'get_test_keys', lambda *_: [1, 2])
+    self.mock(swarming, 'get_task_keys', lambda *_: [1, 2])
     data = {
       'config_instance_index': 0,
       'exit_codes': '0',
@@ -405,7 +409,7 @@ class TestGetSwarmResults(TestCase):
         '')
 
   def test_collect_fail(self):
-    self.mock(swarming, 'get_test_keys', lambda *_: [1, 2])
+    self.mock(swarming, 'get_task_keys', lambda *_: [1, 2])
     data = {
       'config_instance_index': 0,
       'exit_codes': '0,8',
@@ -503,7 +507,7 @@ class ManifestTest(TestCase):
     manifest = swarming.Manifest(
         isolate_server='http://localhost:8081',
         isolated_hash=FILE_HASH,
-        test_name=TEST_NAME,
+        task_name=TEST_NAME,
         shards=2,
         env=env,
         dimensions=dimensions,
@@ -533,7 +537,7 @@ class ManifestTest(TestCase):
     manifest = swarming.Manifest(
         isolate_server='http://localhost:8081',
         isolated_hash=FILE_HASH,
-        test_name=TEST_NAME,
+        task_name=TEST_NAME,
         shards=1,
         env={},
         dimensions=dimensions,
@@ -560,7 +564,7 @@ class ManifestTest(TestCase):
     manifest = swarming.Manifest(
         isolate_server='http://localhost:8081',
         isolated_hash=FILE_HASH,
-        test_name=TEST_NAME,
+        task_name=TEST_NAME,
         shards=1,
         env={},
         dimensions=dimensions,
@@ -590,8 +594,8 @@ class ManifestTest(TestCase):
     result = swarming.process_manifest(
         swarming='http://localhost:8082',
         isolate_server='http://localhost:8081',
-        file_hash_or_isolated=FILE_HASH,
-        test_name=TEST_NAME,
+        isolated_hash=FILE_HASH,
+        task_name=TEST_NAME,
         shards=1,
         dimensions={},
         env={},
@@ -619,8 +623,8 @@ class ManifestTest(TestCase):
     result = swarming.process_manifest(
         swarming='http://localhost:8082',
         isolate_server='http://localhost:8081',
-        file_hash_or_isolated=FILE_HASH,
-        test_name=TEST_NAME,
+        isolated_hash=FILE_HASH,
+        task_name=TEST_NAME,
         shards=1,
         dimensions=dimensions,
         env={},
@@ -637,20 +641,21 @@ class ManifestTest(TestCase):
     self.assertTrue('Zip file already on server' in out)
     self.mock(sys, 'stdout', StringIO.StringIO())
 
-  def test_no_request(self):
-    try:
-      main([
-          'trigger', '--swarming', 'https://host',
-          '--isolate-server', 'https://host'])
-      self.fail()
-    except SystemExit as e:
-      self.assertEqual(2, e.code)
-      self._check_output(
-          '',
-          'Usage: swarming.py trigger [options]\n\n'
-          'swarming.py: error: At least one --task is required.\n')
 
-  def test_env(self):
+class MainTest(TestCase):
+  def test_trigger_no_request(self):
+    with self.assertRaises(SystemExit):
+      main([
+            'trigger', '--swarming', 'https://host',
+            '--isolate-server', 'https://host',
+          ])
+    self._check_output(
+        '',
+        'Usage: swarming.py trigger [options] (hash|isolated)\n\n'
+        'swarming.py: error: Must pass one .isolated file or its hash (sha1).'
+        '\n')
+
+  def test_trigger_env(self):
     self.mock(swarming.isolateserver, 'get_storage',
         lambda *_: MockedStorage(warm_cache=False))
     j = generate_expected_json(
@@ -662,7 +667,7 @@ class ManifestTest(TestCase):
         profile=False)
     j['data'] = [['http://localhost:8081/fetch_url', 'swarm_data.zip']]
     data = {
-      'request': json.dumps(j, separators=(',',':')),
+      'request': json.dumps(j, sort_keys=True, separators=(',',':')),
     }
     self.requests = [
       (
@@ -676,19 +681,21 @@ class ManifestTest(TestCase):
         'trigger',
         '--swarming', 'https://host1',
         '--isolate-server', 'https://host2',
-        '--task', FILE_HASH, TEST_NAME, '1', '*',
+        '--shards', '1',
         '--priority', '101',
         '--env', 'foo', 'bar',
         '--os', 'darwin',
+        '--task-name', TEST_NAME,
+        FILE_HASH,
       ])
-    self.assertEqual(0, ret)
-
     actual = sys.stdout.getvalue()
+    self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
+
     expected = 'Zipping up files...\nZipping completed, time elapsed: '
     self.assertTrue(actual.startswith(expected))
     self.mock(sys, 'stdout', StringIO.StringIO())
 
-  def test_dimension_filter(self):
+  def test_trigger_dimension_filter(self):
     self.mock(swarming.isolateserver, 'get_storage',
         lambda *_: MockedStorage(warm_cache=False))
     j = generate_expected_json(
@@ -700,7 +707,7 @@ class ManifestTest(TestCase):
         profile=False)
     j['data'] = [['http://localhost:8081/fetch_url', 'swarm_data.zip']]
     data = {
-      'request': json.dumps(j, separators=(',',':')),
+      'request': json.dumps(j, sort_keys=True, separators=(',',':')),
     }
     self.requests = [
       (
@@ -714,14 +721,16 @@ class ManifestTest(TestCase):
         'trigger',
         '--swarming', 'https://host1',
         '--isolate-server', 'https://host2',
-        '--task', FILE_HASH, TEST_NAME, '1', '*',
+        '--shards', '1',
         '--priority', '101',
         '--dimension', 'foo', 'bar',
         '--os', 'darwin',
+        '--task-name', TEST_NAME,
+        FILE_HASH,
       ])
-    self.assertEqual(0, ret)
-
     actual = sys.stdout.getvalue()
+    self.assertEqual(0, ret, (actual, sys.stderr.getvalue()))
+
     expected = 'Zipping up files...\nZipping completed, time elapsed: '
     self.assertTrue(actual.startswith(expected))
     self.mock(sys, 'stdout', StringIO.StringIO())

@@ -5,36 +5,23 @@
 
 """Runs hello_world.py, through hello_world.isolate, locally in a temporary
 directory.
+
+Uses a local hash table instead of a remote isolate server.
 """
 
 import hashlib
-import optparse
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-
-def run(cmd):
-  print('Running: %s' % ' '.join(cmd))
-  cmd = [sys.executable, os.path.join(ROOT_DIR, '..', cmd[0])] + cmd[1:]
-  if sys.platform != 'win32':
-    cmd = ['time', '-p'] + cmd
-  subprocess.check_call(cmd)
+from . import common
 
 
 def main():
-  parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
-  parser.add_option('-v', '--verbose', action='count', default=0)
-  options, args = parser.parse_args()
-  if args:
-    parser.error('Unsupported argument %s' % args)
-
-  os.environ['ISOLATE_DEBUG'] = str(options.verbose)
-
+  options = common.parse_args(use_isolate_server=False, use_swarming=False)
+  tempdir = tempfile.mkdtemp(prefix='hello_world')
   try:
     # All the files are put in a temporary directory. This is optional and
     # simply done so the current directory doesn't have the following files
@@ -43,7 +30,6 @@ def main():
     # - hello_world.isolated.state
     # - cache/
     # - hashtable/
-    tempdir = tempfile.mkdtemp(prefix='hello_world')
     cachedir = os.path.join(tempdir, 'cache')
     hashtabledir = os.path.join(tempdir, 'hashtable')
     isolateddir = os.path.join(tempdir, 'isolated')
@@ -51,26 +37,31 @@ def main():
 
     os.mkdir(isolateddir)
 
-    print('Archiving')
-    run(
+    common.note('Archiving to %s' % hashtabledir)
+    # TODO(maruel): Parse the output from run() to get 'isolated_sha1'.
+    common.run(
         [
           'isolate.py',
           'archive',
-          '--isolate', os.path.join(ROOT_DIR, 'hello_world.isolate'),
+          '--isolate', os.path.join('payload', 'hello_world.isolate'),
           '--isolated', isolated,
           '--outdir', hashtabledir,
-        ])
+        ], options.verbose)
 
-    print('\nRunning')
-    hashval = hashlib.sha1(open(isolated, 'rb').read()).hexdigest()
-    run(
+    common.note(
+        'Running the executable in a temporary directory from the hash table')
+    with open(isolated, 'rb') as f:
+      isolated_sha1 = hashlib.sha1(f.read()).hexdigest()
+    common.run(
         [
           'run_isolated.py',
           '--cache', cachedir,
           '--isolate-server', hashtabledir,
-          '--hash', hashval,
+          '--hash', isolated_sha1,
+          # TODO(maruel): Should not require this.
+          '--namespace', 'default',
           '--no-log',
-        ])
+        ], options.verbose)
     return 0
   except subprocess.CalledProcessError as e:
     return e.returncode

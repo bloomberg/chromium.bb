@@ -4,42 +4,24 @@
 # can be found in the LICENSE file.
 
 """Runs hello_world.py, through hello_world.isolated, locally in a temporary
-directory with the files fetched from the remote Content-Addressed Datastore.
+directory.
+
+The files are archived and fetched from the remote Isolate Server.
 """
 
 import hashlib
-import optparse
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
 
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-
-
-def run(cmd):
-  print('Running: %s' % ' '.join(cmd))
-  cmd = [sys.executable, os.path.join(ROOT_DIR, '..', cmd[0])] + cmd[1:]
-  if sys.platform != 'win32':
-    cmd = ['time', '-p'] + cmd
-  subprocess.check_call(cmd)
+from . import common
 
 
 def main():
-  parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
-  parser.add_option(
-      '-I', '--isolate-server',
-      metavar='URL', default='',
-      help='Isolate server to use')
-  parser.add_option('-v', '--verbose', action='count', default=0)
-  options, args = parser.parse_args()
-  if args:
-    parser.error('Unsupported argument %s' % args)
-  if not options.isolate_server:
-    parser.error('--isolate-server is required.')
-  os.environ['ISOLATE_DEBUG'] = str(options.verbose)
-
+  options = common.parse_args(use_isolate_server=True, use_swarming=False)
+  tempdir = tempfile.mkdtemp(prefix='hello_world')
   try:
     # All the files are put in a temporary directory. This is optional and
     # simply done so the current directory doesn't have the following files
@@ -47,33 +29,37 @@ def main():
     # - hello_world.isolated
     # - hello_world.isolated.state
     # - cache/
-    tempdir = tempfile.mkdtemp(prefix='hello_world')
     cachedir = os.path.join(tempdir, 'cache')
     isolateddir = os.path.join(tempdir, 'isolated')
     isolated = os.path.join(isolateddir, 'hello_world.isolated')
 
     os.mkdir(isolateddir)
 
-    print('Archiving')
-    run(
+    common.note('Archiving to %s' % options.isolate_server)
+    # TODO(maruel): Parse the output from run() to get 'isolated_sha1'.
+    # Note that -V OS is not specified and nobody cares.
+    common.run(
         [
           'isolate.py',
           'archive',
-          '--isolate', os.path.join(ROOT_DIR, 'hello_world.isolate'),
+          '--isolate', os.path.join('payload', 'hello_world.isolate'),
           '--isolated', isolated,
           '--outdir', options.isolate_server,
-        ])
+        ], options.verbose)
 
-    print('\nRunning')
-    hashval = hashlib.sha1(open(isolated, 'rb').read()).hexdigest()
-    run(
+    common.note(
+        'Downloading from %s and running in a temporary directory' %
+        options.isolate_server)
+    with open(isolated, 'rb') as f:
+      isolated_sha1 = hashlib.sha1(f.read()).hexdigest()
+    common.run(
         [
           'run_isolated.py',
           '--cache', cachedir,
           '--isolate-server', options.isolate_server,
-          '--hash', hashval,
+          '--hash', isolated_sha1,
           '--no-log',
-        ])
+        ], options.verbose)
     return 0
   except subprocess.CalledProcessError as e:
     return e.returncode
