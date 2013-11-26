@@ -28,6 +28,10 @@ class DictionaryValue;
 
 namespace message_center {
 
+namespace test {
+class MessagePopupCollectionTest;
+}
+
 class MessageCenterObserver;
 class NotificationBlocker;
 class NotificationList;
@@ -163,6 +167,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
 
  protected:
   friend class ::TrayViewControllerTest;
+  friend class test::MessagePopupCollectionTest;
   virtual void DisableTimersForTest() = 0;
 
   MessageCenter();

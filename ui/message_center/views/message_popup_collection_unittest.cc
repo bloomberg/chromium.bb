@@ -28,6 +28,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
   virtual void SetUp() OVERRIDE {
     views::ViewsTestBase::SetUp();
     MessageCenter::Initialize();
+    MessageCenter::Get()->DisableTimersForTest();
     collection_.reset(new MessagePopupCollection(
         GetContext(), MessageCenter::Get(), NULL, false));
     // This size fits test machines resolution and also can keep a few toasts
@@ -38,10 +39,10 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
                                                              // taskbar at the
                                                              // bottom.
     id_ = 0;
+    PrepareForWait();
   }
 
   virtual void TearDown() OVERRIDE {
-    collection_->CloseAllWidgets();
     collection_.reset();
     MessageCenter::Shutdown();
     views::ViewsTestBase::TearDown();
@@ -97,16 +98,18 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
     return id;
   }
 
+  void PrepareForWait() { collection_->CreateRunLoopForTest(); }
+
   // Assumes there is non-zero pending work.
   void WaitForTransitionsDone() {
-    collection_->RunLoopForTest();
+    collection_->WaitForTest();
+    collection_->CreateRunLoopForTest();
   }
 
-  void CloseAllToastsAndWait() {
+  void CloseAllToasts() {
     // Assumes there is at least one toast to close.
     EXPECT_TRUE(GetToastCounts() > 0);
     MessageCenter::Get()->RemoveAllNotifications(false);
-    WaitForTransitionsDone();
   }
 
   gfx::Rect GetToastRectAt(size_t index) {
@@ -119,15 +122,18 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
 };
 
 TEST_F(MessagePopupCollectionTest, DismissOnClick) {
+
   std::string id1 = AddNotification();
   std::string id2 = AddNotification();
   WaitForTransitionsDone();
+
   EXPECT_EQ(2u, GetToastCounts());
   EXPECT_TRUE(IsToastShown(id1));
   EXPECT_TRUE(IsToastShown(id2));
 
   MessageCenter::Get()->ClickOnNotification(id2);
   WaitForTransitionsDone();
+
   EXPECT_EQ(1u, GetToastCounts());
   EXPECT_TRUE(IsToastShown(id1));
   EXPECT_FALSE(IsToastShown(id2));
@@ -187,7 +193,7 @@ TEST_F(MessagePopupCollectionTest, DefaultPositioning) {
   EXPECT_EQ(0, r3.width());
   EXPECT_EQ(0, r3.height());
 
-  CloseAllToastsAndWait();
+  CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
 }
 
@@ -213,7 +219,7 @@ TEST_F(MessagePopupCollectionTest, DefaultPositioningWithRightTaskbar) {
   EXPECT_GT(r0.y(), r1.y());
   EXPECT_EQ(r0.x(), r1.x());
 
-  CloseAllToastsAndWait();
+  CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
 
   // Restore simulated taskbar position to bottom.
@@ -241,7 +247,7 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithTopTaskbar) {
   EXPECT_LT(r0.y(), r1.y());
   EXPECT_EQ(r0.x(), r1.x());
 
-  CloseAllToastsAndWait();
+  CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
 
   // Restore simulated taskbar position to bottom.
@@ -272,7 +278,7 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithLeftAndTopTaskbar) {
   EXPECT_LT(r0.y(), r1.y());
   EXPECT_EQ(r0.x(), r1.x());
 
-  CloseAllToastsAndWait();
+  CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
 
   // Restore simulated taskbar position to bottom.
@@ -303,7 +309,7 @@ TEST_F(MessagePopupCollectionTest, TopDownPositioningWithBottomAndTopTaskbar) {
   EXPECT_LT(r0.y(), r1.y());
   EXPECT_EQ(r0.x(), r1.x());
 
-  CloseAllToastsAndWait();
+  CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
 
   // Restore simulated taskbar position to bottom.
@@ -334,7 +340,7 @@ TEST_F(MessagePopupCollectionTest, LeftPositioningWithLeftTaskbar) {
   // Ensure that toasts are on the left.
   EXPECT_LT(r1.x(), GetWorkArea().CenterPoint().x());
 
-  CloseAllToastsAndWait();
+  CloseAllToasts();
   EXPECT_EQ(0u, GetToastCounts());
 
   // Restore simulated taskbar position to bottom.

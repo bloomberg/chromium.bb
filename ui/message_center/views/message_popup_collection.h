@@ -18,6 +18,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/message_center_observer.h"
+#include "ui/message_center/views/toast_contents_view.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace base {
@@ -40,7 +41,6 @@ class MessagePopupCollectionTest;
 
 class MessageCenter;
 class MessageCenterTray;
-class ToastContentsView;
 
 enum PopupAlignment {
   POPUP_ALIGNMENT_TOP = 1 << 0,
@@ -56,8 +56,7 @@ enum PopupAlignment {
 // be slightly different.
 class MESSAGE_CENTER_EXPORT MessagePopupCollection
     : public MessageCenterObserver,
-      public gfx::DisplayObserver,
-      public base::SupportsWeakPtr<MessagePopupCollection> {
+      public gfx::DisplayObserver {
  public:
   // |parent| specifies the parent widget of the toast windows. The default
   // parent will be used for NULL. Usually each icon is spacing against its
@@ -68,9 +67,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
                          MessageCenterTray* tray,
                          bool first_item_has_no_margin);
   virtual ~MessagePopupCollection();
-
-  // Called by ToastContentsView when its window is closed.
-  void RemoveToast(ToastContentsView* toast);
 
   // Since these events are really coming from individual toast widgets,
   // it helps to be able to keep track of the sender.
@@ -89,6 +85,10 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // zero. Otherwise, simply waits when it becomes zero.
   void DoUpdateIfPossible();
 
+  // Removes the toast from our internal list of toasts; this is called when the
+  // toast is irrevocably closed (such as within RemoveToast).
+  void ForgetToast(ToastContentsView* toast);
+
   // Updates |work_area_| and re-calculates the alignment of notification toasts
   // rearranging them if necessary.
   // This is separated from methods from OnDisplayBoundsChanged(), since
@@ -104,6 +104,9 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
 
+  // Used by ToastContentsView to locate itself.
+  gfx::NativeView parent() const { return parent_; }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ash::WebNotificationTrayTest,
                            ManyPopupNotifications);
@@ -111,13 +114,14 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   friend class ash::WebNotificationTrayTest;
   typedef std::list<ToastContentsView*> Toasts;
 
-  void CloseAllWidgets();
+  // Iterates toasts and starts closing them.
+  std::set<std::string> CloseAllWidgets();
+
+  // Called by ToastContentsView when its window is closed.
+  void RemoveToast(ToastContentsView* toast, bool mark_as_shown);
 
   // Returns the x-origin for the given toast bounds in the current work area.
-  int GetToastOriginX(const gfx::Rect& toast_bounds);
-
-  // Iterates toasts and starts closing the expired ones.
-  void CloseToasts();
+  int GetToastOriginX(const gfx::Rect& toast_bounds) const;
 
   // Creates new widgets for new toast notifications, and updates |toasts_| and
   // |widgets_| correctly.
@@ -135,7 +139,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
   // The base line is an (imaginary) line that would touch the bottom of the
   // next created notification if bottom-aligned or its top if top-aligned.
-  int GetBaseLine(ToastContentsView* last_toast);
+  int GetBaseLine(ToastContentsView* last_toast) const;
 
   // Overridden from MessageCenterObserver:
   virtual void OnNotificationAdded(const std::string& notification_id) OVERRIDE;
@@ -144,19 +148,19 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   virtual void OnNotificationUpdated(
       const std::string& notification_id) OVERRIDE;
 
-  ToastContentsView* FindToast(const std::string& notification_id);
+  ToastContentsView* FindToast(const std::string& notification_id) const;
 
   // While the toasts are animated, avoid updating the collection, to reduce
   // user confusion. Instead, update the collection when all animations are
   // done. This method is run when defer counter is zero, may initiate next
   // update/animation step.
-  void PerformDeferredTasks();
   void OnDeferTimerExpired();
 
   // "ForTest" methods.
-  views::Widget* GetWidgetForTest(const std::string& id);
-  void RunLoopForTest();
-  gfx::Rect GetToastRectAt(size_t index);
+  views::Widget* GetWidgetForTest(const std::string& id) const;
+  void CreateRunLoopForTest();
+  void WaitForTest();
+  gfx::Rect GetToastRectAt(size_t index) const;
 
   gfx::NativeView parent_;
   MessageCenter* message_center_;
@@ -191,6 +195,10 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
 
   // True if the first item should not have spacing against the tray.
   bool first_item_has_no_margin_;
+
+  // Gives out weak pointers to toast contents views which have an unrelated
+  // lifetime.  Must remain the last member variable.
+  base::WeakPtrFactory<MessagePopupCollection> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePopupCollection);
 };

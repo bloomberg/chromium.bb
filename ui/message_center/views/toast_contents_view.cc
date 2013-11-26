@@ -15,7 +15,6 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
-#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/views/message_popup_collection.h"
@@ -46,17 +45,13 @@ gfx::Size ToastContentsView::GetToastSizeForView(views::View* view) {
 }
 
 ToastContentsView::ToastContentsView(
-  const Notification* notification,
-  base::WeakPtr<MessagePopupCollection> collection,
-  MessageCenter* message_center)
+    const std::string& notification_id,
+    base::WeakPtr<MessagePopupCollection> collection)
     : collection_(collection),
-      message_center_(message_center),
-      id_(notification->id()),
+      id_(notification_id),
       is_animating_bounds_(false),
       is_closing_(false),
       closing_animation_(NULL) {
-  DCHECK(collection_);
-
   set_notify_enter_exit_on_child(true);
   // Sets the transparent background. Then, when the message view is slid out,
   // the whole toast seems to slide although the actual bound of the widget
@@ -65,61 +60,30 @@ ToastContentsView::ToastContentsView(
 
   fade_animation_.reset(new gfx::SlideAnimation(this));
   fade_animation_->SetSlideDuration(kFadeInOutDuration);
+
+  CreateWidget(collection->parent());
 }
 
 // This is destroyed when the toast window closes.
 ToastContentsView::~ToastContentsView() {
+  if (collection_)
+    collection_->ForgetToast(this);
 }
 
-views::Widget* ToastContentsView::CreateWidget(gfx::NativeView parent) {
-  views::Widget::InitParams params(
-      views::Widget::InitParams::TYPE_POPUP);
-  params.keep_on_top = true;
-  if (parent)
-    params.parent = parent;
-  else
-    params.top_level = true;
-  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.delegate = this;
-  views::Widget* widget = new views::Widget();
-  widget->set_focus_on_creation(false);
-
-#if defined(OS_WIN) && defined(USE_ASH)
-  // We want to ensure that this toast always goes to the native desktop,
-  // not the Ash desktop (since there is already another toast contents view
-  // there.
-  if (!params.parent)
-    params.native_widget = new views::DesktopNativeWidgetAura(widget);
-#endif
-
-  widget->Init(params);
-  return widget;
-}
-
-void ToastContentsView::SetContents(MessageView* view) {
+void ToastContentsView::SetContents(MessageView* view,
+                                    bool a11y_feedback_for_updates) {
   bool already_has_contents = child_count() > 0;
   RemoveAllChildViews(true);
   AddChildView(view);
   preferred_size_ = GetToastSizeForView(view);
   Layout();
+
   // If it has the contents already, this invocation means an update of the
   // popup toast, and the new contents should be read through a11y feature.
   // The notification type should be ALERT, otherwise the accessibility message
   // won't be read for this view which returns ROLE_WINDOW.
-  if (already_has_contents) {
-    const NotificationList::Notifications& notifications =
-        message_center_->GetVisibleNotifications();
-    for (NotificationList::Notifications::const_iterator iter =
-             notifications.begin(); iter != notifications.end(); ++iter) {
-      if ((*iter)->id() != id_)
-        continue;
-
-      const RichNotificationData& optional = (*iter)->rich_notification_data();
-      if (optional.should_make_spoken_feedback_for_popup_updates)
-        NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, false);
-      break;
-    }
-  }
+  if (already_has_contents && a11y_feedback_for_updates)
+    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_ALERT, false);
 }
 
 void ToastContentsView::RevealWithAnimation(gfx::Point origin) {
@@ -138,14 +102,10 @@ void ToastContentsView::RevealWithAnimation(gfx::Point origin) {
   SetBoundsWithAnimation(stable_bounds);
 }
 
-void ToastContentsView::CloseWithAnimation(bool mark_as_shown) {
+void ToastContentsView::CloseWithAnimation() {
   if (is_closing_)
     return;
   is_closing_ = true;
-  if (collection_)
-    collection_->RemoveToast(this);
-  if (mark_as_shown)
-    message_center_->MarkSinglePopupAsShown(id(), false);
   StartFadeOut();
 }
 
@@ -260,8 +220,8 @@ views::View* ToastContentsView::GetContentsView() {
 }
 
 void ToastContentsView::WindowClosing() {
-  if (!is_closing_ && collection_)
-    collection_->RemoveToast(this);
+  if (!is_closing_ && collection_.get())
+    collection_->ForgetToast(this);
 }
 
 bool ToastContentsView::CanActivate() const {
@@ -278,7 +238,7 @@ void ToastContentsView::OnDisplayChanged() {
     return;
 
   gfx::NativeView native_view = widget->GetNativeView();
-  if (!native_view || !collection_)
+  if (!native_view || !collection_.get())
     return;
 
   collection_->OnDisplayBoundsChanged(gfx::Screen::GetScreenFor(
@@ -291,7 +251,7 @@ void ToastContentsView::OnWorkAreaChanged() {
     return;
 
   gfx::NativeView native_view = widget->GetNativeView();
-  if (!native_view || !collection_)
+  if (!native_view || !collection_.get())
     return;
 
   collection_->OnDisplayBoundsChanged(gfx::Screen::GetScreenFor(
@@ -324,6 +284,29 @@ void ToastContentsView::GetAccessibleState(ui::AccessibleViewState* state) {
   if (child_count() > 0)
     child_at(0)->GetAccessibleState(state);
   state->role = ui::AccessibilityTypes::ROLE_WINDOW;
+}
+
+void ToastContentsView::CreateWidget(gfx::NativeView parent) {
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
+  params.keep_on_top = true;
+  if (parent)
+    params.parent = parent;
+  else
+    params.top_level = true;
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+  params.delegate = this;
+  views::Widget* widget = new views::Widget();
+  widget->set_focus_on_creation(false);
+
+#if defined(OS_WIN) && defined(USE_ASH)
+  // We want to ensure that this toast always goes to the native desktop,
+  // not the Ash desktop (since there is already another toast contents view
+  // there.
+  if (!params.parent)
+    params.native_widget = new views::DesktopNativeWidgetAura(widget);
+#endif
+
+  widget->Init(params);
 }
 
 gfx::Rect ToastContentsView::GetClosedToastBounds(gfx::Rect bounds) {

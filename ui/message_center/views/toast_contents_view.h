@@ -25,7 +25,6 @@ class View;
 
 namespace message_center {
 
-class MessageCenter;
 class MessagePopupCollection;
 class MessageView;
 class Notification;
@@ -34,23 +33,26 @@ class Notification;
 class ToastContentsView : public views::WidgetDelegateView,
                           public gfx::AnimationDelegate {
  public:
-  ToastContentsView(const Notification* notification,
-                    base::WeakPtr<MessagePopupCollection> collection,
-                    MessageCenter* message_center);
+  // Computes the size of a toast assuming it will host the given view.
+  static gfx::Size GetToastSizeForView(views::View* view);
+
+  ToastContentsView(const std::string& notification_id,
+                    base::WeakPtr<MessagePopupCollection> collection);
   virtual ~ToastContentsView();
 
-  // Initialization and update.
-  views::Widget* CreateWidget(gfx::NativeView parent);
-  void SetContents(MessageView* view);
+  // Sets the inner view of the toast. If it has contents already,
+  // |a11y_feedback_for_updates| causes the view to notify that the
+  // accessibility message should be read after this update.
+  void SetContents(MessageView* view, bool a11y_feedback_for_updates);
 
   // Shows the new toast for the first time, animated.
   // |origin| is the right-bottom corner of the toast.
   void RevealWithAnimation(gfx::Point origin);
+
   // Disconnectes the toast from the rest of the system immediately and start
   // an animation. Once animation finishes, closes the widget.
-  void CloseWithAnimation(bool mark_as_shown);
+  void CloseWithAnimation();
 
-  void SetBoundsInstantly(gfx::Rect new_bounds);
   void SetBoundsWithAnimation(gfx::Rect new_bounds);
 
   // Origin and bounds are not 'instant', but rather 'current stable values',
@@ -59,9 +61,6 @@ class ToastContentsView : public views::WidgetDelegateView,
   gfx::Rect bounds() { return gfx::Rect(origin_, preferred_size_); }
 
   const std::string& id() { return id_; }
-
-  // Computes the size of the toast assuming it will host the given view.
-  static gfx::Size GetToastSizeForView(views::View* view);
 
   // Overridden from views::View:
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
@@ -83,6 +82,12 @@ class ToastContentsView : public views::WidgetDelegateView,
   virtual void OnDisplayChanged() OVERRIDE;
   virtual void OnWorkAreaChanged() OVERRIDE;
 
+  // Initialization and update.
+  void CreateWidget(gfx::NativeView parent);
+
+  // Immediately moves the toast without any sort of delay or animation.
+  void SetBoundsInstantly(gfx::Rect new_bounds);
+
   // Given the bounds of a toast on the screen, compute the bouds for that
   // toast in 'closed' state. The 'closed' state is used as origin/destination
   // in reveal/closing animations.
@@ -93,7 +98,6 @@ class ToastContentsView : public views::WidgetDelegateView,
   void OnBoundsAnimationEndedOrCancelled(const gfx::Animation* animation);
 
   base::WeakPtr<MessagePopupCollection> collection_;
-  MessageCenter* message_center_;
 
   // Id if the corresponding Notification.
   std::string id_;
