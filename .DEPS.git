@@ -275,7 +275,7 @@ deps_os = {
         'src/chrome/installer/mac/third_party/xz/xz':
             Var('git_url') + '/chromium/deps/xz.git@eecaf55632ca72e90eb2641376bce7cdbc7284f7',
         'src/chrome/tools/test/reference_build/chrome_mac':
-            Var('git_url') + '/chromium/reference_builds/chrome_mac.git@491663acafe9fd54aeb36c00cc27e4481d2a2b4c',
+            Var('git_url') + '/chromium/reference_builds/chrome_mac.git@1dc401bb64a752dfd927fe8e94f2dc633033c074',
         'src/third_party/GTM':
             Var('git_url') + '/external/google-toolbox-for-mac.git@471407b943b14bcebe017dc6d098b3f54019eaba',
         'src/third_party/lighttpd':
