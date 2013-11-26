@@ -800,12 +800,16 @@ from :3
     gclient_scm.SVNWrapper.BinaryExists = staticmethod(lambda : True)
 
   def tearDown(self):
-    StdoutCheck.tearDown(self)
-    TestCaseUtils.tearDown(self)
-    unittest.TestCase.tearDown(self)
-    rmtree(self.root_dir)
-    gclient_scm.GitWrapper.BinaryExists = self._original_GitBinaryExists
-    gclient_scm.SVNWrapper.BinaryExists = self._original_SVNBinaryExists
+    try:
+      rmtree(self.root_dir)
+      StdoutCheck.tearDown(self)
+      TestCaseUtils.tearDown(self)
+      unittest.TestCase.tearDown(self)
+    finally:
+      # TODO(maruel): Use auto_stub.TestCase.
+      gclient_scm.GitWrapper.BinaryExists = self._original_GitBinaryExists
+      gclient_scm.SVNWrapper.BinaryExists = self._original_SVNBinaryExists
+
 
 class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
   def testDir(self):
@@ -824,6 +828,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
         'pack',
         'UpdateSubmoduleConfig',
         'relpath',
+        'remote',
         'revert',
         'revinfo',
         'runhooks',
@@ -1039,7 +1044,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
                  'Fix the conflict and run gclient again.\n'
                  'See \'man git-rebase\' for details.\n')
     self.assertRaisesError(exception, scm.update, options, (), [])
-    exception = ('\n____ . at refs/heads/master\n'
+    exception = ('\n____ . at refs/remotes/origin/master\n'
                  '\tYou have unstaged changes.\n'
                  '\tPlease commit, stash, or reset.\n')
     self.assertRaisesError(exception, scm.update, options, (), [])

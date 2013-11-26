@@ -188,6 +188,7 @@ class GitFilter(object):
 class GitWrapper(SCMWrapper):
   """Wrapper for Git"""
   name = 'git'
+  remote = 'origin'
 
   cache_dir = None
   # If a given cache is used in a solution more than once, prevent multiple
@@ -230,7 +231,7 @@ class GitWrapper(SCMWrapper):
     """
 
   def diff(self, options, _args, _file_list):
-    merge_base = self._Capture(['merge-base', 'HEAD', 'origin'])
+    merge_base = self._Capture(['merge-base', 'HEAD', self.remote])
     self._Run(['diff', merge_base], options)
 
   def pack(self, _options, _args, _file_list):
@@ -240,7 +241,7 @@ class GitWrapper(SCMWrapper):
     The patch file is generated from a diff of the merge base of HEAD and
     its upstream branch.
     """
-    merge_base = self._Capture(['merge-base', 'HEAD', 'origin'])
+    merge_base = self._Capture(['merge-base', 'HEAD', self.remote])
     gclient_utils.CheckCallAndFilter(
         ['git', 'diff', merge_base],
         cwd=self.checkout_path,
@@ -280,7 +281,7 @@ class GitWrapper(SCMWrapper):
     self._UpdateBranchHeads(options, fetch=False)
 
     fetch_cmd = [
-      '-c', 'core.deltaBaseCacheLimit=2g', 'fetch', 'origin', '--prune']
+      '-c', 'core.deltaBaseCacheLimit=2g', 'fetch', self.remote, '--prune']
     self._Run(fetch_cmd + quiet, options, retry=True)
     self._Run(['reset', '--hard', revision] + quiet, options)
     self.UpdateSubmoduleConfig()
@@ -301,7 +302,8 @@ class GitWrapper(SCMWrapper):
 
     self._CheckMinVersion("1.6.6")
 
-    default_rev = "refs/heads/master"
+    # If a dependency is not pinned, track the default remote branch.
+    default_rev = 'refs/remotes/%s/master' % self.remote
     url, deps_revision = gclient_utils.SplitUrlRevision(self.url)
     rev_str = ""
     revision = deps_revision
@@ -337,9 +339,9 @@ class GitWrapper(SCMWrapper):
 
     if revision.startswith('refs/'):
       rev_type = "branch"
-    elif revision.startswith('origin/'):
-      # For compatability with old naming, translate 'origin' to 'refs/heads'
-      revision = revision.replace('origin/', 'refs/heads/')
+    elif revision.startswith(self.remote + '/'):
+      # For compatibility with old naming, translate 'origin' to 'refs/heads'
+      revision = revision.replace(self.remote + '/', 'refs/heads/')
       rev_type = "branch"
     else:
       # hash is also a tag, only make a distinction at checkout
@@ -375,7 +377,7 @@ class GitWrapper(SCMWrapper):
 
     # See if the url has changed (the unittests use git://foo for the url, let
     # that through).
-    current_url = self._Capture(['config', 'remote.origin.url'])
+    current_url = self._Capture(['config', 'remote.%s.url' % self.remote])
     return_early = False
     # TODO(maruel): Delete url != 'git://foo' since it's just to make the
     # unit test pass. (and update the comment above)
@@ -385,13 +387,13 @@ class GitWrapper(SCMWrapper):
     if (current_url != url and
         url != 'git://foo' and
         subprocess2.capture(
-            ['git', 'config', 'remote.origin.gclient-auto-fix-url'],
+            ['git', 'config', 'remote.%s.gclient-auto-fix-url' % self.remote],
             cwd=self.checkout_path).strip() != 'False'):
       print('_____ switching %s to a new upstream' % self.relpath)
       # Make sure it's clean
       self._CheckClean(rev_str)
       # Switch over to the new upstream
-      self._Run(['remote', 'set-url', 'origin', url], options)
+      self._Run(['remote', 'set-url', self.remote, url], options)
       self._FetchAndReset(revision, file_list, options)
       return_early = True
 
@@ -473,7 +475,7 @@ class GitWrapper(SCMWrapper):
         # Can't find a merge-base since we don't know our upstream. That makes
         # this command VERY likely to produce a rebase failure. For now we
         # assume origin is our upstream since that's what the old behavior was.
-        upstream_branch = 'origin'
+        upstream_branch = self.remote
         if options.revision or deps_revision:
           upstream_branch = revision
         self._AttemptRebase(upstream_branch, files, options,
@@ -484,9 +486,9 @@ class GitWrapper(SCMWrapper):
       self._AttemptRebase(upstream_branch, files, options,
                           newbase=revision, printed_path=printed_path)
       printed_path = True
-    elif revision.replace('heads', 'remotes/origin') != upstream_branch:
+    elif revision.replace('heads', 'remotes/' + self.remote) != upstream_branch:
       # case 4
-      new_base = revision.replace('heads', 'remotes/origin')
+      new_base = revision.replace('heads', 'remotes/' + self.remote)
       if not printed_path:
         print('\n_____ %s%s' % (self.relpath, rev_str))
       switch_error = ("Switching upstream branch from %s to %s\n"
@@ -613,7 +615,7 @@ class GitWrapper(SCMWrapper):
     if not deps_revision:
       deps_revision = default_rev
     if deps_revision.startswith('refs/heads/'):
-      deps_revision = deps_revision.replace('refs/heads/', 'origin/')
+      deps_revision = deps_revision.replace('refs/heads/', self.remote + '/')
 
     if file_list is not None:
       files = self._Capture(['diff', deps_revision, '--name-only']).split()
@@ -637,7 +639,7 @@ class GitWrapper(SCMWrapper):
       print(('\n________ couldn\'t run status in %s:\n'
              'The directory does not exist.') % self.checkout_path)
     else:
-      merge_base = self._Capture(['merge-base', 'HEAD', 'origin'])
+      merge_base = self._Capture(['merge-base', 'HEAD', self.remote])
       self._Run(['diff', '--name-status', merge_base], options)
       if file_list is not None:
         files = self._Capture(['diff', '--name-only', merge_base]).split()
@@ -695,7 +697,7 @@ class GitWrapper(SCMWrapper):
       else:
         # May exist in origin, but we don't have it yet, so fetch and look
         # again.
-        scm.GIT.Capture(['fetch', 'origin'], cwd=self.checkout_path)
+        scm.GIT.Capture(['fetch', self.remote], cwd=self.checkout_path)
         if scm.GIT.IsValidRevision(cwd=self.checkout_path, rev=rev):
           sha1 = rev
 
@@ -807,7 +809,7 @@ class GitWrapper(SCMWrapper):
         # to relax this restriction in the future to allow for smarter cache
         # repo update schemes (such as pulling the same repo, but from a
         # different host).
-        existing_url = self._Capture(['config', 'remote.origin.url'],
+        existing_url = self._Capture(['config', 'remote.%s.url' % self.remote],
                                      cwd=folder)
         assert self._NormalizeGitURL(existing_url) == self._NormalizeGitURL(url)
 
@@ -874,8 +876,8 @@ class GitWrapper(SCMWrapper):
       print(
         ('Checked out %s to a detached HEAD. Before making any commits\n'
          'in this repo, you should use \'git checkout <branch>\' to switch to\n'
-         'an existing branch or use \'git checkout origin -b <branch>\' to\n'
-         'create a new branch for your work.') % revision)
+         'an existing branch or use \'git checkout %s -b <branch>\' to\n'
+         'create a new branch for your work.') % (revision, self.remote))
 
   def _AttemptRebase(self, upstream, files, options, newbase=None,
                      branch=None, printed_path=False):
@@ -1024,12 +1026,12 @@ class GitWrapper(SCMWrapper):
   def _UpdateBranchHeads(self, options, fetch=False):
     """Adds, and optionally fetches, "branch-heads" refspecs if requested."""
     if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
-      config_cmd = ['config', 'remote.origin.fetch',
+      config_cmd = ['config', 'remote.%s.fetch' % self.remote,
                     '+refs/branch-heads/*:refs/remotes/branch-heads/*',
                     '^\\+refs/branch-heads/\\*:.*$']
       self._Run(config_cmd, options)
       if fetch:
-        fetch_cmd = ['-c', 'core.deltaBaseCacheLimit=2g', 'fetch', 'origin']
+        fetch_cmd = ['-c', 'core.deltaBaseCacheLimit=2g', 'fetch', self.remote]
         if options.verbose:
           fetch_cmd.append('--verbose')
         self._Run(fetch_cmd, options, retry=True)
