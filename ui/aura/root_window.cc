@@ -594,16 +594,17 @@ void RootWindow::OnWindowHidden(Window* invisible, WindowHiddenReason reason) {
   if (invisible->Contains(mouse_moved_handler_))
     mouse_moved_handler_ = NULL;
 
-  CleanupGestureRecognizerState(invisible);
+  CleanupGestureState(invisible);
 }
 
-void RootWindow::CleanupGestureRecognizerState(Window* window) {
+void RootWindow::CleanupGestureState(Window* window) {
+  ui::GestureRecognizer::Get()->CancelActiveTouches(window);
   ui::GestureRecognizer::Get()->CleanupStateForConsumer(window);
   const Window::Windows& windows = window->children();
   for (Window::Windows::const_iterator iter = windows.begin();
       iter != windows.end();
       ++iter) {
-    CleanupGestureRecognizerState(*iter);
+    CleanupGestureState(*iter);
   }
 }
 

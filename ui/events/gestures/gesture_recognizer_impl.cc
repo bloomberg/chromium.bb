@@ -126,17 +126,7 @@ void GestureRecognizerImpl::TransferEventsTo(GestureConsumer* current_consumer,
     }
   }
 
-  while (!ids.empty()) {
-    int touch_id = ids.begin()->first;
-    GestureConsumer* target = ids.begin()->second;
-    TouchEvent touch_event(ui::ET_TOUCH_CANCELLED, gfx::Point(0, 0),
-                           ui::EF_IS_SYNTHESIZED, touch_id,
-                           ui::EventTimeForNow(), 0.0f, 0.0f, 0.0f, 0.0f);
-    GestureEventHelper* helper = FindDispatchHelperForConsumer(target);
-    if (helper)
-      helper->DispatchCancelTouchEvent(&touch_event);
-    ids.erase(ids.begin());
-  }
+  CancelTouches(&ids);
 
   // Transfer events from |current_consumer| to |new_consumer|.
   if (current_consumer && new_consumer) {
@@ -156,6 +146,17 @@ bool GestureRecognizerImpl::GetLastTouchPointForTarget(
 
   *point = consumer_sequence_[consumer]->last_touch_location();
   return true;
+}
+
+void GestureRecognizerImpl::CancelActiveTouches(
+    GestureConsumer* consumer) {
+  std::vector<std::pair<int, GestureConsumer*> > ids;
+  for (TouchIdToConsumerMap::const_iterator i = touch_id_target_.begin();
+       i != touch_id_target_.end(); ++i) {
+    if (i->second == consumer)
+      ids.push_back(std::make_pair(i->first, i->second));
+  }
+  CancelTouches(&ids);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -188,6 +189,21 @@ void GestureRecognizerImpl::SetupTargets(const TouchEvent& event,
     touch_id_target_[event.touch_id()] = target;
     if (target)
       touch_id_target_for_gestures_[event.touch_id()] = target;
+  }
+}
+
+void GestureRecognizerImpl::CancelTouches(
+    std::vector<std::pair<int, GestureConsumer*> >* touches) {
+  while (!touches->empty()) {
+    int touch_id = touches->begin()->first;
+    GestureConsumer* target = touches->begin()->second;
+    TouchEvent touch_event(ui::ET_TOUCH_CANCELLED, gfx::Point(0, 0),
+                           ui::EF_IS_SYNTHESIZED, touch_id,
+                           ui::EventTimeForNow(), 0.0f, 0.0f, 0.0f, 0.0f);
+    GestureEventHelper* helper = FindDispatchHelperForConsumer(target);
+    if (helper)
+      helper->DispatchCancelTouchEvent(&touch_event);
+    touches->erase(touches->begin());
   }
 }
 

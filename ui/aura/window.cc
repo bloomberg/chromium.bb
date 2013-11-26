@@ -670,7 +670,8 @@ std::string Window::GetDebugInfo() const {
 }
 
 void Window::PrintWindowHierarchy(int depth) const {
-  printf("%*s%s\n", depth * 2, "", GetDebugInfo().c_str());
+  VLOG(0) << base::StringPrintf(
+      "%*s%s", depth * 2, "", GetDebugInfo().c_str());
   for (Windows::const_iterator it = children_.begin();
        it != children_.end(); ++it) {
     Window* child = *it;
@@ -1164,13 +1165,19 @@ base::Closure Window::PrepareForLayerBoundsChange() {
 }
 
 bool Window::CanAcceptEvent(const ui::Event& event) {
-  if (!IsVisible())
-    return false;
-
   // The client may forbid certain windows from receiving events at a given
   // point in time.
   client::EventClient* client = client::GetEventClient(GetRootWindow());
   if (client && !client->CanProcessEventsWithinSubtree(this))
+    return false;
+
+  // We need to make sure that a touch cancel event and any gesture events it
+  // creates can always reach the window. This ensures that we receive a valid
+  // touch / gesture stream.
+  if (event.IsEndingEvent())
+    return true;
+
+  if (!IsVisible())
     return false;
 
   // The top-most window can always process an event.

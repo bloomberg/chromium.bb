@@ -66,6 +66,9 @@ class EVENTS_EXPORT GestureRecognizer {
   virtual bool GetLastTouchPointForTarget(GestureConsumer* consumer,
                                           gfx::Point* point) = 0;
 
+  // Sends a touch cancel event for every active touch.
+  virtual void CancelActiveTouches(GestureConsumer* consumer) = 0;
+
   // Subscribes |helper| for dispatching async gestures such as long press.
   // The Gesture Recognizer does NOT take ownership of |helper| and it is the
   // responsibility of the |helper| to call |RemoveGestureEventHelper()| on

@@ -844,13 +844,13 @@ void NativeWidgetAura::OnScrollEvent(ui::ScrollEvent* event) {
 
 void NativeWidgetAura::OnTouchEvent(ui::TouchEvent* event) {
   DCHECK(window_);
-  DCHECK(window_->IsVisible());
+  DCHECK(window_->IsVisible() || event->IsEndingEvent());
   delegate_->OnTouchEvent(event);
 }
 
 void NativeWidgetAura::OnGestureEvent(ui::GestureEvent* event) {
   DCHECK(window_);
-  DCHECK(window_->IsVisible());
+  DCHECK(window_->IsVisible() || event->IsEndingEvent());
   delegate_->OnGestureEvent(event);
 }
 

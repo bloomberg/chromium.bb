@@ -43,6 +43,7 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
                                 GestureConsumer* new_consumer) OVERRIDE;
   virtual bool GetLastTouchPointForTarget(GestureConsumer* consumer,
                                           gfx::Point* point) OVERRIDE;
+  virtual void CancelActiveTouches(GestureConsumer* consumer) OVERRIDE;
 
  protected:
   virtual GestureSequence* CreateSequence(GestureSequenceDelegate* delegate);
@@ -51,6 +52,7 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
  private:
   // Sets up the target consumer for gestures based on the touch-event.
   void SetupTargets(const TouchEvent& event, GestureConsumer* consumer);
+  void CancelTouches(std::vector<std::pair<int, GestureConsumer*> >* touches);
 
   // Overridden from GestureRecognizer
   virtual Gestures* ProcessTouchEventForGesture(

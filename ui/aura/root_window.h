@@ -257,9 +257,9 @@ class AURA_EXPORT RootWindow : public ui::EventDispatcherDelegate,
   // |reason| specifies what triggered the hiding.
   void OnWindowHidden(Window* invisible, WindowHiddenReason reason);
 
-  // Cleans up the gesture recognizer for all windows in |window| (including
-  // |window| itself).
-  void CleanupGestureRecognizerState(Window* window);
+  // Cleans up the state of gestures for all windows in |window| (including
+  // |window| itself). This includes cancelling active touch points.
+  void CleanupGestureState(Window* window);
 
   // Updates the root window's size using |host_size|, current
   // transform and insets.

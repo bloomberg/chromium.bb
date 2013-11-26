@@ -427,6 +427,12 @@ class EventFilterRecorder : public ui::EventHandler {
   MouseEventLocations& mouse_locations() { return mouse_locations_; }
   gfx::Point mouse_location(int i) const { return mouse_locations_[i]; }
 
+Events GetAndResetEvents() {
+    Events events = events_;
+    events_.clear();
+    return events;
+  }
+
   // ui::EventHandler overrides:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
     events_.push_back(event->type());
@@ -462,6 +468,9 @@ std::string EventTypeToString(ui::EventType type) {
     case ui::ET_TOUCH_RELEASED:
       return "TOUCH_RELEASED";
 
+    case ui::ET_TOUCH_CANCELLED:
+      return "TOUCH_CANCELLED";
+
     case ui::ET_TOUCH_PRESSED:
       return "TOUCH_PRESSED";
 
@@ -495,11 +504,26 @@ std::string EventTypeToString(ui::EventType type) {
     case ui::ET_GESTURE_SCROLL_UPDATE:
       return "GESTURE_SCROLL_UPDATE";
 
+    case ui::ET_GESTURE_PINCH_BEGIN:
+      return "GESTURE_PINCH_BEGIN";
+
+    case ui::ET_GESTURE_PINCH_END:
+      return "GESTURE_PINCH_END";
+
+    case ui::ET_GESTURE_PINCH_UPDATE:
+      return "GESTURE_PINCH_UPDATE";
+
     case ui::ET_GESTURE_TAP:
       return "GESTURE_TAP";
 
     case ui::ET_GESTURE_TAP_DOWN:
       return "GESTURE_TAP_DOWN";
+
+    case ui::ET_GESTURE_TAP_CANCEL:
+      return "GESTURE_TAP_CANCEL";
+
+    case ui::ET_GESTURE_SHOW_PRESS:
+      return "GESTURE_SHOW_PRESS";
 
     case ui::ET_GESTURE_BEGIN:
       return "GESTURE_BEGIN";
@@ -508,6 +532,8 @@ std::string EventTypeToString(ui::EventType type) {
       return "GESTURE_END";
 
     default:
+      // We should explicitly require each event type.
+      NOTREACHED();
       break;
   }
   return "";
@@ -681,7 +707,7 @@ TEST_F(RootWindowTest, TouchMovesHeld) {
       &touch_moved_event);
   dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(
       &touch_released_event);
-  EXPECT_EQ("TOUCH_MOVED TOUCH_RELEASED  GESTURE_END",
+  EXPECT_EQ("TOUCH_MOVED TOUCH_RELEASED GESTURE_TAP_CANCEL GESTURE_END",
             EventTypesToString(filter->events()));
   filter->events().clear();
   dispatcher()->ReleasePointerMoves();
@@ -998,17 +1024,25 @@ class RepostGestureEventRecorder : public EventFilterRecorder {
                              aura::Window* repost_target)
       : repost_source_(repost_source),
         repost_target_(repost_target),
-        reposted_(false) {}
+        reposted_(false),
+        done_cleanup_(false) {}
 
   virtual ~RepostGestureEventRecorder() {}
 
+  virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
+    if (reposted_ && event->type() == ui::ET_TOUCH_PRESSED) {
+      done_cleanup_ = true;
+      events().clear();
+    }
+    EventFilterRecorder::OnTouchEvent(event);
+  }
+
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE {
-    EXPECT_EQ(reposted_ ? repost_target_ : repost_source_, event->target());
+    EXPECT_EQ(done_cleanup_ ? repost_target_ : repost_source_, event->target());
     if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
       if (!reposted_) {
         EXPECT_NE(repost_target_, event->target());
         reposted_ = true;
-        events().clear();
         repost_target_->GetDispatcher()->RepostEvent(*event);
         // Ensure that the reposted gesture event above goes to the
         // repost_target_;
@@ -1028,6 +1062,8 @@ class RepostGestureEventRecorder : public EventFilterRecorder {
   aura::Window* repost_target_;
   // set to true if we reposted the ET_GESTURE_TAP_DOWN event.
   bool reposted_;
+  // set true if we're done cleaning up after hiding repost_source_;
+  bool done_cleanup_;
   DISALLOW_COPY_AND_ASSIGN(RepostGestureEventRecorder);
 };
 
@@ -1039,8 +1075,8 @@ TEST_F(RootWindowTest, GestureRepostEventOrder) {
   const char kExpectedTargetEvents[] =
     // TODO)(rbyers): Gesture event reposting is disabled - crbug.com/279039.
     // "GESTURE_BEGIN GESTURE_TAP_DOWN "
-    "TOUCH_RELEASED TOUCH_PRESSED GESTURE_BEGIN GESTURE_TAP_DOWN TOUCH_MOVED "
-    " GESTURE_SCROLL_BEGIN GESTURE_SCROLL_UPDATE TOUCH_MOVED "
+    "TOUCH_PRESSED GESTURE_BEGIN GESTURE_TAP_DOWN TOUCH_MOVED "
+    "GESTURE_TAP_CANCEL GESTURE_SCROLL_BEGIN GESTURE_SCROLL_UPDATE TOUCH_MOVED "
     "GESTURE_SCROLL_UPDATE TOUCH_MOVED GESTURE_SCROLL_UPDATE TOUCH_RELEASED "
     "GESTURE_SCROLL_END GESTURE_END";
   // We create two windows.
@@ -1327,6 +1363,58 @@ TEST_F(RootWindowTest, MAYBE_DeleteRootFromHeldMouseEvent) {
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(delegate.got_mouse_event());
   EXPECT_TRUE(delegate.got_destroy());
+}
+
+TEST_F(RootWindowTest, WindowHideCancelsActiveTouches) {
+  EventFilterRecorder* filter = new EventFilterRecorder;
+  root_window()->SetEventFilter(filter);  // passes ownership
+
+  test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(0, 0, 100, 100), root_window()));
+
+  gfx::Point position1 = root_window()->bounds().origin();
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, position1, 0, base::TimeDelta());
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+
+  EXPECT_EQ("TOUCH_PRESSED GESTURE_BEGIN GESTURE_TAP_DOWN",
+            EventTypesToString(filter->GetAndResetEvents()));
+
+  window->Hide();
+
+  EXPECT_EQ("TOUCH_CANCELLED GESTURE_TAP_CANCEL GESTURE_END",
+            EventTypesToString(filter->events()));
+}
+
+TEST_F(RootWindowTest, WindowHideCancelsActiveGestures) {
+  EventFilterRecorder* filter = new EventFilterRecorder;
+  root_window()->SetEventFilter(filter);  // passes ownership
+
+  test::TestWindowDelegate delegate;
+  scoped_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(0, 0, 100, 100), root_window()));
+
+  gfx::Point position1 = root_window()->bounds().origin();
+  gfx::Point position2 = root_window()->bounds().CenterPoint();
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, position1, 0, base::TimeDelta());
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, position2, 0, base::TimeDelta());
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+
+  ui::TouchEvent press2(ui::ET_TOUCH_PRESSED, position1, 1, base::TimeDelta());
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+
+  EXPECT_EQ("TOUCH_PRESSED GESTURE_BEGIN GESTURE_TAP_DOWN TOUCH_MOVED "
+            "GESTURE_TAP_CANCEL GESTURE_SCROLL_BEGIN GESTURE_SCROLL_UPDATE "
+            "TOUCH_PRESSED GESTURE_BEGIN GESTURE_PINCH_BEGIN",
+            EventTypesToString(filter->GetAndResetEvents()));
+
+  window->Hide();
+
+  EXPECT_EQ("TOUCH_CANCELLED GESTURE_PINCH_END GESTURE_END TOUCH_CANCELLED "
+            "GESTURE_SCROLL_END GESTURE_END",
+            EventTypesToString(filter->events()));
 }
 
 }  // namespace aura

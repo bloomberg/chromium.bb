@@ -124,6 +124,8 @@ class EVENTS_EXPORT Event {
       case ET_GESTURE_LONG_TAP:
       case ET_GESTURE_MULTIFINGER_SWIPE:
       case ET_GESTURE_SHOW_PRESS:
+        // When adding a gesture event which is paired with an event which
+        // occurs earlier, add the event to |IsEndingEvent|.
         return true;
 
       case ET_SCROLL_FLING_CANCEL:
@@ -136,6 +138,21 @@ class EVENTS_EXPORT Event {
         break;
     }
     return false;
+  }
+
+  // An ending event is paired with the event which started it. Setting capture
+  // should not prevent ending events from getting to their initial target.
+  bool IsEndingEvent() const {
+    switch(type_) {
+      case ui::ET_TOUCH_CANCELLED:
+      case ui::ET_GESTURE_TAP_CANCEL:
+      case ui::ET_GESTURE_END:
+      case ui::ET_GESTURE_SCROLL_END:
+      case ui::ET_GESTURE_PINCH_END:
+        return true;
+      default:
+        return false;
+    }
   }
 
   bool IsScrollEvent() const {
