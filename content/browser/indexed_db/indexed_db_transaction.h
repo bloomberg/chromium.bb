@@ -68,18 +68,21 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
     FINISHED,  // Either aborted or committed.
   };
 
-  // These are for diagnostic purposes only.
   State state() const { return state_; }
-  base::Time creation_time() const { return creation_time_; }
-  base::Time start_time() const { return start_time_; }
-  int tasks_scheduled() const { return tasks_scheduled_; }
-  int tasks_completed() const { return tasks_completed_; }
 
- protected:
-  virtual ~IndexedDBTransaction();
-  friend class base::RefCounted<IndexedDBTransaction>;
+  struct Diagnostics {
+    base::Time creation_time;
+    base::Time start_time;
+    int tasks_scheduled;
+    int tasks_completed;
+  };
+
+  const Diagnostics& diagnostics() const { return diagnostics_; }
 
  private:
+  friend class base::RefCounted<IndexedDBTransaction>;
+  virtual ~IndexedDBTransaction();
+
   void RunTasksIfStarted();
 
   bool IsTaskQueueEmpty() const;
@@ -135,12 +138,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   int pending_preemptive_events_;
 
   std::set<IndexedDBCursor*> open_cursors_;
-
-  // The following members are for diagnostics only.
-  base::Time creation_time_;
-  base::Time start_time_;
-  int tasks_scheduled_;
-  int tasks_completed_;
+  Diagnostics diagnostics_;
 };
 
 }  // namespace content

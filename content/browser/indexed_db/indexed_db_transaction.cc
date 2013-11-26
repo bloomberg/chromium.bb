@@ -65,11 +65,12 @@ IndexedDBTransaction::IndexedDBTransaction(
       transaction_(database->backing_store()),
       backing_store_transaction_begun_(false),
       should_process_queue_(false),
-      pending_preemptive_events_(0),
-      creation_time_(base::Time::Now()),
-      tasks_scheduled_(0),
-      tasks_completed_(0) {
+      pending_preemptive_events_(0) {
   database_->transaction_coordinator().DidCreateTransaction(this);
+
+  diagnostics_.tasks_scheduled = 0;
+  diagnostics_.tasks_completed = 0;
+  diagnostics_.creation_time = base::Time::Now();
 }
 
 IndexedDBTransaction::~IndexedDBTransaction() {
@@ -87,7 +88,7 @@ void IndexedDBTransaction::ScheduleTask(Operation task, Operation abort_task) {
 
   used_ = true;
   task_queue_.push(task);
-  ++tasks_scheduled_;
+  ++diagnostics_.tasks_scheduled;
   abort_task_stack_.push(abort_task);
   RunTasksIfStarted();
 }
@@ -100,7 +101,7 @@ void IndexedDBTransaction::ScheduleTask(IndexedDBDatabase::TaskType type,
   used_ = true;
   if (type == IndexedDBDatabase::NORMAL_TASK) {
     task_queue_.push(task);
-    ++tasks_scheduled_;
+    ++diagnostics_.tasks_scheduled;
   } else {
     preemptive_task_queue_.push(task);
   }
@@ -197,7 +198,7 @@ void IndexedDBTransaction::Start() {
   DCHECK_EQ(CREATED, state_);
   state_ = STARTED;
   database_->TransactionStarted(this);
-  start_time_ = base::Time::Now();
+  diagnostics_.start_time = base::Time::Now();
 
   if (!used_)
     return;
@@ -290,8 +291,8 @@ void IndexedDBTransaction::ProcessTaskQueue() {
     Operation task(task_queue->pop());
     task.Run(this);
     if (!pending_preemptive_events_) {
-      DCHECK(tasks_completed_ < tasks_scheduled_);
-      ++tasks_completed_;
+      DCHECK(diagnostics_.tasks_completed < diagnostics_.tasks_scheduled);
+      ++diagnostics_.tasks_completed;
     }
 
     // Event itself may change which queue should be processed next.
