@@ -105,9 +105,6 @@ public:
 
     BLINK_PLATFORM_EXPORT WebMediaConstraints constraints();
 
-    BLINK_PLATFORM_EXPORT WebString deviceId() const;
-    BLINK_PLATFORM_EXPORT void setDeviceId(const WebString&);
-
     // Only used if if this is a WebAudio source.
     // The WebAudioDestinationConsumer is not owned, and has to be disposed of separately
     // after calling removeAudioConsumer.

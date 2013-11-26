@@ -86,9 +86,6 @@ public:
     void setConstraints(PassRefPtr<MediaConstraints> constraints) { m_constraints = constraints; }
     MediaConstraints* constraints() { return m_constraints.get(); }
 
-    const String& deviceId() { return m_deviceId; }
-    void setDeviceId(const String& deviceId) { m_deviceId = deviceId; }
-
     void setAudioFormat(size_t numberOfChannels, float sampleRate);
     void consumeAudio(AudioBus*, size_t numberOfFrames);
 
@@ -104,7 +101,6 @@ private:
     Type m_type;
     String m_name;
     ReadyState m_readyState;
-    String m_deviceId;
     bool m_requiresConsumer;
     Vector<Observer*> m_observers;
     Mutex m_audioConsumersLock;

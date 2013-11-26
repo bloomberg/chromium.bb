@@ -163,18 +163,6 @@ WebMediaConstraints WebMediaStreamSource::constraints()
     return m_private->constraints();
 }
 
-WebString WebMediaStreamSource::deviceId() const
-{
-    ASSERT(!m_private.isNull());
-    return m_private->deviceId();
-}
-
-void WebMediaStreamSource::setDeviceId(const WebString& deviceId)
-{
-    ASSERT(!m_private.isNull());
-    m_private->setDeviceId(deviceId);
-}
-
 bool WebMediaStreamSource::requiresAudioConsumer() const
 {
     ASSERT(!m_private.isNull());
