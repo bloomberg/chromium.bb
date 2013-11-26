@@ -40,6 +40,8 @@
 }
 
 .error-header {
+  /* A hack used to prevent aliasing on High-DPI displays. */
+  -webkit-transform: scale3d(1,1,1);
   background-clip: padding-box;
   background-image: -webkit-linear-gradient(rgba(255,255,255,0.99),
                                             rgba(255,255,255,0.97));
