@@ -1,0 +1,28 @@
+The letters in the right image should be crisp and non-blurry like the letters in the left image.<p>
+<canvas></canvas>
+<img id="result" onload="testDone()">
+
+<script>
+if (window.testRunner) {
+    window.testRunner.dumpAsTextWithPixelResults();
+    window.testRunner.waitUntilDone();
+}
+
+function testDone()
+{
+    if (window.testRunner)
+        window.testRunner.notifyDone();
+}
+
+var image = new Image();
+image.onload = function() {
+    var canvas = document.querySelector('canvas');
+    canvas.width = this.width;
+    canvas.height = this.height;
+    canvas.getContext('2d').drawImage(this, 0, 0);
+    result.src = canvas.toDataURL('image/jpeg', 1.0);
+    document.body.style.zoom = 1.3;
+};
+
+image.src = "resources/letters.png";
+</script>

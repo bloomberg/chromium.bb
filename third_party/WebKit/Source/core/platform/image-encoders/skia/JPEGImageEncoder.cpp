@@ -106,6 +106,17 @@ static void RGBAtoRGB(const unsigned char* pixels, unsigned int pixelCount, unsi
     }
 }
 
+static void disableSubsamplingForHighQuality(jpeg_compress_struct* cinfo, int quality)
+{
+    if (quality < 100)
+        return;
+
+    for (int i = 0; i < MAX_COMPONENTS; ++i) {
+        cinfo->comp_info[i].h_samp_factor = 1;
+        cinfo->comp_info[i].v_samp_factor = 1;
+    }
+}
+
 static bool encodePixels(IntSize imageSize, unsigned char* inputPixels, bool premultiplied, int quality, Vector<unsigned char>* output)
 {
     JPEGOutputBuffer destination;
@@ -142,6 +153,7 @@ static bool encodePixels(IntSize imageSize, unsigned char* inputPixels, bool pre
 
         jpeg_set_defaults(&cinfo);
         jpeg_set_quality(&cinfo, quality, TRUE);
+        disableSubsamplingForHighQuality(&cinfo, quality);
         jpeg_start_compress(&cinfo, TRUE);
 
         unsigned char* pixels = inputPixels;
@@ -167,6 +179,7 @@ static bool encodePixels(IntSize imageSize, unsigned char* inputPixels, bool pre
 
     jpeg_set_defaults(&cinfo);
     jpeg_set_quality(&cinfo, quality, TRUE);
+    disableSubsamplingForHighQuality(&cinfo, quality);
     jpeg_start_compress(&cinfo, TRUE);
 
     unsigned char* pixels = inputPixels;
