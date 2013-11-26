@@ -5,13 +5,19 @@
 #include "sandbox/linux/services/credentials.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/tests/unit_tests.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using file_util::ScopedFD;
 
 namespace sandbox {
 
@@ -50,6 +56,44 @@ TEST(Credentials, CreateAndDestroy) {
     (void) cred1;
   }
   scoped_ptr<Credentials> cred2(new Credentials);
+}
+
+TEST(Credentials, HasOpenDirectory) {
+  Credentials creds;
+  // No open directory should exist at startup.
+  EXPECT_FALSE(creds.HasOpenDirectory(-1));
+  {
+    // Have a "/dev" file descriptor around.
+    int dev_fd = open("/dev", O_RDONLY | O_DIRECTORY);
+    ScopedFD dev_fd_closer(&dev_fd);
+    EXPECT_TRUE(creds.HasOpenDirectory(-1));
+  }
+  EXPECT_FALSE(creds.HasOpenDirectory(-1));
+}
+
+TEST(Credentials, HasOpenDirectoryWithFD) {
+  Credentials creds;
+
+  int proc_fd = open("/proc", O_RDONLY | O_DIRECTORY);
+  ScopedFD proc_fd_closer(&proc_fd);
+  ASSERT_LE(0, proc_fd);
+
+  // Don't pass |proc_fd|, an open directory (proc_fd) should
+  // be detected.
+  EXPECT_TRUE(creds.HasOpenDirectory(-1));
+  // Pass |proc_fd| and no open directory should be detected.
+  EXPECT_FALSE(creds.HasOpenDirectory(proc_fd));
+
+  {
+    // Have a "/dev" file descriptor around.
+    int dev_fd = open("/dev", O_RDONLY | O_DIRECTORY);
+    ScopedFD dev_fd_closer(&dev_fd);
+    EXPECT_TRUE(creds.HasOpenDirectory(proc_fd));
+  }
+
+  // The "/dev" file descriptor should now be closed, |proc_fd| is the only
+  // directory file descriptor open.
+  EXPECT_FALSE(creds.HasOpenDirectory(proc_fd));
 }
 
 SANDBOX_TEST(Credentials, DropAllCaps) {
