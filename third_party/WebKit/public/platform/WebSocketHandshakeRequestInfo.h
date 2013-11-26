@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc.  All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,59 +28,38 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef WebSocketHandshakeRequestInfo_h
+#define WebSocketHandshakeRequestInfo_h
 
-#include "modules/websockets/WebSocketHandshakeResponse.h"
-
-#include "wtf/Assertions.h"
-#include "wtf/text/AtomicString.h"
-
-using namespace std;
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebNonCopyable.h"
+#include "public/platform/WebPrivatePtr.h"
 
 namespace WebCore {
-
-WebSocketHandshakeResponse::WebSocketHandshakeResponse()
-{
-}
-
-WebSocketHandshakeResponse::~WebSocketHandshakeResponse()
-{
-}
-
-int WebSocketHandshakeResponse::statusCode() const
-{
-    return m_statusCode;
-}
-
-void WebSocketHandshakeResponse::setStatusCode(int statusCode)
-{
-    ASSERT(statusCode >= 100 && statusCode < 600);
-    m_statusCode = statusCode;
-}
-
-const String& WebSocketHandshakeResponse::statusText() const
-{
-    return m_statusText;
-}
-
-void WebSocketHandshakeResponse::setStatusText(const String& statusText)
-{
-    m_statusText = statusText;
-}
-
-const HTTPHeaderMap& WebSocketHandshakeResponse::headerFields() const
-{
-    return m_headerFields;
-}
-
-void WebSocketHandshakeResponse::addHeaderField(const AtomicString& name, const String& value)
-{
-    m_headerFields.add(name, value);
-}
-
-void WebSocketHandshakeResponse::clearHeaderFields()
-{
-    m_headerFields.clear();
-}
-
+class WebSocketHandshakeRequest;
 } // namespace WebCore
+
+namespace blink {
+
+class WebString;
+class WebURL;
+
+class WebSocketHandshakeRequestInfo : public WebNonCopyable {
+public:
+    WebSocketHandshakeRequestInfo();
+    ~WebSocketHandshakeRequestInfo();
+
+    BLINK_PLATFORM_EXPORT void setURL(const WebURL&);
+    BLINK_PLATFORM_EXPORT void addHeaderField(const WebString& name, const WebString& value);
+
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT const WebCore::WebSocketHandshakeRequest& toCoreRequest() const { return *m_private.get(); }
+#endif // INSIDE_BLINK
+
+private:
+    WebPrivatePtr<WebCore::WebSocketHandshakeRequest> m_private;
+};
+
+} // namespace blink
+
+#endif // WebSocketHandshakeRequestInfo_h

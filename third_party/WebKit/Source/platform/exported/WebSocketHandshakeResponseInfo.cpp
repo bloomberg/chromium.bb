@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc.  All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,22 +28,35 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSocketHandshakeRequest_h
-#define WebSocketHandshakeRequest_h
+#include "config.h"
+#include "public/platform/WebSocketHandshakeResponseInfo.h"
 
-#include "platform/network/HTTPRequest.h"
+#include "platform/network/WebSocketHandshakeResponse.h"
+#include "public/platform/WebString.h"
 
-namespace WebCore {
+using WebCore::WebSocketHandshakeResponse;
 
-class WebSocketHandshakeRequest : public HTTPRequest {
-public:
-    static PassRefPtr<WebSocketHandshakeRequest> create(const String& requestMethod, const KURL& url) { return adoptRef(new WebSocketHandshakeRequest(requestMethod, url)); }
-    ~WebSocketHandshakeRequest();
+namespace blink {
 
-private:
-    WebSocketHandshakeRequest(const String& requestMethod, const KURL&);
-};
+WebSocketHandshakeResponseInfo::WebSocketHandshakeResponseInfo() : m_private(new WebSocketHandshakeResponse)
+{
+}
 
-} // namespace WebCore
+WebSocketHandshakeResponseInfo::~WebSocketHandshakeResponseInfo() { }
 
-#endif // WebSocketHandshakeRequest_h
+void WebSocketHandshakeResponseInfo::setStatusCode(int statusCode)
+{
+    m_private->setStatusCode(statusCode);
+}
+
+void WebSocketHandshakeResponseInfo::setStatusText(const WebString& statusText)
+{
+    m_private->setStatusText(statusText);
+}
+
+void WebSocketHandshakeResponseInfo::addHeaderField(const WebString& name, const WebString& value)
+{
+    m_private->addHeaderField(name, value);
+}
+
+} // namespace blink

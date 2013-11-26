@@ -28,23 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef WebSocketHandshakeRequest_h
+#define WebSocketHandshakeRequest_h
 
-#include "modules/websockets/WebSocketHandshakeRequest.h"
-
-#include <cstring>
-
-using namespace std;
+#include "platform/network/HTTPRequest.h"
 
 namespace WebCore {
 
-WebSocketHandshakeRequest::WebSocketHandshakeRequest(const String& requestMethod, const KURL& url)
-    : HTTPRequest(requestMethod, url, HTTP_1_1)
-{
-}
+class PLATFORM_EXPORT WebSocketHandshakeRequest : public HTTPRequest {
+public:
+    static PassRefPtr<WebSocketHandshakeRequest> create(const String& requestMethod, const KURL& url) { return adoptRef(new WebSocketHandshakeRequest(requestMethod, url)); }
+    static PassRefPtr<WebSocketHandshakeRequest> create() { return adoptRef(new WebSocketHandshakeRequest); }
+    ~WebSocketHandshakeRequest();
 
-WebSocketHandshakeRequest::~WebSocketHandshakeRequest()
-{
-}
+private:
+    WebSocketHandshakeRequest(const String& requestMethod, const KURL&);
+    WebSocketHandshakeRequest();
+};
 
 } // namespace WebCore
+
+#endif // WebSocketHandshakeRequest_h

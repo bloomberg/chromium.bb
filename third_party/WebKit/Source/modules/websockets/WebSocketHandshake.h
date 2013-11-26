@@ -33,8 +33,8 @@
 
 #include "modules/websockets/WebSocketExtensionDispatcher.h"
 #include "modules/websockets/WebSocketExtensionProcessor.h"
-#include "modules/websockets/WebSocketHandshakeRequest.h"
-#include "modules/websockets/WebSocketHandshakeResponse.h"
+#include "platform/network/WebSocketHandshakeRequest.h"
+#include "platform/network/WebSocketHandshakeResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"

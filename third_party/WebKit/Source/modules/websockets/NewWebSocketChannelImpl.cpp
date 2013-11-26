@@ -43,6 +43,8 @@
 #include "platform/Logging.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebSocketHandshakeRequestInfo.h"
+#include "public/platform/WebSocketHandshakeResponseInfo.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
@@ -366,13 +368,23 @@ void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, con
         // failAsError may delete this object.
         return;
     }
-    // FIXME: We should have Request / Response information to be output.
-    // InspectorInstrumentation::willSendWebSocketHandshakeRequest(document(), m_identifier, "");
-    // InspectorInstrumentation::didReceiveWebSocketHandshakeResponse(document(), m_identifier, "");
-
     m_subprotocol = selectedProtocol;
     m_extensions = extensions;
     m_client->didConnect();
+}
+
+void NewWebSocketChannelImpl::didStartOpeningHandshake(WebSocketHandle* handle, const blink::WebSocketHandshakeRequestInfo& request)
+{
+    LOG(Network, "NewWebSocketChannelImpl %p didStartOpeningHandshake(%p)", this, handle);
+    if (m_identifier)
+        InspectorInstrumentation::willSendWebSocketHandshakeRequest(document(), m_identifier, request.toCoreRequest());
+}
+
+void NewWebSocketChannelImpl::didFinishOpeningHandshake(WebSocketHandle* handle, const blink::WebSocketHandshakeResponseInfo& response)
+{
+    LOG(Network, "NewWebSocketChannelImpl %p didFinishOpeningHandshake(%p)", this, handle);
+    if (m_identifier)
+        InspectorInstrumentation::didReceiveWebSocketHandshakeResponse(document(), m_identifier, response.toCoreResponse());
 }
 
 void NewWebSocketChannelImpl::didFail(WebSocketHandle* handle, const blink::WebString& message)

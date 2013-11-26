@@ -50,6 +50,13 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
+namespace blink {
+
+class WebSocketHandshakeRequestInfo;
+class WebSocketHandshakeResponseInfo;
+
+} // namespace blink
+
 namespace WebCore {
 
 class Document;
@@ -123,6 +130,8 @@ private:
 
     // WebSocketHandleClient functions.
     virtual void didConnect(blink::WebSocketHandle*, bool fail, const blink::WebString& selectedProtocol, const blink::WebString& extensions) OVERRIDE;
+    virtual void didStartOpeningHandshake(blink::WebSocketHandle*, const blink::WebSocketHandshakeRequestInfo&) OVERRIDE;
+    virtual void didFinishOpeningHandshake(blink::WebSocketHandle*, const blink::WebSocketHandshakeResponseInfo&) OVERRIDE;
     virtual void didFail(blink::WebSocketHandle*, const blink::WebString& message) OVERRIDE;
     virtual void didReceiveData(blink::WebSocketHandle*, bool fin, blink::WebSocketHandle::MessageType, const char* data, size_t /* size */) OVERRIDE;
     virtual void didClose(blink::WebSocketHandle*, bool wasClean, unsigned short code, const blink::WebString& reason) OVERRIDE;

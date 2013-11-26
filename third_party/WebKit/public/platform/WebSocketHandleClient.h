@@ -36,6 +36,8 @@
 
 namespace blink {
 
+class WebSocketHandshakeRequestInfo;
+class WebSocketHandshakeResponseInfo;
 class WebString;
 class WebURL;
 
@@ -44,6 +46,15 @@ class WebSocketHandleClient {
 public:
     // Called when the handle is opened.
     virtual void didConnect(WebSocketHandle*, bool fail, const WebString& selectedProtocol, const WebString& extensions) = 0;
+
+    // Called when the browser starts the opening handshake.
+    // This notification can be omitted when the inspector is not active.
+    virtual void didStartOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeRequestInfo&) = 0;
+
+    // Called when the browser finishes the opening handshake.
+    // This notification precedes didConnect.
+    // This notification can be omitted when the inspector is not active.
+    virtual void didFinishOpeningHandshake(WebSocketHandle*, const WebSocketHandshakeResponseInfo&) = 0;
 
     // Called when the browser is required to fail the connection.
     // |message| can be displayed in the inspector, but should not be passed

@@ -46,9 +46,9 @@
 #include "core/rendering/RenderImage.h"
 #include "core/storage/StorageArea.h"
 #include "modules/websockets/WebSocketFrame.h"
-#include "modules/websockets/WebSocketHandshakeRequest.h"
-#include "modules/websockets/WebSocketHandshakeResponse.h"
 #include "platform/network/FormData.h"
+#include "platform/network/WebSocketHandshakeRequest.h"
+#include "platform/network/WebSocketHandshakeResponse.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

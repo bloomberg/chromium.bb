@@ -28,34 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSocketHandshakeResponse_h
-#define WebSocketHandshakeResponse_h
-
-#include "platform/network/HTTPHeaderMap.h"
-#include "wtf/Forward.h"
-#include "wtf/text/WTFString.h"
+#include "config.h"
+#include "platform/network/WebSocketHandshakeRequest.h"
 
 namespace WebCore {
 
-class WebSocketHandshakeResponse {
-public:
-    WebSocketHandshakeResponse();
-    ~WebSocketHandshakeResponse();
+WebSocketHandshakeRequest::WebSocketHandshakeRequest(const String& requestMethod, const KURL& url)
+    : HTTPRequest(requestMethod, url, HTTP_1_1)
+{
+}
 
-    int statusCode() const;
-    void setStatusCode(int statusCode);
-    const String& statusText() const;
-    void setStatusText(const String& statusText);
-    const HTTPHeaderMap& headerFields() const;
-    void addHeaderField(const AtomicString& name, const String& value);
-    void clearHeaderFields();
+WebSocketHandshakeRequest::WebSocketHandshakeRequest()
+    : HTTPRequest()
+{
+}
 
-private:
-    int m_statusCode;
-    String m_statusText;
-    HTTPHeaderMap m_headerFields;
-};
+WebSocketHandshakeRequest::~WebSocketHandshakeRequest()
+{
+}
 
 } // namespace WebCore
-
-#endif // WebSocketHandshakeResponse_h
