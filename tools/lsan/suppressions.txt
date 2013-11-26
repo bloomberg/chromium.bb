@@ -51,6 +51,9 @@ leak:GrGpuGL::flushGraphicsState
 # xrandr leak. http://crbug.com/119677
 leak:XRRFindDisplay
 
+# Test tears down V8 incorrectly and should be fixed. http://crbug.com/323149
+leak:V8UnitTest::SetUp
+
 #### Actual bugs in Chromium code ####
 # PLEASE DO NOT ADD NEW SUPPRESSIONS TO THIS SECTION. Instead, commits that
 # introduce memory leaks should be reverted.
