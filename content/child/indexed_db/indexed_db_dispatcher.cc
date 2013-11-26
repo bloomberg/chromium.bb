@@ -12,6 +12,7 @@
 #include "content/child/indexed_db/proxy_webidbcursor_impl.h"
 #include "content/child/indexed_db/proxy_webidbdatabase_impl.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/common/indexed_db/indexed_db_constants.h"
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "ipc/ipc_channel.h"
 #include "third_party/WebKit/public/platform/WebIDBDatabaseCallbacks.h"
@@ -459,10 +460,15 @@ void IndexedDBDispatcher::OnSuccessIDBDatabase(
   WebIDBMetadata metadata(ConvertMetadata(idb_metadata));
   // If an upgrade was performed, count will be non-zero.
   WebIDBDatabase* database = NULL;
-  if (!databases_.count(ipc_object_id))
+
+  // Back-end will send kNoDatabase if it was already sent in OnUpgradeNeeded.
+  // May already be deleted and removed from the table, but do not recreate..
+  if (ipc_object_id != kNoDatabase) {
+    DCHECK(!databases_.count(ipc_object_id));
     database = databases_[ipc_object_id] = new RendererWebIDBDatabaseImpl(
         ipc_object_id, ipc_database_callbacks_id, thread_safe_sender_.get());
-  DCHECK_EQ(databases_.count(ipc_object_id), 1u);
+  }
+
   callbacks->onSuccess(database, metadata);
   pending_callbacks_.Remove(ipc_callbacks_id);
 }
