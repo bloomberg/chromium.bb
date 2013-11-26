@@ -76,3 +76,17 @@ TEST(HttpByteRangeTest, SetInstanceSize) {
     }
   }
 }
+
+TEST(HttpByteRangeTest, GetHeaderValue) {
+  static const struct {
+    net::HttpByteRange range;
+    const char* expected;
+  } tests[] = {{net::HttpByteRange::Bounded(0, 0),       "bytes=0-0"},
+               {net::HttpByteRange::Bounded(0, 100),     "bytes=0-100"},
+               {net::HttpByteRange::Bounded(0, -1),      "bytes=0-"},
+               {net::HttpByteRange::RightUnbounded(100), "bytes=100-"},
+               {net::HttpByteRange::Suffix(100),         "bytes=-100"}, };
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
+    EXPECT_EQ(tests[i].expected, tests[i].range.GetHeaderValue());
+  }
+}

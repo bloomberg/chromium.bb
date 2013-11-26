@@ -237,15 +237,6 @@ class CONTENT_EXPORT BufferedResourceLoader
   // If we have made a range request, verify the response from the server.
   bool VerifyPartialResponse(const blink::WebURLResponse& response);
 
-  // Returns the value for a range request header using parameters
-  // |first_byte_position| and |last_byte_position|. Negative numbers other
-  // than |kPositionNotSpecified| are not allowed for |first_byte_position| and
-  // |last_byte_position|. |first_byte_position| should always be less than or
-  // equal to |last_byte_position| if they are both not |kPositionNotSpecified|.
-  // Empty string is returned on invalid parameters.
-  std::string GenerateHeaders(int64 first_byte_position,
-                              int64 last_byte_position);
-
   // Done with read. Invokes the read callback and reset parameters for the
   // read request.
   void DoneRead(Status status, int bytes_read);

@@ -4,6 +4,9 @@
 
 #include <algorithm>
 
+#include "base/format_macros.h"
+#include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "net/http/http_byte_range.h"
 
 namespace {
@@ -19,6 +22,29 @@ HttpByteRange::HttpByteRange()
       last_byte_position_(kPositionNotSpecified),
       suffix_length_(kPositionNotSpecified),
       has_computed_bounds_(false) {
+}
+
+// static
+HttpByteRange HttpByteRange::Bounded(int64 first_byte_position,
+                                     int64 last_byte_position) {
+  HttpByteRange range;
+  range.set_first_byte_position(first_byte_position);
+  range.set_last_byte_position(last_byte_position);
+  return range;
+}
+
+// static
+HttpByteRange HttpByteRange::RightUnbounded(int64 first_byte_position) {
+  HttpByteRange range;
+  range.set_first_byte_position(first_byte_position);
+  return range;
+}
+
+// static
+HttpByteRange HttpByteRange::Suffix(int64 suffix_length) {
+  HttpByteRange range;
+  range.set_suffix_length(suffix_length);
+  return range;
 }
 
 bool HttpByteRange::IsSuffixByteRange() const {
@@ -39,6 +65,21 @@ bool HttpByteRange::IsValid() const {
   return (first_byte_position_ >= 0 &&
           (last_byte_position_ == kPositionNotSpecified ||
            last_byte_position_ >= first_byte_position_));
+}
+
+std::string HttpByteRange::GetHeaderValue() const {
+  DCHECK(IsValid());
+
+  if (IsSuffixByteRange())
+    return base::StringPrintf("bytes=-%" PRId64, suffix_length());
+
+  DCHECK(HasFirstBytePosition());
+
+  if (!HasLastBytePosition())
+    return base::StringPrintf("bytes=%" PRId64 "-", first_byte_position());
+
+  return base::StringPrintf("bytes=%" PRId64 "-%" PRId64,
+                            first_byte_position(), last_byte_position());
 }
 
 bool HttpByteRange::ComputeBounds(int64 size) {

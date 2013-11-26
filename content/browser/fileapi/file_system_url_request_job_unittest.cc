@@ -26,6 +26,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/request_priority.h"
+#include "net/http/http_byte_range.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -220,10 +221,10 @@ TEST_F(FileSystemURLRequestJobTest, FileTestFullSpecifiedRange) {
                                     buffer.get() + last_byte_position + 1);
 
   net::HttpRequestHeaders headers;
-  headers.SetHeader(net::HttpRequestHeaders::kRange,
-                    base::StringPrintf(
-                         "bytes=%" PRIuS "-%" PRIuS,
-                         first_byte_position, last_byte_position));
+  headers.SetHeader(
+      net::HttpRequestHeaders::kRange,
+      net::HttpByteRange::Bounded(
+          first_byte_position, last_byte_position).GetHeaderValue());
   TestRequestWithHeaders(CreateFileSystemURL("bigfile"), &headers);
 
   ASSERT_FALSE(request_->is_pending());
@@ -243,9 +244,9 @@ TEST_F(FileSystemURLRequestJobTest, FileTestHalfSpecifiedRange) {
                                     buffer.get() + buffer_size);
 
   net::HttpRequestHeaders headers;
-  headers.SetHeader(net::HttpRequestHeaders::kRange,
-                    base::StringPrintf("bytes=%" PRIuS "-",
-                                       first_byte_position));
+  headers.SetHeader(
+      net::HttpRequestHeaders::kRange,
+      net::HttpByteRange::RightUnbounded(first_byte_position).GetHeaderValue());
   TestRequestWithHeaders(CreateFileSystemURL("bigfile"), &headers);
   ASSERT_FALSE(request_->is_pending());
   EXPECT_EQ(1, delegate_->response_started_count());
@@ -269,7 +270,9 @@ TEST_F(FileSystemURLRequestJobTest, FileTestMultipleRangesNotSupported) {
 TEST_F(FileSystemURLRequestJobTest, RangeOutOfBounds) {
   WriteFile("file1.dat", kTestFileData, arraysize(kTestFileData) - 1);
   net::HttpRequestHeaders headers;
-  headers.SetHeader(net::HttpRequestHeaders::kRange, "bytes=500-1000");
+  headers.SetHeader(
+      net::HttpRequestHeaders::kRange,
+      net::HttpByteRange::Bounded(500, 1000).GetHeaderValue());
   TestRequestWithHeaders(CreateFileSystemURL("file1.dat"), &headers);
 
   ASSERT_FALSE(request_->is_pending());

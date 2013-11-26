@@ -5,6 +5,8 @@
 #ifndef NET_HTTP_HTTP_BYTE_RANGE_H_
 #define NET_HTTP_HTTP_BYTE_RANGE_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "net/base/net_export.h"
 
@@ -17,10 +19,16 @@ class NET_EXPORT HttpByteRange {
  public:
   HttpByteRange();
 
+  // Convenience constructors.
+  static HttpByteRange Bounded(int64 first_byte_position,
+                               int64 last_byte_position);
+  static HttpByteRange RightUnbounded(int64 first_byte_position);
+  static HttpByteRange Suffix(int64 suffix_length);
+
   // Since this class is POD, we use constructor, assignment operator
   // and destructor provided by compiler.
   int64 first_byte_position() const { return first_byte_position_; }
-  void set_first_byte_position(int64 value) { first_byte_position_ =  value; }
+  void set_first_byte_position(int64 value) { first_byte_position_ = value; }
 
   int64 last_byte_position() const { return last_byte_position_; }
   void set_last_byte_position(int64 value) { last_byte_position_ = value; }
@@ -37,6 +45,10 @@ class NET_EXPORT HttpByteRange {
 
   // Returns true if this range is valid.
   bool IsValid() const;
+
+  // Gets the header string, e.g. "bytes=0-100", "bytes=100-", "bytes=-100".
+  // Assumes range is valid.
+  std::string GetHeaderValue() const;
 
   // A method that when given the size in bytes of a file, adjust the internal
   // |first_byte_position_| and |last_byte_position_| values according to the

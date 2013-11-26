@@ -50,6 +50,7 @@
 #include "net/disk_cache/disk_cache.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/ftp/ftp_network_layer.h"
+#include "net/http/http_byte_range.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
 #include "net/http/http_network_session.h"
@@ -759,10 +760,10 @@ TEST_F(URLRequestTest, FileTestFullSpecifiedRange) {
     URLRequest r(temp_url, DEFAULT_PRIORITY, &d, &default_context_);
 
     HttpRequestHeaders headers;
-    headers.SetHeader(HttpRequestHeaders::kRange,
-                      base::StringPrintf(
-                           "bytes=%" PRIuS "-%" PRIuS,
-                           first_byte_position, last_byte_position));
+    headers.SetHeader(
+        HttpRequestHeaders::kRange,
+        net::HttpByteRange::Bounded(
+            first_byte_position, last_byte_position).GetHeaderValue());
     r.SetExtraRequestHeaders(headers);
     r.Start();
     EXPECT_TRUE(r.is_pending());
@@ -804,8 +805,8 @@ TEST_F(URLRequestTest, FileTestHalfSpecifiedRange) {
 
     HttpRequestHeaders headers;
     headers.SetHeader(HttpRequestHeaders::kRange,
-                      base::StringPrintf("bytes=%" PRIuS "-",
-                                         first_byte_position));
+                      net::HttpByteRange::RightUnbounded(
+                          first_byte_position).GetHeaderValue());
     r.SetExtraRequestHeaders(headers);
     r.Start();
     EXPECT_TRUE(r.is_pending());
@@ -840,8 +841,7 @@ TEST_F(URLRequestTest, FileTestMultipleRanges) {
     URLRequest r(temp_url, DEFAULT_PRIORITY, &d, &default_context_);
 
     HttpRequestHeaders headers;
-    headers.SetHeader(HttpRequestHeaders::kRange,
-                      "bytes=0-0,10-200,200-300");
+    headers.SetHeader(HttpRequestHeaders::kRange, "bytes=0-0,10-200,200-300");
     r.SetExtraRequestHeaders(headers);
     r.Start();
     EXPECT_TRUE(r.is_pending());

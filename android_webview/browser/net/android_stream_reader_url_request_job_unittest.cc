@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/request_priority.h"
+#include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_test_util.h"
 
@@ -162,9 +163,8 @@ class AndroidStreamReaderURLRequestJobTest : public Test {
   void SetRange(net::URLRequest* req, int first_byte, int last_byte) {
     net::HttpRequestHeaders headers;
     headers.SetHeader(net::HttpRequestHeaders::kRange,
-                      base::StringPrintf(
-                           "bytes=%" PRIuS "-%" PRIuS,
-                           first_byte, last_byte));
+                      net::HttpByteRange::Bounded(
+                          first_byte, last_byte).GetHeaderValue());
     req->SetExtraRequestHeaders(headers);
   }
 

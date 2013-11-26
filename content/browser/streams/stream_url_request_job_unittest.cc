@@ -9,6 +9,7 @@
 #include "content/browser/streams/stream_url_request_job.h"
 #include "content/browser/streams/stream_write_observer.h"
 #include "net/base/request_priority.h"
+#include "net/http/http_byte_range.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -154,7 +155,8 @@ TEST_F(StreamURLRequestJobTest, TestRangeDataRequest) {
   stream->Finalize();
 
   net::HttpRequestHeaders extra_headers;
-  extra_headers.SetHeader(net::HttpRequestHeaders::kRange, "bytes=0-3");
+  extra_headers.SetHeader(net::HttpRequestHeaders::kRange,
+                          net::HttpByteRange::Bounded(0, 3).GetHeaderValue());
   TestRequest("GET", kStreamURL, extra_headers,
               200, std::string(kTestData2, 4));
 }
@@ -170,7 +172,8 @@ TEST_F(StreamURLRequestJobTest, TestInvalidRangeDataRequest) {
   stream->Finalize();
 
   net::HttpRequestHeaders extra_headers;
-  extra_headers.SetHeader(net::HttpRequestHeaders::kRange, "bytes=1-3");
+  extra_headers.SetHeader(net::HttpRequestHeaders::kRange,
+                          net::HttpByteRange::Bounded(1, 3).GetHeaderValue());
   TestRequest("GET", kStreamURL, extra_headers, 405, std::string());
 }
 

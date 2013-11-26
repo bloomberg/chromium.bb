@@ -13,6 +13,7 @@
 #include "content/public/test/test_file_system_context.h"
 #include "net/base/io_buffer.h"
 #include "net/base/request_priority.h"
+#include "net/http/http_byte_range.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -397,7 +398,8 @@ TEST_F(BlobURLRequestJobTest, TestGetRangeRequest1) {
   std::string result;
   BuildComplicatedData(&result);
   net::HttpRequestHeaders extra_headers;
-  extra_headers.SetHeader(net::HttpRequestHeaders::kRange, "bytes=5-10");
+  extra_headers.SetHeader(net::HttpRequestHeaders::kRange,
+                          net::HttpByteRange::Bounded(5, 10).GetHeaderValue());
   expected_status_code_ = 206;
   expected_response_ = result.substr(5, 10 - 5 + 1);
   TestRequest("GET", extra_headers);
@@ -408,7 +410,8 @@ TEST_F(BlobURLRequestJobTest, TestGetRangeRequest2) {
   std::string result;
   BuildComplicatedData(&result);
   net::HttpRequestHeaders extra_headers;
-  extra_headers.SetHeader(net::HttpRequestHeaders::kRange, "bytes=-10");
+  extra_headers.SetHeader(net::HttpRequestHeaders::kRange,
+                          net::HttpByteRange::Suffix(10).GetHeaderValue());
   expected_status_code_ = 206;
   expected_response_ = result.substr(result.length() - 10);
   TestRequest("GET", extra_headers);
