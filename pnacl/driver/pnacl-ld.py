@@ -319,6 +319,8 @@ def main(argv):
     SetArch('X8632')
   assert(GetArch() is not None)
 
+  inputs = FixPrivateLibs(inputs)
+
   # Expand all parameters
   # This resolves -lfoo into actual filenames,
   # and expands linker scripts into command-line arguments.
@@ -337,11 +339,6 @@ def main(argv):
   CheckInputsArch(inputs)
 
   regular_inputs, native_objects = SplitLinkLine(inputs)
-
-  if not env.getbool('USE_IRT'):
-    inputs = UsePrivateLibraries(inputs)
-
-  inputs = FixPrivateLibs(inputs)
 
   if env.getbool('RELOCATABLE'):
     bitcode_type = 'po'
@@ -440,82 +437,42 @@ def main(argv):
     SetExecutableMode(output)
   return 0
 
-def UsePrivateLibraries(libs):
-  """ Place libnacl_sys_private.a before libnacl.a
-  Replace libpthread.a with libpthread_private.a
-  Replace libnacl_dyncode.a with libnacl_dyncode_private.a
-  This assumes that the private libs can be found at the same directory
-  as the public libs.
-  """
-  result_libs = []
-  for l in libs:
-    base = pathtools.basename(l)
-    dname = pathtools.dirname(l)
-    if base == 'libnacl.a':
-      Log.Info('Not using IRT -- injecting libnacl_sys_private.a to link line')
-      result_libs.append(pathtools.join(dname, 'libnacl_sys_private.a'))
-      result_libs.append(l)
-    elif base == 'libpthread.a':
-      Log.Info('Not using IRT -- swapping private lib for libpthread')
-      result_libs.append(pathtools.join(dname, 'libpthread_private.a'))
-    elif base == 'libnacl_dyncode.a':
-      Log.Info('Not using IRT -- swapping private lib for libnacl_dyncode')
-      result_libs.append(pathtools.join(dname, 'libnacl_dyncode_private.a'))
-    else:
-      result_libs.append(l)
-  return result_libs
-
 def FixPrivateLibs(user_libs):
-  """ Private libraries are special: all libraries that have an equivalent
-  private version should be swapped for their private equivalent,
-  except for the ones that can coexist. Private/non-private coexist by
-  following each other in link order, the non-private one fulfills any
-  lookups the private one fails to implement.
+  """If not using the IRT or if private libraries are used:
+    - Place private libraries that can coexist before their public
+      equivalent (keep both);
+    - Replace public libraries that can't coexist with their private
+      equivalent.
+
+  This occurs before path resolution (important because public/private
+  libraries aren't always colocated) and assumes that -l:libfoo.a syntax
+  isn't used by the driver for relevant libraries.
   """
   special_libs = {
-      # Private library name: (public library name, can coexist?)
-      'libnacl_sys_private.a': ('libnacl.a', True),
-      'libpthread_private.a': ('libpthread.a', False),
-      'libnacl_dyncode_private.a': ('libnacl_dyncode.a', False),
+      # Public library name: (private library name, can coexist?)
+      '-lnacl': ('-lnacl_sys_private', True),
+      '-lpthread': ('-lpthread_private', False),
       }
+  private_libs = [v[0] for v in special_libs.values()]
+  public_libs = special_libs.keys()
+  private_lib_for = lambda user_lib: special_libs[user_lib][0]
+  can_coexist = lambda user_lib: special_libs[user_lib][1]
 
-  # The following code uses a zipped view of (base name, full path) as
-  # well as the unzipped bases and paths.
-  user_libs = [(pathtools.basename(lib_path), lib_path)
-               for lib_path in user_libs]
-  bases_for = lambda libs: zip(*libs)[0]
-  paths_for = lambda libs: zip(*libs)[1]
+  no_irt = not env.getbool('USE_IRT')
+  uses_private_libs = set(user_libs) & set(private_libs)
 
-  # Swap in the private library's base name instead of the public one's
-  # but keep the same path.
-  full_priv_path = (lambda full_pub_path, priv:
-                      pathtools.join(pathtools.dirname(full_pub_path), priv))
+  if not (no_irt or uses_private_libs):
+    return user_libs
 
-  uses_special_libs = set(bases_for(user_libs)) & set(special_libs.keys())
-  # Broaden the set only if it's libnacl_sys_private.a.
-  if 'libnacl_sys_private.a' in uses_special_libs:
-    uses_special_libs = set(special_libs.keys())
-  if uses_special_libs:
-    for priv_lib, (pub_lib, can_coexist) in special_libs.iteritems():
-      # Skip private libs that were never requested.
-      if priv_lib not in uses_special_libs:
-        continue
-      if can_coexist:
-        bases = bases_for(user_libs)
-        if pub_lib in bases:
-          # The non-private library is present. Both can coexist, so insert
-          # the private library right before the non-private one.
-          first_lib_idx = bases.index(pub_lib)
-          replacement = (priv_lib, full_priv_path(user_libs[first_lib_idx][1],
-                                                  priv_lib))
-          user_libs.insert(first_lib_idx, replacement)
-      else:
-        # Replace all occurences of the non-private library with the
-        # private one.
-        user_libs = [(priv_lib, full_priv_path(p, priv_lib))
-                     if b == pub_lib else (b, p)
-                     for b, p in user_libs]
-  return list(paths_for(user_libs))
+  result_libs = []
+  for user_lib in user_libs:
+    if user_lib in public_libs:
+      result_libs.append(private_lib_for(user_lib))
+      if can_coexist(user_lib):
+        result_libs.append(user_lib)
+    else:
+      result_libs.append(user_lib)
+  return result_libs
 
 def SplitLinkLine(inputs):
   """ Split the input list into bitcode and native objects (.o, .a)

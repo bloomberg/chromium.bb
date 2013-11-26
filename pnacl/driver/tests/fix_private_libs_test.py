@@ -17,6 +17,7 @@ class TestFixPrivateLibs(driver_test_utils.DriverTesterCommon):
   def setUp(self):
     super(TestFixPrivateLibs, self).setUp()
     driver_test_utils.ApplyTestEnvOverrides(env)
+    env.set('USE_IRT', '1')
 
   def test_nop(self):
     """Test having no private libs at all -- nothing should happen.
@@ -29,8 +30,8 @@ class TestFixPrivateLibs(driver_test_utils.DriverTesterCommon):
                   'toolchain/pnacl_linux_x86/lib/crti.bc',
                   'foo.bc',
                   '--start-group',
-                  'scons-out/lib/libnacl.a',
-                  'toolchain/pnacl_linux_x86/usr/lib/libc.a',
+                  '-lnacl',
+                  '-lc',
                   '--end-group']
     expected_libs = list(input_libs)
     output_libs = pnacl_ld.FixPrivateLibs(input_libs)
@@ -42,48 +43,24 @@ class TestFixPrivateLibs(driver_test_utils.DriverTesterCommon):
     pthread_private should replace pthread. However we still keep the
     original instance of pthread_private where it is, which shouldn't hurt.
 
-    Also test that libnacl.a stays the same, if libnacl_sys_private.a was
-    never requested by the user. We can't pull in libnacl_sys_private.a
-    spuriously, because chrome never builds libnacl_sys_private.a w/ gyp.
+    Also test that nacl stays the same, if nacl_sys_private was never
+    requested by the user. We can't pull in nacl_sys_private spuriously,
+    because chrome never builds nacl_sys_private w/ gyp.
     """
     input_libs = ['foo.bc',
-                  'scons-out/lib1/libpthread_private.a',
+                  '-lpthread_private',
                   '--start-group',
-                  'scons-out/lib1/libpthread.a',
-                  'scons-out/lib2/libnacl.a',
-                  'toolchain/pnacl_linux_x86/usr/lib/libc.a',
+                  '-lpthread',
+                  '-lnacl',
+                  '-lc',
                   '--end-group']
     expected_libs = ['foo.bc',
-                     'scons-out/lib1/libpthread_private.a',
+                     '-lpthread_private',
                      '--start-group',
-                     'scons-out/lib1/libpthread_private.a',
-                     'scons-out/lib2/libnacl.a',
-                     'toolchain/pnacl_linux_x86/usr/lib/libc.a',
-                     '--end-group']
-    output_libs = pnacl_ld.FixPrivateLibs(input_libs)
-    self.assertEqual(expected_libs, output_libs)
-
-  def test_dyncode_no_nacl_no_pthread(self):
-    """Test having dyncode_private but not pthread_private or nacl_sys_private.
-
-    Similar to pthread_no_nacl, but dyncode isn't a special library
-    like libc or libpthread. Also, a chrome test uses dyncode_private,
-    but not nacl_sys_private and not pthread_private, so don't accidentally
-    pull those two in.
-    """
-    input_libs = ['foo.bc',
-                  'scons-out/lib1/libnacl_dyncode_private.a',
-                  '--start-group',
-                  'scons-out/lib2/libpthread.a',
-                  'scons-out/lib3/libnacl.a',
-                  'toolchain/pnacl_linux_x86/usr/lib/libc.a',
-                  '--end-group']
-    expected_libs = ['foo.bc',
-                     'scons-out/lib1/libnacl_dyncode_private.a',
-                     '--start-group',
-                     'scons-out/lib2/libpthread.a',
-                     'scons-out/lib3/libnacl.a',
-                     'toolchain/pnacl_linux_x86/usr/lib/libc.a',
+                     '-lpthread_private',
+                     '-lnacl_sys_private',
+                     '-lnacl',
+                     '-lc',
                      '--end-group']
     output_libs = pnacl_ld.FixPrivateLibs(input_libs)
     self.assertEqual(expected_libs, output_libs)
@@ -91,77 +68,78 @@ class TestFixPrivateLibs(driver_test_utils.DriverTesterCommon):
   def test_nacl_private_no_pthread(self):
     """Test having nacl_sys_private but not pthread_private.
 
-    Since libpthread is added as an implicit lib for libc++, for non-IRT
-    programs we need to swap pthread with pthread_private even if it wasn't
-    explicitly asked for. Otherwise libpthread will try to query the IRT
-    and crash. Use nacl_sys_private as the signal for non-IRT programs.
+    Since pthread is added as an implicit lib for libc++, for non-IRT
+    programs we need to swap pthread with pthread_private even if it
+    wasn't explicitly asked for. Otherwise pthread will try to query the
+    IRT and crash. Use nacl_sys_private as the signal for non-IRT
+    programs.
     """
     input_libs = ['foo.bc',
-                  'scons-out/lib1/libnacl_sys_private.a',
+                  '-lnacl_sys_private',
                   '--start-group',
-                  'scons-out/lib2/libpthread.a',
-                  'scons-out/lib1/libnacl.a',
-                  'toolchain/pnacl_linux_x86/usr/lib/libc.a',
+                  '-lpthread',
+                  '-lnacl',
+                  '-lc',
                   '--end-group']
     expected_libs = ['foo.bc',
-                     'scons-out/lib1/libnacl_sys_private.a',
+                     '-lnacl_sys_private',
                      '--start-group',
-                     'scons-out/lib2/libpthread_private.a',
-                     'scons-out/lib1/libnacl_sys_private.a',
-                     'scons-out/lib1/libnacl.a',
-                     'toolchain/pnacl_linux_x86/usr/lib/libc.a',
+                     '-lpthread_private',
+                     '-lnacl_sys_private',
+                     '-lnacl',
+                     '-lc',
                      '--end-group']
     output_libs = pnacl_ld.FixPrivateLibs(input_libs)
     self.assertEqual(expected_libs, output_libs)
 
 
   def test_pthread_and_nacl_1(self):
-    """Test having both libnacl_sys_private and libpthread_private #1.
+    """Test having both nacl_sys_private and pthread_private #1.
 
-    In this case, yes we should touch libnacl_sys_private.
+    In this case, yes we should touch nacl_sys_private.
     """
     input_libs = ['foo.bc',
-                  'scons-out/lib1/libnacl_sys_private.a',
-                  'scons-out/lib2/libpthread_private.a',
+                  '-lnacl_sys_private',
+                  '-lpthread_private',
                   '--start-group',
-                  'scons-out/lib2/libpthread.a',
-                  'scons-out/lib1/libnacl.a',
-                  'toolchain/pnacl_linux_x86/usr/lib/libc.a',
+                  '-lpthread',
+                  '-lnacl',
+                  '-lc',
                   '--end-group']
     expected_libs = ['foo.bc',
-                     'scons-out/lib1/libnacl_sys_private.a',
-                     'scons-out/lib2/libpthread_private.a',
+                     '-lnacl_sys_private',
+                     '-lpthread_private',
                      '--start-group',
-                     'scons-out/lib2/libpthread_private.a',
-                     'scons-out/lib1/libnacl_sys_private.a',
-                     'scons-out/lib1/libnacl.a',
-                     'toolchain/pnacl_linux_x86/usr/lib/libc.a',
+                     '-lpthread_private',
+                     '-lnacl_sys_private',
+                     '-lnacl',
+                     '-lc',
                      '--end-group']
     output_libs = pnacl_ld.FixPrivateLibs(input_libs)
     self.assertEqual(expected_libs, output_libs)
 
   def test_pthread_and_nacl_2(self):
-    """Test having both libnacl_sys_private and libpthread_private #2.
+    """Test having both nacl_sys_private and pthread_private #2.
 
     Try flipping the order of nacl and pthread to make sure the substitution
     still works.
     """
     input_libs = ['foo.bc',
-                  'scons-out/lib1/libpthread_private.a',
-                  'scons-out/lib2/libnacl_sys_private.a',
+                  '-lpthread_private',
+                  '-lnacl_sys_private',
                   '--start-group',
-                  'scons-out/lib2/libnacl.a',
-                  'scons-out/lib1/libpthread.a',
-                  'toolchain/pnacl_linux_x86/usr/lib/libc.a',
+                  '-lnacl',
+                  '-lpthread',
+                  '-lc',
                   '--end-group']
     expected_libs = ['foo.bc',
-                     'scons-out/lib1/libpthread_private.a',
-                     'scons-out/lib2/libnacl_sys_private.a',
+                     '-lpthread_private',
+                     '-lnacl_sys_private',
                      '--start-group',
-                     'scons-out/lib2/libnacl_sys_private.a',
-                     'scons-out/lib2/libnacl.a',
-                     'scons-out/lib1/libpthread_private.a',
-                     'toolchain/pnacl_linux_x86/usr/lib/libc.a',
+                     '-lnacl_sys_private',
+                     '-lnacl',
+                     '-lpthread_private',
+                     '-lc',
                      '--end-group']
     output_libs = pnacl_ld.FixPrivateLibs(input_libs)
     self.assertEqual(expected_libs, output_libs)
