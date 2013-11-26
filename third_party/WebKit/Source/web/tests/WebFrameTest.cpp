@@ -4443,6 +4443,38 @@ TEST_F(WebFrameTest, DidAccessInitialDocumentBodyBeforeModalDialog)
     EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);
 }
 
+TEST_F(WebFrameTest, DidWriteToInitialDocumentBeforeModalDialog)
+{
+    TestAccessInitialDocumentWebFrameClient webFrameClient;
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initialize(true, &webFrameClient);
+    runPendingTasks();
+    EXPECT_FALSE(webFrameClient.m_didAccessInitialDocument);
+
+    // Create another window that will try to access it.
+    FrameTestHelpers::WebViewHelper newWebViewHelper;
+    WebView* newView = newWebViewHelper.initialize(true);
+    newView->mainFrame()->setOpener(webViewHelper.webView()->mainFrame());
+    runPendingTasks();
+    EXPECT_FALSE(webFrameClient.m_didAccessInitialDocument);
+
+    // Access the initial document with document.write, which moves us past the
+    // initial empty document state of the state machine. We normally set a
+    // timer to notify the client.
+    newView->mainFrame()->executeScript(
+        WebScriptSource("window.opener.document.write('Modified');"));
+    EXPECT_FALSE(webFrameClient.m_didAccessInitialDocument);
+
+    // Make sure that a modal dialog forces us to notify right away.
+    newView->mainFrame()->executeScript(
+        WebScriptSource("window.opener.confirm('Modal');"));
+    EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);
+
+    // Ensure that we don't notify again later.
+    runPendingTasks();
+    EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);
+}
+
 class TestMainFrameUserOrProgrammaticScrollFrameClient : public WebFrameClient {
 public:
     TestMainFrameUserOrProgrammaticScrollFrameClient() { reset(); }
