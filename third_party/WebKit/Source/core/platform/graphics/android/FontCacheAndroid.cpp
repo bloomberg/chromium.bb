@@ -73,7 +73,7 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
     AtomicString familyName = getFamilyNameForCharacter(c, font.fontDescription().script());
     if (familyName.isEmpty())
         return 0;
-    return getFontResourceData(getFontResourcePlatformData(font.fontDescription(), familyName, DoNotRetain), DoNotRetain);
+    return getFontResourceData(getFontResourcePlatformData(font.fontDescription(), familyName), DoNotRetain);
 }
 
 // static

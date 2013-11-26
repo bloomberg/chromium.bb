@@ -262,7 +262,7 @@ bool CSSFontFaceSource::isLocalFontAvailable(const FontDescription& fontDescript
 {
     if (!isLocal())
         return false;
-    return fontCache()->isPlatformFontAvailable(fontDescription, m_string, true);
+    return fontCache()->isPlatformFontAvailable(fontDescription, m_string);
 }
 
 void CSSFontFaceSource::willUseFontData()

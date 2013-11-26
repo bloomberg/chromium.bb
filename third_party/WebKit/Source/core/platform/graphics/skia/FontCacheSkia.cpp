@@ -78,7 +78,7 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
         description.setItalic(FontItalicOff);
     }
 
-    FontPlatformData* substitutePlatformData = getFontResourcePlatformData(description, atomicFamily, DoNotRetain);
+    FontPlatformData* substitutePlatformData = getFontResourcePlatformData(description, atomicFamily);
     if (!substitutePlatformData)
         return 0;
     FontPlatformData platformData = FontPlatformData(*substitutePlatformData);

@@ -70,6 +70,16 @@ typedef HashMap<FontCacheKey, OwnPtr<FontPlatformData>, FontCacheKeyHash, FontCa
 
 static FontPlatformDataCache* gFontPlatformDataCache = 0;
 
+FontPlatformData* FontCache::addFontResourcePlatformData(const FontDescription& fontDescription, const AtomicString& family)
+{
+    FontCacheKey key = fontDescription.cacheKey(family);
+    key.setSynthetic(fontDescription.isSyntheticBold(), fontDescription.isSyntheticItalic());
+    OwnPtr<FontPlatformData>& result = gFontPlatformDataCache->add(key, nullptr).iterator->value;
+    if (!result)
+        result = adoptPtr(createFontPlatformData(fontDescription, family, fontDescription.effectiveFontSize()));
+    return result.get();
+}
+
 FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& fontDescription,
     const AtomicString& passedFamilyName, bool checkingAlternateName)
 {
@@ -88,28 +98,20 @@ FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& 
         platformInit();
     }
 
-    FontCacheKey key = fontDescription.cacheKey(familyName);
-    key.setSynthetic(fontDescription.isSyntheticBold(), fontDescription.isSyntheticItalic());
-    FontPlatformData* result = 0;
-    bool foundResult;
-    FontPlatformDataCache::iterator it = gFontPlatformDataCache->find(key);
-    if (it == gFontPlatformDataCache->end()) {
-        result = createFontPlatformData(fontDescription, familyName, fontDescription.effectiveFontSize());
-        gFontPlatformDataCache->set(key, adoptPtr(result));
-        foundResult = result;
-    } else {
-        result = it->value.get();
-        foundResult = true;
-    }
+    FontPlatformData* result = addFontResourcePlatformData(fontDescription, familyName);
+    if (result || checkingAlternateName)
+        return result;
 
-    if (!foundResult && !checkingAlternateName) {
-        // We were unable to find a font. We have a small set of fonts that we alias to other names,
-        // e.g., Arial/Helvetica, Courier/Courier New, etc. Try looking up the font under the aliased name.
-        const AtomicString& alternateName = alternateFamilyName(familyName);
-        if (!alternateName.isEmpty())
-            result = getFontResourcePlatformData(fontDescription, alternateName, true);
-        if (result)
-            gFontPlatformDataCache->set(key, adoptPtr(new FontPlatformData(*result))); // Cache the result under the old name.
+    // We were unable to find a font. We have a small set of fonts that we alias to other names,
+    // e.g., Arial/Helvetica, Courier/Courier New, etc. Try looking up the font under the aliased name.
+    const AtomicString& alternateName = alternateFamilyName(familyName);
+    if (!alternateName.isEmpty()) {
+        if (FontPlatformData* alternateFontPlatformData = addFontResourcePlatformData(fontDescription, alternateName)) {
+            FontCacheKey key = fontDescription.cacheKey(familyName);
+            key.setSynthetic(fontDescription.isSyntheticBold(), fontDescription.isSyntheticItalic());
+            result = new FontPlatformData(*alternateFontPlatformData);
+            gFontPlatformDataCache->set(key, adoptPtr(result));
+        }
     }
 
     return result;
@@ -186,18 +188,10 @@ static ListHashSet<RefPtr<SimpleFontData> >* gInactiveFontData = 0;
 
 PassRefPtr<SimpleFontData> FontCache::getFontResourceData(const FontDescription& fontDescription, const AtomicString& family, bool checkingAlternateName, ShouldRetain shouldRetain)
 {
-    FontPlatformData* platformData;
+    if (FontPlatformData* platformData = getFontResourcePlatformData(fontDescription, adjustFamilyNameToAvoidUnsupportedFonts(family), checkingAlternateName))
+        return getFontResourceData(platformData, shouldRetain);
 
-    const AtomicString& preferedAlternateName = alternateFamilyNameAvoidingBitmapFonts(family);
-    if (!preferedAlternateName.isEmpty())
-        platformData = getFontResourcePlatformData(fontDescription, preferedAlternateName, checkingAlternateName);
-    else
-        platformData = getFontResourcePlatformData(fontDescription, family, checkingAlternateName);
-
-    if (!platformData)
-        return 0;
-
-    return getFontResourceData(platformData, shouldRetain);
+    return 0;
 }
 
 PassRefPtr<SimpleFontData> FontCache::getFontResourceData(const FontPlatformData* platformData, ShouldRetain shouldRetain)
@@ -240,8 +234,9 @@ PassRefPtr<SimpleFontData> FontCache::getFontResourceData(const FontPlatformData
     return result.get()->value.first;
 }
 
-bool FontCache::isPlatformFontAvailable(const FontDescription& fontDescription, const AtomicString& family, bool checkingAlternateName)
+bool FontCache::isPlatformFontAvailable(const FontDescription& fontDescription, const AtomicString& family)
 {
+    bool checkingAlternateName = true;
     return getFontResourcePlatformData(fontDescription, family, checkingAlternateName);
 }
 

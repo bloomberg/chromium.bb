@@ -82,7 +82,7 @@ public:
     PassRefPtr<SimpleFontData> getFontResourceData(const FontDescription&, const AtomicString&, bool checkingAlternateName = false, ShouldRetain = Retain);
     PassRefPtr<SimpleFontData> getLastResortFallbackFont(const FontDescription&, ShouldRetain = Retain);
     SimpleFontData* getNonRetainedLastResortFallbackFont(const FontDescription&);
-    bool isPlatformFontAvailable(const FontDescription&, const AtomicString&, bool checkingAlternateName = false);
+    bool isPlatformFontAvailable(const FontDescription&, const AtomicString&);
 
     void addClient(FontSelector*);
     void removeClient(FontSelector*);
@@ -127,6 +127,7 @@ private:
 
     // FIXME: This method should eventually be removed.
     FontPlatformData* getFontResourcePlatformData(const FontDescription&, const AtomicString& family, bool checkingAlternateName = false);
+    FontPlatformData* addFontResourcePlatformData(const FontDescription&, const AtomicString& family);
 
     // These methods are implemented by each platform.
     FontPlatformData* createFontPlatformData(const FontDescription&, const AtomicString& family, float fontSize);
