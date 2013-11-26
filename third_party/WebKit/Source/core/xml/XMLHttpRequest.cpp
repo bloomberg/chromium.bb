@@ -441,9 +441,9 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
     InspectorInstrumentation::didDispatchXHRReadyStateChangeEvent(cookie);
     if (m_state == DONE && !m_error) {
         InspectorInstrumentationCookie cookie = InspectorInstrumentation::willDispatchXHRLoadEvent(executionContext(), this);
-        m_progressEventThrottle.dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::load));
+        dispatchThrottledProgressEventSnapshot(EventTypeNames::load);
         InspectorInstrumentation::didDispatchXHRLoadEvent(cookie);
-        m_progressEventThrottle.dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::loadend));
+        dispatchThrottledProgressEventSnapshot(EventTypeNames::loadend);
     }
 }
 
@@ -856,6 +856,10 @@ void XMLHttpRequest::abort()
 
     bool sendFlag = m_loader;
 
+    // Response is cleared next, save needed progress event data.
+    long long expectedLength = m_response.expectedContentLength();
+    long long receivedLength = m_receivedLength;
+
     if (!internalAbort())
         return;
 
@@ -866,7 +870,7 @@ void XMLHttpRequest::abort()
 
     if (!((m_state <= OPENED && !sendFlag) || m_state == DONE)) {
         ASSERT(!m_loader);
-        handleRequestError(0, EventTypeNames::abort);
+        handleRequestError(0, EventTypeNames::abort, receivedLength, expectedLength);
     }
     m_state = UNSENT;
 }
@@ -958,31 +962,42 @@ void XMLHttpRequest::handleDidFailGeneric()
     m_error = true;
 }
 
-void XMLHttpRequest::dispatchEventAndLoadEnd(const AtomicString& type)
+void XMLHttpRequest::dispatchEventAndLoadEnd(const AtomicString& type, long long receivedLength, long long expectedLength)
 {
-    if (!m_uploadComplete) {
-        m_uploadComplete = true;
-        if (m_upload && m_uploadEventsAllowed)
-            m_upload->dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(type));
-    }
-    m_progressEventThrottle.dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(type));
+    bool lengthComputable = expectedLength > 0 && receivedLength <= expectedLength;
+    unsigned long long loaded = receivedLength >= 0 ? static_cast<unsigned long long>(receivedLength) : 0;
+    unsigned long long total = lengthComputable ? static_cast<unsigned long long>(expectedLength) : 0;
+
+    m_progressEventThrottle.dispatchEventAndLoadEnd(type, lengthComputable, loaded, total);
 }
 
-void XMLHttpRequest::dispatchThrottledProgressEvent()
+void XMLHttpRequest::dispatchThrottledProgressEvent(const AtomicString& type, long long receivedLength, long long expectedLength)
 {
-    long long expectedLength = m_response.expectedContentLength();
-    bool lengthComputable = expectedLength > 0 && m_receivedLength <= expectedLength;
-    unsigned long long total = lengthComputable ? expectedLength : 0;
+    bool lengthComputable = expectedLength > 0 && receivedLength <= expectedLength;
+    unsigned long long loaded = receivedLength >= 0 ? static_cast<unsigned long long>(receivedLength) : 0;
+    unsigned long long total = lengthComputable ? static_cast<unsigned long long>(expectedLength) : 0;
 
-    m_progressEventThrottle.dispatchProgressEvent(lengthComputable, m_receivedLength, total);
+    if (type == EventTypeNames::progress)
+        m_progressEventThrottle.dispatchProgressEvent(lengthComputable, loaded, total);
+    else
+        m_progressEventThrottle.dispatchEvent(XMLHttpRequestProgressEvent::create(type, lengthComputable, loaded, total));
+}
+
+void XMLHttpRequest::dispatchThrottledProgressEventSnapshot(const AtomicString& type)
+{
+    return dispatchThrottledProgressEvent(type, m_receivedLength, m_response.expectedContentLength());
 }
 
 void XMLHttpRequest::handleNetworkError()
 {
     LOG(Network, "XMLHttpRequest %p handleNetworkError()", this);
 
+    // Response is cleared next, save needed progress event data.
+    long long expectedLength = m_response.expectedContentLength();
+    long long receivedLength = m_receivedLength;
+
     handleDidFailGeneric();
-    handleRequestError(NetworkError, EventTypeNames::error);
+    handleRequestError(NetworkError, EventTypeNames::error, receivedLength, expectedLength);
     internalAbort();
 }
 
@@ -990,11 +1005,15 @@ void XMLHttpRequest::handleDidCancel()
 {
     LOG(Network, "XMLHttpRequest %p handleDidCancel()", this);
 
+    // Response is cleared next, save needed progress event data.
+    long long expectedLength = m_response.expectedContentLength();
+    long long receivedLength = m_receivedLength;
+
     handleDidFailGeneric();
-    handleRequestError(AbortError, EventTypeNames::abort);
+    handleRequestError(AbortError, EventTypeNames::abort, receivedLength, expectedLength);
 }
 
-void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode, const AtomicString& type)
+void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode, const AtomicString& type, long long receivedLength, long long expectedLength)
 {
     LOG(Network, "XMLHttpRequest %p handleRequestError()", this);
 
@@ -1018,8 +1037,8 @@ void XMLHttpRequest::handleRequestError(ExceptionCode exceptionCode, const Atomi
             m_upload->handleRequestError(type);
     }
 
-    dispatchThrottledProgressEvent();
-    m_progressEventThrottle.dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(type));
+    dispatchThrottledProgressEvent(EventTypeNames::progress, receivedLength, expectedLength);
+    dispatchEventAndLoadEnd(type, receivedLength, expectedLength);
 }
 
 void XMLHttpRequest::dropProtectionSoon()
@@ -1219,8 +1238,6 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
     if (m_decoder)
         m_responseText = m_responseText.concatenateWith(m_decoder->flush());
 
-    clearVariablesForLoading();
-
     if (m_responseStream)
         m_responseStream->finalize();
 
@@ -1235,6 +1252,8 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
     }
 
     changeState(DONE);
+
+    clearVariablesForLoading();
 }
 
 void XMLHttpRequest::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
@@ -1250,7 +1269,7 @@ void XMLHttpRequest::didSendData(unsigned long long bytesSent, unsigned long lon
     if (bytesSent == totalBytesToBeSent && !m_uploadComplete) {
         m_uploadComplete = true;
         if (m_uploadEventsAllowed)
-            m_upload->dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(EventTypeNames::load));
+            m_upload->dispatchEventAndLoadEnd(EventTypeNames::load, true, bytesSent, totalBytesToBeSent);
     }
 }
 
@@ -1321,7 +1340,7 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
     m_receivedLength += len;
 
     if (m_async)
-        dispatchThrottledProgressEvent();
+        dispatchThrottledProgressEventSnapshot(EventTypeNames::progress);
 
     if (m_state != LOADING) {
         changeState(LOADING);
@@ -1342,11 +1361,15 @@ void XMLHttpRequest::handleDidTimeout()
     // internalAbort() calls dropProtection(), which may release the last reference.
     RefPtr<XMLHttpRequest> protect(this);
 
+    // Response is cleared next, save needed progress event data.
+    long long expectedLength = m_response.expectedContentLength();
+    long long receivedLength = m_receivedLength;
+
     if (!internalAbort())
         return;
 
     handleDidFailGeneric();
-    handleRequestError(TimeoutError, EventTypeNames::timeout);
+    handleRequestError(TimeoutError, EventTypeNames::timeout, receivedLength, expectedLength);
 }
 
 void XMLHttpRequest::suspend()

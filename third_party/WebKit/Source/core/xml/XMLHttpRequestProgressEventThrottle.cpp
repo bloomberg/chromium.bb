@@ -98,12 +98,12 @@ void XMLHttpRequestProgressEventThrottle::dispatchEvent(PassRefPtr<Event> event)
         m_target->dispatchEvent(event);
 }
 
-void XMLHttpRequestProgressEventThrottle::dispatchEventAndLoadEnd(PassRefPtr<Event> event)
+void XMLHttpRequestProgressEventThrottle::dispatchEventAndLoadEnd(const AtomicString& type, bool lengthComputable, unsigned long long bytesSent, unsigned long long total)
 {
-    ASSERT(event->type() == EventTypeNames::load || event->type() == EventTypeNames::abort || event->type() == EventTypeNames::error || event->type() == EventTypeNames::timeout);
+    ASSERT(type == EventTypeNames::load || type == EventTypeNames::abort || type == EventTypeNames::error || type == EventTypeNames::timeout);
 
-    dispatchEvent(event);
-    dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::loadend));
+    dispatchEvent(XMLHttpRequestProgressEvent::create(type, lengthComputable, bytesSent, total));
+    dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::loadend, lengthComputable, bytesSent, total));
 }
 
 bool XMLHttpRequestProgressEventThrottle::flushDeferredProgressEvent()

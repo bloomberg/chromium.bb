@@ -30,6 +30,7 @@
 #include "platform/Timer.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/Vector.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 
@@ -52,7 +53,7 @@ public:
     void dispatchProgressEvent(bool lengthComputable, unsigned long long loaded, unsigned long long total);
     void dispatchReadyStateChangeEvent(PassRefPtr<Event>, ProgressEventAction = DoNotFlushProgressEvent);
     void dispatchEvent(PassRefPtr<Event>);
-    void dispatchEventAndLoadEnd(PassRefPtr<Event>);
+    void dispatchEventAndLoadEnd(const AtomicString&, bool, unsigned long long, unsigned long long);
 
     void suspend();
     void resume();

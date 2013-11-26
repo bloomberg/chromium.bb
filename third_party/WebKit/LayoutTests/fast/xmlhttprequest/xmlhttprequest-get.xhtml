@@ -44,6 +44,10 @@ if (window.testRunner) {
   testRunner.waitUntilDone();
 }
 
+// Some properties do not have stable/guaranteed values;
+// emit default values for these.
+var propertiesWithDefaultValues = {loaded: 0, total: 0, position: 0, totalSize: 0};
+
 function myfunc(e)
 {
   document.getElementById("id1").firstChild.nodeValue = p.responseText;
@@ -67,10 +71,11 @@ function myfunc(e)
   var eventProperties = "";
   for (i in propNames) {
         var prop = propNames[i];
-        eventProperties += prop + " : '" + e[prop] + "'\n";
+        var value = (prop in propertiesWithDefaultValues) ? propertiesWithDefaultValues[prop] : e[prop];
+        eventProperties += prop + " : '" + value + "'\n";
   }
-  
-  document.getElementById("id7").firstChild.nodeValue = 
+
+  document.getElementById("id7").firstChild.nodeValue =
     "Event object: " + e + "\n" +
     "Event properties:\n" + eventProperties;
 

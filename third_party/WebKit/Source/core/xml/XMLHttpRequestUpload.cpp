@@ -60,18 +60,18 @@ void XMLHttpRequestUpload::dispatchProgressEvent(unsigned long long bytesSent, u
     dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::progress, true, bytesSent, totalBytesToBeSent));
 }
 
-void XMLHttpRequestUpload::dispatchEventAndLoadEnd(PassRefPtr<Event> event)
+void XMLHttpRequestUpload::dispatchEventAndLoadEnd(const AtomicString& type, bool lengthComputable, unsigned long long bytesSent, unsigned long long total)
 {
-    ASSERT(event->type() == EventTypeNames::load || event->type() == EventTypeNames::abort || event->type() == EventTypeNames::error || event->type() == EventTypeNames::timeout);
-
-    dispatchEvent(event);
-    dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::loadend));
+    ASSERT(type == EventTypeNames::load || type == EventTypeNames::abort || type == EventTypeNames::error || type == EventTypeNames::timeout);
+    dispatchEvent(XMLHttpRequestProgressEvent::create(type, lengthComputable, bytesSent, total));
+    dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::loadend, lengthComputable, bytesSent, total));
 }
 
 void XMLHttpRequestUpload::handleRequestError(const AtomicString& type)
 {
-    dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::progress, true, m_lastBytesSent, m_lastTotalBytesToBeSent));
-    dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(type));
+    bool lengthComputable = m_lastTotalBytesToBeSent > 0 && m_lastBytesSent <= m_lastTotalBytesToBeSent;
+    dispatchEvent(XMLHttpRequestProgressEvent::create(EventTypeNames::progress, lengthComputable, m_lastBytesSent, m_lastTotalBytesToBeSent));
+    dispatchEventAndLoadEnd(type, lengthComputable, m_lastBytesSent, m_lastTotalBytesToBeSent);
 }
 
 } // namespace WebCore

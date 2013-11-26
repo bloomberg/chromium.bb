@@ -58,10 +58,10 @@ public:
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
-    void dispatchEventAndLoadEnd(PassRefPtr<Event>);
-    void dispatchProgressEvent(unsigned long long bytesSent, unsigned long long totalBytesToBeSent);
+    void dispatchEventAndLoadEnd(const AtomicString&, bool, unsigned long long, unsigned long long);
+    void dispatchProgressEvent(unsigned long long, unsigned long long);
 
-    void handleRequestError(const AtomicString& type);
+    void handleRequestError(const AtomicString&);
 
 private:
     explicit XMLHttpRequestUpload(XMLHttpRequest*);

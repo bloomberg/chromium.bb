@@ -1,0 +1,5 @@
+Verify that a load ProgressEvent is dispatched and have the expected values.
+
+
+PASS Check that 'load' events are delivered and have expected values. 
+
