@@ -78,6 +78,7 @@ clients_programs =				\
 	weston-fullscreen			\
 	weston-stacking				\
 	weston-calibrator			\
+	weston-scaler				\
 	$(subsurfaces)				\
 	$(full_gl_client_programs)		\
 	$(cairo_glesv2_programs)
@@ -93,6 +94,8 @@ libtoytoolkit_la_SOURCES =			\
 	window.h				\
 	text-cursor-position-protocol.c		\
 	text-cursor-position-client-protocol.h	\
+	scaler-protocol.c			\
+	scaler-client-protocol.h		\
 	workspaces-protocol.c			\
 	workspaces-client-protocol.h
 
@@ -130,6 +133,9 @@ weston_smoke_LDADD = libtoytoolkit.la
 
 weston_resizor_SOURCES = resizor.c
 weston_resizor_LDADD = libtoytoolkit.la
+
+weston_scaler_SOURCES = scaler.c
+weston_scaler_LDADD = libtoytoolkit.la
 
 if HAVE_CAIRO_GLESV2
 cairo_glesv2_programs = weston-nested weston-nested-client
@@ -216,6 +222,8 @@ BUILT_SOURCES =					\
 	input-method-client-protocol.h		\
 	desktop-shell-client-protocol.h		\
 	desktop-shell-protocol.c		\
+	scaler-client-protocol.h		\
+	scaler-protocol.c			\
 	workspaces-client-protocol.h		\
 	workspaces-protocol.c
 
