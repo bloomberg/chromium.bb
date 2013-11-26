@@ -583,6 +583,9 @@ const char kEnableDeviceDiscoveryNotifications[] =
 // Enables the DOM distiller.
 const char kEnableDomDistiller[]               = "enable-dom-distiller";
 
+// Enable Enhanced Bookmarks.
+const char kEnableEnhancedBookmarks[] = "enable-enhanced-bookmarks";
+
 // Enables experimentation with ephemeral apps, which are launched without
 // installing in Chrome.
 const char kEnableEphemeralApps[]           = "enable-ephemeral-apps";

@@ -22,6 +22,8 @@ class ExternalComponentLoader : public ExternalLoader {
  public:
   ExternalComponentLoader();
 
+  static bool IsEnhancedBookmarksExperimentEnabled();
+
  protected:
   virtual void StartLoading() OVERRIDE;
 

@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "cc/base/switches.h"
+#include "chrome/browser/extensions/external_component_loader.h"
 #include "chrome/browser/flags_storage.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
@@ -1831,6 +1832,14 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kEnableAppsShowOnFirstPaint)
   },
+  {
+    "enable-enhanced-bookmarks",
+    IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_NAME,
+    IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_DESCRIPTION,
+    kOsDesktop,
+    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(switches::kEnableEnhancedBookmarks, "1",
+                                        switches::kEnableEnhancedBookmarks, "0")
+  },
 };
 
 const Experiment* experiments = kExperiments;
@@ -1932,6 +1941,15 @@ void GetSanitizedEnabledFlags(
   SanitizeList(flags_storage);
   *result = flags_storage->GetFlags();
 }
+
+bool SkipConditionalExperiment(const Experiment& experiment) {
+  if (experiment.internal_name == std::string("enable-enhanced-bookmarks")) {
+    return !extensions::ExternalComponentLoader::
+        IsEnhancedBookmarksExperimentEnabled();
+  }
+  return false;
+}
+
 
 // Variant of GetSanitizedEnabledFlags that also removes any flags that aren't
 // enabled on the current platform.
@@ -2040,6 +2058,8 @@ void GetFlagsExperimentsData(FlagsStorage* flags_storage,
 
   for (size_t i = 0; i < num_experiments; ++i) {
     const Experiment& experiment = experiments[i];
+    if (SkipConditionalExperiment(experiment))
+      continue;
 
     DictionaryValue* data = new DictionaryValue();
     data->SetString("internal_name", experiment.internal_name);

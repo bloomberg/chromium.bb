@@ -6979,6 +6979,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_APPS_SHOW_ON_FIRST_PAINT_DESCRIPTION" desc="Description of flag to enable show-on-first-paint for apps.">
         Show apps windows after the first paint. Windows will be shown significantly later for heavy apps loading resources synchronously but it will be insignificant for apps that load most of their resources asynchronously.
       </message>
+      <message name="IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_NAME" desc="Name of about:flags option to enable Enhanced Bookmarks extension.">
+        Enable Enhanced Bookmarks
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ENHANCED_BOOKMARKS_DESCRIPTION" desc="Description of about:flags option to enable Enhanced Bookmarks extension.">
+        Provides an off switch for enhanced bookmarks experiment
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
