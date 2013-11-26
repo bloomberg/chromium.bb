@@ -24,9 +24,8 @@ class IndexedDBTransactionCoordinator {
   ~IndexedDBTransactionCoordinator();
 
   // Called by transactions as they start and finish.
-  void DidCreateTransaction(IndexedDBTransaction* transaction);
-  void DidStartTransaction(IndexedDBTransaction* transaction);
-  void DidFinishTransaction(IndexedDBTransaction* transaction);
+  void DidCreateTransaction(scoped_refptr<IndexedDBTransaction> transaction);
+  void DidFinishTransaction(scoped_refptr<IndexedDBTransaction> transaction);
 
 #ifndef NDEBUG
   bool IsActive(IndexedDBTransaction* transaction);
@@ -36,19 +35,16 @@ class IndexedDBTransactionCoordinator {
   std::vector<const IndexedDBTransaction*> GetTransactions() const;
 
  private:
-  void ProcessStartedTransactions();
-  bool CanRunTransaction(IndexedDBTransaction* const transaction,
-                         const std::set<int64>& locked_scope) const;
-
-  // This is just an efficient way to keep references to all transactions.
-  std::map<IndexedDBTransaction*, scoped_refptr<IndexedDBTransaction> >
-      transactions_;
+  void ProcessQueuedTransactions();
+  bool CanStartTransaction(IndexedDBTransaction* const transaction,
+                           const std::set<int64>& locked_scope) const;
 
   // Transactions in different states are grouped below.
   // list_set is used to provide stable ordering; required by spec
   // for the queue, convenience for diagnostics for the rest.
-  list_set<IndexedDBTransaction*> queued_transactions_;
-  list_set<IndexedDBTransaction*> started_transactions_;
+  typedef list_set<scoped_refptr<IndexedDBTransaction> > TransactionSet;
+  TransactionSet queued_transactions_;
+  TransactionSet started_transactions_;
 };
 
 }  // namespace content

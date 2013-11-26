@@ -219,18 +219,18 @@ ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
 
           const char* kModes[] = { "readonly", "readwrite", "versionchange" };
           transaction_info->SetString("mode", kModes[transaction->mode()]);
-          switch (transaction->queue_status()) {
+          switch (transaction->state()) {
             case IndexedDBTransaction::CREATED:
-              transaction_info->SetString("status", "created");
-              break;
-            case IndexedDBTransaction::BLOCKED:
               transaction_info->SetString("status", "blocked");
               break;
-            case IndexedDBTransaction::UNBLOCKED:
-              if (transaction->IsRunning())
+            case IndexedDBTransaction::STARTED:
+              if (transaction->tasks_scheduled() > 0)
                 transaction_info->SetString("status", "running");
               else
                 transaction_info->SetString("status", "started");
+              break;
+            case IndexedDBTransaction::FINISHED:
+              transaction_info->SetString("status", "finished");
               break;
           }
 

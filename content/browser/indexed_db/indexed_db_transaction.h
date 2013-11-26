@@ -34,15 +34,17 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
 
   virtual void Abort();
   void Commit();
-
   void Abort(const IndexedDBDatabaseError& error);
-  void Run();
+
+  // Called by the transaction coordinator when this transaction is unblocked.
+  void Start();
+
   indexed_db::TransactionMode mode() const { return mode_; }
   const std::set<int64>& scope() const { return object_store_ids_; }
+
   void ScheduleTask(Operation task) {
     ScheduleTask(IndexedDBDatabase::NORMAL_TASK, task);
   }
-
   void ScheduleTask(Operation task, Operation abort_task);
   void ScheduleTask(IndexedDBDatabase::TaskType, Operation task);
   void RegisterOpenCursor(IndexedDBCursor* cursor);
@@ -59,17 +61,15 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
 
   IndexedDBDatabase* database() const { return database_; }
   IndexedDBDatabaseCallbacks* connection() const { return callbacks_; }
-  bool IsRunning() const { return state_ == RUNNING; }
 
-  // The following types/accessors are for diagnostics only.
-  enum QueueStatus {
-    CREATED,
-    BLOCKED,
-    UNBLOCKED,
+  enum State {
+    CREATED,   // Created, but not yet started by coordinator.
+    STARTED,   // Started by the coordinator.
+    FINISHED,  // Either aborted or committed.
   };
 
-  QueueStatus queue_status() const { return queue_status_; }
-  void set_queue_status(QueueStatus status) { queue_status_ = status; }
+  // These are for diagnostic purposes only.
+  State state() const { return state_; }
   base::Time creation_time() const { return creation_time_; }
   base::Time start_time() const { return start_time_; }
   int tasks_scheduled() const { return tasks_scheduled_; }
@@ -80,16 +80,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   friend class base::RefCounted<IndexedDBTransaction>;
 
  private:
-  enum State {
-    UNUSED,         // Created, but no tasks yet.
-    START_PENDING,  // Enqueued tasks, but backing store transaction not yet
-                    // started.
-    RUNNING,        // Backing store transaction started but not yet finished.
-    FINISHED,       // Either aborted or committed.
-  };
-
-  void EnsureTasksRunning();
-  void Start();
+  void RunTasksIfStarted();
 
   bool IsTaskQueueEmpty() const;
   bool HasPendingTasks() const;
@@ -101,6 +92,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   const std::set<int64> object_store_ids_;
   const indexed_db::TransactionMode mode_;
 
+  bool used_;
   State state_;
   bool commit_pending_;
   scoped_refptr<IndexedDBDatabaseCallbacks> callbacks_;
@@ -137,6 +129,7 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   TaskStack abort_task_stack_;
 
   IndexedDBBackingStore::Transaction transaction_;
+  bool backing_store_transaction_begun_;
 
   bool should_process_queue_;
   int pending_preemptive_events_;
@@ -144,7 +137,6 @@ class IndexedDBTransaction : public base::RefCounted<IndexedDBTransaction> {
   std::set<IndexedDBCursor*> open_cursors_;
 
   // The following members are for diagnostics only.
-  QueueStatus queue_status_;
   base::Time creation_time_;
   base::Time start_time_;
   int tasks_scheduled_;

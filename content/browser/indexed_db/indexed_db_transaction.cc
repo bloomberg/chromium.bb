@@ -57,14 +57,15 @@ IndexedDBTransaction::IndexedDBTransaction(
     : id_(id),
       object_store_ids_(object_store_ids),
       mode_(mode),
-      state_(UNUSED),
+      used_(false),
+      state_(CREATED),
       commit_pending_(false),
       callbacks_(callbacks),
       database_(database),
       transaction_(database->backing_store()),
+      backing_store_transaction_begun_(false),
       should_process_queue_(false),
       pending_preemptive_events_(0),
-      queue_status_(CREATED),
       creation_time_(base::Time::Now()),
       tasks_scheduled_(0),
       tasks_completed_(0) {
@@ -83,10 +84,12 @@ IndexedDBTransaction::~IndexedDBTransaction() {
 void IndexedDBTransaction::ScheduleTask(Operation task, Operation abort_task) {
   if (state_ == FINISHED)
     return;
+
+  used_ = true;
   task_queue_.push(task);
   ++tasks_scheduled_;
   abort_task_stack_.push(abort_task);
-  EnsureTasksRunning();
+  RunTasksIfStarted();
 }
 
 void IndexedDBTransaction::ScheduleTask(IndexedDBDatabase::TaskType type,
@@ -94,23 +97,30 @@ void IndexedDBTransaction::ScheduleTask(IndexedDBDatabase::TaskType type,
   if (state_ == FINISHED)
     return;
 
+  used_ = true;
   if (type == IndexedDBDatabase::NORMAL_TASK) {
     task_queue_.push(task);
     ++tasks_scheduled_;
   } else {
     preemptive_task_queue_.push(task);
   }
-  EnsureTasksRunning();
+  RunTasksIfStarted();
 }
 
-void IndexedDBTransaction::EnsureTasksRunning() {
-  if (state_ == UNUSED) {
-    Start();
-  } else if (state_ == RUNNING && !should_process_queue_) {
-    should_process_queue_ = true;
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(&IndexedDBTransaction::ProcessTaskQueue, this));
-  }
+void IndexedDBTransaction::RunTasksIfStarted() {
+  DCHECK(used_);
+
+  // Not started by the coordinator yet.
+  if (state_ != STARTED)
+    return;
+
+  // A task is already posted.
+  if (should_process_queue_)
+    return;
+
+  should_process_queue_ = true;
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&IndexedDBTransaction::ProcessTaskQueue, this));
 }
 
 void IndexedDBTransaction::Abort() {
@@ -123,8 +133,6 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   if (state_ == FINISHED)
     return;
 
-  bool was_running = state_ == RUNNING;
-
   // The last reference to this object may be released while performing the
   // abort steps below. We therefore take a self reference to keep ourselves
   // alive while executing this method.
@@ -133,7 +141,7 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   state_ = FINISHED;
   should_process_queue_ = false;
 
-  if (was_running)
+  if (backing_store_transaction_begun_)
     transaction_.Rollback();
 
   // Run the abort tasks, if any.
@@ -184,23 +192,17 @@ void IndexedDBTransaction::UnregisterOpenCursor(IndexedDBCursor* cursor) {
   open_cursors_.erase(cursor);
 }
 
-void IndexedDBTransaction::Run() {
-  // TransactionCoordinator has started this transaction.
-  DCHECK(state_ == START_PENDING || state_ == RUNNING);
-  DCHECK(!should_process_queue_);
-
-  start_time_ = base::Time::Now();
-  should_process_queue_ = true;
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(&IndexedDBTransaction::ProcessTaskQueue, this));
-}
-
 void IndexedDBTransaction::Start() {
-  DCHECK_EQ(state_, UNUSED);
-
-  state_ = START_PENDING;
-  database_->transaction_coordinator().DidStartTransaction(this);
+  // TransactionCoordinator has started this transaction.
+  DCHECK_EQ(CREATED, state_);
+  state_ = STARTED;
   database_->TransactionStarted(this);
+  start_time_ = base::Time::Now();
+
+  if (!used_)
+    return;
+
+  RunTasksIfStarted();
 }
 
 void IndexedDBTransaction::Commit() {
@@ -212,7 +214,7 @@ void IndexedDBTransaction::Commit() {
   if (state_ == FINISHED)
     return;
 
-  DCHECK(state_ == UNUSED || state_ == RUNNING);
+  DCHECK(!used_ || state_ == STARTED);
   commit_pending_ = true;
 
   // Front-end has requested a commit, but there may be tasks like
@@ -229,10 +231,9 @@ void IndexedDBTransaction::Commit() {
   // TODO(jsbell): Run abort tasks if commit fails? http://crbug.com/241843
   abort_task_stack_.clear();
 
-  bool unused = state_ == UNUSED;
   state_ = FINISHED;
 
-  bool committed = unused || transaction_.Commit();
+  bool committed = !used_ || transaction_.Commit();
 
   // Backing store resources (held via cursors) must be released
   // before script callbacks are fired, as the script callbacks may
@@ -272,9 +273,9 @@ void IndexedDBTransaction::ProcessTaskQueue() {
   DCHECK(!IsTaskQueueEmpty());
   should_process_queue_ = false;
 
-  if (state_ == START_PENDING) {
+  if (!backing_store_transaction_begun_) {
     transaction_.Begin();
-    state_ = RUNNING;
+    backing_store_transaction_begun_ = true;
   }
 
   // The last reference to this object may be released while performing the
@@ -285,7 +286,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
   TaskQueue* task_queue =
       pending_preemptive_events_ ? &preemptive_task_queue_ : &task_queue_;
   while (!task_queue->empty() && state_ != FINISHED) {
-    DCHECK_EQ(state_, RUNNING);
+    DCHECK_EQ(STARTED, state_);
     Operation task(task_queue->pop());
     task.Run(this);
     if (!pending_preemptive_events_) {
