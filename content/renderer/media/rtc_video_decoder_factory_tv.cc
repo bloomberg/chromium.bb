@@ -193,8 +193,9 @@ void RTCVideoDecoderFactoryTv::ReleaseDemuxer() {
   }
 }
 
-void RTCVideoDecoderFactoryTv::Initialize(media::DemuxerHost*,
-                                          const media::PipelineStatusCB& cb) {
+void RTCVideoDecoderFactoryTv::Initialize(media::DemuxerHost* /*host*/,
+                                          const media::PipelineStatusCB& cb,
+                                          bool /*enable_text_tracks*/) {
   base::AutoLock lock(lock_);
   init_cb_ = media::BindToLoop(base::MessageLoopProxy::current(), cb);
   if (stream_)

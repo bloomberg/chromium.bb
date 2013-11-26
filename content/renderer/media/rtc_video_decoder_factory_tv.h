@@ -47,7 +47,8 @@ class CONTENT_EXPORT RTCVideoDecoderFactoryTv
 
   // media::Demuxer implementation.
   virtual void Initialize(media::DemuxerHost* host,
-                          const media::PipelineStatusCB& cb) OVERRIDE;
+                          const media::PipelineStatusCB& cb,
+                          bool enable_text_tracks) OVERRIDE;
   virtual void Seek(base::TimeDelta time,
                     const media::PipelineStatusCB& status_cb) OVERRIDE;
   virtual void Stop(const base::Closure& callback) OVERRIDE;
