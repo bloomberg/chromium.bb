@@ -918,10 +918,6 @@ void
 weston_view_from_global_fixed(struct weston_view *view,
 			      wl_fixed_t x, wl_fixed_t y,
 			      wl_fixed_t *vx, wl_fixed_t *vy);
-int32_t
-weston_surface_buffer_width(struct weston_surface *surface);
-int32_t
-weston_surface_buffer_height(struct weston_surface *surface);
 
 WL_EXPORT void
 weston_surface_to_buffer_float(struct weston_surface *surface,

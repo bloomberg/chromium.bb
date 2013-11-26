@@ -1140,40 +1140,33 @@ weston_surface_is_mapped(struct weston_surface *surface)
 		return 0;
 }
 
-WL_EXPORT int32_t
-weston_surface_buffer_width(struct weston_surface *surface)
+static void
+weston_surface_set_size_from_buffer(struct weston_surface *surface)
 {
-	int32_t width;
+	int32_t width, height;
+
+	if (!surface->buffer_ref.buffer) {
+		surface->width = 0;
+		surface->height = 0;
+		return;
+	}
+
 	switch (surface->buffer_viewport.transform) {
 	case WL_OUTPUT_TRANSFORM_90:
 	case WL_OUTPUT_TRANSFORM_270:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
 	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
 		width = surface->buffer_ref.buffer->height;
-                break;
+		height = surface->buffer_ref.buffer->width;
+		break;
 	default:
 		width = surface->buffer_ref.buffer->width;
-                break;
-	}
-	return width / surface->buffer_viewport.scale;
-}
-
-WL_EXPORT int32_t
-weston_surface_buffer_height(struct weston_surface *surface)
-{
-	int32_t height;
-	switch (surface->buffer_viewport.transform) {
-	case WL_OUTPUT_TRANSFORM_90:
-	case WL_OUTPUT_TRANSFORM_270:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_90:
-	case WL_OUTPUT_TRANSFORM_FLIPPED_270:
-		height = surface->buffer_ref.buffer->width;
-                break;
-	default:
 		height = surface->buffer_ref.buffer->height;
-                break;
+		break;
 	}
-	return height / surface->buffer_viewport.scale;
+
+	surface->width = width / surface->buffer_viewport.scale;
+	surface->height = height / surface->buffer_viewport.scale;
 }
 
 WL_EXPORT uint32_t
@@ -1969,13 +1962,7 @@ weston_surface_commit(struct weston_surface *surface)
 	if (surface->pending.buffer || surface->pending.newly_attached)
 		weston_surface_attach(surface, surface->pending.buffer);
 
-	surface->width = 0;
-	surface->height = 0;
-	if (surface->buffer_ref.buffer) {
-		/* This already includes the buffer scale */
-		surface->width = weston_surface_buffer_width(surface);
-		surface->height = weston_surface_buffer_height(surface);
-	}
+	weston_surface_set_size_from_buffer(surface);
 
 	if (surface->configure && surface->pending.newly_attached)
 		surface->configure(surface,
@@ -2202,12 +2189,7 @@ weston_subsurface_commit_from_cache(struct weston_subsurface *sub)
 		weston_surface_attach(surface, sub->cached.buffer_ref.buffer);
 	weston_buffer_reference(&sub->cached.buffer_ref, NULL);
 
-	surface->width = 0;
-	surface->height = 0;
-	if (surface->buffer_ref.buffer) {
-		surface->width = weston_surface_buffer_width(surface);
-		surface->height = weston_surface_buffer_height(surface);
-	}
+	weston_surface_set_size_from_buffer(surface);
 
 	if (surface->configure && sub->cached.newly_attached)
 		surface->configure(surface, sub->cached.sx, sub->cached.sy,
