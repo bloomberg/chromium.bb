@@ -569,6 +569,39 @@ function shouldThrow(_a, _e)
     testFailed(_a + " should throw " + (typeof _e == "undefined" ? "an exception" : _ev) + ". Was " + _av + ".");
 }
 
+function shouldBeNow(a)
+{
+    for (var i = 0; i < 1000; ++i) {
+        var startDate = Date.now();
+        var av = eval(a);
+        var date = av.valueOf();
+        var endDate = Date.now();
+
+        // On some occasions such as NTP updates, the current time can go
+        // backwards. This should only happen rarely, so we can get away with
+        // retrying the test a few times if we detect the time going backwards.
+        if (startDate > endDate)
+            continue;
+
+        if (typeof date !== "number") {
+            testFailed(a + " is not a number or a Date. Got " + av);
+            return;
+        }
+        if (date < startDate) {
+            testFailed(a + " is not the curent time. Got " + av + " which is " + (startDate - date) / 1000 + " seconds in the past.");
+            return;
+        }
+        if (date > endDate) {
+            testFailed(a + " is not the current time. Got " + av + " which is " + (date - endDate) / 1000 + " seconds in the future.");
+            return;
+        }
+
+        testPassed(a + " is equivalent to Date.now().");
+        return;
+    }
+    testFailed(a + " cannot be tested against the current time. The clock is going backwards too often.");
+}
+
 function expectError()
 {
     if (expectingError) {
