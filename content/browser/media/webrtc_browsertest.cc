@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/debug/trace_event_impl.h"
+#include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -12,6 +15,7 @@
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/perf/perf_test.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -19,8 +23,10 @@
 
 namespace {
 
-static const char kGetUserMedia[] = "getUserMedia";
-static const char kGetUserMediaWithAnalysis[] = "getUserMediaWithAnalysis";
+static const char kGetUserMediaAndStop[] = "getUserMediaAndStop";
+static const char kGetUserMediaAndWaitAndStop[] = "getUserMediaAndWaitAndStop";
+static const char kGetUserMediaAndAnalyseAndStop[] =
+    "getUserMediaAndAnalyseAndStop";
 
 std::string GenerateGetUserMediaCall(const char* function_name,
                                      int min_width,
@@ -63,6 +69,61 @@ class WebrtcBrowserTest: public ContentBrowserTest {
     command_line->AppendSwitch(switches::kUseGpuInTests);
   }
 
+  void DumpChromeTraceCallback(
+      const scoped_refptr<base::RefCountedString>& events,
+      bool has_more_events) {
+    // Convert the dump output into a correct JSON List.
+    std::string contents = "[" + events->data() + "]";
+
+    int error_code;
+    std::string error_message;
+    scoped_ptr<base::Value> value(
+        base::JSONReader::ReadAndReturnError(contents,
+                                             base::JSON_ALLOW_TRAILING_COMMAS,
+                                             &error_code,
+                                             &error_message));
+
+    ASSERT_TRUE(value.get() != NULL) << error_message;
+    EXPECT_EQ(value->GetType(), base::Value::TYPE_LIST);
+
+    base::ListValue* values;
+    ASSERT_TRUE(value->GetAsList(&values));
+
+    int duration_ns = 0;
+    std::string samples_duration;
+    double timestamp_ns = 0.0;
+    double previous_timestamp_ns = 0.0;
+    std::string samples_interarrival_ns;
+    for (ListValue::iterator it = values->begin(); it != values->end(); ++it) {
+      const DictionaryValue* dict;
+      EXPECT_TRUE((*it)->GetAsDictionary(&dict));
+
+      if (dict->GetInteger("dur", &duration_ns))
+        samples_duration.append(base::StringPrintf("%d,", duration_ns));
+      if (dict->GetDouble("ts", &timestamp_ns)) {
+        if (previous_timestamp_ns) {
+          samples_interarrival_ns.append(
+              base::StringPrintf("%f,", timestamp_ns - previous_timestamp_ns));
+        }
+        previous_timestamp_ns = timestamp_ns;
+      }
+    }
+    ASSERT_GT(samples_duration.size(), 0u)
+        << "Could not collect any samples during test, this is bad";
+    perf_test::PrintResultList("video_capture",
+                               "",
+                               "sample_duration",
+                               samples_duration,
+                               "ns",
+                               true);
+    perf_test::PrintResultList("video_capture",
+                               "",
+                               "interarrival_time",
+                               samples_interarrival_ns,
+                               "ns",
+                               true);
+  }
+
  protected:
   bool ExecuteJavascript(const std::string& javascript) {
     return ExecuteScript(shell()->web_contents(), javascript);
@@ -84,7 +145,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetVideoStreamAndStop) {
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
 
-  EXPECT_TRUE(ExecuteJavascript("getUserMedia({video: true});"));
+  EXPECT_TRUE(ExecuteJavascript(
+      base::StringPrintf("%s({video: true});", kGetUserMediaAndStop)));
 
   ExpectTitle("OK");
 }
@@ -95,7 +157,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, GetAudioAndVideoStreamAndStop) {
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
 
-  EXPECT_TRUE(ExecuteJavascript("getUserMedia({video: true, audio: true});"));
+  EXPECT_TRUE(ExecuteJavascript(base::StringPrintf(
+      "%s({video: true, audio: true});", kGetUserMediaAndStop)));
 
   ExpectTitle("OK");
 }
@@ -129,6 +192,36 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, MAYBE_CanSetupVideoCall) {
 
   EXPECT_TRUE(ExecuteJavascript("call({video: true});"));
   ExpectTitle("OK");
+}
+
+// This test will make a simple getUserMedia page, verify that video is playing
+// in a simple local <video>, and for a couple of seconds, collect some
+// performance traces.
+IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TracePerformanceDuringGetUserMedia) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+  // Put getUserMedia to work and let it run for a couple of seconds.
+  EXPECT_TRUE(ExecuteJavascript(base::StringPrintf(
+      "%s({video: true}, 10);", kGetUserMediaAndWaitAndStop)));
+
+  // Make sure the stream is up and running, then start collecting traces.
+  ExpectTitle("Running...");
+  base::debug::TraceLog* trace_log = base::debug::TraceLog::GetInstance();
+  trace_log->SetEnabled(base::debug::CategoryFilter("video"),
+                        base::debug::TraceLog::ENABLE_SAMPLING);
+  // Check that we are indeed recording.
+  EXPECT_EQ(trace_log->GetNumTracesRecorded(), 1);
+
+  // Wait until the page title changes to "OK". Do not sleep() here since that
+  // would stop both this code and the browser underneath.
+  ExpectTitle("OK");
+
+  // Note that we need to stop the trace recording before flushing the data.
+  trace_log->SetDisabled();
+  trace_log->Flush(base::Bind(&WebrtcBrowserTest::DumpChromeTraceCallback,
+                              base::Unretained(this)));
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
@@ -406,20 +499,20 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestGetUserMediaConstraints) {
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
   std::vector<std::string> list_of_get_user_media_calls;
-  list_of_get_user_media_calls.push_back(
-      GenerateGetUserMediaCall(kGetUserMedia, 320, 320, 180, 180, 30, 30));
-  list_of_get_user_media_calls.push_back(
-      GenerateGetUserMediaCall(kGetUserMedia, 320, 320, 240, 240, 30, 30));
-  list_of_get_user_media_calls.push_back(
-      GenerateGetUserMediaCall(kGetUserMedia, 640, 640, 360, 360, 30, 30));
-  list_of_get_user_media_calls.push_back(
-      GenerateGetUserMediaCall(kGetUserMedia, 640, 640, 480, 480, 30, 30));
-  list_of_get_user_media_calls.push_back(
-      GenerateGetUserMediaCall(kGetUserMedia, 960, 960, 720, 720, 30, 30));
-  list_of_get_user_media_calls.push_back(
-      GenerateGetUserMediaCall(kGetUserMedia, 1280, 1280, 720, 720, 30, 30));
-  list_of_get_user_media_calls.push_back(
-      GenerateGetUserMediaCall(kGetUserMedia, 1920, 1920, 1080, 1080, 30, 30));
+  list_of_get_user_media_calls.push_back(GenerateGetUserMediaCall(
+      kGetUserMediaAndStop, 320, 320, 180, 180, 30, 30));
+  list_of_get_user_media_calls.push_back(GenerateGetUserMediaCall(
+      kGetUserMediaAndStop, 320, 320, 240, 240, 30, 30));
+  list_of_get_user_media_calls.push_back(GenerateGetUserMediaCall(
+      kGetUserMediaAndStop, 640, 640, 360, 360, 30, 30));
+  list_of_get_user_media_calls.push_back(GenerateGetUserMediaCall(
+      kGetUserMediaAndStop, 640, 640, 480, 480, 30, 30));
+  list_of_get_user_media_calls.push_back(GenerateGetUserMediaCall(
+      kGetUserMediaAndStop, 960, 960, 720, 720, 30, 30));
+  list_of_get_user_media_calls.push_back(GenerateGetUserMediaCall(
+      kGetUserMediaAndStop, 1280, 1280, 720, 720, 30, 30));
+  list_of_get_user_media_calls.push_back(GenerateGetUserMediaCall(
+      kGetUserMediaAndStop, 1920, 1920, 1080, 1080, 30, 30));
 
   for (std::vector<std::string>::iterator const_iterator =
            list_of_get_user_media_calls.begin();
@@ -439,9 +532,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest, TestGetUserMediaAspectRatio) {
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
 
   std::string constraints_4_3 = GenerateGetUserMediaCall(
-      kGetUserMediaWithAnalysis, 640, 640, 480, 480, 30, 30);
+      kGetUserMediaAndAnalyseAndStop, 640, 640, 480, 480, 30, 30);
   std::string constraints_16_9 = GenerateGetUserMediaCall(
-      kGetUserMediaWithAnalysis, 640, 640, 360, 360, 30, 30);
+      kGetUserMediaAndAnalyseAndStop, 640, 640, 360, 360, 30, 30);
 
   // TODO(mcasas): add more aspect ratios, in particular 16:10 crbug.com/275594.
 

@@ -1105,6 +1105,9 @@
               'sources': [
                 'browser/media/webrtc_browsertest.cc',
               ],
+              'dependencies': [
+                '../testing/perf/perf_test.gyp:perf_test',
+              ],
             }],
             ['enable_plugins==0', {
               'sources/': [

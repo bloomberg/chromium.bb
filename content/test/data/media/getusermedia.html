@@ -13,16 +13,31 @@
     document.title = 'OK';
   });
 
-  // This test that a MediaStream can be created and a local preview
-  // rendered.
-  function getUserMedia(constraints) {
-    navigator.webkitGetUserMedia(constraints,
-        displayAndWaitForVideoToStartAndStop, failedCallback);
+  // Creates a MediaStream and renders it locally. When the video is detected to
+  // be rolling, the title is changed and the stream should be stopped.
+  function getUserMediaAndStop(constraints) {
+    navigator.webkitGetUserMedia(
+        constraints,
+        function(stream) { displayAndDetectVideo(stream, stopVideoTrack); },
+        failedCallback);
   }
 
-  function getUserMediaWithAnalysis(constraints) {
+  // Creates a MediaStream and renders it locally. When the video is detected to
+  // be rolling, the title should be changed and the stream is let roll for a
+  // number |waitTimeInSeconds| and then it should be stopped.
+  function getUserMediaAndWaitAndStop(constraints, waitTimeInSeconds) {
     navigator.webkitGetUserMedia(
-        constraints, displayAndWaitForAndAnalyzeVideo, failedCallback);
+        constraints,
+        function(stream) {
+          displayAndDetectVideo(stream,
+                                waitAndStopVideoTrack(waitTimeInSeconds));
+        },
+        failedCallback);
+  }
+
+  function getUserMediaAndAnalyseAndStop(constraints) {
+    navigator.webkitGetUserMedia(
+        constraints, displayDetectAndAnalyzeVideo, failedCallback);
   }
 
   // This test that a MediaStream can be cloned and that the clone can
@@ -36,20 +51,20 @@
     document.title = 'GetUserMedia call failed with code ' + error.code;
   }
 
-  function displayAndWaitForVideoToStartAndStop(stream) {
+  function plugStreamIntoLocalView(stream) {
     gLocalStream = stream;
     var localStreamUrl = webkitURL.createObjectURL(stream);
     $('local-view').src = localStreamUrl;
-    document.title = 'Waiting for video...';
-    // Wait for video to play, then stop the track and wait for video to stop 
-    // playing.
-    detectVideoPlaying('local-view', stopVideoTrack);
   }
 
-  function displayAndWaitForAndAnalyzeVideo(stream) {
-    gLocalStream = stream;
-    var localStreamUrl = webkitURL.createObjectURL(stream);
-    $('local-view').src = localStreamUrl;
+  function displayAndDetectVideo(stream, callback) {
+    plugStreamIntoLocalView(stream);
+    document.title = 'Waiting for video...';
+    detectVideoPlaying('local-view', callback);
+  }
+
+  function displayDetectAndAnalyzeVideo(stream) {
+    plugStreamIntoLocalView(stream);
     analyzeVideo();
   }
 
@@ -74,7 +89,12 @@
 
   function stopVideoTrack() {
     gLocalStream.getVideoTracks()[0].stop();
-    waitForVideoToStop('local-view');    
+    waitForVideoToStop('local-view');
+  }
+
+  function waitAndStopVideoTrack(waitTimeInSeconds) {
+    document.title = 'Running...';
+    setTimeout(stopVideoTrack, waitTimeInSeconds * 1000);
   }
 
   function analyzeVideo() {
