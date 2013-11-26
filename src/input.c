@@ -1495,8 +1495,8 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 	pointer->hotspot_y = y;
 
 	if (surface->buffer_ref.buffer)
-		pointer_cursor_surface_configure(surface, 0, 0, weston_surface_buffer_width(surface),
-								weston_surface_buffer_height(surface));
+		pointer_cursor_surface_configure(surface, 0, 0, surface->width,
+								surface->height);
 }
 
 static void
