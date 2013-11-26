@@ -92,7 +92,6 @@
       ],
       'sources': [
         'keyboard_controller_unittest.cc',
-        'keyboard_test_suite.cc',
       ],
       'conditions': [
         ['OS=="linux" and linux_use_tcmalloc==1', {
