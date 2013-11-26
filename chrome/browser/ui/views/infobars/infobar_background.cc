@@ -13,8 +13,8 @@
 
 InfoBarBackground::InfoBarBackground(InfoBarDelegate::Type infobar_type)
     : separator_color_(SK_ColorBLACK),
-      top_color_(GetInfoBarTopColor(infobar_type)),
-      bottom_color_(GetInfoBarBottomColor(infobar_type)) {
+      top_color_(InfoBar::GetTopColor(infobar_type)),
+      bottom_color_(InfoBar::GetBottomColor(infobar_type)) {
   SetNativeControlColor(
       color_utils::AlphaBlend(top_color_, bottom_color_, 128));
 }

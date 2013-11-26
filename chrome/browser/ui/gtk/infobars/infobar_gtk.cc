@@ -131,12 +131,12 @@ SkColor InfoBarGtk::ConvertGetColor(ColorGetter getter) {
 
 void InfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
                              double* r, double* g, double* b) {
-  GetBackgroundColor(GetInfoBarTopColor(type), r, g, b);
+  GetBackgroundColor(InfoBar::GetTopColor(type), r, g, b);
 }
 
 void InfoBarGtk::GetBottomColor(InfoBarDelegate::Type type,
                                 double* r, double* g, double* b) {
-  GetBackgroundColor(GetInfoBarBottomColor(type), r, g, b);
+  GetBackgroundColor(InfoBar::GetBottomColor(type), r, g, b);
 }
 
 void InfoBarGtk::PlatformSpecificShow(bool animate) {

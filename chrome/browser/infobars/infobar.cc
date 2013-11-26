@@ -12,24 +12,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "ui/gfx/animation/slide_animation.h"
 
-SkColor GetInfoBarTopColor(InfoBarDelegate::Type infobar_type) {
-  static const SkColor kWarningBackgroundColorTop =
-      SkColorSetRGB(255, 242, 183);  // Yellow
-  static const SkColor kPageActionBackgroundColorTop =
-      SkColorSetRGB(237, 237, 237);  // Gray
-  return (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
-      kWarningBackgroundColorTop : kPageActionBackgroundColorTop;
-}
-
-SkColor GetInfoBarBottomColor(InfoBarDelegate::Type infobar_type) {
-  static const SkColor kWarningBackgroundColorBottom =
-      SkColorSetRGB(250, 230, 145);  // Yellow
-  static const SkColor kPageActionBackgroundColorBottom =
-      SkColorSetRGB(217, 217, 217);  // Gray
-  return (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
-      kWarningBackgroundColorBottom : kPageActionBackgroundColorBottom;
-}
-
 InfoBar::InfoBar(InfoBarService* owner, InfoBarDelegate* delegate)
     : owner_(owner),
       delegate_(delegate),
@@ -46,6 +28,26 @@ InfoBar::InfoBar(InfoBarService* owner, InfoBarDelegate* delegate)
 }
 
 InfoBar::~InfoBar() {
+}
+
+// static
+SkColor InfoBar::GetTopColor(InfoBarDelegate::Type infobar_type) {
+  static const SkColor kWarningBackgroundColorTop =
+      SkColorSetRGB(255, 242, 183);  // Yellow
+  static const SkColor kPageActionBackgroundColorTop =
+      SkColorSetRGB(237, 237, 237);  // Gray
+  return (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
+      kWarningBackgroundColorTop : kPageActionBackgroundColorTop;
+}
+
+// static
+SkColor InfoBar::GetBottomColor(InfoBarDelegate::Type infobar_type) {
+  static const SkColor kWarningBackgroundColorBottom =
+      SkColorSetRGB(250, 230, 145);  // Yellow
+  static const SkColor kPageActionBackgroundColorBottom =
+      SkColorSetRGB(217, 217, 217);  // Gray
+  return (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
+      kWarningBackgroundColorBottom : kPageActionBackgroundColorBottom;
 }
 
 void InfoBar::Show(bool animate) {
