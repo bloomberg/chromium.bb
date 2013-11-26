@@ -17,8 +17,7 @@ CountryComboboxModel::CountryComboboxModel(const PersonalDataManager& manager) {
   std::string app_locale = g_browser_process->GetApplicationLocale();
   std::string default_country_code =
       manager.GetDefaultCountryCodeForNewAddress();
-  if (default_country_code.empty())
-    default_country_code = "US";
+  DCHECK(!default_country_code.empty());
 
   countries_.push_back(new AutofillCountry(default_country_code, app_locale));
   // The separator item.

@@ -8,6 +8,7 @@
 #include <functional>
 #include <iterator>
 
+#include "base/i18n/timezone.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/pref_service.h"
@@ -757,8 +758,11 @@ const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()
   if (default_country_code_.empty())
     default_country_code_ = MostCommonCountryCodeFromProfiles();
 
-  // If the profiles don't help, guess based on locale.
-  // TODO(estade): prefer to use the timezone instead.
+  // Failing that, guess based on system timezone.
+  if (default_country_code_.empty())
+    default_country_code_ = base::CountryCodeForCurrentTimezone();
+
+  // Failing that, guess based on locale.
   if (default_country_code_.empty())
     default_country_code_ = AutofillCountry::CountryCodeForLocale(app_locale());
 
