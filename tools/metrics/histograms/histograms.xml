@@ -12300,6 +12300,21 @@ other types of suffix sets.
   <summary>Uncorrectable disk errors (SMART 187), sent at boot.</summary>
 </histogram>
 
+<histogram name="Platform.SpringChargerType">
+  <summary>
+    USB device ID of the charger plugged into a Spring device (if any), sent
+    once a minute.  The Device ID is composed from the following 4 8-bit
+    registers of the TSU6721 chip: ADC (07h), Device Type 3 (15h), Device Type 2
+    (0Bh), Device Type 1 (0Ah).  Device Type 1/2/3 is a bitmap and most of bits
+    are mutually exclusive (excepted VBUS debounce).  ADC is the 5-bit value of
+    the ID pin, but for most types (as in Device Type), there are only one or
+    two possible ID pin connections/values. The datasheet can be found here:
+    http://www.ti.com/lit/ds/symlink/tsu6721.pdf.
+
+    Note that different brand/models of the charger can have the same ID.
+  </summary>
+</histogram>
+
 <histogram name="Platform.StatefulUsage" units="%">
   <summary>Chrome OS stateful partition usage level.</summary>
 </histogram>
