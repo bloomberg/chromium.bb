@@ -21,6 +21,13 @@
         'chrome_elf_main.cc',
         'chrome_elf_main.h',
       ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'BaseAddress': '0x01c20000',
+          # Set /SUBSYSTEM:WINDOWS for chrome_elf.dll (for consistency).
+          'SubSystem': '2',
+        },
+      },
     },
   ],
 }
