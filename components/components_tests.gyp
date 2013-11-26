@@ -90,7 +90,6 @@
 
             # Dependencies of policy
             'components.gyp:policy_component',
-            'components.gyp:policy_test_support',
 
             # Dependencies of precache
             'components.gyp:precache_core',
