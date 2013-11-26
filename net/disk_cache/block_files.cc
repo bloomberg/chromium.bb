@@ -83,8 +83,7 @@ bool BlockHeader::CreateMapBlock(int size, int* index) {
       disk_cache::FileLock lock(header_);
       int index_offset = j * 4 + 4 - target;
       *index = current * 32 + index_offset;
-      DLOG_IF(ERROR, *index / 4 != (*index + size - 1) / 4) <<
-          "Bit mismatch: index = " << *index << ", size = " << size;
+      DLOG_IF(ERROR, *index / 4 != (*index + size - 1) / 4) << "Bit mismatch";
       uint32 to_add = ((1 << size) - 1) << index_offset;
       header_->num_entries++;
 
