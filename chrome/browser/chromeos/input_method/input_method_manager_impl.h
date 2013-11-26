@@ -156,7 +156,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   // Adds new input method to given list if possible
   bool EnableInputMethodImpl(
       const std::string& input_method_id,
-      std::vector<std::string>& new_active_input_method_ids) const;
+      std::vector<std::string>* new_active_input_method_ids) const;
 
   // Starts or stops the system input method framework as needed.
   // (after list of enabled input methods has been updated)

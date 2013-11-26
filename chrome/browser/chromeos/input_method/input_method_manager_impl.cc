@@ -192,14 +192,15 @@ void InputMethodManagerImpl::EnableLayouts(const std::string& language_code,
 // Adds new input method to given list.
 bool InputMethodManagerImpl::EnableInputMethodImpl(
     const std::string& input_method_id,
-    std::vector<std::string>& new_active_input_method_ids) const {
+    std::vector<std::string>* new_active_input_method_ids) const {
+  DCHECK(new_active_input_method_ids);
   if (!util_.IsValidInputMethodId(input_method_id)) {
     DVLOG(1) << "EnableInputMethod: Invalid ID: " << input_method_id;
     return false;
   }
 
-  if (!Contains(new_active_input_method_ids, input_method_id))
-    new_active_input_method_ids.push_back(input_method_id);
+  if (!Contains(*new_active_input_method_ids, input_method_id))
+    new_active_input_method_ids->push_back(input_method_id);
 
   return true;
 }
@@ -221,7 +222,7 @@ void InputMethodManagerImpl::ReconfigureIMFramework() {
 
 bool InputMethodManagerImpl::EnableInputMethod(
     const std::string& input_method_id) {
-  if (!EnableInputMethodImpl(input_method_id, active_input_method_ids_))
+  if (!EnableInputMethodImpl(input_method_id, &active_input_method_ids_))
     return false;
 
   ReconfigureIMFramework();
@@ -238,7 +239,7 @@ bool InputMethodManagerImpl::EnableInputMethods(
 
   for (size_t i = 0; i < new_active_input_method_ids.size(); ++i)
     EnableInputMethodImpl(new_active_input_method_ids[i],
-                          new_active_input_method_ids_filtered);
+                          &new_active_input_method_ids_filtered);
 
   if (new_active_input_method_ids_filtered.empty()) {
     DVLOG(1) << "EnableInputMethods: No valid input method ID";
