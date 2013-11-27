@@ -90,11 +90,11 @@ TEST_P(MediaInternalsTest, AudioLogCreateStartStopErrorClose) {
       kTestComponentID, test_params_, kTestInputDeviceID, kTestOutputDeviceID);
   base::RunLoop().RunUntilIdle();
 
-  ExpectString("output_channel_layout",
+  ExpectString("channel_layout",
                media::ChannelLayoutToString(test_params_.channel_layout()));
   ExpectInt("sample_rate", test_params_.sample_rate());
   ExpectInt("frames_per_buffer", test_params_.frames_per_buffer());
-  ExpectInt("output_channels", test_params_.channels());
+  ExpectInt("channels", test_params_.channels());
   ExpectInt("input_channels", test_params_.input_channels());
   ExpectString("output_device_id", kTestOutputDeviceID);
   ExpectString("input_device_id", kTestInputDeviceID);

@@ -39,6 +39,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_input_controller.h"
 #include "media/audio/audio_io.h"
+#include "media/audio/audio_logging.h"
 #include "media/audio/simple_sources.h"
 
 namespace media {
@@ -159,6 +160,8 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   // Raw pointer of the UserInputMonitor.
   media::UserInputMonitor* user_input_monitor_;
+
+  scoped_ptr<media::AudioLog> audio_log_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputRendererHost);
 };

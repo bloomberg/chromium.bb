@@ -83,8 +83,8 @@ void AudioLogImpl::OnCreated(int component_id,
   dict.SetInteger("frames_per_buffer", params.frames_per_buffer());
   dict.SetInteger("sample_rate", params.sample_rate());
   dict.SetString("output_device_id", output_device_id);
-  dict.SetInteger("output_channels", params.channels());
-  dict.SetString("output_channel_layout",
+  dict.SetInteger("channels", params.channels());
+  dict.SetString("channel_layout",
                  ChannelLayoutToString(params.channel_layout()));
 
   media_internals_->SendUpdateAndCache(

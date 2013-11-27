@@ -8,6 +8,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
+#include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -56,7 +57,9 @@ AudioInputRendererHost::AudioInputRendererHost(
     : audio_manager_(audio_manager),
       media_stream_manager_(media_stream_manager),
       audio_mirroring_manager_(audio_mirroring_manager),
-      user_input_monitor_(user_input_monitor) {}
+      user_input_monitor_(user_input_monitor),
+      audio_log_(MediaInternals::GetInstance()->CreateAudioLog(
+          media::AudioLogFactory::AUDIO_INPUT_CONTROLLER)) {}
 
 AudioInputRendererHost::~AudioInputRendererHost() {
   DCHECK(audio_entries_.empty());
@@ -178,6 +181,7 @@ void AudioInputRendererHost::DoHandleError(
   if (!entry)
     return;
 
+  audio_log_->OnError(entry->stream_id);
   DeleteEntryOnError(entry);
 }
 
@@ -304,6 +308,8 @@ void AudioInputRendererHost::OnCreateStream(
   // to the map.
   entry->stream_id = stream_id;
   audio_entries_.insert(std::make_pair(stream_id, entry.release()));
+
+  audio_log_->OnCreated(stream_id, audio_params, device_id, std::string());
 }
 
 void AudioInputRendererHost::OnRecordStream(int stream_id) {
@@ -316,6 +322,7 @@ void AudioInputRendererHost::OnRecordStream(int stream_id) {
   }
 
   entry->controller->Record();
+  audio_log_->OnStarted(stream_id);
 }
 
 void AudioInputRendererHost::OnCloseStream(int stream_id) {
@@ -337,6 +344,7 @@ void AudioInputRendererHost::OnSetVolume(int stream_id, double volume) {
   }
 
   entry->controller->SetVolume(volume);
+  audio_log_->OnSetVolume(stream_id, volume);
 }
 
 void AudioInputRendererHost::SendErrorMessage(int stream_id) {
@@ -360,6 +368,7 @@ void AudioInputRendererHost::CloseAndDeleteStream(AudioEntry* entry) {
     entry->controller->Close(base::Bind(&AudioInputRendererHost::DeleteEntry,
                                         this, entry));
     entry->pending_close = true;
+    audio_log_->OnClosed(entry->stream_id);
   }
 }
 
