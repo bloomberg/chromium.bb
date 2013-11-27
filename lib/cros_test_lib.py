@@ -180,20 +180,28 @@ def VerifyTarball(tarball, dir_struct):
 
 
 class StackedSetup(type):
-  """Metaclass that extracts automatically stacks setUp and tearDown calls.
+  """Metaclass to simplify unit testing and make it more robust.
 
-  Basically this exists to make it easier to do setUp *correctly*, while also
-  suppressing some unittests misbehaviours- for example, the fact that if a
-  setUp throws an exception the corresponding tearDown isn't ran.  This sorts
-  it.
+  A metaclass alters the way that classes are initialized, enabling us to
+  modify the class dictionary prior to the class being created. We use this
+  feature here to modify the way that unit tests work a bit.
 
-  Usage of it is via usual metaclass approach; just set
-  `__metaclass__ = StackedSetup`.
+  This class does three things:
+    1) When a test case is set up or torn down, we now run all setUp and
+       tearDown methods in the inheritance tree.
+    2) If a setUp or tearDown method fails, we still run tearDown methods
+       for any test classes that were partially or completely set up.
+    3) All test cases time out after TEST_CASE_TIMEOUT seconds.
 
-  Note that this metaclass is designed such that because this is a metaclass,
-  rather than just a scope mutator, all derivative classes derive from this
-  metaclass; thus all derivative TestCase classes get automatic stacking.
+  To use this class, set the following in your class:
+    __metaclass__ = StackedSetup
+
+  Since cros_test_lib.TestCase uses this metaclass, all derivatives of TestCase
+  also inherit the above behavior (unless they override the __metaclass__
+  attribute manually.)
   """
+
+  TEST_CASE_TIMEOUT = 10 * 60
 
   def __new__(mcs, name, bases, scope):
     """Generate the new class with pointers to original funcs & our helpers"""
@@ -204,6 +212,14 @@ class StackedSetup(type):
     if 'tearDown' in scope:
       scope['__raw_tearDown__'] = scope.pop('tearDown')
     scope['tearDown'] = mcs._stacked_tearDown
+
+    # Modify all test* methods to time out after TEST_CASE_TIMEOUT seconds.
+    timeout = scope.get('TEST_CASE_TIMEOUT', StackedSetup.TEST_CASE_TIMEOUT)
+    if timeout is not None:
+      for name, func in scope.iteritems():
+        if name.startswith('test') and hasattr(func, '__call__'):
+          wrapper = cros_build_lib.TimeoutDecorator(timeout)
+          scope[name] = wrapper(func)
 
     return type.__new__(mcs, name, bases, scope)
 

@@ -1113,16 +1113,33 @@ def FatalTimeout(max_run_time):
 
 def TimeoutDecorator(max_time):
   """Decorator used to ensure a func is interrupted if it's running too long."""
-  def decorator(functor):
-    def wrapper(self, *args, **kwds):
-      with Timeout(max_time):
-        return functor(self, *args, **kwds)
+  # Save off the built-in versions of time.time, signal.signal, and
+  # signal.alarm, in case they get mocked out later. We want to ensure that
+  # tests don't accidentally mock out the functions used by Timeout.
+  def _Save():
+    return time.time, signal.signal, signal.alarm
+  def _Restore(values):
+    (time.time, signal.signal, signal.alarm) = values
+  builtins = _Save()
 
-    wrapper.__module__ = functor.__module__
-    wrapper.__name__ = functor.__name__
-    wrapper.__doc__ = functor.__doc__
-    return wrapper
-  return decorator
+  def NestedTimeoutDecorator(func):
+    @functools.wraps(func)
+    def TimeoutWrapper(*args, **kwargs):
+      new = _Save()
+      try:
+        _Restore(builtins)
+        with Timeout(max_time):
+          _Restore(new)
+          try:
+            func(*args, **kwargs)
+          finally:
+            _Restore(builtins)
+      finally:
+        _Restore(new)
+
+    return TimeoutWrapper
+
+  return NestedTimeoutDecorator
 
 
 class ContextManagerStack(object):

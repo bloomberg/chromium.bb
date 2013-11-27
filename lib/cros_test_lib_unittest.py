@@ -6,10 +6,13 @@
 
 import os
 import sys
+import time
+import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
 
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import partial_mock
@@ -173,6 +176,27 @@ class MockTestCaseTest(cros_test_lib.TestCase):
     # continue to stop 'patcher2', and run patcher.stopall().
     self.assertEquals(self.Mockable.TO_BE_MOCKED2, 10)
     self.assertEquals(self.Mockable.TO_BE_MOCKED3, 20)
+
+
+class TestCaseTest(unittest.TestCase):
+  """Tests TestCase functionality."""
+
+  def testTimeout(self):
+    """Test that test cases are interrupted when they are hanging."""
+
+    class TimeoutTestCase(cros_test_lib.TestCase):
+      """Test case that raises a TimeoutError because it takes too long."""
+
+      TEST_CASE_TIMEOUT = 1
+
+      def testSleeping(self):
+        """Sleep for 2 minutes. This should raise a TimeoutError."""
+        time.sleep(2 * 60)
+        raise AssertionError('Test case should have timed out.')
+
+    # Run the test case, verifying it raises a TimeoutError.
+    test = TimeoutTestCase(methodName='testSleeping')
+    self.assertRaises(cros_build_lib.TimeoutError, test.testSleeping)
 
 
 if __name__ == '__main__':
