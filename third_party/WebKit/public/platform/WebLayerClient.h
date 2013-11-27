@@ -33,9 +33,16 @@
 
 namespace blink {
 
+class WebGraphicsLayerDebugInfo;
+
 class WebLayerClient {
 public:
     virtual WebString debugName(WebLayer*) = 0;
+
+    // Returns a pointer to a debug info object, if one has been computed.
+    // If not, returns 0. If the returned pointer is non-zero, the caller takes
+    // ownership of the pointer.
+    virtual WebGraphicsLayerDebugInfo* takeDebugInfo() = 0;
 
 protected:
     virtual ~WebLayerClient() { }

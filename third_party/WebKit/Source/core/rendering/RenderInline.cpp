@@ -30,6 +30,7 @@
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
+#include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderFullScreen.h"
@@ -998,7 +999,7 @@ LayoutRect RenderInline::linesVisualOverflowBoundingBox() const
 
 LayoutRect RenderInline::clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const
 {
-    ASSERT(!view() || !view()->layoutStateEnabled() || RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
+    ASSERT(!view() || !view()->layoutStateEnabled() || LayoutRectRecorder::shouldRecordLayoutRects());
 
     if (!firstLineBoxIncludingCulling() && !continuation())
         return LayoutRect();

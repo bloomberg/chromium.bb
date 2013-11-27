@@ -997,7 +997,13 @@ public:
     {
         setOldRepaintRect(LayoutRect());
         setNewRepaintRect(LayoutRect());
+        setLayoutDidGetCalled(false);
     }
+
+    // layoutDidGetCalled indicates whether this render object was re-laid-out
+    // since the last call to setLayoutDidGetCalled(false) on this object.
+    bool layoutDidGetCalled() { return m_bitfields.layoutDidGetCalled(); }
+    void setLayoutDidGetCalled(bool b) { m_bitfields.setLayoutDidGetCalled(b); }
 
 protected:
     inline bool layerCreationAllowedForSubtree() const;
@@ -1132,7 +1138,7 @@ private:
         {
         }
 
-        // 32 bits have been used here, none are available.
+        // 32 bits have been used in the first word, and 1 in the second.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(needsPositionedMovementLayout, NeedsPositionedMovementLayout);
         ADD_BOOLEAN_BITFIELD(normalChildNeedsLayout, NormalChildNeedsLayout);
@@ -1161,6 +1167,8 @@ private:
         // from RenderBlock
         ADD_BOOLEAN_BITFIELD(childrenInline, ChildrenInline);
         ADD_BOOLEAN_BITFIELD(hasColumns, HasColumns);
+
+        ADD_BOOLEAN_BITFIELD(layoutDidGetCalled, LayoutDidGetCalled);
 
     private:
         unsigned m_positionedState : 2; // PositionedState

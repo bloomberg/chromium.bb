@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,52 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/rendering/LayoutRectRecorder.h"
+#ifndef WebGraphicsLayerDebugInfo_h
+#define WebGraphicsLayerDebugInfo_h
 
-#include "core/rendering/RenderObject.h"
+#include "public/platform/WebString.h"
 
-namespace WebCore {
+namespace blink {
 
-bool LayoutRectRecorder::shouldRecordLayoutRects()
-{
-    bool isTracing;
-    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"), &isTracing);
+class WebGraphicsLayerDebugInfo {
+public:
+    virtual void appendAsTraceFormat(WebString* out) const = 0;
+    virtual ~WebGraphicsLayerDebugInfo() { }
+};
 
-    return RuntimeEnabledFeatures::repaintAfterLayoutEnabled() || isTracing;
-}
+} // namespace blink
 
-LayoutRectRecorder::LayoutRectRecorder(RenderObject& object, bool skipRecording)
-    : m_object(object)
-    , m_repaintContainer(0)
-    , m_skipRecording(skipRecording)
-{
-    if (!shouldRecordLayoutRects())
-        return;
-    if (m_skipRecording)
-        return;
-
-    m_object.setLayoutDidGetCalled(true);
-
-    m_repaintContainer = m_object.containerForRepaint();
-
-    // FIXME: This will do more work then needed in some cases. The isEmpty will
-    // return true if width <=0 or height <=0 so if we have a 0x0 item it will
-    // set the old rect each time it comes through here until it's given a size.
-    if (m_object.everHadLayout() && m_object.oldRepaintRect().isEmpty()) {
-        m_object.setOldRepaintRect(m_object.clippedOverflowRectForRepaint(m_repaintContainer));
-    }
-}
-
-LayoutRectRecorder::~LayoutRectRecorder()
-{
-    if (!shouldRecordLayoutRects())
-        return;
-    if (m_skipRecording)
-        return;
-
-    m_object.setNewRepaintRect(m_object.clippedOverflowRectForRepaint(m_repaintContainer));
-}
-
-} // namespace WebCore
+#endif // WebGraphicsLayerDebugInfo_h
 

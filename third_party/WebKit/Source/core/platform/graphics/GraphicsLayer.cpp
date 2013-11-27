@@ -50,6 +50,7 @@
 #include "public/platform/WebFilterOperations.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
+#include "public/platform/WebGraphicsLayerDebugInfo.h"
 #include "public/platform/WebLayer.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebSize.h"
@@ -103,6 +104,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_contentsLayerId(0)
     , m_scrollableArea(0)
     , m_compositingReasons(blink::CompositingReasonUnknown)
+    , m_debugInfo(0)
 {
 #ifndef NDEBUG
     if (m_client)
@@ -503,6 +505,20 @@ void GraphicsLayer::clearContentsLayerIfUnregistered()
 
     m_contentsLayer = 0;
     m_contentsLayerId = 0;
+}
+
+void GraphicsLayer::setDebugInfo(blink::WebGraphicsLayerDebugInfo* debugInfo)
+{
+    if (m_debugInfo)
+        delete m_debugInfo;
+    m_debugInfo = debugInfo;
+}
+
+blink::WebGraphicsLayerDebugInfo* GraphicsLayer::takeDebugInfo()
+{
+    blink::WebGraphicsLayerDebugInfo* tempDebugInfo = m_debugInfo;
+    m_debugInfo = 0;
+    return tempDebugInfo;
 }
 
 WebLayer* GraphicsLayer::contentsLayerIfRegistered()

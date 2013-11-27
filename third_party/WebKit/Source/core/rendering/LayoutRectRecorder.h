@@ -45,6 +45,8 @@ public:
     LayoutRectRecorder(RenderObject&, bool skipRecording = false);
     ~LayoutRectRecorder();
 
+    static bool shouldRecordLayoutRects();
+
 private:
     RenderObject& m_object;
     RenderLayerModelObject* m_repaintContainer;

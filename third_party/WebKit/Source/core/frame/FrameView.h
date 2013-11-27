@@ -395,6 +395,8 @@ private:
 
     void repaintTree(RenderObject* root);
 
+    virtual void gatherDebugLayoutRects(RenderObject* layoutRoot);
+
     virtual void repaintContentRectangle(const IntRect&);
     virtual void contentsResized() OVERRIDE;
     virtual void scrollbarExistenceDidChange();

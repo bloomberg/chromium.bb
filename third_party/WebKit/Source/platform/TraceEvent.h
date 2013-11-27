@@ -501,6 +501,21 @@
     INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_DELETE_OBJECT, \
         categoryGroup, name, TRACE_ID_DONT_MANGLE(id), TRACE_EVENT_FLAG_NONE)
 
+// Macro to efficiently determine if a given category group is enabled.
+#define TRACE_EVENT_CATEGORY_GROUP_ENABLED(categoryGroup, ret) \
+    do { \
+        INTERNAL_TRACE_EVENT_GET_CATEGORY_INFO(categoryGroup);  \
+        if (*INTERNALTRACEEVENTUID(categoryGroupEnabled)) {     \
+            *ret = true;                                        \
+        } else {                                                \
+            *ret = false;                                       \
+        }                                                       \
+    } while (0)
+
+// This will mark the trace event as disabled by default. The user will need
+// to explicitly enable the event.
+#define TRACE_DISABLED_BY_DEFAULT(name) "disabled-by-default-" name
+
 ////////////////////////////////////////////////////////////////////////////////
 // Implementation specific tracing API definitions.
 

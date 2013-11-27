@@ -119,6 +119,7 @@ struct SameSizeAsRenderObject {
     unsigned m_debugBitfields : 2;
 #endif
     unsigned m_bitfields;
+    unsigned m_bitfields2;
     LayoutRect rects[2]; // Stores the old/new layout rectangles.
 };
 

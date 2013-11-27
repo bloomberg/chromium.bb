@@ -52,6 +52,7 @@
 namespace blink {
 class GraphicsLayerFactoryChromium;
 class WebAnimation;
+class WebGraphicsLayerDebugInfo;
 class WebLayer;
 }
 
@@ -89,6 +90,7 @@ public:
 
     // blink::WebLayerClient implementation.
     virtual blink::WebString debugName(blink::WebLayer*) OVERRIDE;
+    virtual blink::WebGraphicsLayerDebugInfo* takeDebugInfo() OVERRIDE;
 
     void setCompositingReasons(blink::WebCompositingReasons);
     blink::WebCompositingReasons compositingReasons() const { return m_compositingReasons; }
@@ -177,6 +179,8 @@ public:
 
     void setScrollParent(blink::WebLayer*);
     void setClipParent(blink::WebLayer*);
+
+    void setDebugInfo(blink::WebGraphicsLayerDebugInfo*);
 
     // For special cases, e.g. drawing missing tiles on Android.
     // The compositor should never paint this color in normal cases because the RenderLayer
@@ -398,6 +402,7 @@ private:
 
     ScrollableArea* m_scrollableArea;
     blink::WebCompositingReasons m_compositingReasons;
+    blink::WebGraphicsLayerDebugInfo* m_debugInfo;
 };
 
 

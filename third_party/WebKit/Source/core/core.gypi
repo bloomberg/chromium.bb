@@ -1252,6 +1252,7 @@
             'frame/FrameDestructionObserver.h',
             'page/FrameTree.cpp',
             'frame/FrameView.cpp',
+            'frame/GraphicsLayerDebugInfo.cpp',
             'frame/History.cpp',
             'frame/History.h',
             'frame/ImageBitmap.cpp',

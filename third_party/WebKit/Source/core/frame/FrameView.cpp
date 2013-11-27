@@ -49,6 +49,7 @@
 #include "core/page/EventHandler.h"
 #include "core/page/FocusController.h"
 #include "core/frame/Frame.h"
+#include "core/frame/GraphicsLayerDebugInfo.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Settings.h"
 #include "core/frame/animation/AnimationController.h"
@@ -908,6 +909,7 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
 
         LayoutIndicator layoutIndicator;
         rootForThisLayout->layout();
+        gatherDebugLayoutRects(rootForThisLayout);
     }
 
     TextAutosizer* textAutosizer = frame().document()->textAutosizer();
@@ -916,6 +918,7 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
         TRACE_EVENT0("webkit", "2nd layout due to Text Autosizing");
         LayoutIndicator layoutIndicator;
         rootForThisLayout->layout();
+        gatherDebugLayoutRects(rootForThisLayout);
     }
 
     m_inLayout = false;
@@ -1173,6 +1176,31 @@ void FrameView::repaintTree(RenderObject* root)
         renderer->clearRepaintRects();
     }
 }
+
+void FrameView::gatherDebugLayoutRects(RenderObject* layoutRoot)
+{
+    bool isTracing;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink.debug.layout"), &isTracing);
+    if (!isTracing)
+        return;
+    if (!layoutRoot->enclosingLayer()->hasCompositedLayerMapping())
+        return;
+    GraphicsLayer* graphicsLayer = layoutRoot->enclosingLayer()->compositedLayerMapping()->mainGraphicsLayer();
+    if (!graphicsLayer)
+        return;
+
+    GraphicsLayerDebugInfo* debugInfo = new GraphicsLayerDebugInfo();
+    for (RenderObject* renderer = layoutRoot; renderer; renderer = renderer->nextInPreOrder()) {
+        if (renderer->layoutDidGetCalled()) {
+            LayoutRect rect = renderer->newRepaintRect();
+            debugInfo->m_currentLayoutRects.append(rect);
+            renderer->setLayoutDidGetCalled(false);
+        }
+    }
+
+    graphicsLayer->setDebugInfo(debugInfo);
+}
+
 
 RenderBox* FrameView::embeddedContentBox() const
 {
