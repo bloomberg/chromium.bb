@@ -44,9 +44,9 @@ using namespace std;
 
 namespace WebCore {
 
-PassOwnPtr<Locale> Locale::create(const AtomicString& locale)
+PassOwnPtr<Locale> Locale::create(const String& locale)
 {
-    return LocaleICU::create(locale.string().utf8().data());
+    return LocaleICU::create(locale.utf8().data());
 }
 
 LocaleICU::LocaleICU(const char* locale)

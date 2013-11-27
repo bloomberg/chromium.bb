@@ -128,7 +128,7 @@ static LCID LCIDFromLocaleInternal(LCID userDefaultLCID, const String& userDefau
     return localeNameToLCID(locale.charactersWithNullTermination().data(), 0);
 }
 
-static LCID LCIDFromLocale(const AtomicString& locale, bool defaultsForLocale)
+static LCID LCIDFromLocale(const String& locale, bool defaultsForLocale)
 {
     // LocaleNameToLCID() is available since Windows Vista.
     LocaleNameToLCIDPtr localeNameToLCID = reinterpret_cast<LocaleNameToLCIDPtr>(::GetProcAddress(::GetModuleHandle(L"kernel32"), "LocaleNameToLCID"));
@@ -141,13 +141,13 @@ static LCID LCIDFromLocale(const AtomicString& locale, bool defaultsForLocale)
     ::GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_SISO639LANGNAME | (defaultsForLocale ? LOCALE_NOUSEROVERRIDE : 0), lowercaseLanguageCode, languageCodeBufferSize);
     String userDefaultLanguageCode = String(lowercaseLanguageCode);
 
-    LCID lcid = LCIDFromLocaleInternal(LOCALE_USER_DEFAULT, userDefaultLanguageCode, localeNameToLCID, String(locale));
+    LCID lcid = LCIDFromLocaleInternal(LOCALE_USER_DEFAULT, userDefaultLanguageCode, localeNameToLCID, locale);
     if (!lcid)
         lcid = LCIDFromLocaleInternal(LOCALE_USER_DEFAULT, userDefaultLanguageCode, localeNameToLCID, defaultLanguage());
     return lcid;
 }
 
-PassOwnPtr<Locale> Locale::create(const AtomicString& locale)
+PassOwnPtr<Locale> Locale::create(const String& locale)
 {
     // Whether the default settings for the locale should be used, ignoring user overrides.
     bool defaultsForLocale = isRunningLayoutTest();

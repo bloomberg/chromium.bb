@@ -64,9 +64,9 @@ static RetainPtr<NSLocale> determineLocale(const String& locale)
      return RetainPtr<NSLocale>(AdoptNS, [[NSLocale alloc] initWithLocaleIdentifier:locale]);
 }
 
-PassOwnPtr<Locale> Locale::create(const AtomicString& locale)
+PassOwnPtr<Locale> Locale::create(const String& locale)
 {
-    return LocaleMac::create(determineLocale(locale.string()).get());
+    return LocaleMac::create(determineLocale(locale).get());
 }
 
 static RetainPtr<NSDateFormatter> createDateTimeFormatter(NSLocale* locale, NSCalendar* calendar, NSDateFormatterStyle dateStyle, NSDateFormatterStyle timeStyle)

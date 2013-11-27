@@ -37,7 +37,7 @@ namespace WebCore {
 class PLATFORM_EXPORT Locale {
     WTF_MAKE_NONCOPYABLE(Locale);
 public:
-    static PassOwnPtr<Locale> create(const AtomicString& localeIdentifier);
+    static PassOwnPtr<Locale> create(const String& localeIdentifier);
     static Locale& defaultLocale();
 
     String queryString(blink::WebLocalizedString::Name);
