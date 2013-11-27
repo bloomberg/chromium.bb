@@ -26,13 +26,11 @@
 #ifndef PositionCallback_h
 #define PositionCallback_h
 
-#include "wtf/RefCounted.h"
-
 namespace WebCore {
 
     class Geoposition;
 
-    class PositionCallback : public RefCounted<PositionCallback> {
+    class PositionCallback {
     public:
         virtual ~PositionCallback() { }
         virtual bool handleEvent(Geoposition*) = 0;

@@ -102,12 +102,12 @@ ChromiumDataObjectItem::ChromiumDataObjectItem(const String& kind, const String&
 {
 }
 
-void ChromiumDataObjectItem::getAsString(PassRefPtr<StringCallback> callback, ExecutionContext* context) const
+void ChromiumDataObjectItem::getAsString(PassOwnPtr<StringCallback> callback, ExecutionContext* context) const
 {
     if (!callback || kind() != DataTransferItem::kindString)
         return;
 
-    callback->scheduleCallback(context, internalGetAsString());
+    StringCallback::scheduleCallback(callback, context, internalGetAsString());
 }
 
 PassRefPtr<Blob> ChromiumDataObjectItem::getAsFile() const

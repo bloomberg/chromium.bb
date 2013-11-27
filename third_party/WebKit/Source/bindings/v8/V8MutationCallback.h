@@ -31,8 +31,9 @@
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/V8Utilities.h"
 #include "core/dom/MutationCallback.h"
-#include <v8.h>
+#include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
+#include <v8.h>
 
 namespace WebCore {
 
@@ -40,10 +41,10 @@ class ExecutionContext;
 
 class V8MutationCallback : public MutationCallback, public ActiveDOMCallback {
 public:
-    static PassRefPtr<V8MutationCallback> create(v8::Handle<v8::Function> callback, ExecutionContext* context, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
+    static PassOwnPtr<V8MutationCallback> create(v8::Handle<v8::Function> callback, ExecutionContext* context, v8::Handle<v8::Object> owner, v8::Isolate* isolate)
     {
         ASSERT(context);
-        return adoptRef(new V8MutationCallback(callback, context, owner, isolate));
+        return adoptPtr(new V8MutationCallback(callback, context, owner, isolate));
     }
 
     virtual void call(const Vector<RefPtr<MutationRecord> >&, MutationObserver*) OVERRIDE;

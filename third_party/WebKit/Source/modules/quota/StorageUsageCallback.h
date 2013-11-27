@@ -31,11 +31,9 @@
 #ifndef StorageUsageCallback_h
 #define StorageUsageCallback_h
 
-#include "wtf/RefCounted.h"
-
 namespace WebCore {
 
-class StorageUsageCallback : public RefCounted<StorageUsageCallback> {
+class StorageUsageCallback {
 public:
     virtual ~StorageUsageCallback() { }
     virtual bool handleEvent(unsigned long long currentUsageInBytes, unsigned long long currentQuotaInBytes) = 0;

@@ -31,13 +31,11 @@
 #ifndef MIDIErrorCallback_h
 #define MIDIErrorCallback_h
 
-#include "wtf/RefCounted.h"
-
 namespace WebCore {
 
 class DOMError;
 
-class MIDIErrorCallback : public RefCounted<MIDIErrorCallback> {
+class MIDIErrorCallback {
 public:
     virtual ~MIDIErrorCallback() { }
     virtual bool handleEvent(DOMError*) = 0;

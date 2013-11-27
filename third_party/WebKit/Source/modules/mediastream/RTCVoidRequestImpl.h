@@ -41,7 +41,7 @@ class VoidCallback;
 
 class RTCVoidRequestImpl : public RTCVoidRequest, public ActiveDOMObject {
 public:
-    static PassRefPtr<RTCVoidRequestImpl> create(ExecutionContext*, PassRefPtr<VoidCallback>, PassRefPtr<RTCErrorCallback>);
+    static PassRefPtr<RTCVoidRequestImpl> create(ExecutionContext*, PassRefPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>);
     virtual ~RTCVoidRequestImpl();
 
     virtual void requestSucceeded();
@@ -51,12 +51,12 @@ public:
     virtual void stop() OVERRIDE;
 
 private:
-    RTCVoidRequestImpl(ExecutionContext*, PassRefPtr<VoidCallback>, PassRefPtr<RTCErrorCallback>);
+    RTCVoidRequestImpl(ExecutionContext*, PassRefPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>);
 
     void clear();
 
     RefPtr<VoidCallback> m_successCallback;
-    RefPtr<RTCErrorCallback> m_errorCallback;
+    OwnPtr<RTCErrorCallback> m_errorCallback;
 };
 
 } // namespace WebCore

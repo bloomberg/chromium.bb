@@ -45,7 +45,7 @@ NavigatorMediaStream::~NavigatorMediaStream()
 {
 }
 
-void NavigatorMediaStream::webkitGetUserMedia(Navigator* navigator, const Dictionary& options, PassRefPtr<NavigatorUserMediaSuccessCallback> successCallback, PassRefPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionState& exceptionState)
+void NavigatorMediaStream::webkitGetUserMedia(Navigator* navigator, const Dictionary& options, PassOwnPtr<NavigatorUserMediaSuccessCallback> successCallback, PassOwnPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionState& exceptionState)
 {
     if (!successCallback)
         return;

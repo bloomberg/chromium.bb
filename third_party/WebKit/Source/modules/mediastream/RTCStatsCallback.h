@@ -25,13 +25,11 @@
 #ifndef RTCStatsCallback_h
 #define RTCStatsCallback_h
 
-#include "wtf/RefCounted.h"
-
 namespace WebCore {
 
 class RTCStatsResponse;
 
-class RTCStatsCallback : public RefCounted<RTCStatsCallback> {
+class RTCStatsCallback {
 public:
     virtual ~RTCStatsCallback() { }
     virtual bool handleEvent(RTCStatsResponse*) = 0;

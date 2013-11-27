@@ -56,8 +56,8 @@ public:
     Document* document() const;
     Frame* frame() const;
 
-    void getCurrentPosition(PassRefPtr<PositionCallback>, PassRefPtr<PositionErrorCallback>, PassRefPtr<PositionOptions>);
-    int watchPosition(PassRefPtr<PositionCallback>, PassRefPtr<PositionErrorCallback>, PassRefPtr<PositionOptions>);
+    void getCurrentPosition(PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, PassRefPtr<PositionOptions>);
+    int watchPosition(PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, PassRefPtr<PositionOptions>);
     void clearWatch(int watchID);
 
     void setIsAllowed(bool);
@@ -77,7 +77,7 @@ private:
 
     class GeoNotifier : public RefCounted<GeoNotifier> {
     public:
-        static PassRefPtr<GeoNotifier> create(Geolocation* geolocation, PassRefPtr<PositionCallback> positionCallback, PassRefPtr<PositionErrorCallback> positionErrorCallback, PassRefPtr<PositionOptions> options) { return adoptRef(new GeoNotifier(geolocation, positionCallback, positionErrorCallback, options)); }
+        static PassRefPtr<GeoNotifier> create(Geolocation* geolocation, PassOwnPtr<PositionCallback> positionCallback, PassOwnPtr<PositionErrorCallback> positionErrorCallback, PassRefPtr<PositionOptions> options) { return adoptRef(new GeoNotifier(geolocation, positionCallback, positionErrorCallback, options)); }
 
         PositionOptions* options() const { return m_options.get(); };
         void setFatalError(PassRefPtr<PositionError>);
@@ -94,11 +94,11 @@ private:
         bool hasZeroTimeout() const;
 
     private:
-        GeoNotifier(Geolocation*, PassRefPtr<PositionCallback>, PassRefPtr<PositionErrorCallback>, PassRefPtr<PositionOptions>);
+        GeoNotifier(Geolocation*, PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, PassRefPtr<PositionOptions>);
 
         RefPtr<Geolocation> m_geolocation;
-        RefPtr<PositionCallback> m_successCallback;
-        RefPtr<PositionErrorCallback> m_errorCallback;
+        OwnPtr<PositionCallback> m_successCallback;
+        OwnPtr<PositionErrorCallback> m_errorCallback;
         RefPtr<PositionOptions> m_options;
         Timer<GeoNotifier> m_timer;
         RefPtr<PositionError> m_fatalError;

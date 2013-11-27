@@ -70,7 +70,7 @@ public:
         CharacterDataOldValue = 1 << 6,
     };
 
-    static PassRefPtr<MutationObserver> create(PassRefPtr<MutationCallback>);
+    static PassRefPtr<MutationObserver> create(PassOwnPtr<MutationCallback>);
     static void deliverAllMutations();
 
     ~MutationObserver();
@@ -89,10 +89,10 @@ public:
 private:
     struct ObserverLessThan;
 
-    explicit MutationObserver(PassRefPtr<MutationCallback>);
+    explicit MutationObserver(PassOwnPtr<MutationCallback>);
     void deliver();
 
-    RefPtr<MutationCallback> m_callback;
+    OwnPtr<MutationCallback> m_callback;
     Vector<RefPtr<MutationRecord> > m_records;
     HashSet<MutationObserverRegistration*> m_registrations;
     unsigned m_priority;

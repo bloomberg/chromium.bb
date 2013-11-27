@@ -127,7 +127,7 @@ public:
 
     static const String& permission(ExecutionContext*);
     static const String& permissionString(NotificationClient::Permission);
-    static void requestPermission(ExecutionContext*, PassRefPtr<NotificationPermissionCallback> = 0);
+    static void requestPermission(ExecutionContext*, PassOwnPtr<NotificationPermissionCallback> = nullptr);
 
 private:
 #if ENABLE(LEGACY_NOTIFICATIONS)

@@ -66,7 +66,7 @@ private:
 
 class NotificationPermissionCallbackClient : public WebNotificationPermissionCallback {
 public:
-    NotificationPermissionCallbackClient(WebNotificationPresenter* presenter, PassRefPtr<SecurityOrigin> securityOrigin, PassRefPtr<NotificationPermissionCallback> callback)
+    NotificationPermissionCallbackClient(WebNotificationPresenter* presenter, PassRefPtr<SecurityOrigin> securityOrigin, PassOwnPtr<NotificationPermissionCallback> callback)
         : m_presenter(presenter)
         , m_securityOrigin(securityOrigin)
         , m_callback(callback)
@@ -85,7 +85,7 @@ private:
 
     WebNotificationPresenter* m_presenter;
     RefPtr<SecurityOrigin> m_securityOrigin;
-    RefPtr<NotificationPermissionCallback> m_callback;
+    OwnPtr<NotificationPermissionCallback> m_callback;
 };
 
 void NotificationPresenterImpl::initialize(WebNotificationPresenter* presenter)
@@ -130,7 +130,7 @@ void NotificationPresenterImpl::requestPermission(ExecutionContext* context, Pas
 }
 #endif // ENABLE(LEGACY_NOTIFICATIONS)
 
-void NotificationPresenterImpl::requestPermission(ExecutionContext* context, WTF::PassRefPtr<NotificationPermissionCallback> callback)
+void NotificationPresenterImpl::requestPermission(ExecutionContext* context, WTF::PassOwnPtr<NotificationPermissionCallback> callback)
 {
     m_presenter->requestPermission(WebSecurityOrigin(context->securityOrigin()), new NotificationPermissionCallbackClient(m_presenter, context->securityOrigin(), callback));
 }

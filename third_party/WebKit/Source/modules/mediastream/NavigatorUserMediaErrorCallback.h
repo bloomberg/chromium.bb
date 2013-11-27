@@ -26,11 +26,10 @@
 #define NavigatorUserMediaErrorCallback_h
 
 #include "modules/mediastream/NavigatorUserMediaError.h"
-#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class NavigatorUserMediaErrorCallback : public RefCounted<NavigatorUserMediaErrorCallback> {
+class NavigatorUserMediaErrorCallback {
 public:
     virtual ~NavigatorUserMediaErrorCallback() { }
     virtual bool handleEvent(NavigatorUserMediaError*) = 0;

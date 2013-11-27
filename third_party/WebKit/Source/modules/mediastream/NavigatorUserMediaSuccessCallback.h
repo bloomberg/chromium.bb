@@ -25,13 +25,11 @@
 #ifndef NavigatorUserMediaSuccessCallback_h
 #define NavigatorUserMediaSuccessCallback_h
 
-#include "wtf/RefCounted.h"
-
 namespace WebCore {
 
 class MediaStream;
 
-class NavigatorUserMediaSuccessCallback : public RefCounted<NavigatorUserMediaSuccessCallback> {
+class NavigatorUserMediaSuccessCallback {
 public:
     virtual ~NavigatorUserMediaSuccessCallback() { }
     virtual bool handleEvent(MediaStream*) = 0;

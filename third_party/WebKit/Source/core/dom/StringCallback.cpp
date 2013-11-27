@@ -41,7 +41,7 @@ namespace {
 
 class DispatchCallbackTask : public ExecutionContextTask {
 public:
-    static PassOwnPtr<DispatchCallbackTask> create(PassRefPtr<StringCallback> callback, const String& data)
+    static PassOwnPtr<DispatchCallbackTask> create(PassOwnPtr<StringCallback> callback, const String& data)
     {
         return adoptPtr(new DispatchCallbackTask(callback, data));
     }
@@ -52,21 +52,21 @@ public:
     }
 
 private:
-    DispatchCallbackTask(PassRefPtr<StringCallback> callback, const String& data)
+    DispatchCallbackTask(PassOwnPtr<StringCallback> callback, const String& data)
         : m_callback(callback)
         , m_data(data)
     {
     }
 
-    RefPtr<StringCallback> m_callback;
+    OwnPtr<StringCallback> m_callback;
     const String m_data;
 };
 
 } // namespace
 
-void StringCallback::scheduleCallback(ExecutionContext* context, const String& data)
+void StringCallback::scheduleCallback(PassOwnPtr<StringCallback> callback, ExecutionContext* context, const String& data)
 {
-    context->postTask(DispatchCallbackTask::create(this, data));
+    context->postTask(DispatchCallbackTask::create(callback, data));
 }
 
 } // namespace WebCore

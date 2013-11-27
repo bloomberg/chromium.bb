@@ -50,7 +50,7 @@ StorageQuota::StorageQuota(Type type)
     ScriptWrappable::init(this);
 }
 
-void StorageQuota::queryUsageAndQuota(ExecutionContext* executionContext, PassRefPtr<StorageUsageCallback> successCallback, PassRefPtr<StorageErrorCallback> errorCallback)
+void StorageQuota::queryUsageAndQuota(ExecutionContext* executionContext, PassOwnPtr<StorageUsageCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
 {
     ASSERT(executionContext);
 

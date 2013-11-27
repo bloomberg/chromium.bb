@@ -361,7 +361,7 @@ PassRefPtr<AudioBuffer> AudioContext::createBuffer(ArrayBuffer* arrayBuffer, boo
     return audioBuffer;
 }
 
-void AudioContext::decodeAudioData(ArrayBuffer* audioData, PassRefPtr<AudioBufferCallback> successCallback, PassRefPtr<AudioBufferCallback> errorCallback, ExceptionState& exceptionState)
+void AudioContext::decodeAudioData(ArrayBuffer* audioData, PassOwnPtr<AudioBufferCallback> successCallback, PassOwnPtr<AudioBufferCallback> errorCallback, ExceptionState& exceptionState)
 {
     if (!audioData) {
         exceptionState.throwDOMException(

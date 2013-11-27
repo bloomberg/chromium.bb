@@ -129,13 +129,13 @@ void V8Geolocation::getCurrentPositionMethodCustom(const v8::FunctionCallbackInf
 {
     bool succeeded = false;
 
-    RefPtr<PositionCallback> positionCallback = createFunctionOnlyCallback<V8PositionCallback>(info[0], succeeded, info.GetIsolate());
+    OwnPtr<PositionCallback> positionCallback = createFunctionOnlyCallback<V8PositionCallback>(info[0], succeeded, info.GetIsolate());
     if (!succeeded)
         return;
     ASSERT(positionCallback);
 
     // Argument is optional (hence undefined is allowed), and null is allowed.
-    RefPtr<PositionErrorCallback> positionErrorCallback = createFunctionOnlyCallback<V8PositionErrorCallback>(info[1], succeeded, info.GetIsolate(), CallbackAllowUndefined | CallbackAllowNull);
+    OwnPtr<PositionErrorCallback> positionErrorCallback = createFunctionOnlyCallback<V8PositionErrorCallback>(info[1], succeeded, info.GetIsolate(), CallbackAllowUndefined | CallbackAllowNull);
     if (!succeeded)
         return;
 
@@ -152,13 +152,13 @@ void V8Geolocation::watchPositionMethodCustom(const v8::FunctionCallbackInfo<v8:
 {
     bool succeeded = false;
 
-    RefPtr<PositionCallback> positionCallback = createFunctionOnlyCallback<V8PositionCallback>(info[0], succeeded, info.GetIsolate());
+    OwnPtr<PositionCallback> positionCallback = createFunctionOnlyCallback<V8PositionCallback>(info[0], succeeded, info.GetIsolate());
     if (!succeeded)
         return;
     ASSERT(positionCallback);
 
     // Argument is optional (hence undefined is allowed), and null is allowed.
-    RefPtr<PositionErrorCallback> positionErrorCallback = createFunctionOnlyCallback<V8PositionErrorCallback>(info[1], succeeded, info.GetIsolate(), CallbackAllowUndefined | CallbackAllowNull);
+    OwnPtr<PositionErrorCallback> positionErrorCallback = createFunctionOnlyCallback<V8PositionErrorCallback>(info[1], succeeded, info.GetIsolate(), CallbackAllowUndefined | CallbackAllowNull);
     if (!succeeded)
         return;
 

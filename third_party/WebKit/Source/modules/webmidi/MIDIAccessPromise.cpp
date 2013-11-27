@@ -99,7 +99,7 @@ void MIDIAccessPromise::reject(PassRefPtr<DOMError> error)
     }
 }
 
-void MIDIAccessPromise::then(PassRefPtr<MIDISuccessCallback> successCallback, PassRefPtr<MIDIErrorCallback> errorCallback)
+void MIDIAccessPromise::then(PassOwnPtr<MIDISuccessCallback> successCallback, PassOwnPtr<MIDIErrorCallback> errorCallback)
 {
     // Lazily request access.
     if (!m_access)

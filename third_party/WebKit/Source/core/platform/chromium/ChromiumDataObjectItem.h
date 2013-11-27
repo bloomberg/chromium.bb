@@ -55,7 +55,7 @@ public:
 
     String kind() const { return m_kind; }
     String type() const { return m_type; }
-    void getAsString(PassRefPtr<StringCallback>, ExecutionContext*) const;
+    void getAsString(PassOwnPtr<StringCallback>, ExecutionContext*) const;
     PassRefPtr<Blob> getAsFile() const;
 
     // Used to support legacy DataTransfer APIs and renderer->browser serialization.

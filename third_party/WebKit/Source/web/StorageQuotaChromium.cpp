@@ -48,7 +48,7 @@ using namespace blink;
 namespace WebCore {
 
 // FIXME: Implement this as StorageQuotaClient.
-void StorageQuota::requestQuota(ExecutionContext* executionContext, unsigned long long newQuotaInBytes, PassRefPtr<StorageQuotaCallback> successCallback, PassRefPtr<StorageErrorCallback> errorCallback)
+void StorageQuota::requestQuota(ExecutionContext* executionContext, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
 {
     ASSERT(executionContext);
     WebStorageQuotaType storageType = static_cast<WebStorageQuotaType>(m_type);

@@ -90,17 +90,17 @@ void CSSVariablesMap::clear(ExceptionState& exceptionState)
     }
 }
 
-void CSSVariablesMap::forEach(PassRefPtr<CSSVariablesMapForEachCallback> callback, ScriptValue& thisArg) const
+void CSSVariablesMap::forEach(PassOwnPtr<CSSVariablesMapForEachCallback> callback, ScriptValue& thisArg) const
 {
     forEach(callback, &thisArg);
 }
 
-void CSSVariablesMap::forEach(PassRefPtr<CSSVariablesMapForEachCallback> callback) const
+void CSSVariablesMap::forEach(PassOwnPtr<CSSVariablesMapForEachCallback> callback) const
 {
     forEach(callback, 0);
 }
 
-void CSSVariablesMap::forEach(PassRefPtr<CSSVariablesMapForEachCallback> callback, ScriptValue* thisArg) const
+void CSSVariablesMap::forEach(PassOwnPtr<CSSVariablesMapForEachCallback> callback, ScriptValue* thisArg) const
 {
     if (!m_styleDeclaration)
         return;

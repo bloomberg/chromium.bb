@@ -248,7 +248,7 @@ const String& Notification::permissionString(NotificationClient::Permission perm
     return deniedPermission;
 }
 
-void Notification::requestPermission(ExecutionContext* context, PassRefPtr<NotificationPermissionCallback> callback)
+void Notification::requestPermission(ExecutionContext* context, PassOwnPtr<NotificationPermissionCallback> callback)
 {
     ASSERT(toDocument(context)->page());
     NotificationController::from(toDocument(context)->page())->client()->requestPermission(context, callback);

@@ -52,20 +52,20 @@ typedef unsigned CallbackAllowedValueFlags;
 
 // 'FunctionOnly' is assumed for the created callback.
 template <typename V8CallbackType>
-PassRefPtr<V8CallbackType> createFunctionOnlyCallback(v8::Local<v8::Value> value, bool& succeeded, v8::Isolate* isolate, CallbackAllowedValueFlags acceptedValues = 0)
+PassOwnPtr<V8CallbackType> createFunctionOnlyCallback(v8::Local<v8::Value> value, bool& succeeded, v8::Isolate* isolate, CallbackAllowedValueFlags acceptedValues = 0)
 {
     succeeded = true;
 
     if (value->IsUndefined() && (acceptedValues & CallbackAllowUndefined))
-        return 0;
+        return nullptr;
 
     if (value->IsNull() && (acceptedValues & CallbackAllowNull))
-        return 0;
+        return nullptr;
 
     if (!value->IsFunction()) {
         succeeded = false;
         setDOMException(TypeMismatchError, isolate);
-        return 0;
+        return nullptr;
     }
 
     return V8CallbackType::create(value, getExecutionContext());

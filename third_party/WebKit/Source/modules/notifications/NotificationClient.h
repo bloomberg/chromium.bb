@@ -77,7 +77,7 @@ public:
     // made a decision.
     virtual void requestPermission(ExecutionContext*, PassRefPtr<VoidCallback>) = 0;
 #endif
-    virtual void requestPermission(ExecutionContext*, PassRefPtr<NotificationPermissionCallback>) = 0;
+    virtual void requestPermission(ExecutionContext*, PassOwnPtr<NotificationPermissionCallback>) = 0;
 
     // Cancel all outstanding requests for the ExecutionContext
     virtual void cancelRequestsForPermission(ExecutionContext*) = 0;

@@ -31,11 +31,9 @@
 #ifndef StorageQuotaCallback_h
 #define StorageQuotaCallback_h
 
-#include "wtf/RefCounted.h"
-
 namespace WebCore {
 
-class StorageQuotaCallback : public RefCounted<StorageQuotaCallback> {
+class StorageQuotaCallback {
 public:
     virtual ~StorageQuotaCallback() { }
     virtual bool handleEvent(unsigned long long grantedQuotaInBytes) = 0;

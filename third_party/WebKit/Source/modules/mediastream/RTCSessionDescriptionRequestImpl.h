@@ -46,7 +46,7 @@ class RTCSessionDescriptionCallback;
 
 class RTCSessionDescriptionRequestImpl : public RTCSessionDescriptionRequest, public ActiveDOMObject {
 public:
-    static PassRefPtr<RTCSessionDescriptionRequestImpl> create(ExecutionContext*, PassRefPtr<RTCSessionDescriptionCallback>, PassRefPtr<RTCErrorCallback>);
+    static PassRefPtr<RTCSessionDescriptionRequestImpl> create(ExecutionContext*, PassOwnPtr<RTCSessionDescriptionCallback>, PassOwnPtr<RTCErrorCallback>);
     virtual ~RTCSessionDescriptionRequestImpl();
 
     virtual void requestSucceeded(const blink::WebRTCSessionDescription&) OVERRIDE;
@@ -56,12 +56,12 @@ public:
     virtual void stop() OVERRIDE;
 
 private:
-    RTCSessionDescriptionRequestImpl(ExecutionContext*, PassRefPtr<RTCSessionDescriptionCallback>, PassRefPtr<RTCErrorCallback>);
+    RTCSessionDescriptionRequestImpl(ExecutionContext*, PassOwnPtr<RTCSessionDescriptionCallback>, PassOwnPtr<RTCErrorCallback>);
 
     void clear();
 
-    RefPtr<RTCSessionDescriptionCallback> m_successCallback;
-    RefPtr<RTCErrorCallback> m_errorCallback;
+    OwnPtr<RTCSessionDescriptionCallback> m_successCallback;
+    OwnPtr<RTCErrorCallback> m_errorCallback;
 };
 
 } // namespace WebCore

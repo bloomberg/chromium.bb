@@ -51,7 +51,7 @@ StorageInfo::~StorageInfo()
 {
 }
 
-void StorageInfo::queryUsageAndQuota(ExecutionContext* executionContext, int storageType, PassRefPtr<StorageUsageCallback> successCallback, PassRefPtr<StorageErrorCallback> errorCallback)
+void StorageInfo::queryUsageAndQuota(ExecutionContext* executionContext, int storageType, PassOwnPtr<StorageUsageCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
 {
     // Dispatching the request to StorageQuota, as this interface is deprecated in favor of StorageQuota.
     StorageQuota* storageQuota = getStorageQuota(storageType);
@@ -63,7 +63,7 @@ void StorageInfo::queryUsageAndQuota(ExecutionContext* executionContext, int sto
     storageQuota->queryUsageAndQuota(executionContext, successCallback, errorCallback);
 }
 
-void StorageInfo::requestQuota(ExecutionContext* executionContext, int storageType, unsigned long long newQuotaInBytes, PassRefPtr<StorageQuotaCallback> successCallback, PassRefPtr<StorageErrorCallback> errorCallback)
+void StorageInfo::requestQuota(ExecutionContext* executionContext, int storageType, unsigned long long newQuotaInBytes, PassOwnPtr<StorageQuotaCallback> successCallback, PassOwnPtr<StorageErrorCallback> errorCallback)
 {
     // Dispatching the request to StorageQuota, as this interface is deprecated in favor of StorageQuota.
     StorageQuota* storageQuota = getStorageQuota(storageType);

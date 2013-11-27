@@ -57,7 +57,7 @@ public:
 #if ENABLE(LEGACY_NOTIFICATIONS)
     virtual void requestPermission(WebCore::ExecutionContext*, WTF::PassRefPtr<WebCore::VoidCallback>);
 #endif
-    virtual void requestPermission(WebCore::ExecutionContext*, WTF::PassRefPtr<WebCore::NotificationPermissionCallback>);
+    virtual void requestPermission(WebCore::ExecutionContext*, WTF::PassOwnPtr<WebCore::NotificationPermissionCallback>);
     virtual void cancelRequestsForPermission(WebCore::ExecutionContext*) { }
 
 private:

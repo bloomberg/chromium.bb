@@ -62,14 +62,14 @@ public:
     static PassRefPtr<RTCPeerConnection> create(ExecutionContext*, const Dictionary& rtcConfiguration, const Dictionary& mediaConstraints, ExceptionState&);
     ~RTCPeerConnection();
 
-    void createOffer(PassRefPtr<RTCSessionDescriptionCallback>, PassRefPtr<RTCErrorCallback>, const Dictionary& mediaConstraints, ExceptionState&);
+    void createOffer(PassOwnPtr<RTCSessionDescriptionCallback>, PassOwnPtr<RTCErrorCallback>, const Dictionary& mediaConstraints, ExceptionState&);
 
-    void createAnswer(PassRefPtr<RTCSessionDescriptionCallback>, PassRefPtr<RTCErrorCallback>, const Dictionary& mediaConstraints, ExceptionState&);
+    void createAnswer(PassOwnPtr<RTCSessionDescriptionCallback>, PassOwnPtr<RTCErrorCallback>, const Dictionary& mediaConstraints, ExceptionState&);
 
-    void setLocalDescription(PassRefPtr<RTCSessionDescription>, PassRefPtr<VoidCallback>, PassRefPtr<RTCErrorCallback>, ExceptionState&);
+    void setLocalDescription(PassRefPtr<RTCSessionDescription>, PassRefPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>, ExceptionState&);
     PassRefPtr<RTCSessionDescription> localDescription(ExceptionState&);
 
-    void setRemoteDescription(PassRefPtr<RTCSessionDescription>, PassRefPtr<VoidCallback>, PassRefPtr<RTCErrorCallback>, ExceptionState&);
+    void setRemoteDescription(PassRefPtr<RTCSessionDescription>, PassRefPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>, ExceptionState&);
     PassRefPtr<RTCSessionDescription> remoteDescription(ExceptionState&);
 
     String signalingState() const;
@@ -79,7 +79,7 @@ public:
     // DEPRECATED
     void addIceCandidate(RTCIceCandidate*, ExceptionState&);
 
-    void addIceCandidate(RTCIceCandidate*, PassRefPtr<VoidCallback>, PassRefPtr<RTCErrorCallback>, ExceptionState&);
+    void addIceCandidate(RTCIceCandidate*, PassRefPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>, ExceptionState&);
 
     String iceGatheringState() const;
 
@@ -95,7 +95,7 @@ public:
 
     void removeStream(PassRefPtr<MediaStream>, ExceptionState&);
 
-    void getStats(PassRefPtr<RTCStatsCallback> successCallback, PassRefPtr<MediaStreamTrack> selector);
+    void getStats(PassOwnPtr<RTCStatsCallback> successCallback, PassRefPtr<MediaStreamTrack> selector);
 
     PassRefPtr<RTCDataChannel> createDataChannel(String label, const Dictionary& dataChannelDict, ExceptionState&);
 

@@ -51,7 +51,7 @@ class UserMediaController;
 
 class UserMediaRequest : public RefCounted<UserMediaRequest>, public ContextLifecycleObserver {
 public:
-    static PassRefPtr<UserMediaRequest> create(ExecutionContext*, UserMediaController*, const Dictionary& options, PassRefPtr<NavigatorUserMediaSuccessCallback>, PassRefPtr<NavigatorUserMediaErrorCallback>, ExceptionState&);
+    static PassRefPtr<UserMediaRequest> create(ExecutionContext*, UserMediaController*, const Dictionary& options, PassOwnPtr<NavigatorUserMediaSuccessCallback>, PassOwnPtr<NavigatorUserMediaErrorCallback>, ExceptionState&);
     ~UserMediaRequest();
 
     NavigatorUserMediaSuccessCallback* successCallback() const { return m_successCallback.get(); }
@@ -73,15 +73,15 @@ public:
     virtual void contextDestroyed();
 
 private:
-    UserMediaRequest(ExecutionContext*, UserMediaController*, PassRefPtr<MediaConstraintsImpl> audio, PassRefPtr<MediaConstraintsImpl> video, PassRefPtr<NavigatorUserMediaSuccessCallback>, PassRefPtr<NavigatorUserMediaErrorCallback>);
+    UserMediaRequest(ExecutionContext*, UserMediaController*, PassRefPtr<MediaConstraintsImpl> audio, PassRefPtr<MediaConstraintsImpl> video, PassOwnPtr<NavigatorUserMediaSuccessCallback>, PassOwnPtr<NavigatorUserMediaErrorCallback>);
 
     RefPtr<MediaConstraintsImpl> m_audio;
     RefPtr<MediaConstraintsImpl> m_video;
 
     UserMediaController* m_controller;
 
-    RefPtr<NavigatorUserMediaSuccessCallback> m_successCallback;
-    RefPtr<NavigatorUserMediaErrorCallback> m_errorCallback;
+    OwnPtr<NavigatorUserMediaSuccessCallback> m_successCallback;
+    OwnPtr<NavigatorUserMediaErrorCallback> m_errorCallback;
 };
 
 } // namespace WebCore

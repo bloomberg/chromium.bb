@@ -32,19 +32,18 @@
 #define StringCallback_h
 
 #include "wtf/Forward.h"
-#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
 class ExecutionContext;
 
-class StringCallback : public RefCounted<StringCallback> {
+class StringCallback {
 public:
     virtual ~StringCallback() { }
     virtual bool handleEvent(const String& data) = 0;
 
     // Helper to post callback task.
-    void scheduleCallback(ExecutionContext*, const String& data);
+    static void scheduleCallback(PassOwnPtr<StringCallback>, ExecutionContext*, const String& data);
 };
 
 } // namespace WebCore

@@ -31,12 +31,11 @@
 #ifndef RTCErrorCallback_h
 #define RTCErrorCallback_h
 
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class RTCErrorCallback : public RefCounted<RTCErrorCallback> {
+class RTCErrorCallback {
 public:
     virtual ~RTCErrorCallback() { }
     virtual bool handleEvent(const String& errorInformation) = 0;

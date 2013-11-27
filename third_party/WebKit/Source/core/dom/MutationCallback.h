@@ -31,7 +31,6 @@
 #ifndef MutationCallback_h
 #define MutationCallback_h
 
-#include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -40,7 +39,7 @@ namespace WebCore {
 class MutationRecord;
 class MutationObserver;
 
-class MutationCallback : public RefCounted<MutationCallback> {
+class MutationCallback {
 public:
     virtual ~MutationCallback() { }
 

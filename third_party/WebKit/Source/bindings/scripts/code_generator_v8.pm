@@ -2557,10 +2557,11 @@ END
         AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         if (IsCallbackInterface($parameter->type)) {
+            my $ptrType = IsLegacyRefCountedCallback($parameter->type) ? "Ref" : "Own";
             my $v8ClassName = "V8" . $parameter->type;
             AddToImplIncludes("$v8ClassName.h");
             if ($parameter->isOptional) {
-                $parameterCheckString .= "    RefPtr<" . $parameter->type . "> $parameterName;\n";
+                $parameterCheckString .= "    ${ptrType}Ptr<" . $parameter->type . "> $parameterName;\n";
                 $parameterCheckString .= "    if (info.Length() > $paramIndex && !info[$paramIndex]->IsNull() && !info[$paramIndex]->IsUndefined()) {\n";
                 $parameterCheckString .= "        if (!info[$paramIndex]->IsFunction()) {\n";
                 $parameterCheckString .= "            throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"The callback provided as parameter $humanFriendlyIndex is not a function.\"), info.GetIsolate());\n";
@@ -2579,8 +2580,8 @@ END
                 $parameterCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"The callback provided as parameter $humanFriendlyIndex is not a function.\"), info.GetIsolate());\n";
                 $parameterCheckString .= "        return;\n";
                 $parameterCheckString .= "    }\n";
-                $parameterCheckString .= "    RefPtr<" . $parameter->type . "> $parameterName = ";
-                $parameterCheckString .= "info[$paramIndex]->IsNull() ? 0 : " if $parameter->isNullable;
+                $parameterCheckString .= "    ${ptrType}Ptr<" . $parameter->type . "> $parameterName = ";
+                $parameterCheckString .= "info[$paramIndex]->IsNull() ? nullptr : " if $parameter->isNullable;
                 $parameterCheckString .= "${v8ClassName}::create(info[$paramIndex], getExecutionContext());\n";
             }
         } elsif ($parameter->extendedAttributes->{"Clamp"}) {
@@ -4782,6 +4783,9 @@ sub GenerateCallbackHeader
     my $interfaceName = $interface->name;
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
+    my $refCounted = IsLegacyRefCountedCallback($interfaceName);
+    my $ptrType = $refCounted ? "Ref" : "Own";
+    my $adoptType = $refCounted ? "Ref" : "Ptr";
 
     my @includes = ();
     push(@includes, "bindings/v8/ActiveDOMCallback.h");
@@ -4796,11 +4800,11 @@ sub GenerateCallbackHeader
     $header{class}->addFooter("};\n");
 
     $header{classPublic}->add(<<END);
-    static PassRefPtr<${v8ClassName}> create(v8::Handle<v8::Value> jsValue, ExecutionContext* context)
+    static Pass${ptrType}Ptr<${v8ClassName}> create(v8::Handle<v8::Value> jsValue, ExecutionContext* context)
     {
         ASSERT(jsValue->IsObject());
         ASSERT(context);
-        return adoptRef(new ${v8ClassName}(v8::Handle<v8::Object>::Cast(jsValue), context));
+        return adopt${adoptType}(new ${v8ClassName}(v8::Handle<v8::Object>::Cast(jsValue), context));
     }
 
     virtual ~${v8ClassName}();
@@ -6353,6 +6357,32 @@ sub NeedsSpecialWrap
     return 1 if $interface->extendedAttributes->{"SpecialWrapFor"};
     return 1 if InheritsInterface($interface, "Document");
 
+    return 0;
+}
+
+# FIXME: This list should go away entirely, see http://crbug.com/323681
+sub IsLegacyRefCountedCallback
+{
+    my $name = shift;
+    # WebSQL
+    return 1 if $name eq "DatabaseCallback";
+    return 1 if $name eq "SQLTransactionCallback";
+    return 1 if $name eq "SQLTransactionErrorCallback";
+    return 1 if $name eq "SQLTransactionSyncCallback";
+    return 1 if $name eq "SQLStatementCallback";
+    return 1 if $name eq "SQLStatementErrorCallback";
+    # Filesystem
+    return 1 if $name eq "EntryCallback";
+    return 1 if $name eq "EntriesCallback";
+    return 1 if $name eq "ErrorCallback";
+    return 1 if $name eq "FileCallback";
+    return 1 if $name eq "FileSystemCallback";
+    return 1 if $name eq "FileWriterCallback";
+    return 1 if $name eq "MetadataCallback";
+    # requestAnimationFrame
+    return 1 if $name eq "RequestAnimationFrameCallback";
+    # Used everywhere
+    return 1 if $name eq "VoidCallback";
     return 0;
 }
 

@@ -36,7 +36,7 @@ namespace WebCore {
 
 class CSSVariablesMap;
 
-class CSSVariablesMapForEachCallback : public RefCounted<CSSVariablesMapForEachCallback> {
+class CSSVariablesMapForEachCallback {
 public:
     virtual ~CSSVariablesMapForEachCallback() { }
     virtual bool handleItem(ScriptValue thisValue, const String& value, const String& name, CSSVariablesMap*) = 0;

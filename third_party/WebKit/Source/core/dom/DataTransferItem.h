@@ -56,7 +56,7 @@ public:
     String kind() const;
     String type() const;
 
-    void getAsString(ExecutionContext*, PassRefPtr<StringCallback>) const;
+    void getAsString(ExecutionContext*, PassOwnPtr<StringCallback>) const;
     PassRefPtr<Blob> getAsFile() const;
 
     Clipboard* clipboard() { return m_clipboard.get(); }

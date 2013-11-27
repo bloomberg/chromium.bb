@@ -30,15 +30,16 @@
 #include "modules/mediastream/MediaStreamTrackSourcesCallback.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebSourceInfo.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
-PassRefPtr<MediaStreamTrackSourcesRequest> MediaStreamTrackSourcesRequest::create(String origin, PassRefPtr<MediaStreamTrackSourcesCallback> callback)
+PassRefPtr<MediaStreamTrackSourcesRequest> MediaStreamTrackSourcesRequest::create(String origin, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
 {
     return adoptRef(new MediaStreamTrackSourcesRequest(origin, callback));
 }
 
-MediaStreamTrackSourcesRequest::MediaStreamTrackSourcesRequest(String origin, PassRefPtr<MediaStreamTrackSourcesCallback> callback)
+MediaStreamTrackSourcesRequest::MediaStreamTrackSourcesRequest(String origin, PassOwnPtr<MediaStreamTrackSourcesCallback> callback)
     : m_callback(callback)
     , m_scheduledEventTimer(this, &MediaStreamTrackSourcesRequest::scheduledEventTimerFired)
 {

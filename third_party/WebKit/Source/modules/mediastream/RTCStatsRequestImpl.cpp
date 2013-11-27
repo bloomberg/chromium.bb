@@ -31,14 +31,14 @@
 
 namespace WebCore {
 
-PassRefPtr<RTCStatsRequestImpl> RTCStatsRequestImpl::create(ExecutionContext* context, PassRefPtr<RTCStatsCallback> callback, PassRefPtr<MediaStreamTrack> selector)
+PassRefPtr<RTCStatsRequestImpl> RTCStatsRequestImpl::create(ExecutionContext* context, PassOwnPtr<RTCStatsCallback> callback, PassRefPtr<MediaStreamTrack> selector)
 {
     RefPtr<RTCStatsRequestImpl> request = adoptRef(new RTCStatsRequestImpl(context, callback, selector));
     request->suspendIfNeeded();
     return request.release();
 }
 
-RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context, PassRefPtr<RTCStatsCallback> callback, PassRefPtr<MediaStreamTrack> selector)
+RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context, PassOwnPtr<RTCStatsCallback> callback, PassRefPtr<MediaStreamTrack> selector)
     : ActiveDOMObject(context)
     , m_successCallback(callback)
     , m_component(selector ? selector->component() : 0)

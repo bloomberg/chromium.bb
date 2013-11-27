@@ -443,7 +443,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestTypedefs", "The callback provided as parameter 2 is not a function."), info.GetIsolate());
         return;
     }
-    RefPtr<TestCallback> testCallback = V8TestCallback::create(info[1], getExecutionContext());
+    OwnPtr<TestCallback> testCallback = V8TestCallback::create(info[1], getExecutionContext());
 
     RefPtr<TestTypedefs> impl = TestTypedefs::create(hello, testCallback);
     v8::Handle<v8::Object> wrapper = info.Holder();

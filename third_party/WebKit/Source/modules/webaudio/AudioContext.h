@@ -113,7 +113,7 @@ public:
     PassRefPtr<AudioBuffer> createBuffer(ArrayBuffer*, bool mixToMono, ExceptionState&);
 
     // Asynchronous audio file data decoding.
-    void decodeAudioData(ArrayBuffer*, PassRefPtr<AudioBufferCallback>, PassRefPtr<AudioBufferCallback>, ExceptionState&);
+    void decodeAudioData(ArrayBuffer*, PassOwnPtr<AudioBufferCallback>, PassOwnPtr<AudioBufferCallback>, ExceptionState&);
 
     AudioListener* listener() { return m_listener.get(); }
 

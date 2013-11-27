@@ -54,13 +54,13 @@ struct MutationObserver::ObserverLessThan {
     }
 };
 
-PassRefPtr<MutationObserver> MutationObserver::create(PassRefPtr<MutationCallback> callback)
+PassRefPtr<MutationObserver> MutationObserver::create(PassOwnPtr<MutationCallback> callback)
 {
     ASSERT(isMainThread());
     return adoptRef(new MutationObserver(callback));
 }
 
-MutationObserver::MutationObserver(PassRefPtr<MutationCallback> callback)
+MutationObserver::MutationObserver(PassOwnPtr<MutationCallback> callback)
     : m_callback(callback)
     , m_priority(s_observerPriority++)
 {

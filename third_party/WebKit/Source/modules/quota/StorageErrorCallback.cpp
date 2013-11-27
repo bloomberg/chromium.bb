@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-StorageErrorCallback::CallbackTask::CallbackTask(PassRefPtr<StorageErrorCallback> callback, ExceptionCode ec)
+StorageErrorCallback::CallbackTask::CallbackTask(PassOwnPtr<StorageErrorCallback> callback, ExceptionCode ec)
     : m_callback(callback)
     , m_ec(ec)
 {
