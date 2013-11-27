@@ -157,14 +157,23 @@ bool ParseRangeLine(const std::string& line,
 
 // Parses range property lines from /proc/<PID>/smaps, e.g.:
 // Private_Dirty:        16 kB
+//
+// Returns |false| iff it recognizes a new range line. Outputs non-zero |size|
+// only if parsing succeeded.
 bool ParseRangeProperty(const std::string& line,
                         std::vector<std::string>* tokens,
                         uint64* size,
                         bool* is_private_dirty) {
   tokens->clear();
   base::SplitStringAlongWhitespace(line, tokens);
-  if (tokens->size() != 3)
+
+  // If the line is long, attempt to parse new range outside of this scope.
+  if (tokens->size() > 3)
     return false;
+
+  // Skip the line on other parsing error occasions.
+  if (tokens->size() < 3)
+    return true;
   const std::string& type = (*tokens)[0];
   if (type != kPrivateDirty)
     return true;
@@ -176,7 +185,7 @@ bool ParseRangeProperty(const std::string& line,
   const std::string& size_str = (*tokens)[1];
   uint64 map_size = 0;
   if (!base::StringToUint64(size_str, &map_size))
-    return false;
+    return true;
   *is_private_dirty = true;
   *size = map_size;
   return true;
