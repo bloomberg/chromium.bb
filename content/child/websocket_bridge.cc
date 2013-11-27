@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -19,6 +20,8 @@
 #include "url/gurl.h"
 #include "third_party/WebKit/public/platform/WebSocketHandle.h"
 #include "third_party/WebKit/public/platform/WebSocketHandleClient.h"
+#include "third_party/WebKit/public/platform/WebSocketHandshakeRequestInfo.h"
+#include "third_party/WebKit/public/platform/WebSocketHandshakeResponseInfo.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -57,6 +60,10 @@ bool WebSocketBridge::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebSocketBridge, msg)
     IPC_MESSAGE_HANDLER(WebSocketMsg_AddChannelResponse, DidConnect)
+    IPC_MESSAGE_HANDLER(WebSocketMsg_NotifyStartOpeningHandshake,
+                        DidStartOpeningHandshake)
+    IPC_MESSAGE_HANDLER(WebSocketMsg_NotifyFinishOpeningHandshake,
+                        DidFinishOpeningHandshake)
     IPC_MESSAGE_HANDLER(WebSocketMsg_NotifyFailure, DidFail)
     IPC_MESSAGE_HANDLER(WebSocketMsg_SendFrame, DidReceiveData)
     IPC_MESSAGE_HANDLER(WebSocketMsg_FlowControl, DidReceiveFlowControl)
@@ -83,6 +90,37 @@ void WebSocketBridge::DidConnect(bool fail,
   WebString extensions_to_pass = WebString::fromUTF8(extensions);
   client->didConnect(this, fail, protocol_to_pass, extensions_to_pass);
   // |this| can be deleted here.
+}
+
+void WebSocketBridge::DidStartOpeningHandshake(
+    const WebSocketHandshakeRequest& request) {
+  DVLOG(1) << "WebSocketBridge::DidStartOpeningHandshake("
+           << request.url << ")";
+  // All strings are already encoded to ASCII in the browser.
+  blink::WebSocketHandshakeRequestInfo request_to_pass;
+  request_to_pass.setURL(WebURL(request.url));
+  for (size_t i = 0; i < request.headers.size(); ++i) {
+    const std::pair<std::string, std::string>& header = request.headers[i];
+    request_to_pass.addHeaderField(WebString::fromLatin1(header.first),
+                                   WebString::fromLatin1(header.second));
+  }
+  client_->didStartOpeningHandshake(this, request_to_pass);
+}
+
+void WebSocketBridge::DidFinishOpeningHandshake(
+    const WebSocketHandshakeResponse& response) {
+  DVLOG(1) << "WebSocketBridge::DidFinishOpeningHandshake("
+           << response.url << ")";
+  // All strings are already encoded to ASCII in the browser.
+  blink::WebSocketHandshakeResponseInfo response_to_pass;
+  response_to_pass.setStatusCode(response.status_code);
+  response_to_pass.setStatusText(WebString::fromLatin1(response.status_text));
+  for (size_t i = 0; i < response.headers.size(); ++i) {
+    const std::pair<std::string, std::string>& header = response.headers[i];
+    response_to_pass.addHeaderField(WebString::fromLatin1(header.first),
+                                    WebString::fromLatin1(header.second));
+  }
+  client_->didFinishOpeningHandshake(this, response_to_pass);
 }
 
 void WebSocketBridge::DidFail(const std::string& message) {

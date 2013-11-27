@@ -22,6 +22,8 @@ class URLRequestContext;
 
 namespace content {
 
+struct WebSocketHandshakeRequest;
+struct WebSocketHandshakeResponse;
 class WebSocketHost;
 
 // Creates a WebSocketHost object for each WebSocket channel, and dispatches
@@ -32,7 +34,7 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
 
   // Given a routing_id, WebSocketHostFactory returns a new instance of
   // WebSocketHost or its subclass.
-  typedef base::Callback<WebSocketHost*(int)> WebSocketHostFactory;
+  typedef base::Callback<WebSocketHost*(int)> WebSocketHostFactory;  // NOLINT
 
   // Return value for methods that may delete the WebSocketHost. This enum is
   // binary-compatible with net::WebSocketEventInterface::ChannelState, to make
@@ -81,6 +83,16 @@ class CONTENT_EXPORT WebSocketDispatcherHost : public BrowserMessageFilter {
 
   // Sends a WebSocketMsg_SendClosing IPC
   WebSocketHostState SendClosing(int routing_id) WARN_UNUSED_RESULT;
+
+  // Sends a WebSocketMsg_NotifyStartOpeningHandshake IPC.
+  WebSocketHostState SendStartOpeningHandshake(
+      int routing_id,
+      const WebSocketHandshakeRequest& request) WARN_UNUSED_RESULT;
+
+  // Sends a WebSocketMsg_NotifyFinishOpeningHandshake IPC.
+  WebSocketHostState SendFinishOpeningHandshake(
+      int routing_id,
+      const WebSocketHandshakeResponse& response) WARN_UNUSED_RESULT;
 
   // Sends a WebSocketMsg_DropChannel IPC and deletes and unregisters the
   // channel.

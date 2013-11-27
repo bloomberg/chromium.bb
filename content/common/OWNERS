@@ -38,6 +38,6 @@ per-file accessibility_node_data.*=dmazzoni@chromium.org
 per-file accessibility_node_data.*=dtseng@chromium.org
 
 # WebSocket
-per-file websocket.h=ricea@chromium.org
-per-file websocket.h=tyoshino@chromium.org
-per-file websocket.h=yhirano@chromium.org
+per-file websocket.*=ricea@chromium.org
+per-file websocket.*=tyoshino@chromium.org
+per-file websocket.*=yhirano@chromium.org

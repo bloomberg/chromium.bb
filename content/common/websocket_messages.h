@@ -26,6 +26,20 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START WebSocketMsgStart
 
+IPC_STRUCT_TRAITS_BEGIN(content::WebSocketHandshakeRequest)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(headers)
+  IPC_STRUCT_TRAITS_MEMBER(request_time)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::WebSocketHandshakeResponse)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(status_code)
+  IPC_STRUCT_TRAITS_MEMBER(status_text)
+  IPC_STRUCT_TRAITS_MEMBER(headers)
+  IPC_STRUCT_TRAITS_MEMBER(response_time)
+IPC_STRUCT_TRAITS_END()
+
 // WebSocket messages sent from the renderer to the browser.
 
 // Open new virtual WebSocket connection to |socket_url|. |channel_id| is an
@@ -58,6 +72,19 @@ IPC_MESSAGE_ROUTED3(WebSocketMsg_AddChannelResponse,
                     bool /* fail */,
                     std::string /* selected_protocol */,
                     std::string /* extensions */)
+
+// Notify the renderer that the browser has started an opening handshake.
+// This message is for showing the request in the inspector and
+// can be omitted if the inspector is not active.
+IPC_MESSAGE_ROUTED1(WebSocketMsg_NotifyStartOpeningHandshake,
+                    content::WebSocketHandshakeRequest /* request */)
+
+// Notify the renderer that the browser has finished an opening handshake.
+// This message precedes AddChannelResponse.
+// This message is for showing the response in the inspector and
+// can be omitted if the inspector is not active.
+IPC_MESSAGE_ROUTED1(WebSocketMsg_NotifyFinishOpeningHandshake,
+                    content::WebSocketHandshakeResponse /* response */)
 
 // Notify the renderer that the browser is required to fail the connection
 // (see RFC6455 7.1.7 for details).

@@ -371,6 +371,7 @@
     'common/view_message_enums.h',
     'common/webplugin_geometry.cc',
     'common/webplugin_geometry.h',
+    'common/websocket.cc',
     'common/websocket.h',
     'common/websocket_messages.h',
     'common/worker_messages.h',
