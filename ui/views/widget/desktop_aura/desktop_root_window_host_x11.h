@@ -222,9 +222,6 @@ private:
   // The bounds of our window before we were maximized.
   gfx::Rect restored_bounds_;
 
-  // True if the window should be focused when the window is shown.
-  bool focus_when_shown_;
-
   // The window manager state bits.
   std::set< ::Atom> window_properties_;
 

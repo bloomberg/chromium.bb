@@ -84,19 +84,7 @@ bool IsSideBezelsEnabled() {
 }
 #endif
 
-void SelectEventsForRootWindow() {
-  XDisplay* display = gfx::GetXDisplay();
-  ::Window root_window = ui::GetX11RootWindow();
-
-  // Receive resize events for the root-window so |x_root_bounds_| can be
-  // updated.
-  XWindowAttributes attr;
-  XGetWindowAttributes(display, root_window, &attr);
-  if (!(attr.your_event_mask & StructureNotifyMask)) {
-    XSelectInput(display, root_window,
-                 StructureNotifyMask | attr.your_event_mask);
-  }
-
+void SelectEventsForRootWindow(XDisplay* display, ::Window root_window) {
   if (!ui::IsXInput2Available())
     return;
 
@@ -327,7 +315,6 @@ RootWindowHostX11::RootWindowHostX11(const gfx::Rect& bounds)
       window_mapped_(false),
       bounds_(bounds),
       is_internal_display_(false),
-      focus_when_shown_(false),
       touch_calibrate_(new internal::TouchEventCalibrate),
       mouse_move_filter_(new MouseMoveFilter),
       atom_cache_(xdisplay_, kAtomsToCache),
@@ -360,12 +347,7 @@ RootWindowHostX11::RootWindowHostX11(const gfx::Rect& bounds)
   if (ui::IsXInput2Available())
     ui::TouchFactory::GetInstance()->SetupXI2ForXWindow(xwindow_);
 
-  SelectEventsForRootWindow();
-
-  // Get the initial size of the X root window.
-  XWindowAttributes attrs;
-  XGetWindowAttributes(xdisplay_, x_root_window_, &attrs);
-  x_root_bounds_.SetRect(attrs.x, attrs.y, attrs.width, attrs.height);
+  SelectEventsForRootWindow(xdisplay_, x_root_window_);
 
   // TODO(erg): We currently only request window deletion events. We also
   // should listen for activation events and anything else that GTK+ listens
@@ -517,13 +499,6 @@ bool RootWindowHostX11::Dispatch(const base::NativeEvent& event) {
     case GenericEvent:
       DispatchXI2Event(event);
       break;
-    case MapNotify: {
-      // If there's no window manager running, we need to assign the X input
-      // focus to our host window.
-      if (!IsWindowManagerPresent() && focus_when_shown_)
-        XSetInputFocus(xdisplay_, xwindow_, RevertToNone, CurrentTime);
-      break;
-    }
     case ClientMessage: {
       Atom message_type = static_cast<Atom>(xev->xclient.data.l[0]);
       if (message_type == atom_cache_.GetAtom("WM_DELETE_WINDOW")) {
@@ -848,12 +823,6 @@ void RootWindowHostX11::OnRootWindowInitialized(RootWindow* root_window) {
 bool RootWindowHostX11::DispatchEventForRootWindow(
     const base::NativeEvent& event) {
   switch (event->type) {
-    case ConfigureNotify:
-      DCHECK_EQ(x_root_window_, event->xconfigure.event);
-      x_root_bounds_.SetRect(event->xconfigure.x, event->xconfigure.y,
-          event->xconfigure.width, event->xconfigure.height);
-      break;
-
     case GenericEvent:
       DispatchXI2Event(event);
       break;

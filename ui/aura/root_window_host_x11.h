@@ -117,14 +117,8 @@ class AURA_EXPORT RootWindowHostX11 : public RootWindowHost,
   // The insets that specifies the effective area within the |window_|.
   gfx::Insets insets_;
 
-  // The bounds of |x_root_window_|.
-  gfx::Rect x_root_bounds_;
-
   // True if the root host resides on the internal display
   bool is_internal_display_;
-
-  // True if the window should be focused when the window is shown.
-  bool focus_when_shown_;
 
   scoped_ptr<XID[]> pointer_barriers_;
 

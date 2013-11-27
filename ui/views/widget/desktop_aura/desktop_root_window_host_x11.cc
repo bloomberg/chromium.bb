@@ -127,7 +127,6 @@ DesktopRootWindowHostX11::DesktopRootWindowHostX11(
       x_root_window_(DefaultRootWindow(xdisplay_)),
       atom_cache_(xdisplay_, kAtomsToCache),
       window_mapped_(false),
-      focus_when_shown_(false),
       is_fullscreen_(false),
       is_always_on_top_(false),
       root_window_(NULL),
@@ -1358,11 +1357,6 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
       break;
     }
     case MapNotify: {
-      // If there's no window manager running, we need to assign the X input
-      // focus to our host window.
-      if (!IsWindowManagerPresent() && focus_when_shown_)
-        XSetInputFocus(xdisplay_, xwindow_, RevertToNone, CurrentTime);
-
       FOR_EACH_OBSERVER(DesktopRootWindowHostObserverX11,
                         observer_list_,
                         OnWindowMapped(xwindow_));
