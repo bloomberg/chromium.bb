@@ -50,12 +50,7 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_handlers/background_info.h"
-#include "grit/browser_resources.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/events/keycodes/keyboard_codes.h"
 
 #if !defined(OS_ANDROID)
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -144,8 +139,7 @@ ExtensionHost::ExtensionHost(const Extension* extension,
       document_element_available_(false),
       initial_url_(url),
       extension_function_dispatcher_(profile_, this),
-      extension_host_type_(host_type),
-      associated_web_contents_(NULL) {
+      extension_host_type_(host_type) {
   // Not used for panels, see PanelHost.
   DCHECK(host_type == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE ||
          host_type == VIEW_TYPE_EXTENSION_DIALOG ||
@@ -179,29 +173,6 @@ ExtensionHost::~ExtensionHost() {
       content::Source<Profile>(profile_),
       content::Details<ExtensionHost>(this));
   ProcessCreationQueue::GetInstance()->Remove(this);
-}
-
-WebContents* ExtensionHost::GetAssociatedWebContents() const {
-  return associated_web_contents_;
-}
-
-WebContents* ExtensionHost::GetVisibleWebContents() const {
-  if (associated_web_contents_)
-    return associated_web_contents_;
-  if (extension_host_type_ == VIEW_TYPE_EXTENSION_POPUP)
-    return host_contents_.get();
-  return NULL;
-}
-
-// TODO(jamescook): Move this to ExtensionViewHost, as it is only used by
-// dialogs and infobars.
-void ExtensionHost::SetAssociatedWebContents(
-    content::WebContents* web_contents) {
-  associated_web_contents_ = web_contents;
-  if (web_contents) {
-    registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                   content::Source<WebContents>(associated_web_contents_));
-  }
 }
 
 content::RenderProcessHost* ExtensionHost::render_process_host() const {
@@ -335,12 +306,6 @@ void ExtensionHost::Observe(int type,
         extension_ = NULL;
       }
       break;
-    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
-      if (content::Source<WebContents>(source).ptr() ==
-          associated_web_contents_) {
-        associated_web_contents_ = NULL;
-      }
-      break;
     default:
       NOTREACHED() << "Unexpected notification sent.";
       break;
@@ -370,17 +335,6 @@ void ExtensionHost::RenderProcessGone(base::TerminationStatus status) {
       chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
       content::Source<Profile>(profile_),
       content::Details<ExtensionHost>(this));
-}
-
-// TODO(jamescook): Move to ExtensionViewHost, which handles infobars.
-void ExtensionHost::InsertInfobarCSS() {
-  DCHECK(!IsBackgroundPage());
-
-  static const base::StringPiece css(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-      IDR_EXTENSIONS_INFOBAR_CSS));
-
-  render_view_host()->InsertCSS(string16(), css.as_string());
 }
 
 void ExtensionHost::DidStopLoading(content::RenderViewHost* render_view_host) {
@@ -426,20 +380,14 @@ void ExtensionHost::DocumentAvailableInMainFrame() {
   // bail. No need for the redundant setup. http://crbug.com/31170
   if (document_element_available_)
     return;
-
   document_element_available_ = true;
-  if (IsBackgroundPage()) {
-    ExtensionSystem::Get(profile_)->extension_service()->
-        SetBackgroundPageReady(extension_);
-  } else {
-    switch (extension_host_type_) {
-      case VIEW_TYPE_EXTENSION_INFOBAR:
-        InsertInfobarCSS();
-        break;
-      default:
-        break;  // No style sheet for other types, at the moment.
-    }
-  }
+  OnDocumentAvailable();
+}
+
+void ExtensionHost::OnDocumentAvailable() {
+  DCHECK(extension_host_type_ == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
+  ExtensionSystem::Get(profile_)->extension_service()->
+      SetBackgroundPageReady(extension_);
 }
 
 void ExtensionHost::CloseContents(WebContents* contents) {
@@ -503,8 +451,9 @@ void ExtensionHost::OnDetailedConsoleMessageAdded(
     int32 severity_level) {
   if (IsSourceFromAnExtension(source)) {
     GURL context_url;
-    if (associated_web_contents_)
-      context_url = associated_web_contents_->GetLastCommittedURL();
+    WebContents* associated_contents = GetAssociatedWebContents();
+    if (associated_contents)
+      context_url = associated_contents->GetLastCommittedURL();
     else if (host_contents_.get())
       context_url = host_contents_->GetLastCommittedURL();
 

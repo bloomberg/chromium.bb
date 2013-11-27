@@ -79,11 +79,6 @@ class ExtensionHost : public content::WebContentsDelegate,
   ViewType extension_host_type() const { return extension_host_type_; }
   const GURL& GetURL() const;
 
-  // ExtensionFunctionDispatcher::Delegate
-  virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
-  virtual content::WebContents* GetVisibleWebContents() const OVERRIDE;
-  void SetAssociatedWebContents(content::WebContents* web_contents);
-
   // Returns true if the render view is initialized and didn't crash.
   bool IsRenderViewLive() const;
 
@@ -91,9 +86,6 @@ class ExtensionHost : public content::WebContentsDelegate,
   // navigating to this host's url. Uses host_view for the RenderViewHost's view
   // (can be NULL). This happens delayed to avoid locking the UI.
   void CreateRenderViewSoon();
-
-  // Insert a default style sheet for Extension Infobars.
-  void InsertInfobarCSS();
 
   // Notifications from the JavaScriptDialogManager when a dialog is being
   // opened/closed.
@@ -138,8 +130,12 @@ class ExtensionHost : public content::WebContentsDelegate,
                        const content::NotificationDetails& details) OVERRIDE;
 
  protected:
-  // Called before the EXTENSION_HOST_DID_STOP_LOADING notification is sent.
+  // Called after the extension page finishes loading but before the
+  // EXTENSION_HOST_DID_STOP_LOADING notification is sent.
   virtual void OnDidStopLoading();
+
+  // Called once when the document first becomes available.
+  virtual void OnDocumentAvailable();
 
   // Returns true if we're hosting a background page.
   virtual bool IsBackgroundPage() const;
@@ -220,9 +216,6 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   // The type of view being hosted.
   ViewType extension_host_type_;
-
-  // The relevant WebContents associated with this ExtensionHost, if any.
-  content::WebContents* associated_web_contents_;
 
   // Used to measure how long it's been since the host was created.
   base::ElapsedTimer since_created_;

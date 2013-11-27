@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_VIEW_HOST_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_VIEW_HOST_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_host.h"
 
 #if defined(TOOLKIT_VIEWS)
@@ -57,6 +58,8 @@ class ExtensionViewHost : public ExtensionHost {
   // instantiate Browser objects.
   void CreateView(Browser* browser);
 
+  void SetAssociatedWebContents(content::WebContents* web_contents);
+
   // Handles keyboard events that were not handled by HandleKeyboardEvent().
   // Platform specific implementation may override this method to handle the
   // event in platform specific way.
@@ -66,6 +69,7 @@ class ExtensionViewHost : public ExtensionHost {
 
   // ExtensionHost
   virtual void OnDidStopLoading() OVERRIDE;
+  virtual void OnDocumentAvailable() OVERRIDE;
   virtual bool IsBackgroundPage() const OVERRIDE;
 
   // content::WebContentsDelegate
@@ -93,10 +97,22 @@ class ExtensionViewHost : public ExtensionHost {
 
   // ExtensionFunctionDispatcher::Delegate
   virtual WindowController* GetExtensionWindowController() const OVERRIDE;
+  virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
+  virtual content::WebContents* GetVisibleWebContents() const OVERRIDE;
 
  private:
+  // Insert a default style sheet for Extension Infobars.
+  void InsertInfobarCSS();
+
   // Optional view that shows the rendered content in the UI.
   scoped_ptr<PlatformExtensionView> view_;
+
+  // The relevant WebContents associated with this ExtensionViewHost, if any.
+  content::WebContents* associated_web_contents_;
+
+  // Observer to detect when the associated web contents is destroyed.
+  class AssociatedWebContentsObserver;
+  scoped_ptr<AssociatedWebContentsObserver> associated_web_contents_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionViewHost);
 };

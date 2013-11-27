@@ -4,24 +4,51 @@
 
 #include "chrome/browser/extensions/extension_view_host.h"
 
+#include "base/strings/string_piece.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/render_view_host.h"
+#include "grit/browser_resources.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 using content::NativeWebKeyboardEvent;
 using content::OpenURLParams;
 using content::RenderViewHost;
 using content::WebContents;
+using content::WebContentsObserver;
 
 namespace extensions {
+
+// Notifies an ExtensionViewHost when a WebContents is destroyed.
+class ExtensionViewHost::AssociatedWebContentsObserver
+    : public WebContentsObserver {
+ public:
+  AssociatedWebContentsObserver(ExtensionViewHost* host,
+                                WebContents* web_contents)
+      : WebContentsObserver(web_contents), host_(host) {}
+  virtual ~AssociatedWebContentsObserver() {}
+
+  // content::WebContentsObserver:
+  virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE {
+    // Deleting |this| from here is safe.
+    host_->SetAssociatedWebContents(NULL);
+  }
+
+ private:
+  ExtensionViewHost* host_;
+
+  DISALLOW_COPY_AND_ASSIGN(AssociatedWebContentsObserver);
+};
 
 ExtensionViewHost::ExtensionViewHost(
     const Extension* extension,
     content::SiteInstance* site_instance,
     const GURL& url,
     ViewType host_type)
-    : ExtensionHost(extension, site_instance, url, host_type) {
+    : ExtensionHost(extension, site_instance, url, host_type),
+      associated_web_contents_(NULL) {
   // Not used for panels, see PanelHost.
   DCHECK(host_type == VIEW_TYPE_EXTENSION_DIALOG ||
          host_type == VIEW_TYPE_EXTENSION_INFOBAR ||
@@ -46,6 +73,17 @@ void ExtensionViewHost::CreateView(Browser* browser) {
   // TODO(port)
   NOTREACHED();
 #endif
+}
+
+void ExtensionViewHost::SetAssociatedWebContents(WebContents* web_contents) {
+  associated_web_contents_ = web_contents;
+  if (associated_web_contents_) {
+    // Observe the new WebContents for deletion.
+    associated_web_contents_observer_.reset(
+        new AssociatedWebContentsObserver(this, associated_web_contents_));
+  } else {
+    associated_web_contents_observer_.reset();
+  }
 }
 
 // ExtensionHost overrides:
@@ -73,6 +111,13 @@ void ExtensionViewHost::OnDidStopLoading() {
 #if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
   view_->DidStopLoading();
 #endif
+}
+
+void ExtensionViewHost::OnDocumentAvailable() {
+  if (extension_host_type() == VIEW_TYPE_EXTENSION_INFOBAR) {
+    // No style sheet for other types, at the moment.
+    InsertInfobarCSS();
+  }
 }
 
 bool ExtensionViewHost::IsBackgroundPage() const {
@@ -166,6 +211,26 @@ gfx::NativeView ExtensionViewHost::GetHostView() const {
 WindowController* ExtensionViewHost::GetExtensionWindowController() const {
   return view_->browser() ? view_->browser()->extension_window_controller()
                           : NULL;
+}
+
+WebContents* ExtensionViewHost::GetAssociatedWebContents() const {
+  return associated_web_contents_;
+}
+
+WebContents* ExtensionViewHost::GetVisibleWebContents() const {
+  if (associated_web_contents_)
+    return associated_web_contents_;
+  if (extension_host_type() == VIEW_TYPE_EXTENSION_POPUP)
+    return host_contents();
+  return NULL;
+}
+
+void ExtensionViewHost::InsertInfobarCSS() {
+  static const base::StringPiece css(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_EXTENSIONS_INFOBAR_CSS));
+
+  render_view_host()->InsertCSS(string16(), css.as_string());
 }
 
 }  // namespace extensions
