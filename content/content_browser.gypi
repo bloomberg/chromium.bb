@@ -1449,7 +1449,7 @@
         '../build/linux/system.gyp:pangocairo',
       ],
       'sources!': [
-        'pepper_truetype_font_list_ozone.cc',
+        'browser/renderer_host/pepper/pepper_truetype_font_list_ozone.cc',
       ],
     }],
     ['OS=="android"', {
