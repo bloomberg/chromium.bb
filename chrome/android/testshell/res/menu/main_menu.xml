@@ -13,5 +13,17 @@
         <item android:id="@+id/print"
               android:title="@string/print_menu" />
     </group>
+
+    <group android:id="@+id/PHONE_ICON_MENU_ITEMS"
+        android:visible="false">
+        <!-- These items are never made visible in the default list. They are only used
+             to pass through the clicks from the icon row in the custom menu. -->
+        <item android:id="@+id/back_menu_id"
+            android:title="@null" />
+        <item android:id="@+id/forward_menu_id"
+            android:title="@null" />
+        <item android:id="@+id/bookmark_this_page_id"
+            android:title="@null" />
+    </group>
 </menu>
 

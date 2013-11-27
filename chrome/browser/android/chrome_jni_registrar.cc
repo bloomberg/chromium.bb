@@ -25,6 +25,7 @@
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/signin/signin_manager_android.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/android/uma_bridge.h"
 #include "chrome/browser/android/uma_utils.h"
 #include "chrome/browser/android/url_utilities.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
@@ -132,6 +133,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "TemplateUrlServiceAndroid", TemplateUrlServiceAndroid::Register },
   { "TranslateInfoBarDelegate", RegisterTranslateInfoBarDelegate },
   { "TtsPlatformImpl", TtsPlatformImplAndroid::Register },
+  { "UmaBridge", RegisterUmaBridge },
   { "UrlUtilities", RegisterUrlUtilities },
   { "ValidationMessageBubbleAndroid",
       ValidationMessageBubbleAndroid::Register },

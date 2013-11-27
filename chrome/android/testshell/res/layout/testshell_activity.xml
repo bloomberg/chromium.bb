@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<!-- Copyright (c) 2012 The Chromium Authors. All rights reserved.
+<!-- Copyright 2012 The Chromium Authors. All rights reserved.
 
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file.
@@ -29,20 +29,11 @@
             android:hint="@string/url_hint"
             android:inputType="textUri"
             android:imeOptions="actionGo" />
-        <ImageButton android:id="@+id/prev"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:src="@android:drawable/ic_media_previous"
-            android:scaleType="center" />
-        <ImageButton android:id="@+id/next"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:src="@android:drawable/ic_media_next"
-            android:scaleType="center" />
         <ImageButton android:id="@+id/menu_button"
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:src="@drawable/menu_dots"
+            android:background="?android:attr/selectableItemBackground"
             android:scaleType="center" />
     </org.chromium.chrome.testshell.TestShellToolbar>
     <FrameLayout android:id="@+id/content_container"

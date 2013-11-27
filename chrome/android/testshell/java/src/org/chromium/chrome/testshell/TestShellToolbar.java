@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,10 @@ package org.chromium.chrome.testshell;
 
 import android.content.Context;
 import android.graphics.drawable.ClipDrawable;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -19,10 +18,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
+import org.chromium.chrome.browser.EmptyTabObserver;
 import org.chromium.chrome.browser.TabBase;
 import org.chromium.chrome.browser.TabObserver;
-import org.chromium.chrome.browser.EmptyTabObserver;
-import org.chromium.content.browser.LoadUrlParams;
+import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
+import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 
 /**
  * A Toolbar {@link View} that shows the URL and navigation buttons.
@@ -30,7 +30,7 @@ import org.chromium.content.browser.LoadUrlParams;
 public class TestShellToolbar extends LinearLayout {
     private static final long COMPLETED_PROGRESS_TIMEOUT_MS = 200;
 
-    private Runnable mClearProgressRunnable = new Runnable() {
+    private final Runnable mClearProgressRunnable = new Runnable() {
         @Override
         public void run() {
             mProgressDrawable.setLevel(0);
@@ -38,14 +38,13 @@ public class TestShellToolbar extends LinearLayout {
     };
 
     private EditText mUrlTextView;
-    private ImageButton mPrevButton;
-    private ImageButton mNextButton;
-
     private ClipDrawable mProgressDrawable;
 
     private TestShellTab mTab;
-    private TabObserver mTabObserver = new TabObserverImpl();
-    private MenuHandler mMenuHandler;
+    private final TabObserver mTabObserver = new TabObserverImpl();
+
+    private AppMenuHandler mMenuHandler;
+    private AppMenuButtonHelper mAppMenuButtonHelper;
 
     /**
      * @param context The Context the view is running in.
@@ -82,12 +81,13 @@ public class TestShellToolbar extends LinearLayout {
 
         mProgressDrawable = (ClipDrawable) findViewById(R.id.toolbar).getBackground();
         initializeUrlField();
-        initializeNavigationButtons();
         initializeMenuButton();
     }
 
-    public void setMenuHandler(MenuHandler menuHandler) {
+    public void setMenuHandler(AppMenuHandler menuHandler) {
         mMenuHandler = menuHandler;
+        ImageButton menuButton = (ImageButton) findViewById(R.id.menu_button);
+        mAppMenuButtonHelper = new AppMenuButtonHelper(menuButton, mMenuHandler);
     }
 
     private void initializeUrlField() {
@@ -112,29 +112,9 @@ public class TestShellToolbar extends LinearLayout {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 setKeyboardVisibilityForUrl(hasFocus);
-                mNextButton.setVisibility(hasFocus ? GONE : VISIBLE);
-                mPrevButton.setVisibility(hasFocus ? GONE : VISIBLE);
                 if (!hasFocus) {
                     mUrlTextView.setText(mTab.getContentView().getUrl());
                 }
-            }
-        });
-    }
-
-    private void initializeNavigationButtons() {
-        mPrevButton = (ImageButton) findViewById(R.id.prev);
-        mPrevButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View arg0) {
-                if (mTab.canGoBack()) mTab.goBack();
-            }
-        });
-
-        mNextButton = (ImageButton) findViewById(R.id.next);
-        mNextButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mTab.canGoForward()) mTab.goForward();
             }
         });
     }
@@ -143,8 +123,14 @@ public class TestShellToolbar extends LinearLayout {
         ImageButton menuButton = (ImageButton) findViewById(R.id.menu_button);
         menuButton.setOnClickListener(new OnClickListener() {
             @Override
-            public void onClick(View v) {
-                if (mMenuHandler != null) mMenuHandler.showPopupMenu();
+            public void onClick(View view) {
+                if (mMenuHandler != null) mMenuHandler.showAppMenu(view, false, false);
+            }
+        });
+        menuButton.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+                return mAppMenuButtonHelper != null && mAppMenuButtonHelper.onTouch(view, event);
             }
         });
     }
