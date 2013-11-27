@@ -10,8 +10,6 @@
  * permissions.
  */
 
-[generate_thunk]
-
 label Chrome {
   M31 = 0.1
 };

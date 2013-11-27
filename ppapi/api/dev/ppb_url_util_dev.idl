@@ -7,8 +7,6 @@
  * This file defines the <code>PPB_URLUtil_Dev</code> interface.
  */
 
-[generate_thunk]
-
 label Chrome {
   M17 = 0.6,
   M31 = 0.7
