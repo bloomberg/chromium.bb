@@ -208,6 +208,11 @@ const char kDisableGpu[]                    = "disable-gpu";
 // Prevent the compositor from using its GPU implementation.
 const char kDisableGpuCompositing[]         = "disable-gpu-compositing";
 
+// Disable the limit on the number of times the GPU process may be restarted
+// This switch is intended only for tests.
+extern const char kDisableGpuProcessCrashLimit[] =
+    "disable-gpu-process-crash-limit";
+
 // Do not launch the GPU process shortly after browser process launch. Instead
 // launch it when it is first needed.
 const char kDisableGpuProcessPrelaunch[]    = "disable-gpu-process-prelaunch";

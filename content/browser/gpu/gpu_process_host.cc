@@ -428,6 +428,9 @@ GpuProcessHost::~GpuProcessHost() {
   static bool crashed_before = false;
   static int swiftshader_crash_count = 0;
 
+  bool disable_crash_limit = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableGpuProcessCrashLimit);
+
   // Ending only acts as a failure if the GPU process was actually started and
   // was intended for actual rendering (and not just checking caps or other
   // options).
@@ -437,7 +440,8 @@ GpuProcessHost::~GpuProcessHost() {
                                 DIED_FIRST_TIME + swiftshader_crash_count,
                                 GPU_PROCESS_LIFETIME_EVENT_MAX);
 
-      if (++swiftshader_crash_count >= kGpuMaxCrashCount) {
+      if (++swiftshader_crash_count >= kGpuMaxCrashCount &&
+          !disable_crash_limit) {
         // SwiftShader is too unstable to use. Disable it for current session.
         gpu_enabled_ = false;
       }
@@ -462,8 +466,8 @@ GpuProcessHost::~GpuProcessHost() {
       crashed_before = true;
       last_gpu_crash_time = current_time;
 
-      if (gpu_recent_crash_count >= kGpuMaxCrashCount ||
-          !initialized_) {
+      if ((gpu_recent_crash_count >= kGpuMaxCrashCount && !disable_crash_limit)
+          || !initialized_) {
 #if !defined(OS_CHROMEOS)
         // The gpu process is too unstable to use. Disable it for current
         // session.

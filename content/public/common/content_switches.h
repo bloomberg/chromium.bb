@@ -72,6 +72,7 @@ CONTENT_EXPORT extern const char kDisableGestureTapHighlight[];
 CONTENT_EXPORT extern const char kDisableGLMultisampling[];
 extern const char kDisableGpu[];
 CONTENT_EXPORT extern const char kDisableGpuCompositing[];
+extern const char kDisableGpuProcessCrashLimit[];
 CONTENT_EXPORT extern const char kDisableGpuProcessPrelaunch[];
 extern const char kDisableGpuSandbox[];
 extern const char kDisableGpuWatchdog[];
