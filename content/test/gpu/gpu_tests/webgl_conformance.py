@@ -66,8 +66,11 @@ class WebglConformanceValidator(page_test.PageTest):
       raise page_test.Failure(_WebGLTestMessages(tab))
 
   def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArgs(
-        '--disable-gesture-requirement-for-media-playback')
+    options.AppendExtraBrowserArgs([
+        '--disable-gesture-requirement-for-media-playback',
+        '--disable-domain-blocking-for-3d-apis',
+        '--disable-gpu-process-crash-limit'
+    ])
 
 
 class WebglConformance(test_module.Test):

@@ -133,6 +133,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['mac', 'intel'], bug=225642)
     self.Skip('conformance/ogles/GL/control_flow/control_flow_009_to_010.html',
         ['mac', 'intel'], bug=322795)
+    self.Fail('conformance/ogles/GL/operators/operators_009_to_016.html',
+        ['mac', 'intel'], bug=322795)
 
     # Mac/Intel failures on 10.7
     self.Skip('conformance/glsl/functions/glsl-function-asin.html',
@@ -156,6 +158,20 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['lion', 'intel'])
     self.Skip('conformance/ogles/GL/control_flow/control_flow_009_to_010.html',
         ['lion'], bug=322795)
+    self.Skip('conformance/ogles/GL/dot/dot_001_to_006.html',
+        ['lion', 'intel'], bug=323736)
+    self.Skip('conformance/ogles/GL/faceforward/faceforward_001_to_006.html',
+        ['lion', 'intel'], bug=323736)
+    self.Skip('conformance/ogles/GL/length/length_001_to_006.html',
+        ['lion', 'intel'], bug=323736)
+    self.Skip('conformance/ogles/GL/normalize/normalize_001_to_006.html',
+        ['lion', 'intel'], bug=323736)
+    self.Skip('conformance/ogles/GL/reflect/reflect_001_to_006.html',
+        ['lion', 'intel'], bug=323736)
+    self.Skip('conformance/ogles/GL/refract/refract_001_to_006.html',
+        ['lion', 'intel'], bug=323736)
+    self.Skip('conformance/ogles/GL/tan/tan_001_to_006.html',
+        ['lion', 'intel'], bug=323736)
 
     # Mac/ATI failures
     self.Skip('conformance/extensions/oes-texture-float-with-image-data.html',
