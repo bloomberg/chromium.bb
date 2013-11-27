@@ -12,6 +12,11 @@
 
 namespace gin {
 
+// FileRunnerDelegate is a simple RunnerDelegate that's useful for running
+// tests. The FileRunnerDelegate provides built-in modules for "console" and
+// "gtest" that are useful when writing unit tests.
+//
+// TODO(abarth): Rename FileRunnerDelegate to TestRunnerDelegate.
 class FileRunnerDelegate : public ModuleRunnerDelegate {
  public:
   FileRunnerDelegate();

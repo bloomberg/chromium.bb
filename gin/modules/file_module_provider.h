@@ -14,16 +14,25 @@
 
 namespace gin {
 
+// FileModuleProvider knows how to load AMD modules off disk. It searches for
+// modules in the directories indiciated by |search_paths|. Although we still
+// read from the file system on the main thread, we'll eventually want to move
+// the reads to a background thread.
 class FileModuleProvider {
  public:
   explicit FileModuleProvider(
       const std::vector<base::FilePath>& search_paths);
   ~FileModuleProvider();
 
+  // Searches for modules with |ids| in the file system. If found, the modules
+  // will be executed asynchronously by |runner|.
   void AttempToLoadModules(Runner* runner, const std::set<std::string>& ids);
 
  private:
   std::vector<base::FilePath> search_paths_;
+
+  // We'll only search for a given module once. We remember the set of modules
+  // we've already looked for in |attempted_ids_|.
   std::set<std::string> attempted_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(FileModuleProvider);

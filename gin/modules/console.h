@@ -9,6 +9,8 @@
 
 namespace gin {
 
+// The Console module provides a basic API for printing to stdout. Over time,
+// we'd like to evolve the API to match window.console in browsers.
 class Console {
  public:
   static const char kModuleName[];

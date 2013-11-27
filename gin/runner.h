@@ -15,6 +15,9 @@ namespace gin {
 class Runner;
 class TryCatch;
 
+// Subclass RunnerDelegate to customize the behavior of |Runner|. Typical
+// embedders will want to subclass one of the specialized RunnerDelegates,
+// such as ModuleRunnerDelegate.
 class RunnerDelegate {
  public:
   RunnerDelegate();
@@ -28,11 +31,15 @@ class RunnerDelegate {
   virtual void UnhandledException(Runner* runner, TryCatch& try_catch);
 };
 
+// Runner lets you run code in a v8::Context. Upon construction, Runner will
+// create a v8::Context. Upon destruction, Runner will dispose the context.
 class Runner : public ContextHolder {
  public:
   Runner(RunnerDelegate* delegate, v8::Isolate* isolate);
   ~Runner();
 
+  // Before running script in this context, you'll need to enter the runner's
+  // context by creating an instance of Runner::Scope on the stack.
   void Run(const std::string& source, const std::string& resource_name);
   void Run(v8::Handle<v8::Script> script);
 
@@ -45,6 +52,8 @@ class Runner : public ContextHolder {
     return context()->Global();
   }
 
+  // Useful for running script in this context asynchronously. Rather than
+  // holding a raw pointer to the runner, consider holding a WeakPtr.
   base::WeakPtr<Runner> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }

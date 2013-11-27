@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GIN_EXCEPTION_H_
-#define GIN_EXCEPTION_H_
+#ifndef GIN_TRY_CATCH_H_
+#define GIN_TRY_CATCH_H_
 
 #include <string>
 
@@ -12,6 +12,7 @@
 
 namespace gin {
 
+// TryCatch is a convenient wrapper around v8::TryCatch.
 class TryCatch {
  public:
   TryCatch();
@@ -28,4 +29,4 @@ class TryCatch {
 
 }  // namespace gin
 
-#endif  // GIN_EXCEPTION_H_
+#endif  // GIN_TRY_CATCH_H_

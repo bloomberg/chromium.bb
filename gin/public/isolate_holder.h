@@ -16,14 +16,18 @@ namespace gin {
 
 class PerIsolateData;
 
+// To embed Gin, first create an instance of IsolateHolder to hold the
+// v8::Isolate in which you will execute JavaScript. You might wish to subclass
+// IsolateHolder if you want to tie more state to the lifetime of the
+//
+// You can use gin in two modes: either gin manages V8, or the gin-embedder
+// manages gin. If gin manages V8, use the IsolateHolder constructor without
+// parameters, otherwise, the gin-embedder needs to create v8::Isolates and
+// pass them to IsolateHolder.
+//
+// It is not possible to mix the two.
 class IsolateHolder {
  public:
-  // You can use gin in two modes: either gin manages V8, or the gin-embedder
-  // manages gin. If gin manages V8, use the IsolateHolder constructor without
-  // parameters, otherwise, the gin-embedder needs to create v8::Isolates and
-  // pass them to IsolateHolder.
-  //
-  // It is not possible to mix the two.
   IsolateHolder();
   explicit IsolateHolder(v8::Isolate* isolate);
 

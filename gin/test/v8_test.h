@@ -15,7 +15,8 @@ namespace gin {
 
 class IsolateHolder;
 
-// A base class for tests that use v8.
+// V8Test is a simple harness for testing interactions with V8. V8Test doesn't
+// have any dependencies on Gin's module system.
 class V8Test : public testing::Test {
  public:
   V8Test();

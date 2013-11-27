@@ -15,6 +15,9 @@ namespace gin {
 
 class PerContextData;
 
+// ContextHolder is a generic class for holding a v8::Context. Rather than
+// using ContextHolder directly, most code should use a subclass of
+// ContextHolder, such as Runner.
 class ContextHolder {
  public:
   explicit ContextHolder(v8::Isolate* isolate);

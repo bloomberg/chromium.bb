@@ -9,6 +9,18 @@
 
 namespace gin {
 
+// Dictionary is useful when writing bindings for a function that either
+// receives an arbitrary JavaScript object as an argument or returns an
+// arbitrary JavaScript object as a result. For example, Dictionary is useful
+// when you might use the |dictionary| type in WebIDL:
+//
+//   http://heycam.github.io/webidl/#idl-dictionaries
+//
+// WARNING: You cannot retain a Dictionary object in the heap. The underlying
+//          storage for Dictionary is tied to the closest enclosing
+//          v8::HandleScope. Generally speaking, you should store a Dictionary
+//          on the stack.
+//
 class Dictionary {
  public:
   explicit Dictionary(v8::Isolate* isolate);

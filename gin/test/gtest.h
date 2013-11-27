@@ -9,6 +9,9 @@
 
 namespace gin {
 
+// This module provides bindings to gtest. Most tests should use an idiomatic
+// JavaScript testing API, but this module is available for tests that need a
+// low-level integration with gtest.
 class GTest {
  public:
   static const char kModuleName[];

@@ -14,17 +14,23 @@ namespace gin {
 
 class Runner;
 
+// Embedders can store additional per-context data by subclassing
+// ContextSupplement.
 class ContextSupplement {
  public:
   ContextSupplement();
   virtual ~ContextSupplement();
 
+  // Detach will be called before ContextHolder disposes the v8::Context.
+  // Embedders should not interact with |context| after Detach has been called.
   virtual void Detach(v8::Handle<v8::Context> context) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContextSupplement);
 };
 
+// There is one instance of PerContextData per v8::Context managed by Gin. This
+// class stores all the Gin-related data that varies per context.
 class PerContextData {
  public:
   explicit PerContextData(v8::Handle<v8::Context> context);
@@ -34,8 +40,10 @@ class PerContextData {
   static PerContextData* From(v8::Handle<v8::Context>);
   void Detach(v8::Handle<v8::Context> context);
 
-  void set_runner(Runner* runner) { runner_ = runner; }
+  // The Runner associated with this context. To execute script in this context,
+  // please use the appropriate API on Runner.
   Runner* runner() const { return runner_; }
+  void set_runner(Runner* runner) { runner_ = runner; }
 
   void AddSupplement(scoped_ptr<ContextSupplement> supplement);
 
