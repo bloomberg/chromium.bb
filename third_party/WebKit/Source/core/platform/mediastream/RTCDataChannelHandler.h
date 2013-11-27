@@ -25,7 +25,6 @@
 #ifndef RTCDataChannelHandler_h
 #define RTCDataChannelHandler_h
 
-#include "core/platform/mediastream/RTCDataChannelHandler.h"
 #include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
 #include "public/platform/WebRTCDataChannelHandler.h"
 #include "public/platform/WebRTCDataChannelHandlerClient.h"
