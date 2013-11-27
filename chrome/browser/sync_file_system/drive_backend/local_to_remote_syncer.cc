@@ -4,6 +4,9 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/local_to_remote_syncer.h"
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -40,19 +43,35 @@ void DidUpdateDatabase(const SyncStatusCallback& callback,
   callback.Run(status);
 }
 
-bool FindTrackerByParentAndFileID(MetadataDatabase* metadata_database,
-                                  int64 parent_tracker_id,
-                                  const std::string& file_id,
-                                  FileMetadata* file_metadata,
-                                  FileTracker* tracker) {
-  // TODO(tzik): Call MetadataDatabase::FindFileByFileID() and
-  // MetadataDatabase::FindTrackersByFileID().
-  // Assign the metadata to |file_metadata|.
-  // Find a tracker that have empty synced_details or the same title to
-  // |file_metadata|.  And assign it to |tracker|.
-  // If either of them failed, return false.
-  NOTIMPLEMENTED();
-  return false;
+bool FindTrackerByParentAndFileIDForUpload(MetadataDatabase* metadata_database,
+                                           int64 parent_tracker_id,
+                                           const std::string& file_id,
+                                           FileMetadata* file_metadata_out,
+                                           FileTracker* tracker_out) {
+  DCHECK(metadata_database);
+  DCHECK(file_metadata_out);
+  DCHECK(tracker_out);
+
+  FileMetadata file_metadata;
+  if (!metadata_database->FindFileByFileID(file_id, &file_metadata))
+    return false;
+
+  TrackerSet trackers;
+  if (!metadata_database->FindTrackersByFileID(file_id, &trackers))
+    return false;
+
+  // File tracker for |file_id| is just created. |trackers| should not contain
+  // more than one tracker for the file.  In addition, the tracker should not be
+  // active yet.
+  DCHECK_EQ(1u, trackers.size());
+  DCHECK(!trackers.has_active());
+
+  const FileTracker& tracker = **trackers.begin();
+  DCHECK_EQ(parent_tracker_id, tracker.parent_tracker_id());
+
+  *file_metadata_out = file_metadata;
+  *tracker_out = tracker;
+  return true;
 }
 
 }  // namespace
@@ -452,7 +471,7 @@ void LocalToRemoteSyncer::DidUpdateDatabaseForUpload(
   FileMetadata metadata;
   FileTracker tracker;
   bool should_success =
-      FindTrackerByParentAndFileID(
+      FindTrackerByParentAndFileIDForUpload(
           metadata_database(),
           remote_parent_folder_tracker_->tracker_id(),
           file_id,
