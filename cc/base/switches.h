@@ -25,6 +25,7 @@ CC_EXPORT extern const char kEnableLCDText[];
 CC_EXPORT extern const char kEnableImplSidePainting[];
 CC_EXPORT extern const char kEnableTopControlsPositionCalculation[];
 CC_EXPORT extern const char kForceDirectLayerDrawing[];
+CC_EXPORT extern const char kEnableGPURasterization[];
 CC_EXPORT extern const char kJankInsteadOfCheckerboard[];
 CC_EXPORT extern const char kNumRasterThreads[];
 CC_EXPORT extern const char kTopControlsHeight[];
@@ -73,6 +74,7 @@ CC_EXPORT extern const char kCCRebaselinePixeltests[];
 
 CC_EXPORT bool IsLCDTextEnabled();
 CC_EXPORT bool IsImplSidePaintingEnabled();
+CC_EXPORT bool IsGPURasterizationEnabled();
 CC_EXPORT bool IsMapImageEnabled();
 
 }  // namespace switches

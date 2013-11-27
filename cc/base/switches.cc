@@ -41,6 +41,11 @@ const char kEnableTopControlsPositionCalculation[] =
 // painting.
 const char kForceDirectLayerDrawing[] = "force-direct-layer-drawing";
 
+// Allow heuristics to determine when a layer tile should be drawn with
+// the Skia GPU backend.  Only valid with GPU accelerated compositing +
+// impl-side painting.
+const char kEnableGPURasterization[] = "enable-gpu-rasterization";
+
 // The height of the movable top controls.
 const char kTopControlsHeight[] = "top-controls-height";
 
@@ -185,6 +190,11 @@ bool CheckImplSidePaintingStatus() {
 bool IsImplSidePaintingEnabled() {
   static bool enabled = CheckImplSidePaintingStatus();
   return enabled;
+}
+
+bool IsGPURasterizationEnabled() {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  return command_line.HasSwitch(cc::switches::kEnableGPURasterization);
 }
 
 bool IsMapImageEnabled() {

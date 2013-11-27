@@ -1064,6 +1064,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kDisableLCDText,
     cc::switches::kDisableMapImage,
     cc::switches::kDisableThreadedAnimation,
+    cc::switches::kEnableGPURasterization,
     cc::switches::kEnableImplSidePainting,
     cc::switches::kEnableLCDText,
     cc::switches::kEnableMapImage,
