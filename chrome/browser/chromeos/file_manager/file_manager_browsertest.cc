@@ -715,6 +715,12 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "suggestAppDialog")));
 
 INSTANTIATE_TEST_CASE_P(
+    FileTask,
+    FileManagerBrowserTest,
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "executeDefaultTask"),
+                      TestParameter(IN_GUEST_MODE, "executeDefaultTask")));
+
+INSTANTIATE_TEST_CASE_P(
     NavigationList,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,

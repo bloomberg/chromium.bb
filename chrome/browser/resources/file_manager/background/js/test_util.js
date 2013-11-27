@@ -688,7 +688,7 @@ test.util.sync.deleteFile = function(contentWindow, filename) {
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {Array.<object>} queries Queries that specifies the elements and
- *   expected styles.
+ *     expected styles.
  * @param {function()} callback Callback function to be notified the change of
  *     the styles.
  */
@@ -716,6 +716,56 @@ test.util.async.waitForStyles = function(contentWindow, queries, callback) {
  */
 test.util.sync.execCommand = function(contentWindow, command) {
   return contentWindow.document.execCommand(command);
+};
+
+/**
+ * Override the task-related methods in private api for test.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {Array.<Object>} taskList List of tasks to be returned in
+ *     fileBrowserPrivate.getFileTasks().
+ * @return {boolean} Always return true.
+ */
+test.util.sync.overrideTasks = function(contentWindow, taskList) {
+  var getFileTasks = function(urls, mime, onTasks) {
+    // Call onTask asynchronously (same with original getFileTasks).
+    setTimeout(function() {
+      onTasks(taskList);
+    });
+  };
+
+  var executeTask = function(taskId, url) {
+    test.util.executedTasks_.push(taskId);
+  };
+
+  test.util.executedTasks_ = [];
+  contentWindow.chrome.fileBrowserPrivate.getFileTasks = getFileTasks;
+  contentWindow.chrome.fileBrowserPrivate.executeTask = executeTask;
+  return true;
+};
+
+/**
+ * Check if Files.app has ordered to execute the given task or not yet. This
+ * method must be used with test.util.sync.overrideTasks().
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} taskId Taskid of the task which should be executed.
+ * @param {function()} callback Callback function to be notified the order of
+ *     the execution.
+ */
+test.util.async.waitUntilTaskExecutes =
+    function(contentWindow, taskId, callback) {
+  if (!test.util.executedTasks_) {
+    console.error('Please call overrideTasks() first.');
+    return;
+  }
+
+  test.util.repeatUntilTrue_(function() {
+    if (test.util.executedTasks_.indexOf(taskId) === -1)
+      return false;
+    callback();
+    return true;
+  });
 };
 
 /**

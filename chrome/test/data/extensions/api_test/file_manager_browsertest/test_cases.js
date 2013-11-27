@@ -1174,6 +1174,68 @@ testcase.shareDirectory = function() {
 };
 
 /**
+ * Tests executing the default task when there is only one task.
+ */
+testcase.executeDefaultTask = function() {
+  var appId;
+  StepsRunner.run([
+    // Set up File Manager.
+    function() {
+      var appState = {
+        defaultPath: '/drive/root'
+      };
+      setupAndWaitUntilReady(appState, this.next);
+    },
+    // Override tasks list with a dummy task.
+    function(inAppId, inFileListBefore) {
+      appId = inAppId;
+
+      callRemoteTestUtil(
+          'overrideTasks',
+          appId,
+          [[
+            {
+              driveApp: false,
+              iconUrl: 'chrome://theme/IDR_DEFAULT_FAVICON',  // Dummy icon
+              isDefault: true,
+              taskId: 'dummytaskid|drive|open-with',
+              title: 'The dummy task for test'
+            }
+          ]],
+          this.next);
+    },
+    // Select file.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil(
+          'selectFile', appId, ['hello.txt'], this.next);
+    },
+    // Double-click the file.
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil(
+          'fakeMouseDoubleClick',
+          appId,
+          ['#file-list li.table-row[selected] .filename-label span'],
+          this.next);
+    },
+    // Wait until the task is executed.
+    function(result) {
+      chrome.test.assertTrue(!!result);
+      callRemoteTestUtil(
+          'waitUntilTaskExecutes',
+          appId,
+          ['dummytaskid|drive|open-with'],
+          this.next);
+    },
+    // Check the error.
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+};
+
+/**
  * Tests sharing a file on Drive
  */
 testcase.suggestAppDialog = function() {
@@ -1685,4 +1747,3 @@ testcase.thumbnailsDownloads = function() {
     }
   ]);
 };
-
