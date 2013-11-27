@@ -156,15 +156,10 @@ TimelineTraceEventProcessor::TimelineTraceEventProcessor(WeakPtr<InspectorTimeli
     , m_layerTreeId(m_timelineAgent.get()->layerTreeId())
     , m_lastEventProcessingTime(0)
     , m_processEventsTaskInFlight(false)
-    , m_layerId(0)
     , m_paintSetupStart(0)
     , m_paintSetupEnd(0)
 {
     registerHandler(InstrumentationEvents::BeginFrame, TRACE_EVENT_PHASE_INSTANT, &TimelineTraceEventProcessor::onBeginFrame);
-    registerHandler(InstrumentationEvents::UpdateLayer, TRACE_EVENT_PHASE_BEGIN, &TimelineTraceEventProcessor::onUpdateLayerBegin);
-    registerHandler(InstrumentationEvents::UpdateLayer, TRACE_EVENT_PHASE_END, &TimelineTraceEventProcessor::onUpdateLayerEnd);
-    registerHandler(InstrumentationEvents::PaintLayer, TRACE_EVENT_PHASE_BEGIN, &TimelineTraceEventProcessor::onPaintLayerBegin);
-    registerHandler(InstrumentationEvents::PaintLayer, TRACE_EVENT_PHASE_END, &TimelineTraceEventProcessor::onPaintLayerEnd);
     registerHandler(InstrumentationEvents::PaintSetup, TRACE_EVENT_PHASE_BEGIN, &TimelineTraceEventProcessor::onPaintSetupBegin);
     registerHandler(InstrumentationEvents::PaintSetup, TRACE_EVENT_PHASE_END, &TimelineTraceEventProcessor::onPaintSetupEnd);
     registerHandler(InstrumentationEvents::RasterTask, TRACE_EVENT_PHASE_BEGIN, &TimelineTraceEventProcessor::onRasterTaskBegin);
@@ -244,35 +239,6 @@ void TimelineTraceEventProcessor::onBeginFrame(const TraceEvent&)
     // We don't handle BeginFrame explicitly now, but it still implicitly helps
     // to pump the background events regularly (as opposed to posting a task),
     // as this is only done upon events we recognize.
-}
-
-void TimelineTraceEventProcessor::onUpdateLayerBegin(const TraceEvent& event)
-{
-    unsigned long long layerTreeId = event.asUInt(InstrumentationEventArguments::LayerTreeId);
-    if (layerTreeId != static_cast<unsigned long long>(m_layerTreeId))
-        return;
-    m_layerId = event.asUInt(InstrumentationEventArguments::LayerId);
-    // We don't know the node yet. For content layers, the node will be updated
-    // by paint. For others, let it remain 0 -- we just need the fact that
-    // the layer belongs to the page (see cookie check).
-    m_layerToNodeMap.add(m_layerId, 0);
-}
-
-void TimelineTraceEventProcessor::onUpdateLayerEnd(const TraceEvent& event)
-{
-    m_layerId = 0;
-}
-
-void TimelineTraceEventProcessor::onPaintLayerBegin(const TraceEvent& event)
-{
-    m_layerId = event.asUInt(InstrumentationEventArguments::LayerId);
-    ASSERT(m_layerId);
-    ASSERT(!m_paintSetupStart);
-}
-
-void TimelineTraceEventProcessor::onPaintLayerEnd(const TraceEvent& event)
-{
-    m_layerId = 0;
 }
 
 void TimelineTraceEventProcessor::onPaintSetupBegin(const TraceEvent& event)
@@ -362,20 +328,22 @@ void TimelineTraceEventProcessor::onPaint(const TraceEvent& event)
 {
     double paintSetupStart = m_paintSetupStart;
     m_paintSetupStart = 0;
-    if (!m_layerId)
-        return;
     unsigned long long pageId = event.asUInt(InstrumentationEventArguments::PageId);
     if (pageId != m_pageId)
         return;
-    long long nodeId = event.asInt(InstrumentationEventArguments::NodeId);
-    ASSERT(nodeId);
-    m_layerToNodeMap.set(m_layerId, nodeId);
     InspectorTimelineAgent* timelineAgent = m_timelineAgent.get();
-    if (timelineAgent && paintSetupStart) {
-        RefPtr<JSONObject> paintSetupRecord = TimelineRecordFactory::createGenericRecord(paintSetupStart, 0, TimelineRecordType::PaintSetup);
-        paintSetupRecord->setNumber("endTime", m_paintSetupEnd);
-        paintSetupRecord->setObject("data", TimelineRecordFactory::createLayerData(nodeId));
-        timelineAgent->addRecordToTimeline(paintSetupRecord);
+    if (!timelineAgent)
+        return;
+    if (int layerId = timelineAgent->layerBeingPainted()) {
+        int nodeId = timelineAgent->nodeBeingPainted();
+        ASSERT(nodeId);
+        m_layerToNodeMap.set(layerId, nodeId);
+        if (paintSetupStart) {
+            RefPtr<JSONObject> paintSetupRecord = TimelineRecordFactory::createGenericRecord(paintSetupStart, 0, TimelineRecordType::PaintSetup);
+            paintSetupRecord->setNumber("endTime", m_paintSetupEnd);
+            paintSetupRecord->setObject("data", TimelineRecordFactory::createLayerData(nodeId));
+            timelineAgent->addRecordToTimeline(paintSetupRecord);
+        }
     }
 }
 
@@ -396,9 +364,6 @@ void TimelineTraceEventProcessor::onDecodeLazyPixelRefEnd(const TraceEvent& even
 
 void TimelineTraceEventProcessor::onDrawLazyPixelRef(const TraceEvent& event)
 {
-    // Only track LazyPixelRefs created while we paint known layers
-    if (!m_layerId || !m_layerToNodeMap.contains(m_layerId))
-        return;
     unsigned long long pixelRefId = event.asUInt(PlatformInstrumentation::LazyPixelRef);
     ASSERT(pixelRefId);
     InspectorTimelineAgent* timelineAgent = m_timelineAgent.get();

@@ -1746,7 +1746,7 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
     if (Page* page = renderer()->frame()->page())
         page->setIsPainting(true);
 #endif
-    InspectorInstrumentation::willPaint(m_owningLayer->renderer());
+    InspectorInstrumentation::willPaint(m_owningLayer->renderer(), graphicsLayer);
 
     if (graphicsLayer == m_graphicsLayer.get()
         || graphicsLayer == m_foregroundLayer.get()

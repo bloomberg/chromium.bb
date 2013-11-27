@@ -2956,7 +2956,7 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
     if (needsLayout())
         return;
 
-    InspectorInstrumentation::willPaint(renderView);
+    InspectorInstrumentation::willPaint(renderView, 0);
 
     bool isTopLevelPainter = !s_inPaintContents;
     s_inPaintContents = true;

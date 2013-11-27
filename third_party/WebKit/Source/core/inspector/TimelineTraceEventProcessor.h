@@ -203,10 +203,6 @@ private:
     void registerHandler(const char* name, char, TraceEventHandler);
 
     void onBeginFrame(const TraceEvent&);
-    void onUpdateLayerBegin(const TraceEvent&);
-    void onUpdateLayerEnd(const TraceEvent&);
-    void onPaintLayerBegin(const TraceEvent&);
-    void onPaintLayerEnd(const TraceEvent&);
     void onPaintSetupBegin(const TraceEvent&);
     void onPaintSetupEnd(const TraceEvent&);
     void onRasterTaskBegin(const TraceEvent&);
@@ -237,7 +233,6 @@ private:
     ThreadStateMap m_threadStates;
 
     HashMap<unsigned long long, long long> m_layerToNodeMap;
-    unsigned long long m_layerId;
     double m_paintSetupStart;
     double m_paintSetupEnd;
     RefPtr<JSONObject> m_gpuTask;

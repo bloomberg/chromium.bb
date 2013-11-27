@@ -457,13 +457,13 @@ void InspectorTimelineAgent::didRecalculateStyleForElement()
     ++m_styleRecalcElementCounter;
 }
 
-void InspectorTimelineAgent::willPaint(RenderObject* renderer)
+void InspectorTimelineAgent::willPaint(RenderObject* renderer, const GraphicsLayer* graphicsLayer)
 {
     Frame* frame = renderer->frame();
-    TRACE_EVENT_INSTANT2(InternalEventCategory, InstrumentationEvents::Paint,
-        InstrumentationEventArguments::PageId, reinterpret_cast<unsigned long long>(frame->page()),
-        InstrumentationEventArguments::NodeId, nodeId(renderer));
-
+    m_nodeBeingPainted = nodeId(renderer);
+    m_layerBeingPainted = graphicsLayer ? graphicsLayer->platformLayer()->id() : 0;
+    TRACE_EVENT_INSTANT1(InternalEventCategory, InstrumentationEvents::Paint,
+        InstrumentationEventArguments::PageId, reinterpret_cast<unsigned long long>(frame->page()));
     pushCurrentRecord(JSONObject::create(), TimelineRecordType::Paint, true, frame, true);
 }
 
@@ -475,6 +475,8 @@ void InspectorTimelineAgent::didPaint(RenderObject* renderer, const GraphicsLaye
     localToPageQuad(*renderer, clipRect, &quad);
     int graphicsLayerId = graphicsLayer ? graphicsLayer->platformLayer()->id() : 0;
     entry.data = TimelineRecordFactory::createPaintData(quad, nodeId(renderer), graphicsLayerId);
+    m_nodeBeingPainted = 0;
+    m_layerBeingPainted = 0;
     didCompleteCurrentRecord(TimelineRecordType::Paint);
 }
 
@@ -904,6 +906,8 @@ InspectorTimelineAgent::InspectorTimelineAgent(InstrumentingAgents* instrumentin
     , m_styleRecalcElementCounter(0)
     , m_layerTreeId(0)
     , m_imageBeingPainted(0)
+    , m_nodeBeingPainted(0)
+    , m_layerBeingPainted(0)
     , m_overlay(overlay)
 {
 }

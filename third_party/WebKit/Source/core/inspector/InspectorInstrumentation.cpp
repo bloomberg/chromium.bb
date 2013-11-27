@@ -237,18 +237,15 @@ InstrumentingAgents* instrumentingAgentsForNonDocumentContext(ExecutionContext* 
 
 namespace InstrumentationEvents {
 const char PaintSetup[] = "PaintSetup";
-const char PaintLayer[] = "PaintLayer";
 const char RasterTask[] = "RasterTask";
 const char Paint[] = "Paint";
 const char Layer[] = "Layer";
 const char BeginFrame[] = "BeginFrame";
-const char UpdateLayer[] = "UpdateLayer";
 };
 
 namespace InstrumentationEventArguments {
 const char LayerId[] = "layerId";
 const char LayerTreeId[] = "layerTreeId";
-const char NodeId[] = "nodeId";
 const char PageId[] = "pageId";
 };
 

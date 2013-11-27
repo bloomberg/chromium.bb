@@ -168,7 +168,7 @@ public:
     void didRecalculateStyle();
     void didRecalculateStyleForElement();
 
-    void willPaint(RenderObject*);
+    void willPaint(RenderObject*, const GraphicsLayer*);
     void didPaint(RenderObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
 
     void willPaintImage(RenderImage*);
@@ -280,6 +280,8 @@ private:
     void localToPageQuad(const RenderObject& renderer, const LayoutRect&, FloatQuad*);
     const TimelineTimeConverter& timeConverter() const { return m_timeConverter; }
     const RenderImage* imageBeingPainted() const { return m_imageBeingPainted; }
+    int nodeBeingPainted() const { return m_nodeBeingPainted; }
+    int layerBeingPainted() const { return m_layerBeingPainted; }
     long long nodeId(Node*);
     long long nodeId(RenderObject*);
     void releaseNodeIds();
@@ -324,6 +326,8 @@ private:
     unsigned m_styleRecalcElementCounter;
     int m_layerTreeId;
     RenderImage* m_imageBeingPainted;
+    int m_nodeBeingPainted;
+    int m_layerBeingPainted;
     Vector<String> m_consoleTimelines;
     RefPtr<TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent> > m_bufferedEvents;
     InspectorOverlay* m_overlay;
