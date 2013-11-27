@@ -18,6 +18,8 @@ const int kScreenHeight = 600;
 const int kWindowWidth = 100;
 const int kWindowHeight = 200;
 
+// Size of the menu bar along the top of the screen.
+const int kMenuBarSize = 22;
 // Size of the normal (non-hidden) dock.
 const int kDockSize = 30;
 // Size of the hidden dock.
@@ -61,7 +63,8 @@ class AppListServiceMacUnitTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
     display_.set_bounds(gfx::Rect(0, 0, kScreenWidth, kScreenHeight));
-    display_.set_work_area(gfx::Rect(0, 0, kScreenWidth, kScreenHeight));
+    display_.set_work_area(
+        gfx::Rect(0, kMenuBarSize, kScreenWidth, kScreenHeight - kMenuBarSize));
     window_size_ = gfx::Size(kWindowWidth, kWindowHeight);
     cursor_is_visible_ = true;
     cursor_ = gfx::Point();
@@ -73,15 +76,22 @@ class AppListServiceMacUnitTest : public testing::Test {
     switch (location) {
       case DOCK_LOCATION_BOTTOM:
         display_.set_work_area(
-            gfx::Rect(0, 0, kScreenWidth, kScreenHeight - dock_size));
+            gfx::Rect(0,
+                      kMenuBarSize,
+                      kScreenWidth,
+                      kScreenHeight - kMenuBarSize - dock_size));
         break;
       case DOCK_LOCATION_LEFT:
-        display_.set_work_area(
-            gfx::Rect(dock_size, 0, kScreenWidth - dock_size, kScreenHeight));
+        display_.set_work_area(gfx::Rect(dock_size,
+                                         kMenuBarSize,
+                                         kScreenWidth - dock_size,
+                                         kScreenHeight - kMenuBarSize));
         break;
       case DOCK_LOCATION_RIGHT:
-        display_.set_work_area(
-            gfx::Rect(0, 0, kScreenWidth - dock_size, kScreenHeight));
+        display_.set_work_area(gfx::Rect(0,
+                                         kMenuBarSize,
+                                         kScreenWidth - dock_size,
+                                         kScreenHeight - kMenuBarSize));
         break;
     }
   }
