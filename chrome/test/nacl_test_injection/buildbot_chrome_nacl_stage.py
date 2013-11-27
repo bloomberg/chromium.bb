@@ -216,6 +216,14 @@ def BuildAndTest(options):
     cmd.append('disable_flaky_tests=1')
   cmd.append('chrome_browser_tests')
 
+  # Propagate path to JSON output if present.
+  # Note that RunCommand calls sys.exit on errors, so potential errors
+  # from one command won't be overwritten by another one. Overwriting
+  # a successful results file with either success or failure is fine.
+  if options.json_build_results_output_file:
+    cmd.append('json_build_results_output_file=%s' %
+               options.json_build_results_output_file)
+
   # Download the toolchain(s).
   RunCommand([python,
               os.path.join(nacl_dir, 'build', 'download_toolchains.py'),
@@ -242,6 +250,9 @@ def MakeCommandLineParser():
                     type='int', help='Run newlib tests?')
   parser.add_option('--enable_glibc', dest='enable_glibc', default=-1,
                     type='int', help='Run glibc tests?')
+
+  parser.add_option('--json_build_results_output_file',
+                    help='Path to a JSON file for machine-readable output.')
 
   # Deprecated, but passed to us by a script in the Chrome repo.
   # Replaced by --enable_glibc=0
