@@ -35,7 +35,6 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/html/HTMLImport.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -43,7 +42,7 @@ namespace WebCore {
 class DocumentWriter;
 class HTMLImportLoaderClient;
 
-class HTMLImportLoader : public RefCounted<HTMLImportLoader>, public HTMLImport, public RawResourceClient {
+class HTMLImportLoader : public HTMLImport, public RawResourceClient {
 public:
     enum State {
         StateLoading,

@@ -53,6 +53,8 @@ HTMLImportLoader::~HTMLImportLoader()
     ASSERT(!m_importedDocument);
     if (m_resource)
         m_resource->removeClient(this);
+    for (size_t i = 0; i < m_clients.size(); ++i)
+        m_clients[i]->loaderWillBeDestroyed();
 }
 
 void HTMLImportLoader::setResource(const ResourcePtr<RawResource>& resource)

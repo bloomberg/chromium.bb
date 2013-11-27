@@ -66,9 +66,9 @@ public:
     virtual void importWasDisposed() OVERRIDE;
     virtual HTMLImportsController* toController() { return this; }
 
-    PassRefPtr<HTMLImportLoader> createLoader(HTMLImport* parent, FetchRequest);
+    HTMLImportLoader* createLoader(HTMLImport* parent, FetchRequest);
     void showSecurityErrorMessage(const String&);
-    PassRefPtr<HTMLImportLoader> findLinkFor(const KURL&) const;
+    HTMLImportLoader* findLinkFor(const KURL&) const;
     SecurityOrigin* securityOrigin() const;
     ResourceFetcher* fetcher() const;
 
@@ -82,7 +82,7 @@ private:
     Timer<HTMLImportsController> m_unblockTimer;
 
     // List of import which has been loaded or being loaded.
-    typedef Vector<RefPtr<HTMLImportLoader> > ImportList;
+    typedef Vector<OwnPtr<HTMLImportLoader> > ImportList;
     ImportList m_imports;
 };
 

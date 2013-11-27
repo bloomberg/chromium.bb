@@ -47,6 +47,7 @@ PassRefPtr<LinkImport> LinkImport::create(HTMLLinkElement* owner)
 
 LinkImport::LinkImport(HTMLLinkElement* owner)
     : LinkResource(owner)
+    , m_loader(0)
 {
 }
 
@@ -99,7 +100,7 @@ void LinkImport::clear()
 
     if (m_loader) {
         m_loader->removeClient(this);
-        m_loader.clear();
+        m_loader = 0;
     }
 }
 
@@ -113,6 +114,11 @@ void LinkImport::didFinish()
     if (!m_owner)
         return;
     m_owner->scheduleEvent();
+}
+
+void LinkImport::loaderWillBeDestroyed()
+{
+    clear();
 }
 
 bool LinkImport::hasLoaded() const

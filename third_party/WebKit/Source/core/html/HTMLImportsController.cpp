@@ -66,27 +66,28 @@ void HTMLImportsController::clear()
     m_master = 0;
 }
 
-PassRefPtr<HTMLImportLoader> HTMLImportsController::createLoader(HTMLImport* parent, FetchRequest request)
+HTMLImportLoader* HTMLImportsController::createLoader(HTMLImport* parent, FetchRequest request)
 {
     ASSERT(!request.url().isEmpty() && request.url().isValid());
 
-    if (RefPtr<HTMLImportLoader> found = findLinkFor(request.url()))
-        return found.release();
+    if (HTMLImportLoader* found = findLinkFor(request.url()))
+        return found;
 
     request.setCrossOriginAccessControl(securityOrigin(), DoNotAllowStoredCredentials);
     ResourcePtr<RawResource> resource = parent->document()->fetcher()->fetchImport(request);
     if (!resource)
         return 0;
 
-    RefPtr<HTMLImportLoader> loader = adoptRef(new HTMLImportLoader(request.url()));
-    parent->appendChild(loader.get());
-    m_imports.append(loader);
+    OwnPtr<HTMLImportLoader> loader = adoptPtr(new HTMLImportLoader(request.url()));
+    HTMLImportLoader* loaderPtr = loader.get();
+    parent->appendChild(loaderPtr);
+    m_imports.append(loader.release());
 
     // We set resource after the import tree is built since
     // Resource::addClient() immediately calls back to feed the bytes when the resource is cached.
-    loader->setResource(resource);
+    loaderPtr->setResource(resource);
 
-    return loader.release();
+    return loaderPtr;
 }
 
 void HTMLImportsController::showSecurityErrorMessage(const String& message)
@@ -94,11 +95,11 @@ void HTMLImportsController::showSecurityErrorMessage(const String& message)
     m_master->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
 }
 
-PassRefPtr<HTMLImportLoader> HTMLImportsController::findLinkFor(const KURL& url) const
+HTMLImportLoader* HTMLImportsController::findLinkFor(const KURL& url) const
 {
     for (size_t i = 0; i < m_imports.size(); ++i) {
         if (equalIgnoringFragmentIdentifier(m_imports[i]->url(), url))
-            return m_imports[i];
+            return m_imports[i].get();
     }
 
     return 0;

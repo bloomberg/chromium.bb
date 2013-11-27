@@ -61,13 +61,14 @@ public:
 
     // HTMLImportLoaderClient
     virtual void didFinish() OVERRIDE;
+    virtual void loaderWillBeDestroyed() OVERRIDE;
 
     Document* importedDocument() const;
 
 private:
     void clear();
 
-    RefPtr<HTMLImportLoader> m_loader;
+    HTMLImportLoader* m_loader;
 };
 
 } // namespace WebCore
