@@ -111,27 +111,27 @@ class NetworkingPrivateServiceClient : public BrowserContextKeyedService {
   // BrowserContextKeyedServices method override.
   virtual void Shutdown() OVERRIDE;
 
-  // Gets the properties of the network with id |service_path|. See note on
+  // Gets the properties of the network with id |network_guid|. See note on
   // |callback| and |error_callback|, in class description above.
-  void GetProperties(const std::string& service_path,
+  void GetProperties(const std::string& network_guid,
                      const DictionaryResultCallback& callback,
                      const ErrorCallback& error_callback);
 
-  // Start connect to the network with id |service_path|. See note on
+  // Start connect to the network with id |network_guid|. See note on
   // |callback| and |error_callback|, in class description above.
-  void StartConnect(const std::string& service_path,
+  void StartConnect(const std::string& network_guid,
                     const base::Closure& callback,
                     const ErrorCallback& error_callback);
 
-  // Start disconnect from the network with id |service_path|. See note on
+  // Start disconnect from the network with id |network_guid|. See note on
   // |callback| and |error_callback|, in class description above.
-  void StartDisconnect(const std::string& service_path,
+  void StartDisconnect(const std::string& network_guid,
                        const base::Closure& callback,
                        const ErrorCallback& error_callback);
 
-  // Sets the |properties| of the network with id |service_path|. See note on
+  // Sets the |properties| of the network with id |network_guid|. See note on
   // |callback| and |error_callback|, in class description above.
-  void SetProperties(const std::string& service_path,
+  void SetProperties(const std::string& network_guid,
                      const base::DictionaryValue& properties,
                      const base::Closure& callback,
                      const ErrorCallback& error_callback);
@@ -139,8 +139,9 @@ class NetworkingPrivateServiceClient : public BrowserContextKeyedService {
   // Requests network scan. Broadcasts NetworkListChangedEvent upon completion.
   void RequestNetworkScan();
 
-  // Gets the list of visible networks and calls |callback|.
-  void GetVisibleNetworks(const ListResultCallback& callback);
+  // Gets the list of visible networks of |network_type| and calls |callback|.
+  void GetVisibleNetworks(const std::string& network_type,
+                          const ListResultCallback& callback);
 
   // Verify that Chromecast provides valid cryptographically signed properties.
   void VerifyDestination(scoped_ptr<base::ListValue> args,

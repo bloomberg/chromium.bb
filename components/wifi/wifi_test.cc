@@ -112,7 +112,7 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
 
   if (parsed_command_line.HasSwitch("list")) {
     ListValue network_list;
-    wifi_service->GetVisibleNetworks(&network_list);
+    wifi_service->GetVisibleNetworks(std::string(), &network_list);
     std::cout << network_list;
     return true;
   }

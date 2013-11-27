@@ -107,12 +107,17 @@ class FakeWiFiService : public WiFiService {
     }
   }
 
-  virtual void GetVisibleNetworks(ListValue* network_list) OVERRIDE {
+  virtual void GetVisibleNetworks(const std::string& network_type,
+                                  ListValue* network_list) OVERRIDE {
     for (WiFiService::NetworkList::const_iterator it = networks_.begin();
          it != networks_.end();
          ++it) {
-      scoped_ptr<DictionaryValue> network(it->ToValue(true));
-      network_list->Append(network.release());
+      if (network_type.empty() ||
+          network_type == onc::network_type::kAllTypes ||
+          it->type == network_type) {
+        scoped_ptr<DictionaryValue> network(it->ToValue(true));
+        network_list->Append(network.release());
+      }
     }
   }
 

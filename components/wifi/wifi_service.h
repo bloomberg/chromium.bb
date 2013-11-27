@@ -54,8 +54,10 @@ class WIFI_EXPORT WiFiService {
                              scoped_ptr<base::DictionaryValue> properties,
                              std::string* error) = 0;
 
-  // Get list of visible networks. Populates |network_list| on success.
-  virtual void GetVisibleNetworks(ListValue* network_list) = 0;
+  // Get list of visible networks of |network_type| (one of onc::network_type).
+  // Populates |network_list| on success.
+  virtual void GetVisibleNetworks(const std::string& network_type,
+                                  ListValue* network_list) = 0;
 
   // Request network scan. Send |NetworkListChanged| event on completion.
   virtual void RequestNetworkScan() = 0;

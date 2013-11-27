@@ -154,8 +154,10 @@ class WiFiServiceImpl : public WiFiService, base::NonThreadSafe {
                              scoped_ptr<base::DictionaryValue> properties,
                              std::string* error) OVERRIDE;
 
-  // Get list of visible networks. Populates |network_list| on success.
-  virtual void GetVisibleNetworks(ListValue* network_list) OVERRIDE;
+  // Get list of visible networks of |network_type| (one of onc::network_type).
+  // Populates |network_list| on success.
+  virtual void GetVisibleNetworks(const std::string& network_type,
+                                   ListValue* network_list) OVERRIDE;
 
   // Request network scan. Send |NetworkListChanged| event on completion.
   virtual void RequestNetworkScan() OVERRIDE;
@@ -424,9 +426,15 @@ void WiFiServiceImpl::SetProperties(
   CheckError(ERROR_CALL_NOT_IMPLEMENTED, kWiFiServiceError, error);
 }
 
-void WiFiServiceImpl::GetVisibleNetworks(ListValue* network_list) {
-  DWORD error = EnsureInitialized();
+void WiFiServiceImpl::GetVisibleNetworks(const std::string& network_type,
+                                         ListValue* network_list) {
+  if (!network_type.empty() &&
+      network_type != onc::network_type::kAllTypes &&
+      network_type != onc::network_type::kWiFi) {
+    return;
+  }
 
+  DWORD error = EnsureInitialized();
   if (error == ERROR_SUCCESS) {
     NetworkList networks;
     error = GetVisibleNetworkList(&networks);

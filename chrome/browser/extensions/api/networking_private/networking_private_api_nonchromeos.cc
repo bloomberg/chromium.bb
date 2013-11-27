@@ -35,10 +35,10 @@ bool NetworkingPrivateGetPropertiesFunction::RunImpl() {
       api::GetProperties::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  NetworkingPrivateServiceClient* process_client =
+  NetworkingPrivateServiceClient* service_client =
       NetworkingPrivateServiceClientFactory::GetForProfile(GetProfile());
 
-  process_client->GetProperties(
+  service_client->GetProperties(
       params->network_guid,
       base::Bind(&NetworkingPrivateGetPropertiesFunction::GetPropertiesSuccess,
                  this),
@@ -171,10 +171,10 @@ bool NetworkingPrivateSetPropertiesFunction::RunImpl() {
   scoped_ptr<base::DictionaryValue> properties_dict(
       params->properties.ToValue());
 
-  NetworkingPrivateServiceClient* process_client =
+  NetworkingPrivateServiceClient* service_client =
       NetworkingPrivateServiceClientFactory::GetForProfile(GetProfile());
 
-  process_client->SetProperties(
+  service_client->SetProperties(
       params->network_guid,
       *properties_dict,
       base::Bind(&NetworkingPrivateSetPropertiesFunction::ResultCallback, this),
@@ -222,44 +222,20 @@ bool NetworkingPrivateGetVisibleNetworksFunction::RunImpl() {
       api::GetVisibleNetworks::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  NetworkingPrivateServiceClient* process_client =
+  NetworkingPrivateServiceClient* service_client =
       NetworkingPrivateServiceClientFactory::GetForProfile(GetProfile());
 
-  process_client->GetVisibleNetworks(base::Bind(
-      &NetworkingPrivateGetVisibleNetworksFunction::ResultCallback, this));
+  service_client->GetVisibleNetworks(
+      api::GetVisibleNetworks::Params::ToString(params->type),
+      base::Bind(&NetworkingPrivateGetVisibleNetworksFunction::ResultCallback,
+                 this));
 
   return true;
 }
 
 void NetworkingPrivateGetVisibleNetworksFunction::ResultCallback(
     const base::ListValue& network_list) {
-  scoped_ptr<api::GetVisibleNetworks::Params> params =
-      api::GetVisibleNetworks::Params::Create(*args_);
-  ListValue* result = new ListValue();
-  std::string params_type =
-      api::GetVisibleNetworks::Params::ToString(params->type);
-  bool request_all = params->type == api::GetVisibleNetworks::Params::TYPE_ALL;
-
-  // Copy networks of requested type;
-  for (base::ListValue::const_iterator it = network_list.begin();
-       it != network_list.end();
-       ++it) {
-    const base::Value* network_value = *it;
-    const DictionaryValue* network_dict = NULL;
-    if (!network_value->GetAsDictionary(&network_dict)) {
-      LOG(ERROR) << "Value is not a dictionary";
-      continue;
-    }
-    if (!request_all) {
-      std::string network_type;
-      network_dict->GetString(onc::network_config::kType, &network_type);
-      if (network_type != params_type)
-        continue;
-    }
-    result->Append(network_value->DeepCopy());
-  }
-
-  SetResult(result);
+  SetResult(network_list.DeepCopy());
   SendResponse(true);
 }
 
@@ -272,11 +248,7 @@ NetworkingPrivateGetEnabledNetworkTypesFunction::
 
 bool NetworkingPrivateGetEnabledNetworkTypesFunction::RunImpl() {
   base::ListValue* network_list = new base::ListValue;
-
-  network_list->Append(new base::StringValue("Ethernet"));
-  network_list->Append(new base::StringValue("WiFi"));
-  network_list->Append(new base::StringValue("Cellular"));
-
+  network_list->Append(new base::StringValue(onc::network_type::kWiFi));
   SetResult(network_list);
   return true;
 }
@@ -317,9 +289,9 @@ NetworkingPrivateRequestNetworkScanFunction::
 }
 
 bool NetworkingPrivateRequestNetworkScanFunction::RunImpl() {
-  NetworkingPrivateServiceClient* process_client =
+  NetworkingPrivateServiceClient* service_client =
       NetworkingPrivateServiceClientFactory::GetForProfile(GetProfile());
-  process_client->RequestNetworkScan();
+  service_client->RequestNetworkScan();
   return true;
 }
 
@@ -334,9 +306,9 @@ bool NetworkingPrivateStartConnectFunction::RunImpl() {
   scoped_ptr<api::StartConnect::Params> params =
       api::StartConnect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  NetworkingPrivateServiceClient* process_client =
+  NetworkingPrivateServiceClient* service_client =
       NetworkingPrivateServiceClientFactory::GetForProfile(GetProfile());
-  process_client->StartConnect(
+  service_client->StartConnect(
       params->network_guid,
       base::Bind(&NetworkingPrivateStartConnectFunction::ConnectionStartSuccess,
                  this),
@@ -367,9 +339,9 @@ bool NetworkingPrivateStartDisconnectFunction::RunImpl() {
   scoped_ptr<api::StartDisconnect::Params> params =
       api::StartDisconnect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  NetworkingPrivateServiceClient* process_client =
+  NetworkingPrivateServiceClient* service_client =
       NetworkingPrivateServiceClientFactory::GetForProfile(GetProfile());
-  process_client->StartDisconnect(
+  service_client->StartDisconnect(
       params->network_guid,
       base::Bind(
           &NetworkingPrivateStartDisconnectFunction::DisconnectionStartSuccess,
@@ -401,9 +373,9 @@ bool NetworkingPrivateVerifyDestinationFunction::RunImpl() {
   scoped_ptr<api::VerifyDestination::Params> params =
       api::VerifyDestination::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  NetworkingPrivateServiceClient* process_client =
+  NetworkingPrivateServiceClient* service_client =
       NetworkingPrivateServiceClientFactory::GetForProfile(GetProfile());
-  process_client->VerifyDestination(
+  service_client->VerifyDestination(
       args_.Pass(),
       base::Bind(
           &NetworkingPrivateVerifyDestinationFunction::ResultCallback,
@@ -452,9 +424,9 @@ bool NetworkingPrivateVerifyAndEncryptDataFunction::RunImpl() {
   scoped_ptr<api::VerifyAndEncryptData::Params> params =
       api::VerifyAndEncryptData::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
-  NetworkingPrivateServiceClient* process_client =
+  NetworkingPrivateServiceClient* service_client =
       NetworkingPrivateServiceClientFactory::GetForProfile(GetProfile());
-  process_client->VerifyAndEncryptData(
+  service_client->VerifyAndEncryptData(
       args_.Pass(),
       base::Bind(
           &NetworkingPrivateVerifyAndEncryptDataFunction::ResultCallback,

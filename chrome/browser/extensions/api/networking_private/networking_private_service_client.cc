@@ -205,6 +205,7 @@ void NetworkingPrivateServiceClient::GetProperties(
 }
 
 void NetworkingPrivateServiceClient::GetVisibleNetworks(
+    const std::string& network_type,
     const ListResultCallback& callback) {
   ServiceCallbacks* service_callbacks = AddServiceCallbacks();
   service_callbacks->get_visible_networks_callback = callback;
@@ -215,6 +216,7 @@ void NetworkingPrivateServiceClient::GetVisibleNetworks(
       FROM_HERE,
       base::Bind(&WiFiService::GetVisibleNetworks,
                  base::Unretained(wifi_service_.get()),
+                 network_type,
                  networks),
       base::Bind(&NetworkingPrivateServiceClient::AfterGetVisibleNetworks,
                  weak_factory_.GetWeakPtr(),
