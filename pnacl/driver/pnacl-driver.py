@@ -330,6 +330,7 @@ GCCPatterns = [
   ( ('(-include.+)'),         AddCCFlag),
   ( '(-g)',                   AddCCFlag),
   ( '(-W.*)',                 AddCCFlag),
+  ( '(-w)',                   AddCCFlag),
   ( '(-std=.*)',              AddCCFlag),
   ( '(-ansi)',                AddCCFlag),
   ( ('(-D)','(.*)'),          AddCCFlag),
