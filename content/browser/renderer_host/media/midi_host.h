@@ -7,8 +7,10 @@
 
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -16,6 +18,7 @@
 
 namespace media {
 class MIDIManager;
+class MIDIMessageQueue;
 }
 
 namespace content {
@@ -33,11 +36,10 @@ class CONTENT_EXPORT MIDIHost
                                  bool* message_was_ok) OVERRIDE;
 
   // MIDIManagerClient implementation.
-  virtual void ReceiveMIDIData(
-      uint32 port,
-      const uint8* data,
-      size_t length,
-      double timestamp) OVERRIDE;
+  virtual void ReceiveMIDIData(uint32 port,
+                               const uint8* data,
+                               size_t length,
+                               double timestamp) OVERRIDE;
   virtual void AccumulateMIDIBytesSent(size_t n) OVERRIDE;
 
   // Start session to access MIDI hardware.
@@ -49,12 +51,24 @@ class CONTENT_EXPORT MIDIHost
                   double timestamp);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MIDIHostTest, IsValidWebMIDIData);
   friend class base::DeleteHelper<MIDIHost>;
   friend class BrowserThread;
 
   virtual ~MIDIHost();
 
+  // Returns true if |data| fulfills the requirements of MIDIOutput.send API
+  // defined in the WebMIDI spec.
+  // - |data| must be any number of complete MIDI messages (data abbreviation
+  //    called "running status" is disallowed).
+  // - 1-byte MIDI realtime messages can be placed at any position of |data|.
+  static bool IsValidWebMIDIData(const std::vector<uint8>& data);
+
   int renderer_process_id_;
+
+  // Represents if the renderer has a permission to send/receive MIDI SysEX
+  // messages.
+  bool has_sys_ex_permission_;
 
   // |midi_manager_| talks to the platform-specific MIDI APIs.
   // It can be NULL if the platform (or our current implementation)
@@ -62,6 +76,9 @@ class CONTENT_EXPORT MIDIHost
   // OnRequestAccess() will always refuse access and a call to
   // OnSendData() will do nothing.
   media::MIDIManager* const midi_manager_;
+
+  // Buffers where data sent from each MIDI input port is stored.
+  ScopedVector<media::MIDIMessageQueue> received_messages_queues_;
 
   // The number of bytes sent to the platform-specific MIDI sending
   // system, but not yet completed.
