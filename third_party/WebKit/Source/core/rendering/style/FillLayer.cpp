@@ -361,7 +361,7 @@ bool FillLayer::hasOpaqueImage(const RenderObject* renderer) const
     if (m_composite == CompositeClear || m_composite == CompositeCopy)
         return true;
 
-    if (m_blendMode != BlendModeNormal)
+    if (m_blendMode != blink::WebBlendModeNormal)
         return false;
 
     if (m_composite == CompositeSourceOver)

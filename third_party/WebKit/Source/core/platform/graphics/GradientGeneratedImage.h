@@ -48,10 +48,10 @@ public:
 
 protected:
     virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&,
-        CompositeOperator, BlendMode) OVERRIDE;
+        CompositeOperator, blink::WebBlendMode) OVERRIDE;
     virtual void drawPattern(GraphicsContext*, const FloatRect&,
         const FloatSize&, const FloatPoint&, CompositeOperator,
-        const FloatRect&, BlendMode, const IntSize& repeatSpacing) OVERRIDE;
+        const FloatRect&, blink::WebBlendMode, const IntSize& repeatSpacing) OVERRIDE;
 
     GradientGeneratedImage(PassRefPtr<Gradient> generator, const IntSize& size)
         : m_gradient(generator)

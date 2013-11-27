@@ -52,10 +52,10 @@ public:
 
 protected:
     virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&,
-        CompositeOperator, BlendMode) OVERRIDE;
+        CompositeOperator, blink::WebBlendMode) OVERRIDE;
     virtual void drawPattern(GraphicsContext*, const FloatRect&,
         const FloatSize&, const FloatPoint&, CompositeOperator,
-        const FloatRect&, BlendMode, const IntSize& repeatSpacing) OVERRIDE;
+        const FloatRect&, blink::WebBlendMode, const IntSize& repeatSpacing) OVERRIDE;
 
     CrossfadeGeneratedImage(Image* fromImage, Image* toImage, float percentage, IntSize crossfadeSize, const IntSize&);
 

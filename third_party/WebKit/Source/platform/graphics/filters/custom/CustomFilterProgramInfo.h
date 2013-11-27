@@ -42,7 +42,7 @@ namespace WebCore {
 
 struct CustomFilterProgramMixSettings {
     CustomFilterProgramMixSettings()
-        : blendMode(BlendModeNormal)
+        : blendMode(blink::WebBlendModeNormal)
         , compositeOperator(CompositeSourceAtop)
     {
     }
@@ -52,7 +52,7 @@ struct CustomFilterProgramMixSettings {
         return blendMode == o.blendMode && compositeOperator == o.compositeOperator;
     }
 
-    BlendMode blendMode;
+    blink::WebBlendMode blendMode;
     CompositeOperator compositeOperator;
 };
 

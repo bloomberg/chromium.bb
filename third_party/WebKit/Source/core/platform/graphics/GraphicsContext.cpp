@@ -55,6 +55,7 @@
 #endif
 
 using namespace std;
+using blink::WebBlendMode;
 
 namespace WebCore {
 
@@ -395,7 +396,7 @@ bool GraphicsContext::couldUseLCDRenderedText()
     return shouldSmoothFonts();
 }
 
-void GraphicsContext::setCompositeOperation(CompositeOperator compositeOperation, BlendMode blendMode)
+void GraphicsContext::setCompositeOperation(CompositeOperator compositeOperation, WebBlendMode blendMode)
 {
     m_state->m_compositeOperator = compositeOperation;
     m_state->m_blendMode = blendMode;
@@ -1059,7 +1060,7 @@ void GraphicsContext::drawImage(Image* image, const IntPoint& dest, const IntRec
 
 void GraphicsContext::drawImage(Image* image, const FloatRect& dest, const FloatRect& src, CompositeOperator op, RespectImageOrientationEnum shouldRespectImageOrientation, bool useLowQualityScale)
 {
-    drawImage(image, dest, src, op, BlendModeNormal, shouldRespectImageOrientation, useLowQualityScale);
+    drawImage(image, dest, src, op, blink::WebBlendModeNormal, shouldRespectImageOrientation, useLowQualityScale);
 }
 
 void GraphicsContext::drawImage(Image* image, const FloatRect& dest)
@@ -1069,7 +1070,7 @@ void GraphicsContext::drawImage(Image* image, const FloatRect& dest)
     drawImage(image, dest, FloatRect(IntRect(IntPoint(), image->size())));
 }
 
-void GraphicsContext::drawImage(Image* image, const FloatRect& dest, const FloatRect& src, CompositeOperator op, BlendMode blendMode, RespectImageOrientationEnum shouldRespectImageOrientation, bool useLowQualityScale)
+void GraphicsContext::drawImage(Image* image, const FloatRect& dest, const FloatRect& src, CompositeOperator op, WebBlendMode blendMode, RespectImageOrientationEnum shouldRespectImageOrientation, bool useLowQualityScale)
 {    if (paintingDisabled() || !image)
         return;
 
@@ -1086,7 +1087,7 @@ void GraphicsContext::drawImage(Image* image, const FloatRect& dest, const Float
         setImageInterpolationQuality(previousInterpolationQuality);
 }
 
-void GraphicsContext::drawTiledImage(Image* image, const IntRect& destRect, const IntPoint& srcPoint, const IntSize& tileSize, CompositeOperator op, bool useLowQualityScale, BlendMode blendMode, const IntSize& repeatSpacing)
+void GraphicsContext::drawTiledImage(Image* image, const IntRect& destRect, const IntPoint& srcPoint, const IntSize& tileSize, CompositeOperator op, bool useLowQualityScale, WebBlendMode blendMode, const IntSize& repeatSpacing)
 {
     if (paintingDisabled() || !image)
         return;
@@ -1123,26 +1124,26 @@ void GraphicsContext::drawTiledImage(Image* image, const IntRect& dest, const In
     }
 }
 
-void GraphicsContext::drawImageBuffer(ImageBuffer* image, const IntPoint& p, CompositeOperator op, BlendMode blendMode)
+void GraphicsContext::drawImageBuffer(ImageBuffer* image, const IntPoint& p, CompositeOperator op, WebBlendMode blendMode)
 {
     if (!image)
         return;
     drawImageBuffer(image, FloatRect(IntRect(p, image->logicalSize())), FloatRect(FloatPoint(), FloatSize(image->logicalSize())), op, blendMode);
 }
 
-void GraphicsContext::drawImageBuffer(ImageBuffer* image, const IntRect& r, CompositeOperator op, BlendMode blendMode, bool useLowQualityScale)
+void GraphicsContext::drawImageBuffer(ImageBuffer* image, const IntRect& r, CompositeOperator op, WebBlendMode blendMode, bool useLowQualityScale)
 {
     if (!image)
         return;
     drawImageBuffer(image, FloatRect(r), FloatRect(FloatPoint(), FloatSize(image->logicalSize())), op, blendMode, useLowQualityScale);
 }
 
-void GraphicsContext::drawImageBuffer(ImageBuffer* image, const IntPoint& dest, const IntRect& srcRect, CompositeOperator op, BlendMode blendMode)
+void GraphicsContext::drawImageBuffer(ImageBuffer* image, const IntPoint& dest, const IntRect& srcRect, CompositeOperator op, WebBlendMode blendMode)
 {
     drawImageBuffer(image, FloatRect(IntRect(dest, srcRect.size())), FloatRect(srcRect), op, blendMode);
 }
 
-void GraphicsContext::drawImageBuffer(ImageBuffer* image, const IntRect& dest, const IntRect& srcRect, CompositeOperator op, BlendMode blendMode, bool useLowQualityScale)
+void GraphicsContext::drawImageBuffer(ImageBuffer* image, const IntRect& dest, const IntRect& srcRect, CompositeOperator op, WebBlendMode blendMode, bool useLowQualityScale)
 {
     drawImageBuffer(image, FloatRect(dest), FloatRect(srcRect), op, blendMode, useLowQualityScale);
 }
@@ -1154,7 +1155,7 @@ void GraphicsContext::drawImageBuffer(ImageBuffer* image, const FloatRect& dest)
     drawImageBuffer(image, dest, FloatRect(IntRect(IntPoint(), image->logicalSize())));
 }
 
-void GraphicsContext::drawImageBuffer(ImageBuffer* image, const FloatRect& dest, const FloatRect& src, CompositeOperator op, BlendMode blendMode, bool useLowQualityScale)
+void GraphicsContext::drawImageBuffer(ImageBuffer* image, const FloatRect& dest, const FloatRect& src, CompositeOperator op, WebBlendMode blendMode, bool useLowQualityScale)
 {
     if (paintingDisabled() || !image)
         return;

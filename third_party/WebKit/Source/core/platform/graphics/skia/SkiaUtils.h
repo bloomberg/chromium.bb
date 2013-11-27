@@ -50,7 +50,7 @@ namespace WebCore {
 
 class GraphicsContext;
 
-PassRefPtr<SkXfermode> WebCoreCompositeToSkiaComposite(CompositeOperator, BlendMode = BlendModeNormal);
+PassRefPtr<SkXfermode> WebCoreCompositeToSkiaComposite(CompositeOperator, blink::WebBlendMode = blink::WebBlendModeNormal);
 
 // move this guy into SkColor.h
 SkColor SkPMColorToColor(SkPMColor);

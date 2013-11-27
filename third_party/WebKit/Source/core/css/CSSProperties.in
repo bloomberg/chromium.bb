@@ -82,7 +82,7 @@ max-height type_name=Length, initial=initialMaxSize, converter=convertLengthMaxS
 max-width type_name=Length, initial=initialMaxSize, converter=convertLengthMaxSizing
 min-height type_name=Length, initial=initialMinSize, converter=convertLengthSizing
 min-width type_name=Length, initial=initialMinSize, converter=convertLengthSizing
-mix-blend-mode type_name=BlendMode, name_for_methods=BlendMode
+mix-blend-mode type_name=blink::WebBlendMode, name_for_methods=BlendMode
 object-fit type_name=ObjectFit
 object-position type_name=LengthPoint, initial=initialObjectPosition, converter=convertLengthPoint
 opacity type_name=float

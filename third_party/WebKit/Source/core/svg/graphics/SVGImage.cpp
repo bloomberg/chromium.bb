@@ -165,7 +165,7 @@ IntSize SVGImage::containerSize() const
 }
 
 void SVGImage::drawForContainer(GraphicsContext* context, const FloatSize containerSize, float zoom, const FloatRect& dstRect,
-    const FloatRect& srcRect, CompositeOperator compositeOp, BlendMode blendMode)
+    const FloatRect& srcRect, CompositeOperator compositeOp, blink::WebBlendMode blendMode)
 {
     if (!m_page)
         return;
@@ -196,14 +196,14 @@ PassRefPtr<NativeImageSkia> SVGImage::nativeImageForCurrentFrame()
     if (!buffer) // failed to allocate image
         return 0;
 
-    drawForContainer(buffer->context(), size(), 1, rect(), rect(), CompositeSourceOver, BlendModeNormal);
+    drawForContainer(buffer->context(), size(), 1, rect(), rect(), CompositeSourceOver, blink::WebBlendModeNormal);
 
     // FIXME: WK(Bug 113657): We should use DontCopyBackingStore here.
     return buffer->copyImage(CopyBackingStore)->nativeImageForCurrentFrame();
 }
 
 void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize containerSize, float zoom, const FloatRect& srcRect,
-    const FloatSize& scale, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, BlendMode blendMode, const IntSize& repeatSpacing)
+    const FloatSize& scale, const FloatPoint& phase, CompositeOperator compositeOp, const FloatRect& dstRect, blink::WebBlendMode blendMode, const IntSize& repeatSpacing)
 {
     FloatRect zoomedContainerRect = FloatRect(FloatPoint(), containerSize);
     zoomedContainerRect.scale(zoom);
@@ -223,7 +223,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     OwnPtr<ImageBuffer> buffer = ImageBuffer::create(expandedIntSize(imageBufferSize.size()), 1);
     if (!buffer) // Failed to allocate buffer.
         return;
-    drawForContainer(buffer->context(), containerSize, zoom, imageBufferSize, zoomedContainerRect, CompositeSourceOver, BlendModeNormal);
+    drawForContainer(buffer->context(), containerSize, zoom, imageBufferSize, zoomedContainerRect, CompositeSourceOver, blink::WebBlendModeNormal);
     RefPtr<Image> image = buffer->copyImage(DontCopyBackingStore, Unscaled);
 
     // Adjust the source rect and transform due to the image buffer's scaling.
@@ -233,7 +233,7 @@ void SVGImage::drawPatternForContainer(GraphicsContext* context, const FloatSize
     image->drawPattern(context, scaledSrcRect, scaleWithoutCTM, phase, compositeOp, dstRect, blendMode, repeatSpacing);
 }
 
-void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, BlendMode blendMode)
+void SVGImage::draw(GraphicsContext* context, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, blink::WebBlendMode blendMode)
 {
     if (!m_page)
         return;

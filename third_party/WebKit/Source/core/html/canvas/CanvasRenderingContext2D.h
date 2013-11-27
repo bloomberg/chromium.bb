@@ -177,7 +177,7 @@ public:
     void drawImage(HTMLImageElement*, float x, float y, float width, float height, ExceptionState&);
     void drawImage(HTMLImageElement*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
     void drawImage(HTMLImageElement*, const FloatRect& srcRect, const FloatRect& dstRect, ExceptionState&);
-    void drawImage(HTMLImageElement*, const FloatRect& srcRect, const FloatRect& dstRect, const CompositeOperator&, const BlendMode&, ExceptionState&);
+    void drawImage(HTMLImageElement*, const FloatRect& srcRect, const FloatRect& dstRect, const CompositeOperator&, const blink::WebBlendMode&, ExceptionState&);
     void drawImage(HTMLCanvasElement*, float x, float y, ExceptionState&);
     void drawImage(HTMLCanvasElement*, float x, float y, float width, float height, ExceptionState&);
     void drawImage(HTMLCanvasElement*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
@@ -261,7 +261,7 @@ private:
         RGBA32 m_shadowColor;
         float m_globalAlpha;
         CompositeOperator m_globalComposite;
-        BlendMode m_globalBlend;
+        blink::WebBlendMode m_globalBlend;
         AffineTransform m_transform;
         bool m_invertibleCTM;
         Vector<float> m_lineDash;
@@ -287,7 +287,7 @@ private:
     void applyShadow();
     bool shouldDrawShadows() const;
 
-    void drawImageInternal(Image*, const FloatRect&, const FloatRect&, const CompositeOperator&, const BlendMode&);
+    void drawImageInternal(Image*, const FloatRect&, const FloatRect&, const CompositeOperator&, const blink::WebBlendMode&);
     bool computeDirtyRect(const FloatRect& localBounds, FloatRect*);
     bool computeDirtyRect(const FloatRect& localBounds, const FloatRect& transformedClipBounds, FloatRect*);
     void didDraw(const FloatRect&);

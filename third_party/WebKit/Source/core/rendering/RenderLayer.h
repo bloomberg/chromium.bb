@@ -659,7 +659,7 @@ protected:
 
     unsigned m_hasFilterInfo : 1;
 
-    BlendMode m_blendMode;
+    blink::WebBlendMode m_blendMode;
 
     RenderLayerModelObject* m_renderer;
 

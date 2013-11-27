@@ -56,7 +56,7 @@ private:
         , m_alpha(1)
         , m_xferMode(0)
         , m_compositeOperator(CompositeSourceOver)
-        , m_blendMode(BlendModeNormal)
+        , m_blendMode(blink::WebBlendModeNormal)
 #if USE(LOW_QUALITY_IMAGE_INTERPOLATION)
         , m_interpolationQuality(InterpolationLow)
 #else
@@ -130,7 +130,7 @@ private:
 
     // Compositing control, for the CSS and Canvas compositing spec.
     CompositeOperator m_compositeOperator;
-    BlendMode m_blendMode;
+    blink::WebBlendMode m_blendMode;
 
     // Image interpolation control.
     InterpolationQuality m_interpolationQuality;

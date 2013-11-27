@@ -315,7 +315,7 @@ bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBu
 }
 
 void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect,
-    CompositeOperator op, BlendMode blendMode, bool useLowQualityScale)
+    CompositeOperator op, blink::WebBlendMode blendMode, bool useLowQualityScale)
 {
     if (!isValid())
         return;
@@ -326,7 +326,7 @@ void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, cons
 }
 
 void ImageBuffer::drawPattern(GraphicsContext* context, const FloatRect& srcRect, const FloatSize& scale,
-    const FloatPoint& phase, CompositeOperator op, const FloatRect& destRect, BlendMode blendMode, const IntSize& repeatSpacing)
+    const FloatPoint& phase, CompositeOperator op, const FloatRect& destRect, blink::WebBlendMode blendMode, const IntSize& repeatSpacing)
 {
     if (!isValid())
         return;

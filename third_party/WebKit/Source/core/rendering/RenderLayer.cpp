@@ -126,7 +126,7 @@ RenderLayer::RenderLayer(RenderLayerModelObject* renderer)
     , m_containsDirtyOverlayScrollbars(false)
     , m_canSkipRepaintRectsUpdateOnScroll(renderer->isTableCell())
     , m_hasFilterInfo(false)
-    , m_blendMode(BlendModeNormal)
+    , m_blendMode(blink::WebBlendModeNormal)
     , m_renderer(renderer)
     , m_parent(0)
     , m_previous(0)
@@ -527,8 +527,8 @@ void RenderLayer::updateBlendMode()
     if (!RuntimeEnabledFeatures::cssCompositingEnabled())
         return;
 
-    bool hadBlendMode = m_blendMode != BlendModeNormal;
-    BlendMode newBlendMode = renderer()->style()->blendMode();
+    bool hadBlendMode = m_blendMode != blink::WebBlendModeNormal;
+    blink::WebBlendMode newBlendMode = renderer()->style()->blendMode();
     if (newBlendMode != m_blendMode) {
         m_blendMode = newBlendMode;
 

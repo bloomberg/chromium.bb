@@ -115,13 +115,13 @@ void SVGRenderingContext::prepareToRenderSVGContent(RenderObject* object, PaintI
     // Setup transparency layers before setting up SVG resources!
     bool isRenderingMask = isRenderingMaskImage(m_object);
     float opacity = isRenderingMask ? 1 : style->opacity();
-    BlendMode blendMode = isRenderingMask ? BlendModeNormal : style->blendMode();
-    if (opacity < 1 || blendMode != BlendModeNormal) {
+    blink::WebBlendMode blendMode = isRenderingMask ? blink::WebBlendModeNormal : style->blendMode();
+    if (opacity < 1 || blendMode != blink::WebBlendModeNormal) {
         FloatRect repaintRect = m_object->repaintRectInLocalCoordinates();
 
-        if (opacity < 1 || blendMode != BlendModeNormal) {
+        if (opacity < 1 || blendMode != blink::WebBlendModeNormal) {
             m_paintInfo->context->clip(repaintRect);
-            if (blendMode != BlendModeNormal) {
+            if (blendMode != blink::WebBlendModeNormal) {
                 if (!(m_renderingFlags & RestoreGraphicsContext)) {
                     m_paintInfo->context->save();
                     m_renderingFlags |= RestoreGraphicsContext;

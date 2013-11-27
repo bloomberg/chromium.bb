@@ -323,7 +323,7 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r, boo
             if (m_presentedImage)
                 context->drawImage(m_presentedImage.get(), pixelSnappedIntRect(r), compositeOperator, DoNotRespectImageOrientation, useLowQualityScale);
             else
-                context->drawImageBuffer(imageBuffer, pixelSnappedIntRect(r), compositeOperator, BlendModeNormal, useLowQualityScale);
+                context->drawImageBuffer(imageBuffer, pixelSnappedIntRect(r), compositeOperator, blink::WebBlendModeNormal, useLowQualityScale);
         }
     }
 

@@ -403,7 +403,7 @@ void NativeImageSkia::drawPattern(
     const FloatPoint& phase,
     CompositeOperator compositeOp,
     const FloatRect& destRect,
-    BlendMode blendMode,
+    blink::WebBlendMode blendMode,
     const IntSize& repeatSpacing) const
 {
     FloatRect normSrcRect = floatSrcRect;

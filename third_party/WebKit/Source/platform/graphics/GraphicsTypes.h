@@ -27,6 +27,7 @@
 #define GraphicsTypes_h
 
 #include "platform/PlatformExport.h"
+#include "public/platform/WebBlendMode.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "wtf/Forward.h"
 
@@ -66,26 +67,6 @@ enum CompositeOperator {
     CompositeDifference
 };
 
-// keep it in sync with gMapBlendOpsToXfermodeModes array in SkiaUtils.h
-enum BlendMode {
-    BlendModeNormal,
-    BlendModeMultiply,
-    BlendModeScreen,
-    BlendModeOverlay,
-    BlendModeDarken,
-    BlendModeLighten,
-    BlendModeColorDodge,
-    BlendModeColorBurn,
-    BlendModeHardLight,
-    BlendModeSoftLight,
-    BlendModeDifference,
-    BlendModeExclusion,
-    BlendModeHue,
-    BlendModeSaturation,
-    BlendModeColor,
-    BlendModeLuminosity
-};
-
 enum GradientSpreadMethod {
     SpreadMethodPad,
     SpreadMethodReflect,
@@ -123,8 +104,8 @@ enum ColorFilter {
     ColorFilterLinearRGBToSRGB
 };
 
-PLATFORM_EXPORT String compositeOperatorName(CompositeOperator, BlendMode);
-PLATFORM_EXPORT bool parseCompositeAndBlendOperator(const String&, CompositeOperator&, BlendMode&);
+PLATFORM_EXPORT String compositeOperatorName(CompositeOperator, blink::WebBlendMode);
+PLATFORM_EXPORT bool parseCompositeAndBlendOperator(const String&, CompositeOperator&, blink::WebBlendMode&);
 
 PLATFORM_EXPORT String lineCapName(LineCap);
 PLATFORM_EXPORT bool parseLineCap(const String&, LineCap&);

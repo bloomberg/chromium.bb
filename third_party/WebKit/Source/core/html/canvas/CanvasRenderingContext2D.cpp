@@ -142,7 +142,7 @@ CanvasRenderingContext2D::State::State()
     , m_shadowColor(Color::transparent)
     , m_globalAlpha(1)
     , m_globalComposite(CompositeSourceOver)
-    , m_globalBlend(BlendModeNormal)
+    , m_globalBlend(blink::WebBlendModeNormal)
     , m_invertibleCTM(true)
     , m_lineDashOffset(0)
     , m_imageSmoothingEnabled(true)
@@ -574,7 +574,7 @@ String CanvasRenderingContext2D::globalCompositeOperation() const
 void CanvasRenderingContext2D::setGlobalCompositeOperation(const String& operation)
 {
     CompositeOperator op = CompositeSourceOver;
-    BlendMode blendMode = BlendModeNormal;
+    blink::WebBlendMode blendMode = blink::WebBlendModeNormal;
     if (!parseCompositeAndBlendOperator(operation, op, blendMode))
         return;
     if ((state().m_globalComposite == op) && (state().m_globalBlend == blendMode))
@@ -1256,7 +1256,7 @@ static inline void clipRectsToImageRect(const FloatRect& imageRect, FloatRect* s
     dstRect->move(offset);
 }
 
-void CanvasRenderingContext2D::drawImageInternal(Image* image, const FloatRect& srcRect, const FloatRect& dstRect, const CompositeOperator& op, const BlendMode& blendMode)
+void CanvasRenderingContext2D::drawImageInternal(Image* image, const FloatRect& srcRect, const FloatRect& dstRect, const CompositeOperator& op, const blink::WebBlendMode& blendMode)
 {
     if (!image)
         return;
@@ -1397,7 +1397,7 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
     drawImage(image, srcRect, dstRect, state().m_globalComposite, state().m_globalBlend, exceptionState);
 }
 
-void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRect& srcRect, const FloatRect& dstRect, const CompositeOperator& op, const BlendMode& blendMode, ExceptionState& exceptionState)
+void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRect& srcRect, const FloatRect& dstRect, const CompositeOperator& op, const blink::WebBlendMode& blendMode, ExceptionState& exceptionState)
 {
     if (!image) {
         exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
@@ -1617,11 +1617,11 @@ void CanvasRenderingContext2D::drawImageFromRect(HTMLImageElement* image,
     const String& compositeOperation)
 {
     CompositeOperator op;
-    BlendMode blendOp = BlendModeNormal;
-    if (!parseCompositeAndBlendOperator(compositeOperation, op, blendOp) || blendOp != BlendModeNormal)
+    blink::WebBlendMode blendOp = blink::WebBlendModeNormal;
+    if (!parseCompositeAndBlendOperator(compositeOperation, op, blendOp) || blendOp != blink::WebBlendModeNormal)
         op = CompositeSourceOver;
 
-    drawImage(image, FloatRect(sx, sy, sw, sh), FloatRect(dx, dy, dw, dh), op, BlendModeNormal, IGNORE_EXCEPTION);
+    drawImage(image, FloatRect(sx, sy, sw, sh), FloatRect(dx, dy, dw, dh), op, blink::WebBlendModeNormal, IGNORE_EXCEPTION);
 }
 
 void CanvasRenderingContext2D::setAlpha(float alpha)
@@ -2422,7 +2422,7 @@ void CanvasRenderingContext2D::drawFocusRing(const Path& path)
     c->save();
     c->setAlpha(1.0);
     c->clearShadow();
-    c->setCompositeOperation(CompositeSourceOver, BlendModeNormal);
+    c->setCompositeOperation(CompositeSourceOver, blink::WebBlendModeNormal);
 
     // These should match the style defined in html.css.
     Color focusRingColor = RenderTheme::focusRingColor();

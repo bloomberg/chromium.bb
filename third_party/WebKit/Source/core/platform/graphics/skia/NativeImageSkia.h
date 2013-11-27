@@ -135,7 +135,7 @@ public:
         const FloatPoint& phase,
         CompositeOperator,
         const FloatRect& destRect,
-        BlendMode,
+        blink::WebBlendMode,
         const IntSize& repeatSpacing) const;
 
 private:

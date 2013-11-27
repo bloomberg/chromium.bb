@@ -802,14 +802,14 @@ void RenderStyle::setContent(QuoteType quote, bool add)
     rareNonInheritedData.access()->m_content = ContentData::create(quote);
 }
 
-BlendMode RenderStyle::blendMode() const
+blink::WebBlendMode RenderStyle::blendMode() const
 {
     if (RuntimeEnabledFeatures::cssCompositingEnabled())
-        return static_cast<BlendMode>(rareNonInheritedData->m_effectiveBlendMode);
-    return BlendModeNormal;
+        return static_cast<blink::WebBlendMode>(rareNonInheritedData->m_effectiveBlendMode);
+    return blink::WebBlendModeNormal;
 }
 
-void RenderStyle::setBlendMode(BlendMode v)
+void RenderStyle::setBlendMode(blink::WebBlendMode v)
 {
     if (RuntimeEnabledFeatures::cssCompositingEnabled())
         rareNonInheritedData.access()->m_effectiveBlendMode = v;
@@ -818,7 +818,7 @@ void RenderStyle::setBlendMode(BlendMode v)
 bool RenderStyle::hasBlendMode() const
 {
     if (RuntimeEnabledFeatures::cssCompositingEnabled())
-        return static_cast<BlendMode>(rareNonInheritedData->m_effectiveBlendMode) != BlendModeNormal;
+        return static_cast<blink::WebBlendMode>(rareNonInheritedData->m_effectiveBlendMode) != blink::WebBlendModeNormal;
     return false;
 }
 

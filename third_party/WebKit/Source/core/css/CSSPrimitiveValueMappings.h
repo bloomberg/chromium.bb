@@ -3836,104 +3836,104 @@ template<> inline CSSPrimitiveValue::operator ESpeak() const
     return SpeakNormal;
 }
 
-template<> inline CSSPrimitiveValue::CSSPrimitiveValue(BlendMode blendMode)
+template<> inline CSSPrimitiveValue::CSSPrimitiveValue(blink::WebBlendMode blendMode)
     : CSSValue(PrimitiveClass)
 {
     m_primitiveUnitType = CSS_VALUE_ID;
     switch (blendMode) {
-    case BlendModeNormal:
+    case blink::WebBlendModeNormal:
         m_value.valueID = CSSValueNormal;
         break;
-    case BlendModeMultiply:
+    case blink::WebBlendModeMultiply:
         m_value.valueID = CSSValueMultiply;
         break;
-    case BlendModeScreen:
+    case blink::WebBlendModeScreen:
         m_value.valueID = CSSValueScreen;
         break;
-    case BlendModeOverlay:
+    case blink::WebBlendModeOverlay:
         m_value.valueID = CSSValueOverlay;
         break;
-    case BlendModeDarken:
+    case blink::WebBlendModeDarken:
         m_value.valueID = CSSValueDarken;
         break;
-    case BlendModeLighten:
+    case blink::WebBlendModeLighten:
         m_value.valueID = CSSValueLighten;
         break;
-    case BlendModeColorDodge:
+    case blink::WebBlendModeColorDodge:
         m_value.valueID = CSSValueColorDodge;
         break;
-    case BlendModeColorBurn:
+    case blink::WebBlendModeColorBurn:
         m_value.valueID = CSSValueColorBurn;
         break;
-    case BlendModeHardLight:
+    case blink::WebBlendModeHardLight:
         m_value.valueID = CSSValueHardLight;
         break;
-    case BlendModeSoftLight:
+    case blink::WebBlendModeSoftLight:
         m_value.valueID = CSSValueSoftLight;
         break;
-    case BlendModeDifference:
+    case blink::WebBlendModeDifference:
         m_value.valueID = CSSValueDifference;
         break;
-    case BlendModeExclusion:
+    case blink::WebBlendModeExclusion:
         m_value.valueID = CSSValueExclusion;
         break;
-    case BlendModeHue:
+    case blink::WebBlendModeHue:
         m_value.valueID = CSSValueHue;
         break;
-    case BlendModeSaturation:
+    case blink::WebBlendModeSaturation:
         m_value.valueID = CSSValueSaturation;
         break;
-    case BlendModeColor:
+    case blink::WebBlendModeColor:
         m_value.valueID = CSSValueColor;
         break;
-    case BlendModeLuminosity:
+    case blink::WebBlendModeLuminosity:
         m_value.valueID = CSSValueLuminosity;
         break;
     }
 }
 
-template<> inline CSSPrimitiveValue::operator BlendMode() const
+template<> inline CSSPrimitiveValue::operator blink::WebBlendMode() const
 {
     ASSERT(isValueID());
     switch (m_value.valueID) {
     case CSSValueNormal:
-        return BlendModeNormal;
+        return blink::WebBlendModeNormal;
     case CSSValueMultiply:
-        return BlendModeMultiply;
+        return blink::WebBlendModeMultiply;
     case CSSValueScreen:
-        return BlendModeScreen;
+        return blink::WebBlendModeScreen;
     case CSSValueOverlay:
-        return BlendModeOverlay;
+        return blink::WebBlendModeOverlay;
     case CSSValueDarken:
-        return BlendModeDarken;
+        return blink::WebBlendModeDarken;
     case CSSValueLighten:
-        return BlendModeLighten;
+        return blink::WebBlendModeLighten;
     case CSSValueColorDodge:
-        return BlendModeColorDodge;
+        return blink::WebBlendModeColorDodge;
     case CSSValueColorBurn:
-        return BlendModeColorBurn;
+        return blink::WebBlendModeColorBurn;
     case CSSValueHardLight:
-        return BlendModeHardLight;
+        return blink::WebBlendModeHardLight;
     case CSSValueSoftLight:
-        return BlendModeSoftLight;
+        return blink::WebBlendModeSoftLight;
     case CSSValueDifference:
-        return BlendModeDifference;
+        return blink::WebBlendModeDifference;
     case CSSValueExclusion:
-        return BlendModeExclusion;
+        return blink::WebBlendModeExclusion;
     case CSSValueHue:
-        return BlendModeHue;
+        return blink::WebBlendModeHue;
     case CSSValueSaturation:
-        return BlendModeSaturation;
+        return blink::WebBlendModeSaturation;
     case CSSValueColor:
-        return BlendModeColor;
+        return blink::WebBlendModeColor;
     case CSSValueLuminosity:
-        return BlendModeLuminosity;
+        return blink::WebBlendModeLuminosity;
     default:
         break;
     }
 
     ASSERT_NOT_REACHED();
-    return BlendModeNormal;
+    return blink::WebBlendModeNormal;
 }
 
 template<> inline CSSPrimitiveValue::CSSPrimitiveValue(LineCap e)

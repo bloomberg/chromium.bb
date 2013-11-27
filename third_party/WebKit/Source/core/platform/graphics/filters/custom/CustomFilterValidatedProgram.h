@@ -98,7 +98,7 @@ private:
     static String defaultVertexShaderString();
     static String defaultFragmentShaderString();
 
-    static String blendFunctionString(BlendMode);
+    static String blendFunctionString(blink::WebBlendMode);
     static String compositeFunctionString(CompositeOperator);
 
     void rewriteMixVertexShader(const Vector<ANGLEShaderSymbol>& symbols);

@@ -162,9 +162,9 @@ public:
     void setImageInterpolationQuality(InterpolationQuality quality) { m_state->m_interpolationQuality = quality; }
     InterpolationQuality imageInterpolationQuality() const { return m_state->m_interpolationQuality; }
 
-    void setCompositeOperation(CompositeOperator, BlendMode = BlendModeNormal);
+    void setCompositeOperation(CompositeOperator, blink::WebBlendMode = blink::WebBlendModeNormal);
     CompositeOperator compositeOperation() const { return m_state->m_compositeOperator; }
-    BlendMode blendModeOperation() const { return m_state->m_blendMode; }
+    blink::WebBlendMode blendModeOperation() const { return m_state->m_blendMode; }
 
     // Change the way document markers are rendered.
     // Any deviceScaleFactor higher than 1.5 is enough to justify setting this flag.
@@ -250,20 +250,20 @@ public:
     void drawImage(Image*, const IntPoint& destPoint, const IntRect& srcRect, CompositeOperator = CompositeSourceOver, RespectImageOrientationEnum = DoNotRespectImageOrientation);
     void drawImage(Image*, const FloatRect& destRect);
     void drawImage(Image*, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator = CompositeSourceOver, RespectImageOrientationEnum = DoNotRespectImageOrientation, bool useLowQualityScale = false);
-    void drawImage(Image*, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator, BlendMode, RespectImageOrientationEnum = DoNotRespectImageOrientation, bool useLowQualityScale = false);
+    void drawImage(Image*, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator, blink::WebBlendMode, RespectImageOrientationEnum = DoNotRespectImageOrientation, bool useLowQualityScale = false);
 
     void drawTiledImage(Image*, const IntRect& destRect, const IntPoint& srcPoint, const IntSize& tileSize,
-        CompositeOperator = CompositeSourceOver, bool useLowQualityScale = false, BlendMode = BlendModeNormal, const IntSize& repeatSpacing = IntSize());
+        CompositeOperator = CompositeSourceOver, bool useLowQualityScale = false, blink::WebBlendMode = blink::WebBlendModeNormal, const IntSize& repeatSpacing = IntSize());
     void drawTiledImage(Image*, const IntRect& destRect, const IntRect& srcRect,
         const FloatSize& tileScaleFactor, Image::TileRule hRule = Image::StretchTile, Image::TileRule vRule = Image::StretchTile,
         CompositeOperator = CompositeSourceOver, bool useLowQualityScale = false);
 
-    void drawImageBuffer(ImageBuffer*, const IntPoint&, CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal);
-    void drawImageBuffer(ImageBuffer*, const IntRect&, CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal, bool useLowQualityScale = false);
-    void drawImageBuffer(ImageBuffer*, const IntPoint& destPoint, const IntRect& srcRect, CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal);
-    void drawImageBuffer(ImageBuffer*, const IntRect& destRect, const IntRect& srcRect, CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal, bool useLowQualityScale = false);
+    void drawImageBuffer(ImageBuffer*, const IntPoint&, CompositeOperator = CompositeSourceOver, blink::WebBlendMode = blink::WebBlendModeNormal);
+    void drawImageBuffer(ImageBuffer*, const IntRect&, CompositeOperator = CompositeSourceOver, blink::WebBlendMode = blink::WebBlendModeNormal, bool useLowQualityScale = false);
+    void drawImageBuffer(ImageBuffer*, const IntPoint& destPoint, const IntRect& srcRect, CompositeOperator = CompositeSourceOver, blink::WebBlendMode = blink::WebBlendModeNormal);
+    void drawImageBuffer(ImageBuffer*, const IntRect& destRect, const IntRect& srcRect, CompositeOperator = CompositeSourceOver, blink::WebBlendMode = blink::WebBlendModeNormal, bool useLowQualityScale = false);
     void drawImageBuffer(ImageBuffer*, const FloatRect& destRect);
-    void drawImageBuffer(ImageBuffer*, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator = CompositeSourceOver, BlendMode = BlendModeNormal, bool useLowQualityScale = false);
+    void drawImageBuffer(ImageBuffer*, const FloatRect& destRect, const FloatRect& srcRect, CompositeOperator = CompositeSourceOver, blink::WebBlendMode = blink::WebBlendModeNormal, bool useLowQualityScale = false);
 
     // These methods write to the canvas and modify the opaque region, if tracked.
     // Also drawLine(const IntPoint& point1, const IntPoint& point2) and fillRoundedRect

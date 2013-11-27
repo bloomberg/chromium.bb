@@ -281,7 +281,7 @@ void CustomFilterValidatedProgram::rewriteMixFragmentShader()
     m_validatedFragmentShader = builder.toString();
 }
 
-String CustomFilterValidatedProgram::blendFunctionString(BlendMode blendMode)
+String CustomFilterValidatedProgram::blendFunctionString(blink::WebBlendMode blendMode)
 {
     // Implemented using the same symbol names as the Compositing and Blending spec:
     // https://dvcs.w3.org/hg/FXTF/rawfile/tip/compositing/index.html#blendingnormal
@@ -293,28 +293,28 @@ String CustomFilterValidatedProgram::blendFunctionString(BlendMode blendMode)
     bool needsSaturationHelperFunctions = false;
     String blendFunctionString;
     switch (blendMode) {
-    case BlendModeNormal:
+    case blink::WebBlendModeNormal:
         blendColorExpression = "Cs";
         break;
-    case BlendModeMultiply:
+    case blink::WebBlendModeMultiply:
         blendColorExpression = "Cs * Cb";
         break;
-    case BlendModeScreen:
+    case blink::WebBlendModeScreen:
         blendColorExpression = "Cb + Cs - (Cb * Cs)";
         break;
-    case BlendModeDarken:
+    case blink::WebBlendModeDarken:
         blendColorExpression = "min(Cb, Cs)";
         break;
-    case BlendModeLighten:
+    case blink::WebBlendModeLighten:
         blendColorExpression = "max(Cb, Cs)";
         break;
-    case BlendModeDifference:
+    case blink::WebBlendModeDifference:
         blendColorExpression = "abs(Cb - Cs)";
         break;
-    case BlendModeExclusion:
+    case blink::WebBlendModeExclusion:
         blendColorExpression = "Cb + Cs - 2.0 * Cb * Cs";
         break;
-    case BlendModeOverlay:
+    case blink::WebBlendModeOverlay:
         /*
             Co = HardLight(Cs, Cb)
                = if(Cb <= 0.5)
@@ -333,7 +333,7 @@ String CustomFilterValidatedProgram::blendFunctionString(BlendMode blendMode)
                 Co = Cs + (2.0 * Cb - 1.0) - (Cs * (2.0 * Cb - 1.0));
         );
         break;
-    case BlendModeColorDodge:
+    case blink::WebBlendModeColorDodge:
         /*
             Co = if(Cs < 1)
                      min(1, Cb / (1 - Cs))
@@ -347,7 +347,7 @@ String CustomFilterValidatedProgram::blendFunctionString(BlendMode blendMode)
                 Co = 1.0;
         );
         break;
-    case BlendModeColorBurn:
+    case blink::WebBlendModeColorBurn:
         /*
             Co = if(Cs > 0)
                      1 - min(1, (1 - Cb) / Cs)
@@ -361,7 +361,7 @@ String CustomFilterValidatedProgram::blendFunctionString(BlendMode blendMode)
                 Co = 0.0;
         );
         break;
-    case BlendModeHardLight:
+    case blink::WebBlendModeHardLight:
         /*
             Co = if(Cs <= 0.5)
                      Multiply(Cb, 2 x Cs)
@@ -379,7 +379,7 @@ String CustomFilterValidatedProgram::blendFunctionString(BlendMode blendMode)
                 Co = Cb + (2.0 * Cs - 1.0) - (Cb * (2.0 * Cs - 1.0));
         );
         break;
-    case BlendModeSoftLight:
+    case blink::WebBlendModeSoftLight:
         /*
             Co = if(Cs <= 0.5)
                      Cb - (1 - 2 x Cs) x Cb x (1 - Cb)
@@ -406,20 +406,20 @@ String CustomFilterValidatedProgram::blendFunctionString(BlendMode blendMode)
                 Co = Cb + (2.0 * Cs - 1.0) * (D - Cb);
         );
         break;
-    case BlendModeColor:
+    case blink::WebBlendModeColor:
         needsLuminosityHelperFunctions = true;
         blendColorExpression = "css_SetLum(Cs, css_Lum(Cb))";
         break;
-    case BlendModeLuminosity:
+    case blink::WebBlendModeLuminosity:
         needsLuminosityHelperFunctions = true;
         blendColorExpression = "css_SetLum(Cb, css_Lum(Cs))";
         break;
-    case BlendModeHue:
+    case blink::WebBlendModeHue:
         needsLuminosityHelperFunctions = true;
         needsSaturationHelperFunctions = true;
         blendColorExpression = "css_SetLum(css_SetSat(Cs, css_Sat(Cb)), css_Lum(Cb))";
         break;
-    case BlendModeSaturation:
+    case blink::WebBlendModeSaturation:
         needsLuminosityHelperFunctions = true;
         needsSaturationHelperFunctions = true;
         blendColorExpression = "css_SetLum(css_SetSat(Cb, css_Sat(Cs)), css_Lum(Cb))";

@@ -1591,7 +1591,7 @@ void CompositedLayerMapping::paintsIntoCompositedAncestorChanged()
     compositor()->repaintInCompositedAncestor(m_owningLayer, compositedBounds());
 }
 
-void CompositedLayerMapping::setBlendMode(BlendMode)
+void CompositedLayerMapping::setBlendMode(blink::WebBlendMode)
 {
 }
 

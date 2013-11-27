@@ -1612,11 +1612,11 @@ void RenderBox::paintFillLayers(const PaintInfo& paintInfo, const Color& c, cons
         // the layer recursion into paintFillLayerExtended, or to compute the layer geometry here
         // and pass it down.
 
-        if (!shouldDrawBackgroundInSeparateBuffer && curLayer->blendMode() != BlendModeNormal)
+        if (!shouldDrawBackgroundInSeparateBuffer && curLayer->blendMode() != blink::WebBlendModeNormal)
             shouldDrawBackgroundInSeparateBuffer = true;
 
         // The clipOccludesNextLayers condition must be evaluated first to avoid short-circuiting.
-        if (curLayer->clipOccludesNextLayers(curLayer == fillLayer) && curLayer->hasOpaqueImage(this) && curLayer->image()->canRender(this, style()->effectiveZoom()) && curLayer->hasRepeatXY() && curLayer->blendMode() == BlendModeNormal && !boxShadowShouldBeAppliedToBackground(bleedAvoidance))
+        if (curLayer->clipOccludesNextLayers(curLayer == fillLayer) && curLayer->hasOpaqueImage(this) && curLayer->image()->canRender(this, style()->effectiveZoom()) && curLayer->hasRepeatXY() && curLayer->blendMode() == blink::WebBlendModeNormal && !boxShadowShouldBeAppliedToBackground(bleedAvoidance))
             break;
         curLayer = curLayer->next();
     }

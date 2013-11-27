@@ -91,10 +91,10 @@ private:
     virtual bool currentFrameKnownToBeOpaque() OVERRIDE { return false; }
 
     SVGImage(ImageObserver*);
-    virtual void draw(GraphicsContext*, const FloatRect& fromRect, const FloatRect& toRect, CompositeOperator, BlendMode) OVERRIDE;
-    void drawForContainer(GraphicsContext*, const FloatSize, float, const FloatRect&, const FloatRect&, CompositeOperator, BlendMode);
+    virtual void draw(GraphicsContext*, const FloatRect& fromRect, const FloatRect& toRect, CompositeOperator, blink::WebBlendMode) OVERRIDE;
+    void drawForContainer(GraphicsContext*, const FloatSize, float, const FloatRect&, const FloatRect&, CompositeOperator, blink::WebBlendMode);
     void drawPatternForContainer(GraphicsContext*, const FloatSize, float, const FloatRect&, const FloatSize&, const FloatPoint&,
-        CompositeOperator, const FloatRect&, BlendMode, const IntSize& repeatSpacing);
+        CompositeOperator, const FloatRect&, blink::WebBlendMode, const IntSize& repeatSpacing);
 
     OwnPtr<SVGImageChromeClient> m_chromeClient;
     OwnPtr<Page> m_page;

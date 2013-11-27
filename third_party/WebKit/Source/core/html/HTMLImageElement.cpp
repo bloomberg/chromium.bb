@@ -137,7 +137,7 @@ void HTMLImageElement::parseAttribute(const QualifiedName& name, const AtomicStr
         setAttributeEventListener(EventTypeNames::beforeload, createAttributeEventListener(this, name, value));
     else if (name == compositeAttr) {
         // FIXME: images don't support blend modes in their compositing attribute.
-        BlendMode blendOp = BlendModeNormal;
+        blink::WebBlendMode blendOp = blink::WebBlendModeNormal;
         if (!parseCompositeAndBlendOperator(value, m_compositeOperator, blendOp))
             m_compositeOperator = CompositeSourceOver;
     } else
