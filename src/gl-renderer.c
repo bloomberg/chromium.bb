@@ -1765,7 +1765,7 @@ compile_shaders(struct weston_compositor *ec)
 	gr->texture_shader_y_u_v.fragment_source =
 		texture_fragment_shader_y_u_v;
 
-	gr->texture_shader_y_u_v.vertex_source = vertex_shader;
+	gr->texture_shader_y_xuxv.vertex_source = vertex_shader;
 	gr->texture_shader_y_xuxv.fragment_source =
 		texture_fragment_shader_y_xuxv;
 
