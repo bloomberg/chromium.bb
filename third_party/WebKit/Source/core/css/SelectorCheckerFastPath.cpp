@@ -75,12 +75,12 @@ inline bool fastCheckSingleSelector(const CSSSelector*& selector, const Element*
 
 inline bool checkClassValue(const Element& element, const CSSSelector* selector)
 {
-    return element.hasClass() && element.classNames().contains(selector->value().impl());
+    return element.hasClass() && element.classNames().contains(selector->value());
 }
 
 inline bool checkIDValue(const Element& element, const CSSSelector* selector)
 {
-    return element.hasID() && element.idForStyleResolution().impl() == selector->value().impl();
+    return element.hasID() && element.idForStyleResolution() == selector->value();
 }
 
 inline bool checkExactAttributeValue(const Element& element, const CSSSelector* selector)

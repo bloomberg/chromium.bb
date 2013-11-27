@@ -460,7 +460,7 @@ void FormController::formStatesFromStateVector(const Vector<String>& stateVector
             i = 0;
             break;
         }
-        map.add(formKey.impl(), state.release());
+        map.add(formKey, state.release());
     }
     if (i != stateVector.size())
         map.clear();

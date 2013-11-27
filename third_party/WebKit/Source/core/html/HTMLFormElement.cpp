@@ -725,7 +725,7 @@ Node* HTMLFormElement::elementFromPastNamesMap(const AtomicString& pastName) con
 {
     if (pastName.isEmpty() || !m_pastNamesMap)
         return 0;
-    Node* node = m_pastNamesMap->get(pastName.impl());
+    Node* node = m_pastNamesMap->get(pastName);
 #if !ASSERT_DISABLED
     if (!node)
         return 0;
@@ -747,7 +747,7 @@ void HTMLFormElement::addToPastNamesMap(Node* element, const AtomicString& pastN
         return;
     if (!m_pastNamesMap)
         m_pastNamesMap = adoptPtr(new PastNamesMap);
-    m_pastNamesMap->set(pastName.impl(), element);
+    m_pastNamesMap->set(pastName, element);
 }
 
 void HTMLFormElement::removeFromPastNamesMap(HTMLElement& element)

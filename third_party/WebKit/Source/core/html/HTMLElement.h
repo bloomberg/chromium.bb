@@ -137,7 +137,7 @@ DEFINE_NODE_TYPE_CASTS(HTMLElement, isHTMLElement());
 inline HTMLElement::HTMLElement(const QualifiedName& tagName, Document& document, ConstructionType type = CreateHTMLElement)
     : Element(tagName, &document, type)
 {
-    ASSERT(tagName.localName().impl());
+    ASSERT(!tagName.localName().isNull());
     ScriptWrappable::init(this);
 }
 
