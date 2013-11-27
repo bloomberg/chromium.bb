@@ -360,11 +360,9 @@ HTMLMediaElement::~HTMLMediaElement()
     // object destruction, we use Document::incrementLoadEventDelayCount().
     // See http://crbug.com/275223 for more details.
     document().incrementLoadEventDelayCount();
-    m_player.clear();
-#if ENABLE(WEB_AUDIO)
-    if (audioSourceProvider())
-        audioSourceProvider()->setClient(0);
-#endif
+
+    clearMediaPlayerAndAudioSourceProviderClient();
+
     document().decrementLoadEventDelayCount();
 }
 
@@ -3383,17 +3381,32 @@ void HTMLMediaElement::userCancelledLoad()
         updateActiveTextTrackCues(0);
 }
 
+void HTMLMediaElement::clearMediaPlayerAndAudioSourceProviderClient()
+{
+#if ENABLE(WEB_AUDIO)
+    if (m_audioSourceNode)
+        m_audioSourceNode->lock();
+
+    if (audioSourceProvider())
+        audioSourceProvider()->setClient(0);
+#endif
+
+    m_player.clear();
+
+#if ENABLE(WEB_AUDIO)
+    if (m_audioSourceNode)
+        m_audioSourceNode->unlock();
+#endif
+}
+
 void HTMLMediaElement::clearMediaPlayer(int flags)
 {
     removeAllInbandTracks();
 
     closeMediaSource();
 
-    m_player.clear();
-#if ENABLE(WEB_AUDIO)
-    if (audioSourceProvider())
-        audioSourceProvider()->setClient(0);
-#endif
+    clearMediaPlayerAndAudioSourceProviderClient();
+
     stopPeriodicTimers();
     m_loadTimer.stop();
 
@@ -3706,8 +3719,14 @@ void HTMLMediaElement::setAudioSourceNode(MediaElementAudioSourceNode* sourceNod
 {
     m_audioSourceNode = sourceNode;
 
+    if (m_audioSourceNode)
+        m_audioSourceNode->lock();
+
     if (audioSourceProvider())
         audioSourceProvider()->setClient(m_audioSourceNode);
+
+    if (m_audioSourceNode)
+        m_audioSourceNode->unlock();
 }
 
 AudioSourceProvider* HTMLMediaElement::audioSourceProvider()
