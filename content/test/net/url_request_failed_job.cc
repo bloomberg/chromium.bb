@@ -49,8 +49,6 @@ URLRequestFailedJob::URLRequestFailedJob(net::URLRequest* request,
       net_error_(net_error),
       weak_factory_(this) {}
 
-URLRequestFailedJob::~URLRequestFailedJob() {}
-
 void URLRequestFailedJob::Start() {
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
@@ -92,6 +90,8 @@ GURL URLRequestFailedJob::GetMockHttpsUrlForHostname(
     int net_error, const std::string& hostname) {
   return GetMockUrl("https", hostname, net_error);
 }
+
+URLRequestFailedJob::~URLRequestFailedJob() {}
 
 // static
 net::URLRequestJob* URLRequestFailedJob::Factory(

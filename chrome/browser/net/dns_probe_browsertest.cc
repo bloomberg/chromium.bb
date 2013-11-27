@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
+
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
@@ -16,6 +19,7 @@
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/net/net_error_info.h"
@@ -25,6 +29,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/test/net/url_request_failed_job.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "net/base/net_errors.h"
@@ -58,6 +63,13 @@ using ui_test_utils::NavigateToURLBlockUntilNavigationsComplete;
 namespace chrome_browser_net {
 
 namespace {
+
+// Postable function to run a Closure on the UI thread.  Since
+// BrowserThread::PostTask returns a bool, it can't directly be posted to
+// another thread.
+void RunClosureOnUIThread(const base::Closure& closure) {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, closure);
+}
 
 // Wraps DnsProbeService and delays callbacks until someone calls
 // CallDelayedCallbacks.  This allows the DnsProbeBrowserTest to enforce a
@@ -101,31 +113,201 @@ FilePath GetMockLinkDoctorFilePath() {
   return root_http.AppendASCII("mock-link-doctor.html");
 }
 
+// A request that can be delayed until Resume() is called.  Can also run a
+// callback if destroyed without being resumed.  Resume can be called either
+// before or after a the request is started.
+class DelayableRequest {
+ public:
+  // Called by a DelayableRequest if it was set to be delayed, and has been
+  // destroyed without Undelay being called.
+  typedef base::Callback<void(DelayableRequest* request)> DestructionCallback;
+
+  virtual void Resume() = 0;
+
+ protected:
+  virtual ~DelayableRequest() {}
+};
+
+class DelayableURLRequestFailedJob : public URLRequestFailedJob,
+                                     public DelayableRequest {
+ public:
+  // |destruction_callback| is only called if a delayed request is destroyed
+  // without being resumed.
+  DelayableURLRequestFailedJob(net::URLRequest* request,
+                               net::NetworkDelegate* network_delegate,
+                               int net_error,
+                               bool should_delay,
+                               const DestructionCallback& destruction_callback)
+      : URLRequestFailedJob(request, network_delegate, net_error),
+        should_delay_(should_delay),
+        start_delayed_(false),
+        destruction_callback_(destruction_callback) {}
+
+  virtual void Start() OVERRIDE {
+    if (should_delay_) {
+      DCHECK(!start_delayed_);
+      start_delayed_ = true;
+      return;
+    }
+    URLRequestFailedJob::Start();
+  }
+
+  virtual void Resume() OVERRIDE {
+    DCHECK(should_delay_);
+    should_delay_ = false;
+    if (start_delayed_) {
+      start_delayed_ = false;
+      Start();
+    }
+  }
+
+ private:
+  virtual ~DelayableURLRequestFailedJob() {
+    if (should_delay_)
+      destruction_callback_.Run(this);
+  }
+
+  bool should_delay_;
+  bool start_delayed_;
+  const DestructionCallback destruction_callback_;
+};
+
+class DelayableURLRequestMockHTTPJob : public URLRequestMockHTTPJob,
+                                       public DelayableRequest {
+ public:
+  DelayableURLRequestMockHTTPJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      const base::FilePath& file_path,
+      bool should_delay,
+      const DestructionCallback& destruction_callback)
+      : URLRequestMockHTTPJob(request, network_delegate, file_path),
+        should_delay_(should_delay),
+        start_delayed_(false),
+        destruction_callback_(destruction_callback) {}
+
+  virtual void Start() OVERRIDE {
+    if (should_delay_) {
+      DCHECK(!start_delayed_);
+      start_delayed_ = true;
+      return;
+    }
+    URLRequestMockHTTPJob::Start();
+  }
+
+  virtual void Resume() OVERRIDE {
+    DCHECK(should_delay_);
+    should_delay_ = false;
+    if (start_delayed_) {
+      start_delayed_ = false;
+      Start();
+    }
+  }
+
+ private:
+  virtual ~DelayableURLRequestMockHTTPJob() {
+    if (should_delay_)
+      destruction_callback_.Run(this);
+  }
+
+  bool should_delay_;
+  bool start_delayed_;
+  const DestructionCallback destruction_callback_;
+};
+
+// ProtocolHandler for Link Doctor requests.  Can cause requests to fail with
+// an error, and/or delay a request until a test allows to continue.  Also can
+// run a callback when a delayed request is cancelled.
 class BreakableLinkDoctorProtocolHandler
     : public URLRequestJobFactory::ProtocolHandler {
  public:
   explicit BreakableLinkDoctorProtocolHandler(
       const FilePath& mock_link_doctor_file_path)
       : mock_link_doctor_file_path_(mock_link_doctor_file_path),
-        net_error_(net::OK) {}
+        net_error_(net::OK),
+        delay_requests_(false),
+        on_request_destroyed_callback_(
+            base::Bind(&BreakableLinkDoctorProtocolHandler::OnRequestDestroyed,
+                       base::Unretained(this))) {
+  }
 
-  virtual ~BreakableLinkDoctorProtocolHandler() {}
+  virtual ~BreakableLinkDoctorProtocolHandler() {
+    // All delayed requests should have been resumed or cancelled by this point.
+    EXPECT_TRUE(delayed_requests_.empty());
+  }
 
   virtual URLRequestJob* MaybeCreateJob(
-      URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE {
+      URLRequest* request,
+      NetworkDelegate* network_delegate) const OVERRIDE {
     if (net_error_ != net::OK) {
-      return new URLRequestFailedJob(request, network_delegate, net_error_);
+      DelayableURLRequestFailedJob* job =
+          new DelayableURLRequestFailedJob(
+              request, network_delegate, net_error_, delay_requests_,
+              on_request_destroyed_callback_);
+      if (delay_requests_)
+        delayed_requests_.insert(job);
+      return job;
     } else {
-      return new URLRequestMockHTTPJob(
-          request, network_delegate, mock_link_doctor_file_path_);
+      DelayableURLRequestMockHTTPJob* job =
+          new DelayableURLRequestMockHTTPJob(
+              request, network_delegate, mock_link_doctor_file_path_,
+              delay_requests_, on_request_destroyed_callback_);
+      if (delay_requests_)
+        delayed_requests_.insert(job);
+      return job;
     }
   }
 
   void set_net_error(int net_error) { net_error_ = net_error; }
 
+  void SetDelayRequests(bool delay_requests) {
+    delay_requests_ = delay_requests;
+
+    // Resume all delayed requests if no longer delaying requests.
+    if (!delay_requests) {
+      while (!delayed_requests_.empty()) {
+        DelayableRequest* request = *delayed_requests_.begin();
+        delayed_requests_.erase(request);
+        request->Resume();
+      }
+    }
+  }
+
+  // Runs |callback| once all delayed requests have been destroyed.  Does not
+  // wait for delayed requests that have been resumed.
+  void SetRequestDestructionCallback(const base::Closure& callback) {
+    ASSERT_TRUE(delayed_request_destruction_callback_.is_null());
+    if (delayed_requests_.empty()) {
+      callback.Run();
+      return;
+    }
+    delayed_request_destruction_callback_ = callback;
+  }
+
+  void OnRequestDestroyed(DelayableRequest* request) {
+    ASSERT_EQ(1u, delayed_requests_.count(request));
+    delayed_requests_.erase(request);
+    if (delayed_requests_.empty() &&
+        !delayed_request_destruction_callback_.is_null()) {
+      delayed_request_destruction_callback_.Run();
+      delayed_request_destruction_callback_.Reset();
+    }
+  }
+
  private:
   const FilePath mock_link_doctor_file_path_;
   int net_error_;
+  bool delay_requests_;
+
+  // Called when a request is destroyed.  Memeber variable because
+  // MaybeCreateJob is "const", so calling base::Bind in that function does
+  // not work well.
+  const DelayableRequest::DestructionCallback on_request_destroyed_callback_;
+
+  // Mutable is needed because MaybeCreateJob is const.
+  mutable std::set<DelayableRequest*> delayed_requests_;
+
+  base::Closure delayed_request_destruction_callback_;
 };
 
 class DnsProbeBrowserTestIOThreadHelper {
@@ -138,6 +320,8 @@ class DnsProbeBrowserTestIOThreadHelper {
   void SetMockDnsClientRules(MockDnsClientRule::Result system_good_result,
                              MockDnsClientRule::Result public_good_result);
   void SetLinkDoctorNetError(int link_doctor_net_error);
+  void SetLinkDoctorDelayRequests(bool delay_requests);
+  void SetRequestDestructionCallback(const base::Closure& callback);
   void StartDelayedProbes(int expected_delayed_probe_count);
 
  private:
@@ -217,6 +401,20 @@ void DnsProbeBrowserTestIOThreadHelper::SetLinkDoctorNetError(
   protocol_handler_->set_net_error(link_doctor_net_error);
 }
 
+void DnsProbeBrowserTestIOThreadHelper::SetLinkDoctorDelayRequests(
+    bool delay_requests) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  protocol_handler_->SetDelayRequests(delay_requests);
+}
+
+void DnsProbeBrowserTestIOThreadHelper::SetRequestDestructionCallback(
+    const base::Closure& callback) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  protocol_handler_->SetRequestDestructionCallback(callback);
+}
+
 void DnsProbeBrowserTestIOThreadHelper::StartDelayedProbes(
     int expected_delayed_probe_count) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -233,6 +431,7 @@ void DnsProbeBrowserTestIOThreadHelper::StartDelayedProbes(
 class DnsProbeBrowserTest : public InProcessBrowserTest {
  public:
   DnsProbeBrowserTest();
+  virtual ~DnsProbeBrowserTest();
 
   virtual void SetUpOnMainThread() OVERRIDE;
   virtual void CleanUpOnMainThread() OVERRIDE;
@@ -243,9 +442,10 @@ class DnsProbeBrowserTest : public InProcessBrowserTest {
   void SetActiveBrowser(Browser* browser);
 
   void SetLinkDoctorBroken(bool broken);
+  void SetLinkDoctorDelayRequests(bool delay_requests);
+  void WaitForDelayedRequestDestruction();
   void SetMockDnsClientRules(MockDnsClientRule::Result system_result,
                              MockDnsClientRule::Result public_result);
-
 
   // These functions are often used to wait for two navigations because the Link
   // Doctor loads two pages: a blank page, so the user stops seeing the previous
@@ -281,6 +481,11 @@ DnsProbeBrowserTest::DnsProbeBrowserTest()
       active_browser_(NULL),
       monitored_tab_helper_(NULL),
       awaiting_dns_probe_status_(false) {
+}
+
+DnsProbeBrowserTest::~DnsProbeBrowserTest() {
+  // No tests should have any unconsumed probe statuses.
+  EXPECT_EQ(0, pending_status_count());
 }
 
 void DnsProbeBrowserTest::SetUpOnMainThread() {
@@ -331,6 +536,25 @@ void DnsProbeBrowserTest::SetLinkDoctorBroken(bool broken) {
       Bind(&DnsProbeBrowserTestIOThreadHelper::SetLinkDoctorNetError,
            Unretained(helper_),
            net_error));
+}
+
+void DnsProbeBrowserTest::SetLinkDoctorDelayRequests(bool delay_requests) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      Bind(&DnsProbeBrowserTestIOThreadHelper::SetLinkDoctorDelayRequests,
+           Unretained(helper_),
+           delay_requests));
+}
+
+void DnsProbeBrowserTest::WaitForDelayedRequestDestruction() {
+  base::RunLoop run_loop;
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      Bind(&DnsProbeBrowserTestIOThreadHelper::SetRequestDestructionCallback,
+           Unretained(helper_),
+           base::Bind(&RunClosureOnUIThread,
+                      run_loop.QuitClosure())));
+  run_loop.Run();
 }
 
 void DnsProbeBrowserTest::NavigateToDnsError(int num_navigations) {
@@ -427,8 +651,6 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, OtherErrorWithWorkingLinkDoctor) {
 
   NavigateToOtherError(2);
   EXPECT_EQ("Mock Link Doctor", Title());
-
-  EXPECT_EQ(0, pending_status_count());
 }
 
 // Make sure probes don't break non-DNS error pages when Link Doctor doesn't
@@ -438,19 +660,19 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, OtherErrorWithBrokenLinkDoctor) {
 
   NavigateToOtherError(2);
   EXPECT_TRUE(PageContains("CONNECTION_REFUSED"));
-
-  EXPECT_EQ(0, pending_status_count());
 }
 
 // Make sure probes don't break DNS error pages when Link doctor loads.
 IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
-    NxdomainProbeResultWithWorkingLinkDoctor) {
+                       NxdomainProbeResultWithWorkingLinkDoctor) {
   SetLinkDoctorBroken(false);
   SetMockDnsClientRules(MockDnsClientRule::OK, MockDnsClientRule::OK);
 
   NavigateToDnsError(2);
   EXPECT_EQ("Mock Link Doctor", Title());
 
+  // One status for committing a blank page before the Link Doctor, and one for
+  // when the Link Doctor is committed.
   EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
   EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
   EXPECT_EQ(0, pending_status_count());
@@ -464,9 +686,48 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
   EXPECT_EQ("Mock Link Doctor", Title());
 }
 
+// Make sure probes don't break Link Doctor when probes complete before the
+// Link Doctor loads.
+IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
+                       NxdomainProbeResultWithWorkingSlowLinkDoctor) {
+  SetLinkDoctorBroken(false);
+  SetLinkDoctorDelayRequests(true);
+  SetMockDnsClientRules(MockDnsClientRule::OK, MockDnsClientRule::OK);
+
+  NavigateToDnsError(1);
+  // A blank page should be displayed while the Link Doctor page loads.
+  EXPECT_EQ("", Title());
+
+  // A single probe should be triggered by the error page load, and it should
+  // be ignored.
+  EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
+  EXPECT_EQ(0, pending_status_count());
+  EXPECT_EQ("", Title());
+
+  StartDelayedProbes(1);
+  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN,
+            WaitForSentStatus());
+  EXPECT_EQ(0, pending_status_count());
+  EXPECT_EQ("", Title());
+
+  content::TestNavigationObserver observer(
+      browser()->tab_strip_model()->GetActiveWebContents(), 1);
+  // The Link Doctor page finishes loading.
+  SetLinkDoctorDelayRequests(false);
+  // Wait for it to commit.
+  observer.Wait();
+  EXPECT_EQ("Mock Link Doctor", Title());
+
+  // Committing the Link Doctor page should trigger sending the probe result
+  // again.
+  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NXDOMAIN,
+            WaitForSentStatus());
+  EXPECT_EQ("Mock Link Doctor", Title());
+}
+
 // Make sure probes update DNS error page properly when they're supposed to.
 IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
-    NoInternetProbeResultWithBrokenLinkDoctor) {
+                       NoInternetProbeResultWithBrokenLinkDoctor) {
   SetLinkDoctorBroken(true);
   SetMockDnsClientRules(MockDnsClientRule::TIMEOUT,
                         MockDnsClientRule::TIMEOUT);
@@ -489,7 +750,45 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
   // PageContains runs the RunLoop, so make sure nothing hairy happens.
   EXPECT_EQ(0, pending_status_count());
   EXPECT_TRUE(PageContains("DNS_PROBE_FINISHED_NO_INTERNET"));
+}
+
+// Make sure probes don't break Link Doctor when probes complete before the
+// Link Doctor request returns an error.
+IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest,
+                       NoInternetProbeResultWithSlowBrokenLinkDoctor) {
+  SetLinkDoctorBroken(true);
+  SetLinkDoctorDelayRequests(true);
+  SetMockDnsClientRules(MockDnsClientRule::TIMEOUT,
+                        MockDnsClientRule::TIMEOUT);
+
+  NavigateToDnsError(1);
+  // A blank page should be displayed while the Link Doctor page loads.
+  EXPECT_EQ("", Title());
+
+  // A single probe should be triggered by the error page load, and it should
+  // be ignored.
+  EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
   EXPECT_EQ(0, pending_status_count());
+  EXPECT_EQ("", Title());
+
+  StartDelayedProbes(1);
+  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET,
+            WaitForSentStatus());
+  EXPECT_EQ("", Title());
+  EXPECT_EQ(0, pending_status_count());
+
+  content::TestNavigationObserver observer(
+      browser()->tab_strip_model()->GetActiveWebContents(), 1);
+  // The Link Doctor request fails.
+  SetLinkDoctorDelayRequests(false);
+  // Wait for the DNS error page to load instead.
+  observer.Wait();
+  // The page committing should result in sending the probe results again.
+  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET,
+            WaitForSentStatus());
+
+  EXPECT_EQ(0, pending_status_count());
+  EXPECT_TRUE(PageContains("DNS_PROBE_FINISHED_NO_INTERNET"));
 }
 
 // Double-check to make sure sync failures don't explode.
@@ -516,6 +815,60 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, SyncFailureWithBrokenLinkDoctor) {
   EXPECT_EQ(0, pending_status_count());
   EXPECT_TRUE(PageContains("NAME_NOT_RESOLVED"));
   EXPECT_EQ(0, pending_status_count());
+}
+
+// Test that pressing the stop button cancels loading the Link Doctor page.
+// TODO(mmenke):  Add a test for the cross process navigation case.
+// TODO(mmenke):  This test could flakily pass due to the timeout on downloading
+//                the Link Doctor page.  Disable that timeout for browser tests.
+IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, LinkDoctorLoadStopped) {
+  SetLinkDoctorDelayRequests(true);
+  SetLinkDoctorBroken(true);
+  SetMockDnsClientRules(MockDnsClientRule::TIMEOUT, MockDnsClientRule::TIMEOUT);
+
+  NavigateToDnsError(1);
+
+  EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
+  StartDelayedProbes(1);
+  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET,
+            WaitForSentStatus());
+
+  EXPECT_EQ("", Title());
+  EXPECT_EQ(0, pending_status_count());
+
+  chrome::Stop(browser());
+  WaitForDelayedRequestDestruction();
+
+  // End up displaying a blank page.
+  EXPECT_EQ("", Title());
+}
+
+// Test that pressing the stop button cancels the load of the Link Doctor error
+// page, and receiving a probe result afterwards does not swap in a DNS error
+// page.
+IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, LinkDoctorLoadStoppedSlowProbe) {
+  SetLinkDoctorDelayRequests(true);
+  SetLinkDoctorBroken(true);
+  SetMockDnsClientRules(MockDnsClientRule::TIMEOUT, MockDnsClientRule::TIMEOUT);
+
+  NavigateToDnsError(1);
+
+  EXPECT_EQ(chrome_common_net::DNS_PROBE_STARTED, WaitForSentStatus());
+
+  EXPECT_EQ("", Title());
+  EXPECT_EQ(0, pending_status_count());
+
+  chrome::Stop(browser());
+  WaitForDelayedRequestDestruction();
+
+  EXPECT_EQ("", Title());
+  EXPECT_EQ(0, pending_status_count());
+
+  StartDelayedProbes(1);
+  EXPECT_EQ(chrome_common_net::DNS_PROBE_FINISHED_NO_INTERNET,
+            WaitForSentStatus());
+
+  EXPECT_EQ("", Title());
 }
 
 // Make sure probes don't run for subframe DNS errors.
@@ -553,7 +906,6 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, ProbesDisabled) {
   // PageContains runs the RunLoop, so make sure nothing hairy happens.
   EXPECT_EQ(0, pending_status_count());
   EXPECT_TRUE(PageContains("NAME_NOT_RESOLVED"));
-  EXPECT_EQ(0, pending_status_count());
 }
 
 // Test the case that Link Doctor is disabled, but DNS probes are enabled.  This
@@ -587,7 +939,6 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, LinkDoctorDisabled) {
             WaitForSentStatus());
   EXPECT_EQ(0, pending_status_count());
   EXPECT_TRUE(PageContains("NAME_NOT_RESOLVED"));
-  EXPECT_EQ(0, pending_status_count());
 }
 
 // Test incognito mode.  Link Doctor should be disabled, but DNS probes are
@@ -617,7 +968,6 @@ IN_PROC_BROWSER_TEST_F(DnsProbeBrowserTest, Incognito) {
             WaitForSentStatus());
   EXPECT_EQ(0, pending_status_count());
   EXPECT_TRUE(PageContains("NAME_NOT_RESOLVED"));
-  EXPECT_EQ(0, pending_status_count());
 }
 
 }  // namespace

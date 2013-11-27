@@ -41,12 +41,13 @@ class URLRequestFailedJob : public net::URLRequestJob {
   static GURL GetMockHttpsUrlForHostname(int net_error,
                                          const std::string& hostname);
 
+ protected:
+  virtual ~URLRequestFailedJob();
+
  private:
   static net::URLRequestJob* Factory(net::URLRequest* request,
                                      net::NetworkDelegate* network_delegate,
                                      const std::string& scheme);
-
-  virtual ~URLRequestFailedJob();
 
   // Simulate a failure.
   void StartAsync();

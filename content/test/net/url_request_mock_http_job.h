@@ -60,9 +60,10 @@ class URLRequestMockHTTPJob : public net::URLRequestFileJob {
   static scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
   CreateProtocolHandlerForSingleFile(const base::FilePath& file);
 
- private:
+ protected:
   virtual ~URLRequestMockHTTPJob();
 
+ private:
   void GetResponseInfoConst(net::HttpResponseInfo* info) const;
 };
 
