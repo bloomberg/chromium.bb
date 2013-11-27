@@ -55,10 +55,12 @@ const int kTitleIconOffsetX = 4;
 // The space between the title text and the caption buttons.
 const int kTitleCaptionSpacing = 5;
 
-#if defined(USE_AURA)
+#if defined(OS_CHROMEOS)
+// Chrome OS uses a dark gray.
 const SkColor kDefaultColorFrame = SkColorSetRGB(109, 109, 109);
 const SkColor kDefaultColorFrameInactive = SkColorSetRGB(176, 176, 176);
 #else
+// Windows and Linux use a blue.
 const SkColor kDefaultColorFrame = SkColorSetRGB(66, 116, 201);
 const SkColor kDefaultColorFrameInactive = SkColorSetRGB(161, 182, 228);
 #endif
