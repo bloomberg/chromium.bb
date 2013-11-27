@@ -34,6 +34,7 @@ from chromite.lib import osutils
 from chromite.lib import partial_mock
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
+from chromite.lib import timeout_util
 
 
 import mock
@@ -90,7 +91,7 @@ class Base(cros_test_lib.MockTestCase):
     self.build_root = 'fakebuildroot'
     self.PatchObject(gob_util, 'CreateHttpConn',
                      side_effect=AssertionError('Test should not contact GoB'))
-    self.PatchObject(cros_build_lib, 'IsTreeOpen', return_value=True)
+    self.PatchObject(timeout_util, 'IsTreeOpen', return_value=True)
 
   def MockPatch(self, change_id=None, patch_number=None, is_merged=False,
                 project='chromiumos/chromite', remote=constants.EXTERNAL_REMOTE,

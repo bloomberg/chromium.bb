@@ -31,6 +31,7 @@ from chromite.lib import git
 from chromite.lib import gob_util
 from chromite.lib import gs
 from chromite.lib import patch as cros_patch
+from chromite.lib import timeout_util
 
 # Third-party libraries bundled with chromite need to be listed after the
 # first chromite import.
@@ -1052,7 +1053,7 @@ class ValidationFailedMessage(object):
       # TimeoutErrors are often flaky.
       exc = self.tracebacks[0].exception
       if (isinstance(exc, results_lib.StepFailure) and exc.possibly_flaky or
-          isinstance(exc, cros_build_lib.TimeoutError)):
+          isinstance(exc, timeout_util.TimeoutError)):
         flaky = True
     return flaky
 
@@ -1419,7 +1420,7 @@ class ValidationPool(object):
       time_left = end_time - time.time()
 
       # Wait until the tree opens.
-      if check_tree_open and not cros_build_lib.IsTreeOpen(
+      if check_tree_open and not timeout_util.IsTreeOpen(
           cls.STATUS_URL, cls.SLEEP_TIMEOUT, timeout=time_left,
           throttled_ok=throttled_ok):
         raise TreeIsClosedException(closed_or_throttled=not throttled_ok)
@@ -1792,9 +1793,9 @@ class ValidationPool(object):
                           dry_run=self.dryrun)
 
     if (check_tree_open and not self.dryrun and not
-       cros_build_lib.IsTreeOpen(self.STATUS_URL, self.SLEEP_TIMEOUT,
-                                      timeout=self.MAX_TIMEOUT,
-                                      throttled_ok=throttled_ok)):
+       timeout_util.IsTreeOpen(self.STATUS_URL, self.SLEEP_TIMEOUT,
+                               timeout=self.MAX_TIMEOUT,
+                               throttled_ok=throttled_ok)):
       raise TreeIsClosedException(close_or_throttled=not throttled_ok)
 
     # First, reload all of the changes from the Gerrit server so that we have a

@@ -16,6 +16,7 @@ from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
+from chromite.lib import timeout_util
 
 
 class Stats(object):
@@ -158,11 +159,11 @@ class StatsUploader(object):
     if not cls._UploadConditionsMet(stats):
       return
 
-    with cros_build_lib.Timeout(timeout):
+    with timeout_util.Timeout(timeout):
       try:
         cls._Upload(stats, url)
       # Stats upload errors are silenced, for the sake of user experience.
-      except cros_build_lib.TimeoutError:
+      except timeout_util.TimeoutError:
         logging.debug(cls.TIMEOUT_ERROR, timeout)
       except urllib2.HTTPError as e:
         # HTTPError has a geturl() method, but it relies on self.url, which

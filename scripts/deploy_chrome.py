@@ -40,6 +40,7 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import remote_access as remote
 from chromite.lib import stats
+from chromite.lib import timeout_util
 from chromite.scripts import lddtree
 
 
@@ -164,7 +165,7 @@ class DeployChrome(object):
     # Developers sometimes run session_manager manually, in which case we'll
     # need to help shut the chrome processes down.
     try:
-      with cros_build_lib.Timeout(KILL_PROC_MAX_WAIT):
+      with timeout_util.Timeout(KILL_PROC_MAX_WAIT):
         while self._ChromeFileInUse():
           logging.warning('The chrome binary on the device is in use.')
           logging.warning('Killing chrome and session_manager processes...\n')
@@ -174,7 +175,7 @@ class DeployChrome(object):
           # Wait for processes to actually terminate
           time.sleep(POST_KILL_WAIT)
           logging.info('Rechecking the chrome binary...')
-    except cros_build_lib.TimeoutError:
+    except timeout_util.TimeoutError:
       msg = ('Could not kill processes after %s seconds.  Please exit any '
              'running chrome processes and try again.' % KILL_PROC_MAX_WAIT)
       raise DeployFailure(msg)

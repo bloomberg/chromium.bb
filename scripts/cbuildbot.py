@@ -43,6 +43,7 @@ from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import parallel
 from chromite.lib import sudo
+from chromite.lib import timeout_util
 
 
 _DEFAULT_LOG_DIR = 'cbuildbot_logs'
@@ -1534,7 +1535,7 @@ def main(argv):
     stack.Add(critical_section.ForkWatchdog)
 
     if options.timeout > 0:
-      stack.Add(cros_build_lib.FatalTimeout, options.timeout)
+      stack.Add(timeout_util.FatalTimeout, options.timeout)
 
     if not options.buildbot:
       build_config = cbuildbot_config.OverrideConfigForTrybot(

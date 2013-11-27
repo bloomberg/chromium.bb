@@ -34,6 +34,7 @@ import gs
 import gob_util
 import osutils
 import terminal
+import timeout_util
 
 if 'chromite' not in sys.modules:
   # TODO(build): Finish test wrapper (http://crosbug.com/37517).
@@ -218,7 +219,7 @@ class StackedSetup(type):
     if timeout is not None:
       for name, func in scope.iteritems():
         if name.startswith('test') and hasattr(func, '__call__'):
-          wrapper = cros_build_lib.TimeoutDecorator(timeout)
+          wrapper = timeout_util.TimeoutDecorator(timeout)
           scope[name] = wrapper(func)
 
     return type.__new__(mcs, name, bases, scope)

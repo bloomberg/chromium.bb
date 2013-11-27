@@ -11,12 +11,12 @@ import time
 import urllib2
 
 sys.path.insert(0, os.path.abspath('%s/../..' % os.path.dirname(__file__)))
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.lib import stats
+from chromite.lib import timeout_util
 
 
 # pylint: disable=W0212
@@ -161,7 +161,7 @@ class UploadTest(cros_test_lib.MockLoggingTestCase):
   def testUploadTimeoutIgnore(self):
     """We don't propagate timeouts during upload."""
     self.CheckSuppressException(
-        cros_build_lib.TimeoutError(),
+        timeout_util.TimeoutError(),
         stats.StatsUploader.TIMEOUT_ERROR
         % (stats.StatsUploader.UPLOAD_TIMEOUT,))
 

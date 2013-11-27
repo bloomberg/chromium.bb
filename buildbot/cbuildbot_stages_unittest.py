@@ -46,6 +46,7 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
+from chromite.lib import timeout_util
 from chromite.scripts import cbuildbot
 
 # TODO(build): Finish test wrapper (http://crosbug.com/37517).
@@ -725,7 +726,7 @@ class HWTestStageTest(AbstractStageTest):
 
     # Raise an exception if the user wanted the command to fail.
     if timeout:
-      m.AndRaise(cros_build_lib.TimeoutError('Timed out'))
+      m.AndRaise(timeout_util.TimeoutError('Timed out'))
       cros_build_lib.PrintBuildbotStepFailure()
       cros_build_lib.Error(mox.IgnoreArg())
     elif returncode != 0:
@@ -1778,7 +1779,7 @@ class BaseCQTest(StageTest):
                      return_value=committed, autospec=True)
     self.PatchObject(gerrit.GerritOnBorgHelper, 'Query',
                      return_value=my_patches, autospec=True)
-    self.PatchObject(cros_build_lib, 'IsTreeOpen', return_value=tree_open,
+    self.PatchObject(timeout_util, 'IsTreeOpen', return_value=tree_open,
                      autospec=True)
     exit_it = itertools.chain([False] * runs, itertools.repeat(True))
     self.PatchObject(validation_pool.ValidationPool, 'ShouldExitEarly',

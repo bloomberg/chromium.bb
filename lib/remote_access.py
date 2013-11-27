@@ -12,6 +12,7 @@ import stat
 import time
 
 from chromite.lib import cros_build_lib
+from chromite.lib import timeout_util
 
 
 _path = os.path.dirname(os.path.realpath(__file__))
@@ -174,9 +175,9 @@ class RemoteAccess(object):
     self.RemoteSh('touch %s && reboot' % REBOOT_MARKER)
     time.sleep(CHECK_INTERVAL)
     try:
-      cros_build_lib.WaitForCondition(self._CheckIfRebooted, CHECK_INTERVAL,
-                                      REBOOT_MAX_WAIT)
-    except cros_build_lib.TimeoutError:
+      timeout_util.WaitForCondition(self._CheckIfRebooted, CHECK_INTERVAL,
+                                    REBOOT_MAX_WAIT)
+    except timeout_util.TimeoutError:
       cros_build_lib.Die('Reboot has not completed after %s seconds; giving up.'
                          % (REBOOT_MAX_WAIT,))
 

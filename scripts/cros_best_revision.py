@@ -23,6 +23,7 @@ from chromite.lib import gclient
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import timeout_util
 
 
 class LKGMNotFound(Exception):
@@ -136,7 +137,7 @@ class ChromeCommitter(object):
     commit_cmd = ['svn', 'commit', '--message',
                   self. _COMMIT_MSG % dict(version=self._lkgm)]
 
-    if not cros_build_lib.IsTreeOpen(gclient.STATUS_URL,
+    if not timeout_util.IsTreeOpen(gclient.STATUS_URL,
         self._SLEEP_TIMEOUT, timeout=self._TREE_TIMEOUT):
       raise LKGMNotCommitted('Chromium Tree is closed')
 

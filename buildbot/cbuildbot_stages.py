@@ -47,6 +47,7 @@ from chromite.lib import toolchain
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import patch as cros_patch
+from chromite.lib import timeout_util
 
 _FULL_BINHOST = 'FULL_BINHOST'
 _PORTAGE_BINHOST = 'PORTAGE_BINHOST'
@@ -273,7 +274,7 @@ class ArchivingStage(BoardSpecificBuilderStage):
       commands.UploadArchivedFile(
           self.archive_path, self.upload_url, filename, self.debug,
           update_list=True, acl=self.acl)
-    except (cros_build_lib.RunCommandError, cros_build_lib.TimeoutError) as e:
+    except (cros_build_lib.RunCommandError, timeout_util.TimeoutError) as e:
       cros_build_lib.PrintBuildbotStepText('Upload failed')
       if strict:
         raise
@@ -1571,7 +1572,7 @@ class PreCQLauncherStage(SyncStage):
     verified by either the Pre-CQ or CQ.
     """
     # Submit non-manifest changes if we can.
-    if cros_build_lib.IsTreeOpen(
+    if timeout_util.IsTreeOpen(
         validation_pool.ValidationPool.STATUS_URL):
       pool.SubmitNonManifestChanges(check_tree_open=False)
 
@@ -2387,7 +2388,7 @@ class SignerTestStage(ArchivingStage):
   def PerformStage(self):
     if not self.archive_stage.WaitForRecoveryImage():
       raise InvalidTestConditionException('Missing recovery image.')
-    with cros_build_lib.Timeout(self.SIGNER_TEST_TIMEOUT):
+    with timeout_util.Timeout(self.SIGNER_TEST_TIMEOUT):
       commands.RunSignerTests(self._build_root, self._current_board)
 
 
@@ -2408,7 +2409,7 @@ class UnitTestStage(BoardSpecificBuilderStage):
     extra_env = {}
     if self._build_config['useflags']:
       extra_env['USE'] = ' '.join(self._build_config['useflags'])
-    with cros_build_lib.Timeout(self.UNIT_TEST_TIMEOUT):
+    with timeout_util.Timeout(self.UNIT_TEST_TIMEOUT):
       commands.RunUnitTests(self._build_root,
                             self._current_board,
                             full=(not self._build_config['quick_unit']),
@@ -2545,7 +2546,7 @@ class HWTestStage(ArchivingStage):
     """Override and don't set status to FAIL but FORGIVEN instead."""
 
     # Deal with timeout errors specially.
-    if isinstance(exception, cros_build_lib.TimeoutError):
+    if isinstance(exception, timeout_util.TimeoutError):
       return self._HandleStageTimeoutException(exception)
 
     # 2 for warnings returned by run_suite.py, or CLIENT_HTTP_CODE error
@@ -2581,7 +2582,7 @@ class HWTestStage(ArchivingStage):
     else:
       debug = self._options.debug
     lab_status.CheckLabStatus(self._current_board)
-    with cros_build_lib.Timeout(
+    with timeout_util.Timeout(
         self.suite_config.timeout  + constants.HWTEST_TIMEOUT_EXTENSION):
       commands.RunHWTestSuite(build,
                               self.suite_config.suite,

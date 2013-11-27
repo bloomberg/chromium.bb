@@ -27,6 +27,7 @@ import traceback
 from chromite.buildbot import cbuildbot_results as results_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import osutils
+from chromite.lib import timeout_util
 
 _BUFSIZE = 1024
 
@@ -304,7 +305,7 @@ class _BackgroundTask(multiprocessing.Process):
         error = str(ex)
         possibly_flaky = ex.possibly_flaky
       except BaseException as ex:
-        possibly_flaky = isinstance(ex, cros_build_lib.TimeoutError)
+        possibly_flaky = isinstance(ex, timeout_util.TimeoutError)
         error = traceback.format_exc()
         if self._killing.is_set():
           traceback.print_exc()

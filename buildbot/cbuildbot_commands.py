@@ -26,6 +26,7 @@ from chromite.lib import gs
 from chromite.lib import locking
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.lib import timeout_util
 from chromite.scripts import upload_symbols
 
 
@@ -1218,10 +1219,10 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
   gs_context = gs.GSContext(acl=acl, dry_run=debug)
 
   try:
-    with cros_build_lib.Timeout(timeout):
+    with timeout_util.Timeout(timeout):
       gs_context.CopyInto(local_path, upload_url)
-  except cros_build_lib.TimeoutError:
-    raise cros_build_lib.TimeoutError('Timed out uploading %s' % filename)
+  except timeout_util.TimeoutError:
+    raise timeout_util.TimeoutError('Timed out uploading %s' % filename)
   else:
     # Update the list of uploaded files.
     if update_list:

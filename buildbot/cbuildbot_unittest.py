@@ -22,6 +22,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel_unittest
+from chromite.lib import timeout_util
 from chromite.scripts import cbuildbot
 
 # TODO(build): Finish test wrapper (http://crosbug.com/37517).
@@ -277,7 +278,7 @@ class InterfaceTest(cros_test_lib.MoxTestCase, cros_test_lib.LoggingTestCase):
 
   # Let this test run for a max of 30s; if it takes longer, then it's
   # likely that there is an exec loop in the pathways.
-  @cros_build_lib.TimeoutDecorator(30)
+  @timeout_util.TimeoutDecorator(30)
   def testDepotTools(self):
     """Test that the entry point used by depot_tools works."""
     path = os.path.join(constants.SOURCE_ROOT, 'chromite', 'buildbot',
