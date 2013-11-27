@@ -299,6 +299,17 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
 
   pending_input_method_.clear();
   IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
+
+  IBusPanelCandidateWindowHandlerInterface* candidate_window =
+      IBusBridge::Get()->GetCandidateWindowHandler();
+  if (candidate_window) {
+    // To hide the candidate window we have to call HideLookupTable and
+    // HideAuxiliaryText. Without calling HideAuxiliaryText the auxiliary text
+    // area will remain.
+    candidate_window->HideLookupTable();
+    candidate_window->HideAuxiliaryText();
+  }
+
   const std::string current_input_method_id = current_input_method_.id();
   if (InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch)) {
     if (engine) {
