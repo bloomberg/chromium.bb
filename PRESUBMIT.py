@@ -835,7 +835,8 @@ def _CheckSpamLogging(input_api, output_api):
                 _TEST_CODE_EXCLUDED_PATHS +
                 input_api.DEFAULT_BLACK_LIST +
                 (r"^base[\\\/]logging\.h$",
-                 r"^remoting[\\\/]base[\\\/]logging\.h$",))
+                 r"^remoting[\\\/]base[\\\/]logging\.h$",
+                 r"^sandbox[\\\/]linux[\\\/].*",))
   source_file_filter = lambda x: input_api.FilterSourceFile(
       x, white_list=(file_inclusion_pattern,), black_list=black_list)
 
@@ -846,7 +847,7 @@ def _CheckSpamLogging(input_api, output_api):
     contents = input_api.ReadFile(f, 'rb')
     if re.search(r"\bD?LOG\s*\(\s*INFO\s*\)", contents):
       log_info.append(f.LocalPath())
-    if re.search(r"\bf?printf\(", contents):
+    if re.search(r"\bf?printf\((stdout|stderr)", contents):
       printf.append(f.LocalPath())
 
   if log_info:
