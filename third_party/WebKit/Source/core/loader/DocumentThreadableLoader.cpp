@@ -89,7 +89,7 @@ DocumentThreadableLoader::DocumentThreadableLoader(Document* document, Threadabl
     }
 
     if (m_options.crossOriginRequestPolicy == DenyCrossOriginRequests) {
-        m_client->didFail(ResourceError(errorDomainWebKitInternal, 0, request.url().string(), "Cross origin requests are not supported."));
+        m_client->didFail(ResourceError(errorDomainBlinkInternal, 0, request.url().string(), "Cross origin requests are not supported."));
         return;
     }
 
@@ -125,7 +125,7 @@ void DocumentThreadableLoader::makeSimpleCrossOriginAccessRequest(const Resource
 
     // Cross-origin requests are only allowed for HTTP and registered schemes. We would catch this when checking response headers later, but there is no reason to send a request that's guaranteed to be denied.
     if (!SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(request.url().protocol())) {
-        m_client->didFailAccessControlCheck(ResourceError(errorDomainWebKitInternal, 0, request.url().string(), "Cross origin requests are only supported for HTTP."));
+        m_client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, request.url().string(), "Cross origin requests are only supported for HTTP."));
         return;
     }
 
@@ -158,7 +158,7 @@ void DocumentThreadableLoader::cancelWithError(const ResourceError& error)
         ResourceError errorForCallback = error;
         if (errorForCallback.isNull()) {
             // FIXME: This error is sent to the client in didFail(), so it should not be an internal one. Use FrameLoaderClient::cancelledError() instead.
-            errorForCallback = ResourceError(errorDomainWebKitInternal, 0, m_resource->url().string(), "Load cancelled");
+            errorForCallback = ResourceError(errorDomainBlinkInternal, 0, m_resource->url().string(), "Load cancelled");
             errorForCallback.setIsCancellation(true);
         }
         didFail(m_resource->identifier(), errorForCallback);
@@ -250,7 +250,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
             return;
         }
 
-        ResourceError error(errorDomainWebKitInternal, 0, redirectResponse.url().string(), accessControlErrorDescription);
+        ResourceError error(errorDomainBlinkInternal, 0, redirectResponse.url().string(), accessControlErrorDescription);
         m_client->didFailAccessControlCheck(error);
     } else {
         m_client->didFailRedirectCheck();
@@ -312,7 +312,7 @@ void DocumentThreadableLoader::didReceiveResponse(unsigned long identifier, cons
     } else {
         if (!m_sameOriginRequest && m_options.crossOriginRequestPolicy == UseAccessControl) {
             if (!passesAccessControlCheck(response, m_options.allowCredentials, securityOrigin(), accessControlErrorDescription)) {
-                m_client->didFailAccessControlCheck(ResourceError(errorDomainWebKitInternal, 0, response.url().string(), accessControlErrorDescription));
+                m_client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, response.url().string(), accessControlErrorDescription));
                 return;
             }
         }
@@ -399,7 +399,7 @@ void DocumentThreadableLoader::preflightSuccess()
 
 void DocumentThreadableLoader::preflightFailure(unsigned long identifier, const String& url, const String& errorDescription)
 {
-    ResourceError error(errorDomainWebKitInternal, 0, url, errorDescription);
+    ResourceError error(errorDomainBlinkInternal, 0, url, errorDescription);
     if (m_actualRequest)
         InspectorInstrumentation::didFailLoading(m_document->frame(), identifier, m_document->frame()->loader().documentLoader(), error);
     m_actualRequest = nullptr; // Prevent didFinishLoading() from bypassing access check.

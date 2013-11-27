@@ -1212,7 +1212,7 @@ void XMLHttpRequest::didFail(const ResourceError& error)
     }
 
     // Network failures are already reported to Web Inspector by ResourceLoader.
-    if (error.domain() == errorDomainWebKitInternal)
+    if (error.domain() == errorDomainBlinkInternal)
         logConsoleError(executionContext(), "XMLHttpRequest cannot load " + error.failingURL() + ". " + error.localizedDescription());
 
     handleNetworkError();

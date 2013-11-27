@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-const char errorDomainWebKitInternal[] = "WebKitInternal";
+const char errorDomainBlinkInternal[] = "BlinkInternal";
 
 ResourceError ResourceError::cancelledError(const String& failingURL)
 {

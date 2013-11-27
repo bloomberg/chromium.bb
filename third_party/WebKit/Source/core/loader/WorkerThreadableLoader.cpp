@@ -113,7 +113,7 @@ void WorkerThreadableLoader::MainThreadBridge::mainThreadCreateLoader(ExecutionC
     thisPtr->m_mainThreadLoader = DocumentThreadableLoader::create(document, thisPtr, *request, options);
     if (!thisPtr->m_mainThreadLoader) {
         // DocumentThreadableLoader::create may return 0 when the document loader has been already changed.
-        thisPtr->didFail(ResourceError(errorDomainWebKitInternal, 0, request->url().string(), "Can't create DocumentThreadableLoader"));
+        thisPtr->didFail(ResourceError(errorDomainBlinkInternal, 0, request->url().string(), "Can't create DocumentThreadableLoader"));
     }
 }
 
