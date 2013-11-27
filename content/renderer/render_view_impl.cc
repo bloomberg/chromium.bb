@@ -1790,7 +1790,7 @@ void RenderViewImpl::OnMoveCaret(const gfx::Point& point) {
 
   Send(new ViewHostMsg_MoveCaret_ACK(routing_id_));
 
-  webview()->focusedFrame()->moveCaretSelectionTowardsWindowPoint(point);
+  webview()->focusedFrame()->moveCaretSelection(point);
 }
 
 void RenderViewImpl::OnPaste() {
