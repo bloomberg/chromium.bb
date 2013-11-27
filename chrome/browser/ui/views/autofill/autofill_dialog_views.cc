@@ -115,11 +115,6 @@ const int kOverlayMessageVerticalPadding = 34;
 // Spacing below image and above text messages in overlay view.
 const int kOverlayImageBottomMargin = 100;
 
-// A dimmer text color used in various parts of the dialog. TODO(estade): should
-// this be part of NativeTheme? Currently the value is duplicated in several
-// places.
-const SkColor kGreyTextColor = SkColorSetRGB(102, 102, 102);
-
 const char kNotificationAreaClassName[] = "autofill/NotificationArea";
 const char kOverlayViewClassName[] = "autofill/OverlayView";
 const char kSectionContainerClassName[] = "autofill/SectionContainer";
@@ -1548,6 +1543,20 @@ void AutofillDialogViews::Layout() {
     error_bubble_->UpdatePosition();
 }
 
+void AutofillDialogViews::OnNativeThemeChanged(
+    const ui::NativeTheme* theme) {
+  if (!legal_document_view_)
+    return;
+
+  // NOTE: This color may change because of |auto_color_readability|, set on
+  // |legal_document_view_|.
+  views::StyledLabel::RangeStyleInfo default_style;
+  default_style.color =
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelDisabledColor);
+
+  legal_document_view_->SetDefaultStyle(default_style);
+}
+
 base::string16 AutofillDialogViews::GetWindowTitle() const {
   base::string16 title = delegate_->DialogTitle();
   // Hack alert: we don't want the dialog to jiggle when a title is added or
@@ -1642,9 +1651,7 @@ views::View* AutofillDialogViews::CreateFootnoteView() {
       views::Background::CreateSolidBackground(kShadingColor));
 
   legal_document_view_ = new views::StyledLabel(base::string16(), this);
-  views::StyledLabel::RangeStyleInfo default_style;
-  default_style.color = kGreyTextColor;
-  legal_document_view_->SetDefaultStyle(default_style);
+  OnNativeThemeChanged(GetNativeTheme());
 
   footnote_view_->AddChildView(legal_document_view_);
   footnote_view_->SetVisible(false);
