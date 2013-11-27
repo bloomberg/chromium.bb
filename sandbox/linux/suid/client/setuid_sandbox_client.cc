@@ -12,6 +12,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
 
+#include "sandbox/linux/services/init_process_reaper.h"
 #include "sandbox/linux/suid/common/sandbox.h"
 #include "sandbox/linux/suid/common/suid_unsafe_environment_variables.h"
 #include "setuid_sandbox_client.h"
@@ -148,6 +149,11 @@ bool SetuidSandboxClient::ChrootMe() {
   // setuid sandbox is concerned.
   sandboxed_ = true;
   return true;
+}
+
+bool SetuidSandboxClient::CreateInitProcessReaper(
+    base::Closure* post_fork_parent_callback) {
+  return sandbox::CreateInitProcessReaper(post_fork_parent_callback);
 }
 
 bool SetuidSandboxClient::IsSuidSandboxUpToDate() const {

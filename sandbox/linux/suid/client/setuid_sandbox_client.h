@@ -6,6 +6,7 @@
 #define SANDBOX_LINUX_SUID_SETUID_SANDBOX_CLIENT_H_
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 
 namespace base { class Environment; }
 
@@ -30,6 +31,11 @@ class SetuidSandboxClient {
   // to an empty directory.
   // Will only work if we have been launched through the setuid helper.
   bool ChrootMe();
+  // When a new PID namespace is created, the process with pid == 1 should
+  // assume the role of init.
+  // See sandbox/linux/services/init_process_reaper.h for more information
+  // on this API.
+  bool CreateInitProcessReaper(base::Closure* post_fork_parent_callback);
 
   // Did we get launched through an up to date setuid binary ?
   bool IsSuidSandboxUpToDate() const;

@@ -172,6 +172,8 @@
       'sources': [
         'services/broker_process.cc',
         'services/broker_process.h',
+        'services/init_process_reaper.cc',
+        'services/init_process_reaper.h',
       ],
       'dependencies': [
         '../base/base.gyp:base',
@@ -234,6 +236,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
+        'sandbox_services',
       ],
       'include_dirs': [
         '..',
