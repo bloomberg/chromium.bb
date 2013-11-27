@@ -6,13 +6,9 @@
 
 #include <vector>
 
-#include "base/base64.h"
-#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
-#include "base/values.h"
 #include "crypto/encryptor.h"
 #include "crypto/symmetric_key.h"
 #include "media/base/audio_decoder_config.h"
@@ -20,6 +16,7 @@
 #include "media/base/decrypt_config.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
+#include "media/cdm/json_web_key.h"
 
 namespace media {
 
@@ -29,8 +26,6 @@ enum ClearBytesBufferSel {
   kSrcContainsClearBytes,
   kDstContainsClearBytes
 };
-
-typedef std::vector<std::pair<std::string, std::string> > JWKKeys;
 
 static void CopySubsamples(const std::vector<SubsampleEntry>& subsamples,
                            const ClearBytesBufferSel sel,
@@ -47,122 +42,6 @@ static void CopySubsamples(const std::vector<SubsampleEntry>& subsamples,
     src += subsample.cypher_bytes;
     dst += subsample.cypher_bytes;
   }
-}
-
-// Helper to decode a base64 string. EME spec doesn't allow padding characters,
-// but base::Base64Decode() requires them. So check that they're not there, and
-// then add them before calling base::Base64Decode().
-static bool DecodeBase64(std::string encoded_text, std::string* decoded_text) {
-  const char base64_padding = '=';
-
-  // TODO(jrummell): Enable this after layout tests have been updated to not
-  // include trailing padding characters.
-  // if (encoded_text.back() == base64_padding)
-  //   return false;
-
-  // Add pad characters so length of |encoded_text| is exactly a multiple of 4.
-  size_t num_last_grouping_chars = encoded_text.length() % 4;
-  if (num_last_grouping_chars > 0)
-    encoded_text.append(4 - num_last_grouping_chars, base64_padding);
-
-  return base::Base64Decode(encoded_text, decoded_text);
-}
-
-// Processes a JSON Web Key to extract the key id and key value. Adds the
-// id/value pair to |jwk_keys| and returns true on success.
-static bool ProcessSymmetricKeyJWK(const DictionaryValue& jwk,
-                                   JWKKeys* jwk_keys) {
-  // A symmetric keys JWK looks like the following in JSON:
-  //   { "kty":"oct",
-  //     "kid":"AAECAwQFBgcICQoLDA0ODxAREhM",
-  //     "k":"FBUWFxgZGhscHR4fICEiIw" }
-  // There may be other properties specified, but they are ignored.
-  // Ref: http://tools.ietf.org/html/draft-ietf-jose-json-web-key-14
-  // and:
-  // http://tools.ietf.org/html/draft-jones-jose-json-private-and-symmetric-key-00
-
-  // Have found a JWK, start by checking that it is a symmetric key.
-  std::string type;
-  if (!jwk.GetString("kty", &type) || type != "oct") {
-    DVLOG(1) << "JWK is not a symmetric key";
-    return false;
-  }
-
-  // Get the key id and actual key parameters.
-  std::string encoded_key_id;
-  std::string encoded_key;
-  if (!jwk.GetString("kid", &encoded_key_id)) {
-    DVLOG(1) << "Missing 'kid' parameter";
-    return false;
-  }
-  if (!jwk.GetString("k", &encoded_key)) {
-    DVLOG(1) << "Missing 'k' parameter";
-    return false;
-  }
-
-  // Key ID and key are base64-encoded strings, so decode them.
-  std::string decoded_key_id;
-  std::string decoded_key;
-  if (!DecodeBase64(encoded_key_id, &decoded_key_id) ||
-      decoded_key_id.empty()) {
-    DVLOG(1) << "Invalid 'kid' value";
-    return false;
-  }
-  if (!DecodeBase64(encoded_key, &decoded_key) ||
-      decoded_key.length() !=
-          static_cast<size_t>(DecryptConfig::kDecryptionKeySize)) {
-    DVLOG(1) << "Invalid length of 'k' " << decoded_key.length();
-    return false;
-  }
-
-  // Add the decoded key ID and the decoded key to the list.
-  jwk_keys->push_back(std::make_pair(decoded_key_id, decoded_key));
-  return true;
-}
-
-// Extracts the JSON Web Keys from a JSON Web Key Set. If |input| looks like
-// a valid JWK Set, then true is returned and |jwk_keys| is updated to contain
-// the list of keys found. Otherwise return false.
-static bool ExtractJWKKeys(const std::string& input, JWKKeys* jwk_keys) {
-  // TODO(jrummell): The EME spec references a smaller set of allowed ASCII
-  // values. Verify with spec that the smaller character set is needed.
-  if (!IsStringASCII(input))
-    return false;
-
-  scoped_ptr<Value> root(base::JSONReader().ReadToValue(input));
-  if (!root.get() || root->GetType() != Value::TYPE_DICTIONARY)
-    return false;
-
-  // A JSON Web Key Set looks like the following in JSON:
-  //   { "keys": [ JWK1, JWK2, ... ] }
-  // (See ProcessSymmetricKeyJWK() for description of JWK.)
-  // There may be other properties specified, but they are ignored.
-  // Locate the set from the dictionary.
-  DictionaryValue* dictionary = static_cast<DictionaryValue*>(root.get());
-  ListValue* list_val = NULL;
-  if (!dictionary->GetList("keys", &list_val)) {
-    DVLOG(1) << "Missing 'keys' parameter or not a list in JWK Set";
-    return false;
-  }
-
-  // Create a local list of keys, so that |jwk_keys| only gets updated on
-  // success.
-  JWKKeys local_keys;
-  for (size_t i = 0; i < list_val->GetSize(); ++i) {
-    DictionaryValue* jwk = NULL;
-    if (!list_val->GetDictionary(i, &jwk)) {
-      DVLOG(1) << "Unable to access 'keys'[" << i << "] in JWK Set";
-      return false;
-    }
-    if (!ProcessSymmetricKeyJWK(*jwk, &local_keys)) {
-      DVLOG(1) << "Error from 'keys'[" << i << "]";
-      return false;
-    }
-  }
-
-  // Successfully processed all JWKs in the set.
-  jwk_keys->swap(local_keys);
-  return true;
 }
 
 // Decrypts |input| using |key|.  Returns a DecoderBuffer with the decrypted
@@ -308,19 +187,19 @@ void AesDecryptor::AddKey(uint32 reference_id,
   // with 'kid' being the base64-encoded key id, and 'k' being the
   // base64-encoded key.
   std::string key_string(reinterpret_cast<const char*>(key), key_length);
-  JWKKeys jwk_keys;
-  if (!ExtractJWKKeys(key_string, &jwk_keys)) {
+  KeyIdAndKeyPairs keys;
+  if (!ExtractKeysFromJWKSet(key_string, &keys)) {
     key_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
     return;
   }
 
   // Make sure that at least one key was extracted.
-  if (jwk_keys.empty()) {
+  if (keys.empty()) {
     key_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
     return;
   }
 
-  for (JWKKeys::iterator it = jwk_keys.begin() ; it != jwk_keys.end(); ++it) {
+  for (KeyIdAndKeyPairs::iterator it = keys.begin(); it != keys.end(); ++it) {
     if (it->second.length() !=
         static_cast<size_t>(DecryptConfig::kDecryptionKeySize)) {
       DVLOG(1) << "Invalid key length: " << key_string.length();

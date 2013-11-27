@@ -534,16 +534,16 @@ TEST_F(AesDecryptorTest, SubsampleCypherBytesOnly) {
 
 TEST_F(AesDecryptorTest, JWKKey) {
   // Try a simple JWK key (i.e. not in a set)
-  const std::string key1 =
+  const std::string kJwkSimple =
       "{"
       "  \"kty\": \"oct\","
       "  \"kid\": \"AAECAwQFBgcICQoLDA0ODxAREhM\","
       "  \"k\": \"FBUWFxgZGhscHR4fICEiIw\""
       "}";
-  AddKeyAndExpect(key1, KEY_ERROR);
+  AddKeyAndExpect(kJwkSimple, KEY_ERROR);
 
   // Try a key list with multiple entries.
-  const std::string key2 =
+  const std::string kJwksMultipleEntries =
       "{"
       "  \"keys\": ["
       "    {"
@@ -558,14 +558,14 @@ TEST_F(AesDecryptorTest, JWKKey) {
       "    }"
       "  ]"
       "}";
-  AddKeyAndExpect(key2, KEY_ADDED);
+  AddKeyAndExpect(kJwksMultipleEntries, KEY_ADDED);
 
   // Try a key with no spaces and some \n plus additional fields.
-  const std::string key3 =
+  const std::string kJwksNoSpaces =
       "\n\n{\"something\":1,\"keys\":[{\n\n\"kty\":\"oct\",\"alg\":\"A128KW\","
       "\"kid\":\"AAECAwQFBgcICQoLDA0ODxAREhM\",\"k\":\"GawgguFyGrWKav7AX4VKUg"
       "\",\"foo\":\"bar\"}]}\n\n";
-  AddKeyAndExpect(key3, KEY_ADDED);
+  AddKeyAndExpect(kJwksNoSpaces, KEY_ADDED);
 
   // Try some non-ASCII characters.
   AddKeyAndExpect("This is not ASCII due to \xff\xfe\xfd in it.", KEY_ERROR);
@@ -590,10 +590,8 @@ TEST_F(AesDecryptorTest, JWKKey) {
   // Try with 'keys' a list of integers.
   AddKeyAndExpect("{ \"keys\": [ 1, 2, 3 ] }", KEY_ERROR);
 
-  // TODO(jrummell): The next 2 tests should fail once checking for padding
-  // characters is enabled.
-  // Try a key with padding(=) at end of base64 string.
-  const std::string key4 =
+  // Try padding(=) at end of 'k' base64 string.
+  const std::string kJwksWithPaddedKey =
       "{"
       "  \"keys\": ["
       "    {"
@@ -603,10 +601,10 @@ TEST_F(AesDecryptorTest, JWKKey) {
       "    }"
       "  ]"
       "}";
-  AddKeyAndExpect(key4, KEY_ADDED);
+  AddKeyAndExpect(kJwksWithPaddedKey, KEY_ERROR);
 
-  // Try a key ID with padding(=) at end of base64 string.
-  const std::string key5 =
+  // Try padding(=) at end of 'kid' base64 string.
+  const std::string kJwksWithPaddedKeyId =
       "{"
       "  \"keys\": ["
       "    {"
@@ -616,10 +614,10 @@ TEST_F(AesDecryptorTest, JWKKey) {
       "    }"
       "  ]"
       "}";
-  AddKeyAndExpect(key5, KEY_ADDED);
+  AddKeyAndExpect(kJwksWithPaddedKeyId, KEY_ERROR);
 
   // Try a key with invalid base64 encoding.
-  const std::string key6 =
+  const std::string kJwksWithInvalidBase64 =
       "{"
       "  \"keys\": ["
       "    {"
@@ -629,12 +627,12 @@ TEST_F(AesDecryptorTest, JWKKey) {
       "    }"
       "  ]"
       "}";
-  AddKeyAndExpect(key6, KEY_ERROR);
+  AddKeyAndExpect(kJwksWithInvalidBase64, KEY_ERROR);
 
-  // Try a key where no padding is required. 'k' has to be 16 bytes, so it
-  // will always require padding. (Test above using |key2| has 2 'kid's that
-  // require 1 and 2 padding bytes).
-  const std::string key7 =
+  // Try a 3-byte 'kid' where no base64 padding is required.
+  // |kJwksMultipleEntries| above has 2 'kid's that require 1 and 2 padding
+  // bytes. Note that 'k' has to be 16 bytes, so it will always require padding.
+  const std::string kJwksWithNoPadding =
       "{"
       "  \"keys\": ["
       "    {"
@@ -644,10 +642,10 @@ TEST_F(AesDecryptorTest, JWKKey) {
       "    }"
       "  ]"
       "}";
-  AddKeyAndExpect(key7, KEY_ADDED);
+  AddKeyAndExpect(kJwksWithNoPadding, KEY_ADDED);
 
   // Empty key id.
-  const std::string key8 =
+  const std::string kJwksWithEmptyKeyId =
       "{"
       "  \"keys\": ["
       "    {"
@@ -657,7 +655,7 @@ TEST_F(AesDecryptorTest, JWKKey) {
       "    }"
       "  ]"
       "}";
-  AddKeyAndExpect(key8, KEY_ERROR);
+  AddKeyAndExpect(kJwksWithEmptyKeyId, KEY_ERROR);
 }
 
 }  // namespace media
