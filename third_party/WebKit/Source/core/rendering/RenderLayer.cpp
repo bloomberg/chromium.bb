@@ -533,8 +533,8 @@ void RenderLayer::updateBlendMode()
         m_blendMode = newBlendMode;
 
         // Only update the flag if a blend mode is set or unset.
-        if (!hadBlendMode || !hasBlendMode())
-            dirtyAncestorChainBlendedDescendantStatus();
+        if (parent() && (!hadBlendMode || !hasBlendMode()))
+            parent()->dirtyAncestorChainBlendedDescendantStatus();
 
         if (hasCompositedLayerMapping())
             compositedLayerMapping()->setBlendMode(newBlendMode);
@@ -861,6 +861,7 @@ void RenderLayer::updateDescendantDependentFlags()
     }
 
     if (m_childLayerHasBlendModeStatusDirty) {
+        m_childLayerHasBlendMode = false;
         for (RenderLayer* child = firstChild(); child; child = child->nextSibling()) {
             if (!child->stackingNode()->isStackingContext())
                 child->updateDescendantDependentFlags();
