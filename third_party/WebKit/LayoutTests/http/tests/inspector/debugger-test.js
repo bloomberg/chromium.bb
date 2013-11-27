@@ -193,16 +193,21 @@ InspectorTest.showUISourceCode = function(uiSourceCode, callback)
 
 InspectorTest.showScriptSource = function(scriptName, callback)
 {
+    InspectorTest.waitForScriptSource(scriptName, function(uiSourceCode) { InspectorTest.showUISourceCode(uiSourceCode, callback); });
+};
+
+InspectorTest.waitForScriptSource = function(scriptName, callback)
+{
     var panel = WebInspector.showPanel("sources");
     var uiSourceCodes = panel._workspace.uiSourceCodes();
     for (var i = 0; i < uiSourceCodes.length; ++i) {
         if (uiSourceCodes[i].name() === scriptName) {
-            InspectorTest.showUISourceCode(uiSourceCodes[i], callback);
+            callback(uiSourceCodes[i]);
             return;
         }
     }
 
-    InspectorTest.addSniffer(WebInspector.SourcesPanel.prototype, "_addUISourceCode", InspectorTest.showScriptSource.bind(InspectorTest, scriptName, callback));
+    InspectorTest.addSniffer(WebInspector.SourcesPanel.prototype, "_addUISourceCode", InspectorTest.waitForScriptSource.bind(InspectorTest, scriptName, callback));
 };
 
 InspectorTest.dumpScriptsNavigator = function(navigator, prefix)
