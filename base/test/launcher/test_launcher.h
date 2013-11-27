@@ -181,6 +181,9 @@ class TestLauncher {
   // Watchdog timer to make sure we do not go without output for too long.
   DelayTimer<TestLauncher> watchdog_timer_;
 
+  // Number of jobs to run in parallel.
+  size_t parallel_jobs_;
+
   // Worker pool used to launch processes in parallel.
   scoped_ptr<SequencedWorkerPoolOwner> worker_pool_owner_;
 

@@ -399,20 +399,6 @@ void WrapperTestLauncherDelegate::GTestCallback(
   test_launcher->OnTestFinished(result);
 }
 
-bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switch_name))
-    return true;
-
-  std::string switch_value =
-      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(switch_name);
-  if (!base::StringToInt(switch_value, result) || *result < 1) {
-    LOG(ERROR) << "Invalid value for " << switch_name << ": " << switch_value;
-    return false;
-  }
-
-  return true;
-}
-
 }  // namespace
 
 const char kHelpFlag[]   = "help";
@@ -495,23 +481,18 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
   testing::InitGoogleTest(&argc, argv);
   TestTimeouts::Initialize();
 
-  int jobs = default_jobs;
-  if (!GetSwitchValueAsInt(switches::kTestLauncherJobs, &jobs))
-    return 1;
-
   fprintf(stdout,
-      "Starting tests (using %d parallel jobs)...\n"
       "IMPORTANT DEBUGGING NOTE: each test is run inside its own process.\n"
       "For debugging a test inside a debugger, use the\n"
       "--gtest_filter=<your_test_name> flag along with either\n"
       "--single_process (to run the test in one launcher/browser process) or\n"
       "--single-process (to do the above, and also run Chrome in single-"
-          "process mode).\n", jobs);
+          "process mode).\n");
 
   base::MessageLoopForIO message_loop;
 
   WrapperTestLauncherDelegate delegate(launcher_delegate);
-  base::TestLauncher launcher(&delegate, jobs);
+  base::TestLauncher launcher(&delegate, default_jobs);
   bool success = launcher.Run(argc, argv);
   return (success ? 0 : 1);
 }

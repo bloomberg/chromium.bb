@@ -9,6 +9,7 @@
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)',
           '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
+          '--test-launcher-bot-mode',
         ],
         'isolate_dependency_tracked': [
           '../testing/xvfb.py',
@@ -128,6 +129,7 @@
         'command': [
           '../testing/test_env.py',
           '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
+          '--test-launcher-bot-mode',
         ],
       },
     }],

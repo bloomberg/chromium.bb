@@ -7,6 +7,7 @@
       'variables': {
         'command': [
           '<(PRODUCT_DIR)/cacheinvalidation_unittests<(EXECUTABLE_SUFFIX)',
+          '--test-launcher-bot-mode',
         ],
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/cacheinvalidation_unittests<(EXECUTABLE_SUFFIX)',

@@ -178,6 +178,16 @@ bool UnsetEnvironmentVariableIfExists(const std::string& name) {
   return env->UnSetVar(name.c_str());
 }
 
+// Returns true if bot mode has been requested, i.e. defaults optimized
+// for continuous integration bots. This way developers don't have to remember
+// special command-line flags.
+bool BotModeEnabled() {
+  scoped_ptr<Environment> env(Environment::Create());
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kTestLauncherBotMode) ||
+      env->HasVar("CHROMIUM_TEST_LAUNCHER_BOT_MODE");
+}
+
 // For a basic pattern matching for gtest_filter options.  (Copied from
 // gtest.cc, see the comment below and http://crbug.com/44497)
 bool PatternMatchesString(const char* pattern, const char* str) {
@@ -231,6 +241,7 @@ void RunCallback(
 void DoLaunchChildTestProcess(
     const CommandLine& command_line,
     base::TimeDelta timeout,
+    bool redirect_stdio,
     scoped_refptr<MessageLoopProxy> message_loop_proxy,
     const TestLauncher::LaunchChildGTestProcessCallback& callback) {
   TimeTicks start_time = TimeTicks::Now();
@@ -243,8 +254,7 @@ void DoLaunchChildTestProcess(
 #if defined(OS_WIN)
   win::ScopedHandle handle;
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTestLauncherDeveloperMode)) {
+  if (redirect_stdio) {
     // Make the file handle inheritable by the child.
     SECURITY_ATTRIBUTES sa_attr;
     sa_attr.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -270,8 +280,7 @@ void DoLaunchChildTestProcess(
   base::FileHandleMappingVector fds_mapping;
   file_util::ScopedFD output_file_fd_closer;
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTestLauncherDeveloperMode)) {
+  if (redirect_stdio) {
     int output_file_fd = open(output_file.value().c_str(), O_RDWR);
     CHECK_GE(output_file_fd, 0);
 
@@ -287,8 +296,7 @@ void DoLaunchChildTestProcess(
   int exit_code = LaunchChildTestProcessWithOptions(
       command_line, options, timeout, &was_timeout);
 
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTestLauncherDeveloperMode)) {
+  if (redirect_stdio) {
 #if defined(OS_WIN)
   FlushFileBuffers(handle.Get());
   handle.Close();
@@ -340,27 +348,32 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       test_success_count_(0),
       test_broken_count_(0),
       retry_count_(0),
-      retry_limit_(3),
+      retry_limit_(0),
       run_result_(true),
       watchdog_timer_(FROM_HERE,
                       TimeDelta::FromSeconds(kOutputTimeoutSeconds),
                       this,
-                      &TestLauncher::OnOutputTimeout) {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kTestLauncherDeveloperMode)) {
-    parallel_jobs = 1;
-    retry_limit_ = 0;
+                      &TestLauncher::OnOutputTimeout),
+      parallel_jobs_(parallel_jobs) {
+  if (BotModeEnabled()) {
     fprintf(stdout,
-            "Forcing serial test execution in developer mode.\n"
-            "Disabling test retries in developer mode.\n");
+            "Enabling defaults optimized for continuous integration bots.\n");
     fflush(stdout);
+
+    // Enable test retries by default for bots. This can be still overridden
+    // from command line using --test-launcher-retry-limit flag.
+    retry_limit_ = 3;
+  } else {
+    // Default to serial test execution if not running on a bot. This makes it
+    // possible to disable stdio redirection and can still be overridden with
+    // --test-launcher-jobs flag.
+    parallel_jobs_ = 1;
   }
-  worker_pool_owner_.reset(
-      new SequencedWorkerPoolOwner(parallel_jobs, "test_launcher"));
 }
 
 TestLauncher::~TestLauncher() {
-  worker_pool_owner_->pool()->Shutdown();
+  if (worker_pool_owner_)
+    worker_pool_owner_->pool()->Shutdown();
 }
 
 bool TestLauncher::Run(int argc, char** argv) {
@@ -418,11 +431,17 @@ void TestLauncher::LaunchChildGTestProcess(
   CommandLine new_command_line(
       PrepareCommandLineForGTest(command_line, wrapper));
 
+  // When running in parallel mode we need to redirect stdio to avoid mixed-up
+  // output. We also always redirect on the bots to get the test output into
+  // JSON summary.
+  bool redirect_stdio = (parallel_jobs_ > 1) || BotModeEnabled();
+
   worker_pool_owner_->pool()->PostWorkerTask(
       FROM_HERE,
       Bind(&DoLaunchChildTestProcess,
            new_command_line,
            timeout,
+           redirect_stdio,
            MessageLoopProxy::current(),
            Bind(&TestLauncher::OnLaunchTestProcessFinished,
                 Unretained(this),
@@ -652,6 +671,23 @@ bool TestLauncher::Init() {
 
     retry_limit_ = retry_limit;
   }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestLauncherJobs)) {
+    int jobs = -1;
+    if (!StringToInt(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                         switches::kTestLauncherJobs), &jobs) ||
+        jobs < 0) {
+      LOG(ERROR) << "Invalid value for " << switches::kTestLauncherJobs;
+      return false;
+    }
+
+    parallel_jobs_ = jobs;
+  }
+  fprintf(stdout, "Using %" PRIuS " parallel jobs.\n", parallel_jobs_);
+  fflush(stdout);
+  worker_pool_owner_.reset(
+      new SequencedWorkerPoolOwner(parallel_jobs_, "test_launcher"));
 
   // Split --gtest_filter at '-', if there is one, to separate into
   // positive filter and negative filter portions.

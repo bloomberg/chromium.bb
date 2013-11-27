@@ -464,26 +464,21 @@ int LaunchUnitTests(int argc,
   testing::InitGoogleTest(&argc, argv);
   TestTimeouts::Initialize();
 
-  int jobs = SysInfo::NumberOfProcessors();
-  if (!GetSwitchValueAsInt(switches::kTestLauncherJobs, &jobs))
-    return 1;
-
   int batch_limit = kDefaultTestBatchLimit;
   if (!GetSwitchValueAsInt(switches::kTestLauncherBatchLimit, &batch_limit))
     return 1;
 
   fprintf(stdout,
-          "Starting tests (using %d parallel jobs)...\n"
           "IMPORTANT DEBUGGING NOTE: batches of tests are run inside their\n"
           "own process. For debugging a test inside a debugger, use the\n"
           "--gtest_filter=<your_test_name> flag along with\n"
-          "--single-process-tests.\n", jobs);
+          "--single-process-tests.\n");
   fflush(stdout);
 
   MessageLoopForIO message_loop;
 
   base::UnitTestLauncherDelegate delegate(batch_limit);
-  base::TestLauncher launcher(&delegate, jobs);
+  base::TestLauncher launcher(&delegate, SysInfo::NumberOfProcessors());
   bool success = launcher.Run(argc, argv);
 
   fprintf(stdout,
