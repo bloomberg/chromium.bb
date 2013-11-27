@@ -3013,7 +3013,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_PercentComplete) {
   fd = base::kInvalidPlatformFileValue;
 #if defined(OS_POSIX)
   // Make it readable by chronos on chromeos
-  file_util::SetPosixFilePermissions(file_path, 0755);
+  base::SetPosixFilePermissions(file_path, 0755);
 #endif
 
   // Ensure that we have enough disk space.

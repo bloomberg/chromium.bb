@@ -56,7 +56,7 @@ class InotifyReader {
   void OnInotifyEvent(const inotify_event* event);
 
  private:
-  friend struct ::base::DefaultLazyInstanceTraits<InotifyReader>;
+  friend struct DefaultLazyInstanceTraits<InotifyReader>;
 
   typedef std::set<FilePathWatcherImpl*> WatcherSet;
 
@@ -64,13 +64,13 @@ class InotifyReader {
   ~InotifyReader();
 
   // We keep track of which delegates want to be notified on which watches.
-  base::hash_map<Watch, WatcherSet> watchers_;
+  hash_map<Watch, WatcherSet> watchers_;
 
   // Lock to protect watchers_.
-  base::Lock lock_;
+  Lock lock_;
 
   // Separate thread on which we run blocking read for inotify events.
-  base::Thread thread_;
+  Thread thread_;
 
   // File descriptor returned by inotify_init.
   const int inotify_fd_;
@@ -159,7 +159,7 @@ void InotifyReaderCallback(InotifyReader* reader, int inotify_fd,
   CHECK_LE(0, shutdown_fd);
   CHECK_GT(FD_SETSIZE, shutdown_fd);
 
-  base::debug::TraceLog::GetInstance()->SetCurrentThreadBlocksMessageLoop();
+  debug::TraceLog::GetInstance()->SetCurrentThreadBlocksMessageLoop();
 
   while (true) {
     fd_set rfds;
@@ -210,7 +210,7 @@ void InotifyReaderCallback(InotifyReader* reader, int inotify_fd,
   }
 }
 
-static base::LazyInstance<InotifyReader>::Leaky g_inotify_reader =
+static LazyInstance<InotifyReader>::Leaky g_inotify_reader =
     LAZY_INSTANCE_INITIALIZER;
 
 InotifyReader::InotifyReader()
@@ -224,7 +224,7 @@ InotifyReader::InotifyReader()
   shutdown_pipe_[1] = -1;
   if (inotify_fd_ >= 0 && pipe(shutdown_pipe_) == 0 && thread_.Start()) {
     thread_.message_loop()->PostTask(
-        FROM_HERE, base::Bind(&InotifyReaderCallback, this, inotify_fd_,
+        FROM_HERE, Bind(&InotifyReaderCallback, this, inotify_fd_,
                               shutdown_pipe_[0]));
     valid_ = true;
   }
@@ -252,7 +252,7 @@ InotifyReader::Watch InotifyReader::AddWatch(
   if (!valid_)
     return kInvalidWatch;
 
-  base::AutoLock auto_lock(lock_);
+  AutoLock auto_lock(lock_);
 
   Watch watch = inotify_add_watch(inotify_fd_, path.value().c_str(),
                                   IN_CREATE | IN_DELETE |
@@ -272,7 +272,7 @@ bool InotifyReader::RemoveWatch(Watch watch,
   if (!valid_)
     return false;
 
-  base::AutoLock auto_lock(lock_);
+  AutoLock auto_lock(lock_);
 
   watchers_[watch].erase(watcher);
 
@@ -289,7 +289,7 @@ void InotifyReader::OnInotifyEvent(const inotify_event* event) {
     return;
 
   FilePath::StringType child(event->len ? event->name : FILE_PATH_LITERAL(""));
-  base::AutoLock auto_lock(lock_);
+  AutoLock auto_lock(lock_);
 
   for (WatcherSet::iterator watcher = watchers_[event->wd].begin();
        watcher != watchers_[event->wd].end();
@@ -309,7 +309,7 @@ void FilePathWatcherImpl::OnFilePathChanged(InotifyReader::Watch fired_watch,
   if (!message_loop()->BelongsToCurrentThread()) {
     // Switch to message_loop_ to access watches_ safely.
     message_loop()->PostTask(FROM_HERE,
-        base::Bind(&FilePathWatcherImpl::OnFilePathChanged,
+        Bind(&FilePathWatcherImpl::OnFilePathChanged,
                    this,
                    fired_watch,
                    child,
@@ -376,7 +376,7 @@ bool FilePathWatcherImpl::Watch(const FilePath& path,
     return false;
   }
 
-  set_message_loop(base::MessageLoopProxy::current().get());
+  set_message_loop(MessageLoopProxy::current().get());
   callback_ = callback;
   target_ = path;
   MessageLoop::current()->AddDestructionObserver(this);
@@ -403,7 +403,7 @@ void FilePathWatcherImpl::Cancel() {
   // Switch to the message_loop_ if necessary so we can access |watches_|.
   if (!message_loop()->BelongsToCurrentThread()) {
     message_loop()->PostTask(FROM_HERE,
-                             base::Bind(&FilePathWatcher::CancelWatch,
+                             Bind(&FilePathWatcher::CancelWatch,
                                         make_scoped_refptr(this)));
   } else {
     CancelOnMessageLoopThread();
@@ -448,7 +448,7 @@ bool FilePathWatcherImpl::UpdateWatches() {
       if ((watch_entry->watch_ == InotifyReader::kInvalidWatch) &&
           file_util::IsLink(path)) {
         FilePath link;
-        if (file_util::ReadSymbolicLink(path, &link)) {
+        if (ReadSymbolicLink(path, &link)) {
           if (!link.IsAbsolute())
             link = path.DirName().Append(link);
           // Try watching symlink target directory. If the link target is "/",

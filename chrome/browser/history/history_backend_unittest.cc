@@ -2872,7 +2872,7 @@ TEST_F(HistoryBackendTest, DeleteFTSIndexDatabases) {
   ASSERT_TRUE(file_util::WriteFile(db1_wal, data, data_len));
   ASSERT_TRUE(file_util::WriteFile(db2_actual, data, data_len));
 #if defined(OS_POSIX)
-  EXPECT_TRUE(file_util::CreateSymbolicLink(db2_actual, db2_symlink));
+  EXPECT_TRUE(base::CreateSymbolicLink(db2_actual, db2_symlink));
 #endif
 
   // Delete all DTS index databases.

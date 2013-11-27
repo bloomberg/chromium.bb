@@ -176,12 +176,12 @@ base::FilePath SetUpSymlinkIfNeeded(const base::FilePath& symlink_path,
       if (symlink_exists) // only warn if we might expect it to succeed.
         DPLOG(WARNING) << "Unable to unlink " << symlink_path.value();
     }
-    if (!file_util::CreateSymbolicLink(target_path, symlink_path)) {
+    if (!base::CreateSymbolicLink(target_path, symlink_path)) {
       DPLOG(ERROR) << "Unable to create symlink " << symlink_path.value()
                    << " pointing at " << target_path.value();
     }
   } else {
-    if (!file_util::ReadSymbolicLink(symlink_path, &target_path))
+    if (!base::ReadSymbolicLink(symlink_path, &target_path))
       DPLOG(ERROR) << "Unable to read symlink " << symlink_path.value();
   }
   return target_path;

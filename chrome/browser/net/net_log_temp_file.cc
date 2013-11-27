@@ -127,8 +127,8 @@ bool NetLogTempFile::GetFilePath(base::FilePath* path) {
   DCHECK(!log_path_.empty());
 #if defined(OS_POSIX)
   // Users, group and others can read, write and traverse.
-  int mode = file_util::FILE_PERMISSION_MASK;
-  file_util::SetPosixFilePermissions(log_path_, mode);
+  int mode = base::FILE_PERMISSION_MASK;
+  base::SetPosixFilePermissions(log_path_, mode);
 #endif  // defined(OS_POSIX)
 
   *path = log_path_;

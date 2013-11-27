@@ -245,12 +245,12 @@ FileError FileCache::MarkAsMounted(const std::string& id,
 
   // Ensure the file is readable to cros_disks. See crbug.com/236994.
   base::FilePath path = GetCacheFilePath(id);
-  if (!file_util::SetPosixFilePermissions(
+  if (!base::SetPosixFilePermissions(
           path,
-          file_util::FILE_PERMISSION_READ_BY_USER |
-          file_util::FILE_PERMISSION_WRITE_BY_USER |
-          file_util::FILE_PERMISSION_READ_BY_GROUP |
-          file_util::FILE_PERMISSION_READ_BY_OTHERS))
+          base::FILE_PERMISSION_READ_BY_USER |
+          base::FILE_PERMISSION_WRITE_BY_USER |
+          base::FILE_PERMISSION_READ_BY_GROUP |
+          base::FILE_PERMISSION_READ_BY_OTHERS))
     return FILE_ERROR_FAILED;
 
   mounted_files_.insert(id);

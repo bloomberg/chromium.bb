@@ -138,7 +138,7 @@ TEST_F(LocalFileUtilTest, CreateAndClose) {
       file_util()->Close(context.get(), file_handle));
 }
 
-// file_util::CreateSymbolicLink is only supported on POSIX.
+// base::CreateSymbolicLink is only supported on POSIX.
 #if defined(OS_POSIX)
 TEST_F(LocalFileUtilTest, CreateFailForSymlink) {
   // Create symlink target file.
@@ -153,7 +153,7 @@ TEST_F(LocalFileUtilTest, CreateFailForSymlink) {
   // Create symlink where target must be real file.
   const char *symlink_name = "symlink_file";
   base::FilePath symlink_path = LocalPath(symlink_name);
-  ASSERT_TRUE(file_util::CreateSymbolicLink(target_path, symlink_path));
+  ASSERT_TRUE(base::CreateSymbolicLink(target_path, symlink_path));
   ASSERT_TRUE(FileExists(symlink_name));
 
   // Try to open the symlink file which should fail.

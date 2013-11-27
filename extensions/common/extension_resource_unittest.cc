@@ -61,7 +61,7 @@ TEST(ExtensionResourceTest, ResourcesOutsideOfPath) {
 
 #if defined(OS_POSIX)
   base::FilePath symlink_file = inner_dir.AppendASCII("symlink");
-  file_util::CreateSymbolicLink(
+  base::CreateSymbolicLink(
       base::FilePath().AppendASCII("..").AppendASCII("outer"),
       symlink_file);
 #endif

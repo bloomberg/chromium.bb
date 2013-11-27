@@ -287,8 +287,7 @@ pid_t FindThreadIDWithSyscall(pid_t pid, const std::string& expected_data,
       continue;
     if (syscall_supported != NULL)
       *syscall_supported = true;
-    bool read_ret =
-        file_util::ReadFromFD(fd, syscall_data.get(), expected_data.length());
+    bool read_ret = ReadFromFD(fd, syscall_data.get(), expected_data.length());
     close(fd);
     if (!read_ret)
       continue;

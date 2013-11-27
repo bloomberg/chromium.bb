@@ -113,7 +113,7 @@ size_t SyncSocket::Receive(void* buffer, size_t length) {
   DCHECK_LE(length, kMaxMessageLength);
   DCHECK_NE(handle_, kInvalidHandle);
   char* charbuffer = static_cast<char*>(buffer);
-  if (file_util::ReadFromFD(handle_, charbuffer, length))
+  if (ReadFromFD(handle_, charbuffer, length))
     return length;
   return 0;
 }

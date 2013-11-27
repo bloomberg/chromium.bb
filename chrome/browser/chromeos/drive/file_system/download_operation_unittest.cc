@@ -64,11 +64,11 @@ TEST_F(DownloadOperationTest,
 
   // Verify that readable permission is set.
   int permission = 0;
-  EXPECT_TRUE(file_util::GetPosixFilePermissions(file_path, &permission));
-  EXPECT_EQ(file_util::FILE_PERMISSION_READ_BY_USER |
-            file_util::FILE_PERMISSION_WRITE_BY_USER |
-            file_util::FILE_PERMISSION_READ_BY_GROUP |
-            file_util::FILE_PERMISSION_READ_BY_OTHERS, permission);
+  EXPECT_TRUE(base::GetPosixFilePermissions(file_path, &permission));
+  EXPECT_EQ(base::FILE_PERMISSION_READ_BY_USER |
+            base::FILE_PERMISSION_WRITE_BY_USER |
+            base::FILE_PERMISSION_READ_BY_GROUP |
+            base::FILE_PERMISSION_READ_BY_OTHERS, permission);
 }
 
 TEST_F(DownloadOperationTest,

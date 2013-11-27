@@ -334,9 +334,8 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
     // should not fork any child processes (which the seccomp
     // sandbox does) until then, because that can interfere with the
     // parent's discovery of our PID.
-    if (!file_util::ReadFromFD(pipe_fds[0],
-                               reinterpret_cast<char*>(&real_pid),
-                               sizeof(real_pid))) {
+    if (!base::ReadFromFD(pipe_fds[0], reinterpret_cast<char*>(&real_pid),
+                          sizeof(real_pid))) {
       LOG(FATAL) << "Failed to synchronise with parent zygote process";
     }
     if (real_pid <= 0) {

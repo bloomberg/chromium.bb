@@ -637,8 +637,8 @@ TEST_F(LoginDatabaseTest, VectorSerialization) {
 // This tests that sql::Connection::set_restrict_to_user() was called,
 // and that function is a noop on non-POSIX platforms in any case.
 TEST_F(LoginDatabaseTest, FilePermissions) {
-  int mode = file_util::FILE_PERMISSION_MASK;
-  EXPECT_TRUE(file_util::GetPosixFilePermissions(file_, &mode));
-  EXPECT_EQ((mode & file_util::FILE_PERMISSION_USER_MASK), mode);
+  int mode = base::FILE_PERMISSION_MASK;
+  EXPECT_TRUE(base::GetPosixFilePermissions(file_, &mode));
+  EXPECT_EQ((mode & base::FILE_PERMISSION_USER_MASK), mode);
 }
 #endif  // defined(OS_POSIX)

@@ -137,13 +137,8 @@ BASE_EXPORT bool TextContentsEqual(const FilePath& filename1,
 // Useful for unit tests.
 BASE_EXPORT bool ReadFileToString(const FilePath& path, std::string* contents);
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
 #if defined(OS_POSIX)
+
 // Read exactly |bytes| bytes from file descriptor |fd|, storing the result
 // in |buffer|. This function is protected against EINTR and partial reads.
 // Returns true iff |bytes| bytes have been successfully read from |fd|.
@@ -151,13 +146,12 @@ BASE_EXPORT bool ReadFromFD(int fd, char* buffer, size_t bytes);
 
 // Creates a symbolic link at |symlink| pointing to |target|.  Returns
 // false on failure.
-BASE_EXPORT bool CreateSymbolicLink(const base::FilePath& target,
-                                    const base::FilePath& symlink);
+BASE_EXPORT bool CreateSymbolicLink(const FilePath& target,
+                                    const FilePath& symlink);
 
 // Reads the given |symlink| and returns where it points to in |target|.
 // Returns false upon failure.
-BASE_EXPORT bool ReadSymbolicLink(const base::FilePath& symlink,
-                                  base::FilePath* target);
+BASE_EXPORT bool ReadSymbolicLink(const FilePath& symlink, FilePath* target);
 
 // Bits ans masks of the file permission.
 enum FilePermissionBits {
@@ -180,13 +174,18 @@ enum FilePermissionBits {
 // Reads the permission of the given |path|, storing the file permission
 // bits in |mode|. If |path| is symbolic link, |mode| is the permission of
 // a file which the symlink points to.
-BASE_EXPORT bool GetPosixFilePermissions(const base::FilePath& path,
-                                         int* mode);
+BASE_EXPORT bool GetPosixFilePermissions(const FilePath& path, int* mode);
 // Sets the permission of the given |path|. If |path| is symbolic link, sets
 // the permission of a file which the symlink points to.
-BASE_EXPORT bool SetPosixFilePermissions(const base::FilePath& path,
-                                         int mode);
-#endif  // defined(OS_POSIX)
+BASE_EXPORT bool SetPosixFilePermissions(const FilePath& path, int mode);
+
+#endif  // OS_POSIX
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
 
 // Return true if the given directory is empty
 BASE_EXPORT bool IsDirectoryEmpty(const base::FilePath& dir_path);

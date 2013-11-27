@@ -230,7 +230,7 @@ void SetupSocket(const std::string& path, int* sock, struct sockaddr_un* addr) {
 // Read a symbolic link, return empty string if given path is not a symbol link.
 base::FilePath ReadLink(const base::FilePath& path) {
   base::FilePath target;
-  if (!file_util::ReadSymbolicLink(path, &target)) {
+  if (!base::ReadSymbolicLink(path, &target)) {
     // The only errno that should occur is ENOENT.
     if (errno != 0 && errno != ENOENT)
       PLOG(ERROR) << "readlink(" << path.value() << ") failed";
@@ -249,7 +249,7 @@ bool UnlinkPath(const base::FilePath& path) {
 
 // Create a symlink. Returns true on success.
 bool SymlinkPath(const base::FilePath& target, const base::FilePath& path) {
-  if (!file_util::CreateSymbolicLink(target, path)) {
+  if (!base::CreateSymbolicLink(target, path)) {
     // Double check the value in case symlink suceeded but we got an incorrect
     // failure due to NFS packet loss & retry.
     int saved_errno = errno;
@@ -347,7 +347,7 @@ bool ConnectSocket(ScopedSocket* socket,
                    const base::FilePath& socket_path,
                    const base::FilePath& cookie_path) {
   base::FilePath socket_target;
-  if (file_util::ReadSymbolicLink(socket_path, &socket_target)) {
+  if (base::ReadSymbolicLink(socket_path, &socket_target)) {
     // It's a symlink. Read the cookie.
     base::FilePath cookie = ReadLink(cookie_path);
     if (cookie.empty())

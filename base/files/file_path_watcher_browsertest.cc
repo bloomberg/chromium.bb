@@ -605,7 +605,7 @@ TEST_F(FilePathWatcherTest, CreateLink) {
 
   // Now make sure we get notified if the link is created.
   // Note that test_file() doesn't have to exist.
-  ASSERT_TRUE(file_util::CreateSymbolicLink(test_file(), test_link()));
+  ASSERT_TRUE(CreateSymbolicLink(test_file(), test_link()));
   ASSERT_TRUE(WaitForEvents());
   DeleteDelegateOnFileThread(delegate.release());
 }
@@ -615,7 +615,7 @@ TEST_F(FilePathWatcherTest, DeleteLink) {
   // Unfortunately this test case only works if the link target exists.
   // TODO(craig) fix this as part of crbug.com/91561.
   ASSERT_TRUE(WriteFile(test_file(), "content"));
-  ASSERT_TRUE(file_util::CreateSymbolicLink(test_file(), test_link()));
+  ASSERT_TRUE(CreateSymbolicLink(test_file(), test_link()));
   FilePathWatcher watcher;
   scoped_ptr<TestDelegate> delegate(new TestDelegate(collector()));
   ASSERT_TRUE(SetupWatch(test_link(), &watcher, delegate.get(), false));
@@ -630,7 +630,7 @@ TEST_F(FilePathWatcherTest, DeleteLink) {
 // when we are watching the link is caught.
 TEST_F(FilePathWatcherTest, ModifiedLinkedFile) {
   ASSERT_TRUE(WriteFile(test_file(), "content"));
-  ASSERT_TRUE(file_util::CreateSymbolicLink(test_file(), test_link()));
+  ASSERT_TRUE(CreateSymbolicLink(test_file(), test_link()));
   FilePathWatcher watcher;
   scoped_ptr<TestDelegate> delegate(new TestDelegate(collector()));
   // Note that we are watching the symlink.
@@ -645,7 +645,7 @@ TEST_F(FilePathWatcherTest, ModifiedLinkedFile) {
 // Verify that creating a target file that a link is pointing to
 // when we are watching the link is caught.
 TEST_F(FilePathWatcherTest, CreateTargetLinkedFile) {
-  ASSERT_TRUE(file_util::CreateSymbolicLink(test_file(), test_link()));
+  ASSERT_TRUE(CreateSymbolicLink(test_file(), test_link()));
   FilePathWatcher watcher;
   scoped_ptr<TestDelegate> delegate(new TestDelegate(collector()));
   // Note that we are watching the symlink.
@@ -661,7 +661,7 @@ TEST_F(FilePathWatcherTest, CreateTargetLinkedFile) {
 // when we are watching the link is caught.
 TEST_F(FilePathWatcherTest, DeleteTargetLinkedFile) {
   ASSERT_TRUE(WriteFile(test_file(), "content"));
-  ASSERT_TRUE(file_util::CreateSymbolicLink(test_file(), test_link()));
+  ASSERT_TRUE(CreateSymbolicLink(test_file(), test_link()));
   FilePathWatcher watcher;
   scoped_ptr<TestDelegate> delegate(new TestDelegate(collector()));
   // Note that we are watching the symlink.
@@ -688,7 +688,7 @@ TEST_F(FilePathWatcherTest, LinkedDirectoryPart1) {
   // Note that we are watching dir.lnk/file which doesn't exist yet.
   ASSERT_TRUE(SetupWatch(linkfile, &watcher, delegate.get(), false));
 
-  ASSERT_TRUE(file_util::CreateSymbolicLink(dir, link_dir));
+  ASSERT_TRUE(CreateSymbolicLink(dir, link_dir));
   VLOG(1) << "Waiting for link creation";
   ASSERT_TRUE(WaitForEvents());
 
@@ -713,7 +713,7 @@ TEST_F(FilePathWatcherTest, LinkedDirectoryPart2) {
   scoped_ptr<TestDelegate> delegate(new TestDelegate(collector()));
   // Now create the link from dir.lnk pointing to dir but
   // neither dir nor dir/file exist yet.
-  ASSERT_TRUE(file_util::CreateSymbolicLink(dir, link_dir));
+  ASSERT_TRUE(CreateSymbolicLink(dir, link_dir));
   // Note that we are watching dir.lnk/file.
   ASSERT_TRUE(SetupWatch(linkfile, &watcher, delegate.get(), false));
 
@@ -742,7 +742,7 @@ TEST_F(FilePathWatcherTest, LinkedDirectoryPart3) {
   FilePath linkfile(link_dir.AppendASCII("file"));
   scoped_ptr<TestDelegate> delegate(new TestDelegate(collector()));
   ASSERT_TRUE(file_util::CreateDirectory(dir));
-  ASSERT_TRUE(file_util::CreateSymbolicLink(dir, link_dir));
+  ASSERT_TRUE(CreateSymbolicLink(dir, link_dir));
   // Note that we are watching dir.lnk/file but the file doesn't exist yet.
   ASSERT_TRUE(SetupWatch(linkfile, &watcher, delegate.get(), false));
 

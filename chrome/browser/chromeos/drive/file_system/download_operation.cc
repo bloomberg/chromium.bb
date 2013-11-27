@@ -148,12 +148,12 @@ bool CreateTemporaryReadableFileInDir(const base::FilePath& dir,
                                       base::FilePath* temp_file) {
   if (!file_util::CreateTemporaryFileInDir(dir, temp_file))
     return false;
-  return file_util::SetPosixFilePermissions(
+  return base::SetPosixFilePermissions(
       *temp_file,
-      file_util::FILE_PERMISSION_READ_BY_USER |
-      file_util::FILE_PERMISSION_WRITE_BY_USER |
-      file_util::FILE_PERMISSION_READ_BY_GROUP |
-      file_util::FILE_PERMISSION_READ_BY_OTHERS);
+      base::FILE_PERMISSION_READ_BY_USER |
+      base::FILE_PERMISSION_WRITE_BY_USER |
+      base::FILE_PERMISSION_READ_BY_GROUP |
+      base::FILE_PERMISSION_READ_BY_OTHERS);
 }
 
 // Prepares for downloading the file. Allocates the enough space for the file

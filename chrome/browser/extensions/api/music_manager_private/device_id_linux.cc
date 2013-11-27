@@ -34,7 +34,7 @@ void GetDiskUuid(const extensions::api::DeviceId::IdCallback& callback) {
       break;
 
     base::FilePath target_path;
-    if (!file_util::ReadSymbolicLink(file_path, &target_path))
+    if (!base::ReadSymbolicLink(file_path, &target_path))
       continue;
 
     base::FilePath device_name = target_path.BaseName();

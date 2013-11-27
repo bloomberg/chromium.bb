@@ -20,7 +20,7 @@ ProcessId GetParentProcessId(ProcessHandle process) {
 FilePath GetProcessExecutablePath(ProcessHandle process) {
   FilePath stat_file = internal::GetProcPidDir(process).Append("exe");
   FilePath exe_name;
-  if (!file_util::ReadSymbolicLink(stat_file, &exe_name)) {
+  if (!ReadSymbolicLink(stat_file, &exe_name)) {
     // No such process.  Happens frequently in e.g. TerminateAllChromeProcesses
     return FilePath();
   }

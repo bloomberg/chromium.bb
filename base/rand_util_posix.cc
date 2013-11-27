@@ -46,9 +46,8 @@ uint64 RandUint64() {
   uint64 number;
 
   int urandom_fd = g_urandom_fd.Pointer()->fd();
-  bool success = file_util::ReadFromFD(urandom_fd,
-                                       reinterpret_cast<char*>(&number),
-                                       sizeof(number));
+  bool success = ReadFromFD(urandom_fd, reinterpret_cast<char*>(&number),
+                            sizeof(number));
   CHECK(success);
 
   return number;

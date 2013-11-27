@@ -881,9 +881,9 @@ bool Connection::OpenInternal(const std::string& file_name,
     int mode = 0;
     // TODO(shess): Arguably, failure to retrieve and change
     // permissions should be fatal if the file exists.
-    if (file_util::GetPosixFilePermissions(file_path, &mode)) {
-      mode &= file_util::FILE_PERMISSION_USER_MASK;
-      file_util::SetPosixFilePermissions(file_path, mode);
+    if (base::GetPosixFilePermissions(file_path, &mode)) {
+      mode &= base::FILE_PERMISSION_USER_MASK;
+      base::SetPosixFilePermissions(file_path, mode);
 
       // SQLite sets the permissions on these files from the main
       // database on create.  Set them here in case they already exist
@@ -891,8 +891,8 @@ bool Connection::OpenInternal(const std::string& file_name,
       // be fatal unless the file doesn't exist.
       base::FilePath journal_path(file_name + FILE_PATH_LITERAL("-journal"));
       base::FilePath wal_path(file_name + FILE_PATH_LITERAL("-wal"));
-      file_util::SetPosixFilePermissions(journal_path, mode);
-      file_util::SetPosixFilePermissions(wal_path, mode);
+      base::SetPosixFilePermissions(journal_path, mode);
+      base::SetPosixFilePermissions(wal_path, mode);
     }
   }
 #endif  // defined(OS_POSIX)

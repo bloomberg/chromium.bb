@@ -50,7 +50,7 @@ void SetProcessTitleFromCommandLine(const char** main_argv) {
   // display purposes and has no TOCTTOU security implications.
   base::FilePath target;
   base::FilePath self_exe(base::kProcSelfExe);
-  if (file_util::ReadSymbolicLink(self_exe, &target)) {
+  if (base::ReadSymbolicLink(self_exe, &target)) {
     have_argv0 = true;
     title = target.value();
     // If the binary has since been deleted, Linux appends " (deleted)" to the

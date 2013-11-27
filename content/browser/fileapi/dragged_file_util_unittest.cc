@@ -374,7 +374,7 @@ TEST_F(DraggedFileUtilTest, ReadDirectoryTest) {
       // Creates a symlink for each file/directory.
       // They should be ignored by ReadDirectory, so we don't add them
       // to expected_entry_map.
-      file_util::CreateSymbolicLink(
+      base::CreateSymbolicLink(
           current,
           dir_path.Append(current.BaseName().AddExtension(
               FILE_PATH_LITERAL("link"))));

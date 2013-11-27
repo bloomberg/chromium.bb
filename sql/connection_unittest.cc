@@ -689,12 +689,12 @@ TEST_F(SQLConnectionTest, UserPermission) {
   // read access for the database and journal.
   ASSERT_TRUE(base::PathExists(db_path()));
   ASSERT_TRUE(base::PathExists(journal));
-  mode = file_util::FILE_PERMISSION_MASK;
-  EXPECT_TRUE(file_util::GetPosixFilePermissions(db_path(), &mode));
-  ASSERT_NE((mode & file_util::FILE_PERMISSION_USER_MASK), mode);
-  mode = file_util::FILE_PERMISSION_MASK;
-  EXPECT_TRUE(file_util::GetPosixFilePermissions(journal, &mode));
-  ASSERT_NE((mode & file_util::FILE_PERMISSION_USER_MASK), mode);
+  mode = base::FILE_PERMISSION_MASK;
+  EXPECT_TRUE(base::GetPosixFilePermissions(db_path(), &mode));
+  ASSERT_NE((mode & base::FILE_PERMISSION_USER_MASK), mode);
+  mode = base::FILE_PERMISSION_MASK;
+  EXPECT_TRUE(base::GetPosixFilePermissions(journal, &mode));
+  ASSERT_NE((mode & base::FILE_PERMISSION_USER_MASK), mode);
 
   // Re-open with restricted permissions and verify that the modes
   // changed for both the main database and the journal.
@@ -703,12 +703,12 @@ TEST_F(SQLConnectionTest, UserPermission) {
   ASSERT_TRUE(db().Open(db_path()));
   ASSERT_TRUE(base::PathExists(db_path()));
   ASSERT_TRUE(base::PathExists(journal));
-  mode = file_util::FILE_PERMISSION_MASK;
-  EXPECT_TRUE(file_util::GetPosixFilePermissions(db_path(), &mode));
-  ASSERT_EQ((mode & file_util::FILE_PERMISSION_USER_MASK), mode);
-  mode = file_util::FILE_PERMISSION_MASK;
-  EXPECT_TRUE(file_util::GetPosixFilePermissions(journal, &mode));
-  ASSERT_EQ((mode & file_util::FILE_PERMISSION_USER_MASK), mode);
+  mode = base::FILE_PERMISSION_MASK;
+  EXPECT_TRUE(base::GetPosixFilePermissions(db_path(), &mode));
+  ASSERT_EQ((mode & base::FILE_PERMISSION_USER_MASK), mode);
+  mode = base::FILE_PERMISSION_MASK;
+  EXPECT_TRUE(base::GetPosixFilePermissions(journal, &mode));
+  ASSERT_EQ((mode & base::FILE_PERMISSION_USER_MASK), mode);
 
   // Delete and re-create the database, the restriction should still apply.
   db().Close();
@@ -716,16 +716,16 @@ TEST_F(SQLConnectionTest, UserPermission) {
   ASSERT_TRUE(db().Open(db_path()));
   ASSERT_TRUE(base::PathExists(db_path()));
   ASSERT_FALSE(base::PathExists(journal));
-  mode = file_util::FILE_PERMISSION_MASK;
-  EXPECT_TRUE(file_util::GetPosixFilePermissions(db_path(), &mode));
-  ASSERT_EQ((mode & file_util::FILE_PERMISSION_USER_MASK), mode);
+  mode = base::FILE_PERMISSION_MASK;
+  EXPECT_TRUE(base::GetPosixFilePermissions(db_path(), &mode));
+  ASSERT_EQ((mode & base::FILE_PERMISSION_USER_MASK), mode);
 
   // Verify that journal creation inherits the restriction.
   EXPECT_TRUE(db().Execute("CREATE TABLE x (x)"));
   ASSERT_TRUE(base::PathExists(journal));
-  mode = file_util::FILE_PERMISSION_MASK;
-  EXPECT_TRUE(file_util::GetPosixFilePermissions(journal, &mode));
-  ASSERT_EQ((mode & file_util::FILE_PERMISSION_USER_MASK), mode);
+  mode = base::FILE_PERMISSION_MASK;
+  EXPECT_TRUE(base::GetPosixFilePermissions(journal, &mode));
+  ASSERT_EQ((mode & base::FILE_PERMISSION_USER_MASK), mode);
 }
 #endif  // defined(OS_POSIX)
 
