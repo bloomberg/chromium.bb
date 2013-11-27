@@ -1540,7 +1540,7 @@ def SafeRun(functors, combine_exceptions=False):
 
   Args:
     functors: An iterable of functors to call.
-    combine_exceptions: If set, and multipole exceptions are encountered,
+    combine_exceptions: If set, and multiple exceptions are encountered,
       SafeRun will raise a RuntimeError containing a list of all the exceptions.
       If only one exception is encountered, then the default behavior of
       re-raising the original exception with unmodified stack trace will be
