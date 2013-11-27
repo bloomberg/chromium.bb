@@ -29,7 +29,11 @@ namespace WebCore {
 // We always assume 96 CSS pixels in a CSS inch. This is the cold hard truth of the Web.
 // At high DPI, we may scale a CSS pixel, but the ratio of the CSS pixel to the so-called
 // "absolute" CSS length units like inch and pt is always fixed and never changes.
-const float cssPixelsPerInch = 96;
+const double cssPixelsPerInch = 96;
+const double cssPixelsPerCentimeter = cssPixelsPerInch / 2.54; // 2.54 cm/in
+const double cssPixelsPerMillimeter = cssPixelsPerCentimeter / 10;
+const double cssPixelsPerPoint = cssPixelsPerInch / 72;
+const double cssPixelsPerPica = cssPixelsPerInch / 6;
 
 } // namespace WebCore
 

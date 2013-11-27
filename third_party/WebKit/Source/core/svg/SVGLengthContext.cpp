@@ -111,15 +111,15 @@ float SVGLengthContext::convertValueToUserUnits(float value, SVGLengthMode mode,
     case LengthTypeEXS:
         return convertValueFromEXSToUserUnits(value, exceptionState);
     case LengthTypeCM:
-        return value * cssPixelsPerInch / 2.54f;
+        return value * cssPixelsPerCentimeter;
     case LengthTypeMM:
-        return value * cssPixelsPerInch / 25.4f;
+        return value * cssPixelsPerMillimeter;
     case LengthTypeIN:
         return value * cssPixelsPerInch;
     case LengthTypePT:
-        return value * cssPixelsPerInch / 72;
+        return value * cssPixelsPerPoint;
     case LengthTypePC:
-        return value * cssPixelsPerInch / 6;
+        return value * cssPixelsPerPica;
     }
 
     ASSERT_NOT_REACHED();
@@ -143,15 +143,15 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
     case LengthTypePX:
         return value;
     case LengthTypeCM:
-        return value * 2.54f / cssPixelsPerInch;
+        return value / cssPixelsPerCentimeter;
     case LengthTypeMM:
-        return value * 25.4f / cssPixelsPerInch;
+        return value / cssPixelsPerMillimeter;
     case LengthTypeIN:
         return value / cssPixelsPerInch;
     case LengthTypePT:
-        return value * 72 / cssPixelsPerInch;
+        return value / cssPixelsPerPoint;
     case LengthTypePC:
-        return value * 6 / cssPixelsPerInch;
+        return value / cssPixelsPerPica;
     }
 
     ASSERT_NOT_REACHED();

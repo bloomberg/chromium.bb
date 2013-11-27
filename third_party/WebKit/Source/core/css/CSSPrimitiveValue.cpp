@@ -588,20 +588,19 @@ double CSSPrimitiveValue::computeLengthDouble(const RenderStyle* style, const Re
             factor = 1.0;
             break;
         case CSS_CM:
-            factor = cssPixelsPerInch / 2.54; // (2.54 cm/in)
+            factor = cssPixelsPerCentimeter;
             break;
         case CSS_MM:
-            factor = cssPixelsPerInch / 25.4;
+            factor = cssPixelsPerMillimeter;
             break;
         case CSS_IN:
             factor = cssPixelsPerInch;
             break;
         case CSS_PT:
-            factor = cssPixelsPerInch / 72.0;
+            factor = cssPixelsPerPoint;
             break;
         case CSS_PC:
-            // 1 pc == 12 pt
-            factor = cssPixelsPerInch * 12.0 / 72.0;
+            factor = cssPixelsPerPica;
             break;
         case CSS_CALC_PERCENTAGE_WITH_LENGTH:
         case CSS_CALC_PERCENTAGE_WITH_NUMBER:
@@ -642,13 +641,13 @@ double CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(unsigned short u
     case CSS_HZ:
         break;
     case CSS_CM:
-        factor = cssPixelsPerInch / 2.54; // (2.54 cm/in)
+        factor = cssPixelsPerCentimeter;
         break;
     case CSS_DPCM:
-        factor = 2.54 / cssPixelsPerInch; // (2.54 cm/in)
+        factor = 1 / cssPixelsPerCentimeter;
         break;
     case CSS_MM:
-        factor = cssPixelsPerInch / 25.4;
+        factor = cssPixelsPerMillimeter;
         break;
     case CSS_IN:
         factor = cssPixelsPerInch;
@@ -657,10 +656,10 @@ double CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(unsigned short u
         factor = 1 / cssPixelsPerInch;
         break;
     case CSS_PT:
-        factor = cssPixelsPerInch / 72.0;
+        factor = cssPixelsPerPoint;
         break;
     case CSS_PC:
-        factor = cssPixelsPerInch * 12.0 / 72.0; // 1 pc == 12 pt
+        factor = cssPixelsPerPica;
         break;
     case CSS_RAD:
         factor = 180 / piDouble;
