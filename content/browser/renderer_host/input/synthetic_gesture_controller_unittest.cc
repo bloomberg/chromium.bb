@@ -24,6 +24,7 @@ namespace content {
 namespace {
 
 const int kFlushInputRateInMs = 16;
+const int kPointerAssumedStoppedTimeMs = 43;
 
 class MockSyntheticGesture : public SyntheticGesture {
  public:
@@ -61,7 +62,8 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
   MockSyntheticGestureTarget()
       : num_success_(0),
         num_failure_(0),
-        flush_requested_(false) {}
+        flush_requested_(false),
+        pointer_assumed_stopped_time_ms_(kPointerAssumedStoppedTimeMs) {}
   virtual ~MockSyntheticGestureTarget() {}
 
   // SyntheticGestureTarget:
@@ -90,6 +92,14 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
     return true;
   }
 
+  virtual base::TimeDelta PointerAssumedStoppedTime() const OVERRIDE {
+    return base::TimeDelta::FromMilliseconds(pointer_assumed_stopped_time_ms_);
+  }
+
+  void set_pointer_assumed_stopped_time_ms(int time_ms) {
+    pointer_assumed_stopped_time_ms_ = time_ms;
+  }
+
   int num_success() const { return num_success_; }
   int num_failure() const { return num_failure_; }
 
@@ -101,6 +111,8 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
   int num_failure_;
 
   bool flush_requested_;
+
+  int pointer_assumed_stopped_time_ms_;
 };
 
 class MockSyntheticSmoothScrollMouseTarget : public MockSyntheticGestureTarget {
@@ -247,7 +259,8 @@ class SyntheticGestureControllerTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    time_ = base::TimeTicks::Now();
+    start_time_ = base::TimeTicks::Now();
+    time_ = start_time_;
   }
 
   virtual void TearDown() OVERRIDE {
@@ -264,8 +277,11 @@ class SyntheticGestureControllerTest : public testing::Test {
     }
   }
 
+  base::TimeDelta GetTotalTime() const { return time_ - start_time_; }
+
   MockSyntheticGestureTarget* target_;
   scoped_ptr<SyntheticGestureController> controller_;
+  base::TimeTicks start_time_;
   base::TimeTicks time_;
 };
 
@@ -360,6 +376,31 @@ TEST_F(SyntheticGestureControllerTest, SmoothScrollGestureTouch) {
   EXPECT_FLOAT_EQ(params.distance,
                   static_cast<MockSyntheticSmoothScrollTouchTarget*>(target_)
                       ->scroll_distance());
+}
+
+TEST_F(SyntheticGestureControllerTest, SmoothScrollGestureTouchLongStop) {
+  CreateControllerAndTarget<MockSyntheticSmoothScrollTouchTarget>();
+
+  // Create a smooth scroll with a short distance and set the pointer assumed
+  // stopped time high, so that the stopping should dominate the time the
+  // gesture is active.
+  SyntheticSmoothScrollGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.distance = 21;
+
+  target_->set_pointer_assumed_stopped_time_ms(543);
+
+  scoped_ptr<SyntheticSmoothScrollGesture> gesture(
+      new SyntheticSmoothScrollGesture(params));
+  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  FlushInputUntilComplete();
+
+  EXPECT_EQ(1, target_->num_success());
+  EXPECT_EQ(0, target_->num_failure());
+  EXPECT_FLOAT_EQ(params.distance,
+                  static_cast<MockSyntheticSmoothScrollTouchTarget*>(target_)
+                      ->scroll_distance());
+  EXPECT_GE(GetTotalTime(), target_->PointerAssumedStoppedTime());
 }
 
 TEST_F(SyntheticGestureControllerTest, SmoothScrollGestureMouse) {

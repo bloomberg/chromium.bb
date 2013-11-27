@@ -13,79 +13,119 @@ namespace content {
 
 SyntheticSmoothScrollGesture::SyntheticSmoothScrollGesture(
     const SyntheticSmoothScrollGestureParams& params)
-    : params_(params), current_y_(params_.anchor.y()) {}
+    : params_(params),
+      current_y_(params_.anchor.y()),
+      gesture_source_type_(SyntheticGestureParams::DEFAULT_INPUT),
+      state_(SETUP) {}
 
 SyntheticSmoothScrollGesture::~SyntheticSmoothScrollGesture() {}
 
 SyntheticGesture::Result SyntheticSmoothScrollGesture::ForwardInputEvents(
     const base::TimeDelta& interval, SyntheticGestureTarget* target) {
+  if (state_ == SETUP) {
+    gesture_source_type_ = params_.gesture_source_type;
+    if (gesture_source_type_ == SyntheticGestureParams::DEFAULT_INPUT)
+      gesture_source_type_ = target->GetDefaultSyntheticGestureSourceType();
 
-  SyntheticGestureParams::GestureSourceType source =
-      params_.gesture_source_type;
-  if (source == SyntheticGestureParams::DEFAULT_INPUT)
-    source = target->GetDefaultSyntheticGestureSourceType();
+    if (!target->SupportsSyntheticGestureSourceType(gesture_source_type_))
+      return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_SUPPORTED_BY_PLATFORM;
 
-  if (!target->SupportsSyntheticGestureSourceType(source))
-    return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_SUPPORTED_BY_PLATFORM;
+    state_ = STARTED;
+  }
 
-  if (source == SyntheticGestureParams::TOUCH_INPUT)
-    return ForwardTouchInputEvents(interval, target);
-  else if (source == SyntheticGestureParams::MOUSE_INPUT)
-    return ForwardMouseInputEvents(interval, target);
+  DCHECK_NE(gesture_source_type_, SyntheticGestureParams::DEFAULT_INPUT);
+  if (gesture_source_type_ == SyntheticGestureParams::TOUCH_INPUT)
+    ForwardTouchInputEvents(interval, target);
+  else if (gesture_source_type_ == SyntheticGestureParams::MOUSE_INPUT)
+    ForwardMouseInputEvents(interval, target);
   else
     return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED;
+
+  return (state_ == DONE) ? SyntheticGesture::GESTURE_FINISHED
+                          : SyntheticGesture::GESTURE_RUNNING;
 }
 
-SyntheticGesture::Result SyntheticSmoothScrollGesture::ForwardTouchInputEvents(
+void SyntheticSmoothScrollGesture::ForwardTouchInputEvents(
     const base::TimeDelta& interval, SyntheticGestureTarget* target) {
-  if (HasFinished())
-    return SyntheticGesture::GESTURE_FINISHED;
+  switch (state_) {
+    case STARTED:
+      // Check for an early finish.
+      if (HasScrolledEntireDistance()) {
+        state_ = DONE;
+        break;
+      }
+      touch_event_.PressPoint(params_.anchor.x(), current_y_);
+      ForwardTouchEvent(target);
+      state_ = MOVING;
+      break;
+    case MOVING:
+      current_y_ += GetPositionDelta(interval);
+      touch_event_.MovePoint(0, params_.anchor.x(), current_y_);
+      ForwardTouchEvent(target);
 
-  if (current_y_ == params_.anchor.y()) {
-    touch_event_.PressPoint(params_.anchor.x(), current_y_);
-    ForwardTouchEvent(target);
+      if (HasScrolledEntireDistance())
+        state_ = STOPPING;
+      break;
+    case STOPPING:
+      total_stopping_wait_time_ += interval;
+      if (total_stopping_wait_time_ >= target->PointerAssumedStoppedTime()) {
+        // Send one last move event, but don't change the location. Without this
+        // we'd still sometimes cause a fling on Android.
+        ForwardTouchEvent(target);
+        touch_event_.ReleasePoint(0);
+        ForwardTouchEvent(target);
+        state_ = DONE;
+      }
+      break;
+    case SETUP:
+      NOTREACHED()
+          << "State STARTED invalid for synthetic scroll using touch input.";
+    case DONE:
+      NOTREACHED()
+          << "State DONE invalid for synthetic scroll using touch input.";
   }
-
-  current_y_ += GetPositionDelta(interval);
-  touch_event_.MovePoint(0, params_.anchor.x(), current_y_);
-  ForwardTouchEvent(target);
-
-  if (HasFinished()) {
-    touch_event_.ReleasePoint(0);
-    ForwardTouchEvent(target);
-    return SyntheticGesture::GESTURE_FINISHED;
-  }
-
-  return SyntheticGesture::GESTURE_RUNNING;
 }
 
-SyntheticGesture::Result SyntheticSmoothScrollGesture::ForwardMouseInputEvents(
+void SyntheticSmoothScrollGesture::ForwardMouseInputEvents(
     const base::TimeDelta& interval, SyntheticGestureTarget* target) {
-  if (HasFinished())
-    return SyntheticGesture::GESTURE_FINISHED;
-
-  // Even though WebMouseWheelEvents take floating point deltas, internally the
-  // scroll position is stored as an integer. Flooring the deltas ensures that
-  // the gesture state, especially |current_y_|, is consistent with the internal
-  // state.
-  float delta = floor(GetPositionDelta(interval));
-  current_y_ += delta;
-  ForwardMouseWheelEvent(target, delta);
-
-  if (HasFinished())
-    return SyntheticGesture::GESTURE_FINISHED;
-
-  return SyntheticGesture::GESTURE_RUNNING;
+  switch (state_) {
+    case STARTED:
+      // Check for an early finish.
+      if (HasScrolledEntireDistance()) {
+        state_ = DONE;
+        break;
+      }
+      state_ = MOVING;
+      // Fall through to forward the first event.
+    case MOVING:
+      {
+        const float delta = floor(GetPositionDelta(interval));
+        current_y_ += delta;
+        ForwardMouseWheelEvent(target, delta);
+      }
+      if (HasScrolledEntireDistance())
+        state_ = DONE;
+      break;
+    case SETUP:
+      NOTREACHED()
+          << "State STARTED invalid for synthetic scroll using touch input.";
+    case STOPPING:
+      NOTREACHED()
+          << "State STOPPING invalid for synthetic scroll using touch input.";
+    case DONE:
+      NOTREACHED()
+          << "State DONE invalid for synthetic scroll using touch input.";
+    }
 }
 
 void SyntheticSmoothScrollGesture::ForwardTouchEvent(
-    SyntheticGestureTarget* target) {
+    SyntheticGestureTarget* target) const {
   target->DispatchInputEventToPlatform(
       InputEvent(touch_event_, ui::LatencyInfo(), false));
 }
 
 void SyntheticSmoothScrollGesture::ForwardMouseWheelEvent(
-    SyntheticGestureTarget* target, float delta) {
+    SyntheticGestureTarget* target, float delta) const {
   blink::WebMouseWheelEvent mouse_wheel_event =
       SyntheticWebMouseWheelEventBuilder::Build(0, delta, 0, false);
 
@@ -118,7 +158,7 @@ float SyntheticSmoothScrollGesture::ComputeAbsoluteRemainingDistance() const {
   return abs_remaining_distance;
 }
 
-bool SyntheticSmoothScrollGesture::HasFinished() const {
+bool SyntheticSmoothScrollGesture::HasScrolledEntireDistance() const {
   return ComputeAbsoluteRemainingDistance() == 0;
 }
 

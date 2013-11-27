@@ -19,6 +19,13 @@ using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 
 namespace content {
+namespace {
+
+// This value was determined experimentally. It was sufficient to not cause a
+// fling on Android.
+const int kPointerAssumedStoppedTimeMs = 50;
+
+}  // namespace
 
 SyntheticGestureTargetBase::SyntheticGestureTargetBase(
     RenderWidgetHostImpl* host)
@@ -96,6 +103,11 @@ bool SyntheticGestureTargetBase::SupportsSyntheticGestureSourceType(
     SyntheticGestureParams::GestureSourceType gesture_source_type) const {
   return gesture_source_type == SyntheticGestureParams::MOUSE_INPUT ||
       gesture_source_type == SyntheticGestureParams::TOUCH_INPUT;
+}
+
+base::TimeDelta SyntheticGestureTargetBase::PointerAssumedStoppedTime()
+    const {
+  return base::TimeDelta::FromMilliseconds(kPointerAssumedStoppedTimeMs);
 }
 
 }  // namespace content

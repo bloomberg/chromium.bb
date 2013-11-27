@@ -53,6 +53,8 @@ class SyntheticGestureTargetBase : public SyntheticGestureTarget {
       SyntheticGestureParams::GestureSourceType gesture_source_type) const
       OVERRIDE;
 
+  virtual base::TimeDelta PointerAssumedStoppedTime() const OVERRIDE;
+
  protected:
   RenderWidgetHostImpl* render_widget_host() { return host_; }
 
