@@ -44,6 +44,9 @@ std::string GDataErrorCodeToString(GDataErrorCode error) {
     case HTTP_CONFLICT:
       return"HTTP_CONFLICT";
 
+    case HTTP_GONE:
+      return "HTTP_GONE";
+
     case HTTP_LENGTH_REQUIRED:
       return"HTTP_LENGTH_REQUIRED";
 

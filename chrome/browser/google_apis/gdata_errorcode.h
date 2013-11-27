@@ -22,6 +22,7 @@ enum GDataErrorCode {
   HTTP_FORBIDDEN             = 403,
   HTTP_NOT_FOUND             = 404,
   HTTP_CONFLICT              = 409,
+  HTTP_GONE                  = 410,
   HTTP_LENGTH_REQUIRED       = 411,
   HTTP_PRECONDITION          = 412,
   HTTP_INTERNAL_SERVER_ERROR = 500,

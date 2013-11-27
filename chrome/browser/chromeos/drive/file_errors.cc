@@ -146,6 +146,7 @@ FileError GDataToFileError(google_apis::GDataErrorCode status) {
     case google_apis::HTTP_FORBIDDEN:
       return FILE_ERROR_ACCESS_DENIED;
     case google_apis::HTTP_NOT_FOUND:
+    case google_apis::HTTP_GONE:
       return FILE_ERROR_NOT_FOUND;
     case google_apis::HTTP_INTERNAL_SERVER_ERROR:
     case google_apis::HTTP_SERVICE_UNAVAILABLE:

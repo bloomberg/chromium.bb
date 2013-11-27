@@ -53,6 +53,7 @@ SyncStatusCode GDataErrorCodeToSyncStatusCode(
       return SYNC_STATUS_SERVICE_TEMPORARILY_UNAVAILABLE;
 
     case google_apis::HTTP_NOT_FOUND:
+    case google_apis::HTTP_GONE:
       return SYNC_FILE_ERROR_NOT_FOUND;
 
     case google_apis::GDATA_FILE_ERROR:
