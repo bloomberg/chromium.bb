@@ -3097,8 +3097,15 @@ void RenderViewImpl::didHandleGestureEvent(
     const WebGestureEvent& event,
     bool event_cancelled) {
   RenderWidget::didHandleGestureEvent(event, event_cancelled);
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
-                    DidHandleGestureEvent(event));
+
+  if (event.type != blink::WebGestureEvent::GestureTap)
+    return;
+
+  blink::WebTextInputType text_input_type =
+      GetWebView()->textInputInfo().type;
+
+  Send(new ViewHostMsg_FocusedNodeTouched(
+      routing_id(), text_input_type != blink::WebTextInputTypeNone));
 }
 
 void RenderViewImpl::initializeLayerTreeView() {

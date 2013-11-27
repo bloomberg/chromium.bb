@@ -31,10 +31,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 
-#if defined(OS_WIN)
-#include "base/win/win_util.h"
-#endif
-
 using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(CoreTabHelper);
@@ -195,23 +191,11 @@ void CoreTabHelper::BeforeUnloadDialogCancelled() {
 bool CoreTabHelper::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(CoreTabHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusedNodeTouched,
-                        OnFocusedNodeTouched)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_RequestThumbnailForContextNode_ACK,
                         OnRequestThumbnailForContextNodeACK)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void CoreTabHelper::OnFocusedNodeTouched(bool editable) {
-#if defined(OS_WIN) && defined(USE_AURA)
-  if (editable) {
-    base::win::DisplayVirtualKeyboard();
-  } else {
-    base::win::DismissVirtualKeyboard();
-  }
-#endif  // OS_WIN && USE_AURA
 }
 
 // Handles the image thumbnail for the context node, composes a image search

@@ -84,6 +84,8 @@
 #include "content/browser/renderer_host/popup_menu_helper_mac.h"
 #elif defined(OS_ANDROID)
 #include "content/browser/media/android/browser_media_player_manager.h"
+#elif defined(OS_WIN)
+#include "base/win/win_util.h"
 #endif
 
 using base::TimeDelta;
@@ -1262,6 +1264,7 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DomOperationResponse,
                         OnDomOperationResponse)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Events, OnAccessibilityEvents)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(
         handled = RenderWidgetHostImpl::OnMessageReceived(msg))
@@ -2234,6 +2237,16 @@ void RenderViewHostImpl::OnDomOperationResponse(
       NOTIFICATION_DOM_OPERATION_RESPONSE,
       Source<RenderViewHost>(this),
       Details<DomOperationNotificationDetails>(&details));
+}
+
+void RenderViewHostImpl::OnFocusedNodeTouched(bool editable) {
+#if defined(OS_WIN) && defined(USE_AURA)
+  if (editable) {
+    base::win::DisplayVirtualKeyboard();
+  } else {
+    base::win::DismissVirtualKeyboard();
+  }
+#endif
 }
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
