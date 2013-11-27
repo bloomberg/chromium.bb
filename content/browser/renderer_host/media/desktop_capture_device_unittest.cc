@@ -60,14 +60,42 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
                     int frame_rate));
 };
 
+// DesktopFrame wrapper that flips wrapped frame upside down by inverting
+// stride.
+class InvertedDesktopFrame : public webrtc::DesktopFrame {
+ public:
+  // Takes ownership of |frame|.
+  InvertedDesktopFrame(webrtc::DesktopFrame* frame)
+      : webrtc::DesktopFrame(
+            frame->size(), -frame->stride(),
+            frame->data() + (frame->size().height() - 1) * frame->stride(),
+            frame->shared_memory()),
+        original_frame_(frame) {
+    set_dpi(frame->dpi());
+    set_capture_time_ms(frame->capture_time_ms());
+    mutable_updated_region()->Swap(frame->mutable_updated_region());
+  }
+  virtual ~InvertedDesktopFrame() {}
+
+ private:
+  scoped_ptr<webrtc::DesktopFrame> original_frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(InvertedDesktopFrame);
+};
+
 // TODO(sergeyu): Move this to a separate file where it can be reused.
 class FakeScreenCapturer : public webrtc::ScreenCapturer {
  public:
   FakeScreenCapturer()
       : callback_(NULL),
-        frame_index_(0) {
+        frame_index_(0),
+        generate_inverted_frames_(false) {
   }
   virtual ~FakeScreenCapturer() {}
+
+  void set_generate_inverted_frames(bool generate_inverted_frames) {
+    generate_inverted_frames_ = generate_inverted_frames;
+  }
 
   // VideoFrameCapturer interface.
   virtual void Start(Callback* callback) OVERRIDE {
@@ -82,7 +110,11 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
       size = webrtc::DesktopSize(kTestFrameWidth2, kTestFrameHeight2);
     }
     frame_index_++;
-    callback_->OnCaptureCompleted(new webrtc::BasicDesktopFrame(size));
+
+    webrtc::DesktopFrame* frame = new webrtc::BasicDesktopFrame(size);
+    if (generate_inverted_frames_)
+      frame = new InvertedDesktopFrame(frame);
+    callback_->OnCaptureCompleted(frame);
   }
 
   virtual void SetMouseShapeObserver(
@@ -92,6 +124,7 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
  private:
   Callback* callback_;
   int frame_index_;
+  bool generate_inverted_frames_;
 };
 
 class DesktopCaptureDeviceTest : public testing::Test {
@@ -151,6 +184,37 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   worker_pool_->FlushForTesting();
 }
 
+// Verify that frames are flipped when the capturer generates inverted frames.
+TEST_F(DesktopCaptureDeviceTest, InvertedFrame) {
+  FakeScreenCapturer* mock_capturer = new FakeScreenCapturer();
+  mock_capturer->set_generate_inverted_frames(true);
+
+  DesktopCaptureDevice capture_device(
+      worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()),
+      scoped_ptr<webrtc::DesktopCapturer>(mock_capturer));
+  base::WaitableEvent done_event(false, false);
+
+  scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
+  EXPECT_CALL(*client, OnError()).Times(0);
+
+  // Expect that |flop_vert| is set to true.
+  EXPECT_CALL(*client, OnIncomingCapturedFrame(_, _, _, _, true, false, _))
+      .WillRepeatedly(
+           InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal));
+
+  media::VideoCaptureParams capture_params;
+  capture_params.requested_format.frame_size.SetSize(640, 480);
+  capture_params.requested_format.frame_rate = kFrameRate;
+  capture_params.requested_format.pixel_format = media::PIXEL_FORMAT_I420;
+  capture_params.allow_resolution_change = false;
+  capture_device.AllocateAndStart(
+      capture_params, client.PassAs<media::VideoCaptureDevice::Client>());
+  EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
+  capture_device.StopAndDeAllocate();
+
+  worker_pool_->FlushForTesting();
+}
+
 // Test that screen capturer behaves correctly if the source frame size changes
 // but the caller cannot cope with variable resolution output.
 TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
@@ -166,7 +230,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
 
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError()).Times(0);
-  EXPECT_CALL(*client, OnIncomingCapturedFrame(_, _, _, _, _, _, _))
+  EXPECT_CALL(*client, OnIncomingCapturedFrame(_, _, _, _, false, false, _))
       .WillRepeatedly(
            DoAll(SaveArg<1>(&frame_size),
                  SaveArg<6>(&format),

@@ -312,11 +312,19 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
   int destination_width = new_width;
   int destination_height = new_height;
   libyuv::FourCC origin_colorspace = libyuv::FOURCC_ANY;
+
+  // When rotating by 90 and 270 degrees swap |flip_horiz| and |flip_vert|
+  // because ConvertToI420() flips image before rotation, while
+  // OnIncomingCapturedFrame() interface assumes that rotation happens before
+  // flips.
+  if (rotation == 90 || rotation == 270)
+    std::swap(flip_horiz, flip_vert);
+
   // Assuming rotation happens first and flips next, we can consolidate both
   // vertical and horizontal flips together with rotation into two variables:
-  // new_rotation = (rotation + 180 * vertical_flip) modulo 360
+  // new_rotation = (rotation + 180 * horizontal_flip) modulo 360
   // new_vertical_flip = horizontal_flip XOR vertical_flip
-  int new_rotation_angle = (rotation + 180 * flip_vert) % 360;
+  int new_rotation_angle = (rotation + 180 * flip_horiz) % 360;
   libyuv::RotationMode rotation_mode = libyuv::kRotate0;
   if (new_rotation_angle == 90)
     rotation_mode = libyuv::kRotate90;
