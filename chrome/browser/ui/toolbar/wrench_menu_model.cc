@@ -191,15 +191,21 @@ ToolsMenuModel::ToolsMenuModel(ui::SimpleMenuModel::Delegate* delegate,
 ToolsMenuModel::~ToolsMenuModel() {}
 
 void ToolsMenuModel::Build(Browser* browser) {
+  bool show_create_shortcuts = true;
+#if defined(OS_CHROMEOS) || defined(OS_MACOSX)
+  show_create_shortcuts = false;
+#elif defined(USE_ASH)
+  if (browser->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
+    show_create_shortcuts = false;
+#endif
+
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableStreamlinedHostedApps)) {
     AddItemWithStringId(IDC_CREATE_HOSTED_APP, IDS_CREATE_HOSTED_APP);
     AddSeparator(ui::NORMAL_SEPARATOR);
-  } else {
-#if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
+  } else if (show_create_shortcuts) {
     AddItemWithStringId(IDC_CREATE_SHORTCUTS, IDS_CREATE_SHORTCUTS);
     AddSeparator(ui::NORMAL_SEPARATOR);
-#endif
   }
 
   AddItemWithStringId(IDC_MANAGE_EXTENSIONS, IDS_SHOW_EXTENSIONS);
