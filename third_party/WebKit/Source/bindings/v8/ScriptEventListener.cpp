@@ -44,10 +44,10 @@
 
 namespace WebCore {
 
-static const String& eventParameterName(bool isSVGEvent)
+static const AtomicString& eventParameterName(bool isSVGEvent)
 {
-    DEFINE_STATIC_LOCAL(const String, eventString, ("event"));
-    DEFINE_STATIC_LOCAL(const String, evtString, ("evt"));
+    DEFINE_STATIC_LOCAL(const AtomicString, eventString, ("event"));
+    DEFINE_STATIC_LOCAL(const AtomicString, evtString, ("evt"));
     return isSVGEvent ? evtString : eventString;
 }
 
@@ -73,7 +73,7 @@ PassRefPtr<V8LazyEventListener> createAttributeEventListener(Node* node, const Q
         isolate = v8::Isolate::GetCurrent();
     }
 
-    return V8LazyEventListener::create(name.localName().string(), eventParameterName(node->isSVGElement()), value, sourceURL, position, node, isolate);
+    return V8LazyEventListener::create(name.localName(), eventParameterName(node->isSVGElement()), value, sourceURL, position, node, isolate);
 }
 
 PassRefPtr<V8LazyEventListener> createAttributeEventListener(Frame* frame, const QualifiedName& name, const AtomicString& value)
@@ -91,7 +91,7 @@ PassRefPtr<V8LazyEventListener> createAttributeEventListener(Frame* frame, const
     TextPosition position = scriptController.eventHandlerPosition();
     String sourceURL = frame->document()->url().string();
 
-    return V8LazyEventListener::create(name.localName().string(), eventParameterName(frame->document()->isSVGDocument()), value, sourceURL, position, 0, toIsolate(frame));
+    return V8LazyEventListener::create(name.localName(), eventParameterName(frame->document()->isSVGDocument()), value, sourceURL, position, 0, toIsolate(frame));
 }
 
 String eventListenerHandlerBody(Document* document, EventListener* listener)
