@@ -385,10 +385,15 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
 
-    // FIXME: Handle exceptions properly.
-    String urlString = toWebCoreStringWithUndefinedOrNullCheck(info[0]);
-    AtomicString frameName = (info[1]->IsUndefined() || info[1]->IsNull()) ? "_blank" : toWebCoreAtomicString(info[1]);
-    String windowFeaturesString = toWebCoreStringWithUndefinedOrNullCheck(info[2]);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, urlString, info[0]);
+    AtomicString frameName;
+    if (info[1]->IsUndefined() || info[1]->IsNull()) {
+        frameName = "_blank";
+    } else {
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, frameNameResource, info[1]);
+        frameName = frameNameResource;
+    }
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, windowFeaturesString, info[2]);
 
     RefPtr<DOMWindow> openedWindow = impl->open(urlString, frameName, windowFeaturesString, activeDOMWindow(), firstDOMWindow());
     if (!openedWindow)

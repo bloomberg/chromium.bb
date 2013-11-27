@@ -223,15 +223,6 @@ namespace WebCore {
         return stringResource;
     }
 
-    // FIXME: See the above comment.
-    inline AtomicString toWebCoreAtomicString(v8::Handle<v8::Value> value)
-    {
-        V8StringResource<> stringResource(value);
-        if (!stringResource.prepare())
-            return AtomicString();
-        return stringResource;
-    }
-
     // Convert a string to a V8 string.
     // Return a V8 external string that shares the underlying buffer with the given
     // WebCore string. The reference counting mechanism is used to keep the
