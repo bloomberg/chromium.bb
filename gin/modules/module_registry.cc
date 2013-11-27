@@ -111,7 +111,7 @@ ModuleRegistry* ModuleRegistry::From(v8::Handle<Context> context) {
   v8::Handle<String> key = GetHiddenValueKey(isolate);
   v8::Handle<Value> value = context->Global()->GetHiddenValue(key);
   v8::Handle<External> external;
-  if (value.IsEmpty() || !ConvertFromV8(value, &external)) {
+  if (value.IsEmpty() || !ConvertFromV8(isolate, value, &external)) {
     PerContextData* data = PerContextData::From(context);
     if (!data)
       return NULL;
@@ -181,12 +181,13 @@ void ModuleRegistry::Load(Isolate* isolate, scoped_ptr<PendingModule> pending) {
   v8::Handle<Value> module = Local<Value>::New(isolate, pending->factory);
 
   v8::Handle<Function> factory;
-  if (ConvertFromV8(module, &factory)) {
+  if (ConvertFromV8(isolate, module, &factory)) {
     PerContextData* data = PerContextData::From(isolate->GetCurrentContext());
     Runner* runner = data->runner();
     module = runner->Call(factory, runner->global(), argc, argv.data());
     if (pending->id.empty())
-      ConvertFromV8(factory->GetScriptOrigin().ResourceName(), &pending->id);
+      ConvertFromV8(isolate, factory->GetScriptOrigin().ResourceName(),
+                    &pending->id);
   }
 
   RegisterModule(isolate, pending->id, module);

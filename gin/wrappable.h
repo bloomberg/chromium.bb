@@ -72,7 +72,7 @@ template<>
 struct Converter<Wrappable*> {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     Wrappable* val);
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate, v8::Handle<v8::Value> val,
                      Wrappable** out);
 };
 
@@ -81,9 +81,9 @@ struct WrappableConverter {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate, T* val) {
     return Converter<Wrappable*>::ToV8(isolate, val);
   }
-  static bool FromV8(v8::Handle<v8::Value> val, T** out) {
+  static bool FromV8(v8::Isolate* isolate, v8::Handle<v8::Value> val, T** out) {
     Wrappable* wrappable = 0;
-    if (!Converter<Wrappable*>::FromV8(val, &wrappable)
+    if (!Converter<Wrappable*>::FromV8(isolate, val, &wrappable)
         || wrappable->GetWrapperInfo() != &T::kWrapperInfo)
       return false;
     // Currently we require that you unwrap to the exact runtime type of the

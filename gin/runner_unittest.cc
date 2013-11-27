@@ -28,7 +28,7 @@ TEST(RunnerTest, Run) {
   runner.Run(source, "test_data.js");
 
   std::string result;
-  EXPECT_TRUE(Converter<std::string>::FromV8(
+  EXPECT_TRUE(Converter<std::string>::FromV8(isolate,
       runner.global()->Get(StringToV8(isolate, "result")),
       &result));
   EXPECT_EQ("PASS", result);

@@ -98,7 +98,7 @@ TEST_F(WrappableTest, WrapAndUnwrap) {
   EXPECT_FALSE(wrapper.IsEmpty());
 
   MyObject* unwrapped = 0;
-  EXPECT_TRUE(ConvertFromV8(wrapper, &unwrapped));
+  EXPECT_TRUE(ConvertFromV8(isolate, wrapper, &unwrapped));
   EXPECT_EQ(obj, unwrapped);
 }
 
@@ -124,7 +124,7 @@ TEST_F(WrappableTest, GetAndSetProperty) {
   v8::Handle<v8::Value> val = script->Run();
   EXPECT_FALSE(val.IsEmpty());
   v8::Handle<v8::Function> func;
-  EXPECT_TRUE(ConvertFromV8(val, &func));
+  EXPECT_TRUE(ConvertFromV8(isolate, val, &func));
   v8::Handle<v8::Value> argv[] = {
     ConvertToV8(isolate, obj.get()),
   };

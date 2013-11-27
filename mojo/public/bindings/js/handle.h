@@ -14,7 +14,7 @@ template<>
 struct Converter<mojo::Handle> {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     const mojo::Handle& val);
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate, v8::Handle<v8::Value> val,
                      mojo::Handle* out);
 };
 

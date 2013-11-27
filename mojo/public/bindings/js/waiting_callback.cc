@@ -62,7 +62,7 @@ void WaitingCallback::OnHandleReady(MojoResult result) {
   v8::Handle<v8::Value> hidden_value =
       GetWrapper(isolate)->GetHiddenValue(GetHiddenPropertyName(isolate));
   v8::Handle<v8::Function> callback;
-  CHECK(gin::ConvertFromV8(hidden_value, &callback));
+  CHECK(gin::ConvertFromV8(isolate, hidden_value, &callback));
 
   v8::Handle<v8::Value> args[] = { gin::ConvertToV8(isolate, result) };
   runner_->Call(callback, runner_->global(), 1, args);

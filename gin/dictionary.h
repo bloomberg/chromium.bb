@@ -32,7 +32,7 @@ class Dictionary {
   template<typename T>
   bool Get(const std::string& key, T* out) {
     v8::Handle<v8::Value> val = object_->Get(StringToV8(isolate_, key));
-    return ConvertFromV8(val, out);
+    return ConvertFromV8(isolate_, val, out);
   }
 
   template<typename T>
@@ -45,6 +45,7 @@ class Dictionary {
  private:
   friend struct Converter<Dictionary>;
 
+  // TODO(aa): Remove this. Instead, get via FromV8(), Set(), and Get().
   v8::Isolate* isolate_;
   v8::Handle<v8::Object> object_;
 };
@@ -53,7 +54,8 @@ template<>
 struct Converter<Dictionary> {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     Dictionary val);
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Handle<v8::Value> val,
                      Dictionary* out);
 };
 

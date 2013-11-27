@@ -9,9 +9,16 @@
 
 namespace gin {
 
+Arguments::Arguments()
+    : isolate_(NULL),
+      info_(NULL),
+      next_(0),
+      insufficient_arguments_(false) {
+}
+
 Arguments::Arguments(const v8::FunctionCallbackInfo<v8::Value>& info)
     : isolate_(info.GetIsolate()),
-      info_(info),
+      info_(&info),
       next_(0),
       insufficient_arguments_(false) {
 }
@@ -20,9 +27,9 @@ Arguments::~Arguments() {
 }
 
 v8::Handle<v8::Value> Arguments::PeekNext() {
-  if (next_ >= info_.Length())
+  if (next_ >= info_->Length())
     return v8::Handle<v8::Value>();
-  return info_[next_];
+  return (*info_)[next_];
 }
 
 void Arguments::ThrowError() {
@@ -36,6 +43,12 @@ void Arguments::ThrowError() {
 void Arguments::ThrowTypeError(const std::string& message) {
   isolate_->ThrowException(v8::Exception::TypeError(
       StringToV8(isolate_, message)));
+}
+
+template<>
+bool Arguments::GetNext<Arguments>(Arguments* out) {
+  *out = *this;
+  return true;
 }
 
 }  // namespace gin

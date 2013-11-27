@@ -24,6 +24,7 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
 
 class ArrayBuffer {
  public:
+  ArrayBuffer();
   explicit ArrayBuffer(v8::Isolate* isolate);
   ArrayBuffer(v8::Isolate* isolate, v8::Handle<v8::ArrayBuffer> buffer);
   ~ArrayBuffer();
@@ -31,26 +32,25 @@ class ArrayBuffer {
   void* bytes() const { return bytes_; }
   size_t num_bytes() const { return num_bytes_; }
 
-  v8::Isolate* isolate() const { return isolate_; }
-
  private:
   class Private;
 
-  v8::Isolate* isolate_;
   scoped_refptr<Private> private_;
   void* bytes_;
   size_t num_bytes_;
+
+  DISALLOW_COPY(ArrayBuffer);
 };
 
 template<>
 struct Converter<ArrayBuffer> {
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate, v8::Handle<v8::Value> val,
                      ArrayBuffer* out);
 };
 
 class ArrayBufferView {
  public:
-  explicit ArrayBufferView(v8::Isolate* isolate);
+  ArrayBufferView();
   ArrayBufferView(v8::Isolate* isolate, v8::Handle<v8::ArrayBufferView> view);
   ~ArrayBufferView();
 
@@ -59,17 +59,17 @@ class ArrayBufferView {
   }
   size_t num_bytes() const { return num_bytes_; }
 
-  v8::Isolate* isolate() const { return array_buffer_.isolate(); }
-
  private:
   ArrayBuffer array_buffer_;
   size_t offset_;
   size_t num_bytes_;
+
+  DISALLOW_COPY(ArrayBufferView);
 };
 
 template<>
 struct Converter<ArrayBufferView> {
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate, v8::Handle<v8::Value> val,
                      ArrayBufferView* out);
 };
 

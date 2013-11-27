@@ -30,11 +30,12 @@ v8::Handle<v8::Value> Converter<Dictionary>::ToV8(v8::Isolate* isolate,
   return val.object_;
 }
 
-bool Converter<Dictionary>::FromV8(v8::Handle<v8::Value> val,
+bool Converter<Dictionary>::FromV8(v8::Isolate* isolate,
+                                   v8::Handle<v8::Value> val,
                                    Dictionary* out) {
   if (!val->IsObject())
     return false;
-  *out = Dictionary(out->isolate(), v8::Handle<v8::Object>::Cast(val));
+  *out = Dictionary(isolate, v8::Handle<v8::Object>::Cast(val));
   return true;
 }
 

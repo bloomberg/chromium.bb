@@ -112,16 +112,14 @@ void ArrayBuffer::Private::WeakCallback(
 
 // ArrayBuffer ----------------------------------------------------------------
 
-ArrayBuffer::ArrayBuffer(v8::Isolate* isolate)
-    : isolate_(isolate),
-      bytes_(0),
+ArrayBuffer::ArrayBuffer()
+    : bytes_(0),
       num_bytes_(0) {
 }
 
 ArrayBuffer::ArrayBuffer(v8::Isolate* isolate,
-                         v8::Handle<v8::ArrayBuffer> array)
-    : isolate_(isolate) {
-  private_ = ArrayBuffer::Private::From(isolate_, array);
+                         v8::Handle<v8::ArrayBuffer> array) {
+  private_ = ArrayBuffer::Private::From(isolate, array);
   bytes_ = private_->buffer();
   num_bytes_ = private_->length();
 }
@@ -131,19 +129,19 @@ ArrayBuffer::~ArrayBuffer() {
 
 // Converter<ArrayBuffer> -----------------------------------------------------
 
-bool Converter<ArrayBuffer>::FromV8(v8::Handle<v8::Value> val,
+bool Converter<ArrayBuffer>::FromV8(v8::Isolate* isolate,
+                                    v8::Handle<v8::Value> val,
                                     ArrayBuffer* out) {
   if (!val->IsArrayBuffer())
     return false;
-  *out = ArrayBuffer(out->isolate(), v8::Handle<v8::ArrayBuffer>::Cast(val));
+  *out = ArrayBuffer(isolate, v8::Handle<v8::ArrayBuffer>::Cast(val));
   return true;
 }
 
 // ArrayBufferView ------------------------------------------------------------
 
-ArrayBufferView::ArrayBufferView(v8::Isolate* isolate)
-    : array_buffer_(isolate),
-      offset_(0),
+ArrayBufferView::ArrayBufferView()
+    : offset_(0),
       num_bytes_(0) {
 }
 
@@ -159,12 +157,12 @@ ArrayBufferView::~ArrayBufferView() {
 
 // Converter<ArrayBufferView> -------------------------------------------------
 
-bool Converter<ArrayBufferView>::FromV8(v8::Handle<v8::Value> val,
+bool Converter<ArrayBufferView>::FromV8(v8::Isolate* isolate,
+                                        v8::Handle<v8::Value> val,
                                         ArrayBufferView* out) {
   if (!val->IsArrayBufferView())
     return false;
-  *out = ArrayBufferView(out->isolate(),
-                         v8::Handle<v8::ArrayBufferView>::Cast(val));
+  *out = ArrayBufferView(isolate, v8::Handle<v8::ArrayBufferView>::Cast(val));
   return true;
 }
 

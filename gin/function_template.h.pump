@@ -5,7 +5,7 @@ $$
 $$ http://code.google.com/p/googletest/wiki/PumpManual
 $$
 
-$var MAX_ARITY = 3
+$var MAX_ARITY = 4
 
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
@@ -48,7 +48,6 @@ struct RemoveConstRef<const T&> {
 // JavaScript references in V8.
 class CallbackHolderBase : public Wrappable {
  public:
-  static void EnsureRegistered(PerIsolateData* isolate_data);
   virtual WrapperInfo* GetWrapperInfo() OVERRIDE;
   static WrapperInfo kWrapperInfo;
  protected:
@@ -145,6 +144,11 @@ $for ARG  ||
 ]]
 
 }  // namespace internal
+
+
+// This should be called once per-isolate to initialize the function template
+// system.
+void InitFunctionTemplates(PerIsolateData* isolate_data);
 
 
 // This has to be outside the internal namespace because template

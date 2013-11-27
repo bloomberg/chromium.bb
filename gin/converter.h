@@ -19,7 +19,8 @@ template<>
 struct Converter<bool> {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     bool val);
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Handle<v8::Value> val,
                      bool* out);
 };
 
@@ -27,7 +28,8 @@ template<>
 struct Converter<int32_t> {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     int32_t val);
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Handle<v8::Value> val,
                      int32_t* out);
 };
 
@@ -35,7 +37,8 @@ template<>
 struct Converter<uint32_t> {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     uint32_t val);
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Handle<v8::Value> val,
                      uint32_t* out);
 };
 
@@ -44,7 +47,8 @@ struct Converter<int64_t> {
   // Warning: JavaScript cannot represent 64 integers precisely.
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     int64_t val);
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Handle<v8::Value> val,
                      int64_t* out);
 };
 
@@ -53,7 +57,8 @@ struct Converter<uint64_t> {
   // Warning: JavaScript cannot represent 64 integers precisely.
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     uint64_t val);
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Handle<v8::Value> val,
                      uint64_t* out);
 };
 
@@ -61,7 +66,8 @@ template<>
 struct Converter<double> {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     double val);
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Handle<v8::Value> val,
                      double* out);
 };
 
@@ -69,13 +75,15 @@ template<>
 struct Converter<std::string> {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     const std::string& val);
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Handle<v8::Value> val,
                      std::string* out);
 };
 
 template<>
 struct Converter<v8::Handle<v8::Function> > {
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Handle<v8::Value> val,
                      v8::Handle<v8::Function>* out);
 };
 
@@ -83,7 +91,8 @@ template<>
 struct Converter<v8::Handle<v8::Object> > {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     v8::Handle<v8::Object> val);
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Handle<v8::Value> val,
                      v8::Handle<v8::Object>* out);
 };
 
@@ -91,7 +100,8 @@ template<>
 struct Converter<v8::Handle<v8::ArrayBuffer> > {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     v8::Handle<v8::ArrayBuffer> val);
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Handle<v8::Value> val,
                      v8::Handle<v8::ArrayBuffer>* out);
 };
 
@@ -99,7 +109,8 @@ template<>
 struct Converter<v8::Handle<v8::External> > {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     v8::Handle<v8::External> val);
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Handle<v8::Value> val,
                      v8::Handle<v8::External>* out);
 };
 
@@ -107,7 +118,8 @@ template<>
 struct Converter<v8::Handle<v8::Value> > {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     v8::Handle<v8::Value> val);
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Handle<v8::Value> val,
                      v8::Handle<v8::Value>* out);
 };
 
@@ -122,7 +134,8 @@ struct Converter<std::vector<T> > {
     return result;
   }
 
-  static bool FromV8(v8::Handle<v8::Value> val,
+  static bool FromV8(v8::Isolate* isolate,
+                     v8::Handle<v8::Value> val,
                      std::vector<T>* out) {
     if (!val->IsArray())
       return false;
@@ -132,7 +145,7 @@ struct Converter<std::vector<T> > {
     uint32_t length = array->Length();
     for (uint32_t i = 0; i < length; ++i) {
       T item;
-      if (!Converter<T>::FromV8(array->Get(i), &item))
+      if (!Converter<T>::FromV8(isolate, array->Get(i), &item))
         return false;
       result.push_back(item);
     }
@@ -149,8 +162,8 @@ v8::Handle<v8::Value> ConvertToV8(v8::Isolate* isolate,
   return Converter<T>::ToV8(isolate, input);
 }
 
-inline v8::Handle<v8::String> StringToV8(
-    v8::Isolate* isolate, std::string input) {
+inline v8::Handle<v8::String> StringToV8(v8::Isolate* isolate,
+                                         std::string input) {
   return ConvertToV8(isolate, input).As<v8::String>();
 }
 
@@ -158,8 +171,9 @@ v8::Handle<v8::String> StringToSymbol(v8::Isolate* isolate,
                                       const std::string& val);
 
 template<typename T>
-bool ConvertFromV8(v8::Handle<v8::Value> input, T* result) {
-  return Converter<T>::FromV8(input, result);
+bool ConvertFromV8(v8::Isolate* isolate, v8::Handle<v8::Value> input,
+                   T* result) {
+  return Converter<T>::FromV8(isolate, input, result);
 }
 
 std::string V8ToString(v8::Handle<v8::Value> value);

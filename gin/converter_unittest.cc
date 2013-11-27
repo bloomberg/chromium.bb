@@ -57,11 +57,13 @@ TEST_F(ConverterTest, Bool) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
     bool result = false;
-    EXPECT_TRUE(Converter<bool>::FromV8(test_data[i].input, &result));
+    EXPECT_TRUE(Converter<bool>::FromV8(instance_->isolate(),
+                                        test_data[i].input, &result));
     EXPECT_EQ(test_data[i].expected, result);
 
     result = true;
-    EXPECT_TRUE(Converter<bool>::FromV8(test_data[i].input, &result));
+    EXPECT_TRUE(Converter<bool>::FromV8(instance_->isolate(),
+                                        test_data[i].input, &result));
     EXPECT_EQ(test_data[i].expected, result);
   }
 }
@@ -97,7 +99,8 @@ TEST_F(ConverterTest, Int32) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data_from); ++i) {
     int32_t result = std::numeric_limits<int32_t>::min();
-    bool success = Converter<int32_t>::FromV8(test_data_from[i].input, &result);
+    bool success = Converter<int32_t>::FromV8(instance_->isolate(),
+                                              test_data_from[i].input, &result);
     EXPECT_EQ(test_data_from[i].expect_sucess, success) << i;
     if (success)
       EXPECT_EQ(test_data_from[i].expected_result, result) << i;
@@ -122,7 +125,8 @@ TEST_F(ConverterTest, Vector) {
   }
 
   std::vector<int> actual;
-  EXPECT_TRUE(Converter<std::vector<int> >::FromV8(js_array, &actual));
+  EXPECT_TRUE(Converter<std::vector<int> >::FromV8(instance_->isolate(),
+                                                   js_array, &actual));
   EXPECT_EQ(expected, actual);
 }
 

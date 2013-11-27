@@ -15,41 +15,42 @@ namespace gin {
 // between V8 and C++.
 class Arguments {
  public:
+  Arguments();
   explicit Arguments(const v8::FunctionCallbackInfo<v8::Value>& info);
   ~Arguments();
 
   template<typename T>
   // TODO(aa): Rename GetHolder().
   bool Holder(T* out) {
-    return ConvertFromV8(info_.Holder(), out);
+    return ConvertFromV8(isolate_, info_->Holder(), out);
   }
 
   template<typename T>
   bool GetData(T* out) {
-    return ConvertFromV8(info_.Data(), out);
+    return ConvertFromV8(isolate_, info_->Data(), out);
   }
 
   template<typename T>
   bool GetNext(T* out) {
-    if (next_ >= info_.Length()) {
+    if (next_ >= info_->Length()) {
       insufficient_arguments_ = true;
       return false;
     }
-    v8::Handle<v8::Value> val = info_[next_++];
-    return ConvertFromV8(val, out);
+    v8::Handle<v8::Value> val = (*info_)[next_++];
+    return ConvertFromV8(isolate_, val, out);
   }
 
   template<typename T>
   bool GetRemaining(std::vector<T>* out) {
-    if (next_ >= info_.Length()) {
+    if (next_ >= info_->Length()) {
       insufficient_arguments_ = true;
       return false;
     }
-    int remaining = info_.Length() - next_;
+    int remaining = info_->Length() - next_;
     out->resize(remaining);
     for (int i = 0; i < remaining; ++i) {
-      v8::Handle<v8::Value> val = info_[next_++];
-      if (!ConvertFromV8(val, &out->at(i)))
+      v8::Handle<v8::Value> val = (*info_)[next_++];
+      if (!ConvertFromV8(isolate_, val, &out->at(i)))
         return false;
     }
     return true;
@@ -57,7 +58,7 @@ class Arguments {
 
   template<typename T>
   void Return(T val) {
-    info_.GetReturnValue().Set(ConvertToV8(isolate_, val));
+    info_->GetReturnValue().Set(ConvertToV8(isolate_, val));
   }
 
   v8::Handle<v8::Value> PeekNext();
@@ -69,12 +70,13 @@ class Arguments {
 
  private:
   v8::Isolate* isolate_;
-  const v8::FunctionCallbackInfo<v8::Value>& info_;
+  const v8::FunctionCallbackInfo<v8::Value>* info_;
   int next_;
   bool insufficient_arguments_;
-
-  DISALLOW_COPY_AND_ASSIGN(Arguments);
 };
+
+template<>
+bool Arguments::GetNext<Arguments>(Arguments* out);
 
 }  // namespace gin
 

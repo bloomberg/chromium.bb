@@ -51,8 +51,8 @@ v8::Handle<v8::Value> Converter<Wrappable*>::ToV8(v8::Isolate* isolate,
   return v8::Local<v8::Object>::New(isolate, val->wrapper_);
 }
 
-bool Converter<Wrappable*>::FromV8(v8::Handle<v8::Value> val,
-                                   Wrappable** out) {
+bool Converter<Wrappable*>::FromV8(v8::Isolate* isolate,
+                                   v8::Handle<v8::Value> val, Wrappable** out) {
   if (!val->IsObject())
     return false;
   v8::Handle<v8::Object> obj = v8::Handle<v8::Object>::Cast(val);
