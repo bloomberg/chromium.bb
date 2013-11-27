@@ -14,6 +14,7 @@ var RootType = Object.freeze({
   ARCHIVE: 'archive',
   REMOVABLE: 'removable',
   DRIVE: 'drive',
+  DRIVE_OTHER: 'drive_other',
   DRIVE_OFFLINE: 'drive_offline',  // A fake root. Not the actual filesystem.
   DRIVE_SHARED_WITH_ME: 'drive_shared_with_me',  // A fake root.
   DRIVE_RECENT: 'drive_recent'  // A fake root.
@@ -377,3 +378,93 @@ PathUtil.splitExtension = function(path) {
   var extension = dotPosition != -1 ? path.substr(dotPosition) : '';
   return [filename, extension];
 };
+
+/**
+ * Obtains location information from a path.
+ *
+ * @param {!VolumeInfo} volumeInfo Volume containing an entry pointed by path.
+ * @param {string} fullPath Full path.
+ * @return {EntryLocation} Location information.
+ */
+PathUtil.getLocationInfo = function(volumeInfo, fullPath) {
+  var rootPath;
+  var rootType;
+  if (volumeInfo.volumeType === util.VolumeType.DRIVE) {
+    // If the volume is drive, root path can be either mountPath + '/root' or
+    // mountPath + '/other'.
+    if ((fullPath + '/').indexOf(volumeInfo.mountPath + '/root/') === 0) {
+      rootPath = volumeInfo.mountPath + '/root';
+      rootType = RootType.DRIVE;
+    } else if ((fullPath + '/').indexOf(
+                   volumeInfo.mountPath + '/other/') === 0) {
+      rootPath = volumeInfo.mountPath + '/other';
+      rootType = RootType.DRIVE_OTHER;
+    } else {
+      throw new Exception(fullPath + ' is an invalid drive path.');
+    }
+  } else {
+    // Otherwise, root path is same with a mount path of the volume.
+    rootPath = volumeInfo.mountPath;
+    switch (volumeInfo.volumeType) {
+      case util.VolumeType.DOWNLOADS: rootType = RootType.DOWNLOADS; break;
+      case util.VolumeType.REMOVABLE: rootType = RootType.REMOVABLE; break;
+      case util.VolumeType.ARCHIVE: rootType = RootType.ARCHIVE; break;
+      default: throw new Exception(
+          'Invalid volume type: ' + volumeInfo.volumeType);
+    }
+  }
+  return new EntryLocation(volumeInfo,
+                           fullPath,
+                           rootType,
+                           rootPath,
+                           fullPath.substr(rootPath.length) || '/');
+};
+
+/**
+ * Location information which shows where the path points in FileManager's
+ * file system.
+ *
+ * @param {!VolumeInfo} volumeInfo Volume information.
+ * @param {string} path Full path.
+ * @param {RootType} rootType Root type.
+ * @param {string} rootPath Root path.
+ * @param {string} virtualPath Virtual path. See also
+ *     EntryLocation#vierutalPath.
+ * @constructor
+ */
+function EntryLocation(volumeInfo, path, rootType, rootPath, virtualPath) {
+  /**
+   * Volume information.
+   * @type {!VolumeInfo}
+   */
+  this.volumeInfo = volumeInfo;
+
+  /**
+   * Full path of the location.
+   * @type {string}
+   */
+  this.path = path;
+
+  /**
+   * Root type.
+   * @type {RootType}
+   */
+  this.rootType = rootType;
+
+  /**
+   * Root path.
+   * @type {string}
+   */
+  this.rootPath = rootPath;
+
+  /**
+   * Virtual path.
+   *
+   * Part of full path that follows root path.
+   * e.g. Virtual path of /drive/root/A/B is /A/B.
+   * @type {string}
+   */
+  this.virtualPath = virtualPath;
+
+  Object.freeze(this);
+}

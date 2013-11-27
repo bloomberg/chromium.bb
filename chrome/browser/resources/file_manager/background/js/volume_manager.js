@@ -555,6 +555,32 @@ VolumeManager.prototype.getVolumeInfo = function(path) {
 };
 
 /**
+ * Obtains location information from an entry.
+ *
+ * @param {Entry} entry File or directory entry.
+ * @return {EntryLocation} Location information.
+ */
+VolumeManager.prototype.getLocationInfo = function(entry) {
+  return this.getLocationByPath(entry.fullPath);
+};
+
+/**
+ * Obtains location information from a path.
+ * TODO(hirono): Remove the method before introducing separate file system.
+ *
+ * @param {string} path Path.
+ * @return {EntryLocation} Location information.
+ */
+VolumeManager.prototype.getLocationInfoByPath = function(path) {
+  for (var i = 0; i < this.volumeInfoList.length; i++) {
+    var volumeInfo = this.volumeInfoList.item(i);
+    if ((path + '/').indexOf(volumeInfo.mountPath + '/') === 0)
+      return PathUtil.getLocationInfo(volumeInfo, path);
+  }
+  return null;
+};
+
+/**
  * @param {string} key Key produced by |makeRequestKey_|.
  * @param {function(string)} successCallback To be called when request finishes
  *     successfully.
