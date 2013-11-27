@@ -69,20 +69,25 @@ class GCMProfileService : public BrowserContextKeyedService,
   //               messages to the application. These IDs are assigned by the
   //               Google API Console.
   // |callback|: to be called once the asynchronous operation is done.
-  void Register(const std::string& app_id,
-                const std::vector<std::string>& sender_ids,
-                const std::string& cert,
-                RegisterCallback callback);
+  virtual void Register(const std::string& app_id,
+                        const std::vector<std::string>& sender_ids,
+                        const std::string& cert,
+                        RegisterCallback callback);
 
   // Sends a message to a given receiver.
   // |app_id|: application ID.
   // |receiver_id|: registration ID of the receiver party.
   // |message|: message to be sent.
   // |callback|: to be called once the asynchronous operation is done.
-  void Send(const std::string& app_id,
-            const std::string& receiver_id,
-            const GCMClient::OutgoingMessage& message,
-            SendCallback callback);
+  virtual void Send(const std::string& app_id,
+                    const std::string& receiver_id,
+                    const GCMClient::OutgoingMessage& message,
+                    SendCallback callback);
+
+ protected:
+  // Flag that could be set by the testing code to enable GCM. Otherwise,
+  // tests from official build will fail.
+  static bool enable_gcm_for_testing_;
 
  private:
   friend class GCMProfileServiceTest;
@@ -124,10 +129,6 @@ class GCMProfileService : public BrowserContextKeyedService,
 
   // Returns the event router to fire the event for the given app.
   GCMEventRouter* GetEventRouter(const std::string& app_id);
-
-  // Flag that could be set by the testing code to enable GCM. Otherwise,
-  // tests from official build will fail.
-  static bool enable_gcm_for_testing_;
 
   // The profile which owns this object.
   Profile* profile_;

@@ -22,7 +22,8 @@
             "name": "senderIds",
             "type": "array",
             "items": { 
-              "type": "string"
+              "type": "string",
+              "minLength": 1
             },
             "minItems": 1,
             "maxItems": 100,
@@ -54,14 +55,16 @@
             "properties": {
               "destinationId": {
                 "type": "string",
+                "minLength": 1,
                 "description": "The ID of the server to send the message to as assigned by <a href='https://code.google.com/apis/console'>Google API Console</a>."
               },
               "messageId": {
                 "type": "string",
+                "minLength": 1,
                 "description": "The ID of the message. It must be unique for each message."
               },
               "timeToLive": {
-                "type": "number",
+                "type": "integer",
                 "minimum": 0,
                 "maximum": 2419200,
                 "optional": true,
@@ -71,7 +74,8 @@
                 "type": "object",
                 "properties": {},
                 "additionalProperties": {
-                  "type": "string"
+                  "type": "string",
+                  "minLength": 1
                 },
                 "description": "Message data to send to the server. <code>goog.</code> and <code>google</code> are disallowed as key prefixes. Sum of all key/value pairs should not exceed $ref:MAX_MESSAGE_SIZE."
               }

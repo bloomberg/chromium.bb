@@ -7,24 +7,35 @@
 var binding = require('binding').Binding.create('gcm');
 var forEach = require('utils').forEach;
 
-binding.registerCustomHook(function(api) {
-  var gcm = api.compiledApi;
-  var apiFunctions = api.apiFunctions;
+binding.registerCustomHook(function(bindingsAPI) {
+  var apiFunctions = bindingsAPI.apiFunctions;
+  var gcm = bindingsAPI.compiledApi;
 
   apiFunctions.setUpdateArgumentsPostValidate(
-    'send', function (message, callback) {
+    'send', function(message, callback) {
+      // Validate message.data.
       var payloadSize = 0;
       forEach(message.data, function(property, value) {
-        // Issue error for forbidden prefixes of property names.
-        if (property.startsWith("goog.") || property.startsWith("google"))
-          throw new Error("Invalid key: " + property);
+        if (property.length == 0)
+          throw new Error("One of data keys is empty.");
+
+        // Issue an error for forbidden prefixes of property names.
+        if (property.indexOf("goog.") == 0 ||
+            property.indexOf("google") == 0) {
+          throw new Error("Invalid data key: " + property);
+        }
 
         payloadSize += property.length + value.length;
       });
 
-      // Issue error for messages larger than allowed limit.
       if (payloadSize > gcm.MAX_MESSAGE_SIZE)
-        throw new Error("Payload exceeded size limit");
+        throw new Error("Payload exceeded allowed size limit. Payload size is: "
+            + payloadSize);
+
+      if (payloadSize == 0)
+        throw new Error("No data to send.");
+
+      return arguments;
     });
 });
 

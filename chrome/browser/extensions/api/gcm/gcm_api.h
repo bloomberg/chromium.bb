@@ -5,34 +5,77 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_GCM_GCM_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_GCM_GCM_API_H_
 
+#include "chrome/common/extensions/api/gcm.h"
 #include "extensions/browser/extension_function.h"
+#include "google_apis/gcm/gcm_client.h"
+
+namespace gcm {
+class GCMProfileService;
+}  // namespace gcm
 
 namespace extensions {
 
-class GcmRegisterFunction : public AsyncExtensionFunction {
+class GcmApiFunction : public AsyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("gcm.register", GCM_REGISTER);
-
-  GcmRegisterFunction() {}
+  GcmApiFunction() {}
 
  protected:
-  virtual ~GcmRegisterFunction() {}
+  virtual ~GcmApiFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE FINAL;
+
+  // Actual implementation of specific functions.
+  virtual bool DoWork() = 0;
+
+  // Checks that the GCM API is enabled.
+  bool IsGcmApiEnabled() const;
+
+  gcm::GCMProfileService* GCMProfileService() const;
 };
 
-class GcmSendFunction : public AsyncExtensionFunction {
+class GcmRegisterFunction : public GcmApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("gcm.register", GCM_REGISTER);
+
+  GcmRegisterFunction();
+
+ protected:
+  virtual ~GcmRegisterFunction();
+
+  // Register function implementation.
+  virtual bool DoWork() OVERRIDE FINAL;
+
+ private:
+  void CompleteFunctionWithResult(const std::string& registration_id,
+                                  gcm::GCMClient::Result result);
+
+  std::string cert_;
+  std::vector<std::string> sender_ids_;
+};
+
+class GcmSendFunction : public GcmApiFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("gcm.send", GCM_SEND);
 
-  GcmSendFunction() {}
+  GcmSendFunction();
 
  protected:
-  virtual ~GcmSendFunction() {}
+  virtual ~GcmSendFunction();
 
   // Send function implementation.
-  virtual bool RunImpl() OVERRIDE FINAL;
+  virtual bool DoWork() OVERRIDE FINAL;
+
+ private:
+  void CompleteFunctionWithResult(const std::string& message_id,
+                                  gcm::GCMClient::Result result);
+
+  // Validates that message data do not carry invalid keys and fit into
+  // allowable size limits.
+  bool ValidateMessageData(const gcm::GCMClient::MessageData& data) const;
+
+  std::string destination_id_;
+  gcm::GCMClient::OutgoingMessage outgoing_message_;
 };
 
 }  // namespace extensions

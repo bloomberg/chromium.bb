@@ -1,0 +1,1 @@
+<script src="register.js"></script>
