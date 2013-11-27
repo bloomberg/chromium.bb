@@ -55,20 +55,6 @@
 
 namespace WebCore {
 
-struct CandidateTransition {
-    CandidateTransition(PassRefPtr<AnimatableValue> from, PassRefPtr<AnimatableValue> to, const CSSAnimationData* anim)
-        : from(from)
-        , to(to)
-        , anim(anim)
-    {
-    }
-    CandidateTransition() { } // The HashMap calls the default ctor
-    RefPtr<AnimatableValue> from;
-    RefPtr<AnimatableValue> to;
-    const CSSAnimationData* anim;
-};
-typedef HashMap<CSSPropertyID, CandidateTransition> CandidateTransitionMap;
-
 namespace {
 
 bool isEarlierPhase(TimedItem::Phase target, TimedItem::Phase reference)
@@ -330,50 +316,6 @@ const PassRefPtr<TimingFunction> timingFromAnimationData(const CSSAnimationData*
     return animationData->isTimingFunctionSet() ? animationData->timingFunction() : CSSAnimationData::initialAnimationTimingFunction();
 }
 
-static void calculateCandidateTransitionForProperty(const CSSAnimationData* anim, CSSPropertyID id, const RenderStyle& oldStyle, const RenderStyle& newStyle, CandidateTransitionMap& candidateMap)
-{
-    if (!CSSPropertyAnimation::propertiesEqual(id, &oldStyle, &newStyle)) {
-        RefPtr<AnimatableValue> from = CSSAnimatableValueFactory::create(id, oldStyle);
-        RefPtr<AnimatableValue> to = CSSAnimatableValueFactory::create(id, newStyle);
-        // If we have multiple transitions on the same property, we will use the
-        // last one since we iterate over them in order and this will override
-        // a previously set CandidateTransition.
-        if (from->usesNonDefaultInterpolationWith(to.get()))
-            candidateMap.add(id, CandidateTransition(from.release(), to.release(), anim));
-    }
-}
-
-static void computeCandidateTransitions(const RenderStyle& oldStyle, const RenderStyle& newStyle, CandidateTransitionMap& candidateMap, HashSet<CSSPropertyID>& listedProperties)
-{
-    if (!newStyle.transitions())
-        return;
-
-    for (size_t i = 0; i < newStyle.transitions()->size(); ++i) {
-        const CSSAnimationData* anim = newStyle.transitions()->animation(i);
-        CSSAnimationData::AnimationMode mode = anim->animationMode();
-        if (anim->duration() + anim->delay() <= 0 || mode == CSSAnimationData::AnimateNone)
-            continue;
-
-        bool animateAll = mode == CSSAnimationData::AnimateAll;
-        ASSERT(animateAll || mode == CSSAnimationData::AnimateSingleProperty);
-        const StylePropertyShorthand& propertyList = animateAll ? CSSAnimations::animatableProperties() : shorthandForProperty(anim->property());
-        if (!propertyList.length()) {
-            if (!CSSAnimations::isAnimatableProperty(anim->property()))
-                continue;
-            listedProperties.add(anim->property());
-            calculateCandidateTransitionForProperty(anim, anim->property(), oldStyle, newStyle, candidateMap);
-        } else {
-            for (unsigned i = 0; i < propertyList.length(); ++i) {
-                CSSPropertyID id = propertyList.properties()[i];
-                if (!animateAll && !CSSAnimations::isAnimatableProperty(id))
-                    continue;
-                listedProperties.add(id);
-                calculateCandidateTransitionForProperty(anim, id, oldStyle, newStyle, candidateMap);
-            }
-        }
-    }
-}
-
 } // namespace
 
 CSSAnimationUpdateScope::CSSAnimationUpdateScope(Element* target)
@@ -535,24 +477,20 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     // recalculation, we find these cases by searching for new transitions that
     // have matching cancelled animation property IDs on the compositor.
     HashMap<CSSPropertyID, std::pair<RefPtr<Animation>, double> > retargetedCompositorTransitions;
+    const ActiveAnimations* activeAnimations = element->activeAnimations();
     for (HashSet<CSSPropertyID>::iterator iter = update->cancelledTransitions().begin(); iter != update->cancelledTransitions().end(); ++iter) {
         CSSPropertyID id = *iter;
         ASSERT(m_transitions.contains(id));
         Player* player = m_transitions.take(id).transition->player();
-        ActiveAnimations* activeAnimations = element->activeAnimations();
-        if (activeAnimations && activeAnimations->hasActiveAnimationsOnCompositor(id)) {
-            for (size_t i = 0; i < update->newTransitions().size(); ++i) {
-                if (update->newTransitions()[i].id == id) {
-                    retargetedCompositorTransitions.add(id, std::pair<RefPtr<Animation>, double>(toAnimation(player->source()), player->startTime()));
-                    break;
-                }
-            }
+        if (activeAnimations && activeAnimations->hasActiveAnimationsOnCompositor(id) && update->newTransitions().find(id) != update->newTransitions().end()) {
+            retargetedCompositorTransitions.add(id, std::pair<RefPtr<Animation>, double>(toAnimation(player->source()), player->startTime()));
+            break;
         }
         player->cancel();
     }
 
-    for (size_t i = 0; i < update->newTransitions().size(); ++i) {
-        const CSSAnimationUpdate::NewTransition& newTransition = update->newTransitions()[i];
+    for (CSSAnimationUpdate::NewTransitionMap::const_iterator iter = update->newTransitions().begin(); iter != update->newTransitions().end(); ++iter) {
+        const CSSAnimationUpdate::NewTransition& newTransition = iter->value;
 
         RunningTransition runningTransition;
         runningTransition.from = newTransition.from;
@@ -592,28 +530,38 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
     }
 }
 
-void CSSAnimations::calculateTransitionUpdateForProperty(CSSAnimationUpdate* update, CSSPropertyID id, const CandidateTransition& newTransition, const TransitionMap* existingTransitions)
+void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const CSSAnimationData* anim, const RenderStyle& oldStyle, const RenderStyle& style, const TransitionMap* activeTransitions, CSSAnimationUpdate* update)
 {
-    if (existingTransitions) {
-        TransitionMap::const_iterator existingTransitionIter = existingTransitions->find(id);
+    if (CSSPropertyAnimation::propertiesEqual(id, &oldStyle, &style))
+        return;
 
-        if (existingTransitionIter != existingTransitions->end() && !update->cancelledTransitions().contains(id)) {
-            const AnimatableValue* existingTo = existingTransitionIter->value.to;
-            if (newTransition.to->equals(existingTo))
+    RefPtr<AnimatableValue> to = CSSAnimatableValueFactory::create(id, style);
+
+    if (activeTransitions) {
+        TransitionMap::const_iterator activeTransitionIter = activeTransitions->find(id);
+        if (activeTransitionIter != activeTransitions->end()) {
+            const AnimatableValue* activeTo = activeTransitionIter->value.to;
+            if (to->equals(activeTo))
                 return;
             update->cancelTransition(id);
         }
     }
 
+    RefPtr<AnimatableValue> from = CSSAnimatableValueFactory::create(id, oldStyle);
+    // If we have multiple transitions on the same property, we will use the
+    // last one since we iterate over them in order.
+    if (!from->usesNonDefaultInterpolationWith(to.get()))
+        return;
+
     KeyframeAnimationEffect::KeyframeVector keyframes;
 
     RefPtr<Keyframe> startKeyframe = Keyframe::create();
-    startKeyframe->setPropertyValue(id, newTransition.from.get());
+    startKeyframe->setPropertyValue(id, from.get());
     startKeyframe->setOffset(0);
     keyframes.append(startKeyframe);
 
     RefPtr<Keyframe> endKeyframe = Keyframe::create();
-    endKeyframe->setPropertyValue(id, newTransition.to.get());
+    endKeyframe->setPropertyValue(id, to.get());
     endKeyframe->setOffset(1);
     keyframes.append(endKeyframe);
 
@@ -621,38 +569,63 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSAnimationUpdate* upd
 
     Timing timing;
     bool isPaused;
-    RefPtr<TimingFunction> timingFunction = timingFromAnimationData(newTransition.anim, timing, isPaused);
+    RefPtr<TimingFunction> timingFunction = timingFromAnimationData(anim, timing, isPaused);
     ASSERT(!isPaused);
     timing.timingFunction = timingFunction;
     // Note that the backwards part is required for delay to work.
     timing.fillMode = Timing::FillModeBoth;
 
-    update->startTransition(id, newTransition.from.get(), newTransition.to.get(), InertAnimation::create(effect, timing, isPaused));
+    update->startTransition(id, from.get(), to.get(), InertAnimation::create(effect, timing, isPaused));
 }
 
 void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const Element* element, const RenderStyle& style)
 {
     ActiveAnimations* activeAnimations = element->activeAnimations();
-    const TransitionMap* transitions = activeAnimations ? &activeAnimations->cssAnimations().m_transitions : 0;
+    const TransitionMap* activeTransitions = activeAnimations ? &activeAnimations->cssAnimations().m_transitions : 0;
 
     HashSet<CSSPropertyID> listedProperties;
-    if (style.display() != NONE && element->renderer() && element->renderer()->style()) {
-        CandidateTransitionMap candidateMap;
-        computeCandidateTransitions(*element->renderer()->style(), style, candidateMap, listedProperties);
-        for (CandidateTransitionMap::const_iterator iter = candidateMap.begin(); iter != candidateMap.end(); ++iter) {
-            // FIXME: We should transition if an !important property changes even when an animation is running,
-            // but this is a bit hard to do with the current applyMatchedProperties system.
-            if (!update->compositableValuesForAnimations().contains(iter->key)
-                && (!activeAnimations || !activeAnimations->cssAnimations().m_previousCompositableValuesForAnimations.contains(iter->key)))
-                calculateTransitionUpdateForProperty(update, iter->key, iter->value, transitions);
+    bool anyTransitionHadAnimateAll = false;
+    const RenderObject* renderer = element->renderer();
+    if (style.display() != NONE && renderer && renderer->style() && style.transitions()) {
+        const RenderStyle& oldStyle = *renderer->style();
+
+        for (size_t i = 0; i < style.transitions()->size(); ++i) {
+            const CSSAnimationData* anim = style.transitions()->animation(i);
+            CSSAnimationData::AnimationMode mode = anim->animationMode();
+            if (anim->duration() + anim->delay() <= 0 || mode == CSSAnimationData::AnimateNone)
+                continue;
+
+            bool animateAll = mode == CSSAnimationData::AnimateAll;
+            ASSERT(animateAll || mode == CSSAnimationData::AnimateSingleProperty);
+            if (animateAll)
+                anyTransitionHadAnimateAll = true;
+            const StylePropertyShorthand& propertyList = animateAll ? CSSAnimations::animatableProperties() : shorthandForProperty(anim->property());
+            // If not a shorthand we only execute one iteration of this loop, and refer to the property directly.
+            for (unsigned j = 0; !j || j < propertyList.length(); ++j) {
+                CSSPropertyID id = propertyList.length() ? propertyList.properties()[j] : anim->property();
+
+                if (!animateAll) {
+                    if (CSSAnimations::isAnimatableProperty(id))
+                        listedProperties.add(id);
+                    else
+                        continue;
+                }
+
+                // FIXME: We should transition if an !important property changes even when an animation is running,
+                // but this is a bit hard to do with the current applyMatchedProperties system.
+                if (!update->compositableValuesForAnimations().contains(id)
+                    && (!activeAnimations || !activeAnimations->cssAnimations().m_previousCompositableValuesForAnimations.contains(id))) {
+                    calculateTransitionUpdateForProperty(id, anim, oldStyle, style, activeTransitions, update);
+                }
+            }
         }
     }
 
-    if (transitions) {
-        for (TransitionMap::const_iterator iter = transitions->begin(); iter != transitions->end(); ++iter) {
+    if (activeTransitions) {
+        for (TransitionMap::const_iterator iter = activeTransitions->begin(); iter != activeTransitions->end(); ++iter) {
             const TimedItem* timedItem = iter->value.transition;
             CSSPropertyID id = iter->key;
-            if (timedItem->phase() == TimedItem::PhaseAfter || !listedProperties.contains(id))
+            if (timedItem->phase() == TimedItem::PhaseAfter || (!anyTransitionHadAnimateAll && !listedProperties.contains(id)))
                 update->cancelTransition(id);
         }
     }
@@ -705,8 +678,8 @@ void CSSAnimations::calculateTransitionCompositableValues(CSSAnimationUpdate* up
         compositableValuesForTransitions = AnimationStack::compositableValues(animationStack, 0, 0, Animation::TransitionPriority);
     } else {
         Vector<InertAnimation*> newTransitions;
-        for (size_t i = 0; i < update->newTransitions().size(); ++i)
-            newTransitions.append(update->newTransitions()[i].animation.get());
+        for (CSSAnimationUpdate::NewTransitionMap::const_iterator iter = update->newTransitions().begin(); iter != update->newTransitions().end(); ++iter)
+            newTransitions.append(iter->value.animation.get());
 
         HashSet<const Player*> cancelledPlayers;
         if (!update->cancelledTransitions().isEmpty()) {
