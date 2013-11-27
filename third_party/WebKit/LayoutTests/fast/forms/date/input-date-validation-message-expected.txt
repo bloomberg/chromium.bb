@@ -14,7 +14,7 @@ PASS testIt("1982-11-02", "", "1970-12-31") is "Value must be 12/31/1970 or earl
 Range underflow
 PASS testIt("1982-11-02", "1990-05-25", "1990-12-24") is "Value must be 05/25/1990 or later."
 Step mismatch
-PASS testIt("1982-11-02", "", "", "123") is "Please enter a valid value. The two nearest valid values are 07/07/1982 and 11/07/1982."
+PASS testIt("1982-11-02", "1982-01-01", "", "123") is "Please enter a valid value. The two nearest valid values are 09/04/1982 and 01/05/1983."
 PASS successfullyParsed is true
 
 TEST COMPLETE

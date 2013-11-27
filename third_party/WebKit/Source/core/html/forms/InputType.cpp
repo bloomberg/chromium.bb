@@ -985,4 +985,12 @@ void InputType::countUsageIfVisible(UseCounter::Feature feature) const
     }
 }
 
+Decimal InputType::findStepBase(const Decimal& defaultValue) const
+{
+    Decimal stepBase = parseToNumber(element().fastGetAttribute(minAttr), Decimal::nan());
+    if (!stepBase.isFinite())
+        stepBase = parseToNumber(element().fastGetAttribute(valueAttr), defaultValue);
+    return stepBase;
+}
+
 } // namespace WebCore

@@ -20,6 +20,8 @@
     <option>2012-01-28</option>
     <option>2012-01-29</option>
     <option>2012-01-30</option>
+    <option>2012-01-31</option>
+    <option>2012-02-01</option>
 </datalist>
 
 <p id="description" style="opacity: 0"></p>
@@ -40,13 +42,14 @@ window.onload = function() {
 function test1() {
     popupWindow.focus();
 
-    shouldBe('entryValues().length', '6');
+    shouldBe('entryValues().length', '7');
     shouldBeEqualToString('entryValues()[0]', '2012-01-21');
     shouldBeEqualToString('entryValues()[1]', '2012-01-23');
     shouldBeEqualToString('entryValues()[2]', '2012-01-25');
     shouldBeEqualToString('entryValues()[3]', '2012-01-27');
     shouldBeEqualToString('entryValues()[4]', '2012-01-29');
-    shouldBeEqualToString('entryValues()[5]', '@openCalendarPicker');
+    shouldBeEqualToString('entryValues()[5]', '2012-01-31');
+    shouldBeEqualToString('entryValues()[6]', '@openCalendarPicker');
 
     eventSender.keyDown('\x1B'); // Close picker.
     waitUntilClosing(test1AfterClosing);
@@ -60,10 +63,11 @@ function test1AfterClosing() {
 function test2() {
     popupWindow.focus();
 
-    shouldBe('entryValues().length', '3');
+    shouldBe('entryValues().length', '4');
     shouldBeEqualToString('entryValues()[0]', '2012-01-21');
     shouldBeEqualToString('entryValues()[1]', '2012-01-26');
-    shouldBeEqualToString('entryValues()[2]', '@openCalendarPicker');
+    shouldBeEqualToString('entryValues()[2]', '2012-01-31');
+    shouldBeEqualToString('entryValues()[3]', '@openCalendarPicker');
 
     eventSender.keyDown('\x1B'); // Close picker.
     waitUntilClosing(test2AfterClosing);
@@ -78,7 +82,7 @@ function test3() {
     popupWindow.focus();
 
     shouldBe('entryValues().length', '2');
-    shouldBeEqualToString('entryValues()[0]', '2012-01-21');
+    shouldBeEqualToString('entryValues()[0]', '2012-01-31');
     shouldBeEqualToString('entryValues()[1]', '@openCalendarPicker');
 
     finishJSTest();

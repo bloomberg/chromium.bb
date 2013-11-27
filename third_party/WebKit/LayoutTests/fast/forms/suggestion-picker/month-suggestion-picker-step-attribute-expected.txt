@@ -13,11 +13,11 @@ PASS entryValues()[3] is "2012-07"
 PASS entryValues()[4] is "2012-09"
 PASS entryValues()[5] is "@openCalendarPicker"
 PASS entryValues().length is 3
-PASS entryValues()[0] is "2012-02"
-PASS entryValues()[1] is "2012-07"
+PASS entryValues()[0] is "2012-01"
+PASS entryValues()[1] is "2012-06"
 PASS entryValues()[2] is "@openCalendarPicker"
 PASS entryValues().length is 2
-PASS entryValues()[0] is "2012-07"
+PASS entryValues()[0] is "2012-01"
 PASS entryValues()[1] is "@openCalendarPicker"
 PASS successfullyParsed is true
 

@@ -237,6 +237,9 @@ protected:
     Decimal parseToNumberOrNaN(const String&) const;
     void countUsageIfVisible(UseCounter::Feature) const;
 
+    // Derive the step base, following the HTML algorithm steps.
+    Decimal findStepBase(const Decimal&) const;
+
 private:
     // Helper for stepUp()/stepDown(). Adds step value * count to the current value.
     void applyStep(int count, AnyStepHandling, TextFieldEventBehavior, ExceptionState&);
