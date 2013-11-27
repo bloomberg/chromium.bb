@@ -506,6 +506,14 @@ size_t MembusterMemoryTest::urls_length_ =
     arraysize(MembusterMemoryTest::source_urls_);
 
 #define QUOTE(x) #x
+#if defined(OS_MACOSX)
+// The reference builds crash on mac with the memory test and we don't care
+// enough to fix it because this test is being replaced with Telemetry.
+#define GENERAL_MIX_MEMORY_TESTS(name, tabs) \
+TEST_F(GeneralMixMemoryTest, name) { \
+  RunTest(QUOTE(_##tabs##t), tabs); \
+}
+#else
 #define GENERAL_MIX_MEMORY_TESTS(name, tabs) \
 TEST_F(GeneralMixMemoryTest, name) { \
   RunTest(QUOTE(_##tabs##t), tabs); \
@@ -513,6 +521,7 @@ TEST_F(GeneralMixMemoryTest, name) { \
 TEST_F(GeneralMixReferenceMemoryTest, name) { \
   RunTest(QUOTE(_##tabs##t_ref), tabs); \
 }
+#endif
 
 GENERAL_MIX_MEMORY_TESTS(SingleTabTest, 1);
 GENERAL_MIX_MEMORY_TESTS(FiveTabTest, 5);
