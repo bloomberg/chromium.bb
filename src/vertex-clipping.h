@@ -22,44 +22,42 @@
 #ifndef _WESTON_VERTEX_CLIPPING_H
 #define _WESTON_VERTEX_CLIPPING_H
 
-#include <GLES2/gl2.h>
-
 struct polygon8 {
-	GLfloat x[8];
-	GLfloat y[8];
+	float x[8];
+	float y[8];
 	int n;
 };
 
 struct clip_context {
 	struct {
-		GLfloat x;
-		GLfloat y;
+		float x;
+		float y;
 	} prev;
 
 	struct {
-		GLfloat x1, y1;
-		GLfloat x2, y2;
+		float x1, y1;
+		float x2, y2;
 	} clip;
 
 	struct {
-		GLfloat *x;
-		GLfloat *y;
+		float *x;
+		float *y;
 	} vertices;
 };
 
-GLfloat
-float_difference(GLfloat a, GLfloat b);
+float
+float_difference(float a, float b);
 
 int
 clip_simple(struct clip_context *ctx,
 	    struct polygon8 *surf,
-	    GLfloat *ex,
-	    GLfloat *ey);
+	    float *ex,
+	    float *ey);
 
 int
 clip_transformed(struct clip_context *ctx,
 		 struct polygon8 *surf,
-		 GLfloat *ex,
-		 GLfloat *ey);\
+		 float *ex,
+		 float *ey);\
 
 #endif

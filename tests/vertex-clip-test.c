@@ -56,8 +56,8 @@ populate_clip_context (struct clip_context *ctx)
 static int
 clip_polygon (struct clip_context *ctx,
 	      struct polygon8 *polygon,
-	      GLfloat *vertices_x,
-	      GLfloat *vertices_y)
+	      float *vertices_x,
+	      float *vertices_y)
 {
 	populate_clip_context(ctx);
 	return clip_transformed(ctx, polygon, vertices_x, vertices_y);
@@ -181,8 +181,8 @@ TEST_P(clip_polygon_n_vertices_emitted, test_data)
 	struct vertex_clip_test_data *tdata = data;
 	struct clip_context ctx;
 	struct polygon8 polygon;
-	GLfloat vertices_x[8];
-	GLfloat vertices_y[8];
+	float vertices_x[8];
+	float vertices_y[8];
 	deep_copy_polygon8(&tdata->surface, &polygon);
 	int emitted = clip_polygon(&ctx, &polygon, vertices_x, vertices_y);
 
@@ -194,8 +194,8 @@ TEST_P(clip_polygon_expected_vertices, test_data)
 	struct vertex_clip_test_data *tdata = data;
 	struct clip_context ctx;
 	struct polygon8 polygon;
-	GLfloat vertices_x[8];
-	GLfloat vertices_y[8];
+	float vertices_x[8];
+	float vertices_y[8];
 	deep_copy_polygon8(&tdata->surface, &polygon);
 	int emitted = clip_polygon(&ctx, &polygon, vertices_x, vertices_y);
 	int i = 0;

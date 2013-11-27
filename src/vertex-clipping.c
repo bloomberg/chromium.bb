@@ -23,18 +23,16 @@
 #include <float.h>
 #include <math.h>
 
-#include <GLES2/gl2.h>
-
 #include "vertex-clipping.h"
 
-GLfloat
-float_difference(GLfloat a, GLfloat b)
+float
+float_difference(float a, float b)
 {
 	/* http://www.altdevblogaday.com/2012/02/22/comparing-floating-point-numbers-2012-edition/ */
-	static const GLfloat max_diff = 4.0f * FLT_MIN;
-	static const GLfloat max_rel_diff = 4.0e-5;
-	GLfloat diff = a - b;
-	GLfloat adiff = fabsf(diff);
+	static const float max_diff = 4.0f * FLT_MIN;
+	static const float max_rel_diff = 4.0e-5;
+	float diff = a - b;
+	float adiff = fabsf(diff);
 
 	if (adiff <= max_diff)
 		return 0.0f;
@@ -50,12 +48,12 @@ float_difference(GLfloat a, GLfloat b)
 /* A line segment (p1x, p1y)-(p2x, p2y) intersects the line x = x_arg.
  * Compute the y coordinate of the intersection.
  */
-static GLfloat
-clip_intersect_y(GLfloat p1x, GLfloat p1y, GLfloat p2x, GLfloat p2y,
-		 GLfloat x_arg)
+static float
+clip_intersect_y(float p1x, float p1y, float p2x, float p2y,
+		 float x_arg)
 {
-	GLfloat a;
-	GLfloat diff = float_difference(p1x, p2x);
+	float a;
+	float diff = float_difference(p1x, p2x);
 
 	/* Practically vertical line segment, yet the end points have already
 	 * been determined to be on different sides of the line. Therefore
@@ -72,12 +70,12 @@ clip_intersect_y(GLfloat p1x, GLfloat p1y, GLfloat p2x, GLfloat p2y,
 /* A line segment (p1x, p1y)-(p2x, p2y) intersects the line y = y_arg.
  * Compute the x coordinate of the intersection.
  */
-static GLfloat
-clip_intersect_x(GLfloat p1x, GLfloat p1y, GLfloat p2x, GLfloat p2y,
-		 GLfloat y_arg)
+static float
+clip_intersect_x(float p1x, float p1y, float p2x, float p2y,
+		 float y_arg)
 {
-	GLfloat a;
-	GLfloat diff = float_difference(p1y, p2y);
+	float a;
+	float diff = float_difference(p1y, p2y);
 
 	/* Practically horizontal line segment, yet the end points have already
 	 * been determined to be on different sides of the line. Therefore
@@ -99,32 +97,32 @@ enum path_transition {
 };
 
 static void
-clip_append_vertex(struct clip_context *ctx, GLfloat x, GLfloat y)
+clip_append_vertex(struct clip_context *ctx, float x, float y)
 {
 	*ctx->vertices.x++ = x;
 	*ctx->vertices.y++ = y;
 }
 
 static enum path_transition
-path_transition_left_edge(struct clip_context *ctx, GLfloat x, GLfloat y)
+path_transition_left_edge(struct clip_context *ctx, float x, float y)
 {
 	return ((ctx->prev.x >= ctx->clip.x1) << 1) | (x >= ctx->clip.x1);
 }
 
 static enum path_transition
-path_transition_right_edge(struct clip_context *ctx, GLfloat x, GLfloat y)
+path_transition_right_edge(struct clip_context *ctx, float x, float y)
 {
 	return ((ctx->prev.x < ctx->clip.x2) << 1) | (x < ctx->clip.x2);
 }
 
 static enum path_transition
-path_transition_top_edge(struct clip_context *ctx, GLfloat x, GLfloat y)
+path_transition_top_edge(struct clip_context *ctx, float x, float y)
 {
 	return ((ctx->prev.y >= ctx->clip.y1) << 1) | (y >= ctx->clip.y1);
 }
 
 static enum path_transition
-path_transition_bottom_edge(struct clip_context *ctx, GLfloat x, GLfloat y)
+path_transition_bottom_edge(struct clip_context *ctx, float x, float y)
 {
 	return ((ctx->prev.y < ctx->clip.y2) << 1) | (y < ctx->clip.y2);
 }
@@ -132,9 +130,9 @@ path_transition_bottom_edge(struct clip_context *ctx, GLfloat x, GLfloat y)
 static void
 clip_polygon_leftright(struct clip_context *ctx,
 		       enum path_transition transition,
-		       GLfloat x, GLfloat y, GLfloat clip_x)
+		       float x, float y, float clip_x)
 {
-	GLfloat yi;
+	float yi;
 
 	switch (transition) {
 	case PATH_TRANSITION_IN_TO_IN:
@@ -163,9 +161,9 @@ clip_polygon_leftright(struct clip_context *ctx,
 static void
 clip_polygon_topbottom(struct clip_context *ctx,
 		       enum path_transition transition,
-		       GLfloat x, GLfloat y, GLfloat clip_y)
+		       float x, float y, float clip_y)
 {
-	GLfloat xi;
+	float xi;
 
 	switch (transition) {
 	case PATH_TRANSITION_IN_TO_IN:
@@ -193,7 +191,7 @@ clip_polygon_topbottom(struct clip_context *ctx,
 
 static void
 clip_context_prepare(struct clip_context *ctx, const struct polygon8 *src,
-		      GLfloat *dst_x, GLfloat *dst_y)
+		      float *dst_x, float *dst_y)
 {
 	ctx->prev.x = src->x[src->n - 1];
 	ctx->prev.y = src->y[src->n - 1];
@@ -203,7 +201,7 @@ clip_context_prepare(struct clip_context *ctx, const struct polygon8 *src,
 
 static int
 clip_polygon_left(struct clip_context *ctx, const struct polygon8 *src,
-		  GLfloat *dst_x, GLfloat *dst_y)
+		  float *dst_x, float *dst_y)
 {
 	enum path_transition trans;
 	int i;
@@ -219,7 +217,7 @@ clip_polygon_left(struct clip_context *ctx, const struct polygon8 *src,
 
 static int
 clip_polygon_right(struct clip_context *ctx, const struct polygon8 *src,
-		   GLfloat *dst_x, GLfloat *dst_y)
+		   float *dst_x, float *dst_y)
 {
 	enum path_transition trans;
 	int i;
@@ -235,7 +233,7 @@ clip_polygon_right(struct clip_context *ctx, const struct polygon8 *src,
 
 static int
 clip_polygon_top(struct clip_context *ctx, const struct polygon8 *src,
-		 GLfloat *dst_x, GLfloat *dst_y)
+		 float *dst_x, float *dst_y)
 {
 	enum path_transition trans;
 	int i;
@@ -251,7 +249,7 @@ clip_polygon_top(struct clip_context *ctx, const struct polygon8 *src,
 
 static int
 clip_polygon_bottom(struct clip_context *ctx, const struct polygon8 *src,
-		    GLfloat *dst_x, GLfloat *dst_y)
+		    float *dst_x, float *dst_y)
 {
 	enum path_transition trans;
 	int i;
@@ -272,8 +270,8 @@ clip_polygon_bottom(struct clip_context *ctx, const struct polygon8 *src,
 int
 clip_simple(struct clip_context *ctx,
 	    struct polygon8 *surf,
-	    GLfloat *ex,
-	    GLfloat *ey)
+	    float *ex,
+	    float *ey)
 {
 	int i;
 	for (i = 0; i < surf->n; i++) {
@@ -286,8 +284,8 @@ clip_simple(struct clip_context *ctx,
 int
 clip_transformed(struct clip_context *ctx,
 		 struct polygon8 *surf,
-		 GLfloat *ex,
-		 GLfloat *ey)
+		 float *ex,
+		 float *ey)
 {
 	struct polygon8 polygon;
 	int i, n;
