@@ -39,10 +39,6 @@ class PixelTest::PixelTestRendererClient
   }
   virtual gfx::Rect DeviceClip() const OVERRIDE { return device_clip_; }
   virtual void SetFullRootLayerDamage() OVERRIDE {}
-  virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const
-      OVERRIDE {
-    return CompositorFrameMetadata();
-  }
 
   // OutputSurfaceClient implementation.
   virtual bool DeferredInitialize(

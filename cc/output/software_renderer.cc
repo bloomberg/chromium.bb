@@ -117,9 +117,9 @@ void SoftwareRenderer::FinishDrawingFrame(DrawingFrame* frame) {
   output_device_->EndPaint(current_frame_data_.get());
 }
 
-void SoftwareRenderer::SwapBuffers() {
+void SoftwareRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
   CompositorFrame compositor_frame;
-  compositor_frame.metadata = client_->MakeCompositorFrameMetadata();
+  compositor_frame.metadata = metadata;
   compositor_frame.software_frame_data = current_frame_data_.Pass();
   output_surface_->SwapBuffers(&compositor_frame);
 }

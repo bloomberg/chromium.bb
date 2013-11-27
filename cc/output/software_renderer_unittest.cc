@@ -55,9 +55,6 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
   }
   virtual gfx::Rect DeviceClip() const OVERRIDE { return DeviceViewport(); }
   virtual void SetFullRootLayerDamage() OVERRIDE {}
-  virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const OVERRIDE {
-    return CompositorFrameMetadata();
-  }
 
  protected:
   LayerTreeSettings settings_;

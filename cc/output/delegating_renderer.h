@@ -36,7 +36,7 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
 
   virtual void Finish() OVERRIDE {}
 
-  virtual void SwapBuffers() OVERRIDE;
+  virtual void SwapBuffers(const CompositorFrameMetadata& metadata) OVERRIDE;
   virtual void ReceiveSwapBuffersAck(const CompositorFrameAck&) OVERRIDE;
 
   virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) OVERRIDE;
@@ -59,7 +59,7 @@ class CC_EXPORT DelegatingRenderer : public Renderer {
   OutputSurface* output_surface_;
   ResourceProvider* resource_provider_;
   RendererCapabilities capabilities_;
-  CompositorFrame frame_for_swap_buffers_;
+  scoped_ptr<DelegatedFrameData> delegated_frame_data_;
   bool visible_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegatingRenderer);

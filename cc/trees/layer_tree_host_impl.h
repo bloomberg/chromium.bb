@@ -213,7 +213,6 @@ class CC_EXPORT LayerTreeHostImpl
   virtual gfx::Rect DeviceViewport() const OVERRIDE;
   virtual gfx::Rect DeviceClip() const OVERRIDE;
   virtual void SetFullRootLayerDamage() OVERRIDE;
-  virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const OVERRIDE;
 
   // TileManagerClient implementation.
   virtual void NotifyReadyToActivate() OVERRIDE;
@@ -413,6 +412,8 @@ class CC_EXPORT LayerTreeHostImpl
   };
 
   void ScheduleMicroBenchmark(scoped_ptr<MicroBenchmarkImpl> benchmark);
+
+  CompositorFrameMetadata MakeCompositorFrameMetadata() const;
 
  protected:
   LayerTreeHostImpl(

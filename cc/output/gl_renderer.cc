@@ -2238,7 +2238,7 @@ void GLRenderer::Finish() {
   GLC(context_, context_->finish());
 }
 
-void GLRenderer::SwapBuffers() {
+void GLRenderer::SwapBuffers(const CompositorFrameMetadata& metadata) {
   DCHECK(visible_);
   DCHECK(!is_backbuffer_discarded_);
 
@@ -2246,7 +2246,7 @@ void GLRenderer::SwapBuffers() {
   // We're done! Time to swapbuffers!
 
   CompositorFrame compositor_frame;
-  compositor_frame.metadata = client_->MakeCompositorFrameMetadata();
+  compositor_frame.metadata = metadata;
   compositor_frame.gl_frame_data = make_scoped_ptr(new GLFrameData);
   compositor_frame.gl_frame_data->size = output_surface_->SurfaceSize();
   if (capabilities_.using_partial_swap) {

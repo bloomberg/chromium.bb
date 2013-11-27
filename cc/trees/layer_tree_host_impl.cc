@@ -1424,7 +1424,8 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
     active_tree()->BreakSwapPromises(SwapPromise::SWAP_FAILS);
     return false;
   }
-  renderer_->SwapBuffers();
+  CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
+  renderer_->SwapBuffers(metadata);
   active_tree_->ClearLatencyInfo();
   active_tree()->FinishSwapPromises();
   return true;

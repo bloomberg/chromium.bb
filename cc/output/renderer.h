@@ -24,7 +24,6 @@ class CC_EXPORT RendererClient {
   virtual gfx::Rect DeviceViewport() const = 0;
   virtual gfx::Rect DeviceClip() const = 0;
   virtual void SetFullRootLayerDamage() = 0;
-  virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const = 0;
 
  protected:
   virtual ~RendererClient() {}
@@ -59,7 +58,7 @@ class CC_EXPORT Renderer {
   virtual void DoNoOp() {}
 
   // Puts backbuffer onscreen.
-  virtual void SwapBuffers() = 0;
+  virtual void SwapBuffers(const CompositorFrameMetadata& metadata) = 0;
   virtual void ReceiveSwapBuffersAck(const CompositorFrameAck& ack) {}
 
   virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) = 0;

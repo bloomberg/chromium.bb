@@ -36,7 +36,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   virtual ~SoftwareRenderer();
   virtual const RendererCapabilities& Capabilities() const OVERRIDE;
   virtual void Finish() OVERRIDE;
-  virtual void SwapBuffers() OVERRIDE;
+  virtual void SwapBuffers(const CompositorFrameMetadata& metadata) OVERRIDE;
   virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) OVERRIDE;
   virtual void SetVisible(bool visible) OVERRIDE;
   virtual void SendManagedMemoryStats(

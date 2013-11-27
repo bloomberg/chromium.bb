@@ -61,7 +61,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   virtual void Finish() OVERRIDE;
 
   virtual void DoNoOp() OVERRIDE;
-  virtual void SwapBuffers() OVERRIDE;
+  virtual void SwapBuffers(const CompositorFrameMetadata& metadata) OVERRIDE;
 
   virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) OVERRIDE;
 

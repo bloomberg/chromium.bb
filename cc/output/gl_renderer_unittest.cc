@@ -172,9 +172,6 @@ class FakeRendererClient : public RendererClient {
   virtual void SetFullRootLayerDamage() OVERRIDE {
     set_full_root_layer_damage_count_++;
   }
-  virtual CompositorFrameMetadata MakeCompositorFrameMetadata() const OVERRIDE {
-    return CompositorFrameMetadata();
-  }
 
   // Methods added for test.
   int set_full_root_layer_damage_count() const {
@@ -242,7 +239,7 @@ class GLRendererTest : public testing::Test {
 
   virtual void SetUp() { renderer_->Initialize(); }
 
-  void SwapBuffers() { renderer_->SwapBuffers(); }
+  void SwapBuffers() { renderer_->SwapBuffers(CompositorFrameMetadata()); }
 
   LayerTreeSettings settings_;
   FrameCountingContext* context3d_;
@@ -1654,7 +1651,7 @@ class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
     EXPECT_TRUE(renderer_->Initialize());
   }
 
-  void SwapBuffers() { renderer_->SwapBuffers(); }
+  void SwapBuffers() { renderer_->SwapBuffers(CompositorFrameMetadata()); }
 
   void DrawFrame(float device_scale_factor) {
     gfx::Rect viewport_rect(DeviceViewport());
@@ -1697,31 +1694,31 @@ TEST_F(MockOutputSurfaceTest, DrawFrameAndSwap) {
   DrawFrame(1.f);
 
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
-  renderer_->SwapBuffers();
+  renderer_->SwapBuffers(CompositorFrameMetadata());
 }
 
 TEST_F(MockOutputSurfaceTest, DrawFrameAndResizeAndSwap) {
   DrawFrame(1.f);
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
-  renderer_->SwapBuffers();
+  renderer_->SwapBuffers(CompositorFrameMetadata());
 
   set_viewport(gfx::Rect(0, 0, 2, 2));
   renderer_->ViewportChanged();
 
   DrawFrame(2.f);
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
-  renderer_->SwapBuffers();
+  renderer_->SwapBuffers(CompositorFrameMetadata());
 
   DrawFrame(2.f);
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
-  renderer_->SwapBuffers();
+  renderer_->SwapBuffers(CompositorFrameMetadata());
 
   set_viewport(gfx::Rect(0, 0, 1, 1));
   renderer_->ViewportChanged();
 
   DrawFrame(1.f);
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
-  renderer_->SwapBuffers();
+  renderer_->SwapBuffers(CompositorFrameMetadata());
 }
 
 class GLRendererTestSyncPoint : public GLRendererPixelTest {
