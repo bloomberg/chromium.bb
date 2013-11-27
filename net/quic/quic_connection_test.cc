@@ -745,7 +745,6 @@ class QuicConnectionTest : public ::testing::TestWithParam<bool> {
 
     QuicConnectionCloseFrame qccf;
     qccf.error_code = QUIC_PEER_GOING_AWAY;
-    qccf.ack_frame = QuicAckFrame(0, QuicTime::Zero(), 1);
 
     QuicFrames frames;
     QuicFrame frame(&qccf);
@@ -895,43 +894,7 @@ TEST_F(QuicConnectionTest, RejectPacketTooFarOut) {
   ProcessDataPacket(6000, 0, !kEntropyFlag);
 }
 
-// TODO(rtenneti): Delete this when QUIC_VERSION_11 is deprecated.
-TEST_F(QuicConnectionTest, TruncatedAck11) {
-  if (QuicVersionMax() > QUIC_VERSION_11) {
-    return;
-  }
-  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  EXPECT_CALL(*send_algorithm_, OnPacketAcked(_, _, _)).Times(2);
-  EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(1);
-  for (int i = 0; i < 200; ++i) {
-    SendStreamDataToPeer(1, "foo", i * 3, !kFin, NULL);
-  }
-
-  QuicAckFrame frame(0, QuicTime::Zero(), 1);
-  frame.received_info.largest_observed = 193;
-  InsertMissingPacketsBetween(&frame.received_info, 1, 193);
-  frame.received_info.entropy_hash =
-      QuicConnectionPeer::GetSentEntropyHash(&connection_, 193) ^
-      QuicConnectionPeer::GetSentEntropyHash(&connection_, 192);
-
-  ProcessAckPacket(&frame);
-
-  EXPECT_TRUE(QuicConnectionPeer::GetReceivedTruncatedAck(&connection_));
-
-  frame.received_info.missing_packets.erase(192);
-  frame.received_info.entropy_hash =
-      QuicConnectionPeer::GetSentEntropyHash(&connection_, 193) ^
-      QuicConnectionPeer::GetSentEntropyHash(&connection_, 191);
-
-  ProcessAckPacket(&frame);
-  EXPECT_FALSE(QuicConnectionPeer::GetReceivedTruncatedAck(&connection_));
-}
-
 TEST_F(QuicConnectionTest, TruncatedAck) {
-  // TODO(rtenneti): Delete this when QUIC_VERSION_11 is deprecated.
-  if (QuicVersionMax() <= QUIC_VERSION_11) {
-    return;
-  }
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   int num_packets = 256 * 2 + 1;
   for (int i = 0; i < num_packets; ++i) {
@@ -3055,7 +3018,6 @@ TEST_F(QuicConnectionTest, ProcessFramesIfPacketClosedConnection) {
 
   QuicConnectionCloseFrame qccf;
   qccf.error_code = QUIC_PEER_GOING_AWAY;
-  qccf.ack_frame = QuicAckFrame(0, QuicTime::Zero(), 1);
   QuicFrame close_frame(&qccf);
   QuicFrame stream_frame(&frame1_);
 

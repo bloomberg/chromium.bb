@@ -142,8 +142,6 @@ QuicVersionVector QuicSupportedVersions() {
 
 QuicTag QuicVersionToQuicTag(const QuicVersion version) {
   switch (version) {
-    case QUIC_VERSION_11:
-      return MakeQuicTag('Q', '0', '1', '1');
     case QUIC_VERSION_12:
       return MakeQuicTag('Q', '0', '1', '2');
     default:
@@ -172,7 +170,6 @@ return #x
 
 string QuicVersionToString(const QuicVersion version) {
   switch (version) {
-    RETURN_STRING_LITERAL(QUIC_VERSION_11);
     RETURN_STRING_LITERAL(QUIC_VERSION_12);
     default:
       return "QUIC_VERSION_UNSUPPORTED";

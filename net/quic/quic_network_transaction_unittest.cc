@@ -116,11 +116,9 @@ class QuicNetworkTransactionTest : public PlatformTest {
     header.fec_flag = false;
     header.fec_group = 0;
 
-    QuicAckFrame ack_frame(0, QuicTime::Zero(), 0);
     QuicConnectionCloseFrame close;
     close.error_code = QUIC_CRYPTO_VERSION_NOT_SUPPORTED;
     close.error_details = "Time to panic!";
-    close.ack_frame = ack_frame;
     return scoped_ptr<QuicEncryptedPacket>(
         ConstructPacket(header, QuicFrame(&close)));
   }

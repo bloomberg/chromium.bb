@@ -44,8 +44,6 @@ const size_t kQuicStreamPayloadLengthSize = 2;
 const size_t kQuicEntropyHashSize = 1;
 // Size in bytes reserved for the delta time of the largest observed
 // sequence number in ack frames.
-// TODO(ianswett): Remove this once QUIC_VERSION_11 is removed.
-const size_t kQuicv11DeltaTimeLargestObservedSize = 4;
 const size_t kQuicDeltaTimeLargestObservedSize = 2;
 // Size in bytes reserved for the number of missing packets in ack frames.
 const size_t kNumberOfMissingPacketsSize = 1;
@@ -243,8 +241,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
                                       QuicStreamOffset offset,
                                       bool last_frame_in_packet);
   // Size in bytes of all ack frame fields without the missing packets.
-  // TODO(ianswett): Remove this once QUIC_VERSION_11 is removed.
-  static size_t GetMinAckFrameSizev11();
   static size_t GetMinAckFrameSize(
       QuicVersion version,
       QuicSequenceNumberLength sequence_number_length,
@@ -403,8 +399,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
   bool ProcessAckFrame(const QuicPacketHeader& header,
                        uint8 frame_type,
                        QuicAckFrame* frame);
-  // TODO(ianswett): Remove this once QUIC_VERSION_11 is removed.
-  bool ProcessReceivedInfoV11(ReceivedPacketInfo* received_info);
   bool ProcessReceivedInfo(uint8 frame_type, ReceivedPacketInfo* received_info);
   bool ProcessSentInfo(const QuicPacketHeader& public_header,
                        SentPacketInfo* sent_info);
@@ -453,9 +447,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
   bool AppendAckFramePayloadAndTypeByte(const QuicPacketHeader& header,
                                         const QuicAckFrame& frame,
                                         QuicDataWriter* builder);
-  // TODO(ianswett): Remove this once QUIC_VERSION_11 is removed.
-  bool AppendAckFramePayloadV11(const QuicAckFrame& frame,
-                                QuicDataWriter* builder);
   bool AppendQuicCongestionFeedbackFramePayload(
       const QuicCongestionFeedbackFrame& frame,
       QuicDataWriter* builder);

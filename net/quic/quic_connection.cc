@@ -513,10 +513,7 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
 
   largest_seen_packet_with_ack_ = last_header_.packet_sequence_number;
 
-  received_truncated_ack_ = version() <= QUIC_VERSION_11 ?
-      incoming_ack.received_info.missing_packets.size() >=
-          QuicFramer::GetMaxUnackedPackets(last_header_) :
-      incoming_ack.received_info.is_truncated;
+  received_truncated_ack_ = incoming_ack.received_info.is_truncated;
 
   received_packet_manager_.UpdatePacketInformationReceivedByPeer(incoming_ack);
   received_packet_manager_.UpdatePacketInformationSentByPeer(incoming_ack);
@@ -599,13 +596,6 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
     // A new ack has a diminished largest_observed value.  Error out.
     // If this was an old packet, we wouldn't even have checked.
     return false;
-  }
-
-  // We can't have too many unacked packets, or our ack frames go over
-  // kMaxPacketSize.
-  if (version() <= QUIC_VERSION_11) {
-    DCHECK_LE(incoming_ack.received_info.missing_packets.size(),
-              QuicFramer::GetMaxUnackedPackets(last_header_));
   }
 
   if (incoming_ack.sent_info.least_unacked <
@@ -1024,10 +1014,7 @@ bool QuicConnection::ProcessValidatedPacket() {
   DVLOG(1) << ENDPOINT << "time of last received packet: "
            << time_of_last_received_packet_.ToDebuggingValue();
 
-  // Set the max packet length only when QUIC_VERSION_12 or later is supported,
-  // with explicitly truncated acks.
-  if (version() > QUIC_VERSION_11 && is_server_ &&
-      encryption_level_ == ENCRYPTION_NONE &&
+  if (is_server_ && encryption_level_ == ENCRYPTION_NONE &&
       last_size_ > options()->max_packet_length) {
     options()->max_packet_length = last_size_;
   }
@@ -1698,13 +1685,10 @@ void QuicConnection::SendConnectionClosePacket(QuicErrorCode error,
   DVLOG(1) << ENDPOINT << "Force closing " << guid() << " with error "
              << QuicUtils::ErrorToString(error) << " (" << error << ") "
              << details;
-  ScopedPacketBundler ack_bundler(this, version() > QUIC_VERSION_11);
+  ScopedPacketBundler ack_bundler(this, true);
   QuicConnectionCloseFrame* frame = new QuicConnectionCloseFrame();
   frame->error_code = error;
   frame->error_details = details;
-  UpdateSentPacketInfo(&frame->ack_frame.sent_info);
-  received_packet_manager_.UpdateReceivedPacketInfo(
-      &frame->ack_frame.received_info, clock_->ApproximateNow());
   packet_generator_.AddControlFrame(QuicFrame(frame));
   Flush();
 }

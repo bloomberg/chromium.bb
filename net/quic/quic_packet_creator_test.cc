@@ -278,40 +278,10 @@ TEST_F(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
   delete serialized.packet;
 }
 
-// TODO(rtenneti): Delete this when QUIC_VERSION_11 is deprecated.
-TEST_F(QuicPacketCreatorTest, DISABLED_SerializeConnectionClosev11) {
-  client_framer_.set_version(QUIC_VERSION_11);
-  server_framer_.set_version(QUIC_VERSION_11);
-  QuicConnectionCloseFrame frame;
-  frame.error_code = QUIC_NO_ERROR;
-  frame.error_details = "error";
-  frame.ack_frame = QuicAckFrame(0u, QuicTime::Zero(), 0u);
-
-  SerializedPacket serialized = creator_.SerializeConnectionClose(&frame);
-  ASSERT_EQ(1u, serialized.sequence_number);
-  ASSERT_EQ(1u, creator_.sequence_number());
-
-  InSequence s;
-  EXPECT_CALL(framer_visitor_, OnPacket());
-  EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
-  EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
-  EXPECT_CALL(framer_visitor_, OnAckFrame(_));
-  EXPECT_CALL(framer_visitor_, OnConnectionCloseFrame(_));
-  EXPECT_CALL(framer_visitor_, OnPacketComplete());
-
-  ProcessPacket(serialized.packet);
-  delete serialized.packet;
-}
-
 TEST_F(QuicPacketCreatorTest, SerializeConnectionClose) {
-  // TODO(rtenneti): Delete this when QUIC_VERSION_11 is deprecated.
-  if (QuicVersionMax() <= QUIC_VERSION_11) {
-    return;
-  }
   QuicConnectionCloseFrame frame;
   frame.error_code = QUIC_NO_ERROR;
   frame.error_details = "error";
-  frame.ack_frame = QuicAckFrame(0u, QuicTime::Zero(), 0u);
 
   SerializedPacket serialized = creator_.SerializeConnectionClose(&frame);
   ASSERT_EQ(1u, serialized.sequence_number);

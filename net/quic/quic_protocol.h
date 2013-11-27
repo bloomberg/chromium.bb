@@ -230,7 +230,6 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_11 = 11,
   QUIC_VERSION_12 = 12,  // Current version.
 };
 
@@ -238,8 +237,10 @@ enum QuicVersion {
 // This should be ordered such that the highest supported version is the first
 // element, with subsequent elements in descending order (versions can be
 // skipped as necessary).
-static const QuicVersion kSupportedQuicVersions[] =
-    {QUIC_VERSION_12};
+//
+// IMPORTANT: if you are addding to this list, follow the instructions at
+// http://sites/quic/adding-and-removing-versions
+static const QuicVersion kSupportedQuicVersions[] = {QUIC_VERSION_12};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
@@ -671,8 +672,6 @@ struct NET_EXPORT_PRIVATE QuicRstStreamFrame {
 struct NET_EXPORT_PRIVATE QuicConnectionCloseFrame {
   QuicErrorCode error_code;
   std::string error_details;
-  // TODO(ianswett): Remove this once QUIC_VERSION_11 is removed.
-  QuicAckFrame ack_frame;
 };
 
 struct NET_EXPORT_PRIVATE QuicGoAwayFrame {
