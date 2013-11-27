@@ -475,9 +475,9 @@ bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8
         target->loader().didAccessInitialDocument();
 
     if (key->IsString()) {
-        DEFINE_STATIC_LOCAL(AtomicString, nameOfProtoProperty, ("__proto__", AtomicString::ConstructFromLiteral));
+        DEFINE_STATIC_LOCAL(const AtomicString, nameOfProtoProperty, ("__proto__", AtomicString::ConstructFromLiteral));
 
-        String name = toWebCoreString(key.As<v8::String>());
+        AtomicString name = toWebCoreAtomicString(key.As<v8::String>());
         Frame* childFrame = target->tree().scopedChild(name);
         // Notice that we can't call HasRealNamedProperty for ACCESS_HAS
         // because that would generate infinite recursion.
