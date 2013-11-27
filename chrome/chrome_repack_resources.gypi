@@ -6,6 +6,7 @@
   'variables': {
     'pak_inputs': [
       '<(SHARED_INTERMEDIATE_DIR)/chrome/chrome_unscaled_resources.pak',
+      '<(SHARED_INTERMEDIATE_DIR)/components/dom_distiller_resources.pak',
       '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
       '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/webui_resources.pak',
       '<(grit_out_dir)/browser_resources.pak',
@@ -19,7 +20,6 @@
     'conditions': [
       ['OS != "ios"', {
         'pak_inputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/components/dom_distiller_resources.pak',
           '<(SHARED_INTERMEDIATE_DIR)/content/browser/tracing/tracing_resources.pak',
           '<(SHARED_INTERMEDIATE_DIR)/content/content_resources.pak',
           '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.pak',
