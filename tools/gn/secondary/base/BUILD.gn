@@ -2,12 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-config("base_libs") {
-  if (!is_win) {
-    libs = [ "dl" ]
-  }
-}
-
 component("base") {
   external = true
   sources = [
@@ -696,9 +690,7 @@ component("base") {
     "//third_party/modp_b64",
   ]
 
-  # So we can append below without worrying about whether it has been
-  # previously defined or not.
-  all_dependent_configs = [ ":base_libs" ]
+  libs = []
 
   if (!is_chromeos) {
     sources -= [
@@ -750,6 +742,7 @@ component("base") {
   } else if (!is_nacl) {
     # Non-Windows.
     deps += "//third_party/libevent"
+    libs += "dl"
   }
 
   # Mac.
@@ -760,9 +753,29 @@ component("base") {
       "strings/sys_string_conversions_posix.cc",
     ]
     deps += "//third_party/mach_override"
+    libs += [
+      "AppKit.framework",
+      "ApplicationServices.framework",
+      "Carbon.framework",
+      "CoreFoundation.framework",
+      "Foundation.framework",
+      "IOKit.framework",
+      "Security.framework",
+    ]
   } else {
     # Non-Mac.
     sources -= "files/file_path_watcher_kqueue.cc"
+  }
+
+  # IOS.
+  if (is_ios) {
+    libs += [
+      "CoreFoundation.framework",
+      "CoreGraphics.framework",
+      "CoreText.framework",
+      "Foundation.framework",
+      "UIKit.framework",
+    ]
   }
 
   # Linux.

@@ -279,19 +279,24 @@ void NinjaBinaryTargetWriter::WriteLinkerFlags(
 
 void NinjaBinaryTargetWriter::WriteLibs(const Toolchain::Tool& tool) {
   out_ << "libs =";
-  if (settings_->IsMac()) {
-    // TODO(brettw) write frameworks correctly for Mac.
-    out_ << " -framework AppKit -framework ApplicationServices -framework Carbon -framework CoreFoundation -framework Foundation -framework IOKit -framework Security";
-  }
 
   // Libraries that have been recursively pushed through the dependency tree.
   EscapeOptions lib_escape_opts;
   lib_escape_opts.mode = ESCAPE_NINJA_SHELL;
   const OrderedSet<std::string> all_libs = target_->all_libs();
+  const std::string framework_ending(".framework");
   for (size_t i = 0; i < all_libs.size(); i++) {
-    out_ << " " << tool.lib_prefix;
-    EscapeStringToStream(out_, all_libs[i], lib_escape_opts);
-    out_ << "";
+    if (settings_->IsMac() && EndsWith(all_libs[i], framework_ending, false)) {
+      // Special-case libraries ending in ".framework" on Mac. Add the
+      // -framework switch and don't add the extension to the output.
+      out_ << " -framework ";
+      EscapeStringToStream(out_,
+          all_libs[i].substr(0, all_libs[i].size() - framework_ending.size()),
+          lib_escape_opts);
+    } else {
+      out_ << " " << tool.lib_prefix;
+      EscapeStringToStream(out_, all_libs[i], lib_escape_opts);
+    }
   }
   out_ << std::endl;
 }

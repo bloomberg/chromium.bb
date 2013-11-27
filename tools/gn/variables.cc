@@ -640,6 +640,13 @@ const char kLibs_Help[] =
     "  the \"lib_dirs\" so your library is found. If you need to specify\n"
     "  a path, you can use \"rebase_path\" to convert a path to be relative\n"
     "  to the build directory.\n"
+    "\n"
+    "  When constructing the linker command, the \"lib_prefix\" attribute of\n"
+    "  the linker tool in the current toolchain will be prepended to each\n"
+    "  library. So your BUILD file should not specify the switch prefix\n"
+    "  (like \"-l\"). On Mac, libraries ending in \".framework\" will be\n"
+    "  special-cased: the switch \"-framework\" will be prepended instead of\n"
+    "  the lib_prefix, and the \".framework\" suffix will be trimmed.\n"
     COMMON_LIB_INHERITANCE_HELP
     "\n"
     "Examples:\n"
