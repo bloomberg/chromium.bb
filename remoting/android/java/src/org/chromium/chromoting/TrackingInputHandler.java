@@ -38,6 +38,9 @@ public class TrackingInputHandler implements TouchInputHandler {
     /** Used to calculate the physics for flinging the cursor. */
     private Scroller mFlingScroller;
 
+    /** Used to disambiguate a 2-finger gesture as a swipe or a pinch. */
+    private SwipePinchDetector mSwipePinchDetector;
+
     /**
      * The current cursor position is stored here as floats, so that the desktop image can be
      * positioned with sub-pixel accuracy, to give a smoother panning animation at high zoom levels.
@@ -93,8 +96,8 @@ public class TrackingInputHandler implements TouchInputHandler {
 
         mZoomer = new ScaleGestureDetector(context, listener);
         mTapDetector = new TapGestureDetector(context, listener);
-
         mFlingScroller = new Scroller(context);
+        mSwipePinchDetector = new SwipePinchDetector(context);
 
         mCursorPosition = new PointF();
 
@@ -251,6 +254,7 @@ public class TrackingInputHandler implements TouchInputHandler {
         boolean handled = mScroller.onTouchEvent(event);
         handled |= mZoomer.onTouchEvent(event);
         handled |= mTapDetector.onTouchEvent(event);
+        mSwipePinchDetector.onTouchEvent(event);
 
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
@@ -318,7 +322,8 @@ public class TrackingInputHandler implements TouchInputHandler {
          */
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            if (e2.getPointerCount() == 3 && !mSwipeCompleted) {
+            int pointerCount = e2.getPointerCount();
+            if (pointerCount == 3 && !mSwipeCompleted) {
                 // Note that distance values are reversed. For example, dragging a finger in the
                 // direction of increasing Y coordinate (downwards) results in distanceY being
                 // negative.
@@ -326,7 +331,15 @@ public class TrackingInputHandler implements TouchInputHandler {
                 return onSwipe();
             }
 
-            if (e2.getPointerCount() != 1 || mSuppressCursorMovement) {
+            if (pointerCount == 2 && mSwipePinchDetector.isSwiping()) {
+                mViewer.injectMouseWheelDeltaEvent(-(int)distanceX, -(int)distanceY);
+
+                // Prevent the cursor being moved or flung by the gesture.
+                mSuppressCursorMovement = true;
+                return true;
+            }
+
+            if (pointerCount != 1 || mSuppressCursorMovement) {
                 return false;
             }
 
@@ -373,6 +386,10 @@ public class TrackingInputHandler implements TouchInputHandler {
         /** Called when the user is in the process of pinch-zooming. */
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
+            if (!mSwipePinchDetector.isPinching()) {
+                return false;
+            }
+
             if (Math.abs(detector.getScaleFactor() - 1) < MIN_ZOOM_DELTA) {
                 return false;
             }
