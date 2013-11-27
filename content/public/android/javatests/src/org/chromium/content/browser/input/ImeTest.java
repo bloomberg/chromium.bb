@@ -8,9 +8,9 @@ import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.graphics.Rect;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.test.FlakyTest;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -29,14 +29,15 @@ import org.chromium.content_shell_apk.ContentShellTestBase;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeoutException;
 
 public class ImeTest extends ContentShellTestBase {
 
     private static final String DATA_URL = UrlUtils.encodeHtmlDataUri(
             "<html><head><meta name=\"viewport\"" +
-            "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>" +
+            "content=\"width=device-width, initial-scale=2.0, maximum-scale=2.0\" /></head>" +
             "<body><form action=\"about:blank\">" +
-            "<input id=\"input_text\" type=\"text\" />" +
+            "<input id=\"input_text\" type=\"text\" /><br/>" +
             "<input id=\"input_radio\" type=\"radio\" style=\"width:50px;height:50px\" />" +
             "<br/><textarea id=\"textarea\" rows=\"4\" cols=\"20\"></textarea>" +
             "</form></body></html>");
@@ -63,7 +64,9 @@ public class ImeTest extends ContentShellTestBase {
         mContentView = getActivity().getActiveContentView();
         mCallbackContainer = new TestCallbackHelperContainer(mContentView);
         // TODO(aurimas) remove this wait once crbug.com/179511 is fixed.
-        assertWaitForPageScaleFactorMatch(1);
+        assertWaitForPageScaleFactorMatch(2);
+        assertWaitForNonZeroNodeBounds("input_text");
+
         DOMUtils.clickNode(this, mContentView, mCallbackContainer, "input_text");
         assertWaitForKeyboardStatus(true);
 
@@ -76,12 +79,8 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(0, mInputMethodManagerWrapper.getEditorInfo().initialSelEnd);
     }
 
-    /*
-       @MediumTest
-       @Feature({"TextInput", "Main"})
-       crbug.com/315548
-    */
-    @FlakyTest
+    @MediumTest
+    @Feature({"TextInput", "Main"})
     public void testKeyboardDismissedAfterClickingGo() throws Throwable {
         mConnection.setComposingText("hello", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, 0, 5);
@@ -92,12 +91,8 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForKeyboardStatus(false);
     }
 
-    /*
-       @SmallTest
-       @Feature({"TextInput", "Main"})
-       crbug.com/315548
-    */
-    @FlakyTest
+    @SmallTest
+    @Feature({"TextInput", "Main"})
     public void testGetTextUpdatesAfterEnteringText() throws Throwable {
         mConnection.setComposingText("h", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "h", 1, 1, 0, 1);
@@ -116,12 +111,8 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(1, mInputMethodManagerWrapper.getShowSoftInputCounter());
     }
 
-    /*
-       @SmallTest
-       @Feature({"TextInput"})
-       crbug.com/315548
-    */
-    @FlakyTest
+    @SmallTest
+    @Feature({"TextInput"})
     public void testImeCopy() throws Exception {
         mConnection.commitText("hello", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, -1, -1);
@@ -133,12 +124,8 @@ public class ImeTest extends ContentShellTestBase {
         assertClipboardContents(getActivity(), "llo");
     }
 
-    /*
-       @SmallTest
-       @Feature({"TextInput"})
-       crbug.com/315548
-    */
-    @FlakyTest
+    @SmallTest
+    @Feature({"TextInput"})
     public void testEnterTextAndRefocus() throws Exception {
         mConnection.commitText("hello", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, -1, -1);
@@ -152,12 +139,8 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(5, mInputMethodManagerWrapper.getEditorInfo().initialSelEnd);
     }
 
-    /*
-       @SmallTest
-       @Feature({"TextInput"})
-       crbug.com/315548
-    */
-    @FlakyTest
+    @SmallTest
+    @Feature({"TextInput"})
     public void testImeCut() throws Exception {
         mConnection.commitText("snarful", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "snarful", 7, 7, -1, -1);
@@ -171,12 +154,8 @@ public class ImeTest extends ContentShellTestBase {
         assertClipboardContents(getActivity(), "narf");
     }
 
-    /*
-       @SmallTest
-       @Feature({"TextInput"})
-       crbug.com/315548
-    */
-    @FlakyTest
+    @SmallTest
+    @Feature({"TextInput"})
     public void testImePaste() throws Exception {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -204,13 +183,8 @@ public class ImeTest extends ContentShellTestBase {
                 mConnection.mImeUpdateQueue, 5, "blablargblarg", 13, 13, -1, -1);
     }
 
-
-    /*
-       @SmallTest
-       @Feature({"TextInput"})
-       crbug.com/315548
-    */
-    @FlakyTest
+    @SmallTest
+    @Feature({"TextInput"})
     public void testImeSelectAndUnSelectAll() throws Exception {
         mConnection.commitText("hello", 1);
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, -1, -1);
@@ -224,12 +198,8 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForKeyboardStatus(false);
     }
 
-    /*
-       @SmallTest
-       @Feature({"TextInput", "Main"})
-       crbug.com/315548
-    */
-    @FlakyTest
+    @SmallTest
+    @Feature({"TextInput", "Main"})
     public void testShowImeIfNeeded() throws Throwable {
         DOMUtils.focusNode(this, mContentView, mCallbackContainer, "input_radio");
         assertWaitForKeyboardStatus(false);
@@ -244,12 +214,8 @@ public class ImeTest extends ContentShellTestBase {
         assertWaitForKeyboardStatus(true);
     }
 
-    /*
-       @SmallTest
-       @Feature({"TextInput", "Main"})
-       crbug.com/315548
-    */
-    @FlakyTest
+    @SmallTest
+    @Feature({"TextInput", "Main"})
     public void testFinishComposingText() throws Throwable {
         // Focus the textarea. We need to do the following steps because we are focusing using JS.
         DOMUtils.focusNode(this, mContentView, mCallbackContainer, "input_radio");
@@ -281,12 +247,8 @@ public class ImeTest extends ContentShellTestBase {
         waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 6, "h\nllo ", 2, 2, -1, -1);
     }
 
-    /*
-       @SmallTest
-       @Feature({"TextInput", "Main"})
-       crbug.com/315548
-    */
-    @FlakyTest
+    @SmallTest
+    @Feature({"TextInput", "Main"})
     public void testEnterKeyEventWhileComposingText() throws Throwable {
         // Focus the textarea. We need to do the following steps because we are focusing using JS.
         DOMUtils.focusNode(this, mContentView, mCallbackContainer, "input_radio");
@@ -378,6 +340,26 @@ public class ImeTest extends ContentShellTestBase {
                                 && TextUtils.equals(clip.getItemAt(0).getText(), expectedContents);
                     }
                 });
+            }
+        }));
+    }
+
+    private void assertWaitForNonZeroNodeBounds(final String nodeName) throws InterruptedException {
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                Rect nodeBounds = new Rect();
+                try {
+                    nodeBounds =
+                            DOMUtils.getNodeBounds(mContentView, mCallbackContainer, nodeName);
+                } catch (InterruptedException e) {
+                    // Intentionally do nothing
+                    return false;
+                } catch (TimeoutException e) {
+                    // Intentionally do nothing
+                    return false;
+                }
+                return !nodeBounds.isEmpty();
             }
         }));
     }
