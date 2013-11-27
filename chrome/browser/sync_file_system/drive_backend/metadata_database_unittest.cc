@@ -127,6 +127,10 @@ void ExpectEquivalentSets(const Container& left, const Container& right) {
   }
 }
 
+base::FilePath CreateNormalizedPath(const base::FilePath::StringType& path) {
+  return base::FilePath(path).NormalizePathSeparators();
+}
+
 }  // namespace
 
 class MetadataDatabaseTest : public testing::Test {
@@ -690,12 +694,12 @@ TEST_F(MetadataDatabaseTest, BuildPathTest) {
   FileMetadata folder(CreateFolderMetadata(app_root, "folder"));
   FileTracker folder_tracker(CreateTracker(app_root_tracker, folder));
 
-  FileMetadata file(CreateFolderMetadata(folder, "file"));
+  FileMetadata file(CreateFileMetadata(folder, "file"));
   FileTracker file_tracker(CreateTracker(folder_tracker, file));
 
   FileMetadata inactive_folder(CreateFolderMetadata(app_root, "folder"));
   FileTracker inactive_folder_tracker(CreateTracker(app_root_tracker,
-                                                          inactive_folder));
+                                                    inactive_folder));
   inactive_folder_tracker.set_active(false);
 
   {
@@ -724,6 +728,111 @@ TEST_F(MetadataDatabaseTest, BuildPathTest) {
       file_tracker.tracker_id(), &path));
   EXPECT_EQ(base::FilePath(FPL("/folder/file")).NormalizePathSeparators(),
             path);
+}
+
+TEST_F(MetadataDatabaseTest, FindNearestActiveAncestorTest) {
+  const std::string kAppID = "app_id";
+
+  FileMetadata sync_root(CreateSyncRootMetadata());
+  FileTracker sync_root_tracker(CreateSyncRootTracker(sync_root));
+
+  FileMetadata app_root(CreateFolderMetadata(sync_root, kAppID));
+  FileTracker app_root_tracker(
+      CreateTracker(sync_root_tracker, app_root));
+  app_root_tracker.set_app_id(app_root.details().title());
+  app_root_tracker.set_tracker_kind(TRACKER_KIND_APP_ROOT);
+
+  // Create directory structure like this: "/folder1/folder2/file"
+  FileMetadata folder1(CreateFolderMetadata(app_root, "folder1"));
+  FileTracker folder_tracker1(CreateTracker(app_root_tracker, folder1));
+  FileMetadata folder2(CreateFolderMetadata(folder1, "folder2"));
+  FileTracker folder_tracker2(CreateTracker(folder_tracker1, folder2));
+  FileMetadata file(CreateFileMetadata(folder2, "file"));
+  FileTracker file_tracker(CreateTracker(folder_tracker2, file));
+
+  FileMetadata inactive_folder(CreateFolderMetadata(app_root, "folder1"));
+  FileTracker inactive_folder_tracker(CreateTracker(app_root_tracker,
+                                                    inactive_folder));
+  inactive_folder_tracker.set_active(false);
+
+  {
+    scoped_ptr<leveldb::DB> db = InitializeLevelDB();
+    ASSERT_TRUE(db);
+
+    EXPECT_TRUE(PutFileToDB(db.get(), sync_root).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), sync_root_tracker).ok());
+    EXPECT_TRUE(PutFileToDB(db.get(), app_root).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), app_root_tracker).ok());
+    EXPECT_TRUE(PutFileToDB(db.get(), folder1).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), folder_tracker1).ok());
+    EXPECT_TRUE(PutFileToDB(db.get(), folder2).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), folder_tracker2).ok());
+    EXPECT_TRUE(PutFileToDB(db.get(), file).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), file_tracker).ok());
+    EXPECT_TRUE(PutFileToDB(db.get(), inactive_folder).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), inactive_folder_tracker).ok());
+  }
+
+  EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
+
+  {
+    base::FilePath path;
+    FileTracker tracker;
+    EXPECT_FALSE(metadata_database()->FindNearestActiveAncestor(
+        "non_registered_app_id",
+        CreateNormalizedPath(FPL("folder1/folder2/file")),
+        &tracker, &path));
+  }
+
+  {
+    base::FilePath path;
+    FileTracker tracker;
+    EXPECT_TRUE(metadata_database()->FindNearestActiveAncestor(
+        kAppID, CreateNormalizedPath(FPL("")), &tracker, &path));
+    EXPECT_EQ(app_root_tracker.tracker_id(), tracker.tracker_id());
+    EXPECT_EQ(CreateNormalizedPath(FPL("")), path);
+  }
+
+  {
+    base::FilePath path;
+    FileTracker tracker;
+    EXPECT_TRUE(metadata_database()->FindNearestActiveAncestor(
+        kAppID, CreateNormalizedPath(FPL("folder1/folder2")),
+        &tracker, &path));
+    EXPECT_EQ(folder_tracker2.tracker_id(), tracker.tracker_id());
+    EXPECT_EQ(CreateNormalizedPath(FPL("folder1/folder2")), path);
+  }
+
+  {
+    base::FilePath path;
+    FileTracker tracker;
+    EXPECT_TRUE(metadata_database()->FindNearestActiveAncestor(
+        kAppID, CreateNormalizedPath(FPL("folder1/folder2/file")),
+        &tracker, &path));
+    EXPECT_EQ(file_tracker.tracker_id(), tracker.tracker_id());
+    EXPECT_EQ(CreateNormalizedPath(FPL("folder1/folder2/file")), path);
+  }
+
+  {
+    base::FilePath path;
+    FileTracker tracker;
+    EXPECT_TRUE(metadata_database()->FindNearestActiveAncestor(
+        kAppID,
+        CreateNormalizedPath(FPL("folder1/folder2/folder3/folder4/file")),
+        &tracker, &path));
+    EXPECT_EQ(folder_tracker2.tracker_id(), tracker.tracker_id());
+    EXPECT_EQ(CreateNormalizedPath(FPL("folder1/folder2")), path);
+  }
+
+  {
+    base::FilePath path;
+    FileTracker tracker;
+    EXPECT_TRUE(metadata_database()->FindNearestActiveAncestor(
+        kAppID, CreateNormalizedPath(FPL("folder1/folder2/file/folder4/file")),
+        &tracker, &path));
+    EXPECT_EQ(folder_tracker2.tracker_id(), tracker.tracker_id());
+    EXPECT_EQ(CreateNormalizedPath(FPL("folder1/folder2")), path);
+  }
 }
 
 TEST_F(MetadataDatabaseTest, UpdateByChangeListTest) {

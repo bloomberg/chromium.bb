@@ -756,12 +756,40 @@ bool MetadataDatabase::FindNearestActiveAncestor(
     const base::FilePath& full_path,
     FileTracker* tracker,
     base::FilePath* path) const {
-  // TODO(tzik):
-  //  - Call FindAppTracker() for |app_id|.
-  //  - Call base::FilePath::GetComponent() to decompose |full_path|.
-  //  - Follow folder tree for the components, and return the tracker if found.
-  NOTIMPLEMENTED();
-  return false;
+  DCHECK(tracker);
+  DCHECK(path);
+
+  if (full_path.IsAbsolute() ||
+      !FindAppRootTracker(app_id, tracker) ||
+      tracker->tracker_kind() == TRACKER_KIND_DISABLED_APP_ROOT) {
+    return false;
+  }
+
+  std::vector<base::FilePath::StringType> components;
+  full_path.GetComponents(&components);
+  path->clear();
+
+  for (size_t i = 0; i < components.size(); ++i) {
+    const std::string title = base::FilePath(components[i]).AsUTF8Unsafe();
+    TrackerSet trackers;
+    if (!FindTrackersByParentAndTitle(
+            tracker->tracker_id(), title, &trackers) ||
+        !trackers.has_active()) {
+      return true;
+    }
+
+    DCHECK(trackers.active_tracker()->has_synced_details());
+    const FileDetails& details = trackers.active_tracker()->synced_details();
+    if (details.file_kind() != FILE_KIND_FOLDER && i != components.size() - 1) {
+      // This non-last component indicates file. Give up search.
+      return true;
+    }
+
+    *tracker = *trackers.active_tracker();
+    *path = path->Append(components[i]);
+  }
+
+  return true;
 }
 
 void MetadataDatabase::UpdateByChangeList(
