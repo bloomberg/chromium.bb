@@ -181,14 +181,8 @@ private:
     // Event base timing
     void handleConditionEvent(Event*, Condition*);
 
-    // Syncbase timing
-    enum NewOrExistingInterval {
-        NewInterval,
-        ExistingInterval
-    };
-
-    void notifyDependentsIntervalChanged(NewOrExistingInterval);
-    void createInstanceTimesFromSyncbase(SVGSMILElement* syncbase, NewOrExistingInterval);
+    void notifyDependentsIntervalChanged();
+    void createInstanceTimesFromSyncbase(SVGSMILElement* syncbase);
     void addTimeDependent(SVGSMILElement*);
     void removeTimeDependent(SVGSMILElement*);
 

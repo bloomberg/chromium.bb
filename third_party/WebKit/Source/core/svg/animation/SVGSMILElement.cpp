@@ -898,10 +898,9 @@ void SVGSMILElement::resolveFirstInterval()
     ASSERT(!begin.isIndefinite());
 
     if (!begin.isUnresolved() && (begin != m_intervalBegin || end != m_intervalEnd)) {
-        bool wasUnresolved = m_intervalBegin.isUnresolved();
         m_intervalBegin = begin;
         m_intervalEnd = end;
-        notifyDependentsIntervalChanged(wasUnresolved ? NewInterval : ExistingInterval);
+        notifyDependentsIntervalChanged();
         m_nextProgressTime = min(m_nextProgressTime, m_intervalBegin);
 
         if (m_timeContainer)
@@ -920,7 +919,7 @@ bool SVGSMILElement::resolveNextInterval(bool notifyDependents)
         m_intervalBegin = begin;
         m_intervalEnd = end;
         if (notifyDependents)
-            notifyDependentsIntervalChanged(NewInterval);
+            notifyDependentsIntervalChanged();
         m_nextProgressTime = min(m_nextProgressTime, m_intervalBegin);
         return true;
     }
@@ -951,7 +950,7 @@ void SVGSMILElement::beginListChanged(SMILTime eventTime)
                     if (m_activeState != Active)
                         endedActiveInterval();
                 }
-                notifyDependentsIntervalChanged(ExistingInterval);
+                notifyDependentsIntervalChanged();
             }
         }
     }
@@ -972,7 +971,7 @@ void SVGSMILElement::endListChanged(SMILTime)
             newEnd = resolveActiveEnd(m_intervalBegin, newEnd);
             if (newEnd != m_intervalEnd) {
                 m_intervalEnd = newEnd;
-                notifyDependentsIntervalChanged(ExistingInterval);
+                notifyDependentsIntervalChanged();
             }
         }
     }
@@ -997,7 +996,7 @@ void SVGSMILElement::checkRestart(SMILTime elapsed)
         SMILTime nextBegin = findInstanceTime(Begin, m_intervalBegin, false);
         if (nextBegin < m_intervalEnd) {
             m_intervalEnd = nextBegin;
-            notifyDependentsIntervalChanged(ExistingInterval);
+            notifyDependentsIntervalChanged();
         }
     }
 
@@ -1197,7 +1196,7 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
     return animationIsContributing;
 }
 
-void SVGSMILElement::notifyDependentsIntervalChanged(NewOrExistingInterval newOrExisting)
+void SVGSMILElement::notifyDependentsIntervalChanged()
 {
     ASSERT(m_intervalBegin.isFinite());
     DEFINE_STATIC_LOCAL(HashSet<SVGSMILElement*>, loopBreaker, ());
@@ -1207,13 +1206,13 @@ void SVGSMILElement::notifyDependentsIntervalChanged(NewOrExistingInterval newOr
     TimeDependentSet::iterator end = m_timeDependents.end();
     for (TimeDependentSet::iterator it = m_timeDependents.begin(); it != end; ++it) {
         SVGSMILElement* dependent = *it;
-        dependent->createInstanceTimesFromSyncbase(this, newOrExisting);
+        dependent->createInstanceTimesFromSyncbase(this);
     }
 
     loopBreaker.remove(this);
 }
 
-void SVGSMILElement::createInstanceTimesFromSyncbase(SVGSMILElement* syncbase, NewOrExistingInterval)
+void SVGSMILElement::createInstanceTimesFromSyncbase(SVGSMILElement* syncbase)
 {
     // FIXME: To be really correct, this should handle updating exising interval by changing
     // the associated times instead of creating new ones.
@@ -1240,7 +1239,7 @@ void SVGSMILElement::addTimeDependent(SVGSMILElement* animation)
 {
     m_timeDependents.add(animation);
     if (m_intervalBegin.isFinite())
-        animation->createInstanceTimesFromSyncbase(this, NewInterval);
+        animation->createInstanceTimesFromSyncbase(this);
 }
 
 void SVGSMILElement::removeTimeDependent(SVGSMILElement* animation)
