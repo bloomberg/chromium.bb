@@ -151,6 +151,7 @@ namespace WTF {
         void prependNode(Node*);
         void insertNodeBefore(Node* beforeNode, Node* newNode);
         void deleteAllNodes();
+        void createAllocatorIfNeeded();
 
         iterator makeIterator(Node*);
         const_iterator makeConstIterator(Node*) const;
@@ -510,7 +511,6 @@ namespace WTF {
     inline ListHashSet<T, inlineCapacity, U>::ListHashSet()
         : m_head(0)
         , m_tail(0)
-        , m_allocator(adoptPtr(new NodeAllocator))
     {
     }
 
@@ -518,7 +518,6 @@ namespace WTF {
     inline ListHashSet<T, inlineCapacity, U>::ListHashSet(const ListHashSet& other)
         : m_head(0)
         , m_tail(0)
-        , m_allocator(adoptPtr(new NodeAllocator))
     {
         const_iterator end = other.end();
         for (const_iterator it = other.begin(); it != end; ++it)
@@ -569,8 +568,10 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename U>
     size_t ListHashSet<T, inlineCapacity, U>::sizeInBytes() const
     {
-        size_t result = sizeof(*this) + sizeof(*m_allocator);
-        result += sizeof(typename ImplType::ValueType) * m_impl.capacity();
+        size_t result = sizeof(*this);
+        if (!m_allocator)
+            return result;
+        result += sizeof(*m_allocator) + (sizeof(typename ImplType::ValueType) * m_impl.capacity());
         for (Node* node = m_head; node; node = node->m_next) {
             if (!m_allocator->inPool(node))
                 result += sizeof(Node);
@@ -730,6 +731,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename U>
     typename ListHashSet<T, inlineCapacity, U>::AddResult ListHashSet<T, inlineCapacity, U>::add(const ValueType &value)
     {
+        createAllocatorIfNeeded();
         typename ImplType::AddResult result = m_impl.template add<BaseTranslator>(value, m_allocator.get());
         if (result.isNewEntry)
             appendNode(*result.iterator);
@@ -739,6 +741,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename U>
     typename ListHashSet<T, inlineCapacity, U>::AddResult ListHashSet<T, inlineCapacity, U>::appendOrMoveToLast(const ValueType &value)
     {
+        createAllocatorIfNeeded();
         typename ImplType::AddResult result = m_impl.template add<BaseTranslator>(value, m_allocator.get());
         Node* node = *result.iterator;
         if (!result.isNewEntry)
@@ -750,6 +753,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename U>
     typename ListHashSet<T, inlineCapacity, U>::AddResult ListHashSet<T, inlineCapacity, U>::prependOrMoveToFirst(const ValueType &value)
     {
+        createAllocatorIfNeeded();
         typename ImplType::AddResult result = m_impl.template add<BaseTranslator>(value, m_allocator.get());
         Node* node = *result.iterator;
         if (!result.isNewEntry)
@@ -761,6 +765,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename U>
     typename ListHashSet<T, inlineCapacity, U>::AddResult ListHashSet<T, inlineCapacity, U>::insertBefore(iterator it, const ValueType& newValue)
     {
+        createAllocatorIfNeeded();
         typename ImplType::AddResult result = m_impl.template add<BaseTranslator>(newValue, m_allocator.get());
         if (result.isNewEntry)
             insertNodeBefore(it.node(), *result.iterator);
@@ -770,6 +775,7 @@ namespace WTF {
     template<typename T, size_t inlineCapacity, typename U>
     typename ListHashSet<T, inlineCapacity, U>::AddResult ListHashSet<T, inlineCapacity, U>::insertBefore(const ValueType& beforeValue, const ValueType& newValue)
     {
+        createAllocatorIfNeeded();
         return insertBefore(find(beforeValue), newValue);
     }
 
@@ -879,6 +885,13 @@ namespace WTF {
 
         for (Node* node = m_head, *next = m_head->m_next; node; node = next, next = node ? node->m_next : 0)
             node->destroy(m_allocator.get());
+    }
+
+    template<typename T, size_t inlineCapacity, typename U>
+    void ListHashSet<T, inlineCapacity, U>::createAllocatorIfNeeded()
+    {
+        if (!m_allocator)
+            m_allocator = adoptPtr(new NodeAllocator);
     }
 
     template<typename T, size_t inlineCapacity, typename U>
