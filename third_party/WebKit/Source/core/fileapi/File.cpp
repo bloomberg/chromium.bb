@@ -32,7 +32,6 @@
 #include "public/platform/WebFileUtilities.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

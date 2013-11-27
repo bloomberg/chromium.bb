@@ -24,7 +24,6 @@
 
 #include "SVGNames.h"
 #include "core/css/CSSImageSetValue.h"
-#include "core/css/CSSImageValue.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/rendering/style/StyleFetchedImage.h"

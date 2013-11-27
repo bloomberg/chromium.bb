@@ -46,7 +46,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSize.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/text/WTFString.h"
 
 namespace {
 

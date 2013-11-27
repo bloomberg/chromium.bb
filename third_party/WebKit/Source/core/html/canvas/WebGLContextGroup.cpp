@@ -27,7 +27,6 @@
 
 #include "core/html/canvas/WebGLContextGroup.h"
 
-#include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/html/canvas/WebGLSharedObject.h"
 
 namespace WebCore {

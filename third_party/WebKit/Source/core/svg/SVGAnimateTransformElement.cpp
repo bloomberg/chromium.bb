@@ -26,7 +26,6 @@
 
 #include "SVGNames.h"
 #include "core/svg/SVGParserUtilities.h"
-#include "core/svg/SVGTransform.h"
 
 namespace WebCore {
 

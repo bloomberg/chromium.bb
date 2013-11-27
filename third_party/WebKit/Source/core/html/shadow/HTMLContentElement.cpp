@@ -29,7 +29,6 @@
 
 #include "HTMLNames.h"
 #include "core/css/CSSParser.h"
-#include "core/css/CSSSelectorList.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/dom/QualifiedName.h"

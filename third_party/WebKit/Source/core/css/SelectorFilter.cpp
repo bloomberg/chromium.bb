@@ -30,7 +30,6 @@
 #include "core/css/SelectorFilter.h"
 
 #include "core/css/CSSSelector.h"
-#include "core/dom/Element.h"
 
 namespace WebCore {
 

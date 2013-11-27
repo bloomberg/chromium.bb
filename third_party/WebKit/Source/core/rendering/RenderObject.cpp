@@ -81,7 +81,6 @@
 #include "core/rendering/style/ShadowList.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "platform/Partitions.h"
-#include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/UnusedParam.h"

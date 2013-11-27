@@ -39,7 +39,6 @@
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorAgent.h"
 #include "core/inspector/InspectorApplicationCacheAgent.h"
-#include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorCanvasAgent.h"
 #include "core/inspector/InspectorClient.h"

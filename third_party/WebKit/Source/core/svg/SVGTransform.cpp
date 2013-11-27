@@ -22,11 +22,9 @@
 #include "core/svg/SVGTransform.h"
 
 #include "platform/FloatConversion.h"
-#include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

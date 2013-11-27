@@ -26,7 +26,6 @@
 #include "core/dom/DOMImplementation.h"
 #include "platform/Language.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGStringList.h"
 
 namespace WebCore {
 

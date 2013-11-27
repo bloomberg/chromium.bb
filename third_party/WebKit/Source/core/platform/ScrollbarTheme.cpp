@@ -27,7 +27,6 @@
 #include "core/platform/ScrollbarTheme.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/mock/ScrollbarThemeMock.h"
 #include "core/platform/mock/ScrollbarThemeOverlayMock.h"
 #include "platform/scroll/ScrollbarThemeClient.h"

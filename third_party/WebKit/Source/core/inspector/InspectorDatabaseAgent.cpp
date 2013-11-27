@@ -29,7 +29,6 @@
 #include "config.h"
 #include "core/inspector/InspectorDatabaseAgent.h"
 
-#include "InspectorFrontend.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/html/VoidCallback.h"
 #include "core/inspector/InspectorDatabaseResource.h"

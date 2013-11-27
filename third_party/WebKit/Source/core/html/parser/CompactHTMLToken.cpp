@@ -28,7 +28,6 @@
 
 #include "core/dom/QualifiedName.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/html/parser/HTMLToken.h"
 
 namespace WebCore {
 

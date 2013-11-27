@@ -31,7 +31,6 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/SVGURIReference.h"
 #include "platform/text/TextStream.h"
 #include "platform/transforms/AffineTransform.h"

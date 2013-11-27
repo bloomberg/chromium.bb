@@ -23,7 +23,6 @@
 
 #include "core/svg/SVGGradientElement.h"
 
-#include "SVGNames.h"
 #include "XLinkNames.h"
 #include "core/dom/Attribute.h"
 #include "core/rendering/svg/RenderSVGHiddenContainer.h"

@@ -25,7 +25,6 @@
 #include "core/frame/FrameView.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/RenderView.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

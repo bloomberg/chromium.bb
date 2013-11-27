@@ -22,7 +22,6 @@
 #if ENABLE(SVG_FONTS)
 #include "core/svg/SVGFontFaceNameElement.h"
 
-#include "SVGNames.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 
 namespace WebCore {

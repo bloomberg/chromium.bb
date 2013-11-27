@@ -30,7 +30,6 @@
 #include "config.h"
 #include "core/inspector/InspectorProfilerAgent.h"
 
-#include "InspectorFrontend.h"
 #include "bindings/v8/ScriptProfiler.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InjectedScript.h"

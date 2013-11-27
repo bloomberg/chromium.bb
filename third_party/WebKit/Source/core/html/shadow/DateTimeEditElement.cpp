@@ -37,7 +37,6 @@
 #include "core/platform/graphics/FontCache.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
-#include "platform/DateComponents.h"
 #include "platform/text/DateTimeFormat.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/DateMath.h"

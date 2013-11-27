@@ -26,12 +26,10 @@
 #include "config.h"
 #include "core/frame/DOMSecurityPolicy.h"
 
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/ContentSecurityPolicy.h"
 #include "wtf/text/TextPosition.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

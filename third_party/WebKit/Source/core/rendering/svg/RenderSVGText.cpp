@@ -43,7 +43,6 @@
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include "core/rendering/svg/SVGRootInlineBox.h"
-#include "core/rendering/svg/SVGTextLayoutAttributesBuilder.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include "core/svg/SVGLengthList.h"
 #include "core/svg/SVGTextElement.h"

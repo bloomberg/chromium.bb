@@ -40,7 +40,6 @@
 #include "platform/graphics/WindRule.h"
 #include "wtf/MathExtras.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

@@ -24,7 +24,6 @@
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 
 #include "SVGNames.h"
-#include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/WidthIterator.h"
 #include "core/rendering/RenderObject.h"

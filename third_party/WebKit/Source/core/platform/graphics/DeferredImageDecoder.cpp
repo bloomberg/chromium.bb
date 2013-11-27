@@ -28,7 +28,6 @@
 
 #include "core/platform/graphics/ImageFrameGenerator.h"
 #include "core/platform/graphics/LazyDecodingPixelRef.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {

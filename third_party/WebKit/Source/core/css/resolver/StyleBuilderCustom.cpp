@@ -68,7 +68,6 @@
 #include "core/css/resolver/FilterOperationResolver.h"
 #include "core/css/resolver/FontBuilder.h"
 #include "core/css/resolver/StyleBuilder.h"
-#include "core/css/resolver/StyleResolverState.h"
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/frame/Frame.h"
 #include "core/page/Settings.h"

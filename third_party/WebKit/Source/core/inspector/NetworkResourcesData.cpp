@@ -31,7 +31,6 @@
 
 #include "core/dom/DOMImplementation.h"
 #include "core/fetch/Resource.h"
-#include "core/fetch/TextResourceDecoder.h"
 #include "platform/SharedBuffer.h"
 #include "platform/network/ResourceResponse.h"
 

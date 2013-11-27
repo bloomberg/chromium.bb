@@ -34,7 +34,6 @@
 #if ENABLE(INPUT_SPEECH)
 
 #include "core/speech/SpeechInputClient.h"
-#include "core/speech/SpeechInputListener.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {

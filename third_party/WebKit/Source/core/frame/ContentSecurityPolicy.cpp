@@ -29,7 +29,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptController.h"
-#include "bindings/v8/ScriptState.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/events/SecurityPolicyViolationEvent.h"
@@ -50,13 +49,10 @@
 #include "platform/weborigin/KnownPorts.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/HashSet.h"
 #include "wtf/SHA1.h"
 #include "wtf/StringHasher.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/StringBuilder.h"
-#include "wtf/text/TextPosition.h"
-#include "wtf/text/WTFString.h"
 
 namespace WTF {
 

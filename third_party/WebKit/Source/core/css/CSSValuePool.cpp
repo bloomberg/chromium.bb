@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/css/CSSValuePool.h"
 
-#include "CSSValueKeywords.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSValueList.h"
 #include "core/rendering/style/RenderStyle.h"

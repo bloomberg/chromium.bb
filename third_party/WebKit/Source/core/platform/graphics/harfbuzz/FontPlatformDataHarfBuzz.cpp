@@ -32,7 +32,6 @@
 #include "core/platform/graphics/harfbuzz/FontPlatformDataHarfBuzz.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "SkPaint.h"
 #include "SkTypeface.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/NotImplemented.h"
@@ -43,7 +42,6 @@
 #include "public/platform/linux/WebFontRenderStyle.h"
 #include "public/platform/linux/WebSandboxSupport.h"
 #include "public/platform/Platform.h"
-#include "wtf/text/StringImpl.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

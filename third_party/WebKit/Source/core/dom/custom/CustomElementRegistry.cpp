@@ -35,8 +35,6 @@
 #include "SVGNames.h"
 #include "bindings/v8/CustomElementConstructorBuilder.h"
 #include "core/dom/DocumentLifecycleObserver.h"
-#include "core/dom/custom/CustomElement.h"
-#include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/CustomElementException.h"
 #include "core/dom/custom/CustomElementRegistrationContext.h"
 

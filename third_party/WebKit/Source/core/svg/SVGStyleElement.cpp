@@ -23,7 +23,6 @@
 #include "config.h"
 #include "core/svg/SVGStyleElement.h"
 
-#include "SVGNames.h"
 #include "core/css/CSSStyleSheet.h"
 #include "wtf/StdLibExtras.h"
 

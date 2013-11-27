@@ -31,8 +31,6 @@
 #include <v8.h>
 #include "SkCanvas.h"
 #include "SkColorShader.h"
-#include "SkShader.h"
-#include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 
 namespace WebCore {

@@ -34,7 +34,6 @@
 
 #include "core/animation/Animation.h"
 #include "core/animation/DocumentTimeline.h"
-#include "core/animation/TimedItem.h"
 
 namespace WebCore {
 

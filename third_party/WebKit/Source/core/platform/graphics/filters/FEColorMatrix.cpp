@@ -26,7 +26,6 @@
 #include "core/platform/graphics/filters/FEColorMatrix.h"
 
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "platform/text/TextStream.h"

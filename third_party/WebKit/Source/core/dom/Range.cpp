@@ -27,7 +27,6 @@
 
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
 #include "core/dom/DocumentFragment.h"
@@ -47,7 +46,6 @@
 #include "core/rendering/RenderText.h"
 #include "platform/geometry/FloatQuad.h"
 #include "wtf/RefCountedLeakCounter.h"
-#include "wtf/Vector.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #ifndef NDEBUG

@@ -28,7 +28,6 @@
 #include "core/fetch/CrossOriginAccessControl.h"
 
 #include "platform/network/HTTPParsers.h"
-#include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Threading.h"

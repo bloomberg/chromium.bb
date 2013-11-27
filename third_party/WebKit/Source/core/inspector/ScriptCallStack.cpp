@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/inspector/ScriptCallStack.h"
 
-#include "InspectorTypeBuilder.h"
 
 namespace WebCore {
 

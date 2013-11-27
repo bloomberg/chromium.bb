@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/workers/WorkerRunLoop.h"
 
-#include "core/dom/ExecutionContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"

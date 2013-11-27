@@ -23,7 +23,6 @@
 #include "core/platform/graphics/filters/SourceGraphic.h"
 
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/filters/Filter.h"
 #include "platform/text/TextStream.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/WTFString.h"

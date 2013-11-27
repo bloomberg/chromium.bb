@@ -33,10 +33,8 @@
 
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
-#include "core/dom/Node.h"
 #include "core/dom/StaticNodeList.h"
 #include "wtf/HashMap.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/StdLibExtras.h"
 
 namespace WebCore {

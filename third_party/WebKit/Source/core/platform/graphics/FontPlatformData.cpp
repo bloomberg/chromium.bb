@@ -22,7 +22,6 @@
 #include "core/platform/graphics/FontPlatformData.h"
 
 #include "wtf/HashMap.h"
-#include "wtf/RetainPtr.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 #include "wtf/Vector.h"

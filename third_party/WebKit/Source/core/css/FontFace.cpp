@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/css/FontFace.h"
 
-#include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "FontFamilyNames.h"
 #include "bindings/v8/Dictionary.h"

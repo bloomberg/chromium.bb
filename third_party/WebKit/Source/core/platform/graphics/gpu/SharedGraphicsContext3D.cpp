@@ -29,7 +29,6 @@
 #include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
 
 #include "core/platform/graphics/Extensions3D.h"
-#include "core/platform/graphics/GraphicsContext3D.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"

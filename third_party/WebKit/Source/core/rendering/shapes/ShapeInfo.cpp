@@ -31,8 +31,6 @@
 #include "core/rendering/shapes/ShapeInfo.h"
 
 #include "core/rendering/RenderRegion.h"
-#include "core/rendering/shapes/Shape.h"
-#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 

@@ -31,7 +31,6 @@
 #include "core/frame/animation/CSSPropertyAnimation.h"
 
 #include <algorithm>
-#include "CSSPropertyNames.h"
 #include "StylePropertyShorthand.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSCrossfadeValue.h"

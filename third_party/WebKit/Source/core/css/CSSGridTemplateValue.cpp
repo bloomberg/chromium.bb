@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/css/CSSGridTemplateValue.h"
 
-#include "core/rendering/style/GridCoordinate.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

@@ -30,7 +30,6 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "core/html/parser/HTMLTokenizer.h"
-#include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncodingRegistry.h"
 #include "wtf/text/WTFString.h"
 

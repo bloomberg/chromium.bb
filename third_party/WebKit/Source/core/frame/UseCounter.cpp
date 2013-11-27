@@ -35,7 +35,6 @@
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 #include "public/platform/Platform.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

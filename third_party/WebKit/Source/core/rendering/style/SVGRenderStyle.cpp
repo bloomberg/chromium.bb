@@ -29,7 +29,6 @@
 
 #include "core/rendering/style/SVGRenderStyle.h"
 
-#include "core/css/CSSValueList.h"
 
 using namespace std;
 

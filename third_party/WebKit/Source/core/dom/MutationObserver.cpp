@@ -41,9 +41,7 @@
 #include "core/dom/MutationObserverRegistration.h"
 #include "core/dom/MutationRecord.h"
 #include "core/dom/Node.h"
-#include "wtf/HashSet.h"
 #include "wtf/MainThread.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 

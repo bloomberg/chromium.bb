@@ -21,7 +21,6 @@
 
 #include "core/svg/SVGTransformDistance.h"
 
-#include "core/svg/SVGTransform.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
 #include <math.h>

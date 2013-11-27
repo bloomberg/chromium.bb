@@ -41,7 +41,6 @@
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/loader/DocumentWriter.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/UniqueIdentifier.h"

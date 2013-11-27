@@ -26,8 +26,6 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 
 #include <limits>
-#include "core/dom/QualifiedName.h"
-#include "core/html/parser/HTMLIdentifier.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuilder.h"

@@ -27,7 +27,6 @@
 #include "core/events/EventDispatcher.h"
 
 #include "core/dom/ContainerNode.h"
-#include "core/events/EventContext.h"
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/EventRetargeter.h"
 #include "core/events/MouseEvent.h"

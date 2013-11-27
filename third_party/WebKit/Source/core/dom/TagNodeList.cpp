@@ -24,7 +24,6 @@
 #include "config.h"
 #include "core/dom/TagNodeList.h"
 
-#include "core/dom/Element.h"
 #include "core/dom/NodeRareData.h"
 #include "wtf/Assertions.h"
 

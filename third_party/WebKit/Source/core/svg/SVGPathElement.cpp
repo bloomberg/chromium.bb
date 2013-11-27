@@ -22,7 +22,6 @@
 
 #include "core/svg/SVGPathElement.h"
 
-#include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGElementInstance.h"
@@ -44,7 +43,6 @@
 #include "core/svg/SVGPathSegLinetoRel.h"
 #include "core/svg/SVGPathSegLinetoVerticalAbs.h"
 #include "core/svg/SVGPathSegLinetoVerticalRel.h"
-#include "core/svg/SVGPathSegList.h"
 #include "core/svg/SVGPathSegMovetoAbs.h"
 #include "core/svg/SVGPathSegMovetoRel.h"
 #include "core/svg/SVGPathUtilities.h"

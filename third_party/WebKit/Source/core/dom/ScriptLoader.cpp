@@ -49,7 +49,6 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringHash.h"
-#include "wtf/text/TextPosition.h"
 
 namespace WebCore {
 

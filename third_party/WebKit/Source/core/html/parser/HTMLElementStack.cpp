@@ -34,7 +34,6 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLTableElement.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

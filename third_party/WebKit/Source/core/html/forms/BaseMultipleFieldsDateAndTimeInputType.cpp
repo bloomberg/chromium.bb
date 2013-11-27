@@ -41,7 +41,6 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/forms/DateTimeFieldsState.h"
 #include "core/html/forms/FormController.h"
-#include "core/html/shadow/PickerIndicatorElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"

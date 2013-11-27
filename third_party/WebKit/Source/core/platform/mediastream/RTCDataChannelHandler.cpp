@@ -23,12 +23,7 @@
  */
 
 #include "config.h"
-
 #include "core/platform/mediastream/RTCDataChannelHandler.h"
-
-#include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
-#include "public/platform/WebRTCDataChannelHandler.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

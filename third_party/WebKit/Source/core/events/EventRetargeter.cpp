@@ -34,8 +34,6 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/TouchEvent.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/RefPtr.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 

@@ -30,8 +30,6 @@
 #include "core/events/Event.h"
 #include "core/events/FocusEvent.h"
 #include "core/events/MouseEvent.h"
-#include "core/dom/Node.h"
-#include "core/dom/StaticNodeList.h"
 #include "core/events/TouchEvent.h"
 #include "core/dom/TouchList.h"
 

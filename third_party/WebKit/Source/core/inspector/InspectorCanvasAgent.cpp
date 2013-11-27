@@ -32,10 +32,8 @@
 #include "core/inspector/InspectorCanvasAgent.h"
 
 #include "HTMLNames.h"
-#include "InspectorFrontend.h"
 #include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/ScriptProfiler.h"
-#include "bindings/v8/ScriptState.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/inspector/BindingVisitors.h"
 #include "core/inspector/InjectedScript.h"

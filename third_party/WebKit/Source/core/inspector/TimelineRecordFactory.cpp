@@ -34,7 +34,6 @@
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/events/Event.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "platform/JSONValues.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/network/ResourceRequest.h"

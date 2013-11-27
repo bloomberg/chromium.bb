@@ -31,7 +31,6 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/PageRuleCollector.h"
 #include "core/css/RuleFeature.h"
-#include "core/css/RuleSet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h" // For MatchRequest.

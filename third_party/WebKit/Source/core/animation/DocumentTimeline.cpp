@@ -33,7 +33,6 @@
 
 #include "core/animation/ActiveAnimations.h"
 #include "core/animation/AnimationClock.h"
-#include "core/animation/Player.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 

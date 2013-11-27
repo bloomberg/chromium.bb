@@ -32,7 +32,6 @@
 #include "core/timing/PerformanceMark.h"
 #include "core/timing/PerformanceMeasure.h"
 #include "public/platform/Platform.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -25,10 +25,8 @@
 
 #include "core/svg/SVGMaskElement.h"
 
-#include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "core/svg/SVGElementInstance.h"
-#include "core/svg/SVGUnitTypes.h"
 
 namespace WebCore {
 

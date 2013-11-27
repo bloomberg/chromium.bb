@@ -77,7 +77,6 @@ mailing address.
 
 #include <string.h>
 #include "core/platform/graphics/ImageSource.h"
-#include "core/platform/image-decoders/gif/GIFImageDecoder.h"
 
 using WebCore::GIFImageDecoder;
 

@@ -44,7 +44,6 @@
 #include "core/rendering/RenderTableSection.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/SubtreeLayoutScope.h"
-#include "core/rendering/style/CollapsedBorderValue.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
 using namespace std;

@@ -36,11 +36,9 @@
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/harfbuzz/HarfBuzzFace.h"
 #include "hb-icu.h"
-#include "platform/graphics/TextRun.h"
 #include "platform/text/SurrogatePairAwareTextIterator.h"
 #include "wtf/MathExtras.h"
 #include "wtf/unicode/Unicode.h"
-#include "wtf/Vector.h"
 #include <unicode/normlzr.h>
 #include <unicode/uchar.h>
 

@@ -102,7 +102,6 @@
 #include "core/page/PrintContext.h"
 #include "core/page/Settings.h"
 #include "core/frame/animation/AnimationController.h"
-#include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/filters/FilterOperation.h"

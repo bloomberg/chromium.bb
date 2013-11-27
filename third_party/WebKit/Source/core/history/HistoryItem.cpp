@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/history/HistoryItem.h"
 
-#include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "platform/network/ResourceRequest.h"
 #include "wtf/CurrentTime.h"

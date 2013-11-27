@@ -24,7 +24,6 @@
 #include "config.h"
 #include "core/html/HTMLAnchorElement.h"
 
-#include "HTMLNames.h"
 #include "core/dom/Attribute.h"
 #include "core/editing/FrameSelection.h"
 #include "core/events/KeyboardEvent.h"

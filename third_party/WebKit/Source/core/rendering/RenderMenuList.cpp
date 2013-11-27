@@ -44,7 +44,6 @@
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
-#include "platform/PopupMenu.h"
 #include "platform/geometry/IntSize.h"
 
 using namespace std;

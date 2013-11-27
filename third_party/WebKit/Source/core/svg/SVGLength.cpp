@@ -24,7 +24,6 @@
 #include "core/svg/SVGLength.h"
 
 #include "SVGNames.h"
-#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/ExceptionCode.h"

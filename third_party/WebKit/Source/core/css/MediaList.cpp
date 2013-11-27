@@ -27,7 +27,6 @@
 #include "core/css/MediaQuery.h"
 #include "core/css/MediaQueryExp.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/frame/DOMWindow.h"
 #include "wtf/text/StringBuilder.h"
 

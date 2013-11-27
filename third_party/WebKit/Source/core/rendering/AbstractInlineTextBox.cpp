@@ -32,7 +32,6 @@
 #include "core/rendering/AbstractInlineTextBox.h"
 
 #include "core/editing/TextIterator.h"
-#include "core/rendering/InlineTextBox.h"
 #include "platform/text/TextBreakIterator.h"
 
 namespace WebCore {

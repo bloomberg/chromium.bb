@@ -30,7 +30,6 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
-#include "core/dom/Element.h"
 #include "core/events/Event.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/page/Chrome.h"

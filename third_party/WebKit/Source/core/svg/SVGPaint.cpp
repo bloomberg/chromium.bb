@@ -23,7 +23,6 @@
 #include "core/svg/SVGPaint.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

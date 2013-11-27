@@ -32,22 +32,6 @@
 
 #include "core/animation/AnimatableValueTestHelper.h"
 
-#include "core/animation/AnimatableClipPathOperation.h"
-#include "core/animation/AnimatableColor.h"
-#include "core/animation/AnimatableDouble.h"
-#include "core/animation/AnimatableImage.h"
-#include "core/animation/AnimatableLength.h"
-#include "core/animation/AnimatableLengthBox.h"
-#include "core/animation/AnimatableLengthPoint.h"
-#include "core/animation/AnimatableLengthSize.h"
-#include "core/animation/AnimatableNeutral.h"
-#include "core/animation/AnimatableSVGLength.h"
-#include "core/animation/AnimatableSVGPaint.h"
-#include "core/animation/AnimatableShapeValue.h"
-#include "core/animation/AnimatableTransform.h"
-#include "core/animation/AnimatableUnknown.h"
-#include "core/animation/AnimatableValue.h"
-#include "core/animation/AnimatableVisibility.h"
 
 
 namespace WebCore {

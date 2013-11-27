@@ -23,7 +23,6 @@
 #include "core/rendering/style/StyleBoxData.h"
 
 #include "core/rendering/style/RenderStyle.h"
-#include "core/rendering/style/RenderStyleConstants.h"
 
 namespace WebCore {
 

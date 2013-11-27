@@ -40,7 +40,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 

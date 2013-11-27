@@ -23,7 +23,6 @@
 #include "config.h"
 #include "core/events/UIEvent.h"
 
-#include "core/frame/DOMWindow.h"
 
 namespace WebCore {
 

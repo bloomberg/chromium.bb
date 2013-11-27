@@ -27,7 +27,6 @@
 #include "core/frame/History.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/history/HistoryItem.h"

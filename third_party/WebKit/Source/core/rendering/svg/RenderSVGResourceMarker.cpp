@@ -27,8 +27,6 @@
 #include "core/rendering/LayoutRectRecorder.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
-#include "core/svg/SVGElement.h"
-#include "core/svg/SVGMarkerElement.h"
 
 #include "wtf/TemporaryChange.h"
 

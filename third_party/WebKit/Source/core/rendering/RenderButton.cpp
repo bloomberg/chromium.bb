@@ -21,7 +21,6 @@
 #include "config.h"
 #include "core/rendering/RenderButton.h"
 
-#include "HTMLNames.h"
 #include "core/dom/Document.h"
 
 namespace WebCore {

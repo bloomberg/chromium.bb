@@ -32,7 +32,6 @@
 #include "core/inspector/InspectorResourceAgent.h"
 
 #include "FetchInitiatorTypeNames.h"
-#include "InspectorFrontend.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Document.h"

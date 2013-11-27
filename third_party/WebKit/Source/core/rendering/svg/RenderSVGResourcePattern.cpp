@@ -25,7 +25,6 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
-#include "core/svg/PatternAttributes.h"
 #include "core/svg/SVGFitToViewBox.h"
 
 namespace WebCore {

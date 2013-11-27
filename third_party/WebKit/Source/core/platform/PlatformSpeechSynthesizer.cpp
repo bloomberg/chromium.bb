@@ -27,7 +27,6 @@
 #include "core/platform/PlatformSpeechSynthesizer.h"
 
 #include "core/platform/PlatformSpeechSynthesisUtterance.h"
-#include "core/platform/PlatformSpeechSynthesisVoice.h"
 #include "core/platform/chromium/support/WebSpeechSynthesizerClientImpl.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSpeechSynthesisUtterance.h"

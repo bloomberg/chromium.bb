@@ -29,11 +29,9 @@
 #include "core/css/SelectorChecker.h"
 
 #include "HTMLNames.h"
-#include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/dom/Document.h"
-#include "core/dom/Element.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/Text.h"

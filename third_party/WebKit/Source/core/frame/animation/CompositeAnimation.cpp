@@ -32,8 +32,6 @@
 #include "CSSPropertyNames.h"
 #include "core/frame/animation/AnimationControllerPrivate.h"
 #include "core/frame/animation/CSSPropertyAnimation.h"
-#include "core/frame/animation/ImplicitAnimation.h"
-#include "core/frame/animation/KeyframeAnimation.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {

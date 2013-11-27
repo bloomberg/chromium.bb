@@ -30,7 +30,6 @@
 
 #include "core/platform/graphics/DeferredImageDecoder.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
-#include "platform/graphics/ImageOrientation.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 

@@ -22,7 +22,6 @@
 #include "config.h"
 #include "core/css/resolver/StyleResolverState.h"
 
-#include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/page/Page.h"

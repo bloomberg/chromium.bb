@@ -28,8 +28,6 @@
 #include "config.h"
 #include "core/rendering/RenderImageResource.h"
 
-#include "core/fetch/ImageResource.h"
-#include "core/platform/graphics/Image.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderObject.h"
 

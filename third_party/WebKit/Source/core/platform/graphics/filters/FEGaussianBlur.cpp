@@ -29,7 +29,6 @@
 
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/cpu/arm/filters/FEGaussianBlurNEON.h"
-#include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/filters/ParallelJobs.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"

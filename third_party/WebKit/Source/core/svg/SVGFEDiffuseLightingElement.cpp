@@ -21,12 +21,10 @@
 
 #include "core/svg/SVGFEDiffuseLightingElement.h"
 
-#include "SVGNames.h"
 #include "core/platform/graphics/filters/FEDiffuseLighting.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/svg/SVGElementInstance.h"
-#include "core/svg/SVGFELightElement.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 

@@ -6,7 +6,6 @@
 #include "core/frame/ImageBitmap.h"
 
 #include "core/html/HTMLCanvasElement.h"
-#include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/CanvasRenderingContext.h"

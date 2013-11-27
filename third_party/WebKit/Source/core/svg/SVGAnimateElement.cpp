@@ -25,7 +25,6 @@
 #include "core/svg/SVGAnimateElement.h"
 
 #include "CSSPropertyNames.h"
-#include "SVGNames.h"
 #include "core/css/CSSParser.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/QualifiedName.h"

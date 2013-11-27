@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/fileapi/FileList.h"
 
-#include "core/fileapi/File.h"
 
 namespace WebCore {
 

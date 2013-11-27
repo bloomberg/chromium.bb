@@ -32,7 +32,6 @@
 #include "core/timing/MemoryInfo.h"
 
 #include <limits>
-#include "bindings/v8/ScriptGCEvent.h"
 #include "core/frame/Frame.h"
 #include "core/page/Settings.h"
 #include "wtf/CurrentTime.h"

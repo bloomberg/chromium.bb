@@ -55,7 +55,6 @@
 #include "core/css/ElementRuleCollector.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/PageRuleCollector.h"
-#include "core/css/RuleSet.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
@@ -64,7 +63,6 @@
 #include "core/css/resolver/MediaQueryResult.h"
 #include "core/css/resolver/SharedStyleFinder.h"
 #include "core/css/resolver/StyleAdjuster.h"
-#include "core/css/resolver/StyleBuilder.h"
 #include "core/css/resolver/StyleResolverStats.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/CSSSelectorWatch.h"
@@ -84,7 +82,6 @@
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGFontFaceElement.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/Vector.h"
 
 using namespace std;
 

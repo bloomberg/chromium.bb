@@ -32,7 +32,6 @@
 #include "core/loader/HistoryController.h"
 
 #include "core/dom/Document.h"
-#include "core/history/HistoryItem.h"
 #include "core/inspector/InspectorController.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"

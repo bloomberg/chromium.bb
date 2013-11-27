@@ -35,7 +35,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/frame/Frame.h"
 #include "core/page/PagePopup.h"
-#include "core/page/PagePopupClient.h"
 #include "core/page/PagePopupController.h"
 #include "platform/Timer.h"
 

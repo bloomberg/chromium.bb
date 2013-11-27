@@ -25,7 +25,6 @@
 #include "config.h"
 #include "core/html/ClassList.h"
 
-#include "core/dom/SpaceSplitString.h"
 
 namespace WebCore {
 

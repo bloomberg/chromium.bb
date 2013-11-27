@@ -46,7 +46,6 @@
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
 #include "core/svg/SVGAngle.h"
 #include "core/svg/SVGElementInstance.h"
-#include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/SVGTransform.h"
 #include "core/svg/SVGTransformList.h"

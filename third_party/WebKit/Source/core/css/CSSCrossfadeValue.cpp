@@ -27,7 +27,6 @@
 #include "core/css/CSSCrossfadeValue.h"
 
 #include "core/css/CSSImageValue.h"
-#include "core/fetch/ImageResource.h"
 #include "core/platform/graphics/CrossfadeGeneratedImage.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/StyleFetchedImage.h"

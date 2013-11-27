@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WorkerThreadStartupData.h"
 
-#include "core/workers/WorkerClients.h"
 
 namespace WebCore {
 

@@ -30,10 +30,8 @@
 #include "config.h"
 #include "core/platform/graphics/SimpleFontData.h"
 
-#include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 
 #include "wtf/MathExtras.h"
-#include "wtf/UnusedParam.h"
 
 using namespace std;
 

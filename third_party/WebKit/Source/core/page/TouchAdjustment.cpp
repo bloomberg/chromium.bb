@@ -35,7 +35,6 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatQuad.h"
-#include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/text/TextBreakIterator.h"
 

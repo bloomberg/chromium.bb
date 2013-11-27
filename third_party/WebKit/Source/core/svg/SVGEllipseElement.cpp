@@ -22,7 +22,6 @@
 
 #include "core/svg/SVGEllipseElement.h"
 
-#include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGEllipse.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGElementInstance.h"

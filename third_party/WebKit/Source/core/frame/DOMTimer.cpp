@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/frame/DOMTimer.h"
 
-#include "bindings/v8/ScheduledAction.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "wtf/CurrentTime.h"

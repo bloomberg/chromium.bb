@@ -23,11 +23,9 @@
 
 #include "core/svg/SVGFEImageElement.h"
 
-#include "SVGNames.h"
 #include "XLinkNames.h"
 #include "core/dom/Document.h"
 #include "core/fetch/FetchRequest.h"
-#include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/platform/graphics/Image.h"
 #include "core/rendering/svg/RenderSVGResource.h"

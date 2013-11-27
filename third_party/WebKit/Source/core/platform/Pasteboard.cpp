@@ -44,7 +44,6 @@
 #include "platform/clipboard/ClipboardUtilities.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebClipboard.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"

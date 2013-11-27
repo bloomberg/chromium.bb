@@ -21,7 +21,6 @@
 #include "core/svg/properties/SVGPathSegListPropertyTearOff.h"
 
 #include "SVGNames.h"
-#include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGPathElement.h"
 #include "core/svg/SVGPathSegWithContext.h"

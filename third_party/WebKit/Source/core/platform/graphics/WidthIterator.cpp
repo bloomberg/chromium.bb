@@ -22,7 +22,6 @@
 #include "config.h"
 #include "core/platform/graphics/WidthIterator.h"
 
-#include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/fonts/Latin1TextIterator.h"

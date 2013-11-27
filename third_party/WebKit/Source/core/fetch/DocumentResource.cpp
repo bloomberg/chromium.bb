@@ -24,8 +24,6 @@
 
 #include "core/fetch/DocumentResource.h"
 
-#include "core/fetch/ResourceClient.h"
-#include "core/fetch/ResourcePtr.h"
 #include "platform/SharedBuffer.h"
 #include "core/svg/SVGDocument.h"
 #include "wtf/text/StringBuilder.h"

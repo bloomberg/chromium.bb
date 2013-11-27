@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/fetch/RawResource.h"
 
-#include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"

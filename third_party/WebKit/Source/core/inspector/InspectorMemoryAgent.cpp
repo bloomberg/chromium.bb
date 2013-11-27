@@ -31,10 +31,8 @@
 #include "config.h"
 #include "core/inspector/InspectorMemoryAgent.h"
 
-#include "InspectorFrontend.h"
 #include "core/inspector/InspectorCounters.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

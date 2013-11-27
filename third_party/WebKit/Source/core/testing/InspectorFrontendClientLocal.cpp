@@ -41,7 +41,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Deque.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

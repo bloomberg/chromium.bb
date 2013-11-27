@@ -28,7 +28,6 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSParser.h"
-#include "core/css/CSSSelectorList.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/SelectorCheckerFastPath.h"
 #include "core/css/SiblingTraversalStrategies.h"

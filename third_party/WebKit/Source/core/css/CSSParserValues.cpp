@@ -22,8 +22,6 @@
 #include "core/css/CSSParserValues.h"
 
 #include "core/css/CSSFunctionValue.h"
-#include "core/css/CSSPrimitiveValue.h"
-#include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 

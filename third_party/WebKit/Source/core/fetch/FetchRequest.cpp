@@ -26,9 +26,7 @@
 #include "config.h"
 #include "core/fetch/FetchRequest.h"
 
-#include "core/dom/Element.h"
 #include "core/fetch/CrossOriginAccessControl.h"
-#include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/ResourceFetcher.h"
 
 namespace WebCore {

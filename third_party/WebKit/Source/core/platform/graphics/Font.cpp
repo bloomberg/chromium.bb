@@ -28,7 +28,6 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/TextRun.h"
 #include "wtf/MainThread.h"
-#include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/UnusedParam.h"
 #include "wtf/text/StringBuilder.h"

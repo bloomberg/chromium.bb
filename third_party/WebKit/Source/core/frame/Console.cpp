@@ -31,7 +31,6 @@
 
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptProfiler.h"
-#include "core/frame/ConsoleBase.h"
 #include "core/frame/ConsoleTypes.h"
 #include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"

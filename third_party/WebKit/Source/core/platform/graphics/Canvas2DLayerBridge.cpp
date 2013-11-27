@@ -31,7 +31,6 @@
 #include "SkDevice.h"
 #include "SkSurface.h"
 #include "core/platform/graphics/Canvas2DLayerManager.h"
-#include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
 #include "platform/TraceEvent.h"

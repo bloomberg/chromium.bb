@@ -20,7 +20,6 @@
 
 #include "config.h"
 
-#include "SVGNames.h"
 #include "core/svg/SVGFEFuncRElement.h"
 
 namespace WebCore {

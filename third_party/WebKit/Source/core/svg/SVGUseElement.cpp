@@ -26,7 +26,6 @@
 
 #include "core/svg/SVGUseElement.h"
 
-#include "SVGNames.h"
 #include "XLinkNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
@@ -34,7 +33,6 @@
 #include "core/events/Event.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/fetch/DocumentResource.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/rendering/svg/RenderSVGResource.h"

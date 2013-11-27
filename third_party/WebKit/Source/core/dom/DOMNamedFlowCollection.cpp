@@ -31,7 +31,6 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/NamedFlow.h"
-#include "core/dom/NamedFlowCollection.h"
 #include "wtf/text/StringHash.h"
 
 namespace WebCore {

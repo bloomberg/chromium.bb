@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "core/platform/mediastream/RTCPeerConnectionHandler.h"
 
 #include "core/platform/mediastream/RTCDataChannelHandler.h"

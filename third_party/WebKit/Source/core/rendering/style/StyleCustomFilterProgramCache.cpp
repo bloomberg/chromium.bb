@@ -32,7 +32,6 @@
 #include "core/rendering/style/StyleCustomFilterProgramCache.h"
 
 #include "core/rendering/style/StyleCustomFilterProgram.h"
-#include "platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 
 namespace WebCore {
 

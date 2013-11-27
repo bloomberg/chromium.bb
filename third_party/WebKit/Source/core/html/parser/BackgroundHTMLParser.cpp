@@ -28,7 +28,6 @@
 
 #include "core/html/parser/HTMLDocumentParser.h"
 #include "core/html/parser/HTMLParserThread.h"
-#include "core/html/parser/HTMLTokenizer.h"
 #include "core/html/parser/XSSAuditor.h"
 #include "wtf/MainThread.h"
 #include "wtf/text/TextPosition.h"

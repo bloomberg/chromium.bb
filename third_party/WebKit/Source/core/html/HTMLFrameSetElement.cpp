@@ -32,7 +32,6 @@
 #include "core/events/MouseEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLCollection.h"
-#include "core/html/HTMLDimension.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/Frame.h"

@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/fetch/FontResource.h"
 
-#include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/platform/graphics/FontPlatformData.h"

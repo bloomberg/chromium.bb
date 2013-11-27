@@ -31,7 +31,6 @@
 #include "core/html/HTMLStyleElement.h"
 #include "core/frame/ContentSecurityPolicy.h"
 #include "wtf/text/StringBuilder.h"
-#include "wtf/text/TextPosition.h"
 
 namespace WebCore {
 

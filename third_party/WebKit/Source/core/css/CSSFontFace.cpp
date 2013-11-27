@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/css/CSSFontFace.h"
 
-#include "core/css/CSSFontFaceSource.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/FontFaceSet.h"

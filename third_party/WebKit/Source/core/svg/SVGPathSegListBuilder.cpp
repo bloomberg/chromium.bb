@@ -44,7 +44,6 @@
 #include "core/svg/SVGPathSegLinetoRel.h"
 #include "core/svg/SVGPathSegLinetoVerticalAbs.h"
 #include "core/svg/SVGPathSegLinetoVerticalRel.h"
-#include "core/svg/SVGPathSegList.h"
 #include "core/svg/SVGPathSegMovetoAbs.h"
 #include "core/svg/SVGPathSegMovetoRel.h"
 

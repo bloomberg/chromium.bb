@@ -30,9 +30,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
-#include "core/events/EventListener.h"
 #include "core/events/MessageEvent.h"
-#include "core/events/ThreadLocalEventNames.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/frame/DOMWindow.h"

@@ -33,7 +33,6 @@
 
 #include "core/inspector/ConsoleMessage.h"
 
-#include "InspectorFrontend.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptValue.h"
 #include "core/inspector/IdentifiersFactory.h"

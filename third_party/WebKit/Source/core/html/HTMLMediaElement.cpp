@@ -70,7 +70,6 @@
 #include "platform/MIMETypeRegistry.h"
 #include "platform/NotImplemented.h"
 #include "platform/UserGestureIndicator.h"
-#include "platform/graphics/media/MediaPlayer.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebInbandTextTrack.h"

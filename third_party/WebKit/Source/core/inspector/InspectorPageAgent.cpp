@@ -32,7 +32,6 @@
 #include "core/inspector/InspectorPageAgent.h"
 
 #include "HTMLNames.h"
-#include "InspectorFrontend.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/DOMImplementation.h"

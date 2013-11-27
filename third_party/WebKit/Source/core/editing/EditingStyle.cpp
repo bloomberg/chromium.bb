@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/editing/EditingStyle.h"
 
-#include "CSSValueKeywords.h"
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/CSSComputedStyleDeclaration.h"

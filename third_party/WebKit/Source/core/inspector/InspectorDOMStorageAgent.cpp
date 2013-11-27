@@ -43,7 +43,6 @@
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"
 #include "core/storage/Storage.h"
-#include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
 #include "platform/JSONValues.h"
 #include "platform/weborigin/SecurityOrigin.h"

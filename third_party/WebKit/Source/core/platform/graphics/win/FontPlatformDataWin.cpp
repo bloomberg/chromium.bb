@@ -33,9 +33,6 @@
 #include "core/platform/graphics/FontPlatformData.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "SkPaint.h"
-#include "SkTypeface.h"
-#include "SkTypeface_win.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #if USE(HARFBUZZ)
@@ -43,7 +40,6 @@
 #endif
 #include "core/platform/graphics/skia/SkiaFontWin.h"
 #include "platform/LayoutTestSupport.h"
-#include "platform/SharedBuffer.h"
 #include "platform/win/HWndDC.h"
 #include "public/platform/Platform.h"
 #include "public/platform/win/WebSandboxSupport.h"

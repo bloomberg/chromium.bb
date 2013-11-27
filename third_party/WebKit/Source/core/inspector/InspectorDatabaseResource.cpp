@@ -32,7 +32,6 @@
 
 #include "core/inspector/InspectorDatabaseResource.h"
 
-#include "InspectorFrontend.h"
 #include "modules/webdatabase/Database.h"
 
 namespace WebCore {

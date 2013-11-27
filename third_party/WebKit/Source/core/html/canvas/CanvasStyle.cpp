@@ -36,7 +36,6 @@
 #include "core/html/canvas/CanvasGradient.h"
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "wtf/Assertions.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

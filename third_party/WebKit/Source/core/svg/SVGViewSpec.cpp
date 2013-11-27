@@ -24,9 +24,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/svg/SVGAnimatedTransformList.h"
-#include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGParserUtilities.h"
-#include "core/svg/SVGSVGElement.h"
 
 namespace WebCore {
 

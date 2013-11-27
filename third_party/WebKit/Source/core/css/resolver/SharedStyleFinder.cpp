@@ -35,7 +35,6 @@
 #include "core/css/resolver/StyleResolverStats.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
-#include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/Node.h"

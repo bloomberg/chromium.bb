@@ -41,7 +41,6 @@
 #include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/platform/Scrollbar.h"
-#include "core/rendering/HitTestLocation.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderTextFragment.h"
 

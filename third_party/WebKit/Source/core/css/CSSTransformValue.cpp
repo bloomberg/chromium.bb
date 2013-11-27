@@ -26,8 +26,6 @@
 #include "config.h"
 #include "core/css/CSSTransformValue.h"
 
-#include "core/css/CSSValueList.h"
-#include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

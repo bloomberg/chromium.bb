@@ -22,7 +22,6 @@
 
 #include "core/svg/SVGTextElement.h"
 
-#include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/svg/SVGElementInstance.h"

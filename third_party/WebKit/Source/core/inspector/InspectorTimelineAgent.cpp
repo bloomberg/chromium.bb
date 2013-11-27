@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/inspector/InspectorTimelineAgent.h"
 
-#include "InspectorFrontend.h"
 #include "core/events/Event.h"
 #include "core/frame/DOMWindow.h"
 #include "core/frame/Frame.h"

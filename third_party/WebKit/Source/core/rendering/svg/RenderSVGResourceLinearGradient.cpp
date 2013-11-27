@@ -22,7 +22,6 @@
 
 #include "core/rendering/svg/RenderSVGResourceLinearGradient.h"
 
-#include "core/svg/LinearGradientAttributes.h"
 #include "core/svg/SVGLinearGradientElement.h"
 
 namespace WebCore {

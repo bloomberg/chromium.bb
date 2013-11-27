@@ -33,8 +33,6 @@
 #include "core/dom/MutationObserverInterestGroup.h"
 
 #include "core/dom/MutationRecord.h"
-#include "core/dom/Node.h"
-#include "core/dom/QualifiedName.h"
 
 namespace WebCore {
 

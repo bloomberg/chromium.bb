@@ -30,7 +30,6 @@
 #include "core/page/SpatialNavigation.h"
 
 #include "HTMLNames.h"
-#include "core/dom/Node.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/frame/Frame.h"

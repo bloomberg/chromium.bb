@@ -22,12 +22,10 @@
 
 #include "core/svg/SVGFitToViewBox.h"
 
-#include "SVGNames.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGParserUtilities.h"
-#include "core/svg/SVGPreserveAspectRatio.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/text/StringImpl.h"

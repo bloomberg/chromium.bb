@@ -33,7 +33,6 @@
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/DocumentResource.h"
 #include "core/fetch/FetchContext.h"
-#include "core/fetch/FetchRequest.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"

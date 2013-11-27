@@ -22,10 +22,6 @@
 
 #include "core/svg/SVGViewElement.h"
 
-#include "SVGNames.h"
-#include "core/svg/SVGFitToViewBox.h"
-#include "core/svg/SVGStringList.h"
-#include "core/svg/SVGZoomAndPan.h"
 
 namespace WebCore {
 

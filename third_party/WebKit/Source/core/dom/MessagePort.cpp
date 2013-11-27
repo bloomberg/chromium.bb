@@ -38,7 +38,6 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/frame/DOMWindow.h"
 #include "core/workers/WorkerGlobalScope.h"
-#include "public/platform/WebMessagePortChannel.h"
 #include "public/platform/WebString.h"
 #include "wtf/Functional.h"
 #include "wtf/text/AtomicString.h"

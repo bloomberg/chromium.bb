@@ -29,7 +29,6 @@
 #include "config.h"
 #include "core/css/CSSStyleDeclaration.h"
 
-#include "core/css/CSSVariablesMap.h"
 
 namespace WebCore {
 

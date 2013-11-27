@@ -43,7 +43,6 @@
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/html/HTMLOptionElement.h"
-#include "core/html/HTMLOptionsCollection.h"
 #include "core/html/forms/FormController.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"

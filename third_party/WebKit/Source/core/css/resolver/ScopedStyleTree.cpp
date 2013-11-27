@@ -28,7 +28,6 @@
 #include "core/css/resolver/ScopedStyleTree.h"
 
 #include "core/css/RuleFeature.h"
-#include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/dom/Document.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"

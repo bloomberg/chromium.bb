@@ -38,7 +38,6 @@
 #include "core/frame/DOMWindow.h"
 #include "core/workers/SharedWorkerThread.h"
 #include "core/workers/WorkerClients.h"
-#include "core/workers/WorkerThreadStartupData.h"
 #include "wtf/CurrentTime.h"
 
 namespace WebCore {

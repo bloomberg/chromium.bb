@@ -27,7 +27,6 @@
 #include <math.h>
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "SVGNames.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSStyleSheet.h"

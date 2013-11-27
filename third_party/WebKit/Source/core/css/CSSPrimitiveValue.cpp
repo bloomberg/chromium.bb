@@ -21,8 +21,6 @@
 #include "config.h"
 #include "core/css/CSSPrimitiveValue.h"
 
-#include "CSSPropertyNames.h"
-#include "CSSValueKeywords.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSBasicShapes.h"
 #include "core/css/CSSCalculationValue.h"
@@ -37,7 +35,6 @@
 #include "core/dom/Node.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/LayoutUnit.h"
-#include "platform/graphics/Color.h"
 #include "wtf/DecimalNumber.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuffer.h"

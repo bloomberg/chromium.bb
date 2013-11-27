@@ -24,7 +24,6 @@
 #include "core/rendering/style/RenderStyle.h"
 
 #include <algorithm>
-#include "CSSPropertyNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/platform/graphics/Font.h"
@@ -38,7 +37,6 @@
 #include "core/rendering/style/StyleInheritedData.h"
 #include "platform/fonts/FontSelector.h"
 #include "wtf/MathExtras.h"
-#include "wtf/StdLibExtras.h"
 
 using namespace std;
 

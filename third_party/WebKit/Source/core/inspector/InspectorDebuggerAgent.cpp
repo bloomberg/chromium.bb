@@ -31,13 +31,11 @@
 #include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/JavaScriptCallFrame.h"
 
-#include "InspectorFrontend.h"
 #include "bindings/v8/ScriptDebugServer.h"
 #include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "core/fetch/Resource.h"
 #include "core/inspector/ContentSearchUtils.h"
-#include "core/inspector/InjectedScript.h"
 #include "core/inspector/InjectedScriptManager.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "core/inspector/InspectorState.h"

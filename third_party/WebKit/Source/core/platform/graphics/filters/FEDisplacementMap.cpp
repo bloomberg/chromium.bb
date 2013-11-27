@@ -27,7 +27,6 @@
 #include "core/platform/graphics/filters/FEDisplacementMap.h"
 
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/filters/Filter.h"
 #include "platform/text/TextStream.h"
 #include "wtf/Uint8ClampedArray.h"
 

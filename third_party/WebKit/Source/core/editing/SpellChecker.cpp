@@ -33,7 +33,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/editing/Editor.h"
-#include "core/editing/FrameSelection.h"
 #include "core/editing/SpellCheckRequester.h"
 #include "core/editing/TextCheckingHelper.h"
 #include "core/editing/VisibleUnits.h"

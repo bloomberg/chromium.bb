@@ -33,7 +33,6 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
-#include "core/dom/custom/CustomElementCallbackQueue.h"
 #include "core/dom/custom/CustomElementLifecycleCallbacks.h"
 
 namespace WebCore {

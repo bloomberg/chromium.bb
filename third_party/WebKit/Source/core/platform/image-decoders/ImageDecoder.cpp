@@ -21,14 +21,12 @@
 #include "config.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 
-#include "platform/SharedBuffer.h"
 #include "core/platform/image-decoders/bmp/BMPImageDecoder.h"
 #include "core/platform/image-decoders/gif/GIFImageDecoder.h"
 #include "core/platform/image-decoders/ico/ICOImageDecoder.h"
 #include "core/platform/image-decoders/jpeg/JPEGImageDecoder.h"
 #include "core/platform/image-decoders/png/PNGImageDecoder.h"
 #include "core/platform/image-decoders/webp/WEBPImageDecoder.h"
-#include "public/platform/Platform.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {

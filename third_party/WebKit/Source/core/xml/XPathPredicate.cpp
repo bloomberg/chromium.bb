@@ -31,7 +31,6 @@
 #include <math.h>
 #include "core/xml/XPathFunctions.h"
 #include "core/xml/XPathUtil.h"
-#include "core/xml/XPathValue.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {

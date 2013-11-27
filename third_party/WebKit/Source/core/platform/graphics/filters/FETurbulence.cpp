@@ -28,7 +28,6 @@
 #include "core/platform/graphics/filters/FETurbulence.h"
 #include "SkPerlinNoiseShader.h"
 #include "SkRectShaderImageFilter.h"
-#include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/filters/ParallelJobs.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"

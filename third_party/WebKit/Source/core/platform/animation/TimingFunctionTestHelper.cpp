@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/platform/animation/TimingFunctionTestHelper.h"
 
-#include <ostream> // NOLINT
 
 namespace WebCore {
 

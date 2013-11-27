@@ -32,7 +32,6 @@
 #include "core/inspector/PageDebuggerAgent.h"
 
 #include "bindings/v8/DOMWrapperWorld.h"
-#include "bindings/v8/PageScriptDebugServer.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptSourceCode.h"
 #include "core/inspector/InspectorOverlay.h"

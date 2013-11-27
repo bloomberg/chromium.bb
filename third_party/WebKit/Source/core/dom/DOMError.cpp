@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/dom/DOMError.h"
 
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

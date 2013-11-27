@@ -27,7 +27,6 @@
 #include "core/events/EventTarget.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

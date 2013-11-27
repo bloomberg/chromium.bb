@@ -29,7 +29,6 @@
 #include "platform/text/TextEncodingDetector.h"
 #include "wtf/StringExtras.h"
 #include "wtf/text/TextCodec.h"
-#include "wtf/text/TextEncoding.h"
 #include "wtf/text/TextEncodingRegistry.h"
 
 using namespace WTF;

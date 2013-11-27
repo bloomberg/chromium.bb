@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/inspector/InspectorConsoleAgent.h"
 
-#include "InspectorFrontend.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptObject.h"

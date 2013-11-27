@@ -22,7 +22,6 @@
 
 #include "core/svg/SVGStopElement.h"
 
-#include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGGradientStop.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGElementInstance.h"

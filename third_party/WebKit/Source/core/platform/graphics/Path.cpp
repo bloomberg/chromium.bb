@@ -36,7 +36,6 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/transforms/AffineTransform.h"
-#include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPathMeasure.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "wtf/MathExtras.h"

@@ -27,7 +27,6 @@
 #include "core/platform/graphics/filters/FEComponentTransfer.h"
 
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/filters/Filter.h"
 #include "platform/text/TextStream.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"

@@ -44,7 +44,6 @@
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/loader/WorkerThreadableLoader.h"
-#include "core/frame/ContentSecurityPolicy.h"
 #include "core/frame/DOMWindow.h"
 #include "core/workers/WorkerNavigator.h"
 #include "core/workers/WorkerClients.h"
@@ -54,7 +53,6 @@
 #include "core/workers/WorkerThread.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/RefPtr.h"
 #include "wtf/UnusedParam.h"
 
 namespace WebCore {

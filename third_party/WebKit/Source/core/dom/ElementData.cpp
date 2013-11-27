@@ -35,7 +35,6 @@
 #include "core/dom/Attr.h"
 #include "core/dom/QualifiedName.h"
 #include "wtf/Vector.h"
-#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

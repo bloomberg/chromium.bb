@@ -28,9 +28,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
-#include "core/xml/XPathEvaluator.h"
 #include "core/xml/XPathExpression.h"
-#include "core/xml/XPathNSResolver.h"
 #include "core/xml/XPathResult.h"
 
 namespace WebCore {

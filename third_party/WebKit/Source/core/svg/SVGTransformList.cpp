@@ -23,7 +23,6 @@
 
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGSVGElement.h"
-#include "core/svg/SVGTransform.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/text/StringBuilder.h"
 

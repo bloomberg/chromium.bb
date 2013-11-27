@@ -34,11 +34,9 @@
 #include "InspectorFrontend.h"
 #include "core/events/Event.h"
 #include "core/inspector/InspectorDOMAgent.h"
-#include "core/inspector/InspectorDebuggerAgent.h"
 #include "core/inspector/InspectorState.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "platform/JSONValues.h"
-#include "wtf/text/WTFString.h"
 
 namespace {
 

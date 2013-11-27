@@ -36,7 +36,6 @@
 #include "core/events/EventDispatcher.h"
 #include "core/events/EventTarget.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

@@ -25,7 +25,6 @@
 
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
-#include "core/fetch/Resource.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/frame/FrameView.h"
 #include "core/workers/WorkerGlobalScope.h"

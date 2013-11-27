@@ -33,20 +33,16 @@
 
 #include "bindings/v8/ScriptCallStackFactory.h"
 #include "bindings/v8/ScriptProfiler.h"
-#include "core/inspector/ConsoleAPITypes.h"
 #include "core/inspector/InspectorConsoleInstrumentation.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/ScriptProfile.h"
 #include "core/inspector/WorkerInspectorController.h"
-#include "core/frame/ConsoleBase.h"
-#include "core/frame/ConsoleTypes.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/TraceEvent.h"
 
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

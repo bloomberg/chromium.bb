@@ -25,7 +25,6 @@
 
 #include "core/svg/SVGLinearGradientElement.h"
 
-#include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGResourceLinearGradient.h"
 #include "core/svg/LinearGradientAttributes.h"
 #include "core/svg/SVGElementInstance.h"

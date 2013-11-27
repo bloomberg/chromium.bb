@@ -27,7 +27,6 @@
 #include "core/dom/PositionIterator.h"
 
 #include "HTMLNames.h"
-#include "core/dom/Node.h"
 #include "core/editing/htmlediting.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/rendering/RenderBlock.h"

@@ -30,8 +30,6 @@
 #include "config.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
 
-#include "core/platform/graphics/filters/FilterOperation.h"
-#include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
 #include "platform/graphics/filters/custom/CustomFilterParameter.h"
 
 namespace WebCore {

@@ -35,7 +35,6 @@
 #include "core/page/ContextMenuProvider.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
-#include "core/rendering/HitTestResult.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
 

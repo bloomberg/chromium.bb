@@ -22,7 +22,6 @@
 
 #include "core/svg/SVGLineElement.h"
 
-#include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGLength.h"

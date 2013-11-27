@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/rendering/LayoutState.h"
 
-#include "core/rendering/ColumnInfo.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"

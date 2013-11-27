@@ -28,15 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <windows.h>
 #include "config.h"
 
 #include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
 #include "core/platform/graphics/win/TransparencyWin.h"
-#include "platform/transforms/AffineTransform.h"
 
 #include "SkColorPriv.h"
 #include "skia/ext/platform_canvas.h"

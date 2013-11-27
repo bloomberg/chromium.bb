@@ -39,7 +39,6 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntPoint.h"
-#include "platform/geometry/IntSize.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/TextRun.h"
 #include "platform/transforms/AffineTransform.h"

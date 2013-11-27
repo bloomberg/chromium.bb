@@ -34,7 +34,6 @@
 
 #include "core/platform/graphics/GraphicsContext.h"
 
-#include "SkCanvas.h"
 #include "SkColorFilter.h"
 #include "SkShader.h"
 

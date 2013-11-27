@@ -37,8 +37,6 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
-#include "platform/geometry/IntRect.h"
-#include "platform/graphics/GraphicsTypes.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
 #include "wtf/MainThread.h"

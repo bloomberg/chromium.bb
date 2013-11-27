@@ -33,7 +33,6 @@
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSMediaRule.h"
 #include "core/css/CSSParser.h"
-#include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSRule.h"
 #include "core/css/CSSRuleList.h"
 #include "core/css/CSSStyleRule.h"
@@ -53,10 +52,8 @@
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 #include "core/platform/text/RegularExpression.h"
-#include "platform/JSONValues.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextPosition.h"
 

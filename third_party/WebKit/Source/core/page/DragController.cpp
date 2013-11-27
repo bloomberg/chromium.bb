@@ -54,7 +54,6 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
-#include "core/page/DragActions.h"
 #include "core/page/DragClient.h"
 #include "core/page/DragData.h"
 #include "core/page/DragSession.h"
