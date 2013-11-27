@@ -37,6 +37,8 @@ class AwContentRendererClient : public content::ContentRendererClient {
   virtual unsigned long long VisitedLinkHash(const char* canonical_url,
                                              size_t length) OVERRIDE;
   virtual bool IsLinkVisited(unsigned long long link_hash) OVERRIDE;
+  virtual void AddKeySystems(
+      std::vector<content::KeySystemInfo>* key_systems) OVERRIDE;
 
  private:
   scoped_ptr<AwRenderProcessObserver> aw_render_process_observer_;

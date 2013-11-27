@@ -6,6 +6,7 @@
 
 #include "android_webview/common/aw_resource.h"
 #include "android_webview/common/url_constants.h"
+#include "android_webview/renderer/aw_key_systems.h"
 #include "android_webview/renderer/aw_render_view_ext.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -105,6 +106,11 @@ unsigned long long AwContentRendererClient::VisitedLinkHash(
 
 bool AwContentRendererClient::IsLinkVisited(unsigned long long link_hash) {
   return visited_link_slave_->IsVisited(link_hash);
+}
+
+void AwContentRendererClient::AddKeySystems(
+    std::vector<content::KeySystemInfo>* key_systems) {
+  AwAddKeySystems(key_systems);
 }
 
 }  // namespace android_webview
