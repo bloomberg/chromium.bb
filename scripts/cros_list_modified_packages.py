@@ -61,7 +61,7 @@ class WorkonProjectsMonitor(object):
     self._tasks = []
     for project in set(projects).intersection(manifest.projects):
       for checkout in manifest.FindCheckouts(project):
-        self._tasks.append((project, checkout['path']))
+        self._tasks.append((project, checkout.GetPath(absolute=True)))
     self._result_queue = multiprocessing.Queue(len(self._tasks))
 
   def _EnqueueProjectModificationTime(self, project, path):
