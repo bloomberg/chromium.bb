@@ -5,14 +5,16 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_SYNC_CLIENT_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_SYNC_CLIENT_H_
 
-#include <set>
+#include <map>
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
+#include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -45,15 +47,6 @@ class ResourceMetadata;
 // the states left in the cache.
 class SyncClient {
  public:
-  // Types of sync tasks.
-  enum SyncType {
-    FETCH,  // Fetch a file from the Drive server.
-    UPLOAD,  // Upload a file to the Drive server.
-    UPLOAD_RETRY,  // Upload a file that once put back to the queue due to
-                   // offline networks etc, or a dirty file in cache that wasn't
-                   // uploaded during the previous session.
-  };
-
   SyncClient(base::SequencedTaskRunner* blocking_task_runner,
              file_system::OperationObserver* observer,
              JobScheduler* scheduler,
@@ -62,17 +55,16 @@ class SyncClient {
              const base::FilePath& temporary_file_directory);
   virtual ~SyncClient();
 
-  // Adds a fetch task to the queue.
+  // Adds a fetch task.
   void AddFetchTask(const std::string& local_id);
 
-  // Removes a fetch task from the queue.
+  // Removes a fetch task.
   void RemoveFetchTask(const std::string& local_id);
 
-  // Adds an upload task to the queue.
-  void AddUploadTask(const ClientContext& context,
-                     const std::string& local_id);
+  // Adds an upload task.
+  void AddUploadTask(const ClientContext& context, const std::string& local_id);
 
-  // Adds a remove task to the queue.
+  // Adds a remove task.
   void AddRemoveTask(const std::string& local_id);
 
   // Starts processing the backlog (i.e. pinned-but-not-filed files and
@@ -82,7 +74,7 @@ class SyncClient {
 
   // Starts checking the existing pinned files to see if these are
   // up-to-date. If stale files are detected, the local IDs of these files
-  // are added to the queue and the sync loop is started.
+  // are added and the sync loop is started.
   void StartCheckingExistingPinnedFiles();
 
   // Sets a delay for testing.
@@ -94,17 +86,45 @@ class SyncClient {
   void StartSyncLoop();
 
  private:
-  // Adds the given task to the queue. If the same task is queued, remove the
-  // existing one, and adds a new one to the end of the queue.
-  void AddTaskToQueue(SyncType type,
-                      const ClientContext& context,
-                      const std::string& local_id,
-                      const base::TimeDelta& delay);
+  // Types of sync tasks.
+  enum SyncType {
+    FETCH,  // Fetch a file from the Drive server.
+    UPLOAD,  // Upload a file to the Drive server.
+  };
 
-  // Called when a task is ready to be added to the queue.
-  void StartTask(SyncType type,
-                 const ClientContext& context,
-                 const std::string& local_id);
+  // States of sync tasks.
+  enum SyncState {
+    PENDING,
+    RUNNING,
+  };
+
+  struct SyncTask {
+    SyncTask();
+    ~SyncTask();
+    SyncState state;
+    base::Closure task;
+  };
+
+  typedef std::map<std::pair<SyncType, std::string>, SyncTask> SyncTasks;
+
+  // Adds a FETCH task.
+  void AddFetchTaskInternal(const std::string& local_id,
+                            const base::TimeDelta& delay);
+
+  // Adds a UPLOAD task.
+  void AddUploadTaskInternal(
+      const ClientContext& context,
+      const std::string& local_id,
+      file_system::UpdateOperation::ContentCheckMode content_check_mode,
+      const base::TimeDelta& delay);
+
+  // Adds the given task. If the same task is found, does nothing.
+  void AddTask(const SyncTasks::key_type& key,
+               const SyncTask& task,
+               const base::TimeDelta& delay);
+
+  // Called when a task is ready to start.
+  void StartTask(const SyncTasks::key_type& key);
 
   // Called when the local IDs of files in the backlog are obtained.
   void OnGetLocalIdsOfBacklog(const std::vector<std::string>* to_fetch,
@@ -141,17 +161,10 @@ class SyncClient {
   // Used to remove entries from the trash.
   scoped_ptr<RemovePerformer> remove_performer_;
 
-  // List of the local ids of resources which have a fetch task created.
-  std::set<std::string> fetch_list_;
+  // Sync tasks to be processed.
+  SyncTasks tasks_;
 
-  // List of the local ids of resources which have a upload task created.
-  std::set<std::string> upload_list_;
-
-  // Fetch tasks which have been created, but not started yet.  If they are
-  // removed before starting, they will be cancelled.
-  std::set<std::string> pending_fetch_list_;
-
-  // The delay is used for delaying processing tasks in AddTaskToQueue().
+  // The delay is used for delaying processing tasks in AddTask().
   base::TimeDelta delay_;
 
   // The delay is used for delaying retry of tasks on server errors.
