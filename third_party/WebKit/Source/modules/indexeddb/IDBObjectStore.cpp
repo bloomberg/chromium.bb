@@ -39,6 +39,7 @@
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBTransaction.h"
+#include "modules/indexeddb/WebIDBCallbacksImpl.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/WebData.h"
 #include "public/platform/WebIDBKey.h"
@@ -94,7 +95,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::get(ExecutionContext* context, const Scri
     }
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
-    backendDB()->get(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, keyRange.release(), false, new WebIDBCallbacks(request));
+    backendDB()->get(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, keyRange.release(), false, WebIDBCallbacksImpl::create(request).leakPtr());
     return request.release();
 }
 
@@ -225,7 +226,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::put(WebIDBDatabase::PutMode putMode, Pass
     Vector<char> wireBytes;
     serializedValue->toWireBytes(wireBytes);
     RefPtr<SharedBuffer> valueBuffer = SharedBuffer::adoptVector(wireBytes);
-    backendDB()->put(m_transaction->id(), id(), blink::WebData(valueBuffer), key.release(), static_cast<WebIDBDatabase::PutMode>(putMode), new WebIDBCallbacks(request), indexIds, indexKeys);
+    backendDB()->put(m_transaction->id(), id(), blink::WebData(valueBuffer), key.release(), static_cast<WebIDBDatabase::PutMode>(putMode), WebIDBCallbacksImpl::create(request).leakPtr(), indexIds, indexKeys);
     return request.release();
 }
 
@@ -258,7 +259,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::deleteFunction(ExecutionContext* context,
     }
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
-    backendDB()->deleteRange(m_transaction->id(), id(), keyRange.release(), new WebIDBCallbacks(request));
+    backendDB()->deleteRange(m_transaction->id(), id(), keyRange.release(), WebIDBCallbacksImpl::create(request).leakPtr());
     return request.release();
 }
 
@@ -283,7 +284,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::clear(ExecutionContext* context, Exceptio
     }
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
-    backendDB()->clear(m_transaction->id(), id(), new WebIDBCallbacks(request));
+    backendDB()->clear(m_transaction->id(), id(), WebIDBCallbacksImpl::create(request).leakPtr());
     return request.release();
 }
 
@@ -535,7 +536,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::openCursor(ExecutionContext* context, Pas
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyAndValue, direction);
 
-    backendDB()->openCursor(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, range, direction, false, taskType, new WebIDBCallbacks(request));
+    backendDB()->openCursor(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, range, direction, false, taskType, WebIDBCallbacksImpl::create(request).leakPtr());
     return request.release();
 }
 
@@ -566,7 +567,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::openKeyCursor(ExecutionContext* context, 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyOnly, direction);
 
-    backendDB()->openCursor(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, keyRange.release(), direction, true, WebIDBDatabase::NormalTask, new WebIDBCallbacks(request));
+    backendDB()->openCursor(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, keyRange.release(), direction, true, WebIDBDatabase::NormalTask, WebIDBCallbacksImpl::create(request).leakPtr());
     return request.release();
 }
 
@@ -591,7 +592,7 @@ PassRefPtr<IDBRequest> IDBObjectStore::count(ExecutionContext* context, const Sc
         return 0;
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
-    backendDB()->count(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, keyRange.release(), new WebIDBCallbacks(request));
+    backendDB()->count(m_transaction->id(), id(), IDBIndexMetadata::InvalidId, keyRange.release(), WebIDBCallbacksImpl::create(request).leakPtr());
     return request.release();
 }
 

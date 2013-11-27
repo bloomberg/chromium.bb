@@ -27,18 +27,8 @@
 #define WebIDBCallbacks_h
 
 #include "WebCommon.h"
-#include "WebIDBTypes.h"
-#include "WebPrivatePtr.h"
 #include "WebString.h"
 #include "WebVector.h"
-
-#if BLINK_IMPLEMENTATION
-#include "wtf/PassRefPtr.h"
-#endif
-
-namespace WebCore {
-class IDBRequest;
-}
 
 namespace blink {
 
@@ -51,40 +41,23 @@ class WebIDBKey;
 class WebIDBKeyPath;
 struct WebIDBMetadata;
 
-class BLINK_EXPORT WebIDBCallbacks {
+class WebIDBCallbacks {
 public:
-#if BLINK_IMPLEMENTATION
-    explicit WebIDBCallbacks(PassRefPtr<WebCore::IDBRequest>);
-#endif
+    virtual ~WebIDBCallbacks() { }
 
-    WebIDBCallbacks() { }
-    virtual ~WebIDBCallbacks();
-
-    // FIXME: Remove once callers use the WebIDBDataLoss enum.
-    enum DataLoss {
-        DataLossNone = WebIDBDataLossNone,
-        DataLossTotal = WebIDBDataLossTotal
-    };
-
-    // For classes that follow the PImpl pattern, pass a const reference.
-    // For the rest, pass ownership to the callee via a pointer.
-    virtual void onError(const WebIDBDatabaseError&);
-    virtual void onSuccess(const WebVector<WebString>&);
-    virtual void onSuccess(WebIDBCursor*, const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&);
-    virtual void onSuccess(WebIDBDatabase*, const WebIDBMetadata&);
-    virtual void onSuccess(const WebIDBKey&);
-    virtual void onSuccess(const WebData&);
-    virtual void onSuccess(const WebData&, const WebIDBKey&, const WebIDBKeyPath&);
-    virtual void onSuccess(long long);
-    virtual void onSuccess();
-    virtual void onSuccess(const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&);
-    virtual void onBlocked(long long oldVersion);
-    virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, unsigned short dataLoss, WebString dataLossMessage);
-
-private:
-    WebPrivatePtr<WebCore::IDBRequest> m_private;
-    // FIXME: Eliminate this flag by having Chromium call onSuccess() with null.
-    bool m_upgradeNeededCalled;
+    // Pointers transfer ownership.
+    virtual void onError(const WebIDBDatabaseError&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebVector<WebString>&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(WebIDBCursor*, const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebIDBKey&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebData&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebData&, const WebIDBKey&, const WebIDBKeyPath&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(long long) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess() { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onBlocked(long long oldVersion) { BLINK_ASSERT_NOT_REACHED(); }
+    virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, unsigned short dataLoss, WebString dataLossMessage) { BLINK_ASSERT_NOT_REACHED(); }
 };
 
 } // namespace blink

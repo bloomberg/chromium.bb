@@ -39,9 +39,9 @@
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBTransaction.h"
+#include "modules/indexeddb/WebIDBCallbacksImpl.h"
 #include "platform/SharedBuffer.h"
 #include "platform/SharedBuffer.h"
-#include "public/platform/WebIDBCallbacks.h"
 #include "public/platform/WebIDBCursor.h"
 #include "public/platform/WebIDBDatabase.h"
 #include "public/platform/WebIDBKeyRange.h"
@@ -174,7 +174,7 @@ void IDBCursor::advance(unsigned long count, ExceptionState& exceptionState)
 
     m_request->setPendingCursor(this);
     m_gotValue = false;
-    m_backend->advance(count, new blink::WebIDBCallbacks(m_request));
+    m_backend->advance(count, WebIDBCallbacksImpl::create(m_request).leakPtr());
 }
 
 void IDBCursor::continueFunction(ExecutionContext* context, const ScriptValue& keyValue, ExceptionState& exceptionState)
@@ -230,7 +230,7 @@ void IDBCursor::continueFunction(PassRefPtr<IDBKey> key, ExceptionState& excepti
     //        will be on the original context openCursor was called on. Is this right?
     m_request->setPendingCursor(this);
     m_gotValue = false;
-    m_backend->continueFunction(key, new blink::WebIDBCallbacks(m_request));
+    m_backend->continueFunction(key, WebIDBCallbacksImpl::create(m_request).leakPtr());
 }
 
 PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ExecutionContext* context, ExceptionState& exceptionState)
@@ -266,7 +266,7 @@ PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ExecutionContext* context, Exce
     ASSERT(!exceptionState.hadException());
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
-    m_transaction->backendDB()->deleteRange(m_transaction->id(), effectiveObjectStore()->id(), keyRange.release(), new blink::WebIDBCallbacks(request));
+    m_transaction->backendDB()->deleteRange(m_transaction->id(), effectiveObjectStore()->id(), keyRange.release(), WebIDBCallbacksImpl::create(request).leakPtr());
     return request.release();
 }
 

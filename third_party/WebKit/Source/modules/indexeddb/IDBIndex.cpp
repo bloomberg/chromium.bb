@@ -33,6 +33,7 @@
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBTransaction.h"
+#include "modules/indexeddb/WebIDBCallbacksImpl.h"
 #include "public/platform/WebIDBKeyRange.h"
 
 using blink::WebIDBDatabase;
@@ -86,7 +87,7 @@ PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, PassRefPt
 {
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyAndValue, direction);
-    backendDB()->openCursor(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange, direction, false, WebIDBDatabase::NormalTask, new WebIDBCallbacks(request));
+    backendDB()->openCursor(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange, direction, false, WebIDBDatabase::NormalTask, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
 
@@ -111,7 +112,7 @@ PassRefPtr<IDBRequest> IDBIndex::count(ExecutionContext* context, const ScriptVa
         return 0;
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
-    backendDB()->count(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange.release(), new WebIDBCallbacks(request));
+    backendDB()->count(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange.release(), WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
 
@@ -140,7 +141,7 @@ PassRefPtr<IDBRequest> IDBIndex::openKeyCursor(ExecutionContext* context, const 
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     request->setCursorDetails(IndexedDB::CursorKeyOnly, direction);
-    backendDB()->openCursor(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange.release(), direction, true, WebIDBDatabase::NormalTask, new WebIDBCallbacks(request));
+    backendDB()->openCursor(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange.release(), direction, true, WebIDBDatabase::NormalTask, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
 
@@ -169,7 +170,7 @@ PassRefPtr<IDBRequest> IDBIndex::get(ExecutionContext* context, const ScriptValu
     }
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
-    backendDB()->get(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange.release(), false, new WebIDBCallbacks(request));
+    backendDB()->get(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange.release(), false, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
 
@@ -198,7 +199,7 @@ PassRefPtr<IDBRequest> IDBIndex::getKey(ExecutionContext* context, const ScriptV
     }
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
-    backendDB()->get(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange.release(), true, new WebIDBCallbacks(request));
+    backendDB()->get(m_transaction->id(), m_objectStore->id(), m_metadata.id, keyRange.release(), true, WebIDBCallbacksImpl::create(request).leakPtr());
     return request;
 }
 

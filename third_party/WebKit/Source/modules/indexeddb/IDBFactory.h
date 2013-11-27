@@ -64,7 +64,7 @@ private:
 
     PassRefPtr<IDBOpenDBRequest> openInternal(ExecutionContext*, const String& name, int64_t version, ExceptionState&);
 
-    RefPtr<IDBFactoryBackendInterface> m_backend;
+    RefPtr<IDBFactoryBackendInterface> m_permissionClient;
 };
 
 } // namespace WebCore

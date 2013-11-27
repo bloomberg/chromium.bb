@@ -397,6 +397,8 @@
       'indexeddb/IndexedDB.h',
       'indexeddb/PageGroupIndexedDatabase.cpp',
       'indexeddb/PageGroupIndexedDatabase.h',
+      'indexeddb/WebIDBCallbacksImpl.cpp',
+      'indexeddb/WebIDBCallbacksImpl.h',
       'indexeddb/WebIDBDatabaseCallbacksImpl.cpp',
       'indexeddb/WebIDBDatabaseCallbacksImpl.h',
       'indexeddb/WorkerGlobalScopeIndexedDatabase.cpp',

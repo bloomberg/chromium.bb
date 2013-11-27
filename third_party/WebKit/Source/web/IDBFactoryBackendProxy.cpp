@@ -29,12 +29,6 @@
 #include "config.h"
 #include "IDBFactoryBackendProxy.h"
 
-#include "public/platform/WebIDBCallbacks.h"
-#include "public/platform/WebIDBDatabase.h"
-#include "public/platform/WebIDBDatabaseCallbacks.h"
-#include "public/platform/WebIDBDatabaseError.h"
-#include "public/platform/WebIDBFactory.h"
-#include "public/platform/WebVector.h"
 #include "WebFrameImpl.h"
 #include "WebKit.h"
 #include "WebPermissionClient.h"
@@ -42,9 +36,6 @@
 #include "WebViewImpl.h"
 #include "WorkerPermissionClient.h"
 #include "bindings/v8/WorkerScriptController.h"
-#include "core/dom/DOMError.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
@@ -58,64 +49,21 @@ PassRefPtr<IDBFactoryBackendInterface> IDBFactoryBackendProxy::create()
     return adoptRef(new IDBFactoryBackendProxy());
 }
 
-IDBFactoryBackendProxy::IDBFactoryBackendProxy()
+bool IDBFactoryBackendProxy::allowIndexedDB(ExecutionContext* context, const String& name)
 {
-    m_webIDBFactory = blink::Platform::current()->idbFactory();
-}
-
-IDBFactoryBackendProxy::~IDBFactoryBackendProxy()
-{
-}
-
-bool IDBFactoryBackendProxy::allowIndexedDB(ExecutionContext* context, const String& name, const WebSecurityOrigin& origin, PassRefPtr<IDBRequest> callbacks)
-{
-    bool allowed;
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument() || context->isWorkerGlobalScope());
+
     if (context->isDocument()) {
+        WebSecurityOrigin origin(context->securityOrigin());
         Document* document = toDocument(context);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
         WebViewImpl* webView = webFrame->viewImpl();
         // FIXME: webView->permissionClient() returns 0 in test_shell and content_shell http://crbug.com/137269
-        allowed = !webView->permissionClient() || webView->permissionClient()->allowIndexedDB(webFrame, name, origin);
-    } else {
-        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
-        allowed = WorkerPermissionClient::from(workerGlobalScope)->allowIndexedDB(name);
+        return !webView->permissionClient() || webView->permissionClient()->allowIndexedDB(webFrame, name, origin);
     }
 
-    if (!allowed)
-        callbacks->onError(WebIDBDatabaseError(UnknownError, "The user denied permission to access the database."));
-
-    return allowed;
-}
-
-void IDBFactoryBackendProxy::getDatabaseNames(PassRefPtr<IDBRequest> prpCallbacks, const String& databaseIdentifier, ExecutionContext* context)
-{
-    RefPtr<IDBRequest> callbacks(prpCallbacks);
-    WebSecurityOrigin origin(context->securityOrigin());
-    if (!allowIndexedDB(context, "Database Listing", origin, callbacks))
-        return;
-
-    m_webIDBFactory->getDatabaseNames(new WebIDBCallbacks(callbacks), databaseIdentifier);
-}
-
-void IDBFactoryBackendProxy::open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<IDBRequest> prpCallbacks,  PassOwnPtr<WebIDBDatabaseCallbacks> databaseCallbacks, const String& databaseIdentifier, ExecutionContext* context)
-{
-    RefPtr<IDBRequest> callbacks(prpCallbacks);
-    WebSecurityOrigin origin(context->securityOrigin());
-    if (!allowIndexedDB(context, name, origin, callbacks))
-        return;
-
-    m_webIDBFactory->open(name, version, transactionId, new WebIDBCallbacks(callbacks), databaseCallbacks.leakPtr(), databaseIdentifier);
-}
-
-void IDBFactoryBackendProxy::deleteDatabase(const String& name, PassRefPtr<IDBRequest> prpCallbacks, const String& databaseIdentifier, ExecutionContext* context)
-{
-    RefPtr<IDBRequest> callbacks(prpCallbacks);
-    WebSecurityOrigin origin(context->securityOrigin());
-    if (!allowIndexedDB(context, name, origin, callbacks))
-        return;
-
-    m_webIDBFactory->deleteDatabase(name, new WebIDBCallbacks(callbacks), databaseIdentifier);
+    WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(context);
+    return WorkerPermissionClient::from(workerGlobalScope)->allowIndexedDB(name);
 }
 
 } // namespace blink

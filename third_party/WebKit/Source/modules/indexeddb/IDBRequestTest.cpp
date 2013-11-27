@@ -39,16 +39,6 @@
 
 using namespace WebCore;
 
-using blink::WebData;
-using blink::WebIDBCallbacks;
-using blink::WebIDBDatabase;
-using blink::WebIDBDatabaseCallbacks;
-using blink::WebIDBKey;
-using blink::WebIDBKeyPath;
-using blink::WebIDBKeyRange;
-using blink::WebString;
-using blink::WebVector;
-
 namespace {
 
 class NullEventQueue : public EventQueue {
@@ -132,7 +122,7 @@ TEST_F(IDBRequestTest, AbortErrorAfterAbort)
     request->onError(DOMError::create(AbortError, "Description goes here."));
 }
 
-class MockWebIDBDatabase : public WebIDBDatabase {
+class MockWebIDBDatabase : public blink::WebIDBDatabase {
 public:
     static PassOwnPtr<MockWebIDBDatabase> create()
     {
