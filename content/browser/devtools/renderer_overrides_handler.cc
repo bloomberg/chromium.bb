@@ -234,11 +234,10 @@ void RendererOverridesHandler::ParseCaptureParameters(
   RenderViewHost* host = agent_->GetRenderViewHost();
   CHECK(host->GetView());
   gfx::Rect view_bounds = host->GetView()->GetViewBounds();
-  float device_sf = last_compositor_frame_metadata_.device_scale_factor;
   if (max_width > 0)
-    *scale = std::min(*scale, max_width / view_bounds.width() / device_sf);
+    *scale = std::min(*scale, max_width / view_bounds.width());
   if (max_height > 0)
-    *scale = std::min(*scale, max_height / view_bounds.height() / device_sf);
+    *scale = std::min(*scale, max_height / view_bounds.height());
 
   if (format->empty())
     *format = kPng;
