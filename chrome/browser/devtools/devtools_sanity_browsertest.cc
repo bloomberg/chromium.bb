@@ -587,6 +587,29 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
       &chrome::CloseAllBrowsers));
 }
 
+// Tests that inspected tab gets closed if devtools renderer
+// becomes unresponsive during beforeunload event interception.
+// @see http://crbug.com/322380
+IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
+                       TestUndockedDevToolsUnresponsive) {
+  ASSERT_TRUE(test_server()->Start());
+  LoadTestPage(kDebuggerTestPage);
+  DevToolsWindow* devtools_window = OpenDevToolWindowOnWebContents(
+      GetInspectedTab());
+  devtools_window->SetDockSideForTest(DEVTOOLS_DOCK_SIDE_UNDOCKED);
+  content::WindowedNotificationObserver devtools_close_observer(
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<content::WebContents>(
+          devtools_window->web_contents()));
+
+  ASSERT_TRUE(content::ExecuteScript(
+      devtools_window->web_contents()->GetRenderViewHost(),
+      "window.addEventListener('beforeunload',"
+      "function(event) { while (true); });"));
+  CloseInspectedTab();
+  devtools_close_observer.Wait();
+}
+
 // Flaky, see crbug.com/323847.
 //
 // Tests that BeforeUnload event gets called on devtools that are opened
