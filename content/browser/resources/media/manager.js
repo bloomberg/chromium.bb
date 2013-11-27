@@ -14,45 +14,47 @@ var Manager = (function() {
 
   function Manager(clientRenderer) {
     this.players_ = {};
-    this.audioStreams_ = {};
+    this.audioComponents_ = [];
     this.clientRenderer_ = clientRenderer;
   }
 
   Manager.prototype = {
     /**
-     * Adds an audio-stream to the dictionary of audio-streams to manage.
-     * @param id The unique-id of the audio-stream.
+     * Updates an audio-component.
+     * @param componentType Integer AudioComponent enum value; must match values
+     * from the AudioLogFactory::AudioComponent enum.
+     * @param componentId The unique-id of the audio-component.
+     * @param componentData The actual component data dictionary.
      */
-    addAudioStream: function(id) {
-      this.audioStreams_[id] = this.audioStreams_[id] || {};
-      this.clientRenderer_.audioStreamAdded(this.audioStreams_,
-                                            this.audioStreams_[id]);
-    },
-
-    /**
-     * Sets properties of an audiostream.
-     * @param id The unique-id of the audio-stream.
-     * @param properties A dictionary of properties to be added to the
-     * audio-stream.
-     */
-    updateAudioStream: function(id, properties) {
-      for (var key in properties) {
-        this.audioStreams_[id][key] = properties[key];
+    updateAudioComponent: function(componentType, componentId, componentData) {
+      if (!(componentType in this.audioComponents_))
+        this.audioComponents_[componentType] = {};
+      if (!(componentId in this.audioComponents_[componentType])) {
+        this.audioComponents_[componentType][componentId] = componentData;
+      } else {
+        for (var key in componentData) {
+          this.audioComponents_[componentType][componentId][key] =
+              componentData[key];
+        }
       }
-      this.clientRenderer_.audioStreamAdded(
-          this.audioStreams_, this.audioStreams_[id]);
+      this.clientRenderer_.audioComponentAdded(
+          componentType, this.audioComponents_[componentType]);
     },
 
     /**
      * Removes an audio-stream from the manager.
      * @param id The unique-id of the audio-stream.
      */
-    removeAudioStream: function(id) {
-      this.clientRenderer_.audioStreamRemoved(
-          this.audioStreams_, this.audioStreams_[id]);
-      delete this.audioStreams_[id];
-    },
+    removeAudioComponent: function(componentType, componentId) {
+      if (!(componentType in this.audioComponents_) ||
+          !(componentId in this.audioComponents_[componentType])) {
+        return;
+      }
 
+      delete this.audioComponents_[componentType][componentId];
+      this.clientRenderer_.audioComponentRemoved(
+          componentType, this.audioComponents_[componentType]);
+    },
 
     /**
      * Adds a player to the list of players to manage.

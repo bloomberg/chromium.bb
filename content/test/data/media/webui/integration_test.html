@@ -15,15 +15,14 @@ found in the LICENSE file.
           playerUpdated: doNothing,
           playerRemoved: doNothing,
           playerAdded: doNothing,
-          audioStreamUpdated: doNothing,
-          audioStreamAdded: doNothing,
-          audioStreamRemoved: doNothing
+          audioComponentAdded: doNothing,
+          audioComponentRemoved: doNothing
         };
 
         var manager = new Manager(mockClientRenderer);
         media.initialize(manager);
 
-        window.manager= manager;
+        window.manager = manager;
       };
 
       // The renderer and player ids are completely arbitrarily.
@@ -59,19 +58,40 @@ found in the LICENSE file.
         assertEquals(undefined, window.manager.players_[TEST_NAME]);
       };
 
-      // Audio Streams are weird, they are handled separately
-      window.testAddAudioStream = function() {
+      window.testAudioComponents = function() {
         var event = {
-          id: 'ID',
-          status: 'created',
-          playing: true
+          component_id: 1,
+          component_type: 0,
+          owner_id: 3,
+          status: 'created'
         };
 
-        window.media.addAudioStream(event);
+        // Ensure no components are currently present.
+        assertEquals(0, window.manager.audioComponents_.length);
 
-        var player = window.manager.audioStreams_[event.id];
-        assertTrue(undefined !== player);
-        assertEquals(event.playing, player['playing']);
+        // Test adding an audio component.
+        window.media.updateAudioComponent(event);
+        assertEquals(1, window.manager.audioComponents_.length);
+
+        // The key format is an implementation detail we don't care about, so
+        // just ensure there's only one key and then use it directly.
+        assertEquals(1, Object.keys(
+            window.manager.audioComponents_[event.component_type]).length);
+        for (key in window.manager.audioComponents_[event.component_type]) {
+          var component =
+              window.manager.audioComponents_[event.component_type][key];
+          assertEquals(event.component_id, component['component_id']);
+          assertEquals(event.component_type, component['component_type']);
+          assertEquals(event.owner_id, component['owner_id']);
+          assertEquals(event.status, component['status']);
+        }
+
+        // Test removing an audio component.
+        event.status = 'closed';
+        window.media.updateAudioComponent(event);
+        assertEquals(1, window.manager.audioComponents_.length);
+        assertEquals(0, Object.keys(
+            window.manager.audioComponents_[event.component_type]).length);
       };
     </script>
   </body>

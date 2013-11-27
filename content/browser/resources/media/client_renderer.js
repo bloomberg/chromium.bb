@@ -5,13 +5,15 @@
 var ClientRenderer = (function() {
   var ClientRenderer = function() {
     this.playerListElement = document.getElementById('player-list');
-    this.audioStreamListElement = document.getElementById('audio-stream-list');
-    this.propertiesTable = document.getElementById('property-table');
-    this.logTable = document.getElementById('log');
+    this.propertiesTable =
+        document.getElementById('property-table').querySelector('tbody');
+    this.logTable = document.getElementById('log').querySelector('tbody');
     this.graphElement = document.getElementById('graphs');
 
     this.selectedPlayer = null;
-    this.selectedStream = null;
+    this.selectedAudioComponentType = null;
+    this.selectedAudioComponentId = null;
+    this.selectedAudioCompontentData = null;
 
     this.selectedPlayerLogIndex = 0;
 
@@ -26,6 +28,8 @@ var ClientRenderer = (function() {
     this.clipboardTextarea = document.getElementById('clipboard-textarea');
     this.clipboardButton = document.getElementById('copy-button');
     this.clipboardButton.onclick = this.copyToClipboard_.bind(this);
+
+    this.hiddenKeys = ['component_id', 'component_type', 'owner_id'];
   };
 
   function removeChildren(element) {
@@ -46,18 +50,39 @@ var ClientRenderer = (function() {
   };
 
   ClientRenderer.prototype = {
-    audioStreamAdded: function(audioStreams, audioStreamAdded) {
-      this.redrawAudioStreamList_(audioStreams);
-    },
+    /**
+     * Called when an audio component is added to the collection.
+     * @param componentType Integer AudioComponent enum value; must match values
+     * from the AudioLogFactory::AudioComponent enum.
+     * @param components The entire map of components (name -> dict).
+     */
+    audioComponentAdded: function(componentType, components) {
+      this.redrawAudioComponentList_(componentType, components);
 
-    audioStreamUpdated: function(audioStreams, stream, key, value) {
-      if (stream === this.selectedStream) {
-        this.drawProperties_(stream);
+      // Redraw the component if it's currently selected.
+      if (this.selectedAudioComponentType == componentType &&
+          this.selectedAudioComponentId &&
+          this.selectedAudioComponentId in components) {
+        this.selectAudioComponent_(
+            componentType, this.selectedAudioComponentId,
+            components[this.selectedAudioComponentId]);
       }
     },
 
-    audioStreamRemoved: function(audioStreams, audioStreamRemoved) {
-      this.redrawAudioStreamList_(audioStreams);
+    /**
+     * Called when an audio component is removed from the collection.
+     * @param componentType Integer AudioComponent enum value; must match values
+     * from the AudioLogFactory::AudioComponent enum.
+     * @param components The entire map of components (name -> dict).
+     */
+    audioComponentRemoved: function(componentType, components) {
+      this.redrawAudioComponentList_(componentType, components);
+
+      // Clear the component if it was previously currently selected.
+      if (this.selectedAudioComponentType == componentType &&
+          !(this.selectedAudioComponentId in components)) {
+        this.selectAudioComponent_(null, null, {});
+      }
     },
 
     /**
@@ -96,48 +121,74 @@ var ClientRenderer = (function() {
       }
     },
 
-    redrawAudioStreamList_: function(streams) {
-      removeChildren(this.audioStreamListElement);
+    redrawAudioComponentList_: function(componentType, components) {
+      function redrawList(renderer, baseName, element) {
+        var fragment = document.createDocumentFragment();
+        for (id in components) {
+          var li = document.createElement('li');
+          li.appendChild(createButton(
+              baseName + ' ' + id, renderer.selectAudioComponent_.bind(
+                  renderer, componentType, id, components[id])));
+          fragment.appendChild(li);
+        }
+        removeChildren(element);
+        element.appendChild(fragment);
+      }
 
-      for (id in streams) {
-        var li = document.createElement('li');
-        li.appendChild(createButton(
-            id, this.selectAudioStream_.bind(this, streams[id])));
-        this.audioStreamListElement.appendChild(li);
+      switch (componentType) {
+        case 0:
+          redrawList(this, 'Controller', document.getElementById(
+              'audio-input-controller-list'));
+          break;
+        case 1:
+          redrawList(this, 'Controller', document.getElementById(
+              'audio-output-controller-list'));
+          break;
+        case 2:
+          redrawList(this, 'Stream', document.getElementById(
+              'audio-output-stream-list'));
+          break;
+        default:
+          break;
       }
     },
 
-    selectAudioStream_: function(audioStream) {
-      this.selectedStream = audioStream;
+    selectAudioComponent_: function(componentType, componentId, componentData) {
       this.selectedPlayer = null;
-      this.drawProperties_(audioStream);
-      removeChildren(this.logTable.querySelector('tbody'));
+      this.selectedAudioComponentType = componentType;
+      this.selectedAudioComponentId = componentId;
+      this.selectedAudioCompontentData = componentData;
+      this.drawProperties_(componentData);
+      removeChildren(this.logTable);
       removeChildren(this.graphElement);
     },
 
     redrawPlayerList_: function(players) {
-      removeChildren(this.playerListElement);
-
+      var fragment = document.createDocumentFragment();
       for (id in players) {
-        var li = document.createElement('li');
         var player = players[id];
         var usableName = player.properties.name ||
             player.properties.url ||
-            'player ' + player.id;
+            'Player ' + player.id;
 
+        var li = document.createElement('li');
         li.appendChild(createButton(
             usableName, this.selectPlayer_.bind(this, player)));
-        this.playerListElement.appendChild(li);
+        fragment.appendChild(li);
       }
+      removeChildren(this.playerListElement);
+      this.playerListElement.appendChild(fragment);
     },
 
     selectPlayer_: function(player) {
       this.selectedPlayer = player;
       this.selectedPlayerLogIndex = 0;
-      this.selectedStream = null;
+      this.selectedAudioComponentType = null;
+      this.selectedAudioComponentId = null;
+      this.selectedAudioCompontentData = null;
       this.drawProperties_(player.properties);
 
-      removeChildren(this.logTable.querySelector('tbody'));
+      removeChildren(this.logTable);
       removeChildren(this.graphElement);
       this.drawLog_();
       this.drawGraphs_();
@@ -145,12 +196,13 @@ var ClientRenderer = (function() {
 
     drawProperties_: function(propertyMap) {
       removeChildren(this.propertiesTable);
-
       var sortedKeys = Object.keys(propertyMap).sort();
       for (var i = 0; i < sortedKeys.length; ++i) {
         var key = sortedKeys[i];
-        var value = propertyMap[key];
+        if (this.hiddenKeys.indexOf(key) >= 0)
+          continue;
 
+        var value = propertyMap[key];
         var row = this.propertiesTable.insertRow(-1);
         var keyCell = row.insertCell(-1);
         var valueCell = row.insertCell(-1);
@@ -162,9 +214,11 @@ var ClientRenderer = (function() {
 
     appendEventToLog_: function(event) {
       if (this.filterFunction(event.key)) {
-        var row = this.logTable.querySelector('tbody').insertRow(-1);
+        var row = this.logTable.insertRow(-1);
 
-        row.insertCell(-1).appendChild(document.createTextNode(
+        var timestampCell = row.insertCell(-1);
+        timestampCell.classList.add('timestamp');
+        timestampCell.appendChild(document.createTextNode(
             util.millisecondsToString(event.time)));
         row.insertCell(-1).appendChild(document.createTextNode(event.key));
         row.insertCell(-1).appendChild(document.createTextNode(event.value));
@@ -249,7 +303,7 @@ var ClientRenderer = (function() {
     },
 
     copyToClipboard_: function() {
-      var properties = this.selectedStream ||
+      var properties = this.selectedAudioCompontentData ||
           this.selectedPlayer.properties || false;
       if (!properties) {
         return;
@@ -265,18 +319,14 @@ var ClientRenderer = (function() {
       }
 
       this.clipboardTextarea.value = stringBuffer.join('');
-      this.clipboardTextarea.classList.remove('hidden');
+      this.clipboardTextarea.classList.remove('hiddenClipboard');
       this.clipboardTextarea.focus();
       this.clipboardTextarea.select();
 
-      // The act of copying anything from the textarea gets canceled
-      // if the element in question gets the class 'hidden' (which contains the
-      // css property display:none) before the event is finished. For this, it
-      // is necessary put the property setting on the event loop to be executed
-      // after the copy has taken place.
-      this.clipboardTextarea.oncopy = function(event) {
+      // Hide the clipboard element when it loses focus.
+      this.clipboardTextarea.onblur = function(event) {
         setTimeout(function(element) {
-          event.target.classList.add('hidden');
+          event.target.classList.add('hiddenClipboard');
         }, 0);
       };
     },
@@ -297,7 +347,7 @@ var ClientRenderer = (function() {
       };
 
       if (this.selectedPlayer) {
-        removeChildren(this.logTable.querySelector('tbody'));
+        removeChildren(this.logTable);
         this.selectedPlayerLogIndex = 0;
         this.drawLog_();
       }

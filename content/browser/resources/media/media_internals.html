@@ -13,16 +13,24 @@ found in the LICENSE file.
 </head>
 
 <body>
-  <textarea id="clipboard-textarea" class="hidden"></textarea>
+  <textarea id="clipboard-textarea" class="hiddenClipboard"></textarea>
   <div id="container">
     <div id="list-wrapper">
       <div id="player-list-wrapper">
         <h2>Players</h2>
         <ul id="player-list"></ul>
       </div>
-      <div id="audio-stream-list-wrapper">
-        <h2>Audio Streams</h2>
-        <ul id="audio-stream-list"></ul>
+      <div id="audio-component-list-wrapper">
+        <h2>Input Controllers</h2>
+        <ul id="audio-input-controller-list"></ul>
+      </div>
+      <div id="audio-component-list-wrapper">
+        <h2>Output Controllers</h2>
+        <ul id="audio-output-controller-list"></ul>
+      </div>
+      <div id="audio-component-list-wrapper">
+        <h2>Output Streams</h2>
+        <ul id="audio-output-stream-list"></ul>
       </div>
     </div>
     <div id="property-wrapper">
@@ -30,9 +38,11 @@ found in the LICENSE file.
       <table id="property-table">
         <thead>
           <tr>
-            <td>Property Name</td> <td>Value</td>
+            <th>Property</th>
+            <th>Value</th>
           </tr>
         </thead>
+        <tbody></tbody>
       </table>
       <ul id="graphs"></ul>
     </div>
@@ -43,9 +53,9 @@ found in the LICENSE file.
       <table id="log">
         <thead>
           <tr>
-            <td>Timestamp</td>
-            <td>Property</td>
-            <td>Value</td>
+            <th class="timestamp">Timestamp</th>
+            <th>Property</th>
+            <th>Value</th>
           </tr>
         </thead>
         <tbody></tbody>

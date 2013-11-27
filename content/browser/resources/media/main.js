@@ -40,8 +40,8 @@ var media = (function() {
   };
 
   media.onReceiveEverything = function(everything) {
-    for (var key in everything.audio_streams) {
-      media.updateAudioStream(everything.audio_streams[key]);
+    for (var component in everything) {
+      media.updateAudioComponent(everything[component]);
     }
   };
 
@@ -123,29 +123,18 @@ var media = (function() {
     });
   };
 
-  // For whatever reason, addAudioStream is also called on
-  // the removal of audio streams.
-  media.addAudioStream = function(event) {
-    switch (event.status) {
-      case 'created':
-        manager.addAudioStream(event.id);
-        manager.updateAudioStream(event.id, { 'playing': event.playing });
-        break;
+  media.updateAudioComponent = function(component) {
+    var uniqueComponentId = component.owner_id + ':' + component.component_id;
+    switch (component.status) {
       case 'closed':
-        manager.removeAudioStream(event.id);
+        manager.removeAudioComponent(
+            component.component_type, uniqueComponentId);
+        break;
+      default:
+        manager.updateAudioComponent(
+            component.component_type, uniqueComponentId, component);
         break;
     }
-  };
-
-  media.updateAudioStream = function(stream) {
-    manager.addAudioStream(stream.id);
-    manager.updateAudioStream(stream.id, stream);
-  };
-
-  media.onItemDeleted = function() {
-    // This only gets called when an audio stream is removed, which
-    // for whatever reason is also handled by addAudioStream...
-    // Because it is already handled, we can safely ignore it.
   };
 
   media.onPlayerOpen = function(id, timestamp) {

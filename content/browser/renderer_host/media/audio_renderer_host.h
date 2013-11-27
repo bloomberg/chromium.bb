@@ -49,6 +49,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "media/audio/audio_io.h"
+#include "media/audio/audio_logging.h"
 #include "media/audio/audio_output_controller.h"
 #include "media/audio/simple_sources.h"
 
@@ -156,7 +157,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
 
   media::AudioManager* const audio_manager_;
   AudioMirroringManager* const mirroring_manager_;
-  MediaInternals* const media_internals_;
+  scoped_ptr<media::AudioLog> audio_log_;
 
   // Used to access to AudioInputDeviceManager.
   MediaStreamManager* media_stream_manager_;

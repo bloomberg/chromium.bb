@@ -16,7 +16,8 @@
 namespace content {
 
 MediaInternalsMessageHandler::MediaInternalsMessageHandler()
-    : proxy_(new MediaInternalsProxy()) {}
+    : proxy_(new MediaInternalsProxy()),
+      page_load_complete_(false) {}
 
 MediaInternalsMessageHandler::~MediaInternalsMessageHandler() {
   proxy_->Detach();
@@ -33,13 +34,15 @@ void MediaInternalsMessageHandler::RegisterMessages() {
 
 void MediaInternalsMessageHandler::OnGetEverything(
     const base::ListValue* list) {
+  page_load_complete_ = true;
   proxy_->GetEverything();
 }
 
 void MediaInternalsMessageHandler::OnUpdate(const string16& update) {
-  // Don't try to execute JavaScript in a RenderView that no longer exists.
+  // Don't try to execute JavaScript in a RenderView that no longer exists nor
+  // if the chrome://media-internals page hasn't finished loading.
   RenderViewHost* host = web_ui()->GetWebContents()->GetRenderViewHost();
-  if (host)
+  if (host && page_load_complete_)
     host->ExecuteJavascriptInWebFrame(string16(), update);
 }
 

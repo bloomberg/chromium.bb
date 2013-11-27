@@ -5,173 +5,142 @@
 #include "content/browser/media/media_internals.h"
 
 #include "base/bind.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/strings/stringprintf.h"
-#include "content/public/test/test_browser_thread.h"
+#include "base/bind_helpers.h"
+#include "base/json/json_reader.h"
+#include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_parameters.h"
 #include "media/base/channel_layout.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
 namespace {
-
-class MockObserverBaseClass {
- public:
-  ~MockObserverBaseClass() {}
-  virtual void OnUpdate(const string16& javascript) = 0;
-};
-
-class MockMediaInternalsObserver : public MockObserverBaseClass {
- public:
-  virtual ~MockMediaInternalsObserver() {}
-  MOCK_METHOD1(OnUpdate, void(const string16& javascript));
-};
-
+const int kTestComponentID = 0;
+const char kTestInputDeviceID[] = "test-input-id";
+const char kTestOutputDeviceID[] = "test-output-id";
 }  // namespace
 
-class MediaInternalsTest : public testing::Test {
+namespace content {
+
+class MediaInternalsTest
+    : public testing::TestWithParam<media::AudioLogFactory::AudioComponent> {
  public:
-  MediaInternalsTest() : io_thread_(BrowserThread::IO, &loop_) {}
-  base::DictionaryValue* data() {
-    return &internals_->data_;
+  MediaInternalsTest()
+      : media_internals_(MediaInternals::GetInstance()),
+        update_cb_(base::Bind(&MediaInternalsTest::UpdateCallbackImpl,
+                              base::Unretained(this))),
+        test_params_(media::AudioParameters::AUDIO_PCM_LINEAR,
+                     media::CHANNEL_LAYOUT_MONO,
+                     48000,
+                     16,
+                     128),
+        test_component_(GetParam()),
+        audio_log_(media_internals_->CreateAudioLog(test_component_)) {
+    media_internals_->AddUpdateCallback(update_cb_);
   }
 
-  void DeleteItem(const std::string& item) {
-    internals_->DeleteItem(item);
-  }
-
-  void UpdateItem(const std::string& item, const std::string& property,
-                  base::Value* value) {
-    internals_->UpdateItem(std::string(), item, property, value);
-  }
-
-  void SendUpdate(const std::string& function, base::Value* value) {
-    internals_->SendUpdate(function, value);
+  virtual ~MediaInternalsTest() {
+    media_internals_->RemoveUpdateCallback(update_cb_);
   }
 
  protected:
-  virtual void SetUp() {
-    internals_.reset(new MediaInternals());
+  // Extracts and deserializes the JSON update data; merges into |update_data_|.
+  void UpdateCallbackImpl(const string16& update) {
+    // Each update string looks like "<JavaScript Function Name>({<JSON>});", to
+    // use the JSON reader we need to strip out the JavaScript code.
+    std::string utf8_update = base::UTF16ToUTF8(update);
+    const std::string::size_type first_brace = utf8_update.find('{');
+    const std::string::size_type last_brace = utf8_update.rfind('}');
+    scoped_ptr<base::Value> output_value(base::JSONReader::Read(
+        utf8_update.substr(first_brace, last_brace - first_brace + 1)));
+    CHECK(output_value);
+
+    base::DictionaryValue* output_dict = NULL;
+    CHECK(output_value->GetAsDictionary(&output_dict));
+    update_data_.MergeDictionary(output_dict);
   }
 
-  base::MessageLoop loop_;
-  TestBrowserThread io_thread_;
-  scoped_ptr<MediaInternals> internals_;
+  void ExpectInt(const std::string& key, int expected_value) {
+    int actual_value = 0;
+    ASSERT_TRUE(update_data_.GetInteger(key, &actual_value));
+    EXPECT_EQ(expected_value, actual_value);
+  }
+
+  void ExpectString(const std::string& key, const std::string& expected_value) {
+    std::string actual_value;
+    ASSERT_TRUE(update_data_.GetString(key, &actual_value));
+    EXPECT_EQ(expected_value, actual_value);
+  }
+
+  void ExpectStatus(const std::string& expected_value) {
+    ExpectString("status", expected_value);
+  }
+
+  TestBrowserThreadBundle thread_bundle_;
+  MediaInternals* const media_internals_;
+  MediaInternals::UpdateCallback update_cb_;
+  base::DictionaryValue update_data_;
+  const media::AudioParameters test_params_;
+  const media::AudioLogFactory::AudioComponent test_component_;
+  scoped_ptr<media::AudioLog> audio_log_;
 };
 
-TEST_F(MediaInternalsTest, AudioStreamCreatedSendsMessage) {
-  media::AudioParameters params =
-      media::AudioParameters(media::AudioParameters::AUDIO_PCM_LINEAR,
-                             media::CHANNEL_LAYOUT_MONO,
-                             48000,
-                             16,
-                             129);
+TEST_P(MediaInternalsTest, AudioLogCreateStartStopErrorClose) {
+  audio_log_->OnCreated(
+      kTestComponentID, test_params_, kTestInputDeviceID, kTestOutputDeviceID);
+  base::RunLoop().RunUntilIdle();
 
-  const int stream_id = 0;
-  const std::string device_id = "test";
-  const std::string name =
-      base::StringPrintf("audio_streams.%p:%d", this, stream_id);
+  ExpectString("output_channel_layout",
+               media::ChannelLayoutToString(test_params_.channel_layout()));
+  ExpectInt("sample_rate", test_params_.sample_rate());
+  ExpectInt("frames_per_buffer", test_params_.frames_per_buffer());
+  ExpectInt("output_channels", test_params_.channels());
+  ExpectInt("input_channels", test_params_.input_channels());
+  ExpectString("output_device_id", kTestOutputDeviceID);
+  ExpectString("input_device_id", kTestInputDeviceID);
+  ExpectInt("component_id", kTestComponentID);
+  ExpectInt("component_type", test_component_);
+  ExpectStatus("created");
 
-  internals_->OnAudioStreamCreated(this, stream_id, params, device_id);
+  // Verify OnStarted().
+  audio_log_->OnStarted(kTestComponentID);
+  base::RunLoop().RunUntilIdle();
+  ExpectStatus("started");
 
-  std::string channel_layout;
-  data()->GetString(name + ".channel_layout", &channel_layout);
-  EXPECT_EQ("MONO", channel_layout);
+  // Verify OnStopped().
+  audio_log_->OnStopped(kTestComponentID);
+  base::RunLoop().RunUntilIdle();
+  ExpectStatus("stopped");
 
-  int sample_rate;
-  data()->GetInteger(name + ".sample_rate", &sample_rate);
-  EXPECT_EQ(params.sample_rate(), sample_rate);
+  // Verify OnError().
+  const char kErrorKey[] = "error_occurred";
+  std::string no_value;
+  ASSERT_FALSE(update_data_.GetString(kErrorKey, &no_value));
+  audio_log_->OnError(kTestComponentID);
+  base::RunLoop().RunUntilIdle();
+  ExpectString(kErrorKey, "true");
 
-  int frames_per_buffer;
-  data()->GetInteger(name + ".frames_per_buffer", &frames_per_buffer);
-  EXPECT_EQ(params.frames_per_buffer(), frames_per_buffer);
-
-  int output_channels;
-  data()->GetInteger(name + ".output_channels", &output_channels);
-  EXPECT_EQ(params.channels(), output_channels);
-
-  std::string device_id_out;
-  data()->GetString(name + ".input_device_id", &device_id_out);
-  EXPECT_EQ(device_id, device_id_out);
-
-  int input_channels;
-  data()->GetInteger(name + ".input_channels", &input_channels);
-  EXPECT_EQ(params.input_channels(), input_channels);
+  // Verify OnClosed().
+  audio_log_->OnClosed(kTestComponentID);
+  base::RunLoop().RunUntilIdle();
+  ExpectStatus("closed");
 }
 
-TEST_F(MediaInternalsTest, UpdateAddsNewItem) {
-  UpdateItem("some.item", "testing", new base::FundamentalValue(true));
-  bool testing = false;
-  std::string id;
+TEST_P(MediaInternalsTest, AudioLogCreateClose) {
+  audio_log_->OnCreated(
+      kTestComponentID, test_params_, kTestInputDeviceID, kTestOutputDeviceID);
+  base::RunLoop().RunUntilIdle();
+  ExpectStatus("created");
 
-  EXPECT_TRUE(data()->GetBoolean("some.item.testing", &testing));
-  EXPECT_TRUE(testing);
-
-  EXPECT_TRUE(data()->GetString("some.item.id", &id));
-  EXPECT_EQ(id, "some.item");
+  audio_log_->OnClosed(kTestComponentID);
+  base::RunLoop().RunUntilIdle();
+  ExpectStatus("closed");
 }
 
-TEST_F(MediaInternalsTest, UpdateModifiesExistingItem) {
-  UpdateItem("some.item", "testing", new base::FundamentalValue(true));
-  UpdateItem("some.item", "value", new base::FundamentalValue(5));
-  UpdateItem("some.item", "testing", new base::FundamentalValue(false));
-  bool testing = true;
-  int value = 0;
-  std::string id;
-
-  EXPECT_TRUE(data()->GetBoolean("some.item.testing", &testing));
-  EXPECT_FALSE(testing);
-
-  EXPECT_TRUE(data()->GetInteger("some.item.value", &value));
-  EXPECT_EQ(value, 5);
-
-  EXPECT_TRUE(data()->GetString("some.item.id", &id));
-  EXPECT_EQ(id, "some.item");
-}
-
-TEST_F(MediaInternalsTest, ObserversReceiveNotifications) {
-  scoped_ptr<MockMediaInternalsObserver> observer(
-      new MockMediaInternalsObserver());
-
-  EXPECT_CALL(*observer.get(), OnUpdate(testing::_)).Times(1);
-
-  MediaInternals::UpdateCallback callback = base::Bind(
-      &MockMediaInternalsObserver::OnUpdate, base::Unretained(observer.get()));
-
-  internals_->AddUpdateCallback(callback);
-  SendUpdate("fn", data());
-}
-
-TEST_F(MediaInternalsTest, RemovedObserversReceiveNoNotifications) {
-  scoped_ptr<MockMediaInternalsObserver> observer(
-      new MockMediaInternalsObserver());
-
-  EXPECT_CALL(*observer.get(), OnUpdate(testing::_)).Times(0);
-
-  MediaInternals::UpdateCallback callback = base::Bind(
-      &MockMediaInternalsObserver::OnUpdate, base::Unretained(observer.get()));
-
-  internals_->AddUpdateCallback(callback);
-  internals_->RemoveUpdateCallback(callback);
-  SendUpdate("fn", data());
-}
-
-TEST_F(MediaInternalsTest, DeleteRemovesItem) {
-  base::Value* out;
-
-  UpdateItem("some.item", "testing", base::Value::CreateNullValue());
-  EXPECT_TRUE(data()->Get("some.item", &out));
-  EXPECT_TRUE(data()->Get("some", &out));
-
-  DeleteItem("some.item");
-  EXPECT_FALSE(data()->Get("some.item", &out));
-  EXPECT_TRUE(data()->Get("some", &out));
-
-  DeleteItem("some");
-  EXPECT_FALSE(data()->Get("some.item", &out));
-  EXPECT_FALSE(data()->Get("some", &out));
-}
+INSTANTIATE_TEST_CASE_P(
+    MediaInternalsTest, MediaInternalsTest, testing::Values(
+        media::AudioLogFactory::AUDIO_INPUT_CONTROLLER,
+        media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER,
+        media::AudioLogFactory::AUDIO_OUTPUT_STREAM));
 
 }  // namespace content

@@ -117,7 +117,8 @@ AudioRendererHost::AudioRendererHost(
     : render_process_id_(render_process_id),
       audio_manager_(audio_manager),
       mirroring_manager_(mirroring_manager),
-      media_internals_(media_internals),
+      audio_log_(media_internals->CreateAudioLog(
+          media::AudioLogFactory::AUDIO_OUTPUT_CONTROLLER)),
       media_stream_manager_(media_stream_manager) {
   DCHECK(audio_manager_);
   DCHECK(media_stream_manager_);
@@ -379,10 +380,7 @@ void AudioRendererHost::OnCreateStream(
         render_process_id_, entry->render_view_id(), entry->controller());
   }
   audio_entries_.insert(std::make_pair(stream_id, entry.release()));
-  if (media_internals_) {
-    media_internals_->OnAudioStreamCreated(
-        this, stream_id, params, input_device_id);
-  }
+  audio_log_->OnCreated(stream_id, params, input_device_id, output_device_id);
 }
 
 void AudioRendererHost::OnPlayStream(int stream_id) {
@@ -395,8 +393,7 @@ void AudioRendererHost::OnPlayStream(int stream_id) {
   }
 
   entry->controller()->Play();
-  if (media_internals_)
-    media_internals_->OnSetAudioStreamPlaying(this, stream_id, true);
+  audio_log_->OnStarted(stream_id);
 }
 
 void AudioRendererHost::OnPauseStream(int stream_id) {
@@ -409,8 +406,7 @@ void AudioRendererHost::OnPauseStream(int stream_id) {
   }
 
   entry->controller()->Pause();
-  if (media_internals_)
-    media_internals_->OnSetAudioStreamPlaying(this, stream_id, false);
+  audio_log_->OnStopped(stream_id);
 }
 
 void AudioRendererHost::OnSetVolume(int stream_id, double volume) {
@@ -426,8 +422,7 @@ void AudioRendererHost::OnSetVolume(int stream_id, double volume) {
   if (volume < 0 || volume > 1.0)
     return;
   entry->controller()->SetVolume(volume);
-  if (media_internals_)
-    media_internals_->OnSetAudioStreamVolume(this, stream_id, volume);
+  audio_log_->OnSetVolume(stream_id, volume);
 }
 
 void AudioRendererHost::SendErrorMessage(int stream_id) {
@@ -453,9 +448,7 @@ void AudioRendererHost::OnCloseStream(int stream_id) {
   }
   controller->Close(
       base::Bind(&AudioRendererHost::DeleteEntry, this, base::Passed(&entry)));
-
-  if (media_internals_)
-    media_internals_->OnSetAudioStreamStatus(this, stream_id, "closed");
+  audio_log_->OnClosed(stream_id);
 }
 
 void AudioRendererHost::DeleteEntry(scoped_ptr<AudioEntry> entry) {
@@ -469,12 +462,6 @@ void AudioRendererHost::DeleteEntry(scoped_ptr<AudioEntry> entry) {
         render_process_id_, entry->render_view_id(), entry->stream_id(),
         false, -std::numeric_limits<float>::infinity(), false);
   }
-
-  // Notify the media observer.
-  if (media_internals_)
-    media_internals_->OnDeleteAudioStream(this, entry->stream_id());
-
-  // Note: |entry| will be deleted upon leaving this scope.
 }
 
 void AudioRendererHost::ReportErrorAndClose(int stream_id) {
@@ -488,9 +475,7 @@ void AudioRendererHost::ReportErrorAndClose(int stream_id) {
 
   SendErrorMessage(stream_id);
 
-  if (media_internals_)
-    media_internals_->OnSetAudioStreamStatus(this, stream_id, "error");
-
+  audio_log_->OnError(stream_id);
   OnCloseStream(stream_id);
 }
 

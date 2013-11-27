@@ -9,21 +9,30 @@ body,
   padding: 0;
   width: 100%;
   height: 100%;
-
-  font-family: 'Lucida Grande', sans-serif;
 }
 
 table {
-  border-collapse: collapse;
+  font-family: sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-size: 115%;
+  width: auto;
+  overflow: auto;
+  display: block;
+}
+th {
+  background-color: rgb(112, 196, 105);
+  font-weight: normal;
+  color: white;
+  padding: 2px;
+  text-align: center;
+  min-width: 230px;
 }
 td {
-  border: 1px solid black;
+  background-color: rgb(238, 238, 238);
+  padding: 2px;
+  color: rgb(111, 111, 111);
   word-wrap: break-word;
-  max-width: 200px;
-}
-thead {
-  color: rgb(50,50,50);
-  font-size: 1.1em;
+  min-width: 230px;
 }
 
 h1,
@@ -56,26 +65,22 @@ h3 {
 }
 
 #player-list-wrapper,
-#audio-stream-list-wrapper {
+#audio-component-list-wrapper {
   flex-grow: 1;
   align-self: stretch;
   min-width: 200px;
-  max-width: 200px;
   overflow: auto;
 }
 
 #player-list-wrapper ul,
 #player-list-wrapper li,
-#audio-stream-list-wrapper ul,
-#audio-stream-list-wrapper li {
-  margin: 0;
-  padding: 0;
+#audio-component-list-wrapper ul,
+#audio-component-list-wrapper li {
+  padding: 0px;
   list-style-type: none;
 }
 #list-wrapper button {
-  margin: 0;
-  padding: 0;
-  width: 170px;
+  padding: 0px;
 }
 
 #property-wrapper,
@@ -103,6 +108,10 @@ h3 {
   top: 25%;
 }
 
-.hidden {
+.hiddenClipboard {
   display: none;
+}
+
+.timestamp {
+  min-width: 115px;
 }
