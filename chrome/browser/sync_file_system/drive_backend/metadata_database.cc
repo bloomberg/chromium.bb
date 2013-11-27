@@ -836,6 +836,59 @@ void MetadataDatabase::UpdateByFileResource(
   WriteToDatabase(batch.Pass(), callback);
 }
 
+void MetadataDatabase::ReplaceActiveTrackerWithNewResource(
+    int64 change_id,
+    int64 parent_tracker_id,
+    const google_apis::FileResource& resource,
+    const SyncStatusCallback& callback) {
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+
+  scoped_ptr<FileMetadata> file(
+      CreateFileMetadataFromFileResource(change_id, resource));
+  std::string file_id = file->file_id();
+  DCHECK(!ContainsKey(file_by_id_, file_id));
+  DCHECK(!file->details().missing());
+
+  // TODO(tzik): Consolidate with UpdateByChangeList.
+  MaybeAddTrackersForNewFile(*file, batch.get());
+
+  const FileDetails& new_file_details = file->details();
+  PutFileToBatch(*file, batch.get());
+  file_by_id_[file_id] = file.release();
+
+  TrackerSet new_trackers;
+  if (!FindTrackersByFileID(file_id, &new_trackers)) {
+    NOTREACHED();
+    WriteToDatabase(batch.Pass(), callback);
+    return;
+  }
+  DCHECK_EQ(1u, new_trackers.size());
+
+  FileTracker* new_tracker = *new_trackers.begin();
+  DCHECK(!new_tracker->active());
+  DCHECK(!new_tracker->has_synced_details());
+  DCHECK_EQ(parent_tracker_id, new_tracker->parent_tracker_id());
+
+  std::string title = new_file_details.title();
+  TrackerSet trackers;
+  if (FindTrackersByParentAndTitle(parent_tracker_id, title, &trackers) &&
+      trackers.has_active())
+    MakeTrackerInactive(trackers.active_tracker()->tracker_id(), batch.get());
+
+  // TODO(tzik): Simplify this part.
+  *new_tracker->mutable_synced_details() = new_file_details;
+  trackers_by_parent_and_title_[parent_tracker_id][title].Insert(new_tracker);
+
+  MakeTrackerActive(new_tracker->tracker_id(), batch.get());
+
+  new_tracker->set_dirty(false);
+  dirty_trackers_.erase(new_tracker);
+  low_priority_dirty_trackers_.erase(new_tracker);
+  PutTrackerToBatch(*new_tracker, batch.get());
+
+  WriteToDatabase(batch.Pass(), callback);
+}
+
 void MetadataDatabase::PopulateFolderByChildList(
     const std::string& folder_id,
     const FileIDList& child_file_ids,
