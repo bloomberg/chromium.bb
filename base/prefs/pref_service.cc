@@ -53,19 +53,11 @@ PrefService::PrefService(
       read_error_callback_(read_error_callback) {
   pref_notifier_->SetPrefService(this);
 
-  pref_registry_->SetRegistrationCallback(
-      base::Bind(&PrefService::AddRegisteredPreference,
-                 base::Unretained(this)));
-  AddInitialPreferences();
-
   InitFromStorage(async);
 }
 
 PrefService::~PrefService() {
   DCHECK(CalledOnValidThread());
-
-  // Remove our callback, setting a NULL one.
-  pref_registry_->SetRegistrationCallback(PrefRegistry::RegistrationCallback());
 
   // Reset pointers so accesses after destruction reliably crash.
   pref_value_store_.reset();
@@ -297,10 +289,6 @@ const base::Value* PrefService::GetDefaultPrefValue(const char* path) const {
   return value;
 }
 
-void PrefService::MarkUserStoreNeedsEmptyValue(const std::string& key) const {
-  user_pref_store_->MarkNeedsEmptyValue(key);
-}
-
 const base::ListValue* PrefService::GetList(const char* path) const {
   DCHECK(CalledOnValidThread());
 
@@ -330,42 +318,6 @@ void PrefService::AddPrefInitObserver(base::Callback<void(bool)> obs) {
 
 PrefRegistry* PrefService::DeprecatedGetPrefRegistry() {
   return pref_registry_.get();
-}
-
-void PrefService::AddInitialPreferences() {
-  for (PrefRegistry::const_iterator it = pref_registry_->begin();
-       it != pref_registry_->end();
-       ++it) {
-    AddRegisteredPreference(it->first.c_str(), it->second);
-  }
-}
-
-// TODO(joi): Once MarkNeedsEmptyValue is gone, we can probably
-// completely get rid of this method. There will be one difference in
-// semantics; currently all registered preferences are stored right
-// away in the prefs_map_, if we remove this they would be stored only
-// opportunistically.
-void PrefService::AddRegisteredPreference(const char* path,
-                                          base::Value* default_value) {
-  DCHECK(CalledOnValidThread());
-
-  // For ListValue and DictionaryValue with non empty default, empty value
-  // for |path| needs to be persisted in |user_pref_store_|. So that
-  // non empty default is not used when user sets an empty ListValue or
-  // DictionaryValue.
-  bool needs_empty_value = false;
-  base::Value::Type orig_type = default_value->GetType();
-  if (orig_type == base::Value::TYPE_LIST) {
-    const base::ListValue* list = NULL;
-    if (default_value->GetAsList(&list) && !list->empty())
-      needs_empty_value = true;
-  } else if (orig_type == base::Value::TYPE_DICTIONARY) {
-    const base::DictionaryValue* dict = NULL;
-    if (default_value->GetAsDictionary(&dict) && !dict->empty())
-      needs_empty_value = true;
-  }
-  if (needs_empty_value)
-    user_pref_store_->MarkNeedsEmptyValue(path);
 }
 
 void PrefService::ClearPref(const char* path) {

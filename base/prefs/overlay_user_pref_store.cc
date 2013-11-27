@@ -93,11 +93,6 @@ void OverlayUserPrefStore::RemoveValue(const std::string& key) {
     ReportValueChanged(key);
 }
 
-void OverlayUserPrefStore::MarkNeedsEmptyValue(const std::string& key) {
-  if (!ShallBeStoredInOverlay(key))
-    underlay_->MarkNeedsEmptyValue(key);
-}
-
 bool OverlayUserPrefStore::ReadOnly() const {
   return false;
 }

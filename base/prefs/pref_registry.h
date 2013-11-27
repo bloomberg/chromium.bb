@@ -5,7 +5,6 @@
 #ifndef BASE_PREFS_PREF_REGISTRY_H_
 #define BASE_PREFS_PREF_REGISTRY_H_
 
-#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/prefs/base_prefs_export.h"
 #include "base/prefs/pref_value_map.h"
@@ -29,7 +28,6 @@ class PrefStore;
 class BASE_PREFS_EXPORT PrefRegistry : public base::RefCounted<PrefRegistry> {
  public:
   typedef PrefValueMap::const_iterator const_iterator;
-  typedef base::Callback<void(const char*, base::Value*)> RegistrationCallback;
 
   PrefRegistry();
 
@@ -45,15 +43,6 @@ class BASE_PREFS_EXPORT PrefRegistry : public base::RefCounted<PrefRegistry> {
   // |pref_name| must be a previously registered preference.
   void SetDefaultPrefValue(const char* pref_name, base::Value* value);
 
-  // Exactly one callback can be set for registration. The callback
-  // will be invoked each time registration has been performed on this
-  // object.
-  //
-  // Calling this method after a callback has already been set will
-  // make the object forget the previous callback and use the new one
-  // instead.
-  void SetRegistrationCallback(const RegistrationCallback& callback);
-
  protected:
   friend class base::RefCounted<PrefRegistry>;
   virtual ~PrefRegistry();
@@ -64,8 +53,6 @@ class BASE_PREFS_EXPORT PrefRegistry : public base::RefCounted<PrefRegistry> {
   scoped_refptr<DefaultPrefStore> defaults_;
 
  private:
-  RegistrationCallback registration_callback_;
-
   DISALLOW_COPY_AND_ASSIGN(PrefRegistry);
 };
 

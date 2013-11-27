@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "base/prefs/pref_registry.h"
 #include "components/user_prefs/user_prefs_export.h"
 

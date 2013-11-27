@@ -324,6 +324,11 @@ class BASE_EXPORT DictionaryValue : public Value {
   virtual bool RemoveWithoutPathExpansion(const std::string& key,
                                           scoped_ptr<Value>* out_value);
 
+  // Removes a path, clearing out all dictionaries on |path| that remain empty
+  // after removing the value at |path|.
+  virtual bool RemovePath(const std::string& path,
+                          scoped_ptr<Value>* out_value);
+
   // Makes a copy of |this| but doesn't include empty dictionaries and lists in
   // the copy.  This never returns NULL, even if |this| itself is empty.
   DictionaryValue* DeepCopyWithoutEmptyChildren() const;

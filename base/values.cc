@@ -462,8 +462,8 @@ void DictionaryValue::SetStringWithoutPathExpansion(
   SetWithoutPathExpansion(path, CreateStringValue(in_value));
 }
 
-bool DictionaryValue::Get(
-    const std::string& path, const Value** out_value) const {
+bool DictionaryValue::Get(const std::string& path,
+                          const Value** out_value) const {
   DCHECK(IsStringUTF8(path));
   std::string current_path(path);
   const DictionaryValue* current_dictionary = this;
@@ -750,6 +750,26 @@ bool DictionaryValue::RemoveWithoutPathExpansion(const std::string& key,
     delete entry;
   dictionary_.erase(entry_iterator);
   return true;
+}
+
+bool DictionaryValue::RemovePath(const std::string& path,
+                                 scoped_ptr<Value>* out_value) {
+  bool result = false;
+  size_t delimiter_position = path.find('.');
+
+  if (delimiter_position == std::string::npos)
+    return RemoveWithoutPathExpansion(path, out_value);
+
+  const std::string subdict_path = path.substr(0, delimiter_position);
+  DictionaryValue* subdict = NULL;
+  if (!GetDictionary(subdict_path, &subdict))
+    return false;
+  result = subdict->RemovePath(path.substr(delimiter_position + 1),
+                               out_value);
+  if (result && subdict->empty())
+    RemoveWithoutPathExpansion(subdict_path, NULL);
+
+  return result;
 }
 
 DictionaryValue* DictionaryValue::DeepCopyWithoutEmptyChildren() const {

@@ -52,9 +52,6 @@ void AwPrefStore::RemoveValue(const std::string& key) {
     ReportValueChanged(key);
 }
 
-void AwPrefStore::MarkNeedsEmptyValue(const std::string& key) {
-}
-
 bool AwPrefStore::ReadOnly() const {
   return false;
 }

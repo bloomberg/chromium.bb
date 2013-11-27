@@ -88,59 +88,6 @@ class ChromePrefServiceUserFilePrefsTest : public testing::Test {
   base::MessageLoop message_loop_;
 };
 
-// Verifies that ListValue and DictionaryValue pref with non emtpy default
-// preserves its empty value.
-TEST_F(ChromePrefServiceUserFilePrefsTest, PreserveEmptyValue) {
-  base::FilePath pref_file = temp_dir_.path().AppendASCII("write.json");
-
-  ASSERT_TRUE(base::CopyFile(
-      data_dir_.AppendASCII("read.need_empty_value.json"),
-      pref_file));
-
-  PrefServiceMockFactory factory;
-  factory.SetUserPrefsFile(pref_file,
-                          message_loop_.message_loop_proxy().get());
-  scoped_refptr<user_prefs::PrefRegistrySyncable> registry(
-      new user_prefs::PrefRegistrySyncable);
-  scoped_ptr<PrefServiceSyncable> prefs(factory.CreateSyncable(registry.get()));
-
-  // Register testing prefs.
-  registry->RegisterListPref("list",
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-  registry->RegisterDictionaryPref(
-      "dict",
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
-  base::ListValue* non_empty_list = new base::ListValue;
-  non_empty_list->Append(base::Value::CreateStringValue("test"));
-  registry->RegisterListPref("list_needs_empty_value",
-                             non_empty_list,
-                             user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
-  base::DictionaryValue* non_empty_dict = new base::DictionaryValue;
-  non_empty_dict->SetString("dummy", "whatever");
-  registry->RegisterDictionaryPref(
-      "dict_needs_empty_value",
-      non_empty_dict,
-      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
-  // Set all testing prefs to empty.
-  ClearListValue(prefs.get(), "list");
-  ClearListValue(prefs.get(), "list_needs_empty_value");
-  ClearDictionaryValue(prefs.get(), "dict");
-  ClearDictionaryValue(prefs.get(), "dict_needs_empty_value");
-
-  // Write to file.
-  prefs->CommitPendingWrite();
-  message_loop_.RunUntilIdle();
-
-  // Compare to expected output.
-  base::FilePath golden_output_file =
-      data_dir_.AppendASCII("write.golden.need_empty_value.json");
-  ASSERT_TRUE(base::PathExists(golden_output_file));
-  EXPECT_TRUE(base::TextContentsEqual(golden_output_file, pref_file));
-}
-
 class ChromePrefServiceWebKitPrefs : public ChromeRenderViewHostTestHarness {
  protected:
   virtual void SetUp() {

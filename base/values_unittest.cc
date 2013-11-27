@@ -323,6 +323,31 @@ TEST(ValuesTest, DictionaryWithoutPathExpansion) {
   EXPECT_EQ(Value::TYPE_NULL, value4->GetType());
 }
 
+TEST(ValuesTest, DictionaryRemovePath) {
+  DictionaryValue dict;
+  dict.Set("a.long.way.down", Value::CreateIntegerValue(1));
+  dict.Set("a.long.key.path", Value::CreateBooleanValue(true));
+
+  scoped_ptr<Value> removed_item;
+  EXPECT_TRUE(dict.RemovePath("a.long.way.down", &removed_item));
+  ASSERT_TRUE(removed_item);
+  EXPECT_TRUE(removed_item->IsType(base::Value::TYPE_INTEGER));
+  EXPECT_FALSE(dict.HasKey("a.long.way.down"));
+  EXPECT_FALSE(dict.HasKey("a.long.way"));
+  EXPECT_TRUE(dict.Get("a.long.key.path", NULL));
+
+  removed_item.reset();
+  EXPECT_FALSE(dict.RemovePath("a.long.way.down", &removed_item));
+  EXPECT_FALSE(removed_item);
+  EXPECT_TRUE(dict.Get("a.long.key.path", NULL));
+
+  removed_item.reset();
+  EXPECT_TRUE(dict.RemovePath("a.long.key.path", &removed_item));
+  ASSERT_TRUE(removed_item);
+  EXPECT_TRUE(removed_item->IsType(base::Value::TYPE_BOOLEAN));
+  EXPECT_TRUE(dict.empty());
+}
+
 TEST(ValuesTest, DeepCopy) {
   DictionaryValue original_dict;
   Value* original_null = Value::CreateNullValue();

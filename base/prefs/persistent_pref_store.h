@@ -63,10 +63,6 @@ class BASE_PREFS_EXPORT PersistentPrefStore : public PrefStore {
   // Removes the value for |key|.
   virtual void RemoveValue(const std::string& key) = 0;
 
-  // Marks that the |key| with empty ListValue/DictionaryValue needs to be
-  // persisted.
-  virtual void MarkNeedsEmptyValue(const std::string& key) = 0;
-
   // Whether the store is in a pseudo-read-only mode where changes are not
   // actually persisted to disk.  This happens in some cases when there are
   // read errors during startup.

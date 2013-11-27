@@ -92,8 +92,6 @@ PrefMetricsService::PrefMetricsService(Profile* profile)
 
   RegisterSyncedPrefObservers();
 
-  MarkNeedsEmptyValueForTrackedPreferences();
-
   // The following code might cause callbacks into this instance before we exit
   // the constructor. This instance should be initialized at this point.
 #if defined(OS_WIN) || defined(OS_MACOSX)
@@ -122,7 +120,6 @@ PrefMetricsService::PrefMetricsService(Profile* profile,
       tracked_pref_path_count_(tracked_pref_path_count),
       checked_tracked_prefs_(false),
       weak_factory_(this) {
-  MarkNeedsEmptyValueForTrackedPreferences();
   CheckTrackedPreferences();
 }
 
@@ -271,19 +268,6 @@ void PrefMetricsService::GetDeviceIdCallback(const std::string& device_id) {
 
   device_id_ = device_id;
   CheckTrackedPreferences();
-}
-
-void PrefMetricsService::MarkNeedsEmptyValueForTrackedPreferences() {
-  for (int i = 0; i < tracked_pref_path_count_; ++i) {
-    // Skip prefs that haven't been registered.
-    if (!prefs_->FindPreference(tracked_pref_paths_[i]))
-      continue;
-
-    // Make sure tracked prefs are saved to disk even if empty.
-    // TODO(gab): Guarantee this for all prefs at a lower level and remove this
-    // hack.
-    prefs_->MarkUserStoreNeedsEmptyValue(tracked_pref_paths_[i]);
-  }
 }
 
 // To detect changes to Preferences that happen outside of Chrome, we hash
