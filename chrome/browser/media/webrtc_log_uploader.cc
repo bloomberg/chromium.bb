@@ -72,8 +72,7 @@ void WebRtcLogUploader::OnURLFetchComplete(
       content::BrowserThread::FILE, FROM_HERE,
       base::Bind(&WebRtcLogUploader::AddUploadedLogInfoToUploadListFile,
                  base::Unretained(this),
-                 WebRtcLogUploadList::GetFilePathForProfile(
-                     upload_done_data_[source].profile),
+                 upload_done_data_[source].upload_list_path,
                  report_id));
   }
   NotifyUploadDone(response_code, report_id, upload_done_data_[source]);
@@ -108,6 +107,7 @@ void WebRtcLogUploader::LoggingStoppedDoUpload(
   DCHECK(file_thread_checker_.CalledOnValidThread());
   DCHECK(shared_memory);
   DCHECK(shared_memory->memory());
+  DCHECK(!upload_done_data.upload_list_path.empty());
 
   scoped_ptr<std::string> post_data;
   post_data.reset(new std::string);

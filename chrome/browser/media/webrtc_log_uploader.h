@@ -31,7 +31,7 @@ typedef struct z_stream_s z_stream;
 
 // Used when uploading is done to perform post-upload actions.
 typedef struct {
-  Profile* profile;
+  base::FilePath upload_list_path;
   WebRtcLoggingHandlerHost::UploadDoneCallback callback;
   scoped_refptr<WebRtcLoggingHandlerHost> host;
 } WebRtcLogUploadDoneData;

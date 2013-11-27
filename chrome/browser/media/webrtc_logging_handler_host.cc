@@ -15,6 +15,7 @@
 #include "base/sys_info.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/media/webrtc_log_upload_list.h"
 #include "chrome/browser/media/webrtc_log_uploader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -353,7 +354,8 @@ void WebRtcLoggingHandlerHost::TriggerUploadLog() {
 
   logging_state_ = UPLOADING;
   WebRtcLogUploadDoneData upload_done_data;
-  upload_done_data.profile = profile_;
+  upload_done_data.upload_list_path =
+      WebRtcLogUploadList::GetFilePathForProfile(profile_);
   upload_done_data.callback = upload_callback_;
   upload_done_data.host = this;
   upload_callback_.Reset();
