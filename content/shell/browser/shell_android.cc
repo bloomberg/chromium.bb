@@ -26,6 +26,9 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
   DCHECK(command_line->HasSwitch(switches::kEnableThreadedCompositing));
 }
 
+void Shell::PlatformExit() {
+}
+
 void Shell::PlatformCleanUp() {
 }
 

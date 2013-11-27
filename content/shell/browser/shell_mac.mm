@@ -127,6 +127,9 @@ namespace content {
 void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
 }
 
+void Shell::PlatformExit() {
+}
+
 void Shell::PlatformCleanUp() {
 }
 

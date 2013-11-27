@@ -315,11 +315,6 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
 }
 
 void Shell::PlatformExit() {
-  std::vector<Shell*> windows = windows_;
-  for (std::vector<Shell*>::iterator it = windows.begin();
-       it != windows.end(); ++it) {
-    (*it)->window_widget_->Close();
-  }
 #if defined(OS_CHROMEOS)
   if (wm_test_helper_)
     delete wm_test_helper_;

@@ -93,9 +93,6 @@ class Shell : public WebContentsDelegate,
   // Closes all windows and returns. This runs a message loop.
   static void CloseAllWindows();
 
-  // Closes all windows and exits.
-  static void PlatformExit();
-
   // Used for content_browsertests. Called once.
   static void SetShellCreatedCallback(
       base::Callback<void(Shell*)> shell_created_callback);
@@ -170,6 +167,8 @@ class Shell : public WebContentsDelegate,
 
   // Helper for one time initialization of application
   static void PlatformInitialize(const gfx::Size& default_window_size);
+  // Helper for one time deinitialization of platform specific state.
+  static void PlatformExit();
 
   // Adjust the size when Blink sends 0 for width and/or height.
   // This happens when Blink requests a default-sized window.
