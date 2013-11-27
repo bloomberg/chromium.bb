@@ -5,7 +5,6 @@
 #include "content/public/test/mock_render_thread.h"
 
 #include "base/message_loop/message_loop_proxy.h"
-#include "content/common/frame_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/render_process_observer.h"
 #include "ipc/ipc_message_utils.h"
@@ -20,8 +19,7 @@ MockRenderThread::MockRenderThread()
       surface_id_(0),
       opener_id_(0),
       new_window_routing_id_(0),
-      new_window_main_frame_routing_id_(0),
-      new_frame_routing_id_(0) {
+      new_window_main_frame_routing_id_(0) {
 }
 
 MockRenderThread::~MockRenderThread() {
@@ -230,15 +228,6 @@ void MockRenderThread::OnCreateWindow(
   *cloned_session_storage_namespace_id = 0;
 }
 
-// The Frame expects to be returned a valid route_id different from its own.
-void MockRenderThread::OnCreateChildFrame(int new_frame_routing_id,
-                                          int64 parent_frame_id,
-                                          int64 frame_id,
-                                          const std::string& frame_name,
-                                          int* new_render_frame_id) {
-  *new_render_frame_id = new_frame_routing_id_;
-}
-
 bool MockRenderThread::OnControlMessageReceived(const IPC::Message& msg) {
   ObserverListBase<RenderProcessObserver>::Iterator it(observers_);
   RenderProcessObserver* observer;
@@ -258,7 +247,6 @@ bool MockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP_EX(MockRenderThread, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWidget, OnCreateWidget)
     IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWindow, OnCreateWindow)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_CreateChildFrame, OnCreateChildFrame)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;

@@ -946,7 +946,6 @@
             'browser/download/mhtml_generation_browsertest.cc',
             'browser/download/save_package_browsertest.cc',
             'browser/fileapi/file_system_browsertest.cc',
-            'browser/frame_host/frame_tree_browsertest.cc',
             'browser/gpu/compositor_util_browsertest.cc',
             'browser/gpu/gpu_ipc_browsertests.cc',
             'browser/indexed_db/indexed_db_browsertest.cc',

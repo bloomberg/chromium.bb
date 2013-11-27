@@ -56,13 +56,11 @@ void FrameTreeNode::RemoveChild(FrameTreeNode* child) {
 
 void FrameTreeNode::ResetForMainFrame(
     RenderFrameHostImpl* new_render_frame_host) {
+  DCHECK_EQ(0UL, children_.size());
+
   owns_render_frame_host_ = false;
   frame_id_ = kInvalidFrameId;
   current_url_ = GURL();
-
-  // The children may not have been cleared if a cross-process navigation
-  // commits before the old process cleans everything up.  Make sure the child
-  // nodes get deleted.
   children_.clear();
 
   render_frame_host_ = new_render_frame_host;
