@@ -142,16 +142,6 @@ def ReinterpretPathForChroot(path):
   return new_path
 
 
-def GetProjectDir(cwd, project):
-  """Returns the absolute path to a project.
-
-  Args:
-    cwd: a directory within a repo-managed checkout.
-    project: the name of the project to get the path for.
-  """
-  return ManifestCheckout.Cached(cwd).GetProjectPath(project, True)
-
-
 def IsGitRepo(cwd):
   """Checks if there's a git repo rooted at a directory."""
   return os.path.isdir(os.path.join(cwd, '.git'))
@@ -362,18 +352,6 @@ class Manifest(object):
       self.includes.append((attrs['name'], include_path))
       self._RunParser(include_path, finalize=False)
 
-  def ProjectExists(self, project):
-    """Returns True if a project is in this manifest."""
-    return os.path.normpath(project) in self.projects
-
-  def GetProjectPath(self, project):
-    """Returns the relative path for a project.
-
-    Raises:
-      KeyError if the project isn't known.
-    """
-    return self.projects[os.path.normpath(project)]['path']
-
   def _FinalizeAllProjectData(self):
     """Rewrite projects mixing defaults in and adding our attributes."""
     for path_data in self.checkouts_by_path.itervalues():
@@ -427,23 +405,6 @@ class Manifest(object):
     attrs.setdefault('path', attrs['name'])
     for key in ('name', 'path'):
       attrs[key] = os.path.normpath(attrs[key])
-
-  def GetAttributeForProject(self, project, attribute):
-    """Get |attribute| from |project|, falling back to defaults if needed."""
-    return self.projects[project].get(attribute)
-
-  def GetProjectsTrackingBranch(self, project):
-    """Returns the remote tracking branch for a given project.
-
-    Each project tracks a remote branch. Most projects will track the same
-    branch as the manifest, but some projects may specify a custom branch.
-    Return the remote tracking branch, including the appropriate
-    refs/remotes/{cros,cros-internal} prefix.
-
-    Args:
-      project: Which project name we're looking at.
-    """
-    return self.GetAttributeForProject(project, 'tracking_branch')
 
   @staticmethod
   def _GetManifestHash(source, ignore_missing=False):
@@ -540,10 +501,6 @@ class ManifestCheckout(Manifest):
     """Verify that the |project| has push_* attributes populated."""
     for checkout in self.FindCheckouts(project):
       checkout.AssertPushable()
-
-  def GetAttributeForProject(self, project, attribute, branch=None):
-    """Get |attribute| from |project|, falling back to defaults if needed."""
-    return self.FindCheckout(project, branch=branch).get(attribute)
 
   def ProjectIsContentMerging(self, project):
     """Returns whether the given project has content merging enabled in git.
@@ -647,15 +604,6 @@ class ManifestCheckout(Manifest):
     # the given pathway. Return that.
     return max(candidates)[1]
 
-  def FindProjectFromPath(self, path, strict=True):
-    """Find the project name associated with a given pathway.
-
-    See FindCheckoutFromPath for arguments.
-    """
-    checkout = self.FindCheckoutFromPath(path, strict=strict)
-    if checkout:
-      return checkout['name']
-
   def _FinalizeAllProjectData(self):
     """Rewrite projects mixing defaults in and adding our attributes."""
     Manifest._FinalizeAllProjectData(self)
@@ -719,20 +667,6 @@ class ManifestCheckout(Manifest):
                   "Manifest repository at %s is checked out to 'default', but "
                   "the git tracking configuration for that branch is broken; "
                   "failing due to that." % (root,))
-
-  def GetProjectPath(self, project, absolute=False):
-    """Returns the path for a project.
-
-    Args:
-      project: Project name to get the path for.
-      absolute:  If True, return an absolute path. If False,
-        return a path relative to the repo root.
-
-    Raises:
-      KeyError if the project isn't known.
-    """
-    checkout = self.FindCheckout(os.path.normpath(project))
-    return checkout.GetPath(absolute)
 
   # pylint: disable=W0221
   @classmethod
@@ -1237,7 +1171,7 @@ def GetChromiteTrackingBranch():
   try:
     manifest = ManifestCheckout.Cached(cwd)
     # Ensure the manifest knows of this checkout.
-    if manifest.FindProjectFromPath(cwd):
+    if manifest.FindCheckoutFromPath(cwd, strict=False):
       return manifest.manifest_branch
   except EnvironmentError as e:
     if e.errno != errno.ENOENT:

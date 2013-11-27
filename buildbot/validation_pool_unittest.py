@@ -77,17 +77,6 @@ class MockManifest(object):
     for key, attr in kwds.iteritems():
       setattr(self, key, attr)
 
-  def GetProjectPath(self, project, absolute=False):
-    if absolute:
-      return os.path.join(self.root, project)
-    return project
-
-  def GetProjectsTrackingBranch(self, _project):
-    return 'refs/remotes/cros/master'
-
-  def ProjectExists(self, _project):
-    return True
-
   def ProjectIsContentMerging(self, _project):
     return False
 
