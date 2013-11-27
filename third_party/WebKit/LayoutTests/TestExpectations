@@ -376,8 +376,6 @@ crbug.com/318431 [ Linux ] fast/dom/shadow/transition-on-shadow-host-with-distri
 
 crbug.com/284734 svg/custom/getsvgdocument.html [ Pass Failure ]
 
-Bug(fmalita) svg/zoom/page/zoom-clip-path.html [ NeedsRebaseline ]
-
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]
 crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/embedded-svg-size-changes-no-layout-triggers.html [ Pass ImageOnlyFailure ]
 crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Pass ImageOnlyFailure ]
