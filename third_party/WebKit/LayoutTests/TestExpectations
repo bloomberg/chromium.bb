@@ -714,5 +714,3 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-iframe-exp
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-iframe.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-in-narrow-overflow-scroll-expected.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-in-narrow-overflow-scroll.html [ ImageOnlyFailure ]
-
-crbug.com/302005 virtual/fasttextautosizing/fast/text-autosizing/hackernews-comments.html [ NeedsRebaseline ]
