@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(WIN32) || defined(__linux__)
+// The Chromium build system defines __linux__ even for native client builds,
+// so guard against __native_client__ being defined as well.
+#if defined(WIN32) || (defined(__linux__) && !defined(__native_client__))
 
 #include <errno.h>
 
@@ -70,7 +72,9 @@ int _real_write(int fd, const void *buf, size_t count, size_t *nwrote) {
 
 #endif
 
-#if defined(__linux__)
+// The Chromium build system defines __linux__ even for native client builds,
+// so guard against __native_client__ being defined as well.
+#if defined(__linux__) && !defined(__native_client__)
 
 void kernel_wrap_init() {
 }
