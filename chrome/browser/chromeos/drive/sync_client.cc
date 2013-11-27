@@ -220,12 +220,7 @@ void SyncClient::AddUploadTask(const ClientContext& context,
 
 void SyncClient::AddRemoveTask(const std::string& local_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DVLOG(1) << "Removing " << local_id;
-  remove_performer_->Remove(local_id,
-                            base::Bind(&SyncClient::OnRemoveComplete,
-                                       weak_ptr_factory_.GetWeakPtr(),
-                                       local_id));
+  AddRemoveTaskInternal(local_id, base::TimeDelta::FromSeconds(0));
 }
 
 void SyncClient::AddFetchTaskInternal(const std::string& local_id,
@@ -264,6 +259,19 @@ void SyncClient::AddUploadTaskInternal(
                  weak_ptr_factory_.GetWeakPtr(),
                  local_id));
   AddTask(SyncTasks::key_type(UPLOAD, local_id), task, delay);
+}
+
+void SyncClient::AddRemoveTaskInternal(const std::string& local_id,
+                                       const base::TimeDelta& delay) {
+  SyncTask task;
+  task.task = base::Bind(
+      &RemovePerformer::Remove,
+      base::Unretained(remove_performer_.get()),
+      local_id,
+      base::Bind(&SyncClient::OnRemoveComplete,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 local_id));
+  AddTask(SyncTasks::key_type(REMOVE, local_id), task, delay);
 }
 
 void SyncClient::AddTask(const SyncTasks::key_type& key,
@@ -402,22 +410,19 @@ void SyncClient::OnRemoveComplete(const std::string& local_id,
                                   FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  tasks_.erase(SyncTasks::key_type(REMOVE, local_id));
+
   if (error == FILE_ERROR_OK) {
     DVLOG(1) << "Removed " << local_id;
   } else {
     switch (error) {
       case FILE_ERROR_NO_CONNECTION:
         // Add the task again so that we'll retry once the connection is back.
-        AddRemoveTask(local_id);
+        AddRemoveTaskInternal(local_id, base::TimeDelta::FromSeconds(0));
         break;
       case FILE_ERROR_SERVICE_UNAVAILABLE:
         // Add the task again so that we'll retry once the service is back.
-        base::MessageLoopProxy::current()->PostDelayedTask(
-            FROM_HERE,
-            base::Bind(&SyncClient::AddRemoveTask,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       local_id),
-            long_delay_);
+        AddRemoveTaskInternal(local_id, long_delay_);
         break;
       default:
         LOG(WARNING) << "Failed to remove " << local_id << ": "

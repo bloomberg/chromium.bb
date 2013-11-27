@@ -90,6 +90,7 @@ class SyncClient {
   enum SyncType {
     FETCH,  // Fetch a file from the Drive server.
     UPLOAD,  // Upload a file to the Drive server.
+    REMOVE,  // Remove an entry from the Drive server.
   };
 
   // States of sync tasks.
@@ -117,6 +118,10 @@ class SyncClient {
       const std::string& local_id,
       file_system::UpdateOperation::ContentCheckMode content_check_mode,
       const base::TimeDelta& delay);
+
+  // Adds a REMOVE task.
+  void AddRemoveTaskInternal(const std::string& local_id,
+                             const base::TimeDelta& delay);
 
   // Adds the given task. If the same task is found, does nothing.
   void AddTask(const SyncTasks::key_type& key,
