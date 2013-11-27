@@ -38,9 +38,6 @@
 namespace WebCore { class ResourceRequest; }
 #endif
 
-// TODO(davidben): Remove #define once Chromium side has updated.
-#define WEBKIT_HAS_TARGET_IS_PING
-
 namespace blink {
 
 class WebCString;
