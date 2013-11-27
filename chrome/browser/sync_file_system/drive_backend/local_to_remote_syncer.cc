@@ -287,6 +287,7 @@ void LocalToRemoteSyncer::DeleteRemoteFile(
   DCHECK(remote_file_tracker_);
   DCHECK(remote_file_tracker_->has_synced_details());
 
+  set_used_network(true);
   drive_service()->DeleteResource(
       remote_file_tracker_->file_id(),
       remote_file_tracker_->synced_details().etag(),
@@ -339,6 +340,7 @@ void LocalToRemoteSyncer::DidGetMD5ForUpload(
     return;
   }
 
+  set_used_network(true);
   drive_uploader()->UploadExistingFile(
       remote_file_tracker_->file_id(),
       local_path_,
@@ -370,6 +372,7 @@ void LocalToRemoteSyncer::DidUploadExistingFile(
 void LocalToRemoteSyncer::UpdateRemoteMetadata(
     const SyncStatusCallback& callback) {
   DCHECK(remote_file_tracker_);
+  set_used_network(true);
   drive_service()->GetResourceEntry(
       remote_file_tracker_->file_id(),
       base::Bind(&LocalToRemoteSyncer::DidGetRemoteMetadata,
@@ -424,6 +427,7 @@ void LocalToRemoteSyncer::DidDeleteForCreateFolder(
 void LocalToRemoteSyncer::UploadNewFile(const SyncStatusCallback& callback) {
   DCHECK(remote_parent_folder_tracker_);
 
+  set_used_network(true);
   base::FilePath title = fileapi::VirtualPath::BaseName(target_path_);
   drive_uploader()->UploadNewFile(
       remote_parent_folder_tracker_->file_id(),

@@ -1192,7 +1192,8 @@ void DriveFileSyncService::MaybeScheduleNextTask() {
 }
 
 void DriveFileSyncService::NotifyLastOperationStatus(
-    SyncStatusCode sync_status) {
+    SyncStatusCode sync_status,
+    bool used_network) {
   UpdateServiceStateFromLastOperationStatus(sync_status, last_gdata_error_);
 }
 

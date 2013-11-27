@@ -57,7 +57,8 @@ class TaskManagerClient
     ++maybe_schedule_next_task_count_;
   }
   virtual void NotifyLastOperationStatus(
-      SyncStatusCode last_operation_status) OVERRIDE {
+      SyncStatusCode last_operation_status,
+      bool last_operation_used_network) OVERRIDE {
     last_operation_status_ = last_operation_status;
   }
 

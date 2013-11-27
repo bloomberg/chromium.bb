@@ -11,11 +11,20 @@ namespace sync_file_system {
 
 class SyncTask {
  public:
-  SyncTask() {}
+  SyncTask() : used_network_(false) {}
   virtual ~SyncTask() {}
   virtual void Run(const SyncStatusCallback& callback) = 0;
 
+  bool used_network() { return used_network_; }
+
+ protected:
+  void set_used_network(bool used_network) {
+    used_network_ = used_network;
+  }
+
  private:
+  bool used_network_;
+
   DISALLOW_COPY_AND_ASSIGN(SyncTask);
 };
 

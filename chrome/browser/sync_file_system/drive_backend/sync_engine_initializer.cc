@@ -139,6 +139,7 @@ void SyncEngineInitializer::DidCreateMetadataDatabase(
 
 void SyncEngineInitializer::GetAboutResource(
     const SyncStatusCallback& callback) {
+  set_used_network(true);
   drive_service_->GetAboutResource(
       base::Bind(&SyncEngineInitializer::DidGetAboutResource,
                  weak_ptr_factory_.GetWeakPtr(), callback));
@@ -168,6 +169,7 @@ void SyncEngineInitializer::FindSyncRoot(const SyncStatusCallback& callback) {
     return;
   }
 
+  set_used_network(true);
   cancel_callback_ = drive_service_->SearchByTitle(
       kSyncRootFolderTitle,
       std::string(), // parent_folder_id
@@ -209,6 +211,7 @@ void SyncEngineInitializer::DidFindSyncRoot(
     }
   }
 
+  set_used_network(true);
   // If there are more results, retrieve them.
   if (GetRemainingFileList(
           &cancel_callback_,
@@ -233,6 +236,7 @@ void SyncEngineInitializer::DidFindSyncRoot(
 
 void SyncEngineInitializer::CreateSyncRoot(const SyncStatusCallback& callback) {
   DCHECK(!sync_root_folder_);
+  set_used_network(true);
   cancel_callback_ = drive_service_->AddNewDirectory(
       root_folder_id_, kSyncRootFolderTitle,
       base::Bind(&SyncEngineInitializer::DidCreateSyncRoot,
@@ -257,6 +261,7 @@ void SyncEngineInitializer::DidCreateSyncRoot(
 
 void SyncEngineInitializer::DetachSyncRoot(const SyncStatusCallback& callback) {
   DCHECK(sync_root_folder_);
+  set_used_network(true);
   cancel_callback_ = drive_service_->RemoveResourceFromDirectory(
       root_folder_id_, GetID(*sync_root_folder_),
       base::Bind(&SyncEngineInitializer::DidDetachSyncRoot,
@@ -272,12 +277,14 @@ void SyncEngineInitializer::DidDetachSyncRoot(
     callback.Run(GDataErrorCodeToSyncStatusCode(error));
     return;
   }
+
   ListAppRootFolders(callback);
 }
 
 void SyncEngineInitializer::ListAppRootFolders(
     const SyncStatusCallback& callback) {
   DCHECK(sync_root_folder_);
+  set_used_network(true);
   cancel_callback_ = drive_service_->GetResourceListInDirectory(
       GetID(*sync_root_folder_),
       base::Bind(&SyncEngineInitializer::DidListAppRootFolders,
@@ -301,6 +308,7 @@ void SyncEngineInitializer::DidListAppRootFolders(
                            new_entries->begin(), new_entries->end());
   new_entries->weak_clear();
 
+  set_used_network(true);
   if (GetRemainingFileList(
           &cancel_callback_,
           drive_service_,

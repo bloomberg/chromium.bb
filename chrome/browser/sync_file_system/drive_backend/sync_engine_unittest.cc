@@ -33,6 +33,21 @@ void EmptyTask(SyncStatusCode status, const SyncStatusCallback& callback) {
 
 }  // namespace
 
+class MockSyncTask : public SyncTask {
+ public:
+  explicit MockSyncTask(bool used_network) {
+    set_used_network(used_network);
+  }
+  virtual ~MockSyncTask() {}
+
+  virtual void Run(const SyncStatusCallback& callback) OVERRIDE {
+    callback.Run(SYNC_STATUS_OK);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSyncTask);
+};
+
 class MockExtensionService : public TestExtensionService {
  public:
   MockExtensionService() {}
@@ -255,8 +270,6 @@ TEST_F(SyncEngineTest, GetOriginStatusMap) {
 }
 
 TEST_F(SyncEngineTest, UpdateServiceState) {
-  //SyncStatusCode sync_status = SYNC_STATUS_UNKNOWN;
-
   EXPECT_EQ(REMOTE_SERVICE_OK, sync_engine()->GetCurrentState());
 
   GetSyncEngineTaskManager()->ScheduleTask(
@@ -321,6 +334,20 @@ TEST_F(SyncEngineTest, UpdateServiceState) {
                  AsWeakPtr(),
                  SYNC_DATABASE_ERROR_FAILED,
                  REMOTE_SERVICE_DISABLED));
+
+  GetSyncEngineTaskManager()->ScheduleSyncTask(
+      scoped_ptr<SyncTask>(new MockSyncTask(false)),
+      base::Bind(&SyncEngineTest::CheckServiceState,
+                 AsWeakPtr(),
+                 SYNC_STATUS_OK,
+                 REMOTE_SERVICE_DISABLED));
+
+  GetSyncEngineTaskManager()->ScheduleSyncTask(
+      scoped_ptr<SyncTask>(new MockSyncTask(true)),
+      base::Bind(&SyncEngineTest::CheckServiceState,
+                 AsWeakPtr(),
+                 SYNC_STATUS_OK,
+                 REMOTE_SERVICE_OK));
 
   base::RunLoop().RunUntilIdle();
 }

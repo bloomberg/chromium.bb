@@ -101,7 +101,8 @@ class SyncEngine : public RemoteFileSyncService,
 
   // SyncTaskManager::Client overrides.
   virtual void MaybeScheduleNextTask() OVERRIDE;
-  virtual void NotifyLastOperationStatus(SyncStatusCode sync_status) OVERRIDE;
+  virtual void NotifyLastOperationStatus(SyncStatusCode sync_status,
+                                         bool used_network) OVERRIDE;
 
   // drive::DriveNotificationObserver overrides.
   virtual void OnNotificationReceived() OVERRIDE;
@@ -140,7 +141,8 @@ class SyncEngine : public RemoteFileSyncService,
   void DidFetchChangeList(SyncStatusCallback& callback);
 
   void MaybeStartFetchChanges();
-  void UpdateServiceStateFromSyncStatusCode(SyncStatusCode state);
+  void UpdateServiceStateFromSyncStatusCode(SyncStatusCode state,
+                                            bool used_network);
   void UpdateServiceState(RemoteServiceState state,
                           const std::string& description);
   void UpdateRegisteredApps();

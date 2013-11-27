@@ -44,7 +44,8 @@ class SyncTaskManager
 
     // Called when the manager is notified a task is done.
     virtual void NotifyLastOperationStatus(
-        SyncStatusCode last_operation_status) = 0;
+        SyncStatusCode last_operation_status,
+        bool last_operation_used_network) = 0;
   };
 
   explicit SyncTaskManager(base::WeakPtr<Client> client);

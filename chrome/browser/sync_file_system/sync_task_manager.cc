@@ -152,8 +152,13 @@ void SyncTaskManager::NotifyTaskDone(
            << " (" << SyncStatusCodeToString(status) << ")"
            << " " << token_->location().ToString();
 
+  bool task_used_network = false;
+  if (task)
+    task_used_network = task->used_network();
+
   if (client_)
-    client_->NotifyLastOperationStatus(last_operation_status_);
+    client_->NotifyLastOperationStatus(last_operation_status_,
+                                       task_used_network);
 
   if (!current_callback_.is_null()) {
     SyncStatusCallback callback = current_callback_;

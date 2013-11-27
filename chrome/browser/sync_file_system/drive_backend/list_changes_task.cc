@@ -50,6 +50,7 @@ void ListChangesTask::Run(const SyncStatusCallback& callback) {
     return;
   }
 
+  set_used_network(true);
   drive_service()->GetChangeList(
       metadata_database()->GetLargestFetchedChangeID() + 1,
       base::Bind(&ListChangesTask::DidListChanges,

@@ -135,7 +135,9 @@ class DriveFileSyncService : public RemoteFileSyncService,
 
   // SyncTaskManager::Client overrides.
   virtual void MaybeScheduleNextTask() OVERRIDE;
-  virtual void NotifyLastOperationStatus(SyncStatusCode sync_status) OVERRIDE;
+  virtual void NotifyLastOperationStatus(
+      SyncStatusCode sync_status,
+      bool used_network) OVERRIDE;
 
   static std::string PathToTitle(const base::FilePath& path);
   static base::FilePath TitleToPath(const std::string& title);

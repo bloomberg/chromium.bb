@@ -250,8 +250,10 @@ void SyncEngine::MaybeScheduleNextTask() {
   MaybeStartFetchChanges();
 }
 
-void SyncEngine::NotifyLastOperationStatus(SyncStatusCode sync_status) {
-  UpdateServiceStateFromSyncStatusCode(sync_status);
+void SyncEngine::NotifyLastOperationStatus(
+    SyncStatusCode sync_status,
+    bool used_network) {
+  UpdateServiceStateFromSyncStatusCode(sync_status, used_network);
 }
 
 void SyncEngine::OnNotificationReceived() {
@@ -365,12 +367,13 @@ void SyncEngine::MaybeStartFetchChanges() {
   }
 }
 
-void SyncEngine::UpdateServiceStateFromSyncStatusCode(SyncStatusCode status) {
+void SyncEngine::UpdateServiceStateFromSyncStatusCode(
+      SyncStatusCode status,
+      bool used_network) {
   switch (status) {
     case SYNC_STATUS_OK:
-      // FIXME(keishi) Do not turn remote service back on if the task did not
-      // involve network access.
-      UpdateServiceState(REMOTE_SERVICE_OK, std::string());
+      if (used_network)
+        UpdateServiceState(REMOTE_SERVICE_OK, std::string());
       break;
 
     // Authentication error.
