@@ -955,21 +955,21 @@ void MetadataDatabase::LowerTrackerPriority(int64 tracker_id) {
 
 bool MetadataDatabase::GetNormalPriorityDirtyTracker(
     FileTracker* tracker) const {
-  DCHECK(tracker);
   DirtyTrackers::const_iterator itr = dirty_trackers_.begin();
   if (itr == dirty_trackers_.end())
     return false;
-  *tracker = **itr;
+  if (tracker)
+    *tracker = **itr;
   return true;
 }
 
 bool MetadataDatabase::GetLowPriorityDirtyTracker(
     FileTracker* tracker) const {
-  DCHECK(tracker);
   DirtyTrackers::const_iterator itr = low_priority_dirty_trackers_.begin();
   if (itr == low_priority_dirty_trackers_.end())
     return false;
-  *tracker = **itr;
+  if (tracker)
+    *tracker = **itr;
   return true;
 }
 
