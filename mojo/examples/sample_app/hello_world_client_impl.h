@@ -13,7 +13,7 @@ namespace examples {
 
 class HelloWorldClientImpl : public HelloWorldClientStub {
  public:
-  explicit HelloWorldClientImpl(const MessagePipeHandle& pipe);
+  explicit HelloWorldClientImpl(ScopedMessagePipeHandle pipe);
   virtual ~HelloWorldClientImpl();
 
   virtual void DidReceiveGreeting(int32_t result) MOJO_OVERRIDE;

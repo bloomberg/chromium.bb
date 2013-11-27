@@ -16,7 +16,9 @@ Message::Message()
 
 Message::~Message() {
   free(data);
-  std::for_each(handles.begin(), handles.end(), CloseRaw);
+  // TODO(davemoore): We don't close the handles because they're typically
+  // owned by the Connection. This could result in some Handle leaks. This will
+  // be fixed by a later cl.
 }
 
 void Message::Swap(Message* other) {

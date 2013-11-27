@@ -12,8 +12,8 @@ namespace test {
 
 class MathCalculatorImpl : public math::CalculatorStub {
  public:
-  explicit MathCalculatorImpl(const MessagePipeHandle& pipe)
-      : ui_(pipe),
+  explicit MathCalculatorImpl(ScopedMessagePipeHandle pipe)
+      : ui_(pipe.Pass()),
         total_(0.0) {
     ui_.SetPeer(this);
   }
@@ -39,8 +39,8 @@ class MathCalculatorImpl : public math::CalculatorStub {
 
 class MathCalculatorUIImpl : public math::CalculatorUIStub {
  public:
-  explicit MathCalculatorUIImpl(const MessagePipeHandle& pipe)
-      : calculator_(pipe),
+  explicit MathCalculatorUIImpl(ScopedMessagePipeHandle pipe)
+      : calculator_(pipe.Pass()),
         output_(0.0) {
     calculator_.SetPeer(this);
   }
@@ -98,10 +98,10 @@ class BindingsRemotePtrTest : public testing::Test {
 
 TEST_F(BindingsRemotePtrTest, EndToEnd) {
   // Suppose this is instantiated in a process that has pipe0_.
-  MathCalculatorImpl calculator(pipe0_);
+  MathCalculatorImpl calculator(pipe0_.Pass());
 
   // Suppose this is instantiated in a process that has pipe1_.
-  MathCalculatorUIImpl calculator_ui(pipe1_);
+  MathCalculatorUIImpl calculator_ui(pipe1_.Pass());
 
   calculator_ui.Add(2.0);
   calculator_ui.Multiply(5.0);

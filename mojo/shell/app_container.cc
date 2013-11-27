@@ -39,7 +39,7 @@ void AppContainer::DidCompleteLoad(const GURL& app_url,
   CreateMessagePipe(&shell_handle_, &app_handle_);
 
   hello_world_service_.reset(
-    new examples::HelloWorldServiceImpl(shell_handle_));
+    new examples::HelloWorldServiceImpl(shell_handle_.Pass()));
 
   // Launch the app on its own thread.
   // TODO(beng): Create a unique thread name.

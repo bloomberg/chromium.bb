@@ -48,8 +48,8 @@ namespace mojo {
 template <typename S>
 class RemotePtr {
  public:
-  explicit RemotePtr(const MessagePipeHandle& message_pipe)
-      : connector_(message_pipe),
+  explicit RemotePtr(ScopedMessagePipeHandle message_pipe)
+      : connector_(message_pipe.Pass()),
         proxy_(&connector_) {
   }
 

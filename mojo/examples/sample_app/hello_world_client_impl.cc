@@ -11,8 +11,8 @@
 namespace mojo {
 namespace examples {
 
-HelloWorldClientImpl::HelloWorldClientImpl(const MessagePipeHandle& pipe)
-    : service_(pipe) {
+HelloWorldClientImpl::HelloWorldClientImpl(ScopedMessagePipeHandle pipe)
+    : service_(pipe.Pass()) {
   service_.SetPeer(this);
 }
 

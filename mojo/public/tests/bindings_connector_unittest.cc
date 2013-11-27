@@ -71,8 +71,8 @@ class BindingsConnectorTest : public testing::Test {
 };
 
 TEST_F(BindingsConnectorTest, Basic) {
-  Connector connector0(handle0_);
-  Connector connector1(handle1_);
+  Connector connector0(handle0_.Pass());
+  Connector connector1(handle1_.Pass());
 
   const char kText[] = "hello world";
 
@@ -97,8 +97,8 @@ TEST_F(BindingsConnectorTest, Basic) {
 }
 
 TEST_F(BindingsConnectorTest, Basic_EarlyIncomingReceiver) {
-  Connector connector0(handle0_);
-  Connector connector1(handle1_);
+  Connector connector0(handle0_.Pass());
+  Connector connector1(handle1_.Pass());
 
   MessageAccumulator accumulator;
   connector1.SetIncomingReceiver(&accumulator);
@@ -123,8 +123,8 @@ TEST_F(BindingsConnectorTest, Basic_EarlyIncomingReceiver) {
 }
 
 TEST_F(BindingsConnectorTest, Basic_TwoMessages) {
-  Connector connector0(handle0_);
-  Connector connector1(handle1_);
+  Connector connector0(handle0_.Pass());
+  Connector connector1(handle1_.Pass());
 
   const char* kText[] = { "hello", "world" };
 
@@ -153,25 +153,28 @@ TEST_F(BindingsConnectorTest, Basic_TwoMessages) {
 }
 
 TEST_F(BindingsConnectorTest, WriteToClosedPipe) {
-  Connector connector0(handle0_);
+  // Leak this, so the closed handle isn't closed again.
+  MojoHandle mojo_handle = handle0_.get().value();
+  Connector* connector0 = new Connector(handle0_.Pass());
 
   const char kText[] = "hello world";
 
   Message message;
   AllocMessage(kText, &message);
 
-  Close(handle0_.Pass());  // Close the handle before writing to it.
+  // Close handle out from under the connection
+  MojoClose(mojo_handle);
 
-  bool ok = connector0.Accept(&message);
+  bool ok = connector0->Accept(&message);
   EXPECT_FALSE(ok);
 
-  EXPECT_TRUE(connector0.EncounteredError());
+  EXPECT_TRUE(connector0->EncounteredError());
 }
 
 // Enable this test once MojoWriteMessage supports passing handles.
 TEST_F(BindingsConnectorTest, MessageWithHandles) {
-  Connector connector0(handle0_);
-  Connector connector1(handle1_);
+  Connector connector0(handle0_.Pass());
+  Connector connector1(handle1_.Pass());
 
   const char kText[] = "hello world";
 
@@ -205,9 +208,10 @@ TEST_F(BindingsConnectorTest, MessageWithHandles) {
   // Now send a message to the transferred handle and confirm it's sent through
   // to the orginal pipe.
   // TODO(vtl): Do we need a better way of "downcasting" the handle types?
-  Connector connector_received(
-      MessagePipeHandle(message_received.handles[0].value()));
-  Connector connector_original(handles[1]);
+  ScopedMessagePipeHandle smph;
+  smph.reset(MessagePipeHandle(message_received.handles[0].value()));
+  Connector connector_received(smph.Pass());
+  Connector connector_original(handles[1].Pass());
 
   AllocMessage(kText, &message);
 

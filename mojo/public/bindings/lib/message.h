@@ -38,8 +38,7 @@ class Message {
   void Swap(Message* other);
 
   MessageData* data;  // Heap-allocated using malloc.
-  // TODO(vtl): Should these be ScopedHandles? How does that interact with
-  // encoding/decoding?
+  // TODO(davemoore): Turn these into ScopedHandles and fix bindings generation.
   std::vector<Handle> handles;
 
  private:

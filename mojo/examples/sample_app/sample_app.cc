@@ -25,9 +25,9 @@
 namespace mojo {
 namespace examples {
 
-void SayHello(const MessagePipeHandle& pipe) {
+void SayHello(ScopedMessagePipeHandle pipe) {
   // Send message out.
-  HelloWorldClientImpl client(pipe);
+  HelloWorldClientImpl client(pipe.Pass());
   ScratchBuffer buf;
   const std::string kGreeting("hello, world!");
   String greeting(kGreeting, &buf);
@@ -46,7 +46,9 @@ extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(MojoHandle pipe) {
   mojo::common::BindingsSupportImpl bindings_support;
   mojo::BindingsSupport::Set(&bindings_support);
 
-  mojo::examples::SayHello(mojo::MessagePipeHandle(pipe));
+  mojo::ScopedMessagePipeHandle scoped_handle;
+  scoped_handle.reset(mojo::MessagePipeHandle(pipe));
+  mojo::examples::SayHello(scoped_handle.Pass());
 
   mojo::BindingsSupport::Set(NULL);
   return MOJO_RESULT_OK;

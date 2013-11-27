@@ -21,9 +21,8 @@ namespace mojo {
 //
 class Connector : public MessageReceiver {
  public:
-  // The Connector does not take ownership of |message_pipe|.
-  // TODO(darin): Perhaps it should take ownership.
-  explicit Connector(const MessagePipeHandle& message_pipe);
+  // The Connector takes ownership of |message_pipe|.
+  explicit Connector(ScopedMessagePipeHandle message_pipe);
   virtual ~Connector();
 
   // Sets the receiver to handle messages read from the message pipe.  The
@@ -62,7 +61,7 @@ class Connector : public MessageReceiver {
   void WriteMore();
   void WriteOne(Message* message, bool* wait_to_write);
 
-  MessagePipeHandle message_pipe_;
+  ScopedMessagePipeHandle message_pipe_;
   MessageReceiver* incoming_receiver_;
   MessageQueue write_queue_;
 

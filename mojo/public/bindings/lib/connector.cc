@@ -13,8 +13,8 @@ namespace mojo {
 
 // ----------------------------------------------------------------------------
 
-Connector::Connector(const MessagePipeHandle& message_pipe)
-    : message_pipe_(message_pipe),
+Connector::Connector(ScopedMessagePipeHandle message_pipe)
+    : message_pipe_(message_pipe.Pass()),
       incoming_receiver_(NULL),
       error_(false) {
 }
