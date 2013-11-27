@@ -95,6 +95,10 @@
 #include "chromeos/settings/cros_settings_names.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(USE_NSS)
+#include "chrome/browser/ui/crypto_module_password_dialog.h"
+#endif
+
 using content::BrowserContext;
 using content::BrowserThread;
 using content::ResourceContext;
@@ -679,8 +683,14 @@ net::URLRequestContext* ProfileIOData::ResourceContext::GetRequestContext()  {
 scoped_ptr<net::ClientCertStore>
 ProfileIOData::ResourceContext::CreateClientCertStore() {
 #if !defined(USE_OPENSSL)
-  return scoped_ptr<net::ClientCertStore>(new net::ClientCertStoreImpl());
-#else
+  scoped_ptr<net::ClientCertStoreImpl> store(new net::ClientCertStoreImpl());
+#if defined(USE_NSS)
+  store->set_password_delegate_factory(
+      base::Bind(&chrome::NewCryptoModuleBlockingDialogDelegate,
+                 chrome::kCryptoModulePasswordClientAuth));
+#endif
+  return store.PassAs<net::ClientCertStore>();
+#else  // defined(USE_OPENSSL)
   // OpenSSL does not use the ClientCertStore infrastructure. On Android client
   // cert matching is done by the OS as part of the call to show the cert
   // selection dialog.

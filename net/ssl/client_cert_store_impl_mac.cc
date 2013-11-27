@@ -172,6 +172,10 @@ void GetClientCertsImpl(const scoped_refptr<X509Certificate>& preferred_cert,
 
 }  // namespace
 
+ClientCertStoreImpl::ClientCertStoreImpl() {}
+
+ClientCertStoreImpl::~ClientCertStoreImpl() {}
+
 void ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
                                          CertificateList* selected_certs,
                                          const base::Closure& callback) {

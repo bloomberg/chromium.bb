@@ -143,6 +143,10 @@ void GetClientCertsImpl(HCERTSTORE cert_store,
 
 }  // namespace
 
+ClientCertStoreImpl::ClientCertStoreImpl() {}
+
+ClientCertStoreImpl::~ClientCertStoreImpl() {}
+
 void ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
                                          CertificateList* selected_certs,
                                          const base::Closure& callback) {

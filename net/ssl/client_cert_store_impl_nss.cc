@@ -7,8 +7,12 @@
 #include <nss.h>
 #include <ssl.h>
 
-#include "base/callback.h"
+#include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/threading/worker_pool.h"
+#include "crypto/crypto_module_blocking_password_delegate.h"
 #include "net/cert/x509_util.h"
 
 namespace net {
@@ -75,24 +79,56 @@ void GetClientCertsImpl(CERTCertList* cert_list,
             x509_util::ClientCertSorter());
 }
 
+void GetClientCertsOnWorkerThread(
+    scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate,
+    const SSLCertRequestInfo* request,
+    CertificateList* selected_certs) {
+  CERTCertList* client_certs = CERT_FindUserCertsByUsage(
+      CERT_GetDefaultCertDB(),
+      certUsageSSLClient,
+      PR_FALSE,
+      PR_FALSE,
+      password_delegate.get());
+  // It is ok for a user not to have any client certs.
+  if (!client_certs) {
+    selected_certs->clear();
+    return;
+  }
+
+  GetClientCertsImpl(client_certs, *request, true, selected_certs);
+  CERT_DestroyCertList(client_certs);
+}
+
 }  // namespace
+
+ClientCertStoreImpl::ClientCertStoreImpl() {}
+
+ClientCertStoreImpl::~ClientCertStoreImpl() {}
 
 void ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
                                          CertificateList* selected_certs,
                                          const base::Closure& callback) {
-  CERTCertList* client_certs = CERT_FindUserCertsByUsage(
-      CERT_GetDefaultCertDB(), certUsageSSLClient,
-      PR_FALSE, PR_FALSE, NULL);
-  // It is ok for a user not to have any client certs.
-  if (!client_certs) {
+  scoped_ptr<crypto::CryptoModuleBlockingPasswordDelegate> password_delegate;
+  if (!password_delegate_factory_.is_null()) {
+    password_delegate.reset(
+        password_delegate_factory_.Run(request.host_and_port));
+  }
+  if (!base::WorkerPool::PostTaskAndReply(
+           FROM_HERE,
+           base::Bind(&GetClientCertsOnWorkerThread,
+                      base::Passed(&password_delegate),
+                      &request,
+                      selected_certs),
+           callback,
+           true)) {
     selected_certs->clear();
     callback.Run();
-    return;
   }
+}
 
-  GetClientCertsImpl(client_certs, request, true, selected_certs);
-  CERT_DestroyCertList(client_certs);
-  callback.Run();
+void ClientCertStoreImpl::set_password_delegate_factory(
+      const PasswordDelegateFactory& password_delegate_factory) {
+  password_delegate_factory_ = password_delegate_factory;
 }
 
 bool ClientCertStoreImpl::SelectClientCertsForTesting(
