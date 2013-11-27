@@ -72,7 +72,7 @@ bool ShellDownloadManagerDelegate::DetermineDownloadTarget(
   base::FilePath generated_name = net::GenerateFileName(
       download->GetURL(),
       download->GetContentDisposition(),
-      EmptyString(),
+      std::string(),
       download->GetSuggestedFilename(),
       download->GetMimeType(),
       "download");

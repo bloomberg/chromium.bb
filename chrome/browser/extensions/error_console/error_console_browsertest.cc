@@ -320,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(ErrorConsoleBrowserTest, ReportManifestErrors) {
                          manifest_errors::kUnrecognizedManifestKey,
                          kFakeKey),
                      kFakeKey,
-                     EmptyString());
+                     std::string());
 }
 
 // Test that we do not store any errors unless the Developer Mode switch is

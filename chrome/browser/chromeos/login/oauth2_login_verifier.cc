@@ -117,7 +117,7 @@ void OAuth2LoginVerifier::OnUberAuthTokenFailure(
     const GoogleServiceAuthError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   LOG(WARNING) << "OAuthLogin(uber_token) failed,"
-             << " error: " << error.state();
+               << " error: " << error.state();
   RetryOnError("OAuthLoginUberToken", error,
                base::Bind(&OAuth2LoginVerifier::StartOAuthLoginForUberToken,
                           AsWeakPtr()),
@@ -131,7 +131,7 @@ void OAuth2LoginVerifier::StartOAuthLoginForGaiaCredentials() {
       new GaiaAuthFetcher(this,
                           std::string(GaiaConstants::kChromeOSSource),
                           user_request_context_.get()));
-  gaia_fetcher_->StartOAuthLogin(access_token_, EmptyString());
+  gaia_fetcher_->StartOAuthLogin(access_token_, std::string());
 }
 
 void OAuth2LoginVerifier::OnClientLoginSuccess(
@@ -144,8 +144,7 @@ void OAuth2LoginVerifier::OnClientLoginSuccess(
 void OAuth2LoginVerifier::OnClientLoginFailure(
     const GoogleServiceAuthError& error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LOG(WARNING) << "OAuthLogin(SID+LSID failed),"
-             << " error: " << error.state();
+  LOG(WARNING) << "OAuthLogin(SID+LSID failed)," << " error: " << error.state();
   RetryOnError(
       "OAuthLoginGaiaCred", error,
       base::Bind(&OAuth2LoginVerifier::StartOAuthLoginForGaiaCredentials,
@@ -173,8 +172,7 @@ void OAuth2LoginVerifier::OnMergeSessionSuccess(const std::string& data) {
 
 void OAuth2LoginVerifier::OnMergeSessionFailure(
     const GoogleServiceAuthError& error) {
-  LOG(WARNING) << "Failed MergeSession request,"
-             << " error: " << error.state();
+  LOG(WARNING) << "Failed MergeSession request," << " error: " << error.state();
   // If MergeSession from GAIA service token fails, retry the session restore
   // from OAuth2 refresh token. If that failed too, signal the delegate.
   RetryOnError(
@@ -207,7 +205,7 @@ void OAuth2LoginVerifier::OnGetTokenFailure(
   login_token_request_.reset();
 
   LOG(WARNING) << "Failed to get OAuth2 access token, "
-             << " error: " << error.state();
+               << " error: " << error.state();
   UMA_HISTOGRAM_ENUMERATION(
       base::StringPrintf("OAuth2Login.%sFailure", "GetOAuth2AccessToken"),
       error.state(),
@@ -233,7 +231,7 @@ void OAuth2LoginVerifier::RetryOnError(const char* operation_id,
   }
 
   LOG(WARNING) << "Unrecoverable error or retry count max reached for "
-             << operation_id;
+               << operation_id;
   UMA_HISTOGRAM_ENUMERATION(
       base::StringPrintf("OAuth2Login.%sFailure", operation_id),
       error.state(),

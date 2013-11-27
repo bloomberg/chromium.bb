@@ -51,7 +51,7 @@ void PolicyOAuth2TokenFetcher::Start() {
 void PolicyOAuth2TokenFetcher::StartFetchingRefreshToken() {
   refresh_token_fetcher_.reset(new GaiaAuthFetcher(
       this, GaiaConstants::kChromeSource, auth_context_getter_.get()));
-  refresh_token_fetcher_->StartCookieForOAuthLoginTokenExchange(EmptyString());
+  refresh_token_fetcher_->StartCookieForOAuthLoginTokenExchange(std::string());
 }
 
 void PolicyOAuth2TokenFetcher::StartFetchingAccessToken() {
@@ -68,7 +68,7 @@ void PolicyOAuth2TokenFetcher::StartFetchingAccessToken() {
 
 void PolicyOAuth2TokenFetcher::OnClientOAuthSuccess(
     const GaiaAuthConsumer::ClientOAuthResult& oauth2_tokens) {
-  LOG(INFO) << "OAuth2 tokens for policy fetching succeeded.";
+  VLOG(1) << "OAuth2 tokens for policy fetching succeeded.";
   oauth2_tokens_ = oauth2_tokens;
   oauth2_refresh_token_ = oauth2_tokens.refresh_token;
   retry_count_ = 0;
@@ -77,7 +77,7 @@ void PolicyOAuth2TokenFetcher::OnClientOAuthSuccess(
 
 void PolicyOAuth2TokenFetcher::OnClientOAuthFailure(
     const GoogleServiceAuthError& error) {
-  LOG(ERROR) << "OAuth2 tokens fetch for policy fetch failed!";
+  VLOG(1) << "OAuth2 tokens fetch for policy fetch failed!";
   RetryOnError(error,
                base::Bind(&PolicyOAuth2TokenFetcher::StartFetchingRefreshToken,
                           AsWeakPtr()));
@@ -86,7 +86,7 @@ void PolicyOAuth2TokenFetcher::OnClientOAuthFailure(
 void PolicyOAuth2TokenFetcher::OnGetTokenSuccess(
     const std::string& access_token,
     const base::Time& expiration_time) {
-  LOG(INFO) << "OAuth2 access token (device management) fetching succeeded.";
+  VLOG(1) << "OAuth2 access token (device management) fetching succeeded.";
   oauth2_access_token_ = access_token;
   ForwardPolicyToken(access_token,
                      GoogleServiceAuthError(GoogleServiceAuthError::NONE));

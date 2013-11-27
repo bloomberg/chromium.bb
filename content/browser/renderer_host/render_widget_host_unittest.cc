@@ -2375,13 +2375,13 @@ TEST_InputRouterRoutes_NOARGS(LostCapture);
 
 TEST_F(RenderWidgetHostTest, InputRouterRoutesReplace) {
   host_->SetupForInputRouterTest();
-  host_->Replace(EmptyString16());
+  host_->Replace(base::string16());
   EXPECT_TRUE(host_->mock_input_router()->send_event_called_);
 }
 
 TEST_F(RenderWidgetHostTest, InputRouterRoutesReplaceMisspelling) {
   host_->SetupForInputRouterTest();
-  host_->ReplaceMisspelling(EmptyString16());
+  host_->ReplaceMisspelling(base::string16());
   EXPECT_TRUE(host_->mock_input_router()->send_event_called_);
 }
 

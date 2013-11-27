@@ -435,7 +435,7 @@ void TabHelper::OnDetailedConsoleMessageAdded(
     content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
     ErrorConsole::Get(profile_)->ReportError(
         scoped_ptr<ExtensionError>(new RuntimeError(
-            extension_app_ ? extension_app_->id() : EmptyString(),
+            extension_app_ ? extension_app_->id() : std::string(),
             profile_->IsOffTheRecord(),
             source,
             message,

@@ -1,6 +1,7 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/devtools/devtools_window.h"
 
 #include <algorithm>
@@ -303,7 +304,7 @@ void DevToolsWindow::RegisterProfilePrefs(
       prefs::kDevToolsFileSystemPaths,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
-      prefs::kDevToolsAdbKey, EmptyString(),
+      prefs::kDevToolsAdbKey, std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   registry->RegisterDictionaryPref(
@@ -670,7 +671,7 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
   frontend_contents_observer_.reset(new FrontendWebContentsObserver(this));
 
   web_contents_->GetController().LoadURL(url, content::Referrer(),
-      content::PAGE_TRANSITION_AUTO_TOPLEVEL, EmptyString());
+      content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 
   frontend_host_.reset(content::DevToolsClientHost::CreateDevToolsFrontendHost(
       web_contents_, this));
@@ -1227,14 +1228,13 @@ void DevToolsWindow::FileSystemsLoaded(
 
 void DevToolsWindow::FileSystemAdded(
     const DevToolsFileHelper::FileSystem& file_system) {
-  StringValue error_string_value(EmptyString());
-  DictionaryValue* file_system_value = NULL;
+  scoped_ptr<base::StringValue> error_string_value(
+      new base::StringValue(std::string()));
+  scoped_ptr<base::DictionaryValue> file_system_value;
   if (!file_system.file_system_path.empty())
-    file_system_value = CreateFileSystemValue(file_system);
+    file_system_value.reset(CreateFileSystemValue(file_system));
   CallClientFunction("InspectorFrontendAPI.fileSystemAdded",
-                     &error_string_value, file_system_value, NULL);
-  if (file_system_value)
-    delete file_system_value;
+                     error_string_value.get(), file_system_value.get(), NULL);
 }
 
 void DevToolsWindow::IndexingTotalWorkCalculated(
@@ -1417,7 +1417,7 @@ void DevToolsWindow::UpdateTheme() {
       SkColorToRGBAString(tp->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT)) +
       "\")");
   web_contents_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
-      EmptyString16(), ASCIIToUTF16(command));
+      base::string16(), base::ASCIIToUTF16(command));
 }
 
 void DevToolsWindow::AddDevToolsExtensionsToClient() {
@@ -1478,8 +1478,8 @@ void DevToolsWindow::CallClientFunction(const std::string& function_name,
     }
   }
   string16 javascript = ASCIIToUTF16(function_name + "(" + params + ");");
-  web_contents_->GetRenderViewHost()->
-      ExecuteJavascriptInWebFrame(EmptyString16(), javascript);
+  web_contents_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
+      base::string16(), javascript);
 }
 
 void DevToolsWindow::UpdateBrowserToolbar() {

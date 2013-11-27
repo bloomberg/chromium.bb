@@ -57,7 +57,7 @@ void OAuth2TokenFetcher::StartExchangeFromCookies() {
         base::TimeDelta::FromMilliseconds(kRequestRestartDelay));
     return;
   }
-  auth_fetcher_.StartCookieForOAuthLoginTokenExchange(EmptyString());
+  auth_fetcher_.StartCookieForOAuthLoginTokenExchange(std::string());
 }
 
 void OAuth2TokenFetcher::StartExchangeFromAuthCode(
@@ -86,7 +86,7 @@ void OAuth2TokenFetcher::StartExchangeFromAuthCode(
 void OAuth2TokenFetcher::OnClientOAuthSuccess(
     const GaiaAuthConsumer::ClientOAuthResult& oauth_tokens) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  LOG(INFO) << "Got OAuth2 tokens!";
+  VLOG(1) << "Got OAuth2 tokens!";
   retry_count_ = 0;
   oauth_tokens_ = oauth_tokens;
   delegate_->OnOAuth2TokensAvailable(oauth_tokens_);

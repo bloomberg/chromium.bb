@@ -172,8 +172,8 @@ void PromoHandler::HandlePromoSendEmail(const base::ListValue* args) {
     data_email = service->signin()->GetAuthenticatedUsername();
 
   chrome::android::SendEmail(
-      UTF8ToUTF16(data_email), data_subject, data_body, data_inv,
-      EmptyString16());
+      base::UTF8ToUTF16(data_email), data_subject, data_body, data_inv,
+      base::string16());
   RecordImpressionOnHistogram(PROMO_IMPRESSION_SEND_EMAIL_CLICKED);
 }
 

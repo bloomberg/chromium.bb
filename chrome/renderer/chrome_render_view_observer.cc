@@ -260,7 +260,7 @@ extensions::StackTrace GetStackTraceFromMessage(string16* message,
         extensions::StackFrame(line_number,
                                1u,  // column number
                                source,
-                               EmptyString16() /* no function name */ ));
+                               base::string16() /* no function name */ ));
   }
 
   return result;
