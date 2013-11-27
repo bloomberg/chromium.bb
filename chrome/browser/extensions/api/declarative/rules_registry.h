@@ -195,6 +195,7 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
     // to schedule one.
     NOT_SCHEDULED_FOR_PROCESSING
   };
+  typedef std::map<ExtensionId, ProcessChangedRulesState> ProcessStateMap;
 
   base::WeakPtr<RulesRegistry> GetWeakPtr() {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -204,7 +205,8 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // Common processing after extension's rules have changed.
   void ProcessChangedRules(const std::string& extension_id);
 
-  // Calls ProcessChangedRules if |process_changed_rules_requested_| ==
+  // Calls ProcessChangedRules if
+  // |process_changed_rules_requested_(extension_id)| ==
   // NOT_SCHEDULED_FOR_PROCESSING.
   void MaybeProcessChangedRules(const std::string& extension_id);
 
@@ -246,7 +248,7 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // instance.
   base::WeakPtr<RulesCacheDelegate> cache_delegate_;
 
-  ProcessChangedRulesState process_changed_rules_requested_;
+  ProcessStateMap process_changed_rules_requested_;
 
   // Returns whether any existing rule is registered with identifier |rule_id|
   // for extension |extension_id|.

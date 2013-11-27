@@ -4,10 +4,13 @@
 
 #include "chrome/browser/extensions/api/declarative/rules_registry.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -81,8 +84,6 @@ RulesRegistry::RulesRegistry(
       event_name_(event_name),
       webview_key_(webview_key),
       weak_ptr_factory_(profile ? this : NULL),
-      process_changed_rules_requested_(profile ? NOT_SCHEDULED_FOR_PROCESSING
-                                               : NEVER_PROCESS),
       last_generated_rule_identifier_id_(0) {
   if (cache_delegate) {
     cache_delegate_ = cache_delegate->GetWeakPtr();
@@ -271,7 +272,8 @@ void RulesRegistry::MarkReady(base::Time storage_init_time) {
 void RulesRegistry::ProcessChangedRules(const std::string& extension_id) {
   DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
 
-  process_changed_rules_requested_ = NOT_SCHEDULED_FOR_PROCESSING;
+  DCHECK(ContainsKey(process_changed_rules_requested_, extension_id));
+  process_changed_rules_requested_[extension_id] = NOT_SCHEDULED_FOR_PROCESSING;
 
   std::vector<linked_ptr<Rule> > new_rules;
   GetAllRules(extension_id, &new_rules);
@@ -285,10 +287,17 @@ void RulesRegistry::ProcessChangedRules(const std::string& extension_id) {
 }
 
 void RulesRegistry::MaybeProcessChangedRules(const std::string& extension_id) {
-  if (process_changed_rules_requested_ != NOT_SCHEDULED_FOR_PROCESSING)
+  // Read and initialize |process_changed_rules_requested_[extension_id]| if
+  // necessary. (Note that the insertion below will not overwrite
+  // |process_changed_rules_requested_[extension_id]| if that already exists.
+  std::pair<ProcessStateMap::iterator, bool> insertion =
+      process_changed_rules_requested_.insert(std::make_pair(
+          extension_id,
+          profile_ ? NOT_SCHEDULED_FOR_PROCESSING : NEVER_PROCESS));
+  if (insertion.first->second != NOT_SCHEDULED_FOR_PROCESSING)
     return;
 
-  process_changed_rules_requested_ = SCHEDULED_FOR_PROCESSING;
+  process_changed_rules_requested_[extension_id] = SCHEDULED_FOR_PROCESSING;
   ready_.Post(FROM_HERE,
               base::Bind(&RulesRegistry::ProcessChangedRules,
                          weak_ptr_factory_.GetWeakPtr(),
