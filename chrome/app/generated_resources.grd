@@ -9883,7 +9883,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_OPTIONS_HOMEPAGE_NTP" desc="The value displayed on the settings page to indicate that we're using the new tab page as the homepage">
         New Tab page
       </message>
-      <message name="IDS_OPTIONS_HOMEPAGE_TITLE" desc="The title of the home page overlay">
+      <message name="IDS_OPTIONS_HOMEPAGE_TITLE" desc="The title of the home page overlay"  formatter_data="android_java">
         Home page
       </message>
       <message name="IDS_OPTIONS_HOMEPAGE_USE_NEWTAB" desc="The title of the 'Use the New Tab page' for the home page radio">
