@@ -97,14 +97,13 @@ enum Status {
 };
 
 // This must be consistent with MediaKeyError defined in the spec:
-// http://goo.gl/rbdnR
+// https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#error-codes
+// The error codes are in the process of changing. For now, support the minimum
+// required set with backwards compatible values.
 enum MediaKeyError {
   kUnknownError = 1,
-  kClientError,
-  kServiceError,
-  kOutputError,
-  kHardwareChangeError,
-  kDomainError
+  kClientError = 2,
+  kOutputError = 4
 };
 
 // An input buffer can be split into several continuous subsamples.
