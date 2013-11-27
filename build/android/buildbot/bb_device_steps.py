@@ -155,10 +155,11 @@ def RunChromeDriverTests(options):
   """Run all the steps for running chromedriver tests."""
   bb_annotations.PrintNamedStep('chromedriver_annotation')
   RunCmd(['chrome/test/chromedriver/run_buildbot_steps.py',
-          '--android-packages=%s,%s,%s' %
+          '--android-packages=%s,%s,%s,%s' %
           ('chromium_test_shell',
            'chrome_stable',
-           'chrome_beta'),
+           'chrome_beta',
+           'chromedriver_webview_shell'),
           '--revision=%s' % _GetRevision(options),
           '--update-log'])
 
