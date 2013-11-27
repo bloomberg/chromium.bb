@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMPONENT_UPDATER_UPDATE_MANIFEST_H_
-#define CHROME_BROWSER_COMPONENT_UPDATER_UPDATE_MANIFEST_H_
+#ifndef CHROME_BROWSER_COMPONENT_UPDATER_UPDATE_RESPONSE_H_
+#define CHROME_BROWSER_COMPONENT_UPDATER_UPDATE_RESPONSE_H_
 
 #include <string>
 #include <vector>
@@ -15,7 +15,7 @@ namespace component_updater {
 // Parses responses for the update protocol version 3.
 // (http://code.google.com/p/omaha/wiki/ServerProtocol)
 //
-// An update manifest looks like this:
+// An update response looks like this:
 //
 // <?xml version="1.0" encoding="UTF-8"?>
 //  <response protocol="3.0" server="prod">
@@ -54,9 +54,9 @@ namespace component_updater {
 //
 // The diff data members correspond to the differential update package, if
 // a differential update is specified in the response.
-class UpdateManifest {
+class UpdateResponse {
  public:
-  // The result of parsing one <app> tag in an xml update check manifest.
+  // The result of parsing one <app> tag in an xml update check response.
   struct Result {
     struct Manifest {
       struct Package {
@@ -106,10 +106,10 @@ class UpdateManifest {
     std::vector<Result> list;
   };
 
-  UpdateManifest();
-  ~UpdateManifest();
+  UpdateResponse();
+  ~UpdateResponse();
 
-  // Parses an update manifest xml string into Result data. Returns a bool
+  // Parses an update response xml string into Result data. Returns a bool
   // indicating success or failure. On success, the results are available by
   // calling results(). The details for any failures are available by calling
   // errors().
@@ -125,10 +125,10 @@ class UpdateManifest {
   // Adds parse error details to |errors_| string.
   void ParseError(const char* details, ...);
 
-  DISALLOW_COPY_AND_ASSIGN(UpdateManifest);
+  DISALLOW_COPY_AND_ASSIGN(UpdateResponse);
 };
 
 }  // namespace component_updater
 
-#endif  // CHROME_BROWSER_COMPONENT_UPDATER_UPDATE_MANIFEST_H_
+#endif  // CHROME_BROWSER_COMPONENT_UPDATER_UPDATE_RESPONSE_H_
 

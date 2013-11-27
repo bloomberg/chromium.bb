@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/component_updater/update_manifest.h"
+#include "chrome/browser/component_updater/update_response.h"
 #include <algorithm>
 #include "base/memory/scoped_ptr.h"
 #include "base/stl_util.h"
@@ -17,23 +17,23 @@ namespace component_updater {
 
 static const char* kExpectedResponseProtocol = "3.0";
 
-UpdateManifest::UpdateManifest() {}
-UpdateManifest::~UpdateManifest() {}
+UpdateResponse::UpdateResponse() {}
+UpdateResponse::~UpdateResponse() {}
 
-UpdateManifest::Results::Results() : daystart_elapsed_seconds(kNoDaystart) {}
-UpdateManifest::Results::~Results() {}
+UpdateResponse::Results::Results() : daystart_elapsed_seconds(kNoDaystart) {}
+UpdateResponse::Results::~Results() {}
 
-UpdateManifest::Result::Result() {}
+UpdateResponse::Result::Result() {}
 
-UpdateManifest::Result::~Result() {}
+UpdateResponse::Result::~Result() {}
 
-UpdateManifest::Result::Manifest::Manifest() {}
-UpdateManifest::Result::Manifest::~Manifest() {}
+UpdateResponse::Result::Manifest::Manifest() {}
+UpdateResponse::Result::Manifest::~Manifest() {}
 
-UpdateManifest::Result::Manifest::Package::Package() : size(0), sizediff(0) {}
-UpdateManifest::Result::Manifest::Package::~Package() {}
+UpdateResponse::Result::Manifest::Package::Package() : size(0), sizediff(0) {}
+UpdateResponse::Result::Manifest::Package::~Package() {}
 
-void UpdateManifest::ParseError(const char* details, ...) {
+void UpdateResponse::ParseError(const char* details, ...) {
   va_list args;
   va_start(args, details);
 
@@ -104,9 +104,9 @@ class ScopedXmlDocument {
 
 // Parses the <package> tag.
 bool ParsePackageTag(xmlNode* package,
-                     UpdateManifest::Result* result,
+                     UpdateResponse::Result* result,
                      std::string* error) {
-  UpdateManifest::Result::Manifest::Package p;
+  UpdateResponse::Result::Manifest::Package p;
   p.name = GetAttribute(package, "name");
   if (p.name.empty()) {
     *error = "Missing name for package.";
@@ -138,7 +138,7 @@ bool ParsePackageTag(xmlNode* package,
 
 // Parses the <manifest> tag.
 bool ParseManifestTag(xmlNode* manifest,
-                      UpdateManifest::Result* result,
+                      UpdateResponse::Result* result,
                       std::string* error) {
   // Get the version.
   result->manifest.version = GetAttribute(manifest, "version");
@@ -186,7 +186,7 @@ bool ParseManifestTag(xmlNode* manifest,
 
 // Parses the <urls> tag and its children in the <updatecheck>.
 bool ParseUrlsTag(xmlNode* urls,
-                  UpdateManifest::Result* result,
+                  UpdateResponse::Result* result,
                   std::string* error) {
   // Get the url nodes.
   std::vector<xmlNode*> url = GetChildren(urls, "url");
@@ -222,7 +222,7 @@ bool ParseUrlsTag(xmlNode* urls,
 
 // Parses the <updatecheck> tag.
 bool ParseUpdateCheckTag(xmlNode* updatecheck,
-                         UpdateManifest::Result* result,
+                         UpdateResponse::Result* result,
                          std::string* error) {
   if (GetAttribute(updatecheck, "status") == "noupdate") {
     return true;
@@ -250,7 +250,7 @@ bool ParseUpdateCheckTag(xmlNode* updatecheck,
 
 // Parses a single <app> tag.
 bool ParseAppTag(xmlNode* app,
-                 UpdateManifest::Result* result,
+                 UpdateResponse::Result* result,
                  std::string* error) {
   // Read the crx id.
   result->extension_id = GetAttribute(app, "appid");
@@ -269,12 +269,12 @@ bool ParseAppTag(xmlNode* app,
   return ParseUpdateCheckTag(updates[0], result, error);
 }
 
-bool UpdateManifest::Parse(const std::string& manifest_xml) {
+bool UpdateResponse::Parse(const std::string& response_xml) {
   results_.daystart_elapsed_seconds = kNoDaystart;
   results_.list.clear();
   errors_.clear();
 
-  if (manifest_xml.length() < 1) {
+  if (response_xml.length() < 1) {
     ParseError("Empty xml");
     return false;
   }
@@ -284,7 +284,7 @@ bool UpdateManifest::Parse(const std::string& manifest_xml) {
 
   // Start up the xml parser with the manifest_xml contents.
   ScopedXmlDocument document(xmlParseDoc(
-      reinterpret_cast<const xmlChar*>(manifest_xml.c_str())));
+      reinterpret_cast<const xmlChar*>(response_xml.c_str())));
   if (!document.get()) {
     ParseError("%s", xml_errors.c_str());
     return false;

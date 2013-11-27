@@ -358,10 +358,10 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
 // should have been fired. We do two loops so the second time around there
 // should be nothing left to do.
 // We also check that the following network requests are issued:
-// 1- manifest check
+// 1- update check
 // 2- download crx
 // 3- ping
-// 4- second manifest check.
+// 4- second update check.
 TEST_F(ComponentUpdaterTest, InstallCrx) {
   MockComponentObserver observer1;
   {

@@ -29,7 +29,7 @@
 #include "chrome/browser/component_updater/component_updater_ping_manager.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/component_updater/crx_update_item.h"
-#include "chrome/browser/component_updater/update_manifest.h"
+#include "chrome/browser/component_updater/update_response.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"
@@ -307,9 +307,9 @@ class CrxUpdateService : public ComponentUpdateService {
     kStepDelayLong,
   };
 
-  void OnParseUpdateManifestSucceeded(
-      const component_updater::UpdateManifest::Results& results);
-  void OnParseUpdateManifestFailed(const std::string& error_message);
+  void OnParseUpdateResponseSucceeded(
+      const component_updater::UpdateResponse::Results& results);
+  void OnParseUpdateResponseFailed(const std::string& error_message);
 
   Status OnDemandUpdateInternal(CrxUpdateItem* item);
 
@@ -328,7 +328,7 @@ class CrxUpdateService : public ComponentUpdateService {
 
   void ScheduleNextRun(StepDelayInterval step_delay);
 
-  void ParseManifest(const std::string& xml);
+  void ParseResponse(const std::string& xml);
 
   void Install(const CRXContext* context, const base::FilePath& crx_path);
 
@@ -847,32 +847,32 @@ void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
     std::string xml;
     source->GetResponseAsString(&xml);
     url_fetcher_.reset();
-    ParseManifest(xml);
+    ParseResponse(xml);
   } else {
     url_fetcher_.reset();
-    CrxUpdateService::OnParseUpdateManifestFailed("network error");
+    CrxUpdateService::OnParseUpdateResponseFailed("network error");
   }
   delete context;
 }
 
-void CrxUpdateService::ParseManifest(const std::string& xml) {
+void CrxUpdateService::ParseResponse(const std::string& xml) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  component_updater::UpdateManifest manifest;
-  if (manifest.Parse(xml))
-    CrxUpdateService::OnParseUpdateManifestSucceeded(manifest.results());
+  component_updater::UpdateResponse update_response;
+  if (update_response.Parse(xml))
+    CrxUpdateService::OnParseUpdateResponseSucceeded(update_response.results());
   else
-    CrxUpdateService::OnParseUpdateManifestFailed(manifest.errors());
+    CrxUpdateService::OnParseUpdateResponseFailed(update_response.errors());
 }
 
 // A valid Omaha update check has arrived, from only the list of components that
 // we are currently upgrading we check for a match in which the server side
 // version is newer, if so we queue them for an upgrade. The next time we call
 // ProcessPendingItems() one of them will be drafted for the upgrade process.
-void CrxUpdateService::OnParseUpdateManifestSucceeded(
-    const component_updater::UpdateManifest::Results& results) {
+void CrxUpdateService::OnParseUpdateResponseSucceeded(
+    const component_updater::UpdateResponse::Results& results) {
   size_t num_updates_pending = 0;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::vector<component_updater::UpdateManifest::Result>::const_iterator it;
+  std::vector<component_updater::UpdateResponse::Result>::const_iterator it;
   for (it = results.list.begin(); it != results.list.end(); ++it) {
     CrxUpdateItem* crx = FindUpdateItemById(it->extension_id);
     if (!crx)
@@ -913,7 +913,7 @@ void CrxUpdateService::OnParseUpdateManifestSucceeded(
     crx->next_version = Version(it->manifest.version);
 
     typedef component_updater::
-        UpdateManifest::Result::Manifest::Package Package;
+        UpdateResponse::Result::Manifest::Package Package;
     const Package& package(it->manifest.packages[0]);
     crx->next_fp = package.fingerprint;
 
@@ -937,7 +937,7 @@ void CrxUpdateService::OnParseUpdateManifestSucceeded(
   ScheduleNextRun(num_updates_pending > 0 ? kStepDelayShort : kStepDelayMedium);
 }
 
-void CrxUpdateService::OnParseUpdateManifestFailed(
+void CrxUpdateService::OnParseUpdateResponseFailed(
     const std::string& error_message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   size_t count = ChangeItemStatus(CrxUpdateItem::kChecking,

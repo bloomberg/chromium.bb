@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/component_updater/update_manifest.h"
+#include "chrome/browser/component_updater/update_response.h"
 #include "libxml/globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -191,8 +191,8 @@ const char* kTwoAppsOneError =
 " </app>"
 "</response>";
 
-TEST(ComponentUpdaterManifestTest, TestUpdateManifest) {
-  UpdateManifest parser;
+TEST(ComponentUpdaterUpdateResponseTest, TestParser) {
+  UpdateResponse parser;
 
   // Test parsing of a number of invalid xml cases
   EXPECT_FALSE(parser.Parse(std::string()));
@@ -218,7 +218,7 @@ TEST(ComponentUpdaterManifestTest, TestUpdateManifest) {
   EXPECT_TRUE(parser.Parse(kValidXml));
   EXPECT_TRUE(parser.errors().empty());
   EXPECT_EQ(1u, parser.results().list.size());
-  const UpdateManifest::Result* firstResult = &parser.results().list[0];
+  const UpdateResponse::Result* firstResult = &parser.results().list[0];
   EXPECT_EQ(1u, firstResult->crx_urls.size());
   EXPECT_EQ(GURL("http://example.com/"), firstResult->crx_urls[0]);
   EXPECT_EQ(GURL("http://diff.example.com/"), firstResult->crx_diffurls[0]);
