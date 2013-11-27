@@ -164,7 +164,7 @@ class DeployChrome(object):
     # Developers sometimes run session_manager manually, in which case we'll
     # need to help shut the chrome processes down.
     try:
-      with cros_build_lib.SubCommandTimeout(KILL_PROC_MAX_WAIT):
+      with cros_build_lib.Timeout(KILL_PROC_MAX_WAIT):
         while self._ChromeFileInUse():
           logging.warning('The chrome binary on the device is in use.')
           logging.warning('Killing chrome and session_manager processes...\n')

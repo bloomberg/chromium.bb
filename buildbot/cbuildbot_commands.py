@@ -1218,7 +1218,7 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
   gs_context = gs.GSContext(acl=acl, dry_run=debug)
 
   try:
-    with cros_build_lib.SubCommandTimeout(timeout):
+    with cros_build_lib.Timeout(timeout):
       gs_context.CopyInto(local_path, upload_url)
   except cros_build_lib.TimeoutError:
     raise cros_build_lib.TimeoutError('Timed out uploading %s' % filename)

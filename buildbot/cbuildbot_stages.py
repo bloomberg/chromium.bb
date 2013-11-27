@@ -2387,7 +2387,7 @@ class SignerTestStage(ArchivingStage):
   def PerformStage(self):
     if not self.archive_stage.WaitForRecoveryImage():
       raise InvalidTestConditionException('Missing recovery image.')
-    with cros_build_lib.SubCommandTimeout(self.SIGNER_TEST_TIMEOUT):
+    with cros_build_lib.Timeout(self.SIGNER_TEST_TIMEOUT):
       commands.RunSignerTests(self._build_root, self._current_board)
 
 
@@ -2408,7 +2408,7 @@ class UnitTestStage(BoardSpecificBuilderStage):
     extra_env = {}
     if self._build_config['useflags']:
       extra_env['USE'] = ' '.join(self._build_config['useflags'])
-    with cros_build_lib.SubCommandTimeout(self.UNIT_TEST_TIMEOUT):
+    with cros_build_lib.Timeout(self.UNIT_TEST_TIMEOUT):
       commands.RunUnitTests(self._build_root,
                             self._current_board,
                             full=(not self._build_config['quick_unit']),
@@ -2581,7 +2581,7 @@ class HWTestStage(ArchivingStage):
     else:
       debug = self._options.debug
     lab_status.CheckLabStatus(self._current_board)
-    with cros_build_lib.SubCommandTimeout(
+    with cros_build_lib.Timeout(
         self.suite_config.timeout  + constants.HWTEST_TIMEOUT_EXTENSION):
       commands.RunHWTestSuite(build,
                               self.suite_config.suite,

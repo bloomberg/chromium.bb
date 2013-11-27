@@ -737,22 +737,22 @@ class TestInput(cros_test_lib.MoxOutputTestCase):
 
 class TestTimeouts(cros_test_lib.TestCase):
 
-  def testSubCommandTimeout(self):
-    """Tests that we can nest SubCommandTimeout correctly."""
+  def testTimeout(self):
+    """Tests that we can nest Timeout correctly."""
     self.assertFalse('mock' in str(time.sleep).lower())
-    with cros_build_lib.SubCommandTimeout(30):
-      with cros_build_lib.SubCommandTimeout(20):
-        with cros_build_lib.SubCommandTimeout(1):
+    with cros_build_lib.Timeout(30):
+      with cros_build_lib.Timeout(20):
+        with cros_build_lib.Timeout(1):
           self.assertRaises(cros_build_lib.TimeoutError, time.sleep, 10)
 
         # Should not raise a timeout exception as 20 > 2.
         time.sleep(1)
 
-  def testSubCommandTimeoutNested(self):
+  def testTimeoutNested(self):
     """Tests that we still re-raise an alarm if both are reached."""
-    with cros_build_lib.SubCommandTimeout(1):
+    with cros_build_lib.Timeout(1):
       try:
-        with cros_build_lib.SubCommandTimeout(2):
+        with cros_build_lib.Timeout(2):
           self.assertRaises(cros_build_lib.TimeoutError, time.sleep, 1)
 
       # Craziness to catch nested timeouts.

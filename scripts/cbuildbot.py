@@ -1534,7 +1534,7 @@ def main(argv):
     stack.Add(critical_section.ForkWatchdog)
 
     if options.timeout > 0:
-      stack.Add(cros_build_lib.Timeout, options.timeout)
+      stack.Add(cros_build_lib.FatalTimeout, options.timeout)
 
     if not options.buildbot:
       build_config = cbuildbot_config.OverrideConfigForTrybot(

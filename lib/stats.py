@@ -158,7 +158,7 @@ class StatsUploader(object):
     if not cls._UploadConditionsMet(stats):
       return
 
-    with cros_build_lib.SubCommandTimeout(timeout):
+    with cros_build_lib.Timeout(timeout):
       try:
         cls._Upload(stats, url)
       # Stats upload errors are silenced, for the sake of user experience.

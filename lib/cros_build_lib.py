@@ -1012,16 +1012,15 @@ def AllowDisabling(enabled, functor, *args, **kwds):
 
 
 class TimeoutError(Exception):
-  """Raises when code within SubCommandTimeout has been run too long."""
+  """Raises when code within Timeout has been run too long."""
 
 
 @contextlib.contextmanager
-def SubCommandTimeout(max_run_time):
+def Timeout(max_run_time):
   """ContextManager that alarms if code is ran for too long.
 
-  Unlike Timeout, SubCommandTimeout can run nested and raises a TimeoutException
-  if the timeout is reached. SubCommandTimeout can also nest underneath
-  Timeout.
+  Timeout can run nested and raises a TimeoutException if the timeout
+  is reached. Timeout can also nest underneath FatalTimeout.
 
   Args:
     max_run_time: Number (integer) of seconds to wait before sending SIGALRM.
@@ -1062,14 +1061,14 @@ def SubCommandTimeout(max_run_time):
 
 
 @contextlib.contextmanager
-def Timeout(max_run_time):
-  """ContextManager that alarms if code is run for too long.
+def FatalTimeout(max_run_time):
+  """ContextManager that exits the program if code is run for too long.
 
   This implementation is fairly simple, thus multiple timeouts
   cannot be active at the same time.
 
   Additionally, if the timeout has elapsed, it'll trigger a SystemExit
-  exception w/in the invoking code, ultimately propagating that past
+  exception within the invoking code, ultimately propagating that past
   itself.  If the underlying code tries to suppress the SystemExit, once
   a minute it'll retrigger SystemExit until control is returned to this
   manager.
@@ -1244,11 +1243,11 @@ def WaitForReturnValue(values, func, timeout, period=1, side_effect_func=None,
     TimeoutError when the timeout is exceeded.
   """
   assert period >= 0
-  # SubCommandTimeout requires timeout >= 1.
+  # Timeout requires timeout >= 1.
   assert timeout >= 1
   func_args = func_args or []
   func_kwargs = func_kwargs or {}
-  with SubCommandTimeout(timeout):
+  with Timeout(timeout):
     while True:
       timestamp = time.time()
       value = func(*func_args, **func_kwargs)
