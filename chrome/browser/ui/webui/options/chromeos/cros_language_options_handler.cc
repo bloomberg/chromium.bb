@@ -17,15 +17,21 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
+#include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/extension.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -342,6 +348,21 @@ void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(
   const std::string action = base::StringPrintf(
       "InputMethodOptions_Open_%s", input_method_id.c_str());
   content::RecordComputedAction(action);
+
+  const std::string extension_id =
+      extension_ime_util::GetExtensionIDFromInputMethodID(input_method_id);
+  if (extension_id.empty())
+    return;
+  const extensions::Extension* extension =
+      extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()))->
+          extension_service()->extensions()->GetByID(extension_id);
+  if (!extension ||
+      extensions::ManifestURL::GetOptionsPage(extension).is_empty()) {
+    return;
+  }
+  extensions::ExtensionTabUtil::OpenOptionsPage(
+      extension,
+      chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
 }
 
 void CrosLanguageOptionsHandler::OnInitialized() {

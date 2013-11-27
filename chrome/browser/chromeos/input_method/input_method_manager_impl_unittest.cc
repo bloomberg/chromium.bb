@@ -141,12 +141,6 @@ class InputMethodManagerImplTest :  public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImplTest);
 };
 
-class TestableComponentExtensionIMEManager
-    : public ComponentExtensionIMEManager {
- public:
-  using ComponentExtensionIMEManager::GetComponentExtensionIMEId;
-};
-
 class TestObserver : public InputMethodManager::Observer {
  public:
   TestObserver()
@@ -1052,10 +1046,9 @@ TEST_F(InputMethodManagerImplTest,
 TEST_F(InputMethodManagerImplTest,
        ChangeInputMethodBeforeComponentExtensionInitialization_CompOneIME) {
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
-  const std::string ext_id =
-      TestableComponentExtensionIMEManager::GetComponentExtensionIMEId(
-          ime_list_[0].id,
-          ime_list_[0].engines[0].engine_id);
+  const std::string ext_id = extension_ime_util::GetComponentInputMethodID(
+      ime_list_[0].id,
+      ime_list_[0].engines[0].engine_id);
   std::vector<std::string> ids;
   ids.push_back(ext_id);
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
@@ -1069,14 +1062,12 @@ TEST_F(InputMethodManagerImplTest,
 TEST_F(InputMethodManagerImplTest,
        ChangeInputMethodBeforeComponentExtensionInitialization_CompTwoIME) {
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
-  const std::string ext_id1 =
-      TestableComponentExtensionIMEManager::GetComponentExtensionIMEId(
-          ime_list_[0].id,
-          ime_list_[0].engines[0].engine_id);
-  const std::string ext_id2 =
-      TestableComponentExtensionIMEManager::GetComponentExtensionIMEId(
-          ime_list_[1].id,
-          ime_list_[1].engines[0].engine_id);
+  const std::string ext_id1 = extension_ime_util::GetComponentInputMethodID(
+      ime_list_[0].id,
+      ime_list_[0].engines[0].engine_id);
+  const std::string ext_id2 = extension_ime_util::GetComponentInputMethodID(
+      ime_list_[1].id,
+      ime_list_[1].engines[0].engine_id);
   std::vector<std::string> ids;
   ids.push_back(ext_id1);
   ids.push_back(ext_id2);
@@ -1093,10 +1084,9 @@ TEST_F(InputMethodManagerImplTest,
        ChangeInputMethod_ComponenteExtensionOneIME) {
   InitComponentExtension();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
-  const std::string ext_id =
-      TestableComponentExtensionIMEManager::GetComponentExtensionIMEId(
-          ime_list_[0].id,
-          ime_list_[0].engines[0].engine_id);
+  const std::string ext_id = extension_ime_util::GetComponentInputMethodID(
+      ime_list_[0].id,
+      ime_list_[0].engines[0].engine_id);
   std::vector<std::string> ids;
   ids.push_back(ext_id);
   EXPECT_TRUE(manager_->EnableInputMethods(ids));
@@ -1108,14 +1098,12 @@ TEST_F(InputMethodManagerImplTest,
        ChangeInputMethod_ComponenteExtensionTwoIME) {
   InitComponentExtension();
   manager_->SetState(InputMethodManager::STATE_BROWSER_SCREEN);
-  const std::string ext_id1 =
-      TestableComponentExtensionIMEManager::GetComponentExtensionIMEId(
-          ime_list_[0].id,
-          ime_list_[0].engines[0].engine_id);
-  const std::string ext_id2 =
-      TestableComponentExtensionIMEManager::GetComponentExtensionIMEId(
-          ime_list_[1].id,
-          ime_list_[1].engines[0].engine_id);
+  const std::string ext_id1 = extension_ime_util::GetComponentInputMethodID(
+      ime_list_[0].id,
+      ime_list_[0].engines[0].engine_id);
+  const std::string ext_id2 = extension_ime_util::GetComponentInputMethodID(
+      ime_list_[1].id,
+      ime_list_[1].engines[0].engine_id);
   std::vector<std::string> ids;
   ids.push_back(ext_id1);
   ids.push_back(ext_id2);

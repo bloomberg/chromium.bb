@@ -385,7 +385,7 @@ void InputMethodManagerImpl::LoadNecessaryComponentExtensions() {
       active_input_method_ids_;
   active_input_method_ids_.clear();
   for (size_t i = 0; i < unfiltered_input_method_ids.size(); ++i) {
-    if (!component_extension_ime_manager_->IsComponentExtensionIMEId(
+    if (!extension_ime_util::IsComponentExtensionIME(
         unfiltered_input_method_ids[i])) {
       // Legacy IMEs or xkb layouts are alwayes active.
       active_input_method_ids_.push_back(unfiltered_input_method_ids[i]);
@@ -427,7 +427,7 @@ void InputMethodManagerImpl::AddInputMethodExtension(
     return;
 
   if (!extension_ime_util::IsExtensionIME(id) &&
-      !ComponentExtensionIMEManager::IsComponentExtensionIMEId(id)) {
+      !extension_ime_util::IsComponentExtensionIME(id)) {
     DVLOG(1) << id << " is not a valid extension input method ID.";
     return;
   }
@@ -435,7 +435,7 @@ void InputMethodManagerImpl::AddInputMethodExtension(
   extra_input_methods_[id] = InputMethodDescriptor(
       id, name, layouts, languages, false, options_url, inputview_url);
   if (Contains(enabled_extension_imes_, id) &&
-      !ComponentExtensionIMEManager::IsComponentExtensionIMEId(id)) {
+      !extension_ime_util::IsComponentExtensionIME(id)) {
     if (!Contains(active_input_method_ids_, id)) {
       active_input_method_ids_.push_back(id);
     } else {
@@ -501,7 +501,7 @@ void InputMethodManagerImpl::SetEnabledExtensionImes(
   for (std::map<std::string, InputMethodDescriptor>::iterator extra_iter =
        extra_input_methods_.begin(); extra_iter != extra_input_methods_.end();
        ++extra_iter) {
-    if (ComponentExtensionIMEManager::IsComponentExtensionIMEId(
+    if (extension_ime_util::IsComponentExtensionIME(
         extra_iter->first))
       continue;  // Do not filter component extension.
     std::vector<std::string>::iterator active_iter = std::find(

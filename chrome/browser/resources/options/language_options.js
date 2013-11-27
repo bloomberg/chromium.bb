@@ -325,9 +325,9 @@ cr.define('options', function() {
           var button = document.createElement('button');
           button.textContent = loadTimeData.getString('configure');
           button.inputMethodId = inputMethod.id;
-          button.onclick = function(optionsPage, e) {
-            window.open(optionsPage);
-          }.bind(this, inputMethod.optionsPage);
+          button.onclick = function(inputMethodId, e) {
+            chrome.send('inputMethodOptionsOpen', [inputMethodId]);
+          }.bind(this, inputMethod.id);
           element.appendChild(button);
         }
 
