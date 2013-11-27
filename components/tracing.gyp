@@ -8,11 +8,13 @@
 # on this, thus if you try to rename this to gypi and include it in
 # components.gyp, you will get a circular dependency error.
 {
+  'variables': {
+    'chromium_code': 1,
+  },
   'targets' : [
     {
       'target_name': 'tracing',
       'type': 'static_library',
-      'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
         '../base/base.gyp:base',
         '../ipc/ipc.gyp:ipc',
