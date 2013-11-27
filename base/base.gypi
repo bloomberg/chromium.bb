@@ -157,6 +157,8 @@
           'debug/trace_event_impl.cc',
           'debug/trace_event_impl.h',
           'debug/trace_event_impl_constants.cc',
+          'debug/trace_event_synthetic_delay.cc',
+          'debug/trace_event_synthetic_delay.h',
           'debug/trace_event_system_stats_monitor.cc',
           'debug/trace_event_memory.cc',
           'debug/trace_event_memory.h',
