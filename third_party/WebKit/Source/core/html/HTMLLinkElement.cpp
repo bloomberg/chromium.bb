@@ -150,7 +150,7 @@ LinkResource* HTMLLinkElement::linkResourceToProcess()
         if (m_relAttribute.isImport() && RuntimeEnabledFeatures::htmlImportsEnabled())
             m_link = LinkImport::create(this);
         else {
-            RefPtr<LinkStyle> link = LinkStyle::create(this);
+            OwnPtr<LinkStyle> link = LinkStyle::create(this);
             if (fastHasAttribute(disabledAttr))
                 link->setDisabledState(true);
             m_link = link.release();
@@ -364,9 +364,9 @@ DOMSettableTokenList* HTMLLinkElement::sizes() const
     return m_sizes.get();
 }
 
-PassRefPtr<LinkStyle> LinkStyle::create(HTMLLinkElement* owner)
+PassOwnPtr<LinkStyle> LinkStyle::create(HTMLLinkElement* owner)
 {
-    return adoptRef(new LinkStyle(owner));
+    return adoptPtr(new LinkStyle(owner));
 }
 
 LinkStyle::LinkStyle(HTMLLinkElement* owner)

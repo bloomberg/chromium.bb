@@ -40,9 +40,9 @@
 
 namespace WebCore {
 
-PassRefPtr<LinkImport> LinkImport::create(HTMLLinkElement* owner)
+PassOwnPtr<LinkImport> LinkImport::create(HTMLLinkElement* owner)
 {
-    return adoptRef(new LinkImport(owner));
+    return adoptPtr(new LinkImport(owner));
 }
 
 LinkImport::LinkImport(HTMLLinkElement* owner)

@@ -33,14 +33,14 @@
 
 #include "core/fetch/FetchRequest.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class HTMLLinkElement;
 
-class LinkResource : public RefCounted<LinkResource> {
+class LinkResource {
+    WTF_MAKE_NONCOPYABLE(LinkResource); WTF_MAKE_FAST_ALLOCATED;
 public:
     enum Type {
         Style,

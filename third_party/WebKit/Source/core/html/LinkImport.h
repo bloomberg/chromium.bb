@@ -34,6 +34,7 @@
 #include "core/html/HTMLImportLoaderClient.h"
 #include "core/html/LinkResource.h"
 #include "wtf/FastAllocBase.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
@@ -48,7 +49,7 @@ class LinkImport : public LinkResource, public HTMLImportLoaderClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
 
-    static PassRefPtr<LinkImport> create(HTMLLinkElement* owner);
+    static PassOwnPtr<LinkImport> create(HTMLLinkElement* owner);
 
     explicit LinkImport(HTMLLinkElement* owner);
     virtual ~LinkImport();

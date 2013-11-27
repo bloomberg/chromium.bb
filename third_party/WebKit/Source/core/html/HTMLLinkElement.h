@@ -57,7 +57,7 @@ typedef EventSender<HTMLLinkElement> LinkEventSender;
 class LinkStyle FINAL : public LinkResource, StyleSheetResourceClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassRefPtr<LinkStyle> create(HTMLLinkElement* owner);
+    static PassOwnPtr<LinkStyle> create(HTMLLinkElement* owner);
 
     explicit LinkStyle(HTMLLinkElement* owner);
     virtual ~LinkStyle();
@@ -190,7 +190,7 @@ private:
 private:
     HTMLLinkElement(Document&, bool createdByParser);
 
-    RefPtr<LinkResource> m_link;
+    OwnPtr<LinkResource> m_link;
     LinkLoader m_linkLoader;
 
     String m_type;
