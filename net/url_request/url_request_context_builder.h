@@ -26,6 +26,7 @@
 namespace net {
 
 class FtpTransactionFactory;
+class HostResolver;
 class HostMappingRules;
 class ProxyConfigService;
 class URLRequestContext;
@@ -98,6 +99,11 @@ class NET_EXPORT URLRequestContextBuilder {
   }
 #endif
 
+  // By default host_resolver is constructed with CreateDefaultResolver.
+  void set_host_resolver(HostResolver* host_resolver) {
+    host_resolver_.reset(host_resolver);
+  }
+
   // Uses BasicNetworkDelegate by default. Note that calling Build will unset
   // any custom delegate in builder, so this must be called each time before
   // Build is called.
@@ -136,6 +142,7 @@ class NET_EXPORT URLRequestContextBuilder {
   bool http_cache_enabled_;
   HttpCacheParams http_cache_params_;
   HttpNetworkSessionParams http_network_session_params_;
+  scoped_ptr<HostResolver> host_resolver_;
   scoped_ptr<ProxyConfigService> proxy_config_service_;
   scoped_ptr<NetworkDelegate> network_delegate_;
   scoped_ptr<FtpTransactionFactory> ftp_transaction_factory_;

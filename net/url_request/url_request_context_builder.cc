@@ -217,7 +217,9 @@ URLRequestContext* URLRequestContextBuilder::Build() {
   NetworkDelegate* network_delegate = network_delegate_.release();
   storage->set_network_delegate(network_delegate);
 
-  storage->set_host_resolver(net::HostResolver::CreateDefaultResolver(NULL));
+  if (!host_resolver_)
+    host_resolver_ = net::HostResolver::CreateDefaultResolver(NULL);
+  storage->set_host_resolver(host_resolver_.Pass());
 
   context->StartFileThread();
 

@@ -13,14 +13,17 @@
 #include "android_webview/browser/net/init_native_callback.h"
 #include "android_webview/common/aw_switches.h"
 #include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/cache_type.h"
 #include "net/cookies/cookie_store.h"
+#include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_cache.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/data_protocol_handler.h"
@@ -36,6 +39,38 @@ namespace android_webview {
 
 namespace {
 
+void ApplyCmdlineOverridesToURLRequestContextBuilder(
+    net::URLRequestContextBuilder* builder) {
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kHostResolverRules)) {
+    // If hostname remappings were specified on the command-line, layer these
+    // rules on top of the real host resolver. This allows forwarding all
+    // requests through a designated test server.
+    scoped_ptr<net::MappedHostResolver> host_resolver(
+        new net::MappedHostResolver(
+            net::HostResolver::CreateDefaultResolver(NULL)));
+    host_resolver->SetRulesFromString(
+        command_line.GetSwitchValueASCII(switches::kHostResolverRules));
+    builder->set_host_resolver(host_resolver.release());
+  }
+}
+
+void ApplyCmdlineOverridesToNetworkSessionParams(
+    net::HttpNetworkSession::Params* params) {
+  int value;
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
+    base::StringToInt(command_line.GetSwitchValueASCII(
+        switches::kTestingFixedHttpPort), &value);
+    params->testing_fixed_http_port = value;
+  }
+  if (command_line.HasSwitch(switches::kTestingFixedHttpsPort)) {
+    base::StringToInt(command_line.GetSwitchValueASCII(
+        switches::kTestingFixedHttpsPort), &value);
+    params->testing_fixed_https_port = value;
+  }
+}
+
 void PopulateNetworkSessionParams(
     net::URLRequestContext* context,
     net::HttpNetworkSession::Params* params) {
@@ -49,6 +84,7 @@ void PopulateNetworkSessionParams(
   params->network_delegate = context->network_delegate();
   params->http_server_properties = context->http_server_properties();
   params->net_log = context->net_log();
+  ApplyCmdlineOverridesToNetworkSessionParams(params);
 }
 
 scoped_ptr<net::URLRequestJobFactory> CreateJobFactory(
@@ -147,6 +183,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   builder.set_proxy_config_service(proxy_config_service_.release());
   builder.set_accept_language(net::HttpUtil::GenerateAcceptLanguageHeader(
       AwContentBrowserClient::GetAcceptLangsImpl()));
+  ApplyCmdlineOverridesToURLRequestContextBuilder(&builder);
 
   url_request_context_.reset(builder.Build());
   // TODO(mnaganov): Fix URLRequestContextBuilder to use proper threads.
