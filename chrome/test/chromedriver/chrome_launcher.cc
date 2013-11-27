@@ -173,7 +173,8 @@ Status WaitForDevToolsAndCheckVersion(
     WebViewsInfo views_info;
     client->GetWebViewsInfo(&views_info);
     for (size_t i = 0; i < views_info.GetSize(); ++i) {
-      if (views_info.Get(i).type == WebViewInfo::kPage) {
+      if (views_info.Get(i).type == WebViewInfo::kPage ||
+          views_info.Get(i).type == WebViewInfo::kApp) {
         *user_client = client.Pass();
         return Status(kOk);
       }
