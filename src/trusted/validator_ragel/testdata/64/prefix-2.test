@@ -477,6 +477,19 @@
   0: ('dangling legacy prefixes', Instruction(0x0: 66  data16))
 ----------------------------------------------------------------------
 @hex:
+  # 0x66 mulsd %xmm0,%xmm1
+  # objdump disassembles this instruction wrong.
+  F2 66 0F 59 C8
+@dis:
+     0:	f2                                           	data16
+     1:	66 0f 59 c8                                  	mulpd  %xmm0,%xmm1
+@rdfa_output:
+  0: unrecognized instruction
+  return code: 1
+@spec:
+  0: ('dangling legacy prefixes', Instruction(0x0: f2  data16))
+----------------------------------------------------------------------
+@hex:
   # phaddw (%esp), %xmm0
   67 66 0f 38 01 04 24
 @dis:
