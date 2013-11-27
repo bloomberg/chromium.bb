@@ -45,6 +45,8 @@ _TEST_CODE_EXCLUDED_PATHS = (
     r'content[/\\]shell[/\\].*',
     # At request of folks maintaining this folder.
     r'chrome[/\\]browser[/\\]automation[/\\].*',
+    # Non-production example code.
+    r'mojo[/\\]examples[/\\].*',
 )
 
 _TEST_ONLY_WARNING = (
