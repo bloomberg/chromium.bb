@@ -291,11 +291,6 @@ TextIterator::TextIterator(const Range* r, TextIteratorBehavior behavior)
     m_lastTextNodeEndedWithCollapsedSpace = false;
     m_lastCharacter = 0;
 
-#ifndef NDEBUG
-    // need this just because of the assert in advance()
-    m_positionNode = m_node;
-#endif
-
     // identify the first run
     advance();
 }
