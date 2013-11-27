@@ -106,6 +106,7 @@ namespace {
 const char kQuicFieldTrialName[] = "QUIC";
 const char kQuicFieldTrialEnabledGroupName[] = "Enabled";
 const char kQuicFieldTrialHttpsEnabledGroupName[] = "HttpsEnabled";
+const char kQuicFieldTrialPacketLengthSuffix[] = "BytePackets";
 
 const char kSpdyFieldTrialName[] = "SPDY";
 const char kSpdyFieldTrialDisabledGroupName[] = "SpdyDisabled";
@@ -568,18 +569,7 @@ void IOThread::InitAsync() {
     globals_->testing_fixed_https_port =
         GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpsPort);
   }
-  bool enable_quic = ShouldEnableQuic(command_line);
-  globals_->enable_quic.set(enable_quic);
-  if (enable_quic)
-    globals_->enable_quic_https.set(ShouldEnableQuicHttps(command_line));
-  if (command_line.HasSwitch(switches::kOriginToForceQuicOn)) {
-    net::HostPortPair quic_origin =
-        net::HostPortPair::FromString(
-            command_line.GetSwitchValueASCII(switches::kOriginToForceQuicOn));
-    if (!quic_origin.IsEmpty()) {
-      globals_->origin_to_force_quic_on.set(quic_origin);
-    }
-  }
+  ConfigureQuic(command_line);
   if (command_line.HasSwitch(
           switches::kEnableUserAlternateProtocolPorts)) {
     globals_->enable_user_alternate_protocol_ports = true;
@@ -806,7 +796,7 @@ void IOThread::EnableSpdy(const std::string& mode) {
       pair.protocol = net::NPN_SPDY_3;
       net::HttpServerPropertiesImpl::ForceAlternateProtocol(pair);
     } else if (option == kSingleDomain) {
-      DLOG(INFO) << "FORCING SINGLE DOMAIN";
+      DVLOG(1) << "FORCING SINGLE DOMAIN";
       globals_->force_spdy_single_domain.set(true);
     } else if (option == kInitialMaxConcurrentStreams) {
       int streams;
@@ -929,6 +919,7 @@ void IOThread::InitializeNetworkSessionParams(
       &params->trusted_spdy_proxy);
   globals_->enable_quic.CopyToIfSet(&params->enable_quic);
   globals_->enable_quic_https.CopyToIfSet(&params->enable_quic_https);
+  globals_->quic_max_packet_length.CopyToIfSet(&params->quic_max_packet_length);
   globals_->origin_to_force_quic_on.CopyToIfSet(
       &params->origin_to_force_quic_on);
   params->enable_user_alternate_protocol_ports =
@@ -1000,38 +991,88 @@ void IOThread::UpdateDnsClientEnabled() {
   globals()->host_resolver->SetDnsClientEnabled(*dns_client_enabled_);
 }
 
-bool IOThread::ShouldEnableQuic(const CommandLine& command_line) {
+void IOThread::ConfigureQuic(const CommandLine& command_line) {
   // Always fetch the field trial group to ensure it is reported correctly.
   // The command line flags will be associated with a group that is reported
   // so long as trial is actually queried.
   std::string quic_trial_group =
       base::FieldTrialList::FindFullName(kQuicFieldTrialName);
 
+  bool enable_quic = ShouldEnableQuic(command_line, quic_trial_group);
+  globals_->enable_quic.set(enable_quic);
+  if (enable_quic) {
+    globals_->enable_quic_https.set(
+        ShouldEnableQuicHttps(command_line, quic_trial_group));
+  }
+
+  size_t max_packet_length = GetQuicMaxPacketLength(command_line,
+                                                    quic_trial_group);
+  if (max_packet_length != 0) {
+    globals_->quic_max_packet_length.set(max_packet_length);
+  }
+
+  if (command_line.HasSwitch(switches::kOriginToForceQuicOn)) {
+    net::HostPortPair quic_origin =
+        net::HostPortPair::FromString(
+            command_line.GetSwitchValueASCII(switches::kOriginToForceQuicOn));
+    if (!quic_origin.IsEmpty()) {
+      globals_->origin_to_force_quic_on.set(quic_origin);
+    }
+  }
+}
+
+bool IOThread::ShouldEnableQuic(const CommandLine& command_line,
+                                base::StringPiece quic_trial_group) {
   if (command_line.HasSwitch(switches::kDisableQuic))
     return false;
 
   if (command_line.HasSwitch(switches::kEnableQuic))
     return true;
 
-  // QUIC should be enabled if we are in either field trial group.
-  return quic_trial_group == kQuicFieldTrialEnabledGroupName ||
-      quic_trial_group == kQuicFieldTrialHttpsEnabledGroupName;
+  return quic_trial_group.starts_with(kQuicFieldTrialEnabledGroupName) ||
+      quic_trial_group.starts_with(kQuicFieldTrialHttpsEnabledGroupName);
 }
 
-bool IOThread::ShouldEnableQuicHttps(const CommandLine& command_line) {
-  // Always fetch the field trial group to ensure it is reported correctly.
-  // The command line flags will be associated with a group that is reported
-  // so long as trial is actually queried.
-  std::string quic_trial_group =
-      base::FieldTrialList::FindFullName(kQuicFieldTrialName);
-
+bool IOThread::ShouldEnableQuicHttps(const CommandLine& command_line,
+                                     base::StringPiece quic_trial_group) {
   if (command_line.HasSwitch(switches::kDisableQuicHttps))
     return false;
 
   if (command_line.HasSwitch(switches::kEnableQuicHttps))
     return true;
 
-  // HTTPS over QUIC should only be enabled if we are in the https
-  // field trial group.
-  return quic_trial_group == kQuicFieldTrialHttpsEnabledGroupName;
+  return quic_trial_group.starts_with(kQuicFieldTrialHttpsEnabledGroupName);
+}
+
+size_t IOThread::GetQuicMaxPacketLength(const CommandLine& command_line,
+                                        base::StringPiece quic_trial_group) {
+  if (command_line.HasSwitch(switches::kQuicMaxPacketLength)) {
+    unsigned value;
+    if (!base::StringToUint(
+            command_line.GetSwitchValueASCII(switches::kQuicMaxPacketLength),
+            &value)) {
+      return 0;
+    }
+    return value;
+  }
+
+  // Format of the packet length group names is:
+  //   (Https)?Enabled<length>BytePackets.
+  base::StringPiece length_str(quic_trial_group);
+  if (length_str.starts_with(kQuicFieldTrialEnabledGroupName)) {
+    length_str.remove_prefix(strlen(kQuicFieldTrialEnabledGroupName));
+  } else if (length_str.starts_with(kQuicFieldTrialHttpsEnabledGroupName)) {
+    length_str.remove_prefix(strlen(kQuicFieldTrialHttpsEnabledGroupName));
+  } else {
+    return 0;
+  }
+  if (!length_str.ends_with(kQuicFieldTrialPacketLengthSuffix)) {
+    return 0;
+  }
+  length_str.remove_suffix(strlen(kQuicFieldTrialPacketLengthSuffix));
+  unsigned value;
+  if (!base::StringToUint(length_str, &value)) {
+    return 0;
+  }
+  return value;
 }

@@ -165,6 +165,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<string> trusted_spdy_proxy;
     Optional<bool> enable_quic;
     Optional<bool> enable_quic_https;
+    Optional<size_t> quic_max_packet_length;
     Optional<net::HostPortPair> origin_to_force_quic_on;
     bool enable_user_alternate_protocol_ports;
     // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
@@ -258,13 +259,25 @@ class IOThread : public content::BrowserThreadDelegate {
 
   void UpdateDnsClientEnabled();
 
+  // Configures QUIC options based on the flags in |command_line| as
+  // well as the QUIC field trial group.
+  void ConfigureQuic(const CommandLine& command_line);
+
   // Returns true if QUIC should be enabled, either as a result
   // of a field trial or a command line flag.
-  bool ShouldEnableQuic(const CommandLine& command_line);
+  bool ShouldEnableQuic(const CommandLine& command_line,
+                        base::StringPiece quic_trial_group);
 
   // Returns true if HTTPS over QUIC should be enabled, either as a result
   // of a field trial or a command line flag.
-  bool ShouldEnableQuicHttps(const CommandLine& command_line);
+  bool ShouldEnableQuicHttps(const CommandLine& command_line,
+                             base::StringPiece quic_trial_group);
+
+  // Returns the maximum length for QUIC packets, based on any flags in
+  // |command_line| or the field trial.  Returns 0 if there is an error
+  // parsing any of the options, or if the default value should be used.
+  size_t GetQuicMaxPacketLength(const CommandLine& command_line,
+                                base::StringPiece quic_trial_group);
 
   // The NetLog is owned by the browser process, to allow logging from other
   // threads during shutdown, but is used most frequently on the IOThread.

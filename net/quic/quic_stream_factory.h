@@ -88,7 +88,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       base::WeakPtr<HttpServerProperties> http_server_properties,
       QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
       QuicRandom* random_generator,
-      QuicClock* clock);
+      QuicClock* clock,
+      size_t max_packet_length);
   virtual ~QuicStreamFactory();
 
   // Creates a new QuicHttpStream to |host_port_proxy_pair| which will be
@@ -193,6 +194,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory_;
   QuicRandom* random_generator_;
   scoped_ptr<QuicClock> clock_;
+  const size_t max_packet_length_;
 
   // The helper used for all connections.
   scoped_ptr<QuicConnectionHelper> helper_;

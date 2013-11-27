@@ -327,6 +327,7 @@ extern const char kProxyBypassList[];
 extern const char kProxyPacUrl[];
 extern const char kProxyServer[];
 extern const char kPurgeMemoryButton[];
+extern const char kQuicMaxPacketLength[];
 extern const char kRecordMode[];
 extern const char kRemoteDebuggingFrontend[];
 extern const char kRendererPrintPreview[];

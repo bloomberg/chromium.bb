@@ -68,7 +68,7 @@ class QuicStreamFactoryTest : public ::testing::Test {
         factory_(&host_resolver_, &socket_factory_,
                  base::WeakPtr<HttpServerProperties>(),
                  &crypto_client_stream_factory_,
-                 &random_generator_, clock_),
+                 &random_generator_, clock_, kDefaultMaxPacketSize),
         host_port_proxy_pair_(HostPortPair("www.google.com", 443),
                               ProxyServer::Direct()),
         is_https_(false),

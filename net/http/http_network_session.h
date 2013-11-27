@@ -90,6 +90,7 @@ class NET_EXPORT HttpNetworkSession
     HostPortPair origin_to_force_quic_on;
     QuicClock* quic_clock;  // Will be owned by QuicStreamFactory.
     QuicRandom* quic_random;
+    size_t quic_max_packet_length;
     bool enable_user_alternate_protocol_ports;
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory;
   };

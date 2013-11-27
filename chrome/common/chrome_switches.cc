@@ -1213,6 +1213,9 @@ const char kProxyServer[]                   = "proxy-server";
 // NOTE: This is only implemented for Views.
 const char kPurgeMemoryButton[]             = "purge-memory-button";
 
+// Specifies the maximum length for a QUIC packet.
+const char kQuicMaxPacketLength[]           = "quic-max-packet-length";
+
 // Chrome supports a playback and record mode.  Record mode saves *everything*
 // to the cache.  Playback mode reads data exclusively from the cache.  This
 // allows us to record a session into the cache and then replay it at will.
