@@ -1,14 +1,13 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_POLICY_CORE_COMMON_PREFERENCES_MAC_H_
-#define COMPONENTS_POLICY_CORE_COMMON_PREFERENCES_MAC_H_
+#ifndef CHROME_BROWSER_POLICY_PREFERENCES_MAC_H_
+#define CHROME_BROWSER_POLICY_PREFERENCES_MAC_H_
 
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "base/basictypes.h"
-#include "components/policy/policy_export.h"
 
 // Wraps a small part of the CFPreferences API surface in a very thin layer, to
 // allow it to be mocked out for testing.
@@ -16,7 +15,7 @@
 // See CFPreferences documentation for function documentation, as these call
 // through directly to their CFPreferences equivalents (Foo ->
 // CFPreferencesFoo).
-class POLICY_EXPORT MacPreferences {
+class MacPreferences {
  public:
   MacPreferences() {}
   virtual ~MacPreferences() {}
@@ -32,4 +31,4 @@ class POLICY_EXPORT MacPreferences {
   DISALLOW_COPY_AND_ASSIGN(MacPreferences);
 };
 
-#endif  // COMPONENTS_POLICY_CORE_COMMON_PREFERENCES_MAC_H_
+#endif  // CHROME_BROWSER_POLICY_PREFERENCES_MAC_H_
