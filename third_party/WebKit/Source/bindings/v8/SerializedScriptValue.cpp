@@ -2319,32 +2319,6 @@ PassRefPtr<SerializedScriptValue> SerializedScriptValue::nullValue(v8::Isolate* 
     return adoptRef(new SerializedScriptValue(wireData));
 }
 
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::undefinedValue()
-{
-    return undefinedValue(v8::Isolate::GetCurrent());
-}
-
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::undefinedValue(v8::Isolate* isolate)
-{
-    Writer writer(isolate);
-    writer.writeUndefined();
-    String wireData = writer.takeWireString();
-    return adoptRef(new SerializedScriptValue(wireData));
-}
-
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::numberValue(double value)
-{
-    return numberValue(value, v8::Isolate::GetCurrent());
-}
-
-PassRefPtr<SerializedScriptValue> SerializedScriptValue::numberValue(double value, v8::Isolate* isolate)
-{
-    Writer writer(isolate);
-    writer.writeNumber(value);
-    String wireData = writer.takeWireString();
-    return adoptRef(new SerializedScriptValue(wireData));
-}
-
 // Convert serialized string to big endian wire data.
 void SerializedScriptValue::toWireBytes(Vector<char>& result) const
 {

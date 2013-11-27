@@ -81,10 +81,6 @@ public:
 
     static PassRefPtr<SerializedScriptValue> nullValue();
     static PassRefPtr<SerializedScriptValue> nullValue(v8::Isolate*);
-    static PassRefPtr<SerializedScriptValue> undefinedValue();
-    static PassRefPtr<SerializedScriptValue> undefinedValue(v8::Isolate*);
-    static PassRefPtr<SerializedScriptValue> numberValue(double);
-    static PassRefPtr<SerializedScriptValue> numberValue(double, v8::Isolate*);
 
     String toWireString() const { return m_data; }
     void toWireBytes(Vector<char>&) const;
