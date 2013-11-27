@@ -58,8 +58,6 @@ crbug.com/321460 animations/animation-direction-normal.html [ Pass ImageOnlyFail
 
 crbug.com/309963 virtual/legacy-animations-engine/animations/play-state-initially-paused.html [ Timeout ]
 crbug.com/309963 virtual/legacy-animations-engine/animations/play-state-initially-paused-start-event.html [ Timeout ]
-crbug.com/321841 animations/play-state-initially-paused.html [ Pass Failure ]
-crbug.com/321841 virtual/threaded/animations/play-state-initially-paused.html [ Pass Failure ]
 
 # This has flaky output so can't be rebaselined.
 crbug.com/258896 virtual/legacy-animations-engine/animations/transition-and-animation-3.html [ Failure ]
@@ -214,6 +212,7 @@ crbug.com/322272 virtual/threaded/animations/animation-offscreen-to-onscreen.htm
 crbug.com/322272 virtual/threaded/animations/change-transform-style-during-animation.html [ Pass ImageOnlyFailure Timeout ]
 crbug.com/322272 virtual/threaded/animations/matrix-anim.html [ Pass Timeout ]
 crbug.com/322272 virtual/threaded/animations/negative-delay.html [ Pass Failure ]
+crbug.com/322272 virtual/threaded/animations/play-state-initially-paused.html [ Pass Failure ]
 crbug.com/322272 virtual/threaded/animations/transition-and-animation-1.html [ Pass Timeout ]
 crbug.com/322272 virtual/threaded/animations/transition-and-animation-2.html [ Pass Timeout ]
 crbug.com/322272 virtual/threaded/transitions/default-timing-function.html [ Pass Timeout ]
