@@ -21,7 +21,7 @@ if sys.platform == 'win32':
 
   # Confirm that the default behaviour is to name the .pdb per-target (rather
   # than per .cc file).
-  test.built_file_must_exist('obj/test_pdbname.pdb', chdir=CHDIR)
+  test.built_file_must_exist('obj/test_pdbname.cc.pdb', chdir=CHDIR)
 
   # Confirm that there should be a .pdb alongside the executable.
   test.built_file_must_exist('test_pdbname.exe', chdir=CHDIR)

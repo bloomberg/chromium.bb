@@ -814,15 +814,18 @@ class NinjaWriter:
       cflags_c = self.msvs_settings.GetCflagsC(config_name)
       cflags_cc = self.msvs_settings.GetCflagsCC(config_name)
       extra_defines = self.msvs_settings.GetComputedDefines(config_name)
-      pdbpath = self.msvs_settings.GetCompilerPdbName(
+      # See comment at cc_command for why there's two .pdb files.
+      pdbpath_c = pdbpath_cc = self.msvs_settings.GetCompilerPdbName(
           config_name, self.ExpandSpecial)
-      if not pdbpath:
+      if not pdbpath_c:
         obj = 'obj'
         if self.toolset != 'target':
           obj += '.' + self.toolset
-        pdbpath = os.path.normpath(os.path.join(obj, self.base_dir,
-                                                self.name + '.pdb'))
-      self.WriteVariableList(ninja_file, 'pdbname', [pdbpath])
+        pdbpath = os.path.normpath(os.path.join(obj, self.base_dir, self.name))
+        pdbpath_c = pdbpath + '.c.pdb'
+        pdbpath_cc = pdbpath + '.cc.pdb'
+      self.WriteVariableList(ninja_file, 'pdbname_c', [pdbpath_c])
+      self.WriteVariableList(ninja_file, 'pdbname_cc', [pdbpath_cc])
       self.WriteVariableList(ninja_file, 'pchprefix', [self.name])
     else:
       cflags = config.get('cflags', [])
@@ -1797,14 +1800,20 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       depfile='$out.d',
       deps=deps)
   else:
+    # TODO(scottmg) Separate pdb names is a test to see if it works around
+    # http://crbug.com/142362. It seems there's a race between the creation of
+    # the .pdb by the precompiled header step for .cc and the compilation of
+    # .c files. This should be handled by mspdbsrv, but rarely errors out with
+    #   c1xx : fatal error C1033: cannot open program database
+    # By making the rules target separate pdb files this might be avoided.
     cc_command = ('ninja -t msvc -e $arch ' +
                   '-- '
                   '$cc /nologo /showIncludes /FC '
-                  '@$out.rsp /c $in /Fo$out /Fd$pdbname ')
+                  '@$out.rsp /c $in /Fo$out /Fd$pdbname_c ')
     cxx_command = ('ninja -t msvc -e $arch ' +
                    '-- '
                    '$cxx /nologo /showIncludes /FC '
-                   '@$out.rsp /c $in /Fo$out /Fd$pdbname ')
+                   '@$out.rsp /c $in /Fo$out /Fd$pdbname_cc ')
     master_ninja.rule(
       'cc',
       description='CC $out',
