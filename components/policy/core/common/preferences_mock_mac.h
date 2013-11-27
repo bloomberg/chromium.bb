@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_PREFERENCES_MOCK_MAC_H_
-#define CHROME_BROWSER_POLICY_PREFERENCES_MOCK_MAC_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_PREFERENCES_MOCK_MAC_H_
+#define COMPONENTS_POLICY_CORE_COMMON_PREFERENCES_MOCK_MAC_H_
 
 #include "base/mac/scoped_cftyperef.h"
-#include "chrome/browser/policy/preferences_mac.h"
+#include "components/policy/core/common/preferences_mac.h"
+#include "components/policy/policy_export.h"
 
 // Mock preferences wrapper for testing code that interacts with CFPreferences.
-class MockPreferences : public MacPreferences {
+class POLICY_EXPORT MockPreferences : public MacPreferences {
  public:
   MockPreferences();
   virtual ~MockPreferences();
@@ -30,4 +31,4 @@ class MockPreferences : public MacPreferences {
   base::ScopedCFTypeRef<CFMutableSetRef> forced_;
 };
 
-#endif  // CHROME_BROWSER_POLICY_PREFERENCES_MOCK_MAC_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_PREFERENCES_MOCK_MAC_H_
