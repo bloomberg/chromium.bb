@@ -280,7 +280,7 @@ class ServiceRuntime {
 
   NaClSrpcChannel command_channel_;
   Plugin* plugin_;
-  bool should_report_uma_;
+  bool main_service_runtime_;
   nacl::ReverseService* reverse_service_;
   nacl::scoped_ptr<nacl::SelLdrLauncherBase> subprocess_;
 

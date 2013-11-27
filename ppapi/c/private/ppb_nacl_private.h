@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Tue Nov  5 15:33:53 2013. */
+/* From private/ppb_nacl_private.idl modified Thu Nov 14 08:29:25 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -183,6 +183,12 @@ struct PPB_NaCl_Private_1_0 {
                         PP_Bool length_is_computable,
                         uint64_t loaded_bytes,
                         uint64_t total_bytes);
+  /* Sets a read-only property on the <embed> DOM element that corresponds to
+   * the given instance.
+   */
+  void (*SetReadOnlyProperty)(PP_Instance instance,
+                              struct PP_Var key,
+                              struct PP_Var value);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

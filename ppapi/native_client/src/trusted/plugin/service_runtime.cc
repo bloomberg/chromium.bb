@@ -472,11 +472,11 @@ void PluginReverseInterface::AddTempQuotaManagedFile(
 
 ServiceRuntime::ServiceRuntime(Plugin* plugin,
                                const Manifest* manifest,
-                               bool should_report_uma,
+                               bool main_service_runtime,
                                pp::CompletionCallback init_done_cb,
                                pp::CompletionCallback crash_cb)
     : plugin_(plugin),
-      should_report_uma_(should_report_uma),
+      main_service_runtime_(main_service_runtime),
       reverse_service_(NULL),
       anchor_(new nacl::WeakRefAnchor()),
       rev_interface_(new PluginReverseInterface(anchor_, plugin,
@@ -551,7 +551,7 @@ bool ServiceRuntime::InitCommunication(nacl::DescWrapper* nacl_desc,
   }
   NaClLog(4, "ServiceRuntime::InitCommunication (load_status=%d)\n",
           load_status);
-  if (should_report_uma_) {
+  if (main_service_runtime_) {
     plugin_->ReportSelLdrLoadStatus(load_status);
   }
   if (LOAD_OK != load_status) {
@@ -711,14 +711,10 @@ ServiceRuntime::~ServiceRuntime() {
   NaClMutexDtor(&mu_);
 }
 
-int ServiceRuntime::exit_status() {
-  nacl::MutexLocker take(&mu_);
-  return exit_status_;
-}
-
 void ServiceRuntime::set_exit_status(int exit_status) {
   nacl::MutexLocker take(&mu_);
-  exit_status_ = exit_status & 0xff;
+  if (main_service_runtime_)
+    plugin_->set_exit_status(exit_status & 0xff);
 }
 
 nacl::string ServiceRuntime::GetCrashLogOutput() {

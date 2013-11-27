@@ -7,6 +7,7 @@
 
 #include <deque>
 #include <list>
+#include <map>
 
 #include "base/memory/weak_ptr.h"
 #include "ppapi/shared_impl/resource.h"
@@ -84,6 +85,9 @@ class MessageChannel {
   void QueueJavaScriptMessages();
   void StopQueueingJavaScriptMessages();
 
+  bool GetReadOnlyProperty(NPIdentifier key, NPVariant* value) const;
+  void SetReadOnlyProperty(PP_Var key, PP_Var value);
+
  private:
   // Struct for storing the result of a NPVariant being converted to a PP_Var.
   struct VarConversionResult;
@@ -134,6 +138,8 @@ class MessageChannel {
   // previous vars have been converted before calling PostMessage to ensure that
   // the order in which messages are processed is preserved.
   std::list<VarConversionResult> converted_var_queue_;
+
+  std::map<NPIdentifier, ppapi::ScopedPPVar> internal_properties_;
 
   // This is used to ensure pending tasks will not fire after this object is
   // destroyed.

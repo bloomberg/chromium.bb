@@ -407,6 +407,14 @@ void DispatchEvent(PP_Instance instance,
   }
 }
 
+void SetReadOnlyProperty(PP_Instance instance,
+                         struct PP_Var key,
+                         struct PP_Var value) {
+  content::PepperPluginInstance* plugin_instance =
+      content::PepperPluginInstance::Get(instance);
+  plugin_instance->SetEmbedProperty(key, value);
+}
+
 const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
@@ -420,7 +428,8 @@ const PPB_NaCl_Private nacl_interface = {
   &IsOffTheRecord,
   &ReportNaClError,
   &OpenNaClExecutable,
-  &DispatchEvent
+  &DispatchEvent,
+  &SetReadOnlyProperty
 };
 
 }  // namespace

@@ -9,6 +9,7 @@
 #include "base/process/process_handle.h"
 #include "content/common/content_export.h"
 #include "ppapi/c/pp_resource.h"
+#include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 
 class GURL;
@@ -99,6 +100,9 @@ class PepperPluginInstance {
 
   // Creates a pending PepperFileRefRendererHost. Returns 0 on failure.
   virtual int MakePendingFileRefRendererHost(const base::FilePath& path) = 0;
+
+  // Sets a read-only property on the <embed> tag for this plugin instance.
+  virtual void SetEmbedProperty(PP_Var key, PP_Var value) = 0;
 };
 
 }  // namespace content

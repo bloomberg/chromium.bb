@@ -38,6 +38,7 @@ class FakePepperPluginInstance : public PepperPluginInstance {
                            bool from_user_action) OVERRIDE;
   virtual int MakePendingFileRefRendererHost(
       const base::FilePath& path) OVERRIDE;
+  virtual void SetEmbedProperty(PP_Var key, PP_Var value) OVERRIDE;
 
  private:
   GURL gurl_;

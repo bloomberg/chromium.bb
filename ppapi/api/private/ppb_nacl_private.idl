@@ -173,4 +173,11 @@ interface PPB_NaCl_Private {
                      [in] PP_Bool length_is_computable,
                      [in] uint64_t loaded_bytes,
                      [in] uint64_t total_bytes);
+
+  /* Sets a read-only property on the <embed> DOM element that corresponds to
+   * the given instance.
+   */
+  void SetReadOnlyProperty([in] PP_Instance instance,
+                           [in] PP_Var key,
+                           [in] PP_Var value);
 };

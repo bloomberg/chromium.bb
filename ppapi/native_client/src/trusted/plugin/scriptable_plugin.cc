@@ -41,54 +41,6 @@ pp::Var Error(const nacl::string& call_name, const char* caller,
   return pp::Var();
 }
 
-// In JavaScript, foo[1] is equivalent to foo["1"], so map both indexed and
-// string names to a string.
-nacl::string NameAsString(const pp::Var& name) {
-  if (name.is_string())
-    return name.AsString();
-  CHECK(name.is_int());
-  nacl::stringstream namestream;
-  namestream << name.AsInt();
-  return namestream.str();
-}
-
-// Returns a pp::Var corresponding to |arg| or void. Sets |exception| on error.
-pp::Var NaClSrpcArgToPPVar(const NaClSrpcArg* arg, pp::Var* exception) {
-  PLUGIN_PRINTF(("  NaClSrpcArgToPPVar (arg->tag='%c')\n", arg->tag));
-  pp::Var var;
-  switch (arg->tag) {
-    case NACL_SRPC_ARG_TYPE_BOOL:
-      var = pp::Var(arg->u.bval != 0);
-      break;
-    case NACL_SRPC_ARG_TYPE_DOUBLE:
-      var = pp::Var(arg->u.dval);
-      break;
-    case NACL_SRPC_ARG_TYPE_INT:
-      var = pp::Var(arg->u.ival);
-      break;
-    case NACL_SRPC_ARG_TYPE_LONG:
-      // PPAPI does not have a 64-bit integral type.  Downcast.
-      var = pp::Var(static_cast<int32_t>(arg->u.lval));
-      break;
-    case NACL_SRPC_ARG_TYPE_STRING:
-      var = pp::Var(arg->arrays.str);
-      break;
-    case NACL_SRPC_ARG_TYPE_CHAR_ARRAY:
-    case NACL_SRPC_ARG_TYPE_DOUBLE_ARRAY:
-    case NACL_SRPC_ARG_TYPE_INT_ARRAY:
-    case NACL_SRPC_ARG_TYPE_LONG_ARRAY:
-    case NACL_SRPC_ARG_TYPE_OBJECT:
-    case NACL_SRPC_ARG_TYPE_HANDLE:
-    case NACL_SRPC_ARG_TYPE_VARIANT_ARRAY:
-    case NACL_SRPC_ARG_TYPE_INVALID:
-    default:
-      *exception = "variant array and invalid argument types are not supported";
-  }
-  PLUGIN_PRINTF(("  NaClSrpcArgToPPVar (return var=%s, exception=%s)\n",
-                 var.DebugString().c_str(), exception->DebugString().c_str()));
-  return var;
-}
-
 }  // namespace
 
 ScriptablePlugin::ScriptablePlugin(Plugin* plugin)
@@ -131,17 +83,8 @@ bool ScriptablePlugin::HasProperty(const pp::Var& name, pp::Var* exception) {
   UNREFERENCED_PARAMETER(exception);
   PLUGIN_PRINTF(("ScriptablePlugin::HasProperty (this=%p, name=%s)\n",
                  static_cast<void*>(this), name.DebugString().c_str()));
-  if (plugin_ == NULL) {
-    return false;
-  }
-  if (!name.is_string() && !name.is_int())
-    return false;
-  bool has_property = plugin_->HasProperty(name.AsString());
-  PLUGIN_PRINTF(("ScriptablePlugin::HasProperty (has_property=%d)\n",
-                 has_property));
-  return has_property;
+  return false;
 }
-
 
 bool ScriptablePlugin::HasMethod(const pp::Var& name, pp::Var* exception) {
   UNREFERENCED_PARAMETER(exception);
@@ -150,32 +93,14 @@ bool ScriptablePlugin::HasMethod(const pp::Var& name, pp::Var* exception) {
   return false;
 }
 
-
 pp::Var ScriptablePlugin::GetProperty(const pp::Var& name,
                                       pp::Var* exception) {
   PLUGIN_PRINTF(("ScriptablePlugin::GetProperty (name=%s)\n",
                  name.DebugString().c_str()));
-  if (plugin_ == NULL) {
-    return pp::Var();
-  }
-  // Get the property.
-  NaClSrpcArg prop_value;
-  nacl::string prop_name = NameAsString(name);
-  if (!plugin_->GetProperty(prop_name, &prop_value)) {
-    return Error(prop_name, "GetProperty", "invocation failed", exception);
-  }
-  PLUGIN_PRINTF(("ScriptablePlugin::GetProperty (invocation done)\n"));
-  // Marshall output parameter.
-  pp::Var property = NaClSrpcArgToPPVar(&prop_value, exception);
-  if (!exception->is_undefined()) {
-    return Error(prop_name, "GetProperty", "output marshalling failed",
-                 exception);
-  }
-  PLUGIN_PRINTF(("ScriptablePlugin::GetProperty (property=%s)\n",
-                 property.DebugString().c_str()));
-  return property;
+  Error("GetProperty", name.DebugString().c_str(),
+        "property getting is not supported", exception);
+  return pp::Var();
 }
-
 
 void ScriptablePlugin::SetProperty(const pp::Var& name,
                                    const pp::Var& value,
@@ -191,7 +116,7 @@ void ScriptablePlugin::RemoveProperty(const pp::Var& name,
                                       pp::Var* exception) {
   PLUGIN_PRINTF(("ScriptablePlugin::RemoveProperty (name=%s)\n",
                  name.DebugString().c_str()));
-  Error(NameAsString(name), "RemoveProperty",
+  Error("RemoveProperty", name.DebugString().c_str(),
         "property removal is not supported", exception);
 }
 

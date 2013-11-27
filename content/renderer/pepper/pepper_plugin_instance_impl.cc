@@ -2934,6 +2934,11 @@ int PepperPluginInstanceImpl::MakePendingFileRefRendererHost(
       scoped_ptr<ppapi::host::ResourceHost>(file_ref_host));
 }
 
+void PepperPluginInstanceImpl::SetEmbedProperty(PP_Var key,
+                                                PP_Var value) {
+  message_channel_->SetReadOnlyProperty(key, value);
+}
+
 bool PepperPluginInstanceImpl::CanAccessMainFrame() const {
   if (!container_)
     return false;

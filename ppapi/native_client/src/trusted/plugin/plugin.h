@@ -202,16 +202,6 @@ class Plugin : public pp::InstancePrivate {
   // Requests a NaCl manifest download from a |url| relative to the page origin.
   void RequestNaClManifest(const nacl::string& url);
 
-  // Support for property getting.
-  typedef void (Plugin::* PropertyGetter)(NaClSrpcArg* prop_value);
-  void AddPropertyGet(const nacl::string& prop_name, PropertyGetter getter);
-  bool HasProperty(const nacl::string& prop_name);
-  bool GetProperty(const nacl::string& prop_name, NaClSrpcArg* prop_value);
-  // The supported property getters.
-  void GetExitStatus(NaClSrpcArg* prop_value);
-  void GetLastError(NaClSrpcArg* prop_value);
-  void GetReadyStateProperty(NaClSrpcArg* prop_value);
-
   // The size returned when a file download operation is unable to determine
   // the size of the file to load.  W3C ProgressEvents specify that unknown
   // sizes return 0.
@@ -241,11 +231,7 @@ class Plugin : public pp::InstancePrivate {
   // document to request the URL using CORS even if this function returns false.
   bool DocumentCanRequest(const std::string& url);
 
-  // Get the text description of the last error reported by the plugin.
-  const nacl::string& last_error_string() const { return last_error_string_; }
-  void set_last_error_string(const nacl::string& error) {
-    last_error_string_ = error;
-  }
+  void set_last_error_string(const nacl::string& error);
 
   // The MIME type used to instantiate this instance of the NaCl plugin.
   // Typically, the MIME type will be application/x-nacl.  However, if the NEXE
@@ -262,13 +248,9 @@ class Plugin : public pp::InstancePrivate {
   Manifest const* manifest() const { return manifest_.get(); }
   const pp::URLUtil_Dev* url_util() const { return url_util_; }
 
-  // Extracts the exit status from the (main) service runtime.
-  int exit_status() const {
-    if (NULL == main_service_runtime()) {
-      return -1;
-    }
-    return main_service_runtime()->exit_status();
-  }
+  int exit_status() const { return exit_status_; }
+  // set_exit_status may be called off the main thread.
+  void set_exit_status(int exit_status);
 
   const PPB_NaCl_Private* nacl_interface() const { return nacl_interface_; }
 
@@ -386,6 +368,10 @@ class Plugin : public pp::InstancePrivate {
   // request so it won't slow down non-installed file downloads.
   bool OpenURLFast(const nacl::string& url, FileDownloader* downloader);
 
+  void set_nacl_ready_state(ReadyState state);
+
+  void SetExitStatusOnMainThread(int32_t pp_error, int exit_status);
+
   ScriptablePlugin* scriptable_plugin_;
 
   int argc_;
@@ -403,8 +389,6 @@ class Plugin : public pp::InstancePrivate {
 
   nacl::DescWrapperFactory* wrapper_factory_;
 
-  std::map<nacl::string, PropertyGetter> property_getters_;
-
   // File download support.  |nexe_downloader_| can be opened with a specific
   // callback to run when the file has been downloaded and is opened for
   // reading.  We use one downloader for all URL downloads to prevent issuing
@@ -420,10 +404,6 @@ class Plugin : public pp::InstancePrivate {
   nacl::scoped_ptr<Manifest> manifest_;
   // URL processing interface for use in looking up resources in manifests.
   const pp::URLUtil_Dev* url_util_;
-
-  // A string containing the text description of the last error
-  // produced by this plugin.
-  nacl::string last_error_string_;
 
   // PPAPI Dev interfaces are disabled by default.
   bool enable_dev_interfaces_;
@@ -482,6 +462,7 @@ class Plugin : public pp::InstancePrivate {
   const FileDownloader* FindFileDownloader(PP_Resource url_loader) const;
 
   int64_t time_of_last_progress_event_;
+  int exit_status_;
 
   const PPB_NaCl_Private* nacl_interface_;
 };

@@ -190,6 +190,12 @@ bool MessageChannelHasProperty(NPObject* np_obj, NPIdentifier name) {
   if (!np_obj)
     return false;
 
+  MessageChannel* message_channel = ToMessageChannel(np_obj);
+  if (message_channel) {
+    if (message_channel->GetReadOnlyProperty(name, NULL))
+      return true;
+  }
+
   // Invoke on the passthrough object, if we have one.
   NPObject* passthrough = ToPassThroughObject(np_obj);
   if (passthrough)
@@ -205,6 +211,12 @@ bool MessageChannelGetProperty(NPObject* np_obj, NPIdentifier name,
   // Don't allow getting the postMessage function.
   if (IdentifierIsPostMessage(name))
     return false;
+
+  MessageChannel* message_channel = ToMessageChannel(np_obj);
+  if (message_channel) {
+    if (message_channel->GetReadOnlyProperty(name, result))
+      return true;
+  }
 
   // Invoke on the passthrough object, if we have one.
   NPObject* passthrough = ToPassThroughObject(np_obj);
@@ -557,6 +569,22 @@ void MessageChannel::SetPassthroughObject(NPObject* passthrough) {
     WebBindings::releaseObject(passthrough_object_);
 
   passthrough_object_ = passthrough;
+}
+
+bool MessageChannel::GetReadOnlyProperty(NPIdentifier key,
+                                         NPVariant *value) const {
+  std::map<NPIdentifier, ppapi::ScopedPPVar>::const_iterator it =
+      internal_properties_.find(key);
+  if (it != internal_properties_.end()) {
+    if (value)
+      return PPVarToNPVariant(it->second.get(), value);
+    return true;
+  }
+  return false;
+}
+
+void MessageChannel::SetReadOnlyProperty(PP_Var key, PP_Var value) {
+  internal_properties_[PPVarToNPIdentifier(key)] = ppapi::ScopedPPVar(value);
 }
 
 }  // namespace content

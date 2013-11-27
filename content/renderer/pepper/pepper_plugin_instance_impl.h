@@ -368,6 +368,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                            bool from_user_action) OVERRIDE;
   virtual int MakePendingFileRefRendererHost(
       const base::FilePath& path) OVERRIDE;
+  virtual void SetEmbedProperty(PP_Var key, PP_Var value) OVERRIDE;
 
   // PPB_Instance_API implementation.
   virtual PP_Bool BindGraphics(PP_Instance instance,

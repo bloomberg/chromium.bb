@@ -246,49 +246,6 @@ void HistogramHTTPStatusCode(const std::string& name, int status) {
 
 }  // namespace
 
-void Plugin::AddPropertyGet(const nacl::string& prop_name,
-                            Plugin::PropertyGetter getter) {
-  PLUGIN_PRINTF(("Plugin::AddPropertyGet (prop_name='%s')\n",
-                 prop_name.c_str()));
-  property_getters_[nacl::string(prop_name)] = getter;
-}
-
-bool Plugin::HasProperty(const nacl::string& prop_name) {
-  PLUGIN_PRINTF(("Plugin::HasProperty (prop_name=%s)\n",
-                 prop_name.c_str()));
-  return property_getters_.find(prop_name) != property_getters_.end();
-}
-
-bool Plugin::GetProperty(const nacl::string& prop_name,
-                         NaClSrpcArg* prop_value) {
-  PLUGIN_PRINTF(("Plugin::GetProperty (prop_name=%s)\n", prop_name.c_str()));
-
-  if (property_getters_.find(prop_name) == property_getters_.end()) {
-    return false;
-  }
-  PropertyGetter getter = property_getters_[prop_name];
-  (this->*getter)(prop_value);
-  return true;
-}
-
-void Plugin::GetExitStatus(NaClSrpcArg* prop_value) {
-  PLUGIN_PRINTF(("GetExitStatus (this=%p)\n", reinterpret_cast<void*>(this)));
-  prop_value->tag = NACL_SRPC_ARG_TYPE_INT;
-  prop_value->u.ival = exit_status();
-}
-
-void Plugin::GetLastError(NaClSrpcArg* prop_value) {
-  PLUGIN_PRINTF(("GetLastError (this=%p)\n", reinterpret_cast<void*>(this)));
-  prop_value->tag = NACL_SRPC_ARG_TYPE_STRING;
-  prop_value->arrays.str = strdup(last_error_string().c_str());
-}
-
-void Plugin::GetReadyStateProperty(NaClSrpcArg* prop_value) {
-  PLUGIN_PRINTF(("GetReadyState (this=%p)\n", reinterpret_cast<void*>(this)));
-  prop_value->tag = NACL_SRPC_ARG_TYPE_INT;
-  prop_value->u.ival = nacl_ready_state_;
-}
-
 bool Plugin::EarlyInit(int argc, const char* argn[], const char* argv[]) {
   PLUGIN_PRINTF(("Plugin::EarlyInit (instance=%p)\n",
                  static_cast<void*>(this)));
@@ -329,13 +286,6 @@ bool Plugin::EarlyInit(int argc, const char* argn[], const char* argv[]) {
   }
   PLUGIN_PRINTF(("Plugin::Init (wrapper_factory=%p)\n",
                  static_cast<void*>(wrapper_factory_)));
-
-  // Export a property to allow us to get the exit status of a nexe.
-  AddPropertyGet("exitStatus", &Plugin::GetExitStatus);
-  // Export a property to allow us to get the last error description.
-  AddPropertyGet("lastError", &Plugin::GetLastError);
-  // Export a property to allow us to get the ready state of a nexe during load.
-  AddPropertyGet("readyState", &Plugin::GetReadyStateProperty);
 
   PLUGIN_PRINTF(("Plugin::Init (return 1)\n"));
   // Return success.
@@ -692,7 +642,6 @@ Plugin::Plugin(PP_Instance pp_instance)
       argn_(NULL),
       argv_(NULL),
       main_subprocess_("main subprocess", NULL, NULL),
-      nacl_ready_state_(UNSENT),
       nexe_error_reported_(false),
       wrapper_factory_(NULL),
       enable_dev_interfaces_(false),
@@ -701,6 +650,7 @@ Plugin::Plugin(PP_Instance pp_instance)
       ready_time_(0),
       nexe_size_(0),
       time_of_last_progress_event_(0),
+      exit_status_(-1),
       nacl_interface_(NULL) {
   PLUGIN_PRINTF(("Plugin::Plugin (this=%p, pp_instance=%"
                  NACL_PRId32 ")\n", static_cast<void*>(this), pp_instance));
@@ -708,6 +658,11 @@ Plugin::Plugin(PP_Instance pp_instance)
   nexe_downloader_.Initialize(this);
   nacl_interface_ = GetNaClInterface();
   CHECK(nacl_interface_ != NULL);
+  set_nacl_ready_state(UNSENT);
+  set_last_error_string("");
+  // We call set_exit_status() here to ensure that the 'exitStatus' property is
+  // set. This can only be called when nacl_interface_ is not NULL.
+  set_exit_status(-1);
 }
 
 
@@ -936,14 +891,13 @@ void Plugin::NexeDidCrash(int32_t pp_error) {
                    " non-PP_OK arg -- SHOULD NOT HAPPEN\n"));
   }
   PLUGIN_PRINTF(("Plugin::NexeDidCrash: crash event!\n"));
-  int exit_status = main_subprocess_.service_runtime()->exit_status();
-  if (-1 != exit_status) {
+  if (-1 != exit_status()) {
     // The NaCl module voluntarily exited.  However, this is still a
     // crash from the point of view of Pepper, since PPAPI plugins are
     // event handlers and should never exit.
     PLUGIN_PRINTF((("Plugin::NexeDidCrash: nexe exited with status %d"
                     " so this is a \"controlled crash\".\n"),
-                   exit_status));
+                   exit_status()));
   }
   // If the crash occurs during load, we just want to report an error
   // that fits into our load progress event grammar.  If the crash
@@ -1164,7 +1118,7 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
 
   if (manifest_->GetProgramURL(&program_url, &pnacl_options, &error_info)) {
     is_installed_ = GetUrlScheme(program_url) == SCHEME_CHROME_EXTENSION;
-    nacl_ready_state_ = LOADING;
+    set_nacl_ready_state(LOADING);
     // Inform JavaScript that we found a nexe URL to load.
     EnqueueProgressEvent(PP_NACL_EVENT_PROGRESS);
     if (pnacl_options.translate()) {
@@ -1223,7 +1177,7 @@ void Plugin::RequestNaClManifest(const nacl::string& url) {
   set_manifest_base_url(nmf_resolved_url.AsString());
   set_manifest_url(url);
   // Inform JavaScript that a load is starting.
-  nacl_ready_state_ = OPENED;
+  set_nacl_ready_state(OPENED);
   EnqueueProgressEvent(PP_NACL_EVENT_LOADSTART);
   bool is_data_uri = GetUrlScheme(nmf_resolved_url.AsString()) == SCHEME_DATA;
   HistogramEnumerateManifestIsDataURI(static_cast<int>(is_data_uri));
@@ -1342,7 +1296,7 @@ void Plugin::ReportLoadSuccess(LengthComputable length_computable,
                                uint64_t loaded_bytes,
                                uint64_t total_bytes) {
   // Set the readyState attribute to indicate loaded.
-  nacl_ready_state_ = DONE;
+  set_nacl_ready_state(DONE);
   // Inform JavaScript that loading was successful and is complete.
   const nacl::string& url = nexe_downloader_.url_to_open();
   EnqueueProgressEvent(
@@ -1369,7 +1323,7 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
   }
 
   // Set the readyState attribute to indicate we need to start over.
-  nacl_ready_state_ = DONE;
+  set_nacl_ready_state(DONE);
   set_nexe_error_reported(true);
   // Report an error in lastError and on the JavaScript console.
   nacl::string message = nacl::string("NaCl module load failed: ") +
@@ -1389,7 +1343,7 @@ void Plugin::ReportLoadError(const ErrorInfo& error_info) {
 void Plugin::ReportLoadAbort() {
   PLUGIN_PRINTF(("Plugin::ReportLoadAbort\n"));
   // Set the readyState attribute to indicate we need to start over.
-  nacl_ready_state_ = DONE;
+  set_nacl_ready_state(DONE);
   set_nexe_error_reported(true);
   // Report an error in lastError and on the JavaScript console.
   nacl::string error_string("NaCl module load failed: user aborted");
@@ -1604,5 +1558,43 @@ void Plugin::AddToConsole(const nacl::string& text) {
   var_interface->Release(prefix);
   var_interface->Release(str);
 }
+
+void Plugin::set_last_error_string(const nacl::string& error) {
+  DCHECK(nacl_interface_);
+  nacl_interface_->SetReadOnlyProperty(pp_instance(),
+                                       pp::Var("lastError").pp_var(),
+                                       pp::Var(error).pp_var());
+}
+
+void Plugin::set_nacl_ready_state(ReadyState state) {
+  nacl_ready_state_ = state;
+  DCHECK(nacl_interface_);
+  nacl_interface_->SetReadOnlyProperty(pp_instance(),
+                                       pp::Var("readyState").pp_var(),
+                                       pp::Var(state).pp_var());
+}
+
+void Plugin::set_exit_status(int exit_status) {
+  pp::Core* core = pp::Module::Get()->core();
+  if (core->IsMainThread()) {
+    SetExitStatusOnMainThread(PP_OK, exit_status);
+  } else {
+    pp::CompletionCallback callback =
+        callback_factory_.NewCallback(&Plugin::SetExitStatusOnMainThread,
+                                      exit_status);
+    core->CallOnMainThread(0, callback, 0);
+  }
+}
+
+void Plugin::SetExitStatusOnMainThread(int32_t pp_error,
+                                       int exit_status) {
+  DCHECK(pp::Module::Get()->core()->IsMainThread());
+  DCHECK(nacl_interface_);
+  exit_status_ = exit_status;
+  nacl_interface_->SetReadOnlyProperty(pp_instance(),
+                                       pp::Var("exitStatus").pp_var(),
+                                       pp::Var(exit_status_).pp_var());
+}
+
 
 }  // namespace plugin

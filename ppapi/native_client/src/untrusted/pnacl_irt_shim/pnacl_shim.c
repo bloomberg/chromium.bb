@@ -3013,6 +3013,11 @@ static void Pnacl_M25_PPB_NaCl_Private_DispatchEvent(PP_Instance instance, PP_Na
   iface->DispatchEvent(instance, event_type, *resource_url, length_is_computable, loaded_bytes, total_bytes);
 }
 
+static void Pnacl_M25_PPB_NaCl_Private_SetReadOnlyProperty(PP_Instance instance, struct PP_Var* key, struct PP_Var* value) {
+  const struct PPB_NaCl_Private_1_0 *iface = Pnacl_WrapperInfo_PPB_NaCl_Private_1_0.real_iface;
+  iface->SetReadOnlyProperty(instance, *key, *value);
+}
+
 /* End wrapper methods for PPB_NaCl_Private_1_0 */
 
 /* Begin wrapper methods for PPB_NetAddress_Private_0_1 */
@@ -4888,7 +4893,8 @@ struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .IsOffTheRecord = (PP_Bool (*)(void))&Pnacl_M25_PPB_NaCl_Private_IsOffTheRecord,
     .ReportNaClError = (PP_ExternalPluginResult (*)(PP_Instance instance, PP_NaClError message_id))&Pnacl_M25_PPB_NaCl_Private_ReportNaClError,
     .OpenNaClExecutable = (PP_FileHandle (*)(PP_Instance instance, const char* file_url, uint64_t* file_token_lo, uint64_t* file_token_hi))&Pnacl_M25_PPB_NaCl_Private_OpenNaClExecutable,
-    .DispatchEvent = (void (*)(PP_Instance instance, PP_NaClEventType event_type, struct PP_Var resource_url, PP_Bool length_is_computable, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_DispatchEvent
+    .DispatchEvent = (void (*)(PP_Instance instance, PP_NaClEventType event_type, struct PP_Var resource_url, PP_Bool length_is_computable, uint64_t loaded_bytes, uint64_t total_bytes))&Pnacl_M25_PPB_NaCl_Private_DispatchEvent,
+    .SetReadOnlyProperty = (void (*)(PP_Instance instance, struct PP_Var key, struct PP_Var value))&Pnacl_M25_PPB_NaCl_Private_SetReadOnlyProperty
 };
 
 struct PPB_NetAddress_Private_0_1 Pnacl_Wrappers_PPB_NetAddress_Private_0_1 = {

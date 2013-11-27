@@ -76,4 +76,6 @@ int FakePepperPluginInstance::MakePendingFileRefRendererHost(
   return 0;
 }
 
+void FakePepperPluginInstance::SetEmbedProperty(PP_Var key, PP_Var value) {}
+
 }  // namespace content
