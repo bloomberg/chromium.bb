@@ -87,7 +87,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
       result = base_test_result.BaseTestResult(
           test_name, base_test_result.ResultType.FAIL, log=output)
       if 'chrome' in self._options.package:
-        logging.warning('Start MinidumpUploadService...')
-        self.adb.StartCrashUploadService(self._package)
+        logging.warning('Starting MinidumpUploadService...')
+        try:
+          self.adb.StartCrashUploadService(self._package)
+        except AssertionError as e:
+          logging.error('Failed to start MinidumpUploadService: %s', e)
     results.AddResult(result)
     return results, False
