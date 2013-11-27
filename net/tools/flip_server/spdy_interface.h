@@ -30,7 +30,8 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
          SMInterface* sm_http_interface,
          EpollServer* epoll_server,
          MemoryCache* memory_cache,
-         FlipAcceptor* acceptor);
+         FlipAcceptor* acceptor,
+         SpdyMajorVersion spdy_version);
   virtual ~SpdySM();
 
   virtual void InitSMInterface(SMInterface* sm_http_interface,

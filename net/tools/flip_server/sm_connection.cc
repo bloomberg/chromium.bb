@@ -393,7 +393,8 @@ bool SMConnection::SetupProtocolInterfaces() {
                                           NULL,
                                           epoll_server_,
                                           memory_cache_,
-                                          acceptor_);
+                                          acceptor_,
+                                          SPDY2);
         sm_interface_ = sm_spdy_interface_;
       }
       break;

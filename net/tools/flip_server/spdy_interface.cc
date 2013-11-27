@@ -39,8 +39,9 @@ SpdySM::SpdySM(SMConnection* connection,
                SMInterface* sm_http_interface,
                EpollServer* epoll_server,
                MemoryCache* memory_cache,
-               FlipAcceptor* acceptor)
-    : buffered_spdy_framer_(new BufferedSpdyFramer(SPDY2, true)),
+               FlipAcceptor* acceptor,
+               SpdyMajorVersion spdy_version)
+    : buffered_spdy_framer_(new BufferedSpdyFramer(spdy_version, true)),
       valid_spdy_session_(false),
       connection_(connection),
       client_output_list_(connection->output_list()),
