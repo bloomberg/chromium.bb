@@ -16,7 +16,6 @@
       ],
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
-      #  '<(DEPTH)/base/base.gyp:test_support_base',
       ],
       'sources': [
         'cast_config.cc',
@@ -46,6 +45,7 @@
             'cast_sender.gyp:cast_sender',
             'test/utility/utility.gyp:cast_test_utility',
             '<(DEPTH)/base/base.gyp:run_all_unittests',
+            '<(DEPTH)/base/base.gyp:test_support_base',
             '<(DEPTH)/crypto/crypto.gyp:crypto',
             '<(DEPTH)/net/net.gyp:net',
             '<(DEPTH)/testing/gmock.gyp:gmock',

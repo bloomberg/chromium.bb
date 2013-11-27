@@ -18,7 +18,6 @@
       ], # source
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/base/base.gyp:test_support_base',
         'packet_storage/packet_storage.gyp:*',
         'rtp_packetizer/rtp_packetizer.gyp:*',
       ],

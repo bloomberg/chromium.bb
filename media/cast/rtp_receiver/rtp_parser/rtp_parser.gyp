@@ -17,7 +17,6 @@
       ], # source
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/base/base.gyp:test_support_base',
       ],
     },
   ],

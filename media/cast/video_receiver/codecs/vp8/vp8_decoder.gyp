@@ -19,7 +19,6 @@
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
-        '<(DEPTH)/base/base.gyp:test_support_base',
       ],
     },
   ],
