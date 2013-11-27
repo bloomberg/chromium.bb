@@ -491,11 +491,10 @@ int CoalescePendingMotionEvents(const XEvent* xev,
         XGetEventData(display, &last_event->xcookie);
         ++num_coalesced;
         continue;
-      } else {
-        // This isn't an event we want so free its cookie data.
-        XFreeEventData(display, &next_event.xcookie);
       }
     }
+    // This isn't an event we want so free its cookie data.
+    XFreeEventData(display, &next_event.xcookie);
     break;
   }
 
