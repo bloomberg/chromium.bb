@@ -10,7 +10,6 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "chrome/browser/extensions/api/declarative/rules_cache_delegate.h"
 #include "chrome/browser/extensions/api/declarative/test_rules_registry.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -46,11 +45,8 @@ class RulesRegistryWithCacheTest : public testing::Test {
   RulesRegistryWithCacheTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_),
-        cache_delegate_(new RulesCacheDelegate(false)),
-        registry_(new TestRulesRegistry(&profile_,
+        registry_(new TestRulesRegistry(content::BrowserThread::UI,
                                         "" /*event_name*/,
-                                        content::BrowserThread::UI,
-                                        cache_delegate_.get(),
                                         RulesRegistry::WebViewKey(0, 0))) {}
 
   virtual ~RulesRegistryWithCacheTest() {}
@@ -97,8 +93,6 @@ class RulesRegistryWithCacheTest : public testing::Test {
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
-  TestingProfile profile_;
-  scoped_ptr<RulesCacheDelegate> cache_delegate_;
   scoped_refptr<TestRulesRegistry> registry_;
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
@@ -235,6 +229,7 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   TestingValueStore* store = system->value_store();
 
   const std::string event_name("testEvent");
+  const RulesRegistry::WebViewKey key(0, 0);
   const std::string rules_stored_key(
       RulesCacheDelegate::GetRulesStoredKey(
           event_name, profile.IsOffTheRecord()));
@@ -309,6 +304,7 @@ TEST_F(RulesRegistryWithCacheTest, RulesStoredFlagMultipleRegistries) {
 
   const std::string event_name1("testEvent1");
   const std::string event_name2("testEvent2");
+  const RulesRegistry::WebViewKey key(0, 0);
   const std::string rules_stored_key1(
       RulesCacheDelegate::GetRulesStoredKey(
           event_name1, profile.IsOffTheRecord()));
@@ -386,24 +382,6 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
 
   message_loop_.RunUntilIdle();  // Posted tasks retrieve the stored rule.
   EXPECT_EQ(1, GetNumberOfRules(kExtensionId, registry.get()));
-}
-
-TEST_F(RulesRegistryWithCacheTest, ConcurrentStoringOfRules) {
-  extensions::TestExtensionSystem* system =
-      static_cast<extensions::TestExtensionSystem*>(
-          extensions::ExtensionSystem::Get(&profile_));
-  system->CreateExtensionPrefs(CommandLine::ForCurrentProcess(),
-                               base::FilePath());
-  system->CreateExtensionService(
-      CommandLine::ForCurrentProcess(), base::FilePath(), false);
-  TestingValueStore* store = system->value_store();
-
-  int write_count = store->write_count();
-  EXPECT_EQ("", AddRule(kExtensionId, kRuleId));
-  EXPECT_EQ("", AddRule(kExtension2Id, kRule2Id));
-  system->SetReady();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(write_count + 2, store->write_count());
 }
 
 }  //  namespace extensions
