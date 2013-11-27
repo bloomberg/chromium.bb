@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_flash_drm.idl modified Sat Jun  8 16:45:26 2013.
+// From private/ppb_flash_drm.idl modified Mon Nov 11 14:49:53 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -56,6 +56,17 @@ int32_t GetVoucherFile(PP_Resource drm,
                                                         enter.callback()));
 }
 
+int32_t MonitorIsExternal(PP_Resource drm,
+                          PP_Bool* is_external,
+                          struct PP_CompletionCallback callback) {
+  VLOG(4) << "PPB_Flash_DRM::MonitorIsExternal()";
+  EnterResource<PPB_Flash_DRM_API> enter(drm, callback, true);
+  if (enter.failed())
+    return enter.retval();
+  return enter.SetResult(enter.object()->MonitorIsExternal(is_external,
+                                                           enter.callback()));
+}
+
 const PPB_Flash_DRM_1_0 g_ppb_flash_drm_thunk_1_0 = {
   &Create,
   &GetDeviceID,
@@ -63,10 +74,22 @@ const PPB_Flash_DRM_1_0 g_ppb_flash_drm_thunk_1_0 = {
   &GetVoucherFile
 };
 
+const PPB_Flash_DRM_1_1 g_ppb_flash_drm_thunk_1_1 = {
+  &Create,
+  &GetDeviceID,
+  &GetHmonitor,
+  &GetVoucherFile,
+  &MonitorIsExternal
+};
+
 }  // namespace
 
 const PPB_Flash_DRM_1_0* GetPPB_Flash_DRM_1_0_Thunk() {
   return &g_ppb_flash_drm_thunk_1_0;
+}
+
+const PPB_Flash_DRM_1_1* GetPPB_Flash_DRM_1_1_Thunk() {
+  return &g_ppb_flash_drm_thunk_1_1;
 }
 
 }  // namespace thunk

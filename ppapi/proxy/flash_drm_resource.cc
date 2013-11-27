@@ -71,6 +71,22 @@ int32_t FlashDRMResource::GetVoucherFile(
   return PP_OK_COMPLETIONPENDING;
 }
 
+int32_t FlashDRMResource::MonitorIsExternal(
+    PP_Bool* is_external,
+    scoped_refptr<TrackedCallback> callback) {
+  if (!is_external)
+    return PP_ERROR_BADARGUMENT;
+
+  *is_external = PP_FALSE;
+
+  Call<PpapiPluginMsg_FlashDRM_MonitorIsExternalReply>(
+      BROWSER,
+      PpapiHostMsg_FlashDRM_MonitorIsExternal(),
+      base::Bind(&FlashDRMResource::OnPluginMsgMonitorIsExternalReply, this,
+                 is_external, callback));
+  return PP_OK_COMPLETIONPENDING;
+}
+
 void FlashDRMResource::OnPluginMsgGetDeviceIDReply(
     PP_Var* dest,
     scoped_refptr<TrackedCallback> callback,
@@ -95,6 +111,18 @@ void FlashDRMResource::OnPluginMsgGetVoucherFileReply(
           pp_instance(),
           file_info);
     }
+    callback->Run(params.result());
+  }
+}
+
+void FlashDRMResource::OnPluginMsgMonitorIsExternalReply(
+    PP_Bool* dest,
+    scoped_refptr<TrackedCallback> callback,
+    const ResourceMessageReplyParams& params,
+    PP_Bool is_external) {
+  if (TrackedCallback::IsPending(callback)) {
+    if (params.result() == PP_OK)
+      *dest = is_external;
     callback->Run(params.result());
   }
 }

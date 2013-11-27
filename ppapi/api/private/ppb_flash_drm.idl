@@ -10,7 +10,8 @@
 [generate_thunk]
 
 label Chrome {
-  M29 = 1.0
+  M29 = 1.0,
+  M33 = 1.1
 };
 
 /**
@@ -48,5 +49,15 @@ interface PPB_Flash_DRM {
    int32_t GetVoucherFile([in] PP_Resource drm,
                           [out] PP_Resource file_ref,
                           [in] PP_CompletionCallback callback);
+
+  /**
+   * Asynchronously returns a value indicating whether the monitor on which the
+   * plugin instance is displayed is external. |callback| will be called upon
+   * completion.
+   */
+   [version=1.1]
+   int32_t MonitorIsExternal([in] PP_Resource drm,
+                             [out] PP_Bool is_external,
+                             [in] PP_CompletionCallback callback);
 };
 

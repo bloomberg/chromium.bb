@@ -145,6 +145,8 @@ int32_t PepperFlashDRMHost::OnResourceMessageReceived(
                                         OnHostMsgGetDeviceID)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FlashDRM_GetHmonitor,
                                         OnHostMsgGetHmonitor)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FlashDRM_MonitorIsExternal,
+                                        OnHostMsgMonitorIsExternal)
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
@@ -164,6 +166,19 @@ int32_t PepperFlashDRMHost::OnHostMsgGetHmonitor(
   int64_t monitor_id = monitor_finder_->GetMonitor();
   if (monitor_id) {
     context->reply_msg = PpapiPluginMsg_FlashDRM_GetHmonitorReply(monitor_id);
+    return PP_OK;
+  } else {
+    return PP_ERROR_FAILED;
+  }
+}
+
+int32_t PepperFlashDRMHost::OnHostMsgMonitorIsExternal(
+    ppapi::host::HostMessageContext* context) {
+  int64_t monitor_id = monitor_finder_->GetMonitor();
+  if (monitor_id) {
+    // TODO(bbudge) get information about whether monitor is external.
+    context->reply_msg =
+        PpapiPluginMsg_FlashDRM_MonitorIsExternalReply(PP_FALSE);
     return PP_OK;
   } else {
     return PP_ERROR_FAILED;

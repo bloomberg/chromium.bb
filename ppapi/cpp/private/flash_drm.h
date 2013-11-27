@@ -27,6 +27,10 @@ class DRM : public Resource {
   bool GetHmonitor(int64_t* hmonitor);
   // Returns the voucher file as a FileRef or an invalid resource on failure.
   int32_t GetVoucherFile(const CompletionCallbackWithOutput<FileRef>& callback);
+  // On success, returns a value indicating if the monitor associated with the
+  // current plugin instance is external.
+  int32_t MonitorIsExternal(
+      const CompletionCallbackWithOutput<PP_Bool>& callback);
 };
 
 }  // namespace flash

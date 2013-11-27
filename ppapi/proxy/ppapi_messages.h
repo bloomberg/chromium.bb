@@ -1337,6 +1337,14 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_FlashDRM_GetVoucherFile)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FlashDRM_GetVoucherFileReply,
                      ppapi::FileRefCreateInfo /* file_info */)
 
+// Requests a value indicating whether the monitor on which the instance is
+// displayed is external.
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_FlashDRM_MonitorIsExternal)
+// Reply message for MonitorIsExternal which contains the value indicating if
+// the monitor is external.
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FlashDRM_MonitorIsExternalReply,
+                     PP_Bool /* is_external */)
+
 // Gamepad.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Gamepad_Create)
 

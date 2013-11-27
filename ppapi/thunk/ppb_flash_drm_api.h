@@ -20,6 +20,9 @@ class PPAPI_THUNK_EXPORT PPB_Flash_DRM_API {
   virtual PP_Bool GetHmonitor(int64_t* hmonitor) = 0;
   virtual int32_t GetVoucherFile(PP_Resource* file_ref,
                                  scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t MonitorIsExternal(
+      PP_Bool* is_external,
+      scoped_refptr<TrackedCallback> callback) = 0;
 };
 
 }  // namespace thunk

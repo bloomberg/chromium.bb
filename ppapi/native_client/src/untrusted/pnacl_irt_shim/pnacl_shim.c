@@ -207,6 +207,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Clipboard_4_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Clipboard_5_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_DeviceID_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_DRM_1_0;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_DRM_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Menu_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_Private_0_1;
@@ -2825,6 +2826,35 @@ static int32_t Pnacl_M29_PPB_Flash_DRM_GetVoucherFile(PP_Resource drm, PP_Resour
 
 /* End wrapper methods for PPB_Flash_DRM_1_0 */
 
+/* Begin wrapper methods for PPB_Flash_DRM_1_1 */
+
+static PP_Resource Pnacl_M33_PPB_Flash_DRM_Create(PP_Instance instance) {
+  const struct PPB_Flash_DRM_1_1 *iface = Pnacl_WrapperInfo_PPB_Flash_DRM_1_1.real_iface;
+  return iface->Create(instance);
+}
+
+static int32_t Pnacl_M33_PPB_Flash_DRM_GetDeviceID(PP_Resource drm, struct PP_Var* id, struct PP_CompletionCallback* callback) {
+  const struct PPB_Flash_DRM_1_1 *iface = Pnacl_WrapperInfo_PPB_Flash_DRM_1_1.real_iface;
+  return iface->GetDeviceID(drm, id, *callback);
+}
+
+static PP_Bool Pnacl_M33_PPB_Flash_DRM_GetHmonitor(PP_Resource drm, int64_t* hmonitor) {
+  const struct PPB_Flash_DRM_1_1 *iface = Pnacl_WrapperInfo_PPB_Flash_DRM_1_1.real_iface;
+  return iface->GetHmonitor(drm, hmonitor);
+}
+
+static int32_t Pnacl_M33_PPB_Flash_DRM_GetVoucherFile(PP_Resource drm, PP_Resource* file_ref, struct PP_CompletionCallback* callback) {
+  const struct PPB_Flash_DRM_1_1 *iface = Pnacl_WrapperInfo_PPB_Flash_DRM_1_1.real_iface;
+  return iface->GetVoucherFile(drm, file_ref, *callback);
+}
+
+static int32_t Pnacl_M33_PPB_Flash_DRM_MonitorIsExternal(PP_Resource drm, PP_Bool* is_external, struct PP_CompletionCallback* callback) {
+  const struct PPB_Flash_DRM_1_1 *iface = Pnacl_WrapperInfo_PPB_Flash_DRM_1_1.real_iface;
+  return iface->MonitorIsExternal(drm, is_external, *callback);
+}
+
+/* End wrapper methods for PPB_Flash_DRM_1_1 */
+
 /* Not generating wrapper methods for PPB_Flash_FontFile_0_1 */
 
 /* Not generating wrapper methods for PPB_FlashFullscreen_0_1 */
@@ -4802,6 +4832,14 @@ struct PPB_Flash_DRM_1_0 Pnacl_Wrappers_PPB_Flash_DRM_1_0 = {
     .GetVoucherFile = (int32_t (*)(PP_Resource drm, PP_Resource* file_ref, struct PP_CompletionCallback callback))&Pnacl_M29_PPB_Flash_DRM_GetVoucherFile
 };
 
+struct PPB_Flash_DRM_1_1 Pnacl_Wrappers_PPB_Flash_DRM_1_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M33_PPB_Flash_DRM_Create,
+    .GetDeviceID = (int32_t (*)(PP_Resource drm, struct PP_Var* id, struct PP_CompletionCallback callback))&Pnacl_M33_PPB_Flash_DRM_GetDeviceID,
+    .GetHmonitor = (PP_Bool (*)(PP_Resource drm, int64_t* hmonitor))&Pnacl_M33_PPB_Flash_DRM_GetHmonitor,
+    .GetVoucherFile = (int32_t (*)(PP_Resource drm, PP_Resource* file_ref, struct PP_CompletionCallback callback))&Pnacl_M33_PPB_Flash_DRM_GetVoucherFile,
+    .MonitorIsExternal = (int32_t (*)(PP_Resource drm, PP_Bool* is_external, struct PP_CompletionCallback callback))&Pnacl_M33_PPB_Flash_DRM_MonitorIsExternal
+};
+
 /* Not generating wrapper interface for PPB_Flash_FontFile_0_1 */
 
 /* Not generating wrapper interface for PPB_FlashFullscreen_0_1 */
@@ -5543,6 +5581,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_DRM_1_0 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_DRM_1_1 = {
+  .iface_macro = PPB_FLASH_DRM_INTERFACE_1_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Flash_DRM_1_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Menu_0_2 = {
   .iface_macro = PPB_FLASH_MENU_INTERFACE_0_2,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_Flash_Menu_0_2,
@@ -5798,6 +5842,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Flash_Clipboard_5_0,
   &Pnacl_WrapperInfo_PPB_Flash_DeviceID_1_0,
   &Pnacl_WrapperInfo_PPB_Flash_DRM_1_0,
+  &Pnacl_WrapperInfo_PPB_Flash_DRM_1_1,
   &Pnacl_WrapperInfo_PPB_Flash_Menu_0_2,
   &Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1,
   &Pnacl_WrapperInfo_PPB_Instance_Private_0_1,
