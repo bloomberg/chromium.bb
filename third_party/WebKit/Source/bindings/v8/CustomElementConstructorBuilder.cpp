@@ -76,11 +76,11 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
 
     ScriptValue prototypeScriptValue;
     if (m_options->get("prototype", prototypeScriptValue) && !prototypeScriptValue.isNull()) {
-        m_prototype = prototypeScriptValue.v8Value().As<v8::Object>();
-        if (m_prototype.IsEmpty()) {
+        if (!prototypeScriptValue.isObject()) {
             CustomElementException::throwException(CustomElementException::PrototypeNotAnObject, type, exceptionState);
             return false;
         }
+        m_prototype = prototypeScriptValue.v8Value().As<v8::Object>();
     } else {
         m_prototype = v8::Object::New();
         v8::Local<v8::Object> basePrototype = V8PerContextData::from(m_context)->prototypeForType(&V8HTMLElement::wrapperTypeInfo);
