@@ -10,17 +10,26 @@ Certificate:
         Subject: O=Acme Co, CN=Leaf certificate
         Subject Public Key Info:
             Public Key Algorithm: rsaEncryption
-                Public-Key: (1024 bit)
+                Public-Key: (2048 bit)
                 Modulus:
-                    00:c1:31:32:b2:28:dc:0d:a4:e0:4b:54:d6:fa:b7:
-                    d2:0c:45:29:bf:67:c7:d1:b8:a9:90:63:51:c4:96:
-                    9f:86:a9:47:d7:67:f6:f9:1d:37:29:c2:0a:55:a7:
-                    8c:29:97:dc:f2:7f:f4:97:d0:d5:44:c9:04:1c:48:
-                    ea:cc:a9:48:5c:eb:69:11:75:6e:db:7d:1a:5a:c0:
-                    9f:ad:a7:b8:0e:3b:a1:61:24:24:6f:64:84:ad:bb:
-                    28:06:c2:4a:c8:07:7b:46:33:8a:c7:81:77:92:4f:
-                    9d:88:1c:52:04:23:61:12:97:c7:e4:af:90:67:7e:
-                    fb:ac:3d:23:92:f0:c9:39:6d
+                    00:d5:ca:19:79:8e:a9:ab:46:f0:4e:b7:58:6d:b3:
+                    a3:9a:68:10:52:af:f0:00:94:ae:34:bd:b4:50:1f:
+                    a3:26:a4:9e:1c:90:37:5b:3d:e8:d7:3b:bc:93:fb:
+                    00:fb:c7:49:54:9b:f1:d0:9a:f2:51:84:7b:59:8b:
+                    bd:66:f3:ae:92:5a:b9:63:8c:64:a7:d0:9e:e3:0c:
+                    50:d2:cf:93:9d:e9:4a:11:57:93:c1:de:af:7b:5a:
+                    44:1d:0a:8c:22:a6:1d:c6:ad:e9:8f:16:8d:4e:91:
+                    f1:d3:f1:f3:82:fe:f6:55:dc:72:f1:11:07:75:ec:
+                    bb:e9:3a:35:87:43:81:5e:dc:43:4a:b7:7c:a1:1a:
+                    d5:d2:c1:40:39:69:7d:89:ad:64:1b:31:34:a8:ea:
+                    9e:5e:26:fc:71:d2:c6:6b:e5:c2:73:30:3f:59:a7:
+                    35:8d:a9:a5:e9:3d:43:41:bd:54:f2:2a:e1:15:0c:
+                    35:30:6b:8b:f2:77:ca:5c:07:8f:58:f4:54:77:5e:
+                    af:ce:b1:c1:2b:a7:bb:c0:e9:7d:ef:1a:d7:03:ee:
+                    8f:67:ad:c6:e6:1d:a9:e7:91:3f:41:e7:d6:86:20:
+                    8c:53:b3:d8:79:09:e2:4b:15:5a:d8:92:3b:62:4f:
+                    68:e4:cb:d0:a4:4e:b6:7d:3e:5f:b0:24:ea:62:61:
+                    cf:7b
                 Exponent: 65537 (0x10001)
         X509v3 extensions:
             X509v3 Key Usage: critical
@@ -32,25 +41,37 @@ Certificate:
             X509v3 Subject Alternative Name: 
                 DNS:test.example.com
     Signature Algorithm: sha1WithRSAEncryption
-         ad:33:55:2a:80:4c:ab:bc:b3:34:f7:b3:7e:fb:05:a8:11:3f:
-         a1:35:56:4c:46:2f:8d:24:70:35:3a:66:8d:14:c4:fb:7f:d9:
-         76:de:c4:52:a7:42:8f:70:1d:fd:d5:33:04:69:5d:3c:18:03:
-         8f:db:19:d0:14:d8:1c:0b:b6:74:9c:cf:41:ba:24:d9:c4:c3:
-         cf:86:fb:15:3d:c4:99:ea:af:6a:29:34:ed:97:03:38:ed:38:
-         b3:21:39:a0:f0:16:ac:81:d3:88:52:d8:5e:a3:6d:e6:ec:3f:
-         e9:20:ac:d3:78:7b:ae:59:9e:5d:3b:5e:61:bb:43:88:cd:8e:
-         d0:0d
+         58:c3:dc:e3:4d:ec:76:c6:62:99:ba:ba:6d:da:e4:2f:ec:00:
+         f8:fb:2a:e3:f6:a4:bc:37:c9:53:0f:73:2e:a6:79:8f:6b:ef:
+         87:16:56:7b:9e:6d:ac:1a:ec:8b:49:71:7d:f2:11:11:a4:0d:
+         5e:6e:be:93:6b:fe:cb:44:1b:4e:99:2a:d2:eb:d8:91:80:d7:
+         c8:87:fd:c8:fa:cf:c2:68:06:07:2d:60:ae:56:c4:3c:49:4d:
+         e3:05:3f:1b:15:a8:a9:ea:85:d8:af:d3:f5:be:b5:71:28:23:
+         8d:04:f1:c6:e1:fb:0c:1b:ac:5a:2d:e0:7f:fb:4e:79:47:29:
+         b3:9c:27:09:7d:3c:84:0b:59:0a:03:c5:86:a9:aa:90:49:89:
+         0b:bc:8e:0e:2e:b1:67:ed:99:be:37:ee:75:7f:a9:fa:62:95:
+         44:02:1c:99:26:fa:a7:17:61:d2:ec:e1:ca:42:2b:69:97:8f:
+         71:dc:1b:41:7b:91:a8:d6:b2:82:05:ef:d0:0b:3c:46:a3:9d:
+         7c:06:81:da:de:b6:54:ad:97:bd:c2:03:02:ff:1b:64:17:25:
+         4a:4c:9b:85:c1:bb:6f:26:3a:b5:ba:9b:2d:17:b9:bd:36:b1:
+         43:48:29:f7:da:88:8d:ce:f0:ac:7f:03:a7:93:e1:e9:c1:58:
+         15:b3:30:22
 -----BEGIN CERTIFICATE-----
-MIICGzCCAYagAwIBAgIBAzALBgkqhkiG9w0BAQUwLDEQMA4GA1UEChMHQWNtZSBD
+MIIDIjCCAgygAwIBAgIBAzALBgkqhkiG9w0BAQUwLDEQMA4GA1UEChMHQWNtZSBD
 bzEYMBYGA1UEAxMPSW50ZXJtZWRpYXRlIENBMB4XDTEzMDEwMTEwMDAwMFoXDTIz
 MTIzMTEwMDAwMFowLTEQMA4GA1UEChMHQWNtZSBDbzEZMBcGA1UEAxMQTGVhZiBj
-ZXJ0aWZpY2F0ZTCBnTALBgkqhkiG9w0BAQEDgY0AMIGJAoGBAMExMrIo3A2k4EtU
-1vq30gxFKb9nx9G4qZBjUcSWn4apR9dn9vkdNynCClWnjCmX3PJ/9JfQ1UTJBBxI
-6sypSFzraRF1btt9GlrAn62nuA47oWEkJG9khK27KAbCSsgHe0YziseBd5JPnYgc
-UgQjYRKXx+SvkGd++6w9I5LwyTltAgMBAAGjUjBQMA4GA1UdDwEB/wQEAwIAoDAT
-BgNVHSUEDDAKBggrBgEFBQcDATAMBgNVHRMBAf8EAjAAMBsGA1UdEQQUMBKCEHRl
-c3QuZXhhbXBsZS5jb20wCwYJKoZIhvcNAQEFA4GBAK0zVSqATKu8szT3s377BagR
-P6E1VkxGL40kcDU6Zo0UxPt/2XbexFKnQo9wHf3VMwRpXTwYA4/bGdAU2BwLtnSc
-z0G6JNnEw8+G+xU9xJnqr2opNO2XAzjtOLMhOaDwFqyB04hS2F6jbebsP+kgrNN4
-e65Znl07XmG7Q4jNjtAN
+ZXJ0aWZpY2F0ZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANXKGXmO
+qatG8E63WG2zo5poEFKv8ACUrjS9tFAfoyaknhyQN1s96Nc7vJP7APvHSVSb8dCa
+8lGEe1mLvWbzrpJauWOMZKfQnuMMUNLPk53pShFXk8Her3taRB0KjCKmHcat6Y8W
+jU6R8dPx84L+9lXccvERB3Xsu+k6NYdDgV7cQ0q3fKEa1dLBQDlpfYmtZBsxNKjq
+nl4m/HHSxmvlwnMwP1mnNY2ppek9Q0G9VPIq4RUMNTBri/J3ylwHj1j0VHder86x
+wSunu8Dpfe8a1wPuj2etxuYdqeeRP0Hn1oYgjFOz2HkJ4ksVWtiSO2JPaOTL0KRO
+tn0+X7Ak6mJhz3sCAwEAAaNSMFAwDgYDVR0PAQH/BAQDAgCgMBMGA1UdJQQMMAoG
+CCsGAQUFBwMBMAwGA1UdEwEB/wQCMAAwGwYDVR0RBBQwEoIQdGVzdC5leGFtcGxl
+LmNvbTALBgkqhkiG9w0BAQUDggEBAFjD3ONN7HbGYpm6um3a5C/sAPj7KuP2pLw3
+yVMPcy6meY9r74cWVnuebawa7ItJcX3yERGkDV5uvpNr/stEG06ZKtLr2JGA18iH
+/cj6z8JoBgctYK5WxDxJTeMFPxsVqKnqhdiv0/W+tXEoI40E8cbh+wwbrFot4H/7
+TnlHKbOcJwl9PIQLWQoDxYapqpBJiQu8jg4usWftmb437nV/qfpilUQCHJkm+qcX
+YdLs4cpCK2mXj3HcG0F7kajWsoIF79ALPEajnXwGgdretlStl73CAwL/G2QXJUpM
+m4XBu28mOrW6my0Xub02sUNIKffaiI3O8Kx/A6eT4enBWBWzMCI=
 -----END CERTIFICATE-----

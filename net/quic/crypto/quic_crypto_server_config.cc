@@ -840,7 +840,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
 
   client_hello.GetStringPiece(kServerNonceTag, &info->server_nonce);
   if (!info->server_nonce.empty()) {
-    // If the server nonce is present, use it establish uniqueness.
+    // If the server nonce is present, use it to establish uniqueness.
     info->unique = ValidateServerNonce(info->server_nonce, info->now);
     DVLOG(1) << "Using server nonce, unique: " << info->unique;
     helper.ValidationComplete(QUIC_NO_ERROR, "");
