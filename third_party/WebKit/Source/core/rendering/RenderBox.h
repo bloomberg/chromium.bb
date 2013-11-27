@@ -715,10 +715,6 @@ protected:
 
     // Our overflow information.
     OwnPtr<RenderOverflow> m_overflow;
-
-private:
-    // Used to store state between styleWillChange and styleDidChange
-    static bool s_hadOverflowClip;
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderBox, isBox());

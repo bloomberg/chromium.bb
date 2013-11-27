@@ -82,8 +82,6 @@ static OverrideSizeMap* gOverrideContainingBlockLogicalWidthMap = 0;
 static const int autoscrollBeltSize = 20;
 static const unsigned backgroundObscurationTestMaxDepth = 4;
 
-bool RenderBox::s_hadOverflowClip = false;
-
 static bool skipBodyBackground(const RenderBox* bodyElementRenderer)
 {
     ASSERT(bodyElementRenderer->isBody());
@@ -196,8 +194,6 @@ void RenderBox::removeFloatingOrPositionedChildFromBlockLists()
 
 void RenderBox::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)
 {
-    s_hadOverflowClip = hasOverflowClip();
-
     RenderStyle* oldStyle = style();
     if (oldStyle) {
         // The background of the root element or the body element could propagate up to
@@ -354,11 +350,15 @@ void RenderBox::updateFromStyle()
         // Check for overflow clip.
         // It's sufficient to just check one direction, since it's illegal to have visible on only one overflow value.
         if (boxHasOverflowClip) {
-            if (!s_hadOverflowClip)
-                // Erase the overflow
+            // If we are getting an overflow clip, preemptively erase any overflowing content.
+            // FIXME: This should probably consult RenderOverflow.
+            if (!hasOverflowClip())
                 repaint();
+
             setHasOverflowClip(true);
         }
+    } else {
+        setHasOverflowClip(false);
     }
 
     setHasTransform(styleToUse->hasTransformRelatedProperty());

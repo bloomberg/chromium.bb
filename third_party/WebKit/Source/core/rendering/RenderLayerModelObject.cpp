@@ -34,9 +34,6 @@ using namespace std;
 namespace WebCore {
 
 bool RenderLayerModelObject::s_wasFloating = false;
-bool RenderLayerModelObject::s_hadLayer = false;
-bool RenderLayerModelObject::s_hadTransform = false;
-bool RenderLayerModelObject::s_layerWasSelfPainting = false;
 
 RenderLayerModelObject::RenderLayerModelObject(ContainerNode* node)
     : RenderObject(node)
@@ -94,10 +91,6 @@ void RenderLayerModelObject::willBeDestroyed()
 void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)
 {
     s_wasFloating = isFloating();
-    s_hadLayer = hasLayer();
-    s_hadTransform = hasTransform();
-    if (s_hadLayer)
-        s_layerWasSelfPainting = layer()->isSelfPaintingLayer();
 
     // If our z-index changes value or our visibility changes,
     // we need to dirty our stacking context's z-order list.
@@ -141,6 +134,10 @@ void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderS
 
 void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle)
 {
+    bool hadTransform = hasTransform();
+    bool hadLayer = hasLayer();
+    bool layerWasSelfPainting = hadLayer && layer()->isSelfPaintingLayer();
+
     RenderObject::styleDidChange(diff, oldStyle);
     updateFromStyle();
 
@@ -162,13 +159,13 @@ void RenderLayerModelObject::styleDidChange(StyleDifference diff, const RenderSt
         layer()->removeOnlyThisLayer(); // calls destroyLayer() which clears m_layer
         if (s_wasFloating && isFloating())
             setChildNeedsLayout();
-        if (s_hadTransform)
+        if (hadTransform)
             setNeedsLayoutAndPrefWidthsRecalc();
     }
 
     if (layer()) {
         layer()->styleChanged(diff, oldStyle);
-        if (s_hadLayer && layer()->isSelfPaintingLayer() != s_layerWasSelfPainting)
+        if (hadLayer && layer()->isSelfPaintingLayer() != layerWasSelfPainting)
             setChildNeedsLayout();
     }
 

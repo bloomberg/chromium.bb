@@ -1997,16 +1997,12 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle* newS
             && (!newStyle->isFloating() && !newStyle->hasOutOfFlowPosition())
             && parent() && (parent()->isRenderBlockFlow() || parent()->isRenderInline());
 
-        // reset style flags
+        // Clearing these bits is required to avoid leaving stale renderers.
+        // FIXME: We shouldn't need that hack if our logic was totally correct.
         if (diff == StyleDifferenceLayout || diff == StyleDifferenceLayoutPositionedMovementOnly) {
             setFloating(false);
             clearPositionedState();
         }
-        setHorizontalWritingMode(true);
-        setHasBoxDecorations(false);
-        setHasOverflowClip(false);
-        setHasTransform(false);
-        setHasReflection(false);
     } else
         s_affectsParentBlock = false;
 
