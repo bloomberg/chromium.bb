@@ -29,6 +29,7 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/trace_subscriber.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
@@ -81,7 +82,8 @@ class AutomationProvider
       public IPC::Sender,
       public base::SupportsWeakPtr<AutomationProvider>,
       public base::RefCountedThreadSafe<
-          AutomationProvider, content::BrowserThread::DeleteOnUIThread> {
+          AutomationProvider, content::BrowserThread::DeleteOnUIThread>,
+      public content::TraceSubscriber {
  public:
   explicit AutomationProvider(Profile* profile);
 
@@ -213,6 +215,17 @@ class AutomationProvider
   bool reinitialize_on_channel_error_;
 
  private:
+  // Storage for EndTracing() to resume operations after a callback.
+  struct TracingData {
+    std::list<std::string> trace_output;
+    scoped_ptr<IPC::Message> reply_message;
+  };
+
+  // TraceSubscriber:
+  virtual void OnEndTracingComplete() OVERRIDE;
+  virtual void OnTraceDataCollected(
+      const scoped_refptr<base::RefCountedString>& trace_fragment) OVERRIDE;
+
   void OnUnhandledMessage(const IPC::Message& message);
 
   // Clear and reinitialize the automation IPC channel.
@@ -241,8 +254,7 @@ class AutomationProvider
 
   void BeginTracing(const std::string& category_patterns, bool* success);
   void EndTracing(IPC::Message* reply_message);
-  void OnTraceDataCollected(IPC::Message* reply_message,
-                            const base::FilePath& path);
+  void GetTracingOutput(std::string* chunk, bool* success);
 
   // Asynchronous request for printing the current tab.
   void PrintAsync(int tab_handle);
@@ -338,6 +350,10 @@ class AutomationProvider
 
   // ID of automation channel.
   std::string channel_id_;
+
+  // Trace data that has been collected but not flushed to the automation
+  // client.
+  TracingData tracing_data_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProvider);
 };

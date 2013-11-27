@@ -4,21 +4,19 @@
 
 #include "chrome/test/base/tracing.h"
 
-#include "base/file_util.h"
-#include "base/files/file_path.h"
+#include "base/debug/trace_event.h"
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
-#include "base/strings/string_util.h"
-#include "base/timer/timer.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/tracing_controller.h"
+#include "content/public/browser/trace_controller.h"
+#include "content/public/browser/trace_subscriber.h"
 #include "content/public/test/test_utils.h"
 
 namespace {
 
 using content::BrowserThread;
 
-class InProcessTraceController {
+class InProcessTraceController : public content::TraceSubscriber {
  public:
   static InProcessTraceController* GetInstance() {
     return Singleton<InProcessTraceController>::get();
@@ -31,10 +29,8 @@ class InProcessTraceController {
 
   bool BeginTracing(const std::string& category_patterns) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    return content::TracingController::GetInstance()->EnableRecording(
-        category_patterns, content::TracingController::DEFAULT_OPTIONS,
-        content::TracingController::EnableRecordingDoneCallback());
-    return true;
+    return content::TraceController::GetInstance()->BeginTracing(
+        this, category_patterns, base::debug::TraceLog::RECORD_UNTIL_FULL);
   }
 
   bool BeginTracingWithWatch(const std::string& category_patterns,
@@ -44,11 +40,9 @@ class InProcessTraceController {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(num_occurrences > 0);
     watch_notification_count_ = num_occurrences;
-    return content::TracingController::GetInstance()->SetWatchEvent(
-        category_name, event_name,
-        base::Bind(&InProcessTraceController::OnWatchEventMatched,
-                   base::Unretained(this))) &&
-        BeginTracing(category_patterns);
+    return BeginTracing(category_patterns) &&
+           content::TraceController::GetInstance()->SetWatchEvent(
+               this, category_name, event_name);
   }
 
   bool WaitForWatchEvent(base::TimeDelta timeout) {
@@ -73,16 +67,20 @@ class InProcessTraceController {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     using namespace base::debug;
 
-    if (!content::TracingController::GetInstance()->DisableRecording(
-        base::FilePath(),
-        base::Bind(&InProcessTraceController::OnTraceDataCollected,
-                   base::Unretained(this),
-                   base::Unretained(json_trace_output))))
-      return false;
+    TraceResultBuffer::SimpleOutput output;
+    trace_buffer_.SetOutputCallback(output.GetCallback());
 
+    trace_buffer_.Start();
+    if (!content::TraceController::GetInstance()->EndTracingAsync(this))
+      return false;
     // Wait for OnEndTracingComplete() to quit the message loop.
+    // OnTraceDataCollected may be called multiple times while blocking here.
     message_loop_runner_ = new content::MessageLoopRunner;
     message_loop_runner_->Run();
+    trace_buffer_.Finish();
+    trace_buffer_.SetOutputCallback(TraceResultBuffer::OutputCallback());
+
+    *json_trace_output = output.json_output;
 
     // Watch notifications can occur during this method's message loop run, but
     // not after, so clear them here.
@@ -93,40 +91,19 @@ class InProcessTraceController {
  private:
   friend struct DefaultSingletonTraits<InProcessTraceController>;
 
-  void OnEndTracingComplete() {
+  // TraceSubscriber implementation
+  virtual void OnEndTracingComplete() OVERRIDE {
     message_loop_runner_->Quit();
   }
 
-  void OnTraceDataCollected(std::string* json_trace_output,
-                            const base::FilePath& path) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-        base::Bind(&InProcessTraceController::ReadTraceData,
-                   base::Unretained(this),
-                   base::Unretained(json_trace_output),
-                   path));
+  // TraceSubscriber implementation
+  virtual void OnTraceDataCollected(
+      const scoped_refptr<base::RefCountedString>& trace_fragment) OVERRIDE {
+    trace_buffer_.AddFragment(trace_fragment->data());
   }
 
-  void ReadTraceData(std::string* json_trace_output,
-                     const base::FilePath& path) {
-    json_trace_output->clear();
-    bool ok = base::ReadFileToString(path, json_trace_output);
-    DCHECK(ok);
-    base::DeleteFile(path, false);
-
-    // The callers expect an array of trace events.
-    const char* preamble = "{\"traceEvents\": ";
-    const char* trailout = "}";
-    DCHECK(StartsWithASCII(*json_trace_output, preamble, true));
-    DCHECK(EndsWith(*json_trace_output, trailout, true));
-    json_trace_output->erase(0, strlen(preamble));
-    json_trace_output->erase(json_trace_output->end() - 1);
-
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&InProcessTraceController::OnEndTracingComplete,
-                   base::Unretained(this)));
-  }
-
-  void OnWatchEventMatched() {
+  // TraceSubscriber implementation
+  virtual void OnEventWatchNotification() OVERRIDE {
     if (watch_notification_count_ == 0)
       return;
     if (--watch_notification_count_ == 0) {
@@ -140,6 +117,9 @@ class InProcessTraceController {
     DCHECK(is_waiting_on_watch_);
     message_loop_runner_->Quit();
   }
+
+  // For collecting trace data asynchronously.
+  base::debug::TraceResultBuffer trace_buffer_;
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 

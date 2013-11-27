@@ -86,10 +86,11 @@ bool OnBeginRecording(const std::string& data64,
   if (use_continuous_tracing)
     tracing_options |= TracingController::RECORD_CONTINUOUSLY;
 
+  base::debug::CategoryFilter category_filter(category_filter_string);
   return TracingController::GetInstance()->EnableRecording(
-      category_filter_string,
+      category_filter,
       static_cast<TracingController::Options>(tracing_options),
-      base::Bind(&OnRecordingEnabledAck, callback));
+      base::Bind(OnRecordingEnabledAck, callback));
 }
 
 void OnRecordingEnabledAck(const WebUIDataSource::GotDataCallback& callback) {

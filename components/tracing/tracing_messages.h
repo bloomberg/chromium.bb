@@ -30,7 +30,7 @@ IPC_MESSAGE_CONTROL3(TracingMsg_EnableMonitoring,
                      base::TimeTicks /* browser_time */,
                      int /* base::debug::TraceLog::Options */)
 
-// Sent to all child processes to stop monitoring.
+// Sent to all child processes to stop monitoring..
 IPC_MESSAGE_CONTROL0(TracingMsg_DisableMonitoring)
 
 // Sent to all child processes to capture the current monitorint snapshot.
@@ -47,9 +47,6 @@ IPC_MESSAGE_CONTROL2(TracingMsg_SetWatchEvent,
 // Sent to all child processes to clear watch event.
 IPC_MESSAGE_CONTROL0(TracingMsg_CancelWatchEvent)
 
-// Sent everytime when a watch event is matched.
-IPC_MESSAGE_CONTROL0(TracingHostMsg_WatchEventMatched);
-
 // Notify the browser that this child process supports tracing.
 IPC_MESSAGE_CONTROL0(TracingHostMsg_ChildSupportsTracing)
 
@@ -59,6 +56,10 @@ IPC_MESSAGE_CONTROL1(TracingHostMsg_EndTracingAck,
 
 // Reply from child processes acking TracingMsg_CaptureMonitoringSnapshot.
 IPC_MESSAGE_CONTROL0(TracingHostMsg_CaptureMonitoringSnapshotAck)
+
+// Sent if the trace buffer becomes full.
+IPC_MESSAGE_CONTROL1(TracingHostMsg_TraceNotification,
+                     int /* base::debug::TraceLog::Notification */)
 
 // Child processes send back trace data in JSON chunks.
 IPC_MESSAGE_CONTROL1(TracingHostMsg_TraceDataCollected,

@@ -66,7 +66,7 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/tracing_controller.h"
+#include "content/public/browser/trace_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "net/proxy/proxy_config_service_fixed.h"
@@ -86,7 +86,7 @@ using content::BrowserThread;
 using content::DownloadItem;
 using content::NavigationController;
 using content::RenderViewHost;
-using content::TracingController;
+using content::TraceController;
 using content::WebContents;
 
 namespace {
@@ -376,6 +376,20 @@ void AutomationProvider::OnChannelConnected(int pid) {
   SendInitialLoadMessage();
 }
 
+void AutomationProvider::OnEndTracingComplete() {
+  IPC::Message* reply_message = tracing_data_.reply_message.release();
+  if (reply_message) {
+    AutomationMsg_EndTracing::WriteReplyParams(
+        reply_message, tracing_data_.trace_output.size(), true);
+    Send(reply_message);
+  }
+}
+
+void AutomationProvider::OnTraceDataCollected(
+    const scoped_refptr<base::RefCountedString>& trace_fragment) {
+  tracing_data_.trace_output.push_back(trace_fragment->data());
+}
+
 bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   bool deserialize_success = true;
@@ -398,6 +412,7 @@ bool AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                         JavaScriptStressTestControl)
     IPC_MESSAGE_HANDLER(AutomationMsg_BeginTracing, BeginTracing)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_EndTracing, EndTracing)
+    IPC_MESSAGE_HANDLER(AutomationMsg_GetTracingOutput, GetTracingOutput)
 #if defined(OS_WIN)
     // These are for use with external tabs.
     IPC_MESSAGE_HANDLER(AutomationMsg_CreateExternalTab, CreateExternalTab)
@@ -707,28 +722,39 @@ void AutomationProvider::JavaScriptStressTestControl(int tab_handle,
 
 void AutomationProvider::BeginTracing(const std::string& category_patterns,
                                       bool* success) {
-  *success = TracingController::GetInstance()->EnableRecording(
-      category_patterns, TracingController::DEFAULT_OPTIONS,
-      TracingController::EnableRecordingDoneCallback());
+  tracing_data_.trace_output.clear();
+  *success = TraceController::GetInstance()->BeginTracing(
+      this,
+      category_patterns,
+      base::debug::TraceLog::RECORD_UNTIL_FULL);
 }
 
 void AutomationProvider::EndTracing(IPC::Message* reply_message) {
-  base::FilePath path;
-  if (!TracingController::GetInstance()->DisableRecording(
-      path, base::Bind(&AutomationProvider::OnTraceDataCollected, this,
-                       reply_message))) {
+  bool success = false;
+  if (!tracing_data_.reply_message.get())
+    success = TraceController::GetInstance()->EndTracingAsync(this);
+  if (success) {
+    // Defer EndTracing reply until TraceController calls us back with all the
+    // events.
+    tracing_data_.reply_message.reset(reply_message);
+  } else {
     // If failed to call EndTracingAsync, need to reply with failure now.
-    AutomationMsg_EndTracing::WriteReplyParams(reply_message, path, false);
+    AutomationMsg_EndTracing::WriteReplyParams(reply_message, size_t(0), false);
     Send(reply_message);
   }
-  // Otherwise defer EndTracing reply until TraceController calls us back.
 }
 
-void AutomationProvider::OnTraceDataCollected(IPC::Message* reply_message,
-                                              const base::FilePath& path) {
-  if (reply_message) {
-    AutomationMsg_EndTracing::WriteReplyParams(reply_message, path, true);
-    Send(reply_message);
+void AutomationProvider::GetTracingOutput(std::string* chunk,
+                                          bool* success) {
+  // The JSON data is sent back to the test in chunks, because IPC sends will
+  // fail if they are too large.
+  if (tracing_data_.trace_output.empty()) {
+    *chunk = "";
+    *success = false;
+  } else {
+    *chunk = tracing_data_.trace_output.front();
+    tracing_data_.trace_output.pop_front();
+    *success = true;
   }
 }
 
