@@ -8,8 +8,6 @@
  */
 
 <include src="instant_iframe_validation.js">
-<include src="window_disposition_util.js">
-
 
 /**
  * Enum for the different types of events that are logged from the NTP.
@@ -33,7 +31,6 @@ var NTP_LOGGING_EVENT_TYPE = {
   // The suggestion is coming from the server.
   NTP_SERVER_SIDE_SUGGESTION: 5
 };
-
 
 /**
  * Parses query parameters from Location.
@@ -101,14 +98,6 @@ function createMostVisitedLink(params, href, title, text, ping) {
   link.addEventListener('mouseover', function() {
     var ntpApiHandle = chrome.embeddedSearch.newTabPage;
     ntpApiHandle.logEvent(NTP_LOGGING_EVENT_TYPE.NTP_MOUSEOVER);
-  });
-  // Webkit's security policy prevents some Most Visited thumbnails from
-  // working (those with schemes different from http and https). Therefore,
-  // navigateContentWindow is being used in order to get all schemes working.
-  link.addEventListener('click', function(e) {
-    e.preventDefault();
-    var ntpApiHandle = chrome.embeddedSearch.newTabPage;
-    ntpApiHandle.navigateContentWindow(href, getDispositionFromEvent(e));
   });
   return link;
 }
