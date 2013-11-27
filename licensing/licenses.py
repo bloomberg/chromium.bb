@@ -36,11 +36,11 @@ Recommended build:
   ./build_packages --board=$board --nowithautotest --nowithtest --nowithdev \
                    --nowithfactory
   cd ~/trunk/chromite/licensing
-  %(prog)s [--debug] $board out.html 2>&1 | tee output.sav
+  %(prog)s [--debug] --board $board -o out.html 2>&1 | output.sav
 
-For debugging during development, you can get a faster run of just one package
-with:
-  %(prog)s --testpkg "dev-libs/libatomic_ops-7.2d" $board out.html
+You can get a faster run by passing a list of pacakges using --package:
+  %(prog)s --package "dev-libs/libatomic_ops-7.2d" --package
+  "net-misc/wget-1.14" --board $board -o out.html
 
 The output file is meant to update
 http://src.chromium.org/viewvc/chrome/trunk/src/chrome/browser/resources/ +
@@ -62,7 +62,7 @@ Once it's been updated to "Merge-Approved" by a TPM, please merge into the
 required release branch. You can ask karen@ for merge approve help.
 Example: http://crbug.com/221281
 
-Usage: %(prog)s [opts] <board> <output>
+Usage: %(prog)s [opts] <board>
 
 """
 
@@ -1169,17 +1169,23 @@ def main(args):
   # pylint: enable=W0603
 
   parser = commandline.ArgumentParser(usage=__doc__)
-  parser.add_argument("-t", "--testpkg",
-                      help="force a single package for debugging, like"
-                      " dev-libs/libatomic_ops-7.2d")
-  parser.add_argument("board",
+  parser.add_argument("-b", "--board", default=cros_build_lib.GetDefaultBoard(),
                       help="which board to run for, like x86-alex")
-  parser.add_argument("output_file", type="path",
+  parser.add_argument("-p", "--package", action="append", default=[],
+                      help="check the license of the package, e.g.,"
+                      "dev-libs/libatomic_ops-7.2d")
+  parser.add_argument("-o", "--output", type="path",
                       help="which html file to create with output")
   opts = parser.parse_args(args)
   debug = opts.debug
+  board, output_file = opts.board, opts.output
+  logging.info("Using board %s.", board)
 
-  board, output_file, testpkg = opts.board, opts.output_file, opts.testpkg
+  if opts.package:
+    packages_mode = True
+
+  if not output_file and not packages_mode:
+    logging.warning('No output file is specified.')
 
   builddir = "/build/%s/tmp/portage" % board
   if not os.path.exists(builddir):
@@ -1187,18 +1193,18 @@ def main(args):
         "FATAL: %s missing.\n"
         "Did you give the right board and build that tree?" % builddir)
 
-  # We have a hardcoded list of skipped packages for various reasons, but we
-  # also exclude any google platform package from needing a license since they
-  # are covered by the top license in the tree.
+  # We have a hardcoded list of skipped packages for various reasons,
+  # but we also exclude any google platform package from needing a
+  # license since they are covered by the top license in the tree.
+  # TODO: find a better way to deal with this because running
+  # cros_workon for individual packages (with -p) is too costly.
   cmd = "cros_workon info --all --host | grep src/platform/ | awk '{print $1}'"
   packages = cros_build_lib.RunCommand(cmd, shell=True, print_cmd=debug,
                                        redirect_stdout=True).output.splitlines()
   SKIPPED_PACKAGES += packages
 
-  # For temporary single package debugging (make sure to include trailing -ver):
-  if testpkg:
-    logging.info("Will only generate license for %s", testpkg)
-    packages = [testpkg]
+  if packages_mode:
+    packages = opts.package
   else:
     packages = ListInstalledPackages(board)
   if not packages:
@@ -1210,7 +1216,7 @@ def main(args):
   logging.debug('\n'.join(SKIPPED_PACKAGES))
   licensing = Licensing(board, packages)
   licensing.ProcessPackages()
-  if not testpkg:
+  if not packages_mode:
     # We add 2 virtual packages as well as 2 boot packages that are included
     # with some hardware, but not in the image or package list.
     for extra_pkg in [
@@ -1222,7 +1228,10 @@ def main(args):
          ['GPL-2']],
     ]:
       licensing.AddExtraPkg(extra_pkg)
-  licensing.GenerateHTMLLicenseOutput(output_file)
+
+  if output_file:
+    licensing.GenerateHTMLLicenseOutput(output_file)
+
   if licensing.incomplete_packages:
     raise AssertionError("""
 DO NOT USE OUTPUT!!!
