@@ -587,10 +587,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
       &chrome::CloseAllBrowsers));
 }
 
+// Flaky, see crbug.com/323847.
+//
 // Tests that BeforeUnload event gets called on devtools that are opened
 // on another devtools.
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
-                       TestDevToolsOnDevTools) {
+                       DISABLED_TestDevToolsOnDevTools) {
   ASSERT_TRUE(test_server()->Start());
   LoadTestPage(kDebuggerTestPage);
 
