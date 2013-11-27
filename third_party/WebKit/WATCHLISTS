@@ -21,6 +21,10 @@
       'filepath': 'Source/platform/audio' \
                   '|Source/modules/webaudio',
     },
+    'bidi': {
+      'filepath': 'Source/platform/text/.*Bidi' \
+                  '|Source/core/rendering/.*Bidi',
+    },
     'bindings': {
       'filepath': 'Source/bindings',
     },
@@ -222,6 +226,7 @@
                   'caseq+blink@chromium.org',
                   'paulirish+reviews@chromium.org',
                   'devtools-reviews@chromium.org' ],
+    'bidi': [ 'leviw+bidiwatch@chromium.org' ],
     'bindings': [ 'abarth@chromium.org',
                   'adamk+blink@chromium.org',
                   'arv+blink@chromium.org',
