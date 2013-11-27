@@ -693,6 +693,9 @@ WebURLError WebURLLoaderImpl::CreateError(const WebURL& unreachable_url,
   } else if (reason == net::ERR_TEMPORARILY_THROTTLED) {
     error.localizedDescription = WebString::fromUTF8(
         kThrottledErrorDescription);
+  } else {
+    error.localizedDescription = WebString::fromUTF8(
+        net::ErrorToString(reason));
   }
   return error;
 }
