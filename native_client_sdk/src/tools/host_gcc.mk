@@ -14,17 +14,17 @@
 # We use the C++ compiler for everything and then use the -Wl,-as-needed flag
 # in the linker to drop libc++ unless it's actually needed.
 #
-HOST_CC ?= $(NACL_COMPILER_PREFIX) gcc
-HOST_CXX ?= $(NACL_COMPILER_PREFIX) g++
-HOST_LINK ?= g++
-HOST_LIB ?= ar
-HOST_STRIP ?= strip
+CC ?= $(NACL_COMPILER_PREFIX) gcc
+CXX ?= $(NACL_COMPILER_PREFIX) g++
+LINK ?= $(CXX)
+LIB ?= ar
+STRIP ?= strip
 
 # Adding -Wl,-Bsymbolic means that symbols defined within the module are always
 # used by the moulde, and not shadowed by symbols already loaded in, for
 # exmaple, libc.  Without this the libc symbols (or anything injected with
 # LD_PRELOAD will take precedence).
-LDFLAGS ?= -Wl,-Map,$(OUTDIR)/$(TARGET).map -Wl,-Bsymbolic
+HOST_LDFLAGS ?= -Wl,-Map,$(OUTDIR)/$(TARGET).map -Wl,-Bsymbolic
 
 ifeq (,$(findstring gcc,$(shell $(WHICH) gcc)))
 $(warning To skip the host build use:)
@@ -32,9 +32,8 @@ $(warning "make all_versions NO_HOST_BUILDS=1")
 $(error Unable to find gcc in PATH while building Host build)
 endif
 
-
-LINUX_WARNINGS ?= -Wno-long-long -Wall -Werror
-LINUX_CFLAGS = -fPIC -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(NACL_SDK_ROOT)/include/linux
+HOST_WARNINGS ?= -Wno-long-long -Wall -Werror
+HOST_CFLAGS = -fPIC -pthread $(HOST_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(NACL_SDK_ROOT)/include/linux
 
 
 #
@@ -46,14 +45,14 @@ LINUX_CFLAGS = -fPIC -pthread $(LINUX_WARNINGS) -I$(NACL_SDK_ROOT)/include -I$(N
 define C_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1))
 $(call SRC_TO_OBJ,$(1)): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CC  ,$$@,$(HOST_CC) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(LINUX_CFLAGS) $(2))
+	$(call LOG,CC  ,$$@,$(CC) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(HOST_CFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1))
 endef
 
 define CXX_COMPILER_RULE
 -include $(call SRC_TO_DEP,$(1))
 $(call SRC_TO_OBJ,$(1)): $(1) $(TOP_MAKE) | $(dir $(call SRC_TO_OBJ,$(1)))dir.stamp
-	$(call LOG,CXX ,$$@,$(HOST_CXX) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(LINUX_CFLAGS) $(2))
+	$(call LOG,CXX ,$$@,$(CXX) -o $$@ -c $$< -fPIC $(POSIX_FLAGS) $(HOST_CFLAGS) $(2))
 	@$(FIXDEPS) $(call SRC_TO_DEP_PRE_FIXUP,$(1))
 endef
 
@@ -100,7 +99,7 @@ all: $(LIBDIR)/$(OSNAME)_host/$(CONFIG)/lib$(1).a
 $(LIBDIR)/$(OSNAME)_host/$(CONFIG)/lib$(1).a: $(foreach src,$(2),$(call SRC_TO_OBJ,$(src)))
 	$(MKDIR) -p $$(dir $$@)
 	$(RM) -f $$@
-	$(call LOG,LIB,$$@,$(HOST_LIB) -cr $$@ $$^)
+	$(call LOG,LIB,$$@,$(LIB) -cr $$@ $$^)
 endef
 
 
@@ -112,19 +111,19 @@ endef
 # $3 = List of libs
 # $4 = List of deps
 # $5 = List of lib dirs
-# $6 = Other Linker Args
+# $6 = Linker Args
 #
 ifdef STANDALONE
 define LINKER_RULE
 all: $(1)
 $(1): $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
-	$(call LOG,LINK,$$@,$(HOST_LINK) -o $(1) $(2) $(LDFLAGS) $(NACL_LDFLAGS) $(foreach path,$(5),-L$(path)/$(OSNAME)_host)/$(CONFIG) $(foreach lib,$(3),-l$(lib)) $(6))
+	$(call LOG,LINK,$$@,$(LINK) -o $(1) $(2) $(HOST_LDFLAGS) $(NACL_LDFLAGS) $(LDFLAGS) $(foreach path,$(5),-L$(path)/$(OSNAME)_host)/$(CONFIG) $(foreach lib,$(3),-l$(lib)) $(6))
 endef
 else
 define LINKER_RULE
 all: $(1)
 $(1): $(2) $(foreach dep,$(4),$(STAMPDIR)/$(dep).stamp)
-	$(call LOG,LINK,$$@,$(HOST_LINK) -shared -o $(1) $(2) $(LDFLAGS) $(NACL_LDFLAGS) $(foreach path,$(5),-L$(path)/$(OSNAME)_host)/$(CONFIG) $(foreach lib,$(3),-l$(lib)) $(6))
+	$(call LOG,LINK,$$@,$(LINK) -shared -o $(1) $(2) $(HOST_LDFLAGS) $(NACL_LDFLAGS) $(LDFLAGS) $(foreach path,$(5),-L$(path)/$(OSNAME)_host)/$(CONFIG) $(foreach lib,$(3),-l$(lib)) $(6))
 endef
 endif
 
@@ -157,7 +156,7 @@ all: $(LIB_LIST) $(DEPS_LIST)
 define STRIP_RULE
 all: $(OUTDIR)/$(1)$(HOST_EXT)
 $(OUTDIR)/$(1)$(HOST_EXT): $(OUTDIR)/$(2)$(HOST_EXT)
-	$(call LOG,STRIP,$$@,$(HOST_STRIP) --strip-debug -o $$@ $$^)
+	$(call LOG,STRIP,$$@,$(STRIP) --strip-debug -o $$@ $$^)
 endef
 
 
