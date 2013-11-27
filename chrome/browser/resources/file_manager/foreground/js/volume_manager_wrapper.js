@@ -230,6 +230,16 @@ VolumeManagerWrapper.prototype.getVolumeInfo = function(mountPath) {
 };
 
 /**
+ * Obtains location information from an entry.
+ *
+ * @param {Entry} entry File or directory entry.
+ * @return {EntryLocation} Location information.
+ */
+VolumeManagerWrapper.prototype.getLocationInfo = function(entry) {
+  return this.volumeManager_ && this.volumeManager_.getLocationInfo(entry);
+};
+
+/**
  * Requests to mount the archive file.
  * @param {string} fileUrl The path to the archive file to be mounted.
  * @param {function(string)} successCallback Called with mount path on success.

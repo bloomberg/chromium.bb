@@ -540,32 +540,43 @@ DirectoryModel.prototype.scan_ = function(
    * @return {boolean} Did pending scan exist.
    */
   var maybeRunPendingRescan = function() {
-    if (self.pendingRescan_) {
-      self.rescanSoon();
-      self.pendingRescan_ = false;
+    if (this.pendingRescan_) {
+      this.rescanSoon();
+      this.pendingRescan_ = false;
       return true;
     }
     return false;
-  };
+  }.bind(this);
 
   var onSuccess = function() {
-    self.runningScan_ = null;
+    // Record metric for Downloads directory.
+    if (!dirContents.isSearch()) {
+      var locationInfo =
+          this.volumeManager_.getLocationInfo(dirContents.getDirectoryEntry());
+      if (locationInfo.volumeInfo.volumeType === util.VolumeType.DOWNLOADS &&
+          locationInfo.isRootEntry) {
+        metrics.recordMediumCount('DownloadsCount',
+                                  dirContents.fileList_.length);
+      }
+    }
+
+    this.runningScan_ = null;
     successCallback();
-    self.scanFailures_ = 0;
+    this.scanFailures_ = 0;
     maybeRunPendingRescan();
-  };
+  }.bind(this);
 
   var onFailure = function() {
-    self.runningScan_ = null;
-    self.scanFailures_++;
+    this.runningScan_ = null;
+    this.scanFailures_++;
     failureCallback();
 
     if (maybeRunPendingRescan())
       return;
 
-    if (self.scanFailures_ <= 1)
-      self.rescanLater();
-  };
+    if (this.scanFailures_ <= 1)
+      this.rescanLater();
+  }.bind(this);
 
   this.runningScan_ = dirContents;
 

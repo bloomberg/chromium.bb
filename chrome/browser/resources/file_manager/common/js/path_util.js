@@ -466,5 +466,11 @@ function EntryLocation(volumeInfo, path, rootType, rootPath, virtualPath) {
    */
   this.virtualPath = virtualPath;
 
+  /**
+   * Whether the entry is root entry or not.
+   * @type {boolean}
+   */
+  this.isRootEntry = virtualPath === '/';
+
   Object.freeze(this);
 }

@@ -561,7 +561,7 @@ VolumeManager.prototype.getVolumeInfo = function(path) {
  * @return {EntryLocation} Location information.
  */
 VolumeManager.prototype.getLocationInfo = function(entry) {
-  return this.getLocationByPath(entry.fullPath);
+  return this.getLocationInfoByPath(entry.fullPath);
 };
 
 /**

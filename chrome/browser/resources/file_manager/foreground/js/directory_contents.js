@@ -565,9 +565,6 @@ DirectoryContents.prototype.onScanCompleted_ = function() {
     return;
 
   this.prefetchMetadataQueue_.run(function(callback) {
-    if (!this.isSearch() &&
-        this.getDirectoryEntry().fullPath === RootDirectory.DOWNLOADS)
-      metrics.recordMediumCount('DownloadsCount', this.fileList_.length);
     // Call callback first, so isScanning() returns false in the event handlers.
     callback();
     cr.dispatchSimpleEvent(this, 'scan-completed');
