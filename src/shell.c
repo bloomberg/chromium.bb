@@ -220,6 +220,9 @@ struct desktop_shell {
 
 		int row_current;
 		int column_current;
+
+		bool mod_pressed;
+		bool mod_invalid;
 	} exposay;
 
 	uint32_t binding_modifier;
@@ -5367,6 +5370,29 @@ exposay_modifier(struct weston_keyboard_grab *grab, uint32_t serial,
                  uint32_t mods_depressed, uint32_t mods_latched,
                  uint32_t mods_locked, uint32_t group)
 {
+	struct desktop_shell *shell =
+		container_of(grab, struct desktop_shell, exposay.grab_kbd);
+	struct weston_seat *seat = (struct weston_seat *) grab->keyboard->seat;
+
+	/* We want to know when mod has been pressed and released.
+	 * FIXME: There is a problem here: if mod is pressed, then a key
+	 * is pressed and released, then mod is released, we will treat that
+	 * as if only mod had been pressed and released. */
+	if (seat->modifier_state) {
+		if (seat->modifier_state == shell->binding_modifier) {
+			shell->exposay.mod_pressed = true;
+		} else {
+			shell->exposay.mod_invalid = true;
+		}
+	} else {
+		if (shell->exposay.mod_pressed && !shell->exposay.mod_invalid)
+			exposay_set_state(shell, EXPOSAY_TARGET_CANCEL, seat);
+
+		shell->exposay.mod_invalid = false;
+		shell->exposay.mod_pressed = false;
+	}
+
+	return;
 }
 
 static void
@@ -5512,10 +5538,7 @@ exposay_binding(struct weston_seat *seat, enum weston_keyboard_modifier modifier
 {
 	struct desktop_shell *shell = data;
 
-	if (shell->exposay.state_target == EXPOSAY_TARGET_OVERVIEW)
-		exposay_set_state(shell, EXPOSAY_TARGET_CANCEL, seat);
-	else
-		exposay_set_state(shell, EXPOSAY_TARGET_OVERVIEW, seat);
+	exposay_set_state(shell, EXPOSAY_TARGET_OVERVIEW, seat);
 }
 
 static void
