@@ -19,26 +19,12 @@ class IntroDataSourceTest(unittest.TestCase):
     intro_data = intro_data_source.get('test_intro')
     article_data = intro_data_source.get('test_article')
 
-    self.assertEqual('hi', article_data.get('title'))
-    self.assertEqual(None, intro_data.get('title'))
+    expected_intro = 'you<h2>first</h2><h3>inner</h3><h2>second</h2>'
+    # Article still has the header.
+    expected_article = '<h1>hi</h1>' + expected_intro
 
-    # TODO(kalman): test links.
-    expected_toc = [{
-        'link': '',
-        'subheadings': [{'link': '', 'subheadings': [], 'title': u'inner'}],
-        'title': u'first',
-      }, {
-        'link': '',
-        'subheadings': [],
-        'title': u'second'
-      }
-    ]
-    self.assertEqual(expected_toc, article_data.get('toc'))
-    self.assertEqual(expected_toc, intro_data.get('toc'))
-
-    expected_text = 'you<h2>first</h2><h3>inner</h3><h2>second</h2>'
-    self.assertEqual(expected_text, article_data.Render().text)
-    self.assertEqual(expected_text, intro_data.Render().text)
+    self.assertEqual(expected_intro, intro_data.Render().text)
+    self.assertEqual(expected_article, article_data.Render().text)
 
 
 if __name__ == '__main__':

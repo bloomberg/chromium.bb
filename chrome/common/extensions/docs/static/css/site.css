@@ -64,10 +64,6 @@ a:visited {
   color: #236bb2;
 }
 
-#toc a {
-  color: black;
-}
-
 li {
   margin: .3em 0 0 1.5em;
   padding: 0;
@@ -147,6 +143,14 @@ dd {
   font-weight: normal;
   margin: .4em 0 0 2em;
   padding: 0;
+}
+
+section {
+  margin-top: 1em;
+  padding-top: 1em;
+}
+section + section {
+  border-top: 1px solid #F5F5F5;
 }
 
 #gc-container {
@@ -311,9 +315,14 @@ button.google-button:active {
   line-height: 130%;
 }
 
-#gc-pagecontent h2 {
+#gc-pagecontent h2,
+#api-reference-header {
   font-size: 170%;
   font-weight: normal;
+}
+
+#api-reference-header {
+  font-weight: bold;
 }
 
 #gc-pagecontent h3 {
@@ -501,8 +510,14 @@ button.google-button:active {
      they float over. So we add this border to force the issue. */
   border-left: 20px solid white;
   float: right;
-  margin: 5px 0px 0px 0px;
-  padding: 5px;
+  /* The spacing in the TOC is based around 10px:
+   *  - The spacing between text and the box border is 10px, made up of a
+   *    top/bottom padding of 10px here and a left/right margin on every
+   *    TOC link of 10px.
+   *  - The separator has a 5px top margin and 5px top padding for a total
+   *    separation of 10px between each section.
+   */
+  padding: 10px 0;
   position: relative;
   width: 250px;
   word-break: break-word;
@@ -511,39 +526,27 @@ button.google-button:active {
 
 #toc * {
   list-style: none;
+  margin: 0;
   overflow: hidden;
   padding: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-#toc h2 {
-  border: none;
-  font-size: 100%;
-  font-weight: bold;
-  margin: 0;
-  padding: 0;
-}
-
-#toc ol {
-  margin: 1em 0 0 0;
-}
-
-#toc ol li {
+#toc a {
+  color: black;
   line-height: 1.2em;
-  margin: .5em 0 .5em 1em;
+  margin: 5px 0 5px 10px;
 }
 
-#toc ol li ol {
-  margin: 0;
+#toc li {
+  margin: 0 10px 0 10px;
 }
 
-#toc ol li ol li {
-  margin: .5em 0 0 1em;
-}
-
-#toc .api-reference {
+#toc .separator {
   border-top: 1px solid #e5e5e5;
+  margin-top: 5px;
+  padding-top: 5px;
 }
 
 .filtered_item {
@@ -615,6 +618,10 @@ tabs content pre {
 /*
  * API references.
  */
+
+h2#apiReference {
+  font-size: 28pt;
+}
 
 .type_name,
 .variable,

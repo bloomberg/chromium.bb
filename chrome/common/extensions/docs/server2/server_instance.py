@@ -9,6 +9,7 @@ from api_models import APIModels
 from availability_finder import AvailabilityFinder
 from compiled_file_system import CompiledFileSystem
 from content_providers import ContentProviders
+from document_renderer import DocumentRenderer
 from empty_dir_file_system import EmptyDirFileSystem
 from environment import IsDevServer
 from features_bundle import FeaturesBundle
@@ -20,6 +21,7 @@ from object_store_creator import ObjectStoreCreator
 from path_canonicalizer import PathCanonicalizer
 from reference_resolver import ReferenceResolver
 from samples_data_source import SamplesDataSource
+from table_of_contents_renderer import TableOfContentsRenderer
 from template_renderer import TemplateRenderer
 from test_branch_utility import TestBranchUtility
 from test_object_store import TestObjectStore
@@ -64,6 +66,10 @@ class ServerInstance(object):
 
     assert base_path.startswith('/') and base_path.endswith('/')
     self.base_path = base_path
+
+    self.document_renderer = DocumentRenderer(TableOfContentsRenderer(
+        host_fs_at_trunk,
+        compiled_fs_factory))
 
     self.host_file_system_iterator = HostFileSystemIterator(
         host_file_system_provider,

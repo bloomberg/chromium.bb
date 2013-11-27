@@ -9,25 +9,12 @@ import re
 
 from data_source import DataSource
 from docs_server_utils import FormatKey
-from document_parser import ParseDocument, RemoveTitle
+from document_parser import ParseDocument
 from extensions_paths import INTROS_TEMPLATES, ARTICLES_TEMPLATES
 from file_system import FileNotFoundError
 from future import Future
 from third_party.handlebar import Handlebar
 
-
-class _HandlebarWithContext(Handlebar):
-  '''Extends Handlebar with a get() method so that templates can not only
-  render intros with {{+intro}} but also access properties on them, like
-  {{intro.title}}, {{intro.toc}}, etc.
-  '''
-
-  def __init__(self, text, name, context):
-    Handlebar.__init__(self, text, name=name)
-    self._context = context
-
-  def get(self, key):
-    return self._context.get(key)
 
 
 # TODO(kalman): rename this HTMLDataSource or other, then have separate intro
@@ -49,51 +36,9 @@ class IntroDataSource(DataSource):
   def _MakeIntro(self, intro_path, intro):
     # Guess the name of the API from the path to the intro.
     api_name = os.path.splitext(intro_path.split('/')[-1])[0]
-    intro_with_links = self._ref_resolver.ResolveAllLinks(
-            intro, namespace=api_name)
-
-    # The templates generate a title for intros based on the API name.
-    expect_title = '/intros/' not in intro_path
-
-    # TODO(kalman): In order to pick up every header tag, and therefore make a
-    # complete TOC, the render context of the Handlebar needs to be passed
-    # through to here. Even if there were a mechanism to do this it would
-    # break caching; we'd need to do the TOC parsing *after* rendering the full
-    # template, and that would probably be expensive.
-    parse_result = ParseDocument(
-        self._template_renderer.Render(Handlebar(intro_with_links),
-                                       self._request,
-                                       # Avoid nasty surprises.
-                                       data_sources=('partials', 'strings'),
-                                       warn=False),
-        expect_title=expect_title)
-
-    if parse_result.warnings:
-      logging.warning('%s: %s' % (intro_path, '\n'.join(parse_result.warnings)))
-
-    # Convert the TableOfContentEntries into the data the templates want.
-    def make_toc(entries):
-      return [{
-        'link': entry.attributes.get('id', ''),
-        'subheadings': make_toc(entry.entries),
-        'title': entry.name,
-      } for entry in entries]
-
-    if expect_title:
-      intro_with_links, warning = RemoveTitle(intro_with_links)
-      if warning:
-        logging.warning('%s: %s' % (intro_path, warning))
-
-    if parse_result.sections:
-      # Only use the first section for now.
-      toc = make_toc(parse_result.sections[0].structure)
-    else:
-      toc = []
-
-    return _HandlebarWithContext(intro_with_links, intro_path, {
-      'title': parse_result.title,
-      'toc': toc
-    })
+    return Handlebar(
+        self._ref_resolver.ResolveAllLinks(intro, namespace=api_name),
+        name=intro_path)
 
   def get(self, key):
     path = FormatKey(key)

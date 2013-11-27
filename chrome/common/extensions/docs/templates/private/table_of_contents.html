@@ -1,57 +1,16 @@
 <div id="toc">
   <ol>
-    {{?toc_items}}
-    {{#i:toc_items}}
-    <li>
+    {{#i:items}}
+    <li {{?i.separator}}class="separator"{{/}}>
       <a href="#{{i.link}}">{{{i.title}}}</a>
       {{?i.subheadings}}
       <ol>
-        {{#sh:i.subheadings}}<li><a href="#{{sh.link}}">{{{sh.title}}}</a></li>{{/}}
+        {{#sh:i.subheadings}}
+        <li><a href="#{{sh.link}}">{{{sh.title}}}</a></li>
+        {{/i.subheadings}}
       </ol>
-      {{/}}
+      {{/i.subheadings}}
     </li>
-    {{/toc_items}}
-    {{/toc_items}}
-    {{?api}}
-    <div class="api-reference">
-      <li>
-        <a href="#apiReference">Reference</a>
-        <ol>
-          {{#a:api}}
-          {{?a.types}}
-          <li>
-            {{+partials.toc_types types:a.types/}}
-          </li>
-          {{/a.types}}
-          {{?a.properties}}
-          <li>
-            {{+partials.toc_properties properties:a.properties/}}
-          </li>
-          {{/a.properties}}
-          {{?a.functions}}
-          <li>
-            {{+partials.toc_functions functions:a.functions/}}
-          </li>
-          {{/a.functions}}
-          {{?a.events}}
-          <li>
-            {{+partials.toc_events events:a.events/}}
-          </li>
-          {{/a.events}}
-          {{?a.domEvents}}
-          <li>
-            {{+partials.toc_dom_events domEvents:a.domEvents/}}
-          </li>
-          {{/a.domEvents}}
-          {{?samples_list}}
-          <li>
-            {{+partials.toc_samples title:title/}}
-          </li>
-          {{/samples_list}}
-          {{/api}}
-        </ol>
-      </li>
-    </div>
-    {{/api}}
+    {{/items}}
   </ol>
 </div>

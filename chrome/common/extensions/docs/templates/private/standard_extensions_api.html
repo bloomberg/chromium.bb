@@ -13,23 +13,19 @@
         {{?api.channelWarning.trunk +partials.warning_trunk/}}
         {{?api.channelWarning.dev +partials.warning_dev/}}
         {{?api.channelWarning.beta +partials.warning_beta/}}
-        {{?intro}}
-        {{+partials.table_of_contents toc_items:intro.toc
-                                      api:api
-                                      samples_list:api.samples.extensions
-                                      title:strings.extensions_title/}}
-        {{:intro}}
-        {{+partials.table_of_contents toc_items:false
-                                      api:api
-                                      samples_list:api.samples.extensions
-                                      title:strings.extensions_title/}}
-        {{/intro}}
+        $(table_of_contents)
         {{+partials.intro_table api:api/}}
+        {{?intro}}
+        <section>
 {{- This is unindented because it contains <pre> tags -}}
-{{?intro +intro platform:strings.extension is_apps:false/}}
+{{+intro platform:strings.extension is_apps:false/}}
+        </section>
+        {{/intro}}
+        <section>
         {{+partials.api_reference samples_list:api.samples.extensions
                                   title:strings.extensions_title
                                   api:api/}}
+        </section>
       </div>
     </div>
   </body>

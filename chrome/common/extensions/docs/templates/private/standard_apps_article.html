@@ -2,16 +2,14 @@
 <html>
   <head>
     {{+partials.header_head/}}
-    <title>{{article.title}} - Google Chrome</title>
+    <title>$(title) - Google Chrome</title>
   </head>
   <body>
     {{+partials.header_body title:strings.apps_title platform:strings.app/}}
     <div id="gc-container">
       {{+partials.sidenav items:sidenavs.apps/}}
       <div id="gc-pagecontent">
-        <h1 class="page_title">{{article.title}}</h1>
-        {{+partials.table_of_contents toc_items:article.toc
-                                      title:strings.apps_title/}}
+        $(table_of_contents)
 {{- This may contain <pre> tags so it is not indented -}}
 {{+article platform:strings.app is_apps:true/}}
       </div>
