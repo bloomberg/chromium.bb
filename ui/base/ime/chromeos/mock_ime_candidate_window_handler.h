@@ -31,13 +31,10 @@ class UI_EXPORT MockIMECandidateWindowHandler
   virtual void UpdateLookupTable(
       const input_method::CandidateWindow& candidate_window,
       bool visible) OVERRIDE;
-  virtual void HideLookupTable() OVERRIDE;
   virtual void UpdateAuxiliaryText(const std::string& text,
                                    bool visible) OVERRIDE;
-  virtual void HideAuxiliaryText() OVERRIDE;
   virtual void UpdatePreeditText(const std::string& text, uint32 cursor_pos,
                                  bool visible) OVERRIDE;
-  virtual void HidePreeditText() OVERRIDE;
   virtual void SetCursorBounds(const gfx::Rect& cursor_bounds,
                                const gfx::Rect& composition_head) OVERRIDE;
 

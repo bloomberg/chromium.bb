@@ -130,23 +130,14 @@ class UI_EXPORT IBusPanelCandidateWindowHandlerInterface {
       const input_method::CandidateWindow& candidate_window,
       bool visible) = 0;
 
-  // Called when the IME hides the lookup table.
-  virtual void HideLookupTable() = 0;
-
   // Called when the IME updates the auxiliary text. The |text| is given in
   // UTF-8 encoding.
   virtual void UpdateAuxiliaryText(const std::string& text, bool visible) = 0;
-
-  // Called when the IME hides the auxiliary text.
-  virtual void HideAuxiliaryText() = 0;
 
   // Called when the IME updates the preedit text. The |text| is given in
   // UTF-8 encoding.
   virtual void UpdatePreeditText(const std::string& text, uint32 cursor_pos,
                                  bool visible) = 0;
-
-  // Called when the IME hides the preedit text.
-  virtual void HidePreeditText() = 0;
 
   // Called when the application changes its caret bounds.
   virtual void SetCursorBounds(const gfx::Rect& cursor_bounds,

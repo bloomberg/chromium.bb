@@ -94,17 +94,13 @@ CandidateWindowControllerImpl::~CandidateWindowControllerImpl() {
   candidate_window_view_->RemoveObserver(this);
 }
 
-void CandidateWindowControllerImpl::HideAuxiliaryText() {
-  candidate_window_view_->HideAuxiliaryText();
-}
-
-void CandidateWindowControllerImpl::HideLookupTable() {
+void CandidateWindowControllerImpl::Hide() {
+  // To hide the candidate window we have to call HideLookupTable and
+  // HideAuxiliaryText. Without calling HideAuxiliaryText the
+  // auxiliary text area will remain.
   candidate_window_view_->HideLookupTable();
+  candidate_window_view_->HideAuxiliaryText();
   infolist_window_->Hide();
-}
-
-void CandidateWindowControllerImpl::HidePreeditText() {
-  candidate_window_view_->HidePreeditText();
 }
 
 void CandidateWindowControllerImpl::SetCursorBounds(

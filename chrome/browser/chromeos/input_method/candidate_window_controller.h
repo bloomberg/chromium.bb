@@ -42,6 +42,7 @@ class CandidateWindowController {
   virtual void Shutdown() = 0;
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
+  virtual void Hide() = 0;
 
   // Gets an instance of CandidateWindowController. Caller has to delete the
   // returned object.

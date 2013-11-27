@@ -41,6 +41,7 @@ class CandidateWindowControllerImpl
       CandidateWindowController::Observer* observer) OVERRIDE;
   virtual void RemoveObserver(
       CandidateWindowController::Observer* observer) OVERRIDE;
+  virtual void Hide() OVERRIDE;
 
  protected:
   // Returns infolist window position. This function handles right or bottom
@@ -80,9 +81,6 @@ class CandidateWindowControllerImpl
   void CreateView();
 
   // IBusPanelCandidateWindowHandlerInterface overrides.
-  virtual void HideAuxiliaryText() OVERRIDE;
-  virtual void HideLookupTable() OVERRIDE;
-  virtual void HidePreeditText() OVERRIDE;
   virtual void SetCursorBounds(const gfx::Rect& cursor_bounds,
                                const gfx::Rect& composition_head) OVERRIDE;
   virtual void UpdateAuxiliaryText(const std::string& utf8_text,

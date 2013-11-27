@@ -24,9 +24,6 @@ void MockIMECandidateWindowHandler::UpdateLookupTable(
   last_update_lookup_table_arg_.is_visible = visible;
 }
 
-void MockIMECandidateWindowHandler::HideLookupTable() {
-}
-
 void MockIMECandidateWindowHandler::UpdateAuxiliaryText(const std::string& text,
                                                         bool visible) {
   ++update_auxiliary_text_call_count_;
@@ -34,15 +31,9 @@ void MockIMECandidateWindowHandler::UpdateAuxiliaryText(const std::string& text,
   last_update_auxiliary_text_arg_.is_visible = visible;
 }
 
-void MockIMECandidateWindowHandler::HideAuxiliaryText() {
-}
-
 void MockIMECandidateWindowHandler::UpdatePreeditText(const std::string& text,
                                                       uint32 cursor_pos,
                                                       bool visible) {
-}
-
-void MockIMECandidateWindowHandler::HidePreeditText() {
 }
 
 void MockIMECandidateWindowHandler::SetCursorBounds(
