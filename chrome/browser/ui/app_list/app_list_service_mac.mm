@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate_impl.h"
+#include "chrome/browser/ui/app_list/app_list_positioner.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
@@ -165,41 +166,57 @@ NSRunningApplication* ActiveApplicationNotChrome() {
   return nil;
 }
 
-enum DockLocation {
-  DockLocationOtherDisplay,
-  DockLocationBottom,
-  DockLocationLeft,
-  DockLocationRight,
-};
-
-DockLocation DockLocationInDisplay(const gfx::Display& display) {
+// Determines which screen edge the dock is aligned to.
+AppListPositioner::ScreenEdge DockLocationInDisplay(
+    const gfx::Display& display) {
   // Assume the dock occupies part of the work area either on the left, right or
   // bottom of the display. Note in the autohide case, it is always 4 pixels.
   const gfx::Rect work_area = display.work_area();
   const gfx::Rect display_bounds = display.bounds();
   if (work_area.bottom() != display_bounds.bottom())
-    return DockLocationBottom;
+    return AppListPositioner::SCREEN_EDGE_BOTTOM;
 
   if (work_area.x() != display_bounds.x())
-    return DockLocationLeft;
+    return AppListPositioner::SCREEN_EDGE_LEFT;
 
   if (work_area.right() != display_bounds.right())
-    return DockLocationRight;
+    return AppListPositioner::SCREEN_EDGE_RIGHT;
 
-  return DockLocationOtherDisplay;
+  return AppListPositioner::SCREEN_EDGE_UNKNOWN;
 }
 
-// If |work_area_edge| is too close to the |screen_edge| (e.g. autohide dock),
-// adjust |anchor| away from the edge by a constant amount to reduce overlap and
+// If |display|'s work area is too close to its boundary on |dock_edge|, adjust
+// the work area away from the edge by a constant amount to reduce overlap and
 // ensure the dock icon can still be clicked to dismiss the app list.
-int AdjustPointForDynamicDock(int anchor, int screen_edge, int work_area_edge) {
+void AdjustWorkAreaForDock(const gfx::Display& display,
+                           AppListPositioner* positioner,
+                           AppListPositioner::ScreenEdge dock_edge) {
   const int kAutohideDockThreshold = 10;
   const int kExtraDistance = 50;  // A dock with 40 items is about this size.
-  if (abs(work_area_edge - screen_edge) > kAutohideDockThreshold)
-    return anchor;
 
-  return anchor +
-      (screen_edge < work_area_edge ? kExtraDistance : -kExtraDistance);
+  const gfx::Rect work_area = display.work_area();
+  const gfx::Rect display_bounds = display.bounds();
+
+  switch (dock_edge) {
+    case AppListPositioner::SCREEN_EDGE_LEFT:
+      if (work_area.x() - display_bounds.x() <= kAutohideDockThreshold)
+        positioner->WorkAreaInset(kExtraDistance, 0, 0, 0);
+      break;
+    case AppListPositioner::SCREEN_EDGE_RIGHT:
+      if (display_bounds.right() - work_area.right() <= kAutohideDockThreshold)
+        positioner->WorkAreaInset(0, 0, kExtraDistance, 0);
+      break;
+    case AppListPositioner::SCREEN_EDGE_BOTTOM:
+      if (display_bounds.bottom() - work_area.bottom() <=
+          kAutohideDockThreshold) {
+        positioner->WorkAreaInset(0, 0, 0, kExtraDistance);
+      }
+      break;
+    case AppListPositioner::SCREEN_EDGE_UNKNOWN:
+    case AppListPositioner::SCREEN_EDGE_TOP:
+      NOTREACHED();
+      break;
+  }
 }
 
 void GetAppListWindowOrigins(
@@ -262,49 +279,27 @@ void AppListServiceMac::FindAnchorPoint(const gfx::Size& window_size,
                                         const gfx::Point& cursor,
                                         NSPoint* target_origin,
                                         NSPoint* start_origin) {
-  const gfx::Rect work_area = display.work_area();
+  AppListPositioner positioner(display, window_size, 0);
+  AppListPositioner::ScreenEdge dock_location =
+      AppListPositioner::SCREEN_EDGE_UNKNOWN;
+  gfx::Point anchor;
   if (!cursor_is_visible) {
-    *target_origin =
-        NSMakePoint(work_area.x(), primary_display_height - work_area.bottom());
-    *start_origin = *target_origin;
-    return;
-  }
+    anchor = positioner.GetAnchorPointForScreenCorner(
+        AppListPositioner::SCREEN_CORNER_BOTTOM_LEFT);
+  } else {
+    dock_location = DockLocationInDisplay(display);
 
-  const DockLocation dock_location = DockLocationInDisplay(display);
-  const gfx::Rect display_bounds = display.bounds();
-
-  if (dock_location == DockLocationOtherDisplay) {
-    // Just display at the bottom-left of the display the cursor is on.
-    *target_origin = NSMakePoint(
-        display_bounds.x(), primary_display_height - display_bounds.bottom());
-    *start_origin = *target_origin;
-    return;
-  }
-
-  // Anchor the center of the window in a region that prevents the window
-  // showing outside of the work area.
-  gfx::Rect anchor_area = work_area;
-  anchor_area.Inset(window_size.width() / 2, window_size.height() / 2);
-  gfx::Point anchor = cursor;
-  anchor.SetToMax(anchor_area.origin());
-  anchor.SetToMin(anchor_area.bottom_right());
-
-  // Move anchor to the dock, keeping the other axis aligned with the cursor.
-  switch (dock_location) {
-    case DockLocationBottom:
-      anchor.set_y(AdjustPointForDynamicDock(
-          anchor_area.bottom(), display_bounds.bottom(), work_area.bottom()));
-      break;
-    case DockLocationLeft:
-      anchor.set_x(AdjustPointForDynamicDock(
-          anchor_area.x(), display_bounds.x(), work_area.x()));
-      break;
-    case DockLocationRight:
-      anchor.set_x(AdjustPointForDynamicDock(
-          anchor_area.right(), display_bounds.right(), work_area.right()));
-      break;
-    default:
-      NOTREACHED();
+    // Snap to the dock edge, anchored to the cursor position.
+    if (dock_location == AppListPositioner::SCREEN_EDGE_UNKNOWN) {
+      anchor = positioner.GetAnchorPointForScreenCorner(
+          AppListPositioner::SCREEN_CORNER_BOTTOM_LEFT);
+    } else {
+      // Subtract the dock area since the display's default work_area will not
+      // subtract it if the dock is set to auto-hide, and the app list should
+      // never overlap the dock.
+      AdjustWorkAreaForDock(display, &positioner, dock_location);
+      anchor = positioner.GetAnchorPointForShelfCursor(dock_location, cursor);
+    }
   }
 
   *target_origin = NSMakePoint(
@@ -313,17 +308,20 @@ void AppListServiceMac::FindAnchorPoint(const gfx::Size& window_size,
   *start_origin = *target_origin;
 
   switch (dock_location) {
-    case DockLocationBottom:
-      start_origin->y -= kDistanceMovedOnShow;
+    case AppListPositioner::SCREEN_EDGE_UNKNOWN:
       break;
-    case DockLocationLeft:
+    case AppListPositioner::SCREEN_EDGE_LEFT:
       start_origin->x -= kDistanceMovedOnShow;
       break;
-    case DockLocationRight:
+    case AppListPositioner::SCREEN_EDGE_RIGHT:
       start_origin->x += kDistanceMovedOnShow;
       break;
-    default:
+    case AppListPositioner::SCREEN_EDGE_TOP:
       NOTREACHED();
+      break;
+    case AppListPositioner::SCREEN_EDGE_BOTTOM:
+      start_origin->y -= kDistanceMovedOnShow;
+      break;
   }
 }
 
