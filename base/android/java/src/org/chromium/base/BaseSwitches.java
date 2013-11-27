@@ -12,6 +12,12 @@ public abstract class BaseSwitches {
     // Block onCreate() of Chrome until a Java debugger is attached.
     public static final String WAIT_FOR_JAVA_DEBUGGER = "wait-for-java-debugger";
 
+    // Overrides low-end device detection, disabling low-end device optimizations.
+    public static final String DISABLE_LOW_END_DEVICE_MODE = "disable-low-end-device-mode";
+
+    // Overrides low-end device detection, enabling low-end device optimizations.
+    public static final String ENABLE_LOW_END_DEVICE_MODE = "enable-low-end-device-mode";
+
     // Prevent instantiation.
     private BaseSwitches() {}
 };

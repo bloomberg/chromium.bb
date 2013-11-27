@@ -27,6 +27,11 @@ extern const char kTraceToConsole[];
 extern const char kEnableCrashReporterForTesting[];
 #endif
 
+#if defined(OS_ANDROID)
+extern const char kDisableLowEndDeviceMode[];
+extern const char kEnableLowEndDeviceMode[];
+#endif
+
 }  // namespace switches
 
 #endif  // BASE_BASE_SWITCHES_H_

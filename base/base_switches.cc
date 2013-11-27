@@ -61,4 +61,12 @@ const char kEnableCrashReporterForTesting[] =
     "enable-crash-reporter-for-testing";
 #endif
 
+#if defined(OS_ANDROID)
+// Overrides low-end device detection, disabling low-end device optimizations.
+const char kDisableLowEndDeviceMode[]       = "disable-low-end-device-mode";
+
+// Overrides low-end device detection, enabling low-end device optimizations.
+const char kEnableLowEndDeviceMode[]        = "enable-low-end-device-mode";
+#endif
+
 }  // namespace switches

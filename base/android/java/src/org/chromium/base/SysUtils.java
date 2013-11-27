@@ -15,6 +15,9 @@ import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 
+import org.chromium.base.BaseSwitches;
+import org.chromium.base.CommandLine;
+
 /**
  * Exposes system related information about the current device.
  */
@@ -98,15 +101,28 @@ public class SysUtils {
      */
     @CalledByNative
     public static boolean isLowEndDevice() {
-        if (Build.VERSION.SDK_INT <= ANDROID_LOW_MEMORY_ANDROID_SDK_THRESHOLD) {
-            return false;
-        }
         if (sLowEndDevice == null) {
-            int ramSizeKB = amountOfPhysicalMemoryKB();
-            sLowEndDevice = (ramSizeKB > 0 &&
-                    ramSizeKB / 1024 < ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB);
+            sLowEndDevice = detectLowEndDevice();
         }
 
         return sLowEndDevice.booleanValue();
+    }
+
+    private static boolean detectLowEndDevice() {
+        if (CommandLine.isInitialized()) {
+            if (CommandLine.getInstance().hasSwitch(BaseSwitches.ENABLE_LOW_END_DEVICE_MODE)) {
+                return true;
+            }
+            if (CommandLine.getInstance().hasSwitch(BaseSwitches.DISABLE_LOW_END_DEVICE_MODE)) {
+                return false;
+            }
+        }
+
+        if (Build.VERSION.SDK_INT <= ANDROID_LOW_MEMORY_ANDROID_SDK_THRESHOLD) {
+            return false;
+        }
+
+        int ramSizeKB = amountOfPhysicalMemoryKB();
+        return (ramSizeKB > 0 && ramSizeKB / 1024 < ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB);
     }
 }
