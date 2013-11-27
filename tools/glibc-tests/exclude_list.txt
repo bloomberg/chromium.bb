@@ -246,3 +246,19 @@ nptl/tst-stdio1
 # http://code.google.com/p/nativeclient/issues/detail?id=1969
 ###########################################################################
 check-local-headers
+
+###########################################################################
+# Tests that use /dev/null which pass on linux/mac but fail on win32
+###########################################################################
+stdio-common/bug22
+stdio-common/scanf4
+rt/tst-aio8
+
+###########################################################################
+# Tests that fail on win32 (due to lack of /dev/null) and TIMEOUT on
+# linux/mac:
+# http://code.google.com/p/nativeclient/issues/detail?id=3744
+###########################################################################
+nptl/tst-cond16
+nptl/tst-cond17
+nptl/tst-cond18

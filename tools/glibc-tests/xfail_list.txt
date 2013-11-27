@@ -160,9 +160,6 @@ nptl/tst-attr3
 nptl/tst-basic6
 nptl/tst-cancel24
 nptl/tst-cleanupx3
-nptl/tst-cond16
-nptl/tst-cond17
-nptl/tst-cond18
 nptl/tst-execstack
 nptl/tst-fini1
 nptl/tst-flock1
@@ -211,14 +208,12 @@ resource/bug-ulimit1
 rt/tst-aio4
 rt/tst-aio6
 rt/tst-aio7
-rt/tst-aio8
 signal/tst-signal
 signal/tst-sigsimple
 stdio-common/bug12
 stdio-common/bug14
 stdio-common/bug19
 stdio-common/bug19a
-stdio-common/bug22
 stdio-common/bug5
 stdio-common/bug6
 stdio-common/bug7
@@ -229,7 +224,6 @@ stdio-common/scanf14
 stdio-common/scanf15
 stdio-common/scanf16
 stdio-common/scanf17
-stdio-common/scanf4
 stdio-common/temptest
 stdio-common/test-fwrite
 stdio-common/test-popen
