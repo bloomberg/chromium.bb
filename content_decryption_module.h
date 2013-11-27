@@ -593,22 +593,25 @@ class ContentDecryptionModule_3 {
   static const int kVersion = 3;
   typedef Host_3 Host;
 
-  // GenerateKeyRequest(), Update(), and Release() get passed a |reference_id|
-  // which is the reference ID for a MediaKeySession object. It must be used
-  // in the reply via Host methods (e.g. Host::SendMessage()).
+  // CreateSession(), UpdateSession(), and ReleaseSession() get passed a
+  // |session_id| for a MediaKeySession object. It must be used in the reply via
+  // Host methods (e.g. Host::OnSessionMessage()).
+  // Note: |session_id| is different from MediaKeySession's sessionId attribute,
+  // which is referred to as |web_session_id| in this file.
 
-  // Generates a key request given |type| and |init_data|.
-  virtual void GenerateKeyRequest(
-      uint32_t reference_id,
+  // Creates a session given |type| and |init_data|.
+  virtual void CreateSession(
+      uint32_t session_id,
       const char* type, uint32_t type_size,
       const uint8_t* init_data, uint32_t init_data_size) = 0;
 
   // Updates the session with |response|.
-  virtual void Update(uint32_t reference_id,
-                      const uint8_t* response, uint32_t response_size) = 0;
+  virtual void UpdateSession(
+      uint32_t session_id,
+      const uint8_t* response, uint32_t response_size) = 0;
 
-  // Releases the resources for the session specified by |reference_id|.
-  virtual void Release(uint32_t reference_id) = 0;
+  // Releases the resources for the session.
+  virtual void ReleaseSession(uint32_t session_id) = 0;
 
   // Performs scheduled operation with |context| when the timer fires.
   virtual void TimerExpired(void* context) = 0;
@@ -866,34 +869,32 @@ class Host_3 {
   // Returns the current epoch wall time in seconds.
   virtual double GetCurrentWallTimeInSeconds() = 0;
 
-  // Sets the session ID for the session represented by |reference_id|.
-  // This must be called before any SendMessage() or SendReady() for
-  // |reference_id|. |session_id_length| should not include null termination.
-  virtual void SetSessionId(
-      uint32_t reference_id,
-      const char* session_id, uint32_t session_id_length) = 0;
+  // Called by the CDM when a session is created and the value for the
+  // MediaKeySession's sessionId attribute is available (|web_session_id|).
+  // This must be called before OnSessionMessage() or OnSessionReady() is called
+  // for |session_id|. |web_session_id_length| should not include null
+  // termination.
+  virtual void OnSessionCreated(
+      uint32_t session_id,
+      const char* web_session_id, uint32_t web_session_id_length) = 0;
 
-  // Sends a message event with |message| to the MediaKeySession object
-  // represented by |reference_id|. Length parameters should not include
-  // null termination.
-  virtual void SendMessage(
-      uint32_t reference_id,
+  // Called by the CDM when it has a message for session |session_id|.
+  // Length parameters should not include null termination.
+  virtual void OnSessionMessage(
+      uint32_t session_id,
       const char* message, uint32_t message_length,
       const char* destination_url, uint32_t destination_url_length) = 0;
 
-  // Sends a ready event to the MediaKeySession object represented by
-  // |reference_id|.
-  virtual void SendReady(uint32_t reference_id) = 0;
+  // Called by the CDM when session |session_id| is ready.
+  virtual void OnSessionReady(uint32_t session_id) = 0;
 
-  // Sends a closed event to the MediaKeySession object represented by
-  // |reference_id|.
-  virtual void SendClosed(uint32_t reference_id) = 0;
+  // Called by the CDM when session |session_id| is closed.
+  virtual void OnSessionClosed(uint32_t session_id) = 0;
 
-  // Sends an error event to the MediaKeySession object represented by
-  // |reference_id|.
-  virtual void SendError(uint32_t reference_id,
-                         MediaKeyError error_code,
-                         uint32_t system_code) = 0;
+  // Called by the CDM when an error occurs in session |session_id|.
+  virtual void OnSessionError(uint32_t session_id,
+                              MediaKeyError error_code,
+                              uint32_t system_code) = 0;
 
   // The following are optional methods that may not be implemented on all
   // platforms.
