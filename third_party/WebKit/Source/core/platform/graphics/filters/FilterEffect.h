@@ -55,6 +55,14 @@ enum FilterEffectType {
     FilterEffectTypeSourceInput
 };
 
+enum DetermineSubregionFlag {
+    DetermineSubregionNone = 0,
+    MapRectForward = 1,
+    ClipToFilterRegion = 1 << 1
+};
+
+typedef int DetermineSubregionFlags;
+
 class FilterEffect : public RefCounted<FilterEffect> {
 public:
     virtual ~FilterEffect();
@@ -155,7 +163,7 @@ public:
     virtual void transformResultColorSpace(FilterEffect* in, const int) { in->transformResultColorSpace(m_operatingColorSpace); }
     void transformResultColorSpace(ColorSpace);
 
-    FloatRect determineFilterPrimitiveSubregion();
+    FloatRect determineFilterPrimitiveSubregion(DetermineSubregionFlags = DetermineSubregionNone);
 
 protected:
     FilterEffect(Filter*);

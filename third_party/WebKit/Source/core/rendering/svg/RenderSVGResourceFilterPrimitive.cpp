@@ -55,47 +55,4 @@ void RenderSVGResourceFilterPrimitive::styleDidChange(StyleDifference diff, cons
     }
 }
 
-FloatRect RenderSVGResourceFilterPrimitive::determineFilterPrimitiveSubregion(FilterEffect* effect)
-{
-    SVGFilter* filter = static_cast<SVGFilter*>(effect->filter());
-    ASSERT(filter);
-
-    // FETile, FETurbulence, FEFlood don't have input effects, take the filter region as unite rect.
-    FloatRect subregion;
-    if (unsigned numberOfInputEffects = effect->inputEffects().size()) {
-        subregion = determineFilterPrimitiveSubregion(effect->inputEffect(0));
-        for (unsigned i = 1; i < numberOfInputEffects; ++i)
-            subregion.unite(determineFilterPrimitiveSubregion(effect->inputEffect(i)));
-    } else
-        subregion = filter->filterRegion();
-
-    // After calling determineFilterPrimitiveSubregion on the target effect, reset the subregion again for <feTile>.
-    if (effect->filterEffectType() == FilterEffectTypeTile)
-        subregion = filter->filterRegion();
-
-    FloatRect effectBoundaries = effect->effectBoundaries();
-    if (effect->hasX())
-        subregion.setX(effectBoundaries.x());
-    if (effect->hasY())
-        subregion.setY(effectBoundaries.y());
-    if (effect->hasWidth())
-        subregion.setWidth(effectBoundaries.width());
-    if (effect->hasHeight())
-        subregion.setHeight(effectBoundaries.height());
-
-    effect->setFilterPrimitiveSubregion(subregion);
-
-    FloatRect absoluteSubregion = filter->absoluteTransform().mapRect(subregion);
-    FloatSize filterResolution = filter->filterResolution();
-    absoluteSubregion.scale(filterResolution.width(), filterResolution.height());
-
-    // Clip every filter effect to the filter region.
-    FloatRect absoluteScaledFilterRegion = filter->absoluteFilterRegion();
-    absoluteScaledFilterRegion.scale(filterResolution.width(), filterResolution.height());
-    absoluteSubregion.intersect(absoluteScaledFilterRegion);
-
-    effect->setMaxEffectRect(absoluteSubregion);
-    return subregion;
-}
-
 } // namespace WebCore

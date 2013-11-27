@@ -437,16 +437,16 @@ TextStream& FilterEffect::externalRepresentation(TextStream& ts, int) const
     return ts;
 }
 
-FloatRect FilterEffect::determineFilterPrimitiveSubregion()
+FloatRect FilterEffect::determineFilterPrimitiveSubregion(DetermineSubregionFlags flags)
 {
     ASSERT(filter());
 
     // FETile, FETurbulence, FEFlood don't have input effects, take the filter region as unite rect.
     FloatRect subregion;
     if (unsigned numberOfInputEffects = inputEffects().size()) {
-        subregion = inputEffect(0)->determineFilterPrimitiveSubregion();
+        subregion = inputEffect(0)->determineFilterPrimitiveSubregion(flags);
         for (unsigned i = 1; i < numberOfInputEffects; ++i)
-            subregion.unite(inputEffect(i)->determineFilterPrimitiveSubregion());
+            subregion.unite(inputEffect(i)->determineFilterPrimitiveSubregion(flags));
     } else
         subregion = filter()->filterRegion();
 
@@ -454,7 +454,8 @@ FloatRect FilterEffect::determineFilterPrimitiveSubregion()
     if (filterEffectType() == FilterEffectTypeTile)
         subregion = filter()->filterRegion();
 
-    subregion = mapRect(subregion);
+    if (flags & MapRectForward)
+        subregion = mapRect(subregion);
 
     FloatRect boundaries = effectBoundaries();
     if (hasX())
@@ -471,6 +472,13 @@ FloatRect FilterEffect::determineFilterPrimitiveSubregion()
     FloatRect absoluteSubregion = filter()->absoluteTransform().mapRect(subregion);
     FloatSize filterResolution = filter()->filterResolution();
     absoluteSubregion.scale(filterResolution.width(), filterResolution.height());
+
+    // Clip every filter effect to the filter region.
+    if (flags & ClipToFilterRegion) {
+        FloatRect absoluteScaledFilterRegion = filter()->absoluteFilterRegion();
+        absoluteScaledFilterRegion.scale(filterResolution.width(), filterResolution.height());
+        absoluteSubregion.intersect(absoluteScaledFilterRegion);
+    }
 
     setMaxEffectRect(absoluteSubregion);
     return subregion;

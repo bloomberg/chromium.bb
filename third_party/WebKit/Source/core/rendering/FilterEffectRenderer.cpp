@@ -373,7 +373,7 @@ bool FilterEffectRendererHelper::prepareFilterEffect(RenderLayer* renderLayer, c
     filter->setAbsoluteTransform(absoluteTransform);
     filter->setAbsoluteFilterRegion(AffineTransform().scale(zoom).mapRect(filterSourceRect));
     filter->setFilterRegion(absoluteTransform.inverse().mapRect(filterSourceRect));
-    filter->lastEffect()->determineFilterPrimitiveSubregion();
+    filter->lastEffect()->determineFilterPrimitiveSubregion(MapRectForward);
 
     bool hasUpdatedBackingStore = filter->updateBackingStoreRect(filterSourceRect);
     if (filter->hasFilterThatMovesPixels()) {
