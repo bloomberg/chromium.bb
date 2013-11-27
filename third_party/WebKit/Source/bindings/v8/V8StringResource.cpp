@@ -148,7 +148,7 @@ StringType v8StringToWebCoreString(v8::Handle<v8::String> v8String, ExternalMode
 
     int length = v8String->Length();
     if (UNLIKELY(!length))
-        return String("");
+        return StringType("");
 
     bool oneByte = v8String->ContainsOnlyOneByte();
     StringType result(oneByte ? StringTraits<StringType>::template fromV8String<true>(v8String, length) : StringTraits<StringType>::template fromV8String<false>(v8String, length));
