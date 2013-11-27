@@ -66,6 +66,7 @@
         'base/scoped_ptr_algorithm.h',
         'base/scoped_ptr_deque.h',
         'base/scoped_ptr_vector.h',
+        'base/swap_promise.h',
         'base/switches.cc',
         'base/switches.h',
         'base/tiling_data.cc',

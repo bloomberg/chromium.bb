@@ -385,6 +385,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   sync_tree->SetLatencyInfo(latency_info_);
   latency_info_.Clear();
 
+  sync_tree->PassSwapPromises(&swap_promise_list_);
+
   host_impl->SetViewportSize(device_viewport_size_);
   host_impl->SetOverdrawBottomHeight(overdraw_bottom_height_);
   host_impl->SetDeviceScaleFactor(device_scale_factor_);
@@ -1266,6 +1268,22 @@ bool LayerTreeHost::ScheduleMicroBenchmark(
     const MicroBenchmark::DoneCallback& callback) {
   return micro_benchmark_controller_.ScheduleRun(
       benchmark_name, value.Pass(), callback);
+}
+
+void LayerTreeHost::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {
+  if (proxy_->HasImplThread()) {
+    DCHECK(proxy_->CommitRequested() || proxy_->BeginMainFrameRequested());
+  }
+  DCHECK(swap_promise);
+  if (swap_promise_list_.size() > kMaxQueuedSwapPromiseNumber)
+    BreakSwapPromises(SwapPromise::SWAP_PROMISE_LIST_OVERFLOW);
+  swap_promise_list_.push_back(swap_promise.Pass());
+}
+
+void LayerTreeHost::BreakSwapPromises(SwapPromise::DidNotSwapReason reason) {
+  for (size_t i = 0; i < swap_promise_list_.size(); i++)
+    swap_promise_list_[i]->DidNotSwap(reason);
+  swap_promise_list_.clear();
 }
 
 }  // namespace cc

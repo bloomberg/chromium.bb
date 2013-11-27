@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
+#include "cc/base/swap_promise.h"
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/input/input_handler.h"
 #include "cc/output/context_provider.h"
@@ -24,6 +25,8 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/frame_time.h"
 
+namespace {
+
 // Measured in seconds.
 const double kSmoothnessTakesPriorityExpirationDelay = 0.25;
 
@@ -31,6 +34,21 @@ const size_t kDurationHistorySize = 60;
 const double kCommitAndActivationDurationEstimationPercentile = 50.0;
 const double kDrawDurationEstimationPercentile = 100.0;
 const int kDrawDurationEstimatePaddingInMicroseconds = 0;
+
+class SwapPromiseChecker {
+ public:
+  explicit SwapPromiseChecker(cc::LayerTreeHost* layer_tree_host)
+        : layer_tree_host_(layer_tree_host) {}
+
+  ~SwapPromiseChecker() {
+    layer_tree_host_->BreakSwapPromises(cc::SwapPromise::COMMIT_FAILS);
+  }
+
+ private:
+  cc::LayerTreeHost* layer_tree_host_;
+};
+
+}  // namespace
 
 namespace cc {
 
@@ -753,6 +771,11 @@ void ThreadProxy::BeginMainFrame(
     TRACE_EVENT0("cc", "EarlyOut_DeferCommits");
     return;
   }
+
+  // If the commit finishes, LayerTreeHost will transfer its swap promises to
+  // LayerTreeImpl. The destructor of SwapPromiseChecker checks LayerTressHost's
+  // swap promises.
+  SwapPromiseChecker swap_promise_checker(layer_tree_host());
 
   // Do not notify the impl thread of commit requests that occur during
   // the apply/animate/layout part of the BeginMainFrameAndCommit process since

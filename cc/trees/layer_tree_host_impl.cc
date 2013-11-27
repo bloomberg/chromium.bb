@@ -1420,10 +1420,13 @@ const RendererCapabilities& LayerTreeHostImpl::GetRendererCapabilities() const {
 }
 
 bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
-  if (frame.has_no_damage)
+  if (frame.has_no_damage) {
+    active_tree()->BreakSwapPromises(SwapPromise::SWAP_FAILS);
     return false;
+  }
   renderer_->SwapBuffers();
   active_tree_->ClearLatencyInfo();
+  active_tree()->FinishSwapPromises();
   return true;
 }
 

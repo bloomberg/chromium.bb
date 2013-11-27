@@ -122,6 +122,9 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   target_tree->SetLatencyInfo(latency_info_);
   latency_info_.Clear();
+
+  target_tree->PassSwapPromises(&swap_promise_list_);
+
   target_tree->SetPageScaleFactorAndLimits(
       page_scale_factor(), min_page_scale_factor(), max_page_scale_factor());
   target_tree->SetPageScaleDelta(
@@ -706,6 +709,32 @@ const ui::LatencyInfo& LayerTreeImpl::GetLatencyInfo() {
 
 void LayerTreeImpl::ClearLatencyInfo() {
   latency_info_.Clear();
+}
+
+void LayerTreeImpl::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {
+  DCHECK(swap_promise);
+  if (swap_promise_list_.size() > kMaxQueuedSwapPromiseNumber)
+    BreakSwapPromises(SwapPromise::SWAP_PROMISE_LIST_OVERFLOW);
+  swap_promise_list_.push_back(swap_promise.Pass());
+}
+
+void LayerTreeImpl::PassSwapPromises(
+    ScopedPtrVector<SwapPromise>* new_swap_promise) {
+  swap_promise_list_.insert_and_take(swap_promise_list_.end(),
+                                     *new_swap_promise);
+  new_swap_promise->clear();
+}
+
+void LayerTreeImpl::FinishSwapPromises() {
+  for (size_t i = 0; i < swap_promise_list_.size(); i++)
+    swap_promise_list_[i]->DidSwap();
+  swap_promise_list_.clear();
+}
+
+void LayerTreeImpl::BreakSwapPromises(SwapPromise::DidNotSwapReason reason) {
+  for (size_t i = 0; i < swap_promise_list_.size(); i++)
+    swap_promise_list_[i]->DidNotSwap(reason);
+  swap_promise_list_.clear();
 }
 
 void LayerTreeImpl::DidModifyTilePriorities() {

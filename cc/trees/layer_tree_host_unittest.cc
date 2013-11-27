@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/synchronization/lock.h"
 #include "cc/animation/timing_function.h"
+#include "cc/base/swap_promise.h"
 #include "cc/debug/frame_rate_counter.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/content_layer_client.h"
@@ -5214,5 +5215,125 @@ class LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface
 // No output to copy for delegated renderers.
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostTestSetMemoryPolicyOnLostOutputSurface);
+
+struct TestSwapPromiseResult {
+  TestSwapPromiseResult() : did_swap_called(false),
+                            did_not_swap_called(false),
+                            dtor_called(false),
+                            reason(SwapPromise::DID_NOT_SWAP_UNKNOWN) {
+  }
+
+  bool did_swap_called;
+  bool did_not_swap_called;
+  bool dtor_called;
+  SwapPromise::DidNotSwapReason reason;
+  base::Lock lock;
+};
+
+class TestSwapPromise : public SwapPromise {
+ public:
+  explicit TestSwapPromise(TestSwapPromiseResult* result)
+      : result_(result) {
+  }
+
+  virtual ~TestSwapPromise() {
+    base::AutoLock lock(result_->lock);
+    result_->dtor_called = true;
+  }
+
+  virtual void DidSwap() OVERRIDE {
+    base::AutoLock lock(result_->lock);
+    EXPECT_FALSE(result_->did_swap_called);
+    EXPECT_FALSE(result_->did_not_swap_called);
+    result_->did_swap_called = true;
+  }
+
+  virtual void DidNotSwap(DidNotSwapReason reason) OVERRIDE {
+    base::AutoLock lock(result_->lock);
+    EXPECT_FALSE(result_->did_swap_called);
+    EXPECT_FALSE(result_->did_not_swap_called);
+    result_->did_not_swap_called = true;
+    result_->reason = reason;
+  }
+
+ private:
+  // Not owned.
+  TestSwapPromiseResult* result_;
+};
+
+class LayerTreeHostTestBreakSwapPromise
+    : public LayerTreeHostTest {
+ protected:
+  LayerTreeHostTestBreakSwapPromise()
+      : commit_count_(0), commit_complete_count_(0) {
+  }
+
+  virtual void WillBeginMainFrame() OVERRIDE {
+    ASSERT_LE(commit_count_, 2);
+    scoped_ptr<SwapPromise> swap_promise(new TestSwapPromise(
+        &swap_promise_result_[commit_count_]));
+    layer_tree_host()->QueueSwapPromise(swap_promise.Pass());
+  }
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  virtual void DidCommit() OVERRIDE {
+    commit_count_++;
+    if (commit_count_ == 2) {
+      // This commit will finish.
+      layer_tree_host()->SetNeedsCommit();
+    }
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    commit_complete_count_++;
+    if (commit_complete_count_ == 1) {
+      // This commit will be aborted because no actual update.
+      PostSetNeedsUpdateLayersToMainThread();
+    } else {
+      EndTest();
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {
+    // 3 commits are scheduled. 2 completes. 1 is aborted.
+    EXPECT_EQ(commit_count_, 3);
+    EXPECT_EQ(commit_complete_count_, 2);
+
+    {
+      // The first commit completes and causes swap buffer which finishes
+      // the promise.
+      base::AutoLock lock(swap_promise_result_[0].lock);
+      EXPECT_TRUE(swap_promise_result_[0].did_swap_called);
+      EXPECT_FALSE(swap_promise_result_[0].did_not_swap_called);
+      EXPECT_TRUE(swap_promise_result_[0].dtor_called);
+    }
+
+    {
+      // The second commit aborts.
+      base::AutoLock lock(swap_promise_result_[1].lock);
+      EXPECT_FALSE(swap_promise_result_[1].did_swap_called);
+      EXPECT_TRUE(swap_promise_result_[1].did_not_swap_called);
+      EXPECT_EQ(SwapPromise::COMMIT_FAILS, swap_promise_result_[1].reason);
+      EXPECT_TRUE(swap_promise_result_[1].dtor_called);
+    }
+
+    {
+      // The last commit completes but it does not cause swap buffer because
+      // there is no damage in the frame data.
+      base::AutoLock lock(swap_promise_result_[2].lock);
+      EXPECT_FALSE(swap_promise_result_[2].did_swap_called);
+      EXPECT_TRUE(swap_promise_result_[2].did_not_swap_called);
+      EXPECT_EQ(SwapPromise::SWAP_FAILS, swap_promise_result_[2].reason);
+      EXPECT_TRUE(swap_promise_result_[2].dtor_called);
+    }
+  }
+
+  int commit_count_;
+  int commit_complete_count_;
+  TestSwapPromiseResult swap_promise_result_[3];
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestBreakSwapPromise);
 
 }  // namespace cc

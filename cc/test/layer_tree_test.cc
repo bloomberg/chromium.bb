@@ -409,6 +409,13 @@ void LayerTreeTest::PostSetNeedsCommitToMainThread() {
                                          main_thread_weak_ptr_));
 }
 
+void LayerTreeTest::PostSetNeedsUpdateLayersToMainThread() {
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&LayerTreeTest::DispatchSetNeedsUpdateLayers,
+                 main_thread_weak_ptr_));
+}
+
 void LayerTreeTest::PostReadbackToMainThread() {
   main_task_runner_->PostTask(
       FROM_HERE,
@@ -536,6 +543,13 @@ void LayerTreeTest::DispatchSetNeedsCommit() {
 
   if (layer_tree_host_)
     layer_tree_host_->SetNeedsCommit();
+}
+
+void LayerTreeTest::DispatchSetNeedsUpdateLayers() {
+  DCHECK(!proxy() || proxy()->IsMainThread());
+
+  if (layer_tree_host_)
+    layer_tree_host_->SetNeedsUpdateLayers();
 }
 
 void LayerTreeTest::DispatchReadback() {

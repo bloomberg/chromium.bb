@@ -11,6 +11,8 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/values.h"
+#include "cc/base/scoped_ptr_vector.h"
+#include "cc/base/swap_promise.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/resources/ui_resource_client.h"
 #include "ui/events/latency_info.h"
@@ -209,6 +211,15 @@ class CC_EXPORT LayerTreeImpl {
   const ui::LatencyInfo& GetLatencyInfo();
   void ClearLatencyInfo();
 
+  // Call this function when you expect there to be a swap buffer.
+  // See swap_promise.h for how to use SwapPromise.
+  void QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise);
+
+  // Take the |new_swap_promise| and append it to |swap_promise_list_|.
+  void PassSwapPromises(ScopedPtrVector<SwapPromise>* new_swap_promise);
+  void FinishSwapPromises();
+  void BreakSwapPromises(SwapPromise::DidNotSwapReason reason);
+
   void DidModifyTilePriorities();
 
   ResourceProvider::ResourceId ResourceIdForUIResource(UIResourceId uid) const;
@@ -270,6 +281,8 @@ class CC_EXPORT LayerTreeImpl {
   bool next_activation_forces_redraw_;
 
   ui::LatencyInfo latency_info_;
+
+  ScopedPtrVector<SwapPromise> swap_promise_list_;
 
   UIResourceRequestQueue ui_resource_request_queue_;
 

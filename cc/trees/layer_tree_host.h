@@ -21,6 +21,7 @@
 #include "cc/animation/animation_events.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
+#include "cc/base/swap_promise.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/debug/micro_benchmark_controller.h"
 #include "cc/input/input_handler.h"
@@ -286,6 +287,12 @@ class CC_EXPORT LayerTreeHost {
                               scoped_ptr<base::Value> value,
                               const MicroBenchmark::DoneCallback& callback);
 
+  // Call this function when you expect there to be a swap buffer.
+  // See swap_promise.h for how to use SwapPromise.
+  void QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise);
+
+  void BreakSwapPromises(SwapPromise::DidNotSwapReason reason);
+
  protected:
   LayerTreeHost(LayerTreeHostClient* client,
                 SharedBitmapManager* manager,
@@ -432,6 +439,8 @@ class CC_EXPORT LayerTreeHost {
   scoped_refptr<Layer> outer_viewport_scroll_layer_;
 
   SharedBitmapManager* shared_bitmap_manager_;
+
+  ScopedPtrVector<SwapPromise> swap_promise_list_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };
