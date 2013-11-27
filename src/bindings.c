@@ -293,6 +293,9 @@ weston_compositor_run_modifier_binding(struct weston_compositor *compositor,
 {
 	struct weston_binding *b;
 
+	if (seat->keyboard->grab != &seat->keyboard->default_grab)
+		return;
+
 	wl_list_for_each(b, &compositor->modifier_binding_list, link) {
 		weston_modifier_binding_handler_t handler = b->handler;
 
