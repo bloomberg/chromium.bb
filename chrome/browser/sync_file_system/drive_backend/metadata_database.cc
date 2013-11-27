@@ -813,8 +813,10 @@ void MetadataDatabase::UpdateByFileResource(
   scoped_ptr<FileMetadata> file(
       CreateFileMetadataFromFileResource(change_id, resource));
   std::string file_id = file->file_id();
-  if (HasNewerFileMetadata(file_id, change_id))
+  if (HasNewerFileMetadata(file_id, change_id)) {
+    callback.Run(SYNC_STATUS_OK);
     return;
+  }
 
   // TODO(tzik): Consolidate with UpdateByChangeList.
   MarkTrackersDirtyByFileID(file_id, batch.get());
