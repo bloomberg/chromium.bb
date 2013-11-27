@@ -84,11 +84,15 @@ class TestClientInitializer : public testing::EmptyTestEventListener {
 
 }  // namespace
 
+namespace base {
+
 int RunUnitTestsUsingBaseTestSuite(int argc, char **argv) {
   TestSuite test_suite(argc, argv);
   return base::LaunchUnitTests(
       argc, argv, Bind(&TestSuite::Run, Unretained(&test_suite)));
 }
+
+}  // namespace base
 
 TestSuite::TestSuite(int argc, char** argv) : initialized_command_line_(false) {
   PreInitialize(argc, argv, true);
