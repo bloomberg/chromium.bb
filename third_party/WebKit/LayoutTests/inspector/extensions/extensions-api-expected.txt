@@ -37,6 +37,7 @@ RUNNING TEST: extension_testAPI
         }
     }
     panels : {
+        applyStyleSheet : <function>
         elements : {
             createSidebarPane : <function>
             onSelectionChanged : {
