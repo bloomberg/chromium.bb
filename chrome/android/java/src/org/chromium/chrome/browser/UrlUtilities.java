@@ -110,6 +110,19 @@ public class UrlUtilities {
     }
 
     /**
+     * Refer to UrlFixerUpper::FixupURL.
+     *
+     * Compare to {@link #fixUrl(String)}, This fixes URL more aggressively including Chrome
+     * specific cases. For example, "about:" becomes "chrome://version/". However, this is not a
+     * superset of {@link #fixUrl(String)} either. For example, this function doesn't do anything
+     * with "://mail.google.com:/", while the other one prepends "http". Also, for
+     * "//mail.google.com:/", this function prepends "file" while the other one prepends "http".
+     */
+    public static String fixupUrl(String uri) {
+        return nativeFixupUrl(uri, null);
+    }
+
+    /**
      * Builds a String that strips down the URL to the its scheme, host, and port.
      * @param uri URI to break down.
      * @param showScheme Whether or not to show the scheme.  If the URL can't be parsed, this value
@@ -190,4 +203,5 @@ public class UrlUtilities {
             boolean includePrivateRegistries);
     public static native boolean nativeIsGoogleSearchUrl(String url);
     public static native boolean nativeIsGoogleHomePageUrl(String url);
+    public static native String nativeFixupUrl(String url, String desiredTld);
 }

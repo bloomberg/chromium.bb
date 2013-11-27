@@ -5,6 +5,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/common/net/url_fixer_upper.h"
 #include "jni/UrlUtilities_jni.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
@@ -67,6 +68,18 @@ static jboolean IsGoogleHomePageUrl(JNIEnv* env, jclass clazz, jstring url) {
   if (gurl.is_empty())
     return false;
   return google_util::IsGoogleHomePageUrl(gurl);
+}
+
+static jstring FixupUrl(JNIEnv* env,
+                        jclass clazz,
+                        jstring url,
+                        jstring desired_tld) {
+  GURL fixed_url = URLFixerUpper::FixupURL(
+      base::android::ConvertJavaStringToUTF8(env, url),
+      base::android::ConvertJavaStringToUTF8(env, desired_tld));
+
+  return base::android::ConvertUTF8ToJavaString(env, fixed_url.spec())
+      .Release();
 }
 
 // Register native methods
