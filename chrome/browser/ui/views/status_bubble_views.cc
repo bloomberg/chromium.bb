@@ -445,14 +445,7 @@ void StatusBubbleViews::StatusView::OnPaint(gfx::Canvas* canvas) {
                         std::max(0, text_height));
   body_bounds.set_x(GetMirroredXForRect(body_bounds));
   SkColor text_color =
-      theme_service_->GetColor(ThemeProperties::COLOR_TAB_TEXT);
-
-  // DrawStringInt doesn't handle alpha, so we'll do the blending ourselves.
-  text_color = SkColorSetARGB(
-      SkColorGetA(text_color),
-      (SkColorGetR(text_color) + SkColorGetR(toolbar_color)) / 2,
-      (SkColorGetG(text_color) + SkColorGetR(toolbar_color)) / 2,
-      (SkColorGetB(text_color) + SkColorGetR(toolbar_color)) / 2);
+      theme_service_->GetColor(ThemeProperties::COLOR_STATUS_BAR_TEXT);
   canvas->DrawStringInt(text_,
                         views::Label::font(),
                         text_color,

@@ -155,6 +155,20 @@ SkColor ThemeService::GetColor(int id) const {
           GetColor(Properties::COLOR_MANAGED_USER_LABEL_BACKGROUND),
           SK_ColorBLACK,
           230);
+    case Properties::COLOR_STATUS_BAR_TEXT: {
+      // A long time ago, we blended the toolbar and the tab text together to
+      // get the status bar text because, at the time, our text rendering in
+      // views couldn't do alpha blending. Even though this is no longer the
+      // case, this blending decision is built into the majority of themes that
+      // exist, and we must keep doing it.
+      SkColor toolbar_color = GetColor(Properties::COLOR_TOOLBAR);
+      SkColor text_color = GetColor(Properties::COLOR_TAB_TEXT);
+      return SkColorSetARGB(
+          SkColorGetA(text_color),
+          (SkColorGetR(text_color) + SkColorGetR(toolbar_color)) / 2,
+          (SkColorGetG(text_color) + SkColorGetR(toolbar_color)) / 2,
+          (SkColorGetB(text_color) + SkColorGetR(toolbar_color)) / 2);
+    }
   }
 
   return Properties::GetDefaultColor(id);
