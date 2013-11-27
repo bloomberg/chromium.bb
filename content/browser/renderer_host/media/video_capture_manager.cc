@@ -25,6 +25,9 @@
 
 #if defined(ENABLE_SCREEN_CAPTURE)
 #include "content/browser/renderer_host/media/desktop_capture_device.h"
+#if defined(OS_CHROMEOS)
+#include "content/browser/renderer_host/media/desktop_capture_device_ash.h"
+#endif
 #endif
 
 namespace content {
@@ -162,7 +165,12 @@ void VideoCaptureManager::DoStartDeviceOnDeviceThread(
 #if defined(ENABLE_SCREEN_CAPTURE)
       DesktopMediaID id = DesktopMediaID::Parse(entry->id);
       if (id.type != DesktopMediaID::TYPE_NONE) {
+#if defined(OS_CHROMEOS)
+        // TODO(hshi): enable this path for Ash windows in metro mode.
+        video_capture_device.reset(DesktopCaptureDeviceAsh::Create(id));
+#else
         video_capture_device = DesktopCaptureDevice::Create(id);
+#endif
       }
 #endif  // defined(ENABLE_SCREEN_CAPTURE)
       break;
