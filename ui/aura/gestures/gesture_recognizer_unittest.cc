@@ -343,7 +343,12 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
         root_window_(root_window),
         queue_events_(true) {
   }
-  virtual ~QueueTouchEventDelegate() {}
+  virtual ~QueueTouchEventDelegate() {
+    while(!queue_.empty()) {
+      delete queue_.front();
+      queue_.pop();
+    }
+  }
 
   virtual void OnTouchEvent(ui::TouchEvent* event) OVERRIDE {
     if (queue_events_) {
