@@ -45,8 +45,6 @@ enum WebEmbeddedWorkerStartMode {
 struct WebEmbeddedWorkerStartData {
     WebURL scriptURL;
     WebString userAgent;
-    WebString contentSecurityPolicy;
-    WebContentSecurityPolicyType contentSecurityPolicyType;
     WebEmbeddedWorkerStartMode startMode;
 };
 

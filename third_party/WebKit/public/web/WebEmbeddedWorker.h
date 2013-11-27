@@ -36,6 +36,7 @@
 namespace blink {
 
 class WebServiceWorkerContextClient;
+class WebWorkerPermissionClientProxy;
 struct WebEmbeddedWorkerStartData;
 
 // An interface to start and terminate an embedded worker.

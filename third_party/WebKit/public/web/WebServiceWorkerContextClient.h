@@ -40,10 +40,12 @@ class WebServiceWorkerContextProxy;
 
 // This interface is implemented by the client. It is suppoed to be created
 // on the main thread and then passed on to the worker thread to be owned
-// by a newly created WorkerGlobalScope. All methods of this class are
-// called on the worker thread.
+// by a newly created WorkerGlobalScope. All methods of this class, except
+// for workerContextFailedToStart(), are called on the worker thread.
 class WebServiceWorkerContextClient {
 public:
+    virtual ~WebServiceWorkerContextClient() { }
+
     // A new WorkerGlobalScope is created and started to run on the
     // worker thread.
     // This also gives back a proxy to the client to talk to the
@@ -52,12 +54,14 @@ public:
     // after workerContextDestroyed() is called.
     virtual void workerContextStarted(WebServiceWorkerContextProxy*) { }
 
-    // WorkerGlobalScope.close() is called.
-    virtual void workerContextClosed() { }
-
     // WorkerGlobalScope is destroyed. The client should clear the
     // WebServiceWorkerGlobalScopeProxy when this is called.
     virtual void workerContextDestroyed() { }
+
+    // Starting worker context is failed. This could happen when loading
+    // worker script fails, or is asked to terminated before the context starts.
+    // This is called on the main thread.
+    virtual void workerContextFailedToStart() { }
 
     virtual void dispatchDevToolsMessage(const WebString&) { }
     virtual void saveDevToolsAgentState(const WebString&) { }

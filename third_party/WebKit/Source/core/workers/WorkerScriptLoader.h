@@ -58,6 +58,12 @@ namespace WebCore {
 
         void notifyError();
 
+        // This will immediately lead to notifyFinished() if loadAsynchronously
+        // is in progress.
+        void cancel();
+
+        void setClient(WorkerScriptLoaderClient* client) { m_client = client; }
+
         String script();
         const KURL& url() const { return m_url; }
         const KURL& responseURL() const;

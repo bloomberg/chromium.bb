@@ -66,6 +66,7 @@ public:
         TargetIsXHR,
         TargetIsTextTrack,
         TargetIsPing,
+        TargetIsServiceWorker,
         TargetIsUnspecified,
     };
 

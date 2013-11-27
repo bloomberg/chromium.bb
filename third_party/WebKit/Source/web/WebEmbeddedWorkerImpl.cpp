@@ -1,0 +1,200 @@
+/*
+ * Copyright (C) 2013 Google Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include "config.h"
+#include "WebEmbeddedWorkerImpl.h"
+
+#include "WebDataSourceImpl.h"
+#include "WebFrameImpl.h"
+#include "WebServiceWorkerContextClient.h"
+#include "WebView.h"
+#include "WebWorkerPermissionClientProxy.h"
+#include "WorkerPermissionClient.h"
+#include "core/dom/Document.h"
+#include "core/frame/ContentSecurityPolicyResponseHeaders.h"
+#include "core/loader/FrameLoadRequest.h"
+#include "core/loader/SubstituteData.h"
+#include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerScriptLoader.h"
+#include "core/workers/WorkerScriptLoaderClient.h"
+#include "core/workers/WorkerThreadStartupData.h"
+#include "platform/NotImplemented.h"
+#include "platform/SharedBuffer.h"
+#include "wtf/Functional.h"
+
+using namespace WebCore;
+
+namespace blink {
+
+// A thin wrapper for one-off script loading.
+class WebEmbeddedWorkerImpl::Loader : public WorkerScriptLoaderClient {
+public:
+    static PassOwnPtr<Loader> create(ExecutionContext* loadingContext, const KURL& scriptURL, const Closure& callback)
+    {
+        return adoptPtr(new Loader(loadingContext, scriptURL, callback));
+    }
+
+    virtual ~Loader()
+    {
+        m_scriptLoader->setClient(0);
+    }
+
+    virtual void notifyFinished() OVERRIDE
+    {
+        m_callback();
+    }
+
+    void cancel()
+    {
+        m_scriptLoader->cancel();
+    }
+
+    bool failed() const { return m_scriptLoader->failed(); }
+    String script() const { return m_scriptLoader->script(); }
+
+private:
+    Loader(ExecutionContext* loadingContext, const KURL& scriptURL, const Closure& callback)
+        : m_scriptLoader(WorkerScriptLoader::create())
+        , m_callback(callback)
+    {
+        m_scriptLoader->setTargetType(ResourceRequest::TargetIsServiceWorker);
+        m_scriptLoader->loadAsynchronously(
+            loadingContext, scriptURL, DenyCrossOriginRequests, this);
+    }
+
+    RefPtr<WorkerScriptLoader> m_scriptLoader;
+    Closure m_callback;
+};
+
+WebEmbeddedWorker* WebEmbeddedWorker::create(
+    WebServiceWorkerContextClient* client,
+    WebWorkerPermissionClientProxy* permissionClient)
+{
+    return new WebEmbeddedWorkerImpl(adoptPtr(client), adoptPtr(permissionClient));
+}
+
+WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
+    PassOwnPtr<WebServiceWorkerContextClient> client,
+    PassOwnPtr<WebWorkerPermissionClientProxy> permissionClient)
+    : m_workerContextClient(client)
+    , m_permissionClient(permissionClient)
+    , m_askedToTerminate(false)
+{
+}
+
+WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl()
+{
+    ASSERT(m_webView);
+
+    // Detach the client before closing the view to avoid getting called back.
+    toWebFrameImpl(m_mainFrame)->setClient(0);
+
+    m_webView->close();
+    m_mainFrame->close();
+}
+
+void WebEmbeddedWorkerImpl::startWorkerContext(
+    const WebEmbeddedWorkerStartData& data)
+{
+    ASSERT(!m_askedToTerminate);
+    ASSERT(!m_mainScriptLoader);
+    m_workerStartData = data;
+
+    prepareShadowPageForLoader();
+
+    m_mainScriptLoader = Loader::create(
+        m_loadingContext.get(),
+        data.scriptURL,
+        bind(&WebEmbeddedWorkerImpl::onScriptLoaderFinished, this));
+}
+
+void WebEmbeddedWorkerImpl::terminateWorkerContext()
+{
+    if (m_askedToTerminate)
+        return;
+    m_askedToTerminate = true;
+    if (m_mainScriptLoader)
+        m_mainScriptLoader->cancel();
+    if (m_workerThread)
+        m_workerThread->stop();
+}
+
+void WebEmbeddedWorkerImpl::prepareShadowPageForLoader()
+{
+    // Create 'shadow page', which is never displayed and is used mainly to
+    // provide a context for loading on the main thread.
+    //
+    // FIXME: This does mostly same as WebSharedWorkerImpl::initializeLoader.
+    // This code, and probably most of the code in this class should be shared
+    // with SharedWorker.
+    ASSERT(!m_webView);
+    m_webView = WebView::create(0);
+    m_mainFrame = WebFrame::create(this);
+    m_webView->setMainFrame(m_mainFrame);
+
+    WebFrameImpl* webFrame = toWebFrameImpl(m_webView->mainFrame());
+
+    // Construct substitute data source for the 'shadow page'. We only need it
+    // to have same origin as the worker so the loading checks work correctly.
+    CString content("");
+    int length = static_cast<int>(content.length());
+    RefPtr<SharedBuffer> buffer(SharedBuffer::create(content.data(), length));
+    webFrame->frame()->loader().load(FrameLoadRequest(0, ResourceRequest(m_workerStartData.scriptURL), SubstituteData(buffer, "text/html", "UTF-8", KURL())));
+
+    // This document context will be used as 'loading context' for the worker.
+    m_loadingContext = webFrame->frame()->document();
+}
+
+void WebEmbeddedWorkerImpl::didCreateDataSource(WebFrame*, WebDataSource* ds)
+{
+    // Tell the loader to load the data into the 'shadow page' synchronously,
+    // so we can grab the resulting Document right after load.
+    static_cast<WebDataSourceImpl*>(ds)->setDeferMainResourceDataLoad(false);
+}
+
+void WebEmbeddedWorkerImpl::onScriptLoaderFinished()
+{
+    ASSERT(m_mainScriptLoader);
+
+    if (m_mainScriptLoader->failed() || m_askedToTerminate) {
+        m_workerContextClient->workerContextFailedToStart();
+        m_mainScriptLoader.clear();
+        return;
+    }
+
+    // FIXME: Create WorkerReportingProxy, set up WorkerThreadStartupData,
+    // create ServiceWorkerThread and start it with m_scripLoader->script().
+
+    m_mainScriptLoader.clear();
+
+    notImplemented();
+}
+
+} // namespace blink

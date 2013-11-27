@@ -85,7 +85,8 @@ public:
         TargetIsXHR = 13,
         TargetIsTextTrack = 14,
         TargetIsPing = 15,
-        TargetIsUnspecified = 16,
+        TargetIsServiceWorker = 16,
+        TargetIsUnspecified = 17,
     };
 
     class ExtraData {

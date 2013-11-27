@@ -136,6 +136,8 @@
       'WebDocumentType.cpp',
       'WebDragData.cpp',
       'WebElement.cpp',
+      'WebEmbeddedWorkerImpl.cpp',
+      'WebEmbeddedWorkerImpl.h',
       'WebEntities.cpp',
       'WebEntities.h',
       'WebFileChooserCompletionImpl.cpp',

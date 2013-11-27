@@ -171,6 +171,12 @@ void WorkerScriptLoader::notifyError()
     notifyFinished();
 }
 
+void WorkerScriptLoader::cancel()
+{
+    if (m_threadableLoader)
+        m_threadableLoader->cancel();
+}
+
 String WorkerScriptLoader::script()
 {
     return m_script.toString();
