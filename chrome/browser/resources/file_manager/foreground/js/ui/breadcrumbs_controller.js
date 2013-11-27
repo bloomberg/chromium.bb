@@ -35,13 +35,12 @@ BreadcrumbsController.prototype.setHideLast = function(value) {
 
 /**
  * Update the breadcrumb display.
- * TODO(haruki): Remove |rootPath|. It only needs |path|, as |rootPath| can be
- * derived.
  *
- * @param {string} rootPath Path to root.
- * @param {string} path Path to directory.
+ * @param {Entry} entry Target entry.
  */
-BreadcrumbsController.prototype.update = function(rootPath, path) {
+BreadcrumbsController.prototype.update = function(entry) {
+  var rootPath = PathUtil.getRootPath(entry.fullPath);
+  var path = entry.fullPath;
   if (path == this.path_)
     return;
 

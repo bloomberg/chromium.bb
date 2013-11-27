@@ -745,8 +745,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         DialogType.isOpenDialog(this.dialogType) ?
             PreviewPanel.VisibilityType.ALWAYS_VISIBLE :
             PreviewPanel.VisibilityType.AUTO,
-        this.getCurrentDirectory(),
-        this.metadataCache_);
+        this.metadataCache_,
+        this.volumeManager_);
     this.previewPanel_.addEventListener(
         PreviewPanel.Event.VISIBILITY_CHANGE,
         this.onPreviewPanelVisibilityChange_.bind(this));
@@ -2218,7 +2218,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.updateUnformattedVolumeStatus_();
     this.updateTitle_();
     this.updateGearMenu_();
-    this.previewPanel_.currentPath_ = this.getCurrentDirectory();
+    var currentEntry = this.getCurrentDirectoryEntry();
+    this.previewPanel_.currentEntry = util.isFakeDirectoryEntry(currentEntry) ?
+        null : currentEntry;
   };
 
   FileManager.prototype.updateUnformattedVolumeStatus_ = function() {
