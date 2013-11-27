@@ -358,8 +358,8 @@ FileTasks.prototype.executeDefaultInternal_ = function(urls, opt_callback) {
         urls[0],
         function() {
           var newTasks = new FileTasks(fm);
-          tasks.init(urls, this.mimeTypes_);
-          tasks.executeDefault();
+          newTasks.init(urls, this.mimeTypes_);
+          newTasks.executeDefault();
           callback(true, urls);
         }.bind(this),
         // Cancelled callback.
