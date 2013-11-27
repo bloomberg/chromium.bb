@@ -27,16 +27,6 @@ BuiltIn = set(['int8_t', 'int16_t', 'int32_t', 'int64_t', 'uint8_t',
 # The mapping is applied to the File nodes within the AST.
 #
 class IDLLabelResolver(IDLVisitor):
-  def Arrive(self, node, ignore):
-    # If we are entering a File, clear the visitor local mapping
-    if node.IsA('File'):
-      self.release_map = None
-      self.filenode = node
-    # For any non AST node, the filenode is the last known file
-    if not node.IsA('AST'):
-      node.filenode = self.filenode
-    return ignore
-
   def Depart(self, node, ignore, childdata):
     # Build list of Release=Version
     if node.IsA('LabelItem'):
@@ -46,8 +36,7 @@ class IDLLabelResolver(IDLVisitor):
     # name of the label matches the generation label.
     if node.IsA('Label') and node.GetName() == GetOption('label'):
       try:
-        self.release_map = IDLReleaseMap(childdata)
-        node.parent.release_map = self.release_map
+        node.parent.release_map = IDLReleaseMap(childdata)
       except Exception as err:
         node.Error('Unable to build release map: %s' % str(err))
 

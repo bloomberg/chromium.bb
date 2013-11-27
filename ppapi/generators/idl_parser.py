@@ -35,7 +35,6 @@ from idl_lexer import IDLLexer
 from idl_node import IDLAttribute, IDLFile, IDLNode
 from idl_option import GetOption, Option, ParseOptions
 from idl_lint import Lint
-from idl_visitor import IDLVisitor
 
 from ply import lex
 from ply import yacc
