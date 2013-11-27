@@ -88,16 +88,6 @@ import java.util.Map;
 public class ContentViewCore
         implements MotionEventDelegate, NavigationClient, AccessibilityStateChangeListener {
 
-    /**
-     * Indicates that input events are batched together and delivered just before vsync.
-     */
-    public static final int INPUT_EVENTS_DELIVERED_AT_VSYNC = 1;
-
-    /**
-     * Opposite of INPUT_EVENTS_DELIVERED_AT_VSYNC.
-     */
-    public static final int INPUT_EVENTS_DELIVERED_IMMEDIATELY = 0;
-
     private static final String TAG = "ContentViewCore";
 
     // Used to avoid enabling zooming in / out if resulting zooming will
@@ -291,10 +281,9 @@ public class ContentViewCore
             public void onVSync(long frameTimeMicros) {
                 animateIfNecessary(frameTimeMicros);
 
-                if (mDidSignalVSyncUsingInputEvent) {
-                    TraceEvent.instant("ContentViewCore::onVSync ignored");
-                    mDidSignalVSyncUsingInputEvent = false;
-                    return;
+                if (mRequestedVSyncForInput) {
+                    mRequestedVSyncForInput = false;
+                    removeVSyncSubscriber();
                 }
                 if (mNativeContentViewCore != 0) {
                     nativeOnVSync(mNativeContentViewCore, frameTimeMicros);
@@ -453,6 +442,13 @@ public class ContentViewCore
 
     // Whether we should animate at the next vsync tick.
     private boolean mNeedAnimate = false;
+
+    // Whether we requested a proactive vsync event in response to touch input.
+    // This reduces the latency of responding to input by ensuring the renderer
+    // is sent a BeginFrame for every touch event we receive. Otherwise the
+    // renderer's SetNeedsBeginFrame message would get serviced at the next
+    // vsync.
+    private boolean mRequestedVSyncForInput = false;
 
     private ViewAndroid mViewAndroid;
 
@@ -724,8 +720,7 @@ public class ContentViewCore
     // Note that the caller remains the owner of the nativeWebContents and is responsible for
     // deleting it after destroying the ContentViewCore.
     public void initialize(ViewGroup containerView, InternalAccessDelegate internalDispatcher,
-            long nativeWebContents, WindowAndroid windowAndroid,
-            int inputEventDeliveryMode) {
+            long nativeWebContents, WindowAndroid windowAndroid) {
         // Check whether to use hardware acceleration. This is a bit hacky, and
         // only works if the Context is actually an Activity (as it is in the
         // Chrome application).
@@ -763,7 +758,7 @@ public class ContentViewCore
         mNativeContentViewCore = nativeInit(mHardwareAccelerated,
                 nativeWebContents, viewAndroidNativePointer, windowNativePointer);
         mContentSettings = new ContentSettings(this, mNativeContentViewCore);
-        initializeContainerView(internalDispatcher, inputEventDeliveryMode);
+        initializeContainerView(internalDispatcher);
 
         mAccessibilityInjector = AccessibilityInjector.newInstance(this);
 
@@ -807,8 +802,7 @@ public class ContentViewCore
      * @param internalDispatcher Handles dispatching all hidden or super methods to the
      *                           containerView.
      */
-    private void initializeContainerView(InternalAccessDelegate internalDispatcher,
-            int inputEventDeliveryMode) {
+    private void initializeContainerView(InternalAccessDelegate internalDispatcher) {
         TraceEvent.begin();
         mContainerViewInternals = internalDispatcher;
 
@@ -816,8 +810,7 @@ public class ContentViewCore
         mContainerView.setClickable(true);
 
         mZoomManager = new ZoomManager(mContext, this);
-        mContentViewGestureHandler = new ContentViewGestureHandler(mContext, this, mZoomManager,
-                inputEventDeliveryMode);
+        mContentViewGestureHandler = new ContentViewGestureHandler(mContext, this, mZoomManager);
         mZoomControlsDelegate = new ZoomControlsDelegate() {
             @Override
             public void invokeZoomPicker() {}
@@ -1299,6 +1292,10 @@ public class ContentViewCore
      */
     public boolean onTouchEvent(MotionEvent event) {
         undoScrollFocusedEditableNodeIntoViewIfNeeded(false);
+        if (!mRequestedVSyncForInput) {
+            mRequestedVSyncForInput = true;
+            addVSyncSubscriber();
+        }
         return mContentViewGestureHandler.onTouchEvent(event);
     }
 
@@ -1442,16 +1439,6 @@ public class ContentViewCore
                 type,
                 clickDelayEnabled,
                 UMAActionAfterDoubleTap.COUNT);
-    }
-
-    @Override
-    public void onSentLastGestureForVSync(long eventTimeMs) {
-        if (isVSyncNotificationEnabled()) {
-            mDidSignalVSyncUsingInputEvent = true;
-        }
-        if (mNativeContentViewCore != 0) {
-            nativeOnVSync(mNativeContentViewCore, eventTimeMs * 1000);
-        }
     }
 
     public void setGestureStateListener(GestureStateListener pinchGestureStateListener) {

@@ -106,10 +106,7 @@ public class ContentView extends FrameLayout
         setFocusableInTouchMode(true);
 
         mContentViewCore = new ContentViewCore(context);
-        mContentViewCore.initialize(this, this, nativeWebContents, windowAndroid,
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN ?
-                ContentViewCore.INPUT_EVENTS_DELIVERED_AT_VSYNC :
-                ContentViewCore.INPUT_EVENTS_DELIVERED_IMMEDIATELY);
+        mContentViewCore.initialize(this, this, nativeWebContents, windowAndroid);
     }
 
     /**
