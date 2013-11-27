@@ -61,6 +61,17 @@ struct WlanApi {
                   close_handle_func;
   }
 
+  template <typename T>
+  DWORD OpenHandle(DWORD client_version, DWORD* cur_version, T* handle) const {
+    HANDLE temp_handle;
+    DWORD result = open_handle_func(client_version, NULL, cur_version,
+                                    &temp_handle);
+    if (result != ERROR_SUCCESS)
+      return result;
+    handle->Set(temp_handle);
+    return ERROR_SUCCESS;
+  }
+
   HMODULE module;
   WlanOpenHandleFunc open_handle_func;
   WlanEnumInterfacesFunc enum_interfaces_func;
@@ -236,8 +247,7 @@ WifiPHYLayerProtocol GetWifiPHYLayerProtocol() {
   WlanHandle client;
   DWORD cur_version = 0;
   const DWORD kMaxClientVersion = 2;
-  DWORD result = wlanapi.open_handle_func(kMaxClientVersion, NULL, &cur_version,
-                                          client.Receive());
+  DWORD result = wlanapi.OpenHandle(kMaxClientVersion, &cur_version, &client);
   if (result != ERROR_SUCCESS)
     return WIFI_PHY_LAYER_PROTOCOL_NONE;
 

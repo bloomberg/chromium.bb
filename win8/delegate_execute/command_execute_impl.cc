@@ -487,12 +487,13 @@ HRESULT CommandExecuteImpl::LaunchDesktopChrome() {
 
   AtlTrace("Formatted command line is %ls\n", command_line.c_str());
 
-  base::win::ScopedProcessInformation proc_info;
+  PROCESS_INFORMATION temp_process_info = {};
   BOOL ret = CreateProcess(chrome_exe_.value().c_str(),
                            const_cast<LPWSTR>(command_line.c_str()),
                            NULL, NULL, FALSE, 0, NULL, NULL, &start_info_,
-                           proc_info.Receive());
+                           &temp_process_info);
   if (ret) {
+    base::win::ScopedProcessInformation proc_info(temp_process_info);
     AtlTrace("Process id is %d\n", proc_info.process_id());
     AllowSetForegroundWindow(proc_info.process_id());
   } else {

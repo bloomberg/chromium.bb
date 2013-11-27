@@ -122,26 +122,26 @@ bool ConnectToExecutionServer(uint32 session_id,
 // Copies the process token making it a primary impersonation token.
 // The returned handle will have |desired_access| rights.
 bool CopyProcessToken(DWORD desired_access, ScopedHandle* token_out) {
-  ScopedHandle process_token;
+  HANDLE temp_handle;
   if (!OpenProcessToken(GetCurrentProcess(),
                         TOKEN_DUPLICATE | desired_access,
-                        process_token.Receive())) {
+                        &temp_handle)) {
     LOG_GETLASTERROR(ERROR) << "Failed to open process token";
     return false;
   }
+  ScopedHandle process_token(temp_handle);
 
-  ScopedHandle copied_token;
   if (!DuplicateTokenEx(process_token,
                         desired_access,
                         NULL,
                         SecurityImpersonation,
                         TokenPrimary,
-                        copied_token.Receive())) {
+                        &temp_handle)) {
     LOG_GETLASTERROR(ERROR) << "Failed to duplicate the process token";
     return false;
   }
 
-  *token_out = copied_token.Pass();
+  token_out->Set(temp_handle);
   return true;
 }
 
@@ -467,7 +467,7 @@ bool LaunchProcessWithToken(const base::FilePath& binary,
   if (desktop_name)
     startup_info.lpDesktop = const_cast<char16*>(desktop_name);
 
-  base::win::ScopedProcessInformation process_info;
+  PROCESS_INFORMATION temp_process_info = {};
   BOOL result = CreateProcessAsUser(user_token,
                                     application_name.c_str(),
                                     const_cast<LPWSTR>(command_line.c_str()),
@@ -478,7 +478,7 @@ bool LaunchProcessWithToken(const base::FilePath& binary,
                                     NULL,
                                     NULL,
                                     &startup_info,
-                                    process_info.Receive());
+                                    &temp_process_info);
 
   // CreateProcessAsUser will fail on XP and W2K3 with ERROR_PIPE_NOT_CONNECTED
   // if the user hasn't logged to the target session yet. In such a case
@@ -502,7 +502,7 @@ bool LaunchProcessWithToken(const base::FilePath& binary,
                                           command_line,
                                           creation_flags,
                                           desktop_name,
-                                          process_info.Receive());
+                                          &temp_process_info);
     } else {
       // Restore the error status returned by CreateProcessAsUser().
       result = FALSE;
@@ -515,6 +515,8 @@ bool LaunchProcessWithToken(const base::FilePath& binary,
         "Failed to launch a process with a user token";
     return false;
   }
+
+  base::win::ScopedProcessInformation process_info(temp_process_info);
 
   CHECK(process_info.IsValid());
   process_out->Set(process_info.TakeProcessHandle());

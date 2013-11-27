@@ -38,7 +38,6 @@ TEST_F(StartupInformationTest, InheritStdOut) {
   if (base::win::GetVersion() < base::win::VERSION_VISTA)
     return;
 
-  base::win::ScopedProcessInformation process_info;
   base::win::StartupInformation startup_info;
 
   HANDLE section = ::CreateFileMappingW(INVALID_HANDLE_VALUE, NULL,
@@ -65,10 +64,13 @@ TEST_F(StartupInformationTest, InheritStdOut) {
   std::wstring cmd_line =
       this->MakeCmdLine("FireInheritedEvents", false).GetCommandLineString();
 
+  PROCESS_INFORMATION temp_process_info = {};
   ASSERT_TRUE(::CreateProcess(NULL, const_cast<wchar_t*>(cmd_line.c_str()),
                               NULL, NULL, true, EXTENDED_STARTUPINFO_PRESENT,
                               NULL, NULL, startup_info.startup_info(),
-                              process_info.Receive())) << ::GetLastError();
+                              &temp_process_info)) << ::GetLastError();
+  base::win::ScopedProcessInformation process_info(temp_process_info);
+
   // Only the first event should be signalled
   EXPECT_EQ(WAIT_OBJECT_0, ::WaitForMultipleObjects(2, events, false,
                                                     4000));

@@ -70,11 +70,13 @@ void UITestSuite::LoadCrashService() {
   base::LaunchOptions launch_options;
   launch_options.job_handle = job_handle_.Get();
   base::FilePath crash_service = exe_dir.Append(L"crash_service.exe");
+  base::win::ScopedHandle crash_service_handle;
   if (!base::LaunchProcess(crash_service.value(), base::LaunchOptions(),
-                           &crash_service_)) {
+                           &crash_service_handle)) {
     LOG(ERROR) << "Couldn't start crash_service.exe, so this ui_tests run "
                << "won't tell you if any test crashes!";
     return;
   }
+  crash_service_ = crash_service_handle.Take();
 }
 #endif

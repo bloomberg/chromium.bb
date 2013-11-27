@@ -55,12 +55,14 @@ static const wchar_t kTestedPrivilege[] = SE_RESTORE_NAME;
 // Returns true if the current process' token has privilege |privilege_name|
 // enabled.
 bool CurrentProcessHasPrivilege(const wchar_t* privilege_name) {
-  base::win::ScopedHandle token;
+  HANDLE temp_handle;
   if (!::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY,
-                          token.Receive())) {
+                          &temp_handle)) {
     ADD_FAILURE();
     return false;
   }
+
+  base::win::ScopedHandle token(temp_handle);
 
   // First get the size of the buffer needed for |privileges| below.
   DWORD size;

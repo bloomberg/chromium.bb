@@ -300,7 +300,7 @@ void DaemonCommandLineInstallerWin::Install() {
                          kOmahaLanguage));
 
   base::LaunchOptions options;
-  if (!base::LaunchProcess(command_line, options, process_.Receive())) {
+  if (!base::LaunchProcess(command_line, options, &process_)) {
     result = GetLastError();
     Done(HRESULT_FROM_WIN32(result));
     return;
