@@ -791,11 +791,11 @@ views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
 }
 
 bool NativeAppWindowViews::WidgetHasHitTestMask() const {
-  return input_region_ != NULL;
+  return shape_ != NULL;
 }
 
 void NativeAppWindowViews::GetWidgetHitTestMask(gfx::Path* mask) const {
-  input_region_->getBoundaryPath(mask);
+  shape_->getBoundaryPath(mask);
 }
 
 bool NativeAppWindowViews::ShouldDescendIntoChildForEventHandling(
@@ -970,12 +970,12 @@ SkRegion* NativeAppWindowViews::GetDraggableRegion() {
   return draggable_region_.get();
 }
 
-void NativeAppWindowViews::UpdateInputRegion(scoped_ptr<SkRegion> region) {
-  input_region_ = region.Pass();
+void NativeAppWindowViews::UpdateShape(scoped_ptr<SkRegion> region) {
+  shape_ = region.Pass();
 
 #if defined(USE_AURA)
-  if (input_region_)
-    window_->SetShape(new SkRegion(*input_region_));
+  if (shape_)
+    window_->SetShape(new SkRegion(*shape_));
   else
     window_->SetShape(NULL);
 #endif // defined(USE_AURA)

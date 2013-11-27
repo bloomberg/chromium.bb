@@ -185,14 +185,14 @@ class AppCurrentWindowInternalSetIconFunction
   virtual bool RunWithWindow(apps::ShellWindow* window) OVERRIDE;
 };
 
-class AppCurrentWindowInternalSetInputRegionFunction
+class AppCurrentWindowInternalSetShapeFunction
     : public AppCurrentWindowInternalExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setInputRegion",
-                             APP_CURRENTWINDOWINTERNAL_SETINPUTREGION)
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setShape",
+                             APP_CURRENTWINDOWINTERNAL_SETSHAPE)
 
  protected:
-  virtual ~AppCurrentWindowInternalSetInputRegionFunction() {}
+  virtual ~AppCurrentWindowInternalSetShapeFunction() {}
   virtual bool RunWithWindow(apps::ShellWindow* window) OVERRIDE;
 };
 

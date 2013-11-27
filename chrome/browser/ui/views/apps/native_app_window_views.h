@@ -178,7 +178,7 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   virtual void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) OVERRIDE;
   virtual SkRegion* GetDraggableRegion() OVERRIDE;
-  virtual void UpdateInputRegion(scoped_ptr<SkRegion> region) OVERRIDE;
+  virtual void UpdateShape(scoped_ptr<SkRegion> region) OVERRIDE;
   virtual void HandleKeyboardEvent(
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual bool IsFrameless() const OVERRIDE;
@@ -205,9 +205,9 @@ class NativeAppWindowViews : public apps::NativeAppWindow,
   views::Widget* window_;
   bool is_fullscreen_;
 
-  // The region of the window that accepts input events.
-  // If this is not set, then the entire window accepts input events.
-  scoped_ptr<SkRegion> input_region_;
+  // Custom shape of the window. If this is not set then the window has a
+  // default shape, usually rectangular.
+  scoped_ptr<SkRegion> shape_;
 
   scoped_ptr<SkRegion> draggable_region_;
 

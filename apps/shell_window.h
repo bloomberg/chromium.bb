@@ -280,9 +280,8 @@ class ShellWindow : public content::NotificationObserver,
   // Specifies a url for the launcher icon.
   void SetAppIconUrl(const GURL& icon_url);
 
-  // Set the region in the window that will accept input events.
-  // If |region| is NULL, then the entire window will accept input events.
-  void UpdateInputRegion(scoped_ptr<SkRegion> region);
+  // Set the window shape. Passing a NULL |region| sets the default shape.
+  void UpdateShape(scoped_ptr<SkRegion> region);
 
   // Called from the render interface to modify the draggable regions.
   void UpdateDraggableRegions(

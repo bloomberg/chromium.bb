@@ -650,7 +650,7 @@ SkRegion* NativeAppWindowGtk::GetDraggableRegion() {
   return draggable_region_.get();
 }
 
-void NativeAppWindowGtk::UpdateInputRegion(scoped_ptr<SkRegion> region) {
+void NativeAppWindowGtk::UpdateShape(scoped_ptr<SkRegion> region) {
   NOTIMPLEMENTED();
 }
 

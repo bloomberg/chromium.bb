@@ -26,7 +26,7 @@ namespace SetMinHeight = app_current_window_internal::SetMinHeight;
 namespace SetMaxWidth = app_current_window_internal::SetMaxWidth;
 namespace SetMaxHeight = app_current_window_internal::SetMaxHeight;
 namespace SetIcon = app_current_window_internal::SetIcon;
-namespace SetInputRegion = app_current_window_internal::SetInputRegion;
+namespace SetShape = app_current_window_internal::SetShape;
 namespace SetAlwaysOnTop = app_current_window_internal::SetAlwaysOnTop;
 
 using apps::ShellWindow;
@@ -224,7 +224,7 @@ bool AppCurrentWindowInternalSetIconFunction::RunWithWindow(
   return true;
 }
 
-bool AppCurrentWindowInternalSetInputRegionFunction::RunWithWindow(
+bool AppCurrentWindowInternalSetShapeFunction::RunWithWindow(
     ShellWindow* window) {
 
   const char* whitelist[] = {
@@ -243,9 +243,9 @@ bool AppCurrentWindowInternalSetInputRegionFunction::RunWithWindow(
     return false;
   }
 
-  scoped_ptr<SetInputRegion::Params> params(
-      SetInputRegion::Params::Create(*args_));
-  const Region& inputRegion = params->region;
+  scoped_ptr<SetShape::Params> params(
+      SetShape::Params::Create(*args_));
+  const Region& shape = params->region;
 
   // Build a region from the supplied list of rects.
   // If |rects| is missing, then the input region is removed. This clears the
@@ -253,10 +253,10 @@ bool AppCurrentWindowInternalSetInputRegionFunction::RunWithWindow(
   // To specify an empty input region (so the window ignores all input),
   // |rects| should be an empty list.
   scoped_ptr<SkRegion> region(new SkRegion);
-  if (inputRegion.rects) {
+  if (shape.rects) {
     for (std::vector<linked_ptr<RegionRect> >::const_iterator i =
-             inputRegion.rects->begin();
-         i != inputRegion.rects->end();
+             shape.rects->begin();
+         i != shape.rects->end();
          ++i) {
       const RegionRect& inputRect = **i;
       int32_t x = inputRect.left;
@@ -271,7 +271,7 @@ bool AppCurrentWindowInternalSetInputRegionFunction::RunWithWindow(
     region.reset(NULL);
   }
 
-  window->UpdateInputRegion(region.Pass());
+  window->UpdateShape(region.Pass());
 
   return true;
 }

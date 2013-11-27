@@ -387,8 +387,8 @@ void ShellWindow::SetAppIconUrl(const GURL& url) {
                  image_loader_ptr_factory_.GetWeakPtr()));
 }
 
-void ShellWindow::UpdateInputRegion(scoped_ptr<SkRegion> region) {
-  native_app_window_->UpdateInputRegion(region.Pass());
+void ShellWindow::UpdateShape(scoped_ptr<SkRegion> region) {
+  native_app_window_->UpdateShape(region.Pass());
 }
 
 void ShellWindow::UpdateDraggableRegions(

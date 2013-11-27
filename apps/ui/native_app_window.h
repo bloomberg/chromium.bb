@@ -41,9 +41,9 @@ class NativeAppWindow : public ui::BaseWindow,
   // Returns the region used by frameless windows for dragging. May return NULL.
   virtual SkRegion* GetDraggableRegion() = 0;
 
-  // Called when the region that accepts input events is changed.
-  // If |region| is NULL, then the entire window will accept input events.
-  virtual void UpdateInputRegion(scoped_ptr<SkRegion> region) = 0;
+  // Called when the window shape is changed. If |region| is NULL then the
+  // window is restored to the default shape.
+  virtual void UpdateShape(scoped_ptr<SkRegion> region) = 0;
 
   // Allows the window to handle unhandled keyboard messages coming back from
   // the renderer.
