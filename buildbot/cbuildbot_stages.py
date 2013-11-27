@@ -2080,7 +2080,7 @@ class SyncChromeStage(bs.BuilderStage):
       cros_build_lib.PrintBuildbotStepText('tag %s' % kwargs['tag'])
       self.chrome_version = kwargs['tag']
 
-    useflags = self._build_config['useflags'] or []
+    useflags = self._build_config['useflags']
     commands.SyncChrome(self._build_root, self._options.chrome_root, useflags,
                         **kwargs)
     if (self._chrome_rev and not chrome_atom_to_build and
@@ -2109,7 +2109,7 @@ class BuildPackagesStage(ArchivingStage):
   option_name = 'build'
   def __init__(self, options, build_config, board, archive_stage,
                pgo_generate=False, pgo_use=False):
-    useflags = build_config['useflags'][:] if build_config['useflags'] else []
+    useflags = build_config['useflags'][:]
     self._pgo_generate, self._pgo_use = pgo_generate, pgo_use
     suffix = None
     assert not pgo_generate or not pgo_use

@@ -53,6 +53,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     constants.BRANCH_UTIL_CONFIG,
 )
 
+
 def OverrideConfigForTrybot(build_config, options):
   """Apply trybot-specific configuration settings.
 
@@ -145,6 +146,9 @@ def IsCQType(b_type):
 
 
 # List of usable cbuildbot configs; see add_config method.
+# TODO(mtennant): This is seriously buried in this file.  Move to top
+# and rename something that stands out in a file where the word "config"
+# is used everywhere.
 config = {}
 
 
@@ -241,7 +245,7 @@ _settings = dict(
 
 # useflags -- emerge use flags to use while setting up the board, building
 #             packages, making images, etc.
-  useflags=None,
+  useflags=[],
 
 # chromeos_official -- Set the variable CHROMEOS_OFFICIAL for the build.
 #                      Known to affect parallel_emerge, cros_set_lsb_release,
@@ -575,6 +579,7 @@ def PGORecordTest(**dargs):
   return HWTestConfig('PGO_record', **default_dict)
 
 
+# TODO(mtennant): Rename this BuildConfig?
 class _config(dict):
   """Dictionary of explicit configuration settings for a cbuildbot config
 
@@ -584,6 +589,13 @@ class _config(dict):
   """
 
   _URLQUOTED_PARAMS = ('paladin_builder_name',)
+
+  def __getattr__(self, name):
+    """Support attribute-like access to each dict entry."""
+    if name in self:
+      return self[name]
+
+    return super(_config, self).__getattr__(name)
 
   def derive(self, *inherits, **overrides):
     """Create a new config derived from this one.
@@ -622,9 +634,13 @@ class _config(dict):
     # aren't affected by recent refactorings.
 
     config_dict = _default.derive(self, *inherits, **overrides)
-    config_dict.update((key, urllib.quote(config_dict[key]))
-      for key in self._URLQUOTED_PARAMS if config_dict.get(key))
+    config_dict.update(
+        (key, urllib.quote(config_dict[key]))
+        for key in self._URLQUOTED_PARAMS if config_dict.get(key))
 
+    # TODO(mtennant): This is just confusing.  Some random _config object
+    # (self) can add a new _config object to the global config dict.  Even if
+    # self is itself not a part of the global config dict.
     config[name] = config_dict
 
     return new_config

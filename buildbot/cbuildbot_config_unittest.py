@@ -9,6 +9,7 @@
 import json
 import mock
 import os
+import cPickle
 import subprocess
 import sys
 
@@ -23,7 +24,19 @@ from chromite.lib import parallel
 CHROMIUM_WATCHING_URL = ('http://src.chromium.org/chrome/trunk/tools/build/'
     'masters/master.chromium.chromiumos/master_chromiumos_cros_cfg.py')
 
+
 # pylint: disable=W0212,R0904
+class ConfigPickleTest(cros_test_lib.TestCase):
+  """Test that a config object is pickleable."""
+
+  def testPickle(self):
+    bc1 = cbuildbot_config.config['x86-mario-paladin']
+    bc2 = cPickle.loads(cPickle.dumps(bc1))
+
+    self.assertEquals(bc1.boards, bc2.boards)
+    self.assertEquals(bc1.name, bc2.name)
+
+
 class CBuildBotTest(cros_test_lib.MoxTestCase):
 
   def testConfigsKeysMismatch(self):

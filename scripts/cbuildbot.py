@@ -761,7 +761,7 @@ def _RunBuildStagesWrapper(options, build_config):
 
   if options.managed_chrome:
     # Tell Chrome to fetch the source locally.
-    internal = constants.USE_CHROME_INTERNAL in (build_config['useflags'] or [])
+    internal = constants.USE_CHROME_INTERNAL in build_config['useflags']
     chrome_src = 'chrome-src-internal' if internal else 'chrome-src'
     options.chrome_root = os.path.join(options.cache_dir, 'distfiles', 'target',
                                        chrome_src)
