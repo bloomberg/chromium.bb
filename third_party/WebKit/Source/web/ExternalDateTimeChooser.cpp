@@ -115,9 +115,7 @@ bool ExternalDateTimeChooser::openDateTimeChooser(ChromeClientImpl* chromeClient
     webParams.anchorRectInScreen = chromeClient->rootViewToScreen(parameters.anchorRectInRootView);
     webParams.currentValue = parameters.currentValue;
     webParams.doubleValue = parameters.doubleValue;
-    webParams.suggestionValues = parameters.suggestionValues;
-    webParams.localizedSuggestionValues = parameters.localizedSuggestionValues;
-    webParams.suggestionLabels = parameters.suggestionLabels;
+    webParams.suggestions = parameters.suggestions;
     webParams.minimum = parameters.minimum;
     webParams.maximum = parameters.maximum;
     webParams.step = parameters.step;

@@ -125,6 +125,7 @@
       'WebDOMMouseEvent.cpp',
       'WebDOMProgressEvent.cpp',
       'WebDOMResourceProgressEvent.cpp',
+      'WebDateTimeSuggestion.cpp',
       'WebDataSourceImpl.cpp',
       'WebDataSourceImpl.h',
       'WebDatabase.cpp',

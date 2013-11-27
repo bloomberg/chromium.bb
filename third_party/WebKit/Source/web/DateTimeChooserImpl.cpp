@@ -141,11 +141,19 @@ void DateTimeChooserImpl::writeDocument(WebCore::DocumentWriter& writer)
     addProperty("isLocaleRTL", m_locale->isRTL(), writer);
     addProperty("isRTL", m_parameters.isAnchorElementRTL, writer);
     addProperty("mode", m_parameters.type.string(), writer);
-    if (m_parameters.suggestionValues.size()) {
+    if (m_parameters.suggestions.size()) {
+        Vector<String> suggestionValues;
+        Vector<String> localizedSuggestionValues;
+        Vector<String> suggestionLabels;
+        for (unsigned i = 0; i < m_parameters.suggestions.size(); i++) {
+            suggestionValues.append(valueToDateTimeString(m_parameters.suggestions[i].value, m_parameters.type));
+            localizedSuggestionValues.append(m_parameters.suggestions[i].localizedValue);
+            suggestionLabels.append(m_parameters.suggestions[i].label);
+        }
+        addProperty("suggestionValues", suggestionValues, writer);
+        addProperty("localizedSuggestionValues", localizedSuggestionValues, writer);
+        addProperty("suggestionLabels", suggestionLabels, writer);
         addProperty("inputWidth", static_cast<unsigned>(m_parameters.anchorRectInRootView.width()), writer);
-        addProperty("suggestionValues", m_parameters.suggestionValues, writer);
-        addProperty("localizedSuggestionValues", m_parameters.localizedSuggestionValues, writer);
-        addProperty("suggestionLabels", m_parameters.suggestionLabels, writer);
         addProperty("showOtherDateEntry", WebCore::RenderTheme::theme().supportsCalendarPicker(m_parameters.type), writer);
         addProperty("otherDateLabel", otherDateLabelString, writer);
         addProperty("suggestionHighlightColor", WebCore::RenderTheme::theme().activeListBoxSelectionBackgroundColor().serialized(), writer);

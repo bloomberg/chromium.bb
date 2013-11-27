@@ -1846,9 +1846,13 @@ bool HTMLInputElement::setupDateTimeChooserParameters(DateTimeChooserParameters&
             for (unsigned i = 0; HTMLOptionElement* option = toHTMLOptionElement(options->item(i)); ++i) {
                 if (!isValidValue(option->value()))
                     continue;
-                parameters.suggestionValues.append(sanitizeValue(option->value()));
-                parameters.localizedSuggestionValues.append(localizeValue(option->value()));
-                parameters.suggestionLabels.append(option->value() == option->label() ? String() : option->label());
+                DateTimeSuggestion suggestion;
+                suggestion.value = m_inputType->parseToNumber(option->value(), Decimal::nan()).toDouble();
+                if (std::isnan(suggestion.value))
+                    continue;
+                suggestion.localizedValue = localizeValue(option->value());
+                suggestion.label = option->value() == option->label() ? String() : option->label();
+                parameters.suggestions.append(suggestion);
             }
         }
     }

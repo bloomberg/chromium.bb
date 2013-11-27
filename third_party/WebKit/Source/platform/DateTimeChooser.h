@@ -38,6 +38,12 @@
 
 namespace WebCore {
 
+struct DateTimeSuggestion {
+    double value;
+    String localizedValue;
+    String label;
+};
+
 struct DateTimeChooserParameters {
     AtomicString type;
     IntRect anchorRectInRootView;
@@ -48,9 +54,7 @@ struct DateTimeChooserParameters {
     // FIXME: Remove. Deprecated in favor of doubleValue.
     String currentValue;
     double doubleValue;
-    Vector<String> suggestionValues;
-    Vector<String> localizedSuggestionValues;
-    Vector<String> suggestionLabels;
+    Vector<DateTimeSuggestion> suggestions;
     double minimum;
     double maximum;
     double step;
