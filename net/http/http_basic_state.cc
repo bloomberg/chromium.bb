@@ -39,6 +39,10 @@ scoped_ptr<ClientSocketHandle> HttpBasicState::ReleaseConnection() {
   return connection_.Pass();
 }
 
+scoped_refptr<GrowableIOBuffer> HttpBasicState::read_buf() const {
+  return read_buf_;
+}
+
 void HttpBasicState::DeleteParser() { parser_.reset(); }
 
 std::string HttpBasicState::GenerateRequestLine() const {

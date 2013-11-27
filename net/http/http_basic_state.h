@@ -47,6 +47,8 @@ class NET_EXPORT_PRIVATE HttpBasicState {
 
   scoped_ptr<ClientSocketHandle> ReleaseConnection();
 
+  scoped_refptr<GrowableIOBuffer> read_buf() const;
+
   // Generates a string of the form "METHOD PATH HTTP/1.1\r\n", based on the
   // values of request_info_ and using_proxy_.
   std::string GenerateRequestLine() const;
