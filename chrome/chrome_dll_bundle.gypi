@@ -288,8 +288,8 @@
       'postbuilds': [{
         'postbuild_name': 'Copy inspector files',
         'action': [
-          'cp',
-          '-r',
+          'ln',
+          '-fs',
           '${BUILT_PRODUCTS_DIR}/resources/inspector',
           '${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Resources',
         ],
