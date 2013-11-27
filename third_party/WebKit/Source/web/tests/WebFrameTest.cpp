@@ -3691,13 +3691,13 @@ TEST_F(WebFrameTest, MoveCaretStaysHorizontallyAlignedWhenMoved)
     WebPoint moveTo(topLeft(initialStartRect));
 
     moveTo.y += 40;
-    frame->moveCaretSelectionTowardsWindowPoint(moveTo);
+    frame->moveCaretSelection(moveTo);
     webViewHelper.webView()->selectionBounds(startRect, endRect);
     EXPECT_EQ(startRect, initialStartRect);
     EXPECT_EQ(endRect, initialEndRect);
 
     moveTo.y -= 80;
-    frame->moveCaretSelectionTowardsWindowPoint(moveTo);
+    frame->moveCaretSelection(moveTo);
     webViewHelper.webView()->selectionBounds(startRect, endRect);
     EXPECT_EQ(startRect, initialStartRect);
     EXPECT_EQ(endRect, initialEndRect);
@@ -4049,7 +4049,7 @@ TEST_F(WebFrameTest, MoveCaretSelectionTowardsWindowPointWithNoSelection)
     WebFrame* frame = webViewHelper.webView()->mainFrame();
 
     // This test passes if this doesn't crash.
-    frame->moveCaretSelectionTowardsWindowPoint(WebPoint(0, 0));
+    frame->moveCaretSelection(WebPoint(0, 0));
 }
 
 class SpellCheckClient : public WebSpellCheckClient {
