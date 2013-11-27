@@ -720,7 +720,8 @@ class HWTestStageTest(AbstractStageTest):
     m = commands.RunHWTestSuite(mox.IgnoreArg(),
                                 self.suite,
                                 self._current_board, mox.IgnoreArg(),
-                                mox.IgnoreArg(), mox.IgnoreArg(), True, debug)
+                                mox.IgnoreArg(), mox.IgnoreArg(), True,
+                                mox.IgnoreArg(), mox.IgnoreArg(), debug)
 
     # Raise an exception if the user wanted the command to fail.
     if timeout:

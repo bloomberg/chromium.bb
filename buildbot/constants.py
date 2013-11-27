@@ -261,6 +261,18 @@ HWTEST_TRYBOT_POOL = 'try-bot'
 HWTEST_AU_SUITE = 'au'
 HWTEST_QAV_SUITE = 'qav'
 
+HWTEST_TIMEOUT_EXTENSION = 10 * 60
+HWTEST_DEFAULT_PRIORITY = 'DEFAULT'
+HWTEST_CQ_PRIORITY = 'CQ'
+HWTEST_BUILD_PRIORITY = 'Build'
+HWTEST_VALID_PRIORITIES = ['Weekly',
+                           'Daily',
+                           'PostBuild',
+                           HWTEST_DEFAULT_PRIORITY,
+                           HWTEST_BUILD_PRIORITY,
+                           'PFQ',
+                           HWTEST_CQ_PRIORITY]
+
 # Defines VM Test types.
 FULL_AU_TEST_TYPE = 'full_suite'
 SIMPLE_AU_TEST_TYPE = 'pfq_suite'

@@ -398,6 +398,14 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
         msg = 'Config %s is internal but has public prebuilts.' % build_name
         self.assertNotEqual(config['prebuilts'], constants.PUBLIC, msg)
 
+  def testValidHWTestPriority(self):
+    """Verify that hw test priority is valid."""
+    for build_name, config in cbuildbot_config.config.iteritems():
+      for test_config in config['hw_tests']:
+        self.assertTrue(
+            test_config.priority in constants.HWTEST_VALID_PRIORITIES,
+            '%s has an invalid hwtest priority.' % build_name)
+
 
 class FindFullTest(cros_test_lib.TestCase):
   """Test locating of official build for a board."""

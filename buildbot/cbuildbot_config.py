@@ -97,6 +97,7 @@ def OverrideConfigForTrybot(build_config, options):
           hw_config.pool = constants.HWTEST_TRYBOT_POOL
           hw_config.fatal_timeouts = True
           hw_config.file_bugs = False
+          hw_config.priority = constants.HWTEST_DEFAULT_PRIORITY
 
     # Default to starting with a fresh chroot on remote trybot runs.
     if options.remote_trybot:
@@ -557,7 +558,7 @@ class HWTestConfig(object):
     """Returns a default list of HWTestConfig's for a CQ build,
     with overrides for optional args."""
     default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=120 * 60,
-                        file_bugs=False)
+                        file_bugs=False, priority=constants.HWTEST_CQ_PRIORITY)
     # Allows dargs overrides to default_dict for cq.
     default_dict.update(dargs)
     return [cls(cls.DEFAULT_HW_TEST, **default_dict)]
@@ -565,7 +566,8 @@ class HWTestConfig(object):
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL, copy_perf_results=False,
                timeout=DEFAULT_HW_TEST_TIMEOUT, async=False, critical=False,
-               fatal_timeouts=True, file_bugs=False):
+               fatal_timeouts=True, file_bugs=False,
+               priority=constants.HWTEST_BUILD_PRIORITY):
     """Constructor -- see members above."""
     self.suite = suite
     self.num = num
@@ -576,6 +578,11 @@ class HWTestConfig(object):
     self.critical = critical
     self.fatal_timeouts = fatal_timeouts
     self.file_bugs = file_bugs
+    self.priority = priority
+
+  @property
+  def timeout_mins(self):
+    return int(self.timeout/60)
 
 
 def PGORecordTest(**dargs):

@@ -584,7 +584,7 @@ def ArchiveVMDiskImages(buildroot, test_results_dir, archive_path):
 
 
 def RunHWTestSuite(build, suite, board, pool, num, file_bugs, wait_for_results,
-                   debug):
+                   priority, timeout_mins, debug):
   """Run the test suite in the Autotest lab.
 
   Args:
@@ -597,6 +597,8 @@ def RunHWTestSuite(build, suite, board, pool, num, file_bugs, wait_for_results,
          hardware test lab.
     file_bugs: File bugs on test failures for this suite run.
     wait_for_results: If True, wait for autotest results before returning.
+    priority: Priority of this suite run.
+    timeout_mins: Timeout in minutes for the suite job and its sub-jobs.
     debug: Whether we are in debug mode.
   """
   # TODO(scottz): RPC client option names are misnomers crosbug.com/26445.
@@ -609,7 +611,9 @@ def RunHWTestSuite(build, suite, board, pool, num, file_bugs, wait_for_results,
          '--pool', pool,
          '--num', str(num),
          '--file_bugs', str(file_bugs),
-         '--no_wait', str(not wait_for_results)]
+         '--no_wait', str(not wait_for_results),
+         '--priority', priority,
+         '--timeout_mins', str(timeout_mins)]
   if debug:
     cros_build_lib.Info('RunHWTestSuite would run: %s',
                         ' '.join(map(repr, cmd)))

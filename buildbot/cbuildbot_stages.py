@@ -2581,7 +2581,8 @@ class HWTestStage(ArchivingStage):
     else:
       debug = self._options.debug
     lab_status.CheckLabStatus(self._current_board)
-    with cros_build_lib.SubCommandTimeout(self.suite_config.timeout):
+    with cros_build_lib.SubCommandTimeout(
+        self.suite_config.timeout  + constants.HWTEST_TIMEOUT_EXTENSION):
       commands.RunHWTestSuite(build,
                               self.suite_config.suite,
                               self._current_board,
@@ -2589,6 +2590,8 @@ class HWTestStage(ArchivingStage):
                               self.suite_config.num,
                               self.suite_config.file_bugs,
                               self.wait_for_results,
+                              self.suite_config.priority,
+                              self.suite_config.timeout_mins,
                               debug)
 
       if self.suite_config.copy_perf_results:
