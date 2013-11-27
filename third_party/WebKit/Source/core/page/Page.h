@@ -118,7 +118,7 @@ public:
     SpellCheckerClient& spellCheckerClient() const { return *m_spellCheckerClient; }
     UndoStack& undoStack() const { return *m_undoStack; }
 
-    HistoryController* history() const { return m_history.get(); }
+    HistoryController& history() const { return *m_history; }
 
     void setMainFrame(PassRefPtr<Frame>);
     Frame* mainFrame() const { return m_mainFrame.get(); }

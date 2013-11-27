@@ -354,7 +354,7 @@ void FrameLoaderClientImpl::dispatchDidNavigateWithinPage(NavigationHistoryPolic
 {
     bool shouldCreateHistoryEntry = navigationHistoryPolicy == NavigationCreatedHistoryEntry;
     if (shouldCreateHistoryEntry)
-        m_webFrame->frame()->page()->history()->updateBackForwardListForFragmentScroll(m_webFrame->frame());
+        m_webFrame->frame()->page()->history().updateBackForwardListForFragmentScroll(m_webFrame->frame());
     m_webFrame->viewImpl()->didCommitLoad(navigationHistoryPolicy == NavigationCreatedHistoryEntry, true);
     if (m_webFrame->client())
         m_webFrame->client()->didNavigateWithinPage(m_webFrame, shouldCreateHistoryEntry);
@@ -585,7 +585,7 @@ String FrameLoaderClientImpl::doNotTrackValue()
 // will occur.
 void FrameLoaderClientImpl::transitionToCommittedForNewPage(Frame* frame)
 {
-    m_webFrame->frame()->page()->history()->updateForCommit(frame);
+    m_webFrame->frame()->page()->history().updateForCommit(frame);
     m_webFrame->createFrameView();
 }
 
