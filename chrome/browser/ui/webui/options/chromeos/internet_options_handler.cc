@@ -1873,9 +1873,23 @@ void PopulateCellularDetails(const NetworkState* cellular,
       cellular->activation_state() != shill::kActivationStateActivated) {
     dictionary->SetBoolean(kTagShowActivateButton, true);
   } else {
-    const MobileConfig::Carrier* carrier =
-        MobileConfig::GetInstance()->GetCarrier(carrier_id);
-    if (carrier && carrier->show_portal_button()) {
+    bool may_show_portal_button = false;
+
+    // If an online payment URL was provided by shill, then this means that the
+    // "View Account" button should be shown for the current carrier.
+    if (olp) {
+      std::string url;
+      olp->GetStringWithoutPathExpansion(shill::kPaymentPortalURL, &url);
+      may_show_portal_button = !url.empty();
+    }
+    // If no online payment URL was provided by shill, fall back to
+    // MobileConfig to determine if the "View Account" should be shown.
+    if (!may_show_portal_button && MobileConfig::GetInstance()->IsReady()) {
+      const MobileConfig::Carrier* carrier =
+          MobileConfig::GetInstance()->GetCarrier(carrier_id);
+      may_show_portal_button = carrier && carrier->show_portal_button();
+    }
+    if (may_show_portal_button) {
       // The button should be shown for a LTE network even when the LTE network
       // is not connected, but CrOS is online. This is done to enable users to
       // update their plan even if they are out of credits.
