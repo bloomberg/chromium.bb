@@ -64,6 +64,14 @@ class ScoredHistoryMatch : public history::HistoryMatch {
   const TermMatches& title_matches() const { return title_matches_; }
   bool can_inline() const { return can_inline_; }
 
+  // Returns |term_matches| after removing all matches that are not at a
+  // word break that starts after position |start_pos|.  If |start_pos| is
+  // string::npos, does no filtering and simply returns |term_matches|.
+  static TermMatches FilterTermMatchesByWordStarts(
+      const TermMatches& term_matches,
+      const WordStarts& word_starts,
+      const size_t start_pos);
+
  private:
   friend class ScoredHistoryMatchTest;
 
@@ -82,15 +90,6 @@ class ScoredHistoryMatch : public history::HistoryMatch {
   float GetTopicalityScore(const int num_terms,
                            const string16& cleaned_up_url,
                            const RowWordStarts& word_starts);
-
-  // Helper function for GetTopicalityScore().
-  // Returns |term_matches| after removing all matches that are not at a
-  // word break that starts after position |start_pos|.  If |start_pos| is
-  // string::npos, does no filtering and simply returns |term_matches|.
-  static TermMatches FilterTermMatchesByWordStarts(
-      const TermMatches& term_matches,
-      const WordStarts& word_starts,
-      const size_t start_pos);
 
   // Precalculates raw_term_score_to_topicality_score_, used in
   // GetTopicalityScore().

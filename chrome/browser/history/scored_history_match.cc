@@ -245,6 +245,33 @@ bool ScoredHistoryMatch::MatchScoreGreater(const ScoredHistoryMatch& m1,
   return m1.url_info.last_visit() > m2.url_info.last_visit();
 }
 
+// static
+TermMatches ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+    const TermMatches& term_matches,
+    const WordStarts& word_starts,
+    const size_t start_pos) {
+  if (start_pos == std::string::npos)
+    return term_matches;
+  TermMatches filtered_matches;
+  WordStarts::const_iterator next_word_starts = word_starts.begin();
+  WordStarts::const_iterator end_word_starts = word_starts.end();
+  for (TermMatches::const_iterator iter = term_matches.begin();
+       iter != term_matches.end(); ++iter) {
+    // Advance next_word_starts until it's >= the position of the term
+    // we're considering.
+    while ((next_word_starts != end_word_starts) &&
+           (*next_word_starts < iter->offset))
+      ++next_word_starts;
+    // Add the match if it's before the position we start filtering at or
+    // if it's at a word boundary.
+    if ((iter->offset < start_pos) ||
+        ((next_word_starts != end_word_starts) &&
+         (*next_word_starts == iter->offset)))
+      filtered_matches.push_back(*iter);
+  }
+  return filtered_matches;
+}
+
 float ScoredHistoryMatch::GetTopicalityScore(
     const int num_terms,
     const string16& url,
@@ -371,33 +398,6 @@ float ScoredHistoryMatch::GetTopicalityScore(
   // geometric mean of per-term scores rather than the arithmetic mean.
 
   return topicality_score / num_terms;
-}
-
-// static
-TermMatches ScoredHistoryMatch::FilterTermMatchesByWordStarts(
-    const TermMatches& term_matches,
-    const WordStarts& word_starts,
-    const size_t start_pos) {
-  if (start_pos == std::string::npos)
-    return term_matches;
-  TermMatches filtered_matches;
-  WordStarts::const_iterator next_word_starts = word_starts.begin();
-  WordStarts::const_iterator end_word_starts = word_starts.end();
-  for (TermMatches::const_iterator iter = term_matches.begin();
-       iter != term_matches.end(); ++iter) {
-    // Advance next_word_starts until it's >= the position of the term
-    // we're considering.
-    while ((next_word_starts != end_word_starts) &&
-           (*next_word_starts < iter->offset))
-      ++next_word_starts;
-    // Add the match if it's before the position we start filtering at or
-    // if it's at a word boundary.
-    if ((iter->offset < start_pos) ||
-        ((next_word_starts != end_word_starts) &&
-         (*next_word_starts == iter->offset)))
-      filtered_matches.push_back(*iter);
-  }
-  return filtered_matches;
 }
 
 // static

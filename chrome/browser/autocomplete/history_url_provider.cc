@@ -21,6 +21,8 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/history/in_memory_url_index_types.h"
+#include "chrome/browser/history/scored_history_match.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service.h"
@@ -771,10 +773,8 @@ bool HistoryURLProvider::FixupExactSuggestion(
       match->deletable = true;
       match->description = classifier.url_row().title();
       RecordAdditionalInfoFromUrlRow(classifier.url_row(), match);
-      AutocompleteMatch::ClassifyMatchInString(
-          input.text(),
-          classifier.url_row().title(),
-          ACMatchClassification::NONE, &match->description_class);
+      match->description_class =
+          ClassifyDescription(input.text(), match->description);
       if (!classifier.url_row().typed_count()) {
         // If we reach here, we must be in the second pass, and we must not have
         // this row's data available during the first pass.  That means we
@@ -1087,10 +1087,25 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
         &match.contents_class);
   }
   match.description = info.title();
-  AutocompleteMatch::ClassifyMatchInString(params.input.text(),
-                                           info.title(),
-                                           ACMatchClassification::NONE,
-                                           &match.description_class);
+  match.description_class =
+      ClassifyDescription(params.input.text(), match.description);
   RecordAdditionalInfoFromUrlRow(info, &match);
   return match;
+}
+
+// static
+ACMatchClassifications HistoryURLProvider::ClassifyDescription(
+    const string16& input_text,
+    const string16& description) {
+  string16 clean_description = history::CleanUpTitleForMatching(description);
+  history::TermMatches description_matches(SortAndDeoverlapMatches(
+      history::MatchTermInString(input_text, clean_description, 0)));
+  history::WordStarts description_word_starts;
+  history::String16VectorFromString16(
+      clean_description, false, &description_word_starts);
+  description_matches =
+      history::ScoredHistoryMatch::FilterTermMatchesByWordStarts(
+          description_matches, description_word_starts, 0);
+  return SpansFromTermMatch(
+      description_matches, clean_description.length(), false);
 }

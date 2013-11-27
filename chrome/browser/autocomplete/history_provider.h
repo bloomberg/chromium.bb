@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/history/in_memory_url_index_types.h"
 
 class AutocompleteInput;
 struct AutocompleteMatch;
@@ -53,6 +54,13 @@ class HistoryProvider : public AutocompleteProvider {
   // |input.prevent_inline_autocomplete()| is true or the input text contains
   // trailing whitespace.
   bool PreventInlineAutocomplete(const AutocompleteInput& input);
+
+  // Fill and return an ACMatchClassifications structure given the |matches|
+  // to highlight.
+  static ACMatchClassifications SpansFromTermMatch(
+      const history::TermMatches& matches,
+      size_t text_length,
+      bool is_url);
 };
 
 #endif  // CHROME_BROWSER_AUTOCOMPLETE_HISTORY_PROVIDER_H_

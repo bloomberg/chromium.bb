@@ -291,6 +291,12 @@ class HistoryURLProvider : public HistoryProvider {
       MatchType match_type,
       int relevance);
 
+  // Returns a set of classifications that highlight all the occurrences
+  // of |input_text| at word breaks in |description|.
+  static ACMatchClassifications ClassifyDescription(
+      const string16& input_text,
+      const string16& description);
+
   // Params for the current query.  The provider should not free this directly;
   // instead, it is passed as a parameter through the history backend, and the
   // parameter itself is freed once it's no longer needed.  The only reason we
