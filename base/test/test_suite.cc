@@ -7,6 +7,7 @@
 #include "base/at_exit.h"
 #include "base/base_paths.h"
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/debug_on_start_win.h"
 #include "base/debug/debugger.h"
@@ -19,6 +20,7 @@
 #include "base/path_service.h"
 #include "base/process/memory.h"
 #include "base/test/gtest_xml_util.h"
+#include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_switches.h"
 #include "base/test/test_timeouts.h"
@@ -81,6 +83,12 @@ class TestClientInitializer : public testing::EmptyTestEventListener {
 };
 
 }  // namespace
+
+int RunUnitTestsUsingBaseTestSuite(int argc, char **argv) {
+  TestSuite test_suite(argc, argv);
+  return base::LaunchUnitTests(
+      argc, argv, Bind(&TestSuite::Run, Unretained(&test_suite)));
+}
 
 TestSuite::TestSuite(int argc, char** argv) : initialized_command_line_(false) {
   PreInitialize(argc, argv, true);
