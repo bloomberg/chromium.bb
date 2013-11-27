@@ -7,10 +7,14 @@ import os
 import sys
 
 # boto is located in depot_tools/third_party/
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
-                             os.pardir, os.pardir, os.pardir, os.pardir,
-                             'depot_tools', 'third_party'))
-import boto
+if 'DEPOT_TOOLS' in os.environ:
+  sys.path.append(os.path.join(os.getenv('DEPOT_TOOLS'), 'third_party'))
+try:
+  import boto
+except ImportError:
+  print ("Set 'DEPOT_TOOLS' environment variable to the location of "
+         "depot_tools.")
+  raise
 
 from ..common import cloud_bucket
 
