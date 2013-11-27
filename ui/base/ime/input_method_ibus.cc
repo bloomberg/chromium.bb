@@ -406,16 +406,17 @@ void InputMethodIBus::UpdateContextFocusState() {
     return;
 
   // We only focus in |context_| when the focus is in a normal textfield.
+  // Even if focus is not changed, a text input type change causes a focus
+  // blink.
   // ibus_input_context_focus_{in|out}() run asynchronously.
-  if (old_context_focused && !context_focused_) {
+  bool input_type_change =
+      (current_text_input_type != previous_textinput_type_);
+  if (old_context_focused && (!context_focused_ || input_type_change))
     GetEngine()->FocusOut();
-  } else if (!old_context_focused && context_focused_) {
-    GetEngine()->FocusIn(current_text_input_type);
-    OnCaretBoundsChanged(GetTextInputClient());
-  } else if (context_focused_ &&
-             current_text_input_type != previous_textinput_type_) {
-    GetEngine()->FocusOut();
-    GetEngine()->FocusIn(current_text_input_type);
+  if (context_focused_ && (!old_context_focused || input_type_change)) {
+    chromeos::IBusEngineHandlerInterface::InputContext context(
+        current_text_input_type, GetTextInputMode());
+    GetEngine()->FocusIn(context);
     OnCaretBoundsChanged(GetTextInputClient());
   }
 }

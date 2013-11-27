@@ -393,16 +393,17 @@ bool InputMethodEngineIBus::DeleteSurroundingText(int context_id,
   return true;
 }
 
-void InputMethodEngineIBus::FocusIn(ui::TextInputType text_input_type) {
+void InputMethodEngineIBus::FocusIn(
+    const IBusEngineHandlerInterface::InputContext& input_context) {
   focused_ = true;
   if (!active_)
     return;
   context_id_ = next_context_id_;
   ++next_context_id_;
 
-  InputContext context;
+  InputMethodEngine ::InputContext context;
   context.id = context_id_;
-  switch (text_input_type) {
+  switch (input_context.type) {
     case ui::TEXT_INPUT_TYPE_SEARCH:
       context.type = "search";
       break;
@@ -438,7 +439,9 @@ void InputMethodEngineIBus::FocusOut() {
 void InputMethodEngineIBus::Enable() {
   active_ = true;
   observer_->OnActivate(engine_id_);
-  FocusIn(ui::TEXT_INPUT_TYPE_TEXT);
+  IBusEngineHandlerInterface::InputContext context(ui::TEXT_INPUT_TYPE_TEXT,
+                                                   ui::TEXT_INPUT_MODE_DEFAULT);
+  FocusIn(context);
 }
 
 void InputMethodEngineIBus::Disable() {

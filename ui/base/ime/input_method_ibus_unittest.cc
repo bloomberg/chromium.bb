@@ -279,7 +279,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
     return input_type_;
   }
   virtual TextInputMode GetTextInputMode() const OVERRIDE {
-    return TEXT_INPUT_MODE_DEFAULT;
+    return input_mode_;
   }
   virtual bool CanComposeInline() const OVERRIDE {
     return can_compose_inline_;
@@ -349,6 +349,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
     on_input_method_changed_call_count_ = 0;
 
     input_type_ = TEXT_INPUT_TYPE_NONE;
+    input_mode_ = TEXT_INPUT_MODE_DEFAULT;
     can_compose_inline_ = true;
     caret_bounds_ = gfx::Rect();
   }
@@ -373,6 +374,7 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
 
   // Variables that will be returned from the ui::TextInputClient functions.
   TextInputType input_type_;
+  TextInputMode input_mode_;
   bool can_compose_inline_;
   gfx::Rect caret_bounds_;
   gfx::Range text_range_;
@@ -537,22 +539,31 @@ TEST_F(InputMethodIBusTest, Focus_Scenario) {
   EXPECT_EQ(0, mock_ime_engine_handler_->focus_in_call_count());
   EXPECT_EQ(0, mock_ime_engine_handler_->focus_out_call_count());
   EXPECT_EQ(TEXT_INPUT_TYPE_NONE,
-            mock_ime_engine_handler_->last_text_input_type());
+            mock_ime_engine_handler_->last_text_input_context().type);
+  EXPECT_EQ(TEXT_INPUT_MODE_DEFAULT,
+            mock_ime_engine_handler_->last_text_input_context().mode);
 
   input_type_ = TEXT_INPUT_TYPE_TEXT;
+  input_mode_ = TEXT_INPUT_MODE_LATIN;
   ime_->OnTextInputTypeChanged(this);
-  // Confirm that only FocusIn is called and the TextInputType is TEXT.
+  // Confirm that only FocusIn is called, the TextInputType is TEXT and the
+  // TextInputMode is LATIN..
   EXPECT_EQ(1, mock_ime_engine_handler_->focus_in_call_count());
   EXPECT_EQ(0, mock_ime_engine_handler_->focus_out_call_count());
   EXPECT_EQ(TEXT_INPUT_TYPE_TEXT,
-            mock_ime_engine_handler_->last_text_input_type());
+            mock_ime_engine_handler_->last_text_input_context().type);
+  EXPECT_EQ(TEXT_INPUT_MODE_LATIN,
+            mock_ime_engine_handler_->last_text_input_context().mode);
 
+  input_mode_ = TEXT_INPUT_MODE_KANA;
   ime_->OnTextInputTypeChanged(this);
   // Confirm that both FocusIn and FocusOut are NOT called.
   EXPECT_EQ(1, mock_ime_engine_handler_->focus_in_call_count());
   EXPECT_EQ(0, mock_ime_engine_handler_->focus_out_call_count());
   EXPECT_EQ(TEXT_INPUT_TYPE_TEXT,
-            mock_ime_engine_handler_->last_text_input_type());
+            mock_ime_engine_handler_->last_text_input_context().type);
+  EXPECT_EQ(TEXT_INPUT_MODE_LATIN,
+            mock_ime_engine_handler_->last_text_input_context().mode);
 
   input_type_ = TEXT_INPUT_TYPE_URL;
   ime_->OnTextInputTypeChanged(this);
@@ -561,7 +572,9 @@ TEST_F(InputMethodIBusTest, Focus_Scenario) {
   EXPECT_EQ(2, mock_ime_engine_handler_->focus_in_call_count());
   EXPECT_EQ(1, mock_ime_engine_handler_->focus_out_call_count());
   EXPECT_EQ(TEXT_INPUT_TYPE_URL,
-            mock_ime_engine_handler_->last_text_input_type());
+            mock_ime_engine_handler_->last_text_input_context().type);
+  EXPECT_EQ(TEXT_INPUT_MODE_KANA,
+            mock_ime_engine_handler_->last_text_input_context().mode);
 }
 
 // Test if the new |caret_bounds_| is correctly sent to ibus-daemon.

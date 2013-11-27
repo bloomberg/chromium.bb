@@ -15,7 +15,7 @@ class UI_EXPORT MockIMEEngineHandler : public IBusEngineHandlerInterface {
   MockIMEEngineHandler();
   virtual ~MockIMEEngineHandler();
 
-  virtual void FocusIn(ui::TextInputType text_input_type) OVERRIDE;
+  virtual void FocusIn(const InputContext& input_context) OVERRIDE;
   virtual void FocusOut() OVERRIDE;
   virtual void Enable() OVERRIDE;
   virtual void Disable() OVERRIDE;
@@ -38,8 +38,8 @@ class UI_EXPORT MockIMEEngineHandler : public IBusEngineHandlerInterface {
     return process_key_event_call_count_;
   }
 
-  ui::TextInputType last_text_input_type() const {
-    return last_text_input_type_;
+  const InputContext& last_text_input_context() const {
+    return last_text_input_context_;
   }
 
   std::string last_activated_property() const {
@@ -80,7 +80,7 @@ class UI_EXPORT MockIMEEngineHandler : public IBusEngineHandlerInterface {
   int set_surrounding_text_call_count_;
   int process_key_event_call_count_;
   int reset_call_count_;
-  ui::TextInputType last_text_input_type_;
+  InputContext last_text_input_context_;
   std::string last_activated_property_;
   std::string last_set_surrounding_text_;
   uint32 last_set_surrounding_cursor_pos_;

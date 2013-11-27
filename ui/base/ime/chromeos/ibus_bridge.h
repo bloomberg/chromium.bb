@@ -9,6 +9,7 @@
 #include <string>
 #include "base/basictypes.h"
 #include "base/callback.h"
+#include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/ui_export.h"
 
@@ -53,10 +54,27 @@ class UI_EXPORT IBusEngineHandlerInterface {
  public:
   typedef base::Callback<void (bool consumed)> KeyEventDoneCallback;
 
+  // A information about a focused text input field.
+  // A type of each member is based on the html spec, but InputContext can be
+  // used to specify about a non html text field like Omnibox.
+  struct InputContext {
+    InputContext(ui::TextInputType type_, ui::TextInputMode mode_) :
+      type(type_), mode(mode_) {}
+
+    // An attribute of the field defined at
+    // http://www.w3.org/TR/html401/interact/forms.html#input-control-types.
+    ui::TextInputType type;
+    // An attribute of the field defined at
+    // http://www.whatwg.org/specs/web-apps/current-work/multipage/
+    //  association-of-controls-and-forms.html#input-modalities
+    //  :-the-inputmode-attribute.
+    ui::TextInputMode mode;
+  };
+
   virtual ~IBusEngineHandlerInterface() {}
 
   // Called when the Chrome input field get the focus.
-  virtual void FocusIn(ui::TextInputType text_input_type) = 0;
+  virtual void FocusIn(const InputContext& input_context) = 0;
 
   // Called when the Chrome input field lose the focus.
   virtual void FocusOut() = 0;
