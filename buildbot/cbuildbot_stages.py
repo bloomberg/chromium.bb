@@ -39,6 +39,7 @@ from chromite.buildbot import portage_utilities
 from chromite.buildbot import repository
 from chromite.buildbot import trybot_patch_pool
 from chromite.buildbot import validation_pool
+from chromite.lib import alerts
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import git
@@ -3359,8 +3360,13 @@ class ReportStage(bs.BuilderStage):
     else:
       streak_value = gs_counter.StreakDecrement()
 
-    logging.debug('Streak counter value is %s', streak_value)
     return streak_value
+
+  def _HealthAlertMessage(self):
+    """Returns the body of a health alert email message."""
+    return 'The builder named %s has failed %i consecutive times. See %s' % (
+        self._run.config['name'], self._run.config['health_threshold'],
+        self.ConstructDashboardURL())
 
   def PerformStage(self):
     acl = ArchivingStage.GetUploadACL(self._run.config)
@@ -3392,9 +3398,16 @@ class ReportStage(bs.BuilderStage):
       # If this was a Commit Queue build, update the streak counter
       if (self._sync_instance and
           isinstance(self._sync_instance, CommitQueueSyncStage)):
-        self._UpdateStreakCounter(final_status=final_status,
-                                  counter_name=board_config.name,
-                                  dry_run=archive_stage.debug)
+        streak_value = self._UpdateStreakCounter(
+            final_status=final_status, counter_name=board_config.name,
+            dry_run=archive_stage.debug)
+        if (self._run.config['health_alert_recipients'] and
+            streak_value == -self._run.config['health_threshold']):
+          alerts.SendEmail('%s health alert' % self._run.config['name'],
+                           self._run.config['health_alert_recipients'],
+                           message=self._HealthAlertMessage(),
+                           smtp_server=constants.GOLO_SMTP_SERVER,
+                           extra_fields={'X-cbuildbot-alert': 'cq-health'})
 
       # Generate the index page needed for public reading.
       uploaded = os.path.join(path, commands.UPLOADED_LIST_FILENAME)

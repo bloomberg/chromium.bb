@@ -35,6 +35,7 @@ from chromite.buildbot import manifest_version_unittest
 from chromite.buildbot import portage_utilities
 from chromite.buildbot import repository
 from chromite.buildbot import validation_pool
+from chromite.lib import alerts
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
@@ -1763,7 +1764,7 @@ class ReportStageTest(AbstractStageTest):
   def setUp(self):
     for cmd in ((osutils, 'ReadFile'), (osutils, 'WriteFile'),
                 (commands, 'UploadArchivedFile'),
-                (stages.ReportStage, '_UpdateStreakCounter')):
+                (alerts, 'SendEmail')):
       self.StartPatcher(mock.patch.object(*cmd, autospec=True))
 
     self.StartPatcher(BuilderRunMock())
@@ -1774,6 +1775,18 @@ class ReportStageTest(AbstractStageTest):
 
     self._Prepare()
 
+  def _SetupUpdateStreakCounter(self, counter_value=-1):
+    self.PatchObject(stages.ReportStage, '_UpdateStreakCounter',
+                     autospec=True, return_value=counter_value)
+
+  def _SetupCommitQueueSyncPool(self):
+    self.sync_stage = stages.CommitQueueSyncStage(self.run)
+    pool = validation_pool.ValidationPool(constants.BOTH_OVERLAYS,
+        self.build_root, build_number=3, builder_name=self.bot_id,
+        is_master=True, dryrun=True)
+    pool.changes = [MockPatch()]
+    self.sync_stage.pool = pool
+
   def ConstructStage(self):
     archive_stage = stages.ArchiveStage(self.run, self._current_board)
     archive_stages = {
@@ -1782,22 +1795,28 @@ class ReportStageTest(AbstractStageTest):
         cbuildbot.BoardConfig('mattress-man', 'config2'): archive_stage,
     }
     return stages.ReportStage(self.run,
-                              archive_stages, None, self.sync_stage)
+                              archive_stages, self.sync_stage)
 
   def testCheckResults(self):
     """Basic sanity check for results stage functionality"""
+    self._SetupUpdateStreakCounter()
     self.RunStage()
 
   def testCommitQueueResults(self):
     """Check that commit queue patches get serialized"""
-    self.sync_stage = stages.CommitQueueSyncStage(self.run)
-    pool = validation_pool.ValidationPool(constants.BOTH_OVERLAYS,
-        self.build_root, build_number=3, builder_name=self.bot_id,
-        is_master=True, dryrun=True)
-    pool.changes = [MockPatch()]
-    self.sync_stage.pool = pool
+    self._SetupUpdateStreakCounter()
+    self._SetupCommitQueueSyncPool()
     self.RunStage()
 
+  def testAlertEmail(self):
+    self._Prepare(extra_config={'health_threshold': 3,
+                                'health_alert_recipients': ['fake_recipient']})
+    self._SetupUpdateStreakCounter(counter_value=-3)
+    self._SetupCommitQueueSyncPool()
+    self.RunStage()
+    # pylint: disable=E1101
+    self.assertGreater(alerts.SendEmail.call_count, 0,
+                       'CQ health alerts emails were not sent.')
 
 class BoardSpecificBuilderStageTest(cros_test_lib.TestCase):
 

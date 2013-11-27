@@ -229,6 +229,19 @@ _settings = dict(
 #              consistently green, mark the builder as important=True.
   important=False,
 
+# health_threshold -- An integer. If this builder fails this many times
+#                     consecutively, send an alert email to the recipients
+#                     health_alert_recipients. Applies only to builders that
+#                     run CommitQueueSyncCompletion.
+#                     This feature is similar to the ERROR_WATERMARK feature of
+#                     upload_symbols, and it may make sense to merge the
+#                     features at some point.
+  health_threshold=0,
+
+# health_alert_recipients -- List of email addresses to send health alerts to
+#                            for this builder.
+  health_alert_recipients=[],
+
 # internal -- Whether this is an internal build config.
   internal=False,
 
@@ -1281,6 +1294,8 @@ internal_paladin.add_config('x86-mario-paladin',
   boards=['x86-mario'],
   paladin_builder_name='x86-mario paladin',
   vm_tests=constants.SIMPLE_AU_TEST_TYPE,
+  health_threshold=3,
+  health_alert_recipients=['chromeos-build-alerts@google.com']
 )
 
 ### Other paladins (CQ builders).
