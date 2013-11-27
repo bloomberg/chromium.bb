@@ -109,37 +109,34 @@ class TextInputModeMapSingleton {
   static TextInputModeMapSingleton* GetInstance() {
     return Singleton<TextInputModeMapSingleton>::get();
   }
-  TextInputModeMapSingleton()
-      : map() {
-    map["verbatim"] = ui::TEXT_INPUT_MODE_VERBATIM;
-    map["latin"] = ui::TEXT_INPUT_MODE_LATIN;
-    map["latin-name"] = ui::TEXT_INPUT_MODE_LATIN_NAME;
-    map["latin-prose"] = ui::TEXT_INPUT_MODE_LATIN_PROSE;
-    map["full-width-latin"] = ui::TEXT_INPUT_MODE_FULL_WIDTH_LATIN;
-    map["kana"] = ui::TEXT_INPUT_MODE_KANA;
-    map["katakana"] = ui::TEXT_INPUT_MODE_KATAKANA;
-    map["numeric"] = ui::TEXT_INPUT_MODE_NUMERIC;
-    map["tel"] = ui::TEXT_INPUT_MODE_TEL;
-    map["email"] = ui::TEXT_INPUT_MODE_EMAIL;
-    map["url"] = ui::TEXT_INPUT_MODE_URL;
+  TextInputModeMapSingleton() {
+    map_["verbatim"] = ui::TEXT_INPUT_MODE_VERBATIM;
+    map_["latin"] = ui::TEXT_INPUT_MODE_LATIN;
+    map_["latin-name"] = ui::TEXT_INPUT_MODE_LATIN_NAME;
+    map_["latin-prose"] = ui::TEXT_INPUT_MODE_LATIN_PROSE;
+    map_["full-width-latin"] = ui::TEXT_INPUT_MODE_FULL_WIDTH_LATIN;
+    map_["kana"] = ui::TEXT_INPUT_MODE_KANA;
+    map_["katakana"] = ui::TEXT_INPUT_MODE_KATAKANA;
+    map_["numeric"] = ui::TEXT_INPUT_MODE_NUMERIC;
+    map_["tel"] = ui::TEXT_INPUT_MODE_TEL;
+    map_["email"] = ui::TEXT_INPUT_MODE_EMAIL;
+    map_["url"] = ui::TEXT_INPUT_MODE_URL;
   }
-  TextInputModeMap& Map() {
-    return map;
-  }
+  const TextInputModeMap& map() const { return map_; }
  private:
-  TextInputModeMap map;
+  TextInputModeMap map_;
 
   friend struct DefaultSingletonTraits<TextInputModeMapSingleton>;
 
   DISALLOW_COPY_AND_ASSIGN(TextInputModeMapSingleton);
 };
 
-ui::TextInputMode ConvertInputMode(
-    const blink::WebString& input_mode) {
+ui::TextInputMode ConvertInputMode(const blink::WebString& input_mode) {
   static TextInputModeMapSingleton* singleton =
       TextInputModeMapSingleton::GetInstance();
-  TextInputModeMap::iterator it = singleton->Map().find(input_mode.utf8());
-  if (it == singleton->Map().end())
+  TextInputModeMap::const_iterator it =
+      singleton->map().find(input_mode.utf8());
+  if (it == singleton->map().end())
     return ui::TEXT_INPUT_MODE_DEFAULT;
   return it->second;
 }
