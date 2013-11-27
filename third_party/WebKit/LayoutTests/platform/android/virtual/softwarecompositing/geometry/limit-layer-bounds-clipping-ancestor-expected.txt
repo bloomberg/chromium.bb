@@ -49,8 +49,7 @@ middlebottom
           (bounds 185.00 200.00)
           (children 1
             (GraphicsLayer
-              (position 0.00 -100.00)
-              (bounds 110.00 2210.00)
+              (bounds 110.00 200.00)
               (contentsOpaque 1)
               (drawsContent 1)
               (backgroundColor #008000)

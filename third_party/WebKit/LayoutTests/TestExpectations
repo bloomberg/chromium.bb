@@ -165,9 +165,6 @@ crbug.com/229207 [ Win ] fast/forms/range/input-appearance-range.html [ ImageOnl
 # Can't distinguish between hot and hover on scrollbar thumbs.
 crbug.com/229207 [ Win ] ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ ImageOnlyFailure ]
 
-Bug(vollick) compositing/geometry/limit-layer-bounds-clipping-ancestor.html [ NeedsRebaseline ]
-Bug(vollick) virtual/softwarecompositing/geometry/limit-layer-bounds-clipping-ancestor.html [ NeedsRebaseline ]
-
 # Aura-specific minor border-radius diffs.
 crbug.com/229207 [ Win ] fast/forms/select/menulist-appearance-basic.html [ NeedsManualRebaseline ]
 crbug.com/229207 [ Win ] fast/forms/basic-selects.html [ NeedsManualRebaseline ]
