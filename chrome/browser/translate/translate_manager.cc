@@ -728,11 +728,17 @@ void TranslateManager::ShowBubble(WebContents* web_contents,
   if (web_contents != browser->tab_strip_model()->GetActiveWebContents())
     return;
 
-  BrowserWindow* window = browser->window();
-  if (window && !window->IsActive())
+  // This ShowBubble function is also used for upating the existing bubble.
+  // However, with the bubble shown, any browser windows are NOT activated
+  // because the bubble takes the focus from the other widgets including the
+  // browser windows. So it is checked that |browser| is the last activated
+  // browser, not is now activated.
+  if (browser !=
+      chrome::FindLastActiveWithHostDesktopType(browser->host_desktop_type())) {
     return;
+  }
 
-  TranslateBubbleFactory::Show(window, web_contents, view_state);
+  TranslateBubbleFactory::Show(browser->window(), web_contents, view_state);
 #else
   NOTREACHED();
 #endif
