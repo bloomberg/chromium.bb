@@ -15,7 +15,7 @@
 #import "media/video/capture/mac/platform_video_capturing_mac.h"
 
 namespace media {
-  class VideoCaptureDeviceMac;
+class VideoCaptureDeviceMac;
 }
 
 @class QTCaptureDeviceInput;

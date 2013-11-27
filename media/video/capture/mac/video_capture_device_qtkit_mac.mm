@@ -12,6 +12,7 @@
 #include "media/video/capture/mac/video_capture_device_mac.h"
 #include "media/video/capture/video_capture_device.h"
 #include "media/video/capture/video_capture_types.h"
+#include "ui/gfx/size.h"
 
 @implementation VideoCaptureDeviceQTKit
 
@@ -178,22 +179,15 @@
   QTCaptureDecompressedVideoOutput *output =
       [[captureSession_ outputs] objectAtIndex:0];
 
-  // The old capture dictionary is used to retrieve the initial pixel
-  // format, which must be maintained.
-  NSDictionary *oldCaptureDictionary = [output pixelBufferAttributes];
-
-  // Set up desired output properties.
-  NSDictionary *captureDictionary =
-      [NSDictionary dictionaryWithObjectsAndKeys:
-          [NSNumber numberWithDouble:width],
-          (id)kCVPixelBufferWidthKey,
-          [NSNumber numberWithDouble:height],
-          (id)kCVPixelBufferHeightKey,
-          [oldCaptureDictionary
-              valueForKey:(id)kCVPixelBufferPixelFormatTypeKey],
-          (id)kCVPixelBufferPixelFormatTypeKey,
-          nil];
-  [output setPixelBufferAttributes:captureDictionary];
+  // Set up desired output properties. The old capture dictionary is used to
+  // retrieve the initial pixel format, which must be maintained.
+  NSDictionary* videoSettingsDictionary = @{
+    (id)kCVPixelBufferWidthKey : @(width),
+    (id)kCVPixelBufferHeightKey : @(height),
+    (id)kCVPixelBufferPixelFormatTypeKey : [[output pixelBufferAttributes]
+        valueForKey:(id)kCVPixelBufferPixelFormatTypeKey]
+  };
+  [output setPixelBufferAttributes:videoSettingsDictionary];
 
   [output setMinimumVideoFrameInterval:(NSTimeInterval)1/(float)frameRate];
   return YES;

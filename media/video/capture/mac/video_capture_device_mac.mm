@@ -13,7 +13,7 @@
 #import "media/video/capture/mac/video_capture_device_avfoundation_mac.h"
 #import "media/video/capture/mac/video_capture_device_qtkit_mac.h"
 
-namespace {
+namespace media {
 
 const int kMinFrameRate = 1;
 const int kMaxFrameRate = 30;
@@ -61,10 +61,6 @@ void GetBestMatchSupportedResolution(int* width, int* height) {
   *width = matched_width;
   *height = matched_height;
 }
-
-}
-
-namespace media {
 
 void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
   // Loop through all available devices and add to |device_names|.
@@ -213,8 +209,14 @@ bool VideoCaptureDeviceMac::Init() {
   if (!found)
     return false;
 
-  capture_device_ =
-      [[VideoCaptureDeviceQTKit alloc] initWithFrameReceiver:this];
+  if (AVFoundationGlue::IsAVFoundationSupported()) {
+    capture_device_ =
+        [[VideoCaptureDeviceAVFoundation alloc] initWithFrameReceiver:this];
+  } else {
+    capture_device_ =
+        [[VideoCaptureDeviceQTKit alloc] initWithFrameReceiver:this];
+  }
+
   if (!capture_device_)
     return false;
 
