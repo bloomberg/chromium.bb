@@ -5,6 +5,7 @@
 #include "net/http/http_network_layer.h"
 
 #include "base/logging.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -23,9 +24,19 @@ HttpNetworkLayer::HttpNetworkLayer(HttpNetworkSession* session)
     : session_(session),
       suspended_(false) {
   DCHECK(session_.get());
+#if defined(OS_WIN)
+ base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+ if (power_monitor)
+   power_monitor->AddObserver(this);
+#endif
 }
 
 HttpNetworkLayer::~HttpNetworkLayer() {
+#if defined(OS_WIN)
+  base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
+  if (power_monitor)
+    power_monitor->RemoveObserver(this);
+#endif
 }
 
 //-----------------------------------------------------------------------------

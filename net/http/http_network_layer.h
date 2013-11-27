@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/power_monitor/power_observer.h"
@@ -54,6 +56,8 @@ class NET_EXPORT HttpNetworkLayer
  private:
   const scoped_refptr<HttpNetworkSession> session_;
   bool suspended_;
+
+  DISALLOW_COPY_AND_ASSIGN(HttpNetworkLayer);
 };
 
 }  // namespace net
