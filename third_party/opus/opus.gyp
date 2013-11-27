@@ -37,8 +37,11 @@
         'src/celt/bands.h',
         'src/celt/celt.c',
         'src/celt/celt.h',
+        'src/celt/celt_decoder.c',
+        'src/celt/celt_encoder.c',
         'src/celt/celt_lpc.c',
         'src/celt/celt_lpc.h',
+        'src/celt/cpu_support.h',
         'src/celt/cwrs.c',
         'src/celt/cwrs.h',
         'src/celt/ecintrin.h',
@@ -237,11 +240,19 @@
         'src/silk/typedef.h',
         'src/silk/VAD.c',
         'src/silk/VQ_WMat_EC.c',
+        'src/src/analysis.c',
+        'src/src/analysis.h',
+        'src/src/mlp.c',
+        'src/src/mlp.h',
+        'src/src/mlp_data.c',
         'src/src/opus.c',
         'src/src/opus_decoder.c',
         'src/src/opus_encoder.c',
         'src/src/opus_multistream.c',
+        'src/src/opus_multistream_decoder.c',
+        'src/src/opus_multistream_encoder.c',
         'src/src/repacketizer.c',
+        'src/src/tansig_table.h',
       ],
       'conditions': [
         ['OS!="win"', {
@@ -257,6 +268,7 @@
           ],
           'msvs_disabled_warnings': [
             4305,  # Disable truncation warning in celt/pitch.c .
+            4334,  # Disable 32-bit shift warning in src/opus_encoder.c .
           ],
         }],
         ['use_opus_fixed_point==0', {
