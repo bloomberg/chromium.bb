@@ -324,11 +324,40 @@ bool ImportKeyInternalRaw(
   return true;
 }
 
-typedef scoped_ptr_malloc<
-    CERTSubjectPublicKeyInfo,
-    crypto::NSSDestroyer<CERTSubjectPublicKeyInfo,
-                         SECKEY_DestroySubjectPublicKeyInfo> >
+typedef scoped_ptr<CERTSubjectPublicKeyInfo,
+                   crypto::NSSDestroyer<CERTSubjectPublicKeyInfo,
+                                        SECKEY_DestroySubjectPublicKeyInfo> >
     ScopedCERTSubjectPublicKeyInfo;
+
+// Validates an NSS KeyType against a WebCrypto algorithm. Some NSS KeyTypes
+// contain enough information to fabricate a Web Crypto algorithm, which is
+// returned if the input algorithm isNull(). This function indicates failure by
+// returning a Null algorithm.
+blink::WebCryptoAlgorithm ResolveNssKeyTypeWithInputAlgorithm(
+    KeyType key_type,
+    const blink::WebCryptoAlgorithm& algorithm_or_null) {
+  switch (key_type) {
+    case rsaKey:
+      // NSS's rsaKey KeyType maps to keys with SEC_OID_PKCS1_RSA_ENCRYPTION and
+      // according to RFCs 4055/5756 this can be used for both encryption and
+      // signatures. However, this is not specific enough to build a compatible
+      // Web Crypto algorithm, since in Web Crypto, RSA encryption and signature
+      // algorithms are distinct. So if the input algorithm isNull() here, we
+      // have to fail.
+      if (!algorithm_or_null.isNull() && IsAlgorithmRsa(algorithm_or_null))
+        return algorithm_or_null;
+      break;
+    case dsaKey:
+    case ecKey:
+    case rsaPssKey:
+    case rsaOaepKey:
+      // TODO(padolph): Handle other key types.
+      break;
+    default:
+      break;
+  }
+  return blink::WebCryptoAlgorithm::createNull();
+}
 
 bool ImportKeyInternalSpki(
     const unsigned char* key_data,
@@ -342,16 +371,11 @@ bool ImportKeyInternalSpki(
 
   if (!key_data_size)
     return false;
-
   DCHECK(key_data);
 
   // The binary blob 'key_data' is expected to be a DER-encoded ASN.1 Subject
   // Public Key Info. Decode this to a CERTSubjectPublicKeyInfo.
-  SECItem spki_item = {
-      siBuffer,
-      const_cast<uint8*>(key_data),
-      key_data_size
-  };
+  SECItem spki_item = {siBuffer, const_cast<uint8*>(key_data), key_data_size};
   const ScopedCERTSubjectPublicKeyInfo spki(
       SECKEY_DecodeDERSubjectPublicKeyInfo(&spki_item));
   if (!spki)
@@ -363,34 +387,10 @@ bool ImportKeyInternalSpki(
     return false;
 
   const KeyType sec_key_type = SECKEY_GetPublicKeyType(sec_public_key.get());
-
-  // Validate the sec_key_type against the input algorithm. Some NSS KeyType's
-  // contain enough information to fabricate a Web Crypto Algorithm, which will
-  // be used if the input algorithm isNull(). Others like 'rsaKey' do not (see
-  // below).
   blink::WebCryptoAlgorithm algorithm =
-      blink::WebCryptoAlgorithm::createNull();
-  switch (sec_key_type) {
-    case rsaKey:
-      // NSS's rsaKey KeyType maps to keys with SEC_OID_PKCS1_RSA_ENCRYPTION and
-      // according to RFC 4055 this can be used for both encryption and
-      // signatures. However, this is not specific enough to build a compatible
-      // Web Crypto algorithm, since in Web Crypto RSA encryption and signature
-      // algorithms are distinct. So if the input algorithm isNull() here, we
-      // have to fail.
-      if (algorithm_or_null.isNull() || !IsAlgorithmRsa(algorithm_or_null))
-        return false;
-      algorithm = algorithm_or_null;
-      break;
-    case dsaKey:
-    case ecKey:
-    case rsaPssKey:
-    case rsaOaepKey:
-      // TODO(padolph): Handle other key types.
-      return false;
-    default:
-      return false;
-  }
+      ResolveNssKeyTypeWithInputAlgorithm(sec_key_type, algorithm_or_null);
+  if (algorithm.isNull())
+    return false;
 
   *key = blink::WebCryptoKey::create(
       new PublicKeyHandle(sec_public_key.Pass()),
@@ -425,6 +425,56 @@ bool ExportKeyInternalSpki(
 
   *buffer = blink::WebArrayBuffer::create(spki_der->len, 1);
   memcpy(buffer->data(), spki_der->data, spki_der->len);
+
+  return true;
+}
+
+bool ImportKeyInternalPkcs8(
+    const unsigned char* key_data,
+    unsigned key_data_size,
+    const blink::WebCryptoAlgorithm& algorithm_or_null,
+    bool extractable,
+    blink::WebCryptoKeyUsageMask usage_mask,
+    blink::WebCryptoKey* key) {
+
+  DCHECK(key);
+
+  if (!key_data_size)
+    return false;
+  DCHECK(key_data);
+
+  // The binary blob 'key_data' is expected to be a DER-encoded ASN.1 PKCS#8
+  // private key info object.
+  SECItem pki_der = {siBuffer, const_cast<uint8*>(key_data), key_data_size};
+
+  SECKEYPrivateKey* seckey_private_key = NULL;
+  if (PK11_ImportDERPrivateKeyInfoAndReturnKey(
+          PK11_GetInternalSlot(),
+          &pki_der,
+          NULL,  // nickname
+          NULL,  // publicValue
+          false,  // isPerm
+          false,  // isPrivate
+          KU_ALL,  // usage
+          &seckey_private_key,
+          NULL) != SECSuccess) {
+    return false;
+  }
+  DCHECK(seckey_private_key);
+  crypto::ScopedSECKEYPrivateKey private_key(seckey_private_key);
+
+  const KeyType sec_key_type = SECKEY_GetPrivateKeyType(private_key.get());
+  blink::WebCryptoAlgorithm algorithm =
+      ResolveNssKeyTypeWithInputAlgorithm(sec_key_type, algorithm_or_null);
+  if (algorithm.isNull())
+    return false;
+
+  *key = blink::WebCryptoKey::create(
+      new PrivateKeyHandle(private_key.Pass()),
+      blink::WebCryptoKeyTypePrivate,
+      extractable,
+      algorithm,
+      usage_mask);
 
   return true;
 }
@@ -680,9 +730,14 @@ bool WebCryptoImpl::ImportKeyInternal(
                                    usage_mask,
                                    key);
     case blink::WebCryptoKeyFormatPkcs8:
-      // TODO(padolph): Handle PKCS#8 private key import
-      return false;
+      return ImportKeyInternalPkcs8(key_data,
+                                    key_data_size,
+                                    algorithm_or_null,
+                                    extractable,
+                                    usage_mask,
+                                    key);
     default:
+      // NOTE: blink::WebCryptoKeyFormatJwk is handled one level above.
       return false;
   }
 }

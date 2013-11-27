@@ -789,7 +789,87 @@ TEST_F(WebCryptoImplTest, ImportExportSpki) {
   EXPECT_FALSE(key.extractable());
   EXPECT_FALSE(ExportKeyInternal(blink::WebCryptoKeyFormatSpki, key, &output));
 
-  // TODO(padolph): Import a RSA SPKI key and verify it works with an operation.
+  // TODO(padolph): Use the imported key for a Known Answer Test (KAT).
+}
+
+TEST_F(WebCryptoImplTest, ImportPkcs8) {
+
+  // The following is a DER-encoded PKCS#8 representation of the RSA key from
+  // Example 1 of NIST's "Test vectors for RSA PKCS#1 v1.5 Signature".
+  // ftp://ftp.rsa.com/pub/rsalabs/tmp/pkcs1v15sign-vectors.txt
+  const std::string hex_rsa_pkcs8_der =
+      "30820275020100300D06092A864886F70D01010105000482025F3082025B020100028181"
+      "00A56E4A0E701017589A5187DC7EA841D156F2EC0E36AD52A44DFEB1E61F7AD991D8C510"
+      "56FFEDB162B4C0F283A12A88A394DFF526AB7291CBB307CEABFCE0B1DFD5CD9508096D5B"
+      "2B8B6DF5D671EF6377C0921CB23C270A70E2598E6FF89D19F105ACC2D3F0CB35F29280E1"
+      "386B6F64C4EF22E1E1F20D0CE8CFFB2249BD9A2137020301000102818033A5042A90B27D"
+      "4F5451CA9BBBD0B44771A101AF884340AEF9885F2A4BBE92E894A724AC3C568C8F97853A"
+      "D07C0266C8C6A3CA0929F1E8F11231884429FC4D9AE55FEE896A10CE707C3ED7E734E447"
+      "27A39574501A532683109C2ABACABA283C31B4BD2F53C3EE37E352CEE34F9E503BD80C06"
+      "22AD79C6DCEE883547C6A3B325024100E7E8942720A877517273A356053EA2A1BC0C94AA"
+      "72D55C6E86296B2DFC967948C0A72CBCCCA7EACB35706E09A1DF55A1535BD9B3CC34160B"
+      "3B6DCD3EDA8E6443024100B69DCA1CF7D4D7EC81E75B90FCCA874ABCDE123FD2700180AA"
+      "90479B6E48DE8D67ED24F9F19D85BA275874F542CD20DC723E6963364A1F9425452B269A"
+      "6799FD024028FA13938655BE1F8A159CBACA5A72EA190C30089E19CD274A556F36C4F6E1"
+      "9F554B34C077790427BBDD8DD3EDE2448328F385D81B30E8E43B2FFFA02786197902401A"
+      "8B38F398FA712049898D7FB79EE0A77668791299CDFA09EFC0E507ACB21ED74301EF5BFD"
+      "48BE455EAEB6E1678255827580A8E4E8E14151D1510A82A3F2E729024027156ABA4126D2"
+      "4A81F3A528CBFB27F56886F840A9F6E86E17A44B94FE9319584B8E22FDDE1E5A2E3BD8AA"
+      "5BA8D8584194EB2190ACF832B847F13A3D24A79F4D";
+
+  // Passing case: Import a valid RSA key in PKCS#8 format.
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+  ASSERT_TRUE(ImportKeyInternal(
+      blink::WebCryptoKeyFormatPkcs8,
+      HexStringToBytes(hex_rsa_pkcs8_der),
+      CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5),
+      true,
+      blink::WebCryptoKeyUsageSign,
+      &key));
+  EXPECT_TRUE(key.handle());
+  EXPECT_EQ(blink::WebCryptoKeyTypePrivate, key.type());
+  EXPECT_TRUE(key.extractable());
+  EXPECT_EQ(blink::WebCryptoKeyUsageSign, key.usages());
+
+  // Failing case: Empty PKCS#8 data
+  EXPECT_FALSE(ImportKeyInternal(
+      blink::WebCryptoKeyFormatPkcs8,
+      std::vector<uint8>(),
+      blink::WebCryptoAlgorithm::createNull(),
+      true,
+      blink::WebCryptoKeyUsageSign,
+      &key));
+
+  // Failing case: Import RSA key with NULL input algorithm. This is not
+  // allowed because the PKCS#8 ASN.1 format for RSA keys is not specific enough
+  // to map to a Web Crypto algorithm.
+  EXPECT_FALSE(ImportKeyInternal(
+      blink::WebCryptoKeyFormatPkcs8,
+      HexStringToBytes(hex_rsa_pkcs8_der),
+      blink::WebCryptoAlgorithm::createNull(),
+      true,
+      blink::WebCryptoKeyUsageSign,
+      &key));
+
+  // Failing case: Bad DER encoding.
+  EXPECT_FALSE(ImportKeyInternal(
+      blink::WebCryptoKeyFormatPkcs8,
+      HexStringToBytes("618333c4cb"),
+      CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5),
+      true,
+      blink::WebCryptoKeyUsageSign,
+      &key));
+
+  // Failing case: Import RSA key but provide an inconsistent input algorithm.
+  EXPECT_FALSE(ImportKeyInternal(
+      blink::WebCryptoKeyFormatPkcs8,
+      HexStringToBytes(hex_rsa_pkcs8_der),
+      CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
+      true,
+      blink::WebCryptoKeyUsageSign,
+      &key));
+
+  // TODO(padolph): Use the imported key for a Known Answer Test (KAT).
 }
 
 TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
