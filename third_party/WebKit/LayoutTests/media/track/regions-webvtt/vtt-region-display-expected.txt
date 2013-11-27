@@ -1,6 +1,5 @@
 Tests default rendering for TextTrackCues that belong to a VTTRegion.
 
-EVENT(canplaythrough)
 ** The text track has only one region **
 EXPECTED (testTrack.regions.length == '1') OK
 

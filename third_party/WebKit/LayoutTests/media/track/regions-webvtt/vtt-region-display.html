@@ -38,6 +38,8 @@
 
         function testRegionsDisplay()
         {
+            video.removeEventListener('canplaythrough', testRegionsDisplay);
+
             testTrack = video.textTracks[0];
 
             consoleWrite("** The text track has only one region **");
@@ -94,7 +96,7 @@
             findMediaElement();
 
             video.src = findMediaFile('video', '../../content/test');
-            waitForEvent('canplaythrough', testRegionsDisplay);
+            video.addEventListener('canplaythrough', testRegionsDisplay);
         }
 
         </script>

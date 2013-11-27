@@ -39,15 +39,15 @@
         function pause() {
             consoleWrite("EVENT(pause)");
             controller.removeEventListener('pause', pause, true);
-            controller.addEventListener('play', playAgain, true);
+            controller.addEventListener('playing', playingAgain, true);
             run('controller.play()');
         }
 
-        function playAgain()
+        function playingAgain()
         {
-            consoleWrite("EVENT(play)");
+            consoleWrite("EVENT(playing)");
             testExpected('controller.playbackState', 'playing');
-            controller.removeEventListener('play', playAgain, true);
+            controller.removeEventListener('playing', playingAgain, true);
             endTest();
         }
 

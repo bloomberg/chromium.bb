@@ -20,9 +20,13 @@
                     case "canplaythrough":
                         if (playingCount > 0)
                             return;
+                        video.oncanplaythrough = null;
                         testExpected('progressEventCount', 1, '>=');
                         consoleWrite("<br>*** starting playback");
                         run("video.play()");
+                        break;
+                    case "canplay":
+                        video.oncanplay = null;
                         break;
                     case "playing":
                         if (++playingCount == 1) {
