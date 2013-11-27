@@ -1038,6 +1038,12 @@ def urlretrieve(source, destination):
     f.write(urllib2.urlopen(source).read())
 
 
+def hasSheBang(fname):
+  """Checks fname is a #! script."""
+  with open(fname) as f:
+    return f.read(2).startswith('#!')
+
+
 def DownloadHooks(force):
   """downloads hooks
 
@@ -1046,21 +1052,27 @@ def DownloadHooks(force):
   """
   if not settings.GetIsGerrit():
     return
-  server_url = settings.GetDefaultServerUrl()
-  src = '%s/tools/hooks/commit-msg' % server_url
+  src = 'https://gerrit-review.googlesource.com/tools/hooks/commit-msg'
   dst = os.path.join(settings.GetRoot(), '.git', 'hooks', 'commit-msg')
   if not os.access(dst, os.X_OK):
     if os.path.exists(dst):
       if not force:
         return
-      os.remove(dst)
     try:
       urlretrieve(src, dst)
+      if not hasSheBang(dst):
+        DieWithError('Not a script: %s\n'
+                     'You need to download from\n%s\n'
+                     'into .git/hooks/commit-msg and '
+                     'chmod +x .git/hooks/commit-msg' % (dst, src))
       os.chmod(dst, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
     except Exception:
       if os.path.exists(dst):
         os.remove(dst)
-      DieWithError('\nFailed to download hooks from %s' % src)
+      DieWithError('\nFailed to download hooks.\n'
+                   'You need to download from\n%s\n'
+                   'into .git/hooks/commit-msg and '
+                   'chmod +x .git/hooks/commit-msg' % src)
 
 
 @subcommand.usage('[repo root containing codereview.settings]')

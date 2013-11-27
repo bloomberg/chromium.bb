@@ -649,6 +649,7 @@ class TestGitCl(TestCase):
       return True
     self.mock(git_cl.os.path, 'exists', Exists)
     self.mock(git_cl, 'urlretrieve', self._mocked_call)
+    self.mock(git_cl, 'hasSheBang', self._mocked_call)
     self.calls = [
         ((['git', 'config', 'rietveld.server',
            'gerrit.chromium.org'],), ''),
@@ -665,12 +666,11 @@ class TestGitCl(TestCase):
         # DownloadHooks(False)
         ((['git', 'config', 'gerrit.host'],),
          'gerrit.chromium.org'),
-        ((['git', 'config', 'rietveld.server'],),
-         'gerrit.chromium.org'),
         ((['git', 'rev-parse', '--show-cdup'],), ''),
         ((commit_msg_path, os.X_OK,), False),
-        (('https://gerrit.chromium.org/tools/hooks/commit-msg',
+        (('https://gerrit-review.googlesource.com/tools/hooks/commit-msg',
           commit_msg_path,), ''),
+        ((commit_msg_path,), True),
         ((commit_msg_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR,), ''),
         # GetCodereviewSettingsInteractively
         ((['git', 'config', 'rietveld.server'],),
