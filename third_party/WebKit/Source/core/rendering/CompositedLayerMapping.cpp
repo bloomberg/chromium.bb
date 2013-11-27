@@ -1275,9 +1275,6 @@ void CompositedLayerMapping::updateBackgroundColor(bool isSimpleContainer)
 
 static bool supportsDirectBoxDecorationsComposition(const RenderObject* renderer)
 {
-    if (!GraphicsLayer::supportsBackgroundColorContent())
-        return false;
-
     if (renderer->hasClip())
         return false;
 

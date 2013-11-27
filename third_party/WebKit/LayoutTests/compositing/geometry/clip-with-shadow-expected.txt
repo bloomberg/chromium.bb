@@ -20,8 +20,6 @@
             (GraphicsLayer
               (position -5.00 -5.00)
               (bounds 120.00 120.00)
-              (drawsContent 1)
-              (backgroundColor #00000033)
               (transform [1.00 0.00 0.00 0.00] [0.00 1.00 0.00 0.00] [0.00 0.00 1.00 0.00] [0.00 0.00 1.00 1.00])
             )
           )

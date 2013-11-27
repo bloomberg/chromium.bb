@@ -37,8 +37,6 @@
           (position 50.00 200.00)
           (bounds 200.00 200.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #008000)
           (hasClipParent 1)
           (children 1
             (GraphicsLayer
@@ -54,8 +52,6 @@
               (position 10.00 10.00)
               (bounds 100.00 100.00)
               (contentsOpaque 1)
-              (drawsContent 1)
-              (backgroundColor #FF0000)
               (children 1
                 (GraphicsLayer
                 )
@@ -67,8 +63,6 @@
           (position 22.00 102.00)
           (bounds 100.00 100.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
           (hasScrollParent 1)
           (children 1
             (GraphicsLayer
@@ -79,8 +73,6 @@
           (position 22.00 212.00)
           (bounds 100.00 100.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
           (hasScrollParent 1)
           (children 1
             (GraphicsLayer
@@ -91,8 +83,6 @@
           (position 22.00 322.00)
           (bounds 100.00 100.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
           (hasScrollParent 1)
           (children 1
             (GraphicsLayer
@@ -103,8 +93,6 @@
           (position 22.00 432.00)
           (bounds 100.00 100.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
           (hasScrollParent 1)
           (children 1
             (GraphicsLayer

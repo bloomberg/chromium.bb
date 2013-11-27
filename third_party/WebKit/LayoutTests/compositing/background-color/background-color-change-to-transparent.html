@@ -1,7 +1,7 @@
 <!DOCTYPE>
 <html>
 <head>
-<style type="text/css" media="screen">
+<style>
     #background {
         width: 200px;
         height: 200px;
@@ -29,9 +29,7 @@
         var bg = document.getElementById("background");
 
         window.setTimeout(function() {
-            // Change the layer not to be background color layer.
-            bg.innerHTML = "text" + bg.innerHTML;
-            bg.style.backgroundColor = "red";
+            bg.style.backgroundColor = "transparent";
             if (window.testRunner) {
                 window.setTimeout(function() {
                     testRunner.notifyDone();

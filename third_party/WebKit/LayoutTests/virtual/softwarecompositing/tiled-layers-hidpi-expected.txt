@@ -10,8 +10,6 @@
           (position 8.00 8.00)
           (bounds 1800.00 10.00)
           (contentsOpaque 1)
-          (drawsContent 1)
-          (backgroundColor #0000FF)
         )
       )
     )

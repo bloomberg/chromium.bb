@@ -229,7 +229,7 @@ public:
     void setContentsToImage(Image*);
     void setContentsToNinePatch(Image*, const IntRect& aperture);
     // Pass an invalid color to remove the contents layer.
-    void setContentsToSolidColor(const Color&) { }
+    void setContentsToSolidColor(const Color&);
     void setContentsToPlatformLayer(blink::WebLayer* layer) { setContentsTo(layer); }
     bool hasContentsLayer() const { return m_contentsLayer; }
 
@@ -273,11 +273,6 @@ public:
     void addRepaintRect(const FloatRect&);
 
     void collectTrackedRepaintRects(Vector<FloatRect>&) const;
-
-    static bool supportsBackgroundColorContent()
-    {
-        return false;
-    }
 
     void addLinkHighlight(LinkHighlightClient*);
     void removeLinkHighlight(LinkHighlightClient*);
@@ -389,6 +384,8 @@ private:
     OwnPtr<blink::WebContentLayer> m_layer;
     OwnPtr<blink::WebImageLayer> m_imageLayer;
     OwnPtr<blink::WebNinePatchLayer> m_ninePatchLayer;
+    Color m_contentsSolidColor;
+    OwnPtr<blink::WebSolidColorLayer> m_solidColorLayer;
     blink::WebLayer* m_contentsLayer;
     // We don't have ownership of m_contentsLayer, but we do want to know if a given layer is the
     // same as our current layer in setContentsTo(). Since m_contentsLayer may be deleted at this point,
