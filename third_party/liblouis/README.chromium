@@ -15,4 +15,13 @@ libloius is used in a native client binary in ChromeVox and not linked into
 Chrome itself.
 
 Local Modifications:
-...
+
+* Add manually created liblouis.h.
+* On Android: log to logcat.
+* Fix backtranslation to not output unicode braille patterns
+  (svn r838)
+* Fix 3 letters in Danish 8 dot braille table, reverting part of svn r238.
+* Fix out-of-bounds array access (code removed by upstream).
+* Fix compiler warnings (part of svn r856).
+* Add tables.json a list of tables with metadata.
+* Add a wrapper to expose the library in native client.

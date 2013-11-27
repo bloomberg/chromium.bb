@@ -1,0 +1,398 @@
+[
+  {
+    "locale": "ar",
+    "dots": "6",
+    "id": "ar-g1",
+    "grade": "1",
+    "fileName": "ar-ar-g1.utb"
+  },
+  {
+    "locale": "bg",
+    "dots": "8",
+    "id": "bg-comp8",
+    "fileName": "bg.ctb"
+  },
+  {
+    "locale": "ca",
+    "dots": "6",
+    "id": "ca-g1",
+    "grade": "1",
+    "fileName": "ca-g1.ctb"
+  },
+  {
+    "locale": "hr",
+    "dots": "8",
+    "id": "hr-comp8",
+    "fileName": "hr.ctb"
+  },
+  {
+    "locale": "cs",
+    "dots": "6",
+    "id": "cs-g1",
+    "grade": "1",
+    "fileName": "cs-g1.ctb"
+  },
+  {
+    "locale": "da",
+    "dots": "8",
+    "id": "da-comp8",
+    "fileName": "da.ctb"
+  },
+  {
+    "locale": "nl",
+    "dots": "6",
+    "id": "nl-g1",
+    "grade": "1",
+    "fileName": "Nl-Nl-g1.utb"
+  },
+  {
+    "locale": "en_CA",
+    "dots": "8",
+    "id": "en-CA-comp8",
+    "fileName": "en_CA.ctb"
+  },
+  {
+    "locale": "en_GB",
+    "dots": "6",
+    "id": "en-GB-g1",
+    "grade": "1",
+    "fileName": "en-gb-g1.utb"
+  },
+  {
+    "locale": "en_GB",
+    "dots": "6",
+    "id": "en-GB-g2",
+    "grade": "2",
+    "fileName": "en-GB-g2.ctb"
+  },
+  {
+    "locale": "en_US",
+    "dots": "8",
+    "id": "en-US-comp8",
+    "fileName": "en-us-comp8.ctb"
+  },
+  {
+    "locale": "en_US",
+    "dots": "6",
+    "id": "en-US-g1",
+    "grade": "1",
+    "fileName": "en-us-g1.ctb"
+  },
+  {
+    "locale": "en_US",
+    "dots": "6",
+    "id": "en-US-g2",
+    "grade": "2",
+    "fileName": "en-us-g2.ctb"
+  },
+  {
+    "locale": "et",
+    "dots": "8",
+    "id": "et-comp8",
+    "fileName": "et-g0.utb"
+  },
+  {
+    "locale": "fr",
+    "dots": "8",
+    "id": "fr-comp8",
+    "fileName": "fr-2007.ctb"
+  },
+  {
+    "locale": "fr_CA",
+    "dots": "6",
+    "id": "fr-CA-g1",
+    "grade": "1",
+    "fileName": "fr-ca-g1.utb"
+  },
+  {
+    "locale": "fr_CA",
+    "dots": "6",
+    "id": "fr-CA-g2",
+    "grade": "2",
+    "fileName": "Fr-Ca-g2.ctb"
+  },
+  {
+    "locale": "fr_FR",
+    "dots": "6",
+    "id": "fr-FR-g1",
+    "grade": "1",
+    "fileName": "fr-fr-g1.utb"
+  },
+  {
+    "locale": "fr_FR",
+    "dots": "6",
+    "id": "fr-FR-g2",
+    "grade": "2",
+    "fileName": "Fr-Fr-g2.ctb"
+  },
+  {
+    "locale": "fi",
+    "dots": "8",
+    "id": "fi-comp8",
+    "fileName": "fi-fi-8dot.ctb"
+  },
+  {
+    "locale": "de",
+    "dots": "8",
+    "id": "de-comp8",
+    "fileName": "de-de-comp8.ctb"
+  },
+  {
+    "locale": "de_CH",
+    "dots": "6",
+    "id": "de-CH-g0",
+    "grade": "0",
+    "fileName": "de-ch-g0.utb"
+  },
+  {
+    "locale": "de_CH",
+    "dots": "6",
+    "id": "de-CH-g1",
+    "grade": "1",
+    "fileName": "de-ch-g1.ctb"
+  },
+  {
+    "locale": "de_CH",
+    "dots": "6",
+    "id": "de-CH-g2",
+    "grade": "2",
+    "fileName": "de-ch-g2.ctb"
+  },
+  {
+    "locale": "de_DE",
+    "dots": "6",
+    "id": "de-DE-g0",
+    "grade": "0",
+    "fileName": "de-de-g0.utb"
+  },
+  {
+    "locale": "de_DE",
+    "dots": "6",
+    "id": "de-DE-g1",
+    "grade": "1",
+    "fileName": "de-de-g1.ctb"
+  },
+  {
+    "locale": "de_DE",
+    "dots": "6",
+    "id": "de-DE-g2",
+    "grade": "2",
+    "fileName": "de-de-g2.ctb"
+  },
+  {
+    "locale": "el",
+    "dots": "6",
+    "id": "el-g1",
+    "grade": "1",
+    "fileName": "gr-gr-g1.utb"
+  },
+  {
+    "locale": "hi",
+    "dots": "8",
+    "id": "hi-comp8",
+    "fileName": "hi.ctb"
+  },
+  {
+    "locale": "hi",
+    "dots": "6",
+    "id": "hi-g1",
+    "grade": "1",
+    "fileName": "hi-in-g1.utb"
+  },
+  {
+    "locale": "hu",
+    "dots": "8",
+    "id": "hu-comp8",
+    "fileName": "hu-hu-comp8.ctb"
+  },
+  {
+    "locale": "hu",
+    "dots": "6",
+    "id": "hu-g1",
+    "grade": "1",
+    "fileName": "hu-hu-g1.ctb"
+  },
+  {
+    "locale": "is",
+    "dots": "8",
+    "id": "is-comp8",
+    "fileName": "is.ctb"
+  },
+  {
+    "locale": "it",
+    "dots": "8",
+    "id": "it-comp8",
+    "fileName": "it-it-comp8.utb"
+  },
+  {
+    "locale": "it",
+    "dots": "6",
+    "id": "it-g1",
+    "grade": "1",
+    "fileName": "it-it-comp6.utb"
+  },
+  {
+    "locale": "lv",
+    "dots": "6",
+    "id": "lv-g1",
+    "grade": "1",
+    "fileName": "Lv-Lv-g1.utb"
+  },
+  {
+    "locale": "lt",
+    "dots": "8",
+    "id": "lt-comp8",
+    "fileName": "lt.ctb"
+  },
+  {
+    "locale": "nb",
+    "dots": "8",
+    "id": "nb-comp8",
+    "fileName": "no-no.ctb"
+  },
+  {
+    "locale": "nb",
+    "dots": "6",
+    "id": "nb-g0",
+    "grade": "0",
+    "fileName": "no-no-g0.utb"
+  },
+  {
+    "locale": "nb",
+    "dots": "6",
+    "id": "nb-g1",
+    "grade": "1",
+    "fileName": "no-no-g1.ctb"
+  },
+  {
+    "locale": "nb",
+    "dots": "6",
+    "id": "nb-g2",
+    "grade": "2",
+    "fileName": "no-no-g2.ctb"
+  },
+  {
+    "locale": "nb",
+    "dots": "6",
+    "id": "nb-g3",
+    "grade": "3",
+    "fileName": "no-no-g3.ctb"
+  },
+  {
+    "locale": "pl",
+    "dots": "6",
+    "id": "pl-g1",
+    "grade": "1",
+    "fileName": "Pl-Pl-g1.utb"
+  },
+  {
+    "locale": "pt",
+    "dots": "8",
+    "id": "pt-comp8",
+    "fileName": "pt-pt-comp8.ctb"
+  },
+  {
+    "locale": "pt",
+    "dots": "6",
+    "id": "pt-g1",
+    "grade": "1",
+    "fileName": "pt-pt-g1.utb"
+  },
+  {
+    "locale": "pt",
+    "dots": "6",
+    "id": "pt-g2",
+    "grade": "2",
+    "fileName": "pt-pt-g2.ctb"
+  },
+  {
+    "locale": "ro",
+    "dots": "8",
+    "id": "ro-comp8",
+    "fileName": "ro.ctb"
+  },
+  {
+    "locale": "ru",
+    "dots": "8",
+    "id": "ru-comp8",
+    "fileName": "ru.ctb"
+  },
+  {
+    "locale": "ru",
+    "dots": "6",
+    "id": "ru-g1",
+    "grade": "1",
+    "fileName": "ru-ru-g1.utb"
+  },
+  {
+    "locale": "sr",
+    "dots": "6",
+    "id": "sr-g1",
+    "grade": "1",
+    "fileName": "sr-g1.ctb"
+  },
+  {
+    "locale": "sk",
+    "dots": "6",
+    "id": "sk-g1",
+    "grade": "1",
+    "fileName": "sk-sk-g1.utb"
+  },
+  {
+    "locale": "sl",
+    "dots": "6",
+    "id": "sl-g1",
+    "grade": "1",
+    "fileName": "sl-si-g1.utb"
+  },
+  {
+    "locale": "es",
+    "dots": "8",
+    "id": "es-comp8",
+    "fileName": "Es-Es-G0.utb"
+  },
+  {
+    "locale": "es",
+    "dots": "6",
+    "id": "es-g1",
+    "grade": "1",
+    "fileName": "es-g1.ctb"
+  },
+  {
+    "locale": "sv",
+    "dots": "8",
+    "id": "sv-comp8",
+    "fileName": "sv-1996.ctb"
+  },
+  {
+    "locale": "sv",
+    "dots": "6",
+    "id": "sv-g1",
+    "grade": "1",
+    "fileName": "Se-Se-g1.utb"
+  },
+  {
+    "locale": "tr",
+    "dots": "8",
+    "id": "tr-comp8",
+    "fileName": "tr.ctb"
+  },
+  {
+    "locale": "vi",
+    "dots": "8",
+    "id": "vi-comp8",
+    "fileName": "vi.ctb"
+  },
+  {
+    "locale": "zh",
+    "dots": "8",
+    "id": "zh-comp8",
+    "fileName": "zh-hk.ctb"
+  },
+  {
+    "locale": "zh_TW",
+    "dots": "8",
+    "id": "zh-TW-comp8",
+    "fileName": "zh-tw.ctb"
+  }
+]
