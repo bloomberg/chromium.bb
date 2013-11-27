@@ -1732,6 +1732,7 @@
             'workers/WorkerLocation.h',
             'workers/WorkerMessagingProxy.cpp',
             'workers/WorkerMessagingProxy.h',
+            'workers/WorkerObjectProxy.cpp',
             'workers/WorkerObjectProxy.h',
             'workers/WorkerReportingProxy.h',
             'workers/WorkerRunLoop.cpp',

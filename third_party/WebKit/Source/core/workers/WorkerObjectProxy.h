@@ -34,21 +34,44 @@
 #include "core/dom/MessagePort.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
-    class MessagePortChannel;
+    class ExecutionContext;
+    class WorkerMessagingProxy;
 
-    // A proxy to talk to the worker object.
+    // A proxy to talk to the worker object. This object is created on the
+    // worker object thread (i.e. usually the main thread), passed on to
+    // the worker thread, and used just to proxy messages to the
+    // WorkerMessagingProxy on the worker object thread.
+    //
+    // Used only by Dedicated Worker.
     class WorkerObjectProxy : public WorkerReportingProxy {
     public:
-        virtual void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>) = 0;
+        static PassOwnPtr<WorkerObjectProxy> create(ExecutionContext*, WorkerMessagingProxy*);
+        ~WorkerObjectProxy() { }
 
-        virtual void confirmMessageFromWorkerObject(bool hasPendingActivity) = 0;
-        virtual void reportPendingActivity(bool hasPendingActivity) = 0;
+        void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>);
 
-        // No need to notify the parent page context when dedicated workers are closing.
-        virtual void workerGlobalScopeClosed() OVERRIDE { }
+        void confirmMessageFromWorkerObject(bool hasPendingActivity);
+        void reportPendingActivity(bool hasPendingActivity);
+
+        // WorkerReportingProxy overrides.
+        virtual void reportException(const String& errorMessage, int lineNumber, int columnNumber, const String& sourceURL) OVERRIDE;
+        virtual void reportConsoleMessage(MessageSource, MessageLevel, const String& message, int lineNumber, const String& sourceURL) OVERRIDE;
+        virtual void postMessageToPageInspector(const String&) OVERRIDE;
+        virtual void updateInspectorStateCookie(const String&) OVERRIDE;
+        virtual void workerGlobalScopeStarted() OVERRIDE { }
+        virtual void workerGlobalScopeClosed() OVERRIDE;
+        virtual void workerGlobalScopeDestroyed() OVERRIDE;
+
+    private:
+        WorkerObjectProxy(ExecutionContext*, WorkerMessagingProxy*);
+
+        // These objects always outlive this proxy.
+        ExecutionContext* m_executionContext;
+        WorkerMessagingProxy* m_messagingProxy;
     };
 
 } // namespace WebCore

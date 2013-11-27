@@ -48,7 +48,7 @@
 #include "core/workers/WorkerNavigator.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerLocation.h"
-#include "core/workers/WorkerObjectProxy.h"
+#include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/weborigin/KURL.h"
