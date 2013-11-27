@@ -27,9 +27,6 @@ AutofillDialogCocoa::AutofillDialogCocoa(AutofillDialogViewDelegate* delegate)
 }
 
 AutofillDialogCocoa::~AutofillDialogCocoa() {
-  // Cancel potential relayout requests, since the AutofillDialogController
-  // is about to go away, but relayout requests assume it will still exist.
-  [sheet_delegate_ cancelRelayout];
 }
 
 void AutofillDialogCocoa::Show() {

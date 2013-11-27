@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 
-@class AutofillDialogWindowController;
 @class AutofillHeader;
 @class AutofillLoadingShieldController;
 @class AutofillMainContainer;
@@ -75,9 +74,6 @@ class AutofillDialogCocoa;
 // Requests a re-layout for the entire dialog. The layout will be postponed
 // until the next cycle of the runloop.
 - (void)requestRelayout;
-
-// Cancels all previous requests to re-layout.
-- (void)cancelRelayout;
 
 // Validate data. If it is valid, notify the delegate that the user would
 // like to use the data.

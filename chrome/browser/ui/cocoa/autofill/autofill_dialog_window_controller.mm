@@ -26,11 +26,55 @@
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace {
-
 const CGFloat kMinimumContentsHeight = 101;
 
-}  // namespace
+#pragma mark AutofillDialogWindow
+
+// Window class for the AutofillDialog. Its main purpose is the proper handling
+// of layout requests - i.e. ensuring that layout is fully done before any
+// updates of the display happen.
+@interface AutofillDialogWindow : ConstrainedWindowCustomWindow {
+ @private
+  BOOL needsLayout_;  // Indicates that the subviews need to be laid out.
+}
+
+// Request a new layout for all subviews. Layout occurs right before -display
+// or -displayIfNeeded are invoked.
+- (void)requestRelayout;
+
+// Layout the window's subviews. Delegates to the controller.
+- (void)performLayout;
+
+@end
+
+
+@implementation AutofillDialogWindow
+
+- (void)requestRelayout {
+  needsLayout_ = YES;
+}
+
+- (void)performLayout {
+  if (needsLayout_) {
+    needsLayout_ = NO;
+    AutofillDialogWindowController* controller =
+        base::mac::ObjCCastStrict<AutofillDialogWindowController>(
+            [self windowController]);
+    [controller performLayout];
+  }
+}
+
+- (void)display {
+  [self performLayout];
+  [super display];
+}
+
+- (void)displayIfNeeded {
+  [self performLayout];
+  [super displayIfNeeded];
+}
+
+@end
 
 #pragma mark Field Editor
 
@@ -81,6 +125,8 @@ const CGFloat kMinimumContentsHeight = 101;
 // Update whether or not the main container is hidden.
 - (void)updateMainContainerVisibility;
 
+- (AutofillDialogWindow*)autofillWindow;
+
 @end
 
 
@@ -108,7 +154,7 @@ const CGFloat kMinimumContentsHeight = 101;
   DCHECK(webContents);
 
   base::scoped_nsobject<ConstrainedWindowCustomWindow> window(
-      [[ConstrainedWindowCustomWindow alloc]
+      [[AutofillDialogWindow alloc]
           initWithContentRect:ui::kWindowSizeDeterminedLater]);
 
   if ((self = [super initWithWindow:window])) {
@@ -196,15 +242,12 @@ const CGFloat kMinimumContentsHeight = 101;
   [[mainContainer_ view] setHidden:!visible];
 }
 
-- (void)cancelRelayout {
-  [NSObject cancelPreviousPerformRequestsWithTarget:self
-                                           selector:@selector(performLayout)
-                                             object:nil];
+- (AutofillDialogWindow*)autofillWindow {
+  return base::mac::ObjCCastStrict<AutofillDialogWindow>([self window]);
 }
 
 - (void)requestRelayout {
-  [self cancelRelayout];
-  [self performSelector:@selector(performLayout) withObject:nil afterDelay:0.0];
+  [[self autofillWindow] requestRelayout];
 }
 
 - (NSSize)preferredSize {
