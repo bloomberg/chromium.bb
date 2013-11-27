@@ -29,34 +29,37 @@ class BookmarkUtilsTest : public ::testing::Test {
 
 TEST_F(BookmarkUtilsTest, GetBookmarksContainingText) {
   BookmarkModel model(NULL);
-  const BookmarkNode* n1 = model.AddURL(model.other_node(),
+  const BookmarkNode* node1 = model.AddURL(model.other_node(),
                                         0,
                                         ASCIIToUTF16("foo bar"),
                                         GURL("http://www.google.com"));
-  const BookmarkNode* n2 = model.AddURL(model.other_node(),
+  const BookmarkNode* node2 = model.AddURL(model.other_node(),
                                         0,
                                         ASCIIToUTF16("baz buz"),
                                         GURL("http://www.cnn.com"));
 
-  model.AddFolder(model.other_node(), 0, ASCIIToUTF16("foo"));
+  const BookmarkNode* folder1 = model.AddFolder(model.other_node(),
+                                           0,
+                                           ASCIIToUTF16("foo"));
 
   std::vector<const BookmarkNode*> nodes;
   GetBookmarksContainingText(
       &model, ASCIIToUTF16("foo"), 100, string(), &nodes);
-  ASSERT_EQ(1U, nodes.size());
-  EXPECT_TRUE(nodes[0] == n1);
+  ASSERT_EQ(2U, nodes.size());
+  EXPECT_TRUE(nodes[0] == folder1);
+  EXPECT_TRUE(nodes[1] == node1);
   nodes.clear();
 
   GetBookmarksContainingText(
       &model, ASCIIToUTF16("cnn"), 100, string(), &nodes);
   ASSERT_EQ(1U, nodes.size());
-  EXPECT_TRUE(nodes[0] == n2);
+  EXPECT_TRUE(nodes[0] == node2);
   nodes.clear();
 
   GetBookmarksContainingText(
       &model, ASCIIToUTF16("foo bar"), 100, string(), &nodes);
   ASSERT_EQ(1U, nodes.size());
-  EXPECT_TRUE(nodes[0] == n1);
+  EXPECT_TRUE(nodes[0] == node1);
   nodes.clear();
 }
 

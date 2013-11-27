@@ -228,7 +228,7 @@ void GetBookmarksContainingText(BookmarkModel* model,
   ui::TreeNodeIterator<const BookmarkNode> iterator(model->root_node());
   while (iterator.has_next()) {
     const BookmarkNode* node = iterator.Next();
-    if (node->is_url() && DoesBookmarkContainWords(node, words, languages)) {
+    if (DoesBookmarkContainWords(node, words, languages)) {
       nodes->push_back(node);
       if (nodes->size() == max_count)
         return;

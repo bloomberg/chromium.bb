@@ -301,8 +301,8 @@ chrome.test.runTests([
       chrome.test.assertEq(1, results.length);
     }));
     chrome.bookmarks.search("foo bar", pass(function(results) {
-      // matches node1
-      chrome.test.assertEq(1, results.length);
+      // matches node1 & folder "foo bar" from createFolder
+      chrome.test.assertEq(2, results.length);
     }));
     chrome.bookmarks.search("quux", pass(function(results) {
       // matches node2 & node3
