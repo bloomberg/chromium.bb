@@ -119,9 +119,9 @@ bool CSSAnimationData::animationsMatchForStyleRecalc(const CSSAnimationData* o) 
         && m_isNone == o->m_isNone;
 }
 
-const String& CSSAnimationData::initialAnimationName()
+const AtomicString& CSSAnimationData::initialAnimationName()
 {
-    DEFINE_STATIC_LOCAL(String, initialValue, ("none"));
+    DEFINE_STATIC_LOCAL(const AtomicString, initialValue, ("none"));
     return initialValue;
 }
 

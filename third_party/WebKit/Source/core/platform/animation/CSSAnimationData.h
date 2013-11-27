@@ -115,7 +115,7 @@ public:
 
     enum { IterationCountInfinite = -1 };
     double iterationCount() const { return m_iterationCount; }
-    const String& name() const { return m_name; }
+    const AtomicString& name() const { return m_name; }
     EAnimPlayState playState() const { return static_cast<EAnimPlayState>(m_playState); }
     CSSPropertyID property() const { return m_property; }
     TimingFunction* timingFunction() const { return m_timingFunction.get(); }
@@ -181,7 +181,7 @@ public:
     static double initialAnimationDuration() { return 0; }
     static unsigned initialAnimationFillMode() { return AnimationFillModeNone; }
     static double initialAnimationIterationCount() { return 1.0; }
-    static const String& initialAnimationName();
+    static const AtomicString& initialAnimationName();
     static EAnimPlayState initialAnimationPlayState() { return AnimPlayStatePlaying; }
     static CSSPropertyID initialAnimationProperty() { return CSSPropertyInvalid; }
     static const PassRefPtr<TimingFunction> initialAnimationTimingFunction() { return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::Ease); }
