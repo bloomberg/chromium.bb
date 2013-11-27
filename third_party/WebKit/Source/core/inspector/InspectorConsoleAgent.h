@@ -55,6 +55,7 @@ class ScriptArguments;
 class ScriptCallStack;
 class ScriptProfile;
 class ThreadableLoaderClient;
+class XMLHttpRequest;
 
 typedef String ErrorString;
 
@@ -92,7 +93,7 @@ public:
     void frameWindowDiscarded(DOMWindow*);
     void didCommitLoad(Frame*, DocumentLoader*);
 
-    void didFinishXHRLoading(ThreadableLoaderClient*, unsigned long requestIdentifier, ScriptString, const String& url, const String& sendURL, unsigned sendLineNumber);
+    void didFinishXHRLoading(XMLHttpRequest*, ThreadableLoaderClient*, unsigned long requestIdentifier, ScriptString, const String& url, const String& sendURL, unsigned sendLineNumber);
     void didReceiveResourceResponse(unsigned long requestIdentifier, DocumentLoader*, const ResourceResponse& response, ResourceLoader*);
     void didFailLoading(unsigned long requestIdentifier, DocumentLoader*, const ResourceError&);
     void addProfileFinishedMessageToConsole(PassRefPtr<ScriptProfile>, unsigned lineNumber, const String& sourceURL);

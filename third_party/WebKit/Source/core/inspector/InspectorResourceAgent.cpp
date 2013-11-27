@@ -440,7 +440,7 @@ void InspectorResourceAgent::documentThreadableLoaderStartedLoadingForClient(uns
     m_resourcesData->setXHRReplayData(requestId, xhrReplayData);
 }
 
-void InspectorResourceAgent::willLoadXHR(ThreadableLoaderClient* client, const String& method, const KURL& url, bool async, PassRefPtr<FormData> formData, const HTTPHeaderMap& headers, bool includeCredentials)
+void InspectorResourceAgent::willLoadXHR(XMLHttpRequest*, ThreadableLoaderClient* client, const String& method, const KURL& url, bool async, PassRefPtr<FormData> formData, const HTTPHeaderMap& headers, bool includeCredentials)
 {
     RefPtr<XHRReplayData> xhrReplayData = XHRReplayData::create(method, urlWithoutFragment(url), async, formData, includeCredentials);
     HTTPHeaderMap::const_iterator end = headers.end();
@@ -449,12 +449,12 @@ void InspectorResourceAgent::willLoadXHR(ThreadableLoaderClient* client, const S
     m_pendingXHRReplayData.set(client, xhrReplayData);
 }
 
-void InspectorResourceAgent::didFailXHRLoading(ThreadableLoaderClient* client)
+void InspectorResourceAgent::didFailXHRLoading(XMLHttpRequest*, ThreadableLoaderClient* client)
 {
     m_pendingXHRReplayData.remove(client);
 }
 
-void InspectorResourceAgent::didFinishXHRLoading(ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const String&, const String&, unsigned)
+void InspectorResourceAgent::didFinishXHRLoading(XMLHttpRequest*, ThreadableLoaderClient* client, unsigned long identifier, ScriptString sourceString, const String&, const String&, unsigned)
 {
     m_pendingXHRReplayData.remove(client);
 }

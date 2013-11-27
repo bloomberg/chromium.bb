@@ -793,7 +793,7 @@ void XMLHttpRequest::createRequest(ExceptionState& exceptionState)
     request.setHTTPMethod(m_method);
     request.setTargetType(ResourceRequest::TargetIsXHR);
 
-    InspectorInstrumentation::willLoadXHR(executionContext(), this, m_method, m_url, m_async, m_requestEntityBody ? m_requestEntityBody->deepCopy() : 0, m_requestHeaders, m_includeCredentials);
+    InspectorInstrumentation::willLoadXHR(executionContext(), this, this, m_method, m_url, m_async, m_requestEntityBody ? m_requestEntityBody->deepCopy() : 0, m_requestHeaders, m_includeCredentials);
 
     if (m_requestEntityBody) {
         ASSERT(m_method != "GET");
@@ -890,7 +890,7 @@ bool XMLHttpRequest::internalAbort(DropProtection async)
 
     clearVariablesForLoading();
 
-    InspectorInstrumentation::didFailXHRLoading(executionContext(), this);
+    InspectorInstrumentation::didFailXHRLoading(executionContext(), this, this);
 
     if (m_responseStream && m_state != DONE)
         m_responseStream->abort();
@@ -1241,7 +1241,7 @@ void XMLHttpRequest::didFinishLoading(unsigned long identifier, double)
     if (m_responseStream)
         m_responseStream->finalize();
 
-    InspectorInstrumentation::didFinishXHRLoading(executionContext(), this, identifier, m_responseText, m_url, m_lastSendURL, m_lastSendLineNumber);
+    InspectorInstrumentation::didFinishXHRLoading(executionContext(), this, this, identifier, m_responseText, m_url, m_lastSendURL, m_lastSendLineNumber);
 
     // Prevent dropProtection releasing the last reference, and retain |this| until the end of this method.
     RefPtr<XMLHttpRequest> protect(this);
