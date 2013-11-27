@@ -93,6 +93,11 @@ bool isBase64EncodedCharacter(UChar c)
     return isASCIIAlphanumeric(c) || c == '+' || c == '/';
 }
 
+bool isNonceCharacter(UChar c)
+{
+    return isBase64EncodedCharacter(c) || c == '=';
+}
+
 bool isSourceCharacter(UChar c)
 {
     return !isASCIISpace(c);
@@ -516,7 +521,7 @@ bool CSPSourceList::parseSource(const UChar* begin, const UChar* end, String& sc
 }
 
 // nonce-source      = "'nonce-" nonce-value "'"
-// nonce-value       = 1*( ALPHA / DIGIT / "+" / "/" )
+// nonce-value        = 1*( ALPHA / DIGIT / "+" / "/" / "=" )
 //
 bool CSPSourceList::parseNonce(const UChar* begin, const UChar* end, String& nonce)
 {
@@ -528,7 +533,7 @@ bool CSPSourceList::parseNonce(const UChar* begin, const UChar* end, String& non
     const UChar* position = begin + noncePrefix.length();
     const UChar* nonceBegin = position;
 
-    skipWhile<UChar, isBase64EncodedCharacter>(position, end);
+    skipWhile<UChar, isNonceCharacter>(position, end);
     ASSERT(nonceBegin <= position);
 
     if ((position + 1) != end  || *position != '\'' || !(position - nonceBegin))
