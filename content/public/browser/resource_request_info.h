@@ -100,6 +100,9 @@ class ResourceRequestInfo {
   // Returns true if this is associated with an asynchronous request.
   virtual bool IsAsync() const = 0;
 
+  // Whether this is a download.
+  virtual bool IsDownload() const = 0;
+
  protected:
   virtual ~ResourceRequestInfo() {}
 };

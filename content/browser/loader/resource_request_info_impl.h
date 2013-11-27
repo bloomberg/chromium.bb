@@ -80,6 +80,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   virtual bool GetAssociatedRenderView(int* render_process_id,
                                        int* render_view_id) const OVERRIDE;
   virtual bool IsAsync() const OVERRIDE;
+  virtual bool IsDownload() const OVERRIDE;
 
 
   CONTENT_EXPORT void AssociateWithRequest(net::URLRequest* request);
@@ -134,7 +135,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool allow_download() const { return allow_download_; }
 
   // Whether this is a download.
-  bool is_download() const { return is_download_; }
   void set_is_download(bool download) { is_download_ = download; }
 
   // Whether this is a stream.

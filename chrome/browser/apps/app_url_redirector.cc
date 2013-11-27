@@ -16,6 +16,7 @@
 #include "components/navigation_interception/navigation_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/info_map.h"
@@ -23,6 +24,7 @@
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
+using content::ResourceRequestInfo;
 using content::WebContents;
 using extensions::Extension;
 using extensions::UrlHandlers;
@@ -39,8 +41,10 @@ bool LaunchAppWithUrl(
 
   // Redirect top-level navigations only. This excludes iframes and webviews
   // in particular.
-  if (source->IsSubframe())
+  if (source->IsSubframe()) {
+    DVLOG(1) << "Cancel redirection: source is a subframe";
     return false;
+  }
 
   // These are guaranteed by CreateThrottleFor below.
   DCHECK(!params.is_post());
@@ -53,6 +57,9 @@ bool LaunchAppWithUrl(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
+  DVLOG(0) << "Launching app handler with URL: "
+           << params.url().spec() << " -> "
+           << app->name() << "(" << app->id() << "):" << handler_id;
   apps::LaunchPlatformAppWithUrl(
       profile, app, handler_id, params.url(), params.referrer().url);
 
@@ -65,18 +72,34 @@ bool LaunchAppWithUrl(
 content::ResourceThrottle*
 AppUrlRedirector::MaybeCreateThrottleFor(net::URLRequest* request,
                                          ProfileIOData* profile_io_data) {
-  // Support only GET for now.
-  if (request->method() != "GET")
-    return NULL;
+  DVLOG(0) << "Considering URL for redirection: "
+           << request->method() << " " << request->url().spec();
 
-  if (!request->url().SchemeIsHTTPOrHTTPS())
+  // Support only GET for now.
+  if (request->method() != "GET") {
+    DVLOG(1) << "Skip redirection: method is not GET";
     return NULL;
+  }
+
+  if (!request->url().SchemeIsHTTPOrHTTPS()) {
+    DVLOG(1) << "Skip redirection: scheme is not HTTP or HTTPS";
+    return NULL;
+  }
+
+  // The user has indicated that a URL should be force downloaded. Turn off
+  // URL redirection in this case.
+  if (ResourceRequestInfo::ForRequest(request)->IsDownload()) {
+    DVLOG(1) << "Skip redirection: request is a forced download";
+    return NULL;
+  }
 
   // Never redirect URLs to apps in incognito. Technically, apps are not
   // supported in incognito, but that may change in future.
   // See crbug.com/240879, which tracks incognito support for v2 apps.
-  if (profile_io_data->is_incognito())
+  if (profile_io_data->is_incognito()) {
+    DVLOG(1) << "Skip redirection: unsupported in incognito";
     return NULL;
+  }
 
   const ExtensionSet& extensions =
       profile_io_data->GetExtensionInfoMap()->extensions();
@@ -86,6 +109,9 @@ AppUrlRedirector::MaybeCreateThrottleFor(net::URLRequest* request,
     const UrlHandlerInfo* handler =
         UrlHandlers::FindMatchingUrlHandler(*iter, request->url());
     if (handler) {
+      DVLOG(1) << "Found matching app handler for redirection: "
+               << (*iter)->name() << "(" << (*iter)->id() << "):"
+               << handler->id;
       return new navigation_interception::InterceptNavigationResourceThrottle(
           request,
           base::Bind(&LaunchAppWithUrl,
@@ -94,5 +120,6 @@ AppUrlRedirector::MaybeCreateThrottleFor(net::URLRequest* request,
     }
   }
 
+  DVLOG(1) << "Skipping redirection: no matching app handler found";
   return NULL;
 }

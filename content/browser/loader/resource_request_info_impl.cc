@@ -218,6 +218,10 @@ bool ResourceRequestInfoImpl::IsAsync() const {
   return is_async_;
 }
 
+bool ResourceRequestInfoImpl::IsDownload() const {
+  return is_download_;
+}
+
 void ResourceRequestInfoImpl::AssociateWithRequest(net::URLRequest* request) {
   request->SetUserData(NULL, this);
   int render_process_id;

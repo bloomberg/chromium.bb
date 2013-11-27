@@ -134,7 +134,7 @@ bool CrossSiteResourceHandler::OnResponseStarted(
   // navigation) will stick around until the next cross-site navigation, since
   // we are unable to tell when to destroy it.
   // See RenderViewHostManager::RendererAbortedProvisionalLoad.
-  if (!swap_needed || info->is_download() ||
+  if (!swap_needed || info->IsDownload() ||
       (response->head.headers.get() &&
        response->head.headers->response_code() == 204)) {
     return next_handler_->OnResponseStarted(request_id, response, defer);

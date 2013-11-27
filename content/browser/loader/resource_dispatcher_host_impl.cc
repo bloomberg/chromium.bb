@@ -429,7 +429,7 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
     // away. It may be OK for this invariant to change in the future, but if
     // this assertion fires without the invariant changing, then it's indicative
     // of a leak.
-    DCHECK((*i)->GetRequestInfo()->is_download() ||
+    DCHECK((*i)->GetRequestInfo()->IsDownload() ||
            (*i)->GetRequestInfo()->is_stream() ||
            ((*i)->GetRequestInfo()->detachable_handler() &&
             (*i)->GetRequestInfo()->detachable_handler()->is_detached()) ||
@@ -1387,10 +1387,9 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(int child_id,
     // Don't cancel navigations that are expected to live beyond this process.
     if (IsTransferredNavigation(id))
       any_requests_transferring = true;
-
     if (info->detachable_handler()) {
       info->detachable_handler()->Detach();
-    } else if (!info->is_download() && !info->is_stream() &&
+    } else if (!info->IsDownload() && !info->is_stream() &&
                !IsTransferredNavigation(id) &&
                (route_id == -1 || route_id == info->GetRouteID())) {
       matching_requests.push_back(id);
