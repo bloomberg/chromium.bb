@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -495,6 +496,73 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(0UL, root->child_count());
   EXPECT_EQ(std::string(), root->frame_name());
   EXPECT_EQ(rvh->main_frame_id(), root->frame_id());
+}
+
+// Test that we can navigate away if the previous renderer doesn't clean up its
+// child frames.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FrameTreeAfterCrash) {
+  ASSERT_TRUE(test_server()->Start());
+  NavigateToURL(shell(),
+                test_server()->GetURL("files/frame_tree/top.html"));
+
+  // Crash the renderer so that it doesn't send any FrameDetached messages.
+  WindowedNotificationObserver crash_observer(
+      NOTIFICATION_RENDERER_PROCESS_CLOSED,
+      NotificationService::AllSources());
+  NavigateToURL(shell(), GURL(kChromeUICrashURL));
+  crash_observer.Wait();
+
+  // The frame tree should be cleared, and the frame ID should be reset.
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
+      wc->GetRenderViewHost());
+  FrameTreeNode* root = wc->GetFrameTree()->root();
+  EXPECT_EQ(0UL, root->child_count());
+  EXPECT_EQ(FrameTreeNode::kInvalidFrameId, root->frame_id());
+  EXPECT_EQ(rvh->main_frame_id(), root->frame_id());
+
+  // Navigate to a new URL.
+  NavigateToURL(shell(), test_server()->GetURL("files/title1.html"));
+
+  // The frame ID should now be set.
+  EXPECT_EQ(0UL, root->child_count());
+  EXPECT_NE(FrameTreeNode::kInvalidFrameId, root->frame_id());
+  EXPECT_EQ(rvh->main_frame_id(), root->frame_id());
+}
+
+// Test that we can navigate away if the previous renderer doesn't clean up its
+// child frames.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateWithLeftoverFrames) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL base_url = test_server()->GetURL("files/site_isolation/");
+  GURL::Replacements replace_host;
+  std::string host_str("A.com");  // Must stay in scope with replace_host.
+  replace_host.SetHostStr(host_str);
+  base_url = base_url.ReplaceComponents(replace_host);
+
+  NavigateToURL(shell(),
+                test_server()->GetURL("files/frame_tree/top.html"));
+
+  // Hang the renderer so that it doesn't send any FrameDetached messages.
+  // (This navigation will never complete, so don't wait for it.)
+  shell()->LoadURL(GURL(kChromeUIHangURL));
+
+  // Check that the frame tree still has children.
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = wc->GetFrameTree()->root();
+  ASSERT_EQ(3UL, root->child_count());
+
+  // Navigate to a new URL.  We use LoadURL because NavigateToURL will try to
+  // wait for the previous navigation to stop.
+  TestNavigationObserver tab_observer(wc, 1);
+  shell()->LoadURL(base_url.Resolve("blank.html"));
+  tab_observer.Wait();
+
+  // The frame tree should now be cleared, and the frame ID should be valid.
+  EXPECT_EQ(0UL, root->child_count());
+  EXPECT_NE(FrameTreeNode::kInvalidFrameId, root->frame_id());
 }
 
 // Tests that the |should_replace_current_entry| flag persists correctly across
