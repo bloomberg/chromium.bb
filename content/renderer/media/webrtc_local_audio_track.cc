@@ -56,26 +56,37 @@ bool NeedsAudioProcessing(
 // callbacks.
 class WebRtcLocalAudioTrack::ConfiguredBuffer {
  public:
-  ConfiguredBuffer() : sink_buffer_size_(0) {}
+  ConfiguredBuffer() {}
   virtual ~ConfiguredBuffer() {}
 
   void Configure(const media::AudioParameters& params) {
     DCHECK(params.IsValid());
-    params_ = params;
 
-    // Use 10ms as the sink buffer size since that is the native packet size
-    // WebRtc is running on.
-    sink_buffer_size_ = params.sample_rate() / 100;
-    audio_wrapper_ =
-        media::AudioBus::Create(params.channels(), sink_buffer_size_);
-    buffer_.reset(new int16[sink_buffer_size_ * params.channels()]);
+    // PeerConnection uses 10ms as the sink buffer size as its native packet
+    // size. We use the native PeerConnection buffer size to achieve the best
+    // performance when a PeerConnection is connected with a track.
+    int sink_buffer_size = params.sample_rate() / 100;
+    if (params.frames_per_buffer() < sink_buffer_size) {
+      // When the source is running with a buffer size smaller than the peer
+      // connection buffer size, that means no PeerConnection is connected
+      // to the track, use the same buffer size as the incoming format to
+      // avoid extra FIFO for WebAudio.
+      sink_buffer_size = params.frames_per_buffer();
+    }
+    params_.Reset(params.format(), params.channel_layout(), params.channels(),
+                  params.input_channels(), params.sample_rate(),
+                  params.bits_per_sample(), sink_buffer_size);
+
+    audio_wrapper_ = media::AudioBus::Create(params_.channels(),
+                                             params_.frames_per_buffer());
+    buffer_.reset(new int16[params_.frames_per_buffer() * params_.channels()]);
 
     // The size of the FIFO should be at least twice of the source buffer size
     // or twice of the sink buffer size.
     int buffer_size = std::max(
         kMaxNumberOfBuffersInFifo * params.frames_per_buffer(),
-        kMaxNumberOfBuffersInFifo * sink_buffer_size_);
-    fifo_.reset(new media::AudioFifo(params.channels(), buffer_size));
+        kMaxNumberOfBuffersInFifo * params_.frames_per_buffer());
+    fifo_.reset(new media::AudioFifo(params_.channels(), buffer_size));
   }
 
   void Push(media::AudioBus* audio_source) {
@@ -95,15 +106,15 @@ class WebRtcLocalAudioTrack::ConfiguredBuffer {
   }
 
   int16* buffer() const { return buffer_.get(); }
+
+  // Format of the output audio buffer.
   const media::AudioParameters& params() const { return params_; }
-  int sink_buffer_size() const { return sink_buffer_size_; }
 
  private:
   media::AudioParameters params_;
   scoped_ptr<media::AudioBus> audio_wrapper_;
   scoped_ptr<media::AudioFifo> fifo_;
   scoped_ptr<int16[]> buffer_;
-  int sink_buffer_size_;
 };
 
 scoped_refptr<WebRtcLocalAudioTrack> WebRtcLocalAudioTrack::Create(
@@ -195,7 +206,7 @@ void WebRtcLocalAudioTrack::Capture(media::AudioBus* audio_source,
                                           buffer_->buffer(),
                                           buffer_->params().sample_rate(),
                                           buffer_->params().channels(),
-                                          buffer_->sink_buffer_size(),
+                                          buffer_->params().frames_per_buffer(),
                                           audio_delay_milliseconds,
                                           current_volume,
                                           need_audio_processing,

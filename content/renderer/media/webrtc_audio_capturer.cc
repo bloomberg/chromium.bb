@@ -134,7 +134,6 @@ bool WebRtcAudioCapturer::Initialize(int render_view_id,
                                      int paired_output_sample_rate,
                                      int paired_output_frames_per_buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_GE(render_view_id, 0);
   DVLOG(1) << "WebRtcAudioCapturer::Initialize()";
 
   DVLOG(1) << "Audio input hardware channel layout: " << channel_layout;
@@ -479,14 +478,18 @@ int WebRtcAudioCapturer::GetBufferSize(int sample_rate) const {
   return (2 * sample_rate / 100);
 #endif
 
-#if defined(OS_MACOSX)
-  // Use the native hardware buffer size in non peer connection mode on Mac.
-  if (!peer_connection_mode_ && hardware_buffer_size_)
-    return hardware_buffer_size_;
-#endif
+  // PeerConnection is running at a buffer size of 10ms data. A multiple of
+  // 10ms as the buffer size can give the best performance to PeerConnection.
+  int peer_connection_buffer_size = sample_rate / 100;
 
-  // WebRtc is running at a buffer size of 10ms data. Use a multiple of 10ms
-  // as the buffer size to achieve the best performance for WebRtc.
+  // Use the native hardware buffer size in non peer connection mode when the
+  // platform is using a native buffer size smaller than the PeerConnection
+  // buffer size.
+  if (!peer_connection_mode_ && hardware_buffer_size_ &&
+      hardware_buffer_size_ <= peer_connection_buffer_size) {
+    return hardware_buffer_size_;
+  }
+
   return (sample_rate / 100);
 }
 

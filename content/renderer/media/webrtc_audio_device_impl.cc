@@ -78,6 +78,7 @@ int WebRtcAudioDeviceImpl::CaptureData(const std::vector<int>& channels,
   // buffer is empty.
   const int16* audio_buffer = audio_data;
   const int samples_per_10_msec = (sample_rate / 100);
+  CHECK_EQ(number_of_frames % samples_per_10_msec, 0);
   int accumulated_audio_samples = 0;
   uint32_t new_volume = 0;
   while (accumulated_audio_samples < number_of_frames) {
