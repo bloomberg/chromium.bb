@@ -1209,21 +1209,21 @@ unsigned DOMWindow::length() const
     return m_frame->tree().scopedChildCount();
 }
 
-String DOMWindow::name() const
+const AtomicString& DOMWindow::name() const
 {
     if (!m_frame)
-        return String();
+        return nullAtom;
 
     return m_frame->tree().name();
 }
 
-void DOMWindow::setName(const String& string)
+void DOMWindow::setName(const AtomicString& name)
 {
     if (!m_frame)
         return;
 
-    m_frame->tree().setName(string);
-    m_frame->loader().client()->didChangeName(string);
+    m_frame->tree().setName(name);
+    m_frame->loader().client()->didChangeName(name);
 }
 
 void DOMWindow::setStatus(const String& string)

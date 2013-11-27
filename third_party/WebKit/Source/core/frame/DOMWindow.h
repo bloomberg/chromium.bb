@@ -178,8 +178,8 @@ enum PageshowEventPersistence {
 
         unsigned length() const;
 
-        String name() const;
-        void setName(const String&);
+        const AtomicString& name() const;
+        void setName(const AtomicString&);
 
         String status() const;
         void setStatus(const String&);
