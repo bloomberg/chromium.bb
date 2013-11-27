@@ -67,9 +67,12 @@ class KeycodeConverter {
   // Convert a platform native keycode into an equivalent USB keycode.
   uint32_t NativeKeycodeToUsbKeycode(uint16_t native_keycode);
 
-  // Convert a USB keycode into the string with the UI Event |code| value.
+  // Convert a USB keycode into the string with the DOM3 |code| value.
   // The returned pointer references a static global string.
   const char* UsbKeycodeToCode(uint32_t usb_keycode);
+
+  // Convert a DOM3 Event |code| string into a USB keycode value.
+  uint32_t CodeToUsbKeycode(const char* code);
 
   // Static methods to support testing.
   size_t NumKeycodeMapEntriesForTest();

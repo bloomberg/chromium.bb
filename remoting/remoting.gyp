@@ -2110,6 +2110,7 @@
         '../ppapi/ppapi.gyp:ppapi_cpp_objects',
         '../skia/skia.gyp:skia',
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',
+        '../ui/events/events.gyp:dom4_keycode_converter',
       ],
       'sources': [
         'client/plugin/chromoting_instance.cc',

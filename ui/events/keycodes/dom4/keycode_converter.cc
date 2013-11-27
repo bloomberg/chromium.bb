@@ -112,4 +112,19 @@ const char* KeycodeConverter::UsbKeycodeToCode(uint32_t usb_keycode) {
   return InvalidKeyboardEventCode();
 }
 
+uint32_t KeycodeConverter::CodeToUsbKeycode(const char* code) {
+  if (!code ||
+      strcmp(code, InvalidKeyboardEventCode()) == 0) {
+    return InvalidUsbKeycode();
+  }
+
+  for (size_t i = 0; i < kKeycodeMapEntries; ++i) {
+    if (usb_keycode_map[i].code &&
+        strcmp(usb_keycode_map[i].code, code) == 0) {
+      return usb_keycode_map[i].usb_keycode;
+    }
+  }
+  return InvalidUsbKeycode();
+}
+
 }  // namespace ui
