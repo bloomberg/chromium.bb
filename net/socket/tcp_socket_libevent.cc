@@ -69,6 +69,20 @@ bool SetTCPKeepAlive(int fd, bool enable, int delay) {
   return true;
 }
 
+int MapAcceptError(int os_error) {
+  switch (os_error) {
+    // If the client aborts the connection before the server calls accept,
+    // POSIX specifies accept should fail with ECONNABORTED. The server can
+    // ignore the error and just call accept again, so we map the error to
+    // ERR_IO_PENDING. See UNIX Network Programming, Vol. 1, 3rd Ed., Sec.
+    // 5.11, "Connection Abort before accept Returns".
+    case ECONNABORTED:
+      return ERR_IO_PENDING;
+    default:
+      return MapSystemError(os_error);
+  }
+}
+
 int MapConnectError(int os_error) {
   switch (os_error) {
     case EACCES:
@@ -567,7 +581,7 @@ int TCPSocketLibevent::AcceptInternal(scoped_ptr<TCPSocketLibevent>* socket,
                                        storage.addr,
                                        &storage.addr_len));
   if (new_socket < 0) {
-    int net_error = MapSystemError(errno);
+    int net_error = MapAcceptError(errno);
     if (net_error != ERR_IO_PENDING)
       net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT, net_error);
     return net_error;
