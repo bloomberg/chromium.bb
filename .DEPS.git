@@ -88,7 +88,7 @@ deps = {
     'src/third_party/openmax_dl':
         Var('git_url') + '/external/webrtc/deps/third_party/openmax.git@160311f8f0a09062f4360709d2965e71d3f3d749',
     'src/third_party/opus/src':
-        Var('git_url') + '/chromium/deps/opus.git@6b6bee25314cfac02cc555cddedb9680c63a26d6',
+        Var('git_url') + '/chromium/deps/opus.git@dd52457296df1ef41bae8e28dc321d6798509172',
     'src/third_party/ots':
         Var('git_url') + '/external/ots.git@e78f18717608d5f4db643abdc561b754ff8c2442',
     'src/third_party/pyftpdlib/src':
