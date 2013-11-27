@@ -42,13 +42,12 @@ base::LazyInstance<scoped_refptr<AutoThreadTaskRunner> > g_module_task_runner =
 // Lowers the process integrity level such that it does not exceed |max_level|.
 // |max_level| is expected to be one of SECURITY_MANDATORY_XXX constants.
 bool LowerProcessIntegrityLevel(DWORD max_level) {
-  HANDLE temp_handle;
+  base::win::ScopedHandle token;
   if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY | TOKEN_WRITE,
-                        &temp_handle)) {
+                        token.Receive())) {
     PLOG(ERROR) << "OpenProcessToken() failed";
     return false;
   }
-  base::win::ScopedHandle token(temp_handle);
 
   TypedBuffer<TOKEN_MANDATORY_LABEL> mandatory_label;
   DWORD length = 0;

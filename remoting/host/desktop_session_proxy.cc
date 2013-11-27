@@ -230,9 +230,9 @@ bool DesktopSessionProxy::AttachToDesktop(
 #if defined(OS_WIN)
   // On Windows: |desktop_process| is a valid handle, but |desktop_pipe| needs
   // to be duplicated from the desktop process.
-  HANDLE temp_handle;
+  base::win::ScopedHandle pipe;
   if (!DuplicateHandle(desktop_process_, desktop_pipe, GetCurrentProcess(),
-                       &temp_handle, 0, FALSE, DUPLICATE_SAME_ACCESS)) {
+                       pipe.Receive(), 0, FALSE, DUPLICATE_SAME_ACCESS)) {
     LOG_GETLASTERROR(ERROR) << "Failed to duplicate the desktop-to-network"
                                " pipe handle";
 
@@ -240,7 +240,6 @@ bool DesktopSessionProxy::AttachToDesktop(
     base::CloseProcessHandle(desktop_process);
     return false;
   }
-  base::win::ScopedHandle pipe(temp_handle);
 
   IPC::ChannelHandle desktop_channel_handle(pipe);
 

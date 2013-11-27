@@ -210,13 +210,13 @@ bool MappedFile::Initialize(base::PlatformFile file) {
 bool RunProcessAndWait(const wchar_t* exe_path, const std::wstring& cmdline,
                        int* exit_code) {
   bool result = true;
-  base::win::ScopedHandle process;
+  base::ProcessHandle process;
   base::LaunchOptions options;
   options.wait = true;
   options.start_hidden = true;
   if (base::LaunchProcess(cmdline, options, &process)) {
     if (exit_code) {
-      if (!GetExitCodeProcess(process.Get(),
+      if (!GetExitCodeProcess(process,
                               reinterpret_cast<DWORD*>(exit_code))) {
         PLOG(DFATAL) << "Failed getting the exit code for \""
                      << cmdline << "\".";
@@ -229,6 +229,7 @@ bool RunProcessAndWait(const wchar_t* exe_path, const std::wstring& cmdline,
     result = false;
   }
 
+  CloseHandle(process);
   return result;
 }
 

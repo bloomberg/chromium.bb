@@ -21,7 +21,6 @@
 #include "base/posix/file_descriptor_shuffle.h"
 #elif defined(OS_WIN)
 #include <windows.h>
-#include "base/win/scoped_handle.h"
 #endif
 
 class CommandLine;
@@ -147,7 +146,7 @@ BASE_EXPORT bool LaunchProcess(const CommandLine& cmdline,
 //  cmdline = "c:\windows\explorer.exe" -foo "c:\bar\"
 BASE_EXPORT bool LaunchProcess(const string16& cmdline,
                                const LaunchOptions& options,
-                               win::ScopedHandle* process_handle);
+                               ProcessHandle* process_handle);
 
 #elif defined(OS_POSIX)
 // A POSIX-specific version of LaunchProcess that takes an argv array

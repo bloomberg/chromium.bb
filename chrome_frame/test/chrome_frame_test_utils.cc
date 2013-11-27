@@ -640,7 +640,7 @@ base::ProcessHandle StartCrashService() {
     return NULL;
   }
 
-  base::win::ScopedHandle crash_service;
+  base::ProcessHandle crash_service = NULL;
 
   VLOG(1) << "Starting crash_service.exe so you know if a test crashes!";
 
@@ -656,7 +656,7 @@ base::ProcessHandle StartCrashService() {
   if (DetectRunningCrashService(kCrashServiceStartupTimeoutMs)) {
     VLOG(1) << "crash_service.exe is ready for clients in "
             << (base::Time::Now() - start).InMilliseconds() << " ms.";
-    return crash_service.Take();
+    return crash_service;
   } else {
     LOG(ERROR) << "crash_service.exe failed to accept client connections "
                   "within " << kCrashServiceStartupTimeoutMs << " ms. "
@@ -664,8 +664,8 @@ base::ProcessHandle StartCrashService() {
 
     // First check to see if it's even still running just to minimize the
     // likelihood of spurious error messages from KillProcess.
-    if (WAIT_OBJECT_0 != ::WaitForSingleObject(crash_service.Get(), 0)) {
-      base::KillProcess(crash_service.Get(), 0, false);
+    if (WAIT_OBJECT_0 != ::WaitForSingleObject(crash_service, 0)) {
+      base::KillProcess(crash_service, 0, false);
     }
     return NULL;
   }

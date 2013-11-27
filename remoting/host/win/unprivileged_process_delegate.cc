@@ -74,12 +74,11 @@ const char kWorkerThreadSd[] = "O:SYG:SYD:(A;;GA;;;SY)(A;;0x120801;;;BA)";
 // process.
 bool CreateRestrictedToken(ScopedHandle* token_out) {
   // Create a token representing LocalService account.
-  HANDLE temp_handle;
+  ScopedHandle token;
   if (!LogonUser(L"LocalService", L"NT AUTHORITY", NULL, LOGON32_LOGON_SERVICE,
-                 LOGON32_PROVIDER_DEFAULT, &temp_handle)) {
+                 LOGON32_PROVIDER_DEFAULT, token.Receive())) {
     return false;
   }
-  ScopedHandle token(temp_handle);
 
   sandbox::RestrictedToken restricted_token;
   if (restricted_token.Init(token) != ERROR_SUCCESS)
@@ -98,12 +97,8 @@ bool CreateRestrictedToken(ScopedHandle* token_out) {
   }
 
   // Return the resulting token.
-  if (restricted_token.GetRestrictedTokenHandle(&temp_handle) ==
-      ERROR_SUCCESS) {
-    token_out->Set(temp_handle);
-    return true;
-  }
-  return false;
+  return restricted_token.GetRestrictedTokenHandle(token_out->Receive()) ==
+      ERROR_SUCCESS;
 }
 
 // Creates a window station with a given name and the default desktop giving
@@ -278,13 +273,12 @@ void UnprivilegedProcessDelegate::LaunchProcess(
     base::AutoLock lock(g_inherit_handles_lock.Get());
 
     // Create a connected IPC channel.
-    HANDLE temp_handle;
-    if (!CreateConnectedIpcChannel(io_task_runner_, this, &temp_handle,
+    ScopedHandle client;
+    if (!CreateConnectedIpcChannel(io_task_runner_, this, client.Receive(),
                                    &server)) {
       ReportFatalError();
       return;
     }
-    ScopedHandle client(temp_handle);
 
     // Convert the handle value into a decimal integer. Handle values are 32bit
     // even on 64bit platforms.
@@ -403,11 +397,11 @@ void UnprivilegedProcessDelegate::ReportProcessLaunched(
   // query information about the process and duplicate handles.
   DWORD desired_access =
       SYNCHRONIZE | PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION;
-  HANDLE temp_handle;
+  ScopedHandle limited_handle;
   if (!DuplicateHandle(GetCurrentProcess(),
                        worker_process_,
                        GetCurrentProcess(),
-                       &temp_handle,
+                       limited_handle.Receive(),
                        desired_access,
                        FALSE,
                        0)) {
@@ -415,7 +409,6 @@ void UnprivilegedProcessDelegate::ReportProcessLaunched(
     ReportFatalError();
     return;
   }
-  ScopedHandle limited_handle(temp_handle);
 
   event_handler_->OnProcessLaunched(limited_handle.Pass());
 }

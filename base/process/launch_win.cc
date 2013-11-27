@@ -103,7 +103,7 @@ void RouteStdioToConsole() {
 
 bool LaunchProcess(const string16& cmdline,
                    const LaunchOptions& options,
-                   win::ScopedHandle* process_handle) {
+                   ProcessHandle* process_handle) {
   STARTUPINFO startup_info = {};
   startup_info.cb = sizeof(startup_info);
   if (options.empty_desktop_name)
@@ -136,7 +136,7 @@ bool LaunchProcess(const string16& cmdline,
   if (options.force_breakaway_from_job_)
     flags |= CREATE_BREAKAWAY_FROM_JOB;
 
-  PROCESS_INFORMATION temp_process_info = {};
+  base::win::ScopedProcessInformation process_info;
 
   if (options.as_user) {
     flags |= CREATE_UNICODE_ENVIRONMENT;
@@ -152,7 +152,7 @@ bool LaunchProcess(const string16& cmdline,
                             const_cast<wchar_t*>(cmdline.c_str()),
                             NULL, NULL, options.inherit_handles, flags,
                             enviroment_block, NULL, &startup_info,
-                            &temp_process_info);
+                            process_info.Receive());
     DestroyEnvironmentBlock(enviroment_block);
     if (!launched) {
       DPLOG(ERROR);
@@ -162,12 +162,11 @@ bool LaunchProcess(const string16& cmdline,
     if (!CreateProcess(NULL,
                        const_cast<wchar_t*>(cmdline.c_str()), NULL, NULL,
                        options.inherit_handles, flags, NULL, NULL,
-                       &startup_info, &temp_process_info)) {
+                       &startup_info, process_info.Receive())) {
       DPLOG(ERROR);
       return false;
     }
   }
-  base::win::ScopedProcessInformation process_info(temp_process_info);
 
   if (options.job_handle) {
     if (0 == AssignProcessToJobObject(options.job_handle,
@@ -185,7 +184,7 @@ bool LaunchProcess(const string16& cmdline,
 
   // If the caller wants the process handle, we won't close it.
   if (process_handle)
-    process_handle->Set(process_info.TakeProcessHandle());
+    *process_handle = process_info.TakeProcessHandle();
 
   return true;
 }
@@ -193,13 +192,7 @@ bool LaunchProcess(const string16& cmdline,
 bool LaunchProcess(const CommandLine& cmdline,
                    const LaunchOptions& options,
                    ProcessHandle* process_handle) {
-  if (!process_handle)
-    return LaunchProcess(cmdline.GetCommandLineString(), options, NULL);
-
-  win::ScopedHandle process;
-  bool rv = LaunchProcess(cmdline.GetCommandLineString(), options, &process);
-  *process_handle = process.Take();
-  return rv;
+  return LaunchProcess(cmdline.GetCommandLineString(), options, process_handle);
 }
 
 bool SetJobObjectLimitFlags(HANDLE job_object, DWORD limit_flags) {
@@ -240,7 +233,8 @@ bool GetAppOutput(const CommandLine& cl, std::string* output) {
 
   FilePath::StringType writable_command_line_string(cl.GetCommandLineString());
 
-  STARTUPINFO start_info = {};
+  base::win::ScopedProcessInformation proc_info;
+  STARTUPINFO start_info = { 0 };
 
   start_info.cb = sizeof(STARTUPINFO);
   start_info.hStdOutput = out_write;
@@ -250,16 +244,14 @@ bool GetAppOutput(const CommandLine& cl, std::string* output) {
   start_info.dwFlags |= STARTF_USESTDHANDLES;
 
   // Create the child process.
-  PROCESS_INFORMATION temp_process_info = {};
   if (!CreateProcess(NULL,
                      &writable_command_line_string[0],
                      NULL, NULL,
                      TRUE,  // Handles are inherited.
-                     0, NULL, NULL, &start_info, &temp_process_info)) {
+                     0, NULL, NULL, &start_info, proc_info.Receive())) {
     NOTREACHED() << "Failed to start process";
     return false;
   }
-  base::win::ScopedProcessInformation proc_info(temp_process_info);
 
   // Close our writing end of pipe now. Otherwise later read would not be able
   // to detect end of child's output.

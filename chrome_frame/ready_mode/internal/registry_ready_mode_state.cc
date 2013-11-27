@@ -40,11 +40,11 @@ HANDLE LaunchCommandDirectly(const std::wstring& command_field) {
       std::wstring command_line;
       if (version_key.ReadValue(command_field.c_str(),
                                 &command_line) == ERROR_SUCCESS) {
-        base::win::ScopedHandle launched_process;
+        HANDLE launched_process = NULL;
         base::LaunchOptions options;
         options.start_hidden = true;
         if (base::LaunchProcess(command_line, options, &launched_process)) {
-          return launched_process.Take();
+          return launched_process;
         }
       }
     }

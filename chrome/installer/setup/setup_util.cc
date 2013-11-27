@@ -452,13 +452,11 @@ bool IsUninstallSuccess(InstallStatus install_status) {
 
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)
     : is_enabled_(false) {
-  HANDLE temp_handle;
   if (!::OpenProcessToken(::GetCurrentProcess(),
                           TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY,
-                          &temp_handle)) {
+                          token_.Receive())) {
     return;
   }
-  token_.Set(temp_handle);
 
   LUID privilege_luid;
   if (!::LookupPrivilegeValue(NULL, privilege_name, &privilege_luid)) {

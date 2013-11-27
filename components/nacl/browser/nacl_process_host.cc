@@ -977,7 +977,7 @@ bool NaClProcessHost::AttachDebugExceptionHandler(const std::string& info,
   debug_exception_handler_requested_ = true;
 
   base::ProcessId nacl_pid = base::GetProcId(process_->GetData().handle);
-  base::ProcessHandle temp_handle;
+  base::win::ScopedHandle process_handle;
   // We cannot use process_->GetData().handle because it does not have
   // the necessary access rights.  We open the new handle here rather
   // than in the NaCl broker process in case the NaCl loader process
@@ -996,11 +996,10 @@ bool NaClProcessHost::AttachDebugExceptionHandler(const std::string& info,
            base::kProcessAccessVMWrite |
            base::kProcessAccessDuplicateHandle |
            base::kProcessAccessWaitForTermination,
-           &temp_handle)) {
+           process_handle.Receive())) {
     LOG(ERROR) << "Failed to get process handle";
     return false;
   }
-  base::win::ScopedHandle process_handle(temp_handle);
 
   attach_debug_exception_handler_reply_msg_.reset(reply_msg);
   // If the NaCl loader is 64-bit, the process running its debug

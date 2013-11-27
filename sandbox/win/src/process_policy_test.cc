@@ -50,12 +50,8 @@ sandbox::SboxTestResult CreateProcessHelper(const string16& exe,
 
   // Create the process with the unicode version of the API.
   sandbox::SboxTestResult ret1 = sandbox::SBOX_TEST_FAILED;
-  PROCESS_INFORMATION temp_process_info = {};
-  if (::CreateProcessW(exe_name, const_cast<wchar_t*>(cmd_line), NULL, NULL,
-                       FALSE, 0, NULL, NULL, &si, &temp_process_info)) {
-    pi.Set(temp_process_info);
-    ret1 = sandbox::SBOX_TEST_SUCCEEDED;
-  } else {
+  if (!::CreateProcessW(exe_name, const_cast<wchar_t*>(cmd_line), NULL, NULL,
+                        FALSE, 0, NULL, NULL, &si, pi.Receive())) {
     DWORD last_error = GetLastError();
     if ((ERROR_NOT_ENOUGH_QUOTA == last_error) ||
         (ERROR_ACCESS_DENIED == last_error) ||
@@ -64,6 +60,8 @@ sandbox::SboxTestResult CreateProcessHelper(const string16& exe,
     } else {
       ret1 = sandbox::SBOX_TEST_FAILED;
     }
+  } else {
+    ret1 = sandbox::SBOX_TEST_SUCCEEDED;
   }
 
   pi.Close();
@@ -75,13 +73,10 @@ sandbox::SboxTestResult CreateProcessHelper(const string16& exe,
   std::string narrow_cmd_line;
   if (cmd_line)
     narrow_cmd_line = base::SysWideToMultiByte(cmd_line, CP_UTF8);
-  if (::CreateProcessA(
+  if (!::CreateProcessA(
         exe_name ? base::SysWideToMultiByte(exe_name, CP_UTF8).c_str() : NULL,
         cmd_line ? const_cast<char*>(narrow_cmd_line.c_str()) : NULL,
-        NULL, NULL, FALSE, 0, NULL, NULL, &sia, &temp_process_info)) {
-    pi.Set(temp_process_info);
-    ret2 = sandbox::SBOX_TEST_SUCCEEDED;
-  } else {
+        NULL, NULL, FALSE, 0, NULL, NULL, &sia, pi.Receive())) {
     DWORD last_error = GetLastError();
     if ((ERROR_NOT_ENOUGH_QUOTA == last_error) ||
         (ERROR_ACCESS_DENIED == last_error) ||
@@ -90,6 +85,8 @@ sandbox::SboxTestResult CreateProcessHelper(const string16& exe,
     } else {
       ret2 = sandbox::SBOX_TEST_FAILED;
     }
+  } else {
+    ret2 = sandbox::SBOX_TEST_SUCCEEDED;
   }
 
   if (ret1 == ret2)
@@ -218,14 +215,13 @@ SBOX_TESTS_COMMAND int Process_GetChildProcessToken(int argc, wchar_t **argv) {
 
   string16 path = MakeFullPathToSystem32(argv[0]);
 
+  base::win::ScopedProcessInformation pi;
   STARTUPINFOW si = {sizeof(si)};
 
-  PROCESS_INFORMATION temp_process_info = {};
   if (!::CreateProcessW(path.c_str(), NULL, NULL, NULL, FALSE, CREATE_SUSPENDED,
-                        NULL, NULL, &si, &temp_process_info)) {
+                        NULL, NULL, &si, pi.Receive())) {
       return SBOX_TEST_FAILED;
   }
-  base::win::ScopedProcessInformation pi(temp_process_info);
 
   HANDLE token = NULL;
   BOOL result =

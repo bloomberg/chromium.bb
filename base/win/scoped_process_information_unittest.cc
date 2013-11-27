@@ -19,13 +19,11 @@ const DWORD kThreadId = 1234;
 const HANDLE kProcessHandle = reinterpret_cast<HANDLE>(7651);
 const HANDLE kThreadHandle = reinterpret_cast<HANDLE>(1567);
 
-void MockCreateProcess(base::win::ScopedProcessInformation* process_info) {
-  PROCESS_INFORMATION process_information = {};
-  process_information.dwProcessId = kProcessId;
-  process_information.dwThreadId = kThreadId;
-  process_information.hProcess = kProcessHandle;
-  process_information.hThread = kThreadHandle;
-  process_info->Set(process_information);
+void MockCreateProcess(PROCESS_INFORMATION* process_info) {
+  process_info->dwProcessId = kProcessId;
+  process_info->dwThreadId = kThreadId;
+  process_info->hProcess = kProcessHandle;
+  process_info->hThread = kThreadHandle;
 }
 
 }  // namespace
@@ -64,7 +62,7 @@ TEST_F(ScopedProcessInformationTest, InitiallyInvalid) {
 
 TEST_F(ScopedProcessInformationTest, Receive) {
   base::win::ScopedProcessInformation process_info;
-  MockCreateProcess(&process_info);
+  MockCreateProcess(process_info.Receive());
 
   EXPECT_TRUE(process_info.IsValid());
   EXPECT_EQ(kProcessId, process_info.process_id());
@@ -76,7 +74,7 @@ TEST_F(ScopedProcessInformationTest, Receive) {
 
 TEST_F(ScopedProcessInformationTest, TakeProcess) {
   base::win::ScopedProcessInformation process_info;
-  MockCreateProcess(&process_info);
+  MockCreateProcess(process_info.Receive());
 
   HANDLE process = process_info.TakeProcessHandle();
   EXPECT_EQ(kProcessHandle, process);
@@ -88,7 +86,7 @@ TEST_F(ScopedProcessInformationTest, TakeProcess) {
 
 TEST_F(ScopedProcessInformationTest, TakeThread) {
   base::win::ScopedProcessInformation process_info;
-  MockCreateProcess(&process_info);
+  MockCreateProcess(process_info.Receive());
 
   HANDLE thread = process_info.TakeThreadHandle();
   EXPECT_EQ(kThreadHandle, thread);
@@ -100,7 +98,7 @@ TEST_F(ScopedProcessInformationTest, TakeThread) {
 
 TEST_F(ScopedProcessInformationTest, TakeBoth) {
   base::win::ScopedProcessInformation process_info;
-  MockCreateProcess(&process_info);
+  MockCreateProcess(process_info.Receive());
 
   HANDLE process = process_info.TakeProcessHandle();
   HANDLE thread = process_info.TakeThreadHandle();
@@ -110,7 +108,7 @@ TEST_F(ScopedProcessInformationTest, TakeBoth) {
 
 TEST_F(ScopedProcessInformationTest, TakeWholeStruct) {
   base::win::ScopedProcessInformation process_info;
-  MockCreateProcess(&process_info);
+  MockCreateProcess(process_info.Receive());
 
   PROCESS_INFORMATION to_discard = process_info.Take();
   EXPECT_EQ(kProcessId, to_discard.dwProcessId);
@@ -121,11 +119,8 @@ TEST_F(ScopedProcessInformationTest, TakeWholeStruct) {
 }
 
 TEST_F(ScopedProcessInformationTest, Duplicate) {
-  PROCESS_INFORMATION temp_process_information;
-  DoCreateProcess("ReturnSeven", &temp_process_information);
   base::win::ScopedProcessInformation process_info;
-  process_info.Set(temp_process_information);
-
+  DoCreateProcess("ReturnSeven", process_info.Receive());
   base::win::ScopedProcessInformation duplicate;
   duplicate.DuplicateFrom(process_info);
 
@@ -151,17 +146,15 @@ TEST_F(ScopedProcessInformationTest, Duplicate) {
 }
 
 TEST_F(ScopedProcessInformationTest, Set) {
-  base::win::ScopedProcessInformation base_process_info;
+  PROCESS_INFORMATION base_process_info = {};
   MockCreateProcess(&base_process_info);
 
-  PROCESS_INFORMATION base_struct = base_process_info.Take();
-
   base::win::ScopedProcessInformation process_info;
-  process_info.Set(base_struct);
+  process_info.Set(base_process_info);
 
   EXPECT_EQ(kProcessId, process_info.process_id());
   EXPECT_EQ(kThreadId, process_info.thread_id());
   EXPECT_EQ(kProcessHandle, process_info.process_handle());
   EXPECT_EQ(kThreadHandle, process_info.thread_handle());
-  base_struct = process_info.Take();
+  base_process_info = process_info.Take();
 }

@@ -425,18 +425,16 @@ TEST(SharedMemoryTest, ShareReadOnly) {
   EXPECT_EQ(NULL, MapViewOfFile(handle, FILE_MAP_WRITE, 0, 0, 0))
       << "Shouldn't be able to map memory writable.";
 
-  HANDLE temp_handle;
-  BOOL rv = ::DuplicateHandle(GetCurrentProcess(),
+  base::win::ScopedHandle writable_handle;
+  EXPECT_EQ(0,
+            ::DuplicateHandle(GetCurrentProcess(),
                               handle,
                               GetCurrentProcess,
-                              &temp_handle,
+                              writable_handle.Receive(),
                               FILE_MAP_ALL_ACCESS,
                               false,
-                              0);
-  EXPECT_EQ(FALSE, rv)
+                              0))
       << "Shouldn't be able to duplicate the handle into a writable one.";
-  if (rv)
-    base::win::ScopedHandle writable_handle(temp_handle);
 #else
 #error Unexpected platform; write a test that tries to make 'handle' writable.
 #endif  // defined(OS_POSIX) || defined(OS_WIN)

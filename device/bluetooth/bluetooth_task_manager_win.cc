@@ -211,12 +211,10 @@ void BluetoothTaskManagerWin::PollAdapter() {
         { sizeof(BLUETOOTH_FIND_RADIO_PARAMS) };
     if (adapter_handle_)
       adapter_handle_.Close();
-    HANDLE temp_adapter_handle;
     HBLUETOOTH_RADIO_FIND handle = BluetoothFindFirstRadio(
-        &adapter_param, &temp_adapter_handle);
+        &adapter_param, adapter_handle_.Receive());
 
     if (handle) {
-      adapter_handle_.Set(temp_adapter_handle);
       GetKnownDevices();
       BluetoothFindRadioClose(handle);
     }

@@ -183,7 +183,7 @@ DWORD StartRestrictedProcessInJob(wchar_t *command_line,
 
   // Start the process
   STARTUPINFO startup_info = {0};
-  PROCESS_INFORMATION temp_process_info = {};
+  base::win::ScopedProcessInformation process_info;
   DWORD flags = CREATE_SUSPENDED;
 
   if (base::win::GetVersion() < base::win::VERSION_WIN8) {
@@ -202,10 +202,9 @@ DWORD StartRestrictedProcessInJob(wchar_t *command_line,
                              NULL,   // Use the environment of the caller.
                              NULL,   // Use current directory of the caller.
                              &startup_info,
-                             &temp_process_info)) {
+                             process_info.Receive())) {
     return ::GetLastError();
   }
-  base::win::ScopedProcessInformation process_info(temp_process_info);
 
   // Change the token of the main thread of the new process for the
   // impersonation token with more rights.

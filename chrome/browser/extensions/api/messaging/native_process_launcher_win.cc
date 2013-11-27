@@ -136,7 +136,7 @@ bool NativeProcessLauncher::LaunchNativeProcess(
 
   base::LaunchOptions options;
   options.start_hidden = true;
-  base::win::ScopedHandle cmd_handle;
+  base::ProcessHandle cmd_handle;
   if (!base::LaunchProcess(command.c_str(), options, &cmd_handle)) {
     LOG(ERROR) << "Error launching process "
                << command_line.GetProgram().MaybeAsASCII();
@@ -148,13 +148,14 @@ bool NativeProcessLauncher::LaunchNativeProcess(
   bool stdin_connected = ConnectNamedPipe(stdin_pipe.Get(), NULL) ?
       TRUE : GetLastError() == ERROR_PIPE_CONNECTED;
   if (!stdout_connected || !stdin_connected) {
-    base::KillProcess(cmd_handle.Get(), 0, false);
+    base::KillProcess(cmd_handle, 0, false);
+    base::CloseProcessHandle(cmd_handle);
     LOG(ERROR) << "Failed to connect IO pipes when starting "
                << command_line.GetProgram().MaybeAsASCII();
     return false;
   }
 
-  *process_handle = cmd_handle.Take();
+  *process_handle = cmd_handle;
   *read_file = stdout_pipe.Take();
   *write_file = stdin_pipe.Take();
 

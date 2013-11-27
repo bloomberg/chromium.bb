@@ -54,12 +54,11 @@ bool RegisterTestDefaultBrowser() {
   register_command.AppendArg("/RegServer");
 
   base::win::ScopedHandle register_handle;
-  if (base::LaunchProcess(register_command.GetCommandLineString(),
-                          base::LaunchOptions(),
-                          &register_handle)) {
+  if (base::LaunchProcess(register_command, base::LaunchOptions(),
+                          register_handle.Receive())) {
     int ret = 0;
     if (base::WaitForExitCodeWithTimeout(
-            register_handle.Get(), &ret,
+            register_handle, &ret,
             base::TimeDelta::FromSeconds(kRegistrationTimeoutSeconds))) {
       if (ret == 0) {
         return true;

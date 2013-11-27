@@ -157,11 +157,10 @@ bool Wow64::RunWowHelper(void* buffer) {
 
   STARTUPINFO startup_info = {0};
   startup_info.cb = sizeof(startup_info);
-  PROCESS_INFORMATION temp_process_info = {};
+  base::win::ScopedProcessInformation process_info;
   if (!::CreateProcess(NULL, writable_command.get(), NULL, NULL, FALSE, 0, NULL,
-                       NULL, &startup_info, &temp_process_info))
+                       NULL, &startup_info, process_info.Receive()))
     return false;
-  base::win::ScopedProcessInformation process_info(temp_process_info);
 
   DWORD reason = ::WaitForSingleObject(process_info.process_handle(), INFINITE);
 

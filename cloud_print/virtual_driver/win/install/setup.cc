@@ -97,7 +97,7 @@ void SpoolerServiceCommand(const char* command) {
   base::LaunchOptions options;
   options.wait = true;
   options.start_hidden = true;
-  VLOG(0) << command_line.GetCommandLineString();
+  LOG(INFO) << command_line.GetCommandLineString();
   base::LaunchProcess(command_line, options, NULL);
 }
 
@@ -140,8 +140,7 @@ HRESULT RegisterPortMonitor(bool install, const base::FilePath& install_path) {
   options.wait = true;
 
   base::win::ScopedHandle regsvr32_handle;
-  if (!base::LaunchProcess(command_line.GetCommandLineString(), options,
-                           &regsvr32_handle)) {
+  if (!base::LaunchProcess(command_line, options, regsvr32_handle.Receive())) {
     LOG(ERROR) << "Unable to launch regsvr32.exe.";
     return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
   }
@@ -541,8 +540,8 @@ int WINAPI WinMain(__in  HINSTANCE hInstance,
   CommandLine::Init(0, NULL);
   HRESULT retval = cloud_print::ExecuteCommands();
 
-  VLOG(0) << _com_error(retval).ErrorMessage() << " HRESULT=0x" <<
-            std::setbase(16) << retval;
+  LOG(INFO) << _com_error(retval).ErrorMessage() << " HRESULT=0x" <<
+               std::setbase(16) << retval;
 
   // Installer is silent by default as required by Google Update.
   if (CommandLine::ForCurrentProcess()->HasSwitch("verbose")) {
