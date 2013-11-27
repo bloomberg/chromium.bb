@@ -41,12 +41,12 @@ PASS [Worker] random is an instance of Int32Array
 PASS [Worker] view = new Int32Array(3) is defined.
 PASS [Worker] random = crypto.getRandomValues(view) is defined.
 PASS [Worker] random is view
-PASS [Worker] crypto.getRandomValues(new Float32Array(3)) threw exception TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..
-PASS [Worker] crypto.getRandomValues(new Float64Array(3)) threw exception TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..
+PASS [Worker] crypto.getRandomValues(new Float32Array(3)) threw exception TypeMismatchError: Failed to execute 'getRandomValues' on 'Crypto': The provided ArrayBufferView is of type 'Float32', which is not an integer array type..
+PASS [Worker] crypto.getRandomValues(new Float64Array(3)) threw exception TypeMismatchError: Failed to execute 'getRandomValues' on 'Crypto': The provided ArrayBufferView is of type 'Float64', which is not an integer array type..
 PASS [Worker] buffer = new Uint8Array(32) is defined.
 PASS [Worker] buffer.buffer is defined.
 PASS [Worker] view = new DataView(buffer.buffer) is defined.
-PASS [Worker] crypto.getRandomValues(view) threw exception TypeMismatchError: The type of an object was incompatible with the expected type of the parameter associated to the object..
+PASS [Worker] crypto.getRandomValues(view) threw exception TypeMismatchError: Failed to execute 'getRandomValues' on 'Crypto': The provided ArrayBufferView is of type 'DataView', which is not an integer array type..
 PASS successfullyParsed is true
 
 TEST COMPLETE

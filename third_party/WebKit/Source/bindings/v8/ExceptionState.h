@@ -44,10 +44,38 @@ typedef int ExceptionCode;
 class ExceptionState {
     WTF_MAKE_NONCOPYABLE(ExceptionState);
 public:
+    enum Context {
+        ConstructionContext,
+        ExecutionContext,
+        DeletionContext,
+        GetterContext,
+        SetterContext,
+        UnknownContext, // FIXME: Remove this once we've flipped over to the new API.
+    };
+
     explicit ExceptionState(const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
         : m_code(0)
+        , m_context(UnknownContext)
+        , m_propertyName(0)
+        , m_interfaceName(0)
         , m_creationContext(creationContext)
         , m_isolate(isolate) { }
+
+    ExceptionState(Context context, const char* propertyName, const char* interfaceName, const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
+        : m_code(0)
+        , m_context(context)
+        , m_propertyName(propertyName)
+        , m_interfaceName(interfaceName)
+        , m_creationContext(creationContext)
+        , m_isolate(isolate) { }
+
+    ExceptionState(Context context, const char* interfaceName, const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
+        : m_code(0)
+        , m_context(context)
+        , m_propertyName(0)
+        , m_interfaceName(interfaceName)
+        , m_creationContext(creationContext)
+        , m_isolate(isolate) { ASSERT(m_context == ConstructionContext); }
 
     virtual void throwDOMException(const ExceptionCode&, const String& message);
     virtual void throwTypeError(const String& message);
@@ -74,8 +102,15 @@ public:
         return true;
     }
 
+    Context context() { return m_context; }
+    const char* propertyName() { return m_propertyName; }
+    const char* interfaceName() { return m_interfaceName; }
+
 protected:
     ExceptionCode m_code;
+    Context m_context;
+    const char* m_propertyName;
+    const char* m_interfaceName;
 
 private:
     void setException(v8::Handle<v8::Value>);

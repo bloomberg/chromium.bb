@@ -55,4 +55,42 @@ void ArrayBufferView::neuter()
     m_byteOffset = 0;
 }
 
+const char* ArrayBufferView::typeName()
+{
+    switch (getType()) {
+    case TypeInt8:
+        return "Int8";
+        break;
+    case TypeUint8:
+        return "UInt8";
+        break;
+    case TypeUint8Clamped:
+        return "UInt8Clamped";
+        break;
+    case TypeInt16:
+        return "Int16";
+        break;
+    case TypeUint16:
+        return "UInt16";
+        break;
+    case TypeInt32:
+        return "Int32";
+        break;
+    case TypeUint32:
+        return "Uint32";
+        break;
+    case TypeFloat32:
+        return "Float32";
+        break;
+    case TypeFloat64:
+        return "Float64";
+        break;
+    case TypeDataView:
+        return "DataView";
+        break;
+    }
+    ASSERT_NOT_REACHED();
+    return "Unknown";
+}
+
 }

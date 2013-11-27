@@ -7,7 +7,7 @@ Starting worker: resources/random-values-limits.js
 PASS [Worker] 'crypto' in self is true
 PASS [Worker] 'getRandomValues' in self.crypto is true
 PASS [Worker] crypto.getRandomValues(almostTooLargeArray) did not throw exception.
-PASS [Worker] crypto.getRandomValues(tooLargeArray) threw exception QuotaExceededError: An attempt was made to add something to storage that exceeded the quota..
+PASS [Worker] crypto.getRandomValues(tooLargeArray) threw exception QuotaExceededError: Failed to execute 'getRandomValues' on 'Crypto': The ArrayBufferView's byte length (65537) exceeds the number of bytes of entropy available via this API (65536)..
 PASS successfullyParsed is true
 
 TEST COMPLETE

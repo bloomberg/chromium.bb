@@ -52,6 +52,7 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
         TypeDataView
     };
     virtual ViewType getType() const = 0;
+    const char* typeName();
 
     PassRefPtr<ArrayBuffer> buffer() const
     {
