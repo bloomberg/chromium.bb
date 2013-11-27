@@ -1830,7 +1830,6 @@ menuitem#thumbnail-view[lead]:not([disabled]) {
 
 #suggest-app-dialog .spinner-layer {
   background-color: rgba(255, 255, 255, 0.7);
-  top: 45px;  /* Title: 44px, border: 1px */
 }
 
 #suggest-app-dialog .cr-dialog-buttons,
