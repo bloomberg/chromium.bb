@@ -4,6 +4,8 @@
 
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
 
+#include <cmath>
+
 #include "content/common/input/input_event.h"
 #include "ui/events/latency_info.h"
 
@@ -62,7 +64,11 @@ SyntheticGesture::Result SyntheticSmoothScrollGesture::ForwardMouseInputEvents(
   if (HasFinished())
     return SyntheticGesture::GESTURE_FINISHED;
 
-  float delta = GetPositionDelta(interval);
+  // Even though WebMouseWheelEvents take floating point deltas, internally the
+  // scroll position is stored as an integer. Flooring the deltas ensures that
+  // the gesture state, especially |current_y_|, is consistent with the internal
+  // state.
+  float delta = floor(GetPositionDelta(interval));
   current_y_ += delta;
   ForwardMouseWheelEvent(target, delta);
 
