@@ -61,6 +61,21 @@ public class AppMenuButtonHelper extends SimpleOnGestureListener implements OnTo
         return false;
     }
 
+    /**
+     * @return Whether the App Menu is currently showing.
+     */
+    public boolean isAppMenuShowing() {
+        return mMenuHandler.isAppMenuShowing();
+    }
+
+    /**
+     * Handle the key press event on a menu button.
+     * @return Whether the app menu was shown as a result of this action.
+     */
+    public boolean onEnterKeyPress() {
+        return showAppMenu(false);
+    }
+
     @Override
     public boolean onDown(MotionEvent e) {
         mSeenFirstScrollEvent = false;
