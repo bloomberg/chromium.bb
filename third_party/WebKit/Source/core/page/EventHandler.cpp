@@ -2633,6 +2633,12 @@ bool EventHandler::bestClickableNodeForTouchPoint(const IntPoint& touchCenter, c
     IntPoint hitTestPoint = m_frame->view()->windowToContents(touchCenter);
     HitTestResult result = hitTestResultAtPoint(hitTestPoint, HitTestRequest::ReadOnly | HitTestRequest::Active, touchRadius);
 
+    // If the touch is over a scrollbar, don't adjust the touch point since touch adjustment only takes into account
+    // DOM nodes so a touch over a scrollbar will be adjusted towards nearby nodes. This leads to things like textarea
+    // scrollbars being untouchable.
+    if (result.scrollbar())
+        return false;
+
     IntRect touchRect(touchCenter - touchRadius, touchRadius + touchRadius);
     Vector<RefPtr<Node>, 11> nodes;
     copyToVector(result.rectBasedTestResult(), nodes);

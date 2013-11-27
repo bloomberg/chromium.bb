@@ -453,6 +453,10 @@ void HitTestResult::append(const HitTestResult& other)
 {
     ASSERT(isRectBasedTest() && other.isRectBasedTest());
 
+    if (!m_scrollbar && other.scrollbar()) {
+        setScrollbar(other.scrollbar());
+    }
+
     if (!m_innerNode && other.innerNode()) {
         m_innerNode = other.innerNode();
         m_innerPossiblyPseudoNode = other.innerPossiblyPseudoNode();
@@ -460,7 +464,6 @@ void HitTestResult::append(const HitTestResult& other)
         m_localPoint = other.localPoint();
         m_pointInInnerNodeFrame = other.m_pointInInnerNodeFrame;
         m_innerURLElement = other.URLElement();
-        m_scrollbar = other.scrollbar();
         m_isOverWidget = other.isOverWidget();
     }
 
