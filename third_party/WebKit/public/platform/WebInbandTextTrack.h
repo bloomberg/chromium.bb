@@ -31,9 +31,10 @@
 #ifndef WebInbandTextTrack_h
 #define WebInbandTextTrack_h
 
+#include "public/platform/WebString.h"
+
 namespace blink {
 
-class WebString;
 class WebInbandTextTrackClient;
 
 class WebInbandTextTrack {
@@ -55,6 +56,7 @@ public:
     virtual Kind kind() const = 0;
     virtual WebString label() const = 0;
     virtual WebString language() const = 0;
+    virtual WebString id() const { return WebString(); }
 
     virtual int textTrackIndex() const = 0;
 };

@@ -45,7 +45,7 @@ PassRefPtr<InbandTextTrack> InbandTextTrack::create(Document& document, TextTrac
 }
 
 InbandTextTrack::InbandTextTrack(Document& document, TextTrackClient* client, WebInbandTextTrack* webTrack)
-    : TextTrack(document, client, emptyAtom, webTrack->label(), webTrack->language(), InBand)
+    : TextTrack(document, client, emptyAtom, webTrack->label(), webTrack->language(), webTrack->id(), InBand)
     , m_webTrack(webTrack)
 {
     m_webTrack->setClient(this);

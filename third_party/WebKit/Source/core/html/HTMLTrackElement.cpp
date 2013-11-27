@@ -106,6 +106,8 @@ void HTMLTrackElement::parseAttribute(const QualifiedName& name, const AtomicStr
         track()->setLabel(value);
     } else if (name == srclangAttr) {
         track()->setLanguage(value);
+    } else if (name == idAttr) {
+        track()->setId(value);
     } else if (name == defaultAttr) {
         track()->setIsDefault(!value.isNull());
     }

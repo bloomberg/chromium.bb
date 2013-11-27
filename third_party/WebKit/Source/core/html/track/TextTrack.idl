@@ -33,6 +33,8 @@ enum TextTrackKind { "subtitles",  "captions",  "descriptions",  "chapters",  "m
     readonly attribute DOMString label;
     readonly attribute DOMString language;
 
+    readonly attribute DOMString id;
+
              attribute TextTrackMode mode;
 
     readonly attribute TextTrackCueList cues;

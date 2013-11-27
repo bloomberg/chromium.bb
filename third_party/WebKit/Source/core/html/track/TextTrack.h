@@ -57,7 +57,7 @@ class TextTrack : public TrackBase, public ScriptWrappable {
 public:
     static PassRefPtr<TextTrack> create(Document& document, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language)
     {
-        return adoptRef(new TextTrack(document, client, kind, label, language, AddTrack));
+        return adoptRef(new TextTrack(document, client, kind, label, language, emptyAtom, AddTrack));
     }
     virtual ~TextTrack();
 
@@ -79,6 +79,9 @@ public:
 
     AtomicString language() const { return m_language; }
     void setLanguage(const AtomicString& language) { m_language = language; }
+
+    AtomicString id() const { return m_id; }
+    void setId(const AtomicString& id) { m_id = id; }
 
     static const AtomicString& disabledKeyword();
     static const AtomicString& hiddenKeyword();
@@ -133,7 +136,7 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
 protected:
-    TextTrack(Document&, TextTrackClient*, const AtomicString& kind, const AtomicString& label, const AtomicString& language, TextTrackType);
+    TextTrack(Document&, TextTrackClient*, const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType);
 
     RefPtr<TextTrackCueList> m_cues;
 
@@ -150,6 +153,7 @@ private:
     AtomicString m_kind;
     AtomicString m_label;
     AtomicString m_language;
+    AtomicString m_id;
     AtomicString m_mode;
     TextTrackClient* m_client;
     TextTrackType m_trackType;

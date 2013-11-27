@@ -55,6 +55,7 @@ public:
     bool contains(TextTrack*) const;
 
     TextTrack* item(unsigned index);
+    TextTrack* getTrackById(const AtomicString& id);
     void append(PassRefPtr<TextTrack>);
     void remove(TextTrack*);
 

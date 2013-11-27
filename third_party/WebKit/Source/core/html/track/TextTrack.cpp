@@ -96,7 +96,7 @@ const AtomicString& TextTrack::showingKeyword()
     return ended;
 }
 
-TextTrack::TextTrack(Document& document, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language, TextTrackType type)
+TextTrack::TextTrack(Document& document, TextTrackClient* client, const AtomicString& kind, const AtomicString& label, const AtomicString& language, const AtomicString& id, TextTrackType type)
     : TrackBase(TrackBase::TextTrack)
     , m_cues(0)
     , m_regions(0)
@@ -104,6 +104,7 @@ TextTrack::TextTrack(Document& document, TextTrackClient* client, const AtomicSt
     , m_mediaElement(0)
     , m_label(label)
     , m_language(language)
+    , m_id(id)
     , m_mode(disabledKeyword())
     , m_client(client)
     , m_trackType(type)
