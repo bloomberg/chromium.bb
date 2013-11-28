@@ -295,6 +295,11 @@
               'type': 'none',
               'sources': [],
             },
+            {
+              'target_name': 'nacl_switches_win64',
+              'type': 'none',
+              'sources': [],
+            },
           ],
         }],
       ],
