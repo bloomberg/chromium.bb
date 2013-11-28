@@ -31,6 +31,8 @@ class NativeViewportDelegate {
 };
 
 // Encapsulation of platform-specific Viewport.
+// TODO(abarth): Rename this class so that it doesn't conflict with the name of
+// the service.
 class NativeViewport {
  public:
   virtual ~NativeViewport() {}

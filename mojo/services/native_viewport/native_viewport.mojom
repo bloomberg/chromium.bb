@@ -1,0 +1,21 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo {
+
+[Peer=NativeViewportClient]
+interface NativeViewport {
+  void Open();
+  void Close();
+};
+
+[Peer=NativeViewport]
+interface NativeViewportClient {
+  void DidOpen();
+
+  // Rather than send a uint64, we should send an opaque handle to a GL service.
+  void DidCreateGLContext(uint64 gl);
+};
+
+}

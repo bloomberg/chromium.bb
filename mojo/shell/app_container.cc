@@ -14,7 +14,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "mojo/public/system/core.h"
-#include "mojo/services/native_viewport/native_viewport_controller.h"
+#include "mojo/services/native_viewport/native_viewport_impl.h"
 #include "mojo/shell/context.h"
 
 typedef MojoResult (*MojoMainFunction)(MojoHandle pipe);
@@ -38,8 +38,8 @@ void AppContainer::DidCompleteLoad(const GURL& app_url,
                                    const base::FilePath& app_path) {
   CreateMessagePipe(&shell_handle_, &app_handle_);
 
-  hello_world_service_.reset(
-    new examples::HelloWorldServiceImpl(shell_handle_.Pass()));
+  native_viewport_.reset(
+    new services::NativeViewportImpl(context_, shell_handle_.Pass()));
 
   // Launch the app on its own thread.
   // TODO(beng): Create a unique thread name.
@@ -48,11 +48,6 @@ void AppContainer::DidCompleteLoad(const GURL& app_url,
       base::Bind(&AppContainer::AppCompleted, weak_factory_.GetWeakPtr());
   thread_.reset(new base::DelegateSimpleThread(this, "app_thread"));
   thread_->Start();
-
-  // TODO(beng): This should be created on demand by the NativeViewportService
-  //             when it is retrieved by the app.
-  // native_viewport_controller_.reset(
-  //     new services::NativeViewportController(context_, shell_handle_));
 }
 
 void AppContainer::Run() {
@@ -78,14 +73,11 @@ void AppContainer::Run() {
     LOG(ERROR) << "MojoMain returned an error: " << result;
     return;
   }
-  LOG(INFO) << "MojoMain succeeded: " << result;
   context_->task_runners()->ui_runner()->PostTask(FROM_HERE, ack_closure_);
 }
 
 void AppContainer::AppCompleted() {
-  hello_world_service_.reset();
-  // TODO(aa): This code gets replaced once we have a service manager.
-  // native_viewport_controller_->Close();
+  native_viewport_.reset();
 
   thread_->Join();
   thread_.reset();

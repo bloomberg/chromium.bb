@@ -7,7 +7,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "mojo/common/bindings_support_impl.h"
-#include "mojo/examples/sample_app/hello_world_client_impl.h"
+#include "mojo/examples/sample_app/native_viewport_client_impl.h"
 #include "mojo/public/bindings/lib/bindings_support.h"
 #include "mojo/public/system/core.h"
 #include "mojo/public/system/macros.h"
@@ -25,15 +25,12 @@
 namespace mojo {
 namespace examples {
 
-void SayHello(ScopedMessagePipeHandle pipe) {
-  // Send message out.
-  HelloWorldClientImpl client(pipe.Pass());
-  ScratchBuffer buf;
-  const std::string kGreeting("hello, world!");
-  String greeting(kGreeting, &buf);
-  client.service()->Greeting(greeting);
+void Start(ScopedMessagePipeHandle pipe) {
+  printf("Starting sample app.\n");
+  NativeViewportClientImpl client(pipe.Pass());
+  printf("Opening native viewport.\n");
+  client.service()->Open();
 
-  // Run loop to receieve Ack. The client will quit the loop.
   base::MessageLoop::current()->Run();
 }
 
@@ -42,13 +39,12 @@ void SayHello(ScopedMessagePipeHandle pipe) {
 
 extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(MojoHandle pipe) {
   base::MessageLoop loop;
-  // Set the global bindings support.
   mojo::common::BindingsSupportImpl bindings_support;
   mojo::BindingsSupport::Set(&bindings_support);
 
   mojo::ScopedMessagePipeHandle scoped_handle;
   scoped_handle.reset(mojo::MessagePipeHandle(pipe));
-  mojo::examples::SayHello(scoped_handle.Pass());
+  mojo::examples::Start(scoped_handle.Pass());
 
   mojo::BindingsSupport::Set(NULL);
   return MOJO_RESULT_OK;

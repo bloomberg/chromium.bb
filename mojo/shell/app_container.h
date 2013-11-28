@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/simple_thread.h"
-#include "mojo/examples/hello_world_service/hello_world_service_impl.h"
 #include "mojo/public/system/core_cpp.h"
 #include "mojo/shell/loader.h"
 
@@ -20,7 +19,7 @@ class PlatformThreadHandle;
 
 namespace mojo {
 namespace services {
-class NativeViewportController;
+class NativeViewportImpl;
 }
 namespace shell {
 
@@ -53,8 +52,7 @@ class AppContainer
   base::Closure ack_closure_;
   scoped_ptr<Loader::Job> request_;
   scoped_ptr<base::DelegateSimpleThread> thread_;
-  scoped_ptr<examples::HelloWorldServiceImpl> hello_world_service_;
-  scoped_ptr<services::NativeViewportController> native_viewport_controller_;
+  scoped_ptr<services::NativeViewportImpl> native_viewport_;
 
   base::WeakPtrFactory<AppContainer> weak_factory_;
 
