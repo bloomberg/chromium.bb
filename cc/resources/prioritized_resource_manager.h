@@ -152,29 +152,32 @@ class CC_EXPORT PrioritizedResourceManager {
   // Compare backings. Lowest priority first.
   static inline bool CompareBackings(PrioritizedResource::Backing* a,
                                      PrioritizedResource::Backing* b) {
-    // Make textures that can be recycled appear first
-    if (a->CanBeRecycled() != b->CanBeRecycled())
-      return (a->CanBeRecycled() > b->CanBeRecycled());
-    // Put textures in the parent compositor last since they can't be
-    // freed when they are evicted anyhow.
-    if (a->in_parent_compositor() != b->in_parent_compositor())
-      return (a->in_parent_compositor() < b->in_parent_compositor());
+    // Make textures that can be recycled appear first.
+    if (a->CanBeRecycledIfNotInExternalUse() !=
+        b->CanBeRecycledIfNotInExternalUse())
+      return (a->CanBeRecycledIfNotInExternalUse() >
+              b->CanBeRecycledIfNotInExternalUse());
     // Then sort by being above or below the priority cutoff.
     if (a->was_above_priority_cutoff_at_last_priority_update() !=
         b->was_above_priority_cutoff_at_last_priority_update())
       return (a->was_above_priority_cutoff_at_last_priority_update() <
               b->was_above_priority_cutoff_at_last_priority_update());
     // Then sort by priority (note that backings that no longer have owners will
-    // always have the lowest priority)
+    // always have the lowest priority).
     if (a->request_priority_at_last_priority_update() !=
         b->request_priority_at_last_priority_update())
       return PriorityCalculator::priority_is_lower(
           a->request_priority_at_last_priority_update(),
           b->request_priority_at_last_priority_update());
-    // Finally sort by being in the impl tree versus being completely
-    // unreferenced
+    // Then sort by being in the impl tree versus being completely
+    // unreferenced.
     if (a->in_drawing_impl_tree() != b->in_drawing_impl_tree())
       return (a->in_drawing_impl_tree() < b->in_drawing_impl_tree());
+    // Finally, prefer to evict textures in the parent compositor because
+    // they will otherwise take another roundtrip to the parent compositor
+    // before they are evicted.
+    if (a->in_parent_compositor() != b->in_parent_compositor())
+      return (a->in_parent_compositor() > b->in_parent_compositor());
     return a < b;
   }
 

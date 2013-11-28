@@ -451,7 +451,7 @@ TEST_F(PrioritizedResourceTest, ChangePriorityCutoff) {
   resource_manager->ClearAllMemory(ResourceProvider());
 }
 
-TEST_F(PrioritizedResourceTest, NotEvictingTexturesInParent) {
+TEST_F(PrioritizedResourceTest, EvictingTexturesInParent) {
   const size_t kMaxTextures = 8;
   scoped_ptr<PrioritizedResourceManager> resource_manager =
       CreateManager(kMaxTextures);
@@ -546,6 +546,13 @@ TEST_F(PrioritizedResourceTest, NotEvictingTexturesInParent) {
     to_send.push_back(textures[i]->resource_id());
   resource_provider_->PrepareSendToParent(to_send, &transferable);
 
+  // Set the last two textures to be tied for prioity with the two
+  // before them. Being sent to the parent will break the tie.
+  textures[4]->set_request_priority(100 + 4);
+  textures[5]->set_request_priority(100 + 5);
+  textures[6]->set_request_priority(100 + 4);
+  textures[7]->set_request_priority(100 + 5);
+
   for (size_t i = 0; i < 8; ++i)
     texture_resource_ids[i] = textures[i]->resource_id();
 
@@ -574,10 +581,10 @@ TEST_F(PrioritizedResourceTest, NotEvictingTexturesInParent) {
     std::vector<unsigned> remaining = BackingResources(resource_manager.get());
     EXPECT_TRUE(std::find(remaining.begin(),
                           remaining.end(),
-                          texture_resource_ids[6]) != remaining.end());
+                          texture_resource_ids[6]) == remaining.end());
     EXPECT_TRUE(std::find(remaining.begin(),
                           remaining.end(),
-                          texture_resource_ids[7]) != remaining.end());
+                          texture_resource_ids[7]) == remaining.end());
   }
   resource_manager->UnlinkAndClearEvictedBackings();
   EXPECT_EQ(TexturesMemorySize(4), resource_manager->MemoryUseBytes());

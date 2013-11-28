@@ -241,7 +241,7 @@ void PrioritizedResourceManager::AcquireBackingTextureIfNeeded(
   // First try to recycle
   for (BackingList::iterator it = backings_.begin(); it != backings_.end();
        ++it) {
-    if (!(*it)->CanBeRecycled())
+    if (!(*it)->CanBeRecycledIfNotInExternalUse())
       break;
     if (resource_provider->InUseByConsumer((*it)->id()))
       continue;
@@ -299,7 +299,8 @@ bool PrioritizedResourceManager::EvictBackingsToReduceMemory(
             backing->request_priority_at_last_priority_update(),
             priority_cutoff))
       break;
-    if (eviction_policy == EVICT_ONLY_RECYCLABLE && !backing->CanBeRecycled())
+    if (eviction_policy == EVICT_ONLY_RECYCLABLE &&
+        !backing->CanBeRecycledIfNotInExternalUse())
       break;
     if (unlink_policy == UNLINK_BACKINGS && backing->owner())
       backing->owner()->Unlink();
@@ -368,6 +369,7 @@ bool PrioritizedResourceManager::ReduceMemoryOnImplThread(
     ResourceProvider* resource_provider) {
   DCHECK(proxy_->IsImplThread());
   DCHECK(resource_provider);
+
   // If we are in the process of uploading a new frame then the backings at the
   // very end of the list are not sorted by priority. Sort them before doing the
   // eviction.
@@ -527,12 +529,12 @@ void PrioritizedResourceManager::AssertInvariants() {
         (!backings_tail_not_sorted_ ||
          !backing->was_above_priority_cutoff_at_last_priority_update()))
       DCHECK(CompareBackings(previous_backing, backing));
-    if (!backing->CanBeRecycled())
+    if (!backing->CanBeRecycledIfNotInExternalUse())
       reached_unrecyclable = true;
     if (reached_unrecyclable)
-      DCHECK(!backing->CanBeRecycled());
+      DCHECK(!backing->CanBeRecycledIfNotInExternalUse());
     else
-      DCHECK(backing->CanBeRecycled());
+      DCHECK(backing->CanBeRecycledIfNotInExternalUse());
     previous_backing = backing;
   }
 #endif

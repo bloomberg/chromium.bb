@@ -114,7 +114,7 @@ class CC_EXPORT PrioritizedResource {
     void UpdateState(ResourceProvider* resource_provider);
 
     PrioritizedResource* owner() { return owner_; }
-    bool CanBeRecycled() const;
+    bool CanBeRecycledIfNotInExternalUse() const;
     int request_priority_at_last_priority_update() const {
       return priority_at_last_priority_update_;
     }

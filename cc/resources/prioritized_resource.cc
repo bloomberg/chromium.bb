@@ -155,10 +155,10 @@ bool PrioritizedResource::Backing::ResourceHasBeenDeleted() const {
   return resource_has_been_deleted_;
 }
 
-bool PrioritizedResource::Backing::CanBeRecycled() const {
+bool PrioritizedResource::Backing::CanBeRecycledIfNotInExternalUse() const {
   DCHECK(!proxy() || proxy()->IsImplThread());
   return !was_above_priority_cutoff_at_last_priority_update_ &&
-         !in_drawing_impl_tree_ && !in_parent_compositor_;
+         !in_drawing_impl_tree_;
 }
 
 void PrioritizedResource::Backing::UpdatePriority() {
