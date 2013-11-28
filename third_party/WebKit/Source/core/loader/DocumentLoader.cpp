@@ -688,8 +688,6 @@ bool DocumentLoader::isLoadingInAPISense() const
             return true;
         if (m_fetcher->requestCount())
             return true;
-        if (doc->isDelayingLoadEvent() && !doc->loadEventFinished())
-            return true;
         if (doc->processingLoadEvent())
             return true;
         if (doc->hasActiveParser())

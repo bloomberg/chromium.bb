@@ -2195,7 +2195,7 @@ void FrameView::updateWidget(RenderObject* object)
         if (ownerElement->isPluginElement()) {
             HTMLPlugInElement* pluginElement = toHTMLPlugInElement(ownerElement);
             if (pluginElement->needsWidgetUpdate())
-                pluginElement->updateWidget();
+                pluginElement->updateWidget(CreateAnyWidgetType);
         } else {
             ASSERT_NOT_REACHED();
         }
@@ -2298,8 +2298,7 @@ void FrameView::performPostLayoutTasks()
     if (renderView)
         renderView->updateWidgetPositions();
 
-    if (!m_updateWidgetsTimer.isActive())
-        m_updateWidgetsTimer.startOneShot(0);
+    m_updateWidgetsTimer.startOneShot(0);
 
     if (Page* page = m_frame->page()) {
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())

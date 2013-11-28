@@ -100,9 +100,8 @@ RenderWidget* HTMLAppletElement::existingRenderWidget() const
     return renderPart();
 }
 
-void HTMLAppletElement::updateWidgetInternal()
+void HTMLAppletElement::updateWidget(PluginCreationOption)
 {
-    ASSERT(!m_isDelayingLoadEvent);
     setNeedsWidgetUpdate(false);
     // FIXME: This should ASSERT isFinishedParsingChildren() instead.
     if (!isFinishedParsingChildren())

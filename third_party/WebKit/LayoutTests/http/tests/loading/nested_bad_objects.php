@@ -8,9 +8,6 @@ if (isset($_GET['object'])) {
     <script>
     if (window.testRunner)
         testRunner.dumpAsText();
-    window.onload = function() {
-        internals.updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks();
-    };
     </script>
     <object type="image/jpeg" data="nested_bad_objects.php?object">
         <object type="image/jpeg" data="nested_bad_objects.php?object" />

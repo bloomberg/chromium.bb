@@ -88,7 +88,7 @@ private:
 
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
 
-    virtual void updateWidgetInternal() OVERRIDE;
+    virtual void updateWidget(PluginCreationOption);
     void updateDocNamedItem();
 
     void reattachFallbackContent();

@@ -44,7 +44,7 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
     virtual RenderWidget* existingRenderWidget() const OVERRIDE;
-    virtual void updateWidgetInternal() OVERRIDE;
+    virtual void updateWidget(PluginCreationOption) OVERRIDE;
 
     bool canEmbedJava() const;
 

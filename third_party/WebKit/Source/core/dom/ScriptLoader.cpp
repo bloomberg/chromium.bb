@@ -394,7 +394,6 @@ void ScriptLoader::notifyFinished(Resource* resource)
     CORSEnabled corsEnabled = isPotentiallyCORSEnabled() ? PotentiallyCORSEnabled : NotCORSEnabled;
     if (!elementDocument->fetcher()->canAccess(m_resource.get(), corsEnabled)) {
         dispatchErrorEvent();
-        contextDocument->scriptRunner()->notifyScriptLoadError(this, m_willExecuteInOrder ? ScriptRunner::IN_ORDER_EXECUTION : ScriptRunner::ASYNC_EXECUTION);
         return;
     }
 
