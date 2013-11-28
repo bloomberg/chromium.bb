@@ -32,7 +32,7 @@
     [InitializedByEventConstructor] readonly attribute Uint8Array initData;
     [InitializedByEventConstructor] readonly attribute Uint8Array message;
     [InitializedByEventConstructor] readonly attribute DOMString defaultURL;
-    [InitializedByEventConstructor] readonly attribute MediaKeyError errorCode;
+    [InitializedByEventConstructor] readonly attribute MediaKeyError? errorCode;
     [InitializedByEventConstructor] readonly attribute unsigned short systemCode;
 };
 

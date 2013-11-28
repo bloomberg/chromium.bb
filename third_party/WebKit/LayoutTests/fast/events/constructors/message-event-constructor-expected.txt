@@ -61,20 +61,21 @@ PASS new MessageEvent('eventType', { get lastEventId() { throw 'MessageEvent Err
 PASS new MessageEvent('eventType', { source: window }).source is window
 PASS new MessageEvent('eventType', { source: this }).source is this
 PASS new MessageEvent('eventType', { ports: [channel.port1], source: channel.port1 }).source is channel.port1
-PASS new MessageEvent('eventType', { source: test_object }).source is null
-PASS new MessageEvent('eventType', { source: document }).source is null
-PASS new MessageEvent('eventType', { source: document.body }).source is null
+PASS new MessageEvent('eventType', { source: test_object }).source threw exception TypeError: Failed to construct 'MessageEvent': The 'source' property does not have a EventTarget type..
+PASS new MessageEvent('eventType', { source: document }).source threw exception TypeError: Failed to construct 'MessageEvent': The optional 'source' property is neither a Window nor MessagePort..
+PASS new MessageEvent('eventType', { source: document.body }).source threw exception TypeError: Failed to construct 'MessageEvent': The optional 'source' property is neither a Window nor MessagePort..
 PASS new MessageEvent('eventType', { source: undefined }).source is null
 PASS new MessageEvent('eventType', { source: null }).source is null
-PASS new MessageEvent('eventType', { source: false }).source is null
-PASS new MessageEvent('eventType', { source: true }).source is null
-PASS new MessageEvent('eventType', { source: '' }).source is null
-PASS new MessageEvent('eventType', { source: 'chocolate' }).source is null
-PASS new MessageEvent('eventType', { source: 12345 }).source is null
-PASS new MessageEvent('eventType', { source: 18446744073709551615 }).source is null
-PASS new MessageEvent('eventType', { source: NaN }).source is null
-PASS new MessageEvent('eventType', { source: {valueOf: function () { return window; } } }).source == window is false
-PASS new MessageEvent('eventType', { get source() { return 123; } }).source is null
+PASS new MessageEvent('eventType', { source: false }).source threw exception TypeError: Failed to construct 'MessageEvent': The 'source' property does not have a EventTarget type..
+PASS new MessageEvent('eventType', { source: true }).source threw exception TypeError: Failed to construct 'MessageEvent': The 'source' property does not have a EventTarget type..
+PASS new MessageEvent('eventType', { source: '' }).source threw exception TypeError: Failed to construct 'MessageEvent': The 'source' property does not have a EventTarget type..
+PASS new MessageEvent('eventType', { source: 'chocolate' }).source threw exception TypeError: Failed to construct 'MessageEvent': The 'source' property does not have a EventTarget type..
+PASS new MessageEvent('eventType', { source: 12345 }).source threw exception TypeError: Failed to construct 'MessageEvent': The 'source' property does not have a EventTarget type..
+PASS new MessageEvent('eventType', { source: 18446744073709551615 }).source threw exception TypeError: Failed to construct 'MessageEvent': The 'source' property does not have a EventTarget type..
+PASS new MessageEvent('eventType', { source: NaN }).source threw exception TypeError: Failed to construct 'MessageEvent': The 'source' property does not have a EventTarget type..
+PASS new MessageEvent('eventType', { source: {valueOf: function () { return window; } } }).source == window threw exception TypeError: Failed to construct 'MessageEvent': The 'source' property does not have a EventTarget type..
+PASS new MessageEvent('eventType', { get source() { return window; } }).source is window
+PASS new MessageEvent('eventType', { get source() { return 123; } }).source threw exception TypeError: Failed to construct 'MessageEvent': The 'source' property does not have a EventTarget type..
 PASS new MessageEvent('eventType', { get source() { throw 'MessageEvent Error'; } }) threw exception MessageEvent Error.
 PASS new MessageEvent('eventType', { ports: [channel.port1, channel.port2, channel2.port1] }).ports[0] is channel.port1
 PASS new MessageEvent('eventType', { ports: [channel.port1, channel.port2, channel2.port1] }).ports[1] is channel.port2

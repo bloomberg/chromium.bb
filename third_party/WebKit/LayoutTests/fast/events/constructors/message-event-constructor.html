@@ -76,21 +76,22 @@ var channel = new MessageChannel();
 shouldBe("new MessageEvent('eventType', { ports: [channel.port1], source: channel.port1 }).source", "channel.port1");
 
 // Unacceptable source objects (not a Window or a MessagePort).
-shouldBe("new MessageEvent('eventType', { source: test_object }).source", "null");
-shouldBe("new MessageEvent('eventType', { source: document }).source", "null");
-shouldBe("new MessageEvent('eventType', { source: document.body }).source", "null");
+shouldThrow("new MessageEvent('eventType', { source: test_object }).source");
+shouldThrow("new MessageEvent('eventType', { source: document }).source");
+shouldThrow("new MessageEvent('eventType', { source: document.body }).source");
 shouldBe("new MessageEvent('eventType', { source: undefined }).source", "null");
 shouldBe("new MessageEvent('eventType', { source: null }).source", "null");
-shouldBe("new MessageEvent('eventType', { source: false }).source", "null");
-shouldBe("new MessageEvent('eventType', { source: true }).source", "null");
-shouldBe("new MessageEvent('eventType', { source: '' }).source", "null");
-shouldBe("new MessageEvent('eventType', { source: 'chocolate' }).source", "null");
-shouldBe("new MessageEvent('eventType', { source: 12345 }).source", "null");
-shouldBe("new MessageEvent('eventType', { source: 18446744073709551615 }).source", "null");
-shouldBe("new MessageEvent('eventType', { source: NaN }).source", "null");
+shouldThrow("new MessageEvent('eventType', { source: false }).source");
+shouldThrow("new MessageEvent('eventType', { source: true }).source");
+shouldThrow("new MessageEvent('eventType', { source: '' }).source");
+shouldThrow("new MessageEvent('eventType', { source: 'chocolate' }).source");
+shouldThrow("new MessageEvent('eventType', { source: 12345 }).source");
+shouldThrow("new MessageEvent('eventType', { source: 18446744073709551615 }).source");
+shouldThrow("new MessageEvent('eventType', { source: NaN }).source");
 // Note that valueOf() is not called, when the left hand side is evaluated.
-shouldBeFalse("new MessageEvent('eventType', { source: {valueOf: function () { return window; } } }).source == window");
-shouldBe("new MessageEvent('eventType', { get source() { return 123; } }).source", "null");
+shouldThrow("new MessageEvent('eventType', { source: {valueOf: function () { return window; } } }).source == window");
+shouldBe("new MessageEvent('eventType', { get source() { return window; } }).source", "window");
+shouldThrow("new MessageEvent('eventType', { get source() { return 123; } }).source");
 shouldThrow("new MessageEvent('eventType', { get source() { throw 'MessageEvent Error'; } })");
 
 // ports is passed.

@@ -60,6 +60,11 @@ String ExceptionMessages::failedToDelete(const String& property, const String& t
     return "Failed to delete the '" + property + "' property from '" + type + "': " + detail;
 }
 
+String ExceptionMessages::incorrectPropertyType(const String& property, const String& detail)
+{
+    return "The '" + property + "' property " + detail;
+}
+
 String ExceptionMessages::notAnArrayTypeArgumentOrValue(int argumentIndex)
 {
     String kind;

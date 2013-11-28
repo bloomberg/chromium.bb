@@ -28,6 +28,7 @@
 #include "config.h"
 #include "core/events/MessageEvent.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "core/events/ThreadLocalEventNames.h"
 
 namespace WebCore {
@@ -130,6 +131,15 @@ MessageEvent::MessageEvent(PassRefPtr<ArrayBuffer> data, const String& origin)
 
 MessageEvent::~MessageEvent()
 {
+}
+
+PassRefPtr<MessageEvent> MessageEvent::create(const AtomicString& type, const MessageEventInit& initializer, ExceptionState& exceptionState)
+{
+    if (initializer.source.get() && !isValidSource(initializer.source.get())) {
+        exceptionState.throwTypeError(ExceptionMessages::failedToConstruct("MessageEvent", "The optional 'source' property is neither a Window nor MessagePort."));
+        return 0;
+    }
+    return adoptRef(new MessageEvent(type, initializer));
 }
 
 void MessageEvent::initMessageEvent(const AtomicString& type, bool canBubble, bool cancelable, const String& origin, const String& lastEventId, DOMWindow* source, PassOwnPtr<MessagePortArray> ports)

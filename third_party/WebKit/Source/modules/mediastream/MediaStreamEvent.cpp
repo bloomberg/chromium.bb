@@ -77,6 +77,12 @@ MediaStream* MediaStreamEvent::stream() const
     return m_stream.get();
 }
 
+MediaStream* MediaStreamEvent::stream(bool& isNull) const
+{
+    isNull = !m_stream;
+    return m_stream.get();
+}
+
 const AtomicString& MediaStreamEvent::interfaceName() const
 {
     return EventNames::MediaStreamEvent;

@@ -115,10 +115,12 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     EventInit eventInit;
     if (info.Length() >= 2) {
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
-        if (!fillEventInit(eventInit, options))
+        ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+        if (!fillEventInit(eventInit, options, exceptionState)) {
+            exceptionState.throwIfNeeded();
             return;
+        }
     }
-
     RefPtr<Event> event = Event::create(type, eventInit);
     v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestExtendedEvent>(event.release(), &V8TestExtendedEvent::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
@@ -131,14 +133,20 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestExtendedEventAttri
     {"keyLocation", EventV8Internal::keyLocationAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
-bool fillEventInit(EventInit& eventInit, const Dictionary& options)
+bool fillEventInit(EventInit& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
 {
-    if (!fillTestEventInit(eventInit, options))
+    Dictionary::ConversionContext conversionContext(forEventName.isEmpty() ? String("TestExtendedEvent") : forEventName, "", exceptionState);
+    if (!fillTestEventInit(eventInit, options, exceptionState, forEventName.isEmpty() ? String("TestExtendedEvent") : forEventName))
         return false;
 
-    options.get("location", eventInit.location);
-    if (options.get("keyLocation", eventInit.location))
-        UseCounter::countDeprecation(activeExecutionContext(), UseCounter::KeyboardEventKeyLocation);
+    if (!options.convert(conversionContext.withAttributes(false, NormalConversion), "location", eventInit.location))
+        return false;
+    if (options.convert(conversionContext.withAttributes(false, NormalConversion), "keyLocation", eventInit.location)) {
+        if (options.hasProperty("keyLocation"))
+            UseCounter::countDeprecation(activeExecutionContext(), UseCounter::KeyboardEventKeyLocation);
+    } else {
+        return false;
+    }
     return true;
 }
 

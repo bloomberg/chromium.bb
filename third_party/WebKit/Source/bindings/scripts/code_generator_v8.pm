@@ -169,6 +169,16 @@ my %primitiveTypeHash = ("Date" => 1,
                          "double" => 1,
                         );
 
+my %integerTypeHash = ("byte" => 1,
+                       "octet" => 1,
+                       "short" => 1,
+                       "long" => 1,
+                       "long long" => 1,
+                       "unsigned short" => 1,
+                       "unsigned long" => 1,
+                       "unsigned long long" => 1,
+                      );
+
 my %nonWrapperTypes = ("CompareHow" => 1,
                        "Dictionary" => 1,
                        "EventListener" => 1,
@@ -1019,7 +1029,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<${
 END
 
     if (IsConstructorTemplate($interface, "Event")) {
-        $header{nameSpaceWebCore}->add("bool fill${implClassName}Init(${implClassName}Init&, const Dictionary&);\n\n");
+        $header{nameSpaceWebCore}->add("bool fill${implClassName}Init(${implClassName}Init&, const Dictionary&, ExceptionState&, const String& = \"\");\n\n");
     }
 }
 
@@ -2868,6 +2878,8 @@ sub GenerateEventConstructor
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
+    my $constructorRaisesException = $interface->extendedAttributes->{"RaisesException"} && $interface->extendedAttributes->{"RaisesException"} eq "Constructor";
+
     my @anyAttributeNames;
     my @serializableAnyAttributeNames;
     foreach my $attribute (@{$interface->attributes}) {
@@ -2900,8 +2912,11 @@ END
     ${implClassName}Init eventInit;
     if (info.Length() >= 2) {
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
-        if (!fill${implClassName}Init(eventInit, options))
+        ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+        if (!fill${implClassName}Init(eventInit, options, exceptionState)) {
+            exceptionState.throwIfNeeded();
             return;
+        }
 END
 
     # Store 'any'-typed properties on the wrapper to avoid leaking them between isolated worlds.
@@ -2915,9 +2930,26 @@ END
 
     $implementation{nameSpaceInternal}->add(<<END);
     }
-
-    RefPtr<${implClassName}> event = ${implClassName}::create(type, eventInit);
 END
+
+    my $exceptionStateArgument = "";
+    if ($constructorRaisesException) {
+        ${exceptionStateArgument} = ", exceptionState";
+        $implementation{nameSpaceInternal}->add(<<END);
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+END
+    }
+
+    $implementation{nameSpaceInternal}->add(<<END);
+    RefPtr<${implClassName}> event = ${implClassName}::create(type, eventInit${exceptionStateArgument});
+END
+
+    if ($constructorRaisesException) {
+        $implementation{nameSpaceInternal}->add(<<END);
+    if (exceptionState.throwIfNeeded())
+        return;
+END
+    }
 
     if (@serializableAnyAttributeNames) {
         # If we're in an isolated world, create a SerializedScriptValue and store it in the event for
@@ -2944,14 +2976,15 @@ END
 
     my $code = "";
     $code .= <<END;
-bool fill${implClassName}Init(${implClassName}Init& eventInit, const Dictionary& options)
+bool fill${implClassName}Init(${implClassName}Init& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
 {
+    Dictionary::ConversionContext conversionContext(forEventName.isEmpty() ? String("${interfaceName}") : forEventName, "", exceptionState);
 END
 
     if ($interface->parent) {
         my $interfaceBase = $interface->parent;
         $code .= <<END;
-    if (!fill${interfaceBase}Init(eventInit, options))
+    if (!fill${interfaceBase}Init(eventInit, options, exceptionState, forEventName.isEmpty() ? String("${interfaceName}") : forEventName))
         return false;
 
 END
@@ -2963,12 +2996,40 @@ END
                 my $attributeName = $attribute->name;
                 my $attributeImplName = GetImplName($attribute);
                 my $deprecation = $attribute->extendedAttributes->{"DeprecateAs"};
-                my $dictionaryGetter = "options.get(\"$attributeName\", eventInit.$attributeImplName)";
+
+                # Construct the arguments to the corresponding Dictionary.convert() method.
+                my @convertArguments = ();
+                if ($attribute->extendedAttributes->{"EnforceRange"}) {
+                    push(@convertArguments, "EnforceRange");
+                } elsif ($attribute->extendedAttributes->{"Clamp"}) {
+                    push(@convertArguments, "Clamp");
+                } elsif (IsIntegerType($attribute->type)) {
+                    push(@convertArguments, "NormalConversion");
+                } elsif ($attribute->type eq "boolean" || $attribute->type eq "double") {
+                    ;
+                } elsif ($attribute->type eq "DOMString" || IsEnumType($attribute->type) || IsCallbackFunctionType($attribute->type)) {
+                    ;
+                } elsif ($attribute->type ne "object") {
+                    push(@convertArguments, "\"" . $attribute->type . "\"");
+                }
+
+                my $withPropertyAttributes = "";
+                if (@convertArguments || $attribute->isNullable) {
+                    unshift(@convertArguments, $attribute->isNullable ? "true" : "false");
+                    $withPropertyAttributes = ".withAttributes(" . join(", ", @convertArguments) . ")";
+                }
+
+                my $dictionaryGetter = "options.convert(conversionContext${withPropertyAttributes}, \"$attributeName\", eventInit.$attributeImplName)";
                 if ($attribute->extendedAttributes->{"DeprecateAs"}) {
-                    $code .= "    if ($dictionaryGetter)\n";
-                    $code .= "    " . GenerateDeprecationNotification($attribute->extendedAttributes->{"DeprecateAs"});
+                    $code .= "    if ($dictionaryGetter) {\n";
+                    $code .= "        if (options.hasProperty(\"$attributeName\"))\n";
+                    $code .= "        " . GenerateDeprecationNotification($attribute->extendedAttributes->{"DeprecateAs"});
+                    $code .= "    } else {\n";
+                    $code .= "        return false;\n";
+                    $code .= "    }\n";
                 } else {
-                    $code .= "    $dictionaryGetter;\n";
+                    $code .= "    if (!$dictionaryGetter)\n";
+                    $code .= "        return false;\n";
                 }
             }
         }
@@ -5957,6 +6018,14 @@ sub IsPrimitiveType
     my $type = shift;
 
     return 1 if $primitiveTypeHash{$type};
+    return 0;
+}
+
+sub IsIntegerType
+{
+    my $type = shift;
+
+    return 1 if $integerTypeHash{$type};
     return 0;
 }
 

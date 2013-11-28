@@ -27,20 +27,20 @@
             shouldBeNull("new TrackEvent('TrackEvent', { bubbles: true, cancelable: true }).track");
     
             debug("<br>*** Bubbles and cancelable true, invalid track ***");
-            shouldBe("new TrackEvent('TrackEvent', { bubbles: true, cancelable: true, track: HTMLTrackElement }).bubbles", "true");
-            shouldBe("new TrackEvent('TrackEvent', { bubbles: true, cancelable: true, track: HTMLTrackElement }).cancelable", "true");
-            shouldBeNull("new TrackEvent('TrackEvent', { bubbles: true, cancelable: true, track: HTMLTrackElement }).track");
+            shouldThrow("new TrackEvent('TrackEvent', { bubbles: true, cancelable: true, track: HTMLTrackElement }).bubbles");
+            shouldThrow("new TrackEvent('TrackEvent', { bubbles: true, cancelable: true, track: HTMLTrackElement }).cancelable");
+            shouldThrow("new TrackEvent('TrackEvent', { bubbles: true, cancelable: true, track: HTMLTrackElement }).track");
     
             debug("<br>*** Initialize 'track' with a invalid values ***");
-            shouldBeNull("new TrackEvent('TrackEvent', { track: 10 }).track");
-            shouldBeNull("new TrackEvent('TrackEvent', { track: \'string\' }).track");
+            shouldThrow("new TrackEvent('TrackEvent', { track: 10 }).track");
+            shouldThrow("new TrackEvent('TrackEvent', { track: \'string\' }).track");
             emptyObject = { };
-            shouldBeNull("new TrackEvent('TrackEvent', { track: emptyObject }).track");
-            shouldBeNull("new TrackEvent('TrackEvent', { track: document }).track");
+            shouldThrow("new TrackEvent('TrackEvent', { track: emptyObject }).track");
+            shouldThrow("new TrackEvent('TrackEvent', { track: document }).track");
 
             debug("<br>*** Bubbles and cancelable true, valid track ***");
-            shouldBe("new TrackEvent('TrackEvent', { bubbles: true, cancelable: true, track: HTMLTrackElement }).bubbles", "true");
-            shouldBe("new TrackEvent('TrackEvent', { bubbles: true, cancelable: true, track: HTMLTrackElement }).cancelable", "true");
+            shouldBe("new TrackEvent('TrackEvent', { bubbles: true, cancelable: true, track: trackElement.track }).bubbles", "true");
+            shouldBe("new TrackEvent('TrackEvent', { bubbles: true, cancelable: true, track: trackElement.track }).cancelable", "true");
             shouldBe("new TrackEvent('TrackEvent', { track: trackElement.track }).track", "trackElement.track");
 
             debug("<br>*** Initialize 'track' with valid track object ***");

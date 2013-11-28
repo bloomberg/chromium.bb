@@ -83,6 +83,7 @@ public:
     unsigned short button() const { return m_button; }
     bool buttonDown() const { return m_buttonDown; }
     EventTarget* relatedTarget() const { return m_relatedTarget.get(); }
+    EventTarget* relatedTarget(bool& isNull) const { isNull = !m_relatedTarget; return m_relatedTarget.get(); }
     void setRelatedTarget(PassRefPtr<EventTarget> relatedTarget) { m_relatedTarget = relatedTarget; }
 
     Clipboard* clipboard() const { return m_clipboard.get(); }

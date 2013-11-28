@@ -27,15 +27,15 @@ PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true }).err
 PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true }).systemCode is 0
 
 *** Bubbles and cancelable true, invalid other members ***
-PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).bubbles is true
-PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).cancelable is true
-PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).keySystem is "undefined"
-PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).sessionId is "undefined"
-PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).initData is null
-PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).message is null
-PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).defaultURL is "undefined"
-PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).errorCode is null
-PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).systemCode is 0
+PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).bubbles threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'initData' property does not have a Uint8Array type..
+PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).cancelable threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'initData' property does not have a Uint8Array type..
+PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).keySystem threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'initData' property does not have a Uint8Array type..
+PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).sessionId threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'initData' property does not have a Uint8Array type..
+PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).initData threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'initData' property does not have a Uint8Array type..
+PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).message threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'initData' property does not have a Uint8Array type..
+PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).defaultURL threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'initData' property does not have a Uint8Array type..
+PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).errorCode threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'initData' property does not have a Uint8Array type..
+PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: undefined, sessionId: undefined, initData: Uint8Array, message: Uint8Array, defaultURL: undefined, errorCode: MediaKeyError, systemCode: undefined }).systemCode threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'initData' property does not have a Uint8Array type..
 
 *** Initialize 'keySystem' with a invalid values ***
 PASS new MediaKeyEvent('MediaKeyEvent', { keySystem: emptyObject }).keySystem is "[object Object]"
@@ -46,26 +46,26 @@ PASS new MediaKeyEvent('MediaKeyEvent', { sessionId: emptyObject }).sessionId is
 PASS new MediaKeyEvent('MediaKeyEvent', { sessionId: document }).sessionId is "[object HTMLDocument]"
 
 *** Initialize 'initData' with a invalid values ***
-PASS new MediaKeyEvent('MediaKeyEvent', { initData: 10 }).initData is null
-PASS new MediaKeyEvent('MediaKeyEvent', { initData: 'string' }).initData is null
-PASS new MediaKeyEvent('MediaKeyEvent', { initData: emptyObject }).initData is null
-PASS new MediaKeyEvent('MediaKeyEvent', { initData: document }).initData is null
+PASS new MediaKeyEvent('MediaKeyEvent', { initData: 10 }).initData threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'initData' property does not have a Uint8Array type..
+PASS new MediaKeyEvent('MediaKeyEvent', { initData: 'string' }).initData threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'initData' property does not have a Uint8Array type..
+PASS new MediaKeyEvent('MediaKeyEvent', { initData: emptyObject }).initData threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'initData' property does not have a Uint8Array type..
+PASS new MediaKeyEvent('MediaKeyEvent', { initData: document }).initData threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'initData' property does not have a Uint8Array type..
 
 *** Initialize 'message' with a invalid values ***
-PASS new MediaKeyEvent('MediaKeyEvent', { message: 10 }).message is null
-PASS new MediaKeyEvent('MediaKeyEvent', { message: 'string' }).message is null
-PASS new MediaKeyEvent('MediaKeyEvent', { message: emptyObject }).message is null
-PASS new MediaKeyEvent('MediaKeyEvent', { message: document }).message is null
+PASS new MediaKeyEvent('MediaKeyEvent', { message: 10 }).message threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'message' property does not have a Uint8Array type..
+PASS new MediaKeyEvent('MediaKeyEvent', { message: 'string' }).message threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'message' property does not have a Uint8Array type..
+PASS new MediaKeyEvent('MediaKeyEvent', { message: emptyObject }).message threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'message' property does not have a Uint8Array type..
+PASS new MediaKeyEvent('MediaKeyEvent', { message: document }).message threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'message' property does not have a Uint8Array type..
 
 *** Initialize 'defaultURL' with a invalid values ***
 PASS new MediaKeyEvent('MediaKeyEvent', { defaultURL: emptyObject }).defaultURL is "[object Object]"
 PASS new MediaKeyEvent('MediaKeyEvent', { defaultURL: document }).defaultURL is "[object HTMLDocument]"
 
 *** Initialize 'errorCode' with a invalid values ***
-PASS new MediaKeyEvent('MediaKeyEvent', { errorCode: 10 }).errorCode is null
-PASS new MediaKeyEvent('MediaKeyEvent', { errorCode: 'string' }).errorCode is null
-PASS new MediaKeyEvent('MediaKeyEvent', { errorCode: emptyObject }).errorCode is null
-PASS new MediaKeyEvent('MediaKeyEvent', { errorCode: document }).errorCode is null
+PASS new MediaKeyEvent('MediaKeyEvent', { errorCode: 10 }).errorCode threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'errorCode' property does not have a MediaKeyError type..
+PASS new MediaKeyEvent('MediaKeyEvent', { errorCode: 'string' }).errorCode threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'errorCode' property does not have a MediaKeyError type..
+PASS new MediaKeyEvent('MediaKeyEvent', { errorCode: emptyObject }).errorCode threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'errorCode' property does not have a MediaKeyError type..
+PASS new MediaKeyEvent('MediaKeyEvent', { errorCode: document }).errorCode threw exception TypeError: Failed to construct 'MediaKeyEvent': The 'errorCode' property does not have a MediaKeyError type..
 
 *** Initialize 'systemCode' with a invalid values ***
 PASS new MediaKeyEvent('MediaKeyEvent', { systemCode: 'string' }).systemCode is 0
@@ -80,7 +80,7 @@ PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySy
 PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: 'keySystem', sessionId: 'sessionId', initData: initDataArray, message: messageArray, defaultURL: 'defaultURL', errorCode: errorObject, systemCode: 123 }).initData is initDataArray
 PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: 'keySystem', sessionId: 'sessionId', initData: initDataArray, message: messageArray, defaultURL: 'defaultURL', errorCode: errorObject, systemCode: 123 }).message is messageArray
 PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: 'keySystem', sessionId: 'sessionId', initData: initDataArray, message: messageArray, defaultURL: 'defaultURL', errorCode: errorObject, systemCode: 123 }).defaultURL is "defaultURL"
-FAIL new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: 'keySystem', sessionId: 'sessionId', initData: initDataArray, message: messageArray, defaultURL: 'defaultURL', errorCode: errorObject, systemCode: 123 }).errorCode should be function MediaKeyError() { [native code] } (of type function). Was null (of type object).
+FAIL new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: 'keySystem', sessionId: 'sessionId', initData: initDataArray, message: messageArray, defaultURL: 'defaultURL', errorCode: errorObject, systemCode: 123 }).errorCode should be non-null. Was null
 FAIL new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: 'keySystem', sessionId: 'sessionId', initData: initDataArray, message: messageArray, defaultURL: 'defaultURL', errorCode: errorObject, systemCode: 123 }).errorCode.code should be 1. Threw exception TypeError: Cannot read property 'code' of null
 PASS new MediaKeyEvent('MediaKeyEvent', { bubbles: true, cancelable: true, keySystem: 'keySystem', sessionId: 'sessionId', initData: initDataArray, message: messageArray, defaultURL: 'defaultURL', errorCode: errorObject, systemCode: 123 }).systemCode is 123
 
@@ -92,7 +92,7 @@ PASS new MediaKeyEvent('MediaKeyEvent', { keySystem: 'keySystem', sessionId: 'se
 PASS new MediaKeyEvent('MediaKeyEvent', { keySystem: 'keySystem', sessionId: 'sessionId', initData: initDataArray, message: messageArray, defaultURL: 'defaultURL', errorCode: errorObject, systemCode: 123 }).initData is initDataArray
 PASS new MediaKeyEvent('MediaKeyEvent', { keySystem: 'keySystem', sessionId: 'sessionId', initData: initDataArray, message: messageArray, defaultURL: 'defaultURL', errorCode: errorObject, systemCode: 123 }).message is messageArray
 PASS new MediaKeyEvent('MediaKeyEvent', { keySystem: 'keySystem', sessionId: 'sessionId', initData: initDataArray, message: messageArray, defaultURL: 'defaultURL', errorCode: errorObject, systemCode: 123 }).defaultURL is "defaultURL"
-FAIL new MediaKeyEvent('MediaKeyEvent', { keySystem: 'keySystem', sessionId: 'sessionId', initData: initDataArray, message: messageArray, defaultURL: 'defaultURL', errorCode: errorObject, systemCode: 123 }).errorCode should be function MediaKeyError() { [native code] } (of type function). Was null (of type object).
+FAIL new MediaKeyEvent('MediaKeyEvent', { keySystem: 'keySystem', sessionId: 'sessionId', initData: initDataArray, message: messageArray, defaultURL: 'defaultURL', errorCode: errorObject, systemCode: 123 }).errorCode should be non-null. Was null
 FAIL new MediaKeyEvent('MediaKeyEvent', { keySystem: 'keySystem', sessionId: 'sessionId', initData: initDataArray, message: messageArray, defaultURL: 'defaultURL', errorCode: errorObject, systemCode: 123 }).errorCode.code should be 1. Threw exception TypeError: Cannot read property 'code' of null
 PASS new MediaKeyEvent('MediaKeyEvent', { keySystem: 'keySystem', sessionId: 'sessionId', initData: initDataArray, message: messageArray, defaultURL: 'defaultURL', errorCode: errorObject, systemCode: 123 }).systemCode is 123
 

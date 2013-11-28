@@ -38,6 +38,8 @@
 #include "V8VoidCallback.h"
 #include "V8Window.h"
 #include "bindings/v8/ArrayValue.h"
+#include "bindings/v8/ExceptionMessages.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
@@ -91,6 +93,22 @@ bool Dictionary::isUndefinedOrNull() const
     return WebCore::isUndefinedOrNull(m_options);
 }
 
+bool Dictionary::hasProperty(const String& key) const
+{
+    if (isUndefinedOrNull())
+        return false;
+    v8::Local<v8::Object> options = m_options->ToObject();
+    ASSERT(!options.IsEmpty());
+
+    ASSERT(m_isolate);
+    ASSERT(m_isolate == v8::Isolate::GetCurrent());
+    v8::Handle<v8::String> v8Key = v8String(key, m_isolate);
+    if (!options->Has(v8Key))
+        return false;
+
+    return true;
+}
+
 bool Dictionary::getKey(const String& key, v8::Local<v8::Value>& value) const
 {
     if (isUndefinedOrNull())
@@ -127,6 +145,13 @@ bool Dictionary::get(const String& key, bool& value) const
     return true;
 }
 
+bool Dictionary::convert(ConversionContext& context, const String& key, bool& value) const
+{
+    ConversionContextScope scope(context);
+    get(key, value);
+    return true;
+}
+
 bool Dictionary::get(const String& key, int32_t& value) const
 {
     v8::Local<v8::Value> v8Value;
@@ -149,7 +174,7 @@ bool Dictionary::get(const String& key, double& value, bool& hasValue) const
     }
 
     hasValue = true;
-    v8::Local<v8::Number> v8Number = v8Value->ToNumber();
+    V8TRYCATCH_RETURN(v8::Local<v8::Number>, v8Number, v8Value->ToNumber(), false);
     if (v8Number.IsEmpty())
         return false;
     value = v8Number->Value();
@@ -160,6 +185,18 @@ bool Dictionary::get(const String& key, double& value) const
 {
     bool unused;
     return get(key, value, unused);
+}
+
+bool Dictionary::convert(ConversionContext& context, const String& key, double& value) const
+{
+    ConversionContextScope scope(context);
+
+    bool hasValue = false;
+    if (!get(key, value, hasValue) && hasValue) {
+        context.throwTypeError(ExceptionMessages::incorrectPropertyType(key, "is not of type 'double'."));
+        return false;
+    }
+    return true;
 }
 
 bool Dictionary::get(const String& key, String& value) const
@@ -173,6 +210,19 @@ bool Dictionary::get(const String& key, String& value) const
     return true;
 }
 
+bool Dictionary::convert(ConversionContext& context, const String& key, String& value) const
+{
+    ConversionContextScope scope(context);
+
+    v8::Local<v8::Value> v8Value;
+    if (!getKey(key, v8Value))
+        return true;
+
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, v8Value, false);
+    value = stringValue;
+    return true;
+}
+
 bool Dictionary::get(const String& key, ScriptValue& value) const
 {
     v8::Local<v8::Value> v8Value;
@@ -180,6 +230,14 @@ bool Dictionary::get(const String& key, ScriptValue& value) const
         return false;
 
     value = ScriptValue(v8Value, m_isolate);
+    return true;
+}
+
+bool Dictionary::convert(ConversionContext& context, const String& key, ScriptValue& value) const
+{
+    ConversionContextScope scope(context);
+
+    get(key, value);
     return true;
 }
 
@@ -241,7 +299,7 @@ bool Dictionary::get(const String& key, unsigned long long& value) const
     if (!getKey(key, v8Value))
         return false;
 
-    v8::Local<v8::Number> v8Number = v8Value->ToNumber();
+    V8TRYCATCH_RETURN(v8::Local<v8::Number>, v8Number, v8Value->ToNumber(), false);
     if (v8Number.IsEmpty())
         return false;
     double d = v8Number->Value();
@@ -290,6 +348,17 @@ bool Dictionary::get(const String& key, MessagePortArray& value) const
     return getMessagePortArray(v8Value, key, value, m_isolate);
 }
 
+bool Dictionary::convert(ConversionContext& context, const String& key, MessagePortArray& value) const
+{
+    ConversionContextScope scope(context);
+
+    v8::Local<v8::Value> v8Value;
+    if (!getKey(key, v8Value))
+        return true;
+
+    return get(key, value);
+}
+
 bool Dictionary::get(const String& key, HashSet<AtomicString>& value) const
 {
     v8::Local<v8::Value> v8Value;
@@ -312,16 +381,30 @@ bool Dictionary::get(const String& key, HashSet<AtomicString>& value) const
     return true;
 }
 
+bool Dictionary::convert(ConversionContext& context, const String& key, HashSet<AtomicString>& value) const
+{
+    ConversionContextScope scope(context);
+
+    v8::Local<v8::Value> v8Value;
+    if (!getKey(key, v8Value))
+        return true;
+
+    if (context.isNullable() && WebCore::isUndefinedOrNull(v8Value))
+        return true;
+
+    if (!v8Value->IsArray()) {
+        context.throwTypeError(ExceptionMessages::notASequenceTypeProperty(key));
+        return false;
+    }
+
+    return get(key, value);
+}
+
 bool Dictionary::getWithUndefinedOrNullCheck(const String& key, String& value) const
 {
     v8::Local<v8::Value> v8Value;
-    if (!getKey(key, v8Value) || v8Value->IsNull() || v8Value->IsUndefined())
+    if (!getKey(key, v8Value) || WebCore::isUndefinedOrNull(v8Value))
         return false;
-
-    if (WebCore::isUndefinedOrNull(v8Value)) {
-        value = String();
-        return true;
-    }
 
     V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringValue, v8Value, false);
     value = stringValue;
@@ -484,6 +567,24 @@ bool Dictionary::get(const String& key, Dictionary& value) const
     return true;
 }
 
+bool Dictionary::convert(ConversionContext& context, const String& key, Dictionary& value) const
+{
+    ConversionContextScope scope(context);
+
+    v8::Local<v8::Value> v8Value;
+    if (!getKey(key, v8Value))
+        return true;
+
+    if (v8Value->IsObject())
+        return get(key, value);
+
+    if (context.isNullable() && WebCore::isUndefinedOrNull(v8Value))
+        return true;
+
+    context.throwTypeError(ExceptionMessages::incorrectPropertyType(key, "does not have a Dictionary type."));
+    return false;
+}
+
 bool Dictionary::get(const String& key, Vector<String>& value) const
 {
     v8::Local<v8::Value> v8Value;
@@ -503,6 +604,25 @@ bool Dictionary::get(const String& key, Vector<String>& value) const
     return true;
 }
 
+bool Dictionary::convert(ConversionContext& context, const String& key, Vector<String>& value) const
+{
+    ConversionContextScope scope(context);
+
+    v8::Local<v8::Value> v8Value;
+    if (!getKey(key, v8Value))
+        return true;
+
+    if (context.isNullable() && WebCore::isUndefinedOrNull(v8Value))
+        return true;
+
+    if (!v8Value->IsArray()) {
+        context.throwTypeError(ExceptionMessages::notASequenceTypeProperty(key));
+        return false;
+    }
+
+    return get(key, value);
+}
+
 bool Dictionary::get(const String& key, ArrayValue& value) const
 {
     v8::Local<v8::Value> v8Value;
@@ -516,6 +636,25 @@ bool Dictionary::get(const String& key, ArrayValue& value) const
     ASSERT(m_isolate == v8::Isolate::GetCurrent());
     value = ArrayValue(v8::Local<v8::Array>::Cast(v8Value), m_isolate);
     return true;
+}
+
+bool Dictionary::convert(ConversionContext& context, const String& key, ArrayValue& value) const
+{
+    ConversionContextScope scope(context);
+
+    v8::Local<v8::Value> v8Value;
+    if (!getKey(key, v8Value))
+        return true;
+
+    if (context.isNullable() && WebCore::isUndefinedOrNull(v8Value))
+        return true;
+
+    if (!v8Value->IsArray()) {
+        context.throwTypeError(ExceptionMessages::notASequenceTypeProperty(key));
+        return false;
+    }
+
+    return get(key, value);
 }
 
 bool Dictionary::get(const String& key, RefPtr<DOMError>& value) const
@@ -596,6 +735,57 @@ bool Dictionary::getOwnPropertyNames(Vector<String>& names) const
     }
 
     return true;
+}
+
+void Dictionary::ConversionContext::resetPerPropertyContext()
+{
+    if (m_dirty) {
+        m_dirty = false;
+        m_isNullable = false;
+        m_propertyTypeName = "";
+        m_numberConversion = NormalConversion;
+    }
+}
+
+Dictionary::ConversionContext& Dictionary::ConversionContext::withAttributes(bool isNullable, IntegerConversionConfiguration conversion, const String& typeName)
+{
+    ASSERT(!m_dirty);
+    m_dirty = true;
+    m_isNullable = isNullable;
+    m_propertyTypeName = typeName;
+    m_numberConversion = conversion;
+
+    return *this;
+}
+
+Dictionary::ConversionContext& Dictionary::ConversionContext::withAttributes(bool isNullable, const String& typeName)
+{
+    return withAttributes(isNullable, NormalConversion, typeName);
+}
+
+Dictionary::ConversionContext& Dictionary::ConversionContext::withAttributes(bool isNullable, IntegerConversionConfiguration conversion)
+{
+    return withAttributes(isNullable, conversion, "");
+}
+
+Dictionary::ConversionContext& Dictionary::ConversionContext::withAttributes(const String& typeName)
+{
+    return withAttributes(false, NormalConversion, typeName);
+}
+
+Dictionary::ConversionContext& Dictionary::ConversionContext::withAttributes(bool isNullable)
+{
+    return withAttributes(isNullable, NormalConversion, "");
+}
+
+void Dictionary::ConversionContext::throwTypeError(const String& detail)
+{
+    if (forConstructor()) {
+        exceptionState().throwTypeError(ExceptionMessages::failedToConstruct(interfaceName(), detail));
+    } else {
+        ASSERT(!methodName().isEmpty());
+        exceptionState().throwTypeError(ExceptionMessages::failedToExecute(interfaceName(), methodName(), detail));
+    }
 }
 
 } // namespace WebCore

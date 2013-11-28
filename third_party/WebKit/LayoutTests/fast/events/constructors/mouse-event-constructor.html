@@ -42,20 +42,21 @@ shouldBe("new MouseEvent('eventType', { view: window }).view", "window");
 shouldBe("new MouseEvent('eventType', { view: this }).view", "this");
 
 // Non-window objects.
-shouldBe("new MouseEvent('eventType', { view: testObject }).view", "null");
-shouldBe("new MouseEvent('eventType', { view: document }).view", "null");
+shouldThrow("new MouseEvent('eventType', { view: testObject }).view");
+shouldThrow("new MouseEvent('eventType', { view: document }).view");
 shouldBe("new MouseEvent('eventType', { view: undefined }).view", "null");
 shouldBe("new MouseEvent('eventType', { view: null }).view", "null");
-shouldBe("new MouseEvent('eventType', { view: false }).view", "null");
-shouldBe("new MouseEvent('eventType', { view: true }).view", "null");
-shouldBe("new MouseEvent('eventType', { view: '' }).view", "null");
-shouldBe("new MouseEvent('eventType', { view: 'chocolate' }).view", "null");
-shouldBe("new MouseEvent('eventType', { view: 12345 }).view", "null");
-shouldBe("new MouseEvent('eventType', { view: 18446744073709551615 }).view", "null");
-shouldBe("new MouseEvent('eventType', { view: NaN }).view", "null");
+shouldThrow("new MouseEvent('eventType', { view: false }).view");
+shouldThrow("new MouseEvent('eventType', { view: true }).view");
+shouldThrow("new MouseEvent('eventType', { view: '' }).view");
+shouldThrow("new MouseEvent('eventType', { view: 'chocolate' }).view");
+shouldThrow("new MouseEvent('eventType', { view: 12345 }).view");
+shouldThrow("new MouseEvent('eventType', { view: 18446744073709551615 }).view");
+shouldThrow("new MouseEvent('eventType', { view: NaN }).view");
 // Note that valueOf() is not called, when the left hand side is evaluated.
-shouldBeFalse("new MouseEvent('eventType', { view: {valueOf: function () { return window; } } }).view == window");
-shouldBe("new MouseEvent('eventType', { get view() { return 123; } }).view", "null");
+shouldThrow("new MouseEvent('eventType', { view: {valueOf: function () { return window; } } }).view == window");
+shouldBe("new MouseEvent('eventType', { get view() { return window; } }).view", "window");
+shouldThrow("new MouseEvent('eventType', { get view() { return 123; } }).view");
 shouldThrow("new MouseEvent('eventType', { get view() { throw 'MouseEvent Error'; } })");
 
 // Max/min for client positions (LayoutUnit max/min).
@@ -140,19 +141,20 @@ shouldBe("new MouseEvent('eventType', { relatedTarget: xhr }).relatedTarget", "x
 shouldBe("new MouseEvent('eventType', { relatedTarget: window }).relatedTarget", "window");
 
 // Invalid objects.
-shouldBe("new MouseEvent('eventType', { relatedTarget: testObject }).relatedTarget", "null");
+shouldThrow("new MouseEvent('eventType', { relatedTarget: testObject }).relatedTarget");
 shouldBe("new MouseEvent('eventType', { relatedTarget: undefined }).relatedTarget", "null");
 shouldBe("new MouseEvent('eventType', { relatedTarget: null }).relatedTarget", "null");
-shouldBe("new MouseEvent('eventType', { relatedTarget: false }).relatedTarget", "null");
-shouldBe("new MouseEvent('eventType', { relatedTarget: true }).relatedTarget", "null");
-shouldBe("new MouseEvent('eventType', { relatedTarget: '' }).relatedTarget", "null");
-shouldBe("new MouseEvent('eventType', { relatedTarget: 'chocolate' }).relatedTarget", "null");
-shouldBe("new MouseEvent('eventType', { relatedTarget: 12345 }).relatedTarget", "null");
-shouldBe("new MouseEvent('eventType', { relatedTarget: 18446744073709551615 }).relatedTarget", "null");
-shouldBe("new MouseEvent('eventType', { relatedTarget: NaN }).relatedTarget", "null");
+shouldThrow("new MouseEvent('eventType', { relatedTarget: false }).relatedTarget");
+shouldThrow("new MouseEvent('eventType', { relatedTarget: true }).relatedTarget");
+shouldThrow("new MouseEvent('eventType', { relatedTarget: '' }).relatedTarget");
+shouldThrow("new MouseEvent('eventType', { relatedTarget: 'chocolate' }).relatedTarget");
+shouldThrow("new MouseEvent('eventType', { relatedTarget: 12345 }).relatedTarget");
+shouldThrow("new MouseEvent('eventType', { relatedTarget: 18446744073709551615 }).relatedTarget");
+shouldThrow("new MouseEvent('eventType', { relatedTarget: NaN }).relatedTarget");
 // Note that valueOf() is not called, when the left hand side is evaluated.
-shouldBeFalse("new MouseEvent('eventType', { relatedTarget: {valueOf: function () { return testDiv; } } }).relatedTarget == testDiv");
-shouldBe("new MouseEvent('eventType', { get relatedTarget() { return 123; } }).relatedTarget", "null");
+shouldThrow("new MouseEvent('eventType', { relatedTarget: {valueOf: function () { return testDiv; } } }).relatedTarget == testDiv");
+shouldBe("new MouseEvent('eventType', { get relatedTarget() { return testDiv; } }).relatedTarget", "testDiv");
+shouldThrow("new MouseEvent('eventType', { get relatedTarget() { return 123; } }).relatedTarget");
 shouldThrow("new MouseEvent('eventType', { get relatedTarget() { throw 'MouseEvent Error'; } })");
 
 // All initializers are passed.

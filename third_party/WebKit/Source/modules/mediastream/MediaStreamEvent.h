@@ -46,6 +46,7 @@ public:
     static PassRefPtr<MediaStreamEvent> create(const AtomicString& type, const MediaStreamEventInit& initializer);
 
     MediaStream* stream() const;
+    MediaStream* stream(bool&) const;
 
     virtual const AtomicString& interfaceName() const;
 

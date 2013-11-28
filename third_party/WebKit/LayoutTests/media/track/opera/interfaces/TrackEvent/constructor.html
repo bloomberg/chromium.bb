@@ -14,11 +14,17 @@ test(function(){
 }, document.title+', one arg');
 test(function(){
     var obj = {};
-    var ev = new TrackEvent('foo', {track:obj});
+    try {
+        var ev = new TrackEvent('foo', {track:obj});
+        assert_unreached("Expected constructor to throw TypeError");
+    } catch (e) {
+        assert_true(e instanceof TypeError);
+    }
+    var ev = new TrackEvent('foo', {});
     assert_true(ev instanceof TrackEvent, 'ev instanceof TrackEvent');
     assert_true(ev instanceof Event, 'ev instanceof Event');
-    assert_equals(ev.track, obj, 'ev.track');
+    assert_equals(ev.track, null, 'ev.track');
     ev.track = {};
-    assert_equals(ev.track, obj, 'ev.track after assignment');
+    assert_equals(ev.track, null, 'ev.track after assignment');
 }, document.title+', two args');
 </script>

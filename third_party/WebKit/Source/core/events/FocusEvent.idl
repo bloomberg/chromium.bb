@@ -26,5 +26,5 @@
 [
     ConstructorTemplate=Event
 ] interface FocusEvent : UIEvent {
-    [InitializedByEventConstructor] readonly attribute EventTarget relatedTarget;
+    [InitializedByEventConstructor] readonly attribute EventTarget? relatedTarget;
 };

@@ -31,20 +31,21 @@ shouldBe("new CompositionEvent('eventType', { view: window }).view", "window");
 shouldBe("new CompositionEvent('eventType', { view: this }).view", "this");
 
 // Non-window objects.
-shouldBe("new CompositionEvent('eventType', { view: testObject }).view", "null");
-shouldBe("new CompositionEvent('eventType', { view: document }).view", "null");
+shouldThrow("new CompositionEvent('eventType', { view: testObject }).view");
+shouldThrow("new CompositionEvent('eventType', { view: document }).view");
 shouldBe("new CompositionEvent('eventType', { view: undefined }).view", "null");
 shouldBe("new CompositionEvent('eventType', { view: null }).view", "null");
-shouldBe("new CompositionEvent('eventType', { view: false }).view", "null");
-shouldBe("new CompositionEvent('eventType', { view: true }).view", "null");
-shouldBe("new CompositionEvent('eventType', { view: '' }).view", "null");
-shouldBe("new CompositionEvent('eventType', { view: 'chocolate' }).view", "null");
-shouldBe("new CompositionEvent('eventType', { view: 12345 }).view", "null");
-shouldBe("new CompositionEvent('eventType', { view: 18446744073709551615 }).view", "null");
-shouldBe("new CompositionEvent('eventType', { view: NaN }).view", "null");
+shouldThrow("new CompositionEvent('eventType', { view: false }).view");
+shouldThrow("new CompositionEvent('eventType', { view: true }).view");
+shouldThrow("new CompositionEvent('eventType', { view: '' }).view");
+shouldThrow("new CompositionEvent('eventType', { view: 'chocolate' }).view");
+shouldThrow("new CompositionEvent('eventType', { view: 12345 }).view");
+shouldThrow("new CompositionEvent('eventType', { view: 18446744073709551615 }).view");
+shouldThrow("new CompositionEvent('eventType', { view: NaN }).view");
 // Note that valueOf() is not called, when the left hand side is evaluated.
-shouldBeFalse("new CompositionEvent('eventType', { view: {valueOf: function () { return window; } } }).view == window");
-shouldBe("new CompositionEvent('eventType', { get view() { return 123; } }).view", "null");
+shouldThrow("new CompositionEvent('eventType', { view: {valueOf: function () { return window; } } }).view == window");
+shouldBe("new CompositionEvent('eventType', { get view() { return window; } }).view", "window");
+shouldThrow("new CompositionEvent('eventType', { get view() { return 123; } }).view");
 shouldThrow("new CompositionEvent('eventType', { get view() { throw 'CompositionEvent Error'; } })");
 
 // data is passed.

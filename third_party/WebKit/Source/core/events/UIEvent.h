@@ -58,6 +58,7 @@ public:
     void initUIEvent(const AtomicString& type, bool canBubble, bool cancelable, PassRefPtr<AbstractView>, int detail);
 
     AbstractView* view() const { return m_view.get(); }
+    AbstractView* view(bool& isNull) const { isNull = !m_view; return m_view.get(); }
     int detail() const { return m_detail; }
 
     virtual const AtomicString& interfaceName() const;

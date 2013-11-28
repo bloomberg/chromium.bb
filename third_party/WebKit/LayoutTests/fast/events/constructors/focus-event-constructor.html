@@ -33,20 +33,21 @@ shouldBe("new FocusEvent('eventType', { view: window }).view", "window");
 shouldBe("new FocusEvent('eventType', { view: this }).view", "this");
 
 // Non-window objects.
-shouldBe("new FocusEvent('eventType', { view: testObject }).view", "null");
-shouldBe("new FocusEvent('eventType', { view: document }).view", "null");
+shouldThrow("new FocusEvent('eventType', { view: testObject }).view");
+shouldThrow("new FocusEvent('eventType', { view: document }).view");
 shouldBe("new FocusEvent('eventType', { view: undefined }).view", "null");
 shouldBe("new FocusEvent('eventType', { view: null }).view", "null");
-shouldBe("new FocusEvent('eventType', { view: false }).view", "null");
-shouldBe("new FocusEvent('eventType', { view: true }).view", "null");
-shouldBe("new FocusEvent('eventType', { view: '' }).view", "null");
-shouldBe("new FocusEvent('eventType', { view: 'chocolate' }).view", "null");
-shouldBe("new FocusEvent('eventType', { view: 12345 }).view", "null");
-shouldBe("new FocusEvent('eventType', { view: 18446744073709551615 }).view", "null");
-shouldBe("new FocusEvent('eventType', { view: NaN }).view", "null");
+shouldThrow("new FocusEvent('eventType', { view: false }).view");
+shouldThrow("new FocusEvent('eventType', { view: true }).view");
+shouldThrow("new FocusEvent('eventType', { view: '' }).view");
+shouldThrow("new FocusEvent('eventType', { view: 'chocolate' }).view");
+shouldThrow("new FocusEvent('eventType', { view: 12345 }).view");
+shouldThrow("new FocusEvent('eventType', { view: 18446744073709551615 }).view");
+shouldThrow("new FocusEvent('eventType', { view: NaN }).view");
 // Note that valueOf() is not called, when the left hand side is evaluated.
-shouldBeFalse("new FocusEvent('eventType', { view: {valueOf: function () { return window; } } }).view == window");
-shouldBe("new FocusEvent('eventType', { get view() { return 123; } }).view", "null");
+shouldThrow("new FocusEvent('eventType', { view: {valueOf: function () { return window; } } }).view == window");
+shouldBe("new FocusEvent('eventType', { get view() { return window; } }).view", "window");
+shouldThrow("new FocusEvent('eventType', { get view() { return 123; } }).view");
 shouldThrow("new FocusEvent('eventType', { get view() { throw 'FocusEvent Error'; } })");
 
 // relatedTarget is passed.
@@ -57,19 +58,20 @@ shouldBe("new FocusEvent('eventType', { relatedTarget: xhr }).relatedTarget", "x
 shouldBe("new FocusEvent('eventType', { relatedTarget: window }).relatedTarget", "window");
 
 // Invalid objects.
-shouldBe("new FocusEvent('eventType', { relatedTarget: testObject }).relatedTarget", "null");
+shouldThrow("new FocusEvent('eventType', { relatedTarget: testObject }).relatedTarget");
 shouldBe("new FocusEvent('eventType', { relatedTarget: undefined }).relatedTarget", "null");
 shouldBe("new FocusEvent('eventType', { relatedTarget: null }).relatedTarget", "null");
-shouldBe("new FocusEvent('eventType', { relatedTarget: false }).relatedTarget", "null");
-shouldBe("new FocusEvent('eventType', { relatedTarget: true }).relatedTarget", "null");
-shouldBe("new FocusEvent('eventType', { relatedTarget: '' }).relatedTarget", "null");
-shouldBe("new FocusEvent('eventType', { relatedTarget: 'chocolate' }).relatedTarget", "null");
-shouldBe("new FocusEvent('eventType', { relatedTarget: 12345 }).relatedTarget", "null");
-shouldBe("new FocusEvent('eventType', { relatedTarget: 18446744073709551615 }).relatedTarget", "null");
-shouldBe("new FocusEvent('eventType', { relatedTarget: NaN }).relatedTarget", "null");
+shouldThrow("new FocusEvent('eventType', { relatedTarget: false }).relatedTarget");
+shouldThrow("new FocusEvent('eventType', { relatedTarget: true }).relatedTarget");
+shouldThrow("new FocusEvent('eventType', { relatedTarget: '' }).relatedTarget");
+shouldThrow("new FocusEvent('eventType', { relatedTarget: 'chocolate' }).relatedTarget");
+shouldThrow("new FocusEvent('eventType', { relatedTarget: 12345 }).relatedTarget");
+shouldThrow("new FocusEvent('eventType', { relatedTarget: 18446744073709551615 }).relatedTarget");
+shouldThrow("new FocusEvent('eventType', { relatedTarget: NaN }).relatedTarget");
 // Note that valueOf() is not called, when the left hand side is evaluated.
-shouldBeFalse("new FocusEvent('eventType', { relatedTarget: {valueOf: function () { return testDiv; } } }).relatedTarget == testDiv");
-shouldBe("new FocusEvent('eventType', { get relatedTarget() { return 123; } }).relatedTarget", "null");
+shouldThrow("new FocusEvent('eventType', { relatedTarget: {valueOf: function () { return testDiv; } } }).relatedTarget == testDiv");
+shouldBeTrue("new FocusEvent('eventType', { get relatedTarget() { return testDiv; } }).relatedTarget == testDiv");
+shouldThrow("new FocusEvent('eventType', { get relatedTarget() { return 123; } }).relatedTarget");
 shouldThrow("new FocusEvent('eventType', { get relatedTarget() { throw 'FocusEvent Error'; } })");
 
 // All initializers are passed.

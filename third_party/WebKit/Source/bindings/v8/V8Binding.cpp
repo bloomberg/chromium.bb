@@ -257,6 +257,9 @@ static inline T toSmallerUInt(v8::Handle<v8::Value> value, IntegerConversionConf
     if (std::isnan(numberValue) || std::isinf(numberValue) || !numberValue)
         return 0;
 
+    if (configuration == Clamp)
+        return clampTo<T>(numberObject->Value());
+
     numberValue = numberValue < 0 ? -floor(fabs(numberValue)) : floor(fabs(numberValue));
     return static_cast<T>(fmod(numberValue, LimitsTrait::numberOfValues));
 }
@@ -290,11 +293,12 @@ int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
         return value->Int32Value();
 
     // Can the value be converted to a number?
-    v8::Local<v8::Number> numberObject = value->ToNumber();
+    ok = false;
+    V8TRYCATCH_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), 0);
     if (numberObject.IsEmpty()) {
-        ok = false;
         return 0;
     }
+    ok = true;
 
     if (configuration == EnforceRange)
         return enforceRange(numberObject->Value(), kMinInt32, kMaxInt32, ok);
@@ -303,7 +307,12 @@ int32_t toInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
     double numberValue = numberObject->Value();
     if (std::isnan(numberValue) || std::isinf(numberValue))
         return 0;
-    return numberObject->Int32Value();
+
+    if (configuration == Clamp)
+        return clampTo<int32_t>(numberObject->Value());
+
+    V8TRYCATCH_RETURN(int32_t, result, numberObject->Int32Value(), 0);
+    return result;
 }
 
 uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
@@ -327,11 +336,12 @@ uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
     }
 
     // Can the value be converted to a number?
-    v8::Local<v8::Number> numberObject = value->ToNumber();
+    ok = false;
+    V8TRYCATCH_RETURN(v8::Local<v8::Number>, numberObject, value->ToNumber(), 0);
     if (numberObject.IsEmpty()) {
-        ok = false;
         return 0;
     }
+    ok = true;
 
     if (configuration == EnforceRange)
         return enforceRange(numberObject->Value(), 0, kMaxUInt32, ok);
@@ -340,7 +350,12 @@ uint32_t toUInt32(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
     double numberValue = numberObject->Value();
     if (std::isnan(numberValue) || std::isinf(numberValue))
         return 0;
-    return numberObject->Uint32Value();
+
+    if (configuration == Clamp)
+        return clampTo<uint32_t>(numberObject->Value());
+
+    V8TRYCATCH_RETURN(uint32_t, result, numberObject->Uint32Value(), 0);
+    return result;
 }
 
 int64_t toInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration configuration, bool& ok)
@@ -362,6 +377,10 @@ int64_t toInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration conf
 
     if (configuration == EnforceRange)
         return enforceRange(x, -kJSMaxInteger, kJSMaxInteger, ok);
+
+    // Does the value convert to nan or to an infinity?
+    if (std::isnan(x) || std::isinf(x))
+        return 0;
 
     // NaNs and +/-Infinity should be 0, otherwise modulo 2^64.
     unsigned long long integer;
@@ -400,6 +419,10 @@ uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
 
     if (configuration == EnforceRange)
         return enforceRange(x, 0, kJSMaxInteger, ok);
+
+    // Does the value convert to nan or to an infinity?
+    if (std::isnan(x) || std::isinf(x))
+        return 0;
 
     // NaNs and +/-Infinity should be 0, otherwise modulo 2^64.
     unsigned long long integer;

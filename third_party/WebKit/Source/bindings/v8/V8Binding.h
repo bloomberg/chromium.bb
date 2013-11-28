@@ -33,7 +33,6 @@
 #define V8Binding_h
 
 #include "bindings/v8/DOMWrapperWorld.h"
-#include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/V8BindingMacros.h"
 #include "bindings/v8/V8PerIsolateData.h"
@@ -303,7 +302,7 @@ namespace WebCore {
     enum IntegerConversionConfiguration {
         NormalConversion,
         EnforceRange,
-        // FIXME: Implement Clamp
+        Clamp
     };
 
     // Convert a value to a 8-bit signed integer. The conversion fails if the
@@ -458,14 +457,6 @@ namespace WebCore {
         static inline v8::Handle<v8::Value> nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
         {
             return value;
-        }
-    };
-
-    template<>
-    struct NativeValueTraits<Dictionary> {
-        static inline Dictionary nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
-        {
-            return Dictionary(value, isolate);
         }
     };
 

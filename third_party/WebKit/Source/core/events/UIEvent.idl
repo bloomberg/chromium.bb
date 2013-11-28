@@ -20,7 +20,7 @@
 [
     ConstructorTemplate=Event
 ] interface UIEvent : Event {
-    [InitializedByEventConstructor] readonly attribute Window view;
+    [InitializedByEventConstructor] readonly attribute Window? view;
     [InitializedByEventConstructor] readonly attribute long detail;
 
      void initUIEvent([Default=Undefined] optional DOMString type,

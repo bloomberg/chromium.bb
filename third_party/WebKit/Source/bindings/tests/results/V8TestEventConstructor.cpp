@@ -111,10 +111,12 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestEventConstructorInit eventInit;
     if (info.Length() >= 2) {
         V8TRYCATCH_VOID(Dictionary, options, Dictionary(info[1], info.GetIsolate()));
-        if (!fillTestEventConstructorInit(eventInit, options))
+        ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+        if (!fillTestEventConstructorInit(eventInit, options, exceptionState)) {
+            exceptionState.throwIfNeeded();
             return;
+        }
     }
-
     RefPtr<TestEventConstructor> event = TestEventConstructor::create(type, eventInit);
     v8::Handle<v8::Object> wrapper = info.Holder();
     V8DOMWrapper::associateObjectWithWrapper<V8TestEventConstructor>(event.release(), &V8TestEventConstructor::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
@@ -127,9 +129,11 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestEventConstructorAt
     {"attr2", TestEventConstructorV8Internal::attr2AttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
-bool fillTestEventConstructorInit(TestEventConstructorInit& eventInit, const Dictionary& options)
+bool fillTestEventConstructorInit(TestEventConstructorInit& eventInit, const Dictionary& options, ExceptionState& exceptionState, const String& forEventName)
 {
-    options.get("attr2", eventInit.attr2);
+    Dictionary::ConversionContext conversionContext(forEventName.isEmpty() ? String("TestEventConstructor") : forEventName, "", exceptionState);
+    if (!options.convert(conversionContext, "attr2", eventInit.attr2))
+        return false;
     return true;
 }
 
