@@ -122,7 +122,7 @@ class BASE_EXPORT TraceEvent {
 
   void Reset();
 
-  void UpdateDuration(const TimeTicks& now);
+  void UpdateDuration(const TimeTicks& now, const TimeTicks& thread_now);
 
   // Serialize event data to JSON
   static void AppendEventsAsJSON(const std::vector<TraceEvent>& events,
@@ -141,6 +141,7 @@ class BASE_EXPORT TraceEvent {
   char phase() const { return phase_; }
   int thread_id() const { return thread_id_; }
   TimeDelta duration() const { return duration_; }
+  TimeDelta thread_duration() const { return thread_duration_; }
   unsigned long long id() const { return id_; }
   unsigned char flags() const { return flags_; }
 
@@ -165,6 +166,7 @@ class BASE_EXPORT TraceEvent {
   TimeTicks timestamp_;
   TimeTicks thread_timestamp_;
   TimeDelta duration_;
+  TimeDelta thread_duration_;
   // id_ can be used to store phase-specific data.
   unsigned long long id_;
   TraceValue arg_values_[kTraceMaxNumArgs];

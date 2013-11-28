@@ -601,9 +601,11 @@ void TraceEvent::Reset() {
     convertable_values_[i] = NULL;
 }
 
-void TraceEvent::UpdateDuration(const TimeTicks& now) {
+void TraceEvent::UpdateDuration(const TimeTicks& now,
+                                const TimeTicks& thread_now) {
   DCHECK(duration_.ToInternalValue() == -1);
   duration_ = now - timestamp_;
+  thread_duration_ = thread_now - thread_timestamp_;
 }
 
 // static
@@ -695,6 +697,11 @@ void TraceEvent::AppendAsJSON(std::string* out) const {
     int64 duration = duration_.ToInternalValue();
     if (duration != -1)
       StringAppendF(out, ",\"dur\":%" PRId64, duration);
+    if (!thread_timestamp_.is_null()) {
+      int64 thread_duration = thread_duration_.ToInternalValue();
+      if (thread_duration != -1)
+        StringAppendF(out, ",\"tdur\":%" PRId64, thread_duration);
+    }
   }
 
   // Output tts if thread_timestamp is valid.
@@ -1058,6 +1065,7 @@ void TraceLog::ThreadLocalEventBuffer::ReportOverhead(
   CheckThisIsCurrentBuffer();
 
   event_count_++;
+  TimeTicks thread_now = ThreadNow();
   TimeTicks now = trace_log_->OffsetNow();
   TimeDelta overhead = now - event_timestamp;
   if (overhead.InMicroseconds() >= kOverheadReportThresholdInMicroseconds) {
@@ -1069,7 +1077,7 @@ void TraceLog::ThreadLocalEventBuffer::ReportOverhead(
           TRACE_EVENT_PHASE_COMPLETE,
           &g_category_group_enabled[g_category_trace_event_overhead],
           "overhead", 0, 0, NULL, NULL, NULL, NULL, 0);
-      trace_event->UpdateDuration(now);
+      trace_event->UpdateDuration(now, thread_now);
     }
   }
   overhead_ += overhead;
@@ -1930,6 +1938,7 @@ void TraceLog::UpdateTraceEventDuration(
     const unsigned char* category_group_enabled,
     const char* name,
     TraceEventHandle handle) {
+  TimeTicks thread_now = ThreadNow();
   TimeTicks now = OffsetNow();
 
   if (*category_group_enabled & ENABLED_FOR_RECORDING) {
@@ -1938,7 +1947,7 @@ void TraceLog::UpdateTraceEventDuration(
     TraceEvent* trace_event = GetEventByHandleInternal(handle, &lock);
     if (trace_event) {
       DCHECK(trace_event->phase() == TRACE_EVENT_PHASE_COMPLETE);
-      trace_event->UpdateDuration(now);
+      trace_event->UpdateDuration(now, thread_now);
 #if defined(OS_ANDROID)
       trace_event->SendToATrace();
 #endif
