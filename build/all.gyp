@@ -402,8 +402,17 @@
               ],
             }, {  # OS!="win"
               'dependencies': [
-                '../breakpad/breakpad.gyp:dump_syms',
                 '../breakpad/breakpad.gyp:minidump_stackwalk',
+              ],
+            }],
+            ['OS=="mac"', {
+              'dependencies': [
+                '../breakpad/breakpad.gyp:dump_syms#host',
+              ],
+            }],
+            ['OS=="linux"', {
+              'dependencies': [
+                '../breakpad/breakpad.gyp:dump_syms',
               ],
             }],
           ],
