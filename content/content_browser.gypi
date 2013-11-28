@@ -921,6 +921,8 @@
     'browser/renderer_host/media/video_capture_controller.h',
     'browser/renderer_host/media/video_capture_controller_event_handler.cc',
     'browser/renderer_host/media/video_capture_controller_event_handler.h',
+    'browser/renderer_host/media/video_capture_device_impl.cc',
+    'browser/renderer_host/media/video_capture_device_impl.h',
     'browser/renderer_host/media/video_capture_host.cc',
     'browser/renderer_host/media/video_capture_host.h',
     'browser/renderer_host/media/video_capture_manager.cc',
@@ -1364,6 +1366,8 @@
       'sources': [
         'browser/renderer_host/media/desktop_capture_device.cc',
         'browser/renderer_host/media/desktop_capture_device.h',
+        'browser/renderer_host/media/desktop_capture_device_ash.cc',
+        'browser/renderer_host/media/desktop_capture_device_ash.h',
       ],
       'dependencies': [
         '../third_party/webrtc/modules/modules.gyp:desktop_capture',

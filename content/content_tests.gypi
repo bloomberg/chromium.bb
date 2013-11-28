@@ -713,6 +713,11 @@
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
           ],
         }],
+        ['enable_webrtc==1 and chromeos==1', {
+          'sources': [
+            'browser/renderer_host/media/desktop_capture_device_ash_unittest.cc',
+          ],
+        }],
         # TODO(jrg): remove the OS=="android" section?
         # http://crbug.com/113172
         # Understand better how media_stream_ is tied into Chromium.
