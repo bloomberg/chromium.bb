@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/strings/stringprintf.h"
 #include "content/common/media/audio_messages.h"
+#include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_logging.h"
 
@@ -169,6 +171,10 @@ void AudioMessageFilter::OnStreamCreated(
     uint32 length) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
 
+  WebRtcLogMessage(base::StringPrintf(
+      "AMF::OnStreamCreated. stream_id=%d",
+      stream_id));
+
 #if !defined(OS_WIN)
   base::SyncSocket::Handle socket_handle = socket_descriptor.fd;
 #endif
@@ -201,6 +207,13 @@ void AudioMessageFilter::OnOutputDeviceChanged(int stream_id,
                                                int new_sample_rate) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
+
+  WebRtcLogMessage(base::StringPrintf(
+      "AMF::OnOutputDeviceChanged. stream_id=%d"
+      ", new_buffer_size=%d, new_sample_rate=%d",
+      stream_id,
+      new_buffer_size,
+      new_sample_rate));
 
   // Ignore the message if an audio hardware config hasn't been created; this
   // can occur if the renderer is using the high latency audio path.

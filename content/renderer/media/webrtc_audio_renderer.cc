@@ -7,8 +7,10 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
+#include "content/renderer/media/webrtc_logging.h"
 #include "media/audio/audio_output_device.h"
 #include "media/audio/audio_parameters.h"
 #include "media/audio/sample_rates.h"
@@ -176,6 +178,13 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(int source_render_view_id,
       fifo_delay_milliseconds_(0),
       sample_rate_(sample_rate),
       frames_per_buffer_(frames_per_buffer) {
+  WebRtcLogMessage(base::StringPrintf(
+      "WAR::WAR. source_render_view_id=%d"
+      ", session_id=%d, sample_rate=%d, frames_per_buffer=%d",
+      source_render_view_id,
+      session_id,
+      sample_rate,
+      frames_per_buffer));
 }
 
 WebRtcAudioRenderer::~WebRtcAudioRenderer() {

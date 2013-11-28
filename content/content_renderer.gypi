@@ -668,6 +668,11 @@
         'renderer/pepper/pepper_video_source_host.cc',
         'renderer/pepper/pepper_video_source_host.h',
       ],
+    },{  # enable_webrtc==0
+      'sources': [
+        'renderer/media/webrtc_logging_noop.cc',
+        'renderer/media/webrtc_logging.h',
+      ],
     }],
     ['enable_webrtc==1 and google_tv==1', {
       'sources': [

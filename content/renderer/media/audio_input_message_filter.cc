@@ -6,7 +6,9 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/strings/stringprintf.h"
 #include "content/common/media/audio_messages.h"
+#include "content/renderer/media/webrtc_logging.h"
 #include "ipc/ipc_logging.h"
 
 namespace content {
@@ -122,6 +124,10 @@ void AudioInputMessageFilter::OnStreamCreated(
     uint32 length,
     uint32 total_segments) {
   DCHECK(io_message_loop_->BelongsToCurrentThread());
+
+  WebRtcLogMessage(base::StringPrintf(
+      "AIMF::OnStreamCreated. stream_id=%d",
+      stream_id));
 
 #if !defined(OS_WIN)
   base::SyncSocket::Handle socket_handle = socket_descriptor.fd;

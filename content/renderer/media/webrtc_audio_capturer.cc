@@ -8,10 +8,12 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
+#include "content/renderer/media/webrtc_logging.h"
 #include "media/audio/sample_rates.h"
 
 namespace content {
@@ -139,6 +141,19 @@ bool WebRtcAudioCapturer::Initialize(int render_view_id,
   DVLOG(1) << "Audio input hardware channel layout: " << channel_layout;
   UMA_HISTOGRAM_ENUMERATION("WebRTC.AudioInputChannelLayout",
                             channel_layout, media::CHANNEL_LAYOUT_MAX);
+
+  WebRtcLogMessage(base::StringPrintf(
+      "WAC::Initialize. render_view_id=%d"
+      ", channel_layout=%d, sample_rate=%d, buffer_size=%d"
+      ", session_id=%d, paired_output_sample_rate=%d"
+      ", paired_output_frames_per_buffer=%d",
+      render_view_id,
+      channel_layout,
+      sample_rate,
+      buffer_size,
+      session_id,
+      paired_output_sample_rate,
+      paired_output_frames_per_buffer));
 
   render_view_id_ = render_view_id;
   session_id_ = session_id;

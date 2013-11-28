@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,6 +20,7 @@
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
 #include "content/renderer/media/webrtc_local_audio_renderer.h"
+#include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/audio_hardware_config.h"
@@ -188,6 +188,12 @@ void MediaStreamImpl::requestUserMedia(
            << ", video=" << (options.video_type) << " ], "
            << security_origin.spec() << ")";
 
+  WebRtcLogMessage(base::StringPrintf(
+      "MSI::requestUserMedia. request_id=%d"
+      ", audio device id=%s",
+      request_id,
+      options.audio_device_id.c_str()));
+
   user_media_requests_.push_back(
       new UserMediaRequestInfo(request_id, frame, user_media_request,
           enable_automatic_output_device_selection));
@@ -322,6 +328,16 @@ void MediaStreamImpl::OnStreamGenerated(
 
   blink::WebVector<blink::WebMediaStreamSource> audio_source_vector(
         audio_array.size());
+
+  // Log the device names for this request.
+  for (StreamDeviceInfoArray::const_iterator it = audio_array.begin();
+       it != audio_array.end(); ++it) {
+    WebRtcLogMessage(base::StringPrintf(
+        "Generated media stream for request id %d contains audio device name"
+        " \"%s\"",
+        request_id,
+        it->device.name.c_str()));
+  }
 
   StreamDeviceInfoArray overridden_audio_array = audio_array;
   if (!request_info->enable_automatic_output_device_selection) {
