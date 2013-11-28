@@ -19,6 +19,8 @@
 
 #if defined(OS_WIN)
 #include "net/proxy/proxy_config_service_win.h"
+#elif defined(OS_IOS)
+#include "net/proxy/proxy_config_service_ios.h"
 #elif defined(OS_MACOSX)
 #include "net/proxy/proxy_config_service_mac.h"
 #elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -47,8 +49,7 @@ net::ProxyConfigService* CreateSystemProxyConfigService(
 #if defined(OS_WIN)
   return new net::ProxyConfigServiceWin();
 #elif defined(OS_IOS)
-  NOTREACHED() << "iOS is not a supported target for Chromoting host";
-  return NULL;
+    return new net::ProxyConfigServiceIOS();
 #elif defined(OS_MACOSX)
   return new net::ProxyConfigServiceMac(io_thread_task_runner);
 #elif defined(OS_CHROMEOS)
