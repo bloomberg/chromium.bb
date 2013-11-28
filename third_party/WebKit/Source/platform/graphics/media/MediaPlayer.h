@@ -80,8 +80,6 @@ public:
     // the movie size has changed
     virtual void mediaPlayerSizeChanged() = 0;
 
-    virtual void mediaPlayerEngineUpdated() = 0;
-
     enum MediaKeyErrorCode { UnknownError = 1, ClientError, ServiceError, OutputError, HardwareChangeError, DomainError };
     virtual void mediaPlayerKeyAdded(const String& /* keySystem */, const String& /* sessionId */) = 0;
     virtual void mediaPlayerKeyError(const String& /* keySystem */, const String& /* sessionId */, MediaKeyErrorCode, unsigned short /* systemCode */) = 0;

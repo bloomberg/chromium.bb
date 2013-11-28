@@ -3140,13 +3140,6 @@ void HTMLMediaElement::mediaPlayerSizeChanged()
         renderer()->updateFromElement();
 }
 
-void HTMLMediaElement::mediaPlayerEngineUpdated()
-{
-    LOG(Media, "HTMLMediaElement::mediaPlayerEngineUpdated");
-    if (renderer())
-        renderer()->updateFromElement();
-}
-
 PassRefPtr<TimeRanges> HTMLMediaElement::buffered() const
 {
     if (!m_player)

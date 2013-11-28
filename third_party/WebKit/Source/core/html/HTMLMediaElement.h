@@ -358,7 +358,6 @@ private:
     virtual void mediaPlayerRequestSeek(double) OVERRIDE;
     virtual void mediaPlayerRepaint() OVERRIDE;
     virtual void mediaPlayerSizeChanged() OVERRIDE;
-    virtual void mediaPlayerEngineUpdated() OVERRIDE;
 
     virtual void mediaPlayerKeyAdded(const String& keySystem, const String& sessionId) OVERRIDE;
     virtual void mediaPlayerKeyError(const String& keySystem, const String& sessionId, MediaPlayerClient::MediaKeyErrorCode, unsigned short systemCode) OVERRIDE;
