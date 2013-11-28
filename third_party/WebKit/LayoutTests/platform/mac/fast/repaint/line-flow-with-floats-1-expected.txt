@@ -47,15 +47,15 @@ layer at (0,0) size 800x600
                   text run at (298,240) width 114: "the ground, Alice"
                   text run at (57,258) width 306: "soon came to the conclusion that it was a very "
                 RenderBlock (floating) {SPAN} at (6,261.19) size 48x64 [bgcolor=#ADD8E6]
-                RenderText {#text} at (363,258) size 355x36
-                  text run at (363,258) width 49: "difficult"
-                  text run at (57,276) width 88: "game indeed. "
+                RenderText {#text} at (362,258) size 355x36
+                  text run at (362,258) width 50: "difficult"
+                  text run at (57,276) width 89: "game indeed. "
                 RenderBR {BR} at (0,0) size 0x0
                 RenderText {#text} at (57,294) size 303x18
                   text run at (57,294) width 303: "The players all played at once without waiting"
                 RenderBlock (floating) {SPAN} at (364,297.19) size 48x80 [bgcolor=#90EE90]
                 RenderText {#text} at (57,312) size 354x36
-                  text run at (57,312) width 63: "for turns, "
+                  text run at (57,312) width 64: "for turns, "
                   text run at (120,312) width 240: "quarrelling all the while, and fighting"
                   text run at (6,330) width 172: "for the hedgehogs; and in "
                   text run at (178,330) width 115: "a very short time "

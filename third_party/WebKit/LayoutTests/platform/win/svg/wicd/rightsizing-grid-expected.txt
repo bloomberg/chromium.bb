@@ -84,7 +84,7 @@ layer at (0,0) size 785x1449
                   RenderSVGText {text} at (32,28) size 16x24 contains 1 chunk(s)
                     RenderSVGInlineText {#text} at (0,0) size 15x23
                       chunk 1 (middle anchor) text run 1 at (32.81,47.00) startOffset 0 endOffset 1 width 14.38: "K"
-            RenderBR {br} at (256,0) size 0x19
+            RenderBR {br} at (256,0) size 1x19
             RenderEmbeddedObject {object} at (0,256) size 256.30x192
               layer at (0,0) size 256x192
                 RenderView at (0,0) size 256x192
@@ -267,14 +267,14 @@ layer at (0,0) size 785x1449
                       chunk 1 (middle anchor) text run 1 at (8.75,27.00) startOffset 0 endOffset 1 width 12.50: "T"
         RenderBlock {p} at (0,121.14) size 769x596 [color=#FFFFFF]
           RenderBR {br} at (769,0) size 0x19
-          RenderText {#text} at (641,576) size 8x19
-            text run at (641,576) width 8: ".."
+          RenderText {#text} at (640,576) size 9x19
+            text run at (640,576) width 9: ".."
         RenderBlock {p} at (0,733.14) size 769x580
-          RenderText {#text} at (641,0) size 760x579
-            text run at (641,0) width 114: "Above, you should"
-            text run at (641,20) width 94: "see a grid of 17"
-            text run at (641,40) width 119: "SVG child elements"
-            text run at (641,60) width 112: "sticked together to"
+          RenderText {#text} at (640,0) size 760x579
+            text run at (640,0) width 115: "Above, you should"
+            text run at (640,20) width 95: "see a grid of 17"
+            text run at (640,40) width 120: "SVG child elements"
+            text run at (640,60) width 113: "sticked together to"
             text run at (0,540) width 148: "build one rectangle grid. "
             text run at (148,540) width 584: "You should be able to resize your browser window and the grid rendering should adjust to it. The"
             text run at (0,560) width 327: "outcome should look like in these sample screenshots: "

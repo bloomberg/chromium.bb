@@ -28,13 +28,13 @@ layer at (0,0) size 785x1533
             RenderBlock {DIV} at (0,0) size 583.19x24 [bgcolor=#009900]
           RenderBlock {PRE} at (16,53) size 583.19x80 [bgcolor=#FFFFFF]
             RenderListMarker at (-38,6.50) size 17x18: "1"
-            RenderText {#text} at (7,9) size 280x65
-              text run at (7,9) width 144: "div:only-of-type {"
-              text run at (151,9) width 0: " "
-              text run at (7,26) width 8: "}"
-              text run at (15,26) width 0: " "
-              text run at (7,42) width 0: " "
-              text run at (7,58) width 280: "<div>Does this element match?</div>"
+            RenderText {#text} at (6,9) size 281x65
+              text run at (6,9) width 145: "div:only-of-type {"
+              text run at (150,9) width 1: " "
+              text run at (6,26) width 9: "}"
+              text run at (14,26) width 1: " "
+              text run at (6,42) width 1: " "
+              text run at (6,58) width 281: "<div>Does this element match?</div>"
           RenderBlock {P} at (16,149) size 583.19x38
             RenderText {#text} at (0,0) size 535x37
               text run at (0,0) width 535: "The CSS selector should match the marked div element, because it is the only"
@@ -45,15 +45,15 @@ layer at (0,0) size 785x1533
             RenderBlock {BLOCKQUOTE} at (0,24) size 583.19x0 [bgcolor=#009900]
           RenderBlock {PRE} at (16,53) size 583.19x96 [bgcolor=#FFFFFF]
             RenderListMarker at (-38,6.50) size 17x18: "2"
-            RenderText {#text} at (7,9) size 280x81
-              text run at (7,9) width 144: "div:only-of-type {"
-              text run at (151,9) width 0: " "
-              text run at (7,26) width 8: "}"
-              text run at (15,26) width 0: " "
-              text run at (7,42) width 0: " "
-              text run at (7,58) width 280: "<div>Does this element match?</div>"
-              text run at (287,58) width 0: " "
-              text run at (7,74) width 200: "<blockquote></blockquote>"
+            RenderText {#text} at (6,9) size 281x81
+              text run at (6,9) width 145: "div:only-of-type {"
+              text run at (150,9) width 1: " "
+              text run at (6,26) width 9: "}"
+              text run at (14,26) width 1: " "
+              text run at (6,42) width 1: " "
+              text run at (6,58) width 281: "<div>Does this element match?</div>"
+              text run at (286,58) width 1: " "
+              text run at (6,74) width 201: "<blockquote></blockquote>"
           RenderBlock {P} at (16,165) size 583.19x38
             RenderText {#text} at (0,0) size 535x37
               text run at (0,0) width 535: "The CSS selector should match the marked div element, because it is the only"
@@ -65,19 +65,19 @@ layer at (0,0) size 785x1533
               RenderBlock {DIV} at (0,0) size 583.19x0
           RenderBlock {PRE} at (16,53) size 583.19x128 [bgcolor=#FFFFFF]
             RenderListMarker at (-38,6.50) size 17x18: "3"
-            RenderText {#text} at (7,9) size 280x113
-              text run at (7,9) width 144: "div:only-of-type {"
-              text run at (151,9) width 0: " "
-              text run at (7,26) width 8: "}"
-              text run at (15,26) width 0: " "
-              text run at (7,42) width 0: " "
-              text run at (7,58) width 280: "<div>Does this element match?</div>"
-              text run at (287,58) width 0: " "
-              text run at (7,74) width 96: "<blockquote>"
-              text run at (103,74) width 0: " "
-              text run at (7,90) width 112: "   <div></div>"
-              text run at (119,90) width 0: " "
-              text run at (7,106) width 104: "</blockquote>"
+            RenderText {#text} at (6,9) size 281x113
+              text run at (6,9) width 145: "div:only-of-type {"
+              text run at (150,9) width 1: " "
+              text run at (6,26) width 9: "}"
+              text run at (14,26) width 1: " "
+              text run at (6,42) width 1: " "
+              text run at (6,58) width 281: "<div>Does this element match?</div>"
+              text run at (286,58) width 1: " "
+              text run at (6,74) width 97: "<blockquote>"
+              text run at (102,74) width 1: " "
+              text run at (6,90) width 113: "   <div></div>"
+              text run at (118,90) width 1: " "
+              text run at (6,106) width 105: "</blockquote>"
           RenderBlock {P} at (16,197) size 583.19x38
             RenderText {#text} at (0,0) size 535x37
               text run at (0,0) width 535: "The CSS selector should match the marked div element, because it is the only"
@@ -88,15 +88,15 @@ layer at (0,0) size 785x1533
             RenderBlock {DIV} at (0,24) size 583.19x0
           RenderBlock {PRE} at (16,53) size 583.19x96 [bgcolor=#FFFFFF]
             RenderListMarker at (-38,6.50) size 17x18: "4"
-            RenderText {#text} at (7,9) size 280x81
-              text run at (7,9) width 144: "div:only-of-type {"
-              text run at (151,9) width 0: " "
-              text run at (7,26) width 8: "}"
-              text run at (15,26) width 0: " "
-              text run at (7,42) width 0: " "
-              text run at (7,58) width 280: "<div>Does this element match?</div>"
-              text run at (287,58) width 0: " "
-              text run at (7,74) width 88: "<div></div>"
+            RenderText {#text} at (6,9) size 281x81
+              text run at (6,9) width 145: "div:only-of-type {"
+              text run at (150,9) width 1: " "
+              text run at (6,26) width 9: "}"
+              text run at (14,26) width 1: " "
+              text run at (6,42) width 1: " "
+              text run at (6,58) width 281: "<div>Does this element match?</div>"
+              text run at (286,58) width 1: " "
+              text run at (6,74) width 89: "<div></div>"
           RenderBlock {P} at (16,165) size 583.19x38
             RenderText {#text} at (0,0) size 554x37
               text run at (0,0) width 554: "The CSS selector should not match the marked div element, because it is not the"
@@ -107,18 +107,18 @@ layer at (0,0) size 785x1533
             RenderBlock {DIV} at (0,24) size 583.19x0
           RenderBlock {PRE} at (16,53) size 583.19x128 [bgcolor=#FFFFFF]
             RenderListMarker at (-38,6.50) size 17x18: "5"
-            RenderText {#text} at (7,9) size 480x113
-              text run at (7,9) width 144: "div:only-of-type {"
-              text run at (151,9) width 0: " "
-              text run at (7,26) width 8: "}"
-              text run at (15,26) width 0: " "
-              text run at (7,42) width 0: " "
-              text run at (7,58) width 224: "<div id='appendChild'></div>"
-              text run at (231,58) width 0: " "
-              text run at (7,74) width 0: " "
-              text run at (7,90) width 384: "var ib = document.getElementById('appendChild');"
-              text run at (391,90) width 0: " "
-              text run at (7,106) width 480: "ib.parentElement.appendChild(document.createElement(\"div\"));"
+            RenderText {#text} at (6,9) size 481x113
+              text run at (6,9) width 145: "div:only-of-type {"
+              text run at (150,9) width 1: " "
+              text run at (6,26) width 9: "}"
+              text run at (14,26) width 1: " "
+              text run at (6,42) width 1: " "
+              text run at (6,58) width 225: "<div id='appendChild'></div>"
+              text run at (230,58) width 1: " "
+              text run at (6,74) width 1: " "
+              text run at (6,90) width 385: "var ib = document.getElementById('appendChild');"
+              text run at (390,90) width 1: " "
+              text run at (6,106) width 481: "ib.parentElement.appendChild(document.createElement(\"div\"));"
           RenderBlock {P} at (16,197) size 583.19x57
             RenderText {#text} at (0,0) size 583x56
               text run at (0,0) width 506: "The CSS selector should not match the original div element, because it is "

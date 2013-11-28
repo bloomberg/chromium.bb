@@ -14,16 +14,16 @@ layer at (0,0) size 800x584
           RenderText {#text} at (0,0) size 344x22
             text run at (0,0) width 344: "Relative SVG with explicit dimensions - 1x"
         RenderBlock (floating) {DIV} at (650.22,77.44) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
-          RenderText {#text} at (7,7) size 55x19
-            text run at (7,7) width 55: "expected"
-          RenderBR {BR} at (62,7) size 0x19
-          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (7,7) size 56x19
+            text run at (7,7) width 56: "expected"
+          RenderBR {BR} at (62,7) size 1x19
+          RenderImage {IMG} at (7.39,27.39) size 102x52 [border: (1px solid #000000)]
           RenderText {#text} at (0,0) size 0x0
         RenderBlock (floating) {DIV} at (517.44,77.44) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
-          RenderText {#text} at (7,7) size 35x19
-            text run at (7,7) width 35: "actual"
-          RenderBR {BR} at (42,7) size 0x19
-          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (7,7) size 36x19
+            text run at (7,7) width 36: "actual"
+          RenderBR {BR} at (42,7) size 1x19
+          RenderImage {IMG} at (7.39,27.39) size 102x52 [border: (1px solid #000000)]
           RenderText {#text} at (0,0) size 0x0
         RenderBlock (anonymous) at (17,77.44) size 750x139.78
           RenderText {#text} at (0,0) size 465x59
@@ -46,16 +46,16 @@ layer at (0,0) size 800x584
           RenderText {#text} at (0,0) size 344x22
             text run at (0,0) width 344: "Relative SVG with explicit dimensions - 4x"
         RenderBlock (floating) {DIV} at (650.22,77.44) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
-          RenderText {#text} at (7,7) size 55x19
-            text run at (7,7) width 55: "expected"
-          RenderBR {BR} at (62,7) size 0x19
-          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (7,7) size 56x19
+            text run at (7,7) width 56: "expected"
+          RenderBR {BR} at (62,7) size 1x19
+          RenderImage {IMG} at (7.39,27.39) size 102x52 [border: (1px solid #000000)]
           RenderText {#text} at (0,0) size 0x0
         RenderBlock (floating) {DIV} at (517.44,77.44) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
-          RenderText {#text} at (7,7) size 35x19
-            text run at (7,7) width 35: "actual"
-          RenderBR {BR} at (42,7) size 0x19
-          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (7,7) size 36x19
+            text run at (7,7) width 36: "actual"
+          RenderBR {BR} at (42,7) size 1x19
+          RenderImage {IMG} at (7.39,27.39) size 102x52 [border: (1px solid #000000)]
           RenderText {#text} at (0,0) size 0x0
         RenderBlock (anonymous) at (17,77.44) size 750x156.78
           RenderText {#text} at (0,0) size 463x59

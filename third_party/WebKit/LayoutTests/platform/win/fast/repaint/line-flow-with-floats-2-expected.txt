@@ -43,20 +43,20 @@ layer at (0,0) size 800x600
                   text run at (83,247) width 329: "soldiers were always getting up and walking off to"
                   text run at (6,267) width 86: "other parts of "
                   text run at (92,267) width 320: "the ground, Alice soon came to the conclusion that it"
-                  text run at (57,287) width 69: "was a very "
+                  text run at (57,287) width 70: "was a very "
                 RenderBlock (floating) {SPAN} at (6,290.19) size 48x64 [bgcolor=#ADD8E6]
-                RenderText {#text} at (126,287) size 131x19
-                  text run at (126,287) width 131: "difficult game indeed. "
+                RenderText {#text} at (126,287) size 132x19
+                  text run at (126,287) width 132: "difficult game indeed. "
                 RenderBR {BR} at (0,0) size 0x0
                 RenderText {#text} at (57,307) size 286x19
                   text run at (57,307) width 286: "The players all played at once without waiting "
                 RenderBlock (floating) {SPAN} at (364,310.19) size 48x80 [bgcolor=#90EE90]
-                RenderText {#text} at (343,307) size 303x59
-                  text run at (343,307) width 17: "for"
-                  text run at (57,327) width 38: "turns, "
+                RenderText {#text} at (342,307) size 303x59
+                  text run at (342,307) width 18: "for"
+                  text run at (57,327) width 39: "turns, "
                   text run at (95,327) width 265: "quarrelling all the while, and fighting for the"
-                  text run at (57,347) width 121: "hedgehogs; and in "
-                  text run at (178,347) width 116: "a very short time "
+                  text run at (57,347) width 122: "hedgehogs; and in "
+                  text run at (178,347) width 117: "a very short time "
                 RenderInline {SPAN} at (0,0) size 66x19
                   RenderText {#text} at (294,347) size 66x19
                     text run at (294,347) width 66: "the Queen"

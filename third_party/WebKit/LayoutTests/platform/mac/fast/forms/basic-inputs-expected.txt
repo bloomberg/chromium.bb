@@ -66,7 +66,7 @@ layer at (0,0) size 800x600
         RenderBlock {INPUT} at (64.72,4) size 12x13 [color=#545454]
         RenderText {#text} at (79,1) size 9x18
           text run at (79,1) width 9: "b"
-layer at (31,330) size 117x13 scrollWidth 165
+layer at (31,330) size 117x13 scrollWidth 164
   RenderBlock {DIV} at (3,3) size 117x13
     RenderText {#text} at (0,0) size 164x13
       text run at (0,0) width 164: "foobarbazfoobarbazfoobarbaz"

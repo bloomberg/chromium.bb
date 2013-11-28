@@ -1,0 +1,140 @@
+layer at (0,0) size 785x1135
+  RenderView at (0,0) size 785x600
+layer at (0,0) size 785x1135
+  RenderBlock {HTML} at (0,0) size 785x1134.69
+    RenderBody {BODY} at (8,19.91) size 769x1098.78
+      RenderBlock {H2} at (0,0) size 769x27
+        RenderInline {A} at (0,0) size 59x26 [color=#0000EE]
+          RenderText {#text} at (0,0) size 59x26
+            text run at (0,0) width 59: "srcset"
+        RenderText {#text} at (59,0) size 184x26
+          text run at (59,0) width 184: " testcases for SVG"
+      RenderBlock {DIV} at (0,46.91) size 769x284.22 [border: (1px solid #808080)]
+        RenderBlock {H3} at (17,35.72) size 735x23
+          RenderText {#text} at (0,0) size 300x22
+            text run at (0,0) width 300: "PNG without explicit dimensions - 1x"
+        RenderBlock (floating) {DIV} at (535.22,77.44) size 216.78x141.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 202x102 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (302.44,77.44) size 216.78x141.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 202x102 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (anonymous) at (17,77.44) size 735x189.78
+          RenderText {#text} at (0,0) size 267x79
+            text run at (0,0) width 257: "This test should show a PNG image of size"
+            text run at (0,20) width 267: "200x100, and intrinsic/natural size 200x100."
+            text run at (0,40) width 259: "The left half of the image should be red and"
+            text run at (0,60) width 257: "there should be a black circle in the center."
+          RenderBR {BR} at (257,60) size 0x19
+          RenderBlock {CODE} at (0,154.78) size 440x34
+            RenderText {#text} at (0,0) size 384x17
+              text run at (0,0) width 384: "image stats: size(200,100), naturalSize(200,100)"
+            RenderBR {BR} at (384,0) size 0x17
+            RenderText {#text} at (0,17) size 440x17
+              text run at (0,17) width 440: "image codes: <img id=\"png1\" src=\"resources/srcset.png\">"
+          RenderText {#text} at (440,169) size 4x20
+            text run at (440,169) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderBR {BR} at (444,169) size 0x20
+      RenderBlock {DIV} at (0,347.13) size 769x234.22 [border: (1px solid #808080)]
+        RenderBlock {H3} at (17,35.72) size 735x23
+          RenderText {#text} at (0,0) size 274x22
+            text run at (0,0) width 274: "PNG with explicit dimensions - 1x"
+        RenderBlock (floating) {DIV} at (635.22,77.44) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (502.44,77.44) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (anonymous) at (17,77.44) size 735x139.78
+          RenderText {#text} at (0,0) size 458x59
+            text run at (0,0) width 457: "This test should show a PNG image of size 100x50, and intrinsic/natural size"
+            text run at (0,20) width 458: "100x50. The left half of the image should be red and there should be a black"
+            text run at (0,40) width 113: "circle in the center."
+          RenderBR {BR} at (113,40) size 0x19
+          RenderBlock {CODE} at (0,104.78) size 632x34
+            RenderText {#text} at (0,0) size 376x17
+              text run at (0,0) width 376: "image stats: size(100,50), naturalSize(200,100)"
+            RenderBR {BR} at (376,0) size 0x17
+            RenderText {#text} at (0,17) size 632x17
+              text run at (0,17) width 632: "image codes: <img id=\"png2\" src=\"resources/srcset.png\" width=\"100\" height=\"50\">"
+          RenderText {#text} at (632,119) size 4x20
+            text run at (632,119) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderBR {BR} at (636,119) size 0x20
+      RenderBlock {DIV} at (0,597.34) size 769x234.22 [border: (1px solid #808080)]
+        RenderBlock {H3} at (17,35.72) size 735x23
+          RenderText {#text} at (0,0) size 300x22
+            text run at (0,0) width 300: "PNG without explicit dimensions - 2x"
+        RenderBlock (floating) {DIV} at (635.22,77.44) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (502.44,77.44) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (anonymous) at (17,77.44) size 735x139.78
+          RenderText {#text} at (0,0) size 458x59
+            text run at (0,0) width 457: "This test should show a PNG image of size 100x50, and intrinsic/natural size"
+            text run at (0,20) width 458: "100x50. The left half of the image should be red and there should be a black"
+            text run at (0,40) width 113: "circle in the center."
+          RenderBR {BR} at (113,40) size 0x19
+          RenderBlock {CODE} at (0,104.78) size 544x34
+            RenderText {#text} at (0,0) size 376x17
+              text run at (0,0) width 376: "image stats: size(100,50), naturalSize(200,100)"
+            RenderBR {BR} at (376,0) size 0x17
+            RenderText {#text} at (0,17) size 544x17
+              text run at (0,17) width 544: "image codes: <img id=\"png3\" src=\"\" srcset=\"resources/srcset.png 2x\">"
+          RenderText {#text} at (544,119) size 4x20
+            text run at (544,119) width 4: " "
+          RenderText {#text} at (0,0) size 0x0
+          RenderBR {BR} at (548,119) size 0x20
+      RenderBlock {DIV} at (0,847.56) size 769x251.22 [border: (1px solid #808080)]
+        RenderBlock {H3} at (17,35.72) size 735x23
+          RenderText {#text} at (0,0) size 274x22
+            text run at (0,0) width 274: "PNG with explicit dimensions - 4x"
+        RenderBlock (floating) {DIV} at (635.22,77.44) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 55x19
+            text run at (7,7) width 55: "expected"
+          RenderBR {BR} at (62,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (floating) {DIV} at (502.44,77.44) size 116.78x91.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
+          RenderText {#text} at (7,7) size 35x19
+            text run at (7,7) width 35: "actual"
+          RenderBR {BR} at (42,7) size 0x19
+          RenderImage {IMG} at (7,27.39) size 102x52 [border: (1px solid #000000)]
+          RenderText {#text} at (0,0) size 0x0
+        RenderBlock (anonymous) at (17,77.44) size 735x156.78
+          RenderText {#text} at (0,0) size 457x59
+            text run at (0,0) width 457: "This test should show a PNG image of size 100x50, and intrinsic/natural size"
+            text run at (0,20) width 450: "50x25. The left half of the image should be red and there should be a black"
+            text run at (0,40) width 113: "circle in the center."
+          RenderBR {BR} at (113,40) size 0x19
+          RenderBlock {CODE} at (0,104.78) size 735x51
+            RenderText {#text} at (0,0) size 376x17
+              text run at (0,0) width 376: "image stats: size(100,50), naturalSize(200,100)"
+            RenderBR {BR} at (376,0) size 0x17
+            RenderText {#text} at (0,17) size 632x34
+              text run at (0,17) width 632: "image codes: <img id=\"png4\" src=\"\" srcset=\"resources/srcset.png 4x\" width=\"100\""
+              text run at (0,34) width 96: "height=\"50\">"
+          RenderText {#text} at (0,0) size 0x0
+          RenderText {#text} at (0,0) size 0x0
+          RenderBR {BR} at (0,0) size 0x0
