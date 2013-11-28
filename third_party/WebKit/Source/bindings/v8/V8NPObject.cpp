@@ -182,7 +182,7 @@ public:
     {
         ASSERT(!m_map.contains(key));
         v8::Persistent<v8::FunctionTemplate> wrapper(m_isolate, handle);
-        wrapper.SetWeak(key, &setWeakCallback);
+        wrapper.MakeWeak(key, &makeWeakCallback);
         m_map.set(key, UnsafePersistent<v8::FunctionTemplate>(wrapper));
     }
 
@@ -199,7 +199,7 @@ private:
     {
     }
 
-    void clear(PrivateIdentifier* key)
+    void dispose(PrivateIdentifier* key)
     {
         MapType::iterator it = m_map.find(key);
         ASSERT_WITH_SECURITY_IMPLICATION(it != m_map.end());
@@ -207,9 +207,9 @@ private:
         m_map.remove(it);
     }
 
-    static void setWeakCallback(const v8::WeakCallbackData<v8::FunctionTemplate, PrivateIdentifier>& data)
+    static void makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::FunctionTemplate>*, PrivateIdentifier* key)
     {
-        V8NPTemplateMap::sharedInstance(data.GetIsolate()).clear(data.GetParameter());
+        V8NPTemplateMap::sharedInstance(isolate).dispose(key);
     }
 
     MapType m_map;
@@ -399,12 +399,12 @@ static DOMWrapperMap<NPObject>& staticNPObjectMap()
 }
 
 template<>
-inline void DOMWrapperMap<NPObject>::setWeakCallback(const v8::WeakCallbackData<v8::Object, DOMWrapperMap<NPObject> >& data)
+inline void DOMWrapperMap<NPObject>::makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Object>* wrapper, DOMWrapperMap<NPObject>*)
 {
-    NPObject* npObject = static_cast<NPObject*>(toNative(data.GetValue()));
+    NPObject* npObject = static_cast<NPObject*>(toNative(*wrapper));
 
     ASSERT(npObject);
-    ASSERT(staticNPObjectMap().containsKeyAndValue(npObject, data.GetValue()));
+    ASSERT(staticNPObjectMap().containsKeyAndValue(npObject, *wrapper));
 
     // Must remove from our map before calling _NPN_ReleaseObject(). _NPN_ReleaseObject can
     // call forgetV8ObjectForNPObject, which uses the table as well.

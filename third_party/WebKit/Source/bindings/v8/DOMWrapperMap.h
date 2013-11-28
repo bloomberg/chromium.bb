@@ -86,7 +86,7 @@ public:
         ASSERT(static_cast<KeyType*>(toNative(wrapper)) == key);
         v8::Persistent<v8::Object> persistent(m_isolate, wrapper);
         configuration.configureWrapper(&persistent);
-        persistent.SetWeak(this, &setWeakCallback);
+        persistent.MakeWeak(this, &makeWeakCallback);
         typename MapType::AddResult result = m_map.add(key, UnsafePersistent<v8::Object>());
         ASSERT(result.isNewEntry);
         // FIXME: Stop handling this case once duplicate wrappers are guaranteed not to be created.
@@ -117,20 +117,20 @@ public:
     }
 
 private:
-    static void setWeakCallback(const v8::WeakCallbackData<v8::Object, DOMWrapperMap<KeyType> >&);
+    static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Object>* wrapper, DOMWrapperMap<KeyType>*);
 
     v8::Isolate* m_isolate;
     MapType m_map;
 };
 
 template<>
-inline void DOMWrapperMap<void>::setWeakCallback(const v8::WeakCallbackData<v8::Object, DOMWrapperMap<void> >& data)
+inline void DOMWrapperMap<void>::makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Object>* wrapper, DOMWrapperMap<void>* map)
 {
-    const WrapperTypeInfo* type = toWrapperTypeInfo(data.GetValue());
+    const WrapperTypeInfo* type = toWrapperTypeInfo(*wrapper);
     ASSERT(type->derefObjectFunction);
-    void* key = static_cast<void*>(toNative(data.GetValue()));
-    ASSERT(*(data.GetParameter()->m_map.get(key).persistent()) == data.GetValue());
-    data.GetParameter()->removeAndDispose(key);
+    void* key = static_cast<void*>(toNative(*wrapper));
+    ASSERT(*(map->m_map.get(key).persistent()) == *wrapper);
+    map->removeAndDispose(key);
     type->derefObject(key);
 }
 
