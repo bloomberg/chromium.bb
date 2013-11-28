@@ -589,8 +589,8 @@ body.album #album {
     display: none;
   }
 
-  /* Hide the album behind the browser view. */
-  #album {
+  /* Hide all root elements, except the browser view. */
+  body > :not(#browser) {
     display: none;
   }
 
@@ -599,14 +599,17 @@ body.album #album {
     display: none;
   }
 
-  /* Reset position of the image to the left-top. */
+  /* Reset styles to default, and set the maximum dimensions to 100%. */
   #browser img.selected {
-    position: absolute;
-  }
-
-  /* Remove border from the image. */
-  #browse img.selected {
+    -webkit-transform: scale(1);
     border: none;
+    box-shadow: none;
+    height: auto;
+    margin: auto;
+    max-height: 100%;
+    max-width: 100%;
+    position: absolute;
+    width: auto;
   }
 }
 
