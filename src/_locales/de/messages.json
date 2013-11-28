@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Kamera",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Nehmen Sie witzige Bilder mit Ihrer Webcam auf.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Andy",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Große Augen",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Beauty",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Einfärben",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Funky",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Graustufen",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Zeitung",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Normal",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Großer Kopf",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Großer Kiefer",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Hase",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Sepia",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "Retro 30er",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "Retro 50er",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "Retro 60er",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Wirbel",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Tilt-Shift",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Kino",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Vintage",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "Ihre Kamera ist zurzeit nicht verfügbar.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Möglicherweise wird sie von einer anderen App verwendet.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Bild kann nicht in der Galerie gespeichert werden.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Galerie kann nicht geladen werden.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Das ausgewählte Bild kann nicht gelöscht werden.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Das ausgewählte Bild kann nicht gespeichert werden.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Hardwarebeschleunigung ist nicht verfügbar.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Möglicherweise ist die Grafikkarte Ihres Computers nicht kompatibel oder die Treiber sind veraltet.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Zur Galerie",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Filter aktivieren/deaktivieren",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Löschen",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Auf Datenträger speichern",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Drucken",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Zurück",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Maximieren",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Schließen",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Galeriebilder",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Bild aufnehmen",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Ja",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Nein",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Möchten Sie dieses Bild wirklich aus der Galerie entfernen?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

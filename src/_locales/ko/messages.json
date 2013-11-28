@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "카메라",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "웹캠으로 멋진 사진을 찍으세요.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "팝아트",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "눈 크게",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "뷰티",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "색칠",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "펑키",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "회색조",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "신문",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "원본",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "머리 크게",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "턱 길게",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "토끼 머리",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "세피아",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "레트로 '30",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "레트로 '50",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "레트로 '60",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "소용돌이",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "미니어쳐",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "시네마",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "빈티지",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "현재 카메라를 사용할 수 없습니다.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "다른 앱에서 사용 중일 수 있습니다.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "사진을 갤러리에 저장할 수 없습니다.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "갤러리를 로드할 수 없습니다.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "선택한 사진을 삭제할 수 없습니다.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "선택한 사진을 저장할 수 없습니다.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "하드웨어 가속을 사용할 수 없습니다.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "컴퓨터에서 호환되지 않는 그래픽 카드나 오래된 드라이버를 사용 중입니다.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "갤러리로 이동",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "필터 전환",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "삭제",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "디스크에 저장",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "인쇄",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "뒤로",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "최대화",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "닫기",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "갤러리 이미지",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "사진 찍기",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "예",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "아니요",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "확인",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "이 사진을 갤러리에서 삭제하시겠습니까?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

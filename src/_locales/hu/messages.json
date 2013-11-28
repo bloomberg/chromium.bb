@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Fényképezőgép",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Készítsen őrült képeket webkamerájával.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Andy",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Nagy szemek",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Szépség",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Színezés",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Funky",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Szürkeárnyalat",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Újság",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Normál",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Nagy fej",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Nagy áll",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Nyuszifej",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Szépia",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "30-as évek retró stílusa",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "50-es évek retró stílusa",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "60-as évek retró stílusa",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Örvény",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Képsík eltolása",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Mozi",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Klasszikus",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "A kamera jelenleg nem érhető el.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Lehet, hogy egy másik alkalmazás használja.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Nem lehet menteni a képet a galériába.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Nem lehet betölteni a galériát.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Nem lehet törölni a kiválasztott képet.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Nem lehet menteni a kiválasztott képet.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Hardvergyorsítás nem érhető el.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Számítógépében nem kompatibilis a grafikai kártya vagy régiek a meghajtók.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Ugrás a galériába",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Szűrők váltása",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Törlés",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Mentés lemezre",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Nyomtatás",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Vissza",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Teljes méret",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Bezárás",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Galériaképek",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Képkészítés",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Igen",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Nem",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Biztosan eltávolítja ezt a képet a galériából?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "الكاميرا",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "استمتع بالتقاط صور مجنونة باستخدام كاميرا الويب.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "أندي",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "عيون كبيرة",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "تجميل",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "تلوين",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "غير تقليدي",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "تدرج الرمادي",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "صحف",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "عادي",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "رأس كبير",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "فك كبير",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "رأس سنجاب",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "بني داكن",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "رجوع '30",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "رجوع '50",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "رجوع '60",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "دوامة",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "إمالة تحريك",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "سينما",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "قديم",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "الكاميرا غير متاحة حاليًا.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "ربما يكون هناك تطبيق آخر يستخدمها.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "يتعذر حفظ الصورة في المعرض.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "يتعذر تحميل المعرض.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "يتعذر حذف الصورة المحددة.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "يتعذر حفظ الصورة المحددة.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "لا تتوفر ميزة تسريع الأجهزة.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "ربما تكون هناك بطاقة رسومات غير متوافقة أو برامج تشغيل قديمة على جهاز الكمبيوتر.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "الانتقال إلى المعرض",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "تبديل الفلاتر",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "حذف",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "الحفظ في القرص",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "طباعة",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "الرجوع للخلف",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "الرفع إلى الحد الأقصى",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "إغلاق",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "صور المعرض",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "التقاط صورة",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "نعم",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "لا",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "موافق",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "هل تريد حقًا إزالة هذه الصورة من المعرض؟",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

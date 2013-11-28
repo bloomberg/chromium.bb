@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "カメラ",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "ウェブ カメラでさまざまな効果を使用した写真を撮ることができます。",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "ポップ アート",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "ビッグ アイ",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "ビューティ",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "カラーライズ",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "ファンキー",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "グレースケール",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "ニュースペーパー",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "ノーマル",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "ビッグ ヘッド",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "ビッグ ジョー",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "バニー ヘッド",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "セピア",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "30 年代レトロ",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "50 年代レトロ",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "60 年代レトロ",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "スワール",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "ティルト シフト",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "シネマ",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "ビンテージ",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "現在、カメラは使用できません。",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "別のアプリで使用されている可能性があります。",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "画像をギャラリーに保存できません。",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "ギャラリーを読み込めません。",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "選択した画像は削除できません。",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "選択した画像は保存できません。",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "ハードウェア アクセラレーションは使用できません。",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "お使いのパソコンで互換性のないグラフィック カードが使用されているか、ドライバが古い可能性があります。",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "ギャラリーに移動",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "フィルタを切り替える",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "削除",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "ディスクに保存",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "印刷",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "戻る",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "最大化",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "閉じる",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "ギャラリーの画像",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "写真を撮る",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "はい",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "いいえ",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "ギャラリーからこの画像を削除してもよろしいですか？",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

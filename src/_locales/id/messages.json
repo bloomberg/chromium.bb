@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Kamera",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Jepret foto heboh dengan kamera web Anda.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Andy",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Mata Besar",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Percantik",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Warnai",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Funky",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Abu-abu",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Koran",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Normal",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Kepala Besar",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Rahang Besar",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Kepala Kelinci",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Sepia",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "Kuno era '30-an",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "Kuno era '50-an",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "Kuno era '60-an",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Berpusar",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Miring Geser",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Bioskop",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Antik",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "Kamera Anda tidak tersedia untuk saat ini.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Aplikasi lain mungkin sedang menggunakannya.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Tidak dapat menyimpan gambar ke galeri.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Tidak dapat memuat galeri.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Tidak dapat menghapus gambar yang dipilih.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Tidak dapat menyimpan gambar yang dipilih.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Akselerasi perangkat keras tidak tersedia.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Mungkin komputer Anda memiliki kartu grafik yang tidak kompatibel atau driver yang kuno.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Buka galeri",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Aktifkan/Nonaktifkan filter",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Hapus",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Simpan ke disk",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Cetak",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Kembali",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Maksimalkan",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Tutup",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Gambar galeri",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Ambil gambar",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Ya",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Tidak",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "Oke",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Yakin ingin menghapus gambar ini dari galeri?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

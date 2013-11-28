@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Camera",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Kumuha ng mga nakatutuwang larawan gamit ang iyong web camera.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Andy",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Malalaking Mata",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Kagandahan",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Colorize",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Funky",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Grayscale",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Pahayagan",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Normal",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Malaking Ulo",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Malaking Panga",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Ulo ng Kuneho",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Sepia",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "Retro '30",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "Retro '50",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "Retro '60",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "I-swirl",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "I-shift ang Pag-tilt",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Pelikula",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Vintage",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "Kasalukuyang hindi available ang iyong camera. ",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Maaaring ginagamit ito ng isa pang app.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Hndi ma-save ang larawan sa gallery.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Hindi ma-load ang gallery.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Hindi matanggal ang napiling larawan.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Hindi ma-save ang napiling larawan.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Hindi available ang pagpapabilis ng hardware.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Maaaring mayroong hindi tugmang graphics card, o mga lumang driver ang iyong computer.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Pumunta sa gallery",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "I-toggle ang mga filter",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Tanggalin",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "I-save sa disk",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "I-print",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Bumalik",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "I-maximize",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Isara",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Mga larawan sa Gallery",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Kumuha ng larawan",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Oo",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Hindi",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Gusto mo ba talagang alisin ang larawang ito sa gallery?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

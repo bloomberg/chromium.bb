@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Φωτογραφική μηχανή ",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Τραβήξτε καταπληκτικές φωτογραφίες με την webcam σας.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Andy",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Μεγάλα μάτια",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Ομορφιά",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Χρωματισμός",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Funky",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Κλίμακα του γκρι",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Εφημερίδα",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Κανονικό",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Μεγάλο κεφάλι",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Μεγάλο σαγόνι",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Κουνελάκι",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Σέπια",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "Ρετρό '30",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "Ρετρό '50",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "Ρετρό '60",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Δίνη",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Εφέ Tilt Shift",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Κινηματογράφος",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Αντίκα",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "Η φωτογραφική μηχανή δεν είναι διαθέσιμη προς το παρόν.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Μια άλλη εφαρμογή ενδέχεται να το χρησιμοποιεί.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Δεν είναι δυνατή η αποθήκευση της εικόνας στο gallery.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Δεν είναι δυνατή η φόρτωση του gallery.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Δεν είναι δυνατή η διαγραφή της επιλεγμένης εικόνας.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Δεν είναι δυνατή η αποθήκευση της επιλεγμένης εικόνας.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Η επιτάχυνση υλικού δεν είναι διαθέσιμη.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Ο υπολογιστής σας μπορεί να διαθέτει μια μη συμβατή κάρτα γραφικών ή προγράμματα οδήγησης παλαιού τύπου.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Μετάβαση στο gallery",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Εναλλαγή φίλτρων",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Διαγραφή",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Αποθήκευση στο δίσκο",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Εκτύπωση",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Επιστροφή",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Μεγιστοποίηση",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Κλείσιμο",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Εικόνες Gallery",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Τραβήξτε μια φωτογραφία",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Ναι",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Όχι",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Είστε βέβαιοι ότι θέλετε να καταργήσετε αυτή την εικόνα από το gallery;",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

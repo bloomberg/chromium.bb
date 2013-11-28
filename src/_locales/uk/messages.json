@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Камера",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Робіть неймовірні фотографії за допомогою своєї веб-камери.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Плакат",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Великі очі",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Усунення недоліків",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Додати кольори",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Неординарний",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Відтінки сірого",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Газета",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Без ефектів",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Великий лоб",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Велика щелепа",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Голова кролика",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Сепія",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "Ретро 1930-х",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "Ретро 1950-х",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "Ретро 1960-х",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Криве дзеркало",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Поєднання фокусів",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Кінофільм",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Вінтаж",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "Камера зараз недоступна.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Можливо, її використовує інша програма.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Не вдається зберегти знімок у галереї.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Не вдається завантажити галерею.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Не вдається видалити вибраний знімок.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Не вдається зберегти вибраний знімок.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Апаратне прискорення недоступне.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Можливо, графічна карта вашого комп’ютера несумісна або драйвери застаріли.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Перейти в галерею",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Увімкнути/вимкнути фільтри",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Видалити",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Зберегти на диску",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Друк",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Повернутися",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Розгорнути",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Закрити",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Галерея зображень",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Зробити знімок",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Так",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Ні",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Справді видалити цю фотографію з галереї?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Камера",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Правете лудешки снимки с уеб камерата си.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Анди",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Големи очи",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Красота",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Оцветяване",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Модерно",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Сива скала",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Вестник",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Нормално",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Голяма глава",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Голяма челюст",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Заешка глава",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Сепия",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "Ретро от 30-те",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "Ретро от 50-те",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "Ретро от 60-те",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Спирала",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Накланяне и отместване",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Кино",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Класика",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "Понастоящем няма достъп до камерата ви.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Възможно е да се използва от друго приложение.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Снимката не може да се запази в галерията.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Галерията не може да се зареди.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Избраната снимка не може да се изтрие.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Избраната снимка не може да се запази.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Няма хардуерно ускорение.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Графичната платка на компютъра ви може да е несъвместима или със стари драйвери.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Към галерията",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Превключване на филтрите",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Изтриване",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Запазване на диска",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Печат",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Назад",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Максимално увеличаване",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Затваряне",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Изображения в галерията",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Правене на снимка",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Да",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Не",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Наистина ли искате да премахнете тази снимка от галерията?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

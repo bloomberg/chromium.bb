@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "מצלמה",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "צלמו תמונות מוטרפות עם מצלמת האינטרנט שלכם.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "אנדי",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "עיניים גדולות",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "יופי",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "צביעה",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "פאנקי",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "גווני אפור",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "עיתון",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "רגיל",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "ראש גדול",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "לסת גדולה",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "ראש ארנב",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "חום-ספיה",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "רטרו שנות ה-30",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "רטרו שנות ה-50",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "רטרו שנות ה-60",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "מערבולת",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "הזזה-הטיה",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "קולנוע",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "וינטאג'",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "המצלמה שלך לא זמינה כרגע.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "ייתכן שיישום אחר משתמש בה.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "לא ניתן לשמור את התמונה בגלריה.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "לא ניתן לטעון את הגלריה.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "לא ניתן למחוק את התמונה הנבחרת.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "לא ניתן לשמור את התמונה הנבחרת.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "האצת חומרה אינה זמינה.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "ייתכן שכרטיס המסך במחשב שלך אינו מתאים, או שמנהלי ההתקן ישנים.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "עבור אל הגלריה",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "החלף מסננים",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "מחק",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "שמור בדיסק",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "הדפס",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "חזור אחורה",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "הגדל",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "סגור",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "תמונות בגלריה",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "צלם תמונה",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "כן",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "לא",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "אישור",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "האם אתה באמת רוצה להסיר את התמונה הזו מהגלריה שלך?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

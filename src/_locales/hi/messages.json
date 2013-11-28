@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "कैमरा",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "अपने वेब कैमरे से आकर्षक चित्र लें.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "एंडी",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "बड़ी आंखें",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "सौंदर्य",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "कलराइज़",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "फ़ंकी",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "ग्रेस्केल",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "न्यूज़पेपर",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "सामान्य",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "बड़ा सिर",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "बड़े जबड़े",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "बनी हेड",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "सेपिया",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "रेट्रो '30",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "रेट्रो '50",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "रेट्रो '60",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "स्वर्ल",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "टिल्ट-शिफ़्ट",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "सिनेमा",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "विंटेज",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "वर्तमान मेंआपका कैमरा उपलब्ध नहीं है.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "संभवत: कोई अन्य ऐप्स इसका उपयोग कर रहा है.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "फ़ोटो को गैलरी में सहेजने में असमर्थ.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "गैलरी लोड करने में असमर्थ.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "चयनित फ़ोटो हटाने में असमर्थ.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "चयनित फ़ोटो सहेजने में असमर्थ.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "हार्डवेयर त्वरण उपलब्ध नहीं है.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "आपके कंप्यूटर का ग्राफ़िक्स कार्ड असंगत हो सकता है, या उसमें पुराने ड्राइवर हो सकते हैं.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "गैलरी में जाएं",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "फ़िल्टर टॉगल करें",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "हटाएं",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "डिस्क पर सहेजें",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "प्रिंट करें",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "वापस जाएं",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "विस्तृत करें",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "बंद करें",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "गैलरी के चित्र",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "कोई चित्र लें",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "हां",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "नहीं",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "ठीक",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "क्या आप वाकई इस चित्र को गैलरी से हटाना चाहते हैं?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

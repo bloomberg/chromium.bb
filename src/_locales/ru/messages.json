@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Камера",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Делайте веселые снимки с помощью веб-камеры",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Энди Уорхол",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Большие глаза",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Гладкая кожа",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Колоризация",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Забавный",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Оттенки серого",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Газета",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Без эффектов",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Большая голова",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Большая челюсть",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Зайчик",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Сепия",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "Ретро: 30-е",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "Ретро: 50-е",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "Ретро: 60-е",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Воронка",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Сдвиг и наклон",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Кино",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Винтаж",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "В настоящий момент камера недоступна.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Возможно, она используется другим приложением.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Не удалось сохранить фотографию в галерее",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Не удалось загрузить галерею",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Не удалось удалить фотографию",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Не удалось сохранить фотографию",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Аппаратное ускорение недоступно.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Возможно, ваша видеокарта не поддерживается или драйверы устарели.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Перейти в галерею",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Включить/отключить фильтры",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Удалить",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Сохранить на диске",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Печать",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Назад",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Развернуть",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Закрыть",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Изображения в галерее",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Сделать снимок",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Да",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Нет",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "ОК",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Удалить эту фотографию из галереи?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}
