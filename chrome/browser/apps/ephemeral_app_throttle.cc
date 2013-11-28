@@ -80,7 +80,7 @@ EphemeralAppThrottle::MaybeCreateThrottleForLaunch(
     net::URLRequest* request,
     ProfileIOData* profile_io_data) {
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableEphemeralApps))
+          switches::kEnableLinkableEphemeralApps))
     return NULL;
 
   if (request->method() != "GET" || !request->url().SchemeIsHTTPOrHTTPS())
@@ -88,6 +88,11 @@ EphemeralAppThrottle::MaybeCreateThrottleForLaunch(
 
   // Not supported for incognito profiles.
   if (profile_io_data->is_incognito())
+    return NULL;
+
+  // Only watch for links in Google search results.
+  if (request->referrer().find("http://www.google.com") == std::string::npos &&
+      request->referrer().find("https://www.google.com") == std::string::npos)
     return NULL;
 
   // Crudely watch for links to Chrome Web Store detail pages and assume that
