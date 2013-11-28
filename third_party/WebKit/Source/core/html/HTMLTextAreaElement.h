@@ -124,7 +124,6 @@ private:
     WrapMethod m_wrap;
     mutable String m_value;
     mutable bool m_isDirty;
-    mutable bool m_wasModifiedByUser;
 };
 
 inline bool isHTMLTextAreaElement(const Node* node)

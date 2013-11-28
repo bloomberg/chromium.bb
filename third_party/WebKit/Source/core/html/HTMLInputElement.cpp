@@ -118,7 +118,6 @@ HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bo
     , m_stateRestored(false)
     , m_parsingInProgress(createdByParser)
     , m_valueAttributeWasUpdatedAfterParsing(false)
-    , m_wasModifiedByUser(false)
     , m_canReceiveDroppedFiles(false)
     , m_hasTouchEventHandler(false)
     , m_inputType(InputType::createText(*this))
@@ -245,7 +244,7 @@ bool HTMLInputElement::tooLong(const String& value, NeedsToCheckDirtyFlag check)
     if (check == CheckDirtyFlag) {
         // Return false for the default value or a value set by a script even if
         // it is longer than maxLength.
-        if (!hasDirtyValue() || !m_wasModifiedByUser)
+        if (!hasDirtyValue() || !lastChangeWasUserEdit())
             return false;
     }
     return value.length() > static_cast<unsigned>(max);
@@ -456,8 +455,6 @@ void HTMLInputElement::updateType()
 
     setFormControlValueMatchesRenderer(false);
     m_inputTypeView->updateView();
-
-    m_wasModifiedByUser = false;
 
     if (didRespectHeightAndWidth != m_inputType->shouldRespectHeightAndWidthAttributes()) {
         ASSERT(elementData());
@@ -924,7 +921,6 @@ void HTMLInputElement::copyNonAttributePropertiesFromElement(const Element& sour
     const HTMLInputElement& sourceElement = static_cast<const HTMLInputElement&>(source);
 
     m_valueIfDirty = sourceElement.m_valueIfDirty;
-    m_wasModifiedByUser = false;
     setChecked(sourceElement.m_isChecked);
     m_reflectsCheckedAttribute = sourceElement.m_reflectsCheckedAttribute;
     m_isIndeterminate = sourceElement.m_isIndeterminate;
@@ -1036,7 +1032,6 @@ void HTMLInputElement::setValue(const String& value, TextFieldEventBehavior even
 void HTMLInputElement::setValueInternal(const String& sanitizedValue, TextFieldEventBehavior eventBehavior)
 {
     m_valueIfDirty = sanitizedValue;
-    m_wasModifiedByUser = eventBehavior != DispatchNoEvent;
     setNeedsValidityCheck();
 }
 
@@ -1077,7 +1072,6 @@ void HTMLInputElement::setValueFromRenderer(const String& value)
     m_valueIfDirty = value;
 
     setFormControlValueMatchesRenderer(true);
-    m_wasModifiedByUser = true;
 
     // Input event is fired by the Node::defaultEventHandler for editable controls.
     if (!isTextField())

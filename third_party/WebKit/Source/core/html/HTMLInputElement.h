@@ -394,7 +394,6 @@ private:
     bool m_stateRestored : 1;
     bool m_parsingInProgress : 1;
     bool m_valueAttributeWasUpdatedAfterParsing : 1;
-    bool m_wasModifiedByUser : 1;
     bool m_canReceiveDroppedFiles : 1;
     bool m_hasTouchEventHandler : 1;
     RefPtr<InputType> m_inputType;
