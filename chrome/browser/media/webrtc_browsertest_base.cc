@@ -5,6 +5,7 @@
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 
 #include "base/strings/stringprintf.h"
+#include "base/threading/platform_thread.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -22,21 +23,6 @@ const char WebRtcTestBase::kAudioOnlyCallConstraints[] = "'{audio: true}'";
 const char WebRtcTestBase::kVideoOnlyCallConstraints[] = "'{video: true}'";
 const char WebRtcTestBase::kFailedWithPermissionDeniedError[] =
     "failed-with-error-PermissionDeniedError";
-
-// Work around an issue where javascript isn't always fully loaded when we
-// invoke doGetUserMedia (crbug.com/281268).
-static void EnsureOurJavascriptHasBeenLoaded(
-    content::WebContents* tab_contents) {
-  const std::string script =
-      "var gumDefined = typeof(doGetUserMedia) == typeof(Function); "
-      "window.domAutomationController.send(gumDefined);";
-  bool get_user_media_defined = false;
-  while (!get_user_media_defined) {
-    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-        tab_contents, script, &get_user_media_defined));
-    SleepInJavascript(tab_contents, 100);
-  }
-}
 
 WebRtcTestBase::WebRtcTestBase() {
 }
@@ -96,7 +82,8 @@ void WebRtcTestBase::GetUserMediaAndDismiss(
 
 void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,
                                   const std::string& constraints) const {
-  EnsureOurJavascriptHasBeenLoaded(tab_contents);
+  // TODO(phoglund): temporary hack to work around/analyze b/281268.
+  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(2));
 
   // Request user media: this will launch the media stream info bar.
   std::string result;
