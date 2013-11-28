@@ -239,10 +239,10 @@ void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8:
     }
 
     // Delete the accessor from this object.
-    info.Holder()->Delete(v8::String::NewSymbol("opener"));
+    info.Holder()->Delete(v8Symbol("opener", info.GetIsolate()));
 
     // Put property on the front (this) object.
-    info.This()->Set(v8::String::NewSymbol("opener"), value);
+    info.This()->Set(v8Symbol("opener", info.GetIsolate()), value);
 }
 
 static bool isLegacyTargetOriginDesignation(v8::Handle<v8::Value> value)
@@ -322,7 +322,7 @@ public:
     {
     }
 
-    void dialogCreated(DOMWindow*);
+    void dialogCreated(DOMWindow*, v8::Isolate*);
     v8::Handle<v8::Value> returnValue(v8::Isolate*) const;
 
 private:
@@ -330,7 +330,7 @@ private:
     v8::Handle<v8::Context> m_dialogContext;
 };
 
-inline void DialogHandler::dialogCreated(DOMWindow* dialogFrame)
+inline void DialogHandler::dialogCreated(DOMWindow* dialogFrame, v8::Isolate* isolate)
 {
     m_dialogContext = dialogFrame->frame() ? dialogFrame->frame()->script().currentWorldContext() : v8::Local<v8::Context>();
     if (m_dialogContext.IsEmpty())
@@ -338,7 +338,7 @@ inline void DialogHandler::dialogCreated(DOMWindow* dialogFrame)
     if (m_dialogArguments.IsEmpty())
         return;
     v8::Context::Scope scope(m_dialogContext);
-    m_dialogContext->Global()->Set(v8::String::NewSymbol("dialogArguments"), m_dialogArguments);
+    m_dialogContext->Global()->Set(v8Symbol("dialogArguments", isolate), m_dialogArguments);
 }
 
 inline v8::Handle<v8::Value> DialogHandler::returnValue(v8::Isolate* isolate) const
@@ -346,7 +346,7 @@ inline v8::Handle<v8::Value> DialogHandler::returnValue(v8::Isolate* isolate) co
     if (m_dialogContext.IsEmpty())
         return v8::Undefined(isolate);
     v8::Context::Scope scope(m_dialogContext);
-    v8::Handle<v8::Value> returnValue = m_dialogContext->Global()->Get(v8::String::NewSymbol("returnValue"));
+    v8::Handle<v8::Value> returnValue = m_dialogContext->Global()->Get(v8Symbol("returnValue", isolate));
     if (returnValue.IsEmpty())
         return v8::Undefined(isolate);
     return returnValue;
@@ -354,7 +354,7 @@ inline v8::Handle<v8::Value> DialogHandler::returnValue(v8::Isolate* isolate) co
 
 static void setUpDialog(DOMWindow* dialog, void* handler)
 {
-    static_cast<DialogHandler*>(handler)->dialogCreated(dialog);
+    static_cast<DialogHandler*>(handler)->dialogCreated(dialog, v8::Isolate::GetCurrent());
 }
 
 void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -554,7 +554,7 @@ v8::Handle<v8::Value> toV8(DOMWindow* window, v8::Handle<v8::Object> creationCon
     // code running in one of those contexts accesses the window object, we
     // want to return the global object associated with that context, not
     // necessarily the first global object associated with that DOMWindow.
-    v8::Handle<v8::Context> currentContext = v8::Context::GetCurrent();
+    v8::Handle<v8::Context> currentContext = isolate->GetCurrentContext();
     v8::Handle<v8::Object> currentGlobal = currentContext->Global();
     v8::Handle<v8::Object> windowWrapper = currentGlobal->FindInstanceInPrototypeChain(V8Window::GetTemplate(isolate, worldTypeInMainThread(isolate)));
     if (!windowWrapper.IsEmpty()) {

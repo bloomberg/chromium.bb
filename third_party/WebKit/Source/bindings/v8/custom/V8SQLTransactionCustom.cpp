@@ -63,7 +63,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
 
         uint32_t sqlArgsLength = 0;
         v8::Local<v8::Object> sqlArgsObject = info[1]->ToObject();
-        V8TRYCATCH_VOID(v8::Local<v8::Value>, length, sqlArgsObject->Get(v8::String::NewSymbol("length")));
+        V8TRYCATCH_VOID(v8::Local<v8::Value>, length, sqlArgsObject->Get(v8Symbol("length", info.GetIsolate())));
 
         if (isUndefinedOrNull(length))
             sqlArgsLength = sqlArgsObject->GetPropertyNames()->Length();

@@ -38,7 +38,7 @@ using namespace WTF;
 
 namespace WebCore {
 
-static PassRefPtr<PositionOptions> createPositionOptions(v8::Local<v8::Value> value, bool& succeeded)
+static PassRefPtr<PositionOptions> createPositionOptions(v8::Local<v8::Value> value, v8::Isolate* isolate, bool& succeeded)
 {
     succeeded = true;
 
@@ -58,7 +58,7 @@ static PassRefPtr<PositionOptions> createPositionOptions(v8::Local<v8::Value> va
     // - If the getter or the property's valueOf method throws an exception, we
     //   quit so as not to risk overwriting the exception.
     // - If the value is absent or undefined, we don't override the default.
-    v8::Local<v8::Value> enableHighAccuracyValue = object->Get(v8::String::NewSymbol("enableHighAccuracy"));
+    v8::Local<v8::Value> enableHighAccuracyValue = object->Get(v8Symbol("enableHighAccuracy", isolate));
     if (enableHighAccuracyValue.IsEmpty()) {
         succeeded = false;
         return 0;
@@ -72,7 +72,7 @@ static PassRefPtr<PositionOptions> createPositionOptions(v8::Local<v8::Value> va
         options->setEnableHighAccuracy(enableHighAccuracyBoolean->Value());
     }
 
-    v8::Local<v8::Value> timeoutValue = object->Get(v8::String::NewSymbol("timeout"));
+    v8::Local<v8::Value> timeoutValue = object->Get(v8Symbol("timeout", isolate));
     if (timeoutValue.IsEmpty()) {
         succeeded = false;
         return 0;
@@ -96,7 +96,7 @@ static PassRefPtr<PositionOptions> createPositionOptions(v8::Local<v8::Value> va
         }
     }
 
-    v8::Local<v8::Value> maximumAgeValue = object->Get(v8::String::NewSymbol("maximumAge"));
+    v8::Local<v8::Value> maximumAgeValue = object->Get(v8Symbol("maximumAge", isolate));
     if (maximumAgeValue.IsEmpty()) {
         succeeded = false;
         return 0;
@@ -139,7 +139,7 @@ void V8Geolocation::getCurrentPositionMethodCustom(const v8::FunctionCallbackInf
     if (!succeeded)
         return;
 
-    RefPtr<PositionOptions> positionOptions = createPositionOptions(info[2], succeeded);
+    RefPtr<PositionOptions> positionOptions = createPositionOptions(info[2], info.GetIsolate(), succeeded);
     if (!succeeded)
         return;
     ASSERT(positionOptions);
@@ -162,7 +162,7 @@ void V8Geolocation::watchPositionMethodCustom(const v8::FunctionCallbackInfo<v8:
     if (!succeeded)
         return;
 
-    RefPtr<PositionOptions> positionOptions = createPositionOptions(info[2], succeeded);
+    RefPtr<PositionOptions> positionOptions = createPositionOptions(info[2], info.GetIsolate(), succeeded);
     if (!succeeded)
         return;
     ASSERT(positionOptions);

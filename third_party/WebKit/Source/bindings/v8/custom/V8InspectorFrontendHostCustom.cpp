@@ -45,11 +45,11 @@ namespace WebCore {
 void V8InspectorFrontendHost::platformMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
 #if OS(MACOSX)
-    v8SetReturnValue(info, v8::String::NewSymbol("mac"));
+    v8SetReturnValue(info, v8Symbol("mac", info.GetIsolate()));
 #elif OS(WIN)
-    v8SetReturnValue(info, v8::String::NewSymbol("windows"));
+    v8SetReturnValue(info, v8Symbol("windows", info.GetIsolate()));
 #else // Unix-like systems
-    v8SetReturnValue(info, v8::String::NewSymbol("linux"));
+    v8SetReturnValue(info, v8Symbol("linux", info.GetIsolate()));
 #endif
 }
 
@@ -57,16 +57,16 @@ void V8InspectorFrontendHost::portMethodCustom(const v8::FunctionCallbackInfo<v8
 {
 }
 
-static bool populateContextMenuItems(v8::Local<v8::Array>& itemArray, ContextMenu& menu)
+static bool populateContextMenuItems(v8::Local<v8::Array>& itemArray, ContextMenu& menu, v8::Isolate* isolate)
 {
     for (size_t i = 0; i < itemArray->Length(); ++i) {
         v8::Local<v8::Object> item = v8::Local<v8::Object>::Cast(itemArray->Get(i));
-        v8::Local<v8::Value> type = item->Get(v8::String::NewSymbol("type"));
-        v8::Local<v8::Value> id = item->Get(v8::String::NewSymbol("id"));
-        v8::Local<v8::Value> label = item->Get(v8::String::NewSymbol("label"));
-        v8::Local<v8::Value> enabled = item->Get(v8::String::NewSymbol("enabled"));
-        v8::Local<v8::Value> checked = item->Get(v8::String::NewSymbol("checked"));
-        v8::Local<v8::Value> subItems = item->Get(v8::String::NewSymbol("subItems"));
+        v8::Local<v8::Value> type = item->Get(v8Symbol("type", isolate));
+        v8::Local<v8::Value> id = item->Get(v8Symbol("id", isolate));
+        v8::Local<v8::Value> label = item->Get(v8Symbol("label", isolate));
+        v8::Local<v8::Value> enabled = item->Get(v8Symbol("enabled", isolate));
+        v8::Local<v8::Value> checked = item->Get(v8Symbol("checked", isolate));
+        v8::Local<v8::Value> subItems = item->Get(v8Symbol("subItems", isolate));
         if (!type->IsString())
             continue;
         String typeString = toWebCoreStringWithNullCheck(type.As<v8::String>());
@@ -78,7 +78,7 @@ static bool populateContextMenuItems(v8::Local<v8::Array>& itemArray, ContextMen
         } else if (typeString == "subMenu" && subItems->IsArray()) {
             ContextMenu subMenu;
             v8::Local<v8::Array> subItemsArray = v8::Local<v8::Array>::Cast(subItems);
-            if (!populateContextMenuItems(subItemsArray, subMenu))
+            if (!populateContextMenuItems(subItemsArray, subMenu, isolate))
                 return false;
             V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<WithNullCheck>, labelString, label, false);
             ContextMenuItem item(SubmenuType,
@@ -114,7 +114,7 @@ void V8InspectorFrontendHost::showContextMenuMethodCustom(const v8::FunctionCall
 
     v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(info[1]);
     ContextMenu menu;
-    if (!populateContextMenuItems(array, menu))
+    if (!populateContextMenuItems(array, menu, info.GetIsolate()))
         return;
 
     InspectorFrontendHost* frontendHost = V8InspectorFrontendHost::toNative(info.Holder());

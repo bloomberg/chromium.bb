@@ -126,12 +126,12 @@ static v8::Handle<v8::Value> toV8Object(const WebGLGetInfo& args, v8::Handle<v8:
 {
     switch (args.getType()) {
     case WebGLGetInfo::kTypeBool:
-        return v8::Boolean::New(args.getBool());
+        return v8Boolean(args.getBool(), isolate);
     case WebGLGetInfo::kTypeBoolArray: {
         const Vector<bool>& value = args.getBoolArray();
-        v8::Local<v8::Array> array = v8::Array::New(value.size());
+        v8::Local<v8::Array> array = v8::Array::New(isolate, value.size());
         for (size_t ii = 0; ii < value.size(); ++ii)
-            array->Set(v8::Integer::New(ii, isolate), v8::Boolean::New(value[ii]));
+            array->Set(v8::Integer::New(ii, isolate), v8Boolean(value[ii], isolate));
         return array;
     }
     case WebGLGetInfo::kTypeFloat:
@@ -326,7 +326,7 @@ void V8WebGLRenderingContext::getAttachedShadersMethodCustom(const v8::FunctionC
         v8SetReturnValueNull(info);
         return;
     }
-    v8::Local<v8::Array> array = v8::Array::New(shaders.size());
+    v8::Local<v8::Array> array = v8::Array::New(info.GetIsolate(), shaders.size());
     for (size_t ii = 0; ii < shaders.size(); ++ii)
         array->Set(v8::Integer::New(ii, info.GetIsolate()), toV8(shaders[ii].get(), info.Holder(), info.GetIsolate()));
     v8SetReturnValue(info, array);
@@ -427,7 +427,7 @@ void V8WebGLRenderingContext::getSupportedExtensionsMethodCustom(const v8::Funct
     }
 
     Vector<String> value = imp->getSupportedExtensions();
-    v8::Local<v8::Array> array = v8::Array::New(value.size());
+    v8::Local<v8::Array> array = v8::Array::New(info.GetIsolate(), value.size());
     for (size_t ii = 0; ii < value.size(); ++ii)
         array->Set(v8::Integer::New(ii, info.GetIsolate()), v8String(value[ii], info.GetIsolate()));
     v8SetReturnValue(info, array);

@@ -34,7 +34,7 @@ namespace WebCore {
 
 namespace {
 
-RefPtr<DeviceMotionData::Acceleration> readAccelerationArgument(v8::Local<v8::Value> value)
+RefPtr<DeviceMotionData::Acceleration> readAccelerationArgument(v8::Local<v8::Value> value, v8::Isolate* isolate)
 {
     if (isUndefinedOrNull(value))
         return 0;
@@ -42,19 +42,19 @@ RefPtr<DeviceMotionData::Acceleration> readAccelerationArgument(v8::Local<v8::Va
     // Given the test above, this will always yield an object.
     v8::Local<v8::Object> object = value->ToObject();
 
-    v8::Local<v8::Value> xValue = object->Get(v8::String::NewSymbol("x"));
+    v8::Local<v8::Value> xValue = object->Get(v8Symbol("x", isolate));
     if (xValue.IsEmpty())
         return 0;
     bool canProvideX = !isUndefinedOrNull(xValue);
     double x = xValue->NumberValue();
 
-    v8::Local<v8::Value> yValue = object->Get(v8::String::NewSymbol("y"));
+    v8::Local<v8::Value> yValue = object->Get(v8Symbol("y", isolate));
     if (yValue.IsEmpty())
         return 0;
     bool canProvideY = !isUndefinedOrNull(yValue);
     double y = yValue->NumberValue();
 
-    v8::Local<v8::Value> zValue = object->Get(v8::String::NewSymbol("z"));
+    v8::Local<v8::Value> zValue = object->Get(v8Symbol("z", isolate));
     if (zValue.IsEmpty())
         return 0;
     bool canProvideZ = !isUndefinedOrNull(zValue);
@@ -66,7 +66,7 @@ RefPtr<DeviceMotionData::Acceleration> readAccelerationArgument(v8::Local<v8::Va
     return DeviceMotionData::Acceleration::create(canProvideX, x, canProvideY, y, canProvideZ, z);
 }
 
-RefPtr<DeviceMotionData::RotationRate> readRotationRateArgument(v8::Local<v8::Value> value)
+RefPtr<DeviceMotionData::RotationRate> readRotationRateArgument(v8::Local<v8::Value> value, v8::Isolate* isolate)
 {
     if (isUndefinedOrNull(value))
         return 0;
@@ -74,19 +74,19 @@ RefPtr<DeviceMotionData::RotationRate> readRotationRateArgument(v8::Local<v8::Va
     // Given the test above, this will always yield an object.
     v8::Local<v8::Object> object = value->ToObject();
 
-    v8::Local<v8::Value> alphaValue = object->Get(v8::String::NewSymbol("alpha"));
+    v8::Local<v8::Value> alphaValue = object->Get(v8Symbol("alpha", isolate));
     if (alphaValue.IsEmpty())
         return 0;
     bool canProvideAlpha = !isUndefinedOrNull(alphaValue);
     double alpha = alphaValue->NumberValue();
 
-    v8::Local<v8::Value> betaValue = object->Get(v8::String::NewSymbol("beta"));
+    v8::Local<v8::Value> betaValue = object->Get(v8Symbol("beta", isolate));
     if (betaValue.IsEmpty())
         return 0;
     bool canProvideBeta = !isUndefinedOrNull(betaValue);
     double beta = betaValue->NumberValue();
 
-    v8::Local<v8::Value> gammaValue = object->Get(v8::String::NewSymbol("gamma"));
+    v8::Local<v8::Value> gammaValue = object->Get(v8Symbol("gamma", isolate));
     if (gammaValue.IsEmpty())
         return 0;
     bool canProvideGamma = !isUndefinedOrNull(gammaValue);
@@ -103,12 +103,13 @@ RefPtr<DeviceMotionData::RotationRate> readRotationRateArgument(v8::Local<v8::Va
 void V8DeviceMotionEvent::initDeviceMotionEventMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     DeviceMotionEvent* imp = V8DeviceMotionEvent::toNative(info.Holder());
+    v8::Isolate* isolate = info.GetIsolate();
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, info[0]);
     bool bubbles = info[1]->BooleanValue();
     bool cancelable = info[2]->BooleanValue();
-    RefPtr<DeviceMotionData::Acceleration> acceleration = readAccelerationArgument(info[3]);
-    RefPtr<DeviceMotionData::Acceleration> accelerationIncludingGravity = readAccelerationArgument(info[4]);
-    RefPtr<DeviceMotionData::RotationRate> rotationRate = readRotationRateArgument(info[5]);
+    RefPtr<DeviceMotionData::Acceleration> acceleration = readAccelerationArgument(info[3], isolate);
+    RefPtr<DeviceMotionData::Acceleration> accelerationIncludingGravity = readAccelerationArgument(info[4], isolate);
+    RefPtr<DeviceMotionData::RotationRate> rotationRate = readRotationRateArgument(info[5], isolate);
     bool intervalProvided = !isUndefinedOrNull(info[6]);
     double interval = info[6]->NumberValue();
     RefPtr<DeviceMotionData> deviceMotionData = DeviceMotionData::create(acceleration, accelerationIncludingGravity, rotationRate, intervalProvided, interval);

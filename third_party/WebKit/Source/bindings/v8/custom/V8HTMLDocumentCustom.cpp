@@ -64,7 +64,7 @@ void V8HTMLDocument::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
                 return;
             v8::Local<v8::Object> global = context->Global();
             // Get the open property of the global object.
-            v8::Local<v8::Value> function = global->Get(v8::String::NewSymbol("open"));
+            v8::Local<v8::Value> function = global->Get(v8Symbol("open", info.GetIsolate()));
             // If the open property is not a function throw a type error.
             if (!function->IsFunction()) {
                 throwTypeError("open is not a function", info.GetIsolate());
