@@ -1019,9 +1019,8 @@ def LoadCodereviewSettingsFromFile(fileobj):
   SetProperty('tree-status-url', 'STATUS', unset_error_ok=True)
   SetProperty('viewvc-url', 'VIEW_VC', unset_error_ok=True)
 
-  if 'GERRIT_HOST' in keyvals and 'GERRIT_PORT' in keyvals:
+  if 'GERRIT_HOST' in keyvals:
     RunGit(['config', 'gerrit.host', keyvals['GERRIT_HOST']])
-    RunGit(['config', 'gerrit.port', keyvals['GERRIT_PORT']])
 
   if 'PUSH_URL_CONFIG' in keyvals and 'ORIGIN_URL_CONFIG' in keyvals:
     #should be of the form

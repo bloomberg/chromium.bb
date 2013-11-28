@@ -662,7 +662,6 @@ class TestGitCl(TestCase):
            'rietveld.viewvc-url'],), ''),
         ((['git', 'config', 'gerrit.host',
            'gerrit.chromium.org'],), ''),
-        ((['git', 'config', 'gerrit.port', '29418'],), ''),
         # DownloadHooks(False)
         ((['git', 'config', 'gerrit.host'],),
          'gerrit.chromium.org'),
