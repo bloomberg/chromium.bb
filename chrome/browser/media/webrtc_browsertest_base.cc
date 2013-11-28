@@ -5,7 +5,6 @@
 #include "chrome/browser/media/webrtc_browsertest_base.h"
 
 #include "base/strings/stringprintf.h"
-#include "base/threading/platform_thread.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -82,9 +81,6 @@ void WebRtcTestBase::GetUserMediaAndDismiss(
 
 void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,
                                   const std::string& constraints) const {
-  // TODO(phoglund): temporary hack to work around/analyze b/281268.
-  base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(2));
-
   // Request user media: this will launch the media stream info bar.
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(

@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/test_timeouts.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
@@ -179,6 +180,10 @@ class WebrtcBrowserTest : public WebRtcTestBase {
     chrome::AddTabAt(browser(), GURL(), -1, true);
     ui_test_utils::NavigateToURL(
         browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
+
+    // TODO(phoglund): temporary hack to work around/analyze b/281268.
+    base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(2));
+
     content::WebContents* left_tab =
         browser()->tab_strip_model()->GetActiveWebContents();
     GetUserMediaAndAccept(left_tab);
