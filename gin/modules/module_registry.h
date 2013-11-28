@@ -6,9 +6,11 @@
 #define GIN_MODULES_MODULE_REGISTRY_H_
 
 #include <list>
+#include <map>
 #include <set>
 #include <string>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "gin/per_context_data.h"
@@ -30,6 +32,8 @@ struct PendingModule;
 //
 class ModuleRegistry : public ContextSupplement {
  public:
+  typedef base::Callback<void (v8::Handle<v8::Value>)> LoadModuleCallback;
+
   virtual ~ModuleRegistry();
 
   static ModuleRegistry* From(v8::Handle<v8::Context> context);
@@ -46,6 +50,10 @@ class ModuleRegistry : public ContextSupplement {
   void AddPendingModule(v8::Isolate* isolate,
                         scoped_ptr<PendingModule> pending);
 
+  void LoadModule(v8::Isolate* isolate,
+                  const std::string& id,
+                  LoadModuleCallback callback);
+
   // The caller must have already entered our context.
   void AttemptToLoadMoreModules(v8::Isolate* isolate);
 
@@ -59,6 +67,7 @@ class ModuleRegistry : public ContextSupplement {
 
  private:
   typedef ScopedVector<PendingModule> PendingModuleVector;
+  typedef std::map<std::string, LoadModuleCallback> LoadModuleCallbackMap;
 
   explicit ModuleRegistry(v8::Isolate* isolate);
 
@@ -73,8 +82,12 @@ class ModuleRegistry : public ContextSupplement {
   bool CheckDependencies(PendingModule* pending);
   bool AttemptToLoad(v8::Isolate* isolate, scoped_ptr<PendingModule> pending);
 
+  v8::Handle<v8::Value> GetModule(v8::Isolate* isolate, const std::string& id);
+
   std::set<std::string> available_modules_;
   std::set<std::string> unsatisfied_dependencies_;
+
+  LoadModuleCallbackMap waiting_callbacks_;
 
   PendingModuleVector pending_modules_;
   v8::Persistent<v8::Object> modules_;

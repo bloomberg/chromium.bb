@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "gin/modules/module_runner_delegate.h"
+#include "mojo/public/system/core.h"
 
 namespace mojo {
 namespace apps {
@@ -15,6 +16,8 @@ class MojoRunnerDelegate : public gin::ModuleRunnerDelegate {
  public:
   MojoRunnerDelegate();
   virtual ~MojoRunnerDelegate();
+
+  void Start(gin::Runner* runner, MojoHandle pipe, const std::string& module);
 
  private:
   // From ModuleRunnerDelegate:

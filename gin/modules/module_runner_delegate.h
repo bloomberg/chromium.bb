@@ -32,6 +32,9 @@ class ModuleRunnerDelegate : public RunnerDelegate {
   // lazily.
   void AddBuiltinModule(const std::string& id, ModuleTemplateGetter templ);
 
+ protected:
+  void AttemptToLoadMoreModules(Runner* runner);
+
  private:
   typedef std::map<std::string, ModuleTemplateGetter> BuiltinModuleMap;
 

@@ -306,11 +306,11 @@
         'mojo_system',
       ],
       'sources': [
-        'apps/js/bootstrap.cc',
-        'apps/js/bootstrap.h',
         'apps/js/main.cc',
         'apps/js/mojo_runner_delegate.cc',
         'apps/js/mojo_runner_delegate.h',
+        'apps/js/threading.cc',
+        'apps/js/threading.h',
       ],
     },
     {

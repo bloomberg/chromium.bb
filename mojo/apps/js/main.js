@@ -4,10 +4,10 @@
 
 define([
     "console",
-    "mojo/apps/js/bootstrap",
+    "mojo/apps/js/threading",
     "mojo/public/bindings/js/connector",
     "mojom/hello_world_service",
-], function(console, bootstrap, connector, hello) {
+], function(console, threading, connector, hello) {
 
   function HelloWorldClientImpl() {
   }
@@ -18,12 +18,16 @@ define([
   HelloWorldClientImpl.prototype.didReceiveGreeting = function(result) {
     console.log("DidReceiveGreeting from pipe: " + result);
     connection.close();
-    bootstrap.quit();
+    threading.quit();
   };
 
-  var connection = new connector.Connection(bootstrap.initialHandle,
-                                            HelloWorldClientImpl,
-                                            hello.HelloWorldServiceProxy);
+  var connection = null;
 
-  connection.remote.greeting("hello, world!");
+  return function(handle) {
+    connection = new connector.Connection(handle,
+                                          HelloWorldClientImpl,
+                                          hello.HelloWorldServiceProxy);
+
+    connection.remote.greeting("hello, world!");
+  };
 });

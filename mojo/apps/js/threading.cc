@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/apps/js/bootstrap.h"
+#include "mojo/apps/js/threading.h"
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
@@ -19,15 +19,13 @@ void Quit() {
   base::MessageLoop::current()->QuitNow();
 }
 
-MojoHandle g_initial_handle = MOJO_HANDLE_INVALID;
-
 gin::WrapperInfo g_wrapper_info = { gin::kEmbedderNativeGin };
 
 }  // namespace
 
-const char Bootstrap::kModuleName[] = "mojo/apps/js/bootstrap";
+const char Threading::kModuleName[] = "mojo/apps/js/threading";
 
-v8::Local<v8::ObjectTemplate> Bootstrap::GetTemplate(v8::Isolate* isolate) {
+v8::Local<v8::ObjectTemplate> Threading::GetTemplate(v8::Isolate* isolate) {
   gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);
   v8::Local<v8::ObjectTemplate> templ = data->GetObjectTemplate(
       &g_wrapper_info);
@@ -36,20 +34,10 @@ v8::Local<v8::ObjectTemplate> Bootstrap::GetTemplate(v8::Isolate* isolate) {
     templ = v8::ObjectTemplate::New();
     templ->Set(gin::StringToSymbol(isolate, "quit"),
                gin::CreateFunctionTemplate(isolate, base::Bind(Quit)));
-
-    // Don't forget to call SetInitialHandle before getting the template.
-    DCHECK(g_initial_handle != MOJO_HANDLE_INVALID);
-    templ->Set(gin::StringToSymbol(isolate, "initialHandle"),
-               gin::ConvertToV8(isolate, g_initial_handle));
-
     data->SetObjectTemplate(&g_wrapper_info, templ);
   }
 
   return templ;
-}
-
-void Bootstrap::SetInitialHandle(MojoHandle pipe) {
-  g_initial_handle = pipe;
 }
 
 }  // namespace apps

@@ -21,6 +21,13 @@ void ModuleRunnerDelegate::AddBuiltinModule(const std::string& id,
   builtin_modules_[id] = templ;
 }
 
+void ModuleRunnerDelegate::AttemptToLoadMoreModules(Runner* runner) {
+  ModuleRegistry* registry = ModuleRegistry::From(runner->context());
+  registry->AttemptToLoadMoreModules(runner->isolate());
+  module_provider_.AttempToLoadModules(
+      runner, registry->unsatisfied_dependencies());
+}
+
 v8::Handle<v8::ObjectTemplate> ModuleRunnerDelegate::GetGlobalTemplate(
     Runner* runner) {
   v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
@@ -42,10 +49,7 @@ void ModuleRunnerDelegate::DidCreateContext(Runner* runner) {
 }
 
 void ModuleRunnerDelegate::DidRunScript(Runner* runner) {
-  ModuleRegistry* registry = ModuleRegistry::From(runner->context());
-  registry->AttemptToLoadMoreModules(runner->isolate());
-  module_provider_.AttempToLoadModules(
-      runner, registry->unsatisfied_dependencies());
+  AttemptToLoadMoreModules(runner);
 }
 
 }  // namespace gin

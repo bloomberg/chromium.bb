@@ -135,6 +135,20 @@ void ModuleRegistry::AddPendingModule(Isolate* isolate,
   AttemptToLoad(isolate, pending.Pass());
 }
 
+void ModuleRegistry::LoadModule(Isolate* isolate,
+                                const std::string& id,
+                                LoadModuleCallback callback) {
+  if (available_modules_.find(id) != available_modules_.end()) {
+    // Should we call the callback asynchronously?
+    callback.Run(GetModule(isolate, id));
+    return;
+  }
+  // Should we support multiple callers waiting on the same module?
+  DCHECK(waiting_callbacks_.find(id) == waiting_callbacks_.end());
+  waiting_callbacks_[id] = callback;
+  unsatisfied_dependencies_.insert(id);
+}
+
 void ModuleRegistry::RegisterModule(Isolate* isolate,
                                     const std::string& id,
                                     v8::Handle<Value> module) {
@@ -145,6 +159,14 @@ void ModuleRegistry::RegisterModule(Isolate* isolate,
   available_modules_.insert(id);
   v8::Handle<Object> modules = Local<Object>::New(isolate, modules_);
   modules->Set(StringToSymbol(isolate, id), module);
+
+  LoadModuleCallbackMap::iterator it = waiting_callbacks_.find(id);
+  if (it == waiting_callbacks_.end())
+    return;
+  LoadModuleCallback callback = it->second;
+  waiting_callbacks_.erase(it);
+  // Should we call the callback asynchronously?
+  callback.Run(module);
 }
 
 void ModuleRegistry::Detach(v8::Handle<Context> context) {
@@ -169,14 +191,10 @@ void ModuleRegistry::Load(Isolate* isolate, scoped_ptr<PendingModule> pending) {
   if (!pending->id.empty() && available_modules_.count(pending->id))
     return;  // We've already loaded this module.
 
-  v8::Handle<Object> modules = Local<Object>::New(isolate, modules_);
   uint32_t argc = static_cast<uint32_t>(pending->dependencies.size());
   std::vector<v8::Handle<Value> > argv(argc);
-  for (uint32_t i = 0; i < argc; ++i) {
-    v8::Handle<String> key = StringToSymbol(isolate, pending->dependencies[i]);
-    DCHECK(modules->HasOwnProperty(key));
-    argv[i] = modules->Get(key);
-  }
+  for (uint32_t i = 0; i < argc; ++i)
+    argv[i] = GetModule(isolate, pending->dependencies[i]);
 
   v8::Handle<Value> module = Local<Value>::New(isolate, pending->factory);
 
@@ -201,6 +219,14 @@ bool ModuleRegistry::AttemptToLoad(Isolate* isolate,
   }
   Load(isolate, pending.Pass());
   return true;
+}
+
+v8::Handle<v8::Value> ModuleRegistry::GetModule(v8::Isolate* isolate,
+                                                const std::string& id) {
+  v8::Handle<Object> modules = Local<Object>::New(isolate, modules_);
+  v8::Handle<String> key = StringToSymbol(isolate, id);
+  DCHECK(modules->HasOwnProperty(key));
+  return modules->Get(key);
 }
 
 void ModuleRegistry::AttemptToLoadMoreModules(Isolate* isolate) {
