@@ -71,15 +71,6 @@ typedef HashMap<FontCacheKey, OwnPtr<FontPlatformData>, FontCacheKeyHash, FontCa
 
 static FontPlatformDataCache* gFontPlatformDataCache = 0;
 
-FontPlatformData* FontCache::addFontResourcePlatformData(const FontDescription& fontDescription, const AtomicString& family)
-{
-    FontCacheKey key = fontDescription.cacheKey(family);
-    OwnPtr<FontPlatformData>& result = gFontPlatformDataCache->add(key, nullptr).iterator->value;
-    if (!result)
-        result = adoptPtr(createFontPlatformData(fontDescription, family, fontDescription.effectiveFontSize()));
-    return result.get();
-}
-
 FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& fontDescription,
     const AtomicString& passedFamilyName, bool checkingAlternateName)
 {
@@ -98,19 +89,27 @@ FontPlatformData* FontCache::getFontResourcePlatformData(const FontDescription& 
         platformInit();
     }
 
-    FontPlatformData* result = addFontResourcePlatformData(fontDescription, familyName);
-    if (result || checkingAlternateName)
-        return result;
+    FontCacheKey key = fontDescription.cacheKey(familyName);
+    FontPlatformData* result = 0;
+    bool foundResult;
+    FontPlatformDataCache::iterator it = gFontPlatformDataCache->find(key);
+    if (it == gFontPlatformDataCache->end()) {
+        result = createFontPlatformData(fontDescription, familyName, fontDescription.effectiveFontSize());
+        gFontPlatformDataCache->set(key, adoptPtr(result));
+        foundResult = result;
+    } else {
+        result = it->value.get();
+        foundResult = true;
+    }
 
-    // We were unable to find a font. We have a small set of fonts that we alias to other names,
-    // e.g., Arial/Helvetica, Courier/Courier New, etc. Try looking up the font under the aliased name.
-    const AtomicString& alternateName = alternateFamilyName(familyName);
-    if (!alternateName.isEmpty()) {
-        if (FontPlatformData* alternateFontPlatformData = addFontResourcePlatformData(fontDescription, alternateName)) {
-            FontCacheKey key = fontDescription.cacheKey(familyName);
-            result = new FontPlatformData(*alternateFontPlatformData);
-            gFontPlatformDataCache->set(key, adoptPtr(result));
-        }
+    if (!foundResult && !checkingAlternateName) {
+        // We were unable to find a font. We have a small set of fonts that we alias to other names,
+        // e.g., Arial/Helvetica, Courier/Courier New, etc. Try looking up the font under the aliased name.
+        const AtomicString& alternateName = alternateFamilyName(familyName);
+        if (!alternateName.isEmpty())
+            result = getFontResourcePlatformData(fontDescription, alternateName, true);
+        if (result)
+            gFontPlatformDataCache->set(key, adoptPtr(new FontPlatformData(*result))); // Cache the result under the old name.
     }
 
     return result;

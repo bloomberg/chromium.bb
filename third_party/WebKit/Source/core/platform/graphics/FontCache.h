@@ -127,7 +127,6 @@ private:
 
     // FIXME: This method should eventually be removed.
     FontPlatformData* getFontResourcePlatformData(const FontDescription&, const AtomicString& family, bool checkingAlternateName = false);
-    FontPlatformData* addFontResourcePlatformData(const FontDescription&, const AtomicString& family);
 
     // These methods are implemented by each platform.
     FontPlatformData* createFontPlatformData(const FontDescription&, const AtomicString& family, float fontSize);
