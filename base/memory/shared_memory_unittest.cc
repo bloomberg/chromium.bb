@@ -33,7 +33,9 @@
 #endif
 
 static const int kNumThreads = 5;
+#if !defined(OS_IOS)  // iOS does not allow multiple processes.
 static const int kNumTasks = 5;
+#endif
 
 namespace base {
 
