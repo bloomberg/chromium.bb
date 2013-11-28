@@ -48,7 +48,8 @@ IsolateHolder::IsolateHolder()
   EnsureV8Initialized(true);
   isolate_ = v8::Isolate::New();
   v8::ResourceConstraints constraints;
-  constraints.ConfigureDefaults(base::SysInfo::AmountOfPhysicalMemory());
+  constraints.ConfigureDefaults(base::SysInfo::AmountOfPhysicalMemory(),
+                                base::SysInfo::NumberOfProcessors());
   v8::SetResourceConstraints(isolate_, &constraints);
   v8::Isolate::Scope isolate_scope(isolate_);
   v8::HandleScope handle_scope(isolate_);

@@ -37,6 +37,8 @@ class PerIsolateData {
   v8::Local<v8::ObjectTemplate> GetObjectTemplate(WrapperInfo* info);
   v8::Local<v8::FunctionTemplate> GetFunctionTemplate(WrapperInfo* info);
 
+  v8::Isolate* isolate() { return isolate_; }
+
  private:
   typedef std::map<
       WrapperInfo*, v8::Eternal<v8::ObjectTemplate> > ObjectTemplateMap;

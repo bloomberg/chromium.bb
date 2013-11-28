@@ -21,7 +21,7 @@ using v8::Value;
 namespace gin {
 
 Handle<Value> Converter<bool>::ToV8(Isolate* isolate, bool val) {
-  return Boolean::New(val).As<Value>();
+  return Boolean::New(isolate, val).As<Value>();
 }
 
 bool Converter<bool>::FromV8(Isolate* isolate, Handle<Value> val, bool* out) {
@@ -30,7 +30,7 @@ bool Converter<bool>::FromV8(Isolate* isolate, Handle<Value> val, bool* out) {
 }
 
 Handle<Value> Converter<int32_t>::ToV8(Isolate* isolate, int32_t val) {
-  return Integer::New(val, isolate).As<Value>();
+  return Integer::New(isolate, val).As<Value>();
 }
 
 bool Converter<int32_t>::FromV8(Isolate* isolate, Handle<Value> val,
@@ -42,7 +42,7 @@ bool Converter<int32_t>::FromV8(Isolate* isolate, Handle<Value> val,
 }
 
 Handle<Value> Converter<uint32_t>::ToV8(Isolate* isolate, uint32_t val) {
-  return Integer::NewFromUnsigned(val, isolate).As<Value>();
+  return Integer::NewFromUnsigned(isolate, val).As<Value>();
 }
 
 bool Converter<uint32_t>::FromV8(Isolate* isolate, Handle<Value> val,

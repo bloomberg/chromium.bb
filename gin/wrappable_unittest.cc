@@ -75,12 +75,12 @@ void RegisterTemplate(v8::Isolate* isolate) {
   PerIsolateData* data = PerIsolateData::From(isolate);
   DCHECK(data->GetObjectTemplate(&MyObject::kWrapperInfo).IsEmpty());
 
-  v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
+  v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
   templ->SetInternalFieldCount(kNumberOfInternalFields);
   templ->SetAccessorProperty(
       StringToSymbol(isolate, "value"),
-      v8::FunctionTemplate::New(MyObjectGetValue),
-      v8::FunctionTemplate::New(MyObjectSetValue));
+      v8::FunctionTemplate::New(isolate, MyObjectGetValue),
+      v8::FunctionTemplate::New(isolate, MyObjectSetValue));
 
   data->SetObjectTemplate(&MyObject::kWrapperInfo, templ);
 }

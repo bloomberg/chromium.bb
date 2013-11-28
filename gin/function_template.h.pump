@@ -173,6 +173,7 @@ v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
   typedef internal::CallbackHolder<R($for ARG , [[P$(ARG)]])> HolderT;
   scoped_refptr<HolderT> holder(new HolderT(callback));
   return v8::FunctionTemplate::New(
+      isolate,
       &internal::DispatchToCallback<R$for ARG [[, P$(ARG)]]>,
       ConvertToV8<internal::CallbackHolderBase*>(isolate, holder.get()));
 }

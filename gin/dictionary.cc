@@ -21,7 +21,7 @@ Dictionary::~Dictionary() {
 
 Dictionary Dictionary::CreateEmpty(v8::Isolate* isolate) {
   Dictionary dictionary(isolate);
-  dictionary.object_ = v8::Object::New();
+  dictionary.object_ = v8::Object::New(isolate);
   return dictionary;
 }
 

@@ -34,25 +34,25 @@ TEST_F(ConverterTest, Bool) {
   HandleScope handle_scope(instance_->isolate());
 
   EXPECT_TRUE(Converter<bool>::ToV8(instance_->isolate(), true)->StrictEquals(
-      Boolean::New(true)));
+      Boolean::New(instance_->isolate(), true)));
   EXPECT_TRUE(Converter<bool>::ToV8(instance_->isolate(), false)->StrictEquals(
-      Boolean::New(false)));
+      Boolean::New(instance_->isolate(), false)));
 
   struct {
     Handle<Value> input;
     bool expected;
   } test_data[] = {
-    { Boolean::New(false).As<Value>(), false },
-    { Boolean::New(true).As<Value>(), true },
-    { Number::New(0).As<Value>(), false },
-    { Number::New(1).As<Value>(), true },
-    { Number::New(-1).As<Value>(), true },
-    { Number::New(0.1).As<Value>(), true },
-    { String::New("").As<Value>(), false },
-    { String::New("foo").As<Value>(), true },
-    { Object::New().As<Value>(), true },
-    { Null().As<Value>(), false },
-    { Undefined().As<Value>(), false },
+    { Boolean::New(instance_->isolate(), false).As<Value>(), false },
+    { Boolean::New(instance_->isolate(), true).As<Value>(), true },
+    { Number::New(instance_->isolate(), 0).As<Value>(), false },
+    { Number::New(instance_->isolate(), 1).As<Value>(), true },
+    { Number::New(instance_->isolate(), -1).As<Value>(), true },
+    { Number::New(instance_->isolate(), 0.1).As<Value>(), true },
+    { String::NewFromUtf8(instance_->isolate(), "").As<Value>(), false },
+    { String::NewFromUtf8(instance_->isolate(), "foo").As<Value>(), true },
+    { Object::New(instance_->isolate()).As<Value>(), true },
+    { Null(instance_->isolate()).As<Value>(), false },
+    { Undefined(instance_->isolate()).As<Value>(), false },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data); ++i) {
@@ -82,19 +82,19 @@ TEST_F(ConverterTest, Int32) {
     bool expect_sucess;
     int expected_result;
   } test_data_from[] = {
-    { Boolean::New(false).As<Value>(), false, 0 },
-    { Boolean::New(true).As<Value>(), false, 0 },
-    { Integer::New(-1).As<Value>(), true, -1 },
-    { Integer::New(0).As<Value>(), true, 0 },
-    { Integer::New(1).As<Value>(), true, 1 },
-    { Number::New(-1).As<Value>(), true, -1 },
-    { Number::New(1.1).As<Value>(), false, 0 },
-    { String::New("42").As<Value>(), false, 0 },
-    { String::New("foo").As<Value>(), false, 0 },
-    { Object::New().As<Value>(), false, 0 },
-    { Array::New().As<Value>(), false, 0 },
-    { v8::Null().As<Value>(), false, 0 },
-    { v8::Undefined().As<Value>(), false, 0 },
+    { Boolean::New(instance_->isolate(), false).As<Value>(), false, 0 },
+    { Boolean::New(instance_->isolate(), true).As<Value>(), false, 0 },
+    { Integer::New(instance_->isolate(), -1).As<Value>(), true, -1 },
+    { Integer::New(instance_->isolate(), 0).As<Value>(), true, 0 },
+    { Integer::New(instance_->isolate(), 1).As<Value>(), true, 1 },
+    { Number::New(instance_->isolate(), -1).As<Value>(), true, -1 },
+    { Number::New(instance_->isolate(), 1.1).As<Value>(), false, 0 },
+    { String::NewFromUtf8(instance_->isolate(), "42").As<Value>(), false, 0 },
+    { String::NewFromUtf8(instance_->isolate(), "foo").As<Value>(), false, 0 },
+    { Object::New(instance_->isolate()).As<Value>(), false, 0 },
+    { Array::New(instance_->isolate()).As<Value>(), false, 0 },
+    { v8::Null(instance_->isolate()).As<Value>(), false, 0 },
+    { v8::Undefined(instance_->isolate()).As<Value>(), false, 0 },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_data_from); ++i) {
@@ -120,8 +120,8 @@ TEST_F(ConverterTest, Vector) {
   ASSERT_FALSE(js_array.IsEmpty());
   EXPECT_EQ(3u, js_array->Length());
   for (size_t i = 0; i < expected.size(); ++i) {
-    EXPECT_TRUE(Integer::New(expected[i])->StrictEquals(
-        js_array->Get(static_cast<int>(i))));
+    EXPECT_TRUE(Integer::New(instance_->isolate(), expected[i])
+                    ->StrictEquals(js_array->Get(static_cast<int>(i))));
   }
 
   std::vector<int> actual;
