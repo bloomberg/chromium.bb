@@ -157,7 +157,7 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // Checks available amount of space in the endpoint buffer and reads
   // data from the client to fill up the buffer without causing audio
   // glitches.
-  bool RenderAudioFromSource(IAudioClock* audio_clock, UINT64 device_frequency);
+  bool RenderAudioFromSource(UINT64 device_frequency);
 
   // Called when the device will be opened in exclusive mode and use the
   // application specified format.
@@ -206,9 +206,6 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // Size in bytes of each audio packet.
   size_t packet_size_bytes_;
 
-  // Size in milliseconds of each audio packet.
-  float packet_size_ms_;
-
   // Length of the audio endpoint buffer.
   uint32 endpoint_buffer_size_frames_;
 
@@ -229,9 +226,6 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // Pointer to the client that will deliver audio samples to be played out.
   AudioSourceCallback* source_;
 
-  // An IMMDeviceEnumerator interface which represents a device enumerator.
-  base::win::ScopedComPtr<IMMDeviceEnumerator> device_enumerator_;
-
   // An IAudioClient interface which enables a client to create and initialize
   // an audio stream between an audio application and the audio engine.
   base::win::ScopedComPtr<IAudioClient> audio_client_;
@@ -249,6 +243,8 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
 
   // Container for retrieving data from AudioSourceCallback::OnMoreData().
   scoped_ptr<AudioBus> audio_bus_;
+
+  base::win::ScopedComPtr<IAudioClock> audio_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(WASAPIAudioOutputStream);
 };
