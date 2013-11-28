@@ -163,9 +163,15 @@ bool Credentials::HasOpenDirectory(int proc_fd) {
   } else {
     proc_self_fd = openat(AT_FDCWD, "/proc/self/fd", O_DIRECTORY | O_RDONLY);
     if (proc_self_fd < 0) {
+      // If this process has been chrooted (eg into /proc/self/fdinfo) then
+      // the new root dir will not have directory listing permissions for us
+      // (hence EACCES).  And if we do have this permission, then /proc won't
+      // exist anyway (hence ENOENT).
+      DPCHECK(errno == EACCES || errno == ENOENT)
+        << "Unexpected failure when trying to open /proc/self/fd: ("
+        << errno << ") " << strerror(errno);
+
       // If not available, guess false.
-      // TODO(mostynb@opera.com): add a CHECK_EQ(ENOENT, errno); Figure out what
-      // other situations are here. http://crbug.com/314985
       return false;
     }
   }
