@@ -69,6 +69,9 @@ ExecutionContext* Console::context()
 
 void Console::reportMessageToClient(MessageLevel level, const String& message, PassRefPtr<ScriptCallStack> callStack)
 {
+    if (!m_frame || !m_frame->page() || !callStack.get())
+        return;
+
     String stackTrace;
     if (m_frame->page()->chrome().client().shouldReportDetailedMessageForSource(callStack->at(0).sourceURL())) {
         RefPtr<ScriptCallStack> fullStack = createScriptCallStack(ScriptCallStack::maxCallStackSizeToCapture);
