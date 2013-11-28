@@ -1010,11 +1010,11 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
   if (!host_)
     return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 
-  if (input_event.type == blink::WebInputEvent::GestureTapDown &&
-      accelerated_surface_route_id_) {
+  if (input_event.type == blink::WebInputEvent::GestureTapDown ||
+      input_event.type == blink::WebInputEvent::TouchStart) {
     GpuDataManagerImpl* gpu_data = GpuDataManagerImpl::GetInstance();
     GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
-    if (shim && gpu_data &&
+    if (shim && gpu_data && accelerated_surface_route_id_ &&
         gpu_data->IsDriverBugWorkaroundActive(gpu::WAKE_UP_GPU_BEFORE_DRAWING))
       shim->Send(
           new AcceleratedSurfaceMsg_WakeUpGpu(accelerated_surface_route_id_));
