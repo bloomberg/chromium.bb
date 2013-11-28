@@ -64,8 +64,8 @@ class DesktopCaptureDeviceAshTest : public testing::Test {
     // can use gfx::NativeWindow::GetWindowAtScreenPoint() to locate the
     // root window associated with the primary display.
     gfx::Rect desktop_bounds = root_window()->bounds();
-    window_delegate_.reset(new aura::test::TestWindowDelegate());
-    desktop_window_.reset(new aura::Window(window_delegate_.get()));
+    desktop_window_.reset(new aura::Window(
+        new aura::test::TestWindowDelegate()));
     desktop_window_->Init(ui::LAYER_TEXTURED);
     desktop_window_->SetBounds(desktop_bounds);
     aura::client::ParentWindowWithContext(
@@ -77,7 +77,6 @@ class DesktopCaptureDeviceAshTest : public testing::Test {
     helper_->RunAllPendingInMessageLoop();
     root_window()->RemoveChild(desktop_window_.get());
     desktop_window_.reset();
-    window_delegate_.reset();
     helper_->TearDown();
   }
 
@@ -88,7 +87,6 @@ class DesktopCaptureDeviceAshTest : public testing::Test {
   BrowserThreadImpl browser_thread_for_ui_;
   scoped_ptr<aura::test::AuraTestHelper> helper_;
   scoped_ptr<aura::Window> desktop_window_;
-  scoped_ptr<aura::test::TestWindowDelegate> window_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopCaptureDeviceAshTest);
 };
