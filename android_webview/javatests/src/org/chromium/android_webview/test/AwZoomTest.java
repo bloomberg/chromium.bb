@@ -13,7 +13,6 @@ import android.view.ViewConfiguration;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -132,6 +131,21 @@ public class AwZoomTest extends AwTestBase {
             }, TEST_TIMEOUT_MS, CHECK_INTERVAL_MS);
     }
 
+    private boolean waitUntilCanZoomIn() throws Throwable {
+        return CriteriaHelper.pollForCriteria(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    try {
+                        return canZoomInOnUiThread(mAwContents);
+                    } catch (Throwable t) {
+                        t.printStackTrace();
+                        fail("Failed to query canZoomIn: " + t.toString());
+                        return false;
+                    }
+                }
+            }, TEST_TIMEOUT_MS, CHECK_INTERVAL_MS);
+    }
+
     private boolean waitUntilCanNotZoom() throws Throwable {
         return CriteriaHelper.pollForCriteria(new Criteria() {
                 @Override
@@ -148,12 +162,12 @@ public class AwZoomTest extends AwTestBase {
             }, TEST_TIMEOUT_MS, CHECK_INTERVAL_MS);
     }
 
-    private void runMagnificationTest(boolean supportZoom) throws Throwable {
-        int onScaleChangedCallCount = mContentsClient.getOnScaleChangedHelper().getCallCount();
+    private void runMagnificationTest() throws Throwable {
+        getAwSettingsOnUiThread(mAwContents).setUseWideViewPort(true);
+        assertFalse("Should not be able to zoom in", canZoomInOnUiThread(mAwContents));
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getZoomableHtml(), "text/html", false);
-        mContentsClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
-        getAwSettingsOnUiThread(mAwContents).setSupportZoom(supportZoom);
+        waitUntilCanZoomIn();
         assertTrue("Should be able to zoom in", canZoomInOnUiThread(mAwContents));
         assertFalse("Should not be able to zoom out", canZoomOutOnUiThread(mAwContents));
 
@@ -168,26 +182,20 @@ public class AwZoomTest extends AwTestBase {
         assertTrue("Should be able to zoom in", canZoomInOnUiThread(mAwContents));
     }
 
-    /*
     @SmallTest
     @Feature({"AndroidWebView"})
-    http://crbug.com/239144
-    */
-    @DisabledTest
     public void testMagnification() throws Throwable {
-        runMagnificationTest(true);
+        getAwSettingsOnUiThread(mAwContents).setSupportZoom(true);
+        runMagnificationTest();
     }
 
     // According to Android CTS test, zoomIn/Out must work
     // even if supportZoom is turned off.
-    /*
     @SmallTest
     @Feature({"AndroidWebView"})
-    http://crbug.com/239144
-    */
-    @DisabledTest
     public void testMagnificationWithZoomSupportOff() throws Throwable {
-        runMagnificationTest(false);
+        getAwSettingsOnUiThread(mAwContents).setSupportZoom(false);
+        runMagnificationTest();
     }
 
     @SmallTest
@@ -208,18 +216,15 @@ public class AwZoomTest extends AwTestBase {
         assertFalse(isMultiTouchZoomSupportedOnUiThread());
     }
 
-    /*
     @SmallTest
     @Feature({"AndroidWebView"})
-    http://crbug.com/239144
-    */
-    @DisabledTest
     public void testZoomControls() throws Throwable {
         AwSettings webSettings = getAwSettingsOnUiThread(mAwContents);
-        int onScaleChangedCallCount = mContentsClient.getOnScaleChangedHelper().getCallCount();
+        webSettings.setUseWideViewPort(true);
+        assertFalse("Should not be able to zoom in", canZoomInOnUiThread(mAwContents));
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getZoomableHtml(), "text/html", false);
-        mContentsClient.getOnScaleChangedHelper().waitForCallback(onScaleChangedCallCount);
+        waitUntilCanZoomIn();
         // It must be possible to zoom in (or zoom out) for zoom controls to be shown
         assertTrue("Should be able to zoom in", canZoomInOnUiThread(mAwContents));
 

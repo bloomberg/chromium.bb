@@ -7,7 +7,6 @@ package org.chromium.android_webview.test;
 import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
