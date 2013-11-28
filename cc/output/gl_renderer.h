@@ -417,6 +417,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   bool is_using_bind_uniform_;
   bool visible_;
   bool is_scissor_enabled_;
+  bool scissor_rect_needs_reset_;
   bool stencil_shadow_;
   bool blend_shadow_;
   unsigned program_shadow_;

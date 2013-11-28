@@ -182,6 +182,7 @@ GLRenderer::GLRenderer(RendererClient* client,
       is_backbuffer_discarded_(false),
       visible_(true),
       is_scissor_enabled_(false),
+      scissor_rect_needs_reset_(true),
       stencil_shadow_(false),
       blend_shadow_(false),
       highp_threshold_min_(highp_threshold_min),
@@ -2663,7 +2664,7 @@ void GLRenderer::SetScissorTestRect(gfx::Rect scissor_rect) {
 
   // Don't unnecessarily ask the context to change the scissor, because it
   // may cause undesired GPU pipeline flushes.
-  if (scissor_rect == scissor_rect_)
+  if (scissor_rect == scissor_rect_ && !scissor_rect_needs_reset_)
     return;
 
   scissor_rect_ = scissor_rect;
@@ -2673,6 +2674,8 @@ void GLRenderer::SetScissorTestRect(gfx::Rect scissor_rect) {
                         scissor_rect.y(),
                         scissor_rect.width(),
                         scissor_rect.height()));
+
+  scissor_rect_needs_reset_ = false;
 }
 
 void GLRenderer::SetDrawViewport(gfx::Rect window_space_viewport) {
@@ -3149,6 +3152,7 @@ void GLRenderer::ReinitializeGLState() {
   // Make sure scissoring starts as disabled.
   is_scissor_enabled_ = false;
   GLC(context_, context_->disable(GL_SCISSOR_TEST));
+  scissor_rect_needs_reset_ = true;
 }
 
 bool GLRenderer::CanUseSkiaGPUBackend() const {
