@@ -1733,6 +1733,53 @@ TEST_F(RenderTextTest, Multiline_SufficientWidth) {
   }
 }
 
+TEST_F(RenderTextTest, Multiline_Newline) {
+  const struct {
+    const wchar_t* const text;
+    // Ranges of the characters on each line preceding the newline.
+    const Range first_line_char_range;
+    const Range second_line_char_range;
+  } kTestStrings[] = {
+    { L"abc\ndef", Range(0, 3), Range(4, 7) },
+    { L"a \n b ", Range(0, 2), Range(3, 6) },
+    { L"\n" , Range::InvalidRange(), Range::InvalidRange() }
+  };
+
+  scoped_ptr<RenderTextWin> render_text(
+      static_cast<RenderTextWin*>(RenderText::CreateInstance()));
+  render_text->SetDisplayRect(Rect(200, 1000));
+  render_text->SetMultiline(true);
+  Canvas canvas;
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestStrings); ++i) {
+    SCOPED_TRACE(base::StringPrintf("kTestStrings[%" PRIuS "]", i));
+    render_text->SetText(WideToUTF16(kTestStrings[i].text));
+    render_text->Draw(&canvas);
+
+    ASSERT_EQ(2U, render_text->lines_.size());
+
+    const Range first_expected_range = kTestStrings[i].first_line_char_range;
+    ASSERT_EQ(first_expected_range.IsValid() ? 2U : 1U,
+              render_text->lines_[0].segments.size());
+    if (first_expected_range.IsValid())
+      EXPECT_EQ(first_expected_range,
+                render_text->lines_[0].segments[0].char_range);
+
+    const internal::LineSegment& newline_segment =
+        render_text->lines_[0].segments[first_expected_range.IsValid() ? 1 : 0];
+    ASSERT_EQ(1U, newline_segment.char_range.length());
+    EXPECT_EQ(L'\n', kTestStrings[i].text[newline_segment.char_range.start()]);
+
+    const Range second_expected_range = kTestStrings[i].second_line_char_range;
+    ASSERT_EQ(second_expected_range.IsValid() ? 1U : 0U,
+              render_text->lines_[1].segments.size());
+    if (second_expected_range.IsValid())
+      EXPECT_EQ(second_expected_range,
+                render_text->lines_[1].segments[0].char_range);
+  }
+}
+
+
 TEST_F(RenderTextTest, Win_BreakRunsByUnicodeBlocks) {
   scoped_ptr<RenderTextWin> render_text(
       static_cast<RenderTextWin*>(RenderText::CreateInstance()));

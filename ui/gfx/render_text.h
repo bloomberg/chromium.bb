@@ -541,6 +541,7 @@ class GFX_EXPORT RenderText {
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_MinWidth);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_NormalWidth);
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_SufficientWidth);
+  FRIEND_TEST_ALL_PREFIXES(RenderTextTest, Multiline_Newline);
 
   // Set the cursor to |position|, with the caret trailing the previous
   // grapheme, or if there is no previous grapheme, leading the cursor position.
