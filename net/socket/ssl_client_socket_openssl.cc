@@ -163,6 +163,9 @@ int MapOpenSSLErrorSSL() {
     case SSL_R_INVALID_TICKET_KEYS_LENGTH:
     case SSL_R_KEY_ARG_TOO_LONG:
     case SSL_R_READ_WRONG_PACKET_TYPE:
+    // SSL_do_handshake reports this error when the server responds to a
+    // ClientHello with a fatal close_notify alert.
+    case SSL_AD_REASON_OFFSET + SSL_AD_CLOSE_NOTIFY:
     case SSL_R_SSLV3_ALERT_UNEXPECTED_MESSAGE:
     // TODO(joth): SSL_R_SSLV3_ALERT_HANDSHAKE_FAILURE may be returned from the
     // server after receiving ClientHello if there's no common supported cipher.
