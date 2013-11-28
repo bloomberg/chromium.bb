@@ -40,6 +40,10 @@
 #include "platform/Logging.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/Deque.h"
+#include "wtf/HashSet.h"
+#include "wtf/ThreadSpecific.h"
+#include "wtf/Threading.h"
 #include "wtf/text/CString.h"
 
 namespace WebCore {
@@ -60,7 +64,65 @@ const CString utf8FilePath(Blob* blob)
 
 } // namespace
 
+// Embedders like chromium limit the number of simultaneous requests to avoid
+// excessive IPC congestion. We limit this to 100 per thread to throttle the
+// requests (the value is arbitrarily chosen).
+static const size_t kMaxOutstandingRequestsPerThread = 100;
 static const double progressNotificationIntervalMS = 50;
+
+class FileReader::ThrottlingController {
+public:
+    ThrottlingController() : m_maxRunningReaders(kMaxOutstandingRequestsPerThread) { }
+    ~ThrottlingController() { }
+
+    void pushReader(FileReader* reader)
+    {
+        reader->setPendingActivity(reader);
+        if (m_pendingReaders.isEmpty()
+            && m_runningReaders.size() < m_maxRunningReaders) {
+            reader->executePendingRead();
+            m_runningReaders.add(reader);
+            return;
+        }
+        m_pendingReaders.append(reader);
+        executeReaders();
+    }
+
+    void removeReader(FileReader* reader)
+    {
+        HashSet<FileReader*>::const_iterator hashIter = m_runningReaders.find(reader);
+        if (hashIter != m_runningReaders.end()) {
+            m_runningReaders.remove(hashIter);
+            reader->unsetPendingActivity(reader);
+            executeReaders();
+            return;
+        }
+        Deque<FileReader*>::const_iterator dequeEnd = m_pendingReaders.end();
+        for (Deque<FileReader*>::const_iterator it = m_pendingReaders.begin(); it != dequeEnd; ++it) {
+            if (*it == reader) {
+                m_pendingReaders.remove(it);
+                reader->unsetPendingActivity(reader);
+                return;
+            }
+        }
+    }
+
+private:
+    void executeReaders()
+    {
+        while (m_runningReaders.size() < m_maxRunningReaders) {
+            if (m_pendingReaders.isEmpty())
+                return;
+            FileReader* reader = m_pendingReaders.takeFirst();
+            reader->executePendingRead();
+            m_runningReaders.add(reader);
+        }
+    }
+
+    const size_t m_maxRunningReaders;
+    Deque<FileReader*> m_pendingReaders;
+    HashSet<FileReader*> m_runningReaders;
+};
 
 PassRefPtr<FileReader> FileReader::create(ExecutionContext* context)
 {
@@ -91,6 +153,8 @@ const AtomicString& FileReader::interfaceName() const
 
 void FileReader::stop()
 {
+    if (m_loadingState == LoadingStateLoading || m_loadingState == LoadingStatePending)
+        throttlingController()->removeReader(this);
     terminate();
 }
 
@@ -148,13 +212,18 @@ void FileReader::readInternal(Blob* blob, FileReaderLoader::ReadType type, Excep
         return;
     }
 
-    setPendingActivity(this);
-
     m_blob = blob;
     m_readType = type;
     m_state = LOADING;
-    m_loadingState = LoadingStateLoading;
+    m_loadingState = LoadingStatePending;
     m_error = 0;
+    throttlingController()->pushReader(this);
+}
+
+void FileReader::executePendingRead()
+{
+    ASSERT(m_loadingState == LoadingStatePending);
+    m_loadingState = LoadingStateLoading;
 
     m_loader = adoptPtr(new FileReaderLoader(m_readType, this));
     m_loader->setEncoding(m_encoding);
@@ -171,8 +240,10 @@ void FileReader::abort()
 {
     LOG(FileAPI, "FileReader: aborting\n");
 
-    if (m_loadingState != LoadingStateLoading)
+    if (m_loadingState != LoadingStateLoading
+        && m_loadingState != LoadingStatePending) {
         return;
+    }
     m_loadingState = LoadingStateAborted;
 
     // Schedule to have the abort done later since abort() might be called from the event handler and we do not want the resource loading code to be in the stack.
@@ -193,7 +264,7 @@ void FileReader::doAbort()
     fireEvent(EventTypeNames::loadend);
 
     // All possible events have fired and we're done, no more pending activity.
-    unsetPendingActivity(this);
+    throttlingController()->removeReader(this);
 }
 
 void FileReader::terminate()
@@ -243,7 +314,7 @@ void FileReader::didFinishLoading()
     fireEvent(EventTypeNames::loadend);
 
     // All possible events have fired and we're done, no more pending activity.
-    unsetPendingActivity(this);
+    throttlingController()->removeReader(this);
 }
 
 void FileReader::didFail(FileError::ErrorCode errorCode)
@@ -261,7 +332,7 @@ void FileReader::didFail(FileError::ErrorCode errorCode)
     fireEvent(EventTypeNames::loadend);
 
     // All possible events have fired and we're done, no more pending activity.
-    unsetPendingActivity(this);
+    throttlingController()->removeReader(this);
 }
 
 void FileReader::fireEvent(const AtomicString& type)
@@ -275,6 +346,12 @@ void FileReader::fireEvent(const AtomicString& type)
         dispatchEvent(ProgressEvent::create(type, true, m_loader->bytesLoaded(), m_loader->totalBytes()));
     else
         dispatchEvent(ProgressEvent::create(type, false, m_loader->bytesLoaded(), 0));
+}
+
+ThreadSpecific<FileReader::ThrottlingController>& FileReader::throttlingController()
+{
+    AtomicallyInitializedStatic(ThreadSpecific<FileReader::ThrottlingController>*, controller = new ThreadSpecific<FileReader::ThrottlingController>);
+    return *controller;
 }
 
 PassRefPtr<ArrayBuffer> FileReader::arrayBufferResult() const

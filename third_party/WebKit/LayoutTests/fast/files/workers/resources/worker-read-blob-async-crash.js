@@ -1,6 +1,6 @@
 onmessage = function(event)
 {
-    var count = 100;
+    var count = 10000;
     var chunk = new Uint8Array(1);
     chunk[0] = 0;
     var blob = new Blob([chunk]);

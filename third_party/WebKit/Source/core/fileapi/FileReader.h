@@ -39,6 +39,7 @@
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
+#include "wtf/ThreadSpecific.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -96,6 +97,8 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(loadend);
 
 private:
+    class ThrottlingController;
+
     FileReader(ExecutionContext*);
 
     void terminate();
@@ -103,12 +106,16 @@ private:
     void fireErrorEvent(int httpStatusCode);
     void fireEvent(const AtomicString& type);
 
+    static ThreadSpecific<ThrottlingController>& throttlingController();
+    void executePendingRead();
+
     ReadyState m_state;
 
     // Internal loading state, which could differ from ReadyState as it's
     // for script-visible state while this one's for internal state.
     enum LoadingState {
         LoadingStateNone,
+        LoadingStatePending,
         LoadingStateLoading,
         LoadingStateAborted
     };
