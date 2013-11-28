@@ -130,7 +130,6 @@
         'audio/fake_audio_output_stream.cc',
         'audio/fake_audio_output_stream.h',
         'audio/linux/audio_manager_linux.cc',
-        'audio/linux/audio_manager_linux.h',
         'audio/mac/aggregate_device_manager.cc',
         'audio/mac/aggregate_device_manager.h',
         'audio/mac/audio_auhal_mac.cc',
