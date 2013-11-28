@@ -133,7 +133,7 @@ bool CrossSiteResourceHandler::OnResponseStarted(
   // In both cases, any pending RenderViewHost (if one was created for this
   // navigation) will stick around until the next cross-site navigation, since
   // we are unable to tell when to destroy it.
-  // See RenderViewHostManager::RendererAbortedProvisionalLoad.
+  // See RenderFrameHostManager::RendererAbortedProvisionalLoad.
   if (!swap_needed || info->IsDownload() ||
       (response->head.headers.get() &&
        response->head.headers->response_code() == 204)) {

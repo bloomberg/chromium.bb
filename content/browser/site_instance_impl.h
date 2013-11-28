@@ -71,7 +71,7 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   // For example, Chrome uses this to replace hosted app URLs with extension
   // hosts.
   // Only public so that we can make a consistent process swap decision in
-  // RenderViewHostManager.
+  // RenderFrameHostManager.
   static GURL GetEffectiveURL(BrowserContext* browser_context,
                               const GURL& url);
 

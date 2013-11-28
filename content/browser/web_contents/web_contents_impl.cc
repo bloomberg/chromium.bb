@@ -131,8 +131,8 @@
 //   a transfer was needed for a redirect).
 // - If so, CrossSiteResourceHandler pauses the response to first run the old
 //   page's unload handler.  It does this by asynchronously calling the
-//   OnCrossSiteResponse method of RenderViewHostManager on the UI thread, which
-//   sends a SwapOut message to the current RVH.
+//   OnCrossSiteResponse method of RenderFrameHostManager on the UI thread,
+//   which sends a SwapOut message to the current RVH.
 // - Once the unload handler is finished, RVHM::SwappedOut checks if a transfer
 //   to a new process is needed, based on the stored pending_nav_params_.  (This
 //   is independent of whether we started out with a cross-process navigation.)
@@ -145,7 +145,7 @@
 // - The pending renderer sends a FrameNavigate message that invokes the
 //   DidNavigate method.  This replaces the current RVH with the
 //   pending RVH.
-// - The previous renderer is kept swapped out in RenderViewHostManager in case
+// - The previous renderer is kept swapped out in RenderFrameHostManager in case
 //   the user goes back.  The process only stays live if another tab is using
 //   it, but if so, the existing frame relationships will be maintained.
 
@@ -465,7 +465,7 @@ BrowserPluginGuest* WebContentsImpl::CreateGuest(
   return new_contents->browser_plugin_guest_.get();
 }
 
-RenderViewHostManager* WebContentsImpl::GetRenderManagerForTesting() {
+RenderFrameHostManager* WebContentsImpl::GetRenderManagerForTesting() {
   return GetRenderManager();
 }
 
@@ -1019,7 +1019,7 @@ WebContents* WebContentsImpl::GetWebContents() {
 
 void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   // This is set before initializing the render manager since
-  // RenderViewHostManager::Init calls back into us via its delegate to ask if
+  // RenderFrameHostManager::Init calls back into us via its delegate to ask if
   // it should be hidden.
   should_normally_be_visible_ = !params.initially_hidden;
 
@@ -1624,7 +1624,7 @@ bool WebContentsImpl::NavigateToEntry(
   }
 
   // TODO(creis): Use entry->frame_tree_node_id() to pick which
-  // RenderViewHostManager to use.
+  // RenderFrameHostManager to use.
   RenderViewHostImpl* dest_render_view_host =
       static_cast<RenderViewHostImpl*>(GetRenderManager()->Navigate(entry));
   if (!dest_render_view_host)
@@ -2095,7 +2095,7 @@ void WebContentsImpl::DidFailProvisionalLoadWithError(
     //
     // We can't tell this apart, so we think we're tearing down the current page
     // which will cause a crash later one. There is also some code in
-    // RenderViewHostManager::RendererAbortedProvisionalLoad that is commented
+    // RenderFrameHostManager::RendererAbortedProvisionalLoad that is commented
     // out because of this problem.
     //
     // http://code.google.com/p/chromium/issues/detail?id=2855
@@ -2855,7 +2855,7 @@ void WebContentsImpl::DidNavigate(
     // When overscroll navigation gesture is enabled, a screenshot of the page
     // in its current state is taken so that it can be used during the
     // nav-gesture. It is necessary to take the screenshot here, before calling
-    // RenderViewHostManager::DidNavigateMainFrame, because that can change
+    // RenderFrameHostManager::DidNavigateMainFrame, because that can change
     // WebContents::GetRenderViewHost to return the new host, instead of the one
     // that may have just been swapped out.
     if (delegate_ && delegate_->CanOverscrollContent())
@@ -3643,7 +3643,7 @@ bool WebContentsImpl::IsHidden() {
   return capturer_count_ == 0 && !should_normally_be_visible_;
 }
 
-RenderViewHostManager* WebContentsImpl::GetRenderManager() const {
+RenderFrameHostManager* WebContentsImpl::GetRenderManager() const {
   return frame_tree_.root()->render_manager();
 }
 

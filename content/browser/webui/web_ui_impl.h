@@ -25,7 +25,7 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
 
   // Called by WebContentsImpl when the RenderView is first created. This is
   // *not* called for every page load because in some cases
-  // RenderViewHostManager will reuse RenderView instances.
+  // RenderFrameHostManager will reuse RenderView instances.
   void RenderViewCreated(RenderViewHost* render_view_host);
 
   // WebUI implementation:

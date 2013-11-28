@@ -79,7 +79,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
  public:
   // RendererManagerment -------------------------------------------------------
   // Functions for managing switching of Renderers. For WebContents, this is
-  // implemented by the RenderViewHostManager.
+  // implemented by the RenderFrameHostManager.
 
   class CONTENT_EXPORT RendererManagement {
    public:

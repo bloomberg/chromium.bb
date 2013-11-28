@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_VIEW_HOST_MANAGER_H_
-#define CONTENT_BROWSER_FRAME_HOST_RENDER_VIEW_HOST_MANAGER_H_
+#ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_MANAGER_H_
+#define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_MANAGER_H_
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -23,18 +23,17 @@ class InterstitialPageImpl;
 class NavigationControllerImpl;
 class NavigationEntry;
 class NavigationEntryImpl;
+class RenderFrameHostManagerTest;
 class RenderViewHost;
 class RenderViewHostImpl;
-class RenderViewHostManagerTest;
 class RenderWidgetHostDelegate;
 class RenderWidgetHostView;
 class TestWebContents;
 class WebUIImpl;
 
-// Manages RenderViewHosts for a WebContentsImpl. Normally there is only one and
-// it is easy to do. But we can also have transitions of processes (and hence
-// RenderViewHosts) that can get complex.
-class CONTENT_EXPORT RenderViewHostManager
+// Manages RenderFrameHosts for a FrameTreeNode.  This class acts as a state
+// machine to make cross-process navigations in a frame possible.
+class CONTENT_EXPORT RenderFrameHostManager
     : public RenderViewHostDelegate::RendererManagement,
       public NotificationObserver {
  public:
@@ -113,11 +112,11 @@ class CONTENT_EXPORT RenderViewHostManager
   // RenderViewHosts that are created.
   //
   // You must call Init() before using this class.
-  RenderViewHostManager(
+  RenderFrameHostManager(
       RenderViewHostDelegate* render_view_delegate,
       RenderWidgetHostDelegate* render_widget_delegate,
       Delegate* delegate);
-  virtual ~RenderViewHostManager();
+  virtual ~RenderFrameHostManager();
 
   // For arguments, see WebContentsImpl constructor.
   void Init(BrowserContext* browser_context,
@@ -248,7 +247,7 @@ class CONTENT_EXPORT RenderViewHostManager
   void SwapOutOldPage();
 
  private:
-  friend class RenderViewHostManagerTest;
+  friend class RenderFrameHostManagerTest;
   friend class TestWebContents;
 
   // Tracks information about a navigation while a cross-process transition is
@@ -399,9 +398,9 @@ class CONTENT_EXPORT RenderViewHostManager
 
   NotificationRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(RenderViewHostManager);
+  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostManager);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_FRAME_HOST_RENDER_VIEW_HOST_MANAGER_H_
+#endif  // CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_MANAGER_H_

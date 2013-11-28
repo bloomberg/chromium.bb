@@ -46,7 +46,7 @@ bool FrameTreeNodeForFrameId(int64 frame_id,
 FrameTree::FrameTree(Navigator* navigator,
                      RenderViewHostDelegate* render_view_delegate,
                      RenderWidgetHostDelegate* render_widget_delegate,
-                     RenderViewHostManager::Delegate* manager_delegate)
+                     RenderFrameHostManager::Delegate* manager_delegate)
     : render_view_delegate_(render_view_delegate),
       render_widget_delegate_(render_widget_delegate),
       manager_delegate_(manager_delegate),

@@ -1074,7 +1074,7 @@
    fun:_ZN16RenderWidgetHost21GetCompositingSurfaceEv
    fun:_ZN14RenderViewHost16CreateRenderViewERKSbItN4base20string16_char_traitsESaItEE
    fun:_ZN15WebContentsImpl32CreateRenderViewForRenderManagerEP14RenderViewHost
-   fun:_ZN21RenderViewHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
+   fun:_ZN22RenderFrameHostManager14InitRenderViewEP14RenderViewHostRK15NavigationEntry
 }
 {
    bug_80239_b

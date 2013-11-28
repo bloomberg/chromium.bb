@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -34,9 +34,9 @@
 
 namespace content {
 
-class RenderViewHostManagerTest : public ContentBrowserTest {
+class RenderFrameHostManagerTest : public ContentBrowserTest {
  public:
-  RenderViewHostManagerTest() {}
+  RenderFrameHostManagerTest() {}
 
   static bool GetFilePathWithHostAndPortReplacement(
       const std::string& original_file_path,
@@ -51,7 +51,7 @@ class RenderViewHostManagerTest : public ContentBrowserTest {
 };
 
 // Web pages should not have script access to the swapped out page.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        DISABLED_NoScriptAccessAfterSwapOut) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
@@ -119,7 +119,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
 // Test for crbug.com/24447.  Following a cross-site link with rel=noreferrer
 // and target=_blank should create a new SiteInstance.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        SwapProcessWithRelNoreferrerAndTargetBlank) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
@@ -173,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 // As of crbug.com/69267, we create a new BrowsingInstance (and SiteInstance)
 // for rel=noreferrer links in new windows, even to same site pages and named
 // targets.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        SwapProcessWithSameSiteRelNoreferrer) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
 // Test for crbug.com/24447.  Following a cross-site link with just
 // target=_blank should not create a new SiteInstance.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        DontSwapProcessWithOnlyTargetBlank) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
@@ -275,7 +275,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
 // Test for crbug.com/24447.  Following a cross-site link with rel=noreferrer
 // and no target=_blank should not create a new SiteInstance.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        DontSwapProcessWithOnlyRelNoreferrer) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
@@ -322,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
 // Test for crbug.com/116192.  Targeted links should still work after the
 // named target window has swapped processes.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        AllowTargetedNavigationsAfterSwap) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
@@ -407,7 +407,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 #else
 #define MAYBE_DisownOpener DisownOpener
 #endif
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, MAYBE_DisownOpener) {
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, MAYBE_DisownOpener) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
   net::SpawnedTestServer https_server(
@@ -483,7 +483,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, MAYBE_DisownOpener) {
 }
 
 // Test that subframes can disown their openers.  http://crbug.com/225528.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DisownSubframeOpener) {
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, DisownSubframeOpener) {
   const GURL frame_url("data:text/html,<iframe name=\"foo\"></iframe>");
   NavigateToURL(shell(), frame_url);
 
@@ -505,7 +505,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, DisownSubframeOpener) {
 // 4) Post a message from _blank to "foo".
 // 5) Post a message from "foo" to a subframe of opener, which replies back.
 // 6) Post a message from _blank to a subframe of "foo".
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        SupportCrossProcessPostMessage) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
@@ -528,7 +528,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   scoped_refptr<SiteInstance> orig_site_instance(
       opener_contents->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance.get() != NULL);
-  RenderViewHostManager* opener_manager = static_cast<WebContentsImpl*>(
+  RenderFrameHostManager* opener_manager = static_cast<WebContentsImpl*>(
       opener_contents)->GetRenderManagerForTesting();
 
   // 1) Open two more windows, one named.  These initially have openers but no
@@ -571,7 +571,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   EXPECT_EQ("/files/title2.html", new_contents->GetLastCommittedURL().path());
   NavigateToURL(new_shell2, test_server()->GetURL("files/post_message.html"));
   EXPECT_EQ(orig_site_instance, new_contents->GetSiteInstance());
-  RenderViewHostManager* new_manager =
+  RenderFrameHostManager* new_manager =
       static_cast<WebContentsImpl*>(new_contents)->GetRenderManagerForTesting();
 
   // We now have three windows.  The opener should have a swapped out RVH
@@ -652,7 +652,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 // 2) Post a message containing a message port from opener to "foo".
 // 3) Post a message from "foo" back to opener via the passed message port.
 // The test will be enabled when the feature implementation lands.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        SupportCrossProcessPostMessageWithMessagePort) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
@@ -675,7 +675,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
   scoped_refptr<SiteInstance> orig_site_instance(
       opener_contents->GetSiteInstance());
   EXPECT_TRUE(orig_site_instance.get() != NULL);
-  RenderViewHostManager* opener_manager = static_cast<WebContentsImpl*>(
+  RenderFrameHostManager* opener_manager = static_cast<WebContentsImpl*>(
       opener_contents)->GetRenderManagerForTesting();
 
   // 1) Open a named target=foo window. We will later post a message between the
@@ -748,7 +748,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
 // Test for crbug.com/116192.  Navigations to a window's opener should
 // still work after a process swap.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        AllowTargetedNavigationsInOpenerAfterSwap) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
@@ -816,7 +816,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 // Test that opening a new window in the same SiteInstance and then navigating
 // both windows to a different SiteInstance allows the first process to exit.
 // See http://crbug.com/126333.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        ProcessExitWithSwappedOutViews) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
@@ -884,7 +884,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 
 // Test for crbug.com/76666.  A cross-site navigation that fails with a 204
 // error should not make us ignore future renderer-initiated navigations.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ClickLinkAfter204Error) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
   net::SpawnedTestServer https_server(
@@ -948,7 +948,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ClickLinkAfter204Error) {
 // initiated navigation in a new tab, until the content of the initial
 // about:blank page is modified by another window.  At that point, we should
 // revert to showing about:blank to prevent a URL spoof.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ShowLoadingURLUntilSpoof) {
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ShowLoadingURLUntilSpoof) {
   ASSERT_TRUE(test_server()->Start());
 
   // Load a page that can open a URL that won't commit in a new window.
@@ -997,7 +997,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, ShowLoadingURLUntilSpoof) {
 // initiated navigation in a new tab if it is not the initial navigation.  In
 // this case, the renderer will not notify us of a modification, so we cannot
 // show the pending URL without allowing a spoof.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        DontShowLoadingURLIfNotInitialNav) {
   ASSERT_TRUE(test_server()->Start());
 
@@ -1031,7 +1031,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
 // Test for http://crbug.com/93427.  Ensure that cross-site navigations
 // do not cause back/forward navigations to be considered stale by the
 // renderer.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, BackForwardNotStale) {
   NavigateToURL(shell(), GURL(kAboutBlankURL));
 
   // Start two servers with different sites.
@@ -1129,7 +1129,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, BackForwardNotStale) {
 
 // Test for http://crbug.com/130016.
 // Swapping out a render view should update its visiblity state.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        SwappedOutViewHasCorrectVisibilityState) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
@@ -1231,7 +1231,7 @@ class RenderViewHostDestructionObserver : public WebContentsObserver {
 // delegate_. This test also verifies crbug.com/117420 and crbug.com/143255 to
 // ensure that a separate SiteInstance is created when navigating to view-source
 // URLs, regardless of current URL.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, LeakingRenderViewHosts) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());
   net::SpawnedTestServer https_server(
@@ -1306,7 +1306,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest, LeakingRenderViewHosts) {
 // This used to cause an update to the frame tree of the swapped out RV,
 // just as it was navigating to a real page.  That pre-empted the real
 // navigation and visibly sent the tab to swappedout://.
-IN_PROC_BROWSER_TEST_F(RenderViewHostManagerTest,
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
                        DontPreemptNavigationWithFrameTreeUpdate) {
   // Start two servers with different sites.
   ASSERT_TRUE(test_server()->Start());

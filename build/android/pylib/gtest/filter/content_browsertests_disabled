@@ -53,7 +53,7 @@ PasswordFormConversionUtilsTest.ValidWebFormElementToPasswordForm
 PasswordFormConversionUtilsTest.InvalidWebFormElementToPasswordForm
 
 # Multiple test servers support: http://crbug/187570
-RenderViewHostManagerTest.*
+RenderFrameHostManagerTest.*
 
 # http://crbug.com/215894
 DownloadContentTest.CancelInterruptedDownload

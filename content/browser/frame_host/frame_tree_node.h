@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "content/browser/frame_host/render_view_host_manager.h"
+#include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
 
@@ -31,7 +31,7 @@ class CONTENT_EXPORT FrameTreeNode {
   FrameTreeNode(Navigator* navigator,
                 RenderViewHostDelegate* render_view_delegate,
                 RenderWidgetHostDelegate* render_widget_delegate,
-                RenderViewHostManager::Delegate* manager_delegate,
+                RenderFrameHostManager::Delegate* manager_delegate,
                 int64 frame_id,
                 const std::string& name,
                 scoped_ptr<RenderFrameHostImpl> render_frame_host);
@@ -55,7 +55,7 @@ class CONTENT_EXPORT FrameTreeNode {
     return navigator_.get();
   }
 
-  RenderViewHostManager* render_manager() {
+  RenderFrameHostManager* render_manager() {
     return &render_manager_;
   }
 
@@ -109,9 +109,8 @@ class CONTENT_EXPORT FrameTreeNode {
   // be declared before |children_| so that it gets deleted after them.  That's
   // currently necessary so that RenderFrameHostImpl's destructor can call
   // GetProcess.
-  // TODO(creis): This will become a RenderFrameHostManager, which eliminates
-  // the need for |render_frame_host_| below.
-  RenderViewHostManager render_manager_;
+  // TODO(creis): This will eliminate the need for |render_frame_host_| below.
+  RenderFrameHostManager render_manager_;
 
   // A browser-global identifier for the frame in the page, which stays stable
   // even if the frame does a cross-process navigation.
@@ -134,7 +133,7 @@ class CONTENT_EXPORT FrameTreeNode {
   // |render_frame_host_| below is not deleted on destruction.
   //
   // For the mainframe, the FrameTree does not own the |render_frame_host_|.
-  // This is a transitional wart because RenderViewHostManager does not yet
+  // This is a transitional wart because RenderFrameHostManager does not yet
   // have the bookkeeping logic to handle creating a pending RenderFrameHost
   // along with a pending RenderViewHost. Thus, for the main frame, the
   // RenderViewHost currently retains ownership and the FrameTreeNode should

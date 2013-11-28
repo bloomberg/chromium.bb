@@ -19,7 +19,7 @@
 #include "content/browser/frame_host/navigation_controller_delegate.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigator_delegate.h"
-#include "content/browser/frame_host/render_view_host_manager.h"
+#include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/common/content_export.h"
@@ -79,7 +79,7 @@ class CONTENT_EXPORT WebContentsImpl
     : public NON_EXPORTED_BASE(WebContents),
       public RenderViewHostDelegate,
       public RenderWidgetHostDelegate,
-      public RenderViewHostManager::Delegate,
+      public RenderFrameHostManager::Delegate,
       public NotificationObserver,
       public NON_EXPORTED_BASE(NavigationControllerDelegate),
       public NON_EXPORTED_BASE(NavigatorDelegate) {
@@ -128,7 +128,7 @@ class CONTENT_EXPORT WebContentsImpl
 #endif
 
   // Expose the render manager for testing.
-  RenderViewHostManager* GetRenderManagerForTesting();
+  RenderFrameHostManager* GetRenderManagerForTesting();
 
   // Returns guest browser plugin object, or NULL if this WebContents is not a
   // guest.
@@ -443,7 +443,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual gfx::NativeViewAccessible GetParentNativeViewAccessible() OVERRIDE;
 #endif
 
-  // RenderViewHostManager::Delegate -------------------------------------------
+  // RenderFrameHostManager::Delegate ------------------------------------------
 
   virtual bool CreateRenderViewForRenderManager(
       RenderViewHost* render_view_host, int opener_route_id) OVERRIDE;
@@ -558,7 +558,7 @@ class CONTENT_EXPORT WebContentsImpl
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplTest, FrameTreeShape);
   FRIEND_TEST_ALL_PREFIXES(FormStructureBrowserTest, HTMLFiles);
   FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest, HistoryNavigate);
-  FRIEND_TEST_ALL_PREFIXES(RenderViewHostManagerTest, PageDoesBackAndReload);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest, PageDoesBackAndReload);
 
   // So InterstitialPageImpl can access SetIsLoading.
   friend class InterstitialPageImpl;
@@ -761,7 +761,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   // TODO(creis): This should take in a FrameTreeNode to know which node's
   // render manager to return.  For now, we just return the root's.
-  RenderViewHostManager* GetRenderManager() const;
+  RenderFrameHostManager* GetRenderManager() const;
 
   RenderViewHostImpl* GetRenderViewHostImpl();
 

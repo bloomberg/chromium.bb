@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/frame_host/render_view_host_manager.h"
+#include "content/browser/frame_host/render_frame_host_manager.h"
 
 #include <utility>
 
@@ -33,11 +33,11 @@
 
 namespace content {
 
-RenderViewHostManager::PendingNavigationParams::PendingNavigationParams()
+RenderFrameHostManager::PendingNavigationParams::PendingNavigationParams()
     : is_transfer(false), frame_id(-1), should_replace_current_entry(false) {
 }
 
-RenderViewHostManager::PendingNavigationParams::PendingNavigationParams(
+RenderFrameHostManager::PendingNavigationParams::PendingNavigationParams(
     const GlobalRequestID& global_request_id,
     bool is_transfer,
     const std::vector<GURL>& transfer_url_chain,
@@ -54,9 +54,9 @@ RenderViewHostManager::PendingNavigationParams::PendingNavigationParams(
       should_replace_current_entry(should_replace_current_entry) {
 }
 
-RenderViewHostManager::PendingNavigationParams::~PendingNavigationParams() {}
+RenderFrameHostManager::PendingNavigationParams::~PendingNavigationParams() {}
 
-RenderViewHostManager::RenderViewHostManager(
+RenderFrameHostManager::RenderFrameHostManager(
     RenderViewHostDelegate* render_view_delegate,
     RenderWidgetHostDelegate* render_widget_delegate,
     Delegate* delegate)
@@ -69,7 +69,7 @@ RenderViewHostManager::RenderViewHostManager(
       interstitial_page_(NULL) {
 }
 
-RenderViewHostManager::~RenderViewHostManager() {
+RenderFrameHostManager::~RenderFrameHostManager() {
   if (pending_render_view_host_)
     CancelPending();
 
@@ -87,10 +87,10 @@ RenderViewHostManager::~RenderViewHostManager() {
   }
 }
 
-void RenderViewHostManager::Init(BrowserContext* browser_context,
-                                 SiteInstance* site_instance,
-                                 int routing_id,
-                                 int main_frame_routing_id) {
+void RenderFrameHostManager::Init(BrowserContext* browser_context,
+                                  SiteInstance* site_instance,
+                                  int routing_id,
+                                  int main_frame_routing_id) {
   // Create a RenderViewHost, once we have an instance.  It is important to
   // immediately give this SiteInstance to a RenderViewHost so that it is
   // ref counted.
@@ -111,15 +111,15 @@ void RenderViewHostManager::Init(BrowserContext* browser_context,
                  NotificationService::AllSources());
 }
 
-RenderViewHostImpl* RenderViewHostManager::current_host() const {
+RenderViewHostImpl* RenderFrameHostManager::current_host() const {
   return render_view_host_;
 }
 
-RenderViewHostImpl* RenderViewHostManager::pending_render_view_host() const {
+RenderViewHostImpl* RenderFrameHostManager::pending_render_view_host() const {
   return pending_render_view_host_;
 }
 
-RenderWidgetHostView* RenderViewHostManager::GetRenderWidgetHostView() const {
+RenderWidgetHostView* RenderFrameHostManager::GetRenderWidgetHostView() const {
   if (interstitial_page_)
     return interstitial_page_->GetView();
   if (!render_view_host_)
@@ -127,7 +127,7 @@ RenderWidgetHostView* RenderViewHostManager::GetRenderWidgetHostView() const {
   return render_view_host_->GetView();
 }
 
-void RenderViewHostManager::SetPendingWebUI(const NavigationEntryImpl& entry) {
+void RenderFrameHostManager::SetPendingWebUI(const NavigationEntryImpl& entry) {
   pending_web_ui_.reset(
       delegate_->CreateWebUIForRenderManager(entry.GetURL()));
   pending_and_current_web_ui_.reset();
@@ -144,9 +144,9 @@ void RenderViewHostManager::SetPendingWebUI(const NavigationEntryImpl& entry) {
   }
 }
 
-RenderViewHostImpl* RenderViewHostManager::Navigate(
+RenderViewHostImpl* RenderFrameHostManager::Navigate(
     const NavigationEntryImpl& entry) {
-  TRACE_EVENT0("browser", "RenderViewHostManager:Navigate");
+  TRACE_EVENT0("browser", "RenderFrameHostManager:Navigate");
   // Create a pending RenderViewHost. It will give us the one we should use
   RenderViewHostImpl* dest_render_view_host =
       static_cast<RenderViewHostImpl*>(UpdateRendererStateForNavigate(entry));
@@ -189,7 +189,7 @@ RenderViewHostImpl* RenderViewHostManager::Navigate(
   return dest_render_view_host;
 }
 
-void RenderViewHostManager::Stop() {
+void RenderFrameHostManager::Stop() {
   render_view_host_->Stop();
 
   // If we are cross-navigating, we should stop the pending renderers.  This
@@ -200,13 +200,13 @@ void RenderViewHostManager::Stop() {
   }
 }
 
-void RenderViewHostManager::SetIsLoading(bool is_loading) {
+void RenderFrameHostManager::SetIsLoading(bool is_loading) {
   render_view_host_->SetIsLoading(is_loading);
   if (pending_render_view_host_)
     pending_render_view_host_->SetIsLoading(is_loading);
 }
 
-bool RenderViewHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
+bool RenderFrameHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
   if (!cross_navigation_pending_)
     return true;
 
@@ -238,7 +238,7 @@ bool RenderViewHostManager::ShouldCloseTabOnUnresponsiveRenderer() {
   return false;
 }
 
-void RenderViewHostManager::SwappedOut(RenderViewHost* render_view_host) {
+void RenderFrameHostManager::SwappedOut(RenderViewHost* render_view_host) {
   // Make sure this is from our current RVH, and that we have a pending
   // navigation from OnCrossSiteResponse.  (There may be no pending navigation
   // for data URLs that don't make network requests, for example.)   If not,
@@ -283,7 +283,7 @@ void RenderViewHostManager::SwappedOut(RenderViewHost* render_view_host) {
   pending_nav_params_.reset();
 }
 
-void RenderViewHostManager::DidNavigateMainFrame(
+void RenderFrameHostManager::DidNavigateMainFrame(
     RenderViewHost* render_view_host) {
   if (!cross_navigation_pending_) {
     DCHECK(!pending_render_view_host_);
@@ -318,7 +318,7 @@ void RenderViewHostManager::DidNavigateMainFrame(
   }
 }
 
-void RenderViewHostManager::DidDisownOpener(RenderViewHost* render_view_host) {
+void RenderFrameHostManager::DidDisownOpener(RenderViewHost* render_view_host) {
   // Notify all swapped out hosts, including the pending RVH.
   for (RenderViewHostMap::iterator iter = swapped_out_hosts_.begin();
        iter != swapped_out_hosts_.end();
@@ -329,7 +329,7 @@ void RenderViewHostManager::DidDisownOpener(RenderViewHost* render_view_host) {
   }
 }
 
-void RenderViewHostManager::RendererAbortedProvisionalLoad(
+void RenderFrameHostManager::RendererAbortedProvisionalLoad(
     RenderViewHost* render_view_host) {
   // We used to cancel the pending renderer here for cross-site downloads.
   // However, it's not safe to do that because the download logic repeatedly
@@ -343,7 +343,7 @@ void RenderViewHostManager::RendererAbortedProvisionalLoad(
   // the response is not a download.
 }
 
-void RenderViewHostManager::RendererProcessClosing(
+void RenderFrameHostManager::RendererProcessClosing(
     RenderProcessHost* render_process_host) {
   // Remove any swapped out RVHs from this process, so that we don't try to
   // swap them back in while the process is exiting.  Start by finding them,
@@ -364,7 +364,7 @@ void RenderViewHostManager::RendererProcessClosing(
   }
 }
 
-void RenderViewHostManager::ShouldClosePage(
+void RenderFrameHostManager::ShouldClosePage(
     bool for_cross_site_transition,
     bool proceed,
     const base::TimeTicks& proceed_time) {
@@ -409,7 +409,7 @@ void RenderViewHostManager::ShouldClosePage(
   }
 }
 
-void RenderViewHostManager::OnCrossSiteResponse(
+void RenderFrameHostManager::OnCrossSiteResponse(
     RenderViewHost* pending_render_view_host,
     const GlobalRequestID& global_request_id,
     bool is_transfer,
@@ -437,7 +437,7 @@ void RenderViewHostManager::OnCrossSiteResponse(
   SwapOutOldPage();
 }
 
-void RenderViewHostManager::SwapOutOldPage() {
+void RenderFrameHostManager::SwapOutOldPage() {
   // Should only see this while we have a pending renderer or transfer.
   CHECK(cross_navigation_pending_ || pending_nav_params_.get());
 
@@ -466,7 +466,7 @@ void RenderViewHostManager::SwapOutOldPage() {
     pending_render_view_host_->SetHasPendingCrossSiteRequest(false);
 }
 
-void RenderViewHostManager::Observe(
+void RenderFrameHostManager::Observe(
     int type,
     const NotificationSource& source,
     const NotificationDetails& details) {
@@ -482,7 +482,7 @@ void RenderViewHostManager::Observe(
   }
 }
 
-bool RenderViewHostManager::ShouldTransitionCrossSite() {
+bool RenderFrameHostManager::ShouldTransitionCrossSite() {
   // False in the single-process mode, as it makes RVHs to accumulate
   // in swapped_out_hosts_.
   // True if we are using process-per-site-instance (default) or
@@ -492,7 +492,7 @@ bool RenderViewHostManager::ShouldTransitionCrossSite() {
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessPerTab);
 }
 
-bool RenderViewHostManager::ShouldSwapBrowsingInstancesForNavigation(
+bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     const NavigationEntry* current_entry,
     const NavigationEntryImpl* new_entry) const {
   DCHECK(new_entry);
@@ -554,7 +554,7 @@ bool RenderViewHostManager::ShouldSwapBrowsingInstancesForNavigation(
   return false;
 }
 
-bool RenderViewHostManager::ShouldReuseWebUI(
+bool RenderFrameHostManager::ShouldReuseWebUI(
     const NavigationEntry* current_entry,
     const NavigationEntryImpl* new_entry) const {
   NavigationControllerImpl& controller =
@@ -566,7 +566,7 @@ bool RenderViewHostManager::ShouldReuseWebUI(
           controller.GetBrowserContext(), new_entry->GetURL()));
 }
 
-SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
+SiteInstance* RenderFrameHostManager::GetSiteInstanceForEntry(
     const NavigationEntryImpl& entry,
     SiteInstance* current_instance,
     bool force_browsing_instance_swap) {
@@ -719,7 +719,7 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
   return current_instance->GetRelatedSiteInstance(dest_url);
 }
 
-int RenderViewHostManager::CreateRenderView(
+int RenderFrameHostManager::CreateRenderView(
     SiteInstance* instance,
     int opener_route_id,
     bool swapped_out,
@@ -775,8 +775,8 @@ int RenderViewHostManager::CreateRenderView(
   return new_render_view_host->GetRoutingID();
 }
 
-bool RenderViewHostManager::InitRenderView(RenderViewHost* render_view_host,
-                                           int opener_route_id) {
+bool RenderFrameHostManager::InitRenderView(RenderViewHost* render_view_host,
+                                            int opener_route_id) {
   // If the pending navigation is to a WebUI and the RenderView is not in a
   // guest process, tell the RenderView about any bindings it will need enabled.
   if (pending_web_ui() && !render_view_host->GetProcess()->IsGuest()) {
@@ -792,7 +792,7 @@ bool RenderViewHostManager::InitRenderView(RenderViewHost* render_view_host,
                                                      opener_route_id);
 }
 
-void RenderViewHostManager::CommitPending() {
+void RenderFrameHostManager::CommitPending() {
   // First check whether we're going to want to focus the location bar after
   // this commit.  We do this now because the navigation hasn't formally
   // committed yet, so if we've already cleared |pending_web_ui_| the call chain
@@ -897,7 +897,7 @@ void RenderViewHostManager::CommitPending() {
   }
 }
 
-void RenderViewHostManager::ShutdownRenderViewHostsInSiteInstance(
+void RenderFrameHostManager::ShutdownRenderViewHostsInSiteInstance(
     int32 site_instance_id) {
   // First remove any swapped out RVH for this SiteInstance from our
   // list.
@@ -915,7 +915,7 @@ void RenderViewHostManager::ShutdownRenderViewHostsInSiteInstance(
   }
 }
 
-RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
+RenderViewHostImpl* RenderFrameHostManager::UpdateRendererStateForNavigate(
     const NavigationEntryImpl& entry) {
   // If we are currently navigating cross-process, we want to get back to normal
   // and then navigate as usual.
@@ -1067,7 +1067,7 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
   return render_view_host_;
 }
 
-void RenderViewHostManager::CancelPending() {
+void RenderFrameHostManager::CancelPending() {
   RenderViewHostImpl* pending_render_view_host = pending_render_view_host_;
   pending_render_view_host_ = NULL;
 
@@ -1096,7 +1096,7 @@ void RenderViewHostManager::CancelPending() {
   pending_and_current_web_ui_.reset();
 }
 
-void RenderViewHostManager::RenderViewDeleted(RenderViewHost* rvh) {
+void RenderFrameHostManager::RenderViewDeleted(RenderViewHost* rvh) {
   // We are doing this in order to work around and to track a crasher
   // (http://crbug.com/23411) where it seems that pending_render_view_host_ is
   // deleted (not sure from where) but not NULLed.
@@ -1124,7 +1124,7 @@ void RenderViewHostManager::RenderViewDeleted(RenderViewHost* rvh) {
   }
 }
 
-bool RenderViewHostManager::IsOnSwappedOutList(RenderViewHost* rvh) const {
+bool RenderFrameHostManager::IsOnSwappedOutList(RenderViewHost* rvh) const {
   if (!rvh->GetSiteInstance())
     return false;
 
@@ -1136,7 +1136,7 @@ bool RenderViewHostManager::IsOnSwappedOutList(RenderViewHost* rvh) const {
   return iter->second == rvh;
 }
 
-RenderViewHostImpl* RenderViewHostManager::GetSwappedOutRenderViewHost(
+RenderViewHostImpl* RenderFrameHostManager::GetSwappedOutRenderViewHost(
     SiteInstance* instance) {
   RenderViewHostMap::iterator iter = swapped_out_hosts_.find(instance->GetId());
   if (iter != swapped_out_hosts_.end())

@@ -1170,7 +1170,7 @@ void BrowserPluginGuest::Attach(
   params.src.clear();
 
   // If a RenderView has already been created for this new window, then we need
-  // to initialize the browser-side state now so that the RenderViewHostManager
+  // to initialize the browser-side state now so that the RenderFrameHostManager
   // does not create a new RenderView on navigation.
   if (has_render_view_) {
     static_cast<RenderViewHostImpl*>(

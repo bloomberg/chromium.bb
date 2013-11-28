@@ -1714,7 +1714,7 @@ void RenderViewImpl::OnStop() {
   if (webview()) {
     WebFrame* main_frame = webview()->mainFrame();
     // Stop the alt error page fetcher. If we let it continue it may complete
-    // and cause RenderViewHostManager to swap to this RenderView, even though
+    // and cause RenderFrameHostManager to swap to this RenderView, even though
     // it may no longer be active.
     StopAltErrorPageFetcher(main_frame->provisionalDataSource());
     StopAltErrorPageFetcher(main_frame->dataSource());

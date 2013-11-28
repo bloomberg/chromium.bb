@@ -18,7 +18,7 @@ int64 FrameTreeNode::next_frame_tree_node_id_ = 1;
 FrameTreeNode::FrameTreeNode(Navigator* navigator,
                              RenderViewHostDelegate* render_view_delegate,
                              RenderWidgetHostDelegate* render_widget_delegate,
-                             RenderViewHostManager::Delegate* manager_delegate,
+                             RenderFrameHostManager::Delegate* manager_delegate,
                              int64 frame_id,
                              const std::string& name,
                              scoped_ptr<RenderFrameHostImpl> render_frame_host)

@@ -456,7 +456,7 @@
    fun:content::SiteInstanceImpl::GetProcess
    fun:RenderViewHostImpl
    fun:content::RenderViewHostFactory::Create
-   fun:content::RenderViewHostManager::Init
+   fun:content::RenderFrameHostManager::Init
    fun:content::WebContentsImpl::Init
    fun:content::TestWebContents::Create
    fun:content::WebContentsTester::CreateTestWebContents
@@ -633,7 +633,7 @@
    fun:GetStoragePartitionFromConfig
    fun:content::BrowserContext::GetStoragePartition
    fun:content::NavigationControllerImpl::GetSessionStorageNamespace
-   fun:content::RenderViewHostManager::Init
+   fun:content::RenderFrameHostManager::Init
 }
 {
    bug_236791
