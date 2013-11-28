@@ -203,7 +203,7 @@ private:
     {
         MapType::iterator it = m_map.find(key);
         ASSERT_WITH_SECURITY_IMPLICATION(it != m_map.end());
-        it->value.clear();
+        it->value.dispose();
         m_map.remove(it);
     }
 
