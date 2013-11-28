@@ -76,6 +76,8 @@ class ResourceScheduler::RequestQueue {
   void Erase(ScheduledResourceRequest* request) {
     PointerMap::iterator it = pointers_.find(request);
     DCHECK(it != pointers_.end());
+    if (it == pointers_.end())
+      return;
     queue_.Erase(it->second);
     pointers_.erase(it);
   }
@@ -256,6 +258,9 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
   ClientId client_id = MakeClientId(child_id, route_id);
   DCHECK(ContainsKey(client_map_, client_id));
   ClientMap::iterator it = client_map_.find(client_id);
+  if (it == client_map_.end())
+    return;
+
   Client* client = it->second;
 
   // FYI, ResourceDispatcherHost cancels all of the requests after this function
