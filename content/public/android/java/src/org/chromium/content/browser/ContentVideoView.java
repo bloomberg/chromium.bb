@@ -281,20 +281,24 @@ public class ContentVideoView
                 message = mUnknownErrorText;
             }
 
-            new AlertDialog.Builder(getContext())
-                .setTitle(mErrorTitle)
-                .setMessage(message)
-                .setPositiveButton(mErrorButton,
-                        new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        /* Inform that the video is over.
-                         */
-                        onCompletion();
-                    }
-                })
-                .setCancelable(false)
-                .show();
+            try {
+                new AlertDialog.Builder(getContext())
+                    .setTitle(mErrorTitle)
+                    .setMessage(message)
+                    .setPositiveButton(mErrorButton,
+                            new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            /* Inform that the video is over.
+                             */
+                            onCompletion();
+                        }
+                    })
+                    .setCancelable(false)
+                    .show();
+            } catch (RuntimeException e) {
+                Log.e(TAG, "Cannot show the alert dialog, error message: " + message, e);
+            }
         }
     }
 
