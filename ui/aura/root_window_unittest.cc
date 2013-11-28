@@ -1417,4 +1417,37 @@ TEST_F(RootWindowTest, WindowHideCancelsActiveGestures) {
             EventTypesToString(filter->events()));
 }
 
+// Places two windows side by side. Presses down on one window, and starts a
+// scroll. Sets capture on the other window and ensures that the "ending" events
+// aren't sent to the window which gained capture.
+TEST_F(RootWindowTest, EndingEventDoesntRetarget) {
+  scoped_ptr<Window> window1(CreateNormalWindow(1, root_window(), NULL));
+  window1->SetBounds(gfx::Rect(0, 0, 40, 40));
+
+  scoped_ptr<Window> window2(CreateNormalWindow(2, root_window(), NULL));
+  window2->SetBounds(gfx::Rect(40, 0, 40, 40));
+
+  EventFilterRecorder* filter1 = new EventFilterRecorder();
+  window1->SetEventFilter(filter1);  // passes ownership
+  EventFilterRecorder* filter2 = new EventFilterRecorder();
+  window2->SetEventFilter(filter2);  // passes ownership
+
+  gfx::Point position = window1->bounds().origin();
+  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, position, 0, base::TimeDelta());
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+
+  gfx::Point position2 = window1->bounds().CenterPoint();
+  ui::TouchEvent move(ui::ET_TOUCH_MOVED, position2, 0, base::TimeDelta());
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+
+  window2->SetCapture();
+
+  EXPECT_EQ("TOUCH_PRESSED GESTURE_BEGIN GESTURE_TAP_DOWN TOUCH_MOVED "
+            "GESTURE_TAP_CANCEL GESTURE_SCROLL_BEGIN GESTURE_SCROLL_UPDATE "
+            "TOUCH_CANCELLED GESTURE_SCROLL_END GESTURE_END",
+            EventTypesToString(filter1->events()));
+
+  EXPECT_TRUE(filter2->events().empty());
+}
+
 }  // namespace aura

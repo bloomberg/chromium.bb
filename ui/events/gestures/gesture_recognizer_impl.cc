@@ -185,7 +185,7 @@ void GestureRecognizerImpl::SetupTargets(const TouchEvent& event,
   if (event.type() == ui::ET_TOUCH_RELEASED ||
       event.type() == ui::ET_TOUCH_CANCELLED) {
     touch_id_target_.erase(event.touch_id());
-  } else {
+  } else if (event.type() == ui::ET_TOUCH_PRESSED) {
     touch_id_target_[event.touch_id()] = target;
     if (target)
       touch_id_target_for_gestures_[event.touch_id()] = target;

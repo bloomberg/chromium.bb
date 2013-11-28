@@ -310,7 +310,12 @@ void RootWindow::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
 }
 
 Window* RootWindow::GetGestureTarget(ui::GestureEvent* event) {
-  Window* target = client::GetCaptureWindow(window());
+  Window* target = NULL;
+  if (!event->IsEndingEvent()) {
+    // The window that received the start event (e.g. scroll begin) needs to
+    // receive the end event (e.g. scroll end).
+    target = client::GetCaptureWindow(window());
+  }
   if (!target) {
     target = ConsumerToWindow(
         ui::GestureRecognizer::Get()->GetTargetForGestureEvent(event));
