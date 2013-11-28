@@ -169,7 +169,7 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
 
   views::View* avatar_label_;
   views::View* avatar_button_;
-  NewAvatarButton* new_avatar_button_;
+  views::View* new_avatar_button_;
 
   std::vector<views::FrameButton> leading_buttons_;
   std::vector<views::FrameButton> trailing_buttons_;

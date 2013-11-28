@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/ui/views/new_avatar_button.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -596,7 +595,7 @@ void OpaqueBrowserFrameViewLayout::SetView(int id, views::View* view) {
       avatar_button_ = view;
       break;
     case VIEW_ID_NEW_AVATAR_BUTTON:
-      new_avatar_button_ = static_cast<NewAvatarButton*>(view);
+      new_avatar_button_ = view;
       break;
     default:
       NOTIMPLEMENTED() << "Unknown view id " << id;
