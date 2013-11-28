@@ -89,7 +89,7 @@ struct WrapperTypeInfo;
     public:
         V8WrapperInstantiationScope(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
             : m_didEnterContext(false)
-            , m_context(v8::Context::GetCurrent())
+            , m_context(isolate->GetCurrentContext())
         {
             // FIXME: Remove all empty creationContexts from caller sites.
             // If a creationContext is empty, we will end up creating a new object
