@@ -15,7 +15,8 @@ namespace {
 void GetBlobUuid(const v8::FunctionCallbackInfo<v8::Value>& args) {
   DCHECK_EQ(1, args.Length());
   blink::WebBlob blob = blink::WebBlob::fromV8Value(args[0]);
-  args.GetReturnValue().Set(v8::String::New(blob.uuid().utf8().data()));
+  args.GetReturnValue().Set(
+      v8::String::NewFromUtf8(args.GetIsolate(), blob.uuid().utf8().data()));
 }
 
 }  // namespace

@@ -37,7 +37,8 @@ bool ActivityLogConverterStrategy::FromV8ObjectInternal(
 
   v8::Handle<v8::String> name = v8::String::NewFromUtf8(isolate, "[");
   if (value->IsFunction()) {
-    name =  v8::String::Concat(name, v8::String::New("Function"));
+    name =
+        v8::String::Concat(name, v8::String::NewFromUtf8(isolate, "Function"));
     v8::Handle<v8::Value> fname =
         v8::Handle<v8::Function>::Cast(value)->GetName();
     if (fname->IsString() && v8::Handle<v8::String>::Cast(fname)->Length()) {

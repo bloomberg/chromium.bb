@@ -40,7 +40,7 @@ class ObjectBackedNativeHandler : public NativeHandler {
   void RouteFunction(const std::string& name,
                      const HandlerFunction& handler_function);
 
-  ChromeV8Context* context() { return context_; }
+  ChromeV8Context* context() const { return context_; }
 
   virtual void Invalidate() OVERRIDE;
 

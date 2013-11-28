@@ -130,9 +130,12 @@ ModuleSystem::ModuleSystem(ChromeV8Context* context, SourceMap* source_map)
       base::Bind(&ModuleSystem::RequireNative, base::Unretained(this)));
 
   v8::Handle<v8::Object> global(context->v8_context()->Global());
-  global->SetHiddenValue(v8::String::New(kModulesField), v8::Object::New());
-  global->SetHiddenValue(v8::String::New(kModuleSystem),
-                         v8::External::New(context->isolate(), this));
+  global->SetHiddenValue(
+      v8::String::NewFromUtf8(context->isolate(), kModulesField),
+      v8::Object::New());
+  global->SetHiddenValue(
+      v8::String::NewFromUtf8(context->isolate(), kModuleSystem),
+      v8::External::New(context->isolate(), this));
 }
 
 ModuleSystem::~ModuleSystem() {
@@ -148,8 +151,10 @@ void ModuleSystem::Invalidate() {
   {
     v8::HandleScope scope(GetIsolate());
     v8::Handle<v8::Object> global = context()->v8_context()->Global();
-    global->DeleteHiddenValue(v8::String::New(kModulesField));
-    global->DeleteHiddenValue(v8::String::New(kModuleSystem));
+    global->DeleteHiddenValue(
+        v8::String::NewFromUtf8(GetIsolate(), kModulesField));
+    global->DeleteHiddenValue(
+        v8::String::NewFromUtf8(GetIsolate(), kModuleSystem));
   }
 
   // Invalidate all of the successfully required handlers we own.
@@ -178,8 +183,8 @@ void ModuleSystem::HandleException(const v8::TryCatch& try_catch) {
 
 v8::Handle<v8::Value> ModuleSystem::Require(const std::string& module_name) {
   v8::HandleScope handle_scope(GetIsolate());
-  return handle_scope.Close(
-      RequireForJsInner(v8::String::New(module_name.c_str())));
+  return handle_scope.Close(RequireForJsInner(
+      v8::String::NewFromUtf8(GetIsolate(), module_name.c_str())));
 }
 
 void ModuleSystem::RequireForJs(
@@ -198,8 +203,8 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
   // The module system might have been deleted. This can happen if a different
   // context keeps a reference to us, but our frame is destroyed (e.g.
   // background page keeps reference to chrome object in a closed popup).
-  v8::Handle<v8::Value> modules_value =
-      global->GetHiddenValue(v8::String::New(kModulesField));
+  v8::Handle<v8::Value> modules_value = global->GetHiddenValue(
+      v8::String::NewFromUtf8(GetIsolate(), kModulesField));
   if (modules_value.IsEmpty() || modules_value->IsUndefined()) {
     Warn("Extension view no longer exists");
     return v8::Undefined();
@@ -291,7 +296,8 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
   v8::Local<v8::Value> module;
   {
     NativesEnabledScope natives_enabled(this);
-    module = RequireForJsInner(v8::String::New(module_name.c_str()));
+    module = RequireForJsInner(
+        v8::String::NewFromUtf8(GetIsolate(), module_name.c_str()));
   }
 
   if (module.IsEmpty() || !module->IsObject()) {
@@ -302,7 +308,7 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
 
   v8::Local<v8::Value> value =
       v8::Handle<v8::Object>::Cast(module)->Get(
-          v8::String::New(method_name.c_str()));
+          v8::String::NewFromUtf8(GetIsolate(), method_name.c_str()));
   if (value.IsEmpty() || !value->IsFunction()) {
     Fatal(context_, module_name + "." + method_name + " is not a function");
     return handle_scope.Close(v8::Undefined());
@@ -332,7 +338,8 @@ void ModuleSystem::OverrideNativeHandlerForTest(const std::string& name) {
 
 void ModuleSystem::RunString(const std::string& code, const std::string& name) {
   v8::HandleScope handle_scope(GetIsolate());
-  RunString(v8::String::New(code.c_str()), v8::String::New(name.c_str()));
+  RunString(v8::String::NewFromUtf8(GetIsolate(), code.c_str()),
+            v8::String::NewFromUtf8(GetIsolate(), name.c_str()));
 }
 
 // static
@@ -363,8 +370,8 @@ void ModuleSystem::LazyFieldGetterInner(
   // This context should be the same as context()->v8_context().
   v8::Handle<v8::Context> context = parameters->CreationContext();
   v8::Handle<v8::Object> global(context->Global());
-  v8::Handle<v8::Value> module_system_value =
-      global->GetHiddenValue(v8::String::New(kModuleSystem));
+  v8::Handle<v8::Value> module_system_value = global->GetHiddenValue(
+      v8::String::NewFromUtf8(info.GetIsolate(), kModuleSystem));
   if (module_system_value.IsEmpty() || !module_system_value->IsExternal()) {
     // ModuleSystem has been deleted.
     // TODO(kalman): See comment in header file.
@@ -375,8 +382,8 @@ void ModuleSystem::LazyFieldGetterInner(
   ModuleSystem* module_system = static_cast<ModuleSystem*>(
       v8::Handle<v8::External>::Cast(module_system_value)->Value());
 
-  std::string name = *v8::String::Utf8Value(
-      parameters->Get(v8::String::New(kModuleName))->ToString());
+  std::string name = *v8::String::Utf8Value(parameters->Get(
+      v8::String::NewFromUtf8(info.GetIsolate(), kModuleName))->ToString());
 
   // Switch to our v8 context because we need functions created while running
   // the require()d module to belong to our context, not the current one.
@@ -396,7 +403,8 @@ void ModuleSystem::LazyFieldGetterInner(
 
   v8::Handle<v8::Object> module = v8::Handle<v8::Object>::Cast(module_value);
   v8::Handle<v8::String> field =
-      parameters->Get(v8::String::New(kModuleField))->ToString();
+      parameters->Get(v8::String::NewFromUtf8(info.GetIsolate(), kModuleField))
+          ->ToString();
 
   if (!module->Has(field)) {
     std::string field_str = *v8::String::Utf8Value(field);
@@ -439,11 +447,11 @@ void ModuleSystem::SetLazyField(v8::Handle<v8::Object> object,
                                 v8::AccessorGetterCallback getter) {
   v8::HandleScope handle_scope(GetIsolate());
   v8::Handle<v8::Object> parameters = v8::Object::New();
-  parameters->Set(v8::String::New(kModuleName),
-                  v8::String::New(module_name.c_str()));
-  parameters->Set(v8::String::New(kModuleField),
-                  v8::String::New(module_field.c_str()));
-  object->SetAccessor(v8::String::New(field.c_str()),
+  parameters->Set(v8::String::NewFromUtf8(GetIsolate(), kModuleName),
+                  v8::String::NewFromUtf8(GetIsolate(), module_name.c_str()));
+  parameters->Set(v8::String::NewFromUtf8(GetIsolate(), kModuleField),
+                  v8::String::NewFromUtf8(GetIsolate(), module_field.c_str()));
+  object->SetAccessor(v8::String::NewFromUtf8(GetIsolate(), field.c_str()),
                       getter,
                       NULL,
                       parameters);
@@ -475,8 +483,12 @@ v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
   blink::WebScopedMicrotaskSuppression suppression;
   v8::TryCatch try_catch;
   try_catch.SetCaptureMessage(true);
-  v8::Handle<v8::Script> script(v8::Script::New(
-      code, v8::String::New(internal_name.c_str(), internal_name.size())));
+  v8::Handle<v8::Script> script(
+      v8::Script::New(code,
+                      v8::String::NewFromUtf8(GetIsolate(),
+                                              internal_name.c_str(),
+                                              v8::String::kNormalString,
+                                              internal_name.size())));
   if (try_catch.HasCaught()) {
     HandleException(try_catch);
     return v8::Undefined();
@@ -511,14 +523,18 @@ v8::Handle<v8::Value> ModuleSystem::RequireNativeFromString(
     // HACK: if in test throw exception so that we can test the natives-disabled
     // logic; however, under normal circumstances, this is programmer error so
     // we could crash.
-    if (exception_handler_)
-      return v8::ThrowException(v8::String::New("Natives disabled"));
+    if (exception_handler_) {
+      return v8::ThrowException(
+          v8::String::NewFromUtf8(GetIsolate(), "Natives disabled"));
+    }
     Fatal(context_, "Natives disabled for requireNative(" + native_name + ")");
     return v8::Undefined();
   }
 
-  if (overridden_native_handlers_.count(native_name) > 0u)
-    return RequireForJsInner(v8::String::New(native_name.c_str()));
+  if (overridden_native_handlers_.count(native_name) > 0u) {
+    return RequireForJsInner(
+        v8::String::NewFromUtf8(GetIsolate(), native_name.c_str()));
+  }
 
   NativeHandlerMap::iterator i = native_handler_map_.find(native_name);
   if (i == native_handler_map_.end()) {
@@ -532,12 +548,12 @@ v8::Handle<v8::Value> ModuleSystem::RequireNativeFromString(
 v8::Handle<v8::String> ModuleSystem::WrapSource(v8::Handle<v8::String> source) {
   v8::HandleScope handle_scope(GetIsolate());
   // Keep in order with the arguments in RequireForJsInner.
-  v8::Handle<v8::String> left = v8::String::New(
+  v8::Handle<v8::String> left = v8::String::NewFromUtf8(GetIsolate(),
       "(function(require, requireNative, exports, "
                 "console, "
                 "$Array, $Function, $JSON, $Object, $RegExp, $String) {"
        "'use strict';");
-  v8::Handle<v8::String> right = v8::String::New("\n})");
+  v8::Handle<v8::String> right = v8::String::NewFromUtf8(GetIsolate(), "\n})");
   return handle_scope.Close(
       v8::String::Concat(left, v8::String::Concat(source, right)));
 }

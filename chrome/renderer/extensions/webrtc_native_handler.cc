@@ -226,14 +226,14 @@ void WebRtcNativeHandler::StartCastSendTransport(
   scoped_ptr<Value> params_value(
       converter->FromV8Value(args[1], context()->v8_context()));
   if (!params_value) {
-    v8::ThrowException(v8::Exception::TypeError(v8::String::New(
-        kUnableToConvertParams)));
+    v8::ThrowException(v8::Exception::TypeError(
+        v8::String::NewFromUtf8(args.GetIsolate(), kUnableToConvertParams)));
     return;
   }
   scoped_ptr<RtpParams> params = RtpParams::FromValue(*params_value);
   if (!params) {
-    v8::ThrowException(v8::Exception::TypeError(v8::String::New(
-        kInvalidRtpParams)));
+    v8::ThrowException(v8::Exception::TypeError(
+        v8::String::NewFromUtf8(args.GetIsolate(), kInvalidRtpParams)));
     return;
   }
 
@@ -294,14 +294,14 @@ void WebRtcNativeHandler::StartCastUdpTransport(
   scoped_ptr<Value> udp_params_value(
       converter->FromV8Value(args[1], context()->v8_context()));
   if (!udp_params_value) {
-    v8::ThrowException(v8::Exception::TypeError(v8::String::New(
-        kUnableToConvertArgs)));
+    v8::ThrowException(v8::Exception::TypeError(
+        v8::String::NewFromUtf8(args.GetIsolate(), kUnableToConvertArgs)));
     return;
   }
   scoped_ptr<UdpParams> udp_params = UdpParams::FromValue(*udp_params_value);
   if (!udp_params) {
-    v8::ThrowException(v8::Exception::TypeError(v8::String::New(
-        kInvalidUdpParams)));
+    v8::ThrowException(v8::Exception::TypeError(
+        v8::String::NewFromUtf8(args.GetIsolate(), kInvalidUdpParams)));
     return;
   }
   transport->Start(net::HostPortPair(udp_params->address, udp_params->port));
@@ -313,8 +313,9 @@ CastSendTransport* WebRtcNativeHandler::GetSendTransportOrThrow(
       transport_id);
   if (iter != send_transport_map_.end())
     return iter->second.get();
-  v8::ThrowException(v8::Exception::RangeError(v8::String::New(
-      kSendTransportNotFound)));
+  v8::Isolate* isolate = context()->v8_context()->GetIsolate();
+  v8::ThrowException(v8::Exception::RangeError(
+      v8::String::NewFromUtf8(isolate, kSendTransportNotFound)));
   return NULL;
 }
 
@@ -324,8 +325,9 @@ CastUdpTransport* WebRtcNativeHandler::GetUdpTransportOrThrow(
       transport_id);
   if (iter != udp_transport_map_.end())
     return iter->second.get();
-  v8::ThrowException(v8::Exception::RangeError(v8::String::New(
-      kUdpTransportNotFound)));
+  v8::Isolate* isolate = context()->v8_context()->GetIsolate();
+  v8::ThrowException(v8::Exception::RangeError(
+      v8::String::NewFromUtf8(isolate, kUdpTransportNotFound)));
   return NULL;
 }
 

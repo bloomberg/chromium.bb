@@ -117,21 +117,22 @@ const char kScript[] =
     "\n"
     "}());\n";
 
-v8::Local<v8::String> MakeKey(const char* name) {
-  return v8::String::New(
-      base::StringPrintf("%s::%s", kClassName, name).c_str());
+v8::Local<v8::String> MakeKey(const char* name, v8::Isolate* isolate) {
+  return v8::String::NewFromUtf8(
+      isolate, base::StringPrintf("%s::%s", kClassName, name).c_str());
 }
 
 void SaveImpl(const char* name,
               v8::Local<v8::Value> value,
               v8::Local<v8::Context> context) {
   CHECK(!value.IsEmpty() && value->IsObject()) << name;
-  context->Global()->SetHiddenValue(MakeKey(name), value);
+  context->Global()
+      ->SetHiddenValue(MakeKey(name, context->GetIsolate()), value);
 }
 
 v8::Local<v8::Object> Load(const char* name, v8::Handle<v8::Context> context) {
   v8::Local<v8::Value> value =
-      context->Global()->GetHiddenValue(MakeKey(name));
+      context->Global()->GetHiddenValue(MakeKey(name, context->GetIsolate()));
   CHECK(!value.IsEmpty() && value->IsObject()) << name;
   return value->ToObject();
 }
@@ -165,7 +166,8 @@ class ExtensionImpl : public v8::Extension {
     } else if (info[1]->IsString()) {
       recv = v8::StringObject::New(info[1]->ToString())->ToObject();
     } else {
-      v8::ThrowException(v8::Exception::TypeError(v8::String::New(
+      v8::ThrowException(v8::Exception::TypeError(v8::String::NewFromUtf8(
+          info.GetIsolate(),
           "The first argument is the receiver and must be an object")));
       return;
     }

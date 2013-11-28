@@ -129,7 +129,8 @@ static const char kOnSuspendCanceledEvent[] = "runtime.onSuspendCanceled";
 // Note that this isn't necessarily an object, since webpages can write, for
 // example, "window.chrome = true".
 v8::Handle<v8::Value> GetOrCreateChrome(ChromeV8Context* context) {
-  v8::Handle<v8::String> chrome_string(v8::String::New("chrome"));
+  v8::Handle<v8::String> chrome_string(
+      v8::String::NewFromUtf8(context->isolate(), "chrome"));
   v8::Handle<v8::Object> global(context->v8_context()->Global());
   v8::Handle<v8::Value> chrome(global->Get(chrome_string));
   if (chrome->IsUndefined()) {
@@ -229,11 +230,12 @@ class V8ContextNativeHandler : public ObjectBackedNativeHandler {
     Feature::Availability availability = context_->GetAvailability(api_name);
 
     v8::Handle<v8::Object> ret = v8::Object::New();
-    ret->Set(v8::String::New("is_available"),
+    ret->Set(v8::String::NewFromUtf8(args.GetIsolate(), "is_available"),
              v8::Boolean::New(availability.is_available()));
-    ret->Set(v8::String::New("message"),
-             v8::String::New(availability.message().c_str()));
-    ret->Set(v8::String::New("result"),
+    ret->Set(v8::String::NewFromUtf8(args.GetIsolate(), "message"),
+             v8::String::NewFromUtf8(args.GetIsolate(),
+                                     availability.message().c_str()));
+    ret->Set(v8::String::NewFromUtf8(args.GetIsolate(), "result"),
              v8::Integer::New(availability.result()));
     args.GetReturnValue().Set(ret);
   }
@@ -370,11 +372,13 @@ class ProcessInfoNativeHandler : public ChromeV8Extension {
 
  private:
   void GetExtensionId(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    args.GetReturnValue().Set(v8::String::New(extension_id_.c_str()));
+    args.GetReturnValue()
+        .Set(v8::String::NewFromUtf8(args.GetIsolate(), extension_id_.c_str()));
   }
 
   void GetContextType(const v8::FunctionCallbackInfo<v8::Value>& args) {
-    args.GetReturnValue().Set(v8::String::New(context_type_.c_str()));
+    args.GetReturnValue()
+        .Set(v8::String::NewFromUtf8(args.GetIsolate(), context_type_.c_str()));
   }
 
   void InIncognitoContext(const v8::FunctionCallbackInfo<v8::Value>& args) {
@@ -387,7 +391,7 @@ class ProcessInfoNativeHandler : public ChromeV8Extension {
 
   void IsSendRequestDisabled(const v8::FunctionCallbackInfo<v8::Value>& args) {
     if (send_request_disabled_) {
-      args.GetReturnValue().Set(v8::String::New(
+      args.GetReturnValue().Set(v8::String::NewFromUtf8(args.GetIsolate(),
           "sendRequest and onRequest are obsolete."
           " Please use sendMessage and onMessage instead."));
     }
@@ -673,8 +677,9 @@ bool Dispatcher::IsExtensionActive(
 
 v8::Handle<v8::Object> Dispatcher::GetOrCreateObject(
     v8::Handle<v8::Object> object,
-    const std::string& field) {
-  v8::Handle<v8::String> key = v8::String::New(field.c_str());
+    const std::string& field,
+    v8::Isolate* isolate) {
+  v8::Handle<v8::String> key = v8::String::NewFromUtf8(isolate, field.c_str());
   // If the object has a callback property, it is assumed it is an unavailable
   // API, so it is safe to delete. This is checked before GetOrCreateObject is
   // called.
@@ -800,7 +805,7 @@ v8::Handle<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(
       if (bind_object.IsEmpty())
         return v8::Handle<v8::Object>();
     }
-    bind_object = GetOrCreateObject(bind_object, split[i]);
+    bind_object = GetOrCreateObject(bind_object, split[i], context->isolate());
   }
 
   if (only_ancestor_available)
@@ -824,7 +829,8 @@ void Dispatcher::RegisterBinding(const std::string& api_name,
   if (bind_object.IsEmpty())
     return;
 
-  v8::Local<v8::String> v8_api_name = v8::String::New(api_name.c_str());
+  v8::Local<v8::String> v8_api_name =
+      v8::String::NewFromUtf8(context->isolate(), api_name.c_str());
   if (bind_object->HasRealNamedProperty(v8_api_name)) {
     // The bind object may already have the property if the API has been
     // registered before (or if the extension has put something there already,
@@ -1062,7 +1068,8 @@ void Dispatcher::InstallBindings(ModuleSystem* module_system,
   if (lazy_binding != lazy_bindings_map_.end()) {
     v8::Handle<v8::Object> global(v8_context->Global());
     v8::Handle<v8::Object> chrome =
-        global->Get(v8::String::New("chrome"))->ToObject();
+        global->Get(v8::String::NewFromUtf8(v8_context->GetIsolate(), "chrome"))
+            ->ToObject();
     (*lazy_binding->second)(module_system, chrome);
   } else {
     module_system->Require(api);
@@ -1560,8 +1567,8 @@ bool Dispatcher::CheckContextAccessToExtensionAPI(
   }
 
   if (!context->extension()) {
-    v8::ThrowException(
-        v8::Exception::Error(v8::String::New("Not in an extension.")));
+    v8::ThrowException(v8::Exception::Error(
+        v8::String::NewFromUtf8(context->isolate(), "Not in an extension.")));
     return false;
   }
 
@@ -1572,15 +1579,15 @@ bool Dispatcher::CheckContextAccessToExtensionAPI(
     static const char kMessage[] =
         "%s cannot be used within a sandboxed frame.";
     std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());
-    v8::ThrowException(
-        v8::Exception::Error(v8::String::New(error_msg.c_str())));
+    v8::ThrowException(v8::Exception::Error(
+        v8::String::NewFromUtf8(context->isolate(), error_msg.c_str())));
     return false;
   }
 
   Feature::Availability availability = context->GetAvailability(function_name);
   if (!availability.is_available()) {
-    v8::ThrowException(v8::Exception::Error(
-        v8::String::New(availability.message().c_str())));
+    v8::ThrowException(v8::Exception::Error(v8::String::NewFromUtf8(
+        context->isolate(), availability.message().c_str())));
   }
 
   return availability.is_available();

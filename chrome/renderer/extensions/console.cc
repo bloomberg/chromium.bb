@@ -84,7 +84,8 @@ void BindLogMethod(v8::Isolate* isolate,
   v8::Local<v8::FunctionTemplate> tmpl = v8::FunctionTemplate::New(
       &BoundLogMethodCallback,
       v8::External::New(isolate, reinterpret_cast<void*>(log_method)));
-  target->Set(v8::String::New(name.c_str()), tmpl->GetFunction());
+  target->Set(v8::String::NewFromUtf8(isolate, name.c_str()),
+              tmpl->GetFunction());
 }
 
 }  // namespace

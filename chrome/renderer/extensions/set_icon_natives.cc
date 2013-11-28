@@ -36,14 +36,17 @@ SetIconNatives::SetIconNatives(Dispatcher* dispatcher,
 bool SetIconNatives::ConvertImageDataToBitmapValue(
     const v8::Local<v8::Object> image_data,
     Value** bitmap_value) {
+  v8::Isolate* isolate = context()->v8_context()->GetIsolate();
   v8::Local<v8::Object> data =
-      image_data->Get(v8::String::New("data"))->ToObject();
-  int width = image_data->Get(v8::String::New("width"))->Int32Value();
-  int height = image_data->Get(v8::String::New("height"))->Int32Value();
+      image_data->Get(v8::String::NewFromUtf8(isolate, "data"))->ToObject();
+  int width =
+      image_data->Get(v8::String::NewFromUtf8(isolate, "width"))->Int32Value();
+  int height =
+      image_data->Get(v8::String::NewFromUtf8(isolate, "height"))->Int32Value();
 
   if (width <= 0 || height <= 0) {
-    v8::ThrowException(
-        v8::Exception::Error(v8::String::New(kInvalidDimensions)));
+    v8::ThrowException(v8::Exception::Error(
+        v8::String::NewFromUtf8(isolate, kInvalidDimensions)));
     return false;
   }
 
@@ -51,21 +54,24 @@ bool SetIconNatives::ConvertImageDataToBitmapValue(
   // without overflowing below.
   int max_width = (std::numeric_limits<int>::max() / 4) / height;
   if (width > max_width) {
-    v8::ThrowException(
-        v8::Exception::Error(v8::String::New(kInvalidDimensions)));
+    v8::ThrowException(v8::Exception::Error(
+        v8::String::NewFromUtf8(isolate, kInvalidDimensions)));
     return false;
   }
 
-  int data_length = data->Get(v8::String::New("length"))->Int32Value();
+  int data_length =
+      data->Get(v8::String::NewFromUtf8(isolate, "length"))->Int32Value();
   if (data_length != 4 * width * height) {
-    v8::ThrowException(v8::Exception::Error(v8::String::New(kInvalidData)));
+    v8::ThrowException(
+        v8::Exception::Error(v8::String::NewFromUtf8(isolate, kInvalidData)));
     return false;
   }
 
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
   if (!bitmap.allocPixels()) {
-    v8::ThrowException(v8::Exception::Error(v8::String::New(kNoMemory)));
+    v8::ThrowException(
+        v8::Exception::Error(v8::String::NewFromUtf8(isolate, kNoMemory)));
     return false;
   }
   bitmap.eraseARGB(0, 0, 0, 0);
@@ -93,17 +99,20 @@ bool SetIconNatives::ConvertImageDataSetToBitmapValueSet(
     const v8::FunctionCallbackInfo<v8::Value>& args,
     base::DictionaryValue* bitmap_set_value) {
   v8::Local<v8::Object> extension_args = args[1]->ToObject();
-  v8::Local<v8::Object> details =
-      extension_args->Get(v8::String::New("0"))->ToObject();
+  v8::Local<v8::Object> details = extension_args
+      ->Get(v8::String::NewFromUtf8(args.GetIsolate(), "0"))->ToObject();
   v8::Local<v8::Object> image_data_set =
-      details->Get(v8::String::New("imageData"))->ToObject();
+      details->Get(v8::String::NewFromUtf8(args.GetIsolate(), "imageData"))
+          ->ToObject();
 
   DCHECK(bitmap_set_value);
   for (size_t i = 0; i < arraysize(kImageSizeKeys); i++) {
-    if (!image_data_set->Has(v8::String::New(kImageSizeKeys[i])))
+    if (!image_data_set->Has(
+            v8::String::NewFromUtf8(args.GetIsolate(), kImageSizeKeys[i])))
       continue;
-    v8::Local<v8::Object> image_data =
-        image_data_set->Get(v8::String::New(kImageSizeKeys[i]))->ToObject();
+    v8::Local<v8::Object> image_data = image_data_set
+        ->Get(v8::String::NewFromUtf8(args.GetIsolate(), kImageSizeKeys[i]))
+        ->ToObject();
     Value* image_data_bitmap = NULL;
     if (!ConvertImageDataToBitmapValue(image_data, &image_data_bitmap))
       return false;
@@ -120,15 +129,16 @@ void SetIconNatives::SetIconCommon(
     return;
 
   v8::Local<v8::Object> extension_args = args[1]->ToObject();
-  v8::Local<v8::Object> details =
-      extension_args->Get(v8::String::New("0"))->ToObject();
+  v8::Local<v8::Object> details = extension_args
+      ->Get(v8::String::NewFromUtf8(args.GetIsolate(), "0"))->ToObject();
 
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->Set("imageData", bitmap_set_value.release());
 
-  if (details->Has(v8::String::New("tabId"))) {
+  if (details->Has(v8::String::NewFromUtf8(args.GetIsolate(), "tabId"))) {
     dict->SetInteger("tabId",
-                     details->Get(v8::String::New("tabId"))->Int32Value());
+                     details->Get(v8::String::NewFromUtf8(
+                         args.GetIsolate(), "tabId"))->Int32Value());
   }
 
   ListValue list_value;

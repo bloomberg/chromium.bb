@@ -117,8 +117,10 @@ void FileSystemNatives::CrackIsolatedFileSystemName(
   if (!fileapi::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id))
     return;
 
-  args.GetReturnValue().Set(
-      v8::String::New(filesystem_id.c_str(), filesystem_id.size()));
+  args.GetReturnValue().Set(v8::String::NewFromUtf8(args.GetIsolate(),
+                                                    filesystem_id.c_str(),
+                                                    v8::String::kNormalString,
+                                                    filesystem_id.size()));
 }
 
 void FileSystemNatives::GetDOMError(

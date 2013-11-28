@@ -79,7 +79,7 @@ void I18NCustomBindings::GetL10nMessage(
   }
 
   args.GetReturnValue().Set(
-      v8::String::New(ReplaceStringPlaceholders(
+      v8::String::NewFromUtf8(args.GetIsolate(), ReplaceStringPlaceholders(
         message, substitutions, NULL).c_str()));
 }
 

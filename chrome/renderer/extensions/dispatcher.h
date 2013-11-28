@@ -251,7 +251,8 @@ class Dispatcher : public content::RenderProcessObserver {
   // Gets |field| from |object| or creates it as an empty object if it doesn't
   // exist.
   v8::Handle<v8::Object> GetOrCreateObject(v8::Handle<v8::Object> object,
-                                           const std::string& field);
+                                           const std::string& field,
+                                           v8::Isolate* isolate);
 
   // True if this renderer is running extensions.
   bool is_extension_process_;

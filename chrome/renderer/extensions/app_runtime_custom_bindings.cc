@@ -35,7 +35,8 @@ void SerializeToString(const v8::FunctionCallbackInfo<v8::Value> &args) {
   WebString data_webstring = data.toString();
 
   std::string v = std::string(data_webstring.utf8());
-  args.GetReturnValue().Set(v8::String::New(v.c_str()));
+  args.GetReturnValue()
+      .Set(v8::String::NewFromUtf8(args.GetIsolate(), v.c_str()));
 }
 
 void CreateBlob(const v8::FunctionCallbackInfo<v8::Value> &args) {

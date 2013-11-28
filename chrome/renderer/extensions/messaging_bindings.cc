@@ -110,7 +110,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
     int port_id = args[0]->Int32Value();
     if (!HasPortData(port_id)) {
       v8::ThrowException(v8::Exception::Error(
-        v8::String::New(kPortClosedError)));
+          v8::String::NewFromUtf8(args.GetIsolate(), kPortClosedError)));
       return;
     }
 
@@ -249,7 +249,8 @@ void MessagingBindings::DispatchOnConnect(
     const GURL& source_url,
     const std::string& tls_channel_id,
     content::RenderView* restrict_to_render_view) {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(isolate);
 
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
 
@@ -279,17 +280,31 @@ void MessagingBindings::DispatchOnConnect(
       if (externally_connectable &&
           externally_connectable->accepts_tls_channel_id) {
         tls_channel_id_value =
-            v8::String::New(tls_channel_id.c_str(), tls_channel_id.size());
+            v8::String::NewFromUtf8(isolate,
+                                    tls_channel_id.c_str(),
+                                    v8::String::kNormalString,
+                                    tls_channel_id.size());
       }
     }
 
     v8::Handle<v8::Value> arguments[] = {
       v8::Integer::New(target_port_id),
-      v8::String::New(channel_name.c_str(), channel_name.size()),
-      tab,
-      v8::String::New(source_extension_id.c_str(), source_extension_id.size()),
-      v8::String::New(target_extension_id.c_str(), target_extension_id.size()),
-      v8::String::New(source_url_spec.c_str(), source_url_spec.size()),
+      v8::String::NewFromUtf8(isolate,
+                              channel_name.c_str(),
+                              v8::String::kNormalString,
+                              channel_name.size()),
+      tab, v8::String::NewFromUtf8(isolate,
+                                   source_extension_id.c_str(),
+                                   v8::String::kNormalString,
+                                   source_extension_id.size()),
+      v8::String::NewFromUtf8(isolate,
+                              target_extension_id.c_str(),
+                              v8::String::kNormalString,
+                              target_extension_id.size()),
+      v8::String::NewFromUtf8(isolate,
+                              source_url_spec.c_str(),
+                              v8::String::kNormalString,
+                              source_url_spec.size()),
       tls_channel_id_value,
     };
 
@@ -326,7 +341,8 @@ void MessagingBindings::DeliverMessage(
   if (message.user_gesture)
     web_user_gesture.reset(new blink::WebScopedUserGesture);
 
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(isolate);
 
   // TODO(kalman): pass in the full ChromeV8ContextSet; call ForEach.
   for (ChromeV8ContextSet::ContextSet::const_iterator it = contexts.begin();
@@ -353,8 +369,10 @@ void MessagingBindings::DeliverMessage(
       continue;
 
     std::vector<v8::Handle<v8::Value> > arguments;
-    arguments.push_back(v8::String::New(message.data.c_str(),
-                                        message.data.size()));
+    arguments.push_back(v8::String::NewFromUtf8(isolate,
+                                                message.data.c_str(),
+                                                v8::String::kNormalString,
+                                                message.data.size()));
     arguments.push_back(port_id_handle);
     (*it)->module_system()->CallModuleMethod("messaging",
                                              "dispatchOnMessage",
@@ -368,7 +386,8 @@ void MessagingBindings::DispatchOnDisconnect(
     int port_id,
     const std::string& error_message,
     content::RenderView* restrict_to_render_view) {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::HandleScope handle_scope(isolate);
 
   // TODO(kalman): pass in the full ChromeV8ContextSet; call ForEach.
   for (ChromeV8ContextSet::ContextSet::const_iterator it = contexts.begin();
@@ -385,7 +404,8 @@ void MessagingBindings::DispatchOnDisconnect(
     std::vector<v8::Handle<v8::Value> > arguments;
     arguments.push_back(v8::Integer::New(port_id));
     if (!error_message.empty()) {
-      arguments.push_back(v8::String::New(error_message.c_str()));
+      arguments.push_back(
+          v8::String::NewFromUtf8(isolate, error_message.c_str()));
     } else {
       arguments.push_back(v8::Null());
     }
