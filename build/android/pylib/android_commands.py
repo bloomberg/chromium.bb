@@ -465,10 +465,18 @@ class AndroidCommands(object):
 
   def RestartAdbdOnDevice(self):
     logging.info('Killing adbd on the device...')
-    adb_pids = self.KillAll('adbd', signal=signal.SIGTERM, with_su=True)
-    assert adb_pids, 'Unable to obtain adbd pid'
-    logging.info('Waiting for device to settle...')
-    self._adb.SendCommand('wait-for-device')
+    adb_pids = self.ExtractPid('adbd')
+    if not adb_pids:
+      raise errors.MsgException('Unable to obtain adbd pid')
+    try:
+      self.KillAll('adbd', signal=signal.SIGTERM, with_su=True)
+      logging.info('Waiting for device to settle...')
+      self._adb.SendCommand('wait-for-device')
+      new_adb_pids = self.ExtractPid('adbd')
+      if new_adb_pids == adb_pids:
+        logging.error('adbd on the device may not have been restarted.')
+    except Exception as e:
+      logging.error('Exception when trying to kill adbd on the device [%s]', e)
 
   def RestartAdbServer(self):
     """Restart the adb server."""
