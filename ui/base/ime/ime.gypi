@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 {
+  'dependencies' : [
+    '<(DEPTH)/ui/events/events.gyp:events',
+  ],
   'sources': [
     'character_composer.cc',
     'character_composer.h',

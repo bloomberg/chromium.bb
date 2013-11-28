@@ -19,6 +19,7 @@ class Rect;
 namespace ui {
 
 class InputMethodObserver;
+class KeyEvent;
 class TextInputClient;
 
 // A helper class providing functionalities shared among ui::InputMethod
@@ -72,14 +73,12 @@ class UI_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod) {
 
   // Convenience method to call delegate_->DispatchKeyEventPostIME().
   // Returns true if the event was processed
-  bool DispatchKeyEventPostIME(const base::NativeEvent& native_event) const;
+  bool DispatchKeyEventPostIME(const ui::KeyEvent& event) const;
 
   // Convenience method to call delegate_->DispatchFabricatedKeyEventPostIME().
   // Returns true if the event was processed
   // TODO(komatsu): Unify this function to DispatchKeyEventPostIME.
-  bool DispatchFabricatedKeyEventPostIME(EventType type,
-                                         KeyboardCode key_code,
-                                         int flags) const;
+  bool DispatchFabricatedKeyEventPostIME(const ui::KeyEvent& event) const;
 
   // Convenience method to notify all observers of TextInputClient changes.
   void NotifyTextInputStateChanged(const TextInputClient* client);

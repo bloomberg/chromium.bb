@@ -73,7 +73,7 @@ bool InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& event) {
     }
   }
 
-  return DispatchKeyEventPostIME(native_key_event);
+  return DispatchKeyEventPostIME(event);
 }
 
 void InputMethodWin::OnInputLocaleChanged() {
@@ -364,9 +364,7 @@ bool InputMethodWin::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
       return true;
     }
   }
-  return DispatchFabricatedKeyEventPostIME(event.type(),
-                                           event.key_code(),
-                                           event.flags());
+  return DispatchFabricatedKeyEventPostIME(event);
 }
 
 }  // namespace ui

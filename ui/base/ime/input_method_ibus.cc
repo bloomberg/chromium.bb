@@ -112,24 +112,23 @@ bool InputMethodIBus::OnUntranslatedIMEMessage(const base::NativeEvent& event,
 }
 
 void InputMethodIBus::ProcessKeyEventDone(uint32 id,
-                                          ui::KeyEvent* key_event,
+                                          ui::KeyEvent* event,
                                           uint32 ibus_keyval,
                                           uint32 ibus_keycode,
                                           uint32 ibus_state,
                                           bool is_handled) {
-  DCHECK(key_event);
+  DCHECK(event);
 
   // TODO(komatsu): Support fabricated key events.
-  if (!key_event->HasNativeEvent())
+  if (!event->HasNativeEvent())
     return;
 
-  const base::NativeEvent event = key_event->native_event();
   std::set<uint32>::iterator it = pending_key_events_.find(id);
 
   if (it == pending_key_events_.end())
    return;  // Abandoned key event.
 
-  if (event->type == KeyPress) {
+  if (event->type() == ET_KEY_PRESSED) {
     if (is_handled) {
       // IME event has a priority to be handled, so that character composer
       // should be reset.
@@ -142,8 +141,8 @@ void InputMethodIBus::ProcessKeyEventDone(uint32 id,
     }
   }
 
-  if (event->type == KeyPress || event->type == KeyRelease)
-    ProcessKeyEventPostIME(*key_event, ibus_state, is_handled);
+  if (event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED)
+    ProcessKeyEventPostIME(*event, is_handled);
 
   // Do not use |it| for erasing, ProcessKeyEventPostIME may change the
   // |pending_key_events_|.
@@ -154,11 +153,10 @@ bool InputMethodIBus::DispatchKeyEvent(const ui::KeyEvent& event) {
   if (!event.HasNativeEvent())
     return DispatchFabricatedKeyEvent(event);
 
-  const base::NativeEvent& native_event = event.native_event();
-  DCHECK(native_event && (native_event->type == KeyPress ||
-                          native_event->type == KeyRelease));
+  DCHECK(event.type() == ET_KEY_PRESSED || event.type() == ET_KEY_RELEASED);
   DCHECK(system_toplevel_window_focused());
 
+  const base::NativeEvent& native_event = event.native_event();
   uint32 ibus_keyval = 0;
   uint32 ibus_keycode = 0;
   uint32 ibus_state = 0;
@@ -173,16 +171,16 @@ bool InputMethodIBus::DispatchKeyEvent(const ui::KeyEvent& event) {
   // enabled, so that ibus can have a chance to enable the |context_|.
   if (!context_focused_ || !GetEngine() ||
       GetTextInputType() == TEXT_INPUT_TYPE_PASSWORD ) {
-    if (native_event->type == KeyPress) {
+    if (event.type() == ET_KEY_PRESSED) {
       if (ExecuteCharacterComposer(ibus_keyval, ibus_keycode, ibus_state)) {
         // Treating as PostIME event if character composer handles key event and
         // generates some IME event,
-        ProcessKeyEventPostIME(event, ibus_state, true);
+        ProcessKeyEventPostIME(event, true);
         return true;
       }
-      ProcessUnfilteredKeyPressEvent(native_event, ibus_state);
+      ProcessUnfilteredKeyPressEvent(event);
     } else {
-      DispatchKeyEventPostIME(native_event);
+      DispatchKeyEventPostIME(event);
     }
     return true;
   }
@@ -333,15 +331,11 @@ void InputMethodIBus::ConfirmCompositionText() {
 
 bool InputMethodIBus::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
   // TODO(bryeung): The fabricated events should also pass through IME.
-  if (event.type() == ET_KEY_PRESSED) {
-    ProcessUnfilteredFabricatedKeyPressEvent(
-        ET_KEY_PRESSED, event.key_code(), event.flags());
-  } else {
-    DispatchFabricatedKeyEventPostIME(
-        ET_KEY_RELEASED,
-        event.key_code(),
-        event.flags());
-  }
+  if (event.type() == ET_KEY_PRESSED)
+    ProcessUnfilteredFabricatedKeyPressEvent(event);
+  else
+    DispatchFabricatedKeyEventPostIME(event);
+
   return true;
 }
 
@@ -423,24 +417,22 @@ void InputMethodIBus::UpdateContextFocusState() {
 
 void InputMethodIBus::ProcessKeyEventPostIME(
     const ui::KeyEvent& event,
-    uint32 ibus_state,
     bool handled) {
   // TODO(komatsu): Support fabricated key events.
   if (!event.HasNativeEvent())
     return;
-  const base::NativeEvent& native_event = event.native_event();
 
   TextInputClient* client = GetTextInputClient();
 
   if (!client) {
     // As ibus works asynchronously, there is a chance that the focused client
     // loses focus before this method gets called.
-    DispatchKeyEventPostIME(native_event);
+    DispatchKeyEventPostIME(event);
     return;
   }
 
-  if (native_event->type == KeyPress && handled)
-    ProcessFilteredKeyPressEvent(native_event);
+  if (event.type() == ET_KEY_PRESSED && handled)
+    ProcessFilteredKeyPressEvent(event);
 
   // In case the focus was changed by the key event. The |context_| should have
   // been reset when the focused window changed.
@@ -448,17 +440,17 @@ void InputMethodIBus::ProcessKeyEventPostIME(
     return;
 
   if (HasInputMethodResult())
-    ProcessInputMethodResult(native_event, handled);
+    ProcessInputMethodResult(event, handled);
 
   // In case the focus was changed when sending input method results to the
   // focused window.
   if (client != GetTextInputClient())
     return;
 
-  if (native_event->type == KeyPress && !handled)
-    ProcessUnfilteredKeyPressEvent(native_event, ibus_state);
-  else if (native_event->type == KeyRelease)
-    DispatchKeyEventPostIME(native_event);
+  if (event.type() == ET_KEY_PRESSED && !handled)
+    ProcessUnfilteredKeyPressEvent(event);
+  else if (event.type() == ET_KEY_RELEASED)
+    DispatchKeyEventPostIME(event);
 }
 
 void InputMethodIBus::IBusKeyEventFromNativeKeyEvent(
@@ -480,26 +472,30 @@ void InputMethodIBus::IBusKeyEventFromNativeKeyEvent(
     *ibus_state |= kIBusReleaseMask;
 }
 
-void InputMethodIBus::ProcessFilteredKeyPressEvent(
-    const base::NativeEvent& native_event) {
-  if (NeedInsertChar())
-    DispatchKeyEventPostIME(native_event);
-  else
-    DispatchFabricatedKeyEventPostIME(
-        ET_KEY_PRESSED,
-        VKEY_PROCESSKEY,
-        EventFlagsFromXState(GetKeyEvent(native_event)->state));
+void InputMethodIBus::ProcessFilteredKeyPressEvent(const ui::KeyEvent& event) {
+  if (NeedInsertChar()) {
+    DispatchKeyEventPostIME(event);
+  } else {
+    const ui::KeyEvent fabricated_event(ET_KEY_PRESSED,
+                                        VKEY_PROCESSKEY,
+                                        event.flags(),
+                                        false);  // is_char
+    DispatchFabricatedKeyEventPostIME(fabricated_event);
+  }
 }
 
 void InputMethodIBus::ProcessUnfilteredKeyPressEvent(
-    const base::NativeEvent& native_event,
-    uint32 ibus_state) {
+    const ui::KeyEvent& event) {
   // For a fabricated event, ProcessUnfilteredFabricatedKeyPressEvent should be
   // called instead.
+  if (!event.HasNativeEvent())
+    return ProcessUnfilteredFabricatedKeyPressEvent(event);
+
+  const base::NativeEvent& native_event = event.native_event();
   DCHECK(native_event);
 
   TextInputClient* client = GetTextInputClient();
-  DispatchKeyEventPostIME(native_event);
+  DispatchKeyEventPostIME(event);
 
   // We shouldn't dispatch the character anymore if the key event dispatch
   // caused focus change. For example, in the following scenario,
@@ -511,7 +507,7 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(
   if (client != GetTextInputClient())
     return;
 
-  const uint32 event_flags = EventFlagsFromXState(ibus_state);
+  const uint32 event_flags = event.flags();
 
   // If a key event was not filtered by |context_| and |character_composer_|,
   // then it means the key event didn't generate any result text. So we need
@@ -531,34 +527,30 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(
 }
 
 void InputMethodIBus::ProcessUnfilteredFabricatedKeyPressEvent(
-    EventType type,
-    KeyboardCode key_code,
-    int event_flags) {
+    const ui::KeyEvent& event) {
   TextInputClient* client = GetTextInputClient();
-  DispatchFabricatedKeyEventPostIME(type, key_code, event_flags);
+  DispatchFabricatedKeyEventPostIME(event);
 
   if (client != GetTextInputClient())
     return;
 
   client = GetTextInputClient();
-  const uint16 ch = ui::GetCharacterFromKeyCode(key_code, event_flags);
+  const uint16 ch = ui::GetCharacterFromKeyCode(event.key_code(),
+                                                event.flags());
   if (client && ch)
-    client->InsertChar(ch, event_flags);
+    client->InsertChar(ch, event.flags());
 }
 
-void InputMethodIBus::ProcessInputMethodResult(
-    const base::NativeEvent& native_event,
-    bool handled) {
+void InputMethodIBus::ProcessInputMethodResult(const ui::KeyEvent& event,
+                                               bool handled) {
   TextInputClient* client = GetTextInputClient();
   DCHECK(client);
 
   if (result_text_.length()) {
     if (handled && NeedInsertChar()) {
-      const uint32 state =
-          EventFlagsFromXState(GetKeyEvent(native_event)->state);
       for (string16::const_iterator i = result_text_.begin();
            i != result_text_.end(); ++i) {
-        client->InsertChar(*i, state);
+        client->InsertChar(*i, event.flags());
       }
     } else {
       client->InsertText(result_text_);

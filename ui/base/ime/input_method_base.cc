@@ -8,6 +8,7 @@
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/events/event.h"
 
 namespace ui {
 
@@ -100,15 +101,23 @@ void InputMethodBase::OnInputMethodChanged() const {
 }
 
 bool InputMethodBase::DispatchKeyEventPostIME(
-    const base::NativeEvent& native_event) const {
-  return delegate_ ? delegate_->DispatchKeyEventPostIME(native_event) : false;
+    const ui::KeyEvent& event) const {
+  if (!event.HasNativeEvent())
+    return DispatchFabricatedKeyEventPostIME(event);
+
+  if (!delegate_)
+    return false;
+
+  return delegate_->DispatchKeyEventPostIME(event.native_event());
 }
 
-bool InputMethodBase::DispatchFabricatedKeyEventPostIME(EventType type,
-                                                        KeyboardCode key_code,
-                                                        int flags) const {
-  return delegate_ ? delegate_->DispatchFabricatedKeyEventPostIME
-      (type, key_code, flags) : false;
+bool InputMethodBase::DispatchFabricatedKeyEventPostIME(
+    const ui::KeyEvent& event) const {
+  if (!delegate_)
+    return false;
+
+  return delegate_->DispatchFabricatedKeyEventPostIME(
+      event.type(), event.key_code(), event.flags());
 }
 
 void InputMethodBase::NotifyTextInputStateChanged(
