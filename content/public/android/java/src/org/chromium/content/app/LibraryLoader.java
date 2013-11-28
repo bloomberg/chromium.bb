@@ -116,7 +116,7 @@ public class LibraryLoader {
                 if (useContentLinker)
                     Linker.prepareLibraryLoad();
 
-                for (String library : NativeLibraries.libraries) {
+                for (String library : NativeLibraries.LIBRARIES) {
                     Log.i(TAG, "Loading: " + library);
                     if (useContentLinker)
                         Linker.loadLibrary(library);
@@ -135,6 +135,16 @@ public class LibraryLoader {
         } catch (UnsatisfiedLinkError e) {
             throw new ProcessInitException(ResultCodes.RESULT_CODE_NATIVE_LIBRARY_LOAD_FAILED, e);
         }
+        // Check that the version of the library we have loaded matches the version we expect
+        Log.i(TAG, String.format(
+                "Expected native library version number \"%s\"," +
+                        "actual native library version number \"%s\"",
+                NativeLibraries.VERSION_NUMBER,
+                nativeGetVersionNumber()));
+        if (!NativeLibraries.VERSION_NUMBER.equals(nativeGetVersionNumber())) {
+            throw new ProcessInitException(ResultCodes.RESULT_CODE_NATIVE_LIBRARY_WRONG_VERSION);
+        }
+
     }
 
 
@@ -157,13 +167,13 @@ public class LibraryLoader {
         TraceEvent.setEnabledToMatchNative();
         // Record histogram for the content linker.
         if (Linker.isUsed())
-          nativeRecordContentAndroidLinkerHistogram(Linker.loadAtFixedAddressFailed(),
+            nativeRecordContentAndroidLinkerHistogram(Linker.loadAtFixedAddressFailed(),
                                                     SysUtils.isLowEndDevice());
     }
 
-    // This is the only method that is registered during System.loadLibrary. We then call it
-    // to register everything else. This process is called "initialization".
-    // This method will be mapped (by generated code) to the LibraryLoaded
+    // Only methods needed before or during normal JNI registration are during System.OnLoad.
+    // nativeLibraryLoaded is then called to register everything else.  This process is called
+    // "initialization".  This method will be mapped (by generated code) to the LibraryLoaded
     // definition in content/app/android/library_loader_hooks.cc.
     //
     // Return 0 on success, otherwise return the error code from
@@ -176,4 +186,8 @@ public class LibraryLoader {
     private static native void nativeRecordContentAndroidLinkerHistogram(
          boolean loadedAtFixedAddressFailed,
          boolean isLowMemoryDevice);
+
+    // Get the version of the native library. This is needed so that we can check we
+    // have the right version before initializing the (rest of the) JNI.
+    private static native String nativeGetVersionNumber();
 }

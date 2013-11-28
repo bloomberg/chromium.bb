@@ -7,6 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/logging.h"
 #include "chrome/app/android/chrome_main_delegate_android.h"
+#include "chrome/common/chrome_version_info.h"
 #include "content/public/app/android_library_loader_hooks.h"
 #include "content/public/app/content_main.h"
 #include "net/proxy/proxy_resolver_v8.h"
@@ -16,6 +17,11 @@ jint RunChrome(JavaVM* vm, ChromeMainDelegateAndroid* main_delegate) {
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!content::RegisterLibraryLoaderEntryHook(env))
     return -1;
+
+  // Pass the library version number to content so that we can check it from the
+  // Java side before continuing initialization
+  chrome::VersionInfo vi;
+  content::SetVersionNumber(vi.Version().c_str());
 
   DCHECK(main_delegate);
   content::SetContentMainDelegate(main_delegate);

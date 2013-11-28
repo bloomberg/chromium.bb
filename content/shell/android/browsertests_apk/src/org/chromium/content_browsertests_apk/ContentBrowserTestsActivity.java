@@ -34,6 +34,7 @@ public class ContentBrowserTestsActivity extends Activity {
             LibraryLoader.ensureInitialized();
         } catch (ProcessInitException e) {
             Log.i(TAG, "Cannot load content_browsertests:" +  e);
+            System.exit(-1);
         }
         BrowserStartupController.get(getApplicationContext()).initChromiumBrowserProcessForTests();
 

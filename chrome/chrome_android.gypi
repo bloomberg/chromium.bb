@@ -65,6 +65,7 @@
         'resource_dir': 'android/testshell/res',
         'asset_location': '<(PRODUCT_DIR)/../assets/<(package_name)',
         'native_lib_target': 'libchromiumtestshell',
+        'native_lib_version_name': '<(version_full)',
         'additional_input_paths': [
           '<@(chrome_android_pak_output_resources)',
         ],

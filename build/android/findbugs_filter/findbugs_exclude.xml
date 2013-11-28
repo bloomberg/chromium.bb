@@ -49,4 +49,44 @@ In particular, ~ at the start of a string means it's a regex.
       <Bug pattern="DM_GC" />
     </Or>
   </Match>
+  <!--
+  Ignore calls to System.exit() following errors during loading the native library.
+  There is no way to recover from such errors without restarting the application,
+  so System.exit() is the best solution.
+  -->
+  <Match>
+    <Class name="~org\.chromium\.chrome\..*\.ChromiumSyncAdapter.*" />
+    <Method name="run" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
+    <Class name="~org\.chromium\.chrome\..*\.ChromiumSyncAdapter" />
+    <Method name="startBrowserProcessesSync" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
+    <Class name="~org\.chromium\.chrome\..*\.ChromiumTestShellActivity" />
+    <Method name="onCreate" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
+    <Class name="~org\.chromium\.chrome\..*\.AccountsChangedReceiver.*" />
+    <Method name="run" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
+    <Class name="~org\.chromium\.content\..*\.ChildProcessService.*" />
+    <Method name="run" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
+    <Class name="~org\.chromium\..*ContentBrowserTestsActivity" />
+    <Method name="onCreate" />
+    <Bug code="Dm" />
+  </Match>
+  <Match>
+    <Class name="~org\.chromium\..*ContentShellActivity" />
+    <Method name="onCreate" />
+    <Bug code="Dm" />
+  </Match>
 </FindBugsFilter>

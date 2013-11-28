@@ -36,6 +36,7 @@ namespace content {
 
 namespace {
 base::AtExitManager* g_at_exit_manager = NULL;
+const char* g_library_version_number = "";
 }
 
 bool EnsureJniRegistered(JNIEnv* env) {
@@ -144,6 +145,14 @@ bool RegisterLibraryLoaderEntryHook(JNIEnv* env) {
   g_at_exit_manager = new base::AtExitManager();
 
   return RegisterNativesImpl(env);
+}
+
+void SetVersionNumber(const char* version_number) {
+  g_library_version_number = strdup(version_number);
+}
+
+jstring GetVersionNumber(JNIEnv* env, jclass clazz) {
+  return env->NewStringUTF(g_library_version_number);
 }
 
 }  // namespace content

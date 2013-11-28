@@ -15,6 +15,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.OAuth2TokenService;
 import org.chromium.content.browser.BrowserStartupController;
+import org.chromium.content.common.ProcessInitException;
 import org.chromium.sync.signin.ChromeSigninController;
 
 /**
@@ -52,7 +53,13 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                BrowserStartupController.get(context).startBrowserProcessesAsync(callback);
+                try {
+                    BrowserStartupController.get(context).startBrowserProcessesAsync(callback);
+                }
+                catch (ProcessInitException e) {
+                    Log.e(TAG, "Unable to load native library.", e);
+                    System.exit(-1);
+                }
             }
         });
     }

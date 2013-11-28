@@ -89,7 +89,7 @@
     'native_libraries_java_stamp': '<(intermediate_dir)/native_libraries_java.stamp',
     'native_libraries_template_data_dir': '<(intermediate_dir)/native_libraries/',
     'native_libraries_template_data_file': '<(native_libraries_template_data_dir)/native_libraries_array.h',
-    'native_libraries_template_data_stamp': '<(intermediate_dir)/native_libraries_template_data.stamp',
+    'native_libraries_template_version_file': '<(native_libraries_template_data_dir)/native_libraries_version.h',
     'compile_stamp': '<(intermediate_dir)/compile.stamp',
     'instr_stamp': '<(intermediate_dir)/instr.stamp',
     'jar_stamp': '<(intermediate_dir)/jar.stamp',
@@ -120,6 +120,7 @@
     'variables': {
       'variables': {
         'native_lib_target%': '',
+        'native_lib_version_name%': '',
         'use_content_linker%': 0,
         'enable_content_linker_tests%': 0,
         'is_test_apk%': 0,
@@ -143,6 +144,7 @@
       ],
     },
     'native_lib_target%': '',
+    'native_lib_version_name%': '',
     'use_content_linker%': 0,
     'enable_content_linker_tests%': 0,
     'emma_instrument': '<(emma_instrument)',
@@ -239,13 +241,15 @@
             '<(ordered_libraries_file)',
           ],
           'outputs': [
-            '<(native_libraries_template_data_stamp)',
+            '<(native_libraries_template_data_file)',
+            '<(native_libraries_template_version_file)',
           ],
           'action': [
             'python', '<(DEPTH)/build/android/gyp/create_native_libraries_header.py',
             '--ordered-libraries=<(ordered_libraries_file)',
-            '--output=<(native_libraries_template_data_file)',
-            '--stamp=<(native_libraries_template_data_stamp)',
+            '--version-name=<(native_lib_version_name)',
+            '--native-library-list=<(native_libraries_template_data_file)',
+            '--version-output=<(native_libraries_template_version_file)',
           ],
         },
         {
@@ -284,7 +288,8 @@
           'inputs': [
             '<(DEPTH)/build/android/gyp/util/build_utils.py',
             '<(DEPTH)/build/android/gyp/gcc_preprocess.py',
-            '<(native_libraries_template_data_stamp)',
+            '<(native_libraries_template_data_file)',
+            '<(native_libraries_template_version_file)',
             '<(native_libraries_template)',
           ],
           'outputs': [

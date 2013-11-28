@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.test.ActivityInstrumentationTestCase2;
 import android.text.TextUtils;
+import android.util.Log;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
@@ -17,6 +18,7 @@ import org.chromium.chrome.test.util.ApplicationData;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.common.ProcessInitException;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,6 +29,7 @@ public class ChromiumTestShellTestBase extends
         ActivityInstrumentationTestCase2<ChromiumTestShellActivity> {
     /** The maximum time the waitForActiveShellToBeDoneLoading method will wait. */
     private static final long WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT = 10000;
+    private static final String TAG = "ChromiumTestShellTestBase";
 
     public ChromiumTestShellTestBase() {
         super(ChromiumTestShellActivity.class);
@@ -37,8 +40,13 @@ public class ChromiumTestShellTestBase extends
             @Override
             public void run() {
                 CommandLine.initFromFile("/data/local/tmp/chromium-testshell-command-line");
-                BrowserStartupController.get(targetContext).startBrowserProcessesSync(
-                        BrowserStartupController.MAX_RENDERERS_LIMIT);
+                try {
+                    BrowserStartupController.get(targetContext).startBrowserProcessesSync(
+                            BrowserStartupController.MAX_RENDERERS_LIMIT);
+                } catch (ProcessInitException e) {
+                    Log.e(TAG, "Unable to load native library.", e);
+                    fail("Unable to load native library");
+                }
             }
         });
     }

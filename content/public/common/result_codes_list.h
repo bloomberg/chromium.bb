@@ -35,4 +35,10 @@ RESULT_CODE(FAILED_TO_REGISTER_JNI, 4)
 
 // Failed to find and load the native library.
 RESULT_CODE(NATIVE_LIBRARY_LOAD_FAILED, 5)
+
+// Wrong version of library loaded
+RESULT_CODE(NATIVE_LIBRARY_WRONG_VERSION, 6)
+
+// Native library startup failed
+RESULT_CODE(NATIVE_STARTUP_FAILED, 7)
 #endif

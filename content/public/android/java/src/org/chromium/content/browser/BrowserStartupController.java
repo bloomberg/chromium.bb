@@ -16,6 +16,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.content.app.ContentMain;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.common.ProcessInitException;
+import org.chromium.content.common.ResultCodes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -139,7 +140,8 @@ public class BrowserStartupController {
      *
      * @param callback the callback to be called when browser startup is complete.
      */
-    public void startBrowserProcessesAsync(final StartupCallback callback) {
+    public void startBrowserProcessesAsync(final StartupCallback callback)
+            throws ProcessInitException {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread.";
         if (mStartupDone) {
             // Browser process initialization has already been completed, so we can immediately post
@@ -156,25 +158,13 @@ public class BrowserStartupController {
             // flag that indicates that we have kicked off starting the browser process.
             mHasStartedInitializingBrowserProcess = true;
 
-            if (!tryPrepareToStartBrowserProcess(MAX_RENDERERS_LIMIT)) return;
+            prepareToStartBrowserProcess(MAX_RENDERERS_LIMIT);
 
             setAsynchronousStartup(true);
             if (contentStart() > 0) {
                 // Failed. The callbacks may not have run, so run them.
                 enqueueCallbackExecution(STARTUP_FAILURE, NOT_ALREADY_STARTED);
             }
-        }
-    }
-
-    private boolean tryPrepareToStartBrowserProcess(int maxRenderers) {
-        // Make sure that everything is in place to initialize the Android browser process.
-        try {
-            prepareToStartBrowserProcess(maxRenderers);
-            return true;
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Unable to load native library.", e);
-            enqueueCallbackExecution(STARTUP_FAILURE, NOT_ALREADY_STARTED);
-            return false;
         }
     }
 
@@ -188,25 +178,27 @@ public class BrowserStartupController {
      * @param maxRenderers The maximum number of renderer processes the browser may
      *                      create. Zero for single process mode.
      * @return true if successfully started, false otherwise.
+     * @throws ProcessInitException
      */
-    public boolean startBrowserProcessesSync(int maxRenderers) {
-        if (mStartupDone) {
-            // Nothing to do
-            return mStartupSuccess;
-        }
-        if (!mHasStartedInitializingBrowserProcess) {
-            if (!tryPrepareToStartBrowserProcess(maxRenderers)) return false;
-        }
+    public void startBrowserProcessesSync(int maxRenderers) throws ProcessInitException {
+        // If already started skip to checking the result
+        if (!mStartupDone) {
+            if (!mHasStartedInitializingBrowserProcess) {
+                prepareToStartBrowserProcess(maxRenderers);
+            }
 
-        setAsynchronousStartup(false);
-        if (contentStart() > 0) {
-            // Failed. The callbacks may not have run, so run them.
-            enqueueCallbackExecution(STARTUP_FAILURE, NOT_ALREADY_STARTED);
+            setAsynchronousStartup(false);
+            if (contentStart() > 0) {
+                // Failed. The callbacks may not have run, so run them.
+                enqueueCallbackExecution(STARTUP_FAILURE, NOT_ALREADY_STARTED);
+            }
         }
 
         // Startup should now be complete
         assert mStartupDone;
-        return mStartupSuccess;
+        if(!mStartupSuccess) {
+            throw new ProcessInitException(ResultCodes.RESULT_CODE_NATIVE_STARTUP_FAILED);
+        }
     }
 
     /**

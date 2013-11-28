@@ -31,6 +31,7 @@ import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.DeviceUtils;
+import org.chromium.content.common.ProcessInitException;
 import org.chromium.printing.PrintingController;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -75,7 +76,13 @@ public class ChromiumTestShellActivity extends Activity implements AppMenuProper
                         finish();
                     }
                 };
-        BrowserStartupController.get(this).startBrowserProcessesAsync(callback);
+        try {
+            BrowserStartupController.get(this).startBrowserProcessesAsync(callback);
+        }
+        catch (ProcessInitException e) {
+            Log.e(TAG, "Unable to load native library.", e);
+            System.exit(-1);
+        }
     }
 
     private void finishInitialization(final Bundle savedInstanceState) {

@@ -62,7 +62,9 @@ public class ContentShellActivity extends Activity {
             LibraryLoader.ensureInitialized();
         } catch (ProcessInitException e) {
             Log.e(TAG, "ContentView initialization failed.", e);
-            finish();
+            // Since the library failed to initialize nothing in the application
+            // can work, so kill the whole application not just the activity
+            System.exit(-1);
             return;
         }
 
@@ -78,25 +80,33 @@ public class ContentShellActivity extends Activity {
         }
 
         if (CommandLine.getInstance().hasSwitch(ContentSwitches.DUMP_RENDER_TREE)) {
-            if(BrowserStartupController.get(this).startBrowserProcessesSync(
-                   BrowserStartupController.MAX_RENDERERS_LIMIT)) {
-                finishInitialization(savedInstanceState);
-            } else {
-                initializationFailed();
+            try {
+                BrowserStartupController.get(this).startBrowserProcessesSync(
+                       BrowserStartupController.MAX_RENDERERS_LIMIT);
+            }
+            catch (ProcessInitException e) {
+                Log.e(TAG, "Failed to load native library.", e);
+                System.exit(-1);
             }
         } else {
-            BrowserStartupController.get(this).startBrowserProcessesAsync(
-                    new BrowserStartupController.StartupCallback() {
-                @Override
-                public void onSuccess(boolean alreadyStarted) {
-                    finishInitialization(savedInstanceState);
-                }
+            try {
+                BrowserStartupController.get(this).startBrowserProcessesAsync(
+                        new BrowserStartupController.StartupCallback() {
+                    @Override
+                    public void onSuccess(boolean alreadyStarted) {
+                        finishInitialization(savedInstanceState);
+                    }
 
-                @Override
-                public void onFailure() {
-                    initializationFailed();
-                }
-            });
+                    @Override
+                    public void onFailure() {
+                        initializationFailed();
+                    }
+                });
+            }
+            catch (ProcessInitException e) {
+                Log.e(TAG, "Unable to load native library.", e);
+                System.exit(-1);
+          }
         }
     }
 

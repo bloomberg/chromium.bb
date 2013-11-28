@@ -141,7 +141,7 @@ public class ChildProcessService extends Service {
                         LibraryLoader.loadNow();
                     } catch (ProcessInitException e) {
                         Log.e(TAG, "Failed to load native library, exiting child process", e);
-                        return;
+                        System.exit(-1);
                     }
                     synchronized (mMainThread) {
                         while (mCommandLineParams == null) {

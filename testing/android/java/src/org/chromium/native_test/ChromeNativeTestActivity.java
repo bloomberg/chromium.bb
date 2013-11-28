@@ -68,7 +68,7 @@ public class ChromeNativeTestActivity extends Activity {
     }
 
     private void loadLibraries() {
-        for (String library: NativeLibraries.libraries) {
+        for (String library: NativeLibraries.LIBRARIES) {
             Log.i(TAG, "loading: " + library);
             System.loadLibrary(library);
             Log.i(TAG, "loaded: " + library);
