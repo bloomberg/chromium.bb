@@ -32,18 +32,18 @@
 
 namespace WebCore {
 
-static v8::Local<v8::String> makeExternalString(const String& string)
+static v8::Local<v8::String> makeExternalString(const String& string, v8::Isolate* isolate)
 {
     if (string.is8Bit()) {
         WebCoreStringResource8* stringResource = new WebCoreStringResource8(string);
-        v8::Local<v8::String> newString = v8::String::NewExternal(stringResource);
+        v8::Local<v8::String> newString = v8::String::NewExternal(isolate, stringResource);
         if (newString.IsEmpty())
             delete stringResource;
         return newString;
     }
 
     WebCoreStringResource16* stringResource = new WebCoreStringResource16(string);
-    v8::Local<v8::String> newString = v8::String::NewExternal(stringResource);
+    v8::Local<v8::String> newString = v8::String::NewExternal(isolate, stringResource);
     if (newString.IsEmpty())
         delete stringResource;
     return newString;
@@ -87,7 +87,7 @@ v8::Local<v8::String> StringCache::createStringAndInsertIntoCache(StringImpl* st
     ASSERT(!m_stringCache.contains(stringImpl));
     ASSERT(stringImpl->length());
 
-    v8::Local<v8::String> newString = makeExternalString(String(stringImpl));
+    v8::Local<v8::String> newString = makeExternalString(String(stringImpl), isolate);
     if (newString.IsEmpty())
         return newString;
 
@@ -111,7 +111,7 @@ void StringCache::makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Stri
     ASSERT(stringCache->m_stringCache.contains(stringImpl));
     stringCache->m_stringCache.remove(stringImpl);
     stringImpl->deref();
-    wrapper->Dispose();
+    wrapper->Reset();
 }
 
 } // namespace WebCore
