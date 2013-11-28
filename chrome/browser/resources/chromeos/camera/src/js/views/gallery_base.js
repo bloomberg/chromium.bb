@@ -19,12 +19,15 @@ camera.views = camera.views || {};
  *
  * @param {camera.View.Context} context Context object.
  * @param {camera.Router} router View router to switch views.
+ * @param {HTMLElement} rootElement Root element containing elements of the
+ *     view.
+ * @param {string} name View name.
  * @extends {camera.View}
  * @implements {camera.models.Gallery.Observer}
  * @constructor
  */
-camera.views.GalleryBase = function(context, router) {
-  camera.View.call(this, context, router);
+camera.views.GalleryBase = function(context, router, rootElement, name) {
+  camera.View.call(this, context, router, rootElement, name);
 
   /**
    * @type {camera.models.Gallery}
