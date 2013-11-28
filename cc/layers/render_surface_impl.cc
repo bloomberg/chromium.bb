@@ -133,7 +133,7 @@ void RenderSurfaceImpl::AppendRenderPasses(RenderPassSink* pass_sink) {
     delegated_renderer_layer->AppendContributingRenderPasses(pass_sink);
   }
 
-  scoped_ptr<RenderPass> pass = RenderPass::Create();
+  scoped_ptr<RenderPass> pass = RenderPass::Create(layer_list_.size());
   pass->SetNew(RenderPassId(),
                content_rect_,
                damage_tracker_->current_damage_rect(),

@@ -12,6 +12,11 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 
+namespace {
+const size_t kDefaultNumSharedQuadStatesToReserve = 32;
+const size_t kDefaultNumQuadsToReserve = 128;
+}
+
 namespace cc {
 
 void* RenderPass::Id::AsTracingId() const {
@@ -21,12 +26,28 @@ void* RenderPass::Id::AsTracingId() const {
 }
 
 scoped_ptr<RenderPass> RenderPass::Create() {
-  return make_scoped_ptr(new RenderPass);
+  return make_scoped_ptr(new RenderPass());
+}
+
+scoped_ptr<RenderPass> RenderPass::Create(size_t num_layers) {
+  return make_scoped_ptr(new RenderPass(num_layers));
 }
 
 RenderPass::RenderPass()
     : id(Id(-1, -1)),
-      has_transparent_background(true) {}
+      has_transparent_background(true) {
+  shared_quad_state_list.reserve(kDefaultNumSharedQuadStatesToReserve);
+  quad_list.reserve(kDefaultNumQuadsToReserve);
+}
+
+RenderPass::RenderPass(size_t num_layers)
+    : id(Id(-1, -1)),
+      has_transparent_background(true) {
+  // Each layer usually produces one shared quad state, so the number of layers
+  // is a good hint for what to reserve here.
+  shared_quad_state_list.reserve(num_layers);
+  quad_list.reserve(kDefaultNumQuadsToReserve);
+}
 
 RenderPass::~RenderPass() {
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
