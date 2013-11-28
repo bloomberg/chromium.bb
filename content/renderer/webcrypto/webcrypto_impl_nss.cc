@@ -491,9 +491,47 @@ bool WebCryptoImpl::EncryptInternal(
     const unsigned char* data,
     unsigned data_size,
     blink::WebArrayBuffer* buffer) {
+
+  DCHECK_EQ(algorithm.id(), key.algorithm().id());
+  DCHECK(key.handle());
+  DCHECK(buffer);
+
   if (algorithm.id() == blink::WebCryptoAlgorithmIdAesCbc) {
     return AesCbcEncryptDecrypt(
         CKA_ENCRYPT, algorithm, key, data, data_size, buffer);
+  } else if (algorithm.id() == blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5) {
+
+    // RSAES encryption does not support empty input
+    if (!data_size)
+      return false;
+    DCHECK(data);
+
+    if (key.type() != blink::WebCryptoKeyTypePublic)
+      return false;
+
+    PublicKeyHandle* const public_key =
+        reinterpret_cast<PublicKeyHandle*>(key.handle());
+
+    const unsigned encrypted_length_bytes =
+        SECKEY_PublicKeyStrength(public_key->key());
+
+    // RSAES can operate on messages up to a length of k - 11, where k is the
+    // octet length of the RSA modulus.
+    if (encrypted_length_bytes < 11 || encrypted_length_bytes - 11 < data_size)
+      return false;
+
+    *buffer = blink::WebArrayBuffer::create(encrypted_length_bytes, 1);
+    unsigned char* const buffer_data =
+        reinterpret_cast<unsigned char*>(buffer->data());
+
+    if (PK11_PubEncryptPKCS1(public_key->key(),
+                             buffer_data,
+                             const_cast<unsigned char*>(data),
+                             data_size,
+                             NULL) != SECSuccess) {
+      return false;
+    }
+    return true;
   }
 
   return false;
@@ -505,9 +543,49 @@ bool WebCryptoImpl::DecryptInternal(
     const unsigned char* data,
     unsigned data_size,
     blink::WebArrayBuffer* buffer) {
+
+  DCHECK_EQ(algorithm.id(), key.algorithm().id());
+  DCHECK(key.handle());
+  DCHECK(buffer);
+
   if (algorithm.id() == blink::WebCryptoAlgorithmIdAesCbc) {
     return AesCbcEncryptDecrypt(
         CKA_DECRYPT, algorithm, key, data, data_size, buffer);
+  } else if (algorithm.id() == blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5) {
+
+    // RSAES decryption does not support empty input
+    if (!data_size)
+      return false;
+    DCHECK(data);
+
+    if (key.type() != blink::WebCryptoKeyTypePrivate)
+      return false;
+
+    PrivateKeyHandle* const private_key =
+        reinterpret_cast<PrivateKeyHandle*>(key.handle());
+
+    const int modulus_length_bytes =
+        PK11_GetPrivateModulusLen(private_key->key());
+    if (modulus_length_bytes <= 0)
+      return false;
+    const unsigned max_output_length_bytes = modulus_length_bytes;
+
+    *buffer = blink::WebArrayBuffer::create(max_output_length_bytes, 1);
+    unsigned char* const buffer_data =
+        reinterpret_cast<unsigned char*>(buffer->data());
+
+    unsigned output_length_bytes = 0;
+    if (PK11_PrivDecryptPKCS1(private_key->key(),
+                              buffer_data,
+                              &output_length_bytes,
+                              max_output_length_bytes,
+                              const_cast<unsigned char*>(data),
+                              data_size) != SECSuccess) {
+      return false;
+    }
+    DCHECK_LE(output_length_bytes, max_output_length_bytes);
+    WebCryptoImpl::ShrinkBuffer(buffer, output_length_bytes);
+    return true;
   }
 
   return false;

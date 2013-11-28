@@ -4,6 +4,7 @@
 
 #include "content/renderer/webcrypto/webcrypto_impl.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -81,7 +82,8 @@ blink::WebCryptoAlgorithm CreateAesCbcAlgorithm(
 }
 
 #if !defined(USE_OPENSSL)
-blink::WebCryptoAlgorithm CreateRsaAlgorithm(
+
+blink::WebCryptoAlgorithm CreateRsaKeyGenAlgorithm(
     blink::WebCryptoAlgorithmId algorithm_id,
     unsigned modulus_length,
     const std::vector<uint8>& public_exponent) {
@@ -93,7 +95,8 @@ blink::WebCryptoAlgorithm CreateRsaAlgorithm(
       new blink::WebCryptoRsaKeyGenParams(
           modulus_length, Start(public_exponent), public_exponent.size()));
 }
-#endif  // !defined(USE_OPENSSL)
+
+#endif  // #if !defined(USE_OPENSSL)
 
 }  // namespace
 
@@ -879,9 +882,9 @@ TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
   const unsigned modulus_length = 256;
   const std::vector<uint8> public_exponent = HexStringToBytes("010001");
   blink::WebCryptoAlgorithm algorithm =
-      CreateRsaAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
-                         modulus_length,
-                         public_exponent);
+      CreateRsaKeyGenAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
+                               modulus_length,
+                               public_exponent);
   bool extractable = true;
   const blink::WebCryptoKeyUsageMask usage_mask = 0;
   blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
@@ -898,7 +901,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
   EXPECT_EQ(usage_mask, private_key.usages());
 
   // Fail with bad modulus.
-  algorithm = CreateRsaAlgorithm(
+  algorithm = CreateRsaKeyGenAlgorithm(
       blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, 0, public_exponent);
   EXPECT_FALSE(GenerateKeyPairInternal(
       algorithm, extractable, usage_mask, &public_key, &private_key));
@@ -906,25 +909,26 @@ TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
   // Fail with bad exponent: larger than unsigned long.
   unsigned exponent_length = sizeof(unsigned long) + 1; // NOLINT
   const std::vector<uint8> long_exponent(exponent_length, 0x01);
-  algorithm = CreateRsaAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
-                                 modulus_length,
-                                 long_exponent);
+  algorithm = CreateRsaKeyGenAlgorithm(
+      blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5, modulus_length, long_exponent);
   EXPECT_FALSE(GenerateKeyPairInternal(
       algorithm, extractable, usage_mask, &public_key, &private_key));
 
   // Fail with bad exponent: empty.
   const std::vector<uint8> empty_exponent;
-  algorithm = CreateRsaAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
-                                 modulus_length,
-                                 empty_exponent);
+  algorithm =
+      CreateRsaKeyGenAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
+                               modulus_length,
+                               empty_exponent);
   EXPECT_FALSE(GenerateKeyPairInternal(
       algorithm, extractable, usage_mask, &public_key, &private_key));
 
   // Fail with bad exponent: all zeros.
   std::vector<uint8> exponent_with_leading_zeros(15, 0x00);
-  algorithm = CreateRsaAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
-                                 modulus_length,
-                                 exponent_with_leading_zeros);
+  algorithm =
+      CreateRsaKeyGenAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
+                               modulus_length,
+                               exponent_with_leading_zeros);
   EXPECT_FALSE(GenerateKeyPairInternal(
       algorithm, extractable, usage_mask, &public_key, &private_key));
 
@@ -932,9 +936,10 @@ TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
   exponent_with_leading_zeros.insert(exponent_with_leading_zeros.end(),
                                      public_exponent.begin(),
                                      public_exponent.end());
-  algorithm = CreateRsaAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
-                                 modulus_length,
-                                 exponent_with_leading_zeros);
+  algorithm =
+      CreateRsaKeyGenAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
+                               modulus_length,
+                               exponent_with_leading_zeros);
   EXPECT_TRUE(GenerateKeyPairInternal(
       algorithm, extractable, usage_mask, &public_key, &private_key));
   EXPECT_FALSE(public_key.isNull());
@@ -947,7 +952,7 @@ TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
   EXPECT_EQ(usage_mask, private_key.usages());
 
   // Successful WebCryptoAlgorithmIdRsaOaep key generation.
-  algorithm = CreateRsaAlgorithm(
+  algorithm = CreateRsaKeyGenAlgorithm(
       blink::WebCryptoAlgorithmIdRsaOaep, modulus_length, public_exponent);
   EXPECT_TRUE(GenerateKeyPairInternal(
       algorithm, extractable, usage_mask, &public_key, &private_key));
@@ -961,9 +966,10 @@ TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
   EXPECT_EQ(usage_mask, private_key.usages());
 
   // Successful WebCryptoAlgorithmIdRsaSsaPkcs1v1_5 key generation.
-  algorithm = CreateRsaAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
-                                 modulus_length,
-                                 public_exponent);
+  algorithm =
+      CreateRsaKeyGenAlgorithm(blink::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5,
+                               modulus_length,
+                               public_exponent);
   EXPECT_TRUE(GenerateKeyPairInternal(
       algorithm, extractable, usage_mask, &public_key, &private_key));
   EXPECT_FALSE(public_key.isNull());
@@ -981,6 +987,259 @@ TEST_F(WebCryptoImplTest, GenerateKeyPairRsa) {
   blink::WebArrayBuffer output;
   EXPECT_FALSE(
       ExportKeyInternal(blink::WebCryptoKeyFormatSpki, private_key, &output));
+}
+
+TEST_F(WebCryptoImplTest, RsaEsRoundTrip) {
+  // Note: using unrealistic short key length here to avoid bogging down tests.
+
+  // Create a key pair.
+  const unsigned kModulusLength = 256;
+  blink::WebCryptoAlgorithm algorithm =
+      CreateRsaKeyGenAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
+                               kModulusLength,
+                               HexStringToBytes("010001"));
+  const blink::WebCryptoKeyUsageMask usage_mask =
+      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt;
+  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  EXPECT_TRUE(GenerateKeyPairInternal(
+      algorithm, false, usage_mask, &public_key, &private_key));
+  EXPECT_FALSE(public_key.isNull());
+  EXPECT_FALSE(private_key.isNull());
+
+  // Make a maximum-length data message. RSAES can operate on messages up to
+  // length of k - 11 bytes, where k is the octet length of the RSA modulus.
+  const unsigned kMaxMsgSizeBytes = kModulusLength / 8 - 11;
+  // There are two hex chars for each byte.
+  const unsigned kMsgHexSize = kMaxMsgSizeBytes * 2;
+  char max_data_hex[kMsgHexSize+1];
+  std::fill(&max_data_hex[0], &max_data_hex[0] + kMsgHexSize, 'a');
+  max_data_hex[kMsgHexSize] = '\0';
+
+  // Verify encrypt / decrypt round trip on a few messages. Note that RSA
+  // encryption does not support empty input.
+  algorithm = CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5);
+  const char* const kTestDataHex[] = {
+      "ff",
+      "0102030405060708090a0b0c0d0e0f",
+      max_data_hex
+  };
+  blink::WebArrayBuffer encrypted_data;
+  blink::WebArrayBuffer decrypted_data;
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestDataHex); ++i) {
+    SCOPED_TRACE(i);
+    ASSERT_TRUE(EncryptInternal(
+        algorithm,
+        public_key,
+        HexStringToBytes(kTestDataHex[i]),
+        &encrypted_data));
+    EXPECT_EQ(kModulusLength/8, encrypted_data.byteLength());
+    ASSERT_TRUE(DecryptInternal(
+        algorithm,
+        private_key,
+        reinterpret_cast<const unsigned char*>(encrypted_data.data()),
+        encrypted_data.byteLength(),
+        &decrypted_data));
+    ExpectArrayBufferMatchesHex(kTestDataHex[i], decrypted_data);
+  }
+}
+
+TEST_F(WebCryptoImplTest, RsaEsKnownAnswer) {
+  // Because the random data in PKCS1.5 padding makes the encryption output non-
+  // deterministic, we cannot easily do a typical known-answer test for RSA
+  // encryption / decryption. Instead we will take a known-good encrypted
+  // message, decrypt it, re-encrypt it, then decrypt again, verifying that the
+  // original known cleartext is the result.
+
+  // The RSA public and private keys used for this test are produced by the
+  // openssl command line:
+  // % openssl genrsa -out pair.pem 1024
+  // % openssl rsa -in pair.pem -out spki.der -outform DER -pubout
+  // % openssl pkcs8 -topk8 -inform PEM -outform DER -in pair.pem -out
+  //     pkcs8.der -nocrypt
+  // % xxd -p spki.der
+  // % xxd -p pkcs8.der
+  const std::string rsa_spki_der_hex =
+      "30819f300d06092a864886f70d010101050003818d0030818902818100a8"
+      "d30894b93f376f7822229bfd2483e50da944c4ab803ca31979e0f47e70bf"
+      "683c687c6b3e80f280a237cea3643fd1f7f10f7cc664dbc2ecd45be53e1c"
+      "9b15a53c37dbdad846c0f8340c472abc7821e4aa7df185867bf38228ac3e"
+      "cc1d97d3c8b57e21ea6ba57b2bc3814a436e910ee8ab64a0b7743a927e94"
+      "4d3420401f7dd50203010001";
+  const std::string rsa_pkcs8_der_hex =
+      "30820276020100300d06092a864886f70d0101010500048202603082025c"
+      "02010002818100a8d30894b93f376f7822229bfd2483e50da944c4ab803c"
+      "a31979e0f47e70bf683c687c6b3e80f280a237cea3643fd1f7f10f7cc664"
+      "dbc2ecd45be53e1c9b15a53c37dbdad846c0f8340c472abc7821e4aa7df1"
+      "85867bf38228ac3ecc1d97d3c8b57e21ea6ba57b2bc3814a436e910ee8ab"
+      "64a0b7743a927e944d3420401f7dd5020301000102818100896cdffb50a0"
+      "691bd00ad9696933243a7c5861a64684e8d74b91aed0d76c28234da9303e"
+      "8c6ea2f89b141a9d5ea9a4ddd3d8eb9503dcf05ba0b1fd76060b281e3ae4"
+      "b9d497fb5519bdf1127db8ad412d6a722686c78df3e3002acca960c6b2a2"
+      "42a83ace5410693c03ce3d74cb9c9a7bacc8e271812920d1f53fee9312ef"
+      "4eb1024100d09c14418ce92af7cc62f7cdc79836d8c6e3d0d33e7229cc11"
+      "d732cbac75aa4c56c92e409a3ccbe75d4ce63ac5adca33080690782c6371"
+      "e3628134c3534ca603024100cf2d3206f6deea2f39b70351c51f85436200"
+      "5aa8f643e49e22486736d536e040dc30a2b4f9be3ab212a88d1891280874"
+      "b9a170cdeb22eaf61c27c4b082c7d1470240638411a5b3b307ec6e744802"
+      "c2d4ba556f8bfe72c7b76e790b89bd91ac13f5c9b51d04138d80b3450c1d"
+      "4337865601bf96748b36c8f627be719f71ac3c70b441024065ce92cfe34e"
+      "a58bf173a2b8f3024b4d5282540ac581957db3e11a7f528535ec098808dc"
+      "a0013ffcb3b88a25716757c86c540e07d2ad8502cdd129118822c30f0240"
+      "420a4983040e9db46eb29f1315a0d7b41cf60428f7460fce748e9a1a7d22"
+      "d7390fa328948e7e9d1724401374e99d45eb41474781201378a4330e8e80"
+      "8ce63551";
+
+  // Similarly, the cleartext and public key encrypted ciphertext for this test
+  // are also produced by openssl. Note that since we are using a 1024-bit key,
+  // the cleartext size must be less than or equal to 117 bytes (modulusLength /
+  // 8 - 11).
+  // % openssl rand -out cleartext.bin 64
+  // % openssl rsautl -encrypt -inkey spki.der -keyform DER -pubin -in
+  //     cleartext.bin -out ciphertext.bin
+  // % xxd -p cleartext.bin
+  // % xxd -p ciphertext.bin
+  const std::string cleartext_hex =
+      "ec358ed141c45d7e03d4c6338aebad718e8bcbbf8f8ee6f8d9f4b9ef06d8"
+      "84739a398c6bcbc688418b2ff64761dc0ccd40e7d52bed03e06946d0957a"
+      "eef9e822";
+  const std::string ciphertext_hex =
+      "6106441c2b7a4b1a16260ed1ae4fe6135247345dc8e674754bbda6588c6c"
+      "0d95a3d4d26bb34cdbcbe327723e80343bd7a15cd4c91c3a44e6cb9c6cd6"
+      "7ad2e8bf41523188d9b36dc364a838642dcbc2c25e85dfb2106ba47578ca"
+      "3bbf8915055aea4fa7c3cbfdfbcc163f04c234fb6d847f39bab9612ecbee"
+      "04626e945c3ccf42";
+
+  // Import the public key.
+  const blink::WebCryptoAlgorithm algorithm =
+      CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5);
+  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+  ASSERT_TRUE(ImportKeyInternal(
+      blink::WebCryptoKeyFormatSpki,
+      HexStringToBytes(rsa_spki_der_hex),
+      algorithm,
+      true,
+      blink::WebCryptoKeyUsageEncrypt,
+      &public_key));
+  EXPECT_FALSE(public_key.isNull());
+  EXPECT_TRUE(public_key.handle());
+
+  // Import the private key.
+  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  ASSERT_TRUE(ImportKeyInternal(
+      blink::WebCryptoKeyFormatPkcs8,
+      HexStringToBytes(rsa_pkcs8_der_hex),
+      algorithm,
+      true,
+      blink::WebCryptoKeyUsageDecrypt,
+      &private_key));
+  EXPECT_FALSE(private_key.isNull());
+  EXPECT_TRUE(private_key.handle());
+
+  // Decrypt the known-good ciphertext with the private key. As a check we must
+  // get the known original cleartext.
+  blink::WebArrayBuffer decrypted_data;
+  ASSERT_TRUE(DecryptInternal(
+      algorithm,
+      private_key,
+      HexStringToBytes(ciphertext_hex),
+      &decrypted_data));
+  EXPECT_FALSE(decrypted_data.isNull());
+  ExpectArrayBufferMatchesHex(cleartext_hex, decrypted_data);
+
+  // Encrypt this decrypted data with the public key.
+  blink::WebArrayBuffer encrypted_data;
+  ASSERT_TRUE(EncryptInternal(
+      algorithm,
+      public_key,
+      reinterpret_cast<const unsigned char*>(decrypted_data.data()),
+      decrypted_data.byteLength(),
+      &encrypted_data));
+  EXPECT_EQ(128u, encrypted_data.byteLength());
+
+  // Finally, decrypt the newly encrypted result with the private key, and
+  // compare to the known original cleartext.
+  decrypted_data.reset();
+  ASSERT_TRUE(DecryptInternal(
+      algorithm,
+      private_key,
+      reinterpret_cast<const unsigned char*>(encrypted_data.data()),
+      encrypted_data.byteLength(),
+      &decrypted_data));
+  EXPECT_FALSE(decrypted_data.isNull());
+  ExpectArrayBufferMatchesHex(cleartext_hex, decrypted_data);
+}
+
+TEST_F(WebCryptoImplTest, RsaEsFailures) {
+  // Note: using unrealistic short key length here to avoid bogging down tests.
+
+  // Create a key pair.
+  const unsigned kModulusLength = 256;
+  blink::WebCryptoAlgorithm algorithm =
+      CreateRsaKeyGenAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5,
+                               kModulusLength,
+                               HexStringToBytes("010001"));
+  const blink::WebCryptoKeyUsageMask usage_mask =
+      blink::WebCryptoKeyUsageEncrypt | blink::WebCryptoKeyUsageDecrypt;
+  blink::WebCryptoKey public_key = blink::WebCryptoKey::createNull();
+  blink::WebCryptoKey private_key = blink::WebCryptoKey::createNull();
+  EXPECT_TRUE(GenerateKeyPairInternal(
+      algorithm, false, usage_mask, &public_key, &private_key));
+  EXPECT_FALSE(public_key.isNull());
+  EXPECT_FALSE(private_key.isNull());
+
+  // Fail encrypt with a private key.
+  algorithm = CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5);
+  blink::WebArrayBuffer encrypted_data;
+  const std::string message_hex_str("0102030405060708090a0b0c0d0e0f");
+  const std::vector<uint8> message_hex(HexStringToBytes(message_hex_str));
+  EXPECT_FALSE(
+      EncryptInternal(algorithm, private_key, message_hex, &encrypted_data));
+
+  // Fail encrypt with empty message.
+  EXPECT_FALSE(EncryptInternal(
+      algorithm, public_key, std::vector<uint8>(), &encrypted_data));
+
+  // Fail encrypt with message too large. RSAES can operate on messages up to
+  // length of k - 11 bytes, where k is the octet length of the RSA modulus.
+  const unsigned kMaxMsgSizeBytes = kModulusLength / 8 - 11;
+  EXPECT_FALSE(EncryptInternal(algorithm,
+                               public_key,
+                               std::vector<uint8>(kMaxMsgSizeBytes + 1, '0'),
+                               &encrypted_data));
+
+  // Generate encrypted data.
+  EXPECT_TRUE(
+      EncryptInternal(algorithm, public_key, message_hex, &encrypted_data));
+
+  // Fail decrypt with a public key.
+  blink::WebArrayBuffer decrypted_data;
+  EXPECT_FALSE(DecryptInternal(
+      algorithm,
+      public_key,
+      reinterpret_cast<const unsigned char*>(encrypted_data.data()),
+      encrypted_data.byteLength(),
+      &decrypted_data));
+
+  // Corrupt encrypted data; ensure decrypt fails because padding was disrupted.
+  std::vector<uint8> corrupted_data(
+      static_cast<uint8*>(encrypted_data.data()),
+      static_cast<uint8*>(encrypted_data.data()) + encrypted_data.byteLength());
+  corrupted_data[corrupted_data.size() / 2] ^= 0x01;
+  EXPECT_FALSE(
+      DecryptInternal(algorithm, private_key, corrupted_data, &decrypted_data));
+
+  // TODO(padolph): Are there other specific data corruption scenarios to
+  // consider?
+
+  // Do a successful decrypt with good data just for confirmation.
+  EXPECT_TRUE(DecryptInternal(
+      algorithm,
+      private_key,
+      reinterpret_cast<const unsigned char*>(encrypted_data.data()),
+      encrypted_data.byteLength(),
+      &decrypted_data));
+  ExpectArrayBufferMatchesHex(message_hex_str, decrypted_data);
 }
 
 #endif  // #if !defined(USE_OPENSSL)
