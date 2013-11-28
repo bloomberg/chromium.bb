@@ -249,6 +249,7 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   // Returns the WalletClient* this class uses to talk to Online Wallet. Exposed
   // for testing.
+  const wallet::WalletClient* GetWalletClient() const;
   virtual wallet::WalletClient* GetWalletClient();
 
   // Call to disable communication to Online Wallet for this dialog.
@@ -606,6 +607,10 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // True when the user has clicked the "Use Wallet" link and we're waiting to
   // figure out whether we need to ask them to actively sign in.
   bool handling_use_wallet_link_click_;
+
+  // True when the current WalletItems has a passive auth action which was
+  // attempted and failed.
+  bool passive_failed_;
 
   // Recently received items retrieved via |wallet_client_|.
   scoped_ptr<wallet::WalletItems> wallet_items_;

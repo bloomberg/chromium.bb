@@ -896,6 +896,7 @@ void AutofillDialogControllerImpl::GetWalletItems() {
   }
 
   last_wallet_items_fetch_timestamp_ = base::TimeTicks::Now();
+  passive_failed_ = false;
   wallet_items_.reset();
 
   // The "Loading..." page should be showing now, which should cause the
@@ -922,8 +923,10 @@ AutofillDialogControllerImpl::DialogSignedInState
   if (!wallet_items_requested_)
     return NOT_CHECKED;
 
-  if (wallet_items_->HasRequiredAction(wallet::GAIA_AUTH))
+  if (wallet_items_->HasRequiredAction(wallet::GAIA_AUTH) ||
+      passive_failed_) {
     return REQUIRES_SIGN_IN;
+  }
 
   if (wallet_items_->HasRequiredAction(wallet::PASSIVE_GAIA_AUTH))
     return REQUIRES_PASSIVE_SIGN_IN;
@@ -2327,9 +2330,19 @@ void AutofillDialogControllerImpl::OnPassiveSigninSuccess() {
 
 void AutofillDialogControllerImpl::OnPassiveSigninFailure(
     const GoogleServiceAuthError& error) {
-  // TODO(aruslan): report an error.
-  LOG(ERROR) << "failed to passively sign in: " << error.ToString();
   signin_helper_.reset();
+  passive_failed_ = true;
+
+  if (handling_use_wallet_link_click_ ||
+      GetWalletClient()->user_index() != 0) {
+    // TODO(estade): When a secondary account is selected and fails passive
+    // auth, we show a sign in page. Currently we show the generic add account
+    // page, but we should instead show sign in for the selected account.
+    // http://crbug.com/323327
+    SignInLinkClicked();
+    handling_use_wallet_link_click_ = false;
+  }
+
   OnWalletSigninError();
 }
 
@@ -2528,6 +2541,7 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
       wallet_client_(profile_->GetRequestContext(), this, source_url),
       wallet_items_requested_(false),
       handling_use_wallet_link_click_(false),
+      passive_failed_(false),
       country_combobox_model_(*GetManager()),
       suggested_cc_(this),
       suggested_billing_(this),
@@ -2554,6 +2568,11 @@ AutofillDialogView* AutofillDialogControllerImpl::CreateView() {
 
 PersonalDataManager* AutofillDialogControllerImpl::GetManager() {
   return PersonalDataManagerFactory::GetForProfile(profile_);
+}
+
+const wallet::WalletClient* AutofillDialogControllerImpl::GetWalletClient()
+    const {
+  return const_cast<AutofillDialogControllerImpl*>(this)->GetWalletClient();
 }
 
 wallet::WalletClient* AutofillDialogControllerImpl::GetWalletClient() {

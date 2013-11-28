@@ -2699,4 +2699,14 @@ TEST_F(AutofillDialogControllerTest, MultiAccountSwitch) {
   EXPECT_EQ(1U, controller()->GetTestingWalletClient()->user_index());
 }
 
+TEST_F(AutofillDialogControllerTest, PassiveAuthFailure) {
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItemsWithRequiredAction(
+           wallet::PASSIVE_GAIA_AUTH));
+  EXPECT_TRUE(controller()->ShouldShowSpinner());
+  controller()->OnPassiveSigninFailure(GoogleServiceAuthError(
+      GoogleServiceAuthError::NONE));
+  EXPECT_FALSE(controller()->ShouldShowSpinner());
+}
+
 }  // namespace autofill
