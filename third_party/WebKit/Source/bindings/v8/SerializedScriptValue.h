@@ -114,6 +114,7 @@ private:
     SerializedScriptValue();
     SerializedScriptValue(v8::Handle<v8::Value>, MessagePortArray*, ArrayBufferArray*, bool& didThrow, v8::Isolate*, ExceptionPolicy = ThrowExceptions);
     explicit SerializedScriptValue(const String& wireData);
+    SerializedScriptValue(const String& wireData, v8::Isolate*);
 
     static PassOwnPtr<ArrayBufferContentsArray> transferArrayBuffers(ArrayBufferArray&, bool& didThrow, v8::Isolate*);
 
@@ -121,6 +122,7 @@ private:
     OwnPtr<ArrayBufferContentsArray> m_arrayBufferContentsArray;
     BlobDataHandleMap m_blobDataHandles;
     intptr_t m_externallyAllocatedMemory;
+    v8::Isolate* m_isolate;
 };
 
 } // namespace WebCore

@@ -1353,6 +1353,8 @@ public:
 
     bool isEof() const { return m_position >= m_length; }
 
+    v8::Isolate* isolate() const { return m_isolate; }
+
     bool read(v8::Handle<v8::Value>* value, CompositeCreator& creator)
     {
         SerializationTag tag;
@@ -2158,7 +2160,7 @@ public:
         if (result.IsEmpty()) {
             RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(m_arrayBufferContents->at(index));
             buffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
-            v8::V8::AdjustAmountOfExternalAllocatedMemory(buffer->byteLength());
+            m_reader.isolate()->AdjustAmountOfExternalAllocatedMemory(buffer->byteLength());
             result = toV8Object(buffer.get(), m_reader.getIsolate());
             m_arrayBuffers[index] = result;
         }
@@ -2339,13 +2341,12 @@ void SerializedScriptValue::toWireBytes(Vector<char>& result) const
 }
 
 SerializedScriptValue::SerializedScriptValue()
-    : m_externallyAllocatedMemory(0)
+    : m_externallyAllocatedMemory(0), m_isolate(0)
 {
 }
 
-inline void neuterBinding(ArrayBuffer* object)
+inline void neuterBinding(v8::Isolate* isolate, ArrayBuffer* object)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     Vector<DOMDataStore*>& allStores = V8PerIsolateData::from(isolate)->allStores();
     for (size_t i = 0; i < allStores.size(); i++) {
         v8::Handle<v8::Object> wrapper = allStores[i]->get<V8ArrayBuffer>(object, isolate);
@@ -2356,9 +2357,8 @@ inline void neuterBinding(ArrayBuffer* object)
     }
 }
 
-inline void neuterBinding(ArrayBufferView* object)
+inline void neuterBinding(v8::Isolate* isolate, ArrayBufferView* object)
 {
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     Vector<DOMDataStore*>& allStores = V8PerIsolateData::from(isolate)->allStores();
     for (size_t i = 0; i < allStores.size(); i++) {
         v8::Handle<v8::Object> wrapper = allStores[i]->get<V8ArrayBufferView>(object, isolate);
@@ -2396,15 +2396,15 @@ PassOwnPtr<SerializedScriptValue::ArrayBufferContentsArray> SerializedScriptValu
             return nullptr;
         }
 
-        neuterBinding(arrayBuffers[i].get());
+        neuterBinding(isolate, arrayBuffers[i].get());
         for (size_t j = 0; j < neuteredViews.size(); j++)
-            neuterBinding(neuteredViews[j].get());
+            neuterBinding(isolate, neuteredViews[j].get());
     }
     return contents.release();
 }
 
 SerializedScriptValue::SerializedScriptValue(v8::Handle<v8::Value> value, MessagePortArray* messagePorts, ArrayBufferArray* arrayBuffers, bool& didThrow, v8::Isolate* isolate, ExceptionPolicy policy)
-    : m_externallyAllocatedMemory(0)
+    : m_externallyAllocatedMemory(0), m_isolate(isolate)
 {
     didThrow = false;
     Writer writer(isolate);
@@ -2454,15 +2454,22 @@ SerializedScriptValue::SerializedScriptValue(v8::Handle<v8::Value> value, Messag
     ASSERT_NOT_REACHED();
 }
 
-SerializedScriptValue::SerializedScriptValue(const String& wireData)
-    : m_externallyAllocatedMemory(0)
+SerializedScriptValue::SerializedScriptValue(const String& wireData, v8::Isolate* isolate)
+    : m_externallyAllocatedMemory(0), m_isolate(isolate)
 {
     m_data = wireData.isolatedCopy();
 }
 
+SerializedScriptValue::SerializedScriptValue(const String& wireData)
+    : m_externallyAllocatedMemory(0)
+{
+    m_data = wireData.isolatedCopy();
+    m_isolate = v8::Isolate::GetCurrent();
+}
+
 v8::Handle<v8::Value> SerializedScriptValue::deserialize(MessagePortArray* messagePorts)
 {
-    return deserialize(v8::Isolate::GetCurrent(), messagePorts);
+    return deserialize(m_isolate, messagePorts);
 }
 
 v8::Handle<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, MessagePortArray* messagePorts)
@@ -2489,7 +2496,7 @@ void SerializedScriptValue::registerMemoryAllocatedWithCurrentScriptContext()
     if (m_externallyAllocatedMemory)
         return;
     m_externallyAllocatedMemory = static_cast<intptr_t>(m_data.length());
-    v8::V8::AdjustAmountOfExternalAllocatedMemory(m_externallyAllocatedMemory);
+    m_isolate->AdjustAmountOfExternalAllocatedMemory(m_externallyAllocatedMemory);
 }
 
 SerializedScriptValue::~SerializedScriptValue()
@@ -2498,8 +2505,7 @@ SerializedScriptValue::~SerializedScriptValue()
     // used in a context other then Worker's onmessage environment and the presence of
     // current v8 context is not guaranteed. Avoid calling v8 then.
     if (m_externallyAllocatedMemory) {
-        ASSERT(v8::Isolate::GetCurrent());
-        v8::V8::AdjustAmountOfExternalAllocatedMemory(-m_externallyAllocatedMemory);
+        m_isolate->AdjustAmountOfExternalAllocatedMemory(-m_externallyAllocatedMemory);
     }
 }
 
