@@ -45,7 +45,7 @@ void WaitingCallback::EnsureRegistered(v8::Isolate* isolate) {
   gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);
   if (!data->GetObjectTemplate(&kWrapperInfo).IsEmpty())
     return;
-  v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
+  v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
   templ->SetInternalFieldCount(gin::kNumberOfInternalFields);
   data->SetObjectTemplate(&kWrapperInfo, templ);
 }

@@ -64,10 +64,10 @@ v8::Local<v8::ObjectTemplate> Support::GetTemplate(v8::Isolate* isolate) {
   if (templ.IsEmpty()) {
     WaitingCallback::EnsureRegistered(isolate);
 
-    templ = v8::ObjectTemplate::New();
+    templ = v8::ObjectTemplate::New(isolate);
 
     templ->Set(gin::StringToSymbol(isolate, "asyncWait"),
-               v8::FunctionTemplate::New(AsyncWait));
+               v8::FunctionTemplate::New(isolate, AsyncWait));
     templ->Set(gin::StringToSymbol(isolate, "cancelWait"),
                gin::CreateFunctionTemplate(isolate, base::Bind(CancelWait)));
 

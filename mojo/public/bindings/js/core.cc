@@ -56,7 +56,8 @@ gin::Dictionary ReadMessage(const gin::Arguments& args, MojoHandle handle,
     return dictionary;
   }
 
-  v8::Handle<v8::ArrayBuffer> array_buffer = v8::ArrayBuffer::New(num_bytes);
+  v8::Handle<v8::ArrayBuffer> array_buffer =
+      v8::ArrayBuffer::New(args.isolate(), num_bytes);
   std::vector<MojoHandle> handles(num_handles);
 
   gin::ArrayBuffer buffer;
@@ -92,7 +93,7 @@ v8::Local<v8::ObjectTemplate> Core::GetTemplate(v8::Isolate* isolate) {
       &g_wrapper_info);
 
   if (templ.IsEmpty()) {
-    templ = v8::ObjectTemplate::New();
+    templ = v8::ObjectTemplate::New(isolate);
 
     templ->Set(gin::StringToSymbol(isolate, "close"),
                gin::CreateFunctionTemplate(isolate,
