@@ -480,9 +480,14 @@
   // from one peer connection.
   function CloneStreamAndAddTwoStreamstoOneConnection(localStream) {
     displayAndRemember(localStream);
-    var clonedStream = new webkitMediaStream();
-    clonedStream.addTrack(localStream.getVideoTracks()[0]);
-    clonedStream.addTrack(localStream.getAudioTracks()[0]);
+
+    var clonedStream = null;
+    if (typeof localStream.clone === "function") {
+      clonedStream = localStream.clone();
+    } else {
+      clonedStream = new webkitMediaStream(localStream);
+    }
+
     gFirstConnection.addStream(localStream);
     gFirstConnection.addStream(clonedStream);
 
