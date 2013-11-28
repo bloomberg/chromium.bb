@@ -19034,6 +19034,14 @@ other types of suffix sets.
   <summary>Errors truncating database for Raze().</summary>
 </histogram>
 
+<histogram name="Sqlite.RecoveryEvents" enum="SqliteRecoveryEventEnum">
+  <summary>
+    Records specific failure and success cases in sql::Recovery implementation,
+    to determine which cases (if any) might be worth writing additional
+    automated recovery code for, versus which should lead to clearing databases.
+  </summary>
+</histogram>
+
 <histogram name="Sqlite.RecoveryHandle" enum="SqliteErrorCode">
   <summary>Error from sqlite3_backup_init() in sql::Recovery.</summary>
 </histogram>
@@ -24669,6 +24677,9 @@ other types of suffix sets.
   <int value="26" label="RECOVERY_EVENT_FAILED_AUTORECOVER_ICON_MAPPING">
     Failed v6/7 recovery on icon_mapping.
   </int>
+  <int value="27" label="RECOVERY_EVENT_FAILED_COMMIT">
+    Failed sql::Recovery::Recovered().
+  </int>
 </enum>
 
 <enum name="HttpAuthCount" type="int">
@@ -29083,6 +29094,72 @@ other types of suffix sets.
     Error in stat while mmapping file
   </int>
   <int value="20" label="SQLITE_IOERR_SHMLOCK">Unused</int>
+</enum>
+
+<enum name="SqliteRecoveryEventEnum" type="int">
+  <summary>
+    Track successful completion or failure of sql::Recovery implementation.
+  </summary>
+  <int value="0" label="RECOVERY_SUCCESS_BEGIN">
+    sql::Recovery::Init() (helper for Begin()) completely successfully.
+  </int>
+  <int value="1" label="RECOVERY_FAILED_OPEN_TEMPORARY">
+    Failed to open temporary database to recover into.
+  </int>
+  <int value="2" label="RECOVERY_FAILED_VIRTUAL_TABLE_INIT">
+    Failed to initialize recover vtable subsystem for connection.
+  </int>
+  <int value="3" label="RECOVERY_FAILED_VIRTUAL_TABLE_SYSTEM_SQLITE">
+    USE_SYSTEM_SQLITE in force, recovery virtual table not available.
+  </int>
+  <int value="4" label="RECOVERY_FAILED_WRITABLE_SCHEMA">
+    Failed to enable writable_schema.
+  </int>
+  <int value="5" label="RECOVERY_FAILED_ATTACH">
+    Failed to attach corrupt database to recovery database.
+  </int>
+  <int value="6" label="RECOVERY_SUCCESS_BACKUP">
+    sql::Recovery::Backup() (helper for Recovered()) completely successfully.
+  </int>
+  <int value="7" label="RECOVERY_FAILED_BACKUP_INIT">
+    Failed sqlite3_backup_init().  Error code in Sqlite.RecoveryHandle.
+  </int>
+  <int value="8" label="RECOVERY_FAILED_BACKUP_STEP">
+    Failed sqlite3_backup_step().  Error code in Sqlite.RecoveryStep.
+  </int>
+  <int value="9" label="RECOVERY_SUCCESS_AUTORECOVER">
+    sql::Recovery::AutoRecoverTable() completed successfully.
+  </int>
+  <int value="10" label="RECOVERY_FAILED_AUTORECOVER_UNRECOGNIZED_TYPE">
+    Failed sqlite3_backup_step().  Error code in Sqlite.RecoveryStep.
+  </int>
+  <int value="11" label="RECOVERY_FAILED_AUTORECOVER_MISSING_TABLE">
+    AutoRecoverTable() could not find the target table.
+  </int>
+  <int value="12" label="RECOVERY_FAILED_AUTORECOVER_CREATE">
+    AutoRecoverTable() failed creating recovery vtable.
+  </int>
+  <int value="13" label="RECOVERY_FAILED_AUTORECOVER_INSERT">
+    AutoRecoverTable() failed copying data from recovery to target table.
+  </int>
+  <int value="14" label="RECOVERY_FAILED_AUTORECOVER_DROP">
+    AutoRecoverTable() failed to drop recovery table.
+  </int>
+  <int value="15" label="RECOVERY_SUCCESS_SETUP_META">
+    sql::Recovery::SetupMeta() completed successfully.
+  </int>
+  <int value="16" label="RECOVERY_FAILED_META_CREATE">
+    SetupMeta() failed to create meta recovery table.
+  </int>
+  <int value="17" label="RECOVERY_SUCCESS_META_VERSION">
+    GetMetaVersionNumber() found no version row in meta table.
+  </int>
+  <int value="18" label="RECOVERY_FAILED_META_QUERY">
+    GetMetaVersionNumber() failed querying recovery meta table.
+  </int>
+  <int value="19" label="RECOVERY_FAILED_META_NO_VERSION">
+    GetMetaVersionNumber() found no version row in meta table.
+  </int>
 </enum>
 
 <enum name="SqliteVersionDeprecation" type="int">

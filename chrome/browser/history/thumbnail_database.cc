@@ -421,6 +421,7 @@ enum RecoveryEventType {
   RECOVERY_EVENT_FAILED_AUTORECOVER_FAVICONS,
   RECOVERY_EVENT_FAILED_AUTORECOVER_FAVICON_BITMAPS,
   RECOVERY_EVENT_FAILED_AUTORECOVER_ICON_MAPPING,
+  RECOVERY_EVENT_FAILED_COMMIT,
 
   // Always keep this at the end.
   RECOVERY_EVENT_MAX,
@@ -615,7 +616,10 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   // and sequence the statements, as it is basically a form of garbage
   // collection.
 
-  ignore_result(sql::Recovery::Recovered(recovery.Pass()));
+  if (!sql::Recovery::Recovered(recovery.Pass())) {
+    RecordRecoveryEvent(RECOVERY_EVENT_FAILED_COMMIT);
+    return;
+  }
 
   // Track the size of the recovered database relative to the size of
   // the input database.  The size should almost always be smaller,

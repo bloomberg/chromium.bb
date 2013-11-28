@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -15,6 +16,81 @@
 #include "third_party/sqlite/sqlite3.h"
 
 namespace sql {
+
+namespace {
+
+enum RecoveryEventType {
+  // Init() completed successfully.
+  RECOVERY_SUCCESS_INIT = 0,
+
+  // Failed to open temporary database to recover into.
+  RECOVERY_FAILED_OPEN_TEMPORARY,
+
+  // Failed to initialize recover vtable system.
+  RECOVERY_FAILED_VIRTUAL_TABLE_INIT,
+
+  // System SQLite doesn't support vtable.
+  RECOVERY_FAILED_VIRTUAL_TABLE_SYSTEM_SQLITE,
+
+  // Failed attempting to enable writable_schema.
+  RECOVERY_FAILED_WRITABLE_SCHEMA,
+
+  // Failed to attach the corrupt database to the temporary database.
+  RECOVERY_FAILED_ATTACH,
+
+  // Backup() successfully completed.
+  RECOVERY_SUCCESS_BACKUP,
+
+  // Failed sqlite3_backup_init().  Error code in Sqlite.RecoveryHandle.
+  RECOVERY_FAILED_BACKUP_INIT,
+
+  // Failed sqlite3_backup_step().  Error code in Sqlite.RecoveryStep.
+  RECOVERY_FAILED_BACKUP_STEP,
+
+  // AutoRecoverTable() successfully completed.
+  RECOVERY_SUCCESS_AUTORECOVER,
+
+  // The target table contained a type which the code is not equipped
+  // to handle.  This should only happen if things are fubar.
+  RECOVERY_FAILED_AUTORECOVER_UNRECOGNIZED_TYPE,
+
+  // The target table does not exist.
+  RECOVERY_FAILED_AUTORECOVER_MISSING_TABLE,
+
+  // The recovery virtual table creation failed.
+  RECOVERY_FAILED_AUTORECOVER_CREATE,
+
+  // Copying data from the recovery table to the target table failed.
+  RECOVERY_FAILED_AUTORECOVER_INSERT,
+
+  // Dropping the recovery virtual table failed.
+  RECOVERY_FAILED_AUTORECOVER_DROP,
+
+  // SetupMeta() successfully completed.
+  RECOVERY_SUCCESS_SETUP_META,
+
+  // Failure creating recovery meta table.
+  RECOVERY_FAILED_META_CREATE,
+
+  // GetMetaVersionNumber() successfully completed.
+  RECOVERY_SUCCESS_META_VERSION,
+
+  // Failed in querying recovery meta table.
+  RECOVERY_FAILED_META_QUERY,
+
+  // No version key in recovery meta table.
+  RECOVERY_FAILED_META_NO_VERSION,
+
+  // Always keep this at the end.
+  RECOVERY_EVENT_MAX,
+};
+
+void RecordRecoveryEvent(RecoveryEventType recovery_event) {
+  UMA_HISTOGRAM_ENUMERATION("Sqlite.RecoveryEvents",
+                            recovery_event, RECOVERY_EVENT_MAX);
+}
+
+}  // namespace
 
 // static
 bool Recovery::FullRecoverySupported() {
@@ -102,8 +178,14 @@ bool Recovery::Init(const base::FilePath& db_path) {
   ignore_result(db_->Execute("PRAGMA locking_mode=NORMAL"));
   ignore_result(db_->Execute("SELECT COUNT(*) FROM sqlite_master"));
 
-  if (!recover_db_.OpenTemporary())
+  // TODO(shess): If this is a common failure case, it might be
+  // possible to fall back to a memory database.  But it probably
+  // implies that the SQLite tmpdir logic is busted, which could cause
+  // a variety of other random issues in our code.
+  if (!recover_db_.OpenTemporary()) {
+    RecordRecoveryEvent(RECOVERY_FAILED_OPEN_TEMPORARY);
     return false;
+  }
 
   // TODO(shess): Figure out a story for USE_SYSTEM_SQLITE.  The
   // virtual table implementation relies on SQLite internals for some
@@ -117,20 +199,29 @@ bool Recovery::Init(const base::FilePath& db_path) {
 #if !defined(USE_SYSTEM_SQLITE)
   int rc = recoverVtableInit(recover_db_.db_);
   if (rc != SQLITE_OK) {
+    RecordRecoveryEvent(RECOVERY_FAILED_VIRTUAL_TABLE_INIT);
     LOG(ERROR) << "Failed to initialize recover module: "
                << recover_db_.GetErrorMessage();
     return false;
   }
+#else
+  // If this is infrequent enough, just wire it to Raze().
+  RecordRecoveryEvent(RECOVERY_FAILED_VIRTUAL_TABLE_SYSTEM_SQLITE);
 #endif
 
   // Turn on |SQLITE_RecoveryMode| for the handle, which allows
   // reading certain broken databases.
-  if (!recover_db_.Execute("PRAGMA writable_schema=1"))
+  if (!recover_db_.Execute("PRAGMA writable_schema=1")) {
+    RecordRecoveryEvent(RECOVERY_FAILED_WRITABLE_SCHEMA);
     return false;
+  }
 
-  if (!recover_db_.AttachDatabase(db_path, "corrupt"))
+  if (!recover_db_.AttachDatabase(db_path, "corrupt")) {
+    RecordRecoveryEvent(RECOVERY_FAILED_ATTACH);
     return false;
+  }
 
+  RecordRecoveryEvent(RECOVERY_SUCCESS_INIT);
   return true;
 }
 
@@ -173,11 +264,14 @@ bool Recovery::Backup() {
   sqlite3_backup* backup = sqlite3_backup_init(db_->db_, kMain,
                                                recover_db_.db_, kMain);
   if (!backup) {
+    RecordRecoveryEvent(RECOVERY_FAILED_BACKUP_INIT);
+
     // Error code is in the destination database handle.
-    int err = sqlite3_errcode(db_->db_);
+    int err = sqlite3_extended_errcode(db_->db_);
     UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.RecoveryHandle", err);
     LOG(ERROR) << "sqlite3_backup_init() failed: "
                << sqlite3_errmsg(db_->db_);
+
     return false;
   }
 
@@ -192,6 +286,7 @@ bool Recovery::Backup() {
   DCHECK_GT(pages, 0);
 
   if (rc != SQLITE_DONE) {
+    RecordRecoveryEvent(RECOVERY_FAILED_BACKUP_STEP);
     UMA_HISTOGRAM_SPARSE_SLOWLY("Sqlite.RecoveryStep", rc);
     LOG(ERROR) << "sqlite3_backup_step() failed: "
                << sqlite3_errmsg(db_->db_);
@@ -220,6 +315,7 @@ bool Recovery::Backup() {
 
   // Clean up the recovery db, and terminate the main database
   // connection.
+  RecordRecoveryEvent(RECOVERY_SUCCESS_BACKUP);
   Shutdown(POISON);
   return true;
 }
@@ -306,6 +402,7 @@ bool Recovery::AutoRecoverTable(const char* table_name,
       // - other -> "NUMERIC"
       // Just code those in as they come up.
       NOTREACHED() << " Unsupported type " << column_type;
+      RecordRecoveryEvent(RECOVERY_FAILED_AUTORECOVER_UNRECOGNIZED_TYPE);
       return false;
     }
 
@@ -336,8 +433,10 @@ bool Recovery::AutoRecoverTable(const char* table_name,
   }
 
   // Receiving no column information implies that the table doesn't exist.
-  if (create_column_decls.empty())
+  if (create_column_decls.empty()) {
+    RecordRecoveryEvent(RECOVERY_FAILED_AUTORECOVER_MISSING_TABLE);
     return false;
+  }
 
   // If the PRIMARY KEY was a single INTEGER column, convert it to ROWID.
   if (pk_column_count == 1 && !rowid_decl.empty())
@@ -366,10 +465,13 @@ bool Recovery::AutoRecoverTable(const char* table_name,
   std::string recover_drop(base::StringPrintf(
       "DROP TABLE temp.recover_%s", table_name));
 
-  if (!db()->Execute(recover_create.c_str()))
+  if (!db()->Execute(recover_create.c_str())) {
+    RecordRecoveryEvent(RECOVERY_FAILED_AUTORECOVER_CREATE);
     return false;
+  }
 
   if (!db()->Execute(recover_insert.c_str())) {
+    RecordRecoveryEvent(RECOVERY_FAILED_AUTORECOVER_INSERT);
     ignore_result(db()->Execute(recover_drop.c_str()));
     return false;
   }
@@ -377,7 +479,12 @@ bool Recovery::AutoRecoverTable(const char* table_name,
   *rows_recovered = db()->GetLastChangeCount();
 
   // TODO(shess): Is leaving the recover table around a breaker?
-  return db()->Execute(recover_drop.c_str());
+  if (!db()->Execute(recover_drop.c_str())) {
+    RecordRecoveryEvent(RECOVERY_FAILED_AUTORECOVER_DROP);
+    return false;
+  }
+  RecordRecoveryEvent(RECOVERY_SUCCESS_AUTORECOVER);
+  return true;
 }
 
 bool Recovery::SetupMeta() {
@@ -388,7 +495,12 @@ bool Recovery::SetupMeta() {
       "key TEXT NOT NULL,"
       "value ANY"  // Whatever is stored.
       ")";
-  return db()->Execute(kCreateSql);
+  if (!db()->Execute(kCreateSql)) {
+    RecordRecoveryEvent(RECOVERY_FAILED_META_CREATE);
+    return false;
+  }
+  RecordRecoveryEvent(RECOVERY_SUCCESS_SETUP_META);
+  return true;
 }
 
 bool Recovery::GetMetaVersionNumber(int* version) {
@@ -400,9 +512,16 @@ bool Recovery::GetMetaVersionNumber(int* version) {
   const char kVersionSql[] =
       "SELECT value FROM temp.recover_meta WHERE key = 'version'";
   sql::Statement recovery_version(db()->GetUniqueStatement(kVersionSql));
-  if (!recovery_version.Step())
+  if (!recovery_version.Step()) {
+    if (!recovery_version.Succeeded()) {
+      RecordRecoveryEvent(RECOVERY_FAILED_META_QUERY);
+    } else {
+      RecordRecoveryEvent(RECOVERY_FAILED_META_NO_VERSION);
+    }
     return false;
+  }
 
+  RecordRecoveryEvent(RECOVERY_SUCCESS_META_VERSION);
   *version = recovery_version.ColumnInt(0);
   return true;
 }
