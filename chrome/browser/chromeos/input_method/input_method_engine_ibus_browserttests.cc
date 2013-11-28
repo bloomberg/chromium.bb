@@ -15,6 +15,7 @@
 #include "ui/base/ime/chromeos/ibus_bridge.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
 #include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
+#include "ui/events/event.h"
 
 namespace chromeos {
 namespace input_method {
@@ -26,11 +27,6 @@ const char kToUpperIMEID[] =
     "_ext_ime_iafoklpfplgfnoimmaejoeondnjnlcfpToUpperIME";
 const char kAPIArgumentIMEID[] =
     "_ext_ime_iafoklpfplgfnoimmaejoeondnjnlcfpAPIArgumentIME";
-
-const uint32 kAltKeyMask = 1 << 3;
-const uint32 kCtrlKeyMask = 1 << 2;
-const uint32 kShiftKeyMask = 1 << 0;
-const uint32 kCapsLockMask = 1 << 1;
 
 // InputMethod extension should work on 1)normal extension, 2)normal extension
 // in incognito mode 3)component extension.
@@ -186,9 +182,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   // onKeyEvent should be fired if ProcessKeyEvent is called.
   KeyEventDoneCallback callback(false);  // EchoBackIME doesn't consume keys.
   ExtensionTestMessageListener keyevent_listener("onKeyEvent", false);
-  engine_handler->ProcessKeyEvent(0x61,  // KeySym for 'a'.
-                                  0x26,  // KeyCode for 'a'.
-                                  0,  // No modifiers.
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE, false);
+  engine_handler->ProcessKeyEvent(key_event,
                                   base::Bind(&KeyEventDoneCallback::Run,
                                              base::Unretained(&callback)));
   ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
@@ -267,9 +262,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "onKeyEvent:keydown:a:KeyA:false:false:false:false";
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
-    engine_handler->ProcessKeyEvent(0x61,  // KeySym for 'a'.
-                                    0x26,  // KeyCode for 'a'.
-                                    0,  // No modifiers.
+    ui::KeyEvent key_event(
+        ui::ET_KEY_PRESSED, ui::VKEY_A, "KeyA", ui::EF_NONE, false);
+    engine_handler->ProcessKeyEvent(key_event,
                                     base::Bind(&KeyEventDoneCallback::Run,
                                                base::Unretained(&callback)));
     ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
@@ -283,9 +278,12 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "onKeyEvent:keydown:a:KeyA:true:false:false:false";
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
-    engine_handler->ProcessKeyEvent(0x61,  // KeySym for 'a'.
-                                    0x26,  // KeyCode for 'a'.
-                                    kCtrlKeyMask,
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
+                           ui::VKEY_A,
+                           "KeyA",
+                           ui::EF_CONTROL_DOWN,
+                           false);
+    engine_handler->ProcessKeyEvent(key_event,
                                     base::Bind(&KeyEventDoneCallback::Run,
                                                base::Unretained(&callback)));
     ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
@@ -299,9 +297,12 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "onKeyEvent:keydown:a:KeyA:false:true:false:false";
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
-    engine_handler->ProcessKeyEvent(0x61,  // KeySym for 'a'.
-                                    0x26,  // KeyCode for 'a'.
-                                    kAltKeyMask,
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
+                           ui::VKEY_A,
+                           "KeyA",
+                           ui::EF_ALT_DOWN,
+                           false);
+    engine_handler->ProcessKeyEvent(key_event,
                                     base::Bind(&KeyEventDoneCallback::Run,
                                                base::Unretained(&callback)));
     ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
@@ -312,12 +313,15 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("KeyDown, Ctrl:No, alt:No, Shift:Yes, Caps:No");
     KeyEventDoneCallback callback(false);
     const std::string expected_value =
-        "onKeyEvent:keydown:a:KeyA:false:false:true:false";
+        "onKeyEvent:keydown:A:KeyA:false:false:true:false";
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
-    engine_handler->ProcessKeyEvent(0x61,  // KeySym for 'a'.
-                                    0x26,  // KeyCode for 'a'.
-                                    kShiftKeyMask,
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
+                           ui::VKEY_A,
+                           "KeyA",
+                           ui::EF_SHIFT_DOWN,
+                           false);
+    engine_handler->ProcessKeyEvent(key_event,
                                     base::Bind(&KeyEventDoneCallback::Run,
                                                base::Unretained(&callback)));
     ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
@@ -331,9 +335,12 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "onKeyEvent:keydown:a:KeyA:false:false:false:true";
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
-    engine_handler->ProcessKeyEvent(0x61,  // KeySym for 'a'.
-                                    0x26,  // KeyCode for 'a'.
-                                    kCapsLockMask,
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
+                           ui::VKEY_A,
+                           "KeyA",
+                           ui::EF_CAPS_LOCK_DOWN,
+                           false);
+    engine_handler->ProcessKeyEvent(key_event,
                                     base::Bind(&KeyEventDoneCallback::Run,
                                                base::Unretained(&callback)));
     ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
@@ -347,9 +354,12 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
         "onKeyEvent:keydown:a:KeyA:true:true:false:false";
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
-    engine_handler->ProcessKeyEvent(0x61,  // KeySym for 'a'.
-                                    0x26,  // KeyCode for 'a'.
-                                    kAltKeyMask | kCtrlKeyMask,
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
+                           ui::VKEY_A,
+                           "KeyA",
+                           ui::EF_ALT_DOWN | ui::EF_CONTROL_DOWN,
+                           false);
+    engine_handler->ProcessKeyEvent(key_event,
                                     base::Bind(&KeyEventDoneCallback::Run,
                                                base::Unretained(&callback)));
     ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());
@@ -360,12 +370,15 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
     SCOPED_TRACE("KeyDown, Ctrl:No, alt:No, Shift:Yes, Caps:Yes");
     KeyEventDoneCallback callback(false);
     const std::string expected_value =
-        "onKeyEvent:keydown:a:KeyA:false:false:true:true";
+        "onKeyEvent:keydown:A:KeyA:false:false:true:true";
     ExtensionTestMessageListener keyevent_listener(expected_value, false);
 
-    engine_handler->ProcessKeyEvent(0x61,  // KeySym for 'a'.
-                                    0x26,  // KeyCode for 'a'.
-                                    kShiftKeyMask | kCapsLockMask,
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
+                           ui::VKEY_A,
+                           "KeyA",
+                           ui::EF_SHIFT_DOWN | ui::EF_CAPS_LOCK_DOWN,
+                           false);
+    engine_handler->ProcessKeyEvent(key_event,
                                     base::Bind(&KeyEventDoneCallback::Run,
                                                base::Unretained(&callback)));
     ASSERT_TRUE(keyevent_listener.WaitUntilSatisfied());

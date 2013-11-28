@@ -189,9 +189,7 @@ bool InputMethodIBus::DispatchKeyEvent(const ui::KeyEvent& event) {
 
   ui::KeyEvent* copied_event = event.Copy();
   GetEngine()->ProcessKeyEvent(
-      ibus_keyval,
-      ibus_keycode,
-      ibus_state,
+      event,
       base::Bind(&InputMethodIBus::ProcessKeyEventDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  current_keyevent_id_,

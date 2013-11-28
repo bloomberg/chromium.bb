@@ -7,6 +7,7 @@
 
 #include "ui/base/ime/chromeos/ibus_bridge.h"
 #include "ui/base/ui_export.h"
+#include "ui/events/event.h"
 
 namespace chromeos {
 
@@ -21,7 +22,7 @@ class UI_EXPORT MockIMEEngineHandler : public IBusEngineHandlerInterface {
   virtual void Disable() OVERRIDE;
   virtual void PropertyActivate(const std::string& property_name) OVERRIDE;
   virtual void Reset() OVERRIDE;
-  virtual void ProcessKeyEvent(uint32 keysym, uint32 keycode, uint32 state,
+  virtual void ProcessKeyEvent(const ui::KeyEvent& key_event,
                                const KeyEventDoneCallback& callback) OVERRIDE;
   virtual void CandidateClicked(uint32 index, ibus::IBusMouseButton button,
                                 uint32 state) OVERRIDE;
@@ -58,16 +59,8 @@ class UI_EXPORT MockIMEEngineHandler : public IBusEngineHandlerInterface {
     return last_set_surrounding_anchor_pos_;
   }
 
-  uint32 last_processed_keysym() const {
-    return last_processed_keysym_;
-  }
-
-  uint32 last_processed_keycode() const {
-    return last_processed_keycode_;
-  }
-
-  uint32 last_processed_state() const {
-    return last_processed_state_;
+  const ui::KeyEvent* last_processed_key_event() const {
+    return last_processed_key_event_.get();
   }
 
   const KeyEventDoneCallback& last_passed_callback() const {
@@ -85,9 +78,7 @@ class UI_EXPORT MockIMEEngineHandler : public IBusEngineHandlerInterface {
   std::string last_set_surrounding_text_;
   uint32 last_set_surrounding_cursor_pos_;
   uint32 last_set_surrounding_anchor_pos_;
-  uint32 last_processed_keysym_;
-  uint32 last_processed_keycode_;
-  uint32 last_processed_state_;
+  scoped_ptr<ui::KeyEvent> last_processed_key_event_;
   KeyEventDoneCallback last_passed_callback_;
 };
 

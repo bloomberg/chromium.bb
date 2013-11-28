@@ -12,6 +12,10 @@
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "ui/base/ime/chromeos/ibus_bridge.h"
 
+namespace ui {
+class KeyEvent;
+}  // namespace ui
+
 namespace chromeos {
 
 class IBusText;
@@ -84,7 +88,7 @@ class InputMethodEngineIBus : public InputMethodEngine,
   virtual void Disable() OVERRIDE;
   virtual void PropertyActivate(const std::string& property_name) OVERRIDE;
   virtual void Reset() OVERRIDE;
-  virtual void ProcessKeyEvent(uint32 keysym, uint32 keycode, uint32 state,
+  virtual void ProcessKeyEvent(const ui::KeyEvent& key_event,
                                const KeyEventDoneCallback& callback) OVERRIDE;
   virtual void CandidateClicked(uint32 index, ibus::IBusMouseButton button,
                                 uint32 state) OVERRIDE;

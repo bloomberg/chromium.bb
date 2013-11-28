@@ -923,10 +923,9 @@ class InputMethodIBusKeyEventTest : public InputMethodIBusTest {
 };
 
 TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseTest) {
-  const int kXFlags = ShiftMask;
-  const unsigned int kIbusFlags = ui::EF_SHIFT_DOWN;
+  const int kFlags = ui::EF_SHIFT_DOWN;
   ScopedXI2Event xevent;
-  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, kXFlags);
+  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, kFlags);
   const ui::KeyEvent event(xevent, true);
 
   // Do key event.
@@ -935,14 +934,12 @@ TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseTest) {
   ime_->DispatchKeyEvent(event);
 
   // Check before state.
+  const ui::KeyEvent* key_event =
+      mock_ime_engine_handler_->last_processed_key_event();
   EXPECT_EQ(1, mock_ime_engine_handler_->process_key_event_call_count());
-  EXPECT_EQ("A",
-            chromeos::input_method::GetIBusKey(
-                mock_ime_engine_handler_->last_processed_keysym()));
-  EXPECT_EQ("KeyA",
-            chromeos::input_method::GetIBusKeyCode(
-                mock_ime_engine_handler_->last_processed_keycode()));
-  EXPECT_EQ(kIbusFlags, mock_ime_engine_handler_->last_processed_state());
+  EXPECT_EQ(ui::VKEY_A, key_event->key_code());
+  EXPECT_EQ("KeyA", key_event->code());
+  EXPECT_EQ(kFlags, key_event->flags());
   EXPECT_EQ(0, ime_->process_key_event_post_ime_call_count());
 
   // Do callback.
@@ -962,38 +959,33 @@ TEST_F(InputMethodIBusKeyEventTest, MultiKeyEventDelayResponseTest) {
   input_type_ = TEXT_INPUT_TYPE_TEXT;
   ime_->OnTextInputTypeChanged(this);
 
-  const int kXFlags = ShiftMask;
-  const unsigned int kIbusFlags = ui::EF_SHIFT_DOWN;
+  const int kFlags = ui::EF_SHIFT_DOWN;
   ScopedXI2Event xevent;
-  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_B, kXFlags);
+  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_B, kFlags);
   const ui::KeyEvent event(xevent, true);
 
   // Do key event.
   ime_->DispatchKeyEvent(event);
-  EXPECT_EQ("B",
-            chromeos::input_method::GetIBusKey(
-                mock_ime_engine_handler_->last_processed_keysym()));
-  EXPECT_EQ("KeyB",
-            chromeos::input_method::GetIBusKeyCode(
-                mock_ime_engine_handler_->last_processed_keycode()));
-  EXPECT_EQ(kIbusFlags, mock_ime_engine_handler_->last_processed_state());
+  const ui::KeyEvent* key_event =
+      mock_ime_engine_handler_->last_processed_key_event();
+  EXPECT_EQ(ui::VKEY_B, key_event->key_code());
+  EXPECT_EQ("KeyB", key_event->code());
+  EXPECT_EQ(kFlags, key_event->flags());
 
   KeyEventCallback first_callback =
       mock_ime_engine_handler_->last_passed_callback();
 
   // Do key event again.
   ScopedXI2Event xevent2;
-  xevent2.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_C, kXFlags);
+  xevent2.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_C, kFlags);
   const ui::KeyEvent event2(xevent2, true);
 
   ime_->DispatchKeyEvent(event2);
-  EXPECT_EQ("C",
-            chromeos::input_method::GetIBusKey(
-                mock_ime_engine_handler_->last_processed_keysym()));
-  EXPECT_EQ("KeyC",
-            chromeos::input_method::GetIBusKeyCode(
-                mock_ime_engine_handler_->last_processed_keycode()));
-  EXPECT_EQ(kIbusFlags, mock_ime_engine_handler_->last_processed_state());
+  const ui::KeyEvent* key_event2 =
+      mock_ime_engine_handler_->last_processed_key_event();
+  EXPECT_EQ(ui::VKEY_C, key_event2->key_code());
+  EXPECT_EQ("KeyC", key_event2->code());
+  EXPECT_EQ(kFlags, key_event2->flags());
 
   // Check before state.
   EXPECT_EQ(2,
@@ -1023,9 +1015,8 @@ TEST_F(InputMethodIBusKeyEventTest, MultiKeyEventDelayResponseTest) {
 }
 
 TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseResetTest) {
-  const int kXFlags = ShiftMask;
   ScopedXI2Event xevent;
-  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, kXFlags);
+  xevent.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_SHIFT_DOWN);
   const ui::KeyEvent event(xevent, true);
 
   // Do key event.

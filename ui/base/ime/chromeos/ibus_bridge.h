@@ -17,6 +17,10 @@ namespace gfx {
 class Rect;
 }  // namespace gfx
 
+namespace ui {
+class KeyEvent;
+}  // namespace ui
+
 namespace chromeos {
 namespace ibus {
 // Following button indicator value is introduced from
@@ -91,15 +95,9 @@ class UI_EXPORT IBusEngineHandlerInterface {
   // Called when the IME is reset.
   virtual void Reset() = 0;
 
-  // Called when the key event is received. The |keycode| is raw layout
-  // independent keycode. The |keysym| is result of XLookupString function
-  // which translate |keycode| to keyboard layout dependent symbol value.
+  // Called when the key event is received.
   // Actual implementation must call |callback| after key event handling.
-  // For example: key press event for 'd' key on us layout and dvorak layout.
-  //                  keyval keycode state
-  //      us layout :  0x64   0x20    0x00
-  //  dvorak layout :  0x65   0x20    0x00
-  virtual void ProcessKeyEvent(uint32 keysym, uint32 keycode, uint32 state,
+  virtual void ProcessKeyEvent(const ui::KeyEvent& key_event,
                                const KeyEventDoneCallback& callback) = 0;
 
   // Called when the candidate in lookup table is clicked. The |index| is 0

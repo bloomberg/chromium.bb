@@ -6,6 +6,11 @@
 
 #define XK_MISCELLANY
 #include <X11/keysymdef.h>
+#include <X11/X.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#undef FocusIn
+#undef FocusOut
 #include <map>
 
 #include "base/bind.h"
@@ -20,6 +25,8 @@
 #include "chromeos/ime/ibus_keymap.h"
 #include "chromeos/ime/ibus_text.h"
 #include "chromeos/ime/input_method_manager.h"
+#include "ui/events/event.h"
+#include "ui/events/keycodes/keyboard_code_conversion_x.h"
 
 namespace chromeos {
 const char* kErrorNotActive = "IME is not active";
@@ -28,11 +35,6 @@ const char* kCandidateNotFound = "Candidate not found";
 const char* kEngineBusPrefix = "org.freedesktop.IBus.";
 
 namespace {
-const uint32 kIBusAltKeyMask = 1 << 3;
-const uint32 kIBusCtrlKeyMask = 1 << 2;
-const uint32 kIBusShiftKeyMask = 1 << 0;
-const uint32 kIBusCapsLockMask = 1 << 1;
-const uint32 kIBusKeyReleaseMask = 1 << 30;
 
 // Notifies InputContextHandler that the preedit is changed.
 void UpdatePreedit(const IBusText& ibus_text,
@@ -457,26 +459,56 @@ void InputMethodEngineIBus::Reset() {
   observer_->OnReset(engine_id_);
 }
 
+namespace {
+void GetExtensionKeyboardEventFromKeyEvent(
+    const ui::KeyEvent& event,
+    InputMethodEngineIBus::KeyboardEvent* ext_event) {
+  DCHECK(event.type() == ui::ET_KEY_RELEASED ||
+         event.type() == ui::ET_KEY_PRESSED);
+  DCHECK(ext_event);
+  ext_event->type = (event.type() == ui::ET_KEY_RELEASED) ? "keyup" : "keydown";
+
+  ext_event->code = event.code();
+  ext_event->alt_key = event.IsAltDown();
+  ext_event->ctrl_key = event.IsControlDown();
+  ext_event->shift_key = event.IsShiftDown();
+  ext_event->caps_lock = event.IsCapsLockDown();
+
+  uint32 ibus_keyval = 0;
+  if (event.HasNativeEvent()) {
+    const base::NativeEvent& native_event = event.native_event();
+    DCHECK(native_event);
+
+    XKeyEvent* x_key = &(static_cast<XEvent*>(native_event)->xkey);
+    KeySym keysym = NoSymbol;
+    ::XLookupString(x_key, NULL, 0, &keysym, NULL);
+    ibus_keyval = keysym;
+  } else {
+    // Convert ui::KeyEvent.key_code to DOM UIEvent key.
+    // XKeysymForWindowsKeyCode converts key_code to XKeySym, but it
+    // assumes US layout and does not care about CapLock state.
+    //
+    // TODO(komatsu): Support CapsLock states.
+    // TODO(komatsu): Support non-us keyboard layouts.
+    ibus_keyval = ui::XKeysymForWindowsKeyCode(event.key_code(),
+                                               event.IsShiftDown());
+  }
+  ext_event->key = input_method::GetIBusKey(ibus_keyval);
+}
+}  // namespace
+
 void InputMethodEngineIBus::ProcessKeyEvent(
-    uint32 keysym,
-    uint32 keycode,
-    uint32 state,
+    const ui::KeyEvent& key_event,
     const KeyEventDoneCallback& callback) {
 
   KeyEventDoneCallback *handler = new KeyEventDoneCallback();
   *handler = callback;
 
-  KeyboardEvent event;
-  event.type = !(state & kIBusKeyReleaseMask) ? "keydown" : "keyup";
-  event.key = input_method::GetIBusKey(keysym);
-  event.code = input_method::GetIBusKeyCode(keycode);
-  event.alt_key = state & kIBusAltKeyMask;
-  event.ctrl_key = state & kIBusCtrlKeyMask;
-  event.shift_key = state & kIBusShiftKeyMask;
-  event.caps_lock = state & kIBusCapsLockMask;
+  KeyboardEvent ext_event;
+  GetExtensionKeyboardEventFromKeyEvent(key_event, &ext_event);
   observer_->OnKeyEvent(
       engine_id_,
-      event,
+      ext_event,
       reinterpret_cast<input_method::KeyEventHandle*>(handler));
 }
 
