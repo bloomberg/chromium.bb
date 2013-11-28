@@ -230,13 +230,11 @@ void MediaGalleriesGetMediaFileSystemsFunction::ShowDialog() {
     // host the dialog.
     apps::ShellWindow* window = apps::ShellWindowRegistry::Get(
         GetProfile())->GetCurrentShellWindowForApp(GetExtension()->id());
-    if (window) {
-      contents = window->web_contents();
-    } else {
-      // Abort showing the dialog. TODO(estade) Perhaps return an error instead.
-      GetAndReturnGalleries();
+    if (!window) {
+      SendResponse(false);
       return;
     }
+    contents = window->web_contents();
   }
 
   // Controller will delete itself.
