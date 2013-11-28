@@ -189,6 +189,13 @@
         'ozone/evdev/touch_event_converter_unittest.cc',
         'x/events_x_unittest.cc',
       ],
+      'conditions': [
+        ['OS=="linux" and linux_use_tcmalloc==1', {
+          'dependencies': [
+            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+          ],
+        }],
+      ],
     },
   ],
 }
