@@ -367,12 +367,11 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
   default_host_ = NULL;
   // TODO(dzhioev): find better place for starting tutorial.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kDisableFirstRunUI) &&
+  if (!command_line->HasSwitch(switches::kOobeSkipPostLogin) &&
+      !command_line->HasSwitch(switches::kDisableFirstRunUI) &&
       ((chromeos::UserManager::Get()->IsCurrentUserNew() &&
         !command_line->HasSwitch(::switches::kTestType)) ||
        command_line->HasSwitch(switches::kForceFirstRunUI))) {
-    // FirstRunController manages its lifetime and destructs after tutorial
-    // completion.
     FirstRunController::Start();
   }
 
