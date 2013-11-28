@@ -51,7 +51,7 @@ class V8EventListenerList {
 public:
     static PassRefPtr<V8EventListener> findWrapper(v8::Local<v8::Value> value, v8::Isolate* isolate)
     {
-        ASSERT(v8::Context::InContext());
+        ASSERT(isolate->InContext());
         if (!value->IsObject())
             return 0;
 
@@ -73,7 +73,7 @@ public:
 private:
     static V8EventListener* doFindWrapper(v8::Local<v8::Object> object, v8::Handle<v8::String> wrapperProperty, v8::Isolate* isolate)
     {
-        ASSERT(v8::Context::InContext());
+        ASSERT(isolate->InContext());
         v8::HandleScope scope(isolate);
         v8::Local<v8::Value> listener = object->GetHiddenValue(wrapperProperty);
         if (listener.IsEmpty())
@@ -90,7 +90,7 @@ private:
 template<typename WrapperType>
 PassRefPtr<V8EventListener> V8EventListenerList::findOrCreateWrapper(v8::Local<v8::Value> value, bool isAttribute, v8::Isolate* isolate)
 {
-    ASSERT(v8::Context::InContext());
+    ASSERT(isolate->InContext());
     if (!value->IsObject()
         // Non-callable attribute setter input is treated as null (no wrapper)
         || (isAttribute && !value->IsFunction()))
