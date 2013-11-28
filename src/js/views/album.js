@@ -23,7 +23,8 @@ camera.views = camera.views || {};
  * @constructor
  */
 camera.views.Album = function(context, router) {
-  camera.views.GalleryBase.call(this, context, router);
+  camera.views.GalleryBase.call(
+      this, context, router, document.querySelector('#album'), 'album');
 
   /**
    * @type {camera.util.SmoothScroller}
@@ -76,15 +77,6 @@ camera.views.Album.prototype = {
 camera.views.Album.prototype.onEnter = function() {
   this.onResize();
   this.updateButtons_();
-  document.body.classList.add('album');
-};
-
-/**
- * Leaves the view.
- * @override
- */
-camera.views.Album.prototype.onLeave = function() {
-  document.body.classList.remove('album');
 };
 
 /**

@@ -23,7 +23,8 @@ camera.views = camera.views || {};
  * @constructor
  */
 camera.views.Browser = function(context, router) {
-  camera.views.GalleryBase.call(this, context, router);
+  camera.views.GalleryBase.call(
+      this, context, router, document.querySelector('#browser'), 'browser');
 
   /**
    * @type {camera.util.SmoothScroller}
@@ -106,7 +107,6 @@ camera.views.Browser.prototype.onEnter = function() {
  */
 camera.views.Browser.prototype.onLeave = function() {
   this.scrollTracker_.stop();
-  document.body.classList.remove('browser');
 };
 
 /**

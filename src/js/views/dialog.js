@@ -23,7 +23,8 @@ camera.views = camera.views || {};
  * @constructor
  */
 camera.views.Dialog = function(context, router) {
-  camera.View.call(this, context, router);
+  camera.View.call(
+      this, context, router, document.querySelector('#dialog'), 'dialog');
 
   /**
    * @type {HTMLButtonElement}
@@ -91,16 +92,6 @@ camera.views.Dialog.prototype.onEnter = function(opt_arguments) {
   }
 
   this.messageElement_.textContent = opt_arguments.message;
-
-  document.body.classList.add('dialog');
-};
-
-/**
- * Leaves the view.
- * @override
- */
-camera.views.Dialog.prototype.onLeave = function() {
-  document.body.classList.remove('dialog');
 };
 
 /**
