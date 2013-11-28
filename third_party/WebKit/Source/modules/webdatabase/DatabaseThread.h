@@ -28,16 +28,15 @@
 #ifndef DatabaseThread_h
 #define DatabaseThread_h
 
+#include "public/platform/WebThread.h"
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
-#include "wtf/MessageQueue.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"
-#include "wtf/Threading.h"
 
 namespace WebCore {
 
@@ -53,7 +52,7 @@ public:
     static PassRefPtr<DatabaseThread> create() { return adoptRef(new DatabaseThread); }
     ~DatabaseThread();
 
-    bool start();
+    void start();
     void requestTermination(DatabaseTaskSynchronizer* cleanupSync);
     bool terminationRequested(DatabaseTaskSynchronizer* taskSynchronizer = 0) const;
 
@@ -63,7 +62,7 @@ public:
     void recordDatabaseClosed(DatabaseBackend*);
     bool isDatabaseOpen(DatabaseBackend*);
 
-    bool isDatabaseThread() { return currentThread() == m_threadID; }
+    bool isDatabaseThread() { return m_thread && m_thread->isCurrentThread(); }
 
     SQLTransactionClient* transactionClient() { return m_transactionClient.get(); }
     SQLTransactionCoordinator* transactionCoordinator() { return m_transactionCoordinator.get(); }
@@ -71,14 +70,9 @@ public:
 private:
     DatabaseThread();
 
-    static void databaseThreadStart(void*);
-    void databaseThread();
+    void cleanupDatabaseThread();
 
-    Mutex m_threadCreationMutex;
-    ThreadIdentifier m_threadID;
-    RefPtr<DatabaseThread> m_selfRef;
-
-    MessageQueue<DatabaseTask> m_queue;
+    OwnPtr<blink::WebThread> m_thread;
 
     // This set keeps track of the open databases that have been used on this thread.
     typedef HashSet<RefPtr<DatabaseBackend> > DatabaseSet;
@@ -87,6 +81,7 @@ private:
     OwnPtr<SQLTransactionClient> m_transactionClient;
     OwnPtr<SQLTransactionCoordinator> m_transactionCoordinator;
     DatabaseTaskSynchronizer* m_cleanupSync;
+    bool m_terminationRequested;
 };
 
 } // namespace WebCore
