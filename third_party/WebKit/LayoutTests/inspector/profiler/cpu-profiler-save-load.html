@@ -51,7 +51,7 @@ function test()
                         file.name = fileName;
                         if (fileName.endsWith(".cpuprofile")) {
                             InspectorTest.addResult("PASS: open was called with extension '.cpuprofile'");
-                            callback(this);
+                            callback(true);
                         } else {
                             InspectorTest.addResult("FAILED: open was called with wrong extension. fileName: '" + fileName + "'");
                             next();

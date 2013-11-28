@@ -414,6 +414,11 @@ InspectorTest.StringOutputStream = function(callback)
 };
 
 InspectorTest.StringOutputStream.prototype = {
+    open: function(fileName, callback)
+    {
+        callback(true);
+    },
+
     write: function(chunk, callback)
     {
         this._buffer += chunk;
