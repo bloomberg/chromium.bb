@@ -558,6 +558,7 @@ const blink::WebMediaStreamSource* MediaStreamImpl::FindLocalSource(
             it->source.extraData());
     const StreamDeviceInfo& active_device = extra_data->device_info();
     if (active_device.device.id == device.device.id &&
+        active_device.device.type == device.device.type &&
         active_device.session_id == device.session_id) {
       return &it->source;
     }
