@@ -26,6 +26,7 @@
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_delegate.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "base/auto_reset.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -311,17 +312,6 @@ void ReflectItemStatus(const ash::LauncherItem& item, ShelfButton* button) {
   }
 }
 
-// Get the event location in screen coordinates.
-gfx::Point GetPositionInScreen(const gfx::Point& root_location,
-                               views::View* view) {
-  gfx::Point root_location_in_screen = root_location;
-  aura::Window* root_window =
-      view->GetWidget()->GetNativeWindow()->GetRootWindow();
-  aura::client::GetScreenPositionClient(root_window->GetRootWindow())->
-        ConvertPointToScreen(root_window, &root_location_in_screen);
-  return root_location_in_screen;
-}
-
 }  // namespace
 
 // AnimationDelegate used when deleting an item. This steadily decreased the
@@ -577,8 +567,8 @@ void ShelfView::CreateDragIconProxy(
   drag_image_offset_ = gfx::Vector2d(size.width() / 2, size.height() / 2) +
                        cursor_offset_from_center;
   gfx::Rect drag_image_bounds(
-      GetPositionInScreen(location_in_screen_coordinates,
-                          drag_replaced_view_) - drag_image_offset_, size);
+      location_in_screen_coordinates - drag_image_offset_,
+      size);
   drag_image_->SetBoundsInScreen(drag_image_bounds);
   drag_image_->SetWidgetVisible(true);
 }
@@ -586,8 +576,7 @@ void ShelfView::CreateDragIconProxy(
 void ShelfView::UpdateDragIconProxy(
     const gfx::Point& location_in_screen_coordinates) {
   drag_image_->SetScreenPosition(
-      GetPositionInScreen(location_in_screen_coordinates,
-                          drag_replaced_view_) - drag_image_offset_);
+      location_in_screen_coordinates - drag_image_offset_);
 }
 
 void ShelfView::DestroyDragIconProxy() {
@@ -634,10 +623,14 @@ bool ShelfView::StartDrag(const std::string& app_id,
   // First we have to center the mouse cursor over the item.
   gfx::Point pt = drag_and_drop_view->GetBoundsInScreen().CenterPoint();
   views::View::ConvertPointFromScreen(drag_and_drop_view, &pt);
-  ui::MouseEvent event(ui::ET_MOUSE_PRESSED,
-                       pt, location_in_screen_coordinates, 0);
-  PointerPressedOnButton(
-      drag_and_drop_view, ShelfButtonHost::DRAG_AND_DROP, event);
+  gfx::Point point_in_root = location_in_screen_coordinates;
+  ash::wm::ConvertPointFromScreen(
+      ash::wm::GetRootWindowAt(location_in_screen_coordinates),
+      &point_in_root);
+  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, pt, point_in_root, 0);
+  PointerPressedOnButton(drag_and_drop_view,
+                         ShelfButtonHost::DRAG_AND_DROP,
+                         event);
 
   // Drag the item where it really belongs.
   Drag(location_in_screen_coordinates);
@@ -652,11 +645,15 @@ bool ShelfView::Drag(const gfx::Point& location_in_screen_coordinates) {
   gfx::Point pt = location_in_screen_coordinates;
   views::View* drag_and_drop_view = view_model_->view_at(
       model_->ItemIndexByID(drag_and_drop_launcher_id_));
-  views::View::ConvertPointFromScreen(drag_and_drop_view, &pt);
-
-  ui::MouseEvent event(ui::ET_MOUSE_DRAGGED, pt, gfx::Point(), 0);
-  PointerDraggedOnButton(
-      drag_and_drop_view, ShelfButtonHost::DRAG_AND_DROP, event);
+  ConvertPointFromScreen(drag_and_drop_view, &pt);
+  gfx::Point point_in_root = location_in_screen_coordinates;
+  ash::wm::ConvertPointFromScreen(
+      ash::wm::GetRootWindowAt(location_in_screen_coordinates),
+      &point_in_root);
+  ui::MouseEvent event(ui::ET_MOUSE_DRAGGED, pt, point_in_root, 0);
+  PointerDraggedOnButton(drag_and_drop_view,
+                         ShelfButtonHost::DRAG_AND_DROP,
+                         event);
   return true;
 }
 
@@ -1019,7 +1016,7 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
 
   // TODO: I don't think this works correctly with RTL.
   gfx::Point drag_point(event.location());
-  views::View::ConvertPointToTarget(drag_view_, this, &drag_point);
+  ConvertPointToTarget(drag_view_, this, &drag_point);
 
   // Constrain the location to the range of valid indices for the type.
   std::pair<int, int> indices(GetDragRange(current_index));
@@ -1072,14 +1069,17 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
 bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
   int current_index = view_model_->GetIndexOfView(drag_view_);
   DCHECK_NE(-1, current_index);
+
+  gfx::Point screen_location = event.root_location();
+  ash::wm::ConvertPointToScreen(GetWidget()->GetNativeWindow()->GetRootWindow(),
+                                &screen_location);
+
   // To avoid ugly forwards and backwards flipping we use different constants
   // for ripping off / re-inserting the items.
   if (dragged_off_shelf_) {
-    // If the shelf/overflow bubble bounds contains |event| we insert the item
-    // back into the shelf.
-    gfx::Point event_position_in_screen =
-        GetPositionInScreen(event.root_location(), this);
-    if (GetBoundsForDragInsertInScreen().Contains(event_position_in_screen)) {
+    // If the shelf/overflow bubble bounds contains |screen_location| we insert
+    // the item back into the shelf.
+    if (GetBoundsForDragInsertInScreen().Contains(screen_location)) {
       // Destroy our proxy view item.
       DestroyDragIconProxy();
       // Re-insert the item and return simply false since the caller will handle
@@ -1093,7 +1093,7 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
       return false;
     }
     // Move our proxy view item.
-    UpdateDragIconProxy(event.root_location());
+    UpdateDragIconProxy(screen_location);
     return true;
   }
   // Check if we are too far away from the shelf to enter the ripped off state.

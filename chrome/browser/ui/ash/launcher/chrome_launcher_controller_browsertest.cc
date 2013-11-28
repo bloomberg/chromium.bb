@@ -1647,6 +1647,112 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragAndDrop) {
   generator.ReleaseLeftButton();
 }
 
+#if !defined(OS_WIN)
+// Used to test drag & drop an item between app list and shelf with multi
+// display environment.
+class LauncherAppBrowserTestWithMultiMonitor
+    : public LauncherAppBrowserTestNoDefaultBrowser {
+ protected:
+  LauncherAppBrowserTestWithMultiMonitor() {}
+  virtual ~LauncherAppBrowserTestWithMultiMonitor() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    LauncherAppBrowserTestNoDefaultBrowser::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII("ash-host-window-bounds",
+                                    "800x600,801+0-800x600");
+  }
+
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherAppBrowserTestWithMultiMonitor);
+};
+
+// Do basic drag and drop interaction tests between the application list and
+// the launcher in the secondary monitor.
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTestWithMultiMonitor,
+    BasicDragAndDrop) {
+  // Get a number of interfaces we need.
+  DCHECK_EQ(ash::Shell::GetAllRootWindows().size(), 2U);
+  aura::Window* secondary_root_window = ash::Shell::GetAllRootWindows()[1];
+  ash::Launcher* secondary_launcher =
+      ash::Launcher::ForWindow(secondary_root_window);
+
+  aura::test::EventGenerator generator(secondary_root_window, gfx::Point());
+  ash::test::ShelfViewTestAPI test(
+      ash::test::LauncherTestAPI(secondary_launcher).shelf_view());
+  AppListService* service = AppListService::Get(chrome::GetActiveDesktop());
+
+  // There should be two items in our launcher by this time.
+  EXPECT_EQ(2, model_->item_count());
+  EXPECT_FALSE(service->IsAppListVisible());
+
+  // Open the app list menu and check that the drag and drop host was set.
+  gfx::Rect app_list_bounds =
+      test.shelf_view()->GetAppListButtonView()->GetBoundsInScreen();
+  gfx::Display display =
+      ash::Shell::GetScreen()->GetDisplayNearestWindow(secondary_root_window);
+  const gfx::Point& origin = display.bounds().origin();
+  app_list_bounds.Offset(-origin.x(), -origin.y());
+
+  generator.MoveMouseTo(app_list_bounds.CenterPoint().x(),
+                        app_list_bounds.CenterPoint().y());
+  base::MessageLoop::current()->RunUntilIdle();
+  generator.ClickLeftButton();
+
+  EXPECT_TRUE(service->IsAppListVisible());
+  app_list::AppsGridView* grid_view =
+      ash::test::AppListControllerTestApi(ash::Shell::GetInstance()).
+          GetRootGridView();
+  ASSERT_TRUE(grid_view);
+  ASSERT_TRUE(grid_view->has_drag_and_drop_host_for_test());
+
+  // There should be 2 items in our application list.
+  const views::ViewModel* vm_grid = grid_view->view_model_for_test();
+  EXPECT_EQ(2, vm_grid->view_size());
+
+  // Drag an app list item which does not exist yet in the launcher.
+  // Keeping it dragged, see that a new item gets created.
+  // Continuing to drag it out should remove it again.
+
+  // Get over item #1 of the application list and press the mouse button.
+  views::View* item1 = vm_grid->view_at(1);
+  gfx::Rect bounds_grid_1 = item1->GetBoundsInScreen();
+  bounds_grid_1.Offset(-origin.x(), -origin.y());
+  generator.MoveMouseTo(bounds_grid_1.CenterPoint().x(),
+                        bounds_grid_1.CenterPoint().y());
+  base::MessageLoop::current()->RunUntilIdle();
+  generator.PressLeftButton();
+
+  EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
+
+  // Drag the item into the launcher and check that a new item gets created.
+  const views::ViewModel* vm_launcher =
+      test.shelf_view()->view_model_for_test();
+  views::View* launcher1 = vm_launcher->view_at(1);
+  gfx::Rect bounds_launcher_1 = launcher1->GetBoundsInScreen();
+  bounds_launcher_1.Offset(-origin.x(), -origin.y());
+  generator.MoveMouseTo(bounds_launcher_1.CenterPoint().x(),
+                        bounds_launcher_1.CenterPoint().y());
+  base::MessageLoop::current()->RunUntilIdle();
+
+  // Check that a new item got created.
+  EXPECT_EQ(3, model_->item_count());
+  EXPECT_TRUE(grid_view->forward_events_to_drag_and_drop_host_for_test());
+
+  // Move it where the item originally was and check that it disappears again.
+  generator.MoveMouseTo(bounds_grid_1.CenterPoint().x(),
+                        bounds_grid_1.CenterPoint().y());
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(2, model_->item_count());
+  EXPECT_FALSE(grid_view->forward_events_to_drag_and_drop_host_for_test());
+
+  // Dropping it should keep the launcher as it originally was.
+  generator.ReleaseLeftButton();
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(2, model_->item_count());
+}
+#endif
+
 // Do tests for removal of items from the shelf by dragging.
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {
   aura::test::EventGenerator generator(

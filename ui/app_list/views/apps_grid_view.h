@@ -243,7 +243,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void StartDragAndDropHostDrag(const gfx::Point& grid_location);
 
   // Dispatch the drag and drop update event to the dnd host (if needed).
-  void DispatchDragEventToDragAndDropHost(const gfx::Point& point);
+  void DispatchDragEventToDragAndDropHost(
+      const gfx::Point& location_in_screen_coordinates);
 
   // Starts the page flip timer if |drag_point| is in left/right side page flip
   // zone or is over page switcher.

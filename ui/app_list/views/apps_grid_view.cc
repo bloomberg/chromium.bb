@@ -512,9 +512,11 @@ void AppsGridView::UpdateDragFromItem(Pointer pointer,
 
   // If a drag and drop host is provided, see if the drag operation needs to be
   // forwarded.
-  DispatchDragEventToDragAndDropHost(event.root_location());
+  gfx::Point location_in_screen = drag_point_in_grid_view;
+  views::View::ConvertPointToScreen(this, &location_in_screen);
+  DispatchDragEventToDragAndDropHost(location_in_screen);
   if (drag_and_drop_host_)
-    drag_and_drop_host_->UpdateDragIconProxy(event.root_location());
+    drag_and_drop_host_->UpdateDragIconProxy(location_in_screen);
 }
 
 void AppsGridView::UpdateDrag(Pointer pointer, const gfx::Point& point) {
@@ -1235,7 +1237,7 @@ void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {
 }
 
 void AppsGridView::DispatchDragEventToDragAndDropHost(
-    const gfx::Point& point) {
+    const gfx::Point& location_in_screen_coordinates) {
   if (!drag_view_ || !drag_and_drop_host_)
     return;
   if (bounds().Contains(last_drag_point_)) {
@@ -1250,13 +1252,14 @@ void AppsGridView::DispatchDragEventToDragAndDropHost(
     // The event happened outside our app menu and we might need to dispatch.
     if (forward_events_to_drag_and_drop_host_) {
       // Dispatch since we have already started.
-      if (!drag_and_drop_host_->Drag(point)) {
+      if (!drag_and_drop_host_->Drag(location_in_screen_coordinates)) {
         // The host is not active any longer and we cancel the operation.
         forward_events_to_drag_and_drop_host_ = false;
         drag_and_drop_host_->EndDrag(true);
       }
     } else {
-      if (drag_and_drop_host_->StartDrag(drag_view_->model()->id(), point)) {
+      if (drag_and_drop_host_->StartDrag(drag_view_->model()->id(),
+                                         location_in_screen_coordinates)) {
         // From now on we forward the drag events.
         forward_events_to_drag_and_drop_host_ = true;
         // Any flip operations are stopped.
