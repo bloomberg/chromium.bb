@@ -45,7 +45,7 @@ V8NodeFilterCondition::V8NodeFilterCondition(v8::Handle<v8::Value> filter, v8::H
     : m_filter(isolate, filter)
 {
     owner->SetHiddenValue(V8HiddenPropertyName::condition(isolate), filter);
-    m_filter.makeWeak(this, &makeWeakCallback);
+    m_filter.setWeak(this, &setWeakCallback);
 }
 
 V8NodeFilterCondition::~V8NodeFilterCondition()
@@ -93,9 +93,9 @@ short V8NodeFilterCondition::acceptNode(ScriptState* state, Node* node) const
     return result->Int32Value();
 }
 
-void V8NodeFilterCondition::makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Value>*, V8NodeFilterCondition* condition)
+void V8NodeFilterCondition::setWeakCallback(const v8::WeakCallbackData<v8::Value, V8NodeFilterCondition>& data)
 {
-    condition->m_filter.clear();
+    data.GetParameter()->m_filter.clear();
 }
 
 } // namespace WebCore

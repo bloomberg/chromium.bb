@@ -85,7 +85,7 @@ private:
     friend ScriptState* mainWorldScriptState(Frame*);
     explicit ScriptState(v8::Handle<v8::Context>);
 
-    static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Context>*, ScriptState*);
+    static void setWeakCallback(const v8::WeakCallbackData<v8::Context, ScriptState>&);
 
     ScopedPersistent<v8::Value> m_exception;
     ScopedPersistent<v8::Context> m_context;

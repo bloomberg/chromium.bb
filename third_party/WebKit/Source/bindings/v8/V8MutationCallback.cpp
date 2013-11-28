@@ -43,7 +43,7 @@ V8MutationCallback::V8MutationCallback(v8::Handle<v8::Function> callback, Execut
     , m_isolate(isolate)
 {
     owner->SetHiddenValue(V8HiddenPropertyName::callback(m_isolate), callback);
-    m_callback.makeWeak(this, &makeWeakCallback);
+    m_callback.setWeak(this, &setWeakCallback);
 }
 
 void V8MutationCallback::call(const Vector<RefPtr<MutationRecord> >& mutations, MutationObserver* observer)
@@ -81,9 +81,9 @@ void V8MutationCallback::call(const Vector<RefPtr<MutationRecord> >& mutations, 
     ScriptController::callFunction(executionContext(), callback, thisObject, 2, argv, m_isolate);
 }
 
-void V8MutationCallback::makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Function>*, V8MutationCallback* callback)
+void V8MutationCallback::setWeakCallback(const v8::WeakCallbackData<v8::Function, V8MutationCallback>& data)
 {
-    callback->m_callback.clear();
+    data.GetParameter()->m_callback.clear();
 }
 
 } // namespace WebCore

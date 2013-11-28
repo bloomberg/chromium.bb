@@ -75,7 +75,7 @@ private:
     // to hold a strong reference to |filter|.
     V8NodeFilterCondition(v8::Handle<v8::Value> filter, v8::Handle<v8::Object> owner, v8::Isolate*);
 
-    static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Value>*, V8NodeFilterCondition*);
+    static void setWeakCallback(const v8::WeakCallbackData<v8::Value, V8NodeFilterCondition>&);
 
     ScopedPersistent<v8::Value> m_filter;
 };

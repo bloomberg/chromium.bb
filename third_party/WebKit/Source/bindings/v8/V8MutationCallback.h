@@ -53,7 +53,7 @@ public:
 private:
     V8MutationCallback(v8::Handle<v8::Function>, ExecutionContext*, v8::Handle<v8::Object>, v8::Isolate*);
 
-    static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Function>*, V8MutationCallback*);
+    static void setWeakCallback(const v8::WeakCallbackData<v8::Function, V8MutationCallback>&);
 
     ScopedPersistent<v8::Function> m_callback;
     RefPtr<DOMWrapperWorld> m_world;

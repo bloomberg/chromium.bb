@@ -132,7 +132,7 @@ namespace WebCore {
 
         virtual bool shouldPreventDefault(v8::Local<v8::Value> returnValue);
 
-        static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Object>*, V8AbstractEventListener*);
+        static void setWeakCallback(const v8::WeakCallbackData<v8::Object, V8AbstractEventListener>&);
 
         ScopedPersistent<v8::Object> m_listener;
 

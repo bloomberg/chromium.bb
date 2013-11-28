@@ -83,9 +83,9 @@ static CustomElementLifecycleCallbacks::CallbackType flagSet(v8::Handle<v8::Func
 }
 
 template <typename T>
-static void weakCallback(v8::Isolate*, v8::Persistent<T>*, ScopedPersistent<T>* handle)
+static void weakCallback(const v8::WeakCallbackData<T, ScopedPersistent<T> >& data)
 {
-    handle->clear();
+    data.GetParameter()->clear();
 }
 
 V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ExecutionContext* executionContext, v8::Handle<v8::Object> prototype, v8::Handle<v8::Function> created, v8::Handle<v8::Function> enteredView, v8::Handle<v8::Function> leftView, v8::Handle<v8::Function> attributeChanged)
@@ -99,11 +99,11 @@ V8CustomElementLifecycleCallbacks::V8CustomElementLifecycleCallbacks(ExecutionCo
     , m_leftView(toIsolate(executionContext), leftView)
     , m_attributeChanged(toIsolate(executionContext), attributeChanged)
 {
-    m_prototype.makeWeak(&m_prototype, weakCallback<v8::Object>);
+    m_prototype.setWeak(&m_prototype, weakCallback<v8::Object>);
 
 #define MAKE_WEAK(Var, _) \
     if (!m_##Var.isEmpty()) \
-        m_##Var.makeWeak(&m_##Var, weakCallback<v8::Function>);
+        m_##Var.setWeak(&m_##Var, weakCallback<v8::Function>);
 
     CALLBACK_LIST(MAKE_WEAK)
 #undef MAKE_WEAK

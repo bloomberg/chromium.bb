@@ -58,9 +58,9 @@ public:
     }
 
     template<typename P>
-    void makeWeak(P* parameters, void (*callback)(v8::Isolate*, v8::Persistent<T>*, P*))
+    void setWeak(P* parameters, void (*callback)(const v8::WeakCallbackData<T, P>&))
     {
-        m_handle.MakeWeak(parameters, callback);
+        m_handle.SetWeak(parameters, callback);
     }
 
     bool isEmpty() const { return m_handle.IsEmpty(); }

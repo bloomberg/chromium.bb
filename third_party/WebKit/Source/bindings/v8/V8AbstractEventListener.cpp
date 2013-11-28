@@ -96,7 +96,7 @@ void V8AbstractEventListener::handleEvent(ExecutionContext* context, Event* even
 void V8AbstractEventListener::setListenerObject(v8::Handle<v8::Object> listener)
 {
     m_listener.set(m_isolate, listener);
-    m_listener.makeWeak(this, &makeWeakCallback);
+    m_listener.setWeak(this, &setWeakCallback);
 }
 
 void V8AbstractEventListener::invokeEventHandler(ExecutionContext* context, Event* event, v8::Local<v8::Value> jsEvent)
@@ -180,9 +180,9 @@ v8::Local<v8::Object> V8AbstractEventListener::getReceiverObject(ExecutionContex
     return v8::Local<v8::Object>::New(isolate, v8::Handle<v8::Object>::Cast(value));
 }
 
-void V8AbstractEventListener::makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Object>*, V8AbstractEventListener* listener)
+void V8AbstractEventListener::setWeakCallback(const v8::WeakCallbackData<v8::Object, V8AbstractEventListener> &data)
 {
-    listener->m_listener.clear();
+    data.GetParameter()->m_listener.clear();
 }
 
 } // namespace WebCore
