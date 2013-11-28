@@ -287,6 +287,18 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorKeyframeMultip
     EXPECT_GT(HashFunctions::hash(CSSPropertyWebkitTransform), HashFunctions::hash(CSSPropertyWidth));
 }
 
+TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorTransformDependsOnBoxSize)
+{
+    TransformOperations ops;
+    ops.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(2, WebCore::Fixed), TransformOperation::TranslateX));
+    RefPtr<Keyframe> goodKeyframe = createReplaceOpKeyframe(CSSPropertyWebkitTransform, AnimatableTransform::create(ops).get());
+    EXPECT_TRUE(isCandidateForCompositor(*goodKeyframe.get()));
+
+    ops.operations().append(TranslateTransformOperation::create(Length(50, WebCore::Percent), Length(2, WebCore::Fixed), TransformOperation::TranslateX));
+    RefPtr<Keyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyWebkitTransform, AnimatableTransform::create(ops).get());
+    EXPECT_FALSE(isCandidateForCompositor(*badKeyframe.get()));
+}
+
 TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorCustomFilter)
 {
     FilterOperations ops;
