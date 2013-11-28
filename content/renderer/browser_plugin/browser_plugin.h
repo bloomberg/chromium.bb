@@ -345,9 +345,6 @@ class CONTENT_EXPORT BrowserPlugin :
   bool before_first_navigation_;
   bool mouse_locked_;
 
-  typedef std::pair<int, base::WeakPtr<BrowserPlugin> > TrackedV8ObjectID;
-  std::map<int, TrackedV8ObjectID*> tracked_v8_objects_;
-
   // BrowserPlugin outlives RenderViewImpl in Chrome Apps and so we need to
   // store the BrowserPlugin's BrowserPluginManager in a member variable to
   // avoid accessing the RenderViewImpl.
