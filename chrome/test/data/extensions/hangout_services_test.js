@@ -85,6 +85,11 @@ function loggingUpload(callback) {
   sendMessage({'method': 'logging.upload'}, callback);
 }
 
+// Will call |callback(uploadResult)| on completion.
+function loggingStopAndUpload(callback) {
+  sendMessage({'method': 'logging.stopAndUpload'}, callback);
+}
+
 // Will call |callback()| on completion.
 function loggingDiscard(callback) {
   sendMessage({'method': 'logging.discard'}, callback);
@@ -130,6 +135,7 @@ var TESTS = [
   testLogging,
   testDisabledLogging,
   testDisabledLoggingButUpload,
+  testDisabledLoggingWithStopAndUpload,
   testEnabledLoggingButDiscard,
   testGetSinks,
   testGetActiveSink,
@@ -258,6 +264,20 @@ function testDisabledLoggingButUpload(callback) {
             });
         });
     });
+}
+
+// Starts logging while auto-upload is disabled. Uses the
+// stopAndUpload function to stop, then upload, the results.
+function testDisabledLoggingWithStopAndUpload(callback) {
+  loggingNoUploadOnRenderClose();
+  loggingStart(function() {
+      loggingStopAndUpload(function(loggingResult) {
+          if (loggingResult != '')
+            callback('');
+          else
+            callback('Got empty upload result.');
+      });
+  });
 }
 
 // Starts and stops logging while auto-upload is enabled, but

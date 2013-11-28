@@ -69,6 +69,13 @@ chrome.runtime.onMessageExternal.addListener(
     } else if (method == 'logging.upload') {
       chrome.webrtcLoggingPrivate.upload(sender.tab.id, origin, doSendResponse);
       return true;
+    } else if (method == 'logging.stopAndUpload') {
+      chrome.webrtcLoggingPrivate.stop(
+          sender.tab.id, origin, function() {
+              chrome.webrtcLoggingPrivate.upload(
+                  sender.tab.id, origin, doSendResponse);
+          });
+      return true;
     } else if (method == 'logging.discard') {
       chrome.webrtcLoggingPrivate.discard(
           sender.tab.id, origin, doSendResponse);
