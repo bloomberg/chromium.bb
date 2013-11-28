@@ -409,9 +409,9 @@ uint64_t toUInt64(v8::Handle<v8::Value> value, IntegerConversionConfiguration co
 
 v8::Handle<v8::FunctionTemplate> createRawTemplate(v8::Isolate* isolate)
 {
-    v8::HandleScope scope(isolate);
+    v8::EscapableHandleScope scope(isolate);
     v8::Local<v8::FunctionTemplate> result = v8::FunctionTemplate::New(V8ObjectConstructor::isValidConstructorMode);
-    return scope.Close(result);
+    return scope.Escape(result);
 }
 
 PassRefPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value> value, v8::Isolate* isolate)
@@ -459,36 +459,36 @@ ExecutionContext* toExecutionContext(v8::Handle<v8::Context> context)
 
 DOMWindow* activeDOMWindow()
 {
-    v8::Handle<v8::Context> context = v8::Context::GetCalling();
+    v8::Handle<v8::Context> context = v8::Isolate::GetCurrent()->GetCallingContext();
     if (context.IsEmpty()) {
         // Unfortunately, when processing script from a plug-in, we might not
         // have a calling context. In those cases, we fall back to the
         // entered context.
-        context = v8::Context::GetEntered();
+        context = v8::Isolate::GetCurrent()->GetEnteredContext();
     }
     return toDOMWindow(context);
 }
 
 ExecutionContext* activeExecutionContext()
 {
-    v8::Handle<v8::Context> context = v8::Context::GetCalling();
+    v8::Handle<v8::Context> context = v8::Isolate::GetCurrent()->GetCallingContext();
     if (context.IsEmpty()) {
         // Unfortunately, when processing script from a plug-in, we might not
         // have a calling context. In those cases, we fall back to the
         // entered context.
-        context = v8::Context::GetEntered();
+        context = v8::Isolate::GetCurrent()->GetEnteredContext();
     }
     return toExecutionContext(context);
 }
 
 DOMWindow* firstDOMWindow()
 {
-    return toDOMWindow(v8::Context::GetEntered());
+    return toDOMWindow(v8::Isolate::GetCurrent()->GetEnteredContext());
 }
 
 Document* currentDocument()
 {
-    return toDOMWindow(v8::Context::GetCurrent())->document();
+    return toDOMWindow(v8::Isolate::GetCurrent()->GetCurrentContext())->document();
 }
 
 Frame* toFrameIfNotDetached(v8::Handle<v8::Context> context)
@@ -518,7 +518,7 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld* w
 
 bool handleOutOfMemory()
 {
-    v8::Local<v8::Context> context = v8::Context::GetCurrent();
+    v8::Local<v8::Context> context = v8::Isolate::GetCurrent()->GetCurrentContext();
 
     if (!context->HasOutOfMemoryException())
         return false;
@@ -564,8 +564,8 @@ WrapperWorldType worldTypeInMainThread(v8::Isolate* isolate)
 {
     if (!DOMWrapperWorld::isolatedWorldsExist())
         return MainWorld;
-    ASSERT(!v8::Context::GetEntered().IsEmpty());
-    DOMWrapperWorld* isolatedWorld = DOMWrapperWorld::isolatedWorld(v8::Context::GetEntered());
+    ASSERT(!isolate->GetEnteredContext().IsEmpty());
+    DOMWrapperWorld* isolatedWorld = DOMWrapperWorld::isolatedWorld(isolate->GetEnteredContext());
     if (isolatedWorld)
         return IsolatedWorld;
     return MainWorld;
@@ -579,7 +579,7 @@ DOMWrapperWorld* isolatedWorldForIsolate(v8::Isolate* isolate)
     if (!DOMWrapperWorld::isolatedWorldsExist())
         return 0;
     ASSERT(v8::Context::InContext());
-    return DOMWrapperWorld::isolatedWorld(v8::Context::GetCurrent());
+    return DOMWrapperWorld::isolatedWorld(isolate->GetCurrentContext());
 }
 
 v8::Local<v8::Value> getHiddenValueFromMainWorldWrapper(v8::Isolate* isolate, ScriptWrappable* wrappable, v8::Handle<v8::String> key)

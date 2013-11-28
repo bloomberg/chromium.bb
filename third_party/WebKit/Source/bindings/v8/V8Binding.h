@@ -290,7 +290,7 @@ namespace WebCore {
     template<typename T, size_t inlineCapacity>
     v8::Handle<v8::Value> v8Array(const Vector<T, inlineCapacity>& iterator, v8::Isolate* isolate)
     {
-        v8::Local<v8::Array> result = v8::Array::New(iterator.size());
+        v8::Local<v8::Array> result = v8::Array::New(isolate, iterator.size());
         int index = 0;
         typename Vector<T, inlineCapacity>::const_iterator end = iterator.end();
         typedef V8ValueTraits<T> TraitsType;
@@ -675,7 +675,7 @@ namespace WebCore {
     {
         Collection* collection = reinterpret_cast<Collection*>(info.Holder()->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
         int length = collection->length();
-        v8::Handle<v8::Array> properties = v8::Array::New(length);
+        v8::Handle<v8::Array> properties = v8::Array::New(info.GetIsolate(), length);
         for (int i = 0; i < length; ++i) {
             // FIXME: Do we need to check that the item function returns a non-null value for this index?
             v8::Handle<v8::Integer> integer = v8::Integer::New(i, info.GetIsolate());
