@@ -81,7 +81,8 @@ typedef base::hash_set<HashedHandle> ParentHandleSet;
 // associated with it in the map will be returned, otherwise a new V8 value will
 // be created and added to the map. |did_create| indicates whether a new v8
 // value was created as a result of calling the function.
-bool GetOrCreateV8Value(const PP_Var& var,
+bool GetOrCreateV8Value(v8::Isolate* isolate,
+                        const PP_Var& var,
                         v8::Handle<v8::Value>* result,
                         bool* did_create,
                         VarHandleMap* visited_ids,
@@ -100,13 +101,15 @@ bool GetOrCreateV8Value(const PP_Var& var,
 
   switch (var.type) {
     case PP_VARTYPE_UNDEFINED:
-      *result = v8::Undefined();
+      *result = v8::Undefined(isolate);
       break;
     case PP_VARTYPE_NULL:
-      *result = v8::Null();
+      *result = v8::Null(isolate);
       break;
     case PP_VARTYPE_BOOL:
-      *result = (var.value.as_bool == PP_TRUE) ? v8::True() : v8::False();
+      *result = (var.value.as_bool == PP_TRUE)
+          ? v8::True(isolate)
+          : v8::False(isolate);
       break;
     case PP_VARTYPE_INT32:
       *result = v8::Integer::New(var.value.as_int);
@@ -125,7 +128,10 @@ bool GetOrCreateV8Value(const PP_Var& var,
       // Create a string object rather than a string primitive. This allows us
       // to have multiple references to the same string in javascript, which
       // matches the reference behavior of PP_Vars.
-      *result = v8::String::New(value.c_str(), value.size())->ToObject();
+      *result = v8::String::NewFromUtf8(isolate,
+                                        value.c_str(),
+                                        v8::String::kNormalString,
+                                        value.size())->ToObject();
       break;
     }
     case PP_VARTYPE_ARRAY_BUFFER: {
@@ -141,7 +147,7 @@ bool GetOrCreateV8Value(const PP_Var& var,
       break;
     }
     case PP_VARTYPE_ARRAY:
-      *result = v8::Array::New();
+      *result = v8::Array::New(isolate);
       break;
     case PP_VARTYPE_DICTIONARY:
       *result = v8::Object::New();
@@ -273,7 +279,8 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
                                v8::Handle<v8::Context> context,
                                v8::Handle<v8::Value>* result) {
   v8::Context::Scope context_scope(context);
-  v8::HandleScope handle_scope(context->GetIsolate());
+  v8::Isolate* isolate = context->GetIsolate();
+  v8::HandleScope handle_scope(isolate);
 
   VarHandleMap visited_ids;
   ParentVarSet parent_ids;
@@ -297,7 +304,7 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
     }
 
     bool did_create = false;
-    if (!GetOrCreateV8Value(current_var, &current_v8, &did_create,
+    if (!GetOrCreateV8Value(isolate, current_var, &current_v8, &did_create,
                             &visited_ids, &parent_ids)) {
       return false;
     }
@@ -321,7 +328,7 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
       for (size_t i = 0; i < array_var->elements().size(); ++i) {
         const PP_Var& child_var = array_var->elements()[i].get();
         v8::Handle<v8::Value> child_v8;
-        if (!GetOrCreateV8Value(child_var, &child_v8, &did_create,
+        if (!GetOrCreateV8Value(isolate, child_var, &child_v8, &did_create,
                                 &visited_ids, &parent_ids)) {
           return false;
         }
@@ -351,14 +358,18 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
         const std::string& key = iter->first;
         const PP_Var& child_var = iter->second.get();
         v8::Handle<v8::Value> child_v8;
-        if (!GetOrCreateV8Value(child_var, &child_v8, &did_create,
+        if (!GetOrCreateV8Value(isolate, child_var, &child_v8, &did_create,
                                 &visited_ids, &parent_ids)) {
           return false;
         }
         if (did_create && CanHaveChildren(child_var))
           stack.push(child_var);
         v8::TryCatch try_catch;
-        v8_object->Set(v8::String::New(key.c_str(), key.length()), child_v8);
+        v8_object->Set(v8::String::NewFromUtf8(isolate,
+                                               key.c_str(),
+                                               v8::String::kNormalString,
+                                               key.length()),
+                       child_v8);
         if (try_catch.HasCaught()) {
           LOG(ERROR) << "Setter for property " << key.c_str() << " threw an "
               << "exception.";
@@ -472,7 +483,7 @@ void V8VarConverter::FromV8Value(
 
         // Extend this test to cover more types as necessary and if sensible.
         if (!key->IsString() && !key->IsNumber()) {
-          NOTREACHED() << "Key \"" << *v8::String::AsciiValue(key) << "\" "
+          NOTREACHED() << "Key \"" << *v8::String::Utf8Value(key) << "\" "
                           "is neither a string nor a number";
           message_loop_proxy_->PostTask(FROM_HERE,
               base::Bind(callback, ScopedPPVar(PP_MakeUndefined()), false));

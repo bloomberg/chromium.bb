@@ -369,7 +369,7 @@ void MessageChannel::NPVariantToPPVar(const NPVariant* variant) {
       // shouldn't result in a deep copy.
       v8::Handle<v8::Value> v8_value = WebBindings::toV8Value(variant);
       V8VarConverter(instance_->pp_instance()).FromV8Value(
-          v8_value, v8::Context::GetCurrent(),
+          v8_value, v8::Isolate::GetCurrent()->GetCurrentContext(),
           base::Bind(&MessageChannel::NPVariantToPPVarComplete,
                      weak_ptr_factory_.GetWeakPtr(), result_iterator));
       return;
