@@ -1056,6 +1056,36 @@ bool MetadataDatabase::GetLowPriorityDirtyTracker(
   return true;
 }
 
+bool MetadataDatabase::GetMultiParentFileTrackers(std::string* file_id,
+                                                  TrackerSet* trackers) {
+  // TODO(tzik):
+  // - Pick one File ID from |multi_tracker_files_|,
+  // - Ensure |file_by_id_| contains,
+  // - Ensure corresponding |trackers_by_file_id_| entry has muliple trackers
+  //   and an active tracker
+  // - Then, set them to |file_id| and |tracekrs|, and return true.
+  // - If there's no such file, return false.
+  // - If a |multi_tracker_files_| entry doesn't have multiple tracker,
+  //   remove it from |multiple_tracker_files_|.
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool MetadataDatabase::GetConflictingTrackers(TrackerSet* trackers) {
+  // TODO(tzik):
+  // - Pick one entry from |conflicting_path_| as |parent_tracker_id| and
+  //   |title|.
+  // - Ensure |tracker_by_id_| contains |parent_tracker_id|,
+  // - Ensure corresponding |trackers_by_parent_and_title_| contains multiple
+  //   trackers.
+  // - Then set the set to |trackers| and return true.
+  // - If there's no such path, return false.
+  // - If a |conflicting_path_| entry doesn't have multiple trackers,
+  //   remove it from |conflicting_path_|.
+  NOTIMPLEMENTED();
+  return false;
+}
+
 void MetadataDatabase::GetRegisteredAppIDs(std::vector<std::string>* app_ids) {
   DCHECK(app_ids);
   app_ids->clear();

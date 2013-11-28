@@ -281,6 +281,10 @@ class MetadataDatabase {
   // Assigns the dirty tracker if exists and |tracker| is non-NULL.
   bool GetLowPriorityDirtyTracker(FileTracker* tracker) const;
 
+  bool GetMultiParentFileTrackers(std::string* file_id,
+                                  TrackerSet* trackers);
+  bool GetConflictingTrackers(TrackerSet* trackers);
+
   // Sets |app_ids| to a list of all registered app ids.
   void GetRegisteredAppIDs(std::vector<std::string>* app_ids);
 
@@ -404,6 +408,9 @@ class MetadataDatabase {
   // This must be updated when updating |dirty| field of a tracker.
   DirtyTrackers dirty_trackers_;  // Not owned.
   DirtyTrackers low_priority_dirty_trackers_;  // Not owned.
+
+  std::set<std::string> multi_tracker_files_;
+  std::map<int64, std::set<std::string> > conflicting_path_;
 
   base::WeakPtrFactory<MetadataDatabase> weak_ptr_factory_;
 

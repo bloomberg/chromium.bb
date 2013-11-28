@@ -74,6 +74,11 @@ bool FindTrackerByParentAndFileIDForUpload(MetadataDatabase* metadata_database,
   return true;
 }
 
+bool CanReuseRemoteFolder() {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 }  // namespace
 
 LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
@@ -220,10 +225,24 @@ void LocalToRemoteSyncer::SyncCompleted(const SyncStatusCallback& callback,
 
 void LocalToRemoteSyncer::HandleConflict(const SyncStatusCallback& callback) {
   DCHECK(remote_file_tracker_);
+  DCHECK(remote_file_tracker_->has_synced_details());
+  DCHECK(remote_file_tracker_->active());
   DCHECK(remote_file_tracker_->dirty());
 
-  NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
+  if (local_change_.IsFile()) {
+    UploadNewFile(callback);
+    return;
+  }
+
+  DCHECK(local_change_.IsDirectory());
+  // Check if we can reuse the remote folder.
+  if (CanReuseRemoteFolder()) {
+    callback.Run(SYNC_STATUS_OK);
+    return;
+  }
+
+  // Create new remote folder.
+  CreateRemoteFolder(callback);
 }
 
 void LocalToRemoteSyncer::HandleExistingRemoteFile(

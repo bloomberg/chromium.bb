@@ -2381,6 +2381,8 @@
         'browser/sync_file_system/conflict_resolution_policy.h',
         'browser/sync_file_system/conflict_resolution_resolver.cc',
         'browser/sync_file_system/conflict_resolution_resolver.h',
+        'browser/sync_file_system/drive_backend/conflict_resolver.cc',
+        'browser/sync_file_system/drive_backend/conflict_resolver.h',
         'browser/sync_file_system/drive_backend/drive_backend_constants.cc',
         'browser/sync_file_system/drive_backend/drive_backend_constants.h',
         'browser/sync_file_system/drive_backend/drive_backend_util.cc',
