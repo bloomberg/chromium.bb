@@ -683,6 +683,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kUnlimitedStorage);
   skip.insert(APIPermission::kWebRtc);
   skip.insert(APIPermission::kWebView);
+  skip.insert(APIPermission::kOverrideEscFullscreen);
 
   // TODO(erikkay) add a string for this permission.
   skip.insert(APIPermission::kBackground);
