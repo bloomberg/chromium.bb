@@ -70,7 +70,7 @@ public:
         }
         v8::Persistent<v8::Object> persistent(isolate, wrapper);
         configuration.configureWrapper(&persistent);
-        persistent.MakeWeak(this, &makeWeakCallback);
+        persistent.SetWeak(this, &setWeakCallback);
         m_wrapperOrTypeInfo = reinterpret_cast<uintptr_t>(persistent.ClearAndLeak()) | 1;
         ASSERT(containsWrapper());
     }
@@ -175,11 +175,11 @@ private:
     inline bool containsWrapper() const { return (m_wrapperOrTypeInfo & 1) == 1; }
     inline bool containsTypeInfo() const { return m_wrapperOrTypeInfo && (m_wrapperOrTypeInfo & 1) == 0; }
 
-    inline void disposeWrapper(v8::Persistent<v8::Object>* value, const WrapperTypeInfo* info)
+    inline void disposeWrapper(v8::Local<v8::Object> value, const WrapperTypeInfo* info)
     {
         ASSERT(containsWrapper());
-        ASSERT(*reinterpret_cast<uintptr_t*>(value) == (m_wrapperOrTypeInfo & ~1));
-        value->Reset();
+        ASSERT(value == *unsafePersistent().persistent());
+        unsafePersistent().dispose();
         setTypeInfo(info);
     }
 
@@ -188,18 +188,18 @@ private:
     //   If the bottom bit is clear, then this contains a pointer to the wrapper type info in the remaining bits.
     uintptr_t m_wrapperOrTypeInfo;
 
-    static void makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Object>* wrapper, ScriptWrappable* key)
+    static void setWeakCallback(const v8::WeakCallbackData<v8::Object, ScriptWrappable>& data)
     {
-        ASSERT(*(key->unsafePersistent().persistent()) == *wrapper);
+        ASSERT(*data.GetParameter()->unsafePersistent().persistent() == data.GetValue());
 
-        // Note: |object| might not be equal to |key|, e.g., if ScriptWrappable isn't a left-most base class.
-        void* object = toNative(*wrapper);
-        const WrapperTypeInfo* info = toWrapperTypeInfo(*wrapper);
+        // Note: |object| might not be equal to |data|.GetParameter(), e.g., if ScriptWrappable isn't a left-most base class.
+        void* object = toNative(data.GetValue());
+        const WrapperTypeInfo* info = toWrapperTypeInfo(data.GetValue());
         ASSERT(info->derefObjectFunction);
 
-        key->disposeWrapper(wrapper, info);
+        data.GetParameter()->disposeWrapper(data.GetValue(), info);
         // FIXME: I noticed that 50%~ of minor GC cycle times can be consumed
-        // inside key->deref(), which causes Node destructions. We should
+        // inside data.GetParameter()->deref(), which causes Node destructions. We should
         // make Node destructions incremental.
         info->derefObject(object);
     }
