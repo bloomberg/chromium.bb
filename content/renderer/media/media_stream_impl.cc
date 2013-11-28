@@ -465,12 +465,6 @@ void MediaStreamImpl::CreateWebKitSourceVector(
     blink::WebVector<blink::WebMediaStreamSource>& webkit_sources) {
   CHECK_EQ(devices.size(), webkit_sources.size());
   for (size_t i = 0; i < devices.size(); ++i) {
-    const char* track_type =
-        (type == blink::WebMediaStreamSource::TypeAudio) ? "a" : "v";
-    std::string source_id = base::StringPrintf("%s%s%u", label.c_str(),
-                                               track_type,
-                                               static_cast<unsigned int>(i));
-
     const blink::WebMediaStreamSource* existing_source =
         FindLocalSource(devices[i]);
     if (existing_source) {
@@ -480,7 +474,7 @@ void MediaStreamImpl::CreateWebKitSourceVector(
       continue;
     }
     webkit_sources[i].initialize(
-        UTF8ToUTF16(source_id),
+        UTF8ToUTF16(devices[i].device.id),
         type,
         UTF8ToUTF16(devices[i].device.name));
     MediaStreamSourceExtraData* source_extra_data(

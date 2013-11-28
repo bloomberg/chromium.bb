@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "base/atomicops.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "media/video/capture/video_capture_device.h"
@@ -23,6 +24,7 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   // Used for testing. This will make sure the next call to Create will
   // return NULL;
   static void SetFailNextCreate();
+  static void SetNumberOfFakeDevices(size_t number_of_devices);
 
   static void GetDeviceNames(Names* device_names);
   static void GetDeviceSupportedFormats(const Name& device,
@@ -64,6 +66,11 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   int format_roster_index_;
 
   static bool fail_next_create_;
+  // |number_of_devices_| is atomic since tests can call SetNumberOfFakeDevices
+  // on the IO thread to set |number_of_devices_|. The variable can be
+  // read from a separate thread.
+  // TODO(perkj): Make tests independent of global state. crbug/323913
+  static base::subtle::Atomic32 number_of_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeVideoCaptureDevice);
 };

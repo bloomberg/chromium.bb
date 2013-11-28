@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -22,14 +23,17 @@ static const int kFakeCaptureCapabilityChangePeriod = 30;
 enum { kNumberOfFakeDevices = 2 };
 
 bool FakeVideoCaptureDevice::fail_next_create_ = false;
+base::subtle::Atomic32 FakeVideoCaptureDevice::number_of_devices_ =
+    kNumberOfFakeDevices;
 
 void FakeVideoCaptureDevice::GetDeviceNames(Names* const device_names) {
   // Empty the name list.
   device_names->erase(device_names->begin(), device_names->end());
 
-  for (int n = 0; n < kNumberOfFakeDevices; n++) {
-    Name name(base::StringPrintf("fake_device_%d", n),
-              base::StringPrintf("/dev/video%d", n));
+  int number_of_devices = base::subtle::NoBarrier_Load(&number_of_devices_);
+  for (int32 n = 0; n < number_of_devices; n++) {
+    Name name("fake_device_" + base::IntToString(n),
+              "/dev/video" + base::IntToString(n));
     device_names->push_back(name);
   }
 }
@@ -51,8 +55,9 @@ VideoCaptureDevice* FakeVideoCaptureDevice::Create(const Name& device_name) {
     fail_next_create_ = false;
     return NULL;
   }
-  for (int n = 0; n < kNumberOfFakeDevices; ++n) {
-    std::string possible_id = base::StringPrintf("/dev/video%d", n);
+  int number_of_devices = base::subtle::NoBarrier_Load(&number_of_devices_);
+  for (int32 n = 0; n < number_of_devices; ++n) {
+    std::string possible_id = "/dev/video" + base::IntToString(n);
     if (device_name.id().compare(possible_id) == 0) {
       return new FakeVideoCaptureDevice();
     }
@@ -62,6 +67,11 @@ VideoCaptureDevice* FakeVideoCaptureDevice::Create(const Name& device_name) {
 
 void FakeVideoCaptureDevice::SetFailNextCreate() {
   fail_next_create_ = true;
+}
+
+void FakeVideoCaptureDevice::SetNumberOfFakeDevices(size_t number_of_devices) {
+  base::subtle::NoBarrier_AtomicExchange(&number_of_devices_,
+                                         number_of_devices);
 }
 
 FakeVideoCaptureDevice::FakeVideoCaptureDevice()

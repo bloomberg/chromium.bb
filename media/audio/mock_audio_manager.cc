@@ -34,6 +34,11 @@ void MockAudioManager::ShowAudioInputSettings() {
 
 void MockAudioManager::GetAudioInputDeviceNames(
     AudioDeviceNames* device_names) {
+  DCHECK(device_names->empty());
+  device_names->push_back(media::AudioDeviceName("fake_device_name_1",
+                                                 "fake_device_id_1"));
+  device_names->push_back(media::AudioDeviceName("fake_device_name_2",
+                                                 "fake_device_id_2"));
 }
 
 void MockAudioManager::GetAudioOutputDeviceNames(

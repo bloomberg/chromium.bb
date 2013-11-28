@@ -193,12 +193,16 @@ void FakeMediaStreamUIProxy::RequestAccess(
        it != devices_.end(); ++it) {
     if (!accepted_audio &&
         IsAudioMediaType(request.audio_type) &&
-        IsAudioMediaType(it->type)) {
+        IsAudioMediaType(it->type) &&
+        (request.requested_audio_device_id.empty() ||
+         request.requested_audio_device_id == it->id)) {
       devices_to_use.push_back(*it);
       accepted_audio = true;
     } else if (!accepted_video &&
                IsVideoMediaType(request.video_type) &&
-               IsVideoMediaType(it->type)) {
+               IsVideoMediaType(it->type) &&
+               (request.requested_video_device_id.empty() ||
+                request.requested_video_device_id == it->id)) {
       devices_to_use.push_back(*it);
       accepted_video = true;
     }
