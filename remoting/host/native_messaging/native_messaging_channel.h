@@ -30,18 +30,20 @@ namespace remoting {
 // forwards messages to the elevated instance of the native messaging host.
 class NativeMessagingChannel : public base::NonThreadSafe {
  public:
-  // Used to sends a response back to the client app.
-  typedef base::Callback<void(scoped_ptr<base::DictionaryValue> response)>
-      SendResponseCallback;
+  // Used to send a message to the client app.
+  typedef base::Callback<void(scoped_ptr<base::DictionaryValue> message)>
+      SendMessageCallback;
 
   class Delegate {
    public:
     virtual ~Delegate() {}
 
-    // Processes a message received from the client app. Invokes |done| to send
-    // a response back to the client app.
-    virtual void ProcessMessage(scoped_ptr<base::DictionaryValue> message,
-                                const SendResponseCallback& done) = 0;
+    // Sets the callback the delegate can use to send a message to the client.
+    virtual void SetSendMessageCallback(
+        const SendMessageCallback& send_message) = 0;
+
+    // Processes a message received from the client app.
+    virtual void ProcessMessage(scoped_ptr<base::DictionaryValue> message) = 0;
   };
 
   // Constructs an object taking the ownership of |input| and |output|. Closes
@@ -59,8 +61,8 @@ class NativeMessagingChannel : public base::NonThreadSafe {
   // Processes a message received from the client app.
   void ProcessMessage(scoped_ptr<base::Value> message);
 
-  // Sends a response back to the client app.
-  void SendResponse(scoped_ptr<base::DictionaryValue> response);
+  // Sends a message to the client app.
+  void SendMessage(scoped_ptr<base::DictionaryValue> message);
 
   // Initiates shutdown and runs |quit_closure| if there are no pending requests
   // left.
@@ -75,13 +77,6 @@ class NativeMessagingChannel : public base::NonThreadSafe {
   // afterwards), so it needs to be destroyed before other members of this class
   // (except for |weak_factory_|).
   scoped_ptr<Delegate> delegate_;
-
-  // Keeps track of pending requests. Used to delay shutdown until all responses
-  // have been sent.
-  int pending_requests_;
-
-  // True if Shutdown() has been called.
-  bool shutdown_;
 
   base::WeakPtr<NativeMessagingChannel> weak_ptr_;
   base::WeakPtrFactory<NativeMessagingChannel> weak_factory_;

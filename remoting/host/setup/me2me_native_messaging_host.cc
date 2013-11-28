@@ -75,9 +75,13 @@ NativeMessagingHost::NativeMessagingHost(
 NativeMessagingHost::~NativeMessagingHost() {
 }
 
+void NativeMessagingHost::SetSendMessageCallback(
+    const SendMessageCallback& send_message) {
+  send_message_ = send_message;
+}
+
 void NativeMessagingHost::ProcessMessage(
-    scoped_ptr<base::DictionaryValue> message,
-    const SendResponseCallback& done) {
+    scoped_ptr<base::DictionaryValue> message) {
   scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue());
 
   // If the client supplies an ID, it will expect it in the response. This
@@ -89,7 +93,7 @@ void NativeMessagingHost::ProcessMessage(
   std::string type;
   if (!message->GetString("type", &type)) {
     LOG(ERROR) << "'type' not found";
-    done.Run(scoped_ptr<base::DictionaryValue>());
+    send_message_.Run(scoped_ptr<base::DictionaryValue>());
     return;
   }
 
@@ -97,75 +101,71 @@ void NativeMessagingHost::ProcessMessage(
 
   bool success = false;
   if (type == "hello") {
-    success = ProcessHello(*message, response.Pass(), done);
+    success = ProcessHello(*message, response.Pass());
   } else if (type == "clearPairedClients") {
-    success = ProcessClearPairedClients(*message, response.Pass(), done);
+    success = ProcessClearPairedClients(*message, response.Pass());
   } else if (type == "deletePairedClient") {
-    success = ProcessDeletePairedClient(*message, response.Pass(), done);
+    success = ProcessDeletePairedClient(*message, response.Pass());
   } else if (type == "getHostName") {
-    success = ProcessGetHostName(*message, response.Pass(), done);
+    success = ProcessGetHostName(*message, response.Pass());
   } else if (type == "getPinHash") {
-    success = ProcessGetPinHash(*message, response.Pass(), done);
+    success = ProcessGetPinHash(*message, response.Pass());
   } else if (type == "generateKeyPair") {
-    success = ProcessGenerateKeyPair(*message, response.Pass(), done);
+    success = ProcessGenerateKeyPair(*message, response.Pass());
   } else if (type == "updateDaemonConfig") {
-    success = ProcessUpdateDaemonConfig(*message, response.Pass(), done);
+    success = ProcessUpdateDaemonConfig(*message, response.Pass());
   } else if (type == "getDaemonConfig") {
-    success = ProcessGetDaemonConfig(*message, response.Pass(), done);
+    success = ProcessGetDaemonConfig(*message, response.Pass());
   } else if (type == "getPairedClients") {
-    success = ProcessGetPairedClients(*message, response.Pass(), done);
+    success = ProcessGetPairedClients(*message, response.Pass());
   } else if (type == "getUsageStatsConsent") {
-    success = ProcessGetUsageStatsConsent(*message, response.Pass(), done);
+    success = ProcessGetUsageStatsConsent(*message, response.Pass());
   } else if (type == "startDaemon") {
-    success = ProcessStartDaemon(*message, response.Pass(), done);
+    success = ProcessStartDaemon(*message, response.Pass());
   } else if (type == "stopDaemon") {
-    success = ProcessStopDaemon(*message, response.Pass(), done);
+    success = ProcessStopDaemon(*message, response.Pass());
   } else if (type == "getDaemonState") {
-    success = ProcessGetDaemonState(*message, response.Pass(), done);
+    success = ProcessGetDaemonState(*message, response.Pass());
   } else if (type == "getHostClientId") {
-    success = ProcessGetHostClientId(*message, response.Pass(), done);
+    success = ProcessGetHostClientId(*message, response.Pass());
   } else if (type == "getCredentialsFromAuthCode") {
-    success = ProcessGetCredentialsFromAuthCode(*message, response.Pass(),
-                                                done);
+    success = ProcessGetCredentialsFromAuthCode(*message, response.Pass());
   } else {
     LOG(ERROR) << "Unsupported request type: " << type;
   }
 
   if (!success)
-    done.Run(scoped_ptr<base::DictionaryValue>());
+    send_message_.Run(scoped_ptr<base::DictionaryValue>());
 }
 
 bool NativeMessagingHost::ProcessHello(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response,
-    const SendResponseCallback& done) {
+    scoped_ptr<base::DictionaryValue> response) {
   response->SetString("version", STRINGIZE(VERSION));
   scoped_ptr<base::ListValue> supported_features_list(new base::ListValue());
   supported_features_list->AppendStrings(std::vector<std::string>(
       kSupportedFeatures, kSupportedFeatures + arraysize(kSupportedFeatures)));
   response->Set("supportedFeatures", supported_features_list.release());
-  done.Run(response.Pass());
+  send_message_.Run(response.Pass());
   return true;
 }
 
 bool NativeMessagingHost::ProcessClearPairedClients(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response,
-    const SendResponseCallback& done) {
+    scoped_ptr<base::DictionaryValue> response) {
   if (pairing_registry_) {
     pairing_registry_->ClearAllPairings(
         base::Bind(&NativeMessagingHost::SendBooleanResult, weak_ptr_,
-                   done, base::Passed(&response)));
+                   base::Passed(&response)));
   } else {
-    SendBooleanResult(done, response.Pass(), false);
+    SendBooleanResult(response.Pass(), false);
   }
   return true;
 }
 
 bool NativeMessagingHost::ProcessDeletePairedClient(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response,
-    const SendResponseCallback& done) {
+    scoped_ptr<base::DictionaryValue> response) {
   std::string client_id;
   if (!message.GetString(protocol::PairingRegistry::kClientIdKey, &client_id)) {
     LOG(ERROR) << "'" << protocol::PairingRegistry::kClientIdKey
@@ -176,26 +176,24 @@ bool NativeMessagingHost::ProcessDeletePairedClient(
   if (pairing_registry_) {
     pairing_registry_->DeletePairing(
         client_id, base::Bind(&NativeMessagingHost::SendBooleanResult,
-                              weak_ptr_, done, base::Passed(&response)));
+                              weak_ptr_, base::Passed(&response)));
   } else {
-    SendBooleanResult(done, response.Pass(), false);
+    SendBooleanResult(response.Pass(), false);
   }
   return true;
 }
 
 bool NativeMessagingHost::ProcessGetHostName(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response,
-    const SendResponseCallback& done) {
+    scoped_ptr<base::DictionaryValue> response) {
   response->SetString("hostname", net::GetHostName());
-  done.Run(response.Pass());
+  send_message_.Run(response.Pass());
   return true;
 }
 
 bool NativeMessagingHost::ProcessGetPinHash(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response,
-    const SendResponseCallback& done) {
+    scoped_ptr<base::DictionaryValue> response) {
   std::string host_id;
   if (!message.GetString("hostId", &host_id)) {
     LOG(ERROR) << "'hostId' not found: " << message;
@@ -207,25 +205,23 @@ bool NativeMessagingHost::ProcessGetPinHash(
     return false;
   }
   response->SetString("hash", MakeHostPinHash(host_id, pin));
-  done.Run(response.Pass());
+  send_message_.Run(response.Pass());
   return true;
 }
 
 bool NativeMessagingHost::ProcessGenerateKeyPair(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response,
-    const SendResponseCallback& done) {
+    scoped_ptr<base::DictionaryValue> response) {
   scoped_refptr<RsaKeyPair> key_pair = RsaKeyPair::Generate();
   response->SetString("privateKey", key_pair->ToString());
   response->SetString("publicKey", key_pair->GetPublicKey());
-  done.Run(response.Pass());
+  send_message_.Run(response.Pass());
   return true;
 }
 
 bool NativeMessagingHost::ProcessUpdateDaemonConfig(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response,
-    const SendResponseCallback& done) {
+    scoped_ptr<base::DictionaryValue> response) {
   scoped_ptr<base::DictionaryValue> config_dict =
       ConfigDictionaryFromMessage(message);
   if (!config_dict)
@@ -234,49 +230,45 @@ bool NativeMessagingHost::ProcessUpdateDaemonConfig(
   daemon_controller_->UpdateConfig(
       config_dict.Pass(),
       base::Bind(&NativeMessagingHost::SendAsyncResult, weak_ptr_,
-                 done, base::Passed(&response)));
+                 base::Passed(&response)));
   return true;
 }
 
 bool NativeMessagingHost::ProcessGetDaemonConfig(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response,
-    const SendResponseCallback& done) {
+    scoped_ptr<base::DictionaryValue> response) {
   daemon_controller_->GetConfig(
       base::Bind(&NativeMessagingHost::SendConfigResponse, weak_ptr_,
-                 done, base::Passed(&response)));
+                 base::Passed(&response)));
   return true;
 }
 
 bool NativeMessagingHost::ProcessGetPairedClients(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response,
-    const SendResponseCallback& done) {
+    scoped_ptr<base::DictionaryValue> response) {
   if (pairing_registry_) {
     pairing_registry_->GetAllPairings(
         base::Bind(&NativeMessagingHost::SendPairedClientsResponse, weak_ptr_,
-                   done, base::Passed(&response)));
+                   base::Passed(&response)));
   } else {
     scoped_ptr<base::ListValue> no_paired_clients(new base::ListValue);
-    SendPairedClientsResponse(done, response.Pass(), no_paired_clients.Pass());
+    SendPairedClientsResponse(response.Pass(), no_paired_clients.Pass());
   }
   return true;
 }
 
 bool NativeMessagingHost::ProcessGetUsageStatsConsent(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response,
-    const SendResponseCallback& done) {
+    scoped_ptr<base::DictionaryValue> response) {
   daemon_controller_->GetUsageStatsConsent(
       base::Bind(&NativeMessagingHost::SendUsageStatsConsentResponse,
-                 weak_ptr_, done, base::Passed(&response)));
+                 weak_ptr_, base::Passed(&response)));
   return true;
 }
 
 bool NativeMessagingHost::ProcessStartDaemon(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response,
-    const SendResponseCallback& done) {
+    scoped_ptr<base::DictionaryValue> response) {
   bool consent;
   if (!message.GetBoolean("consent", &consent)) {
     LOG(ERROR) << "'consent' not found.";
@@ -291,24 +283,22 @@ bool NativeMessagingHost::ProcessStartDaemon(
   daemon_controller_->SetConfigAndStart(
       config_dict.Pass(), consent,
       base::Bind(&NativeMessagingHost::SendAsyncResult, weak_ptr_,
-                 done, base::Passed(&response)));
+                 base::Passed(&response)));
   return true;
 }
 
 bool NativeMessagingHost::ProcessStopDaemon(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response,
-    const SendResponseCallback& done) {
+    scoped_ptr<base::DictionaryValue> response) {
   daemon_controller_->Stop(
       base::Bind(&NativeMessagingHost::SendAsyncResult, weak_ptr_,
-                 done, base::Passed(&response)));
+                 base::Passed(&response)));
   return true;
 }
 
 bool NativeMessagingHost::ProcessGetDaemonState(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response,
-    const SendResponseCallback& done) {
+    scoped_ptr<base::DictionaryValue> response) {
   DaemonController::State state = daemon_controller_->GetState();
   switch (state) {
     case DaemonController::STATE_NOT_IMPLEMENTED:
@@ -336,24 +326,22 @@ bool NativeMessagingHost::ProcessGetDaemonState(
       response->SetString("state", "UNKNOWN");
       break;
   }
-  done.Run(response.Pass());
+  send_message_.Run(response.Pass());
   return true;
 }
 
 bool NativeMessagingHost::ProcessGetHostClientId(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response,
-    const SendResponseCallback& done) {
+    scoped_ptr<base::DictionaryValue> response) {
   response->SetString("clientId", google_apis::GetOAuth2ClientID(
       google_apis::CLIENT_REMOTING_HOST));
-  done.Run(response.Pass());
+  send_message_.Run(response.Pass());
   return true;
 }
 
 bool NativeMessagingHost::ProcessGetCredentialsFromAuthCode(
     const base::DictionaryValue& message,
-    scoped_ptr<base::DictionaryValue> response,
-    const SendResponseCallback& done) {
+    scoped_ptr<base::DictionaryValue> response) {
   std::string auth_code;
   if (!message.GetString("authorizationCode", &auth_code)) {
     LOG(ERROR) << "'authorizationCode' string not found.";
@@ -369,13 +357,12 @@ bool NativeMessagingHost::ProcessGetCredentialsFromAuthCode(
   oauth_client_->GetCredentialsFromAuthCode(
       oauth_client_info, auth_code, base::Bind(
           &NativeMessagingHost::SendCredentialsResponse, weak_ptr_,
-          done, base::Passed(&response)));
+          base::Passed(&response)));
 
   return true;
 }
 
 void NativeMessagingHost::SendConfigResponse(
-    const SendResponseCallback& done,
     scoped_ptr<base::DictionaryValue> response,
     scoped_ptr<base::DictionaryValue> config) {
   if (config) {
@@ -383,29 +370,26 @@ void NativeMessagingHost::SendConfigResponse(
   } else {
     response->Set("config", Value::CreateNullValue());
   }
-  done.Run(response.Pass());
+  send_message_.Run(response.Pass());
 }
 
 void NativeMessagingHost::SendPairedClientsResponse(
-    const SendResponseCallback& done,
     scoped_ptr<base::DictionaryValue> response,
     scoped_ptr<base::ListValue> pairings) {
   response->Set("pairedClients", pairings.release());
-  done.Run(response.Pass());
+  send_message_.Run(response.Pass());
 }
 
 void NativeMessagingHost::SendUsageStatsConsentResponse(
-    const SendResponseCallback& done,
     scoped_ptr<base::DictionaryValue> response,
     const DaemonController::UsageStatsConsent& consent) {
   response->SetBoolean("supported", consent.supported);
   response->SetBoolean("allowed", consent.allowed);
   response->SetBoolean("setByPolicy", consent.set_by_policy);
-  done.Run(response.Pass());
+  send_message_.Run(response.Pass());
 }
 
 void NativeMessagingHost::SendAsyncResult(
-    const SendResponseCallback& done,
     scoped_ptr<base::DictionaryValue> response,
     DaemonController::AsyncResult result) {
   switch (result) {
@@ -422,24 +406,22 @@ void NativeMessagingHost::SendAsyncResult(
       response->SetString("result", "FAILED_DIRECTORY");
       break;
   }
-  done.Run(response.Pass());
+  send_message_.Run(response.Pass());
 }
 
 void NativeMessagingHost::SendBooleanResult(
-    const SendResponseCallback& done,
     scoped_ptr<base::DictionaryValue> response, bool result) {
   response->SetBoolean("result", result);
-  done.Run(response.Pass());
+  send_message_.Run(response.Pass());
 }
 
 void NativeMessagingHost::SendCredentialsResponse(
-    const SendResponseCallback& done,
     scoped_ptr<base::DictionaryValue> response,
     const std::string& user_email,
     const std::string& refresh_token) {
   response->SetString("userEmail", user_email);
   response->SetString("refreshToken", refresh_token);
-  done.Run(response.Pass());
+  send_message_.Run(response.Pass());
 }
 
 int NativeMessagingHostMain() {

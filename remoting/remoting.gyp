@@ -762,11 +762,39 @@
             'remoting_jingle_glue',
             'remoting_resources',
           ],
+          'defines': [
+            'VERSION=<(version_full)',
+          ],
           'sources': [
             'host/it2me/it2me_host.cc',
             'host/it2me/it2me_host.h',
+            'host/it2me/it2me_native_messaging_host.cc',
+            'host/it2me/it2me_native_messaging_host.h',
           ],
         },  # end of target 'remoting_it2me_host_static'
+        {
+          'target_name': 'remoting_it2me_native_messaging_host',
+          'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            '../base/base.gyp:base',
+            'remoting_base',
+            'remoting_host',
+            'remoting_jingle_glue',
+            'remoting_it2me_host_static',
+            'remoting_native_messaging_base',
+          ],
+          'sources': [
+            'host/it2me/it2me_native_messaging_host_main.cc',
+          ],
+          'conditions': [
+            ['OS=="linux" and linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        },  # end of target 'remoting_it2me_native_messaging_host'
         {
           'target_name': 'remoting_infoplist_strings',
           'type': 'none',
@@ -2807,6 +2835,7 @@
         'remoting_host',
         'remoting_host_event_logger',
         'remoting_host_setup_base',
+        'remoting_it2me_host_static',
         'remoting_jingle_glue',
         'remoting_native_messaging_base',
         'remoting_protocol',
@@ -2870,6 +2899,7 @@
         'host/host_mock_objects.h',
         'host/host_status_monitor_fake.h',
         'host/ipc_desktop_environment_unittest.cc',
+        'host/it2me/it2me_native_messaging_host_unittest.cc',
         'host/json_host_config_unittest.cc',
         'host/linux/x_server_clipboard_unittest.cc',
         'host/local_input_monitor_unittest.cc',
@@ -2994,6 +3024,7 @@
           'dependencies!': [
             'remoting_host',
             'remoting_host_setup_base',
+            'remoting_it2me_host_static',
             'remoting_native_messaging_base',
           ],
           'sources/': [

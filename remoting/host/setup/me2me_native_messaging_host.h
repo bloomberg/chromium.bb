@@ -31,7 +31,7 @@ class PairingRegistry;
 // Implementation of the native messaging host process.
 class NativeMessagingHost : public NativeMessagingChannel::Delegate {
  public:
-  typedef NativeMessagingChannel::SendResponseCallback SendResponseCallback;
+  typedef NativeMessagingChannel::SendMessageCallback SendMessageCallback;
 
   NativeMessagingHost(
       scoped_refptr<DaemonController> daemon_controller,
@@ -40,8 +40,10 @@ class NativeMessagingHost : public NativeMessagingChannel::Delegate {
   virtual ~NativeMessagingHost();
 
   // NativeMessagingChannel::Delegate interface.
-  virtual void ProcessMessage(scoped_ptr<base::DictionaryValue> message,
-                              const SendResponseCallback& done) OVERRIDE;
+  virtual void SetSendMessageCallback(
+      const SendMessageCallback& send_message) OVERRIDE;
+  virtual void ProcessMessage(
+      scoped_ptr<base::DictionaryValue> message) OVERRIDE;
 
  private:
   // These "Process.." methods handle specific request types. The |response|
@@ -49,87 +51,66 @@ class NativeMessagingHost : public NativeMessagingChannel::Delegate {
   // response already known ("id" and "type" fields).
   bool ProcessHello(
       const base::DictionaryValue& message,
-      scoped_ptr<base::DictionaryValue> response,
-      const SendResponseCallback& done);
+      scoped_ptr<base::DictionaryValue> response);
   bool ProcessClearPairedClients(
       const base::DictionaryValue& message,
-      scoped_ptr<base::DictionaryValue> response,
-      const SendResponseCallback& done);
+      scoped_ptr<base::DictionaryValue> response);
   bool ProcessDeletePairedClient(
       const base::DictionaryValue& message,
-      scoped_ptr<base::DictionaryValue> response,
-      const SendResponseCallback& done);
+      scoped_ptr<base::DictionaryValue> response);
   bool ProcessGetHostName(
       const base::DictionaryValue& message,
-      scoped_ptr<base::DictionaryValue> response,
-      const SendResponseCallback& done);
+      scoped_ptr<base::DictionaryValue> response);
   bool ProcessGetPinHash(
       const base::DictionaryValue& message,
-      scoped_ptr<base::DictionaryValue> response,
-      const SendResponseCallback& done);
+      scoped_ptr<base::DictionaryValue> response);
   bool ProcessGenerateKeyPair(
       const base::DictionaryValue& message,
-      scoped_ptr<base::DictionaryValue> response,
-      const SendResponseCallback& done);
+      scoped_ptr<base::DictionaryValue> response);
   bool ProcessUpdateDaemonConfig(
       const base::DictionaryValue& message,
-      scoped_ptr<base::DictionaryValue> response,
-      const SendResponseCallback& done);
+      scoped_ptr<base::DictionaryValue> response);
   bool ProcessGetDaemonConfig(
       const base::DictionaryValue& message,
-      scoped_ptr<base::DictionaryValue> response,
-      const SendResponseCallback& done);
+      scoped_ptr<base::DictionaryValue> response);
   bool ProcessGetPairedClients(
       const base::DictionaryValue& message,
-      scoped_ptr<base::DictionaryValue> response,
-      const SendResponseCallback& done);
+      scoped_ptr<base::DictionaryValue> response);
   bool ProcessGetUsageStatsConsent(
       const base::DictionaryValue& message,
-      scoped_ptr<base::DictionaryValue> response,
-      const SendResponseCallback& done);
+      scoped_ptr<base::DictionaryValue> response);
   bool ProcessStartDaemon(
       const base::DictionaryValue& message,
-      scoped_ptr<base::DictionaryValue> response,
-      const SendResponseCallback& done);
+      scoped_ptr<base::DictionaryValue> response);
   bool ProcessStopDaemon(
       const base::DictionaryValue& message,
-      scoped_ptr<base::DictionaryValue> response,
-      const SendResponseCallback& done);
+      scoped_ptr<base::DictionaryValue> response);
   bool ProcessGetDaemonState(
       const base::DictionaryValue& message,
-      scoped_ptr<base::DictionaryValue> response,
-      const SendResponseCallback& done);
+      scoped_ptr<base::DictionaryValue> response);
   bool ProcessGetHostClientId(
       const base::DictionaryValue& message,
-      scoped_ptr<base::DictionaryValue> response,
-      const SendResponseCallback& done);
+      scoped_ptr<base::DictionaryValue> response);
   bool ProcessGetCredentialsFromAuthCode(
       const base::DictionaryValue& message,
-      scoped_ptr<base::DictionaryValue> response,
-      const SendResponseCallback& done);
+      scoped_ptr<base::DictionaryValue> response);
 
   // These Send... methods get called on the DaemonController's internal thread,
   // or on the calling thread if called by the PairingRegistry.
   // These methods fill in the |response| dictionary from the other parameters,
   // and pass it to SendResponse().
-  void SendConfigResponse(const SendResponseCallback& done,
-                          scoped_ptr<base::DictionaryValue> response,
+  void SendConfigResponse(scoped_ptr<base::DictionaryValue> response,
                           scoped_ptr<base::DictionaryValue> config);
-  void SendPairedClientsResponse(const SendResponseCallback& done,
-                                 scoped_ptr<base::DictionaryValue> response,
+  void SendPairedClientsResponse(scoped_ptr<base::DictionaryValue> response,
                                  scoped_ptr<base::ListValue> pairings);
   void SendUsageStatsConsentResponse(
-      const SendResponseCallback& done,
       scoped_ptr<base::DictionaryValue> response,
       const DaemonController::UsageStatsConsent& consent);
-  void SendAsyncResult(const SendResponseCallback& done,
-                       scoped_ptr<base::DictionaryValue> response,
+  void SendAsyncResult(scoped_ptr<base::DictionaryValue> response,
                        DaemonController::AsyncResult result);
-  void SendBooleanResult(const SendResponseCallback& done,
-                         scoped_ptr<base::DictionaryValue> response,
+  void SendBooleanResult(scoped_ptr<base::DictionaryValue> response,
                          bool result);
-  void SendCredentialsResponse(const SendResponseCallback& done,
-                               scoped_ptr<base::DictionaryValue> response,
+  void SendCredentialsResponse(scoped_ptr<base::DictionaryValue> response,
                                const std::string& user_email,
                                const std::string& refresh_token);
 
@@ -143,6 +124,7 @@ class NativeMessagingHost : public NativeMessagingChannel::Delegate {
 
   base::ThreadChecker thread_checker_;
 
+  SendMessageCallback send_message_;
   base::WeakPtr<NativeMessagingHost> weak_ptr_;
   base::WeakPtrFactory<NativeMessagingHost> weak_factory_;
 

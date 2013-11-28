@@ -34,13 +34,13 @@ const int kMaxLoginAttempts = 5;
 }  // namespace
 
 It2MeHost::It2MeHost(
-    scoped_ptr<ChromotingHostContext> host_context,
-    scoped_refptr<base::SingleThreadTaskRunner> plugin_task_runner,
+    ChromotingHostContext* host_context,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     base::WeakPtr<It2MeHost::Observer> observer,
     const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
     const std::string& directory_bot_jid)
-  : host_context_(host_context.Pass()),
-    plugin_task_runner_(plugin_task_runner),
+  : host_context_(host_context),
+    task_runner_(task_runner),
     observer_(observer),
     xmpp_server_config_(xmpp_server_config),
     directory_bot_jid_(directory_bot_jid),
@@ -48,12 +48,12 @@ It2MeHost::It2MeHost(
     failed_login_attempts_(0),
     nat_traversal_enabled_(false),
     policy_received_(false) {
-  DCHECK(plugin_task_runner_->BelongsToCurrentThread());
+  DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
 void It2MeHost::Connect() {
   if (!host_context_->ui_task_runner()->BelongsToCurrentThread()) {
-    DCHECK(plugin_task_runner_->BelongsToCurrentThread());
+    DCHECK(task_runner_->BelongsToCurrentThread());
     host_context_->ui_task_runner()->PostTask(
         FROM_HERE, base::Bind(&It2MeHost::Connect, this));
     return;
@@ -77,7 +77,7 @@ void It2MeHost::Connect() {
 
 void It2MeHost::Disconnect() {
   if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
-    DCHECK(plugin_task_runner_->BelongsToCurrentThread());
+    DCHECK(task_runner_->BelongsToCurrentThread());
     host_context_->network_task_runner()->PostTask(
         FROM_HERE, base::Bind(&It2MeHost::Disconnect, this));
     return;
@@ -117,7 +117,7 @@ void It2MeHost::Disconnect() {
 
 void It2MeHost::RequestNatPolicy() {
   if (!host_context_->network_task_runner()->BelongsToCurrentThread()) {
-    DCHECK(plugin_task_runner_->BelongsToCurrentThread());
+    DCHECK(task_runner_->BelongsToCurrentThread());
     host_context_->network_task_runner()->PostTask(
         FROM_HERE, base::Bind(&It2MeHost::RequestNatPolicy, this));
     return;
@@ -299,7 +299,7 @@ void It2MeHost::OnClientAuthenticated(const std::string& jid) {
   HOST_LOG << "Client " << client_username << " connected.";
 
   // Pass the client user name to the script object before changing state.
-  plugin_task_runner_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE, base::Bind(&It2MeHost::Observer::OnClientAuthenticated,
                             observer_, client_username));
 
@@ -348,7 +348,7 @@ void It2MeHost::UpdateNatPolicy(bool nat_traversal_enabled) {
   nat_traversal_enabled_ = nat_traversal_enabled;
 
   // Notify the web-app of the policy setting.
-  plugin_task_runner_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE, base::Bind(&It2MeHost::Observer::OnNatPolicyChanged,
                             observer_, nat_traversal_enabled_));
 }
@@ -415,7 +415,7 @@ void It2MeHost::SetState(It2MeHostState state) {
   state_ = state;
 
   // Post a state-change notification to the web-app.
-  plugin_task_runner_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE, base::Bind(&It2MeHost::Observer::OnStateChanged,
                             observer_, state));
 }
@@ -454,11 +454,25 @@ void It2MeHost::OnReceivedSupportID(
   host_->SetAuthenticatorFactory(factory.Pass());
 
   // Pass the Access Code to the script object before changing state.
-  plugin_task_runner_->PostTask(
+  task_runner_->PostTask(
       FROM_HERE, base::Bind(&It2MeHost::Observer::OnStoreAccessCode,
                             observer_, access_code, lifetime));
 
   SetState(kReceivedAccessCode);
+}
+
+It2MeHostFactory::It2MeHostFactory() {}
+
+It2MeHostFactory::~It2MeHostFactory() {}
+
+scoped_refptr<It2MeHost> It2MeHostFactory::CreateIt2MeHost(
+    ChromotingHostContext* context,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    base::WeakPtr<It2MeHost::Observer> observer,
+    const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
+    const std::string& directory_bot_jid) {
+  return new It2MeHost(
+      context, task_runner, observer, xmpp_server_config, directory_bot_jid);
 }
 
 }  // namespace remoting

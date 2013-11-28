@@ -266,6 +266,7 @@ class HostNPScriptObject : public It2MeHost::Observer {
   // It2Me host state.
 
   // Internal implementation of the It2Me host function.
+  scoped_ptr<ChromotingHostContext> host_context_;
   scoped_refptr<It2MeHost> it2me_host_;
 
   // Cached, read-only copies of |it2me_host_| session state.

@@ -381,8 +381,9 @@ void NativeMessagingHostTest::TestBadRequest(const base::Value& message) {
   EXPECT_FALSE(response);
 }
 
+// TODO (weitaosu): crbug.com/323306. Re-enable these tests.
 // Test all valid request-types.
-TEST_F(NativeMessagingHostTest, All) {
+TEST_F(NativeMessagingHostTest, DISABLED_All) {
   int next_id = 0;
   base::DictionaryValue message;
   message.SetInteger("id", next_id++);
@@ -471,7 +472,7 @@ TEST_F(NativeMessagingHostTest, All) {
 }
 
 // Verify that response ID matches request ID.
-TEST_F(NativeMessagingHostTest, Id) {
+TEST_F(NativeMessagingHostTest, DISABLED_Id) {
   base::DictionaryValue message;
   message.SetString("type", "hello");
   WriteMessageToInputPipe(message);
@@ -493,26 +494,26 @@ TEST_F(NativeMessagingHostTest, Id) {
 }
 
 // Verify non-Dictionary requests are rejected.
-TEST_F(NativeMessagingHostTest, WrongFormat) {
+TEST_F(NativeMessagingHostTest, DISABLED_WrongFormat) {
   base::ListValue message;
   TestBadRequest(message);
 }
 
 // Verify requests with no type are rejected.
-TEST_F(NativeMessagingHostTest, MissingType) {
+TEST_F(NativeMessagingHostTest, DISABLED_MissingType) {
   base::DictionaryValue message;
   TestBadRequest(message);
 }
 
 // Verify rejection if type is unrecognized.
-TEST_F(NativeMessagingHostTest, InvalidType) {
+TEST_F(NativeMessagingHostTest, DISABLED_InvalidType) {
   base::DictionaryValue message;
   message.SetString("type", "xxx");
   TestBadRequest(message);
 }
 
 // Verify rejection if getPinHash request has no hostId.
-TEST_F(NativeMessagingHostTest, GetPinHashNoHostId) {
+TEST_F(NativeMessagingHostTest, DISABLED_GetPinHashNoHostId) {
   base::DictionaryValue message;
   message.SetString("type", "getPinHash");
   message.SetString("pin", "1234");
@@ -520,7 +521,7 @@ TEST_F(NativeMessagingHostTest, GetPinHashNoHostId) {
 }
 
 // Verify rejection if getPinHash request has no pin.
-TEST_F(NativeMessagingHostTest, GetPinHashNoPin) {
+TEST_F(NativeMessagingHostTest, DISABLED_GetPinHashNoPin) {
   base::DictionaryValue message;
   message.SetString("type", "getPinHash");
   message.SetString("hostId", "my_host");
@@ -528,7 +529,7 @@ TEST_F(NativeMessagingHostTest, GetPinHashNoPin) {
 }
 
 // Verify rejection if updateDaemonConfig request has invalid config.
-TEST_F(NativeMessagingHostTest, UpdateDaemonConfigInvalidConfig) {
+TEST_F(NativeMessagingHostTest, DISABLED_UpdateDaemonConfigInvalidConfig) {
   base::DictionaryValue message;
   message.SetString("type", "updateDaemonConfig");
   message.SetString("config", "xxx");
@@ -536,7 +537,7 @@ TEST_F(NativeMessagingHostTest, UpdateDaemonConfigInvalidConfig) {
 }
 
 // Verify rejection if startDaemon request has invalid config.
-TEST_F(NativeMessagingHostTest, StartDaemonInvalidConfig) {
+TEST_F(NativeMessagingHostTest, DISABLED_StartDaemonInvalidConfig) {
   base::DictionaryValue message;
   message.SetString("type", "startDaemon");
   message.SetString("config", "xxx");
@@ -545,7 +546,7 @@ TEST_F(NativeMessagingHostTest, StartDaemonInvalidConfig) {
 }
 
 // Verify rejection if startDaemon request has no "consent" parameter.
-TEST_F(NativeMessagingHostTest, StartDaemonNoConsent) {
+TEST_F(NativeMessagingHostTest, DISABLED_StartDaemonNoConsent) {
   base::DictionaryValue message;
   message.SetString("type", "startDaemon");
   message.Set("config", base::DictionaryValue().DeepCopy());

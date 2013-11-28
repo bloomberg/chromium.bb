@@ -55,8 +55,8 @@ class It2MeHost
   };
 
   It2MeHost(
-      scoped_ptr<ChromotingHostContext> context,
-      scoped_refptr<base::SingleThreadTaskRunner> plugin_task_runner,
+      ChromotingHostContext* context,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       base::WeakPtr<It2MeHost::Observer> observer,
       const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
       const std::string& directory_bot_jid);
@@ -64,25 +64,35 @@ class It2MeHost
   // Methods called by the script object, from the plugin thread.
 
   // Creates It2Me host structures and starts the host.
-  void Connect();
+  virtual void Connect();
 
   // Disconnects the host, ready for tear-down.
   // Also called internally, from the network thread.
-  void Disconnect();
+  virtual void Disconnect();
 
+  // TODO (weitaosu): Remove RequestNatPolicy from It2MeHost.
   // Request a NAT policy notification.
-  void RequestNatPolicy();
+  virtual void RequestNatPolicy();
 
   // remoting::HostStatusObserver implementation.
   virtual void OnAccessDenied(const std::string& jid) OVERRIDE;
   virtual void OnClientAuthenticated(const std::string& jid) OVERRIDE;
   virtual void OnClientDisconnected(const std::string& jid) OVERRIDE;
 
- private:
+  void SetStateForTesting(It2MeHostState state) { SetState(state); }
+
+ protected:
   friend class base::RefCountedThreadSafe<It2MeHost>;
 
   virtual ~It2MeHost();
 
+  ChromotingHostContext* host_context() { return host_context_; }
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() {
+    return task_runner_;
+  }
+  base::WeakPtr<It2MeHost::Observer> observer() { return observer_; }
+
+ private:
   // Updates state of the host. Can be called only on the network thread.
   void SetState(It2MeHostState state);
 
@@ -116,8 +126,11 @@ class It2MeHost
   void UpdateHostDomainPolicy(const std::string& host_domain);
 
   // Caller supplied fields.
-  scoped_ptr<ChromotingHostContext> host_context_;
-  scoped_refptr<base::SingleThreadTaskRunner> plugin_task_runner_;
+
+  // The creator of the It2MeHost object owns the the host context and is
+  // responsible for keeping it alive throughout the liftime of the host.
+  ChromotingHostContext* host_context_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtr<It2MeHost::Observer> observer_;
   XmppSignalStrategy::XmppServerConfig xmpp_server_config_;
   std::string directory_bot_jid_;
@@ -154,6 +167,24 @@ class It2MeHost
   base::Closure pending_connect_;
 
   DISALLOW_COPY_AND_ASSIGN(It2MeHost);
+};
+
+// Having a factory interface makes it possible for the test to provide a mock
+// implementation of the It2MeHost.
+class It2MeHostFactory {
+ public:
+  It2MeHostFactory();
+  virtual ~It2MeHostFactory();
+
+  virtual scoped_refptr<It2MeHost> CreateIt2MeHost(
+      ChromotingHostContext* context,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      base::WeakPtr<It2MeHost::Observer> observer,
+      const XmppSignalStrategy::XmppServerConfig& xmpp_server_config,
+      const std::string& directory_bot_jid);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(It2MeHostFactory);
 };
 
 }  // namespace remoting

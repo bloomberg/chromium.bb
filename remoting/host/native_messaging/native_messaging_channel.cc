@@ -7,6 +7,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/values.h"
 
@@ -51,10 +52,10 @@ NativeMessagingChannel::NativeMessagingChannel(
       native_messaging_writer_(new NativeMessagingWriter(
           DuplicatePlatformFile(output))),
       delegate_(delegate.Pass()),
-      pending_requests_(0),
-      shutdown_(false),
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
+  delegate_->SetSendMessageCallback(
+      base::Bind(&NativeMessagingChannel::SendMessage, weak_ptr_));
 }
 
 NativeMessagingChannel::~NativeMessagingChannel() {
@@ -74,56 +75,37 @@ void NativeMessagingChannel::Start(const base::Closure& quit_closure) {
 void NativeMessagingChannel::ProcessMessage(scoped_ptr<base::Value> message) {
   DCHECK(CalledOnValidThread());
 
-  // Don't process any more messages if Shutdown() has been called.
-  if (shutdown_)
-    return;
-
   if (message->GetType() != base::Value::TYPE_DICTIONARY) {
     LOG(ERROR) << "Expected DictionaryValue";
     Shutdown();
     return;
   }
 
-  DCHECK_GE(pending_requests_, 0);
-  pending_requests_++;
-
   scoped_ptr<base::DictionaryValue> message_dict(
       static_cast<base::DictionaryValue*>(message.release()));
-  delegate_->ProcessMessage(
-      message_dict.Pass(),
-      base::Bind(&NativeMessagingChannel::SendResponse, weak_ptr_));
+  delegate_->ProcessMessage(message_dict.Pass());
 }
 
-void NativeMessagingChannel::SendResponse(
-    scoped_ptr<base::DictionaryValue> response) {
+void NativeMessagingChannel::SendMessage(
+    scoped_ptr<base::DictionaryValue> message) {
   DCHECK(CalledOnValidThread());
 
-  bool success = response && native_messaging_writer_;
+  bool success = message && native_messaging_writer_;
   if (success)
-    success = native_messaging_writer_->WriteMessage(*response);
+    success = native_messaging_writer_->WriteMessage(*message);
 
   if (!success) {
     // Close the write pipe so no more responses will be sent.
     native_messaging_writer_.reset();
     Shutdown();
   }
-
-  pending_requests_--;
-  DCHECK_GE(pending_requests_, 0);
-
-  if (shutdown_ && !pending_requests_)
-    quit_closure_.Run();
 }
 
 void NativeMessagingChannel::Shutdown() {
   DCHECK(CalledOnValidThread());
 
-  if (shutdown_)
-    return;
-
-  shutdown_ = true;
-  if (!pending_requests_)
-    quit_closure_.Run();
+  if (!quit_closure_.is_null())
+    base::ResetAndReturn(&quit_closure_).Run();
 }
 
 }  // namespace remoting
