@@ -1209,6 +1209,9 @@ void HTMLMediaElement::textTrackModeChanged(TextTrack* track)
         textTrackAddCues(track, track->cues());
 
     configureTextTrackDisplay(AssumeVisibleChange);
+
+    ASSERT(textTracks()->contains(track));
+    textTracks()->scheduleChangeEvent();
 }
 
 void HTMLMediaElement::textTrackKindChanged(TextTrack* track)

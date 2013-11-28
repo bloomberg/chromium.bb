@@ -1,4 +1,4 @@
 
-FAIL TextTrackList.onremovetrack assert_equals: expected null but got undefined
+PASS TextTrackList.onremovetrack 
 PASS TextTrackList.addEventListener/removeEventListener 
 

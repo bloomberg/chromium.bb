@@ -27,6 +27,7 @@
 #include "core/html/track/TextTrackList.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/events/GenericEventQueue.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/track/InbandTextTrack.h"
@@ -38,14 +39,14 @@ using namespace WebCore;
 
 TextTrackList::TextTrackList(HTMLMediaElement* owner)
     : m_owner(owner)
-    , m_pendingEventTimer(this, &TextTrackList::asyncEventTimerFired)
-    , m_dispatchingEvents(0)
+    , m_asyncEventQueue(GenericEventQueue::create(this))
 {
     ScriptWrappable::init(this);
 }
 
 TextTrackList::~TextTrackList()
 {
+    m_asyncEventQueue->close();
 }
 
 unsigned TextTrackList::length() const
@@ -226,6 +227,8 @@ void TextTrackList::remove(TextTrack* track)
 
     if (inbandTrack)
         inbandTrack->trackRemoved();
+
+    scheduleRemoveTrackEvent(track);
 }
 
 bool TextTrackList::contains(TextTrack* track) const
@@ -255,6 +258,16 @@ ExecutionContext* TextTrackList::executionContext() const
     return m_owner->executionContext();
 }
 
+void TextTrackList::scheduleTrackEvent(const AtomicString& eventName, PassRefPtr<TextTrack> track)
+{
+    TrackEventInit initializer;
+    initializer.track = track;
+    initializer.bubbles = false;
+    initializer.cancelable = false;
+
+    m_asyncEventQueue->enqueueEvent(TrackEvent::create(eventName, initializer));
+}
+
 void TextTrackList::scheduleAddTrackEvent(PassRefPtr<TextTrack> track)
 {
     // 4.8.10.12.3 Sourcing out-of-band text tracks
@@ -263,28 +276,38 @@ void TextTrackList::scheduleAddTrackEvent(PassRefPtr<TextTrack> track)
     // bubble and is not cancelable, and that uses the TrackEvent interface, with
     // the track attribute initialized to the text track's TextTrack object, at
     // the media element's textTracks attribute's TextTrackList object.
+    scheduleTrackEvent(EventTypeNames::addtrack, track);
+}
 
-    RefPtr<TextTrack> trackRef = track;
-    TrackEventInit initializer;
-    initializer.track = trackRef;
+void TextTrackList::scheduleChangeEvent()
+{
+    // 4.8.10.12.1 Text track model
+    // Whenever a text track that is in a media element's list of text tracks
+    // has its text track mode change value, the user agent must run the
+    // following steps for the media element:
+    // ...
+    // Fire a simple event named change at the media element's textTracks
+    // attribute's TextTrackList object.
+
+    EventInit initializer;
     initializer.bubbles = false;
     initializer.cancelable = false;
 
-    m_pendingEvents.append(TrackEvent::create(EventTypeNames::addtrack, initializer));
-    if (!m_pendingEventTimer.isActive())
-        m_pendingEventTimer.startOneShot(0);
+    m_asyncEventQueue->enqueueEvent(Event::create(EventTypeNames::change, initializer));
 }
 
-void TextTrackList::asyncEventTimerFired(Timer<TextTrackList>*)
+void TextTrackList::scheduleRemoveTrackEvent(PassRefPtr<TextTrack> track)
 {
-    Vector<RefPtr<Event> > pendingEvents;
-
-    ++m_dispatchingEvents;
-    m_pendingEvents.swap(pendingEvents);
-    size_t count = pendingEvents.size();
-    for (size_t index = 0; index < count; ++index)
-        dispatchEvent(pendingEvents[index].release(), IGNORE_EXCEPTION);
-    --m_dispatchingEvents;
+    // 4.8.10.12.3 Sourcing out-of-band text tracks
+    // When a track element's parent element changes and the old parent was a
+    // media element, then the user agent must remove the track element's
+    // corresponding text track from the media element's list of text tracks,
+    // and then queue a task to fire a trusted event with the name removetrack,
+    // that does not bubble and is not cancelable, and that uses the TrackEvent
+    // interface, with the track attribute initialized to the text track's
+    // TextTrack object, at the media element's textTracks attribute's
+    // TextTrackList object.
+    scheduleTrackEvent(EventTypeNames::removetrack, track);
 }
 
 Node* TextTrackList::owner() const

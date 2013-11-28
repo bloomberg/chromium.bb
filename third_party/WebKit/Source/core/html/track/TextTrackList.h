@@ -36,6 +36,7 @@
 
 namespace WebCore {
 
+class GenericEventQueue;
 class HTMLMediaElement;
 class TextTrack;
 class TextTrackList;
@@ -64,30 +65,31 @@ public:
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(removetrack);
 
     void clearOwner() { m_owner = 0; }
     Node* owner() const;
 
-    bool isFiringEventListeners() { return m_dispatchingEvents; }
+    void scheduleChangeEvent();
 
 private:
     explicit TextTrackList(HTMLMediaElement*);
 
+    void scheduleTrackEvent(const AtomicString& eventName, PassRefPtr<TextTrack>);
+
     void scheduleAddTrackEvent(PassRefPtr<TextTrack>);
-    void asyncEventTimerFired(Timer<TextTrackList>*);
+    void scheduleRemoveTrackEvent(PassRefPtr<TextTrack>);
 
     void invalidateTrackIndexesAfterTrack(TextTrack*);
 
     HTMLMediaElement* m_owner;
 
-    Vector<RefPtr<Event> > m_pendingEvents;
-    Timer<TextTrackList> m_pendingEventTimer;
+    OwnPtr<GenericEventQueue> m_asyncEventQueue;
 
     Vector<RefPtr<TextTrack> > m_addTrackTracks;
     Vector<RefPtr<TextTrack> > m_elementTracks;
     Vector<RefPtr<TextTrack> > m_inbandTracks;
-
-    int m_dispatchingEvents;
 };
 
 } // namespace WebCore

@@ -32,5 +32,7 @@
     TextTrack getTrackById(DOMString id);
 
     attribute EventHandler onaddtrack;
+    attribute EventHandler onchange;
+    attribute EventHandler onremovetrack;
 };
 
