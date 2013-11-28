@@ -510,7 +510,9 @@ class AndroidCommands(object):
     while retry < 3:
       ret = cmd_helper.RunCmd(['pgrep', 'adb'])
       if ret == 0:
-        # pgrep fonud adb, start-server succeeded.
+        # pgrep found adb, start-server succeeded.
+        # Waiting for device to reconnect before returning success.
+        self._adb.SendCommand('wait-for-device')
         return 0
       retry += 1
       time.sleep(retry)
