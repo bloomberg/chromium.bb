@@ -467,6 +467,7 @@ camera.views.Camera.prototype.onEnter = function() {
   this.performanceMonitor_.start();
   this.tracker_.start();
   this.onResize();
+  document.body.classList.add('camera');
 };
 
 /**
@@ -477,6 +478,7 @@ camera.views.Camera.prototype.onLeave = function() {
   this.scrollTracker_.stop();
   this.performanceMonitor_.stop();
   this.tracker_.stop();
+  document.body.classList.remove('camera');
 };
 
 /**
