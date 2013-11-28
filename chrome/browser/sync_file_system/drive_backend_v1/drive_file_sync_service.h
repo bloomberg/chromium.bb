@@ -16,7 +16,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
+#include "chrome/browser/drive/drive_notification_manager_factory.h"
 #include "chrome/browser/drive/drive_notification_observer.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_resolver.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/api_util_interface.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_metadata_store.h"
@@ -70,6 +74,8 @@ class DriveFileSyncService : public RemoteFileSyncService,
 
   // Creates DriveFileSyncService.
   static scoped_ptr<DriveFileSyncService> Create(Profile* profile);
+  static void AppendDependsOnFactories(
+      std::set<BrowserContextKeyedServiceFactory*>* factories);
 
   // Creates DriveFileSyncService instance for testing.
   // |metadata_store| must be initialized beforehand.

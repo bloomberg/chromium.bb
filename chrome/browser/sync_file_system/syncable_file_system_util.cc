@@ -4,8 +4,11 @@
 
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/location.h"
+#include "base/strings/string_util.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/browser/fileapi/file_observers.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -27,6 +30,10 @@ const char kEnableSyncFSDirectoryOperation[] =
 
 // A command switch to enable V2 Sync FileSystem.
 const char kEnableSyncFileSystemV2[] = "enable-syncfs-v2";
+
+// A command switch to specify comma-separated app IDs to enable V2 Sync
+// FileSystem.
+const char kSyncFileSystemV2Whitelist[] = "syncfs-v2-whitelist";
 
 const char kSyncableMountName[] = "syncfs";
 const char kSyncableMountNameForInternalSync[] = "syncfs-internal";
@@ -127,14 +134,32 @@ bool IsV2Enabled() {
 bool IsV2EnabledForOrigin(const GURL& origin) {
   if (IsV2Enabled())
     return true;
-  // TODO: Support white listing and/or command line parameter.
+
+  // TODO: Support static whitelisting as well.
+
+  CommandLine command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(kSyncFileSystemV2Whitelist)) {
+    std::string app_ids_string =
+        command_line.GetSwitchValueASCII(kSyncFileSystemV2Whitelist);
+    if (app_ids_string.find(origin.host()) == std::string::npos)
+      return false;
+    std::vector<std::string> app_ids;
+    Tokenize(app_ids_string, ",", &app_ids);
+    for (size_t i = 0; i < app_ids.size(); ++i) {
+      if (origin.host() == app_ids[i])
+        return true;
+    }
+  }
+
   return false;
 }
 
 base::FilePath GetSyncFileSystemDir(const base::FilePath& profile_base_dir) {
-  return profile_base_dir.Append(
-      IsSyncFSDirectoryOperationEnabled() ? kSyncFileSystemDirDev
-                                          : kSyncFileSystemDir);
+  if (IsV2Enabled())
+    return profile_base_dir.Append(kSyncFileSystemDir);
+  if (IsSyncFSDirectoryOperationEnabled())
+    return profile_base_dir.Append(kSyncFileSystemDirDev);
+  return profile_base_dir.Append(kSyncFileSystemDir);
 }
 
 ScopedEnableSyncFSDirectoryOperation::ScopedEnableSyncFSDirectoryOperation() {

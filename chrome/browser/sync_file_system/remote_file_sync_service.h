@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_REMOTE_FILE_SYNC_SERVICE_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -15,10 +16,15 @@
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
+class BrowserContextKeyedServiceFactory;
 class GURL;
 
 namespace base {
 class ListValue;
+}
+
+namespace content {
+class BrowserContext;
 }
 
 namespace webkit_blob {
@@ -65,6 +71,11 @@ enum RemoteServiceState {
 // Owned by SyncFileSystemService.
 class RemoteFileSyncService {
  public:
+  enum BackendVersion {
+    V1,
+    V2,
+  };
+
   class Observer {
    public:
     Observer() {}
@@ -106,6 +117,18 @@ class RemoteFileSyncService {
   typedef base::Callback<void(SyncStatusCode status,
                               webkit_blob::ScopedFile downloaded)>
       DownloadVersionCallback;
+
+  // Creates an initialized RemoteFileSyncService for backend |version|
+  // for |context|.
+  static scoped_ptr<RemoteFileSyncService> CreateForBrowserContext(
+      BackendVersion version,
+      content::BrowserContext* context);
+
+  // Returns BrowserContextKeyedServiceFactory's an instance of
+  // RemoteFileSyncService for backend |version| depends on.
+  static void AppendDependsOnFactories(
+      BackendVersion version,
+      std::set<BrowserContextKeyedServiceFactory*>* factories);
 
   RemoteFileSyncService() {}
   virtual ~RemoteFileSyncService() {}

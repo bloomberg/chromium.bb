@@ -45,6 +45,11 @@ class SyncEngine : public RemoteFileSyncService,
  public:
   typedef Observer SyncServiceObserver;
 
+  static scoped_ptr<SyncEngine> CreateForBrowserContext(
+      content::BrowserContext* context);
+  static void AppendDependsOnFactories(
+      std::set<BrowserContextKeyedServiceFactory*>* factories);
+
   SyncEngine(const base::FilePath& base_dir,
              base::SequencedTaskRunner* task_runner,
              scoped_ptr<drive::DriveServiceInterface> drive_service,

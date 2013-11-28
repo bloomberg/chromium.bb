@@ -97,6 +97,14 @@ scoped_ptr<DriveFileSyncService> DriveFileSyncService::Create(
   return service.Pass();
 }
 
+void DriveFileSyncService::AppendDependsOnFactories(
+    std::set<BrowserContextKeyedServiceFactory*>* factories) {
+  DCHECK(factories);
+  factories->insert(drive::DriveNotificationManagerFactory::GetInstance());
+  factories->insert(ProfileOAuth2TokenServiceFactory::GetInstance());
+  factories->insert(extensions::ExtensionSystemFactory::GetInstance());
+}
+
 scoped_ptr<DriveFileSyncService> DriveFileSyncService::CreateForTesting(
     Profile* profile,
     const base::FilePath& base_dir,

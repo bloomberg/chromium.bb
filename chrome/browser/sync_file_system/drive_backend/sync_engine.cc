@@ -5,11 +5,22 @@
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine.h"
 
 #include "base/bind.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
+#include "chrome/browser/drive/drive_api_service.h"
 #include "chrome/browser/drive/drive_notification_manager.h"
+#include "chrome/browser/drive/drive_notification_manager_factory.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/drive/drive_uploader.h"
+#include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/google_apis/drive_api_url_generator.h"
+#include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/list_changes_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/local_to_remote_syncer.h"
@@ -21,6 +32,8 @@
 #include "chrome/browser/sync_file_system/file_status_observer.h"
 #include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/sync_task.h"
+#include "chrome/browser/sync_file_system/syncable_file_system_util.h"
+#include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
 
 namespace sync_file_system {
@@ -31,6 +44,69 @@ namespace {
 void EmptyStatusCallback(SyncStatusCode status) {}
 
 }  // namespace
+
+scoped_ptr<SyncEngine> SyncEngine::CreateForBrowserContext(
+    content::BrowserContext* context) {
+  GURL base_drive_url(
+      google_apis::DriveApiUrlGenerator::kBaseUrlForProduction);
+  GURL base_download_url(
+      google_apis::DriveApiUrlGenerator::kBaseDownloadUrlForProduction);
+  GURL wapi_base_url(
+      google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction);
+
+  scoped_refptr<base::SequencedWorkerPool> worker_pool(
+      content::BrowserThread::GetBlockingPool());
+  scoped_refptr<base::SequencedTaskRunner> drive_task_runner(
+      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          worker_pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(context));
+  scoped_ptr<drive::DriveServiceInterface> drive_service(
+      new drive::DriveAPIService(
+          token_service,
+          context->GetRequestContext(),
+          drive_task_runner.get(),
+          base_drive_url, base_download_url, wapi_base_url,
+          std::string() /* custom_user_agent */));
+  drive_service->Initialize(token_service->GetPrimaryAccountId());
+
+  scoped_ptr<drive::DriveUploaderInterface> drive_uploader(
+      new drive::DriveUploader(drive_service.get(), drive_task_runner.get()));
+
+  drive::DriveNotificationManager* notification_manager =
+      drive::DriveNotificationManagerFactory::GetForBrowserContext(context);
+  ExtensionService* extension_service =
+      extensions::ExtensionSystem::GetForBrowserContext(
+          context)->extension_service();
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner(
+      worker_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          worker_pool->GetSequenceToken(),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+
+  scoped_ptr<drive_backend::SyncEngine> sync_engine(
+      new drive_backend::SyncEngine(
+          GetSyncFileSystemDir(context->GetPath()),
+          task_runner.get(),
+          drive_service.Pass(),
+          drive_uploader.Pass(),
+          notification_manager,
+          extension_service));
+  sync_engine->Initialize();
+
+  return sync_engine.Pass();
+}
+
+void SyncEngine::AppendDependsOnFactories(
+    std::set<BrowserContextKeyedServiceFactory*>* factories) {
+  DCHECK(factories);
+  factories->insert(drive::DriveNotificationManagerFactory::GetInstance());
+  factories->insert(ProfileOAuth2TokenServiceFactory::GetInstance());
+  factories->insert(extensions::ExtensionSystemFactory::GetInstance());
+}
 
 SyncEngine::SyncEngine(
     const base::FilePath& base_dir,

@@ -9,7 +9,7 @@ namespace drive_backend {
 
 const char kSyncRootFolderTitle[] = "Chrome Syncable FileSystem";
 const base::FilePath::CharType kDatabaseName[] =
-    FILE_PATH_LITERAL("DriveMetadata");
+    FILE_PATH_LITERAL("DriveMetadata_v2");
 
 const char kDatabaseVersionKey[] = "VERSION";
 const int64 kCurrentDatabaseVersion = 3;
