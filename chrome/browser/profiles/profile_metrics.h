@@ -67,6 +67,8 @@ class ProfileMetrics {
     NUM_PROFILE_GAIA_METRICS
   };
 
+  static void UpdateReportedProfilesStatistics(ProfileManager* manager);
+
   static void LogNumberOfProfiles(ProfileManager* manager);
   static void LogProfileAddNewUser(ProfileAdd metric);
   static void LogProfileAvatarSelection(size_t icon_index);

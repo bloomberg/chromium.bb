@@ -530,6 +530,8 @@ void ProfileManager::CreateProfileAsync(
       content::RecordAction(
           UserMetricsAction("ManagedMode_LocallyManagedUserCreated"));
     }
+
+    ProfileMetrics::UpdateReportedProfilesStatistics(this);
   }
 
   // Call or enqueue the callback.
@@ -1199,6 +1201,7 @@ void ProfileManager::FinishDeletingProfile(const base::FilePath& profile_dir) {
 
   QueueProfileDirectoryForDeletion(profile_dir);
   cache.DeleteProfileFromCache(profile_dir);
+  ProfileMetrics::UpdateReportedProfilesStatistics(this);
 }
 
 void ProfileManager::AutoloadProfiles() {

@@ -39,6 +39,7 @@ extern const wchar_t kRegPathGoogleUpdate[];
 // (a.k.a. "Version" key).
 extern const wchar_t kRegCommandsKey[];
 
+extern const wchar_t kRegAggregateMethod[];
 extern const wchar_t kRegApField[];
 extern const wchar_t kRegAutoRunOnOSUpgradeField[];
 extern const wchar_t kRegBrandField[];
@@ -67,6 +68,8 @@ extern const wchar_t kRegOemInstallField[];
 extern const wchar_t kRegOldVersionField[];
 extern const wchar_t kRegOopcrashesField[];
 extern const wchar_t kRegPathField[];
+extern const wchar_t kRegProfilesActive[];
+extern const wchar_t kRegProfilesSignedIn[];
 extern const wchar_t kRegRLZBrandField[];
 extern const wchar_t kRegRLZReactivationBrandField[];
 extern const wchar_t kRegReferralField[];

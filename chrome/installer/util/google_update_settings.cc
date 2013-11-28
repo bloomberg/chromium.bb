@@ -5,6 +5,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 
 #include <algorithm>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/path_service.h"
@@ -14,6 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
+#include "base/win/win_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
@@ -49,33 +51,64 @@ bool ReadGoogleUpdateStrKey(const wchar_t* const name, std::wstring* value) {
   return true;
 }
 
+// Update a state registry key |name| to be |value| for the given browser
+// |dist|.  If this is a |system_install|, then update the value under
+// HKLM (istead of HKCU for user-installs) using a group of keys (one
+// for each OS user) and also include the method to |aggregate| these
+// values when reporting.
 bool WriteGoogleUpdateStrKeyInternal(BrowserDistribution* dist,
+                                     bool system_install,
                                      const wchar_t* const name,
-                                     const std::wstring& value) {
+                                     // presubmit: allow wstring
+                                     const std::wstring& value,
+                                     const wchar_t* const aggregate) {
   DCHECK(dist);
-  std::wstring reg_path(dist->GetStateKey());
-  RegKey key(HKEY_CURRENT_USER, reg_path.c_str(), KEY_SET_VALUE);
-  return (key.WriteValue(name, value.c_str()) == ERROR_SUCCESS);
+
+  if (system_install) {
+    DCHECK(aggregate);
+    // Machine installs require each OS user to write a unique key under a
+    // named key in HKLM as well as an "aggregation" function that describes
+    // how the values of multiple users are to be combined.
+    std::wstring uniquename;  // presubmit: allow wstring
+    if (!base::win::GetUserSidString(&uniquename)) {
+      NOTREACHED();
+      return false;
+    }
+
+    // presubmit: allow wstring
+    std::wstring reg_path(dist->GetStateMediumKey());
+    reg_path.append(L"\\");
+    reg_path.append(name);
+    RegKey key(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_SET_VALUE);
+    key.WriteValue(google_update::kRegAggregateMethod, aggregate);
+    return (key.WriteValue(uniquename.c_str(), value.c_str()) == ERROR_SUCCESS);
+  } else {
+    // User installs are easy: just write the values to HKCU tree.
+    RegKey key(HKEY_CURRENT_USER, dist->GetStateKey().c_str(), KEY_SET_VALUE);
+    return (key.WriteValue(name, value.c_str()) == ERROR_SUCCESS);
+  }
 }
 
 bool WriteGoogleUpdateStrKey(const wchar_t* const name,
                              const std::wstring& value) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  return WriteGoogleUpdateStrKeyInternal(dist, name, value);
+  return WriteGoogleUpdateStrKeyInternal(dist, false, name, value, NULL);
 }
 
 bool WriteGoogleUpdateStrKeyMultiInstall(BrowserDistribution* dist,
                                          const wchar_t* const name,
                                          const std::wstring& value,
                                          bool system_level) {
-  bool result = WriteGoogleUpdateStrKeyInternal(dist, name, value);
+  bool result = WriteGoogleUpdateStrKeyInternal(dist, false, name, value, NULL);
   if (!InstallUtil::IsMultiInstall(dist, system_level))
     return result;
   // It is a multi-install distro. Must write the reg value again.
   BrowserDistribution* multi_dist =
       BrowserDistribution::GetSpecificDistribution(
           BrowserDistribution::CHROME_BINARIES);
-  return WriteGoogleUpdateStrKeyInternal(multi_dist, name, value) && result;
+  return
+      WriteGoogleUpdateStrKeyInternal(multi_dist, false, name, value, NULL) &&
+      result;
 }
 
 bool ClearGoogleUpdateStrKey(const wchar_t* const name) {
@@ -452,6 +485,20 @@ bool GoogleUpdateSettings::UpdateGoogleUpdateApKey(
   }
 
   return modified;
+}
+
+void GoogleUpdateSettings::UpdateProfileCounts(int profiles_active,
+                                               int profiles_signedin) {
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  bool system_install = IsSystemInstall();
+  WriteGoogleUpdateStrKeyInternal(dist, system_install,
+                                  google_update::kRegProfilesActive,
+                                  base::Int64ToString16(profiles_active),
+                                  L"sum()");
+  WriteGoogleUpdateStrKeyInternal(dist, system_install,
+                                  google_update::kRegProfilesSignedIn,
+                                  base::Int64ToString16(profiles_signedin),
+                                  L"sum()");
 }
 
 int GoogleUpdateSettings::DuplicateGoogleUpdateSystemClientKey() {

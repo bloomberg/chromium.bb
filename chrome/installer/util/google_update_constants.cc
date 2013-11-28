@@ -24,6 +24,7 @@ const wchar_t kRegPathGoogleUpdate[] = L"Software\\Google\\Update";
 
 const wchar_t kRegCommandsKey[] = L"Commands";
 
+const wchar_t kRegAggregateMethod[] = L"aggregate";
 const wchar_t kRegApField[] = L"ap";
 const wchar_t kRegAutoRunOnOSUpgradeField[] = L"AutoRunOnOSUpgrade";
 const wchar_t kRegBrandField[] = L"brand";
@@ -53,6 +54,8 @@ const wchar_t kRegOemInstallField[] = L"oeminstall";
 const wchar_t kRegOldVersionField[] = L"opv";
 const wchar_t kRegOopcrashesField[] = L"oopcrashes";
 const wchar_t kRegPathField[] = L"path";
+const wchar_t kRegProfilesActive[] = L"_NumAccounts";
+const wchar_t kRegProfilesSignedIn[] = L"_NumSignedIn";
 const wchar_t kRegRLZBrandField[] = L"brand";
 const wchar_t kRegRLZReactivationBrandField[] = L"reactivationbrand";
 const wchar_t kRegReferralField[] = L"referral";

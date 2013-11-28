@@ -12,10 +12,21 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/user_metrics.h"
 
 namespace {
+
+const int kMaximumReportedProfileCount = 5;
+
+struct ProfileCounts {
+  size_t total;
+  size_t signedin;
+  size_t managed;
+
+  ProfileCounts() : total(0), signedin(0), managed(0) {}
+};
 
 ProfileMetrics::ProfileType GetProfileType(
     const base::FilePath& profile_path) {
@@ -31,6 +42,30 @@ ProfileMetrics::ProfileType GetProfileType(
     metric = ProfileMetrics::ORIGINAL;
   }
   return metric;
+}
+
+void UpdateReportedOSProfileStatistics(int active, int signedin) {
+#if defined(OS_WIN)
+  GoogleUpdateSettings::UpdateProfileCounts(active, signedin);
+#endif
+}
+
+bool CountProfileInformation(ProfileManager* manager, ProfileCounts* counts) {
+  const ProfileInfoCache& info_cache = manager->GetProfileInfoCache();
+  size_t number_of_profiles = info_cache.GetNumberOfProfiles();
+  counts->total = number_of_profiles;
+
+  // Ignore other metrics if we have no profiles, e.g. in Chrome Frame tests.
+  if (!number_of_profiles)
+    return false;
+
+  for (size_t i = 0; i < number_of_profiles; ++i) {
+    if (info_cache.ProfileIsManagedAtIndex(i))
+      counts->managed++;
+    if (!info_cache.GetUserNameOfProfileAtIndex(i).empty())
+      counts->signedin++;
+  }
+  return true;
 }
 
 }  // namespace
@@ -67,28 +102,36 @@ enum ProfileAvatar {
   NUM_PROFILE_AVATAR_METRICS
 };
 
+void ProfileMetrics::UpdateReportedProfilesStatistics(ProfileManager* manager) {
+  ProfileCounts counts;
+  if (CountProfileInformation(manager, &counts)) {
+    int limited_total = counts.total;
+    int limited_signedin = counts.signedin;
+    if (limited_total > kMaximumReportedProfileCount) {
+      limited_total = kMaximumReportedProfileCount + 1;
+      limited_signedin =
+          (int)((float)(counts.signedin * limited_total)
+          / counts.total + 0.5);
+    }
+    UpdateReportedOSProfileStatistics(limited_total, limited_signedin);
+  }
+}
+
 void ProfileMetrics::LogNumberOfProfiles(ProfileManager* manager) {
-  const ProfileInfoCache& info_cache = manager->GetProfileInfoCache();
-  size_t number_of_profiles = info_cache.GetNumberOfProfiles();
-  UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfProfiles",
-                            number_of_profiles);
+  ProfileCounts counts;
+  bool success = CountProfileInformation(manager, &counts);
+  UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfProfiles", counts.total);
 
   // Ignore other metrics if we have no profiles, e.g. in Chrome Frame tests.
-  if (number_of_profiles) {
-    size_t number_of_managed_profiles = 0;
-    size_t number_of_signed_in_profiles = 0;
-    for (size_t i = 0; i < number_of_profiles; ++i) {
-      if (info_cache.ProfileIsManagedAtIndex(i))
-        ++number_of_managed_profiles;
-      if (!info_cache.GetUserNameOfProfileAtIndex(i).empty())
-        ++number_of_signed_in_profiles;
-    }
+  if (success) {
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfManagedProfiles",
-                              number_of_managed_profiles);
+                             counts.managed);
     UMA_HISTOGRAM_COUNTS_100("Profile.PercentageOfManagedProfiles",
-        100 * number_of_managed_profiles / number_of_profiles);
+                             100 * counts.managed / counts.total);
     UMA_HISTOGRAM_COUNTS_100("Profile.NumberOfSignedInProfiles",
-                              number_of_signed_in_profiles);
+                             counts.signedin);
+
+    UpdateReportedOSProfileStatistics(counts.total, counts.signedin);
   }
 }
 
