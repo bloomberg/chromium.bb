@@ -58,6 +58,7 @@ public:
     // DOMFileSystemBase overrides.
     virtual void addPendingCallbacks() OVERRIDE;
     virtual void removePendingCallbacks() OVERRIDE;
+    virtual void reportError(PassRefPtr<ErrorCallback>, PassRefPtr<FileError>) OVERRIDE;
 
     void createWriter(const FileEntry*, PassRefPtr<FileWriterCallback>, PassRefPtr<ErrorCallback>);
     void createFile(const FileEntry*, PassRefPtr<FileCallback>, PassRefPtr<ErrorCallback>);

@@ -50,6 +50,7 @@ class EntriesCallback;
 class EntryBase;
 class EntryCallback;
 class ErrorCallback;
+class FileError;
 class MetadataCallback;
 class ExecutionContext;
 class SecurityOrigin;
@@ -70,10 +71,6 @@ public:
     static const char isolatedPathPrefix[];
     static const char externalPathPrefix[];
 
-    static PassRefPtr<DOMFileSystemBase> create(ExecutionContext* context, const String& name, FileSystemType type, const KURL& rootURL)
-    {
-        return adoptRef(new DOMFileSystemBase(context, name, type, rootURL));
-    }
     virtual ~DOMFileSystemBase();
 
     // These are called when a new callback is created and resolved in
@@ -81,6 +78,9 @@ public:
     // callbacks if necessary.
     virtual void addPendingCallbacks() { }
     virtual void removePendingCallbacks() { }
+
+    // Overridden by subclasses to handle sync vs async error-handling.
+    virtual void reportError(PassRefPtr<ErrorCallback>, PassRefPtr<FileError>) = 0;
 
     const String& name() const { return m_name; }
     FileSystemType type() const { return m_type; }
@@ -104,15 +104,14 @@ public:
     static bool pathPrefixToFileSystemType(const String& pathPrefix, FileSystemType&);
 
     // Actual FileSystem API implementations. All the validity checks on virtual paths are done at this level.
-    // They return false for immediate errors that don't involve lower WebFileSystem layer (e.g. for name validation errors). Otherwise they return true (but later may call back with an runtime error).
-    bool getMetadata(const EntryBase*, PassRefPtr<MetadataCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
-    bool move(const EntryBase* source, EntryBase* parent, const String& name, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
-    bool copy(const EntryBase* source, EntryBase* parent, const String& name, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
-    bool remove(const EntryBase*, PassRefPtr<VoidCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
-    bool removeRecursively(const EntryBase*, PassRefPtr<VoidCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
-    bool getParent(const EntryBase*, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>);
-    bool getFile(const EntryBase*, const String& path, const FileSystemFlags&, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
-    bool getDirectory(const EntryBase*, const String& path, const FileSystemFlags&, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
+    void getMetadata(const EntryBase*, PassRefPtr<MetadataCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
+    void move(const EntryBase* source, EntryBase* parent, const String& name, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
+    void copy(const EntryBase* source, EntryBase* parent, const String& name, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
+    void remove(const EntryBase*, PassRefPtr<VoidCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
+    void removeRecursively(const EntryBase*, PassRefPtr<VoidCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
+    void getParent(const EntryBase*, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>);
+    void getFile(const EntryBase*, const String& path, const FileSystemFlags&, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
+    void getDirectory(const EntryBase*, const String& path, const FileSystemFlags&, PassRefPtr<EntryCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
     bool readDirectory(PassRefPtr<DirectoryReaderBase>, const String& path, PassRefPtr<EntriesCallback>, PassRefPtr<ErrorCallback>, SynchronousType = Asynchronous);
 
 protected:

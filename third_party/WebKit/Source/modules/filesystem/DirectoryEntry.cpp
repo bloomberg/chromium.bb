@@ -50,27 +50,21 @@ PassRefPtr<DirectoryReader> DirectoryEntry::createReader()
     return DirectoryReader::create(m_fileSystem, m_fullPath);
 }
 
-void DirectoryEntry::getFile(const String& path, const Dictionary& options, PassRefPtr<EntryCallback> successCallback, PassRefPtr<ErrorCallback> errorCallbackRef)
+void DirectoryEntry::getFile(const String& path, const Dictionary& options, PassRefPtr<EntryCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
 {
     FileSystemFlags flags(options);
-    RefPtr<ErrorCallback> errorCallback(errorCallbackRef);
-    if (!m_fileSystem->getFile(this, path, flags, successCallback, errorCallback))
-        filesystem()->scheduleCallback(errorCallback.release(), FileError::create(FileError::INVALID_MODIFICATION_ERR));
+    m_fileSystem->getFile(this, path, flags, successCallback, errorCallback);
 }
 
-void DirectoryEntry::getDirectory(const String& path, const Dictionary& options, PassRefPtr<EntryCallback> successCallback, PassRefPtr<ErrorCallback> errorCallbackRef)
+void DirectoryEntry::getDirectory(const String& path, const Dictionary& options, PassRefPtr<EntryCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
 {
     FileSystemFlags flags(options);
-    RefPtr<ErrorCallback> errorCallback(errorCallbackRef);
-    if (!m_fileSystem->getDirectory(this, path, flags, successCallback, errorCallback))
-        filesystem()->scheduleCallback(errorCallback.release(), FileError::create(FileError::INVALID_MODIFICATION_ERR));
+    m_fileSystem->getDirectory(this, path, flags, successCallback, errorCallback);
 }
 
-void DirectoryEntry::removeRecursively(PassRefPtr<VoidCallback> successCallback, PassRefPtr<ErrorCallback> errorCallbackRef) const
+void DirectoryEntry::removeRecursively(PassRefPtr<VoidCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback) const
 {
-    RefPtr<ErrorCallback> errorCallback(errorCallbackRef);
-    if (!m_fileSystem->removeRecursively(this, successCallback, errorCallback))
-        filesystem()->scheduleCallback(errorCallback.release(), FileError::create(FileError::INVALID_MODIFICATION_ERR));
+    m_fileSystem->removeRecursively(this, successCallback, errorCallback);
 }
 
 }

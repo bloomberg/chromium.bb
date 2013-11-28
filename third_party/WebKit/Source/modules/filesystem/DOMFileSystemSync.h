@@ -53,6 +53,8 @@ public:
 
     virtual ~DOMFileSystemSync();
 
+    virtual void reportError(PassRefPtr<ErrorCallback>, PassRefPtr<FileError>) OVERRIDE;
+
     PassRefPtr<DirectoryEntrySync> root();
 
     PassRefPtr<File> createFile(const FileEntrySync*, ExceptionState&);

@@ -107,6 +107,11 @@ void DOMFileSystem::removePendingCallbacks()
     unsetPendingActivity(this);
 }
 
+void DOMFileSystem::reportError(PassRefPtr<ErrorCallback> errorCallback, PassRefPtr<FileError> fileError)
+{
+    scheduleCallback(errorCallback, fileError);
+}
+
 namespace {
 
 class ConvertToFileWriterCallback : public FileWriterBaseCallback {

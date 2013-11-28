@@ -65,6 +65,11 @@ DOMFileSystemSync::~DOMFileSystemSync()
 {
 }
 
+void DOMFileSystemSync::reportError(PassRefPtr<ErrorCallback> errorCallback, PassRefPtr<FileError> fileError)
+{
+    errorCallback->handleEvent(fileError.get());
+}
+
 PassRefPtr<DirectoryEntrySync> DOMFileSystemSync::root()
 {
     return DirectoryEntrySync::create(this, DOMFilePath::root);
