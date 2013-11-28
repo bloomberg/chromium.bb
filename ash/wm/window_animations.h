@@ -44,14 +44,6 @@ extern const int kCrossFadeDurationMS;
 ASH_EXPORT void CrossFadeToBounds(aura::Window* window,
                                   const gfx::Rect& new_bounds);
 
-// Cross fades |layer| (which is a clone of |window|s layer before it was
-// resized) to |window|s current bounds. |new_workspace| is the Window of the
-// workspace |window| was added to.
-// This takes ownership of |layer|.
-ASH_EXPORT void CrossFadeWindowBetweenWorkspaces(aura::Window* new_workspace,
-                                                 aura::Window* window,
-                                                 ui::Layer* layer);
-
 // Returns the duration of the cross-fade animation based on the |old_bounds|
 // and |new_bounds| of the window.
 ASH_EXPORT base::TimeDelta GetCrossFadeDuration(const gfx::Rect& old_bounds,

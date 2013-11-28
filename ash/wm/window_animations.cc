@@ -59,9 +59,6 @@ const float kWindowAnimation_ShowOpacity = 1.f;
 // TODO(sky): if we end up sticking with 0, nuke the code doing the rotation.
 const float kWindowAnimation_MinimizeRotate = 0.f;
 
-// Tween type when cross fading a workspace window.
-const gfx::Tween::Type kCrossFadeTweenType = gfx::Tween::EASE_IN_OUT;
-
 // Scales for AshWindow above/below current workspace.
 const float kLayerScaleAboveSize = 1.1f;
 const float kLayerScaleBelowSize = .9f;
@@ -414,20 +411,6 @@ void CrossFadeToBounds(aura::Window* window, const gfx::Rect& new_bounds) {
     old_layer->parent()->StackAbove(new_layer, old_layer);
 
   CrossFadeImpl(window, old_layer, gfx::Tween::EASE_OUT);
-}
-
-void CrossFadeWindowBetweenWorkspaces(aura::Window* new_workspace,
-                                      aura::Window* window,
-                                      ui::Layer* old_layer) {
-  ui::Layer* layer_parent = new_workspace->layer()->parent();
-  layer_parent->Add(old_layer);
-  const bool restoring = old_layer->bounds().width() > window->bounds().width();
-  if (restoring)
-    layer_parent->StackAbove(old_layer, new_workspace->layer());
-  else
-    layer_parent->StackBelow(old_layer, new_workspace->layer());
-
-  CrossFadeImpl(window, old_layer, kCrossFadeTweenType);
 }
 
 base::TimeDelta GetCrossFadeDuration(const gfx::Rect& old_bounds,
