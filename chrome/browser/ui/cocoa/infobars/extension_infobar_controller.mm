@@ -77,7 +77,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
             extension_misc::EXTENSION_ICON_BITTY,
             ExtensionIconSet::MATCH_EXACTLY);
     extensions::ImageLoader* loader = extensions::ImageLoader::Get(
-        delegate_->extension_view_host()->profile());
+        delegate_->extension_view_host()->browser_context());
     loader->LoadImageAsync(extension, icon_resource,
                            gfx::Size(extension_misc::EXTENSION_ICON_BITTY,
                                      extension_misc::EXTENSION_ICON_BITTY),

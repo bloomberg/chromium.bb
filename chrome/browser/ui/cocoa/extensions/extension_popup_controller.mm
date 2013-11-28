@@ -24,6 +24,7 @@
 #include "content/public/browser/notification_source.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
+using content::BrowserContext;
 using content::RenderViewHost;
 
 namespace {
@@ -188,7 +189,7 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
       // opened.
       registrar_->Add(notificationBridge_.get(),
                       chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                      content::Source<Profile>(host->profile()));
+                      content::Source<BrowserContext>(host->browser_context()));
     }
   }
   return self;

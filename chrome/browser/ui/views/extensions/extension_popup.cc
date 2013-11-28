@@ -35,6 +35,7 @@
 #include "ui/views/win/hwnd_util.h"
 #endif
 
+using content::BrowserContext;
 using content::RenderViewHost;
 using content::WebContents;
 
@@ -88,7 +89,7 @@ ExtensionPopup::ExtensionPopup(extensions::ExtensionViewHost* host,
 
   // Listen for the containing view calling window.close();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 content::Source<Profile>(host->profile()));
+                 content::Source<BrowserContext>(host->browser_context()));
   content::DevToolsManager::GetInstance()->AddAgentStateCallback(
       devtools_callback_);
 }

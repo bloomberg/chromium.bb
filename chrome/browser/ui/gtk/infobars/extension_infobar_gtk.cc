@@ -112,7 +112,7 @@ void ExtensionInfoBarGtk::InitWidgets() {
           ExtensionIconSet::MATCH_EXACTLY);
   // Load image asynchronously, calling back OnImageLoaded.
   extensions::ImageLoader* loader =
-      extensions::ImageLoader::Get(extension_view_host->profile());
+      extensions::ImageLoader::Get(extension_view_host->browser_context());
   loader->LoadImageAsync(extension, icon_resource,
                          gfx::Size(extension_misc::EXTENSION_ICON_BITTY,
                                    extension_misc::EXTENSION_ICON_BITTY),

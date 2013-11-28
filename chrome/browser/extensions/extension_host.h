@@ -70,11 +70,7 @@ class ExtensionHost : public content::WebContentsDelegate,
     return document_element_available_;
   }
 
-  Profile* profile() const { return profile_; }
-
-  // Returns the same value as profile() but as a BrowserContext. Implemented
-  // in the .cc file to avoid including profile.h in this header.
-  content::BrowserContext* browser_context();
+  content::BrowserContext* browser_context() { return browser_context_; }
 
   ViewType extension_host_type() const { return extension_host_type_; }
   const GURL& GetURL() const;
@@ -185,8 +181,8 @@ class ExtensionHost : public content::WebContentsDelegate,
   // Id of extension that we're hosting in this view.
   const std::string extension_id_;
 
-  // The profile that this host is tied to.
-  Profile* profile_;
+  // The browser context that this host is tied to.
+  content::BrowserContext* browser_context_;
 
   // Used to create dialog boxes.
   // It must outlive host_contents_ as host_contents_ will access it

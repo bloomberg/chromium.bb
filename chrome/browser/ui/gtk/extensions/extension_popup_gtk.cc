@@ -29,6 +29,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "url/gurl.h"
 
+using content::BrowserContext;
 using content::RenderViewHost;
 
 ExtensionPopupGtk* ExtensionPopupGtk::current_extension_popup_ = NULL;
@@ -61,11 +62,11 @@ ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
     ShowPopup();
   } else {
     registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                   content::Source<Profile>(host->profile()));
+                   content::Source<BrowserContext>(host->browser_context()));
   }
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 content::Source<Profile>(host->profile()));
+                 content::Source<BrowserContext>(host->browser_context()));
   content::DevToolsManager::GetInstance()->AddAgentStateCallback(
       devtools_callback_);
 }

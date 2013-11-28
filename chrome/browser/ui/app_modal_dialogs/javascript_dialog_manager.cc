@@ -11,6 +11,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog_queue.h"
@@ -26,6 +27,7 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using content::BrowserContext;
 using content::JavaScriptDialogManager;
 using content::WebContents;
 
@@ -114,8 +116,10 @@ ChromeJavaScriptDialogManager::~ChromeJavaScriptDialogManager() {
 ChromeJavaScriptDialogManager::ChromeJavaScriptDialogManager(
     extensions::ExtensionHost* extension_host)
     : extension_host_(extension_host) {
-  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
-                 content::Source<Profile>(extension_host_->profile()));
+  registrar_.Add(
+      this,
+      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+      content::Source<BrowserContext>(extension_host_->browser_context()));
 }
 
 // static
@@ -252,9 +256,11 @@ string16 ChromeJavaScriptDialogManager::GetTitle(const GURL& origin_url,
 
   // If the URL is a chrome extension one, return the extension name.
   if (extension_host_) {
-    const extensions::Extension* extension = extension_host_->
-      profile()->GetExtensionService()->extensions()->
-      GetExtensionOrAppByURL(origin_url);
+    ExtensionService* extension_service =
+        extensions::ExtensionSystem::GetForBrowserContext(
+            extension_host_->browser_context())->extension_service();
+    const extensions::Extension* extension =
+        extension_service->extensions()->GetExtensionOrAppByURL(origin_url);
     if (extension) {
       return UTF8ToUTF16(base::StringPiece(extension->name()));
     }

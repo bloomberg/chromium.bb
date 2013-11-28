@@ -152,7 +152,7 @@ void ExtensionInfoBar::ViewHierarchyChanged(
       extensions::IconsInfo::GetIconResource(
           extension, image_size, ExtensionIconSet::MATCH_EXACTLY);
   extensions::ImageLoader* loader =
-      extensions::ImageLoader::Get(extension_view_host->profile());
+      extensions::ImageLoader::Get(extension_view_host->browser_context());
   loader->LoadImageAsync(
       extension,
       icon_resource,

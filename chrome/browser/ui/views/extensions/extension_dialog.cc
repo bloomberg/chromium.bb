@@ -22,6 +22,7 @@
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
+using content::BrowserContext;
 using content::WebContents;
 
 ExtensionDialog::ExtensionDialog(extensions::ExtensionViewHost* host,
@@ -31,13 +32,13 @@ ExtensionDialog::ExtensionDialog(extensions::ExtensionViewHost* host,
   AddRef();  // Balanced in DeleteDelegate();
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_DID_STOP_LOADING,
-                 content::Source<Profile>(host->profile()));
+                 content::Source<BrowserContext>(host->browser_context()));
   // Listen for the containing view calling window.close();
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 content::Source<Profile>(host->profile()));
+                 content::Source<BrowserContext>(host->browser_context()));
   // Listen for a crash or other termination of the extension process.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-                 content::Source<Profile>(host->profile()));
+                 content::Source<BrowserContext>(host->browser_context()));
 }
 
 ExtensionDialog::~ExtensionDialog() {

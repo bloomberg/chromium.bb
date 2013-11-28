@@ -19,6 +19,7 @@ class Profile;
 struct ExtensionHostMsg_Request_Params;
 
 namespace content {
+class BrowserContext;
 class RenderViewHost;
 class WebContents;
 }
@@ -96,7 +97,8 @@ class ExtensionFunctionDispatcher
   // - |delegate| outlives this object.
   // - This object outlives any RenderViewHost's passed to created
   //   ExtensionFunctions.
-  ExtensionFunctionDispatcher(Profile* profile, Delegate* delegate);
+  ExtensionFunctionDispatcher(content::BrowserContext* browser_context,
+                              Delegate* delegate);
 
   ~ExtensionFunctionDispatcher();
 

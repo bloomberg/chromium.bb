@@ -6,15 +6,17 @@
 
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_view_host.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "extensions/common/view_type.h"
 
 namespace extensions {
 
-typedef ExtensionBrowserTest ExtensionHostFactoryTest;
+typedef ExtensionBrowserTest ExtensionViewHostFactoryTest;
 
 // Tests that ExtensionHosts are created with the correct type and profiles.
-IN_PROC_BROWSER_TEST_F(ExtensionHostFactoryTest, CreateExtensionHosts) {
+IN_PROC_BROWSER_TEST_F(ExtensionViewHostFactoryTest, CreateExtensionHosts) {
   // Load a very simple extension with just a background page.
   scoped_refptr<const Extension> extension =
       LoadExtension(test_data_dir_.AppendASCII("api_test")
@@ -22,12 +24,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionHostFactoryTest, CreateExtensionHosts) {
                         .AppendASCII("none"));
   ASSERT_TRUE(extension.get());
 
+  content::BrowserContext* browser_context = browser()->profile();
   {
     // Popup hosts are created with the correct type and profile.
     scoped_ptr<ExtensionViewHost> host(
         ExtensionViewHostFactory::CreatePopupHost(extension->url(), browser()));
     EXPECT_EQ(extension.get(), host->extension());
-    EXPECT_EQ(browser()->profile(), host->profile());
+    EXPECT_EQ(browser_context, host->browser_context());
     EXPECT_EQ(VIEW_TYPE_EXTENSION_POPUP, host->extension_host_type());
     EXPECT_TRUE(host->view());
   }
@@ -38,7 +41,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionHostFactoryTest, CreateExtensionHosts) {
         ExtensionViewHostFactory::CreateInfobarHost(extension->url(),
                                                     browser()));
     EXPECT_EQ(extension.get(), host->extension());
-    EXPECT_EQ(browser()->profile(), host->profile());
+    EXPECT_EQ(browser_context, host->browser_context());
     EXPECT_EQ(VIEW_TYPE_EXTENSION_INFOBAR, host->extension_host_type());
     EXPECT_TRUE(host->view());
   }
@@ -49,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionHostFactoryTest, CreateExtensionHosts) {
         ExtensionViewHostFactory::CreateDialogHost(extension->url(),
                                                    browser()->profile()));
     EXPECT_EQ(extension.get(), host->extension());
-    EXPECT_EQ(browser()->profile(), host->profile());
+    EXPECT_EQ(browser_context, host->browser_context());
     EXPECT_EQ(VIEW_TYPE_EXTENSION_DIALOG, host->extension_host_type());
     EXPECT_TRUE(host->view());
   }
@@ -58,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionHostFactoryTest, CreateExtensionHosts) {
 // Tests that extensions loaded in incognito mode have the correct profiles
 // for split-mode and non-split-mode.
 // Crashing intermittently on multiple platforms. http://crbug.com/316334
-IN_PROC_BROWSER_TEST_F(ExtensionHostFactoryTest,
+IN_PROC_BROWSER_TEST_F(ExtensionViewHostFactoryTest,
                        DISABLED_IncognitoExtensionHosts) {
   // Open an incognito browser.
   Browser* incognito_browser = ui_test_utils::OpenURLOffTheRecord(
@@ -76,7 +79,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionHostFactoryTest,
   scoped_ptr<ExtensionHost> regular_host(
       ExtensionViewHostFactory::CreatePopupHost(
             regular_extension->url(), incognito_browser));
-  EXPECT_EQ(browser()->profile(), regular_host->profile());
+  content::BrowserContext* browser_context = browser()->profile();
+  EXPECT_EQ(browser_context, regular_host->browser_context());
 
   // Load a split-mode incognito extension.
   scoped_refptr<const Extension> split_mode_extension =
@@ -90,7 +94,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionHostFactoryTest,
   scoped_ptr<ExtensionHost> split_mode_host(
       ExtensionViewHostFactory::CreatePopupHost(
           split_mode_extension->url(), incognito_browser));
-  EXPECT_EQ(incognito_browser->profile(), split_mode_host->profile());
+  content::BrowserContext* incognito_context = incognito_browser->profile();
+  EXPECT_EQ(incognito_context, split_mode_host->browser_context());
 }
 
 }  // namespace extensions

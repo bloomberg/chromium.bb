@@ -288,10 +288,11 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
   }
 }
 
-ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(Profile* profile,
-                                                         Delegate* delegate)
-  : profile_(profile),
-    delegate_(delegate) {
+ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
+    content::BrowserContext* browser_context,
+    Delegate* delegate)
+    : profile_(Profile::FromBrowserContext(browser_context)),
+      delegate_(delegate) {
 }
 
 ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {
