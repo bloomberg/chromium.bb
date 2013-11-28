@@ -70,6 +70,8 @@ class SyncFileSystemService
   ConflictResolutionPolicy GetConflictResolutionPolicy() const;
   SyncStatusCode SetConflictResolutionPolicy(ConflictResolutionPolicy policy);
 
+  LocalChangeProcessor* GetLocalChangeProcessor(const GURL& origin);
+
  private:
   class SyncRunner;
 

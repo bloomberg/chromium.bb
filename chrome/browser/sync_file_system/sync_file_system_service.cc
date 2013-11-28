@@ -143,6 +143,16 @@ void DidGetFileSyncStatusForDump(
   callback.Run(files);
 }
 
+// We need this indirection because WeakPtr can only be bound to methods
+// without a return value.
+LocalChangeProcessor* GetLocalChangeProcessorAdapter(
+    base::WeakPtr<SyncFileSystemService> service,
+    const GURL& origin) {
+  if (!service)
+    return NULL;
+  return service->GetLocalChangeProcessor(origin);
+}
+
 }  // namespace
 
 class SyncFileSystemService::SyncRunner {
@@ -393,6 +403,11 @@ SyncStatusCode SyncFileSystemService::SetConflictResolutionPolicy(
   return remote_file_service_->SetConflictResolutionPolicy(policy);
 }
 
+LocalChangeProcessor* SyncFileSystemService::GetLocalChangeProcessor(
+    const GURL& origin) {
+  return remote_file_service_->GetLocalChangeProcessor();
+}
+
 SyncFileSystemService::SyncFileSystemService(Profile* profile)
     : profile_(profile),
       sync_enabled_(true) {
@@ -410,8 +425,8 @@ void SyncFileSystemService::Initialize(
   remote_file_service_ = remote_file_service.Pass();
 
   local_file_service_->AddChangeObserver(this);
-  local_file_service_->SetLocalChangeProcessor(
-      remote_file_service_->GetLocalChangeProcessor());
+  local_file_service_->SetLocalChangeProcessorCallback(
+      base::Bind(&GetLocalChangeProcessorAdapter, AsWeakPtr()));
 
   remote_file_service_->AddServiceObserver(this);
   remote_file_service_->AddFileStatusObserver(this);

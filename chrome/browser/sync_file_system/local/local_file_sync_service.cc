@@ -141,7 +141,6 @@ void LocalFileSyncService::RegisterURLForWaitingSync(
 
 void LocalFileSyncService::ProcessLocalChange(
     const SyncFileCallback& callback) {
-  DCHECK(local_change_processor_);
   // Pick an origin to process next.
   GURL origin;
   if (!origin_change_map_.NextOriginToProcess(&origin)) {
@@ -163,8 +162,13 @@ void LocalFileSyncService::ProcessLocalChange(
 }
 
 void LocalFileSyncService::SetLocalChangeProcessor(
-    LocalChangeProcessor* processor) {
-  local_change_processor_ = processor;
+    LocalChangeProcessor* local_change_processor) {
+  local_change_processor_ = local_change_processor;
+}
+
+void LocalFileSyncService::SetLocalChangeProcessorCallback(
+    const GetLocalChangeProcessorCallback& get_local_change_processor) {
+  get_local_change_processor_ = get_local_change_processor;
 }
 
 void LocalFileSyncService::HasPendingLocalChanges(
@@ -380,7 +384,7 @@ void LocalFileSyncService::DidGetFileForLocalSync(
   DVLOG(1) << "ProcessLocalChange: " << sync_file_info.url.DebugString()
            << " change:" << next_change.DebugString();
 
-  local_change_processor_->ApplyLocalChange(
+  GetLocalChangeProcessor(sync_file_info.url)->ApplyLocalChange(
       next_change,
       sync_file_info.local_file_path,
       sync_file_info.metadata,
@@ -402,7 +406,7 @@ void LocalFileSyncService::ProcessNextChangeForURL(
            << " status:" << status;
 
   if (status == SYNC_STATUS_RETRY) {
-    local_change_processor_->ApplyLocalChange(
+    GetLocalChangeProcessor(sync_file_info.url)->ApplyLocalChange(
         processed_change,
         sync_file_info.local_file_path,
         sync_file_info.metadata,
@@ -430,7 +434,7 @@ void LocalFileSyncService::ProcessNextChangeForURL(
   }
 
   FileChange next_change = changes.front();
-  local_change_processor_->ApplyLocalChange(
+  GetLocalChangeProcessor(url)->ApplyLocalChange(
       changes.front(),
       sync_file_info.local_file_path,
       sync_file_info.metadata,
@@ -438,6 +442,14 @@ void LocalFileSyncService::ProcessNextChangeForURL(
       base::Bind(&LocalFileSyncService::ProcessNextChangeForURL,
                  AsWeakPtr(), base::Passed(&snapshot), sync_file_info,
                  next_change, changes.PopAndGetNewList()));
+}
+
+LocalChangeProcessor* LocalFileSyncService::GetLocalChangeProcessor(
+    const FileSystemURL& url) {
+  if (!get_local_change_processor_.is_null())
+    return get_local_change_processor_.Run(url.origin());
+  DCHECK(local_change_processor_);
+  return local_change_processor_;
 }
 
 }  // namespace sync_file_system
