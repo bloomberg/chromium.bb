@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/version.h"
+#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -116,6 +117,10 @@ bool ChromeExtensionsBrowserClient::DidVersionUpdate(
 
 scoped_ptr<AppSorting> ChromeExtensionsBrowserClient::CreateAppSorting() {
   return scoped_ptr<AppSorting>(new ChromeAppSorting()).Pass();
+}
+
+bool ChromeExtensionsBrowserClient::IsRunningInForcedAppMode() {
+  return chrome::IsRunningInForcedAppMode();
 }
 
 // static

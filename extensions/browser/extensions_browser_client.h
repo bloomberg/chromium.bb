@@ -64,6 +64,9 @@ class ExtensionsBrowserClient {
   // Creates a new AppSorting instance.
   virtual scoped_ptr<AppSorting> CreateAppSorting() = 0;
 
+  // Return true if the system is run in forced app mode.
+  virtual bool IsRunningInForcedAppMode() = 0;
+
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();
 

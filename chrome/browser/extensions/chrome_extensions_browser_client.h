@@ -44,6 +44,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       content::BrowserContext* context) const OVERRIDE;
   virtual bool DidVersionUpdate(content::BrowserContext* context) OVERRIDE;
   virtual scoped_ptr<AppSorting> CreateAppSorting() OVERRIDE;
+  virtual bool IsRunningInForcedAppMode() OVERRIDE;
 
   // Get the LazyInstance for ChromeBrowserClient.
   static ChromeExtensionsBrowserClient* GetInstance();

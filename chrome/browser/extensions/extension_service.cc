@@ -26,7 +26,6 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
@@ -85,6 +84,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/process_manager.h"
@@ -1845,7 +1845,7 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
 
   bool auto_grant_permission =
       (!is_extension_installed && extension->was_installed_by_default()) ||
-      chrome::IsRunningInForcedAppMode();
+      extensions::ExtensionsBrowserClient::Get()->IsRunningInForcedAppMode();
   // Silently grant all active permissions to default apps only on install.
   // After install they should behave like other apps.
   // Silently grant all active permissions to apps install in kiosk mode on both
