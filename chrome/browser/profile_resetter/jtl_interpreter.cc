@@ -9,6 +9,8 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/profile_resetter/jtl_foundation.h"
 #include "crypto/hmac.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -261,6 +263,59 @@ class StoreNodeValue : public Operation {
   DISALLOW_COPY_AND_ASSIGN(StoreNodeValue);
 };
 
+// Stores the effective SLD (second-level domain) of the URL represented by the
+// current node into working memory.
+class StoreNodeEffectiveSLD : public Operation {
+ public:
+  explicit StoreNodeEffectiveSLD(const std::string& hashed_name)
+      : hashed_name_(hashed_name) {
+    DCHECK(IsStringUTF8(hashed_name));
+  }
+  virtual ~StoreNodeEffectiveSLD() {}
+  virtual bool Execute(ExecutionContext* context) OVERRIDE {
+    std::string possibly_invalid_url;
+    std::string effective_sld;
+    if (!context->current_node()->GetAsString(&possibly_invalid_url) ||
+        !GetEffectiveSLD(possibly_invalid_url, &effective_sld))
+      return true;
+    context->working_memory()->Set(
+        hashed_name_, new StringValue(context->GetHash(effective_sld)));
+    return context->ContinueExecution();
+  }
+
+ private:
+  // If |possibly_invalid_url| is a valid URL that has an effective second-level
+  // domain part, outputs that in |effective_sld| and returns true.
+  // Returns false otherwise.
+  static bool GetEffectiveSLD(const std::string& possibly_invalid_url,
+                              std::string* effective_sld) {
+    namespace domains = net::registry_controlled_domains;
+    DCHECK(effective_sld);
+    GURL url(possibly_invalid_url);
+    if (!url.is_valid())
+      return false;
+    std::string sld_and_registry = domains::GetDomainAndRegistry(
+        url.host(), domains::EXCLUDE_PRIVATE_REGISTRIES);
+    size_t registry_length = domains::GetRegistryLength(
+        url.host(),
+        domains::EXCLUDE_UNKNOWN_REGISTRIES,
+        domains::EXCLUDE_PRIVATE_REGISTRIES);
+    // Fail unless (1.) the URL has a host part; and (2.) that host part is a
+    // well-formed domain name that ends in, but is not in itself, as a whole,
+    // a recognized registry identifier that is acknowledged by ICANN.
+    if (registry_length == std::string::npos || registry_length == 0)
+      return false;
+    DCHECK_LT(registry_length, sld_and_registry.size());
+    // Subtract one to cut off the dot separating the SLD and the registry.
+    effective_sld->assign(
+        sld_and_registry, 0, sld_and_registry.size() - registry_length - 1);
+    return true;
+  }
+
+  std::string hashed_name_;
+  DISALLOW_COPY_AND_ASSIGN(StoreNodeEffectiveSLD);
+};
+
 class CompareNodeBool : public Operation {
  public:
   explicit CompareNodeBool(bool value) : value_(value) {}
@@ -452,6 +507,13 @@ class Parser {
           if (!ReadHash(&hashed_name) || !IsStringUTF8(hashed_name))
             return false;
           operators.push_back(new StoreNodeValue<false>(hashed_name));
+          break;
+        }
+        case jtl_foundation::STORE_NODE_EFFECTIVE_SLD_HASH: {
+          std::string hashed_name;
+          if (!ReadHash(&hashed_name) || !IsStringUTF8(hashed_name))
+            return false;
+          operators.push_back(new StoreNodeEffectiveSLD(hashed_name));
           break;
         }
         case jtl_foundation::COMPARE_NODE_BOOL: {

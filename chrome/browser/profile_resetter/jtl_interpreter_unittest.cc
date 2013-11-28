@@ -483,6 +483,52 @@ TEST(JtlInterpreter, CompareNodeToStoredHash) {
   }
 }
 
+TEST(JtlInterpreter, StoreNodeEffectiveSLDHash) {
+  struct TestCase {
+    std::string expected_value;
+    const char* json;
+    bool expected_success;
+  } cases[] = {
+    { GetHash("google"), "{ 'KEY_HASH_1': 'http://google.com/path' }", true },
+    { GetHash("google"), "{ 'KEY_HASH_1': 'http://mail.google.com/' }", true },
+    { GetHash("google"), "{ 'KEY_HASH_1': 'http://google.co.uk/' }", true },
+    { GetHash("google"), "{ 'KEY_HASH_1': 'http://google.com./' }", true },
+    { GetHash("google"), "{ 'KEY_HASH_1': 'http://..google.com/' }", true },
+
+    { std::string(), "{ 'KEY_HASH_1': 'http://google.com../' }", false },
+    { std::string(), "{ 'KEY_HASH_1': 'http://foo.bar/path' }", false },
+    { std::string(), "{ 'KEY_HASH_1': 'http://bar/path' }", false },
+    { std::string(), "{ 'KEY_HASH_1': 'http://co.uk/path' }", false },
+    { std::string(), "{ 'KEY_HASH_1': 'http://127.0.0.1/path' }", false },
+    { std::string(), "{ 'KEY_HASH_1': 'file:///C:/bar.html' }", false },
+
+    { std::string(), "{ 'KEY_HASH_1': 1 }", false },
+    { std::string(), "{ 'KEY_HASH_1': 1.2 }", false },
+    { std::string(), "{ 'KEY_HASH_1': true }", false },
+    { std::string(), "{ 'KEY_HASH_1': [1] }", false },
+    { std::string(), "{ 'KEY_HASH_1': {'a': 'b'} }", false },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    SCOPED_TRACE(testing::Message() << "Iteration " << i);
+    INIT_INTERPRETER(
+        OP_NAVIGATE(KEY_HASH_1) +
+        OP_STORE_NODE_EFFECTIVE_SLD_HASH(VAR_HASH_1) +
+        OP_STORE_BOOL(VAR_HASH_2, VALUE_TRUE),
+        cases[i].json);
+    EXPECT_EQ(JtlInterpreter::OK, interpreter.result());
+    if (cases[i].expected_success) {
+      base::ExpectDictStringValue(
+          cases[i].expected_value, *interpreter.working_memory(), VAR_HASH_1);
+      base::ExpectDictBooleanValue(
+          true, *interpreter.working_memory(), VAR_HASH_2);
+    } else {
+      EXPECT_FALSE(interpreter.working_memory()->HasKey(VAR_HASH_1));
+      EXPECT_FALSE(interpreter.working_memory()->HasKey(VAR_HASH_2));
+    }
+  }
+}
+
 TEST(JtlInterpreter, Stop) {
   INIT_INTERPRETER(
       OP_NAVIGATE(KEY_HASH_1) +

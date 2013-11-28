@@ -106,6 +106,17 @@ enum OpCodes {
   // Parameters:
   // - a 32 byte hash of the parameter name.
   STORE_NODE_HASH = 0x15,
+  // Interprets the value of the current node as a URL, and stores the hash of
+  // its effective SLD (second-level domain) into the working memory. If the
+  // current node is not a string that represents a URL which has an SLD part,
+  // the program execution returns from the current instruction.
+  // Note: Effective SLD means the dot-separated part of the domain that is
+  // immediately below the portion that is controlled by a registrar.
+  // For instance, both "example.com" and "example.co.uk" will yield "example".
+  // See the unit test for more details.
+  // Parameters:
+  // - a 32 byte hash of the parameter name.
+  STORE_NODE_EFFECTIVE_SLD_HASH = 0x16,
   // Compares the current node against a boolean value and continues execution
   // with the next operation in case of a match. If the current node does not
   // match or is not a boolean value, the program execution returns from the
