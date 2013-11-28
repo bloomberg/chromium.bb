@@ -545,8 +545,9 @@ void LoginUtilsImpl::RestoreAuthSession(Profile* user_profile,
 
   if (chrome::IsRunningInForcedAppMode() ||
       CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kOobeSkipPostLogin))
+          chromeos::switches::kOobeSkipPostLogin)) {
     return;
+  }
 
   exit_after_session_restore_ = false;
   // Remove legacy OAuth1 token if we have one. If it's valid, we should already

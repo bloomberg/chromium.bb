@@ -14,6 +14,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_switches.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -30,6 +31,12 @@ OAuth2LoginManager::OAuth2LoginManager(Profile* user_profile)
       state_(SESSION_RESTORE_NOT_STARTED),
       loading_reported_(false) {
   GetTokenService()->AddObserver(this);
+  if (CommandLine::ForCurrentProcess()->
+          HasSwitch(chromeos::switches::kOobeSkipPostLogin)) {
+    // For telemetry we should mark session restore completed to avoid
+    // warnings from MergeSessionThrottle.
+    SetSessionRestoreState(SESSION_RESTORE_DONE);
+  }
 }
 
 OAuth2LoginManager::~OAuth2LoginManager() {
