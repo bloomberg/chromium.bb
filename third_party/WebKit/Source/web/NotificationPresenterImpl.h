@@ -49,9 +49,9 @@ public:
     bool isInitialized();
 
     // WebCore::NotificationPresenter implementation.
-    virtual bool show(WebCore::Notification* object);
-    virtual void cancel(WebCore::Notification* object);
-    virtual void notificationObjectDestroyed(WebCore::Notification* object);
+    virtual bool show(WebCore::NotificationBase*);
+    virtual void cancel(WebCore::NotificationBase*);
+    virtual void notificationObjectDestroyed(WebCore::NotificationBase*);
     virtual void notificationControllerDestroyed();
     virtual WebCore::NotificationClient::Permission checkPermission(WebCore::ExecutionContext*);
 #if ENABLE(LEGACY_NOTIFICATIONS)

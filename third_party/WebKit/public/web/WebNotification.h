@@ -35,7 +35,7 @@
 #include "WebTextDirection.h"
 
 #if BLINK_IMPLEMENTATION
-namespace WebCore { class Notification; }
+namespace WebCore { class NotificationBase; }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
@@ -98,9 +98,9 @@ public:
     BLINK_EXPORT void dispatchClickEvent();
 
 #if BLINK_IMPLEMENTATION
-    WebNotification(const WTF::PassRefPtr<WebCore::Notification>&);
-    WebNotification& operator=(const WTF::PassRefPtr<WebCore::Notification>&);
-    operator WTF::PassRefPtr<WebCore::Notification>() const;
+    WebNotification(const WTF::PassRefPtr<WebCore::NotificationBase>&);
+    WebNotification& operator=(const WTF::PassRefPtr<WebCore::NotificationBase>&);
+    operator WTF::PassRefPtr<WebCore::NotificationBase>() const;
 #endif
 
 private:

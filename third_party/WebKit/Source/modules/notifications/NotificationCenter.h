@@ -39,7 +39,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/html/VoidCallback.h"
-#include "modules/notifications/Notification.h"
+#include "modules/notifications/WebKitNotification.h"
 #include "platform/Supplementable.h"
 #include "platform/Timer.h"
 #include "wtf/OwnPtr.h"
@@ -56,23 +56,19 @@ class NotificationCenter : public RefCounted<NotificationCenter>, public ScriptW
 public:
     static PassRefPtr<NotificationCenter> create(ExecutionContext*, NotificationClient*);
 
-#if ENABLE(LEGACY_NOTIFICATIONS)
-    PassRefPtr<Notification> createNotification(const String& iconURI, const String& title, const String& body, ExceptionState& exceptionState)
+    PassRefPtr<WebKitNotification> createNotification(const String& iconUrl, const String& title, const String& body, ExceptionState& exceptionState)
     {
         if (!client()) {
             exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
             return 0;
         }
-        return Notification::create(title, body, iconURI, executionContext(), exceptionState, this);
+        return WebKitNotification::create(title, body, iconUrl, executionContext(), exceptionState, this);
     }
-#endif
 
     NotificationClient* client() const { return m_client; }
 
-#if ENABLE(LEGACY_NOTIFICATIONS)
     int checkPermission();
     void requestPermission(PassRefPtr<VoidCallback> = 0);
-#endif
 
     virtual void stop() OVERRIDE;
 

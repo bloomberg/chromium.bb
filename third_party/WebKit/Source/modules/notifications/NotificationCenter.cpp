@@ -56,7 +56,6 @@ NotificationCenter::NotificationCenter(ExecutionContext* context, NotificationCl
     ScriptWrappable::init(this);
 }
 
-#if ENABLE(LEGACY_NOTIFICATIONS)
 int NotificationCenter::checkPermission()
 {
     if (!client() || !executionContext())
@@ -93,7 +92,6 @@ void NotificationCenter::requestPermission(PassRefPtr<VoidCallback> callback)
     ASSERT_NOT_REACHED();
     m_client->requestPermission(executionContext(), callback);
 }
-#endif
 
 void NotificationCenter::stop()
 {

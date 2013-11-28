@@ -35,7 +35,7 @@
 #include "WebNotificationPermissionCallback.h"
 #include "WebNotificationPresenter.h"
 #include "core/dom/ExecutionContext.h"
-#include "modules/notifications/Notification.h"
+#include "modules/notifications/NotificationBase.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 using namespace WebCore;
@@ -76,7 +76,7 @@ public:
     virtual void permissionRequestComplete()
     {
         if (m_callback)
-            m_callback->handleEvent(Notification::permissionString(static_cast<NotificationClient::Permission>(m_presenter->checkPermission(WebSecurityOrigin(m_securityOrigin)))));
+            m_callback->handleEvent(NotificationBase::permissionString(static_cast<NotificationClient::Permission>(m_presenter->checkPermission(WebSecurityOrigin(m_securityOrigin)))));
         delete this;
     }
 
@@ -98,19 +98,19 @@ bool NotificationPresenterImpl::isInitialized()
     return !!m_presenter;
 }
 
-bool NotificationPresenterImpl::show(Notification* notification)
+bool NotificationPresenterImpl::show(NotificationBase* notification)
 {
-    return m_presenter->show(PassRefPtr<Notification>(notification));
+    return m_presenter->show(PassRefPtr<NotificationBase>(notification));
 }
 
-void NotificationPresenterImpl::cancel(Notification* notification)
+void NotificationPresenterImpl::cancel(NotificationBase* notification)
 {
-    m_presenter->cancel(PassRefPtr<Notification>(notification));
+    m_presenter->cancel(PassRefPtr<NotificationBase>(notification));
 }
 
-void NotificationPresenterImpl::notificationObjectDestroyed(Notification* notification)
+void NotificationPresenterImpl::notificationObjectDestroyed(NotificationBase* notification)
 {
-    m_presenter->objectDestroyed(PassRefPtr<Notification>(notification));
+    m_presenter->objectDestroyed(PassRefPtr<NotificationBase>(notification));
 }
 
 void NotificationPresenterImpl::notificationControllerDestroyed()

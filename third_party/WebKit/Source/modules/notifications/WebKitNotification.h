@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
- * Copyright (C) 2009, 2011, 2012 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,48 +28,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Notification_h
-#define Notification_h
+#ifndef WebKitNotification_h
+#define WebKitNotification_h
 
+#if ENABLE(LEGACY_NOTIFICATIONS)
+
+#include "core/events/EventTarget.h"
 #include "modules/notifications/NotificationBase.h"
-#include "platform/AsyncMethodRunner.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class Dictionary;
+class ExceptionState;
 class ExecutionContext;
-class NotificationClient;
-class NotificationPermissionCallback;
+class NotificationCenter;
 
-class Notification : public RefCounted<Notification>, public NotificationBase {
-    REFCOUNTED_EVENT_TARGET(Notification);
+// Implementation of the legacy notification API as specified the following page:
+// http://chromium.org/developers/design-documents/desktop-notifications/api-specification
+class WebKitNotification : public RefCounted<WebKitNotification>, public NotificationBase {
+    REFCOUNTED_EVENT_TARGET(WebKitNotification);
 
 public:
-    static PassRefPtr<Notification> create(ExecutionContext*, const String& title, const Dictionary& options);
+    static PassRefPtr<WebKitNotification> create(const String& title, const String& body, const String& iconUrl, ExecutionContext*, ExceptionState&, PassRefPtr<NotificationCenter> provider);
 
-    virtual ~Notification();
+    virtual ~WebKitNotification();
 
-    static const String& permission(ExecutionContext*);
-    static void requestPermission(ExecutionContext*, PassOwnPtr<NotificationPermissionCallback> = nullptr);
+    void cancel() { close(); }
+
+    DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(display, show);
+
+    String replaceId() const { return tag(); }
+    void setReplaceId(const String& replaceId) { setTag(replaceId); }
 
     // EventTarget interface
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
-    // ActiveDOMObject interface
-    virtual void stop() OVERRIDE;
-    virtual bool hasPendingActivity() const OVERRIDE;
-
 private:
-    Notification(ExecutionContext*, const String& title, NotificationClient*);
-
-    void showSoon();
-
-    OwnPtr<AsyncMethodRunner<Notification> > m_asyncRunner;
+    WebKitNotification(const String& title, const String& body, const String& iconUrl, ExecutionContext*, ExceptionState&, PassRefPtr<NotificationCenter> provider);
 };
 
 } // namespace WebCore
 
-#endif // Notifications_h
+#endif // ENABLE(LEGACY_NOTIFICATIONS)
+
+#endif // WebKitNotification_h
