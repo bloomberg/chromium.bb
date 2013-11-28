@@ -156,6 +156,9 @@ private:
 
     explicit WebSocket(ExecutionContext*);
 
+    // Adds a console message with JSMessageSource and ErrorMessageLevel.
+    void logError(const String& message);
+
     // Handle the JavaScript close method call. close() methods on this class
     // are just for determining if the optional code argument is supplied or
     // not.

@@ -234,6 +234,11 @@ WebSocket::~WebSocket()
         m_channel->disconnect();
 }
 
+void WebSocket::logError(const String& message)
+{
+    executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
+}
+
 PassRefPtr<WebSocket> WebSocket::create(ExecutionContext* context, const String& url, ExceptionState& exceptionState)
 {
     Vector<String> protocols;
@@ -356,7 +361,7 @@ void WebSocket::handleSendResult(WebSocketChannel::SendResult result, ExceptionS
         exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("send", "WebSocket", "The message contains invalid characters."));
         return;
     case WebSocketChannel::SendFail:
-        executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "WebSocket send() failed.");
+        logError("WebSocket send() failed.");
         return;
     case WebSocketChannel::SendSuccess:
         return;
@@ -369,7 +374,7 @@ void WebSocket::updateBufferedAmountAfterClose(unsigned long payloadSize)
     m_bufferedAmountAfterClose = saturateAdd(m_bufferedAmountAfterClose, payloadSize);
     m_bufferedAmountAfterClose = saturateAdd(m_bufferedAmountAfterClose, getFramingOverhead(payloadSize));
 
-    executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "WebSocket is already in CLOSING or CLOSED state.");
+    logError("WebSocket is already in CLOSING or CLOSED state.");
 }
 
 void WebSocket::send(const String& message, ExceptionState& exceptionState)
@@ -528,7 +533,7 @@ void WebSocket::setBinaryType(const String& binaryType)
         m_binaryType = BinaryTypeArrayBuffer;
         return;
     }
-    executionContext()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "'" + binaryType + "' is not a valid value for binaryType; binaryType remains unchanged.");
+    logError("'" + binaryType + "' is not a valid value for binaryType; binaryType remains unchanged.");
 }
 
 const AtomicString& WebSocket::interfaceName() const
