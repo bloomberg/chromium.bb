@@ -145,6 +145,10 @@ v8.log
 /media/test/data/security
 /media/yuv_convert_simd_x86.xml
 /metro_driver
+/mojo/hello_world_service.xml
+/mojo/mojo_public_unittests.xml
+/mojo/mojom_test.xml
+/mojo/sample_service.xml
 /native_client
 /net/Debug
 /net/net_unittests_run.xml
