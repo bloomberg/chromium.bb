@@ -93,12 +93,15 @@ inline unsigned CSSSelector::specificityForOneSelector() const
     switch (m_match) {
     case Id:
         return 0x10000;
+    case PseudoClass:
+        if (pseudoType() == PseudoHost)
+            return 0;
+        // fall through.
     case Exact:
     case Class:
     case Set:
     case List:
     case Hyphen:
-    case PseudoClass:
     case PseudoElement:
     case Contain:
     case Begin:

@@ -33,6 +33,12 @@ PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
 PASS backgroundColorOf('host') is "rgba(0, 0, 0, 0)"
 PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
 PASS backgroundColorOf('host') is "rgba(0, 0, 0, 0)"
+Compare :host with :host.
+PASS backgroundColorOf('host') is "rgb(0, 128, 0)"
+PASS backgroundColorOf('host') is "rgb(255, 0, 0)"
+PASS backgroundColorOf('host/target') is "rgb(0, 128, 0)"
+PASS backgroundColorOf('host/target') is "rgb(0, 128, 0)"
+PASS backgroundColorOf('host/target') is "rgb(0, 128, 0)"
 PASS successfullyParsed is true
 
 TEST COMPLETE

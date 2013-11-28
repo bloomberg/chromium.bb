@@ -54,7 +54,9 @@ public:
         BoundaryBehaviorMask = 3, // 2bit for boundary behavior
         ScopeContainsLastMatchedElement = 4,
         ScopeIsShadowHost = 8,
-        TreatShadowHostAsNormalScope = 16
+        TreatShadowHostAsNormalScope = 16,
+
+        ScopeIsShadowHostInPseudoHostParameter = CrossesBoundary | ScopeIsShadowHost | TreatShadowHostAsNormalScope
     };
 
     enum MatchingTagType {
@@ -93,14 +95,20 @@ public:
         BehaviorAtBoundary behaviorAtBoundary;
     };
 
-    template<typename SiblingTraversalStrategy>
-    Match match(const SelectorCheckingContext&, PseudoId&, const SiblingTraversalStrategy&) const;
+    struct MatchResult {
+        MatchResult()
+            : dynamicPseudo(NOPSEUDO)
+            , specificity(0) { }
+
+        PseudoId dynamicPseudo;
+        unsigned specificity;
+    };
 
     template<typename SiblingTraversalStrategy>
-    Match matchForShadowDistributed(const Element*, const SiblingTraversalStrategy&, PseudoId&, SelectorCheckingContext& nextContext) const;
+    Match match(const SelectorCheckingContext&, const SiblingTraversalStrategy&, MatchResult* = 0) const;
 
     template<typename SiblingTraversalStrategy>
-    bool checkOne(const SelectorCheckingContext&, const SiblingTraversalStrategy&) const;
+    bool checkOne(const SelectorCheckingContext&, const SiblingTraversalStrategy&, unsigned* specificity = 0) const;
 
     bool strictParsing() const { return m_strictParsing; }
 
@@ -117,6 +125,13 @@ public:
     static bool isHostInItsShadowTree(const Element&, BehaviorAtBoundary, const ContainerNode* scope);
 
 private:
+    template<typename SiblingTraversalStrategy>
+    Match matchForSubSelector(const SelectorCheckingContext&, const SiblingTraversalStrategy&, MatchResult*) const;
+    template<typename SiblingTraversalStrategy>
+    Match matchForRelation(const SelectorCheckingContext&, const SiblingTraversalStrategy&, MatchResult*) const;
+    template<typename SiblingTraversalStrategy>
+    Match matchForShadowDistributed(const Element*, const SiblingTraversalStrategy&, SelectorCheckingContext& nextContext, MatchResult* = 0) const;
+
     bool checkScrollbarPseudoClass(const SelectorCheckingContext&, Document*, const CSSSelector*) const;
     Element* parentElement(const SelectorCheckingContext&) const;
     bool scopeContainsLastMatchedElement(const SelectorCheckingContext&) const;

@@ -243,5 +243,80 @@ backgroundColorShouldBe('host', 'rgba(0, 0, 0, 0)');
 
 cleanUp();
 
+debug('Compare :host with :host.');
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host(div:host, div#sandbox) { background-color: green; }')),
+            createDOM('style', {},
+                document.createTextNode(':host(body.mytheme) { background-color: red; }')),
+            createDOM('div', {},
+                document.createTextNode('Hello')))));
+
+// :host(div:host, div#sandbox) wins, because div#sandbox > body.mytheme.
+backgroundColorShouldBe('host', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host(div:host, div#nomatch) { background-color: green; }')),
+            createDOM('style', {},
+                document.createTextNode(':host(body.mytheme) { background-color: red; }')),
+            createDOM('div', {},
+                document.createTextNode('Hello')))));
+
+// :host(body.mytheme) wins, because div:host < body.mytheme.
+backgroundColorShouldBe('host', 'rgb(255, 0, 0)');
+
+cleanUp();
+
+// Test for specificiy of ":host(...) > ...".
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host(div:host, div#host:host) > div { background-color: green; }')),
+            createDOM('style', {},
+                document.createTextNode(':host(body.mytheme) > div { background-color: red; }')),
+            createDOM('div', {'id': 'target'},
+                document.createTextNode('Hello')))));
+
+backgroundColorShouldBe('host/target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host', 'class': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host(div:host, div#host.host:host) > div { background-color: green; }')),
+            createDOM('style', {},
+                document.createTextNode(':host(body) > div#target { background-color: red; }')),
+            createDOM('div', {'id': 'target'},
+                document.createTextNode('Hello')))));
+
+backgroundColorShouldBe('host/target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+sandbox.appendChild(
+    createDOM('div', {'id': 'host', 'class': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host(div:host(div:host(div:host(div:host)))) > div { background-color: green; }')),
+            createDOM('style', {},
+                document.createTextNode(':host(div) > div { background-color: red; }')),
+            createDOM('div', {'id': 'target'},
+                document.createTextNode('Hello')))));
+
+backgroundColorShouldBe('host/target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
 </script>
 </body>

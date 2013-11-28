@@ -117,7 +117,8 @@ sandbox.appendChild(
                 createDOM('span', {'id': 'target'},
                     document.createTextNode('red border because of specificity.'))))));
 
-borderColorShouldBe('host/target', 'rgb(255, 0, 0)');
+// Since :host's specificity is the same as *, div ^^ span wins.
+borderColorShouldBe('host/target', 'rgb(0, 128, 0)');
 
 cleanUp();
 

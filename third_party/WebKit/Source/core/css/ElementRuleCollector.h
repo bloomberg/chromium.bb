@@ -50,8 +50,9 @@ const CascadeOrder ignoreCascadeOrder = 0;
 class MatchedRule {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit MatchedRule(const RuleData* ruleData, CascadeScope cascadeScope, CascadeOrder cascadeOrder)
+    explicit MatchedRule(const RuleData* ruleData, unsigned specificity, CascadeScope cascadeScope, CascadeOrder cascadeOrder)
         : m_ruleData(ruleData)
+        , m_specificity(specificity)
         , m_cascadeScope(cascadeScope)
     {
         ASSERT(m_ruleData);
@@ -62,9 +63,11 @@ public:
     const RuleData* ruleData() const { return m_ruleData; }
     uint32_t cascadeScope() const { return m_cascadeScope; }
     uint32_t position() const { return m_position; }
+    unsigned specificity() const { return ruleData()->specificity() + m_specificity; }
 
 private:
     const RuleData* m_ruleData;
+    unsigned m_specificity;
     CascadeScope m_cascadeScope;
     uint32_t m_position;
 };
@@ -111,12 +114,12 @@ private:
     void collectRuleIfMatches(const RuleData&, SelectorChecker::BehaviorAtBoundary, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
     void collectMatchingRulesForList(const Vector<RuleData>*, SelectorChecker::BehaviorAtBoundary, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
     void collectMatchingRulesForList(const RuleData*, SelectorChecker::BehaviorAtBoundary, CascadeScope, CascadeOrder, const MatchRequest&, RuleRange&);
-    bool ruleMatches(const RuleData&, const ContainerNode* scope, PseudoId&, SelectorChecker::BehaviorAtBoundary);
+    bool ruleMatches(const RuleData&, const ContainerNode* scope, SelectorChecker::BehaviorAtBoundary, SelectorChecker::MatchResult*);
 
     void appendCSSOMWrapperForRule(StyleRule*);
 
     void sortMatchedRules();
-    void addMatchedRule(const RuleData*, CascadeScope, CascadeOrder);
+    void addMatchedRule(const RuleData*, unsigned specificity, CascadeScope, CascadeOrder);
 
     StaticCSSRuleList* ensureRuleList();
     StyleRuleList* ensureStyleRuleList();
