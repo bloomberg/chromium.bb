@@ -351,6 +351,9 @@ bool WebMediaPlayerImpl::supportsSave() const {
 void WebMediaPlayerImpl::seek(double seconds) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
+  if (ready_state_ > WebMediaPlayer::ReadyStateHaveMetadata)
+    SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
+
   base::TimeDelta seek_time = ConvertSecondsToTimestamp(seconds);
 
   if (starting_ || seeking_) {
