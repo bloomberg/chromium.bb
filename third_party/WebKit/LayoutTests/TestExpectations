@@ -914,3 +914,6 @@ crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-iframe-exp
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-iframe.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-in-narrow-overflow-scroll-expected.html [ ImageOnlyFailure ]
 crbug.com/322782 virtual/fasttextautosizing/fast/text-autosizing/wide-in-narrow-overflow-scroll.html [ ImageOnlyFailure ]
+
+# Started failing after r162755.
+crbug.com/324177 [ Linux Win ] virtual/softwarecompositing/webgl/webgl-with-accelerated-background-color.html [ ImageOnlyFailure ]
