@@ -598,10 +598,6 @@ void RendererOverridesHandler::ScreenshotCaptured(
                         metadata.viewport_size.height());
     response_metadata->Set(devtools::Page::kParamViewport, viewport);
 
-    // Temporarily duplicate properties to refactor API smoothly.
-    // TODO(dzvorygin): remove after refactor.
-    response->MergeDictionary(response_metadata);
-
     response->Set(devtools::Page::kMetadata, response_metadata);
   }
 
