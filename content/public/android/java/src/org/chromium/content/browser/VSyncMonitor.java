@@ -48,10 +48,15 @@ public class VSyncMonitor {
     private final Choreographer.FrameCallback mVSyncFrameCallback;
 
     // On ICS we just post a task through the handler (http://crbug.com/156397)
-    private final Handler mHandler;
     private final Runnable mVSyncRunnableCallback;
     private long mGoodStartingPointNano;
     private long mLastPostedNano;
+
+    // If the monitor is activated after having been idle, we synthesize the first vsync to reduce
+    // latency.
+    private final Handler mHandler = new Handler();
+    private final Runnable mSyntheticVSyncRunnable;
+    private long mLastVSyncCpuTimeNano;
 
     public VSyncMonitor(Context context, VSyncMonitor.Listener listener) {
         this(context, listener, true);
@@ -71,27 +76,38 @@ public class VSyncMonitor {
             mVSyncFrameCallback = new Choreographer.FrameCallback() {
                 @Override
                 public void doFrame(long frameTimeNanos) {
-                    TraceEvent.instant("VSync");
-                    onVSyncCallback(frameTimeNanos);
+                    TraceEvent.begin("VSync");
+                    mGoodStartingPointNano = frameTimeNanos;
+                    onVSyncCallback(frameTimeNanos, getCurrentNanoTime());
+                    TraceEvent.end("VSync");
                 }
             };
-            mHandler = null;
             mVSyncRunnableCallback = null;
         } else {
             // On ICS we just hope that running tasks is relatively predictable.
             mChoreographer = null;
             mVSyncFrameCallback = null;
-            mHandler = new Handler();
             mVSyncRunnableCallback = new Runnable() {
                 @Override
                 public void run() {
-                    TraceEvent.instant("VSyncTimer");
-                    onVSyncCallback(System.nanoTime());
+                    TraceEvent.begin("VSyncTimer");
+                    final long currentTime = getCurrentNanoTime();
+                    onVSyncCallback(currentTime, currentTime);
+                    TraceEvent.end("VSyncTimer");
                 }
             };
-            mGoodStartingPointNano = getCurrentNanoTime();
             mLastPostedNano = 0;
         }
+        mSyntheticVSyncRunnable = new Runnable() {
+            @Override
+            public void run() {
+                TraceEvent.begin("VSyncSynthetic");
+                final long currentTime = getCurrentNanoTime();
+                onVSyncCallback(estimateLastVSyncTime(currentTime), currentTime);
+                TraceEvent.end("VSyncSynthetic");
+            }
+        };
+        mGoodStartingPointNano = getCurrentNanoTime();
     }
 
     /**
@@ -147,9 +163,10 @@ public class VSyncMonitor {
         return System.nanoTime();
     }
 
-    private void onVSyncCallback(long frameTimeNanos) {
+    private void onVSyncCallback(long frameTimeNanos, long currentTimeNanos) {
         assert mHaveRequestInFlight;
         mHaveRequestInFlight = false;
+        mLastVSyncCpuTimeNano = currentTimeNanos;
         if (mTriggerNextVSyncCount >= 0) {
             mTriggerNextVSyncCount--;
             postCallback();
@@ -162,6 +179,7 @@ public class VSyncMonitor {
     private void postCallback() {
         if (mHaveRequestInFlight) return;
         mHaveRequestInFlight = true;
+        if (postSyntheticVSync()) return;
         if (isVSyncSignalAvailable()) {
             mChoreographer.postFrameCallback(mVSyncFrameCallback);
         } else {
@@ -169,11 +187,26 @@ public class VSyncMonitor {
         }
     }
 
+    private boolean postSyntheticVSync() {
+        final long currentTime = getCurrentNanoTime();
+        // Only trigger a synthetic vsync if we've been idle for long enough and the upcoming real
+        // vsync is more than half a frame away.
+        if (currentTime - mLastVSyncCpuTimeNano < 2 * mRefreshPeriodNano) return false;
+        if (currentTime - estimateLastVSyncTime(currentTime) > mRefreshPeriodNano / 2) return false;
+        mHandler.post(mSyntheticVSyncRunnable);
+        return true;
+    }
+
+    private long estimateLastVSyncTime(long currentTime) {
+        final long lastRefreshTime = mGoodStartingPointNano +
+                ((currentTime - mGoodStartingPointNano) / mRefreshPeriodNano) * mRefreshPeriodNano;
+        return lastRefreshTime;
+    }
+
     private void postRunnableCallback() {
         assert !isVSyncSignalAvailable();
         final long currentTime = getCurrentNanoTime();
-        final long lastRefreshTime = mGoodStartingPointNano +
-                ((currentTime - mGoodStartingPointNano) / mRefreshPeriodNano) * mRefreshPeriodNano;
+        final long lastRefreshTime = estimateLastVSyncTime(currentTime);
         long delay = (lastRefreshTime + mRefreshPeriodNano) - currentTime;
         assert delay >= 0 && delay < mRefreshPeriodNano;
 

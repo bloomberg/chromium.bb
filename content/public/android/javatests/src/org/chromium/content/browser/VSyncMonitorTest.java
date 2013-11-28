@@ -16,6 +16,7 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
     private static class VSyncDataCollector implements VSyncMonitor.Listener {
         public long mFramePeriods[];
         public int mFrameCount;
+        public long mLastVSyncCpuTimeMillis;
 
         private final boolean mActivelyRequestUpdate;
         private boolean mDone;
@@ -35,6 +36,7 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
 
         @Override
         public void onVSync(VSyncMonitor monitor, long vsyncTimeMicros) {
+            mLastVSyncCpuTimeMillis = System.currentTimeMillis();
             if (mPreviousVSyncTimeMicros == 0) {
                 mPreviousVSyncTimeMicros = vsyncTimeMicros;
                 return;
@@ -117,5 +119,32 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
     @MediumTest
     public void testVSyncPeriodDisallowJBVSync() throws InterruptedException {
         performVSyncPeriodTest(false);
+    }
+
+    // Check that the vsync period roughly matches the timestamps that the monitor generates.
+    private void performVSyncActivationFromIdle(boolean enableJBVSync) throws InterruptedException {
+        VSyncDataCollector collector = new VSyncDataCollector(1, false);
+        VSyncMonitor monitor = createVSyncMonitor(collector, enableJBVSync);
+
+        monitor.requestUpdate();
+        collector.waitTillDone();
+        assertTrue(collector.isDone());
+        monitor.stop();
+
+        long period = monitor.getVSyncPeriodInMicroseconds() / 1000;
+        long delay = System.currentTimeMillis() - collector.mLastVSyncCpuTimeMillis;
+
+        // The VSync should have activated immediately instead of at the next real vsync.
+        assertTrue(delay < period);
+    }
+
+    @MediumTest
+    public void testVSyncActivationFromIdleAllowJBVSync() throws InterruptedException {
+        performVSyncActivationFromIdle(true);
+    }
+
+    @MediumTest
+    public void testVSyncActivationFromIdleDisallowJBVSync() throws InterruptedException {
+        performVSyncActivationFromIdle(false);
     }
 }
