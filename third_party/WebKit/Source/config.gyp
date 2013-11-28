@@ -93,10 +93,7 @@
           'cflags': ['-Wno-uninitialized'],
         }],
         ['clang==1', {
-          'cflags': [
-            '-Wglobal-constructors',
-            '-Wdeprecated-declarations',
-          ],
+          'cflags': ['-Wglobal-constructors'],
           'xcode_settings': {
             'WARNING_CFLAGS': ['-Wglobal-constructors'],
           },
