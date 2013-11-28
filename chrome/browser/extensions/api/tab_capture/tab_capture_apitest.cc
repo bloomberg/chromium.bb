@@ -110,12 +110,6 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_EndToEnd) {
     return;
   }
 #endif
-#if defined(OS_MACOSX)
-  // TODO(miu): Disabled for Mac OS X 10.6 due to timeout issues.
-  // http://crbug.com/174640
-  if (base::mac::IsOSSnowLeopard())
-    return;
-#endif
 
   AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture/experimental",
