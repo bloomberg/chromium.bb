@@ -17,7 +17,7 @@ display: block;
 After disable
 [expanded] 
 element.style  { ()
-/-- overloaded --/ /-- disabled --/ margin: 10px;
+/-- overloaded --/ /-- disabled --/ /* margin: 10px; */
 
 [expanded] 
 #container  { (user stylesheet)

@@ -9,7 +9,7 @@ font-weight: bold;
 After disable
 [expanded] 
 element.style  { ()
-/-- overloaded --/ /-- disabled --/ font-weight: bold;
+/-- overloaded --/ /-- disabled --/ /* font-weight: bold; */
 
 
 After delete

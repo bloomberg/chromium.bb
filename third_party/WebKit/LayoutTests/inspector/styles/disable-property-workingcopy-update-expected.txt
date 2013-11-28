@@ -25,7 +25,7 @@ element.style  { ()
 
 [expanded] 
 #inspected  { (disable-propert…y-update.css:1 -> disable-property-workingcopy-update.css:1:1)
-/-- overloaded --/ /-- disabled --/ font-weight: bold;
+/-- overloaded --/ /-- disabled --/ /* font-weight: bold; */
 
 [expanded] 
 div  { (user agent stylesheet)
