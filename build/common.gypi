@@ -1387,10 +1387,6 @@
         # Location of the "readelf" binary.
         'android_readelf%' : '<!(/bin/echo -n <(android_toolchain)/*-readelf)',
 
-        # Provides an absolute path to PRODUCT_DIR (e.g. out/Release). Used
-        # to specify the output directory for Ant in the Android build.
-        'ant_build_out': '`cd <(PRODUCT_DIR) && pwd -P`',
-
         # Determines whether we should optimize JNI generation at the cost of
         # breaking assumptions in the build system that when inputs have changed
         # the outputs should always change as well.  This is meant purely for

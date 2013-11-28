@@ -790,7 +790,7 @@
             'resource_dir': 'shell/android/shell_apk/res',
             'native_lib_target': 'libcontent_shell_content_view',
             'additional_input_paths': ['<(PRODUCT_DIR)/content_shell/assets/content_shell.pak'],
-            'asset_location': '<(ant_build_out)/content_shell/assets',
+            'asset_location': '<(PRODUCT_DIR)/content_shell/assets',
           },
           'conditions': [
             ['android_webview_build==0', {
