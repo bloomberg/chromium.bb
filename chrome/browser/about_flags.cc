@@ -1249,11 +1249,11 @@ const Experiment kExperiments[] = {
                               autofill::switches::kDisablePasswordGeneration)
   },
   {
-    "enable-password-manager-reauthentication",
+    "password-manager-reauthentication",
     IDS_FLAGS_PASSWORD_MANAGER_REAUTHENTICATION_NAME,
     IDS_FLAGS_PASSWORD_MANAGER_REAUTHENTICATION_DESCRIPTION,
     kOsMac,
-    SINGLE_VALUE_TYPE(switches::kEnablePasswordManagerReauthentication)
+    SINGLE_VALUE_TYPE(switches::kDisablePasswordManagerReauthentication)
   },
   {
     "password-autofill-public-suffix-domain-matching",

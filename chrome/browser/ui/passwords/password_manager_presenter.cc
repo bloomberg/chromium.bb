@@ -24,8 +24,8 @@ PasswordManagerPresenter::PasswordManagerPresenter(
       exception_populater_(this),
       password_view_(password_view) {
   DCHECK(password_view_);
-  require_reauthentication_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePasswordManagerReauthentication);
+  require_reauthentication_ = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisablePasswordManagerReauthentication);
 }
 
 PasswordManagerPresenter::~PasswordManagerPresenter() {

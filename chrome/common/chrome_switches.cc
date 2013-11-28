@@ -387,6 +387,11 @@ const char kDisableOmniboxAutoCompletionForIme[] =
 const char kDisablePasswordAutofillPublicSuffixDomainMatching[] =
     "disable-password-autofill-public-suffix-domain-matching";
 
+// Disable the setting to prompt the user for their OS account password before
+// revealing plaintext passwords in the password manager.
+const char kDisablePasswordManagerReauthentication[] =
+    "disable-password-manager-reauthentication";
+
 // Disable pop-up blocking.
 const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 
@@ -559,11 +564,6 @@ const char kEnableAuthNegotiatePort[]       = "enable-auth-negotiate-port";
 // Enable using a public suffix based domain matching for autofill of passwords.
 const char kEnablePasswordAutofillPublicSuffixDomainMatching[] =
     "enable-password-autofill-public-suffix-domain-matching";
-
-// Enable the setting to prompt the user for their OS account password before
-// revealing plaintext passwords in the password manager.
-const char kEnablePasswordManagerReauthentication[] =
-    "enable-password-manager-reauthentication";
 
 // Enables the pre- and auto-login features. When a user signs in to sync, the
 // browser's cookie jar is pre-filled with GAIA cookies. When the user visits a

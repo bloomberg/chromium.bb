@@ -194,7 +194,7 @@ extern const char kEnableNpnHttpOnly[];
 extern const char kEnableOmniboxAutoCompletionForIme[];
 extern const char kEnablePanels[];
 extern const char kEnablePasswordAutofillPublicSuffixDomainMatching[];
-extern const char kEnablePasswordManagerReauthentication[];
+extern const char kDisablePasswordManagerReauthentication[];
 extern const char kEnableQueryExtraction[];
 extern const char kDisablePeopleSearch[];
 extern const char kEnablePrecache[];
