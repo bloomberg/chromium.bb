@@ -5001,7 +5001,7 @@ END
         $code .= <<END;
     if (wrapper.IsEmpty())
         return wrapper;
-    if (!isolatedWorldForEnteredContext()) {
+    if (!isolatedWorldForEnteredContext(isolate)) {
         if (Frame* frame = impl->frame())
             frame->script().windowShell(mainThreadNormalWorld())->updateDocumentWrapper(wrapper);
     }

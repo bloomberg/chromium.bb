@@ -58,7 +58,7 @@ void V8XMLHttpRequest::constructorCustom(const v8::FunctionCallbackInfo<v8::Valu
 
     RefPtr<SecurityOrigin> securityOrigin;
     if (context->isDocument()) {
-        if (DOMWrapperWorld* world = isolatedWorldForEnteredContext())
+        if (DOMWrapperWorld* world = isolatedWorldForEnteredContext(info.GetIsolate()))
             securityOrigin = world->isolatedWorldSecurityOrigin();
     }
 
