@@ -13,7 +13,7 @@
 
 namespace content {
 
-class VideoCaptureDeviceImpl;
+class RenderWidgetHost;
 
 // A virtualized VideoCaptureDevice that mirrors the displayed contents of a
 // tab (accessed via its associated WebContents instance), producing a stream of
@@ -47,9 +47,11 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   virtual void StopAndDeAllocate() OVERRIDE;
 
  private:
+  class Impl;
+
   WebContentsVideoCaptureDevice(int render_process_id, int render_view_id);
 
-  const scoped_ptr<VideoCaptureDeviceImpl> impl_;
+  const scoped_ptr<Impl> impl_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsVideoCaptureDevice);
 };
