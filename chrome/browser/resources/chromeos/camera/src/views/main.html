@@ -40,34 +40,37 @@
     <script src="../js/main.js"></script>
   </head>
   <body class="controls-visible initializing">
-   <div id="main-canvas-wrapper"></div>
-    <div id="main-fast-canvas-wrapper"></div>
-      <div id="toolbar-puller-wrapper">
-        <div id="toolbar" class="dynamic">
-          <div id="toolbar-background"></div>
-          <div id="toolbar-stripe">
-            <div class="buttons opposite-side">
-              <button id="filters-toggle" tabindex="0"
-                      i18n-label="filtersButton"></button>
+    <div id="camera">
+      <div id="main-canvas-wrapper"></div>
+      <div id="main-fast-canvas-wrapper"></div>
+        <div id="toolbar-puller-wrapper">
+          <div id="toolbar" class="dynamic">
+            <div id="toolbar-background"></div>
+            <div id="toolbar-stripe">
+              <div class="buttons opposite-side">
+                <button id="filters-toggle" tabindex="0"
+                        i18n-label="filtersButton"></button>
+              </div>
+              <div id="buttons">
+                <button id="take-picture" tabindex="0"
+                        i18n-label="takePictureButton"></button>
+              </div>
+              <div class="buttons">
+                <button id="album-enter" tabindex="0"
+                        i18n-label="galleryButton"></button>
+              </div>
             </div>
-            <div id="buttons">
-              <button id="take-picture" tabindex="0"
-                      i18n-label="takePictureButton"></button>
-            </div>
-            <div class="buttons">
-              <button id="album-enter" tabindex="0"
-                      i18n-label="galleryButton"></button>
-            </div>
-          </div>
-          <div id="effects-wrapper" aria-role="listbox" tabindex="0">
-            <div id="effects">
-              <ul class="padder"></ul>
+            <div id="effects-wrapper" aria-role="listbox" tabindex="0">
+              <div id="effects">
+                <ul class="padder"></ul>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    <div id="picture-preview">
+      <div id="picture-preview">
+      </div>
+     </div>
     </div>
     <div id="header">
       <div class="buttons dynamic">

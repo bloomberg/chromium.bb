@@ -3,16 +3,13 @@ html {
 }
 
 body {
-  -webkit-box-align: center;
   background: black;
   bottom: 0;
-  display: -webkit-box;
   height: 100%;
   left: 0;
   margin: 0;
   overflow: hidden;
   position: absolute;
-  right: 0;
   top: 0;
   width: 100%;
 }
@@ -263,6 +260,7 @@ body.browser #toolbar {
   position: absolute;
   right: 0;
   top: 0;
+  z-index: 2;
 }
 
 #error .icon {
@@ -454,6 +452,7 @@ body:not(.has-error) #toolbar.expanded {
   right: 0;
   top: 0;
   transition: opacity 50ms linear;
+  z-index: 2;
 }
 
 body.show-shutter #shutter {
@@ -467,15 +466,11 @@ body.show-shutter #shutter {
   position: absolute;
   right: 25%;
   top: 25%;
+  z-index: 2;
 }
 
 #picture-preview img {
   pointer-events: auto;
-}
-
-body.album #picture-preview,
-body.browser #picture-preview {
-  display: none;
 }
 
 #picture-preview img {
@@ -489,6 +484,7 @@ body.browser #picture-preview {
   width: 100%;
 }
 
+#camera,
 #album,
 #browser {
   bottom: 0;
@@ -502,6 +498,12 @@ body.browser #picture-preview {
   transition: opacity 200ms, visibility 0 200ms;
   visibility: hidden;
   z-index: 1;  /* Hack to enable touch scrolling in album. */
+}
+
+#camera {
+  -webkit-box-align: center;
+  display: -webkit-box;
+  overflow: hidden;
 }
 
 #album .buttons,
@@ -537,6 +539,7 @@ body.browser #picture-preview {
   visibility: hidden;
 }
 
+body.camera #camera,
 body.browser #browser,
 body.album #album {
   opacity: 1;
