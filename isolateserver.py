@@ -1515,8 +1515,8 @@ def load_isolated(content, os_flavor, algo):
             if not is_valid_hash(subsubvalue, algo):
               raise ConfigError('Expected sha-1, got %r' % subsubvalue)
           elif subsubkey == 's':
-            if not isinstance(subsubvalue, int):
-              raise ConfigError('Expected int, got %r' % subsubvalue)
+            if not isinstance(subsubvalue, (int, long)):
+              raise ConfigError('Expected int or long, got %r' % subsubvalue)
           else:
             raise ConfigError('Unknown subsubkey %s' % subsubkey)
         if bool('h' in subvalue) == bool('l' in subvalue):

@@ -690,7 +690,7 @@ class IsolateServerDownloadTest(TestCase):
         % os.path.join(self.tempdir, 'a'))
     self.checkOutput(expected_stdout, '')
 
-class TestIsolated(unittest.TestCase):
+class TestIsolated(auto_stub.TestCase):
   def test_load_isolated_empty(self):
     m = isolateserver.load_isolated('{}', None, ALGO)
     self.assertEqual({}, m)
@@ -767,6 +767,23 @@ class TestIsolated(unittest.TestCase):
     actual = isolateserver.load_isolated(json.dumps(data), None, ALGO)
     expected = gen_data(os.path.sep)
     self.assertEqual(expected, actual)
+
+  def test_save_isolated_good_long_size(self):
+    calls = []
+    self.mock(isolateserver.tools, 'write_json', lambda *x: calls.append(x))
+    data = {
+      u'algo': 'sha-1',
+      u'files': {
+        u'b': {
+          u'm': 123,
+          u'h': u'0123456789abcdef0123456789abcdef01234567',
+          u's': 2181582786L,
+        }
+      },
+    }
+    m = isolateserver.save_isolated('foo', data)
+    self.assertEqual([], m)
+    self.assertEqual([('foo', data, True)], calls)
 
 
 class SymlinkTest(unittest.TestCase):
