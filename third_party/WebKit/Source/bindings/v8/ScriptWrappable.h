@@ -179,7 +179,7 @@ private:
     {
         ASSERT(containsWrapper());
         ASSERT(*reinterpret_cast<uintptr_t*>(value) == (m_wrapperOrTypeInfo & ~1));
-        value->Dispose();
+        value->Reset();
         setTypeInfo(info);
     }
 

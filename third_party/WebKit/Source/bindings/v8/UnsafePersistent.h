@@ -95,7 +95,7 @@ public:
 
     void dispose()
     {
-        persistent()->Dispose();
+        persistent()->Reset();
         m_value = 0;
     }
 

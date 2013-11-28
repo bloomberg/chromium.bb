@@ -48,7 +48,7 @@ public:
         m_threadId = WTF::currentThread();
 #endif
         ASSERT(!string.isNull());
-        v8::V8::AdjustAmountOfExternalAllocatedMemory(memoryConsumption(string));
+        v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(memoryConsumption(string));
     }
 
     explicit WebCoreStringResourceBase(const AtomicString& string)
@@ -59,7 +59,7 @@ public:
         m_threadId = WTF::currentThread();
 #endif
         ASSERT(!string.isNull());
-        v8::V8::AdjustAmountOfExternalAllocatedMemory(memoryConsumption(string));
+        v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(memoryConsumption(string));
     }
 
     virtual ~WebCoreStringResourceBase()
@@ -70,7 +70,7 @@ public:
         int reducedExternalMemory = -memoryConsumption(m_plainString);
         if (m_plainString.impl() != m_atomicString.impl() && !m_atomicString.isNull())
             reducedExternalMemory -= memoryConsumption(m_atomicString.string());
-        v8::V8::AdjustAmountOfExternalAllocatedMemory(reducedExternalMemory);
+        v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(reducedExternalMemory);
     }
 
     const String& webcoreString() { return m_plainString; }
@@ -84,7 +84,7 @@ public:
             m_atomicString = AtomicString(m_plainString);
             ASSERT(!m_atomicString.isNull());
             if (m_plainString.impl() != m_atomicString.impl())
-                v8::V8::AdjustAmountOfExternalAllocatedMemory(memoryConsumption(m_atomicString.string()));
+                v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(memoryConsumption(m_atomicString.string()));
         }
         return m_atomicString;
     }
