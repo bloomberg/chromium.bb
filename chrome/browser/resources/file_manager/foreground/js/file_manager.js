@@ -890,7 +890,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onBreadcrumbClick_ = function(event) {
-    this.directoryModel_.changeDirectory(event.path);
+    // TODO(hirono): Use directoryModel#changeDirectoryEntry after implementing
+    // it.
+    if (event.entry === RootType.DRIVE_SHARED_WITH_ME)
+      this.directoryModel_.changeDirectory(RootDirectory.DRIVE_SHARED_WITH_ME);
+    else
+      this.directoryModel_.changeDirectory(event.entry.fullPath);
   };
 
   /**

@@ -10,14 +10,30 @@
  * @const
  */
 var RootType = Object.freeze({
+  // Root of local directory.
   DOWNLOADS: 'downloads',
+
+  // Root of mounted archive file.
   ARCHIVE: 'archive',
+
+  // Root of removal volume.
   REMOVABLE: 'removable',
+
+  // Root of drive directory.
   DRIVE: 'drive',
+
+  // Root for entries that is not located under RootType.DRIVE. e.g. shared
+  // files.
   DRIVE_OTHER: 'drive_other',
-  DRIVE_OFFLINE: 'drive_offline',  // A fake root. Not the actual filesystem.
-  DRIVE_SHARED_WITH_ME: 'drive_shared_with_me',  // A fake root.
-  DRIVE_RECENT: 'drive_recent'  // A fake root.
+
+  // Fake root for offline available files on the drive.
+  DRIVE_OFFLINE: 'drive_offline',
+
+  // Fake root for shared files on the drive.
+  DRIVE_SHARED_WITH_ME: 'drive_shared_with_me',
+
+  // Fake root for recent files on the drive.
+  DRIVE_RECENT: 'drive_recent'
 });
 
 /**
@@ -282,7 +298,10 @@ PathUtil.isParentPath = function(parent_path, child_path) {
 
 /**
  * Return the localized name for the root.
- * @param {string} path The full path of the root (starting with slash).
+ * TODO(hirono): Support all RootTypes and stop to use paths.
+ *
+ * @param {string|RootType} path The full path of the root (starting with slash)
+ *     or root type.
  * @return {string} The localized name.
  */
 PathUtil.getRootLabel = function(path) {
@@ -310,7 +329,8 @@ PathUtil.getRootLabel = function(path) {
   if (path === RootDirectory.DRIVE_OFFLINE)
     return str('DRIVE_OFFLINE_COLLECTION_LABEL');
 
-  if (path === RootDirectory.DRIVE_SHARED_WITH_ME)
+  if (path === RootDirectory.DRIVE_SHARED_WITH_ME ||
+      path === RootType.DRIVE_SHARED_WITH_ME)
     return str('DRIVE_SHARED_WITH_ME_COLLECTION_LABEL');
 
   if (path === RootDirectory.DRIVE_RECENT)

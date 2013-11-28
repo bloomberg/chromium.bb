@@ -10,7 +10,7 @@
  * @param {PreviewPanel.VisibilityType} visibilityType Initial value of the
  *     visibility type.
  * @param {MetadataCache} metadataCache Metadata cache.
- * @param {VolumeManager} volumeManager Volume manager.
+ * @param {VolumeManagerWrapper} volumeManager Volume manager.
  * @constructor
  * @extends {cr.EventTarget}
  */
@@ -50,7 +50,9 @@ var PreviewPanel = function(element,
    * @type {BreadcrumbsController}
    */
   this.breadcrumbs = new BreadcrumbsController(
-      element.querySelector('#search-breadcrumbs'), metadataCache);
+      element.querySelector('#search-breadcrumbs'),
+      metadataCache,
+      volumeManager);
 
   /**
    * @type {PreviewPanel.Thumbnails}
@@ -450,8 +452,7 @@ PreviewPanel.Thumbnails.prototype.loadThumbnails_ = function(selection) {
  * @param {transform} transform Transformation to be applied to the image.
  * @private
  */
-PreviewPanel.Thumbnails.prototype.setZoomedImage_ =
-    function(image, transform) {
+PreviewPanel.Thumbnails.prototype.setZoomedImage_ = function(image, transform) {
   if (!image)
     return;
   var width = image.width || 0;

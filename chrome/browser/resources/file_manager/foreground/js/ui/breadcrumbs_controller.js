@@ -8,15 +8,23 @@
  * @extends cr.EventTarget
  * @param {HTMLDivElement} div Div container for breadcrumbs.
  * @param {MetadataCache} metadataCache To retrieve metadata.
+ * @param {VolumeManagerWrapper} volumeManager Volume manager.
  * @constructor
  */
-function BreadcrumbsController(div, metadataCache) {
-  this.metadataCache_ = metadataCache;
+function BreadcrumbsController(div, metadataCache, volumeManager) {
   this.bc_ = div;
-  this.hideLast_ = false;
-  this.rootPath_ = null;
-  this.path_ = null;
-  this.rootPathOverride_ = null;
+  this.metadataCache_ = metadataCache;
+  this.volumeManager_ = volumeManager;
+  this.entry_ = null;
+
+  /**
+   * Sequence value to skip requests that are out of date.
+   * @type {number}
+   * @private
+   */
+  this.showSequence_ = 0;
+
+  // Register events and seql the object.
   div.addEventListener('click', this.onClick_.bind(this));
 }
 
@@ -26,130 +34,120 @@ function BreadcrumbsController(div, metadataCache) {
 BreadcrumbsController.prototype.__proto__ = cr.EventTarget.prototype;
 
 /**
- * Whether to hide the last part of the path.
- * @param {boolean} value True if hide.
- */
-BreadcrumbsController.prototype.setHideLast = function(value) {
-  this.hideLast_ = value;
-};
-
-/**
- * Update the breadcrumb display.
+ * Shows breadcrumbs.
  *
  * @param {Entry} entry Target entry.
  */
-BreadcrumbsController.prototype.update = function(entry) {
-  var rootPath = PathUtil.getRootPath(entry.fullPath);
-  var path = entry.fullPath;
-  if (path == this.path_)
+BreadcrumbsController.prototype.show = function(entry) {
+  if (entry === this.entry_)
     return;
 
-  // Clear the content and store |path|.
+  this.entry_ = entry;
+  this.bc_.hidden = false;
   this.bc_.textContent = '';
-  this.rootPath_ = rootPath;
-  this.path_ = path;
+  this.showSequence_++;
 
-  // determineRootPathOverride_() may call MetadataCache to retrieve
-  // shared-with-me property and call the callback asynchronously.
-  this.determineRootPathOverride_(
-      rootPath, path, function(requestedPath, rootPathOverride) {
-        if (requestedPath != path) {
-          // Another update() is called. Ignore this old callback.
-          return;
-        }
-        this.rootPathOverride_ = rootPathOverride;
-        this.updateInternal_(rootPath, path, rootPathOverride);
-      }.bind(this));
+  var queue = new AsyncUtil.Queue();
+  var entries = [];
+  var error = false;
+
+  // Obtain entries from the target entry to the root.
+  var loop;
+  var resolveParent = function(inEntry, callback) {
+    entries.unshift(inEntry);
+    if (!this.volumeManager_.getLocationInfo(inEntry).isRootEntry) {
+      inEntry.getParent(function(parent) {
+        resolveParent(parent, callback);
+      }, function() {
+        error = true;
+        callback();
+      });
+    } else {
+      callback();
+    }
+  }.bind(this);
+  queue.run(resolveParent.bind(null, entry));
+
+  // Override DRIVE_OTHER root to DRIVE_SHARED_WITH_ME root.
+  queue.run(function(callback) {
+    // If an error was occured, just skip.
+    if (error) {
+      callback();
+      return;
+    }
+
+    // If the path is not under the drive other root, it is not needed to
+    // override root type.
+    var locationInfo = this.volumeManager_.getLocationInfo(entry);
+    if (!locationInfo) {
+      error = true;
+      callback();
+      return;
+    }
+    if (locationInfo.rootType !== RootType.DRIVE_OTHER) {
+      callback();
+      return;
+    }
+
+    // Otherwise check the metadata of the directory localted at just under
+    // drive other.
+    if (!entries[1]) {
+      error = true;
+      callback();
+      return;
+    }
+    this.metadataCache_.getOne(entries[1], 'drive', function(result) {
+      if (result && result.sharedWithMe)
+        entries[0] = RootType.DRIVE_SHARED_WITH_ME;
+      else
+        entries.shift();
+      callback();
+    });
+  }.bind(this));
+
+  // Update DOM element.
+  queue.run(function(sequence, callback) {
+    // Check the sequence number to skip requests that are out of date.
+    if (this.showSequence_ === sequence && !error)
+      this.updateInternal_(entries);
+    callback();
+  }.bind(this, this.showSequence_));
 };
 
 /**
- * Check the given path and determines if the breadcrumb should show "Shared
- * with me" as the first crumb. RootDirectory.DRIVE_SHARED_WITH_ME is used as
- * the first crumb if |path| is a shared-with-me directory outside "My Drive".
- * See updateInternal_().
- *
- * @param {string} rootPath Path to root.
- * @param {string} path Path to directory.
- * @param {function(string, !string)} callback Function to call with |path| and
- *     the determined root path override.
+ * Updates the breadcrumb display.
+ * @param {Array.<Entry|RootType>} entries Location information of target path.
  * @private
  */
-BreadcrumbsController.prototype.determineRootPathOverride_ =
-    function(rootPath, path, callback) {
-  if (rootPath != RootDirectory.DRIVE + '/' + DriveSubRootDirectory.OTHER ||
-      rootPath == path) {
-    callback(path, null);  // No need for Drive properties.
-    return;
-  }
-
-  var delimiterPos = path.indexOf('/', rootPath.length + 1);
-  var firstDirPath = delimiterPos > 0 ? path.substring(0, delimiterPos) : path;
-  var entryUrl = util.makeFilesystemUrl(firstDirPath);
-
-  this.metadataCache_.getOne(entryUrl, 'drive', function(result) {
-    callback(path,
-             result && result.sharedWithMe ?
-                 RootDirectory.DRIVE_SHARED_WITH_ME :
-                 null);
-  });
-};
-
-/**
- * Update the breadcrumb display.
- * @private
- */
-BreadcrumbsController.prototype.updateInternal_ = function() {
-  var relativePath =
-      this.path_.substring(this.rootPath_.length).replace(/\/$/, '');
-  var pathNames = relativePath.split('/');
-  if (pathNames[0] == '')
-    pathNames.splice(0, 1);
-
-  // We need a first breadcrumb for root, so placing last name from
-  // rootPath as first name of relativePath.
-  var rootPathNames = this.rootPath_.replace(/\/$/, '').split('/');
-  pathNames.splice(0, 0, rootPathNames[rootPathNames.length - 1]);
-  rootPathNames.splice(rootPathNames.length - 1, 1);
-  var path = rootPathNames.join('/') + '/';
-
+BreadcrumbsController.prototype.updateInternal_ = function(entries) {
+  // Make elements.
   var doc = this.bc_.ownerDocument;
-
-  var divAdded = false;
-  for (var i = 0;
-       i < (this.hideLast_ ? pathNames.length - 1 : pathNames.length);
-       i++) {
-    if (divAdded) {
-      var spacer = doc.createElement('div');
-      spacer.className = 'separator';
-      this.bc_.appendChild(spacer);
-    }
-    var pathName = pathNames[i];
-    path += pathName;
-
-    // We have a special case for the root crumb /drive/other, which contains
-    // the Drive entries not in "My Drive". It is hidden as this path is not
-    // meaningful for the user.
-    if (i == 0 &&
-        path === RootDirectory.DRIVE + '/' + DriveSubRootDirectory.OTHER &&
-        this.rootPathOverride_ == null) {
-        continue;
-    }
-
-    // Create a crumb.
+  for (var i = 0; i < entries.length; i++) {
+    // Add a component.
+    var entry = entries[i];
+    var location = this.volumeManager_.getLocationInfo(entry);
     var div = doc.createElement('div');
     div.className = 'breadcrumb-path';
-    div.textContent = i == 0 ?
-        PathUtil.getRootLabel(this.rootPathOverride_ || path) :
-        pathName;
-
-    path = path + '/';
-
+    div.textContent =
+        entry === RootType.DRIVE_SHARED_WITH_ME ?
+            PathUtil.getRootLabel(RootType.DRIVE_SHARED_WITH_ME) :
+        (location && location.isRootEntry) ?
+            PathUtil.getRootLabel(entry.fullPath) : entry.name;
+    div.entry = entry;
     this.bc_.appendChild(div);
-    divAdded = true;
 
-    if (i == pathNames.length - 1)
+    // If this is the last component, break here.
+    if (i === entries.length - 1) {
       div.classList.add('breadcrumb-last');
+      break;
+    }
+
+    // Add a separator.
+    var separator = doc.createElement('div');
+    separator.className = 'separator';
+    this.bc_.appendChild(separator);
   }
+
   this.truncate();
 };
 
@@ -241,16 +239,6 @@ BreadcrumbsController.prototype.truncate = function() {
 };
 
 /**
- * Show breadcrumbs.
- * @param {string} rootPath Path to root.
- * @param {string} path Path to directory.
- */
-BreadcrumbsController.prototype.show = function(rootPath, path) {
-  this.bc_.hidden = false;
-  this.update(rootPath, path);
-};
-
-/**
  * Hide breadcrumbs div.
  */
 BreadcrumbsController.prototype.hide = function() {
@@ -263,45 +251,11 @@ BreadcrumbsController.prototype.hide = function() {
  * @private
  */
 BreadcrumbsController.prototype.onClick_ = function(event) {
-  var path = this.getTargetPath(event);
-  if (!path)
+  if (!event.target.classList.contains('breadcrumb-path') ||
+      event.target.classList.contains('breadcrumb-last'))
     return;
 
   var newEvent = new Event('pathclick');
-  newEvent.path = path;
+  newEvent.entry = event.target.entry;
   this.dispatchEvent(newEvent);
-};
-
-/**
- * Returns path associated with the event target. Returns empty string for
- * inactive elements: separators, empty space and the last chunk.
- * @param {Event} event The UI event.
- * @return {string} Full path or empty string.
- */
-BreadcrumbsController.prototype.getTargetPath = function(event) {
-  if (!event.target.classList.contains('breadcrumb-path') ||
-      event.target.classList.contains('breadcrumb-last')) {
-    return '';
-  }
-
-  var items = this.bc_.querySelectorAll('.breadcrumb-path');
-  var path = this.rootPath_;
-
-  if (event.target == items[0]) {
-    // The first crumb can be overridden.
-    return this.rootPathOverride_ || path;
-  } else {
-    for (var i = 1; items[i - 1] != event.target; i++) {
-      path += '/' + items[i].textContent;
-    }
-  }
-  return path;
-};
-
-/**
- * Returns the breadcrumbs container.
- * @return {HTMLElement} Breadcumbs container HTML element.
- */
-BreadcrumbsController.prototype.getContainer = function() {
-  return this.bc_;
 };
