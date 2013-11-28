@@ -187,8 +187,15 @@ bool IsOpenInBrowserPreferreredForFile(const base::FilePath& path) {
   // are no external apps so just allow all opens to be handled by the "System."
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && defined(ENABLE_PLUGINS)
   // TODO(asanka): Consider other file types and MIME types.
-  if (path.MatchesExtension(FILE_PATH_LITERAL(".pdf")))
+  // http://crbug.com/323561
+  if (path.MatchesExtension(FILE_PATH_LITERAL(".pdf")) ||
+      path.MatchesExtension(FILE_PATH_LITERAL(".htm")) ||
+      path.MatchesExtension(FILE_PATH_LITERAL(".html")) ||
+      path.MatchesExtension(FILE_PATH_LITERAL(".xht")) ||
+      path.MatchesExtension(FILE_PATH_LITERAL(".xhtm")) ||
+      path.MatchesExtension(FILE_PATH_LITERAL(".xhtml"))) {
     return true;
+  }
 #endif
   return false;
 }

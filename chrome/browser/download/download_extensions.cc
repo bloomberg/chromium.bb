@@ -83,14 +83,9 @@ static const struct Executables {
   // These types can run JavaScript (e.g. HTML and HTML-like).
   // TODO(cevans): work out whether our restrictions on file:/// are strong
   // enough to mark these types as no longer dangerous.
-  { "htm", ALLOW_ON_USER_GESTURE },
-  { "html", ALLOW_ON_USER_GESTURE },
   { "shtm", ALLOW_ON_USER_GESTURE },
   { "shtml", ALLOW_ON_USER_GESTURE },
   { "svg", ALLOW_ON_USER_GESTURE },
-  { "xht", ALLOW_ON_USER_GESTURE },
-  { "xhtm", ALLOW_ON_USER_GESTURE },
-  { "xhtml", ALLOW_ON_USER_GESTURE },
   { "xml", ALLOW_ON_USER_GESTURE },
   { "xsl", ALLOW_ON_USER_GESTURE },
   { "xslt", ALLOW_ON_USER_GESTURE },

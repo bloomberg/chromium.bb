@@ -139,7 +139,7 @@ static const MimeInfo primary_mappings[] = {
   { "video/webm", "webm" },
   { "audio/webm", "webm" },
   { "audio/wav", "wav" },
-  { "application/xhtml+xml", "xhtml,xht" },
+  { "application/xhtml+xml", "xhtml,xht,xhtm" },
   { "application/x-chrome-extension", "crx" },
   { "multipart/related", "mhtml,mht" }
 };
