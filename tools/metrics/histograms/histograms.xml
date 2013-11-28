@@ -22898,6 +22898,7 @@ other types of suffix sets.
              limit should only start running after initial user activity in a
              session"/>
   <int value="248" label="Report device users"/>
+  <int value="249" label="User avatar image"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

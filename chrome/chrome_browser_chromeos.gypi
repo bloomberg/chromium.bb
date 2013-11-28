@@ -679,6 +679,8 @@
         'browser/chromeos/policy/auto_enrollment_client.h',
         'browser/chromeos/policy/cloud_external_data_manager_base.cc',
         'browser/chromeos/policy/cloud_external_data_manager_base.h',
+        'browser/chromeos/policy/cloud_external_data_policy_observer.cc',
+        'browser/chromeos/policy/cloud_external_data_policy_observer.h',
         'browser/chromeos/policy/cloud_external_data_store.cc',
         'browser/chromeos/policy/cloud_external_data_store.h',
         'browser/chromeos/policy/configuration_policy_handler_chromeos.cc',

@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -18,6 +19,8 @@ class URLRequestContextGetter;
 }
 
 namespace policy {
+
+class ExternalDataFetcher;
 
 class MockCloudExternalDataManager : public CloudExternalDataManager {
  public:
@@ -29,6 +32,9 @@ class MockCloudExternalDataManager : public CloudExternalDataManager {
   MOCK_METHOD0(Disconnect, void(void));
   MOCK_METHOD2(Fetch, void(const std::string&,
                            const ExternalDataFetcher::FetchCallback&));
+
+  scoped_ptr<ExternalDataFetcher> CreateExternalDataFetcher(
+      const std::string& policy);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCloudExternalDataManager);

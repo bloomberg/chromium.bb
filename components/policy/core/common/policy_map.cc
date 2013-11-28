@@ -11,6 +11,26 @@
 
 namespace policy {
 
+void PolicyMap::Entry::DeleteOwnedMembers() {
+  delete value;
+  value = NULL;
+  delete external_data_fetcher;
+  external_data_fetcher = NULL;
+}
+
+scoped_ptr<PolicyMap::Entry> PolicyMap::Entry::DeepCopy() const {
+  scoped_ptr<Entry> copy(new Entry);
+  copy->level = level;
+  copy->scope = scope;
+  if (value)
+    copy->value = value->DeepCopy();
+  if (external_data_fetcher) {
+    copy->external_data_fetcher =
+        new ExternalDataFetcher(*external_data_fetcher);
+  }
+  return copy.Pass();
+}
+
 bool PolicyMap::Entry::has_higher_priority_than(
     const PolicyMap::Entry& other) const {
   if (level == other.level)
@@ -50,8 +70,7 @@ void PolicyMap::Set(const std::string& policy,
                     Value* value,
                     ExternalDataFetcher* external_data_fetcher) {
   Entry& entry = map_[policy];
-  delete entry.value;
-  delete entry.external_data_fetcher;
+  entry.DeleteOwnedMembers();
   entry.level = level;
   entry.scope = scope;
   entry.value = value;
@@ -61,8 +80,7 @@ void PolicyMap::Set(const std::string& policy,
 void PolicyMap::Erase(const std::string& policy) {
   PolicyMapType::iterator it = map_.find(policy);
   if (it != map_.end()) {
-    delete it->second.value;
-    delete it->second.external_data_fetcher;
+    it->second.DeleteOwnedMembers();
     map_.erase(it);
   }
 }
@@ -139,8 +157,7 @@ void PolicyMap::FilterLevel(PolicyLevel level) {
   PolicyMapType::iterator iter(map_.begin());
   while (iter != map_.end()) {
     if (iter->second.level != level) {
-      delete iter->second.value;
-      delete iter->second.external_data_fetcher;
+      iter->second.DeleteOwnedMembers();
       map_.erase(iter++);
     } else {
       ++iter;
@@ -170,10 +187,8 @@ PolicyMap::const_iterator PolicyMap::end() const {
 }
 
 void PolicyMap::Clear() {
-  for (PolicyMapType::iterator it = map_.begin(); it != map_.end(); ++it) {
-    delete it->second.value;
-    delete it->second.external_data_fetcher;
-  }
+  for (PolicyMapType::iterator it = map_.begin(); it != map_.end(); ++it)
+    it->second.DeleteOwnedMembers();
   map_.clear();
 }
 

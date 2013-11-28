@@ -34,6 +34,12 @@ class POLICY_EXPORT PolicyMap {
           value(NULL),
           external_data_fetcher(NULL) {}
 
+    // Deletes all members owned by |this|.
+    void DeleteOwnedMembers();
+
+    // Returns a copy of |this|.
+    scoped_ptr<Entry> DeepCopy() const;
+
     // Returns true if |this| has higher priority than |other|.
     bool has_higher_priority_than(const Entry& other) const;
 

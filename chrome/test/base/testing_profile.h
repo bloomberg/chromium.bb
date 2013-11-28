@@ -31,6 +31,7 @@ class URLRequestContextGetter;
 }
 
 namespace policy {
+class PolicyService;
 class ProfilePolicyConnector;
 class SchemaRegistryService;
 }
@@ -105,6 +106,9 @@ class TestingProfile : public Profile {
     // non-empty string, the profile is managed.
     void SetManagedUserId(const std::string& managed_user_id);
 
+    // Sets the PolicyService to be used by this profile.
+    void SetPolicyService(scoped_ptr<policy::PolicyService> policy_service);
+
     // Creates the TestingProfile using previously-set settings.
     scoped_ptr<TestingProfile> Build();
 
@@ -119,6 +123,7 @@ class TestingProfile : public Profile {
     Delegate* delegate_;
     bool incognito_;
     std::string managed_user_id_;
+    scoped_ptr<policy::PolicyService> policy_service_;
     TestingFactories testing_factories_;
 
     DISALLOW_COPY_AND_ASSIGN(Builder);
@@ -145,6 +150,7 @@ class TestingProfile : public Profile {
                  scoped_ptr<PrefServiceSyncable> prefs,
                  bool incognito,
                  const std::string& managed_user_id,
+                 scoped_ptr<policy::PolicyService> policy_service,
                  const TestingFactories& factories);
 
   virtual ~TestingProfile();
@@ -402,6 +408,8 @@ class TestingProfile : public Profile {
   Delegate* delegate_;
 
   std::string profile_name_;
+
+  scoped_ptr<policy::PolicyService> policy_service_;
 };
 
 #endif  // CHROME_TEST_BASE_TESTING_PROFILE_H_

@@ -41,6 +41,7 @@
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chrome/browser/policy/policy_service.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -233,6 +234,7 @@ TestingProfile::TestingProfile(
     scoped_ptr<PrefServiceSyncable> prefs,
     bool incognito,
     const std::string& managed_user_id,
+    scoped_ptr<policy::PolicyService> policy_service,
     const TestingFactories& factories)
     : start_time_(Time::Now()),
       prefs_(prefs.release()),
@@ -247,7 +249,8 @@ TestingProfile::TestingProfile(
       browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
       resource_context_(NULL),
-      delegate_(delegate) {
+      delegate_(delegate),
+      policy_service_(policy_service.release()) {
 
   // If no profile path was supplied, create one.
   if (profile_path_.empty()) {
@@ -628,22 +631,25 @@ void TestingProfile::CreateTestingPrefService() {
 }
 
 void TestingProfile::CreateProfilePolicyConnector() {
-  scoped_ptr<policy::PolicyService> service;
 #if defined(ENABLE_CONFIGURATION_POLICY)
   schema_registry_service_ =
       policy::SchemaRegistryServiceFactory::CreateForContext(
           this, policy::Schema(), NULL);
   CHECK_EQ(schema_registry_service_.get(),
            policy::SchemaRegistryServiceFactory::GetForContext(this));
+#endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
-  std::vector<policy::ConfigurationPolicyProvider*> providers;
-  service.reset(new policy::PolicyServiceImpl(
-      providers, policy::PolicyServiceImpl::PreprocessCallback()));
+if (!policy_service_) {
+#if defined(ENABLE_CONFIGURATION_POLICY)
+    std::vector<policy::ConfigurationPolicyProvider*> providers;
+    policy_service_.reset(new policy::PolicyServiceImpl(
+        providers, policy::PolicyServiceImpl::PreprocessCallback()));
 #else
-  service.reset(new policy::PolicyServiceStub());
+    policy_service_.reset(new policy::PolicyServiceStub());
 #endif
+  }
   profile_policy_connector_.reset(new policy::ProfilePolicyConnector());
-  profile_policy_connector_->InitForTesting(service.Pass());
+  profile_policy_connector_->InitForTesting(policy_service_.Pass());
   policy::ProfilePolicyConnectorFactory::GetInstance()->SetServiceForTesting(
       this, profile_policy_connector_.get());
   CHECK_EQ(profile_policy_connector_.get(),
@@ -886,6 +892,11 @@ void TestingProfile::Builder::SetManagedUserId(
   managed_user_id_ = managed_user_id;
 }
 
+void TestingProfile::Builder::SetPolicyService(
+    scoped_ptr<policy::PolicyService> policy_service) {
+  policy_service_ = policy_service.Pass();
+}
+
 void TestingProfile::Builder::AddTestingFactory(
     BrowserContextKeyedServiceFactory* service_factory,
     BrowserContextKeyedServiceFactory::FactoryFunction callback) {
@@ -903,5 +914,6 @@ scoped_ptr<TestingProfile> TestingProfile::Builder::Build() {
       pref_service_.Pass(),
       incognito_,
       managed_user_id_,
+      policy_service_.Pass(),
       testing_factories_));
 }

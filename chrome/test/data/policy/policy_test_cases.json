@@ -1548,6 +1548,10 @@
   "ForceEphemeralProfiles": {
   },
 
+  "UserAvatarImage": {
+    "os": ["chromeos"]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

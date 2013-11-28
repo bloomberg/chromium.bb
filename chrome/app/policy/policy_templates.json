@@ -31,7 +31,7 @@
 #   'dict' - a dictionary value, containing other values indexed by strings
 #     NOTE: This type is not supported yet. http://crbug.com/108992
 #   'external' - a policy that references external data.
-#     NOTE: This type is not supported yet. http://crbug.com/256635
+#     NOTE: This type is currently supported on Chrome OS only.
 #
 # Policy group descriptions, policy captions and similar texts are localized
 # strings taken from the <message> nodes of the .grd file. Their name
@@ -118,7 +118,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 248
+#   For your editing convenience: highest ID currently used: 249
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -5726,6 +5726,52 @@
       If you enable or disable this setting, users cannot change or override this setting.
 
       If this policy is left not set, the data compression proxy feature will be available for the user to choose whether to use it or not.''',
+    },
+    {
+      'name': 'UserAvatarImage',
+      'type': 'external',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'url': { "type": "string" },
+          'hash': { "type": "string" }
+        },
+      },
+      'supported_on': ['chrome_os:33-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': { "url": "http://example.com/avatar.jpg", "hash": "deadbeefdeadbeefdeadbeefdeadbeef" },
+      'max_size': 524288,
+      'id': 249,
+      'caption': '''User avatar image''',
+      'desc': '''Configure user avatar image.
+
+      This policy allows you to configure the avatar image representing the user on the login screen. The policy is set by specifying the URL from which <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can download the avatar image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its size must not exceed 512kB. The URL must be accessible without any authentication.
+
+      The avatar image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      The policy should be specified as a string that expresses the URL and hash in JSON format, conforming to the following schema:
+      {
+        "type": "object",
+        "properties": {
+          "url": {
+            "description": "The URL from which the avatar image can be downloaded.",
+            "type": "string"
+          },
+          "hash": {
+            "description": "The SHA-1 hash of the avatar image.",
+            "type": "string"
+          }
+        }
+      }
+
+      If this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will download and use the avatar image.
+
+      If you set this policy, users cannot change or override it.
+
+      If the policy is left not set, the user can choose the avatar image representing him/her on the login screen.''',
     },
   ],
   'messages': {
