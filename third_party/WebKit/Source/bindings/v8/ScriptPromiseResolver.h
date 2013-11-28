@@ -81,7 +81,7 @@ public:
 
     ScriptPromise promise()
     {
-        ASSERT(v8::Context::InContext());
+        ASSERT(m_promise.isolate()->InContext());
         return m_promise;
     }
 
@@ -122,7 +122,7 @@ public:
     void reject(ScriptValue);
 
 private:
-    ScriptPromiseResolver(ScriptPromise, v8::Isolate*);
+    ScriptPromiseResolver(ScriptPromise);
     void resolve(v8::Handle<v8::Value>);
     void reject(v8::Handle<v8::Value>);
 

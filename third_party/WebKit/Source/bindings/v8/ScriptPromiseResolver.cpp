@@ -41,8 +41,8 @@
 
 namespace WebCore {
 
-ScriptPromiseResolver::ScriptPromiseResolver(ScriptPromise promise, v8::Isolate* isolate)
-    : m_isolate(isolate)
+ScriptPromiseResolver::ScriptPromiseResolver(ScriptPromise promise)
+    : m_isolate(promise.isolate())
     , m_promise(promise)
 {
 }
@@ -57,21 +57,20 @@ ScriptPromiseResolver::~ScriptPromiseResolver()
 
 PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(ScriptPromise promise, ExecutionContext* context)
 {
-    ASSERT(v8::Context::InContext());
+    ASSERT(promise.isolate()->InContext());
     ASSERT(context);
-    return adoptRef(new ScriptPromiseResolver(promise, toIsolate(context)));
+    return adoptRef(new ScriptPromiseResolver(promise));
 }
 
 PassRefPtr<ScriptPromiseResolver> ScriptPromiseResolver::create(ScriptPromise promise)
 {
-    ASSERT(v8::Context::InContext());
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    return adoptRef(new ScriptPromiseResolver(promise, isolate));
+    ASSERT(promise.isolate()->InContext());
+    return adoptRef(new ScriptPromiseResolver(promise));
 }
 
 bool ScriptPromiseResolver::isPending() const
 {
-    ASSERT(v8::Context::InContext());
+    ASSERT(m_isolate->InContext());
     if (m_promise.hasNoValue())
         return false;
     v8::Local<v8::Object> promise = m_promise.v8Value().As<v8::Object>();
@@ -82,7 +81,7 @@ bool ScriptPromiseResolver::isPending() const
 
 void ScriptPromiseResolver::resolve(v8::Handle<v8::Value> value)
 {
-    ASSERT(v8::Context::InContext());
+    ASSERT(m_isolate->InContext());
     if (!isPending())
         return;
     V8PromiseCustom::resolve(m_promise.v8Value().As<v8::Object>(), value, m_isolate);
@@ -91,7 +90,7 @@ void ScriptPromiseResolver::resolve(v8::Handle<v8::Value> value)
 
 void ScriptPromiseResolver::reject(v8::Handle<v8::Value> value)
 {
-    ASSERT(v8::Context::InContext());
+    ASSERT(m_isolate->InContext());
     if (!isPending())
         return;
     V8PromiseCustom::reject(m_promise.v8Value().As<v8::Object>(), value, m_isolate);
@@ -100,13 +99,13 @@ void ScriptPromiseResolver::reject(v8::Handle<v8::Value> value)
 
 void ScriptPromiseResolver::resolve(ScriptValue value)
 {
-    ASSERT(v8::Context::InContext());
+    ASSERT(m_isolate->InContext());
     resolve(value.v8Value());
 }
 
 void ScriptPromiseResolver::reject(ScriptValue value)
 {
-    ASSERT(v8::Context::InContext());
+    ASSERT(m_isolate->InContext());
     reject(value.v8Value());
 }
 

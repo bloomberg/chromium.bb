@@ -85,6 +85,11 @@ public:
         return m_promise.v8Value();
     }
 
+    v8::Isolate* isolate() const
+    {
+        return m_promise.isolate();
+    }
+
     bool hasNoValue() const
     {
         return m_promise.hasNoValue();

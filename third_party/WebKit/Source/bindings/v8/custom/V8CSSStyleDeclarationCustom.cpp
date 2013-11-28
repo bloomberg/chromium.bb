@@ -174,7 +174,7 @@ void V8CSSStyleDeclaration::namedPropertyEnumeratorCustom(const v8::PropertyCall
         propertyNamesLength = propertyNames.size();
     }
 
-    v8::Handle<v8::Array> properties = v8::Array::New(propertyNamesLength);
+    v8::Handle<v8::Array> properties = v8::Array::New(info.GetIsolate(), propertyNamesLength);
     for (unsigned i = 0; i < propertyNamesLength; ++i) {
         String key = propertyNames.at(i);
         ASSERT(!key.isNull());
