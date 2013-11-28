@@ -12,7 +12,9 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/supports_user_data.h"
 #include "net/http/http_stream_base.h"
+#include "net/url_request/websocket_handshake_userdata_key.h"
 #include "net/websockets/websocket_stream.h"
 
 namespace net {
@@ -26,8 +28,13 @@ class SpdySession;
 // HttpStreamBase.
 class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStreamBase {
  public:
-  class CreateHelper {
+  class CreateHelper : public base::SupportsUserData::Data {
    public:
+    // Returns a key to use to lookup this object in a URLRequest object. It is
+    // different from any other key that is supplied to
+    // URLRequest::SetUserData().
+    static const void* DataKey() { return kWebSocketHandshakeUserDataKey; }
+
     virtual ~CreateHelper() {}
 
     // Create a WebSocketBasicHandshakeStream. This is called after the
@@ -43,6 +50,8 @@ class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStreamBase {
         bool use_relative_url) = 0;
   };
 
+  // This has to have an inline implementation so that the net/url_request/
+  // tests do not fail on iOS.
   virtual ~WebSocketHandshakeStreamBase() {}
 
   // After the handshake has completed, this method creates a WebSocketStream
@@ -52,6 +61,7 @@ class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStreamBase {
   virtual scoped_ptr<WebSocketStream> Upgrade() = 0;
 
  protected:
+  // As with the destructor, this must be inline.
   WebSocketHandshakeStreamBase() {}
 
  private:

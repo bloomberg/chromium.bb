@@ -32,6 +32,12 @@ struct SchemeToFactory {
 static const SchemeToFactory kBuiltinFactories[] = {
   { "http", URLRequestHttpJob::Factory },
   { "https", URLRequestHttpJob::Factory },
+
+#if !defined(OS_IOS)
+  { "ws", URLRequestHttpJob::Factory },
+  { "wss", URLRequestHttpJob::Factory },
+#endif  // !defined(OS_IOS)
+
 };
 
 // static

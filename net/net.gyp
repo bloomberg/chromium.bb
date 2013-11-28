@@ -1137,6 +1137,8 @@
         'url_request/url_request_throttler_manager.h',
         'url_request/view_cache_helper.cc',
         'url_request/view_cache_helper.h',
+        'url_request/websocket_handshake_userdata_key.cc',
+        'url_request/websocket_handshake_userdata_key.h',
         'websockets/websocket_basic_handshake_stream.cc',
         'websockets/websocket_basic_handshake_stream.h',
         'websockets/websocket_basic_stream.cc',

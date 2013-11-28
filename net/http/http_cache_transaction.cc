@@ -213,7 +213,8 @@ HttpCache::Transaction::Transaction(
       io_callback_(base::Bind(&Transaction::OnIOComplete,
                               weak_factory_.GetWeakPtr())),
       transaction_pattern_(PATTERN_UNDEFINED),
-      transaction_delegate_(transaction_delegate) {
+      transaction_delegate_(transaction_delegate),
+      websocket_handshake_stream_base_create_helper_(NULL) {
   COMPILE_ASSERT(HttpCache::Transaction::kNumValidationHeaders ==
                  arraysize(kValidationHeaders),
                  Invalid_number_of_validation_headers);
@@ -535,6 +536,7 @@ void HttpCache::Transaction::SetPriority(RequestPriority priority) {
 
 void HttpCache::Transaction::SetWebSocketHandshakeStreamCreateHelper(
     WebSocketHandshakeStreamBase::CreateHelper* create_helper) {
+  websocket_handshake_stream_base_create_helper_ = create_helper;
   if (network_trans_)
     network_trans_->SetWebSocketHandshakeStreamCreateHelper(create_helper);
 }
@@ -865,6 +867,10 @@ int HttpCache::Transaction::DoSendRequest() {
 
   // Old load timing information, if any, is now obsolete.
   old_network_trans_load_timing_.reset();
+
+  if (websocket_handshake_stream_base_create_helper_)
+    network_trans_->SetWebSocketHandshakeStreamCreateHelper(
+        websocket_handshake_stream_base_create_helper_);
 
   ReportNetworkActionStart();
   next_state_ = STATE_SEND_REQUEST_COMPLETE;

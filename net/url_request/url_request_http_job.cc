@@ -46,6 +46,7 @@
 #include "net/url_request/url_request_redirect_job.h"
 #include "net/url_request/url_request_throttler_header_adapter.h"
 #include "net/url_request/url_request_throttler_manager.h"
+#include "net/websockets/websocket_handshake_stream_base.h"
 
 static const char kAvailDictionaryHeader[] = "Avail-Dictionary";
 
@@ -214,7 +215,8 @@ void URLRequestHttpJob::HttpFilterContext::RecordPacketStats(
 URLRequestJob* URLRequestHttpJob::Factory(URLRequest* request,
                                           NetworkDelegate* network_delegate,
                                           const std::string& scheme) {
-  DCHECK(scheme == "http" || scheme == "https");
+  DCHECK(scheme == "http" || scheme == "https" || scheme == "ws" ||
+         scheme == "wss");
 
   if (!request->context()->http_transaction_factory()) {
     NOTREACHED() << "requires a valid context";
@@ -494,6 +496,20 @@ void URLRequestHttpJob::StartTransactionInternal() {
 
     rv = request_->context()->http_transaction_factory()->CreateTransaction(
         priority_, &transaction_, http_transaction_delegate_.get());
+
+    if (rv == OK && request_info_.url.SchemeIsWSOrWSS()) {
+      // TODO(ricea): Implement WebSocket throttling semantics as defined in
+      // RFC6455 Section 4.1.
+      base::SupportsUserData::Data* data = request_->GetUserData(
+          WebSocketHandshakeStreamBase::CreateHelper::DataKey());
+      if (data) {
+        transaction_->SetWebSocketHandshakeStreamCreateHelper(
+            static_cast<WebSocketHandshakeStreamBase::CreateHelper*>(data));
+      } else {
+        rv = ERR_DISALLOWED_URL_SCHEME;
+      }
+    }
+
     if (rv == OK) {
       if (!throttling_entry_.get() ||
           !throttling_entry_->ShouldRejectRequest(*request_)) {
