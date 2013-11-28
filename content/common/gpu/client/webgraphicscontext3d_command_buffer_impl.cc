@@ -341,6 +341,8 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeCommandBuffer(
   attribs.push_back(attributes_.antialias ? 4 : 0);
   attribs.push_back(SAMPLE_BUFFERS);
   attribs.push_back(attributes_.antialias ? 1 : 0);
+  attribs.push_back(FAIL_IF_MAJOR_PERF_CAVEAT);
+  attribs.push_back(attributes_.failIfMajorPerformanceCaveat ? 1 : 0);
   attribs.push_back(NONE);
 
   // Create a proxy to a command buffer in the GPU process.

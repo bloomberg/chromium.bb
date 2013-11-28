@@ -59,6 +59,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool ext_discard_framebuffer;
     bool angle_depth_texture;
     bool is_angle;
+    bool is_swiftshader;
   };
 
   struct Workarounds {

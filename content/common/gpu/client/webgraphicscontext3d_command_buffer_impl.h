@@ -648,6 +648,9 @@ class WebGraphicsContext3DCommandBufferImpl
   // the 16-bit range are the same as used by EGL. Those outside the 16-bit
   // range are unique to Chromium. Attributes are matched using a closest fit
   // algorithm.
+  // Changes to this enum should also be copied to
+  // gpu/command_buffer/common/gles2_cmd_utils.cc and to
+  // gpu/command_buffer/client/gl_in_process_context.cc
   enum Attribute {
     ALPHA_SIZE                = 0x3021,
     BLUE_SIZE                 = 0x3022,
@@ -661,7 +664,8 @@ class WebGraphicsContext3DCommandBufferImpl
     WIDTH                     = 0x3057,
     NONE                      = 0x3038,  // Attrib list = terminator
     SHARE_RESOURCES           = 0x10000,
-    BIND_GENERATES_RESOURCES  = 0x10001
+    BIND_GENERATES_RESOURCES  = 0x10001,
+    FAIL_IF_MAJOR_PERF_CAVEAT = 0x10002
   };
   friend class WebGraphicsContext3DErrorMessageCallback;
 

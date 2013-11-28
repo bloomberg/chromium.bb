@@ -138,6 +138,8 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::ConvertAttributes(
   output_attribs->stencil_size = attributes.stencil ? 8 : 0;
   output_attribs->samples = attributes.antialias ? 4 : 0;
   output_attribs->sample_buffers = attributes.antialias ? 1 : 0;
+  output_attribs->fail_if_major_perf_caveat =
+      attributes.failIfMajorPerformanceCaveat ? 1 : 0;
 }
 
 bool WebGraphicsContext3DInProcessCommandBufferImpl::MaybeInitializeGL() {

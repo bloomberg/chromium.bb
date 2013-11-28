@@ -909,9 +909,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void LogClientServiceMapping(
       const char* function_name, GLuint client_id, GLuint service_id) {
     if (service_logging_) {
-      DLOG(INFO) << "[" << logger_.GetLogPrefix() << "] " << function_name
-                 << ": client_id = " << client_id
-                 << ", service_id = " << service_id;
+      VLOG(1) << "[" << logger_.GetLogPrefix() << "] " << function_name
+              << ": client_id = " << client_id
+              << ", service_id = " << service_id;
     }
   }
   template<typename T>
@@ -2215,6 +2215,19 @@ bool GLES2DecoderImpl::Initialize(
   context_ = context;
   surface_ = surface;
 
+  ContextCreationAttribHelper attrib_parser;
+  if (!attrib_parser.Parse(attribs))
+    return false;
+
+  // If the failIfMajorPerformanceCaveat context creation attribute was true
+  // and we are using a software renderer, fail.
+  if (attrib_parser.fail_if_major_perf_caveat_ &&
+      feature_info_->feature_flags().is_swiftshader) {
+    group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
+    Destroy(true);
+    return false;
+  }
+
   if (!group_->Initialize(this, disallowed_features)) {
     LOG(ERROR) << "GpuScheduler::InitializeCommon failed because group "
                << "failed to initialize.";
@@ -2276,10 +2289,6 @@ bool GLES2DecoderImpl::Initialize(
   }
   glActiveTexture(GL_TEXTURE0);
   CHECK_GL_ERROR();
-
-  ContextCreationAttribHelper attrib_parser;
-  if (!attrib_parser.Parse(attribs))
-    return false;
 
   if (offscreen) {
     if (attrib_parser.samples_ > 0 && attrib_parser.sample_buffers_ > 0 &&
@@ -3481,7 +3490,7 @@ error::Error GLES2DecoderImpl::DoCommand(
   error::Error result = error::kNoError;
   if (log_commands()) {
     // TODO(notme): Change this to a LOG/VLOG that works in release. Tried
-    // LOG(INFO), tried VLOG(1), no luck.
+    // VLOG(1), no luck.
     LOG(ERROR) << "[" << logger_.GetLogPrefix() << "]" << "cmd: "
                << GetCommandName(command);
   }

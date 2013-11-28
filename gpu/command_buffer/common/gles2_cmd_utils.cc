@@ -734,6 +734,7 @@ const int32 kBufferDestroyed = 0x3095;  // EGL_BUFFER_DESTROYED
 // Chromium only.
 const int32 kShareResources        = 0x10000;
 const int32 kBindGeneratesResource = 0x10001;
+const int32 kFailIfMajorPerfCaveat = 0x10002;
 
 }  // namespace
 
@@ -748,7 +749,8 @@ ContextCreationAttribHelper::ContextCreationAttribHelper()
     sample_buffers_(-1),
     buffer_preserved_(true),
     share_resources_(false),
-    bind_generates_resource_(true) {
+    bind_generates_resource_(true),
+    fail_if_major_perf_caveat_(false) {
 }
 
 void ContextCreationAttribHelper::Serialize(std::vector<int32>* attribs) {
@@ -790,6 +792,8 @@ void ContextCreationAttribHelper::Serialize(std::vector<int32>* attribs) {
   attribs->push_back(share_resources_ ? 1 : 0);
   attribs->push_back(kBindGeneratesResource);
   attribs->push_back(bind_generates_resource_ ? 1 : 0);
+  attribs->push_back(kFailIfMajorPerfCaveat);
+  attribs->push_back(fail_if_major_perf_caveat_ ? 1 : 0);
   attribs->push_back(kNone);
 }
 
@@ -840,6 +844,9 @@ bool ContextCreationAttribHelper::Parse(const std::vector<int32>& attribs) {
         break;
       case kBindGeneratesResource:
         bind_generates_resource_ = value != 0;
+        break;
+      case kFailIfMajorPerfCaveat:
+        fail_if_major_perf_caveat_ = value != 0;
         break;
       case kNone:
         // Terminate list, even if more attributes.

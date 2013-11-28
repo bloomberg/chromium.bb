@@ -127,7 +127,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       map_buffer_range(false),
       ext_discard_framebuffer(false),
       angle_depth_texture(false),
-      is_angle(false) {
+      is_angle(false),
+      is_swiftshader(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds() :
@@ -154,6 +155,9 @@ void FeatureInfo::InitializeBasicState(const CommandLine& command_line) {
   }
   feature_flags_.enable_shader_name_hashing =
       !command_line.HasSwitch(switches::kDisableShaderNameHashing);
+
+  feature_flags_.is_swiftshader =
+      (command_line.GetSwitchValueASCII(switches::kUseGL) == "swiftshader");
 
   static const GLenum kAlphaTypes[] = {
       GL_UNSIGNED_BYTE,

@@ -128,6 +128,9 @@ bool GLInProcessContextImpl::Initialize(
     gfx::GpuPreference gpu_preference) {
   DCHECK(size.width() >= 0 && size.height() >= 0);
 
+  // Changes to these values should also be copied to
+  // gpu/command_buffer/client/gl_in_process_context.cc and to
+  // content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h
   const int32 ALPHA_SIZE     = 0x3021;
   const int32 BLUE_SIZE      = 0x3022;
   const int32 GREEN_SIZE     = 0x3023;
@@ -137,6 +140,9 @@ bool GLInProcessContextImpl::Initialize(
   const int32 SAMPLES        = 0x3031;
   const int32 SAMPLE_BUFFERS = 0x3032;
   const int32 NONE           = 0x3038;
+
+  // Chromium-specific attributes
+  const int32 FAIL_IF_MAJOR_PERF_CAVEAT = 0x10002;
 
   std::vector<int32> attrib_vector;
   if (attribs.alpha_size >= 0) {
@@ -170,6 +176,10 @@ bool GLInProcessContextImpl::Initialize(
   if (attribs.sample_buffers >= 0) {
     attrib_vector.push_back(SAMPLE_BUFFERS);
     attrib_vector.push_back(attribs.sample_buffers);
+  }
+  if (attribs.fail_if_major_perf_caveat > 0) {
+    attrib_vector.push_back(FAIL_IF_MAJOR_PERF_CAVEAT);
+    attrib_vector.push_back(attribs.fail_if_major_perf_caveat);
   }
   attrib_vector.push_back(NONE);
 
@@ -207,14 +217,14 @@ bool GLInProcessContextImpl::Initialize(
                                    gpu_preference,
                                    wrapped_callback,
                                    share_group_id_)) {
-    LOG(INFO) << "Failed to initialize InProcessCommmandBuffer";
+    LOG(ERROR) << "Failed to initialize InProcessCommmandBuffer";
     return false;
   }
 
   // Create the GLES2 helper, which writes the command buffer protocol.
   gles2_helper_.reset(new gles2::GLES2CmdHelper(command_buffer_.get()));
   if (!gles2_helper_->Initialize(kCommandBufferSize)) {
-    LOG(INFO) << "Failed to initialize GLES2CmdHelper";
+    LOG(ERROR) << "Failed to initialize GLES2CmdHelper";
     Destroy();
     return false;
   }
