@@ -4443,7 +4443,12 @@ TEST_F(WebFrameTest, DidAccessInitialDocumentBodyBeforeModalDialog)
     EXPECT_TRUE(webFrameClient.m_didAccessInitialDocument);
 }
 
+// Fails on the WebKit XP (deps) bot. http://crbug.com/312192
+#if OS(WIN)
+TEST_F(WebFrameTest, DISABLED_DidWriteToInitialDocumentBeforeModalDialog)
+#else
 TEST_F(WebFrameTest, DidWriteToInitialDocumentBeforeModalDialog)
+#endif
 {
     TestAccessInitialDocumentWebFrameClient webFrameClient;
     FrameTestHelpers::WebViewHelper webViewHelper;
