@@ -488,7 +488,7 @@ const Region* PictureLayerImpl::GetInvalidation() {
 }
 
 const PictureLayerTiling* PictureLayerImpl::GetTwinTiling(
-    const PictureLayerTiling* tiling) const {
+    const PictureLayerTiling* tiling) {
 
   if (!twin_layer_)
     return NULL;
@@ -659,10 +659,6 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
   DCHECK(ideal_contents_scale_);
   DCHECK_GT(tilings_->num_tilings(), 0u);
 
-  // The goal of this function is to find the minimum set of tiles that need to
-  // be ready to draw in order to activate without flashing content from a
-  // higher res on the active tree to a lower res on the pending tree.
-
   gfx::Rect rect(visible_content_rect());
 
   float min_acceptable_scale =
@@ -679,21 +675,17 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
     }
   }
 
-  PictureLayerTiling* high_res = NULL;
-  PictureLayerTiling* low_res = NULL;
+  // Mark tiles for activation in two passes.  Ready to draw tiles in acceptable
+  // but non-ideal tilings are marked as required for activation, but any
+  // non-ready tiles are not marked as required.  From there, any missing holes
+  // will need to be filled in from the high res tiling.
 
-  // First pass: ready to draw tiles in acceptable but non-ideal tilings are
-  // marked as required for activation so that their textures are not thrown
-  // away; any non-ready tiles are not marked as required.
+  PictureLayerTiling* high_res = NULL;
   Region missing_region = rect;
   for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
     PictureLayerTiling* tiling = tilings_->tiling_at(i);
     DCHECK(tiling->has_ever_been_updated());
 
-    if (tiling->resolution() == LOW_RESOLUTION) {
-      DCHECK(!low_res) << "There can only be one low res tiling";
-      low_res = tiling;
-    }
     if (tiling->contents_scale() < min_acceptable_scale)
       continue;
     if (tiling->resolution() == HIGH_RESOLUTION) {
@@ -719,85 +711,30 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
       iter->MarkRequiredForActivation();
     }
   }
+
   DCHECK(high_res) << "There must be one high res tiling";
-
-  // If these pointers are null (because no twin, no matching tiling, or the
-  // simpification just below), then high res tiles will be required to fill any
-  // holes left by the first pass above.  If the pointers are valid, then this
-  // layer is allowed to skip any tiles that are not ready on its twin.
-  const PictureLayerTiling* twin_high_res = NULL;
-  const PictureLayerTiling* twin_low_res = NULL;
-
-  // As a simplification, only allow activating to skip twin tiles that the
-  // active layer is also missing when both this layer and its twin have 2
-  // tilings (high and low).  This avoids having to iterate/track coverage of
-  // non-ideal tilings during the last draw call on the active layer.
-  if (high_res && low_res && tilings_->num_tilings() == 2 &&
-      twin_layer_ && twin_layer_->tilings_->num_tilings() == 2) {
-    twin_low_res = GetTwinTiling(low_res);
-    if (twin_low_res)
-      twin_high_res = GetTwinTiling(high_res);
-  }
-  if (!twin_high_res || !twin_low_res) {
-    twin_high_res = NULL;
-    twin_low_res = NULL;
-  }
-
-  // As a second pass, mark as required any visible high res tiles not filled in
-  // by acceptable non-ideal tiles from the first pass.
-  if (MarkVisibleTilesAsRequired(
-      high_res, twin_high_res, contents_scale_x(), rect, &missing_region)) {
-    // As an optional third pass, if a high res tile was skipped because its
-    // twin was also missing, then fall back to mark low res tiles as required
-    // in case the active twin is substituting those for missing high res
-    // content.
-    MarkVisibleTilesAsRequired(
-        low_res, twin_low_res, contents_scale_x(), rect, &missing_region);
-  }
-}
-
-bool PictureLayerImpl::MarkVisibleTilesAsRequired(
-    PictureLayerTiling* tiling,
-    const PictureLayerTiling* optional_twin_tiling,
-    float contents_scale,
-    gfx::Rect rect,
-    Region* missing_region) const {
-  bool twin_had_missing_tile = false;
-  for (PictureLayerTiling::CoverageIterator iter(tiling,
-                                                 contents_scale,
+  for (PictureLayerTiling::CoverageIterator iter(high_res,
+                                                 contents_scale_x(),
                                                  rect);
        iter;
        ++iter) {
-    Tile* tile = *iter;
     // A null tile (i.e. missing recording) can just be skipped.
-    if (!tile)
+    if (!*iter)
       continue;
 
     // This iteration is over the visible content rect which is potentially
     // less conservative than projecting the viewport into the layer.
     // Ignore tiles that are know to be outside the viewport.
-    if (tile->priority(PENDING_TREE).distance_to_visible_in_pixels != 0)
+    if (iter->priority(PENDING_TREE).distance_to_visible_in_pixels != 0)
       continue;
 
     // If the missing region doesn't cover it, this tile is fully
     // covered by acceptable tiles at other scales.
-    if (!missing_region->Intersects(iter.geometry_rect()))
+    if (!missing_region.Intersects(iter.geometry_rect()))
       continue;
 
-    // If the twin tile isn't ready to draw, then this tile isn't
-    // required to prevent flashing.
-    if (optional_twin_tiling) {
-      Tile* twin_tile = optional_twin_tiling->TileAt(iter.i(), iter.j());
-      if (!twin_tile || !twin_tile->IsReadyToDraw()) {
-        twin_had_missing_tile = true;
-        continue;
-      }
-    }
-
-    missing_region->Subtract(iter.geometry_rect());
-    tile->MarkRequiredForActivation();
+    iter->MarkRequiredForActivation();
   }
-  return twin_had_missing_tile;
 }
 
 void PictureLayerImpl::DoPostCommitInitialization() {

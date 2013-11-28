@@ -63,7 +63,7 @@ const Region* FakePictureLayerTilingClient::GetInvalidation() {
 }
 
 const PictureLayerTiling* FakePictureLayerTilingClient::GetTwinTiling(
-      const PictureLayerTiling* tiling) const {
+      const PictureLayerTiling* tiling) {
   return twin_tiling_;
 }
 
