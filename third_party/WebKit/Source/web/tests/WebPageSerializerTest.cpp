@@ -35,16 +35,19 @@
 #include "WebFrame.h"
 #include "WebFrameClient.h"
 #include "WebView.h"
+#include "core/dom/Document.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "public/web/WebDocument.h"
 
 #include <gtest/gtest.h>
 
 using namespace blink;
+using WebCore::Document;
 using blink::URLTestHelpers::toKURL;
 
 namespace {
@@ -165,6 +168,12 @@ TEST_F(WebPageSerializerTest, MultipleFrames)
                           WebString::fromUTF8("awesome.png"));
 
     loadURLInTopFrame(topFrameURL);
+    // OBJECT/EMBED have some delay to start to load their content. The first
+    // serveAsynchronousMockedRequests call in loadURLInTopFrame() finishes
+    // before the start.
+    RefPtr<Document> document = static_cast<PassRefPtr<Document> >(m_webView->mainFrame()->document());
+    document->updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);
+    Platform::current()->unitTestSupport()->serveAsynchronousMockedRequests();
 
     // Retrieve all resources.
     WebVector<WebURL> frames;

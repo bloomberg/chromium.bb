@@ -46,7 +46,7 @@
             iframeContentDocument.onreadystatechange = function(e)
             {
                 // Attempts to move the document body back into the iframe document.
-                iframeDocumentElement.innerHTML = document.documentElement;
+                iframeContentDocument.appendChild(iframeDocumentElement);
             }
 
             // Moves the iframe body into the current document.

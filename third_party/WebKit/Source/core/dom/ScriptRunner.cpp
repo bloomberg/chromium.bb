@@ -99,6 +99,21 @@ void ScriptRunner::notifyScriptReady(ScriptLoader* scriptLoader, ExecutionType e
     m_timer.startOneShot(0);
 }
 
+void ScriptRunner::notifyScriptLoadError(ScriptLoader* scriptLoader, ExecutionType executionType)
+{
+    switch (executionType) {
+    case ASYNC_EXECUTION:
+        ASSERT(m_pendingAsyncScripts.contains(scriptLoader));
+        m_pendingAsyncScripts.remove(scriptLoader);
+        m_document->decrementLoadEventDelayCount();
+        break;
+
+    case IN_ORDER_EXECUTION:
+        ASSERT(!m_scriptsToExecuteInOrder.isEmpty());
+        break;
+    }
+}
+
 void ScriptRunner::timerFired(Timer<ScriptRunner>* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_timer);

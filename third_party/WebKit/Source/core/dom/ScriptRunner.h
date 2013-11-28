@@ -52,6 +52,7 @@ public:
     void suspend();
     void resume();
     void notifyScriptReady(ScriptLoader*, ExecutionType);
+    void notifyScriptLoadError(ScriptLoader*, ExecutionType);
 
 private:
     explicit ScriptRunner(Document*);
