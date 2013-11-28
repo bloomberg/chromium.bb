@@ -214,11 +214,16 @@
 //
 // PASSING PARAMETERS BY REFERENCE
 //
-//   void foo(int arg) { cout << arg << endl }
+//   Const references are *copied* unless ConstRef is used. Example:
+//
+//   void foo(const int& arg) { printf("%d %p\n", arg, &arg); }
 //   int n = 1;
+//   base::Closure has_copy = base::Bind(&foo, n);
 //   base::Closure has_ref = base::Bind(&foo, base::ConstRef(n));
 //   n = 2;
-//   has_ref.Run();  // Prints "2"
+//   foo(n);                        // Prints "2 0xaaaaaaaaaaaa"
+//   has_copy.Run();                // Prints "1 0xbbbbbbbbbbbb"
+//   has_ref.Run();                 // Prints "2 0xaaaaaaaaaaaa"
 //
 //   Normally parameters are copied in the closure. DANGER: ConstRef stores a
 //   const reference instead, referencing the original parameter. This means
