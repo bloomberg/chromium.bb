@@ -54,7 +54,7 @@ JavaScriptCallFrame* JavaScriptCallFrame::caller()
         v8::HandleScope handleScope(m_isolate);
         v8::Handle<v8::Context> debuggerContext = m_debuggerContext.newLocal(m_isolate);
         v8::Context::Scope contextScope(debuggerContext);
-        v8::Handle<v8::Value> callerFrame = m_callFrame.newLocal(m_isolate)->Get(v8::String::NewSymbol("caller"));
+        v8::Handle<v8::Value> callerFrame = m_callFrame.newLocal(m_isolate)->Get(v8Symbol("caller", m_isolate));
         if (!callerFrame->IsObject())
             return 0;
         m_caller = JavaScriptCallFrame::create(debuggerContext, v8::Handle<v8::Object>::Cast(callerFrame));
@@ -66,7 +66,7 @@ int JavaScriptCallFrame::sourceID() const
 {
     v8::HandleScope handleScope(m_isolate);
     v8::Context::Scope contextScope(m_debuggerContext.newLocal(m_isolate));
-    v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8::String::NewSymbol("sourceID"));
+    v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8Symbol("sourceID", m_isolate));
     if (result->IsInt32())
         return result->Int32Value();
     return 0;
@@ -76,7 +76,7 @@ int JavaScriptCallFrame::line() const
 {
     v8::HandleScope handleScope(m_isolate);
     v8::Context::Scope contextScope(m_debuggerContext.newLocal(m_isolate));
-    v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8::String::NewSymbol("line"));
+    v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8Symbol("line", m_isolate));
     if (result->IsInt32())
         return result->Int32Value();
     return 0;
@@ -86,7 +86,7 @@ int JavaScriptCallFrame::column() const
 {
     v8::HandleScope handleScope(m_isolate);
     v8::Context::Scope contextScope(m_debuggerContext.newLocal(m_isolate));
-    v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8::String::NewSymbol("column"));
+    v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8Symbol("column", m_isolate));
     if (result->IsInt32())
         return result->Int32Value();
     return 0;
@@ -96,14 +96,14 @@ String JavaScriptCallFrame::functionName() const
 {
     v8::HandleScope handleScope(m_isolate);
     v8::Context::Scope contextScope(m_debuggerContext.newLocal(m_isolate));
-    v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8::String::NewSymbol("functionName"));
+    v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8Symbol("functionName", m_isolate));
     return toWebCoreStringWithUndefinedOrNullCheck(result);
 }
 
 v8::Handle<v8::Value> JavaScriptCallFrame::scopeChain() const
 {
-    v8::Handle<v8::Array> scopeChain = v8::Handle<v8::Array>::Cast(m_callFrame.newLocal(m_isolate)->Get(v8::String::NewSymbol("scopeChain")));
-    v8::Handle<v8::Array> result = v8::Array::New(scopeChain->Length());
+    v8::Handle<v8::Array> scopeChain = v8::Handle<v8::Array>::Cast(m_callFrame.newLocal(m_isolate)->Get(v8Symbol("scopeChain", m_isolate)));
+    v8::Handle<v8::Array> result = v8::Array::New(m_isolate, scopeChain->Length());
     for (uint32_t i = 0; i < scopeChain->Length(); i++)
         result->Set(i, scopeChain->Get(i));
     return result;
@@ -111,19 +111,19 @@ v8::Handle<v8::Value> JavaScriptCallFrame::scopeChain() const
 
 int JavaScriptCallFrame::scopeType(int scopeIndex) const
 {
-    v8::Handle<v8::Array> scopeType = v8::Handle<v8::Array>::Cast(m_callFrame.newLocal(m_isolate)->Get(v8::String::NewSymbol("scopeType")));
+    v8::Handle<v8::Array> scopeType = v8::Handle<v8::Array>::Cast(m_callFrame.newLocal(m_isolate)->Get(v8Symbol("scopeType", m_isolate)));
     return scopeType->Get(scopeIndex)->Int32Value();
 }
 
 v8::Handle<v8::Value> JavaScriptCallFrame::thisObject() const
 {
-    return m_callFrame.newLocal(m_isolate)->Get(v8::String::NewSymbol("thisObject"));
+    return m_callFrame.newLocal(m_isolate)->Get(v8Symbol("thisObject", m_isolate));
 }
 
 String JavaScriptCallFrame::stepInPositions() const
 {
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
-    v8::Handle<v8::Function> stepInPositions = v8::Handle<v8::Function>::Cast(callFrame->Get(v8::String::NewSymbol("stepInPositions")));
+    v8::Handle<v8::Function> stepInPositions = v8::Handle<v8::Function>::Cast(callFrame->Get(v8Symbol("stepInPositions", m_isolate)));
     v8::Handle<v8::Value> result = stepInPositions->Call(callFrame, 0, 0);
     return toWebCoreStringWithUndefinedOrNullCheck(result);
 }
@@ -132,7 +132,7 @@ bool JavaScriptCallFrame::isAtReturn() const
 {
     v8::HandleScope handleScope(m_isolate);
     v8::Context::Scope contextScope(m_debuggerContext.newLocal(m_isolate));
-    v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8::String::NewSymbol("isAtReturn"));
+    v8::Handle<v8::Value> result = m_callFrame.newLocal(m_isolate)->Get(v8Symbol("isAtReturn", m_isolate));
     if (result->IsBoolean())
         return result->BooleanValue();
     return false;
@@ -140,13 +140,13 @@ bool JavaScriptCallFrame::isAtReturn() const
 
 v8::Handle<v8::Value> JavaScriptCallFrame::returnValue() const
 {
-    return m_callFrame.newLocal(m_isolate)->Get(v8::String::NewSymbol("returnValue"));
+    return m_callFrame.newLocal(m_isolate)->Get(v8Symbol("returnValue", m_isolate));
 }
 
 v8::Handle<v8::Value> JavaScriptCallFrame::evaluate(const String& expression)
 {
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
-    v8::Handle<v8::Function> evalFunction = v8::Handle<v8::Function>::Cast(callFrame->Get(v8::String::NewSymbol("evaluate")));
+    v8::Handle<v8::Function> evalFunction = v8::Handle<v8::Function>::Cast(callFrame->Get(v8Symbol("evaluate", m_isolate)));
     v8::Handle<v8::Value> argv[] = { v8String(expression, m_debuggerContext.newLocal(m_isolate)->GetIsolate()) };
     return evalFunction->Call(callFrame, 1, argv);
 }
@@ -154,7 +154,7 @@ v8::Handle<v8::Value> JavaScriptCallFrame::evaluate(const String& expression)
 v8::Handle<v8::Value> JavaScriptCallFrame::restart()
 {
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
-    v8::Handle<v8::Function> restartFunction = v8::Handle<v8::Function>::Cast(callFrame->Get(v8::String::NewSymbol("restart")));
+    v8::Handle<v8::Function> restartFunction = v8::Handle<v8::Function>::Cast(callFrame->Get(v8Symbol("restart", m_isolate)));
     v8::Debug::SetLiveEditEnabled(true);
     v8::Handle<v8::Value> result = restartFunction->Call(callFrame, 0, 0);
     v8::Debug::SetLiveEditEnabled(false);
@@ -169,7 +169,7 @@ v8::Handle<v8::Object> JavaScriptCallFrame::innerCallFrame()
 ScriptValue JavaScriptCallFrame::setVariableValue(int scopeNumber, const String& variableName, const ScriptValue& newValue)
 {
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
-    v8::Handle<v8::Function> setVariableValueFunction = v8::Handle<v8::Function>::Cast(callFrame->Get(v8::String::NewSymbol("setVariableValue")));
+    v8::Handle<v8::Function> setVariableValueFunction = v8::Handle<v8::Function>::Cast(callFrame->Get(v8Symbol("setVariableValue", m_isolate)));
     v8::Handle<v8::Value> argv[] = {
         v8::Handle<v8::Value>(v8::Integer::New(scopeNumber, m_isolate)),
         v8String(variableName, m_isolate),
