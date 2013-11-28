@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Cameră foto",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Faceți fotografii trăsnite utilizând camera web.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Andy",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Ochi mari",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Înfrumusețare",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Colorizare",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Îndrăzneț",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Tonuri de gri",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Ziar",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Normal",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Cap mare",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Falcă mare",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Cap de iepure",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Sepia",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "Retro '30",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "Retro '50",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "Retro '60",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Vârtej",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Descentrare",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Cinema",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Vintage",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "Camera foto este indisponibilă momentan.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Este posibil să fie utilizată de altă aplicație.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Fotografia nu poate fi salvată în galerie.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Galeria nu poate fi încărcată.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Fotografia selectată nu poate fi ștearsă.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Fotografia selectată nu poate fi salvată.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Accelerarea hardware nu este disponibilă.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Este posibil ca placa grafică a computerului să fie incompatibilă sau ca driverele să fie vechi.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Deschideți galeria",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Activați/dezactivați filtrele",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Ștergeți",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Salvați pe disc",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Printați",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Înapoi",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Maximizați",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Închideți",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Imagini din galerie",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Faceți o fotografie",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Da",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Nu",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Sigur doriți să eliminați această fotografie din galerie?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

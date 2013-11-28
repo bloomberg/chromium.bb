@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Máy ảnh",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Chụp những bức ảnh tuyệt vời bằng máy ảnh web của bạn.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Andy",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Mắt to",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Sắc đẹp",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Chỉnh màu sắc",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Hiện đại",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Thang độ xám",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Báo chí",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Bình thường",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Đầu to",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Hàm to",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Đầu thỏ",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Màu nâu đỏ",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "Trở về những năm 30",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "Trở về những năm 50",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "Trở về những năm 60",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Xoáy nước",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Ống kính trượt nghiêng",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Điện ảnh",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Cổ điển",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "Máy ảnh của bạn hiện không khả dụng.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Một ứng dụng khác có thể đang sử dụng máy ảnh của bạn.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Không thể lưu ảnh vào thư viện.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Không thể tải thư viện.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Không thể xóa ảnh đã chọn.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Không thể lưu ảnh đã chọn.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Tăng tốc phần cứng không khả dụng.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Máy tính của bạn có thể có cạc đồ họa không tương thích hoặc trình điều khiển cũ.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Truy cập thư viện",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Chuyển đổi bộ lọc",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Xóa",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Lưu vào đĩa",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "In",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Quay lại",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Phóng to",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Đóng",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Ảnh trong thư viện",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Chụp ảnh",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Có",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Không",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Bạn có thực sự muốn xóa ảnh này khỏi thư viện không?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

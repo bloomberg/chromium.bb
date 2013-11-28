@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Fotoaparat",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Snimajte lude slike svojom web-kamerom.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Andy",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Velike oči",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Uljepšavanje",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Bojanje",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Neobično",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Nijanse sive",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Novine",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Normalno",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Velika glava",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Velika čeljust",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Zečja glava",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Sepija",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "Retro 30-te",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "Retro 50-te",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "Retro 60-te",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Vrtlog",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Zakretanje i pomak",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Kino",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Starinski",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "Vaš fotoaparat trenutačno nije dostupan.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Možda ga upotrebljava neka druga aplikacija.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Slika nije spremljena u galeriju.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Galerija nije učitana.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Odabrana slika nije izbrisana.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Odabrana slika nije spremljena.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Hardversko ubrzanje nije dostupno.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Vaše računalo možda ima nekompatibilnu grafičku karticu ili stare upravljačke programe.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Idi u galeriju",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Izmjenjuj filtre",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Izbriši",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Spremi na disk",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Ispiši",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Natrag",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Maksimiziraj",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Zatvori",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Slike iz galerije",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Snimi sliku",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Da",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Ne",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "U redu",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Želite li doista ukloniti tu sliku iz galerije?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

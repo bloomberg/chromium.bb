@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Fotoaparát",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Odfoťte svojou webovou kamerou bláznivé zábery.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Andy",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Veľké oči",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Krása",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Kolorovanie",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Funky",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Odtiene sivej",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Noviny",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Normálne",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Veľká hlava",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Veľká čeľusť",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Zajačia hlava",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Sépia",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "Retro '30",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "Retro '50",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "Retro '60",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Vír",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Tilt shift",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Kino",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Starosvetské",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "Vaša kamera je momentálne nedostupná.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Pravdepodobne ju používa iná aplikácia.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Obrázok sa nepodarilo uložiť do galérie.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Galériu sa nepodarilo načítať.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Vybratý obrázok sa nepodarilo odstrániť.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Vybratý obrázok sa nepodarilo uložiť.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Hardvérové urýchľovanie nie je k dispozícii.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Váš počítač pravdepodobne používa nekompatibilnú grafickú kartu alebo zastarané ovládače.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Prejsť do galérie",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Prepnúť filtre",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Odstrániť",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Uložiť na disk",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Tlačiť",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Späť",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Maximalizovať",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Zavrieť",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Obrázky galérie",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Odfotiť snímku",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Áno",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Nie",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Naozaj chcete odstrániť tento obrázok z galérie?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

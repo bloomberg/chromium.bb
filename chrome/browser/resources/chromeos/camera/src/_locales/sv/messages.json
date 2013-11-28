@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Kamera",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Ta galna bilder med webbkameran.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Andy",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Stora ögon",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Skönhet",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Färgsätt",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Stencool",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Gråskala",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Dagstidning",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Normal",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Stort huvud",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Stor haka",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Kaninhuvud",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Sepia",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "30-talsretro",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "50-talsretro",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "60-talsretro",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Virvel",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Tiltshift",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Bio",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Patinering",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "Kameran är inte tillgänglig för närvarande.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Den används kanske av en annan app.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Det gick inte att spara bilderna i galleriet.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Det gick inte att läsa in galleriet.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Det gick inte att ta bort den valda bilden.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Det gick inte att spara den valda bilden.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Alternativet Maskinvaruacceleration är inte tillgängligt.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Datorns grafikkort kanske inte är kompatibelt, eller så är drivrutinerna för gamla.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Besök galleriet",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Filter på/av",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Ta bort",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Spara på disk",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Skriv ut",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Tillbaka",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Maximera",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Stäng",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Bilder i galleriet",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Ta en bild",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Ja",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Nej",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Vill du ta bort bilden från galleriet?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

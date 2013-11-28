@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Kamera",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Web kameranızla çılgın fotoğraflar çekin.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Andy",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Büyük Gözler",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Güzellik Salonu",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Renklendir",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Funky",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Gri Tonlamalı",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Gazete",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Normal",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Koca Kafa",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Büyük Çene",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Tavşan Kafa",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Sepya",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "Retro 30'lar",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "Retro 50'ler",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "Retro 60'lar",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Girdap",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Minyatürleştirme",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Sinema",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Klasik",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "Kameranız şu anda kullanılamıyor.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Başka bir uygulama tarafından kullanılıyor olabilir.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Resim, galeriye kaydedilemiyor.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Galeri yüklenemiyor.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Seçilen resim silinemiyor.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Seçilen resim kaydedilemiyor.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Donanım hızlandırma özelliği kullanılamıyor.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Bilgisayarınızdaki grafik kartı uyumsuz olabilir veya sürücüleri eski olabilir.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Galeriye git",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Filtreleri aç/kapat",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Sil",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Diske kaydet",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Yazdır",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Geri git",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Ekranı kapla",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Kapat",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Galeri resimleri",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Fotoğraf çek",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Evet",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Hayır",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "Tamam",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Bu resmi galeriden kaldırmayı gerçekten istiyor musunuz?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

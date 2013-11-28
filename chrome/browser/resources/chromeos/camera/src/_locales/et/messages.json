@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Kaamera",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Tehke oma veebikaameraga pööraseid pilte.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Andy",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Suured silmad",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Ilu",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Värvi",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Stiilne",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Hallskaala",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Ajaleht",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Tavaline",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Suur pea",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Suur lõug",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Jänku pea",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Seepia",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "Retro '30-ndad",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "Retro '50-ndad",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "Retro '60-ndad",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Keerlev",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Kaldnihe",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Film",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Vana",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "Teie kaamera pole praegu saadaval.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Seda võib kasutada mõni teine rakendus.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Pilti ei saa galeriisse salvestada.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Galeriid ei saa laadida.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Valitud pilti ei saa kustutada.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Valitud pilti ei saa salvestada.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Riistvarakiirendus pole saadaval.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Teie arvuti graafikakaart võib olla ühildumatu või draiverid on vanad.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Mine galeriisse",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Lülita filtrite vahel",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Kustuta",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Salvesta kettale",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Prindi",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Mine tagasi",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Maksimeeri",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Sule",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Galerii kujutised",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Pildista",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Jah",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Ei",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Kas soovite selle pildi galeriist kindlasti eemaldada?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

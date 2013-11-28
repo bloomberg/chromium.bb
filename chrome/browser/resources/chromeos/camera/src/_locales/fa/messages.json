@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "دوربین",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "عکس‌هایی جالب و خنده‌دار با دوربین وبتان بگیرید.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "اندی",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "چشم درشت",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "زیبایی",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "رنگی کردن",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "غیرعادی",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "سیاه و سفید",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "روزنامه‌ای",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "عادی",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "سر بزرگ",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "فک بزرگ",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "سر خرگوشی",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "قرمز قهوه‌ای",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "سبک دهه ۳۰",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "سبک دهه ۵۰",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "سبک دهه ۶۰",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "چرخشی",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "تغییر عمق",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "سینمایی",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "قدیمی",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "در حال حاضر دوربین شما در دسترس نیست.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "ممکن است برنامه دیگری در حال استفاده از آن باشد.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "عکس در گالری ذخیره نشد.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "بارگیری گالری انجام نشد.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "عکس انتخابی حذف نشد.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "عکس انتخابی ذخیره نشد.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "شتاب سخت‌افزاری در دسترس نیست.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "ممکن است کارت گرافیک رایانه‌تان سازگار نباشد یا درایورهای آن قدیمی باشند.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "رفتن به گالری",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "فعال و غیرفعال کردن فیلترها",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "حذف",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "ذخیره در دیسک",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "چاپ",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "برگشت به عقب",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "بیشینه کردن",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "بستن",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "تصاویر گالری",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "عکسی بگیرید",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "بله",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "خیر",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "تأیید",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "آیا واقعاً می‌خواهید این عکس را از گالری حذف کنید؟",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

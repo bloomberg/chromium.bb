@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Kamera",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Uzņemiet trakus attēlus, izmantojot tīmekļa kameru!",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Endijs Vorhols",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Lielas acis",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Skaistums",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Krāsains",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Fanks",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Pelēktoņu",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Laikraksts",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Parasts",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Liela galva",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Liels žoklis",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Truša galva",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Sēpija",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "30. gadu retro",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "50. gadu retro",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "60. gadu retro",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Virpulis",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Makroimitācija",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Kino",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Vecmodīgs",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "Kamera pašlaik nav pieejama.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Iespējams, tā tiek izmantota citai lietotnei.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Attēlu nevar saglabāt galerijā.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Galeriju nevar ielādēt.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Atlasīto attēlu nevar dzēst.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Atlasīto attēlu nevar saglabāt galerijā.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Aparatūras paātrināšana nav pieejama.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Iespējams, jūsu datora grafikas karte nav saderīga vai tam ir novecojuši draiveri.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Doties uz galeriju",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Pārslēgt filtrus",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Dzēst",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Saglabāt diskā",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Drukāt",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Atpakaļ",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Palielināt",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Aizvērt",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Galerijas attēli",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Uzņemt attēlu",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Jā",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Nē",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "Labi",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Vai tiešām vēlaties noņemt šo attēlu no galerijas?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

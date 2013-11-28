@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Kamera",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Tag skøre billeder med dit webkamera.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Andy",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Store øjne",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Skønhed",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Farvelæg",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Funky",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Gråtone",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Avis",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Normal",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Stort hoved",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Pluskæbe",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Kaninhoved",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Sepia",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "Retro – 30'erne",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "Retro – 50'erne",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "Retro – 60'erne",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Hvirvel",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Tilt/shift",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Biograf",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Vintage",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "Dit kamera er ikke tilgængeligt i øjeblikket.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Det bruges muligvis af en anden app.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Billedet kan ikke gemmes i galleriet.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Galleriet kunne ikke indlæses.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Det valgte billede kan ikke slettes.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Det valgte billede kan ikke gemmes.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Hardwareacceleration er ikke tilgængelig.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Din computer har muligvis et inkompatibelt grafikkort eller gamle drivere.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Gå til galleriet",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Juster filtre",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Slet",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Gem på disk",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Udskriv",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Gå tilbage",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Maksimer",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Luk",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Billeder i galleriet",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Tag et billede",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Ja",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Nej",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Er du sikker på, at du vil fjerne dette billede fra galleriet?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "Camera",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "Maak te gekke foto's met je webcam.",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "Andy",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "Grote ogen",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "Schoonheid",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "Kleuren",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "Funky",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "Grijstinten",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "Krant",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "Normaal",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "Groot hoofd",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "Grote kaak",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "Konijnenhoofd",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "Sepia",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "Retro '30",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "Retro '50",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "Retro '60",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "Draaikolk",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "Kantelen en schuiven",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "Cinema",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "Vintage",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "Je camera is momenteel niet beschikbaar.",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "Misschien wordt deze gebruikt door een andere app.",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "Kan de afbeelding niet opslaan in de galerij.",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "Kan de galerij niet laden.",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "Kan de geselecteerde afbeelding niet verwijderen.",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "Kan de geselecteerde afbeelding niet opslaan.",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "Hardwareversnelling is niet beschikbaar.",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "Je computer bevat misschien een niet-compatibele grafische kaart of verouderde stuurprogramma's.",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "Naar galerij",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "Filters in-/uitschakelen",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "Verwijderen",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "Opslaan op schijf",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "Afdrukken",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "Teruggaan",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "Maximaliseren",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "Sluiten",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "Galerij-afbeeldingen",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "Een foto maken",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "Ja",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "Nee",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "OK",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "Wil je deze afbeelding uit de galerij verwijderen?",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}

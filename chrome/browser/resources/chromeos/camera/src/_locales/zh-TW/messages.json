@@ -1,0 +1,174 @@
+{
+  "name": {
+    "message": "相機",
+    "description": "Name of the Camera App."
+  },
+  "description": {
+    "message": "使用網路攝影機拍攝創意十足的相片。",
+    "description": "Short description of the Camera App."
+  },
+  "andyEffect": {
+    "message": "普普風",
+    "description": "Andy effect's name."
+  },
+  "bigEyesEffect": {
+    "message": "大眼睛",
+    "description": "Big Eyes effect's name."
+  },
+  "beautyEffect": {
+    "message": "美化",
+    "description": "Beauty effect's name. Smooths skin and increases brightness."
+  },
+  "colorizeEffect": {
+    "message": "上色",
+    "description": "Colorize effect's name."
+  },
+  "funkyEffect": {
+    "message": "古怪",
+    "description": "Funky effect's name."
+  },
+  "grayscaleEffect": {
+    "message": "灰階",
+    "description": "Grayscale effect's name. Makes the images in grayscale."
+  },
+  "newspaperEffect": {
+    "message": "報紙",
+    "description": "Newspaper effect's name. Makes the image look like in a newspaper."
+  },
+  "normalEffect": {
+    "message": "普通",
+    "description": "Name of the normal effect, which means that no effect will be applied."
+  },
+  "bigHeadEffect": {
+    "message": "大頭",
+    "description": "Big Head effect's name."
+  },
+  "bigJawEffect": {
+    "message": "戽斗",
+    "description": "Big Jaw effect's name."
+  },
+  "bunnyHeadEffect": {
+    "message": "兔子頭",
+    "description": "Bunny Head effect's name."
+  },
+  "sepiaEffect": {
+    "message": "深褐色",
+    "description": "Sepia effect's name. Makes the image look like an old picture."
+  },
+  "retro30Effect": {
+    "message": "30 年代懷舊",
+    "description": "Retro '30 effect's name. Makes the image look like a retro picture."
+  },
+  "retro50Effect": {
+    "message": "50 年代懷舊",
+    "description": "Retro '50 effect's name. Makes the image look like a retro picture."
+  },
+  "retro60Effect": {
+    "message": "60 年代懷舊",
+    "description": "Retro '60 effect's name. Makes the image look like a retro picture."
+  },
+  "swirlEffect": {
+    "message": "漩渦",
+    "description": "Swirl effect's name. Makes the image look like a whirlpool."
+  },
+  "tiltShiftEffect": {
+    "message": "移軸",
+    "description": "Tils Shift effect's name."
+  },
+  "cinemaEffect": {
+    "message": "電影",
+    "description": "Cinema effect's name. Makes the image look like from a movie."
+  },
+  "vintageEffect": {
+    "message": "復古",
+    "description": "Vintage effect's name. Makes the image look vintage."
+  },
+  "errorMsgNoCamera": {
+    "message": "您的相機目前無法使用。",
+    "description": "Error message shown when it was impossible to connect to the camera due to unavailability or busy camera."
+  },
+  "errorMsgNoCameraHint": {
+    "message": "另一個應用程式正在使用。",
+    "description": "Hint message shown below the main error message. A hint for a user why the error occured."
+  },
+  "errorMsgGallerySaveFailed": {
+    "message": "無法將這張相片儲存到圖片庫。",
+    "description": "Error message shown when saving a picture to the gallery failed."
+  },
+  "errorMsgGalleryLoadFailed": {
+    "message": "無法載入圖片庫。",
+    "description": "Error message shown when loading the gallery failed."
+  },
+  "errorMsgGalleryDeleteFailed": {
+    "message": "無法刪除選取的相片。",
+    "description": "Error message shown when deleting the selected file from gallery failed."
+  },
+  "errorMsgGalleryExportFailed": {
+    "message": "無法儲存選取的相片。",
+    "description": "Error message shown when saving the selected file to an external directory failed."
+  },
+  "errorMsgNoWebGL": {
+    "message": "無法使用硬體加速功能。",
+    "description": "Error message shown when WebGL is not available."
+  },
+  "errorMsgNoWebGLHint": {
+    "message": "電腦的顯示卡可能不相容，或是驅動程式版本過舊。",
+    "description": "Hint shown below the main error message, when WebGL is not detected."
+  },
+  "galleryButton": {
+    "message": "前往圖片庫",
+    "description": "Label for the gallery button."
+  },
+  "filtersButton": {
+    "message": "切換濾鏡",
+    "description": "Label for the toggle filters button."
+  },
+  "deleteButton": {
+    "message": "刪除",
+    "description": "Label for the delete button."
+  },
+  "exportButton": {
+    "message": "儲存到磁碟",
+    "description": "Label for the exporting button."
+  },
+  "printButton": {
+    "message": "列印",
+    "description": "Label for the printing button."
+  },
+  "backButton": {
+    "message": "返回",
+    "description": "Label for the back button."
+  },
+  "maximizeButton": {
+    "message": "最大化",
+    "description": "Text to speech Label for the maximize button."
+  },
+  "closeButton": {
+    "message": "關閉",
+    "description": "Text to speech label for the close button."
+  },
+  "galleryImages": {
+    "message": "圖片庫圖片",
+    "description": "Text to speech label for the gallery list."
+  },
+  "takePictureButton": {
+    "message": "拍照",
+    "description": "Label for the red picture taking button."
+  },
+  "dialogYesButton": {
+    "message": "是",
+    "description": "Label for the accepting button in the confirmation dialog."
+  },
+  "dialogNoButton": {
+    "message": "否",
+    "description": "Label for the dismissing button in the confirmation dialog."
+  },
+  "dialogOKButton": {
+    "message": "確定",
+    "description": "Label for the OK button in the alert dialog."
+  },
+  "deleteConfirmationMsg": {
+    "message": "您確定要從圖片庫中移除這張相片嗎？",
+    "description": "Confirmation message before removing a picture from the gallery."
+  }
+}
