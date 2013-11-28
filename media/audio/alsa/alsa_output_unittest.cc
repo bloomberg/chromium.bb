@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
-#include "media/audio/linux/alsa_output.h"
-#include "media/audio/linux/alsa_wrapper.h"
-#include "media/audio/linux/audio_manager_linux.h"
+#include "media/audio/alsa/alsa_output.h"
+#include "media/audio/alsa/alsa_wrapper.h"
+#include "media/audio/alsa/audio_manager_alsa.h"
 #include "media/base/data_buffer.h"
 #include "media/base/seekable_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -76,7 +76,7 @@ class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
   MOCK_METHOD1(OnError, void(AudioOutputStream* stream));
 };
 
-class MockAudioManagerLinux : public AudioManagerLinux {
+class MockAudioManagerAlsa : public AudioManagerAlsa {
  public:
   MOCK_METHOD0(Init, void());
   MOCK_METHOD0(HasAudioOutputDevices, bool());
@@ -109,7 +109,7 @@ class MockAudioManagerLinux : public AudioManagerLinux {
 class AlsaPcmOutputStreamTest : public testing::Test {
  protected:
   AlsaPcmOutputStreamTest() {
-    mock_manager_.reset(new StrictMock<MockAudioManagerLinux>());
+    mock_manager_.reset(new StrictMock<MockAudioManagerAlsa>());
   }
 
   virtual ~AlsaPcmOutputStreamTest() {
@@ -171,7 +171,7 @@ class AlsaPcmOutputStreamTest : public testing::Test {
   static void* kFakeHints[];
 
   StrictMock<MockAlsaWrapper> mock_alsa_wrapper_;
-  scoped_ptr<StrictMock<MockAudioManagerLinux> > mock_manager_;
+  scoped_ptr<StrictMock<MockAudioManagerAlsa> > mock_manager_;
   base::MessageLoop message_loop_;
   scoped_refptr<media::DataBuffer> packet_;
 

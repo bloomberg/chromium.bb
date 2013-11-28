@@ -22,7 +22,7 @@
         'media_use_libvpx%': 1,
       }],
       # ALSA usage.
-      ['OS=="linux" or OS=="freebsd" or OS=="solaris"', {
+      ['(OS=="linux" or OS=="freebsd" or OS=="solaris") and embedded!=1', {
         'use_alsa%': 1,
       }, {
         'use_alsa%': 0,
@@ -62,6 +62,16 @@
       ],
       'sources': [
         'audio/agc_audio_stream.h',
+        'audio/alsa/alsa_input.cc',
+        'audio/alsa/alsa_input.h',
+        'audio/alsa/alsa_output.cc',
+        'audio/alsa/alsa_output.h',
+        'audio/alsa/alsa_util.cc',
+        'audio/alsa/alsa_util.h',
+        'audio/alsa/alsa_wrapper.cc',
+        'audio/alsa/alsa_wrapper.h',
+        'audio/alsa/audio_manager_alsa.cc',
+        'audio/alsa/audio_manager_alsa.h',
         'audio/android/audio_manager_android.cc',
         'audio/android/audio_manager_android.h',
         'audio/android/opensles_input.cc',
@@ -115,16 +125,10 @@
         'audio/fake_audio_consumer.h',
         'audio/fake_audio_input_stream.cc',
         'audio/fake_audio_input_stream.h',
+        'audio/fake_audio_manager.cc',
+        'audio/fake_audio_manager.h',
         'audio/fake_audio_output_stream.cc',
         'audio/fake_audio_output_stream.h',
-        'audio/linux/alsa_input.cc',
-        'audio/linux/alsa_input.h',
-        'audio/linux/alsa_output.cc',
-        'audio/linux/alsa_output.h',
-        'audio/linux/alsa_util.cc',
-        'audio/linux/alsa_util.h',
-        'audio/linux/alsa_wrapper.cc',
-        'audio/linux/alsa_wrapper.h',
         'audio/linux/audio_manager_linux.cc',
         'audio/linux/audio_manager_linux.h',
         'audio/mac/aggregate_device_manager.cc',
@@ -573,9 +577,11 @@
               '-lasound',
             ],
           },
+          'defines': [
+            'USE_ALSA',
+          ],
         }, { # use_alsa==0
-          'sources/': [ ['exclude', '/alsa_'],
-                      ['exclude', '/audio_manager_linux'] ],
+          'sources/': [ ['exclude', '(^|/)alsa/'], ],
         }],
         ['OS!="openbsd"', {
           'sources!': [
@@ -875,6 +881,7 @@
       ],
       'sources': [
         'audio/android/audio_android_unittest.cc',
+        'audio/alsa/alsa_output_unittest.cc',
         'audio/audio_input_controller_unittest.cc',
         'audio/audio_input_unittest.cc',
         'audio/audio_input_volume_unittest.cc',
@@ -886,7 +893,6 @@
         'audio/audio_parameters_unittest.cc',
         'audio/audio_power_monitor_unittest.cc',
         'audio/fake_audio_consumer_unittest.cc',
-        'audio/linux/alsa_output_unittest.cc',
         'audio/mac/audio_auhal_mac_unittest.cc',
         'audio/mac/audio_device_listener_mac_unittest.cc',
         'audio/mac/audio_low_latency_input_mac_unittest.cc',
@@ -1064,7 +1070,7 @@
         }],
         ['use_alsa==0', {
           'sources!': [
-            'audio/linux/alsa_output_unittest.cc',
+            'audio/alsa/alsa_output_unittest.cc',
             'audio/audio_low_latency_input_output_unittest.cc',
           ],
         }],

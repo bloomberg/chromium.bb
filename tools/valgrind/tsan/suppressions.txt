@@ -1069,7 +1069,7 @@
 {
   bug_256792
   ThreadSanitizer:Race
-  fun:media::AudioManagerLinux::~AudioManagerLinux
+  fun:media::AudioManagerAlsa::~AudioManagerAlsa
   fun:content::MockAudioManager::~MockAudioManager
   fun:content::MockAudioManager::~MockAudioManager
   fun:base::DefaultDeleter*

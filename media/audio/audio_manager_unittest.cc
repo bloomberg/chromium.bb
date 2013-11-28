@@ -9,9 +9,9 @@
 #include "media/audio/audio_manager_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_LINUX)
-#include "media/audio/linux/audio_manager_linux.h"
-#endif  // defined(OS_LINUX)
+#if defined(USE_ALSA)
+#include "media/audio/alsa/audio_manager_alsa.h"
+#endif  // defined(USE_ALSA)
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
@@ -288,8 +288,8 @@ TEST_F(AudioManagerTest, EnumerateInputDevicesAlsa) {
   if (!CanRunInputTest())
     return;
 
-  VLOG(2) << "Testing AudioManagerLinux.";
-  audio_manager_.reset(new AudioManagerLinux());
+  VLOG(2) << "Testing AudioManagerAlsa.";
+  audio_manager_.reset(new AudioManagerAlsa());
   AudioDeviceNames device_names;
   audio_manager_->GetAudioInputDeviceNames(&device_names);
   CheckDeviceNames(device_names);
@@ -299,8 +299,8 @@ TEST_F(AudioManagerTest, EnumerateOutputDevicesAlsa) {
   if (!CanRunOutputTest())
     return;
 
-  VLOG(2) << "Testing AudioManagerLinux.";
-  audio_manager_.reset(new AudioManagerLinux());
+  VLOG(2) << "Testing AudioManagerAlsa.";
+  audio_manager_.reset(new AudioManagerAlsa());
   AudioDeviceNames device_names;
   audio_manager_->GetAudioOutputDeviceNames(&device_names);
   CheckDeviceNames(device_names);

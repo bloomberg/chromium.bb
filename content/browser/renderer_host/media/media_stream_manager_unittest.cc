@@ -13,14 +13,16 @@
 #include "content/common/media/media_stream_options.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_manager_base.h"
-#if defined(OS_ANDROID)
+#if defined(USE_ALSA)
+#include "media/audio/alsa/audio_manager_alsa.h"
+#elif defined(OS_ANDROID)
 #include "media/audio/android/audio_manager_android.h"
-#elif defined(OS_LINUX) || defined(OS_OPENBSD)
-#include "media/audio/linux/audio_manager_linux.h"
 #elif defined(OS_MACOSX)
 #include "media/audio/mac/audio_manager_mac.h"
 #elif defined(OS_WIN)
 #include "media/audio/win/audio_manager_win.h"
+#else
+#include "media/audio/fake_audio_manager.h"
 #endif
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,14 +31,16 @@ using testing::_;
 
 namespace content {
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
-typedef media::AudioManagerLinux AudioManagerPlatform;
+#if defined(USE_ALSA)
+typedef media::AudioManagerAlsa AudioManagerPlatform;
 #elif defined(OS_MACOSX)
 typedef media::AudioManagerMac AudioManagerPlatform;
 #elif defined(OS_WIN)
 typedef media::AudioManagerWin AudioManagerPlatform;
 #elif defined(OS_ANDROID)
 typedef media::AudioManagerAndroid AudioManagerPlatform;
+#else
+typedef media::FakeAudioManager AudioManagerPlatform;
 #endif
 
 

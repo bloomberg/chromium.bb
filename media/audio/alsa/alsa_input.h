@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_LINUX_ALSA_INPUT_H_
-#define MEDIA_AUDIO_LINUX_ALSA_INPUT_H_
+#ifndef MEDIA_AUDIO_ALSA_ALSA_INPUT_H_
+#define MEDIA_AUDIO_ALSA_ALSA_INPUT_H_
 
 #include <alsa/asoundlib.h>
 
@@ -20,7 +20,7 @@
 namespace media {
 
 class AlsaWrapper;
-class AudioManagerLinux;
+class AudioManagerBase;
 
 // Provides an input stream for audio capture based on the ALSA PCM interface.
 // This object is not thread safe and all methods should be invoked in the
@@ -34,7 +34,7 @@ class AlsaPcmInputStream : public AgcAudioStream<AudioInputStream> {
   // Create a PCM Output stream for the ALSA device identified by
   // |device_name|. If unsure of what to use for |device_name|, use
   // |kAutoSelectDevice|.
-  AlsaPcmInputStream(AudioManagerLinux* audio_manager,
+  AlsaPcmInputStream(AudioManagerBase* audio_manager,
                      const std::string& device_name,
                      const AudioParameters& params,
                      AlsaWrapper* wrapper);
@@ -69,7 +69,7 @@ class AlsaPcmInputStream : public AgcAudioStream<AudioInputStream> {
   // want circular references.  Additionally, stream objects live on the audio
   // thread, which is owned by the audio manager and we don't want to addref
   // the manager from that thread.
-  AudioManagerLinux* audio_manager_;
+  AudioManagerBase* audio_manager_;
   std::string device_name_;
   AudioParameters params_;
   int bytes_per_buffer_;
@@ -89,4 +89,4 @@ class AlsaPcmInputStream : public AgcAudioStream<AudioInputStream> {
 
 }  // namespace media
 
-#endif  // MEDIA_AUDIO_LINUX_ALSA_INPUT_H_
+#endif  // MEDIA_AUDIO_ALSA_ALSA_INPUT_H_

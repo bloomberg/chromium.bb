@@ -1,19 +1,19 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/audio/linux/alsa_input.h"
+#include "media/audio/alsa/alsa_input.h"
 
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
+#include "media/audio/alsa/alsa_output.h"
+#include "media/audio/alsa/alsa_util.h"
+#include "media/audio/alsa/alsa_wrapper.h"
+#include "media/audio/alsa/audio_manager_alsa.h"
 #include "media/audio/audio_manager.h"
-#include "media/audio/linux/alsa_output.h"
-#include "media/audio/linux/alsa_util.h"
-#include "media/audio/linux/alsa_wrapper.h"
-#include "media/audio/linux/audio_manager_linux.h"
 
 namespace media {
 
@@ -24,7 +24,7 @@ static const char kDefaultDevice2[] = "plug:default";
 
 const char AlsaPcmInputStream::kAutoSelectDevice[] = "";
 
-AlsaPcmInputStream::AlsaPcmInputStream(AudioManagerLinux* audio_manager,
+AlsaPcmInputStream::AlsaPcmInputStream(AudioManagerBase* audio_manager,
                                        const std::string& device_name,
                                        const AudioParameters& params,
                                        AlsaWrapper* wrapper)

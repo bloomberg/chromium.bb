@@ -1,10 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
 // AlsaWrapper is a simple stateless class that wraps the alsa library commands
 // we want to use.  It's purpose is to allow injection of a mock so that the
 // higher level code is testable.
+
+#ifndef MEDIA_AUDIO_ALSA_ALSA_WRAPPER_H_
+#define MEDIA_AUDIO_ALSA_ALSA_WRAPPER_H_
 
 #include <alsa/asoundlib.h>
 
@@ -79,3 +82,5 @@ class MEDIA_EXPORT AlsaWrapper {
 };
 
 }  // namespace media
+
+#endif  // MEDIA_AUDIO_ALSA_ALSA_WRAPPER_H_

@@ -18,8 +18,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
-#include "media/audio/linux/audio_manager_linux.h"
+#if defined(USE_ALSA)
+#include "media/audio/alsa/audio_manager_alsa.h"
 #elif defined(OS_MACOSX)
 #include "media/audio/mac/audio_manager_mac.h"
 #elif defined(OS_WIN)
@@ -27,18 +27,22 @@
 #include "media/audio/win/core_audio_util_win.h"
 #elif defined(OS_ANDROID)
 #include "media/audio/android/audio_manager_android.h"
+#else
+#include "media/audio/fake_audio_manager.h"
 #endif
 
 namespace media {
 
-#if defined(OS_LINUX) || defined(OS_OPENBSD)
-typedef AudioManagerLinux AudioManagerAnyPlatform;
+#if defined(USE_ALSA)
+typedef AudioManagerAlsa AudioManagerAnyPlatform;
 #elif defined(OS_MACOSX)
 typedef AudioManagerMac AudioManagerAnyPlatform;
 #elif defined(OS_WIN)
 typedef AudioManagerWin AudioManagerAnyPlatform;
 #elif defined(OS_ANDROID)
 typedef AudioManagerAndroid AudioManagerAnyPlatform;
+#else
+typedef FakeAudioManager AudioManagerAnyPlatform;
 #endif
 
 // Limits the number of delay measurements we can store in an array and

@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_AUDIO_LINUX_AUDIO_MANAGER_LINUX_H_
-#define MEDIA_AUDIO_LINUX_AUDIO_MANAGER_LINUX_H_
+#ifndef MEDIA_AUDIO_ALSA_AUDIO_MANAGER_ALSA_H_
+#define MEDIA_AUDIO_ALSA_AUDIO_MANAGER_ALSA_H_
 
 #include <string>
 #include "base/compiler_specific.h"
@@ -15,9 +15,9 @@ namespace media {
 
 class AlsaWrapper;
 
-class MEDIA_EXPORT AudioManagerLinux : public AudioManagerBase {
+class MEDIA_EXPORT AudioManagerAlsa : public AudioManagerBase {
  public:
-  AudioManagerLinux();
+  AudioManagerAlsa();
 
   static void ShowLinuxAudioInputSettings();
 
@@ -45,7 +45,7 @@ class MEDIA_EXPORT AudioManagerLinux : public AudioManagerBase {
       const AudioParameters& params, const std::string& device_id) OVERRIDE;
 
  protected:
-  virtual ~AudioManagerLinux();
+  virtual ~AudioManagerAlsa();
 
   virtual AudioParameters GetPreferredOutputStreamParameters(
       const std::string& output_device_id,
@@ -86,9 +86,9 @@ class MEDIA_EXPORT AudioManagerLinux : public AudioManagerBase {
 
   scoped_ptr<AlsaWrapper> wrapper_;
 
-  DISALLOW_COPY_AND_ASSIGN(AudioManagerLinux);
+  DISALLOW_COPY_AND_ASSIGN(AudioManagerAlsa);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_AUDIO_LINUX_AUDIO_MANAGER_LINUX_H_
+#endif  // MEDIA_AUDIO_ALSA_AUDIO_MANAGER_ALSA_H_

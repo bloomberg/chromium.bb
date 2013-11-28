@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -18,8 +18,8 @@
 // the audio thread. When modifying the code in this class, please read the
 // threading assumptions at the top of the implementation.
 
-#ifndef MEDIA_AUDIO_LINUX_ALSA_OUTPUT_H_
-#define MEDIA_AUDIO_LINUX_ALSA_OUTPUT_H_
+#ifndef MEDIA_AUDIO_ALSA_ALSA_OUTPUT_H_
+#define MEDIA_AUDIO_ALSA_ALSA_OUTPUT_H_
 
 #include <alsa/asoundlib.h>
 
@@ -40,7 +40,7 @@ class MessageLoop;
 namespace media {
 
 class AlsaWrapper;
-class AudioManagerLinux;
+class AudioManagerBase;
 class ChannelMixer;
 class SeekableBuffer;
 
@@ -70,7 +70,7 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   AlsaPcmOutputStream(const std::string& device_name,
                       const AudioParameters& params,
                       AlsaWrapper* wrapper,
-                      AudioManagerLinux* manager);
+                      AudioManagerBase* manager);
 
   virtual ~AlsaPcmOutputStream();
 
@@ -187,7 +187,7 @@ class MEDIA_EXPORT AlsaPcmOutputStream : public AudioOutputStream {
   AlsaWrapper* wrapper_;
 
   // Audio manager that created us.  Used to report that we've been closed.
-  AudioManagerLinux* manager_;
+  AudioManagerBase* manager_;
 
   // Message loop to use for polling. The object is owned by the AudioManager.
   // We hold a reference to the audio thread message loop since
@@ -225,4 +225,4 @@ MEDIA_EXPORT std::ostream& operator<<(std::ostream& os,
 
 };  // namespace media
 
-#endif  // MEDIA_AUDIO_LINUX_ALSA_OUTPUT_H_
+#endif  // MEDIA_AUDIO_ALSA_ALSA_OUTPUT_H_

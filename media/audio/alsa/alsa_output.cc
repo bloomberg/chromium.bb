@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -32,7 +32,7 @@
 // view, it will seem that the device has just clogged and stopped requesting
 // data.
 
-#include "media/audio/linux/alsa_output.h"
+#include "media/audio/alsa/alsa_output.h"
 
 #include <algorithm>
 
@@ -42,9 +42,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
-#include "media/audio/linux/alsa_util.h"
-#include "media/audio/linux/alsa_wrapper.h"
-#include "media/audio/linux/audio_manager_linux.h"
+#include "media/audio/alsa/alsa_util.h"
+#include "media/audio/alsa/alsa_wrapper.h"
+#include "media/audio/alsa/audio_manager_alsa.h"
 #include "media/base/channel_mixer.h"
 #include "media/base/data_buffer.h"
 #include "media/base/seekable_buffer.h"
@@ -134,7 +134,7 @@ const uint32 AlsaPcmOutputStream::kMinLatencyMicros = 40 * 1000;
 AlsaPcmOutputStream::AlsaPcmOutputStream(const std::string& device_name,
                                          const AudioParameters& params,
                                          AlsaWrapper* wrapper,
-                                         AudioManagerLinux* manager)
+                                         AudioManagerBase* manager)
     : requested_device_name_(device_name),
       pcm_format_(alsa_util::BitsToFormat(params.bits_per_sample())),
       channels_(params.channels()),
