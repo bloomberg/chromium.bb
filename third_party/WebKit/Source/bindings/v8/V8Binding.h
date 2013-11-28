@@ -642,6 +642,13 @@ namespace WebCore {
         return std::isfinite(value) ? v8::Date::New(isolate, value) : v8NullWithCheck(isolate);
     }
 
+    inline v8::Handle<v8::Value> v8Symbol(const char* str, v8::Isolate* isolate)
+    {
+        ASSERT(isolate);
+        return v8::String::NewFromUtf8(isolate, str, v8::String::kInternalizedString, strlen(str));
+    }
+
+
     v8::Handle<v8::FunctionTemplate> createRawTemplate(v8::Isolate*);
 
     PassRefPtr<XPathNSResolver> toXPathNSResolver(v8::Handle<v8::Value>, v8::Isolate*);
