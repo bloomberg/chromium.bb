@@ -30,8 +30,6 @@ bool CreateInitProcessReaper(base::Closure* post_fork_parent_callback) {
     PLOG(ERROR) << "Failed to create socketpair";
     return false;
   }
-  // We use normal fork, not the ForkDelegate in this case since we are not a
-  // true Zygote yet.
   pid_t child_pid = fork();
   if (child_pid == -1) {
     int close_ret;
@@ -42,7 +40,7 @@ bool CreateInitProcessReaper(base::Closure* post_fork_parent_callback) {
     return false;
   }
   if (child_pid) {
-    // We are the parent, assuming the role of an init process.
+    // In the parent, assuming the role of an init process.
     // The disposition for SIGCHLD cannot be SIG_IGN or wait() will only return
     // once all of our childs are dead. Since we're init we need to reap childs
     // as they come.
@@ -76,14 +74,14 @@ bool CreateInitProcessReaper(base::Closure* post_fork_parent_callback) {
         if (reaped_child_info.si_code == CLD_EXITED) {
           exit_code = reaped_child_info.si_status;
         }
-        // Exit with the same exit code as our parent. This is most likely
-        // useless. _exit with 0 if we got signaled.
+        // Exit with the same exit code as our parent. Exit with 0 if we got
+        // signaled.
         _exit(exit_code);
       }
     }
   } else {
-    // The child needs to wait for the parent to close kZygoteIdFd to avoid a
-    // race condition
+    // The child needs to wait for the parent to run the callback to avoid a
+    // race condition.
     int close_ret;
     close_ret = HANDLE_EINTR(close(sync_fds[1]));
     DPCHECK(!close_ret);
