@@ -34,7 +34,7 @@ CSSVariables status=experimental
 CSSViewport status=experimental
 CSS3Text status=experimental
 CSS3TextDecorations status=experimental
-CustomElements status=stable
+CustomElements status=experimental
 Database status=stable
 DataListElement status=stable
 DeviceMotion status=stable
@@ -43,7 +43,7 @@ DevicePixelRatioIncludesZoom status=stable
 DialogElement status=experimental
 DirectoryUpload status=stable
 DirectWrite
-// FIXME: Remove this separate feature now that CustomElements are enabled
+// FIXME: Remove this separate feature when CustomElements are always enabled
 EmbedderCustomElements
 EncodingAPI status=experimental
 EncryptedMedia status=experimental
