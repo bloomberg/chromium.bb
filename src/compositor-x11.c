@@ -703,6 +703,12 @@ x11_output_init_shm(struct x11_compositor *c, struct x11_output *output,
 	     visual_type->blue_mask == 0x0000ff) {
 		weston_log("Will use x8r8g8b8 format for SHM surfaces\n");
 		pixman_format = PIXMAN_x8r8g8b8;
+	} else if (bitsperpixel == 16 &&
+	           visual_type->red_mask == 0x00f800 &&
+	           visual_type->green_mask == 0x0007e0 &&
+	           visual_type->blue_mask == 0x00001f) {
+		weston_log("Will use r5g6b5 format for SHM surfaces\n");
+		pixman_format = PIXMAN_r5g6b5;
 	} else {
 		weston_log("Can't find appropriate format for SHM pixmap\n");
 		errno = ENOTSUP;
