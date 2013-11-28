@@ -88,7 +88,7 @@ namespace WebCore {
     // FIXME: Remove all null isolates from V8 bindings, and remove v8NullWithCheck(isolate).
     inline v8::Handle<v8::Value> v8NullWithCheck(v8::Isolate* isolate)
     {
-        return isolate ? v8::Null(isolate) : v8::Null();
+        return isolate ? v8::Null(isolate) : v8::Null(v8::Isolate::GetCurrent());
     }
 
     template<typename CallbackInfo, typename V>
@@ -581,11 +581,12 @@ namespace WebCore {
 
         v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
         v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(v8Value);
+        v8::Local<v8::String> lengthSymbol = v8::String::NewFromUtf8(isolate, "length", v8::String::kInternalizedString, 6);
 
         // FIXME: The specification states that the length property should be used as fallback, if value
         // is not a platform object that supports indexed properties. If it supports indexed properties,
         // length should actually be one greater than value’s maximum indexed property index.
-        V8TRYCATCH(v8::Local<v8::Value>, lengthValue, object->Get(v8::String::NewSymbol("length")));
+        V8TRYCATCH(v8::Local<v8::Value>, lengthValue, object->Get(lengthSymbol));
 
         if (lengthValue->IsUndefined() || lengthValue->IsNull()) {
             // The caller is responsible for reporting a TypeError.
@@ -616,11 +617,6 @@ namespace WebCore {
         return object->InternalFieldCount() || object->HasIndexedPropertiesInExternalArrayData();
     }
 
-    inline v8::Handle<v8::Boolean> v8Boolean(bool value)
-    {
-        return value ? v8::True() : v8::False();
-    }
-
     inline v8::Handle<v8::Boolean> v8Boolean(bool value, v8::Isolate* isolate)
     {
         return value ? v8::True(isolate) : v8::False(isolate);
@@ -632,7 +628,7 @@ namespace WebCore {
     // FIXME: Remove all null isolates from V8 bindings, and remove v8BooleanWithCheck(value, isolate).
     inline v8::Handle<v8::Boolean> v8BooleanWithCheck(bool value, v8::Isolate* isolate)
     {
-        return isolate ? v8Boolean(value, isolate) : v8Boolean(value);
+        return isolate ? v8Boolean(value, isolate) : v8Boolean(value, v8::Isolate::GetCurrent());
     }
 
     inline double toWebCoreDate(v8::Handle<v8::Value> object)
@@ -643,7 +639,7 @@ namespace WebCore {
     inline v8::Handle<v8::Value> v8DateOrNull(double value, v8::Isolate* isolate)
     {
         ASSERT(isolate);
-        return std::isfinite(value) ? v8::Date::New(value) : v8NullWithCheck(isolate);
+        return std::isfinite(value) ? v8::Date::New(isolate, value) : v8NullWithCheck(isolate);
     }
 
     v8::Handle<v8::FunctionTemplate> createRawTemplate(v8::Isolate*);

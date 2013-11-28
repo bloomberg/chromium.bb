@@ -264,7 +264,7 @@ bool ScriptDebugServer::setScriptSource(const String& sourceID, const String& ne
     if (!isPaused())
         contextScope = adoptPtr(new v8::Context::Scope(debuggerContext));
 
-    v8::Handle<v8::Value> argv[] = { v8String(sourceID, debuggerContext->GetIsolate()), v8String(newContent, debuggerContext->GetIsolate()), v8Boolean(preview) };
+    v8::Handle<v8::Value> argv[] = { v8String(sourceID, debuggerContext->GetIsolate()), v8String(newContent, debuggerContext->GetIsolate()), v8Boolean(preview, debuggerContext->GetIsolate()) };
 
     v8::Local<v8::Value> v8result;
     {
