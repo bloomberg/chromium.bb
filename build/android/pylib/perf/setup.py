@@ -13,11 +13,37 @@ import signal
 import shutil
 import time
 
+from pylib import android_commands
+from pylib import cmd_helper
 from pylib import constants
 from pylib import forwarder
-from pylib.utils import test_environment
+from pylib import ports
 
 import test_runner
+
+
+def _KillPendingServers():
+  for retry in range(5):
+    for server in ['lighttpd', 'web-page-replay']:
+      pids = [p.pid for p in psutil.process_iter() if server in p.name]
+      for pid in pids:
+        try:
+          logging.warning('Killing %s %s', server, pid)
+          os.kill(pid, signal.SIGQUIT)
+        except Exception as e:
+          logging.warning('Failed killing %s %s %s', server, pid, e)
+  # Restart the adb server with taskset to set a single CPU affinity.
+  cmd_helper.RunCmd([constants.ADB_PATH, 'kill-server'])
+  cmd_helper.RunCmd(['taskset', '-c', '0', constants.ADB_PATH, 'start-server'])
+  cmd_helper.RunCmd(['taskset', '-c', '0', constants.ADB_PATH, 'root'])
+  i = 1
+  while not android_commands.GetAttachedDevices():
+    time.sleep(i)
+    i *= 2
+    if i > 10:
+      break
+
+  forwarder.Forwarder.UseMultiprocessing()
 
 
 def Setup(test_options):
@@ -36,8 +62,7 @@ def Setup(test_options):
   os.makedirs(constants.PERF_OUTPUT_DIR)
 
   # Before running the tests, kill any leftover server.
-  test_environment.CleanupLeftoverProcesses()
-  forwarder.Forwarder.UseMultiprocessing()
+  _KillPendingServers()
 
   if test_options.single_step:
     # Running a single command, build the tests structure.
