@@ -951,6 +951,9 @@ const char kInstallFromWebstore[]           = "install-from-webstore";
 // Marks a renderer as an Instant process.
 const char kInstantProcess[]                = "instant-process";
 
+// Specifies the testcase used by the IPC fuzzer.
+const char kIpcFuzzerTestcase[]             = "ipc-fuzzer-testcase";
+
 // Used for testing - keeps browser alive after last browser window closes.
 const char kKeepAliveForTest[]              = "keep-alive-for-test";
 

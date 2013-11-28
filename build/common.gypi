@@ -1217,6 +1217,9 @@
     # Relative path to icu.gyp from this file.
     'icu_gyp_path': '../third_party/icu/icu.gyp',
 
+    # IPC fuzzer is disabled by default.
+    'enable_ipc_fuzzer%': 0,
+
     'conditions': [
       # The version of GCC in use, set later in platforms that use GCC and have
       # not explicitly chosen to build with clang. Currently, this means all
@@ -2395,7 +2398,10 @@
       }],
       ['enable_enhanced_bookmarks==1', {
         'defines': ['ENABLE_ENHANCED_BOOKMARKS=1'],
-      }]
+      }],
+      ['enable_ipc_fuzzer==1', {
+        'defines': ['ENABLE_IPC_FUZZER=1'],
+      }],
     ],  # conditions for 'target_defaults'
     'target_conditions': [
       ['enable_wexit_time_destructors==1', {

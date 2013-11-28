@@ -823,6 +823,10 @@ bool RenderProcessHostImpl::WaitForBackingStoreMsg(
 }
 
 void RenderProcessHostImpl::ReceivedBadMessage() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableKillAfterBadIPC))
+    return;
+
   if (run_renderer_in_process()) {
     // In single process mode it is better if we don't suicide but just
     // crash.

@@ -6,11 +6,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "base/task_runner.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
 #include "ipc/ipc_sync_message.h"
 
@@ -177,8 +179,12 @@ bool BrowserMessageFilter::CheckCanDispatchOnUI(const IPC::Message& message,
 }
 
 void BrowserMessageFilter::BadMessageReceived() {
-  base::KillProcess(PeerHandle(), content::RESULT_CODE_KILLED_BAD_MESSAGE,
-                    false);
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+
+  if (!command_line->HasSwitch(switches::kDisableKillAfterBadIPC)) {
+    base::KillProcess(PeerHandle(), content::RESULT_CODE_KILLED_BAD_MESSAGE,
+                      false);
+  }
 }
 
 BrowserMessageFilter::~BrowserMessageFilter() {

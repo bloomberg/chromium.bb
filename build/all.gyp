@@ -124,6 +124,11 @@
                 '../third_party/mtpd/mtpd.gyp:*',
               ],
             }],
+            ['enable_ipc_fuzzer==1', {
+              'dependencies': [
+                '../tools/ipc_fuzzer/ipc_fuzzer.gyp:*',
+              ],
+            }],
           ],
         }],
         ['use_x11==1', {

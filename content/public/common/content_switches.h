@@ -83,6 +83,7 @@ extern const char kDisableImageTransportSurface[];
 CONTENT_EXPORT extern const char kDisableJava[];
 CONTENT_EXPORT extern const char kDisableJavaScript[];
 extern const char kDisablePrefixedEncryptedMedia[];
+extern const char kDisableKillAfterBadIPC[];
 CONTENT_EXPORT extern const char kDisableLocalStorage[];
 CONTENT_EXPORT extern const char kDisableLogging[];
 extern const char kDisablePepper3d[];

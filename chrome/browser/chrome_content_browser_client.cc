@@ -1418,6 +1418,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
   command_line->CopySwitchesFrom(browser_command_line, kCommonSwitchNames,
                                  arraysize(kCommonSwitchNames));
 
+#if defined(ENABLE_IPC_FUZZER)
+  static const char* const kIpcFuzzerSwitches[] = {
+    switches::kIpcFuzzerTestcase,
+  };
+  command_line->CopySwitchesFrom(browser_command_line, kIpcFuzzerSwitches,
+                                 arraysize(kIpcFuzzerSwitches));
+#endif
+
   if (process_type == switches::kRendererProcess) {
 #if defined(OS_CHROMEOS)
     const std::string& login_profile =
