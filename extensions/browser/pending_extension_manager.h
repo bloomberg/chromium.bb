@@ -1,20 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_PENDING_EXTENSION_MANAGER_H_
-#define CHROME_BROWSER_EXTENSIONS_PENDING_EXTENSION_MANAGER_H_
+#ifndef EXTENSIONS_BROWSER_PENDING_EXTENSION_MANAGER_H_
+#define EXTENSIONS_BROWSER_PENDING_EXTENSION_MANAGER_H_
 
 #include <list>
 #include <string>
 
-#include "chrome/browser/extensions/pending_extension_info.h"
-#include "extensions/common/extension.h"
+#include "extensions/browser/pending_extension_info.h"
 #include "extensions/common/manifest.h"
 
 class ExtensionServiceInterface;
 class GURL;
-class PendingExtensionManager;
 
 namespace base {
 class Version;
@@ -24,6 +22,9 @@ FORWARD_DECLARE_TEST(ExtensionServiceTest,
                      UpdatePendingExtensionAlreadyInstalled);
 
 namespace extensions {
+class Extension;
+class PendingExtensionManager;
+
 class ExtensionUpdaterTest;
 void SetupPendingExtensionManagerForTest(
     int count, const GURL& update_url,
@@ -151,4 +152,4 @@ class PendingExtensionManager {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_PENDING_EXTENSION_MANAGER_H_
+#endif  // EXTENSIONS_BROWSER_PENDING_EXTENSION_MANAGER_H_

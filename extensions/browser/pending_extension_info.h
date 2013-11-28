@@ -1,20 +1,21 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_PENDING_EXTENSION_INFO_H_
-#define CHROME_BROWSER_EXTENSIONS_PENDING_EXTENSION_INFO_H_
+#ifndef EXTENSIONS_BROWSER_PENDING_EXTENSION_INFO_H_
+#define EXTENSIONS_BROWSER_PENDING_EXTENSION_INFO_H_
 
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/version.h"
-#include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "url/gurl.h"
 
 FORWARD_DECLARE_TEST(ExtensionServiceTest, AddPendingExtensionFromSync);
 
 namespace extensions {
+class Extension;
 
 // A pending extension is an extension that hasn't been installed yet
 // and is intended to be installed in the next auto-update cycle.  The
@@ -91,4 +92,4 @@ class PendingExtensionInfo {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_PENDING_EXTENSION_INFO_H_
+#endif  // EXTENSIONS_BROWSER_PENDING_EXTENSION_INFO_H_

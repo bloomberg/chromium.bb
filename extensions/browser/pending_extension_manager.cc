@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/pending_extension_manager.h"
+#include "extensions/browser/pending_extension_manager.h"
 
 #include <algorithm>
 
@@ -10,6 +10,7 @@
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/extension.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
