@@ -23,5 +23,5 @@ void HelloWorldServiceImpl::Greeting(const String& greeting) {
 
 HelloWorldServiceImpl::~HelloWorldServiceImpl() {}
 
-}  // examples
-}  // mojo
+}  // namespace examples
+}  // namespace mojo

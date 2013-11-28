@@ -21,7 +21,7 @@ class HelloWorldServiceImpl : public HelloWorldServiceStub {
   RemotePtr<HelloWorldClient> client_;
 };
 
-}  // examples
-}  // mojo
+}  // namespace examples
+}  // namespace mojo
 
 #endif  // MOJO_EXAMPLES_HELLO_WORLD_SERVICE_HELLO_WORLD_SERVICE_IMPL_H_

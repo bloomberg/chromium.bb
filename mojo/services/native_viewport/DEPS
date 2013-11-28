@@ -1,6 +1,5 @@
 include_rules = [
-  "+base",
-  "+gpu/command_buffer/client",
+  "+mojo/services/gles2",
   "+ui/events",
   "+ui/gfx",
 ]

@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-#include "gpu/command_buffer/client/gles2_interface.h"
+#include "mojo/public/bindings/gles2_client/gles2_client_impl.h"
 
 namespace mojo {
 namespace examples {
@@ -19,23 +19,19 @@ NativeViewportClientImpl::NativeViewportClientImpl(ScopedMessagePipeHandle pipe)
 NativeViewportClientImpl::~NativeViewportClientImpl() {
 }
 
+void NativeViewportClientImpl::Open() {
+  service_->Open();
+
+  ScopedMessagePipeHandle gles2;
+  ScopedMessagePipeHandle gles2_client;
+  CreateMessagePipe(&gles2, &gles2_client);
+
+  gles2_client_.reset(new GLES2ClientImpl(&gles2_delegate_, gles2.Pass()));
+  service_->CreateGLES2Context(gles2_client.release());
+}
+
 void NativeViewportClientImpl::DidOpen() {
-  printf("NativeViewportClientImpl::DidOpen\n");
 }
 
-void NativeViewportClientImpl::DidCreateGLContext(uint64_t encoded_gl) {
-  // Ack, Hans! It's the giant hack.
-  // TODO(abarth): Replace this hack with something more disciplined. Most
-  // likley, we should receive a MojoHandle that we pass off to a lib that
-  // populates the normal C API for GL.
-  gpu::gles2::GLES2Interface* gl =
-      reinterpret_cast<gpu::gles2::GLES2Interface*>(
-          static_cast<uintptr_t>(encoded_gl));
-
-  gl->ClearColor(0, 1, 0, 0);
-  gl->Clear(GL_COLOR_BUFFER_BIT);
-  gl->SwapBuffers();
-}
-
-}  // examples
-}  // mojo
+}  // namespace examples
+}  // namespace mojo

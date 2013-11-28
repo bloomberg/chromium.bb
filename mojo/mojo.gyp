@@ -318,15 +318,20 @@
       'type': 'shared_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../gpu/gpu.gyp:gles2_c_lib',
         '../ui/gl/gl.gyp:gl',
-        'native_viewport',
+        'gles2',
+        'gles2_client_impl',
         'mojo_common_lib',
         'mojo_system',
+        'native_viewport',
       ],
       'sources': [
         'examples/sample_app/native_viewport_client_impl.cc',
         'examples/sample_app/native_viewport_client_impl.h',
         'examples/sample_app/sample_app.cc',
+        'examples/sample_app/sample_gles2_delegate.cc',
+        'examples/sample_app/sample_gles2_delegate.h',
         'examples/sample_app/spinning_cube.cc',
         'examples/sample_app/spinning_cube.h',
       ],
@@ -446,6 +451,52 @@
       ],
     },
     {
+      'target_name': 'gles2',
+      'type': 'static_library',
+      'sources': [
+        'services/gles2/gles2.mojom',
+      ],
+      'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
+      'export_dependent_settings': [
+        'mojo_bindings',
+        'mojo_system',
+      ],
+    },
+    {
+      'target_name': 'gles2_impl',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../gpu/gpu.gyp:command_buffer_service',
+        '../gpu/gpu.gyp:gles2_implementation',
+        '../ui/gfx/gfx.gyp:gfx',
+        '../ui/gl/gl.gyp:gl',
+        'gles2',
+      ],
+      'export_dependent_settings': [
+        'gles2',
+      ],
+      'sources': [
+        'services/gles2/gles2_impl.cc',
+        'services/gles2/gles2_impl.h',
+      ],
+    },
+    {
+      'target_name': 'gles2_client_impl',
+      'type': 'static_library',
+      'dependencies': [
+        '../gpu/gpu.gyp:gles2_c_lib',
+        'gles2',
+      ],
+      'export_dependent_settings': [
+        'gles2',
+      ],
+      'sources': [
+        'public/bindings/gles2_client/gles2_client_impl.cc',
+        'public/bindings/gles2_client/gles2_client_impl.h',
+      ],
+    },
+    {
       'target_name': 'native_viewport',
       'type': 'static_library',
       'sources': [
@@ -462,11 +513,9 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../gpu/gpu.gyp:command_buffer_service',
-        '../gpu/gpu.gyp:gles2_implementation',
         '../ui/events/events.gyp:events',
         '../ui/gfx/gfx.gyp:gfx',
-        '../ui/gl/gl.gyp:gl',
+        'gles2_impl',
         'native_viewport',
       ],
       'export_dependent_settings': [

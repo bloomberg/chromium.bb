@@ -18,6 +18,7 @@ class GLInProcessContext;
 
 namespace mojo {
 namespace services {
+class GLES2Impl;
 
 class NativeViewportImpl : public NativeViewportStub,
                            public NativeViewportDelegate {
@@ -28,6 +29,7 @@ class NativeViewportImpl : public NativeViewportStub,
 
   virtual void Open() OVERRIDE;
   virtual void Close() OVERRIDE;
+  virtual void CreateGLES2Context(mojo::Handle gles2_client) OVERRIDE;
 
  private:
   // Overridden from services::NativeViewportDelegate:
@@ -37,11 +39,12 @@ class NativeViewportImpl : public NativeViewportStub,
   virtual bool OnEvent(ui::Event* event) OVERRIDE;
   virtual void OnDestroyed() OVERRIDE;
 
-  void OnGLContextLost();
+  void CreateGLES2ContextIfNeeded();
 
   shell::Context* context_;
+  gfx::AcceleratedWidget widget_;
   scoped_ptr<services::NativeViewport> native_viewport_;
-  scoped_ptr<gpu::GLInProcessContext> gl_context_;
+  scoped_ptr<GLES2Impl> gles2_;
 
   RemotePtr<NativeViewportClient> client_;
 

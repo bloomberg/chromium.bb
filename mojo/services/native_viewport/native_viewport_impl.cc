@@ -4,13 +4,8 @@
 
 #include "mojo/services/native_viewport/native_viewport_impl.h"
 
-#include <limits>
-
-#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "base/strings/stringprintf.h"
-#include "gpu/command_buffer/client/gl_in_process_context.h"
-#include "gpu/command_buffer/client/gles2_implementation.h"
+#include "mojo/services/gles2/gles2_impl.h"
 #include "mojo/services/native_viewport/native_viewport.h"
 #include "ui/events/event.h"
 
@@ -20,6 +15,7 @@ namespace services {
 NativeViewportImpl::NativeViewportImpl(shell::Context* context,
                                        ScopedMessagePipeHandle pipe)
     : context_(context),
+      widget_(gfx::kNullAcceleratedWidget),
       client_(pipe.Pass()) {
   client_.SetPeer(this);
 }
@@ -34,8 +30,22 @@ void NativeViewportImpl::Open() {
 }
 
 void NativeViewportImpl::Close() {
+  gles2_.reset();
   DCHECK(native_viewport_);
   native_viewport_->Close();
+}
+
+void NativeViewportImpl::CreateGLES2Context(mojo::Handle gles2_client) {
+  ScopedMessagePipeHandle handle;
+  handle.reset(MessagePipeHandle(gles2_client.value()));
+  gles2_.reset(new GLES2Impl(handle.Pass()));
+  CreateGLES2ContextIfNeeded();
+}
+
+void NativeViewportImpl::CreateGLES2ContextIfNeeded() {
+  if (widget_ == gfx::kNullAcceleratedWidget || !gles2_)
+    return;
+  gles2_->CreateContext(widget_, native_viewport_->GetSize());
 }
 
 bool NativeViewportImpl::OnEvent(ui::Event* event) {
@@ -44,21 +54,8 @@ bool NativeViewportImpl::OnEvent(ui::Event* event) {
 
 void NativeViewportImpl::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget) {
-  gfx::Size size = native_viewport_->GetSize();
-  gpu::GLInProcessContextAttribs attribs;
-  gl_context_.reset(gpu::GLInProcessContext::CreateContext(
-      false, widget, size, false, attribs, gfx::PreferDiscreteGpu));
-  gl_context_->SetContextLostCallback(base::Bind(
-      &NativeViewportImpl::OnGLContextLost, base::Unretained(this)));
-
-  gpu::gles2::GLES2Interface* gl = gl_context_->GetImplementation();
-  // TODO(abarth): Instead of drawing green, we want to send the context over
-  // pipe_ somehow.
-  uint64_t encoded_gl = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(gl));
-  client_->DidCreateGLContext(encoded_gl);
-}
-
-void NativeViewportImpl::OnGLContextLost() {
+  widget_ = widget;
+  CreateGLES2ContextIfNeeded();
 }
 
 void NativeViewportImpl::OnResized(const gfx::Size& size) {

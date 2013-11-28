@@ -8,14 +8,12 @@ module mojo {
 interface NativeViewport {
   void Open();
   void Close();
+  void CreateGLES2Context(handle gles2_client);
 };
 
 [Peer=NativeViewport]
 interface NativeViewportClient {
   void DidOpen();
-
-  // Rather than send a uint64, we should send an opaque handle to a GL service.
-  void DidCreateGLContext(uint64 gl);
 };
 
 }
