@@ -17,6 +17,8 @@ EVENTS_BASE_EXPORT KeyboardCode KeyboardCodeFromXKeyEvent(XEvent* xev);
 
 EVENTS_BASE_EXPORT KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym);
 
+EVENTS_BASE_EXPORT const char* CodeFromXEvent(XEvent* xev);
+
 // Returns a character on a standard US PC keyboard from an XEvent.
 EVENTS_BASE_EXPORT uint16 GetCharacterFromXEvent(XEvent* xev);
 

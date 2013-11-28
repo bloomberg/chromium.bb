@@ -52,6 +52,12 @@ KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   return event->key_code();
 }
 
+const char* CodeFromNative(const base::NativeEvent& native_event) {
+  const ui::KeyEvent* event = static_cast<const ui::KeyEvent*>(native_event);
+  DCHECK(event->IsKeyEvent());
+  return event->code().c_str();
+}
+
 bool IsMouseEvent(const base::NativeEvent& native_event) {
   const ui::Event* e = static_cast<const ui::Event*>(native_event);
   return e->IsMouseEvent();

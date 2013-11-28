@@ -68,6 +68,12 @@ EVENTS_EXPORT int EventButtonFromNative(const base::NativeEvent& native_event);
 EVENTS_EXPORT KeyboardCode KeyboardCodeFromNative(
     const base::NativeEvent& native_event);
 
+// Returns the DOM KeyboardEvent code (physical location in the
+// keyboard) from a native event.  The ownership of the return value
+// is NOT trasferred to the caller.
+EVENTS_EXPORT const char* CodeFromNative(
+    const base::NativeEvent& native_event);
+
 // Returns true if the message is a mouse event.
 EVENTS_EXPORT bool IsMouseEvent(const base::NativeEvent& native_event);
 
@@ -145,6 +151,11 @@ EVENTS_EXPORT int GetModifiersFromKeyState();
 // Returns true if |message| identifies a mouse event that was generated as the
 // result of a touch event.
 EVENTS_EXPORT bool IsMouseEventFromTouch(UINT message);
+
+// Converts scan code and lParam each other.  The scan code
+// representing an extended key contains 0xE000 bits.
+EVENTS_EXPORT uint16 GetScanCodeFromLParam(LPARAM lParam);
+EVENTS_EXPORT LPARAM GetLParamFromScanCode(uint16 scan_code);
 #endif
 
 // Returns true if default post-target handling was canceled for |event| after

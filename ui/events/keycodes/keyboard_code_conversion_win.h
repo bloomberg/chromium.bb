@@ -13,6 +13,7 @@ namespace ui {
 // Methods to convert ui::KeyboardCode/Windows virtual key type methods.
 EVENTS_BASE_EXPORT WORD WindowsKeyCodeForKeyboardCode(KeyboardCode keycode);
 EVENTS_BASE_EXPORT KeyboardCode KeyboardCodeForWindowsKeyCode(WORD keycode);
+EVENTS_BASE_EXPORT const char* CodeForWindowsScanCode(WORD scan_code);
 
 }  // namespace ui
 

@@ -9,6 +9,7 @@
 #import <Carbon/Carbon.h>
 
 #include "base/logging.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 
 namespace ui {
 
@@ -553,6 +554,11 @@ KeyboardCode KeyboardCodeFromNSEvent(NSEvent* event) {
       return code;
   }
   return KeyboardCodeFromKeyCode([event keyCode]);
+}
+
+const char* CodeFromNSEvent(NSEvent* event) {
+  return KeycodeConverter::GetInstance()->NativeKeycodeToCode(
+      [event keyCode]);
 }
 
 }  // namespace ui

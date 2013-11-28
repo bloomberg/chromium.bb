@@ -141,6 +141,10 @@ KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   return ui::KeyboardCodeFromNSEvent(native_event);
 }
 
+std::string CodeFromNative(const base::NativeEvent& native_event) {
+  return ui::CodeFromNSEvent(native_event);
+}
+
 bool IsMouseEvent(const base::NativeEvent& native_event) {
   EventType type = EventTypeFromNative(native_event);
   return type == ET_MOUSE_PRESSED ||

@@ -5,6 +5,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 #include "ui/events/test/events_test_utils.h"
 
 #if defined(USE_X11)
@@ -265,6 +267,68 @@ TEST(EventTest, KeyEventCopy) {
   scoped_ptr<KeyEvent> copied_key(key.Copy());
   EXPECT_EQ(copied_key->type(), key.type());
   EXPECT_EQ(copied_key->key_code(), key.key_code());
+}
+
+TEST(EventTest, KeyEventCode) {
+  KeycodeConverter* conv = KeycodeConverter::GetInstance();
+
+  const char kCodeForSpace[] = "Space";
+  const uint16 kNativeCodeSpace = conv->CodeToNativeKeycode(kCodeForSpace);
+  ASSERT_NE(conv->InvalidNativeKeycode(), kNativeCodeSpace);
+
+  {
+    KeyEvent key(ET_KEY_PRESSED, VKEY_SPACE, kCodeForSpace, EF_NONE, false);
+    EXPECT_EQ(kCodeForSpace, key.code());
+  }
+  {
+    // Regardless the KeyEvent.key_code (VKEY_RETURN), code should be
+    // the specified value.
+    KeyEvent key(ET_KEY_PRESSED, VKEY_RETURN, kCodeForSpace, EF_NONE, false);
+    EXPECT_EQ(kCodeForSpace, key.code());
+  }
+  {
+    // If the synthetic event is initialized without code, it returns
+    // an empty string.
+    // TODO(komatsu): Fill a fallback value assuming the US keyboard layout.
+    KeyEvent key(ET_KEY_PRESSED, VKEY_SPACE, EF_NONE, false);
+    EXPECT_TRUE(key.code().empty());
+  }
+#if defined(USE_X11)
+  {
+    // KeyEvent converts from the native keycode (XKB) to the code.
+    ScopedXI2Event xevent;
+    xevent.InitKeyEvent(ET_KEY_PRESSED, VKEY_SPACE, kNativeCodeSpace);
+    KeyEvent key(xevent, false);
+    EXPECT_EQ(kCodeForSpace, key.code());
+  }
+#endif  // USE_X11
+#if defined(OS_WIN)
+  {
+    // Test a non extended key.
+    ASSERT_EQ((kNativeCodeSpace & 0xFF), kNativeCodeSpace);
+
+    const LPARAM lParam = GetLParamFromScanCode(kNativeCodeSpace);
+    MSG native_event = { NULL, WM_KEYUP, VKEY_SPACE, lParam };
+    KeyEvent key(native_event, false);
+
+    // KeyEvent converts from the native keycode (scan code) to the code.
+    EXPECT_EQ(kCodeForSpace, key.code());
+  }
+  {
+    const char kCodeForHome[]  = "Home";
+    const uint16 kNativeCodeHome  = 0xe047;
+
+    // 'Home' is an extended key with 0xe000 bits.
+    ASSERT_NE((kNativeCodeHome & 0xFF), kNativeCodeHome);
+    const LPARAM lParam = GetLParamFromScanCode(kNativeCodeHome);
+
+    MSG native_event = { NULL, WM_KEYUP, VKEY_HOME, lParam };
+    KeyEvent key(native_event, false);
+
+    // KeyEvent converts from the native keycode (scan code) to the code.
+    EXPECT_EQ(kCodeForHome, key.code());
+  }
+#endif  // OS_WIN
 }
 
 }  // namespace ui

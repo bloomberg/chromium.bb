@@ -37,6 +37,8 @@ EVENTS_BASE_EXPORT int MacKeyCodeForWindowsKeyCode(
 // has a different notion of key codes.
 EVENTS_BASE_EXPORT KeyboardCode KeyboardCodeFromNSEvent(NSEvent* event);
 
+EVENTS_BASE_EXPORT const char* CodeFromNSEvent(NSEvent* event);
+
 } // namespace ui
 
 #endif  // UI_EVENTS_KEYCODES_KEYBOARD_CODE_CONVERSION_MAC_H_

@@ -514,6 +514,11 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // Used for synthetic events.
   KeyEvent(EventType type, KeyboardCode key_code, int flags, bool is_char);
 
+  // Used for synthetic events with code of DOM KeyboardEvent (e.g. 'KeyA')
+  // See also: ui/events/keycodes/dom4/keycode_converter_data.h
+  KeyEvent(EventType type, KeyboardCode key_code, const std::string& code,
+           int flags, bool is_char);
+
   // This allows an I18N virtual keyboard to fabricate a keyboard event that
   // does not have a corresponding KeyboardCode (example: U+00E1 Latin small
   // letter A with acute, U+0410 Cyrillic capital letter A).
@@ -538,6 +543,8 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // TODO(msw): Additional work may be needed for analogues on other platforms.
   bool IsUnicodeKeyCode() const;
 
+  std::string code() const { return code_; }
+
   // Normalizes flags_ to make it Windows/Mac compatible. Since the way
   // of setting modifier mask on X is very different than Windows/Mac as shown
   // in http://crbug.com/127142#c8, the normalization is necessary.
@@ -545,6 +552,14 @@ class EVENTS_EXPORT KeyEvent : public Event {
 
  private:
   KeyboardCode key_code_;
+
+  // String of 'code' defined in DOM KeyboardEvent (e.g. 'KeyA', 'Space')
+  // http://www.w3.org/TR/uievents/#keyboard-key-codes.
+  //
+  // This value represents the physical position in the keyboard and can be
+  // converted from / to keyboard scan code like XKB.
+  std::string code_;
+
   // True if this is a translated character event (vs. a raw key down). Both
   // share the same type: ET_KEY_PRESSED.
   bool is_char_;

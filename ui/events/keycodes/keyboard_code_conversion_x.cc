@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 
 namespace ui {
 
@@ -435,6 +436,11 @@ KeyboardCode KeyboardCodeFromXKeysym(unsigned int keysym) {
   }
   DLOG(WARNING) << "Unknown keysym: " << base::StringPrintf("0x%x", keysym);
   return VKEY_UNKNOWN;
+}
+
+const char* CodeFromXEvent(XEvent* xev) {
+  return KeycodeConverter::GetInstance()->NativeKeycodeToCode(
+      xev->xkey.keycode);
 }
 
 uint16 GetCharacterFromXEvent(XEvent* xev) {

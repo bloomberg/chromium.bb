@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
+#include "ui/events/keycodes/dom4/keycode_converter.h"
 
 namespace ui {
 
@@ -12,6 +13,11 @@ WORD WindowsKeyCodeForKeyboardCode(KeyboardCode keycode) {
 
 KeyboardCode KeyboardCodeForWindowsKeyCode(WORD keycode) {
   return static_cast<KeyboardCode>(keycode);
+}
+
+const char* CodeForWindowsScanCode(WORD scan_code) {
+  return KeycodeConverter::GetInstance()->NativeKeycodeToCode(
+      scan_code);
 }
 
 }  // namespace ui

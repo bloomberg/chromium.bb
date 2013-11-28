@@ -513,6 +513,7 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event, bool is_char)
             EventTypeFromNative(native_event),
             EventFlagsFromNative(native_event)),
       key_code_(KeyboardCodeFromNative(native_event)),
+      code_(CodeFromNative(native_event)),
       is_char_(is_char),
       character_(0) {
 #if defined(USE_X11)
@@ -526,6 +527,18 @@ KeyEvent::KeyEvent(EventType type,
                    bool is_char)
     : Event(type, EventTimeForNow(), flags),
       key_code_(key_code),
+      is_char_(is_char),
+      character_(GetCharacterFromKeyCode(key_code, flags)) {
+}
+
+KeyEvent::KeyEvent(EventType type,
+                   KeyboardCode key_code,
+                   const std::string& code,
+                   int flags,
+                   bool is_char)
+    : Event(type, EventTimeForNow(), flags),
+      key_code_(key_code),
+      code_(code),
       is_char_(is_char),
       character_(GetCharacterFromKeyCode(key_code, flags)) {
 }

@@ -228,6 +228,11 @@ KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   return KeyboardCodeForWindowsKeyCode(native_event.wParam);
 }
 
+const char* CodeFromNative(const base::NativeEvent& native_event) {
+  const uint16 scan_code = GetScanCodeFromLParam(native_event.lParam);
+  return CodeForWindowsScanCode(scan_code);
+}
+
 bool IsMouseEvent(const base::NativeEvent& native_event) {
   return IsClientMouseEvent(native_event) ||
          IsNonClientMouseEvent(native_event);
@@ -367,6 +372,30 @@ bool IsMouseEventFromTouch(UINT message) {
   return (message >= WM_MOUSEFIRST) && (message <= WM_MOUSELAST) &&
       (GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) ==
       MOUSEEVENTF_FROMTOUCH;
+}
+
+// Conversion scan_code and LParam each other.
+// uint16 scan_code:
+//     ui/events/keycodes/dom4/keycode_converter_data.h
+// 0 - 15bits: represetns the scan code.
+// 28 - 30 bits (0xE000): represents whether this is an extended key or not.
+//
+// LPARAM lParam:
+//     http://msdn.microsoft.com/en-us/library/windows/desktop/ms644984.aspx
+// 16 - 23bits: represetns the scan code.
+// 24bit (0x0100): represents whether this is an extended key or not.
+uint16 GetScanCodeFromLParam(LPARAM l_param) {
+  uint16 scan_code = ((l_param >> 16) & 0x00FF);
+  if (l_param & (1 << 24))
+    scan_code |= 0xE000;
+  return scan_code;
+}
+
+LPARAM GetLParamFromScanCode(uint16 scan_code) {
+  LPARAM l_param = static_cast<LPARAM>(scan_code & 0x00FF) << 16;
+  if ((scan_code & 0xE000) == 0xE000)
+    l_param |= (1 << 24);
+  return l_param;
 }
 
 }  // namespace ui

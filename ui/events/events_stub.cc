@@ -148,4 +148,9 @@ KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   return static_cast<KeyboardCode>(0);
 }
 
+const char* CodeFromNative(const base::NativeEvent& native_event) {
+  NOTIMPLEMENTED();
+  return "";
+}
+
 }  // namespace ui

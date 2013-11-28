@@ -474,6 +474,10 @@ KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
   return KeyboardCodeFromXKeyEvent(native_event);
 }
 
+const char* CodeFromNative(const base::NativeEvent& native_event) {
+  return CodeFromXEvent(native_event);
+}
+
 bool IsMouseEvent(const base::NativeEvent& native_event) {
   if (native_event->type == EnterNotify ||
       native_event->type == LeaveNotify ||
