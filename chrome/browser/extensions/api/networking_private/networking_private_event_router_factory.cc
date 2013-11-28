@@ -48,7 +48,7 @@ NetworkingPrivateEventRouterFactory::BuildServiceInstanceFor(
 content::BrowserContext*
 NetworkingPrivateEventRouterFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
+  return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
 bool NetworkingPrivateEventRouterFactory::
