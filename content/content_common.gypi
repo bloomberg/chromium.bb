@@ -489,7 +489,6 @@
       ],
     }, {  # enable_plugins == 0
       'sources!': [
-        'common/font_list.cc',
         'common/pepper_plugin_list.cc',
         'common/pepper_plugin_list.h',
         'common/sandbox_util.cc',
