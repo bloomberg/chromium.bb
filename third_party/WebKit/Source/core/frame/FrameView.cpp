@@ -2264,8 +2264,6 @@ void FrameView::flushAnyPendingPostLayoutTasks()
 void FrameView::performPostLayoutTasks()
 {
     TRACE_EVENT0("webkit", "FrameView::performPostLayoutTasks");
-    // FontFaceSet::didLayout() calls below can blow us away from underneath.
-    // FIXME: We should not run any JavaScript code in this function.
     RefPtr<FrameView> protect(this);
 
     m_postLayoutTasksTimer.stop();
