@@ -73,7 +73,7 @@ public:
         return m_map.find(key) != m_map.end();
     }
 
-    bool containsKeyAndValue(KeyType* key, v8::Handle<v8::Object> value)
+    bool containsKeyAndValue(KeyType* key, const v8::Persistent<v8::Object>& value)
     {
         typename MapType::iterator it = m_map.find(key);
         if (it == m_map.end())
