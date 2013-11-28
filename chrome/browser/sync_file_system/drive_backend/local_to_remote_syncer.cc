@@ -313,11 +313,6 @@ void LocalToRemoteSyncer::DidDeleteRemoteFile(
   callback.Run(SYNC_STATUS_OK);
 }
 
-bool LocalToRemoteSyncer::PopulateRemoteParentFolder() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void LocalToRemoteSyncer::UploadExistingFile(
     const SyncStatusCallback& callback)  {
   DCHECK(remote_file_tracker_);

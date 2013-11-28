@@ -57,8 +57,6 @@ class LocalToRemoteSyncer : public SyncTask {
   void DidDeleteRemoteFile(const SyncStatusCallback& callback,
                            google_apis::GDataErrorCode error);
 
-  bool PopulateRemoteParentFolder();
-
   void UploadExistingFile(const SyncStatusCallback& callback);
   void DidGetMD5ForUpload(const SyncStatusCallback& callback,
                           const std::string& local_file_md5);
