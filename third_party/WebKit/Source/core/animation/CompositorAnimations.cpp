@@ -171,6 +171,7 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, co
 
     Vector<OwnPtr<blink::WebAnimation> > animations;
     CompositorAnimationsImpl::getAnimationOnCompositor(timing, keyframeEffect, animations);
+    ASSERT(!animations.isEmpty());
     for (size_t i = 0; i < animations.size(); ++i) {
         int id = animations[i]->id();
         if (!layer->compositedLayerMapping()->mainGraphicsLayer()->addAnimation(animations[i].release())) {
@@ -182,6 +183,7 @@ bool CompositorAnimations::startAnimationOnCompositor(const Element& element, co
         }
         startedAnimationIds.append(id);
     }
+    ASSERT(!startedAnimationIds.isEmpty());
     return true;
 }
 
@@ -205,6 +207,8 @@ bool CompositorAnimationsImpl::isCandidateForCompositor(const Keyframe& keyframe
         return false;
     // Check all the properties can be accelerated
     const PropertySet properties = keyframe.properties();
+    if (properties.isEmpty())
+        return false;
     for (PropertySet::const_iterator it = properties.begin(); it != properties.end(); ++it) {
         switch (*it) {
         case CSSPropertyOpacity:
@@ -492,6 +496,7 @@ void CompositorAnimationsImpl::addKeyframesToCurve(PlatformAnimationCurveType& c
 void CompositorAnimationsImpl::getAnimationOnCompositor(
     const Timing& timing, const KeyframeAnimationEffect& effect, Vector<OwnPtr<blink::WebAnimation> >& animations)
 {
+    ASSERT(animations.isEmpty());
     CompositorTiming compositorTiming;
     bool timingValid = convertTimingForCompositor(timing, compositorTiming);
     ASSERT_UNUSED(timingValid, timingValid);
@@ -501,6 +506,7 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(
         timingFunction = CompositorAnimationsTimingFunctionReverser::reverse(timingFunction.get());
 
     PropertySet properties = effect.properties();
+    ASSERT(!properties.isEmpty());
     for (PropertySet::iterator it = properties.begin(); it != properties.end(); ++it) {
 
         KeyframeVector values;
@@ -544,6 +550,7 @@ void CompositorAnimationsImpl::getAnimationOnCompositor(
 
         animations.append(animation.release());
     }
+    ASSERT(!animations.isEmpty());
 }
 
 } // namespace WebCore
