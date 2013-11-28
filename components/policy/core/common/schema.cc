@@ -5,6 +5,8 @@
 #include "components/policy/core/common/schema.h"
 
 #include <algorithm>
+#include <map>
+#include <utility>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -13,6 +15,8 @@
 #include "components/json_schema/json_schema_constants.h"
 #include "components/json_schema/json_schema_validator.h"
 #include "components/policy/core/common/schema_internal.h"
+
+namespace schema = json_schema_constants;
 
 namespace policy {
 
@@ -23,6 +27,29 @@ using internal::SchemaNode;
 
 namespace {
 
+// Maps schema "id" attributes to the corresponding SchemaNode index.
+typedef std::map<std::string, int> IdMap;
+
+// List of pairs of references to be assigned later. The string is the "id"
+// whose corresponding index should be stored in the pointer, once all the IDs
+// are available.
+typedef std::vector<std::pair<std::string, int*> > ReferenceList;
+
+// Sizes for the storage arrays. These are calculated in advance so that the
+// arrays don't have to be resized during parsing, which would invalidate
+// pointers into their contents (i.e. string's c_str() and address of indices
+// for "$ref" attributes).
+struct StorageSizes {
+  StorageSizes()
+      : strings(0), schema_nodes(0), property_nodes(0), properties_nodes(0) {}
+  size_t strings;
+  size_t schema_nodes;
+  size_t property_nodes;
+  size_t properties_nodes;
+};
+
+// An invalid index, indicating that a node is not present; similar to a NULL
+// pointer.
 const int kInvalid = -1;
 
 bool SchemaTypeToValueType(const std::string& type_string,
@@ -32,13 +59,13 @@ bool SchemaTypeToValueType(const std::string& type_string,
     const char* schema_type;
     base::Value::Type value_type;
   } kSchemaToValueTypeMap[] = {
-    { json_schema_constants::kArray,        base::Value::TYPE_LIST       },
-    { json_schema_constants::kBoolean,      base::Value::TYPE_BOOLEAN    },
-    { json_schema_constants::kInteger,      base::Value::TYPE_INTEGER    },
-    { json_schema_constants::kNull,         base::Value::TYPE_NULL       },
-    { json_schema_constants::kNumber,       base::Value::TYPE_DOUBLE     },
-    { json_schema_constants::kObject,       base::Value::TYPE_DICTIONARY },
-    { json_schema_constants::kString,       base::Value::TYPE_STRING     },
+    { schema::kArray,        base::Value::TYPE_LIST       },
+    { schema::kBoolean,      base::Value::TYPE_BOOLEAN    },
+    { schema::kInteger,      base::Value::TYPE_INTEGER    },
+    { schema::kNull,         base::Value::TYPE_NULL       },
+    { schema::kNumber,       base::Value::TYPE_DOUBLE     },
+    { schema::kObject,       base::Value::TYPE_DICTIONARY },
+    { schema::kString,       base::Value::TYPE_STRING     },
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kSchemaToValueTypeMap); ++i) {
     if (kSchemaToValueTypeMap[i].schema_type == type_string) {
@@ -87,22 +114,53 @@ class Schema::InternalStorage
   InternalStorage();
   ~InternalStorage();
 
-  // Parses the JSON schema in |schema| and returns the index of the
-  // corresponding SchemaNode in |schema_nodes_|, which gets populated with any
-  // necessary intermediate nodes. If |schema| is invalid then -1 is returned
-  // and |error| is set to the error cause.
-  int Parse(const base::DictionaryValue& schema, std::string* error);
+  // Determines the expected |sizes| of the storage for the representation
+  // of |schema|.
+  static void DetermineStorageSizes(const base::DictionaryValue& schema,
+                                   StorageSizes* sizes);
 
-  // Helper for Parse().
-  int ParseDictionary(const base::DictionaryValue& schema, std::string* error);
+  // Parses the JSON schema in |schema|.
+  //
+  // If |schema| has a "$ref" attribute then a pending reference is appended
+  // to the |reference_list|, and nothing else is done.
+  //
+  // Otherwise, |index| gets assigned the index of the corresponding SchemaNode
+  // in |schema_nodes_|. If the |schema| contains an "id" then that ID is mapped
+  // to the |index| in the |id_map|.
+  //
+  // If |schema| is invalid then |error| gets the error reason and false is
+  // returned. Otherwise returns true.
+  bool Parse(const base::DictionaryValue& schema,
+             int* index,
+             IdMap* id_map,
+             ReferenceList* reference_list,
+             std::string* error);
 
-  // Helper for Parse().
-  int ParseList(const base::DictionaryValue& schema, std::string* error);
+  // Helper for Parse() that gets an already assigned |schema_node| instead of
+  // an |index| pointer.
+  bool ParseDictionary(const base::DictionaryValue& schema,
+                       SchemaNode* schema_node,
+                       IdMap* id_map,
+                       ReferenceList* reference_list,
+                       std::string* error);
+
+  // Helper for Parse() that gets an already assigned |schema_node| instead of
+  // an |index| pointer.
+  bool ParseList(const base::DictionaryValue& schema,
+                 SchemaNode* schema_node,
+                 IdMap* id_map,
+                 ReferenceList* reference_list,
+                 std::string* error);
+
+  // Assigns the IDs in |id_map| to the pending references in the
+  // |reference_list|. If an ID is missing then |error| is set and false is
+  // returned; otherwise returns true.
+  static bool ResolveReferences(const IdMap& id_map,
+                                const ReferenceList& reference_list,
+                                std::string* error);
 
   SchemaData schema_data_;
-  // TODO: compute the sizes of these arrays before filling them up to avoid
-  // having to resize them.
-  ScopedVector<std::string> strings_;
+  std::vector<std::string> strings_;
   std::vector<SchemaNode> schema_nodes_;
   std::vector<PropertyNode> property_nodes_;
   std::vector<PropertiesNode> properties_nodes_;
@@ -128,9 +186,46 @@ scoped_refptr<const Schema::InternalStorage> Schema::InternalStorage::Wrap(
 scoped_refptr<const Schema::InternalStorage>
 Schema::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
                                      std::string* error) {
+  // Determine the sizes of the storage arrays and reserve the capacity before
+  // starting to append nodes and strings. This is important to prevent the
+  // arrays from being reallocated, which would invalidate the c_str() pointers
+  // and the addresses of indices to fix.
+  StorageSizes sizes;
+  DetermineStorageSizes(schema, &sizes);
+
   scoped_refptr<InternalStorage> storage = new InternalStorage();
-  if (storage->Parse(schema, error) == kInvalid)
+  storage->strings_.reserve(sizes.strings);
+  storage->schema_nodes_.reserve(sizes.schema_nodes);
+  storage->property_nodes_.reserve(sizes.property_nodes);
+  storage->properties_nodes_.reserve(sizes.properties_nodes);
+
+  int root_index = kInvalid;
+  IdMap id_map;
+  ReferenceList reference_list;
+  if (!storage->Parse(schema, &root_index, &id_map, &reference_list, error))
     return NULL;
+
+  if (root_index == kInvalid) {
+    *error = "The main schema can't have a $ref";
+    return NULL;
+  }
+
+  // None of this should ever happen without having been already detected.
+  // But, if it does happen, then it will lead to corrupted memory; drop
+  // everything in that case.
+  if (root_index != 0 ||
+      sizes.strings != storage->strings_.size() ||
+      sizes.schema_nodes != storage->schema_nodes_.size() ||
+      sizes.property_nodes != storage->property_nodes_.size() ||
+      sizes.properties_nodes != storage->properties_nodes_.size()) {
+    *error = "Failed to parse the schema due to a Chrome bug. Please file a "
+             "new issue at http://crbug.com";
+    return NULL;
+  }
+
+  if (!ResolveReferences(id_map, reference_list, error))
+    return NULL;
+
   SchemaData* data = &storage->schema_data_;
   data->schema_nodes = vector_as_array(&storage->schema_nodes_);
   data->property_nodes = vector_as_array(&storage->property_nodes_);
@@ -138,62 +233,128 @@ Schema::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
   return storage;
 }
 
-int Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
-                                   std::string* error) {
+// static
+void Schema::InternalStorage::DetermineStorageSizes(
+    const base::DictionaryValue& schema,
+    StorageSizes* sizes) {
+  std::string ref_string;
+  if (schema.GetString(schema::kRef, &ref_string)) {
+    // Schemas with a "$ref" attribute don't take additional storage.
+    return;
+  }
+
   std::string type_string;
-  if (!schema.GetString(json_schema_constants::kType, &type_string)) {
+  base::Value::Type type = base::Value::TYPE_NULL;
+  if (!schema.GetString(schema::kType, &type_string) ||
+      !SchemaTypeToValueType(type_string, &type)) {
+    // This schema is invalid.
+    return;
+  }
+
+  sizes->schema_nodes++;
+
+  if (type == base::Value::TYPE_LIST) {
+    const base::DictionaryValue* items = NULL;
+    if (schema.GetDictionary(schema::kItems, &items))
+      DetermineStorageSizes(*items, sizes);
+  } else if (type == base::Value::TYPE_DICTIONARY) {
+    sizes->properties_nodes++;
+
+    const base::DictionaryValue* dict = NULL;
+    if (schema.GetDictionary(schema::kAdditionalProperties, &dict))
+      DetermineStorageSizes(*dict, sizes);
+
+    const base::DictionaryValue* properties = NULL;
+    if (schema.GetDictionary(schema::kProperties, &properties)) {
+      for (base::DictionaryValue::Iterator it(*properties);
+           !it.IsAtEnd(); it.Advance()) {
+        // This should have been verified by the JSONSchemaValidator.
+        CHECK(it.value().GetAsDictionary(&dict));
+        DetermineStorageSizes(*dict, sizes);
+        sizes->strings++;
+        sizes->property_nodes++;
+      }
+    }
+  }
+}
+
+bool Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
+                                    int* index,
+                                    IdMap* id_map,
+                                    ReferenceList* reference_list,
+                                    std::string* error) {
+  std::string ref_string;
+  if (schema.GetString(schema::kRef, &ref_string)) {
+    std::string id_string;
+    if (schema.GetString(schema::kId, &id_string)) {
+      *error = "Schemas with a $ref can't have an id";
+      return false;
+    }
+    reference_list->push_back(std::make_pair(ref_string, index));
+    return true;
+  }
+
+  std::string type_string;
+  if (!schema.GetString(schema::kType, &type_string)) {
     *error = "The schema type must be declared.";
-    return kInvalid;
+    return false;
   }
 
   base::Value::Type type = base::Value::TYPE_NULL;
   if (!SchemaTypeToValueType(type_string, &type)) {
     *error = "Type not supported: " + type_string;
-    return kInvalid;
+    return false;
   }
 
-  if (type == base::Value::TYPE_DICTIONARY)
-    return ParseDictionary(schema, error);
-  if (type == base::Value::TYPE_LIST)
-    return ParseList(schema, error);
-
-  int index = static_cast<int>(schema_nodes_.size());
+  *index = static_cast<int>(schema_nodes_.size());
   schema_nodes_.push_back(SchemaNode());
-  SchemaNode& node = schema_nodes_.back();
-  node.type = type;
-  node.extra = kInvalid;
-  return index;
+  SchemaNode* schema_node = &schema_nodes_.back();
+  schema_node->type = type;
+  schema_node->extra = kInvalid;
+
+  if (type == base::Value::TYPE_DICTIONARY) {
+    if (!ParseDictionary(schema, schema_node, id_map, reference_list, error))
+      return false;
+  } else if (type == base::Value::TYPE_LIST) {
+    if (!ParseList(schema, schema_node, id_map, reference_list, error))
+      return false;
+  }
+
+  std::string id_string;
+  if (schema.GetString(schema::kId, &id_string)) {
+    if (ContainsKey(*id_map, id_string)) {
+      *error = "Duplicated id: " + id_string;
+      return false;
+    }
+    (*id_map)[id_string] = *index;
+  }
+
+  return true;
 }
 
-// static
-int Schema::InternalStorage::ParseDictionary(
+bool Schema::InternalStorage::ParseDictionary(
     const base::DictionaryValue& schema,
+    SchemaNode* schema_node,
+    IdMap* id_map,
+    ReferenceList* reference_list,
     std::string* error) {
-  // Note: recursive calls to Parse() invalidate iterators and references into
-  // the vectors.
-
-  // Reserve an index for this dictionary at the front, so that the root node
-  // is at index 0.
-  int schema_index = static_cast<int>(schema_nodes_.size());
-  schema_nodes_.push_back(SchemaNode());
-
   int extra = static_cast<int>(properties_nodes_.size());
   properties_nodes_.push_back(PropertiesNode());
   properties_nodes_[extra].begin = kInvalid;
   properties_nodes_[extra].end = kInvalid;
   properties_nodes_[extra].additional = kInvalid;
+  schema_node->extra = extra;
 
   const base::DictionaryValue* dict = NULL;
-  if (schema.GetDictionary(json_schema_constants::kAdditionalProperties,
-                           &dict)) {
-    int additional = Parse(*dict, error);
-    if (additional == kInvalid)
-      return kInvalid;
-    properties_nodes_[extra].additional = additional;
+  if (schema.GetDictionary(schema::kAdditionalProperties, &dict)) {
+    if (!Parse(*dict, &properties_nodes_[extra].additional,
+               id_map, reference_list, error)) {
+      return false;
+    }
   }
 
   const base::DictionaryValue* properties = NULL;
-  if (schema.GetDictionary(json_schema_constants::kProperties, &properties)) {
+  if (schema.GetDictionary(schema::kProperties, &properties)) {
     int base_index = static_cast<int>(property_nodes_.size());
     // This reserves nodes for all of the |properties|, and makes sure they
     // are contiguous. Recursive calls to Parse() will append after these
@@ -205,39 +366,49 @@ int Schema::InternalStorage::ParseDictionary(
          !it.IsAtEnd(); it.Advance(), ++index) {
       // This should have been verified by the JSONSchemaValidator.
       CHECK(it.value().GetAsDictionary(&dict));
-      int extra = Parse(*dict, error);
-      if (extra == kInvalid)
-        return kInvalid;
-      strings_.push_back(new std::string(it.key()));
-      property_nodes_[index].key = strings_.back()->c_str();
-      property_nodes_[index].schema = extra;
+      strings_.push_back(it.key());
+      property_nodes_[index].key = strings_.back().c_str();
+      if (!Parse(*dict, &property_nodes_[index].schema,
+                 id_map, reference_list, error)) {
+        return false;
+      }
     }
     CHECK_EQ(static_cast<int>(properties->size()), index - base_index);
     properties_nodes_[extra].begin = base_index;
     properties_nodes_[extra].end = index;
   }
 
-  schema_nodes_[schema_index].type = base::Value::TYPE_DICTIONARY;
-  schema_nodes_[schema_index].extra = extra;
-  return schema_index;
+  return true;
+}
+
+bool Schema::InternalStorage::ParseList(const base::DictionaryValue& schema,
+                                        SchemaNode* schema_node,
+                                        IdMap* id_map,
+                                        ReferenceList* reference_list,
+                                        std::string* error) {
+  const base::DictionaryValue* dict = NULL;
+  if (!schema.GetDictionary(schema::kItems, &dict)) {
+    *error = "Arrays must declare a single schema for their items.";
+    return false;
+  }
+  return Parse(*dict, &schema_node->extra, id_map, reference_list, error);
 }
 
 // static
-int Schema::InternalStorage::ParseList(const base::DictionaryValue& schema,
-                                       std::string* error) {
-  const base::DictionaryValue* dict = NULL;
-  if (!schema.GetDictionary(json_schema_constants::kItems, &dict)) {
-    *error = "Arrays must declare a single schema for their items.";
-    return kInvalid;
+bool Schema::InternalStorage::ResolveReferences(
+    const IdMap& id_map,
+    const ReferenceList& reference_list,
+    std::string* error) {
+  for (ReferenceList::const_iterator ref = reference_list.begin();
+       ref != reference_list.end(); ++ref) {
+    IdMap::const_iterator id = id_map.find(ref->first);
+    if (id == id_map.end()) {
+      *error = "Invalid $ref: " + ref->first;
+      return false;
+    }
+    *ref->second = id->second;
   }
-  int extra = Parse(*dict, error);
-  if (extra == kInvalid)
-    return kInvalid;
-  int index = static_cast<int>(schema_nodes_.size());
-  schema_nodes_.push_back(SchemaNode());
-  schema_nodes_[index].type = base::Value::TYPE_LIST;
-  schema_nodes_[index].extra = extra;
-  return index;
+  return true;
 }
 
 Schema::Iterator::Iterator(const scoped_refptr<const InternalStorage>& storage,
@@ -337,16 +508,16 @@ Schema Schema::Parse(const std::string& content, std::string* error) {
 
   // Validate the main type.
   std::string string_value;
-  if (!dict->GetString(json_schema_constants::kType, &string_value) ||
-      string_value != json_schema_constants::kObject) {
+  if (!dict->GetString(schema::kType, &string_value) ||
+      string_value != schema::kObject) {
     *error =
         "The main schema must have a type attribute with \"object\" value.";
     return Schema();
   }
 
   // Checks for invalid attributes at the top-level.
-  if (dict->HasKey(json_schema_constants::kAdditionalProperties) ||
-      dict->HasKey(json_schema_constants::kPatternProperties)) {
+  if (dict->HasKey(schema::kAdditionalProperties) ||
+      dict->HasKey(schema::kPatternProperties)) {
     *error = "\"additionalProperties\" and \"patternProperties\" are not "
              "supported at the main schema.";
     return Schema();

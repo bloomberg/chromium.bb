@@ -89,7 +89,7 @@ bool IsValidSchema(const base::DictionaryValue* dict, std::string* error) {
     { schema::kTitle,                   base::Value::TYPE_STRING      },
   };
 
-  bool has_type = false;
+  bool has_type_or_ref = false;
   const base::ListValue* list_value = NULL;
   const base::DictionaryValue* dictionary_value = NULL;
   std::string string_value;
@@ -119,7 +119,7 @@ bool IsValidSchema(const base::DictionaryValue* dict, std::string* error) {
           *error = "Invalid value for type attribute";
           return false;
       }
-      has_type = true;
+      has_type_or_ref = true;
       continue;
     }
 
@@ -242,10 +242,13 @@ bool IsValidSchema(const base::DictionaryValue* dict, std::string* error) {
         }
       }
     }
+
+    if (it.key() == schema::kRef)
+      has_type_or_ref = true;
   }
 
-  if (!has_type) {
-    *error = "Schema must have a type attribute";
+  if (!has_type_or_ref) {
+    *error = "Schema must have a type or a $ref attribute";
     return false;
   }
 

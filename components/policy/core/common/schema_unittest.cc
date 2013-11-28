@@ -105,6 +105,12 @@ TEST(SchemaTest, InvalidSchemas) {
       "  \"type\": \"object\","
       "  \"properties\": { \"Policy\": { \"type\": \"any\" } }"
       "}"));
+
+  EXPECT_TRUE(ParseFails(
+      "{"
+      "  \"type\": \"object\","
+      "  \"properties\": { \"Policy\": 123 }"
+      "}"));
 }
 
 TEST(SchemaTest, Ownership) {
@@ -461,6 +467,214 @@ TEST(SchemaTest, Validate) {
 
   bundle.SetString("boom", "bang");
   EXPECT_FALSE(schema.Validate(bundle));
+
 }
+TEST(SchemaTest, InvalidReferences) {
+  // References to undeclared schemas fail.
+  EXPECT_TRUE(ParseFails(
+      "{"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"name\": { \"$ref\": \"undeclared\" }"
+      "  }"
+      "}"));
+
+  // Can't refer to self.
+  EXPECT_TRUE(ParseFails(
+      "{"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"name\": {"
+      "      \"id\": \"self\","
+      "      \"$ref\": \"self\""
+      "    }"
+      "  }"
+      "}"));
+
+  // Duplicated IDs are invalid.
+  EXPECT_TRUE(ParseFails(
+      "{"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"name\": {"
+      "      \"id\": \"x\","
+      "      \"type\": \"string\""
+      "    },"
+      "    \"another\": {"
+      "      \"id\": \"x\","
+      "      \"type\": \"string\""
+      "    }"
+      "  }"
+      "}"));
+
+  // Main object can't be a reference.
+  EXPECT_TRUE(ParseFails(
+      "{"
+      "  \"type\": \"object\","
+      "  \"id\": \"main\","
+      "  \"$ref\": \"main\""
+      "}"));
+
+  EXPECT_TRUE(ParseFails(
+      "{"
+      "  \"type\": \"object\","
+      "  \"$ref\": \"main\""
+      "}"));
+}
+
+TEST(SchemaTest, RecursiveReferences) {
+  // Verifies that references can go to a parent schema, to define a
+  // recursive type.
+  std::string error;
+  Schema schema = Schema::Parse(
+      "{"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"bookmarks\": {"
+      "      \"type\": \"array\","
+      "      \"id\": \"ListOfBookmarks\","
+      "      \"items\": {"
+      "        \"type\": \"object\","
+      "        \"properties\": {"
+      "          \"name\": { \"type\": \"string\" },"
+      "          \"url\": { \"type\": \"string\" },"
+      "          \"children\": { \"$ref\": \"ListOfBookmarks\" }"
+      "        }"
+      "      }"
+      "    }"
+      "  }"
+      "}", &error);
+  ASSERT_TRUE(schema.valid()) << error;
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+
+  Schema parent = schema.GetKnownProperty("bookmarks");
+  ASSERT_TRUE(parent.valid());
+  ASSERT_EQ(base::Value::TYPE_LIST, parent.type());
+
+  // Check the recursive type a number of times.
+  for (int i = 0; i < 10; ++i) {
+    Schema items = parent.GetItems();
+    ASSERT_TRUE(items.valid());
+    ASSERT_EQ(base::Value::TYPE_DICTIONARY, items.type());
+
+    Schema prop = items.GetKnownProperty("name");
+    ASSERT_TRUE(prop.valid());
+    ASSERT_EQ(base::Value::TYPE_STRING, prop.type());
+
+    prop = items.GetKnownProperty("url");
+    ASSERT_TRUE(prop.valid());
+    ASSERT_EQ(base::Value::TYPE_STRING, prop.type());
+
+    prop = items.GetKnownProperty("children");
+    ASSERT_TRUE(prop.valid());
+    ASSERT_EQ(base::Value::TYPE_LIST, prop.type());
+
+    parent = prop;
+  }
+}
+
+TEST(SchemaTest, UnorderedReferences) {
+  // Verifies that references and IDs can come in any order.
+  std::string error;
+  Schema schema = Schema::Parse(
+      "{"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"a\": { \"$ref\": \"shared\" },"
+      "    \"b\": { \"$ref\": \"shared\" },"
+      "    \"c\": { \"$ref\": \"shared\" },"
+      "    \"d\": { \"$ref\": \"shared\" },"
+      "    \"e\": {"
+      "      \"type\": \"boolean\","
+      "      \"id\": \"shared\""
+      "    },"
+      "    \"f\": { \"$ref\": \"shared\" },"
+      "    \"g\": { \"$ref\": \"shared\" },"
+      "    \"h\": { \"$ref\": \"shared\" },"
+      "    \"i\": { \"$ref\": \"shared\" }"
+      "  }"
+      "}", &error);
+  ASSERT_TRUE(schema.valid()) << error;
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+
+  for (char c = 'a'; c <= 'i'; ++c) {
+    Schema sub = schema.GetKnownProperty(std::string(1, c));
+    ASSERT_TRUE(sub.valid()) << c;
+    ASSERT_EQ(base::Value::TYPE_BOOLEAN, sub.type()) << c;
+  }
+}
+
+TEST(SchemaTest, AdditionalPropertiesReference) {
+  // Verifies that "additionalProperties" can be a reference.
+  std::string error;
+  Schema schema = Schema::Parse(
+      "{"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"policy\": {"
+      "      \"type\": \"object\","
+      "      \"properties\": {"
+      "        \"foo\": {"
+      "          \"type\": \"boolean\","
+      "          \"id\": \"FooId\""
+      "        }"
+      "      },"
+      "      \"additionalProperties\": { \"$ref\": \"FooId\" }"
+      "    }"
+      "  }"
+      "}", &error);
+  ASSERT_TRUE(schema.valid()) << error;
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+
+  Schema policy = schema.GetKnownProperty("policy");
+  ASSERT_TRUE(policy.valid());
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, policy.type());
+
+  Schema foo = policy.GetKnownProperty("foo");
+  ASSERT_TRUE(foo.valid());
+  EXPECT_EQ(base::Value::TYPE_BOOLEAN, foo.type());
+
+  Schema additional = policy.GetAdditionalProperties();
+  ASSERT_TRUE(additional.valid());
+  EXPECT_EQ(base::Value::TYPE_BOOLEAN, additional.type());
+
+  Schema x = policy.GetProperty("x");
+  ASSERT_TRUE(x.valid());
+  EXPECT_EQ(base::Value::TYPE_BOOLEAN, x.type());
+}
+
+TEST(SchemaTest, ItemsReference) {
+  // Verifies that "items" can be a reference.
+  std::string error;
+  Schema schema = Schema::Parse(
+      "{"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"foo\": {"
+      "      \"type\": \"boolean\","
+      "      \"id\": \"FooId\""
+      "    },"
+      "    \"list\": {"
+      "      \"type\": \"array\","
+      "      \"items\": { \"$ref\": \"FooId\" }"
+      "    }"
+      "  }"
+      "}", &error);
+  ASSERT_TRUE(schema.valid()) << error;
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+
+  Schema foo = schema.GetKnownProperty("foo");
+  ASSERT_TRUE(foo.valid());
+  EXPECT_EQ(base::Value::TYPE_BOOLEAN, foo.type());
+
+  Schema list = schema.GetKnownProperty("list");
+  ASSERT_TRUE(list.valid());
+  ASSERT_EQ(base::Value::TYPE_LIST, list.type());
+
+  Schema items = list.GetItems();
+  ASSERT_TRUE(items.valid());
+  ASSERT_EQ(base::Value::TYPE_BOOLEAN, items.type());
+}
+
 
 }  // namespace policy
