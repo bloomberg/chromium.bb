@@ -240,9 +240,9 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
     collection->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
+    v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
     for (size_t i = 0; i < names.size(); ++i)
-        v8names->Set(v8::Integer::New(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
+        v8names->Set(v8::Integer::New(info.GetIsolate(), i), v8String(names[i], info.GetIsolate()));
     v8SetReturnValue(info, v8names);
 }
 
@@ -300,7 +300,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestEventTargetTemplate(v8::H
     functionTemplate->InstanceTemplate()->MarkAsUndetectable();
 
     // Custom toString template
-    functionTemplate->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
+    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());
     return functionTemplate;
 }
 
@@ -312,11 +312,11 @@ v8::Handle<v8::FunctionTemplate> V8TestEventTarget::GetTemplate(v8::Isolate* iso
         return result->value.newLocal(isolate);
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::FunctionTemplate> templ =
+    v8::EscapableHandleScope handleScope(isolate);
+    v8::Local<v8::FunctionTemplate> templ =
         ConfigureV8TestEventTargetTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
-    return handleScope.Close(templ);
+    return handleScope.Escape(templ);
 }
 
 bool V8TestEventTarget::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)

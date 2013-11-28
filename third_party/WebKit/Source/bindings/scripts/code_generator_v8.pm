@@ -1209,7 +1209,7 @@ sub GenerateDomainSafeFunctionGetter
     my $funcName = $function->name;
 
     my $functionLength = GetFunctionLength($function);
-    my $signature = "v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&" . $v8ClassName . "::wrapperTypeInfo, currentWorldType))";
+    my $signature = "v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&" . $v8ClassName . "::wrapperTypeInfo, currentWorldType))";
     if ($function->extendedAttributes->{"DoNotCheckSignature"}) {
         $signature = "v8::Local<v8::Signature>()";
     }
@@ -1241,7 +1241,7 @@ static void ${funcName}OriginSafeMethodGetter${forMainWorldSuffix}(const v8::Pro
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8::String::NewSymbol("${funcName}"));
+    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8::String::NewFromUtf8(info.GetIsolate(), "${funcName}", v8::String::kInternalizedString));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
@@ -1509,7 +1509,7 @@ END
         if ($attrCached) {
             $imp = 1;
             $code .= <<END;
-    v8::Handle<v8::String> propertyName = v8::String::NewSymbol("${attrName}");
+    v8::Handle<v8::String> propertyName = v8::String::NewFromUtf8(info.GetIsolate(), "${attrName}", v8::String::kInternalizedString);
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
     if (!imp->$attrCached()) {
         v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
@@ -2125,7 +2125,7 @@ END
 
     if ($attrCached) {
         $code .= <<END;
-    info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("${attrName}")); // Invalidate the cached value.
+    info.Holder()->DeleteHiddenValue(v8::String::NewFromUtf8(info.GetIsolate(), "${attrName}", v8::String::kInternalizedString)); // Invalidate the cached value.
 END
     }
 
@@ -3092,11 +3092,11 @@ v8::Handle<v8::FunctionTemplate> ${v8ClassName}Constructor::GetTemplate(v8::Isol
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink\", \"BuildDOMTemplate");
     v8::HandleScope scope(isolate);
-    result = v8::FunctionTemplate::New(${v8ClassName}ConstructorCallback);
+    result = v8::FunctionTemplate::New(isolate, ${v8ClassName}ConstructorCallback);
 
     v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount(${v8ClassName}::internalFieldCount);
-    result->SetClassName(v8::String::NewSymbol("${implClassName}"));
+    result->SetClassName(v8::String::NewFromUtf8(isolate, "${implClassName}", v8::String::kInternalizedString));
     result->Inherit(${v8ClassName}::GetTemplate(isolate, currentWorldType));
     data->setPrivateTemplate(currentWorldType, &privateTemplateUniqueKey, result);
 
@@ -3282,7 +3282,7 @@ sub GenerateStaticAttribute
     my $conditionalString = GenerateConditionalString($attribute);
 
     $code .= "#if ${conditionalString}\n" if $conditionalString;
-    $code .= "    functionTemplate->SetNativeDataProperty(v8::String::NewSymbol(\"$attrName\"), $getter, $setter, v8::External::New(isolate, $data), $propAttribute, v8::Handle<v8::AccessorSignature>(), $accessControl);\n";
+    $code .= "    functionTemplate->SetNativeDataProperty(v8::String::NewFromUtf8(isolate, \"$attrName\", v8::String::kInternalizedString), $getter, $setter, v8::External::New(isolate, $data), $propAttribute, v8::Handle<v8::AccessorSignature>(), $accessControl);\n";
     $code .= "#endif // ${conditionalString}\n" if $conditionalString;
 
     return $code;
@@ -3358,13 +3358,13 @@ sub GenerateNonStandardFunction
         if ($function->extendedAttributes->{"PerWorldBindings"}) {
             $code .= <<END;
     if (currentWorldType == MainWorld) {
-        ${conditional8}$template->SetAccessor(v8::String::NewSymbol("$name"), ${implClassName}V8Internal::${name}OriginSafeMethodGetterCallbackForMainWorld, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
+        ${conditional8}$template->SetAccessor(v8::String::NewFromUtf8(isolate, "$name", v8::String::kInternalizedString), ${implClassName}V8Internal::${name}OriginSafeMethodGetterCallbackForMainWorld, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
     } else {
-        ${conditional8}$template->SetAccessor(v8::String::NewSymbol("$name"), ${implClassName}V8Internal::${name}OriginSafeMethodGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
+        ${conditional8}$template->SetAccessor(v8::String::NewFromUtf8(isolate, "$name", v8::String::kInternalizedString), ${implClassName}V8Internal::${name}OriginSafeMethodGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
     }
 END
         } else {
-            $code .= "    ${conditional4}$template->SetAccessor(v8::String::NewSymbol(\"$name\"), ${implClassName}V8Internal::${name}OriginSafeMethodGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));\n";
+            $code .= "    ${conditional4}$template->SetAccessor(v8::String::NewFromUtf8(isolate, \"$name\", v8::String::kInternalizedString), ${implClassName}V8Internal::${name}OriginSafeMethodGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));\n";
         }
 
         return $code;
@@ -3396,12 +3396,12 @@ END
 
     if ($function->extendedAttributes->{"PerWorldBindings"}) {
         $code .= "    if (currentWorldType == MainWorld) {\n";
-        $code .= "        ${conditional8}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${implClassName}V8Internal::${name}MethodCallbackForMainWorld, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
+        $code .= "        ${conditional8}$template->Set(v8::String::NewFromUtf8(isolate, \"$name\", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, ${implClassName}V8Internal::${name}MethodCallbackForMainWorld, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
         $code .= "    } else {\n";
-        $code .= "        ${conditional8}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
+        $code .= "        ${conditional8}$template->Set(v8::String::NewFromUtf8(isolate, \"$name\", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, ${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
         $code .= "    }\n";
     } else {
-        $code .= "    ${conditional4}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
+        $code .= "    ${conditional4}$template->Set(v8::String::NewFromUtf8(isolate, \"$name\", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, ${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
     }
     $code .= "#endif // ${conditionalString}\n" if $conditionalString;
     return $code;
@@ -4056,9 +4056,9 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
     collection->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
+    v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
     for (size_t i = 0; i < names.size(); ++i)
-        v8names->Set(v8::Integer::New(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
+        v8names->Set(v8::Integer::New(info.GetIsolate(), i), v8String(names[i], info.GetIsolate()));
     v8SetReturnValue(info, v8names);
 }
 
@@ -4587,7 +4587,7 @@ END
     $code .= <<END;
 
     // Custom toString template
-    functionTemplate->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
+    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());
     return functionTemplate;
 }
 
@@ -4603,11 +4603,11 @@ v8::Handle<v8::FunctionTemplate> ${v8ClassName}::GetTemplate(v8::Isolate* isolat
         return result->value.newLocal(isolate);
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::FunctionTemplate> templ =
+    v8::EscapableHandleScope handleScope(isolate);
+    v8::Local<v8::FunctionTemplate> templ =
         Configure${v8ClassName}Template(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
-    return handleScope.Close(templ);
+    return handleScope.Escape(templ);
 }
 
 END
@@ -4664,7 +4664,7 @@ void ${v8ClassName}::installPerContextEnabledMethods(v8::Handle<v8::Object> prot
 END
         # Define per-context enabled operations.
         $code .=  <<END;
-    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(GetTemplate(isolate, worldType(isolate)));
+    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, GetTemplate(isolate, worldType(isolate)));
     UNUSED_PARAM(defaultSignature);
 
     ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
@@ -4678,7 +4678,7 @@ END
             $code .= "    if (context && context->isDocument() && ${contextEnabledFunction}(toDocument(context)))\n";
             my $name = $perContextEnabledFunction->name;
             $code .= <<END;
-        prototypeTemplate->Set(v8::String::NewSymbol("${name}"), v8::FunctionTemplate::New(${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), defaultSignature, $functionLength)->GetFunction());
+        prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "${name}", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, ${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), defaultSignature, $functionLength)->GetFunction());
 END
             $code .= "#endif // ${conditionalString}\n" if $conditionalString;
         }
@@ -4718,7 +4718,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::GetShadowObjectTemplate(v8::Isolate* is
         DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowShadowObjectCacheForMainWorld, ());
         if (V8WindowShadowObjectCacheForMainWorld.IsEmpty()) {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
-            v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
+            v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
             ConfigureShadowObjectTemplate(templ, isolate, currentWorldType);
             V8WindowShadowObjectCacheForMainWorld.Reset(isolate, templ);
             return templ;
@@ -4728,7 +4728,7 @@ v8::Handle<v8::ObjectTemplate> V8Window::GetShadowObjectTemplate(v8::Isolate* is
         DEFINE_STATIC_LOCAL(v8::Persistent<v8::ObjectTemplate>, V8WindowShadowObjectCacheForNonMainWorld, ());
         if (V8WindowShadowObjectCacheForNonMainWorld.IsEmpty()) {
             TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
-            v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New();
+            v8::Handle<v8::ObjectTemplate> templ = v8::ObjectTemplate::New(isolate);
             ConfigureShadowObjectTemplate(templ, isolate, currentWorldType);
             V8WindowShadowObjectCacheForNonMainWorld.Reset(isolate, templ);
             return templ;
@@ -5542,7 +5542,7 @@ sub CreateCustomSignature
         }
     }
     $code .= " };\n";
-    $code .= "    v8::Handle<v8::Signature> ${name}Signature = v8::Signature::New(functionTemplate, ${name}Argc, ${name}Argv);\n";
+    $code .= "    v8::Handle<v8::Signature> ${name}Signature = v8::Signature::New(isolate, functionTemplate, ${name}Argc, ${name}Argv);\n";
     return $code;
 }
 
@@ -5714,18 +5714,18 @@ sub NativeToJSValue
     if ($extendedAttributes->{"Reflect"} and ($type eq "unsigned long" or $type eq "unsigned short")) {
         $nativeValue =~ s/getUnsignedIntegralAttribute/getIntegralAttribute/g;
         return "${indent}v8SetReturnValueUnsigned(${getCallbackInfo}, std::max(0, ${nativeValue}));" if $isReturnValue;
-        return "$indent$receiver v8::Integer::NewFromUnsigned(std::max(0, " . $nativeValue . "), $getIsolate);";
+        return "$indent$receiver v8::Integer::NewFromUnsigned($getIsolate, std::max(0, " . $nativeValue . "));";
     }
 
     my $nativeType = GetNativeType($type);
     if ($nativeType eq "int") {
         return "${indent}v8SetReturnValueInt(${getCallbackInfo}, ${nativeValue});" if $isReturnValue;
-        return "$indent$receiver v8::Integer::New($nativeValue, $getIsolate);";
+        return "$indent$receiver v8::Integer::New($getIsolate, $nativeValue);";
     }
 
     if ($nativeType eq "unsigned") {
         return "${indent}v8SetReturnValueUnsigned(${getCallbackInfo}, ${nativeValue});" if $isReturnValue;
-        return "$indent$receiver v8::Integer::NewFromUnsigned($nativeValue, $getIsolate);";
+        return "$indent$receiver v8::Integer::NewFromUnsigned($getIsolate, $nativeValue);";
     }
 
     if ($type eq "Date") {

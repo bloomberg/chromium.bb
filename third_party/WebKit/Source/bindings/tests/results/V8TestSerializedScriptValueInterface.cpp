@@ -117,7 +117,7 @@ static void readonlyValueAttributeGetterCallback(v8::Local<v8::String>, const v8
 
 static void dirtySerializedValueAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::String> propertyName = v8::String::NewSymbol("dirtySerializedValue");
+    v8::Handle<v8::String> propertyName = v8::String::NewFromUtf8(info.GetIsolate(), "dirtySerializedValue", v8::String::kInternalizedString);
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
     if (!imp->isValueDirty()) {
         v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
@@ -144,7 +144,7 @@ static void dirtySerializedValueAttributeSetter(v8::Local<v8::Value> jsValue, co
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(RefPtr<SerializedScriptValue>, cppValue, SerializedScriptValue::create(jsValue, info.GetIsolate()));
     imp->setDirtySerializedValue(WTF::getPtr(cppValue));
-    info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("dirtySerializedValue")); // Invalidate the cached value.
+    info.Holder()->DeleteHiddenValue(v8::String::NewFromUtf8(info.GetIsolate(), "dirtySerializedValue", v8::String::kInternalizedString)); // Invalidate the cached value.
 }
 
 static void dirtySerializedValueAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -156,7 +156,7 @@ static void dirtySerializedValueAttributeSetterCallback(v8::Local<v8::String>, v
 
 static void dirtyScriptValueAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::String> propertyName = v8::String::NewSymbol("dirtyScriptValue");
+    v8::Handle<v8::String> propertyName = v8::String::NewFromUtf8(info.GetIsolate(), "dirtyScriptValue", v8::String::kInternalizedString);
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
     if (!imp->isValueDirty()) {
         v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
@@ -182,7 +182,7 @@ static void dirtyScriptValueAttributeSetter(v8::Local<v8::Value> jsValue, const 
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
     V8TRYCATCH_VOID(ScriptValue, cppValue, ScriptValue(jsValue, info.GetIsolate()));
     imp->setDirtyScriptValue(cppValue);
-    info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("dirtyScriptValue")); // Invalidate the cached value.
+    info.Holder()->DeleteHiddenValue(v8::String::NewFromUtf8(info.GetIsolate(), "dirtyScriptValue", v8::String::kInternalizedString)); // Invalidate the cached value.
 }
 
 static void dirtyScriptValueAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -194,7 +194,7 @@ static void dirtyScriptValueAttributeSetterCallback(v8::Local<v8::String>, v8::L
 
 static void cachedValueCallWithAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::String> propertyName = v8::String::NewSymbol("cachedValueCallWith");
+    v8::Handle<v8::String> propertyName = v8::String::NewFromUtf8(info.GetIsolate(), "cachedValueCallWith", v8::String::kInternalizedString);
     TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
     if (!imp->isValueDirty()) {
         v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
@@ -231,7 +231,7 @@ static void cachedValueCallWithAttributeSetter(v8::Local<v8::Value> jsValue, con
     imp->setCachedValueCallWith(&state, WTF::getPtr(cppValue));
     if (state.hadException())
         throwError(state.exception(), info.GetIsolate());
-    info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("cachedValueCallWith")); // Invalidate the cached value.
+    info.Holder()->DeleteHiddenValue(v8::String::NewFromUtf8(info.GetIsolate(), "cachedValueCallWith", v8::String::kInternalizedString)); // Invalidate the cached value.
 }
 
 static void cachedValueCallWithAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -268,7 +268,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestSerializedScriptValueInte
     UNUSED_PARAM(prototypeTemplate);
 
     // Custom toString template
-    functionTemplate->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
+    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());
     return functionTemplate;
 }
 
@@ -280,11 +280,11 @@ v8::Handle<v8::FunctionTemplate> V8TestSerializedScriptValueInterface::GetTempla
         return result->value.newLocal(isolate);
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::FunctionTemplate> templ =
+    v8::EscapableHandleScope handleScope(isolate);
+    v8::Local<v8::FunctionTemplate> templ =
         ConfigureV8TestSerializedScriptValueInterfaceTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
-    return handleScope.Close(templ);
+    return handleScope.Escape(templ);
 }
 
 bool V8TestSerializedScriptValueInterface::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)

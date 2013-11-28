@@ -432,21 +432,21 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8SupportTestInterfaceTemplate(
     // Custom Signature 'supplementalMethod2'
     const int supplementalMethod2Argc = 2;
     v8::Handle<v8::FunctionTemplate> supplementalMethod2Argv[supplementalMethod2Argc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> supplementalMethod2Signature = v8::Signature::New(functionTemplate, supplementalMethod2Argc, supplementalMethod2Argv);
-    prototypeTemplate->Set(v8::String::NewSymbol("supplementalMethod2"), v8::FunctionTemplate::New(SupportTestInterfaceV8Internal::supplementalMethod2MethodCallback, v8Undefined(), supplementalMethod2Signature, 2));
+    v8::Handle<v8::Signature> supplementalMethod2Signature = v8::Signature::New(isolate, functionTemplate, supplementalMethod2Argc, supplementalMethod2Argv);
+    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "supplementalMethod2", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, SupportTestInterfaceV8Internal::supplementalMethod2MethodCallback, v8Undefined(), supplementalMethod2Signature, 2));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    functionTemplate->Set(v8::String::NewSymbol("supplementalMethod4"), v8::FunctionTemplate::New(SupportTestInterfaceV8Internal::supplementalMethod4MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
+    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "supplementalMethod4", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, SupportTestInterfaceV8Internal::supplementalMethod4MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    functionTemplate->SetNativeDataProperty(v8::String::NewSymbol("supplementalStaticReadOnlyAttr"), SupportTestInterfaceV8Internal::supplementalStaticReadOnlyAttrAttributeGetterCallback, 0, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8::String::NewFromUtf8(isolate, "supplementalStaticReadOnlyAttr", v8::String::kInternalizedString), SupportTestInterfaceV8Internal::supplementalStaticReadOnlyAttrAttributeGetterCallback, 0, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 #if ENABLE(Condition11) || ENABLE(Condition12)
-    functionTemplate->SetNativeDataProperty(v8::String::NewSymbol("supplementalStaticAttr"), SupportTestInterfaceV8Internal::supplementalStaticAttrAttributeGetterCallback, SupportTestInterfaceV8Internal::supplementalStaticAttrAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8::String::NewFromUtf8(isolate, "supplementalStaticAttr", v8::String::kInternalizedString), SupportTestInterfaceV8Internal::supplementalStaticAttrAttributeGetterCallback, SupportTestInterfaceV8Internal::supplementalStaticAttrAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
 
     // Custom toString template
-    functionTemplate->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
+    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());
     return functionTemplate;
 }
 
@@ -458,11 +458,11 @@ v8::Handle<v8::FunctionTemplate> V8SupportTestInterface::GetTemplate(v8::Isolate
         return result->value.newLocal(isolate);
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::FunctionTemplate> templ =
+    v8::EscapableHandleScope handleScope(isolate);
+    v8::Local<v8::FunctionTemplate> templ =
         ConfigureV8SupportTestInterfaceTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
-    return handleScope.Close(templ);
+    return handleScope.Escape(templ);
 }
 
 bool V8SupportTestInterface::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)

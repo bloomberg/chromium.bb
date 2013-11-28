@@ -179,11 +179,11 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8Float64ArrayTemplate(v8::Hand
     // Custom Signature 'foo'
     const int fooArgc = 1;
     v8::Handle<v8::FunctionTemplate> fooArgv[fooArgc] = { v8::Handle<v8::FunctionTemplate>() };
-    v8::Handle<v8::Signature> fooSignature = v8::Signature::New(functionTemplate, fooArgc, fooArgv);
-    prototypeTemplate->Set(v8::String::NewSymbol("foo"), v8::FunctionTemplate::New(Float64ArrayV8Internal::fooMethodCallback, v8Undefined(), fooSignature, 1));
+    v8::Handle<v8::Signature> fooSignature = v8::Signature::New(isolate, functionTemplate, fooArgc, fooArgv);
+    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "foo", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, Float64ArrayV8Internal::fooMethodCallback, v8Undefined(), fooSignature, 1));
 
     // Custom toString template
-    functionTemplate->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
+    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());
     return functionTemplate;
 }
 
@@ -195,11 +195,11 @@ v8::Handle<v8::FunctionTemplate> V8Float64Array::GetTemplate(v8::Isolate* isolat
         return result->value.newLocal(isolate);
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::FunctionTemplate> templ =
+    v8::EscapableHandleScope handleScope(isolate);
+    v8::Local<v8::FunctionTemplate> templ =
         ConfigureV8Float64ArrayTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
-    return handleScope.Close(templ);
+    return handleScope.Escape(templ);
 }
 
 bool V8Float64Array::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)

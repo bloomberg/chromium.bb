@@ -1655,7 +1655,7 @@ static void cachedAttribute2AttributeGetterCallback(v8::Local<v8::String>, const
 
 static void cachedDirtyableAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::String> propertyName = v8::String::NewSymbol("cachedDirtyableAttribute");
+    v8::Handle<v8::String> propertyName = v8::String::NewFromUtf8(info.GetIsolate(), "cachedDirtyableAttribute", v8::String::kInternalizedString);
     TestObj* imp = V8TestObject::toNative(info.Holder());
     if (!imp->isValueDirty()) {
         v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
@@ -1678,7 +1678,7 @@ static void cachedDirtyableAttributeAttributeGetterCallback(v8::Local<v8::String
 
 static void cachedDirtyableAttributeRaisesAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8::Handle<v8::String> propertyName = v8::String::NewSymbol("cachedDirtyableAttributeRaises");
+    v8::Handle<v8::String> propertyName = v8::String::NewFromUtf8(info.GetIsolate(), "cachedDirtyableAttributeRaises", v8::String::kInternalizedString);
     TestObj* imp = V8TestObject::toNative(info.Holder());
     if (!imp->isValueDirty()) {
         v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
@@ -4989,9 +4989,9 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
     collection->namedPropertyEnumerator(names, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
-    v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
+    v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
     for (size_t i = 0; i < names.size(); ++i)
-        v8names->Set(v8::Integer::New(i, info.GetIsolate()), v8String(names[i], info.GetIsolate()));
+        v8names->Set(v8::Integer::New(info.GetIsolate(), i), v8String(names[i], info.GetIsolate()));
     v8SetReturnValue(info, v8names);
 }
 
@@ -5260,72 +5260,72 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
     // Custom Signature 'voidMethodWithArgs'
     const int voidMethodWithArgsArgc = 3;
     v8::Handle<v8::FunctionTemplate> voidMethodWithArgsArgv[voidMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> voidMethodWithArgsSignature = v8::Signature::New(functionTemplate, voidMethodWithArgsArgc, voidMethodWithArgsArgv);
-    prototypeTemplate->Set(v8::String::NewSymbol("voidMethodWithArgs"), v8::FunctionTemplate::New(TestObjV8Internal::voidMethodWithArgsMethodCallback, v8Undefined(), voidMethodWithArgsSignature, 3));
+    v8::Handle<v8::Signature> voidMethodWithArgsSignature = v8::Signature::New(isolate, functionTemplate, voidMethodWithArgsArgc, voidMethodWithArgsArgv);
+    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "voidMethodWithArgs", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::voidMethodWithArgsMethodCallback, v8Undefined(), voidMethodWithArgsSignature, 3));
 
     // Custom Signature 'longMethodWithArgs'
     const int longMethodWithArgsArgc = 3;
     v8::Handle<v8::FunctionTemplate> longMethodWithArgsArgv[longMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> longMethodWithArgsSignature = v8::Signature::New(functionTemplate, longMethodWithArgsArgc, longMethodWithArgsArgv);
-    prototypeTemplate->Set(v8::String::NewSymbol("longMethodWithArgs"), v8::FunctionTemplate::New(TestObjV8Internal::longMethodWithArgsMethodCallback, v8Undefined(), longMethodWithArgsSignature, 3));
+    v8::Handle<v8::Signature> longMethodWithArgsSignature = v8::Signature::New(isolate, functionTemplate, longMethodWithArgsArgc, longMethodWithArgsArgv);
+    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "longMethodWithArgs", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::longMethodWithArgsMethodCallback, v8Undefined(), longMethodWithArgsSignature, 3));
 
     // Custom Signature 'objMethodWithArgs'
     const int objMethodWithArgsArgc = 3;
     v8::Handle<v8::FunctionTemplate> objMethodWithArgsArgv[objMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> objMethodWithArgsSignature = v8::Signature::New(functionTemplate, objMethodWithArgsArgc, objMethodWithArgsArgv);
-    prototypeTemplate->Set(v8::String::NewSymbol("objMethodWithArgs"), v8::FunctionTemplate::New(TestObjV8Internal::objMethodWithArgsMethodCallback, v8Undefined(), objMethodWithArgsSignature, 3));
+    v8::Handle<v8::Signature> objMethodWithArgsSignature = v8::Signature::New(isolate, functionTemplate, objMethodWithArgsArgc, objMethodWithArgsArgv);
+    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "objMethodWithArgs", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::objMethodWithArgsMethodCallback, v8Undefined(), objMethodWithArgsSignature, 3));
 
     // Custom Signature 'methodThatRequiresAllArgsAndThrows'
     const int methodThatRequiresAllArgsAndThrowsArgc = 2;
     v8::Handle<v8::FunctionTemplate> methodThatRequiresAllArgsAndThrowsArgv[methodThatRequiresAllArgsAndThrowsArgc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObject::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> methodThatRequiresAllArgsAndThrowsSignature = v8::Signature::New(functionTemplate, methodThatRequiresAllArgsAndThrowsArgc, methodThatRequiresAllArgsAndThrowsArgv);
-    prototypeTemplate->Set(v8::String::NewSymbol("methodThatRequiresAllArgsAndThrows"), v8::FunctionTemplate::New(TestObjV8Internal::methodThatRequiresAllArgsAndThrowsMethodCallback, v8Undefined(), methodThatRequiresAllArgsAndThrowsSignature, 2));
-    functionTemplate->Set(v8::String::NewSymbol("staticMethodWithCallbackAndOptionalArg"), v8::FunctionTemplate::New(TestObjV8Internal::staticMethodWithCallbackAndOptionalArgMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
-    functionTemplate->Set(v8::String::NewSymbol("staticMethodWithCallbackArg"), v8::FunctionTemplate::New(TestObjV8Internal::staticMethodWithCallbackArgMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 1));
-    functionTemplate->Set(v8::String::NewSymbol("classMethod"), v8::FunctionTemplate::New(TestObjV8Internal::classMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
-    functionTemplate->Set(v8::String::NewSymbol("classMethodWithOptional"), v8::FunctionTemplate::New(TestObjV8Internal::classMethodWithOptionalMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
-    functionTemplate->Set(v8::String::NewSymbol("classMethod2"), v8::FunctionTemplate::New(TestObjV8Internal::classMethod2MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 1));
+    v8::Handle<v8::Signature> methodThatRequiresAllArgsAndThrowsSignature = v8::Signature::New(isolate, functionTemplate, methodThatRequiresAllArgsAndThrowsArgc, methodThatRequiresAllArgsAndThrowsArgv);
+    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "methodThatRequiresAllArgsAndThrows", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::methodThatRequiresAllArgsAndThrowsMethodCallback, v8Undefined(), methodThatRequiresAllArgsAndThrowsSignature, 2));
+    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "staticMethodWithCallbackAndOptionalArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::staticMethodWithCallbackAndOptionalArgMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
+    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "staticMethodWithCallbackArg", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::staticMethodWithCallbackArgMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 1));
+    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "classMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::classMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
+    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "classMethodWithOptional", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::classMethodWithOptionalMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
+    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "classMethod2", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::classMethod2MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 1));
     if (RuntimeEnabledFeatures::featureNameEnabled())
-        prototypeTemplate->Set(v8::String::NewSymbol("enabledAtRuntimeMethod"), v8::FunctionTemplate::New(TestObjV8Internal::enabledAtRuntimeMethodMethodCallback, v8Undefined(), defaultSignature, 1));
+        prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "enabledAtRuntimeMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::enabledAtRuntimeMethodMethodCallback, v8Undefined(), defaultSignature, 1));
 
     // Custom Signature 'domStringListFunction'
     const int domStringListFunctionArgc = 1;
     v8::Handle<v8::FunctionTemplate> domStringListFunctionArgv[domStringListFunctionArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8DOMStringList::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> domStringListFunctionSignature = v8::Signature::New(functionTemplate, domStringListFunctionArgc, domStringListFunctionArgv);
-    prototypeTemplate->Set(v8::String::NewSymbol("domStringListFunction"), v8::FunctionTemplate::New(TestObjV8Internal::domStringListFunctionMethodCallback, v8Undefined(), domStringListFunctionSignature, 1));
+    v8::Handle<v8::Signature> domStringListFunctionSignature = v8::Signature::New(isolate, functionTemplate, domStringListFunctionArgc, domStringListFunctionArgv);
+    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "domStringListFunction", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::domStringListFunctionMethodCallback, v8Undefined(), domStringListFunctionSignature, 1));
 
     // Custom Signature 'convert1'
     const int convert1Argc = 1;
     v8::Handle<v8::FunctionTemplate> convert1Argv[convert1Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestNode::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> convert1Signature = v8::Signature::New(functionTemplate, convert1Argc, convert1Argv);
-    prototypeTemplate->Set(v8::String::NewSymbol("convert1"), v8::FunctionTemplate::New(TestObjV8Internal::convert1MethodCallback, v8Undefined(), convert1Signature, 1));
+    v8::Handle<v8::Signature> convert1Signature = v8::Signature::New(isolate, functionTemplate, convert1Argc, convert1Argv);
+    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "convert1", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::convert1MethodCallback, v8Undefined(), convert1Signature, 1));
 
     // Custom Signature 'convert2'
     const int convert2Argc = 1;
     v8::Handle<v8::FunctionTemplate> convert2Argv[convert2Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestNode::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> convert2Signature = v8::Signature::New(functionTemplate, convert2Argc, convert2Argv);
-    prototypeTemplate->Set(v8::String::NewSymbol("convert2"), v8::FunctionTemplate::New(TestObjV8Internal::convert2MethodCallback, v8Undefined(), convert2Signature, 1));
+    v8::Handle<v8::Signature> convert2Signature = v8::Signature::New(isolate, functionTemplate, convert2Argc, convert2Argv);
+    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "convert2", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::convert2MethodCallback, v8Undefined(), convert2Signature, 1));
 
     // Custom Signature 'svgPointMethod'
     const int svgPointMethodArgc = 2;
     v8::Handle<v8::FunctionTemplate> svgPointMethodArgv[svgPointMethodArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8SVGPoint::wrapperTypeInfo, currentWorldType), v8::Handle<v8::FunctionTemplate>() };
-    v8::Handle<v8::Signature> svgPointMethodSignature = v8::Signature::New(functionTemplate, svgPointMethodArgc, svgPointMethodArgv);
-    prototypeTemplate->Set(v8::String::NewSymbol("svgPointMethod"), v8::FunctionTemplate::New(TestObjV8Internal::svgPointMethodMethodCallback, v8Undefined(), svgPointMethodSignature, 2));
+    v8::Handle<v8::Signature> svgPointMethodSignature = v8::Signature::New(isolate, functionTemplate, svgPointMethodArgc, svgPointMethodArgv);
+    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "svgPointMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::svgPointMethodMethodCallback, v8Undefined(), svgPointMethodSignature, 2));
 
     // Custom Signature 'variadicNodeMethod'
     const int variadicNodeMethodArgc = 2;
     v8::Handle<v8::FunctionTemplate> variadicNodeMethodArgv[variadicNodeMethodArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8Node::wrapperTypeInfo, currentWorldType), V8PerIsolateData::from(isolate)->rawTemplate(&V8Node::wrapperTypeInfo, currentWorldType) };
-    v8::Handle<v8::Signature> variadicNodeMethodSignature = v8::Signature::New(functionTemplate, variadicNodeMethodArgc, variadicNodeMethodArgv);
-    prototypeTemplate->Set(v8::String::NewSymbol("variadicNodeMethod"), v8::FunctionTemplate::New(TestObjV8Internal::variadicNodeMethodMethodCallback, v8Undefined(), variadicNodeMethodSignature, 2));
-    functionTemplate->Set(v8::String::NewSymbol("deprecatedStaticMethod"), v8::FunctionTemplate::New(TestObjV8Internal::deprecatedStaticMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
-    functionTemplate->SetNativeDataProperty(v8::String::NewSymbol("staticReadOnlyLongAttr"), TestObjV8Internal::staticReadOnlyLongAttrAttributeGetterCallback, 0, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
-    functionTemplate->SetNativeDataProperty(v8::String::NewSymbol("staticStringAttr"), TestObjV8Internal::staticStringAttrAttributeGetterCallback, TestObjV8Internal::staticStringAttrAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
-    functionTemplate->SetNativeDataProperty(v8::String::NewSymbol("TestSubObj"), TestObjV8Internal::TestObjConstructorGetter, 0, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8TestSubObj::wrapperTypeInfo)), static_cast<v8::PropertyAttribute>(v8::DontEnum), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
-    functionTemplate->SetNativeDataProperty(v8::String::NewSymbol("deprecatedStaticReadOnlyAttr"), TestObjV8Internal::deprecatedStaticReadOnlyAttrAttributeGetterCallback, 0, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
-    functionTemplate->SetNativeDataProperty(v8::String::NewSymbol("deprecatedStaticAttr"), TestObjV8Internal::deprecatedStaticAttrAttributeGetterCallback, TestObjV8Internal::deprecatedStaticAttrAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    v8::Handle<v8::Signature> variadicNodeMethodSignature = v8::Signature::New(isolate, functionTemplate, variadicNodeMethodArgc, variadicNodeMethodArgv);
+    prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "variadicNodeMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::variadicNodeMethodMethodCallback, v8Undefined(), variadicNodeMethodSignature, 2));
+    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "deprecatedStaticMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::deprecatedStaticMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
+    functionTemplate->SetNativeDataProperty(v8::String::NewFromUtf8(isolate, "staticReadOnlyLongAttr", v8::String::kInternalizedString), TestObjV8Internal::staticReadOnlyLongAttrAttributeGetterCallback, 0, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8::String::NewFromUtf8(isolate, "staticStringAttr", v8::String::kInternalizedString), TestObjV8Internal::staticStringAttrAttributeGetterCallback, TestObjV8Internal::staticStringAttrAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8::String::NewFromUtf8(isolate, "TestSubObj", v8::String::kInternalizedString), TestObjV8Internal::TestObjConstructorGetter, 0, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&V8TestSubObj::wrapperTypeInfo)), static_cast<v8::PropertyAttribute>(v8::DontEnum), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8::String::NewFromUtf8(isolate, "deprecatedStaticReadOnlyAttr", v8::String::kInternalizedString), TestObjV8Internal::deprecatedStaticReadOnlyAttrAttributeGetterCallback, 0, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
+    functionTemplate->SetNativeDataProperty(v8::String::NewFromUtf8(isolate, "deprecatedStaticAttr", v8::String::kInternalizedString), TestObjV8Internal::deprecatedStaticAttrAttributeGetterCallback, TestObjV8Internal::deprecatedStaticAttrAttributeSetterCallback, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 
     // Custom toString template
-    functionTemplate->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());
+    functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());
     return functionTemplate;
 }
 
@@ -5337,11 +5337,11 @@ v8::Handle<v8::FunctionTemplate> V8TestObject::GetTemplate(v8::Isolate* isolate,
         return result->value.newLocal(isolate);
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
-    v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::FunctionTemplate> templ =
+    v8::EscapableHandleScope handleScope(isolate);
+    v8::Local<v8::FunctionTemplate> templ =
         ConfigureV8TestObjectTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
-    return handleScope.Close(templ);
+    return handleScope.Escape(templ);
 }
 
 bool V8TestObject::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -5369,12 +5369,12 @@ void V8TestObject::installPerContextEnabledProperties(v8::Handle<v8::Object> ins
 void V8TestObject::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate)
 {
     UNUSED_PARAM(prototypeTemplate);
-    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(GetTemplate(isolate, worldType(isolate)));
+    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, GetTemplate(isolate, worldType(isolate)));
     UNUSED_PARAM(defaultSignature);
 
     ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
     if (context && context->isDocument() && ContextFeatures::featureNameEnabled(toDocument(context)))
-        prototypeTemplate->Set(v8::String::NewSymbol("enabledPerContextMethod"), v8::FunctionTemplate::New(TestObjV8Internal::enabledPerContextMethodMethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction());
+        prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "enabledPerContextMethod", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, TestObjV8Internal::enabledPerContextMethodMethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction());
 }
 
 EventTarget* V8TestObject::toEventTarget(v8::Handle<v8::Object> object)
