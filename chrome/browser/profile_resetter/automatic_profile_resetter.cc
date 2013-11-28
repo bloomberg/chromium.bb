@@ -59,12 +59,10 @@ const char kUserPreferencesKey[] = "preferences";
 const char kUserPreferencesIsUserControlledKey[] = "preferences_iuc";
 
 // Keys used in the output dictionary of the program.
-const char kCombinedStatusMaskKeys[][26] = {
-    "combined_status_mask_bit1", "combined_status_mask_bit2",
-    "combined_status_mask_bit3", "combined_status_mask_bit4"};
+const char kCombinedStatusMaskKeyPrefix[] = "combined_status_mask_bit";
 const char kHadPromptedAlreadyKey[] = "had_prompted_already";
-const char kSatisfiedCriteriaMaskKeys[][29] = {"satisfied_criteria_mask_bit1",
-                                               "satisfied_criteria_mask_bit2"};
+const char kShouldPromptKey[] = "should_prompt";
+const char kSatisfiedCriteriaMaskKeyPrefix[] = "satisfied_criteria_mask_bit";
 
 // Keys used in both the input and output dictionary of the program.
 const char kMementoValueInFileKey[] = "memento_value_in_file";
@@ -73,7 +71,7 @@ const char kMementoValueInPrefsKey[] = "memento_value_in_prefs";
 
 // Number of bits, and maximum value (exclusive) for the mask whose bits
 // indicate which of reset criteria were satisfied.
-const size_t kSatisfiedCriteriaMaskNumberOfBits = 2u;
+const size_t kSatisfiedCriteriaMaskNumberOfBits = 5u;
 const uint32 kSatisfiedCriteriaMaskMaximumValue =
     (1u << kSatisfiedCriteriaMaskNumberOfBits);
 
@@ -83,13 +81,6 @@ const uint32 kSatisfiedCriteriaMaskMaximumValue =
 const size_t kCombinedStatusMaskNumberOfBits = 4u;
 const uint32 kCombinedStatusMaskMaximumValue =
     (1u << kCombinedStatusMaskNumberOfBits);
-
-COMPILE_ASSERT(
-    arraysize(kSatisfiedCriteriaMaskKeys) == kSatisfiedCriteriaMaskNumberOfBits,
-    satisfied_criteria_mask_bits_mismatch);
-COMPILE_ASSERT(
-    arraysize(kCombinedStatusMaskKeys) == kCombinedStatusMaskNumberOfBits,
-    combined_status_mask_bits_mismatch);
 
 // Returns whether or not a dry-run shall be performed.
 bool ShouldPerformDryRun() {
@@ -359,7 +350,8 @@ class AutomaticProfileResetter::InputBuilder
 // Encapsulates the output values extracted from the evaluator program.
 struct AutomaticProfileResetter::EvaluationResults {
   EvaluationResults()
-      : had_prompted_already(false),
+      : should_prompt(false),
+        had_prompted_already(false),
         satisfied_criteria_mask(0),
         combined_status_mask(0) {}
 
@@ -367,6 +359,7 @@ struct AutomaticProfileResetter::EvaluationResults {
   std::string memento_value_in_local_state;
   std::string memento_value_in_file;
 
+  bool should_prompt;
   bool had_prompted_already;
   uint32 satisfied_criteria_mask;
   uint32 combined_status_mask;
@@ -639,6 +632,7 @@ scoped_ptr<AutomaticProfileResetter::EvaluationResults>
   // In each case below, the respective field in result originally contains the
   // default, so if the getter fails, we still have the correct value there.
   scoped_ptr<EvaluationResults> results(new EvaluationResults);
+  interpreter.GetOutputBoolean(kShouldPromptKey, &results->should_prompt);
   interpreter.GetOutputBoolean(kHadPromptedAlreadyKey,
                                &results->had_prompted_already);
   interpreter.GetOutputString(kMementoValueInPrefsKey,
@@ -647,15 +641,18 @@ scoped_ptr<AutomaticProfileResetter::EvaluationResults>
                               &results->memento_value_in_local_state);
   interpreter.GetOutputString(kMementoValueInFileKey,
                               &results->memento_value_in_file);
-  for (size_t i = 0; i < arraysize(kCombinedStatusMaskKeys); ++i) {
+  for (size_t i = 0; i < kCombinedStatusMaskNumberOfBits; ++i) {
     bool flag = false;
-    if (interpreter.GetOutputBoolean(kCombinedStatusMaskKeys[i], &flag) && flag)
+    std::string mask_i_th_bit_key =
+        kCombinedStatusMaskKeyPrefix + base::IntToString(i + 1);
+    if (interpreter.GetOutputBoolean(mask_i_th_bit_key, &flag) && flag)
       results->combined_status_mask |= (1 << i);
   }
-  for (size_t i = 0; i < arraysize(kSatisfiedCriteriaMaskKeys); ++i) {
+  for (size_t i = 0; i < kSatisfiedCriteriaMaskNumberOfBits; ++i) {
     bool flag = false;
-    if (interpreter.GetOutputBoolean(kSatisfiedCriteriaMaskKeys[i], &flag) &&
-        flag)
+    std::string mask_i_th_bit_key =
+        kSatisfiedCriteriaMaskKeyPrefix + base::IntToString(i + 1);
+    if (interpreter.GetOutputBoolean(mask_i_th_bit_key, &flag) && flag)
       results->satisfied_criteria_mask |= (1 << i);
   }
   return results.Pass();
@@ -679,7 +676,7 @@ void AutomaticProfileResetter::FinishEvaluationFlow(
   ReportStatistics(results->satisfied_criteria_mask,
                    results->combined_status_mask);
 
-  if (results->satisfied_criteria_mask != 0 && !results->had_prompted_already) {
+  if (results->should_prompt && !results->had_prompted_already) {
     evaluation_results_ = results.Pass();
     BeginResetPromptFlow();
   } else {
