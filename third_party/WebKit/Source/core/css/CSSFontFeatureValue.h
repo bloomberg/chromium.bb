@@ -33,21 +33,21 @@ namespace WebCore {
 
 class CSSFontFeatureValue : public CSSValue {
 public:
-    static PassRefPtr<CSSFontFeatureValue> create(const String& tag, int value)
+    static PassRefPtr<CSSFontFeatureValue> create(const AtomicString& tag, int value)
     {
         return adoptRef(new CSSFontFeatureValue(tag, value));
     }
 
-    const String& tag() const { return m_tag; }
+    const AtomicString& tag() const { return m_tag; }
     int value() const { return m_value; }
     String customCSSText() const;
 
     bool equals(const CSSFontFeatureValue&) const;
 
 private:
-    CSSFontFeatureValue(const String&, int);
+    CSSFontFeatureValue(const AtomicString& tag, int value);
 
-    String m_tag;
+    AtomicString m_tag;
     const int m_value;
 };
 

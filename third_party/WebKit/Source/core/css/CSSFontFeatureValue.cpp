@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-CSSFontFeatureValue::CSSFontFeatureValue(const String& tag, int value)
+CSSFontFeatureValue::CSSFontFeatureValue(const AtomicString& tag, int value)
     : CSSValue(FontFeatureClass)
     , m_tag(tag)
     , m_value(value)

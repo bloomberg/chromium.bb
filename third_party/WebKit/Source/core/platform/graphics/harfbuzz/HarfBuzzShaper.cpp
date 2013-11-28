@@ -527,7 +527,7 @@ void HarfBuzzShaper::setFontFeatures()
     unsigned numFeatures = settings->size();
     for (unsigned i = 0; i < numFeatures; ++i) {
         hb_feature_t feature;
-        String tag = settings->at(i).tag();
+        const AtomicString& tag = settings->at(i).tag();
         feature.tag = HB_TAG(tag[0], tag[1], tag[2], tag[3]);
         feature.value = settings->at(i).value();
         feature.start = 0;

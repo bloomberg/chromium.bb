@@ -9242,7 +9242,7 @@ bool CSSParser::parseFontFeatureTag(CSSValueList* settings)
             return false;
     }
 
-    String tag = value->string;
+    AtomicString tag = value->string;
     int tagValue = 1;
     // Feature tag values could follow: <integer> | on | off
     value = m_valueList->next();
