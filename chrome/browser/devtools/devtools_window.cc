@@ -587,7 +587,8 @@ bool DevToolsWindow::HandleBeforeUnload(content::WebContents* frontend_contents,
     bool proceed, bool* proceed_to_fire_unload) {
   DevToolsWindow* window = AsDevToolsWindow(
       frontend_contents->GetRenderViewHost());
-  DCHECK(window);
+  if (!window)
+    return false;
   if (!window->intercepted_page_beforeunload_)
     return false;
   window->BeforeUnloadFired(frontend_contents, proceed,
@@ -633,7 +634,8 @@ bool DevToolsWindow::HasFiredBeforeUnloadEventForDevToolsBrowser(
   content::WebContents* contents =
       browser->tab_strip_model()->GetWebContentsAt(0);
   DevToolsWindow* window = AsDevToolsWindow(contents->GetRenderViewHost());
-  DCHECK(window);
+  if (!window)
+    return false;
   return window->intercepted_page_beforeunload_;
 }
 

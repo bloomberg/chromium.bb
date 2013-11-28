@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_iterator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -262,6 +263,36 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
         contents->GetRenderViewHost());
     observer.Wait();
     return window;
+  }
+
+  void OpenDevToolsPopupWindow(DevToolsWindow* devtools_window) {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::NotificationService::AllSources());
+    ASSERT_TRUE(content::ExecuteScript(
+        devtools_window->web_contents()->GetRenderViewHost(),
+        "window.open(\"\", \"\", \"location=0\");"));
+    observer.Wait();
+  }
+
+  void CloseDevToolsPopupWindow(DevToolsWindow* devtools_window) {
+    Browser* popup_browser = NULL;
+    for (chrome::BrowserIterator it; !it.done(); it.Next()) {
+      if (it->is_devtools()) {
+        content::WebContents* contents =
+            it->tab_strip_model()->GetWebContentsAt(0);
+        if (devtools_window->web_contents() != contents) {
+          popup_browser = *it;
+          break;
+        }
+      }
+    }
+    ASSERT_FALSE(popup_browser == NULL);
+    content::WindowedNotificationObserver close_observer(
+        chrome::NOTIFICATION_BROWSER_CLOSED,
+        content::Source<Browser>(popup_browser));
+    chrome::CloseWindow(popup_browser);
+    close_observer.Wait();
   }
 
   void AcceptModalDialog() {
@@ -608,6 +639,24 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
       "function(event) { while (true); });"));
   CloseInspectedTab();
   devtools_close_observer.Wait();
+}
+
+// Tests that closing worker inspector window does not cause browser crash
+// @see http://crbug.com/323031
+IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
+                       TestWorkerWindowClosing) {
+  ASSERT_TRUE(test_server()->Start());
+  LoadTestPage(kDebuggerTestPage);
+  DevToolsWindow* devtools_window = OpenDevToolWindowOnWebContents(
+      GetInspectedTab());
+  devtools_window->SetDockSideForTest(DEVTOOLS_DOCK_SIDE_UNDOCKED);
+  content::WindowedNotificationObserver devtools_close_observer(
+      content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+      content::Source<content::WebContents>(
+          devtools_window->web_contents()));
+
+  OpenDevToolsPopupWindow(devtools_window);
+  CloseDevToolsPopupWindow(devtools_window);
 }
 
 // Flaky, see crbug.com/323847.
