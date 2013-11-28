@@ -67,22 +67,23 @@ void CloseChrome(HANDLE process, DWORD thread_id) {
 }
 
 bool LaunchProcess(const CommandLine& cmdline,
-                   base::ProcessHandle* process_handle,
+                   base::win::ScopedHandle* process_handle,
                    DWORD* thread_id) {
   STARTUPINFO startup_info = {};
   startup_info.cb = sizeof(startup_info);
   startup_info.dwFlags = STARTF_USESHOWWINDOW;
   startup_info.wShowWindow = SW_SHOW;
 
-  base::win::ScopedProcessInformation process_info;
+  PROCESS_INFORMATION temp_process_info = {};
   if (!CreateProcess(NULL,
       const_cast<wchar_t*>(cmdline.GetCommandLineString().c_str()), NULL, NULL,
-      FALSE, 0, NULL, NULL, &startup_info, process_info.Receive())) {
+      FALSE, 0, NULL, NULL, &startup_info, &temp_process_info)) {
     return false;
   }
+  base::win::ScopedProcessInformation process_info(temp_process_info);
 
   if (process_handle)
-    *process_handle = process_info.TakeProcessHandle();
+    process_handle->Set(process_info.TakeProcessHandle());
 
   if (thread_id)
     *thread_id = process_info.thread_id();
@@ -240,7 +241,7 @@ void ChromeLauncher::Run() {
       base::win::ScopedHandle chrome_handle;
       base::Time started = base::Time::Now();
       DWORD thread_id = 0;
-      LaunchProcess(cmd, chrome_handle.Receive(), &thread_id);
+      LaunchProcess(cmd, &chrome_handle, &thread_id);
 
       HANDLE handles[] = {stop_event_.handle(), chrome_handle};
       DWORD wait_result = WAIT_TIMEOUT;
@@ -317,7 +318,7 @@ std::string ChromeLauncher::CreateServiceStateFile(
 
   base::win::ScopedHandle chrome_handle;
   DWORD thread_id = 0;
-  if (!LaunchProcess(cmd, chrome_handle.Receive(), &thread_id)) {
+  if (!LaunchProcess(cmd, &chrome_handle, &thread_id)) {
     LOG(ERROR) << "Unable to launch Chrome.";
     return result;
   }

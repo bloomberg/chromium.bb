@@ -164,10 +164,11 @@ TEST(JobTest, ProcessInJob) {
 
   wchar_t notepad[] = L"notepad";
   STARTUPINFO si = { sizeof(si) };
-  base::win::ScopedProcessInformation pi;
+  PROCESS_INFORMATION temp_process_info = {};
   result = ::CreateProcess(NULL, notepad, NULL, NULL, FALSE, 0, NULL, NULL, &si,
-                           pi.Receive());
+                           &temp_process_info);
   ASSERT_TRUE(result);
+  base::win::ScopedProcessInformation pi(temp_process_info);
   ASSERT_EQ(ERROR_SUCCESS, job.AssignProcessToJob(pi.process_handle()));
 
   // Get the job handle.

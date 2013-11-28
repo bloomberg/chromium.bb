@@ -467,13 +467,14 @@ BOOL WINAPI DuplicateHandlePatch(HANDLE source_process_handle,
   if (!::IsProcessInJob(target_process_handle, NULL, &is_in_job)) {
     // We need a handle with permission to check the job object.
     if (ERROR_ACCESS_DENIED == ::GetLastError()) {
-      base::win::ScopedHandle process;
+      HANDLE temp_handle;
       CHECK(g_iat_orig_duplicate_handle(::GetCurrentProcess(),
                                         target_process_handle,
                                         ::GetCurrentProcess(),
-                                        process.Receive(),
+                                        &temp_handle,
                                         PROCESS_QUERY_INFORMATION,
                                         FALSE, 0));
+      base::win::ScopedHandle process(temp_handle);
       CHECK(::IsProcessInJob(process, NULL, &is_in_job));
     }
   }
@@ -483,10 +484,11 @@ BOOL WINAPI DuplicateHandlePatch(HANDLE source_process_handle,
     CHECK(!inherit_handle) << kDuplicateHandleWarning;
 
     // Duplicate the handle again, to get the final permissions.
-    base::win::ScopedHandle handle;
+    HANDLE temp_handle;
     CHECK(g_iat_orig_duplicate_handle(target_process_handle, *target_handle,
-                                      ::GetCurrentProcess(), handle.Receive(),
+                                      ::GetCurrentProcess(), &temp_handle,
                                       0, FALSE, DUPLICATE_SAME_ACCESS));
+    base::win::ScopedHandle handle(temp_handle);
 
     // Callers use CHECK macro to make sure we get the right stack.
     CheckDuplicateHandle(handle);
@@ -600,7 +602,6 @@ base::ProcessHandle StartSandboxedProcess(
     return process;
   }
 
-  base::win::ScopedProcessInformation target;
   sandbox::TargetPolicy* policy = g_broker_services->CreatePolicy();
 
   sandbox::MitigationFlags mitigations = sandbox::MITIGATION_HEAP_TERMINATE |
@@ -672,11 +673,13 @@ base::ProcessHandle StartSandboxedProcess(
 
   TRACE_EVENT_BEGIN_ETW("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
 
+  PROCESS_INFORMATION temp_process_info = {};
   result = g_broker_services->SpawnTarget(
-      cmd_line->GetProgram().value().c_str(),
-      cmd_line->GetCommandLineString().c_str(),
-      policy, target.Receive());
+               cmd_line->GetProgram().value().c_str(),
+               cmd_line->GetCommandLineString().c_str(),
+               policy, &temp_process_info);
   policy->Release();
+  base::win::ScopedProcessInformation target(temp_process_info);
 
   TRACE_EVENT_END_ETW("StartProcessWithAccess::LAUNCHPROCESS", 0, 0);
 

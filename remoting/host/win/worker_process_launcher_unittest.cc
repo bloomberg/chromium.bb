@@ -343,7 +343,7 @@ void WorkerProcessLauncherTest::DoLaunchProcess() {
   STARTUPINFOW startup_info = { 0 };
   startup_info.cb = sizeof(startup_info);
 
-  base::win::ScopedProcessInformation process_information;
+  PROCESS_INFORMATION temp_process_info = {};
   ASSERT_TRUE(CreateProcess(NULL,
                             notepad,
                             NULL,   // default process attibutes
@@ -353,7 +353,8 @@ void WorkerProcessLauncherTest::DoLaunchProcess() {
                             NULL,   // no environment
                             NULL,   // default current directory
                             &startup_info,
-                            process_information.Receive()));
+                            &temp_process_info));
+  base::win::ScopedProcessInformation process_information(temp_process_info);
   worker_process_.Set(process_information.TakeProcessHandle());
   ASSERT_TRUE(worker_process_.IsValid());
 
@@ -368,14 +369,15 @@ void WorkerProcessLauncherTest::DoLaunchProcess() {
       this,
       task_runner_));
 
-  ScopedHandle copy;
+  HANDLE temp_handle;
   ASSERT_TRUE(DuplicateHandle(GetCurrentProcess(),
                               worker_process_,
                               GetCurrentProcess(),
-                              copy.Receive(),
+                              &temp_handle,
                               0,
                               FALSE,
                               DUPLICATE_SAME_ACCESS));
+  ScopedHandle copy(temp_handle);
 
   event_handler_->OnProcessLaunched(copy.Pass());
 }

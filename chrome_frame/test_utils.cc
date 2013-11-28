@@ -88,7 +88,7 @@ void ScopedChromeFrameRegistrar::DoRegistration(
 
   int entrypoint_index = 0;
   base::LaunchOptions launch_options;
-  base::ProcessHandle process_handle = INVALID_HANDLE_VALUE;
+  base::win::ScopedHandle process_handle;
   int exit_code = -1;
 
   if (registration_type == PER_USER)
@@ -111,13 +111,12 @@ void ScopedChromeFrameRegistrar::DoRegistration(
         << "Failed to register or unregister DLL with command: "
         << registration_command;
   } else {
-    base::win::ScopedHandle rundll32(process_handle);
     if (!base::WaitForExitCodeWithTimeout(
-            process_handle, &exit_code,
+            process_handle.Get(), &exit_code,
             base::TimeDelta::FromMilliseconds(kDllRegistrationTimeoutMs))) {
       LOG(ERROR) << "Timeout waiting to register or unregister DLL with "
                     "command: " << registration_command;
-      base::KillProcess(process_handle, 0, false);
+      base::KillProcess(process_handle.Get(), 0, false);
       NOTREACHED() << "Aborting test due to registration failure.";
     }
   }

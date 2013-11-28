@@ -103,7 +103,7 @@ void UpdateChromeIfNeeded(const base::FilePath& chrome_exe) {
   if (IsBrowserRunning(chrome_exe) || !NewChromeExeExists(chrome_exe))
     return;
 
-  base::ProcessHandle process_handle = base::kNullProcessHandle;
+  base::win::ScopedHandle process_handle;
 
   if (InstallUtil::IsPerUserInstall(chrome_exe.value().c_str())) {
     // Read the update command from the registry.
@@ -119,7 +119,6 @@ void UpdateChromeIfNeeded(const base::FilePath& chrome_exe) {
                                &process_handle)) {
         AtlTrace("%hs. Failed to launch command to finalize update; "
                  "error %u.\n", __FUNCTION__, ::GetLastError());
-        process_handle = base::kNullProcessHandle;
       }
     }
   } else {
@@ -140,16 +139,16 @@ void UpdateChromeIfNeeded(const base::FilePath& chrome_exe) {
         AtlTrace("%hs. Failed to launch command to finalize update; "
                  "hr=0x%X.\n", __FUNCTION__, hr);
       } else {
-        process_handle = reinterpret_cast<base::ProcessHandle>(handle);
+        process_handle.Set(reinterpret_cast<base::ProcessHandle>(handle));
       }
     }
   }
 
   // Wait for the update to complete and report the results.
-  if (process_handle != base::kNullProcessHandle) {
+  if (process_handle.IsValid()) {
     int exit_code = 0;
     // WaitForExitCode will close the handle in all cases.
-    if (!base::WaitForExitCode(process_handle, &exit_code)) {
+    if (!base::WaitForExitCode(process_handle.Take(), &exit_code)) {
       AtlTrace("%hs. Failed to get result when finalizing update.\n",
                __FUNCTION__);
     } else if (exit_code != installer::RENAME_SUCCESSFUL) {

@@ -95,9 +95,9 @@ bool LaunchProcessAndWaitWithTimeout(const string16& cmd_string,
   bool success = false;
   base::win::ScopedHandle process;
   int exit_code = 0;
-  LOG(INFO) << "Launching: " << cmd_string;
+  VLOG(0) << "Launching: " << cmd_string;
   if (!base::LaunchProcess(cmd_string, base::LaunchOptions(),
-                           process.Receive())) {
+                           &process)) {
     PLOG(ERROR) << "Failed to launch (" << cmd_string << ")";
   } else if (!base::WaitForExitCodeWithTimeout(process, &exit_code, timeout)) {
     // The GetExitCodeProcess failed or timed-out.
@@ -174,7 +174,7 @@ bool GetGoogleUpdateUntrustedData(
 }  // namespace
 
 bool EnsureUserLevelGoogleUpdatePresent() {
-  LOG(INFO) << "Ensuring Google Update is present at user-level.";
+  VLOG(0) << "Ensuring Google Update is present at user-level.";
 
   bool success = false;
   if (IsGoogleUpdatePresent(false)) {

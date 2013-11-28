@@ -513,11 +513,11 @@ void WtsSessionProcessDelegate::Core::ReportProcessLaunched(
   // query information about the process and duplicate handles.
   DWORD desired_access =
       SYNCHRONIZE | PROCESS_DUP_HANDLE | PROCESS_QUERY_INFORMATION;
-  ScopedHandle limited_handle;
+  HANDLE temp_handle;
   if (!DuplicateHandle(GetCurrentProcess(),
                        worker_process_,
                        GetCurrentProcess(),
-                       limited_handle.Receive(),
+                       &temp_handle,
                        desired_access,
                        FALSE,
                        0)) {
@@ -525,6 +525,7 @@ void WtsSessionProcessDelegate::Core::ReportProcessLaunched(
     ReportFatalError();
     return;
   }
+  ScopedHandle limited_handle(temp_handle);
 
   event_handler_->OnProcessLaunched(limited_handle.Pass());
 }
