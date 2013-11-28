@@ -71,9 +71,7 @@ TEST_F(NewCreditCardBubbleCocoaUnitTest, CloseDeletes) {
   cocoa_view->CreateCocoaController(window);
 
   // ... so window animations can be disabled, guaranteeing prompt deallocation.
-  InfoBubbleWindow* bubble_window =
-      base::mac::ObjCCastStrict<InfoBubbleWindow>(
-          [cocoa_view->bubbleController_ window]);
+  InfoBubbleWindow* bubble_window = cocoa_view->GetInfoBubbleWindow();
   [bubble_window setAllowedAnimations:info_bubble::kAnimateNone];
 
   view->Show();

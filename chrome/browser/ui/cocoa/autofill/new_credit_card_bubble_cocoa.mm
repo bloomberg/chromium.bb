@@ -249,5 +249,9 @@ void NewCreditCardBubbleCocoa::CreateCocoaController(NSWindow* parent) {
                     bridge:this];
 }
 
+InfoBubbleWindow* NewCreditCardBubbleCocoa::GetInfoBubbleWindow() {
+  return base::mac::ObjCCastStrict<InfoBubbleWindow>(
+      [bubbleController_ window]);
+}
 
 }  // namespace autofill

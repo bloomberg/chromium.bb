@@ -12,9 +12,11 @@
 #include "chrome/browser/ui/autofill/new_credit_card_bubble_view.h"
 
 #ifdef __OBJC__
+@class InfoBubbleWindow;
 @class NewCreditCardBubbleControllerCocoa;
 @class NSWindow;
 #else
+class InfoBubbleWindow;
 class NewCreditCardBubbleControllerCocoa;
 class NSWindow;
 }
@@ -43,6 +45,8 @@ class NewCreditCardBubbleCocoa : public NewCreditCardBubbleView {
 
   // Creates the cocoa bubble controller without initializing anything else.
   void CreateCocoaController(NSWindow* parent);
+
+  InfoBubbleWindow* GetInfoBubbleWindow();
 
   // Cocoa-side controller for the bubble. Not owned.
   NewCreditCardBubbleControllerCocoa* bubbleController_;
