@@ -198,7 +198,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
     // Return values of sendPendingEventToNative();
     static final int EVENT_FORWARDED_TO_NATIVE = 0;
-    static final int EVENT_CONVERTED_TO_CANCEL = 1;
+    static final int EVENT_DROPPED = 1;
     static final int EVENT_NOT_FORWARDED = 2;
 
     private final float mPxToDp;
@@ -932,15 +932,9 @@ class ContentViewGestureHandler implements LongPressDelegate {
     }
 
     private boolean offerTouchEventToJavaScript(MotionEvent event) {
-        mLongPressDetector.onOfferTouchEventToJavaScript(event);
-
         if (!mHasTouchHandlers || mNoTouchHandlerForGesture) return false;
 
         if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
-            // Only send move events if the move has exceeded the slop threshold.
-            if (!mLongPressDetector.confirmOfferMoveEventToJavaScript(event)) {
-                return true;
-            }
             // Avoid flooding the renderer process with move events: if the previous pending
             // command is also a move (common case) that has not yet been forwarded, skip sending
             //  this event to the webkit side and collapse it into the pending event.
@@ -970,7 +964,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
             mPendingMotionEvents.add(clone);
 
             int forward = sendPendingEventToNative();
-            if (forward == EVENT_NOT_FORWARDED) mPendingMotionEvents.remove(clone);
+            if (forward != EVENT_FORWARDED_TO_NATIVE) mPendingMotionEvents.remove(clone);
             return forward != EVENT_NOT_FORWARDED;
         } else {
             TraceEvent.instant("offerTouchEventToJavaScript:EventQueued",
@@ -990,6 +984,18 @@ class ContentViewGestureHandler implements LongPressDelegate {
         }
 
         if (mTouchEventTimeoutHandler.hasTimeoutEvent()) return EVENT_NOT_FORWARDED;
+
+        mLongPressDetector.onOfferTouchEventToJavaScript(event);
+
+        if (event.getActionMasked() == MotionEvent.ACTION_MOVE) {
+            // If javascript has not yet prevent-defaulted the touch sequence,
+            // only send move events if the move has exceeded the slop threshold.
+            boolean moveEventConfirmed =
+                    mLongPressDetector.confirmOfferMoveEventToJavaScript(event);
+            if (!mJavaScriptIsConsumingGesture && !moveEventConfirmed) {
+                return EVENT_DROPPED;
+            }
+        }
 
         TouchPoint[] pts = new TouchPoint[event.getPointerCount()];
         int type = TouchPoint.createTouchPoints(event, pts);
@@ -1109,13 +1115,15 @@ class ContentViewGestureHandler implements LongPressDelegate {
     private void trySendPendingEventsToNative() {
         while (!mPendingMotionEvents.isEmpty()) {
             int forward = sendPendingEventToNative();
-            if (forward != EVENT_NOT_FORWARDED) break;
+            if (forward == EVENT_FORWARDED_TO_NATIVE) break;
 
             // Even though we missed sending one event to native, as long as we haven't
             // received INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, we should keep sending
             // events on the queue to native.
             MotionEvent event = mPendingMotionEvents.removeFirst();
-            if (!mJavaScriptIsConsumingGesture) processTouchEvent(event);
+            if (!mJavaScriptIsConsumingGesture && forward != EVENT_DROPPED) {
+                processTouchEvent(event);
+            }
             recycleEvent(event);
         }
     }

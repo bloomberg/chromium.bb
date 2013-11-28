@@ -1446,6 +1446,86 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         assertEquals(-scrollDelta, extraParams.getInt(ContentViewGestureHandler.DISTANCE_Y));
     }
 
+    /**
+     * Verify that touch moves are deferred if they are within the touch slop region
+     * and the touch sequence is not being consumed.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testTouchMoveWithinTouchSlopDeferred() throws Exception {
+        Context context = getInstrumentation().getTargetContext();
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+        final int scaledTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+        final int lessThanSlopScrollDelta = scaledTouchSlop / 2;
+        final int greaterThanSlopScrollDelta = scaledTouchSlop * 2;
+
+        mGestureHandler.hasTouchEventHandlers(true);
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals("The touch down should have been forwarded",
+                TouchPoint.TOUCH_EVENT_TYPE_START, mMockMotionEventDelegate.mLastTouchAction);
+        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X, FAKE_COORD_Y + lessThanSlopScrollDelta, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(2, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+        assertEquals("The less-than-slop touch move should not have been forwarded",
+                TouchPoint.TOUCH_EVENT_TYPE_START, mMockMotionEventDelegate.mLastTouchAction);
+        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X, FAKE_COORD_Y + greaterThanSlopScrollDelta, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals("The touch move should have been forwarded",
+                TouchPoint.TOUCH_EVENT_TYPE_MOVE, mMockMotionEventDelegate.mLastTouchAction);
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+        assertEquals(0, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+    }
+
+    /**
+     * Verify that touch moves are not deferred even if they are within the touch slop region
+     * when the touch sequence is being consumed.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testTouchMoveWithinTouchSlopNotDeferredIfJavascriptConsumingGesture() throws Exception {
+        Context context = getInstrumentation().getTargetContext();
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+        final int scaledTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+        final int lessThanSlopScrollDelta = scaledTouchSlop / 2;
+
+        mGestureHandler.hasTouchEventHandlers(true);
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals("The touch down should have been forwarded",
+                TouchPoint.TOUCH_EVENT_TYPE_START, mMockMotionEventDelegate.mLastTouchAction);
+        assertEquals(1, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        event = MotionEvent.obtain(
+                downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X, FAKE_COORD_Y + lessThanSlopScrollDelta, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals(2, mGestureHandler.getNumberOfPendingMotionEventsForTesting());
+
+        mGestureHandler.confirmTouchEvent(
+                ContentViewGestureHandler.INPUT_EVENT_ACK_STATE_CONSUMED);
+        assertEquals("The less-than-slop touch move should have been forwarded",
+                TouchPoint.TOUCH_EVENT_TYPE_MOVE, mMockMotionEventDelegate.mLastTouchAction);
+    }
+
     private static void sendLastScrollByEvent(ContentViewGestureHandler handler) {
         final long downTime = SystemClock.uptimeMillis();
         final long eventTime = SystemClock.uptimeMillis();
