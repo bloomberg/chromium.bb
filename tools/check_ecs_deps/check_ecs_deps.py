@@ -15,36 +15,37 @@ import sys
 import optparse
 
 kUndesiredLibraryList = [
+  # 'libasound',  # ALSA sound - needs to go eventually
   'libcairo',
+  'libglib',
   'libpango',
-#  'libglib',  # TODO(spang) Stop depending on this.
+  'libudev',
 ]
 
 kAllowedLibraryList = [
-  'linux-vdso',
-  'libfreetype',
-  'librt',
+  'libc',
+  'libcap',
   'libdl',
+  'libdrm',
+  'libexpat',
+  'libffi',
+  'libfontconfig',
+  'libfreetype',
+  'libgcc_s',
   'libgobject-2.0',
+  'libm',
+  'libnspr4',
   'libnss3',
   'libnssutil3',
-  'libsmime3',
-  'libplc4',
-  'libnspr4',
-  'libfontconfig',
-  'libdrm',
-  'libasound',
-  'libexpat',
-  # 'libudev', # TODO(rjkroege) Decide about this one.
-  'libstdc++',
-  'libm',
-  'libgcc_s',
-  'libpthread',
-  'libc',
-  'libz',
-  'libffi',
   'libpcre',
+  'libplc4',
   'libplds4',
+  'libpthread',
+  'librt',
+  'libsmime3',
+  'libstdc++',
+  'libz',
+  'linux-vdso',
 ]
 
 binary_target = 'content_shell'
