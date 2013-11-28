@@ -125,7 +125,7 @@ Value* V8ValueConverterImpl::FromV8Value(
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope(context->GetIsolate());
   FromV8ValueState state(avoid_identity_hash_for_testing_);
-  return FromV8ValueImpl(val, &state);
+  return FromV8ValueImpl(val, &state, context->GetIsolate());
 }
 
 v8::Handle<v8::Value> V8ValueConverterImpl::ToV8ValueImpl(
@@ -225,7 +225,8 @@ v8::Handle<v8::Value> V8ValueConverterImpl::ToArrayBuffer(
 
 Value* V8ValueConverterImpl::FromV8ValueImpl(
     v8::Handle<v8::Value> val,
-    FromV8ValueState* state) const {
+    FromV8ValueState* state,
+    v8::Isolate* isolate) const {
   CHECK(!val.IsEmpty());
 
   FromV8ValueState::Level state_level(state);
@@ -261,7 +262,7 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(
     if (!date_allowed_)
       // JSON.stringify would convert this to a string, but an object is more
       // consistent within this class.
-      return FromV8Object(val->ToObject(), state);
+      return FromV8Object(val->ToObject(), state, isolate);
     v8::Date* date = v8::Date::Cast(*val);
     return new base::FundamentalValue(date->NumberValue() / 1000.0);
   }
@@ -269,19 +270,19 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(
   if (val->IsRegExp()) {
     if (!reg_exp_allowed_)
       // JSON.stringify converts to an object.
-      return FromV8Object(val->ToObject(), state);
+      return FromV8Object(val->ToObject(), state, isolate);
     return new base::StringValue(*v8::String::Utf8Value(val->ToString()));
   }
 
   // v8::Value doesn't have a ToArray() method for some reason.
   if (val->IsArray())
-    return FromV8Array(val.As<v8::Array>(), state);
+    return FromV8Array(val.As<v8::Array>(), state, isolate);
 
   if (val->IsFunction()) {
     if (!function_allowed_)
       // JSON.stringify refuses to convert function(){}.
       return NULL;
-    return FromV8Object(val->ToObject(), state);
+    return FromV8Object(val->ToObject(), state, isolate);
   }
 
   if (val->IsObject()) {
@@ -289,7 +290,7 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(
     if (binary_value) {
       return binary_value;
     } else {
-      return FromV8Object(val->ToObject(), state);
+      return FromV8Object(val->ToObject(), state, isolate);
     }
   }
 
@@ -299,7 +300,8 @@ Value* V8ValueConverterImpl::FromV8ValueImpl(
 
 base::Value* V8ValueConverterImpl::FromV8Array(
     v8::Handle<v8::Array> val,
-    FromV8ValueState* state) const {
+    FromV8ValueState* state,
+    v8::Isolate* isolate) const {
   if (!state->UpdateAndCheckUniqueness(val))
     return base::Value::CreateNullValue();
 
@@ -312,7 +314,7 @@ base::Value* V8ValueConverterImpl::FromV8Array(
 
   if (strategy_) {
     Value* out = NULL;
-    if (strategy_->FromV8Array(val, &out))
+    if (strategy_->FromV8Array(val, &out, isolate))
       return out;
   }
 
@@ -330,7 +332,7 @@ base::Value* V8ValueConverterImpl::FromV8Array(
     if (!val->HasRealIndexedProperty(i))
       continue;
 
-    base::Value* child = FromV8ValueImpl(child_v8, state);
+    base::Value* child = FromV8ValueImpl(child_v8, state, isolate);
     if (child)
       result->Append(child);
     else
@@ -368,7 +370,8 @@ base::BinaryValue* V8ValueConverterImpl::FromV8Buffer(
 
 base::Value* V8ValueConverterImpl::FromV8Object(
     v8::Handle<v8::Object> val,
-    FromV8ValueState* state) const {
+    FromV8ValueState* state,
+    v8::Isolate* isolate) const {
   if (!state->UpdateAndCheckUniqueness(val))
     return base::Value::CreateNullValue();
 
@@ -381,7 +384,7 @@ base::Value* V8ValueConverterImpl::FromV8Object(
 
   if (strategy_) {
     Value* out = NULL;
-    if (strategy_->FromV8Object(val, &out))
+    if (strategy_->FromV8Object(val, &out, isolate))
       return out;
   }
 
@@ -423,7 +426,7 @@ base::Value* V8ValueConverterImpl::FromV8Object(
       child_v8 = v8::Null();
     }
 
-    scoped_ptr<base::Value> child(FromV8ValueImpl(child_v8, state));
+    scoped_ptr<base::Value> child(FromV8ValueImpl(child_v8, state, isolate));
     if (!child)
       // JSON.stringify skips properties whose values don't serialize, for
       // example undefined and functions. Emulate that behavior.

@@ -31,11 +31,13 @@ class CONTENT_EXPORT V8ValueConverter {
     // If false is returned, V8ValueConverter proceeds with the default
     // behavior.
     virtual bool FromV8Object(v8::Handle<v8::Object> value,
-                              base::Value** out) const = 0;
+                              base::Value** out,
+                              v8::Isolate* isolate) const = 0;
     // If false is returned, V8ValueConverter proceeds with the default
     // behavior.
     virtual bool FromV8Array(v8::Handle<v8::Array> value,
-                             base::Value** out) const = 0;
+                             base::Value** out,
+                             v8::Isolate* isolate) const = 0;
   };
 
   static V8ValueConverter* create();

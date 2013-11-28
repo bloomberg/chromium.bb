@@ -50,9 +50,11 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
   v8::Handle<v8::Value> ToArrayBuffer(const base::BinaryValue* value) const;
 
   base::Value* FromV8ValueImpl(v8::Handle<v8::Value> value,
-                               FromV8ValueState* state) const;
+                               FromV8ValueState* state,
+                               v8::Isolate* isolate) const;
   base::Value* FromV8Array(v8::Handle<v8::Array> array,
-                           FromV8ValueState* state) const;
+                           FromV8ValueState* state,
+                           v8::Isolate* isolate) const;
 
   // This will convert objects of type ArrayBuffer or any of the
   // ArrayBufferView subclasses. The return value will be NULL if |value| is
@@ -60,7 +62,8 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
   base::BinaryValue* FromV8Buffer(v8::Handle<v8::Value> value) const;
 
   base::Value* FromV8Object(v8::Handle<v8::Object> object,
-                            FromV8ValueState* state) const;
+                            FromV8ValueState* state,
+                            v8::Isolate* isolate) const;
 
   // If true, we will convert Date JavaScript objects to doubles.
   bool date_allowed_;

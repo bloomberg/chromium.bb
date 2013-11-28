@@ -22,13 +22,16 @@ class ActivityLogConverterStrategy
   virtual ~ActivityLogConverterStrategy() {}
 
   virtual bool FromV8Object(v8::Handle<v8::Object> value,
-                            base::Value** out) const OVERRIDE;
+                            base::Value** out,
+                            v8::Isolate* isolate) const OVERRIDE;
   virtual bool FromV8Array(v8::Handle<v8::Array> value,
-                           base::Value** out) const OVERRIDE;
+                           base::Value** out,
+                           v8::Isolate* isolate) const OVERRIDE;
 
  private:
   bool FromV8ObjectInternal(v8::Handle<v8::Object> value,
-                            base::Value** out) const;
+                            base::Value** out,
+                            v8::Isolate* isolate) const;
 };
 
 }  // namespace extensions
