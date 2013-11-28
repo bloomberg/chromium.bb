@@ -47,6 +47,7 @@ public:
 
     virtual PassRefPtr<RTCStatsResponseBase> createResponse() = 0;
     virtual bool hasSelector() = 0;
+    virtual MediaStreamDescriptor* stream() = 0;
     virtual MediaStreamComponent* component() = 0;
     virtual void requestSucceeded(PassRefPtr<RTCStatsResponseBase>) = 0;
 

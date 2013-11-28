@@ -46,12 +46,6 @@ class MediaStreamTrackSourcesCallback;
 class MediaStreamTrack : public RefCounted<MediaStreamTrack>, public ScriptWrappable, public ActiveDOMObject, public EventTargetWithInlineData, public MediaStreamSource::Observer {
     REFCOUNTED_EVENT_TARGET(MediaStreamTrack);
 public:
-    class Observer {
-    public:
-        virtual ~Observer() { }
-        virtual void trackEnded() = 0;
-    };
-
     static PassRefPtr<MediaStreamTrack> create(ExecutionContext*, MediaStreamComponent*);
     virtual ~MediaStreamTrack();
 
@@ -62,11 +56,12 @@ public:
     bool enabled() const;
     void setEnabled(bool);
 
+    void didEndTrack();
+
     String readyState() const;
 
     static void getSources(ExecutionContext*, PassOwnPtr<MediaStreamTrackSourcesCallback>, ExceptionState&);
     void stopTrack(ExceptionState&);
-    PassRefPtr<MediaStreamTrack> clone(ExecutionContext*);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(mute);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute);
@@ -74,9 +69,6 @@ public:
 
     MediaStreamComponent* component();
     bool ended() const;
-
-    void addObserver(Observer*);
-    void removeObserver(Observer*);
 
     // EventTarget
     virtual const AtomicString& interfaceName() const OVERRIDE;
@@ -90,10 +82,6 @@ private:
 
     // MediaStreamSourceObserver
     virtual void sourceChangedState() OVERRIDE;
-
-    void propagateTrackEnded();
-    Vector<Observer*> m_observers;
-    bool m_isIteratingObservers;
 
     bool m_stopped;
     RefPtr<MediaStreamComponent> m_component;

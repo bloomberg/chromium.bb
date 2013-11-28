@@ -33,7 +33,6 @@
 
     [CallWith=ExecutionContext, RaisesException] static void getSources(MediaStreamTrackSourcesCallback callback);
     [ImplementedAs=stopTrack, RaisesException] void stop();
-    [CallWith=ExecutionContext] MediaStreamTrack clone();
 
     attribute EventHandler onmute;
     attribute EventHandler onunmute;

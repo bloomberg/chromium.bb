@@ -60,7 +60,7 @@ public:
     bool getMediaStreamTrackSources(PassRefPtr<MediaStreamTrackSourcesRequest>);
 
     void didCreateMediaStreamTrack(MediaStreamComponent*);
-    void didSetMediaStreamTrackEnabled(MediaStreamComponent*);
+    void didSetMediaStreamTrackEnabled(MediaStreamDescriptor*, MediaStreamComponent*);
     bool didStopMediaStreamTrack(MediaStreamComponent*);
 
     void didCreateMediaStream(MediaStreamDescriptor*);
