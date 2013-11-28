@@ -41,7 +41,8 @@ class ExternalExtensionWrapper : public v8::Extension {
 
   // Allows v8's javascript code to call the native functions defined
   // in this class for window.external.
-  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
+  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
+      v8::Isolate* isolate,
       v8::Handle<v8::String> name) OVERRIDE;
 
   // Helper function to find the RenderView. May return NULL.
@@ -65,13 +66,16 @@ ExternalExtensionWrapper::ExternalExtensionWrapper()
         kSearchProviderApi) {
 }
 
-v8::Handle<v8::FunctionTemplate> ExternalExtensionWrapper::GetNativeFunction(
+v8::Handle<v8::FunctionTemplate>
+ExternalExtensionWrapper::GetNativeFunctionTemplate(
+    v8::Isolate* isolate,
     v8::Handle<v8::String> name) {
-  if (name->Equals(v8::String::New("NativeAddSearchProvider")))
-    return v8::FunctionTemplate::New(AddSearchProvider);
+  if (name->Equals(v8::String::NewFromUtf8(isolate, "NativeAddSearchProvider")))
+    return v8::FunctionTemplate::New(isolate, AddSearchProvider);
 
-  if (name->Equals(v8::String::New("NativeIsSearchProviderInstalled")))
-    return v8::FunctionTemplate::New(IsSearchProviderInstalled);
+  if (name->Equals(
+          v8::String::NewFromUtf8(isolate, "NativeIsSearchProviderInstalled")))
+    return v8::FunctionTemplate::New(isolate, IsSearchProviderInstalled);
 
   return v8::Handle<v8::FunctionTemplate>();
 }
@@ -134,7 +138,8 @@ void ExternalExtensionWrapper::IsSearchProviderInstalled(
 
   if (install == search_provider::DENIED) {
     // FIXME: throw access denied exception.
-    v8::ThrowException(v8::Exception::Error(v8::String::Empty()));
+    v8::Isolate* isolate = args.GetIsolate();
+    isolate->ThrowException(v8::Exception::Error(v8::String::Empty(isolate)));
     return;
   }
   args.GetReturnValue().Set(static_cast<int32_t>(install));

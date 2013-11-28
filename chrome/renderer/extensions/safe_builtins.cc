@@ -142,13 +142,14 @@ class ExtensionImpl : public v8::Extension {
   ExtensionImpl() : v8::Extension(kClassName, kScript) {}
 
  private:
-  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
+  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
+      v8::Isolate* isolate,
       v8::Handle<v8::String> name) OVERRIDE {
-    if (name->Equals(v8::String::New("Apply")))
-      return v8::FunctionTemplate::New(Apply);
-    if (name->Equals(v8::String::New("Save")))
-      return v8::FunctionTemplate::New(Save);
-    NOTREACHED() << *v8::String::AsciiValue(name);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "Apply")))
+      return v8::FunctionTemplate::New(isolate, Apply);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "Save")))
+      return v8::FunctionTemplate::New(isolate, Save);
+    NOTREACHED() << *v8::String::Utf8Value(name);
     return v8::Handle<v8::FunctionTemplate>();
   }
 
@@ -166,9 +167,10 @@ class ExtensionImpl : public v8::Extension {
     } else if (info[1]->IsString()) {
       recv = v8::StringObject::New(info[1]->ToString())->ToObject();
     } else {
-      v8::ThrowException(v8::Exception::TypeError(v8::String::NewFromUtf8(
-          info.GetIsolate(),
-          "The first argument is the receiver and must be an object")));
+      info.GetIsolate()->ThrowException(
+          v8::Exception::TypeError(v8::String::NewFromUtf8(
+              info.GetIsolate(),
+              "The first argument is the receiver and must be an object")));
       return;
     }
     v8::Local<v8::Object> args = info[2]->ToObject();
@@ -191,9 +193,9 @@ class ExtensionImpl : public v8::Extension {
     CHECK(info.Length() == 2 &&
           info[0]->IsString() &&
           info[1]->IsObject());
-    SaveImpl(*v8::String::AsciiValue(info[0]),
+    SaveImpl(*v8::String::Utf8Value(info[0]),
              info[1],
-             v8::Context::GetCalling());
+             info.GetIsolate()->GetCallingContext());
   }
 };
 

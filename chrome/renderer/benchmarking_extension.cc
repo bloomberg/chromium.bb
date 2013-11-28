@@ -59,16 +59,19 @@ class BenchmarkingWrapper : public v8::Extension {
         "}"
         ) {}
 
-  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
+  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
+      v8::Isolate* isolate,
       v8::Handle<v8::String> name) OVERRIDE {
-    if (name->Equals(v8::String::New("GetCounter"))) {
-      return v8::FunctionTemplate::New(GetCounter);
-    } else if (name->Equals(v8::String::New("GetCounterForRenderer"))) {
-      return v8::FunctionTemplate::New(GetCounterForRenderer);
-    } else if (name->Equals(v8::String::New("IsSingleProcess"))) {
-      return v8::FunctionTemplate::New(IsSingleProcess);
-    } else if (name->Equals(v8::String::New("HiResTime"))) {
-      return v8::FunctionTemplate::New(HiResTime);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "GetCounter"))) {
+      return v8::FunctionTemplate::New(isolate, GetCounter);
+    } else if (name->Equals(
+                   v8::String::NewFromUtf8(isolate, "GetCounterForRenderer"))) {
+      return v8::FunctionTemplate::New(isolate, GetCounterForRenderer);
+    } else if (name->Equals(
+                   v8::String::NewFromUtf8(isolate, "IsSingleProcess"))) {
+      return v8::FunctionTemplate::New(isolate, IsSingleProcess);
+    } else if (name->Equals(v8::String::NewFromUtf8(isolate, "HiResTime"))) {
+      return v8::FunctionTemplate::New(isolate, HiResTime);
     }
 
     return v8::Handle<v8::FunctionTemplate>();
