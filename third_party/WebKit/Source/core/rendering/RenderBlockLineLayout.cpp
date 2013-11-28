@@ -617,7 +617,9 @@ void RenderBlockFlow::updateLogicalWidthForAlignment(const ETextAlign& textAlign
 static void updateLogicalInlinePositions(RenderBlockFlow* block, float& lineLogicalLeft, float& lineLogicalRight, float& availableLogicalWidth, bool firstLine, IndentTextOrNot shouldIndentText, LayoutUnit boxLogicalHeight)
 {
     LayoutUnit lineLogicalHeight = block->minLineHeightForReplacedRenderer(firstLine, boxLogicalHeight);
-    lineLogicalLeft = block->pixelSnappedLogicalLeftOffsetForLine(block->logicalHeight(), shouldIndentText == IndentText, lineLogicalHeight);
+    lineLogicalLeft = block->logicalLeftOffsetForLine(block->logicalHeight(), shouldIndentText == IndentText, lineLogicalHeight);
+    // FIXME: This shouldn't be pixel snapped once multicolumn layout has been updated to correctly carry over subpixel values.
+    // https://bugs.webkit.org/show_bug.cgi?id=105461
     lineLogicalRight = block->pixelSnappedLogicalRightOffsetForLine(block->logicalHeight(), shouldIndentText == IndentText, lineLogicalHeight);
     availableLogicalWidth = lineLogicalRight - lineLogicalLeft;
 }
@@ -643,8 +645,8 @@ void RenderBlockFlow::computeInlineDirectionPositionsForLine(RootInlineBox* line
     if (shapeInsideInfo && shapeInsideInfo->hasSegments()) {
         BidiRun* segmentStart = firstRun;
         const SegmentList& segments = shapeInsideInfo->segments();
-        float logicalLeft = max<float>(roundToInt(segments[0].logicalLeft), lineLogicalLeft);
-        float logicalRight = min<float>(floorToInt(segments[0].logicalRight), lineLogicalRight);
+        float logicalLeft = max<float>(segments[0].logicalLeft, lineLogicalLeft);
+        float logicalRight = min<float>(segments[0].logicalRight, lineLogicalRight);
         float startLogicalLeft = logicalLeft;
         float endLogicalRight = logicalLeft;
         float minLogicalLeft = logicalLeft;
@@ -652,8 +654,8 @@ void RenderBlockFlow::computeInlineDirectionPositionsForLine(RootInlineBox* line
         lineBox->beginPlacingBoxRangesInInlineDirection(logicalLeft);
         for (size_t i = 0; i < segments.size(); i++) {
             if (i) {
-                logicalLeft = max<float>(roundToInt(segments[i].logicalLeft), lineLogicalLeft);
-                logicalRight = min<float>(floorToInt(segments[i].logicalRight), lineLogicalRight);
+                logicalLeft = max<float>(segments[i].logicalLeft, lineLogicalLeft);
+                logicalRight = min<float>(segments[i].logicalRight, lineLogicalRight);
             }
             availableLogicalWidth = logicalRight - logicalLeft;
             BidiRun* newSegmentStart = computeInlineDirectionPositionsForSegment(lineBox, lineInfo, textAlign, logicalLeft, availableLogicalWidth, segmentStart, trailingSpaceRun, textBoxDataMap, verticalPositionCache, wordMeasurements);
