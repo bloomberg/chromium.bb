@@ -23,6 +23,21 @@ const char WebRtcTestBase::kVideoOnlyCallConstraints[] = "'{video: true}'";
 const char WebRtcTestBase::kFailedWithPermissionDeniedError[] =
     "failed-with-error-PermissionDeniedError";
 
+// Work around an issue where javascript isn't always fully loaded when we
+// invoke doGetUserMedia (crbug.com/281268).
+static void EnsureOurJavascriptHasBeenLoaded(
+    content::WebContents* tab_contents) {
+  const std::string script =
+      "var gumDefined = typeof(doGetUserMedia) == typeof(Function); "
+      "window.domAutomationController.send(gumDefined);";
+  bool get_user_media_defined = false;
+  while (!get_user_media_defined) {
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        tab_contents, script, &get_user_media_defined));
+    SleepInJavascript(tab_contents, 100);
+  }
+}
+
 WebRtcTestBase::WebRtcTestBase() {
 }
 
@@ -81,6 +96,8 @@ void WebRtcTestBase::GetUserMediaAndDismiss(
 
 void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,
                                   const std::string& constraints) const {
+  EnsureOurJavascriptHasBeenLoaded(tab_contents);
+
   // Request user media: this will launch the media stream info bar.
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
