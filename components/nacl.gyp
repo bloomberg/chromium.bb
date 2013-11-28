@@ -7,7 +7,6 @@
     'chromium_code': 1,
   },
   'includes': [
-    '../native_client/build/untrusted.gypi',
     'nacl/nacl_defines.gypi',
   ],
   'target_defaults': {
@@ -127,8 +126,8 @@
             '..',
           ],
           'dependencies': [
-            'nacl_common.gyp:nacl_common',
-            'nacl_common.gyp:nacl_switches',
+            'nacl_common',
+            'nacl_switches',
             '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel',
             '../content/content.gyp:content_browser',
           ],
@@ -150,7 +149,7 @@
               ],
               'dependencies': [
                 'nacl',
-                'nacl_common.gyp:nacl_common',
+                'nacl_common',
                 '../crypto/crypto.gyp:crypto',
                 '../sandbox/sandbox.gyp:libc_urandom_override',
                 '../sandbox/sandbox.gyp:sandbox',
@@ -205,10 +204,10 @@
                 'nacl_target': 1,
               },
               'dependencies': [
+                'nacl_common_win64',
                 '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel_main_chrome64',
                 '../ppapi/ppapi_internal.gyp:ppapi_shared_win64',
                 '../ppapi/ppapi_internal.gyp:ppapi_ipc_win64',
-                '../components/nacl_common.gyp:nacl_common_win64',
               ],
               'export_dependent_settings': [
                 '../ppapi/ppapi_internal.gyp:ppapi_ipc_win64',
@@ -238,6 +237,45 @@
                 ],
               },
             },
+            {
+              'target_name': 'nacl_switches_win64',
+              'type': 'static_library',
+              'sources': [
+                'nacl/common/nacl_switches.cc',
+                'nacl/common/nacl_switches.h',
+              ],
+              'include_dirs': [
+                '..',
+              ],
+              'configurations': {
+                'Common_Base': {
+                  'msvs_target_platform': 'x64',
+                },
+              },
+            },
+            {
+              'target_name': 'nacl_common_win64',
+              'type': 'static_library',
+              'defines': [
+                'COMPILE_CONTENT_STATICALLY',
+              ],
+              'sources': [
+                'nacl/common/nacl_cmd_line.cc',
+                'nacl/common/nacl_cmd_line.h',
+                'nacl/common/nacl_messages.cc',
+                'nacl/common/nacl_messages.h',
+                'nacl/common/nacl_types.cc',
+                'nacl/common/nacl_types.h',
+              ],
+              'include_dirs': [
+                '..',
+              ],
+              'configurations': {
+                'Common_Base': {
+                  'msvs_target_platform': 'x64',
+                },
+              },
+            },
           ],
         }],
       ],
@@ -262,4 +300,38 @@
       ],
     }],
   ],
+  'targets': [
+    {
+      'target_name': 'nacl_switches',
+      'type': 'static_library',
+      'sources': [
+        'nacl/common/nacl_switches.cc',
+        'nacl/common/nacl_switches.h',
+    ],
+      'include_dirs': [
+        '..',
+      ],
+    },
+    {
+      'target_name': 'nacl_common',
+      'type': 'static_library',
+      'sources': [
+        'nacl/common/nacl_cmd_line.cc',
+        'nacl/common/nacl_cmd_line.h',
+        'nacl/common/nacl_host_messages.h',
+        'nacl/common/nacl_host_messages.cc',
+        'nacl/common/nacl_messages.cc',
+        'nacl/common/nacl_messages.h',
+        'nacl/common/nacl_process_type.h',
+        'nacl/common/nacl_sandbox_type_mac.h',
+        'nacl/common/nacl_types.cc',
+        'nacl/common/nacl_types.h',
+        'nacl/common/pnacl_types.cc',
+        'nacl/common/pnacl_types.h',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+    },
+  ]
 }

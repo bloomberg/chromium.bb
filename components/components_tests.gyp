@@ -143,7 +143,7 @@
               ],
               'dependencies': [
                 'nacl.gyp:nacl_browser',
-                'nacl_common.gyp:nacl_common',
+                'nacl.gyp:nacl_common',
               ],
             }],
             ['OS == "android"', {

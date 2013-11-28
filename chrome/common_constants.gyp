@@ -70,7 +70,7 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../components/nacl_common.gyp:nacl_switches',
+        '../components/nacl.gyp:nacl_switches',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
       ],
       'target_conditions': [
@@ -100,7 +100,7 @@
           ],
           'dependencies': [
             '../base/base.gyp:base_nacl_win64',
-            '../components/nacl_common.gyp:nacl_switches_win64',
+            '../components/nacl.gyp:nacl_switches_win64',
             '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
           ],
           'defines': [

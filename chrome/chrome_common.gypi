@@ -428,7 +428,7 @@
             '<(DEPTH)/chrome/app/policy/cloud_policy_codegen.gyp:policy',
             '<(DEPTH)/chrome/common/extensions/api/api.gyp:api',
             '<(DEPTH)/components/components.gyp:autofill_core_common',
-            '<(DEPTH)/components/nacl_common.gyp:nacl_common',
+            '<(DEPTH)/components/nacl.gyp:nacl_common',
             '<(DEPTH)/extensions/extensions.gyp:extensions_common',
             '<(DEPTH)/ipc/ipc.gyp:ipc',
             '<(DEPTH)/third_party/adobe/flash/flash_player.gyp:flapper_version_h',
