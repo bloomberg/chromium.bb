@@ -1493,7 +1493,7 @@ pseudo:
     | ':' FUNCTION maybe_space maybe_unary_operator INTEGER maybe_space closing_parenthesis {
         $$ = parser->createFloatingSelector();
         $$->setMatch(CSSSelector::PseudoClass);
-        $$->setArgument(String::number($4 * $5));
+        $$->setArgument(AtomicString::number($4 * $5));
         $$->setValue($2);
         CSSSelector::PseudoType type = $$->pseudoType();
         if (type == CSSSelector::PseudoUnknown)
