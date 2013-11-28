@@ -72,10 +72,10 @@ var gl;
 var canvas;
 var premultipledAlpha;
 
-if (window.testRunner) {
-      testRunner.waitUntilDone();
-      testRunner.overridePreference("WebKitWebGLEnabled", "1");
-}
+window.jsTestIsAsync = true;
+
+if (window.testRunner)
+  testRunner.overridePreference("WebKitWebGLEnabled", "1");
 
 description("Test the WebGL premultipledAlpha context creation flag.");
 doNextTest();
@@ -154,8 +154,6 @@ function doNextTest() {
         setTimeout(loadTexture, 0);
      }
    } else {
-      if (window.testRunner)
-         testRunner.notifyDone();
       finishTest();
    }
 }
