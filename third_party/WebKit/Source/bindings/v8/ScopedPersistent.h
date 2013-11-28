@@ -73,10 +73,7 @@ public:
     // Note: This is clear in the OwnPtr sense, not the v8::Handle sense.
     void clear()
     {
-        if (m_handle.IsEmpty())
-            return;
-        m_handle.Dispose();
-        m_handle.Clear();
+        m_handle.Reset();
     }
 
     bool operator==(const ScopedPersistent<T>& other)
