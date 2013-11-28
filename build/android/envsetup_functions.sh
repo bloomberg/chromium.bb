@@ -310,8 +310,6 @@ ${ANDROID_SDK_VERSION}
       ;;
   esac
   DEFINES+=" android_webview_build=1"
-  # temporary until all uses of android_build_type are gone (crbug.com/184431)
-  DEFINES+=" android_build_type=1"
   DEFINES+=" android_src=\$(PWD)"
   DEFINES+=" android_sdk=\$(PWD)/${ANDROID_SDK}"
   DEFINES+=" android_sdk_root=\$(PWD)/${ANDROID_SDK}"
