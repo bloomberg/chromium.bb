@@ -110,11 +110,16 @@ void TypingCommand::deleteSelection(Document& document, Options options)
 void TypingCommand::deleteKeyPressed(Document& document, Options options, TextGranularity granularity)
 {
     if (granularity == CharacterGranularity) {
-        if (RefPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(document.frame())) {
-            updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand.get(), document.frame());
-            lastTypingCommand->setShouldPreventSpellChecking(options & PreventSpellChecking);
-            lastTypingCommand->deleteKeyPressed(granularity, options & KillRing);
-            return;
+        Frame* frame = document.frame();
+        if (RefPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame)) {
+            // If the last typing command is not Delete, open a new typing command.
+            // We need to group continuous delete commands alone in a single typing command.
+            if (lastTypingCommand->commandTypeOfOpenCommand() == DeleteKey) {
+                updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand.get(), frame);
+                lastTypingCommand->setShouldPreventSpellChecking(options & PreventSpellChecking);
+                lastTypingCommand->deleteKeyPressed(granularity, options & KillRing);
+                return;
+            }
         }
     }
 
@@ -124,8 +129,8 @@ void TypingCommand::deleteKeyPressed(Document& document, Options options, TextGr
 void TypingCommand::forwardDeleteKeyPressed(Document& document, Options options, TextGranularity granularity)
 {
     // FIXME: Forward delete in TextEdit appears to open and close a new typing command.
-    Frame* frame = document.frame();
     if (granularity == CharacterGranularity) {
+        Frame* frame = document.frame();
         if (RefPtr<TypingCommand> lastTypingCommand = lastTypingCommandIfStillOpenForTyping(frame)) {
             updateSelectionIfDifferentFromCurrentSelection(lastTypingCommand.get(), frame);
             lastTypingCommand->setShouldPreventSpellChecking(options & PreventSpellChecking);
@@ -311,6 +316,7 @@ void TypingCommand::typingAddedToOpenCommand(ETypingCommand commandTypeForAddedT
         return;
 
     updatePreservesTypingStyle(commandTypeForAddedTyping);
+    updateCommandTypeOfOpenCommand(commandTypeForAddedTyping);
 
     // The old spellchecking code requires that checking be done first, to prevent issues like that in 6864072, where <doesn't> is marked as misspelled.
     markMisspellingsAfterTyping(commandTypeForAddedTyping);

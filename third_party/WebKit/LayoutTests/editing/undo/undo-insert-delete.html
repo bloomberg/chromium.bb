@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<body>
+<div id="container">
+<p id="description"></p>
+<p>To test manually:<br>1. Place the cursor at the end of 'abc'. Delete 'c'. Type in 'x'. Delete 'x'. Do ctrl+z. You should now see 'abx'.<br>2. Make sure you have the cursor at the end of 'abx'. Type in 'y'. Delete 'y'. Do ctrl+z. You should now see 'abxy'.</p>
+<div id="test" style="border: 2px solid red;" contenteditable>abc</div>
+</div>
+<div id="console"></div>
+<script src="../../resources/js-test.js"></script>
+<script>
+description('Verifies undo functionality that follows text insertion.');
+
+var selection = window.getSelection();
+selection.collapse(document.getElementById('test').firstChild, 3);
+
+// Use case 1:  Place the cursor at the end of 'abc'. Delete 'c'. Type in 'x'. Delete 'x'. Do ctrl+z. You should now see 'abx'.
+document.execCommand('delete');
+document.execCommand('insertText', false, 'x');
+document.execCommand('delete');
+document.execCommand('undo');
+shouldBeEqualToString('selection.focusNode.data', 'abx');
+
+// Use case 2: Type in 'y'. Delete 'y'. Do ctrl+z. You should now see 'abxy'.
+selection.collapseToEnd(); // This is needed for this test to work on mac platform
+document.execCommand('insertText', false, 'y');
+document.execCommand('delete');
+document.execCommand('undo');
+shouldBeEqualToString('selection.focusNode.data', 'abxy');
+
+if (window.testRunner)
+  document.getElementById('container').outerHTML = '';
+</script>
+</body>
+</html>

@@ -117,6 +117,9 @@ private:
     void typingAddedToOpenCommand(ETypingCommand);
     bool makeEditableRootEmpty();
 
+    void updateCommandTypeOfOpenCommand(ETypingCommand typingCommand) { m_commandType = typingCommand; }
+    ETypingCommand commandTypeOfOpenCommand() const { return m_commandType; }
+
     ETypingCommand m_commandType;
     String m_textToInsert;
     bool m_openForMoreTyping;
