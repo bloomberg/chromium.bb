@@ -1113,6 +1113,8 @@ void DevToolsWindow::SaveToFile(const std::string& url,
                                 bool save_as) {
   file_helper_->Save(url, content, save_as,
                      base::Bind(&DevToolsWindow::FileSavedAs,
+                                weak_factory_.GetWeakPtr(), url),
+                     base::Bind(&DevToolsWindow::CanceledFileSaveAs,
                                 weak_factory_.GetWeakPtr(), url));
 }
 
@@ -1210,6 +1212,12 @@ void DevToolsWindow::SearchInPath(int request_id,
 void DevToolsWindow::FileSavedAs(const std::string& url) {
   StringValue url_value(url);
   CallClientFunction("InspectorFrontendAPI.savedURL", &url_value, NULL, NULL);
+}
+
+void DevToolsWindow::CanceledFileSaveAs(const std::string& url) {
+  StringValue url_value(url);
+  CallClientFunction("InspectorFrontendAPI.canceledSaveURL",
+                     &url_value, NULL, NULL);
 }
 
 void DevToolsWindow::AppendedTo(const std::string& url) {

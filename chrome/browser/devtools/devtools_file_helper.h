@@ -58,7 +58,8 @@ class DevToolsFileHelper {
   void Save(const std::string& url,
             const std::string& content,
             bool save_as,
-            const SaveCallback& callback);
+            const SaveCallback& saveCallback,
+            const SaveCallback& cancelCallback);
 
   // Append |content| to the file that has been associated with given |url|.
   // The |url| can be associated with a file via calling Save method.
@@ -111,7 +112,7 @@ class DevToolsFileHelper {
                           const std::string& content,
                           const SaveCallback& callback,
                           const base::FilePath& path);
-  void SaveAsFileSelectionCanceled();
+  void SaveAsFileSelectionCanceled(const SaveCallback& callback);
   void InnerAddFileSystem(
       const AddFileSystemCallback& callback,
       const ShowInfoBarCallback& show_info_bar_callback,

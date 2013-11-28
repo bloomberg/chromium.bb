@@ -221,10 +221,11 @@ DevToolsFileHelper::~DevToolsFileHelper() {
 void DevToolsFileHelper::Save(const std::string& url,
                               const std::string& content,
                               bool save_as,
-                              const SaveCallback& callback) {
+                              const SaveCallback& saveCallback,
+                              const SaveCallback& cancelCallback) {
   PathsMap::iterator it = saved_files_.find(url);
   if (it != saved_files_.end() && !save_as) {
-    SaveAsFileSelected(url, content, callback, it->second);
+    SaveAsFileSelected(url, content, saveCallback, it->second);
     return;
   }
 
@@ -259,9 +260,10 @@ void DevToolsFileHelper::Save(const std::string& url,
            weak_factory_.GetWeakPtr(),
            url,
            content,
-           callback),
+           saveCallback),
       Bind(&DevToolsFileHelper::SaveAsFileSelectionCanceled,
-           weak_factory_.GetWeakPtr()),
+           weak_factory_.GetWeakPtr(),
+           cancelCallback),
       web_contents_);
   select_file_dialog->Show(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
                            initial_path);
@@ -295,7 +297,9 @@ void DevToolsFileHelper::SaveAsFileSelected(const std::string& url,
                           Bind(&WriteToFile, path, content));
 }
 
-void DevToolsFileHelper::SaveAsFileSelectionCanceled() {
+void DevToolsFileHelper::SaveAsFileSelectionCanceled(
+    const SaveCallback& callback) {
+  callback.Run();
 }
 
 void DevToolsFileHelper::AddFileSystem(

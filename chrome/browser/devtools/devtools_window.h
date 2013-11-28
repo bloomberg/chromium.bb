@@ -297,6 +297,7 @@ class DevToolsWindow : private content::NotificationObserver,
 
   // DevToolsFileHelper callbacks.
   void FileSavedAs(const std::string& url);
+  void CanceledFileSaveAs(const std::string& url);
   void AppendedTo(const std::string& url);
   void FileSystemsLoaded(
       const std::vector<DevToolsFileHelper::FileSystem>& file_systems);
