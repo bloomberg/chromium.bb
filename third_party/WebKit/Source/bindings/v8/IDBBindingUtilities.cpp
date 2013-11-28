@@ -65,10 +65,10 @@ v8::Handle<v8::Value> toV8(IDBKey* key, v8::Handle<v8::Object> creationContext, 
     case IDBKey::BinaryType:
         return toV8(Uint8Array::create(reinterpret_cast<const unsigned char*>(key->binary()->data()), key->binary()->size()), creationContext, isolate);
     case IDBKey::DateType:
-        return v8::Date::New(key->date());
+        return v8::Date::New(isolate, key->date());
     case IDBKey::ArrayType:
         {
-            v8::Local<v8::Array> array = v8::Array::New(key->array().size());
+            v8::Local<v8::Array> array = v8::Array::New(isolate, key->array().size());
             for (size_t i = 0; i < key->array().size(); ++i)
                 array->Set(i, toV8(key->array()[i].get(), creationContext, isolate));
             return array;
@@ -217,7 +217,7 @@ static PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(const ScriptValu
     IDBKeyPathParseError error;
     IDBParseKeyPath(keyPath, keyPathElements, error);
     ASSERT(error == IDBKeyPathParseErrorNone);
-    ASSERT(v8::Context::InContext());
+    ASSERT(isolate->InContext());
 
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> v8Value(value.v8Value());
@@ -231,9 +231,8 @@ PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(DOMRequestState* state,
 {
     IDB_TRACE("createIDBKeyFromScriptValueAndKeyPath");
     ASSERT(!keyPath.isNull());
-    ASSERT(v8::Context::InContext());
-
     v8::Isolate* isolate = state ? state->context()->GetIsolate() : v8::Isolate::GetCurrent();
+    ASSERT(isolate->InContext());
     v8::HandleScope handleScope(isolate);
     if (keyPath.type() == IDBKeyPath::ArrayType) {
         IDBKey::KeyArray result;
@@ -253,7 +252,7 @@ PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(DOMRequestState* state,
 
 v8::Handle<v8::Value> deserializeIDBValueBuffer(SharedBuffer* buffer, v8::Isolate* isolate)
 {
-    ASSERT(v8::Context::InContext());
+    ASSERT(isolate->InContext());
     if (!buffer)
         return v8::Null(isolate);
 
@@ -267,7 +266,7 @@ v8::Handle<v8::Value> deserializeIDBValueBuffer(SharedBuffer* buffer, v8::Isolat
 bool injectV8KeyIntoV8Value(v8::Handle<v8::Value> key, v8::Handle<v8::Value> value, const IDBKeyPath& keyPath, v8::Isolate* isolate)
 {
     IDB_TRACE("injectIDBV8KeyIntoV8Value");
-    ASSERT(v8::Context::InContext());
+    ASSERT(isolate->InContext());
 
     ASSERT(keyPath.type() == IDBKeyPath::StringType);
     Vector<String> keyPathElements;
@@ -307,8 +306,8 @@ bool canInjectIDBKeyIntoScriptValue(DOMRequestState* state, const ScriptValue& s
 
 ScriptValue idbAnyToScriptValue(DOMRequestState* state, PassRefPtr<IDBAny> any)
 {
-    ASSERT(v8::Context::InContext());
     v8::Isolate* isolate = state ? state->context()->GetIsolate() : v8::Isolate::GetCurrent();
+    ASSERT(isolate->InContext());
     v8::Local<v8::Context> context = state ? state->context() : isolate->GetCurrentContext();
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> v8Value(toV8(any.get(), context->Global(), isolate));
@@ -317,8 +316,8 @@ ScriptValue idbAnyToScriptValue(DOMRequestState* state, PassRefPtr<IDBAny> any)
 
 ScriptValue idbKeyToScriptValue(DOMRequestState* state, PassRefPtr<IDBKey> key)
 {
-    ASSERT(v8::Context::InContext());
     v8::Isolate* isolate = state ? state->context()->GetIsolate() : v8::Isolate::GetCurrent();
+    ASSERT(isolate->InContext());
     v8::Local<v8::Context> context = state ? state->context() : isolate->GetCurrentContext();
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> v8Value(toV8(key.get(), context->Global(), isolate));
@@ -327,8 +326,8 @@ ScriptValue idbKeyToScriptValue(DOMRequestState* state, PassRefPtr<IDBKey> key)
 
 PassRefPtr<IDBKey> scriptValueToIDBKey(DOMRequestState* state, const ScriptValue& scriptValue)
 {
-    ASSERT(v8::Context::InContext());
     v8::Isolate* isolate = state ? state->context()->GetIsolate() : v8::Isolate::GetCurrent();
+    ASSERT(isolate->InContext());
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> v8Value(scriptValue.v8Value());
     return createIDBKeyFromValue(v8Value, isolate);
