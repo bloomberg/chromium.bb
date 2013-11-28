@@ -11,10 +11,31 @@
 #include <algorithm>
 
 #include "mojo/public/bindings/lib/bindings_serialization.h"
+#include "mojo/public/bindings/lib/bindings_support.h"
 
 namespace mojo {
 
 //-----------------------------------------------------------------------------
+
+Buffer::Buffer() {
+  previous_ = BindingsSupport::Get()->SetCurrentBuffer(this);
+}
+
+Buffer::~Buffer() {
+#ifndef NDEBUG
+  Buffer* buf =
+#endif
+      BindingsSupport::Get()->SetCurrentBuffer(previous_);
+  assert(buf == this);
+}
+
+Buffer* Buffer::current() {
+  return BindingsSupport::Get()->GetCurrentBuffer();
+}
+
+//-----------------------------------------------------------------------------
+
+namespace internal {
 
 ScratchBuffer::ScratchBuffer()
     : overflow_(NULL) {
@@ -111,4 +132,5 @@ void* FixedBuffer::Leak() {
   return ptr;
 }
 
+}  // namespace internal
 }  // namespace mojo

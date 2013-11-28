@@ -21,7 +21,7 @@ class Array {
   typedef typename Traits_::DataType Data;
 
   template <typename U>
-  Array<T>(const U& u, Buffer* buf) {
+  explicit Array<T>(const U& u, Buffer* buf = mojo::Buffer::current()) {
     Data* data = Data::New(u.size(), buf);
     memcpy(data->storage(), u.data(), u.size() * sizeof(T));
     data_ = data;
@@ -48,7 +48,7 @@ class Array {
     typedef typename Array<T>::Data Data;
     typedef typename Array<T>::Traits_ Traits_;
 
-    Builder(size_t num_elements, Buffer* buf)
+    explicit Builder(size_t num_elements, Buffer* buf = mojo::Buffer::current())
         : data_(Data::New(num_elements, buf)) {
     }
 
@@ -72,7 +72,9 @@ class Array {
  protected:
   friend class internal::WrapperHelper<Array<T> >;
 
-  explicit Array(const Data* data) : data_(data) {}
+  struct Wrap {};
+  Array(Wrap, const Data* data) : data_(data) {}
+
   const Data* data_;
 };
 

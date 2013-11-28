@@ -427,6 +427,7 @@
       ],
       'dependencies': [
         '../testing/gtest.gyp:gtest',
+        'mojo_public_test_support',
         'mojo_run_all_unittests',
         'sample_service',
       ],

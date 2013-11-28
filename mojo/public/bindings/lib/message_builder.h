@@ -12,6 +12,8 @@
 namespace mojo {
 struct MessageData;
 
+namespace internal {
+
 // Used to construct a MessageData object.
 class MessageBuilder {
  public:
@@ -31,6 +33,7 @@ class MessageBuilder {
   MOJO_DISALLOW_COPY_AND_ASSIGN(MessageBuilder);
 };
 
+}  // namespace internal
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_BINDINGS_LIB_MESSAGE_BUILDER_H_

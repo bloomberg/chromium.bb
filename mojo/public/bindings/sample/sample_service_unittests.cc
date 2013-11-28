@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <string>
 
+#include "mojo/public/tests/simple_bindings_support.h"
 #include "mojom/sample_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,18 +17,18 @@ namespace sample {
 // Set this variable to true to print the binary message in hex.
 bool g_dump_message_as_hex = true;
 
-// Make a sample |Foo| in the given |ScratchBuffer|.
-Foo MakeFoo(mojo::ScratchBuffer* buf) {
-  mojo::String name(std::string("foopy"), buf);
+// Make a sample |Foo|.
+Foo MakeFoo() {
+  mojo::String name(std::string("foopy"));
 
-  Bar::Builder bar(buf);
+  Bar::Builder bar;
   bar.set_alpha(20);
   bar.set_beta(40);
   bar.set_gamma(60);
 
-  mojo::Array<Bar>::Builder extra_bars(3, buf);
+  mojo::Array<Bar>::Builder extra_bars(3);
   for (size_t i = 0; i < extra_bars.size(); ++i) {
-    Bar::Builder bar(buf);
+    Bar::Builder bar;
     uint8_t base = static_cast<uint8_t>(i * 100);
     bar.set_alpha(base);
     bar.set_beta(base + 20);
@@ -35,15 +36,15 @@ Foo MakeFoo(mojo::ScratchBuffer* buf) {
     extra_bars[i] = bar.Finish();
   }
 
-  mojo::Array<uint8_t>::Builder data(10, buf);
+  mojo::Array<uint8_t>::Builder data(10);
   for (size_t i = 0; i < data.size(); ++i)
     data[i] = static_cast<uint8_t>(data.size() - i);
 
-  mojo::Array<mojo::Handle>::Builder files(4, buf);
+  mojo::Array<mojo::Handle>::Builder files(4);
   for (size_t i = 0; i < files.size(); ++i)
     files[i] = mojo::Handle(static_cast<MojoHandle>(0xFFFF - i));
 
-  Foo::Builder foo(buf);
+  Foo::Builder foo;
   foo.set_name(name);
   foo.set_x(1);
   foo.set_y(2);
@@ -234,6 +235,7 @@ class SimpleMessageReceiver : public mojo::MessageReceiver {
 };
 
 TEST(BindingsSampleTest, Basic) {
+  mojo::test::SimpleBindingsSupport bindings_support;
   SimpleMessageReceiver receiver;
 
   // User has a proxy to a Service somehow.
@@ -245,8 +247,9 @@ TEST(BindingsSampleTest, Basic) {
   // allocated. Here, the various members of Foo are allocated before Foo is
   // allocated.
 
-  mojo::ScratchBuffer buf;
-  Foo foo = MakeFoo(&buf);
+  mojo::AllocationScope scope;
+
+  Foo foo = MakeFoo();
   CheckFoo(foo);
 
   mojo::Handle port(static_cast<MojoHandle>(10));

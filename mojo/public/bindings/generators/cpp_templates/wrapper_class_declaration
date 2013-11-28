@@ -8,7 +8,7 @@ $GETTERS
 
   class Builder {
    public:
-    explicit Builder(mojo::Buffer* buf);
+    explicit Builder(mojo::Buffer* buf = mojo::Buffer::current());
 
 $SETTERS
 
@@ -21,6 +21,8 @@ $SETTERS
  private:
   friend class mojo::internal::WrapperHelper<$CLASS>;
 
-  explicit $CLASS(const Data* data) : data_(data) {}
+  struct Wrap {};
+  $CLASS(Wrap, const Data* data) : data_(data) {}
+
   const Data* data_;
 }; 

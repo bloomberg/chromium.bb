@@ -4,6 +4,7 @@
 
 #include "mojo/public/bindings/lib/bindings_serialization.h"
 #include "mojo/public/bindings/lib/buffer.h"
+#include "mojo/public/tests/simple_bindings_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -20,8 +21,10 @@ bool IsZero(void* p_buf, size_t size) {
 
 // Tests small and large allocations in ScratchBuffer.
 TEST(ScratchBufferTest, Basic) {
+  SimpleBindingsSupport bindings_support;
+
   // Test that a small allocation is placed on the stack.
-  ScratchBuffer buf;
+  internal::ScratchBuffer buf;
   void* small = buf.Allocate(10);
   EXPECT_TRUE(small >= &buf && small < (&buf + sizeof(buf)));
   EXPECT_TRUE(IsZero(small, 10));
@@ -37,9 +40,30 @@ TEST(ScratchBufferTest, Basic) {
   EXPECT_TRUE(small >= &buf && small < (&buf + sizeof(buf)));
 }
 
+// Tests that Buffer::current() returns the correct value.
+TEST(ScratchBufferTest, Stacked) {
+  SimpleBindingsSupport bindings_support;
+
+  EXPECT_FALSE(Buffer::current());
+
+  {
+    internal::ScratchBuffer a;
+    EXPECT_EQ(&a, Buffer::current());
+
+    {
+      internal::ScratchBuffer b;
+      EXPECT_EQ(&b, Buffer::current());
+    }
+  }
+
+  EXPECT_FALSE(Buffer::current());
+}
+
 // Tests that FixedBuffer allocates memory aligned to 8 byte boundaries.
 TEST(FixedBufferTest, Alignment) {
-  FixedBuffer buf(internal::Align(10) * 2);
+  SimpleBindingsSupport bindings_support;
+
+  internal::FixedBuffer buf(internal::Align(10) * 2);
   ASSERT_EQ(buf.size(), 16u * 2);
 
   void* a = buf.Allocate(10);
@@ -57,10 +81,12 @@ TEST(FixedBufferTest, Alignment) {
 
 // Tests that FixedBuffer::Leak passes ownership to the caller.
 TEST(FixedBufferTest, Leak) {
+  SimpleBindingsSupport bindings_support;
+
   void* ptr = NULL;
   void* buf_ptr = NULL;
   {
-    FixedBuffer buf(8);
+    internal::FixedBuffer buf(8);
     ASSERT_EQ(8u, buf.size());
 
     ptr = buf.Allocate(8);

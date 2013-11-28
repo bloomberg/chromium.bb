@@ -56,7 +56,7 @@ template <typename T>
 class WrapperHelper {
  public:
   static const T Wrap(const typename T::Data* data) {
-    return T(const_cast<typename T::Data*>(data));
+    return T(typename T::Wrap(), const_cast<typename T::Data*>(data));
   }
   static typename T::Data* Unwrap(const T& object) {
     return const_cast<typename T::Data*>(object.data_);

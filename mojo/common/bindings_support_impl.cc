@@ -6,10 +6,16 @@
 
 #include "base/atomic_ref_count.h"
 #include "base/bind.h"
+#include "base/lazy_instance.h"
+#include "base/threading/thread_local.h"
 #include "mojo/common/handle_watcher.h"
 
 namespace mojo {
 namespace common {
+namespace {
+base::LazyInstance<base::ThreadLocalPointer<Buffer> >::Leaky lazy_tls_ptr =
+    LAZY_INSTANCE_INITIALIZER;
+}
 
 // Context is used to track the number of HandleWatcher objects in use by a
 // particular BindingsSupportImpl instance.
@@ -36,6 +42,16 @@ BindingsSupportImpl::~BindingsSupportImpl() {
   // All HandleWatcher instances created through this interface should have
   // been destroyed.
   DCHECK(context_->HasOneRef());
+}
+
+Buffer* BindingsSupportImpl::GetCurrentBuffer() {
+  return lazy_tls_ptr.Pointer()->Get();
+}
+
+Buffer* BindingsSupportImpl::SetCurrentBuffer(Buffer* buf) {
+  Buffer* old_buf = lazy_tls_ptr.Pointer()->Get();
+  lazy_tls_ptr.Pointer()->Set(buf);
+  return old_buf;
 }
 
 BindingsSupport::AsyncWaitID BindingsSupportImpl::AsyncWait(

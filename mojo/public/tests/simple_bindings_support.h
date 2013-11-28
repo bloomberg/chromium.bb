@@ -17,6 +17,9 @@ class SimpleBindingsSupport : public BindingsSupport {
   SimpleBindingsSupport();
   virtual ~SimpleBindingsSupport();
 
+  virtual Buffer* SetCurrentBuffer(Buffer* buf) MOJO_OVERRIDE;
+  virtual Buffer* GetCurrentBuffer() MOJO_OVERRIDE;
+
   virtual AsyncWaitID AsyncWait(const Handle& handle,
                                 MojoWaitFlags flags,
                                 AsyncWaitCallback* callback) MOJO_OVERRIDE;
@@ -38,6 +41,8 @@ class SimpleBindingsSupport : public BindingsSupport {
 
   typedef std::list<Waiter*> WaiterList;
   WaiterList waiters_;
+
+  Buffer* buf_;
 };
 
 }  // namespace test

@@ -5,5 +5,5 @@ $CLASS::Builder::Builder(mojo::Buffer* buf)
 $CLASS $CLASS::Builder::Finish() {
   Data* data = NULL;
   std::swap(data, data_);
-  return $CLASS(data);
+  return mojo::internal::Wrap(data);
 }

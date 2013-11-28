@@ -8,6 +8,7 @@
 #include "mojo/public/system/core_cpp.h"
 
 namespace mojo {
+class Buffer;
 
 // An embedder of the bindings library MUST implement BindingsSupport and call
 // BindingsSupport::Set prior to using the library.
@@ -23,6 +24,11 @@ class BindingsSupport {
 
   static void Set(BindingsSupport* support);
   static BindingsSupport* Get();
+
+  // Get/set the current thread's Buffer pointer. SetCurrentBuffer returns the
+  // previously current Buffer.
+  virtual Buffer* GetCurrentBuffer() = 0;
+  virtual Buffer* SetCurrentBuffer(Buffer* buf) = 0;
 
   // Asynchronously call MojoWait on a background thread, and pass the result
   // of MojoWait to the given AsyncWaitCallback on the current thread.  Returns

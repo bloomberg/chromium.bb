@@ -14,9 +14,18 @@ namespace mojo {
 // Allocations are 8-byte aligned and zero-filled.
 class Buffer {
  public:
-  virtual ~Buffer() {}
+  Buffer();
+  virtual ~Buffer();
+
   virtual void* Allocate(size_t num_bytes) = 0;
+
+  static Buffer* current();
+
+ private:
+  Buffer* previous_;
 };
+
+namespace internal {
 
 // The following class is designed to be allocated on the stack.  If necessary,
 // it will failover to allocating objects on the heap.
@@ -94,6 +103,21 @@ class FixedBuffer : public Buffer {
   size_t size_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(FixedBuffer);
+};
+
+}  // namespace internal
+
+class AllocationScope {
+ public:
+  AllocationScope() {}
+  ~AllocationScope() {}
+
+  Buffer* buffer() { return &buffer_; }
+
+ private:
+  internal::ScratchBuffer buffer_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(AllocationScope);
 };
 
 }  // namespace mojo

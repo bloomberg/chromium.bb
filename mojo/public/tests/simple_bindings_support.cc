@@ -6,10 +6,13 @@
 
 #include <stdlib.h>
 
+#include <algorithm>
+
 namespace mojo {
 namespace test {
 
-SimpleBindingsSupport::SimpleBindingsSupport() {
+SimpleBindingsSupport::SimpleBindingsSupport()
+    : buf_(NULL) {
   BindingsSupport::Set(this);
 }
 
@@ -18,6 +21,17 @@ SimpleBindingsSupport::~SimpleBindingsSupport() {
 
   for (WaiterList::iterator it = waiters_.begin(); it != waiters_.end(); ++it)
     delete *it;
+}
+
+Buffer* SimpleBindingsSupport::SetCurrentBuffer(Buffer* buf) {
+  // This is a simplistic implementation that assumes it is only ever used from
+  // a single thread, which is common in tests.
+  std::swap(buf_, buf);
+  return buf;
+}
+
+Buffer* SimpleBindingsSupport::GetCurrentBuffer() {
+  return buf_;
 }
 
 BindingsSupport::AsyncWaitID SimpleBindingsSupport::AsyncWait(

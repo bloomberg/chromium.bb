@@ -3,7 +3,7 @@ void ${CLASS}Proxy::$METHOD($PARAMS_LIST) {
       mojo::internal::Align(sizeof($PARAMS));
 $COMPUTES
 
-  mojo::MessageBuilder builder($NAME, payload_size);
+  mojo::internal::MessageBuilder builder($NAME, payload_size);
 
   $PARAMS* params =
       $PARAMS::New(builder.buffer());

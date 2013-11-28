@@ -7,6 +7,7 @@
 #include "mojo/public/bindings/lib/message.h"
 
 namespace mojo {
+namespace internal {
 
 MessageBuilder::MessageBuilder(uint32_t message_name, size_t payload_size)
     : buf_(sizeof(MessageHeader) + payload_size) {
@@ -23,4 +24,5 @@ MessageData* MessageBuilder::Finish() {
   return static_cast<MessageData*>(buf_.Leak());
 }
 
+}  // namespace internal
 }  // namespace mojo
