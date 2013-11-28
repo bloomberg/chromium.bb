@@ -156,11 +156,11 @@ bool DetailInputMatchesShippingField(const DetailInput& input,
 }
 
 // Initializes |form_group| from user-entered data.
-void FillFormGroupFromOutputs(const DetailOutputMap& detail_outputs,
+void FillFormGroupFromOutputs(const FieldValueMap& detail_outputs,
                               FormGroup* form_group) {
-  for (DetailOutputMap::const_iterator iter = detail_outputs.begin();
+  for (FieldValueMap::const_iterator iter = detail_outputs.begin();
        iter != detail_outputs.end(); ++iter) {
-    ServerFieldType type = iter->first->type;
+    ServerFieldType type = iter->first;
     if (!iter->second.empty()) {
       if (type == ADDRESS_HOME_COUNTRY || type == ADDRESS_BILLING_COUNTRY) {
         form_group->SetInfo(AutofillType(type),
@@ -177,38 +177,38 @@ void FillFormGroupFromOutputs(const DetailOutputMap& detail_outputs,
 // Get billing info from |output| and put it into |card|, |cvc|, and |profile|.
 // These outparams are required because |card|/|profile| accept different types
 // of raw info, and CreditCard doesn't save CVCs.
-void GetBillingInfoFromOutputs(const DetailOutputMap& output,
+void GetBillingInfoFromOutputs(const FieldValueMap& output,
                                CreditCard* card,
-                               string16* cvc,
+                               base::string16* cvc,
                                AutofillProfile* profile) {
-  for (DetailOutputMap::const_iterator it = output.begin();
+  for (FieldValueMap::const_iterator it = output.begin();
        it != output.end(); ++it) {
-    string16 trimmed;
+    const ServerFieldType type = it->first;
+    base::string16 trimmed;
     TrimWhitespace(it->second, TRIM_ALL, &trimmed);
 
     // Special case CVC as CreditCard just swallows it.
-    if (it->first->type == CREDIT_CARD_VERIFICATION_CODE) {
+    if (type == CREDIT_CARD_VERIFICATION_CODE) {
       if (cvc)
         cvc->assign(trimmed);
-    } else if (it->first->type == ADDRESS_HOME_COUNTRY ||
-               it->first->type == ADDRESS_BILLING_COUNTRY) {
+    } else if (type == ADDRESS_HOME_COUNTRY ||
+               type == ADDRESS_BILLING_COUNTRY) {
       if (profile) {
-        profile->SetInfo(AutofillType(it->first->type),
+        profile->SetInfo(AutofillType(type),
                          trimmed,
                          g_browser_process->GetApplicationLocale());
       }
     } else {
       // Copy the credit card name to |profile| in addition to |card| as
       // wallet::Instrument requires a recipient name for its billing address.
-      if (card && it->first->type == NAME_FULL)
+      if (card && type == NAME_FULL)
         card->SetRawInfo(CREDIT_CARD_NAME, trimmed);
 
-      if (common::IsCreditCardType(it->first->type)) {
+      if (common::IsCreditCardType(type)) {
         if (card)
-          card->SetRawInfo(it->first->type, trimmed);
+          card->SetRawInfo(type, trimmed);
       } else if (profile) {
-        profile->SetRawInfo(
-            AutofillType(it->first->type).GetStorableType(), trimmed);
+        profile->SetRawInfo(AutofillType(type).GetStorableType(), trimmed);
       }
     }
   }
@@ -229,18 +229,6 @@ ui::BaseWindow* GetBaseWindowForWebContents(
       apps::ShellWindowRegistry::
           GetShellWindowForNativeWindowAnyProfile(native_window);
   return shell_window->GetBaseWindow();
-}
-
-// Extracts the string value of a field with |type| from |output|. This is
-// useful when you only need the value of 1 input from a section of view inputs.
-string16 GetValueForType(const DetailOutputMap& output,
-                         ServerFieldType type) {
-  for (DetailOutputMap::const_iterator it = output.begin();
-       it != output.end(); ++it) {
-    if (it->first->type == type)
-      return it->second;
-  }
-  return string16();
 }
 
 // Returns a string descriptor for a DialogSection, for use with prefs (do not
@@ -1143,8 +1131,8 @@ bool AutofillDialogControllerImpl::InputWasEdited(ServerFieldType type,
   return true;
 }
 
-DetailOutputMap AutofillDialogControllerImpl::TakeUserInputSnapshot() {
-  DetailOutputMap snapshot;
+FieldValueMap AutofillDialogControllerImpl::TakeUserInputSnapshot() {
+  FieldValueMap snapshot;
   if (!view_)
     return snapshot;
 
@@ -1154,13 +1142,13 @@ DetailOutputMap AutofillDialogControllerImpl::TakeUserInputSnapshot() {
     if (model->GetItemKeyForCheckedItem() != kAddNewItemKey)
       continue;
 
-    DetailOutputMap outputs;
+    FieldValueMap outputs;
     view_->GetUserInput(section, &outputs);
     // Remove fields that are empty, at their default values, or invalid.
-    for (DetailOutputMap::iterator it = outputs.begin(); it != outputs.end();
+    for (FieldValueMap::iterator it = outputs.begin(); it != outputs.end();
          ++it) {
-      if (InputWasEdited(it->first->type, it->second) &&
-          InputValidityMessage(section, it->first->type, it->second).empty()) {
+      if (InputWasEdited(it->first, it->second) &&
+          InputValidityMessage(section, it->first, it->second).empty()) {
         snapshot.insert(std::make_pair(it->first, it->second));
       }
     }
@@ -1170,11 +1158,11 @@ DetailOutputMap AutofillDialogControllerImpl::TakeUserInputSnapshot() {
 }
 
 void AutofillDialogControllerImpl::RestoreUserInputFromSnapshot(
-    const DetailOutputMap& snapshot) {
+    const FieldValueMap& snapshot) {
   if (snapshot.empty())
     return;
 
-  DetailOutputWrapper wrapper(snapshot);
+  FieldMapWrapper wrapper(snapshot);
   for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
     DialogSection section = static_cast<DialogSection>(i);
     if (!SectionIsActive(section))
@@ -1435,7 +1423,7 @@ string16 AutofillDialogControllerImpl::RequiredActionTextForSection(
     if (current_instrument)
       return current_instrument->TypeAndLastFourDigits();
 
-    DetailOutputMap output;
+    FieldValueMap output;
     view_->GetUserInput(section, &output);
     CreditCard card;
     GetBillingInfoFromOutputs(output, &card, NULL, NULL);
@@ -1618,16 +1606,16 @@ bool AutofillDialogControllerImpl::InputIsEditable(
   // aspect of the card.
   if (input.type == CREDIT_CARD_VERIFICATION_CODE &&
       IsEditingExistingData(section)) {
-    DetailOutputMap output;
+    FieldValueMap output;
     view_->GetUserInput(section, &output);
     WalletInstrumentWrapper wrapper(ActiveInstrument());
 
-    for (DetailOutputMap::iterator iter = output.begin(); iter != output.end();
+    for (FieldValueMap::iterator iter = output.begin(); iter != output.end();
          ++iter) {
-      if (iter->first->type == input.type)
+      if (iter->first == input.type)
         continue;
 
-      AutofillType type(iter->first->type);
+      AutofillType type(iter->first);
       if (type.group() == CREDIT_CARD &&
           iter->second != wrapper.GetInfo(type)) {
         return true;
@@ -1749,12 +1737,12 @@ string16 AutofillDialogControllerImpl::InputValidityMessage(
 // TODO(groby): Also add tests.
 ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
     DialogSection section,
-    const DetailOutputMap& inputs) {
+    const FieldValueMap& inputs) {
   ValidityMessages messages;
   std::map<ServerFieldType, string16> field_values;
-  for (DetailOutputMap::const_iterator iter = inputs.begin();
+  for (FieldValueMap::const_iterator iter = inputs.begin();
        iter != inputs.end(); ++iter) {
-    const ServerFieldType type = iter->first->type;
+    const ServerFieldType type = iter->first;
 
     base::string16 text = InputValidityMessage(section, type, iter->second);
 
@@ -1852,7 +1840,7 @@ ValidityMessages AutofillDialogControllerImpl::InputsAreValid(
 
 void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
     DialogSection section,
-    const DetailInput* input,
+    ServerFieldType type,
     gfx::NativeView parent_view,
     const gfx::Rect& content_bounds,
     const string16& field_contents,
@@ -1871,8 +1859,8 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
   }
 
   std::vector<string16> popup_values, popup_labels, popup_icons;
-  if (common::IsCreditCardType(input->type)) {
-    GetManager()->GetCreditCardSuggestions(AutofillType(input->type),
+  if (common::IsCreditCardType(type)) {
+    GetManager()->GetCreditCardSuggestions(AutofillType(type),
                                            field_contents,
                                            &popup_values,
                                            &popup_labels,
@@ -1885,7 +1873,7 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
          iter != inputs.end(); ++iter) {
       field_types.push_back(iter->type);
     }
-    GetManager()->GetProfileSuggestions(AutofillType(input->type),
+    GetManager()->GetProfileSuggestions(AutofillType(type),
                                         field_contents,
                                         false,
                                         field_types,
@@ -1899,6 +1887,19 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
     HidePopup();
     return;
   }
+
+  // |input_showing_popup_| must be set before calling |Show()|.
+  const DetailInputs& inputs = RequestedFieldsForSection(section);
+  for (DetailInputs::const_iterator iter = inputs.begin();
+       iter != inputs.end(); ++iter) {
+    if (iter->type == type) {
+      input_showing_popup_ = &(*iter);
+      break;
+    }
+  }
+
+  if (!input_showing_popup_)
+    return;
 
   // TODO(estade): do we need separators and control rows like 'Clear
   // Form'?
@@ -1916,10 +1917,6 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
       base::i18n::IsRTL() ?
           base::i18n::RIGHT_TO_LEFT : base::i18n::LEFT_TO_RIGHT);
   popup_controller_->set_hide_on_outside_click(true);
-
-  // |input_showing_popup_| must be set before calling |Show()|.
-  input_showing_popup_ = input;
-
   popup_controller_->Show(popup_values,
                           popup_labels,
                           popup_icons,
@@ -2090,7 +2087,7 @@ bool AutofillDialogControllerImpl::OnAccept() {
       if (ActiveInstrument()) {
         backing_card_last_four_ = ActiveInstrument()->TypeAndLastFourDigits();
       } else {
-        DetailOutputMap output;
+        FieldValueMap output;
         view_->GetUserInput(SECTION_CC_BILLING, &output);
         CreditCard card;
         GetBillingInfoFromOutputs(output, &card, NULL, NULL);
@@ -2663,7 +2660,7 @@ void AutofillDialogControllerImpl::DisableWallet(
 void AutofillDialogControllerImpl::SuggestionsUpdated() {
   ScopedViewUpdates updates(view_.get());
 
-  const DetailOutputMap snapshot = TakeUserInputSnapshot();
+  const FieldValueMap snapshot = TakeUserInputSnapshot();
 
   suggested_cc_.Reset();
   suggested_billing_.Reset();
@@ -2879,7 +2876,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
   } else {
     // The user manually input data. If using Autofill, save the info as new or
     // edited data. Always fill local data into |form_structure_|.
-    DetailOutputMap output;
+    FieldValueMap output;
     view_->GetUserInput(section, &output);
 
     if (section == SECTION_CC) {
@@ -2904,7 +2901,7 @@ void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
       // Again, CVC needs special-casing. Fill it in directly from |output|.
       SetOutputForFieldsOfType(
           CREDIT_CARD_VERIFICATION_CODE,
-          GetValueForType(output, CREDIT_CARD_VERIFICATION_CODE));
+          output[CREDIT_CARD_VERIFICATION_CODE]);
     } else {
       AutofillProfile profile;
       profile.set_origin(kAutofillDialogOrigin);
@@ -2955,9 +2952,9 @@ string16 AutofillDialogControllerImpl::GetValueFromSection(
   if (wrapper)
     return wrapper->GetInfo(AutofillType(type));
 
-  DetailOutputMap output;
+  FieldValueMap output;
   view_->GetUserInput(section, &output);
-  return GetValueForType(output, type);
+  return output[type];
 }
 
 SuggestionsMenuModel* AutofillDialogControllerImpl::
@@ -3061,7 +3058,7 @@ bool AutofillDialogControllerImpl::SectionIsValid(
   if (!IsManuallyEditingSection(section))
     return true;
 
-  DetailOutputMap detail_outputs;
+  FieldValueMap detail_outputs;
   view_->GetUserInput(section, &detail_outputs);
   return !InputsAreValid(section, detail_outputs).HasSureErrors();
 }
@@ -3216,7 +3213,7 @@ scoped_ptr<wallet::Instrument> AutofillDialogControllerImpl::
   if (!active_instrument_id_.empty())
     return scoped_ptr<wallet::Instrument>();
 
-  DetailOutputMap output;
+  FieldValueMap output;
   view_->GetUserInput(SECTION_CC_BILLING, &output);
 
   CreditCard card;
@@ -3231,7 +3228,7 @@ scoped_ptr<wallet::Instrument> AutofillDialogControllerImpl::
 scoped_ptr<wallet::Address>AutofillDialogControllerImpl::
     CreateTransientAddress() {
   // If not using billing for shipping, just scrape the view.
-  DetailOutputMap output;
+  FieldValueMap output;
   view_->GetUserInput(SECTION_SHIPPING, &output);
 
   AutofillProfile profile;
@@ -3509,7 +3506,7 @@ void AutofillDialogControllerImpl::MaybeShowCreditCardBubble() {
     scoped_ptr<AutofillProfile> billing_profile;
     if (IsManuallyEditingSection(SECTION_BILLING)) {
       // Scrape the view as the user's entering or updating information.
-      DetailOutputMap outputs;
+      FieldValueMap outputs;
       view_->GetUserInput(SECTION_BILLING, &outputs);
       billing_profile.reset(new AutofillProfile);
       FillFormGroupFromOutputs(outputs, billing_profile.get());

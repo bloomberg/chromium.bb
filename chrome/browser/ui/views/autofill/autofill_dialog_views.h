@@ -89,7 +89,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void FillSection(DialogSection section,
                            const DetailInput& originating_input) OVERRIDE;
   virtual void GetUserInput(DialogSection section,
-                            DetailOutputMap* output) OVERRIDE;
+                            FieldValueMap* output) OVERRIDE;
   virtual base::string16 GetCvc() OVERRIDE;
   virtual bool HitTestInput(const DetailInput& input,
                             const gfx::Point& screen_point) OVERRIDE;
@@ -303,8 +303,8 @@ class AutofillDialogViews : public AutofillDialogView,
     DISALLOW_COPY_AND_ASSIGN(NotificationArea);
   };
 
-  typedef std::map<const DetailInput*, DecoratedTextfield*> TextfieldMap;
-  typedef std::map<const DetailInput*, views::Combobox*> ComboboxMap;
+  typedef std::map<ServerFieldType, DecoratedTextfield*> TextfieldMap;
+  typedef std::map<ServerFieldType, views::Combobox*> ComboboxMap;
 
   // A view that packs a label on the left and some related controls
   // on the right.

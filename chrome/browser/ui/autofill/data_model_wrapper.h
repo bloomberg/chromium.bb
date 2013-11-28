@@ -220,17 +220,17 @@ class FullWalletShippingWrapper : public DataModelWrapper {
 };
 
 // A DataModelWrapper to copy the output of one section to the input of another.
-class DetailOutputWrapper : public DataModelWrapper {
+class FieldMapWrapper : public DataModelWrapper {
  public:
-  explicit DetailOutputWrapper(const DetailOutputMap& outputs);
-  virtual ~DetailOutputWrapper();
+  explicit FieldMapWrapper(const FieldValueMap& field_map);
+  virtual ~FieldMapWrapper();
 
   virtual base::string16 GetInfo(const AutofillType& type) const OVERRIDE;
 
  private:
-  const DetailOutputMap& outputs_;
+  const FieldValueMap& field_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(DetailOutputWrapper);
+  DISALLOW_COPY_AND_ASSIGN(FieldMapWrapper);
 };
 
 }  // namespace autofill

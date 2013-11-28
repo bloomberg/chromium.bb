@@ -135,7 +135,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   virtual ValidityMessages InputsAreValid(
       DialogSection section,
-      const DetailOutputMap& inputs) OVERRIDE {
+      const FieldValueMap& inputs) OVERRIDE {
     if (!use_validation_)
       return ValidityMessages();
     return AutofillDialogControllerImpl::InputsAreValid(section, inputs);
@@ -170,7 +170,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   }
 
   using AutofillDialogControllerImpl::IsEditingExistingData;
-  using AutofillDialogControllerImpl::IsManuallyEditingSection;
+  using AutofillDialogControllerImpl::IsPayingWithWallet;
   using AutofillDialogControllerImpl::IsSubmitPausedOn;
   using AutofillDialogControllerImpl::OnDidLoadRiskFingerprintData;
   using AutofillDialogControllerImpl::AccountChooserModelForTesting;
@@ -896,52 +896,15 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, NoCvcSegfault) {
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
   controller()->set_use_validation(true);
 
-  // Set up some Autofill state.
-  CreditCard credit_card(test::GetVerifiedCreditCard());
-  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
-
-  AutofillProfile profile(test::GetVerifiedProfile());
-  controller()->GetTestingManager()->AddTestingProfile(&profile);
-
-  EXPECT_TRUE(controller()->SectionIsActive(SECTION_CC));
-  EXPECT_TRUE(controller()->SectionIsActive(SECTION_BILLING));
-  EXPECT_FALSE(controller()->SectionIsActive(SECTION_CC_BILLING));
-  EXPECT_TRUE(controller()->SectionIsActive(SECTION_SHIPPING));
-
-  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_CC));
-  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_BILLING));
-  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
-
-  // Set up some Wallet state.
-  controller()->OnDidFetchWalletCookieValue(std::string());
-  controller()->OnDidGetWalletItems(
-      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
-
-  ui::MenuModel* account_chooser = controller()->MenuModelForAccountChooser();
-  ASSERT_TRUE(account_chooser->IsItemCheckedAt(0));
-
-  // Check that the view's in the state we expect before starting to simulate
-  // user input.
-  EXPECT_FALSE(controller()->SectionIsActive(SECTION_CC));
-  EXPECT_FALSE(controller()->SectionIsActive(SECTION_BILLING));
-  EXPECT_TRUE(controller()->SectionIsActive(SECTION_CC_BILLING));
-  EXPECT_TRUE(controller()->SectionIsActive(SECTION_SHIPPING));
-
-  EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_CC_BILLING));
-
-  // Create some valid inputted billing data.
-  const DetailInput& cc_number =
-      controller()->RequestedFieldsForSection(SECTION_CC_BILLING)[0];
-  EXPECT_EQ(CREDIT_CARD_NUMBER, cc_number.type);
   TestableAutofillDialogView* view = controller()->GetTestableView();
-  view->SetTextContentsOfInput(cc_number, ASCIIToUTF16("4111111111111111"));
 
-  // Select "Add new shipping info..." from suggestions menu.
-  ui::MenuModel* shipping_model =
-      controller()->MenuModelForSection(SECTION_SHIPPING);
-  shipping_model->ActivatedAt(shipping_model->GetItemCount() - 2);
-
-  EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
+  {
+    // Create some valid inputted billing data.
+    const DetailInput& cc_number =
+        controller()->RequestedFieldsForSection(SECTION_CC)[0];
+    DCHECK_EQ(cc_number.type, CREDIT_CARD_NUMBER);
+    view->SetTextContentsOfInput(cc_number, ASCIIToUTF16("4111111111111111"));
+  }
 
   // Create some invalid, manually inputted shipping data.
   const DetailInput& shipping_zip =
@@ -949,28 +912,37 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
   ASSERT_EQ(ADDRESS_HOME_ZIP, shipping_zip.type);
   view->SetTextContentsOfInput(shipping_zip, ASCIIToUTF16("shipping zip"));
 
-  // Switch to using Autofill.
+  // Switch to Wallet by simulating a successful server response.
+  controller()->OnDidFetchWalletCookieValue(std::string());
+  controller()->OnDidGetWalletItems(
+      wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
+  ASSERT_TRUE(controller()->IsPayingWithWallet());
+
+  {
+    // The valid data should be preserved.
+    const DetailInput& cc_number =
+        controller()->RequestedFieldsForSection(SECTION_CC_BILLING)[0];
+    EXPECT_EQ(cc_number.type, CREDIT_CARD_NUMBER);
+    EXPECT_EQ(ASCIIToUTF16("4111111111111111"),
+              view->GetTextContentsOfInput(cc_number));
+  }
+
+  // The invalid data should be dropped.
+  EXPECT_TRUE(view->GetTextContentsOfInput(shipping_zip).empty());
+
+  // Switch back to Autofill.
+  ui::MenuModel* account_chooser = controller()->MenuModelForAccountChooser();
   account_chooser->ActivatedAt(account_chooser->GetItemCount() - 1);
+  ASSERT_FALSE(controller()->IsPayingWithWallet());
 
-  // Check that appropriate sections are preserved and in manually editing mode
-  // (or disabled, in the case of the combined cc + billing section).
-  EXPECT_TRUE(controller()->SectionIsActive(SECTION_CC));
-  EXPECT_TRUE(controller()->SectionIsActive(SECTION_BILLING));
-  EXPECT_FALSE(controller()->SectionIsActive(SECTION_CC_BILLING));
-  EXPECT_TRUE(controller()->SectionIsActive(SECTION_SHIPPING));
-
-  EXPECT_TRUE(controller()->IsManuallyEditingSection(SECTION_CC));
-  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_BILLING));
-  EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
-
-  const DetailInput& new_cc_number =
-      controller()->RequestedFieldsForSection(SECTION_CC).front();
-  EXPECT_EQ(cc_number.type, new_cc_number.type);
-  EXPECT_EQ(ASCIIToUTF16("4111111111111111"),
-            view->GetTextContentsOfInput(new_cc_number));
-
-  EXPECT_NE(ASCIIToUTF16("shipping name"),
-            view->GetTextContentsOfInput(shipping_zip));
+  {
+    // The valid data should still be preserved when switched back.
+    const DetailInput& cc_number =
+        controller()->RequestedFieldsForSection(SECTION_CC)[0];
+    EXPECT_EQ(cc_number.type, CREDIT_CARD_NUMBER);
+    EXPECT_EQ(ASCIIToUTF16("4111111111111111"),
+              view->GetTextContentsOfInput(cc_number));
+  }
 }
 #endif  // defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
 

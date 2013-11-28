@@ -137,9 +137,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
                                         ServerFieldType type,
                                         const string16& value) OVERRIDE;
   virtual ValidityMessages InputsAreValid(
-      DialogSection section, const DetailOutputMap& inputs) OVERRIDE;
+      DialogSection section, const FieldValueMap& inputs) OVERRIDE;
   virtual void UserEditedOrActivatedInput(DialogSection section,
-                                          const DetailInput* input,
+                                          ServerFieldType type,
                                           gfx::NativeView parent_view,
                                           const gfx::Rect& content_bounds,
                                           const string16& field_contents,
@@ -357,11 +357,11 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
                       const base::string16& value);
 
   // Takes a snapshot of the newly inputted user data in |view_| (if it exists).
-  DetailOutputMap TakeUserInputSnapshot();
+  FieldValueMap TakeUserInputSnapshot();
 
   // Fills the detail inputs from a previously taken user input snapshot. Does
   // not update the view.
-  void RestoreUserInputFromSnapshot(const DetailOutputMap& snapshot);
+  void RestoreUserInputFromSnapshot(const FieldValueMap& snapshot);
 
   // Tells the view to update |section|.
   void UpdateSection(DialogSection section);

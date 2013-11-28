@@ -195,7 +195,7 @@ enum ValidationType {
 };
 
 typedef std::vector<DetailInput> DetailInputs;
-typedef std::map<const DetailInput*, base::string16> DetailOutputMap;
+typedef std::map<ServerFieldType, base::string16> FieldValueMap;
 
 // A validity message for a single input field.
 struct ValidityMessage {

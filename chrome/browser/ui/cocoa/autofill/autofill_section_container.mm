@@ -91,10 +91,10 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 - (const autofill::DetailInput*)detailInputForType:
     (autofill::ServerFieldType)type;
 
-// Takes an NSArray of controls and builds a DetailOutputMap from them.
+// Takes an NSArray of controls and builds a FieldValueMap from them.
 // Translates between Cocoa code and delegate, essentially.
 // All controls must inherit from NSControl and conform to AutofillInputView.
-- (void)fillDetailOutputs:(autofill::DetailOutputMap*)outputs
+- (void)fillDetailOutputs:(autofill::FieldValueMap*)outputs
              fromControls:(NSArray*)controls;
 
 // Updates input fields based on delegate status. If |shouldClobber| is YES,
@@ -133,7 +133,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   return self;
 }
 
-- (void)getInputs:(autofill::DetailOutputMap*)output {
+- (void)getInputs:(autofill::FieldValueMap*)output {
   [self fillDetailOutputs:output fromControls:[inputs_ subviews]];
 }
 
@@ -355,15 +355,14 @@ bool CompareInputRows(const autofill::DetailInput* input1,
               return [field isEnabled];
           }]];
 
-  autofill::DetailOutputMap detailOutputs;
+  autofill::FieldValueMap detailOutputs;
   [self fillDetailOutputs:&detailOutputs fromControls:fields];
   autofill::ValidityMessages messages = delegate_->InputsAreValid(
       section_, detailOutputs);
 
   for (NSControl<AutofillInputField>* input in fields) {
-    const autofill::ServerFieldType type = [self fieldTypeForControl:input];
     const autofill::ValidityMessage& message =
-        messages.GetMessageOrDefault(type);
+        messages.GetMessageOrDefault([self fieldTypeForControl:input]);
     if (validationType != autofill::VALIDATE_FINAL && !message.sure)
       continue;
     [input setValidityMessage:base::SysUTF16ToNSString(message.text)];
@@ -408,7 +407,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   gfx::Rect textFrameRect(NSRectToCGRect(textFrameInScreen));
 
   delegate_->UserEditedOrActivatedInput(section_,
-                                        [self detailInputForType:type],
+                                        type,
                                         [self view],
                                         textFrameRect,
                                         fieldValue,
@@ -453,16 +452,14 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   return NULL;
 }
 
-- (void)fillDetailOutputs:(autofill::DetailOutputMap*)outputs
+- (void)fillDetailOutputs:(autofill::FieldValueMap*)outputs
              fromControls:(NSArray*)controls {
   for (NSControl<AutofillInputField>* input in controls) {
     DCHECK([input isKindOfClass:[NSControl class]]);
     DCHECK([input conformsToProtocol:@protocol(AutofillInputField)]);
-    autofill::ServerFieldType fieldType = [self fieldTypeForControl:input];
-    DCHECK([self detailInputForType:fieldType]);
-    NSString* value = [input fieldValue];
-    outputs->insert(std::make_pair([self detailInputForType:fieldType],
-                                   base::SysNSStringToUTF16(value)));
+    outputs->insert(std::make_pair(
+        [self fieldTypeForControl:input],
+        base::SysNSStringToUTF16([input fieldValue])));
   }
 }
 

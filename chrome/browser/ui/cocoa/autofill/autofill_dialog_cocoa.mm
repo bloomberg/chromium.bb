@@ -99,7 +99,7 @@ void AutofillDialogCocoa::FillSection(DialogSection section,
 }
 
 void AutofillDialogCocoa::GetUserInput(DialogSection section,
-                                       DetailOutputMap* output) {
+                                       FieldValueMap* output) {
   [sheet_delegate_ getInputs:output forSection:section];
 }
 
@@ -153,9 +153,9 @@ void AutofillDialogCocoa::CancelForTesting() {
 string16 AutofillDialogCocoa::GetTextContentsOfInput(const DetailInput& input) {
   for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
     DialogSection section = static_cast<DialogSection>(i);
-    DetailOutputMap contents;
+    FieldValueMap contents;
     [sheet_delegate_ getInputs:&contents forSection:section];
-    DetailOutputMap::const_iterator it = contents.find(&input);
+    FieldValueMap::const_iterator it = contents.find(input.type);
     if (it != contents.end())
       return it->second;
   }

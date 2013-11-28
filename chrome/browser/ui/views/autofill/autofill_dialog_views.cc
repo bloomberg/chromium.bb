@@ -1315,7 +1315,7 @@ void AutofillDialogViews::FillSection(DialogSection section,
   DetailsGroup* group = GroupForSection(section);
   // Make sure to overwrite the originating input.
   TextfieldMap::iterator text_mapping =
-      group->textfields.find(&originating_input);
+      group->textfields.find(originating_input.type);
   if (text_mapping != group->textfields.end())
     text_mapping->second->SetText(base::string16());
 
@@ -1326,7 +1326,7 @@ void AutofillDialogViews::FillSection(DialogSection section,
       AutofillType(originating_input.type).group() == CREDIT_CARD) {
     for (ComboboxMap::const_iterator it = group->comboboxes.begin();
          it != group->comboboxes.end(); ++it) {
-      if (AutofillType(it->first->type).group() == CREDIT_CARD)
+      if (AutofillType(it->first).group() == CREDIT_CARD)
         it->second->SetSelectedIndex(it->second->model()->GetDefaultIndex());
     }
   }
@@ -1335,7 +1335,7 @@ void AutofillDialogViews::FillSection(DialogSection section,
 }
 
 void AutofillDialogViews::GetUserInput(DialogSection section,
-                                       DetailOutputMap* output) {
+                                       FieldValueMap* output) {
   DetailsGroup* group = GroupForSection(section);
   for (TextfieldMap::const_iterator it = group->textfields.begin();
        it != group->textfields.end(); ++it) {
@@ -1458,7 +1458,7 @@ void AutofillDialogViews::SetTextContentsOfInput(
     const base::string16& contents) {
   views::Textfield* textfield = TextfieldForInput(input);
   if (textfield) {
-    TextfieldForInput(input)->SetText(contents);
+    textfield->SetText(contents);
     return;
   }
 
@@ -1968,7 +1968,7 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
     if (input_model) {
       views::Combobox* combobox = new views::Combobox(input_model);
       combobox->set_listener(this);
-      comboboxes->insert(std::make_pair(&input, combobox));
+      comboboxes->insert(std::make_pair(input.type, combobox));
       SelectComboboxValueOrSetToDefault(combobox, input.initial_value);
       view_to_add.reset(combobox);
     } else {
@@ -1977,7 +1977,7 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
           l10n_util::GetStringUTF16(input.placeholder_text_rid),
           this);
 
-      textfields->insert(std::make_pair(&input, field));
+      textfields->insert(std::make_pair(input.type, field));
       view_to_add.reset(field);
     }
 
@@ -2045,15 +2045,15 @@ void AutofillDialogViews::UpdateSectionImpl(
   for (DetailInputs::const_iterator iter = updated_inputs.begin();
        iter != updated_inputs.end(); ++iter) {
     const DetailInput& input = *iter;
-    TextfieldMap::iterator text_mapping = group->textfields.find(&input);
+    TextfieldMap::iterator text_mapping = group->textfields.find(input.type);
 
     if (text_mapping != group->textfields.end()) {
       DecoratedTextfield* decorated = text_mapping->second;
       if (decorated->text().empty() || clobber_inputs)
-        decorated->SetText(iter->initial_value);
+        decorated->SetText(input.initial_value);
     }
 
-    ComboboxMap::iterator combo_mapping = group->comboboxes.find(&input);
+    ComboboxMap::iterator combo_mapping = group->comboboxes.find(input.type);
     if (combo_mapping != group->comboboxes.end()) {
       views::Combobox* combobox = combo_mapping->second;
       if (combobox->selected_index() == combobox->model()->GetDefaultIndex() ||
@@ -2166,14 +2166,14 @@ void AutofillDialogViews::MarkInputsInvalid(
     for (TextfieldMap::const_iterator iter = group->textfields.begin();
          iter != group->textfields.end(); ++iter) {
       const ValidityMessage& message =
-          messages.GetMessageOrDefault(iter->first->type);
+          messages.GetMessageOrDefault(iter->first);
       if (overwrite_unsure || message.sure)
         SetValidityForInput(iter->second, message.text);
     }
     for (ComboboxMap::const_iterator iter = group->comboboxes.begin();
          iter != group->comboboxes.end(); ++iter) {
       const ValidityMessage& message =
-          messages.GetMessageOrDefault(iter->first->type);
+          messages.GetMessageOrDefault(iter->first);
       if (overwrite_unsure || message.sure)
         SetValidityForInput(iter->second, message.text);
     }
@@ -2204,8 +2204,7 @@ bool AutofillDialogViews::ValidateGroup(const DetailsGroup& group,
                                         ValidationType validation_type) {
   DCHECK(group.container->visible());
 
-  scoped_ptr<DetailInput> cvc_input;
-  DetailOutputMap detail_outputs;
+  FieldValueMap detail_outputs;
 
   if (group.manual_input->visible()) {
     for (TextfieldMap::const_iterator iter = group.textfields.begin();
@@ -2228,11 +2227,8 @@ bool AutofillDialogViews::ValidateGroup(const DetailsGroup& group,
   } else if (group.section == GetCreditCardSection()) {
     DecoratedTextfield* decorated_cvc =
         group.suggested_info->decorated_textfield();
-    if (decorated_cvc->visible()) {
-      cvc_input.reset(new DetailInput);
-      cvc_input->type = CREDIT_CARD_VERIFICATION_CODE;
-      detail_outputs[cvc_input.get()] = decorated_cvc->text();
-    }
+    if (decorated_cvc->visible())
+      detail_outputs[CREDIT_CARD_VERIFICATION_CODE] = decorated_cvc->text();
   }
 
   ValidityMessages validity = delegate_->InputsAreValid(group.section,
@@ -2282,7 +2278,7 @@ void AutofillDialogViews::TextfieldEditedOrActivated(
                                             textfield->GetBoundsInScreen(),
                                             textfield->text(),
                                             was_edit);
-      type = iter->first->type;
+      type = iter->first;
       break;
     }
   }
@@ -2377,7 +2373,8 @@ views::Textfield* AutofillDialogViews::TextfieldForInput(
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
        iter != detail_groups_.end(); ++iter) {
     const DetailsGroup& group = iter->second;
-    TextfieldMap::const_iterator text_mapping = group.textfields.find(&input);
+    TextfieldMap::const_iterator text_mapping =
+        group.textfields.find(input.type);
     if (text_mapping != group.textfields.end())
       return text_mapping->second;
   }
@@ -2390,7 +2387,8 @@ views::Combobox* AutofillDialogViews::ComboboxForInput(
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
        iter != detail_groups_.end(); ++iter) {
     const DetailsGroup& group = iter->second;
-    ComboboxMap::const_iterator combo_mapping = group.comboboxes.find(&input);
+    ComboboxMap::const_iterator combo_mapping =
+        group.comboboxes.find(input.type);
     if (combo_mapping != group.comboboxes.end())
       return combo_mapping->second;
   }
@@ -2404,22 +2402,14 @@ void AutofillDialogViews::DetailsContainerBoundsChanged() {
 }
 
 void AutofillDialogViews::SetIconsForSection(DialogSection section) {
-  DetailOutputMap user_input;
+  FieldValueMap user_input;
   GetUserInput(section, &user_input);
-  FieldValueMap field_values;
-  for (DetailOutputMap::const_iterator user_input_it = user_input.begin();
-       user_input_it != user_input.end();
-       ++user_input_it) {
-    const DetailInput* field_detail = user_input_it->first;
-    const string16& field_value = user_input_it->second;
-    field_values[field_detail->type] = field_value;
-  }
-  FieldIconMap field_icons = delegate_->IconsForFields(field_values);
+  FieldIconMap field_icons = delegate_->IconsForFields(user_input);
   TextfieldMap* textfields = &GroupForSection(section)->textfields;
   for (TextfieldMap::const_iterator textfield_it = textfields->begin();
        textfield_it != textfields->end();
        ++textfield_it) {
-    ServerFieldType field_type = textfield_it->first->type;
+    ServerFieldType field_type = textfield_it->first;
     FieldIconMap::const_iterator field_icon_it = field_icons.find(field_type);
     DecoratedTextfield* textfield = textfield_it->second;
     if (field_icon_it != field_icons.end())
@@ -2439,14 +2429,14 @@ void AutofillDialogViews::SetEditabilityForSection(DialogSection section) {
     const DetailInput& input = *iter;
     bool editable = delegate_->InputIsEditable(input, section);
 
-    TextfieldMap::iterator text_mapping = group->textfields.find(&input);
+    TextfieldMap::iterator text_mapping = group->textfields.find(input.type);
     if (text_mapping != group->textfields.end()) {
       DecoratedTextfield* decorated = text_mapping->second;
       decorated->SetEditable(editable);
       continue;
     }
 
-    ComboboxMap::iterator combo_mapping = group->comboboxes.find(&input);
+    ComboboxMap::iterator combo_mapping = group->comboboxes.find(input.type);
     if (combo_mapping != group->comboboxes.end()) {
       views::Combobox* combobox = combo_mapping->second;
       combobox->SetEnabled(editable);

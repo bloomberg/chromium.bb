@@ -38,7 +38,7 @@ class AutofillDialogCocoa;
 - (void)updateSection:(autofill::DialogSection)section;
 - (void)fillSection:(autofill::DialogSection)section
            forInput:(const autofill::DetailInput&)input;
-- (void)getInputs:(autofill::DetailOutputMap*)outputs
+- (void)getInputs:(autofill::FieldValueMap*)outputs
        forSection:(autofill::DialogSection)section;
 - (NSString*)getCvc;
 - (BOOL)saveDetailsLocally;

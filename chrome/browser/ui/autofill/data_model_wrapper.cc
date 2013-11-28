@@ -355,18 +355,14 @@ base::string16 FullWalletShippingWrapper::GetInfo(
       type, g_browser_process->GetApplicationLocale());
 }
 
-DetailOutputWrapper::DetailOutputWrapper(const DetailOutputMap& outputs)
-    : outputs_(outputs) {}
+FieldMapWrapper::FieldMapWrapper(const FieldValueMap& field_map)
+    : field_map_(field_map) {}
 
-DetailOutputWrapper::~DetailOutputWrapper() {}
+FieldMapWrapper::~FieldMapWrapper() {}
 
-base::string16 DetailOutputWrapper::GetInfo(const AutofillType& type) const {
-  for (DetailOutputMap::const_iterator it = outputs_.begin();
-       it != outputs_.end(); ++it) {
-    if (type.server_type() == it->first->type)
-      return it->second;
-  }
-  return base::string16();
+base::string16 FieldMapWrapper::GetInfo(const AutofillType& type) const {
+  FieldValueMap::const_iterator it = field_map_.find(type.server_type());
+  return it != field_map_.end() ? it->second : base::string16();
 }
 
 }  // namespace autofill

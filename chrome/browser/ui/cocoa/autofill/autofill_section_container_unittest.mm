@@ -139,12 +139,12 @@ TEST_F(AutofillSectionContainerTest, OutputMatchesDefinition) {
   [popup selectItemWithTitle:@"02"];
   [[container_ getField:EMAIL_ADDRESS] setStringValue:@"magic@example.org"];
 
-  autofill::DetailOutputMap output;
+  autofill::FieldValueMap output;
   [container_ getInputs:&output];
 
   ASSERT_EQ(inputs.size(), output.size());
-  EXPECT_EQ(ASCIIToUTF16("magic@example.org"), output[&inputs[0]]);
-  EXPECT_EQ(ASCIIToUTF16("02"), output[&inputs[1]]);
+  EXPECT_EQ(ASCIIToUTF16("magic@example.org"), output[inputs[0].type]);
+  EXPECT_EQ(ASCIIToUTF16("02"), output[inputs[1].type]);
 }
 
 TEST_F(AutofillSectionContainerTest, SuggestionsPopulatedByController) {
@@ -217,7 +217,6 @@ TEST_F(AutofillSectionContainerTest, ControllerInformsValidity) {
   inputs.push_back(kTestInputs[0]);
   inputs.push_back(kTestInputs[1]);
 
-  DetailOutputMap output;
   ValidityMessages validity, validity2;
 
   validity.Set(EMAIL_ADDRESS,
@@ -232,6 +231,7 @@ TEST_F(AutofillSectionContainerTest, ControllerInformsValidity) {
       .WillRepeatedly(Return(&comboModel));
 
   ResetContainer();
+  autofill::FieldValueMap output;
   [container_ getInputs:&output];
   EXPECT_CALL(delegate_, InputsAreValid(section_, output))
       .WillOnce(Return(validity))

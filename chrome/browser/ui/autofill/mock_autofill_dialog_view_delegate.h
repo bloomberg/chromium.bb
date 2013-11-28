@@ -58,9 +58,9 @@ class MockAutofillDialogViewDelegate : public AutofillDialogViewDelegate {
   MOCK_METHOD3(InputValidityMessage,
       string16(DialogSection, ServerFieldType, const string16&));
   MOCK_METHOD2(InputsAreValid, ValidityMessages(DialogSection,
-                                                const DetailOutputMap&));
+                                                const FieldValueMap&));
   MOCK_METHOD6(UserEditedOrActivatedInput, void(DialogSection,
-                                                const DetailInput*,
+                                                ServerFieldType,
                                                 gfx::NativeView,
                                                 const gfx::Rect&,
                                                 const string16&,

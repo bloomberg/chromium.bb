@@ -49,7 +49,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
   virtual void FillSection(DialogSection section,
                            const DetailInput& originating_input) OVERRIDE;
   virtual void GetUserInput(DialogSection section,
-                            DetailOutputMap* output) OVERRIDE;
+                            FieldValueMap* output) OVERRIDE;
   virtual string16 GetCvc() OVERRIDE;
   virtual bool HitTestInput(const DetailInput& input,
                             const gfx::Point& screen_point) OVERRIDE;

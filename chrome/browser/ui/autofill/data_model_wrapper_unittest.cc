@@ -168,7 +168,7 @@ TEST(DataModelWrapperTest, GetDisplayPhoneNumber) {
 
 }
 
-TEST(DetailOutputWrapperTest, BothShippingAndBillingCanCoexist) {
+TEST(FieldMapWrapperTest, BothShippingAndBillingCanCoexist) {
   DetailInputs inputs;
 
   DetailInput billing_street;
@@ -179,13 +179,11 @@ TEST(DetailOutputWrapperTest, BothShippingAndBillingCanCoexist) {
   shipping_street.type = ADDRESS_HOME_STREET_ADDRESS;
   inputs.push_back(shipping_street);
 
-  const DetailInputs const_inputs(inputs);
+  FieldValueMap outputs;
+  outputs[inputs[0].type] = ASCIIToUTF16("123 billing street");
+  outputs[inputs[1].type] = ASCIIToUTF16("123 shipping street");
 
-  DetailOutputMap outputs;
-  outputs[&const_inputs[0]] = ASCIIToUTF16("123 billing street");
-  outputs[&const_inputs[1]] = ASCIIToUTF16("123 shipping street");
-
-  DetailOutputWrapper wrapper(outputs);
+  FieldMapWrapper wrapper(outputs);
   wrapper.FillInputs(&inputs);
 
   EXPECT_NE(inputs[0].initial_value, inputs[1].initial_value);

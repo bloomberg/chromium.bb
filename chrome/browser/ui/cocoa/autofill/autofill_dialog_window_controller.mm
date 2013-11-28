@@ -378,7 +378,7 @@ const CGFloat kMinimumContentsHeight = 101;
   return [signInContainer_ navigationController];
 }
 
-- (void)getInputs:(autofill::DetailOutputMap*)output
+- (void)getInputs:(autofill::FieldValueMap*)output
        forSection:(autofill::DialogSection)section {
   [[mainContainer_ sectionForId:section] getInputs:output];
 }

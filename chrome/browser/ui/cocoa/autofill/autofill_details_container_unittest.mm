@@ -44,7 +44,6 @@ TEST_F(AutofillDetailsContainerTest, ValidateAllSections) {
   using namespace autofill;
   using namespace testing;
 
-  DetailOutputMap output;
   ValidityMessages validity;
 
   EXPECT_CALL(delegate_, InputsAreValid(_, _))

@@ -73,7 +73,7 @@ class AutofillDialogViewDelegate;
             forSection:(autofill::DialogSection)section;
 
 // Populates |output| with mappings from field identification to input value.
-- (void)getInputs:(autofill::DetailOutputMap*)output;
+- (void)getInputs:(autofill::FieldValueMap*)output;
 
 // Called when the delegate-maintained suggestions model has changed.
 - (void)modelChanged;
