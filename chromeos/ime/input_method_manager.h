@@ -11,7 +11,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/ime/input_method_config.h"
 #include "chromeos/ime/input_method_descriptor.h"
 #include "chromeos/ime/input_method_property.h"
 

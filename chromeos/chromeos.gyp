@@ -209,8 +209,6 @@
         'ime/ibus_keymap.h',
         'ime/ibus_text.cc',
         'ime/ibus_text.h',
-        'ime/input_method_config.cc',
-        'ime/input_method_config.h',
         'ime/input_method_delegate.h',
         'ime/input_method_descriptor.cc',
         'ime/input_method_descriptor.h',
