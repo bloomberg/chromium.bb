@@ -436,6 +436,7 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
   if (!did_move_or_resize_ || details_.window_component != HTCAPTION)
     return;
 
+  bool snapped = false;
   // When the window is not in the normal show state, we do not snap the window.
   // This happens when the user minimizes or maximizes the window by keyboard
   // shortcut while dragging it. If the window is the result of dragging a tab
@@ -458,8 +459,11 @@ void WorkspaceWindowResizer::CompleteDrag(int event_flags) {
     if (window_state()->CanResize() &&
         !dock_layout_->is_dragged_window_docked()) {
       snap_sizer_->SnapWindowToTargetBounds();
+      snapped = true;
     }
   }
+  if (window_state()->IsSnapped() && !snapped)
+    window_state()->Restore();
 }
 
 void WorkspaceWindowResizer::RevertDrag() {

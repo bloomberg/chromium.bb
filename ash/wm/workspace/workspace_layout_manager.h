@@ -87,6 +87,13 @@ class ASH_EXPORT WorkspaceLayoutManager : public BaseLayoutManager {
   // window are set and true is returned. Does nothing otherwise.
   bool SetMaximizedOrFullscreenBounds(wm::WindowState* window_state);
 
+  // Adjusts the |bounds| so that they are flush with the edge of the
+  // workspace if the window represented by |window_state| is side snapped.
+  void AdjustSnappedBounds(wm::WindowState* window_state, gfx::Rect* bounds);
+
+  // Animates the window bounds to |bounds|.
+  void SetChildBoundsAnimated(aura::Window* child, const gfx::Rect& bounds);
+
   internal::ShelfLayoutManager* shelf_;
   aura::Window* window_;
 

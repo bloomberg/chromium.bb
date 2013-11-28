@@ -596,6 +596,11 @@ TEST_F(WorkspaceWindowResizerTest, MouseMoveWithTouchDrag) {
 
 // Assertions around dragging to the left/right edge of the screen.
 TEST_F(WorkspaceWindowResizerTest, Edge) {
+  if (!SupportsHostWindowResize())
+    return;
+
+  // Resize host window to force insets update.
+  UpdateDisplay("800x700");
   // TODO(varkha): Insets are reset after every drag because of
   // http://crbug.com/292238.
   // Window is wide enough not to get docked right away.
@@ -636,10 +641,11 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   }
 
   // Test if the restore bounds is correct in multiple displays.
-  window_state->ClearRestoreBounds();
-
   if (!SupportsMultipleDisplays())
     return;
+
+  // Restore the window to clear snapped state.
+  window_state->Restore();
 
   UpdateDisplay("800x600,500x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
@@ -654,7 +660,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
         window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
-    resizer->Drag(CalculateDragPoint(*resizer, 499, 00), 0);
+    resizer->Drag(CalculateDragPoint(*resizer, 499, 0), 0);
     int bottom =
         ScreenAsh::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
     resizer->CompleteDrag(0);
@@ -783,8 +789,9 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
     window_->SetBounds(gfx::Rect(100, 200, 300, 20));
     DCHECK_LT(window_->bounds().height(),
               WorkspaceWindowResizer::kMinOnscreenHeight);
+    // Drag down avoiding dragging along the edge as that would side-snap.
     scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
-        window_.get(), gfx::Point(), HTCAPTION));
+        window_.get(), gfx::Point(10, 0), HTCAPTION));
     ASSERT_TRUE(resizer.get());
     resizer->Drag(CalculateDragPoint(*resizer, 0, 400), 0);
     int expected_y = kRootHeight - window_->bounds().height() - 10;
@@ -802,8 +809,9 @@ TEST_F(WorkspaceWindowResizerTest, DontDragOffBottomWithMultiDisplay) {
   {
     window_->SetBounds(gfx::Rect(100, 200, 300, 400));
     scoped_ptr<WindowResizer> resizer(CreateResizerForTest(
-        window_.get(), gfx::Point(), HTCAPTION));
+        window_.get(), gfx::Point(10, 0), HTCAPTION));
     ASSERT_TRUE(resizer.get());
+    // Drag down avoiding dragging along the edge as that would side-snap.
     resizer->Drag(CalculateDragPoint(*resizer, 0, 400), 0);
     int expected_y =
         kRootHeight - WorkspaceWindowResizer::kMinOnscreenHeight - 10;

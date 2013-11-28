@@ -20,6 +20,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/events/event.h"
 #include "ui/views/corewm/window_util.h"
 
@@ -117,19 +118,21 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(Window* child,
 void WorkspaceLayoutManager::SetChildBounds(
     Window* child,
     const gfx::Rect& requested_bounds) {
-  if (!wm::GetWindowState(child)->tracked_by_workspace()) {
+  wm::WindowState* window_state = wm::GetWindowState(child);
+  if (!window_state->tracked_by_workspace()) {
     SetChildBoundsDirect(child, requested_bounds);
     return;
   }
   gfx::Rect child_bounds(requested_bounds);
   // Some windows rely on this to set their initial bounds.
-  if (!SetMaximizedOrFullscreenBounds(wm::GetWindowState(child))) {
+  if (!SetMaximizedOrFullscreenBounds(window_state)) {
     // Non-maximized/full-screen windows have their size constrained to the
     // work-area.
     child_bounds.set_width(std::min(work_area_in_parent_.width(),
                                     child_bounds.width()));
-    child_bounds.set_height(
-        std::min(work_area_in_parent_.height(), child_bounds.height()));
+    child_bounds.set_height(std::min(work_area_in_parent_.height(),
+                                     child_bounds.height()));
+    AdjustSnappedBounds(window_state, &child_bounds);
     SetChildBoundsDirect(child, child_bounds);
   }
   UpdateDesktopVisibility();
@@ -157,8 +160,14 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
 void WorkspaceLayoutManager::OnTrackedByWorkspaceChanged(
     wm::WindowState* window_state,
     bool old){
-  if (window_state->tracked_by_workspace())
-    SetMaximizedOrFullscreenBounds(window_state);
+  if (window_state->tracked_by_workspace()) {
+    if (!SetMaximizedOrFullscreenBounds(window_state)) {
+      gfx::Rect bounds = window_state->window()->bounds();
+      AdjustSnappedBounds(window_state, &bounds);
+      if (window_state->window()->bounds() != bounds)
+        SetChildBoundsDirect(window_state->window(), bounds);
+    }
+  }
 }
 
 void WorkspaceLayoutManager::OnWindowShowTypeChanged(
@@ -249,8 +258,9 @@ void WorkspaceLayoutManager::AdjustWindowBoundsForWorkAreaChange(
           work_area_in_parent_, &bounds);
       break;
   }
+  AdjustSnappedBounds(window_state, &bounds);
   if (window_state->window()->bounds() != bounds)
-    window_state->window()->SetBounds(bounds);
+    SetChildBoundsAnimated(window_state->window(), bounds);
 }
 
 void WorkspaceLayoutManager::AdjustWindowBoundsWhenAdded(
@@ -281,6 +291,7 @@ void WorkspaceLayoutManager::AdjustWindowBoundsWhenAdded(
 
   ash::wm::AdjustBoundsToEnsureWindowVisibility(
       display_area, min_width, min_height, &bounds);
+  AdjustSnappedBounds(window_state, &bounds);
   if (window->bounds() != bounds)
     window->SetBounds(bounds);
 }
@@ -296,6 +307,7 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowState(
   aura::Window* window = window_state->window();
   // See comment in SetMaximizedOrFullscreenBounds() as to why we use parent in
   // these calculation.
+  // TODO(varkha): Change the switch statement below to use wm::WindowShowType.
   switch (window_state->GetShowState()) {
     case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_NORMAL: {
@@ -317,13 +329,20 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowState(
           bounds_in_parent.SetRect(0, 0, 0, 0);
       }
       if (!bounds_in_parent.IsEmpty()) {
-        gfx::Rect new_bounds = BaseLayoutManager::BoundsWithScreenEdgeVisible(
-            window->parent()->parent(),
-            bounds_in_parent);
-        if (last_show_state == ui::SHOW_STATE_MINIMIZED)
-          SetChildBoundsDirect(window, new_bounds);
-        else
-          CrossFadeToBounds(window, new_bounds);
+        if ((last_show_state == ui::SHOW_STATE_DEFAULT ||
+             last_show_state == ui::SHOW_STATE_NORMAL) &&
+             window_state->IsSnapped()) {
+          AdjustSnappedBounds(window_state, &bounds_in_parent);
+          SetChildBoundsAnimated(window, bounds_in_parent);
+        } else {
+          gfx::Rect new_bounds = BaseLayoutManager::BoundsWithScreenEdgeVisible(
+              window->parent()->parent(),
+              bounds_in_parent);
+          if (last_show_state == ui::SHOW_STATE_MINIMIZED)
+            SetChildBoundsDirect(window, new_bounds);
+          else
+            CrossFadeToBounds(window, new_bounds);
+        }
       }
       window_state->ClearRestoreBounds();
       break;
@@ -383,6 +402,40 @@ bool WorkspaceLayoutManager::SetMaximizedOrFullscreenBounds(
     return true;
   }
   return false;
+}
+
+void WorkspaceLayoutManager::AdjustSnappedBounds(wm::WindowState* window_state,
+                                                 gfx::Rect* bounds) {
+  // TODO(varkha): DockedWindowResizer sets |WindowState::tracked_by_workspace_|
+  // to false during the drag. The same can be done in WorkspaceWindowResizer.
+  // This will allow us to remove the check for window_resizer() to determine if
+  // the window is being dragged.
+  if (!window_state->tracked_by_workspace() ||
+      !window_state->IsSnapped() ||
+      window_state->window_resizer())
+    return;
+  gfx::Rect maximized_bounds = ScreenAsh::GetMaximizedWindowBoundsInParent(
+      window_state->window()->parent()->parent());
+  if (window_state->window_show_type() == wm::SHOW_TYPE_LEFT_SNAPPED)
+    bounds->set_x(maximized_bounds.x());
+  else if (window_state->window_show_type() == wm::SHOW_TYPE_RIGHT_SNAPPED)
+    bounds->set_x(maximized_bounds.right() - bounds->width());
+  bounds->set_y(maximized_bounds.y());
+  // TODO(varkha): Set width to 50% here for snapped windows.
+  bounds->set_height(maximized_bounds.height());
+}
+
+void WorkspaceLayoutManager::SetChildBoundsAnimated(Window* child,
+                                                    const gfx::Rect& bounds) {
+  const int kBoundsChangeSlideDurationMs = 120;
+
+  ui::Layer* layer = child->layer();
+  ui::ScopedLayerAnimationSettings slide_settings(layer->GetAnimator());
+  slide_settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  slide_settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kBoundsChangeSlideDurationMs));
+  SetChildBoundsDirect(child, bounds);
 }
 
 }  // namespace internal

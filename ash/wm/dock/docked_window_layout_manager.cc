@@ -565,11 +565,12 @@ void DockedWindowLayoutManager::OnWindowShowTypeChanged(
     return;
   if (window_state->IsMinimized()) {
     MinimizeDockedWindow(window_state);
-  } else if (window_state->IsMaximizedOrFullscreen()) {
-    // Reparenting changes the source bounds for the animation if a window is
-    // visible so hide it here and show later when it is already in the desktop.
-    UndockWindow(window);
-    RecordUmaAction(DOCKED_ACTION_MAXIMIZE, DOCKED_ACTION_SOURCE_UNKNOWN);
+  } else if (window_state->IsMaximizedOrFullscreen() ||
+             window_state->IsSnapped()) {
+    if (window != dragged_window_) {
+      UndockWindow(window);
+      RecordUmaAction(DOCKED_ACTION_MAXIMIZE, DOCKED_ACTION_SOURCE_UNKNOWN);
+    }
   } else if (old_type == wm::SHOW_TYPE_MINIMIZED) {
     RestoreDockedWindow(window_state);
   }

@@ -527,16 +527,10 @@ gfx::Point FrameMaximizeButton::LocationForSnapSizer(
 
 void FrameMaximizeButton::Snap(SnapSizer* snap_sizer) {
   Shell* shell = Shell::GetInstance();
-  wm::WindowState* window_state = wm::GetWindowState(frame_->GetNativeWindow());
   switch (snap_type_) {
     case SNAP_LEFT:
     case SNAP_RIGHT: {
-      // Others might also have set up a restore rectangle already. If so, we
-      // should not overwrite the restore rectangle.
-      gfx::Rect current_bounds_in_screen = frame_->GetWindowBoundsInScreen();
       snap_sizer->SnapWindowToTargetBounds();
-      if (!window_state->HasRestoreBounds())
-        window_state->SetRestoreBoundsInScreen(current_bounds_in_screen);
       shell->delegate()->RecordUserMetricsAction(
           snap_type_ == SNAP_LEFT ?
               UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT :

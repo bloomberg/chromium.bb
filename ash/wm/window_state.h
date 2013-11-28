@@ -69,6 +69,7 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool IsNormalShowState() const;
   bool IsActive() const;
   bool IsDocked() const;
+  bool IsSnapped() const;
 
   // Checks if the window can change its state accordingly.
   bool CanMaximize() const;

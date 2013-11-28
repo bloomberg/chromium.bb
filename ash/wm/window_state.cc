@@ -88,6 +88,11 @@ bool WindowState::IsDocked() const {
       window_->parent()->id() == internal::kShellWindowId_DockedContainer;
 }
 
+bool WindowState::IsSnapped() const {
+  return window_show_type_ == SHOW_TYPE_LEFT_SNAPPED ||
+      window_show_type_ == SHOW_TYPE_RIGHT_SNAPPED;
+}
+
 bool WindowState::CanMaximize() const {
   return window_->GetProperty(aura::client::kCanMaximizeKey);
 }
@@ -136,7 +141,7 @@ void WindowState::SnapLeft(const gfx::Rect& bounds) {
 }
 
 void WindowState::SnapRight(const gfx::Rect& bounds) {
-  SnapWindow(SHOW_TYPE_LEFT_SNAPPED, bounds);
+  SnapWindow(SHOW_TYPE_RIGHT_SNAPPED, bounds);
 }
 
 void WindowState::Minimize() {
@@ -159,6 +164,9 @@ void WindowState::Deactivate() {
 }
 
 void WindowState::Restore() {
+  // Set |window_show_type_| to SHOW_TYPE_NORMAL now so that an observer
+  // observing kShowStateKey gets the correct value when querying IsSnapped().
+  window_show_type_ = SHOW_TYPE_NORMAL;
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
 }
 
@@ -265,24 +273,39 @@ void WindowState::OnWindowDestroying(aura::Window* window) {
 
 void WindowState::SnapWindow(WindowShowType left_or_right,
                              const gfx::Rect& bounds) {
-  if (IsMaximizedOrFullscreen()) {
-    // Before we can set the bounds we need to restore the window.
-    // Restoring the window will set the window to its restored bounds.
-    // To avoid an unnecessary bounds changes (which may have side effects)
-    // we set the restore bounds to the bounds we want, restore the window,
-    // then reset the restore bounds. This way no unnecessary bounds
-    // changes occurs and the original restore bounds is remembered.
-    gfx::Rect restore_bounds_in_screen =
-        GetRestoreBoundsInScreen();
-    SetRestoreBoundsInParent(bounds);
+  // Compute the bounds that the window will restore to. If the window does not
+  // already have restore bounds, it will be restored (when un-snapped) to the
+  // last bounds that it had before getting snapped.
+  gfx::Rect restore_bounds_in_screen(HasRestoreBounds() ?
+      GetRestoreBoundsInScreen() : window_->GetBoundsInScreen());
+  // Set the window's restore bounds so that WorkspaceLayoutManager knows
+  // which width to use when the snapped window is moved to the edge.
+  SetRestoreBoundsInParent(bounds);
+
+  bool was_maximized = IsMaximizedOrFullscreen();
+  // Before we can set the bounds we need to restore the window.
+  // Restoring the window will set the window to its restored bounds set above.
+  // Restore will cause OnWindowPropertyChanged() so it needs to be done
+  // before notifying that the WindowShowType has changed to |left_or_right|.
+  if (was_maximized)
     Restore();
-    SetRestoreBoundsInScreen(restore_bounds_in_screen);
-  } else {
-    window_->SetBounds(bounds);
-  }
   DCHECK(left_or_right == SHOW_TYPE_LEFT_SNAPPED ||
          left_or_right == SHOW_TYPE_RIGHT_SNAPPED);
+  WindowShowType old_type = window_show_type_;
   window_show_type_ = left_or_right;
+  FOR_EACH_OBSERVER(
+      WindowStateObserver, observer_list_,
+      OnWindowShowTypeChanged(this, old_type));
+  // TODO(varkha): Ideally the bounds should be changed in a LayoutManager upon
+  // observing the WindowShowType change.
+  // If the window is a child of kShellWindowId_DockedContainer such as during
+  // a drag, the window's bounds are not set in
+  // WorkspaceLayoutManager::OnWindowShowTypeChanged(). Set them here. Skip
+  // setting the bounds otherwise to avoid stopping the slide animation which
+  // was started as a result of OnWindowShowTypeChanged().
+  if (IsDocked())
+    window_->SetBounds(bounds);
+  SetRestoreBoundsInScreen(restore_bounds_in_screen);
 }
 
 WindowState* GetActiveWindowState() {

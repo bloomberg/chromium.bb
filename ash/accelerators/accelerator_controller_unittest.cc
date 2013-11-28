@@ -505,7 +505,7 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
     EXPECT_EQ(window->bounds().ToString(), snap_right.ToString());
   }
   {
-    gfx::Rect normal_bounds = window->bounds();
+    gfx::Rect normal_bounds = window_state->GetRestoreBoundsInParent();
 
     GetController()->PerformAction(TOGGLE_MAXIMIZED, dummy);
     EXPECT_TRUE(window_state->IsMaximized());
@@ -513,6 +513,8 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
 
     GetController()->PerformAction(TOGGLE_MAXIMIZED, dummy);
     EXPECT_FALSE(window_state->IsMaximized());
+    // Window gets restored to its restore bounds since side-maximized state
+    // is treated as a "maximized" state.
     EXPECT_EQ(normal_bounds.ToString(), window->bounds().ToString());
 
     GetController()->PerformAction(TOGGLE_MAXIMIZED, dummy);
