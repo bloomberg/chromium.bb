@@ -69,7 +69,7 @@ public:
         v8::Context::Scope scope(v8Context);
         v8::Handle<v8::Value> jsEvent = toV8(event, v8::Handle<v8::Object>(), isolate);
 
-        EXPECT_EQ(jsEvent->ToObject()->Get(v8::String::New("detail")), v8::Boolean::New(true));
+        EXPECT_EQ(jsEvent->ToObject()->Get(v8::String::NewFromUtf8(isolate, "detail")), v8::Boolean::New(true));
     }
 
     static PassRefPtr<TestListener> create(v8::Isolate* isolate)

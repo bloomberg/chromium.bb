@@ -48,7 +48,7 @@ const v8::HeapGraphNode* GetProperty(const v8::HeapGraphNode* node, v8::HeapGrap
     for (int i = 0, count = node->GetChildrenCount(); i < count; ++i) {
         const v8::HeapGraphEdge* prop = node->GetChild(i);
         if (prop->GetType() == type) {
-            v8::String::AsciiValue propName(prop->GetName());
+            v8::String::Utf8Value propName(prop->GetName());
             if (!strcmp(name, *propName))
                 return prop->GetToNode();
         }
@@ -61,7 +61,7 @@ int GetNumObjects(const char* constructor)
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
     v8::HeapProfiler* profiler = isolate->GetHeapProfiler();
-    const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot(v8::String::New(""));
+    const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot(v8::String::NewFromUtf8(isolate, ""));
     if (!snapshot)
         return -1;
     int count = 0;
@@ -69,12 +69,12 @@ int GetNumObjects(const char* constructor)
         const v8::HeapGraphNode* node = snapshot->GetNode(i);
         if (node->GetType() != v8::HeapGraphNode::kObject)
             continue;
-        v8::String::AsciiValue nodeName(node->GetName());
+        v8::String::Utf8Value nodeName(node->GetName());
         if (!strcmp(constructor, *nodeName)) {
             const v8::HeapGraphNode* constructorProp = GetProperty(node, v8::HeapGraphEdge::kProperty, "constructor");
             // Skip an Object instance named after the constructor.
             if (constructorProp) {
-                v8::String::AsciiValue constructorName(constructorProp->GetName());
+                v8::String::Utf8Value constructorName(constructorProp->GetName());
                 if (!strcmp(constructor, *constructorName))
                     continue;
             }

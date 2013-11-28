@@ -141,20 +141,20 @@ void WebDevToolsFrontendImpl::doDispatchOnInspectorFrontend(const WebString& mes
     v8::HandleScope scope(isolate);
     v8::Handle<v8::Context> frameContext = frame->frame()->script().currentWorldContext();
     v8::Context::Scope contextScope(frameContext);
-    v8::Handle<v8::Value> inspectorFrontendApiValue = frameContext->Global()->Get(v8::String::New("InspectorFrontendAPI"));
+    v8::Handle<v8::Value> inspectorFrontendApiValue = frameContext->Global()->Get(v8::String::NewFromUtf8(isolate, "InspectorFrontendAPI"));
     if (!inspectorFrontendApiValue->IsObject())
         return;
     v8::Handle<v8::Object> dispatcherObject = v8::Handle<v8::Object>::Cast(inspectorFrontendApiValue);
-    v8::Handle<v8::Value> dispatchFunction = dispatcherObject->Get(v8::String::New("dispatchMessage"));
+    v8::Handle<v8::Value> dispatchFunction = dispatcherObject->Get(v8::String::NewFromUtf8(isolate, "dispatchMessage"));
     // The frame might have navigated away from the front-end page (which is still weird),
     // OR the older version of frontend might have a dispatch method in a different place.
     // FIXME(kaznacheev): Remove when Chrome for Android M18 is retired.
     if (!dispatchFunction->IsFunction()) {
-        v8::Handle<v8::Value> inspectorBackendApiValue = frameContext->Global()->Get(v8::String::New("InspectorBackend"));
+        v8::Handle<v8::Value> inspectorBackendApiValue = frameContext->Global()->Get(v8::String::NewFromUtf8(isolate, "InspectorBackend"));
         if (!inspectorBackendApiValue->IsObject())
             return;
         dispatcherObject = v8::Handle<v8::Object>::Cast(inspectorBackendApiValue);
-        dispatchFunction = dispatcherObject->Get(v8::String::New("dispatch"));
+        dispatchFunction = dispatcherObject->Get(v8::String::NewFromUtf8(isolate, "dispatch"));
         if (!dispatchFunction->IsFunction())
             return;
     }

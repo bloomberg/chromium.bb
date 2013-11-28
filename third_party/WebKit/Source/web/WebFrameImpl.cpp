@@ -504,7 +504,7 @@ int WebFrame::instanceCount()
 
 WebFrame* WebFrame::frameForCurrentContext()
 {
-    v8::Handle<v8::Context> context = v8::Context::GetCurrent();
+    v8::Handle<v8::Context> context = v8::Isolate::GetCurrent()->GetCurrentContext();
     if (context.IsEmpty())
         return 0;
     return frameForContext(context);
