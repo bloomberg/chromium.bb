@@ -42,6 +42,7 @@ class EditCommandComposition : public UndoStep {
 public:
     static PassRefPtr<EditCommandComposition> create(Document*, const VisibleSelection&, const VisibleSelection&, EditAction);
 
+    virtual bool belongsTo(const Frame&) const OVERRIDE;
     virtual void unapply() OVERRIDE;
     virtual void reapply() OVERRIDE;
     EditAction editingAction() const OVERRIDE { return m_editAction; }

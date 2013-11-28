@@ -975,12 +975,6 @@ void Editor::copyImage(const HitTestResult& result)
     Pasteboard::generalPasteboard()->writeImage(result.innerNonSharedNode(), url, result.altDisplayString());
 }
 
-void Editor::clearUndoRedoOperations()
-{
-    if (UndoStack* undoStack = this->undoStack())
-        undoStack->clearUndoRedoOperations();
-}
-
 bool Editor::canUndo()
 {
     if (UndoStack* undoStack = this->undoStack())

@@ -67,11 +67,23 @@ void UndoStack::registerRedoStep(PassRefPtr<UndoStep> step)
     m_redoStack.append(step);
 }
 
-void UndoStack::clearUndoRedoOperations()
+void UndoStack::didUnloadFrame(const Frame& frame)
 {
     NoEventDispatchAssertion assertNoEventDispatch;
-    m_undoStack.clear();
-    m_redoStack.clear();
+    filterOutUndoSteps(m_undoStack, frame);
+    filterOutUndoSteps(m_redoStack, frame);
+}
+
+void UndoStack::filterOutUndoSteps(UndoStepStack& stack, const Frame& frame)
+{
+    UndoStepStack newStack;
+    while (!stack.isEmpty()) {
+        UndoStep* step = stack.first().get();
+        if (!step->belongsTo(frame))
+            newStack.append(step);
+        stack.removeFirst();
+    }
+    stack.swap(newStack);
 }
 
 bool UndoStack::canUndo() const
@@ -87,7 +99,7 @@ bool UndoStack::canRedo() const
 void UndoStack::undo()
 {
     if (canUndo()) {
-        UndoManagerStack::iterator back = --m_undoStack.end();
+        UndoStepStack::iterator back = --m_undoStack.end();
         RefPtr<UndoStep> step(*back);
         m_undoStack.remove(back);
         step->unapply();
@@ -98,7 +110,7 @@ void UndoStack::undo()
 void UndoStack::redo()
 {
     if (canRedo()) {
-        UndoManagerStack::iterator back = --m_redoStack.end();
+        UndoStepStack::iterator back = --m_redoStack.end();
         RefPtr<UndoStep> step(*back);
         m_redoStack.remove(back);
 

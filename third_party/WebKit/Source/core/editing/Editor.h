@@ -173,7 +173,6 @@ public:
     bool isOverwriteModeEnabled() const { return m_overwriteModeEnabled; }
     void toggleOverwriteModeEnabled();
 
-    void clearUndoRedoOperations();
     bool canUndo();
     void undo();
     bool canRedo();

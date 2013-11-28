@@ -107,6 +107,12 @@ EditCommandComposition::EditCommandComposition(Document* document, const Visible
 {
 }
 
+bool EditCommandComposition::belongsTo(const Frame& frame) const
+{
+    ASSERT(m_document);
+    return m_document->frame() == &frame;
+}
+
 void EditCommandComposition::unapply()
 {
     ASSERT(m_document);

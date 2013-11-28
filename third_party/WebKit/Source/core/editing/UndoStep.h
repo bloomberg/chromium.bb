@@ -36,10 +36,13 @@
 
 namespace WebCore {
 
+class Frame;
+
 class UndoStep : public RefCounted<UndoStep> {
 public:
     virtual ~UndoStep() { }
 
+    virtual bool belongsTo(const Frame&) const = 0;
     virtual void unapply() = 0;
     virtual void reapply() = 0;
     virtual EditAction editingAction() const = 0;

@@ -42,6 +42,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/editing/Editor.h"
+#include "core/editing/UndoStack.h"
 #include "core/events/Event.h"
 #include "core/events/PageTransitionEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
@@ -252,7 +253,8 @@ bool FrameLoader::closeURL()
         m_frame->document()->dispatchUnloadEvents();
     stopLoading();
 
-    m_frame->editor().clearUndoRedoOperations();
+    if (Page* page = m_frame->page())
+        page->undoStack().didUnloadFrame(*m_frame);
     return true;
 }
 
