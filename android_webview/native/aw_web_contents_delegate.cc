@@ -199,8 +199,11 @@ static void FilesSelectedInChooser(
   std::vector<ui::SelectedFileInfo> files;
   files.reserve(file_path_str.size());
   for (size_t i = 0; i < file_path_str.size(); ++i) {
-    files.push_back(ui::SelectedFileInfo(base::FilePath(file_path_str[i]),
-                                         base::FilePath()));
+    GURL url(file_path_str[i]);
+    if (!url.is_valid())
+      continue;
+    base::FilePath path(url.SchemeIsFile() ? url.path() : file_path_str[i]);
+    files.push_back(ui::SelectedFileInfo(path, base::FilePath()));
   }
   FileChooserParams::Mode mode;
   if (mode_flags & kFileChooserModeOpenFolder) {
@@ -210,8 +213,8 @@ static void FilesSelectedInChooser(
   } else {
     mode = FileChooserParams::Open;
   }
-  LOG(INFO) << "File Chooser result: mode = " << mode
-            << ", file paths = " << JoinString(file_path_str, ":");
+  DVLOG(0) << "File Chooser result: mode = " << mode
+           << ", file paths = " << JoinString(file_path_str, ":");
   rvh->FilesSelectedInChooser(files, mode);
 }
 
