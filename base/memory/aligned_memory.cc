@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-#if defined(OS_ANDROID) || defined(OS_NACL)
+#if defined(OS_ANDROID)
 #include <malloc.h>
 #endif
 
@@ -19,13 +19,12 @@ void* AlignedAlloc(size_t size, size_t alignment) {
   void* ptr = NULL;
 #if defined(COMPILER_MSVC)
   ptr = _aligned_malloc(size, alignment);
-// Both Android and NaCl technically support posix_memalign(), but do not expose
-// it in the current version of the library headers used by Chrome.  Luckily,
-// memalign() on both platforms returns pointers which can safely be used with
-// free(), so we can use it instead.  Issues filed with each project for docs:
+// Android technically supports posix_memalign(), but does not expose it in
+// the current version of the library headers used by Chrome.  Luckily,
+// memalign() on Android returns pointers which can safely be used with
+// free(), so we can use it instead.  Issue filed to document this:
 // http://code.google.com/p/android/issues/detail?id=35391
-// http://code.google.com/p/chromium/issues/detail?id=138579
-#elif defined(OS_ANDROID) || defined(OS_NACL)
+#elif defined(OS_ANDROID)
   ptr = memalign(alignment, size);
 #else
   if (posix_memalign(&ptr, alignment, size))
