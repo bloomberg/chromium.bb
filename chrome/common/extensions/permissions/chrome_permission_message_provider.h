@@ -54,6 +54,12 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
       const PermissionSet* old_permissions,
       const PermissionSet* new_permissions) const;
 
+  // Returns true if |new_permissions| has an elevated manifest permission
+  // privilege level compared to |old_permissions|.
+  bool IsManifestPermissionPrivilegeIncrease(
+      const PermissionSet* old_permissions,
+      const PermissionSet* new_permissions) const;
+
   // Returns true if |new_permissions| has more host permissions compared to
   // |old_permissions|.
   bool IsHostPrivilegeIncrease(

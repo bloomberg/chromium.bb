@@ -152,6 +152,9 @@ bool ChromePermissionMessageProvider::IsPrivilegeIncrease(
   if (IsAPIPrivilegeIncrease(old_permissions, new_permissions))
     return true;
 
+  if (IsManifestPermissionPrivilegeIncrease(old_permissions, new_permissions))
+    return true;
+
   return false;
 }
 
@@ -265,7 +268,25 @@ bool ChromePermissionMessageProvider::IsAPIPrivilegeIncrease(
         PermissionMessage(PermissionMessage::kFileSystemWrite, string16()));
   }
 
-  // We have less privileges if there are additional warnings present.
+  // It is a privilege increase if there are additional warnings present.
+  return !delta_warnings.empty();
+}
+
+bool ChromePermissionMessageProvider::IsManifestPermissionPrivilegeIncrease(
+    const PermissionSet* old_permissions,
+    const PermissionSet* new_permissions) const {
+  if (new_permissions == NULL)
+    return false;
+
+  typedef std::set<PermissionMessage> PermissionMsgSet;
+  PermissionMsgSet old_warnings =
+      GetManifestPermissionMessages(old_permissions);
+  PermissionMsgSet new_warnings =
+      GetManifestPermissionMessages(new_permissions);
+  PermissionMsgSet delta_warnings =
+      base::STLSetDifference<PermissionMsgSet>(new_warnings, old_warnings);
+
+  // It is a privilege increase if there are additional warnings present.
   return !delta_warnings.empty();
 }
 

@@ -582,6 +582,9 @@ TEST(PermissionsTest, CreateDifference) {
 }
 
 TEST(PermissionsTest, IsPrivilegeIncrease) {
+  // Dev channel required by "sockets" feature.
+  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
+
   const struct {
     const char* base_name;
     bool expect_increase;
@@ -617,6 +620,9 @@ TEST(PermissionsTest, IsPrivilegeIncrease) {
     { "media_galleries5", false },  // read|copyTo|delete|all -> read|all
     { "media_galleries6", false },  // read|all -> read|all
     { "media_galleries7", true },  // read|delete|all -> read|copyTo|delete|all
+    { "sockets1", true },  // none -> tcp:*:*
+    { "sockets2", false },  // tcp:*:* -> tcp:*:*
+    { "sockets3", true },  // tcp:a.com:80 -> tcp:*:*
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
