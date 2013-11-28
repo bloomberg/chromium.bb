@@ -32,6 +32,7 @@ class ContentType:
     all = (20,21,22,23)
 
 class ExtensionType:
+    signed_cert_timestamps = 18  # signed_certificate_timestamp in RFC 6962
     channel_id = 30031
 
 class AlertLevel:

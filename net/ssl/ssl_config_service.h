@@ -99,6 +99,9 @@ struct NET_EXPORT SSLConfig {
   bool cached_info_enabled;  // True if TLS cached info extension is enabled.
   bool channel_id_enabled;   // True if TLS channel ID extension is enabled.
   bool false_start_enabled;  // True if we'll use TLS False Start.
+  // True if the Certificate Transparency signed_certificate_timestamp
+  // TLS extension is enabled.
+  bool signed_cert_timestamps_enabled;
 
   // require_forward_secrecy, if true, causes only (EC)DHE cipher suites to be
   // enabled. NOTE: this only applies to server sockets currently, although

@@ -131,6 +131,7 @@ class ClientHello(HandshakeMsg):
         self.compression_methods = []   # a list of 8-bit values
         self.srp_username = None        # a string
         self.channel_id = False
+        self.support_signed_cert_timestamps = False
 
     def create(self, version, random, session_id, cipher_suites,
                certificate_types=None, srp_username=None):
@@ -177,6 +178,10 @@ class ClientHello(HandshakeMsg):
                         self.certificate_types = p.getVarList(1, 1)
                     elif extType == ExtensionType.channel_id:
                         self.channel_id = True
+                    elif extType == ExtensionType.signed_cert_timestamps:
+                        if extLength:
+                            raise SyntaxError()
+                        self.support_signed_cert_timestamps = True
                     else:
                         p.getFixBytes(extLength)
                     soFar += 4 + extLength
@@ -224,6 +229,7 @@ class ServerHello(HandshakeMsg):
         self.certificate_type = CertificateType.x509
         self.compression_method = 0
         self.channel_id = False
+        self.signed_cert_timestamps = None
 
     def create(self, version, random, session_id, cipher_suite,
                certificate_type):
@@ -273,6 +279,9 @@ class ServerHello(HandshakeMsg):
         if self.channel_id:
             extLength += 4
 
+        if self.signed_cert_timestamps:
+            extLength += 4 + len(self.signed_cert_timestamps)
+
         if extLength != 0:
             w.add(extLength, 2)
 
@@ -285,6 +294,10 @@ class ServerHello(HandshakeMsg):
         if self.channel_id:
             w.add(ExtensionType.channel_id, 2)
             w.add(0, 2)
+
+        if self.signed_cert_timestamps:
+            w.add(ExtensionType.signed_cert_timestamps, 2)
+            w.addVarSeq(stringToBytes(self.signed_cert_timestamps), 1, 2)
 
         return HandshakeMsg.postWrite(self, w, trial)
 

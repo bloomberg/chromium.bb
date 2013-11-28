@@ -1793,6 +1793,105 @@ TEST_F(SSLClientSocketCertRequestInfoTest, TwoAuthorities) {
       request_info->cert_authorities[1]);
 }
 
+TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabled) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.signed_cert_timestamps = "test";
+
+  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
+                                ssl_options,
+                                base::FilePath());
+  ASSERT_TRUE(test_server.Start());
+
+  AddressList addr;
+  ASSERT_TRUE(test_server.GetAddressList(&addr));
+
+  TestCompletionCallback callback;
+  CapturingNetLog log;
+  scoped_ptr<StreamSocket> transport(
+      new TCPClientSocket(addr, &log, NetLog::Source()));
+  int rv = transport->Connect(callback.callback());
+  if (rv == ERR_IO_PENDING)
+    rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  SSLConfig ssl_config;
+  ssl_config.signed_cert_timestamps_enabled = true;
+
+  scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
+      transport.Pass(), test_server.host_port_pair(), ssl_config));
+
+  EXPECT_FALSE(sock->IsConnected());
+
+  rv = sock->Connect(callback.callback());
+
+  CapturingNetLog::CapturedEntryList entries;
+  log.GetEntries(&entries);
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLog::TYPE_SSL_CONNECT));
+  if (rv == ERR_IO_PENDING)
+    rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+  EXPECT_TRUE(sock->IsConnected());
+  log.GetEntries(&entries);
+  EXPECT_TRUE(LogContainsSSLConnectEndEvent(entries, -1));
+
+#if !defined(USE_OPENSSL)
+  EXPECT_TRUE(sock->WereSignedCertTimestampsReceived());
+#else
+  // Enabling CT for OpenSSL is currently a noop.
+  EXPECT_FALSE(sock->WereSignedCertTimestampsReceived());
+#endif
+
+  sock->Disconnect();
+  EXPECT_FALSE(sock->IsConnected());
+}
+
+TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsDisabled) {
+  SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.signed_cert_timestamps = "test";
+
+  SpawnedTestServer test_server(SpawnedTestServer::TYPE_HTTPS,
+                                ssl_options,
+                                base::FilePath());
+  ASSERT_TRUE(test_server.Start());
+
+  AddressList addr;
+  ASSERT_TRUE(test_server.GetAddressList(&addr));
+
+  TestCompletionCallback callback;
+  CapturingNetLog log;
+  scoped_ptr<StreamSocket> transport(
+      new TCPClientSocket(addr, &log, NetLog::Source()));
+  int rv = transport->Connect(callback.callback());
+  if (rv == ERR_IO_PENDING)
+    rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+
+  SSLConfig ssl_config;
+  ssl_config.signed_cert_timestamps_enabled = false;
+
+  scoped_ptr<SSLClientSocket> sock(CreateSSLClientSocket(
+      transport.Pass(), test_server.host_port_pair(), ssl_config));
+
+  EXPECT_FALSE(sock->IsConnected());
+
+  rv = sock->Connect(callback.callback());
+
+  CapturingNetLog::CapturedEntryList entries;
+  log.GetEntries(&entries);
+  EXPECT_TRUE(LogContainsBeginEvent(entries, 5, NetLog::TYPE_SSL_CONNECT));
+  if (rv == ERR_IO_PENDING)
+    rv = callback.WaitForResult();
+  EXPECT_EQ(OK, rv);
+  EXPECT_TRUE(sock->IsConnected());
+  log.GetEntries(&entries);
+  EXPECT_TRUE(LogContainsSSLConnectEndEvent(entries, -1));
+
+  EXPECT_FALSE(sock->WereSignedCertTimestampsReceived());
+
+  sock->Disconnect();
+  EXPECT_FALSE(sock->IsConnected());
+}
+
 }  // namespace
 
 }  // namespace net

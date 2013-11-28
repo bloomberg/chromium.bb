@@ -34,3 +34,5 @@ Local Modifications:
 - patches/tls_intolerant.patch: allow TLSLite to simulate a TLS-intolerant server.
 - patches/channel_id.patch: add basic ChannelID support. (Signatures are not
   checked.)
+- patches/signed_certificate_timestamps.patch: add support for sending Signed
+  Certificate Timestamps over a TLS extension.

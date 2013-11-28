@@ -43,6 +43,7 @@ SSLConfig::SSLConfig()
       cached_info_enabled(false),
       channel_id_enabled(true),
       false_start_enabled(true),
+      signed_cert_timestamps_enabled(true),
       require_forward_secrecy(false),
       unrestricted_ssl3_fallback_enabled(false),
       send_client_cert(false),

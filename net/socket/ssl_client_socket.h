@@ -126,8 +126,17 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   // Public for ssl_client_socket_openssl_unittest.cc.
   virtual bool WasChannelIDSent() const;
 
+  // Returns true if the server sent Certificate Transparency SCTs
+  // via a TLS extension.
+  // Temporary glue for testing while the CT code hasn't landed.
+  // TODO(ekasper): expose received SCTs via SSLInfo instead.
+  virtual bool WereSignedCertTimestampsReceived() const;
+
  protected:
   virtual void set_channel_id_sent(bool channel_id_sent);
+
+  virtual void set_signed_cert_timestamps_received(
+      bool signed_cert_timestamps_received);
 
   // Records histograms for channel id support during full handshakes - resumed
   // handshakes are ignored.
@@ -151,6 +160,8 @@ class NET_EXPORT SSLClientSocket : public SSLSocket {
   NextProto protocol_negotiated_;
   // True if a channel ID was sent.
   bool channel_id_sent_;
+  // True if SCTs were received via a TLS extension.
+  bool signed_cert_timestamps_received_;
 };
 
 }  // namespace net

@@ -398,6 +398,12 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
       arguments->Set("tls-intolerant",
                      new base::FundamentalValue(ssl_options_.tls_intolerant));
     }
+    if (!ssl_options_.signed_cert_timestamps.empty()) {
+      std::string b64_scts;
+      if (!base::Base64Encode(ssl_options_.signed_cert_timestamps, &b64_scts))
+        return false;
+      arguments->SetString("signed-cert-timestamps", b64_scts);
+    }
   }
 
   return GenerateAdditionalArguments(arguments);

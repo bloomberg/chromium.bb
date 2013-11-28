@@ -1,0 +1,147 @@
+diff --git a/third_party/tlslite/tlslite/TLSConnection.py b/third_party/tlslite/tlslite/TLSConnection.py
+index e882e2c..d2270a9 100644
+--- a/third_party/tlslite/tlslite/TLSConnection.py
++++ b/third_party/tlslite/tlslite/TLSConnection.py
+@@ -936,7 +936,8 @@ class TLSConnection(TLSRecordLayer):
+     def handshakeServer(self, sharedKeyDB=None, verifierDB=None,
+                         certChain=None, privateKey=None, reqCert=False,
+                         sessionCache=None, settings=None, checker=None,
+-                        reqCAs=None, tlsIntolerant=0):
++                        reqCAs=None, tlsIntolerant=0,
++                        signedCertTimestamps=None):
+         """Perform a handshake in the role of server.
+ 
+         This function performs an SSL or TLS handshake.  Depending on
+@@ -1007,6 +1008,11 @@ class TLSConnection(TLSRecordLayer):
+         will be sent along with a certificate request. This does not affect
+         verification.
+ 
++        @type signedCertTimestamps: str
++        @param signedCertTimestamps: A SignedCertificateTimestampList (as a
++        binary 8-bit string) that will be sent as a TLS extension whenever
++        the client announces support for the extension.
++
+         @raise socket.error: If a socket error occurs.
+         @raise tlslite.errors.TLSAbruptCloseError: If the socket is closed
+         without a preceding alert.
+@@ -1016,14 +1022,15 @@ class TLSConnection(TLSRecordLayer):
+         """
+         for result in self.handshakeServerAsync(sharedKeyDB, verifierDB,
+                 certChain, privateKey, reqCert, sessionCache, settings,
+-                checker, reqCAs, tlsIntolerant):
++                checker, reqCAs, tlsIntolerant, signedCertTimestamps):
+             pass
+ 
+ 
+     def handshakeServerAsync(self, sharedKeyDB=None, verifierDB=None,
+                              certChain=None, privateKey=None, reqCert=False,
+                              sessionCache=None, settings=None, checker=None,
+-                             reqCAs=None, tlsIntolerant=0):
++                             reqCAs=None, tlsIntolerant=0,
++                             signedCertTimestamps=None):
+         """Start a server handshake operation on the TLS connection.
+ 
+         This function returns a generator which behaves similarly to
+@@ -1041,14 +1048,16 @@ class TLSConnection(TLSRecordLayer):
+             privateKey=privateKey, reqCert=reqCert,
+             sessionCache=sessionCache, settings=settings,
+             reqCAs=reqCAs,
+-            tlsIntolerant=tlsIntolerant)
++            tlsIntolerant=tlsIntolerant,
++            signedCertTimestamps=signedCertTimestamps)
+         for result in self._handshakeWrapperAsync(handshaker, checker):
+             yield result
+ 
+ 
+     def _handshakeServerAsyncHelper(self, sharedKeyDB, verifierDB,
+-                             certChain, privateKey, reqCert, sessionCache,
+-                             settings, reqCAs, tlsIntolerant):
++                                    certChain, privateKey, reqCert,
++                                    sessionCache, settings, reqCAs,
++                                    tlsIntolerant, signedCertTimestamps):
+ 
+         self._handshakeStart(client=False)
+ 
+@@ -1060,6 +1069,9 @@ class TLSConnection(TLSRecordLayer):
+             raise ValueError("Caller passed a privateKey but no certChain")
+         if reqCAs and not reqCert:
+             raise ValueError("Caller passed reqCAs but not reqCert")
++        if signedCertTimestamps and not certChain:
++            raise ValueError("Caller passed signedCertTimestamps but no "
++                             "certChain")
+ 
+         if not settings:
+             settings = HandshakeSettings()
+@@ -1415,6 +1427,8 @@ class TLSConnection(TLSRecordLayer):
+                     self.version, serverRandom,
+                     sessionID, cipherSuite, certificateType)
+             serverHello.channel_id = clientHello.channel_id
++            if clientHello.support_signed_cert_timestamps:
++                serverHello.signed_cert_timestamps = signedCertTimestamps
+             doingChannelID = clientHello.channel_id
+             msgs.append(serverHello)
+             msgs.append(Certificate(certificateType).create(serverCertChain))
+diff --git a/third_party/tlslite/tlslite/constants.py b/third_party/tlslite/tlslite/constants.py
+index e357dd0..b5a345a 100644
+--- a/third_party/tlslite/tlslite/constants.py
++++ b/third_party/tlslite/tlslite/constants.py
+@@ -32,6 +32,7 @@ class ContentType:
+     all = (20,21,22,23)
+ 
+ class ExtensionType:
++    signed_cert_timestamps = 18  # signed_certificate_timestamp in RFC 6962
+     channel_id = 30031
+ 
+ class AlertLevel:
+diff --git a/third_party/tlslite/tlslite/messages.py b/third_party/tlslite/tlslite/messages.py
+index fa4d817..296f422 100644
+--- a/third_party/tlslite/tlslite/messages.py
++++ b/third_party/tlslite/tlslite/messages.py
+@@ -131,6 +131,7 @@ class ClientHello(HandshakeMsg):
+         self.compression_methods = []   # a list of 8-bit values
+         self.srp_username = None        # a string
+         self.channel_id = False
++        self.support_signed_cert_timestamps = False
+ 
+     def create(self, version, random, session_id, cipher_suites,
+                certificate_types=None, srp_username=None):
+@@ -177,6 +178,10 @@ class ClientHello(HandshakeMsg):
+                         self.certificate_types = p.getVarList(1, 1)
+                     elif extType == ExtensionType.channel_id:
+                         self.channel_id = True
++                    elif extType == ExtensionType.signed_cert_timestamps:
++                        if extLength:
++                            raise SyntaxError()
++                        self.support_signed_cert_timestamps = True
+                     else:
+                         p.getFixBytes(extLength)
+                     soFar += 4 + extLength
+@@ -224,6 +229,7 @@ class ServerHello(HandshakeMsg):
+         self.certificate_type = CertificateType.x509
+         self.compression_method = 0
+         self.channel_id = False
++        self.signed_cert_timestamps = None
+ 
+     def create(self, version, random, session_id, cipher_suite,
+                certificate_type):
+@@ -273,6 +279,9 @@ class ServerHello(HandshakeMsg):
+         if self.channel_id:
+             extLength += 4
+ 
++        if self.signed_cert_timestamps:
++            extLength += 4 + len(self.signed_cert_timestamps)
++
+         if extLength != 0:
+             w.add(extLength, 2)
+ 
+@@ -286,6 +295,10 @@ class ServerHello(HandshakeMsg):
+             w.add(ExtensionType.channel_id, 2)
+             w.add(0, 2)
+ 
++        if self.signed_cert_timestamps:
++            w.add(ExtensionType.signed_cert_timestamps, 2)
++            w.addVarSeq(stringToBytes(self.signed_cert_timestamps), 1, 2)
++
+         return HandshakeMsg.postWrite(self, w, trial)
+ 
+ class Certificate(HandshakeMsg):

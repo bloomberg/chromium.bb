@@ -936,7 +936,8 @@ class TLSConnection(TLSRecordLayer):
     def handshakeServer(self, sharedKeyDB=None, verifierDB=None,
                         certChain=None, privateKey=None, reqCert=False,
                         sessionCache=None, settings=None, checker=None,
-                        reqCAs=None, tlsIntolerant=0):
+                        reqCAs=None, tlsIntolerant=0,
+                        signedCertTimestamps=None):
         """Perform a handshake in the role of server.
 
         This function performs an SSL or TLS handshake.  Depending on
@@ -1007,6 +1008,11 @@ class TLSConnection(TLSRecordLayer):
         will be sent along with a certificate request. This does not affect
         verification.
 
+        @type signedCertTimestamps: str
+        @param signedCertTimestamps: A SignedCertificateTimestampList (as a
+        binary 8-bit string) that will be sent as a TLS extension whenever
+        the client announces support for the extension.
+
         @raise socket.error: If a socket error occurs.
         @raise tlslite.errors.TLSAbruptCloseError: If the socket is closed
         without a preceding alert.
@@ -1016,14 +1022,15 @@ class TLSConnection(TLSRecordLayer):
         """
         for result in self.handshakeServerAsync(sharedKeyDB, verifierDB,
                 certChain, privateKey, reqCert, sessionCache, settings,
-                checker, reqCAs, tlsIntolerant):
+                checker, reqCAs, tlsIntolerant, signedCertTimestamps):
             pass
 
 
     def handshakeServerAsync(self, sharedKeyDB=None, verifierDB=None,
                              certChain=None, privateKey=None, reqCert=False,
                              sessionCache=None, settings=None, checker=None,
-                             reqCAs=None, tlsIntolerant=0):
+                             reqCAs=None, tlsIntolerant=0,
+                             signedCertTimestamps=None):
         """Start a server handshake operation on the TLS connection.
 
         This function returns a generator which behaves similarly to
@@ -1041,14 +1048,16 @@ class TLSConnection(TLSRecordLayer):
             privateKey=privateKey, reqCert=reqCert,
             sessionCache=sessionCache, settings=settings,
             reqCAs=reqCAs,
-            tlsIntolerant=tlsIntolerant)
+            tlsIntolerant=tlsIntolerant,
+            signedCertTimestamps=signedCertTimestamps)
         for result in self._handshakeWrapperAsync(handshaker, checker):
             yield result
 
 
     def _handshakeServerAsyncHelper(self, sharedKeyDB, verifierDB,
-                             certChain, privateKey, reqCert, sessionCache,
-                             settings, reqCAs, tlsIntolerant):
+                                    certChain, privateKey, reqCert,
+                                    sessionCache, settings, reqCAs,
+                                    tlsIntolerant, signedCertTimestamps):
 
         self._handshakeStart(client=False)
 
@@ -1060,6 +1069,9 @@ class TLSConnection(TLSRecordLayer):
             raise ValueError("Caller passed a privateKey but no certChain")
         if reqCAs and not reqCert:
             raise ValueError("Caller passed reqCAs but not reqCert")
+        if signedCertTimestamps and not certChain:
+            raise ValueError("Caller passed signedCertTimestamps but no "
+                             "certChain")
 
         if not settings:
             settings = HandshakeSettings()
@@ -1415,6 +1427,8 @@ class TLSConnection(TLSRecordLayer):
                     self.version, serverRandom,
                     sessionID, cipherSuite, certificateType)
             serverHello.channel_id = clientHello.channel_id
+            if clientHello.support_signed_cert_timestamps:
+                serverHello.signed_cert_timestamps = signedCertTimestamps
             doingChannelID = clientHello.channel_id
             msgs.append(serverHello)
             msgs.append(Certificate(certificateType).create(serverCertChain))

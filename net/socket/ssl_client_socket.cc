@@ -16,7 +16,8 @@ SSLClientSocket::SSLClientSocket()
     : was_npn_negotiated_(false),
       was_spdy_negotiated_(false),
       protocol_negotiated_(kProtoUnknown),
-      channel_id_sent_(false) {
+      channel_id_sent_(false),
+      signed_cert_timestamps_received_(false) {
 }
 
 // static
@@ -142,6 +143,15 @@ bool SSLClientSocket::WasChannelIDSent() const {
 
 void SSLClientSocket::set_channel_id_sent(bool channel_id_sent) {
   channel_id_sent_ = channel_id_sent;
+}
+
+bool SSLClientSocket::WereSignedCertTimestampsReceived() const {
+  return signed_cert_timestamps_received_;
+}
+
+void SSLClientSocket::set_signed_cert_timestamps_received(
+    bool signed_cert_timestamps_received) {
+  signed_cert_timestamps_received_ = signed_cert_timestamps_received;
 }
 
 // static

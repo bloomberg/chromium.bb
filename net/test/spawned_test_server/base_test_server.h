@@ -147,6 +147,14 @@ class BaseTestServer {
     // If not TLS_INTOLERANT_NONE, the server will abort any handshake that
     // negotiates an intolerant TLS version in order to test version fallback.
     TLSIntolerantLevel tls_intolerant;
+
+    // (Fake) SignedCertificateTimestampList (as a raw binary string) to send in
+    // a TLS extension.
+    // Temporary glue for testing: validation of SCTs is application-controlled
+    // and can be appropriately mocked out, so sending fake data here does not
+    // affect handshaking behaviour.
+    // TODO(ekasper): replace with valid SCT files for test certs.
+    std::string signed_cert_timestamps;
   };
 
   // Pass as the 'host' parameter during construction to server on 127.0.0.1
@@ -260,4 +268,3 @@ class BaseTestServer {
 }  // namespace net
 
 #endif  // NET_TEST_SPAWNED_TEST_SERVER_BASE_TEST_SERVER_H_
-

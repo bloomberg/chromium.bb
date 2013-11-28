@@ -414,6 +414,7 @@ struct HandshakeState {
     channel_id_sent = false;
     server_cert_chain.Reset(NULL);
     server_cert = NULL;
+    sct_list_from_tls_extension.clear();
     resumed_handshake = false;
     ssl_connection_status = 0;
   }
@@ -443,6 +444,8 @@ struct HandshakeState {
   // always be non-NULL.
   PeerCertificateChain server_cert_chain;
   scoped_refptr<X509Certificate> server_cert;
+  // SignedCertificateTimestampList received via TLS extension (RFC 6962).
+  std::string sct_list_from_tls_extension;
 
   // True if the current handshake was the result of TLS session resumption.
   bool resumed_handshake;
@@ -754,6 +757,10 @@ class SSLClientSocketNSS::Core : public base::RefCountedThreadSafe<Core> {
 
   // Updates the NSS and platform specific certificates.
   void UpdateServerCert();
+  // Update the nss_handshake_state_ with SignedCertificateTimestampLists
+  // received in the handshake, via a TLS extension or (to be implemented)
+  // OCSP stapling.
+  void UpdateSignedCertTimestamps();
   // Updates the nss_handshake_state_ with the negotiated security parameters.
   void UpdateConnectionStatus();
   // Record histograms for channel id support during full handshakes - resumed
@@ -1652,6 +1659,7 @@ void SSLClientSocketNSS::Core::HandshakeSucceeded() {
 
   RecordChannelIDSupportOnNSSTaskRunner();
   UpdateServerCert();
+  UpdateSignedCertTimestamps();
   UpdateConnectionStatus();
   UpdateNextProto();
 
@@ -2411,6 +2419,18 @@ void SSLClientSocketNSS::Core::UpdateServerCert() {
                    NetLog::TYPE_SSL_CERTIFICATES_RECEIVED,
                    net_log_callback));
   }
+}
+
+void SSLClientSocketNSS::Core::UpdateSignedCertTimestamps() {
+  const SECItem* signed_cert_timestamps =
+      SSL_PeerSignedCertTimestamps(nss_fd_);
+
+  if (!signed_cert_timestamps || !signed_cert_timestamps->len)
+    return;
+
+  nss_handshake_state_.sct_list_from_tls_extension = std::string(
+      reinterpret_cast<char*>(signed_cert_timestamps->data),
+      signed_cert_timestamps->len);
 }
 
 void SSLClientSocketNSS::Core::UpdateConnectionStatus() {
@@ -3175,6 +3195,13 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
   }
 #endif
 
+  rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_SIGNED_CERT_TIMESTAMPS,
+                     ssl_config_.signed_cert_timestamps_enabled);
+  if (rv != SECSuccess) {
+    LogFailedNSSFunction(net_log_, "SSL_OptionSet",
+                         "SSL_ENABLE_SIGNED_CERT_TIMESTAMPS");
+  }
+
 // Chromium patch to libssl
 #ifdef SSL_ENABLE_CACHED_INFO
   rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_CACHED_INFO,
@@ -3320,6 +3347,8 @@ int SSLClientSocketNSS::DoHandshakeComplete(int result) {
     // Done!
   }
   set_channel_id_sent(core_->state().channel_id_sent);
+  set_signed_cert_timestamps_received(
+      !core_->state().sct_list_from_tls_extension.empty());
 
   LeaveFunction(result);
   return result;
