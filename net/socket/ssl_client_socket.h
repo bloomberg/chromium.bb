@@ -16,6 +16,7 @@
 namespace net {
 
 class CertVerifier;
+class CTVerifier;
 class ServerBoundCertService;
 class SSLCertRequestInfo;
 struct SSLConfig;
@@ -28,20 +29,24 @@ struct SSLClientSocketContext {
   SSLClientSocketContext()
       : cert_verifier(NULL),
         server_bound_cert_service(NULL),
-        transport_security_state(NULL) {}
+        transport_security_state(NULL),
+        cert_transparency_verifier(NULL) {}
 
   SSLClientSocketContext(CertVerifier* cert_verifier_arg,
                          ServerBoundCertService* server_bound_cert_service_arg,
                          TransportSecurityState* transport_security_state_arg,
+                         CTVerifier* cert_transparency_verifier_arg,
                          const std::string& ssl_session_cache_shard_arg)
       : cert_verifier(cert_verifier_arg),
         server_bound_cert_service(server_bound_cert_service_arg),
         transport_security_state(transport_security_state_arg),
+        cert_transparency_verifier(cert_transparency_verifier_arg),
         ssl_session_cache_shard(ssl_session_cache_shard_arg) {}
 
   CertVerifier* cert_verifier;
   ServerBoundCertService* server_bound_cert_service;
   TransportSecurityState* transport_security_state;
+  CTVerifier* cert_transparency_verifier;
   // ssl_session_cache_shard is an opaque string that identifies a shard of the
   // SSL session cache. SSL sockets with the same ssl_session_cache_shard may
   // resume each other's SSL sessions but we'll never sessions between shards.

@@ -408,6 +408,10 @@ NET_ERROR(CERT_WEAK_KEY, -211)
 // The value immediately past the last certificate error code.
 NET_ERROR(CERT_END, -212)
 
+// Certificate Transparency: All Signed Certificate Timestamps failed to verify.
+// XXX(eranm): Move this error to a more appropriate category.
+NET_ERROR(CT_NO_SCTS_VERIFIED_OK, -299)
+
 // The URL is invalid.
 NET_ERROR(INVALID_URL, -300)
 

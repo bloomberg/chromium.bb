@@ -23,6 +23,7 @@ namespace net {
 class CertVerifier;
 class ClientSocketFactory;
 class ClientSocketPoolHistograms;
+class CTVerifier;
 class HttpProxyClientSocketPool;
 class HostResolver;
 class NetLog;
@@ -62,6 +63,7 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
                               CertVerifier* cert_verifier,
                               ServerBoundCertService* server_bound_cert_service,
                               TransportSecurityState* transport_security_state,
+                              CTVerifier* cert_transparency_verifier,
                               const std::string& ssl_session_cache_shard,
                               ProxyService* proxy_service,
                               SSLConfigService* ssl_config_service,
@@ -108,6 +110,7 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
   CertVerifier* const cert_verifier_;
   ServerBoundCertService* const server_bound_cert_service_;
   TransportSecurityState* const transport_security_state_;
+  CTVerifier* const cert_transparency_verifier_;
   const std::string ssl_session_cache_shard_;
   ProxyService* const proxy_service_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;

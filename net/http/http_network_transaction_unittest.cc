@@ -512,6 +512,7 @@ CaptureGroupNameSSLSocketPool::CaptureGroupNameSocketPool(
                           cert_verifier,
                           NULL,
                           NULL,
+                          NULL,
                           std::string(),
                           NULL,
                           NULL,

@@ -29,6 +29,7 @@
 namespace net {
 class CertVerifier;
 class CookieStore;
+class CTVerifier;
 class FraudulentCertificateReporter;
 class HostResolver;
 class HttpAuthHandlerFactory;
@@ -152,11 +153,18 @@ class NET_EXPORT URLRequestContext
   void set_cookie_store(CookieStore* cookie_store);
 
   TransportSecurityState* transport_security_state() const {
-      return transport_security_state_;
+    return transport_security_state_;
   }
   void set_transport_security_state(
       TransportSecurityState* state) {
     transport_security_state_ = state;
+  }
+
+  CTVerifier* cert_transparency_verifier() const {
+    return cert_transparency_verifier_;
+  }
+  void set_cert_transparency_verifier(CTVerifier* verifier) {
+    cert_transparency_verifier_ = verifier;
   }
 
   // ---------------------------------------------------------------------------
@@ -222,6 +230,7 @@ class NET_EXPORT URLRequestContext
   HttpUserAgentSettings* http_user_agent_settings_;
   scoped_refptr<CookieStore> cookie_store_;
   TransportSecurityState* transport_security_state_;
+  CTVerifier* cert_transparency_verifier_;
   HttpTransactionFactory* http_transaction_factory_;
   const URLRequestJobFactory* job_factory_;
   URLRequestThrottlerManager* throttler_manager_;

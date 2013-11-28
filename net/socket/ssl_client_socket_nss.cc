@@ -93,6 +93,7 @@
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_verifier.h"
 #include "net/cert/scoped_nss_types.h"
 #include "net/cert/single_request_cert_verifier.h"
 #include "net/cert/x509_certificate_net_log_param.h"
@@ -2782,6 +2783,7 @@ SSLClientSocketNSS::SSLClientSocketNSS(
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       cert_verifier_(context.cert_verifier),
+      cert_transparency_verifier_(context.cert_transparency_verifier),
       server_bound_cert_service_(context.server_bound_cert_service),
       ssl_session_cache_shard_(context.ssl_session_cache_shard),
       completed_handshake_(false),
@@ -3354,7 +3356,6 @@ int SSLClientSocketNSS::DoHandshakeComplete(int result) {
   return result;
 }
 
-
 int SSLClientSocketNSS::DoVerifyCert(int result) {
   DCHECK(!core_->state().server_cert_chain.empty());
   DCHECK(core_->state().server_cert_chain[0]);
@@ -3438,8 +3439,6 @@ int SSLClientSocketNSS::DoVerifyCertComplete(int result) {
   if (result == OK)
     LogConnectionTypeMetrics();
 
-  completed_handshake_ = true;
-
 #if defined(OFFICIAL_BUILD) && !defined(OS_ANDROID) && !defined(OS_IOS)
   // Take care of any mandates for public key pinning.
   //
@@ -3487,9 +3486,37 @@ int SSLClientSocketNSS::DoVerifyCertComplete(int result) {
   }
 #endif
 
+  if (result == OK) {
+    // Only check Certificate Transparency if there were no other errors with
+    // the connection.
+    VerifyCT();
+  }
+
+  completed_handshake_ = true;
+
   // Exit DoHandshakeLoop and return the result to the caller to Connect.
   DCHECK_EQ(STATE_NONE, next_handshake_state_);
   return result;
+}
+
+void SSLClientSocketNSS::VerifyCT() {
+  if (!cert_transparency_verifier_)
+    return;
+
+  // Note that this is a completely synchronous operation: The CT Log Verifier
+  // gets all the data it needs for SCT verification and does not do any
+  // external communication.
+  int result = cert_transparency_verifier_->Verify(
+      server_cert_verify_result_.verified_cert,
+      std::string(), // SCT list from OCSP response
+      std::string(),  // SCT list from TLS extension
+      &ct_verify_result_);
+
+  VLOG(1) << "CT Verification complete: result " << result
+          << " Unverified scts: " << ct_verify_result_.unverified_scts.size()
+          << " Verified scts: " << ct_verify_result_.verified_scts.size()
+          << " scts from unknown logs: "
+          << ct_verify_result_.unknown_logs_scts.size();
 }
 
 void SSLClientSocketNSS::LogConnectionTypeMetrics() const {

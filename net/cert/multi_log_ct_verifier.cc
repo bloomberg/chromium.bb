@@ -60,25 +60,24 @@ int MultiLogCTVerifier::Verify(
   }
 
   ct::LogEntry x509_entry;
-  if (!ct::GetX509LogEntry(cert->os_cert_handle(), &x509_entry))
-    return has_verified_scts ? OK : ERR_FAILED;
+  if (ct::GetX509LogEntry(cert->os_cert_handle(), &x509_entry)) {
+    has_verified_scts |= VerifySCTs(
+        sct_list_from_ocsp,
+        x509_entry,
+        ct::SignedCertificateTimestamp::SCT_FROM_OCSP_RESPONSE,
+        result);
 
-  has_verified_scts |= VerifySCTs(
-      sct_list_from_ocsp,
-      x509_entry,
-      ct::SignedCertificateTimestamp::SCT_FROM_OCSP_RESPONSE,
-      result);
-
-  has_verified_scts |= VerifySCTs(
-      sct_list_from_tls_extension,
-      x509_entry,
-      ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION,
-      result);
+    has_verified_scts |= VerifySCTs(
+        sct_list_from_tls_extension,
+        x509_entry,
+        ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION,
+        result);
+  }
 
   if (has_verified_scts)
     return OK;
 
-  return ERR_FAILED;
+  return ERR_CT_NO_SCTS_VERIFIED_OK;
 }
 
 bool MultiLogCTVerifier::VerifySCTs(
@@ -119,7 +118,6 @@ bool MultiLogCTVerifier::VerifySingleSCT(
     ct::CTVerifyResult* result) {
 
   // Assume this SCT is untrusted until proven otherwise.
-
   IDToLogMap::iterator it = logs_.find(sct->log_id);
   if (it == logs_.end()) {
     DVLOG(1) << "SCT does not match any known log.";

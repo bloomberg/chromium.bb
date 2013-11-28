@@ -62,6 +62,7 @@ class NET_EXPORT HttpNetworkSession
     CertVerifier* cert_verifier;
     ServerBoundCertService* server_bound_cert_service;
     TransportSecurityState* transport_security_state;
+    CTVerifier* cert_transparency_verifier;
     ProxyService* proxy_service;
     std::string ssl_session_cache_shard;
     SSLConfigService* ssl_config_service;

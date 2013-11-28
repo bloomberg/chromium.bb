@@ -41,6 +41,7 @@ class EventRouterForwarder;
 namespace net {
 class CertVerifier;
 class CookieStore;
+class CTVerifier;
 class FtpTransactionFactory;
 class HostMappingRules;
 class HostResolver;
@@ -118,6 +119,7 @@ class IOThread : public content::BrowserThreadDelegate {
     // used to enforce pinning for system requests and will only use built-in
     // pins.
     scoped_ptr<net::TransportSecurityState> transport_security_state;
+    scoped_ptr<net::CTVerifier> cert_transparency_verifier;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
     scoped_ptr<net::HttpServerProperties> http_server_properties;

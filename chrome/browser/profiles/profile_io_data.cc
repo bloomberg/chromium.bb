@@ -958,6 +958,7 @@ void ProfileIOData::PopulateNetworkSessionParams(
   params->cert_verifier = context->cert_verifier();
   params->server_bound_cert_service = context->server_bound_cert_service();
   params->transport_security_state = context->transport_security_state();
+  params->cert_transparency_verifier = context->cert_transparency_verifier();
   params->proxy_service = context->proxy_service();
   params->ssl_session_cache_shard = GetSSLSessionCacheShard();
   params->ssl_config_service = context->ssl_config_service();

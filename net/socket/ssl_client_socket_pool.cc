@@ -123,6 +123,7 @@ SSLConnectJob::SSLConnectJob(const std::string& group_name,
       context_(context.cert_verifier,
                context.server_bound_cert_service,
                context.transport_security_state,
+               context.cert_transparency_verifier,
                (params->privacy_mode() == kPrivacyModeEnabled
                     ? "pm/" + context.ssl_session_cache_shard
                     : context.ssl_session_cache_shard)),
@@ -508,6 +509,7 @@ SSLClientSocketPool::SSLClientSocketPool(
     CertVerifier* cert_verifier,
     ServerBoundCertService* server_bound_cert_service,
     TransportSecurityState* transport_security_state,
+    CTVerifier* cert_transparency_verifier,
     const std::string& ssl_session_cache_shard,
     ClientSocketFactory* client_socket_factory,
     TransportClientSocketPool* transport_pool,
@@ -530,6 +532,7 @@ SSLClientSocketPool::SSLClientSocketPool(
                                          cert_verifier,
                                          server_bound_cert_service,
                                          transport_security_state,
+                                         cert_transparency_verifier,
                                          ssl_session_cache_shard),
                                      net_log)),
       ssl_config_service_(ssl_config_service) {

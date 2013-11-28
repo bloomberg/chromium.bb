@@ -270,6 +270,8 @@
         'cert/cert_verify_result.h',
         'cert/crl_set.cc',
         'cert/crl_set.h',
+        'cert/ct_known_logs.cc',
+        'cert/ct_known_logs.h',
         'cert/ct_log_verifier.cc',
         'cert/ct_log_verifier.h',
         'cert/ct_log_verifier_nss.cc',

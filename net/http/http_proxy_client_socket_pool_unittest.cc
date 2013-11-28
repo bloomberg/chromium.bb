@@ -77,6 +77,7 @@ class HttpProxyClientSocketPoolTest
                          session_deps_.cert_verifier.get(),
                          NULL /* server_bound_cert_store */,
                          NULL /* transport_security_state */,
+                         NULL /* cert_transparency_verifier */,
                          std::string() /* ssl_session_cache_shard */,
                          session_deps_.deterministic_socket_factory.get(),
                          &transport_socket_pool_,

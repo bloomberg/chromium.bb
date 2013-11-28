@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -50,6 +51,8 @@
 #include "net/base/network_time_notifier.h"
 #include "net/base/sdch_manager.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/ct_known_logs.h"
+#include "net/cert/ct_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
@@ -80,6 +83,11 @@
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "policy/policy_constants.h"
+#endif
+
+#if !defined(USE_OPENSSL)
+#include "net/cert/ct_log_verifier.h"
+#include "net/cert/multi_log_ct_verifier.h"
 #endif
 
 #if defined(USE_NSS) || defined(OS_IOS)
@@ -205,6 +213,8 @@ ConstructProxyScriptFetcherContext(IOThread::Globals* globals,
   context->set_cert_verifier(globals->cert_verifier.get());
   context->set_transport_security_state(
       globals->transport_security_state.get());
+  context->set_cert_transparency_verifier(
+      globals->cert_transparency_verifier.get());
   context->set_http_auth_handler_factory(
       globals->http_auth_handler_factory.get());
   context->set_proxy_service(globals->proxy_script_fetcher_proxy_service.get());
@@ -233,6 +243,8 @@ ConstructSystemRequestContext(IOThread::Globals* globals,
   context->set_cert_verifier(globals->cert_verifier.get());
   context->set_transport_security_state(
       globals->transport_security_state.get());
+  context->set_cert_transparency_verifier(
+      globals->cert_transparency_verifier.get());
   context->set_http_auth_handler_factory(
       globals->http_auth_handler_factory.get());
   context->set_proxy_service(globals->system_proxy_service.get());
@@ -528,6 +540,41 @@ void IOThread::InitAsync() {
   UpdateDnsClientEnabled();
   globals_->cert_verifier.reset(net::CertVerifier::CreateDefault());
   globals_->transport_security_state.reset(new net::TransportSecurityState());
+#if !defined(USE_OPENSSL)
+  // For now, Certificate Transparency is only implemented for platforms
+  // that use NSS.
+  net::MultiLogCTVerifier* ct_verifier = new net::MultiLogCTVerifier();
+  globals_->cert_transparency_verifier.reset(ct_verifier);
+
+  // Add built-in logs
+  ct_verifier->AddLog(net::ct::CreateGooglePilotLogVerifier().Pass());
+  ct_verifier->AddLog(net::ct::CreateGoogleAviatorLogVerifier().Pass());
+  ct_verifier->AddLog(net::ct::CreateGoogleRocketeerLogVerifier().Pass());
+
+  // Add logs from command line
+  if (command_line.HasSwitch(switches::kCertificateTransparencyLog)) {
+    std::string switch_value = command_line.GetSwitchValueASCII(
+        switches::kCertificateTransparencyLog);
+    size_t delim_pos = switch_value.find(":");
+    CHECK(delim_pos != std::string::npos)
+        << "CT log description not provided (switch format"
+           " is 'description:base64_key')";
+    std::string log_description(switch_value.substr(0, delim_pos));
+    std::string ct_public_key_data;
+    CHECK(base::Base64Decode(
+          switch_value.substr(delim_pos + 1),
+          &ct_public_key_data)) << "Unable to decode CT public key.";
+    scoped_ptr<net::CTLogVerifier> external_log_verifier(
+        net::CTLogVerifier::Create(ct_public_key_data, log_description));
+    CHECK(external_log_verifier) << "Unable to parse CT public key.";
+    ct_verifier->AddLog(external_log_verifier.Pass());
+  }
+#else
+  if (command_line.HasSwitch(switches::kCertificateTransparencyLog)) {
+    LOG(DFATAL) << "Certificate Transparency is not yet supported in Chrome "
+                   "builds using OpenSSL.";
+  }
+#endif
   globals_->ssl_config_service = GetSSLConfigService();
 #if defined(OS_ANDROID) || defined(OS_IOS)
   if (DataReductionProxySettings::IsDataReductionProxyAllowed()) {

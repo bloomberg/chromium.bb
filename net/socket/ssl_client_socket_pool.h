@@ -24,6 +24,7 @@ namespace net {
 class CertVerifier;
 class ClientSocketFactory;
 class ConnectJobFactory;
+class CTVerifier;
 class HostPortPair;
 class HttpProxyClientSocketPool;
 class HttpProxySocketParams;
@@ -189,6 +190,7 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
       CertVerifier* cert_verifier,
       ServerBoundCertService* server_bound_cert_service,
       TransportSecurityState* transport_security_state,
+      CTVerifier* cert_transparency_verifier,
       const std::string& ssl_session_cache_shard,
       ClientSocketFactory* client_socket_factory,
       TransportClientSocketPool* transport_pool,
