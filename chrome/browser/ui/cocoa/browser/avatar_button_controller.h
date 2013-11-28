@@ -11,7 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 
 @class AvatarLabelButton;
-@class AvatarMenuBubbleController;
+@class BaseBubbleController;
 class Browser;
 
 namespace AvatarButtonControllerInternal {
@@ -30,7 +30,7 @@ class Observer;
   scoped_ptr<AvatarButtonControllerInternal::Observer> observer_;
 
   // The menu controller, if the menu is open.
-  __weak AvatarMenuBubbleController* menuController_;
+  __weak BaseBubbleController* menuController_;
 
   // The avatar button.
   base::scoped_nsobject<NSButton> button_;
@@ -58,7 +58,7 @@ class Observer;
 @end
 
 @interface AvatarButtonController (ExposedForTesting)
-- (AvatarMenuBubbleController*)menuController;
+- (BaseBubbleController*)menuController;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_BROWSER_AVATAR_BUTTON_CONTROLLER_H_

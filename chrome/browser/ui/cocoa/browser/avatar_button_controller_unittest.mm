@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/browser/avatar_menu_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -73,7 +73,7 @@ TEST_F(AvatarButtonControllerTest, DoubleOpen) {
 
   [button() performClick:button()];
 
-  AvatarMenuBubbleController* menu = [controller() menuController];
+  BaseBubbleController* menu = [controller() menuController];
   EXPECT_TRUE(menu);
 
   [button() performClick:button()];
