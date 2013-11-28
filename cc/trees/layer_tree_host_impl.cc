@@ -254,6 +254,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       micro_benchmark_controller_(this),
       need_to_update_visible_tiles_before_draw_(false),
+#ifndef NDEBUG
+      did_lose_called_(false),
+#endif
       shared_bitmap_manager_(manager) {
   DCHECK(proxy_->IsImplThread());
   DidVisibilityChange(this, visible_);
@@ -1461,6 +1464,9 @@ void LayerTreeHostImpl::DidLoseOutputSurface() {
   // important) in production. We should adjust the test to not need this.
   if (renderer_)
     client_->DidLoseOutputSurfaceOnImplThread();
+#ifndef NDEBUG
+  did_lose_called_ = true;
+#endif
 }
 
 void LayerTreeHostImpl::Readback(void* pixels,
@@ -1695,6 +1701,10 @@ void LayerTreeHostImpl::EnforceZeroBudget(bool zero_budget) {
 
 bool LayerTreeHostImpl::InitializeRenderer(
     scoped_ptr<OutputSurface> output_surface) {
+#ifndef NDEBUG
+  DCHECK(!renderer_ || did_lose_called_);
+#endif
+
   // Since we will create a new resource provider, we cannot continue to use
   // the old resources (i.e. render_surfaces and texture IDs). Clear them
   // before we destroy the old resource provider.

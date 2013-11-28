@@ -1040,6 +1040,7 @@ TEST_F(PictureLayerImplTest, ClampTilesToToMaxTileSize) {
   scoped_ptr<TestWebGraphicsContext3D> context =
       TestWebGraphicsContext3D::Create();
   context->set_max_texture_size(140);
+  host_impl_.DidLoseOutputSurface();
   host_impl_.InitializeRenderer(FakeOutputSurface::Create3d(
       context.Pass()).PassAs<OutputSurface>());
 
@@ -1091,6 +1092,7 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
   scoped_ptr<TestWebGraphicsContext3D> context =
       TestWebGraphicsContext3D::Create();
   context->set_max_texture_size(140);
+  host_impl_.DidLoseOutputSurface();
   host_impl_.InitializeRenderer(FakeOutputSurface::Create3d(
       context.Pass()).PassAs<OutputSurface>());
 
