@@ -108,6 +108,10 @@ void AudioSender::InsertAudio(const AudioBus* audio_bus,
                               const base::Closure& done_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   DCHECK(audio_encoder_.get()) << "Invalid internal state";
+  // TODO(mikhal): Resolve calculation of the audio rtp_timestamp for logging.
+  // This is a tmp solution to allow the code to build.
+  cast_environment_->Logging()->InsertFrameEvent(kAudioFrameReceived,
+        GetVideoRtpTimestamp(recorded_time), kFrameIdUnknown);
   audio_encoder_->InsertAudio(audio_bus, recorded_time, done_callback);
 }
 

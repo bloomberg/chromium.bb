@@ -12,6 +12,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
+#include "media/cast/cast_config.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/logging_raw.h"
 #include "media/cast/logging/logging_stats.h"
@@ -19,7 +20,6 @@
 namespace media {
 namespace cast {
 
-static const int kFrameIdUnknown = -1;
 // Should only be called from the main thread.
 class LoggingImpl : public base::NonThreadSafe {
  public:
@@ -40,6 +40,8 @@ class LoggingImpl : public base::NonThreadSafe {
                                  uint32 rtp_timestamp,
                                  uint32 frame_id,
                                  base::TimeDelta delay);
+  void InsertPacketListEvent(CastLoggingEvent event, const PacketList& packets);
+
   void InsertPacketEvent(CastLoggingEvent event,
                          uint32 rtp_timestamp,
                          uint32 frame_id,

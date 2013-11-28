@@ -5,6 +5,7 @@
 #include "base/debug/trace_event.h"
 #include "base/metrics/histogram.h"
 #include "media/cast/logging/logging_impl.h"
+#include "net/base/big_endian.h"
 
 namespace media {
 namespace cast {
@@ -74,6 +75,27 @@ void LoggingImpl::InsertFrameEventWithDelay(CastLoggingEvent event,
           TRACE_EVENT_SCOPE_THREAD, "rtp_timestamp", rtp_timestamp, "delay",
           delay.InMilliseconds());
   }
+}
+
+void LoggingImpl::InsertPacketListEvent(CastLoggingEvent event,
+                                        const PacketList& packets) {
+  DCHECK(main_thread_proxy_->RunsTasksOnCurrentThread());
+  for (unsigned int i = 0; i < packets.size(); ++i) {
+    const Packet& packet = packets[i];
+    // Parse basic properties.
+    uint32 rtp_timestamp;
+    uint16 packet_id, max_packet_id;
+    const uint8* packet_data = &packet[0];
+    net::BigEndianReader big_endian_reader(packet_data + 4, 4);
+    big_endian_reader.ReadU32(&rtp_timestamp);
+    net::BigEndianReader cast_big_endian_reader(packet_data + 12 + 2, 4);
+    cast_big_endian_reader.ReadU16(&packet_id);
+    cast_big_endian_reader.ReadU16(&max_packet_id);
+    // rtp_timestamp is enough - no need for frame_id as well.
+    InsertPacketEvent(event, rtp_timestamp, kFrameIdUnknown, packet_id,
+                      max_packet_id, packet.size());
+  }
+
 }
 
 void LoggingImpl::InsertPacketEvent(CastLoggingEvent event,

@@ -151,8 +151,7 @@ void VideoReceiver::GetRawVideoFrame(
     const VideoFrameDecodedCallback& callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   GetEncodedVideoFrame(base::Bind(&VideoReceiver::DecodeVideoFrame,
-                                  weak_factory_.GetWeakPtr(),
-                                  callback));
+                                  base::Unretained(this), callback));
 }
 
 // Called when we have a frame to decode.
@@ -163,10 +162,8 @@ void VideoReceiver::DecodeVideoFrame(
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   // Hand the ownership of the encoded frame to the decode thread.
   cast_environment_->PostTask(CastEnvironment::VIDEO_DECODER, FROM_HERE,
-      base::Bind(&VideoReceiver::DecodeVideoFrameThread,
-                 base::Unretained(this),
-                 base::Passed(&encoded_frame),
-                 render_time, callback));
+      base::Bind(&VideoReceiver::DecodeVideoFrameThread, base::Unretained(this),
+                 base::Passed(&encoded_frame), render_time, callback));
 }
 
 // Utility function to run the decoder on a designated decoding thread.
@@ -178,7 +175,7 @@ void VideoReceiver::DecodeVideoFrameThread(
   DCHECK(video_decoder_);
 
   if (!(video_decoder_->DecodeVideoFrame(encoded_frame.get(), render_time,
-                                        frame_decoded_callback))) {
+        frame_decoded_callback))) {
     // This will happen if we decide to decode but not show a frame.
     cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
         base::Bind(&VideoReceiver::GetRawVideoFrame, base::Unretained(this),
@@ -251,10 +248,10 @@ bool VideoReceiver::PullEncodedVideoFrame(uint32 rtp_timestamp,
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   *render_time = GetRenderTime(now, rtp_timestamp);
-  base::TimeDelta diff = now - *render_time;
 
-  cast_environment_->Logging()->InsertFrameEvent(kVideoRenderDelay,
-      rtp_timestamp, diff.InMilliseconds());
+  // TODO(mikhal): Store actual render time and not diff.
+  cast_environment_->Logging()->InsertFrameEventWithDelay(kVideoRenderDelay,
+      rtp_timestamp, (*encoded_frame)->frame_id, now - *render_time);
 
   // Minimum time before a frame is due to be rendered before we pull it for
   // decode.

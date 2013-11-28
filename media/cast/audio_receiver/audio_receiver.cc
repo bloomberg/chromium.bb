@@ -224,10 +224,9 @@ void AudioReceiver::DecodeAudioFrameThread(
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
   base::TimeTicks playout_time;
   playout_time = GetPlayoutTime(now, rtp_timestamp);
-  base::TimeDelta diff = playout_time - now;
 
-  cast_environment_->Logging()->InsertFrameEvent(kAudioPlayoutDelay,
-      rtp_timestamp, diff.InMilliseconds());
+  cast_environment_->Logging()->InsertFrameEventWithDelay(kAudioPlayoutDelay,
+      rtp_timestamp, kFrameIdUnknown, playout_time - now);
 
   // Frame is ready - Send back to the main thread.
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,

@@ -51,7 +51,7 @@ void LoggingRaw::InsertBaseFrameEvent(CastLoggingEvent event,
                                       uint32 frame_id,
                                       uint32 rtp_timestamp) {
   // Is this a new event?
-  FrameRawMap::iterator it = frame_map_.find(event);
+  FrameRawMap::iterator it = frame_map_.find(rtp_timestamp);
   if (it == frame_map_.end()) {
     // Create a new map entry.
     FrameEvent info;
@@ -64,11 +64,9 @@ void LoggingRaw::InsertBaseFrameEvent(CastLoggingEvent event,
     it->second.timestamp.push_back(clock_->NowTicks());
     it->second.type.push_back(event);
     // Do we have a valid frame_id?
-    // We don't always have it to begin with.
-    // TODO(mikhal): Switch frame_id to int when the fix gets in.
-    // This is currently illegal, as frame_id is uint8, so commenting it out.
-    // if (it->second.frame_id == -1 && frame_id != -1)
-    //   it->second.frame_id = frame_id;
+    // Not all events have a valid frame id.
+    if (it->second.frame_id == kFrameIdUnknown && frame_id != kFrameIdUnknown)
+      it->second.frame_id = frame_id;
   }
 }
 

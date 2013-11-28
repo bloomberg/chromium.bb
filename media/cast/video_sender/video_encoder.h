@@ -67,6 +67,8 @@ class VideoEncoder : public VideoEncoderController {
   virtual int NumberOfSkippedFrames() const OVERRIDE;
 
  private:
+  friend class base::RefCountedThreadSafe<VideoEncoder>;
+
   const VideoSenderConfig video_config_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<Vp8Encoder> vp8_encoder_;

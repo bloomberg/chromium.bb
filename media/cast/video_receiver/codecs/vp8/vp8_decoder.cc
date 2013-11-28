@@ -12,6 +12,13 @@
 namespace media {
 namespace cast {
 
+void LogFrameDecodedEvent(CastEnvironment* const cast_environment,
+                          uint32 frame_id) {
+// TODO(mikhal): Sort out passing of rtp_timestamp.
+// cast_environment->Logging()->InsertFrameEvent(kVideoFrameDecoded,
+//      0, frame_id);
+}
+
 Vp8Decoder::Vp8Decoder(int number_of_cores,
                        scoped_refptr<CastEnvironment> cast_environment)
     : decoder_(new vpx_dec_ctx_t()),
@@ -84,13 +91,15 @@ bool Vp8Decoder::Decode(const EncodedVideoFrame* encoded_frame,
   memcpy(decoded_frame->v_plane.data, img->planes[VPX_PLANE_V],
          decoded_frame->v_plane.length);
 
-  cast_environment_->Logging()->InsertFrameEvent(kVideoFrameDecoded,
-      kFrameIdUnknown, encoded_frame->frame_id);
+  // Log:: Decoding complete (should be called from the main thread).
+  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, base::Bind(
+      LogFrameDecodedEvent, cast_environment_,encoded_frame->frame_id));
   VLOG(1) << "Decoded frame " << frame_id_int;
 
   // Frame decoded - return frame to the user via callback.
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-      base::Bind(frame_decoded_cb, base::Passed(&decoded_frame), render_time));
+      base::Bind(frame_decoded_cb, base::Passed(&decoded_frame),
+                 render_time));
 
   return true;
 }

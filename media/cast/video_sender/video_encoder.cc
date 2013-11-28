@@ -8,9 +8,16 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "media/base/video_frame.h"
+#include "media/cast/cast_defines.h"
 
 namespace media {
 namespace cast {
+
+void LogFrameEncodedEvent(CastEnvironment* const cast_environment,
+                          const base::TimeTicks& capture_time) {
+  cast_environment->Logging()->InsertFrameEvent(kVideoFrameEncoded,
+      GetVideoRtpTimestamp(capture_time), kFrameIdUnknown);
+}
 
 VideoEncoder::VideoEncoder(scoped_refptr<CastEnvironment> cast_environment,
                            const VideoSenderConfig& video_config,
@@ -46,6 +53,8 @@ bool VideoEncoder::EncodeVideoFrame(
     return false;
   }
 
+  cast_environment_->Logging()->InsertFrameEvent(kVideoFrameSentToEncoder,
+      GetVideoRtpTimestamp(capture_time), kFrameIdUnknown);
   cast_environment_->PostTask(CastEnvironment::VIDEO_ENCODER, FROM_HERE,
       base::Bind(&VideoEncoder::EncodeVideoFrameEncoderThread,
                  base::Unretained(this), video_frame, capture_time,
@@ -62,6 +71,7 @@ void VideoEncoder::EncodeVideoFrameEncoderThread(
     const CodecDynamicConfig& dynamic_config,
     const FrameEncodedCallback& frame_encoded_callback,
     const base::Closure frame_release_callback) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::VIDEO_ENCODER));
   if (dynamic_config.key_frame_requested) {
     vp8_encoder_->GenerateKeyFrame();
   }
@@ -69,12 +79,11 @@ void VideoEncoder::EncodeVideoFrameEncoderThread(
       dynamic_config.latest_frame_id_to_reference);
   vp8_encoder_->UpdateRates(dynamic_config.bit_rate);
 
-  uint32 rtp_timestamp = GetVideoRtpTimestamp(capture_time);
-  cast_environment_->Logging()->InsertFrameEvent(kVideoFrameSentToEncoder,
-      rtp_timestamp, kFrameIdUnknown);
   scoped_ptr<EncodedVideoFrame> encoded_frame(new EncodedVideoFrame());
   bool retval = vp8_encoder_->Encode(video_frame, encoded_frame.get());
 
+  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
+      base::Bind(LogFrameEncodedEvent, cast_environment_, capture_time));
   // We are done with the video frame release it.
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
                               frame_release_callback);
@@ -87,8 +96,6 @@ void VideoEncoder::EncodeVideoFrameEncoderThread(
     VLOG(1) << "Encoding resulted in an empty frame";
     return;
   }
-  cast_environment_->Logging()->InsertFrameEvent(kVideoFrameEncoded,
-      rtp_timestamp, kFrameIdUnknown);
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
       base::Bind(frame_encoded_callback,
           base::Passed(&encoded_frame), capture_time));

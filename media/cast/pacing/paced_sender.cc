@@ -29,11 +29,15 @@ PacedSender::~PacedSender() {}
 
 bool PacedSender::SendPackets(const PacketList& packets) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  cast_environment_->Logging()->InsertPacketListEvent(kPacketSentToPacer,
+                                                      packets);
   return SendPacketsToTransport(packets, &packet_list_);
 }
 
 bool PacedSender::ResendPackets(const PacketList& packets) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  cast_environment_->Logging()->InsertPacketListEvent(kPacketRetransmited,
+                                                      packets);
   return SendPacketsToTransport(packets, &resend_packet_list_);
 }
 
@@ -64,6 +68,8 @@ bool PacedSender::SendPacketsToTransport(const PacketList& packets,
   packets_sent_in_burst_ += packets_to_send.size();
   if (packets_to_send.empty()) return true;
 
+  cast_environment_->Logging()->InsertPacketListEvent(kPacketSentToNetwork,
+                                                      packets);
   return transport_->SendPackets(packets_to_send);
 }
 

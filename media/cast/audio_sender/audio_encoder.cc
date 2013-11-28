@@ -20,6 +20,13 @@
 namespace media {
 namespace cast {
 
+void LogAudioEncodedEvent(CastEnvironment* const cast_environment,
+                          const base::TimeTicks& recorded_time) {
+  // TODO(mikhal): Resolve timestamp calculation for audio.
+  cast_environment->Logging()->InsertFrameEvent(kAudioFrameEncoded,
+      GetVideoRtpTimestamp(recorded_time), kFrameIdUnknown);
+}
+
 // Base class that handles the common problem of feeding one or more AudioBus'
 // data into a 10 ms buffer and then, once the buffer is full, encoding the
 // signal and emitting an EncodedAudioFrame via the FrameEncodedCallback.
@@ -277,6 +284,8 @@ void AudioEncoder::EncodeAudio(
     const base::Closure& done_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::AUDIO_ENCODER));
   impl_->EncodeAudio(audio_bus, recorded_time, done_callback);
+  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
+      base::Bind(LogAudioEncodedEvent, cast_environment_, recorded_time));
 }
 
 }  // namespace cast

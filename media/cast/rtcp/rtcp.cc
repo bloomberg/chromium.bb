@@ -188,6 +188,8 @@ void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
 
   if (cast_message) {
     packet_type_flags |= RtcpSender::kRtcpCast;
+    cast_environment_->Logging()->InsertGenericEvent(kAckSent,
+        cast_message->ack_frame_id_);
   }
   if (receiver_log) {
     packet_type_flags |= RtcpSender::kRtcpReceiverLog;

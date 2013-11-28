@@ -15,6 +15,8 @@
 namespace media {
 namespace cast {
 
+static const uint32 kFrameIdUnknown = 0xFFFF;
+
 struct CastLoggingConfig {
   CastLoggingConfig();
   ~CastLoggingConfig();
