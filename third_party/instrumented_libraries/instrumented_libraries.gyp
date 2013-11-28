@@ -13,6 +13,7 @@
       'dependencies': [
         'libpng12-0',
         'libxau6',
+        'libglib2.0-0',
       ],
       'actions': [
         {
@@ -34,6 +35,11 @@
     },
     {
       'target_name': 'libxau6',
+      'dependencies=': [],
+      'includes': ['standard_instrumented_library_target.gypi'],
+    },
+    {
+      'target_name': 'libglib2.0-0',
       'dependencies=': [],
       'includes': ['standard_instrumented_library_target.gypi'],
     },
