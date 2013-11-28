@@ -30,22 +30,25 @@ namespace {
 
 const char kSkiaBenchmarkingExtensionName[] = "v8/SkiaBenchmarking";
 
-static scoped_ptr<base::Value> ParsePictureArg(v8::Handle<v8::Value> arg) {
+static scoped_ptr<base::Value> ParsePictureArg(v8::Isolate* isolate,
+                                               v8::Handle<v8::Value> arg) {
   scoped_ptr<content::V8ValueConverter> converter(
       content::V8ValueConverter::create());
   return scoped_ptr<base::Value>(
-      converter->FromV8Value(arg, v8::Context::GetCurrent()));
+      converter->FromV8Value(arg, isolate->GetCurrentContext()));
 }
 
-static scoped_refptr<cc::Picture> ParsePictureStr(v8::Handle<v8::Value> arg) {
-  scoped_ptr<base::Value> picture_value = ParsePictureArg(arg);
+static scoped_refptr<cc::Picture> ParsePictureStr(v8::Isolate* isolate,
+                                                  v8::Handle<v8::Value> arg) {
+  scoped_ptr<base::Value> picture_value = ParsePictureArg(isolate, arg);
   if (!picture_value)
     return NULL;
   return cc::Picture::CreateFromSkpValue(picture_value.get());
 }
 
-static scoped_refptr<cc::Picture> ParsePictureHash(v8::Handle<v8::Value> arg) {
-  scoped_ptr<base::Value> picture_value = ParsePictureArg(arg);
+static scoped_refptr<cc::Picture> ParsePictureHash(v8::Isolate* isolate,
+                                                   v8::Handle<v8::Value> arg) {
+  scoped_ptr<base::Value> picture_value = ParsePictureArg(isolate, arg);
   if (!picture_value)
     return NULL;
   return cc::Picture::CreateFromValue(picture_value.get());
@@ -118,16 +121,17 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
       content::SkiaBenchmarkingExtension::InitSkGraphics();
   }
 
-  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
+  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
+      v8::Isolate* isolate,
       v8::Handle<v8::String> name) OVERRIDE {
-    if (name->Equals(v8::String::New("Rasterize")))
-      return v8::FunctionTemplate::New(Rasterize);
-    if (name->Equals(v8::String::New("GetOps")))
-      return v8::FunctionTemplate::New(GetOps);
-    if (name->Equals(v8::String::New("GetOpTimings")))
-      return v8::FunctionTemplate::New(GetOpTimings);
-    if (name->Equals(v8::String::New("GetInfo")))
-      return v8::FunctionTemplate::New(GetInfo);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "Rasterize")))
+      return v8::FunctionTemplate::New(isolate, Rasterize);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "GetOps")))
+      return v8::FunctionTemplate::New(isolate, GetOps);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "GetOpTimings")))
+      return v8::FunctionTemplate::New(isolate, GetOpTimings);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "GetInfo")))
+      return v8::FunctionTemplate::New(isolate, GetInfo);
 
     return v8::Handle<v8::FunctionTemplate>();
   }
@@ -136,7 +140,8 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     if (args.Length() < 1)
       return;
 
-    scoped_refptr<cc::Picture> picture = ParsePictureHash(args[0]);
+    v8::Isolate* isolate = args.GetIsolate();
+    scoped_refptr<cc::Picture> picture = ParsePictureHash(isolate, args[0]);
     if (!picture.get())
       return;
 
@@ -149,7 +154,7 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
       scoped_ptr<content::V8ValueConverter> converter(
           content::V8ValueConverter::create());
       scoped_ptr<base::Value> params_value(
-          converter->FromV8Value(args[1], v8::Context::GetCurrent()));
+          converter->FromV8Value(args[1], isolate->GetCurrentContext()));
 
       const base::DictionaryValue* params_dict = NULL;
       if (params_value.get() && params_value->GetAsDictionary(&params_dict)) {
@@ -216,11 +221,11 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     }
 
     v8::Handle<v8::Object> result = v8::Object::New();
-    result->Set(v8::String::New("width"),
+    result->Set(v8::String::NewFromUtf8(isolate, "width"),
                 v8::Number::New(snapped_clip.width()));
-    result->Set(v8::String::New("height"),
+    result->Set(v8::String::NewFromUtf8(isolate, "height"),
                 v8::Number::New(snapped_clip.height()));
-    result->Set(v8::String::New("data"), buffer.toV8Value());
+    result->Set(v8::String::NewFromUtf8(isolate, "data"), buffer.toV8Value());
 
     args.GetReturnValue().Set(result);
   }
@@ -229,7 +234,8 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     if (args.Length() != 1)
       return;
 
-    scoped_refptr<cc::Picture> picture = ParsePictureHash(args[0]);
+    v8::Isolate* isolate = args.GetIsolate();
+    scoped_refptr<cc::Picture> picture = ParsePictureHash(isolate, args[0]);
     if (!picture.get())
       return;
 
@@ -237,25 +243,27 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     SkDebugCanvas canvas(bounds.width(), bounds.height());
     picture->Replay(&canvas);
 
-    v8::Local<v8::Array> result = v8::Array::New(canvas.getSize());
+    v8::Local<v8::Array> result = v8::Array::New(isolate, canvas.getSize());
     for (int i = 0; i < canvas.getSize(); ++i) {
       DrawType cmd_type = canvas.getDrawCommandAt(i)->getType();
       v8::Handle<v8::Object> cmd = v8::Object::New();
-      cmd->Set(v8::String::New("cmd_type"), v8::Integer::New(cmd_type));
-      cmd->Set(v8::String::New("cmd_string"), v8::String::New(
-          SkDrawCommand::GetCommandString(cmd_type)));
+      cmd->Set(v8::String::NewFromUtf8(isolate, "cmd_type"),
+               v8::Integer::New(isolate, cmd_type));
+      cmd->Set(v8::String::NewFromUtf8(isolate, "cmd_string"),
+               v8::String::NewFromUtf8(
+                   isolate, SkDrawCommand::GetCommandString(cmd_type)));
 
       SkTDArray<SkString*>* info = canvas.getCommandInfo(i);
       DCHECK(info);
 
-      v8::Local<v8::Array> v8_info = v8::Array::New(info->count());
+      v8::Local<v8::Array> v8_info = v8::Array::New(isolate, info->count());
       for (int j = 0; j < info->count(); ++j) {
         const SkString* info_str = (*info)[j];
         DCHECK(info_str);
-        v8_info->Set(j, v8::String::New(info_str->c_str()));
+        v8_info->Set(j, v8::String::NewFromUtf8(isolate, info_str->c_str()));
       }
 
-      cmd->Set(v8::String::New("info"), v8_info);
+      cmd->Set(v8::String::NewFromUtf8(isolate, "info"), v8_info);
 
       result->Set(i, cmd);
     }
@@ -267,7 +275,8 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     if (args.Length() != 1)
       return;
 
-    scoped_refptr<cc::Picture> picture = ParsePictureHash(args[0]);
+    v8::Isolate* isolate = args.GetIsolate();
+    scoped_refptr<cc::Picture> picture = ParsePictureHash(isolate, args[0]);
     if (!picture.get())
       return;
 
@@ -289,14 +298,14 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     picture->Replay(&benchmarking_canvas);
 
     v8::Local<v8::Array> op_times =
-            v8::Array::New(benchmarking_canvas.CommandCount());
+        v8::Array::New(isolate, benchmarking_canvas.CommandCount());
     for (size_t i = 0; i < benchmarking_canvas.CommandCount(); ++i)
         op_times->Set(i, v8::Number::New(benchmarking_canvas.GetTime(i)));
 
-    v8::Handle<v8::Object> result = v8::Object::New();
-    result->Set(v8::String::New("total_time"),
+    v8::Handle<v8::Object> result = v8::Object::New(isolate);
+    result->Set(v8::String::NewFromUtf8(isolate, "total_time"),
                 v8::Number::New(total_time.InMillisecondsF()));
-    result->Set(v8::String::New("cmd_times"), op_times);
+    result->Set(v8::String::NewFromUtf8(isolate, "cmd_times"), op_times);
 
     args.GetReturnValue().Set(result);
   }
@@ -305,14 +314,15 @@ class SkiaBenchmarkingWrapper : public v8::Extension {
     if (args.Length() != 1)
       return;
 
-    scoped_refptr<cc::Picture> picture = ParsePictureStr(args[0]);
+    v8::Isolate* isolate = args.GetIsolate();
+    scoped_refptr<cc::Picture> picture = ParsePictureStr(isolate, args[0]);
     if (!picture.get())
       return;
 
-    v8::Handle<v8::Object> result = v8::Object::New();
-    result->Set(v8::String::New("width"),
+    v8::Handle<v8::Object> result = v8::Object::New(isolate);
+    result->Set(v8::String::NewFromUtf8(isolate, "width"),
                 v8::Number::New(picture->LayerRect().width()));
-    result->Set(v8::String::New("height"),
+    result->Set(v8::String::NewFromUtf8(isolate, "height"),
                 v8::Number::New(picture->LayerRect().height()));
 
     args.GetReturnValue().Set(result);

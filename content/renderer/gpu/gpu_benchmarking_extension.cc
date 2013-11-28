@@ -105,28 +105,33 @@ class SkPictureSerializer {
 
 class RenderingStatsEnumerator : public cc::RenderingStats::Enumerator {
  public:
-  RenderingStatsEnumerator(v8::Handle<v8::Object> stats_object)
-      : stats_object(stats_object) { }
+  RenderingStatsEnumerator(v8::Isolate* isolate,
+                           v8::Handle<v8::Object> stats_object)
+      : isolate(isolate), stats_object(stats_object) {}
 
   virtual void AddInt64(const char* name, int64 value) OVERRIDE {
-    stats_object->Set(v8::String::New(name), v8::Number::New(value));
+    stats_object->Set(v8::String::NewFromUtf8(isolate, name),
+                      v8::Number::New(isolate, value));
   }
 
   virtual void AddDouble(const char* name, double value) OVERRIDE {
-    stats_object->Set(v8::String::New(name), v8::Number::New(value));
+    stats_object->Set(v8::String::NewFromUtf8(isolate, name),
+                      v8::Number::New(isolate, value));
   }
 
   virtual void AddInt(const char* name, int value) OVERRIDE {
-    stats_object->Set(v8::String::New(name), v8::Integer::New(value));
+    stats_object->Set(v8::String::NewFromUtf8(isolate, name),
+                      v8::Integer::New(value));
   }
 
   virtual void AddTimeDeltaInSecondsF(const char* name,
                                       const base::TimeDelta& value) OVERRIDE {
-    stats_object->Set(v8::String::New(name),
-                      v8::Number::New(value.InSecondsF()));
+    stats_object->Set(v8::String::NewFromUtf8(isolate, name),
+                      v8::Number::New(isolate, value.InSecondsF()));
   }
 
  private:
+  v8::Isolate* isolate;
   v8::Handle<v8::Object> stats_object;
 };
 
@@ -162,8 +167,8 @@ class CallbackAndContext : public base::RefCounted<CallbackAndContext> {
   friend class base::RefCounted<CallbackAndContext>;
 
   virtual ~CallbackAndContext() {
-    callback_.Dispose();
-    context_.Dispose();
+    callback_.Reset();
+    context_.Reset();
   }
 
   v8::Isolate* isolate_;
@@ -328,32 +333,37 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "  return HasGpuProcess();"
           "};") {}
 
-  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
+  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
+      v8::Isolate* isolate,
       v8::Handle<v8::String> name) OVERRIDE {
-    if (name->Equals(v8::String::New("SetNeedsDisplayOnAllLayers")))
-      return v8::FunctionTemplate::New(SetNeedsDisplayOnAllLayers);
-    if (name->Equals(v8::String::New("SetRasterizeOnlyVisibleContent")))
-      return v8::FunctionTemplate::New(SetRasterizeOnlyVisibleContent);
-    if (name->Equals(v8::String::New("GetRenderingStats")))
-      return v8::FunctionTemplate::New(GetRenderingStats);
-    if (name->Equals(v8::String::New("GetGpuRenderingStats")))
-      return v8::FunctionTemplate::New(GetGpuRenderingStats);
-    if (name->Equals(v8::String::New("PrintToSkPicture")))
-      return v8::FunctionTemplate::New(PrintToSkPicture);
-    if (name->Equals(v8::String::New("BeginSmoothScroll")))
-      return v8::FunctionTemplate::New(BeginSmoothScroll);
-    if (name->Equals(v8::String::New("SmoothScrollSendsTouch")))
-      return v8::FunctionTemplate::New(SmoothScrollSendsTouch);
-    if (name->Equals(v8::String::New("BeginPinch")))
-      return v8::FunctionTemplate::New(BeginPinch);
-    if (name->Equals(v8::String::New("BeginWindowSnapshotPNG")))
-      return v8::FunctionTemplate::New(BeginWindowSnapshotPNG);
-    if (name->Equals(v8::String::New("ClearImageCache")))
-      return v8::FunctionTemplate::New(ClearImageCache);
-    if (name->Equals(v8::String::New("RunMicroBenchmark")))
-      return v8::FunctionTemplate::New(RunMicroBenchmark);
-    if (name->Equals(v8::String::New("HasGpuProcess")))
-      return v8::FunctionTemplate::New(HasGpuProcess);
+    if (name->Equals(
+            v8::String::NewFromUtf8(isolate, "SetNeedsDisplayOnAllLayers")))
+      return v8::FunctionTemplate::New(isolate, SetNeedsDisplayOnAllLayers);
+    if (name->Equals(
+            v8::String::NewFromUtf8(isolate, "SetRasterizeOnlyVisibleContent")))
+      return v8::FunctionTemplate::New(isolate, SetRasterizeOnlyVisibleContent);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "GetRenderingStats")))
+      return v8::FunctionTemplate::New(isolate, GetRenderingStats);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "GetGpuRenderingStats")))
+      return v8::FunctionTemplate::New(isolate, GetGpuRenderingStats);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "PrintToSkPicture")))
+      return v8::FunctionTemplate::New(isolate, PrintToSkPicture);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "BeginSmoothScroll")))
+      return v8::FunctionTemplate::New(isolate, BeginSmoothScroll);
+    if (name->Equals(
+            v8::String::NewFromUtf8(isolate, "SmoothScrollSendsTouch")))
+      return v8::FunctionTemplate::New(isolate, SmoothScrollSendsTouch);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "BeginPinch")))
+      return v8::FunctionTemplate::New(isolate, BeginPinch);
+    if (name->Equals(
+            v8::String::NewFromUtf8(isolate, "BeginWindowSnapshotPNG")))
+      return v8::FunctionTemplate::New(isolate, BeginWindowSnapshotPNG);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "ClearImageCache")))
+      return v8::FunctionTemplate::New(isolate, ClearImageCache);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "RunMicroBenchmark")))
+      return v8::FunctionTemplate::New(isolate, RunMicroBenchmark);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "HasGpuProcess")))
+      return v8::FunctionTemplate::New(isolate, HasGpuProcess);
 
     return v8::Handle<v8::FunctionTemplate>();
   }
@@ -392,7 +402,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     context.render_view_impl()->GetBrowserRenderingStats(&browser_stats);
     v8::Handle<v8::Object> stats_object = v8::Object::New();
 
-    RenderingStatsEnumerator enumerator(stats_object);
+    RenderingStatsEnumerator enumerator(args.GetIsolate(), stats_object);
     stats.rendering_stats.EnumerateFields(&enumerator);
     gpu_stats.EnumerateFields(&enumerator);
     browser_stats.EnumerateFields(&enumerator);
@@ -410,8 +420,9 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     content::GpuRenderingStats gpu_stats;
     context.render_view_impl()->GetGpuRenderingStats(&gpu_stats);
 
-    v8::Handle<v8::Object> stats_object = v8::Object::New();
-    RenderingStatsEnumerator enumerator(stats_object);
+    v8::Isolate* isolate = args.GetIsolate();
+    v8::Handle<v8::Object> stats_object = v8::Object::New(isolate);
+    RenderingStatsEnumerator enumerator(isolate, stats_object);
     gpu_stats.EnumerateFields(&enumerator);
 
     args.GetReturnValue().Set(stats_object);
@@ -422,7 +433,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     if (args.Length() != 1)
       return;
 
-    v8::String::AsciiValue dirname(args[0]);
+    v8::String::Utf8Value dirname(args[0]);
     if (dirname.length() == 0)
       return;
 
@@ -440,8 +451,9 @@ class GpuBenchmarkingWrapper : public v8::Extension {
         !base::PathIsWritable(dirpath)) {
       std::string msg("Path is not writable: ");
       msg.append(dirpath.MaybeAsASCII());
-      v8::ThrowException(v8::Exception::Error(
-          v8::String::New(msg.c_str(), msg.length())));
+      v8::Isolate* isolate = args.GetIsolate();
+      isolate->ThrowException(v8::Exception::Error(v8::String::NewFromUtf8(
+          isolate, msg.c_str(), v8::String::kNormalString, msg.length())));
       return;
     }
 
@@ -598,7 +610,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
   static void OnSnapshotCompleted(CallbackAndContext* callback_and_context,
                                   const gfx::Size& size,
                                   const std::vector<unsigned char>& png) {
-    v8::HandleScope scope(callback_and_context->isolate());
+    v8::Isolate* isolate = callback_and_context->isolate();
+    v8::HandleScope scope(isolate);
     v8::Handle<v8::Context> context = callback_and_context->GetContext();
     v8::Context::Scope context_scope(context);
     WebFrame* frame = WebFrame::frameForContext(context);
@@ -608,24 +621,27 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
       if(!size.IsEmpty()) {
         v8::Handle<v8::Object> result_object;
-        result_object = v8::Object::New();
+        result_object = v8::Object::New(isolate);
 
-        result_object->Set(v8::String::New("width"),
-                           v8::Number::New(size.width()));
-        result_object->Set(v8::String::New("height"),
-                           v8::Number::New(size.height()));
+        result_object->Set(v8::String::NewFromUtf8(isolate, "width"),
+                           v8::Number::New(isolate, size.width()));
+        result_object->Set(v8::String::NewFromUtf8(isolate, "height"),
+                           v8::Number::New(isolate, size.height()));
 
         std::string base64_png;
         base::Base64Encode(base::StringPiece(
             reinterpret_cast<const char*>(&*png.begin()), png.size()),
             &base64_png);
 
-        result_object->Set(v8::String::New("data"),
-            v8::String::New(base64_png.c_str(), base64_png.size()));
+        result_object->Set(v8::String::NewFromUtf8(isolate, "data"),
+                           v8::String::NewFromUtf8(isolate,
+                                                   base64_png.c_str(),
+                                                   v8::String::kNormalString,
+                                                   base64_png.size()));
 
         result = result_object;
       } else {
-        result = v8::Null();
+        result = v8::Null(isolate);
       }
 
       v8::Handle<v8::Value> argv[] = { result };

@@ -41,12 +41,13 @@ class MemoryBenchmarkingWrapper : public v8::Extension {
         "};"
         ) {}
 
-  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
+  virtual v8::Handle<v8::FunctionTemplate> GetNativeFunctionTemplate(
+      v8::Isolate* isolate,
       v8::Handle<v8::String> name) OVERRIDE {
-    if (name->Equals(v8::String::New("IsHeapProfilerRunning")))
-      return v8::FunctionTemplate::New(IsHeapProfilerRunning);
-    else if (name->Equals(v8::String::New("HeapProfilerDump")))
-      return v8::FunctionTemplate::New(HeapProfilerDump);
+    if (name->Equals(v8::String::NewFromUtf8(isolate, "IsHeapProfilerRunning")))
+      return v8::FunctionTemplate::New(isolate, IsHeapProfilerRunning);
+    else if (name->Equals(v8::String::NewFromUtf8(isolate, "HeapProfilerDump")))
+      return v8::FunctionTemplate::New(isolate, HeapProfilerDump);
 
     return v8::Handle<v8::FunctionTemplate>();
   }
@@ -60,10 +61,10 @@ class MemoryBenchmarkingWrapper : public v8::Extension {
       const v8::FunctionCallbackInfo<v8::Value>& args) {
     std::string process_type;
     if (args.Length() && args[0]->IsString())
-      process_type = *v8::String::AsciiValue(args[0]);
+      process_type = *v8::String::Utf8Value(args[0]);
     std::string reason("benchmarking_extension");
     if (args.Length() > 1 && args[1]->IsString())
-      reason = *v8::String::AsciiValue(args[1]);
+      reason = *v8::String::Utf8Value(args[1]);
     if (process_type == "browser") {
       content::RenderThreadImpl::current()->Send(
           new MemoryBenchmarkHostMsg_HeapProfilerDump(reason));
