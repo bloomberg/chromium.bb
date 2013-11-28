@@ -457,6 +457,16 @@
                 '../chrome/chrome.gyp:linux_symbols'
               ],
             }],
+            ['OS=="win"', {
+              'dependencies': [
+                '../chrome/chrome.gyp:crash_service',
+              ],
+            }],
+            ['OS=="win" and target_arch=="ia32"', {
+              'dependencies': [
+                '../chrome/chrome.gyp:crash_service_win64',
+              ],
+            }],
           ],
         }, # target_name: chromium_builder_perf
         {
