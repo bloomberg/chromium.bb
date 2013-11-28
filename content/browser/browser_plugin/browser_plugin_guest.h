@@ -423,6 +423,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   void OnSetEditCommandsForNextKeyEvent(
       int instance_id,
       const std::vector<EditCommand>& edit_commands);
+  void OnSetContentsOpaque(int instance_id, bool opaque);
   // The guest WebContents is visible if both its embedder is visible and
   // the browser plugin element is visible. If either one is not then the
   // WebContents is marked as hidden. A hidden WebContents will consume
@@ -519,6 +520,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   bool mouse_locked_;
   bool pending_lock_request_;
   bool guest_visible_;
+  bool guest_opaque_;
   bool embedder_visible_;
   std::string name_;
   bool auto_size_enabled_;

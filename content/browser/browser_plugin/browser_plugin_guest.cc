@@ -524,6 +524,8 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
                         OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetFocus, OnSetFocus)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetName, OnSetName)
+    IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetContentsOpaque,
+                        OnSetContentsOpaque)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_SetVisibility, OnSetVisibility)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UnlockMouse_ACK, OnUnlockMouseAck)
     IPC_MESSAGE_HANDLER(BrowserPluginHostMsg_UpdateGeometry, OnUpdateGeometry)
@@ -538,6 +540,7 @@ void BrowserPluginGuest::Initialize(
     WebContentsImpl* embedder_web_contents) {
   focused_ = params.focused;
   guest_visible_ = params.visible;
+  guest_opaque_ = params.opaque;
   guest_window_rect_ = params.resize_guest_params.view_rect;
 
   if (!params.name.empty())
@@ -1059,6 +1062,7 @@ void BrowserPluginGuest::RenderViewReady() {
     rvh->DisableAutoResize(damage_view_size_);
 
   Send(new ViewMsg_SetName(routing_id(), name_));
+  OnSetContentsOpaque(instance_id_, guest_opaque_);
 
   RenderWidgetHostImpl::From(rvh)->
       set_hung_renderer_delay_ms(guest_hang_timeout_);
@@ -1117,6 +1121,7 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent::ID:
     case BrowserPluginHostMsg_SetFocus::ID:
     case BrowserPluginHostMsg_SetName::ID:
+    case BrowserPluginHostMsg_SetContentsOpaque::ID:
     case BrowserPluginHostMsg_SetVisibility::ID:
     case BrowserPluginHostMsg_UnlockMouse_ACK::ID:
     case BrowserPluginHostMsg_UpdateGeometry::ID:
@@ -1488,6 +1493,18 @@ void BrowserPluginGuest::OnSetEditCommandsForNextKeyEvent(
     const std::vector<EditCommand>& edit_commands) {
   Send(new InputMsg_SetEditCommandsForNextKeyEvent(routing_id(),
                                                    edit_commands));
+}
+
+void BrowserPluginGuest::OnSetContentsOpaque(int instance_id, bool opaque) {
+  guest_opaque_ = opaque;
+
+  SkBitmap background;
+  if (!guest_opaque_) {
+    background.setConfig(SkBitmap::kARGB_8888_Config, 1, 1);
+    unsigned int color = 0;
+    background.setPixels(&color);
+  }
+  Send(new ViewMsg_SetBackground(routing_id(), background));
 }
 
 void BrowserPluginGuest::OnSetVisibility(int instance_id, bool visible) {

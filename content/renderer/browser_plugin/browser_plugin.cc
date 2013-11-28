@@ -86,6 +86,7 @@ BrowserPlugin::BrowserPlugin(
       content_window_routing_id_(MSG_ROUTING_NONE),
       plugin_focused_(false),
       visible_(true),
+      opaque_(true),
       before_first_navigation_(true),
       mouse_locked_(false),
       browser_plugin_manager_(render_view->GetBrowserPluginManager()),
@@ -371,6 +372,7 @@ void BrowserPlugin::Attach(scoped_ptr<base::DictionaryValue> extra_params) {
   BrowserPluginHostMsg_Attach_Params attach_params;
   attach_params.focused = ShouldGuestBeFocused();
   attach_params.visible = visible_;
+  attach_params.opaque = opaque_;
   attach_params.name = GetNameAttribute();
   attach_params.storage_partition_id = storage_partition_id_;
   attach_params.persist_storage = persist_storage_;
@@ -389,6 +391,23 @@ void BrowserPlugin::Attach(scoped_ptr<base::DictionaryValue> extra_params) {
 void BrowserPlugin::DidCommitCompositorFrame() {
   if (compositing_helper_.get())
     compositing_helper_->DidCommitCompositorFrame();
+}
+
+void BrowserPlugin::SetContentsOpaque(bool opaque) {
+  if (opaque_ == opaque)
+    return;
+
+  opaque_ = opaque;
+  if (!HasGuestInstanceID())
+    return;
+
+  if (compositing_helper_)
+    compositing_helper_->SetContentsOpaque(opaque_);
+
+  browser_plugin_manager()->Send(new BrowserPluginHostMsg_SetContentsOpaque(
+        render_view_routing_id_,
+        guest_instance_id_,
+        opaque_));
 }
 
 void BrowserPlugin::OnAdvanceFocus(int guest_instance_id, bool reverse) {
@@ -899,6 +918,7 @@ void BrowserPlugin::EnableCompositing(bool enable) {
     }
   }
   compositing_helper_->EnableCompositing(enable);
+  compositing_helper_->SetContentsOpaque(opaque_);
 }
 
 void BrowserPlugin::destroy() {

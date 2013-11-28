@@ -135,6 +135,10 @@ class CONTENT_EXPORT BrowserPlugin :
   // sent, if needed.
   void DidCommitCompositorFrame();
 
+  // Apply opacity settings on the composited layers in embedder and send a
+  // message to the guest renderer to enable or disable transparent background.
+  void SetContentsOpaque(bool opaque);
+
   // Returns whether a message should be forwarded to BrowserPlugin.
   static bool ShouldForwardToBrowserPlugin(const IPC::Message& message);
 
@@ -331,6 +335,9 @@ class CONTENT_EXPORT BrowserPlugin :
   // Tracks the visibility of the browser plugin regardless of the whole
   // embedder RenderView's visibility.
   bool visible_;
+  // Tracks the opacity of the compositing helper's layers and the guest
+  // renderer process.
+  bool opaque_;
 
   WebCursor cursor_;
 
