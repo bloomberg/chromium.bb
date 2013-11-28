@@ -58,6 +58,8 @@
         [ 'OS == "ios"', { 'include_dirs': [ 'ios' ] } ],
         [ 'OS == "mac"', { 'include_dirs': [ 'mac' ] } ],
         [ 'OS == "win"', { 'include_dirs': [ 'open-vcdiff/vsprojects' ] } ],
+        # TODO(mark): Remove usage of the deprecated auto_ptr.
+        [ 'clang == 1', { 'cflags': [ '-Wno-deprecated-declarations' ] } ],
       ],
       # open-vcdiff's logging.h introduces static initializers. This was
       # reported upstream years ago (
