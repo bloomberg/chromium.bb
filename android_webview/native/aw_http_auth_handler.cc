@@ -27,7 +27,7 @@ AwHttpAuthHandler::AwHttpAuthHandler(AwLoginDelegate* login_delegate,
   JNIEnv* env = base::android::AttachCurrentThread();
   http_auth_handler_.Reset(
       Java_AwHttpAuthHandler_create(
-          env, reinterpret_cast<jint>(this), first_auth_attempt));
+          env, reinterpret_cast<intptr_t>(this), first_auth_attempt));
 }
 
 AwHttpAuthHandler:: ~AwHttpAuthHandler() {

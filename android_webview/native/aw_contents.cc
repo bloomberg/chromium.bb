@@ -320,14 +320,14 @@ void AwContents::Destroy(JNIEnv* env, jobject obj) {
   }
 }
 
-static jint Init(JNIEnv* env, jclass, jobject browser_context) {
+static jlong Init(JNIEnv* env, jclass, jobject browser_context) {
   // TODO(joth): Use |browser_context| to get the native BrowserContext, rather
   // than hard-code the default instance lookup here.
   scoped_ptr<WebContents> web_contents(content::WebContents::Create(
       content::WebContents::CreateParams(AwBrowserContext::GetDefault())));
   // Return an 'uninitialized' instance; most work is deferred until the
   // subsequent SetJavaPeers() call.
-  return reinterpret_cast<jint>(new AwContents(web_contents.Pass()));
+  return reinterpret_cast<intptr_t>(new AwContents(web_contents.Pass()));
 }
 
 static void SetAwDrawSWFunctionTable(JNIEnv* env, jclass, jint function_table) {
@@ -944,12 +944,12 @@ void AwContents::OnWebLayoutContentsSizeChanged(
       env, obj.obj(), contents_size.width(), contents_size.height());
 }
 
-jint AwContents::CapturePicture(JNIEnv* env,
-                                jobject obj,
-                                int width,
-                                int height) {
+jlong AwContents::CapturePicture(JNIEnv* env,
+                                 jobject obj,
+                                 int width,
+                                 int height) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return reinterpret_cast<jint>(new AwPicture(
+  return reinterpret_cast<intptr_t>(new AwPicture(
       browser_view_renderer_->CapturePicture(width, height)));
 }
 

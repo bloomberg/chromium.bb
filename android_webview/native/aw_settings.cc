@@ -42,7 +42,7 @@ class AwSettingsUserData : public base::SupportsUserData::Data {
   AwSettings* settings_;
 };
 
-AwSettings::AwSettings(JNIEnv* env, jobject obj, jint web_contents)
+AwSettings::AwSettings(JNIEnv* env, jobject obj, jlong web_contents)
     : WebContentsObserver(
           reinterpret_cast<content::WebContents*>(web_contents)),
       aw_settings_(env, obj) {
@@ -60,7 +60,7 @@ AwSettings::~AwSettings() {
   jobject obj = scoped_obj.obj();
   if (!obj) return;
   Java_AwSettings_nativeAwSettingsGone(env, obj,
-                                       reinterpret_cast<jint>(this));
+                                       reinterpret_cast<intptr_t>(this));
 }
 
 void AwSettings::Destroy(JNIEnv* env, jobject obj) {
@@ -313,11 +313,11 @@ void AwSettings::PopulateWebPreferences(WebPreferences* web_prefs) {
       Java_AwSettings_getSpatialNavigationLocked(env, obj);
 }
 
-static jint Init(JNIEnv* env,
-                 jobject obj,
-                 jint web_contents) {
+static jlong Init(JNIEnv* env,
+                  jobject obj,
+                  jlong web_contents) {
   AwSettings* settings = new AwSettings(env, obj, web_contents);
-  return reinterpret_cast<jint>(settings);
+  return reinterpret_cast<intptr_t>(settings);
 }
 
 static jstring GetDefaultUserAgent(JNIEnv* env, jclass clazz) {

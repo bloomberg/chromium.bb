@@ -137,7 +137,7 @@ public class AwContents {
         boolean requestDrawGL(Canvas canvas);
     }
 
-    private int mNativeAwContents;
+    private long mNativeAwContents;
     private final AwBrowserContext mBrowserContext;
     private final ViewGroup mContainerView;
     private ContentViewCore mContentViewCore;
@@ -194,8 +194,8 @@ public class AwContents {
     private ComponentCallbacks2 mComponentCallbacks;
 
     private static final class DestroyRunnable implements Runnable {
-        private final int mNativeAwContents;
-        private DestroyRunnable(int nativeAwContents) {
+        private final long mNativeAwContents;
+        private DestroyRunnable(long nativeAwContents) {
             mNativeAwContents = nativeAwContents;
         }
         @Override
@@ -562,7 +562,7 @@ public class AwContents {
      * TAKE CARE! This method can get called multiple times per java instance. Code accordingly.
      * ^^^^^^^^^  See the native class declaration for more details on relative object lifetimes.
      */
-    private void setNewAwContents(int newAwContentsPtr) {
+    private void setNewAwContents(long newAwContentsPtr) {
         if (mNativeAwContents != 0) {
             destroy();
             mContentViewCore = null;
@@ -2011,68 +2011,69 @@ public class AwContents {
     //  Native methods
     //--------------------------------------------------------------------------------------------
 
-    private static native int nativeInit(AwBrowserContext browserContext);
-    private static native void nativeDestroy(int nativeAwContents);
+    private static native long nativeInit(AwBrowserContext browserContext);
+    private static native void nativeDestroy(long nativeAwContents);
     private static native void nativeSetAwDrawSWFunctionTable(int functionTablePointer);
     private static native void nativeSetAwDrawGLFunctionTable(int functionTablePointer);
     private static native int nativeGetAwDrawGLFunction();
     private static native int nativeGetNativeInstanceCount();
     private static native void nativeSetShouldDownloadFavicons();
-    private native void nativeSetJavaPeers(int nativeAwContents, AwContents awContents,
+    private native void nativeSetJavaPeers(long nativeAwContents, AwContents awContents,
             AwWebContentsDelegate webViewWebContentsDelegate,
             AwContentsClientBridge contentsClientBridge,
             AwContentsIoThreadClient ioThreadClient,
             InterceptNavigationDelegate navigationInterceptionDelegate);
-    private native int nativeGetWebContents(int nativeAwContents);
+    private native int nativeGetWebContents(long nativeAwContents);
 
-    private native void nativeDocumentHasImages(int nativeAwContents, Message message);
+    private native void nativeDocumentHasImages(long nativeAwContents, Message message);
     private native void nativeGenerateMHTML(
-            int nativeAwContents, String path, ValueCallback<String> callback);
+            long nativeAwContents, String path, ValueCallback<String> callback);
 
-    private native void nativeAddVisitedLinks(int nativeAwContents, String[] visitedLinks);
-    private native boolean nativeOnDraw(int nativeAwContents, Canvas canvas,
+    private native void nativeAddVisitedLinks(long nativeAwContents, String[] visitedLinks);
+    private native boolean nativeOnDraw(long nativeAwContents, Canvas canvas,
             boolean isHardwareAccelerated, int scrollX, int ScrollY,
             int clipLeft, int clipTop, int clipRight, int clipBottom);
-    private native void nativeSetGlobalVisibleRect(int nativeAwContents, int visibleLeft,
+    private native void nativeSetGlobalVisibleRect(long nativeAwContents, int visibleLeft,
             int visibleTop, int visibleRight, int visibleBottom);
-    private native void nativeFindAllAsync(int nativeAwContents, String searchString);
-    private native void nativeFindNext(int nativeAwContents, boolean forward);
-    private native void nativeClearMatches(int nativeAwContents);
-    private native void nativeClearCache(int nativeAwContents, boolean includeDiskFiles);
-    private native byte[] nativeGetCertificate(int nativeAwContents);
+    private native void nativeFindAllAsync(long nativeAwContents, String searchString);
+    private native void nativeFindNext(long nativeAwContents, boolean forward);
+    private native void nativeClearMatches(long nativeAwContents);
+    private native void nativeClearCache(long nativeAwContents, boolean includeDiskFiles);
+    private native byte[] nativeGetCertificate(long nativeAwContents);
 
     // Coordinates in desity independent pixels.
-    private native void nativeRequestNewHitTestDataAt(int nativeAwContents, int x, int y);
-    private native void nativeUpdateLastHitTestData(int nativeAwContents);
+    private native void nativeRequestNewHitTestDataAt(long nativeAwContents, int x, int y);
+    private native void nativeUpdateLastHitTestData(long nativeAwContents);
 
-    private native void nativeOnSizeChanged(int nativeAwContents, int w, int h, int ow, int oh);
-    private native void nativeScrollTo(int nativeAwContents, int x, int y);
-    private native void nativeSetViewVisibility(int nativeAwContents, boolean visible);
-    private native void nativeSetWindowVisibility(int nativeAwContents, boolean visible);
-    private native void nativeSetIsPaused(int nativeAwContents, boolean paused);
-    private native void nativeOnAttachedToWindow(int nativeAwContents, int w, int h);
-    private static native void nativeOnDetachedFromWindow(int nativeAwContents);
-    private native void nativeSetDipScale(int nativeAwContents, float dipScale);
-    private native void nativeSetFixedLayoutSize(int nativeAwContents, int widthDip, int heightDip);
+    private native void nativeOnSizeChanged(long nativeAwContents, int w, int h, int ow, int oh);
+    private native void nativeScrollTo(long nativeAwContents, int x, int y);
+    private native void nativeSetViewVisibility(long nativeAwContents, boolean visible);
+    private native void nativeSetWindowVisibility(long nativeAwContents, boolean visible);
+    private native void nativeSetIsPaused(long nativeAwContents, boolean paused);
+    private native void nativeOnAttachedToWindow(long nativeAwContents, int w, int h);
+    private static native void nativeOnDetachedFromWindow(long nativeAwContents);
+    private native void nativeSetDipScale(long nativeAwContents, float dipScale);
+    private native void nativeSetFixedLayoutSize(long nativeAwContents,
+            int widthDip, int heightDip);
 
     // Returns null if save state fails.
-    private native byte[] nativeGetOpaqueState(int nativeAwContents);
+    private native byte[] nativeGetOpaqueState(long nativeAwContents);
 
     // Returns false if restore state fails.
-    private native boolean nativeRestoreFromOpaqueState(int nativeAwContents, byte[] state);
+    private native boolean nativeRestoreFromOpaqueState(long nativeAwContents, byte[] state);
 
-    private native int nativeReleasePopupAwContents(int nativeAwContents);
-    private native void nativeFocusFirstNode(int nativeAwContents);
-    private native void nativeSetBackgroundColor(int nativeAwContents, int color);
+    private native int nativeReleasePopupAwContents(long nativeAwContents);
+    private native void nativeFocusFirstNode(long nativeAwContents);
+    private native void nativeSetBackgroundColor(long nativeAwContents, int color);
 
-    private native int nativeGetAwDrawGLViewContext(int nativeAwContents);
-    private native int nativeCapturePicture(int nativeAwContents, int width, int height);
-    private native void nativeEnableOnNewPicture(int nativeAwContents, boolean enabled);
+    private native int nativeGetAwDrawGLViewContext(long nativeAwContents);
+    private native long nativeCapturePicture(long nativeAwContents, int width, int height);
+    private native void nativeEnableOnNewPicture(long nativeAwContents, boolean enabled);
 
     private native void nativeInvokeGeolocationCallback(
-            int nativeAwContents, boolean value, String requestingFrame);
+            long nativeAwContents, boolean value, String requestingFrame);
 
-    private native void nativeSetJsOnlineProperty(int nativeAwContents, boolean networkUp);
+    private native void nativeSetJsOnlineProperty(long nativeAwContents, boolean networkUp);
 
-    private native void nativeTrimMemory(int nativeAwContents, int level);
+    private native void nativeTrimMemory(long nativeAwContents, int level);
 }

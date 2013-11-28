@@ -19,17 +19,17 @@ import org.chromium.ui.autofill.AutofillSuggestion;
 @JNINamespace("android_webview")
 public class AwAutofillManagerDelegate {
 
-    private final int mNativeAwAutofillManagerDelegate;
+    private final long mNativeAwAutofillManagerDelegate;
     private AutofillPopup mAutofillPopup;
     private ViewGroup mContainerView;
     private ContentViewCore mContentViewCore;
 
     @CalledByNative
-    public static AwAutofillManagerDelegate create(int nativeDelegate) {
+    public static AwAutofillManagerDelegate create(long nativeDelegate) {
         return new AwAutofillManagerDelegate(nativeDelegate);
     }
 
-    private AwAutofillManagerDelegate(int nativeAwAutofillManagerDelegate) {
+    private AwAutofillManagerDelegate(long nativeAwAutofillManagerDelegate) {
         mNativeAwAutofillManagerDelegate = nativeAwAutofillManagerDelegate;
     }
 
@@ -85,5 +85,6 @@ public class AwAutofillManagerDelegate {
         array[index] = new AutofillSuggestion(name, label, uniqueId);
     }
 
-    private native void nativeSuggestionSelected(int nativeAwAutofillManagerDelegate, int position);
+    private native void nativeSuggestionSelected(long nativeAwAutofillManagerDelegate,
+            int position);
 }

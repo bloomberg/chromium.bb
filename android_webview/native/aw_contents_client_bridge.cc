@@ -27,7 +27,7 @@ AwContentsClientBridge::AwContentsClientBridge(JNIEnv* env, jobject obj)
     : java_ref_(env, obj) {
   DCHECK(obj);
   Java_AwContentsClientBridge_setNativeContentsClientBridge(
-      env, obj, reinterpret_cast<jint>(this));
+      env, obj, reinterpret_cast<intptr_t>(this));
 }
 
 AwContentsClientBridge::~AwContentsClientBridge() {

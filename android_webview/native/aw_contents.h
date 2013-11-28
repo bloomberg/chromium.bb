@@ -116,7 +116,7 @@ class AwContents : public FindHelper::Listener,
                             jint visible_right,
                             jint visible_bottom);
   jint GetAwDrawGLViewContext(JNIEnv* env, jobject obj);
-  jint CapturePicture(JNIEnv* env, jobject obj, int width, int height);
+  jlong CapturePicture(JNIEnv* env, jobject obj, int width, int height);
   void EnableOnNewPicture(JNIEnv* env, jobject obj, jboolean enabled);
 
   // Geolocation API support

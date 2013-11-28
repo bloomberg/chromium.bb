@@ -154,14 +154,14 @@ void RunOnUIThread(const base::Closure& task) {
 
 
 // static
-jint GetDefaultNativeAwQuotaManagerBridge(JNIEnv* env, jclass clazz) {
+jlong GetDefaultNativeAwQuotaManagerBridge(JNIEnv* env, jclass clazz) {
   AwBrowserContext* browser_context =
       AwContentBrowserClient::GetAwBrowserContext();
 
   AwQuotaManagerBridgeImpl* bridge = static_cast<AwQuotaManagerBridgeImpl*>(
       browser_context->GetQuotaManagerBridge());
   DCHECK(bridge);
-  return reinterpret_cast<jint>(bridge);
+  return reinterpret_cast<intptr_t>(bridge);
 }
 
 // static

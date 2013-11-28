@@ -42,7 +42,8 @@ AwAutofillManagerDelegate::AwAutofillManagerDelegate(WebContents* contents)
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> delegate;
   delegate.Reset(
-      Java_AwAutofillManagerDelegate_create(env, reinterpret_cast<jint>(this)));
+      Java_AwAutofillManagerDelegate_create(
+          env, reinterpret_cast<intptr_t>(this)));
 
   AwContents* aw_contents = AwContents::FromWebContents(web_contents_);
   aw_contents->SetAwAutofillManagerDelegate(delegate.obj());

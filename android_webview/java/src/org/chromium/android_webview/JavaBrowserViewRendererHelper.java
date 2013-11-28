@@ -23,7 +23,7 @@ public class JavaBrowserViewRendererHelper {
     private static final String LOGTAG = "JavaBrowserViewRendererHelper";
 
     // Until the full HW path is ready, we limit to 5 AwContents on the screen at once.
-    private static LruCache<Integer, Bitmap> sBitmapCache = new LruCache<Integer, Bitmap>(5);
+    private static LruCache<Long, Bitmap> sBitmapCache = new LruCache<Long, Bitmap>(5);
 
     /**
      * Provides a Bitmap object with a given width and height used for auxiliary rasterization.
@@ -32,7 +32,7 @@ public class JavaBrowserViewRendererHelper {
      * the Bitmap will be cached in sBitmapCache for future use.
      */
     @CalledByNative
-    private static Bitmap createBitmap(int width, int height, Canvas canvas, int ownerKey) {
+    private static Bitmap createBitmap(int width, int height, Canvas canvas, long ownerKey) {
         if (canvas != null) {
             // When drawing into a Canvas, there is a maximum size imposed
             // on Bitmaps that can be drawn. Respect that limit.

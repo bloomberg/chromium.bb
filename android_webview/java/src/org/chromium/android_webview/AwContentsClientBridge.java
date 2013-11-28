@@ -24,7 +24,7 @@ public class AwContentsClientBridge {
 
     private AwContentsClient mClient;
     // The native peer of this object.
-    private int mNativeContentsClientBridge;
+    private long mNativeContentsClientBridge;
 
     public AwContentsClientBridge(AwContentsClient client) {
         assert client != null;
@@ -33,7 +33,7 @@ public class AwContentsClientBridge {
 
     // Used by the native peer to set/reset a weak ref to the native peer.
     @CalledByNative
-    private void setNativeContentsClientBridge(int nativeContentsClientBridge) {
+    private void setNativeContentsClientBridge(long nativeContentsClientBridge) {
         mNativeContentsClientBridge = nativeContentsClientBridge;
     }
 
@@ -104,10 +104,10 @@ public class AwContentsClientBridge {
     //--------------------------------------------------------------------------------------------
     //  Native methods
     //--------------------------------------------------------------------------------------------
-    private native void nativeProceedSslError(int nativeAwContentsClientBridge, boolean proceed,
+    private native void nativeProceedSslError(long nativeAwContentsClientBridge, boolean proceed,
             int id);
 
-    private native void nativeConfirmJsResult(int nativeAwContentsClientBridge, int id,
+    private native void nativeConfirmJsResult(long nativeAwContentsClientBridge, int id,
             String prompt);
-    private native void nativeCancelJsResult(int nativeAwContentsClientBridge, int id);
+    private native void nativeCancelJsResult(long nativeAwContentsClientBridge, int id);
 }
