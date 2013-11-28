@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/cpu.h"
@@ -16,6 +17,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/profiler/alternate_timer.h"
+#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -203,6 +205,12 @@ ProfilerEventProto::TrackedObject::ProcessType AsProtobufProcessType(
   }
 }
 
+// Computes a SHA-1 hash of |data| and returns it as a hex string.
+std::string ComputeSHA1(const std::string& data) {
+  const std::string sha1 = base::SHA1HashString(data);
+  return base::HexEncode(sha1.data(), sha1.size());
+}
+
 #if defined(ENABLE_PLUGINS)
 // Returns the plugin preferences corresponding for this user, if available.
 // If multiple user profiles are loaded, returns the preferences corresponding
@@ -380,7 +388,7 @@ GoogleUpdateMetrics::GoogleUpdateMetrics() : is_system_install(false) {}
 GoogleUpdateMetrics::~GoogleUpdateMetrics() {}
 
 static base::LazyInstance<std::string>::Leaky
-  g_version_extension = LAZY_INSTANCE_INITIALIZER;
+    g_version_extension = LAZY_INSTANCE_INITIALIZER;
 
 MetricsLog::MetricsLog(const std::string& client_id, int session_id)
     : MetricsLogBase(client_id, session_id, MetricsLog::GetVersionString()),
@@ -428,8 +436,8 @@ void MetricsLog::RecordStabilityMetrics(
     LogType log_type) {
   DCHECK_NE(NO_LOG, log_type);
   DCHECK(!locked());
-  // Check UMA enabled date presence to ensure system profile has been filled.
-  DCHECK(uma_proto()->system_profile().has_uma_enabled_date());
+  DCHECK(HasEnvironment());
+  DCHECK(!HasStabilityMetrics());
 
   PrefService* pref = GetPrefService();
   DCHECK(pref);
@@ -501,6 +509,14 @@ int MetricsLog::GetScreenCount() const {
 void MetricsLog::GetFieldTrialIds(
     std::vector<ActiveGroupId>* field_trial_ids) const {
   chrome_variations::GetFieldTrialActiveGroupIds(field_trial_ids);
+}
+
+bool MetricsLog::HasEnvironment() const {
+  return uma_proto()->system_profile().has_uma_enabled_date();
+}
+
+bool MetricsLog::HasStabilityMetrics() const {
+  return uma_proto()->system_profile().stability().has_launch_count();
 }
 
 void MetricsLog::WritePluginStabilityElements(PrefService* pref) {
@@ -672,6 +688,8 @@ void MetricsLog::RecordEnvironment(
     const std::vector<content::WebPluginInfo>& plugin_list,
     const GoogleUpdateMetrics& google_update_metrics,
     const std::vector<chrome_variations::ActiveGroupId>& synthetic_trials) {
+  DCHECK(!HasEnvironment());
+
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
 
   std::string brand_code;
@@ -782,6 +800,36 @@ void MetricsLog::RecordEnvironment(
   WriteBluetoothProto(hardware);
   UpdateMultiProfileUserCount();
 #endif
+
+  std::string serialied_system_profile;
+  std::string base64_system_profile;
+  if (system_profile->SerializeToString(&serialied_system_profile) &&
+      base::Base64Encode(serialied_system_profile, &base64_system_profile)) {
+    PrefService* local_state = GetPrefService();
+    local_state->SetString(prefs::kStabilitySavedSystemProfile,
+                           base64_system_profile);
+    local_state->SetString(prefs::kStabilitySavedSystemProfileHash,
+                           ComputeSHA1(serialied_system_profile));
+  }
+}
+
+bool MetricsLog::LoadSavedEnvironmentFromPrefs() {
+  PrefService* local_state = GetPrefService();
+  const std::string base64_system_profile =
+      local_state->GetString(prefs::kStabilitySavedSystemProfile);
+  if (base64_system_profile.empty())
+    return false;
+
+  const std::string system_profile_hash =
+      local_state->GetString(prefs::kStabilitySavedSystemProfileHash);
+  local_state->ClearPref(prefs::kStabilitySavedSystemProfile);
+  local_state->ClearPref(prefs::kStabilitySavedSystemProfileHash);
+
+  SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
+  std::string serialied_system_profile;
+  return base::Base64Decode(base64_system_profile, &serialied_system_profile) &&
+         ComputeSHA1(serialied_system_profile) == system_profile_hash &&
+         system_profile->ParseFromString(serialied_system_profile);
 }
 
 void MetricsLog::RecordProfilerData(

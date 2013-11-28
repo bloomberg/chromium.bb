@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
@@ -57,7 +58,9 @@ namespace {
 
 const char kClientId[] = "bogus client ID";
 const int64 kInstallDate = 1373051956;
+const int64 kInstallDateExpected = 1373050800;  // Computed from kInstallDate.
 const int64 kEnabledDate = 1373001211;
+const int64 kEnabledDateExpected = 1373000400;  // Computed from kEnabledDate.
 const int kSessionId = 127;
 const int kScreenWidth = 1024;
 const int kScreenHeight = 768;
@@ -96,23 +99,25 @@ class TestMetricsLog : public MetricsLog {
  public:
   TestMetricsLog(const std::string& client_id, int session_id)
       : MetricsLog(client_id, session_id),
+        prefs_(&scoped_prefs_),
         brand_for_testing_(kBrandForTesting) {
-    chrome::RegisterLocalState(prefs_.registry());
-
-    prefs_.SetInt64(prefs::kInstallDate, kInstallDate);
-    prefs_.SetString(prefs::kMetricsClientIDTimestamp,
-                     base::Int64ToString(kEnabledDate));
-#if defined(OS_CHROMEOS)
-    prefs_.SetInteger(prefs::kStabilityChildProcessCrashCount, 10);
-    prefs_.SetInteger(prefs::kStabilityOtherUserCrashCount, 11);
-    prefs_.SetInteger(prefs::kStabilityKernelCrashCount, 12);
-    prefs_.SetInteger(prefs::kStabilitySystemUncleanShutdownCount, 13);
-#endif  // OS_CHROMEOS
+    chrome::RegisterLocalState(scoped_prefs_.registry());
+    InitPrefs();
+  }
+  // Creates a TestMetricsLog that will use |prefs| as the fake local state.
+  // Useful for tests that need to re-use the local state prefs between logs.
+  TestMetricsLog(const std::string& client_id,
+                 int session_id,
+                 TestingPrefServiceSimple* prefs)
+      : MetricsLog(client_id, session_id),
+        prefs_(prefs),
+        brand_for_testing_(kBrandForTesting) {
+    InitPrefs();
   }
   virtual ~TestMetricsLog() {}
 
   virtual PrefService* GetPrefService() OVERRIDE {
-    return &prefs_;
+    return prefs_;
   }
 
   const metrics::ChromeUserMetricsExtension& uma_proto() const {
@@ -124,6 +129,18 @@ class TestMetricsLog : public MetricsLog {
   }
 
  private:
+  void InitPrefs() {
+    prefs_->SetInt64(prefs::kInstallDate, kInstallDate);
+    prefs_->SetString(prefs::kMetricsClientIDTimestamp,
+                     base::Int64ToString(kEnabledDate));
+#if defined(OS_CHROMEOS)
+    prefs_->SetInteger(prefs::kStabilityChildProcessCrashCount, 10);
+    prefs_->SetInteger(prefs::kStabilityOtherUserCrashCount, 11);
+    prefs_->SetInteger(prefs::kStabilityKernelCrashCount, 12);
+    prefs_->SetInteger(prefs::kStabilitySystemUncleanShutdownCount, 13);
+#endif  // OS_CHROMEOS
+  }
+
   virtual void GetFieldTrialIds(
       std::vector<chrome_variations::ActiveGroupId>* field_trial_ids) const
       OVERRIDE {
@@ -146,7 +163,10 @@ class TestMetricsLog : public MetricsLog {
     return kScreenCount;
   }
 
-  TestingPrefServiceSimple prefs_;
+  // Scoped PrefsService, which may not be used if |prefs_ != &scoped_prefs|.
+  TestingPrefServiceSimple scoped_prefs_;
+  // Weak pointer to the PrefsService used by this log.
+  TestingPrefServiceSimple* prefs_;
 
   google_util::BrandForTesting brand_for_testing_;
 
@@ -196,6 +216,45 @@ class MetricsLogTest : public testing::Test {
 #endif  // OS_CHROMEOS
   }
 
+  // Check that the values in |system_values| correspond to the test data
+  // defined at the top of this file.
+  void CheckSystemProfile(const metrics::SystemProfileProto& system_profile) {
+    EXPECT_EQ(kInstallDateExpected, system_profile.install_date());
+    EXPECT_EQ(kEnabledDateExpected, system_profile.uma_enabled_date());
+
+    ASSERT_EQ(arraysize(kFieldTrialIds) + arraysize(kSyntheticTrials),
+              static_cast<size_t>(system_profile.field_trial_size()));
+    for (size_t i = 0; i < arraysize(kFieldTrialIds); ++i) {
+      const metrics::SystemProfileProto::FieldTrial& field_trial =
+          system_profile.field_trial(i);
+      EXPECT_EQ(kFieldTrialIds[i].name, field_trial.name_id());
+      EXPECT_EQ(kFieldTrialIds[i].group, field_trial.group_id());
+    }
+    // Verify the right data is present for the synthetic trials.
+    for (size_t i = 0; i < arraysize(kSyntheticTrials); ++i) {
+      const metrics::SystemProfileProto::FieldTrial& field_trial =
+          system_profile.field_trial(i + arraysize(kFieldTrialIds));
+      EXPECT_EQ(kSyntheticTrials[i].name, field_trial.name_id());
+      EXPECT_EQ(kSyntheticTrials[i].group, field_trial.group_id());
+    }
+
+    EXPECT_EQ(kBrandForTesting, system_profile.brand_code());
+
+    const metrics::SystemProfileProto::Hardware& hardware =
+        system_profile.hardware();
+    EXPECT_EQ(kScreenWidth, hardware.primary_screen_width());
+    EXPECT_EQ(kScreenHeight, hardware.primary_screen_height());
+    EXPECT_EQ(kScreenScaleFactor, hardware.primary_screen_scale_factor());
+    EXPECT_EQ(kScreenCount, hardware.screen_count());
+
+    EXPECT_TRUE(hardware.has_cpu());
+    EXPECT_TRUE(hardware.cpu().has_vendor_name());
+    EXPECT_TRUE(hardware.cpu().has_signature());
+
+    // TODO(isherman): Verify other data written into the protobuf as a result
+    // of this call.
+  }
+
  private:
   // This is necessary because eventually some tests call base::RepeatingTimer
   // functions and a message loop is required for that.
@@ -217,45 +276,74 @@ TEST_F(MetricsLogTest, RecordEnvironment) {
   synthetic_trials.push_back(kSyntheticTrials[1]);
 
   log.RecordEnvironment(plugins, google_update_metrics, synthetic_trials);
+  // Check that the system profile on the log has the correct values set.
+  CheckSystemProfile(log.system_profile());
 
-  // Computed from original time of 1373051956.
-  EXPECT_EQ(1373050800, log.system_profile().install_date());
+  // Check that the system profile has also been written to prefs.
+  PrefService* local_state = log.GetPrefService();
+  const std::string base64_system_profile =
+      local_state->GetString(prefs::kStabilitySavedSystemProfile);
+  EXPECT_FALSE(base64_system_profile.empty());
+  std::string serialied_system_profile;
+  EXPECT_TRUE(base::Base64Decode(base64_system_profile,
+                                 &serialied_system_profile));
+  SystemProfileProto decoded_system_profile;
+  EXPECT_TRUE(decoded_system_profile.ParseFromString(serialied_system_profile));
+  CheckSystemProfile(decoded_system_profile);
+}
 
-  // Computed from original time of 1373001211.
-  EXPECT_EQ(1373000400, log.system_profile().uma_enabled_date());
+TEST_F(MetricsLogTest, LoadSavedEnvironmentFromPrefs) {
+  const char* kSystemProfilePref = prefs::kStabilitySavedSystemProfile;
+  const char* kSystemProfileHashPref = prefs::kStabilitySavedSystemProfileHash;
 
-  const metrics::SystemProfileProto& system_profile = log.system_profile();
-  ASSERT_EQ(arraysize(kFieldTrialIds) + arraysize(kSyntheticTrials),
-            static_cast<size_t>(system_profile.field_trial_size()));
-  for (size_t i = 0; i < arraysize(kFieldTrialIds); ++i) {
-    const metrics::SystemProfileProto::FieldTrial& field_trial =
-        system_profile.field_trial(i);
-    EXPECT_EQ(kFieldTrialIds[i].name, field_trial.name_id());
-    EXPECT_EQ(kFieldTrialIds[i].group, field_trial.group_id());
+  TestingPrefServiceSimple prefs;
+  chrome::RegisterLocalState(prefs.registry());
+
+  // The pref value is empty, so loading it from prefs should fail.
+  {
+    TestMetricsLog log(kClientId, kSessionId, &prefs);
+    EXPECT_FALSE(log.LoadSavedEnvironmentFromPrefs());
   }
-  // Verify the right data is present for the synthetic trials.
-  for (size_t i = 0; i < arraysize(kSyntheticTrials); ++i) {
-    const metrics::SystemProfileProto::FieldTrial& field_trial =
-        system_profile.field_trial(i + arraysize(kFieldTrialIds));
-    EXPECT_EQ(kSyntheticTrials[i].name, field_trial.name_id());
-    EXPECT_EQ(kSyntheticTrials[i].group, field_trial.group_id());
+
+  // Do a RecordEnvironment() call and check whether the pref is recorded.
+  {
+    TestMetricsLog log(kClientId, kSessionId, &prefs);
+    log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
+                          GoogleUpdateMetrics(),
+                          std::vector<chrome_variations::ActiveGroupId>());
+    EXPECT_FALSE(prefs.GetString(kSystemProfilePref).empty());
+    EXPECT_FALSE(prefs.GetString(kSystemProfileHashPref).empty());
   }
 
-  EXPECT_EQ(kBrandForTesting, system_profile.brand_code());
+  {
+    TestMetricsLog log(kClientId, kSessionId, &prefs);
+    EXPECT_TRUE(log.LoadSavedEnvironmentFromPrefs());
+    // Check some values in the system profile.
+    EXPECT_EQ(kInstallDateExpected, log.system_profile().install_date());
+    EXPECT_EQ(kEnabledDateExpected, log.system_profile().uma_enabled_date());
+    // Ensure that the call cleared the prefs.
+    EXPECT_TRUE(prefs.GetString(kSystemProfilePref).empty());
+    EXPECT_TRUE(prefs.GetString(kSystemProfileHashPref).empty());
+  }
 
-  const metrics::SystemProfileProto::Hardware& hardware =
-      system_profile.hardware();
-  EXPECT_EQ(kScreenWidth, hardware.primary_screen_width());
-  EXPECT_EQ(kScreenHeight, hardware.primary_screen_height());
-  EXPECT_EQ(kScreenScaleFactor, hardware.primary_screen_scale_factor());
-  EXPECT_EQ(kScreenCount, hardware.screen_count());
+  // Ensure that a non-matching hash results in the pref being invalid.
+  {
+    TestMetricsLog log(kClientId, kSessionId, &prefs);
+    // Call RecordEnvironment() to record the pref again.
+    log.RecordEnvironment(std::vector<content::WebPluginInfo>(),
+                          GoogleUpdateMetrics(),
+                          std::vector<chrome_variations::ActiveGroupId>());
+  }
 
-  EXPECT_TRUE(hardware.has_cpu());
-  EXPECT_TRUE(hardware.cpu().has_vendor_name());
-  EXPECT_TRUE(hardware.cpu().has_signature());
-
-  // TODO(isherman): Verify other data written into the protobuf as a result
-  // of this call.
+  {
+    // Set the hash to a bad value.
+    prefs.SetString(kSystemProfileHashPref, "deadbeef");
+    TestMetricsLog log(kClientId, kSessionId, &prefs);
+    EXPECT_FALSE(log.LoadSavedEnvironmentFromPrefs());
+    // Ensure that the prefs are cleared, even if the call failed.
+    EXPECT_TRUE(prefs.GetString(kSystemProfilePref).empty());
+    EXPECT_TRUE(prefs.GetString(kSystemProfileHashPref).empty());
+  }
 }
 
 TEST_F(MetricsLogTest, InitialLogStabilityMetrics) {

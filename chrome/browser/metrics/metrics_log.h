@@ -95,6 +95,11 @@ class MetricsLog : public MetricsLogBase {
       const GoogleUpdateMetrics& google_update_metrics,
       const std::vector<chrome_variations::ActiveGroupId>& synthetic_trials);
 
+  // Loads the environment proto that was saved by the last RecordEnvironment()
+  // call from prefs and clears the pref value. Returns true on success or false
+  // if there was no saved environment in prefs or it could not be decoded.
+  bool LoadSavedEnvironmentFromPrefs();
+
   // Records the input text, available choices, and selected entry when the
   // user uses the Omnibox to open a URL.
   void RecordOmniboxOpenedURL(const OmniboxLog& log);
@@ -107,7 +112,7 @@ class MetricsLog : public MetricsLogBase {
 
   // Writes application stability metrics (as part of the profile log). The
   // system profile portion of the log must have already been filled in by a
-  // call to RecordEnvironment().
+  // call to RecordEnvironment() or LoadSavedEnvironmentFromPrefs().
   // NOTE: Has the side-effect of clearing the stability prefs..
   //
   // If |log_type| is INITIAL_LOG, records additional info such as number of
@@ -142,6 +147,14 @@ class MetricsLog : public MetricsLogBase {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MetricsLogTest, ChromeOSStabilityData);
+
+  // Returns true if the environment has already been filled in by a call to
+  // RecordEnvironment() or LoadSavedEnvironmentFromPrefs().
+  bool HasEnvironment() const;
+
+  // Returns true if the stability metrics have already been filled in by a
+  // call to RecordStabilityMetrics().
+  bool HasStabilityMetrics() const;
 
   // Within stability group, write plugin crash stats.
   void WritePluginStabilityElements(PrefService* pref);

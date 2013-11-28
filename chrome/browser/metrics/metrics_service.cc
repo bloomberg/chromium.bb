@@ -452,6 +452,11 @@ void MetricsService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kStabilitySystemUncleanShutdownCount, 0);
 #endif  // OS_CHROMEOS
 
+  registry->RegisterStringPref(prefs::kStabilitySavedSystemProfile,
+                               std::string());
+  registry->RegisterStringPref(prefs::kStabilitySavedSystemProfileHash,
+                               std::string());
+
   registry->RegisterListPref(prefs::kMetricsInitialLogs);
   registry->RegisterListPref(prefs::kMetricsOngoingLogs);
 
