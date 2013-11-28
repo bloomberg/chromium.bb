@@ -70,7 +70,7 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener,
         canceled_callback_(canceled_callback),
         web_contents_(web_contents) {
     select_file_dialog_ = ui::SelectFileDialog::Create(
-        this, new ChromeSelectFilePolicy(NULL));
+        this, new ChromeSelectFilePolicy(web_contents));
   }
 
   void Show(ui::SelectFileDialog::Type type,
@@ -78,7 +78,7 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener,
     AddRef();  // Balanced in the three listener outcomes.
     select_file_dialog_->SelectFile(
       type,
-      string16(),
+      base::string16(),
       default_path,
       NULL,
       0,
@@ -114,6 +114,8 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener,
   SelectedCallback selected_callback_;
   CanceledCallback canceled_callback_;
   WebContents* web_contents_;
+
+  DISALLOW_COPY_AND_ASSIGN(SelectFileDialog);
 };
 
 void WriteToFile(const base::FilePath& path, const std::string& content) {
@@ -345,7 +347,7 @@ void DevToolsFileHelper::InnerAddFileSystem(
   }
 
   std::string path_display_name = path.AsEndingWithSeparator().AsUTF8Unsafe();
-  string16 message = l10n_util::GetStringFUTF16(
+  base::string16 message = l10n_util::GetStringFUTF16(
       IDS_DEV_TOOLS_CONFIRM_ADD_FILE_SYSTEM_MESSAGE,
       UTF8ToUTF16(path_display_name));
   show_info_bar_callback.Run(
