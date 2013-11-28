@@ -45,10 +45,13 @@ class MultilineExample::RenderTextView : public View {
     // TODO(ckocagil): Why does this happen?
     if (w == 0)
       return View::GetHeightForWidth(w);
-    gfx::Rect rect = render_text_->display_rect();
+    const gfx::Rect old_rect = render_text_->display_rect();
+    gfx::Rect rect = old_rect;
     rect.set_width(w - GetInsets().width());
     render_text_->SetDisplayRect(rect);
-    return render_text_->GetStringSize().height() + GetInsets().height();
+    int height = render_text_->GetStringSize().height() + GetInsets().height();
+    render_text_->SetDisplayRect(old_rect);
+    return height;
   }
 
   void SetText(const string16& new_contents) {
