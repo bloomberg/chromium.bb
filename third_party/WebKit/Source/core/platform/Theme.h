@@ -26,10 +26,10 @@
 #ifndef Theme_h
 #define Theme_h
 
-#include "core/platform/graphics/Font.h"
 #include "platform/LengthBox.h"
 #include "platform/LengthSize.h"
 #include "platform/ThemeTypes.h"
+#include "platform/fonts/FontDescription.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
 #include "wtf/Forward.h"
@@ -70,7 +70,6 @@ public:
 
     // CSS system colors and fonts
     virtual Color systemColor(ThemeColor) const { return Color(); }
-    virtual Font systemFont(ThemeFont, FontDescription&) const { return Font(); }
 
     // How fast the caret blinks in text fields.
     virtual double caretBlinkInterval() const { return 0.5; }
@@ -78,17 +77,17 @@ public:
     // Methods used to adjust the RenderStyles of controls.
 
     // The font description result should have a zoomed font size.
-    virtual FontDescription controlFont(ControlPart, const Font& font, float /*zoomFactor*/) const { return font.fontDescription(); }
+    virtual FontDescription controlFont(ControlPart, const FontDescription& fontDescription, float /*zoomFactor*/) const { return fontDescription; }
 
     // The size here is in zoomed coordinates already.  If a new size is returned, it also needs to be in zoomed coordinates.
-    virtual LengthSize controlSize(ControlPart, const Font&, const LengthSize& zoomedSize, float /*zoomFactor*/) const { return zoomedSize; }
+    virtual LengthSize controlSize(ControlPart, const FontDescription&, const LengthSize& zoomedSize, float /*zoomFactor*/) const { return zoomedSize; }
 
     // Returns the minimum size for a control in zoomed coordinates.
-    virtual LengthSize minimumControlSize(ControlPart, const Font&, float /*zoomFactor*/) const { return LengthSize(Length(0, Fixed), Length(0, Fixed)); }
+    virtual LengthSize minimumControlSize(ControlPart, const FontDescription&, float /*zoomFactor*/) const { return LengthSize(Length(0, Fixed), Length(0, Fixed)); }
 
     // Allows the theme to modify the existing padding/border.
-    virtual LengthBox controlPadding(ControlPart, const Font&, const LengthBox& zoomedBox, float zoomFactor) const;
-    virtual LengthBox controlBorder(ControlPart, const Font&, const LengthBox& zoomedBox, float zoomFactor) const;
+    virtual LengthBox controlPadding(ControlPart, const FontDescription&, const LengthBox& zoomedBox, float zoomFactor) const;
+    virtual LengthBox controlBorder(ControlPart, const FontDescription&, const LengthBox& zoomedBox, float zoomFactor) const;
 
     // Whether or not whitespace: pre should be forced on always.
     virtual bool controlRequiresPreWhiteSpace(ControlPart) const { return false; }

@@ -106,9 +106,9 @@ Theme* platformTheme()
 
 // Helper functions used by a bunch of different control parts.
 
-static NSControlSize controlSizeForFont(const Font& font)
+static NSControlSize controlSizeForFont(const FontDescription& fontDescription)
 {
-    int fontSize = font.pixelSize();
+    int fontSize = fontDescription.computedPixelSize();
     if (fontSize >= 16)
         return NSRegularControlSize;
     if (fontSize >= 11)
@@ -129,9 +129,9 @@ static LengthSize sizeFromNSControlSize(NSControlSize nsControlSize, const Lengt
     return result;
 }
 
-static LengthSize sizeFromFont(const Font& font, const LengthSize& zoomedSize, float zoomFactor, const IntSize* sizes)
+static LengthSize sizeFromFont(const FontDescription& fontDescription, const LengthSize& zoomedSize, float zoomFactor, const IntSize* sizes)
 {
-    return sizeFromNSControlSize(controlSizeForFont(font), zoomedSize, zoomFactor, sizes);
+    return sizeFromNSControlSize(controlSizeForFont(fontDescription), zoomedSize, zoomFactor, sizes);
 }
 
 static ControlSize controlSizeFromPixelSize(const IntSize* sizes, const IntSize& minZoomedSize, float zoomFactor)
@@ -241,14 +241,14 @@ static const int* checkboxMargins(NSControlSize controlSize)
     return margins[controlSize];
 }
 
-static LengthSize checkboxSize(const Font& font, const LengthSize& zoomedSize, float zoomFactor)
+static LengthSize checkboxSize(const FontDescription& fontDescription, const LengthSize& zoomedSize, float zoomFactor)
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!zoomedSize.width().isIntrinsicOrAuto() && !zoomedSize.height().isIntrinsicOrAuto())
         return zoomedSize;
 
     // Use the font size to determine the intrinsic width of the control.
-    return sizeFromFont(font, zoomedSize, zoomFactor, checkboxSizes());
+    return sizeFromFont(fontDescription, zoomedSize, zoomFactor, checkboxSizes());
 }
 
 static NSButtonCell *checkbox(ControlStates states, const IntRect& zoomedRect, float zoomFactor)
@@ -325,14 +325,14 @@ static const int* radioMargins(NSControlSize controlSize)
     return margins[controlSize];
 }
 
-static LengthSize radioSize(const Font& font, const LengthSize& zoomedSize, float zoomFactor)
+static LengthSize radioSize(const FontDescription& fontDescription, const LengthSize& zoomedSize, float zoomFactor)
 {
     // If the width and height are both specified, then we have nothing to do.
     if (!zoomedSize.width().isIntrinsicOrAuto() && !zoomedSize.height().isIntrinsicOrAuto())
         return zoomedSize;
 
     // Use the font size to determine the intrinsic width of the control.
-    return sizeFromFont(font, zoomedSize, zoomFactor, radioSizes());
+    return sizeFromFont(fontDescription, zoomedSize, zoomFactor, radioSizes());
 }
 
 static NSButtonCell *radio(ControlStates states, const IntRect& zoomedRect, float zoomFactor)
@@ -490,9 +490,9 @@ static const IntSize* stepperSizes()
 
 // We don't use controlSizeForFont() for steppers because the stepper height
 // should be equal to or less than the corresponding text field height,
-static NSControlSize stepperControlSizeForFont(const Font& font)
+static NSControlSize stepperControlSizeForFont(const FontDescription& fontDescription)
 {
-    int fontSize = font.pixelSize();
+    int fontSize = fontDescription.computedPixelSize();
     if (fontSize >= 18)
         return NSRegularControlSize;
     if (fontSize >= 13)
@@ -566,45 +566,45 @@ int ThemeMac::baselinePositionAdjustment(ControlPart part) const
     return Theme::baselinePositionAdjustment(part);
 }
 
-FontDescription ThemeMac::controlFont(ControlPart part, const Font& font, float zoomFactor) const
+FontDescription ThemeMac::controlFont(ControlPart part, const FontDescription& fontDescription, float zoomFactor) const
 {
     switch (part) {
         case PushButtonPart: {
-            FontDescription fontDescription;
-            fontDescription.setIsAbsoluteSize(true);
-            fontDescription.setGenericFamily(FontDescription::SerifFamily);
+            FontDescription result;
+            result.setIsAbsoluteSize(true);
+            result.setGenericFamily(FontDescription::SerifFamily);
 
-            NSFont* nsFont = [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:controlSizeForFont(font)]];
-            fontDescription.firstFamily().setFamily([nsFont webCoreFamilyName]);
-            fontDescription.setComputedSize([nsFont pointSize] * zoomFactor);
-            fontDescription.setSpecifiedSize([nsFont pointSize] * zoomFactor);
-            return fontDescription;
+            NSFont* nsFont = [NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:controlSizeForFont(fontDescription)]];
+            result.firstFamily().setFamily([nsFont webCoreFamilyName]);
+            result.setComputedSize([nsFont pointSize] * zoomFactor);
+            result.setSpecifiedSize([nsFont pointSize] * zoomFactor);
+            return result;
         }
         default:
-            return Theme::controlFont(part, font, zoomFactor);
+            return Theme::controlFont(part, fontDescription, zoomFactor);
     }
 }
 
-LengthSize ThemeMac::controlSize(ControlPart part, const Font& font, const LengthSize& zoomedSize, float zoomFactor) const
+LengthSize ThemeMac::controlSize(ControlPart part, const FontDescription& fontDescription, const LengthSize& zoomedSize, float zoomFactor) const
 {
     switch (part) {
         case CheckboxPart:
-            return checkboxSize(font, zoomedSize, zoomFactor);
+            return checkboxSize(fontDescription, zoomedSize, zoomFactor);
         case RadioPart:
-            return radioSize(font, zoomedSize, zoomFactor);
+            return radioSize(fontDescription, zoomedSize, zoomFactor);
         case PushButtonPart:
             // Height is reset to auto so that specified heights can be ignored.
-            return sizeFromFont(font, LengthSize(zoomedSize.width(), Length()), zoomFactor, buttonSizes());
+            return sizeFromFont(fontDescription, LengthSize(zoomedSize.width(), Length()), zoomFactor, buttonSizes());
         case InnerSpinButtonPart:
             if (!zoomedSize.width().isIntrinsicOrAuto() && !zoomedSize.height().isIntrinsicOrAuto())
                 return zoomedSize;
-            return sizeFromNSControlSize(stepperControlSizeForFont(font), zoomedSize, zoomFactor, stepperSizes());
+            return sizeFromNSControlSize(stepperControlSizeForFont(fontDescription), zoomedSize, zoomFactor, stepperSizes());
         default:
             return zoomedSize;
     }
 }
 
-LengthSize ThemeMac::minimumControlSize(ControlPart part, const Font& font, float zoomFactor) const
+LengthSize ThemeMac::minimumControlSize(ControlPart part, const FontDescription& fontDescription, float zoomFactor) const
 {
     switch (part) {
         case SquareButtonPart:
@@ -616,22 +616,22 @@ LengthSize ThemeMac::minimumControlSize(ControlPart part, const Font& font, floa
                               Length(static_cast<int>(base.height() * zoomFactor), Fixed));
         }
         default:
-            return Theme::minimumControlSize(part, font, zoomFactor);
+            return Theme::minimumControlSize(part, fontDescription, zoomFactor);
     }
 }
 
-LengthBox ThemeMac::controlBorder(ControlPart part, const Font& font, const LengthBox& zoomedBox, float zoomFactor) const
+LengthBox ThemeMac::controlBorder(ControlPart part, const FontDescription& fontDescription, const LengthBox& zoomedBox, float zoomFactor) const
 {
     switch (part) {
         case SquareButtonPart:
         case ButtonPart:
             return LengthBox(0, zoomedBox.right().value(), 0, zoomedBox.left().value());
         default:
-            return Theme::controlBorder(part, font, zoomedBox, zoomFactor);
+            return Theme::controlBorder(part, fontDescription, zoomedBox, zoomFactor);
     }
 }
 
-LengthBox ThemeMac::controlPadding(ControlPart part, const Font& font, const LengthBox& zoomedBox, float zoomFactor) const
+LengthBox ThemeMac::controlPadding(ControlPart part, const FontDescription& fontDescription, const LengthBox& zoomedBox, float zoomFactor) const
 {
     switch (part) {
         case PushButtonPart: {
@@ -644,7 +644,7 @@ LengthBox ThemeMac::controlPadding(ControlPart part, const Font& font, const Len
             return LengthBox(0, padding, 0, padding);
         }
         default:
-            return Theme::controlPadding(part, font, zoomedBox, zoomFactor);
+            return Theme::controlPadding(part, fontDescription, zoomedBox, zoomFactor);
     }
 }
 
