@@ -115,17 +115,18 @@
   if (!renderWidgetHostView_)
     return;
 
-  gfx::Size window_size([self frame].size);
+  gfx::Rect window_rect([self frame]);
   float window_scale_factor = 1.f;
   if ([self respondsToSelector:(@selector(contentsScale))])
     window_scale_factor = [self contentsScale];
 
   CGLSetCurrentContext(glContext);
   if (!renderWidgetHostView_->compositing_iosurface_->DrawIOSurface(
-        window_size,
+        context_,
+        window_rect,
         window_scale_factor,
         renderWidgetHostView_->frame_subscriber(),
-        true)) {
+        false)) {
     renderWidgetHostView_->GotAcceleratedCompositingError();
   }
 }

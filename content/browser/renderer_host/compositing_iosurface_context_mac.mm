@@ -69,14 +69,19 @@ CompositingIOSurfaceContext::Get(int window_number) {
   GLint swapInterval = is_vsync_disabled ? 0 : 1;
   [nsgl_context setValues:&swapInterval forParameter:NSOpenGLCPSwapInterval];
 
-  // Prepare the shader program cache.  Precompile only the shader programs
-  // needed to draw the IO Surface.
+  // Prepare the shader program cache. Precompile the shader programs
+  // needed to draw the IO Surface for non-offscreen contexts.
   CGLSetCurrentContext(cgl_context);
   scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache(
       new CompositingIOSurfaceShaderPrograms());
-  const bool prepared = (
-      shader_program_cache->UseBlitProgram() &&
-      shader_program_cache->UseSolidWhiteProgram());
+  bool prepared = false;
+  if (window_number == kOffscreenContextWindowNumber) {
+    prepared = true;
+  } else {
+    prepared = (
+        shader_program_cache->UseBlitProgram() &&
+        shader_program_cache->UseSolidWhiteProgram());
+  }
   glUseProgram(0u);
   CGLSetCurrentContext(0);
   if (!prepared) {
@@ -113,7 +118,10 @@ CompositingIOSurfaceContext::CompositingIOSurfaceContext(
       cgl_context_(cgl_context),
       is_vsync_disabled_(is_vsync_disabled),
       shader_program_cache_(shader_program_cache.Pass()),
-      can_be_shared_(true) {
+      can_be_shared_(true),
+      initialized_is_intel_(false),
+      is_intel_(false),
+      screen_(0) {
   DCHECK(window_map()->find(window_number_) == window_map()->end());
   window_map()->insert(std::make_pair(window_number_, this));
 }
@@ -131,6 +139,20 @@ CompositingIOSurfaceContext::~CompositingIOSurfaceContext() {
     if (found != window_map()->end())
       DCHECK(found->second != this);
   }
+}
+
+bool CompositingIOSurfaceContext::IsVendorIntel() {
+  GLint screen;
+  CGLGetVirtualScreen(cgl_context(), &screen);
+  if (screen != screen_)
+    initialized_is_intel_ = false;
+  screen_ = screen;
+  if (!initialized_is_intel_) {
+    is_intel_ = strstr(reinterpret_cast<const char*>(glGetString(GL_VENDOR)),
+                      "Intel") != NULL;
+    initialized_is_intel_ = true;
+  }
+  return is_intel_;
 }
 
 // static

@@ -22,6 +22,8 @@ class CompositingIOSurfaceShaderPrograms;
 class CompositingIOSurfaceContext
     : public base::RefCounted<CompositingIOSurfaceContext> {
  public:
+  enum { kOffscreenContextWindowNumber = -2 };
+
   // Get or create a GL context for the specified window with the specified
   // surface ordering. Share these GL contexts as much as possible because
   // creating and destroying them can be expensive
@@ -41,6 +43,8 @@ class CompositingIOSurfaceContext
   bool is_vsync_disabled() const { return is_vsync_disabled_; }
   int window_number() const { return window_number_; }
 
+  bool IsVendorIntel();
+
  private:
   friend class base::RefCounted<CompositingIOSurfaceContext>;
 
@@ -58,6 +62,10 @@ class CompositingIOSurfaceContext
   bool is_vsync_disabled_;
   scoped_ptr<CompositingIOSurfaceShaderPrograms> shader_program_cache_;
   bool can_be_shared_;
+
+  bool initialized_is_intel_;
+  bool is_intel_;
+  GLint screen_;
 
   // The global map from window number and window ordering to
   // context data.

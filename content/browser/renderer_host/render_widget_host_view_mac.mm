@@ -527,16 +527,12 @@ bool RenderWidgetHostViewMac::CreateCompositedIOSurface() {
   }
   // Create the IOSurface texture.
   if (!compositing_iosurface_) {
-    compositing_iosurface_.reset(CompositingIOSurfaceMac::Create(
-        compositing_iosurface_context_));
+    compositing_iosurface_.reset(CompositingIOSurfaceMac::Create());
     if (!compositing_iosurface_) {
       LOG(ERROR) << "Failed to create CompositingIOSurface";
       return false;
     }
   }
-  // Make sure that the IOSurface is updated to use the context that is owned
-  // by the view.
-  compositing_iosurface_->SetContext(compositing_iosurface_context_);
 
   return true;
 }
@@ -1390,8 +1386,8 @@ void RenderWidgetHostViewMac::ThrottledAckPendingSwapBuffers() {
   bool throttle_swap_ack =
       render_widget_host_ &&
       !render_widget_host_->is_threaded_compositing_enabled() &&
-      compositing_iosurface_ &&
-      !compositing_iosurface_->is_vsync_disabled();
+      compositing_iosurface_context_ &&
+      !compositing_iosurface_context_->is_vsync_disabled();
   base::Time now = base::Time::Now();
   if (throttle_swap_ack && next_swap_ack_time_ > now) {
     base::TimeDelta next_swap_ack_delay = next_swap_ack_time_ - now;
@@ -1410,7 +1406,6 @@ void RenderWidgetHostViewMac::ThrottledAckPendingSwapBuffers() {
 bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
   CHECK(!use_core_animation_);
   CHECK(compositing_iosurface_);
-  CHECK(compositing_iosurface_context_ == compositing_iosurface_->context());
 
   GLint old_gl_surface_order = 0;
   GLint new_gl_surface_order = allow_overlapping_views_ ? -1 : 1;
@@ -1432,10 +1427,11 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
 
   [compositing_iosurface_context_->nsgl_context() setView:cocoa_view_];
   return compositing_iosurface_->DrawIOSurface(
-      gfx::Size(NSSizeToCGSize([cocoa_view_ frame].size)),
+      compositing_iosurface_context_,
+      gfx::Rect(NSRectToCGRect([cocoa_view_ frame])),
       scale_factor(),
       frame_subscriber(),
-      false);
+      true);
 }
 
 void RenderWidgetHostViewMac::GotAcceleratedCompositingError() {
@@ -1890,7 +1886,6 @@ void RenderWidgetHostViewMac::WindowFrameChanged() {
       // http://crbug.com/230883
       ClearBoundContextDrawable();
       compositing_iosurface_context_ = new_context;
-      compositing_iosurface_->SetContext(compositing_iosurface_context_);
     }
   }
 }

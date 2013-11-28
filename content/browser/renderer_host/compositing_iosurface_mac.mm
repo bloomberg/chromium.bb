@@ -230,23 +230,30 @@ void CompositingIOSurfaceMac::CopyContext::PrepareForAsynchronousReadback() {
 
 
 // static
-CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create(
-    const scoped_refptr<CompositingIOSurfaceContext>& context) {
+CompositingIOSurfaceMac* CompositingIOSurfaceMac::Create() {
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
   if (!io_surface_support) {
     LOG(ERROR) << "No IOSurface support";
     return NULL;
   }
 
+  scoped_refptr<CompositingIOSurfaceContext> offscreen_context =
+      CompositingIOSurfaceContext::Get(
+          CompositingIOSurfaceContext::kOffscreenContextWindowNumber);
+  if (!offscreen_context) {
+    LOG(ERROR) << "Failed to create context for offscreen operations";
+    return NULL;
+  }
+
   return new CompositingIOSurfaceMac(io_surface_support,
-                                     context);
+                                     offscreen_context);
 }
 
 CompositingIOSurfaceMac::CompositingIOSurfaceMac(
     IOSurfaceSupport* io_surface_support,
-    const scoped_refptr<CompositingIOSurfaceContext>& context)
+    const scoped_refptr<CompositingIOSurfaceContext>& offscreen_context)
     : io_surface_support_(io_surface_support),
-      context_(context),
+      offscreen_context_(offscreen_context),
       io_surface_handle_(0),
       scale_factor_(1.f),
       texture_(0),
@@ -262,11 +269,8 @@ CompositingIOSurfaceMac::CompositingIOSurfaceMac(
                                this, &CompositingIOSurfaceMac::StopDisplayLink),
       vsync_interval_numerator_(0),
       vsync_interval_denominator_(0),
-      initialized_is_intel_(false),
-      is_intel_(false),
-      screen_(0),
       gl_error_(GL_NO_ERROR) {
-  CHECK(context_);
+  CHECK(offscreen_context_);
 }
 
 void CompositingIOSurfaceMac::SetupCVDisplayLink() {
@@ -305,26 +309,6 @@ void CompositingIOSurfaceMac::SetupCVDisplayLink() {
   StopDisplayLink();
 }
 
-void CompositingIOSurfaceMac::SetContext(
-    const scoped_refptr<CompositingIOSurfaceContext>& new_context) {
-  CHECK(new_context);
-
-  if (context_ == new_context)
-    return;
-
-  // Asynchronous copies must complete in the same context they started in.
-  CheckIfAllCopiesAreFinished(true);
-  CGLSetCurrentContext(context_->cgl_context());
-  DestroyAllCopyContextsWithinContext();
-  CGLSetCurrentContext(0);
-
-  context_ = new_context;
-}
-
-bool CompositingIOSurfaceMac::is_vsync_disabled() const {
-  return context_->is_vsync_disabled();
-}
-
 void CompositingIOSurfaceMac::GetVSyncParameters(base::TimeTicks* timebase,
                                                  uint32* interval_numerator,
                                                  uint32* interval_denominator) {
@@ -337,11 +321,11 @@ void CompositingIOSurfaceMac::GetVSyncParameters(base::TimeTicks* timebase,
 CompositingIOSurfaceMac::~CompositingIOSurfaceMac() {
   FailAllCopies();
   CVDisplayLinkRelease(display_link_);
-  CGLSetCurrentContext(context_->cgl_context());
+  CGLSetCurrentContext(offscreen_context_->cgl_context());
   DestroyAllCopyContextsWithinContext();
   UnrefIOSurfaceWithContextCurrent();
   CGLSetCurrentContext(0);
-  context_ = NULL;
+  offscreen_context_ = NULL;
 }
 
 bool CompositingIOSurfaceMac::SetIOSurface(
@@ -354,7 +338,7 @@ bool CompositingIOSurfaceMac::SetIOSurface(
   dip_io_surface_size_ = gfx::ToFlooredSize(
       gfx::ScaleSize(pixel_io_surface_size_, 1.0 / scale_factor_));
 
-  CGLError cgl_error = CGLSetCurrentContext(context_->cgl_context());
+  CGLError cgl_error = CGLSetCurrentContext(offscreen_context_->cgl_context());
   if (cgl_error != kCGLNoError) {
     LOG(ERROR) << "CGLSetCurrentContext error in SetIOSurface: " << cgl_error;
     return false;
@@ -367,7 +351,7 @@ bool CompositingIOSurfaceMac::SetIOSurface(
 
 int CompositingIOSurfaceMac::GetRendererID() {
   GLint current_renderer_id = -1;
-  if (CGLGetParameter(context_->cgl_context(),
+  if (CGLGetParameter(offscreen_context_->cgl_context(),
                       kCGLCPCurrentRendererID,
                       &current_renderer_id) == kCGLNoError)
     return current_renderer_id & kCGLRendererIDMatchingMask;
@@ -375,11 +359,12 @@ int CompositingIOSurfaceMac::GetRendererID() {
 }
 
 bool CompositingIOSurfaceMac::DrawIOSurface(
-    const gfx::Size& window_size,
+    scoped_refptr<CompositingIOSurfaceContext> drawing_context,
+    const gfx::Rect& window_rect,
     float window_scale_factor,
     RenderWidgetHostViewFrameSubscriber* frame_subscriber,
-    bool using_core_animation) {
-  bool result = true;
+    bool flush_drawable) {
+  DCHECK_EQ(CGLGetCurrentContext(), drawing_context->cgl_context());
 
   if (display_link_ == NULL)
     SetupCVDisplayLink();
@@ -388,9 +373,11 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
   TRACE_EVENT1("browser", "CompositingIOSurfaceMac::DrawIOSurface",
                "has_io_surface", has_io_surface);
 
-  gfx::Size pixel_window_size = gfx::ToFlooredSize(
-      gfx::ScaleSize(window_size, window_scale_factor));
-  glViewport(0, 0, pixel_window_size.width(), pixel_window_size.height());
+  gfx::Rect pixel_window_rect =
+      ToNearestRect(gfx::ScaleRect(window_rect, window_scale_factor));
+  glViewport(
+      pixel_window_rect.x(), pixel_window_rect.y(),
+      pixel_window_rect.width(), pixel_window_rect.height());
 
   SurfaceQuad quad;
   quad.set_size(dip_io_surface_size_, pixel_io_surface_size_);
@@ -399,9 +386,9 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
   glLoadIdentity();
 
   // Note that the projection keeps things in view units, so the use of
-  // window_size / dip_io_surface_size_ (as opposed to the pixel_ variants)
+  // window_rect / dip_io_surface_size_ (as opposed to the pixel_ variants)
   // below is correct.
-  glOrtho(0, window_size.width(), window_size.height(), 0, -1, 1);
+  glOrtho(0, window_rect.width(), window_rect.height(), 0, -1, 1);
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
 
@@ -409,7 +396,7 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
   glDisable(GL_BLEND);
 
   if (has_io_surface) {
-    context_->shader_program_cache()->UseBlitProgram();
+    drawing_context->shader_program_cache()->UseBlitProgram();
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texture_);
 
@@ -418,21 +405,21 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0); CHECK_AND_SAVE_GL_ERROR();
 
     // Fill the resize gutters with white.
-    if (window_size.width() > dip_io_surface_size_.width() ||
-        window_size.height() > dip_io_surface_size_.height()) {
-      context_->shader_program_cache()->UseSolidWhiteProgram();
+    if (window_rect.width() > dip_io_surface_size_.width() ||
+        window_rect.height() > dip_io_surface_size_.height()) {
+      drawing_context->shader_program_cache()->UseSolidWhiteProgram();
       SurfaceQuad filler_quad;
-      if (window_size.width() > dip_io_surface_size_.width()) {
+      if (window_rect.width() > dip_io_surface_size_.width()) {
         // Draw right-side gutter down to the bottom of the window.
         filler_quad.set_rect(dip_io_surface_size_.width(), 0.0f,
-                             window_size.width(), window_size.height());
+                             window_rect.width(), window_rect.height());
         DrawQuad(filler_quad);
       }
-      if (window_size.height() > dip_io_surface_size_.height()) {
+      if (window_rect.height() > dip_io_surface_size_.height()) {
         // Draw bottom gutter to the width of the IOSurface.
         filler_quad.set_rect(
             0.0f, dip_io_surface_size_.height(),
-            dip_io_surface_size_.width(), window_size.height());
+            dip_io_surface_size_.width(), window_rect.height());
         DrawQuad(filler_quad);
       }
     }
@@ -463,7 +450,7 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
   }
 
   const bool workaround_needed =
-      IsVendorIntel() && !base::mac::IsOSMountainLionOrLater();
+      drawing_context->IsVendorIntel() && !base::mac::IsOSMountainLionOrLater();
   const bool use_glfinish_workaround =
       (workaround_needed || force_on_workaround) && !force_off_workaround;
 
@@ -489,22 +476,14 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
     }
   }
 
-  if (!using_core_animation) {
-    CGLError cgl_error =  CGLFlushDrawable(context_->cgl_context());
+  bool result = true;
+  if (flush_drawable) {
+    CGLError cgl_error =  CGLFlushDrawable(drawing_context->cgl_context());
     if (cgl_error != kCGLNoError) {
       LOG(ERROR) << "CGLFlushDrawable error in DrawIOSurface: " << cgl_error;
       result = false;
     }
   }
-
-  latency_info_.AddLatencyNumber(
-      ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
-  RenderWidgetHostImpl::CompositorFrameDrawn(latency_info_);
-  latency_info_.Clear();
-
-  // Try to finish previous copy requests after flush to get better pipelining.
-  std::vector<base::Closure> copy_done_callbacks;
-  CheckIfAllCopiesAreFinishedWithinContext(false, &copy_done_callbacks);
 
   // Check if any of the drawing calls result in an error.
   GetAndSaveGLError();
@@ -513,13 +492,13 @@ bool CompositingIOSurfaceMac::DrawIOSurface(
     result = false;
   }
 
-  if (!using_core_animation)
-    CGLSetCurrentContext(0);
+  latency_info_.AddLatencyNumber(
+      ui::INPUT_EVENT_LATENCY_TERMINATED_FRAME_SWAP_COMPONENT, 0, 0);
+  RenderWidgetHostImpl::CompositorFrameDrawn(latency_info_);
+  latency_info_.Clear();
 
-  if (!copy_done_callback.is_null())
-    copy_done_callbacks.push_back(copy_done_callback);
-  for (size_t i = 0; i < copy_done_callbacks.size(); ++i)
-    copy_done_callbacks[i].Run();
+  // Try to finish previous copy requests after flush to get better pipelining.
+  CheckIfAllCopiesAreFinished(false);
 
   StartOrContinueDisplayLink();
 
@@ -545,7 +524,7 @@ void CompositingIOSurfaceMac::CopyTo(
   DCHECK_EQ(output->rowBytesAsPixels(), dst_pixel_size.width())
       << "Stride is required to be equal to width for GPU readback.";
 
-  CGLSetCurrentContext(context_->cgl_context());
+  CGLSetCurrentContext(offscreen_context_->cgl_context());
   const base::Closure copy_done_callback = CopyToSelectedOutputWithinContext(
       src_pixel_subrect, gfx::Rect(dst_pixel_size), false,
       output.get(), NULL,
@@ -559,7 +538,7 @@ void CompositingIOSurfaceMac::CopyToVideoFrame(
     const gfx::Rect& src_pixel_subrect,
     const scoped_refptr<media::VideoFrame>& target,
     const base::Callback<void(bool)>& callback) {
-  CGLSetCurrentContext(context_->cgl_context());
+  CGLSetCurrentContext(offscreen_context_->cgl_context());
   const base::Closure copy_done_callback = CopyToVideoFrameWithinContext(
       src_pixel_subrect, false, target, callback);
   CGLSetCurrentContext(0);
@@ -621,7 +600,7 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTexture(
   CHECK_AND_SAVE_GL_ERROR();
   GLuint plane = 0;
   CGLError cgl_error = io_surface_support_->CGLTexImageIOSurface2D(
-      context_->cgl_context(),
+      offscreen_context_->cgl_context(),
       GL_TEXTURE_RECTANGLE_ARB,
       GL_RGBA,
       rounded_size.width(),
@@ -646,7 +625,7 @@ bool CompositingIOSurfaceMac::MapIOSurfaceToTexture(
 }
 
 void CompositingIOSurfaceMac::UnrefIOSurface() {
-  CGLSetCurrentContext(context_->cgl_context());
+  CGLSetCurrentContext(offscreen_context_->cgl_context());
   UnrefIOSurfaceWithContextCurrent();
   CGLSetCurrentContext(0);
 }
@@ -661,20 +640,6 @@ void CompositingIOSurfaceMac::DrawQuad(const SurfaceQuad& quad) {
 
   glDisableClientState(GL_VERTEX_ARRAY);
   glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-}
-
-bool CompositingIOSurfaceMac::IsVendorIntel() {
-  GLint screen;
-  CGLGetVirtualScreen(context_->cgl_context(), &screen);
-  if (screen != screen_)
-    initialized_is_intel_ = false;
-  screen_ = screen;
-  if (!initialized_is_intel_) {
-    is_intel_ = strstr(reinterpret_cast<const char*>(glGetString(GL_VENDOR)),
-                      "Intel") != NULL;
-    initialized_is_intel_ = true;
-  }
-  return is_intel_;
 }
 
 void CompositingIOSurfaceMac::UnrefIOSurfaceWithContextCurrent() {
@@ -729,14 +694,18 @@ void CompositingIOSurfaceMac::StopDisplayLink() {
 }
 
 bool CompositingIOSurfaceMac::IsAsynchronousReadbackSupported() {
+  const bool forced_synchronous = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kForceSynchronousGLReadPixels);
+  if (forced_synchronous)
+    return false;
+  if (!HasAppleFenceExtension() && HasPixelBufferObjectExtension())
+    return false;
   // Using PBO crashes on Intel drivers but not on newer Mountain Lion
   // systems. See bug http://crbug.com/152225.
-  const bool forced_synchronous = CommandLine::ForCurrentProcess()->HasSwitch(
-                                      switches::kForceSynchronousGLReadPixels);
-  return (!forced_synchronous &&
-          HasAppleFenceExtension() &&
-          HasPixelBufferObjectExtension() &&
-          (base::mac::IsOSMountainLionOrLater() || !IsVendorIntel()));
+  if (offscreen_context_->IsVendorIntel() &&
+      !base::mac::IsOSMountainLionOrLater())
+    return false;
+  return true;
 }
 
 base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(
@@ -753,7 +722,8 @@ base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(
   // readback for SkBitmap output since the Blit shader program doesn't support
   // switchable output formats.
   const bool require_sync_copy_for_workaround = bitmap_output &&
-      context_->shader_program_cache()->rgb_to_yv12_output_format() == GL_RGBA;
+      offscreen_context_->shader_program_cache()->rgb_to_yv12_output_format() ==
+          GL_RGBA;
   const bool async_copy = !require_sync_copy_for_workaround &&
       IsAsynchronousReadbackSupported();
   TRACE_EVENT2(
@@ -776,7 +746,7 @@ base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(
     // be started here.
     if (copy_requests_.size() >= 2)
       return base::Bind(done_callback, false);
-    copy_context = new CopyContext(context_);
+    copy_context = new CopyContext(offscreen_context_);
   } else {
     copy_context = copy_context_pool_.back();
     copy_context_pool_.pop_back();
@@ -804,7 +774,8 @@ base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(
             &copy_context->output_texture_sizes[0],
             &copy_context->output_texture_sizes[1])) {
       copy_context->output_readback_format =
-          context_->shader_program_cache()->rgb_to_yv12_output_format();
+          offscreen_context_->shader_program_cache()->
+              rgb_to_yv12_output_format();
       copy_context->num_outputs = 3;
       copy_context->output_texture_sizes[2] =
           copy_context->output_texture_sizes[1];
@@ -890,11 +861,15 @@ void CompositingIOSurfaceMac::AsynchronousReadbackForCopy(
 
 void CompositingIOSurfaceMac::CheckIfAllCopiesAreFinished(
     bool block_until_finished) {
+  if (copy_requests_.empty())
+    return;
+
   std::vector<base::Closure> done_callbacks;
-  CGLSetCurrentContext(context_->cgl_context());
+  CGLContextObj previous_context = CGLGetCurrentContext();
+  CGLSetCurrentContext(offscreen_context_->cgl_context());
   CheckIfAllCopiesAreFinishedWithinContext(
       block_until_finished, &done_callbacks);
-  CGLSetCurrentContext(0);
+  CGLSetCurrentContext(previous_context);
   for (size_t i = 0; i < done_callbacks.size(); ++i)
     done_callbacks[i].Run();
 }
