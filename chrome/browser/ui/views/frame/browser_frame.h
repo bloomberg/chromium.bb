@@ -59,9 +59,11 @@ class BrowserFrame
   // TabStrip view.
   gfx::Rect GetBoundsForTabStrip(views::View* tabstrip) const;
 
-  // Returns the amount that the tab strip is inset from the edges of the
-  // window.
-  BrowserNonClientFrameView::TabStripInsets GetTabStripInsets() const;
+  // Returns the inset of the topmost view in the client view from the top of
+  // the non-client view. The topmost view depends on the window type. The
+  // topmost view is the tab strip for tabbed browser windows, the toolbar for
+  // popups, the web contents for app windows and varies for fullscreen windows
+  int GetTopInset() const;
 
   // Returns the amount that the theme background should be inset.
   int GetThemeBackgroundXInset() const;

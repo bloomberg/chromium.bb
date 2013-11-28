@@ -14,7 +14,6 @@
 
 class BookmarkBarView;
 class Browser;
-class BrowserView;
 class BrowserViewLayoutDelegate;
 class ContentsContainer;
 class ImmersiveModeController;
@@ -28,6 +27,7 @@ class Size;
 }
 
 namespace views {
+class ClientView;
 class SingleSplitView;
 }
 
@@ -48,7 +48,7 @@ class BrowserViewLayout : public views::LayoutManager {
   // |browser_view| may be NULL in tests.
   void Init(BrowserViewLayoutDelegate* delegate,
             Browser* browser,
-            BrowserView* browser_view,
+            views::ClientView* browser_view,
             views::View* top_container,
             TabStrip* tab_strip,
             views::View* toolbar,
@@ -94,12 +94,9 @@ class BrowserViewLayout : public views::LayoutManager {
 
   Browser* browser() { return browser_; }
 
-  // Layout the tab strip region, returns the coordinate of the bottom of the
-  // TabStrip, for laying out subsequent controls.
-  int LayoutTabStripRegion(views::View* browser_view);
-
   // Layout the following controls, starting at |top|, returns the coordinate
   // of the bottom of the control, for laying out the next control.
+  int LayoutTabStripRegion(int top);
   int LayoutToolbar(int top);
   int LayoutBookmarkAndInfoBars(int top, int browser_view_y);
   int LayoutBookmarkBar(int top);
@@ -136,9 +133,8 @@ class BrowserViewLayout : public views::LayoutManager {
   // The browser from the owning BrowserView.
   Browser* browser_;
 
-  // The owning BrowserView. May be NULL in tests.
-  // TODO(jamescook): Remove this, use the views::View passed in to Layout().
-  BrowserView* browser_view_;
+  // The owning browser view.
+  views::ClientView* browser_view_;
 
   // Child views that the layout manager manages.
   // NOTE: If you add a view, try to add it as a views::View, which makes

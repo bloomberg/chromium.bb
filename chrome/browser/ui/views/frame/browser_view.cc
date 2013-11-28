@@ -117,6 +117,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/single_split_view.h"
@@ -279,9 +280,23 @@ class BrowserViewLayoutDelegateImpl : public BrowserViewLayoutDelegate {
     return browser_view_->IsTabStripVisible();
   }
 
-  virtual gfx::Rect GetBoundsForTabStrip(
-      views::View* tab_strip) const OVERRIDE {
-    return browser_view_->frame()->GetBoundsForTabStrip(tab_strip);
+  virtual gfx::Rect GetBoundsForTabStripInBrowserView() const OVERRIDE {
+    gfx::RectF bounds_f(browser_view_->frame()->GetBoundsForTabStrip(
+        browser_view_->tabstrip()));
+    views::View::ConvertRectToTarget(browser_view_->parent(), browser_view_,
+        &bounds_f);
+    return gfx::ToEnclosingRect(bounds_f);
+  }
+
+  virtual int GetTopInsetInBrowserView() const OVERRIDE {
+    return browser_view_->frame()->GetTopInset() -
+        browser_view_->y();
+  }
+
+  virtual int GetThemeBackgroundXInset() const OVERRIDE {
+    // TODO(pkotwicz): Return the inset with respect to the left edge of the
+    // BrowserView.
+    return browser_view_->frame()->GetThemeBackgroundXInset();
   }
 
   virtual bool IsToolbarVisible() const OVERRIDE {
@@ -506,14 +521,6 @@ gfx::Rect BrowserView::GetToolbarBounds() const {
   return toolbar_bounds;
 }
 
-gfx::Rect BrowserView::GetClientAreaBounds() const {
-  gfx::Rect container_bounds = contents_container_->bounds();
-  gfx::Point container_origin = container_bounds.origin();
-  ConvertPointToTarget(this, parent(), &container_origin);
-  container_bounds.set_origin(container_origin);
-  return container_bounds;
-}
-
 gfx::Rect BrowserView::GetFindBarBoundingBox() const {
   return GetBrowserViewLayout()->GetFindBarBoundingBox();
 }
@@ -532,7 +539,7 @@ gfx::Point BrowserView::OffsetPointForToolbarBackgroundImage(
   // be).  We expect our parent's origin to be the window origin.
   gfx::Point window_point(point + GetMirroredPosition().OffsetFromOrigin());
   window_point.Offset(frame_->GetThemeBackgroundXInset(),
-                      -frame_->GetTabStripInsets().top);
+                      -frame_->GetTopInset());
   return window_point;
 }
 

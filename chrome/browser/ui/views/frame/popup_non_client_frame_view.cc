@@ -29,7 +29,7 @@ int PopupNonClientFrameView::NonClientHitTest(const gfx::Point& point) {
 }
 
 void PopupNonClientFrameView::GetWindowMask(const gfx::Size& size,
-                                                    gfx::Path* window_mask) {
+                                            gfx::Path* window_mask) {
 }
 
 void PopupNonClientFrameView::ResetWindowControls() {
@@ -46,9 +46,8 @@ gfx::Rect PopupNonClientFrameView::GetBoundsForTabStrip(
   return gfx::Rect(0, 0, width(), tabstrip->GetPreferredSize().height());
 }
 
-BrowserNonClientFrameView::TabStripInsets
-PopupNonClientFrameView::GetTabStripInsets() const {
-  return TabStripInsets();
+int PopupNonClientFrameView::GetTopInset() const {
+  return 0;
 }
 
 int PopupNonClientFrameView::GetThemeBackgroundXInset() const {

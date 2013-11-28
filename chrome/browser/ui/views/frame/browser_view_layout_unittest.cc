@@ -45,9 +45,14 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
   virtual bool IsTabStripVisible() const OVERRIDE {
     return tab_strip_visible_;
   }
-  virtual gfx::Rect GetBoundsForTabStrip(views::View* tab_strip) const
-      OVERRIDE {
+  virtual gfx::Rect GetBoundsForTabStripInBrowserView() const OVERRIDE {
     return gfx::Rect();
+  }
+  virtual int GetTopInsetInBrowserView() const OVERRIDE {
+    return 0;
+  }
+  virtual int GetThemeBackgroundXInset() const OVERRIDE {
+    return 0;
   }
   virtual bool IsToolbarVisible() const OVERRIDE {
     return toolbar_visible_;

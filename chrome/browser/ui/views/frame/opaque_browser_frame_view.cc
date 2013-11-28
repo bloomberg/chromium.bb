@@ -170,12 +170,10 @@ gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
   return layout_->GetBoundsForTabStrip(tabstrip->GetPreferredSize(), width());
 }
 
-BrowserNonClientFrameView::TabStripInsets
-OpaqueBrowserFrameView::GetTabStripInsets() const {
-  if (!browser_view()->IsTabStripVisible())
-    return TabStripInsets();
-  // TODO: include OTR and caption.
-  return TabStripInsets(layout_->GetTabStripInsetsTop(false), 0, 0);
+int OpaqueBrowserFrameView::GetTopInset() const {
+  return browser_view()->IsTabStripVisible() ?
+      layout_->GetTabStripInsetsTop(false) :
+      layout_->NonClientTopBorderHeight(false);
 }
 
 int OpaqueBrowserFrameView::GetThemeBackgroundXInset() const {
@@ -657,7 +655,7 @@ void OpaqueBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
   gfx::ImageSkia* theme_toolbar = tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR);
   canvas->TileImageInt(*theme_toolbar,
                        x + GetThemeBackgroundXInset(),
-                       bottom_y - GetTabStripInsets().top,
+                       bottom_y - GetTopInset(),
                        x, bottom_y, w, theme_toolbar->height());
 
   // Draw rounded corners for the tab.

@@ -139,17 +139,13 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
   int tabstrip_width = minimize_button_offset - tabstrip_x -
       (frame()->IsMaximized() ?
           kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
-  return gfx::Rect(tabstrip_x, GetTabStripInsets().top,
+  return gfx::Rect(tabstrip_x, NonClientTopBorderHeight(),
                    std::max(0, tabstrip_width),
                    tabstrip->GetPreferredSize().height());
 }
 
-BrowserNonClientFrameView::TabStripInsets
-GlassBrowserFrameView::GetTabStripInsets() const {
-  if (!browser_view()->IsTabStripVisible())
-    return TabStripInsets();
-  // TODO: include OTR and caption.
-  return TabStripInsets(NonClientTopBorderHeight(), 0, 0);
+int GlassBrowserFrameView::GetTopInset() const {
+  return GetClientAreaInsets().top();
 }
 
 int GlassBrowserFrameView::GetThemeBackgroundXInset() const {
@@ -347,7 +343,7 @@ void GlassBrowserFrameView::PaintToolbarBackground(gfx::Canvas* canvas) {
                    : y;
   canvas->TileImageInt(*theme_toolbar,
                        x + GetThemeBackgroundXInset(),
-                       dest_y - GetTabStripInsets().top, x,
+                       dest_y - GetTopInset(), x,
                        dest_y, w, theme_toolbar->height());
 
   if (browser_view()->IsTabStripVisible()) {
@@ -480,7 +476,7 @@ void GlassBrowserFrameView::LayoutAvatar() {
   if (base::i18n::IsRTL())
     avatar_x += width() - frame()->GetMinimizeButtonOffset();
 
-  int avatar_bottom = GetTabStripInsets().top +
+  int avatar_bottom = GetTopInset() +
       browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
   int avatar_restored_y = avatar_bottom - incognito_icon.height();
   int avatar_y = frame()->IsMaximized() ?

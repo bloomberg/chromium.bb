@@ -118,30 +118,32 @@ gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForTabStrip(
   // bounds are still used to compute the tab strip bounds so that the tabs have
   // the same horizontal position when the tab strip is painted in the immersive
   // light bar style as when the top-of-window views are revealed.
-  TabStripInsets insets(GetTabStripInsets());
-  return gfx::Rect(insets.left, insets.top,
-                   std::max(0, width() - insets.left - insets.right),
+  int left_inset = GetTabStripLeftInset();
+  int right_inset = GetTabStripRightInset();
+  return gfx::Rect(left_inset,
+                   GetTopInset(),
+                   std::max(0, width() - left_inset - right_inset),
                    tabstrip->GetPreferredSize().height());
 }
 
-BrowserNonClientFrameView::TabStripInsets
-BrowserNonClientFrameViewAsh::GetTabStripInsets() const {
-  int left = avatar_button() ? kAvatarSideSpacing +
-      browser_view()->GetOTRAvatarIcon().width() + kAvatarSideSpacing :
-      kTabstripLeftSpacing;
-  int right = header_painter_->GetRightInset() + kTabstripRightSpacing;
+int BrowserNonClientFrameViewAsh::GetTopInset() const {
+  if (!ShouldPaint() || UseImmersiveLightbarHeaderStyle())
+    return 0;
 
-  int top = NonClientTopBorderHeight();
-  if (browser_view()->IsTabStripVisible() &&
-      !UseImmersiveLightbarHeaderStyle()) {
-    if (UseShortHeader()) {
-      top += kTabstripTopSpacingShort;
-    } else {
-      top += kTabstripTopSpacingTall;
-    }
+  if (browser_view()->IsTabStripVisible()) {
+    if (UseShortHeader())
+      return kTabstripTopSpacingShort;
+    else
+      return kTabstripTopSpacingTall;
   }
 
-  return TabStripInsets(top, left, right);
+  int caption_buttons_bottom = caption_button_container_->bounds().bottom();
+
+  // The toolbar partially overlaps the caption buttons.
+  if (browser_view()->IsToolbarVisible())
+    return caption_buttons_bottom - kContentShadowHeight;
+
+  return caption_buttons_bottom + kClientEdgeThickness;
 }
 
 int BrowserNonClientFrameViewAsh::GetThemeBackgroundXInset() const {
@@ -265,7 +267,7 @@ void BrowserNonClientFrameViewAsh::Layout() {
   header_painter_->LayoutHeader(UseShortHeader());
   int header_height = 0;
   if (browser_view()->IsTabStripVisible()) {
-    header_height = GetTabStripInsets().top +
+    header_height = GetTopInset() +
         browser_view()->GetTabStripHeight();
   } else if (browser_view()->IsToolbarVisible()) {
     // Set the header's height so that it overlaps with the toolbar because the
@@ -334,9 +336,17 @@ void BrowserNonClientFrameViewAsh::GetAccessibleState(
 
 gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() {
   gfx::Size min_client_view_size(frame()->client_view()->GetMinimumSize());
-  return gfx::Size(
-      std::max(header_painter_->GetMinimumHeaderWidth(),
-               min_client_view_size.width()),
+  int min_width = std::max(header_painter_->GetMinimumHeaderWidth(),
+                           min_client_view_size.width());
+  if (browser_view()->IsTabStripVisible()) {
+    // Ensure that the minimum width is enough to hold a minimum width tab strip
+    // at its usual insets.
+    int min_tabstrip_width =
+        browser_view()->tabstrip()->GetMinimumSize().width();
+    min_width = std::max(min_width,
+        min_tabstrip_width + GetTabStripLeftInset() + GetTabStripRightInset());
+  }
+  return gfx::Size(min_width,
       NonClientTopBorderHeight() + min_client_view_size.height());
 }
 
@@ -366,6 +376,16 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewAsh, private:
 
+int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
+  return avatar_button() ? kAvatarSideSpacing +
+      browser_view()->GetOTRAvatarIcon().width() + kAvatarSideSpacing :
+      kTabstripLeftSpacing;
+}
+
+int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
+  return header_painter_->GetRightInset() + kTabstripRightSpacing;
+}
+
 int BrowserNonClientFrameViewAsh::NonClientTopBorderHeight() const {
   if (!ShouldPaint() || browser_view()->IsTabStripVisible())
     return 0;
@@ -394,14 +414,14 @@ bool BrowserNonClientFrameViewAsh::UseImmersiveLightbarHeaderStyle() const {
 
 void BrowserNonClientFrameViewAsh::LayoutAvatar() {
   DCHECK(avatar_button());
+  DCHECK(browser_view()->IsTabStripVisible());
   gfx::ImageSkia incognito_icon = browser_view()->GetOTRAvatarIcon();
 
-  int avatar_bottom = GetTabStripInsets().top +
+  int avatar_bottom = GetTopInset() +
       browser_view()->GetTabStripHeight() - kAvatarBottomSpacing;
   int avatar_restored_y = avatar_bottom - incognito_icon.height();
   int avatar_y = (frame()->IsMaximized() || frame()->IsFullscreen()) ?
-      GetTabStripInsets().top + kContentShadowHeight :
-      avatar_restored_y;
+      GetTopInset() + kContentShadowHeight : avatar_restored_y;
 
   // Hide the incognito icon in immersive fullscreen when the tab light bar is
   // visible because the header is too short for the icognito icon to be
@@ -473,7 +493,7 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
   canvas->TileImageInt(
       *theme_toolbar,
       x + GetThemeBackgroundXInset(),
-      bottom_y - GetTabStripInsets().top,
+      bottom_y - GetTopInset(),
       x, bottom_y,
       w, theme_toolbar->height());
 

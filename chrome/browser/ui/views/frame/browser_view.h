@@ -136,10 +136,6 @@ class BrowserView : public BrowserWindow,
   // horizontally. Note that this returns the bounds for the toolbar area.
   gfx::Rect GetToolbarBounds() const;
 
-  // Returns the bounds of the content area, in the coordinates of the
-  // BrowserView's parent.
-  gfx::Rect GetClientAreaBounds() const;
-
   // Returns the constraining bounding box that should be used to lay out the
   // FindBar within. This is _not_ the size of the find bar, just the bounding
   // box it should be laid out within. The coordinate system of the returned

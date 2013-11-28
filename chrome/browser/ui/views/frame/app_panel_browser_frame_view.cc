@@ -100,10 +100,8 @@ gfx::Rect AppPanelBrowserFrameView::GetBoundsForTabStrip(
   return gfx::Rect();
 }
 
-BrowserNonClientFrameView::TabStripInsets
-AppPanelBrowserFrameView::GetTabStripInsets() const {
-  // App panels are not themed and don't need this.
-  return TabStripInsets();
+int AppPanelBrowserFrameView::GetTopInset() const {
+  return NonClientTopBorderHeight();
 }
 
 int AppPanelBrowserFrameView::GetThemeBackgroundXInset() const {
