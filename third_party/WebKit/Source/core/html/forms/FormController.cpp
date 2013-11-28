@@ -401,7 +401,7 @@ PassOwnPtr<FormController::SavedFormStateMap> FormController::createSavedFormSta
         ASSERT(control->inDocument());
         if (!control->shouldSaveAndRestoreFormControlState())
             continue;
-        SavedFormStateMap::AddResult result = stateMap->add(keyGenerator->formKey(*control).impl(), nullptr);
+        SavedFormStateMap::AddResult result = stateMap->add(keyGenerator->formKey(*control), nullptr);
         if (result.isNewEntry)
             result.iterator->value = SavedFormState::create();
         result.iterator->value->appendControlState(control->name(), control->type(), control->saveFormControlState());
@@ -436,7 +436,7 @@ FormControlState FormController::takeStateForFormElement(const HTMLFormControlEl
         return FormControlState();
     if (!m_formKeyGenerator)
         m_formKeyGenerator = FormKeyGenerator::create();
-    SavedFormStateMap::iterator it = m_savedFormStateMap.find(m_formKeyGenerator->formKey(control).impl());
+    SavedFormStateMap::iterator it = m_savedFormStateMap.find(m_formKeyGenerator->formKey(control));
     if (it == m_savedFormStateMap.end())
         return FormControlState();
     FormControlState state = it->value->takeControlState(control.name(), control.type());

@@ -1382,7 +1382,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
                         state.style()->setUnique();
                     else
                         state.parentStyle()->setUnique();
-                    QualifiedName attr(nullAtom, contentValue->getStringValue().impl(), nullAtom);
+                    QualifiedName attr(nullAtom, AtomicString(contentValue->getStringValue()), nullAtom);
                     const AtomicString& value = state.element()->getAttribute(attr);
                     state.style()->setContent(value.isNull() ? emptyString() : value.string(), didSet);
                     didSet = true;

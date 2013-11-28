@@ -55,7 +55,7 @@ public:
     {
     }
 
-    ATOMICSTRING_CONVERSION AtomicString(StringImpl* imp) : m_string(add(imp)) { }
+    explicit AtomicString(StringImpl* imp) : m_string(add(imp)) { }
     ATOMICSTRING_CONVERSION AtomicString(const String& s) : m_string(add(s.impl())) { }
     AtomicString(StringImpl* baseString, unsigned start, unsigned length) : m_string(add(baseString, start, length)) { }
 

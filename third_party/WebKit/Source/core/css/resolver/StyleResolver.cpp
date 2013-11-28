@@ -344,7 +344,7 @@ void StyleResolver::collectFeatures()
 
 bool StyleResolver::hasRulesForId(const AtomicString& id) const
 {
-    return m_features.idsInRules.contains(id.impl());
+    return m_features.idsInRules.contains(id);
 }
 
 void StyleResolver::addToStyleSharingList(Element& element)
@@ -641,7 +641,7 @@ static inline void resetDirectionAndWritingModeOnDocument(Document& document)
 static void addContentAttrValuesToFeatures(const Vector<AtomicString>& contentAttrValues, RuleFeatureSet& features)
 {
     for (size_t i = 0; i < contentAttrValues.size(); ++i)
-        features.attrsInRules.add(contentAttrValues[i].impl());
+        features.attrsInRules.add(contentAttrValues[i]);
 }
 
 PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderStyle* defaultParent, StyleSharingBehavior sharingBehavior,

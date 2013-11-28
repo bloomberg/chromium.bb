@@ -98,8 +98,9 @@ bool SharedStyleFinder::canShareStyleWithControl(Element& candidate) const
 
 bool SharedStyleFinder::classNamesAffectedByRules(const SpaceSplitString& classNames) const
 {
-    for (unsigned i = 0; i < classNames.size(); ++i) {
-        if (m_features.classesInRules.contains(classNames[i].impl()))
+    unsigned count = classNames.size();
+    for (unsigned i = 0; i < count; ++i) {
+        if (m_features.classesInRules.contains(classNames[i]))
             return true;
     }
     return false;
@@ -194,7 +195,7 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
         return false;
     if (candidate.additionalPresentationAttributeStyle() != element().additionalPresentationAttributeStyle())
         return false;
-    if (candidate.hasID() && m_features.idsInRules.contains(candidate.idForStyleResolution().impl()))
+    if (candidate.hasID() && m_features.idsInRules.contains(candidate.idForStyleResolution()))
         return false;
     if (candidate.hasScopedHTMLStyleChild())
         return false;
@@ -228,7 +229,7 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
             return false;
         if (parent->isSVGElement() && toSVGElement(parent)->animatedSMILStyleProperties())
             return false;
-        if (parent->hasID() && m_features.idsInRules.contains(parent->idForStyleResolution().impl()))
+        if (parent->hasID() && m_features.idsInRules.contains(parent->idForStyleResolution()))
             return false;
         if (!parent->childrenSupportStyleSharing())
             return false;

@@ -50,8 +50,7 @@ void SetNodeAttributeCommand::doApply()
 void SetNodeAttributeCommand::doUnapply()
 {
     m_element->setAttribute(m_attribute, m_oldValue);
-    StringImpl* nullString = 0;
-    m_oldValue = nullString;
+    m_oldValue = nullAtom;
 }
 
 } // namespace WebCore

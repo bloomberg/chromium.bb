@@ -1118,8 +1118,11 @@ String CSSPrimitiveValue::customCSSText(CSSTextFormattingFlags formattingFlag) c
 
 String CSSPrimitiveValue::customSerializeResolvingVariables(const HashMap<AtomicString, String>& variables) const
 {
-    if (isVariableName() && variables.contains(m_value.string))
-        return variables.get(m_value.string);
+    if (isVariableName()) {
+        AtomicString variableName(m_value.string);
+        if (variables.contains(variableName))
+            return variables.get(variableName);
+    }
     if (CSSCalcValue* calcValue = cssCalcValue())
         return calcValue->customSerializeResolvingVariables(variables);
     if (Pair* pairValue = getPairValue())
