@@ -489,7 +489,7 @@ void HTMLCanvasElement::createImageBuffer()
 
 void HTMLCanvasElement::setExternallyAllocatedMemory(intptr_t externallyAllocatedMemory)
 {
-    v8::V8::AdjustAmountOfExternalAllocatedMemory(externallyAllocatedMemory - m_externallyAllocatedMemory);
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(externallyAllocatedMemory - m_externallyAllocatedMemory);
     m_externallyAllocatedMemory = externallyAllocatedMemory;
 }
 
