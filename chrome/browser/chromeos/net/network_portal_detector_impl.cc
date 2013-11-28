@@ -204,9 +204,16 @@ void NetworkPortalDetectorImpl::DisableLazyDetection() {
 void NetworkPortalDetectorImpl::DefaultNetworkChanged(
     const NetworkState* default_network) {
   DCHECK(CalledOnValidThread());
+
   if (!default_network) {
     default_network_name_.clear();
     default_network_id_.clear();
+
+    CancelPortalDetection();
+
+    CaptivePortalState state;
+    state.status = CAPTIVE_PORTAL_STATUS_OFFLINE;
+    SetCaptivePortalState(NULL, state);
     return;
   }
 

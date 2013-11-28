@@ -19,8 +19,12 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "dbus/object_path.h"
 #include "net/base/net_errors.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+using testing::Mock;
+using testing::_;
 
 namespace chromeos {
 
@@ -30,6 +34,15 @@ void ErrorCallbackFunction(const std::string& error_name,
                            const std::string& error_message) {
   LOG(ERROR) << "Shill Error: " << error_name << " : " << error_message;
 }
+
+class MockObserver : public NetworkPortalDetector::Observer {
+ public:
+  virtual ~MockObserver() {}
+
+  MOCK_METHOD2(OnPortalDetectionCompleted,
+               void(const NetworkState* network,
+                    const NetworkPortalDetector::CaptivePortalState& state));
+};
 
 }  // namespace
 
@@ -186,6 +199,13 @@ class NetworkPortalDetectorImplTest
     base::RunLoop().RunUntilIdle();
   }
 
+  void SetDisconnected(const std::string& service_path) {
+    DBusThreadManager::Get()->GetShillServiceClient()->Disconnect(
+        dbus::ObjectPath(service_path),
+        base::Bind(&*base::DoNothing), base::Bind(&ErrorCallbackFunction));
+    base::RunLoop().RunUntilIdle();
+  }
+
  private:
   void SetupDefaultShillState() {
     base::RunLoop().RunUntilIdle();
@@ -272,13 +292,52 @@ TEST_F(NetworkPortalDetectorImplTest, Portal) {
                    kStubEthernet);
 }
 
+TEST_F(NetworkPortalDetectorImplTest, Online2Offline) {
+  ASSERT_TRUE(is_state_idle());
+
+  MockObserver observer;
+  network_portal_detector()->AddObserver(&observer);
+
+  // WiFi is in online state.
+  {
+    NetworkPortalDetector::CaptivePortalState state;
+    state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE;
+    state.response_code = 204;
+    EXPECT_CALL(observer, OnPortalDetectionCompleted(_, state)).Times(1);
+
+    SetConnected(kStubWireless1);
+    ASSERT_TRUE(is_state_checking_for_portal());
+
+    CompleteURLFetch(net::OK, 204, NULL);
+    ASSERT_TRUE(is_state_idle());
+
+    // Check that observer was notified about online state.
+    Mock::VerifyAndClearExpectations(&observer);
+  }
+
+  // WiFi is turned off.
+  {
+    NetworkPortalDetector::CaptivePortalState state;
+    state.status = NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_OFFLINE;
+    EXPECT_CALL(observer, OnPortalDetectionCompleted(NULL, state)).Times(1);
+
+    SetDisconnected(kStubWireless1);
+    ASSERT_TRUE(is_state_idle());
+
+    // Check that observer was notified about offline state.
+    Mock::VerifyAndClearExpectations(&observer);
+  }
+
+  network_portal_detector()->RemoveObserver(&observer);
+}
+
 TEST_F(NetworkPortalDetectorImplTest, TwoNetworks) {
   ASSERT_TRUE(is_state_idle());
 
   SetConnected(kStubWireless1);
   ASSERT_TRUE(is_state_checking_for_portal());
 
-  // wifi is in portal state.
+  // WiFi is in portal state.
   CompleteURLFetch(net::OK, 200, NULL);
   ASSERT_TRUE(is_state_idle());
 
@@ -303,10 +362,10 @@ TEST_F(NetworkPortalDetectorImplTest, NetworkChanged) {
   fetcher()->set_response_code(200);
   ASSERT_TRUE(is_state_checking_for_portal());
 
-  // Active network is changed during portal detection for wifi.
+  // Active network is changed during portal detection for WiFi.
   SetConnected(kStubEthernet);
 
-  // Portal detection for wifi is cancelled, portal detection for
+  // Portal detection for WiFi is cancelled, portal detection for
   // ethernet is initiated.
   ASSERT_TRUE(is_state_checking_for_portal());
 

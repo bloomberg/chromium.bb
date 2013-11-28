@@ -32,6 +32,10 @@ class NetworkPortalDetector {
           response_code(net::URLFetcher::RESPONSE_CODE_INVALID) {
     }
 
+    bool operator==(const CaptivePortalState& o) const {
+      return status == o.status && response_code == o.response_code;
+    }
+
     CaptivePortalStatus status;
     int response_code;
   };
