@@ -418,8 +418,6 @@
         'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
         'browser/renderer_host/input/gesture_event_filter_unittest.cc',
         'browser/renderer_host/input/immediate_input_router_unittest.cc',
-        'browser/renderer_host/input/input_router_unittest.h',
-        'browser/renderer_host/input/input_router_unittest.cc',
         'browser/renderer_host/input/mock_input_ack_handler.cc',
         'browser/renderer_host/input/mock_input_ack_handler.h',
         'browser/renderer_host/input/mock_input_router_client.cc',

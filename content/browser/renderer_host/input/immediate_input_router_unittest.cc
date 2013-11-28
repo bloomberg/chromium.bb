@@ -8,8 +8,9 @@
 #include "content/browser/renderer_host/input/gesture_event_filter.h"
 #include "content/browser/renderer_host/input/immediate_input_router.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
-#include "content/browser/renderer_host/input/input_router_unittest.h"
+#include "content/browser/renderer_host/input/mock_input_ack_handler.h"
 #include "content/browser/renderer_host/input/mock_input_router_client.h"
+#include "content/browser/renderer_host/input/synthetic_web_input_event_builders.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/edit_command.h"
 #include "content/common/input/web_input_event_traits.h"
@@ -103,23 +104,148 @@ bool EventListIsSubset(const ScopedVector<ui::TouchEvent>& subset,
 
 }  // namespace
 
-class ImmediateInputRouterTest : public InputRouterTest {
+class ImmediateInputRouterTest : public testing::Test {
  public:
   ImmediateInputRouterTest() {}
   virtual ~ImmediateInputRouterTest() {}
 
  protected:
-  // InputRouterTest
-  virtual scoped_ptr<InputRouter> CreateInputRouter(RenderProcessHost* process,
-                                                    InputRouterClient* client,
-                                                    InputAckHandler* handler,
-                                                    int routing_id) OVERRIDE {
-    ImmediateInputRouter* ir =
-        new ImmediateInputRouter(process, client, handler, routing_id);
-    ir->gesture_event_filter_->set_debounce_enabled_for_testing(false);
-    return scoped_ptr<InputRouter>(ir);
+  // testing::Test
+  virtual void SetUp() OVERRIDE {
+    browser_context_.reset(new TestBrowserContext());
+    process_.reset(new MockRenderProcessHost(browser_context_.get()));
+    client_.reset(new MockInputRouterClient());
+    ack_handler_.reset(new MockInputAckHandler());
+    input_router_.reset(new ImmediateInputRouter(process_.get(),
+                                                 client_.get(),
+                                                 ack_handler_.get(),
+                                                 MSG_ROUTING_NONE));
+    input_router_->gesture_event_filter_->
+        set_debounce_enabled_for_testing(false);
+    client_->set_input_router(input_router());
+    ack_handler_->set_input_router(input_router());
   }
 
+  virtual void TearDown() OVERRIDE {
+    // Process all pending tasks to avoid leaks.
+    base::MessageLoop::current()->RunUntilIdle();
+
+    input_router_.reset();
+    client_.reset();
+    process_.reset();
+    browser_context_.reset();
+  }
+
+  void SimulateKeyboardEvent(WebInputEvent::Type type, bool is_shortcut) {
+    input_router_->SendKeyboardEvent(
+        SyntheticWebKeyboardEventBuilder::Build(type),
+        ui::LatencyInfo(),
+        is_shortcut);
+  }
+
+  void SimulateWheelEvent(float dX, float dY, int modifiers, bool precise) {
+    input_router_->SendWheelEvent(MouseWheelEventWithLatencyInfo(
+        SyntheticWebMouseWheelEventBuilder::Build(dX, dY, modifiers, precise),
+        ui::LatencyInfo()));
+  }
+
+  void SimulateMouseMove(int x, int y, int modifiers) {
+    input_router_->SendMouseEvent(MouseEventWithLatencyInfo(
+        SyntheticWebMouseEventBuilder::Build(
+            WebInputEvent::MouseMove, x, y, modifiers),
+        ui::LatencyInfo()));
+  }
+
+  void SimulateWheelEventWithPhase(WebMouseWheelEvent::Phase phase) {
+    input_router_->SendWheelEvent(MouseWheelEventWithLatencyInfo(
+        SyntheticWebMouseWheelEventBuilder::Build(phase), ui::LatencyInfo()));
+  }
+
+  void SimulateGestureEvent(const WebGestureEvent& gesture) {
+    input_router_->SendGestureEvent(
+        GestureEventWithLatencyInfo(gesture, ui::LatencyInfo()));
+  }
+
+  void SimulateGestureEvent(WebInputEvent::Type type,
+                            WebGestureEvent::SourceDevice sourceDevice) {
+    SimulateGestureEvent(
+        SyntheticWebGestureEventBuilder::Build(type, sourceDevice));
+  }
+
+  void SimulateGestureScrollUpdateEvent(float dX, float dY, int modifiers) {
+    SimulateGestureEvent(
+        SyntheticWebGestureEventBuilder::BuildScrollUpdate(dX, dY, modifiers));
+  }
+
+  void SimulateGesturePinchUpdateEvent(float scale,
+                                       float anchorX,
+                                       float anchorY,
+                                       int modifiers) {
+    SimulateGestureEvent(
+        SyntheticWebGestureEventBuilder::BuildPinchUpdate(scale,
+                                                          anchorX,
+                                                          anchorY,
+                                                          modifiers));
+  }
+
+  void SimulateGestureFlingStartEvent(
+      float velocityX,
+      float velocityY,
+      WebGestureEvent::SourceDevice sourceDevice) {
+    SimulateGestureEvent(
+        SyntheticWebGestureEventBuilder::BuildFling(velocityX,
+                                                    velocityY,
+                                                    sourceDevice));
+  }
+
+  void SimulateTouchEvent(WebInputEvent::Type type) {
+    touch_event_.ResetPoints();
+    int index = PressTouchPoint(0, 0);
+    switch (type) {
+      case WebInputEvent::TouchStart:
+        // Already handled by |PressTouchPoint()|.
+        break;
+      case WebInputEvent::TouchMove:
+        MoveTouchPoint(index, 5, 5);
+        break;
+      case WebInputEvent::TouchEnd:
+        ReleaseTouchPoint(index);
+        break;
+      case WebInputEvent::TouchCancel:
+        CancelTouchPoint(index);
+        break;
+      default:
+        FAIL() << "Invalid touch event type.";
+        break;
+    }
+    SendTouchEvent();
+  }
+
+  void SetTouchTimestamp(base::TimeDelta timestamp) {
+    touch_event_.SetTimestamp(timestamp);
+  }
+
+  void SendTouchEvent() {
+    input_router_->SendTouchEvent(
+        TouchEventWithLatencyInfo(touch_event_, ui::LatencyInfo()));
+    touch_event_.ResetPoints();
+  }
+
+  int PressTouchPoint(int x, int y) {
+    return touch_event_.PressPoint(x, y);
+  }
+
+  void MoveTouchPoint(int index, int x, int y) {
+    touch_event_.MovePoint(index, x, y);
+  }
+
+  void ReleaseTouchPoint(int index) {
+    touch_event_.ReleasePoint(index);
+  }
+
+  void CancelTouchPoint(int index) {
+    touch_event_.CancelPoint(index);
+  }
   void SendInputEventACK(blink::WebInputEvent::Type type,
                          InputEventAckState ack_result) {
     scoped_ptr<IPC::Message> response(
@@ -129,7 +255,7 @@ class ImmediateInputRouterTest : public InputRouterTest {
   }
 
   ImmediateInputRouter* input_router() const {
-    return static_cast<ImmediateInputRouter*>(input_router_.get());
+    return input_router_.get();
   }
 
   bool no_touch_to_renderer() {
@@ -145,6 +271,17 @@ class ImmediateInputRouterTest : public InputRouterTest {
     process_->sink().ClearMessages();
     return count;
   }
+
+  scoped_ptr<MockRenderProcessHost> process_;
+  scoped_ptr<MockInputRouterClient> client_;
+  scoped_ptr<MockInputAckHandler> ack_handler_;
+  scoped_ptr<ImmediateInputRouter> input_router_;
+
+ private:
+  base::MessageLoopForUI message_loop_;
+  SyntheticWebTouchEvent touch_event_;
+
+  scoped_ptr<TestBrowserContext> browser_context_;
 };
 
 TEST_F(ImmediateInputRouterTest, CoalescesRangeSelection) {

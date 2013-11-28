@@ -142,7 +142,7 @@ class GestureEventFilterTest : public testing::Test,
   }
 
   void set_debounce_interval_time_ms(int ms) {
-    filter()->debounce_interval_time_ms_ = ms;
+    filter()->set_debounce_interval_time_ms_for_testing(ms);
   }
 
   void set_synchronous_ack(InputEventAckState ack_result) {

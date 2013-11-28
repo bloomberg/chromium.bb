@@ -258,11 +258,12 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   void DisableGestureDebounce() {
-    gesture_event_filter()->debounce_enabled_ = false;
+    gesture_event_filter()->set_debounce_enabled_for_testing(false);
   }
 
   void set_debounce_interval_time_ms(int delay_ms) {
-    gesture_event_filter()->debounce_interval_time_ms_ = delay_ms;
+    gesture_event_filter()->
+        set_debounce_interval_time_ms_for_testing(delay_ms);
   }
 
   bool TouchEventQueueEmpty() const {

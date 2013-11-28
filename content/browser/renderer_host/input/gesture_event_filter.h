@@ -93,9 +93,13 @@ class CONTENT_EXPORT GestureEventFilter {
     debounce_enabled_ = enabled;
   }
 
+  void set_debounce_interval_time_ms_for_testing(int interval_time_ms) {
+    debounce_interval_time_ms_ = interval_time_ms;
+  }
+
  private:
-  friend class MockRenderWidgetHost;
   friend class GestureEventFilterTest;
+  friend class MockRenderWidgetHost;
 
   // TODO(mohsen): There are a bunch of ShouldForward.../ShouldDiscard...
   // methods that are getting confusing. This should be somehow fixed. Maybe
