@@ -200,9 +200,9 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
 
     layer_tree_host_impl_->BeginCommit();
 
-    if (layer_tree_host_->contents_texture_manager()) {
-      layer_tree_host_->contents_texture_manager()->
-          PushTexturePrioritiesToBackings();
+    if (PrioritizedResourceManager* contents_texture_manager =
+        layer_tree_host_->contents_texture_manager()) {
+      contents_texture_manager->PushTexturePrioritiesToBackings();
     }
     layer_tree_host_->BeginCommitOnImplThread(layer_tree_host_impl_.get());
 
@@ -329,24 +329,28 @@ bool SingleThreadProxy::ReduceContentsTextureMemoryOnImplThread(
     size_t limit_bytes,
     int priority_cutoff) {
   DCHECK(IsImplThread());
-  if (!layer_tree_host_->contents_texture_manager())
-    return false;
-  if (!layer_tree_host_impl_->resource_provider())
+  PrioritizedResourceManager* contents_texture_manager =
+      layer_tree_host_->contents_texture_manager();
+
+  ResourceProvider* resource_provider =
+      layer_tree_host_impl_->resource_provider();
+
+  if (!contents_texture_manager || !resource_provider)
     return false;
 
-  return layer_tree_host_->contents_texture_manager()->ReduceMemoryOnImplThread(
-      limit_bytes, priority_cutoff, layer_tree_host_impl_->resource_provider());
+  return contents_texture_manager->ReduceMemoryOnImplThread(
+      limit_bytes, priority_cutoff, resource_provider);
 }
 
 void SingleThreadProxy::SendManagedMemoryStats() {
   DCHECK(Proxy::IsImplThread());
   if (!layer_tree_host_impl_)
     return;
-  if (!layer_tree_host_->contents_texture_manager())
-    return;
-
   PrioritizedResourceManager* contents_texture_manager =
       layer_tree_host_->contents_texture_manager();
+  if (!contents_texture_manager)
+    return;
+
   layer_tree_host_impl_->SendManagedMemoryStats(
       contents_texture_manager->MemoryVisibleBytes(),
       contents_texture_manager->MemoryVisibleAndNearbyBytes(),
@@ -434,12 +438,12 @@ bool SingleThreadProxy::CommitAndComposite(
 
   layer_tree_host_->AnimateLayers(frame_begin_time);
 
-  if (layer_tree_host_->contents_texture_manager()) {
-    layer_tree_host_->contents_texture_manager()
-        ->UnlinkAndClearEvictedBackings();
-    layer_tree_host_->contents_texture_manager()->SetMaxMemoryLimitBytes(
+  if (PrioritizedResourceManager* contents_texture_manager =
+      layer_tree_host_->contents_texture_manager()) {
+    contents_texture_manager->UnlinkAndClearEvictedBackings();
+    contents_texture_manager->SetMaxMemoryLimitBytes(
         layer_tree_host_impl_->memory_allocation_limit_bytes());
-    layer_tree_host_->contents_texture_manager()->SetExternalPriorityCutoff(
+    contents_texture_manager->SetExternalPriorityCutoff(
         layer_tree_host_impl_->memory_allocation_priority_cutoff());
   }
 
