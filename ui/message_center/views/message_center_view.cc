@@ -1015,6 +1015,16 @@ void MessageCenterView::AddNotificationAt(const Notification& notification,
 
 void MessageCenterView::NotificationsChanged() {
   bool no_message_views = notification_views_.empty();
+
+  // When the child view is removed from the hierarchy, its focus is cleared.
+  // In this case we want to save which view has focus so that the user can
+  // continue to interact with notifications in the order they were expecting.
+  views::FocusManager* focus_manager = scroller_->GetFocusManager();
+  View* focused_view = NULL;
+  // |focus_manager| can be NULL in tests.
+  if (focus_manager)
+    focused_view = focus_manager->GetFocusedView();
+
   // All the children of this view are owned by |this|.
   scroller_->contents()->RemoveAllChildViews(/*delete_children=*/false);
   scroller_->contents()->AddChildView(
@@ -1022,6 +1032,9 @@ void MessageCenterView::NotificationsChanged() {
 
   button_bar_->SetCloseAllButtonEnabled(!no_message_views);
   scroller_->set_focusable(!no_message_views);
+
+  if (focus_manager && focused_view)
+    focus_manager->SetFocusedView(focused_view);
 
   scroller_->InvalidateLayout();
   PreferredSizeChanged();
