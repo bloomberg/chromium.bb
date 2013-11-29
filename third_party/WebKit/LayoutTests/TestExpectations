@@ -45,7 +45,7 @@ crbug.com/324369 [ Win ] inspector/styles/pseudo-state-change.html [ Failure Pas
 # Plugin tests
 # -----------------------------------------------------------------
 
-# crbug.com/260351 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ ImageOnlyFailure Pass ]
+crbug.com/260351 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ ImageOnlyFailure Pass ]
 
 crbug.com/321606 plugins/layout-in-beforeload-listener-affects-plugin-loading.html [ Failure Pass ]
 
@@ -225,7 +225,7 @@ crbug.com/322272 virtual/threaded/transitions/transition-end-event-left.html [ P
 # Tests that have new baselines but are probably still failing on Linux Aura.
 crbug.com/318980 [ Linux ] editing/selection/7152-1.html [ Pass ]
 crbug.com/318980 [ Linux ] editing/selection/linux_selection_color.html [ Pass ]
-#crbug.com/318980 [ Linux ] fast/forms/input-disabled-color.html [ Pass ]
+crbug.com/318980 [ Linux ] fast/forms/input-disabled-color.html [ Pass ]
 crbug.com/318980 [ Linux ] fast/replaced/width100percent-menulist.html [ Pass ]
 crbug.com/318980 [ Linux ] fast/ruby/select-ruby.html [ Pass ]
 crbug.com/318980 [ Linux ] fast/sub-pixel/selection/selection-gaps-at-fractional-offsets.html [ Pass ]
@@ -569,8 +569,6 @@ crbug.com/315514 [ Linux ] fast/workers/storage/test-authorizer-sync.html [ Fail
 crbug.com/315514 [ Linux ] fast/workers/storage/test-authorizer.html [ Failure ]
 crbug.com/315514 [ Linux ] storage/websql/sql-error-codes.html [ Failure ]
 crbug.com/315514 [ Linux ] storage/websql/test-authorizer.html [ Failure ]
-crbug.com/255061 [ Linux ] fast/forms/input-disabled-color.html [ NeedsManualRebaseline ]
-crbug.com/255061 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ NeedsManualRebaseline ]
 
 crbug.com/315913 [ Win7 Debug ] editing/spelling/inline-spelling-markers-hidpi.html [ ImageOnlyFailure ]
 
