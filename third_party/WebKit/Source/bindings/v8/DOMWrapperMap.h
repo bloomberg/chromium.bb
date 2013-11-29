@@ -73,7 +73,7 @@ public:
         return m_map.find(key) != m_map.end();
     }
 
-    bool containsKeyAndValue(KeyType* key, const v8::Persistent<v8::Object>& value)
+    bool containsKeyAndValue(KeyType* key, v8::Handle<v8::Object> value)
     {
         typename MapType::iterator it = m_map.find(key);
         if (it == m_map.end())
@@ -86,7 +86,7 @@ public:
         ASSERT(static_cast<KeyType*>(toNative(wrapper)) == key);
         v8::Persistent<v8::Object> persistent(m_isolate, wrapper);
         configuration.configureWrapper(&persistent);
-        persistent.MakeWeak(this, &makeWeakCallback);
+        persistent.SetWeak(this, &setWeakCallback);
         typename MapType::AddResult result = m_map.add(key, UnsafePersistent<v8::Object>());
         ASSERT(result.isNewEntry);
         // FIXME: Stop handling this case once duplicate wrappers are guaranteed not to be created.
@@ -117,20 +117,20 @@ public:
     }
 
 private:
-    static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::Object>* wrapper, DOMWrapperMap<KeyType>*);
+    static void setWeakCallback(const v8::WeakCallbackData<v8::Object, DOMWrapperMap<KeyType> >&);
 
     v8::Isolate* m_isolate;
     MapType m_map;
 };
 
 template<>
-inline void DOMWrapperMap<void>::makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Object>* wrapper, DOMWrapperMap<void>* map)
+inline void DOMWrapperMap<void>::setWeakCallback(const v8::WeakCallbackData<v8::Object, DOMWrapperMap<void> >& data)
 {
-    const WrapperTypeInfo* type = toWrapperTypeInfo(*wrapper);
+    const WrapperTypeInfo* type = toWrapperTypeInfo(data.GetValue());
     ASSERT(type->derefObjectFunction);
-    void* key = static_cast<void*>(toNative(*wrapper));
-    ASSERT(*(map->m_map.get(key).persistent()) == *wrapper);
-    map->removeAndDispose(key);
+    void* key = static_cast<void*>(toNative(data.GetValue()));
+    ASSERT(*(data.GetParameter()->m_map.get(key).persistent()) == data.GetValue());
+    data.GetParameter()->removeAndDispose(key);
     type->derefObject(key);
 }
 
