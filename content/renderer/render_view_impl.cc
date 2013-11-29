@@ -540,7 +540,7 @@ static bool IsNonLocalTopLevelNavigation(const GURL& url,
 static void NotifyTimezoneChange(blink::WebFrame* frame) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   v8::Context::Scope context_scope(frame->mainWorldScriptContext());
-  v8::Date::DateTimeConfigurationChangeNotification();
+  v8::Date::DateTimeConfigurationChangeNotification(v8::Isolate::GetCurrent());
   blink::WebFrame* child = frame->firstChild();
   for (; child; child = child->nextSibling())
     NotifyTimezoneChange(child);

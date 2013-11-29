@@ -43,9 +43,12 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
 
   class FromV8ValueState;
 
-  v8::Handle<v8::Value> ToV8ValueImpl(const base::Value* value) const;
-  v8::Handle<v8::Value> ToV8Array(const base::ListValue* list) const;
+  v8::Local<v8::Value> ToV8ValueImpl(v8::Isolate* isolate,
+                                      const base::Value* value) const;
+  v8::Handle<v8::Value> ToV8Array(v8::Isolate* isolate,
+                                  const base::ListValue* list) const;
   v8::Handle<v8::Value> ToV8Object(
+      v8::Isolate* isolate,
       const base::DictionaryValue* dictionary) const;
   v8::Handle<v8::Value> ToArrayBuffer(const base::BinaryValue* value) const;
 

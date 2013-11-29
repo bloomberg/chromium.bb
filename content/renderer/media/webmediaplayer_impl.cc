@@ -1239,7 +1239,8 @@ void WebMediaPlayerImpl::Destroy() {
 
   // Let V8 know we are not using extra resources anymore.
   if (incremented_externally_allocated_memory_) {
-    v8::V8::AdjustAmountOfExternalAllocatedMemory(-kPlayerExtraMemory);
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+        -kPlayerExtraMemory);
     incremented_externally_allocated_memory_ = false;
   }
 
@@ -1262,7 +1263,8 @@ blink::WebAudioSourceProvider* WebMediaPlayerImpl::audioSourceProvider() {
 void WebMediaPlayerImpl::IncrementExternallyAllocatedMemory() {
   DCHECK(main_loop_->BelongsToCurrentThread());
   incremented_externally_allocated_memory_ = true;
-  v8::V8::AdjustAmountOfExternalAllocatedMemory(kPlayerExtraMemory);
+  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+      kPlayerExtraMemory);
 }
 
 double WebMediaPlayerImpl::GetPipelineDuration() const {

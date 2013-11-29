@@ -280,14 +280,14 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
                                v8::Handle<v8::Value>* result) {
   v8::Context::Scope context_scope(context);
   v8::Isolate* isolate = context->GetIsolate();
-  v8::HandleScope handle_scope(isolate);
+  v8::EscapableHandleScope handle_scope(isolate);
 
   VarHandleMap visited_ids;
   ParentVarSet parent_ids;
 
   std::stack<StackEntry<PP_Var> > stack;
   stack.push(StackEntry<PP_Var>(var));
-  v8::Handle<v8::Value> root;
+  v8::Local<v8::Value> root;
   bool is_root = true;
 
   while (!stack.empty()) {
@@ -379,7 +379,7 @@ bool V8VarConverter::ToV8Value(const PP_Var& var,
     }
   }
 
-  *result = handle_scope.Close(root);
+  *result = handle_scope.Escape(root);
   return true;
 }
 

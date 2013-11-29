@@ -837,9 +837,13 @@ void BrowserPlugin::TriggerEvent(const std::string& event_name,
   // more appropriate (and stable) event to the consumers as part of the API.
   event.initCustomEvent(
       blink::WebString::fromUTF8(GetInternalEventName(event_name.c_str())),
-      false, false,
+      false,
+      false,
       blink::WebSerializedScriptValue::serialize(
-          v8::String::New(json_string.c_str(), json_string.size())));
+          v8::String::NewFromUtf8(context->GetIsolate(),
+                                  json_string.c_str(),
+                                  v8::String::kNormalString,
+                                  json_string.size())));
   container()->element().dispatchEvent(event);
 }
 
