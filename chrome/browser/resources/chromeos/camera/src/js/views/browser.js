@@ -95,6 +95,8 @@ camera.views.Browser.prototype.onEnter = function() {
   this.onResize();
   this.scrollTracker_.start();
   this.updateButtons_();
+  if (!this.scroller_.animating)
+    this.updatePicturesResolutions_();
   document.body.classList.add('browser');
 };
 
