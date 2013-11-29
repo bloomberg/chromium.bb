@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
+#include "chrome/browser/chromeos/drive/sync/remove_performer.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -24,7 +25,46 @@ FileError PrepareUpdate(ResourceMetadata* metadata,
   if (error != FILE_ERROR_OK)
     return error;
 
-  return metadata->GetResourceEntryById(entry->parent_local_id(), parent_entry);
+  error = metadata->GetResourceEntryById(entry->parent_local_id(),
+                                         parent_entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  switch (entry->metadata_edit_state()) {
+    case ResourceEntry::CLEAN:  // Nothing to do.
+    case ResourceEntry::SYNCING:  // Error during the last update. Go ahead.
+      break;
+
+    case ResourceEntry::DIRTY:
+      entry->set_metadata_edit_state(ResourceEntry::SYNCING);
+      error = metadata->RefreshEntry(*entry);
+      if (error != FILE_ERROR_OK)
+        return error;
+      break;
+  }
+  return FILE_ERROR_OK;
+}
+
+FileError FinishUpdate(ResourceMetadata* metadata,
+                       const std::string& local_id) {
+  ResourceEntry entry;
+  FileError error = metadata->GetResourceEntryById(local_id, &entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+
+  switch (entry.metadata_edit_state()) {
+    case ResourceEntry::CLEAN:  // Nothing to do.
+    case ResourceEntry::DIRTY:  // Entry was edited again during the update.
+      break;
+
+    case ResourceEntry::SYNCING:
+      entry.set_metadata_edit_state(ResourceEntry::CLEAN);
+      error = metadata->RefreshEntry(entry);
+      if (error != FILE_ERROR_OK)
+        return error;
+      break;
+  }
+  return FILE_ERROR_OK;
 }
 
 }  // namespace
@@ -77,6 +117,11 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
     return;
   }
 
+  if (entry->metadata_edit_state() == ResourceEntry::CLEAN) {
+    callback.Run(FILE_ERROR_OK);
+    return;
+  }
+
   base::Time last_modified =
       base::Time::FromInternalValue(entry->file_info().last_modified());
   base::Time last_accessed =
@@ -85,16 +130,27 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
       entry->resource_id(), parent_entry->resource_id(),
       entry->title(), last_modified, last_accessed,
       base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+                 weak_ptr_factory_.GetWeakPtr(), callback, entry->local_id()));
 }
 
 void EntryUpdatePerformer::UpdateEntryAfterUpdateResource(
     const FileOperationCallback& callback,
+    const std::string& local_id,
     google_apis::GDataErrorCode status,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  callback.Run(GDataToFileError(status));
+  FileError error = GDataToFileError(status);
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
+    return;
+  }
+
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(),
+      FROM_HERE,
+      base::Bind(&FinishUpdate, metadata_, local_id),
+      callback);
 }
 
 }  // namespace internal

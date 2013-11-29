@@ -99,6 +99,16 @@ message ResourceEntry {
 
   // Directory specific information, such as changestamp.
   optional DirectorySpecificInfo directory_specific_info = 13;
+
+  // Used to remember whether this entry is edited locally or not.
+  enum EditState {
+    CLEAN = 0;  // No local edit.
+    DIRTY = 1;  // Edited locally.
+    SYNCING = 2;  // Local change is being synced to the server.
+  }
+
+  // Indicates whether this entry's metadata is edited locally or not.
+  optional EditState metadata_edit_state = 16;
 }
 
 // Container for the header part of ResourceMetadata.

@@ -50,6 +50,7 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry) {
       new_last_modified.ToInternalValue());
   src_entry.mutable_file_info()->set_last_accessed(
       new_last_accessed.ToInternalValue());
+  src_entry.set_metadata_edit_state(ResourceEntry::DIRTY);
 
   FileError error = FILE_ERROR_FAILED;
   base::PostTaskAndReplyWithResult(

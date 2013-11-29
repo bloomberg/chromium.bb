@@ -54,6 +54,7 @@ class EntryUpdatePerformer {
   // Part of UpdateEntry(). Called after UpdateResource is completed.
   void UpdateEntryAfterUpdateResource(
       const FileOperationCallback& callback,
+      const std::string& local_id,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
