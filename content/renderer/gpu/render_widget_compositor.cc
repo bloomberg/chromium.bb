@@ -17,7 +17,6 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "cc/base/latency_info_swap_promise.h"
 #include "cc/base/switches.h"
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/debug/micro_benchmark.h"
@@ -392,9 +391,7 @@ void RenderWidgetCompositor::SetNeedsForcedRedraw() {
 
 void RenderWidgetCompositor::SetLatencyInfo(
     const ui::LatencyInfo& latency_info) {
-  scoped_ptr<cc::SwapPromise> swap_promise(
-      new cc::LatencyInfoSwapPromise(latency_info));
-  layer_tree_host_->QueueSwapPromise(swap_promise.Pass());
+  layer_tree_host_->SetLatencyInfo(latency_info);
 }
 
 int RenderWidgetCompositor::GetLayerTreeId() const {

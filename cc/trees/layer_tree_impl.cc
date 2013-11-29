@@ -120,6 +120,9 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
     next_activation_forces_redraw_ = false;
   }
 
+  target_tree->SetLatencyInfo(latency_info_);
+  latency_info_.Clear();
+
   target_tree->PassSwapPromises(&swap_promise_list_);
 
   target_tree->SetPageScaleFactorAndLimits(
@@ -461,6 +464,8 @@ void LayerTreeImpl::PushPersistedState(LayerTreeImpl* pending_tree) {
   pending_tree->SetCurrentlyScrollingLayer(
       LayerTreeHostCommon::FindLayerInSubtree(pending_tree->root_layer(),
           currently_scrolling_layer_ ? currently_scrolling_layer_->id() : 0));
+  pending_tree->SetLatencyInfo(latency_info_);
+  latency_info_.Clear();
 }
 
 static void DidBecomeActiveRecursive(LayerImpl* layer) {
@@ -694,6 +699,18 @@ void LayerTreeImpl::UpdateRootScrollLayerSizeDelta() {
       scrollable_viewport_size - original_viewport_size);
 }
 
+void LayerTreeImpl::SetLatencyInfo(const ui::LatencyInfo& latency_info) {
+  latency_info_.MergeWith(latency_info);
+}
+
+const ui::LatencyInfo& LayerTreeImpl::GetLatencyInfo() {
+  return latency_info_;
+}
+
+void LayerTreeImpl::ClearLatencyInfo() {
+  latency_info_.Clear();
+}
+
 void LayerTreeImpl::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {
   DCHECK(swap_promise);
   if (swap_promise_list_.size() > kMaxQueuedSwapPromiseNumber)
@@ -708,9 +725,9 @@ void LayerTreeImpl::PassSwapPromises(
   new_swap_promise->clear();
 }
 
-void LayerTreeImpl::FinishSwapPromises(CompositorFrameMetadata* metadata) {
+void LayerTreeImpl::FinishSwapPromises() {
   for (size_t i = 0; i < swap_promise_list_.size(); i++)
-    swap_promise_list_[i]->DidSwap(metadata);
+    swap_promise_list_[i]->DidSwap();
   swap_promise_list_.clear();
 }
 

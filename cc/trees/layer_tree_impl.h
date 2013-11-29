@@ -15,6 +15,7 @@
 #include "cc/base/swap_promise.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/resources/ui_resource_client.h"
+#include "ui/events/latency_info.h"
 
 #if defined(COMPILER_GCC)
 namespace BASE_HASH_NAMESPACE {
@@ -206,13 +207,17 @@ class CC_EXPORT LayerTreeImpl {
   void SetRootLayerScrollOffsetDelegate(
       LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate);
 
+  void SetLatencyInfo(const ui::LatencyInfo& latency_info);
+  const ui::LatencyInfo& GetLatencyInfo();
+  void ClearLatencyInfo();
+
   // Call this function when you expect there to be a swap buffer.
   // See swap_promise.h for how to use SwapPromise.
   void QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise);
 
   // Take the |new_swap_promise| and append it to |swap_promise_list_|.
   void PassSwapPromises(ScopedPtrVector<SwapPromise>* new_swap_promise);
-  void FinishSwapPromises(CompositorFrameMetadata* metadata);
+  void FinishSwapPromises();
   void BreakSwapPromises(SwapPromise::DidNotSwapReason reason);
 
   void DidModifyTilePriorities();
@@ -274,6 +279,8 @@ class CC_EXPORT LayerTreeImpl {
   bool needs_full_tree_sync_;
 
   bool next_activation_forces_redraw_;
+
+  ui::LatencyInfo latency_info_;
 
   ScopedPtrVector<SwapPromise> swap_promise_list_;
 

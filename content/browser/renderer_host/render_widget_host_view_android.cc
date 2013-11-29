@@ -14,7 +14,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/worker_pool.h"
-#include "cc/base/latency_info_swap_promise.h"
 #include "cc/layers/delegated_frame_provider.h"
 #include "cc/layers/delegated_renderer_layer.h"
 #include "cc/layers/layer.h"
@@ -780,11 +779,8 @@ void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
   texture_size_in_layer_ = frame->gl_frame_data->size;
   ComputeContentsSize(frame->metadata);
 
-  if (layer_->layer_tree_host()) {
-    scoped_ptr<cc::SwapPromise> swap_promise(
-        new cc::LatencyInfoSwapPromise(frame->metadata.latency_info));
-    layer_->layer_tree_host()->QueueSwapPromise(swap_promise.Pass());
-  }
+  if (layer_->layer_tree_host())
+    layer_->layer_tree_host()->SetLatencyInfo(frame->metadata.latency_info);
 
   BuffersSwapped(frame->gl_frame_data->mailbox, output_surface_id, callback);
 }

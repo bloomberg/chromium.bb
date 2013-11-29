@@ -382,6 +382,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
                                          min_page_scale_factor_,
                                          max_page_scale_factor_);
   sync_tree->SetPageScaleDelta(page_scale_delta / sent_page_scale_delta);
+  sync_tree->SetLatencyInfo(latency_info_);
+  latency_info_.Clear();
 
   sync_tree->PassSwapPromises(&swap_promise_list_);
 
@@ -701,6 +703,10 @@ void LayerTreeHost::SetVisible(bool visible) {
   if (!visible)
     ReduceMemoryUsage();
   proxy_->SetVisible(visible);
+}
+
+void LayerTreeHost::SetLatencyInfo(const ui::LatencyInfo& latency_info) {
+  latency_info_.MergeWith(latency_info);
 }
 
 void LayerTreeHost::StartPageScaleAnimation(gfx::Vector2d target_offset,
@@ -1265,6 +1271,9 @@ bool LayerTreeHost::ScheduleMicroBenchmark(
 }
 
 void LayerTreeHost::QueueSwapPromise(scoped_ptr<SwapPromise> swap_promise) {
+  if (proxy_->HasImplThread()) {
+    DCHECK(proxy_->CommitRequested() || proxy_->BeginMainFrameRequested());
+  }
   DCHECK(swap_promise);
   if (swap_promise_list_.size() > kMaxQueuedSwapPromiseNumber)
     BreakSwapPromises(SwapPromise::SWAP_PROMISE_LIST_OVERFLOW);

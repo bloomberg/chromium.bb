@@ -218,7 +218,6 @@
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
-        '../ui/events/events.gyp:events_base',
         '../ui/gfx/gfx.gyp:gfx',
         '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
         'cc.gyp:cc',
