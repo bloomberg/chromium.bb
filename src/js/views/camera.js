@@ -432,29 +432,29 @@ camera.views.Camera.prototype.initialize = function(callback) {
         this.mainFastCanvas_);
 
     // Set the default effect.
-    this.mainProcessor_.effect = new camera.effects.Swirl();
+    this.mainProcessor_.effect = new camera.effects.Normal();
 
     // Prepare effect previews.
     this.previewCanvasTexture_ = this.previewCanvas_.texture(
         this.previewInputCanvas_);
     this.addEffect_(new camera.effects.Normal(this.tracker_));
     this.addEffect_(new camera.effects.Vintage(this.tracker_));
-    this.addEffect_(new camera.effects.Beauty(this.tracker_));
+    this.addEffect_(new camera.effects.Cinema(this.tracker_));
+    this.addEffect_(new camera.effects.TiltShift(this.tracker_));
+    this.addEffect_(new camera.effects.Retro30(this.tracker_));
+    this.addEffect_(new camera.effects.Retro50(this.tracker_));
+    this.addEffect_(new camera.effects.Retro60(this.tracker_));
     this.addEffect_(new camera.effects.BigHead(this.tracker_));
     this.addEffect_(new camera.effects.BigJaw(this.tracker_));
     this.addEffect_(new camera.effects.BigEyes(this.tracker_));
     this.addEffect_(new camera.effects.BunnyHead(this.tracker_));
-    this.addEffect_(new camera.effects.Swirl(this.tracker_));
     this.addEffect_(new camera.effects.Grayscale(this.tracker_));
     this.addEffect_(new camera.effects.Sepia(this.tracker_));
-    this.addEffect_(new camera.effects.Retro30(this.tracker_));
-    this.addEffect_(new camera.effects.Retro50(this.tracker_));
-    this.addEffect_(new camera.effects.Retro60(this.tracker_));
     this.addEffect_(new camera.effects.Colorize(this.tracker_));
+    this.addEffect_(new camera.effects.Beauty(this.tracker_));
     this.addEffect_(new camera.effects.Newspaper(this.tracker_));
     this.addEffect_(new camera.effects.Funky(this.tracker_));
-    this.addEffect_(new camera.effects.TiltShift(this.tracker_));
-    this.addEffect_(new camera.effects.Cinema(this.tracker_));
+    this.addEffect_(new camera.effects.Swirl(this.tracker_));
 
     // Select the default effect.
     // TODO(mtomasz): Move to chrome.storage.local.sync, after implementing
