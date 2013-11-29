@@ -47,7 +47,8 @@ namespace sync_file_system {
 namespace {
 
 const char kLocalSyncName[] = "Local sync";
-const char kRemoteSyncName[] = "Remote sync";
+const char kRemoteSyncNameV1[] = "Remote sync (v1)";
+const char kRemoteSyncNameV2[] = "Remote sync (v2)";
 
 SyncServiceState RemoteStateToSyncServiceState(
     RemoteServiceState state) {
@@ -193,14 +194,21 @@ class RemoteSyncRunner : public SyncProcessRunner,
                          public RemoteFileSyncService::Observer {
  public:
   RemoteSyncRunner(const std::string& name,
-                   SyncFileSystemService* sync_service)
+                   SyncFileSystemService* sync_service,
+                   RemoteFileSyncService* remote_service)
       : SyncProcessRunner(name, sync_service),
+        remote_service_(remote_service),
+        last_state_(REMOTE_SERVICE_OK),
         factory_(this) {}
 
   virtual void StartSync(const SyncStatusCallback& callback) OVERRIDE {
-    sync_service()->remote_service_->ProcessRemoteChange(
+    remote_service_->ProcessRemoteChange(
         base::Bind(&RemoteSyncRunner::DidProcessRemoteChange,
                    factory_.GetWeakPtr(), callback));
+  }
+
+  virtual SyncServiceState GetServiceState() OVERRIDE {
+    return RemoteStateToSyncServiceState(last_state_);
   }
 
   // RemoteFileSyncService::Observer overrides.
@@ -219,6 +227,7 @@ class RemoteSyncRunner : public SyncProcessRunner,
       const std::string& description) OVERRIDE {
     // Just forward to SyncFileSystemService.
     sync_service()->OnRemoteServiceStateUpdated(state, description);
+    last_state_ = state;
   }
 
  private:
@@ -239,6 +248,8 @@ class RemoteSyncRunner : public SyncProcessRunner,
     callback.Run(status);
   }
 
+  RemoteFileSyncService* remote_service_;
+  RemoteServiceState last_state_;
   base::WeakPtrFactory<RemoteSyncRunner> factory_;
   DISALLOW_COPY_AND_ASSIGN(RemoteSyncRunner);
 };
@@ -253,6 +264,7 @@ void SyncFileSystemService::Shutdown() {
   local_service_.reset();
 
   remote_service_.reset();
+  v2_remote_service_.reset();
 
   ProfileSyncServiceBase* profile_sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
@@ -285,13 +297,17 @@ void SyncFileSystemService::InitializeForApp(
 }
 
 SyncServiceState SyncFileSystemService::GetSyncServiceState() {
+  // For now we always query the state from the main RemoteFileSyncService.
   return RemoteStateToSyncServiceState(remote_service_->GetCurrentState());
 }
 
 void SyncFileSystemService::GetExtensionStatusMap(
     std::map<GURL, std::string>* status_map) {
   DCHECK(status_map);
+  status_map->clear();
   remote_service_->GetOriginStatusMap(status_map);
+  if (v2_remote_service_)
+    v2_remote_service_->GetOriginStatusMap(status_map);
 }
 
 void SyncFileSystemService::DumpFiles(const GURL& origin,
@@ -311,7 +327,7 @@ void SyncFileSystemService::DumpFiles(const GURL& origin,
 void SyncFileSystemService::GetFileSyncStatus(
     const FileSystemURL& url, const SyncFileStatusCallback& callback) {
   DCHECK(local_service_);
-  DCHECK(remote_service_);
+  DCHECK(GetRemoteService(url.origin()));
 
   // It's possible to get an invalid FileEntry.
   if (!url.is_valid()) {
@@ -323,7 +339,7 @@ void SyncFileSystemService::GetFileSyncStatus(
     return;
   }
 
-  if (remote_service_->IsConflicting(url)) {
+  if (GetRemoteService(url.origin())->IsConflicting(url)) {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback,
@@ -359,7 +375,7 @@ SyncStatusCode SyncFileSystemService::SetConflictResolutionPolicy(
 
 LocalChangeProcessor* SyncFileSystemService::GetLocalChangeProcessor(
     const GURL& origin) {
-  return remote_service_->GetLocalChangeProcessor();
+  return GetRemoteService(origin)->GetLocalChangeProcessor();
 }
 
 SyncFileSystemService::SyncFileSystemService(Profile* profile)
@@ -381,7 +397,7 @@ void SyncFileSystemService::Initialize(
   scoped_ptr<LocalSyncRunner> local_syncer(
       new LocalSyncRunner(kLocalSyncName, this));
   scoped_ptr<RemoteSyncRunner> remote_syncer(
-      new RemoteSyncRunner(kRemoteSyncName, this));
+      new RemoteSyncRunner(kRemoteSyncNameV1, this, remote_service_.get()));
 
   local_service_->AddChangeObserver(local_syncer.get());
   local_service_->SetLocalChangeProcessorCallback(
@@ -425,7 +441,7 @@ void SyncFileSystemService::DidInitializeFileSystem(
 
   // Local side of initialization for the app is done.
   // Continue on initializing the remote side.
-  remote_service_->RegisterOrigin(
+  GetRemoteService(app_origin)->RegisterOrigin(
       app_origin,
       base::Bind(&SyncFileSystemService::DidRegisterOrigin,
                  AsWeakPtr(), app_origin, callback));
@@ -455,7 +471,8 @@ void SyncFileSystemService::DidInitializeFileSystemForDump(
     return;
   }
 
-  base::ListValue* files = remote_service_->DumpFiles(origin).release();
+  base::ListValue* files =
+      GetRemoteService(origin)->DumpFiles(origin).release();
   if (!files->GetSize()) {
     callback.Run(files);
     return;
@@ -488,6 +505,8 @@ void SyncFileSystemService::DidInitializeFileSystemForDump(
 void SyncFileSystemService::SetSyncEnabledForTesting(bool enabled) {
   sync_enabled_ = enabled;
   remote_service_->SetSyncEnabled(sync_enabled_);
+  if (v2_remote_service_)
+    v2_remote_service_->SetSyncEnabled(sync_enabled_);
 }
 
 void SyncFileSystemService::DidGetLocalChangeStatus(
@@ -586,7 +605,7 @@ void SyncFileSystemService::HandleExtensionUnloaded(
 
   DVLOG(1) << "Handle extension notification for UNLOAD(DISABLE): "
            << app_origin;
-  remote_service_->DisableOrigin(
+  GetRemoteService(app_origin)->DisableOrigin(
       app_origin,
       base::Bind(&DidHandleOriginForExtensionUnloadedEvent,
                  type, app_origin));
@@ -612,7 +631,7 @@ void SyncFileSystemService::HandleExtensionUninstalled(
   GURL app_origin = Extension::GetBaseURLFromExtensionId(extension->id());
   DVLOG(1) << "Handle extension notification for UNINSTALLED: "
            << app_origin;
-  remote_service_->UninstallOrigin(
+  GetRemoteService(app_origin)->UninstallOrigin(
       app_origin, flag,
       base::Bind(&DidHandleOriginForExtensionUnloadedEvent,
                  type, app_origin));
@@ -625,7 +644,7 @@ void SyncFileSystemService::HandleExtensionEnabled(
   std::string extension_id = content::Details<const Extension>(details)->id();
   GURL app_origin = Extension::GetBaseURLFromExtensionId(extension_id);
   DVLOG(1) << "Handle extension notification for ENABLED: " << app_origin;
-  remote_service_->EnableOrigin(
+  GetRemoteService(app_origin)->EnableOrigin(
       app_origin,
       base::Bind(&DidHandleOriginForExtensionEnabledEvent, type, app_origin));
   local_service_->SetOriginEnabled(app_origin, true);
@@ -656,6 +675,8 @@ void SyncFileSystemService::UpdateSyncEnabledStatus(
   sync_enabled_ = profile_sync_service->GetActiveDataTypes().Has(
       syncer::APPS);
   remote_service_->SetSyncEnabled(sync_enabled_);
+  if (v2_remote_service_)
+    v2_remote_service_->SetSyncEnabled(sync_enabled_);
   if (!old_sync_enabled && sync_enabled_)
     RunForEachSyncRunners(&SyncProcessRunner::Schedule);
 }
@@ -665,6 +686,27 @@ void SyncFileSystemService::RunForEachSyncRunners(
   for (ScopedVector<SyncProcessRunner>::iterator iter = sync_runners_.begin();
        iter != sync_runners_.end(); ++iter)
     ((*iter)->*method)();
+}
+
+RemoteFileSyncService* SyncFileSystemService::GetRemoteService(
+    const GURL& origin) {
+  if (IsV2Enabled())
+    return remote_service_.get();
+  if (!IsV2EnabledForOrigin(origin))
+    return remote_service_.get();
+
+  if (!v2_remote_service_) {
+    scoped_ptr<RemoteSyncRunner> v2_remote_syncer(
+        new RemoteSyncRunner(kRemoteSyncNameV2, this,
+                             v2_remote_service_.get()));
+
+    v2_remote_service_ = RemoteFileSyncService::CreateForBrowserContext(
+        RemoteFileSyncService::V2, profile_);
+    v2_remote_service_->AddServiceObserver(v2_remote_syncer.get());
+    v2_remote_service_->AddFileStatusObserver(this);
+    v2_remote_service_->SetRemoteChangeProcessor(local_service_.get());
+  }
+  return v2_remote_service_.get();
 }
 
 }  // namespace sync_file_system

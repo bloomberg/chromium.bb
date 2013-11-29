@@ -239,8 +239,6 @@ RemoteServiceState SyncEngine::GetCurrentState() const {
 
 void SyncEngine::GetOriginStatusMap(OriginStatusMap* status_map) {
   DCHECK(status_map);
-  status_map->clear();
-
   if (!extension_service_)
     return;
 

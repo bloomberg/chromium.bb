@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
+#include "chrome/browser/sync_file_system/sync_service_state.h"
 
 namespace sync_file_system {
 
@@ -27,14 +28,20 @@ class SyncProcessRunner {
                     SyncFileSystemService* sync_service);
   virtual ~SyncProcessRunner();
 
+  // Subclass must implement this.
   virtual void StartSync(const SyncStatusCallback& callback) = 0;
 
+  // Schedules a new sync.
   void Schedule();
   void ScheduleIfNotRunning();
-  void OnChangesUpdated(int64 pending_changes);
 
  protected:
+  void OnChangesUpdated(int64 pending_changes);
   SyncFileSystemService* sync_service() { return sync_service_; }
+
+  // Returns the current service state.  Default implementation returns
+  // sync_service()->GetSyncServiceState().
+  virtual SyncServiceState GetServiceState();
 
  private:
   void Finished(SyncStatusCode status);
