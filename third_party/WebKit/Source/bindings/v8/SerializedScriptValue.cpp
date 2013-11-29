@@ -1627,7 +1627,7 @@ private:
             return false;
         if (m_position + length > m_length)
             return false;
-        *value = v8::String::New(reinterpret_cast<const char*>(m_buffer + m_position), length);
+        *value = v8::String::NewFromUtf8(m_isolate, reinterpret_cast<const char*>(m_buffer + m_position), v8::String::kNormalString, length);
         m_position += length;
         return true;
     }
@@ -1640,7 +1640,7 @@ private:
         if (m_position + length > m_length)
             return false;
         ASSERT(!(m_position & 1));
-        *value = v8::String::New(reinterpret_cast<const uint16_t*>(m_buffer + m_position), length / sizeof(UChar));
+        *value = v8::String::NewFromTwoByte(m_isolate, reinterpret_cast<const uint16_t*>(m_buffer + m_position), v8::String::kNormalString, length / sizeof(UChar));
         m_position += length;
         return true;
     }

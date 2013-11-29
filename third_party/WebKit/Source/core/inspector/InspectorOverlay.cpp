@@ -626,7 +626,7 @@ Page* InspectorOverlay::overlayPage()
     v8::Context::Scope contextScope(frameContext);
     v8::Handle<v8::Value> overlayHostObj = toV8(m_overlayHost.get(), v8::Handle<v8::Object>(), isolate);
     v8::Handle<v8::Object> global = frameContext->Global();
-    global->Set(v8::String::New("InspectorOverlayHost"), overlayHostObj);
+    global->Set(v8::String::NewFromUtf8(isolate, "InspectorOverlayHost"), overlayHostObj);
 
 #if OS(WIN)
     evaluateInOverlay("setPlatform", "windows");

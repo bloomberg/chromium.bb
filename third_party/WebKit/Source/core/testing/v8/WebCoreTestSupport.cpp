@@ -45,7 +45,7 @@ void injectInternalsObject(v8::Local<v8::Context> context)
     v8::HandleScope scope(context->GetIsolate());
     ExecutionContext* scriptContext = getExecutionContext();
     if (scriptContext->isDocument())
-        context->Global()->Set(v8::String::New(Internals::internalsId), toV8(Internals::create(toDocument(scriptContext)), v8::Handle<v8::Object>(), context->GetIsolate()));
+        context->Global()->Set(v8::String::NewFromUtf8(context->GetIsolate(), Internals::internalsId), toV8(Internals::create(toDocument(scriptContext)), v8::Handle<v8::Object>(), context->GetIsolate()));
 }
 
 void resetInternalsObject(v8::Local<v8::Context> context)
