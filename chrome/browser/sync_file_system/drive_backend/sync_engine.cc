@@ -305,11 +305,11 @@ void SyncEngine::DownloadRemoteVersion(
 void SyncEngine::ApplyLocalChange(
     const FileChange& local_change,
     const base::FilePath& local_path,
-    const SyncFileMetadata& local_metadata,
+    const SyncFileMetadata& /* unused */,
     const fileapi::FileSystemURL& url,
     const SyncStatusCallback& callback) {
   LocalToRemoteSyncer* syncer = new LocalToRemoteSyncer(
-      this, local_change, local_path, local_metadata, url);
+      this, local_change, local_path, url);
 
   task_manager_->ScheduleSyncTask(
       scoped_ptr<SyncTask>(syncer),

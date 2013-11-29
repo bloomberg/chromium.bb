@@ -84,12 +84,10 @@ bool CanReuseRemoteFolder() {
 LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
                                          const FileChange& local_change,
                                          const base::FilePath& local_path,
-                                         const SyncFileMetadata& local_metadata,
                                          const fileapi::FileSystemURL& url)
     : sync_context_(sync_context),
       local_change_(local_change),
       local_path_(local_path),
-      local_metadata_(local_metadata),
       url_(url),
       weak_ptr_factory_(this) {
 }

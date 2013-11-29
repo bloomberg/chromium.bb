@@ -39,7 +39,6 @@ class LocalToRemoteSyncer : public SyncTask {
   LocalToRemoteSyncer(SyncEngineContext* sync_context,
                       const FileChange& local_change,
                       const base::FilePath& local_path,
-                      const SyncFileMetadata& local_metadata,
                       const fileapi::FileSystemURL& url);
   virtual ~LocalToRemoteSyncer();
   virtual void Run(const SyncStatusCallback& callback) OVERRIDE;
@@ -102,7 +101,6 @@ class LocalToRemoteSyncer : public SyncTask {
 
   FileChange local_change_;
   base::FilePath local_path_;
-  SyncFileMetadata local_metadata_;
   fileapi::FileSystemURL url_;
 
   scoped_ptr<FileTracker> remote_file_tracker_;

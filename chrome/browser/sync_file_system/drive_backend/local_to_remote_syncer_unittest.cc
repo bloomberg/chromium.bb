@@ -129,12 +129,11 @@ class LocalToRemoteSyncerTest : public testing::Test,
   }
 
   SyncStatusCode RunSyncer(FileChange file_change,
-                           SyncFileMetadata file_metadata,
                            const fileapi::FileSystemURL& url) {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     base::FilePath local_path = base::FilePath::FromUTF8Unsafe("dummy");
     scoped_ptr<LocalToRemoteSyncer> syncer(new LocalToRemoteSyncer(
-        this, file_change, local_path, file_metadata, url));
+        this, file_change, local_path, url));
     syncer->Run(CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
     return status;
@@ -174,12 +173,10 @@ TEST_F(LocalToRemoteSyncerTest, CreateLocalFile) {
   EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_FILE),
-      SyncFileMetadata(SYNC_FILE_TYPE_FILE, 100, base::Time::Now()),
       URL(kOrigin, "file")));
   EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_DIRECTORY),
-      SyncFileMetadata(SYNC_FILE_TYPE_DIRECTORY, 100, base::Time::Now()),
       URL(kOrigin, "folder")));
 
   VerifyRemoteFile(app_root, "file", google_apis::ENTRY_KIND_FILE);
