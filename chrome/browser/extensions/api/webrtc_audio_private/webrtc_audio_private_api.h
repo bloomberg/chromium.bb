@@ -120,6 +120,9 @@ class WebrtcAudioPrivateSetActiveSinkFunction
 
 class WebrtcAudioPrivateGetAssociatedSinkFunction
     : public ChromeAsyncExtensionFunction {
+ public:
+  WebrtcAudioPrivateGetAssociatedSinkFunction();
+
  protected:
   virtual ~WebrtcAudioPrivateGetAssociatedSinkFunction();
 
@@ -129,11 +132,42 @@ class WebrtcAudioPrivateGetAssociatedSinkFunction
 
   virtual bool RunImpl() OVERRIDE;
 
-  // Takes the parameters of the function, returns the associated sink
-  // ID, or the empty string if none.
-  std::string DoWorkOnDeviceThread(GURL security_origin,
-                                   std::string source_id_in_origin);
-  void DoneOnUIThread(const std::string& associated_sink_id);
+  // This implementation is slightly complicated because of different
+  // thread requirements for the various functions we need to invoke.
+  //
+  // All OnXyzDone callbacks occur on the UI thread, and they trigger
+  // the next step (or send the response in case of the last step).
+  //
+  // The sequence of events is:
+  // 1. Get the list of source devices on the device thread.
+  // 2. Given a source ID for an origin and that security origin, find
+  //    the raw source ID. This needs to happen on the IO thread since
+  //    we will be using the ResourceContext.
+  // 3. Given a raw source ID, get the associated sink ID on the
+  //    device thread.
+
+  // Fills in |source_devices_|. OnGetDevicesDone will be invoked on
+  // the UI thread once done.
+  void GetDevicesOnDeviceThread();
+  void OnGetDevicesDone();
+
+  // Takes the parameters of the function, returns the raw source
+  // device ID, or the empty string if none.
+  std::string GetRawSourceIDOnIOThread(GURL security_origin,
+                                       const std::string& source_id_in_origin);
+  void OnGetRawSourceIDDone(const std::string& raw_source_id);
+
+  // Given a raw source ID, get its associated sink, which needs to
+  // happen on the device thread.
+  std::string GetAssociatedSinkOnDeviceThread(const std::string& raw_source_id);
+  void OnGetAssociatedSinkDone(const std::string& associated_sink_id);
+
+  // Accessed from UI thread and device thread, but only on one at a
+  // time, no locking needed.
+  scoped_ptr<api::webrtc_audio_private::GetAssociatedSink::Params> params_;
+
+  // Filled in by DoWorkOnDeviceThread.
+  media::AudioDeviceNames source_devices_;
 };
 
 }  // namespace extensions
