@@ -469,7 +469,7 @@ void SyncEngine::DidFetchChanges(SyncStatusCode status) {
   if (status != SYNC_STATUS_OK)
     return;
 
-  if (metadata_database_->HasDirtyTracker()) {
+  if (!metadata_database_->HasDirtyTracker()) {
     task_manager_->ScheduleSyncTaskIfIdle(
         scoped_ptr<SyncTask>(new ConflictResolver(this)),
         SyncStatusCallback());
