@@ -565,12 +565,29 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document)
     }
     case VTTTokenTypes::EndTag: {
         VTTNodeType nodeType = tokenToNodeType(m_token);
-        if (nodeType != VTTNodeTypeNone) {
-            if (nodeType == VTTNodeTypeLanguage && m_currentNode->isVTTElement() && toVTTElement(m_currentNode.get())->webVTTNodeType() == VTTNodeTypeLanguage)
-                m_languageStack.removeLast();
-            if (m_currentNode->parentNode())
-                m_currentNode = m_currentNode->parentNode();
+        if (nodeType == VTTNodeTypeNone)
+            break;
+
+        // The only non-VTTElement would be the DocumentFragment root. (Text
+        // nodes and PIs will never appear as m_currentNode.)
+        if (!m_currentNode->isVTTElement())
+            break;
+
+        VTTNodeType currentType = toVTTElement(m_currentNode.get())->webVTTNodeType();
+        bool matchesCurrent = nodeType == currentType;
+        if (!matchesCurrent) {
+            // </ruby> auto-closes <rt>.
+            if (currentType == VTTNodeTypeRubyText && nodeType == VTTNodeTypeRuby) {
+                if (m_currentNode->parentNode())
+                    m_currentNode = m_currentNode->parentNode();
+            } else {
+                break;
+            }
         }
+        if (nodeType == VTTNodeTypeLanguage)
+            m_languageStack.removeLast();
+        if (m_currentNode->parentNode())
+            m_currentNode = m_currentNode->parentNode();
         break;
     }
     case VTTTokenTypes::TimestampTag: {
