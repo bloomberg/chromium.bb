@@ -81,10 +81,21 @@ void WebRtcTestBase::GetUserMediaAndDismiss(
 
 void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,
                                   const std::string& constraints) const {
+  // TODO(phoglund): temporary debugging measure for crbug.com/281268.
+  std::string javascript =
+      "if (typeof(doGetUserMedia) != typeof(Function)) {\n"
+      "  console.log('hitting weird js load bug: diagnosing...');\n"
+      "  for (var v in window) {\n"
+      "    if (window.hasOwnProperty(v)) console.log(v);\n"
+      "  }\n"
+      "  window.domAutomationController.send('failed!');\n"
+      "}\n"
+      "else\n"
+      "  doGetUserMedia(" + constraints + ");";
   // Request user media: this will launch the media stream info bar.
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      tab_contents, "doGetUserMedia(" + constraints + ");", &result));
+      tab_contents, javascript, &result));
   EXPECT_EQ("ok-requested", result);
 }
 
