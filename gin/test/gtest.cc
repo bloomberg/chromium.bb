@@ -9,6 +9,7 @@
 #include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/function_template.h"
+#include "gin/object_template_builder.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
 #include "gin/wrappable.h"
@@ -18,13 +19,7 @@ namespace gin {
 
 namespace {
 
-void Fail(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Arguments args(info);
-
-  std::string description;
-  if (!args.GetNext(&description))
-    return args.ThrowError();
-
+void Fail(const std::string& description) {
   FAIL() << description;
 }
 
@@ -53,15 +48,12 @@ v8::Local<v8::ObjectTemplate> GTest::GetTemplate(v8::Isolate* isolate) {
   v8::Local<v8::ObjectTemplate> templ =
       data->GetObjectTemplate(&g_wrapper_info);
   if (templ.IsEmpty()) {
-    templ = v8::ObjectTemplate::New();
-    templ->Set(StringToSymbol(isolate, "fail"),
-               v8::FunctionTemplate::New(Fail));
-    templ->Set(StringToSymbol(isolate, "expectTrue"),
-               CreateFunctionTemplate(isolate, base::Bind(ExpectTrue)));
-    templ->Set(StringToSymbol(isolate, "expectFalse"),
-               CreateFunctionTemplate(isolate, base::Bind(ExpectFalse)));
-    templ->Set(StringToSymbol(isolate, "expectEqual"),
-               CreateFunctionTemplate(isolate, base::Bind(ExpectEqual)));
+    templ = ObjectTemplateBuilder(isolate)
+        .SetMethod("fail", Fail)
+        .SetMethod("expectTrue", ExpectTrue)
+        .SetMethod("expectFalse", ExpectFalse)
+        .SetMethod("expectEqual", ExpectEqual)
+        .Build();
     data->SetObjectTemplate(&g_wrapper_info, templ);
   }
   return templ;

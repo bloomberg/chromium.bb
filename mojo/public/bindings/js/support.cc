@@ -8,6 +8,7 @@
 #include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/function_template.h"
+#include "gin/object_template_builder.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
 #include "gin/wrappable.h"
@@ -20,18 +21,9 @@ namespace js {
 
 namespace {
 
-void AsyncWait(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  gin::Arguments args(info);
-
-  mojo::Handle handle;
-  MojoWaitFlags flags = MOJO_WAIT_FLAG_NONE;
-  v8::Handle<v8::Function> callback;
-
-  if (!args.GetNext(&handle) ||
-      !args.GetNext(&flags) ||
-      !args.GetNext(&callback))
-    return args.ThrowError();
-
+WaitingCallback* AsyncWait(const gin::Arguments& args, mojo::Handle handle,
+                           MojoWaitFlags flags,
+                           v8::Handle<v8::Function> callback) {
   scoped_refptr<WaitingCallback> waiting_callback =
       WaitingCallback::Create(args.isolate(), callback);
 
@@ -40,7 +32,7 @@ void AsyncWait(const v8::FunctionCallbackInfo<v8::Value>& info) {
 
   waiting_callback->set_wait_id(wait_id);
 
-  args.Return(waiting_callback.get());
+  return waiting_callback.get();
 }
 
 void CancelWait(WaitingCallback* waiting_callback) {
@@ -64,12 +56,10 @@ v8::Local<v8::ObjectTemplate> Support::GetTemplate(v8::Isolate* isolate) {
   if (templ.IsEmpty()) {
     WaitingCallback::EnsureRegistered(isolate);
 
-    templ = v8::ObjectTemplate::New(isolate);
-
-    templ->Set(gin::StringToSymbol(isolate, "asyncWait"),
-               v8::FunctionTemplate::New(isolate, AsyncWait));
-    templ->Set(gin::StringToSymbol(isolate, "cancelWait"),
-               gin::CreateFunctionTemplate(isolate, base::Bind(CancelWait)));
+     templ = gin::ObjectTemplateBuilder(isolate)
+        .SetMethod("asyncWait", AsyncWait)
+        .SetMethod("cancelWait", CancelWait)
+        .Build();
 
     data->SetObjectTemplate(&g_wrapper_info, templ);
   }

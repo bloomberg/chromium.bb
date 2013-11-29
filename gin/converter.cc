@@ -91,12 +91,15 @@ bool Converter<double>::FromV8(Isolate* isolate, Handle<Value> val,
   return true;
 }
 
+Handle<Value> Converter<base::StringPiece>::ToV8(
+    Isolate* isolate, const base::StringPiece& val) {
+  return String::NewFromUtf8(isolate, val.data(), String::kNormalString,
+                             static_cast<uint32_t>(val.length()));
+}
+
 Handle<Value> Converter<std::string>::ToV8(Isolate* isolate,
                                            const std::string& val) {
-  return String::NewFromUtf8(isolate,
-                             val.data(),
-                             String::kNormalString,
-                             static_cast<uint32_t>(val.length()));
+  return Converter<base::StringPiece>::ToV8(isolate, val);
 }
 
 bool Converter<std::string>::FromV8(Isolate* isolate, Handle<Value> val,
@@ -171,7 +174,7 @@ bool Converter<Handle<Value> >::FromV8(Isolate* isolate, Handle<Value> val,
 }
 
 v8::Handle<v8::String> StringToSymbol(v8::Isolate* isolate,
-                                      const std::string& val) {
+                                      const base::StringPiece& val) {
   return String::NewFromUtf8(isolate,
                              val.data(),
                              String::kInternalizedString,

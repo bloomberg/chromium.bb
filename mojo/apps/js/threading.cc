@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "gin/function_template.h"
+#include "gin/object_template_builder.h"
 #include "gin/per_isolate_data.h"
 #include "mojo/public/bindings/js/handle.h"
 
@@ -31,9 +32,10 @@ v8::Local<v8::ObjectTemplate> Threading::GetTemplate(v8::Isolate* isolate) {
       &g_wrapper_info);
 
   if (templ.IsEmpty()) {
-    templ = v8::ObjectTemplate::New();
-    templ->Set(gin::StringToSymbol(isolate, "quit"),
-               gin::CreateFunctionTemplate(isolate, base::Bind(Quit)));
+    templ = gin::ObjectTemplateBuilder(isolate)
+        .SetMethod("quit", Quit)
+        .Build();
+
     data->SetObjectTemplate(&g_wrapper_info, templ);
   }
 

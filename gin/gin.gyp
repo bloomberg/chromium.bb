@@ -40,6 +40,8 @@
         'modules/module_registry.h',
         'modules/module_runner_delegate.cc',
         'modules/module_runner_delegate.h',
+        'object_template_builder.cc',
+        'object_template_builder.h',
         'per_context_data.cc',
         'per_context_data.h',
         'per_isolate_data.cc',

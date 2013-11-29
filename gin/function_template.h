@@ -4,6 +4,9 @@
 
 
 
+#ifndef GIN_FUNCTION_TEMPLATE_H_
+#define GIN_FUNCTION_TEMPLATE_H_
+
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -354,3 +357,5 @@ v8::Local<v8::FunctionTemplate> CreateFunctionTemplate(
 }
 
 }  // namespace gin
+
+#endif  // GIN_FUNCTION_TEMPLATE_H_

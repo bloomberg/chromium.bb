@@ -11,6 +11,7 @@
 #include "gin/converter.h"
 #include "gin/dictionary.h"
 #include "gin/function_template.h"
+#include "gin/object_template_builder.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
 #include "mojo/public/bindings/js/handle.h"
@@ -93,85 +94,49 @@ v8::Local<v8::ObjectTemplate> Core::GetTemplate(v8::Isolate* isolate) {
       &g_wrapper_info);
 
   if (templ.IsEmpty()) {
-    templ = v8::ObjectTemplate::New(isolate);
+     templ = gin::ObjectTemplateBuilder(isolate)
+        .SetMethod("close", mojo::CloseRaw)
+        .SetMethod("wait", mojo::Wait)
+        .SetMethod("waitMany", mojo::WaitMany<std::vector<mojo::Handle>,
+                                              std::vector<MojoWaitFlags> >)
+        .SetMethod("createMessagePipe", CreateMessagePipe)
+        .SetMethod("writeMessage", WriteMessage)
+        .SetMethod("readMessage", ReadMessage)
 
-    templ->Set(gin::StringToSymbol(isolate, "close"),
-               gin::CreateFunctionTemplate(isolate,
-                   base::Bind(mojo::CloseRaw)));
-    templ->Set(gin::StringToSymbol(isolate, "wait"),
-               gin::CreateFunctionTemplate(isolate,
-                   base::Bind(mojo::Wait)));
-    templ->Set(gin::StringToSymbol(isolate, "waitMany"),
-               gin::CreateFunctionTemplate(isolate,
-                   base::Bind(mojo::WaitMany<std::vector<mojo::Handle>,
-                                             std::vector<MojoWaitFlags> >)));
-    templ->Set(gin::StringToSymbol(isolate, "createMessagePipe"),
-               gin::CreateFunctionTemplate(isolate,
-                   base::Bind(CreateMessagePipe)));
-    templ->Set(gin::StringToSymbol(isolate, "writeMessage"),
-               gin::CreateFunctionTemplate(isolate,
-                   base::Bind(WriteMessage)));
-    templ->Set(gin::StringToSymbol(isolate, "readMessage"),
-               gin::CreateFunctionTemplate(isolate,
-                   base::Bind(ReadMessage)));
+        // TODO(vtl): Change name of "kInvalidHandle", now that there's no such
+        // C++ constant?
+        .SetValue("kInvalidHandle", mojo::Handle())
 
-    // TODO(vtl): Change name of "kInvalidHandle", now that there's no such C++
-    // constant?
-    templ->Set(gin::StringToSymbol(isolate, "kInvalidHandle"),
-               gin::ConvertToV8(isolate, mojo::Handle()));
+        .SetValue("RESULT_OK", MOJO_RESULT_OK)
+        .SetValue("RESULT_CANCELLED", MOJO_RESULT_CANCELLED)
+        .SetValue("RESULT_UNKNOWN", MOJO_RESULT_UNKNOWN)
+        .SetValue("RESULT_INVALID_ARGUMENT", MOJO_RESULT_INVALID_ARGUMENT)
+        .SetValue("RESULT_DEADLINE_EXCEEDED", MOJO_RESULT_DEADLINE_EXCEEDED)
+        .SetValue("RESULT_NOT_FOUND", MOJO_RESULT_NOT_FOUND)
+        .SetValue("RESULT_ALREADY_EXISTS", MOJO_RESULT_ALREADY_EXISTS)
+        .SetValue("RESULT_PERMISSION_DENIED", MOJO_RESULT_PERMISSION_DENIED)
+        .SetValue("RESULT_RESOURCE_EXHAUSTED", MOJO_RESULT_RESOURCE_EXHAUSTED)
+        .SetValue("RESULT_FAILED_PRECONDITION", MOJO_RESULT_FAILED_PRECONDITION)
+        .SetValue("RESULT_ABORTED", MOJO_RESULT_ABORTED)
+        .SetValue("RESULT_OUT_OF_RANGE", MOJO_RESULT_OUT_OF_RANGE)
+        .SetValue("RESULT_UNIMPLEMENTED", MOJO_RESULT_UNIMPLEMENTED)
+        .SetValue("RESULT_INTERNAL", MOJO_RESULT_INTERNAL)
+        .SetValue("RESULT_UNAVAILABLE", MOJO_RESULT_UNAVAILABLE)
+        .SetValue("RESULT_DATA_LOSS", MOJO_RESULT_DATA_LOSS)
 
-    templ->Set(gin::StringToSymbol(isolate, "RESULT_OK"),
-               gin::ConvertToV8(isolate, MOJO_RESULT_OK));
-    templ->Set(gin::StringToSymbol(isolate, "RESULT_CANCELLED"),
-               gin::ConvertToV8(isolate, MOJO_RESULT_CANCELLED));
-    templ->Set(gin::StringToSymbol(isolate, "RESULT_UNKNOWN"),
-               gin::ConvertToV8(isolate, MOJO_RESULT_UNKNOWN));
-    templ->Set(gin::StringToSymbol(isolate, "RESULT_INVALID_ARGUMENT"),
-               gin::ConvertToV8(isolate, MOJO_RESULT_INVALID_ARGUMENT));
-    templ->Set(gin::StringToSymbol(isolate, "RESULT_DEADLINE_EXCEEDED"),
-               gin::ConvertToV8(isolate, MOJO_RESULT_DEADLINE_EXCEEDED));
-    templ->Set(gin::StringToSymbol(isolate, "RESULT_NOT_FOUND"),
-               gin::ConvertToV8(isolate, MOJO_RESULT_NOT_FOUND));
-    templ->Set(gin::StringToSymbol(isolate, "RESULT_ALREADY_EXISTS"),
-               gin::ConvertToV8(isolate, MOJO_RESULT_ALREADY_EXISTS));
-    templ->Set(gin::StringToSymbol(isolate, "RESULT_PERMISSION_DENIED"),
-               gin::ConvertToV8(isolate, MOJO_RESULT_PERMISSION_DENIED));
-    templ->Set(gin::StringToSymbol(isolate, "RESULT_RESOURCE_EXHAUSTED"),
-               gin::ConvertToV8(isolate, MOJO_RESULT_RESOURCE_EXHAUSTED));
-    templ->Set(gin::StringToSymbol(isolate, "RESULT_FAILED_PRECONDITION"),
-               gin::ConvertToV8(isolate, MOJO_RESULT_FAILED_PRECONDITION));
-    templ->Set(gin::StringToSymbol(isolate, "RESULT_ABORTED"),
-               gin::ConvertToV8(isolate, MOJO_RESULT_ABORTED));
-    templ->Set(gin::StringToSymbol(isolate, "RESULT_OUT_OF_RANGE"),
-               gin::ConvertToV8(isolate, MOJO_RESULT_OUT_OF_RANGE));
-    templ->Set(gin::StringToSymbol(isolate, "RESULT_UNIMPLEMENTED"),
-               gin::ConvertToV8(isolate, MOJO_RESULT_UNIMPLEMENTED));
-    templ->Set(gin::StringToSymbol(isolate, "RESULT_INTERNAL"),
-               gin::ConvertToV8(isolate, MOJO_RESULT_INTERNAL));
-    templ->Set(gin::StringToSymbol(isolate, "RESULT_UNAVAILABLE"),
-               gin::ConvertToV8(isolate, MOJO_RESULT_UNAVAILABLE));
-    templ->Set(gin::StringToSymbol(isolate, "RESULT_DATA_LOSS"),
-               gin::ConvertToV8(isolate, MOJO_RESULT_DATA_LOSS));
+        .SetValue("DEADLINE_INDEFINITE", MOJO_DEADLINE_INDEFINITE)
 
-    templ->Set(gin::StringToSymbol(isolate, "DEADLINE_INDEFINITE"),
-               gin::ConvertToV8(isolate, MOJO_DEADLINE_INDEFINITE));
+        .SetValue("WAIT_FLAG_NONE", MOJO_WAIT_FLAG_NONE)
+        .SetValue("WAIT_FLAG_READABLE", MOJO_WAIT_FLAG_READABLE)
+        .SetValue("WAIT_FLAG_READABLE", MOJO_WAIT_FLAG_READABLE)
+        .SetValue("WAIT_FLAG_EVERYTHING", MOJO_WAIT_FLAG_EVERYTHING)
 
-    templ->Set(gin::StringToSymbol(isolate, "WAIT_FLAG_NONE"),
-               gin::ConvertToV8(isolate, MOJO_WAIT_FLAG_NONE));
-    templ->Set(gin::StringToSymbol(isolate, "WAIT_FLAG_READABLE"),
-               gin::ConvertToV8(isolate, MOJO_WAIT_FLAG_READABLE));
-    templ->Set(gin::StringToSymbol(isolate, "WAIT_FLAG_READABLE"),
-               gin::ConvertToV8(isolate, MOJO_WAIT_FLAG_READABLE));
-    templ->Set(gin::StringToSymbol(isolate, "WAIT_FLAG_EVERYTHING"),
-               gin::ConvertToV8(isolate, MOJO_WAIT_FLAG_EVERYTHING));
+        .SetValue("WRITE_MESSAGE_FLAG_NONE", MOJO_WRITE_MESSAGE_FLAG_NONE)
 
-    templ->Set(gin::StringToSymbol(isolate, "WRITE_MESSAGE_FLAG_NONE"),
-               gin::ConvertToV8(isolate, MOJO_WRITE_MESSAGE_FLAG_NONE));
-
-    templ->Set(gin::StringToSymbol(isolate, "READ_MESSAGE_FLAG_NONE"),
-               gin::ConvertToV8(isolate, MOJO_READ_MESSAGE_FLAG_NONE));
-    templ->Set(gin::StringToSymbol(isolate, "READ_MESSAGE_FLAG_MAY_DISCARD"),
-               gin::ConvertToV8(isolate, MOJO_READ_MESSAGE_FLAG_MAY_DISCARD));
+        .SetValue("READ_MESSAGE_FLAG_NONE", MOJO_READ_MESSAGE_FLAG_NONE)
+        .SetValue("READ_MESSAGE_FLAG_MAY_DISCARD",
+                  MOJO_READ_MESSAGE_FLAG_MAY_DISCARD)
+        .Build();
 
     data->SetObjectTemplate(&g_wrapper_info, templ);
   }

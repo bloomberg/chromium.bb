@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/strings/string_piece.h"
 #include "v8/include/v8.h"
 
 namespace gin {
@@ -69,6 +70,13 @@ struct Converter<double> {
   static bool FromV8(v8::Isolate* isolate,
                      v8::Handle<v8::Value> val,
                      double* out);
+};
+
+template<>
+struct Converter<base::StringPiece> {
+  static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
+                                    const base::StringPiece& val);
+  // No conversion out is possible because StringPiece does not contain storage.
 };
 
 template<>
@@ -164,12 +172,12 @@ v8::Handle<v8::Value> ConvertToV8(v8::Isolate* isolate,
 }
 
 inline v8::Handle<v8::String> StringToV8(v8::Isolate* isolate,
-                                         std::string input) {
+                                         const base::StringPiece& input) {
   return ConvertToV8(isolate, input).As<v8::String>();
 }
 
 v8::Handle<v8::String> StringToSymbol(v8::Isolate* isolate,
-                                      const std::string& val);
+                                      const base::StringPiece& val);
 
 template<typename T>
 bool ConvertFromV8(v8::Isolate* isolate, v8::Handle<v8::Value> input,
