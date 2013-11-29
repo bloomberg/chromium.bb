@@ -43,17 +43,6 @@ XKeyEvent* GetKeyEvent(XEvent* event) {
   return &event->xkey;
 }
 
-// Converts X (and ibus) state to event flags.
-int EventFlagsFromXState(unsigned int state) {
-  return (state & LockMask ? ui::EF_CAPS_LOCK_DOWN : 0) |
-      (state & ControlMask ? ui::EF_CONTROL_DOWN : 0) |
-      (state & ShiftMask ? ui::EF_SHIFT_DOWN : 0) |
-      (state & Mod1Mask ? ui::EF_ALT_DOWN : 0) |
-      (state & Button1Mask ? ui::EF_LEFT_MOUSE_BUTTON : 0) |
-      (state & Button2Mask ? ui::EF_MIDDLE_MOUSE_BUTTON : 0) |
-      (state & Button3Mask ? ui::EF_RIGHT_MOUSE_BUTTON : 0);
-}
-
 // Converts X state to ibus key and button state.
 uint32 IBusStateFromXState(unsigned int state) {
   return (state & (LockMask | ControlMask | ShiftMask | Mod1Mask |
@@ -136,8 +125,7 @@ void InputMethodIBus::ProcessKeyEventDone(uint32 id,
     } else {
       // If IME does not handle key event, passes keyevent to character composer
       // to be able to compose complex characters.
-      is_handled = ExecuteCharacterComposer(ibus_keyval, ibus_keycode,
-                                            ibus_state);
+      is_handled = ExecuteCharacterComposer(*event);
     }
   }
 
@@ -172,7 +160,7 @@ bool InputMethodIBus::DispatchKeyEvent(const ui::KeyEvent& event) {
   if (!context_focused_ || !GetEngine() ||
       GetTextInputType() == TEXT_INPUT_TYPE_PASSWORD ) {
     if (event.type() == ET_KEY_PRESSED) {
-      if (ExecuteCharacterComposer(ibus_keyval, ibus_keycode, ibus_state)) {
+      if (ExecuteCharacterComposer(event)) {
         // Treating as PostIME event if character composer handles key event and
         // generates some IME event,
         ProcessKeyEventPostIME(event, true);
@@ -678,13 +666,17 @@ void InputMethodIBus::DeleteSurroundingText(int32 offset, uint32 length) {
     GetTextInputClient()->ExtendSelectionAndDelete(length, 0U);
 }
 
-bool InputMethodIBus::ExecuteCharacterComposer(uint32 ibus_keyval,
-                                               uint32 ibus_keycode,
-                                               uint32 ibus_state) {
-  bool consumed = character_composer_.FilterKeyPress(
-      ibus_keyval,
-      ibus_keycode,
-      EventFlagsFromXState(ibus_state));
+bool InputMethodIBus::ExecuteCharacterComposer(const ui::KeyEvent& event) {
+  if (!event.HasNativeEvent())
+    return false;
+  XEvent* xevent = event.native_event();
+  if (xevent->type == KeyPress || xevent->type == KeyRelease)
+    return false;
+  XKeyEvent x_key = xevent->xkey;
+  KeySym keysym = NoSymbol;
+  ::XLookupString(&x_key, NULL, 0, &keysym, NULL);
+  bool consumed = character_composer_.FilterKeyPress(keysym, x_key.keycode,
+                                                     event.flags());
 
   suppress_next_result_ = false;
   chromeos::IBusText preedit;

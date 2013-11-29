@@ -115,9 +115,7 @@ class UI_EXPORT InputMethodIBus
 
   // Passes keyevent and executes character composition if necessary. Returns
   // true if character composer comsumes key event.
-  bool ExecuteCharacterComposer(uint32 ibus_keyval,
-                                uint32 ibus_keycode,
-                                uint32 ibus_state);
+  bool ExecuteCharacterComposer(const ui::KeyEvent& event);
 
   // chromeos::IBusInputContextHandlerInterface overrides:
   virtual void CommitText(const std::string& text) OVERRIDE;
