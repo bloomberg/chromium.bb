@@ -29,7 +29,7 @@ ConflictResolver::~ConflictResolver() {
 }
 
 void ConflictResolver::Run(const SyncStatusCallback& callback) {
-  if (!drive_service() || !metadata_database()) {
+  if (!IsContextReady()) {
     NOTREACHED();
     callback.Run(SYNC_STATUS_FAILED);
     return;
@@ -221,7 +221,13 @@ void ConflictResolver::DidRemoveFile(const SyncStatusCallback& callback,
   callback.Run(SYNC_STATUS_OK);
 }
 
+bool ConflictResolver::IsContextReady() {
+  return sync_context_->GetDriveService() &&
+      sync_context_->GetMetadataDatabase();
+}
+
 drive::DriveServiceInterface* ConflictResolver::drive_service() {
+  set_used_network(true);
   return sync_context_->GetDriveService();
 }
 

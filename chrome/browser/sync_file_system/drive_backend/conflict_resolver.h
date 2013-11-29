@@ -29,8 +29,6 @@ class MetadataDatabase;
 class SyncEngineContext;
 class TrackerSet;
 
-// TODO(tzik): Put set_use_network(true).
-//
 // Resolves server side file confliction.
 // If a remote file has an active tracker and multiple managed parents,
 // ConflictResolver detaches the file from all parents other than the parent
@@ -63,6 +61,7 @@ class ConflictResolver : public SyncTask {
 
   std::vector<FileIDAndETag> non_primary_file_ids_;
 
+  bool IsContextReady();
   drive::DriveServiceInterface* drive_service();
   MetadataDatabase* metadata_database();
 

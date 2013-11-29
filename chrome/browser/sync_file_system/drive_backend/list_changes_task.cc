@@ -44,13 +44,12 @@ ListChangesTask::~ListChangesTask() {
 }
 
 void ListChangesTask::Run(const SyncStatusCallback& callback) {
-  if (!metadata_database() || !drive_service()) {
+  if (!IsContextReady()) {
     util::Log(logging::LOG_ERROR, FROM_HERE, "Failed to get required sercive.");
     RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_FAILED));
     return;
   }
 
-  set_used_network(true);
   drive_service()->GetChangeList(
       metadata_database()->GetLargestFetchedChangeID() + 1,
       base::Bind(&ListChangesTask::DidListChanges,
@@ -92,11 +91,17 @@ void ListChangesTask::DidListChanges(
       change_list_.Pass(), callback);
 }
 
+bool ListChangesTask::IsContextReady() {
+  return sync_context_->GetMetadataDatabase() &&
+      sync_context_->GetDriveService();
+}
+
 MetadataDatabase* ListChangesTask::metadata_database() {
   return sync_context_->GetMetadataDatabase();
 }
 
 drive::DriveServiceInterface* ListChangesTask::drive_service() {
+  set_used_network(true);
   return sync_context_->GetDriveService();
 }
 

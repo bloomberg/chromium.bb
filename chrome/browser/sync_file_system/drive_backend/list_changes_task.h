@@ -39,6 +39,7 @@ class ListChangesTask : public SyncTask {
                       google_apis::GDataErrorCode error,
                       scoped_ptr<google_apis::ResourceList> resource_list);
 
+  bool IsContextReady();
   MetadataDatabase* metadata_database();
   drive::DriveServiceInterface* drive_service();
 

@@ -95,6 +95,7 @@ class LocalToRemoteSyncer : public SyncTask {
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> resource_list);
 
+  bool IsContextReady();
   drive::DriveServiceInterface* drive_service();
   drive::DriveUploaderInterface* drive_uploader();
   MetadataDatabase* metadata_database();

@@ -44,6 +44,7 @@ class UninstallAppTask : public SyncTask {
                         int64 change_id,
                         google_apis::GDataErrorCode error);
 
+  bool IsContextReady();
   MetadataDatabase* metadata_database();
   drive::DriveServiceInterface* drive_service();
 

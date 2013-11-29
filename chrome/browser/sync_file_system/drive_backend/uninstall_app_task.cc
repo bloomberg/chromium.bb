@@ -34,7 +34,7 @@ UninstallAppTask::~UninstallAppTask() {
 }
 
 void UninstallAppTask::Run(const SyncStatusCallback& callback) {
-  if (!metadata_database() || !drive_service()) {
+  if (!IsContextReady()) {
     RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_FAILED));
     return;
   }
@@ -58,7 +58,6 @@ void UninstallAppTask::Run(const SyncStatusCallback& callback) {
   app_root_tracker_id_ = app_root_tracker->tracker_id();
   DCHECK(app_root_tracker->has_synced_details());
 
-  set_used_network(true);
   drive_service()->DeleteResource(
       app_root_tracker->file_id(),
       std::string(),  // etag
@@ -80,11 +79,17 @@ void UninstallAppTask::DidDeleteAppRoot(const SyncStatusCallback& callback,
   metadata_database()->UnregisterApp(app_id_, callback);
 }
 
+bool UninstallAppTask::IsContextReady() {
+  return sync_context_->GetMetadataDatabase() &&
+      sync_context_->GetDriveService();
+}
+
 MetadataDatabase* UninstallAppTask::metadata_database() {
   return sync_context_->GetMetadataDatabase();
 }
 
 drive::DriveServiceInterface* UninstallAppTask::drive_service() {
+  set_used_network(true);
   return sync_context_->GetDriveService();
 }
 
