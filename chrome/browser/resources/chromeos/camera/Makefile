@@ -15,20 +15,20 @@ SRC_RESOURCES= \
 	src/_locales/de/messages.json \
 	src/_locales/el/messages.json \
 	src/_locales/en/messages.json \
-	src/_locales/en-GB/messages.json \
+	src/_locales/en_GB/messages.json \
 	src/_locales/es/messages.json \
-	src/_locales/es-419/messages.json \
+	src/_locales/es_419/messages.json \
 	src/_locales/et/messages.json \
 	src/_locales/fa/messages.json \
 	src/_locales/fi/messages.json \
 	src/_locales/fil/messages.json \
 	src/_locales/fr/messages.json \
+	src/_locales/he/messages.json \
 	src/_locales/hi/messages.json \
 	src/_locales/hr/messages.json \
 	src/_locales/hu/messages.json \
 	src/_locales/id/messages.json \
 	src/_locales/it/messages.json \
-	src/_locales/iw/messages.json \
 	src/_locales/ja/messages.json \
 	src/_locales/ko/messages.json \
 	src/_locales/lt/messages.json \
@@ -37,8 +37,8 @@ SRC_RESOURCES= \
 	src/_locales/nl/messages.json \
 	src/_locales/no/messages.json \
 	src/_locales/pl/messages.json \
-	src/_locales/pt-BR/messages.json \
-	src/_locales/pt-PT/messages.json \
+	src/_locales/pt_BR/messages.json \
+	src/_locales/pt_PT/messages.json \
 	src/_locales/ro/messages.json \
 	src/_locales/ru/messages.json \
 	src/_locales/sk/messages.json \
@@ -49,8 +49,8 @@ SRC_RESOURCES= \
 	src/_locales/tr/messages.json \
 	src/_locales/uk/messages.json \
 	src/_locales/vi/messages.json \
-	src/_locales/zh-CN/messages.json \
-	src/_locales/zh-TW/messages.json \
+	src/_locales/zh_CN/messages.json \
+	src/_locales/zh_TW/messages.json \
 	src/css/main.css \
 	src/images/2x/browser_button_export.png \
 	src/images/2x/browser_button_print.png \
