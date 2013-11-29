@@ -612,6 +612,21 @@ TEST(HttpUtilTest, RequestUrlSanitize) {
       "http://user:pass@google.com",
       "http://google.com/",
       "/"
+    },
+    { // https scheme
+      "https://www.google.com:78/foobar?query=1#hash",
+      "https://www.google.com:78/foobar?query=1",
+      "/foobar?query=1"
+    },
+    { // WebSocket's ws scheme
+      "ws://www.google.com:78/foobar?query=1#hash",
+      "ws://www.google.com:78/foobar?query=1",
+      "/foobar?query=1"
+    },
+    { // WebSocket's wss scheme
+      "wss://www.google.com:78/foobar?query=1#hash",
+      "wss://www.google.com:78/foobar?query=1",
+      "/foobar?query=1"
     }
   };
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
@@ -622,6 +637,13 @@ TEST(HttpUtilTest, RequestUrlSanitize) {
     EXPECT_EQ(expected_spec, HttpUtil::SpecForRequest(url));
     EXPECT_EQ(expected_path, HttpUtil::PathForRequest(url));
   }
+}
+
+// Test SpecForRequest() for "ftp" scheme.
+TEST(HttpUtilTest, SpecForRequestForUrlWithFtpScheme) {
+  GURL ftp_url("ftp://user:pass@google.com/pub/chromium/");
+  EXPECT_EQ("ftp://google.com/pub/chromium/",
+            HttpUtil::SpecForRequest(ftp_url));
 }
 
 TEST(HttpUtilTest, GenerateAcceptLanguageHeader) {
