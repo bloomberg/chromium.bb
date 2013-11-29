@@ -53,15 +53,15 @@ void V8DOMConfiguration::installAccessors(v8::Handle<v8::ObjectTemplate> prototy
 
         v8::Local<v8::FunctionTemplate> getter;
         if (getterCallback) {
-            getter = v8::FunctionTemplate::New(getterCallback, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(accessors[i].data)), signature, 0);
+            getter = v8::FunctionTemplate::New(isolate, getterCallback, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(accessors[i].data)), signature, 0);
             getter->RemovePrototype();
         }
         v8::Local<v8::FunctionTemplate> setter;
         if (setterCallback) {
-            setter = v8::FunctionTemplate::New(setterCallback, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(accessors[i].data)), signature, 1);
+            setter = v8::FunctionTemplate::New(isolate, setterCallback, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(accessors[i].data)), signature, 1);
             setter->RemovePrototype();
         }
-        prototype->SetAccessorProperty(v8::String::NewSymbol(accessors[i].name), getter, setter, accessors[i].attribute, accessors[i].settings);
+        prototype->SetAccessorProperty(v8::String::NewFromUtf8(isolate, accessors[i].name, v8::String::kInternalizedString), getter, setter, accessors[i].attribute, accessors[i].settings);
     }
 }
 
@@ -69,20 +69,20 @@ void V8DOMConfiguration::installConstants(v8::Handle<v8::FunctionTemplate> funct
 {
     for (size_t i = 0; i < constantCount; ++i) {
         const ConstantConfiguration* constant = &constants[i];
-        functionDescriptor->Set(v8::String::NewSymbol(constant->name), v8::Integer::New(constant->value, isolate), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
-        prototype->Set(v8::String::NewSymbol(constant->name), v8::Integer::New(constant->value, isolate), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+        functionDescriptor->Set(v8::String::NewFromUtf8(isolate, constant->name, v8::String::kInternalizedString), v8::Integer::New(isolate, constant->value), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+        prototype->Set(v8::String::NewFromUtf8(isolate, constant->name, v8::String::kInternalizedString), v8::Integer::New(isolate, constant->value), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
     }
 }
 
-void V8DOMConfiguration::installCallbacks(v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attributes, const MethodConfiguration* callbacks, size_t callbackCount, v8::Isolate*, WrapperWorldType currentWorldType)
+void V8DOMConfiguration::installCallbacks(v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attributes, const MethodConfiguration* callbacks, size_t callbackCount, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     for (size_t i = 0; i < callbackCount; ++i) {
         v8::FunctionCallback callback = callbacks[i].callback;
         if (currentWorldType == MainWorld && callbacks[i].callbackForMainWorld)
             callback = callbacks[i].callbackForMainWorld;
-        v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(callback, v8Undefined(), signature, callbacks[i].length);
+        v8::Local<v8::FunctionTemplate> functionTemplate = v8::FunctionTemplate::New(isolate, callback, v8Undefined(), signature, callbacks[i].length);
         functionTemplate->RemovePrototype();
-        prototype->Set(v8::String::NewSymbol(callbacks[i].name), functionTemplate, attributes);
+        prototype->Set(v8::String::NewFromUtf8(isolate, callbacks[i].name, v8::String::kInternalizedString), functionTemplate, attributes);
     }
 }
 
@@ -92,7 +92,7 @@ v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Handle<
     const MethodConfiguration* callbacks, size_t callbackCount,
     v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
-    functionDescriptor->SetClassName(v8::String::NewSymbol(interfaceName));
+    functionDescriptor->SetClassName(v8::String::NewFromUtf8(isolate, interfaceName, v8::String::kInternalizedString));
     v8::Local<v8::ObjectTemplate> instanceTemplate = functionDescriptor->InstanceTemplate();
     instanceTemplate->SetInternalFieldCount(fieldCount);
     if (!parentClass.IsEmpty()) {

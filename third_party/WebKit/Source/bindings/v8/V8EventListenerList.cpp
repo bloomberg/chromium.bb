@@ -39,10 +39,10 @@ namespace WebCore {
 
 PassRefPtr<EventListener> V8EventListenerList::getEventListener(v8::Local<v8::Value> value, bool isAttribute, ListenerLookupType lookup)
 {
-    v8::Handle<v8::Context> context = v8::Context::GetCurrent();
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    v8::Handle<v8::Context> context = isolate->GetCurrentContext();
     if (context.IsEmpty())
         return 0;
-    v8::Isolate* isolate = context->GetIsolate();
     if (lookup == ListenerFindOnly) {
         // Used by EventTarget::removeEventListener, specifically
         // EventTargetV8Internal::removeEventListenerMethod

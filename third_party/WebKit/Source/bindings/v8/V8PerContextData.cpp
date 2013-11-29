@@ -57,13 +57,13 @@ void V8PerContextData::dispose()
     disposeMapWithUnsafePersistentValues(&m_constructorMap);
     m_customElementBindings.clear();
 
-    m_context.Dispose();
+    m_context.Reset();
 }
 
 #define V8_STORE_PRIMORDIAL(name, Name) \
 { \
     ASSERT(m_##name##Prototype.isEmpty()); \
-    v8::Handle<v8::String> symbol = v8::String::NewSymbol(#Name); \
+    v8::Handle<v8::String> symbol = v8::String::NewFromUtf8(m_isolate, #Name, v8::String::kInternalizedString); \
     if (symbol.IsEmpty()) \
         return false; \
     v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(v8::Local<v8::Context>::New(m_isolate, m_context)->Global()->Get(symbol)); \

@@ -106,7 +106,7 @@ PassRefPtr<ScriptCallStack> createScriptCallStack(size_t maxStackSize, bool empt
     if (!isolate->InContext())
         return 0;
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::StackTrace> stackTrace(v8::StackTrace::CurrentStackTrace(maxStackSize, stackTraceOptions));
+    v8::Handle<v8::StackTrace> stackTrace(v8::StackTrace::CurrentStackTrace(isolate, maxStackSize, stackTraceOptions));
     return createScriptCallStack(stackTrace, maxStackSize, emptyStackIsAllowed, isolate);
 }
 

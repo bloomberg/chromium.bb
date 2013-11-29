@@ -85,8 +85,9 @@ static void reportFatalErrorInMainThread(const char* location, const char* messa
 
 static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Handle<v8::Value> data)
 {
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // If called during context initialization, there will be no entered context.
-    v8::Handle<v8::Context> enteredContext = v8::Context::GetEntered();
+    v8::Handle<v8::Context> enteredContext = isolate->GetEnteredContext();
     if (enteredContext.IsEmpty())
         return;
 
@@ -100,7 +101,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     RefPtr<ScriptCallStack> callStack;
     // Currently stack trace is only collected when inspector is open.
     if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
-        callStack = createScriptCallStack(stackTrace, ScriptCallStack::maxCallStackSizeToCapture, v8::Isolate::GetCurrent());
+        callStack = createScriptCallStack(stackTrace, ScriptCallStack::maxCallStackSizeToCapture, isolate);
 
     v8::Handle<v8::Value> resourceName = message->GetScriptResourceName();
     bool shouldUseDocumentURL = resourceName.IsEmpty() || !resourceName->IsString();

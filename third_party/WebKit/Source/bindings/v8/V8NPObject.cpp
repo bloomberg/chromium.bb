@@ -367,7 +367,7 @@ void npObjectPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info,
         uint32_t count;
         NPIdentifier* identifiers;
         if (npObject->_class->enumerate(npObject, &identifiers, &count)) {
-            v8::Handle<v8::Array> properties = v8::Array::New(count);
+            v8::Handle<v8::Array> properties = v8::Array::New(info.GetIsolate(), count);
             for (uint32_t i = 0; i < count; ++i) {
                 IdentifierRep* identifier = static_cast<IdentifierRep*>(identifiers[i]);
                 if (namedProperty)

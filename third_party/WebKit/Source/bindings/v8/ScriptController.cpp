@@ -84,7 +84,7 @@ namespace WebCore {
 
 bool ScriptController::canAccessFromCurrentOrigin(Frame *frame)
 {
-    return !v8::Context::InContext() || BindingSecurity::shouldAllowAccessToFrame(frame);
+    return !v8::Isolate::GetCurrent()->InContext() || BindingSecurity::shouldAllowAccessToFrame(frame);
 }
 
 ScriptController::ScriptController(Frame* frame)
@@ -678,7 +678,7 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
 
         v8::Local<v8::Context> context = isolatedWorldShell->context();
         v8::Context::Scope contextScope(context);
-        v8::Local<v8::Array> resultArray = v8::Array::New(sources.size());
+        v8::Local<v8::Array> resultArray = v8::Array::New(m_isolate, sources.size());
 
         for (size_t i = 0; i < sources.size(); ++i) {
             v8::Local<v8::Value> evaluationResult = executeScriptAndReturnValue(context, sources[i]);
