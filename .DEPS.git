@@ -140,7 +140,7 @@ deps = {
     'src/tools/swarming_client':
         Var('git_url') + '/external/swarming.client.git@aab3a62beb7e1d7a6785dcaee707479691fd6ddf',
     'src/v8':
-        Var('git_url') + '/external/v8.git@9f18d9111f676f2899d9aa2444130c985eb75395',
+        Var('git_url') + '/external/v8.git@cc536058448cdb26fedf76ce62f2ce91480f2ae3',
 }
 
 deps_os = {
