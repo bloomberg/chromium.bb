@@ -484,6 +484,12 @@ body.show-shutter #shutter {
   width: 100%;
 }
 
+#picture-preview img.activated {
+  -webkit-transform: scale(1.2) !important;  /* Override the inline style. */
+  transition: opacity 1s, -webkit-transform 250ms;
+  z-index: 1;
+}
+
 #camera,
 #album,
 #browser {

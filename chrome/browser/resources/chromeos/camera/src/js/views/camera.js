@@ -854,6 +854,8 @@ camera.views.Camera.prototype.takePicture_ = function() {
 
     // Create the fly-away animation after two second.
     setTimeout(function() {
+      img.classList.remove('activated');
+
       var sourceRect = img.getBoundingClientRect();
       var targetRect = albumButton.getBoundingClientRect();
 
@@ -877,6 +879,16 @@ camera.views.Camera.prototype.takePicture_ = function() {
         this.taking_ = false;
       }.bind(this));
     }.bind(this), 2000);
+
+    var onPointerDown = function() {
+      img.classList.add('activated');
+    };
+
+    // When clicking or touching, zoom the preview a little to give feedback.
+    // Do not release the 'activated' flag since in most cases, releasing the
+    // mouse button or touch would redirect to the browser view.
+    img.addEventListener('touchstart', onPointerDown);
+    img.addEventListener('mousedown', onPointerDown);
 
     // Add to DOM.
     picturePreview.appendChild(img);
