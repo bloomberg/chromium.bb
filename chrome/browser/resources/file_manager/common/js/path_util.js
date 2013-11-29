@@ -433,11 +433,8 @@ PathUtil.getLocationInfo = function(volumeInfo, fullPath) {
           'Invalid volume type: ' + volumeInfo.volumeType);
     }
   }
-  return new EntryLocation(volumeInfo,
-                           fullPath,
-                           rootType,
-                           rootPath,
-                           fullPath.substr(rootPath.length) || '/');
+  var isRootEntry = (fullPath.substr(0, rootPath.length) || '/') === fullPath;
+  return new EntryLocation(volumeInfo, rootType, isRootEntry);
 };
 
 /**
@@ -445,25 +442,16 @@ PathUtil.getLocationInfo = function(volumeInfo, fullPath) {
  * file system.
  *
  * @param {!VolumeInfo} volumeInfo Volume information.
- * @param {string} path Full path.
  * @param {RootType} rootType Root type.
- * @param {string} rootPath Root path.
- * @param {string} virtualPath Virtual path. See also
- *     EntryLocation#vierutalPath.
+ * @param {boolean} isRootEntry Whether the entry is root entry or not.
  * @constructor
  */
-function EntryLocation(volumeInfo, path, rootType, rootPath, virtualPath) {
+function EntryLocation(volumeInfo, rootType, isRootEntry) {
   /**
    * Volume information.
    * @type {!VolumeInfo}
    */
   this.volumeInfo = volumeInfo;
-
-  /**
-   * Full path of the location.
-   * @type {string}
-   */
-  this.path = path;
 
   /**
    * Root type.
@@ -472,25 +460,10 @@ function EntryLocation(volumeInfo, path, rootType, rootPath, virtualPath) {
   this.rootType = rootType;
 
   /**
-   * Root path.
-   * @type {string}
-   */
-  this.rootPath = rootPath;
-
-  /**
-   * Virtual path.
-   *
-   * Part of full path that follows root path.
-   * e.g. Virtual path of /drive/root/A/B is /A/B.
-   * @type {string}
-   */
-  this.virtualPath = virtualPath;
-
-  /**
    * Whether the entry is root entry or not.
    * @type {boolean}
    */
-  this.isRootEntry = virtualPath === '/';
+  this.isRootEntry = isRootEntry;
 
   Object.freeze(this);
 }
