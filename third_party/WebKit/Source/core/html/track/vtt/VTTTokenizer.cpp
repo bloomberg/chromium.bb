@@ -141,13 +141,21 @@ bool VTTTokenizer::nextToken(VTTToken& token)
             } else if (isASCIIAlphanumeric(cc)) {
                 buffer.append(static_cast<LChar>(cc));
                 WEBVTT_ADVANCE_TO(EscapeState);
+            } else if (cc == '<') {
+                result.append(buffer);
+                return emitToken(VTTToken::StringToken(result.toString()));
             } else if (cc == kEndOfFileMarker) {
                 result.append(buffer);
                 return advanceAndEmitToken(source, VTTToken::StringToken(result.toString()));
             } else {
-                if (!equalLiteral(buffer, "&"))
-                    result.append(buffer);
+                result.append(buffer);
                 buffer.clear();
+
+                if (cc == '&') {
+                    buffer.append(static_cast<LChar>(cc));
+                    WEBVTT_ADVANCE_TO(EscapeState);
+                }
+                result.append(cc);
                 WEBVTT_ADVANCE_TO(DataState);
             }
         }

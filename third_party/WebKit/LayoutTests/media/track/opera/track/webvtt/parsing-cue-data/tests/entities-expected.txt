@@ -12,12 +12,12 @@ PASS WebVTT cue data parser test entities - da999a55445eca43aa41e039ec439c1a812d
 PASS WebVTT cue data parser test entities - 0fd9e3823b62c028c1d50e35b1f3ee3df02a62eb 
 PASS WebVTT cue data parser test entities - e7387003fbacb22b706796c98b781eb4ebf5ff85 
 PASS WebVTT cue data parser test entities - 216cd0e914b9f2ccd04eff6d02a0b1ce24441d95 
-FAIL WebVTT cue data parser test entities - 2cdf20980d17a5d077299215e6a7e97f3c6b07e2 assert_equals: expected "#document-fragment\n| \"&&\"" but got "#document-fragment\n| \"\""
+PASS WebVTT cue data parser test entities - 2cdf20980d17a5d077299215e6a7e97f3c6b07e2 
 PASS WebVTT cue data parser test entities - 83f4500c0bd8598480713997a041d8f70fd3f11e 
 PASS WebVTT cue data parser test entities - 2c6b2ba38a08eca45370f28a5b7df2aa463fb3dc 
-FAIL WebVTT cue data parser test entities - f4bb977c0a06851bdd19260c035a766c5c8ea093 assert_equals: expected "#document-fragment\n| \"&\"" but got "#document-fragment\n| \"\""
-FAIL WebVTT cue data parser test entities - b1fff1ac42688d16e00f6c758d84e5152e39702d assert_equals: expected "#document-fragment\n| \"&\"\n| <span>" but got "#document-fragment\n| \"c\""
-FAIL WebVTT cue data parser test entities - bd68f6beda2c2264e61dff7359c1ad48bc0a9934 assert_equals: expected "#document-fragment\n| \"&#32;\"" but got "#document-fragment\n| \"32;\""
-FAIL WebVTT cue data parser test entities - 5b77a0be23453dfe6eea59d43bb0708f89e1df82 assert_equals: expected "#document-fragment\n| \"&#x20;\"" but got "#document-fragment\n| \"x20;\""
+PASS WebVTT cue data parser test entities - f4bb977c0a06851bdd19260c035a766c5c8ea093 
+PASS WebVTT cue data parser test entities - b1fff1ac42688d16e00f6c758d84e5152e39702d 
+PASS WebVTT cue data parser test entities - bd68f6beda2c2264e61dff7359c1ad48bc0a9934 
+PASS WebVTT cue data parser test entities - 5b77a0be23453dfe6eea59d43bb0708f89e1df82 
 PASS WebVTT cue data parser test entities - 87986551b0e6180cb279f2aa4cdddf77daa90c11 
 
