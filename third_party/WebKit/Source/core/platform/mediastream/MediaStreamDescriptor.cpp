@@ -42,6 +42,11 @@ PassRefPtr<MediaStreamDescriptor> MediaStreamDescriptor::create(const MediaStrea
     return adoptRef(new MediaStreamDescriptor(createCanonicalUUIDString(), audioSources, videoSources));
 }
 
+PassRefPtr<MediaStreamDescriptor> MediaStreamDescriptor::create(const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
+{
+    return adoptRef(new MediaStreamDescriptor(createCanonicalUUIDString(), audioComponents, videoComponents));
+}
+
 PassRefPtr<MediaStreamDescriptor> MediaStreamDescriptor::create(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
 {
     return adoptRef(new MediaStreamDescriptor(id, audioComponents, videoComponents));
@@ -101,10 +106,10 @@ MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStream
 {
     ASSERT(m_id.length());
     for (size_t i = 0; i < audioSources.size(); i++)
-        m_audioComponents.append(MediaStreamComponent::create(this, audioSources[i]));
+        m_audioComponents.append(MediaStreamComponent::create(audioSources[i]));
 
     for (size_t i = 0; i < videoSources.size(); i++)
-        m_videoComponents.append(MediaStreamComponent::create(this, videoSources[i]));
+        m_videoComponents.append(MediaStreamComponent::create(videoSources[i]));
 }
 
 MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
@@ -113,23 +118,10 @@ MediaStreamDescriptor::MediaStreamDescriptor(const String& id, const MediaStream
     , m_ended(false)
 {
     ASSERT(m_id.length());
-    for (MediaStreamComponentVector::const_iterator iter = audioComponents.begin(); iter != audioComponents.end(); ++iter) {
-        (*iter)->setStream(this);
+    for (MediaStreamComponentVector::const_iterator iter = audioComponents.begin(); iter != audioComponents.end(); ++iter)
         m_audioComponents.append((*iter));
-    }
-    for (MediaStreamComponentVector::const_iterator iter = videoComponents.begin(); iter != videoComponents.end(); ++iter) {
-        (*iter)->setStream(this);
+    for (MediaStreamComponentVector::const_iterator iter = videoComponents.begin(); iter != videoComponents.end(); ++iter)
         m_videoComponents.append((*iter));
-    }
-}
-
-MediaStreamDescriptor::~MediaStreamDescriptor()
-{
-    for (MediaStreamComponentVector::iterator iter = m_audioComponents.begin(); iter != m_audioComponents.end(); ++iter)
-        (*iter)->setStream(0);
-
-    for (MediaStreamComponentVector::iterator iter = m_videoComponents.begin(); iter != m_videoComponents.end(); ++iter)
-        (*iter)->setStream(0);
 }
 
 } // namespace WebCore
