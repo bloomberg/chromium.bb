@@ -9,6 +9,10 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 
+#if defined(USE_OZONE)
+#include "ui/events/keycodes/keyboard_code_conversion.h"
+#endif
+
 namespace content {
 
 #if defined(USE_X11) || defined(USE_OZONE)
@@ -101,7 +105,9 @@ blink::WebKeyboardEvent MakeWebKeyboardEventFromAuraEvent(
   if (webkit_event.windowsKeyCode == ui::VKEY_RETURN)
     webkit_event.unmodifiedText[0] = '\r';
   else
-    webkit_event.unmodifiedText[0] = character;
+    webkit_event.unmodifiedText[0] = ui::GetCharacterFromKeyCode(
+        ui::KeyboardCodeFromNative(native_event),
+        ui::EventFlagsFromNative(native_event));
 
   if (webkit_event.modifiers & blink::WebInputEvent::ControlKey) {
     webkit_event.text[0] =

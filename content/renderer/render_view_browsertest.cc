@@ -57,6 +57,10 @@
 #include "ui/events/test/events_test_utils_x11.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/events/keycodes/keyboard_code_conversion.h"
+#endif
+
 using blink::WebFrame;
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
@@ -69,7 +73,7 @@ namespace content  {
 
 namespace {
 
-#if defined(USE_AURA) && defined(USE_X11)
+#if (defined(USE_AURA) && defined(USE_X11)) || defined(USE_OZONE)
 // Converts MockKeyboard::Modifiers to ui::EventFlags.
 int ConvertMockKeyboardModifier(MockKeyboard::Modifiers modifiers) {
   static struct ModifierMap {
@@ -215,6 +219,39 @@ class RenderViewImplTest : public RenderViewTest {
     ui::KeyEvent event3(xevent, false);
     NativeWebKeyboardEvent keyup_event(&event3);
     SendNativeKeyEvent(keyup_event);
+
+    long c = GetCharacterFromKeyCode(static_cast<ui::KeyboardCode>(key_code),
+                                     flags);
+    output->assign(1, static_cast<char16>(c));
+    return 1;
+#elif defined(USE_OZONE)
+    const int flags = ConvertMockKeyboardModifier(modifiers);
+
+    // Ozone's native events are ui::Events. So first create the "native" event,
+    // then create the actual ui::KeyEvent with the native event.
+    ui::KeyEvent keydown_native_event(ui::ET_KEY_PRESSED,
+                                   static_cast<ui::KeyboardCode>(key_code),
+                                   flags,
+                                   true);
+    ui::KeyEvent keydown_event(&keydown_native_event, false);
+    NativeWebKeyboardEvent keydown_web_event(&keydown_event);
+    SendNativeKeyEvent(keydown_web_event);
+
+    ui::KeyEvent char_native_event(ui::ET_KEY_PRESSED,
+                                   static_cast<ui::KeyboardCode>(key_code),
+                                   flags,
+                                   true);
+    ui::KeyEvent char_event(&char_native_event, true);
+    NativeWebKeyboardEvent char_web_event(&char_event);
+    SendNativeKeyEvent(char_web_event);
+
+    ui::KeyEvent keyup_native_event(ui::ET_KEY_RELEASED,
+                                    static_cast<ui::KeyboardCode>(key_code),
+                                    flags,
+                                    true);
+    ui::KeyEvent keyup_event(&keyup_native_event, false);
+    NativeWebKeyboardEvent keyup_web_event(&keyup_event);
+    SendNativeKeyEvent(keyup_web_event);
 
     long c = GetCharacterFromKeyCode(static_cast<ui::KeyboardCode>(key_code),
                                      flags);
