@@ -186,3 +186,4 @@ fun:arena_thread_freeres
 # __strncasecmp_l_ssse3 overreads the buffer causing TSan to report a data race
 # on another object. See http://crbug.com/177074
 fun:*strncasecmp*
+fun:*strcasecmp*
