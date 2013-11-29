@@ -35,6 +35,7 @@
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
+#include "webkit/common/blob/scoped_file.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -228,7 +229,7 @@ LocalChangeProcessor* SyncEngine::GetLocalChangeProcessor() {
 }
 
 bool SyncEngine::IsConflicting(const fileapi::FileSystemURL& url) {
-  NOTIMPLEMENTED();
+  // TODO(tzik): Implement this before we support manual conflict resolution.
   return false;
 }
 
@@ -289,14 +290,16 @@ SyncEngine::GetConflictResolutionPolicy() const {
 void SyncEngine::GetRemoteVersions(
     const fileapi::FileSystemURL& url,
     const RemoteVersionsCallback& callback) {
-  NOTIMPLEMENTED();
+  // TODO(tzik): Implement this before we support manual conflict resolution.
+  callback.Run(SYNC_STATUS_FAILED, std::vector<Version>());
 }
 
 void SyncEngine::DownloadRemoteVersion(
     const fileapi::FileSystemURL& url,
     const std::string& version_id,
     const DownloadVersionCallback& callback) {
-  NOTIMPLEMENTED();
+  // TODO(tzik): Implement this before we support manual conflict resolution.
+  callback.Run(SYNC_STATUS_FAILED, webkit_blob::ScopedFile());
 }
 
 void SyncEngine::ApplyLocalChange(
@@ -419,6 +422,8 @@ void SyncEngine::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
                                           syncer->sync_action(),
                                           SYNC_DIRECTION_REMOTE_TO_LOCAL));
   }
+
+  callback.Run(status, syncer->url());
 }
 
 void SyncEngine::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
