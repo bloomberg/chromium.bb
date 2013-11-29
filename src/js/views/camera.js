@@ -842,16 +842,19 @@ camera.views.Camera.prototype.takePicture_ = function() {
       var sourceRect = img.getBoundingClientRect();
       var targetRect = albumButton.getBoundingClientRect();
 
-      var translateXValue = (targetRect.left + targetRect.right) / 2 -
-          (sourceRect.left + sourceRect.right) / 2;
-      var translateYValue = (targetRect.top + targetRect.bottom) / 2 -
-          (sourceRect.top + sourceRect.bottom) / 2;
-      var scaleValue = targetRect.width / sourceRect.width;
+      // If the album button is hidden, then we can't get its geometry.
+      if (targetRect.width && targetRect.height) {
+        var translateXValue = (targetRect.left + targetRect.right) / 2 -
+            (sourceRect.left + sourceRect.right) / 2;
+        var translateYValue = (targetRect.top + targetRect.bottom) / 2 -
+            (sourceRect.top + sourceRect.bottom) / 2;
+        var scaleValue = targetRect.width / sourceRect.width;
 
-      img.style.webkitTransform =
-          'rotate(0) translateX(' + translateXValue +'px) ' +
-          'translateY(' + translateYValue + 'px) ' +
-          'scale(' + scaleValue + ')';
+        img.style.webkitTransform =
+            'rotate(0) translateX(' + translateXValue +'px) ' +
+            'translateY(' + translateYValue + 'px) ' +
+            'scale(' + scaleValue + ')';
+      }
       img.style.opacity = 0;
 
       camera.util.waitForTransitionCompletion(img, 1500, function() {
