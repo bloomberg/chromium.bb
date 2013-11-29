@@ -42,19 +42,19 @@ RefPtr<DeviceMotionData::Acceleration> readAccelerationArgument(v8::Local<v8::Va
     // Given the test above, this will always yield an object.
     v8::Local<v8::Object> object = value->ToObject();
 
-    v8::Local<v8::Value> xValue = object->Get(v8Symbol("x", isolate));
+    v8::Local<v8::Value> xValue = object->Get(v8AtomicString(isolate, "x"));
     if (xValue.IsEmpty())
         return 0;
     bool canProvideX = !isUndefinedOrNull(xValue);
     double x = xValue->NumberValue();
 
-    v8::Local<v8::Value> yValue = object->Get(v8Symbol("y", isolate));
+    v8::Local<v8::Value> yValue = object->Get(v8AtomicString(isolate, "y"));
     if (yValue.IsEmpty())
         return 0;
     bool canProvideY = !isUndefinedOrNull(yValue);
     double y = yValue->NumberValue();
 
-    v8::Local<v8::Value> zValue = object->Get(v8Symbol("z", isolate));
+    v8::Local<v8::Value> zValue = object->Get(v8AtomicString(isolate, "z"));
     if (zValue.IsEmpty())
         return 0;
     bool canProvideZ = !isUndefinedOrNull(zValue);
@@ -74,19 +74,19 @@ RefPtr<DeviceMotionData::RotationRate> readRotationRateArgument(v8::Local<v8::Va
     // Given the test above, this will always yield an object.
     v8::Local<v8::Object> object = value->ToObject();
 
-    v8::Local<v8::Value> alphaValue = object->Get(v8Symbol("alpha", isolate));
+    v8::Local<v8::Value> alphaValue = object->Get(v8AtomicString(isolate, "alpha"));
     if (alphaValue.IsEmpty())
         return 0;
     bool canProvideAlpha = !isUndefinedOrNull(alphaValue);
     double alpha = alphaValue->NumberValue();
 
-    v8::Local<v8::Value> betaValue = object->Get(v8Symbol("beta", isolate));
+    v8::Local<v8::Value> betaValue = object->Get(v8AtomicString(isolate, "beta"));
     if (betaValue.IsEmpty())
         return 0;
     bool canProvideBeta = !isUndefinedOrNull(betaValue);
     double beta = betaValue->NumberValue();
 
-    v8::Local<v8::Value> gammaValue = object->Get(v8Symbol("gamma", isolate));
+    v8::Local<v8::Value> gammaValue = object->Get(v8AtomicString(isolate, "gamma"));
     if (gammaValue.IsEmpty())
         return 0;
     bool canProvideGamma = !isUndefinedOrNull(gammaValue);

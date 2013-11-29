@@ -102,11 +102,11 @@ static v8::Local<v8::String> npIdentifierToV8Identifier(NPIdentifier name, v8::I
 {
     PrivateIdentifier* identifier = static_cast<PrivateIdentifier*>(name);
     if (identifier->isString)
-        return v8Symbol(static_cast<const char*>(identifier->value.string), isolate);
+        return v8AtomicString(isolate, static_cast<const char*>(identifier->value.string));
 
     char buffer[32];
     snprintf(buffer, sizeof(buffer), "%d", identifier->value.number);
-    return v8Symbol(buffer, isolate);
+    return v8AtomicString(isolate, buffer);
 }
 
 NPObject* v8ObjectToNPObject(v8::Handle<v8::Object> object)
@@ -240,7 +240,7 @@ bool _NPN_Invoke(NPP npp, NPObject* npObject, NPIdentifier methodName, const NPV
     ExceptionCatcher exceptionCatcher;
 
     v8::Handle<v8::Object> v8Object = v8::Local<v8::Object>::New(isolate, v8NpObject->v8Object);
-    v8::Handle<v8::Value> functionObject = v8Object->Get(v8Symbol(identifier->value.string, isolate));
+    v8::Handle<v8::Value> functionObject = v8Object->Get(v8AtomicString(isolate, identifier->value.string));
     if (functionObject.IsEmpty() || functionObject->IsNull()) {
         NULL_TO_NPVARIANT(*result);
         return false;

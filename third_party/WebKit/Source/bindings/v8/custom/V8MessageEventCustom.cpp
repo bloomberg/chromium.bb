@@ -93,7 +93,7 @@ void V8MessageEvent::dataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8
     // Overwrite the data attribute so it returns the cached result in future invocations.
     // This custom handler (dataAccessGetter) will not be called again.
     v8::PropertyAttribute dataAttr = static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly);
-    info.Holder()->ForceSet(v8Symbol("data", info.GetIsolate()), result, dataAttr);
+    info.Holder()->ForceSet(v8AtomicString(info.GetIsolate(), "data"), result, dataAttr);
     v8SetReturnValue(info, result);
 }
 

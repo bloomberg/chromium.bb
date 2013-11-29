@@ -75,7 +75,7 @@ void V8JavaScriptCallFrame::returnValueAttributeGetterCustom(const v8::PropertyC
 
 void V8JavaScriptCallFrame::typeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
-    v8SetReturnValue(info, v8Symbol("function", info.GetIsolate()));
+    v8SetReturnValue(info, v8AtomicString(info.GetIsolate(), "function"));
 }
 
 } // namespace WebCore

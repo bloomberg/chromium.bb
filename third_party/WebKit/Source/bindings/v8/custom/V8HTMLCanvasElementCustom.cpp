@@ -60,25 +60,25 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
         RefPtr<WebGLContextAttributes> webGLAttributes = WebGLContextAttributes::create();
         if (info.Length() > 1 && info[1]->IsObject()) {
             v8::Handle<v8::Object> jsAttributes = info[1]->ToObject();
-            v8::Handle<v8::String> alpha = v8Symbol("alpha", isolate);
+            v8::Handle<v8::String> alpha = v8AtomicString(isolate, "alpha");
             if (jsAttributes->Has(alpha))
                 webGLAttributes->setAlpha(jsAttributes->Get(alpha)->BooleanValue());
-            v8::Handle<v8::String> depth = v8Symbol("depth", isolate);
+            v8::Handle<v8::String> depth = v8AtomicString(isolate, "depth");
             if (jsAttributes->Has(depth))
                 webGLAttributes->setDepth(jsAttributes->Get(depth)->BooleanValue());
-            v8::Handle<v8::String> stencil = v8Symbol("stencil", isolate);
+            v8::Handle<v8::String> stencil = v8AtomicString(isolate, "stencil");
             if (jsAttributes->Has(stencil))
                 webGLAttributes->setStencil(jsAttributes->Get(stencil)->BooleanValue());
-            v8::Handle<v8::String> antialias = v8Symbol("antialias", isolate);
+            v8::Handle<v8::String> antialias = v8AtomicString(isolate, "antialias");
             if (jsAttributes->Has(antialias))
                 webGLAttributes->setAntialias(jsAttributes->Get(antialias)->BooleanValue());
-            v8::Handle<v8::String> premultipliedAlpha = v8Symbol("premultipliedAlpha", isolate);
+            v8::Handle<v8::String> premultipliedAlpha = v8AtomicString(isolate, "premultipliedAlpha");
             if (jsAttributes->Has(premultipliedAlpha))
                 webGLAttributes->setPremultipliedAlpha(jsAttributes->Get(premultipliedAlpha)->BooleanValue());
-            v8::Handle<v8::String> preserveDrawingBuffer = v8Symbol("preserveDrawingBuffer", isolate);
+            v8::Handle<v8::String> preserveDrawingBuffer = v8AtomicString(isolate, "preserveDrawingBuffer");
             if (jsAttributes->Has(preserveDrawingBuffer))
                 webGLAttributes->setPreserveDrawingBuffer(jsAttributes->Get(preserveDrawingBuffer)->BooleanValue());
-            v8::Handle<v8::String> failIfMajorPerformanceCaveat = v8Symbol("failIfMajorPerformanceCaveat", isolate);
+            v8::Handle<v8::String> failIfMajorPerformanceCaveat = v8AtomicString(isolate, "failIfMajorPerformanceCaveat");
             if (jsAttributes->Has(failIfMajorPerformanceCaveat))
                 webGLAttributes->setFailIfMajorPerformanceCaveat(jsAttributes->Get(failIfMajorPerformanceCaveat)->BooleanValue());
         }
@@ -87,7 +87,7 @@ void V8HTMLCanvasElement::getContextMethodCustom(const v8::FunctionCallbackInfo<
         RefPtr<Canvas2DContextAttributes> canvas2DAttributes = Canvas2DContextAttributes::create();
         if (info.Length() > 1 && info[1]->IsObject()) {
             v8::Handle<v8::Object> jsAttributes = info[1]->ToObject();
-            v8::Handle<v8::String> alpha = v8Symbol("alpha", isolate);
+            v8::Handle<v8::String> alpha = v8AtomicString(isolate, "alpha");
             if (jsAttributes->Has(alpha))
                 canvas2DAttributes->setAlpha(jsAttributes->Get(alpha)->BooleanValue());
         }

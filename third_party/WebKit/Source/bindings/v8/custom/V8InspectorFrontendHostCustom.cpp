@@ -45,11 +45,11 @@ namespace WebCore {
 void V8InspectorFrontendHost::platformMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
 #if OS(MACOSX)
-    v8SetReturnValue(info, v8Symbol("mac", info.GetIsolate()));
+    v8SetReturnValue(info, v8AtomicString(info.GetIsolate(), "mac"));
 #elif OS(WIN)
-    v8SetReturnValue(info, v8Symbol("windows", info.GetIsolate()));
+    v8SetReturnValue(info, v8AtomicString(info.GetIsolate(), "windows"));
 #else // Unix-like systems
-    v8SetReturnValue(info, v8Symbol("linux", info.GetIsolate()));
+    v8SetReturnValue(info, v8AtomicString(info.GetIsolate(), "linux"));
 #endif
 }
 
@@ -61,12 +61,12 @@ static bool populateContextMenuItems(v8::Local<v8::Array>& itemArray, ContextMen
 {
     for (size_t i = 0; i < itemArray->Length(); ++i) {
         v8::Local<v8::Object> item = v8::Local<v8::Object>::Cast(itemArray->Get(i));
-        v8::Local<v8::Value> type = item->Get(v8Symbol("type", isolate));
-        v8::Local<v8::Value> id = item->Get(v8Symbol("id", isolate));
-        v8::Local<v8::Value> label = item->Get(v8Symbol("label", isolate));
-        v8::Local<v8::Value> enabled = item->Get(v8Symbol("enabled", isolate));
-        v8::Local<v8::Value> checked = item->Get(v8Symbol("checked", isolate));
-        v8::Local<v8::Value> subItems = item->Get(v8Symbol("subItems", isolate));
+        v8::Local<v8::Value> type = item->Get(v8AtomicString(isolate, "type"));
+        v8::Local<v8::Value> id = item->Get(v8AtomicString(isolate, "id"));
+        v8::Local<v8::Value> label = item->Get(v8AtomicString(isolate, "label"));
+        v8::Local<v8::Value> enabled = item->Get(v8AtomicString(isolate, "enabled"));
+        v8::Local<v8::Value> checked = item->Get(v8AtomicString(isolate, "checked"));
+        v8::Local<v8::Value> subItems = item->Get(v8AtomicString(isolate, "subItems"));
         if (!type->IsString())
             continue;
         String typeString = toWebCoreStringWithNullCheck(type.As<v8::String>());

@@ -273,7 +273,7 @@ void UpdateDerivedTask::performTask(ExecutionContext* context)
 
     v8::Local<v8::Value> then;
     v8::TryCatch trycatch;
-    then = originatorValueObject->Get(v8Symbol("then", isolate));
+    then = originatorValueObject->Get(v8AtomicString(isolate, "then"));
     if (then.IsEmpty()) {
         // If calling the [[Get]] internal method threw an exception, catch it and run updateDerivedFromReason.
         V8PromiseCustom::updateDerivedFromReason(m_promise.newLocal(isolate), m_onRejected.newLocal(isolate), trycatch.Exception(), isolate);

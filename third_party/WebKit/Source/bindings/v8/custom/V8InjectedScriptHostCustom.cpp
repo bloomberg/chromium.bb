@@ -130,56 +130,56 @@ void V8InjectedScriptHost::typeMethodCustom(const v8::FunctionCallbackInfo<v8::V
 
     v8::Handle<v8::Value> value = info[0];
     if (value->IsString()) {
-        v8SetReturnValue(info, v8Symbol("string", isolate));
+        v8SetReturnValue(info, v8AtomicString(isolate, "string"));
         return;
     }
     if (value->IsArray()) {
-        v8SetReturnValue(info, v8Symbol("array", isolate));
+        v8SetReturnValue(info, v8AtomicString(isolate, "array"));
         return;
     }
     if (value->IsBoolean()) {
-        v8SetReturnValue(info, v8Symbol("boolean", isolate));
+        v8SetReturnValue(info, v8AtomicString(isolate, "boolean"));
         return;
     }
     if (value->IsNumber()) {
-        v8SetReturnValue(info, v8Symbol("number", isolate));
+        v8SetReturnValue(info, v8AtomicString(isolate, "number"));
         return;
     }
     if (value->IsDate()) {
-        v8SetReturnValue(info, v8Symbol("date", isolate));
+        v8SetReturnValue(info, v8AtomicString(isolate, "date"));
         return;
     }
     if (value->IsRegExp()) {
-        v8SetReturnValue(info, v8Symbol("regexp", isolate));
+        v8SetReturnValue(info, v8AtomicString(isolate, "regexp"));
         return;
     }
     WrapperWorldType currentWorldType = worldType(isolate);
     if (V8Node::hasInstance(value, isolate, currentWorldType)) {
-        v8SetReturnValue(info, v8Symbol("node", isolate));
+        v8SetReturnValue(info, v8AtomicString(isolate, "node"));
         return;
     }
     if (V8NodeList::hasInstance(value, isolate, currentWorldType)) {
-        v8SetReturnValue(info, v8Symbol("array", isolate));
+        v8SetReturnValue(info, v8AtomicString(isolate, "array"));
         return;
     }
     if (V8HTMLCollection::hasInstance(value, isolate, currentWorldType)) {
-        v8SetReturnValue(info, v8Symbol("array", isolate));
+        v8SetReturnValue(info, v8AtomicString(isolate, "array"));
         return;
     }
     if (V8Int8Array::hasInstance(value, isolate, currentWorldType) || V8Int16Array::hasInstance(value, isolate, currentWorldType) || V8Int32Array::hasInstance(value, isolate, currentWorldType)) {
-        v8SetReturnValue(info, v8Symbol("array", isolate));
+        v8SetReturnValue(info, v8AtomicString(isolate, "array"));
         return;
     }
     if (V8Uint8Array::hasInstance(value, isolate, currentWorldType) || V8Uint16Array::hasInstance(value, isolate, currentWorldType) || V8Uint32Array::hasInstance(value, isolate, currentWorldType)) {
-        v8SetReturnValue(info, v8Symbol("array", isolate));
+        v8SetReturnValue(info, v8AtomicString(isolate, "array"));
         return;
     }
     if (V8Float32Array::hasInstance(value, isolate, currentWorldType) || V8Float64Array::hasInstance(value, isolate, currentWorldType)) {
-        v8SetReturnValue(info, v8Symbol("array", isolate));
+        v8SetReturnValue(info, v8AtomicString(isolate, "array"));
         return;
     }
     if (V8Uint8ClampedArray::hasInstance(value, isolate, currentWorldType)) {
-        v8SetReturnValue(info, v8Symbol("array", isolate));
+        v8SetReturnValue(info, v8AtomicString(isolate, "array"));
         return;
     }
 }
@@ -187,7 +187,7 @@ void V8InjectedScriptHost::typeMethodCustom(const v8::FunctionCallbackInfo<v8::V
 static bool setFunctionName(v8::Handle<v8::Object>& result, const v8::Handle<v8::Value>& value, v8::Isolate* isolate)
 {
     if (value->IsString() && v8::Handle<v8::String>::Cast(value)->Length()) {
-        result->Set(v8Symbol("functionName", isolate), value);
+        result->Set(v8AtomicString(isolate, "functionName"), value);
         return true;
     }
     return false;
@@ -208,23 +208,23 @@ void V8InjectedScriptHost::functionDetailsMethodCustom(const v8::FunctionCallbac
     int columnNumber = function->GetScriptColumnNumber();
 
     v8::Local<v8::Object> location = v8::Object::New();
-    location->Set(v8Symbol("lineNumber", isolate), v8::Integer::New(lineNumber, isolate));
-    location->Set(v8Symbol("columnNumber", isolate), v8::Integer::New(columnNumber, isolate));
-    location->Set(v8Symbol("scriptId", isolate), v8::Integer::New(function->ScriptId(), isolate)->ToString());
+    location->Set(v8AtomicString(isolate, "lineNumber"), v8::Integer::New(lineNumber, isolate));
+    location->Set(v8AtomicString(isolate, "columnNumber"), v8::Integer::New(columnNumber, isolate));
+    location->Set(v8AtomicString(isolate, "scriptId"), v8::Integer::New(function->ScriptId(), isolate)->ToString());
 
     v8::Local<v8::Object> result = v8::Object::New();
-    result->Set(v8Symbol("location", isolate), location);
+    result->Set(v8AtomicString(isolate, "location"), location);
 
     if (!setFunctionName(result, function->GetDisplayName(), isolate)
         && !setFunctionName(result, function->GetName(), isolate)
         && !setFunctionName(result, function->GetInferredName(), isolate))
-        result->Set(v8Symbol("functionName", isolate), v8Symbol("", isolate));
+        result->Set(v8AtomicString(isolate, "functionName"), v8AtomicString(isolate, ""));
 
     InjectedScriptHost* host = V8InjectedScriptHost::toNative(info.Holder());
     ScriptDebugServer& debugServer = host->scriptDebugServer();
     v8::Handle<v8::Value> scopes = debugServer.functionScopes(function);
     if (!scopes.IsEmpty() && scopes->IsArray())
-        result->Set(v8Symbol("rawScopes", isolate), scopes);
+        result->Set(v8AtomicString(isolate, "rawScopes"), scopes);
 
     v8SetReturnValue(info, result);
 }
@@ -266,8 +266,8 @@ static v8::Handle<v8::Array> getJSListenerFunctions(Document* document, const Ev
         }
         ASSERT(!function.IsEmpty());
         v8::Local<v8::Object> listenerEntry = v8::Object::New();
-        listenerEntry->Set(v8Symbol("listener", isolate), function);
-        listenerEntry->Set(v8Symbol("useCapture", isolate), v8::Boolean::New(isolate, listenerInfo.eventListenerVector[i].useCapture));
+        listenerEntry->Set(v8AtomicString(isolate, "listener"), function);
+        listenerEntry->Set(v8AtomicString(isolate, "useCapture"), v8::Boolean::New(isolate, listenerInfo.eventListenerVector[i].useCapture));
         result->Set(v8::Number::New(isolate, outputIndex++), listenerEntry);
     }
     return result;

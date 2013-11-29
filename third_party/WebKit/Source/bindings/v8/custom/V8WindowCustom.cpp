@@ -239,10 +239,10 @@ void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8:
     }
 
     // Delete the accessor from this object.
-    info.Holder()->Delete(v8Symbol("opener", info.GetIsolate()));
+    info.Holder()->Delete(v8AtomicString(info.GetIsolate(), "opener"));
 
     // Put property on the front (this) object.
-    info.This()->Set(v8Symbol("opener", info.GetIsolate()), value);
+    info.This()->Set(v8AtomicString(info.GetIsolate(), "opener"), value);
 }
 
 static bool isLegacyTargetOriginDesignation(v8::Handle<v8::Value> value)
@@ -338,7 +338,7 @@ inline void DialogHandler::dialogCreated(DOMWindow* dialogFrame, v8::Isolate* is
     if (m_dialogArguments.IsEmpty())
         return;
     v8::Context::Scope scope(m_dialogContext);
-    m_dialogContext->Global()->Set(v8Symbol("dialogArguments", isolate), m_dialogArguments);
+    m_dialogContext->Global()->Set(v8AtomicString(isolate, "dialogArguments"), m_dialogArguments);
 }
 
 inline v8::Handle<v8::Value> DialogHandler::returnValue(v8::Isolate* isolate) const
@@ -346,7 +346,7 @@ inline v8::Handle<v8::Value> DialogHandler::returnValue(v8::Isolate* isolate) co
     if (m_dialogContext.IsEmpty())
         return v8::Undefined(isolate);
     v8::Context::Scope scope(m_dialogContext);
-    v8::Handle<v8::Value> returnValue = m_dialogContext->Global()->Get(v8Symbol("returnValue", isolate));
+    v8::Handle<v8::Value> returnValue = m_dialogContext->Global()->Get(v8AtomicString(isolate, "returnValue"));
     if (returnValue.IsEmpty())
         return v8::Undefined(isolate);
     return returnValue;
