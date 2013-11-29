@@ -630,7 +630,7 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
     var readonly = fm.isOnReadonlyDirectory();
     var currentDir = fm.getCurrentDirectoryEntry();
     var downloadsVolume =
-        fm.volumeManager_.getVolumeInfo(RootDirectory.DOWNLOADS);
+        fm.volumeManager_.getCurrentProfileVolumeInfo(RootType.DOWNLOADS);
     var downloadsDir = downloadsVolume && downloadsVolume.root;
     var readonlyDirName = null;
     if (readonly && currentDir) {
