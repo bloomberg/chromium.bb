@@ -365,7 +365,7 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorStartDelay)
 
     m_timing.startDelay = -2.0;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
-    EXPECT_DOUBLE_EQ(-2.0, m_compositorTiming.scaledTimeOffset);
+    EXPECT_DOUBLE_EQ(2.0, m_compositorTiming.scaledTimeOffset);
 }
 
 TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorIterationStart)
@@ -398,7 +398,7 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorIterationCou
     m_timing.iterationDuration = 5.0;
     m_timing.startDelay = -6.0;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
-    EXPECT_DOUBLE_EQ(-1.0, m_compositorTiming.scaledTimeOffset);
+    EXPECT_DOUBLE_EQ(1.0, m_compositorTiming.scaledTimeOffset);
     EXPECT_EQ(-1, m_compositorTiming.adjustedIterationCount);
 }
 
@@ -409,7 +409,7 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorIterationsAn
 
     m_timing.startDelay = -6.0;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
-    EXPECT_DOUBLE_EQ(-1.0, m_compositorTiming.scaledTimeOffset);
+    EXPECT_DOUBLE_EQ(1.0, m_compositorTiming.scaledTimeOffset);
     EXPECT_DOUBLE_EQ(3.0, m_compositorTiming.adjustedIterationCount);
     EXPECT_FALSE(m_compositorTiming.reverse);
 
@@ -461,7 +461,7 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorDirectionIte
     m_timing.iterationDuration = 5.0;
     m_timing.startDelay = -6.0;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
-    EXPECT_DOUBLE_EQ(-1.0, m_compositorTiming.scaledTimeOffset);
+    EXPECT_DOUBLE_EQ(1.0, m_compositorTiming.scaledTimeOffset);
     EXPECT_EQ(3, m_compositorTiming.adjustedIterationCount);
     EXPECT_TRUE(m_compositorTiming.alternate);
     EXPECT_TRUE(m_compositorTiming.reverse);
@@ -471,7 +471,7 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorDirectionIte
     m_timing.iterationDuration = 5.0;
     m_timing.startDelay = -11.0;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
-    EXPECT_DOUBLE_EQ(-1.0, m_compositorTiming.scaledTimeOffset);
+    EXPECT_DOUBLE_EQ(1.0, m_compositorTiming.scaledTimeOffset);
     EXPECT_EQ(2, m_compositorTiming.adjustedIterationCount);
     EXPECT_TRUE(m_compositorTiming.alternate);
     EXPECT_FALSE(m_compositorTiming.reverse);
@@ -481,7 +481,7 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorDirectionIte
     m_timing.iterationDuration = 5.0;
     m_timing.startDelay = -6.0;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
-    EXPECT_DOUBLE_EQ(-1.0, m_compositorTiming.scaledTimeOffset);
+    EXPECT_DOUBLE_EQ(1.0, m_compositorTiming.scaledTimeOffset);
     EXPECT_EQ(3, m_compositorTiming.adjustedIterationCount);
     EXPECT_TRUE(m_compositorTiming.alternate);
     EXPECT_FALSE(m_compositorTiming.reverse);
@@ -491,7 +491,7 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorDirectionIte
     m_timing.iterationDuration = 5.0;
     m_timing.startDelay = -11.0;
     EXPECT_TRUE(convertTimingForCompositor(m_timing, m_compositorTiming));
-    EXPECT_DOUBLE_EQ(-1.0, m_compositorTiming.scaledTimeOffset);
+    EXPECT_DOUBLE_EQ(1.0, m_compositorTiming.scaledTimeOffset);
     EXPECT_EQ(2, m_compositorTiming.adjustedIterationCount);
     EXPECT_TRUE(m_compositorTiming.alternate);
     EXPECT_TRUE(m_compositorTiming.reverse);
@@ -914,7 +914,7 @@ TEST_F(AnimationCompositorAnimationsTest, createSimpleOpacityAnimationNegativeSt
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(4));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(-1.5));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(1.5));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setAlternatesDirection(false));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())
@@ -1084,7 +1084,7 @@ TEST_F(AnimationCompositorAnimationsTest, createReversedOpacityAnimationNegative
         .WillOnce(Return(mockAnimationPtr));
 
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setIterations(4));
-    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(-1.0));
+    usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setTimeOffset(1.0));
     usesMockAnimation += EXPECT_CALL(*mockAnimationPtr, setAlternatesDirection(true));
 
     EXPECT_CALL(*mockAnimationPtr, delete_())

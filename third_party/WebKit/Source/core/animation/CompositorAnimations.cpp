@@ -357,8 +357,9 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
         ASSERT(out.adjustedIterationCount > 0);
     }
 
-    out.scaledTimeOffset = scaledStartDelay + skippedIterations * out.scaledDuration;
-    ASSERT(out.scaledTimeOffset <= 0);
+    // Compositor's time offset is positive for seeking into the animation.
+    out.scaledTimeOffset = -(scaledStartDelay + skippedIterations * out.scaledDuration);
+    ASSERT(out.scaledTimeOffset >= 0);
     return true;
 }
 
