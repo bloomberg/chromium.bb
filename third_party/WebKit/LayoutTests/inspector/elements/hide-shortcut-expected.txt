@@ -20,6 +20,18 @@ visibility: visible;
 === Child node is visible ===
 visibility: visible;
 
+Running: testToggleHideBeforePseudoShortcutOn
+::before node visibility: 'hidden'
+
+Running: testToggleHideAfterPseudoShortcutOn
+::after node visibility: 'hidden'
+
+Running: testToggleHideBeforePseudoShortcutOff
+::before node visibility: 'visible'
+
+Running: testToggleHideAfterPseudoShortcutOff
+::after node visibility: 'visible'
+
 Running: testToggleHideShortcutOnInFrame
 === Added hide shortcut in frame ===
 === Frame node is hidden ===

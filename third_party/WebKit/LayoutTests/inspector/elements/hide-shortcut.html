@@ -88,6 +88,26 @@ function test()
             }
         },
 
+        function testToggleHideBeforePseudoShortcutOn(next)
+        {
+            testPseudoToggle(WebInspector.DOMNode.PseudoElementNames.Before, next);
+        },
+
+        function testToggleHideAfterPseudoShortcutOn(next)
+        {
+            testPseudoToggle(WebInspector.DOMNode.PseudoElementNames.After, next);
+        },
+
+        function testToggleHideBeforePseudoShortcutOff(next)
+        {
+            testPseudoToggle(WebInspector.DOMNode.PseudoElementNames.Before, next);
+        },
+
+        function testToggleHideAfterPseudoShortcutOff(next)
+        {
+            testPseudoToggle(WebInspector.DOMNode.PseudoElementNames.After, next);
+        },
+
         function testToggleHideShortcutOnInFrame(next)
         {
             treeOutline._toggleHideShortcut(frameNode, callback);
@@ -106,8 +126,34 @@ function test()
             }
         }
     ]);
+
+    function testPseudoToggle(pseudoType, next)
+    {
+        var pseudoNode = parentNode.pseudoElements()[pseudoType];
+        treeOutline._toggleHideShortcut(pseudoNode, callback);
+
+        function callback()
+        {
+            WebInspector.cssModel.getComputedStyleAsync(pseudoNode.id, callback2);
+        }
+
+        function callback2(style)
+        {
+            InspectorTest.addResult("::" + pseudoType + " node visibility: '" + style.getLiveProperty("visibility").value + "'");
+            next();
+        }
+    }
 }
 </script>
+<style>
+#parent-node::before {
+    content: "before";
+}
+
+#parent-node::after {
+    content: "after";
+}
+</style>
 </head>
 
 <body>
