@@ -53,7 +53,7 @@ static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper,
         shadowTemplate = v8::FunctionTemplate::New();
         if (shadowTemplate.IsEmpty())
             return v8::Local<v8::Object>();
-        shadowTemplate->SetClassName(v8::String::NewSymbol("HTMLDocument"));
+        shadowTemplate->SetClassName(v8AtomicString(isolate, "HTMLDocument"));
         shadowTemplate->Inherit(V8HTMLDocument::GetTemplate(isolate, currentWorldType));
         shadowTemplate->InstanceTemplate()->SetInternalFieldCount(V8HTMLDocument::internalFieldCount);
         data->setPrivateTemplate(currentWorldType, &shadowTemplateUniqueKey, shadowTemplate);

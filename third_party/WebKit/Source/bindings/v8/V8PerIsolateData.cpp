@@ -159,7 +159,7 @@ void V8PerIsolateData::constructorOfToString(const v8::FunctionCallbackInfo<v8::
     // changes to a DOM constructor's toString's toString will cause the
     // toString of the DOM constructor itself to change. This is extremely
     // obscure and unlikely to be a problem.
-    v8::Handle<v8::Value> value = info.Callee()->Get(v8::String::NewSymbol("toString"));
+    v8::Handle<v8::Value> value = info.Callee()->Get(v8AtomicString(info.GetIsolate(), "toString"));
     if (!value->IsFunction()) {
         v8SetReturnValue(info, v8::String::Empty(info.GetIsolate()));
         return;

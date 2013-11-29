@@ -351,7 +351,7 @@ void V8WindowShell::updateDocumentProperty()
         return;
     }
     ASSERT(documentWrapper->IsObject());
-    context->Global()->ForceSet(v8::String::NewSymbol("document"), documentWrapper, static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
+    context->Global()->ForceSet(v8AtomicString(m_isolate, "document"), documentWrapper, static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
 
     // We also stash a reference to the document on the inner global object so that
     // DOMWindow objects we obtain from JavaScript references are guaranteed to have
@@ -365,7 +365,7 @@ void V8WindowShell::clearDocumentProperty()
     if (!m_world->isMainWorld())
         return;
     v8::HandleScope handleScope(m_isolate);
-    m_context.newLocal(m_isolate)->Global()->ForceDelete(v8::String::NewSymbol("document"));
+    m_context.newLocal(m_isolate)->Global()->ForceDelete(v8AtomicString(m_isolate, "document"));
 }
 
 void V8WindowShell::setSecurityToken()

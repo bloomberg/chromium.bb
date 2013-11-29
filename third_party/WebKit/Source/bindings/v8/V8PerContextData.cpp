@@ -80,7 +80,7 @@ bool V8PerContextData::init()
     v8::Handle<v8::Context> context = v8::Local<v8::Context>::New(m_isolate, m_context);
     context->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, this);
 
-    v8::Handle<v8::String> prototypeString = v8::String::NewSymbol("prototype");
+    v8::Handle<v8::String> prototypeString = v8AtomicString(m_isolate, "prototype");
     if (prototypeString.IsEmpty())
         return false;
 
@@ -124,7 +124,7 @@ v8::Local<v8::Function> V8PerContextData::constructorForTypeSlowCase(const Wrapp
         function->SetPrototype(prototypeTemplate);
     }
 
-    v8::Local<v8::Value> prototypeValue = function->Get(v8::String::NewSymbol("prototype"));
+    v8::Local<v8::Value> prototypeValue = function->Get(v8AtomicString(m_isolate, "prototype"));
     if (!prototypeValue.IsEmpty() && prototypeValue->IsObject()) {
         v8::Local<v8::Object> prototypeObject = v8::Local<v8::Object>::Cast(prototypeValue);
         if (prototypeObject->InternalFieldCount() == v8PrototypeInternalFieldcount

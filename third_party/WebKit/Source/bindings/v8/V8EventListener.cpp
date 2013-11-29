@@ -32,6 +32,7 @@
 #include "bindings/v8/V8EventListener.h"
 
 #include "bindings/v8/ScriptController.h"
+#include "bindings/v8/V8Binding.h"
 #include "core/dom/Document.h"
 #include "core/frame/Frame.h"
 
@@ -56,7 +57,7 @@ v8::Local<v8::Function> V8EventListener::getListenerFunction(ExecutionContext* c
 
     if (listener->IsObject()) {
         ASSERT_WITH_MESSAGE(!isAttribute(), "EventHandler attributes should only accept JS Functions as input.");
-        v8::Local<v8::Value> property = listener->Get(v8::String::NewSymbol("handleEvent"));
+        v8::Local<v8::Value> property = listener->Get(v8AtomicString(isolate(), "handleEvent"));
         // Check that no exceptions were thrown when getting the
         // handleEvent property and that the value is a function.
         if (!property.IsEmpty() && property->IsFunction())

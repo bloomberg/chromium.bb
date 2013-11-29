@@ -113,7 +113,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
     }
 
     // Set DebugId for the new context.
-    context->SetEmbedderData(0, v8::String::NewSymbol("worker"));
+    context->SetEmbedderData(0, v8AtomicString(m_isolate, "worker"));
 
     // Create a new JS object and use it as the prototype for the shadow global object.
     const WrapperTypeInfo* contextType = &V8DedicatedWorkerGlobalScope::wrapperTypeInfo;

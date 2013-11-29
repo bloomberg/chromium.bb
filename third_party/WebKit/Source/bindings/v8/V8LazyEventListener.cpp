@@ -212,7 +212,7 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
     if (!toStringFunction.IsEmpty()) {
         String toStringString = "function " + m_functionName + "(" + m_eventParameterName + ") {\n  " + m_code + "\n}";
         wrappedFunction->SetHiddenValue(V8HiddenPropertyName::toStringString(isolate), v8String(toStringString, isolate));
-        wrappedFunction->Set(v8::String::NewSymbol("toString"), toStringFunction);
+        wrappedFunction->Set(v8AtomicString(isolate, "toString"), toStringFunction);
     }
 
     wrappedFunction->SetName(v8String(m_functionName, isolate));

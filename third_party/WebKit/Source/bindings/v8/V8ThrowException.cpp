@@ -35,13 +35,13 @@ namespace WebCore {
 static void domExceptionStackGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     ASSERT(info.Data()->IsObject());
-    v8SetReturnValue(info, info.Data()->ToObject()->Get(v8::String::NewSymbol("stack")));
+    v8SetReturnValue(info, info.Data()->ToObject()->Get(v8AtomicString(info.GetIsolate(), "stack")));
 }
 
 static void domExceptionStackSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     ASSERT(info.Data()->IsObject());
-    info.Data()->ToObject()->Set(v8::String::NewSymbol("stack"), value);
+    info.Data()->ToObject()->Set(v8AtomicString(info.GetIsolate(), "stack"), value);
 }
 
 v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
@@ -65,7 +65,7 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String&
     v8::Handle<v8::Value> error = v8::Exception::Error(v8String(domException->message(), isolate));
     ASSERT(!error.IsEmpty());
     ASSERT(exception->IsObject());
-    exception->ToObject()->SetAccessor(v8::String::NewSymbol("stack"), domExceptionStackGetter, domExceptionStackSetter, error);
+    exception->ToObject()->SetAccessor(v8AtomicString(isolate, "stack"), domExceptionStackGetter, domExceptionStackSetter, error);
 
     return exception;
 }

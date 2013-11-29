@@ -81,7 +81,7 @@ int RegularExpression::match(const String& string, int startFrom, int* matchLeng
     V8RecursionScope::MicrotaskSuppression microtaskScope;
 
     v8::Local<v8::RegExp> regex = m_regex.newLocal(isolate);
-    v8::Local<v8::Function> exec = regex->Get(v8::String::NewSymbol("exec")).As<v8::Function>();
+    v8::Local<v8::Function> exec = regex->Get(v8AtomicString(isolate, "exec")).As<v8::Function>();
 
     v8::Handle<v8::Value> argv[] = { v8String(string.substring(startFrom), context->GetIsolate()) };
     v8::Local<v8::Value> returnValue = exec->Call(regex, 1, argv);
@@ -97,7 +97,7 @@ int RegularExpression::match(const String& string, int startFrom, int* matchLeng
          return -1;
 
     v8::Local<v8::Array> result = returnValue.As<v8::Array>();
-    int matchOffset = result->Get(v8::String::NewSymbol("index"))->ToInt32()->Value();
+    int matchOffset = result->Get(v8AtomicString(isolate, "index"))->ToInt32()->Value();
 
     if (matchLength) {
         v8::Local<v8::String> match = result->Get(0).As<v8::String>();
