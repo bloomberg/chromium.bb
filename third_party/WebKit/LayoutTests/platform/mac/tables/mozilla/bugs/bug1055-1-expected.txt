@@ -7,8 +7,8 @@ layer at (0,0) size 785x2031
         RenderBR {BR} at (0,0) size 0x18
       RenderBlock {HR} at (0,26) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {H3} at (0,46.72) size 769x22
-        RenderText {#text} at (0,0) size 89x22
-          text run at (0,0) width 89: "border-top"
+        RenderText {#text} at (0,0) size 84x22
+          text run at (0,0) width 84: "border-top"
       RenderBlock {P} at (0,87.44) size 769x18
         RenderInline {CODE} at (0,0) size 56x15
           RenderText {#text} at (0,2) size 56x15
@@ -97,8 +97,8 @@ layer at (0,0) size 785x2031
         RenderBR {BR} at (0,0) size 0x18
       RenderBlock {HR} at (0,440.44) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {H3} at (0,461.16) size 769x22
-        RenderText {#text} at (0,0) size 102x22
-          text run at (0,0) width 102: "border-right"
+        RenderText {#text} at (0,0) size 97x22
+          text run at (0,0) width 97: "border-right"
       RenderBlock {P} at (0,501.88) size 769x18
         RenderInline {CODE} at (0,0) size 56x15
           RenderText {#text} at (0,2) size 56x15
@@ -187,8 +187,8 @@ layer at (0,0) size 785x2031
         RenderBR {BR} at (0,0) size 0x18
       RenderBlock {HR} at (0,797.88) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {H3} at (0,818.59) size 769x22
-        RenderText {#text} at (0,0) size 121x22
-          text run at (0,0) width 121: "border-bottom"
+        RenderText {#text} at (0,0) size 115x22
+          text run at (0,0) width 115: "border-bottom"
       RenderBlock {P} at (0,859.31) size 769x18
         RenderInline {CODE} at (0,0) size 56x15
           RenderText {#text} at (0,2) size 56x15
@@ -277,8 +277,8 @@ layer at (0,0) size 785x2031
         RenderBR {BR} at (0,0) size 0x18
       RenderBlock {HR} at (0,1212.31) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {H3} at (0,1233.03) size 769x22
-        RenderText {#text} at (0,0) size 87x22
-          text run at (0,0) width 87: "border-left"
+        RenderText {#text} at (0,0) size 84x22
+          text run at (0,0) width 84: "border-left"
       RenderBlock {P} at (0,1273.75) size 769x18
         RenderInline {CODE} at (0,0) size 56x15
           RenderText {#text} at (0,2) size 56x15
@@ -367,8 +367,8 @@ layer at (0,0) size 785x2031
         RenderBR {BR} at (0,0) size 0x18
       RenderBlock {HR} at (0,1569.75) size 769x2 [border: (1px inset #EEEEEE)]
       RenderBlock {H3} at (0,1590.47) size 769x22
-        RenderText {#text} at (0,0) size 56x22
-          text run at (0,0) width 56: "border"
+        RenderText {#text} at (0,0) size 53x22
+          text run at (0,0) width 53: "border"
       RenderBlock {P} at (0,1631.19) size 769x18
         RenderInline {CODE} at (0,0) size 56x15
           RenderText {#text} at (0,2) size 56x15

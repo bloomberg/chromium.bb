@@ -11,8 +11,8 @@ layer at (0,0) size 800x514
           text run at (59,0) width 186: " testcases for SVG"
       RenderBlock {DIV} at (0,47.91) size 784x232.22 [border: (1px solid #808080)]
         RenderBlock {H3} at (17,35.72) size 750x22
-          RenderText {#text} at (0,0) size 371x22
-            text run at (0,0) width 371: "Canvas PNG without explicit dimensions - 1x"
+          RenderText {#text} at (0,0) size 355x22
+            text run at (0,0) width 355: "Canvas PNG without explicit dimensions - 1x"
         RenderBlock (floating) {DIV} at (550.22,76.44) size 216.78x138.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
           RenderText {#text} at (7,7) size 57x18
             text run at (7,7) width 57: "expected"
@@ -37,8 +37,8 @@ layer at (0,0) size 800x514
           RenderBR {BR} at (4,54) size 0x18
       RenderBlock {DIV} at (0,296.13) size 784x182.22 [border: (1px solid #808080)]
         RenderBlock {H3} at (17,35.72) size 750x22
-          RenderText {#text} at (0,0) size 371x22
-            text run at (0,0) width 371: "Canvas PNG without explicit dimensions - 2x"
+          RenderText {#text} at (0,0) size 355x22
+            text run at (0,0) width 355: "Canvas PNG without explicit dimensions - 2x"
         RenderBlock (floating) {DIV} at (650.22,76.44) size 116.78x88.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
           RenderText {#text} at (7,7) size 57x18
             text run at (7,7) width 57: "expected"

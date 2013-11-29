@@ -41,8 +41,8 @@ layer at (0,0) size 785x2589
         RenderText {#text} at (0,0) size 172x28
           text run at (0,0) width 172: "1. HTML Tables"
       RenderBlock {H3} at (0,460.06) size 769x22
-        RenderText {#text} at (0,0) size 250x22
-          text run at (0,0) width 250: "1.1 Inheritance through a DIV"
+        RenderText {#text} at (0,0) size 238x22
+          text run at (0,0) width 238: "1.1 Inheritance through a DIV"
       RenderBlock {DIV} at (0,500.78) size 769x80 [color=#FFFFFF] [bgcolor=#000000]
         RenderTable {TABLE} at (0,0) size 769x80
           RenderTableSection {TBODY} at (0,0) size 769x80
@@ -52,8 +52,8 @@ layer at (0,0) size 785x2589
                   text run at (1,1) width 716: "This text should be white on black, bold, twice"
                   text run at (1,38) width 587: "the size of normal text, and sans serif."
       RenderBlock {H3} at (0,599.50) size 769x22
-        RenderText {#text} at (0,0) size 266x22
-          text run at (0,0) width 266: "1.2 Styles set directly on TABLE"
+        RenderText {#text} at (0,0) size 254x22
+          text run at (0,0) width 254: "1.2 Styles set directly on TABLE"
       RenderTable {TABLE} at (0,640.22) size 769x80 [color=#FFFFFF] [bgcolor=#000000]
         RenderTableSection {TBODY} at (0,0) size 769x80
           RenderTableRow {TR} at (0,2) size 769x76
@@ -65,8 +65,8 @@ layer at (0,0) size 785x2589
         RenderText {#text} at (0,0) size 228x28
           text run at (0,0) width 228: "2. Explicit CSS Tables"
       RenderBlock {H3} at (0,788.03) size 769x22
-        RenderText {#text} at (0,0) size 250x22
-          text run at (0,0) width 250: "2.1 Inheritance through a DIV"
+        RenderText {#text} at (0,0) size 238x22
+          text run at (0,0) width 238: "2.1 Inheritance through a DIV"
       RenderBlock {DIV} at (0,828.75) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
         RenderTable {DIV} at (0,0) size 769x74
           RenderTableSection (anonymous) at (0,0) size 769x74
@@ -76,8 +76,8 @@ layer at (0,0) size 785x2589
                   text run at (0,0) width 716: "This text should be white on black, bold, twice"
                   text run at (0,37) width 587: "the size of normal text, and sans serif."
       RenderBlock {H3} at (0,921.47) size 769x22
-        RenderText {#text} at (0,0) size 266x22
-          text run at (0,0) width 266: "2.2 Styles set directly on TABLE"
+        RenderText {#text} at (0,0) size 254x22
+          text run at (0,0) width 254: "2.2 Styles set directly on TABLE"
       RenderTable {DIV} at (0,962.19) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
         RenderTableSection (anonymous) at (0,0) size 769x74
           RenderTableRow {DIV} at (0,0) size 769x74
@@ -86,8 +86,8 @@ layer at (0,0) size 785x2589
                 text run at (0,0) width 716: "This text should be white on black, bold, twice"
                 text run at (0,37) width 587: "the size of normal text, and sans serif."
       RenderBlock {H3} at (0,1054.91) size 769x22
-        RenderText {#text} at (0,0) size 248x22
-          text run at (0,0) width 248: "2.3 Styles set directly on ROW"
+        RenderText {#text} at (0,0) size 240x22
+          text run at (0,0) width 240: "2.3 Styles set directly on ROW"
       RenderTable {DIV} at (0,1095.63) size 769x74
         RenderTableSection (anonymous) at (0,0) size 769x74
           RenderTableRow {DIV} at (0,0) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
@@ -96,8 +96,8 @@ layer at (0,0) size 785x2589
                 text run at (0,0) width 716: "This text should be white on black, bold, twice"
                 text run at (0,37) width 587: "the size of normal text, and sans serif."
       RenderBlock {H3} at (0,1188.34) size 769x22
-        RenderText {#text} at (0,0) size 253x22
-          text run at (0,0) width 253: "2.4 Styles set directly on CELL"
+        RenderText {#text} at (0,0) size 242x22
+          text run at (0,0) width 242: "2.4 Styles set directly on CELL"
       RenderTable {DIV} at (0,1229.06) size 769x74
         RenderTableSection (anonymous) at (0,0) size 769x74
           RenderTableRow {DIV} at (0,0) size 769x74
@@ -109,8 +109,8 @@ layer at (0,0) size 785x2589
         RenderText {#text} at (0,0) size 384x28
           text run at (0,0) width 384: "3. Implicit CSS Tables (table explicit)"
       RenderBlock {H3} at (0,1370.88) size 769x22
-        RenderText {#text} at (0,0) size 250x22
-          text run at (0,0) width 250: "3.1 Inheritance through a DIV"
+        RenderText {#text} at (0,0) size 238x22
+          text run at (0,0) width 238: "3.1 Inheritance through a DIV"
       RenderBlock {DIV} at (0,1411.59) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
         RenderTable {DIV} at (0,0) size 769x74
           RenderTableSection (anonymous) at (0,0) size 769x74
@@ -120,8 +120,8 @@ layer at (0,0) size 785x2589
                   text run at (0,0) width 716: "This text should be white on black, bold, twice"
                   text run at (0,37) width 587: "the size of normal text, and sans serif."
       RenderBlock {H3} at (0,1504.31) size 769x22
-        RenderText {#text} at (0,0) size 266x22
-          text run at (0,0) width 266: "3.2 Styles set directly on TABLE"
+        RenderText {#text} at (0,0) size 254x22
+          text run at (0,0) width 254: "3.2 Styles set directly on TABLE"
       RenderTable {DIV} at (0,1545.03) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
         RenderTableSection (anonymous) at (0,0) size 769x74
           RenderTableRow (anonymous) at (0,0) size 769x74
@@ -133,8 +133,8 @@ layer at (0,0) size 785x2589
         RenderText {#text} at (0,0) size 373x28
           text run at (0,0) width 373: "4. Implicit CSS Tables (row explicit)"
       RenderBlock {H3} at (0,1686.84) size 769x22
-        RenderText {#text} at (0,0) size 250x22
-          text run at (0,0) width 250: "4.1 Inheritance through a DIV"
+        RenderText {#text} at (0,0) size 238x22
+          text run at (0,0) width 238: "4.1 Inheritance through a DIV"
       RenderBlock {DIV} at (0,1727.56) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
         RenderTable at (0,0) size 769x74
           RenderTableSection (anonymous) at (0,0) size 769x74
@@ -144,8 +144,8 @@ layer at (0,0) size 785x2589
                   text run at (0,0) width 716: "This text should be white on black, bold, twice"
                   text run at (0,37) width 587: "the size of normal text, and sans serif."
       RenderBlock {H3} at (0,1820.28) size 769x22
-        RenderText {#text} at (0,0) size 248x22
-          text run at (0,0) width 248: "4.2 Styles set directly on ROW"
+        RenderText {#text} at (0,0) size 240x22
+          text run at (0,0) width 240: "4.2 Styles set directly on ROW"
       RenderTable at (0,1861) size 769x74
         RenderTableSection (anonymous) at (0,0) size 769x74
           RenderTableRow {DIV} at (0,0) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
@@ -157,8 +157,8 @@ layer at (0,0) size 785x2589
         RenderText {#text} at (0,0) size 369x28
           text run at (0,0) width 369: "5. Implicit CSS Tables (cell explicit)"
       RenderBlock {H3} at (0,2002.81) size 769x22
-        RenderText {#text} at (0,0) size 250x22
-          text run at (0,0) width 250: "5.1 Inheritance through a DIV"
+        RenderText {#text} at (0,0) size 238x22
+          text run at (0,0) width 238: "5.1 Inheritance through a DIV"
       RenderBlock {DIV} at (0,2043.53) size 769x74 [color=#FFFFFF] [bgcolor=#000000]
         RenderTable at (0,0) size 769x74
           RenderTableSection (anonymous) at (0,0) size 769x74
@@ -168,8 +168,8 @@ layer at (0,0) size 785x2589
                   text run at (0,0) width 716: "This text should be white on black, bold, twice"
                   text run at (0,37) width 587: "the size of normal text, and sans serif."
       RenderBlock {H3} at (0,2136.25) size 769x22
-        RenderText {#text} at (0,0) size 253x22
-          text run at (0,0) width 253: "5.2 Styles set directly on CELL"
+        RenderText {#text} at (0,0) size 242x22
+          text run at (0,0) width 242: "5.2 Styles set directly on CELL"
       RenderTable at (0,2176.97) size 769x74
         RenderTableSection (anonymous) at (0,0) size 769x74
           RenderTableRow (anonymous) at (0,0) size 769x74

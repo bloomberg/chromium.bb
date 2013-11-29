@@ -11,8 +11,8 @@ layer at (0,0) size 785x1102
           text run at (59,0) width 186: " testcases for SVG"
       RenderBlock {DIV} at (0,47.91) size 769x276.22 [border: (1px solid #808080)]
         RenderBlock {H3} at (17,35.72) size 735x22
-          RenderText {#text} at (0,0) size 304x22
-            text run at (0,0) width 304: "PNG without explicit dimensions - 1x"
+          RenderText {#text} at (0,0) size 292x22
+            text run at (0,0) width 292: "PNG without explicit dimensions - 1x"
         RenderBlock (floating) {DIV} at (535.22,76.44) size 216.78x138.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
           RenderText {#text} at (7,7) size 57x18
             text run at (7,7) width 57: "expected"
@@ -45,8 +45,8 @@ layer at (0,0) size 785x1102
           RenderBR {BR} at (444,164) size 0x19
       RenderBlock {DIV} at (0,340.13) size 769x226.22 [border: (1px solid #808080)]
         RenderBlock {H3} at (17,35.72) size 735x22
-          RenderText {#text} at (0,0) size 277x22
-            text run at (0,0) width 277: "PNG with explicit dimensions - 1x"
+          RenderText {#text} at (0,0) size 267x22
+            text run at (0,0) width 267: "PNG with explicit dimensions - 1x"
         RenderBlock (floating) {DIV} at (635.22,76.44) size 116.78x88.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
           RenderText {#text} at (7,7) size 57x18
             text run at (7,7) width 57: "expected"
@@ -77,8 +77,8 @@ layer at (0,0) size 785x1102
           RenderBR {BR} at (636,114) size 0x19
       RenderBlock {DIV} at (0,582.34) size 769x226.22 [border: (1px solid #808080)]
         RenderBlock {H3} at (17,35.72) size 735x22
-          RenderText {#text} at (0,0) size 304x22
-            text run at (0,0) width 304: "PNG without explicit dimensions - 2x"
+          RenderText {#text} at (0,0) size 292x22
+            text run at (0,0) width 292: "PNG without explicit dimensions - 2x"
         RenderBlock (floating) {DIV} at (635.22,76.44) size 116.78x88.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
           RenderText {#text} at (7,7) size 57x18
             text run at (7,7) width 57: "expected"
@@ -109,8 +109,8 @@ layer at (0,0) size 785x1102
           RenderBR {BR} at (548,114) size 0x19
       RenderBlock {DIV} at (0,824.56) size 769x241.22 [border: (1px solid #808080)]
         RenderBlock {H3} at (17,35.72) size 735x22
-          RenderText {#text} at (0,0) size 277x22
-            text run at (0,0) width 277: "PNG with explicit dimensions - 4x"
+          RenderText {#text} at (0,0) size 267x22
+            text run at (0,0) width 267: "PNG with explicit dimensions - 4x"
         RenderBlock (floating) {DIV} at (635.22,76.44) size 116.78x88.78 [bgcolor=#EEEEEE] [border: (1px solid #CCCCCC)]
           RenderText {#text} at (7,7) size 57x18
             text run at (7,7) width 57: "expected"

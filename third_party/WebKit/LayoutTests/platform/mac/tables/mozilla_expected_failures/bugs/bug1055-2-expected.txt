@@ -7,11 +7,11 @@ layer at (0,0) size 785x896
         RenderText {#text} at (0,0) size 359x37
           text run at (0,0) width 359: "Tests de conformit\x{E9} CSS 2"
       RenderBlock {H3} at (0,58.44) size 769x22
-        RenderText {#text} at (0,0) size 155x22
-          text run at (0,0) width 155: "Tableaux, test 13.8"
+        RenderText {#text} at (0,0) size 146x22
+          text run at (0,0) width 146: "Tableaux, test 13.8"
       RenderBlock {H6} at (0,105.41) size 769x13
-        RenderText {#text} at (0,0) size 119x13
-          text run at (0,0) width 119: "\x{A9} \x{C9}ditions Eyrolles 1998"
+        RenderText {#text} at (0,0) size 112x13
+          text run at (0,0) width 112: "\x{A9} \x{C9}ditions Eyrolles 1998"
       RenderTable {TABLE} at (193,143.38) size 576x46
         RenderTableSection {TBODY} at (0,0) size 576x46
           RenderTableRow {TR} at (0,2) size 576x20

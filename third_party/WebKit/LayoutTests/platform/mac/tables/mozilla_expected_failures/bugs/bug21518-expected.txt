@@ -5,8 +5,8 @@ layer at (0,0) size 800x440
     RenderBody {BODY} at (8,8) size 784x423.88
       RenderBlock {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {H3} at (0,20.72) size 784x22
-        RenderText {#text} at (0,0) size 62x22
-          text run at (0,0) width 62: "Table 1"
+        RenderText {#text} at (0,0) size 58x22
+          text run at (0,0) width 58: "Table 1"
       RenderBlock {PRE} at (0,61.44) size 784x60
         RenderText {#text} at (0,0) size 224x60
           text run at (0,0) width 224: "<TABLE width=\"500\" border=1>"
@@ -54,8 +54,8 @@ layer at (0,0) size 800x440
                 text run at (2,2) width 35: "Cell I"
       RenderBlock {HR} at (0,218.44) size 784x2 [border: (1px inset #EEEEEE)]
       RenderBlock {H3} at (0,239.16) size 784x22
-        RenderText {#text} at (0,0) size 62x22
-          text run at (0,0) width 62: "Table 2"
+        RenderText {#text} at (0,0) size 58x22
+          text run at (0,0) width 58: "Table 2"
       RenderBlock {PRE} at (0,279.88) size 784x45
         RenderText {#text} at (0,0) size 224x45
           text run at (0,0) width 224: "<TABLE width=\"500\" border=1>"

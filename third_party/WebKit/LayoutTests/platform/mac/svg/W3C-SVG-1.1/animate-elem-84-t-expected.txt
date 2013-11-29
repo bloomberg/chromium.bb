@@ -11,7 +11,7 @@ layer at (0,0) size 480x360
           RenderSVGRect {rect} at (319,22) size 110x110 [fill={[type=SOLID] [color=#000000]}] [x=240.00] [y=0.00] [width=100.00] [height=100.00]
         RenderSVGContainer {g} at (319,187) size 110x110
           RenderSVGRect {rect} at (319,187) size 110x110 [fill={[type=SOLID] [color=#000000]}] [x=240.00] [y=150.00] [width=100.00] [height=100.00]
-        RenderSVGContainer {g} at (70,69) size 325x100
+        RenderSVGContainer {g} at (70,68) size 325x101
           RenderSVGText {text} at (14,117) size 72x17 contains 1 chunk(s)
             RenderSVGInlineText {#text} at (0,0) size 72x16
               chunk 1 (middle anchor) text run 1 at (14.09,130.00) startOffset 0 endOffset 12 width 71.82: "currentColor"
