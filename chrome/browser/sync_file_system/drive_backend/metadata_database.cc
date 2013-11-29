@@ -1058,31 +1058,37 @@ bool MetadataDatabase::GetLowPriorityDirtyTracker(
 
 bool MetadataDatabase::GetMultiParentFileTrackers(std::string* file_id,
                                                   TrackerSet* trackers) {
-  // TODO(tzik):
-  // - Pick one File ID from |multi_tracker_files_|,
-  // - Ensure |file_by_id_| contains,
-  // - Ensure corresponding |trackers_by_file_id_| entry has muliple trackers
-  //   and an active tracker
-  // - Then, set them to |file_id| and |tracekrs|, and return true.
-  // - If there's no such file, return false.
-  // - If a |multi_tracker_files_| entry doesn't have multiple tracker,
-  //   remove it from |multiple_tracker_files_|.
-  NOTIMPLEMENTED();
+  DCHECK(file_id);
+  DCHECK(trackers);
+  // TODO(tzik): Make this function more efficient.
+  for (TrackersByFileID::const_iterator itr = trackers_by_file_id_.begin();
+       itr != trackers_by_file_id_.end(); ++itr) {
+    if (itr->second.size() > 1 && itr->second.has_active()) {
+      *file_id = itr->first;
+      *trackers = itr->second;
+      return true;
+    }
+  }
   return false;
 }
 
 bool MetadataDatabase::GetConflictingTrackers(TrackerSet* trackers) {
-  // TODO(tzik):
-  // - Pick one entry from |conflicting_path_| as |parent_tracker_id| and
-  //   |title|.
-  // - Ensure |tracker_by_id_| contains |parent_tracker_id|,
-  // - Ensure corresponding |trackers_by_parent_and_title_| contains multiple
-  //   trackers.
-  // - Then set the set to |trackers| and return true.
-  // - If there's no such path, return false.
-  // - If a |conflicting_path_| entry doesn't have multiple trackers,
-  //   remove it from |conflicting_path_|.
-  NOTIMPLEMENTED();
+  DCHECK(trackers);
+  // TODO(tzik): Make this function more efficient.
+  for (TrackersByParentAndTitle::const_iterator parent_itr =
+           trackers_by_parent_and_title_.begin();
+       parent_itr != trackers_by_parent_and_title_.end();
+       ++parent_itr) {
+    const TrackersByTitle& trackers_by_title = parent_itr->second;
+    for (TrackersByTitle::const_iterator itr = trackers_by_title.begin();
+         itr != trackers_by_title.end();
+         ++itr) {
+      if (itr->second.size() > 1 && itr->second.has_active()) {
+        *trackers = itr->second;
+        return true;
+      }
+    }
+  }
   return false;
 }
 

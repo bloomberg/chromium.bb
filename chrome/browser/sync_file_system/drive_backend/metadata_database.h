@@ -409,9 +409,6 @@ class MetadataDatabase {
   DirtyTrackers dirty_trackers_;  // Not owned.
   DirtyTrackers low_priority_dirty_trackers_;  // Not owned.
 
-  std::set<std::string> multi_tracker_files_;
-  std::map<int64, std::set<std::string> > conflicting_path_;
-
   base::WeakPtrFactory<MetadataDatabase> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MetadataDatabase);
