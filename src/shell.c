@@ -2254,6 +2254,8 @@ create_black_surface(struct weston_compositor *ec,
 	pixman_region32_init_rect(&surface->opaque, 0, 0, w, h);
 	pixman_region32_fini(&surface->input);
 	pixman_region32_init_rect(&surface->input, 0, 0, w, h);
+	surface->width = w;
+	surface->height = h;
 
 	weston_view_configure(view, x, y, w, h);
 
