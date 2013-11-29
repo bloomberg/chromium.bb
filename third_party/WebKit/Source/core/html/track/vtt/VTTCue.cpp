@@ -45,6 +45,8 @@
 #include "core/html/track/vtt/VTTParser.h"
 #include "core/html/track/vtt/VTTRegionList.h"
 #include "core/rendering/RenderVTTCue.h"
+#include "platform/graphics/TextRunIterator.h"
+#include "platform/text/BidiResolver.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -497,58 +499,58 @@ int VTTCue::calculateComputedLinePosition()
     return n;
 }
 
-static bool isCueParagraphSeparator(UChar character)
+class VTTTextRunIterator : public TextRunIterator {
+public:
+    VTTTextRunIterator() { }
+    VTTTextRunIterator(const TextRun* textRun, unsigned offset) : TextRunIterator(textRun, offset) { }
+
+    bool atParagraphSeparator() const
+    {
+        // Within a cue, paragraph boundaries are only denoted by Type B characters,
+        // such as U+000A LINE FEED (LF), U+0085 NEXT LINE (NEL), and U+2029 PARAGRAPH SEPARATOR.
+        return WTF::Unicode::category(current()) & WTF::Unicode::Separator_Paragraph;
+    }
+};
+
+// Almost the same as determineDirectionality in core/html/HTMLElement.cpp, but
+// that one uses a "plain" TextRunIterator (which only checks for '\n').
+static TextDirection determineDirectionality(const String& value, bool& hasStrongDirectionality)
 {
-    // Within a cue, paragraph boundaries are only denoted by Type B characters,
-    // such as U+000A LINE FEED (LF), U+0085 NEXT LINE (NEL), and U+2029 PARAGRAPH SEPARATOR.
-    return WTF::Unicode::category(character) & WTF::Unicode::Separator_Paragraph;
+    TextRun run(value);
+    BidiResolver<VTTTextRunIterator, BidiCharacterRun> bidiResolver;
+    bidiResolver.setStatus(BidiStatus(LTR, false));
+    bidiResolver.setPositionIgnoringNestedIsolates(VTTTextRunIterator(&run, 0));
+    return bidiResolver.determineParagraphDirectionality(&hasStrongDirectionality);
 }
 
-void VTTCue::determineTextDirection()
+static CSSValueID determineTextDirection(DocumentFragment* vttRoot)
 {
     DEFINE_STATIC_LOCAL(const String, rtTag, ("rt"));
-    createVTTNodeTree();
+    ASSERT(vttRoot);
 
     // Apply the Unicode Bidirectional Algorithm's Paragraph Level steps to the
     // concatenation of the values of each WebVTT Text Object in nodes, in a
     // pre-order, depth-first traversal, excluding WebVTT Ruby Text Objects and
     // their descendants.
-    StringBuilder paragraphBuilder;
-    for (Node* node = m_vttNodeTree->firstChild(); node; node = NodeTraversal::next(*node, m_vttNodeTree.get())) {
+    TextDirection textDirection = LTR;
+    for (Node* node = vttRoot->firstChild(); node; node = NodeTraversal::next(*node, vttRoot)) {
         if (!node->isTextNode() || node->localName() == rtTag)
             continue;
 
-        paragraphBuilder.append(node->nodeValue());
+        bool hasStrongDirectionality;
+        textDirection = determineDirectionality(node->nodeValue(), hasStrongDirectionality);
+        if (hasStrongDirectionality)
+            break;
     }
-
-    String paragraph = paragraphBuilder.toString();
-    if (!paragraph.length())
-        return;
-
-    for (size_t i = 0; i < paragraph.length(); ++i) {
-        UChar current = paragraph[i];
-        if (!current || isCueParagraphSeparator(current))
-            return;
-
-        if (UChar current = paragraph[i]) {
-            WTF::Unicode::Direction charDirection = WTF::Unicode::direction(current);
-            if (charDirection == WTF::Unicode::LeftToRight) {
-                m_displayDirection = CSSValueLtr;
-                return;
-            }
-            if (charDirection == WTF::Unicode::RightToLeft
-                || charDirection == WTF::Unicode::RightToLeftArabic) {
-                m_displayDirection = CSSValueRtl;
-                return;
-            }
-        }
-    }
+    return isLeftToRightDirection(textDirection) ? CSSValueLtr : CSSValueRtl;
 }
 
 void VTTCue::calculateDisplayParameters()
 {
+    createVTTNodeTree();
+
     // Steps 10.2, 10.3
-    determineTextDirection();
+    m_displayDirection = determineTextDirection(m_vttNodeTree.get());
 
     // 10.4 If the text track cue writing direction is horizontal, then let
     // block-flow be 'tb'. Otherwise, if the text track cue writing direction is

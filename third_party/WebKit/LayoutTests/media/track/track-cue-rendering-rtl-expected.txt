@@ -78,5 +78,31 @@ EXPECTED (testCueDisplayBox.innerText == '	०१२३४५६७८९ ') OK
 ** The position should be default and CSS direction set to ltr **
 EXPECTED (2 * testCueDisplayBox.offsetLeft == video.videoWidth - testCueDisplayBox.offsetWidth == 'true') OK
 EXPECTED (getComputedStyle(testCueDisplayBox).direction == 'ltr') OK
+
+RUN(video.currentTime = 3.25)
+EVENT(seeked)
+
+** Jump to next cue **
+EXPECTED (video.currentTime == '3.25') OK
+EXPECTED (testTrack.track.activeCues.length == '1') OK
+EXPECTED (testTrack.track.activeCues[0].text == '𐡘 (Imperial Aramaic number one, U+10858) strong RTL, non-BMP') OK
+EXPECTED (testCueDisplayBox.innerText == '𐡘 (Imperial Aramaic number one, U+10858) strong RTL, non-BMP') OK
+
+** The position should be default and CSS direction set to rtl **
+EXPECTED (2 * testCueDisplayBox.offsetLeft == video.videoWidth - testCueDisplayBox.offsetWidth == 'true') OK
+EXPECTED (getComputedStyle(testCueDisplayBox).direction == 'rtl') OK
+
+RUN(video.currentTime = 3.75)
+EVENT(seeked)
+
+** Jump to next cue **
+EXPECTED (video.currentTime == '3.75') OK
+EXPECTED (testTrack.track.activeCues.length == '1') OK
+EXPECTED (testTrack.track.activeCues[0].text == '𝅘𝅥 (Musical symbol quarter note, U+1D15F) strong LTR, non-BMP') OK
+EXPECTED (testCueDisplayBox.innerText == '𝅘𝅥 (Musical symbol quarter note, U+1D15F) strong LTR, non-BMP') OK
+
+** The position should be default and CSS direction set to ltr **
+EXPECTED (2 * testCueDisplayBox.offsetLeft == video.videoWidth - testCueDisplayBox.offsetWidth == 'true') OK
+EXPECTED (getComputedStyle(testCueDisplayBox).direction == 'ltr') OK
 END OF TEST
 

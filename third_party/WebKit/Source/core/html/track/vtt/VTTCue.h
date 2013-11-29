@@ -155,7 +155,6 @@ private:
 
     std::pair<double, double> getPositionCoordinates() const;
 
-    void determineTextDirection();
     void calculateDisplayParameters();
 
     enum CueSetting {
