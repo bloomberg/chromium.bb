@@ -51,21 +51,8 @@ void ExceptionState::throwDOMException(const ExceptionCode& ec, const String& me
     // SecurityError is thrown via ::throwSecurityError, and _careful_ consideration must be given to the data exposed to JavaScript via the 'sanitizedMessage'.
     ASSERT(ec != SecurityError);
 
-    String processedMessage = message;
-    if (propertyName() && interfaceName() && m_context != UnknownContext) {
-        if (m_context == DeletionContext)
-            processedMessage = ExceptionMessages::failedToDelete(propertyName(), interfaceName(), message);
-        else if (m_context == ExecutionContext)
-            processedMessage = ExceptionMessages::failedToExecute(propertyName(), interfaceName(), message);
-        else if (m_context == GetterContext)
-            processedMessage = ExceptionMessages::failedToGet(propertyName(), interfaceName(), message);
-        else if (m_context == SetterContext)
-            processedMessage = ExceptionMessages::failedToSet(propertyName(), interfaceName(), message);
-    } else if (!propertyName() && interfaceName() && m_context == ConstructionContext) {
-        processedMessage = ExceptionMessages::failedToConstruct(interfaceName(), message);
-    }
-
     m_code = ec;
+    String processedMessage = addExceptionContext(message);
     setException(V8ThrowException::createDOMException(ec, processedMessage, m_creationContext, m_isolate));
 }
 
@@ -73,7 +60,9 @@ void ExceptionState::throwSecurityError(const String& sanitizedMessage, const St
 {
     ASSERT(m_isolate);
     m_code = SecurityError;
-    setException(V8ThrowException::createDOMException(SecurityError, sanitizedMessage, unsanitizedMessage, m_creationContext, m_isolate));
+    String finalSanitized = addExceptionContext(sanitizedMessage);
+    String finalUnsanitized = addExceptionContext(unsanitizedMessage);
+    setException(V8ThrowException::createDOMException(SecurityError, finalSanitized, finalUnsanitized, m_creationContext, m_isolate));
 }
 
 void ExceptionState::setException(v8::Handle<v8::Value> exception)
@@ -107,6 +96,27 @@ void TrackExceptionState::throwTypeError(const String&)
 void TrackExceptionState::throwSecurityError(const String&, const String&)
 {
     m_code = SecurityError;
+}
+
+String ExceptionState::addExceptionContext(const String& message) const
+{
+    if (message.isEmpty())
+        return message;
+
+    String processedMessage = message;
+    if (propertyName() && interfaceName() && m_context != UnknownContext) {
+        if (m_context == DeletionContext)
+            processedMessage = ExceptionMessages::failedToDelete(propertyName(), interfaceName(), message);
+        else if (m_context == ExecutionContext)
+            processedMessage = ExceptionMessages::failedToExecute(propertyName(), interfaceName(), message);
+        else if (m_context == GetterContext)
+            processedMessage = ExceptionMessages::failedToGet(propertyName(), interfaceName(), message);
+        else if (m_context == SetterContext)
+            processedMessage = ExceptionMessages::failedToSet(propertyName(), interfaceName(), message);
+    } else if (!propertyName() && interfaceName() && m_context == ConstructionContext) {
+        processedMessage = ExceptionMessages::failedToConstruct(interfaceName(), message);
+    }
+    return processedMessage;
 }
 
 } // namespace WebCore

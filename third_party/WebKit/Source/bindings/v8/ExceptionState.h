@@ -88,7 +88,7 @@ public:
     bool hadException() const { return !m_exception.isEmpty() || m_code; }
     void clearException();
 
-    ExceptionCode code() { return m_code; }
+    ExceptionCode code() const { return m_code; }
 
     bool throwIfNeeded()
     {
@@ -102,9 +102,9 @@ public:
         return true;
     }
 
-    Context context() { return m_context; }
-    const char* propertyName() { return m_propertyName; }
-    const char* interfaceName() { return m_interfaceName; }
+    Context context() const { return m_context; }
+    const char* propertyName() const { return m_propertyName; }
+    const char* interfaceName() const { return m_interfaceName; }
 
 protected:
     ExceptionCode m_code;
@@ -114,6 +114,8 @@ protected:
 
 private:
     void setException(v8::Handle<v8::Value>);
+
+    String addExceptionContext(const String&) const;
 
     ScopedPersistent<v8::Value> m_exception;
     v8::Handle<v8::Object> m_creationContext;

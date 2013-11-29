@@ -1882,7 +1882,7 @@ PassRefPtr<ImageData> CanvasRenderingContext2D::webkitGetImageDataHD(float sx, f
 PassRefPtr<ImageData> CanvasRenderingContext2D::getImageData(ImageBuffer::CoordinateSystem coordinateSystem, float sx, float sy, float sw, float sh, ExceptionState& exceptionState) const
 {
     if (!canvas()->originClean()) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("getImageData", "CanvasRenderingContext2D", "the canvas has been tainted by cross-origin data."));
+        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("getImageData", "CanvasRenderingContext2D", "The canvas has been tainted by cross-origin data."));
         return 0;
     }
 

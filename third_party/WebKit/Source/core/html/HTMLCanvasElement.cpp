@@ -373,7 +373,7 @@ String HTMLCanvasElement::toEncodingMimeType(const String& mimeType)
 String HTMLCanvasElement::toDataURL(const String& mimeType, const double* quality, ExceptionState& exceptionState)
 {
     if (!m_originClean) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("toDataURL", "HTMLCanvasElement", "tainted canvases may not be exported."));
+        exceptionState.throwSecurityError("Tainted canvases may not be exported.");
         return String();
     }
 
