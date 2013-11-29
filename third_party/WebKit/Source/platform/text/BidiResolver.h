@@ -548,18 +548,31 @@ TextDirection BidiResolver<Iterator, Run>::determineParagraphDirectionality(bool
         }
         if (m_current.atParagraphSeparator())
             break;
-        if (UChar current = m_current.current()) {
-            WTF::Unicode::Direction charDirection = WTF::Unicode::direction(current);
-            if (charDirection == WTF::Unicode::LeftToRight) {
-                if (hasStrongDirectionality)
-                    *hasStrongDirectionality = true;
-                return LTR;
-            }
-            if (charDirection == WTF::Unicode::RightToLeft || charDirection == WTF::Unicode::RightToLeftArabic) {
-                if (hasStrongDirectionality)
-                    *hasStrongDirectionality = true;
-                return RTL;
-            }
+        UChar32 current = m_current.current();
+        if (UNLIKELY(U16_IS_SURROGATE(current))) {
+            increment();
+            // If this not the high part of the surrogate pair, then drop it and move to the next.
+            if (!U16_IS_SURROGATE_LEAD(current))
+                continue;
+            UChar high = static_cast<UChar>(current);
+            if (m_current.atEnd())
+                continue;
+            UChar low = m_current.current();
+            // Verify the low part. If invalid, then assume an invalid surrogate pair and retry.
+            if (!U16_IS_TRAIL(low))
+                continue;
+            current = U16_GET_SUPPLEMENTARY(high, low);
+        }
+        WTF::Unicode::Direction charDirection = WTF::Unicode::direction(current);
+        if (charDirection == WTF::Unicode::LeftToRight) {
+            if (hasStrongDirectionality)
+                *hasStrongDirectionality = true;
+            return LTR;
+        }
+        if (charDirection == WTF::Unicode::RightToLeft || charDirection == WTF::Unicode::RightToLeftArabic) {
+            if (hasStrongDirectionality)
+                *hasStrongDirectionality = true;
+            return RTL;
         }
         increment();
     }

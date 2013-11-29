@@ -55,6 +55,59 @@ TEST(BidiResolver, Basic)
     EXPECT_EQ(LTR, direction);
 }
 
+TextDirection determineParagraphDirectionality(const TextRun& textRun, bool* hasStrongDirectionality = 0)
+{
+    BidiResolver<TextRunIterator, BidiCharacterRun> resolver;
+    resolver.setStatus(BidiStatus(LTR, false));
+    resolver.setPositionIgnoringNestedIsolates(TextRunIterator(&textRun, 0));
+    return resolver.determineParagraphDirectionality(hasStrongDirectionality);
+}
+
+struct TestData {
+    UChar text[3];
+    size_t length;
+    TextDirection expectedDirection;
+    bool expectedStrong;
+};
+
+void testDirectionality(const TestData& entry)
+{
+    bool hasStrongDirectionality;
+    String data(entry.text, entry.length);
+    TextRun run(data);
+    TextDirection direction = determineParagraphDirectionality(run, &hasStrongDirectionality);
+    EXPECT_EQ(entry.expectedStrong, hasStrongDirectionality);
+    EXPECT_EQ(entry.expectedDirection, direction);
+}
+
+TEST(BidiResolver, ParagraphDirectionSurrogates)
+{
+    const TestData testData[] = {
+        // Test strong RTL, non-BMP. (U+10858 Imperial Aramaic number one, strong RTL)
+        { { 0xD802, 0xDC58 }, 2, RTL, true },
+
+        // Test strong LTR, non-BMP. (U+1D15F Musical symbol quarter note, strong LTR)
+        { { 0xD834, 0xDD5F }, 2, LTR, true },
+
+        // Test broken surrogate: valid leading, invalid trail. (Lead of U+10858, space)
+        { { 0xD802, ' ' }, 2, LTR, false },
+
+        // Test broken surrogate: invalid leading. (Trail of U+10858, U+05D0 Hebrew Alef)
+        { { 0xDC58, 0x05D0 }, 2, RTL, true },
+
+        // Test broken surrogate: valid leading, invalid trail/valid lead, valid trail.
+        { { 0xD802, 0xD802, 0xDC58 }, 3, RTL, true },
+
+        // Test broken surrogate: valid leading, no trail (string too short). (Lead of U+10858)
+        { { 0xD802, 0xDC58 }, 1, LTR, false },
+
+        // Test broken surrogate: trail appearing before lead. (U+10858 units reversed)
+        { { 0xDC58, 0xD802 }, 2, LTR, false }
+    };
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(testData); ++i)
+        testDirectionality(testData[i]);
+}
+
 class BidiTestRunner {
 public:
     BidiTestRunner()
@@ -105,14 +158,6 @@ std::string diffString(const std::vector<int>& actual, const std::vector<int>& e
     diff << " expected: ";
     std::copy(expected.begin(), expected.end(), std::ostream_iterator<int>(diff, " "));
     return diff.str();
-}
-
-TextDirection determineParagraphDirectionality(const TextRun& textRun)
-{
-    BidiResolver<TextRunIterator, BidiCharacterRun> resolver;
-    resolver.setStatus(BidiStatus(LTR, false));
-    resolver.setPositionIgnoringNestedIsolates(TextRunIterator(&textRun, 0));
-    return resolver.determineParagraphDirectionality();
 }
 
 void BidiTestRunner::runTest(const std::basic_string<UChar>& input, const std::vector<int>& expectedOrder,
