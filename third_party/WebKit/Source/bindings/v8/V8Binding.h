@@ -81,15 +81,6 @@ namespace WebCore {
         return index >= info.Length() ? v8::Local<v8::Value>() : info[index];
     }
 
-    // Since v8::Null(isolate) crashes if we pass a null isolate,
-    // we need to use v8NullWithCheck(isolate) if an isolate can be null.
-    //
-    // FIXME: Remove all null isolates from V8 bindings, and remove v8NullWithCheck(isolate).
-    inline v8::Handle<v8::Value> v8NullWithCheck(v8::Isolate* isolate)
-    {
-        return isolate ? v8::Null(isolate) : v8::Null(v8::Isolate::GetCurrent());
-    }
-
     template<typename CallbackInfo, typename V>
     inline void v8SetReturnValue(const CallbackInfo& info, V v)
     {
@@ -630,7 +621,7 @@ namespace WebCore {
     inline v8::Handle<v8::Value> v8DateOrNull(double value, v8::Isolate* isolate)
     {
         ASSERT(isolate);
-        return std::isfinite(value) ? v8::Date::New(isolate, value) : v8NullWithCheck(isolate);
+        return std::isfinite(value) ? v8::Date::New(isolate, value) : v8::Handle<v8::Value>::Cast(v8::Null(isolate));
     }
 
     inline v8::Handle<v8::String> v8AtomicString(v8::Isolate* isolate, const char* str)

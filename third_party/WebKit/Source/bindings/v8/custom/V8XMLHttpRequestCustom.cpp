@@ -103,7 +103,7 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::PropertyCallbackI
                 return;
 
             if (jsonSource.hasNoValue() || !jsonSource.v8Value()->IsString()) {
-                v8SetReturnValue(info, v8NullWithCheck(isolate));
+                v8SetReturnValue(info, v8::Null(isolate));
                 return;
             }
 
@@ -113,7 +113,7 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::PropertyCallbackI
             v8::Handle<v8::Value> json = v8::JSON::Parse(jsonSource.v8Value().As<v8::String>());
 
             if (exceptionCatcher.HasCaught() || json.IsEmpty())
-                v8SetReturnValue(info, v8NullWithCheck(isolate));
+                v8SetReturnValue(info, v8::Null(isolate));
             else
                 v8SetReturnValue(info, json);
 

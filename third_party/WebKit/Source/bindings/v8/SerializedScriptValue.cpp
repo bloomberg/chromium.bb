@@ -1380,7 +1380,7 @@ public:
             *value = v8::Undefined(m_isolate);
             break;
         case NullTag:
-            *value = v8NullWithCheck(m_isolate);
+            *value = v8::Null(m_isolate);
             break;
         case TrueTag:
             *value = v8BooleanWithCheck(true, m_isolate);
@@ -2011,15 +2011,15 @@ public:
     v8::Handle<v8::Value> deserialize()
     {
         if (!m_reader.readVersion(m_version) || m_version > SerializedScriptValue::wireFormatVersion)
-            return v8NullWithCheck(m_reader.getIsolate());
+            return v8::Null(m_reader.getIsolate());
         m_reader.setVersion(m_version);
         v8::HandleScope scope(m_reader.getIsolate());
         while (!m_reader.isEof()) {
             if (!doDeserialize())
-                return v8NullWithCheck(m_reader.getIsolate());
+                return v8::Null(m_reader.getIsolate());
         }
         if (stackDepth() != 1 || m_openCompositeReferenceStack.size())
-            return v8NullWithCheck(m_reader.getIsolate());
+            return v8::Null(m_reader.getIsolate());
         v8::Handle<v8::Value> result = scope.Close(element(0));
         return result;
     }
@@ -2468,7 +2468,7 @@ v8::Handle<v8::Value> SerializedScriptValue::deserialize(MessagePortArray* messa
 v8::Handle<v8::Value> SerializedScriptValue::deserialize(v8::Isolate* isolate, MessagePortArray* messagePorts)
 {
     if (!m_data.impl())
-        return v8NullWithCheck(isolate);
+        return v8::Null(isolate);
     COMPILE_ASSERT(sizeof(BufferValueType) == 2, BufferValueTypeIsTwoBytes);
     m_data.ensure16Bit();
     // FIXME: SerializedScriptValue shouldn't use String for its underlying

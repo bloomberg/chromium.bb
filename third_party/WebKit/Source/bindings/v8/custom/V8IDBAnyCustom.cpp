@@ -47,7 +47,7 @@ static v8::Handle<v8::Value> toV8(const IDBKeyPath& value, v8::Handle<v8::Object
 {
     switch (value.type()) {
     case IDBKeyPath::NullType:
-        return v8NullWithCheck(isolate);
+        return v8::Null(isolate);
     case IDBKeyPath::StringType:
         return v8String(value.string(), isolate);
     case IDBKeyPath::ArrayType:
@@ -63,13 +63,13 @@ static v8::Handle<v8::Value> toV8(const IDBKeyPath& value, v8::Handle<v8::Object
 v8::Handle<v8::Value> toV8(IDBAny* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!impl)
-        return v8NullWithCheck(isolate);
+        return v8::Null(isolate);
 
     switch (impl->type()) {
     case IDBAny::UndefinedType:
         return v8::Undefined(isolate);
     case IDBAny::NullType:
-        return v8NullWithCheck(isolate);
+        return v8::Null(isolate);
     case IDBAny::DOMStringListType:
         return toV8(impl->domStringList(), creationContext, isolate);
     case IDBAny::IDBCursorType:

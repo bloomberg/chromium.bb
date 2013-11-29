@@ -43,7 +43,7 @@ namespace WebCore {
 v8::Handle<v8::Value> toV8(EventTarget* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!impl)
-        return v8NullWithCheck(isolate);
+        return v8::Null(isolate);
 
     AtomicString desiredInterface = impl->interfaceName();
     EVENT_TARGET_INTERFACES_FOR_EACH(TRY_TO_WRAP_WITH_INTERFACE)

@@ -88,7 +88,7 @@ inline v8::Handle<v8::Object> wrap(SupportTestInterface* impl, v8::Handle<v8::Ob
 inline v8::Handle<v8::Value> toV8(SupportTestInterface* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (UNLIKELY(!impl))
-        return v8NullWithCheck(isolate);
+        return v8::Null(isolate);
     v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8SupportTestInterface>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;

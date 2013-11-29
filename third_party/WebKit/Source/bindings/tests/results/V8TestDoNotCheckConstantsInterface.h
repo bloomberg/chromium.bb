@@ -85,7 +85,7 @@ inline v8::Handle<v8::Object> wrap(TestDoNotCheckConstantsInterface* impl, v8::H
 inline v8::Handle<v8::Value> toV8(TestDoNotCheckConstantsInterface* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (UNLIKELY(!impl))
-        return v8NullWithCheck(isolate);
+        return v8::Null(isolate);
     v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8TestDoNotCheckConstantsInterface>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;

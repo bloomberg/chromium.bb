@@ -542,7 +542,7 @@ v8::Handle<v8::Value> toV8(DOMWindow* window, v8::Handle<v8::Object> creationCon
     // Notice that we explicitly ignore creationContext because the DOMWindow is its own creationContext.
 
     if (!window)
-        return v8NullWithCheck(isolate);
+        return v8::Null(isolate);
     // Initializes environment of a frame, and return the global object
     // of the frame.
     Frame* frame = window->frame();

@@ -85,7 +85,7 @@ inline v8::Handle<v8::Object> wrap(TestDependentLifetimeInterface* impl, v8::Han
 inline v8::Handle<v8::Value> toV8(TestDependentLifetimeInterface* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (UNLIKELY(!impl))
-        return v8NullWithCheck(isolate);
+        return v8::Null(isolate);
     v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8TestDependentLifetimeInterface>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;

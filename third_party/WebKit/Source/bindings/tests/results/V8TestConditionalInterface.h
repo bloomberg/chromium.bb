@@ -86,7 +86,7 @@ inline v8::Handle<v8::Object> wrap(TestConditionalInterface* impl, v8::Handle<v8
 inline v8::Handle<v8::Value> toV8(TestConditionalInterface* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (UNLIKELY(!impl))
-        return v8NullWithCheck(isolate);
+        return v8::Null(isolate);
     v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8TestConditionalInterface>(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
