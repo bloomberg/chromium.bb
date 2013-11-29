@@ -36,9 +36,9 @@ void OperationTestBase::LoggingObserver::OnCacheFileUploadNeededByOperation(
   upload_needed_local_ids_.insert(local_id);
 }
 
-void OperationTestBase::LoggingObserver::OnEntryRemovedByOperation(
+void OperationTestBase::LoggingObserver::OnEntryUpdatedByOperation(
     const std::string& local_id) {
-  removed_local_ids_.insert(local_id);
+  updated_local_ids_.insert(local_id);
 }
 
 OperationTestBase::OperationTestBase() {

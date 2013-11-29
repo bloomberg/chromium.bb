@@ -51,7 +51,7 @@ class OperationTestBase : public testing::Test {
         const base::FilePath& path) OVERRIDE;
     virtual void OnCacheFileUploadNeededByOperation(
         const std::string& local_id) OVERRIDE;
-    virtual void OnEntryRemovedByOperation(
+    virtual void OnEntryUpdatedByOperation(
         const std::string& local_id) OVERRIDE;
 
     // Gets the set of changed paths.
@@ -64,15 +64,15 @@ class OperationTestBase : public testing::Test {
       return upload_needed_local_ids_;
     }
 
-    // Gets the set of removed local IDs.
-    const std::set<std::string>& removed_local_ids() const {
-      return removed_local_ids_;
+    // Gets the set of updated local IDs.
+    const std::set<std::string>& updated_local_ids() const {
+      return updated_local_ids_;
     }
 
    private:
     std::set<base::FilePath> changed_paths_;
     std::set<std::string> upload_needed_local_ids_;
-    std::set<std::string> removed_local_ids_;
+    std::set<std::string> updated_local_ids_;
   };
 
   OperationTestBase();

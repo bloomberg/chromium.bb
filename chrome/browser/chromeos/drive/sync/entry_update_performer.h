@@ -27,6 +27,7 @@ class ResourceEntry;
 
 namespace internal {
 
+class RemovePerformer;
 class ResourceMetadata;
 
 // This class is responsible to perform server side update of an entry.
@@ -61,6 +62,7 @@ class EntryUpdatePerformer {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   JobScheduler* scheduler_;
   ResourceMetadata* metadata_;
+  scoped_ptr<RemovePerformer> remove_performer_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

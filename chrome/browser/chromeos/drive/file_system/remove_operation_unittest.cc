@@ -72,9 +72,9 @@ TEST_F(RemoveOperationTest, RemoveFile) {
   EXPECT_TRUE(observer()->get_changed_paths().count(file_in_root.DirName()));
   EXPECT_TRUE(observer()->get_changed_paths().count(file_in_subdir.DirName()));
 
-  EXPECT_EQ(2U, observer()->removed_local_ids().size());
-  EXPECT_TRUE(observer()->removed_local_ids().count(id_file_in_root));
-  EXPECT_TRUE(observer()->removed_local_ids().count(id_file_in_subdir));
+  EXPECT_EQ(2U, observer()->updated_local_ids().size());
+  EXPECT_TRUE(observer()->updated_local_ids().count(id_file_in_root));
+  EXPECT_TRUE(observer()->updated_local_ids().count(id_file_in_subdir));
 }
 
 TEST_F(RemoveOperationTest, RemoveDirectory) {

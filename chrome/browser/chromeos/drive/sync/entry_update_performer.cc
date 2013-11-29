@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/drive/sync/entry_update_performer.h"
 
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/sync/remove_performer.h"
@@ -76,6 +77,9 @@ EntryUpdatePerformer::EntryUpdatePerformer(
     : blocking_task_runner_(blocking_task_runner),
       scheduler_(scheduler),
       metadata_(metadata),
+      remove_performer_(new RemovePerformer(blocking_task_runner,
+                                            scheduler,
+                                            metadata)),
       weak_ptr_factory_(this) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
@@ -114,6 +118,12 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
 
   if (error != FILE_ERROR_OK) {
     callback.Run(error);
+    return;
+  }
+
+  // Trashed entry should be removed.
+  if (entry->parent_local_id() == util::kDriveTrashDirLocalId) {
+    remove_performer_->Remove(entry->local_id(), callback);
     return;
   }
 

@@ -712,8 +712,8 @@ void FileSystem::ReadDirectoryAfterLoad(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  DLOG_IF(INFO, error != FILE_ERROR_OK) << "LoadIfNeeded failed. "
-                                        << FileErrorToString(error);
+  DVLOG_IF(1, error != FILE_ERROR_OK) << "LoadIfNeeded failed. "
+                                      << FileErrorToString(error);
 
   resource_metadata_->ReadDirectoryByPathOnUIThread(
       directory_path,
@@ -885,8 +885,8 @@ void FileSystem::OnCacheFileUploadNeededByOperation(
   sync_client_->AddUploadTask(ClientContext(USER_INITIATED), local_id);
 }
 
-void FileSystem::OnEntryRemovedByOperation(const std::string& local_id) {
-  sync_client_->AddRemoveTask(local_id);
+void FileSystem::OnEntryUpdatedByOperation(const std::string& local_id) {
+  sync_client_->AddUpdateTask(local_id);
 }
 
 void FileSystem::OnDirectoryChanged(const base::FilePath& directory_path) {

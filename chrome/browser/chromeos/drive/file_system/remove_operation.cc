@@ -110,7 +110,7 @@ void RemoveOperation::RemoveAfterUpdateLocalState(
 
   if (error == FILE_ERROR_OK) {
     observer_->OnDirectoryChangedByOperation(*changed_directory_path);
-    observer_->OnEntryRemovedByOperation(*local_id);
+    observer_->OnEntryUpdatedByOperation(*local_id);
   }
 
   callback.Run(error);
