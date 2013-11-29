@@ -125,14 +125,15 @@ BreadcrumbsController.prototype.updateInternal_ = function(entries) {
   for (var i = 0; i < entries.length; i++) {
     // Add a component.
     var entry = entries[i];
-    var location = this.volumeManager_.getLocationInfo(entry);
     var div = doc.createElement('div');
     div.className = 'breadcrumb-path';
-    div.textContent =
-        entry === RootType.DRIVE_SHARED_WITH_ME ?
-            PathUtil.getRootLabel(RootType.DRIVE_SHARED_WITH_ME) :
-        (location && location.isRootEntry) ?
-            PathUtil.getRootLabel(entry.fullPath) : entry.name;
+    if (entry === RootType.DRIVE_SHARED_WITH_ME) {
+      div.textContent = PathUtil.getRootLabel(RootType.DRIVE_SHARED_WITH_ME);
+    } else {
+      var location = this.volumeManager_.getLocationInfo(entry);
+      div.textContent = (location && location.isRootEntry) ?
+          PathUtil.getRootLabel(entry.fullPath) : entry.name;
+    }
     div.entry = entry;
     this.bc_.appendChild(div);
 

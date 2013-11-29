@@ -420,7 +420,7 @@ PathUtil.getLocationInfo = function(volumeInfo, fullPath) {
       rootPath = volumeInfo.mountPath + '/other';
       rootType = RootType.DRIVE_OTHER;
     } else {
-      throw new Exception(fullPath + ' is an invalid drive path.');
+      throw new Error(fullPath + ' is an invalid drive path.');
     }
   } else {
     // Otherwise, root path is same with a mount path of the volume.
@@ -429,7 +429,7 @@ PathUtil.getLocationInfo = function(volumeInfo, fullPath) {
       case util.VolumeType.DOWNLOADS: rootType = RootType.DOWNLOADS; break;
       case util.VolumeType.REMOVABLE: rootType = RootType.REMOVABLE; break;
       case util.VolumeType.ARCHIVE: rootType = RootType.ARCHIVE; break;
-      default: throw new Exception(
+      default: throw new Error(
           'Invalid volume type: ' + volumeInfo.volumeType);
     }
   }

@@ -56,6 +56,7 @@ MockVolumeManager.createMockVolumeInfo = function(type, path) {
       type,
       path,
       '',  // volumeId
+      true,  // isCurrent
       entry,  // root
       '',  // error
       '',  // deviceType

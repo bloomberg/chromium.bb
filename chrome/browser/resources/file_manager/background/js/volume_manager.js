@@ -11,6 +11,8 @@
  * @param {util.VolumeType} volumeType The type of the volume.
  * @param {string} mountPath Where the volume is mounted.
  * @param {string} volumeId ID of the volume.
+ * @param {boolean} isCurrent True if the volume is owned by the current
+ *     profile, which the application run with.
  * @param {DirectoryEntry} root The root directory entry of this volume.
  * @param {string} error The error if an error is found.
  * @param {string} deviceType The type of device ('usb'|'sd'|'optical'|'mobile'
@@ -20,11 +22,19 @@
  * @constructor
  */
 function VolumeInfo(
-    volumeType, mountPath, volumeId, root, error, deviceType, isReadOnly) {
+    volumeType,
+    mountPath,
+    volumeId,
+    isCurrent,
+    root,
+    error,
+    deviceType,
+    isReadOnly) {
   this.volumeType = volumeType;
   // TODO(hidehiko): This should include FileSystem instance.
   this.mountPath = mountPath;
   this.volumeId = volumeId;
+  this.isCurrent = isCurrent;
   this.root = root;
 
   // Note: This represents if the mounting of the volume is successfully done
@@ -37,6 +47,15 @@ function VolumeInfo(
   // VolumeInfo is immutable.
   Object.freeze(this);
 }
+
+/**
+ * Obtains a URL of the display root directory that users can see as a root.
+ * @return {string} URL of root entry.
+ */
+VolumeInfo.prototype.getDisplayRootDirectoryURL = function() {
+  return this.root.toURL() +
+      (this.volumeType === util.VolumeType.DRIVE ? '/root' : '');
+};
 
 /**
  * Utilities for volume manager implementation.
@@ -114,6 +133,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
             volumeMetadata.volumeType,
             volumeMetadata.mountPath,
             volumeMetadata.volumeId,
+            true,  // TODO(hirono): All volumes are owned by current profile
+                   // now.
             entry,
             volumeMetadata.mountCondition,
             volumeMetadata.deviceType,
@@ -127,6 +148,8 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
             volumeMetadata.volumeType,
             volumeMetadata.mountPath,
             volumeMetadata.volumeId,
+            true,  // TODO(hirono): All volumes are owned by current profile
+                   // now.
             null,  // Root entry is not found.
             volumeMetadata.mountCondition,
             volumeMetadata.deviceType,
@@ -547,11 +570,44 @@ VolumeManager.prototype.resolvePath = function(
 /**
  * Obtains the information of the volume that containing an entry pointed by the
  * specified path.
- * @param {string} path Path pointing an entry on a volume.
+ * TODO(hirono): Stop to use path to get a volume info.
+ *
+ * @param {string|Entry} target Path or Entry pointing anywhere on a volume.
  * @return {VolumeInfo} The data about the volume.
  */
-VolumeManager.prototype.getVolumeInfo = function(path) {
-  return this.volumeInfoList.findByPath(path);
+VolumeManager.prototype.getVolumeInfo = function(target) {
+  if (typeof target === 'string')
+    return this.volumeInfoList.findByPath(target);
+  else if (util.isFakeDirectoryEntry(target))
+    return this.getCurrentProfileVolumeInfo(util.VolumeType.DRIVE);
+  else
+    return this.volumeInfoList.findByPath(target.fullPath);
+};
+
+/**
+ * Obtains a volume information from a file entry URL.
+ * TODO(hirono): Check a file system to find a volume.
+ *
+ * @param {string} url URL of entry.
+ * @return {VolumeInfo} Volume info.
+ */
+VolumeManager.prototype.getVolumeInfoByURL = function(url) {
+  return this.getVolumeInfo(util.extractFilePath(url));
+};
+
+/**
+ * Obtains a volume infomration of the current profile.
+ *
+ * @param {util.VolumeType} volumeType Volume type.
+ * @return {VolumeInfo} Volume info.
+ */
+VolumeManager.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
+  for (var i = 0; i < this.volumeInfoList.length; i++) {
+    var volumeInfo = this.volumeInfoList.item(i);
+    if (volumeInfo.isCurrent && volumeInfo.volumeType === volumeType)
+      return volumeInfo;
+  }
+  return null;
 };
 
 /**
@@ -572,12 +628,8 @@ VolumeManager.prototype.getLocationInfo = function(entry) {
  * @return {EntryLocation} Location information.
  */
 VolumeManager.prototype.getLocationInfoByPath = function(path) {
-  for (var i = 0; i < this.volumeInfoList.length; i++) {
-    var volumeInfo = this.volumeInfoList.item(i);
-    if ((path + '/').indexOf(volumeInfo.mountPath + '/') === 0)
-      return PathUtil.getLocationInfo(volumeInfo, path);
-  }
-  return null;
+  var volumeInfo = this.volumeInfoList.findByPath(path);
+  return volumeInfo && PathUtil.getLocationInfo(volumeInfo, path);
 };
 
 /**

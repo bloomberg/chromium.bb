@@ -218,15 +218,33 @@ VolumeManagerWrapper.prototype.getDriveConnectionState = function() {
  *     mountPath, or null if no volume is found
  */
 VolumeManagerWrapper.prototype.getVolumeInfo = function(mountPath) {
-  if (!this.volumeManager_)
-    return null;
+  return this.filterDisabledDriveVolume_(
+      this.volumeManager_ && this.volumeManager_.getVolumeInfo(mountPath));
+};
 
-  var volumeInfo = this.volumeManager_.getVolumeInfo(mountPath);
-  if (!this.driveEnabled_ && volumeInfo &&
-      volumeInfo.volumeType === util.VolumeType.DRIVE)
-    return null;
+/**
+ * Obtains a volume information from a file entry URL.
+ * TODO(hirono): Check a file system to find a volume.
+ *
+ * @param {string} url URL of entry.
+ * @return {VolumeInfo} Volume info.
+ */
+VolumeManagerWrapper.prototype.getVolumeInfoByURL = function(url) {
+  return this.filterDisabledDriveVolume_(
+      this.volumeManager_ && this.volumeManager_.getVolumeInfoByURL(url));
+};
 
-  return volumeInfo;
+/**
+ * Obtains a volume infomration of the current profile.
+ *
+ * @param {util.VolumeType} volumeType Volume type.
+ * @return {VolumeInfo} Found volume info.
+ */
+VolumeManagerWrapper.prototype.getCurrentProfileVolumeInfo =
+    function(volumeType) {
+  return this.filterDisabledDriveVolume_(
+      this.volumeManager_ &&
+      this.volumeManager_.getCurrentProfileVolumeInfo(volumeType));
 };
 
 /**
@@ -299,4 +317,18 @@ VolumeManagerWrapper.prototype.resolvePath = function(
   }
 
   this.volumeManager_.resolvePath(path, successCallback, errorCallback);
+};
+
+/**
+ * Filters volume info by referring driveEnabled.
+ *
+ * @param {VolumeInfo} volumeInfo Volume info.
+ * @return {VolumeInfo} Null if the drive is disabled and the given volume is
+ *     drive. Otherwise just returns the volume.
+ * @private
+ */
+VolumeManagerWrapper.prototype.filterDisabledDriveVolume_ =
+    function(volumeInfo) {
+  var isDrive = volumeInfo && volumeInfo.volumeType === util.VolumeType.DRIVE;
+  return this.driveEnabled_ || !isDrive ? volumeInfo : null;
 };
