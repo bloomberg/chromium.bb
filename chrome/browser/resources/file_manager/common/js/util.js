@@ -1081,6 +1081,15 @@ util.isFakeDirectoryEntry = function(entry) {
 };
 
 /**
+ * Obtains whether an entry is fake or not.
+ * @param {Entry|Object} entry Entry of fake entry.
+ * @return {boolean} True if the given entry is fake.
+ */
+util.isFakeEntry = function(entry) {
+  return !('getParent' in entry);
+};
+
+/**
  * Creates a FileError instance with given code.
  * Note that we cannot create FileError instance by "new FileError(code)",
  * unfortunately, so here we use Object.create.

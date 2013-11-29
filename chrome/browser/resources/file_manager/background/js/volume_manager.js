@@ -612,11 +612,19 @@ VolumeManager.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
 /**
  * Obtains location information from an entry.
  *
- * @param {Entry} entry File or directory entry.
+ * @param {Entry|Object} entry File or directory entry. It can be a fake entry.
  * @return {EntryLocation} Location information.
  */
 VolumeManager.prototype.getLocationInfo = function(entry) {
-  return this.getLocationInfoByPath(entry.fullPath);
+  if (util.isFakeEntry(entry)) {
+    return new EntryLocation(
+        // TODO(hirono): Specify currect volume.
+        this.getCurrentProfileVolumeInfo(RootType.DRIVE),
+        entry.rootType,
+        true /* the entry points a root directory. */);
+  } else {
+    return this.getLocationInfoByPath(entry.fullPath);
+  }
 };
 
 /**

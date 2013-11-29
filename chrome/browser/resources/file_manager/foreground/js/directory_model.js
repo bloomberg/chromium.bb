@@ -59,7 +59,8 @@ function DirectoryModel(singleSelection, fileFilter, fileWatcher,
  */
 DirectoryModel.fakeDriveEntry_ = {
   fullPath: RootDirectory.DRIVE + '/' + DriveSubRootDirectory.ROOT,
-  isDirectory: true
+  isDirectory: true,
+  rootType: RootType.DRIVE
 };
 
 /**
@@ -72,7 +73,8 @@ DirectoryModel.fakeDriveEntry_ = {
  */
 DirectoryModel.fakeDriveOfflineEntry_ = {
   fullPath: RootDirectory.DRIVE_OFFLINE,
-  isDirectory: true
+  isDirectory: true,
+  rootType: RootType.DRIVE_OFFLINE
 };
 
 /**
@@ -85,7 +87,8 @@ DirectoryModel.fakeDriveOfflineEntry_ = {
  */
 DirectoryModel.fakeDriveSharedWithMeEntry_ = {
   fullPath: RootDirectory.DRIVE_SHARED_WITH_ME,
-  isDirectory: true
+  isDirectory: true,
+  rootType: RootType.DRIVE_SHARED_WITH_ME
 };
 
 /**
@@ -100,7 +103,8 @@ DirectoryModel.fakeDriveSharedWithMeEntry_ = {
  */
 DirectoryModel.fakeDriveRecentEntry_ = {
   fullPath: RootDirectory.DRIVE_RECENT,
-  isDirectory: true
+  isDirectory: true,
+  rootType: RootType.DRIVE_RECENT
 };
 
 /**
