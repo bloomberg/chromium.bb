@@ -5,8 +5,6 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 
-using namespace apps;
-
 // This class of BrowserTests is a helper to create tests related to crashes in
 // Chrome Apps. To be tested, the app will have to be placed as any other test
 // app (see PlatformAppBrowserTest) and will need to send a "Done" message back.

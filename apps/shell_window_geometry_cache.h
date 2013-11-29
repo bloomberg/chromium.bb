@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -57,6 +58,16 @@ class ShellWindowGeometryCache
         content::BrowserContext* context) const OVERRIDE;
   };
 
+  class Observer {
+   public:
+    virtual void OnGeometryCacheChanged(const std::string& extension_id,
+                                        const std::string& window_id,
+                                        const gfx::Rect& bounds) = 0;
+
+   protected:
+    virtual ~Observer() {};
+  };
+
   ShellWindowGeometryCache(Profile* profile,
                            extensions::ExtensionPrefs* prefs);
 
@@ -83,6 +94,9 @@ class ShellWindowGeometryCache
 
   // BrowserContextKeyedService
   virtual void Shutdown() OVERRIDE;
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Maximum number of windows we'll cache the geometry for per app.
   static const size_t kMaxCachedWindows = 100;
@@ -134,6 +148,7 @@ class ShellWindowGeometryCache
   base::TimeDelta sync_delay_;
 
   content::NotificationRegistrar registrar_;
+  ObserverList<Observer> observers_;
 };
 
 }  // namespace apps

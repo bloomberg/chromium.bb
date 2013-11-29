@@ -126,7 +126,13 @@ void ShellWindowGeometryCache::SyncToStorage() {
       value->SetString(
           "ts", base::Int64ToString(it->second.last_change.ToInternalValue()));
       dict->SetWithoutPathExpansion(it->first, value);
+
+      FOR_EACH_OBSERVER(
+        Observer,
+        observers_,
+        OnGeometryCacheChanged(extension_id, it->first, bounds));
     }
+
     prefs_->SetGeometryCache(extension_id, dict.Pass());
   }
 }
@@ -314,6 +320,14 @@ content::BrowserContext*
 ShellWindowGeometryCache::Factory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextRedirectedInIncognito(context);
+}
+
+void ShellWindowGeometryCache::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ShellWindowGeometryCache::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 } // namespace apps

@@ -20,6 +20,18 @@ function assertFuzzyEq(expected, actual, fuzzFactor, message) {
   }
 }
 
+// This helper will verify that |check| returns true. If it does not, it will do
+// a trip to the event loop and will try again until |check| returns true. At
+// which points |callback| will be called.
+// NOTE: if the test fails, it will timeout.
+function eventLoopCheck(check, callback) {
+  if (check()) {
+    callback();
+  } else {
+    setTimeout(callbackPass(function() { eventLoopCheck(check, callback); }));
+  }
+}
+
 function testCreate() {
   chrome.test.runTests([
     function basic() {
@@ -203,16 +215,8 @@ function testMaximize() {
           // .maximize() is called but when the maximizing is finished.
           // See crbug.com/316091
           function isWindowMaximized() {
-            return win.contentWindow.outerHeight > screen.availHeight * 0.8 &&
-                   win.contentWindow.outerWidth > screen.availWidth * 0.8;
-          }
-
-          function eventLoopCheck(check, done) {
-            if (check()) {
-              done();
-            } else {
-              setTimeout(function() { eventLoopCheck(check, done); });
-            }
+            return win.contentWindow.outerHeight == screen.availHeight &&
+                   win.contentWindow.outerWidth == screen.availWidth;
           }
 
           eventLoopCheck(isWindowMaximized, function() {
@@ -222,7 +226,30 @@ function testMaximize() {
           win.maximize();
         })
       );
-    }
+    },
+
+    function nonResizableWindow() {
+      chrome.app.window.create('test.html',
+                               { bounds: {width: 200, height: 200},
+                                 resizable: false },
+        callbackPass(function(win) {
+          // TODO(mlamouri): we should be able to use onMaximized here but to
+          // make that happen we need to make sure the event is not fired when
+          // .maximize() is called but when the maximizing is finished.
+          // See crbug.com/316091
+          function isWindowMaximized() {
+            return win.contentWindow.outerHeight == screen.availHeight &&
+                   win.contentWindow.outerWidth == screen.availWidth;
+          }
+
+          eventLoopCheck(isWindowMaximized, function() {
+            win.close();
+          });
+
+          win.maximize();
+        })
+      );
+    },
   ]);
 }
 
@@ -240,20 +267,12 @@ function testRestore() {
           // .maximize() is called but when the maximizing is finished.
           // See crbug.com/316091
           function isWindowMaximized() {
-            return win.contentWindow.outerHeight > screen.availHeight * 0.8 &&
-                   win.contentWindow.outerWidth > screen.availWidth * 0.8;
+            return win.contentWindow.outerHeight == screen.availHeight &&
+                   win.contentWindow.outerWidth == screen.availWidth;
           }
           function isWindowRestored() {
             return win.contentWindow.innerHeight == oldHeight &&
                    win.contentWindow.innerWidth == oldWidth;
-          }
-
-          function eventLoopCheck(check, done) {
-            if (check()) {
-              done();
-            } else {
-              setTimeout(function() { eventLoopCheck(check, done); });
-            }
           }
 
           eventLoopCheck(isWindowMaximized, function() {
@@ -273,12 +292,12 @@ function testRestore() {
 
 function testRestoreAfterClose() {
   chrome.test.runTests([
-    function restoredBoundsLowerThanNewMineSize() {
+    function restoredBoundsLowerThanNewMinSize() {
       chrome.app.window.create('test.html', {
         bounds: { width: 100, height: 150 },
         minWidth: 200, minHeight: 250,
         maxWidth: 200, maxHeight: 250,
-        id: 'test-id', singleton: false
+        id: 'test-id'
       }, callbackPass(function(win) {
         var w = win.contentWindow;
         assertFuzzyEq(200, w.innerWidth, defaultFuzzFactor);
@@ -287,9 +306,9 @@ function testRestoreAfterClose() {
         win.onClosed.addListener(callbackPass(function() {
           chrome.app.window.create('test.html', {
             bounds: { width: 500, height: 550 },
-             minWidth: 400, minHeight: 450,
+            minWidth: 400, minHeight: 450,
             maxWidth: 600, maxHeight: 650,
-            id: 'test-id', singleton: false
+            id: 'test-id'
           }, callbackPass(function(win) {
             var w = win.contentWindow;
             assertFuzzyEq(400, w.innerWidth, defaultFuzzFactor);
@@ -301,6 +320,45 @@ function testRestoreAfterClose() {
         w.close();
       }));
     }
+  ]);
+}
+
+function testRestoreAfterGeometryCacheChange() {
+  chrome.test.runTests([
+    function restorePositionAndSize() {
+      chrome.app.window.create('test.html', {
+        bounds: { left: 200, top: 200, width: 200, height: 200 }, id: 'test-ps',
+      }, callbackPass(function(win) {
+        var w = win.contentWindow;
+        // The fuzzy factor here is related to the fact that depending on the
+        // platform, the bounds initialization will set the inner bounds or the
+        // outer bounds.
+        // TODO(mlamouri): remove the fuzz factor.
+        assertFuzzyEq(200, w.screenX, 5);
+        assertFuzzyEq(200, w.screenY, 30);
+        chrome.test.assertEq(200, w.innerHeight);
+        chrome.test.assertEq(200, w.innerWidth);
+
+        w.resizeTo(300, 300);
+        w.moveTo(100, 100);
+
+        chrome.test.sendMessage('ListenGeometryChange', function(reply) {
+          win.onClosed.addListener(callbackPass(function() {
+            chrome.app.window.create('test.html', {
+              id: 'test-ps'
+            }, callbackPass(function(win) {
+              var w = win.contentWindow;
+              chrome.test.assertEq(100, w.screenX);
+              chrome.test.assertEq(100, w.screenY);
+              chrome.test.assertEq(300, w.outerWidth);
+              chrome.test.assertEq(300, w.outerHeight);
+            }));
+          }));
+
+          win.close();
+        });
+      }));
+    },
   ]);
 }
 
