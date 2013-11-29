@@ -117,7 +117,8 @@
      * @const
      * @type {number}
      */
-    var MIN_SWIPE_DIST = 60;
+    var MIN_SWIPE_DIST_X = 50;
+    var MIN_SWIPE_DIST_Y = 30;
 
     /**
      * The boolean to decide if it is swipe in process or finished.
@@ -150,7 +151,7 @@
     /**
      * A structure to track the current swipe status.
      */
-    var swipeStatus = {
+    var swipeTracker = {
 
       /**
        * The count of horizontal and vertical movement.
@@ -185,6 +186,47 @@
       swipeIndex: 0,
 
       /**
+       * Returns the combined direction of the x and y offsets.
+       * @return {number} The latest direction.
+       */
+      getOffsetDirection: function() {
+        // TODO (rsadam): Use angles to figure out the direction.
+        var direction = 0;
+        // Checks for horizontal swipe.
+        if (Math.abs(this.offset_x) > MIN_SWIPE_DIST_X) {
+          if (this.offset_x > 0) {
+            direction |= SWIPE_DIRECTION.RIGHT;
+          } else {
+            direction |= SWIPE_DIRECTION.LEFT;
+          }
+        }
+        // Checks for vertical swipe.
+        if (Math.abs(this.offset_y) > MIN_SWIPE_DIST_Y) {
+          if (this.offset_y < 0) {
+            direction |= SWIPE_DIRECTION.UP;
+          } else {
+            direction |= SWIPE_DIRECTION.DOWN;
+          }
+        }
+        return direction;
+      },
+
+      /**
+       * Populates the swipe update details.
+       * @param {boolean} endSwipe Whether this is the final event for this
+       *     swipe.
+       * @return {Object} The current state of the swipeTracker.
+       */
+      populateDetails: function(endSwipe) {
+        var detail = {};
+        detail.direction = this.swipeDirection;
+        detail.index = this.swipeIndex;
+        detail.status = this.swipeStatus;
+        detail.endSwipe = endSwipe;
+        return detail;
+      },
+
+      /**
        * Reset all the values when swipe finished.
        */
       resetAll: function() {
@@ -195,7 +237,34 @@
         this.swipeFlags = 0;
         this.swipeDirection = 0;
         this.swipeIndex = 0;
-      }
+      },
+
+      /**
+       * Updates the swipe path with the current event.
+       * @param {Object} event The PointerEvent that triggered this update.
+       * @return {boolean} Whether or not to notify swipe observers.
+       */
+      update: function(event) {
+        if(!event.isPrimary)
+          return false;
+        // Update priors.
+        this.offset_x += event.screenX - this.pre_x;
+        this.offset_y += event.screenY - this.pre_y;
+        this.pre_x = event.screenX;
+        this.pre_y = event.screenY;
+
+        // Check if movement crosses minimum thresholds in each direction.
+        var direction = this.getOffsetDirection();
+        if (direction == 0)
+          return false;
+        // Save event details.
+        this.swipeDirection = direction;
+        this.offset_x = 0;
+        this.offset_y = 0;
+        this.swipeIndex++;
+        return true;
+      },
+
     };
 
     Polymer('kb-keyboard', {
@@ -242,7 +311,7 @@
 
       ready: function() {
         this.voiceInput_ = new VoiceInput(this);
-        this.swipeHandler = this.onSwipeUpdate.bind(this);
+        this.swipeHandler = this.updateSwipeTracker.bind(this);
       },
 
       /**
@@ -312,55 +381,45 @@
       },
 
       /**
-       * This function is bound to swipeHandler. And swipeHandler handle
-       * the pointermove event after pointerdown event happened.
-       * @para {PointerEvent} event.
+       * Handles a swipe update.
+       * param {Object} detail The swipe update details.
        */
-      onSwipeUpdate: function(event) {
-        if (!event.isPrimary)
-          return;
-        swipeStatus.offset_x += event.screenX - swipeStatus.pre_x;
-        // swipeStatus.offset_y += event.screenY - swipeStatus.pre_y;
-        if (Math.abs(swipeStatus.offset_x) > MIN_SWIPE_DIST ||
-            Math.abs(swipeStatus.offset_y) > MIN_SWIPE_DIST) {
-          swipeInProgress = true;
-          if (this.lastPressedKey) {
-            this.lastPressedKey.classList.remove('active');
-            this.lastPressedKey = null;
-          }
-        }
-        if (swipeStatus.offset_x > MIN_SWIPE_DIST) {
-          swipeStatus.swipeDirection |= SWIPE_DIRECTION.RIGHT;
-          swipeStatus.swipeIndex++;
-          swipeStatus.offset_x = 0;
-        } else if (swipeStatus.offset_x < -MIN_SWIPE_DIST) {
-          swipeStatus.swipeDirection |= SWIPE_DIRECTION.LEFT;
-          swipeStatus.swipeIndex--;
-          swipeStatus.offset_x = 0;
-        }
-        // Swipe vertically only when the swipe reaches the gradient of 45
-        // degree. This can also be larger.
-        if (Math.abs(event.screenY - swipeStatus.pre_y) >
-            Math.abs(event.screenX - swipeStatus.pre_x)) {
-          if (swipeStatus.offset_y > MIN_SWIPE_DIST) {
-            swipeStatus.swipeDirection |= SWIPE_DIRECTION.DOWN;
-            swipeStatus.offset_y = 0;
-          } else if (swipeStatus.offset_y < -MIN_SWIPE_DIST) {
-            swipeStatus.swipeDirection |= SWIPE_DIRECTION.UP;
-            swipeStatus.offset_y = 0;
-          }
-        }
-        if (swipeStatus.swipeDirection) {
+      onSwipeUpdate: function(detail) {
+        var direction = detail.direction;
+        if (!direction)
+          console.error("Swipe direction cannot be: " + direction);
+        // Skip any vertical events.
+        var vertical = direction & (SWIPE_DIRECTION.UP | SWIPE_DIRECTION.DOWN);
+        if (!vertical) {
+          // Nothing to do if the swipe has ended.
+          if (detail.endSwipe)
+            return;
           var modifiers = 0;
-          if (swipeStatus.swipeIndex % 2 != 0) {
+          // TODO (rsadam): This doesn't take into account index shifts caused
+          // by vertical swipes.
+          if (detail.index % 2 != 0) {
             modifiers |= Modifier.SHIFT;
             modifiers |= Modifier.CONTROL;
           }
-          MoveCursor(swipeStatus.swipeDirection, modifiers);
-          swipeStatus.swipeDirection = 0;
+          MoveCursor(direction, modifiers);
         }
-        swipeStatus.pre_x = event.screenX;
-        swipeStatus.pre_y = event.screenY;
+      },
+
+      /**
+       * This function is bound to swipeHandler. Updates the current swipe
+       * status so that PointerEvents can be converted to Swipe events.
+       * @param {PointerEvent} event.
+       */
+      updateSwipeTracker: function(event) {
+        if (!swipeTracker.update(event))
+          return;
+        // Conversion was successful, swipe is now in progress.
+        swipeInProgress = true;
+        if (this.lastPressedKey) {
+          this.lastPressedKey.classList.remove('active');
+          this.lastPressedKey = null;
+        }
+        this.onSwipeUpdate(swipeTracker.populateDetails(false));
       },
 
       /**
@@ -466,8 +525,8 @@
        */
       down: function(event) {
         if (event.isPrimary) {
-          swipeStatus.pre_x = event.screenX;
-          swipeStatus.pre_y = event.screenY;
+          swipeTracker.pre_x = event.screenX;
+          swipeTracker.pre_y = event.screenY;
           this.addEventListener("pointermove", this.swipeHandler, false);
         }
       },
@@ -506,7 +565,8 @@
         // all the data should be reset to prepare for the next session.
         if (event.isPrimary && swipeInProgress) {
           swipeInProgress = false;
-          swipeStatus.resetAll();
+          this.onSwipeUpdate(swipeTracker.populateDetails(true))
+          swipeTracker.resetAll();
         }
         this.removeEventListener('pointermove', this.swipeHandler, false);
       },
@@ -559,7 +619,7 @@
           case 'Ctrl':
           case 'Alt':
             enterUpperOnSpace = false;
-            swipeStatus.swipeFlags = 0;
+            swipeTracker.swipeFlags = 0;
             return;
           case 'Microphone':
             this.voiceInput_.onDown();
