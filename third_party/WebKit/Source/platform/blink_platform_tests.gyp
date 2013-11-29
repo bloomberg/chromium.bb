@@ -41,6 +41,7 @@
       '../config.gyp:unittest_config',
       '../wtf/wtf.gyp:wtf',
       '../wtf/wtf_tests.gyp:run_all_tests',
+      '../wtf/wtf_tests.gyp:wtf_unittest_helpers',
       '<(DEPTH)/url/url.gyp:url_lib',
     ],
     'sources': [

@@ -230,7 +230,6 @@
             'TemporaryChangeTest.cpp',
             'TreeNodeTest.cpp',
             'VectorTest.cpp',
-            'testing/WTFTestHelpers.h',
             'text/AtomicStringTest.cpp',
             'text/CStringTest.cpp',
             'text/StringBuilderTest.cpp',
@@ -238,6 +237,11 @@
             'text/StringOperatorsTest.cpp',
             'text/TextCodecUTF8Test.cpp',
             'text/WTFStringTest.cpp',
+        ],
+        'wtf_unittest_helper_files': [
+            'testing/WTFTestHelpers.cpp',
+            'testing/WTFTestHelpers.h',
+            'testing/WTFUnitTestHelpersExport.h',
         ],
     },
 }

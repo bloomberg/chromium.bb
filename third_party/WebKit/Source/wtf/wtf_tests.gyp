@@ -36,6 +36,7 @@
       'type': 'executable',
       'dependencies': [
         'run_all_tests',
+        'wtf_unittest_helpers',
         'wtf.gyp:wtf',
         '../config.gyp:unittest_config',
       ],
@@ -66,6 +67,22 @@
       'sources': [
         'testing/RunAllTests.cpp',
       ]
-    }
-  ]
+    },
+    {
+      'target_name': 'wtf_unittest_helpers',
+      'type': '<(component)',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'wtf.gyp:wtf',
+      ],
+      'defines': [
+        'WTF_UNITTEST_HELPERS_IMPLEMENTATION=1',
+      ],
+      'sources': [
+        '<@(wtf_unittest_helper_files)',
+      ],
+    },
+  ],
 }
