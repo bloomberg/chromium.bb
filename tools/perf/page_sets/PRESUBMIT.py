@@ -7,13 +7,20 @@ import re
 import sys
 
 
-# Avoid leaking changes to global sys.path.
-_old_sys_path = sys.path
-try:
-  sys.path.append(os.path.join(os.pardir, os.pardir, 'telemetry'))
-  from telemetry.page import cloud_storage
-finally:
-  sys.path = _old_sys_path
+def LoadSupport(input_api):
+  if 'cloud_storage' not in globals():
+    # Avoid leaking changes to global sys.path.
+    _old_sys_path = sys.path
+    try:
+      telemetry_path = os.path.join(os.path.dirname(os.path.dirname(
+          input_api.PresubmitLocalPath())), 'telemetry')
+      sys.path = [telemetry_path] + sys.path
+      from telemetry.page import cloud_storage
+      globals()['cloud_storage'] = cloud_storage
+    finally:
+      sys.path = _old_sys_path
+
+  return globals()['cloud_storage']
 
 
 def _SyncFilesToCloud(input_api, output_api):
@@ -21,6 +28,9 @@ def _SyncFilesToCloud(input_api, output_api):
 
   It validates all the hashes and skips upload if not necessary.
   """
+
+  cloud_storage = LoadSupport(input_api)
+
   # Look in both buckets, in case the user uploaded the file manually. But this
   # script focuses on WPR archives, so it only uploads to the internal bucket.
   hashes_in_cloud_storage = cloud_storage.List(cloud_storage.INTERNAL_BUCKET)

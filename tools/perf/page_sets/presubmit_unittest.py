@@ -3,10 +3,15 @@
 # found in the LICENSE file.
 
 import collections
+import os
+import sys
 import unittest
 
+PERF_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(PERF_ROOT), 'telemetry'))
 from telemetry.unittest import system_stub
 
+sys.path.insert(0, PERF_ROOT)
 from page_sets import PRESUBMIT
 
 
@@ -35,6 +40,9 @@ class InputAPIStub(object):
   def AbsoluteLocalPaths(self):
     return [af.AbsoluteLocalPath() for af in self.AffectedFiles()]
 
+  def PresubmitLocalPath(self):
+    return PRESUBMIT.__file__
+
 
 class OutputAPIStub(object):
   class PresubmitError(Exception):
@@ -43,6 +51,8 @@ class OutputAPIStub(object):
   class PresubmitNotifyResult(Exception):
     pass
 
+
+PRESUBMIT.LoadSupport(InputAPIStub([]))   # do this to support monkey patching
 
 class PresubmitTest(unittest.TestCase):
   def setUp(self):
@@ -123,3 +133,7 @@ class PresubmitTest(unittest.TestCase):
   def testWrongHash(self):
     results = self._CheckUpload(['/path/to/wrong_hash.wpr.sha1'])
     self.assertTrue('does not match' in str(results[0]), msg=results[0])
+
+
+if __name__ == '__main__':
+  unittest.main()
