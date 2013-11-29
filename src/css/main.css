@@ -520,6 +520,7 @@ body.show-shutter #shutter {
 }
 
 #album img {
+  -webkit-app-region: no-drag;
   border: 4px solid white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   margin: 10px;
