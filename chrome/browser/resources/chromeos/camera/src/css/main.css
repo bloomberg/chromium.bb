@@ -251,7 +251,7 @@ body.browser #toolbar {
   -webkit-box-align: center;
   -webkit-box-orient: vertical;
   -webkit-box-pack: center;
-  background: rgba(0, 0, 0, 0.5);
+  background: black;
   bottom: 0;
   color: white;
   display: none;
@@ -712,6 +712,7 @@ body.dialog #dialog #dialog-popup {
   position: absolute;
   right: 0;
   top: 0;
+  z-index: 1;
 }
 
 body:not(.initializing) #initializing {
