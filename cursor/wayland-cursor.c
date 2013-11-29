@@ -20,6 +20,7 @@
  * OF THIS SOFTWARE.
  */
 
+#include "config.h"
 #include "xcursor.h"
 #include "wayland-cursor.h"
 #include "wayland-client.h"
@@ -28,6 +29,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <fcntl.h>
+#include <errno.h>
 
 #include "os-compatibility.h"
 
@@ -78,6 +81,12 @@ shm_pool_resize(struct shm_pool *pool, int size)
 {
 	if (ftruncate(pool->fd, size) < 0)
 		return 0;
+
+#ifdef HAVE_POSIX_FALLOCATE
+	errno = posix_fallocate(pool->fd, 0, size);
+	if (errno != 0)
+		return 0;
+#endif
 
 	wl_shm_pool_resize(pool->pool, size);
 
@@ -199,21 +208,15 @@ wl_cursor_create_from_data(struct cursor_metadata *metadata,
 
 	cursor->cursor.image_count = 1;
 	cursor->cursor.images = malloc(sizeof *cursor->cursor.images);
-	if (!cursor->cursor.images) {
-		free(cursor);
-		return NULL;
-	}
+	if (!cursor->cursor.images)
+		goto err_free_cursor;
 
 	cursor->cursor.name = strdup(metadata->name);
 	cursor->total_delay = 0;
 
 	image = malloc(sizeof *image);
-	if (!image) {
-		free(cursor->cursor.name);
-		free(cursor->cursor.images);
-		free(cursor);
-		return NULL;
-	}
+	if (!image)
+		goto err_free_images;
 
 	cursor->cursor.images[0] = (struct wl_cursor_image *) image;
 	image->theme = theme;
@@ -226,10 +229,25 @@ wl_cursor_create_from_data(struct cursor_metadata *metadata,
 
 	size = metadata->width * metadata->height * sizeof(uint32_t);
 	image->offset = shm_pool_allocate(theme->pool, size);
+
+	if (image->offset < 0)
+		goto err_free_image;
+
 	memcpy(theme->pool->data + image->offset,
 	       cursor_data + metadata->offset, size);
 
 	return &cursor->cursor;
+
+err_free_image:
+	free(image);
+
+err_free_images:
+	free(cursor->cursor.name);
+	free(cursor->cursor.images);
+
+err_free_cursor:
+	free(cursor);
+	return NULL;
 }
 
 static void
@@ -240,12 +258,17 @@ load_default_theme(struct wl_cursor_theme *theme)
 	free(theme->name);
 	theme->name = strdup("default");
 
-	theme->cursor_count = ARRAY_LENGTH(cursor_metadata);;
+	theme->cursor_count = ARRAY_LENGTH(cursor_metadata);
 	theme->cursors = malloc(theme->cursor_count * sizeof(*theme->cursors));
 
-	for (i = 0; i < theme->cursor_count; ++i)
+	for (i = 0; i < theme->cursor_count; ++i) {
 		theme->cursors[i] =
 			wl_cursor_create_from_data(&cursor_metadata[i], theme);
+
+		if (theme->cursors[i] == NULL)
+			break;
+	}
+	theme->cursor_count = i;
 }
 
 static struct wl_cursor *
@@ -260,7 +283,6 @@ wl_cursor_create_from_xcursor_images(XcursorImages *images,
 	if (!cursor)
 		return NULL;
 
-	cursor->cursor.image_count = images->nimage;
 	cursor->cursor.images =
 		malloc(images->nimage * sizeof cursor->cursor.images[0]);
 	if (!cursor->cursor.images) {
@@ -273,7 +295,6 @@ wl_cursor_create_from_xcursor_images(XcursorImages *images,
 
 	for (i = 0; i < images->nimage; i++) {
 		image = malloc(sizeof *image);
-		cursor->cursor.images[i] = (struct wl_cursor_image *) image;
 
 		image->theme = theme;
 		image->buffer = NULL;
@@ -283,13 +304,27 @@ wl_cursor_create_from_xcursor_images(XcursorImages *images,
 		image->image.hotspot_x = images->images[i]->xhot;
 		image->image.hotspot_y = images->images[i]->yhot;
 		image->image.delay = images->images[i]->delay;
-		cursor->total_delay += image->image.delay;
 
-		/* copy pixels to shm pool */
 		size = image->image.width * image->image.height * 4;
 		image->offset = shm_pool_allocate(theme->pool, size);
+		if (image->offset < 0) {
+			free(image);
+			break;
+		}
+
+		/* copy pixels to shm pool */
 		memcpy(theme->pool->data + image->offset,
 		       images->images[i]->pixels, size);
+		cursor->total_delay += image->image.delay;
+		cursor->cursor.images[i] = (struct wl_cursor_image *) image;
+	}
+	cursor->cursor.image_count = i;
+
+	if (cursor->cursor.image_count == 0) {
+		free(cursor->cursor.name);
+		free(cursor->cursor.images);
+		free(cursor);
+		return NULL;
 	}
 
 	return &cursor->cursor;
