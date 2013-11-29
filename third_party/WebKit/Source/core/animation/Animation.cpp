@@ -74,6 +74,7 @@ static AnimationStack& ensureAnimationStack(Element* element)
 
 bool Animation::applyEffects(bool previouslyInEffect)
 {
+    ASSERT(isInEffect());
     if (!m_target || !m_effect)
         return false;
 
@@ -82,7 +83,10 @@ bool Animation::applyEffects(bool previouslyInEffect)
         m_activeInAnimationStack = true;
     }
 
-    m_compositableValues = m_effect->sample(currentIteration(), timeFraction());
+    double iteration = currentIteration();
+    ASSERT(iteration >= 0);
+    // FIXME: Handle iteration values which overflow int.
+    m_compositableValues = m_effect->sample(static_cast<int>(iteration), timeFraction());
     if (player()) {
         m_target->setNeedsStyleRecalc(LocalStyleChange, StyleChangeFromRenderer);
         return true;

@@ -87,7 +87,7 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
         ASSERT(localRepeatedDuration >= 0);
         const double localActiveDuration = m_specified.playbackRate ? localRepeatedDuration / abs(m_specified.playbackRate) : std::numeric_limits<double>::infinity();
         ASSERT(localActiveDuration >= 0);
-        const double localLocalTime = localTime < m_specified.startDelay ? m_specified.startDelay - 1 : localActiveDuration + m_specified.startDelay;
+        const double localLocalTime = localTime < m_specified.startDelay ? localTime : localActiveDuration + m_specified.startDelay;
         const TimedItem::Phase localCurrentPhase = calculatePhase(localActiveDuration, localLocalTime, m_specified);
         const double localActiveTime = calculateActiveTime(localActiveDuration, localLocalTime, parentPhase, localCurrentPhase, m_specified);
         const double startOffset = m_specified.iterationStart * localIterationDuration;

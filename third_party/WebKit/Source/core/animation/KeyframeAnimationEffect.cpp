@@ -323,6 +323,10 @@ PassRefPtr<AnimationEffect::CompositableValue> KeyframeAnimationEffect::Property
     ASSERT_UNUSED(iteration, iteration >= 0);
     ASSERT(!isNull(offset));
 
+    // Bail if offset is null, as this can lead to buffer overflow below.
+    if (isNull(offset))
+        return const_cast<CompositableValue*>(m_keyframes.first()->value());
+
     double minimumOffset = m_keyframes.first()->offset();
     double maximumOffset = m_keyframes.last()->offset();
     ASSERT(minimumOffset != maximumOffset);

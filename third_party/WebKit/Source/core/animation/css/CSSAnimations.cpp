@@ -313,6 +313,14 @@ const PassRefPtr<TimingFunction> timingFromAnimationData(const CSSAnimationData*
             ASSERT_NOT_REACHED();
         }
     }
+
+    // For CSS, the constraints on the timing properties are tighter than in
+    // the general case of the Web Animations model.
+    timing.assertValid();
+    ASSERT(!timing.iterationStart);
+    ASSERT(timing.playbackRate == 1);
+    ASSERT(timing.iterationDuration >= 0 && std::isfinite(timing.iterationDuration));
+
     isPaused = animationData->isPlayStateSet() && animationData->playState() == AnimPlayStatePaused;
     return animationData->isTimingFunctionSet() ? animationData->timingFunction() : CSSAnimationData::initialAnimationTimingFunction();
 }
