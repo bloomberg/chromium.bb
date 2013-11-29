@@ -12,6 +12,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/keyboard/keyboard_export.h"
+#include "url/gurl.h"
 
 namespace aura {
 class Window;
@@ -50,6 +51,10 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Returns the container for the keyboard, which is owned by
   // KeyboardController.
   aura::Window* GetContainerWindow();
+
+  // Sets the override content url. This is used by for input view for extension
+  // IMEs.
+  void SetOverrideContentUrl(const GURL& url);
 
   // Hides virtual keyboard and notifies observer bounds change.
   // This function should be called with a delay to avoid layout flicker

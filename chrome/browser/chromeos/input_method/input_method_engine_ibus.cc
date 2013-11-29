@@ -13,6 +13,7 @@
 #undef FocusOut
 #include <map>
 
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -27,6 +28,7 @@
 #include "chromeos/ime/input_method_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/keyboard/keyboard_controller.h"
 
 namespace chromeos {
 const char* kErrorNotActive = "IME is not active";
@@ -107,6 +109,8 @@ void InputMethodEngineIBus::Initialize(
   } else {
     ibus_id_ = extension_ime_util::GetInputMethodID(extension_id, engine_id);
   }
+
+  input_view_url_ = input_view;
 
   manager->AddInputMethodExtension(ibus_id_, engine_name, layouts, languages,
                                    options_page, input_view, this);
@@ -444,11 +448,24 @@ void InputMethodEngineIBus::Enable() {
   IBusEngineHandlerInterface::InputContext context(ui::TEXT_INPUT_TYPE_TEXT,
                                                    ui::TEXT_INPUT_MODE_DEFAULT);
   FocusIn(context);
+
+  keyboard::KeyboardController* keyboard_controller =
+      ash::Shell::GetInstance()->keyboard_controller();
+  if (keyboard_controller) {
+    keyboard_controller->SetOverrideContentUrl(input_view_url_);
+  }
 }
 
 void InputMethodEngineIBus::Disable() {
   active_ = false;
   observer_->OnDeactivated(engine_id_);
+
+  keyboard::KeyboardController* keyboard_controller =
+      ash::Shell::GetInstance()->keyboard_controller();
+  if (keyboard_controller) {
+    GURL empty_url;
+    keyboard_controller->SetOverrideContentUrl(empty_url);
+  }
 }
 
 void InputMethodEngineIBus::PropertyActivate(const std::string& property_name) {

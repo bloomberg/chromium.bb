@@ -182,6 +182,10 @@ void KeyboardController::OnWindowHierarchyChanged(
     OnTextInputStateChanged(proxy_->GetInputMethod()->GetTextInputClient());
 }
 
+void KeyboardController::SetOverrideContentUrl(const GURL& url) {
+  proxy_->SetOverrideContentUrl(url);
+}
+
 void KeyboardController::OnTextInputStateChanged(
     const ui::TextInputClient* client) {
   if (!container_.get())

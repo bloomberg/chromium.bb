@@ -82,6 +82,7 @@
         '../../content/content.gyp:content',
         '../../skia/skia.gyp:skia',
         '../../testing/gtest.gyp:gtest',
+        '../../url/url.gyp:url_lib',
         '../aura/aura.gyp:aura',
         '../aura/aura.gyp:aura_test_support',
         '../compositor/compositor.gyp:compositor',

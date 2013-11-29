@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "ui/base/ime/chromeos/ibus_bridge.h"
+#include "url/gurl.h"
 
 namespace ui {
 class KeyEvent;
@@ -153,6 +154,9 @@ class InputMethodEngineIBus : public InputMethodEngine,
 
   // Used for making callbacks.
   base::WeakPtrFactory<InputMethodEngineIBus> weak_ptr_factory_;
+
+  // Used for input view window.
+  GURL input_view_url_;
 };
 
 }  // namespace chromeos

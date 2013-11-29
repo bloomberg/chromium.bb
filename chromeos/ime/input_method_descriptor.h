@@ -35,6 +35,7 @@ class CHROMEOS_EXPORT InputMethodDescriptor {
     return language_codes_;
   }
   const GURL& options_page_url() const { return options_page_url_; }
+  const GURL& input_view_url() const { return input_view_url_; }
   const std::vector<std::string>& keyboard_layouts() const {
     return keyboard_layouts_;
   }

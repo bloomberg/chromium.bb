@@ -38,6 +38,9 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   // with the proxy.
   virtual aura::Window* GetKeyboardWindow();
 
+  // Sets the override content url.
+  void SetOverrideContentUrl(const GURL& url);
+
   // Gets the InputMethod that will provide notifications about changes in the
   // text input context.
   virtual ui::InputMethod* GetInputMethod() = 0;
@@ -74,6 +77,15 @@ class KEYBOARD_EXPORT KeyboardControllerProxy {
   virtual void SetupWebContents(content::WebContents* contents);
 
  private:
+  // Reloads the web contents to the valid url from GetValidUrl().
+  void ReloadContents();
+
+  // Gets the valid url from default url or override url.
+  const GURL& GetValidUrl();
+
+  const GURL default_url_;
+  GURL override_url_;
+
   scoped_ptr<content::WebContents> keyboard_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerProxy);

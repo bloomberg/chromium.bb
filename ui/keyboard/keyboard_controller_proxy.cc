@@ -93,28 +93,46 @@ class KeyboardContentsDelegate : public content::WebContentsDelegate,
 
 namespace keyboard {
 
-KeyboardControllerProxy::KeyboardControllerProxy() {
+KeyboardControllerProxy::KeyboardControllerProxy()
+    : default_url_(kKeyboardWebUIURL) {
 }
 
 KeyboardControllerProxy::~KeyboardControllerProxy() {
 }
 
+const GURL& KeyboardControllerProxy::GetValidUrl() {
+  return override_url_.is_valid() ? override_url_ : default_url_;
+}
+
+void KeyboardControllerProxy::SetOverrideContentUrl(const GURL& url) {
+  if (override_url_ == url)
+    return;
+  override_url_ = url;
+
+  ReloadContents();
+}
+
+void KeyboardControllerProxy::ReloadContents() {
+  if (keyboard_contents_) {
+    content::OpenURLParams params(
+        GetValidUrl(),
+        content::Referrer(),
+        SINGLETON_TAB,
+        content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+        false);
+    keyboard_contents_->OpenURL(params);
+  }
+}
+
 aura::Window* KeyboardControllerProxy::GetKeyboardWindow() {
   if (!keyboard_contents_) {
     content::BrowserContext* context = GetBrowserContext();
-    GURL url(kKeyboardWebUIURL);
     keyboard_contents_.reset(content::WebContents::Create(
         content::WebContents::CreateParams(context,
-            content::SiteInstance::CreateForURL(context, url))));
+            content::SiteInstance::CreateForURL(context, GetValidUrl()))));
     keyboard_contents_->SetDelegate(new KeyboardContentsDelegate(this));
     SetupWebContents(keyboard_contents_.get());
-
-    content::OpenURLParams params(url,
-                                  content::Referrer(),
-                                  SINGLETON_TAB,
-                                  content::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                  false);
-    keyboard_contents_->OpenURL(params);
+    ReloadContents();
   }
 
   return keyboard_contents_->GetView()->GetNativeView();
