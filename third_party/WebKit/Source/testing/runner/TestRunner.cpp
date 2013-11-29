@@ -1186,8 +1186,8 @@ void TestRunner::evaluateScriptInIsolatedWorldAndReturnValue(const CppArgumentLi
         v8::Local<v8::Value> scriptValue = values[0];
         // FIXME: There are many more types that can be handled.
         if (scriptValue->IsString()) {
-            v8::String::AsciiValue asciiV8(scriptValue);
-            result->set(std::string(*asciiV8));
+            v8::String::Utf8Value utf8V8(scriptValue);
+            result->set(std::string(*utf8V8));
         } else if (scriptValue->IsBoolean())
             result->set(scriptValue->ToBoolean()->Value());
         else if (scriptValue->IsNumber()) {

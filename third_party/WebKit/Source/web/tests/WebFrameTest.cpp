@@ -2705,7 +2705,7 @@ public:
 
         ~Notification()
         {
-            context.Dispose();
+            context.Reset();
         }
 
         bool Equals(Notification* other)

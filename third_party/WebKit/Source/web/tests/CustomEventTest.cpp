@@ -69,7 +69,7 @@ public:
         v8::Context::Scope scope(v8Context);
         v8::Handle<v8::Value> jsEvent = toV8(event, v8::Handle<v8::Object>(), isolate);
 
-        EXPECT_EQ(jsEvent->ToObject()->Get(v8::String::NewFromUtf8(isolate, "detail")), v8::Boolean::New(true));
+        EXPECT_EQ(jsEvent->ToObject()->Get(v8::String::NewFromUtf8(isolate, "detail")), v8::Boolean::New(isolate, true));
     }
 
     static PassRefPtr<TestListener> create(v8::Isolate* isolate)
@@ -110,7 +110,7 @@ TEST(CustomEventTest, InitWithSerializedScriptValue)
 
     v8::Isolate* isolate = toIsolate(frame->frame());
     v8::HandleScope handleScope(isolate);
-    customEvent.initCustomEvent("blah", false, false, WebSerializedScriptValue::serialize(v8::Boolean::New(true)));
+    customEvent.initCustomEvent("blah", false, false, WebSerializedScriptValue::serialize(v8::Boolean::New(isolate, true)));
     RefPtr<EventListener> listener = TestListener::create(isolate);
     frame->frame()->document()->addEventListener("blah", listener, false);
     frame->frame()->document()->dispatchEvent(event);
