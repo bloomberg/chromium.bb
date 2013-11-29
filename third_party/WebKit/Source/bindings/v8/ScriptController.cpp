@@ -669,7 +669,7 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
     v8::HandleScope handleScope(m_isolate);
     v8::Local<v8::Array> v8Results;
     {
-        v8::HandleScope evaluateHandleScope(m_isolate);
+        v8::EscapableHandleScope evaluateHandleScope(m_isolate);
         RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::ensureIsolatedWorld(worldID, extensionGroup);
         V8WindowShell* isolatedWorldShell = windowShell(world.get());
 
@@ -687,7 +687,7 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
             resultArray->Set(i, evaluationResult);
         }
 
-        v8Results = evaluateHandleScope.Close(resultArray);
+        v8Results = evaluateHandleScope.Escape(resultArray);
     }
 
     if (results && !v8Results.IsEmpty()) {

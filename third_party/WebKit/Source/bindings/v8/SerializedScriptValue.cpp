@@ -2013,14 +2013,14 @@ public:
         if (!m_reader.readVersion(m_version) || m_version > SerializedScriptValue::wireFormatVersion)
             return v8::Null(m_reader.getIsolate());
         m_reader.setVersion(m_version);
-        v8::HandleScope scope(m_reader.getIsolate());
+        v8::EscapableHandleScope scope(m_reader.getIsolate());
         while (!m_reader.isEof()) {
             if (!doDeserialize())
                 return v8::Null(m_reader.getIsolate());
         }
         if (stackDepth() != 1 || m_openCompositeReferenceStack.size())
             return v8::Null(m_reader.getIsolate());
-        v8::Handle<v8::Value> result = scope.Close(element(0));
+        v8::Handle<v8::Value> result = scope.Escape(element(0));
         return result;
     }
 

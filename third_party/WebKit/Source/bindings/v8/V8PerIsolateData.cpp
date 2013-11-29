@@ -124,10 +124,10 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::rawTemplate(const WrapperType
     if (result != templates.end())
         return result->value.newLocal(m_isolate);
 
-    v8::HandleScope handleScope(m_isolate);
-    v8::Handle<v8::FunctionTemplate> templ = createRawTemplate(m_isolate);
+    v8::EscapableHandleScope handleScope(m_isolate);
+    v8::Local<v8::FunctionTemplate> templ = createRawTemplate(m_isolate);
     templates.add(info, UnsafePersistent<v8::FunctionTemplate>(m_isolate, templ));
-    return handleScope.Close(templ);
+    return handleScope.Escape(templ);
 }
 
 v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
