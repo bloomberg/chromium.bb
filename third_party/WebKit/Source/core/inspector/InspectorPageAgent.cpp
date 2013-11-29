@@ -99,7 +99,6 @@ static const char touchEventEmulationEnabled[] = "touchEventEmulationEnabled";
 static const char pageAgentEmulatedMedia[] = "pageAgentEmulatedMedia";
 static const char showSizeOnResize[] = "showSizeOnResize";
 static const char showGridOnResize[] = "showGridOnResize";
-static const char forceCompositingMode[] = "forceCompositingMode";
 }
 
 namespace {
@@ -346,8 +345,6 @@ void InspectorPageAgent::restore()
         enable(&error);
         bool scriptExecutionDisabled = m_state->getBoolean(PageAgentState::pageAgentScriptExecutionDisabled);
         setScriptExecutionDisabled(0, scriptExecutionDisabled);
-        if (m_state->getBoolean(PageAgentState::forceCompositingMode))
-            setForceCompositingMode(0);
         bool showPaintRects = m_state->getBoolean(PageAgentState::pageAgentShowPaintRects);
         setShowPaintRects(0, showPaintRects);
         bool showDebugBorders = m_state->getBoolean(PageAgentState::pageAgentShowDebugBorders);
@@ -704,28 +701,36 @@ void InspectorPageAgent::setShowPaintRects(ErrorString*, bool show)
         mainFrame()->view()->invalidate();
 }
 
-void InspectorPageAgent::setShowDebugBorders(ErrorString*, bool show)
+void InspectorPageAgent::setShowDebugBorders(ErrorString* errorString, bool show)
 {
     m_state->setBoolean(PageAgentState::pageAgentShowDebugBorders, show);
+    if (show && !forceCompositingMode(errorString))
+        return;
     m_client->setShowDebugBorders(show);
 }
 
-void InspectorPageAgent::setShowFPSCounter(ErrorString*, bool show)
+void InspectorPageAgent::setShowFPSCounter(ErrorString* errorString, bool show)
 {
     // FIXME: allow metrics override, fps counter and continuous painting at the same time: crbug.com/299837.
     m_state->setBoolean(PageAgentState::pageAgentShowFPSCounter, show);
+    if (show && !forceCompositingMode(errorString))
+        return;
     m_client->setShowFPSCounter(show && !m_deviceMetricsOverridden);
 }
 
-void InspectorPageAgent::setContinuousPaintingEnabled(ErrorString*, bool enabled)
+void InspectorPageAgent::setContinuousPaintingEnabled(ErrorString* errorString, bool enabled)
 {
     m_state->setBoolean(PageAgentState::pageAgentContinuousPaintingEnabled, enabled);
+    if (enabled && !forceCompositingMode(errorString))
+        return;
     m_client->setContinuousPaintingEnabled(enabled && !m_deviceMetricsOverridden);
 }
 
-void InspectorPageAgent::setShowScrollBottleneckRects(ErrorString*, bool show)
+void InspectorPageAgent::setShowScrollBottleneckRects(ErrorString* errorString, bool show)
 {
     m_state->setBoolean(PageAgentState::pageAgentShowScrollBottleneckRects, show);
+    if (show && !forceCompositingMode(errorString))
+        return;
     m_client->setShowScrollBottleneckRects(show);
 }
 
@@ -795,8 +800,6 @@ void InspectorPageAgent::domContentLoadedEventFired(Frame* frame)
         return;
 
     m_frontend->domContentEventFired(currentTime());
-    if (m_state->getBoolean(PageAgentState::forceCompositingMode))
-        setForceCompositingMode(0);
 }
 
 void InspectorPageAgent::loadEventFired(Frame* frame)
@@ -1198,22 +1201,21 @@ void InspectorPageAgent::applyEmulatedMedia(String* media)
         *media = emulatedMedia;
 }
 
-void InspectorPageAgent::setForceCompositingMode(ErrorString* errorString)
+bool InspectorPageAgent::forceCompositingMode(ErrorString* errorString)
 {
     Settings& settings = m_page->settings();
     if (!settings.acceleratedCompositingEnabled()) {
         if (errorString)
             *errorString = "Compositing mode is not supported";
-        return;
+        return false;
     }
-    m_state->setBoolean(PageAgentState::forceCompositingMode, true);
     if (settings.forceCompositingMode())
-        return;
+        return true;
     settings.setForceCompositingMode(true);
     Frame* mainFrame = m_page->mainFrame();
-    if (!mainFrame)
-        return;
-    mainFrame->view()->updateCompositingLayersAfterStyleChange();
+    if (mainFrame)
+        mainFrame->view()->updateCompositingLayersAfterStyleChange();
+    return true;
 }
 
 void InspectorPageAgent::captureScreenshot(ErrorString*, const String*, const int*, const int*, const int*, String*, RefPtr<TypeBuilder::Page::ScreencastFrameMetadata>&)

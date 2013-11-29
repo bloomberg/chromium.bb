@@ -114,7 +114,6 @@ public:
     virtual void clearDeviceOrientationOverride(ErrorString*);
     virtual void setTouchEmulationEnabled(ErrorString*, bool);
     virtual void setEmulatedMedia(ErrorString*, const String&);
-    virtual void setForceCompositingMode(ErrorString*);
     virtual void captureScreenshot(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight, String* data, RefPtr<TypeBuilder::Page::ScreencastFrameMetadata>& out_metadata);
     virtual void canScreencast(ErrorString*, bool*);
     virtual void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight);
@@ -186,6 +185,7 @@ private:
     bool deviceMetricsChanged(int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow, double fontScaleFactor, bool textAutosizing);
     void updateViewMetrics(int width, int height, double deviceScaleFactor, bool emulateViewport, bool fitWindow);
     void updateTouchEventEmulationInPage(bool);
+    bool forceCompositingMode(ErrorString*);
 
     static bool dataContent(const char* data, unsigned size, const String& textEncodingName, bool withBase64Encode, String* result);
 
