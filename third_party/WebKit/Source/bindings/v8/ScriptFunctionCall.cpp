@@ -191,12 +191,13 @@ ScriptCallback::ScriptCallback(ScriptState* state, const ScriptValue& function)
 
 ScriptValue ScriptCallback::call()
 {
-    ASSERT(v8::Context::InContext());
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    ASSERT(isolate->InContext());
     ASSERT(m_function.v8Value()->IsFunction());
 
     v8::TryCatch exceptionCatcher;
     exceptionCatcher.SetVerbose(true);
-    v8::Handle<v8::Object> object = v8::Context::GetCurrent()->Global();
+    v8::Handle<v8::Object> object = isolate->GetCurrentContext()->Global();
     v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(m_function.v8Value());
 
     OwnPtr<v8::Handle<v8::Value>[]> info = adoptArrayPtr(new v8::Handle<v8::Value>[m_arguments.size()]);

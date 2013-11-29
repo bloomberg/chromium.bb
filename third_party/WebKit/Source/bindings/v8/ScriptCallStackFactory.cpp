@@ -68,9 +68,9 @@ static ScriptCallFrame toScriptCallFrame(v8::Handle<v8::StackFrame> frame)
     return ScriptCallFrame(functionName, scriptId, sourceName, sourceLineNumber, sourceColumn);
 }
 
-static void toScriptCallFramesVector(v8::Handle<v8::StackTrace> stackTrace, Vector<ScriptCallFrame>& scriptCallFrames, size_t maxStackSize, bool emptyStackIsAllowed)
+static void toScriptCallFramesVector(v8::Handle<v8::StackTrace> stackTrace, Vector<ScriptCallFrame>& scriptCallFrames, size_t maxStackSize, bool emptyStackIsAllowed, v8::Isolate* isolate)
 {
-    ASSERT(v8::Context::InContext());
+    ASSERT(isolate->InContext());
     int frameCount = stackTrace->GetFrameCount();
     if (frameCount > static_cast<int>(maxStackSize))
         frameCount = maxStackSize;
@@ -88,10 +88,10 @@ static void toScriptCallFramesVector(v8::Handle<v8::StackTrace> stackTrace, Vect
 
 static PassRefPtr<ScriptCallStack> createScriptCallStack(v8::Handle<v8::StackTrace> stackTrace, size_t maxStackSize, bool emptyStackIsAllowed, v8::Isolate* isolate)
 {
-    ASSERT(v8::Context::InContext());
+    ASSERT(isolate->InContext());
     v8::HandleScope scope(isolate);
     Vector<ScriptCallFrame> scriptCallFrames;
-    toScriptCallFramesVector(stackTrace, scriptCallFrames, maxStackSize, emptyStackIsAllowed);
+    toScriptCallFramesVector(stackTrace, scriptCallFrames, maxStackSize, emptyStackIsAllowed, isolate);
     return ScriptCallStack::create(scriptCallFrames);
 }
 
@@ -102,9 +102,9 @@ PassRefPtr<ScriptCallStack> createScriptCallStack(v8::Handle<v8::StackTrace> sta
 
 PassRefPtr<ScriptCallStack> createScriptCallStack(size_t maxStackSize, bool emptyStackIsAllowed)
 {
-    if (!v8::Context::InContext())
-        return 0;
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
+    if (!isolate->InContext())
+        return 0;
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::StackTrace> stackTrace(v8::StackTrace::CurrentStackTrace(maxStackSize, stackTraceOptions));
     return createScriptCallStack(stackTrace, maxStackSize, emptyStackIsAllowed, isolate);

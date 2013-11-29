@@ -61,14 +61,14 @@ v8::Handle<v8::Object> ScriptObject::v8Object() const
 bool ScriptGlobalObject::set(ScriptState* scriptState, const char* name, InspectorFrontendHost* value)
 {
     ScriptScope scope(scriptState);
-    scope.global()->Set(v8::String::NewSymbol(name), toV8(value, v8::Handle<v8::Object>(), scriptState->isolate()));
+    scope.global()->Set(v8Symbol(name, scriptState->isolate()), toV8(value, v8::Handle<v8::Object>(), scriptState->isolate()));
     return scope.success();
 }
 
 bool ScriptGlobalObject::get(ScriptState* scriptState, const char* name, ScriptObject& value)
 {
     ScriptScope scope(scriptState);
-    v8::Local<v8::Value> v8Value = scope.global()->Get(v8::String::NewSymbol(name));
+    v8::Local<v8::Value> v8Value = scope.global()->Get(v8Symbol(name, scriptState->isolate()));
     if (v8Value.IsEmpty())
         return false;
 
