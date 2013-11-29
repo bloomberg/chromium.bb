@@ -3147,12 +3147,12 @@ v8::Handle<v8::FunctionTemplate> ${v8ClassName}Constructor::GetTemplate(v8::Isol
     // This is only for getting a unique pointer which we can pass to privateTemplate.
     static int privateTemplateUniqueKey;
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-    v8::Handle<v8::FunctionTemplate> result = data->privateTemplateIfExists(currentWorldType, &privateTemplateUniqueKey);
+    v8::Local<v8::FunctionTemplate> result = data->privateTemplateIfExists(currentWorldType, &privateTemplateUniqueKey);
     if (!result.IsEmpty())
         return result;
 
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink\", \"BuildDOMTemplate");
-    v8::HandleScope scope(isolate);
+    v8::EscapableHandleScope scope(isolate);
     result = v8::FunctionTemplate::New(isolate, ${v8ClassName}ConstructorCallback);
 
     v8::Local<v8::ObjectTemplate> instanceTemplate = result->InstanceTemplate();
@@ -3161,7 +3161,7 @@ v8::Handle<v8::FunctionTemplate> ${v8ClassName}Constructor::GetTemplate(v8::Isol
     result->Inherit(${v8ClassName}::GetTemplate(isolate, currentWorldType));
     data->setPrivateTemplate(currentWorldType, &privateTemplateUniqueKey, result);
 
-    return scope.Close(result);
+    return scope.Escape(result);
 }
 
 END
