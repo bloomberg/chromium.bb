@@ -1083,6 +1083,9 @@ shm_surface_prepare(struct toysurface *base, int dx, int dy,
 					   surface->flags,
 					   leaf->resize_pool,
 					   &leaf->data);
+	if (!leaf->cairo_surface)
+		return NULL;
+
 	wl_buffer_add_listener(leaf->data->buffer,
 			       &shm_surface_buffer_listener, surface);
 
@@ -3724,20 +3727,9 @@ hack_prevent_EGL_sub_surface_deadlock(struct window *window)
 }
 
 static void
-idle_resize(struct window *window)
+window_do_resize(struct window *window)
 {
 	struct surface *surface;
-
-	window->resize_needed = 0;
-	window->redraw_needed = 1;
-
-	DBG("from %dx%d to %dx%d\n",
-	    window->main_surface->server_allocation.width,
-	    window->main_surface->server_allocation.height,
-	    window->pending_allocation.width,
-	    window->pending_allocation.height);
-
-	hack_prevent_EGL_sub_surface_deadlock(window);
 
 	widget_set_allocation(window->main_surface->widget,
 			      window->pending_allocation.x,
@@ -3758,6 +3750,46 @@ idle_resize(struct window *window)
 
 		surface_set_synchronized(surface);
 		surface_resize(surface);
+	}
+}
+
+static void
+idle_resize(struct window *window)
+{
+	window->resize_needed = 0;
+	window->redraw_needed = 1;
+
+	DBG("from %dx%d to %dx%d\n",
+	    window->main_surface->server_allocation.width,
+	    window->main_surface->server_allocation.height,
+	    window->pending_allocation.width,
+	    window->pending_allocation.height);
+
+	hack_prevent_EGL_sub_surface_deadlock(window);
+
+	window_do_resize(window);
+}
+
+static void
+undo_resize(struct window *window)
+{
+	window->pending_allocation.width =
+		window->main_surface->server_allocation.width;
+	window->pending_allocation.height =
+		window->main_surface->server_allocation.height;
+
+	DBG("back to %dx%d\n",
+	    window->main_surface->server_allocation.width,
+	    window->main_surface->server_allocation.height);
+
+	window_do_resize(window);
+
+	if (window->pending_allocation.width == 0 &&
+	    window->pending_allocation.height == 0) {
+		fprintf(stderr, "Error: Could not draw a surface, "
+			"most likely due to insufficient disk space in "
+			"%s (XDG_RUNTIME_DIR).\n", getenv("XDG_RUNTIME_DIR"));
+		exit(EXIT_FAILURE);
 	}
 }
 
@@ -3885,23 +3917,28 @@ static const struct wl_callback_listener listener = {
 	frame_callback
 };
 
-static void
+static int
 surface_redraw(struct surface *surface)
 {
 	DBG_OBJ(surface->surface, "begin\n");
 
 	if (!surface->window->redraw_needed && !surface->redraw_needed)
-		return;
+		return 0;
 
 	/* Whole-window redraw forces a redraw even if the previous has
 	 * not yet hit the screen.
 	 */
 	if (surface->frame_cb) {
 		if (!surface->window->redraw_needed)
-			return;
+			return 0;
 
 		DBG_OBJ(surface->frame_cb, "cancelled\n");
 		wl_callback_destroy(surface->frame_cb);
+	}
+
+	if (!widget_get_cairo_surface(surface->widget)) {
+		DBG_OBJ(surface->surface, "cancelled due buffer failure\n");
+		return -1;
 	}
 
 	surface->frame_cb = wl_surface_frame(surface->surface);
@@ -3912,6 +3949,7 @@ surface_redraw(struct surface *surface)
 	DBG_OBJ(surface->surface, "-> widget_redraw\n");
 	widget_redraw(surface->widget);
 	DBG_OBJ(surface->surface, "done\n");
+	return 0;
 }
 
 static void
@@ -3919,6 +3957,8 @@ idle_redraw(struct task *task, uint32_t events)
 {
 	struct window *window = container_of(task, struct window, redraw_task);
 	struct surface *surface;
+	int failed = 0;
+	int resized = 0;
 
 	DBG(" --------- \n");
 
@@ -3933,16 +3973,35 @@ idle_redraw(struct task *task, uint32_t events)
 		}
 
 		idle_resize(window);
+		resized = 1;
 	}
 
-	wl_list_for_each(surface, &window->subsurface_list, link)
-		surface_redraw(surface);
+	if (surface_redraw(window->main_surface) < 0) {
+		/*
+		 * Only main_surface failure will cause us to undo the resize.
+		 * If sub-surfaces fail, they will just be broken with old
+		 * content.
+		 */
+		failed = 1;
+	} else {
+		wl_list_for_each(surface, &window->subsurface_list, link) {
+			if (surface == window->main_surface)
+				continue;
+
+			surface_redraw(surface);
+		}
+	}
 
 	window->redraw_needed = 0;
 	window_flush(window);
 
 	wl_list_for_each(surface, &window->subsurface_list, link)
 		surface_set_synchronized_default(surface);
+
+	if (resized && failed) {
+		/* Restore widget tree to correspond to what is on screen. */
+		undo_resize(window);
+	}
 }
 
 static void
