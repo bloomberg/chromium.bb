@@ -138,11 +138,6 @@
         # Sets whether chrome is built for google tv device.
         'google_tv%': 0,
 
-        # goma settings.
-        # 1 to use goma.
-        # If no gomadir is set, it uses the default gomadir.
-        'use_goma%': 0,
-
         # Set ARM architecture version.
         'arm_version%': 7,
 
@@ -201,14 +196,7 @@
             'use_ozone_evdev%': 1,
           }, {
             'use_ozone_evdev%': 0,
-          }],
-
-          # Set default gomadir.
-          ['OS=="win"', {
-            'gomadir%': 'c:\\goma\\goma-win',
-          }, {
-            'gomadir%': '<!(/bin/echo -n ${HOME}/goma)',
-          }],
+          }]
         ],
       },
 
@@ -231,8 +219,6 @@
       'enable_touch_ui%': '<(enable_touch_ui)',
       'android_webview_build%': '<(android_webview_build)',
       'google_tv%': '<(google_tv)',
-      'use_goma%': '<(use_goma)',
-      'gomadir%': '<(gomadir)',
       'enable_app_list%': '<(enable_app_list)',
       'use_default_render_theme%': '<(use_default_render_theme)',
       'buildtype%': '<(buildtype)',
@@ -972,8 +958,6 @@
     'enable_enhanced_bookmarks%' : '<(enable_enhanced_bookmarks)',
     'v8_optimized_debug%': '<(v8_optimized_debug)',
     'proprietary_codecs%': '<(proprietary_codecs)',
-    'use_goma%': '<(use_goma)',
-    'gomadir%': '<(gomadir)',
 
     # Use system nspr instead of the bundled one.
     'use_system_nspr%': 0,
@@ -1886,16 +1870,6 @@
       }, {  # use_ozone==0
         'ozone_platform_dri%': 0,
         'ozone_platform_test%': 0,
-      }],
-      ['OS=="win" and use_goma==1', {
-        # goma doesn't support pch yet.
-        'chromium_win_pch': 0,
-        # goma doesn't support PDB yet, so win_z7=1 or fastbuild=1.
-        'conditions': [
-          ['fastbuild==0', {
-            'win_z7': 1,
-          }],
-        ],
       }],
     ],
 
@@ -4673,21 +4647,33 @@
       },
     }],
     ['clang==1', {
-      'make_global_settings': [
-        ['CC', '<(make_clang_dir)/bin/clang'],
-        ['CXX', '<(make_clang_dir)/bin/clang++'],
-        ['CC.host', '$(CC)'],
-        ['CXX.host', '$(CXX)'],
+      'conditions': [
+        ['OS=="android"', {
+          # Android could use the goma with clang.
+          'make_global_settings': [
+            ['CC', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} ${CHROME_SRC}/<(make_clang_dir)/bin/clang)'],
+            ['CXX', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} ${CHROME_SRC}/<(make_clang_dir)/bin/clang++)'],
+            ['CC.host', '$(CC)'],
+            ['CXX.host', '$(CXX)'],
+          ],
+        }, {
+          'make_global_settings': [
+            ['CC', '<(make_clang_dir)/bin/clang'],
+            ['CXX', '<(make_clang_dir)/bin/clang++'],
+            ['CC.host', '$(CC)'],
+            ['CXX.host', '$(CXX)'],
+          ],
+        }],
       ],
     }],
     ['OS=="android" and clang==0', {
       # Hardcode the compiler names in the Makefile so that
       # it won't depend on the environment at make time.
       'make_global_settings': [
-        ['CC', '<!(/bin/echo -n <(android_toolchain)/*-gcc)'],
-        ['CXX', '<!(/bin/echo -n <(android_toolchain)/*-g++)'],
-        ['CC.host', '<!(which gcc)'],
-        ['CXX.host', '<!(which g++)'],
+        ['CC', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} <(android_toolchain)/*-gcc)'],
+        ['CXX', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} <(android_toolchain)/*-g++)'],
+        ['CC.host', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} <!(which gcc))'],
+        ['CXX.host', '<!(/bin/echo -n ${ANDROID_GOMA_WRAPPER} <!(which g++))'],
       ],
     }],
     ['OS=="linux" and target_arch=="mipsel"', {
@@ -4696,18 +4682,6 @@
         ['CXX', '<(sysroot)/../bin/mipsel-linux-gnu-g++'],
         ['CC.host', '<!(which gcc)'],
         ['CXX.host', '<!(which g++)'],
-      ],
-    }],
-
-    # TODO(yyanagisawa): supports GENERATOR==make
-    #  make generator doesn't support CC_wrapper without CC
-    #  in make_global_settings yet.
-    ['use_goma==1 and ("<(GENERATOR)"=="ninja" or clang==1)', {
-      'make_global_settings': [
-       ['CC_wrapper', '<(gomadir)/gomacc'],
-       ['CXX_wrapper', '<(gomadir)/gomacc'],
-       ['CC.host_wrapper', '<(gomadir)/gomacc'],
-       ['CXX.host_wrapper', '<(gomadir)/gomacc'],
       ],
     }],
   ],
