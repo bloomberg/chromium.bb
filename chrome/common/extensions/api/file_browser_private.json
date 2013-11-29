@@ -107,6 +107,21 @@
         }
       },
       {
+        "id": "ProfileInfo",
+        "type": "object",
+        "description": "Information about a profile.",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "description": "The name of the profile for display purpose."
+          },
+          "isCurrentProfile": {
+            "type": "boolean",
+            "description": "True if the profile is the one running the current file manager instance."
+          }
+        }
+      },
+      {
         "id": "VolumeMetadata",
         "type": "object",
         "description": "Mounted disk volume metadata.",
@@ -114,6 +129,10 @@
           "volumeId": {
             "type": "string",
             "description": "ID of the disk volume."
+          },
+          "profile": {
+            "$ref": "ProfileInfo",
+            "description": "Description of the profile where the volume belongs."
           },
           // TODO(satorux): Remove "mountPath". crbug.com/316077
           "mountPath": {

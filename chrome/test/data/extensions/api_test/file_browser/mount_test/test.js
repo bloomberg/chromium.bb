@@ -9,7 +9,8 @@ var expectedVolume1 = {
   sourcePath: 'device_path1',
   volumeType: 'removable',
   deviceType: 'usb',
-  isReadOnly: false
+  isReadOnly: false,
+  profile: {displayName: "", isCurrentProfile: true}
 };
 
 var expectedVolume2 = {
@@ -18,7 +19,8 @@ var expectedVolume2 = {
   sourcePath: 'device_path2',
   volumeType: 'removable',
   deviceType: 'mobile',
-  isReadOnly: true
+  isReadOnly: true,
+  profile: {displayName: "", isCurrentProfile: true}
 };
 
 var expectedVolume3 = {
@@ -27,14 +29,16 @@ var expectedVolume3 = {
   sourcePath: 'device_path3',
   volumeType: 'removable',
   deviceType: 'optical',
-  isReadOnly: false
+  isReadOnly: false,
+  profile: {displayName: "", isCurrentProfile: true}
 };
 
 var expectedDownloadsVolume = {
   volumeId: 'downloads:Downloads',
   mountPath: '/Downloads',
   volumeType: 'downloads',
-  isReadOnly: false
+  isReadOnly: false,
+  profile: {displayName: "", isCurrentProfile: true}
 };
 
 var expectedDriveVolume = {
@@ -42,7 +46,8 @@ var expectedDriveVolume = {
   mountPath: '/drive',
   sourcePath: '/special/drive',
   volumeType: 'drive',
-  isReadOnly: false
+  isReadOnly: false,
+  profile: {displayName: "", isCurrentProfile: true}
 };
 
 var expectedArchiveVolume = {
@@ -50,7 +55,8 @@ var expectedArchiveVolume = {
   mountPath: '/archive/archive_mount_path',
   sourcePath: 'archive_path',
   volumeType: 'archive',
-  isReadOnly: false
+  isReadOnly: false,
+  profile: {displayName: "", isCurrentProfile: true}
 };
 
 // List of expected mount points.
@@ -67,7 +73,10 @@ var expectedVolumeList = [
 
 function validateObject(received, expected, name) {
   for (var key in expected) {
-    if (received[key] != expected[key]) {
+    if (expected[key] instanceof Object) {
+      if (!validateObject(received[key], expected[key], name + "." + key))
+        return false;
+    } else if (received[key] != expected[key]) {
       console.warn('Expected "' + key + '" ' + name + ' property to be: "' +
                   expected[key] + '"' + ', but got: "' + received[key] +
                   '" instead.');
