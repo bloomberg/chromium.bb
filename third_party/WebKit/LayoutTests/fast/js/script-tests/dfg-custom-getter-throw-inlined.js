@@ -23,7 +23,7 @@ function bar(binary) {
 }
 
 for (var i = 0; i < 200; ++i) {
-    shouldBe("bar(i >= 100)", i >= 100 ? "\"Threw exception: InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': the value is only accessible if the object's 'responseType' is '' or 'text' (was 'arraybuffer').\"" : "\"Returned result: \"");
+    shouldBe("bar(i >= 100)", i >= 100 ? "\"Threw exception: InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was 'arraybuffer').\"" : "\"Returned result: \"");
 }
 
 

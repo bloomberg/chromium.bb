@@ -80,7 +80,7 @@ void ExceptionState::throwTypeError(const String& message)
 {
     ASSERT(m_isolate);
     m_code = TypeError;
-    setException(V8ThrowException::createTypeError(message, m_isolate));
+    setException(V8ThrowException::createTypeError(addExceptionContext(message), m_isolate));
 }
 
 void TrackExceptionState::throwDOMException(const ExceptionCode& ec, const String& message)

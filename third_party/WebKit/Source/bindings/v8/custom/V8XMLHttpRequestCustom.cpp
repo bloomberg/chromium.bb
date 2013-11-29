@@ -72,7 +72,7 @@ void V8XMLHttpRequest::constructorCustom(const v8::FunctionCallbackInfo<v8::Valu
 void V8XMLHttpRequest::responseTextAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toNative(info.Holder());
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::GetterContext, "responseText", "XMLHttpRequest", info.Holder(), info.GetIsolate());
     ScriptValue text = xmlHttpRequest->responseText(exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -97,11 +97,7 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::PropertyCallbackI
         {
             v8::Isolate* isolate = info.GetIsolate();
 
-            ExceptionState exceptionState(info.Holder(), isolate);
             ScriptString jsonSource = xmlHttpRequest->responseJSONSource();
-            if (exceptionState.throwIfNeeded())
-                return;
-
             if (jsonSource.hasNoValue() || !jsonSource.v8Value()->IsString()) {
                 v8SetReturnValue(info, v8::Null(isolate));
                 return;
@@ -164,38 +160,37 @@ void V8XMLHttpRequest::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value
     // open(method, url, async, user)
     // open(method, url, async, user, passwd)
 
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "open", "XMLHttpRequest", info.Holder(), info.GetIsolate());
+
     if (info.Length() < 2) {
-        throwTypeError(ExceptionMessages::failedToExecute("open", "XMLHttpRequest", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
-        return;
-    }
+        exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
+    } else {
+        XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toNative(info.Holder());
 
-    XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toNative(info.Holder());
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, method, info[0]);
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, urlstring, info[1]);
 
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, method, info[0]);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, urlstring, info[1]);
+        ExecutionContext* context = getExecutionContext();
+        KURL url = context->completeURL(urlstring);
 
-    ExecutionContext* context = getExecutionContext();
-    KURL url = context->completeURL(urlstring);
+        if (info.Length() >= 3) {
+            bool async = info[2]->BooleanValue();
 
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+            if (info.Length() >= 4 && !info[3]->IsUndefined()) {
+                V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, user, info[3]);
 
-    if (info.Length() >= 3) {
-        bool async = info[2]->BooleanValue();
-
-        if (info.Length() >= 4 && !info[3]->IsUndefined()) {
-            V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, user, info[3]);
-
-            if (info.Length() >= 5 && !info[4]->IsUndefined()) {
-                V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, password, info[4]);
-                xmlHttpRequest->open(method, url, async, user, password, exceptionState);
+                if (info.Length() >= 5 && !info[4]->IsUndefined()) {
+                    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, password, info[4]);
+                    xmlHttpRequest->open(method, url, async, user, password, exceptionState);
+                } else {
+                    xmlHttpRequest->open(method, url, async, user, exceptionState);
+                }
             } else {
-                xmlHttpRequest->open(method, url, async, user, exceptionState);
+                xmlHttpRequest->open(method, url, async, exceptionState);
             }
         } else {
-            xmlHttpRequest->open(method, url, async, exceptionState);
+            xmlHttpRequest->open(method, url, exceptionState);
         }
-    } else {
-        xmlHttpRequest->open(method, url, exceptionState);
     }
 
     exceptionState.throwIfNeeded();
@@ -213,7 +208,7 @@ void V8XMLHttpRequest::sendMethodCustom(const v8::FunctionCallbackInfo<v8::Value
 
     InspectorInstrumentation::willSendXMLHttpRequest(xmlHttpRequest->executionContext(), xmlHttpRequest->url());
 
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "send", "XMLHttpRequest", info.Holder(), info.GetIsolate());
     if (info.Length() < 1)
         xmlHttpRequest->send(exceptionState);
     else {
