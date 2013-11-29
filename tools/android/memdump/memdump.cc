@@ -29,6 +29,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 
+const unsigned int kPageSize = getpagesize();
+
 namespace {
 
 class BitSet {
@@ -123,24 +125,17 @@ bool ParseMemoryMapLine(const std::string& line,
   base::SplitString(line, ' ', tokens);
   if (tokens->size() < 2)
     return false;
-  const int addr_len = 8;
   const std::string& addr_range = tokens->at(0);
-  if (addr_range.length() != addr_len + 1 + addr_len)
-    return false;
+  std::vector<std::string> range_tokens;
+  base::SplitString(addr_range, '-', &range_tokens);
   uint64 tmp = 0;
-  if (!base::HexStringToUInt64(
-          base::StringPiece(
-              addr_range.begin(), addr_range.begin() + addr_len),
-          &tmp)) {
+  const std::string& start_address_token = range_tokens.at(0);
+  if (!base::HexStringToUInt64(start_address_token, &tmp)) {
     return false;
   }
   memory_map->start_address = static_cast<uint>(tmp);
-  const int end_addr_start_pos = addr_len + 1;
-  if (!base::HexStringToUInt64(
-          base::StringPiece(
-              addr_range.begin() + end_addr_start_pos,
-              addr_range.begin() + end_addr_start_pos + addr_len),
-          &tmp)) {
+  const std::string& end_address_token = range_tokens.at(1);
+  if (!base::HexStringToUInt64(end_address_token, &tmp)) {
     return false;
   }
   memory_map->end_address = static_cast<uint>(tmp);
@@ -151,7 +146,7 @@ bool ParseMemoryMapLine(const std::string& line,
     return false;
   memory_map->offset = static_cast<uint>(tmp);
   memory_map->committed_pages_bits.resize(
-      (memory_map->end_address - memory_map->start_address) / PAGE_SIZE);
+      (memory_map->end_address - memory_map->start_address) / kPageSize);
   const int map_name_index = 5;
   if (tokens->size() >= map_name_index + 1) {
     for (std::vector<std::string>::const_iterator it =
@@ -209,11 +204,11 @@ bool GetPagesForMemoryMap(int pagemap_fd,
                           BitSet* committed_pages_bits) {
   for (uint addr = memory_map.start_address, page_index = 0;
        addr < memory_map.end_address;
-       addr += PAGE_SIZE, ++page_index) {
-    DCHECK_EQ(0, addr % PAGE_SIZE);
+       addr += kPageSize, ++page_index) {
+    DCHECK_EQ(0, addr % kPageSize);
     PageMapEntry page_map_entry = {};
     COMPILE_ASSERT(sizeof(PageMapEntry) == sizeof(uint64), unexpected_size);
-    const off64_t offset = addr / PAGE_SIZE;
+    const off64_t offset = addr / kPageSize;
     if (!ReadFromFileAtOffset(pagemap_fd, offset, &page_map_entry))
       return false;
     if (page_map_entry.present) {  // Ignore non-committed pages.
@@ -284,7 +279,7 @@ void ClassifyPages(std::vector<ProcessMemory>* processes_memory) {
   FillPFNMaps(*processes_memory, &pfn_maps);
   // Hash set keeping track of the physical pages mapped in a single process so
   // that they can be counted only once.
-  std::hash_set<uint64> physical_pages_mapped_in_process;
+  base::hash_set<uint64> physical_pages_mapped_in_process;
 
   for (std::vector<ProcessMemory>::iterator it = processes_memory->begin();
        it != processes_memory->end(); ++it) {
@@ -306,7 +301,7 @@ void ClassifyPages(std::vector<ProcessMemory>* processes_memory) {
           continue;
         }
         const uint64 page_frame_number = page_info.page_frame_number;
-        const std::pair<std::hash_set<uint64>::iterator, bool> result =
+        const std::pair<base::hash_set<uint64>::iterator, bool> result =
             physical_pages_mapped_in_process.insert(page_frame_number);
         const bool did_insert = result.second;
         if (!did_insert) {
@@ -356,9 +351,9 @@ void AppendAppSharedField(const std::vector<PageCount>& app_shared_pages,
   out->append("[");
   for (std::vector<PageCount>::const_iterator it = app_shared_pages.begin();
        it != app_shared_pages.end(); ++it) {
-    out->append(base::IntToString(it->total_count * PAGE_SIZE));
+    out->append(base::IntToString(it->total_count * kPageSize));
     out->append(":");
-    out->append(base::IntToString(it->unevictable_count * PAGE_SIZE));
+    out->append(base::IntToString(it->unevictable_count * kPageSize));
     if (it + 1 != app_shared_pages.end())
       out->append(",");
   }
@@ -367,7 +362,7 @@ void AppendAppSharedField(const std::vector<PageCount>& app_shared_pages,
 
 void DumpProcessesMemoryMapsInShortFormat(
     const std::vector<ProcessMemory>& processes_memory) {
-  const int KB_PER_PAGE = PAGE_SIZE >> 10;
+  const int KB_PER_PAGE = kPageSize >> 10;
   std::vector<int> totals_app_shared(processes_memory.size());
   std::string buf;
   std::cout << "pid\tprivate\t\tshared_app\tshared_other (KB)\n";
@@ -420,11 +415,11 @@ void DumpProcessesMemoryMapsInExtendedFormat(
           memory_map.end_address,
           memory_map.flags.c_str(),
           memory_map.offset,
-          memory_map.private_pages.unevictable_count * PAGE_SIZE,
-          memory_map.private_pages.total_count * PAGE_SIZE,
+          memory_map.private_pages.unevictable_count * kPageSize,
+          memory_map.private_pages.total_count * kPageSize,
           app_shared_buf.c_str(),
-          memory_map.other_shared_pages.unevictable_count * PAGE_SIZE,
-          memory_map.other_shared_pages.total_count * PAGE_SIZE,
+          memory_map.other_shared_pages.unevictable_count * kPageSize,
+          memory_map.other_shared_pages.total_count * kPageSize,
           memory_map.name.c_str(),
           memory_map.committed_pages_bits.AsB64String().c_str());
       std::cout << buf;
