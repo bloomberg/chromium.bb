@@ -40,14 +40,20 @@ function moveOutOfBox()
     eventSender.mouseMoveTo(0, 0);
 }
 
-function pressMouseButton()
+function activateBox()
 {
+    document.getElementById("inspected").focus();
     eventSender.mouseDown();
 }
 
 function releaseMouseButton()
 {
     eventSender.mouseUp();
+}
+
+function blurBox()
+{
+    document.getElementById("inspected").blur();
 }
 
 function test()
@@ -72,7 +78,7 @@ function test()
 
         function dumpActiveStyles(next)
         {
-            callAndDumpStyles("pressMouseButton", next);
+            callAndDumpStyles("activateBox", next);
         },
 
         function dumpFocusedStyles(next)
@@ -82,13 +88,12 @@ function test()
 
         function dumpUnfocusedStyles(next)
         {
-            InspectorTest.waitForStyles("inspected", callback);
-            InspectorTest.evaluateInPage("moveOutOfBox()");
+            callAndDumpStyles("blurBox", next);
+        },
 
-            function callback()
-            {
-                callAndDumpStyles("pressMouseButton", next);
-            }
+        function dumpUnhoveredStyles(next)
+        {
+            callAndDumpStyles("moveOutOfBox", next);
         }
     ]);
 

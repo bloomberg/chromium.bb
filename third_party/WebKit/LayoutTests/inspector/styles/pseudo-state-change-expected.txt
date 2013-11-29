@@ -117,6 +117,29 @@ Running: dumpUnfocusedStyles
 element.style  { ()
 
 [expanded] 
+#inspected:hover  { (pseudo-state-change.html:14 -> pseudo-state-change.html:14:1)
+color: green;
+content: "Hovered";
+
+[expanded] 
+#inspected  { (pseudo-state-change.html:4 -> pseudo-state-change.html:4:1)
+position: absolute;
+top: 20px;
+left: 0px;
+/-- overloaded --/ color: black;
+/-- overloaded --/ content: "Default";
+
+[expanded] 
+div  { (user agent stylesheet)
+display: block;
+
+
+
+Running: dumpUnhoveredStyles
+[expanded] 
+element.style  { ()
+
+[expanded] 
 #inspected  { (pseudo-state-change.html:4 -> pseudo-state-change.html:4:1)
 position: absolute;
 top: 20px;
