@@ -39,7 +39,7 @@ if test "x$GCC" = "xyes"; then
 fi
 AC_SUBST(GCC_CFLAGS)
 
-AC_CHECK_FUNCS([accept4 mkostemp])
+AC_CHECK_FUNCS([accept4 mkostemp posix_fallocate])
 
 AC_CHECK_DECL(SFD_CLOEXEC,[],
 	      [AC_MSG_ERROR("SFD_CLOEXEC is needed to compile wayland")],
