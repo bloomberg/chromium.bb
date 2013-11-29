@@ -418,7 +418,7 @@ v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object, NPObject* root
 {
     static v8::Eternal<v8::FunctionTemplate> npObjectDesc;
 
-    ASSERT(v8::Context::InContext());
+    ASSERT(isolate->InContext());
 
     // If this is a v8 object, just return it.
     V8NPObject* v8NPObject = npObjectToV8NPObject(object);

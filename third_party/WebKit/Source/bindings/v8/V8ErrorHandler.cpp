@@ -64,7 +64,7 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ExecutionContext* cont
     v8::Local<v8::Value> returnValue;
     if (!listener.IsEmpty() && listener->IsFunction()) {
         v8::Local<v8::Function> callFunction = v8::Local<v8::Function>::Cast(listener);
-        v8::Local<v8::Object> thisValue = v8::Context::GetCurrent()->Global();
+        v8::Local<v8::Object> thisValue = isolate->GetCurrentContext()->Global();
 
         v8::Local<v8::Value> error = jsEvent->ToObject()->GetHiddenValue(V8HiddenPropertyName::error(isolate));
         if (error.IsEmpty())

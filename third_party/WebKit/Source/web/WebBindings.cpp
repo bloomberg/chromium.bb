@@ -314,7 +314,7 @@ static bool getArrayBufferViewImpl(NPObject* object, WebArrayBufferView* arrayBu
 static NPObject* makeIntArrayImpl(const WebVector<int>& data, v8::Isolate* isolate)
 {
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Array> result = v8::Array::New(data.size());
+    v8::Handle<v8::Array> result = v8::Array::New(isolate, data.size());
     for (size_t i = 0; i < data.size(); ++i)
         result->Set(i, v8::Number::New(isolate, data[i]));
 
@@ -325,7 +325,7 @@ static NPObject* makeIntArrayImpl(const WebVector<int>& data, v8::Isolate* isola
 static NPObject* makeStringArrayImpl(const WebVector<WebString>& data, v8::Isolate* isolate)
 {
     v8::HandleScope handleScope(isolate);
-    v8::Handle<v8::Array> result = v8::Array::New(data.size());
+    v8::Handle<v8::Array> result = v8::Array::New(isolate, data.size());
     for (size_t i = 0; i < data.size(); ++i)
         result->Set(i, v8String(data[i], isolate));
 

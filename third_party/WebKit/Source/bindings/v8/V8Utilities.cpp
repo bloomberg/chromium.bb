@@ -56,7 +56,7 @@ void createHiddenDependency(v8::Handle<v8::Object> object, v8::Local<v8::Value> 
 {
     v8::Local<v8::Value> cache = object->GetInternalField(cacheIndex);
     if (cache->IsNull() || cache->IsUndefined()) {
-        cache = v8::Array::New();
+        cache = v8::Array::New(isolate);
         object->SetInternalField(cacheIndex, cache);
     }
 

@@ -121,7 +121,7 @@ v8::Handle<v8::Value> V8ThrowException::throwTypeError(const String& message, v8
 v8::Handle<v8::Value> V8ThrowException::throwError(v8::Handle<v8::Value> exception, v8::Isolate* isolate)
 {
     if (!v8::V8::IsExecutionTerminating())
-        v8::ThrowException(exception);
+        isolate->ThrowException(exception);
     return v8::Undefined(isolate);
 }
 
