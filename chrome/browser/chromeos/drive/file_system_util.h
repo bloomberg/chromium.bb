@@ -135,7 +135,8 @@ std::string UnescapeCacheFileName(const std::string& filename);
 
 // Converts the given string to a form suitable as a file name. Specifically,
 // - Normalizes in Unicode Normalization Form C.
-// - Replaces slashes '/' with \u2215 that pretty much looks the same in UI.
+// - Replaces slashes '/' with '_'.
+// - Replaces the whole input with "_" if the all input characters are '.'.
 // |input| must be a valid UTF-8 encoded string.
 std::string NormalizeFileName(const std::string& input);
 

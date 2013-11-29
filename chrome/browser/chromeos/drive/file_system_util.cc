@@ -59,7 +59,8 @@ const base::FilePath::CharType kFileCacheVersionDir[] =
     FILE_PATH_LITERAL("v1");
 
 const char kSlash[] = "/";
-const char kEscapedSlash[] = "\xE2\x88\x95";
+const char kDot = '.';
+const char kEscapedChars[] = "_";
 
 const base::FilePath& GetDriveMyDriveMountPointPath() {
   CR_DEFINE_STATIC_LOCAL(base::FilePath, drive_mydrive_mount_path,
@@ -73,7 +74,7 @@ std::string ReadStringFromGDocFile(const base::FilePath& file_path,
   int64 file_size = 0;
   if (!file_util::GetFileSize(file_path, &file_size) ||
       file_size > kMaxGDocSize) {
-    DLOG(INFO) << "File too large to be a GDoc file " << file_path.value();
+    LOG(WARNING) << "File too large to be a GDoc file " << file_path.value();
     return std::string();
   }
 
@@ -81,8 +82,8 @@ std::string ReadStringFromGDocFile(const base::FilePath& file_path,
   std::string error_message;
   scoped_ptr<base::Value> root_value(reader.Deserialize(NULL, &error_message));
   if (!root_value) {
-    DLOG(INFO) << "Failed to parse " << file_path.value() << " as JSON."
-               << " error = " << error_message;
+    LOG(WARNING) << "Failed to parse " << file_path.value() << " as JSON."
+                 << " error = " << error_message;
     return std::string();
   }
 
@@ -90,8 +91,8 @@ std::string ReadStringFromGDocFile(const base::FilePath& file_path,
   std::string result;
   if (!root_value->GetAsDictionary(&dictionary_value) ||
       !dictionary_value->GetString(key, &result)) {
-    DLOG(INFO) << "No value for the given key is stored in "
-               << file_path.value() << ". key = " << key;
+    LOG(WARNING) << "No value for the given key is stored in "
+                 << file_path.value() << ". key = " << key;
     return std::string();
   }
 
@@ -303,7 +304,9 @@ std::string NormalizeFileName(const std::string& input) {
   std::string output;
   if (!base::ConvertToUtf8AndNormalize(input, base::kCodepageUTF8, &output))
     output = input;
-  ReplaceChars(output, kSlash, std::string(kEscapedSlash), &output);
+  ReplaceChars(output, kSlash, std::string(kEscapedChars), &output);
+  if (!output.empty() && output.find_first_not_of(kDot, 0) == std::string::npos)
+    output = kEscapedChars;
   return output;
 }
 

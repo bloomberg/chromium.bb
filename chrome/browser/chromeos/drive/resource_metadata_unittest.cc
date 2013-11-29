@@ -688,7 +688,7 @@ TEST_F(ResourceMetadataTest, EncodedNames) {
       CreateDirectoryEntry("\\(^o^)/", root_local_id), &dir_id));
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
       dir_id, &entry));
-  EXPECT_EQ("\\(^o^)\xE2\x88\x95", entry.base_name());
+  EXPECT_EQ("\\(^o^)_", entry.base_name());
 
   std::string file_id;
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(
@@ -696,11 +696,11 @@ TEST_F(ResourceMetadataTest, EncodedNames) {
       &file_id));
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
       file_id, &entry));
-  EXPECT_EQ("Slash \xE2\x88\x95.txt", entry.base_name());
+  EXPECT_EQ("Slash _.txt", entry.base_name());
 
   ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryByPath(
       base::FilePath::FromUTF8Unsafe(
-          "drive/root/\\(^o^)\xE2\x88\x95/Slash \xE2\x88\x95.txt"),
+          "drive/root/\\(^o^)_/Slash _.txt"),
       &entry));
   EXPECT_EQ("myfile", entry.resource_id());
 }
