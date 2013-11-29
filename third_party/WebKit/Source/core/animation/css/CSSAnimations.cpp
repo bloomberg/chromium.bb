@@ -51,6 +51,7 @@
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/KeyframeList.h"
 #include "public/platform/Platform.h"
+#include "wtf/BitArray.h"
 #include "wtf/HashSet.h"
 
 namespace WebCore {
@@ -583,7 +584,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
     ActiveAnimations* activeAnimations = element->activeAnimations();
     const TransitionMap* activeTransitions = activeAnimations ? &activeAnimations->cssAnimations().m_transitions : 0;
 
-    HashSet<CSSPropertyID> listedProperties;
+    BitArray<numCSSProperties> listedProperties;
     bool anyTransitionHadAnimateAll = false;
     const RenderObject* renderer = element->renderer();
     if (style.display() != NONE && renderer && renderer->style() && style.transitions()) {
@@ -606,7 +607,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
 
                 if (!animateAll) {
                     if (CSSAnimations::isAnimatableProperty(id))
-                        listedProperties.add(id);
+                        listedProperties.set(id);
                     else
                         continue;
                 }
@@ -625,7 +626,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const 
         for (TransitionMap::const_iterator iter = activeTransitions->begin(); iter != activeTransitions->end(); ++iter) {
             const TimedItem* timedItem = iter->value.transition;
             CSSPropertyID id = iter->key;
-            if (timedItem->phase() == TimedItem::PhaseAfter || (!anyTransitionHadAnimateAll && !listedProperties.contains(id)))
+            if (timedItem->phase() == TimedItem::PhaseAfter || (!anyTransitionHadAnimateAll && !listedProperties.get(id)))
                 update->cancelTransition(id);
         }
     }
