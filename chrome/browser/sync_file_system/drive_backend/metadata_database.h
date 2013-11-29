@@ -290,6 +290,10 @@ class MetadataDatabase {
     return !dirty_trackers_.empty() || !low_priority_dirty_trackers_.empty();
   }
 
+  size_t GetDirtyTrackerCount() {
+    return dirty_trackers_.size();
+  }
+
   bool GetMultiParentFileTrackers(std::string* file_id,
                                   TrackerSet* trackers);
   bool GetConflictingTrackers(TrackerSet* trackers);

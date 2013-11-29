@@ -334,6 +334,13 @@ void SyncEngine::NotifyLastOperationStatus(
     SyncStatusCode sync_status,
     bool used_network) {
   UpdateServiceStateFromSyncStatusCode(sync_status, used_network);
+  if (metadata_database_) {
+    FOR_EACH_OBSERVER(
+        Observer,
+        service_observers_,
+        OnRemoteChangeQueueUpdated(
+            metadata_database_->GetDirtyTrackerCount()));
+  }
 }
 
 void SyncEngine::OnNotificationReceived() {
