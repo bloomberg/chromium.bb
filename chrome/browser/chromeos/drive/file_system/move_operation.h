@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/resource_metadata.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace base {
@@ -25,6 +25,10 @@ namespace drive {
 
 class JobScheduler;
 class ResourceEntry;
+
+namespace internal {
+class ResourceMetadata;
+}  // namespace internal
 
 namespace file_system {
 
@@ -44,7 +48,7 @@ class MoveOperation {
   // Performs the move operation on the file at drive path |src_file_path|
   // with a target of |dest_file_path|.
   // If |preserve_last_modified| is set to true, this tries to preserve
-  // last modified time stamp. This is supported only on Drive API v2.
+  // last modified time stamp.
   // Invokes |callback| when finished with the result of the operation.
   // |callback| must not be null.
   void Move(const base::FilePath& src_file_path,
@@ -63,71 +67,14 @@ class MoveOperation {
                         scoped_ptr<ResourceEntry> dest_parent_entry,
                         FileError error);
 
-  // Part of Move(). Called after UpdateResource is completed. This is only for
-  // Drive API v2.
+  // Part of Move(). Called after UpdateResource is completed.
   void MoveAfterUpdateResource(
       const MoveParams& params,
       google_apis::GDataErrorCode status,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
 
   // Part of Move(). Called after ResourceMetadata::RefreshEntry is completed.
-  // This is only for Drive API v2.
   void MoveAfterRefreshEntry(const MoveParams& params, FileError error);
-
-  // Part of Move(). Called after renaming (without moving the directory)
-  // is completed.
-  void MoveAfterRename(const MoveParams& params,
-                       scoped_ptr<ResourceEntry> src_entry,
-                       scoped_ptr<ResourceEntry> src_parent_entry,
-                       scoped_ptr<ResourceEntry> dest_parent_entry,
-                       FileError error);
-
-  // Part of Move(). Called after adding the entry to the parent is done.
-  void MoveAfterAddToDirectory(const MoveParams& params,
-                               const std::string& resource_id,
-                               const std::string& old_parent_resource_id,
-                               FileError error);
-
-
-  // Renames the |entry| to |new_title|. Upon completion, |callback| will be
-  // called. Note that if |entry|'s title is same as |new_title|, does nothing
-  // and calls |callback|.
-  // |callback| must not be null.
-  void Rename(const ResourceEntry& entry,
-              const std::string& new_title,
-              const FileOperationCallback& callback);
-
-  // Part of Rename(). Called after server side renaming is done.
-  void RenameAfterRenameResource(const std::string& local_id,
-                                 const std::string& new_title,
-                                 const FileOperationCallback& callback,
-                                 google_apis::GDataErrorCode status);
-
-
-  // Adds the entry to the specified directory.
-  // Upon completion, |callback| will be called.
-  void AddToDirectory(scoped_ptr<ResourceEntry> entry,
-                      scoped_ptr<ResourceEntry> directory,
-                      const FileOperationCallback& callback);
-
-  // Part of AddToDirectory(). Called after server side updating is done.
-  void AddToDirectoryAfterAddResourceToDirectory(
-      const std::string& local_id,
-      const std::string& parent_local_id,
-      const FileOperationCallback& callback,
-      google_apis::GDataErrorCode status);
-
-  // Removes the resource with |resource_id| from the directory with
-  // |directory_resource_id|.
-  // Upon completion, |callback| will be called.
-  void RemoveFromDirectory(const std::string& resource_id,
-                           const std::string& directory_resource_id,
-                           const FileOperationCallback& callback);
-
-  // Part of RemoveFromDirectory(). Called after server side updating is done.
-  void RemoveFromDirectoryAfterRemoveResourceFromDirectory(
-      const FileOperationCallback& callback,
-      google_apis::GDataErrorCode status);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
