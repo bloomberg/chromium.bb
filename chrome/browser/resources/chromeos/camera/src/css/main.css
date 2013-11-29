@@ -260,7 +260,7 @@ body.browser #toolbar {
   position: absolute;
   right: 0;
   top: 0;
-  z-index: 2;
+  z-index: 1;
 }
 
 #error .icon {
@@ -452,7 +452,7 @@ body:not(.has-error) #toolbar.expanded {
   right: 0;
   top: 0;
   transition: opacity 50ms linear;
-  z-index: 2;
+  z-index: 1;
 }
 
 body.show-shutter #shutter {
@@ -466,7 +466,7 @@ body.show-shutter #shutter {
   position: absolute;
   right: 25%;
   top: 25%;
-  z-index: 2;
+  z-index: 1;
 }
 
 #picture-preview img {
