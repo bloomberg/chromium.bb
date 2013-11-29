@@ -435,7 +435,7 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
     // volume is higher than 255.
     volume_ = static_cast<int>((volume * MaxVolume()) + 0.5);
     current_volume = volume_;
-    audio_delay_ = base::TimeDelta::FromMicroseconds(audio_delay_milliseconds);
+    audio_delay_ = base::TimeDelta::FromMilliseconds(audio_delay_milliseconds);
     key_pressed_ = key_pressed;
     tracks = tracks_;
     std::swap(tracks_to_notify_format_, tracks_to_notify_format);

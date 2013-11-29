@@ -687,6 +687,7 @@
             'renderer/media/rtc_peer_connection_handler_unittest.cc',
             'renderer/media/rtc_video_decoder_unittest.cc',
             'renderer/media/video_source_handler_unittest.cc',
+            'renderer/media/webrtc_audio_capturer_unittest.cc',
             'renderer/media/webrtc_audio_device_unittest.cc',
             'renderer/media/webrtc_identity_service_unittest.cc',
             'renderer/media/webrtc_local_audio_source_provider_unittest.cc',
