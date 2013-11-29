@@ -28,7 +28,10 @@ class SpdySession;
 // HttpStreamBase.
 class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStreamBase {
  public:
-  class CreateHelper : public base::SupportsUserData::Data {
+  // An object that stores data needed for the creation of a
+  // WebSocketBasicHandshakeStream object. A new CreateHelper is used for each
+  // WebSocket connection.
+  class NET_EXPORT_PRIVATE CreateHelper : public base::SupportsUserData::Data {
    public:
     // Returns a key to use to lookup this object in a URLRequest object. It is
     // different from any other key that is supplied to
@@ -39,7 +42,8 @@ class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStreamBase {
 
     // Create a WebSocketBasicHandshakeStream. This is called after the
     // underlying connection has been established but before any handshake data
-    // has been transferred.
+    // has been transferred. This can be called more than once in the case that
+    // HTTP authentication is needed.
     virtual WebSocketHandshakeStreamBase* CreateBasicStream(
         scoped_ptr<ClientSocketHandle> connection,
         bool using_proxy) = 0;

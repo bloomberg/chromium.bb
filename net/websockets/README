@@ -61,6 +61,8 @@ websocket_frame_parser.h
 websocket_frame_parser_test.cc
 websocket_frame_test.cc
 websocket_handshake_stream_base.h
+websocket_handshake_stream_create_helper.cc
+websocket_handshake_stream_create_helper.h
 websocket_inflater.cc
 websocket_inflater.h
 websocket_inflater_test.cc
