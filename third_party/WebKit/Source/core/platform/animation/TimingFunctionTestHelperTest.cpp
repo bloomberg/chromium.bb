@@ -70,21 +70,6 @@ using namespace WebCore;
 
 class TimingFunctionTestHelperTest : public ::testing::Test {
 
-protected:
-    bool m_enabled;
-
-    virtual void SetUp()
-    {
-        m_enabled = RuntimeEnabledFeatures::webAnimationsEnabled();
-        // Needed for ChainedTimingFunction support
-        RuntimeEnabledFeatures::setWebAnimationsEnabled(true);
-    }
-
-    virtual void TearDown()
-    {
-        RuntimeEnabledFeatures::setWebAnimationsEnabled(m_enabled);
-    }
-
 public:
     // Make sure that the CubicBezierTimingFunction call goes via the generic
     // TimingFunction PrintTo.

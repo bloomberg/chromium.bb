@@ -1057,7 +1057,7 @@ void Document::setReadyState(ReadyState readyState)
     case Loading:
         if (!m_documentTiming.domLoading) {
             m_documentTiming.domLoading = monotonicallyIncreasingTime();
-            if (RuntimeEnabledFeatures::webAnimationsEnabled())
+            if (RuntimeEnabledFeatures::webAnimationsCSSEnabled())
                 m_timeline->setZeroTime(m_documentTiming.domLoading);
         }
         break;

@@ -122,9 +122,8 @@ Touch status=stable
 UserSelectAll status=experimental
 Vibration status=stable
 VideoTrack depends_on=Media, status=stable
-WebAnimations status=experimental
-WebAnimationsCSS depends_on=WebAnimations, status=experimental
-WebAnimationsSVG depends_on=WebAnimations
+WebAnimationsCSS status=experimental
+WebAnimationsSVG depends_on=WebAnimationsCSS
 WebAnimationsAPI depends_on=WebAnimationsCSS, status=experimental
 WebAudio condition=WEB_AUDIO, status=stable
 WebGLDraftExtensions status=experimental

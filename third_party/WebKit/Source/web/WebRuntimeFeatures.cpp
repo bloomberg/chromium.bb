@@ -361,13 +361,11 @@ bool WebRuntimeFeatures::isTouchEnabled()
 
 void WebRuntimeFeatures::enableWebAnimationsCSS(bool enable)
 {
-    RuntimeEnabledFeatures::setWebAnimationsEnabled(enable || RuntimeEnabledFeatures::webAnimationsSVGEnabled());
     RuntimeEnabledFeatures::setWebAnimationsCSSEnabled(enable);
 }
 
 void WebRuntimeFeatures::enableWebAnimationsSVG(bool enable)
 {
-    RuntimeEnabledFeatures::setWebAnimationsEnabled(enable || RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     RuntimeEnabledFeatures::setWebAnimationsSVGEnabled(enable);
 }
 

@@ -1941,7 +1941,7 @@ void CompositedLayerMapping::transitionFinished(CSSPropertyID property)
 
 void CompositedLayerMapping::notifyAnimationStarted(const GraphicsLayer*, double time)
 {
-    if (RuntimeEnabledFeatures::webAnimationsEnabled())
+    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled())
         renderer()->node()->document().cssPendingAnimations().notifyCompositorAnimationStarted(monotonicallyIncreasingTime() - (currentTime() - time));
     else
         renderer()->animation().notifyAnimationStarted(renderer(), time);

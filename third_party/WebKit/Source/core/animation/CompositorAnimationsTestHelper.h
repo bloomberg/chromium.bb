@@ -138,15 +138,10 @@ private:
     PlatformProxy m_proxyPlatform;
 
 protected:
-    bool m_enabled;
     blink::Platform* m_platform;
 
     virtual void SetUp()
     {
-        m_enabled = RuntimeEnabledFeatures::webAnimationsEnabled();
-        // Needed for ChainedTimingFunction support
-        RuntimeEnabledFeatures::setWebAnimationsEnabled(true);
-
         m_mockCompositor = 0;
         m_platform = blink::Platform::current();
         blink::Platform::initialize(&m_proxyPlatform);
@@ -154,7 +149,6 @@ protected:
 
     virtual void TearDown()
     {
-        RuntimeEnabledFeatures::setWebAnimationsEnabled(m_enabled);
         blink::Platform::initialize(m_platform);
     }
 

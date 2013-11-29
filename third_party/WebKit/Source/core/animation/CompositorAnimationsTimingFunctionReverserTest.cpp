@@ -50,19 +50,6 @@ using namespace WebCore;
 
 class AnimationCompositorAnimationsTimingFunctionReverserTest : public ::testing::Test {
 protected:
-    bool m_enabled;
-
-    virtual void SetUp()
-    {
-        m_enabled = RuntimeEnabledFeatures::webAnimationsEnabled();
-        // Needed for ChainedTimingFunction support
-        RuntimeEnabledFeatures::setWebAnimationsEnabled(true);
-    }
-
-    virtual void TearDown()
-    {
-        RuntimeEnabledFeatures::setWebAnimationsEnabled(m_enabled);
-    }
 
 public:
     PassRefPtr<TimingFunction> reverse(const RefPtr<TimingFunction>& timefunc)

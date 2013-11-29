@@ -71,7 +71,7 @@ void dispatchAnimationEventsAsync(Document& document)
 
 void DocumentAnimations::serviceOnAnimationFrame(Document& document, double monotonicAnimationStartTime)
 {
-    if (!RuntimeEnabledFeatures::webAnimationsEnabled())
+    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
         return;
 
     updateAnimationTiming(document, monotonicAnimationStartTime);
@@ -80,7 +80,7 @@ void DocumentAnimations::serviceOnAnimationFrame(Document& document, double mono
 
 void DocumentAnimations::serviceBeforeGetComputedStyle(Node& node, CSSPropertyID property)
 {
-    if (!RuntimeEnabledFeatures::webAnimationsEnabled())
+    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
         return;
 
     if (node.isElementNode()) {
@@ -95,7 +95,7 @@ void DocumentAnimations::serviceBeforeGetComputedStyle(Node& node, CSSPropertyID
 
 void DocumentAnimations::serviceAfterStyleRecalc(Document& document)
 {
-    if (!RuntimeEnabledFeatures::webAnimationsEnabled())
+    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
         return;
 
     if (document.cssPendingAnimations().startPendingAnimations() && document.view())

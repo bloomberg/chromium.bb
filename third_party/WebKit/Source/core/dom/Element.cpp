@@ -390,7 +390,7 @@ ActiveAnimations* Element::ensureActiveAnimations()
 
 bool Element::hasActiveAnimations() const
 {
-    if (!RuntimeEnabledFeatures::webAnimationsEnabled())
+    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
         return false;
 
     if (!hasRareData())
