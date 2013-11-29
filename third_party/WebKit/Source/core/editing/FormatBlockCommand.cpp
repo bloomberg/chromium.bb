@@ -60,16 +60,17 @@ void FormatBlockCommand::formatSelection(const VisiblePosition& startOfSelection
 
 void FormatBlockCommand::formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtr<Element>& blockNode)
 {
-    Node* nodeToSplitTo = enclosingBlockToSplitTreeTo(start.deprecatedNode());
-    RefPtr<Node> outerBlock = (start.deprecatedNode() == nodeToSplitTo) ? start.deprecatedNode() : splitTreeToNode(start.deprecatedNode(), nodeToSplitTo);
-    RefPtr<Node> nodeAfterInsertionPosition = outerBlock;
-
-    RefPtr<Range> range = Range::create(document(), start, endOfSelection);
     Element* refNode = enclosingBlockFlowElement(end);
     Element* root = editableRootForPosition(start);
     // Root is null for elements with contenteditable=false.
     if (!root || !refNode)
         return;
+
+    Node* nodeToSplitTo = enclosingBlockToSplitTreeTo(start.deprecatedNode());
+    RefPtr<Node> outerBlock = (start.deprecatedNode() == nodeToSplitTo) ? start.deprecatedNode() : splitTreeToNode(start.deprecatedNode(), nodeToSplitTo);
+    RefPtr<Node> nodeAfterInsertionPosition = outerBlock;
+    RefPtr<Range> range = Range::create(document(), start, endOfSelection);
+
     if (isElementForFormatBlock(refNode->tagQName()) && start == startOfBlock(start)
         && (end == endOfBlock(end) || isNodeVisiblyContainedWithin(refNode, range.get()))
         && refNode != root && !root->isDescendantOf(refNode)) {
