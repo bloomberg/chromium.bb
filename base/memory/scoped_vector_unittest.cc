@@ -112,6 +112,18 @@ TEST(ScopedVectorTest, LifeCycleWatcher) {
   EXPECT_EQ(LC_DESTROYED, watcher.life_cycle_state());
 }
 
+TEST(ScopedVectorTest, PopBack) {
+  LifeCycleWatcher watcher;
+  EXPECT_EQ(LC_INITIAL, watcher.life_cycle_state());
+  ScopedVector<LifeCycleObject> scoped_vector;
+  scoped_vector.push_back(watcher.NewLifeCycleObject());
+  EXPECT_EQ(LC_CONSTRUCTED, watcher.life_cycle_state());
+  EXPECT_TRUE(watcher.IsWatching(scoped_vector.back()));
+  scoped_vector.pop_back();
+  EXPECT_EQ(LC_DESTROYED, watcher.life_cycle_state());
+  EXPECT_TRUE(scoped_vector.empty());
+}
+
 TEST(ScopedVectorTest, Clear) {
   LifeCycleWatcher watcher;
   EXPECT_EQ(LC_INITIAL, watcher.life_cycle_state());
