@@ -58,7 +58,10 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context) cons
     paint->setTypeface(typeface());
     paint->setFakeBoldText(m_fakeBold);
     paint->setTextSkewX(m_fakeItalic ? -SK_Scalar1 / 4 : 0);
-    if (RuntimeEnabledFeatures::subpixelFontScalingEnabled())
+
+    // Subpixel text positioning is not supported by the GDI backend.
+    if (RuntimeEnabledFeatures::directWriteEnabled()
+        && RuntimeEnabledFeatures::subpixelFontScalingEnabled())
         paint->setSubpixelText(true);
 
     int textFlags = paintTextFlags();

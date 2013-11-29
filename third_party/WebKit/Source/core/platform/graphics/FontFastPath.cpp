@@ -28,6 +28,7 @@
 #include "core/platform/graphics/GlyphPageTreeNode.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/WidthIterator.h"
+#include "platform/LayoutUnit.h"
 #include "platform/fonts/GlyphBuffer.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/graphics/TextRun.h"
@@ -556,14 +557,21 @@ FloatRect Font::selectionRectForSimpleText(const TextRun& run, const FloatPoint&
     it.advance(to, &glyphBuffer);
     float afterWidth = it.m_runWidthSoFar;
 
-    // Using roundf() rather than ceilf() for the right edge as a compromise to ensure correct caret positioning.
+    // Using roundf() rather than ceilf() for the right edge as a compromise to
+    // ensure correct caret positioning.
+    // Use LayoutUnit::epsilon() to ensure that values that cannot be stored as
+    // an integer are floored to n and not n-1 due to floating point imprecision.
     if (run.rtl()) {
         it.advance(run.length(), &glyphBuffer);
         float totalWidth = it.m_runWidthSoFar;
-        return FloatRect(floorf(point.x() + totalWidth - afterWidth), point.y(), roundf(point.x() + totalWidth - beforeWidth) - floorf(point.x() + totalWidth - afterWidth), h);
+        float pixelAlignedX = floorf(point.x() + totalWidth - afterWidth + LayoutUnit::epsilon());
+        return FloatRect(pixelAlignedX, point.y(),
+            roundf(point.x() + totalWidth - beforeWidth) - pixelAlignedX, h);
     }
 
-    return FloatRect(floorf(point.x() + beforeWidth), point.y(), roundf(point.x() + afterWidth) - floorf(point.x() + beforeWidth), h);
+    float pixelAlignedX = floorf(point.x() + beforeWidth + LayoutUnit::epsilon());
+    return FloatRect(pixelAlignedX, point.y(),
+        roundf(point.x() + afterWidth) - pixelAlignedX, h);
 }
 
 int Font::offsetForPositionForSimpleText(const TextRun& run, float x, bool includePartialGlyphs) const

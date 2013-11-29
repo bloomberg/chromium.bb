@@ -190,9 +190,14 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context) cons
     paint->setHinting(static_cast<SkPaint::Hinting>(m_style.hintStyle));
     paint->setEmbeddedBitmapText(m_style.useBitmaps);
     paint->setAutohinted(m_style.useAutoHint);
-    paint->setSubpixelText(m_style.useSubpixelPositioning);
     if (m_style.useAntiAlias)
         paint->setLCDRenderText(m_style.useSubpixelRendering);
+
+    // TestRunner specifically toggles the subpixel positioning flag.
+    if (RuntimeEnabledFeatures::subpixelFontScalingEnabled() && !isRunningLayoutTest())
+        paint->setSubpixelText(true);
+    else
+        paint->setSubpixelText(m_style.useSubpixelPositioning);
 
     const float ts = m_textSize >= 0 ? m_textSize : 12;
     paint->setTextSize(SkFloatToScalar(ts));

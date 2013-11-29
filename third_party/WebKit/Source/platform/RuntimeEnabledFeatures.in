@@ -110,7 +110,7 @@ SpeechSynthesis status=stable
 Srcset status=experimental
 Stream status=experimental
 StyleScoped status=experimental
-SubpixelFontScaling
+SubpixelFontScaling status=experimental
 SVGPaintOrder status=experimental
 
 // Many websites disable mouse support when touch APIs are available.  We'd
