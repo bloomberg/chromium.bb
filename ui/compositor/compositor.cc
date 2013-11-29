@@ -17,6 +17,7 @@
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "cc/base/latency_info_swap_promise.h"
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
@@ -437,7 +438,9 @@ void Compositor::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
 }
 
 void Compositor::SetLatencyInfo(const ui::LatencyInfo& latency_info) {
-  host_->SetLatencyInfo(latency_info);
+  scoped_ptr<cc::SwapPromise> swap_promise(
+      new cc::LatencyInfoSwapPromise(latency_info));
+  host_->QueueSwapPromise(swap_promise.Pass());
 }
 
 bool Compositor::ReadPixels(SkBitmap* bitmap,

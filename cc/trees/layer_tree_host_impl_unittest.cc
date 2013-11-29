@@ -5335,5 +5335,44 @@ TEST_F(LayerTreeHostImplTest, WheelFlingShouldBubble) {
   }
 }
 
+// Make sure LatencyInfo carried by LatencyInfoSwapPromise are passed
+// to CompositorFrameMetadata after SwapBuffers();
+TEST_F(LayerTreeHostImplTest, LatencyInfoPassedToCompositorFrameMetadata) {
+  scoped_ptr<SolidColorLayerImpl> root =
+      SolidColorLayerImpl::Create(host_impl_->active_tree(), 1);
+  root->SetAnchorPoint(gfx::PointF());
+  root->SetPosition(gfx::PointF());
+  root->SetBounds(gfx::Size(10, 10));
+  root->SetContentBounds(gfx::Size(10, 10));
+  root->SetDrawsContent(true);
+
+  host_impl_->active_tree()->SetRootLayer(root.PassAs<LayerImpl>());
+
+  FakeOutputSurface* fake_output_surface =
+      static_cast<FakeOutputSurface*>(host_impl_->output_surface());
+
+  const ui::LatencyInfo& metadata_latency_before =
+      fake_output_surface->last_sent_frame().metadata.latency_info;
+  EXPECT_FALSE(metadata_latency_before.FindLatency(
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, NULL));
+
+  ui::LatencyInfo latency_info;
+  latency_info.AddLatencyNumber(
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, 0);
+  host_impl_->SetLatencyInfoForInputEvent(latency_info);
+
+  gfx::Rect full_frame_damage(host_impl_->DrawViewportSize());
+  LayerTreeHostImpl::FrameData frame;
+  EXPECT_TRUE(host_impl_->PrepareToDraw(&frame, gfx::Rect()));
+  host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());
+  host_impl_->DidDrawAllLayers(frame);
+  EXPECT_TRUE(host_impl_->SwapBuffers(frame));
+
+  const ui::LatencyInfo& metadata_latency_after =
+      fake_output_surface->last_sent_frame().metadata.latency_info;
+  EXPECT_TRUE(metadata_latency_after.FindLatency(
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 0, NULL));
+}
+
 }  // namespace
 }  // namespace cc

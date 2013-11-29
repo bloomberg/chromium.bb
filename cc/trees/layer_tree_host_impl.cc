@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "cc/animation/scrollbar_animation_controller.h"
 #include "cc/animation/timing_function.h"
+#include "cc/base/latency_info_swap_promise.h"
 #include "cc/base/math_util.h"
 #include "cc/base/util.h"
 #include "cc/debug/benchmark_instrumentation.h"
@@ -474,7 +475,9 @@ bool LayerTreeHostImpl::HaveTouchEventHandlersAt(gfx::Point viewport_point) {
 
 void LayerTreeHostImpl::SetLatencyInfoForInputEvent(
     const ui::LatencyInfo& latency_info) {
-  active_tree()->SetLatencyInfo(latency_info);
+  scoped_ptr<SwapPromise> swap_promise(
+      new LatencyInfoSwapPromise(latency_info));
+  active_tree()->QueueSwapPromise(swap_promise.Pass());
 }
 
 void LayerTreeHostImpl::TrackDamageForAllSurfaces(
@@ -1269,7 +1272,6 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
   metadata.root_layer_size = active_tree_->ScrollableSize();
   metadata.min_page_scale_factor = active_tree_->min_page_scale_factor();
   metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
-  metadata.latency_info = active_tree_->GetLatencyInfo();
   if (top_controls_manager_) {
     metadata.location_bar_offset =
         gfx::Vector2dF(0.f, top_controls_manager_->controls_top_offset());
@@ -1428,9 +1430,8 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
     return false;
   }
   CompositorFrameMetadata metadata = MakeCompositorFrameMetadata();
+  active_tree()->FinishSwapPromises(&metadata);
   renderer_->SwapBuffers(metadata);
-  active_tree_->ClearLatencyInfo();
-  active_tree()->FinishSwapPromises();
   return true;
 }
 

@@ -5,6 +5,8 @@
 #ifndef CC_BASE_SWAP_PROMISE_H_
 #define CC_BASE_SWAP_PROMISE_H_
 
+#include "cc/output/compositor_frame_metadata.h"
+
 namespace cc {
 
 const unsigned int kMaxQueuedSwapPromiseNumber = 100;
@@ -27,11 +29,8 @@ const unsigned int kMaxQueuedSwapPromiseNumber = 100;
 // DidNotSwap() are called at a particular thread. It is better to let the
 // subclass carry thread-safe member data and operate on that member data in
 // DidSwap() and DidNotSwap().
-class SwapPromise {
+class CC_EXPORT SwapPromise {
  public:
-  SwapPromise() {}
-  virtual ~SwapPromise() {}
-
   enum DidNotSwapReason {
     DID_NOT_SWAP_UNKNOWN,
     SWAP_FAILS,
@@ -39,7 +38,10 @@ class SwapPromise {
     SWAP_PROMISE_LIST_OVERFLOW,
   };
 
-  virtual void DidSwap() = 0;
+  SwapPromise() {}
+  virtual ~SwapPromise() {}
+
+  virtual void DidSwap(CompositorFrameMetadata* metadata) = 0;
   virtual void DidNotSwap(DidNotSwapReason reason) = 0;
 };
 

@@ -37,7 +37,6 @@
 #include "cc/trees/occlusion_tracker.h"
 #include "cc/trees/proxy.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/events/latency_info.h"
 #include "ui/gfx/rect.h"
 
 namespace cc {
@@ -233,7 +232,6 @@ class CC_EXPORT LayerTreeHost {
   void ApplyScrollAndScale(const ScrollAndScaleSet& info);
 
   void SetImplTransform(const gfx::Transform& transform);
-  void SetLatencyInfo(const ui::LatencyInfo& latency_info);
 
   // Virtual for tests.
   virtual void StartRateLimiter();
@@ -414,8 +412,6 @@ class CC_EXPORT LayerTreeHost {
   scoped_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
 
   bool in_paint_layer_contents_;
-
-  ui::LatencyInfo latency_info_;
 
   static const int kTotalFramesToUseForLCDTextMetrics = 50;
   int total_frames_used_for_lcd_text_metrics_;
