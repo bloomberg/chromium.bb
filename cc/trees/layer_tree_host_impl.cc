@@ -447,13 +447,13 @@ void LayerTreeHostImpl::StartPageScaleAnimation(gfx::Vector2d target_offset,
                                   duration.InSecondsF());
   }
 
-  client_->SetNeedsRedrawOnImplThread();
+  SetNeedsRedraw();
   client_->SetNeedsCommitOnImplThread();
   client_->RenewTreePriority();
 }
 
 void LayerTreeHostImpl::ScheduleAnimation() {
-  client_->SetNeedsRedrawOnImplThread();
+  SetNeedsRedraw();
 }
 
 bool LayerTreeHostImpl::HaveTouchEventHandlersAt(gfx::Point viewport_point) {
@@ -1565,7 +1565,7 @@ void LayerTreeHostImpl::ActivatePendingTree() {
       root_layer_scroll_offset_delegate_);
 
   client_->OnCanDrawStateChanged(CanDraw());
-  client_->SetNeedsRedrawOnImplThread();
+  SetNeedsRedraw();
   client_->RenewTreePriority();
 
   if (debug_state_.continuous_painting) {
@@ -1929,7 +1929,7 @@ void LayerTreeHostImpl::UpdateMaxScrollOffset() {
 }
 
 void LayerTreeHostImpl::DidChangeTopControlsPosition() {
-  client_->SetNeedsRedrawOnImplThread();
+  SetNeedsRedraw();
   active_tree_->set_needs_update_draw_properties();
   SetFullRootLayerDamage();
 }
@@ -2216,7 +2216,7 @@ bool LayerTreeHostImpl::ScrollBy(gfx::Point viewport_point,
   bool did_scroll = did_scroll_x || did_scroll_y;
   if (did_scroll) {
     client_->SetNeedsCommitOnImplThread();
-    client_->SetNeedsRedrawOnImplThread();
+    SetNeedsRedraw();
     client_->RenewTreePriority();
   }
 
@@ -2269,7 +2269,7 @@ bool LayerTreeHostImpl::ScrollVerticallyByPage(gfx::Point viewport_point,
 
     if (!applied_delta.IsZero()) {
       client_->SetNeedsCommitOnImplThread();
-      client_->SetNeedsRedrawOnImplThread();
+      SetNeedsRedraw();
       client_->RenewTreePriority();
       return true;
     }
@@ -2452,7 +2452,7 @@ void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
   RootScrollLayer()->ScrollBy(move);
 
   client_->SetNeedsCommitOnImplThread();
-  client_->SetNeedsRedrawOnImplThread();
+  SetNeedsRedraw();
   client_->RenewTreePriority();
 }
 
@@ -2518,7 +2518,7 @@ void LayerTreeHostImpl::AnimatePageScale(base::TimeTicks time) {
       page_scale_animation_->ScrollOffsetAtTime(monotonic_time);
 
   RootScrollLayer()->ScrollBy(next_scroll - scroll_total);
-  client_->SetNeedsRedrawOnImplThread();
+  SetNeedsRedraw();
 
   if (page_scale_animation_->IsAnimationCompleteAtTime(monotonic_time)) {
     page_scale_animation_.reset();
@@ -2557,7 +2557,7 @@ void LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
        ++iter)
     (*iter).second->Animate(monotonic_seconds);
 
-  client_->SetNeedsRedrawOnImplThread();
+  SetNeedsRedraw();
 }
 
 void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
@@ -2671,7 +2671,7 @@ void LayerTreeHostImpl::AnimateScrollbarsRecursive(LayerImpl* layer,
     TRACE_EVENT_INSTANT0(
         "cc", "LayerTreeHostImpl::SetNeedsRedraw due to AnimateScrollbars",
         TRACE_EVENT_SCOPE_THREAD);
-    client_->SetNeedsRedrawOnImplThread();
+    SetNeedsRedraw();
   }
 
   for (size_t i = 0; i < layer->children().size(); ++i)
@@ -2695,7 +2695,7 @@ void LayerTreeHostImpl::StartScrollbarAnimationRecursive(LayerImpl* layer,
     if (delay > base::TimeDelta())
       client_->RequestScrollbarAnimationOnImplThread(delay);
     else if (scrollbar_controller->Animate(time))
-      client_->SetNeedsRedrawOnImplThread();
+      SetNeedsRedraw();
   }
 
   for (size_t i = 0; i < layer->children().size(); ++i)

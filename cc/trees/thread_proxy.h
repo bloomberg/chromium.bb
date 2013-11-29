@@ -74,6 +74,8 @@ class ThreadProxy : public Proxy,
   virtual void BeginImplFrame(const BeginFrameArgs& args) OVERRIDE;
   virtual void OnCanDrawStateChanged(bool can_draw) OVERRIDE;
   virtual void NotifyReadyToActivate() OVERRIDE;
+  // Please call these 2 functions through
+  // LayerTreeHostImpl's SetNeedsRedraw() and SetNeedsRedrawRect().
   virtual void SetNeedsRedrawOnImplThread() OVERRIDE;
   virtual void SetNeedsRedrawRectOnImplThread(gfx::Rect dirty_rect) OVERRIDE;
   virtual void SetNeedsManageTilesOnImplThread() OVERRIDE;

@@ -64,6 +64,8 @@ class LayerTreeHostImplClient {
   virtual void BeginImplFrame(const BeginFrameArgs& args) = 0;
   virtual void OnCanDrawStateChanged(bool can_draw) = 0;
   virtual void NotifyReadyToActivate() = 0;
+  // Please call these 2 functions through
+  // LayerTreeHostImpl's SetNeedsRedraw() and SetNeedsRedrawRect().
   virtual void SetNeedsRedrawOnImplThread() = 0;
   virtual void SetNeedsRedrawRectOnImplThread(gfx::Rect damage_rect) = 0;
   virtual void DidInitializeVisibleTileOnImplThread() = 0;
