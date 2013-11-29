@@ -960,13 +960,15 @@ class ChromiumAndroidDriver(driver.Driver):
         if not tombstones or tombstones.startswith('/data/tombstones/tombstone_*: No such file or directory'):
             self._log_error('The driver crashed, but no tombstone found!')
             return ''
+
         if tombstones.startswith('/data/tombstones/tombstone_*: Permission denied'):
             # FIXME: crbug.com/321489 ... figure out why this happens.
             self._log_error('The driver crashed, but we could not read the tombstones!')
             return ''
+
         tombstones = tombstones.rstrip().split('\n')
-        last_tombstone = tombstones[0].split()
-        for tombstone in tombstones[1:]:
+        last_tombstone = None
+        for tombstone in tombstones:
             # Format of fields:
             # 0          1      2      3     4          5     6
             # permission uid    gid    size  date       time  filename
@@ -975,10 +977,15 @@ class ChromiumAndroidDriver(driver.Driver):
             if len(fields) != 7:
                 self._log_warning("unexpected line in tombstone output, skipping: '%s'" % tombstone)
                 continue
-            if (fields[4] + fields[5] >= last_tombstone[4] + last_tombstone[5]):
+
+            if not last_tombstone or fields[4] + fields[5] >= last_tombstone[4] + last_tombstone[5]:
                 last_tombstone = fields
             else:
                 break
+
+        if not last_tombstone:
+            self._log_error('The driver crashed, but we could not find any valid tombstone!')
+            return ''
 
         # Use Android tool vendor/google/tools/stack to convert the raw
         # stack trace into a human readable format, if needed.

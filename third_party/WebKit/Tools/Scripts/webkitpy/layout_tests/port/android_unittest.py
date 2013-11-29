@@ -42,6 +42,12 @@ from webkitpy.layout_tests.port import driver
 from webkitpy.layout_tests.port import driver_unittest
 from webkitpy.tool.mocktool import MockOptions
 
+# Type of tombstone test which the mocked Android Debug Bridge should execute.
+VALID_TOMBSTONE_TEST_TYPE = 0
+NO_FILES_TOMBSTONE_TEST_TYPE = 1
+NO_PERMISSION_TOMBSTONE_TEST_TYPE = 2
+INVALID_ENTRY_TOMBSTONE_TEST_TYPE = 3
+INVALID_ENTRIES_TOMBSTONE_TEST_TYPE = 4
 
 # Any "adb" commands will be interpret by this class instead of executing actual
 # commansd on the file system, which we don't want to do.
@@ -49,6 +55,7 @@ class MockAndroidDebugBridge:
     def __init__(self, device_count):
         self._device_count = device_count
         self._last_command = None
+        self._tombstone_output = None
 
     # Local public methods.
 
@@ -79,11 +86,19 @@ class MockAndroidDebugBridge:
                 return 'mockoutput'
             if len(args) > 5 and args[5] == 'power':
                 return 'mScreenOn=true'
+            if len(args) > 5 and args[4] == 'cat' and args[5].find('tombstone') != -1:
+                return 'tombstone content'
+            if len(args) > 6 and args[4] == 'ls' and args[6].find('tombstone') != -1:
+                assert self._tombstone_output, 'Tombstone output needs to have been set by the test.'
+                return self._tombstone_output
 
         return ''
 
     def last_command(self):
         return self._last_command
+
+    def set_tombstone_output(self, output):
+        self._tombstone_output = output
 
     # Local private methods.
 
@@ -133,8 +148,8 @@ class AndroidCommandsTest(unittest.TestCase):
     def test_convenience_methods(self):
         android_commands = self.make_android_commands(1, '123456789ABCDEF0')
 
-        android_commands.file_exists('/tombstones')
-        self.assertEquals('adb -s 123456789ABCDEF0 shell ls -d /tombstones', self._mock_executive.last_command())
+        android_commands.file_exists('/some_directory')
+        self.assertEquals('adb -s 123456789ABCDEF0 shell ls -d /some_directory', self._mock_executive.last_command())
 
         android_commands.push('foo', 'bar')
         self.assertEquals('adb -s 123456789ABCDEF0 push foo bar', self._mock_executive.last_command())
@@ -240,3 +255,73 @@ class ChromiumAndroidTwoPortsTest(unittest.TestCase):
 
         self.assertEqual(1, port0.driver_cmd_line().count('--foo=bar'))
         self.assertEqual(0, port1.driver_cmd_line().count('--create-stdin-fifo'))
+
+
+class ChromiumAndroidDriverTombstoneTest(unittest.TestCase):
+    EXPECTED_STACKTRACE = '-rw------- 1000 1000 3604 2013-11-19 16:16 tombstone_10\ntombstone content'
+
+    def setUp(self):
+        self._mock_adb = MockAndroidDebugBridge(1)
+        self._mock_executive = MockExecutive2(run_command_fn=self._mock_adb.run_command)
+
+        self._port = android.AndroidPort(MockSystemHost(executive=self._mock_executive), 'android')
+        self._driver = android.ChromiumAndroidDriver(self._port, worker_number=0,
+            pixel_tests=True, driver_details=android.ContentShellDriverDetails(), android_devices=self._port._devices)
+
+        self._errors = []
+        self._driver._log_error = lambda msg: self._errors.append(msg)
+
+        self._warnings = []
+        self._driver._log_warning = lambda msg: self._warnings.append(msg)
+
+    # Tests that we return an empty string and log an error when no tombstones could be found.
+    def test_no_tombstones_found(self):
+        self._mock_adb.set_tombstone_output('/data/tombstones/tombstone_*: No such file or directory')
+        stacktrace = self._driver._get_last_stacktrace()
+
+        self.assertEqual(1, len(self._errors))
+        self.assertEqual('The driver crashed, but no tombstone found!', self._errors[0])
+        self.assertEqual('', stacktrace)
+
+    # Tests that an empty string will be returned if we cannot read the tombstone files.
+    def test_insufficient_tombstone_permission(self):
+        self._mock_adb.set_tombstone_output('/data/tombstones/tombstone_*: Permission denied')
+        stacktrace = self._driver._get_last_stacktrace()
+
+        self.assertEqual(1, len(self._errors))
+        self.assertEqual('The driver crashed, but we could not read the tombstones!', self._errors[0])
+        self.assertEqual('', stacktrace)
+
+    # Tests that invalid "ls" output will throw a warning when listing the tombstone files.
+    def test_invalid_tombstone_list_entry_format(self):
+        self._mock_adb.set_tombstone_output('-rw------- 1000 1000 3604 2013-11-19 16:15 tombstone_00\n' +
+                                            '-- invalid entry --\n' +
+                                            '-rw------- 1000 1000 3604 2013-11-19 16:16 tombstone_10')
+        stacktrace = self._driver._get_last_stacktrace()
+
+        self.assertEqual(1, len(self._warnings))
+        self.assertEqual(ChromiumAndroidDriverTombstoneTest.EXPECTED_STACKTRACE, stacktrace)
+
+    # Tests the case in which we can't find any valid tombstone entries at all. The tombstone
+    # output used for the mock misses the permission part.
+    def test_invalid_tombstone_list(self):
+        self._mock_adb.set_tombstone_output('1000 1000 3604 2013-11-19 16:15 tombstone_00\n' +
+                                            '1000 1000 3604 2013-11-19 16:15 tombstone_01\n' +
+                                            '1000 1000 3604 2013-11-19 16:15 tombstone_02')
+        stacktrace = self._driver._get_last_stacktrace()
+
+        self.assertEqual(3, len(self._warnings))
+        self.assertEqual(1, len(self._errors))
+        self.assertEqual('The driver crashed, but we could not find any valid tombstone!', self._errors[0])
+        self.assertEqual('', stacktrace)
+
+    # Tests that valid tombstone listings will return the contents of the most recent file.
+    def test_read_valid_tombstone_file(self):
+        self._mock_adb.set_tombstone_output('-rw------- 1000 1000 3604 2013-11-19 16:15 tombstone_00\n' +
+                                            '-rw------- 1000 1000 3604 2013-11-19 16:16 tombstone_10\n' +
+                                            '-rw------- 1000 1000 3604 2013-11-19 16:15 tombstone_02')
+        stacktrace = self._driver._get_last_stacktrace()
+
+        self.assertEqual(0, len(self._warnings))
+        self.assertEqual(0, len(self._errors))
+        self.assertEqual(ChromiumAndroidDriverTombstoneTest.EXPECTED_STACKTRACE, stacktrace)
