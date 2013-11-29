@@ -137,24 +137,13 @@ class SyncFileSystemService
   // |profile_sync_service| must be non-null.
   void UpdateSyncEnabledStatus(ProfileSyncServiceBase* profile_sync_service);
 
-  // Runs the SyncProcessRunner method of all sync runners (e.g. for Local sync
-  // and Remote sync).
   void RunForEachSyncRunners(void(SyncProcessRunner::*method)());
-
-  // Returns the appropriate RemoteFileSyncService for the given origin/app.
-  // (crbug.com/324215)
-  RemoteFileSyncService* GetRemoteService(const GURL& origin);
 
   Profile* profile_;
   content::NotificationRegistrar registrar_;
 
   scoped_ptr<LocalFileSyncService> local_service_;
   scoped_ptr<RemoteFileSyncService> remote_service_;
-
-  // Holds v2 RemoteFileSyncService, gets created lazily
-  // in case we need to run multiple remote services depending on origin/app.
-  // (crbug.com/324215)
-  scoped_ptr<RemoteFileSyncService> v2_remote_service_;
 
   // Holds all SyncProcessRunners.
   ScopedVector<SyncProcessRunner> sync_runners_;
