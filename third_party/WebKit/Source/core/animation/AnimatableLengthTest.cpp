@@ -35,6 +35,7 @@
 #include "core/animation/AnimatableValueTestHelper.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSToLengthConversionData.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "platform/CalculationValue.h"
@@ -48,9 +49,11 @@ namespace WebCore {
 
 class AnimationAnimatableLengthTest : public ::testing::Test {
 protected:
-    virtual void SetUp()
+    AnimationAnimatableLengthTest()
+        : style(RenderStyle::createDefaultStyle())
+        , conversionDataZoom1(style.get(), style.get(), 1.0f)
+        , conversionDataZoom3(style.get(), style.get(), 3.0f)
     {
-        style = RenderStyle::createDefaultStyle();
     }
 
     PassRefPtr<AnimatableLength> create(double value, CSSPrimitiveValue::UnitTypes type)
@@ -88,6 +91,8 @@ protected:
     }
 
     RefPtr<RenderStyle> style;
+    CSSToLengthConversionData conversionDataZoom1;
+    CSSToLengthConversionData conversionDataZoom3;
 };
 
 TEST_F(AnimationAnimatableLengthTest, CanCreateFrom)
@@ -164,15 +169,15 @@ TEST_F(AnimationAnimatableLengthTest, ToCSSValue)
 
 TEST_F(AnimationAnimatableLengthTest, ToLength)
 {
-    EXPECT_EQ(Length(-5, WebCore::Fixed), create(-5, CSSPrimitiveValue::CSS_PX)->toLength(style.get(), style.get(), 1));
-    EXPECT_EQ(Length(-15, WebCore::Fixed), create(-5, CSSPrimitiveValue::CSS_PX)->toLength(style.get(), style.get(), 3));
-    EXPECT_EQ(Length(0, WebCore::Fixed), create(-5, CSSPrimitiveValue::CSS_PX)->toLength(style.get(), style.get(), 1, NonNegativeValues));
-    EXPECT_EQ(Length(0, WebCore::Fixed), create(-5, CSSPrimitiveValue::CSS_PX)->toLength(style.get(), style.get(), 3, NonNegativeValues));
+    EXPECT_EQ(Length(-5, WebCore::Fixed), create(-5, CSSPrimitiveValue::CSS_PX)->toLength(conversionDataZoom1));
+    EXPECT_EQ(Length(-15, WebCore::Fixed), create(-5, CSSPrimitiveValue::CSS_PX)->toLength(conversionDataZoom3));
+    EXPECT_EQ(Length(0, WebCore::Fixed), create(-5, CSSPrimitiveValue::CSS_PX)->toLength(conversionDataZoom1, NonNegativeValues));
+    EXPECT_EQ(Length(0, WebCore::Fixed), create(-5, CSSPrimitiveValue::CSS_PX)->toLength(conversionDataZoom3, NonNegativeValues));
 
-    EXPECT_EQ(Length(-5, Percent), create(-5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 1));
-    EXPECT_EQ(Length(-5, Percent), create(-5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 3));
-    EXPECT_EQ(Length(0, Percent), create(-5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 1, NonNegativeValues));
-    EXPECT_EQ(Length(0, Percent), create(-5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 3, NonNegativeValues));
+    EXPECT_EQ(Length(-5, Percent), create(-5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(conversionDataZoom1));
+    EXPECT_EQ(Length(-5, Percent), create(-5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(conversionDataZoom3));
+    EXPECT_EQ(Length(0, Percent), create(-5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(conversionDataZoom1, NonNegativeValues));
+    EXPECT_EQ(Length(0, Percent), create(-5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(conversionDataZoom3, NonNegativeValues));
 
     EXPECT_EQ(
         Length(CalculationValue::create(
@@ -181,7 +186,7 @@ TEST_F(AnimationAnimatableLengthTest, ToLength)
                 adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
                 CalcAdd)),
             ValueRangeAll)),
-        create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 1));
+        create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(conversionDataZoom1));
     EXPECT_EQ(
         Length(CalculationValue::create(
             adoptPtr(new CalcExpressionBinaryOperation(
@@ -189,7 +194,7 @@ TEST_F(AnimationAnimatableLengthTest, ToLength)
                 adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
                 CalcAdd)),
             ValueRangeAll)),
-        create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 3));
+        create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(conversionDataZoom3));
     EXPECT_EQ(
         Length(CalculationValue::create(
             adoptPtr(new CalcExpressionBinaryOperation(
@@ -197,7 +202,7 @@ TEST_F(AnimationAnimatableLengthTest, ToLength)
                 adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
                 CalcAdd)),
             ValueRangeNonNegative)),
-        create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 1, NonNegativeValues));
+        create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(conversionDataZoom1, NonNegativeValues));
     EXPECT_EQ(
         Length(CalculationValue::create(
             adoptPtr(new CalcExpressionBinaryOperation(
@@ -205,7 +210,7 @@ TEST_F(AnimationAnimatableLengthTest, ToLength)
                 adoptPtr(new CalcExpressionLength(Length(-5, Percent))),
                 CalcAdd)),
             ValueRangeNonNegative)),
-        create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(style.get(), style.get(), 3, NonNegativeValues));
+        create(-5, CSSPrimitiveValue::CSS_PX, -5, CSSPrimitiveValue::CSS_PERCENTAGE)->toLength(conversionDataZoom3, NonNegativeValues));
 }
 
 TEST_F(AnimationAnimatableLengthTest, Interpolate)

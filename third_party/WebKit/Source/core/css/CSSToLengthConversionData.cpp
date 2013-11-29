@@ -28,26 +28,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TransformBuilder_h
-#define TransformBuilder_h
+#include "config.h"
+#include "core/css/CSSToLengthConversionData.h"
 
-#include "platform/transforms/TransformOperations.h"
-#include "wtf/Noncopyable.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 
-class CSSToLengthConversionData;
-class CSSValue;
-
-class TransformBuilder {
-    WTF_MAKE_NONCOPYABLE(TransformBuilder); WTF_MAKE_FAST_ALLOCATED;
-public:
-    TransformBuilder();
-    ~TransformBuilder();
-
-    static bool createTransformOperations(CSSValue* inValue, const CSSToLengthConversionData&, TransformOperations& outOperations);
-};
+float CSSToLengthConversionData::zoom() const
+{
+    if (m_useEffectiveZoom)
+        return m_style ? m_style->effectiveZoom() : 1;
+    return m_zoom;
+}
 
 } // namespace WebCore
-
-#endif // TransformBuilder_h

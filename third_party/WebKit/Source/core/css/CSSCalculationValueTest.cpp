@@ -32,6 +32,7 @@
 #include "core/css/CSSCalculationValue.h"
 
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSToLengthConversionData.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
@@ -46,7 +47,7 @@ void testExpression(PassRefPtr<CSSCalcExpressionNode> expression, const RenderSt
     EXPECT_TRUE(
         expression->equals(
             *CSSCalcValue::createExpressionNode(
-                expression->toCalcValue(style, style, style->effectiveZoom()).get(),
+                expression->toCalcValue(CSSToLengthConversionData(style, style)).get(),
                 style->effectiveZoom()).get()));
 }
 

@@ -65,24 +65,22 @@ namespace {
 
 Length animatableValueToLength(const AnimatableValue* value, const StyleResolverState& state, NumberRange range = AllValues)
 {
-    const RenderStyle* style = state.style();
     if (value->isLength())
-        return toAnimatableLength(value)->toLength(style, state.rootElementStyle(), style->effectiveZoom(), range);
+        return toAnimatableLength(value)->toLength(state.cssToLengthConversionData(), range);
     RefPtr<CSSValue> cssValue = toAnimatableUnknown(value)->toCSSValue();
     CSSPrimitiveValue* cssPrimitiveValue = toCSSPrimitiveValue(cssValue.get());
-    return cssPrimitiveValue->convertToLength<AnyConversion>(style, state.rootElementStyle(), style->effectiveZoom());
+    return cssPrimitiveValue->convertToLength<AnyConversion>(state.cssToLengthConversionData());
 }
 
 BorderImageLength animatableValueToBorderImageLength(const AnimatableValue* value, const StyleResolverState& state)
 {
-    const RenderStyle* style = state.style();
     if (value->isLength())
-        return BorderImageLength(toAnimatableLength(value)->toLength(style, state.rootElementStyle(), style->effectiveZoom(), NonNegativeValues));
+        return BorderImageLength(toAnimatableLength(value)->toLength(state.cssToLengthConversionData(), NonNegativeValues));
     if (value->isDouble())
         return BorderImageLength(clampTo<double>(toAnimatableDouble(value)->toDouble(), 0));
     RefPtr<CSSValue> cssValue = toAnimatableUnknown(value)->toCSSValue();
     CSSPrimitiveValue* cssPrimitiveValue = toCSSPrimitiveValue(cssValue.get());
-    return BorderImageLength(cssPrimitiveValue->convertToLength<AnyConversion>(style, state.rootElementStyle(), style->effectiveZoom()));
+    return BorderImageLength(cssPrimitiveValue->convertToLength<AnyConversion>(state.cssToLengthConversionData()));
 }
 
 template<typename T> T animatableValueRoundClampTo(const AnimatableValue* value, T min = defaultMinimumForClamp<T>(), T max = defaultMaximumForClamp<T>())

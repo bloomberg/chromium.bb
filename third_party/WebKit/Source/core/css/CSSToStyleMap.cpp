@@ -42,14 +42,9 @@
 
 namespace WebCore {
 
-const RenderStyle* CSSToStyleMap::style() const
+const CSSToLengthConversionData& CSSToStyleMap::cssToLengthConversionData() const
 {
-    return m_state.style();
-}
-
-const RenderStyle* CSSToStyleMap::rootElementStyle() const
-{
-    return m_state.rootElementStyle();
+    return m_state.cssToLengthConversionData();
 }
 
 bool CSSToStyleMap::useSVGZoomRules() const
@@ -205,16 +200,14 @@ void CSSToStyleMap::mapFillSize(CSSPropertyID, FillLayer* layer, CSSValue* value
         return;
     }
 
-    float zoomFactor = style()->effectiveZoom();
-
     Length firstLength;
     Length secondLength;
 
     if (Pair* pair = primitiveValue->getPairValue()) {
-        firstLength = pair->first()->convertToLength<AnyConversion>(style(), rootElementStyle(), zoomFactor);
-        secondLength = pair->second()->convertToLength<AnyConversion>(style(), rootElementStyle(), zoomFactor);
+        firstLength = pair->first()->convertToLength<AnyConversion>(cssToLengthConversionData());
+        secondLength = pair->second()->convertToLength<AnyConversion>(cssToLengthConversionData());
     } else {
-        firstLength = primitiveValue->convertToLength<AnyConversion>(style(), rootElementStyle(), zoomFactor);
+        firstLength = primitiveValue->convertToLength<AnyConversion>(cssToLengthConversionData());
         secondLength = Length();
     }
 
@@ -231,8 +224,6 @@ void CSSToStyleMap::mapFillXPosition(CSSPropertyID propertyID, FillLayer* layer,
     if (!value->isPrimitiveValue())
         return;
 
-    float zoomFactor = style()->effectiveZoom();
-
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     Pair* pair = primitiveValue->getPairValue();
     if (pair) {
@@ -242,11 +233,11 @@ void CSSToStyleMap::mapFillXPosition(CSSPropertyID propertyID, FillLayer* layer,
 
     Length length;
     if (primitiveValue->isLength())
-        length = primitiveValue->computeLength<Length>(style(), rootElementStyle(), zoomFactor);
+        length = primitiveValue->computeLength<Length>(cssToLengthConversionData());
     else if (primitiveValue->isPercentage())
         length = Length(primitiveValue->getDoubleValue(), Percent);
     else if (primitiveValue->isCalculatedPercentageWithLength())
-        length = Length(primitiveValue->cssCalcValue()->toCalcValue(style(), rootElementStyle(), zoomFactor));
+        length = Length(primitiveValue->cssCalcValue()->toCalcValue(cssToLengthConversionData()));
     else if (primitiveValue->isViewportPercentageLength())
         length = primitiveValue->viewportPercentageLength();
     else
@@ -262,8 +253,6 @@ void CSSToStyleMap::mapFillYPosition(CSSPropertyID propertyID, FillLayer* layer,
     if (!value->isPrimitiveValue())
         return;
 
-    float zoomFactor = style()->effectiveZoom();
-
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     Pair* pair = primitiveValue->getPairValue();
     if (pair) {
@@ -273,11 +262,11 @@ void CSSToStyleMap::mapFillYPosition(CSSPropertyID propertyID, FillLayer* layer,
 
     Length length;
     if (primitiveValue->isLength())
-        length = primitiveValue->computeLength<Length>(style(), rootElementStyle(), zoomFactor);
+        length = primitiveValue->computeLength<Length>(cssToLengthConversionData());
     else if (primitiveValue->isPercentage())
         length = Length(primitiveValue->getDoubleValue(), Percent);
     else if (primitiveValue->isCalculatedPercentageWithLength())
-        length = Length(primitiveValue->cssCalcValue()->toCalcValue(style(), rootElementStyle(), zoomFactor));
+        length = Length(primitiveValue->cssCalcValue()->toCalcValue(cssToLengthConversionData()));
     else if (primitiveValue->isViewportPercentageLength())
         length = primitiveValue->viewportPercentageLength();
     else
@@ -610,14 +599,14 @@ void CSSToStyleMap::mapNinePieceImageSlice(CSSValue* value, NinePieceImage& imag
     image.setFill(borderImageSlice->m_fill);
 }
 
-static BorderImageLength toBorderImageLength(CSSPrimitiveValue& value, const RenderStyle* currentStyle, const RenderStyle* rootStyle, float multiplier)
+static BorderImageLength toBorderImageLength(CSSPrimitiveValue& value, const CSSToLengthConversionData& conversionData)
 {
     if (value.isNumber())
         return value.getDoubleValue();
     if (value.isPercentage())
         return Length(value.getDoubleValue(CSSPrimitiveValue::CSS_PERCENTAGE), Percent);
     if (value.getValueID() != CSSValueAuto)
-        return value.computeLength<Length>(currentStyle, rootStyle, multiplier);
+        return value.computeLength<Length>(conversionData);
     return Length(Auto);
 }
 
@@ -626,15 +615,16 @@ BorderImageLengthBox CSSToStyleMap::mapNinePieceImageQuad(CSSValue* value) const
     if (!value || !value->isPrimitiveValue())
         return BorderImageLengthBox(Length(Auto));
 
-    float zoom = useSVGZoomRules() ? 1.0f : style()->effectiveZoom();
+    float zoom = useSVGZoomRules() ? 1.0f : cssToLengthConversionData().zoom();
     Quad* slices = toCSSPrimitiveValue(value)->getQuadValue();
 
     // Set up a border image length box to represent our image slices.
+    const CSSToLengthConversionData& conversionData = cssToLengthConversionData().copyWithAdjustedZoom(zoom);
     return BorderImageLengthBox(
-        toBorderImageLength(*slices->top(), style(), rootElementStyle(), zoom),
-        toBorderImageLength(*slices->right(), style(), rootElementStyle(), zoom),
-        toBorderImageLength(*slices->bottom(), style(), rootElementStyle(), zoom),
-        toBorderImageLength(*slices->left(), style(), rootElementStyle(), zoom));
+        toBorderImageLength(*slices->top(), conversionData),
+        toBorderImageLength(*slices->right(), conversionData),
+        toBorderImageLength(*slices->bottom(), conversionData),
+        toBorderImageLength(*slices->left(), conversionData));
 }
 
 void CSSToStyleMap::mapNinePieceImageRepeat(CSSValue* value, NinePieceImage& image) const

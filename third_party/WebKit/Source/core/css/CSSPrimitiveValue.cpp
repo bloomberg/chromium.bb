@@ -26,6 +26,7 @@
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSParser.h"
+#include "core/css/CSSToLengthConversionData.h"
 #include "core/css/Counter.h"
 #include "core/css/Pair.h"
 #include "core/css/RGBColor.h"
@@ -516,70 +517,70 @@ double CSSPrimitiveValue::computeDegrees()
     }
 }
 
-template<> int CSSPrimitiveValue::computeLength(const RenderStyle* style, const RenderStyle* rootStyle, float multiplier, bool computingFontSize)
+template<> int CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData)
 {
-    return roundForImpreciseConversion<int>(computeLengthDouble(style, rootStyle, multiplier, computingFontSize));
+    return roundForImpreciseConversion<int>(computeLengthDouble(conversionData));
 }
 
-template<> unsigned CSSPrimitiveValue::computeLength(const RenderStyle* style, const RenderStyle* rootStyle, float multiplier, bool computingFontSize)
+template<> unsigned CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData)
 {
-    return roundForImpreciseConversion<unsigned>(computeLengthDouble(style, rootStyle, multiplier, computingFontSize));
+    return roundForImpreciseConversion<unsigned>(computeLengthDouble(conversionData));
 }
 
-template<> Length CSSPrimitiveValue::computeLength(const RenderStyle* style, const RenderStyle* rootStyle, float multiplier, bool computingFontSize)
+template<> Length CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData)
 {
-    return Length(clampTo<float>(computeLengthDouble(style, rootStyle, multiplier, computingFontSize), minValueForCssLength, maxValueForCssLength), Fixed);
+    return Length(clampTo<float>(computeLengthDouble(conversionData), minValueForCssLength, maxValueForCssLength), Fixed);
 }
 
-template<> short CSSPrimitiveValue::computeLength(const RenderStyle* style, const RenderStyle* rootStyle, float multiplier, bool computingFontSize)
+template<> short CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData)
 {
-    return roundForImpreciseConversion<short>(computeLengthDouble(style, rootStyle, multiplier, computingFontSize));
+    return roundForImpreciseConversion<short>(computeLengthDouble(conversionData));
 }
 
-template<> unsigned short CSSPrimitiveValue::computeLength(const RenderStyle* style, const RenderStyle* rootStyle, float multiplier, bool computingFontSize)
+template<> unsigned short CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData)
 {
-    return roundForImpreciseConversion<unsigned short>(computeLengthDouble(style, rootStyle, multiplier, computingFontSize));
+    return roundForImpreciseConversion<unsigned short>(computeLengthDouble(conversionData));
 }
 
-template<> float CSSPrimitiveValue::computeLength(const RenderStyle* style, const RenderStyle* rootStyle, float multiplier, bool computingFontSize)
+template<> float CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData)
 {
-    return static_cast<float>(computeLengthDouble(style, rootStyle, multiplier, computingFontSize));
+    return static_cast<float>(computeLengthDouble(conversionData));
 }
 
-template<> double CSSPrimitiveValue::computeLength(const RenderStyle* style, const RenderStyle* rootStyle, float multiplier, bool computingFontSize)
+template<> double CSSPrimitiveValue::computeLength(const CSSToLengthConversionData& conversionData)
 {
-    return computeLengthDouble(style, rootStyle, multiplier, computingFontSize);
+    return computeLengthDouble(conversionData);
 }
 
-double CSSPrimitiveValue::computeLengthDouble(const RenderStyle* style, const RenderStyle* rootStyle, float multiplier, bool computingFontSize)
+double CSSPrimitiveValue::computeLengthDouble(const CSSToLengthConversionData& conversionData)
 {
     if (m_primitiveUnitType == CSS_CALC)
-        // The multiplier and factor is applied to each value in the calc expression individually
-        return m_value.calc->computeLengthPx(style, rootStyle, multiplier, computingFontSize);
+        return m_value.calc->computeLengthPx(conversionData);
+
+    const RenderStyle& style = conversionData.style();
+    const RenderStyle& rootStyle = conversionData.rootStyle();
+    bool computingFontSize = conversionData.computingFontSize();
 
     double factor;
 
     switch (primitiveType()) {
         case CSS_EMS:
-            factor = computingFontSize ? style->fontDescription().specifiedSize() : style->fontDescription().computedSize();
+            factor = computingFontSize ? style.fontDescription().specifiedSize() : style.fontDescription().computedSize();
             break;
         case CSS_EXS:
             // FIXME: We have a bug right now where the zoom will be applied twice to EX units.
             // We really need to compute EX using fontMetrics for the original specifiedSize and not use
             // our actual constructed rendering font.
-            if (style->fontMetrics().hasXHeight())
-                factor = style->fontMetrics().xHeight();
+            if (style.fontMetrics().hasXHeight())
+                factor = style.fontMetrics().xHeight();
             else
-                factor = (computingFontSize ? style->fontDescription().specifiedSize() : style->fontDescription().computedSize()) / 2.0;
+                factor = (computingFontSize ? style.fontDescription().specifiedSize() : style.fontDescription().computedSize()) / 2.0;
             break;
         case CSS_REMS:
-            if (rootStyle)
-                factor = computingFontSize ? rootStyle->fontDescription().specifiedSize() : rootStyle->fontDescription().computedSize();
-            else
-                factor = 1.0;
+            factor = computingFontSize ? rootStyle.fontDescription().specifiedSize() : rootStyle.fontDescription().computedSize();
             break;
         case CSS_CHS:
-            factor = style->fontMetrics().zeroWidth();
+            factor = style.fontMetrics().zeroWidth();
             break;
         case CSS_PX:
             factor = 1.0;
@@ -615,7 +616,7 @@ double CSSPrimitiveValue::computeLengthDouble(const RenderStyle* style, const Re
     if (computingFontSize || isFontRelativeLength())
         return result;
 
-    return result * multiplier;
+    return result * conversionData.zoom();
 }
 
 void CSSPrimitiveValue::setFloatValue(unsigned short, double, ExceptionState& exceptionState)

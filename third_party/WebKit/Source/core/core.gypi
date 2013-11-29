@@ -722,6 +722,8 @@
             'css/CSSTimingFunctionValue.cpp',
             'css/CSSTimingFunctionValue.h',
             'css/CSSTokenizer.h',
+            'css/CSSToLengthConversionData.cpp',
+            'css/CSSToLengthConversionData.h',
             'css/CSSToStyleMap.cpp',
             'css/CSSToStyleMap.h',
             'css/CSSTransformValue.cpp',

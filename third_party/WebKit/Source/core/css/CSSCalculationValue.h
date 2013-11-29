@@ -46,7 +46,6 @@ class CSSValueList;
 class CalculationValue;
 class CalcExpressionNode;
 class Length;
-class RenderStyle;
 
 enum CalculationCategory {
     CalcNumber = 0,
@@ -67,9 +66,9 @@ public:
 
     virtual ~CSSCalcExpressionNode() = 0;
     virtual bool isZero() const = 0;
-    virtual PassOwnPtr<CalcExpressionNode> toCalcValue(const RenderStyle*, const RenderStyle* rootStyle, double zoom = 1.0) const = 0;
+    virtual PassOwnPtr<CalcExpressionNode> toCalcValue(const CSSToLengthConversionData&) const = 0;
     virtual double doubleValue() const = 0;
-    virtual double computeLengthPx(const RenderStyle* currentStyle, const RenderStyle* rootStyle, double multiplier = 1.0, bool computingFontSize = false) const = 0;
+    virtual double computeLengthPx(const CSSToLengthConversionData&) const = 0;
     virtual String customCSSText() const = 0;
     virtual String serializeResolvingVariables(const HashMap<AtomicString, String>&) const = 0;
     virtual bool hasVariableReference() const = 0;
@@ -102,16 +101,16 @@ public:
     static PassRefPtr<CSSCalcExpressionNode> createExpressionNode(const CalcExpressionNode*, float zoom);
     static PassRefPtr<CSSCalcExpressionNode> createExpressionNode(const Length&, float zoom);
 
-    PassRefPtr<CalculationValue> toCalcValue(const RenderStyle* style, const RenderStyle* rootStyle, double zoom = 1.0) const
+    PassRefPtr<CalculationValue> toCalcValue(const CSSToLengthConversionData& conversionData) const
     {
-        return CalculationValue::create(m_expression->toCalcValue(style, rootStyle, zoom), m_nonNegative ? ValueRangeNonNegative : ValueRangeAll);
+        return CalculationValue::create(m_expression->toCalcValue(conversionData), m_nonNegative ? ValueRangeNonNegative : ValueRangeAll);
     }
     CalculationCategory category() const { return m_expression->category(); }
     bool isInt() const { return m_expression->isInteger(); }
     double doubleValue() const;
     bool isNegative() const { return m_expression->doubleValue() < 0; }
     ValueRange permittedValueRange() { return m_nonNegative ? ValueRangeNonNegative : ValueRangeAll; }
-    double computeLengthPx(const RenderStyle* currentStyle, const RenderStyle* rootStyle, double multiplier = 1.0, bool computingFontSize = false) const;
+    double computeLengthPx(const CSSToLengthConversionData&) const;
     CSSCalcExpressionNode* expressionNode() const { return m_expression.get(); }
 
     String customCSSText() const;

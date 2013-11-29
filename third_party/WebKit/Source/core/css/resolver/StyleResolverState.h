@@ -26,6 +26,7 @@
 
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSSVGDocumentValue.h"
+#include "core/css/CSSToLengthConversionData.h"
 #include "core/css/CSSToStyleMap.h"
 #include "core/css/resolver/ElementResolveContext.h"
 #include "core/css/resolver/ElementStyleResources.h"
@@ -58,10 +59,12 @@ public:
 
     const ElementResolveContext& elementContext() const { return m_elementContext; }
 
-    void setStyle(PassRefPtr<RenderStyle> style) { m_style = style; }
+    void setStyle(PassRefPtr<RenderStyle> style) { m_style = style; m_cssToLengthConversionData.setStyle(m_style.get()); }
     const RenderStyle* style() const { return m_style.get(); }
     RenderStyle* style() { return m_style.get(); }
     PassRefPtr<RenderStyle> takeStyle() { return m_style.release(); }
+
+    const CSSToLengthConversionData& cssToLengthConversionData() const { return m_cssToLengthConversionData; }
 
     void setAnimationUpdate(PassOwnPtr<CSSAnimationUpdate> update) { m_animationUpdate = update; }
     const CSSAnimationUpdate* animationUpdate() { return m_animationUpdate.get(); }
@@ -137,6 +140,8 @@ private:
 
     // m_style is the primary output for each element's style resolve.
     RefPtr<RenderStyle> m_style;
+
+    CSSToLengthConversionData m_cssToLengthConversionData;
 
     // m_parentStyle is not always just element->parentNode()->style()
     // so we keep it separate from m_elementContext.

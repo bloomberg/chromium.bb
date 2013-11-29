@@ -25,6 +25,7 @@
 
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSFontFeatureValue.h"
+#include "core/css/CSSToLengthConversionData.h"
 #include "core/css/FontSize.h"
 #include "core/frame/Frame.h"
 #include "core/page/Settings.h"
@@ -324,11 +325,11 @@ void FontBuilder::setFontSizeValue(CSSValue* value, RenderStyle* parentStyle, co
     } else {
         scope.fontDescription().setIsAbsoluteSize(parentIsAbsoluteSize || !(primitiveValue->isPercentage() || primitiveValue->isFontRelativeLength()));
         if (primitiveValue->isLength())
-            size = primitiveValue->computeLength<float>(parentStyle, rootElementStyle, 1.0, true);
+            size = primitiveValue->computeLength<float>(CSSToLengthConversionData(parentStyle, rootElementStyle, 1.0, true));
         else if (primitiveValue->isPercentage())
             size = (primitiveValue->getFloatValue() * parentSize) / 100.0f;
         else if (primitiveValue->isCalculatedPercentageWithLength())
-            size = primitiveValue->cssCalcValue()->toCalcValue(parentStyle, rootElementStyle)->evaluate(parentSize);
+            size = primitiveValue->cssCalcValue()->toCalcValue(CSSToLengthConversionData(parentStyle, rootElementStyle, 1.0f))->evaluate(parentSize);
         else if (primitiveValue->isViewportPercentageLength())
             size = valueForLength(primitiveValue->viewportPercentageLength(), 0, m_document->renderView());
         else

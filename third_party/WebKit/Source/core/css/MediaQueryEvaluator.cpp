@@ -34,6 +34,7 @@
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSToLengthConversionData.h"
 #include "core/css/MediaFeatureNames.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQuery.h"
@@ -347,7 +348,7 @@ static bool computeLength(CSSValue* value, bool strict, RenderStyle* initialStyl
     if (primitiveValue->isLength()) {
         // Relative (like EM) and root relative (like REM) units are always resolved against the initial values
         // for media queries, hence the two initialStyle parameters.
-        result = primitiveValue->computeLength<int>(initialStyle, initialStyle, 1.0 /* multiplier */, true /* computingFontSize */);
+        result = primitiveValue->computeLength<int>(CSSToLengthConversionData(initialStyle, initialStyle, 1.0 /* zoom */, true /* computingFontSize */));
         return true;
     }
 

@@ -27,14 +27,14 @@
 
 namespace WebCore {
 
+class CSSToLengthConversionData;
 class CSSValue;
-class RenderStyle;
 
 class FilterOperationResolver {
 private:
     FilterOperationResolver();
 public:
-    static bool createFilterOperations(CSSValue* inValue, const RenderStyle* inStyle, const RenderStyle* rootStyle, FilterOperations& outOperations, StyleResolverState&);
+    static bool createFilterOperations(CSSValue* inValue, const CSSToLengthConversionData&, FilterOperations& outOperations, StyleResolverState&);
 };
 
 } // namespace WebCore

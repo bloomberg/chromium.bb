@@ -79,15 +79,15 @@ PassRefPtr<CSSValue> AnimatableLength::toCSSValue(NumberRange range) const
     return toCSSPrimitiveValue(range);
 }
 
-Length AnimatableLength::toLength(const RenderStyle* style, const RenderStyle* rootStyle, double zoom, NumberRange range) const
+Length AnimatableLength::toLength(const CSSToLengthConversionData& conversionData, NumberRange range) const
 {
     // Avoid creating a CSSValue in the common cases
     if (m_unitType == UnitTypePixels)
-        return Length(clampedNumber(range) * zoom, Fixed);
+        return Length(clampedNumber(range) * conversionData.zoom(), Fixed);
     if (m_unitType == UnitTypePercentage)
         return Length(clampedNumber(range), Percent);
 
-    return toCSSPrimitiveValue(range)->convertToLength<AnyConversion>(style, rootStyle, zoom);
+    return toCSSPrimitiveValue(range)->convertToLength<AnyConversion>(conversionData);
 }
 
 PassRefPtr<AnimatableValue> AnimatableLength::interpolateTo(const AnimatableValue* value, double fraction) const

@@ -30,9 +30,12 @@
 #include "CSSValueKeywords.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSParser.h"
+#include "core/css/CSSToLengthConversionData.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/resolver/TransformBuilder.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/StyleInheritedData.h"
 #include "wtf/MathExtras.h"
 
 namespace WebCore {
@@ -64,8 +67,9 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
         if (!value || (value->isPrimitiveValue() && (toCSSPrimitiveValue(value.get()))->getValueID() == CSSValueNone))
             return;
 
+        DEFINE_STATIC_REF(RenderStyle, defaultStyle, RenderStyle::createDefaultStyle());
         TransformOperations operations;
-        if (!TransformBuilder::createTransformOperations(value.get(), 0, 0, operations)) {
+        if (!TransformBuilder::createTransformOperations(value.get(), CSSToLengthConversionData(defaultStyle, defaultStyle), operations)) {
             exceptionState.throwUninformativeAndGenericDOMException(SyntaxError);
             return;
         }

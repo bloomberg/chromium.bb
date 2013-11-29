@@ -34,6 +34,7 @@
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSReflectionDirection.h"
+#include "core/css/CSSToLengthConversionData.h"
 #include "core/platform/graphics/Path.h"
 #include "core/rendering/style/LineClampValue.h"
 #include "core/rendering/style/RenderStyleConstants.h"
@@ -4435,19 +4436,17 @@ enum LengthConversion {
     PercentConversion = 1 << 2,
 };
 
-template<int supported> Length CSSPrimitiveValue::convertToLength(const RenderStyle* style, const RenderStyle* rootStyle, double multiplier, bool computingFontSize)
+template<int supported> Length CSSPrimitiveValue::convertToLength(const CSSToLengthConversionData& conversionData)
 {
     ASSERT(!hasVariableReference());
-    if ((supported & FixedConversion) && isFontRelativeLength() && (!style || !rootStyle))
-        return Length(Undefined);
     if ((supported & FixedConversion) && isLength())
-        return computeLength<Length>(style, rootStyle, multiplier, computingFontSize);
+        return computeLength<Length>(conversionData);
     if ((supported & PercentConversion) && isPercentage())
         return Length(getDoubleValue(), Percent);
     if ((supported & AutoConversion) && getValueID() == CSSValueAuto)
         return Length(Auto);
     if ((supported & FixedConversion) && (supported & PercentConversion) && isCalculated())
-        return Length(cssCalcValue()->toCalcValue(style, rootStyle, multiplier));
+        return Length(cssCalcValue()->toCalcValue(conversionData));
     if ((supported & FixedConversion) && isViewportPercentageLength())
         return viewportPercentageLength();
     return Length(Undefined);

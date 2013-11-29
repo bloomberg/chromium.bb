@@ -110,10 +110,10 @@ protected:
     {
     }
 
-    void addStops(Gradient*, RenderObject*, RenderStyle* rootStyle, float maxLengthForRepeat = 0);
+    void addStops(Gradient*, const CSSToLengthConversionData&, float maxLengthForRepeat = 0);
 
     // Resolve points/radii to front end values.
-    FloatPoint computeEndPoint(CSSPrimitiveValue*, CSSPrimitiveValue*, RenderStyle*, RenderStyle* rootStyle, const IntSize&);
+    FloatPoint computeEndPoint(CSSPrimitiveValue*, CSSPrimitiveValue*, const CSSToLengthConversionData&, const IntSize&);
 
     bool isCacheable() const;
 
@@ -146,7 +146,7 @@ public:
     String customCSSText() const;
 
     // Create the gradient for a given size.
-    PassRefPtr<Gradient> createGradient(RenderObject*, const IntSize&);
+    PassRefPtr<Gradient> createGradient(const CSSToLengthConversionData&, const IntSize&);
 
     PassRefPtr<CSSLinearGradientValue> clone() const
     {
@@ -196,7 +196,7 @@ public:
     void setEndVerticalSize(PassRefPtr<CSSPrimitiveValue> val) { m_endVerticalSize = val; }
 
     // Create the gradient for a given size.
-    PassRefPtr<Gradient> createGradient(RenderObject*, const IntSize&);
+    PassRefPtr<Gradient> createGradient(const CSSToLengthConversionData&, const IntSize&);
 
     bool equals(const CSSRadialGradientValue&) const;
 
@@ -219,7 +219,7 @@ private:
 
 
     // Resolve points/radii to front end values.
-    float resolveRadius(CSSPrimitiveValue*, RenderStyle*, RenderStyle* rootStyle, float* widthOrHeight = 0);
+    float resolveRadius(CSSPrimitiveValue*, const CSSToLengthConversionData&, float* widthOrHeight = 0);
 
     // These may be null for non-deprecated gradients.
     RefPtr<CSSPrimitiveValue> m_firstRadius;

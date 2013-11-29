@@ -28,26 +28,55 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TransformBuilder_h
-#define TransformBuilder_h
+#ifndef CSSToLengthConversionData_h
+#define CSSToLengthConversionData_h
 
-#include "platform/transforms/TransformOperations.h"
+#include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {
 
-class CSSToLengthConversionData;
-class CSSValue;
+class RenderStyle;
 
-class TransformBuilder {
-    WTF_MAKE_NONCOPYABLE(TransformBuilder); WTF_MAKE_FAST_ALLOCATED;
+class CSSToLengthConversionData {
 public:
-    TransformBuilder();
-    ~TransformBuilder();
+    CSSToLengthConversionData(const RenderStyle* style, const RenderStyle* rootStyle, float zoom, bool computingFontSize = false)
+        : m_style(style)
+        , m_rootStyle(rootStyle)
+        , m_zoom(zoom)
+        , m_useEffectiveZoom(false)
+        , m_computingFontSize(computingFontSize)
+    {
+        ASSERT(zoom > 0);
+    }
+    CSSToLengthConversionData(const RenderStyle* style, const RenderStyle* rootStyle, bool computingFontSize = false)
+        : m_style(style)
+        , m_rootStyle(rootStyle)
+        , m_useEffectiveZoom(true)
+        , m_computingFontSize(computingFontSize)
+    {
+    }
+    const RenderStyle& style() const { return *m_style; }
+    const RenderStyle& rootStyle() const { return *m_rootStyle; }
+    float zoom() const;
+    bool computingFontSize() const { return m_computingFontSize; }
 
-    static bool createTransformOperations(CSSValue* inValue, const CSSToLengthConversionData&, TransformOperations& outOperations);
+    void setStyle(const RenderStyle* style) { m_style = style; }
+    void setRootStyle(const RenderStyle* rootStyle) { m_rootStyle = rootStyle; }
+
+    CSSToLengthConversionData copyWithAdjustedZoom(float newZoom) const
+    {
+        return CSSToLengthConversionData(m_style, m_rootStyle, newZoom, m_computingFontSize);
+    }
+
+private:
+    const RenderStyle* m_style;
+    const RenderStyle* m_rootStyle;
+    float m_zoom;
+    bool m_useEffectiveZoom;
+    bool m_computingFontSize;
 };
 
 } // namespace WebCore
 
-#endif // TransformBuilder_h
+#endif

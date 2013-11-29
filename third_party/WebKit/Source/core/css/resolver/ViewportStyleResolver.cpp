@@ -31,6 +31,7 @@
 #include "core/css/resolver/ViewportStyleResolver.h"
 
 #include "CSSValueKeywords.h"
+#include "core/css/CSSToLengthConversionData.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/dom/Document.h"
@@ -183,7 +184,7 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value.get());
 
     if (primitiveValue->isLength())
-        return primitiveValue->computeLength<Length>(m_document->renderStyle(), m_document->renderStyle());
+        return primitiveValue->computeLength<Length>(CSSToLengthConversionData(m_document->renderStyle(), m_document->renderStyle(), 1.0f));
 
     if (primitiveValue->isViewportPercentageLength())
         return primitiveValue->viewportPercentageLength();

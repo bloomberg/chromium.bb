@@ -143,7 +143,7 @@ namespace WebCore {
         state.style()->{{auto_setter}}();
     else
     {%- if compute_length %}
-        {{ set_value(property) }}(primitiveValue->computeLength<{{property.type_name}}>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom()));
+        {{ set_value(property) }}(primitiveValue->computeLength<{{property.type_name}}>(state.cssToLengthConversionData()));
     {%- else %}
         {{ set_value(property) }}(*primitiveValue);
     {%- endif %}

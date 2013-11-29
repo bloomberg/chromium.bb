@@ -29,8 +29,9 @@
 namespace WebCore {
 
 class FillLayer;
-class CSSValue;
 class CSSAnimationData;
+class CSSToLengthConversionData;
+class CSSValue;
 class RenderStyle;
 class StyleImage;
 class StyleResolverState;
@@ -75,8 +76,7 @@ public:
     void mapNinePieceImageRepeat(CSSValue*, NinePieceImage&) const;
 
 private:
-    const RenderStyle* style() const;
-    const RenderStyle* rootElementStyle() const;
+    const CSSToLengthConversionData& cssToLengthConversionData() const;
     bool useSVGZoomRules() const;
 
     PassRefPtr<StyleImage> styleImage(CSSPropertyID, CSSValue*);

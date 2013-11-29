@@ -59,8 +59,7 @@ public:
 template <typename T>
 T StyleBuilderConverter::convertComputedLength(StyleResolverState& state, CSSValue* value)
 {
-    float zoom = state.style()->effectiveZoom();
-    return toCSSPrimitiveValue(value)->computeLength<T>(state.style(), state.rootElementStyle(), zoom);
+    return toCSSPrimitiveValue(value)->computeLength<T>(state.cssToLengthConversionData());
 }
 
 template <typename T>
@@ -77,12 +76,11 @@ T StyleBuilderConverter::convertLineWidth(StyleResolverState& state, CSSValue* v
     if (primitiveValue->isViewportPercentageLength())
         return intValueForLength(primitiveValue->viewportPercentageLength(), 0, state.document().renderView());
     if (valueID == CSSValueInvalid) {
-        float zoom = state.style()->effectiveZoom();
         // Any original result that was >= 1 should not be allowed to fall below 1.
         // This keeps border lines from vanishing.
-        T result = primitiveValue->computeLength<T>(state.style(), state.rootElementStyle(), zoom);
-        if (zoom < 1.0f && result < 1.0) {
-            T originalLength = primitiveValue->computeLength<T>(state.style(), state.rootElementStyle(), 1.0);
+        T result = primitiveValue->computeLength<T>(state.cssToLengthConversionData());
+        if (state.style()->effectiveZoom() < 1.0f && result < 1.0) {
+            T originalLength = primitiveValue->computeLength<T>(state.cssToLengthConversionData().copyWithAdjustedZoom(1.0));
             if (originalLength >= 1.0)
                 return 1.0;
         }

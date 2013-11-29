@@ -73,7 +73,7 @@ public:
         return adoptRef(new AnimatableLength(calcExpression, cssPrimitiveValue));
     }
     PassRefPtr<CSSValue> toCSSValue(NumberRange = AllValues) const;
-    Length toLength(const RenderStyle* currStyle, const RenderStyle* rootStyle, double zoom, NumberRange = AllValues) const;
+    Length toLength(const CSSToLengthConversionData&, NumberRange = AllValues) const;
 
 protected:
     virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const OVERRIDE;

@@ -51,9 +51,9 @@ TransformBuilder::~TransformBuilder()
 {
 }
 
-static Length convertToFloatLength(CSSPrimitiveValue* primitiveValue, const RenderStyle* style, const RenderStyle* rootStyle, double multiplier)
+static Length convertToFloatLength(CSSPrimitiveValue* primitiveValue, const CSSToLengthConversionData& conversionData)
 {
-    return primitiveValue ? primitiveValue->convertToLength<FixedConversion | PercentConversion>(style, rootStyle, multiplier) : Length(Undefined);
+    return primitiveValue ? primitiveValue->convertToLength<FixedConversion | PercentConversion>(conversionData) : Length(Undefined);
 }
 
 static TransformOperation::OperationType getTransformOperationType(CSSTransformValue::TransformOperationType type)
@@ -85,14 +85,14 @@ static TransformOperation::OperationType getTransformOperationType(CSSTransformV
     return TransformOperation::None;
 }
 
-bool TransformBuilder::createTransformOperations(CSSValue* inValue, const RenderStyle* style, const RenderStyle* rootStyle, TransformOperations& outOperations)
+bool TransformBuilder::createTransformOperations(CSSValue* inValue, const CSSToLengthConversionData& conversionData, TransformOperations& outOperations)
 {
     if (!inValue || !inValue->isValueList()) {
         outOperations.clear();
         return false;
     }
 
-    float zoomFactor = style ? style->effectiveZoom() : 1;
+    float zoomFactor = conversionData.zoom();
     TransformOperations operations;
     for (CSSValueListIterator i = inValue; i.hasMore(); i.advance()) {
         CSSValue* currValue = i.value();
@@ -169,13 +169,13 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const Render
             Length tx = Length(0, Fixed);
             Length ty = Length(0, Fixed);
             if (transformValue->operationType() == CSSTransformValue::TranslateYTransformOperation)
-                ty = convertToFloatLength(firstValue, style, rootStyle, zoomFactor);
+                ty = convertToFloatLength(firstValue, conversionData);
             else {
-                tx = convertToFloatLength(firstValue, style, rootStyle, zoomFactor);
+                tx = convertToFloatLength(firstValue, conversionData);
                 if (transformValue->operationType() != CSSTransformValue::TranslateXTransformOperation) {
                     if (transformValue->length() > 1) {
                         CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->itemWithoutBoundsCheck(1));
-                        ty = convertToFloatLength(secondValue, style, rootStyle, zoomFactor);
+                        ty = convertToFloatLength(secondValue, conversionData);
                     }
                 }
             }
@@ -192,19 +192,19 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const Render
             Length ty = Length(0, Fixed);
             Length tz = Length(0, Fixed);
             if (transformValue->operationType() == CSSTransformValue::TranslateZTransformOperation)
-                tz = convertToFloatLength(firstValue, style, rootStyle, zoomFactor);
+                tz = convertToFloatLength(firstValue, conversionData);
             else if (transformValue->operationType() == CSSTransformValue::TranslateYTransformOperation)
-                ty = convertToFloatLength(firstValue, style, rootStyle, zoomFactor);
+                ty = convertToFloatLength(firstValue, conversionData);
             else {
-                tx = convertToFloatLength(firstValue, style, rootStyle, zoomFactor);
+                tx = convertToFloatLength(firstValue, conversionData);
                 if (transformValue->operationType() != CSSTransformValue::TranslateXTransformOperation) {
                     if (transformValue->length() > 2) {
                         CSSPrimitiveValue* thirdValue = toCSSPrimitiveValue(transformValue->itemWithoutBoundsCheck(2));
-                        tz = convertToFloatLength(thirdValue, style, rootStyle, zoomFactor);
+                        tz = convertToFloatLength(thirdValue, conversionData);
                     }
                     if (transformValue->length() > 1) {
                         CSSPrimitiveValue* secondValue = toCSSPrimitiveValue(transformValue->itemWithoutBoundsCheck(1));
-                        ty = convertToFloatLength(secondValue, style, rootStyle, zoomFactor);
+                        ty = convertToFloatLength(secondValue, conversionData);
                     }
                 }
             }
@@ -307,7 +307,7 @@ bool TransformBuilder::createTransformOperations(CSSValue* inValue, const Render
         case CSSTransformValue::PerspectiveTransformOperation: {
             Length p = Length(0, Fixed);
             if (firstValue->isLength())
-                p = convertToFloatLength(firstValue, style, rootStyle, zoomFactor);
+                p = convertToFloatLength(firstValue, conversionData);
             else {
                 // This is a quirk that should go away when 3d transforms are finalized.
                 double val = firstValue->getDoubleValue();
