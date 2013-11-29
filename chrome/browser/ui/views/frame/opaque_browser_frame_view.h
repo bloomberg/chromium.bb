@@ -45,12 +45,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual void UpdateThrobber(bool running) OVERRIDE;
   virtual gfx::Size GetMinimumSize() OVERRIDE;
 
- protected:
-  views::ImageButton* minimize_button() const { return minimize_button_; }
-  views::ImageButton* maximize_button() const { return maximize_button_; }
-  views::ImageButton* restore_button() const { return restore_button_; }
-  views::ImageButton* close_button() const { return close_button_; }
-
   // Overridden from views::NonClientFrameView:
   virtual gfx::Rect GetBoundsForClientView() const OVERRIDE;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
@@ -63,7 +57,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual void UpdateWindowTitle() OVERRIDE;
 
   // Overridden from views::View:
-  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
@@ -87,6 +80,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual int GetIconSize() const OVERRIDE;
   virtual bool ShouldLeaveOffsetNearTopBorder() const OVERRIDE;
   virtual gfx::Size GetBrowserViewMinimumSize() const OVERRIDE;
+  virtual bool ShouldShowCaptionButtons() const OVERRIDE;
   virtual bool ShouldShowAvatar() const OVERRIDE;
   virtual bool IsRegularOrGuestSession() const OVERRIDE;
   virtual gfx::ImageSkia GetOTRAvatarIcon() const OVERRIDE;
@@ -97,6 +91,15 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual int GetTabStripHeight() const OVERRIDE;
   virtual int GetAdditionalReservedSpaceInTabStrip() const OVERRIDE;
   virtual gfx::Size GetTabstripPreferredSize() const OVERRIDE;
+
+ protected:
+  views::ImageButton* minimize_button() const { return minimize_button_; }
+  views::ImageButton* maximize_button() const { return maximize_button_; }
+  views::ImageButton* restore_button() const { return restore_button_; }
+  views::ImageButton* close_button() const { return close_button_; }
+
+  // Overridden from views::View:
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   // Creates, adds and returns a new image button with |this| as its listener.

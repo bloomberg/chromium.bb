@@ -18,6 +18,11 @@ class OpaqueBrowserFrameViewPlatformSpecific {
   static OpaqueBrowserFrameViewPlatformSpecific* Create(
       OpaqueBrowserFrameView* view,
       OpaqueBrowserFrameViewLayout* layout);
+
+  // Whether we should show the (minimize,maximize,close) buttons. This can
+  // depend on the current state of the window (e.g., whether it is maximized).
+  // The default implementation always returns true.
+  virtual bool ShouldShowCaptionButtons() const;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_PLATFORM_SPECIFIC_H_

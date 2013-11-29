@@ -17,3 +17,7 @@ OpaqueBrowserFrameViewPlatformSpecific::Create(
 }
 
 #endif
+
+bool OpaqueBrowserFrameViewPlatformSpecific::ShouldShowCaptionButtons() const {
+  return true;
+}

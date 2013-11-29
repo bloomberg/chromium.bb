@@ -35,6 +35,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
 
   TestLayoutDelegate()
       : show_avatar_(false),
+        show_caption_buttons_(true),
         window_state_(STATE_NORMAL) {
   }
 
@@ -48,9 +49,15 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
     show_avatar_ = show_avatar;
   }
 
+  void SetShouldShowCaptionButtons(bool show_caption_buttons) {
+    show_caption_buttons_ = show_caption_buttons;
+  }
+
   void SetWindowState(WindowState state) {
     window_state_ = state;
   }
+
+  // OpaqueBrowserFrameViewLayoutDelegate overrides:
 
   virtual bool ShouldShowWindowIcon() const OVERRIDE {
     return !window_title_.empty();
@@ -76,6 +83,10 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
   virtual gfx::Size GetBrowserViewMinimumSize() const OVERRIDE {
     // Taken from a calculation in BrowserViewLayout.
     return gfx::Size(168, 64);
+  }
+
+  virtual bool ShouldShowCaptionButtons() const OVERRIDE {
+    return show_caption_buttons_;
   }
 
   virtual bool ShouldShowAvatar() const OVERRIDE {
@@ -127,6 +138,7 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
  private:
   base::string16 window_title_;
   bool show_avatar_;
+  bool show_caption_buttons_;
   WindowState window_state_;
 
   DISALLOW_COPY_AND_ASSIGN(TestLayoutDelegate);
@@ -296,6 +308,27 @@ TEST_F(OpaqueBrowserFrameViewLayoutTest, BasicWindowMaximized) {
   // In the maximized case, OpaqueBrowserFrameView::NonClientHitTest() uses
   // this rect, extended to the top left corner of the window.
   EXPECT_EQ("2,0 17x17", layout_manager_->IconBounds().ToString());
+}
+
+TEST_F(OpaqueBrowserFrameViewLayoutTest, WithoutCaptionButtons) {
+  // Tests the layout of a default chrome window with no caption buttons.
+  delegate_->SetShouldShowCaptionButtons(false);
+  root_view_->Layout();
+
+  EXPECT_EQ("0,0 0x0", maximize_button_->bounds().ToString());
+  EXPECT_EQ("0,0 0x0", minimize_button_->bounds().ToString());
+  EXPECT_EQ("0,0 0x0", restore_button_->bounds().ToString());
+  EXPECT_EQ("0,0 0x0", close_button_->bounds().ToString());
+
+  EXPECT_EQ("-1,13 492x29",
+            layout_manager_->GetBoundsForTabStrip(
+                delegate_->GetTabstripPreferredSize(), kWidth).ToString());
+  EXPECT_EQ("261x73", layout_manager_->GetMinimumSize(kWidth).ToString());
+
+  // A normal window with no window icon still produces icon bounds for
+  // Windows, which has a hidden icon that a user can double click on to close
+  // the window.
+  EXPECT_EQ("6,4 17x17", layout_manager_->IconBounds().ToString());
 }
 
 TEST_F(OpaqueBrowserFrameViewLayoutTest, WithWindowTitleAndIcon) {

@@ -29,6 +29,17 @@ OpaqueBrowserFrameViewLinux::~OpaqueBrowserFrameViewLinux() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameViewLinux,
+//     OpaqueBrowserFrameViewPlatformSpecific implementation:
+
+bool OpaqueBrowserFrameViewLinux::ShouldShowCaptionButtons() const {
+  // On Ubuntu Unity, if the window is maximized, the system will provide
+  // caption buttons, so Chrome should not add its own.
+  views::LinuxUI* ui = views::LinuxUI::instance();
+  return !(view_->IsMaximized() && ui && ui->UnityIsRunning());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// OpaqueBrowserFrameViewLinux,
 //     views::WindowButtonOrderObserver implementation:
 
 void OpaqueBrowserFrameViewLinux::OnWindowButtonOrderingChange(

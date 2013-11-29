@@ -27,8 +27,10 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
       OpaqueBrowserFrameViewLayoutDelegate* delegate);
   virtual ~OpaqueBrowserFrameViewLayout();
 
-  // Whether we should add the (minimize,maximize,close) buttons. Can be false
-  // on Windows 8 in metro mode.
+  // Whether we should add the (minimize,maximize,close) buttons. This should be
+  // true if the buttons could be shown at any time in this session (see
+  // OpaqueBrowserFrameViewLayoutDelegate::ShouldShowCaptionButtons for whether
+  // they are currently visible).
   static bool ShouldAddDefaultCaptionButtons();
 
   // Configures the button ordering in the frame.

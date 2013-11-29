@@ -103,6 +103,9 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   // Removes the observer from the LinuxUI's list.
   virtual void RemoveWindowButtonOrderObserver(
       WindowButtonOrderObserver* observer) = 0;
+
+  // Determines whether the user's window manager is Unity.
+  virtual bool UnityIsRunning() = 0;
 };
 
 }  // namespace views

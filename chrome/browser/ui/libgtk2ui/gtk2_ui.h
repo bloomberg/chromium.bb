@@ -79,6 +79,7 @@ class Gtk2UI : public views::LinuxUI {
       views::WindowButtonOrderObserver* observer) OVERRIDE;
   virtual void RemoveWindowButtonOrderObserver(
       views::WindowButtonOrderObserver* observer) OVERRIDE;
+  virtual bool UnityIsRunning() OVERRIDE;
 
  private:
   typedef std::map<int, SkColor> ColorMap;

@@ -287,29 +287,6 @@ void OpaqueBrowserFrameView::UpdateWindowTitle() {
 ///////////////////////////////////////////////////////////////////////////////
 // OpaqueBrowserFrameView, views::View overrides:
 
-void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
-  if (frame()->IsFullscreen())
-    return;  // Nothing is visible, so don't bother to paint.
-
-  if (frame()->IsMaximized())
-    PaintMaximizedFrameBorder(canvas);
-  else
-    PaintRestoredFrameBorder(canvas);
-
-  // The window icon and title are painted by their respective views.
-  /* TODO(pkasting):  If this window is active, we should also draw a drop
-   * shadow on the title.  This is tricky, because we don't want to hardcode a
-   * shadow color (since we want to work with various themes), but we can't
-   * alpha-blend either (since the Windows text APIs don't really do this).
-   * So we'd need to sample the background color at the right location and
-   * synthesize a good shadow color. */
-
-  if (browser_view()->IsToolbarVisible())
-    PaintToolbarBackground(canvas);
-  if (!frame()->IsMaximized())
-    PaintRestoredClientEdge(canvas);
-}
-
 bool OpaqueBrowserFrameView::HitTestRect(const gfx::Rect& rect) const {
   if (!views::View::HitTestRect(rect)) {
     // |rect| is outside OpaqueBrowserFrameView's bounds.
@@ -468,6 +445,14 @@ gfx::Size OpaqueBrowserFrameView::GetBrowserViewMinimumSize() const {
   return browser_view()->GetMinimumSize();
 }
 
+bool OpaqueBrowserFrameView::ShouldShowCaptionButtons() const {
+  if (!OpaqueBrowserFrameViewLayout::ShouldAddDefaultCaptionButtons())
+    return false;
+  if (!platform_observer_)
+    return true;
+  return platform_observer_->ShouldShowCaptionButtons();
+}
+
 bool OpaqueBrowserFrameView::ShouldShowAvatar() const {
   return browser_view()->ShouldShowAvatar();
 }
@@ -512,6 +497,32 @@ int OpaqueBrowserFrameView::GetAdditionalReservedSpaceInTabStrip() const {
 gfx::Size OpaqueBrowserFrameView::GetTabstripPreferredSize() const {
   gfx::Size s = browser_view()->tabstrip()->GetPreferredSize();
   return s;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// OpaqueBrowserFrameView, views::View overrides:
+
+void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
+  if (frame()->IsFullscreen())
+    return;  // Nothing is visible, so don't bother to paint.
+
+  if (frame()->IsMaximized())
+    PaintMaximizedFrameBorder(canvas);
+  else
+    PaintRestoredFrameBorder(canvas);
+
+  // The window icon and title are painted by their respective views.
+  /* TODO(pkasting):  If this window is active, we should also draw a drop
+   * shadow on the title.  This is tricky, because we don't want to hardcode a
+   * shadow color (since we want to work with various themes), but we can't
+   * alpha-blend either (since the Windows text APIs don't really do this).
+   * So we'd need to sample the background color at the right location and
+   * synthesize a good shadow color. */
+
+  if (browser_view()->IsToolbarVisible())
+    PaintToolbarBackground(canvas);
+  if (!frame()->IsMaximized())
+    PaintRestoredClientEdge(canvas);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -269,20 +269,22 @@ void OpaqueBrowserFrameViewLayout::LayoutWindowControls(views::View* host) {
   buttons_not_shown.push_back(views::FRAME_BUTTON_MINIMIZE);
   buttons_not_shown.push_back(views::FRAME_BUTTON_CLOSE);
 
-  for (std::vector<views::FrameButton>::const_iterator it =
-           leading_buttons_.begin(); it != leading_buttons_.end(); ++it) {
-    ConfigureButton(host, *it, ALIGN_LEADING, caption_y);
-    buttons_not_shown.erase(
-        std::remove(buttons_not_shown.begin(), buttons_not_shown.end(), *it),
-        buttons_not_shown.end());
-  }
+  if (delegate_->ShouldShowCaptionButtons()) {
+    for (std::vector<views::FrameButton>::const_iterator it =
+             leading_buttons_.begin(); it != leading_buttons_.end(); ++it) {
+      ConfigureButton(host, *it, ALIGN_LEADING, caption_y);
+      buttons_not_shown.erase(
+          std::remove(buttons_not_shown.begin(), buttons_not_shown.end(), *it),
+          buttons_not_shown.end());
+    }
 
-  for (std::vector<views::FrameButton>::const_reverse_iterator it =
-           trailing_buttons_.rbegin(); it != trailing_buttons_.rend(); ++it) {
-    ConfigureButton(host, *it, ALIGN_TRAILING, caption_y);
-    buttons_not_shown.erase(
-        std::remove(buttons_not_shown.begin(), buttons_not_shown.end(), *it),
-        buttons_not_shown.end());
+    for (std::vector<views::FrameButton>::const_reverse_iterator it =
+             trailing_buttons_.rbegin(); it != trailing_buttons_.rend(); ++it) {
+      ConfigureButton(host, *it, ALIGN_TRAILING, caption_y);
+      buttons_not_shown.erase(
+          std::remove(buttons_not_shown.begin(), buttons_not_shown.end(), *it),
+          buttons_not_shown.end());
+    }
   }
 
   for (std::vector<views::FrameButton>::const_iterator it =

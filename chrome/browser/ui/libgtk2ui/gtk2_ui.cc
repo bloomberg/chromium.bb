@@ -550,6 +550,10 @@ ui::SelectFileDialog* Gtk2UI::CreateSelectFileDialog(
   return SelectFileDialogImpl::Create(listener, policy);
 }
 
+bool Gtk2UI::UnityIsRunning() {
+  return unity::IsRunning();
+}
+
 void Gtk2UI::GetScrollbarColors(GdkColor* thumb_active_color,
                                 GdkColor* thumb_inactive_color,
                                 GdkColor* track_color) {

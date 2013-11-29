@@ -32,6 +32,10 @@ class OpaqueBrowserFrameViewLayoutDelegate {
   // the minimum size for the entire non-client area.
   virtual gfx::Size GetBrowserViewMinimumSize() const = 0;
 
+  // Whether we should show the (minimize,maximize,close) buttons. This can
+  // depend on the current state of the window (e.g., whether it is maximized).
+  virtual bool ShouldShowCaptionButtons() const = 0;
+
   // Controls the visualization of the avatar
   virtual bool ShouldShowAvatar() const = 0;
 
