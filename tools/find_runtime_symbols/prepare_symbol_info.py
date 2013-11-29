@@ -13,11 +13,16 @@ import subprocess
 import sys
 import tempfile
 
-from proc_maps import ProcMaps
-
 
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 REDUCE_DEBUGLINE_PATH = os.path.join(BASE_PATH, 'reduce_debugline.py')
+_TOOLS_LINUX_PATH = os.path.join(BASE_PATH, os.pardir, 'linux')
+sys.path.insert(0, _TOOLS_LINUX_PATH)
+
+
+from procfs import ProcMaps  # pylint: disable=F0401
+
+
 LOGGER = logging.getLogger('prepare_symbol_info')
 
 
@@ -138,7 +143,7 @@ def prepare_symbol_info(maps_path,
   shutil.copyfile(maps_path, os.path.join(output_dir_path, 'maps'))
 
   with open(maps_path, mode='r') as f:
-    maps = ProcMaps.load(f)
+    maps = ProcMaps.load_file(f)
 
   LOGGER.debug('Listing up symbols.')
   files = {}

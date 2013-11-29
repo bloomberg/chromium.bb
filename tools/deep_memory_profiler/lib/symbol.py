@@ -10,11 +10,15 @@ _BASE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 _FIND_RUNTIME_SYMBOLS_PATH = os.path.join(_BASE_PATH,
                                           os.pardir,
                                           'find_runtime_symbols')
+_TOOLS_LINUX_PATH = os.path.join(_BASE_PATH,
+                                 os.pardir,
+                                 'linux')
 sys.path.append(_FIND_RUNTIME_SYMBOLS_PATH)
+sys.path.append(_TOOLS_LINUX_PATH)
 
 import find_runtime_symbols
 import prepare_symbol_info
-import proc_maps  # pylint: disable=W0611
+import procfs  # pylint: disable=W0611,F0401
 
 LOGGER = logging.getLogger('dmprof')
 

@@ -10,7 +10,7 @@ import re
 from lib.bucket import BucketSet
 from lib.dump import Dump, DumpList
 from lib.symbol import SymbolDataSources, SymbolMappingCache, SymbolFinder
-from lib.symbol import proc_maps
+from lib.symbol import procfs
 from lib.symbol import FUNCTION_SYMBOLS, SOURCEFILE_SYMBOLS, TYPEINFO_SYMBOLS
 
 
@@ -95,7 +95,7 @@ class SubCommand(object):
     device_lib_path_candidates = set()
 
     with open(prefix + '.maps') as maps_f:
-      maps = proc_maps.ProcMaps.load(maps_f)
+      maps = procfs.ProcMaps.load_file(maps_f)
       for entry in maps:
         name = entry.as_dict()['name']
         if any([base_dir in name for base_dir in SubCommand._DEVICE_BINDIRS]):

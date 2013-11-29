@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -12,7 +12,7 @@ import unittest
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
-from proc_maps import ProcMaps
+from procfs import ProcMaps
 
 
 class ProcMapsTest(unittest.TestCase):
@@ -77,26 +77,26 @@ class ProcMapsTest(unittest.TestCase):
         }
 
   def test_load(self):
-    maps = ProcMaps.load(cStringIO.StringIO(self._TEST_PROCMAPS))
+    maps = ProcMaps.load_file(cStringIO.StringIO(self._TEST_PROCMAPS))
     for index, entry in enumerate(maps):
       self.assertEqual(entry.as_dict(), self._expected_as_dict(index))
 
   def test_constants(self):
-    maps = ProcMaps.load(cStringIO.StringIO(self._TEST_PROCMAPS))
+    maps = ProcMaps.load_file(cStringIO.StringIO(self._TEST_PROCMAPS))
     selected = [4, 7]
     for index, entry in enumerate(maps.iter(ProcMaps.constants)):
       self.assertEqual(entry.as_dict(),
                        self._expected_as_dict(selected[index]))
 
   def test_executable(self):
-    maps = ProcMaps.load(cStringIO.StringIO(self._TEST_PROCMAPS))
+    maps = ProcMaps.load_file(cStringIO.StringIO(self._TEST_PROCMAPS))
     selected = [3, 6]
     for index, entry in enumerate(maps.iter(ProcMaps.executable)):
       self.assertEqual(entry.as_dict(),
                        self._expected_as_dict(selected[index]))
 
   def test_executable_and_constants(self):
-    maps = ProcMaps.load(cStringIO.StringIO(self._TEST_PROCMAPS))
+    maps = ProcMaps.load_file(cStringIO.StringIO(self._TEST_PROCMAPS))
     selected = [3, 4, 6, 7]
     for index, entry in enumerate(maps.iter(ProcMaps.executable_and_constants)):
       self.assertEqual(entry.as_dict(),

@@ -14,14 +14,21 @@ import os
 import sys
 
 from static_symbols import StaticSymbolsInFile
-from proc_maps import ProcMaps
+
+
+_BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+_TOOLS_LINUX_PATH = os.path.join(_BASE_PATH, os.pardir, 'linux')
+sys.path.insert(0, _TOOLS_LINUX_PATH)
+
+
+from procfs import ProcMaps  # pylint: disable=F0401
 
 try:
   from collections import OrderedDict  # pylint: disable=E0611
 except ImportError:
-  BASE_PATH = os.path.dirname(os.path.abspath(__file__))
-  SIMPLEJSON_PATH = os.path.join(BASE_PATH, os.pardir, os.pardir, 'third_party')
-  sys.path.insert(0, SIMPLEJSON_PATH)
+  _SIMPLEJSON_PATH = os.path.join(_BASE_PATH, os.pardir, os.pardir,
+                                  'third_party')
+  sys.path.insert(0, _SIMPLEJSON_PATH)
   from simplejson import OrderedDict
 
 
@@ -76,7 +83,7 @@ class RuntimeSymbolsInProcess(object):
     symbols_in_process = RuntimeSymbolsInProcess()
 
     with open(os.path.join(prepared_data_dir, _MAPS_FILENAME), mode='r') as f:
-      symbols_in_process._maps = ProcMaps.load(f)
+      symbols_in_process._maps = ProcMaps.load_file(f)
     with open(os.path.join(prepared_data_dir, _FILES_FILENAME), mode='r') as f:
       files = json.load(f)
 

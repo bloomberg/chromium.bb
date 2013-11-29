@@ -14,7 +14,7 @@ from lib.exceptions import EmptyDumpException, InvalidDumpException
 from lib.exceptions import ObsoleteDumpVersionException, ParsingException
 from lib.pageframe import PageFrame
 from lib.range_dict import ExclusiveRangeDict
-from lib.symbol import proc_maps
+from lib.symbol import procfs
 
 
 LOGGER = logging.getLogger('dmprof')
@@ -295,7 +295,7 @@ class Dump(object):
     current_vma = {}
     pageframe_list = []
     while True:
-      entry = proc_maps.ProcMaps.parse_line(self._lines[ln])
+      entry = procfs.ProcMaps.parse_line(self._lines[ln])
       if entry:
         current_vma = {}
         for _, _, attr in self._procmaps.iter_range(entry.begin, entry.end):
@@ -433,7 +433,7 @@ class DumpList(object):
 
 class ProcMapsEntryAttribute(ExclusiveRangeDict.RangeAttribute):
   """Represents an entry of /proc/maps in range_dict.ExclusiveRangeDict."""
-  _DUMMY_ENTRY = proc_maps.ProcMapsEntry(
+  _DUMMY_ENTRY = procfs.ProcMapsEntry(
       0,     # begin
       0,     # end
       '-',   # readable
