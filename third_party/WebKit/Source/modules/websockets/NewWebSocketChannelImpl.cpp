@@ -31,13 +31,11 @@
 #include "config.h"
 #include "modules/websockets/NewWebSocketChannelImpl.h"
 
-#include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/Logging.h"
@@ -109,8 +107,8 @@ NewWebSocketChannelImpl::NewWebSocketChannelImpl(ExecutionContext* context, WebS
     , m_receivedDataSizeForFlowControl(receivedDataSizeForFlowControlHighWaterMark * 2) // initial quota
     , m_bufferedAmount(0)
     , m_sentSizeOfTopMessage(0)
-    , m_sourceURLAtConnection(sourceURL)
-    , m_lineNumberAtConnection(lineNumber)
+    , m_sourceURLAtConstruction(sourceURL)
+    , m_lineNumberAtConstruction(lineNumber)
 {
     if (context->isDocument() && toDocument(context)->page())
         m_identifier = createUniqueIdentifier();
@@ -144,11 +142,6 @@ void NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
     flowControlIfNecessary();
     if (m_identifier)
         InspectorInstrumentation::didCreateWebSocket(document(), m_identifier, url, protocol);
-    RefPtr<ScriptCallStack> callStack = createScriptCallStack(1, true);
-    if (callStack && callStack->size()) {
-        m_sourceURLAtConnection = callStack->at(0).sourceURL();
-        m_lineNumberAtConnection = callStack->at(0).lineNumber();
-    }
 }
 
 String NewWebSocketChannelImpl::subprotocol()

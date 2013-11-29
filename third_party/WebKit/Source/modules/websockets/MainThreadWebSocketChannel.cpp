@@ -32,13 +32,11 @@
 #include "modules/websockets/MainThreadWebSocketChannel.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/inspector/ScriptCallStack.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -79,8 +77,8 @@ MainThreadWebSocketChannel::MainThreadWebSocketChannel(Document* document, WebSo
     , m_closeEventCode(CloseEventCodeAbnormalClosure)
     , m_outgoingFrameQueueStatus(OutgoingFrameQueueOpen)
     , m_blobLoaderStatus(BlobLoaderNotStarted)
-    , m_sourceURLAtConnection(sourceURL)
-    , m_lineNumberAtConnection(lineNumber)
+    , m_sourceURLAtConstruction(sourceURL)
+    , m_lineNumberAtConstruction(lineNumber)
 {
     if (m_document->page())
         m_identifier = createUniqueIdentifier();
@@ -103,11 +101,6 @@ void MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol
         InspectorInstrumentation::didCreateWebSocket(m_document, m_identifier, url, protocol);
     ref();
     m_handle = SocketStreamHandle::create(m_handshake->url(), this);
-    RefPtr<ScriptCallStack> callStack = createScriptCallStack(1, true);
-    if (callStack && callStack->size()) {
-        m_sourceURLAtConnection = callStack->at(0).sourceURL();
-        m_lineNumberAtConnection = callStack->at(0).lineNumber();
-    }
 }
 
 String MainThreadWebSocketChannel::subprotocol()
@@ -278,7 +271,7 @@ void MainThreadWebSocketChannel::didCloseSocketStream(SocketStreamHandle* handle
     // during opening handshake.
     if (!m_hasCalledDisconnectOnHandle && m_handshake->mode() == WebSocketHandshake::Incomplete && m_document) {
         const String message = "WebSocket connection to '" + m_handshake->url().elidedString() + "' failed: Connection closed before receiving a handshake response";
-        static_cast<ExecutionContext*>(m_document)->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message, m_sourceURLAtConnection, m_lineNumberAtConnection);
+        static_cast<ExecutionContext*>(m_document)->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message, m_sourceURLAtConstruction, m_lineNumberAtConstruction);
     }
 
     m_state = ChannelClosed;
@@ -444,7 +437,7 @@ bool MainThreadWebSocketChannel::processOneItemFromBuffer()
 
             if (m_deflateFramer.enabled() && m_document) {
                 const String message = "WebSocket extension \"x-webkit-deflate-frame\" is deprecated";
-                static_cast<ExecutionContext*>(m_document)->addConsoleMessage(JSMessageSource, WarningMessageLevel, message, m_sourceURLAtConnection, m_lineNumberAtConnection);
+                static_cast<ExecutionContext*>(m_document)->addConsoleMessage(JSMessageSource, WarningMessageLevel, message, m_sourceURLAtConstruction, m_lineNumberAtConstruction);
             }
 
             if (!m_handshake->serverSetCookie().isEmpty()) {

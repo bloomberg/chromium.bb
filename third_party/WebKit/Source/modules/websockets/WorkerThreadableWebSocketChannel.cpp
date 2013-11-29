@@ -50,20 +50,13 @@
 
 namespace WebCore {
 
-WorkerThreadableWebSocketChannel::WorkerThreadableWebSocketChannel(WorkerGlobalScope* context, WebSocketChannelClient* client, const String& taskMode)
+WorkerThreadableWebSocketChannel::WorkerThreadableWebSocketChannel(WorkerGlobalScope* context, WebSocketChannelClient* client, const String& taskMode, const String& sourceURL, unsigned lineNumber)
     : m_workerGlobalScope(context)
     , m_workerClientWrapper(ThreadableWebSocketChannelClientWrapper::create(context, client))
     , m_bridge(Bridge::create(m_workerClientWrapper, m_workerGlobalScope, taskMode))
-    , m_lineNumberAtConnection(0)
+    , m_sourceURLAtConnection(sourceURL)
+    , m_lineNumberAtConnection(lineNumber)
 {
-    // We assume that we can take the JS callstack at WebSocket connection here.
-    RefPtr<ScriptCallStack> callStack = createScriptCallStack(1, true);
-    String sourceURL;
-    unsigned lineNumber = 0;
-    if (callStack && callStack->size()) {
-        sourceURL = callStack->at(0).sourceURL();
-        lineNumber = callStack->at(0).lineNumber();
-    }
     m_bridge->initialize(sourceURL, lineNumber);
 }
 
@@ -75,11 +68,6 @@ WorkerThreadableWebSocketChannel::~WorkerThreadableWebSocketChannel()
 
 void WorkerThreadableWebSocketChannel::connect(const KURL& url, const String& protocol)
 {
-    RefPtr<ScriptCallStack> callStack = createScriptCallStack(1, true);
-    if (callStack && callStack->size()) {
-        m_sourceURLAtConnection = callStack->at(0).sourceURL();
-        m_lineNumberAtConnection = callStack->at(0).lineNumber();
-    }
     if (m_bridge)
         m_bridge->connect(url, protocol);
 }

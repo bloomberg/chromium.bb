@@ -57,9 +57,9 @@ class WorkerRunLoop;
 class WorkerThreadableWebSocketChannel : public RefCounted<WorkerThreadableWebSocketChannel>, public WebSocketChannel {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassRefPtr<WebSocketChannel> create(WorkerGlobalScope* workerGlobalScope, WebSocketChannelClient* client, const String& taskMode)
+    static PassRefPtr<WebSocketChannel> create(WorkerGlobalScope* workerGlobalScope, WebSocketChannelClient* client, const String& taskMode, const String& sourceURL, unsigned lineNumber)
     {
-        return adoptRef(new WorkerThreadableWebSocketChannel(workerGlobalScope, client, taskMode));
+        return adoptRef(new WorkerThreadableWebSocketChannel(workerGlobalScope, client, taskMode, sourceURL, lineNumber));
     }
     virtual ~WorkerThreadableWebSocketChannel();
 
@@ -177,7 +177,7 @@ private:
         Peer* m_peer;
     };
 
-    WorkerThreadableWebSocketChannel(WorkerGlobalScope*, WebSocketChannelClient*, const String& taskMode);
+    WorkerThreadableWebSocketChannel(WorkerGlobalScope*, WebSocketChannelClient*, const String& taskMode, const String& sourceURL, unsigned lineNumber);
 
     static void mainThreadConnect(ExecutionContext*, Peer*, const KURL&, const String& protocol);
     static void mainThreadSend(ExecutionContext*, Peer*, const String& message);

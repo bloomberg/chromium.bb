@@ -152,7 +152,7 @@ private:
     void enqueueRawFrame(WebSocketFrame::OpCode, const char* data, size_t dataLength);
     void enqueueBlobFrame(WebSocketFrame::OpCode, PassRefPtr<BlobDataHandle>);
 
-    void failAsError(const String& reason) { fail(reason, ErrorMessageLevel, m_sourceURLAtConnection, m_lineNumberAtConnection); }
+    void failAsError(const String& reason) { fail(reason, ErrorMessageLevel, m_sourceURLAtConstruction, m_lineNumberAtConstruction); }
     void processOutgoingFrameQueue();
     void abortOutgoingFrameQueue();
 
@@ -219,9 +219,13 @@ private:
     OwnPtr<FileReaderLoader> m_blobLoader;
     BlobLoaderStatus m_blobLoaderStatus;
 
-    String m_sourceURLAtConnection;
-    unsigned m_lineNumberAtConnection;
+    // Source code position where construction happened. To be used to show a
+    // console message where no JS callstack info available.
+    String m_sourceURLAtConstruction;
+    unsigned m_lineNumberAtConstruction;
+
     WebSocketPerMessageDeflate m_perMessageDeflate;
+
     WebSocketDeflateFramer m_deflateFramer;
 };
 

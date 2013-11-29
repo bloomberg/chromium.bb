@@ -123,7 +123,7 @@ private:
     NewWebSocketChannelImpl(ExecutionContext*, WebSocketChannelClient*, const String&, unsigned);
     void sendInternal();
     void flowControlIfNecessary();
-    void failAsError(const String& reason) { fail(reason, ErrorMessageLevel, m_sourceURLAtConnection, m_lineNumberAtConnection); }
+    void failAsError(const String& reason) { fail(reason, ErrorMessageLevel, m_sourceURLAtConstruction, m_lineNumberAtConstruction); }
     void abortAsyncOperations();
     void handleDidClose(bool wasClean, unsigned short code, const String& reason);
     Document* document(); // can be called only when m_identifier > 0.
@@ -171,8 +171,8 @@ private:
     String m_subprotocol;
     String m_extensions;
 
-    String m_sourceURLAtConnection;
-    unsigned m_lineNumberAtConnection;
+    String m_sourceURLAtConstruction;
+    unsigned m_lineNumberAtConstruction;
 
     static const int64_t receivedDataSizeForFlowControlHighWaterMark = 1 << 15;
 };
