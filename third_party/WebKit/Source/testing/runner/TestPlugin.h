@@ -30,9 +30,9 @@
 #include "public/platform/WebExternalTextureLayerClient.h"
 #include "public/platform/WebExternalTextureMailbox.h"
 #include "public/platform/WebNonCopyable.h"
+#include "public/testing/WebScopedPtr.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPluginContainer.h"
-#include <memory>
 #include <string>
 
 namespace WebTestRunner {
@@ -142,7 +142,7 @@ private:
     bool m_mailboxChanged;
     unsigned m_framebuffer;
     Scene m_scene;
-    std::auto_ptr<blink::WebExternalTextureLayer> m_layer;
+    WebScopedPtr<blink::WebExternalTextureLayer> m_layer;
 
     blink::WebPluginContainer::TouchEventRequestType m_touchEventRequest;
     // Requests touch events from the WebPluginContainerImpl multiple times to tickle webkit.org/b/108381

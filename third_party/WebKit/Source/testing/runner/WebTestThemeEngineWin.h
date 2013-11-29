@@ -55,6 +55,7 @@ namespace WebTestRunner {
 class WebTestThemeEngineWin : public blink::WebThemeEngine, public blink::WebNonCopyable {
 public:
     WebTestThemeEngineWin() { }
+    virtual ~WebTestThemeEngineWin() { }
 
     // WebThemeEngine methods:
     virtual void paintButton(

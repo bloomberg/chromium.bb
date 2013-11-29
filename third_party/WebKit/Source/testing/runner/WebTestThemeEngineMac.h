@@ -37,6 +37,8 @@ namespace WebTestRunner {
 
 class WebTestThemeEngineMac : public blink::WebThemeEngine, public blink::WebNonCopyable {
 public:
+    virtual ~WebTestThemeEngineMac() { }
+
     virtual void paintScrollbarThumb(
         blink::WebCanvas*,
         blink::WebThemeEngine::State,

@@ -31,8 +31,8 @@
 #ifndef WebTestInterfaces_h
 #define WebTestInterfaces_h
 
+#include "WebScopedPtr.h"
 #include "WebTestCommon.h"
-#include <memory>
 
 namespace blink {
 class WebAudioDevice;
@@ -82,7 +82,7 @@ public:
 #endif
 
 private:
-    std::auto_ptr<TestInterfaces> m_interfaces;
+    WebScopedPtr<TestInterfaces> m_interfaces;
 };
 
 }

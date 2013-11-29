@@ -41,6 +41,8 @@ namespace WebTestRunner {
 
 class WebTestThemeEngineMock : public blink::WebThemeEngine {
 public:
+    virtual ~WebTestThemeEngineMock() { }
+
     // WebThemeEngine methods:
     virtual blink::WebSize getSize(WebThemeEngine::Part);
 

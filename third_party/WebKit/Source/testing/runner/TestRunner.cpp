@@ -76,7 +76,7 @@ namespace {
 
 class InvokeCallbackTask : public WebMethodTask<TestRunner> {
 public:
-    InvokeCallbackTask(TestRunner* object, auto_ptr<CppVariant> callbackArguments)
+    InvokeCallbackTask(TestRunner* object, WebScopedPtr<CppVariant> callbackArguments)
         : WebMethodTask<TestRunner>(object)
         , m_callbackArguments(callbackArguments)
     {
@@ -89,7 +89,7 @@ public:
     }
 
 private:
-    auto_ptr<CppVariant> m_callbackArguments;
+    WebScopedPtr<CppVariant> m_callbackArguments;
 };
 
 }
@@ -1753,7 +1753,7 @@ void TestRunner::setBackingScaleFactor(const CppArgumentList& arguments, CppVari
     m_delegate->setDeviceScaleFactor(value);
     m_proxy->discardBackingStore();
 
-    auto_ptr<CppVariant> callbackArguments(new CppVariant());
+    WebScopedPtr<CppVariant> callbackArguments(new CppVariant());
     callbackArguments->set(arguments[1]);
     result->setNull();
     m_delegate->postTask(new InvokeCallbackTask(this, callbackArguments));

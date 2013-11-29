@@ -324,7 +324,7 @@ EventSender::~EventSender()
 
 void EventSender::setContextMenuData(const WebContextMenuData& contextMenuData)
 {
-    m_lastContextMenuData = auto_ptr<WebContextMenuData>(new WebContextMenuData(contextMenuData));
+    m_lastContextMenuData = WebScopedPtr<WebContextMenuData>(new WebContextMenuData(contextMenuData));
 }
 
 void EventSender::reset()

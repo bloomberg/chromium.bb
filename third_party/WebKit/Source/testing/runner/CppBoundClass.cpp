@@ -75,7 +75,7 @@ private:
 
 class GetterPropertyCallback : public CppBoundClass::PropertyCallback {
 public:
-    GetterPropertyCallback(auto_ptr<CppBoundClass::GetterCallback> callback)
+    GetterPropertyCallback(WebScopedPtr<CppBoundClass::GetterCallback> callback)
         : m_callback(callback)
     {
     }
@@ -89,7 +89,7 @@ public:
     virtual bool setValue(const CppVariant& value) { return false; }
 
 private:
-    auto_ptr<CppBoundClass::GetterCallback> m_callback;
+    WebScopedPtr<CppBoundClass::GetterCallback> m_callback;
 };
 
 }
@@ -296,7 +296,7 @@ void CppBoundClass::bindCallback(const string& name, Callback* callback)
     m_methods[ident] = callback;
 }
 
-void CppBoundClass::bindGetterCallback(const string& name, auto_ptr<GetterCallback> callback)
+void CppBoundClass::bindGetterCallback(const string& name, WebScopedPtr<GetterCallback> callback)
 {
     PropertyCallback* propertyCallback = callback.get() ? new GetterPropertyCallback(callback) : 0;
     bindProperty(name, propertyCallback);

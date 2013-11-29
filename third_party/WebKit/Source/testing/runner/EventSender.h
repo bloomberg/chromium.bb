@@ -39,10 +39,10 @@
 
 #include "CppBoundClass.h"
 #include "public/platform/WebPoint.h"
+#include "public/testing/WebScopedPtr.h"
 #include "public/testing/WebTask.h"
 #include "public/web/WebDragOperation.h"
 #include "public/web/WebInputEvent.h"
-#include <memory>
 
 namespace blink {
 class WebDragData;
@@ -192,7 +192,7 @@ private:
     WebTestDelegate* m_delegate;
     blink::WebView* m_webView;
 
-    std::auto_ptr<blink::WebContextMenuData> m_lastContextMenuData;
+    WebScopedPtr<blink::WebContextMenuData> m_lastContextMenuData;
 
     // Location of the touch point that initiated a gesture.
     blink::WebPoint m_currentGestureLocation;

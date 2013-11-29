@@ -37,6 +37,7 @@
 #include "TestCommon.h"
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebURL.h"
+#include "public/testing/WebScopedPtr.h"
 #include "public/testing/WebTask.h"
 #include "public/testing/WebTestRunner.h"
 #include "public/web/WebArrayBufferView.h"
@@ -44,7 +45,6 @@
 #include "public/web/WebTextDirection.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include <deque>
-#include <memory>
 #include <set>
 #include <string>
 
@@ -711,9 +711,9 @@ private:
     blink::WebFrame* m_topLoadingFrame;
 
     // WebPermissionClient mock object.
-    std::auto_ptr<WebPermissions> m_webPermissions;
+    WebScopedPtr<WebPermissions> m_webPermissions;
 
-    std::auto_ptr<NotificationPresenter> m_notificationPresenter;
+    WebScopedPtr<NotificationPresenter> m_notificationPresenter;
 
     bool m_pointerLocked;
     enum {

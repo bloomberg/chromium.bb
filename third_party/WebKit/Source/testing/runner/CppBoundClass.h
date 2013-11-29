@@ -45,8 +45,8 @@
 
 #include "CppVariant.h"
 #include "public/platform/WebNonCopyable.h"
+#include "public/testing/WebScopedPtr.h"
 #include <map>
-#include <memory>
 #include <vector>
 
 namespace blink {
@@ -162,7 +162,7 @@ protected:
 
     // Bind Javascript property |name| to the C++ getter callback |callback|.
     // This can be used to create read-only properties.
-    void bindGetterCallback(const std::string&, std::auto_ptr<GetterCallback>);
+    void bindGetterCallback(const std::string&, WebScopedPtr<GetterCallback>);
 
     // A wrapper for BindGetterCallback, to simplify the common case of binding a
     // property on the current object. Though not verified here, the method parameter
@@ -170,7 +170,7 @@ protected:
     template<class T>
     void bindProperty(const std::string& name, void (T::*method)(CppVariant*))
     {
-        std::auto_ptr<GetterCallback> callback(new MemberGetterCallback<T>(static_cast<T*>(this), method));
+        WebScopedPtr<GetterCallback> callback(new MemberGetterCallback<T>(static_cast<T*>(this), method));
         bindGetterCallback(name, callback);
     }
 
@@ -191,7 +191,7 @@ protected:
     // as it may cause unexpected behaviors (a JavaScript object with a
     // fallback always returns true when checked for a method's
     // existence).
-    void bindFallbackCallback(std::auto_ptr<Callback> fallbackCallback)
+    void bindFallbackCallback(WebScopedPtr<Callback> fallbackCallback)
     {
         m_fallbackCallback = fallbackCallback;
     }
@@ -204,9 +204,9 @@ protected:
     void bindFallbackMethod(void (T::*method)(const CppArgumentList&, CppVariant*))
     {
         if (method)
-            bindFallbackCallback(std::auto_ptr<Callback>(new MemberCallback<T>(static_cast<T*>(this), method)));
+            bindFallbackCallback(WebScopedPtr<Callback>(new MemberCallback<T>(static_cast<T*>(this), method)));
         else
-            bindFallbackCallback(std::auto_ptr<Callback>());
+            bindFallbackCallback(WebScopedPtr<Callback>());
     }
 
     // Some fields are protected because some tests depend on accessing them,
@@ -220,7 +220,7 @@ protected:
     MethodList m_methods;
 
     // The callback gets invoked when a call is made to an nonexistent method.
-    std::auto_ptr<Callback> m_fallbackCallback;
+    WebScopedPtr<Callback> m_fallbackCallback;
 
 private:
     // NPObject callbacks.

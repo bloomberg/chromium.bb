@@ -31,6 +31,7 @@
 #ifndef WebTestProxy_h
 #define WebTestProxy_h
 
+#include "WebScopedPtr.h"
 #include "WebTask.h"
 #include "WebTestCommon.h"
 #include "public/platform/WebNonCopyable.h"
@@ -48,7 +49,6 @@
 #include "public/web/WebTextAffinity.h"
 #include "public/web/WebTextDirection.h"
 #include <map>
-#include <memory>
 #include <string>
 
 namespace blink {
@@ -234,11 +234,11 @@ private:
 
     WebTaskList m_taskList;
 
-    std::auto_ptr<SpellCheckClient> m_spellcheck;
-    std::auto_ptr<WebUserMediaClientMock> m_userMediaClient;
+    WebScopedPtr<SpellCheckClient> m_spellcheck;
+    WebScopedPtr<WebUserMediaClientMock> m_userMediaClient;
 
     // Painting.
-    std::auto_ptr<SkCanvas> m_canvas;
+    WebScopedPtr<SkCanvas> m_canvas;
     blink::WebRect m_paintRect;
     bool m_isPainting;
     bool m_animateScheduled;
@@ -248,11 +248,11 @@ private:
     bool m_logConsoleOutput;
     int m_chooserCount;
 
-    std::auto_ptr<blink::WebGeolocationClientMock> m_geolocationClient;
-    std::auto_ptr<blink::WebMIDIClientMock> m_midiClient;
-    std::auto_ptr<MockWebSpeechRecognizer> m_speechRecognizer;
-    std::auto_ptr<MockWebSpeechInputController> m_speechInputController;
-    std::auto_ptr<MockWebValidationMessageClient> m_validationMessageClient;
+    WebScopedPtr<blink::WebGeolocationClientMock> m_geolocationClient;
+    WebScopedPtr<blink::WebMIDIClientMock> m_midiClient;
+    WebScopedPtr<MockWebSpeechRecognizer> m_speechRecognizer;
+    WebScopedPtr<MockWebSpeechInputController> m_speechInputController;
+    WebScopedPtr<MockWebValidationMessageClient> m_validationMessageClient;
 
     // FIXME:: We want to move away from this pattern and mark classes
     // as Noncopyable, but this class is marked as WEBTESTRUNNER_EXPORT

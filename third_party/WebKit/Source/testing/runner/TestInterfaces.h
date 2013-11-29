@@ -32,8 +32,8 @@
 #define TestInterfaces_h
 
 #include "public/platform/WebNonCopyable.h"
+#include "public/testing/WebScopedPtr.h"
 
-#include <memory>
 #include <vector>
 
 #if defined(USE_DEFAULT_RENDER_THEME)
@@ -86,21 +86,21 @@ public:
     blink::WebThemeEngine* themeEngine();
 
 private:
-    std::auto_ptr<AccessibilityController> m_accessibilityController;
-    std::auto_ptr<EventSender> m_eventSender;
-    std::auto_ptr<GamepadController> m_gamepadController;
-    std::auto_ptr<TextInputController> m_textInputController;
-    std::auto_ptr<TestRunner> m_testRunner;
+    WebScopedPtr<AccessibilityController> m_accessibilityController;
+    WebScopedPtr<EventSender> m_eventSender;
+    WebScopedPtr<GamepadController> m_gamepadController;
+    WebScopedPtr<TextInputController> m_textInputController;
+    WebScopedPtr<TestRunner> m_testRunner;
     WebTestDelegate* m_delegate;
     WebTestProxyBase* m_proxy;
 
     std::vector<WebTestProxyBase*> m_windowList;
 #if defined(USE_DEFAULT_RENDER_THEME)
-    std::auto_ptr<WebTestThemeEngineMock> m_themeEngine;
+    WebScopedPtr<WebTestThemeEngineMock> m_themeEngine;
 #elif defined(WIN32)
-    std::auto_ptr<WebTestThemeEngineWin> m_themeEngine;
+    WebScopedPtr<WebTestThemeEngineWin> m_themeEngine;
 #elif defined(__APPLE__)
-    std::auto_ptr<WebTestThemeEngineMac> m_themeEngine;
+    WebScopedPtr<WebTestThemeEngineMac> m_themeEngine;
 #endif
 };
 
