@@ -56,11 +56,11 @@ MockVolumeManager.createMockVolumeInfo = function(type, path) {
       type,
       path,
       '',  // volumeId
-      true,  // isCurrent
       entry,  // root
       '',  // error
       '',  // deviceType
-      false);  // isReadonly
+      false,  // isReadonly
+      {isCurrentProfile: true, displayName: ''});  // profile
 
   return volumeInfo;
 };

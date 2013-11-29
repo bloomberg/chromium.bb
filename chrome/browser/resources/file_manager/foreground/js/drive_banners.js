@@ -396,7 +396,7 @@ FileListBannerController.prototype.isOnCurrentProfileDrive = function() {
   var locationInfo = this.volumeManager_.getLocationInfo(entry);
   return locationInfo &&
       locationInfo.rootType === RootType.DRIVE &&
-      locationInfo.volumeInfo.isCurrent;
+      locationInfo.volumeInfo.profile.isCurrentProfile;
 };
 
 /**
@@ -460,7 +460,7 @@ FileListBannerController.prototype.onDirectoryChanged_ = function(event) {
 FileListBannerController.prototype.isLowSpaceWarningTarget_ =
     function(volumeInfo) {
   return volumeInfo &&
-      volumeInfo.isCurrent &&
+      volumeInfo.profile.isCurrentProfile &&
       (volumeInfo.volumeType === util.VolumeType.DOWNLOADS ||
        volumeInfo.volumeType === util.VolumeType.DRIVE);
 };

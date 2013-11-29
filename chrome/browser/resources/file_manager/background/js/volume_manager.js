@@ -11,30 +11,29 @@
  * @param {util.VolumeType} volumeType The type of the volume.
  * @param {string} mountPath Where the volume is mounted.
  * @param {string} volumeId ID of the volume.
- * @param {boolean} isCurrent True if the volume is owned by the current
- *     profile, which the application run with.
  * @param {DirectoryEntry} root The root directory entry of this volume.
  * @param {string} error The error if an error is found.
  * @param {string} deviceType The type of device ('usb'|'sd'|'optical'|'mobile'
  *     |'unknown') (as defined in chromeos/disks/disk_mount_manager.cc).
  *     Can be null.
  * @param {boolean} isReadOnly True if the volume is read only.
+ * @param {!{displayName:string, isCurrentProfile:boolean}} profile Profile
+ *     information.
  * @constructor
  */
 function VolumeInfo(
     volumeType,
     mountPath,
     volumeId,
-    isCurrent,
     root,
     error,
     deviceType,
-    isReadOnly) {
+    isReadOnly,
+    profile) {
   this.volumeType = volumeType;
   // TODO(hidehiko): This should include FileSystem instance.
   this.mountPath = mountPath;
   this.volumeId = volumeId;
-  this.isCurrent = isCurrent;
   this.root = root;
 
   // Note: This represents if the mounting of the volume is successfully done
@@ -43,6 +42,7 @@ function VolumeInfo(
   this.error = error;
   this.deviceType = deviceType;
   this.isReadOnly = isReadOnly;
+  this.profile = Object.freeze(profile);
 
   // VolumeInfo is immutable.
   Object.freeze(this);
@@ -133,12 +133,11 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
             volumeMetadata.volumeType,
             volumeMetadata.mountPath,
             volumeMetadata.volumeId,
-            true,  // TODO(hirono): All volumes are owned by current profile
-                   // now.
             entry,
             volumeMetadata.mountCondition,
             volumeMetadata.deviceType,
-            volumeMetadata.isReadOnly));
+            volumeMetadata.isReadOnly,
+            volumeMetadata.profile));
       },
       function(fileError) {
         console.error('Root entry is not found: ' +
@@ -148,12 +147,11 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata, callback) {
             volumeMetadata.volumeType,
             volumeMetadata.mountPath,
             volumeMetadata.volumeId,
-            true,  // TODO(hirono): All volumes are owned by current profile
-                   // now.
             null,  // Root entry is not found.
             volumeMetadata.mountCondition,
             volumeMetadata.deviceType,
-            volumeMetadata.isReadOnly));
+            volumeMetadata.isReadOnly,
+            volumeMetadata.profile));
       });
 };
 
@@ -604,7 +602,8 @@ VolumeManager.prototype.getVolumeInfoByURL = function(url) {
 VolumeManager.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
   for (var i = 0; i < this.volumeInfoList.length; i++) {
     var volumeInfo = this.volumeInfoList.item(i);
-    if (volumeInfo.isCurrent && volumeInfo.volumeType === volumeType)
+    if (volumeInfo.profile.isCurrentProfile &&
+        volumeInfo.volumeType === volumeType)
       return volumeInfo;
   }
   return null;
