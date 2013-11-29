@@ -12,7 +12,7 @@
 
 namespace chromeos {
 class UserImage;
-}
+}  // namespace chromeos
 
 // Wallpaper manager strings.
 class WallpaperPrivateGetStringsFunction : public SyncExtensionFunction {
