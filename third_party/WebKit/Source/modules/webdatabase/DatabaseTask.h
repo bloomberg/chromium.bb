@@ -88,6 +88,7 @@ protected:
 
 private:
     virtual void doPerformTask() = 0;
+    virtual void taskCancelled() { }
 
     RefPtr<DatabaseBackend> m_database;
     DatabaseTaskSynchronizer* m_synchronizer;
@@ -151,12 +152,12 @@ private:
     explicit DatabaseTransactionTask(PassRefPtr<SQLTransactionBackend>);
 
     virtual void doPerformTask();
+    virtual void taskCancelled();
 #if !LOG_DISABLED
     virtual const char* debugTaskName() const;
 #endif
 
     RefPtr<SQLTransactionBackend> m_transaction;
-    bool m_didPerformTask;
 };
 
 class DatabaseBackend::DatabaseTableNamesTask : public DatabaseTask {

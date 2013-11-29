@@ -83,6 +83,7 @@ void DatabaseTask::run()
 #endif
 
     if (!m_synchronizer && !m_database->databaseContext()->databaseThread()->isDatabaseOpen(m_database.get())) {
+        taskCancelled();
 #if !LOG_DISABLED
         m_complete = true;
 #endif
@@ -156,11 +157,19 @@ const char* DatabaseBackend::DatabaseCloseTask::debugTaskName() const
 DatabaseBackend::DatabaseTransactionTask::DatabaseTransactionTask(PassRefPtr<SQLTransactionBackend> transaction)
     : DatabaseTask(Database::from(transaction->database()), 0)
     , m_transaction(transaction)
-    , m_didPerformTask(false)
 {
 }
 
 DatabaseBackend::DatabaseTransactionTask::~DatabaseTransactionTask()
+{
+}
+
+void DatabaseBackend::DatabaseTransactionTask::doPerformTask()
+{
+    m_transaction->performNextStep();
+}
+
+void DatabaseBackend::DatabaseTransactionTask::taskCancelled()
 {
     // If the task is being destructed without the transaction ever being run,
     // then we must either have an error or an interruption. Give the
@@ -170,14 +179,7 @@ DatabaseBackend::DatabaseTransactionTask::~DatabaseTransactionTask()
     // Transaction phase 2 cleanup. See comment on "What happens if a
     // transaction is interrupted?" at the top of SQLTransactionBackend.cpp.
 
-    if (!m_didPerformTask)
-        m_transaction->notifyDatabaseThreadIsShuttingDown();
-}
-
-void DatabaseBackend::DatabaseTransactionTask::doPerformTask()
-{
-    m_transaction->performNextStep();
-    m_didPerformTask = true;
+    m_transaction->notifyDatabaseThreadIsShuttingDown();
 }
 
 #if !LOG_DISABLED
