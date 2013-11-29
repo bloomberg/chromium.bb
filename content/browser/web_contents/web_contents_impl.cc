@@ -2149,8 +2149,11 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
   net::CertStatus cert_status = 0;
   int security_bits = -1;
   int connection_status = 0;
+  SignedCertificateTimestampIDStatusList signed_certificate_timestamp_ids;
   DeserializeSecurityInfo(security_info, &cert_id, &cert_status,
-                          &security_bits, &connection_status);
+                          &security_bits, &connection_status,
+                          &signed_certificate_timestamp_ids);
+  // TODO(alcutter,eranm): Pass signed_certificate_timestamp_ids into details
   LoadFromMemoryCacheDetails details(
       url, GetRenderProcessHost()->GetID(), cert_id, cert_status, http_method,
       mime_type, resource_type);

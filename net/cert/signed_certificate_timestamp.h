@@ -13,6 +13,9 @@
 #include "net/base/hash_value.h"
 #include "net/base/net_export.h"
 
+class Pickle;
+class PickleIterator;
+
 namespace net {
 
 // Structures related to Certificate Transparency (RFC6962).
@@ -92,6 +95,10 @@ struct NET_EXPORT SignedCertificateTimestamp
   };
 
   SignedCertificateTimestamp();
+
+  void Persist(Pickle* pickle);
+  static scoped_refptr<SignedCertificateTimestamp> CreateFromPickle(
+      PickleIterator* iter);
 
   Version version;
   std::string log_id;

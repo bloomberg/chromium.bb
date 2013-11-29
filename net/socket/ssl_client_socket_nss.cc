@@ -94,7 +94,9 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_verifier.h"
+#include "net/cert/ct_verify_result.h"
 #include "net/cert/scoped_nss_types.h"
+#include "net/cert/sct_status_flags.h"
 #include "net/cert/single_request_cert_verifier.h"
 #include "net/cert/x509_certificate_net_log_param.h"
 #include "net/cert/x509_util.h"
@@ -2823,6 +2825,9 @@ bool SSLClientSocketNSS::GetSSLInfo(SSLInfo* ssl_info) {
 
   ssl_info->cert_status = server_cert_verify_result_.cert_status;
   ssl_info->cert = server_cert_verify_result_.verified_cert;
+
+  AddSCTInfoToSSLInfo(ssl_info);
+
   ssl_info->connection_status =
       core_->state().ssl_connection_status;
   ssl_info->public_key_hashes = server_cert_verify_result_.public_key_hashes;
@@ -3513,7 +3518,7 @@ void SSLClientSocketNSS::VerifyCT() {
       &ct_verify_result_);
 
   VLOG(1) << "CT Verification complete: result " << result
-          << " Unverified scts: " << ct_verify_result_.unverified_scts.size()
+          << " Invalid scts: " << ct_verify_result_.invalid_scts.size()
           << " Verified scts: " << ct_verify_result_.verified_scts.size()
           << " scts from unknown logs: "
           << ct_verify_result_.unknown_logs_scts.size();
@@ -3553,6 +3558,28 @@ bool SSLClientSocketNSS::CalledOnValidThread() const {
   EnsureThreadIdAssigned();
   base::AutoLock auto_lock(lock_);
   return valid_thread_id_ == base::PlatformThread::CurrentId();
+}
+
+void SSLClientSocketNSS::AddSCTInfoToSSLInfo(SSLInfo* ssl_info) const {
+  for (ct::SCTList::const_iterator iter =
+       ct_verify_result_.verified_scts.begin();
+       iter != ct_verify_result_.verified_scts.end(); ++iter) {
+    ssl_info->signed_certificate_timestamps.push_back(
+        SignedCertificateTimestampAndStatus(*iter, ct::SCT_STATUS_OK));
+  }
+  for (ct::SCTList::const_iterator iter =
+       ct_verify_result_.invalid_scts.begin();
+       iter != ct_verify_result_.invalid_scts.end(); ++iter) {
+    ssl_info->signed_certificate_timestamps.push_back(
+        SignedCertificateTimestampAndStatus(*iter, ct::SCT_STATUS_INVALID));
+  }
+  for (ct::SCTList::const_iterator iter =
+       ct_verify_result_.unknown_logs_scts.begin();
+       iter != ct_verify_result_.unknown_logs_scts.end(); ++iter) {
+    ssl_info->signed_certificate_timestamps.push_back(
+        SignedCertificateTimestampAndStatus(*iter,
+                                            ct::SCT_STATUS_LOG_UNKNOWN));
+  }
 }
 
 ServerBoundCertService* SSLClientSocketNSS::GetServerBoundCertService() const {

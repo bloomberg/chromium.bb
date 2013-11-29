@@ -42,7 +42,7 @@ class MultiLogCTVerifierTest : public ::testing::Test {
 
   bool CheckForSingleVerifiedSCTInResult(const ct::CTVerifyResult& result) {
     return (result.verified_scts.size() == 1U) &&
-        result.unverified_scts.empty() &&
+        result.invalid_scts.empty() &&
         result.unknown_logs_scts.empty();
   }
 

@@ -8,21 +8,27 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "content/public/common/signed_certificate_timestamp_id_and_status.h"
 #include "net/cert/cert_status_flags.h"
 
 namespace content {
 
 // Convenience methods for serializing/deserializing the security info.
-CONTENT_EXPORT std::string SerializeSecurityInfo(int cert_id,
-                                                 net::CertStatus cert_status,
-                                                 int security_bits,
-                                                 int connection_status);
+CONTENT_EXPORT std::string SerializeSecurityInfo(
+    int cert_id,
+    net::CertStatus cert_status,
+    int security_bits,
+    int connection_status,
+    const SignedCertificateTimestampIDStatusList&
+        signed_certificate_timestamp_ids);
 
-bool DeserializeSecurityInfo(const std::string& state,
-                             int* cert_id,
-                             net::CertStatus* cert_status,
-                             int* security_bits,
-                             int* connection_status);
+bool DeserializeSecurityInfo(
+    const std::string& state,
+    int* cert_id,
+    net::CertStatus* cert_status,
+    int* security_bits,
+    int* connection_status,
+    SignedCertificateTimestampIDStatusList* signed_certificate_timestamp_ids);
 
 }  // namespace content
 

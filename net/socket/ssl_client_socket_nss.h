@@ -146,6 +146,13 @@ class SSLClientSocketNSS : public SSLClientSocket {
   void EnsureThreadIdAssigned() const;
   bool CalledOnValidThread() const;
 
+  // Adds the SignedCertificateTimestamps from ct_verify_result_ to |ssl_info|.
+  // SCTs are held in three separate vectors in ct_verify_result, each
+  // vetor representing a particular verification state, this method associates
+  // each of the SCTs with the corresponding SCTVerifyStatus as it adds it to
+  // the |ssl_info|.signed_certificate_timestamps list.
+  void AddSCTInfoToSSLInfo(SSLInfo* ssl_info) const;
+
   // The task runner used to perform NSS operations.
   scoped_refptr<base::SequencedTaskRunner> nss_task_runner_;
   scoped_ptr<ClientSocketHandle> transport_;

@@ -7,6 +7,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/security_style.h"
+#include "content/public/common/signed_certificate_timestamp_id_and_status.h"
 #include "net/cert/cert_status_flags.h"
 
 namespace content {
@@ -29,13 +30,16 @@ struct CONTENT_EXPORT SSLStatus {
   };
 
   SSLStatus();
+  ~SSLStatus();
 
   bool Equals(const SSLStatus& status) const {
     return security_style == status.security_style &&
            cert_id == status.cert_id &&
            cert_status == status.cert_status &&
            security_bits == status.security_bits &&
-           content_status == status.content_status;
+           content_status == status.content_status &&
+           signed_certificate_timestamp_ids ==
+               status.signed_certificate_timestamp_ids;
   }
 
   content::SecurityStyle security_style;
@@ -45,6 +49,7 @@ struct CONTENT_EXPORT SSLStatus {
   int connection_status;
   // A combination of the ContentStatusFlags above.
   int content_status;
+  SignedCertificateTimestampIDStatusList signed_certificate_timestamp_ids;
 };
 
 }  // namespace content

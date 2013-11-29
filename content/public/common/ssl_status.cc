@@ -15,4 +15,6 @@ SSLStatus::SSLStatus()
       content_status(NORMAL_CONTENT) {
 }
 
+SSLStatus::~SSLStatus() {}
+
 }  // namespace content

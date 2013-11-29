@@ -35,7 +35,7 @@ int MultiLogCTVerifier::Verify(
   DCHECK(result);
 
   result->verified_scts.clear();
-  result->unverified_scts.clear();
+  result->invalid_scts.clear();
   result->unknown_logs_scts.clear();
 
   bool has_verified_scts = false;
@@ -127,14 +127,14 @@ bool MultiLogCTVerifier::VerifySingleSCT(
 
   if (!it->second->Verify(expected_entry, *sct)) {
     DVLOG(1) << "Unable to verify SCT signature.";
-    result->unverified_scts.push_back(sct);
+    result->invalid_scts.push_back(sct);
     return false;
   }
 
   // SCT verified ok, just make sure the timestamp is legitimate.
   if (sct->timestamp > base::Time::Now()) {
     DVLOG(1) << "SCT is from the future!";
-    result->unverified_scts.push_back(sct);
+    result->invalid_scts.push_back(sct);
     return false;
   }
 

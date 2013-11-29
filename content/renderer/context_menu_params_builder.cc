@@ -76,10 +76,10 @@ ContextMenuParams ContextMenuParamsBuilder::Build(
   // Deserialize the SSL info.
   if (!data.securityInfo.isEmpty()) {
     DeserializeSecurityInfo(data.securityInfo,
-                            &params.security_info.cert_id,
-                            &params.security_info.cert_status,
-                            &params.security_info.security_bits,
-                            &params.security_info.connection_status);
+        &params.security_info.cert_id, &params.security_info.cert_status,
+        &params.security_info.security_bits,
+        &params.security_info.connection_status,
+        &params.security_info.signed_certificate_timestamp_ids);
   }
 
   return params;

@@ -25,8 +25,8 @@ struct NET_EXPORT CTVerifyResult {
   // SCTs from known logs where the signature verified correctly.
   SCTList verified_scts;
   // SCTs from known logs where the signature failed to verify.
-  SCTList unverified_scts;
-  // SCTs from unknown logs.
+  SCTList invalid_scts;
+  // SCTs from unknown logs and as such are unverifiable.
   SCTList unknown_logs_scts;
 };
 

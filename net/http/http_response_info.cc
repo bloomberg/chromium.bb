@@ -10,6 +10,7 @@
 #include "net/base/auth.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
+#include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_response_headers.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -86,6 +87,9 @@ enum {
 
   // This bit is set if the request has http authentication.
   RESPONSE_INFO_USE_HTTP_AUTHENTICATION = 1 << 19,
+
+  // This bit is set if ssl_info has SCTs.
+  RESPONSE_INFO_HAS_SIGNED_CERTIFICATE_TIMESTAMPS = 1 << 20,
 
   // TODO(darin): Add other bits to indicate alternate request methods.
   // For now, we don't support storing those.
@@ -207,6 +211,22 @@ bool HttpResponseInfo::InitFromPickle(const Pickle& pickle,
     ssl_info.connection_status = connection_status;
   }
 
+  if (flags & RESPONSE_INFO_HAS_SIGNED_CERTIFICATE_TIMESTAMPS) {
+    int num_scts;
+    if (!pickle.ReadInt(&iter, &num_scts))
+      return false;
+    for (int i = 0; i < num_scts; ++i) {
+      scoped_refptr<ct::SignedCertificateTimestamp> sct(
+          ct::SignedCertificateTimestamp::CreateFromPickle(&iter));
+      uint16 status;
+      if (!sct.get() || !pickle.ReadUInt16(&iter, &status))
+        return false;
+      ssl_info.signed_certificate_timestamps.push_back(
+          SignedCertificateTimestampAndStatus(
+              sct, static_cast<ct::SCTVerifyStatus>(status)));
+    }
+  }
+
   // Read vary-data
   if (flags & RESPONSE_INFO_HAS_VARY_DATA) {
     if (!vary_data.InitFromPickle(pickle, &iter))
@@ -286,6 +306,8 @@ void HttpResponseInfo::Persist(Pickle* pickle,
     flags |= RESPONSE_INFO_HAS_CONNECTION_INFO;
   if (did_use_http_auth)
     flags |= RESPONSE_INFO_USE_HTTP_AUTHENTICATION;
+  if (!ssl_info.signed_certificate_timestamps.empty())
+    flags |= RESPONSE_INFO_HAS_SIGNED_CERTIFICATE_TIMESTAMPS;
 
   pickle->WriteInt(flags);
   pickle->WriteInt64(request_time.ToInternalValue());
@@ -313,6 +335,15 @@ void HttpResponseInfo::Persist(Pickle* pickle,
       pickle->WriteInt(ssl_info.security_bits);
     if (ssl_info.connection_status != 0)
       pickle->WriteInt(ssl_info.connection_status);
+    if (!ssl_info.signed_certificate_timestamps.empty()) {
+      pickle->WriteInt(ssl_info.signed_certificate_timestamps.size());
+      for (SignedCertificateTimestampAndStatusList::const_iterator it =
+           ssl_info.signed_certificate_timestamps.begin(); it !=
+           ssl_info.signed_certificate_timestamps.end(); ++it) {
+        it->sct_->Persist(pickle);
+        pickle->WriteUInt16(it->status_);
+      }
+    }
   }
 
   if (vary_data.is_valid())

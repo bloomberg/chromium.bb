@@ -4,6 +4,8 @@
 
 #include "net/cert/signed_certificate_timestamp.h"
 
+#include "base/pickle.h"
+
 namespace net {
 
 namespace ct {
@@ -27,6 +29,45 @@ bool SignedCertificateTimestamp::LessThan::operator()(
 SignedCertificateTimestamp::SignedCertificateTimestamp() {}
 
 SignedCertificateTimestamp::~SignedCertificateTimestamp() {}
+
+void SignedCertificateTimestamp::Persist(Pickle* pickle) {
+  CHECK(pickle->WriteInt(version));
+  CHECK(pickle->WriteString(log_id));
+  CHECK(pickle->WriteInt64(timestamp.ToInternalValue()));
+  CHECK(pickle->WriteString(extensions));
+  CHECK(pickle->WriteInt(signature.hash_algorithm));
+  CHECK(pickle->WriteInt(signature.signature_algorithm));
+  CHECK(pickle->WriteString(signature.signature_data));
+}
+
+// static
+scoped_refptr<SignedCertificateTimestamp>
+SignedCertificateTimestamp::CreateFromPickle(PickleIterator* iter) {
+  int version;
+  int64 timestamp;
+  int hash_algorithm;
+  int sig_algorithm;
+  scoped_refptr<SignedCertificateTimestamp> sct(
+      new SignedCertificateTimestamp());
+  // string values are set directly
+  if (!(iter->ReadInt(&version) &&
+        iter->ReadString(&sct->log_id) &&
+        iter->ReadInt64(&timestamp) &&
+        iter->ReadString(&sct->extensions) &&
+        iter->ReadInt(&hash_algorithm) &&
+        iter->ReadInt(&sig_algorithm) &&
+        iter->ReadString(&sct->signature.signature_data))) {
+    return NULL;
+  }
+  // Now set the rest of the member variables:
+  sct->version = static_cast<Version>(version);
+  sct->timestamp = base::Time::FromInternalValue(timestamp);
+  sct->signature.hash_algorithm =
+      static_cast<DigitallySigned::HashAlgorithm>(hash_algorithm);
+  sct->signature.signature_algorithm =
+      static_cast<DigitallySigned::SignatureAlgorithm>(sig_algorithm);
+  return sct;
+}
 
 LogEntry::LogEntry() {}
 

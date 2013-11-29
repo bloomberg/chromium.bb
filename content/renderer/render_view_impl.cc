@@ -3215,7 +3215,8 @@ SSLStatus RenderViewImpl::GetSSLStatusOfFrame(blink::WebFrame* frame) const {
                           &ssl_status.cert_id,
                           &ssl_status.cert_status,
                           &ssl_status.security_bits,
-                          &ssl_status.connection_status);
+                          &ssl_status.connection_status,
+                          &ssl_status.signed_certificate_timestamp_ids);
   return ssl_status;
 }
 

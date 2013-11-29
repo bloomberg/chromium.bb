@@ -19,6 +19,7 @@
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_login_delegate.h"
+#include "content/public/browser/signed_certificate_timestamp_store.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
@@ -473,6 +474,21 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
   }
 }
 
+void ResourceLoader::StoreSignedCertificateTimestamps(
+    const net::SignedCertificateTimestampAndStatusList& sct_list,
+    int process_id,
+    SignedCertificateTimestampIDStatusList* sct_ids) {
+  SignedCertificateTimestampStore* sct_store(
+      SignedCertificateTimestampStore::GetInstance());
+
+  for (net::SignedCertificateTimestampAndStatusList::const_iterator iter =
+       sct_list.begin(); iter != sct_list.end(); ++iter) {
+    const int sct_id(sct_store->Store(iter->sct_, process_id));
+    sct_ids->push_back(
+        SignedCertificateTimestampIDAndStatus(sct_id, iter->status_));
+  }
+}
+
 void ResourceLoader::CompleteResponseStarted() {
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
@@ -482,11 +498,19 @@ void ResourceLoader::CompleteResponseStarted() {
   if (request_->ssl_info().cert.get()) {
     int cert_id = CertStore::GetInstance()->StoreCert(
         request_->ssl_info().cert.get(), info->GetChildID());
+
+    SignedCertificateTimestampIDStatusList signed_certificate_timestamp_ids;
+    StoreSignedCertificateTimestamps(
+        request_->ssl_info().signed_certificate_timestamps,
+        info->GetChildID(),
+        &signed_certificate_timestamp_ids);
+
     response->head.security_info = SerializeSecurityInfo(
         cert_id,
         request_->ssl_info().cert_status,
         request_->ssl_info().security_bits,
-        request_->ssl_info().connection_status);
+        request_->ssl_info().connection_status,
+        signed_certificate_timestamp_ids);
   } else {
     // We should not have any SSL state.
     DCHECK(!request_->ssl_info().cert_status &&
@@ -590,9 +614,14 @@ void ResourceLoader::ResponseCompleted() {
   if (ssl_info.cert.get() != NULL) {
     int cert_id = CertStore::GetInstance()->StoreCert(ssl_info.cert.get(),
                                                       info->GetChildID());
+    SignedCertificateTimestampIDStatusList signed_certificate_timestamp_ids;
+    StoreSignedCertificateTimestamps(ssl_info.signed_certificate_timestamps,
+                                     info->GetChildID(),
+                                     &signed_certificate_timestamp_ids);
+
     security_info = SerializeSecurityInfo(
         cert_id, ssl_info.cert_status, ssl_info.security_bits,
-        ssl_info.connection_status);
+        ssl_info.connection_status, signed_certificate_timestamp_ids);
   }
 
   bool defer = false;

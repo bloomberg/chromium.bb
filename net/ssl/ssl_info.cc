@@ -4,7 +4,9 @@
 
 #include "net/ssl/ssl_info.h"
 
+#include "base/pickle.h"
 #include "net/cert/cert_status_flags.h"
+#include "net/cert/signed_certificate_timestamp.h"
 #include "net/cert/x509_certificate.h"
 
 namespace net {
@@ -30,6 +32,7 @@ SSLInfo& SSLInfo::operator=(const SSLInfo& info) {
   channel_id_sent = info.channel_id_sent;
   handshake_type = info.handshake_type;
   public_key_hashes = info.public_key_hashes;
+  signed_certificate_timestamps = info.signed_certificate_timestamps;
 
   return *this;
 }
@@ -43,8 +46,8 @@ void SSLInfo::Reset() {
   client_cert_sent = false;
   channel_id_sent = false;
   handshake_type = HANDSHAKE_UNKNOWN;
-
   public_key_hashes.clear();
+  signed_certificate_timestamps.clear();
 }
 
 void SSLInfo::SetCertError(int error) {
