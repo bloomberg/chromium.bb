@@ -20,6 +20,7 @@
 #include "content/common/view_message_enums.h"
 #include "content/common/webplugin_geometry.h"
 #include "content/port/common/input_event_ack_state.h"
+#include "content/public/common/color_suggestion.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/favicon_url.h"
@@ -157,6 +158,11 @@ IPC_STRUCT_TRAITS_BEGIN(content::MenuItem)
   IPC_STRUCT_TRAITS_MEMBER(enabled)
   IPC_STRUCT_TRAITS_MEMBER(checked)
   IPC_STRUCT_TRAITS_MEMBER(submenu)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::ColorSuggestion)
+  IPC_STRUCT_TRAITS_MEMBER(color)
+  IPC_STRUCT_TRAITS_MEMBER(label)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ContextMenuParams)
@@ -1970,9 +1976,10 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_SelectionBoundsChanged,
                     ViewHostMsg_SelectionBounds_Params)
 
 // Asks the browser to open the color chooser.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_OpenColorChooser,
+IPC_MESSAGE_ROUTED3(ViewHostMsg_OpenColorChooser,
                     int /* id */,
-                    SkColor /* color */)
+                    SkColor /* color */,
+                    std::vector<content::ColorSuggestion> /* suggestions */)
 
 // Asks the browser to end the color chooser.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_EndColorChooser, int /* id */)

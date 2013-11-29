@@ -613,8 +613,10 @@ bool ShellWindow::ShouldSuppressDialogs() {
   return true;
 }
 
-content::ColorChooser* ShellWindow::OpenColorChooser(WebContents* web_contents,
-                                                     SkColor initial_color) {
+content::ColorChooser* ShellWindow::OpenColorChooser(
+      WebContents* web_contents,
+      SkColor initial_color,
+      const std::vector<content::ColorSuggestion>& suggestionss) {
   return delegate_->ShowColorChooser(web_contents, initial_color);
 }
 

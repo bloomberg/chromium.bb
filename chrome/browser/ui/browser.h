@@ -615,7 +615,9 @@ class Browser : public TabStripModelObserver,
   virtual content::JavaScriptDialogManager*
       GetJavaScriptDialogManager() OVERRIDE;
   virtual content::ColorChooser* OpenColorChooser(
-      content::WebContents* web_contents, SkColor color) OVERRIDE;
+      content::WebContents* web_contents,
+      SkColor color,
+      const std::vector<content::ColorSuggestion>& suggestions) OVERRIDE;
   virtual void RunFileChooser(
       content::WebContents* web_contents,
       const content::FileChooserParams& params) OVERRIDE;

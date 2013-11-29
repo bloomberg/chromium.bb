@@ -995,7 +995,9 @@ void ExternalTabContainerWin::ShowRepostFormWarningDialog(WebContents* source) {
 }
 
 content::ColorChooser* ExternalTabContainerWin::OpenColorChooser(
-    WebContents* web_contents, SkColor initial_color) {
+      WebContents* web_contents,
+      SkColor initial_color,
+      const std::vector<content::ColorSuggestion>& suggestions) {
   return chrome::ShowColorChooser(web_contents, initial_color);
 }
 

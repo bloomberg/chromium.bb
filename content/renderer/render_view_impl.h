@@ -455,7 +455,9 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void didExecuteCommand(const blink::WebString& command_name);
   virtual bool handleCurrentKeyboardEvent();
   virtual blink::WebColorChooser* createColorChooser(
-      blink::WebColorChooserClient*, const blink::WebColor& initial_color);
+      blink::WebColorChooserClient*,
+      const blink::WebColor& initial_color,
+      const blink::WebVector<blink::WebColorSuggestion>& suggestions);
   virtual bool runFileChooser(
       const blink::WebFileChooserParams& params,
       blink::WebFileChooserCompletion* chooser_completion);

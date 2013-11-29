@@ -38,8 +38,12 @@ public class ColorPickerDialog extends AlertDialog implements OnColorChangedList
      * @param theme The theme to display the dialog in.
      * @param listener The object to notify when the color is set.
      * @param color The initial color to set.
+     * @param suggestions The list of suggestions.
      */
-    public ColorPickerDialog(Context context, OnColorChangedListener listener, int color) {
+    public ColorPickerDialog(Context context,
+                             OnColorChangedListener listener,
+                             int color,
+                             ColorSuggestion[] suggestions) {
         super(context, 0);
 
         mListener = listener;
@@ -110,7 +114,7 @@ public class ColorPickerDialog extends AlertDialog implements OnColorChangedList
 
         // Initialize simple color view (default view).
         mSimpleColorPicker = (ColorPickerSimple) content.findViewById(R.id.color_picker_simple);
-        mSimpleColorPicker.init(this);
+        mSimpleColorPicker.init(suggestions, this);
 
         updateCurrentColor(mInitialColor);
     }
@@ -136,8 +140,8 @@ public class ColorPickerDialog extends AlertDialog implements OnColorChangedList
         View buttonBorder = findViewById(R.id.more_colors_button_border);
         buttonBorder.setVisibility(View.GONE);
 
-        View simpleViewBorder = findViewById(R.id.color_picker_simple_border);
-        simpleViewBorder.setVisibility(View.GONE);
+        View simpleView = findViewById(R.id.color_picker_simple);
+        simpleView.setVisibility(View.GONE);
 
         mAdvancedColorPicker.setVisibility(View.VISIBLE);
         mAdvancedColorPicker.setListener(this);

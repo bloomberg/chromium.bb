@@ -29,6 +29,30 @@
       <message desc="Title of ColorPicker dialog. [CHAR-LIMIT=20]" name="IDS_COLOR_PICKER_DIALOG_TITLE">
         Select color
       </message>
+      <message desc="Accessibility label for button to select the red color." name="IDS_COLOR_PICKER_BUTTON_RED">
+        Red
+      </message>
+      <message desc="Accessibility label for button to select the cyan color." name="IDS_COLOR_PICKER_BUTTON_CYAN">
+        Cyan
+      </message>
+      <message desc="Accessibility label for button to select the blue color." name="IDS_COLOR_PICKER_BUTTON_BLUE">
+        Blue
+      </message>
+      <message desc="Accessibility label for button to select the green color." name="IDS_COLOR_PICKER_BUTTON_GREEN">
+        Green
+      </message>
+      <message desc="Accessibility label for button to select the magenta color." name="IDS_COLOR_PICKER_BUTTON_MAGENTA">
+        Magenta
+      </message>
+      <message desc="Accessibility label for button to select the yellow color." name="IDS_COLOR_PICKER_BUTTON_YELLOW">
+        Yellow
+      </message>
+      <message desc="Accessibility label for button to select the black color." name="IDS_COLOR_PICKER_BUTTON_BLACK">
+        Black
+      </message>
+      <message desc="Accessibility label for button to select the white color." name="IDS_COLOR_PICKER_BUTTON_WHITE">
+        White
+      </message>
     </messages>
   </release>
   <translations>

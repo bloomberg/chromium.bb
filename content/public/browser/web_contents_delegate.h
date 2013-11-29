@@ -39,6 +39,7 @@ class RenderViewHost;
 class SessionStorageNamespace;
 class WebContents;
 class WebContentsImpl;
+struct ColorSuggestion;
 struct ContextMenuParams;
 struct DropData;
 struct FileChooserParams;
@@ -333,8 +334,10 @@ class CONTENT_EXPORT WebContentsDelegate {
 
   // Called when color chooser should open. Returns the opened color chooser.
   // Ownership of the returned pointer is transferred to the caller.
-  virtual ColorChooser* OpenColorChooser(WebContents* web_contents,
-                                         SkColor color);
+  virtual ColorChooser* OpenColorChooser(
+      WebContents* web_contents,
+      SkColor color,
+      const std::vector<ColorSuggestion>& suggestions);
 
   // Called when a file selection is to be done.
   virtual void RunFileChooser(WebContents* web_contents,

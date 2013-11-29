@@ -70,7 +70,6 @@ public class ColorPickerAdvanced extends LinearLayout implements OnSeekBarChange
                 SATURATION_SEEK_BAR_MAX, this);
         mValueDetails = createAndAddNewGradient(R.string.color_picker_value,
                 VALUE_SEEK_BAR_MAX, this);
-
         refreshGradientComponents();
     }
 

@@ -5,7 +5,10 @@
 #ifndef CONTENT_RENDERER_RENDERER_WEBCOLORCHOOSER_IMPL_H_
 #define CONTENT_RENDERER_RENDERER_WEBCOLORCHOOSER_IMPL_H_
 
+#include <vector>
+
 #include "base/compiler_specific.h"
+#include "content/public/common/color_suggestion.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebColorChooser.h"
 #include "third_party/WebKit/public/web/WebColorChooserClient.h"
@@ -28,7 +31,8 @@ class RendererWebColorChooserImpl : public blink::WebColorChooser,
   virtual void setSelectedColor(const blink::WebColor);
   virtual void endChooser();
 
-  void Open(SkColor initial_color);
+  void Open(SkColor initial_color,
+            const std::vector<content::ColorSuggestion>& suggestions);
 
   blink::WebColorChooserClient* client() { return client_; }
 

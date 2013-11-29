@@ -47,9 +47,13 @@ void RendererWebColorChooserImpl::endChooser() {
   Send(new ViewHostMsg_EndColorChooser(routing_id(), identifier_));
 }
 
-void RendererWebColorChooserImpl::Open(SkColor initial_color) {
-  Send(new ViewHostMsg_OpenColorChooser(routing_id(), identifier_,
-                                        initial_color));
+void RendererWebColorChooserImpl::Open(
+      SkColor initial_color,
+      const std::vector<content::ColorSuggestion>& suggestions) {
+  Send(new ViewHostMsg_OpenColorChooser(routing_id(),
+                                        identifier_,
+                                        initial_color,
+                                        suggestions));
 }
 
 void RendererWebColorChooserImpl::OnDidChooseColorResponse(int color_chooser_id,

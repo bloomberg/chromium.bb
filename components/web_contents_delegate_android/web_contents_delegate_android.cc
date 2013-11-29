@@ -50,9 +50,11 @@ WebContentsDelegateAndroid::GetJavaDelegate(JNIEnv* env) const {
 // WebContentsDelegate methods
 // ----------------------------------------------------------------------------
 
-ColorChooser* WebContentsDelegateAndroid::OpenColorChooser(WebContents* source,
-                                                           SkColor color)  {
-  return new ColorChooserAndroid(source, color);
+ColorChooser* WebContentsDelegateAndroid::OpenColorChooser(
+      WebContents* source,
+      SkColor color,
+      const std::vector<content::ColorSuggestion>& suggestions)  {
+  return new ColorChooserAndroid(source, color, suggestions);
 }
 
 // OpenURLFromTab() will be called when we're performing a browser-intiated

@@ -1596,8 +1596,10 @@ content::JavaScriptDialogManager* Browser::GetJavaScriptDialogManager() {
   return GetJavaScriptDialogManagerInstance();
 }
 
-content::ColorChooser* Browser::OpenColorChooser(WebContents* web_contents,
-                                                 SkColor initial_color) {
+content::ColorChooser* Browser::OpenColorChooser(
+      WebContents* web_contents,
+      SkColor initial_color,
+      const std::vector<content::ColorSuggestion>& suggestions) {
   return chrome::ShowColorChooser(web_contents, initial_color);
 }
 
@@ -2270,7 +2272,6 @@ bool Browser::MaybeCreateBackgroundContents(
       return true;
     // For scriptable background pages, if one already exists, close it (even
     // if it was specified in the manifest).
-    DLOG(INFO) << "Closing existing BackgroundContents for " << opener_url;
     delete existing;
   }
 

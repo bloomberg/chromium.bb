@@ -65,6 +65,7 @@ class WebContentsImpl;
 class WebContentsObserver;
 class WebContentsViewPort;
 class WebContentsViewDelegate;
+struct ColorSuggestion;
 struct FaviconURL;
 struct LoadNotificationDetails;
 
@@ -645,7 +646,9 @@ class CONTENT_EXPORT WebContentsImpl
   void OnCrashedPlugin(const base::FilePath& plugin_path,
                        base::ProcessId plugin_pid);
   void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
-  void OnOpenColorChooser(int color_chooser_id, SkColor color);
+  void OnOpenColorChooser(int color_chooser_id,
+                          SkColor color,
+                          const std::vector<ColorSuggestion>& suggestions);
   void OnEndColorChooser(int color_chooser_id);
   void OnSetSelectedColorInColorChooser(int color_chooser_id, SkColor color);
   void OnPepperPluginHung(int plugin_child_id,

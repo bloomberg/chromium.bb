@@ -156,6 +156,7 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebColorName.h"
+#include "third_party/WebKit/public/web/WebColorSuggestion.h"
 #include "third_party/WebKit/public/web/WebDOMEvent.h"
 #include "third_party/WebKit/public/web/WebDOMMessageEvent.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
@@ -2660,10 +2661,15 @@ bool RenderViewImpl::handleCurrentKeyboardEvent() {
 
 blink::WebColorChooser* RenderViewImpl::createColorChooser(
     blink::WebColorChooserClient* client,
-    const blink::WebColor& initial_color) {
+    const blink::WebColor& initial_color,
+    const blink::WebVector<blink::WebColorSuggestion>& suggestions) {
   RendererWebColorChooserImpl* color_chooser =
       new RendererWebColorChooserImpl(this, client);
-  color_chooser->Open(static_cast<SkColor>(initial_color));
+  std::vector<content::ColorSuggestion> color_suggestions;
+  for (size_t i = 0; i < suggestions.size(); i++) {
+    color_suggestions.push_back(content::ColorSuggestion(suggestions[i]));
+  }
+  color_chooser->Open(static_cast<SkColor>(initial_color), color_suggestions);
   return color_chooser;
 }
 

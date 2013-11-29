@@ -146,7 +146,9 @@ bool WebContentsDelegate::IsFullscreenForTabOrPending(
 }
 
 content::ColorChooser* WebContentsDelegate::OpenColorChooser(
-    WebContents* web_contents, SkColor color) {
+    WebContents* web_contents,
+    SkColor color,
+    const std::vector<ColorSuggestion>& suggestions) {
   return NULL;
 }
 

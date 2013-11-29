@@ -144,7 +144,9 @@ class ExternalTabContainerWin : public ExternalTabContainer,
   virtual void ShowRepostFormWarningDialog(
       content::WebContents* source) OVERRIDE;
   virtual content::ColorChooser* OpenColorChooser(
-      content::WebContents* web_contents, SkColor color) OVERRIDE;
+      content::WebContents* web_contents,
+      SkColor color,
+      const std::vector<content::ColorSuggestion>& suggestions) OVERRIDE;
   virtual void RunFileChooser(
       content::WebContents* tab,
       const content::FileChooserParams& params) OVERRIDE;
