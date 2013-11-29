@@ -59,3 +59,15 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderCreated,
 // Informs the browser of a ServiceWorkerProvider being destroyed.
 IPC_MESSAGE_CONTROL1(ServiceWorkerHostMsg_ProviderDestroyed,
                      int /* provider_id */)
+
+// For EmbeddedWorker related messages -------------------------------------
+
+// Browser -> Renderer message to create a new embedded worker context.
+IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_StartWorker,
+                     int /* embedded_worker_id */,
+                     int64 /* service_worker_version_id */,
+                     GURL /* script_url */)
+
+// Browser -> Renderer message to terminate the embedded worker.
+IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_TerminateWorker,
+                     int /* embedded_worker_id */)

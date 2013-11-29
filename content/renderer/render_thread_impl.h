@@ -77,6 +77,7 @@ class ContextProviderCommandBuffer;
 class DBMessageFilter;
 class DevToolsAgentFilter;
 class DomStorageDispatcher;
+class EmbeddedWorkerDispatcher;
 class GamepadSharedMemoryReader;
 class GpuChannelHost;
 class IndexedDBDispatcher;
@@ -201,6 +202,10 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   DomStorageDispatcher* dom_storage_dispatcher() const {
     return dom_storage_dispatcher_.get();
+  }
+
+  EmbeddedWorkerDispatcher* embedded_worker_dispatcher() const {
+    return embedded_worker_dispatcher_.get();
   }
 
   AudioInputMessageFilter* audio_input_message_filter() {
@@ -400,6 +405,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_ptr<DomStorageDispatcher> dom_storage_dispatcher_;
   scoped_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
   scoped_ptr<RendererWebKitPlatformSupportImpl> webkit_platform_support_;
+  scoped_ptr<EmbeddedWorkerDispatcher> embedded_worker_dispatcher_;
 
   // Used on the render thread and deleted by WebKit at shutdown.
   blink::WebMediaStreamCenter* media_stream_center_;

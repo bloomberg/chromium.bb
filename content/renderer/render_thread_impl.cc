@@ -81,6 +81,7 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
+#include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/skia_benchmarking_extension.h"
 #include "grit/content_resources.h"
 #include "ipc/ipc_channel_handle.h"
@@ -345,6 +346,7 @@ void RenderThreadImpl::Init() {
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
   main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher(
       thread_safe_sender()));
+  embedded_worker_dispatcher_.reset(new EmbeddedWorkerDispatcher());
 
   media_stream_center_ = NULL;
 
@@ -1130,7 +1132,8 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 
   // Some messages are handled by delegates.
   if (appcache_dispatcher_->OnMessageReceived(msg) ||
-      dom_storage_dispatcher_->OnMessageReceived(msg)) {
+      dom_storage_dispatcher_->OnMessageReceived(msg) ||
+      embedded_worker_dispatcher_->OnMessageReceived(msg)) {
     return true;
   }
 
