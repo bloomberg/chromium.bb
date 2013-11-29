@@ -443,7 +443,16 @@ camera.views.Camera.prototype.initialize = function(callback) {
     this.addEffect_(new camera.effects.Cinema(this.tracker_));
 
     // Select the default effect.
-    this.setCurrentEffect_(0);
+    // TODO(mtomasz): Move to chrome.storage.local.sync, after implementing
+    // syncing of the gallery.
+    chrome.storage.local.get('effectIndex', function(values) {
+      if (values.effectIndex !== undefined &&
+          values.effectIndex < this.previewProcessors_.length) {
+        this.setCurrentEffect_(values.effectIndex);
+      } else {
+        this.setCurrentEffect_(0);
+      }
+    }.bind(this));
   }
 
   // Acquire the gallery model.
@@ -659,6 +668,10 @@ camera.views.Camera.prototype.setCurrentEffect_ = function(effectIndex) {
   listWrapper.setAttribute('aria-activedescendant', effect.id);
   listWrapper.setAttribute('aria-labelledby', effect.id);
   this.currentEffectIndex_ = effectIndex;
+
+  // TODO(mtomasz): This is a little racy, since setting may be run in parallel,
+  // without guarantee which one will be written as the last one.
+  chrome.storage.local.set({effectIndex: effectIndex});
 };
 
 /**
@@ -666,6 +679,9 @@ camera.views.Camera.prototype.setCurrentEffect_ = function(effectIndex) {
  */
 camera.views.Camera.prototype.onResize = function() {
   this.synchronizeBounds_();
+  camera.util.ensureVisible(
+      document.querySelector('#effect-' + this.currentEffectIndex_),
+      this.scroller_);
 };
 
 /**
