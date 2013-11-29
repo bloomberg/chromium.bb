@@ -6381,3 +6381,15 @@
    fun:_ZN6crypto12_GLOBAL__N_116NSSInitSingleton13OpenTestNSSDBEv
    fun:_ZN6crypto15ScopedTestNSSDBC1Ev
 }
+{
+   bug_324420
+   Memcheck:Uninitialized
+   fun:_ZN5mediaL21ToInterleavedInternalIssLs0EEEvPKNS_8AudioBusEiiPvT0_S5_
+   fun:_ZNK5media8AudioBus20ToInterleavedPartialEiiiPv
+   fun:_ZNK5media8AudioBus13ToInterleavedEiiPv
+   fun:_ZN7content21WebRtcLocalAudioTrack16ConfiguredBuffer7ConsumeEv
+   fun:_ZN7content21WebRtcLocalAudioTrack7CaptureEPN5media8AudioBusEiib
+   fun:_ZN7content19WebRtcAudioCapturer10TrackOwner7CaptureEPN5media8AudioBusEidb
+   fun:_ZN7content19WebRtcAudioCapturer7CaptureEPN5media8AudioBusEidb
+   fun:_ZN7content46WebRtcAudioCapturerTest_VerifyAudioParams_Test8TestBodyEv
+}
