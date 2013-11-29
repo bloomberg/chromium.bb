@@ -1353,6 +1353,8 @@ public:
 
     bool isEof() const { return m_position >= m_length; }
 
+    v8::Isolate* isolate() const { return m_isolate; }
+
     bool read(v8::Handle<v8::Value>* value, CompositeCreator& creator)
     {
         SerializationTag tag;
@@ -2158,7 +2160,7 @@ public:
         if (result.IsEmpty()) {
             RefPtr<ArrayBuffer> buffer = ArrayBuffer::create(m_arrayBufferContents->at(index));
             buffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instanceTemplate());
-            v8::V8::AdjustAmountOfExternalAllocatedMemory(buffer->byteLength());
+            m_reader.isolate()->AdjustAmountOfExternalAllocatedMemory(buffer->byteLength());
             result = toV8Object(buffer.get(), m_reader.getIsolate());
             m_arrayBuffers[index] = result;
         }
@@ -2489,7 +2491,7 @@ void SerializedScriptValue::registerMemoryAllocatedWithCurrentScriptContext()
     if (m_externallyAllocatedMemory)
         return;
     m_externallyAllocatedMemory = static_cast<intptr_t>(m_data.length());
-    v8::V8::AdjustAmountOfExternalAllocatedMemory(m_externallyAllocatedMemory);
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(m_externallyAllocatedMemory);
 }
 
 SerializedScriptValue::~SerializedScriptValue()
@@ -2499,7 +2501,7 @@ SerializedScriptValue::~SerializedScriptValue()
     // current v8 context is not guaranteed. Avoid calling v8 then.
     if (m_externallyAllocatedMemory) {
         ASSERT(v8::Isolate::GetCurrent());
-        v8::V8::AdjustAmountOfExternalAllocatedMemory(-m_externallyAllocatedMemory);
+        v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-m_externallyAllocatedMemory);
     }
 }
 
