@@ -416,6 +416,11 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringFUTF16(
           IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE,
           l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)));
+  source->AddString("extensionSettingsSuspiciousInstallLearnMore",
+      l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  source->AddString("extensionSettingsSuspiciousInstallHelpUrl",
+      ASCIIToUTF16(google_util::AppendGoogleLocaleParam(
+          GURL(chrome::kRemoveNonCWSExtensionURL)).spec()));
   source->AddString("extensionSettingsUseAppsDevTools",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_USE_APPS_DEV_TOOLS));
   source->AddString("extensionSettingsOpenAppsDevTools",

@@ -429,6 +429,9 @@ extern const char kNaturalScrollHelpURL[];
 extern const char kLearnMoreEnterpriseURL[];
 #endif
 
+// The URL for the Learn More link of the non-CWS bubble.
+extern const char kRemoveNonCWSExtensionURL[];
+
 extern const char kNotificationsHelpURL[];
 
 // The Welcome Notification More Info URL.
