@@ -652,7 +652,7 @@ HRESULT ChromeAppViewAsh::Unsnap() {
 }
 
 void ChromeAppViewAsh::OnActivateDesktop(const base::FilePath& file_path) {
-  DLOG(INFO) << "ChannelAppViewAsh::OnActivateDesktop\n";
+  DVLOG(1) << "ChannelAppViewAsh::OnActivateDesktop\n";
 
   // As we are the top level window, the exiting is done async so we manage
   // to execute  the entire function including the final Send().
