@@ -179,7 +179,7 @@ static v8::Handle<v8::Value> createDebugData(const char* worldName, int debugId,
         wanted = snprintf(buffer, sizeof(buffer), "%s,%d", worldName, debugId);
 
     if (wanted < sizeof(buffer))
-        return v8::String::NewSymbol(buffer);
+        return v8::String::NewFromUtf8(isolate, buffer, v8::String::kInternalizedString);
 
     return v8::Undefined(isolate);
 }
@@ -213,8 +213,8 @@ int V8PerContextDebugData::contextDebugId(v8::Handle<v8::Context> context)
 
     if (!data->IsString())
         return -1;
-    v8::String::AsciiValue ascii(data);
-    char* comma = strnstr(*ascii, ",", ascii.length());
+    v8::String::Utf8Value utf8(data);
+    char* comma = strnstr(*utf8, ",", utf8.length());
     if (!comma)
         return -1;
     return atoi(comma + 1);

@@ -54,9 +54,8 @@ V8NodeFilterCondition::~V8NodeFilterCondition()
 
 short V8NodeFilterCondition::acceptNode(ScriptState* state, Node* node) const
 {
-    ASSERT(v8::Context::InContext());
-
     v8::Isolate* isolate = state->isolate();
+    ASSERT(isolate->InContext());
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Value> filter = m_filter.newLocal(isolate);
     ASSERT(!filter.IsEmpty());
@@ -80,7 +79,7 @@ short V8NodeFilterCondition::acceptNode(ScriptState* state, Node* node) const
     OwnPtr<v8::Handle<v8::Value>[]> info = adoptArrayPtr(new v8::Handle<v8::Value>[1]);
     info[0] = toV8(node, v8::Handle<v8::Object>(), state->isolate());
 
-    v8::Handle<v8::Object> object = v8::Context::GetCurrent()->Global();
+    v8::Handle<v8::Object> object = isolate->GetCurrentContext()->Global();
     v8::Handle<v8::Value> result = ScriptController::callFunction(state->executionContext(), callback, object, 1, info.get(), isolate);
 
     if (exceptionCatcher.HasCaught()) {

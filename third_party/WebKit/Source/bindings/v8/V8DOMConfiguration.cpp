@@ -104,7 +104,7 @@ v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Handle<
         prototype->SetInternalFieldCount(v8PrototypeInternalFieldcount);
     }
 
-    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(functionDescriptor);
+    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, functionDescriptor);
     if (attributeCount)
         installAttributes(instanceTemplate, functionDescriptor->PrototypeTemplate(), attributes, attributeCount, isolate, currentWorldType);
     if (accessorCount)

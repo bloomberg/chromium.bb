@@ -246,12 +246,13 @@ void WorkerScriptController::rethrowExceptionFromImportedScript(PassRefPtr<Error
 
 WorkerScriptController* WorkerScriptController::controllerForContext()
 {
+    v8::Isolate* isolate = v8::Isolate::GetCurrent();
     // Happens on frame destruction, check otherwise GetCurrent() will crash.
-    if (!v8::Context::InContext())
+    if (!isolate || !isolate->InContext())
         return 0;
-    v8::Handle<v8::Context> context = v8::Context::GetCurrent();
+    v8::Handle<v8::Context> context = isolate->GetCurrentContext();
     v8::Handle<v8::Object> global = context->Global();
-    global = global->FindInstanceInPrototypeChain(V8WorkerGlobalScope::GetTemplate(context->GetIsolate(), WorkerWorld));
+    global = global->FindInstanceInPrototypeChain(V8WorkerGlobalScope::GetTemplate(isolate, WorkerWorld));
     // Return 0 if the current executing context is not the worker context.
     if (global.IsEmpty())
         return 0;

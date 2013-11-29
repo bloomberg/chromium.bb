@@ -601,7 +601,7 @@ DOMWrapperWorld* isolatedWorldForIsolate(v8::Isolate* isolate)
         return 0;
     if (!DOMWrapperWorld::isolatedWorldsExist())
         return 0;
-    ASSERT(v8::Context::InContext());
+    ASSERT(isolate->InContext());
     return DOMWrapperWorld::isolatedWorld(isolate->GetCurrentContext());
 }
 
