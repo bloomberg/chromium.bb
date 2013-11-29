@@ -12,6 +12,7 @@
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/update_observer.h"
 
 class Profile;
 
@@ -31,7 +32,8 @@ class ExtensionHost;
 // extensions. There is one instance shared between a browser context and
 // its related incognito instance.
 class RuntimeAPI : public BrowserContextKeyedService,
-                   public content::NotificationObserver {
+                   public content::NotificationObserver,
+                   public extensions::UpdateObserver {
  public:
   explicit RuntimeAPI(content::BrowserContext* context);
   virtual ~RuntimeAPI();
@@ -45,12 +47,21 @@ class RuntimeAPI : public BrowserContextKeyedService,
   void OnExtensionsReady();
   void OnExtensionLoaded(const Extension* extension);
   void OnExtensionInstalled(const Extension* extension);
+  void OnExtensionUninstalled(const Extension* extension);
+
+  // extensions::UpdateObserver overrides:
+  virtual void OnAppUpdateAvailable(const Extension* extension) OVERRIDE;
+  virtual void OnChromeUpdateAvailable() OVERRIDE;
 
   content::BrowserContext* browser_context_;
 
   // True if we should dispatch the chrome.runtime.onInstalled event with
   // reason "chrome_update" upon loading each extension.
   bool dispatch_chrome_updated_event_;
+
+  // Whether the API registered with the ExtensionService to receive
+  // update notifications.
+  bool registered_for_updates_;
 
   content::NotificationRegistrar registrar_;
 

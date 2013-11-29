@@ -16,6 +16,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "extensions/common/extension.h"
 
 namespace chromeos {
 
@@ -65,9 +66,9 @@ void KioskAppUpdateService::Shutdown() {
     service->RemoveUpdateObserver(this);
 }
 
-void KioskAppUpdateService::OnAppUpdateAvailable(const std::string& app_id) {
-  DCHECK(!app_id_.empty());
-  if (app_id != app_id_)
+void KioskAppUpdateService::OnAppUpdateAvailable(
+    const extensions::Extension* extension) {
+  if (extension->id() != app_id_)
     return;
 
   extensions::RuntimeEventRouter::DispatchOnRestartRequiredEvent(

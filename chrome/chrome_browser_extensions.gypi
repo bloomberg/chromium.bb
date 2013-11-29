@@ -865,7 +865,6 @@
         'browser/extensions/theme_installed_infobar_delegate.h',
         'browser/extensions/unpacked_installer.cc',
         'browser/extensions/unpacked_installer.h',
-        'browser/extensions/update_observer.h',
         'browser/extensions/updater/extension_downloader.cc',
         'browser/extensions/updater/extension_downloader.h',
         'browser/extensions/updater/extension_downloader_delegate.cc',

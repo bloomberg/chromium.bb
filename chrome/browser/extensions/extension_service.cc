@@ -28,9 +28,7 @@
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
-#include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -49,7 +47,6 @@
 #include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
-#include "chrome/browser/extensions/update_observer.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -83,6 +80,7 @@
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/pending_extension_manager.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/browser/update_observer.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
@@ -1545,11 +1543,6 @@ void ExtensionService::UnloadExtension(
     return;
   }
 
-  // If uninstalling let RuntimeEventRouter know.
-  if (reason == UnloadedExtensionInfo::REASON_UNINSTALL)
-    extensions::RuntimeEventRouter::OnExtensionUninstalled(
-        profile_, extension_id);
-
   // Keep information about the extension so that we can reload it later
   // even if it's not permanently installed.
   unloaded_extension_paths_[extension->id()] = extension->path();
@@ -2122,13 +2115,9 @@ void ExtensionService::OnExtensionInstalled(
     // Transfer ownership of |extension|.
     delayed_installs_.Insert(extension);
 
-    // Notify extension of available update.
-    extensions::RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
-        profile_, id, extension->manifest()->value());
-
     // Notify observers that app update is available.
     FOR_EACH_OBSERVER(extensions::UpdateObserver, update_observers_,
-                      OnAppUpdateAvailable(extension->id()));
+                      OnAppUpdateAvailable(extension));
     return;
   }
 
@@ -2557,10 +2546,6 @@ void ExtensionService::Observe(int type,
       break;
     }
     case chrome::NOTIFICATION_UPGRADE_RECOMMENDED: {
-      // Notify extensions that chrome update is available.
-      extensions::RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(
-          profile_);
-
       // Notify observers that chrome update is available.
       FOR_EACH_OBSERVER(extensions::UpdateObserver, update_observers_,
                         OnChromeUpdateAvailable());

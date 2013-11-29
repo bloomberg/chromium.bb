@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/extension_function_histogram_value.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
-#include "chrome/browser/extensions/update_observer.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -60,6 +59,7 @@ class ExtensionSystem;
 class ExtensionUpdater;
 class PendingExtensionManager;
 class SettingsFrontend;
+class UpdateObserver;
 }  // namespace extensions
 
 namespace syncer {

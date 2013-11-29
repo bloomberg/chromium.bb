@@ -205,6 +205,7 @@
         'browser/process_map.h',
         'browser/quota_service.cc',
         'browser/quota_service.h',
+        'browser/update_observer.h',
         'browser/view_type_utils.cc',
         'browser/view_type_utils.h',
       ],

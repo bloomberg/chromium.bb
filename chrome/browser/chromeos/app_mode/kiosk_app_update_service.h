@@ -12,11 +12,15 @@
 #include "base/memory/singleton.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager_observer.h"
-#include "chrome/browser/extensions/update_observer.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
+#include "extensions/browser/update_observer.h"
 
 class Profile;
+
+namespace extensions {
+class Extension;
+}
 
 namespace chromeos {
 
@@ -47,7 +51,8 @@ class KioskAppUpdateService : public BrowserContextKeyedService,
   virtual void Shutdown() OVERRIDE;
 
   // extensions::UpdateObserver overrides:
-  virtual void OnAppUpdateAvailable(const std::string& app_id) OVERRIDE;
+  virtual void OnAppUpdateAvailable(
+      const extensions::Extension* extension) OVERRIDE;
   virtual void OnChromeUpdateAvailable() OVERRIDE {}
 
   // system::AutomaticRebootManagerObserver overrides:

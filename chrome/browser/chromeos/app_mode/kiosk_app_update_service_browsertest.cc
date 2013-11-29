@@ -73,7 +73,7 @@ class KioskAppUpdateServiceTest : public extensions::PlatformAppBrowserTest {
   }
 
   void FireAppUpdateAvailable() {
-    update_service_->OnAppUpdateAvailable(app_->id());
+    update_service_->OnAppUpdateAvailable(app_);
   }
 
   void FireUpdatedNeedReboot() {

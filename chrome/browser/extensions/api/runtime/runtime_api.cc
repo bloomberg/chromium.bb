@@ -139,12 +139,15 @@ std::string GetUninstallUrl(ExtensionPrefs* prefs,
 
 RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
     : browser_context_(context),
-      dispatch_chrome_updated_event_(false) {
+      dispatch_chrome_updated_event_(false),
+      registered_for_updates_(false) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
                  content::Source<BrowserContext>(context));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<BrowserContext>(context));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 content::Source<BrowserContext>(context));
+  registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
                  content::Source<BrowserContext>(context));
 
   // Check if registered events are up-to-date. We can only do this once
@@ -153,7 +156,12 @@ RuntimeAPI::RuntimeAPI(content::BrowserContext* context)
       ExtensionsBrowserClient::Get()->DidVersionUpdate(browser_context_);
 }
 
-RuntimeAPI::~RuntimeAPI() {}
+RuntimeAPI::~RuntimeAPI() {
+  if (registered_for_updates_) {
+    ExtensionSystem::GetForBrowserContext(browser_context_)->
+        extension_service()->RemoveUpdateObserver(this);
+  }
+}
 
 void RuntimeAPI::Observe(int type,
                          const content::NotificationSource& source,
@@ -175,6 +183,12 @@ void RuntimeAPI::Observe(int type,
       OnExtensionInstalled(extension);
       break;
     }
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED: {
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+      OnExtensionUninstalled(extension);
+      break;
+    }
     default:
       NOTREACHED();
       break;
@@ -184,6 +198,11 @@ void RuntimeAPI::Observe(int type,
 void RuntimeAPI::OnExtensionsReady() {
   // We're done restarting Chrome after an update.
   dispatch_chrome_updated_event_ = false;
+
+  registered_for_updates_ = true;
+
+  ExtensionSystem::GetForBrowserContext(browser_context_)->extension_service()->
+      AddUpdateObserver(this);
 }
 
 void RuntimeAPI::OnExtensionLoaded(const Extension* extension) {
@@ -218,6 +237,22 @@ void RuntimeAPI::OnExtensionInstalled(const Extension* extension) {
                  old_version,
                  false));
 
+}
+
+void RuntimeAPI::OnExtensionUninstalled(const Extension* extension) {
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+  RuntimeEventRouter::OnExtensionUninstalled(profile, extension->id());
+}
+
+void RuntimeAPI::OnAppUpdateAvailable(const Extension* extension) {
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+  RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
+      profile, extension->id(), extension->manifest()->value());
+}
+
+void RuntimeAPI::OnChromeUpdateAvailable() {
+  Profile* profile = Profile::FromBrowserContext(browser_context_);
+  RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(profile);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
