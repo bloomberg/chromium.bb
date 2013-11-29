@@ -17,6 +17,7 @@
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/fake_drive_service_helper.h"
+#include "chrome/browser/sync_file_system/drive_backend_v1/fake_drive_uploader.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/escape.h"
@@ -26,10 +27,7 @@
 
 using drive::DriveServiceInterface;
 using drive::DriveUploaderInterface;
-using drive::FakeDriveService;
-using drive::UploadCompletionCallback;
 using google_apis::GDataErrorCode;
-using google_apis::ProgressCallback;
 using google_apis::ResourceEntry;
 using google_apis::ResourceList;
 
@@ -50,153 +48,6 @@ struct Output {
   Output() : error(google_apis::GDATA_OTHER_ERROR),
              largest_changestamp(-1) {
   }
-};
-
-void DidAddFileOrDirectoryForMakingConflict(GDataErrorCode error,
-                                            scoped_ptr<ResourceEntry> entry) {
-  ASSERT_EQ(google_apis::HTTP_CREATED, error);
-  ASSERT_TRUE(entry);
-}
-
-void DidAddFileForUploadNew(
-    const UploadCompletionCallback& callback,
-    GDataErrorCode error,
-    scoped_ptr<ResourceEntry> entry) {
-  ASSERT_EQ(google_apis::HTTP_CREATED, error);
-  ASSERT_TRUE(entry);
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback,
-                 google_apis::HTTP_SUCCESS,
-                 GURL(),
-                 base::Passed(&entry)));
-}
-
-void DidGetResourceEntryForUploadExisting(
-    const UploadCompletionCallback& callback,
-    GDataErrorCode error,
-    scoped_ptr<ResourceEntry> entry) {
-  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
-  ASSERT_TRUE(entry);
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback,
-                 google_apis::HTTP_SUCCESS,
-                 GURL(),
-                 base::Passed(&entry)));
-}
-
-class FakeDriveServiceWrapper : public FakeDriveService {
- public:
-  FakeDriveServiceWrapper() : make_directory_conflict_(false) {}
-  virtual ~FakeDriveServiceWrapper() {}
-
-  // DriveServiceInterface overrides.
-  virtual google_apis::CancelCallback AddNewDirectory(
-      const std::string& parent_resource_id,
-      const std::string& directory_name,
-      const google_apis::GetResourceEntryCallback& callback) OVERRIDE {
-    if (make_directory_conflict_) {
-      FakeDriveService::AddNewDirectory(
-          parent_resource_id,
-          directory_name,
-          base::Bind(&DidAddFileOrDirectoryForMakingConflict));
-    }
-    return FakeDriveService::AddNewDirectory(
-        parent_resource_id, directory_name, callback);
-  }
-
-  void set_make_directory_conflict(bool enable) {
-    make_directory_conflict_ = enable;
-  }
-
- private:
-  bool make_directory_conflict_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDriveServiceWrapper);
-};
-
-// A fake implementation of DriveUploaderInterface, which provides fake
-// behaviors for file uploading.
-class FakeDriveUploader : public DriveUploaderInterface {
- public:
-  explicit FakeDriveUploader(FakeDriveServiceWrapper* fake_drive_service)
-      : fake_drive_service_(fake_drive_service),
-        make_file_conflict_(false) {}
-  virtual ~FakeDriveUploader() {}
-
-  // DriveUploaderInterface overrides.
-
-  // Proxies a request to upload a new file to FakeDriveService, and returns the
-  // resource entry to the caller.
-  virtual google_apis::CancelCallback UploadNewFile(
-      const std::string& parent_resource_id,
-      const base::FilePath& local_file_path,
-      const std::string& title,
-      const std::string& content_type,
-      const UploadCompletionCallback& callback,
-      const ProgressCallback& progress_callback) OVERRIDE {
-    DCHECK(!callback.is_null());
-    const std::string kFileContent = "test content";
-
-    if (make_file_conflict_) {
-      fake_drive_service_->AddNewFile(
-          content_type,
-          kFileContent,
-          parent_resource_id,
-          title,
-          false,  // shared_with_me
-          base::Bind(&DidAddFileOrDirectoryForMakingConflict));
-    }
-
-    fake_drive_service_->AddNewFile(
-        content_type,
-        kFileContent,
-        parent_resource_id,
-        title,
-        false,  // shared_with_me
-        base::Bind(&DidAddFileForUploadNew, callback));
-    base::MessageLoop::current()->RunUntilIdle();
-
-    return google_apis::CancelCallback();
-  }
-
-  // Pretends that an existing file |resource_id| was uploaded successfully, and
-  // returns a resource entry to the caller.
-  virtual google_apis::CancelCallback UploadExistingFile(
-      const std::string& resource_id,
-      const base::FilePath& local_file_path,
-      const std::string& content_type,
-      const std::string& etag,
-      const UploadCompletionCallback& callback,
-      const ProgressCallback& progress_callback) OVERRIDE {
-    DCHECK(!callback.is_null());
-    return fake_drive_service_->GetResourceEntry(
-        resource_id,
-        base::Bind(&DidGetResourceEntryForUploadExisting, callback));
-  }
-
-  // At the moment, sync file system doesn't support resuming of the uploading.
-  // So this method shouldn't be reached.
-  virtual google_apis::CancelCallback ResumeUploadFile(
-      const GURL& upload_location,
-      const base::FilePath& local_file_path,
-      const std::string& content_type,
-      const UploadCompletionCallback& callback,
-      const ProgressCallback& progress_callback) OVERRIDE {
-    NOTREACHED();
-    return google_apis::CancelCallback();
-  }
-
-  void set_make_file_conflict(bool enable) {
-    make_file_conflict_ = enable;
-  }
-
- private:
-  FakeDriveServiceWrapper* fake_drive_service_;
-  bool make_file_conflict_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDriveUploader);
 };
 
 }  // namespace

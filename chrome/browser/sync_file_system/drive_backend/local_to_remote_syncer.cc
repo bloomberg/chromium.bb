@@ -90,6 +90,7 @@ LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
       local_change_(local_change),
       local_path_(local_path),
       local_metadata_(local_metadata),
+      url_(url),
       weak_ptr_factory_(this) {
 }
 
@@ -131,12 +132,16 @@ void LocalToRemoteSyncer::Run(const SyncStatusCallback& callback) {
          active_ancestor_details.file_kind() == FILE_KIND_FOLDER);
 
   base::FilePath missing_entries;
-  bool should_success = active_ancestor_path.AppendRelativePath(
-      path, &missing_entries);
-  if (!should_success) {
-    NOTREACHED();
-    callback.Run(SYNC_STATUS_FAILED);
-    return;
+  if (active_ancestor_path.empty()) {
+    missing_entries = path;
+  } else {
+    bool should_success = active_ancestor_path.AppendRelativePath(
+        path, &missing_entries);
+    if (!should_success) {
+      NOTREACHED();
+      callback.Run(SYNC_STATUS_FAILED);
+      return;
+    }
   }
 
   std::vector<base::FilePath::StringType> missing_components;
