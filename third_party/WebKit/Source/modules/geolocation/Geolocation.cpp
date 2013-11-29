@@ -611,6 +611,11 @@ void Geolocation::makeSuccessCallbacks()
     // further callbacks to these notifiers.
     m_oneShots.clear();
 
+    // Also clear the set of notifiers waiting for a cached position. All the
+    // oneshots and watchers will receive a position now, and if they happen to
+    // be lingering in that set, avoid this bug: http://crbug.com/311876 .
+    m_requestsAwaitingCachedPosition.clear();
+
     sendPosition(oneShotsCopy, lastPosition());
     sendPosition(watchersCopy, lastPosition());
 

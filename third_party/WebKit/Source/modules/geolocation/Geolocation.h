@@ -56,17 +56,30 @@ public:
     Document* document() const;
     Frame* frame() const;
 
+    // Creates a oneshot and attempts to obtain a position that meets the
+    // constraints of the options.
     void getCurrentPosition(PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, PassRefPtr<PositionOptions>);
+
+    // Creates a watcher that will be notified whenever a new position is
+    // available that meets the constraints of the options.
     int watchPosition(PassOwnPtr<PositionCallback>, PassOwnPtr<PositionErrorCallback>, PassRefPtr<PositionOptions>);
+
+    // Removes all references to the watcher, it will not be updated again.
     void clearWatch(int watchID);
 
     void setIsAllowed(bool);
+
     bool isAllowed() const { return m_allowGeolocation == Yes; }
 
+    // Notifies this that a new position is available. Must never be called
+    // before permission is granted by the user.
     void positionChanged();
+
+    // Notifies this that an error has occurred, it must be handled immediately.
     void setError(GeolocationError*);
 
 private:
+    // Returns the last known position, if any. May return null.
     Geoposition* lastPosition();
 
     bool isDenied() const { return m_allowGeolocation == No; }
@@ -75,22 +88,39 @@ private:
 
     Page* page() const;
 
+    // Holds the success and error callbacks and the options that were provided
+    // when a oneshot or watcher were created. Also, if specified in the
+    // options, manages a timer to limit the time to wait for the system to
+    // obtain a position.
     class GeoNotifier : public RefCounted<GeoNotifier> {
     public:
         static PassRefPtr<GeoNotifier> create(Geolocation* geolocation, PassOwnPtr<PositionCallback> positionCallback, PassOwnPtr<PositionErrorCallback> positionErrorCallback, PassRefPtr<PositionOptions> options) { return adoptRef(new GeoNotifier(geolocation, positionCallback, positionErrorCallback, options)); }
 
         PositionOptions* options() const { return m_options.get(); };
+
+        // Sets the given error as the fatal error if there isn't one yet.
+        // Starts the timer with an interval of 0.
         void setFatalError(PassRefPtr<PositionError>);
 
         bool useCachedPosition() const { return m_useCachedPosition; }
+
+        // Tells the notifier to use a cached position and starts its timer with
+        // an interval of 0.
         void setUseCachedPosition();
 
         void runSuccessCallback(Geoposition*);
         void runErrorCallback(PositionError*);
 
+        // Starts the timer if a timeout was specified on the options.
         void startTimerIfNeeded();
+
         void stopTimer();
+
+        // Runs the error callback if there is a fatal error. Otherwise, if a
+        // cached position must be used, registers itself for receiving one.
+        // Otherwise, the notifier has expired, and its error callback is run.
         void timerFired(Timer<GeoNotifier>*);
+
         bool hasZeroTimeout() const;
 
     private:
@@ -130,33 +160,67 @@ private:
     void sendError(GeoNotifierVector&, PositionError*);
     void sendPosition(GeoNotifierVector&, Geoposition*);
 
+    // Removes notifiers that use a cached position from |notifiers| and
+    // if |cached| is not null they are added to it.
     static void extractNotifiersWithCachedPosition(GeoNotifierVector& notifiers, GeoNotifierVector* cached);
-    static void copyToSet(const GeoNotifierVector&, GeoNotifierSet&);
+
+    // Copies notifiers from |src| vector to |dest| set.
+    static void copyToSet(const GeoNotifierVector& src, GeoNotifierSet& dest);
 
     static void stopTimer(GeoNotifierVector&);
     void stopTimersForOneShots();
     void stopTimersForWatchers();
     void stopTimers();
 
+    // Sets a fatal error on the given notifiers.
     void cancelRequests(GeoNotifierVector&);
+
+    // Sets a fatal error on all notifiers.
     void cancelAllRequests();
 
+    // Runs the success callbacks on all notifiers. A position must be available
+    // and the user must have given permission.
     void makeSuccessCallbacks();
+
+    // Sends the given error to all notifiers, unless the error is not fatal and
+    // the notifier is due to receive a cached position. Clears the oneshots,
+    // and also  clears the watchers if the error is fatal.
     void handleError(PositionError*);
 
+    // Requests permission to share positions with the page.
     void requestPermission();
 
+    // Attempts to register this with the controller for receiving updates.
+    // Returns false if there is no controller to register with.
     bool startUpdating(GeoNotifier*);
+
     void stopUpdating();
 
+    // Processes the notifiers that were waiting for a permission decision. If
+    // granted and this can be registered with the controller then the
+    // notifier's timers are started. Otherwise, a fatal error is set on them.
     void handlePendingPermissionNotifiers();
 
+    // Attempts to obtain a position for the given notifier, either by using
+    // the cached position or by requesting one from the controller. Sets a
+    // fatal error if permission is denied or no position can be obtained.
     void startRequest(GeoNotifier*);
 
+    // Discards the notifier because a fatal error occurred for it.
     void fatalErrorOccurred(GeoNotifier*);
+
+    // Discards the notifier if it is a oneshot because it timed it.
     void requestTimedOut(GeoNotifier*);
+
+    // Adds the notifier to the set awaiting a cached position. Runs the success
+    // callbacks for them if permission has been granted. Requests permission if
+    // it is unknown.
     void requestUsesCachedPosition(GeoNotifier*);
+
     bool haveSuitableCachedPosition(PositionOptions*);
+
+    // Runs the success callbacks for the set of notifiers awaiting a cached
+    // position, the set is then cleared. The oneshots are removed everywhere.
     void makeCachedPositionCallbacks();
 
     GeoNotifierSet m_oneShots;
@@ -177,4 +241,3 @@ private:
 } // namespace WebCore
 
 #endif // Geolocation_h
-
