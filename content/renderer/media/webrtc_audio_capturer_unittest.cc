@@ -136,6 +136,7 @@ TEST_F(WebRtcAudioCapturerTest, VerifyAudioParams) {
   // to do the correct truncation as how the production code does.
   int expected_volume_value = volume * capturer_->MaxVolume() + 0.5;
   scoped_ptr<media::AudioBus> audio_bus = media::AudioBus::Create(params_);
+  audio_bus->Zero();
 #if defined(OS_ANDROID)
   const int expected_buffer_size = params_.sample_rate() / 100;
 #else
