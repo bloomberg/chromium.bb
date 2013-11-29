@@ -769,13 +769,6 @@ CommandHandler.COMMANDS_['create-folder-shortcut'] = {
    * @param {FileManager} fileManager The file manager instance.
    */
   canExecute: function(event, fileManager) {
-    var target = event.target;
-    if (!(target instanceof NavigationListItem) &&
-        !(target instanceof DirectoryItem)) {
-      event.command.setHidden(true);
-      return;
-    }
-
     var entry = CommandUtil.getCommandEntry(event.target);
     var folderShortcutExists = entry &&
                                fileManager.folderShortcutExists(entry.fullPath);
@@ -817,14 +810,7 @@ CommandHandler.COMMANDS_['remove-folder-shortcut'] = {
    * @param {FileManager} fileManager The file manager instance.
    */
   canExecute: function(event, fileManager) {
-    var target = event.target;
-    if (!target instanceof NavigationListItem &&
-        !target instanceof DirectoryItem) {
-      event.command.setHidden(true);
-      return;
-    }
-
-    var entry = CommandUtil.getCommandEntry(target);
+    var entry = CommandUtil.getCommandEntry(event.target);
     var path = entry && entry.fullPath;
 
     var eligible = path && PathUtil.isEligibleForFolderShortcut(path);
