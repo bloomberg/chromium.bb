@@ -5,67 +5,67 @@ layer at (0,0) size 800x0
 layer at (158,8) size 634x524
   RenderBody {BODY} at (158,8) size 634x524.33
     RenderBlock {H3} at (0,18.72) size 634x44
-      RenderText {#text} at (0,0) size 206x22
-        text run at (0,0) width 206: "Test for chromium bug : "
-      RenderInline {A} at (0,0) size 50x22 [color=#0000EE]
-        RenderText {#text} at (206,0) size 50x22
-          text run at (206,0) width 50: "31286"
-      RenderText {#text} at (256,0) size 605x44
-        text run at (256,0) width 349: ". css rendering bug : fixed-position-element"
-        text run at (0,22) width 77: "and 'left'."
+      RenderText {#text} at (0,0) size 198x22
+        text run at (0,0) width 198: "Test for chromium bug : "
+      RenderInline {A} at (0,0) size 45x22 [color=#0000EE]
+        RenderText {#text} at (198,0) size 45x22
+          text run at (198,0) width 45: "31286"
+      RenderText {#text} at (243,0) size 612x44
+        text run at (243,0) width 369: ". css rendering bug : fixed-position-element and"
+        text run at (0,22) width 40: "'left'."
     RenderBlock {H4} at (0,83.98) size 634x36
       RenderText {#text} at (0,0) size 630x36
         text run at (0,0) width 630: "If fixed position inline element does not have left and/or right position then it should render as"
         text run at (0,18) width 86: "normal flow."
     RenderBlock {H5} at (0,142.16) size 634x360
       RenderBlock (anonymous) at (0,0) size 634x15
-        RenderText {#text} at (0,0) size 333x15
-          text run at (0,0) width 333: "Case 1 : fixed text box should be just after relative text box. "
-        RenderBR {BR} at (333,0) size 0x15
+        RenderText {#text} at (0,0) size 334x15
+          text run at (0,0) width 334: "Case 1 : fixed text box should be just after relative text box. "
+        RenderBR {BR} at (334,0) size 0x15
       RenderBlock (anonymous) at (0,30) size 634x15
-        RenderText {#text} at (0,0) size 342x15
-          text run at (0,0) width 342: "Case 2 : fixed text box should be just before relative text box. "
-        RenderBR {BR} at (342,0) size 0x15
+        RenderText {#text} at (0,0) size 343x15
+          text run at (0,0) width 343: "Case 2 : fixed text box should be just before relative text box. "
+        RenderBR {BR} at (343,0) size 0x15
       RenderBlock (anonymous) at (0,60) size 634x15
-        RenderText {#text} at (0,0) size 333x15
-          text run at (0,0) width 333: "Case 3 : fixed text box should be just after relative text box. "
-        RenderBR {BR} at (333,0) size 0x15
+        RenderText {#text} at (0,0) size 334x15
+          text run at (0,0) width 334: "Case 3 : fixed text box should be just after relative text box. "
+        RenderBR {BR} at (334,0) size 0x15
       RenderBlock (anonymous) at (0,90) size 634x15
-        RenderText {#text} at (0,0) size 342x15
-          text run at (0,0) width 342: "Case 4 : fixed text box should be just before relative text box. "
-        RenderBR {BR} at (342,0) size 0x15
+        RenderText {#text} at (0,0) size 343x15
+          text run at (0,0) width 343: "Case 4 : fixed text box should be just before relative text box. "
+        RenderBR {BR} at (343,0) size 0x15
       RenderBlock (anonymous) at (0,120) size 634x15
-        RenderText {#text} at (0,0) size 340x15
-          text run at (0,0) width 340: "Case 5 : fixed text box should be just after relative2 text box. "
-        RenderBR {BR} at (340,0) size 0x15
+        RenderText {#text} at (0,0) size 341x15
+          text run at (0,0) width 341: "Case 5 : fixed text box should be just after relative2 text box. "
+        RenderBR {BR} at (341,0) size 0x15
       RenderBlock (anonymous) at (0,150) size 634x15
-        RenderText {#text} at (0,0) size 617x15
-          text run at (0,0) width 617: "Case 6 : fixed text box should be after relative text box in some distance and before relative2 in some distance. "
-        RenderBR {BR} at (617,0) size 0x15
+        RenderText {#text} at (0,0) size 618x15
+          text run at (0,0) width 618: "Case 6 : fixed text box should be after relative text box in some distance and before relative2 in some distance. "
+        RenderBR {BR} at (618,0) size 0x15
       RenderBlock (anonymous) at (0,180) size 634x15
-        RenderText {#text} at (0,0) size 340x15
-          text run at (0,0) width 340: "Case 7 : fixed text box should be just after relative2 text box. "
-        RenderBR {BR} at (340,0) size 0x15
+        RenderText {#text} at (0,0) size 341x15
+          text run at (0,0) width 341: "Case 7 : fixed text box should be just after relative2 text box. "
+        RenderBR {BR} at (341,0) size 0x15
       RenderBlock (anonymous) at (0,210) size 634x15
-        RenderText {#text} at (0,0) size 421x15
-          text run at (0,0) width 421: "Case 8 : fixed text box should be before relative2 text box in some distance. "
-        RenderBR {BR} at (421,0) size 0x15
+        RenderText {#text} at (0,0) size 422x15
+          text run at (0,0) width 422: "Case 8 : fixed text box should be before relative2 text box in some distance. "
+        RenderBR {BR} at (422,0) size 0x15
       RenderBlock (anonymous) at (0,240) size 634x15
-        RenderText {#text} at (0,0) size 340x15
-          text run at (0,0) width 340: "Case 9 : fixed text box should be just after relative2 text box. "
-        RenderBR {BR} at (340,0) size 0x15
+        RenderText {#text} at (0,0) size 341x15
+          text run at (0,0) width 341: "Case 9 : fixed text box should be just after relative2 text box. "
+        RenderBR {BR} at (341,0) size 0x15
       RenderBlock (anonymous) at (0,270) size 634x15
-        RenderText {#text} at (0,0) size 624x15
-          text run at (0,0) width 624: "Case 10 : fixed text box should be after relative text box in some distance and before relative2 in some distance. "
-        RenderBR {BR} at (624,0) size 0x15
+        RenderText {#text} at (0,0) size 625x15
+          text run at (0,0) width 625: "Case 10 : fixed text box should be after relative text box in some distance and before relative2 in some distance. "
+        RenderBR {BR} at (625,0) size 0x15
       RenderBlock (anonymous) at (0,300) size 634x15
-        RenderText {#text} at (0,0) size 347x15
-          text run at (0,0) width 347: "Case 11 : fixed text box should be just after relative2 text box. "
-        RenderBR {BR} at (347,0) size 0x15
+        RenderText {#text} at (0,0) size 348x15
+          text run at (0,0) width 348: "Case 11 : fixed text box should be just after relative2 text box. "
+        RenderBR {BR} at (348,0) size 0x15
       RenderBlock (anonymous) at (0,330) size 634x15
-        RenderText {#text} at (0,0) size 428x15
-          text run at (0,0) width 428: "Case 12 : fixed text box should be before relative2 text box in some distance. "
-        RenderBR {BR} at (428,0) size 0x15
+        RenderText {#text} at (0,0) size 429x15
+          text run at (0,0) width 429: "Case 12 : fixed text box should be before relative2 text box in some distance. "
+        RenderBR {BR} at (429,0) size 0x15
 layer at (258,165) size 400x15
   RenderBlock (relative positioned) {DIV} at (0,15) size 400x15 [bgcolor=#008000]
     RenderText {#text} at (0,0) size 44x15

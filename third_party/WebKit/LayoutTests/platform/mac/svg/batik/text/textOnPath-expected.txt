@@ -332,7 +332,7 @@ layer at (0,0) size 450x500
           RenderSVGContainer {use} at (314,390) size 47x25
             RenderSVGPath {path} at (314,390) size 47x25 [transform={m=((0.30,0.00)(0.00,0.50)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 100 100 C 100 0 400 0 400 100"]
           RenderSVGText {text} at (9,-47) size 240x88 contains 1 chunk(s)
-            RenderSVGInlineText {#text} at (20,0) size 150x34
+            RenderSVGInlineText {#text} at (20,0) size 150x35
               chunk 1 text run 1 at (30.00,-20.00) startOffset 0 endOffset 12 width 150.00: "before path "
             RenderSVGTextPath {textPath} at (0,0) size 120x56
               RenderSVGInlineText {#text} at (0,32) size 120x56

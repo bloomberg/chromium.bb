@@ -62,14 +62,14 @@ layer at (0,0) size 800x412
                     RenderBlock {SECTION} at (0,0) size 71x65.34
                       RenderBlock {HR} at (0,0) size 71x2 [border: (1px inset #EEEEEE)]
                       RenderBlock {H1} at (0,24.17) size 71x17 [border: (1px solid #00FF00)]
-                        RenderText {#text} at (1,1) size 36x15
-                          text run at (1,1) width 36: "MMM"
+                        RenderText {#text} at (1,1) size 39x15
+                          text run at (1,1) width 39: "MMM"
                       RenderBlock {HR} at (0,63.34) size 71x2 [border: (1px inset #EEEEEE)]
             RenderTableCell {TD} at (77,220) size 73x67.34 [r=3 c=1 rs=1 cs=1]
               RenderBlock {HR} at (1,1) size 71x2 [border: (1px inset #EEEEEE)]
               RenderBlock {H5} at (1,25.17) size 71x17 [border: (1px solid #00FF00)]
-                RenderText {#text} at (1,1) size 36x15
-                  text run at (1,1) width 36: "MMM"
+                RenderText {#text} at (1,1) size 39x15
+                  text run at (1,1) width 39: "MMM"
               RenderBlock {HR} at (1,64.34) size 71x2 [border: (1px inset #EEEEEE)]
           RenderTableRow {TR} at (0,289) size 152x71
             RenderTableCell {TD} at (2,289) size 73x70.94 [r=4 c=0 rs=1 cs=1]
@@ -146,14 +146,14 @@ layer at (0,0) size 800x412
                     RenderBlock {SECTION} at (0,0) size 65.34x71
                       RenderBlock {HR} at (0,0) size 2x71 [border: (1px inset #EEEEEE)]
                       RenderBlock {H1} at (24.17,0) size 17x71 [border: (1px solid #00FF00)]
-                        RenderText {#text} at (1,1) size 15x36
-                          text run at (1,1) width 36: "MMM"
+                        RenderText {#text} at (1,1) size 15x39
+                          text run at (1,1) width 39: "MMM"
                       RenderBlock {HR} at (63.34,0) size 2x71 [border: (1px inset #EEEEEE)]
             RenderTableCell {TD} at (220,77) size 67.34x73 [r=3 c=1 rs=1 cs=1]
               RenderBlock {HR} at (1,1) size 2x71 [border: (1px inset #EEEEEE)]
               RenderBlock {H5} at (25.17,1) size 17x71 [border: (1px solid #00FF00)]
-                RenderText {#text} at (1,1) size 15x36
-                  text run at (1,1) width 36: "MMM"
+                RenderText {#text} at (1,1) size 15x39
+                  text run at (1,1) width 39: "MMM"
               RenderBlock {HR} at (64.34,1) size 2x71 [border: (1px inset #EEEEEE)]
           RenderTableRow {TR} at (0,289) size 71x152
             RenderTableCell {TD} at (289,2) size 70.94x73 [r=4 c=0 rs=1 cs=1]

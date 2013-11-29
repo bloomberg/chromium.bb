@@ -4,8 +4,8 @@ layer at (0,0) size 800x600
   RenderBlock {HTML} at (0,0) size 800x600
     RenderBody {BODY} at (8,8) size 784x584
       RenderBlock {H3} at (0,0) size 784x22
-        RenderText {#text} at (0,0) size 192x22
-          text run at (0,0) width 192: "Height:100% Problems"
+        RenderText {#text} at (0,0) size 184x22
+          text run at (0,0) width 184: "Height:100% Problems"
       RenderBlock {P} at (0,40.72) size 784x18
         RenderText {#text} at (0,0) size 742x18
           text run at (0,0) width 398: "In the example below, the inner table should be 300 pixels tall. "

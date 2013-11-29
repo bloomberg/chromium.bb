@@ -4,8 +4,8 @@ layer at (0,0) size 800x418
   RenderBlock {HTML} at (0,0) size 800x418.44
     RenderBody {BODY} at (8,18.72) size 784x391.72
       RenderBlock {H3} at (0,0) size 784x22
-        RenderText {#text} at (0,0) size 90x22
-          text run at (0,0) width 90: "It passes if:"
+        RenderText {#text} at (0,0) size 88x22
+          text run at (0,0) width 88: "It passes if:"
       RenderBlock {UL} at (0,40.72) size 784x54
         RenderListItem {LI} at (40,0) size 744x18
           RenderListMarker at (-17,0) size 7x18: bullet

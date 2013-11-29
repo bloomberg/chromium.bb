@@ -7,160 +7,160 @@ layer at (0,0) size 785x1721
         RenderBlock {DIV} at (1,31) size 600x70
         RenderBlock {DIV} at (1,114.33) size 600x1494.63
           RenderBlock {P} at (20,0) size 560x80 [color=#333333]
-            RenderText {#text} at (0,2) size 520x35
-              text run at (0,2) width 520: "We are trying to understand how UVic students perform Shakespeare related research for"
-              text run at (0,22) width 265: "classes as well as for their own interest. The "
-            RenderInline {A} at (0,0) size 173x15
-              RenderText {#text} at (265,22) size 173x15
-                text run at (265,22) width 173: "Internet Shakespeare Editions"
-            RenderText {#text} at (438,22) size 560x55
-              text run at (438,22) width 122: " are being developed"
-              text run at (0,42) width 210: "for students as well as Shakespeare "
-              text run at (210,42) width 349: "scholars world wide to better understand the man, his plays"
-              text run at (0,62) width 155: "and our interpretations of "
-              text run at (155,62) width 35: "them."
+            RenderText {#text} at (0,2) size 524x36
+              text run at (0,2) width 524: "We are trying to understand how UVic students perform Shakespeare related research for"
+              text run at (0,22) width 266: "classes as well as for their own interest. The "
+            RenderInline {A} at (0,0) size 173x16
+              RenderText {#text} at (266,22) size 173x16
+                text run at (266,22) width 173: "Internet Shakespeare Editions"
+            RenderText {#text} at (439,22) size 537x56
+              text run at (439,22) width 59: " are being"
+              text run at (0,42) width 274: "developed for students as well as Shakespeare "
+              text run at (274,42) width 263: "scholars world wide to better understand the"
+              text run at (0,62) width 243: "man, his plays and our interpretations of "
+              text run at (243,62) width 35: "them."
           RenderBlock {P} at (20,93.33) size 560x20 [color=#333333]
-            RenderText {#text} at (0,2) size 463x15
-              text run at (0,2) width 463: "Please take the time to carefully review and complete the following questions."
+            RenderText {#text} at (0,2) size 467x16
+              text run at (0,2) width 467: "Please take the time to carefully review and complete the following questions."
           RenderBlock {FORM} at (20,138.33) size 560x1322.97
             RenderBlock {H2} at (0,0) size 560x16 [color=#333333]
               RenderText {#text} at (0,0) size 201x16
                 text run at (0,0) width 201: "PERSONAL INFORMATION"
             RenderBlock (floating) {SPAN} at (0,26) size 325x20 [color=#333333]
-              RenderText {#text} at (0,2) size 68x15
-                text run at (0,2) width 68: "Your Name*"
+              RenderText {#text} at (0,2) size 70x16
+                text run at (0,2) width 70: "Your Name*"
             RenderTextControl {INPUT} at (325,26) size 186x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderBlock (floating) {SPAN} at (0,47) size 325x20 [color=#333333]
-              RenderText {#text} at (0,2) size 120x15
-                text run at (0,2) width 120: "Your e-mail address*"
+              RenderText {#text} at (0,2) size 121x16
+                text run at (0,2) width 121: "Your e-mail address*"
             RenderTextControl {INPUT} at (325,47) size 186x19 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
             RenderBlock (floating) {SPAN} at (0,68) size 325x20 [color=#333333]
-              RenderText {#text} at (0,2) size 128x15
-                text run at (0,2) width 128: "Your degree program*"
+              RenderText {#text} at (0,2) size 129x16
+                text run at (0,2) width 129: "Your degree program*"
             RenderMenuList {SELECT} at (325,68) size 180x18 [bgcolor=#FFFFFF]
               RenderBlock (anonymous) at (0,0) size 180x18
                 RenderText at (8,2) size 89x13
                   text run at (8,2) width 89: "Program options"
             RenderBlock (floating) {SPAN} at (0,88) size 325x20 [color=#333333]
-              RenderText {#text} at (0,2) size 110x15
-                text run at (0,2) width 110: "Your year of study*"
+              RenderText {#text} at (0,2) size 113x16
+                text run at (0,2) width 113: "Your year of study*"
             RenderMenuList {SELECT} at (325,88) size 180x18 [bgcolor=#FFFFFF]
               RenderBlock (anonymous) at (0,0) size 180x18
                 RenderText at (8,2) size 123x13
                   text run at (8,2) width 123: "Years you've been here"
             RenderBlock (floating) {SPAN} at (0,108) size 325x20 [color=#333333]
-              RenderText {#text} at (0,2) size 152x15
-                text run at (0,2) width 152: "Shakespeare classes taken"
+              RenderText {#text} at (0,2) size 153x16
+                text run at (0,2) width 153: "Shakespeare classes taken"
             RenderMenuList {SELECT} at (325,108) size 180x18 [bgcolor=#FFFFFF]
               RenderBlock (anonymous) at (0,0) size 180x18
                 RenderText at (8,2) size 76x13
                   text run at (8,2) width 76: "Number taken"
             RenderBlock {P} at (0,139.33) size 560x20 [color=#333333]
-              RenderText {#text} at (0,2) size 156x15
-                text run at (0,2) width 156: "* indicates a required field"
+              RenderText {#text} at (0,2) size 157x16
+                text run at (0,2) width 157: "* indicates a required field"
             RenderBlock {H2} at (0,184.33) size 560x16 [color=#333333]
               RenderText {#text} at (0,0) size 298x16
                 text run at (0,0) width 298: "SHAKESPEARE RESEARCH QUESTIONS"
             RenderBlock (floating) {SPAN} at (0,210.33) size 325x20 [color=#333333]
-              RenderText {#text} at (0,2) size 321x15
-                text run at (0,2) width 321: "What percentage of your research time is spent online?"
+              RenderText {#text} at (0,2) size 324x16
+                text run at (0,2) width 324: "What percentage of your research time is spent online?"
             RenderMenuList {SELECT} at (325,210.33) size 180x18 [bgcolor=#FFFFFF]
               RenderBlock (anonymous) at (0,0) size 180x18
                 RenderText at (8,2) size 106x13
                   text run at (8,2) width 106: "Percentages of time"
             RenderBlock (floating) {SPAN} at (0,230.33) size 325x20 [color=#333333]
-              RenderText {#text} at (0,2) size 300x35
-                text run at (0,2) width 300: "What is holding you back from doing more research"
+              RenderText {#text} at (0,2) size 303x36
+                text run at (0,2) width 303: "What is holding you back from doing more research"
                 text run at (0,22) width 41: "online?"
             RenderMenuList {SELECT} at (325,230.33) size 180x18 [bgcolor=#FFFFFF]
               RenderBlock (anonymous) at (0,0) size 180x18
                 RenderText at (8,2) size 44x13
                   text run at (8,2) width 44: "Reasons"
             RenderBlock (floating) {SPAN} at (0,250.33) size 325x20 [color=#333333]
-              RenderText {#text} at (0,2) size 220x15
-                text run at (0,2) width 220: "Your research is primarily focused on:"
+              RenderText {#text} at (0,2) size 224x16
+                text run at (0,2) width 224: "Your research is primarily focused on:"
             RenderBlock {SPAN} at (325,250.33) size 180x20 [color=#333333]
-              RenderBlock {INPUT} at (2.94,3) size 12x13 [color=#000000]
-              RenderText {#text} at (17,2) size 33x15
+              RenderBlock {INPUT} at (2.94,4) size 12x13 [color=#000000]
+              RenderText {#text} at (17,2) size 33x16
                 text run at (17,2) width 33: "Texts"
             RenderBlock {SPAN} at (325,270.33) size 180x20 [color=#333333]
-              RenderBlock {INPUT} at (2.94,3) size 12x13 [color=#000000]
-              RenderText {#text} at (17,2) size 134x15
-                text run at (17,2) width 134: "Performance materials"
+              RenderBlock {INPUT} at (2.94,4) size 12x13 [color=#000000]
+              RenderText {#text} at (17,2) size 135x16
+                text run at (17,2) width 135: "Performance materials"
             RenderBlock {SPAN} at (325,290.33) size 180x20 [color=#333333]
-              RenderBlock {INPUT} at (2.94,3) size 12x13 [color=#000000]
-              RenderText {#text} at (17,2) size 22x15
+              RenderBlock {INPUT} at (2.94,4) size 12x13 [color=#000000]
+              RenderText {#text} at (17,2) size 22x16
                 text run at (17,2) width 22: "n/a"
             RenderBlock {H2} at (0,335.33) size 560x16 [color=#333333]
               RenderText {#text} at (0,0) size 374x16
                 text run at (0,0) width 374: "INTERNET SHAKESPEARE EDITIONS QUESTIONS"
             RenderBlock (floating) {SPAN} at (0,361.33) size 325x20 [color=#333333]
-              RenderText {#text} at (0,2) size 302x15
-                text run at (0,2) width 302: "Have you used UVic's Internet Shakespeare Editions?"
+              RenderText {#text} at (0,2) size 306x16
+                text run at (0,2) width 306: "Have you used UVic's Internet Shakespeare Editions?"
             RenderBlock {SPAN} at (325,361.33) size 180x20 [color=#333333]
-              RenderText {#text} at (0,2) size 19x15
-                text run at (0,2) width 19: "Yes"
-              RenderBlock {INPUT} at (21.94,3) size 12x13 [color=#000000]
-              RenderText {#text} at (36,2) size 20x15
-                text run at (36,2) width 5: " "
-                text run at (40,2) width 16: "No"
-              RenderBlock {INPUT} at (58.81,3) size 12x13 [color=#000000]
+              RenderText {#text} at (0,2) size 20x16
+                text run at (0,2) width 20: "Yes"
+              RenderBlock {INPUT} at (22.94,4) size 12x13 [color=#000000]
+              RenderText {#text} at (37,2) size 21x16
+                text run at (37,2) width 5: " "
+                text run at (41,2) width 17: "No"
+              RenderBlock {INPUT} at (60.81,4) size 12x13 [color=#000000]
               RenderText {#text} at (0,0) size 0x0
             RenderBlock {P} at (0,394.66) size 560x20 [color=#333333]
-              RenderText {#text} at (0,2) size 378x15
-                text run at (0,2) width 378: "-- If you answered no to this question, skip to the next section --"
+              RenderText {#text} at (0,2) size 380x16
+                text run at (0,2) width 380: "-- If you answered no to this question, skip to the next section --"
             RenderBlock (floating) {SPAN} at (0,427.98) size 325x20 [color=#333333]
-              RenderText {#text} at (0,2) size 274x15
-                text run at (0,2) width 274: "Which area of the ISE did you find most useful?"
+              RenderText {#text} at (0,2) size 276x16
+                text run at (0,2) width 276: "Which area of the ISE did you find most useful?"
             RenderMenuList {SELECT} at (325,427.98) size 180x18 [bgcolor=#FFFFFF]
               RenderBlock (anonymous) at (0,0) size 180x18
                 RenderText at (8,2) size 98x13
                   text run at (8,2) width 98: "Sections of the ISE"
             RenderBlock (floating) {SPAN} at (0,447.98) size 325x20 [color=#333333]
-              RenderText {#text} at (0,2) size 252x15
-                text run at (0,2) width 252: "How did you find the navigation of the ISE?"
+              RenderText {#text} at (0,2) size 254x16
+                text run at (0,2) width 254: "How did you find the navigation of the ISE?"
             RenderMenuList {SELECT} at (325,447.98) size 180x18 [bgcolor=#FFFFFF]
               RenderBlock (anonymous) at (0,0) size 180x18
                 RenderText at (8,2) size 92x13
                   text run at (8,2) width 92: "Level of difficulty"
             RenderBlock (floating) {SPAN} at (0,467.98) size 325x20 [color=#333333]
-              RenderText {#text} at (0,2) size 206x15
-                text run at (0,2) width 206: "Please describe your use of the ISE."
+              RenderText {#text} at (0,2) size 208x16
+                text run at (0,2) width 208: "Please describe your use of the ISE."
             RenderBlock {H2} at (0,621.98) size 560x16 [color=#333333]
               RenderText {#text} at (0,0) size 291x16
                 text run at (0,0) width 291: "TOOLS IN DEVELOPMENT QUESTIONS"
             RenderBlock {P} at (0,651.31) size 560x60 [color=#333333]
-              RenderText {#text} at (0,2) size 556x55
-                text run at (0,2) width 453: "We are in the process of both making new material available and developing "
-                text run at (453,2) width 103: "new tools to view"
+              RenderText {#text} at (0,2) size 560x56
+                text run at (0,2) width 456: "We are in the process of both making new material available and developing "
+                text run at (456,2) width 104: "new tools to view"
                 text run at (0,22) width 354: "and extrapolate information from Shakespeare's works. The "
-                text run at (354,22) width 160: "following images are visual"
+                text run at (354,22) width 161: "following images are visual"
                 text run at (0,42) width 343: "representations of some of the ideas being thrown around."
             RenderBlock {P} at (0,724.64) size 560x20 [color=#333333]
-              RenderText {#text} at (0,2) size 337x15
-                text run at (0,2) width 337: "Please review them carefully and provide feedback below"
+              RenderText {#text} at (0,2) size 342x16
+                text run at (0,2) width 342: "Please review them carefully and provide feedback below"
             RenderBlock (floating) {SPAN} at (0,757.97) size 325x20 [color=#333333]
-              RenderText {#text} at (0,2) size 145x15
-                text run at (0,2) width 145: "Your comments on Fig. 1"
+              RenderText {#text} at (0,2) size 147x16
+                text run at (0,2) width 147: "Your comments on Fig. 1"
             RenderBlock (floating) {SPAN} at (0,888.97) size 325x20 [color=#333333]
-              RenderText {#text} at (0,2) size 145x15
-                text run at (0,2) width 145: "Your comments on Fig. 2"
+              RenderText {#text} at (0,2) size 147x16
+                text run at (0,2) width 147: "Your comments on Fig. 2"
             RenderBlock (floating) {SPAN} at (0,1019.97) size 325x20 [color=#333333]
-              RenderText {#text} at (0,2) size 145x15
-                text run at (0,2) width 145: "Your comments on Fig. 3"
+              RenderText {#text} at (0,2) size 147x16
+                text run at (0,2) width 147: "Your comments on Fig. 3"
             RenderBlock {H2} at (0,1170.97) size 560x16 [color=#333333]
               RenderText {#text} at (0,0) size 143x16
                 text run at (0,0) width 143: "OTHER FEEDBACK"
             RenderBlock (floating) {SPAN} at (0,1196.97) size 325x20 [color=#333333]
-              RenderText {#text} at (0,2) size 220x15
-                text run at (0,2) width 220: "Please enter any other thoughts here."
+              RenderText {#text} at (0,2) size 221x16
+                text run at (0,2) width 221: "Please enter any other thoughts here."
           RenderBlock {P} at (20,1474.63) size 560x20 [color=#333333]
-            RenderText {#text} at (0,2) size 233x15
-              text run at (0,2) width 233: "Thank you for your time filling this out."
+            RenderText {#text} at (0,2) size 235x16
+              text run at (0,2) width 235: "Thank you for your time filling this out."
         RenderBlock {DIV} at (1,1628.95) size 600x51 [border: (1px dashed #A6A972) none]
           RenderBlock {SPAN} at (0,16) size 600x20 [color=#333333]
-            RenderText {#text} at (247,2) size 106x15
-              text run at (247,2) width 106: "\x{A9}2003 Kevin Davis"
+            RenderText {#text} at (245,2) size 110x16
+              text run at (245,2) width 110: "\x{A9}2003 Kevin Davis"
 layer at (441,302) size 180x13
   RenderBlock {DIV} at (3,3) size 180x13
 layer at (441,323) size 180x13

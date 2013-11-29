@@ -289,8 +289,8 @@ layer at (0,0) size 785x2404
           RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,427.44) size 769x22
         RenderBlock {H3} at (0,0) size 769x22
-          RenderText {#text} at (0,0) size 117x22
-            text run at (0,0) width 117: "In a span"
+          RenderText {#text} at (0,0) size 112x22
+            text run at (0,0) width 112: "In a span"
       RenderBlock (anonymous) at (0,468.16) size 769x270
         RenderInline {SPAN} at (0,0) size 753x234
           RenderText {#text} at (0,0) size 177x18
@@ -733,8 +733,8 @@ layer at (0,0) size 785x2404
           RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,1216.50) size 769x22
         RenderBlock {H3} at (0,0) size 769x22
-          RenderText {#text} at (0,0) size 122x22
-            text run at (0,0) width 122: "In a span"
+          RenderText {#text} at (0,0) size 117x22
+            text run at (0,0) width 117: "In a span"
       RenderBlock (anonymous) at (0,1257.22) size 769x270
         RenderInline {SPAN} at (0,0) size 727x234
           RenderText {#text} at (0,0) size 218x18
@@ -1177,8 +1177,8 @@ layer at (0,0) size 785x2404
           RenderText {#text} at (0,0) size 0x0
       RenderBlock (anonymous) at (0,2005.56) size 769x22
         RenderBlock {H3} at (0,0) size 769x22
-          RenderText {#text} at (0,0) size 162x22
-            text run at (0,0) width 162: "In a span"
+          RenderText {#text} at (0,0) size 157x22
+            text run at (0,0) width 157: "In a span"
       RenderBlock (anonymous) at (0,2046.28) size 769x342
         RenderInline {SPAN} at (0,0) size 779x342
           RenderText {#text} at (0,0) size 424x18
