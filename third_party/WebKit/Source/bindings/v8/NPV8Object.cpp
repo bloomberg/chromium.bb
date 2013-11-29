@@ -150,6 +150,7 @@ NPObject* npCreateV8ScriptObject(NPP npp, v8::Handle<v8::Object> object, DOMWind
     V8NPObject* v8npObject = reinterpret_cast<V8NPObject*>(_NPN_CreateObject(npp, &V8NPObjectClass));
     // This is uninitialized memory, we need to clear it so that
     // Persistent::Reset won't try to Dispose anything bogus.
+    v8npObject->v8Object.Clear();
     v8npObject->v8Object.Reset(isolate, object);
     v8npObject->rootObject = root;
 
