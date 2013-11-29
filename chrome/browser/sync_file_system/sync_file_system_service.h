@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
@@ -34,13 +35,14 @@ class FileSystemContext;
 
 namespace sync_file_system {
 
+class LocalSyncRunner;
+class RemoteSyncRunner;
 class SyncEventObserver;
+class SyncProcessRunner;
 
 class SyncFileSystemService
     : public BrowserContextKeyedService,
       public ProfileSyncServiceObserver,
-      public LocalFileSyncService::Observer,
-      public RemoteFileSyncService::Observer,
       public FileStatusObserver,
       public content::NotificationObserver,
       public base::SupportsWeakPtr<SyncFileSystemService> {
@@ -73,11 +75,11 @@ class SyncFileSystemService
   LocalChangeProcessor* GetLocalChangeProcessor(const GURL& origin);
 
  private:
-  class SyncRunner;
-
   friend class SyncFileSystemServiceFactory;
   friend class SyncFileSystemServiceTest;
   friend struct base::DefaultDeleter<SyncFileSystemService>;
+  friend class LocalSyncRunner;
+  friend class RemoteSyncRunner;
 
   explicit SyncFileSystemService(Profile* profile);
   virtual ~SyncFileSystemService();
@@ -100,31 +102,12 @@ class SyncFileSystemService
   // Overrides sync_enabled_ setting. This should be called only by tests.
   void SetSyncEnabledForTesting(bool enabled);
 
-  void StartLocalSync(const SyncStatusCallback& callback);
-  void StartRemoteSync(const SyncStatusCallback& callback);
-
-  // Callbacks for remote/local sync.
-  void DidProcessRemoteChange(const SyncStatusCallback& callback,
-                              SyncStatusCode status,
-                              const fileapi::FileSystemURL& url);
-  void DidProcessLocalChange(const SyncStatusCallback& callback,
-                             SyncStatusCode status,
-                             const fileapi::FileSystemURL& url);
-
   void DidGetLocalChangeStatus(const SyncFileStatusCallback& callback,
                                SyncStatusCode status,
                                bool has_pending_local_changes);
 
-  void OnSyncEnabledForRemoteSync();
-
-  // RemoteFileSyncService::Observer overrides.
-  virtual void OnLocalChangeAvailable(int64 pending_changes) OVERRIDE;
-
-  // LocalFileSyncService::Observer overrides.
-  virtual void OnRemoteChangeQueueUpdated(int64 pending_changes) OVERRIDE;
-  virtual void OnRemoteServiceStateUpdated(
-      RemoteServiceState state,
-      const std::string& description) OVERRIDE;
+  void OnRemoteServiceStateUpdated(RemoteServiceState state,
+                                   const std::string& description);
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -154,14 +137,16 @@ class SyncFileSystemService
   // |profile_sync_service| must be non-null.
   void UpdateSyncEnabledStatus(ProfileSyncServiceBase* profile_sync_service);
 
+  void RunForEachSyncRunners(void(SyncProcessRunner::*method)());
+
   Profile* profile_;
   content::NotificationRegistrar registrar_;
 
-  scoped_ptr<LocalFileSyncService> local_file_service_;
-  scoped_ptr<RemoteFileSyncService> remote_file_service_;
+  scoped_ptr<LocalFileSyncService> local_service_;
+  scoped_ptr<RemoteFileSyncService> remote_service_;
 
-  scoped_ptr<SyncRunner> local_sync_;
-  scoped_ptr<SyncRunner> remote_sync_;
+  // Holds all SyncProcessRunners.
+  ScopedVector<SyncProcessRunner> sync_runners_;
 
   // Indicates if sync is currently enabled or not.
   bool sync_enabled_;

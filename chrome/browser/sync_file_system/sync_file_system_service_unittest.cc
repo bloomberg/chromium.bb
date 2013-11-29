@@ -132,7 +132,7 @@ class SyncFileSystemServiceTest : public testing::Test {
     sync_service_.reset(new SyncFileSystemService(&profile_));
 
     EXPECT_CALL(*mock_remote_service(),
-                AddServiceObserver(sync_service_.get())).Times(1);
+                AddServiceObserver(_)).Times(1);
     EXPECT_CALL(*mock_remote_service(),
                 AddFileStatusObserver(sync_service_.get())).Times(1);
     EXPECT_CALL(*mock_remote_service(),

@@ -2467,6 +2467,8 @@
         'browser/sync_file_system/sync_file_type.h',
         'browser/sync_file_system/sync_operation_type.cc',
         'browser/sync_file_system/sync_operation_type.h',
+        'browser/sync_file_system/sync_process_runner.cc',
+        'browser/sync_file_system/sync_process_runner.h',
         'browser/sync_file_system/sync_service_state.h',
         'browser/sync_file_system/sync_status_code.cc',
         'browser/sync_file_system/sync_status_code.h',
