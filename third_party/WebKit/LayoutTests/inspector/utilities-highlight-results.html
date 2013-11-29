@@ -61,10 +61,7 @@ function test()
 
     function range(offset, length)
     {
-        var result = {};
-        result.offset = offset;
-        result.length = length;
-        return result;
+        return new WebInspector.SourceRange(offset, length);
     }
 
     performTestForElement(textElement(["function"]), [range(0, 8)]); // Highlight whole text node.
