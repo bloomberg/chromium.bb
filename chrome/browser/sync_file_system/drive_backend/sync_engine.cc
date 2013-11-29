@@ -21,6 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/sync_file_system/drive_backend/conflict_resolver.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/list_changes_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/local_to_remote_syncer.h"
@@ -429,7 +430,16 @@ void SyncEngine::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
 void SyncEngine::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
                                      const SyncStatusCallback& callback,
                                      SyncStatusCode status) {
-  NOTIMPLEMENTED();
+  if (status != SYNC_STATUS_OK &&
+      status != SYNC_STATUS_NO_CHANGE_TO_SYNC) {
+    callback.Run(status);
+    return;
+  }
+
+  if (status == SYNC_STATUS_NO_CHANGE_TO_SYNC)
+    metadata_database_->PromoteLowerPriorityTrackersToNormal();
+
+  callback.Run(status);
 }
 
 void SyncEngine::MaybeStartFetchChanges() {
@@ -441,10 +451,23 @@ void SyncEngine::MaybeStartFetchChanges() {
     return;
 
   if (task_manager_->ScheduleSyncTaskIfIdle(
-          scoped_ptr<SyncTask>(new ListChangesTask(this)))) {
+          scoped_ptr<SyncTask>(new ListChangesTask(this)),
+          base::Bind(&SyncEngine::DidFetchChanges,
+                     weak_ptr_factory_.GetWeakPtr()))) {
     should_check_remote_change_ = false;
     time_to_check_changes_ =
         now + base::TimeDelta::FromSeconds(kListChangesRetryDelaySeconds);
+  }
+}
+
+void SyncEngine::DidFetchChanges(SyncStatusCode status) {
+  if (status != SYNC_STATUS_OK)
+    return;
+
+  if (metadata_database_->HasDirtyTracker()) {
+    task_manager_->ScheduleSyncTaskIfIdle(
+        scoped_ptr<SyncTask>(new ConflictResolver(this)),
+        SyncStatusCallback());
   }
 }
 

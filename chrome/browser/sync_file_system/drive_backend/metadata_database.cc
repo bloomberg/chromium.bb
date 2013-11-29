@@ -1036,6 +1036,16 @@ void MetadataDatabase::LowerTrackerPriority(int64 tracker_id) {
     low_priority_dirty_trackers_.insert(tracker);
 }
 
+void MetadataDatabase::PromoteLowerPriorityTrackersToNormal() {
+  if (dirty_trackers_.empty()) {
+    dirty_trackers_.swap(low_priority_dirty_trackers_);
+    return;
+  }
+  dirty_trackers_.insert(low_priority_dirty_trackers_.begin(),
+                         low_priority_dirty_trackers_.end());
+  low_priority_dirty_trackers_.clear();
+}
+
 bool MetadataDatabase::GetNormalPriorityDirtyTracker(
     FileTracker* tracker) const {
   DirtyTrackers::const_iterator itr = dirty_trackers_.begin();

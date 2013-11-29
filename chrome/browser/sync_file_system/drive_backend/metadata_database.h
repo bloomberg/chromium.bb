@@ -272,6 +272,7 @@ class MetadataDatabase {
 
   // Changes the priority of the tracker to low.
   void LowerTrackerPriority(int64 tracker_id);
+  void PromoteLowerPriorityTrackersToNormal();
 
   // Returns true if there is a normal priority dirty tracker.
   // Assigns the dirty tracker if exists and |tracker| is non-NULL.
@@ -280,6 +281,10 @@ class MetadataDatabase {
   // Returns true if there is a low priority dirty tracker.
   // Assigns the dirty tracker if exists and |tracker| is non-NULL.
   bool GetLowPriorityDirtyTracker(FileTracker* tracker) const;
+
+  bool HasDirtyTracker() const {
+    return !dirty_trackers_.empty() || !low_priority_dirty_trackers_.empty();
+  }
 
   bool GetMultiParentFileTrackers(std::string* file_id,
                                   TrackerSet* trackers);

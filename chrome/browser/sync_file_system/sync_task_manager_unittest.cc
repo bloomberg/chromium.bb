@@ -73,7 +73,8 @@ class TaskManagerClient
   void ScheduleTaskIfIdle(SyncStatusCode status_to_return) {
     task_manager_->ScheduleTaskIfIdle(
         base::Bind(&TaskManagerClient::DoTask, AsWeakPtr(),
-                   status_to_return, true /* idle */));
+                   status_to_return, true /* idle */),
+        SyncStatusCallback());
   }
 
   int maybe_schedule_next_task_count() const {

@@ -120,22 +120,25 @@ void SyncTaskManager::ScheduleTaskAtPriority(
   task.Run(CreateCompletionCallback(token.Pass(), callback));
 }
 
-bool SyncTaskManager::ScheduleTaskIfIdle(const Task& task) {
+bool SyncTaskManager::ScheduleTaskIfIdle(const Task& task,
+                                         const SyncStatusCallback& callback) {
   scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
   if (!token)
     return false;
-  task.Run(CreateCompletionCallback(token.Pass(), SyncStatusCallback()));
+  task.Run(CreateCompletionCallback(token.Pass(), callback));
   return true;
 }
 
-bool SyncTaskManager::ScheduleSyncTaskIfIdle(scoped_ptr<SyncTask> task) {
+bool SyncTaskManager::ScheduleSyncTaskIfIdle(
+    scoped_ptr<SyncTask> task,
+    const SyncStatusCallback& callback) {
   scoped_ptr<TaskToken> token(GetToken(FROM_HERE));
   if (!token)
     return false;
   DCHECK(!running_task_);
   running_task_ = task.Pass();
   running_task_->Run(CreateCompletionCallback(token.Pass(),
-                                              SyncStatusCallback()));
+                                              callback));
   return true;
 }
 

@@ -1159,7 +1159,8 @@ void DriveFileSyncService::MaybeStartFetchChanges() {
   if (!pending_batch_sync_origins_.empty()) {
     if (GetCurrentState() == REMOTE_SERVICE_OK || may_have_unfetched_changes_) {
       task_manager_->ScheduleTaskIfIdle(
-          base::Bind(&DriveFileSyncService::StartBatchSync, AsWeakPtr()));
+          base::Bind(&DriveFileSyncService::StartBatchSync, AsWeakPtr()),
+          SyncStatusCallback());
     }
     return;
   }
@@ -1168,7 +1169,8 @@ void DriveFileSyncService::MaybeStartFetchChanges() {
       !metadata_store_->incremental_sync_origins().empty()) {
     task_manager_->ScheduleTaskIfIdle(
         base::Bind(&DriveFileSyncService::FetchChangesForIncrementalSync,
-                   AsWeakPtr()));
+                   AsWeakPtr()),
+        SyncStatusCallback());
   }
 }
 
