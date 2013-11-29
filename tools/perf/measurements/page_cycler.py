@@ -17,7 +17,6 @@ cycling all pages.
 
 import collections
 import os
-import sys
 
 from metrics import cpu
 from metrics import io
@@ -106,15 +105,6 @@ class PageCycler(page_measurement.PageMeasurement):
 
     if options.report_speed_index:
       self._report_speed_index = True
-
-    # A disk cache bug causes some page cyclers to hang on mac.
-    # TODO(tonyg): Re-enable these tests when crbug.com/268646 is fixed.
-    if (sys.platform == 'darwin' and
-        (sys.argv[-1].endswith('/intl_hi_ru.json') or
-         sys.argv[-1].endswith('/tough_layout_cases.json') or
-         sys.argv[-1].endswith('/typical_25.json'))):
-      print '%s is currently disabled on mac. Skipping test.' % sys.argv[-1]
-      sys.exit(0)
 
     self._cold_runs_requested = (options.cold_load_percent != None)
     # Handle requests for cold cache runs
