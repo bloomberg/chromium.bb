@@ -34,6 +34,7 @@
 #include "V8InjectedScriptHost.h"
 #include "V8Window.h"
 #include "bindings/v8/BindingSecurity.h"
+#include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptDebugServer.h"
 #include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/V8Binding.h"
@@ -44,6 +45,11 @@
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
+
+struct InjectedScriptManager::CallbackData {
+    ScopedPersistent<v8::Object> handle;
+    RefPtr<InjectedScriptHost> host;
+};
 
 static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(InjectedScriptHost* host, v8::Isolate* isolate)
 {
@@ -60,9 +66,10 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(InjectedScriptHos
     V8DOMWrapper::setNativeInfo(instanceTemplate, &V8InjectedScriptHost::wrapperTypeInfo, host);
     // Create a weak reference to the v8 wrapper of InspectorBackend to deref
     // InspectorBackend when the wrapper is garbage collected.
-    host->ref();
-    v8::Persistent<v8::Object> weakHandle(isolate, instanceTemplate);
-    weakHandle.MakeWeak(host, &InjectedScriptManager::makeWeakCallback);
+    InjectedScriptManager::CallbackData* data = new InjectedScriptManager::CallbackData;
+    data->host = host;
+    data->handle.set(isolate, instanceTemplate);
+    data->handle.setWeak(data, &InjectedScriptManager::setWeakCallback);
     return instanceTemplate;
 }
 
@@ -115,10 +122,11 @@ bool InjectedScriptManager::canAccessInspectedWindow(ScriptState* scriptState)
     return BindingSecurity::shouldAllowAccessToFrame(frame, DoNotReportSecurityError);
 }
 
-void InjectedScriptManager::makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Object>* object, InjectedScriptHost* host)
+void InjectedScriptManager::setWeakCallback(const v8::WeakCallbackData<v8::Object, InjectedScriptManager::CallbackData>& data)
 {
-    host->deref();
-    object->Reset();
+    data.GetParameter()->handle.clear();
+    data.GetParameter()->host.clear();
+    delete data.GetParameter();
 }
 
 } // namespace WebCore
