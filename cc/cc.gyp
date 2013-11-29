@@ -58,6 +58,8 @@
         'base/completion_event.h',
         'base/invalidation_region.cc',
         'base/invalidation_region.h',
+        'base/latency_info_swap_promise.cc',
+        'base/latency_info_swap_promise.h',
         'base/math_util.cc',
         'base/math_util.h',
         'base/ref_counted_managed.h',

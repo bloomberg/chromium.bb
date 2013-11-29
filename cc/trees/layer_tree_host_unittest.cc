@@ -5241,7 +5241,7 @@ class TestSwapPromise : public SwapPromise {
     result_->dtor_called = true;
   }
 
-  virtual void DidSwap() OVERRIDE {
+  virtual void DidSwap(CompositorFrameMetadata* metadata) OVERRIDE {
     base::AutoLock lock(result_->lock);
     EXPECT_FALSE(result_->did_swap_called);
     EXPECT_FALSE(result_->did_not_swap_called);
