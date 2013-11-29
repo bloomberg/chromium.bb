@@ -179,7 +179,7 @@ static v8::Handle<v8::Value> createDebugData(const char* worldName, int debugId,
         wanted = snprintf(buffer, sizeof(buffer), "%s,%d", worldName, debugId);
 
     if (wanted < sizeof(buffer))
-        return v8::String::NewFromUtf8(isolate, buffer, v8::String::kInternalizedString);
+        return v8AtomicString(isolate, buffer);
 
     return v8::Undefined(isolate);
 }

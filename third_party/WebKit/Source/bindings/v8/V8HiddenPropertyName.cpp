@@ -61,8 +61,7 @@ static v8::Handle<v8::String> hiddenReferenceName(const char* name, unsigned len
     Vector<char, 64> prefixedName;
     prefixedName.append(V8_HIDDEN_PROPERTY_PREFIX, sizeof(V8_HIDDEN_PROPERTY_PREFIX) - 1);
     prefixedName.append(name, length);
-    v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    return v8::String::NewFromUtf8(isolate, prefixedName.data(), v8::String::kInternalizedString, static_cast<int>(prefixedName.size()));
+    return v8AtomicString(v8::Isolate::GetCurrent(), prefixedName.data(), static_cast<int>(prefixedName.size()));
 }
 
 void V8HiddenPropertyName::setNamedHiddenReference(v8::Handle<v8::Object> parent, const char* name, v8::Handle<v8::Value> child)
@@ -74,7 +73,7 @@ void V8HiddenPropertyName::setNamedHiddenReference(v8::Handle<v8::Object> parent
 void V8HiddenPropertyName::createString(const char* key, v8::Persistent<v8::String>* handle, v8::Isolate* isolate)
 {
     v8::HandleScope scope(isolate);
-    handle->Reset(isolate, v8::String::NewFromUtf8(isolate, key, v8::String::kInternalizedString));
+    handle->Reset(isolate, v8AtomicString(isolate, key));
 }
 
 }  // namespace WebCore

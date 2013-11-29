@@ -403,7 +403,7 @@ void V8WindowShell::setSecurityToken()
     CString utf8Token = token.utf8();
     // NOTE: V8 does identity comparison in fast path, must use a symbol
     // as the security token.
-    context->SetSecurityToken(v8::String::NewSymbol(utf8Token.data(), utf8Token.length()));
+    context->SetSecurityToken(v8AtomicString(m_isolate, utf8Token.data(), utf8Token.length()));
 }
 
 void V8WindowShell::updateDocument()

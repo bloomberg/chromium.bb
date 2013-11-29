@@ -630,6 +630,12 @@ namespace WebCore {
         return v8::String::NewFromUtf8(isolate, str, v8::String::kInternalizedString, strlen(str));
     }
 
+    inline v8::Handle<v8::String> v8AtomicString(v8::Isolate* isolate, const char* str, size_t length)
+    {
+        ASSERT(isolate);
+        return v8::String::NewFromUtf8(isolate, str, v8::String::kInternalizedString, length);
+    }
+
 
     v8::Handle<v8::FunctionTemplate> createRawTemplate(v8::Isolate*);
 
