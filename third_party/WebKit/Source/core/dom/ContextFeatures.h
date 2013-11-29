@@ -102,9 +102,14 @@ inline bool ContextFeatures::isEnabled(Document* document, FeatureType type, boo
 
 inline void ContextFeatures::urlDidChange(Document* document)
 {
-    if (m_client)
-        return;
-    m_client->urlDidChange(document);
+    // FIXME: The original code, commented out below, is obviously
+    // wrong, but the seemingly correct fix of negating the test to
+    // the more logical 'if (!m_client)' crashes the renderer.
+    // See issue 294180
+    //
+    // if (m_client)
+    //     return;
+    // m_client->urlDidChange(document);
 }
 
 } // namespace WebCore
