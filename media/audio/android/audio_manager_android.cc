@@ -4,7 +4,12 @@
 
 #include "media/audio/android/audio_manager_android.h"
 
+#include "base/android/build_info.h"
+#include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "jni/AudioManagerAndroid_jni.h"
 #include "media/audio/android/opensles_input.h"
 #include "media/audio/android/opensles_output.h"
@@ -12,6 +17,12 @@
 #include "media/audio/audio_parameters.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/base/channel_layout.h"
+
+using base::android::AppendJavaStringArrayToStringVector;
+using base::android::AttachCurrentThread;
+using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertUTF8ToJavaString;
+using base::android::ScopedJavaLocalRef;
 
 namespace media {
 
@@ -42,9 +53,11 @@ AudioManagerAndroid::AudioManagerAndroid() {
       Java_AudioManagerAndroid_createAudioManagerAndroid(
           base::android::AttachCurrentThread(),
           base::android::GetApplicationContext()));
+  Init();
 }
 
 AudioManagerAndroid::~AudioManagerAndroid() {
+  Close();
   Shutdown();
 }
 
@@ -58,11 +71,31 @@ bool AudioManagerAndroid::HasAudioInputDevices() {
 
 void AudioManagerAndroid::GetAudioInputDeviceNames(
     AudioDeviceNames* device_names) {
+  // Always add default device parameters as first element.
   AddDefaultDevice(device_names);
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobjectArray> j_device_array =
+      Java_AudioManagerAndroid_getAudioInputDeviceNames(
+          env, j_audio_manager_.obj());
+  jsize len = env->GetArrayLength(j_device_array.obj());
+  AudioDeviceName device;
+  for (jsize i = 0; i < len; ++i) {
+    ScopedJavaLocalRef<jobject> j_device(
+        env, env->GetObjectArrayElement(j_device_array.obj(), i));
+    ScopedJavaLocalRef<jstring> j_device_name =
+        Java_AudioDeviceName_name(env, j_device.obj());
+    ConvertJavaStringToUTF8(env, j_device_name.obj(), &device.device_name);
+    ScopedJavaLocalRef<jstring> j_device_id =
+        Java_AudioDeviceName_id(env, j_device.obj());
+    ConvertJavaStringToUTF8(env, j_device_id.obj(), &device.unique_id);
+    device_names->push_back(device);
+  }
 }
 
 void AudioManagerAndroid::GetAudioOutputDeviceNames(
     AudioDeviceNames* device_names) {
+  // TODO(henrika): enumerate using GetAudioInputDeviceNames().
   AddDefaultDevice(device_names);
 }
 
@@ -91,7 +124,6 @@ AudioOutputStream* AudioManagerAndroid::MakeAudioOutputStream(
           std::string());
   if (stream && output_stream_count() == 1) {
     SetAudioMode(kAudioModeInCommunication);
-    RegisterHeadsetReceiver();
   }
   return stream;
 }
@@ -106,7 +138,6 @@ AudioInputStream* AudioManagerAndroid::MakeAudioInputStream(
 void AudioManagerAndroid::ReleaseOutputStream(AudioOutputStream* stream) {
   AudioManagerBase::ReleaseOutputStream(stream);
   if (!output_stream_count()) {
-    UnregisterHeadsetReceiver();
     SetAudioMode(kAudioModeNormal);
   }
 }
@@ -139,6 +170,12 @@ AudioInputStream* AudioManagerAndroid::MakeLinearInputStream(
 AudioInputStream* AudioManagerAndroid::MakeLowLatencyInputStream(
     const AudioParameters& params, const std::string& device_id) {
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
+  DLOG_IF(ERROR, device_id.empty()) << "Invalid device ID!";
+  // Utilize the device ID to select the correct input device.
+  // Note that the input device is always associated with a certain output
+  // device, i.e., this selection does also switch the output device.
+  // All input and output streams will be affected by the device selection.
+  SetAudioDevice(device_id);
   return new OpenSLESInputStream(this, params);
 }
 
@@ -188,22 +225,36 @@ bool AudioManagerAndroid::RegisterAudioManager(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
+void AudioManagerAndroid::Init() {
+  Java_AudioManagerAndroid_init(
+      base::android::AttachCurrentThread(),
+      j_audio_manager_.obj());
+}
+
+void AudioManagerAndroid::Close() {
+  Java_AudioManagerAndroid_close(
+      base::android::AttachCurrentThread(),
+      j_audio_manager_.obj());
+}
+
 void AudioManagerAndroid::SetAudioMode(int mode) {
   Java_AudioManagerAndroid_setMode(
       base::android::AttachCurrentThread(),
       j_audio_manager_.obj(), mode);
 }
 
-void AudioManagerAndroid::RegisterHeadsetReceiver() {
-  Java_AudioManagerAndroid_registerHeadsetReceiver(
-      base::android::AttachCurrentThread(),
-      j_audio_manager_.obj());
-}
+void AudioManagerAndroid::SetAudioDevice(const std::string& device_id) {
+  JNIEnv* env = AttachCurrentThread();
 
-void AudioManagerAndroid::UnregisterHeadsetReceiver() {
-  Java_AudioManagerAndroid_unregisterHeadsetReceiver(
-      base::android::AttachCurrentThread(),
-      j_audio_manager_.obj());
+  // Send the unique device ID to the Java audio manager and make the
+  // device switch. Provide an empty string to the Java audio manager
+  // if the default device is selected.
+  ScopedJavaLocalRef<jstring> j_device_id = ConvertUTF8ToJavaString(
+      env,
+      device_id == AudioManagerBase::kDefaultDeviceId ?
+          std::string() : device_id);
+  Java_AudioManagerAndroid_setDevice(
+      env, j_audio_manager_.obj(), j_device_id.obj());
 }
 
 int AudioManagerAndroid::GetNativeOutputSampleRate() {

@@ -60,9 +60,10 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
       const AudioParameters& input_params) OVERRIDE;
 
  private:
+  void Init();
+  void Close();
   void SetAudioMode(int mode);
-  void RegisterHeadsetReceiver();
-  void UnregisterHeadsetReceiver();
+  void SetAudioDevice(const std::string& device_id);
   int GetNativeOutputSampleRate();
   bool IsAudioLowLatencySupported();
   int GetAudioLowLatencyOutputFrameSize();
