@@ -1050,20 +1050,20 @@ private:
     void writeStringObject(v8::Handle<v8::Value> value)
     {
         v8::Handle<v8::StringObject> stringObject = value.As<v8::StringObject>();
-        v8::String::Utf8Value stringValue(stringObject->StringValue());
+        v8::String::Utf8Value stringValue(stringObject->ValueOf());
         m_writer.writeStringObject(*stringValue, stringValue.length());
     }
 
     void writeNumberObject(v8::Handle<v8::Value> value)
     {
         v8::Handle<v8::NumberObject> numberObject = value.As<v8::NumberObject>();
-        m_writer.writeNumberObject(numberObject->NumberValue());
+        m_writer.writeNumberObject(numberObject->ValueOf());
     }
 
     void writeBooleanObject(v8::Handle<v8::Value> value)
     {
         v8::Handle<v8::BooleanObject> booleanObject = value.As<v8::BooleanObject>();
-        m_writer.writeBooleanObject(booleanObject->BooleanValue());
+        m_writer.writeBooleanObject(booleanObject->ValueOf());
     }
 
     void writeBlob(v8::Handle<v8::Value> value)
@@ -1691,7 +1691,7 @@ private:
         double numberValue;
         if (!doReadNumber(&numberValue))
             return false;
-        *value = v8::Date::New(numberValue);
+        *value = v8DateOrNull(numberValue, m_isolate);
         return true;
     }
 
@@ -1709,7 +1709,7 @@ private:
         double number;
         if (!doReadNumber(&number))
             return false;
-        *value = v8::NumberObject::New(number);
+        *value = v8::NumberObject::New(m_isolate, number);
         return true;
     }
 
@@ -2028,14 +2028,14 @@ public:
 
     virtual bool newSparseArray(uint32_t)
     {
-        v8::Local<v8::Array> array = v8::Array::New(0);
+        v8::Local<v8::Array> array = v8::Array::New(m_reader.isolate(), 0);
         openComposite(array);
         return true;
     }
 
     virtual bool newDenseArray(uint32_t length)
     {
-        v8::Local<v8::Array> array = v8::Array::New(length);
+        v8::Local<v8::Array> array = v8::Array::New(m_reader.isolate(), length);
         openComposite(array);
         return true;
     }
@@ -2059,8 +2059,9 @@ public:
             if (!closeComposite(&composite))
                 return false;
             array = composite.As<v8::Array>();
-        } else
-            array = v8::Array::New(length);
+        } else {
+            array = v8::Array::New(m_reader.isolate(), length);
+        }
         if (array.IsEmpty())
             return false;
         const int depth = stackDepth() - length;
@@ -2104,8 +2105,9 @@ public:
             if (!closeComposite(&composite))
                 return false;
             array = composite.As<v8::Array>();
-        } else
-            array = v8::Array::New();
+        } else {
+            array = v8::Array::New(m_reader.isolate());
+        }
         if (array.IsEmpty())
             return false;
         return initializeObject(array, numProperties, value);
