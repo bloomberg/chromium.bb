@@ -66,26 +66,6 @@ bool GetSwitchValueAsInt(
   }
 }
 
-bool GetSwitchValueAsFloat(
-    const CommandLine& command_line,
-    const std::string& switch_string,
-    float min_value,
-    float max_value,
-    float* result) {
-  std::string string_value = command_line.GetSwitchValueASCII(switch_string);
-  double double_value;
-  if (base::StringToDouble(string_value, &double_value) &&
-      double_value >= min_value && double_value <= max_value) {
-    *result = static_cast<float>(double_value);
-    return true;
-  } else {
-    LOG(WARNING) << "Failed to parse switch " << switch_string  << ": " <<
-        string_value;
-    return false;
-  }
-}
-
-
 }  // namespace
 
 // static
@@ -242,15 +222,6 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
                             kMinRasterThreads, kMaxRasterThreads,
                             &num_raster_threads))
       settings.num_raster_threads = num_raster_threads;
-  }
-
-  if (cmd->HasSwitch(cc::switches::kLowResolutionContentsScaleFactor)) {
-    const int kMinScaleFactor = settings.minimum_contents_scale;
-    const int kMaxScaleFactor = 1;
-    GetSwitchValueAsFloat(*cmd,
-                          cc::switches::kLowResolutionContentsScaleFactor,
-                          kMinScaleFactor, kMaxScaleFactor,
-                          &settings.low_res_contents_scale_factor);
   }
 
   if (cmd->HasSwitch(cc::switches::kMaxTilesForInterestArea)) {

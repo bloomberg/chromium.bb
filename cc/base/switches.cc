@@ -67,10 +67,6 @@ const char kTraceOverdraw[] = "trace-overdraw";
 // complete, such as --slow-down-raster-scale-factor=25.
 const char kSlowDownRasterScaleFactor[] = "slow-down-raster-scale-factor";
 
-// The scale factor for low resolution tile contents.
-const char kLowResolutionContentsScaleFactor[] =
-    "low-resolution-contents-scale-factor";
-
 // Max tiles allowed for each tilings interest area.
 const char kMaxTilesForInterestArea[] = "max-tiles-for-interest-area";
 
