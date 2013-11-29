@@ -41,16 +41,9 @@ class SyncEngineContext;
 
 class RemoteToLocalSyncer : public SyncTask {
  public:
-  enum Priority {
-    PRIORITY_NORMAL = 1 << 0,
-    PRIORITY_LOW = 1 << 1,
-  };
-
-  // |priorities| must be a bitwise-or'd value of Priority.
   // Conflicting trackers will have low priority for RemoteToLocalSyncer so that
   // it should be resolved by LocatToRemoteSyncer.
-  RemoteToLocalSyncer(SyncEngineContext* sync_context,
-                      int priorities);
+  explicit RemoteToLocalSyncer(SyncEngineContext* sync_context);
   virtual ~RemoteToLocalSyncer();
 
   virtual void Run(const SyncStatusCallback& callback) OVERRIDE;
@@ -196,7 +189,6 @@ class RemoteToLocalSyncer : public SyncTask {
 
   SyncEngineContext* sync_context_;  // Not owned.
 
-  int priorities_;
   scoped_ptr<FileTracker> dirty_tracker_;
   scoped_ptr<FileMetadata> remote_metadata_;
 

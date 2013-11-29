@@ -73,10 +73,8 @@ scoped_ptr<FileMetadata> GetFileMetadata(MetadataDatabase* database,
 
 }  // namespace
 
-RemoteToLocalSyncer::RemoteToLocalSyncer(SyncEngineContext* sync_context,
-                                         int priorities)
+RemoteToLocalSyncer::RemoteToLocalSyncer(SyncEngineContext* sync_context)
     : sync_context_(sync_context),
-      priorities_(priorities),
       sync_action_(SYNC_ACTION_NONE),
       weak_ptr_factory_(this) {
 }
@@ -95,21 +93,11 @@ void RemoteToLocalSyncer::Run(const SyncStatusCallback& callback) {
       &RemoteToLocalSyncer::SyncCompleted, weak_ptr_factory_.GetWeakPtr(),
       callback);
 
-  if (priorities_ & PRIORITY_NORMAL) {
-    dirty_tracker_ = make_scoped_ptr(new FileTracker);
-    if (metadata_database()->GetNormalPriorityDirtyTracker(
-            dirty_tracker_.get())) {
-      ResolveRemoteChange(wrapped_callback);
-      return;
-    }
-  }
-
-  if (priorities_ & PRIORITY_LOW) {
-    dirty_tracker_ = make_scoped_ptr(new FileTracker);
-    if (metadata_database()->GetLowPriorityDirtyTracker(dirty_tracker_.get())) {
-      ResolveRemoteChange(wrapped_callback);
-      return;
-    }
+  dirty_tracker_ = make_scoped_ptr(new FileTracker);
+  if (metadata_database()->GetNormalPriorityDirtyTracker(
+          dirty_tracker_.get())) {
+    ResolveRemoteChange(wrapped_callback);
+    return;
   }
 
   base::MessageLoopProxy::current()->PostTask(

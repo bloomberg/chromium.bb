@@ -211,8 +211,7 @@ void SyncEngine::UninstallOrigin(
 
 void SyncEngine::ProcessRemoteChange(
     const SyncFileCallback& callback) {
-  RemoteToLocalSyncer* syncer = new RemoteToLocalSyncer(
-      this, RemoteToLocalSyncer::PRIORITY_NORMAL);
+  RemoteToLocalSyncer* syncer = new RemoteToLocalSyncer(this);
   task_manager_->ScheduleSyncTask(
       scoped_ptr<SyncTask>(syncer),
       base::Bind(&SyncEngine::DidProcessRemoteChange,
