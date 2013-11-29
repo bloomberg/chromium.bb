@@ -104,7 +104,7 @@ public:
     // sites are extremely verbose.
     PassRefPtr<StyleImage> styleImage(CSSPropertyID propertyId, CSSValue* value)
     {
-        return m_elementStyleResources.styleImage(document().textLinkColors(), style()->visitedDependentColor(CSSPropertyColor), propertyId, value);
+        return m_elementStyleResources.styleImage(document().textLinkColors(), style()->color(), propertyId, value);
     }
 
     FontBuilder& fontBuilder() { return m_fontBuilder; }

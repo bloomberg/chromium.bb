@@ -932,7 +932,7 @@ PassRefPtr<ShadowList> StyleBuilderConverter::convertShadow(StyleResolverState& 
         ShadowStyle shadowStyle = item->style && item->style->getValueID() == CSSValueInset ? Inset : Normal;
         Color color;
         if (item->color)
-            color = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->visitedDependentColor(CSSPropertyColor));
+            color = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->color());
         else
             color = state.style()->color();
 
@@ -1614,7 +1614,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         if (!primitiveValue)
             break;
 
-        Color col = state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->visitedDependentColor(CSSPropertyColor));
+        Color col = state.document().textLinkColors().colorFromPrimitiveValue(primitiveValue, state.style()->color());
         state.style()->setTapHighlightColor(col);
         return;
     }

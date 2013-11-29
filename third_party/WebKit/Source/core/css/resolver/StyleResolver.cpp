@@ -732,7 +732,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
 
     // FIXME: Shouldn't this be on RenderBody::styleDidChange?
     if (element->hasTagName(bodyTag))
-        document().textLinkColors().setTextColor(state.style()->visitedDependentColor(CSSPropertyColor));
+        document().textLinkColors().setTextColor(state.style()->color());
 
     setAnimationUpdateIfNeeded(state, *element);
 

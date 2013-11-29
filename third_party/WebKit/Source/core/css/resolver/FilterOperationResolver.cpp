@@ -487,7 +487,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const Re
             int blur = item->blur ? item->blur->computeLength<int>(style, rootStyle, zoomFactor) : 0;
             Color shadowColor;
             if (item->color)
-                shadowColor = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->visitedDependentColor(CSSPropertyColor));
+                shadowColor = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->color());
 
             operations.operations().append(DropShadowFilterOperation::create(location, blur, shadowColor.isValid() ? shadowColor : Color::transparent));
             break;

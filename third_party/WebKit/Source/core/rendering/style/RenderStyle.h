@@ -116,10 +116,15 @@ class RenderStyle: public RefCounted<RenderStyle> {
     friend class CSSComputedStyleDeclaration; // Ignores visited styles, so needs to be able to see unvisited info.
     friend class PropertyWrapperMaybeInvalidColor; // Used by CSS animations. We can't allow them to animate based off visited colors.
     friend class StyleBuilderFunctions; // Sets color styles
-    friend class StyleBuilderConverter; // Reads unvisited color style for shadow currentColor
-    friend class StyleBuilder; // FIXME: Revove this! StyleBuilder::oldApplyProperty reads color().
-    friend class StyleResolver; // Sets members directly.
     friend class CachedUAStyle; // Saves Border/Background information for later comparison.
+
+    // FIXME: When we stop resolving currentColor at style time, these can be removed.
+    friend class CSSToStyleMap;
+    friend class FilterOperationResolver;
+    friend class StyleBuilderConverter;
+    friend class StyleBuilder;
+    friend class StyleResolverState;
+    friend class StyleResolver;
 protected:
 
     // non-inherited attributes
