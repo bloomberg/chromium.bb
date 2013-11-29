@@ -48,7 +48,7 @@ void SyncProcessRunner::Schedule() {
     ScheduleInternal(kSyncDelayMaxInMilliseconds);
     return;
   }
-  switch (sync_service_->GetSyncServiceState()) {
+  switch (GetServiceState()) {
     case SYNC_SERVICE_RUNNING:
       if (pending_changes_ > kPendingChangeThresholdForFastSync)
         delay = kSyncDelayFastInMilliseconds;
@@ -87,6 +87,10 @@ void SyncProcessRunner::OnChangesUpdated(
   }
   pending_changes_ = pending_changes;
   Schedule();
+}
+
+SyncServiceState SyncProcessRunner::GetServiceState() {
+  return sync_service()->GetSyncServiceState();
 }
 
 void SyncProcessRunner::Finished(SyncStatusCode status) {
