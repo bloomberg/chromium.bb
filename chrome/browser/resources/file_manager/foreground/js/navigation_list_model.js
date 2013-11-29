@@ -336,5 +336,7 @@ NavigationListModel.prototype.onItemNotFoundError = function(modelItem) {
  * @return {boolean} True if the drive is mounted, false otherwise.
  */
 NavigationListModel.prototype.isDriveMounted = function() {
-  return !!this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE);
+  var volumeInfo =
+      this.volumeManager_.getCurrentProfileVolumeInfo(RootType.DRIVE);
+  return !!volumeInfo && volumeInfo.root;
 };
