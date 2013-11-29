@@ -558,6 +558,38 @@ EVENT_TYPE(SOCKET_WRITE_ERROR)
 //  }
 EVENT_TYPE(SSL_CERTIFICATES_RECEIVED)
 
+// Signed Certificate Timestamps were received from the server.
+// The following parameters are attached to the event:
+// {
+//    "embedded_scts": Base64-encoded SignedCertificateTimestampList,
+//    "scts_from_ocsp_response": Base64-encoded SignedCertificateTimestampList,
+//    "scts_from_tls_extension": Base64-encoded SignedCertificateTimestampList,
+// }
+//
+// The SignedCertificateTimestampList is defined in RFC6962 and is exactly as
+// received from the server.
+EVENT_TYPE(SIGNED_CERTIFICATE_TIMESTAMPS_RECEIVED)
+
+// Signed Certificate Timestamps were checked.
+// The following parameters are attached to the event:
+// {
+//    "verified_scts": <A list of SCTs>,
+//    "invalid_scts": <A list of SCTs>,
+//    "scts_from_unknown_logs": <A list of SCTs>,
+// }
+//
+// Where each SCT is an object:
+// {
+//    "origin": <one of: "embedded_in_certificate", "tls_extension", "ocsp">,
+//    "version": <numeric version>,
+//    "log_id": <base64-encoded log id>,
+//    "timestamp": <numeric timestamp in milliseconds since the Unix epoch>,
+//    "hash_algorithm": <name of the hash algorithm>,
+//    "signature_algorithm": <name of the signature algorithm>,
+//    "signature_data": <base64-encoded signature bytes>,
+// }
+EVENT_TYPE(SIGNED_CERTIFICATE_TIMESTAMPS_CHECKED)
+
 // ------------------------------------------------------------------------
 // DatagramSocket
 // ------------------------------------------------------------------------

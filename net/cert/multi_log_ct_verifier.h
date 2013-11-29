@@ -38,7 +38,8 @@ class NET_EXPORT MultiLogCTVerifier : public CTVerifier {
   virtual int Verify(X509Certificate* cert,
                      const std::string& sct_list_from_ocsp,
                      const std::string& sct_list_from_tls_extension,
-                     ct::CTVerifyResult* result) OVERRIDE;
+                     ct::CTVerifyResult* result,
+                     const BoundNetLog& net_log) OVERRIDE;
 
  private:
   // Mapping from a log's ID to the verifier for this log.

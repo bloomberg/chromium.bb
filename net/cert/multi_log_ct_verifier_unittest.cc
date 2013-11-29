@@ -8,7 +8,9 @@
 
 #include "base/file_util.h"
 #include "base/files/file_path.h"
+#include "net/base/capturing_net_log.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_serialization.h"
@@ -53,12 +55,36 @@ class MultiLogCTVerifierTest : public ::testing::Test {
         (result.verified_scts[0]->origin == origin);
   }
 
+  bool CheckForEmbeddedSCTInNetLog(CapturingNetLog& net_log) {
+    CapturingNetLog::CapturedEntryList entries;
+    net_log.GetEntries(&entries);
+    if (entries.size() != 2)
+      return false;
+
+    const CapturingNetLog::CapturedEntry& received(entries[0]);
+    std::string embedded_scts;
+    if (!received.GetStringValue("embedded_scts", &embedded_scts))
+      return false;
+    if (embedded_scts.empty())
+      return false;
+
+    //XXX(eranm): entries[1] is the NetLog message with the checked SCTs.
+    //When CapturedEntry has methods to get a dictionary, rather than just
+    //a string, add more checks here.
+
+    return true;
+  }
+
   bool CheckPrecertificateVerification(scoped_refptr<X509Certificate> chain) {
     ct::CTVerifyResult result;
-    return (verifier_->Verify(chain, "", "", &result) == OK) &&
+    CapturingNetLog net_log;
+    BoundNetLog bound_net_log =
+      BoundNetLog::Make(&net_log, NetLog::SOURCE_CONNECT_JOB);
+    return (verifier_->Verify(chain, "", "", &result, bound_net_log) == OK) &&
         CheckForSingleVerifiedSCTInResult(result) &&
         CheckForSCTOrigin(
-            result, ct::SignedCertificateTimestamp::SCT_EMBEDDED);
+            result, ct::SignedCertificateTimestamp::SCT_EMBEDDED) &&
+        CheckForEmbeddedSCTInNetLog(net_log);
   }
 
  protected:
@@ -111,7 +137,8 @@ TEST_F(MultiLogCTVerifierTest,
   ASSERT_TRUE(ct::EncodeSCTListForTesting(sct, &sct_list));
 
   ct::CTVerifyResult result;
-  EXPECT_EQ(OK, verifier_->Verify(chain_, "", sct_list, &result));
+  EXPECT_EQ(OK,
+      verifier_->Verify(chain_, "", sct_list, &result, BoundNetLog()));
   ASSERT_TRUE(CheckForSingleVerifiedSCTInResult(result));
   ASSERT_TRUE(CheckForSCTOrigin(
       result, ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION));
@@ -129,7 +156,8 @@ TEST_F(MultiLogCTVerifierTest,
   ASSERT_TRUE(ct::EncodeSCTListForTesting(sct, &sct_list));
 
   ct::CTVerifyResult result;
-  EXPECT_NE(OK, verifier_->Verify(chain_, sct_list, "", &result));
+  EXPECT_NE(OK,
+      verifier_->Verify(chain_, sct_list, "", &result, BoundNetLog()));
   EXPECT_EQ(1U, result.unknown_logs_scts.size());
 }
 

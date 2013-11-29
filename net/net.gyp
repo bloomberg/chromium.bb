@@ -281,6 +281,8 @@
         'cert/ct_objects_extractor_openssl.cc',
         'cert/ct_serialization.cc',
         'cert/ct_serialization.h',
+        'cert/ct_signed_certificate_timestamp_log_param.cc',
+        'cert/ct_signed_certificate_timestamp_log_param.h',
         'cert/ct_verifier.h',
         'cert/ct_verify_result.cc',
         'cert/ct_verify_result.h',

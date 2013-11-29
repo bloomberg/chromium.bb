@@ -13,6 +13,7 @@ namespace ct {
 struct CTVerifyResult;
 }  // namespace ct
 
+class BoundNetLog;
 class X509Certificate;
 
 // Interface for verifying Signed Certificate Timestamps over a certificate.
@@ -27,8 +28,8 @@ class NET_EXPORT CTVerifier {
   virtual int Verify(X509Certificate* cert,
                      const std::string& sct_list_from_ocsp,
                      const std::string& sct_list_from_tls_extension,
-                     ct::CTVerifyResult* result) = 0;
-
+                     ct::CTVerifyResult* result,
+                     const BoundNetLog& net_log) = 0;
 };
 
 }  // namespace net

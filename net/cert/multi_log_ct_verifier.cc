@@ -4,10 +4,14 @@
 
 #include "net/cert/multi_log_ct_verifier.h"
 
+#include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "net/base/net_errors.h"
+#include "net/base/net_log.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_objects_extractor.h"
 #include "net/cert/ct_serialization.h"
+#include "net/cert/ct_signed_certificate_timestamp_log_param.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/cert/x509_certificate.h"
 
@@ -30,7 +34,8 @@ int MultiLogCTVerifier::Verify(
     X509Certificate* cert,
     const std::string& sct_list_from_ocsp,
     const std::string& sct_list_from_tls_extension,
-    ct::CTVerifyResult* result)  {
+    ct::CTVerifyResult* result,
+    const BoundNetLog& net_log)  {
   DCHECK(cert);
   DCHECK(result);
 
@@ -59,6 +64,16 @@ int MultiLogCTVerifier::Verify(
             result);
   }
 
+  // Log to Net Log, after extracting embedded SCTs but before
+  // possibly failing on X.509 entry creation.
+  NetLog::ParametersCallback net_log_callback =
+      base::Bind(&NetLogRawSignedCertificateTimestampCallback,
+          &embedded_scts, &sct_list_from_ocsp, &sct_list_from_tls_extension);
+
+  net_log.AddEvent(
+      NetLog::TYPE_SIGNED_CERTIFICATE_TIMESTAMPS_RECEIVED,
+      net_log_callback);
+
   ct::LogEntry x509_entry;
   if (ct::GetX509LogEntry(cert->os_cert_handle(), &x509_entry)) {
     has_verified_scts |= VerifySCTs(
@@ -73,6 +88,13 @@ int MultiLogCTVerifier::Verify(
         ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION,
         result);
   }
+
+  NetLog::ParametersCallback net_log_checked_callback =
+      base::Bind(&NetLogSignedCertificateTimestampCallback, result);
+
+  net_log.AddEvent(
+      NetLog::TYPE_SIGNED_CERTIFICATE_TIMESTAMPS_CHECKED,
+      net_log_checked_callback);
 
   if (has_verified_scts)
     return OK;

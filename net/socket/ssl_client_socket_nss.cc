@@ -3515,7 +3515,8 @@ void SSLClientSocketNSS::VerifyCT() {
       server_cert_verify_result_.verified_cert,
       std::string(), // SCT list from OCSP response
       std::string(),  // SCT list from TLS extension
-      &ct_verify_result_);
+      &ct_verify_result_,
+      net_log_);
 
   VLOG(1) << "CT Verification complete: result " << result
           << " Invalid scts: " << ct_verify_result_.invalid_scts.size()
