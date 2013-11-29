@@ -132,6 +132,12 @@ create_tmpfile_cloexec(char *tmpname)
  * The file is suitable for buffer sharing between processes by
  * transmitting the file descriptor over Unix sockets using the
  * SCM_RIGHTS methods.
+ *
+ * If the C library implements posix_fallocate(), it is used to
+ * guarantee that disk space is available for the file at the
+ * given size. If disk space is insufficent, errno is set to ENOSPC.
+ * If posix_fallocate() is not supported, program may receive
+ * SIGBUS on accessing mmap()'ed file contents instead.
  */
 int
 os_create_anonymous_file(off_t size)
@@ -140,6 +146,7 @@ os_create_anonymous_file(off_t size)
 	const char *path;
 	char *name;
 	int fd;
+	int ret;
 
 	path = getenv("XDG_RUNTIME_DIR");
 	if (!path) {
@@ -161,10 +168,20 @@ os_create_anonymous_file(off_t size)
 	if (fd < 0)
 		return -1;
 
-	if (ftruncate(fd, size) < 0) {
+#ifdef HAVE_POSIX_FALLOCATE
+	ret = posix_fallocate(fd, 0, size);
+	if (ret != 0) {
+		close(fd);
+		errno = ret;
+		return -1;
+	}
+#else
+	ret = ftruncate(fd, size);
+	if (ret < 0) {
 		close(fd);
 		return -1;
 	}
+#endif
 
 	return fd;
 }
