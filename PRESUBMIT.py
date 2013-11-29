@@ -863,6 +863,23 @@ def _CheckSpamLogging(input_api, output_api):
   return []
 
 
+def _CheckCygwinShell(input_api, output_api):
+  source_file_filter = lambda x: input_api.FilterSourceFile(
+      x, white_list=(r'.+\.(gyp|gypi)$',))
+  cygwin_shell = []
+
+  for f in input_api.AffectedSourceFiles(source_file_filter):
+    for linenum, line in f.ChangedContents():
+      if 'msvs_cygwin_shell' in line:
+        cygwin_shell.append(f.LocalPath())
+        break
+
+  if cygwin_shell:
+    return [output_api.PresubmitError(
+      'These files should not use msvs_cygwin_shell (the default is 0):',
+      items=cygwin_shell)]
+  return []
+
 
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
@@ -895,6 +912,7 @@ def _CommonChecks(input_api, output_api):
           output_api,
           source_file_filter=lambda x: x.LocalPath().endswith('.grd')))
   results.extend(_CheckSpamLogging(input_api, output_api))
+  results.extend(_CheckCygwinShell(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(
