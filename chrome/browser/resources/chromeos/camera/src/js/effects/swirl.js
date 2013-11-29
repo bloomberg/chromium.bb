@@ -37,7 +37,7 @@ camera.effects.Swirl.prototype.filterFrame = function(canvas) {
   var y = canvas.height * face.y;
   var radius = Math.sqrt(Math.pow(face.width * canvas.width, 2) +
                          Math.pow(face.height * canvas.height, 2));
-  canvas.swirl(x, y, radius, face.confidence * 2.0);
+  canvas.swirl(x, y, radius, 1.5 * Math.sin(Date.now() / 300));
 };
 
 /**
