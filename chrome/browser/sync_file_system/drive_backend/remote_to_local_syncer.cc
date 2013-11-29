@@ -256,7 +256,6 @@ void RemoteToLocalSyncer::DidGetRemoteMetadata(
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
   metadata_database()->UpdateByFileResource(
-      change_id,
       *drive::util::ConvertResourceEntryToFileResource(*entry),
       base::Bind(&RemoteToLocalSyncer::DidUpdateDatabaseForRemoteMetadata,
                  weak_ptr_factory_.GetWeakPtr(), callback));

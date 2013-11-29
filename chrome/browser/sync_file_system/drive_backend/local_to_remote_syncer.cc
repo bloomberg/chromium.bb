@@ -388,17 +388,14 @@ void LocalToRemoteSyncer::UpdateRemoteMetadata(
       remote_file_tracker_->file_id(),
       base::Bind(&LocalToRemoteSyncer::DidGetRemoteMetadata,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback,
-                 metadata_database()->GetLargestKnownChangeID()));
+                 callback));
 }
 
 void LocalToRemoteSyncer::DidGetRemoteMetadata(
     const SyncStatusCallback& callback,
-    int64 change_id,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
   metadata_database()->UpdateByFileResource(
-      change_id,
       *drive::util::ConvertResourceEntryToFileResource(*entry),
       base::Bind(&DidUpdateDatabase, callback));
 }
@@ -446,14 +443,12 @@ void LocalToRemoteSyncer::UploadNewFile(const SyncStatusCallback& callback) {
       GetMimeTypeFromTitle(title),
       base::Bind(&LocalToRemoteSyncer::DidUploadNewFile,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback,
-                 metadata_database()->GetLargestKnownChangeID()),
+                 callback),
       google_apis::ProgressCallback());
 }
 
 void LocalToRemoteSyncer::DidUploadNewFile(
     const SyncStatusCallback& callback,
-    int64 change_id,
     google_apis::GDataErrorCode error,
     const GURL& upload_location,
     scoped_ptr<google_apis::ResourceEntry> entry) {
@@ -466,7 +461,6 @@ void LocalToRemoteSyncer::DidUploadNewFile(
   // TODO(tzik): Add a function to update both FileMetadata and FileTracker to
   // MetadataDatabase.
   metadata_database()->UpdateByFileResource(
-      change_id,
       *drive::util::ConvertResourceEntryToFileResource(*entry),
       base::Bind(&LocalToRemoteSyncer::DidUpdateDatabaseForUpload,
                  weak_ptr_factory_.GetWeakPtr(),

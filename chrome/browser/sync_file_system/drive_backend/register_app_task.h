@@ -38,7 +38,6 @@ class RegisterAppTask : public SyncTask {
  private:
   void CreateAppRootFolder(const SyncStatusCallback& callback);
   void DidCreateAppRootFolder(const SyncStatusCallback& callback,
-                              int64 change_id,
                               google_apis::GDataErrorCode error,
                               scoped_ptr<google_apis::ResourceEntry> entry);
   void DidUpdateDatabase(const SyncStatusCallback& callback,

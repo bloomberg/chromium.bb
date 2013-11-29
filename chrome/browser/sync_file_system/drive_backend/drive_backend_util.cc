@@ -112,6 +112,18 @@ scoped_ptr<FileMetadata> CreateFileMetadataFromChangeResource(
   return file.Pass();
 }
 
+scoped_ptr<FileMetadata> CreateDeletedFileMetadata(
+    int64 change_id,
+    const std::string& file_id) {
+  scoped_ptr<FileMetadata> file(new FileMetadata);
+  file->set_file_id(file_id);
+
+  FileDetails* details = file->mutable_details();
+  details->set_change_id(change_id);
+  details->set_missing(true);
+  return file.Pass();
+}
+
 webkit_blob::ScopedFile CreateTemporaryFile() {
   base::FilePath temp_file_path;
   if (!file_util::CreateTemporaryFile(&temp_file_path))

@@ -87,13 +87,11 @@ void RegisterAppTask::CreateAppRootFolder(const SyncStatusCallback& callback) {
       app_id_,
       base::Bind(&RegisterAppTask::DidCreateAppRootFolder,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback,
-                 metadata_database()->GetLargestKnownChangeID()));
+                 callback));
 }
 
 void RegisterAppTask::DidCreateAppRootFolder(
     const SyncStatusCallback& callback,
-    int64 change_id,
     google_apis::GDataErrorCode error,
     scoped_ptr<google_apis::ResourceEntry> entry) {
   if (error != google_apis::HTTP_SUCCESS &&
@@ -106,7 +104,6 @@ void RegisterAppTask::DidCreateAppRootFolder(
   scoped_ptr<google_apis::FileResource> resource(
       drive::util::ConvertResourceEntryToFileResource(*entry));
   metadata_database()->UpdateByFileResource(
-      change_id,
       *resource,
       base::Bind(&RegisterAppTask::DidUpdateDatabase,
                  weak_ptr_factory_.GetWeakPtr(),

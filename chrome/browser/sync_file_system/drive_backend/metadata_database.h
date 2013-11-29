@@ -231,6 +231,9 @@ class MetadataDatabase {
                                  FileTracker* tracker,
                                  base::FilePath* path) const;
 
+  void UpdateByFileMetadata(scoped_ptr<FileMetadata> file,
+                            leveldb::WriteBatch* batch);
+
   // Updates database by |changes|.
   // Marks each tracker for modified file as dirty and adds new trackers if
   // needed.
@@ -238,13 +241,14 @@ class MetadataDatabase {
                           ScopedVector<google_apis::ChangeResource> changes,
                           const SyncStatusCallback& callback);
 
-  // TODO(tzik): Drop |chaneg_id| paramater.
   // Updates database by |resource|.
   // Marks each tracker for modified file as dirty and adds new trackers if
   // needed.
-  void UpdateByFileResource(int64 change_id,
-                            const google_apis::FileResource& resource,
+  void UpdateByFileResource(const google_apis::FileResource& resource,
                             const SyncStatusCallback& callback);
+
+  void UpdateByDeletedRemoteFile(const std::string& file_id,
+                                 const SyncStatusCallback& callback);
 
   // TODO(tzik): Drop |change_id| parameter.
   // Adds new FileTracker and FileMetadata.  The database must not have

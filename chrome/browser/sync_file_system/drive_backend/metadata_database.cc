@@ -792,6 +792,35 @@ bool MetadataDatabase::FindNearestActiveAncestor(
   return true;
 }
 
+void MetadataDatabase::UpdateByFileMetadata(scoped_ptr<FileMetadata> file,
+                                            leveldb::WriteBatch* batch) {
+  DCHECK(file);
+  DCHECK(file->has_details());
+  std::string file_id = file->file_id();
+  if (file->details().missing()) {
+    TrackerSet trackers;
+    FindTrackersByFileID(file_id, &trackers);
+    for (TrackerSet::const_iterator itr = trackers.begin();
+         itr != trackers.end(); ++itr) {
+      const FileTracker& tracker = **itr;
+      if (!tracker.has_synced_details() ||
+          tracker.synced_details().missing()) {
+        RemoveTracker(tracker.tracker_id(), batch);
+      }
+    }
+  } else {
+    MaybeAddTrackersForNewFile(*file, batch);
+  }
+
+  if (FindTrackersByFileID(file_id, NULL)) {
+    MarkTrackersDirtyByFileID(file_id, batch);
+    PutFileToBatch(*file, batch);
+    FileMetadata* file_ptr = file.release();
+    std::swap(file_ptr, file_by_id_[file_id]);
+    delete file_ptr;
+  }
+}
+
 void MetadataDatabase::UpdateByChangeList(
     int64 largest_change_id,
     ScopedVector<google_apis::ChangeResource> changes,
@@ -810,20 +839,7 @@ void MetadataDatabase::UpdateByChangeList(
 
     scoped_ptr<FileMetadata> file(
         CreateFileMetadataFromChangeResource(change));
-    std::string file_id = file->file_id();
-
-    MarkTrackersDirtyByFileID(file_id, batch.get());
-    if (!file->details().missing())
-      MaybeAddTrackersForNewFile(*file, batch.get());
-
-    if (FindTrackersByFileID(file_id, NULL)) {
-      PutFileToBatch(*file, batch.get());
-
-      // Set |file| to |file_by_id_[file_id]| and delete old value.
-      FileMetadata* file_ptr = file.release();
-      std::swap(file_ptr, file_by_id_[file_id]);
-      delete file_ptr;
-    }
+    UpdateByFileMetadata(file.Pass(), batch.get());
   }
 
   UpdateLargestKnownChangeID(largest_change_id);
@@ -833,34 +849,24 @@ void MetadataDatabase::UpdateByChangeList(
 }
 
 void MetadataDatabase::UpdateByFileResource(
-    int64 change_id,
     const google_apis::FileResource& resource,
     const SyncStatusCallback& callback) {
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
 
   scoped_ptr<FileMetadata> file(
-      CreateFileMetadataFromFileResource(change_id, resource));
-  std::string file_id = file->file_id();
-  if (HasNewerFileMetadata(file_id, change_id)) {
-    callback.Run(SYNC_STATUS_OK);
-    return;
-  }
+      CreateFileMetadataFromFileResource(
+          GetLargestKnownChangeID(), resource));
+  UpdateByFileMetadata(file.Pass(), batch.get());
+  WriteToDatabase(batch.Pass(), callback);
+}
 
-  // TODO(tzik): Consolidate with UpdateByChangeList.
-  MarkTrackersDirtyByFileID(file_id, batch.get());
-  if (!file->details().missing()) {
-    MaybeAddTrackersForNewFile(*file, batch.get());
-
-    if (FindTrackersByFileID(file_id, NULL)) {
-      PutFileToBatch(*file, batch.get());
-
-      // Set |file| to |file_by_id_[file_id]| and delete old value.
-      FileMetadata* file_ptr = file.release();
-      std::swap(file_ptr, file_by_id_[file_id]);
-      delete file_ptr;
-    }
-  }
-
+void MetadataDatabase::UpdateByDeletedRemoteFile(
+    const std::string& file_id,
+    const SyncStatusCallback& callback) {
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  scoped_ptr<FileMetadata> file(
+      CreateDeletedFileMetadata(GetLargestKnownChangeID(), file_id));
+  UpdateByFileMetadata(file.Pass(), batch.get());
   WriteToDatabase(batch.Pass(), callback);
 }
 
