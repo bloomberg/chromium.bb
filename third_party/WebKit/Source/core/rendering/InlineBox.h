@@ -101,7 +101,6 @@ public:
     void* operator new(size_t);
     void operator delete(void*);
 
-public:
 #ifndef NDEBUG
     void showTreeForThis() const;
     void showLineTreeForThis() const;
@@ -295,13 +294,6 @@ public:
     bool dirOverride() const { return m_bitfields.dirOverride(); }
     void setDirOverride(bool dirOverride) { m_bitfields.setDirOverride(dirOverride); }
 
-private:
-    InlineBox* m_next; // The next element on the same line as us.
-    InlineBox* m_prev; // The previous element on the same line as us.
-
-    InlineFlowBox* m_parent; // The box that contains us.
-
-public:
 #define ADD_BOOLEAN_BITFIELD(name, Name) \
     private:\
     unsigned m_##name : 1;\
@@ -379,6 +371,12 @@ public:
         void setExpansion(signed expansion) { m_expansion = expansion; }
     };
 #undef ADD_BOOLEAN_BITFIELD
+
+private:
+    InlineBox* m_next; // The next element on the same line as us.
+    InlineBox* m_prev; // The previous element on the same line as us.
+
+    InlineFlowBox* m_parent; // The box that contains us.
 
 protected:
     // For RootInlineBox
