@@ -154,7 +154,7 @@ crbug.com/229207 [ Win ] fast/forms/select/popup-closes-on-blur.html [ Failure ]
 crbug.com/321607 [ Win Debug ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 
 # ThemePainter-related diffs, could rebaseline them or implement the clipping/transform code.
-#crbug.com/229207 [ Win ] fast/forms/placeholder-position.html [ ImageOnlyFailure ]
+crbug.com/229207 [ Win ] fast/forms/placeholder-position.html [ ImageOnlyFailure ]
 crbug.com/229207 [ Win ] fast/hidpi/resize-corner-hidpi.html [ ImageOnlyFailure ]
 crbug.com/229207 [ Win ] fast/transforms/transformed-focused-text-input.html [ ImageOnlyFailure ]
 crbug.com/229207 [ Win ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure ]
@@ -166,7 +166,7 @@ crbug.com/229207 [ Win ] fast/forms/range/input-appearance-range.html [ ImageOnl
 crbug.com/229207 [ Win ] ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm [ ImageOnlyFailure ]
 
 # Aura-specific minor border-radius diffs.
-#crbug.com/229207 [ Win ] fast/forms/select/menulist-appearance-basic.html [ NeedsManualRebaseline ]
+crbug.com/229207 [ Win ] fast/forms/select/menulist-appearance-basic.html [ NeedsManualRebaseline ]
 crbug.com/229207 [ Win ] fast/forms/basic-selects.html [ NeedsManualRebaseline ]
 
 # Untriaged pixel diffs, unclear if aura-related?
@@ -234,7 +234,7 @@ crbug.com/318980 [ Linux ] svg/W3C-SVG-1.1/text-tselect-02-f.svg [ Pass ]
 # Untriaged Linux-specific Aura failures
 
 # Probably just needs new baseline, but image_diff is failing - investigate that.
-#crbug.com/318980 [ Linux x86 ] fast/text/international/hindi-spacing.html [ ImageOnlyFailure ]
+crbug.com/318980 [ Linux x86 ] fast/text/international/hindi-spacing.html [ ImageOnlyFailure ]
 
 # Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
 crbug.com/14885 [ Mac Debug ] fast/js/JSON-stringify.html [ Failure ]
@@ -298,12 +298,6 @@ crbug.com/248938 [ Win ] virtual/threaded/transitions/cubic-bezier-overflow-tran
 crbug.com/248938 [ Win ] virtual/threaded/animations/keyframe-timing-functions-transform.html [ Pass Timeout ]
 
 crbug.com/320477 [ Debug ] inspector/debugger/debugger-pause-in-internal.html [ Pass Crash ]
-
-# Subpixel font scaling.
-crbug.com/290411 fast/forms/placeholder-position.html [ NeedsManualRebaseline ]
-crbug.com/290411 fast/forms/select/menulist-appearance-basic.html [ NeedsManualRebaseline ]
-crbug.com/290411 fast/text/international/hindi-spacing.html [ NeedsManualRebaseline ]
-crbug.com/290411 svg/custom/js-late-clipPath-and-object-creation.svg [ NeedsManualRebaseline ]
 
 # Not yet supported on Win/Mac. See bug for details.
 crbug.com/290411 [ Win Mac ] fast/text/sub-pixel/text-scaling-ltr.html [ Skip ]
@@ -503,7 +497,7 @@ crbug.com/304993 fast/regions/auto-size/autoheight-regions-mark.html [ Failure P
 
 # This test is flaky on all platforms, and has image failures most of the time on
 # WebKit Win7 (dbg)
-#crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ ImageOnlyFailure Pass ]
+crbug.com/302529 svg/custom/js-late-clipPath-and-object-creation.svg [ ImageOnlyFailure Pass ]
 
 crbug.com/303444 virtual/legacy-animations-engine/animations/interpolation/webkit-column-count-interpolation.html [ Timeout ]
 crbug.com/303444 virtual/legacy-animations-engine/animations/unsigned-underflow.html [ Timeout ]
