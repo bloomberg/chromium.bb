@@ -74,11 +74,6 @@ bool FindTrackerByParentAndFileIDForUpload(MetadataDatabase* metadata_database,
   return true;
 }
 
-bool CanReuseRemoteFolder() {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 }  // namespace
 
 LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
@@ -239,8 +234,24 @@ void LocalToRemoteSyncer::HandleConflict(const SyncStatusCallback& callback) {
 
   DCHECK(local_change_.IsDirectory());
   // Check if we can reuse the remote folder.
-  if (CanReuseRemoteFolder()) {
-    callback.Run(SYNC_STATUS_OK);
+  FileMetadata remote_file_metadata;
+  bool should_success = metadata_database()->FindFileByFileID(
+      remote_file_tracker_->file_id(), &remote_file_metadata);
+  if (!should_success) {
+    NOTREACHED();
+    CreateRemoteFolder(callback);
+    return;
+  }
+
+  const FileDetails& remote_details = remote_file_metadata.details();
+  base::FilePath title = fileapi::VirtualPath::BaseName(target_path_);
+  if (!remote_details.missing() &&
+      remote_details.file_kind() == FILE_KIND_FOLDER &&
+      remote_details.title() == title.AsUTF8Unsafe() &&
+      HasFileAsParent(remote_details,
+                      remote_parent_folder_tracker_->file_id())) {
+    metadata_database()->UpdateTracker(
+        remote_file_tracker_->tracker_id(), remote_details, callback);
     return;
   }
 
