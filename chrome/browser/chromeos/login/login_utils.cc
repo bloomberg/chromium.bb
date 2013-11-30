@@ -419,7 +419,7 @@ void LoginUtilsImpl::DelegateDeleted(LoginUtils::Delegate* delegate) {
 }
 
 void LoginUtilsImpl::InitProfilePreferences(Profile* user_profile,
-    const std::string& email) {
+                                            const std::string& user_id) {
   if (UserManager::Get()->IsCurrentUserNew())
     SetFirstLoginPrefs(user_profile->GetPrefs());
 
@@ -443,8 +443,7 @@ void LoginUtilsImpl::InitProfilePreferences(Profile* user_profile,
     StringPrefMember google_services_username;
     google_services_username.Init(prefs::kGoogleServicesUsername,
                                   user_profile->GetPrefs());
-    const User* user = UserManager::Get()->FindUser(email);
-    google_services_username.SetValue(user ? user->display_email() : email);
+    google_services_username.SetValue(user_id);
   }
 }
 
@@ -489,14 +488,14 @@ void LoginUtilsImpl::InitSessionRestoreStrategy() {
 
 
 void LoginUtilsImpl::OnProfileCreated(
-    const std::string& email,
+    const std::string& user_id,
     Profile* user_profile,
     Profile::CreateStatus status) {
   CHECK(user_profile);
 
   switch (status) {
     case Profile::CREATE_STATUS_CREATED:
-      InitProfilePreferences(user_profile, email);
+      InitProfilePreferences(user_profile, user_id);
       break;
     case Profile::CREATE_STATUS_INITIALIZED:
       UserProfileInitialized(user_profile);
