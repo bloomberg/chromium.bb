@@ -160,18 +160,19 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   void OnPlayerPlay(int player_id);
   void OnPlayerPause(int player_id);
   void OnRequestFullscreen(int player_id);
-  void OnKeyAdded(int media_keys_id, uint32 reference_id);
-  void OnKeyError(int media_keys_id,
-                  uint32 reference_id,
-                  media::MediaKeys::KeyError error_code,
-                  int system_code);
-  void OnKeyMessage(int media_keys_id,
-                    uint32 reference_id,
-                    const std::vector<uint8>& message,
-                    const std::string& destination_url);
-  void OnSetSessionId(int media_keys_id,
+  void OnSessionCreated(int media_keys_id,
+                        uint32 reference_id,
+                        const std::string& session_id);
+  void OnSessionMessage(int media_keys_id,
+                        uint32 reference_id,
+                        const std::vector<uint8>& message,
+                        const std::string& destination_url);
+  void OnSessionReady(int media_keys_id, uint32 reference_id);
+  void OnSessionClosed(int media_keys_id, uint32 reference_id);
+  void OnSessionError(int media_keys_id,
                       uint32 reference_id,
-                      const std::string& session_id);
+                      media::MediaKeys::KeyError error_code,
+                      int system_code);
 
   // Info for all available WebMediaPlayerAndroid on a page; kept so that
   // we can enumerate them to send updates about tab focus and visibility.

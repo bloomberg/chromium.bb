@@ -117,7 +117,7 @@ bool ProxyDecryptor::GenerateKeyRequest(const std::string& type,
                                         int init_data_length) {
   // Use a unique reference id for this request.
   uint32 reference_id = next_reference_id_++;
-  if (!media_keys_->GenerateKeyRequest(
+  if (!media_keys_->CreateSession(
            reference_id, type, init_data, init_data_length)) {
     media_keys_.reset();
     return false;
@@ -161,13 +161,12 @@ void ProxyDecryptor::AddKey(const uint8* key,
     std::string jwk =
         media::GenerateJWKSet(key, key_length, init_data, init_data_length);
     DCHECK(!jwk.empty());
-    media_keys_->AddKey(reference_id,
-                        reinterpret_cast<const uint8*>(jwk.data()), jwk.size(),
-                        NULL, 0);
+    media_keys_->UpdateSession(
+        reference_id, reinterpret_cast<const uint8*>(jwk.data()), jwk.size());
     return;
   }
 
-  media_keys_->AddKey(reference_id, key, key_length, NULL, 0);
+  media_keys_->UpdateSession(reference_id, key, key_length);
 }
 
 void ProxyDecryptor::CancelKeyRequest(const std::string& session_id) {
@@ -181,7 +180,7 @@ void ProxyDecryptor::CancelKeyRequest(const std::string& session_id) {
         std::string(), media::MediaKeys::kUnknownError, 0);
   }
   else {
-    media_keys_->CancelKeyRequest(reference_id);
+    media_keys_->ReleaseSession(reference_id);
   }
 }
 
@@ -200,39 +199,49 @@ scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
       media_keys_id_,
       frame_url,
 #endif  // defined(ENABLE_PEPPER_CDMS)
-      base::Bind(&ProxyDecryptor::KeyAdded, weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ProxyDecryptor::KeyError, weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ProxyDecryptor::KeyMessage, weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ProxyDecryptor::SetSessionId,
+      base::Bind(&ProxyDecryptor::OnSessionCreated,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ProxyDecryptor::OnSessionMessage,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ProxyDecryptor::OnSessionReady,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ProxyDecryptor::OnSessionClosed,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ProxyDecryptor::OnSessionError,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ProxyDecryptor::KeyAdded(uint32 reference_id) {
-  // Assumes that SetSessionId() has been called before this.
-  key_added_cb_.Run(LookupSessionId(reference_id));
-}
-
-void ProxyDecryptor::KeyError(uint32 reference_id,
-                              media::MediaKeys::KeyError error_code,
-                              int system_code) {
-  // Assumes that SetSessionId() has been called before this.
-  key_error_cb_.Run(LookupSessionId(reference_id), error_code, system_code);
-}
-
-void ProxyDecryptor::KeyMessage(uint32 reference_id,
-                                const std::vector<uint8>& message,
-                                const std::string& default_url) {
-  // Assumes that SetSessionId() has been called before this.
-  key_message_cb_.Run(LookupSessionId(reference_id), message, default_url);
-}
-
-void ProxyDecryptor::SetSessionId(uint32 reference_id,
-                                  const std::string& session_id) {
-  // Due to heartbeat messages, SetSessionId() can get called multiple times.
+void ProxyDecryptor::OnSessionCreated(uint32 reference_id,
+                                      const std::string& session_id) {
+  // Due to heartbeat messages, OnSessionCreated() can get called multiple
+  // times.
   SessionIdMap::iterator it = sessions_.find(reference_id);
   DCHECK(it == sessions_.end() || it->second == session_id);
   if (it == sessions_.end())
     sessions_[reference_id] = session_id;
+}
+
+void ProxyDecryptor::OnSessionMessage(uint32 reference_id,
+                                      const std::vector<uint8>& message,
+                                      const std::string& destination_url) {
+  // Assumes that OnSessionCreated() has been called before this.
+  key_message_cb_.Run(LookupSessionId(reference_id), message, destination_url);
+}
+
+void ProxyDecryptor::OnSessionReady(uint32 reference_id) {
+  // Assumes that OnSessionCreated() has been called before this.
+  key_added_cb_.Run(LookupSessionId(reference_id));
+}
+
+void ProxyDecryptor::OnSessionClosed(uint32 reference_id) {
+  // No closed event in EME v0.1b.
+}
+
+void ProxyDecryptor::OnSessionError(uint32 reference_id,
+                                    media::MediaKeys::KeyError error_code,
+                                    int system_code) {
+  // Assumes that OnSessionCreated() has been called before this.
+  key_error_cb_.Run(LookupSessionId(reference_id), error_code, system_code);
 }
 
 uint32 ProxyDecryptor::LookupReferenceId(const std::string& session_id) {

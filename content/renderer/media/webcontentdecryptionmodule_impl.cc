@@ -41,15 +41,16 @@ class ReferenceIdAdapter {
  private:
   typedef std::map<uint32, WebContentDecryptionModuleSessionImpl*> SessionMap;
 
-  // Callbacks for firing key events.
-  void KeyAdded(uint32 reference_id);
-  void KeyError(uint32 reference_id,
-                media::MediaKeys::KeyError error_code,
-                int system_code);
-  void KeyMessage(uint32 reference_id,
-                  const std::vector<uint8>& message,
-                  const std::string& destination_url);
-  void SetSessionId(uint32 reference_id, const std::string& session_id);
+  // Callbacks for firing session events.
+  void OnSessionCreated(uint32 reference_id, const std::string& session_id);
+  void OnSessionMessage(uint32 reference_id,
+                        const std::vector<uint8>& message,
+                        const std::string& destination_url);
+  void OnSessionReady(uint32 reference_id);
+  void OnSessionClosed(uint32 reference_id);
+  void OnSessionError(uint32 reference_id,
+                      media::MediaKeys::KeyError error_code,
+                      int system_code);
 
   // Helper function of the callbacks.
   WebContentDecryptionModuleSessionImpl* GetSession(uint32 reference_id);
@@ -90,10 +91,11 @@ bool ReferenceIdAdapter::Initialize(const std::string& key_system,
           // TODO(ddorwin): Get the URL for the frame containing the MediaKeys.
           GURL(),
 #endif  // defined(ENABLE_PEPPER_CDMS)
-          base::Bind(&ReferenceIdAdapter::KeyAdded, weak_this),
-          base::Bind(&ReferenceIdAdapter::KeyError, weak_this),
-          base::Bind(&ReferenceIdAdapter::KeyMessage, weak_this),
-          base::Bind(&ReferenceIdAdapter::SetSessionId, weak_this));
+          base::Bind(&ReferenceIdAdapter::OnSessionCreated, weak_this),
+          base::Bind(&ReferenceIdAdapter::OnSessionMessage, weak_this),
+          base::Bind(&ReferenceIdAdapter::OnSessionReady, weak_this),
+          base::Bind(&ReferenceIdAdapter::OnSessionClosed, weak_this),
+          base::Bind(&ReferenceIdAdapter::OnSessionError, weak_this));
   if (!created_media_keys)
     return false;
 
@@ -113,25 +115,29 @@ void ReferenceIdAdapter::RemoveSession(uint32 reference_id) {
   sessions_.erase(reference_id);
 }
 
-void ReferenceIdAdapter::KeyAdded(uint32 reference_id) {
-  GetSession(reference_id)->KeyAdded();
+void ReferenceIdAdapter::OnSessionCreated(uint32 reference_id,
+                                          const std::string& session_id) {
+  GetSession(reference_id)->OnSessionCreated(session_id);
 }
 
-void ReferenceIdAdapter::KeyError(uint32 reference_id,
-                                  media::MediaKeys::KeyError error_code,
-                                  int system_code) {
-  GetSession(reference_id)->KeyError(error_code, system_code);
+void ReferenceIdAdapter::OnSessionMessage(uint32 reference_id,
+                                          const std::vector<uint8>& message,
+                                          const std::string& destination_url) {
+  GetSession(reference_id)->OnSessionMessage(message, destination_url);
 }
 
-void ReferenceIdAdapter::KeyMessage(uint32 reference_id,
-                                    const std::vector<uint8>& message,
-                                    const std::string& destination_url) {
-  GetSession(reference_id)->KeyMessage(message, destination_url);
+void ReferenceIdAdapter::OnSessionReady(uint32 reference_id) {
+  GetSession(reference_id)->OnSessionReady();
 }
 
-void ReferenceIdAdapter::SetSessionId(uint32 reference_id,
-                                      const std::string& session_id) {
-  GetSession(reference_id)->SetSessionId(session_id);
+void ReferenceIdAdapter::OnSessionClosed(uint32 reference_id) {
+  GetSession(reference_id)->OnSessionClosed();
+}
+
+void ReferenceIdAdapter::OnSessionError(uint32 reference_id,
+                                        media::MediaKeys::KeyError error_code,
+                                        int system_code) {
+  GetSession(reference_id)->OnSessionError(error_code, system_code);
 }
 
 WebContentDecryptionModuleSessionImpl* ReferenceIdAdapter::GetSession(

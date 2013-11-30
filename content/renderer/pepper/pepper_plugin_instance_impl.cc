@@ -2262,30 +2262,36 @@ PP_Var PepperPluginInstanceImpl::GetDefaultCharSet(PP_Instance instance) {
 // PPP_ContentDecryptor_Private calls made on |content_decryptor_delegate_|.
 // Therefore, |content_decryptor_delegate_| must have been initialized when
 // the following methods are called.
-void PepperPluginInstanceImpl::KeyAdded(PP_Instance instance,
-                                        uint32_t reference_id) {
-  content_decryptor_delegate_->KeyAdded(reference_id);
+void PepperPluginInstanceImpl::SessionCreated(PP_Instance instance,
+                                              uint32_t reference_id,
+                                              PP_Var session_id_var) {
+  content_decryptor_delegate_->OnSessionCreated(reference_id, session_id_var);
 }
 
-void PepperPluginInstanceImpl::KeyMessage(PP_Instance instance,
-                                          uint32_t reference_id,
-                                          PP_Var message_var,
-                                          PP_Var default_url_var) {
-  content_decryptor_delegate_->KeyMessage(
-      reference_id, message_var, default_url_var);
+void PepperPluginInstanceImpl::SessionMessage(PP_Instance instance,
+                                              uint32_t reference_id,
+                                              PP_Var message_var,
+                                              PP_Var destination_url) {
+  content_decryptor_delegate_->OnSessionMessage(
+      reference_id, message_var, destination_url);
 }
 
-void PepperPluginInstanceImpl::KeyError(PP_Instance instance,
-                                        uint32_t reference_id,
-                                        int32_t media_error,
-                                        int32_t system_code) {
-  content_decryptor_delegate_->KeyError(reference_id, media_error, system_code);
+void PepperPluginInstanceImpl::SessionReady(PP_Instance instance,
+                                            uint32_t reference_id) {
+  content_decryptor_delegate_->OnSessionReady(reference_id);
 }
 
-void PepperPluginInstanceImpl::SetSessionId(PP_Instance instance,
+void PepperPluginInstanceImpl::SessionClosed(PP_Instance instance,
+                                             uint32_t reference_id) {
+  content_decryptor_delegate_->OnSessionClosed(reference_id);
+}
+
+void PepperPluginInstanceImpl::SessionError(PP_Instance instance,
                                             uint32_t reference_id,
-                                            PP_Var session_id_var) {
-  content_decryptor_delegate_->SetSessionId(reference_id, session_id_var);
+                                            int32_t media_error,
+                                            int32_t system_code) {
+  content_decryptor_delegate_->OnSessionError(
+      reference_id, media_error, system_code);
 }
 
 void PepperPluginInstanceImpl::DeliverBlock(

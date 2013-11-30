@@ -124,56 +124,49 @@ void Initialize(PP_Instance instance,
           SerializedVarSendInput(dispatcher, key_system)));
 }
 
-void GenerateKeyRequest(PP_Instance instance,
-                        uint32_t reference_id,
-                        PP_Var type,
-                        PP_Var init_data) {
+void CreateSession(PP_Instance instance,
+                   uint32_t reference_id,
+                   PP_Var type,
+                   PP_Var init_data) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
     return;
   }
 
-  dispatcher->Send(
-      new PpapiMsg_PPPContentDecryptor_GenerateKeyRequest(
-          API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
-          instance,
-          reference_id,
-          SerializedVarSendInput(dispatcher, type),
-          SerializedVarSendInput(dispatcher, init_data)));
+  dispatcher->Send(new PpapiMsg_PPPContentDecryptor_CreateSession(
+      API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
+      instance,
+      reference_id,
+      SerializedVarSendInput(dispatcher, type),
+      SerializedVarSendInput(dispatcher, init_data)));
 }
 
-void AddKey(PP_Instance instance,
-            uint32_t reference_id,
-            PP_Var key,
-            PP_Var init_data) {
+void UpdateSession(PP_Instance instance,
+                   uint32_t reference_id,
+                   PP_Var response) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
     return;
   }
 
-  dispatcher->Send(
-      new PpapiMsg_PPPContentDecryptor_AddKey(
-          API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
-          instance,
-          reference_id,
-          SerializedVarSendInput(dispatcher, key),
-          SerializedVarSendInput(dispatcher, init_data)));
+  dispatcher->Send(new PpapiMsg_PPPContentDecryptor_UpdateSession(
+      API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
+      instance,
+      reference_id,
+      SerializedVarSendInput(dispatcher, response)));
 }
 
-void CancelKeyRequest(PP_Instance instance, uint32_t reference_id) {
+void ReleaseSession(PP_Instance instance, uint32_t reference_id) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
     return;
   }
 
-  dispatcher->Send(
-      new PpapiMsg_PPPContentDecryptor_CancelKeyRequest(
-          API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
-          instance,
-          reference_id));
+  dispatcher->Send(new PpapiMsg_PPPContentDecryptor_ReleaseSession(
+      API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE, instance, reference_id));
 }
 
 void Decrypt(PP_Instance instance,
@@ -365,9 +358,9 @@ void DecryptAndDecode(PP_Instance instance,
 
 static const PPP_ContentDecryptor_Private content_decryptor_interface = {
   &Initialize,
-  &GenerateKeyRequest,
-  &AddKey,
-  &CancelKeyRequest,
+  &CreateSession,
+  &UpdateSession,
+  &ReleaseSession,
   &Decrypt,
   &InitializeAudioDecoder,
   &InitializeVideoDecoder,
@@ -408,12 +401,12 @@ bool PPP_ContentDecryptor_Private_Proxy::OnMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(PPP_ContentDecryptor_Private_Proxy, msg)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_Initialize,
                         OnMsgInitialize)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_GenerateKeyRequest,
-                        OnMsgGenerateKeyRequest)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_AddKey,
-                        OnMsgAddKey)
-    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_CancelKeyRequest,
-                        OnMsgCancelKeyRequest)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_CreateSession,
+                        OnMsgCreateSession)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_UpdateSession,
+                        OnMsgUpdateSession)
+    IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_ReleaseSession,
+                        OnMsgReleaseSession)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_Decrypt,
                         OnMsgDecrypt)
     IPC_MESSAGE_HANDLER(PpapiMsg_PPPContentDecryptor_InitializeAudioDecoder,
@@ -443,13 +436,13 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgInitialize(
   }
 }
 
-void PPP_ContentDecryptor_Private_Proxy::OnMsgGenerateKeyRequest(
+void PPP_ContentDecryptor_Private_Proxy::OnMsgCreateSession(
     PP_Instance instance,
     uint32_t reference_id,
     SerializedVarReceiveInput type,
     SerializedVarReceiveInput init_data) {
   if (ppp_decryptor_impl_) {
-    CallWhileUnlocked(ppp_decryptor_impl_->GenerateKeyRequest,
+    CallWhileUnlocked(ppp_decryptor_impl_->CreateSession,
                       instance,
                       reference_id,
                       ExtractReceivedVarAndAddRef(dispatcher(), &type),
@@ -457,25 +450,23 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgGenerateKeyRequest(
   }
 }
 
-void PPP_ContentDecryptor_Private_Proxy::OnMsgAddKey(
+void PPP_ContentDecryptor_Private_Proxy::OnMsgUpdateSession(
     PP_Instance instance,
     uint32_t reference_id,
-    SerializedVarReceiveInput key,
-    SerializedVarReceiveInput init_data) {
+    SerializedVarReceiveInput response) {
   if (ppp_decryptor_impl_) {
-    CallWhileUnlocked(ppp_decryptor_impl_->AddKey,
+    CallWhileUnlocked(ppp_decryptor_impl_->UpdateSession,
                       instance,
                       reference_id,
-                      ExtractReceivedVarAndAddRef(dispatcher(), &key),
-                      ExtractReceivedVarAndAddRef(dispatcher(), &init_data));
+                      ExtractReceivedVarAndAddRef(dispatcher(), &response));
   }
 }
 
-void PPP_ContentDecryptor_Private_Proxy::OnMsgCancelKeyRequest(
+void PPP_ContentDecryptor_Private_Proxy::OnMsgReleaseSession(
     PP_Instance instance,
     uint32_t reference_id) {
   if (ppp_decryptor_impl_) {
-    CallWhileUnlocked(ppp_decryptor_impl_->CancelKeyRequest,
+    CallWhileUnlocked(ppp_decryptor_impl_->ReleaseSession,
                       instance,
                       reference_id);
   }

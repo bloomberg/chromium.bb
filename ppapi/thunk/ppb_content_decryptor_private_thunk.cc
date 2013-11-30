@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // From private/ppb_content_decryptor_private.idl,
-//   modified Thu Oct 17 15:03:48 2013.
+//   modified Wed Nov 27 11:47:56 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
@@ -18,44 +18,58 @@ namespace thunk {
 
 namespace {
 
-void KeyAdded(PP_Instance instance, uint32_t reference_id) {
-  VLOG(4) << "PPB_ContentDecryptor_Private::KeyAdded()";
+void SessionCreated(PP_Instance instance,
+                    uint32_t reference_id,
+                    struct PP_Var web_session_id) {
+  VLOG(4) << "PPB_ContentDecryptor_Private::SessionCreated()";
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->KeyAdded(instance, reference_id);
+  enter.functions()->SessionCreated(instance, reference_id, web_session_id);
 }
 
-void KeyMessage(PP_Instance instance,
-                uint32_t reference_id,
-                struct PP_Var message,
-                struct PP_Var default_url) {
-  VLOG(4) << "PPB_ContentDecryptor_Private::KeyMessage()";
+void SessionMessage(PP_Instance instance,
+                    uint32_t reference_id,
+                    struct PP_Var message,
+                    struct PP_Var destination_url) {
+  VLOG(4) << "PPB_ContentDecryptor_Private::SessionMessage()";
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->KeyMessage(instance, reference_id, message, default_url);
+  enter.functions()->SessionMessage(instance,
+                                    reference_id,
+                                    message,
+                                    destination_url);
 }
 
-void KeyError(PP_Instance instance,
-              uint32_t reference_id,
-              int32_t media_error,
-              int32_t system_code) {
-  VLOG(4) << "PPB_ContentDecryptor_Private::KeyError()";
+void SessionReady(PP_Instance instance, uint32_t reference_id) {
+  VLOG(4) << "PPB_ContentDecryptor_Private::SessionReady()";
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->KeyError(instance, reference_id, media_error, system_code);
+  enter.functions()->SessionReady(instance, reference_id);
 }
 
-void SetSessionId(PP_Instance instance,
+void SessionClosed(PP_Instance instance, uint32_t reference_id) {
+  VLOG(4) << "PPB_ContentDecryptor_Private::SessionClosed()";
+  EnterInstance enter(instance);
+  if (enter.failed())
+    return;
+  enter.functions()->SessionClosed(instance, reference_id);
+}
+
+void SessionError(PP_Instance instance,
                   uint32_t reference_id,
-                  struct PP_Var session_id) {
-  VLOG(4) << "PPB_ContentDecryptor_Private::SetSessionId()";
+                  int32_t media_error,
+                  int32_t system_code) {
+  VLOG(4) << "PPB_ContentDecryptor_Private::SessionError()";
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->SetSessionId(instance, reference_id, session_id);
+  enter.functions()->SessionError(instance,
+                                  reference_id,
+                                  media_error,
+                                  system_code);
 }
 
 void DeliverBlock(PP_Instance instance,
@@ -131,12 +145,13 @@ void DeliverSamples(
                                     decrypted_sample_info);
 }
 
-const PPB_ContentDecryptor_Private_0_8
-    g_ppb_contentdecryptor_private_thunk_0_8 = {
-  &KeyAdded,
-  &KeyMessage,
-  &KeyError,
-  &SetSessionId,
+const PPB_ContentDecryptor_Private_0_9
+    g_ppb_contentdecryptor_private_thunk_0_9 = {
+  &SessionCreated,
+  &SessionMessage,
+  &SessionReady,
+  &SessionClosed,
+  &SessionError,
   &DeliverBlock,
   &DecoderInitializeDone,
   &DecoderDeinitializeDone,
@@ -147,9 +162,9 @@ const PPB_ContentDecryptor_Private_0_8
 
 }  // namespace
 
-const PPB_ContentDecryptor_Private_0_8*
-    GetPPB_ContentDecryptor_Private_0_8_Thunk() {
-  return &g_ppb_contentdecryptor_private_thunk_0_8;
+const PPB_ContentDecryptor_Private_0_9*
+    GetPPB_ContentDecryptor_Private_0_9_Thunk() {
+  return &g_ppb_contentdecryptor_private_thunk_0_9;
 }
 
 }  // namespace thunk

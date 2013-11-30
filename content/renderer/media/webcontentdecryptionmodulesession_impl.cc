@@ -43,40 +43,37 @@ void WebContentDecryptionModuleSessionImpl::generateKeyRequest(
   // Chromium only supports ASCII MIME types.
   if (!IsStringASCII(mime_type)) {
     NOTREACHED();
-    KeyError(media::MediaKeys::kUnknownError, 0);
+    OnSessionError(media::MediaKeys::kUnknownError, 0);
     return;
   }
 
-  media_keys_->GenerateKeyRequest(
+  media_keys_->CreateSession(
       reference_id_, UTF16ToASCII(mime_type), init_data, init_data_length);
 }
 
-void WebContentDecryptionModuleSessionImpl::update(const uint8* key,
-                                                   size_t key_length) {
-  DCHECK(key);
-  media_keys_->AddKey(reference_id_, key, key_length, NULL, 0);
+void WebContentDecryptionModuleSessionImpl::update(const uint8* response,
+                                                   size_t response_length) {
+  DCHECK(response);
+  media_keys_->UpdateSession(reference_id_, response, response_length);
 }
 
 void WebContentDecryptionModuleSessionImpl::close() {
-  // Detach from the CDM.
-  // TODO(jrummell): We shouldn't detach here because closed and other events
-  // may be fired in the latest version of the spec. http://crbug.com/309235
-  if (!session_closed_cb_.is_null())
-    base::ResetAndReturn(&session_closed_cb_).Run(reference_id_);
+  media_keys_->ReleaseSession(reference_id_);
 }
 
-void WebContentDecryptionModuleSessionImpl::KeyAdded() {
-  client_->keyAdded();
+void WebContentDecryptionModuleSessionImpl::OnSessionCreated(
+    const std::string& session_id) {
+  // Due to heartbeat messages, OnSessionCreated() can get called multiple
+  // times.
+  // TODO(jrummell): Once all CDMs are updated to support reference ids,
+  // OnSessionCreated() should only be called once, and the second check can be
+  // removed.
+  DCHECK(session_id_.empty() || session_id_ == session_id)
+      << "Session ID may not be changed once set.";
+  session_id_ = session_id;
 }
 
-void WebContentDecryptionModuleSessionImpl::KeyError(
-    media::MediaKeys::KeyError error_code,
-    int system_code) {
-  client_->keyError(static_cast<Client::MediaKeyErrorCode>(error_code),
-                    system_code);
-}
-
-void WebContentDecryptionModuleSessionImpl::KeyMessage(
+void WebContentDecryptionModuleSessionImpl::OnSessionMessage(
     const std::vector<uint8>& message,
     const std::string& destination_url) {
   client_->keyMessage(message.empty() ? NULL : &message[0],
@@ -84,15 +81,22 @@ void WebContentDecryptionModuleSessionImpl::KeyMessage(
                       GURL(destination_url));
 }
 
-void WebContentDecryptionModuleSessionImpl::SetSessionId(
-    const std::string& session_id) {
-  // Due to heartbeat messages, SetSessionId() can get called multiple times.
-  // TODO(jrummell): Once all CDMs are updated to support reference ids,
-  // SetSessionId() should only be called once, and the second check can be
-  // removed.
-  DCHECK(session_id_.empty() || session_id_ == session_id)
-      << "Session ID may not be changed once set.";
-  session_id_ = session_id;
+void WebContentDecryptionModuleSessionImpl::OnSessionReady() {
+  // TODO(jrummell): Blink APIs need to be updated to the new EME API. For now,
+  // convert the response to the old v0.1b API.
+  client_->keyAdded();
+}
+
+void WebContentDecryptionModuleSessionImpl::OnSessionClosed() {
+  if (!session_closed_cb_.is_null())
+    base::ResetAndReturn(&session_closed_cb_).Run(reference_id_);
+}
+
+void WebContentDecryptionModuleSessionImpl::OnSessionError(
+    media::MediaKeys::KeyError error_code,
+    int system_code) {
+  client_->keyError(static_cast<Client::MediaKeyErrorCode>(error_code),
+                    system_code);
 }
 
 }  // namespace content

@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_content_decryptor_private.idl,
- *   modified Mon Oct 21 17:11:33 2013.
+ *   modified Wed Nov 27 14:10:24 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_8 \
-    "PPB_ContentDecryptor_Private;0.8"
+#define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_9 \
+    "PPB_ContentDecryptor_Private;0.9"
 #define PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_8
+    PPB_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_9
 
 /**
  * @file
@@ -39,40 +39,37 @@
  * <code>PPB_ContentDecryptor_Private</code> structure contains the function
  * pointers the browser must implement to support plugins implementing the
  * <code>PPP_ContentDecryptor_Private</code> interface. This interface provides
- * browser side support for the Content Decryption Module (CDM) for v0.1 of the
- * proposed Encrypted Media Extensions: http://goo.gl/rbdnR
+ * browser side support for the Content Decryption Module (CDM) for Encrypted
+ * Media Extensions: http://www.w3.org/TR/encrypted-media/
  */
-struct PPB_ContentDecryptor_Private_0_8 {
+struct PPB_ContentDecryptor_Private_0_9 {
   /**
-   * A key has been added as the result of a call to the <code>AddKey()</code>
-   * method on the <code>PPP_ContentDecryptor_Private</code> interface.
+   * A session has been created by the CDM.
    *
-   * Note: The above describes the most simple case. Depending on the key
-   * system, a series of <code>KeyMessage()</code> calls from the CDM will be
-   * sent to the browser, and then on to the web application. The web
-   * application must then provide more data to the CDM by directing the browser
-   * to pass the data to the CDM via calls to <code>AddKey()</code> on the
-   * <code>PPP_ContentDecryptor_Private</code> interface.
-   * The CDM must call <code>KeyAdded()</code> when the sequence is completed,
-   * and, in response, the browser must notify the web application.
+   * @param[in] reference_id A reference for the session for which the CDM
+   * created a session.
    *
-   * @param[in] reference_id A reference for the session for which a key
-   * was added.
+   * @param[in] web_session_id A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the string for the
+   * MediaKeySession's sessionId attribute.
+   *
    */
-  void (*KeyAdded)(PP_Instance instance, uint32_t reference_id);
+  void (*SessionCreated)(PP_Instance instance,
+                         uint32_t reference_id,
+                         struct PP_Var web_session_id);
   /**
    * A message or request has been generated for key_system in the CDM, and
    * must be sent to the web application.
    *
-   * For example, when the browser invokes <code>GenerateKeyRequest()</code>
+   * For example, when the browser invokes <code>CreateSession()</code>
    * on the <code>PPP_ContentDecryptor_Private</code> interface, the plugin
-   * must send a key message containing the key request.
+   * must send a message containing the license request.
    *
-   * Note that <code>KeyMessage()</code> can be used for purposes other than
-   * responses to <code>GenerateKeyRequest()</code> calls. See also the text
-   * in the comment for <code>KeyAdded()</code>, which describes a sequence of
-   * <code>AddKey()</code> and <code>KeyMessage()</code> calls required to
-   * prepare for decryption.
+   * Note that <code>SessionMessage()</code> can be used for purposes other than
+   * responses to <code>CreateSession()</code> calls. See also the text
+   * in the comment for <code>SessionReady()</code>, which describes a sequence
+   * of <code>UpdateSession()</code> and <code>SessionMessage()</code> calls
+   * required to prepare for decryption.
    *
    * @param[in] reference_id A reference for the session for which the message
    * is intended.
@@ -80,13 +77,38 @@ struct PPB_ContentDecryptor_Private_0_8 {
    * @param[in] message A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAY_BUFFER</code> that contains the message.
    *
-   * @param[in] default_url A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the default URL for the message.
+   * @param[in] destination_url A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_STRING</code> containing the destination URL for the
+   * message.
    */
-  void (*KeyMessage)(PP_Instance instance,
-                     uint32_t reference_id,
-                     struct PP_Var message,
-                     struct PP_Var default_url);
+  void (*SessionMessage)(PP_Instance instance,
+                         uint32_t reference_id,
+                         struct PP_Var message,
+                         struct PP_Var destination_url);
+  /**
+   * The session is now ready to decrypt the media stream.
+   *
+   * Note: The above describes the most simple case. Depending on the key
+   * system, a series of <code>SessionMessage()</code> calls from the CDM will
+   * be sent to the browser, and then on to the web application. The web
+   * application must then provide more data to the CDM by directing the browser
+   * to pass the data to the CDM via calls to <code>UpdateSession()</code> on
+   * the <code>PPP_ContentDecryptor_Private</code> interface.
+   * The CDM must call <code>SessionReady()</code> when the sequence is
+   * completed, and, in response, the browser must notify the web application.
+   *
+   * @param[in] reference_id A reference for the session that is ready.
+   */
+  void (*SessionReady)(PP_Instance instance, uint32_t reference_id);
+  /**
+   * The session has been closed as the result of a call to the
+   * <code>ReleaseSession()</code> method on the
+   * <code>PPP_ContentDecryptor_Private</code> interface, or due to other
+   * factors as determined by the CDM.
+   *
+   * @param[in] reference_id A reference for the session that is closed.
+   */
+  void (*SessionClosed)(PP_Instance instance, uint32_t reference_id);
   /**
    * An error occurred in a <code>PPP_ContentDecryptor_Private</code> method,
    * or within the plugin implementing the interface.
@@ -98,23 +120,10 @@ struct PPB_ContentDecryptor_Private_0_8 {
    *
    * @param[in] system_error A system error code.
    */
-  void (*KeyError)(PP_Instance instance,
-                   uint32_t reference_id,
-                   int32_t media_error,
-                   int32_t system_code);
-  /**
-   * A session ID has been generated by the CDM for a session.
-   *
-   * @param[in] reference_id A reference for the session for which the session
-   * id is intended.
-   *
-   * @param[in] session_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the session ID.
-   *
-   */
-  void (*SetSessionId)(PP_Instance instance,
+  void (*SessionError)(PP_Instance instance,
                        uint32_t reference_id,
-                       struct PP_Var session_id);
+                       int32_t media_error,
+                       int32_t system_code);
   /**
    * Called after the <code>Decrypt()</code> method on the
    * <code>PPP_ContentDecryptor_Private</code> interface completes to
@@ -244,7 +253,7 @@ struct PPB_ContentDecryptor_Private_0_8 {
       const struct PP_DecryptedSampleInfo* decrypted_sample_info);
 };
 
-typedef struct PPB_ContentDecryptor_Private_0_8 PPB_ContentDecryptor_Private;
+typedef struct PPB_ContentDecryptor_Private_0_9 PPB_ContentDecryptor_Private;
 /**
  * @}
  */

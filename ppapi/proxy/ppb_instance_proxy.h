@@ -117,19 +117,21 @@ class PPB_Instance_Proxy : public InterfaceProxy,
   virtual PP_Var GetPluginReferrerURL(
       PP_Instance instance,
       PP_URLComponents_Dev* components) OVERRIDE;
-  virtual void KeyAdded(PP_Instance instance,
-                        uint32_t reference_id) OVERRIDE;
-  virtual void KeyMessage(PP_Instance instance,
-                          uint32_t reference_id,
-                          PP_Var message,
-                          PP_Var default_url) OVERRIDE;
-  virtual void KeyError(PP_Instance instance,
-                        uint32_t reference_id,
-                        int32_t media_error,
-                        int32_t system_code) OVERRIDE;
-  virtual void SetSessionId(PP_Instance instance,
+  virtual void SessionCreated(PP_Instance instance,
+                              uint32_t reference_id,
+                              PP_Var session_id) OVERRIDE;
+  virtual void SessionMessage(PP_Instance instance,
+                              uint32_t reference_id,
+                              PP_Var message,
+                              PP_Var destination_url) OVERRIDE;
+  virtual void SessionReady(PP_Instance instance,
+                            uint32_t reference_id) OVERRIDE;
+  virtual void SessionClosed(PP_Instance instance,
+                             uint32_t reference_id) OVERRIDE;
+  virtual void SessionError(PP_Instance instance,
                             uint32_t reference_id,
-                            PP_Var session_id) OVERRIDE;
+                            int32_t media_error,
+                            int32_t system_code) OVERRIDE;
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
                             const PP_DecryptedBlockInfo* block_info) OVERRIDE;
@@ -220,19 +222,22 @@ class PPB_Instance_Proxy : public InterfaceProxy,
                                      SerializedVarReturnValue result);
   void OnHostMsgGetPluginReferrerURL(PP_Instance instance,
                                      SerializedVarReturnValue result);
-  virtual void OnHostMsgKeyAdded(PP_Instance instance,
-                                 uint32_t reference_id);
-  virtual void OnHostMsgKeyMessage(PP_Instance instance,
-                                   uint32_t reference_id,
-                                   SerializedVarReceiveInput message,
-                                   SerializedVarReceiveInput default_url);
-  virtual void OnHostMsgKeyError(PP_Instance instance,
-                                 uint32_t reference_id,
-                                 int32_t media_error,
-                                 int32_t system_code);
-  virtual void OnHostMsgSetSessionId(PP_Instance instance,
+  virtual void OnHostMsgSessionCreated(PP_Instance instance,
+                                       uint32_t reference_id,
+                                       SerializedVarReceiveInput session_id);
+  virtual void OnHostMsgSessionMessage(
+      PP_Instance instance,
+      uint32_t reference_id,
+      SerializedVarReceiveInput message,
+      SerializedVarReceiveInput destination_url);
+  virtual void OnHostMsgSessionReady(PP_Instance instance,
+                                     uint32_t reference_id);
+  virtual void OnHostMsgSessionClosed(PP_Instance instance,
+                                      uint32_t reference_id);
+  virtual void OnHostMsgSessionError(PP_Instance instance,
                                      uint32_t reference_id,
-                                     SerializedVarReceiveInput session_id);
+                                     int32_t media_error,
+                                     int32_t system_code);
   virtual void OnHostMsgDecoderInitializeDone(
       PP_Instance instance,
       PP_DecryptorStreamType decoder_type,

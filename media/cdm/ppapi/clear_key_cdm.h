@@ -75,10 +75,11 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
     // interface supports reference_id passing completely.
     enum Status {
       kNone = 0,
-      kKeyAdded = 1 << 0,
-      kKeyError = 1 << 1,
-      kKeyMessage = 1 << 2,
-      kSetSessionId = 1 << 3
+      kCreated = 1 << 0,
+      kMessage = 1 << 1,
+      kReady = 1 << 2,
+      kClosed = 1 << 3,
+      kError = 1 << 4
     };
 
     Client();
@@ -86,28 +87,29 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
 
     Status status() { return status_; }
     const std::string& session_id() { return session_id_; }
-    const std::vector<uint8>& key_message() { return key_message_; }
-    const std::string& default_url() { return default_url_; }
+    const std::vector<uint8>& message() { return message_; }
+    const std::string& destination_url() { return destination_url_; }
     MediaKeys::KeyError error_code() { return error_code_; }
     int system_code() { return system_code_; }
 
     // Resets the Client to a clean state.
     void Reset();
 
-    void KeyAdded(uint32 reference_id);
-    void KeyError(uint32 reference_id,
-                  MediaKeys::KeyError error_code,
-                  int system_code);
-    void KeyMessage(uint32 reference_id,
-                    const std::vector<uint8>& message,
-                    const std::string& default_url);
-    void SetSessionId(uint32 reference_id, const std::string& session_id);
+    void OnSessionCreated(uint32 reference_id, const std::string& session_id);
+    void OnSessionMessage(uint32 reference_id,
+                          const std::vector<uint8>& message,
+                          const std::string& destination_url);
+    void OnSessionReady(uint32 reference_id);
+    void OnSessionClosed(uint32 reference_id);
+    void OnSessionError(uint32 reference_id,
+                        MediaKeys::KeyError error_code,
+                        int system_code);
 
    private:
     Status status_;
     std::string session_id_;
-    std::vector<uint8> key_message_;
-    std::string default_url_;
+    std::vector<uint8> message_;
+    std::string destination_url_;
     MediaKeys::KeyError error_code_;
     int system_code_;
   };

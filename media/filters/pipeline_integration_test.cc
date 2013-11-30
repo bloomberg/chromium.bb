@@ -80,21 +80,23 @@ class FakeEncryptedMedia {
    public:
     virtual ~AppBase() {}
 
-    virtual void KeyAdded(uint32 reference_id) = 0;
-
-    // Errors are not expected unless overridden.
-    virtual void KeyError(uint32 reference_id,
-                          MediaKeys::KeyError error_code,
-                          int system_code) {
-      FAIL() << "Unexpected Key Error";
-    }
-
-    virtual void KeyMessage(uint32 reference_id,
-                            const std::vector<uint8>& message,
-                            const std::string& default_url) = 0;
-
     virtual void SetSession(uint32 reference_id,
                             const std::string& session_id) = 0;
+
+    virtual void Message(uint32 reference_id,
+                         const std::vector<uint8>& message,
+                         const std::string& destination_url) = 0;
+
+    virtual void Ready(uint32 reference_id) = 0;
+
+    virtual void Closed(uint32 reference_id) = 0;
+
+    // Errors are not expected unless overridden.
+    virtual void Error(uint32 reference_id,
+                       MediaKeys::KeyError error_code,
+                       int system_code) {
+      FAIL() << "Unexpected Key Error";
+    }
 
     virtual void NeedKey(const std::string& type,
                          const std::vector<uint8>& init_data,
@@ -103,11 +105,11 @@ class FakeEncryptedMedia {
 
   FakeEncryptedMedia(AppBase* app)
       : decryptor_(
-            base::Bind(&FakeEncryptedMedia::KeyAdded, base::Unretained(this)),
-            base::Bind(&FakeEncryptedMedia::KeyError, base::Unretained(this)),
-            base::Bind(&FakeEncryptedMedia::KeyMessage, base::Unretained(this)),
-            base::Bind(&FakeEncryptedMedia::SetSession,
-                       base::Unretained(this))),
+            base::Bind(&FakeEncryptedMedia::SetSession, base::Unretained(this)),
+            base::Bind(&FakeEncryptedMedia::Message, base::Unretained(this)),
+            base::Bind(&FakeEncryptedMedia::Ready, base::Unretained(this)),
+            base::Bind(&FakeEncryptedMedia::Closed, base::Unretained(this)),
+            base::Bind(&FakeEncryptedMedia::Error, base::Unretained(this))),
         app_(app) {
   }
 
@@ -115,25 +117,29 @@ class FakeEncryptedMedia {
     return &decryptor_;
   }
 
-  // Callbacks for firing key events. Delegate to |app_|.
-  void KeyAdded(uint32 reference_id) {
-    app_->KeyAdded(reference_id);
-  }
-
-  void KeyError(uint32 reference_id,
-                MediaKeys::KeyError error_code,
-                int system_code) {
-    app_->KeyError(reference_id, error_code, system_code);
-  }
-
-  void KeyMessage(uint32 reference_id,
-                  const std::vector<uint8>& message,
-                  const std::string& default_url) {
-    app_->KeyMessage(reference_id, message, default_url);
-  }
-
+  // Callbacks for firing session events. Delegate to |app_|.
   void SetSession(uint32 reference_id, const std::string& session_id) {
     app_->SetSession(reference_id, session_id);
+  }
+
+  void Message(uint32 reference_id,
+               const std::vector<uint8>& message,
+               const std::string& destination_url) {
+    app_->Message(reference_id, message, destination_url);
+  }
+
+  void Ready(uint32 reference_id) {
+    app_->Ready(reference_id);
+  }
+
+  void Closed(uint32 reference_id) {
+    app_->Closed(reference_id);
+  }
+
+  void Error(uint32 reference_id,
+             MediaKeys::KeyError error_code,
+             int system_code) {
+    app_->Error(reference_id, error_code, system_code);
   }
 
   void NeedKey(const std::string& type,
@@ -151,31 +157,35 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
  public:
   KeyProvidingApp() : current_reference_id_(0) {}
 
-  virtual void KeyAdded(uint32 reference_id) OVERRIDE {
-    EXPECT_GT(reference_id, 0u);
-  }
-
-  virtual void KeyMessage(uint32 reference_id,
-                          const std::vector<uint8>& message,
-                          const std::string& default_url) OVERRIDE {
-    EXPECT_GT(reference_id, 0u);
-    EXPECT_FALSE(message.empty());
-
-    current_reference_id_ = reference_id;
-  }
-
   virtual void SetSession(uint32 reference_id,
                           const std::string& session_id) OVERRIDE {
     EXPECT_GT(reference_id, 0u);
     EXPECT_FALSE(session_id.empty());
   }
 
+  virtual void Message(uint32 reference_id,
+                       const std::vector<uint8>& message,
+                       const std::string& default_url) OVERRIDE {
+    EXPECT_GT(reference_id, 0u);
+    EXPECT_FALSE(message.empty());
+
+    current_reference_id_ = reference_id;
+  }
+
+  virtual void Ready(uint32 reference_id) OVERRIDE {
+    EXPECT_GT(reference_id, 0u);
+  }
+
+  virtual void Closed(uint32 reference_id) OVERRIDE {
+    EXPECT_GT(reference_id, 0u);
+  }
+
   virtual void NeedKey(const std::string& type,
                        const std::vector<uint8>& init_data,
                        AesDecryptor* decryptor) OVERRIDE {
     if (current_reference_id_ == 0u) {
-      EXPECT_TRUE(decryptor->GenerateKeyRequest(
-          12, type, kInitData, arraysize(kInitData)));
+      EXPECT_TRUE(
+          decryptor->CreateSession(12, type, kInitData, arraysize(kInitData)));
     }
 
     EXPECT_EQ(current_reference_id_, 12u);
@@ -193,9 +203,9 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
     // Convert key into a JSON structure and then add it.
     std::string jwk = GenerateJWKSet(
         kSecretKey, arraysize(kSecretKey), key_id, key_id_length);
-    decryptor->AddKey(current_reference_id_,
-                      reinterpret_cast<const uint8*>(jwk.data()), jwk.size(),
-                      NULL, 0);
+    decryptor->UpdateSession(current_reference_id_,
+                             reinterpret_cast<const uint8*>(jwk.data()),
+                             jwk.size());
   }
 
   uint32 current_reference_id_;
@@ -204,24 +214,29 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
 // Ignores needkey and does not perform a license request
 class NoResponseApp : public FakeEncryptedMedia::AppBase {
  public:
-  virtual void KeyAdded(uint32 reference_id) OVERRIDE {
-    EXPECT_GT(reference_id, 0u);
-    FAIL() << "Unexpected KeyAdded";
-  }
+   virtual void SetSession(uint32 reference_id,
+                           const std::string& session_id) OVERRIDE {
+     EXPECT_GT(reference_id, 0u);
+     EXPECT_FALSE(session_id.empty());
+   }
 
-  virtual void KeyMessage(uint32 reference_id,
-                          const std::vector<uint8>& message,
-                          const std::string& default_url) OVERRIDE {
-    EXPECT_GT(reference_id, 0u);
-    EXPECT_FALSE(message.empty());
-    FAIL() << "Unexpected KeyMessage";
-  }
+   virtual void Message(uint32 reference_id,
+                        const std::vector<uint8>& message,
+                        const std::string& default_url) OVERRIDE {
+     EXPECT_GT(reference_id, 0u);
+     EXPECT_FALSE(message.empty());
+     FAIL() << "Unexpected KeyMessage";
+   }
 
-  virtual void SetSession(uint32 reference_id,
-                          const std::string& session_id) OVERRIDE {
-    EXPECT_GT(reference_id, 0u);
-    EXPECT_FALSE(session_id.empty());
-  }
+   virtual void Ready(uint32 reference_id) OVERRIDE {
+     EXPECT_GT(reference_id, 0u);
+     FAIL() << "Unexpected Ready";
+   }
+
+   virtual void Closed(uint32 reference_id) OVERRIDE {
+     EXPECT_GT(reference_id, 0u);
+     FAIL() << "Unexpected Closed";
+   }
 
   virtual void NeedKey(const std::string& type,
                        const std::vector<uint8>& init_data,

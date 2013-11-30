@@ -171,43 +171,49 @@ ClearKeyCdm::Client::~Client() {}
 void ClearKeyCdm::Client::Reset() {
   status_ = kNone;
   session_id_.clear();
-  key_message_.clear();
-  default_url_.clear();
+  message_.clear();
+  destination_url_.clear();
   error_code_ = MediaKeys::kUnknownError;
   system_code_ = 0;
 }
 
-void ClearKeyCdm::Client::KeyAdded(uint32 reference_id) {
-  status_ = static_cast<Status>(status_ | kKeyAdded);
+void ClearKeyCdm::Client::OnSessionCreated(uint32 reference_id,
+                                           const std::string& session_id) {
+  status_ = static_cast<Status>(status_ | kCreated);
+  session_id_ = session_id;
 }
 
-void ClearKeyCdm::Client::KeyError(uint32 reference_id,
-                                   media::MediaKeys::KeyError error_code,
-                                   int system_code) {
-  status_ = static_cast<Status>(status_ | kKeyError);
+void ClearKeyCdm::Client::OnSessionMessage(uint32 reference_id,
+                                           const std::vector<uint8>& message,
+                                           const std::string& destination_url) {
+  status_ = static_cast<Status>(status_ | kMessage);
+  message_ = message;
+  destination_url_ = destination_url;
+}
+
+void ClearKeyCdm::Client::OnSessionReady(uint32 reference_id) {
+  status_ = static_cast<Status>(status_ | kReady);
+}
+
+void ClearKeyCdm::Client::OnSessionClosed(uint32 reference_id) {
+  status_ = static_cast<Status>(status_ | kClosed);
+}
+
+void ClearKeyCdm::Client::OnSessionError(uint32 reference_id,
+                                         media::MediaKeys::KeyError error_code,
+                                         int system_code) {
+  status_ = static_cast<Status>(status_ | kError);
   error_code_ = error_code;
   system_code_ = system_code;
 }
 
-void ClearKeyCdm::Client::KeyMessage(uint32 reference_id,
-                                     const std::vector<uint8>& message,
-                                     const std::string& default_url) {
-  status_ = static_cast<Status>(status_ | kKeyMessage);
-  key_message_ = message;
-  default_url_ = default_url;
-}
-
-void ClearKeyCdm::Client::SetSessionId(uint32 reference_id,
-                                       const std::string& session_id) {
-  status_ = static_cast<Status>(status_ | kSetSessionId);
-  session_id_ = session_id;
-}
-
 ClearKeyCdm::ClearKeyCdm(ClearKeyCdmHost* host, bool is_decrypt_only)
-    : decryptor_(base::Bind(&Client::KeyAdded, base::Unretained(&client_)),
-                 base::Bind(&Client::KeyError, base::Unretained(&client_)),
-                 base::Bind(&Client::KeyMessage, base::Unretained(&client_)),
-                 base::Bind(&Client::SetSessionId, base::Unretained(&client_))),
+    : decryptor_(
+          base::Bind(&Client::OnSessionCreated, base::Unretained(&client_)),
+          base::Bind(&Client::OnSessionMessage, base::Unretained(&client_)),
+          base::Bind(&Client::OnSessionReady, base::Unretained(&client_)),
+          base::Bind(&Client::OnSessionClosed, base::Unretained(&client_)),
+          base::Bind(&Client::OnSessionError, base::Unretained(&client_))),
       host_(host),
       is_decrypt_only_(is_decrypt_only),
       timer_delay_ms_(kInitialTimerDelayMs),
@@ -230,11 +236,11 @@ cdm::Status ClearKeyCdm::GenerateKeyRequest(const char* type,
   DVLOG(1) << "GenerateKeyRequest()";
   base::AutoLock auto_lock(client_lock_);
   ScopedResetter<Client> auto_resetter(&client_);
-  decryptor_.GenerateKeyRequest(MediaKeys::kInvalidReferenceId,
-                                std::string(type, type_size),
-                                init_data, init_data_size);
+  decryptor_.CreateSession(MediaKeys::kInvalidReferenceId,
+                           std::string(type, type_size),
+                           init_data, init_data_size);
 
-  if (client_.status() != (Client::kKeyMessage | Client::kSetSessionId)) {
+  if (client_.status() != (Client::kMessage | Client::kCreated)) {
     // Use values returned to client if possible.
     host_->SendKeyError(client_.session_id().data(),
                         client_.session_id().size(),
@@ -245,9 +251,9 @@ cdm::Status ClearKeyCdm::GenerateKeyRequest(const char* type,
 
   host_->SendKeyMessage(
       client_.session_id().data(), client_.session_id().size(),
-      reinterpret_cast<const char*>(&client_.key_message()[0]),
-      client_.key_message().size(),
-      client_.default_url().data(), client_.default_url().size());
+      reinterpret_cast<const char*>(&client_.message()[0]),
+      client_.message().size(),
+      client_.destination_url().data(), client_.destination_url().size());
 
   // Only save the latest session ID for heartbeat messages.
   heartbeat_session_id_ = client_.session_id();
@@ -262,13 +268,12 @@ cdm::Status ClearKeyCdm::AddKey(const char* session_id,
                                 const uint8_t* key_id,
                                 uint32_t key_id_size) {
   DVLOG(1) << "AddKey()";
+  DCHECK(!key_id && !key_id_size);
   base::AutoLock auto_lock(client_lock_);
   ScopedResetter<Client> auto_resetter(&client_);
-  decryptor_.AddKey(MediaKeys::kInvalidReferenceId,
-                    key, key_size,
-                    key_id, key_id_size);
+  decryptor_.UpdateSession(MediaKeys::kInvalidReferenceId, key, key_size);
 
-  if (client_.status() != Client::kKeyAdded) {
+  if (client_.status() != Client::kReady) {
     host_->SendKeyError(session_id, session_id_size,
                         static_cast<cdm::MediaKeyError>(client_.error_code()),
                         client_.system_code());
@@ -288,11 +293,11 @@ cdm::Status ClearKeyCdm::CancelKeyRequest(const char* session_id,
   DVLOG(1) << "CancelKeyRequest()";
   base::AutoLock auto_lock(client_lock_);
   ScopedResetter<Client> auto_resetter(&client_);
-  decryptor_.CancelKeyRequest(MediaKeys::kInvalidReferenceId);
+  decryptor_.ReleaseSession(MediaKeys::kInvalidReferenceId);
 
-  // No message normally sent by CancelKeyRequest(), but if an error occurred,
+  // No message normally sent by Release(), but if an error occurred,
   // report it as a failure.
-  if (client_.status() == Client::kKeyError) {
+  if (client_.status() == Client::kError) {
     host_->SendKeyError(session_id, session_id_size,
                         static_cast<cdm::MediaKeyError>(client_.error_code()),
                         client_.system_code());

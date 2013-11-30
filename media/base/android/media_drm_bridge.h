@@ -61,14 +61,14 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys {
   static bool RegisterMediaDrmBridge(JNIEnv* env);
 
   // MediaKeys implementations.
-  virtual bool GenerateKeyRequest(uint32 reference_id,
-                                  const std::string& type,
-                                  const uint8* init_data,
-                                  int init_data_length) OVERRIDE;
-  virtual void AddKey(uint32 reference_id,
-                      const uint8* key, int key_length,
-                      const uint8* init_data, int init_data_length) OVERRIDE;
-  virtual void CancelKeyRequest(uint32 reference_id) OVERRIDE;
+  virtual bool CreateSession(uint32 reference_id,
+                             const std::string& type,
+                             const uint8* init_data,
+                             int init_data_length) OVERRIDE;
+  virtual void UpdateSession(uint32 reference_id,
+                             const uint8* response,
+                             int response_length) OVERRIDE;
+  virtual void ReleaseSession(uint32 reference_id) OVERRIDE;
 
   // Returns a MediaCrypto object if it's already created. Returns a null object
   // otherwise.

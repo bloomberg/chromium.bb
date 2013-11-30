@@ -90,19 +90,19 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual media::MediaDrmBridge* GetDrmBridge(int media_keys_id) OVERRIDE;
   virtual void DestroyAllMediaPlayers() OVERRIDE;
   virtual void OnProtectedSurfaceRequested(int player_id) OVERRIDE;
-  virtual void OnKeyAdded(int media_keys_id,
-                          uint32 reference_id) OVERRIDE;
-  virtual void OnKeyError(int media_keys_id,
-                          uint32 reference_id,
-                          media::MediaKeys::KeyError error_code,
-                          int system_code) OVERRIDE;
-  virtual void OnKeyMessage(int media_keys_id,
-                            uint32 reference_id,
-                            const std::vector<uint8>& message,
-                            const std::string& destination_url) OVERRIDE;
-  virtual void OnSetSessionId(int media_keys_id,
+  virtual void OnSessionCreated(int media_keys_id,
+                                uint32 reference_id,
+                                const std::string& session_id) OVERRIDE;
+  virtual void OnSessionMessage(int media_keys_id,
+                                uint32 reference_id,
+                                const std::vector<uint8>& message,
+                                const std::string& destination_url) OVERRIDE;
+  virtual void OnSessionReady(int media_keys_id, uint32 reference_id) OVERRIDE;
+  virtual void OnSessionClosed(int media_keys_id, uint32 reference_id) OVERRIDE;
+  virtual void OnSessionError(int media_keys_id,
                               uint32 reference_id,
-                              const std::string& session_id) OVERRIDE;
+                              media::MediaKeys::KeyError error_code,
+                              int system_code) OVERRIDE;
 
 #if defined(GOOGLE_TV)
   void AttachExternalVideoSurface(int player_id, jobject surface);

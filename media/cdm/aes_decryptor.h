@@ -27,23 +27,22 @@ namespace media {
 // encryption must be CTR with a key size of 128bits.
 class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
  public:
-  AesDecryptor(const KeyAddedCB& key_added_cb,
-               const KeyErrorCB& key_error_cb,
-               const KeyMessageCB& key_message_cb,
-               const SetSessionIdCB& set_session_id_cb);
+  AesDecryptor(const SessionCreatedCB& session_created_cb,
+               const SessionMessageCB& session_message_cb,
+               const SessionReadyCB& session_ready_cb,
+               const SessionClosedCB& session_closed_cb,
+               const SessionErrorCB& session_error_cb);
   virtual ~AesDecryptor();
 
   // MediaKeys implementation.
-  virtual bool GenerateKeyRequest(uint32 reference_id,
-                                  const std::string& type,
-                                  const uint8* init_data,
-                                  int init_data_length) OVERRIDE;
-  virtual void AddKey(uint32 reference_id,
-                      const uint8* key,
-                      int key_length,
-                      const uint8* init_data,
-                      int init_data_length) OVERRIDE;
-  virtual void CancelKeyRequest(uint32 reference_id) OVERRIDE;
+  virtual bool CreateSession(uint32 reference_id,
+                             const std::string& type,
+                             const uint8* init_data,
+                             int init_data_length) OVERRIDE;
+  virtual void UpdateSession(uint32 reference_id,
+                             const uint8* response,
+                             int response_length) OVERRIDE;
+  virtual void ReleaseSession(uint32 reference_id) OVERRIDE;
   virtual Decryptor* GetDecryptor() OVERRIDE;
 
   // Decryptor implementation.
@@ -99,11 +98,12 @@ class MEDIA_EXPORT AesDecryptor : public MediaKeys, public Decryptor {
   // the key. Returns NULL if no key is associated with |key_id|.
   DecryptionKey* GetKey(const std::string& key_id) const;
 
-  // Callbacks for firing key events.
-  KeyAddedCB key_added_cb_;
-  KeyErrorCB key_error_cb_;
-  KeyMessageCB key_message_cb_;
-  SetSessionIdCB set_session_id_cb_;
+  // Callbacks for firing session events.
+  SessionCreatedCB session_created_cb_;
+  SessionMessageCB session_message_cb_;
+  SessionReadyCB session_ready_cb_;
+  SessionClosedCB session_closed_cb_;
+  SessionErrorCB session_error_cb_;
 
   // KeyMap owns the DecryptionKey* and must delete them when they are
   // not needed any more.

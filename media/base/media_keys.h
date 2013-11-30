@@ -44,25 +44,21 @@ class MEDIA_EXPORT MediaKeys {
 
   // Generates a key request with the |type| and |init_data| provided.
   // Returns true if generating key request succeeded, false otherwise.
-  // Note: AddKey() and CancelKeyRequest() should only be called after
-  // GenerateKeyRequest() returns true.
-  virtual bool GenerateKeyRequest(uint32 reference_id,
-                                  const std::string& type,
-                                  const uint8* init_data,
-                                  int init_data_length) = 0;
+  // Note: UpdateSession() and ReleaseSession() should only be called after
+  // CreateSession() returns true.
+  // TODO(jrummell): Remove return value when prefixed API is removed.
+  virtual bool CreateSession(uint32 reference_id,
+                             const std::string& type,
+                             const uint8* init_data,
+                             int init_data_length) = 0;
 
-  // Adds a |key| to the session. The |key| is not limited to a decryption
-  // key. It can be any data that the key system accepts, such as a license.
-  // If multiple calls of this function set different keys for the same
-  // key ID, the older key will be replaced by the newer key.
-  virtual void AddKey(uint32 reference_id,
-                      const uint8* key,
-                      int key_length,
-                      const uint8* init_data,
-                      int init_data_length) = 0;
+  // Updates a session specified by |reference_id| with |response|.
+  virtual void UpdateSession(uint32 reference_id,
+                             const uint8* response,
+                             int response_length) = 0;
 
-  // Cancels the key request specified by |reference_id|.
-  virtual void CancelKeyRequest(uint32 reference_id) = 0;
+  // Releases the session specified by |reference_id|.
+  virtual void ReleaseSession(uint32 reference_id) = 0;
 
   // Gets the Decryptor object associated with the MediaKeys. Returns NULL if
   // no Decryptor object is associated. The returned object is only guaranteed
@@ -74,22 +70,23 @@ class MEDIA_EXPORT MediaKeys {
 };
 
 // Key event callbacks. See the spec for details:
-// http://dvcs.w3.org/hg/html-media/raw-file/eme-v0.1b/encrypted-media/encrypted-media.html#event-summary
-typedef base::Callback<void(uint32 reference_id)> KeyAddedCB;
-
-typedef base::Callback<void(uint32 reference_id,
-                            media::MediaKeys::KeyError error_code,
-                            int system_code)> KeyErrorCB;
+// https://dvcs.w3.org/hg/html-media/raw-file/default/encrypted-media/encrypted-media.html#event-summary
+typedef base::Callback<void(uint32 reference_id, const std::string& session_id)>
+    SessionCreatedCB;
 
 typedef base::Callback<void(uint32 reference_id,
                             const std::vector<uint8>& message,
-                            const std::string& default_url)> KeyMessageCB;
+                            const std::string& destination_url)>
+    SessionMessageCB;
 
-// Called by the CDM when it generates the |session_id| as a result of a
-// GenerateKeyRequest() call. Must be called before KeyMessageCB or KeyAddedCB
-// events are fired.
+typedef base::Callback<void(uint32 reference_id)> SessionReadyCB;
+
+typedef base::Callback<void(uint32 reference_id)> SessionClosedCB;
+
 typedef base::Callback<void(uint32 reference_id,
-                            const std::string& session_id)> SetSessionIdCB;
+                            media::MediaKeys::KeyError error_code,
+                            int system_code)> SessionErrorCB;
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_MEDIA_KEYS_H_

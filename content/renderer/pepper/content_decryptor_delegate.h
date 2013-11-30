@@ -41,22 +41,22 @@ class ContentDecryptorDelegate {
 
   void Initialize(const std::string& key_system);
 
-  void SetKeyEventCallbacks(const media::KeyAddedCB& key_added_cb,
-                            const media::KeyErrorCB& key_error_cb,
-                            const media::KeyMessageCB& key_message_cb,
-                            const media::SetSessionIdCB& set_session_id_cb);
+  void SetSessionEventCallbacks(
+      const media::SessionCreatedCB& session_created_cb,
+      const media::SessionMessageCB& session_message_cb,
+      const media::SessionReadyCB& session_ready_cb,
+      const media::SessionClosedCB& session_closed_cb,
+      const media::SessionErrorCB& session_error_cb);
 
   // Provides access to PPP_ContentDecryptor_Private.
-  bool GenerateKeyRequest(uint32 reference_id,
-                          const std::string& type,
-                          const uint8* init_data,
-                          int init_data_length);
-  bool AddKey(uint32 reference_id,
-              const uint8* key,
-              int key_length,
-              const uint8* init_data,
-              int init_data_length);
-  bool CancelKeyRequest(uint32 reference_id);
+  bool CreateSession(uint32 reference_id,
+                     const std::string& type,
+                     const uint8* init_data,
+                     int init_data_length);
+  bool UpdateSession(uint32 reference_id,
+                     const uint8* response,
+                     int response_length);
+  bool ReleaseSession(uint32 reference_id);
   bool Decrypt(media::Decryptor::StreamType stream_type,
                const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
                const media::Decryptor::DecryptCB& decrypt_cb);
@@ -80,14 +80,15 @@ class ContentDecryptorDelegate {
       const media::Decryptor::VideoDecodeCB& video_decode_cb);
 
   // PPB_ContentDecryptor_Private dispatching methods.
-  void KeyAdded(uint32 reference_id);
-  void KeyMessage(uint32 reference_id,
-                  PP_Var message,
-                  PP_Var default_url);
-  void KeyError(uint32 reference_id,
-                int32_t media_error,
-                int32_t system_code);
-  void SetSessionId(uint32 reference_id, PP_Var session_id_var);
+  void OnSessionCreated(uint32 reference_id, PP_Var session_id_var);
+  void OnSessionMessage(uint32 reference_id,
+                        PP_Var message,
+                        PP_Var destination_url);
+  void OnSessionReady(uint32 reference_id);
+  void OnSessionClosed(uint32 reference_id);
+  void OnSessionError(uint32 reference_id,
+                      int32_t media_error,
+                      int32_t system_code);
   void DeliverBlock(PP_Resource decrypted_block,
                     const PP_DecryptedBlockInfo* block_info);
   void DecoderInitializeDone(PP_DecryptorStreamType decoder_type,
@@ -138,11 +139,12 @@ class ContentDecryptorDelegate {
   // TODO(ddorwin): Remove after updating the Pepper API to not use key system.
   std::string key_system_;
 
-  // Callbacks for firing key events.
-  media::KeyAddedCB key_added_cb_;
-  media::KeyErrorCB key_error_cb_;
-  media::KeyMessageCB key_message_cb_;
-  media::SetSessionIdCB set_session_id_cb_;
+  // Callbacks for firing session events.
+  media::SessionCreatedCB session_created_cb_;
+  media::SessionMessageCB session_message_cb_;
+  media::SessionReadyCB session_ready_cb_;
+  media::SessionClosedCB session_closed_cb_;
+  media::SessionErrorCB session_error_cb_;
 
   gfx::Size natural_size_;
 

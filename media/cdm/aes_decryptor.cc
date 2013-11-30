@@ -142,23 +142,25 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
   return output;
 }
 
-AesDecryptor::AesDecryptor(const KeyAddedCB& key_added_cb,
-                           const KeyErrorCB& key_error_cb,
-                           const KeyMessageCB& key_message_cb,
-                           const SetSessionIdCB& set_session_id_cb)
-    : key_added_cb_(key_added_cb),
-      key_error_cb_(key_error_cb),
-      key_message_cb_(key_message_cb),
-      set_session_id_cb_(set_session_id_cb) {}
+AesDecryptor::AesDecryptor(const SessionCreatedCB& session_created_cb,
+                           const SessionMessageCB& session_message_cb,
+                           const SessionReadyCB& session_ready_cb,
+                           const SessionClosedCB& session_closed_cb,
+                           const SessionErrorCB& session_error_cb)
+    : session_created_cb_(session_created_cb),
+      session_message_cb_(session_message_cb),
+      session_ready_cb_(session_ready_cb),
+      session_closed_cb_(session_closed_cb),
+      session_error_cb_(session_error_cb) {}
 
 AesDecryptor::~AesDecryptor() {
   STLDeleteValues(&key_map_);
 }
 
-bool AesDecryptor::GenerateKeyRequest(uint32 reference_id,
-                                      const std::string& type,
-                                      const uint8* init_data,
-                                      int init_data_length) {
+bool AesDecryptor::CreateSession(uint32 reference_id,
+                                 const std::string& type,
+                                 const uint8* init_data,
+                                 int init_data_length) {
   std::string session_id_string(base::UintToString(next_session_id_++));
 
   // For now, the AesDecryptor does not care about |type|;
@@ -167,35 +169,28 @@ bool AesDecryptor::GenerateKeyRequest(uint32 reference_id,
   if (init_data && init_data_length)
     message.assign(init_data, init_data + init_data_length);
 
-  set_session_id_cb_.Run(reference_id, session_id_string);
-  key_message_cb_.Run(reference_id, message, std::string());
+  session_created_cb_.Run(reference_id, session_id_string);
+  session_message_cb_.Run(reference_id, message, std::string());
   return true;
 }
 
-void AesDecryptor::AddKey(uint32 reference_id,
-                          const uint8* key,
-                          int key_length,
-                          const uint8* init_data,
-                          int init_data_length) {
-  CHECK(key);
-  CHECK_GT(key_length, 0);
-  DCHECK(!init_data);
-  DCHECK_EQ(init_data_length, 0);
+void AesDecryptor::UpdateSession(uint32 reference_id,
+                                 const uint8* response,
+                                 int response_length) {
+  CHECK(response);
+  CHECK_GT(response_length, 0);
 
-  // AddKey() is called from update(), where the key(s) are passed as a JSON
-  // Web Key (JWK) set. Each JWK needs to be a symmetric key ('kty' = "oct"),
-  // with 'kid' being the base64-encoded key id, and 'k' being the
-  // base64-encoded key.
-  std::string key_string(reinterpret_cast<const char*>(key), key_length);
+  std::string key_string(reinterpret_cast<const char*>(response),
+                         response_length);
   KeyIdAndKeyPairs keys;
   if (!ExtractKeysFromJWKSet(key_string, &keys)) {
-    key_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
+    session_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
     return;
   }
 
   // Make sure that at least one key was extracted.
   if (keys.empty()) {
-    key_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
+    session_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
     return;
   }
 
@@ -203,11 +198,11 @@ void AesDecryptor::AddKey(uint32 reference_id,
     if (it->second.length() !=
         static_cast<size_t>(DecryptConfig::kDecryptionKeySize)) {
       DVLOG(1) << "Invalid key length: " << key_string.length();
-      key_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
+      session_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
       return;
     }
     if (!AddDecryptionKey(it->first, it->second)) {
-      key_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
+      session_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
       return;
     }
   }
@@ -218,10 +213,11 @@ void AesDecryptor::AddKey(uint32 reference_id,
   if (!new_video_key_cb_.is_null())
     new_video_key_cb_.Run();
 
-  key_added_cb_.Run(reference_id);
+  session_ready_cb_.Run(reference_id);
 }
 
-void AesDecryptor::CancelKeyRequest(uint32 reference_id) {
+void AesDecryptor::ReleaseSession(uint32 reference_id) {
+  // TODO: Implement: http://crbug.com/313412.
 }
 
 Decryptor* AesDecryptor::GetDecryptor() {

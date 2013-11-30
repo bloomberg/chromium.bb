@@ -37,10 +37,11 @@ class ContentDecryptionModuleFactory {
       int media_keys_id,
       const GURL& frame_url,
 #endif  // defined(ENABLE_PEPPER_CDMS)
-      const media::KeyAddedCB& key_added_cb,
-      const media::KeyErrorCB& key_error_cb,
-      const media::KeyMessageCB& key_message_cb,
-      const media::SetSessionIdCB& set_session_id_cb);
+      const media::SessionCreatedCB& session_created_cb,
+      const media::SessionMessageCB& session_message_cb,
+      const media::SessionReadyCB& session_ready_cb,
+      const media::SessionClosedCB& session_closed_cb,
+      const media::SessionErrorCB& session_error_cb);
 
 #if defined(ENABLE_PEPPER_CDMS)
   static void DestroyHelperPlugin(

@@ -363,34 +363,42 @@ void BrowserMediaPlayerManager::OnProtectedSurfaceRequested(int player_id) {
   }
 }
 
-void BrowserMediaPlayerManager::OnKeyAdded(int media_keys_id,
-                                           uint32 reference_id) {
+// The following 5 functions are EME MediaKeySession events.
+
+void BrowserMediaPlayerManager::OnSessionCreated(
+    int media_keys_id,
+    uint32 reference_id,
+    const std::string& session_id) {
+  Send(new MediaKeysMsg_SetSessionId(
+      routing_id(), media_keys_id, reference_id, session_id));
+}
+
+void BrowserMediaPlayerManager::OnSessionMessage(
+    int media_keys_id,
+    uint32 reference_id,
+    const std::vector<uint8>& message,
+    const std::string& destination_url) {
+  Send(new MediaKeysMsg_KeyMessage(
+      routing_id(), media_keys_id, reference_id, message, destination_url));
+}
+
+void BrowserMediaPlayerManager::OnSessionReady(int media_keys_id,
+                                               uint32 reference_id) {
   Send(new MediaKeysMsg_KeyAdded(routing_id(), media_keys_id, reference_id));
 }
 
-void BrowserMediaPlayerManager::OnKeyError(
+void BrowserMediaPlayerManager::OnSessionClosed(int media_keys_id,
+                                                uint32 reference_id) {
+  // TODO(jrummell): Update Android calls and IPC names.
+}
+
+void BrowserMediaPlayerManager::OnSessionError(
     int media_keys_id,
     uint32 reference_id,
     media::MediaKeys::KeyError error_code,
     int system_code) {
   Send(new MediaKeysMsg_KeyError(routing_id(), media_keys_id,
                                  reference_id, error_code, system_code));
-}
-
-void BrowserMediaPlayerManager::OnKeyMessage(
-    int media_keys_id,
-    uint32 reference_id,
-    const std::vector<uint8>& message,
-    const std::string& destination_url) {
-  Send(new MediaKeysMsg_KeyMessage(routing_id(), media_keys_id,
-                                   reference_id, message, destination_url));
-}
-
-void BrowserMediaPlayerManager::OnSetSessionId(int media_keys_id,
-                                               uint32 reference_id,
-                                               const std::string& session_id) {
-  Send(new MediaKeysMsg_SetSessionId(
-      routing_id(), media_keys_id, reference_id, session_id));
 }
 
 #if defined(GOOGLE_TV)
@@ -558,7 +566,8 @@ void BrowserMediaPlayerManager::OnGenerateKeyRequest(
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (!drm_bridge) {
     DLOG(WARNING) << "No MediaDrmBridge for ID: " << media_keys_id << " found";
-    OnKeyError(media_keys_id, reference_id, media::MediaKeys::kUnknownError, 0);
+    OnSessionError(
+        media_keys_id, reference_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
 
@@ -584,13 +593,13 @@ void BrowserMediaPlayerManager::OnAddKey(int media_keys_id,
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (!drm_bridge) {
     DLOG(WARNING) << "No MediaDrmBridge for ID: " << media_keys_id << " found";
-    OnKeyError(media_keys_id, reference_id, media::MediaKeys::kUnknownError, 0);
+    OnSessionError(
+        media_keys_id, reference_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
 
-  drm_bridge->AddKey(reference_id,
-                     &key[0], key.size(),
-                     &init_data[0], init_data.size());
+  DCHECK(init_data.empty());
+  drm_bridge->UpdateSession(reference_id, &key[0], key.size());
   // In EME v0.1b MediaKeys lives in the media element. So the |media_keys_id|
   // is the same as the |player_id|.
   // TODO(xhwang): Separate |media_keys_id| and |player_id|.
@@ -605,11 +614,12 @@ void BrowserMediaPlayerManager::OnCancelKeyRequest(
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (!drm_bridge) {
     DLOG(WARNING) << "No MediaDrmBridge for ID: " << media_keys_id << " found";
-    OnKeyError(media_keys_id, reference_id, media::MediaKeys::kUnknownError, 0);
+    OnSessionError(
+        media_keys_id, reference_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
 
-  drm_bridge->CancelKeyRequest(reference_id);
+  drm_bridge->ReleaseSession(reference_id);
 }
 
 void BrowserMediaPlayerManager::AddPlayer(MediaPlayerAndroid* player) {
@@ -716,12 +726,13 @@ void BrowserMediaPlayerManager::GenerateKeyIfAllowed(
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (!drm_bridge) {
     DLOG(WARNING) << "No MediaDrmBridge for ID: " << media_keys_id << " found";
-    OnKeyError(media_keys_id, reference_id, media::MediaKeys::kUnknownError, 0);
+    OnSessionError(
+        media_keys_id, reference_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
   media_keys_ids_pending_approval_.erase(media_keys_id);
   media_keys_ids_approved_.insert(media_keys_id);
-  drm_bridge->GenerateKeyRequest(
+  drm_bridge->CreateSession(
       reference_id, type, &init_data[0], init_data.size());
 
   // TODO(qinmin): currently |media_keys_id| and player ID are identical.

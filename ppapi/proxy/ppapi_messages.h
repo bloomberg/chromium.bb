@@ -648,17 +648,16 @@ IPC_MESSAGE_ROUTED3(
 IPC_MESSAGE_ROUTED2(PpapiMsg_PPPContentDecryptor_Initialize,
                     PP_Instance /* instance */,
                     ppapi::proxy::SerializedVar /* key_system, String */)
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_GenerateKeyRequest,
+IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_CreateSession,
                     PP_Instance /* instance */,
                     uint32_t /* reference_id */,
                     ppapi::proxy::SerializedVar /* type, String */,
                     ppapi::proxy::SerializedVar /* init_data, ArrayBuffer */)
-IPC_MESSAGE_ROUTED4(PpapiMsg_PPPContentDecryptor_AddKey,
+IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_UpdateSession,
                     PP_Instance /* instance */,
                     uint32_t /* reference_id */,
-                    ppapi::proxy::SerializedVar /* key, ArrayBuffer */,
-                    ppapi::proxy::SerializedVar /* init_data, ArrayBuffer */)
-IPC_MESSAGE_ROUTED2(PpapiMsg_PPPContentDecryptor_CancelKeyRequest,
+                    ppapi::proxy::SerializedVar /* response, ArrayBuffer */)
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPPContentDecryptor_ReleaseSession,
                     PP_Instance /* instance */,
                     uint32_t /* reference_id */)
 IPC_MESSAGE_ROUTED3(PpapiMsg_PPPContentDecryptor_Decrypt,
@@ -983,23 +982,26 @@ IPC_SYNC_MESSAGE_ROUTED2_2(
     ppapi::proxy::SerializedHandle /* result_shm_handle */)
 
 // PPB_ContentDecryptor_Dev messages handled in PPB_Instance_Proxy.
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_KeyAdded,
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_SessionCreated,
                     PP_Instance /* instance */,
-                    uint32_t /* reference_id */)
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_KeyMessage,
+                    uint32_t /* reference_id */,
+                    ppapi::proxy::SerializedVar /* session_id, String */)
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_SessionMessage,
                     PP_Instance /* instance */,
                     uint32_t /* reference_id */,
                     ppapi::proxy::SerializedVar /* message, ArrayBuffer */,
-                    ppapi::proxy::SerializedVar /* default_url, String */)
-IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_KeyError,
+                    ppapi::proxy::SerializedVar /* destination_url, String */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_SessionReady,
+                    PP_Instance /* instance */,
+                    uint32_t /* reference_id */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBInstance_SessionClosed,
+                    PP_Instance /* instance */,
+                    uint32_t /* reference_id */)
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBInstance_SessionError,
                     PP_Instance /* instance */,
                     uint32_t /* reference_id */,
                     int32_t /* media_error */,
                     int32_t /* system_code */)
-IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_SetSessionId,
-                    PP_Instance /* instance */,
-                    uint32_t /* reference_id */,
-                    ppapi::proxy::SerializedVar /* session_id, String */)
 IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBInstance_DeliverBlock,
                     PP_Instance /* instance */,
                     PP_Resource /* decrypted_block, PPB_Buffer_Dev */,

@@ -57,10 +57,11 @@ bool RendererMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidExitFullscreen, OnDidExitFullscreen)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPlay, OnPlayerPlay)
     IPC_MESSAGE_HANDLER(MediaPlayerMsg_DidMediaPlayerPause, OnPlayerPause)
-    IPC_MESSAGE_HANDLER(MediaKeysMsg_KeyAdded, OnKeyAdded)
-    IPC_MESSAGE_HANDLER(MediaKeysMsg_KeyError, OnKeyError)
-    IPC_MESSAGE_HANDLER(MediaKeysMsg_KeyMessage, OnKeyMessage)
-    IPC_MESSAGE_HANDLER(MediaKeysMsg_SetSessionId, OnSetSessionId)
+    // TODO(jrummell): Update IPC names for EME WD and add Closed.
+    IPC_MESSAGE_HANDLER(MediaKeysMsg_KeyAdded, OnSessionReady)
+    IPC_MESSAGE_HANDLER(MediaKeysMsg_KeyError, OnSessionError)
+    IPC_MESSAGE_HANDLER(MediaKeysMsg_KeyMessage, OnSessionMessage)
+    IPC_MESSAGE_HANDLER(MediaKeysMsg_SetSessionId, OnSessionCreated)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -255,39 +256,47 @@ void RendererMediaPlayerManager::CancelKeyRequest(int media_keys_id,
       routing_id(), media_keys_id, reference_id));
 }
 
-void RendererMediaPlayerManager::OnKeyAdded(int media_keys_id,
-                                            uint32 reference_id) {
-  ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
-  if (media_keys)
-    media_keys->OnKeyAdded(reference_id);
-}
-
-void RendererMediaPlayerManager::OnKeyError(
+void RendererMediaPlayerManager::OnSessionCreated(
     int media_keys_id,
     uint32 reference_id,
-    media::MediaKeys::KeyError error_code,
-    int system_code) {
+    const std::string& session_id) {
   ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
   if (media_keys)
-    media_keys->OnKeyError(reference_id, error_code, system_code);
+    media_keys->OnSessionCreated(reference_id, session_id);
 }
 
-void RendererMediaPlayerManager::OnKeyMessage(
+void RendererMediaPlayerManager::OnSessionMessage(
     int media_keys_id,
     uint32 reference_id,
     const std::vector<uint8>& message,
     const std::string& destination_url) {
   ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
   if (media_keys)
-    media_keys->OnKeyMessage(reference_id, message, destination_url);
+    media_keys->OnSessionMessage(reference_id, message, destination_url);
 }
 
-void RendererMediaPlayerManager::OnSetSessionId(int media_keys_id,
-                                                uint32 reference_id,
-                                                const std::string& session_id) {
+void RendererMediaPlayerManager::OnSessionReady(int media_keys_id,
+                                                uint32 reference_id) {
   ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
   if (media_keys)
-    media_keys->OnSetSessionId(reference_id, session_id);
+    media_keys->OnSessionReady(reference_id);
+}
+
+void RendererMediaPlayerManager::OnSessionClosed(int media_keys_id,
+                                                 uint32 reference_id) {
+  ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
+  if (media_keys)
+    media_keys->OnSessionClosed(reference_id);
+}
+
+void RendererMediaPlayerManager::OnSessionError(
+    int media_keys_id,
+    uint32 reference_id,
+    media::MediaKeys::KeyError error_code,
+    int system_code) {
+  ProxyMediaKeys* media_keys = GetMediaKeys(media_keys_id);
+  if (media_keys)
+    media_keys->OnSessionError(reference_id, error_code, system_code);
 }
 
 int RendererMediaPlayerManager::RegisterMediaPlayer(

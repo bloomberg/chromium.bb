@@ -236,10 +236,10 @@ MediaDrmBridge::~MediaDrmBridge() {
     Java_MediaDrmBridge_release(env, j_media_drm_.obj());
 }
 
-bool MediaDrmBridge::GenerateKeyRequest(uint32 reference_id,
-                                        const std::string& type,
-                                        const uint8* init_data,
-                                        int init_data_length) {
+bool MediaDrmBridge::CreateSession(uint32 reference_id,
+                                   const std::string& type,
+                                   const uint8* init_data,
+                                   int init_data_length) {
   std::vector<uint8> pssh_data;
   if (!GetPsshData(init_data, init_data_length, scheme_uuid_, &pssh_data))
     return false;
@@ -254,20 +254,21 @@ bool MediaDrmBridge::GenerateKeyRequest(uint32 reference_id,
   return true;
 }
 
-void MediaDrmBridge::AddKey(uint32 reference_id,
-                            const uint8* key, int key_length,
-                            const uint8* init_data, int init_data_length) {
+void MediaDrmBridge::UpdateSession(uint32 reference_id,
+                                   const uint8* response,
+                                   int response_length) {
   DVLOG(1) << __FUNCTION__;
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jbyteArray> j_key_data =
-      base::android::ToJavaByteArray(env, key, key_length);
+  ScopedJavaLocalRef<jbyteArray> j_response =
+      base::android::ToJavaByteArray(env, response, response_length);
   ScopedJavaLocalRef<jstring> j_session_id =
       ConvertUTF8ToJavaString(env, LookupSessionId(reference_id));
+  // TODO(jrummell): Update Android names to match new functionality.
   Java_MediaDrmBridge_addKey(
-      env, j_media_drm_.obj(), j_session_id.obj(), j_key_data.obj());
+      env, j_media_drm_.obj(), j_session_id.obj(), j_response.obj());
 }
 
-void MediaDrmBridge::CancelKeyRequest(uint32 reference_id) {
+void MediaDrmBridge::ReleaseSession(uint32 reference_id) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_session_id =
       ConvertUTF8ToJavaString(env, LookupSessionId(reference_id));
@@ -308,22 +309,22 @@ void MediaDrmBridge::OnKeyMessage(JNIEnv* env,
   JavaByteArrayToByteVector(env, j_message, &message);
   std::string destination_url = ConvertJavaStringToUTF8(env, j_destination_url);
 
-  manager_->OnSetSessionId(media_keys_id_, reference_id, session_id);
-  manager_->OnKeyMessage(
+  manager_->OnSessionCreated(media_keys_id_, reference_id, session_id);
+  manager_->OnSessionMessage(
       media_keys_id_, reference_id, message, destination_url);
 }
 
 void MediaDrmBridge::OnKeyAdded(JNIEnv* env, jobject, jstring j_session_id) {
   std::string session_id = ConvertJavaStringToUTF8(env, j_session_id);
   uint32_t reference_id = DetermineReferenceId(session_id);
-  manager_->OnKeyAdded(media_keys_id_, reference_id);
+  manager_->OnSessionReady(media_keys_id_, reference_id);
 }
 
 void MediaDrmBridge::OnKeyError(JNIEnv* env, jobject, jstring j_session_id) {
   // |j_session_id| can be NULL, in which case we'll return an empty string.
   std::string session_id = ConvertJavaStringToUTF8(env, j_session_id);
   uint32 reference_id = DetermineReferenceId(session_id);
-  manager_->OnKeyError(
+  manager_->OnSessionError(
       media_keys_id_, reference_id, MediaKeys::kUnknownError, 0);
 }
 

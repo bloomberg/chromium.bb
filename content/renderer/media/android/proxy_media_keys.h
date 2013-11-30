@@ -22,41 +22,44 @@ class ProxyMediaKeys : public media::MediaKeys {
  public:
   ProxyMediaKeys(RendererMediaPlayerManager* proxy,
                  int media_keys_id,
-                 const media::KeyAddedCB& key_added_cb,
-                 const media::KeyErrorCB& key_error_cb,
-                 const media::KeyMessageCB& key_message_cb,
-                 const media::SetSessionIdCB& set_session_id_cb);
+                 const media::SessionCreatedCB& session_created_cb,
+                 const media::SessionMessageCB& session_message_cb,
+                 const media::SessionReadyCB& session_ready_cb,
+                 const media::SessionClosedCB& session_closed_cb,
+                 const media::SessionErrorCB& session_error_cb);
   virtual ~ProxyMediaKeys();
 
   void InitializeCDM(const std::string& key_system, const GURL& frame_url);
 
   // MediaKeys implementation.
-  virtual bool GenerateKeyRequest(uint32 reference_id,
-                                  const std::string& type,
-                                  const uint8* init_data,
-                                  int init_data_length) OVERRIDE;
-  virtual void AddKey(uint32 reference_id,
-                      const uint8* key, int key_length,
-                      const uint8* init_data, int init_data_length) OVERRIDE;
-  virtual void CancelKeyRequest(uint32 reference_id) OVERRIDE;
+  virtual bool CreateSession(uint32 reference_id,
+                             const std::string& type,
+                             const uint8* init_data,
+                             int init_data_length) OVERRIDE;
+  virtual void UpdateSession(uint32 reference_id,
+                             const uint8* response,
+                             int response_length) OVERRIDE;
+  virtual void ReleaseSession(uint32 reference_id) OVERRIDE;
 
   // Callbacks.
-  void OnKeyAdded(uint32 reference_id);
-  void OnKeyError(uint32 reference_id,
-                  media::MediaKeys::KeyError error_code,
-                  int system_code);
-  void OnKeyMessage(uint32 reference_id,
-                    const std::vector<uint8>& message,
-                    const std::string& destination_url);
-  void OnSetSessionId(uint32 reference_id, const std::string& session_id);
+  void OnSessionCreated(uint32 reference_id, const std::string& session_id);
+  void OnSessionMessage(uint32 reference_id,
+                        const std::vector<uint8>& message,
+                        const std::string& destination_url);
+  void OnSessionReady(uint32 reference_id);
+  void OnSessionClosed(uint32 reference_id);
+  void OnSessionError(uint32 reference_id,
+                      media::MediaKeys::KeyError error_code,
+                      int system_code);
 
  private:
   RendererMediaPlayerManager* manager_;
   int media_keys_id_;
-  media::KeyAddedCB key_added_cb_;
-  media::KeyErrorCB key_error_cb_;
-  media::KeyMessageCB key_message_cb_;
-  media::SetSessionIdCB set_session_id_cb_;
+  media::SessionCreatedCB session_created_cb_;
+  media::SessionMessageCB session_message_cb_;
+  media::SessionReadyCB session_ready_cb_;
+  media::SessionClosedCB session_closed_cb_;
+  media::SessionErrorCB session_error_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyMediaKeys);
 };

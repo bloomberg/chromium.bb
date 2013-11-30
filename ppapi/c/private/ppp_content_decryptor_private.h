@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_content_decryptor_private.idl,
- *   modified Fri Oct 18 18:11:09 2013.
+ *   modified Wed Nov 27 15:42:55 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_8 \
-    "PPP_ContentDecryptor_Private;0.8"
+#define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_9 \
+    "PPP_ContentDecryptor_Private;0.9"
 #define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_8
+    PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_9
 
 /**
  * @file
@@ -39,10 +39,10 @@
  * <code>PPP_ContentDecryptor_Private</code> structure contains the function
  * pointers the decryption plugin must implement to provide services needed by
  * the browser. This interface provides the plugin side support for the Content
- * Decryption Module (CDM) for v0.1 of the proposed Encrypted Media Extensions:
- * http://goo.gl/rbdnR
+ * Decryption Module (CDM) for Encrypted Media Extensions:
+ * http://www.w3.org/TR/encrypted-media/
  */
-struct PPP_ContentDecryptor_Private_0_8 {
+struct PPP_ContentDecryptor_Private_0_9 {
   /**
    * Initialize for the specified key system.
    *
@@ -51,16 +51,16 @@ struct PPP_ContentDecryptor_Private_0_8 {
    */
   void (*Initialize)(PP_Instance instance, struct PP_Var key_system);
   /**
-   * Generates a key request. key_system specifies the key or licensing system
-   * to use. type contains the MIME type of init_data. init_data is a data
-   * buffer containing data for use in generating the request.
+   * Creates a session. <code>type</code> contains the MIME type of
+   * <code>init_data</code>. <code>init_data</code> is a data buffer
+   * containing data for use in generating the request.
    *
-   * Note: <code>GenerateKeyRequest()</code> must create the session ID used in
+   * Note: <code>CreateSession()</code> must create the session ID used in
    * other methods on this interface. The session ID must be provided to the
-   * browser by the CDM via <code>KeyMessage()</code> on the
+   * browser by the CDM via <code>SessionCreated()</code> on the
    * <code>PPB_ContentDecryptor_Private</code> interface.
    *
-   * @param[in] reference_id A reference for the session for which the key
+   * @param[in] reference_id A reference for the session for which a session
    * should be generated.
    *
    * @param[in] type A <code>PP_Var</code> of type
@@ -70,43 +70,38 @@ struct PPP_ContentDecryptor_Private_0_8 {
    * <code>PP_VARTYPE_ARRAYBUFFER</code> containing container specific
    * initialization data.
    */
-  void (*GenerateKeyRequest)(PP_Instance instance,
-                             uint32_t reference_id,
-                             struct PP_Var type,
-                             struct PP_Var init_data);
+  void (*CreateSession)(PP_Instance instance,
+                        uint32_t reference_id,
+                        struct PP_Var type,
+                        struct PP_Var init_data);
   /**
-   * Provides a key or license to the decryptor for decrypting media data.
+   * Provides a license or other message to the decryptor.
    *
-   * When the CDM needs more information to complete addition of the key it
-   * will call <code>KeyMessage()</code> on the
-   * <code>PPB_ContentDecryptor_Private</code> interface, which the browser
-   * passes to the application. When the key is ready to use, the CDM
-   * must call call <code>KeyAdded()</code> on the
+   * When the CDM needs more information, it must call
+   * <code>SessionMessage()</code> on the
+   * <code>PPB_ContentDecryptor_Private</code> interface, and the browser
+   * must notify the web application. When the CDM has finished processing
+   * <code>response</code> and needs no more information, it must call
+   * <code>SessionReady()</code> on the
    * <code>PPB_ContentDecryptor_Private</code> interface, and the browser
    * must notify the web application.
    *
-   * @param[in] reference_id A reference for the session for which the key
-   * should be added.
+   * @param[in] reference_id A reference for the session to update.
    *
-   * @param[in] key A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_ARRAYBUFFER</code> containing the decryption key, license,
-   * or other message for the given session ID.
-   *
-   * @param[in] init_data A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_ARRAYBUFFER</code> containing container specific
-   * initialization data.
+   * @param[in] response A <code>PP_Var</code> of type
+   * <code>PP_VARTYPE_ARRAYBUFFER</code> containing the license or other
+   * message for the given session ID.
    */
-  void (*AddKey)(PP_Instance instance,
-                 uint32_t reference_id,
-                 struct PP_Var key,
-                 struct PP_Var init_data);
+  void (*UpdateSession)(PP_Instance instance,
+                        uint32_t reference_id,
+                        struct PP_Var response);
   /**
-   * Cancels a pending key request for the specified session ID.
+   * Release the specified session and related resources.
    *
-   * @param[in] reference_id A reference for the session for which the key
-   * request should be cancelled.
+   * @param[in] reference_id A reference for the session that should be
+   * released.
    */
-  void (*CancelKeyRequest)(PP_Instance instance, uint32_t reference_id);
+  void (*ReleaseSession)(PP_Instance instance, uint32_t reference_id);
   /**
    * Decrypts the block and returns the unencrypted block via
    * <code>DeliverBlock()</code> on the
@@ -233,7 +228,7 @@ struct PPP_ContentDecryptor_Private_0_8 {
       const struct PP_EncryptedBlockInfo* encrypted_block_info);
 };
 
-typedef struct PPP_ContentDecryptor_Private_0_8 PPP_ContentDecryptor_Private;
+typedef struct PPP_ContentDecryptor_Private_0_9 PPP_ContentDecryptor_Private;
 /**
  * @}
  */

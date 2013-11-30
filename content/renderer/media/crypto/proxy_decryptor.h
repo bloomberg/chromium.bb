@@ -93,15 +93,16 @@ class ProxyDecryptor {
   scoped_ptr<media::MediaKeys> CreateMediaKeys(const std::string& key_system,
                                                const GURL& frame_url);
 
-  // Callbacks for firing key events.
-  void KeyAdded(uint32 reference_id);
-  void KeyError(uint32 reference_id,
-                media::MediaKeys::KeyError error_code,
-                int system_code);
-  void KeyMessage(uint32 reference_id,
-                  const std::vector<uint8>& message,
-                  const std::string& default_url);
-  void SetSessionId(uint32 reference_id, const std::string& session_id);
+  // Callbacks for firing session events.
+  void OnSessionCreated(uint32 reference_id, const std::string& session_id);
+  void OnSessionMessage(uint32 reference_id,
+                        const std::vector<uint8>& message,
+                        const std::string& default_url);
+  void OnSessionReady(uint32 reference_id);
+  void OnSessionClosed(uint32 reference_id);
+  void OnSessionError(uint32 reference_id,
+                      media::MediaKeys::KeyError error_code,
+                      int system_code);
 
   // Helper function to determine reference_id for the provided |session_id|.
   uint32 LookupReferenceId(const std::string& session_id);
