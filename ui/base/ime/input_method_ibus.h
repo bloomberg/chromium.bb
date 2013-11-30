@@ -89,7 +89,6 @@ class UI_EXPORT InputMethodIBus
 
   // Processes a key event that was not filtered by the input method.
   void ProcessUnfilteredKeyPressEvent(const ui::KeyEvent& event);
-  void ProcessUnfilteredFabricatedKeyPressEvent(const ui::KeyEvent& event);
 
   // Sends input method result caused by the given key event to the focused text
   // input client.

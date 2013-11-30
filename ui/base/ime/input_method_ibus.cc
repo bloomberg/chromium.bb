@@ -289,7 +289,7 @@ void InputMethodIBus::ConfirmCompositionText() {
 bool InputMethodIBus::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
   // TODO(bryeung): The fabricated events should also pass through IME.
   if (event.type() == ET_KEY_PRESSED)
-    ProcessUnfilteredFabricatedKeyPressEvent(event);
+    ProcessUnfilteredKeyPressEvent(event);
   else
     DispatchKeyEventPostIME(event);
 
@@ -424,15 +424,7 @@ void InputMethodIBus::ProcessFilteredKeyPressEvent(const ui::KeyEvent& event) {
 
 void InputMethodIBus::ProcessUnfilteredKeyPressEvent(
     const ui::KeyEvent& event) {
-  // For a fabricated event, ProcessUnfilteredFabricatedKeyPressEvent should be
-  // called instead.
-  if (!event.HasNativeEvent())
-    return ProcessUnfilteredFabricatedKeyPressEvent(event);
-
-  const base::NativeEvent& native_event = event.native_event();
-  DCHECK(native_event);
-
-  TextInputClient* client = GetTextInputClient();
+  const TextInputClient* prev_client = GetTextInputClient();
   DispatchKeyEventPostIME(event);
 
   // We shouldn't dispatch the character anymore if the key event dispatch
@@ -442,41 +434,30 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(
   // 3. enable Korean IME, press A, then press Tab to move the focus to the web
   //    page.
   // We should return here not to send the Tab key event to RWHV.
-  if (client != GetTextInputClient())
+  TextInputClient* client = GetTextInputClient();
+  if (!client || client != prev_client)
     return;
-
-  const uint32 event_flags = event.flags();
 
   // If a key event was not filtered by |context_| and |character_composer_|,
   // then it means the key event didn't generate any result text. So we need
   // to send corresponding character to the focused text input client.
-  client = GetTextInputClient();
-
+  const uint32 event_flags = event.flags();
   uint16 ch = 0;
-  if (!(event_flags & ui::EF_CONTROL_DOWN))
-    ch = ui::GetCharacterFromXEvent(native_event);
-  if (!ch) {
-    ch = ui::GetCharacterFromKeyCode(
-        ui::KeyboardCodeFromNative(native_event), event_flags);
+  if (event.HasNativeEvent()) {
+    const base::NativeEvent& native_event = event.native_event();
+
+    if (!(event_flags & ui::EF_CONTROL_DOWN))
+      ch = ui::GetCharacterFromXEvent(native_event);
+    if (!ch) {
+      ch = ui::GetCharacterFromKeyCode(
+          ui::KeyboardCodeFromNative(native_event), event_flags);
+    }
+  } else {
+    ch = ui::GetCharacterFromKeyCode(event.key_code(), event_flags);
   }
 
-  if (client && ch)
+  if (ch)
     client->InsertChar(ch, event_flags);
-}
-
-void InputMethodIBus::ProcessUnfilteredFabricatedKeyPressEvent(
-    const ui::KeyEvent& event) {
-  TextInputClient* client = GetTextInputClient();
-  DispatchKeyEventPostIME(event);
-
-  if (client != GetTextInputClient())
-    return;
-
-  client = GetTextInputClient();
-  const uint16 ch = ui::GetCharacterFromKeyCode(event.key_code(),
-                                                event.flags());
-  if (client && ch)
-    client->InsertChar(ch, event.flags());
 }
 
 void InputMethodIBus::ProcessInputMethodResult(const ui::KeyEvent& event,
