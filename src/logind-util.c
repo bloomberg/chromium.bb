@@ -44,6 +44,8 @@
 #include "dbus.h"
 #include "logind-util.h"
 
+#define DRM_MAJOR 226
+
 #ifndef KDSKBMUTE
 #define KDSKBMUTE	0x4B51
 #endif
@@ -275,10 +277,10 @@ weston_logind_activate_vt(struct weston_logind *wl, int vt)
 static void
 weston_logind_set_active(struct weston_logind *wl, bool active)
 {
-	if (active)
-		wl->compositor->session_active = 1;
-	else
-		wl->compositor->session_active = 0;
+	if (!wl->compositor->session_active == !active)
+		return;
+
+	wl->compositor->session_active = active;
 
 	wl_signal_emit(&wl->compositor->session_signal,
 		       wl->compositor);
@@ -314,7 +316,8 @@ get_active_cb(DBusPendingCall *pending, void *data)
 		goto err_unref;
 
 	dbus_message_iter_get_basic(&sub, &b);
-	weston_logind_set_active(wl, b);
+	if (!b)
+		weston_logind_set_active(wl, false);
 
 err_unref:
 	dbus_message_unref(m);
@@ -428,7 +431,8 @@ property_changed(struct weston_logind *wl, DBusMessage *m)
 		if (!strcmp(name, "Active")) {
 			if (dbus_message_iter_get_arg_type(&entry) == DBUS_TYPE_BOOLEAN) {
 				dbus_message_iter_get_basic(&entry, &b);
-				weston_logind_set_active(wl, b);
+				if (!b)
+					weston_logind_set_active(wl, false);
 				return;
 			}
 		}
@@ -478,31 +482,43 @@ device_paused(struct weston_logind *wl, DBusMessage *m)
 
 	/* "pause" means synchronous pausing. Acknowledge it unconditionally
 	 * as we support asynchronous device shutdowns, anyway.
-	 * "force" means asynchronous pausing. We ignore it as the following
-	 * session-deactivation will suffice as notification.
-	 * "gone" means the device is gone. We ignore it as we receive a
-	 * udev notification, anyway. */
+	 * "force" means asynchronous pausing.
+	 * "gone" means the device is gone. We handle it the same as "force" as
+	 * a following udev event will be caught, too.
+	 *
+	 * If it's our main DRM device, tell the compositor to go asleep. */
 
 	if (!strcmp(type, "pause"))
 		weston_logind_pause_device_complete(wl, major, minor);
+
+	if (major == DRM_MAJOR)
+		weston_logind_set_active(wl, false);
 }
 
 static void
 device_resumed(struct weston_logind *wl, DBusMessage *m)
 {
-	/*
-	 * DeviceResumed messages provide us a new file-descriptor for
+	bool r;
+	uint32_t major;
+
+	r = dbus_message_get_args(m, NULL,
+				  DBUS_TYPE_UINT32, &major,
+				  /*DBUS_TYPE_UINT32, &minor,
+				  DBUS_TYPE_UNIX_FD, &fd,*/
+				  DBUS_TYPE_INVALID);
+	if (!r) {
+		weston_log("logind: cannot parse ResumeDevice dbus signal\n");
+		return;
+	}
+
+	/* DeviceResumed messages provide us a new file-descriptor for
 	 * resumed devices. For DRM devices it's the same as before, for evdev
 	 * devices it's a new open-file. As we reopen evdev devices, anyway,
-	 * there is no need for us to handle this event. If we ever optimize
-	 * our evdev code to support resuming devices, this event can be
-	 * parsed like this:
-	 * r = dbus_message_get_args(m, NULL,
-	 * 			  DBUS_TYPE_UINT32, &major,
-	 * 			  DBUS_TYPE_UINT32, &minor,
-	 * 			  DBUS_TYPE_UNIX_FD, &fd,
-	 * 			  DBUS_TYPE_INVALID);
-	 */
+	 * there is no need for us to handle this event for evdev. For DRM, we
+	 * notify the compositor to wake up. */
+
+	if (major == DRM_MAJOR)
+		weston_logind_set_active(wl, true);
 }
 
 static DBusHandlerResult
