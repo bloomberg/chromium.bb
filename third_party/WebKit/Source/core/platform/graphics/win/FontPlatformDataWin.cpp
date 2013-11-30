@@ -32,7 +32,6 @@
 #include "config.h"
 #include "core/platform/graphics/FontPlatformData.h"
 
-#include "RuntimeEnabledFeatures.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #if USE(HARFBUZZ)
@@ -58,11 +57,7 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context) cons
     paint->setTypeface(typeface());
     paint->setFakeBoldText(m_fakeBold);
     paint->setTextSkewX(m_fakeItalic ? -SK_Scalar1 / 4 : 0);
-
-    // Subpixel text positioning is not supported by the GDI backend.
-    if (RuntimeEnabledFeatures::directWriteEnabled()
-        && RuntimeEnabledFeatures::subpixelFontScalingEnabled())
-        paint->setSubpixelText(true);
+    paint->setSubpixelText(m_useSubpixelPositioning);
 
     int textFlags = paintTextFlags();
     // Only set painting flags when we're actually painting.
@@ -180,6 +175,7 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
     , m_typeface(adoptRef(SkTypeface::RefDefault()))
     , m_paintTextFlags(0)
     , m_isHashTableDeletedValue(true)
+    , m_useSubpixelPositioning(false)
 {
 #if !USE(HARFBUZZ)
     m_font = 0;
@@ -195,6 +191,7 @@ FontPlatformData::FontPlatformData()
     , m_typeface(adoptRef(SkTypeface::RefDefault()))
     , m_paintTextFlags(0)
     , m_isHashTableDeletedValue(false)
+    , m_useSubpixelPositioning(false)
 {
 #if !USE(HARFBUZZ)
     m_font = 0;
@@ -212,6 +209,7 @@ FontPlatformData::FontPlatformData(HFONT font, float size, FontOrientation orien
     , m_scriptCache(0)
     , m_typeface(CreateTypefaceFromHFont(font, 0, &m_paintTextFlags))
     , m_isHashTableDeletedValue(false)
+    , m_useSubpixelPositioning(false)
 {
 }
 #endif
@@ -225,6 +223,7 @@ FontPlatformData::FontPlatformData(float size, bool bold, bool oblique)
     , m_typeface(adoptRef(SkTypeface::RefDefault()))
     , m_paintTextFlags(0)
     , m_isHashTableDeletedValue(false)
+    , m_useSubpixelPositioning(false)
 {
 #if !USE(HARFBUZZ)
     m_font = 0;
@@ -240,6 +239,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data)
     , m_typeface(data.m_typeface)
     , m_paintTextFlags(data.m_paintTextFlags)
     , m_isHashTableDeletedValue(false)
+    , m_useSubpixelPositioning(data.m_useSubpixelPositioning)
 {
 #if !USE(HARFBUZZ)
     m_font = data.m_font;
@@ -255,6 +255,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data, float textSize)
     , m_typeface(data.m_typeface)
     , m_paintTextFlags(data.m_paintTextFlags)
     , m_isHashTableDeletedValue(false)
+    , m_useSubpixelPositioning(data.m_useSubpixelPositioning)
 {
 #if !USE(HARFBUZZ)
     m_font = data.m_font;
@@ -262,13 +263,16 @@ FontPlatformData::FontPlatformData(const FontPlatformData& data, float textSize)
 #endif
 }
 
-FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family, float textSize, bool fakeBold, bool fakeItalic, FontOrientation orientation)
+FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family,
+    float textSize, bool fakeBold, bool fakeItalic, FontOrientation orientation,
+    bool useSubpixelPositioning)
     : m_textSize(textSize)
     , m_fakeBold(fakeBold)
     , m_fakeItalic(fakeItalic)
     , m_orientation(orientation)
     , m_typeface(tf)
     , m_isHashTableDeletedValue(false)
+    , m_useSubpixelPositioning(useSubpixelPositioning)
 {
     // FIXME: This can be removed together with m_font once the last few
     // uses of hfont() has been eliminated.

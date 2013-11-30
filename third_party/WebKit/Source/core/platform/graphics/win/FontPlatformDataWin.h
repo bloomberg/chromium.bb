@@ -76,7 +76,7 @@ public:
     FontPlatformData(float size, bool bold, bool oblique);
     FontPlatformData(const FontPlatformData&);
     FontPlatformData(const FontPlatformData&, float textSize);
-    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool fakeBold, bool fakeItalic, FontOrientation = Horizontal);
+    FontPlatformData(PassRefPtr<SkTypeface>, const char* name, float textSize, bool fakeBold, bool fakeItalic, FontOrientation = Horizontal, bool useSubpixelPositioning = false);
 
     void setupPaint(SkPaint*, GraphicsContext* = 0) const;
 
@@ -181,6 +181,7 @@ private:
 #endif
 
     bool m_isHashTableDeletedValue;
+    bool m_useSubpixelPositioning;
 };
 
 } // WebCore

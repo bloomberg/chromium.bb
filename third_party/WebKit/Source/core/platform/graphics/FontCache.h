@@ -141,6 +141,7 @@ private:
 
 #if OS(WIN) && !ENABLE(GDI_FONTS_ON_WINDOWS)
     OwnPtr<SkFontMgr> m_fontManager;
+    bool m_useSubpixelPositioning;
 #endif
 
 #if OS(MACOSX) || OS(ANDROID)

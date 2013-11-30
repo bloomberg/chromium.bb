@@ -51,12 +51,17 @@ FontCache::FontCache()
     // to GDI on platforms where DirectWrite is not supported.
     if (RuntimeEnabledFeatures::directWriteEnabled())
         fontManager = SkFontMgr_New_DirectWrite();
+
+    // Subpixel text positioning is not supported by the GDI backend.
+    m_useSubpixelPositioning = fontManager
+        ? RuntimeEnabledFeatures::subpixelFontScalingEnabled()
+        : false;
+
     if (!fontManager)
         fontManager = SkFontMgr_New_GDI();
 
     m_fontManager = adoptPtr(fontManager);
 }
-
 
 static bool fontContainsCharacter(const FontPlatformData* fontData, const wchar_t* family, UChar32 character)
 {
@@ -207,7 +212,8 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
         fontSize,
         fontDescription.weight() >= FontWeightBold && !tf->isBold() || fontDescription.isSyntheticBold(),
         fontDescription.italic() && !tf->isItalic() || fontDescription.isSyntheticItalic(),
-        fontDescription.orientation());
+        fontDescription.orientation(),
+        m_useSubpixelPositioning);
     return result;
 }
 
