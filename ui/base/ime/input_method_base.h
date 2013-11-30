@@ -75,11 +75,6 @@ class UI_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod) {
   // Returns true if the event was processed
   bool DispatchKeyEventPostIME(const ui::KeyEvent& event) const;
 
-  // Convenience method to call delegate_->DispatchFabricatedKeyEventPostIME().
-  // Returns true if the event was processed
-  // TODO(komatsu): Unify this function to DispatchKeyEventPostIME.
-  bool DispatchFabricatedKeyEventPostIME(const ui::KeyEvent& event) const;
-
   // Convenience method to notify all observers of TextInputClient changes.
   void NotifyTextInputStateChanged(const TextInputClient* client);
 

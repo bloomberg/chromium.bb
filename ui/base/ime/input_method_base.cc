@@ -102,22 +102,14 @@ void InputMethodBase::OnInputMethodChanged() const {
 
 bool InputMethodBase::DispatchKeyEventPostIME(
     const ui::KeyEvent& event) const {
-  if (!event.HasNativeEvent())
-    return DispatchFabricatedKeyEventPostIME(event);
-
   if (!delegate_)
     return false;
+
+  if (!event.HasNativeEvent())
+    return delegate_->DispatchFabricatedKeyEventPostIME(
+        event.type(), event.key_code(), event.flags());
 
   return delegate_->DispatchKeyEventPostIME(event.native_event());
-}
-
-bool InputMethodBase::DispatchFabricatedKeyEventPostIME(
-    const ui::KeyEvent& event) const {
-  if (!delegate_)
-    return false;
-
-  return delegate_->DispatchFabricatedKeyEventPostIME(
-      event.type(), event.key_code(), event.flags());
 }
 
 void InputMethodBase::NotifyTextInputStateChanged(

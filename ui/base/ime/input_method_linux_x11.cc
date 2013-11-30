@@ -93,7 +93,7 @@ bool InputMethodLinuxX11::DispatchKeyEvent(const ui::KeyEvent& event) {
                                           VKEY_PROCESSKEY,
                                           event.flags(),
                                           false);  // is_char
-      DispatchFabricatedKeyEventPostIME(fabricated_event);
+      DispatchKeyEventPostIME(fabricated_event);
     }
     return true;
   }
@@ -194,7 +194,7 @@ void InputMethodLinuxX11::OnDidChangeFocusedClient(
 bool InputMethodLinuxX11::DispatchFabricatedKeyEvent(
     const ui::KeyEvent& event) {
   // Let a post IME handler handle the key event.
-  if (DispatchFabricatedKeyEventPostIME(event))
+  if (DispatchKeyEventPostIME(event))
     return true;
 
   // Otherwise, insert the character.

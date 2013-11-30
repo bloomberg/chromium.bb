@@ -364,7 +364,7 @@ bool InputMethodWin::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
       return true;
     }
   }
-  return DispatchFabricatedKeyEventPostIME(event);
+  return DispatchKeyEventPostIME(event);
 }
 
 }  // namespace ui

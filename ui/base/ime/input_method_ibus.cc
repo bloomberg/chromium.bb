@@ -320,7 +320,7 @@ bool InputMethodIBus::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
   if (event.type() == ET_KEY_PRESSED)
     ProcessUnfilteredFabricatedKeyPressEvent(event);
   else
-    DispatchFabricatedKeyEventPostIME(event);
+    DispatchKeyEventPostIME(event);
 
   return true;
 }
@@ -466,7 +466,7 @@ void InputMethodIBus::ProcessFilteredKeyPressEvent(const ui::KeyEvent& event) {
                                         VKEY_PROCESSKEY,
                                         event.flags(),
                                         false);  // is_char
-    DispatchFabricatedKeyEventPostIME(fabricated_event);
+    DispatchKeyEventPostIME(fabricated_event);
   }
 }
 
@@ -515,7 +515,7 @@ void InputMethodIBus::ProcessUnfilteredKeyPressEvent(
 void InputMethodIBus::ProcessUnfilteredFabricatedKeyPressEvent(
     const ui::KeyEvent& event) {
   TextInputClient* client = GetTextInputClient();
-  DispatchFabricatedKeyEventPostIME(event);
+  DispatchKeyEventPostIME(event);
 
   if (client != GetTextInputClient())
     return;
