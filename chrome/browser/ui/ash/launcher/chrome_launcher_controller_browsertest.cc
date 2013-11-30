@@ -296,6 +296,7 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
     }
     if (command != RIP_OFF_ITEM_AND_DONT_RELEASE_MOUSE) {
       generator->ReleaseLeftButton();
+      base::MessageLoop::current()->RunUntilIdle();
       test->RunMessageLoopUntilAnimationsDone();
     }
   }
@@ -1759,9 +1760,10 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {
       ash::Shell::GetPrimaryRootWindow(), gfx::Point());
   ash::test::ShelfViewTestAPI test(
       ash::test::LauncherTestAPI(launcher_).shelf_view());
-
+  test.SetAnimationDuration(1);  // Speed up animations for test.
   // Create a known application and check that we have 3 items in the launcher.
   CreateShortcut("app1");
+  test.RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(3, model_->item_count());
 
   // Test #1: Ripping out the browser item should not change anything.
@@ -1803,6 +1805,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {
   // Test #5: Uninstalling an application while it is being ripped off should
   // not crash.
   ash::LauncherID app_id = CreateShortcut("app2");
+  test.RunMessageLoopUntilAnimationsDone();
   int app2_index = GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT);
   EXPECT_EQ(3, model_->item_count());  // And it remains that way.
   RipOffItemIndex(app2_index,
@@ -1810,6 +1813,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {
                   &test,
                   RIP_OFF_ITEM_AND_DONT_RELEASE_MOUSE);
   RemoveShortcut(app_id);
+  test.RunMessageLoopUntilAnimationsDone();
   EXPECT_EQ(2, model_->item_count());  // The item should now be gone.
   generator.ReleaseLeftButton();
   base::MessageLoop::current()->RunUntilIdle();
@@ -1833,6 +1837,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {
   // Make one more item after creating a overflow button.
   std::string fake_app_id = base::StringPrintf("fake_app_%d", items_added);
   PinFakeApp(fake_app_id);
+  test.RunMessageLoopUntilAnimationsDone();
 
   int total_count = model_->item_count();
   app_index = GetIndexOfShelfItemType(ash::TYPE_APP_SHORTCUT);
