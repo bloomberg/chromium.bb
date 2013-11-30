@@ -139,6 +139,7 @@ const char kSpeechSynthesisExtensionPath[] =
 const char kSpeechSynthesisExtensionId[] =
     "gjjabgpgjpampikjhjpfhneeoapjbjaf";
 const char kWallpaperManagerId[] = "obklkkbkpaoaejdabbfldmcfplpdgolj";
+const char kFirstRunDialogId[] = "jdgcneonijmofocbhmijhacgchbihela";
 #else
 // The extension id for the web store extension.
 const char kChromeVoxExtensionId[] =

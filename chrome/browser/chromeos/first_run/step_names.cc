@@ -7,7 +7,6 @@
 namespace chromeos {
 namespace first_run {
 
-const char kGreetingStep[] = "greeting";
 const char kAppListStep[] = "app-list";
 const char kTrayStep[] = "tray";
 const char kHelpStep[] = "help";

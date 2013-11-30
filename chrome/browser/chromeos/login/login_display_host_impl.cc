@@ -29,7 +29,7 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/first_run/drive_first_run_controller.h"
-#include "chrome/browser/chromeos/first_run/first_run_controller.h"
+#include "chrome/browser/chromeos/first_run/first_run.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/language_preferences.h"
@@ -372,7 +372,7 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
       ((chromeos::UserManager::Get()->IsCurrentUserNew() &&
         !command_line->HasSwitch(::switches::kTestType)) ||
        command_line->HasSwitch(switches::kForceFirstRunUI))) {
-    FirstRunController::Start();
+    LaunchFirstRunDialog();
   }
 
   // TODO(tengs): This should be refactored together with the first run UI.

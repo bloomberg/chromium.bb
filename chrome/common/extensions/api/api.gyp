@@ -157,6 +157,7 @@
             'schema_files': [
               'diagnostics.idl',
               'file_browser_handler_internal.json',
+              'first_run_private.json',
               'log_private.idl',
               'screenlock_private.idl',
               'wallpaper.json',

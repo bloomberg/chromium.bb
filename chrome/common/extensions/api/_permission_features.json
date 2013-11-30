@@ -370,6 +370,11 @@
     "channel": "trunk",
     "extension_types": ["platform_app"]
   },
+  "firstRunPrivate": {
+    "channel": "stable",
+    "extension_types": ["platform_app"],
+    "location": "component"
+  },
   "fontSettings": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]

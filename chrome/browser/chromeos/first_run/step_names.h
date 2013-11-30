@@ -8,7 +8,6 @@
 namespace chromeos {
 namespace first_run {
 
-extern const char kGreetingStep[];
 extern const char kAppListStep[];
 extern const char kTrayStep[];
 extern const char kHelpStep[];

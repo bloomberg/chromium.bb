@@ -10,7 +10,6 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/first_run/first_run_view.h"
 #include "chrome/browser/chromeos/first_run/steps/app_list_step.h"
-#include "chrome/browser/chromeos/first_run/steps/greeting_step.h"
 #include "chrome/browser/chromeos/first_run/steps/help_step.h"
 #include "chrome/browser/chromeos/first_run/steps/tray_step.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -86,6 +85,7 @@ void FirstRunController::Finalize() {
 void FirstRunController::OnActorInitialized() {
   RegisterSteps();
   shell_helper_->GetOverlayWidget()->Show();
+  actor_->SetBackgroundVisible(true);
   ShowNextStep();
 }
 
@@ -114,8 +114,6 @@ void FirstRunController::OnActorDestroyed() {
 }
 
 void FirstRunController::RegisterSteps() {
-  steps_.push_back(make_linked_ptr(
-      new first_run::GreetingStep(shell_helper_.get(), actor_)));
   steps_.push_back(make_linked_ptr(
       new first_run::AppListStep(shell_helper_.get(), actor_)));
   steps_.push_back(make_linked_ptr(

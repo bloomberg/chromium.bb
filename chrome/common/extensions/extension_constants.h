@@ -255,6 +255,8 @@ namespace extension_misc {
   extern const char kSpeechSynthesisExtensionId[];
   // The extension id of the wallpaper manager application.
   extern const char kWallpaperManagerId[];
+  // The extension id of the first run dialog application.
+  extern const char kFirstRunDialogId[];
 #endif
 
   // What causes an extension to be installed? Used in histograms, so don't

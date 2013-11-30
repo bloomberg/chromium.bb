@@ -30,20 +30,6 @@ cr.define('cr.FirstRun', function() {
         chrome.send('nextButtonClicked', [this.getName()]);
         e.stopPropagation();
       }).bind(this));
-      var topBar = this.getElementsByClassName('topbutton-bar')[0];
-      if (topBar) {
-        var closeButton = topBar.getElementsByClassName('close-button')[0];
-        if (closeButton) {
-          // Make close unfocusable by mouse.
-          closeButton.addEventListener('mousedown', function(e) {
-            e.preventDefault();
-          });
-          closeButton.addEventListener('click', function(e) {
-            chrome.send('closeButtonClicked');
-            e.stopPropagation();
-          });
-        }
-      }
     },
 
     /**

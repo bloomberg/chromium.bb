@@ -169,6 +169,7 @@ class APIPermission {
     kSystemNetwork,
     kSystemInfoCpu,
     kSystemInfoMemory,
+    kFirstRunPrivate,
     kEnumBoundary
   };
 

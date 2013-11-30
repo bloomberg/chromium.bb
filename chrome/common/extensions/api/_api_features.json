@@ -313,6 +313,11 @@
     "dependencies": ["permission:fileSystemProvider"],
     "contexts": ["blessed_extension"]
   },
+  "firstRunPrivate": {
+    "platforms": ["chromeos"],
+    "dependencies": ["permission:firstRunPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   "fontSettings": {
     "dependencies": ["permission:fontSettings"],
     "contexts": ["blessed_extension"]
