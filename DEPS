@@ -286,7 +286,7 @@ deps_os = {
       "/trunk/tools/third_party/python_26@89111",
 
     "src/third_party/psyco_win32":
-      "/trunk/deps/third_party/psyco_win32@79861",
+      "/trunk/deps/third_party/psyco_win32@237949",
 
     "src/third_party/bison":
       "/trunk/deps/third_party/bison@147303",
