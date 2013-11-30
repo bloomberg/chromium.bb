@@ -107,7 +107,9 @@ int RenderThemeChromiumAndroid::menuListArrowPadding() const
 bool RenderThemeChromiumAndroid::supportsDataListUI(const AtomicString& type) const
 {
     // FIXME: Add other input types.
-    return type == InputTypeNames::color;
+    return type == InputTypeNames::text || type == InputTypeNames::search || type == InputTypeNames::url
+        || type == InputTypeNames::tel || type == InputTypeNames::email || type == InputTypeNames::number
+        || type == InputTypeNames::color;
 }
 
 } // namespace WebCore
