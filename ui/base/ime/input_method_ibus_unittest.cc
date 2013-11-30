@@ -70,13 +70,6 @@ class TestableInputMethodIBus : public InputMethodIBus {
     bool handled;
   };
 
-  struct IBusKeyEventFromNativeKeyEventResult {
-    IBusKeyEventFromNativeKeyEventResult() : keyval(0), keycode(0), state(0) {}
-    uint32 keyval;
-    uint32 keycode;
-    uint32 state;
-  };
-
   // InputMethodIBus override.
   virtual void ProcessKeyEventPostIME(const ui::KeyEvent& key_event,
                                       bool handled) OVERRIDE {

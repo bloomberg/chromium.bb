@@ -35,24 +35,9 @@
 #include "ui/gfx/rect.h"
 
 namespace {
-
-const int kIBusReleaseMask = 1 << 30;
-
-XKeyEvent* GetKeyEvent(XEvent* event) {
-  DCHECK(event && (event->type == KeyPress || event->type == KeyRelease));
-  return &event->xkey;
-}
-
-// Converts X state to ibus key and button state.
-uint32 IBusStateFromXState(unsigned int state) {
-  return (state & (LockMask | ControlMask | ShiftMask | Mod1Mask |
-                   Button1Mask | Button2Mask | Button3Mask));
-}
-
 chromeos::IBusEngineHandlerInterface* GetEngine() {
   return chromeos::IBusBridge::Get()->GetEngineHandler();
 }
-
 }  // namespace
 
 namespace ui {
@@ -102,9 +87,6 @@ bool InputMethodIBus::OnUntranslatedIMEMessage(const base::NativeEvent& event,
 
 void InputMethodIBus::ProcessKeyEventDone(uint32 id,
                                           ui::KeyEvent* event,
-                                          uint32 ibus_keyval,
-                                          uint32 ibus_keycode,
-                                          uint32 ibus_state,
                                           bool is_handled) {
   DCHECK(event);
 
@@ -144,14 +126,6 @@ bool InputMethodIBus::DispatchKeyEvent(const ui::KeyEvent& event) {
   DCHECK(event.type() == ET_KEY_PRESSED || event.type() == ET_KEY_RELEASED);
   DCHECK(system_toplevel_window_focused());
 
-  const base::NativeEvent& native_event = event.native_event();
-  uint32 ibus_keyval = 0;
-  uint32 ibus_keycode = 0;
-  uint32 ibus_state = 0;
-  IBusKeyEventFromNativeKeyEvent(
-      native_event,
-      &ibus_keyval, &ibus_keycode, &ibus_state);
-
   // If |context_| is not usable, then we can only dispatch the key event as is.
   // We also dispatch the key event directly if the current text input type is
   // TEXT_INPUT_TYPE_PASSWORD, to bypass the input method.
@@ -182,10 +156,7 @@ bool InputMethodIBus::DispatchKeyEvent(const ui::KeyEvent& event) {
                  weak_ptr_factory_.GetWeakPtr(),
                  current_keyevent_id_,
                  // Pass the ownership of |copied_event|.
-                 base::Owned(copied_event),
-                 ibus_keyval,
-                 ibus_keycode,
-                 ibus_state));
+                 base::Owned(copied_event)));
 
   ++current_keyevent_id_;
 
@@ -437,25 +408,6 @@ void InputMethodIBus::ProcessKeyEventPostIME(
     ProcessUnfilteredKeyPressEvent(event);
   else if (event.type() == ET_KEY_RELEASED)
     DispatchKeyEventPostIME(event);
-}
-
-void InputMethodIBus::IBusKeyEventFromNativeKeyEvent(
-    const base::NativeEvent& native_event,
-    uint32* ibus_keyval,
-    uint32* ibus_keycode,
-    uint32* ibus_state) {
-  DCHECK(native_event);  // A fabricated event is not supported here.
-  XKeyEvent* x_key = GetKeyEvent(native_event);
-
-  // Yes, ibus uses X11 keysym. We cannot use XLookupKeysym(), which doesn't
-  // translate Shift and CapsLock states.
-  KeySym keysym = NoSymbol;
-  ::XLookupString(x_key, NULL, 0, &keysym, NULL);
-  *ibus_keyval = keysym;
-  *ibus_keycode = x_key->keycode;
-  *ibus_state = IBusStateFromXState(x_key->state);
-  if (native_event->type == KeyRelease)
-    *ibus_state |= kIBusReleaseMask;
 }
 
 void InputMethodIBus::ProcessFilteredKeyPressEvent(const ui::KeyEvent& event) {

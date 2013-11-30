@@ -61,13 +61,6 @@ class UI_EXPORT InputMethodIBus
   virtual void ProcessKeyEventPostIME(const ui::KeyEvent& event,
                                       bool handled);
 
-  // Converts |native_event| to ibus representation.
-  virtual void IBusKeyEventFromNativeKeyEvent(
-      const base::NativeEvent& native_event,
-      uint32* ibus_keyval,
-      uint32* ibus_keycode,
-      uint32* ibus_state);
-
   // Resets context and abandon all pending results and key events.
   void ResetContext();
 
@@ -128,9 +121,7 @@ class UI_EXPORT InputMethodIBus
   void HidePreeditText();
 
   // Callback function for IBusEngineHandlerInterface::ProcessKeyEvent.
-  void ProcessKeyEventDone(uint32 id, ui::KeyEvent* event,
-                           uint32 ibus_keyval, uint32 ibus_keycode,
-                           uint32 ibus_state, bool is_handled);
+  void ProcessKeyEventDone(uint32 id, ui::KeyEvent* event, bool is_handled);
 
   // All pending key events. Note: we do not own these object, we just save
   // pointers to these object so that we can abandon them when necessary.
