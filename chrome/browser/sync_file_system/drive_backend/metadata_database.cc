@@ -464,6 +464,11 @@ void RunSoon(const tracked_objects::Location& from_here,
   base::MessageLoopProxy::current()->PostTask(from_here, closure);
 }
 
+bool HasInvalidTitle(const std::string& title) {
+  return title.find('/') != std::string::npos ||
+      title.find('\\') != std::string::npos;
+}
+
 }  // namespace
 
 bool MetadataDatabase::DirtyTrackerComparator::operator()(
@@ -1607,6 +1612,8 @@ bool MetadataDatabase::CanActivateTracker(const FileTracker& tracker) {
   if (tracker.app_id().empty())
     return false;
   if (!tracker.has_synced_details())
+    return false;
+  if (HasInvalidTitle(tracker.synced_details().title()))
     return false;
   DCHECK(tracker.parent_tracker_id());
 
