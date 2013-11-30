@@ -58,6 +58,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
   // unique id, does not make a new reference.
   BrowserAccessibilityWin* GetFromUniqueIdWin(LONG unique_id_win);
 
+  // Called when |accessible_hwnd_| is deleted by its parent.
+  void OnAccessibleHwndDeleted();
+
  private:
   // The closest ancestor HWND.
   HWND parent_hwnd_;
@@ -79,7 +82,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
 
   bool is_chrome_frame_;
 
-  scoped_ptr<AccessibleHWND> accessible_hwnd_;
+  // Owned by its parent; OnAccessibleHwndDeleted gets called upon deletion.
+  AccessibleHWND* accessible_hwnd_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManagerWin);
 };

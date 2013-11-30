@@ -64,6 +64,12 @@ class AccessibleHWND
 
   IAccessible* window_accessible() { return window_accessible_; }
 
+ protected:
+  virtual void OnFinalMessage(HWND hwnd) OVERRIDE {
+    manager_->OnAccessibleHwndDeleted();
+    delete this;
+  }
+
  private:
   LRESULT OnGetObject(UINT message,
                       WPARAM w_param,
@@ -109,7 +115,8 @@ BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
       parent_iaccessible_(parent_iaccessible),
       tracked_scroll_object_(NULL),
       is_chrome_frame_(
-          CommandLine::ForCurrentProcess()->HasSwitch("chrome-frame")) {
+          CommandLine::ForCurrentProcess()->HasSwitch("chrome-frame")),
+      accessible_hwnd_(NULL) {
 }
 
 BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
@@ -143,9 +150,8 @@ void BrowserAccessibilityManagerWin::MaybeCallNotifyWinEvent(DWORD event,
   // accessibility tree. See comments above AccessibleHWND for details.
   if (BrowserAccessibilityStateImpl::GetInstance()->IsAccessibleBrowser() &&
       !is_chrome_frame_ &&
-      !accessible_hwnd_ &&
-      base::win::GetVersion() < base::win::VERSION_WIN8) {
-    accessible_hwnd_.reset(new AccessibleHWND(parent_hwnd_, this));
+      !accessible_hwnd_) {
+    accessible_hwnd_ = new AccessibleHWND(parent_hwnd_, this);
     parent_hwnd_ = accessible_hwnd_->hwnd();
     parent_iaccessible_ = accessible_hwnd_->window_accessible();
   }
@@ -296,6 +302,10 @@ BrowserAccessibilityWin* BrowserAccessibilityManagerWin::GetFromUniqueIdWin(
       return result->ToBrowserAccessibilityWin();
   }
   return NULL;
+}
+
+void BrowserAccessibilityManagerWin::OnAccessibleHwndDeleted() {
+  accessible_hwnd_ = NULL;
 }
 
 }  // namespace content
