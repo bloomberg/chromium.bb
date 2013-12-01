@@ -419,7 +419,7 @@ std::string SegmentURLInternal(std::string* text, url_parse::Parsed* parts) {
       // Couldn't determine the scheme, so just pick one.
       parts->scheme.reset();
       scheme.assign(StartsWithASCII(*text, "ftp.", false) ?
-                    chrome::kFtpScheme : content::kHttpScheme);
+                    content::kFtpScheme : content::kHttpScheme);
     }
   }
 

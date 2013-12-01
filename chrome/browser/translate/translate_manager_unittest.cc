@@ -36,7 +36,7 @@ TEST_F(TranslateManagerTest, CheckTranslatableURL) {
   EXPECT_FALSE(TranslateManager::IsTranslatableURL(filemanager_url));
 #endif
 
-  std::string ftp = std::string(chrome::kFtpScheme) + "://google.com/pub";
+  std::string ftp = std::string(content::kFtpScheme) + "://google.com/pub";
   GURL ftp_url = GURL(ftp);
   EXPECT_FALSE(TranslateManager::IsTranslatableURL(ftp_url));
 

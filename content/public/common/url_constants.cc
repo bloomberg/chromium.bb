@@ -17,11 +17,11 @@ const char kChromeUIScheme[] = "chrome";
 const char kDataScheme[] = "data";
 const char kFileScheme[] = "file";
 const char kFileSystemScheme[] = "filesystem";
-const char kFtpScheme[] = "ftp";
 }  // namespace chrome
 
 namespace content {
 
+const char kFtpScheme[] = "ftp";
 const char kGuestScheme[] = "chrome-guest";
 const char kHttpScheme[] = "http";
 const char kHttpsScheme[] = "https";

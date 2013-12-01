@@ -120,7 +120,7 @@ bool TranslateManager::IsTranslatableURL(const GURL& url) {
          !(url.SchemeIs(extensions::kExtensionScheme) &&
            url.DomainIs(file_manager::kFileManagerAppId)) &&
 #endif
-         !url.SchemeIs(chrome::kFtpScheme);
+         !url.SchemeIs(content::kFtpScheme);
 }
 
 // static

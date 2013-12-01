@@ -502,7 +502,7 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
 #endif  // defined(OS_CHROMEOS)
     chrome::kAboutScheme,
 #if !defined(DISABLE_FTP_SUPPORT)
-    chrome::kFtpScheme,
+    content::kFtpScheme,
 #endif  // !defined(DISABLE_FTP_SUPPORT)
     chrome::kBlobScheme,
     chrome::kFileSystemScheme,
@@ -882,7 +882,7 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
 #if !defined(DISABLE_FTP_SUPPORT)
   DCHECK(ftp_transaction_factory);
   job_factory->SetProtocolHandler(
-      chrome::kFtpScheme,
+      content::kFtpScheme,
       new net::FtpProtocolHandler(ftp_transaction_factory));
 #endif  // !defined(DISABLE_FTP_SUPPORT)
 

@@ -471,7 +471,7 @@ void IEImporter::ImportFavorites() {
 void IEImporter::ImportHistory() {
   const std::string kSchemes[] = {content::kHttpScheme,
                                   content::kHttpsScheme,
-                                  chrome::kFtpScheme,
+                                  content::kFtpScheme,
                                   chrome::kFileScheme};
   int total_schemes = arraysize(kSchemes);
 

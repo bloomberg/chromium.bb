@@ -1048,7 +1048,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcutFtp) {
                                      base::FilePath(kDocRoot));
   ASSERT_TRUE(test_server.Start());
   GURL ftp_url(test_server.GetURL(std::string()));
-  ASSERT_TRUE(ftp_url.SchemeIs(chrome::kFtpScheme));
+  ASSERT_TRUE(ftp_url.SchemeIs(content::kFtpScheme));
   ui_test_utils::NavigateToURL(browser(), ftp_url);
   EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
 }

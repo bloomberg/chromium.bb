@@ -167,7 +167,7 @@ bool IoThreadClientThrottle::ShouldBlockRequest() {
   }
 
   if (io_client->ShouldBlockNetworkLoads()) {
-    if (request_->url().SchemeIs(chrome::kFtpScheme)) {
+    if (request_->url().SchemeIs(content::kFtpScheme)) {
       return true;
     }
     SetCacheControlFlag(request_, net::LOAD_ONLY_FROM_CACHE);

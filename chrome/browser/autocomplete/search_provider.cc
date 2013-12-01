@@ -827,7 +827,7 @@ bool SearchProvider::IsQuerySuitableForSuggest() const {
   // assume we're OK.
   if (!LowerCaseEqualsASCII(input_.scheme(), content::kHttpScheme) &&
       !LowerCaseEqualsASCII(input_.scheme(), content::kHttpsScheme) &&
-      !LowerCaseEqualsASCII(input_.scheme(), chrome::kFtpScheme))
+      !LowerCaseEqualsASCII(input_.scheme(), content::kFtpScheme))
     return (input_.type() == AutocompleteInput::QUERY);
 
   // Don't send URLs with usernames, queries or refs.  Some of these are

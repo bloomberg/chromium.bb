@@ -42,7 +42,7 @@ void InitializeSchemeWhitelist(std::set<std::string>* whitelist) {
   whitelist->insert(std::string(chrome::kAboutScheme));
   whitelist->insert(std::string(chrome::kChromeUIScheme));
   whitelist->insert(std::string(chrome::kFileScheme));
-  whitelist->insert(std::string(chrome::kFtpScheme));
+  whitelist->insert(std::string(content::kFtpScheme));
   whitelist->insert(std::string(content::kHttpScheme));
   whitelist->insert(std::string(content::kHttpsScheme));
   whitelist->insert(std::string(content::kMailToScheme));

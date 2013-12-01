@@ -114,7 +114,7 @@ void OfflineResourceThrottle::OnBlockingPageComplete(bool proceed) {
 }
 
 bool OfflineResourceThrottle::IsRemote(const GURL& url) const {
-  return !net::IsLocalhost(url.host()) && (url.SchemeIs(chrome::kFtpScheme) ||
+  return !net::IsLocalhost(url.host()) && (url.SchemeIs(content::kFtpScheme) ||
                                            url.SchemeIs(content::kHttpScheme) ||
                                            url.SchemeIs(content::kHttpsScheme));
 }

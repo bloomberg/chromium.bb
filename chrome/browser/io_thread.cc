@@ -649,7 +649,7 @@ void IOThread::InitAsync() {
   globals_->proxy_script_fetcher_ftp_transaction_factory.reset(
       new net::FtpNetworkLayer(globals_->host_resolver.get()));
   job_factory->SetProtocolHandler(
-      chrome::kFtpScheme,
+      content::kFtpScheme,
       new net::FtpProtocolHandler(
           globals_->proxy_script_fetcher_ftp_transaction_factory.get()));
 #endif

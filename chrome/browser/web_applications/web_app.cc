@@ -197,7 +197,7 @@ bool IsValidUrl(const GURL& url) {
   static const char* const kValidUrlSchemes[] = {
       chrome::kFileScheme,
       chrome::kFileSystemScheme,
-      chrome::kFtpScheme,
+      content::kFtpScheme,
       content::kHttpScheme,
       content::kHttpsScheme,
       extensions::kExtensionScheme,
