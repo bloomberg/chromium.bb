@@ -522,7 +522,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
             KeyframeAnimationEffect::KeyframeVector newFrames;
             newFrames.append(frames[0]->clone());
             newFrames[0]->clearPropertyValue(id);
-            AnimationEffect::CompositableValue* compositableValue = oldAnimation->compositableValues()->get(id);
+            ASSERT(oldAnimation->compositableValues()->size() == 1);
+            const AnimationEffect::CompositableValue* compositableValue = oldAnimation->compositableValues()->at(0).second.get();
             ASSERT(!compositableValue->dependsOnUnderlyingValue());
             newFrames[0]->setPropertyValue(id, compositableValue->compositeOnto(0).get());
             newFrames.append(frames[1]->clone());

@@ -45,7 +45,7 @@ InertAnimation::InertAnimation(PassRefPtr<AnimationEffect> effect, const Timing&
 {
 }
 
-PassOwnPtr<AnimationEffect::CompositableValueMap> InertAnimation::sample()
+PassOwnPtr<AnimationEffect::CompositableValueList> InertAnimation::sample()
 {
     updateInheritedTime(0);
     if (!isInEffect())

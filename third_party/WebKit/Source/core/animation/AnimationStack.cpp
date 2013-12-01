@@ -37,12 +37,12 @@ namespace WebCore {
 
 namespace {
 
-void copyToCompositableValueMap(const AnimationEffect::CompositableValueMap* source, AnimationEffect::CompositableValueMap& target)
+void copyToCompositableValueMap(const AnimationEffect::CompositableValueList* source, AnimationEffect::CompositableValueMap& target)
 {
     if (!source)
         return;
-    for (AnimationEffect::CompositableValueMap::const_iterator iter = source->begin(); iter != source->end(); ++iter)
-        target.set(iter->key, iter->value);
+    for (AnimationEffect::CompositableValueList::const_iterator iter = source->begin(); iter != source->end(); ++iter)
+        target.set(iter->first, iter->second);
 }
 
 } // namespace

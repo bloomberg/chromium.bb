@@ -41,7 +41,7 @@ class InertAnimation FINAL : public TimedItem {
 
 public:
     static PassRefPtr<InertAnimation> create(PassRefPtr<AnimationEffect>, const Timing&, bool paused);
-    PassOwnPtr<AnimationEffect::CompositableValueMap> sample();
+    PassOwnPtr<AnimationEffect::CompositableValueList> sample();
     AnimationEffect* effect() const { return m_effect.get(); }
     bool paused() const { return m_paused; }
 

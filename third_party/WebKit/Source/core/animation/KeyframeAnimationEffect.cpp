@@ -184,14 +184,14 @@ PropertySet KeyframeAnimationEffect::properties() const
     return result;
 }
 
-PassOwnPtr<AnimationEffect::CompositableValueMap> KeyframeAnimationEffect::sample(int iteration, double fraction) const
+PassOwnPtr<AnimationEffect::CompositableValueList> KeyframeAnimationEffect::sample(int iteration, double fraction) const
 {
     ASSERT(iteration >= 0);
     ASSERT(!isNull(fraction));
     const_cast<KeyframeAnimationEffect*>(this)->ensureKeyframeGroups();
-    OwnPtr<CompositableValueMap> map = adoptPtr(new CompositableValueMap());
+    OwnPtr<CompositableValueList> map = adoptPtr(new CompositableValueList());
     for (KeyframeGroupMap::const_iterator iter = m_keyframeGroups->begin(); iter != m_keyframeGroups->end(); ++iter)
-        map->add(iter->key, iter->value->sample(iteration, fraction));
+        map->append(std::make_pair(iter->key, iter->value->sample(iteration, fraction)));
     return map.release();
 }
 

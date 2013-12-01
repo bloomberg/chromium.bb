@@ -47,7 +47,7 @@ public:
     static PassRefPtr<Animation> create(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&, Priority = DefaultPriority, PassOwnPtr<EventDelegate> = nullptr);
     virtual bool isAnimation() const OVERRIDE FINAL { return true; }
 
-    const AnimationEffect::CompositableValueMap* compositableValues() const
+    const AnimationEffect::CompositableValueList* compositableValues() const
     {
         ASSERT(m_compositableValues);
         return m_compositableValues.get();
@@ -82,7 +82,7 @@ private:
     RefPtr<AnimationEffect> m_effect;
 
     bool m_activeInAnimationStack;
-    OwnPtr<AnimationEffect::CompositableValueMap> m_compositableValues;
+    OwnPtr<AnimationEffect::CompositableValueList> m_compositableValues;
 
     Priority m_priority;
 

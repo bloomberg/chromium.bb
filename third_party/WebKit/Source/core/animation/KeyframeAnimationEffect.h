@@ -92,7 +92,7 @@ public:
     }
 
     // AnimationEffect implementation.
-    virtual PassOwnPtr<CompositableValueMap> sample(int iteration, double fraction) const OVERRIDE;
+    virtual PassOwnPtr<CompositableValueList> sample(int iteration, double fraction) const OVERRIDE;
 
     // FIXME: Implement setFrames()
     const KeyframeVector& getFrames() const { return m_keyframes; }

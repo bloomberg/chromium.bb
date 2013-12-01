@@ -58,7 +58,8 @@ public:
 
     virtual ~AnimationEffect() { }
     typedef HashMap<CSSPropertyID, RefPtr<CompositableValue> > CompositableValueMap;
-    virtual PassOwnPtr<CompositableValueMap> sample(int iteration, double fraction) const = 0;
+    typedef Vector<std::pair<CSSPropertyID, RefPtr<CompositableValue> > > CompositableValueList;
+    virtual PassOwnPtr<CompositableValueList> sample(int iteration, double fraction) const = 0;
 
     virtual bool affects(CSSPropertyID) { return false; };
     virtual bool isKeyframeAnimationEffect() const { return false; }
