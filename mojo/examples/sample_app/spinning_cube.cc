@@ -19,7 +19,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include "gpu/command_buffer/client/gles2_interface.h"
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 
 namespace mojo {
 namespace examples {
@@ -28,8 +29,7 @@ namespace {
 
 const float kPi = 3.14159265359f;
 
-int GenerateCube(gpu::gles2::GLES2Interface* gl,
-                 GLuint *vbo_vertices,
+int GenerateCube(GLuint *vbo_vertices,
                  GLuint *vbo_indices) {
   const int num_indices = 36;
 
@@ -76,75 +76,73 @@ int GenerateCube(gpu::gles2::GLES2Interface* gl,
   };
 
   if (vbo_vertices) {
-    gl->GenBuffers(1, vbo_vertices);
-    gl->BindBuffer(GL_ARRAY_BUFFER, *vbo_vertices);
-    gl->BufferData(
-      GL_ARRAY_BUFFER, sizeof(cube_vertices), cube_vertices, GL_STATIC_DRAW);
-    gl->BindBuffer(GL_ARRAY_BUFFER, 0);
+    glGenBuffers(1, vbo_vertices);
+    glBindBuffer(GL_ARRAY_BUFFER, *vbo_vertices);
+    glBufferData(GL_ARRAY_BUFFER,
+                 sizeof(cube_vertices),
+                 cube_vertices,
+                 GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
   if (vbo_indices) {
-    gl->GenBuffers(1, vbo_indices);
-    gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, *vbo_indices);
-    gl->BufferData(GL_ELEMENT_ARRAY_BUFFER,
-                   sizeof(cube_indices),
-                   cube_indices,
-                   GL_STATIC_DRAW);
-    gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glGenBuffers(1, vbo_indices);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *vbo_indices);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                 sizeof(cube_indices),
+                 cube_indices,
+                 GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   }
 
   return num_indices;
 }
 
-GLuint LoadShader(gpu::gles2::GLES2Interface* gl,
-                  GLenum type,
+GLuint LoadShader(GLenum type,
                   const char* shader_source) {
-  GLuint shader = gl->CreateShader(type);
-  gl->ShaderSource(shader, 1, &shader_source, NULL);
-  gl->CompileShader(shader);
+  GLuint shader = glCreateShader(type);
+  glShaderSource(shader, 1, &shader_source, NULL);
+  glCompileShader(shader);
 
   GLint compiled = 0;
-  gl->GetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
 
   if (!compiled) {
-    gl->DeleteShader(shader);
+    glDeleteShader(shader);
     return 0;
   }
 
   return shader;
 }
 
-GLuint LoadProgram(gpu::gles2::GLES2Interface* gl,
-                   const char* vertext_shader_source,
+GLuint LoadProgram(const char* vertext_shader_source,
                    const char* fragment_shader_source) {
-  GLuint vertex_shader = LoadShader(gl,
-                                    GL_VERTEX_SHADER,
+  GLuint vertex_shader = LoadShader(GL_VERTEX_SHADER,
                                     vertext_shader_source);
   if (!vertex_shader)
     return 0;
 
-  GLuint fragment_shader = LoadShader(gl,
-                                      GL_FRAGMENT_SHADER,
+  GLuint fragment_shader = LoadShader(GL_FRAGMENT_SHADER,
                                       fragment_shader_source);
   if (!fragment_shader) {
-    gl->DeleteShader(vertex_shader);
+    glDeleteShader(vertex_shader);
     return 0;
   }
 
-  GLuint program_object = gl->CreateProgram();
-  gl->AttachShader(program_object, vertex_shader);
-  gl->AttachShader(program_object, fragment_shader);
+  GLuint program_object = glCreateProgram();
+  glAttachShader(program_object, vertex_shader);
+  glAttachShader(program_object, fragment_shader);
 
-  gl->LinkProgram(program_object);
+  glLinkProgram(program_object);
 
-  gl->DeleteShader(vertex_shader);
-  gl->DeleteShader(fragment_shader);
+  glDeleteShader(vertex_shader);
+  glDeleteShader(fragment_shader);
 
   GLint linked = 0;
-  gl->GetProgramiv(program_object, GL_LINK_STATUS, &linked);
+  glGetProgramiv(program_object, GL_LINK_STATUS, &linked);
 
   if (!linked) {
-    gl->DeleteProgram(program_object);
+    glDeleteProgram(program_object);
     return 0;
   }
 
@@ -329,26 +327,25 @@ void SpinningCube::GLState::OnGLContextLost() {
 }
 
 SpinningCube::SpinningCube()
-    : gl_(NULL),
+    : initialized_(false),
+      width_(0),
+      height_(0),
       state_(new GLState()) {
   state_->angle_ = 45.0f;
 }
 
 SpinningCube::~SpinningCube() {
-  if (!gl_)
+  if (!initialized_)
     return;
   if (state_->vbo_vertices_)
-    gl_->DeleteBuffers(1, &state_->vbo_vertices_);
+    glDeleteBuffers(1, &state_->vbo_vertices_);
   if (state_->vbo_indices_)
-    gl_->DeleteBuffers(1, &state_->vbo_indices_);
+    glDeleteBuffers(1, &state_->vbo_indices_);
   if (state_->program_object_)
-    gl_->DeleteProgram(state_->program_object_);
+    glDeleteProgram(state_->program_object_);
 }
 
-void SpinningCube::BindTo(gpu::gles2::GLES2Interface* gl,
-                          int width,
-                          int height) {
-  gl_ = gl;
+void SpinningCube::Init(uint32_t width, uint32_t height) {
   width_ = width;
   height_ = height;
 
@@ -368,19 +365,22 @@ void SpinningCube::BindTo(gpu::gles2::GLES2Interface* gl,
       "}                                                   \n";
 
   state_->program_object_ = LoadProgram(
-      gl_, vertext_shader_source, fragment_shader_source);
-  state_->position_location_ = gl_->GetAttribLocation(
+      vertext_shader_source, fragment_shader_source);
+  state_->position_location_ = glGetAttribLocation(
       state_->program_object_, "a_position");
-  state_->mvp_location_ = gl_->GetUniformLocation(
+  state_->mvp_location_ = glGetUniformLocation(
       state_->program_object_, "u_mvpMatrix");
   state_->num_indices_ = GenerateCube(
-      gl_, &state_->vbo_vertices_, &state_->vbo_indices_);
+      &state_->vbo_vertices_, &state_->vbo_indices_);
 
-  gl_->ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  initialized_ = true;
 }
 
 void SpinningCube::OnGLContextLost() {
-  gl_ = NULL;
+  initialized_ = false;
+  height_ = 0;
+  width_ = 0;
   state_->OnGLContextLost();
 }
 
@@ -404,26 +404,25 @@ void SpinningCube::Update(float delta_time) {
 }
 
 void SpinningCube::Draw() {
-  gl_->Viewport(0, 0, width_, height_);
-  gl_->Clear(GL_COLOR_BUFFER_BIT);
-  gl_->UseProgram(state_->program_object_);
-  gl_->BindBuffer(GL_ARRAY_BUFFER, state_->vbo_vertices_);
-  gl_->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, state_->vbo_indices_);
-  gl_->VertexAttribPointer(state_->position_location_,
+  glViewport(0, 0, width_, height_);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glUseProgram(state_->program_object_);
+  glBindBuffer(GL_ARRAY_BUFFER, state_->vbo_vertices_);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, state_->vbo_indices_);
+  glVertexAttribPointer(state_->position_location_,
                            3,
                            GL_FLOAT,
                            GL_FALSE, 3 * sizeof(GLfloat),
                            0);
-  gl_->EnableVertexAttribArray(state_->position_location_);
-  gl_->UniformMatrix4fv(state_->mvp_location_,
+  glEnableVertexAttribArray(state_->position_location_);
+  glUniformMatrix4fv(state_->mvp_location_,
                         1,
                         GL_FALSE,
                         (GLfloat*) &state_->mvp_matrix_.m[0][0]);
-  gl_->DrawElements(GL_TRIANGLES,
+  glDrawElements(GL_TRIANGLES,
                     state_->num_indices_,
                     GL_UNSIGNED_SHORT,
                     0);
-  gl_->SwapBuffers();
 }
 
 }  // namespace examples

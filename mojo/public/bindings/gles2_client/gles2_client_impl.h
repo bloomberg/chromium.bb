@@ -13,7 +13,7 @@ namespace mojo {
 class GLES2Delegate {
  public:
   virtual ~GLES2Delegate();
-  virtual void DidCreateContext(GLES2* gl);
+  virtual void DidCreateContext(GLES2* gl, uint32_t width, uint32_t height);
   virtual void ContextLost(GLES2* gl);
 };
 
@@ -31,7 +31,8 @@ class GLES2ClientImpl : public GLES2ClientStub {
   }
 
  private:
-  virtual void DidCreateContext(uint64_t encoded) MOJO_OVERRIDE;
+  virtual void DidCreateContext(
+    uint64_t encoded, uint32_t width, uint32_t height) MOJO_OVERRIDE;
   virtual void ContextLost() MOJO_OVERRIDE;
 
   GLES2Delegate* delegate_;

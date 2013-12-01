@@ -18,7 +18,8 @@ bool g_gles2_initialized = false;
 GLES2Delegate::~GLES2Delegate() {
 }
 
-void GLES2Delegate::DidCreateContext(GLES2* gl) {
+void GLES2Delegate::DidCreateContext(
+    GLES2* gl, uint32_t width, uint32_t height) {
 }
 
 void GLES2Delegate::ContextLost(GLES2* gl) {
@@ -47,7 +48,8 @@ void GLES2ClientImpl::Terminate() {
   g_gles2_initialized = false;
 }
 
-void GLES2ClientImpl::DidCreateContext(uint64_t encoded) {
+void GLES2ClientImpl::DidCreateContext(
+    uint64_t encoded, uint32_t width, uint32_t height) {
   // Ack, Hans! It's the giant hack.
   // TODO(abarth): Replace this hack with something more disciplined. Most
   // likley, we should receive a MojoHandle that we use to wire up the
@@ -58,7 +60,7 @@ void GLES2ClientImpl::DidCreateContext(uint64_t encoded) {
           static_cast<uintptr_t>(encoded));
   gles2::SetGLContext(gl_interface);
 
-  delegate_->DidCreateContext(gl());
+  delegate_->DidCreateContext(gl(), width, height);
 }
 
 void GLES2ClientImpl::ContextLost() {

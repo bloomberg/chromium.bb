@@ -11,20 +11,34 @@
 namespace mojo {
 namespace examples {
 
-SampleGLES2Delegate::SampleGLES2Delegate() {
+SampleGLES2Delegate::SampleGLES2Delegate()
+    : gl_(NULL) {
 }
 
 SampleGLES2Delegate::~SampleGLES2Delegate() {
 }
 
-void SampleGLES2Delegate::DidCreateContext(GLES2* gl) {
-  glClearColor(0, 1, 0, 0);
-  glClear(GL_COLOR_BUFFER_BIT);
+void SampleGLES2Delegate::DidCreateContext(
+    GLES2* gl, uint32_t width, uint32_t height) {
+  gl_ = gl;
+  cube_.Init(width, height);
+  last_time_ = base::Time::Now();
+  timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(16),
+               this, &SampleGLES2Delegate::Draw);
+}
 
-  gl->SwapBuffers();
+void SampleGLES2Delegate::Draw() {
+  base::Time now = base::Time::Now();
+  base::TimeDelta offset = now - last_time_;
+  last_time_ = now;
+  cube_.Update(offset.InSecondsF());
+  cube_.Draw();
+  gl_->SwapBuffers();
 }
 
 void SampleGLES2Delegate::ContextLost(GLES2* gl) {
+  timer_.Stop();
+  gl_ = NULL;
 }
 
 }  // namespace examples

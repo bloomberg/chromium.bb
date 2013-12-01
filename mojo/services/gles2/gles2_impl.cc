@@ -36,7 +36,7 @@ void GLES2Impl::CreateContext(gfx::AcceleratedWidget widget,
   gpu::gles2::GLES2Interface* gl = gl_context_->GetImplementation();
   uint64_t encoded_gl = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(gl));
 
-  client_->DidCreateContext(encoded_gl);
+  client_->DidCreateContext(encoded_gl, size.width(), size.height());
 }
 
 void GLES2Impl::OnGLContextLost() {
