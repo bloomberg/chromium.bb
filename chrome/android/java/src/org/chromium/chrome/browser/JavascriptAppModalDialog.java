@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,7 +31,7 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
     private long mNativeDialogPointer;
     private AlertDialog mDialog;
     private CheckBox mSuppressCheckBox;
-    private TextView mPrompTextView;
+    private TextView mPromptTextView;
 
     private JavascriptAppModalDialog(String title, String message,
             boolean shouldShowSuppressCheckBox) {
@@ -78,14 +79,13 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
 
         ViewGroup layout = (ViewGroup) inflater.inflate(R.layout.js_modal_dialog, null);
         mSuppressCheckBox = (CheckBox) layout.findViewById(R.id.suppress_js_modal_dialogs);
-        mPrompTextView = (TextView) layout.findViewById(R.id.js_modal_dialog_prompt);
+        mPromptTextView = (TextView) layout.findViewById(R.id.js_modal_dialog_prompt);
 
         prepare(layout);
 
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context)
                 .setView(layout)
                 .setTitle(mTitle)
-                .setMessage(mMessage)
                 .setOnCancelListener(new DialogInterface.OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
@@ -159,7 +159,7 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
     }
 
     public void onPositiveButtonClicked() {
-        confirm(mPrompTextView.getText().toString(), mSuppressCheckBox.isChecked());
+        confirm(mPromptTextView.getText().toString(), mSuppressCheckBox.isChecked());
         mDialog.dismiss();
     }
 
@@ -172,6 +172,14 @@ public class JavascriptAppModalDialog implements DialogInterface.OnClickListener
         // Display the checkbox for suppressing dialogs if necessary.
         layout.findViewById(R.id.suppress_js_modal_dialogs).setVisibility(
                 mShouldShowSuppressCheckBox ? View.VISIBLE : View.GONE);
+
+        // If the message is null or empty do not display the message text view.
+        // Hide parent scroll view instead of text view in order to prevent ui discrepancies.
+        if (TextUtils.isEmpty(mMessage)) {
+            layout.findViewById(R.id.js_modal_dialog_scroll_view).setVisibility(View.GONE);
+        } else {
+            ((TextView) layout.findViewById(R.id.js_modal_dialog_message)).setText(mMessage);
+        }
     }
 
     public void confirm(String promptResult, boolean suppressDialogs) {

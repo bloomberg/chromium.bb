@@ -13,30 +13,43 @@
      TODO(benm): Move this into the framework once we are integrated with the
      Android tree.
 -->
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <LinearLayout
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="5dp">
+
+    <ScrollView android:id="@+id/js_modal_dialog_scroll_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="5dp">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="5dp">
 
-        <EditText android:id="@+id/js_modal_dialog_prompt"
+        <TextView android:id="@+id/js_modal_dialog_message"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:singleLine="true"
-            android:visibility="gone"
-            android:contentDescription="@string/accessibility_js_modal_dialog_prompt"
-            />
-
-        <CheckBox android:id="@+id/suppress_js_modal_dialogs"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/suppress_js_modal_dialogs"
             android:layout_gravity="start"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             />
 
-    </LinearLayout>
-</ScrollView>
+    </ScrollView>
+
+    <EditText android:id="@+id/js_modal_dialog_prompt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:visibility="gone"
+        android:contentDescription="@string/accessibility_js_modal_dialog_prompt"
+        />
+
+    <CheckBox android:id="@+id/suppress_js_modal_dialogs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="@string/suppress_js_modal_dialogs"
+        />
+
+</LinearLayout>
