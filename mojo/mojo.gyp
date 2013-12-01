@@ -133,10 +133,12 @@
       'sources': [
         'public/tests/bindings_connector_unittest.cc',
         'public/tests/bindings_remote_ptr_unittest.cc',
+        'public/tests/bindings_type_conversion_unittest.cc',
         'public/tests/buffer_unittest.cc',
         'public/tests/math_calculator.mojom',
         'public/tests/system_core_cpp_unittest.cc',
         'public/tests/system_core_unittest.cc',
+        'public/tests/test_structs.mojom',
       ],
       'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
     },

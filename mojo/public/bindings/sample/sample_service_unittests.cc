@@ -12,6 +12,20 @@
 #include "mojom/sample_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace mojo {
+
+template <>
+class SimilarityTraits<sample::Bar, int32_t> {
+ public:
+  static int32_t CopyTo(const sample::Bar& bar) {
+    return static_cast<int32_t>(bar.alpha()) << 16 |
+           static_cast<int32_t>(bar.beta()) << 8 |
+           static_cast<int32_t>(bar.gamma());
+  }
+};
+
+}  // namespace mojo
+
 namespace sample {
 
 // Set this variable to true to print the binary message in hex.
@@ -19,7 +33,7 @@ bool g_dump_message_as_hex = true;
 
 // Make a sample |Foo|.
 Foo MakeFoo() {
-  mojo::String name(std::string("foopy"));
+  mojo::String name("foopy");
 
   Bar::Builder bar;
   bar.set_alpha(20);
@@ -140,6 +154,7 @@ static void Print(int depth, const char* name, const Bar& bar) {
     Print(depth, "alpha", bar.alpha());
     Print(depth, "beta", bar.beta());
     Print(depth, "gamma", bar.gamma());
+    Print(depth, "packed", bar.To<int32_t>());
     --depth;
   }
 }
