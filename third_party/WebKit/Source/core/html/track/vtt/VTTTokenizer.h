@@ -33,60 +33,19 @@
 
 #include "core/html/parser/InputStreamPreprocessor.h"
 #include "core/html/track/vtt/VTTToken.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
-
-class VTTTokenizerState {
-public:
-    enum State {
-        DataState,
-        EscapeState,
-        TagState,
-        StartTagState,
-        StartTagClassState,
-        StartTagAnnotationState,
-        EndTagState,
-        TimestampTagState,
-    };
-};
 
 class VTTTokenizer {
     WTF_MAKE_NONCOPYABLE(VTTTokenizer);
 public:
     explicit VTTTokenizer(const String& input);
 
-    typedef VTTTokenizerState State;
-
-    void reset();
-
     bool nextToken(VTTToken&);
 
-    inline bool haveBufferedCharacterToken() { return false; }
-
-    inline bool advanceAndEmitToken(SegmentedString& source, const VTTToken& token)
-    {
-        source.advanceAndUpdateLineNumber();
-        return emitToken(token);
-    }
-
-    inline bool emitToken(const VTTToken& token)
-    {
-        *m_token = token;
-        return true;
-    }
-
-    bool shouldSkipNullCharacters() const { return true; }
+    inline bool shouldSkipNullCharacters() const { return true; }
 
 private:
-    // m_token is owned by the caller. If nextToken is not on the stack,
-    // this member might be pointing to unallocated memory.
-    VTTToken* m_token;
-
-    // This member does not really need to be an instance member - it's only used in nextToken.
-    // The reason it's stored here is because of the use of the ADVANCE_TO state helpers.
-    VTTTokenizerState::State m_state;
-
     SegmentedString m_input;
 
     // ://www.whatwg.org/specs/web-apps/current-work/#preprocessing-the-input-stream
