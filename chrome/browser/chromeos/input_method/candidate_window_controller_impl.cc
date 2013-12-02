@@ -32,13 +32,16 @@ const int kInfolistHideDelayMilliSeconds = 500;
 
 }  // namespace
 
-bool CandidateWindowControllerImpl::Init() {
-  // Create the candidate window view.
+CandidateWindowControllerImpl::CandidateWindowControllerImpl()
+    : candidate_window_view_(NULL),
+      latest_infolist_focused_index_(InfolistWindowView::InvalidFocusIndex()) {
+  IBusBridge::Get()->SetCandidateWindowHandler(this);
   CreateView();
-  return true;
 }
 
-void CandidateWindowControllerImpl::Shutdown() {
+CandidateWindowControllerImpl::~CandidateWindowControllerImpl() {
+  IBusBridge::Get()->SetCandidateWindowHandler(NULL);
+  candidate_window_view_->RemoveObserver(this);
 }
 
 void CandidateWindowControllerImpl::CreateView() {
@@ -81,17 +84,6 @@ void CandidateWindowControllerImpl::CreateView() {
   // Create the mode indicator controller.
   mode_indicator_controller_.reset(
       new ModeIndicatorController(new ModeIndicatorWidget));
-}
-
-CandidateWindowControllerImpl::CandidateWindowControllerImpl()
-    : candidate_window_view_(NULL),
-      latest_infolist_focused_index_(InfolistWindowView::InvalidFocusIndex()) {
-  IBusBridge::Get()->SetCandidateWindowHandler(this);
-}
-
-CandidateWindowControllerImpl::~CandidateWindowControllerImpl() {
-  IBusBridge::Get()->SetCandidateWindowHandler(NULL);
-  candidate_window_view_->RemoveObserver(this);
 }
 
 void CandidateWindowControllerImpl::Hide() {

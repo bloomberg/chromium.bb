@@ -8,21 +8,12 @@ namespace chromeos {
 namespace input_method {
 
 MockCandidateWindowController::MockCandidateWindowController()
-    : init_count_(0),
-      add_observer_count_(0),
+    : add_observer_count_(0),
       remove_observer_count_(0),
       hide_count_(0) {
 }
 
 MockCandidateWindowController::~MockCandidateWindowController() {
-}
-
-bool MockCandidateWindowController::Init() {
-  ++init_count_;
-  return true;
-}
-
-void MockCandidateWindowController::Shutdown() {
 }
 
 void MockCandidateWindowController::AddObserver(

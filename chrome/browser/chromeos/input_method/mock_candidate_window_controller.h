@@ -19,8 +19,6 @@ class MockCandidateWindowController : public CandidateWindowController {
   virtual ~MockCandidateWindowController();
 
   // CandidateWindowController overrides:
-  virtual bool Init() OVERRIDE;
-  virtual void Shutdown() OVERRIDE;
   virtual void AddObserver(Observer* observer) OVERRIDE;
   virtual void RemoveObserver(Observer* observer) OVERRIDE;
   virtual void Hide() OVERRIDE;
@@ -29,7 +27,6 @@ class MockCandidateWindowController : public CandidateWindowController {
   void NotifyCandidateWindowOpened();
   void NotifyCandidateWindowClosed();
 
-  int init_count_;
   int add_observer_count_;
   int remove_observer_count_;
   int hide_count_;
