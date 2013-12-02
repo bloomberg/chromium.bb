@@ -58,7 +58,11 @@ class MediaMetric(Metric):
       for m in metrics:
         if m.startswith(metric):
           special_label = m[len(metric):]
-          results.Add(trace + special_label, unit, metrics[m],
+          if isinstance(metrics[m], list):
+            values = [float(v) for v in metrics[m]]
+          else:
+            values = float(metrics[m])
+          results.Add(trace + special_label, unit, values,
                       chart_name=metric, data_type='default')
 
     trace = media_metric['id']
