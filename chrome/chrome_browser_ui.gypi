@@ -3150,6 +3150,7 @@
           ],
           'dependencies': [
             '../ui/ui.gyp:ui_cocoa_third_party_toolkits',
+            '../third_party/apple_sample_code/apple_sample_code.gyp:apple_sample_code',
           ],
           'include_dirs': [
             '../third_party/GTM',
