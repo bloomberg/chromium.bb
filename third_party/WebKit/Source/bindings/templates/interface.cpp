@@ -228,7 +228,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     // Custom Signature '{{method.name}}'
     const int {{method.name}}Argc = {{method.arguments | length}};
     v8::Handle<v8::FunctionTemplate> {{method.name}}Argv[{{method.name}}Argc] = { {{method.custom_signature}} };
-    v8::Handle<v8::Signature> {{method.name}}Signature = v8::Signature::New(functionTemplate, {{method.name}}Argc, {{method.name}}Argv);
+    v8::Handle<v8::Signature> {{method.name}}Signature = v8::Signature::New(isolate, functionTemplate, {{method.name}}Argc, {{method.name}}Argv);
     {% endif %}
     {# install_custom_signature #}
     {% if not method.overload_index or method.overload_index == 1 %}
@@ -405,7 +405,7 @@ void {{v8_class_name}}::installPerContextEnabledMethods(v8::Handle<v8::Object> p
 {
     UNUSED_PARAM(prototypeTemplate);
     {# Define per-context enabled operations #}
-    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(GetTemplate(isolate, worldType(isolate)));
+    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, GetTemplate(isolate, worldType(isolate)));
     UNUSED_PARAM(defaultSignature);
 
     ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
