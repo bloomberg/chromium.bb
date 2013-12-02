@@ -62,7 +62,7 @@ void HTTPHeaderMap::adopt(PassOwnPtr<CrossThreadHTTPHeaderMapData> data)
     size_t dataSize = data->size();
     for (size_t index = 0; index < dataSize; ++index) {
         pair<String, String>& header = (*data)[index];
-        set(header.first, header.second);
+        set(AtomicString(header.first), AtomicString(header.second));
     }
 }
 
@@ -94,7 +94,7 @@ struct CaseFoldingCStringTranslator {
     }
 };
 
-AtomicString HTTPHeaderMap::get(const char* name) const
+const AtomicString& HTTPHeaderMap::get(const char* name) const
 {
     const_iterator i = find<CaseFoldingCStringTranslator>(name);
     if (i == end())

@@ -60,7 +60,7 @@ String ScriptResource::encoding() const
     return m_decoder->encoding().name();
 }
 
-String ScriptResource::mimeType() const
+AtomicString ScriptResource::mimeType() const
 {
     return extractMIMETypeFromMediaType(m_response.httpHeaderField("Content-Type")).lower();
 }

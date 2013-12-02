@@ -3743,11 +3743,11 @@ void Document::setCookie(const String& value, ExceptionState& exceptionState)
     setCookies(this, cookieURL, value);
 }
 
-String Document::referrer() const
+AtomicString Document::referrer() const
 {
     if (loader())
         return loader()->request().httpReferrer();
-    return String();
+    return nullAtom;
 }
 
 String Document::domain() const

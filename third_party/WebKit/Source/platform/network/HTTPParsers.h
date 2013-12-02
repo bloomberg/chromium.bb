@@ -76,7 +76,7 @@ PLATFORM_EXPORT bool isValidHTTPToken(const String&);
 PLATFORM_EXPORT bool parseHTTPRefresh(const String& refresh, bool fromHttpEquivMeta, double& delay, String& url);
 PLATFORM_EXPORT double parseDate(const String&);
 PLATFORM_EXPORT String filenameFromHTTPContentDisposition(const String&);
-PLATFORM_EXPORT String extractMIMETypeFromMediaType(const String&);
+PLATFORM_EXPORT AtomicString extractMIMETypeFromMediaType(const AtomicString&);
 PLATFORM_EXPORT String extractCharsetFromMediaType(const String&);
 PLATFORM_EXPORT void findCharsetInMediaType(const String& mediaType, unsigned& charsetPos, unsigned& charsetLen, unsigned start = 0);
 PLATFORM_EXPORT ReflectedXSSDisposition parseXSSProtectionHeader(const String& header, String& failureReason, unsigned& failurePosition, String& reportURL);
@@ -91,7 +91,7 @@ PLATFORM_EXPORT ContentTypeOptionsDisposition parseContentTypeOptionsHeader(cons
 // Parsing Complete HTTP Messages.
 enum HTTPVersion { Unknown, HTTP_1_0, HTTP_1_1 };
 PLATFORM_EXPORT size_t parseHTTPRequestLine(const char* data, size_t length, String& failureReason, String& method, String& url, HTTPVersion&);
-PLATFORM_EXPORT size_t parseHTTPHeader(const char* data, size_t length, String& failureReason, AtomicString& nameStr, String& valueStr);
+PLATFORM_EXPORT size_t parseHTTPHeader(const char* data, size_t length, String& failureReason, AtomicString& nameStr, AtomicString& valueStr);
 PLATFORM_EXPORT size_t parseHTTPRequestBody(const char* data, size_t length, Vector<unsigned char>& body);
 
 }

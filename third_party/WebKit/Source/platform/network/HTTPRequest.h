@@ -58,8 +58,8 @@ public:
     const Vector<unsigned char>& body() const { return m_body; }
 
     const HTTPHeaderMap& headerFields() const { return m_headerFields; }
-    void addHeaderField(const AtomicString& name, const String& value) { m_headerFields.add(name, value); }
-    void addHeaderField(const char* name, const String& value) { m_headerFields.add(name, value); }
+    void addHeaderField(const AtomicString& name, const AtomicString& value) { m_headerFields.add(name, value); }
+    void addHeaderField(const char* name, const AtomicString& value) { m_headerFields.add(name, value); }
 
 protected:
     HTTPRequest();

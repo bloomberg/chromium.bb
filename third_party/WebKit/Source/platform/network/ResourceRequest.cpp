@@ -38,7 +38,7 @@ PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourc
     request->setCachePolicy(data->m_cachePolicy);
     request->setTimeoutInterval(data->m_timeoutInterval);
     request->setFirstPartyForCookies(data->m_firstPartyForCookies);
-    request->setHTTPMethod(data->m_httpMethod);
+    request->setHTTPMethod(AtomicString(data->m_httpMethod));
     request->setPriority(data->m_priority);
 
     request->m_httpHeaderFields.adopt(data->m_httpHeaders.release());
@@ -62,7 +62,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_cachePolicy = cachePolicy();
     data->m_timeoutInterval = timeoutInterval();
     data->m_firstPartyForCookies = firstPartyForCookies().copy();
-    data->m_httpMethod = httpMethod().isolatedCopy();
+    data->m_httpMethod = httpMethod().string().isolatedCopy();
     data->m_httpHeaders = httpHeaderFields().copyData();
     data->m_priority = priority();
 
@@ -138,12 +138,12 @@ void ResourceRequest::setFirstPartyForCookies(const KURL& firstPartyForCookies)
     m_firstPartyForCookies = firstPartyForCookies;
 }
 
-const String& ResourceRequest::httpMethod() const
+const AtomicString& ResourceRequest::httpMethod() const
 {
     return m_httpMethod;
 }
 
-void ResourceRequest::setHTTPMethod(const String& httpMethod)
+void ResourceRequest::setHTTPMethod(const AtomicString& httpMethod)
 {
     m_httpMethod = httpMethod;
 }
@@ -153,22 +153,22 @@ const HTTPHeaderMap& ResourceRequest::httpHeaderFields() const
     return m_httpHeaderFields;
 }
 
-String ResourceRequest::httpHeaderField(const AtomicString& name) const
+AtomicString ResourceRequest::httpHeaderField(const AtomicString& name) const
 {
     return m_httpHeaderFields.get(name);
 }
 
-String ResourceRequest::httpHeaderField(const char* name) const
+const AtomicString& ResourceRequest::httpHeaderField(const char* name) const
 {
     return m_httpHeaderFields.get(name);
 }
 
-void ResourceRequest::setHTTPHeaderField(const AtomicString& name, const String& value)
+void ResourceRequest::setHTTPHeaderField(const AtomicString& name, const AtomicString& value)
 {
     m_httpHeaderFields.set(name, value);
 }
 
-void ResourceRequest::setHTTPHeaderField(const char* name, const String& value)
+void ResourceRequest::setHTTPHeaderField(const char* name, const AtomicString& value)
 {
     setHTTPHeaderField(AtomicString(name), value);
 }
@@ -233,7 +233,7 @@ void ResourceRequest::setPriority(ResourceLoadPriority priority)
     m_priority = priority;
 }
 
-void ResourceRequest::addHTTPHeaderField(const AtomicString& name, const String& value)
+void ResourceRequest::addHTTPHeaderField(const AtomicString& name, const AtomicString& value)
 {
     HTTPHeaderMap::AddResult result = m_httpHeaderFields.add(name, value);
     if (!result.isNewEntry)

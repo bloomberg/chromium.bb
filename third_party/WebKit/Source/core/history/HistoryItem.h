@@ -59,11 +59,11 @@ public:
     KURL url() const;
     KURL originalURL() const;
 
-    const String& referrer() const;
+    const AtomicString& referrer() const;
     const String& target() const;
 
     FormData* formData();
-    String formContentType() const;
+    const AtomicString& formContentType() const;
 
     const IntPoint& scrollPoint() const;
     void setScrollPoint(const IntPoint&);
@@ -79,7 +79,7 @@ public:
     void setURL(const KURL&);
     void setURLString(const String&);
     void setOriginalURLString(const String&);
-    void setReferrer(const String&);
+    void setReferrer(const AtomicString&);
     void setTarget(const String&);
 
     void setStateObject(PassRefPtr<SerializedScriptValue> object);
@@ -96,7 +96,7 @@ public:
 
     void setFormInfoFromRequest(const ResourceRequest&);
     void setFormData(PassRefPtr<FormData>);
-    void setFormContentType(const String&);
+    void setFormContentType(const AtomicString&);
 
     void addChildItem(PassRefPtr<HistoryItem>);
     const HistoryItemVector& children() const;
@@ -110,7 +110,7 @@ private:
 
     String m_urlString;
     String m_originalURLString;
-    String m_referrer;
+    AtomicString m_referrer;
     String m_target;
 
     IntPoint m_scrollPoint;
@@ -137,7 +137,7 @@ private:
 
     // info used to repost form data
     RefPtr<FormData> m_formData;
-    String m_formContentType;
+    AtomicString m_formContentType;
 
 }; //class HistoryItem
 

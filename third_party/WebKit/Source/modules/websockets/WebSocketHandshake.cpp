@@ -349,32 +349,32 @@ String WebSocketHandshake::failureReason() const
     return m_failureReason;
 }
 
-String WebSocketHandshake::serverWebSocketProtocol() const
+const AtomicString& WebSocketHandshake::serverWebSocketProtocol() const
 {
     return m_response.headerFields().get("sec-websocket-protocol");
 }
 
-String WebSocketHandshake::serverSetCookie() const
+const AtomicString& WebSocketHandshake::serverSetCookie() const
 {
     return m_response.headerFields().get("set-cookie");
 }
 
-String WebSocketHandshake::serverSetCookie2() const
+const AtomicString& WebSocketHandshake::serverSetCookie2() const
 {
     return m_response.headerFields().get("set-cookie2");
 }
 
-String WebSocketHandshake::serverUpgrade() const
+const AtomicString& WebSocketHandshake::serverUpgrade() const
 {
     return m_response.headerFields().get("upgrade");
 }
 
-String WebSocketHandshake::serverConnection() const
+const AtomicString& WebSocketHandshake::serverConnection() const
 {
     return m_response.headerFields().get("connection");
 }
 
-String WebSocketHandshake::serverWebSocketAccept() const
+const AtomicString& WebSocketHandshake::serverWebSocketAccept() const
 {
     return m_response.headerFields().get("sec-websocket-accept");
 }
@@ -479,7 +479,7 @@ const char* WebSocketHandshake::readHTTPHeaders(const char* start, const char* e
     m_response.clearHeaderFields();
 
     AtomicString name;
-    String value;
+    AtomicString value;
     bool sawSecWebSocketAcceptHeaderField = false;
     bool sawSecWebSocketProtocolHeaderField = false;
     const char* p = start;
@@ -527,10 +527,10 @@ const char* WebSocketHandshake::readHTTPHeaders(const char* start, const char* e
 
 bool WebSocketHandshake::checkResponseHeaders()
 {
-    const String& serverWebSocketProtocol = this->serverWebSocketProtocol();
-    const String& serverUpgrade = this->serverUpgrade();
-    const String& serverConnection = this->serverConnection();
-    const String& serverWebSocketAccept = this->serverWebSocketAccept();
+    const AtomicString& serverWebSocketProtocol = this->serverWebSocketProtocol();
+    const AtomicString& serverUpgrade = this->serverUpgrade();
+    const AtomicString& serverConnection = this->serverConnection();
+    const AtomicString& serverWebSocketAccept = this->serverWebSocketAccept();
 
     if (serverUpgrade.isNull()) {
         m_failureReason = formatHandshakeFailureReason("'Upgrade' header is missing");

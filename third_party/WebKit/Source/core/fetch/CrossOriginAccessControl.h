@@ -47,7 +47,7 @@ enum AccessControlStatus {
 
 bool isSimpleCrossOriginAccessRequest(const String& method, const HTTPHeaderMap&);
 bool isOnAccessControlSimpleRequestMethodWhitelist(const String&);
-bool isOnAccessControlSimpleRequestHeaderWhitelist(const String& name, const String& value);
+bool isOnAccessControlSimpleRequestHeaderWhitelist(const AtomicString& name, const AtomicString& value);
 bool isOnAccessControlResponseHeaderWhitelist(const String&);
 
 void updateRequestForAccessControl(ResourceRequest&, SecurityOrigin*, StoredCredentials);

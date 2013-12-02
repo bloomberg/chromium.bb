@@ -724,7 +724,7 @@ public:
     String cookie(ExceptionState&) const;
     void setCookie(const String&, ExceptionState&);
 
-    String referrer() const;
+    AtomicString referrer() const;
 
     String domain() const;
     void setDomain(const String& newDomain, ExceptionState&);

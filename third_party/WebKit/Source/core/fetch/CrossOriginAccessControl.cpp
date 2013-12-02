@@ -41,7 +41,7 @@ bool isOnAccessControlSimpleRequestMethodWhitelist(const String& method)
     return method == "GET" || method == "HEAD" || method == "POST";
 }
 
-bool isOnAccessControlSimpleRequestHeaderWhitelist(const String& name, const String& value)
+bool isOnAccessControlSimpleRequestHeaderWhitelist(const AtomicString& name, const AtomicString& value)
 {
     if (equalIgnoringCase(name, "accept")
         || equalIgnoringCase(name, "accept-language")
@@ -52,7 +52,7 @@ bool isOnAccessControlSimpleRequestHeaderWhitelist(const String& name, const Str
 
     // Preflight is required for MIME types that can not be sent via form submission.
     if (equalIgnoringCase(name, "content-type")) {
-        String mimeType = extractMIMETypeFromMediaType(value);
+        AtomicString mimeType = extractMIMETypeFromMediaType(value);
         return equalIgnoringCase(mimeType, "application/x-www-form-urlencoded")
             || equalIgnoringCase(mimeType, "multipart/form-data")
             || equalIgnoringCase(mimeType, "text/plain");

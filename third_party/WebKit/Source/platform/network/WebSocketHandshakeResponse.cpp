@@ -70,7 +70,7 @@ const HTTPHeaderMap& WebSocketHandshakeResponse::headerFields() const
     return m_headerFields;
 }
 
-void WebSocketHandshakeResponse::addHeaderField(const AtomicString& name, const String& value)
+void WebSocketHandshakeResponse::addHeaderField(const AtomicString& name, const AtomicString& value)
 {
     m_headerFields.add(name, value);
 }

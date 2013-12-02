@@ -110,13 +110,13 @@ PassOwnPtr<ResourceResponse> ResourceResponse::adopt(PassOwnPtr<CrossThreadResou
 {
     OwnPtr<ResourceResponse> response = adoptPtr(new ResourceResponse);
     response->setURL(data->m_url);
-    response->setMimeType(data->m_mimeType);
+    response->setMimeType(AtomicString(data->m_mimeType));
     response->setExpectedContentLength(data->m_expectedContentLength);
-    response->setTextEncodingName(data->m_textEncodingName);
+    response->setTextEncodingName(AtomicString(data->m_textEncodingName));
     response->setSuggestedFilename(data->m_suggestedFilename);
 
     response->setHTTPStatusCode(data->m_httpStatusCode);
-    response->setHTTPStatusText(data->m_httpStatusText);
+    response->setHTTPStatusText(AtomicString(data->m_httpStatusText));
 
     response->m_httpHeaderFields.adopt(data->m_httpHeaders.release());
     response->setLastModifiedDate(data->m_lastModifiedDate);
@@ -131,7 +131,7 @@ PassOwnPtr<ResourceResponse> ResourceResponse::adopt(PassOwnPtr<CrossThreadResou
     response->m_wasAlternateProtocolAvailable = data->m_wasAlternateProtocolAvailable;
     response->m_wasFetchedViaProxy = data->m_wasFetchedViaProxy;
     response->m_responseTime = data->m_responseTime;
-    response->m_remoteIPAddress = data->m_remoteIPAddress;
+    response->m_remoteIPAddress = AtomicString(data->m_remoteIPAddress);
     response->m_remotePort = data->m_remotePort;
     response->m_downloadedFilePath = data->m_downloadedFilePath;
     response->m_downloadedFileHandle = data->m_downloadedFileHandle;
@@ -267,12 +267,12 @@ void ResourceResponse::setHTTPStatusText(const AtomicString& statusText)
     m_httpStatusText = statusText;
 }
 
-String ResourceResponse::httpHeaderField(const AtomicString& name) const
+AtomicString ResourceResponse::httpHeaderField(const AtomicString& name) const
 {
     return m_httpHeaderFields.get(name);
 }
 
-String ResourceResponse::httpHeaderField(const char* name) const
+const AtomicString& ResourceResponse::httpHeaderField(const char* name) const
 {
     return m_httpHeaderFields.get(name);
 }
@@ -298,14 +298,14 @@ void ResourceResponse::updateHeaderParsedState(const AtomicString& name)
         m_haveParsedLastModifiedHeader = false;
 }
 
-void ResourceResponse::setHTTPHeaderField(const AtomicString& name, const String& value)
+void ResourceResponse::setHTTPHeaderField(const AtomicString& name, const AtomicString& value)
 {
     updateHeaderParsedState(name);
 
     m_httpHeaderFields.set(name, value);
 }
 
-void ResourceResponse::addHTTPHeaderField(const AtomicString& name, const String& value)
+void ResourceResponse::addHTTPHeaderField(const AtomicString& name, const AtomicString& value)
 {
     updateHeaderParsedState(name);
 
@@ -340,7 +340,7 @@ void ResourceResponse::parseCacheControlDirectives() const
     DEFINE_STATIC_LOCAL(const AtomicString, mustRevalidateDirective, ("must-revalidate", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, maxAgeDirective, ("max-age", AtomicString::ConstructFromLiteral));
 
-    String cacheControlValue = m_httpHeaderFields.get(cacheControlString);
+    AtomicString cacheControlValue = m_httpHeaderFields.get(cacheControlString);
     if (!cacheControlValue.isEmpty()) {
         Vector<pair<String, String> > directives;
         parseCacheHeader(cacheControlValue, directives);

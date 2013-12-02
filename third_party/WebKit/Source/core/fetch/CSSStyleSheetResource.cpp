@@ -123,7 +123,7 @@ bool CSSStyleSheetResource::canUseSheet(bool enforceMIMEType, bool* hasValidMIME
     //
     // This code defaults to allowing the stylesheet for non-HTTP protocols so
     // folks can use standards mode for local HTML documents.
-    String mimeType = extractMIMETypeFromMediaType(response().httpHeaderField("Content-Type"));
+    AtomicString mimeType = extractMIMETypeFromMediaType(response().httpHeaderField("Content-Type"));
     bool typeOK = mimeType.isEmpty() || equalIgnoringCase(mimeType, "text/css") || equalIgnoringCase(mimeType, "application/x-unknown-content-type");
     if (hasValidMIMEType)
         *hasValidMIMEType = typeOK;

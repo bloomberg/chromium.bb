@@ -461,7 +461,7 @@ bool XMLHttpRequest::isAllowedHTTPMethod(const String& method)
         && !equalIgnoringCase(method, "CONNECT");
 }
 
-String XMLHttpRequest::uppercaseKnownHTTPMethod(const String& method)
+AtomicString XMLHttpRequest::uppercaseKnownHTTPMethod(const AtomicString& method)
 {
     const char* const methods[] = {
         "COPY",
@@ -497,14 +497,14 @@ bool XMLHttpRequest::isAllowedHTTPHeader(const String& name)
         && !name.startsWith(staticData->m_secHeaderPrefix, false);
 }
 
-void XMLHttpRequest::open(const String& method, const KURL& url, ExceptionState& exceptionState)
+void XMLHttpRequest::open(const AtomicString& method, const KURL& url, ExceptionState& exceptionState)
 {
     open(method, url, true, exceptionState);
 }
 
-void XMLHttpRequest::open(const String& method, const KURL& url, bool async, ExceptionState& exceptionState)
+void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool async, ExceptionState& exceptionState)
 {
-    WTF_LOG(Network, "XMLHttpRequest %p open('%s', '%s', %d)", this, method.utf8().data(), url.elidedString().utf8().data(), async);
+    WTF_LOG(Network, "XMLHttpRequest %p open('%s', '%s', %d)", this, method.string().utf8().data(), url.elidedString().utf8().data(), async);
 
     if (!internalAbort())
         return;
@@ -574,7 +574,7 @@ void XMLHttpRequest::open(const String& method, const KURL& url, bool async, Exc
         m_state = OPENED;
 }
 
-void XMLHttpRequest::open(const String& method, const KURL& url, bool async, const String& user, ExceptionState& exceptionState)
+void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool async, const String& user, ExceptionState& exceptionState)
 {
     KURL urlWithCredentials(url);
     urlWithCredentials.setUser(user);
@@ -582,7 +582,7 @@ void XMLHttpRequest::open(const String& method, const KURL& url, bool async, con
     open(method, urlWithCredentials, async, exceptionState);
 }
 
-void XMLHttpRequest::open(const String& method, const KURL& url, bool async, const String& user, const String& password, ExceptionState& exceptionState)
+void XMLHttpRequest::open(const AtomicString& method, const KURL& url, bool async, const String& user, const String& password, ExceptionState& exceptionState)
 {
     KURL urlWithCredentials(url);
     urlWithCredentials.setUser(user);
@@ -657,7 +657,7 @@ void XMLHttpRequest::send(const String& body, ExceptionState& exceptionState)
             setRequestHeaderInternal("Content-Type", "text/plain;charset=UTF-8");
         } else {
             replaceCharsetInMediaType(contentType, "UTF-8");
-            m_requestHeaders.set("Content-Type", contentType);
+            m_requestHeaders.set("Content-Type", AtomicString(contentType));
         }
 
         m_requestEntityBody = FormData::create(UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
@@ -680,7 +680,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exceptionState)
         if (contentType.isEmpty()) {
             const String& blobType = body->type();
             if (!blobType.isEmpty() && isValidContentType(blobType))
-                setRequestHeaderInternal("Content-Type", blobType);
+                setRequestHeaderInternal("Content-Type", AtomicString(blobType));
             else {
                 // From FileAPI spec, whenever media type cannot be determined, empty string must be returned.
                 setRequestHeaderInternal("Content-Type", "");
@@ -708,9 +708,8 @@ void XMLHttpRequest::send(DOMFormData* body, ExceptionState& exceptionState)
     if (areMethodAndURLValidForSend()) {
         m_requestEntityBody = body->createMultiPartFormData(body->encoding());
 
-        String contentType = getRequestHeader("Content-Type");
-        if (contentType.isEmpty()) {
-            contentType = String("multipart/form-data; boundary=") + m_requestEntityBody->boundary().data();
+        if (getRequestHeader("Content-Type").isEmpty()) {
+            AtomicString contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + m_requestEntityBody->boundary().data();
             setRequestHeaderInternal("Content-Type", contentType);
         }
     }
@@ -1048,12 +1047,12 @@ void XMLHttpRequest::dropProtection()
     unsetPendingActivity(this);
 }
 
-void XMLHttpRequest::overrideMimeType(const String& override)
+void XMLHttpRequest::overrideMimeType(const AtomicString& override)
 {
     m_mimeTypeOverride = override;
 }
 
-void XMLHttpRequest::setRequestHeader(const AtomicString& name, const String& value, ExceptionState& exceptionState)
+void XMLHttpRequest::setRequestHeader(const AtomicString& name, const AtomicString& value, ExceptionState& exceptionState)
 {
     if (m_state != OPENED || m_loader) {
         exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("setRequestHeader", "XMLHttpRequest", "The object's state must be OPENED."));
@@ -1079,14 +1078,14 @@ void XMLHttpRequest::setRequestHeader(const AtomicString& name, const String& va
     setRequestHeaderInternal(name, value);
 }
 
-void XMLHttpRequest::setRequestHeaderInternal(const AtomicString& name, const String& value)
+void XMLHttpRequest::setRequestHeaderInternal(const AtomicString& name, const AtomicString& value)
 {
     HTTPHeaderMap::AddResult result = m_requestHeaders.add(name, value);
     if (!result.isNewEntry)
         result.iterator->value = result.iterator->value + ", " + value;
 }
 
-String XMLHttpRequest::getRequestHeader(const AtomicString& name) const
+AtomicString XMLHttpRequest::getRequestHeader(const AtomicString& name) const
 {
     return m_requestHeaders.get(name);
 }
@@ -1125,15 +1124,15 @@ String XMLHttpRequest::getAllResponseHeaders(ExceptionState& exceptionState) con
     return stringBuilder.toString();
 }
 
-String XMLHttpRequest::getResponseHeader(const AtomicString& name, ExceptionState& exceptionState) const
+AtomicString XMLHttpRequest::getResponseHeader(const AtomicString& name, ExceptionState& exceptionState) const
 {
     if (m_state < HEADERS_RECEIVED || m_error)
-        return String();
+        return nullAtom;
 
     // See comment in getAllResponseHeaders above.
     if (isSetCookieHeader(name) && !securityOrigin()->canLoadLocalResources()) {
         logConsoleError(executionContext(), "Refused to get unsafe header \"" + name + "\"");
-        return String();
+        return nullAtom;
     }
 
     HTTPHeaderSet accessControlExposeHeaderSet;
@@ -1141,14 +1140,14 @@ String XMLHttpRequest::getResponseHeader(const AtomicString& name, ExceptionStat
 
     if (!m_sameOriginRequest && !isOnAccessControlResponseHeaderWhitelist(name) && !accessControlExposeHeaderSet.contains(name)) {
         logConsoleError(executionContext(), "Refused to get unsafe header \"" + name + "\"");
-        return String();
+        return nullAtom;
     }
     return m_response.httpHeaderField(name);
 }
 
-String XMLHttpRequest::responseMIMEType() const
+AtomicString XMLHttpRequest::responseMIMEType() const
 {
-    String mimeType = extractMIMETypeFromMediaType(m_mimeTypeOverride);
+    AtomicString mimeType = extractMIMETypeFromMediaType(m_mimeTypeOverride);
     if (mimeType.isEmpty()) {
         if (m_response.isHTTP())
             mimeType = extractMIMETypeFromMediaType(m_response.httpHeaderField("Content-Type"));
@@ -1156,7 +1155,7 @@ String XMLHttpRequest::responseMIMEType() const
             mimeType = m_response.mimeType();
     }
     if (mimeType.isEmpty())
-        mimeType = "text/xml";
+        mimeType = AtomicString("text/xml", AtomicString::ConstructFromLiteral);
 
     return mimeType;
 }

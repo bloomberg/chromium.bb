@@ -562,7 +562,7 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
         if (sameDocumentNavigationSource != SameDocumentNavigationDefault) {
             m_currentItem->setStateObject(data);
             m_currentItem->setFormData(0);
-            m_currentItem->setFormContentType(String());
+            m_currentItem->setFormContentType(nullAtom);
         }
     }
 
@@ -1173,10 +1173,10 @@ void FrameLoader::addExtraFieldsToRequest(ResourceRequest& request)
         request.setHTTPAccept(defaultAcceptHeader);
 
     // Make sure we send the Origin header.
-    addHTTPOriginIfNeeded(request, String());
+    addHTTPOriginIfNeeded(request, nullAtom);
 }
 
-void FrameLoader::addHTTPOriginIfNeeded(ResourceRequest& request, const String& origin)
+void FrameLoader::addHTTPOriginIfNeeded(ResourceRequest& request, const AtomicString& origin)
 {
     if (!request.httpOrigin().isEmpty())
         return;  // Request already has an Origin header.

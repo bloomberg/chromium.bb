@@ -42,7 +42,7 @@ public:
 
     virtual void setEncoding(const String&);
     virtual String encoding() const;
-    String mimeType() const;
+    AtomicString mimeType() const;
 
     bool mimeTypeAllowedByNosniff() const;
 

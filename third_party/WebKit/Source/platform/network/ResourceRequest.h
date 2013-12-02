@@ -90,7 +90,7 @@ public:
         initialize(url, UseProtocolCachePolicy);
     }
 
-    ResourceRequest(const KURL& url, const String& referrer, ResourceRequestCachePolicy cachePolicy = UseProtocolCachePolicy)
+    ResourceRequest(const KURL& url, const AtomicString& referrer, ResourceRequestCachePolicy cachePolicy = UseProtocolCachePolicy)
     {
         initialize(url, cachePolicy);
         setHTTPReferrer(referrer);
@@ -118,38 +118,38 @@ public:
     const KURL& firstPartyForCookies() const;
     void setFirstPartyForCookies(const KURL& firstPartyForCookies);
 
-    const String& httpMethod() const;
-    void setHTTPMethod(const String& httpMethod);
+    const AtomicString& httpMethod() const;
+    void setHTTPMethod(const AtomicString&);
 
     const HTTPHeaderMap& httpHeaderFields() const;
-    String httpHeaderField(const AtomicString& name) const;
-    String httpHeaderField(const char* name) const;
-    void setHTTPHeaderField(const AtomicString& name, const String& value);
-    void setHTTPHeaderField(const char* name, const String& value);
-    void addHTTPHeaderField(const AtomicString& name, const String& value);
+    AtomicString httpHeaderField(const AtomicString& name) const;
+    const AtomicString& httpHeaderField(const char* name) const;
+    void setHTTPHeaderField(const AtomicString& name, const AtomicString& value);
+    void setHTTPHeaderField(const char* name, const AtomicString& value);
+    void addHTTPHeaderField(const AtomicString& name, const AtomicString& value);
     void addHTTPHeaderFields(const HTTPHeaderMap& headerFields);
     void clearHTTPHeaderField(const AtomicString& name);
 
     void clearHTTPAuthorization();
 
-    String httpContentType() const { return httpHeaderField("Content-Type");  }
-    void setHTTPContentType(const String& httpContentType) { setHTTPHeaderField("Content-Type", httpContentType); }
+    AtomicString httpContentType() const { return httpHeaderField("Content-Type");  }
+    void setHTTPContentType(const AtomicString& httpContentType) { setHTTPHeaderField("Content-Type", httpContentType); }
     void clearHTTPContentType();
 
-    String httpReferrer() const { return httpHeaderField("Referer"); }
-    void setHTTPReferrer(const String& httpReferrer) { setHTTPHeaderField("Referer", httpReferrer); }
+    AtomicString httpReferrer() const { return httpHeaderField("Referer"); }
+    void setHTTPReferrer(const AtomicString& httpReferrer) { setHTTPHeaderField("Referer", httpReferrer); }
     void clearHTTPReferrer();
 
-    String httpOrigin() const { return httpHeaderField("Origin"); }
-    void setHTTPOrigin(const String& httpOrigin) { setHTTPHeaderField("Origin", httpOrigin); }
+    AtomicString httpOrigin() const { return httpHeaderField("Origin"); }
+    void setHTTPOrigin(const AtomicString& httpOrigin) { setHTTPHeaderField("Origin", httpOrigin); }
     void clearHTTPOrigin();
 
-    String httpUserAgent() const { return httpHeaderField("User-Agent"); }
-    void setHTTPUserAgent(const String& httpUserAgent) { setHTTPHeaderField("User-Agent", httpUserAgent); }
+    AtomicString httpUserAgent() const { return httpHeaderField("User-Agent"); }
+    void setHTTPUserAgent(const AtomicString& httpUserAgent) { setHTTPHeaderField("User-Agent", httpUserAgent); }
     void clearHTTPUserAgent();
 
-    String httpAccept() const { return httpHeaderField("Accept"); }
-    void setHTTPAccept(const String& httpAccept) { setHTTPHeaderField("Accept", httpAccept); }
+    AtomicString httpAccept() const { return httpHeaderField("Accept"); }
+    void setHTTPAccept(const AtomicString& httpAccept) { setHTTPHeaderField("Accept", httpAccept); }
     void clearHTTPAccept();
 
     FormData* httpBody() const;

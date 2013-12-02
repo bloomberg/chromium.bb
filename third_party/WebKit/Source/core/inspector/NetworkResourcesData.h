@@ -49,10 +49,10 @@ class TextResourceDecoder;
 
 class XHRReplayData : public RefCounted<XHRReplayData> {
 public:
-    static PassRefPtr<XHRReplayData> create(const String &method, const KURL&, bool async, PassRefPtr<FormData>, bool includeCredentials);
+    static PassRefPtr<XHRReplayData> create(const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData>, bool includeCredentials);
 
-    void addHeader(const AtomicString& key, const String& value);
-    const String& method() const { return m_method; }
+    void addHeader(const AtomicString& key, const AtomicString& value);
+    const AtomicString& method() const { return m_method; }
     const KURL& url() const { return m_url; }
     bool async() const { return m_async; }
     PassRefPtr<FormData> formData() const { return m_formData; }
@@ -60,9 +60,9 @@ public:
     bool includeCredentials() const { return m_includeCredentials; }
 
 private:
-    XHRReplayData(const String &method, const KURL&, bool async, PassRefPtr<FormData>, bool includeCredentials);
+    XHRReplayData(const AtomicString& method, const KURL&, bool async, PassRefPtr<FormData>, bool includeCredentials);
 
-    String m_method;
+    AtomicString m_method;
     KURL m_url;
     bool m_async;
     RefPtr<FormData> m_formData;

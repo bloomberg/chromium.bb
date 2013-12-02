@@ -98,10 +98,10 @@ public:
     State readyState() const;
     bool withCredentials() const { return m_includeCredentials; }
     void setWithCredentials(bool, ExceptionState&);
-    void open(const String& method, const KURL&, ExceptionState&);
-    void open(const String& method, const KURL&, bool async, ExceptionState&);
-    void open(const String& method, const KURL&, bool async, const String& user, ExceptionState&);
-    void open(const String& method, const KURL&, bool async, const String& user, const String& password, ExceptionState&);
+    void open(const AtomicString& method, const KURL&, ExceptionState&);
+    void open(const AtomicString& method, const KURL&, bool async, ExceptionState&);
+    void open(const AtomicString& method, const KURL&, bool async, const String& user, ExceptionState&);
+    void open(const AtomicString& method, const KURL&, bool async, const String& user, const String& password, ExceptionState&);
     void send(ExceptionState&);
     void send(Document*, ExceptionState&);
     void send(const String&, ExceptionState&);
@@ -110,10 +110,10 @@ public:
     void send(ArrayBuffer*, ExceptionState&);
     void send(ArrayBufferView*, ExceptionState&);
     void abort();
-    void setRequestHeader(const AtomicString& name, const String& value, ExceptionState&);
-    void overrideMimeType(const String& override);
+    void setRequestHeader(const AtomicString& name, const AtomicString& value, ExceptionState&);
+    void overrideMimeType(const AtomicString& override);
     String getAllResponseHeaders(ExceptionState&) const;
-    String getResponseHeader(const AtomicString& name, ExceptionState&) const;
+    AtomicString getResponseHeader(const AtomicString& name, ExceptionState&) const;
     ScriptString responseText(ExceptionState&);
     ScriptString responseJSONSource();
     Document* responseXML(ExceptionState&);
@@ -126,7 +126,7 @@ public:
 
     // Expose HTTP validation methods for other untrusted requests.
     static bool isAllowedHTTPMethod(const String&);
-    static String uppercaseKnownHTTPMethod(const String&);
+    static AtomicString uppercaseKnownHTTPMethod(const AtomicString&);
     static bool isAllowedHTTPHeader(const String&);
 
     void setResponseType(const String&, ExceptionState&);
@@ -156,7 +156,7 @@ private:
     virtual void didFail(const ResourceError&);
     virtual void didFailRedirectCheck();
 
-    String responseMIMEType() const;
+    AtomicString responseMIMEType() const;
     bool responseIsXML() const;
 
     bool areMethodAndURLValidForSend();
@@ -164,8 +164,8 @@ private:
     bool initSend(ExceptionState&);
     void sendBytesData(const void*, size_t, ExceptionState&);
 
-    String getRequestHeader(const AtomicString& name) const;
-    void setRequestHeaderInternal(const AtomicString& name, const String& value);
+    AtomicString getRequestHeader(const AtomicString& name) const;
+    void setRequestHeaderInternal(const AtomicString& name, const AtomicString& value);
 
     // Changes m_state and dispatches a readyStateChange event if new m_state
     // value is different from last one.
@@ -208,10 +208,10 @@ private:
     OwnPtr<XMLHttpRequestUpload> m_upload;
 
     KURL m_url;
-    String m_method;
+    AtomicString m_method;
     HTTPHeaderMap m_requestHeaders;
     RefPtr<FormData> m_requestEntityBody;
-    String m_mimeTypeOverride;
+    AtomicString m_mimeTypeOverride;
     bool m_async;
     bool m_includeCredentials;
     unsigned long m_timeoutMilliseconds;

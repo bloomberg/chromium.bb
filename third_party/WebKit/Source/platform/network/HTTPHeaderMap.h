@@ -57,7 +57,7 @@ public:
 
     // Alternate accessors that are faster than converting the char* to AtomicString first.
     bool contains(const char*) const;
-    AtomicString get(const char*) const;
+    const AtomicString& get(const char*) const;
     AddResult add(const char* name, const AtomicString& value);
 
 };

@@ -146,7 +146,7 @@ public:
 
     void addExtraFieldsToRequest(ResourceRequest&);
 
-    static void addHTTPOriginIfNeeded(ResourceRequest&, const String& origin);
+    static void addHTTPOriginIfNeeded(ResourceRequest&, const AtomicString& origin);
 
     FrameLoaderClient* client() const { return m_client; }
 

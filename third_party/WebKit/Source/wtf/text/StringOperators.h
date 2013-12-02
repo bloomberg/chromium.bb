@@ -35,13 +35,12 @@ public:
 
     operator String() const
     {
-        RefPtr<StringImpl> resultImpl = makeString(m_string1, m_string2);
-        return resultImpl.release();
+        return String(makeString(m_string1, m_string2));
     }
 
     operator AtomicString() const
     {
-        return operator String();
+        return AtomicString(makeString(m_string1, m_string2));
     }
 
     bool is8Bit()

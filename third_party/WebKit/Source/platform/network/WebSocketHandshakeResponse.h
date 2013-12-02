@@ -47,7 +47,7 @@ public:
     const String& statusText() const;
     void setStatusText(const String&);
     const HTTPHeaderMap& headerFields() const;
-    void addHeaderField(const AtomicString& name, const String& value);
+    void addHeaderField(const AtomicString& name, const AtomicString& value);
     void clearHeaderFields();
 
 private:
