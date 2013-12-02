@@ -27,9 +27,12 @@ name=GoogleDesktop LEAK
 GoogleDesktopNetwork3.DLL!DllUnregisterServer
 
 # They deliberately use uninit local var in sqlite random generator
+# random byte may mess up the call stack between randomByte and
+# sqlite3_randomness
 UNINITIALIZED READ
 name=sqlite3_randomness UNINIT
 *!randomByte
+...
 *!sqlite3_randomness
 
 # Intentional leak in WebKit Template Framework for ThreadData.
