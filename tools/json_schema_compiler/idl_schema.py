@@ -223,7 +223,7 @@ class Typeref(object):
     properties = self.additional_properties
     result = properties
 
-    if self.parent.GetProperty('OPTIONAL', False):
+    if self.parent.GetProperty('OPTIONAL'):
       properties['optional'] = True
 
     # The IDL parser denotes array types by adding a child 'Array' node onto

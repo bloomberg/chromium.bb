@@ -5,10 +5,10 @@
 """Nodes for PPAPI IDL AST."""
 
 from idl_namespace import IDLNamespace
-from idl_node import IDLAttribute, IDLFile, IDLNode
+from idl_node import IDLNode
 from idl_option import GetOption
 from idl_visitor import IDLVisitor
-from idl_release import IDLReleaseList, IDLReleaseMap
+from idl_release import IDLReleaseMap
 
 #
 # IDL Predefined types
@@ -42,7 +42,7 @@ class IDLLabelResolver(IDLVisitor):
 
     # For File objects, set the minimum version
     if node.IsA('File'):
-      file_min, file_max = node.release_map.GetReleaseRange()
+      file_min, _ = node.release_map.GetReleaseRange()
       node.SetMin(file_min)
 
     return None
@@ -69,7 +69,7 @@ class IDLNamespaceVersionResolver(IDLVisitor):
 
     # Set the min version on any non Label within the File
     if not node.IsA('AST', 'File', 'Label', 'LabelItem'):
-      my_min, my_max = node.GetMinMax()
+      my_min, _ = node.GetMinMax()
       if not my_min:
         node.SetMin(self.rmin)
 
@@ -118,7 +118,7 @@ class IDLFileTypeResolver(IDLVisitor):
       filenode = node
 
     if not node.IsA('AST'):
-      file_min, file_max = filenode.release_map.GetReleaseRange()
+      file_min, _ = filenode.release_map.GetReleaseRange()
       if not file_min:
         print 'Resetting min on %s to %s' % (node, file_min)
         node.SetMinRange(file_min)
@@ -179,6 +179,8 @@ class IDLAst(IDLNode):
     IDLReleaseResolver().Visit(self, sorted(releases))
 
     for filenode in self.GetListOf('File'):
-      self.errors += int(filenode.GetProperty('ERRORS', 0))
+      errors = filenode.GetProperty('ERRORS')
+      if errors:
+        self.errors += errors
 
 

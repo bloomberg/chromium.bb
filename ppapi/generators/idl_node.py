@@ -16,12 +16,10 @@
 # as the source data by the various generators.
 #
 
-import hashlib
 import sys
 
 from idl_log import ErrOut, InfoOut, WarnOut
 from idl_propertynode import IDLPropertyNode
-from idl_namespace import IDLNamespace
 from idl_release import IDLRelease, IDLReleaseMap
 
 
@@ -53,7 +51,6 @@ class IDLNode(IDLRelease):
   NamedSet = set(['Enum', 'EnumItem', 'File', 'Function', 'Interface',
                   'Member', 'Param', 'Struct', 'Type', 'Typedef'])
 
-  show_versions = False
   def __init__(self, cls, filename, lineno, pos, children=None):
     # Initialize with no starting or ending Version
     IDLRelease.__init__(self, None, None)
@@ -63,7 +60,6 @@ class IDLNode(IDLRelease):
     self.pos = pos
     self.filename = filename
     self.filenode = None
-    self.hashes = {}
     self.deps = {}
     self.errors = 0
     self.namespace = None
@@ -83,12 +79,12 @@ class IDLNode(IDLRelease):
     # Process the passed in list of children, placing ExtAttributes into the
     # property dictionary, and nodes into the local child list in order.  In
     # addition, add nodes to the namespace if the class is in the NamedSet.
-    if not children: children = []
-    for child in children:
-      if child.cls == 'ExtAttribute':
-        self.SetProperty(child.name, child.value)
-      else:
-        self.AddChild(child)
+    if children:
+      for child in children:
+        if child.cls == 'ExtAttribute':
+          self.SetProperty(child.name, child.value)
+        else:
+          self.AddChild(child)
 
 #
 # String related functions
@@ -98,10 +94,9 @@ class IDLNode(IDLRelease):
   # Return a string representation of this node
   def __str__(self):
     name = self.GetName()
-    ver = IDLRelease.__str__(self)
-    if name is None: name = ''
-    if not IDLNode.show_versions: ver = ''
-    return '%s(%s%s)' % (self.cls, name, ver)
+    if name is None:
+      name = ''
+    return '%s(%s)' % (self.cls, name)
 
   # Return file and line number for where node was defined
   def Location(self):
@@ -113,7 +108,9 @@ class IDLNode(IDLRelease):
     ErrOut.LogLine(self.filename, self.lineno, 0, ' %s %s' %
                    (str(self), msg))
     if self.filenode:
-      errcnt = self.filenode.GetProperty('ERRORS', 0)
+      errcnt = self.filenode.GetProperty('ERRORS')
+      if not errcnt:
+        errcnt = 0
       self.filenode.SetProperty('ERRORS', errcnt + 1)
 
   # Log a warning for this object
@@ -124,11 +121,6 @@ class IDLNode(IDLRelease):
   def GetName(self):
     return self.GetProperty('NAME')
 
-  def GetNameVersion(self):
-    name = self.GetProperty('NAME', default='')
-    ver = IDLRelease.__str__(self)
-    return '%s%s' % (name, ver)
-
   # Dump this object and its children
   def Dump(self, depth=0, comments=False, out=sys.stdout):
     if self.cls in ['Comment', 'Copyright']:
@@ -137,7 +129,8 @@ class IDLNode(IDLRelease):
       is_comment = False
 
     # Skip this node if it's a comment, and we are not printing comments
-    if not comments and is_comment: return
+    if not comments and is_comment:
+      return
 
     tab = ''.rjust(depth * 2)
     if is_comment:
@@ -169,19 +162,20 @@ class IDLNode(IDLRelease):
 #
   # Check if node is of a given type
   def IsA(self, *typelist):
-    if self.cls in typelist: return True
-    return False
+    return self.cls in typelist
 
   # Get a list of objects for this key
   def GetListOf(self, *keys):
     out = []
     for child in self.children:
-      if child.cls in keys: out.append(child)
+      if child.cls in keys:
+        out.append(child)
     return out
 
   def GetOneOf(self, *keys):
     out = self.GetListOf(*keys)
-    if out: return out[0]
+    if out:
+      return out[0]
     return None
 
   def SetParent(self, parent):
@@ -196,54 +190,10 @@ class IDLNode(IDLRelease):
   def GetChildren(self):
     return self.children
 
-  # Get a list of all children of a given version
-  def GetChildrenVersion(self, version):
-    out = []
-    for child in self.children:
-      if child.IsVersion(version): out.append(child)
-    return out
-
-  # Get a list of all children in a given range
-  def GetChildrenRange(self, vmin, vmax):
-    out = []
-    for child in self.children:
-      if child.IsRange(vmin, vmax): out.append(child)
-    return out
-
-  def FindVersion(self, name, version):
-    node = self.namespace.FindNode(name, version)
-    if not node and self.parent:
-      node = self.parent.FindVersion(name, version)
-    return node
-
-  def FindRange(self, name, vmin, vmax):
-    nodes = self.namespace.FindNodes(name, vmin, vmax)
-    if not nodes and self.parent:
-      nodes = self.parent.FindVersion(name, vmin, vmax)
-    return nodes
-
   def GetType(self, release):
-    if not self.typelist: return None
+    if not self.typelist:
+      return None
     return self.typelist.FindRelease(release)
-
-  def GetHash(self, release):
-    hashval = self.hashes.get(release, None)
-    if hashval is None:
-      hashval = hashlib.sha1()
-      hashval.update(self.cls)
-      for key in self.property_node.GetPropertyList():
-        val = self.GetProperty(key)
-        hashval.update('%s=%s' % (key, str(val)))
-      typeref = self.GetType(release)
-      if typeref:
-        hashval.update(typeref.GetHash(release))
-      for child in self.GetChildren():
-        if child.IsA('Copyright', 'Comment', 'Label'): continue
-        if not child.IsRelease(release):
-          continue
-        hashval.update( child.GetHash(release) )
-      self.hashes[release] = hashval
-    return hashval.hexdigest()
 
   def GetDeps(self, release, visited=None):
     visited = visited or set()
@@ -296,7 +246,8 @@ class IDLNode(IDLRelease):
     out = set()
     for rel in releases:
       remapped = self.first_release[rel]
-      if not remapped: continue
+      if not remapped:
+        continue
       out |= set([remapped])
 
     # Cache the most recent set of unique_releases
@@ -315,21 +266,6 @@ class IDLNode(IDLRelease):
     if not filenode:
       return None
     return filenode.release_map.GetRelease(version)
-
-  def _GetReleases(self, releases):
-    if not self.releases:
-      my_min, my_max = self.GetMinMax(releases)
-      my_releases = [my_min]
-      if my_max != releases[-1]:
-        my_releases.append(my_max)
-      my_releases = set(my_releases)
-      for child in self.GetChildren():
-        if child.IsA('Copyright', 'Comment', 'Label'):
-          continue
-        my_releases |= child.GetReleases(releases)
-      self.releases = my_releases
-    return self.releases
-
 
   def _GetReleaseList(self, releases, visited=None):
     visited = visited or set()
@@ -393,7 +329,7 @@ class IDLNode(IDLRelease):
 
   def BuildReleaseMap(self, releases):
     unique_list = self._GetReleaseList(releases)
-    my_min, my_max = self.GetMinMax(releases)
+    _, my_max = self.GetMinMax(releases)
 
     self.first_release = {}
     last_rel = None
@@ -407,13 +343,8 @@ class IDLNode(IDLRelease):
   def SetProperty(self, name, val):
     self.property_node.SetProperty(name, val)
 
-  def GetProperty(self, name, default=None):
-    return self.property_node.GetProperty(name, default)
-
-  def Traverse(self, data, func):
-    func(self, data)
-    for child in self.children:
-      child.Traverse(data, func)
+  def GetProperty(self, name):
+    return self.property_node.GetProperty(name)
 
 
 #
@@ -425,8 +356,11 @@ class IDLFile(IDLNode):
   def __init__(self, name, children, errors=0):
     attrs = [IDLAttribute('NAME', name),
              IDLAttribute('ERRORS', errors)]
-    if not children: children = []
+    if not children:
+      children = []
     IDLNode.__init__(self, 'File', name, 1, 0, attrs + children)
+    # TODO(teravest): Why do we set release map like this here? This looks
+    # suspicious...
     self.release_map = IDLReleaseMap([('M13', 1.0)])
 
 
@@ -448,7 +382,8 @@ def StringTest():
   if str(node) != text_str:
     ErrOut.Log('str() returned >%s< not >%s<' % (str(node), text_str))
     errors += 1
-  if not errors: InfoOut.Log('Passed StringTest')
+  if not errors:
+    InfoOut.Log('Passed StringTest')
   return errors
 
 
@@ -482,7 +417,8 @@ def ChildTest():
     ErrOut.Log('Failed GetChildren2.')
     errors += 1
 
-  if not errors: InfoOut.Log('Passed ChildTest')
+  if not errors:
+    InfoOut.Log('Passed ChildTest')
   return errors
 
 
