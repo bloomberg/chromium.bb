@@ -238,8 +238,8 @@ enum PageshowEventPersistence {
         void resizeTo(float width, float height) const;
 
         // WebKit animation extensions
-        int requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback>);
-        int webkitRequestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback>);
+        int requestAnimationFrame(PassOwnPtr<RequestAnimationFrameCallback>);
+        int webkitRequestAnimationFrame(PassOwnPtr<RequestAnimationFrameCallback>);
         void cancelAnimationFrame(int id);
 
         DOMWindowCSS* css();

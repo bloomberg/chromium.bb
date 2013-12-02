@@ -66,10 +66,10 @@ void ScriptedAnimationController::resume()
     scheduleAnimationIfNeeded();
 }
 
-ScriptedAnimationController::CallbackId ScriptedAnimationController::registerCallback(PassRefPtr<RequestAnimationFrameCallback> callback)
+ScriptedAnimationController::CallbackId ScriptedAnimationController::registerCallback(PassOwnPtr<RequestAnimationFrameCallback> callback)
 {
     ScriptedAnimationController::CallbackId id = ++m_nextCallbackId;
-    callback->m_firedOrCancelled = false;
+    callback->m_cancelled = false;
     callback->m_id = id;
     m_callbacks.append(callback);
     scheduleAnimationIfNeeded();
@@ -83,9 +83,16 @@ void ScriptedAnimationController::cancelCallback(CallbackId id)
 {
     for (size_t i = 0; i < m_callbacks.size(); ++i) {
         if (m_callbacks[i]->m_id == id) {
-            m_callbacks[i]->m_firedOrCancelled = true;
             InspectorInstrumentation::didCancelAnimationFrame(m_document, id);
             m_callbacks.remove(i);
+            return;
+        }
+    }
+    for (size_t i = 0; i < m_callbacksToInvoke.size(); ++i) {
+        if (m_callbacksToInvoke[i]->m_id == id) {
+            InspectorInstrumentation::didCancelAnimationFrame(m_document, id);
+            m_callbacksToInvoke[i]->m_cancelled = true;
+            // will be removed at the end of executeCallbacks()
             return;
         }
     }
@@ -120,12 +127,12 @@ void ScriptedAnimationController::executeCallbacks(double monotonicTimeNow)
 
     // First, generate a list of callbacks to consider.  Callbacks registered from this point
     // on are considered only for the "next" frame, not this one.
-    CallbackList callbacks(m_callbacks);
+    ASSERT(m_callbacksToInvoke.isEmpty());
+    m_callbacksToInvoke.swap(m_callbacks);
 
-    for (size_t i = 0; i < callbacks.size(); ++i) {
-        RequestAnimationFrameCallback* callback = callbacks[i].get();
-        if (!callback->m_firedOrCancelled) {
-            callback->m_firedOrCancelled = true;
+    for (size_t i = 0; i < m_callbacksToInvoke.size(); ++i) {
+        RequestAnimationFrameCallback* callback = m_callbacksToInvoke[i].get();
+        if (!callback->m_cancelled) {
             InspectorInstrumentationCookie cookie = InspectorInstrumentation::willFireAnimationFrame(m_document, callback->m_id);
             if (callback->m_useLegacyTimeBase)
                 callback->handleEvent(legacyHighResNowMs);
@@ -135,13 +142,7 @@ void ScriptedAnimationController::executeCallbacks(double monotonicTimeNow)
         }
     }
 
-    // Remove any callbacks we fired from the list of pending callbacks.
-    for (size_t i = 0; i < m_callbacks.size();) {
-        if (m_callbacks[i]->m_firedOrCancelled)
-            m_callbacks.remove(i);
-        else
-            ++i;
-    }
+    m_callbacksToInvoke.clear();
 }
 
 void ScriptedAnimationController::serviceScriptedAnimations(double monotonicTimeNow)

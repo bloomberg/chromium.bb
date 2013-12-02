@@ -6448,8 +6448,6 @@ sub IsLegacyRefCountedCallback
     return 1 if $name eq "FileSystemCallback";
     return 1 if $name eq "FileWriterCallback";
     return 1 if $name eq "MetadataCallback";
-    # requestAnimationFrame
-    return 1 if $name eq "RequestAnimationFrameCallback";
     # Used everywhere
     return 1 if $name eq "VoidCallback";
     return 0;

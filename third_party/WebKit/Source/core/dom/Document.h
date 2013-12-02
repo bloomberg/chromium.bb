@@ -913,7 +913,7 @@ public:
 
     const DocumentTiming* timing() const { return &m_documentTiming; }
 
-    int requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback>);
+    int requestAnimationFrame(PassOwnPtr<RequestAnimationFrameCallback>);
     void cancelAnimationFrame(int id);
     void serviceScriptedAnimations(double monotonicAnimationStartTime);
 

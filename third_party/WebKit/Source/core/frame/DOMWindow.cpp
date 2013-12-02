@@ -1486,7 +1486,7 @@ void DOMWindow::resizeTo(float width, float height) const
     page->chrome().setWindowRect(adjustWindowRect(page, update));
 }
 
-int DOMWindow::requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback> callback)
+int DOMWindow::requestAnimationFrame(PassOwnPtr<RequestAnimationFrameCallback> callback)
 {
     callback->m_useLegacyTimeBase = false;
     if (Document* d = document())
@@ -1494,7 +1494,7 @@ int DOMWindow::requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback> c
     return 0;
 }
 
-int DOMWindow::webkitRequestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback> callback)
+int DOMWindow::webkitRequestAnimationFrame(PassOwnPtr<RequestAnimationFrameCallback> callback)
 {
     callback->m_useLegacyTimeBase = true;
     if (Document* d = document())

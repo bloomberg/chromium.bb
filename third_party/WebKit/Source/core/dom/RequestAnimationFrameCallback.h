@@ -31,17 +31,15 @@
 #ifndef RequestAnimationFrameCallback_h
 #define RequestAnimationFrameCallback_h
 
-#include "wtf/RefCounted.h"
-
 namespace WebCore {
 
-class RequestAnimationFrameCallback : public RefCounted<RequestAnimationFrameCallback> {
+class RequestAnimationFrameCallback {
 public:
     virtual ~RequestAnimationFrameCallback() { }
     virtual bool handleEvent(double highResTimeMs) = 0;
 
     int m_id;
-    bool m_firedOrCancelled;
+    bool m_cancelled;
     bool m_useLegacyTimeBase;
 };
 

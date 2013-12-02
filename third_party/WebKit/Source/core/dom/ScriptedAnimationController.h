@@ -50,7 +50,7 @@ public:
 
     typedef int CallbackId;
 
-    int registerCallback(PassRefPtr<RequestAnimationFrameCallback>);
+    int registerCallback(PassOwnPtr<RequestAnimationFrameCallback>);
     void cancelCallback(CallbackId);
     void serviceScriptedAnimations(double monotonicTimeNow);
 
@@ -68,8 +68,9 @@ private:
     void dispatchEvents();
     void executeCallbacks(double monotonicTimeNow);
 
-    typedef Vector<RefPtr<RequestAnimationFrameCallback> > CallbackList;
+    typedef Vector<OwnPtr<RequestAnimationFrameCallback> > CallbackList;
     CallbackList m_callbacks;
+    CallbackList m_callbacksToInvoke; // only non-empty while inside executeCallbacks
 
     Document* m_document;
     CallbackId m_nextCallbackId;

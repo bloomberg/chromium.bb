@@ -4768,7 +4768,7 @@ ScriptedAnimationController& Document::ensureScriptedAnimationController()
     return *m_scriptedAnimationController;
 }
 
-int Document::requestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback> callback)
+int Document::requestAnimationFrame(PassOwnPtr<RequestAnimationFrameCallback> callback)
 {
     return ensureScriptedAnimationController().registerCallback(callback);
 }
