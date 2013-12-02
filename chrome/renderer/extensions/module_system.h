@@ -42,7 +42,8 @@ class ModuleSystem : public ObjectBackedNativeHandler {
   class SourceMap {
    public:
     virtual ~SourceMap() {}
-    virtual v8::Handle<v8::Value> GetSource(const std::string& name) = 0;
+    virtual v8::Handle<v8::Value> GetSource(v8::Isolate* isolate,
+                                            const std::string& name) = 0;
     virtual bool Contains(const std::string& name) = 0;
   };
 

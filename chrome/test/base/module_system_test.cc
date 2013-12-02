@@ -99,10 +99,11 @@ class ModuleSystemTest::StringSourceMap : public ModuleSystem::SourceMap {
   StringSourceMap() {}
   virtual ~StringSourceMap() {}
 
-  virtual v8::Handle<v8::Value> GetSource(const std::string& name) OVERRIDE {
+  virtual v8::Handle<v8::Value> GetSource(v8::Isolate* isolate,
+                                          const std::string& name) OVERRIDE {
     if (source_map_.count(name) == 0)
-      return v8::Undefined();
-    return v8::String::New(source_map_[name].c_str());
+      return v8::Undefined(isolate);
+    return v8::String::NewFromUtf8(isolate, source_map_[name].c_str());
   }
 
   virtual bool Contains(const std::string& name) OVERRIDE {
@@ -188,9 +189,10 @@ void ModuleSystemTest::ExpectNoAssertionsMade() {
 }
 
 v8::Handle<v8::Object> ModuleSystemTest::CreateGlobal(const std::string& name) {
-  v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
-  v8::Handle<v8::Object> object = v8::Object::New();
-  v8::Context::GetCurrent()->Global()->Set(v8::String::New(name.c_str()),
-                                           object);
-  return handle_scope.Close(object);
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::EscapableHandleScope handle_scope(isolate);
+  v8::Local<v8::Object> object = v8::Object::New(isolate);
+  isolate->GetCurrentContext()->Global()->Set(
+      v8::String::NewFromUtf8(isolate, name.c_str()), object);
+  return handle_scope.Escape(object);
 }

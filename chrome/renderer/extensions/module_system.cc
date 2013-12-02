@@ -507,7 +507,7 @@ v8::Handle<v8::Value> ModuleSystem::GetSource(const std::string& module_name) {
   v8::HandleScope handle_scope(GetIsolate());
   if (!source_map_->Contains(module_name))
     return v8::Undefined();
-  return handle_scope.Close(source_map_->GetSource(module_name));
+  return handle_scope.Close(source_map_->GetSource(GetIsolate(), module_name));
 }
 
 void ModuleSystem::RequireNative(

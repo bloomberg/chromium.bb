@@ -20,12 +20,13 @@ void ResourceBundleSourceMap::RegisterSource(const std::string& name,
 }
 
 v8::Handle<v8::Value> ResourceBundleSourceMap::GetSource(
+    v8::Isolate* isolate,
     const std::string& name) {
   if (!Contains(name))
-    return v8::Undefined();
+    return v8::Undefined(isolate);
   int resource_id = resource_id_map_[name];
-  return ConvertString(resource_bundle_->GetRawDataResource(
-      resource_id));
+  return ConvertString(isolate,
+                       resource_bundle_->GetRawDataResource(resource_id));
 }
 
 bool ResourceBundleSourceMap::Contains(const std::string& name) {
@@ -33,9 +34,10 @@ bool ResourceBundleSourceMap::Contains(const std::string& name) {
 }
 
 v8::Handle<v8::String> ResourceBundleSourceMap::ConvertString(
+    v8::Isolate* isolate,
     const base::StringPiece& string) {
   // v8 takes ownership of the StaticV8ExternalAsciiStringResource (see
   // v8::String::NewExternal()).
   return v8::String::NewExternal(
-      new StaticV8ExternalAsciiStringResource(string));
+      isolate, new StaticV8ExternalAsciiStringResource(string));
 }
