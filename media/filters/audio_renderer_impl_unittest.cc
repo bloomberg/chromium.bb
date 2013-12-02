@@ -40,6 +40,8 @@ static int kSamplesPerSecond = 44100;
 static float kMutedAudio = 0.0f;
 static float kPlayingAudio = 0.5f;
 
+static const int kDataSize = 1024;
+
 class AudioRendererImplTest : public ::testing::Test {
  public:
   // Give the decoder some non-garbage media properties.
@@ -59,6 +61,9 @@ class AudioRendererImplTest : public ::testing::Test {
     EXPECT_CALL(*decoder_, Read(_))
         .WillRepeatedly(Invoke(this, &AudioRendererImplTest::ReadDecoder));
 
+    EXPECT_CALL(*decoder_, Reset(_))
+        .WillRepeatedly(Invoke(this, &AudioRendererImplTest::ResetDecoder));
+
     // Set up audio properties.
     EXPECT_CALL(*decoder_, bits_per_channel())
         .WillRepeatedly(Return(audio_config.bits_per_channel()));
@@ -74,8 +79,7 @@ class AudioRendererImplTest : public ::testing::Test {
         message_loop_.message_loop_proxy(),
         sink_,
         decoders.Pass(),
-        SetDecryptorReadyCB(),
-        false));
+        SetDecryptorReadyCB()));
 
     // Stub out time.
     renderer_->set_now_cb_for_testing(base::Bind(
@@ -147,6 +151,12 @@ class AudioRendererImplTest : public ::testing::Test {
     EXPECT_TRUE(read_cb_.is_null());
   }
 
+  void Flush() {
+    WaitableMessageLoopEvent flush_event;
+    renderer_->Flush(flush_event.GetClosure());
+    flush_event.RunAndWait();
+  }
+
   void Preroll() {
     Preroll(0, PIPELINE_OK);
   }
@@ -197,7 +207,8 @@ class AudioRendererImplTest : public ::testing::Test {
   }
 
   // Delivers |size| frames with value kPlayingAudio to |renderer_|.
-  void SatisfyPendingRead(size_t size) {
+  void SatisfyPendingRead(int size) {
+    CHECK_GT(size, 0);
     CHECK(!read_cb_.is_null());
 
     scoped_refptr<AudioBuffer> buffer =
@@ -272,15 +283,15 @@ class AudioRendererImplTest : public ::testing::Test {
     return total_frames_read;
   }
 
-  uint32 frames_buffered() {
+  int frames_buffered() {
     return renderer_->algorithm_->frames_buffered();
   }
 
-  uint32 buffer_capacity() {
+  int buffer_capacity() {
     return renderer_->algorithm_->QueueCapacity();
   }
 
-  uint32 frames_remaining_in_buffer() {
+  int frames_remaining_in_buffer() {
     // This can happen if too much data was delivered, in which case the buffer
     // will accept the data but not increase capacity.
     if (frames_buffered() > buffer_capacity()) {
@@ -368,6 +379,13 @@ class AudioRendererImplTest : public ::testing::Test {
       base::ResetAndReturn(&wait_for_pending_read_cb_).Run();
   }
 
+  void ResetDecoder(const base::Closure& reset_cb) {
+    CHECK(read_cb_.is_null())
+        << "Reset overlapping with reads is not permitted";
+
+    message_loop_.PostTask(FROM_HERE, reset_cb);
+  }
+
   void DeliverBuffer(AudioDecoder::Status status,
                      const scoped_refptr<AudioBuffer>& buffer) {
     CHECK(!read_cb_.is_null());
@@ -437,6 +455,9 @@ TEST_F(AudioRendererImplTest, EndOfStream_SlowerPlaybackSpeed) {
 TEST_F(AudioRendererImplTest, Underflow) {
   Initialize();
   Preroll();
+
+  int initial_capacity = buffer_capacity();
+
   Play();
 
   // Drain internal buffer, we should have a pending read.
@@ -445,7 +466,6 @@ TEST_F(AudioRendererImplTest, Underflow) {
 
   // Verify the next FillBuffer() call triggers the underflow callback
   // since the decoder hasn't delivered any data after it was drained.
-  const size_t kDataSize = 1024;
   EXPECT_CALL(*this, OnUnderflow());
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, NULL));
 
@@ -453,14 +473,55 @@ TEST_F(AudioRendererImplTest, Underflow) {
 
   // Verify after resuming that we're still not getting data.
   bool muted = false;
-  EXPECT_EQ(0u, frames_buffered());
+  EXPECT_EQ(0, frames_buffered());
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, &muted));
   EXPECT_TRUE(muted);
+
+  // Verify that the buffer capacity increased as a result of the underflow.
+  EXPECT_GT(buffer_capacity(), initial_capacity);
 
   // Deliver data, we should get non-muted audio.
   DeliverRemainingAudio();
   EXPECT_TRUE(ConsumeBufferedData(kDataSize, &muted));
   EXPECT_FALSE(muted);
+}
+
+TEST_F(AudioRendererImplTest, Underflow_FollowedByFlush) {
+  Initialize();
+  Preroll();
+
+  int initial_capacity = buffer_capacity();
+
+  Play();
+
+  // Drain internal buffer, we should have a pending read.
+  EXPECT_TRUE(ConsumeBufferedData(frames_buffered(), NULL));
+  WaitForPendingRead();
+
+  // Verify the next FillBuffer() call triggers the underflow callback
+  // since the decoder hasn't delivered any data after it was drained.
+  EXPECT_CALL(*this, OnUnderflow());
+  EXPECT_FALSE(ConsumeBufferedData(kDataSize, NULL));
+
+  renderer_->ResumeAfterUnderflow();
+
+  // Verify that the buffer capacity increased as a result of the underflow.
+  EXPECT_GT(buffer_capacity(), initial_capacity);
+
+  // Deliver data to get the renderer out of the underflow/rebuffer state.
+  DeliverRemainingAudio();
+
+  // Pause the renderer.
+  WaitableMessageLoopEvent pause_event;
+  renderer_->Pause(pause_event.GetClosure());
+  pause_event.RunAndWait();
+
+  Flush();
+
+  Preroll();
+
+  // Verify that the buffer capacity is restored to the |initial_capacity|.
+  EXPECT_EQ(buffer_capacity(), initial_capacity);
 }
 
 TEST_F(AudioRendererImplTest, Underflow_EndOfStream) {
@@ -480,7 +541,6 @@ TEST_F(AudioRendererImplTest, Underflow_EndOfStream) {
 
   // Verify the next FillBuffer() call triggers the underflow callback
   // since the decoder hasn't delivered any data after it was drained.
-  const size_t kDataSize = 1024;
   EXPECT_CALL(*this, OnUnderflow());
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, NULL));
 
@@ -518,14 +578,13 @@ TEST_F(AudioRendererImplTest, Underflow_ResumeFromCallback) {
 
   // Verify the next FillBuffer() call triggers the underflow callback
   // since the decoder hasn't delivered any data after it was drained.
-  const size_t kDataSize = 1024;
   EXPECT_CALL(*this, OnUnderflow())
       .WillOnce(Invoke(this, &AudioRendererImplTest::CallResumeAfterUnderflow));
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, NULL));
 
   // Verify after resuming that we're still not getting data.
   bool muted = false;
-  EXPECT_EQ(0u, frames_buffered());
+  EXPECT_EQ(0, frames_buffered());
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, &muted));
   EXPECT_TRUE(muted);
 
@@ -548,11 +607,10 @@ TEST_F(AudioRendererImplTest, Underflow_SetPlaybackRate) {
 
   // Verify the next FillBuffer() call triggers the underflow callback
   // since the decoder hasn't delivered any data after it was drained.
-  const size_t kDataSize = 1024;
   EXPECT_CALL(*this, OnUnderflow())
       .WillOnce(Invoke(this, &AudioRendererImplTest::CallResumeAfterUnderflow));
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, NULL));
-  EXPECT_EQ(0u, frames_buffered());
+  EXPECT_EQ(0, frames_buffered());
 
   EXPECT_EQ(FakeAudioRendererSink::kPlaying, sink_->state());
 
@@ -585,11 +643,10 @@ TEST_F(AudioRendererImplTest, Underflow_PausePlay) {
 
   // Verify the next FillBuffer() call triggers the underflow callback
   // since the decoder hasn't delivered any data after it was drained.
-  const size_t kDataSize = 1024;
   EXPECT_CALL(*this, OnUnderflow())
       .WillOnce(Invoke(this, &AudioRendererImplTest::CallResumeAfterUnderflow));
   EXPECT_FALSE(ConsumeBufferedData(kDataSize, NULL));
-  EXPECT_EQ(0u, frames_buffered());
+  EXPECT_EQ(0, frames_buffered());
 
   EXPECT_EQ(FakeAudioRendererSink::kPlaying, sink_->state());
 
@@ -616,6 +673,8 @@ TEST_F(AudioRendererImplTest, AbortPendingRead_Preroll) {
   AbortPendingRead();
   event.RunAndWaitForStatus(PIPELINE_OK);
 
+  Flush();
+
   // Preroll again to a different timestamp and verify it completed normally.
   Preroll(1000, PIPELINE_OK);
 }
@@ -637,6 +696,8 @@ TEST_F(AudioRendererImplTest, AbortPendingRead_Pause) {
   // Simulate the decoder aborting the pending read.
   AbortPendingRead();
   event.RunAndWait();
+
+  Flush();
 
   // Preroll again to a different timestamp and verify it completed normally.
   Preroll(1000, PIPELINE_OK);

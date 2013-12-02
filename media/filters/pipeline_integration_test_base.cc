@@ -273,8 +273,7 @@ PipelineIntegrationTestBase::CreateFilterCollection(
       audio_decoders.Pass(),
       base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
                  base::Unretained(this),
-                 decryptor),
-      true);
+                 decryptor));
   // Disable underflow if hashing is enabled.
   if (hashing_enabled_) {
     audio_sink_->StartAudioHashForTesting();

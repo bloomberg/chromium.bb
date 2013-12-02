@@ -41,8 +41,7 @@ AudioRendererImpl::AudioRendererImpl(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     media::AudioRendererSink* sink,
     ScopedVector<AudioDecoder> decoders,
-    const SetDecryptorReadyCB& set_decryptor_ready_cb,
-    bool increase_preroll_on_underflow)
+    const SetDecryptorReadyCB& set_decryptor_ready_cb)
     : message_loop_(message_loop),
       weak_factory_(this),
       sink_(sink),
@@ -57,7 +56,6 @@ AudioRendererImpl::AudioRendererImpl(
       audio_time_buffered_(kNoTimestamp()),
       current_time_(kNoTimestamp()),
       underflow_disabled_(false),
-      increase_preroll_on_underflow_(increase_preroll_on_underflow),
       preroll_aborted_(false) {
 }
 
@@ -136,12 +134,27 @@ void AudioRendererImpl::Flush(const base::Closure& callback) {
     return;
   }
 
-  decoder_->Reset(callback);
+  ResetDecoder(callback);
 }
 
 void AudioRendererImpl::ResetDecoder(const base::Closure& callback) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  decoder_->Reset(callback);
+  decoder_->Reset(base::Bind(
+      &AudioRendererImpl::ResetDecoderDone, weak_this_, callback));
+}
+
+void AudioRendererImpl::ResetDecoderDone(const base::Closure& callback) {
+  audio_time_buffered_ = kNoTimestamp();
+  current_time_ = kNoTimestamp();
+  received_end_of_stream_ = false;
+  rendered_end_of_stream_ = false;
+  preroll_aborted_ = false;
+
+  earliest_end_time_ = now_cb_.Run();
+  splicer_->Reset();
+  algorithm_->FlushBuffers();
+
+  callback.Run();
 }
 
 void AudioRendererImpl::Stop(const base::Closure& callback) {
@@ -182,17 +195,6 @@ void AudioRendererImpl::Preroll(base::TimeDelta time,
   ChangeState_Locked(kPrerolling);
   preroll_cb_ = cb;
   preroll_timestamp_ = time;
-
-  // Throw away everything and schedule our reads.
-  audio_time_buffered_ = kNoTimestamp();
-  current_time_ = kNoTimestamp();
-  received_end_of_stream_ = false;
-  rendered_end_of_stream_ = false;
-  preroll_aborted_ = false;
-
-  splicer_->Reset();
-  algorithm_->FlushBuffers();
-  earliest_end_time_ = now_cb_.Run();
 
   AttemptRead_Locked();
 }
@@ -296,13 +298,13 @@ void AudioRendererImpl::ResumeAfterUnderflow() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
   if (state_ == kUnderflow) {
-    // The "&& preroll_aborted_" is a hack. If preroll is aborted, then we
+    // The "!preroll_aborted_" is a hack. If preroll is aborted, then we
     // shouldn't even reach the kUnderflow state to begin with. But for now
     // we're just making sure that the audio buffer capacity (i.e. the
     // number of bytes that need to be buffered for preroll to complete)
     // does not increase due to an aborted preroll.
     // TODO(vrk): Fix this bug correctly! (crbug.com/151352)
-    if (increase_preroll_on_underflow_ && !preroll_aborted_)
+    if (!preroll_aborted_)
       algorithm_->IncreaseQueueCapacity();
 
     ChangeState_Locked(kRebuffering);

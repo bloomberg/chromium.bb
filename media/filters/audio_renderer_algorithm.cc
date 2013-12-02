@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_bus.h"
+#include "media/base/limits.h"
 #include "media/filters/wsola_internals.h"
 
 namespace media {
@@ -45,10 +46,6 @@ namespace media {
 //    |search_block_index_| = |search_block_center_offset_| -
 //        |search_block_center_offset_|.
 
-// The maximum size in frames for the |audio_buffer_|. Arbitrarily determined.
-// This number represents 3 seconds of 96kHz/16 bit 7.1 surround sound.
-static const int kMaxBufferSizeInFrames = 3 * 96000;
-
 // Max/min supported playback rates for fast/slow audio. Audio outside of these
 // ranges are muted.
 // Audio at these speeds would sound better under a frequency domain algorithm.
@@ -63,10 +60,17 @@ static const int kOlaWindowSizeMs = 20;
 // interval is 2 * delta.
 static const int kWsolaSearchIntervalMs = 30;
 
+// The maximum size in seconds for the |audio_buffer_|. Arbitrarily determined.
+static const int kMaxCapacityInSeconds = 3;
+
 // The starting size in frames for |audio_buffer_|. Previous usage maintained a
 // queue of 16 AudioBuffers, each of 512 frames. This worked well, so we
 // maintain this number of frames.
 static const int kStartingBufferSizeInFrames = 16 * 512;
+
+COMPILE_ASSERT(kStartingBufferSizeInFrames <
+               (kMaxCapacityInSeconds * limits::kMinSampleRate),
+               max_capacity_smaller_than_starting_buffer_size);
 
 AudioRendererAlgorithm::AudioRendererAlgorithm()
     : channels_(0),
@@ -208,6 +212,10 @@ void AudioRendererAlgorithm::FlushBuffers() {
   target_block_index_ = 0;
   wsola_output_->Zero();
   num_complete_frames_ = 0;
+
+  // Reset |capacity_| so growth triggered by underflows doesn't penalize
+  // seek time.
+  capacity_ = kStartingBufferSizeInFrames;
 }
 
 base::TimeDelta AudioRendererAlgorithm::GetTime() {
@@ -225,7 +233,10 @@ bool AudioRendererAlgorithm::IsQueueFull() {
 }
 
 void AudioRendererAlgorithm::IncreaseQueueCapacity() {
-  capacity_ = std::min(2 * capacity_, kMaxBufferSizeInFrames);
+  int max_capacity = kMaxCapacityInSeconds * samples_per_second_;
+  DCHECK_LE(capacity_, max_capacity);
+
+  capacity_ = std::min(2 * capacity_, max_capacity);
 }
 
 bool AudioRendererAlgorithm::CanPerformWsola() const {

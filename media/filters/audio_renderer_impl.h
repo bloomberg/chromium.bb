@@ -53,14 +53,10 @@ class MEDIA_EXPORT AudioRendererImpl
   //
   // |set_decryptor_ready_cb| is fired when the audio decryptor is available
   // (only applicable if the stream is encrypted and we have a decryptor).
-  //
-  // |increase_preroll_on_underflow| Set to true if the preroll duration
-  // should be increased when ResumeAfterUnderflow() is called.
   AudioRendererImpl(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                     AudioRendererSink* sink,
                     ScopedVector<AudioDecoder> decoders,
-                    const SetDecryptorReadyCB& set_decryptor_ready_cb,
-                    bool increase_preroll_on_underflow);
+                    const SetDecryptorReadyCB& set_decryptor_ready_cb);
   virtual ~AudioRendererImpl();
 
   // AudioRenderer implementation.
@@ -175,6 +171,11 @@ class MEDIA_EXPORT AudioRendererImpl
 
   void ResetDecoder(const base::Closure& callback);
 
+  // Called when the |decoder_|.Reset() has completed.
+  // |callback| is the closure passed to the Flush() call that
+  // triggered the decoder reset.
+  void ResetDecoderDone(const base::Closure& callback);
+
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   base::WeakPtrFactory<AudioRendererImpl> weak_factory_;
   base::WeakPtr<AudioRendererImpl> weak_this_;
@@ -258,7 +259,6 @@ class MEDIA_EXPORT AudioRendererImpl
   size_t total_frames_filled_;
 
   bool underflow_disabled_;
-  bool increase_preroll_on_underflow_;
 
   // True if the renderer receives a buffer with kAborted status during preroll,
   // false otherwise. This flag is cleared on the next Preroll() call.
