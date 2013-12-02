@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/synthetic_web_input_event_builders.h"
+#include "content/common/input/synthetic_web_input_event_builders.h"
 
 #include "base/logging.h"
-#include "content/browser/renderer_host/input/web_input_event_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace content {
@@ -67,10 +66,10 @@ WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(float dx,
   return result;
 }
 
-NativeWebKeyboardEvent SyntheticWebKeyboardEventBuilder::Build(
+WebKeyboardEvent SyntheticWebKeyboardEventBuilder::Build(
     WebInputEvent::Type type) {
   DCHECK(WebInputEvent::isKeyboardEventType(type));
-  NativeWebKeyboardEvent result;
+  WebKeyboardEvent result;
   result.type = type;
   result.windowsKeyCode = ui::VKEY_L;  // non-null made up value.
   return result;

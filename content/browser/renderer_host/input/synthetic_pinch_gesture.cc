@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "base/logging.h"
 #include "content/common/input/input_event.h"
 #include "ui/events/latency_info.h"
 

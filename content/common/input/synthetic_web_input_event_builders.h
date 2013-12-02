@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_WEB_INPUT_EVENT_BUILDERS_H_
-#define CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_WEB_INPUT_EVENT_BUILDERS_H_
+#ifndef CONTENT_COMMON_INPUT_SYNTHETIC_WEB_INPUT_EVENT_BUILDERS_H_
+#define CONTENT_COMMON_INPUT_SYNTHETIC_WEB_INPUT_EVENT_BUILDERS_H_
 
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 // Provides sensible creation of default WebInputEvents for testing purposes.
@@ -35,7 +34,7 @@ class CONTENT_EXPORT SyntheticWebMouseWheelEventBuilder {
 
 class CONTENT_EXPORT SyntheticWebKeyboardEventBuilder {
  public:
-  static NativeWebKeyboardEvent Build(blink::WebInputEvent::Type type);
+  static blink::WebKeyboardEvent Build(blink::WebInputEvent::Type type);
 };
 
 class CONTENT_EXPORT SyntheticWebGestureEventBuilder {
@@ -80,4 +79,4 @@ class CONTENT_EXPORT SyntheticWebTouchEventBuilder {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_RENDERER_HOST_INPUT_SYNTHETIC_WEB_INPUT_EVENT_BUILDERS_H_
+#endif  // CONTENT_COMMON_INPUT_SYNTHETIC_WEB_INPUT_EVENT_BUILDERS_H_

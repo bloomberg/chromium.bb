@@ -10,9 +10,9 @@
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/browser/renderer_host/input/mock_input_ack_handler.h"
 #include "content/browser/renderer_host/input/mock_input_router_client.h"
-#include "content/browser/renderer_host/input/synthetic_web_input_event_builders.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/edit_command.h"
+#include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -28,6 +28,7 @@
 
 using base::TimeDelta;
 using blink::WebGestureEvent;
+using blink::WebKeyboardEvent;
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
@@ -137,8 +138,11 @@ class ImmediateInputRouterTest : public testing::Test {
   }
 
   void SimulateKeyboardEvent(WebInputEvent::Type type, bool is_shortcut) {
+    WebKeyboardEvent event = SyntheticWebKeyboardEventBuilder::Build(type);
+    NativeWebKeyboardEvent native_event;
+    memcpy(&native_event, &event, sizeof(event));
     input_router_->SendKeyboardEvent(
-        SyntheticWebKeyboardEventBuilder::Build(type),
+        native_event,
         ui::LatencyInfo(),
         is_shortcut);
   }
