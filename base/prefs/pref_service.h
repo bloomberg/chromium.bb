@@ -258,6 +258,16 @@ class BASE_PREFS_EXPORT PrefService : public base::NonThreadSafe {
   // Returns the PrefRegistry object for this service. You should not
   // use this; the intent is for no registrations to take place after
   // PrefService has been constructed.
+  //
+  // Instead of using this method, the recommended approach is to
+  // register all preferences for a class Xyz up front in a static
+  // Xyz::RegisterPrefs function, which gets invoked early in the
+  // application's start-up, before a PrefService is created.
+  //
+  // As an example, prefs registration in Chrome is triggered by the
+  // functions chrome::RegisterPrefs (for global preferences) and
+  // chrome::RegisterProfilePrefs (for user-specific preferences)
+  // implemented in chrome/browser/prefs/browser_prefs.cc.
   PrefRegistry* DeprecatedGetPrefRegistry();
 
  protected:
