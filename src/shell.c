@@ -587,7 +587,7 @@ shell_configuration(struct desktop_shell *shell)
 	section = weston_config_get_section(shell->compositor->config,
 					    "shell", NULL, NULL);
 	weston_config_section_get_string(section,
-					 "client", &s, LIBEXECDIR "/weston-desktop-shell");
+					 "client", &s, LIBEXECDIR "/" WESTON_SHELL_CLIENT);
 	shell->client = s;
 	weston_config_section_get_string(section,
 					 "binding-modifier", &s, "super");

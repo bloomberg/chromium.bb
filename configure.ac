@@ -35,6 +35,8 @@ LT_INIT([disable-static])
 
 AC_ARG_VAR([WESTON_NATIVE_BACKEND],
            [Set the native backend to use, if Weston is not running under Wayland nor X11. @<:@default=drm-backend.so@:>@])
+AC_ARG_VAR([WESTON_SHELL_CLIENT],
+           [Set the default desktop shell client to load if none is specified in weston.ini. @<:@default=weston-desktop-shell@:>@])
 
 PKG_PROG_PKG_CONFIG()
 
@@ -455,6 +457,13 @@ fi
 AC_MSG_NOTICE([Weston's native backend: $WESTON_NATIVE_BACKEND])
 AC_DEFINE_UNQUOTED([WESTON_NATIVE_BACKEND], ["$WESTON_NATIVE_BACKEND"],
 		   [The default backend to load, if not wayland nor x11.])
+
+if test "x$WESTON_SHELL_CLIENT" = "x"; then
+	WESTON_SHELL_CLIENT="weston-desktop-shell"
+fi
+AC_MSG_NOTICE([Weston's default desktop shell client: $WESTON_SHELL_CLIENT])
+AC_DEFINE_UNQUOTED([WESTON_SHELL_CLIENT], ["$WESTON_SHELL_CLIENT"],
+		   [The default desktop shell client to load.])
 
 AC_ARG_ENABLE(demo-clients,
               AS_HELP_STRING([--enable-demo-clients],

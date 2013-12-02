@@ -7,6 +7,7 @@ endif
 MAN_SUBSTS = \
 	-e 's|__weston_native_backend__|$(WESTON_NATIVE_BACKEND)|g' \
 	-e 's|__weston_modules_dir__|$(pkglibdir)|g' \
+	-e 's|__weston_shell_client__|$(WESTON_SHELL_CLIENT)|g' \
 	-e 's|__version__|$(PACKAGE_VERSION)|g'
 
 SUFFIXES = .1 .5 .7 .man
