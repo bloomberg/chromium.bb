@@ -219,6 +219,11 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
     }
   } else {
     DCHECK_EQ(FILE_KIND_FOLDER, synced_details.file_kind());
+    if (dirty_tracker_->tracker_id() ==
+        metadata_database()->GetSyncRootTrackerID()) {
+      callback.Run(SYNC_STATUS_OK);
+      return;
+    }
     HandleFolderUpdate(callback);
     return;
   }
