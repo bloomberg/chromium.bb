@@ -34,6 +34,7 @@
 #include "wtf/Compiler.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PartitionAlloc.h"
+#include "wtf/WTFExport.h"
 
 namespace WTF {
 

@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WTF.h"
 
-#include "wtf/PartitionAlloc.h"
 #include "wtf/QuantizedAllocation.h"
 
 #ifndef NDEBUG

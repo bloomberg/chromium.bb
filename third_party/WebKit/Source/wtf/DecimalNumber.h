@@ -31,7 +31,6 @@
 #include "wtf/MathExtras.h"
 #include "wtf/WTFExport.h"
 #include "wtf/dtoa.h"
-#include "wtf/text/WTFString.h"
 
 namespace WTF {
 

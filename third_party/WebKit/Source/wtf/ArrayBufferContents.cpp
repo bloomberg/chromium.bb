@@ -27,7 +27,6 @@
 #include "config.h"
 #include "wtf/ArrayBufferContents.h"
 
-#include "wtf/ArrayBufferDeallocationObserver.h"
 #include "wtf/Assertions.h"
 #include "wtf/WTF.h"
 #include <string.h>

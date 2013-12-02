@@ -31,7 +31,6 @@
 #include "config.h"
 #include "wtf/PageAllocator.h"
 
-#include "wtf/Assertions.h"
 #include "wtf/ProcessID.h"
 #include "wtf/SpinLock.h"
 

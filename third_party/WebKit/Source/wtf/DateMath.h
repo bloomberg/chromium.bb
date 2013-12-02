@@ -43,16 +43,9 @@
 #ifndef DateMath_h
 #define DateMath_h
 
-#include <math.h>
 #include <stdint.h>
 #include <string.h>
-#include <time.h>
-#include "wtf/CurrentTime.h"
-#include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
-#include "wtf/UnusedParam.h"
 #include "wtf/WTFExport.h"
 
 namespace WTF {

@@ -28,7 +28,6 @@
 #include "config.h"
 #include "wtf/text/TextEncoding.h"
 
-#include "wtf/text/TextCodec.h"
 #include "wtf/text/TextEncodingRegistry.h"
 #include <unicode/unorm.h>
 #include "wtf/OwnPtr.h"

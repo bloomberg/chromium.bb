@@ -27,7 +27,6 @@
 #define ArrayBuffer_h
 
 #include "wtf/ArrayBufferContents.h"
-#include "wtf/ArrayBufferDeallocationObserver.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

@@ -29,8 +29,6 @@
 
 #if OS(WIN)
 #include <windows.h>
-#else
-#include <time.h>
 #endif
 
 namespace WTF {

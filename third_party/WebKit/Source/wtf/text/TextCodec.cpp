@@ -28,7 +28,6 @@
 #include "wtf/text/TextCodec.h"
 
 #include "wtf/StringExtras.h"
-#include "wtf/text/WTFString.h"
 
 namespace WTF {
 

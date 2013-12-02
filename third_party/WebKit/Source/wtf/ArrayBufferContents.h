@@ -29,7 +29,6 @@
 
 #include "wtf/ArrayBufferDeallocationObserver.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/PartitionAlloc.h"
 #include "wtf/WTFExport.h"
 
 namespace WTF {

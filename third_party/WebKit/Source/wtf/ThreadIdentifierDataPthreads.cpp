@@ -35,7 +35,6 @@
 #include "wtf/ThreadIdentifierDataPthreads.h"
 
 #include "wtf/Assertions.h"
-#include "wtf/Threading.h"
 #include "wtf/WTF.h"
 
 #if OS(ANDROID)
