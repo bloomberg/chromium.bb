@@ -787,7 +787,7 @@ component("base") {
       "//build/config/linux:x11",
     ]
     configs += linux_configs
-    all_dependent_configs += linux_configs
+    all_dependent_configs = linux_configs
 
     deps += [
       "//base/third_party/symbolize",

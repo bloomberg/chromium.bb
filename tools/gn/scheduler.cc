@@ -43,10 +43,16 @@ Scheduler::~Scheduler() {
 
 bool Scheduler::Run() {
   runner_.Run();
-  base::AutoLock lock(lock_);
+  bool local_is_failed;
+  {
+    base::AutoLock lock(lock_);
+    local_is_failed = is_failed();
+    has_been_shutdown_ = true;
+  }
+  // Don't do this inside the lock since it will block on the workers, which
+  // may be in turn waiting on the lock.
   pool_->Shutdown();
-  has_been_shutdown_ = true;
-  return !is_failed();
+  return !local_is_failed;
 }
 
 void Scheduler::Log(const std::string& verb, const std::string& msg) {
@@ -66,7 +72,7 @@ void Scheduler::FailWithError(const Err& err) {
   {
     base::AutoLock lock(lock_);
 
-    if (is_failed_)
+    if (is_failed_ || has_been_shutdown_)
       return;  // Ignore errors once we see one.
     is_failed_ = true;
   }
