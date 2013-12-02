@@ -955,13 +955,8 @@ void CandidateWindowView::CommitCandidate() {
     return;  // Out of range, do nothing.
   }
 
-  // For now, we don't distinguish left and right clicks.
-  const int button = 1;  // Left button.
-  const int key_modifilers = 0;
   FOR_EACH_OBSERVER(Observer, observers_,
-                    OnCandidateCommitted(selected_candidate_index_in_page_,
-                                         button,
-                                         key_modifilers));
+                    OnCandidateCommitted(selected_candidate_index_in_page_));
 }
 
 void CandidateWindowView::ResizeAndMoveParentFrame() {

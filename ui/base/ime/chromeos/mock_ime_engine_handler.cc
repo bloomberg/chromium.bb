@@ -52,9 +52,7 @@ void MockIMEEngineHandler::ProcessKeyEvent(
   last_passed_callback_ = callback;
 }
 
-void MockIMEEngineHandler::CandidateClicked(uint32 index,
-                                            ibus::IBusMouseButton button,
-                                            uint32 state) {
+void MockIMEEngineHandler::CandidateClicked(uint32 index) {
 }
 
 void MockIMEEngineHandler::SetSurroundingText(const std::string& text,

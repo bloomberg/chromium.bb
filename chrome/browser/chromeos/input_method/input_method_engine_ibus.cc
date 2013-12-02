@@ -529,32 +529,14 @@ void InputMethodEngineIBus::ProcessKeyEvent(
       reinterpret_cast<input_method::KeyEventHandle*>(handler));
 }
 
-void InputMethodEngineIBus::CandidateClicked(uint32 index,
-                                             ibus::IBusMouseButton button,
-                                             uint32 state) {
+void InputMethodEngineIBus::CandidateClicked(uint32 index) {
   if (index > candidate_ids_.size()) {
     return;
   }
 
-  MouseButtonEvent pressed_button;
-  switch (button) {
-    case ibus::IBUS_MOUSE_BUTTON_LEFT:
-      pressed_button = MOUSE_BUTTON_LEFT;
-      break;
-    case ibus::IBUS_MOUSE_BUTTON_MIDDLE:
-      pressed_button = MOUSE_BUTTON_MIDDLE;
-      break;
-    case ibus::IBUS_MOUSE_BUTTON_RIGHT:
-      pressed_button = MOUSE_BUTTON_RIGHT;
-      break;
-    default:
-      DVLOG(1) << "Unknown button: " << button;
-      pressed_button = MOUSE_BUTTON_LEFT;
-      break;
-  }
-
+  // Only left button click is supported at this moment.
   observer_->OnCandidateClicked(
-      engine_id_, candidate_ids_.at(index), pressed_button);
+      engine_id_, candidate_ids_.at(index), MOUSE_BUTTON_LEFT);
 }
 
 void InputMethodEngineIBus::SetSurroundingText(const std::string& text,

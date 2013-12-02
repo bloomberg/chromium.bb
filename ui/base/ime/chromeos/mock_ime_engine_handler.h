@@ -24,8 +24,7 @@ class UI_EXPORT MockIMEEngineHandler : public IBusEngineHandlerInterface {
   virtual void Reset() OVERRIDE;
   virtual void ProcessKeyEvent(const ui::KeyEvent& key_event,
                                const KeyEventDoneCallback& callback) OVERRIDE;
-  virtual void CandidateClicked(uint32 index, ibus::IBusMouseButton button,
-                                uint32 state) OVERRIDE;
+  virtual void CandidateClicked(uint32 index) OVERRIDE;
   virtual void SetSurroundingText(const std::string& text, uint32 cursor_pos,
                                   uint32 anchor_pos) OVERRIDE;
 

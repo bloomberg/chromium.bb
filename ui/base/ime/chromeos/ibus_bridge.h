@@ -22,16 +22,6 @@ class KeyEvent;
 }  // namespace ui
 
 namespace chromeos {
-namespace ibus {
-// Following button indicator value is introduced from
-// http://developer.gnome.org/gdk/stable/gdk-Event-Structures.html#GdkEventButton
-enum IBusMouseButton {
-  IBUS_MOUSE_BUTTON_LEFT = 1U,
-  IBUS_MOUSE_BUTTON_MIDDLE = 2U,
-  IBUS_MOUSE_BUTTON_RIGHT = 3U,
-};
-}  // namespace ibus
-
 namespace input_method {
 class CandidateWindow;
 }  // namespace input_method
@@ -101,11 +91,8 @@ class UI_EXPORT IBusEngineHandlerInterface {
                                const KeyEventDoneCallback& callback) = 0;
 
   // Called when the candidate in lookup table is clicked. The |index| is 0
-  // based candidate index in lookup table. The |state| is same value as
-  // GdkModifierType in
-  // http://developer.gnome.org/gdk/stable/gdk-Windows.html#GdkModifierType
-  virtual void CandidateClicked(uint32 index, ibus::IBusMouseButton button,
-                                uint32 state) = 0;
+  // based candidate index in lookup table.
+  virtual void CandidateClicked(uint32 index) = 0;
 
   // Called when a new surrounding text is set. The |text| is surrounding text
   // and |cursor_pos| is 0 based index of cursor position in |text|. If there is

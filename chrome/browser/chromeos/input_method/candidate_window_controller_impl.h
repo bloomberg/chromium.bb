@@ -73,7 +73,7 @@ class CandidateWindowControllerImpl
 
  private:
   // CandidateWindowView::Observer implementation.
-  virtual void OnCandidateCommitted(int index, int button, int flags) OVERRIDE;
+  virtual void OnCandidateCommitted(int index) OVERRIDE;
   virtual void OnCandidateWindowOpened() OVERRIDE;
   virtual void OnCandidateWindowClosed() OVERRIDE;
 

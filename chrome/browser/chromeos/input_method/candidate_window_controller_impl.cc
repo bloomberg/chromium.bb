@@ -279,14 +279,10 @@ void CandidateWindowControllerImpl::UpdatePreeditText(
   candidate_window_view_->ShowPreeditText();
 }
 
-void CandidateWindowControllerImpl::OnCandidateCommitted(int index,
-                                                         int button,
-                                                         int flags) {
+void CandidateWindowControllerImpl::OnCandidateCommitted(int index) {
   IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
   if (engine)
-    engine->CandidateClicked(index,
-                             static_cast<ibus::IBusMouseButton>(button),
-                             flags);
+    engine->CandidateClicked(index);
 }
 
 void CandidateWindowControllerImpl::OnCandidateWindowOpened() {
