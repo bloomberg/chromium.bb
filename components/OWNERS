@@ -26,7 +26,6 @@ per-file nacl*=mseaborn@chromium.org
 per-file nacl*=noelallen@chromium.org
 per-file nacl*=sehr@chromium.org
 
-per-file navigation_interception.gypi=joth@chromium.org
 per-file navigation_interception.gypi=mkosiba@chromium.org
 
 per-file onc.gypi=armansito@chromium.org
