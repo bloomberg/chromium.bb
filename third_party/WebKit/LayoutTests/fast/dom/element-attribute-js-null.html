@@ -481,6 +481,15 @@
                     ]
                 },
                 {
+                    type: 'HTMLOutputElement',
+                    elementToUse: document.createElement('output'),
+                    attributes: [
+                        {name: 'name', expectedNull: 'null'},
+                        {name: 'defaultValue', expectedNull: 'null'},
+                        {name: 'value', expectedNull: 'null'}
+                    ]
+                },
+                {
                     type: 'HTMLParagraphElement',
                     elementToUse: document.createElement('p'),
                     attributes: [

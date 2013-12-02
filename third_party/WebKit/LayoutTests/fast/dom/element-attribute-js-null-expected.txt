@@ -206,6 +206,10 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLOptionElement.text]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLOptionElement.label]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLOptionElement.value]
 
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLOutputElement.name]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLOutputElement.defaultValue]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLOutputElement.value]
+
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLParagraphElement.align]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLParamElement.name]
