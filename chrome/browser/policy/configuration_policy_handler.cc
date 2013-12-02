@@ -8,7 +8,6 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/prefs/pref_value_map.h"
 #include "base/strings/string16.h"
@@ -16,32 +15,11 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/policy_error_map.h"
-#include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
 #include "grit/component_strings.h"
 #include "url/gurl.h"
 
 namespace policy {
-
-namespace {
-
-// Helper function -------------------------------------------------------------
-
-// Utility function that returns a JSON representation of the given |dict| as
-// a StringValue. The caller owns the returned object.
-base::StringValue* DictionaryToJSONString(const base::DictionaryValue* dict) {
-  std::string json_string;
-  base::JSONWriter::WriteWithOptions(
-      dict,
-      base::JSONWriter::OPTIONS_DO_NOT_ESCAPE |
-          base::JSONWriter::OPTIONS_PRETTY_PRINT,
-      &json_string);
-  return Value::CreateStringValue(json_string);
-}
-
-
-}  // namespace
-
 
 // ConfigurationPolicyHandler implementation -----------------------------------
 
@@ -68,29 +46,7 @@ ConfigurationPolicyHandler::~ConfigurationPolicyHandler() {
 }
 
 void ConfigurationPolicyHandler::PrepareForDisplaying(
-    PolicyMap* policies) const {
-  // jstemplate can't render DictionaryValues/objects. Convert those values to
-  // a string representation.
-  base::DictionaryValue* dict;
-  base::ListValue* list;
-  for (PolicyMap::const_iterator it = policies->begin();
-       it != policies->end(); ++it) {
-    const PolicyMap::Entry& entry = it->second;
-    if (entry.value->GetAsDictionary(&dict)) {
-      base::StringValue* value = DictionaryToJSONString(dict);
-      policies->Set(it->first, entry.level, entry.scope,
-                    value, entry.external_data_fetcher ?
-                        new ExternalDataFetcher(*entry.external_data_fetcher) :
-                        NULL);
-    } else if (entry.value->GetAsList(&list)) {
-      for (size_t i = 0; i < list->GetSize(); ++i) {
-        if (list->GetDictionary(i, &dict)) {
-          list->Set(i, DictionaryToJSONString(dict));
-        }
-      }
-    }
-  }
-}
+    PolicyMap* policies) const {}
 
 
 // TypeCheckingPolicyHandler implementation ------------------------------------

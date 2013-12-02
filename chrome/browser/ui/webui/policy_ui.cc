@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -170,6 +171,36 @@ void ExtractDomainFromUsername(base::DictionaryValue* dict) {
   dict->GetString("username", &username);
   if (!username.empty())
     dict->SetString("domain", gaia::ExtractDomainName(username));
+}
+
+// Utility function that returns a JSON serialization of the given |dict|.
+scoped_ptr<base::StringValue> DictionaryToJSONString(
+    const base::DictionaryValue* dict) {
+  std::string json_string;
+  base::JSONWriter::WriteWithOptions(dict,
+                                     base::JSONWriter::OPTIONS_DO_NOT_ESCAPE |
+                                         base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                     &json_string);
+  return make_scoped_ptr(new base::StringValue(json_string));
+}
+
+// Returns a copy of |value| with some values converted to a representation that
+// i18n_template.js will display in a nicer way.
+scoped_ptr<base::Value> CopyAndConvert(const base::Value* value) {
+  const base::DictionaryValue* dict = NULL;
+  if (value->GetAsDictionary(&dict))
+    return DictionaryToJSONString(dict).PassAs<base::Value>();
+
+  scoped_ptr<base::Value> copy(value->DeepCopy());
+  base::ListValue* list = NULL;
+  if (copy->GetAsList(&list)) {
+    for (size_t i = 0; i < list->GetSize(); ++i) {
+      if (list->GetDictionary(i, &dict))
+        list->Set(i, DictionaryToJSONString(dict).release());
+    }
+  }
+
+  return copy.Pass();
 }
 
 }  // namespace
@@ -644,7 +675,7 @@ void PolicyUIHandler::GetPolicyValues(const policy::PolicyMap& map,
   for (policy::PolicyMap::const_iterator entry = map.begin();
        entry != map.end(); ++entry) {
     base::DictionaryValue* value = new base::DictionaryValue;
-    value->Set("value", entry->second.value->DeepCopy());
+    value->Set("value", CopyAndConvert(entry->second.value).release());
     if (entry->second.scope == policy::POLICY_SCOPE_USER)
       value->SetString("scope", "user");
     else

@@ -50,8 +50,6 @@ class ConfigurationPolicyHandler {
   // Modifies the values of some of the policies in |policies| so that they
   // are more suitable to display to the user. This can be used to remove
   // sensitive values such as passwords, or to pretty-print values.
-  // The base implementation just converts DictionaryValue policies to a
-  // StringValue representation.
   virtual void PrepareForDisplaying(PolicyMap* policies) const;
 
  private:
