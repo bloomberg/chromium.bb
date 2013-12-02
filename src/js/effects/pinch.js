@@ -74,7 +74,7 @@ camera.effects.Pinch.prototype.filterFrame = function(canvas) {
   var radius = Math.sqrt(Math.pow(face.width * canvas.width, 2) +
                          Math.pow(face.height * canvas.height, 2));
   canvas.bulgePinch(x,
-                    y + this.offset_ * radius,
+                    y + this.offset_ * face.height * canvas.height,
                     radius * this.amount_ * this.size_,
                     0.5 * face.confidence * this.strength_);
 };
@@ -112,7 +112,7 @@ camera.effects.BigHead.prototype.getTitle = function() {
  * @extends {camera.effects.Pinch}
  */
 camera.effects.BigJaw = function(tracker) {
-  camera.effects.Pinch.call(this, tracker, 0.45, 0.6, 1.0);
+  camera.effects.Pinch.call(this, tracker, 0.9, 0.6, 1.0);
 };
 
 camera.effects.BigJaw.prototype = {
@@ -132,7 +132,7 @@ camera.effects.BigJaw.prototype.getTitle = function() {
  * @extends {camera.effects.Pinch}
  */
 camera.effects.BunnyHead = function(tracker) {
-  camera.effects.Pinch.call(this, tracker, 0.4, 0.8, -0.7);
+  camera.effects.Pinch.call(this, tracker, 0.8, 0.8, -0.7);
 };
 
 camera.effects.BunnyHead.prototype = {
