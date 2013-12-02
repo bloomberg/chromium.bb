@@ -159,12 +159,8 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
               "window.applicationCache.update();");
     }
 
-    /*
     @LargeTest
     @Feature({"AndroidWebView", "WebStore"})
-    http://crbug.com/324714
-    */
-    @DisabledTest
     public void testDeleteAllWithAppCache() throws Exception {
         long currentUsage = getUsageForOrigin(mOrigin);
         assertEquals(0, currentUsage);
