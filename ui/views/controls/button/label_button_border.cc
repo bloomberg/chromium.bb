@@ -58,7 +58,7 @@ void PaintHelper(LabelButtonBorder* border,
     if (!painter && extra.button.is_focused)
       painter = border->GetPainter(false, GetButtonState(state));
     if (painter)
-      painter->Paint(canvas, rect.size());
+      Painter::PaintPainterAt(canvas, painter, rect);
   }
 }
 

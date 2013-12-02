@@ -237,7 +237,7 @@
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h',
         'browser/ui/views/tabs/tab_drag_controller_interactive_uitest_win.cc',
-        'browser/ui/views/toolbar/button_dropdown_test.cc',
+        'browser/ui/views/toolbar/toolbar_button_test.cc',
         'test/base/interactive_test_utils.cc',
         'test/base/interactive_test_utils.h',
         'test/base/interactive_test_utils_aura.cc',
@@ -269,7 +269,7 @@
           # TODO(gbillock): aura linux does not support the automation for
           # SendMouseMoveNotifyWhenDone
           'sources!': [
-            'browser/ui/views/toolbar/button_dropdown_test.cc',
+            'browser/ui/views/toolbar/toolbar_button_test.cc',
           ],
         }],
         ['toolkit_uses_gtk == 1 or chromeos==1 or (OS=="linux" and use_aura==1)', {

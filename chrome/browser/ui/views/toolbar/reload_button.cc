@@ -22,11 +22,6 @@
 
 namespace {
 
-const int kReloadImages[] =
-    { IDR_RELOAD, IDR_RELOAD_H, IDR_RELOAD_P, IDR_RELOAD_D };
-
-const int kStopImages[] = { IDR_STOP, IDR_STOP_H, IDR_STOP_P, IDR_STOP_D };
-
 // Contents of the Reload drop-down menu.
 const int kReloadMenuItems[]  = {
   IDS_RELOAD_MENU_NORMAL_RELOAD_ITEM,
@@ -44,7 +39,7 @@ const char ReloadButton::kViewClassName[] = "ReloadButton";
 
 ReloadButton::ReloadButton(LocationBarView* location_bar,
                            CommandUpdater* command_updater)
-    : ButtonDropDown(this, CreateMenuModel()),
+    : ToolbarButton(this, CreateMenuModel()),
       location_bar_(location_bar),
       command_updater_(command_updater),
       intended_mode_(MODE_RELOAD),
@@ -71,7 +66,8 @@ void ReloadButton::ChangeMode(Mode mode, bool force) {
       !double_click_timer_.IsRunning() : (visible_mode_ != MODE_STOP))) {
     double_click_timer_.Stop();
     stop_to_reload_timer_.Stop();
-    ChangeModeInternal(mode);
+    if (mode != visible_mode_)
+      ChangeModeInternal(mode);
     SetEnabled(true);
 
   // We want to disable the button if we're preventing a change from stop to
@@ -92,26 +88,14 @@ void ReloadButton::ChangeMode(Mode mode, bool force) {
 }
 
 void ReloadButton::LoadImages() {
-  DCHECK_EQ(static_cast<int>(arraysize(kReloadImages)), STATE_COUNT);
-  DCHECK_EQ(static_cast<int>(arraysize(kStopImages)), STATE_COUNT);
-
-  gfx::ImageSkia* reload_images = images_;
-  gfx::ImageSkia* stop_images = alternate_images_;
-  if (visible_mode_ == MODE_STOP)
-    std::swap(reload_images, stop_images);
-
-  ui::ThemeProvider* tp = GetThemeProvider();
-  for (int i = 0; i < STATE_COUNT; i++) {
-    reload_images[i] = *(tp->GetImageSkiaNamed(kReloadImages[i]));
-    stop_images[i] = *(tp->GetImageSkiaNamed(kStopImages[i]));
-  }
+  ChangeModeInternal(visible_mode_);
 
   SchedulePaint();
   PreferredSizeChanged();
 }
 
 void ReloadButton::OnMouseExited(const ui::MouseEvent& event) {
-  ButtonDropDown::OnMouseExited(event);
+  ToolbarButton::OnMouseExited(event);
   if (!IsMenuShowing())
     ChangeMode(intended_mode_, true);
 }
@@ -132,7 +116,7 @@ const char* ReloadButton::GetClassName() const {
 
 void ReloadButton::GetAccessibleState(ui::AccessibleViewState* state) {
   if (menu_enabled_)
-    ButtonDropDown::GetAccessibleState(state);
+    ToolbarButton::GetAccessibleState(state);
   else
     CustomButton::GetAccessibleState(state);
 }
@@ -142,7 +126,7 @@ bool ReloadButton::ShouldShowMenu() {
 }
 
 void ReloadButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
-  ButtonDropDown::ShowDropDownMenu(source_type);  // Blocks.
+  ToolbarButton::ShowDropDownMenu(source_type);  // Blocks.
   ChangeMode(intended_mode_, true);
 }
 
@@ -249,11 +233,15 @@ void ReloadButton::ExecuteBrowserCommand(int command, int event_flags) {
 }
 
 void ReloadButton::ChangeModeInternal(Mode mode) {
-  if (visible_mode_ == mode)
-    return;
+  ui::ThemeProvider* tp = GetThemeProvider();
+  // |tp| can be NULL in unit tests.
+  if (tp) {
+    SetImage(views::Button::STATE_NORMAL, *(tp->GetImageSkiaNamed(
+        (mode == MODE_RELOAD) ? IDR_RELOAD : IDR_STOP)));
+    SetImage(views::Button::STATE_DISABLED, *(tp->GetImageSkiaNamed(
+        (mode == MODE_RELOAD) ? IDR_RELOAD_D : IDR_STOP_D)));
+  }
 
-  for (size_t i = 0; i < STATE_COUNT; ++i)
-    std::swap(images_[i], alternate_images_[i]);
   visible_mode_ = mode;
   SchedulePaint();
 }

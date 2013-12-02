@@ -8,8 +8,9 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/ui/views/toolbar/button_dropdown.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/views/controls/button/button.h"
 
 class CommandUpdater;
 class LocationBarView;
@@ -25,7 +26,7 @@ class LocationBarView;
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-class ReloadButton : public ButtonDropDown,
+class ReloadButton : public ToolbarButton,
                      public views::ButtonListener,
                      public ui::SimpleMenuModel::Delegate {
  public:
@@ -47,22 +48,20 @@ class ReloadButton : public ButtonDropDown,
 
   void LoadImages();
 
-  // Overridden from views::View:
+  // ToolbarButton:
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual bool GetTooltipText(const gfx::Point& p,
                               string16* tooltip) const OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
-
-  // Overridden from views::ButtonDropDown:
   virtual bool ShouldShowMenu() OVERRIDE;
   virtual void ShowDropDownMenu(ui::MenuSourceType source_type) OVERRIDE;
 
-  // Overridden from views::ButtonListener:
+  // views::ButtonListener:
   virtual void ButtonPressed(views::Button* /* button */,
                              const ui::Event& event) OVERRIDE;
 
-  // Overridden from ui::SimpleMenuModel::Delegate:
+  // ui::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const OVERRIDE;
   virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE;
   virtual bool IsCommandIdVisible(int command_id) const OVERRIDE;
@@ -102,11 +101,6 @@ class ReloadButton : public ButtonDropDown,
 
   // Indicates if reload menu is enabled.
   bool menu_enabled_;
-
-  // The parent class's images_ member is used for the current images,
-  // and this array is used to hold the alternative images.
-  // We swap between the two when changing mode.
-  gfx::ImageSkia alternate_images_[STATE_COUNT];
 
   // TESTING ONLY
   // True if we should pretend the button is hovered.

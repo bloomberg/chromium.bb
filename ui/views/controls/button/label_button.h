@@ -65,12 +65,13 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   ButtonStyle style() const { return style_; }
   void SetStyle(ButtonStyle style);
 
-  // Overridden from View:
+  // View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
 
  protected:
+   ImageView* image() const { return image_; }
    Label* label() const { return label_; }
 
   // Fill |params| with information about the button.
@@ -82,6 +83,9 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   // Updates the image view to contain the appropriate button state image.
   void UpdateImage();
 
+  // NativeThemeDelegate:
+  virtual gfx::Rect GetThemePaintRect() const OVERRIDE;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Init);
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Label);
@@ -89,16 +93,15 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, LabelAndImage);
   FRIEND_TEST_ALL_PREFIXES(LabelButtonTest, Font);
 
-  // Overridden from CustomButton:
+  // CustomButton:
   virtual void StateChanged() OVERRIDE;
 
-  // Overridden from View:
+  // View:
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
   virtual void OnNativeThemeChanged(const ui::NativeTheme* theme) OVERRIDE;
 
-  // Overridden from NativeThemeDelegate:
+  // NativeThemeDelegate:
   virtual ui::NativeTheme::Part GetThemePart() const OVERRIDE;
-  virtual gfx::Rect GetThemePaintRect() const OVERRIDE;
   virtual ui::NativeTheme::State GetThemeState(
       ui::NativeTheme::ExtraParams* params) const OVERRIDE;
   virtual const gfx::Animation* GetThemeAnimation() const OVERRIDE;

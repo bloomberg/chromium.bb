@@ -4,28 +4,28 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/views/toolbar/button_dropdown.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/base/view_event_test_base.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/test/ui_controls.h"
 
-class ButtonDropDownDragTest : public ViewEventTestBase,
-                               ui::SimpleMenuModel::Delegate {
+class ToolbarButtonDragTest : public ViewEventTestBase,
+                                     ui::SimpleMenuModel::Delegate {
  public:
-  ButtonDropDownDragTest()
+  ToolbarButtonDragTest()
       : button_(NULL),
         menu_shown_(false),
         menu_closed_(false) {
   }
 
-  virtual ~ButtonDropDownDragTest() {
+  virtual ~ToolbarButtonDragTest() {
   }
 
   // ViewEventTestBase implementation.
   virtual void SetUp() OVERRIDE {
-    button_ = new ButtonDropDown(NULL, new ui::SimpleMenuModel(this));
+    button_ = new ToolbarButton(NULL, new ui::SimpleMenuModel(this));
 
     ViewEventTestBase::SetUp();
   }
@@ -70,12 +70,12 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
 
   // ViewEventTestBase implementation.
   virtual void DoTestOnMessageLoop() OVERRIDE {
-    // Click on the ButtonDropDown.
+    // Click on the ToolbarButton.
     ui_test_utils::MoveMouseToCenterAndPress(
         button_,
         ui_controls::LEFT,
         ui_controls::DOWN,
-        CreateEventTask(this, &ButtonDropDownDragTest::Step1));
+        CreateEventTask(this, &ToolbarButtonDragTest::Step1));
   }
 
   void Step1() {
@@ -86,7 +86,7 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
     // threshold.
     ui_controls::SendMouseMoveNotifyWhenDone(
         view_center.x(), view_center.y() + 50,
-        CreateEventTask(this, &ButtonDropDownDragTest::Step2));
+        CreateEventTask(this, &ToolbarButtonDragTest::Step2));
   }
 
   void Step2() {
@@ -96,7 +96,7 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
     ui_controls::SendMouseEventsNotifyWhenDone(
         ui_controls::LEFT,
         ui_controls::UP,
-        CreateEventTask(this, &ButtonDropDownDragTest::Step3));
+        CreateEventTask(this, &ToolbarButtonDragTest::Step3));
   }
 
   void Step3() {
@@ -106,7 +106,7 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
         button_,
         ui_controls::LEFT,
         ui_controls::DOWN | ui_controls::UP,
-        CreateEventTask(this, &ButtonDropDownDragTest::Step4));
+        CreateEventTask(this, &ToolbarButtonDragTest::Step4));
   }
 
   void Step4() {
@@ -114,7 +114,7 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
     // ui::SimpleMenuModel::Delegate::MenuClosed() via a posted
     // task.
     base::MessageLoopForUI::current()->PostTask(
-        FROM_HERE, CreateEventTask(this, &ButtonDropDownDragTest::Step5));
+        FROM_HERE, CreateEventTask(this, &ToolbarButtonDragTest::Step5));
   }
 
   void Step5() {
@@ -123,9 +123,9 @@ class ButtonDropDownDragTest : public ViewEventTestBase,
   }
 
  private:
-  ButtonDropDown* button_;
+  ToolbarButton* button_;
   bool menu_shown_;
   bool menu_closed_;
 };
 
-VIEW_TEST(ButtonDropDownDragTest, DragActivation)
+VIEW_TEST(ToolbarButtonDragTest, DragActivation)

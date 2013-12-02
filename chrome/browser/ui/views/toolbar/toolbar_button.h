@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_BUTTON_DROPDOWN_H_
-#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_BUTTON_DROPDOWN_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_BUTTON_H_
+#define CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_BUTTON_H_
 
-#include "base/memory/weak_ptr.h"
 #include "ui/views/context_menu_controller.h"
-#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/label_button.h"
 
 namespace ui {
 class MenuModel;
@@ -17,43 +17,37 @@ namespace views {
 class MenuRunner;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// ButtonDropDown
-//
-// A button class that when pressed (and held) or pressed (and drag down) will
-// display a menu
-//
-////////////////////////////////////////////////////////////////////////////////
-class ButtonDropDown : public views::ImageButton,
-                       public views::ContextMenuController {
+// This class provides basic drawing and mouse-over behavior for buttons
+// appearing in the toolbar.
+class ToolbarButton : public views::LabelButton,
+                      public views::ContextMenuController {
  public:
-  // The button's class name.
-  static const char kViewClassName[];
+  // Takes ownership of the |model|, which can be null if no menu
+  // is to be shown.
+  ToolbarButton(views::ButtonListener* listener, ui::MenuModel* model);
+  virtual ~ToolbarButton();
 
-  // Takes ownership of the |model|.
-  ButtonDropDown(views::ButtonListener* listener, ui::MenuModel* model);
-  virtual ~ButtonDropDown();
+  // Set up basic mouseover border behavior.
+  // Should be called before first paint.
+  void Init();
 
-  // If menu is currently pending for long press - stop it.
+  // Methods for handling ButtonDropDown-style menus.
   void ClearPendingMenu();
-
-  // Indicates if menu is currently showing.
   bool IsMenuShowing() const;
 
-  // Overridden from views::View
+  // views::LabelButton:
+  virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual const char* GetClassName() const OVERRIDE;
   // Showing the drop down results in a MouseCaptureLost, we need to ignore it.
-  virtual void OnMouseCaptureLost() OVERRIDE {}
+  virtual void OnMouseCaptureLost() OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // Overridden from views::ContextMenuController
-  virtual void ShowContextMenuForView(views::View* source,
+  // views::ContextMenuController:
+  virtual void ShowContextMenuForView(View* source,
                                       const gfx::Point& point,
                                       ui::MenuSourceType source_type) OVERRIDE;
 
@@ -84,9 +78,9 @@ class ButtonDropDown : public views::ImageButton,
   scoped_ptr<views::MenuRunner> menu_runner_;
 
   // A factory for tasks that show the dropdown context menu for the button.
-  base::WeakPtrFactory<ButtonDropDown> show_menu_factory_;
+  base::WeakPtrFactory<ToolbarButton> show_menu_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ButtonDropDown);
+  DISALLOW_COPY_AND_ASSIGN(ToolbarButton);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_BUTTON_DROPDOWN_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_BUTTON_H_

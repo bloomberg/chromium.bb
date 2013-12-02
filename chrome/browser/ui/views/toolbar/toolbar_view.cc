@@ -33,10 +33,11 @@
 #include "chrome/browser/ui/views/location_bar/star_view.h"
 #include "chrome/browser/ui/views/location_bar/translate_icon_view.h"
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
+#include "chrome/browser/ui/views/toolbar/back_button.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
-#include "chrome/browser/ui/views/toolbar/button_dropdown.h"
 #include "chrome/browser/ui/views/toolbar/home_button.h"
 #include "chrome/browser/ui/views/toolbar/reload_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/wrench_menu.h"
 #include "chrome/browser/ui/views/toolbar/wrench_toolbar_button.h"
 #include "chrome/browser/upgrade_detector.h"
@@ -166,18 +167,16 @@ ToolbarView::~ToolbarView() {
 void ToolbarView::Init() {
   GetWidget()->AddObserver(this);
 
-  back_ = new ButtonDropDown(this, new BackForwardMenuModel(
+  back_ = new BackButton(this, new BackForwardMenuModel(
       browser_, BackForwardMenuModel::BACKWARD_MENU));
   back_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
   back_->set_tag(IDC_BACK);
-  back_->SetImageAlignment(views::ImageButton::ALIGN_RIGHT,
-                           views::ImageButton::ALIGN_TOP);
   back_->SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_BACK));
   back_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_BACK));
   back_->set_id(VIEW_ID_BACK_BUTTON);
 
-  forward_ = new ButtonDropDown(this, new BackForwardMenuModel(
+  forward_ = new ToolbarButton(this, new BackForwardMenuModel(
       browser_, BackForwardMenuModel::FORWARD_MENU));
   forward_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
@@ -201,7 +200,7 @@ void ToolbarView::Init() {
   reload_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_RELOAD));
   reload_->set_id(VIEW_ID_RELOAD_BUTTON);
 
-  home_ = new HomeImageButton(this, browser_);
+  home_ = new HomeButton(this, browser_);
   home_->set_triggerable_event_flags(
       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON);
   home_->set_tag(IDC_HOME);
@@ -532,10 +531,13 @@ void ToolbarView::Layout() {
   //                http://crbug.com/5540
   bool maximized = browser_->window() && browser_->window()->IsMaximized();
   int back_width = back_->GetPreferredSize().width();
-  if (maximized)
+  if (maximized) {
     back_->SetBounds(0, child_y, back_width + kLeftEdgeSpacing, child_height);
-  else
+    back_->SetLeadingMargin(kLeftEdgeSpacing);
+  } else {
     back_->SetBounds(kLeftEdgeSpacing, child_y, back_width, child_height);
+    back_->SetLeadingMargin(0);
+  }
 
   int button_spacing = GetButtonSpacing();
   forward_->SetBounds(back_->x() + back_->width() + button_spacing,
@@ -713,32 +715,20 @@ int ToolbarView::PopupTopSpacing() const {
 void ToolbarView::LoadImages() {
   ui::ThemeProvider* tp = GetThemeProvider();
 
-  back_->SetImage(views::CustomButton::STATE_NORMAL,
-      tp->GetImageSkiaNamed(IDR_BACK));
-  back_->SetImage(views::CustomButton::STATE_HOVERED,
-      tp->GetImageSkiaNamed(IDR_BACK_H));
-  back_->SetImage(views::CustomButton::STATE_PRESSED,
-      tp->GetImageSkiaNamed(IDR_BACK_P));
-  back_->SetImage(views::CustomButton::STATE_DISABLED,
-      tp->GetImageSkiaNamed(IDR_BACK_D));
+  back_->SetImage(views::Button::STATE_NORMAL,
+                  *(tp->GetImageSkiaNamed(IDR_BACK)));
+  back_->SetImage(views::Button::STATE_DISABLED,
+                  *(tp->GetImageSkiaNamed(IDR_BACK_D)));
 
-  forward_->SetImage(views::CustomButton::STATE_NORMAL,
-      tp->GetImageSkiaNamed(IDR_FORWARD));
-  forward_->SetImage(views::CustomButton::STATE_HOVERED,
-      tp->GetImageSkiaNamed(IDR_FORWARD_H));
-  forward_->SetImage(views::CustomButton::STATE_PRESSED,
-      tp->GetImageSkiaNamed(IDR_FORWARD_P));
-  forward_->SetImage(views::CustomButton::STATE_DISABLED,
-      tp->GetImageSkiaNamed(IDR_FORWARD_D));
+  forward_->SetImage(views::Button::STATE_NORMAL,
+                    *(tp->GetImageSkiaNamed(IDR_FORWARD)));
+  forward_->SetImage(views::Button::STATE_DISABLED,
+                     *(tp->GetImageSkiaNamed(IDR_FORWARD_D)));
 
   reload_->LoadImages();
 
-  home_->SetImage(views::CustomButton::STATE_NORMAL,
-      tp->GetImageSkiaNamed(IDR_HOME));
-  home_->SetImage(views::CustomButton::STATE_HOVERED,
-      tp->GetImageSkiaNamed(IDR_HOME_H));
-  home_->SetImage(views::CustomButton::STATE_PRESSED,
-      tp->GetImageSkiaNamed(IDR_HOME_P));
+  home_->SetImage(views::Button::STATE_NORMAL,
+                  *(tp->GetImageSkiaNamed(IDR_HOME)));
 }
 
 void ToolbarView::ShowCriticalNotification() {

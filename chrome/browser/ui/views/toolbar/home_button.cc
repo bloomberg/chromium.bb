@@ -134,35 +134,35 @@ void HomePageUndoBubble::WindowClosing() {
 }  // namespace
 
 
-// HomeImageButton -----------------------------------------------------------
+// HomeButton -----------------------------------------------------------
 
-HomeImageButton::HomeImageButton(
+HomeButton::HomeButton(
     views::ButtonListener* listener,
     Browser* browser)
-    : views::ImageButton(listener),
+    : ToolbarButton(listener, NULL),
       browser_(browser) {
 }
 
-HomeImageButton::~HomeImageButton() {
+HomeButton::~HomeButton() {
 }
 
-bool HomeImageButton::GetDropFormats(
+bool HomeButton::GetDropFormats(
     int* formats,
     std::set<OSExchangeData::CustomFormat>* custom_formats) {
   *formats = ui::OSExchangeData::URL;
   return true;
 }
 
-bool HomeImageButton::CanDrop(const OSExchangeData& data) {
+bool HomeButton::CanDrop(const OSExchangeData& data) {
   return data.HasURL();
 }
 
-int HomeImageButton::OnDragUpdated(const ui::DropTargetEvent& event) {
+int HomeButton::OnDragUpdated(const ui::DropTargetEvent& event) {
   return (event.source_operations() & ui::DragDropTypes::DRAG_LINK) ?
       ui::DragDropTypes::DRAG_LINK : ui::DragDropTypes::DRAG_NONE;
 }
 
-int HomeImageButton::OnPerformDrop(const ui::DropTargetEvent& event) {
+int HomeButton::OnPerformDrop(const ui::DropTargetEvent& event) {
   GURL new_homepage_url;
   string16 title;
   if (event.data().GetURLAndTitle(&new_homepage_url, &title) &&

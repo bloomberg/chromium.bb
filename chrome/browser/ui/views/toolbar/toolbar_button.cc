@@ -2,64 +2,71 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/toolbar/button_dropdown.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 
 #include "base/bind.h"
-#include "base/compiler_specific.h"
-#include "base/message_loop/message_loop.h"
-#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "grit/theme_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
 
-// static
-const char ButtonDropDown::kViewClassName[] =
-    "ui/views/controls/button/ButtonDropDown";
-
-// How long to wait before showing the menu.
-const int kMenuTimerDelay = 500;
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// ButtonDropDown - constructors, destructors, initialization, cleanup
-//
-////////////////////////////////////////////////////////////////////////////////
-
-ButtonDropDown::ButtonDropDown(views::ButtonListener* listener,
-                               ui::MenuModel* model)
-    : views::ImageButton(listener),
+ToolbarButton::ToolbarButton(views::ButtonListener* listener,
+                             ui::MenuModel* model)
+    : views::LabelButton(listener, string16()),
       model_(model),
       menu_showing_(false),
       y_position_on_lbuttondown_(0),
       show_menu_factory_(this) {
-  set_context_menu_controller(this);
 }
 
-ButtonDropDown::~ButtonDropDown() {
+ToolbarButton::~ToolbarButton() {
 }
 
-void ButtonDropDown::ClearPendingMenu() {
+void ToolbarButton::Init() {
+  set_focusable(true);
+
+  // Provides the hover/pressed style used by buttons in the toolbar.
+  views::LabelButtonBorder* border =
+      new views::LabelButtonBorder(views::Button::STYLE_BUTTON);
+  const int kHoverImages[] = IMAGE_GRID(IDR_TOOLBAR_BUTTON_HOVER);
+  border->SetPainter(false, views::Button::STATE_HOVERED,
+                     views::Painter::CreateImageGridPainter(
+                         kHoverImages));
+  const int kPressedImages[] = IMAGE_GRID(IDR_TOOLBAR_BUTTON_PRESSED);
+  border->SetPainter(false, views::Button::STATE_PRESSED,
+                     views::Painter::CreateImageGridPainter(
+                         kPressedImages));
+  border->SetPainter(false, views::Button::STATE_NORMAL, NULL);
+  border->SetPainter(true, views::Button::STATE_NORMAL, NULL);
+  set_border(border);
+}
+
+void ToolbarButton::ClearPendingMenu() {
   show_menu_factory_.InvalidateWeakPtrs();
 }
 
-bool ButtonDropDown::IsMenuShowing() const {
+bool ToolbarButton::IsMenuShowing() const {
   return menu_showing_;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//
-// ButtonDropDown - Events
-//
-////////////////////////////////////////////////////////////////////////////////
+gfx::Size ToolbarButton::GetPreferredSize() {
+  gfx::Size size(image()->GetPreferredSize());
+  gfx::Size label_size = label()->GetPreferredSize();
+  if (label_size.width() > 0)
+    size.Enlarge(label_size.width() + LocationBarView::GetItemPadding(), 0);
+  return size;
+}
 
-bool ButtonDropDown::OnMousePressed(const ui::MouseEvent& event) {
+bool ToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
   if (enabled() && ShouldShowMenu() &&
       IsTriggerableEvent(event) && HitTestPoint(event.location())) {
     // Store the y pos of the mouse coordinates so we can use them later to
@@ -68,18 +75,19 @@ bool ButtonDropDown::OnMousePressed(const ui::MouseEvent& event) {
     y_position_on_lbuttondown_ = event.y();
 
     // Schedule a task that will show the menu.
+    const int kMenuTimerDelay = 500;
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&ButtonDropDown::ShowDropDownMenu,
+        base::Bind(&ToolbarButton::ShowDropDownMenu,
                    show_menu_factory_.GetWeakPtr(),
                    ui::GetMenuSourceTypeForEvent(event)),
         base::TimeDelta::FromMilliseconds(kMenuTimerDelay));
   }
-  return ImageButton::OnMousePressed(event);
+  return LabelButton::OnMousePressed(event);
 }
 
-bool ButtonDropDown::OnMouseDragged(const ui::MouseEvent& event) {
-  bool result = views::ImageButton::OnMouseDragged(event);
+bool ToolbarButton::OnMouseDragged(const ui::MouseEvent& event) {
+  bool result = LabelButton::OnMouseDragged(event);
 
   if (show_menu_factory_.HasWeakPtrs()) {
     // If the mouse is dragged to a y position lower than where it was when
@@ -94,21 +102,20 @@ bool ButtonDropDown::OnMouseDragged(const ui::MouseEvent& event) {
   return result;
 }
 
-void ButtonDropDown::OnMouseReleased(const ui::MouseEvent& event) {
+void ToolbarButton::OnMouseReleased(const ui::MouseEvent& event) {
   if (IsTriggerableEvent(event) ||
       (event.IsRightMouseButton() && !HitTestPoint(event.location()))) {
-    views::ImageButton::OnMouseReleased(event);
+    LabelButton::OnMouseReleased(event);
   }
 
   if (IsTriggerableEvent(event))
     show_menu_factory_.InvalidateWeakPtrs();
 }
 
-const char* ButtonDropDown::GetClassName() const {
-  return kViewClassName;
+void ToolbarButton::OnMouseCaptureLost() {
 }
 
-void ButtonDropDown::OnMouseExited(const ui::MouseEvent& event) {
+void ToolbarButton::OnMouseExited(const ui::MouseEvent& event) {
   // Starting a drag results in a MouseExited, we need to ignore it.
   // A right click release triggers an exit event. We want to
   // remain in a PUSHED state until the drop down menu closes.
@@ -116,26 +123,26 @@ void ButtonDropDown::OnMouseExited(const ui::MouseEvent& event) {
     SetState(STATE_NORMAL);
 }
 
-void ButtonDropDown::OnGestureEvent(ui::GestureEvent* event) {
+void ToolbarButton::OnGestureEvent(ui::GestureEvent* event) {
   if (menu_showing_) {
     // While dropdown menu is showing the button should not handle gestures.
     event->StopPropagation();
     return;
   }
 
-  ImageButton::OnGestureEvent(event);
+  LabelButton::OnGestureEvent(event);
 }
 
-void ButtonDropDown::GetAccessibleState(ui::AccessibleViewState* state) {
-  views::CustomButton::GetAccessibleState(state);
+void ToolbarButton::GetAccessibleState(ui::AccessibleViewState* state) {
+  CustomButton::GetAccessibleState(state);
   state->role = ui::AccessibilityTypes::ROLE_BUTTONDROPDOWN;
   state->default_action = l10n_util::GetStringUTF16(IDS_APP_ACCACTION_PRESS);
   state->state = ui::AccessibilityTypes::STATE_HASPOPUP;
 }
 
-void ButtonDropDown::ShowContextMenuForView(View* source,
-                                            const gfx::Point& point,
-                                            ui::MenuSourceType source_type) {
+void ToolbarButton::ShowContextMenuForView(View* source,
+                                           const gfx::Point& point,
+                                           ui::MenuSourceType source_type) {
   if (!enabled())
     return;
 
@@ -143,7 +150,7 @@ void ButtonDropDown::ShowContextMenuForView(View* source,
   ShowDropDownMenu(source_type);
 }
 
-bool ButtonDropDown::ShouldEnterPushedState(const ui::Event& event) {
+bool ToolbarButton::ShouldEnterPushedState(const ui::Event& event) {
   // Enter PUSHED state on press with Left or Right mouse button or on taps.
   // Remain in this state while the context menu is open.
   return event.type() == ui::ET_GESTURE_TAP ||
@@ -152,11 +159,11 @@ bool ButtonDropDown::ShouldEnterPushedState(const ui::Event& event) {
              ui::EF_RIGHT_MOUSE_BUTTON) & event.flags()) != 0);
 }
 
-bool ButtonDropDown::ShouldShowMenu() {
-  return true;
+bool ToolbarButton::ShouldShowMenu() {
+  return model_ != NULL;
 }
 
-void ButtonDropDown::ShowDropDownMenu(ui::MenuSourceType source_type) {
+void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
   if (!ShouldShowMenu())
     return;
 

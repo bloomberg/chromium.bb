@@ -20,10 +20,12 @@
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
 
+class BackButton;
 class BrowserActionsContainer;
 class Browser;
-class HomeImageButton;
+class HomeButton;
 class ReloadButton;
+class ToolbarButton;
 class WrenchMenu;
 class WrenchMenuModel;
 class WrenchToolbarButton;
@@ -210,10 +212,10 @@ class ToolbarView : public views::AccessiblePaneView,
   int content_shadow_height() const;
 
   // Controls
-  views::ImageButton* back_;
-  views::ImageButton* forward_;
+  BackButton* back_;
+  ToolbarButton* forward_;
   ReloadButton* reload_;
-  HomeImageButton* home_;
+  HomeButton* home_;
   LocationBarView* location_bar_;
   BrowserActionsContainer* browser_actions_;
   WrenchToolbarButton* app_menu_;

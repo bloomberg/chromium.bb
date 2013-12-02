@@ -7,14 +7,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "ui/views/controls/button/image_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 
 class Browser;
 
-class HomeImageButton : public views::ImageButton {
+class HomeButton : public ToolbarButton {
  public:
-  HomeImageButton(views::ButtonListener* listener, Browser* browser);
-  virtual ~HomeImageButton();
+  HomeButton(views::ButtonListener* listener, Browser* browser);
+  virtual ~HomeButton();
 
   // views::ImageButton:
   virtual bool GetDropFormats(
@@ -27,7 +27,7 @@ class HomeImageButton : public views::ImageButton {
  private:
   Browser* browser_;
 
-  DISALLOW_COPY_AND_ASSIGN(HomeImageButton);
+  DISALLOW_COPY_AND_ASSIGN(HomeButton);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_HOME_BUTTON_H_
