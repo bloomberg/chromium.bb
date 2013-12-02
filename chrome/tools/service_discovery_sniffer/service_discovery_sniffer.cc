@@ -104,7 +104,9 @@ int main(int argc, char** argv) {
   }
 
   scoped_ptr<net::MDnsClient> mdns_client = net::MDnsClient::CreateDefault();
-  mdns_client->StartListening();
+  scoped_ptr<net::MDnsSocketFactory> socket_factory =
+      net::MDnsSocketFactory::CreateDefault();
+  mdns_client->StartListening(socket_factory.get());
   scoped_ptr<local_discovery::ServiceDiscoveryClient> service_discovery_client;
   service_discovery_client.reset(
       new local_discovery::ServiceDiscoveryClientImpl(mdns_client.get()));

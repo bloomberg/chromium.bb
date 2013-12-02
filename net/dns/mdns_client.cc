@@ -26,9 +26,13 @@ IPEndPoint GetMDnsIPEndPoint(const char* address) {
 }  // namespace
 
 // static
+scoped_ptr<MDnsSocketFactory> MDnsSocketFactory::CreateDefault() {
+  return scoped_ptr<MDnsSocketFactory>(new MDnsSocketFactoryImpl);
+}
+
+// static
 scoped_ptr<MDnsClient> MDnsClient::CreateDefault() {
-  return scoped_ptr<MDnsClient>(
-      new MDnsClientImpl(MDnsConnection::SocketFactory::CreateDefault()));
+  return scoped_ptr<MDnsClient>(new MDnsClientImpl());
 }
 
 IPEndPoint GetMDnsIPEndPoint(AddressFamily address_family) {

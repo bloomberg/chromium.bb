@@ -24,32 +24,77 @@
 namespace net {
 
 namespace {
+
 const unsigned MDnsTransactionTimeoutSeconds = 3;
+
+int Bind(const IPEndPoint& multicast_addr, DatagramServerSocket* socket) {
+  IPAddressNumber address_any(multicast_addr.address().size());
+  IPEndPoint bind_endpoint(address_any, multicast_addr.port());
+
+  socket->AllowAddressReuse();
+  int rv = socket->Listen(bind_endpoint);
+  if (rv < OK)
+    return rv;
+
+  socket->SetMulticastLoopbackMode(false);
+  return socket->JoinGroup(multicast_addr.address());
 }
 
+void CreateAndBindSocket(AddressFamily address_family,
+                         ScopedVector<DatagramServerSocket>* sockets) {
+  scoped_ptr<DatagramServerSocket> socket(
+      new UDPServerSocket(NULL, NetLog::Source()));
+
+  IPEndPoint multicast_addr = GetMDnsIPEndPoint(address_family);
+  int rv = Bind(multicast_addr, socket.get());
+  if (rv == OK) {
+    sockets->push_back(socket.release());
+  } else {
+    VLOG(1) << "Bind failed, endpoint=" << multicast_addr.ToStringWithoutPort()
+            << ", error=" << rv;
+  }
+}
+
+}  // namespace
+
+void MDnsSocketFactoryImpl::CreateSockets(
+    ScopedVector<DatagramServerSocket>* sockets) {
+  CreateAndBindSocket(ADDRESS_FAMILY_IPV4, sockets);
+  CreateAndBindSocket(ADDRESS_FAMILY_IPV6, sockets);
+}
+
+
+
 MDnsConnection::SocketHandler::SocketHandler(
-    MDnsConnection* connection, const IPEndPoint& multicast_addr,
-    MDnsConnection::SocketFactory* socket_factory)
-    : socket_(socket_factory->CreateSocket()), connection_(connection),
-      response_(new DnsResponse(dns_protocol::kMaxMulticastSize)),
-      multicast_addr_(multicast_addr) {
+    scoped_ptr<DatagramServerSocket> socket,
+    MDnsConnection* connection)
+    : socket_(socket.Pass()),
+      connection_(connection),
+      response_(dns_protocol::kMaxMulticastSize) {
 }
 
 MDnsConnection::SocketHandler::~SocketHandler() {
 }
 
 int MDnsConnection::SocketHandler::Start() {
+  IPEndPoint end_point;
+  int rv = socket_->GetLocalAddress(&end_point);
+  if (rv != OK)
+    return rv;
+  DCHECK(end_point.GetFamily() == ADDRESS_FAMILY_IPV4 ||
+         end_point.GetFamily() == ADDRESS_FAMILY_IPV6);
+  multicast_addr_ = GetMDnsIPEndPoint(end_point.GetFamily());
   return DoLoop(0);
 }
 
 int MDnsConnection::SocketHandler::DoLoop(int rv) {
   do {
     if (rv > 0)
-      connection_->OnDatagramReceived(response_.get(), recv_addr_, rv);
+      connection_->OnDatagramReceived(&response_, recv_addr_, rv);
 
     rv = socket_->RecvFrom(
-        response_->io_buffer(),
-        response_->io_buffer()->size(),
+        response_.io_buffer(),
+        response_.io_buffer()->size(),
         &recv_addr_,
         base::Bind(&MDnsConnection::SocketHandler::OnDatagramReceived,
                    base::Unretained(this)));
@@ -70,29 +115,13 @@ void MDnsConnection::SocketHandler::OnDatagramReceived(int rv) {
 }
 
 int MDnsConnection::SocketHandler::Send(IOBuffer* buffer, unsigned size) {
-  return socket_->SendTo(
-      buffer, size, multicast_addr_,
-      base::Bind(&MDnsConnection::SocketHandler::SendDone,
-                 base::Unretained(this) ));
+  return socket_->SendTo(buffer, size, multicast_addr_,
+                         base::Bind(&MDnsConnection::SocketHandler::SendDone,
+                                    base::Unretained(this) ));
 }
 
 void MDnsConnection::SocketHandler::SendDone(int rv) {
   // TODO(noamsml): Retry logic.
-}
-
-int MDnsConnection::SocketHandler::Bind() {
-  IPAddressNumber address_any(multicast_addr_.address().size());
-
-  IPEndPoint bind_endpoint(address_any, multicast_addr_.port());
-
-  socket_->AllowAddressReuse();
-  int rv = socket_->Listen(bind_endpoint);
-
-  if (rv < OK) return rv;
-
-  socket_->SetMulticastLoopbackMode(false);
-
-  return socket_->JoinGroup(multicast_addr_.address());
 }
 
 MDnsConnection::MDnsConnection(MDnsConnection::Delegate* delegate) :
@@ -102,25 +131,15 @@ MDnsConnection::MDnsConnection(MDnsConnection::Delegate* delegate) :
 MDnsConnection::~MDnsConnection() {
 }
 
-bool MDnsConnection::Init(MDnsConnection::SocketFactory* socket_factory) {
-  // TODO(vitalybuka): crbug.com/297690 Make socket_factory return list
-  // of initialized sockets.
-  socket_handlers_.push_back(
-      new SocketHandler(this, GetMDnsIPEndPoint(ADDRESS_FAMILY_IPV4),
-                        socket_factory));
-  socket_handlers_.push_back(
-      new SocketHandler(this, GetMDnsIPEndPoint(ADDRESS_FAMILY_IPV6),
-                        socket_factory));
+bool MDnsConnection::Init(MDnsSocketFactory* socket_factory) {
+  ScopedVector<DatagramServerSocket> sockets;
+  socket_factory->CreateSockets(&sockets);
 
-  for (size_t i = 0; i < socket_handlers_.size();) {
-    int rv = socket_handlers_[i]->Bind();
-    if (rv != OK) {
-      socket_handlers_.erase(socket_handlers_.begin() + i);
-      VLOG(1) << "Bind failed, socket=" << i << ", error=" << rv;
-    } else {
-      ++i;
-    }
+  for (size_t i = 0; i < sockets.size(); ++i) {
+    socket_handlers_.push_back(
+        new MDnsConnection::SocketHandler(make_scoped_ptr(sockets[i]), this));
   }
+  sockets.weak_clear();
 
   // All unbound sockets need to be bound before processing untrusted input.
   // This is done for security reasons, so that an attacker can't get an unbound
@@ -167,34 +186,6 @@ void MDnsConnection::OnDatagramReceived(
   delegate_->HandlePacket(response, bytes_read);
 }
 
-class MDnsConnectionSocketFactoryImpl
-    : public MDnsConnection::SocketFactory {
- public:
-  MDnsConnectionSocketFactoryImpl();
-  virtual ~MDnsConnectionSocketFactoryImpl();
-
-  virtual scoped_ptr<DatagramServerSocket> CreateSocket() OVERRIDE;
-};
-
-MDnsConnectionSocketFactoryImpl::MDnsConnectionSocketFactoryImpl() {
-}
-
-MDnsConnectionSocketFactoryImpl::~MDnsConnectionSocketFactoryImpl() {
-}
-
-scoped_ptr<DatagramServerSocket>
-MDnsConnectionSocketFactoryImpl::CreateSocket() {
-  return scoped_ptr<DatagramServerSocket>(new UDPServerSocket(
-      NULL, NetLog::Source()));
-}
-
-// static
-scoped_ptr<MDnsConnection::SocketFactory>
-MDnsConnection::SocketFactory::CreateDefault() {
-  return scoped_ptr<MDnsConnection::SocketFactory>(
-      new MDnsConnectionSocketFactoryImpl);
-}
-
 MDnsClientImpl::Core::Core(MDnsClientImpl* client)
     : client_(client), connection_(new MDnsConnection(this)) {
 }
@@ -203,7 +194,7 @@ MDnsClientImpl::Core::~Core() {
   STLDeleteValues(&listeners_);
 }
 
-bool MDnsClientImpl::Core::Init(MDnsConnection::SocketFactory* socket_factory) {
+bool MDnsClientImpl::Core::Init(MDnsSocketFactory* socket_factory) {
   return connection_->Init(socket_factory);
 }
 
@@ -434,18 +425,16 @@ void MDnsClientImpl::Core::QueryCache(
   cache_.FindDnsRecords(rrtype, name, records, base::Time::Now());
 }
 
-MDnsClientImpl::MDnsClientImpl(
-    scoped_ptr<MDnsConnection::SocketFactory> socket_factory)
-    : socket_factory_(socket_factory.Pass()) {
+MDnsClientImpl::MDnsClientImpl() {
 }
 
 MDnsClientImpl::~MDnsClientImpl() {
 }
 
-bool MDnsClientImpl::StartListening() {
+bool MDnsClientImpl::StartListening(MDnsSocketFactory* socket_factory) {
   DCHECK(!core_.get());
   core_.reset(new Core(this));
-  if (!core_->Init(socket_factory_.get())) {
+  if (!core_->Init(socket_factory)) {
     core_.reset();
     return false;
   }

@@ -183,12 +183,8 @@ class MockServiceWatcherClient {
 class ServiceDiscoveryTest : public ::testing::Test {
  public:
   ServiceDiscoveryTest()
-      : socket_factory_(new net::MockMDnsSocketFactory),
-        mdns_client_(
-            scoped_ptr<net::MDnsConnection::SocketFactory>(
-                socket_factory_)),
-        service_discovery_client_(&mdns_client_) {
-    mdns_client_.StartListening();
+      : service_discovery_client_(&mdns_client_) {
+    mdns_client_.StartListening(&socket_factory_);
   }
 
   virtual ~ServiceDiscoveryTest() {
@@ -209,7 +205,7 @@ class ServiceDiscoveryTest : public ::testing::Test {
     base::MessageLoop::current()->Quit();
   }
 
-  net::MockMDnsSocketFactory* socket_factory_;
+  net::MockMDnsSocketFactory socket_factory_;
   net::MDnsClientImpl mdns_client_;
   ServiceDiscoveryClientImpl service_discovery_client_;
   base::MessageLoop loop_;
@@ -228,8 +224,7 @@ TEST_F(ServiceDiscoveryTest, AddRemoveService) {
                                          "hello._privet._tcp.local"))
       .Times(Exactly(1));
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketPTR, sizeof(kSamplePacketPTR));
+  socket_factory_.SimulateReceive(kSamplePacketPTR, sizeof(kSamplePacketPTR));
 
   EXPECT_CALL(delegate, OnServiceUpdated(ServiceWatcher::UPDATE_REMOVED,
                                          "hello._privet._tcp.local"))
@@ -247,15 +242,13 @@ TEST_F(ServiceDiscoveryTest, DiscoverNewServices) {
 
   watcher->Start();
 
-  EXPECT_CALL(*socket_factory_, OnSendTo(_))
-      .Times(2);
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(2);
 
   watcher->DiscoverNewServices(false);
 };
 
 TEST_F(ServiceDiscoveryTest, ReadCachedServices) {
-  socket_factory_->SimulateReceive(
-      kSamplePacketPTR, sizeof(kSamplePacketPTR));
+  socket_factory_.SimulateReceive(kSamplePacketPTR, sizeof(kSamplePacketPTR));
 
   StrictMock<MockServiceWatcherClient> delegate;
 
@@ -274,8 +267,7 @@ TEST_F(ServiceDiscoveryTest, ReadCachedServices) {
 
 
 TEST_F(ServiceDiscoveryTest, ReadCachedServicesMultiple) {
-  socket_factory_->SimulateReceive(
-      kSamplePacketPTR2, sizeof(kSamplePacketPTR2));
+  socket_factory_.SimulateReceive(kSamplePacketPTR2, sizeof(kSamplePacketPTR2));
 
   StrictMock<MockServiceWatcherClient> delegate;
   scoped_ptr<ServiceWatcher> watcher =
@@ -308,8 +300,7 @@ TEST_F(ServiceDiscoveryTest, OnServiceChanged) {
                                          "hello._privet._tcp.local"))
       .Times(Exactly(1));
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketPTR, sizeof(kSamplePacketPTR));
+  socket_factory_.SimulateReceive(kSamplePacketPTR, sizeof(kSamplePacketPTR));
 
   base::MessageLoop::current()->RunUntilIdle();
 
@@ -317,11 +308,9 @@ TEST_F(ServiceDiscoveryTest, OnServiceChanged) {
                                          "hello._privet._tcp.local"))
       .Times(Exactly(1));
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketSRV, sizeof(kSamplePacketSRV));
+  socket_factory_.SimulateReceive(kSamplePacketSRV, sizeof(kSamplePacketSRV));
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketTXT, sizeof(kSamplePacketTXT));
+  socket_factory_.SimulateReceive(kSamplePacketTXT, sizeof(kSamplePacketTXT));
 
   base::MessageLoop::current()->RunUntilIdle();
 };
@@ -338,8 +327,7 @@ TEST_F(ServiceDiscoveryTest, SinglePacket) {
                                          "hello._privet._tcp.local"))
       .Times(Exactly(1));
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketPTR, sizeof(kSamplePacketPTR));
+  socket_factory_.SimulateReceive(kSamplePacketPTR, sizeof(kSamplePacketPTR));
 
   // Reset the "already updated" flag.
   base::MessageLoop::current()->RunUntilIdle();
@@ -348,11 +336,9 @@ TEST_F(ServiceDiscoveryTest, SinglePacket) {
                                          "hello._privet._tcp.local"))
       .Times(Exactly(1));
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketSRV, sizeof(kSamplePacketSRV));
+  socket_factory_.SimulateReceive(kSamplePacketSRV, sizeof(kSamplePacketSRV));
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketTXT, sizeof(kSamplePacketTXT));
+  socket_factory_.SimulateReceive(kSamplePacketTXT, sizeof(kSamplePacketTXT));
 
   base::MessageLoop::current()->RunUntilIdle();
 };
@@ -401,13 +387,11 @@ class ServiceResolverTest : public ServiceDiscoveryTest {
 };
 
 TEST_F(ServiceResolverTest, TxtAndSrvButNoA) {
-  EXPECT_CALL(*socket_factory_, OnSendTo(_))
-      .Times(4);
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(4);
 
   resolver_->StartResolving();
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketSRV, sizeof(kSamplePacketSRV));
+  socket_factory_.SimulateReceive(kSamplePacketSRV, sizeof(kSamplePacketSRV));
 
   base::MessageLoop::current()->RunUntilIdle();
 
@@ -417,13 +401,11 @@ TEST_F(ServiceResolverTest, TxtAndSrvButNoA) {
                                           metadata_expected_,
                                           net::IPAddressNumber()));
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketTXT, sizeof(kSamplePacketTXT));
+  socket_factory_.SimulateReceive(kSamplePacketTXT, sizeof(kSamplePacketTXT));
 };
 
 TEST_F(ServiceResolverTest, TxtSrvAndA) {
-  EXPECT_CALL(*socket_factory_, OnSendTo(_))
-      .Times(4);
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(4);
 
   resolver_->StartResolving();
 
@@ -433,16 +415,13 @@ TEST_F(ServiceResolverTest, TxtSrvAndA) {
                                           metadata_expected_,
                                           ip_address_expected_));
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketTXT, sizeof(kSamplePacketTXT));
+  socket_factory_.SimulateReceive(kSamplePacketTXT, sizeof(kSamplePacketTXT));
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketSRVA, sizeof(kSamplePacketSRVA));
+  socket_factory_.SimulateReceive(kSamplePacketSRVA, sizeof(kSamplePacketSRVA));
 };
 
 TEST_F(ServiceResolverTest, JustSrv) {
-  EXPECT_CALL(*socket_factory_, OnSendTo(_))
-      .Times(4);
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(4);
 
   resolver_->StartResolving();
 
@@ -452,8 +431,7 @@ TEST_F(ServiceResolverTest, JustSrv) {
                                           std::vector<std::string>(),
                                           ip_address_expected_));
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketSRVA, sizeof(kSamplePacketSRVA));
+  socket_factory_.SimulateReceive(kSamplePacketSRVA, sizeof(kSamplePacketSRVA));
 
   // TODO(noamsml): When NSEC record support is added, change this to use an
   // NSEC record.
@@ -461,13 +439,12 @@ TEST_F(ServiceResolverTest, JustSrv) {
 };
 
 TEST_F(ServiceResolverTest, WithNothing) {
-  EXPECT_CALL(*socket_factory_, OnSendTo(_))
-      .Times(4);
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(4);
 
   resolver_->StartResolving();
 
   EXPECT_CALL(*this, OnFinishedResolvingInternal(
-                        ServiceResolver::STATUS_REQUEST_TIMEOUT, _, _, _));
+                         ServiceResolver::STATUS_REQUEST_TIMEOUT, _, _, _));
 
   // TODO(noamsml): When NSEC record support is added, change this to use an
   // NSEC record.

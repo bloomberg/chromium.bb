@@ -162,7 +162,9 @@ void ServiceDiscoveryMessageHandler::InitializeMdns() {
   {
     // Temporarily redirect network code to use pre-created sockets.
     ScopedSocketFactorySetter socket_factory_setter;
-    if (!mdns_client_->StartListening()) {
+    scoped_ptr<net::MDnsSocketFactory> mdns_sockets =
+        net::MDnsSocketFactory::CreateDefault();
+    if (!mdns_client_->StartListening(mdns_sockets.get())) {
       VLOG(1) << "Failed to start MDnsClient";
       Send(new LocalDiscoveryHostMsg_Error());
       return;

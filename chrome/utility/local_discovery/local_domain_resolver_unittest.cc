@@ -60,17 +60,8 @@ const uint8 kSamplePacketAAAA[] = {
 
 class LocalDomainResolverTest : public testing::Test {
  public:
-  LocalDomainResolverTest() : socket_factory_(new net::MockMDnsSocketFactory),
-    mdns_client_(
-        scoped_ptr<net::MDnsConnection::SocketFactory>(
-            socket_factory_)) {
-  }
-
-  ~LocalDomainResolverTest() {
-  }
-
   virtual void SetUp() OVERRIDE {
-    mdns_client_.StartListening();
+    mdns_client_.StartListening(&socket_factory_);
   }
 
   std::string IPAddressToStringWithEmpty(const net::IPAddressNumber& address) {
@@ -102,7 +93,7 @@ class LocalDomainResolverTest : public testing::Test {
                     std::string address_ipv4,
                     std::string address_ipv6));
 
-  net::MockMDnsSocketFactory* socket_factory_;
+  net::MockMDnsSocketFactory socket_factory_;
   net::MDnsClientImpl mdns_client_;
   base::MessageLoop message_loop_;
 };
@@ -113,15 +104,13 @@ TEST_F(LocalDomainResolverTest, ResolveDomainA) {
       base::Bind(&LocalDomainResolverTest::AddressCallback,
                  base::Unretained(this)), &mdns_client_);
 
-  EXPECT_CALL(*socket_factory_, OnSendTo(_))
-      .Times(2);  // Twice per query
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(2);  // Twice per query
 
   resolver.Start();
 
   EXPECT_CALL(*this, AddressCallbackInternal(true, "1.2.3.4", ""));
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketA, sizeof(kSamplePacketA));
+  socket_factory_.SimulateReceive(kSamplePacketA, sizeof(kSamplePacketA));
 }
 
 TEST_F(LocalDomainResolverTest, ResolveDomainAAAA) {
@@ -130,15 +119,13 @@ TEST_F(LocalDomainResolverTest, ResolveDomainAAAA) {
       base::Bind(&LocalDomainResolverTest::AddressCallback,
                  base::Unretained(this)), &mdns_client_);
 
-  EXPECT_CALL(*socket_factory_, OnSendTo(_))
-      .Times(2);  // Twice per query
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(2);  // Twice per query
 
   resolver.Start();
 
   EXPECT_CALL(*this, AddressCallbackInternal(true, "", "a::1:2:3:4"));
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketAAAA, sizeof(kSamplePacketAAAA));
+  socket_factory_.SimulateReceive(kSamplePacketAAAA, sizeof(kSamplePacketAAAA));
 }
 
 TEST_F(LocalDomainResolverTest, ResolveDomainAnyOneAvailable) {
@@ -147,13 +134,11 @@ TEST_F(LocalDomainResolverTest, ResolveDomainAnyOneAvailable) {
       base::Bind(&LocalDomainResolverTest::AddressCallback,
                  base::Unretained(this)), &mdns_client_);
 
-  EXPECT_CALL(*socket_factory_, OnSendTo(_))
-      .Times(4);  // Twice per query
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(4);  // Twice per query
 
   resolver.Start();
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketAAAA, sizeof(kSamplePacketAAAA));
+  socket_factory_.SimulateReceive(kSamplePacketAAAA, sizeof(kSamplePacketAAAA));
 
   EXPECT_CALL(*this, AddressCallbackInternal(true, "", "a::1:2:3:4"));
 
@@ -167,18 +152,15 @@ TEST_F(LocalDomainResolverTest, ResolveDomainAnyBothAvailable) {
       base::Bind(&LocalDomainResolverTest::AddressCallback,
                  base::Unretained(this)), &mdns_client_);
 
-  EXPECT_CALL(*socket_factory_, OnSendTo(_))
-      .Times(4);  // Twice per query
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(4);  // Twice per query
 
   resolver.Start();
 
   EXPECT_CALL(*this, AddressCallbackInternal(true, "1.2.3.4", "a::1:2:3:4"));
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketAAAA, sizeof(kSamplePacketAAAA));
+  socket_factory_.SimulateReceive(kSamplePacketAAAA, sizeof(kSamplePacketAAAA));
 
-  socket_factory_->SimulateReceive(
-      kSamplePacketA, sizeof(kSamplePacketA));
+  socket_factory_.SimulateReceive(kSamplePacketA, sizeof(kSamplePacketA));
 }
 
 TEST_F(LocalDomainResolverTest, ResolveDomainNone) {
@@ -187,8 +169,7 @@ TEST_F(LocalDomainResolverTest, ResolveDomainNone) {
       base::Bind(&LocalDomainResolverTest::AddressCallback,
                  base::Unretained(this)), &mdns_client_);
 
-  EXPECT_CALL(*socket_factory_, OnSendTo(_))
-      .Times(4);  // Twice per query
+  EXPECT_CALL(socket_factory_, OnSendTo(_)).Times(4);  // Twice per query
 
   resolver.Start();
 

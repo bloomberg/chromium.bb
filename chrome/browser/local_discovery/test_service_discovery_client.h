@@ -38,7 +38,7 @@ class TestServiceDiscoveryClient : public ServiceDiscoverySharedClient {
   ~TestServiceDiscoveryClient();
 
   // Owned by mdns_client_impl_.
-  net::MockMDnsSocketFactory* mock_socket_factory_;
+  net::MockMDnsSocketFactory mock_socket_factory_;
   scoped_ptr<net::MDnsClient> mdns_client_;
   scoped_ptr<ServiceDiscoveryClient> service_discovery_client_impl_;
 };

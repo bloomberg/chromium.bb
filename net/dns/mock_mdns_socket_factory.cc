@@ -12,31 +12,24 @@ using testing::Invoke;
 
 namespace net {
 
-MockMDnsDatagramServerSocket::MockMDnsDatagramServerSocket() {
+MockMDnsDatagramServerSocket::MockMDnsDatagramServerSocket(
+    AddressFamily address_family) {
+  local_address_ = GetMDnsIPEndPoint(address_family);
 }
 
 MockMDnsDatagramServerSocket::~MockMDnsDatagramServerSocket() {
 }
 
 int MockMDnsDatagramServerSocket::SendTo(IOBuffer* buf, int buf_len,
-                                     const IPEndPoint& address,
-                                     const CompletionCallback& callback) {
-    return SendToInternal(std::string(buf->data(), buf_len), address.ToString(),
-                          callback);
+                                         const IPEndPoint& address,
+                                         const CompletionCallback& callback) {
+  return SendToInternal(std::string(buf->data(), buf_len), address.ToString(),
+                        callback);
 }
 
-int MockMDnsDatagramServerSocket::Listen(const IPEndPoint& address) {
-    return ListenInternal(address.ToString());
-}
-
-int MockMDnsDatagramServerSocket::JoinGroup(
-    const IPAddressNumber& group_address) const {
-  return JoinGroupInternal(IPAddressToString(group_address));
-}
-
-int MockMDnsDatagramServerSocket::LeaveGroup(
-    const IPAddressNumber& group_address) const {
-  return LeaveGroupInternal(IPAddressToString(group_address));
+int MockMDnsDatagramServerSocket::GetLocalAddress(IPEndPoint* address) const {
+  *address = local_address_;
+  return OK;
 }
 
 void MockMDnsDatagramServerSocket::SetResponsePacket(
@@ -67,9 +60,17 @@ MockMDnsSocketFactory::MockMDnsSocketFactory() {
 MockMDnsSocketFactory::~MockMDnsSocketFactory() {
 }
 
-scoped_ptr<DatagramServerSocket> MockMDnsSocketFactory::CreateSocket() {
-  scoped_ptr<MockMDnsDatagramServerSocket> new_socket(
-      new testing:: NiceMock<MockMDnsDatagramServerSocket>);
+void MockMDnsSocketFactory::CreateSockets(
+    ScopedVector<DatagramServerSocket>* sockets) {
+  CreateSocket(ADDRESS_FAMILY_IPV4, sockets);
+  CreateSocket(ADDRESS_FAMILY_IPV6, sockets);
+}
+
+void MockMDnsSocketFactory::CreateSocket(
+    AddressFamily address_family,
+    ScopedVector<DatagramServerSocket>* sockets) {
+  scoped_ptr<testing::NiceMock<MockMDnsDatagramServerSocket> > new_socket(
+      new testing::NiceMock<MockMDnsDatagramServerSocket>(address_family));
 
   ON_CALL(*new_socket, SendToInternal(_, _, _))
       .WillByDefault(Invoke(
@@ -81,7 +82,7 @@ scoped_ptr<DatagramServerSocket> MockMDnsSocketFactory::CreateSocket() {
           this,
           &MockMDnsSocketFactory::RecvFromInternal));
 
-  return new_socket.PassAs<DatagramServerSocket>();
+  sockets->push_back(new_socket.release());
 }
 
 void MockMDnsSocketFactory::SimulateReceive(const uint8* packet, int size) {

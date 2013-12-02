@@ -14,11 +14,11 @@ namespace net {
 
 class MockMDnsDatagramServerSocket : public DatagramServerSocket {
  public:
-  MockMDnsDatagramServerSocket();
+  explicit MockMDnsDatagramServerSocket(AddressFamily address_family);
   ~MockMDnsDatagramServerSocket();
 
   // DatagramServerSocket implementation:
-  int Listen(const IPEndPoint& address);
+  MOCK_METHOD1(Listen, int(const IPEndPoint& address));
 
   MOCK_METHOD1(ListenInternal, int(const std::string& address));
 
@@ -26,8 +26,8 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
                              IPEndPoint* address,
                              const CompletionCallback& callback));
 
-  int SendTo(IOBuffer* buf, int buf_len, const IPEndPoint& address,
-             const CompletionCallback& callback);
+  virtual int SendTo(IOBuffer* buf, int buf_len, const IPEndPoint& address,
+                     const CompletionCallback& callback) OVERRIDE;
 
   MOCK_METHOD3(SendToInternal, int(const std::string& packet,
                                    const std::string address,
@@ -39,19 +39,15 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
   MOCK_METHOD0(Close, void());
 
   MOCK_CONST_METHOD1(GetPeerAddress, int(IPEndPoint* address));
-  MOCK_CONST_METHOD1(GetLocalAddress, int(IPEndPoint* address));
+  virtual int GetLocalAddress(IPEndPoint* address) const OVERRIDE;
   MOCK_CONST_METHOD0(NetLog, const BoundNetLog&());
 
   MOCK_METHOD0(AllowAddressReuse, void());
   MOCK_METHOD0(AllowBroadcast, void());
 
-  int JoinGroup(const IPAddressNumber& group_address) const;
+  MOCK_CONST_METHOD1(JoinGroup, int(const IPAddressNumber& group_address));
 
-  MOCK_CONST_METHOD1(JoinGroupInternal, int(const std::string& group));
-
-  int LeaveGroup(const IPAddressNumber& group_address) const;
-
-  MOCK_CONST_METHOD1(LeaveGroupInternal, int(const std::string& group));
+  MOCK_CONST_METHOD1(LeaveGroup, int(const IPAddressNumber& address));
 
   MOCK_METHOD1(SetMulticastTimeToLive, int(int ttl));
 
@@ -69,15 +65,16 @@ class MockMDnsDatagramServerSocket : public DatagramServerSocket {
 
  private:
   std::string response_packet_;
+  IPEndPoint local_address_;
 };
 
-class MockMDnsSocketFactory : public MDnsConnection::SocketFactory {
+class MockMDnsSocketFactory : public MDnsSocketFactory {
  public:
   MockMDnsSocketFactory();
-
   virtual ~MockMDnsSocketFactory();
 
-  virtual scoped_ptr<DatagramServerSocket> CreateSocket() OVERRIDE;
+  virtual void CreateSockets(
+      ScopedVector<DatagramServerSocket>* sockets) OVERRIDE;
 
   void SimulateReceive(const uint8* packet, int size);
 
@@ -92,6 +89,9 @@ class MockMDnsSocketFactory : public MDnsConnection::SocketFactory {
   int RecvFromInternal(IOBuffer* buffer, int size,
                        IPEndPoint* address,
                        const CompletionCallback& callback);
+
+  void CreateSocket(AddressFamily address_family,
+                    ScopedVector<DatagramServerSocket>* sockets);
 
   scoped_refptr<IOBuffer> recv_buffer_;
   int recv_buffer_size_;

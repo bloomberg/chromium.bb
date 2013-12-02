@@ -16,14 +16,12 @@ TestServiceDiscoveryClient::~TestServiceDiscoveryClient() {
 }
 
 void TestServiceDiscoveryClient::Start() {
-  mock_socket_factory_ = new net::MockMDnsSocketFactory();
-  mdns_client_.reset(new net::MDnsClientImpl(
-      scoped_ptr<net::MDnsConnection::SocketFactory>(mock_socket_factory_)));
+  mdns_client_.reset(new net::MDnsClientImpl());
   service_discovery_client_impl_.reset(new ServiceDiscoveryClientImpl(
       mdns_client_.get()));
-  mdns_client_->StartListening();
+  mdns_client_->StartListening(&mock_socket_factory_);
 
-  EXPECT_CALL(*mock_socket_factory_, OnSendTo(testing::_))
+  EXPECT_CALL(mock_socket_factory_, OnSendTo(testing::_))
       .Times(testing::AnyNumber())
       .WillRepeatedly(testing::Invoke(this,
                                       &TestServiceDiscoveryClient::OnSendTo));
@@ -54,7 +52,7 @@ TestServiceDiscoveryClient::CreateLocalDomainResolver(
 
 void TestServiceDiscoveryClient::SimulateReceive(const uint8* packet,
                                                  int size) {
-  mock_socket_factory_->SimulateReceive(packet, size);
+  mock_socket_factory_.SimulateReceive(packet, size);
 }
 
 }  // namespace local_discovery
