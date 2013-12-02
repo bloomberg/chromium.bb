@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_http_handler.h"
@@ -23,6 +24,7 @@
 #include "grit/shell_resources.h"
 #include "net/socket/tcp_listen_socket.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "webkit/common/user_agent/user_agent_util.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/android/devtools_auth.h"
@@ -35,6 +37,10 @@ using content::WebContents;
 
 namespace {
 
+#if defined(OS_ANDROID)
+const char kFrontEndURL[] =
+    "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/devtools.html";
+#endif
 const char kTargetTypePage[] = "page";
 
 net::StreamListenSocketFactory* CreateSocketFactory() {
@@ -135,10 +141,13 @@ namespace content {
 
 ShellDevToolsDelegate::ShellDevToolsDelegate(BrowserContext* browser_context)
     : browser_context_(browser_context) {
-  // Note that Content Shell always used bundled DevTools frontend,
-  // even on Android, because the shell is used for running layout tests.
+  std::string frontend_url;
+#if defined(OS_ANDROID)
+  frontend_url = base::StringPrintf(kFrontEndURL,
+                                    webkit_glue::GetWebKitRevision().c_str());
+#endif
   devtools_http_handler_ =
-      DevToolsHttpHandler::Start(CreateSocketFactory(), std::string(), this);
+      DevToolsHttpHandler::Start(CreateSocketFactory(), frontend_url, this);
 }
 
 ShellDevToolsDelegate::~ShellDevToolsDelegate() {
@@ -150,12 +159,20 @@ void ShellDevToolsDelegate::Stop() {
 }
 
 std::string ShellDevToolsDelegate::GetDiscoveryPageHTML() {
+#if defined(OS_ANDROID)
+  return std::string();
+#else
   return ResourceBundle::GetSharedInstance().GetRawDataResource(
       IDR_CONTENT_SHELL_DEVTOOLS_DISCOVERY_PAGE).as_string();
+#endif
 }
 
 bool ShellDevToolsDelegate::BundlesFrontendResources() {
+#if defined(OS_ANDROID)
+  return false;
+#else
   return true;
+#endif
 }
 
 base::FilePath ShellDevToolsDelegate::GetDebugFrontendDir() {

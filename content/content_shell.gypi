@@ -314,7 +314,6 @@
       'target_name': 'content_shell_pak',
       'type': 'none',
       'dependencies': [
-        'browser/devtools/devtools_resources.gyp:devtools_resources',
         'content_resources.gyp:content_resources',
         'content_shell_resources',
         '<(DEPTH)/net/net.gyp:net_resources',
@@ -327,6 +326,11 @@
         ['OS!="android" and OS!="ios"', {
           'dependencies': [
             'browser/tracing/tracing_resources.gyp:tracing_resources',
+          ],
+        }],
+        ['OS!="android"', {
+          'dependencies': [
+            'browser/devtools/devtools_resources.gyp:devtools_resources',
           ],
         }],
       ],
@@ -346,7 +350,6 @@
               '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/webui_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/ui/ui_strings/ui_strings_en-US.pak',
-              '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.pak',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
               '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
@@ -360,6 +363,11 @@
                      '<@(pak_inputs)'],
           'conditions': [
             ['OS!="android"', {
+              'variables': {
+                'pak_inputs': [
+                  '<(SHARED_INTERMEDIATE_DIR)/webkit/devtools_resources.pak',
+                ],
+              },
               'outputs': [
                 '<(PRODUCT_DIR)/content_shell.pak',
               ],
