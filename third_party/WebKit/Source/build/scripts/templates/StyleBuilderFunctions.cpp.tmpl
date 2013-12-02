@@ -157,18 +157,6 @@ namespace WebCore {
 {{ apply_auto("CSSPropertyWidows") }}
 {{ apply_auto("CSSPropertyZIndex") }}
 
-{%- macro apply_value_border_image(property_id) %}
-{{ declare_value_function(property_id) }}
-{
-    {%- set property = properties[property_id] %}
-    NinePieceImage image;
-    state.styleMap().mapNinePieceImage(state.style(), {{property_id}}, value, image);
-    {{ set_value(property) }}(image);
-}
-{%- endmacro %}
-
-{{ apply_value_border_image("CSSPropertyWebkitBorderImage") }}
-
 {%- macro apply_border_image_modifier(property_id, modifier_type) %}
 {%- set is_mask_box = "MaskBox" in property_id %}
 {%- set getter = "maskBoxImage" if is_mask_box else "borderImage" %}
