@@ -1208,6 +1208,9 @@
     # Turns on the i18n support in V8.
     'v8_enable_i18n_support': 1,
 
+    # Don't use deprecated V8 APIs.
+    'v8_deprecation_warnings': 1,
+
     # Use the chromium skia by default.
     'use_system_skia%': '0',
 
@@ -2007,6 +2010,9 @@
       'ANGLE_DX11',
     ],
     'conditions': [
+      ['v8_deprecation_warnings==1', {
+        'defines': ['V8_DEPRECATION_WARNINGS',],
+      }],
       ['(OS=="mac" or OS=="ios") and asan==1', {
         'dependencies': [
           '<(DEPTH)/build/mac/asan.gyp:asan_dynamic_runtime',
