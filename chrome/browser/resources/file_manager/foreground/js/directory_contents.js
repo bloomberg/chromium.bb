@@ -599,6 +599,10 @@ DirectoryContents.prototype.onNewEntries_ = function(entries) {
   var entriesFiltered = [].filter.call(
       entries, this.context_.fileFilter.filter.bind(this.context_.fileFilter));
 
+  // Update the filelist without waiting the metadata.
+  this.fileList_.push.apply(this.fileList_, entriesFiltered);
+  cr.dispatchSimpleEvent(this, 'scan-updated');
+
   // Because the prefetchMetadata can be slow, throttling by splitting entries
   // into smaller chunks to reduce UI latency.
   // TODO(hidehiko,mtomasz): This should be handled in MetadataCache.
@@ -613,7 +617,6 @@ DirectoryContents.prototype.onNewEntries_ = function(entries) {
           return;
         }
 
-        this.fileList_.push.apply(this.fileList_, chunk);
         cr.dispatchSimpleEvent(this, 'scan-updated');
         callback();
       }.bind(this));
