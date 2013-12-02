@@ -37,10 +37,6 @@
 #include "client/minidump_file_writer-inl.h"
 #include "common/scoped_ptr.h"
 
-#if !defined(HAS_ARM_SUPPORT) && !defined(HAS_ARM64_SUPPORT)
-#error "This file should only be compiled for ARM processors"
-#endif
-
 #if defined(HAS_ARM_SUPPORT) && defined(HAS_ARM64_SUPPORT)
 #error "This file should be compiled for only one architecture at a time"
 #endif
@@ -83,7 +79,7 @@ bool IosExceptionMinidumpGenerator::WriteCrashingContext(
 #elif defined(HAS_ARM64_SUPPORT)
   return WriteCrashingContextARM64(register_location);
 #else
-#error "This file should only be compiled on ARM processors"
+  assert(false);
   return false;
 #endif
 }
@@ -134,6 +130,7 @@ uintptr_t IosExceptionMinidumpGenerator::GetLRFromException() {
 
 bool IosExceptionMinidumpGenerator::WriteExceptionStream(
     MDRawDirectory *exception_stream) {
+#if defined(HAS_ARM_SUPPORT) || defined(HAS_ARM64_SUPPORT)
   TypedMDRVA<MDRawExceptionStream> exception(&writer_);
 
   if (!exception.Allocate())
@@ -154,10 +151,14 @@ bool IosExceptionMinidumpGenerator::WriteExceptionStream(
 
   exception_ptr->exception_record.exception_address = GetPCFromException();
   return true;
+#else
+  return MinidumpGenerator::WriteExceptionStream(exception_stream);
+#endif
 }
 
 bool IosExceptionMinidumpGenerator::WriteThreadStream(mach_port_t thread_id,
                                                       MDRawThread *thread) {
+#if defined(HAS_ARM_SUPPORT) || defined(HAS_ARM64_SUPPORT)
   if (pthread_mach_thread_np(pthread_self()) != thread_id)
     return MinidumpGenerator::WriteThreadStream(thread_id, thread);
 
@@ -196,6 +197,9 @@ bool IosExceptionMinidumpGenerator::WriteThreadStream(mach_port_t thread_id,
 
   thread->thread_id = thread_id;
   return true;
+#else
+  return MinidumpGenerator::WriteThreadStream(thread_id, thread);
+#endif
 }
 
 }  // namespace google_breakpad
