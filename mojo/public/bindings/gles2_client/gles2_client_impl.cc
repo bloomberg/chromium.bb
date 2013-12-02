@@ -19,10 +19,10 @@ GLES2Delegate::~GLES2Delegate() {
 }
 
 void GLES2Delegate::DidCreateContext(
-    GLES2* gl, uint32_t width, uint32_t height) {
+    GLES2ClientImpl* gl, uint32_t width, uint32_t height) {
 }
 
-void GLES2Delegate::ContextLost(GLES2* gl) {
+void GLES2Delegate::ContextLost(GLES2ClientImpl* gl) {
 }
 
 GLES2ClientImpl::GLES2ClientImpl(GLES2Delegate* delegate,
@@ -34,6 +34,7 @@ GLES2ClientImpl::GLES2ClientImpl(GLES2Delegate* delegate,
 }
 
 GLES2ClientImpl::~GLES2ClientImpl() {
+  gl_->Destroy();
 }
 
 void GLES2ClientImpl::Initialize() {
@@ -48,6 +49,10 @@ void GLES2ClientImpl::Terminate() {
   g_gles2_initialized = false;
 }
 
+void GLES2ClientImpl::SwapBuffers() {
+  gles2::GetGLContext()->SwapBuffers();
+}
+
 void GLES2ClientImpl::DidCreateContext(
     uint64_t encoded, uint32_t width, uint32_t height) {
   // Ack, Hans! It's the giant hack.
@@ -60,11 +65,11 @@ void GLES2ClientImpl::DidCreateContext(
           static_cast<uintptr_t>(encoded));
   gles2::SetGLContext(gl_interface);
 
-  delegate_->DidCreateContext(gl(), width, height);
+  delegate_->DidCreateContext(this, width, height);
 }
 
 void GLES2ClientImpl::ContextLost() {
-  delegate_->ContextLost(gl());
+  delegate_->ContextLost(this);
 }
 
 }  // mojo

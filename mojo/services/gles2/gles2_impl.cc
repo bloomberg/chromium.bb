@@ -19,10 +19,8 @@ GLES2Impl::GLES2Impl(ScopedMessagePipeHandle client)
 GLES2Impl::~GLES2Impl() {
 }
 
-void GLES2Impl::SwapBuffers() {
-  if (!gl_context_)
-    return;
-  gl_context_->GetImplementation()->SwapBuffers();
+void GLES2Impl::Destroy() {
+  gl_context_.reset();
 }
 
 void GLES2Impl::CreateContext(gfx::AcceleratedWidget widget,

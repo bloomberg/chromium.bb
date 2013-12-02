@@ -19,15 +19,15 @@ class SampleGLES2Delegate : public GLES2Delegate {
 
  private:
   virtual void DidCreateContext(
-      GLES2* gl, uint32_t width, uint32_t height) MOJO_OVERRIDE;
-  virtual void ContextLost(GLES2* gl) MOJO_OVERRIDE;
+      GLES2ClientImpl* gl, uint32_t width, uint32_t height) MOJO_OVERRIDE;
+  virtual void ContextLost(GLES2ClientImpl* gl) MOJO_OVERRIDE;
 
   void Draw();
 
   base::Time last_time_;
   base::RepeatingTimer<SampleGLES2Delegate> timer_;
-  GLES2* gl_;
   SpinningCube cube_;
+  GLES2ClientImpl* gl_;
 };
 
 }  // namespace examples

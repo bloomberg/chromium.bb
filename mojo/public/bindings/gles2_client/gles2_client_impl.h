@@ -9,12 +9,14 @@
 #include "mojom/gles2.h"
 
 namespace mojo {
+class GLES2ClientImpl;
 
 class GLES2Delegate {
  public:
   virtual ~GLES2Delegate();
-  virtual void DidCreateContext(GLES2* gl, uint32_t width, uint32_t height);
-  virtual void ContextLost(GLES2* gl);
+  virtual void DidCreateContext(
+      GLES2ClientImpl* gl, uint32_t width, uint32_t height);
+  virtual void ContextLost(GLES2ClientImpl* gl);
 };
 
 class GLES2ClientImpl : public GLES2ClientStub {
@@ -26,9 +28,7 @@ class GLES2ClientImpl : public GLES2ClientStub {
   static void Initialize();
   static void Terminate();
 
-  GLES2* gl() {
-    return gl_.get();
-  }
+  void SwapBuffers();
 
  private:
   virtual void DidCreateContext(

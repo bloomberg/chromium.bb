@@ -19,7 +19,7 @@ SampleGLES2Delegate::~SampleGLES2Delegate() {
 }
 
 void SampleGLES2Delegate::DidCreateContext(
-    GLES2* gl, uint32_t width, uint32_t height) {
+    GLES2ClientImpl* gl, uint32_t width, uint32_t height) {
   gl_ = gl;
   cube_.Init(width, height);
   last_time_ = base::Time::Now();
@@ -36,9 +36,9 @@ void SampleGLES2Delegate::Draw() {
   gl_->SwapBuffers();
 }
 
-void SampleGLES2Delegate::ContextLost(GLES2* gl) {
-  timer_.Stop();
+void SampleGLES2Delegate::ContextLost(GLES2ClientImpl* gl) {
   gl_ = NULL;
+  timer_.Stop();
 }
 
 }  // namespace examples

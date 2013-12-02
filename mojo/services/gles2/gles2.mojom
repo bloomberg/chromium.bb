@@ -6,7 +6,7 @@ module mojo {
 
 [Peer=GLES2Client]
 interface GLES2 {
-  void SwapBuffers();
+  void Destroy();
 };
 
 [Peer=GLES2]

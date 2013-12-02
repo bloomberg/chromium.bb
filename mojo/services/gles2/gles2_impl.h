@@ -24,7 +24,7 @@ class GLES2Impl : public GLES2Stub {
   explicit GLES2Impl(ScopedMessagePipeHandle client);
   virtual ~GLES2Impl();
 
-  virtual void SwapBuffers() OVERRIDE;
+  virtual void Destroy() OVERRIDE;
 
   void CreateContext(gfx::AcceleratedWidget widget, const gfx::Size& size);
 

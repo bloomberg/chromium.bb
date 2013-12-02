@@ -17,6 +17,7 @@ NativeViewportClientImpl::NativeViewportClientImpl(ScopedMessagePipeHandle pipe)
 }
 
 NativeViewportClientImpl::~NativeViewportClientImpl() {
+  service_->Close();
 }
 
 void NativeViewportClientImpl::Open() {
