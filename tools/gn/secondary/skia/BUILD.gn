@@ -65,7 +65,6 @@ skia_chrome_sources = [
   "ext/bitmap_platform_device.h",
   "ext/bitmap_platform_device_android.cc",
   "ext/bitmap_platform_device_android.h",
-  "ext/bitmap_platform_device_data.h",
   "ext/bitmap_platform_device_linux.cc",
   "ext/bitmap_platform_device_linux.h",
   "ext/bitmap_platform_device_mac.cc",

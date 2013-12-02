@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "skia/ext/bitmap_platform_device_cairo.h"
-#include "skia/ext/bitmap_platform_device_data.h"
 #include "skia/ext/platform_canvas.h"
 
 #if defined(OS_OPENBSD)
@@ -15,6 +14,42 @@
 namespace skia {
 
 namespace {
+
+// CairoSurfacePixelRef is an SkPixelRef that is backed by a cairo surface.
+class SK_API CairoSurfacePixelRef : public SkPixelRef {
+ public:
+  // The constructor takes ownership of the passed-in surface.
+  explicit CairoSurfacePixelRef(cairo_surface_t* surface);
+  virtual ~CairoSurfacePixelRef();
+
+  SK_DECLARE_UNFLATTENABLE_OBJECT();
+
+ protected:
+  virtual void* onLockPixels(SkColorTable**) SK_OVERRIDE;
+  virtual void onUnlockPixels() SK_OVERRIDE;
+
+ private:
+  cairo_surface_t* surface_;
+};
+
+CairoSurfacePixelRef::CairoSurfacePixelRef(cairo_surface_t* surface)
+    : surface_(surface) {
+}
+
+CairoSurfacePixelRef::~CairoSurfacePixelRef() {
+  if (surface_)
+    cairo_surface_destroy(surface_);
+}
+
+void* CairoSurfacePixelRef::onLockPixels(SkColorTable** color_table) {
+  *color_table = NULL;
+  return cairo_image_surface_get_data(surface_);
+}
+
+void CairoSurfacePixelRef::onUnlockPixels() {
+  // Nothing to do.
+  return;
+}
 
 void LoadMatrixToContext(cairo_t* context, const SkMatrix& matrix) {
   cairo_matrix_t cairo_matrix;
@@ -41,20 +76,7 @@ void LoadClipToContext(cairo_t* context, const SkRegion& clip) {
 
 }  // namespace
 
-BitmapPlatformDevice::BitmapPlatformDeviceData::BitmapPlatformDeviceData(
-    cairo_surface_t* surface)
-    : surface_(surface),
-      config_dirty_(true),
-      transform_(SkMatrix::I()) {  // Want to load the config next time.
-  bitmap_context_ = cairo_create(surface);
-}
-
-BitmapPlatformDevice::BitmapPlatformDeviceData::~BitmapPlatformDeviceData() {
-  cairo_destroy(bitmap_context_);
-  cairo_surface_destroy(surface_);
-}
-
-void BitmapPlatformDevice::BitmapPlatformDeviceData::SetMatrixClip(
+void BitmapPlatformDevice::SetMatrixClip(
     const SkMatrix& transform,
     const SkRegion& region) {
   transform_ = transform;
@@ -62,18 +84,18 @@ void BitmapPlatformDevice::BitmapPlatformDeviceData::SetMatrixClip(
   config_dirty_ = true;
 }
 
-void BitmapPlatformDevice::BitmapPlatformDeviceData::LoadConfig() {
-  if (!config_dirty_ || !bitmap_context_)
+void BitmapPlatformDevice::LoadConfig() {
+  if (!config_dirty_ || !cairo_)
     return;  // Nothing to do.
   config_dirty_ = false;
 
   // Load the identity matrix since this is what our clip is relative to.
   cairo_matrix_t cairo_matrix;
   cairo_matrix_init_identity(&cairo_matrix);
-  cairo_set_matrix(bitmap_context_, &cairo_matrix);
+  cairo_set_matrix(cairo_, &cairo_matrix);
 
-  LoadClipToContext(bitmap_context_, clip_region_);
-  LoadMatrixToContext(bitmap_context_, transform_);
+  LoadClipToContext(cairo_, clip_region_);
+  LoadMatrixToContext(cairo_, transform_);
 }
 
 // We use this static factory function instead of the regular constructor so
@@ -91,11 +113,11 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height,
                    cairo_image_surface_get_stride(surface),
                    is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
-  bitmap.setPixels(cairo_image_surface_get_data(surface));
+  RefPtr<SkPixelRef> pixel_ref = AdoptRef(new CairoSurfacePixelRef(surface));
+  bitmap.setPixelRef(pixel_ref.get());
 
   // The device object will take ownership of the graphics context.
-  return new BitmapPlatformDevice
-      (bitmap, new BitmapPlatformDeviceData(surface));
+  return new BitmapPlatformDevice(bitmap, surface);
 }
 
 BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
@@ -136,13 +158,16 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
 // data. Therefore, we do not transfer ownership to the SkBitmapDevice's bitmap.
 BitmapPlatformDevice::BitmapPlatformDevice(
     const SkBitmap& bitmap,
-    BitmapPlatformDeviceData* data)
+    cairo_surface_t* surface)
     : SkBitmapDevice(bitmap),
-      data_(data) {
+      cairo_(cairo_create(surface)),
+      config_dirty_(true),
+      transform_(SkMatrix::I()) {  // Want to load the config next time.
   SetPlatformDevice(this, this);
 }
 
 BitmapPlatformDevice::~BitmapPlatformDevice() {
+  cairo_destroy(cairo_);
 }
 
 SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
@@ -153,15 +178,14 @@ SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
 }
 
 cairo_t* BitmapPlatformDevice::BeginPlatformPaint() {
-  data_->LoadConfig();
-  cairo_t* cairo = data_->bitmap_context();
-  cairo_surface_t* surface = cairo_get_target(cairo);
+  LoadConfig();
+  cairo_surface_t* surface = cairo_get_target(cairo_);
   // Tell cairo to flush anything it has pending.
   cairo_surface_flush(surface);
   // Tell Cairo that we (probably) modified (actually, will modify) its pixel
   // buffer directly.
   cairo_surface_mark_dirty(surface);
-  return cairo;
+  return cairo_;
 }
 
 void BitmapPlatformDevice::DrawToNativeContext(
@@ -173,7 +197,7 @@ void BitmapPlatformDevice::DrawToNativeContext(
 void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,
                                          const SkRegion& region,
                                          const SkClipStack&) {
-  data_->SetMatrixClip(transform, region);
+  SetMatrixClip(transform, region);
 }
 
 // PlatformCanvas impl
@@ -197,22 +221,17 @@ bool PlatformBitmap::Allocate(int width, int height, bool is_opaque) {
   int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
   bitmap_.setConfig(SkBitmap::kARGB_8888_Config, width, height, stride,
                     is_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType);
-  if (!bitmap_.allocPixels())  // Using the default allocator.
-    return false;
 
-  cairo_surface_t* surf = cairo_image_surface_create_for_data(
-      reinterpret_cast<unsigned char*>(bitmap_.getPixels()),
+  cairo_surface_t* surf = cairo_image_surface_create(
       CAIRO_FORMAT_ARGB32,
       width,
-      height,
-      stride);
+      height);
   if (cairo_surface_status(surf) != CAIRO_STATUS_SUCCESS) {
     cairo_surface_destroy(surf);
     return false;
   }
-
-  surface_ = cairo_create(surf);
-  cairo_surface_destroy(surf);
+  RefPtr<SkPixelRef> pixel_ref = AdoptRef(new CairoSurfacePixelRef(surf));
+  bitmap_.setPixelRef(pixel_ref.get());
   return true;
 }
 

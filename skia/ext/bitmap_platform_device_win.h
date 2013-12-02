@@ -19,13 +19,11 @@ namespace skia {
 // This pixel data is provided to the bitmap that the device contains so that it
 // can be shared.
 //
-// The device owns the pixel data, when the device goes away, the pixel data
-// also becomes invalid. THIS IS DIFFERENT THAN NORMAL SKIA which uses
-// reference counting for the pixel data. In normal Skia, you could assign
-// another bitmap to this device's bitmap and everything will work properly.
-// For us, that other bitmap will become invalid as soon as the device becomes
-// invalid, which may lead to subtle bugs. Therefore, DO NOT ASSIGN THE
-// DEVICE'S PIXEL DATA TO ANOTHER BITMAP, make sure you copy instead.
+// The GDI bitmap created for drawing is actually owned by a
+// PlatformBitmapPixelRef, and stored in an SkBitmap via the normal skia
+// SkPixelRef refcounting mechanism. In this way, the GDI bitmap can outlive
+// the device created to draw into it. So it is safe to call accessBitmap() on
+// the device, and retain the returned SkBitmap.
 class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
  public:
   // Factory function. is_opaque should be set if the caller knows the bitmap
@@ -75,17 +73,43 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
                                                  Usage usage) OVERRIDE;
 
  private:
-  // Reference counted data that can be shared between multiple devices. This
-  // allows copy constructors and operator= for devices to work properly. The
-  // bitmaps used by the base device class are already refcounted and copyable.
-  class BitmapPlatformDeviceData;
-
   // Private constructor.
-  BitmapPlatformDevice(const skia::RefPtr<BitmapPlatformDeviceData>& data,
-                       const SkBitmap& bitmap);
+  BitmapPlatformDevice(HBITMAP hbitmap, const SkBitmap& bitmap);
 
-  // Data associated with this device, guaranteed non-null.
-  skia::RefPtr<BitmapPlatformDeviceData> data_;
+  // Bitmap into which the drawing will be done. This bitmap not owned by this
+  // class, but by the BitmapPlatformPixelRef inside the device's SkBitmap.
+  // It's only stored here in order to lazy-create the DC (below).
+  HBITMAP hbitmap_;
+
+  // Lazily-created DC used to draw into the bitmap; see GetBitmapDC().
+  HDC hdc_;
+
+  // True when there is a transform or clip that has not been set to the
+  // context.  The context is retrieved for every text operation, and the
+  // transform and clip do not change as much. We can save time by not loading
+  // the clip and transform for every one.
+  bool config_dirty_;
+
+  // Translation assigned to the context: we need to keep track of this
+  // separately so it can be updated even if the context isn't created yet.
+  SkMatrix transform_;
+
+  // The current clipping region.
+  SkRegion clip_region_;
+
+  // Create/destroy hdc_, which is the memory DC for our bitmap data.
+  HDC GetBitmapDC();
+  void ReleaseBitmapDC();
+  bool IsBitmapDCCreated() const;
+
+  // Sets the transform and clip operations. This will not update the DC,
+  // but will mark the config as dirty. The next call of LoadConfig will
+  // pick up these changes.
+  void SetMatrixClip(const SkMatrix& transform, const SkRegion& region);
+
+  // Loads the current transform and clip into the context. Can be called even
+  // when |hbitmap_| is NULL (will be a NOP).
+  void LoadConfig();
 
 #ifdef SK_DEBUG
   int begin_paint_count_;

@@ -57,9 +57,6 @@ namespace skia {
 // case we'll probably create the buffer from a precreated region of memory.
 // -----------------------------------------------------------------------------
 class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
-  // A reference counted cairo surface
-  class BitmapPlatformDeviceData;
-
  public:
   // Create a BitmapPlatformDeviceLinux from an already constructed bitmap;
   // you should probably be using Create(). This may become private later if
@@ -67,7 +64,7 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
   // the Windows and Mac versions of this class do.
   //
   // This object takes ownership of @data.
-  BitmapPlatformDevice(const SkBitmap& other, BitmapPlatformDeviceData* data);
+  BitmapPlatformDevice(const SkBitmap& other, cairo_surface_t* surface);
   virtual ~BitmapPlatformDevice();
 
   // Constructs a device with size |width| * |height| with contents initialized
@@ -104,7 +101,29 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
   static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,
                                       cairo_surface_t* surface);
 
-  scoped_refptr<BitmapPlatformDeviceData> data_;
+  // Sets the transform and clip operations. This will not update the Cairo
+  // context, but will mark the config as dirty. The next call of LoadConfig
+  // will pick up these changes.
+  void SetMatrixClip(const SkMatrix& transform, const SkRegion& region);
+
+  // Loads the current transform and clip into the context.
+  void LoadConfig();
+
+  // Graphics context used to draw into the surface.
+  cairo_t* cairo_;
+
+  // True when there is a transform or clip that has not been set to the
+  // context.  The context is retrieved for every text operation, and the
+  // transform and clip do not change as much. We can save time by not loading
+  // the clip and transform for every one.
+  bool config_dirty_;
+
+  // Translation assigned to the context: we need to keep track of this
+  // separately so it can be updated even if the context isn't created yet.
+  SkMatrix transform_;
+
+  // The current clipping
+  SkRegion clip_region_;
 
   DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);
 };

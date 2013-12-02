@@ -28,7 +28,6 @@
     'ext/bitmap_platform_device.h',
     'ext/bitmap_platform_device_cairo.cc',
     'ext/bitmap_platform_device_cairo.h',
-    'ext/bitmap_platform_device_data.h',
     'ext/bitmap_platform_device_mac.cc',
     'ext/bitmap_platform_device_mac.h',
     'ext/bitmap_platform_device_skia.cc',
