@@ -208,8 +208,8 @@ private:
 
     virtual bool isTrackingRepaints() const OVERRIDE;
 
-    // Whether the given RL needs to paint into its own separate backing (and hence would need its own CompositedLayerMapping).
-    bool needsOwnBacking(const RenderLayer*) const;
+    // Whether the given RL needs a compositing layer.
+    bool needsToBeComposited(const RenderLayer*) const;
     // Whether the layer could ever be composited.
     bool canBeComposited(const RenderLayer*) const;
 
@@ -237,10 +237,7 @@ private:
     static void finishCompositingUpdateForFrameTree(Frame*);
 
     // Returns true if any layer's compositing changed
-    void computeCompositingRequirements(RenderLayer* ancestorLayer, RenderLayer*, OverlapMap*, struct CompositingRecursionData&, bool& descendantHas3DTransform, Vector<RenderLayer*>& unclippedDescendants);
-
-    // Defines which RenderLayers will paint into which composited backings, by allocating and destroying CompositedLayerMappings as needed.
-    void assignLayersToBackings(RenderLayer*, bool& layersChanged);
+    void computeCompositingRequirements(RenderLayer* ancestorLayer, RenderLayer*, OverlapMap*, struct CompositingRecursionData&, bool& layersChanged, bool& descendantHas3DTransform, Vector<RenderLayer*>& unclippedDescendants);
 
     // Recurses down the tree, parenting descendant compositing layers and collecting an array of child layers for the current compositing layer.
     void rebuildCompositingLayerTree(RenderLayer*, Vector<GraphicsLayer*>& childGraphicsLayersOfEnclosingLayer, int depth);
