@@ -17,6 +17,7 @@
 #include "android_webview/native/aw_browser_dependency_factory.h"
 #include "android_webview/native/aw_contents_client_bridge.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
+#include "android_webview/native/aw_pdf_exporter.h"
 #include "android_webview/native/aw_picture.h"
 #include "android_webview/native/aw_web_contents_delegate.h"
 #include "android_webview/native/java_browser_view_renderer_helper.h"
@@ -392,6 +393,16 @@ void AwContents::GenerateMHTML(JNIEnv* env, jobject obj,
   web_contents_->GenerateMHTML(
       target_path,
       base::Bind(&GenerateMHTMLCallback, base::Owned(j_callback), target_path));
+}
+
+void AwContents::CreatePdfExporter(JNIEnv* env,
+                                   jobject obj,
+                                   jobject pdfExporter) {
+  pdf_exporter_.reset(
+      new AwPdfExporter(env,
+                        pdfExporter,
+                        browser_view_renderer_.get(),
+                        web_contents_.get()));
 }
 
 bool AwContents::OnReceivedHttpAuthRequest(const JavaRef<jobject>& handler,

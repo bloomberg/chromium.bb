@@ -193,6 +193,8 @@ public class AwContents {
 
     private ComponentCallbacks2 mComponentCallbacks;
 
+    private AwPdfExporter mAwPdfExporter;
+
     private static final class DestroyRunnable implements Runnable {
         private final long mNativeAwContents;
         private DestroyRunnable(long nativeAwContents) {
@@ -687,6 +689,18 @@ public class AwContents {
     // Can be called from any thread.
     public AwSettings getSettings() {
         return mSettings;
+    }
+
+    public AwPdfExporter getPdfExporter() {
+        // mNativeAwContents can be null, due to destroy().
+        if (mNativeAwContents == 0) {
+            return null;
+        }
+        if (mAwPdfExporter == null) {
+            mAwPdfExporter = new AwPdfExporter(mContainerView);
+            nativeCreatePdfExporter(mNativeAwContents, mAwPdfExporter);
+        }
+        return mAwPdfExporter;
     }
 
     public static void setAwDrawSWFunctionTable(int functionTablePointer) {
@@ -2076,4 +2090,6 @@ public class AwContents {
     private native void nativeSetJsOnlineProperty(long nativeAwContents, boolean networkUp);
 
     private native void nativeTrimMemory(long nativeAwContents, int level);
+
+    private native void nativeCreatePdfExporter(long nativeAwContents, AwPdfExporter awPdfExporter);
 }

@@ -10,4 +10,7 @@ include_rules = [
   "+components/navigation_interception",
   "+components/user_prefs",
   "+components/web_contents_delegate_android",
+
+  "+printing",
+
 ]

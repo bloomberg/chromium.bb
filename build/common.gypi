@@ -590,15 +590,7 @@
           'arm_neon_optional%': 1,
           'native_discardable_memory%': 1,
           'native_memory_pressure_signals%': 1,
-        }],
-
-        # Enable basic printing for Chrome for Android but disable printing
-        # completely for WebView.
-        ['OS=="android" and android_webview_build==0', {
           'enable_printing%': 2,
-        }],
-        ['OS=="android" and android_webview_build==1', {
-          'enable_printing%': 0,
         }],
 
         # Android OS includes support for proprietary codecs regardless of

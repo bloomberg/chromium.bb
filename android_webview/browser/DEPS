@@ -18,6 +18,8 @@ include_rules = [
   "+content/public/browser",
   "+content/public/test",
 
+  "+printing",
+
   "+ui/gfx",
   "+ui/gl",
 

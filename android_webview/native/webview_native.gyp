@@ -53,6 +53,8 @@
         'aw_geolocation_permission_context.h',
         'aw_http_auth_handler.cc',
         'aw_http_auth_handler.h',
+        'aw_pdf_exporter.cc',
+        'aw_pdf_exporter.h',
         'aw_picture.cc',
         'aw_picture.h',
         'aw_quota_manager_bridge_impl.cc',
@@ -81,11 +83,20 @@
       ],
     },
     {
-      'target_name': 'android_jar_jni_headers',
+      'target_name': 'input_stream_android_jar_jni_headers',
       'type': 'none',
       'variables': {
         'jni_gen_package': 'android_webview',
         'input_java_class': 'java/io/InputStream.class',
+      },
+      'includes': [ '../../build/jar_file_jni_generator.gypi' ],
+    },
+    {
+      'target_name': 'cancellation_signal_android_jar_jni_headers',
+      'type': 'none',
+      'variables': {
+        'jni_gen_package': 'android_webview',
+        'input_java_class': 'android/os/CancellationSignal.class',
       },
       'includes': [ '../../build/jar_file_jni_generator.gypi' ],
     },
@@ -102,6 +113,7 @@
           '../java/src/org/chromium/android_webview/AwDevToolsServer.java',
           '../java/src/org/chromium/android_webview/AwFormDatabase.java',
           '../java/src/org/chromium/android_webview/AwHttpAuthHandler.java',
+          '../java/src/org/chromium/android_webview/AwPdfExporter.java',
           '../java/src/org/chromium/android_webview/AwPicture.java',
           '../java/src/org/chromium/android_webview/AwQuotaManagerBridge.java',
           '../java/src/org/chromium/android_webview/AwResource.java',
@@ -116,7 +128,8 @@
       },
       'includes': [ '../../build/jni_generator.gypi' ],
       'dependencies': [
-        'android_jar_jni_headers',
+        'input_stream_android_jar_jni_headers',
+        'cancellation_signal_android_jar_jni_headers',
       ],
     },
   ],

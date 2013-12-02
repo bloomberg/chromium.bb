@@ -30,6 +30,7 @@ namespace android_webview {
 
 class AwContentsContainer;
 class AwContentsClientBridge;
+class AwPdfExporter;
 class AwWebContentsDelegate;
 
 // Native side of java-class of same name.
@@ -83,6 +84,7 @@ class AwContents : public FindHelper::Listener,
   void Destroy(JNIEnv* env, jobject obj);
   void DocumentHasImages(JNIEnv* env, jobject obj, jobject message);
   void GenerateMHTML(JNIEnv* env, jobject obj, jstring jpath, jobject callback);
+  void CreatePdfExporter(JNIEnv* env, jobject obj, jobject pdfExporter);
   void AddVisitedLinks(JNIEnv* env, jobject obj, jobjectArray jvisited_links);
   base::android::ScopedJavaLocalRef<jbyteArray> GetCertificate(
       JNIEnv* env, jobject obj);
@@ -195,6 +197,7 @@ class AwContents : public FindHelper::Listener,
   scoped_ptr<IconHelper> icon_helper_;
   scoped_ptr<AwContents> pending_contents_;
   scoped_ptr<BrowserViewRenderer> browser_view_renderer_;
+  scoped_ptr<AwPdfExporter> pdf_exporter_;
 
   // GURL is supplied by the content layer as requesting frame.
   // Callback is supplied by the content layer, and is invoked with the result
