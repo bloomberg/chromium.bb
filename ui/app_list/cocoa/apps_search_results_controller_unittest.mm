@@ -27,6 +27,8 @@
 @property(readonly, nonatomic) app_list::SearchResult* lastOpenedResult;
 @property(readonly, nonatomic) int redoSearchCount;
 
+- (void)quitMessageLoop;
+
 @end
 
 @implementation TestAppsSearchResultsDelegate
@@ -44,6 +46,10 @@
 
 - (void)redoSearch {
   ++redoSearchCount_;
+}
+
+- (void)quitMessageLoop {
+  base::MessageLoop::current()->QuitNow();
 }
 
 @end
@@ -295,12 +301,13 @@ TEST_F(AppsSearchResultsControllerTest, ContextMenus) {
 }
 
 // Test that observing a search result item uninstall performs the search again.
-// Disabled due to failure on 10.6 http://crbug.com/308828 - 10.7 is OK.
-TEST_F(AppsSearchResultsControllerTest, DISABLED_UninstallRedperformsSearch) {
+TEST_F(AppsSearchResultsControllerTest, UninstallReperformsSearch) {
   base::MessageLoopForUI message_loop;
   EXPECT_EQ(0, [delegate_ redoSearchCount]);
   ModelResultAt(0)->NotifyItemUninstalled();
-  message_loop.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
+  [delegate_ performSelector:@selector(quitMessageLoop)
+                  withObject:nil
+                  afterDelay:0];
   message_loop.Run();
   EXPECT_EQ(1, [delegate_ redoSearchCount]);
 }
