@@ -12,6 +12,7 @@
 
 namespace gfx {
 class ImageSkia;
+class Rect;
 }
 
 namespace views {

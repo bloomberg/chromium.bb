@@ -13,6 +13,7 @@
 
 namespace views {
 class BubbleDelegateView;
+class Widget;
 }
 
 namespace ash {

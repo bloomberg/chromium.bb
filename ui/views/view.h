@@ -58,11 +58,8 @@ class ThemeProvider;
 
 namespace views {
 
-class Background;
-class Border;
 class ContextMenuController;
 class DragController;
-class FocusBorder;
 class FocusManager;
 class FocusTraversable;
 class InputMethod;

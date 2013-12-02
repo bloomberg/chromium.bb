@@ -12,8 +12,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/painter.h"
+#include "ui/views/view.h"
 
 namespace views {
 

@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/painter.h"
+#include "ui/views/view.h"
 
 namespace views {
 
