@@ -307,10 +307,6 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
 {
     timing.assertValid();
 
-    // FIXME: Support positive startDelay
-    if (timing.startDelay > 0.0)
-        return false;
-
     // All fill modes are supported (the calling code handles them).
 
     // FIXME: Support non-zero iteration start.
@@ -336,30 +332,23 @@ bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, 
     ASSERT(out.scaledDuration > 0);
 
     double scaledStartDelay = timing.startDelay;
-    ASSERT(scaledStartDelay <= 0);
-
-    int skippedIterations = std::floor(std::abs(scaledStartDelay) / out.scaledDuration);
-    ASSERT(skippedIterations >= 0);
-    if (skippedIterations >= timing.iterationCount)
+    if (scaledStartDelay > 0 && scaledStartDelay > out.scaledDuration * timing.iterationCount)
         return false;
 
     out.reverse = (timing.direction == Timing::PlaybackDirectionReverse
         || timing.direction == Timing::PlaybackDirectionAlternateReverse);
     out.alternate = (timing.direction == Timing::PlaybackDirectionAlternate
         || timing.direction == Timing::PlaybackDirectionAlternateReverse);
-    if (out.alternate && (skippedIterations % 2))
-        out.reverse = !out.reverse;
 
     if (!std::isfinite(timing.iterationCount)) {
         out.adjustedIterationCount = -1;
     } else {
-        out.adjustedIterationCount = std::floor(timing.iterationCount) - skippedIterations;
+        out.adjustedIterationCount = std::floor(timing.iterationCount);
         ASSERT(out.adjustedIterationCount > 0);
     }
 
     // Compositor's time offset is positive for seeking into the animation.
-    out.scaledTimeOffset = -(scaledStartDelay + skippedIterations * out.scaledDuration);
-    ASSERT(out.scaledTimeOffset >= 0);
+    out.scaledTimeOffset = -scaledStartDelay;
     return true;
 }
 
