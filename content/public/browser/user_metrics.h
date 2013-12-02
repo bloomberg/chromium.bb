@@ -34,7 +34,9 @@ struct UserMetricsAction {
 // string literal parameter must be on the same line, e.g.
 //   content::RecordAction(
 //       content::UserMetricsAction("my extremely long action name"));
-// because otherwise our processing scripts won't pick up on new actions.
+// This ensures that our processing scripts can associate this action's hash
+// with its metric name. Therefore, it will be possible to retrieve the metric
+// name from the hash later on.
 //
 // Once a new recorded action is added, run
 // tools/metrics/actions/extract_actions.py --hash
