@@ -109,24 +109,25 @@ gfx::Point AppListPositioner::GetAnchorPointForShelfCursor(
 AppListPositioner::ScreenEdge AppListPositioner::GetShelfEdge(
     const gfx::Rect& shelf_rect) const {
   const gfx::Rect& screen_rect = display_.bounds();
+  const gfx::Rect& work_area = display_.work_area();
 
   // If we can't find the shelf, return SCREEN_EDGE_UNKNOWN. If the display
   // size is the same as the work area, and does not contain the shelf, either
   // the shelf is hidden or on another monitor.
-  if (display_.work_area() == screen_rect &&
-      !display_.work_area().Contains(shelf_rect)) {
+  if (work_area == screen_rect && !work_area.Contains(shelf_rect))
     return SCREEN_EDGE_UNKNOWN;
-  }
 
   // Note: On Windows 8 the work area won't include split windows on the left or
   // right, and neither will |shelf_rect|.
-  if (shelf_rect.width() == display_.work_area().width()) {
+  if (shelf_rect.x() == work_area.x() &&
+      shelf_rect.width() == work_area.width()) {
     // Shelf is horizontal.
     if (shelf_rect.bottom() == screen_rect.bottom())
       return SCREEN_EDGE_BOTTOM;
     else if (shelf_rect.y() == screen_rect.y())
       return SCREEN_EDGE_TOP;
-  } else if (shelf_rect.height() == display_.work_area().height()) {
+  } else if (shelf_rect.y() == work_area.y() &&
+             shelf_rect.height() == work_area.height()) {
     // Shelf is vertical.
     if (shelf_rect.x() == screen_rect.x())
       return SCREEN_EDGE_LEFT;
