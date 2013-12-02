@@ -174,6 +174,9 @@
             },
             }],
             ['configuration_policy==1', {
+              'dependencies': [
+                'components.gyp:policy_test_support',
+              ],
               'sources': [
                 'policy/core/common/policy_bundle_unittest.cc',
                 'policy/core/common/policy_map_unittest.cc',
