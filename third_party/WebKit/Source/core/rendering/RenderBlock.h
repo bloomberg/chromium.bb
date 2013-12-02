@@ -458,7 +458,6 @@ protected:
     virtual void addOverflowFromChildren();
     void addOverflowFromPositionedObjects();
     void addOverflowFromBlockChildren();
-    void addOverflowFromInlineChildren();
     void addVisualOverflowFromTheme();
 
     virtual void addFocusRingRects(Vector<IntRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer = 0) OVERRIDE;
@@ -617,7 +616,6 @@ protected:
     void determineLogicalLeftPositionForChild(RenderBox* child, ApplyLayoutDeltaMode = DoNotApplyLayoutDelta);
 
     // Pagination routines.
-    virtual bool relayoutForPagination(bool hasSpecifiedPageLogicalHeight, LayoutUnit pageLogicalHeight, LayoutStateMaintainer&);
     bool relayoutToAvoidWidows(LayoutStateMaintainer&);
 
     // Returns the logicalOffset at the top of the next page. If the offset passed in is already at the top of the current page,

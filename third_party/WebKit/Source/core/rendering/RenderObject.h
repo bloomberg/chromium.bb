@@ -137,6 +137,7 @@ const int showTreeCharacterOffset = 39;
 // Base class for all rendering tree objects.
 class RenderObject : public ImageResourceClient {
     friend class RenderBlock;
+    friend class RenderBlockFlow;
     friend class RenderLayer; // For setParent.
     friend class RenderLayerReflectionInfo; // For setParent
     friend class RenderLayerScrollableArea; // For setParent.

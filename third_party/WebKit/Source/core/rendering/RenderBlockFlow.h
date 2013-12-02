@@ -149,6 +149,8 @@ public:
     }
     void layoutLineGridBox();
 
+    void addOverflowFromInlineChildren();
+
     GapRects inlineSelectionGaps(RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
         LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo*);
 protected:
@@ -237,6 +239,7 @@ private:
     virtual RootInlineBox* createRootInlineBox() OVERRIDE;
 
     void updateLogicalWidthForAlignment(const ETextAlign&, const RootInlineBox*, BidiRun* trailingSpaceRun, float& logicalLeft, float& totalLogicalWidth, float& availableLogicalWidth, int expansionOpportunityCount);
+    virtual bool relayoutForPagination(bool hasSpecifiedPageLogicalHeight, LayoutUnit pageLogicalHeight, LayoutStateMaintainer&);
 public:
     struct FloatWithRect {
         FloatWithRect(RenderBox* f)
