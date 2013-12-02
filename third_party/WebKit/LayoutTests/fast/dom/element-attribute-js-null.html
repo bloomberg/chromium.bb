@@ -554,12 +554,14 @@
                     type: 'HTMLScriptElement',
                     elementToUse: document.createElement('script'),
                     attributes: [
-                        {name: 'text', expectedNull: ''},
-                        {name: 'htmlFor', expectedNull: ''},
-                        {name: 'event', expectedNull: ''},
-                        {name: 'charset', expectedNull: ''},
-                        {name: 'src', expectedNull: ''},
-                        {name: 'type', expectedNull: ''}
+                        {name: 'text', expectedNull: 'null'},
+                        {name: 'htmlFor', expectedNull: 'null'},
+                        {name: 'event', expectedNull: 'null'},
+                        {name: 'charset', expectedNull: 'null'},
+                        {name: 'src', expectedNull: 'null', isUrl: true},
+                        {name: 'type', expectedNull: 'null'},
+                        {name: 'crossOrigin', expectedNull: 'null'},
+                        {name: 'nonce', expectedNull: 'null'}
                     ]
                 },
                 {
