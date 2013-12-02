@@ -231,17 +231,8 @@ void CSSToStyleMap::mapFillXPosition(CSSPropertyID propertyID, FillLayer* layer,
         primitiveValue = pair->second();
     }
 
-    Length length;
-    if (primitiveValue->isLength())
-        length = primitiveValue->computeLength<Length>(cssToLengthConversionData());
-    else if (primitiveValue->isPercentage())
-        length = Length(primitiveValue->getDoubleValue(), Percent);
-    else if (primitiveValue->isCalculatedPercentageWithLength())
-        length = Length(primitiveValue->cssCalcValue()->toCalcValue(cssToLengthConversionData()));
-    else if (primitiveValue->isViewportPercentageLength())
-        length = primitiveValue->viewportPercentageLength();
-    else
-        return;
+    Length length = primitiveValue->convertToLength<FixedConversion | PercentConversion>(cssToLengthConversionData());
+    ASSERT(!length.isUndefined());
 
     layer->setXPosition(length);
     if (pair)
@@ -260,17 +251,8 @@ void CSSToStyleMap::mapFillYPosition(CSSPropertyID propertyID, FillLayer* layer,
         primitiveValue = pair->second();
     }
 
-    Length length;
-    if (primitiveValue->isLength())
-        length = primitiveValue->computeLength<Length>(cssToLengthConversionData());
-    else if (primitiveValue->isPercentage())
-        length = Length(primitiveValue->getDoubleValue(), Percent);
-    else if (primitiveValue->isCalculatedPercentageWithLength())
-        length = Length(primitiveValue->cssCalcValue()->toCalcValue(cssToLengthConversionData()));
-    else if (primitiveValue->isViewportPercentageLength())
-        length = primitiveValue->viewportPercentageLength();
-    else
-        return;
+    Length length = primitiveValue->convertToLength<FixedConversion | PercentConversion>(cssToLengthConversionData());
+    ASSERT(!length.isUndefined());
 
     layer->setYPosition(length);
     if (pair)
