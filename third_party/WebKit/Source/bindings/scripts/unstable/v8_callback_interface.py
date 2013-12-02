@@ -51,6 +51,29 @@ CALLBACK_INTERFACE_CPP_INCLUDES = set([
     'wtf/Assertions.h',
 ])
 
+# FIXME: eliminate, per http://crbug.com/323681
+LEGACY_REF_COUNTED_CALLBACK_INTERFACES = set([
+    # WebSQL
+    'DatabaseCallback',
+    'SQLTransactionCallback',
+    'SQLTransactionErrorCallback',
+    'SQLTransactionSyncCallback',
+    'SQLStatementCallback',
+    'SQLStatementErrorCallback',
+    # Filesystem
+    'EntryCallback',
+    'EntriesCallback',
+    'ErrorCallback',
+    'FileCallback',
+    'FileSystemCallback',
+    'FileWriterCallback',
+    'MetadataCallback',
+    # requestAnimationFrame
+    'RequestAnimationFrameCallback',
+    # Used everywhere
+    'VoidCallback',
+])
+
 
 def cpp_to_v8_conversion(idl_type, name):
     # FIXME: setting creation_context=v8::Handle<v8::Object>() is wrong,
@@ -77,15 +100,17 @@ def cpp_type(idl_type):
 def generate_callback_interface(callback_interface):
     includes.clear()
     includes.update(CALLBACK_INTERFACE_CPP_INCLUDES)
+    name = callback_interface.name
 
     methods = [generate_method(operation)
                for operation in callback_interface.operations]
     template_contents = {
         'conditional_string': v8_utilities.conditional_string(callback_interface),
-        'cpp_class_name': callback_interface.name,
+        'cpp_class_name': name,
         'v8_class_name': v8_utilities.v8_class_name(callback_interface),
         'header_includes': CALLBACK_INTERFACE_H_INCLUDES,
         'methods': methods,
+        'ref_counted': name in LEGACY_REF_COUNTED_CALLBACK_INTERFACES,
     }
     return template_contents
 
