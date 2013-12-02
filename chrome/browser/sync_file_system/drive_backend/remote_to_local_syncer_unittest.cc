@@ -128,11 +128,11 @@ class RemoteToLocalSyncerTest : public testing::Test,
   }
 
   std::string CreateRemoteFolder(const std::string& parent_folder_id,
-                                 const std::string& app_id) {
+                                 const std::string& title) {
     std::string folder_id;
     EXPECT_EQ(google_apis::HTTP_CREATED,
               fake_drive_helper_->AddFolder(
-                  parent_folder_id, app_id, &folder_id));
+                  parent_folder_id, title, &folder_id));
     return folder_id;
   }
 

@@ -29,6 +29,16 @@
 namespace sync_file_system {
 namespace drive_backend {
 
+namespace {
+
+fileapi::FileSystemURL URL(const GURL& origin,
+                           const std::string& path) {
+  return CreateSyncableFileSystemURL(
+      origin, base::FilePath::FromUTF8Unsafe(path));
+}
+
+}  // namespace
+
 class LocalToRemoteSyncerTest : public testing::Test,
                                 public SyncEngineContext {
  public:
@@ -84,12 +94,6 @@ class LocalToRemoteSyncerTest : public testing::Test,
     EXPECT_EQ(SYNC_STATUS_OK, status);
   }
 
-  fileapi::FileSystemURL URL(const GURL& origin,
-                             const std::string& path) {
-    return CreateSyncableFileSystemURL(
-        origin, base::FilePath::FromUTF8Unsafe(path));
-  }
-
   virtual drive::DriveServiceInterface* GetDriveService() OVERRIDE {
     return fake_drive_service_.get();
   }
@@ -119,13 +123,23 @@ class LocalToRemoteSyncerTest : public testing::Test,
     return sync_root_folder_id;
   }
 
-  std::string CreateFolder(const std::string& parent_folder_id,
-                           const std::string& app_id) {
+  std::string CreateRemoteFolder(const std::string& parent_folder_id,
+                                 const std::string& title) {
     std::string folder_id;
     EXPECT_EQ(google_apis::HTTP_CREATED,
               fake_drive_helper_->AddFolder(
-                  parent_folder_id, app_id, &folder_id));
+                  parent_folder_id, title, &folder_id));
     return folder_id;
+  }
+
+  std::string CreateRemoteFile(const std::string& parent_folder_id,
+                               const std::string& title,
+                               const std::string& content) {
+    std::string file_id;
+    EXPECT_EQ(google_apis::HTTP_SUCCESS,
+              fake_drive_helper_->AddFile(
+                  parent_folder_id, title, content, &file_id));
+    return file_id;
   }
 
   SyncStatusCode RunSyncer(FileChange file_change,
@@ -137,6 +151,24 @@ class LocalToRemoteSyncerTest : public testing::Test,
     syncer->Run(CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
     return status;
+  }
+
+  SyncStatusCode ListChanges() {
+    ListChangesTask list_changes(this);
+    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
+    list_changes.Run(CreateResultReceiver(&status));
+    base::RunLoop().RunUntilIdle();
+    return status;
+  }
+
+  ScopedVector<google_apis::ResourceEntry>
+  GetResourceEntriesForParentAndTitle(const std::string& parent_folder_id,
+                                      const std::string& title) {
+    ScopedVector<google_apis::ResourceEntry> entries;
+    EXPECT_EQ(google_apis::HTTP_SUCCESS,
+              fake_drive_helper_->SearchByTitle(
+                  parent_folder_id, title, &entries));
+    return entries.Pass();
   }
 
   void VerifyTitleUniqueness(const std::string& parent_folder_id,
@@ -175,7 +207,7 @@ class LocalToRemoteSyncerTest : public testing::Test,
 TEST_F(LocalToRemoteSyncerTest, CreateLocalFile) {
   const GURL kOrigin("chrome-extension://example");
   const std::string sync_root = CreateSyncRoot();
-  const std::string app_root = CreateFolder(sync_root, kOrigin.host());
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
 
@@ -197,7 +229,7 @@ TEST_F(LocalToRemoteSyncerTest, CreateLocalFile) {
 TEST_F(LocalToRemoteSyncerTest, DeleteLocalFile) {
   const GURL kOrigin("chrome-extension://example");
   const std::string sync_root = CreateSyncRoot();
-  const std::string app_root = CreateFolder(sync_root, kOrigin.host());
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
 
@@ -225,6 +257,76 @@ TEST_F(LocalToRemoteSyncerTest, DeleteLocalFile) {
   VerifyFileDeletion(app_root, "file");
   VerifyFileDeletion(app_root, "folder");
 }
+
+TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFileOnFolder) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+
+  CreateRemoteFolder(app_root, "foo");
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
+  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_FILE),
+      URL(kOrigin, "foo")));
+
+  // There should exist both file and folder on remote.
+  ScopedVector<google_apis::ResourceEntry> entries =
+      GetResourceEntriesForParentAndTitle(app_root, "foo");
+  ASSERT_EQ(2u, entries.size());
+  EXPECT_EQ(google_apis::ENTRY_KIND_FOLDER, entries[0]->kind());
+  EXPECT_EQ(google_apis::ENTRY_KIND_FILE, entries[1]->kind());
+}
+
+TEST_F(LocalToRemoteSyncerTest, Conflict_FolderOnFile) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+
+  CreateRemoteFile(app_root, "foo", "data");
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
+
+  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_DIRECTORY),
+      URL(kOrigin, "foo")));
+
+  // There should exist both file and folder on remote.
+  ScopedVector<google_apis::ResourceEntry> entries =
+      GetResourceEntriesForParentAndTitle(app_root, "foo");
+  ASSERT_EQ(2u, entries.size());
+  EXPECT_EQ(google_apis::ENTRY_KIND_FILE, entries[0]->kind());
+  EXPECT_EQ(google_apis::ENTRY_KIND_FOLDER, entries[1]->kind());
+}
+
+TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFileOnFile) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+
+  CreateRemoteFile(app_root, "foo", "data");
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
+
+  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_FILE),
+      URL(kOrigin, "foo")));
+
+  // There should exist both files on remote.
+  ScopedVector<google_apis::ResourceEntry> entries =
+      GetResourceEntriesForParentAndTitle(app_root, "foo");
+  ASSERT_EQ(2u, entries.size());
+  EXPECT_EQ(google_apis::ENTRY_KIND_FILE, entries[0]->kind());
+  EXPECT_EQ(google_apis::ENTRY_KIND_FILE, entries[1]->kind());
+}
+
+// TODO(nhiroki): Add folder-folder conflict (reusing remote folder) case.
 
 }  // namespace drive_backend
 }  // namespace sync_file_system
