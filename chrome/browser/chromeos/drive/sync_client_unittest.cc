@@ -16,8 +16,10 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/file_cache.h"
+#include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
 #include "chrome/browser/chromeos/drive/file_system/remove_operation.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
@@ -162,6 +164,7 @@ class SyncClientTest : public testing::Test {
     ASSERT_NO_FATAL_FAILURE(AddFileEntry("fetched"));
     ASSERT_NO_FATAL_FAILURE(AddFileEntry("dirty"));
     ASSERT_NO_FATAL_FAILURE(AddFileEntry("removed"));
+    ASSERT_NO_FATAL_FAILURE(AddFileEntry("moved"));
 
     // Load data from the service to the metadata.
     FileError error = FILE_ERROR_FAILED;
@@ -203,6 +206,17 @@ class SyncClientTest : public testing::Test {
     remove_operation.Remove(
         metadata_->GetFilePath(GetLocalId("removed")),
         false,  // is_recursive
+        google_apis::test_util::CreateCopyResultCallback(&error));
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(FILE_ERROR_OK, error);
+
+    // Prepare a moved file.
+    file_system::MoveOperation move_operation(
+        base::MessageLoopProxy::current().get(), &observer_, metadata_.get());
+    move_operation.Move(
+        metadata_->GetFilePath(GetLocalId("moved")),
+        util::GetDriveMyDriveRootPath().AppendASCII("moved_new_title"),
+        false,  // preserve_last_modified
         google_apis::test_util::CreateCopyResultCallback(&error));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(FILE_ERROR_OK, error);
@@ -264,6 +278,17 @@ TEST_F(SyncClientTest, StartProcessingBacklog) {
   EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
   ASSERT_TRUE(resource_entry);
   EXPECT_TRUE(resource_entry->deleted());
+
+  // Moved entry was moved.
+  status = google_apis::GDATA_OTHER_ERROR;
+  drive_service_->GetResourceEntry(
+      resource_ids_["moved"],
+      google_apis::test_util::CreateCopyResultCallback(&status,
+                                                       &resource_entry));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(google_apis::HTTP_SUCCESS, status);
+  ASSERT_TRUE(resource_entry);
+  EXPECT_EQ("moved_new_title", resource_entry->title());
 }
 
 TEST_F(SyncClientTest, AddFetchTask) {

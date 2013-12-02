@@ -23,7 +23,6 @@ class ResourceEntry;
 
 namespace drive {
 
-class JobScheduler;
 class ResourceEntry;
 
 namespace internal {
@@ -35,13 +34,11 @@ namespace file_system {
 class OperationObserver;
 
 // This class encapsulates the drive Move function.  It is responsible for
-// sending the request to the drive API, then updating the local state and
-// metadata to reflect the new state.
+// updating the local metadata entry.
 class MoveOperation {
  public:
   MoveOperation(base::SequencedTaskRunner* blocking_task_runner,
                 OperationObserver* observer,
-                JobScheduler* scheduler,
                 internal::ResourceMetadata* metadata);
   ~MoveOperation();
 
@@ -57,28 +54,15 @@ class MoveOperation {
             const FileOperationCallback& callback);
 
  private:
-  // Params of Move().
-  struct MoveParams;
-
-  // Part of Move(). Called after local metadata look up.
-  void MoveAfterPrepare(const MoveParams& params,
-                        scoped_ptr<ResourceEntry> src_entry,
-                        scoped_ptr<ResourceEntry> src_parent_entry,
-                        scoped_ptr<ResourceEntry> dest_parent_entry,
-                        FileError error);
-
-  // Part of Move(). Called after UpdateResource is completed.
-  void MoveAfterUpdateResource(
-      const MoveParams& params,
-      google_apis::GDataErrorCode status,
-      scoped_ptr<google_apis::ResourceEntry> resource_entry);
-
-  // Part of Move(). Called after ResourceMetadata::RefreshEntry is completed.
-  void MoveAfterRefreshEntry(const MoveParams& params, FileError error);
+  // Part of Move(). Called after updating the local state.
+  void MoveAfterUpdateLocalState(const base::FilePath& src_file_path,
+                                 const base::FilePath& dest_file_path,
+                                 const FileOperationCallback& callback,
+                                 const std::string* local_id,
+                                 FileError error);
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
-  JobScheduler* scheduler_;
   internal::ResourceMetadata* metadata_;
 
   // Note: This should remain the last member so it'll be destroyed and

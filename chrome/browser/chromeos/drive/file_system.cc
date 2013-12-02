@@ -285,7 +285,6 @@ void FileSystem::ResetComponents() {
   move_operation_.reset(
       new file_system::MoveOperation(blocking_task_runner_.get(),
                                      observer,
-                                     scheduler_,
                                      resource_metadata_));
   open_file_operation_.reset(
       new file_system::OpenFileOperation(blocking_task_runner_.get(),

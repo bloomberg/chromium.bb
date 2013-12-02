@@ -47,20 +47,20 @@ FileError PrepareUpdate(ResourceMetadata* metadata,
 }
 
 FileError FinishUpdate(ResourceMetadata* metadata,
-                       const std::string& local_id) {
-  ResourceEntry entry;
-  FileError error = metadata->GetResourceEntryById(local_id, &entry);
+                       const std::string& local_id,
+                       ResourceEntry* entry) {
+  FileError error = metadata->GetResourceEntryById(local_id, entry);
   if (error != FILE_ERROR_OK)
     return error;
 
-  switch (entry.metadata_edit_state()) {
+  switch (entry->metadata_edit_state()) {
     case ResourceEntry::CLEAN:  // Nothing to do.
     case ResourceEntry::DIRTY:  // Entry was edited again during the update.
       break;
 
     case ResourceEntry::SYNCING:
-      entry.set_metadata_edit_state(ResourceEntry::CLEAN);
-      error = metadata->RefreshEntry(entry);
+      entry->set_metadata_edit_state(ResourceEntry::CLEAN);
+      error = metadata->RefreshEntry(*entry);
       if (error != FILE_ERROR_OK)
         return error;
       break;
@@ -132,12 +132,16 @@ void EntryUpdatePerformer::UpdateEntryAfterPrepare(
     return;
   }
 
+  std::string parent_resource_id;
+  if (!util::IsSpecialResourceId(parent_entry->resource_id()))
+    parent_resource_id = parent_entry->resource_id();
+
   base::Time last_modified =
       base::Time::FromInternalValue(entry->file_info().last_modified());
   base::Time last_accessed =
       base::Time::FromInternalValue(entry->file_info().last_accessed());
   scheduler_->UpdateResource(
-      entry->resource_id(), parent_entry->resource_id(),
+      entry->resource_id(), parent_resource_id,
       entry->title(), last_modified, last_accessed,
       base::Bind(&EntryUpdatePerformer::UpdateEntryAfterUpdateResource,
                  weak_ptr_factory_.GetWeakPtr(), callback, entry->local_id()));
@@ -156,11 +160,31 @@ void EntryUpdatePerformer::UpdateEntryAfterUpdateResource(
     return;
   }
 
+  ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&FinishUpdate, metadata_, local_id),
-      callback);
+      base::Bind(&FinishUpdate, metadata_, local_id, entry),
+      base::Bind(&EntryUpdatePerformer::UpdateEntryAfterFinish,
+                 weak_ptr_factory_.GetWeakPtr(), callback, base::Owned(entry)));
+}
+
+void EntryUpdatePerformer::UpdateEntryAfterFinish(
+    const FileOperationCallback& callback,
+    const ResourceEntry* entry,
+    FileError error) {
+  if (error != FILE_ERROR_OK) {
+    callback.Run(error);
+    return;
+  }
+
+  if (entry->metadata_edit_state() == ResourceEntry::DIRTY) {
+    // The entry was edited during the update. Update again.
+    UpdateEntry(entry->local_id(), callback);
+    return;
+  }
+
+  callback.Run(FILE_ERROR_OK);
 }
 
 }  // namespace internal

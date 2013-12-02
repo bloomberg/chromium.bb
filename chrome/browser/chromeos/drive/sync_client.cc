@@ -63,6 +63,15 @@ void CollectBacklog(ResourceMetadata* metadata,
       continue;
     }
 
+    switch (entry.metadata_edit_state()) {
+      case ResourceEntry::CLEAN:
+        break;
+      case ResourceEntry::SYNCING:
+      case ResourceEntry::DIRTY:
+        to_update->push_back(local_id);
+        break;
+    }
+
     FileCacheEntry cache_entry;
     if (it->GetCacheEntry(&cache_entry)) {
       if (cache_entry.is_pinned() && !cache_entry.is_present())
