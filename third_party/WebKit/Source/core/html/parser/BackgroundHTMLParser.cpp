@@ -38,14 +38,14 @@ namespace WebCore {
 // with a fast CPU, we could end up speculatively tokenizing
 // the whole document, well ahead of when the main-thread actually needs it.
 // This is a waste of memory (and potentially time if the speculation fails).
-// So we limit our outstanding speculations arbitrarily to 10.
+// So we limit our outstanding tokens arbitrarily to 10,000.
 // Our maximal memory spent speculating will be approximately:
-// outstandingCheckpointLimit * pendingTokenLimit * sizeof(CompactToken)
+// (outstandingTokenLimit + pendingTokenLimit) * sizeof(CompactToken)
 // We use a separate low and high water mark to avoid constantly topping
 // off the main thread's token buffer.
-// At time of writing, this is 10 * 1000 * 28 bytes = appox 280kb of memory.
+// At time of writing, this is (10000 + 1000) * 28 bytes = ~308kb of memory.
 // These numbers have not been tuned.
-static const size_t outstandingCheckpointLimit = 10;
+static const size_t outstandingTokenLimit = 10000;
 
 // We limit our chucks to 1000 tokens, to make sure the main
 // thread is never waiting on the parser thread for tokens.
@@ -144,7 +144,7 @@ void BackgroundHTMLParser::markEndOfFile()
 void BackgroundHTMLParser::pumpTokenizer()
 {
     // No need to start speculating until the main thread has almost caught up.
-    if (m_input.outstandingCheckpointCount() > outstandingCheckpointLimit)
+    if (m_input.totalCheckpointTokenCount() > outstandingTokenLimit)
         return;
 
     while (true) {
@@ -176,7 +176,7 @@ void BackgroundHTMLParser::pumpTokenizer()
         if (!m_treeBuilderSimulator.simulate(m_pendingTokens->last(), m_tokenizer.get()) || m_pendingTokens->size() >= pendingTokenLimit) {
             sendTokensToMainThread();
             // If we're far ahead of the main thread, yield for a bit to avoid consuming too much memory.
-            if (m_input.outstandingCheckpointCount() > outstandingCheckpointLimit)
+            if (m_input.totalCheckpointTokenCount() > outstandingTokenLimit)
                 break;
         }
     }
@@ -194,13 +194,13 @@ void BackgroundHTMLParser::sendTokensToMainThread()
 #endif
 
     OwnPtr<HTMLDocumentParser::ParsedChunk> chunk = adoptPtr(new HTMLDocumentParser::ParsedChunk);
-    chunk->tokens = m_pendingTokens.release();
     chunk->preloads.swap(m_pendingPreloads);
     chunk->xssInfos.swap(m_pendingXSSInfos);
     chunk->tokenizerState = m_tokenizer->state();
     chunk->treeBuilderState = m_treeBuilderSimulator.state();
-    chunk->inputCheckpoint = m_input.createCheckpoint();
+    chunk->inputCheckpoint = m_input.createCheckpoint(m_pendingTokens->size());
     chunk->preloadScannerCheckpoint = m_preloadScanner->createCheckpoint();
+    chunk->tokens = m_pendingTokens.release();
     callOnMainThread(bind(&HTMLDocumentParser::didReceiveParsedChunkFromBackgroundParser, m_parser, chunk.release()));
 
     m_pendingTokens = adoptPtr(new CompactHTMLTokenStream);

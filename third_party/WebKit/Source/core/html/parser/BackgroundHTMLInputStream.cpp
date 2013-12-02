@@ -31,6 +31,7 @@ namespace WebCore {
 BackgroundHTMLInputStream::BackgroundHTMLInputStream()
     : m_firstValidCheckpointIndex(0)
     , m_firstValidSegmentIndex(0)
+    , m_totalCheckpointTokenCount(0)
 {
 }
 
@@ -45,10 +46,11 @@ void BackgroundHTMLInputStream::close()
     m_current.close();
 }
 
-HTMLInputCheckpoint BackgroundHTMLInputStream::createCheckpoint()
+HTMLInputCheckpoint BackgroundHTMLInputStream::createCheckpoint(size_t tokensExtractedSincePreviousCheckpoint)
 {
     HTMLInputCheckpoint checkpoint = m_checkpoints.size();
-    m_checkpoints.append(Checkpoint(m_current, m_segments.size()));
+    m_checkpoints.append(Checkpoint(m_current, m_segments.size(), tokensExtractedSincePreviousCheckpoint));
+    m_totalCheckpointTokenCount += tokensExtractedSincePreviousCheckpoint;
     return checkpoint;
 }
 
@@ -70,6 +72,8 @@ void BackgroundHTMLInputStream::invalidateCheckpointsBefore(HTMLInputCheckpoint 
     for (size_t i = m_firstValidCheckpointIndex; i < newFirstValidCheckpointIndex; ++i)
         m_checkpoints[i].clear();
     m_firstValidCheckpointIndex = newFirstValidCheckpointIndex;
+
+    updateTotalCheckpointTokenCount();
 }
 
 void BackgroundHTMLInputStream::rewindTo(HTMLInputCheckpoint checkpointIndex, const String& unparsedInput)
@@ -99,6 +103,16 @@ void BackgroundHTMLInputStream::rewindTo(HTMLInputCheckpoint checkpointIndex, co
     m_checkpoints.clear();
     m_firstValidCheckpointIndex = 0;
     m_firstValidSegmentIndex = 0;
+
+    updateTotalCheckpointTokenCount();
+}
+
+void BackgroundHTMLInputStream::updateTotalCheckpointTokenCount()
+{
+    m_totalCheckpointTokenCount = 0;
+    size_t lastCheckpointIndex = m_checkpoints.size();
+    for (size_t i = 0; i < lastCheckpointIndex; ++i)
+        m_totalCheckpointTokenCount += m_checkpoints[i].tokensExtractedSincePreviousCheckpoint;
 }
 
 }

@@ -46,23 +46,24 @@ public:
 
     // An HTMLInputCheckpoint is valid until the next call to rewindTo, at which
     // point all outstanding checkpoints are invalidated.
-    HTMLInputCheckpoint createCheckpoint();
+    HTMLInputCheckpoint createCheckpoint(size_t tokensExtractedSincePreviousCheckpoint);
     void rewindTo(HTMLInputCheckpoint, const String& unparsedInput);
     void invalidateCheckpointsBefore(HTMLInputCheckpoint);
 
-    size_t outstandingCheckpointCount() const { return m_checkpoints.size() - m_firstValidCheckpointIndex; }
+    size_t totalCheckpointTokenCount() const { return m_totalCheckpointTokenCount; }
 
 private:
     struct Checkpoint {
-        Checkpoint(const SegmentedString& i, size_t n) : input(i), numberOfSegmentsAlreadyAppended(n) { }
+        Checkpoint(const SegmentedString& i, size_t n, size_t t) : input(i), numberOfSegmentsAlreadyAppended(n), tokensExtractedSincePreviousCheckpoint(t) { }
 
         SegmentedString input;
         size_t numberOfSegmentsAlreadyAppended;
+        size_t tokensExtractedSincePreviousCheckpoint;
 
 #ifndef NDEBUG
         bool isNull() const { return input.isEmpty() && !numberOfSegmentsAlreadyAppended; }
 #endif
-        void clear() { input.clear(); numberOfSegmentsAlreadyAppended = 0; }
+        void clear() { input.clear(); numberOfSegmentsAlreadyAppended = 0; tokensExtractedSincePreviousCheckpoint = 0;}
     };
 
     SegmentedString m_current;
@@ -72,6 +73,9 @@ private:
     // Note: These indicies may === vector.size(), in which case there are no valid checkpoints/segments at this time.
     size_t m_firstValidCheckpointIndex;
     size_t m_firstValidSegmentIndex;
+    size_t m_totalCheckpointTokenCount;
+
+    void updateTotalCheckpointTokenCount();
 };
 
 }
