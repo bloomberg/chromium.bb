@@ -140,15 +140,6 @@ void DocumentMarkerController::addTextMatchMarker(const Range* range, bool activ
     }
 }
 
-void DocumentMarkerController::nodeWillBeRemoved(const Node& node)
-{
-    if (!possiblyHasMarkers(DocumentMarker::AllMarkers()))
-        return;
-    m_markers.remove(&node);
-    if (m_markers.isEmpty())
-        m_possiblyExistingMarkerTypes = 0;
-}
-
 void DocumentMarkerController::prepareForDestruction()
 {
     clear();

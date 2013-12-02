@@ -3546,6 +3546,7 @@
             'css/CSSParserValuesTest.cpp',
             'css/CSSCalculationValueTest.cpp',
             'css/CSSValueTestHelper.h',
+            'dom/DocumentMarkerControllerTest.cpp',
             'editing/TextIteratorTest.cpp',
             'dom/MainThreadTaskRunnerTest.cpp',
             'fetch/ImageResourceTest.cpp',

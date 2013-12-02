@@ -3494,10 +3494,8 @@ void Document::nodeChildrenWillBeRemoved(ContainerNode* container)
             (*it)->nodeWillBeRemoved(*n);
     }
 
-    Frame* frame = this->frame();
-    for (Node* n = container->firstChild(); n; n = n->nextSibling()) {
-        m_markers->nodeWillBeRemoved(*n);
-        if (frame) {
+    if (Frame* frame = this->frame()) {
+        for (Node* n = container->firstChild(); n; n = n->nextSibling()) {
             frame->eventHandler().nodeWillBeRemoved(*n);
             frame->selection().nodeWillBeRemoved(*n);
             frame->page()->dragCaretController().nodeWillBeRemoved(*n);
@@ -3522,8 +3520,6 @@ void Document::nodeWillBeRemoved(Node& n)
         frame->selection().nodeWillBeRemoved(n);
         frame->page()->dragCaretController().nodeWillBeRemoved(n);
     }
-
-    m_markers->nodeWillBeRemoved(n);
 }
 
 void Document::didInsertText(Node* text, unsigned offset, unsigned length)

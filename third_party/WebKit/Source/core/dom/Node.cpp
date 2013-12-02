@@ -38,6 +38,7 @@
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
+#include "core/dom/DocumentMarkerController.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementRareData.h"
@@ -317,6 +318,8 @@ void Node::willBeDeletedFromDocument()
 
     if (AXObjectCache* cache = document->existingAXObjectCache())
         cache->remove(this);
+
+    document->markers()->removeMarkers(this);
 }
 
 NodeRareData* Node::rareData() const

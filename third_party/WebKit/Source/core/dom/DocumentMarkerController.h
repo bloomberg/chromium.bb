@@ -34,6 +34,7 @@
 
 namespace WebCore {
 
+class ContainerNode;
 class LayoutPoint;
 class LayoutRect;
 class Node;
@@ -58,7 +59,6 @@ public:
     void copyMarkers(Node* srcNode, unsigned startOffset, int length, Node* dstNode, int delta);
     bool hasMarkers(Range*, DocumentMarker::MarkerTypes = DocumentMarker::AllMarkers());
 
-    void nodeWillBeRemoved(const Node&);
     void prepareForDestruction();
     // When a marker partially overlaps with range, if removePartiallyOverlappingMarkers is true, we completely
     // remove the marker. If the argument is false, we will adjust the span of the marker so that it retains
