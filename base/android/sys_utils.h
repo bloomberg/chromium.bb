@@ -22,6 +22,9 @@ class BASE_EXPORT SysUtils {
 
  private:
   SysUtils();
+
+  static bool IsLowEndDeviceFromJni();
+  static size_t AmountOfPhysicalMemoryKBFromJni();
 };
 
 }  // namespace android
