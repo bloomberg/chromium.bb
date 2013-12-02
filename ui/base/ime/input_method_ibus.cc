@@ -114,9 +114,6 @@ void InputMethodIBus::ProcessKeyEventDone(uint32 id,
 }
 
 bool InputMethodIBus::DispatchKeyEvent(const ui::KeyEvent& event) {
-  if (!event.HasNativeEvent())
-    return DispatchFabricatedKeyEvent(event);
-
   DCHECK(event.type() == ET_KEY_PRESSED || event.type() == ET_KEY_RELEASED);
   DCHECK(system_toplevel_window_focused());
 
@@ -278,16 +275,6 @@ void InputMethodIBus::ConfirmCompositionText() {
     client->ConfirmCompositionText();
 
   ResetContext();
-}
-
-bool InputMethodIBus::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
-  // TODO(bryeung): The fabricated events should also pass through IME.
-  if (event.type() == ET_KEY_PRESSED)
-    ProcessUnfilteredKeyPressEvent(event);
-  else
-    DispatchKeyEventPostIME(event);
-
-  return true;
 }
 
 void InputMethodIBus::ResetContext() {

@@ -76,9 +76,6 @@ class UI_EXPORT InputMethodIBus
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();
 
-  // Dispatchs a key event which does not contain a native event.
-  bool DispatchFabricatedKeyEvent(const ui::KeyEvent& event);
-
   // Checks the availability of focused text input client and update focus
   // state.
   void UpdateContextFocusState();
