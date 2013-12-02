@@ -72,8 +72,12 @@ GURL GetSyncableFileSystemRootURI(const GURL& origin) {
 
 FileSystemURL CreateSyncableFileSystemURL(const GURL& origin,
                                           const base::FilePath& path) {
+  base::FilePath path_for_url = path;
+  if (fileapi::VirtualPath::IsAbsolute(path.value()))
+    path_for_url = base::FilePath(path.value().substr(1));
+
   return ExternalMountPoints::GetSystemInstance()->CreateExternalFileSystemURL(
-      origin, kSyncableMountName, path);
+      origin, kSyncableMountName, path_for_url);
 }
 
 FileSystemURL CreateSyncableFileSystemURLForSync(
