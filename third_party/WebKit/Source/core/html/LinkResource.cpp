@@ -49,7 +49,7 @@ LinkResource::~LinkResource()
 
 LinkRequestBuilder::LinkRequestBuilder(HTMLLinkElement* owner)
     : m_owner(owner)
-    , m_url(m_owner->getNonEmptyURLAttribute(hrefAttr))
+    , m_url(owner->getNonEmptyURLAttribute(hrefAttr))
 {
     m_charset = m_owner->getAttribute(charsetAttr);
     if (m_charset.isEmpty() && m_owner->document().frame())

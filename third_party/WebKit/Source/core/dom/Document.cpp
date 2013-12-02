@@ -3986,7 +3986,12 @@ KURL Document::completeURL(const String& url, const KURL& baseURLOverride) const
     // See also [CSS]StyleSheet::completeURL(const String&)
     if (url.isNull())
         return KURL();
-    const KURL& baseURL = ((baseURLOverride.isEmpty() || baseURLOverride == blankURL()) && parentDocument()) ? parentDocument()->baseURL() : baseURLOverride;
+    const KURL* baseURLFromParent = 0;
+    if (baseURLOverride.isEmpty() || baseURLOverride == blankURL()) {
+        if (Document* parent = parentDocument())
+            baseURLFromParent = &parent->baseURL();
+    }
+    const KURL& baseURL = baseURLFromParent ? *baseURLFromParent : baseURLOverride;
     if (!encoding().isValid())
         return KURL(baseURL, url);
     return KURL(baseURL, url, encoding());
