@@ -139,15 +139,24 @@ class LocalToRemoteSyncerTest : public testing::Test,
     return status;
   }
 
-  void VerifyRemoteFile(const std::string& parent_folder_id,
-                        const std::string& title,
-                        google_apis::DriveEntryKind kind) {
+  void VerifyTitleUniqueness(const std::string& parent_folder_id,
+                             const std::string& title,
+                             google_apis::DriveEntryKind kind) {
     ScopedVector<google_apis::ResourceEntry> entries;
     EXPECT_EQ(google_apis::HTTP_SUCCESS,
               fake_drive_helper_->SearchByTitle(
                   parent_folder_id, title, &entries));
     ASSERT_EQ(1u, entries.size());
     EXPECT_EQ(kind, entries[0]->kind());
+  }
+
+  void VerifyFileDeletion(const std::string& parent_folder_id,
+                          const std::string& title) {
+    ScopedVector<google_apis::ResourceEntry> entries;
+    EXPECT_EQ(google_apis::HTTP_SUCCESS,
+              fake_drive_helper_->SearchByTitle(
+                  parent_folder_id, title, &entries));
+    EXPECT_TRUE(entries.empty());
   }
 
  private:
@@ -179,10 +188,42 @@ TEST_F(LocalToRemoteSyncerTest, CreateLocalFile) {
                  SYNC_FILE_TYPE_DIRECTORY),
       URL(kOrigin, "folder")));
 
-  VerifyRemoteFile(app_root, "file", google_apis::ENTRY_KIND_FILE);
-  VerifyRemoteFile(app_root, "folder", google_apis::ENTRY_KIND_FOLDER);
+  VerifyTitleUniqueness(app_root, "file", google_apis::ENTRY_KIND_FILE);
+  VerifyTitleUniqueness(app_root, "folder", google_apis::ENTRY_KIND_FOLDER);
 
   // TODO(nhiroki): Test nested files case.
+}
+
+TEST_F(LocalToRemoteSyncerTest, DeleteLocalFile) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+
+  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_FILE),
+      URL(kOrigin, "file")));
+  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_DIRECTORY),
+      URL(kOrigin, "folder")));
+
+  VerifyTitleUniqueness(app_root, "file", google_apis::ENTRY_KIND_FILE);
+  VerifyTitleUniqueness(app_root, "folder", google_apis::ENTRY_KIND_FOLDER);
+
+  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+      FileChange(FileChange::FILE_CHANGE_DELETE,
+                 SYNC_FILE_TYPE_FILE),
+      URL(kOrigin, "file")));
+  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+      FileChange(FileChange::FILE_CHANGE_DELETE,
+                 SYNC_FILE_TYPE_DIRECTORY),
+      URL(kOrigin, "folder")));
+
+  VerifyFileDeletion(app_root, "file");
+  VerifyFileDeletion(app_root, "folder");
 }
 
 }  // namespace drive_backend

@@ -257,7 +257,6 @@ class MetadataDatabase {
   // Deactivates existing active tracker if exists that has the same title and
   // parent_tracker to the newly added tracker.
   void ReplaceActiveTrackerWithNewResource(
-      int64 change_id,
       int64 parent_tracker_id,
       const google_apis::FileResource& resource,
       const SyncStatusCallback& callback);

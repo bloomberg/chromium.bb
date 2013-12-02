@@ -876,14 +876,14 @@ void MetadataDatabase::UpdateByDeletedRemoteFile(
 }
 
 void MetadataDatabase::ReplaceActiveTrackerWithNewResource(
-    int64 change_id,
     int64 parent_tracker_id,
     const google_apis::FileResource& resource,
     const SyncStatusCallback& callback) {
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
 
   scoped_ptr<FileMetadata> file(
-      CreateFileMetadataFromFileResource(change_id, resource));
+      CreateFileMetadataFromFileResource(
+          GetLargestKnownChangeID(), resource));
   std::string file_id = file->file_id();
   DCHECK(!ContainsKey(file_by_id_, file_id));
   DCHECK(!file->details().missing());

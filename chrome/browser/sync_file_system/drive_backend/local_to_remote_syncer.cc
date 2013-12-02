@@ -127,7 +127,7 @@ void LocalToRemoteSyncer::Run(const SyncStatusCallback& callback) {
   base::FilePath missing_entries;
   if (active_ancestor_path.empty()) {
     missing_entries = path;
-  } else {
+  } else if (active_ancestor_path != path) {
     bool should_success = active_ancestor_path.AppendRelativePath(
         path, &missing_entries);
     if (!should_success) {
@@ -579,7 +579,10 @@ void LocalToRemoteSyncer::DidListFolderForEnsureUniqueness(
 
   DCHECK(oldest);
   // TODO(tzik): Delete all remote resource but |oldest|.
-  callback.Run(SYNC_STATUS_OK);
+  metadata_database()->ReplaceActiveTrackerWithNewResource(
+      remote_parent_folder_tracker_->tracker_id(),
+      *drive::util::ConvertResourceEntryToFileResource(*oldest),
+      callback);
 }
 
 bool LocalToRemoteSyncer::IsContextReady() {
