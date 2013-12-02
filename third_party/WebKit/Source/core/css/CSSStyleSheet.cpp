@@ -158,6 +158,7 @@ void CSSStyleSheet::willMutateRules()
     InspectorInstrumentation::willMutateRules(this);
     // If we are the only client it is safe to mutate.
     if (m_contents->hasOneClient() && !m_contents->isInMemoryCache()) {
+        m_contents->clearRuleSet();
         m_contents->setMutable();
         return;
     }

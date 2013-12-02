@@ -77,11 +77,11 @@ PassRefPtr<CSSRuleList> ElementRuleCollector::matchedCSSRuleList()
     return m_cssRuleList.release();
 }
 
-inline void ElementRuleCollector::addMatchedRule(const RuleData* rule, unsigned specificity, CascadeScope cascadeScope, CascadeOrder cascadeOrder)
+inline void ElementRuleCollector::addMatchedRule(const RuleData* rule, unsigned specificity, CascadeScope cascadeScope, CascadeOrder cascadeOrder, unsigned styleSheetIndex)
 {
     if (!m_matchedRules)
         m_matchedRules = adoptPtr(new Vector<MatchedRule, 32>);
-    m_matchedRules->append(MatchedRule(rule, specificity, cascadeScope, cascadeOrder));
+    m_matchedRules->append(MatchedRule(rule, specificity, cascadeScope, cascadeOrder, styleSheetIndex));
 }
 
 void ElementRuleCollector::clearMatchedRules()
@@ -329,7 +329,7 @@ void ElementRuleCollector::collectRuleIfMatches(const RuleData& ruleData, Select
                 ruleRange.firstRuleIndex = ruleRange.lastRuleIndex;
 
             // Add this rule to our list of matched rules.
-            addMatchedRule(&ruleData, result.specificity, cascadeScope, cascadeOrder);
+            addMatchedRule(&ruleData, result.specificity, cascadeScope, cascadeOrder, matchRequest.styleSheetIndex);
             return;
         }
     }
@@ -362,6 +362,9 @@ static inline bool compareRules(const MatchedRule& matchedRule1, const MatchedRu
     unsigned specificity2 = matchedRule2.specificity();
     if (specificity1 != specificity2)
         return specificity1 < specificity2;
+
+    if (matchedRule1.styleSheetIndex() != matchedRule2.styleSheetIndex())
+        return matchedRule1.styleSheetIndex() < matchedRule2.styleSheetIndex();
 
     return matchedRule1.position() < matchedRule2.position();
 }

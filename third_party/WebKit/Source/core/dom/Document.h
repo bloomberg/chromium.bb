@@ -223,6 +223,8 @@ public:
 
     MediaQueryMatcher& mediaQueryMatcher();
 
+    void mediaQueryAffectingValueChanged();
+
     using ContainerNode::ref;
     using ContainerNode::deref;
     using SecurityContext::securityOrigin;

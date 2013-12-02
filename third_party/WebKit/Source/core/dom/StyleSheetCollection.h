@@ -88,6 +88,8 @@ public:
     DocumentOrderedList* scopingNodesForStyleScoped() { return m_scopingNodesForStyleScoped.scopingNodes(); }
     ListHashSet<Node*, 4>* scopingNodesRemoved() { return m_scopingNodesForStyleScoped.scopingNodesRemoved(); }
 
+    void clearMediaQueryRuleSetStyleSheets();
+
 protected:
     explicit StyleSheetCollection(TreeScope&);
 
