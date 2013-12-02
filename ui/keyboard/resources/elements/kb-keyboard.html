@@ -7,9 +7,10 @@
 <polymer-element name="kb-keyboard" on-key-over="{{keyOver}}"
     on-key-up="{{keyUp}}" on-key-down="{{keyDown}}"
     on-key-longpress="{{keyLongpress}}" on-pointerup="{{up}}"
-    on-pointerdown="{{down}}" on-enable-sel="{{enableSel}}"
-    on-enable-dbl="{{enableDbl}}"  on-key-out="{{keyOut}}"
-    on-show-options="{{showOptions}}" on-set-layout="{{setLayout}}"
+    on-pointerdown="{{down}}" on-pointerout="{{out}}"
+    on-enable-sel="{{enableSel}}" on-enable-dbl="{{enableDbl}}"
+    on-key-out="{{keyOut}}" on-show-options="{{showOptions}}"
+    on-set-layout="{{setLayout}}"
     attributes="keyset layout inputType inputTypeToLayoutMap">
   <template>
     <style>
@@ -118,7 +119,15 @@
      * @type {number}
      */
     var MIN_SWIPE_DIST_X = 50;
-    var MIN_SWIPE_DIST_Y = 30;
+    var MIN_SWIPE_DIST_Y = 20;
+
+    /**
+     * The maximum swipe distance that will trigger hintText of a key
+     * to be typed.
+     * @const
+     * @type {number}
+     */
+    var MAX_SWIPE_FLICK_DIST = 60;
 
     /**
      * The boolean to decide if it is swipe in process or finished.
@@ -152,13 +161,24 @@
      * A structure to track the current swipe status.
      */
     var swipeTracker = {
+      /**
+       * The latest PointerMove event in the swipe.
+       * @type {Object}
+       */
+      currentEvent: undefined,
+
+      /**
+       * Whether or not a swipe changes direction.
+       * @type {false}
+       */
+      isComplex: false,
 
       /**
        * The count of horizontal and vertical movement.
        * @type {number}
        */
-       offset_x : 0,
-       offset_y : 0,
+      offset_x : 0,
+      offset_y : 0,
 
       /**
        * Last touch coordinate.
@@ -166,6 +186,12 @@
        */
       pre_x : 0,
       pre_y : 0,
+
+      /**
+       * The PointerMove event which triggered the swipe.
+       * @type {Object}
+       */
+      startEvent: undefined,
 
       /**
        * The flag of current modifier key.
@@ -223,6 +249,9 @@
         detail.index = this.swipeIndex;
         detail.status = this.swipeStatus;
         detail.endSwipe = endSwipe;
+        detail.startEvent = this.startEvent;
+        detail.currentEvent = this.currentEvent;
+        detail.isComplex = this.isComplex;
         return detail;
       },
 
@@ -237,6 +266,9 @@
         this.swipeFlags = 0;
         this.swipeDirection = 0;
         this.swipeIndex = 0;
+        this.startEvent = undefined;
+        this.currentEvent = undefined;
+        this.isComplex = false;
       },
 
       /**
@@ -257,10 +289,18 @@
         var direction = this.getOffsetDirection();
         if (direction == 0)
           return false;
-        // Save event details.
+        // If swipeIndex is zero the current event is triggering the swipe.
+        if (this.swipeIndex == 0) {
+          this.startEvent = event;
+        } else if (direction != this.swipeDirection) {
+          // Toggle the isComplex flag.
+          this.isComplex = true;
+        }
+        // Update the swipe tracker.
         this.swipeDirection = direction;
         this.offset_x = 0;
         this.offset_y = 0;
+        this.currentEvent = event;
         this.swipeIndex++;
         return true;
       },
@@ -388,9 +428,8 @@
         var direction = detail.direction;
         if (!direction)
           console.error("Swipe direction cannot be: " + direction);
-        // Skip any vertical events.
-        var vertical = direction & (SWIPE_DIRECTION.UP | SWIPE_DIRECTION.DOWN);
-        if (!vertical) {
+        // Triggers swipe editting if it's a purely horizontal swipe.
+        if (!(direction & (SWIPE_DIRECTION.UP | SWIPE_DIRECTION.DOWN))) {
           // Nothing to do if the swipe has ended.
           if (detail.endSwipe)
             return;
@@ -402,6 +441,29 @@
             modifiers |= Modifier.CONTROL;
           }
           MoveCursor(direction, modifiers);
+          return;
+        }
+        // Triggers swipe hintText if it's a purely vertical swipe.
+        if (!(direction & (SWIPE_DIRECTION.LEFT | SWIPE_DIRECTION.RIGHT))) {
+          // Check if event is relevant to us.
+          if ((!detail.endSwipe) ||
+              (direction & SWIPE_DIRECTION.DOWN) ||
+              (detail.isComplex)) {
+            return;
+          }
+          // Too long a swipe.
+          var distance = Math.abs(detail.startEvent.screenY -
+              detail.currentEvent.screenY);
+          if (distance > MAX_SWIPE_FLICK_DIST)
+            return;
+          var triggerKey = detail.startEvent.target;
+          // Swipe-up on a key without hintText.
+          if (!triggerKey || !triggerKey.hintTextValue)
+            return;
+          var detail = {};
+          detail.char = triggerKey.hintTextValue;
+          this.keyTyped(detail);
+          return;
         }
       },
 
@@ -568,6 +630,25 @@
           this.onSwipeUpdate(swipeTracker.populateDetails(true))
           swipeTracker.resetAll();
         }
+        this.removeEventListener('pointermove', this.swipeHandler, false);
+      },
+
+      /**
+       * Handles PointerOut event. This is used for when a swipe gesture goes
+       * outside of the keyboard window.
+       * @param {Object} event The pointerout event that bubbled to the
+       *    kb-keyboard.
+       */
+      out: function(event) {
+        // Ignore if triggered from one of the keys.
+        if (this.compareDocumentPosition(event.relatedTarget) &
+            Node.DOCUMENT_POSITION_CONTAINED_BY)
+          return;
+        if (swipeInProgress)
+          this.onSwipeUpdate(swipeTracker.populateDetails(true))
+        // Touched outside of the keyboard area, so disables swipe.
+        swipeInProgress = false;
+        swipeTracker.resetAll();
         this.removeEventListener('pointermove', this.swipeHandler, false);
       },
 
