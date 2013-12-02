@@ -30,11 +30,11 @@
 
 interface HTMLKeygenElement : HTMLElement {
     [Reflect] attribute boolean autofocus;
-    [Reflect, TreatNullAs=NullString] attribute DOMString challenge;
+    [Reflect] attribute DOMString challenge;
     [Reflect] attribute boolean disabled;
     readonly attribute HTMLFormElement form;
-    [Reflect, TreatNullAs=NullString] attribute DOMString keytype;
-    [Reflect, TreatNullAs=NullString] attribute DOMString name;
+    [Reflect] attribute DOMString keytype;
+    [Reflect] attribute DOMString name;
 
     readonly attribute DOMString type;
 
@@ -46,4 +46,3 @@ interface HTMLKeygenElement : HTMLElement {
 
     readonly attribute NodeList labels;
 };
-
