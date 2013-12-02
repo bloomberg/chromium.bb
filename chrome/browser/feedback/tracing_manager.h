@@ -12,13 +12,18 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/browser/trace_subscriber.h"
 
+namespace base {
+
+class RefCountedString;
+class FilePath;
+
+}
 // Callback used for getting the output of a trace.
 typedef base::Callback<void(scoped_refptr<base::RefCountedString> trace_data)>
     TraceDataCallback;
 
-// This class is used to manage performance meterics that can be attached to
+// This class is used to manage performance metrics that can be attached to
 // feedback reports.  This class is a Singleton that is owned by the preference
 // system.  It should only be created when it is enabled, and should only be
 // accessed elsewhere via Get().
@@ -28,7 +33,7 @@ typedef base::Callback<void(scoped_refptr<base::RefCountedString> trace_data)>
 // version of the performance data.  That data can then be requested via
 // GetTraceData().  When the data is no longer needed, it should be discarded
 // via DiscardTraceData().
-class TracingManager : public content::TraceSubscriber {
+class TracingManager {
  public:
   virtual ~TracingManager();
 
@@ -50,17 +55,10 @@ class TracingManager : public content::TraceSubscriber {
   void DiscardTraceData(int id);
 
  private:
-  void StartTracing();
-
-  // content::TraceSubscriber overrides
-  virtual void OnEndTracingComplete() OVERRIDE;
-  virtual void OnTraceDataCollected(
-      const scoped_refptr<base::RefCountedString>& trace_fragment) OVERRIDE;
-
   TracingManager();
 
-  // Data being collected from the current trace.
-  std::string data_;
+  void StartTracing();
+  void OnTraceDataCollected(const base::FilePath& path);
 
   // ID of the trace that is being collected.
   int current_trace_id_;

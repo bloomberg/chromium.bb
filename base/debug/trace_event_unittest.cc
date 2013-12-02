@@ -53,10 +53,8 @@ class TraceEventTestFixture : public testing::Test {
       WaitableEvent* flush_complete_event,
       const scoped_refptr<base::RefCountedString>& events_str,
       bool has_more_events);
-  void OnTraceNotification(int notification) {
-    if (notification & TraceLog::EVENT_WATCH_NOTIFICATION)
-      ++event_watch_notification_;
-    notifications_received_ |= notification;
+  void OnWatchEventMatched() {
+    ++event_watch_notification_;
   }
   DictionaryValue* FindMatchingTraceEntry(const JsonKeyValue* key_values);
   DictionaryValue* FindNamePhase(const char* name, const char* phase);
@@ -79,7 +77,6 @@ class TraceEventTestFixture : public testing::Test {
 
   void BeginSpecificTrace(const std::string& filter) {
     event_watch_notification_ = 0;
-    notifications_received_ = 0;
     TraceLog::GetInstance()->SetEnabled(CategoryFilter(filter),
                                         TraceLog::RECORD_UNTIL_FULL);
   }
@@ -127,16 +124,13 @@ class TraceEventTestFixture : public testing::Test {
   virtual void SetUp() OVERRIDE {
     const char* name = PlatformThread::GetName();
     old_thread_name_ = name ? strdup(name) : NULL;
-    notifications_received_ = 0;
 
     TraceLog::DeleteForTesting();
     TraceLog* tracelog = TraceLog::GetInstance();
     ASSERT_TRUE(tracelog);
     ASSERT_FALSE(tracelog->IsEnabled());
-    tracelog->SetNotificationCallback(
-        base::Bind(&TraceEventTestFixture::OnTraceNotification,
-                   base::Unretained(this)));
     trace_buffer_.SetOutputCallback(json_output_.GetCallback());
+    event_watch_notification_ = 0;
   }
   virtual void TearDown() OVERRIDE {
     if (TraceLog::GetInstance())
@@ -153,7 +147,6 @@ class TraceEventTestFixture : public testing::Test {
   base::debug::TraceResultBuffer trace_buffer_;
   base::debug::TraceResultBuffer::SimpleOutput json_output_;
   int event_watch_notification_;
-  int notifications_received_;
 
  private:
   // We want our singleton torn down after each test.
@@ -1188,14 +1181,17 @@ TEST_F(TraceEventTestFixture, Categories) {
 TEST_F(TraceEventTestFixture, EventWatchNotification) {
   // Basic one occurrence.
   BeginTrace();
-  TraceLog::GetInstance()->SetWatchEvent("cat", "event");
+  TraceLog::WatchEventCallback callback =
+      base::Bind(&TraceEventTestFixture::OnWatchEventMatched,
+                 base::Unretained(this));
+  TraceLog::GetInstance()->SetWatchEvent("cat", "event", callback);
   TRACE_EVENT_INSTANT0("cat", "event", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_EQ(event_watch_notification_, 1);
 
   // Auto-reset after end trace.
   BeginTrace();
-  TraceLog::GetInstance()->SetWatchEvent("cat", "event");
+  TraceLog::GetInstance()->SetWatchEvent("cat", "event", callback);
   EndTraceAndFlush();
   BeginTrace();
   TRACE_EVENT_INSTANT0("cat", "event", TRACE_EVENT_SCOPE_THREAD);
@@ -1205,7 +1201,7 @@ TEST_F(TraceEventTestFixture, EventWatchNotification) {
   // Multiple occurrence.
   BeginTrace();
   int num_occurrences = 5;
-  TraceLog::GetInstance()->SetWatchEvent("cat", "event");
+  TraceLog::GetInstance()->SetWatchEvent("cat", "event", callback);
   for (int i = 0; i < num_occurrences; ++i)
     TRACE_EVENT_INSTANT0("cat", "event", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
@@ -1213,21 +1209,21 @@ TEST_F(TraceEventTestFixture, EventWatchNotification) {
 
   // Wrong category.
   BeginTrace();
-  TraceLog::GetInstance()->SetWatchEvent("cat", "event");
+  TraceLog::GetInstance()->SetWatchEvent("cat", "event", callback);
   TRACE_EVENT_INSTANT0("wrong_cat", "event", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_EQ(event_watch_notification_, 0);
 
   // Wrong name.
   BeginTrace();
-  TraceLog::GetInstance()->SetWatchEvent("cat", "event");
+  TraceLog::GetInstance()->SetWatchEvent("cat", "event", callback);
   TRACE_EVENT_INSTANT0("cat", "wrong_event", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_EQ(event_watch_notification_, 0);
 
   // Canceled.
   BeginTrace();
-  TraceLog::GetInstance()->SetWatchEvent("cat", "event");
+  TraceLog::GetInstance()->SetWatchEvent("cat", "event", callback);
   TraceLog::GetInstance()->CancelWatchEvent();
   TRACE_EVENT_INSTANT0("cat", "event", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
@@ -1734,23 +1730,7 @@ TEST_F(TraceEventTestFixture, TraceCategoriesAfterNestedEnable) {
   trace_log->SetDisabled();
 }
 
-TEST_F(TraceEventTestFixture, TraceOptionsParsing) {
-  EXPECT_EQ(TraceLog::RECORD_UNTIL_FULL,
-            TraceLog::TraceOptionsFromString(std::string()));
-
-  EXPECT_EQ(TraceLog::RECORD_UNTIL_FULL,
-            TraceLog::TraceOptionsFromString("record-until-full"));
-  EXPECT_EQ(TraceLog::RECORD_CONTINUOUSLY,
-            TraceLog::TraceOptionsFromString("record-continuously"));
-  EXPECT_EQ(TraceLog::RECORD_UNTIL_FULL | TraceLog::ENABLE_SAMPLING,
-            TraceLog::TraceOptionsFromString("enable-sampling"));
-  EXPECT_EQ(TraceLog::RECORD_CONTINUOUSLY | TraceLog::ENABLE_SAMPLING,
-            TraceLog::TraceOptionsFromString(
-                "record-continuously,enable-sampling"));
-}
-
 TEST_F(TraceEventTestFixture, TraceSampling) {
-  event_watch_notification_ = 0;
   TraceLog::GetInstance()->SetEnabled(
       CategoryFilter("*"),
       TraceLog::Options(TraceLog::RECORD_UNTIL_FULL |
@@ -1769,7 +1749,6 @@ TEST_F(TraceEventTestFixture, TraceSampling) {
 }
 
 TEST_F(TraceEventTestFixture, TraceSamplingScope) {
-  event_watch_notification_ = 0;
   TraceLog::GetInstance()->SetEnabled(
     CategoryFilter("*"),
     TraceLog::Options(TraceLog::RECORD_UNTIL_FULL |
@@ -1804,7 +1783,6 @@ TEST_F(TraceEventTestFixture, TraceSamplingScope) {
 }
 
 TEST_F(TraceEventTestFixture, TraceContinuousSampling) {
-  event_watch_notification_ = 0;
   TraceLog::GetInstance()->SetEnabled(
       CategoryFilter("*"),
       TraceLog::Options(TraceLog::MONITOR_SAMPLING));
@@ -2071,7 +2049,7 @@ TEST_F(TraceEventCallbackTest, TraceEventCallbackWhileFull) {
       TraceLog::RECORD_UNTIL_FULL);
   do {
     TRACE_EVENT_INSTANT0("all", "badger badger", TRACE_EVENT_SCOPE_GLOBAL);
-  } while ((notifications_received_ & TraceLog::TRACE_BUFFER_FULL) == 0);
+  } while (!TraceLog::GetInstance()->BufferIsFull());
   TraceLog::GetInstance()->SetEventCallbackEnabled(CategoryFilter("*"),
                                                    Callback);
   TRACE_EVENT_INSTANT0("all", "a snake", TRACE_EVENT_SCOPE_GLOBAL);
