@@ -12,6 +12,7 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_status.h"
 
 namespace component_updater {
 
@@ -67,6 +68,38 @@ net::URLFetcher* SendProtocolRequest(
   url_fetcher->Start();
 
   return url_fetcher;
+}
+
+bool FetchSuccess(const net::URLFetcher& fetcher) {
+  return GetFetchError(fetcher) == 0;
+}
+
+int GetFetchError(const net::URLFetcher& fetcher) {
+  const net::URLRequestStatus::Status status(fetcher.GetStatus().status());
+  switch (status) {
+    case net::URLRequestStatus::IO_PENDING:
+    case net::URLRequestStatus::CANCELED:
+      // Network status is a small positive number.
+      return status;
+
+    case net::URLRequestStatus::SUCCESS: {
+      // Response codes are positive numbers, greater than 100.
+      const int response_code(fetcher.GetResponseCode());
+      if (response_code == 200)
+        return 0;
+      else
+        return response_code ? response_code : -1;
+    }
+
+    case net::URLRequestStatus::FAILED: {
+      // Network errors are small negative numbers.
+      const int error = fetcher.GetStatus().error();
+      return error ? error : -1;
+    }
+
+    default:
+      return -1;
+  }
 }
 
 }  // namespace component_updater

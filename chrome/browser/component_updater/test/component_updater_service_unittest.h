@@ -154,7 +154,7 @@ class ComponentUpdaterTest : public testing::Test {
   void RunThreads();
   void RunThreadsUntilIdle();
 
-  scoped_ptr<component_updater::InterceptorFactory> interceptor_factory_;
+  scoped_ptr<InterceptorFactory> interceptor_factory_;
   URLRequestPostInterceptor* post_interceptor_;   // Owned by the factory.
 
   scoped_ptr<GetInterceptor> get_interceptor_;

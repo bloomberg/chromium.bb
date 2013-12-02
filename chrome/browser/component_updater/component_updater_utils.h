@@ -43,6 +43,15 @@ net::URLFetcher* SendProtocolRequest(
     net::URLFetcherDelegate* url_fetcher_delegate,
     net::URLRequestContextGetter* url_request_context_getter);
 
+// Returns true if the url request of |fetcher| was succesful.
+bool FetchSuccess(const net::URLFetcher& fetcher);
+
+// Returns the error code which occured during the fetch. The function returns 0
+// if the fetch was successful. If errors happen, the function could return a
+// network error, an http response code, or the status of the fetch, if the
+// fetch is pending or canceled.
+int GetFetchError(const net::URLFetcher& fetcher);
+
 }  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_UPDATER_UTILS_H_

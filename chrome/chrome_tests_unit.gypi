@@ -760,6 +760,7 @@
         'browser/component_updater/test/component_patcher_mock.h',
         'browser/component_updater/test/component_patcher_unittest.cc',
         'browser/component_updater/test/component_updater_service_unittest.cc',
+        'browser/component_updater/test/crx_downloader_unittest.cc',
         'browser/component_updater/test/test_installer.cc',
         'browser/component_updater/test/update_response_unittest.cc',
         'browser/component_updater/test/url_request_post_interceptor.cc',
