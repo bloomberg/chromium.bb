@@ -105,8 +105,8 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
 
   rotation_about_pivot->SetReversed(show);
 
-  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(
-      kLayerAnimationsForMinimizeDurationMS);
+  base::TimeDelta duration = window->layer()->GetAnimator()->
+      GetTransitionDuration();
 
   scoped_ptr<ui::LayerAnimationElement> transition(
       ui::LayerAnimationElement::CreateInterpolatedTransformElement(
@@ -136,6 +136,10 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
 void AnimateShowWindow_Minimize(aura::Window* window) {
   window->layer()->set_delegate(window);
   window->layer()->SetOpacity(kWindowAnimation_HideOpacity);
+  ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+  base::TimeDelta duration = base::TimeDelta::FromMilliseconds(
+      kLayerAnimationsForMinimizeDurationMS);
+  settings.SetTransitionDuration(duration);
   AddLayerAnimationsForMinimize(window, true);
 
   // Now that the window has been restored, we need to clear its animation style

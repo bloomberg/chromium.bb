@@ -45,7 +45,8 @@ const int DockedWindowLayoutManager::kMinDockGap = 2;
 const int DockedWindowLayoutManager::kIdealWidth = 250;
 const int kMinimumHeight = 250;
 const int kSlideDurationMs = 120;
-const int kFadeDurationMs = 720;
+const int kFadeDurationMs = 60;
+const int kMinimizeDurationMs = 720;
 
 namespace {
 
@@ -654,10 +655,17 @@ void DockedWindowLayoutManager::MaybeMinimizeChildrenExcept(
     if (window == child || !IsUsedByLayout(window))
       continue;
     int room_needed = GetWindowHeightCloseTo(window, 0) + kMinDockGap;
-    if (available_room > room_needed)
+    if (available_room > room_needed) {
       available_room -= room_needed;
-    else
+    } else {
+      // Slow down minimizing animations. Lock duration so that it is not
+      // overridden by other ScopedLayerAnimationSettings down the stack.
+      ui::ScopedLayerAnimationSettings settings(window->layer()->GetAnimator());
+      settings.SetTransitionDuration(
+          base::TimeDelta::FromMilliseconds(kMinimizeDurationMs));
+      settings.LockTransitionDuration();
       wm::GetWindowState(window)->Minimize();
+    }
   }
 }
 
@@ -674,7 +682,7 @@ void DockedWindowLayoutManager::RestoreDockedWindow(
     wm::WindowState* window_state) {
   aura::Window* window = window_state->window();
   DCHECK(!IsPopupOrTransient(window));
-  // Always place restored window at the top shuffling the other windows down.
+  // Always place restored window at the bottom shuffling the other windows up.
   // TODO(varkha): add a separate container for docked windows to keep track
   // of ordering.
   gfx::Display display = Shell::GetScreen()->GetDisplayNearestWindow(
@@ -688,7 +696,7 @@ void DockedWindowLayoutManager::RestoreDockedWindow(
     return;
   }
   gfx::Rect bounds(window->bounds());
-  bounds.set_y(work_area.y() - bounds.height());
+  bounds.set_y(work_area.bottom());
   window->SetBounds(bounds);
   window->Show();
   MaybeMinimizeChildrenExcept(window);
