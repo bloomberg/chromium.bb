@@ -84,8 +84,9 @@ class DesktopTestEnvironment(BaseTestEnvironment):
 class AndroidTestEnvironment(DesktopTestEnvironment):
   """Manages the environment java tests require to run on Android."""
 
-  def __init__(self, chrome_version='HEAD'):
+  def __init__(self, package, chrome_version='HEAD'):
     super(AndroidTestEnvironment, self).__init__(chrome_version)
+    self._package = package
     self._adb = None
     self._forwarder = None
 
@@ -105,4 +106,4 @@ class AndroidTestEnvironment(DesktopTestEnvironment):
 
   # override
   def GetOS(self):
-    return 'android'
+    return 'android:%s' % self._package
