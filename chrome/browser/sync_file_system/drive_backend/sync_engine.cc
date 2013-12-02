@@ -419,7 +419,7 @@ void SyncEngine::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
   if (status != SYNC_STATUS_OK)
     DCHECK_EQ(SYNC_ACTION_NONE, syncer->sync_action());
 
-  if (syncer->url().is_valid()) {
+  if (syncer->url().is_valid() && syncer->sync_action() != SYNC_ACTION_NONE) {
     FOR_EACH_OBSERVER(FileStatusObserver,
                       file_status_observers_,
                       OnFileStatusChanged(syncer->url(),
