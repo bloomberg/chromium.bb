@@ -307,6 +307,7 @@ v8.log
 /third_party/webrtc/modules/video_coding/codecs/vp8_internal
 /third_party/widevine/cdm/binaries
 /third_party/widevine/cdm/symbols
+/third_party/win_toolchain/.timestamps
 /third_party/win_toolchain/files
 /third_party/wix
 /third_party/xdg-utils
