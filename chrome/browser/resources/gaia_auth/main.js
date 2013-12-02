@@ -188,6 +188,9 @@ Authenticator.prototype = {
       'method': 'loginUILoaded'
     };
     window.parent.postMessage(msg, this.parentPage_);
+    if (this.inlineMode_) {
+      $('gaia-frame').focus();
+    }
   },
 
   onConfirmLogin_: function() {
