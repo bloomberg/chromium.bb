@@ -165,14 +165,14 @@ TEST SUCCEEDED: The value was the empty string. [tested HTMLLegendElement.align]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLIElement.type]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLLinkElement.charset]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLLinkElement.href]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLLinkElement.hreflang]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLLinkElement.media]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLLinkElement.rel]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLLinkElement.rev]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLLinkElement.target]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLLinkElement.type]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLinkElement.charset]
+TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLLinkElement.href]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLinkElement.hreflang]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLinkElement.media]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLinkElement.rel]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLinkElement.rev]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLinkElement.target]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLinkElement.type]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLMapElement.name]
 
