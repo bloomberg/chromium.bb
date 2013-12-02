@@ -563,6 +563,16 @@ class HWTestConfig(object):
     default_dict.update(dargs)
     return [cls(cls.DEFAULT_HW_TEST, **default_dict)]
 
+  @classmethod
+  def DefaultListPFQ(cls, **dargs):
+    """Returns a default list of HWTestConfig's for a PFQ build,
+    with overrides for optional args."""
+    default_dict = dict(pool=constants.HWTEST_MACH_POOL, timeout=120 * 60,
+                        file_bugs=True, priority=constants.HWTEST_PFQ_PRIORITY)
+    # Allows dargs overrides to default_dict for pfq.
+    default_dict.update(dargs)
+    return [cls(cls.DEFAULT_HW_TEST, **default_dict)]
+
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL, copy_perf_results=False,
                timeout=DEFAULT_HW_TEST_TIMEOUT, async=False, critical=False,
@@ -927,6 +937,8 @@ chrome_pfq.add_config('alex-chrome-pfq',
 
 chrome_pfq.add_config('lumpy-chrome-pfq',
   boards=['lumpy'],
+  hw_tests=HWTestConfig.DefaultListPFQ(),
+  upload_hw_test_artifacts=True,
 )
 
 chrome_pfq.add_config('daisy_spring-chrome-pfq',

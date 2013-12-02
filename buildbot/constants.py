@@ -265,12 +265,13 @@ HWTEST_TIMEOUT_EXTENSION = 10 * 60
 HWTEST_DEFAULT_PRIORITY = 'DEFAULT'
 HWTEST_CQ_PRIORITY = 'CQ'
 HWTEST_BUILD_PRIORITY = 'Build'
+HWTEST_PFQ_PRIORITY = 'PFQ'
 HWTEST_VALID_PRIORITIES = ['Weekly',
                            'Daily',
                            'PostBuild',
                            HWTEST_DEFAULT_PRIORITY,
                            HWTEST_BUILD_PRIORITY,
-                           'PFQ',
+                           HWTEST_PFQ_PRIORITY,
                            HWTEST_CQ_PRIORITY]
 
 # Defines VM Test types.
