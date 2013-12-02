@@ -235,6 +235,7 @@ window.onload = function() {
   displayVideoSize_($('remote-view'));
   getDevices();
   setPcDataChannelType();
+  setupLocalStorageFieldValues();
 };
 
 /**
@@ -389,4 +390,39 @@ function hookupDtmfSenderCallback_() {
     $('dtmf-tones-sent').value =
       tone.tone + '\n' + $('dtmf-tones-sent').value;
   });
+}
+
+/**
+ * A list of element id's to be registered for local storage.
+ */
+function setupLocalStorageFieldValues() {
+  registerLocalStorage_('pc-server');
+  registerLocalStorage_('pc-createanswer-constraints');
+  registerLocalStorage_('pc-createoffer-constraints');
+}
+
+/**
+ * Stores the value of the element_id parameter using local storage.
+ * @private
+ * @param {!string} element_id to be used as a key for local storage
+ */
+function registerLocalStorage_(element_id) {
+  var element = $(element_id);
+  element.onblur = function() { storeLocalStorageFieldValue_(this); };
+
+  if (localStorage.getItem(element.id) === 'undefined') {
+    storeLocalStorageFieldValue_(element);
+  } else {
+    element.value = localStorage.getItem(element.id);
+  }
+}
+
+/**
+ * Stores the string value of the element object using local storage.
+ * @private
+ * @param {!Object} element of which id is representing the key parameter for
+ *     local storage.
+ */
+function storeLocalStorageFieldValue_(element) {
+  localStorage.setItem(element.id, element.value);
 }
