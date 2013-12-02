@@ -151,7 +151,8 @@ bool Animation::IsFinishedAt(double monotonic_time) const {
          iterations_ >= 0 &&
          iterations_ * curve_->Duration() <= (monotonic_time -
                                               start_time() -
-                                              total_paused_time_);
+                                              total_paused_time_ +
+                                              time_offset_);
 }
 
 double Animation::TrimTimeToCurrentIteration(double monotonic_time) const {
