@@ -101,6 +101,10 @@ class LocalFileChangeTrackerTest : public testing::Test {
     change_tracker()->CollectLastDirtyChanges(file_system_context());
   }
 
+  void GetAllChangedURLs(fileapi::FileSystemURLSet* urls) {
+    change_tracker()->GetAllChangedURLs(urls);
+  }
+
   ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;
   base::MessageLoop message_loop_;
   CannedSyncableFileSystem file_system_;
@@ -566,8 +570,6 @@ TEST_F(LocalFileChangeTrackerTest, NextChangedURLsWithRecursiveCopy) {
 TEST_F(LocalFileChangeTrackerTest, NextChangedURLsWithRecursiveRemove) {
   EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_.OpenFileSystem());
 
-  FileSystemURLSet urls;
-
   const char kPath0[] = "dir a";
   const char kPath1[] = "dir a/file1";
   const char kPath2[] = "dir a/file2";
@@ -582,8 +584,8 @@ TEST_F(LocalFileChangeTrackerTest, NextChangedURLsWithRecursiveRemove) {
   EXPECT_EQ(base::PLATFORM_FILE_OK,
             file_system_.Remove(URL(kPath0), true /* recursive */));
 
-  std::deque<FileSystemURL> urls_to_process;
-  change_tracker()->GetNextChangedURLs(&urls_to_process, 0);
+  FileSystemURLSet urls;
+  GetAllChangedURLs(&urls);
 
   // This is actually not really desirable, but since the directory
   // creation and deletion have been offset now we only have two
@@ -595,13 +597,51 @@ TEST_F(LocalFileChangeTrackerTest, NextChangedURLsWithRecursiveRemove) {
   // TODO(kinuko): For micro optimization we could probably restore the ADD
   // change type (other than ADD_OR_UPDATE) and offset file ADD+DELETE
   // changes too.
-  ASSERT_EQ(2U, urls_to_process.size());
+  ASSERT_EQ(2U, urls.size());
 
   // The exact order of recursive removal cannot be determined.
-  EXPECT_TRUE(URL(kPath1) == urls_to_process[0] ||
-              URL(kPath2) == urls_to_process[0]);
-  EXPECT_TRUE(URL(kPath1) == urls_to_process[1] ||
-              URL(kPath2) == urls_to_process[1]);
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath1)));
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath2)));
+}
+
+TEST_F(LocalFileChangeTrackerTest, ResetForFileSystem) {
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system_.OpenFileSystem());
+
+  const char kPath0[] = "dir a";
+  const char kPath1[] = "dir a/file";
+  const char kPath2[] = "dir a/subdir";
+  const char kPath3[] = "dir b";
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.CreateDirectory(URL(kPath0)));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.CreateFile(URL(kPath1)));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.CreateDirectory(URL(kPath2)));
+  EXPECT_EQ(base::PLATFORM_FILE_OK,
+            file_system_.CreateDirectory(URL(kPath3)));
+
+  FileSystemURLSet urls;
+  GetAllChangedURLs(&urls);
+  EXPECT_EQ(4u, urls.size());
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath0)));
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath1)));
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath2)));
+  EXPECT_TRUE(ContainsKey(urls, URL(kPath3)));
+
+  // Reset all changes for the file system.
+  change_tracker()->ResetForFileSystem(
+      file_system_.origin(), file_system_.type());
+
+  GetAllChangedURLs(&urls);
+  EXPECT_TRUE(urls.empty());
+
+  // Make sure they're gone from the database too.
+  DropChangesInTracker();
+  RestoreChangesFromTrackerDB();
+
+  GetAllChangedURLs(&urls);
+  EXPECT_TRUE(urls.empty());
 }
 
 }  // namespace sync_file_system

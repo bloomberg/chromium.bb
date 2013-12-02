@@ -13,6 +13,7 @@
 #include "chrome/browser/sync_file_system/local/local_file_sync_status.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
+#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_file_util.h"
 #include "webkit/browser/fileapi/file_system_operation_context.h"
@@ -42,6 +43,7 @@ class LocalFileChangeTracker::TrackerDB {
   SyncStatusCode ClearDirty(const std::string& url);
   SyncStatusCode GetDirtyEntries(
       std::queue<FileSystemURL>* dirty_files);
+  SyncStatusCode WriteBatch(scoped_ptr<leveldb::WriteBatch> batch);
 
  private:
   enum RecoveryOption {
@@ -203,6 +205,37 @@ SyncStatusCode LocalFileChangeTracker::Initialize(
   if (status == SYNC_STATUS_OK)
     initialized_ = true;
   return status;
+}
+
+void LocalFileChangeTracker::ResetForFileSystem(
+    const GURL& origin,
+    fileapi::FileSystemType type) {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  for (FileChangeMap::iterator iter = changes_.begin();
+       iter != changes_.end();) {
+    fileapi::FileSystemURL url = iter->first;
+    if (url.origin() != origin || url.type() != type) {
+      ++iter;
+      continue;
+    }
+    mirror_changes_.erase(url);
+    change_seqs_.erase(iter->second.change_seq);
+    changes_.erase(iter++);
+
+    std::string serialized_url;
+    const bool should_success =
+        SerializeSyncableFileSystemURL(url, &serialized_url);
+    if (!should_success) {
+      NOTREACHED() << "Failed to serialize: " << url.DebugString();
+      continue;
+    }
+    batch->Delete(serialized_url);
+  }
+  // Fail to apply batch to database wouldn't have critical effect, they'll be
+  // just marked deleted on next relaunch.
+  tracker_db_->WriteBatch(batch.Pass());
+  UpdateNumChanges();
 }
 
 void LocalFileChangeTracker::UpdateNumChanges() {
@@ -467,6 +500,21 @@ SyncStatusCode LocalFileChangeTracker::TrackerDB::GetDirtyEntries(
     }
     dirty_files->push(url);
     iter->Next();
+  }
+  return SYNC_STATUS_OK;
+}
+
+SyncStatusCode LocalFileChangeTracker::TrackerDB::WriteBatch(
+    scoped_ptr<leveldb::WriteBatch> batch) {
+  if (db_status_ != SYNC_STATUS_OK)
+    return db_status_;
+
+  leveldb::Status status = db_->Write(leveldb::WriteOptions(), batch.get());
+  if (!status.ok() && !status.IsNotFound()) {
+    HandleError(FROM_HERE, status);
+    db_status_ = LevelDBStatusToSyncStatusCode(status);
+    db_.reset();
+    return db_status_;
   }
   return SYNC_STATUS_OK;
 }

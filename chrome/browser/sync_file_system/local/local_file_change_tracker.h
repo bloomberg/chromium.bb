@@ -90,13 +90,16 @@ class LocalFileChangeTracker
   // left after the last shutdown (if any).
   SyncStatusCode Initialize(fileapi::FileSystemContext* file_system_context);
 
+  // Resets all the changes recorded for the given |origin| and |type|.
+  // TODO(kinuko,nhiroki): Ideally this should be automatically called in
+  // DeleteFileSystem via QuotaUtil::DeleteOriginDataOnFileThread.
+  void ResetForFileSystem(const GURL& origin, fileapi::FileSystemType type);
+
   // This method is (exceptionally) thread-safe.
   int64 num_changes() const {
     base::AutoLock lock(num_changes_lock_);
     return num_changes_;
   }
-
-  void UpdateNumChanges();
 
  private:
   class TrackerDB;
@@ -117,6 +120,8 @@ class LocalFileChangeTracker
       fileapi::FileSystemURL::Comparator>
           FileChangeMap;
   typedef std::map<int64, fileapi::FileSystemURL> ChangeSeqMap;
+
+  void UpdateNumChanges();
 
   // This does mostly same as calling GetNextChangedURLs with max_url=0
   // except that it returns urls in set rather than in deque.
