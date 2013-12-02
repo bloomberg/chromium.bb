@@ -846,7 +846,7 @@ bool SelectFileDialogImpl::RunOpenMultiFileDialog(
   // We use OFN_NOCHANGEDIR so that the user can rename or delete the directory
   // without having to close Chrome first.
   ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER
-               | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT;
+               | OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT | OFN_NOCHANGEDIR;
 
   if (!filter.empty()) {
     ofn.lpstrFilter = filter.c_str();
