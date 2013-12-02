@@ -3163,6 +3163,14 @@ int SSLClientSocketNSS::InitializeSSLOptions() {
     SSL_CipherPrefSet(nss_fd_, *it, PR_FALSE);
   }
 
+  size_t cipher_order_len;
+  const uint16* cipher_order = GetNSSCipherOrder(&cipher_order_len);
+  if (cipher_order) {
+    rv = SSL_CipherOrderSet(nss_fd_, cipher_order, cipher_order_len);
+    if (rv != SECSuccess)
+      LogFailedNSSFunction(net_log_, "SSL_CipherOrderSet", "");
+  }
+
   // Support RFC 5077
   rv = SSL_OptionSet(nss_fd_, SSL_ENABLE_SESSION_TICKETS, PR_TRUE);
   if (rv != SECSuccess) {

@@ -1344,6 +1344,19 @@ SSL_CipherPrefSet(PRFileDesc *fd, PRInt32 which, PRBool enabled)
     return rv;
 }
 
+SECStatus
+SSL_CipherOrderSet(PRFileDesc *fd, const PRUint16 *ciphers, unsigned int len)
+{
+    sslSocket *ss = ssl_FindSocket(fd);
+
+    if (!ss) {
+	SSL_DBG(("%d: SSL[%d]: bad socket in CipherOrderSet", SSL_GETPID(),
+		fd));
+	return SECFailure;
+    }
+    return ssl3_CipherOrderSet(ss, ciphers, len);
+}
+
 SECStatus 
 SSL_CipherPrefGet(PRFileDesc *fd, PRInt32 which, PRBool *enabled)
 {

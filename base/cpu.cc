@@ -37,6 +37,7 @@ CPU::CPU()
     has_sse42_(false),
     has_avx_(false),
     has_avx_hardware_(false),
+    has_aesni_(false),
     has_non_stop_time_stamp_counter_(false),
     cpu_vendor_("unknown") {
   Initialize();
@@ -131,6 +132,7 @@ void CPU::Initialize() {
         has_avx_hardware_ &&
         (cpu_info[2] & 0x08000000) != 0 /* OSXSAVE */ &&
         (_xgetbv(0) & 6) == 6 /* XSAVE enabled by kernel */;
+    has_aesni_ = (cpu_info[2] & 0x02000000) != 0;
   }
 
   // Get the brand string of the cpu.

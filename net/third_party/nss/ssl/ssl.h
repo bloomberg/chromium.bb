@@ -265,6 +265,13 @@ SSL_IMPORT SECStatus SSL_CipherPrefGetDefault(PRInt32 cipher, PRBool *enabled);
 SSL_IMPORT SECStatus SSL_CipherPolicySet(PRInt32 cipher, PRInt32 policy);
 SSL_IMPORT SECStatus SSL_CipherPolicyGet(PRInt32 cipher, PRInt32 *policy);
 
+/* SSL_CipherOrderSet sets the cipher suite preference order from |ciphers|,
+ * which must be an array of cipher suite ids of length |len|. All the given
+ * cipher suite ids must appear in the array that is returned by
+ * |SSL_GetImplementedCiphers| and may only appear once, at most. */
+SSL_IMPORT SECStatus SSL_CipherOrderSet(PRFileDesc *fd, const PRUint16 *ciphers,
+                                        unsigned int len);
+
 /* SSLChannelBindingType enumerates the types of supported channel binding
  * values. See RFC 5929. */
 typedef enum SSLChannelBindingType {

@@ -10,6 +10,7 @@
 
 #include <prerror.h>
 
+#include "base/basictypes.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -26,6 +27,15 @@ void LogFailedNSSFunction(const BoundNetLog& net_log,
 
 // Map network error code to NSS error code.
 PRErrorCode MapErrorToNSS(int result);
+
+// GetNSSCipherOrder either returns NULL, to indicate that no special cipher
+// order is required, or it returns a pointer to an array of cipher suite ids.
+// On return, |*out_length| is set to the length of the returned array.
+//
+// The array, if not NULL, indicates the preferred order of cipher suites but
+// inclusion in the array does not mean that the given cipher suite should
+// necessarily be enabled.
+const uint16* GetNSSCipherOrder(size_t* out_length);
 
 // Map NSS error code to network error code.
 int MapNSSError(PRErrorCode err);

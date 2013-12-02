@@ -150,6 +150,9 @@ Patches:
     signed_certificate_timestamp (client only).
     patches/signedcertificatetimestamps.patch
 
+  * Add a function to allow the cipher suites preference order to be set.
+    patches/cipherorder.patch
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 

@@ -13,6 +13,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/cpu.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
@@ -27,11 +28,61 @@
 #include "base/win/windows_version.h"
 #endif
 
+namespace {
+
+// CiphersRemove takes a zero-terminated array of cipher suite ids in
+// |to_remove| and sets every instance of them in |ciphers| to zero. It returns
+// true if it found and removed every element of |to_remove|. It assumes that
+// there are no duplicates in |ciphers| nor in |to_remove|.
+bool CiphersRemove(const uint16* to_remove, uint16* ciphers, size_t num) {
+  size_t i, found = 0;
+
+  for (i = 0; ; i++) {
+    if (to_remove[i] == 0)
+      break;
+
+    for (size_t j = 0; j < num; j++) {
+      if (to_remove[i] == ciphers[j]) {
+        ciphers[j] = 0;
+        found++;
+        break;
+      }
+    }
+  }
+
+  return found == i;
+}
+
+// CiphersCompact takes an array of cipher suite ids in |ciphers|, where some
+// entries are zero, and moves the entries so that all the non-zero elements
+// are compacted at the end of the array.
+void CiphersCompact(uint16* ciphers, size_t num) {
+  size_t j = num - 1;
+
+  for (size_t i = num - 1; i < num; i--) {
+    if (ciphers[i] == 0)
+      continue;
+    ciphers[j--] = ciphers[i];
+  }
+}
+
+// CiphersCopy copies the zero-terminated array |in| to |out|. It returns the
+// number of cipher suite ids copied.
+size_t CiphersCopy(const uint16* in, uint16* out) {
+  for (size_t i = 0; ; i++) {
+    if (in[i] == 0)
+      return i;
+    out[i] = in[i];
+  }
+}
+
+}  // anonymous namespace
+
 namespace net {
 
 class NSSSSLInitSingleton {
  public:
-  NSSSSLInitSingleton() {
+  NSSSSLInitSingleton() : num_ciphers_(0) {
     crypto::EnsureNSSInit();
 
     NSS_SetDomesticPolicy();
@@ -86,14 +137,66 @@ class NSSSSLInitSingleton {
     // Enable SSL.
     SSL_OptionSetDefault(SSL_SECURITY, PR_TRUE);
 
+    // Calculate the order of ciphers that we'll use for NSS sockets. (Note
+    // that, even if a cipher is specified in the ordering, it must still be
+    // enabled in order to be included in a ClientHello.)
+    //
+    // Our top preference cipher suites are either forward-secret AES-GCM or
+    // forward-secret ChaCha20-Poly1305. If the local machine has AES-NI then
+    // we prefer AES-GCM, otherwise ChaCha20. The remainder of the cipher suite
+    // preference is inheriented from NSS. */
+    static const uint16 chacha_ciphers[] = {
+      TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
+      TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
+      0,
+    };
+    static const uint16 aes_gcm_ciphers[] = {
+      TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+      TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+      TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,
+      0,
+    };
+    const PRUint16* all_ciphers = SSL_GetImplementedCiphers();
+    num_ciphers_ = SSL_GetNumImplementedCiphers();
+    ciphers_.reset(new uint16[num_ciphers_]);
+    memcpy(ciphers_.get(), all_ciphers, sizeof(uint16)*num_ciphers_);
+
+    if (CiphersRemove(chacha_ciphers, ciphers_.get(), num_ciphers_) &&
+        CiphersRemove(aes_gcm_ciphers, ciphers_.get(), num_ciphers_)) {
+      CiphersCompact(ciphers_.get(), num_ciphers_);
+
+      const uint16* preference_ciphers = chacha_ciphers;
+      const uint16* other_ciphers = aes_gcm_ciphers;
+      base::CPU cpu;
+
+      if (cpu.has_aesni() && cpu.has_avx()) {
+        preference_ciphers = aes_gcm_ciphers;
+        other_ciphers = chacha_ciphers;
+      }
+      unsigned i = CiphersCopy(preference_ciphers, ciphers_.get());
+      CiphersCopy(other_ciphers, &ciphers_[i]);
+    } else {
+      ciphers_.reset();
+      num_ciphers_ = 0;
+    }
+
     // All other SSL options are set per-session by SSLClientSocket and
     // SSLServerSocket.
+  }
+
+  const uint16* GetNSSCipherOrder(size_t* out_length) {
+    *out_length = num_ciphers_;
+    return ciphers_.get();
   }
 
   ~NSSSSLInitSingleton() {
     // Have to clear the cache, or NSS_Shutdown fails with SEC_ERROR_BUSY.
     SSL_ClearSessionCache();
   }
+
+ private:
+  scoped_ptr<uint16[]> ciphers_;
+  size_t num_ciphers_;
 };
 
 static base::LazyInstance<NSSSSLInitSingleton> g_nss_ssl_init_singleton =
@@ -110,6 +213,10 @@ void EnsureNSSSSLInit() {
   base::ThreadRestrictions::ScopedAllowIO allow_io;
 
   g_nss_ssl_init_singleton.Get();
+}
+
+const uint16* GetNSSCipherOrder(size_t* out_length) {
+  return g_nss_ssl_init_singleton.Get().GetNSSCipherOrder(out_length);
 }
 
 // Map a Chromium net error code to an NSS error code.

@@ -61,3 +61,4 @@ SSL_HandshakeResumedSession
 SSL_RestartHandshakeAfterChannelIDReq
 SSL_GetChannelBinding
 SSL_PeerSignedCertTimestamps
+SSL_CipherOrderSet

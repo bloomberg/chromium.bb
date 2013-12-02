@@ -12423,6 +12423,44 @@ ssl3_CipherPrefGet(sslSocket *ss, ssl3CipherSuite which, PRBool *enabled)
     return rv;
 }
 
+SECStatus
+ssl3_CipherOrderSet(sslSocket *ss, const ssl3CipherSuite *ciphers, unsigned int len)
+{
+    unsigned int i;
+
+    for (i = 0; i < len; i++) {
+	PRUint16 id = ciphers[i];
+	unsigned int existingIndex, j;
+	PRBool found = PR_FALSE;
+
+	for (j = i; j < ssl_V3_SUITES_IMPLEMENTED; j++) {
+	    if (ss->cipherSuites[j].cipher_suite == id) {
+		existingIndex = j;
+		found = PR_TRUE;
+		break;
+	    }
+	}
+
+	if (!found) {
+	    PORT_SetError(SSL_ERROR_UNKNOWN_CIPHER_SUITE);
+	    return SECFailure;
+	}
+
+	if (existingIndex != i) {
+	    const ssl3CipherSuiteCfg temp = ss->cipherSuites[i];
+	    ss->cipherSuites[i] = ss->cipherSuites[existingIndex];
+	    ss->cipherSuites[existingIndex] = temp;
+	}
+    }
+
+    /* Disable all cipher suites that weren't included. */
+    for (; i < ssl_V3_SUITES_IMPLEMENTED; i++) {
+	ss->cipherSuites[i].enabled = 0;
+    }
+
+    return SECSuccess;
+}
+
 /* copy global default policy into socket. */
 void
 ssl3_InitSocketPolicy(sslSocket *ss)
