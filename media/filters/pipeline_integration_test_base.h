@@ -31,6 +31,17 @@ extern const char kNullVideoHash[];
 // Empty hash string.  Used to verify empty audio tracks.
 extern const char kNullAudioHash[];
 
+// Dummy tick clock which advances extremely quickly (1 minute every time
+// NowTicks() is called).
+class DummyTickClock : public base::TickClock {
+ public:
+  DummyTickClock() : now_() {}
+  virtual ~DummyTickClock() {}
+  virtual base::TimeTicks NowTicks() OVERRIDE;
+ private:
+  base::TimeTicks now_;
+};
+
 // Integration tests for Pipeline. Real demuxers, real decoders, and
 // base renderer implementations are used to verify pipeline functionality. The
 // renderers used in these tests rely heavily on the AudioRendererBase &
@@ -97,6 +108,7 @@ class PipelineIntegrationTestBase {
   PipelineStatus pipeline_status_;
   Demuxer::NeedKeyCB need_key_cb_;
   VideoFrame::Format last_video_frame_format_;
+  DummyTickClock dummy_clock_;
 
   void OnStatusCallbackChecked(PipelineStatus expected_status,
                                PipelineStatus status);

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/scoped_vector.h"
+#include "media/base/clock.h"
 #include "media/base/media_log.h"
 #include "media/filters/audio_renderer_impl.h"
 #include "media/filters/chunk_demuxer.h"
@@ -122,6 +123,9 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
                                         kTestType test_type) {
   hashing_enabled_ = test_type == kHashed;
   clockless_playback_ = test_type == kClockless;
+  if (clockless_playback_) {
+    pipeline_->SetClockForTesting(new Clock(&dummy_clock_));
+  }
   return Start(file_path, expected_status);
 }
 
@@ -229,30 +233,29 @@ PipelineIntegrationTestBase::CreateFilterCollection(
   scoped_ptr<FilterCollection> collection(new FilterCollection());
   collection->SetDemuxer(demuxer_.get());
 
+  ScopedVector<VideoDecoder> video_decoders;
+  video_decoders.push_back(
+      new VpxVideoDecoder(message_loop_.message_loop_proxy()));
+  video_decoders.push_back(
+      new FFmpegVideoDecoder(message_loop_.message_loop_proxy()));
+
+  // Disable frame dropping if hashing is enabled.
+  scoped_ptr<VideoRenderer> renderer(new VideoRendererImpl(
+      message_loop_.message_loop_proxy(),
+      video_decoders.Pass(),
+      base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
+                 base::Unretained(this),
+                 decryptor),
+      base::Bind(&PipelineIntegrationTestBase::OnVideoRendererPaint,
+                 base::Unretained(this)),
+      base::Bind(&PipelineIntegrationTestBase::OnSetOpaque,
+                 base::Unretained(this)),
+      false));
+  collection->SetVideoRenderer(renderer.Pass());
+
   if (!clockless_playback_) {
-    ScopedVector<VideoDecoder> video_decoders;
-    video_decoders.push_back(
-        new VpxVideoDecoder(message_loop_.message_loop_proxy()));
-    video_decoders.push_back(
-        new FFmpegVideoDecoder(message_loop_.message_loop_proxy()));
-
-    // Disable frame dropping if hashing is enabled.
-    scoped_ptr<VideoRenderer> renderer(new VideoRendererImpl(
-        message_loop_.message_loop_proxy(),
-        video_decoders.Pass(),
-        base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
-                   base::Unretained(this),
-                   decryptor),
-        base::Bind(&PipelineIntegrationTestBase::OnVideoRendererPaint,
-                   base::Unretained(this)),
-        base::Bind(&PipelineIntegrationTestBase::OnSetOpaque,
-                   base::Unretained(this)),
-        !hashing_enabled_));
-    collection->SetVideoRenderer(renderer.Pass());
-
     audio_sink_ = new NullAudioSink(message_loop_.message_loop_proxy());
   } else {
-    // audio only for clockless_playback_
     clockless_audio_sink_ = new ClocklessAudioSink();
   }
 
@@ -312,6 +315,11 @@ std::string PipelineIntegrationTestBase::GetAudioHash() {
 base::TimeDelta PipelineIntegrationTestBase::GetAudioTime() {
   DCHECK(clockless_playback_);
   return clockless_audio_sink_->render_time();
+}
+
+base::TimeTicks DummyTickClock::NowTicks() {
+  now_ += base::TimeDelta::FromSeconds(60);
+  return now_;
 }
 
 }  // namespace media
