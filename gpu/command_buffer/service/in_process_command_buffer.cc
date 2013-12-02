@@ -163,7 +163,7 @@ base::LazyInstance<base::Lock> SchedulerClientBase::all_clients_lock_ =
     LAZY_INSTANCE_INITIALIZER;
 
 SchedulerClientBase::SchedulerClientBase(bool need_thread) {
-  base::AutoLock(all_clients_lock_.Get());
+  base::AutoLock lock(all_clients_lock_.Get());
   if (need_thread) {
     if (!all_clients_.Get().empty()) {
       SchedulerClientBase* other = *all_clients_.Get().begin();
@@ -177,12 +177,12 @@ SchedulerClientBase::SchedulerClientBase(bool need_thread) {
 }
 
 SchedulerClientBase::~SchedulerClientBase() {
-  base::AutoLock(all_clients_lock_.Get());
+  base::AutoLock lock(all_clients_lock_.Get());
   all_clients_.Get().erase(this);
 }
 
 bool SchedulerClientBase::HasClients() {
-  base::AutoLock(all_clients_lock_.Get());
+  base::AutoLock lock(all_clients_lock_.Get());
   return !all_clients_.Get().empty();
 }
 
