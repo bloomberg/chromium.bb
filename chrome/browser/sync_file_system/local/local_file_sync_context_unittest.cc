@@ -668,6 +668,71 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion) {
   file_system.TearDown();
 }
 
+TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForDeletion_ForRoot) {
+  CannedSyncableFileSystem file_system(GURL(kOrigin1),
+                                       io_task_runner_.get(),
+                                       file_task_runner_.get());
+  file_system.SetUp();
+
+  sync_context_ = new LocalFileSyncContext(
+      dir_.path(), ui_task_runner_.get(), io_task_runner_.get());
+  ASSERT_EQ(SYNC_STATUS_OK,
+            file_system.MaybeInitializeFileSystemContext(sync_context_.get()));
+  ASSERT_EQ(base::PLATFORM_FILE_OK, file_system.OpenFileSystem());
+
+  // Record the initial usage (likely 0).
+  int64 initial_usage = -1;
+  int64 quota = -1;
+  EXPECT_EQ(quota::kQuotaStatusOk,
+            file_system.GetUsageAndQuota(&initial_usage, &quota));
+
+  // Create a file and directory in the file_system.
+  const FileSystemURL kFile(file_system.URL("file"));
+  const FileSystemURL kDir(file_system.URL("dir"));
+  const FileSystemURL kChild(file_system.URL("dir/child"));
+
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateFile(kFile));
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateDirectory(kDir));
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.CreateFile(kChild));
+
+  // At this point the usage must be greater than the initial usage.
+  int64 new_usage = -1;
+  EXPECT_EQ(quota::kQuotaStatusOk,
+            file_system.GetUsageAndQuota(&new_usage, &quota));
+  EXPECT_GT(new_usage, initial_usage);
+
+  const FileSystemURL kRoot(file_system.URL(""));
+
+  // Now let's apply remote deletion changes for the root.
+  FileChange change(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_DIRECTORY);
+  EXPECT_EQ(SYNC_STATUS_OK,
+            ApplyRemoteChange(file_system.file_system_context(),
+                              change, base::FilePath(), kRoot,
+                              SYNC_FILE_TYPE_DIRECTORY));
+
+  // Check the directory/files are deleted successfully.
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+            file_system.FileExists(kFile));
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+            file_system.DirectoryExists(kDir));
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND,
+            file_system.FileExists(kChild));
+
+  // All changes made for the previous creation must have been also reset.
+  FileSystemURLSet urls;
+  file_system.GetChangedURLsInTracker(&urls);
+  EXPECT_TRUE(urls.empty());
+
+  // The quota usage data must have reflected the deletion.
+  EXPECT_EQ(quota::kQuotaStatusOk,
+            file_system.GetUsageAndQuota(&new_usage, &quota));
+  EXPECT_EQ(new_usage, initial_usage);
+
+  sync_context_->ShutdownOnUIThread();
+  sync_context_ = NULL;
+  file_system.TearDown();
+}
+
 TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());

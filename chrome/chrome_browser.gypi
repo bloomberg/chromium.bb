@@ -2445,6 +2445,8 @@
         'browser/sync_file_system/local/local_file_sync_status.cc',
         'browser/sync_file_system/local/local_file_sync_status.h',
         'browser/sync_file_system/local/local_origin_change_observer.h',
+        'browser/sync_file_system/local/root_delete_helper.cc',
+        'browser/sync_file_system/local/root_delete_helper.h',
         'browser/sync_file_system/local/sync_file_system_backend.cc',
         'browser/sync_file_system/local/sync_file_system_backend.h',
         'browser/sync_file_system/local/syncable_file_operation_runner.cc',

@@ -43,6 +43,7 @@ class FileChange;
 class LocalFileChangeTracker;
 struct LocalFileSyncInfo;
 class LocalOriginChangeObserver;
+class RootDeleteHelper;
 class SyncableFileOperationRunner;
 
 // This class works as a bridge between LocalFileSyncService (which is a
@@ -277,7 +278,17 @@ class LocalFileSyncContext
                                bool for_snapshot_sync);
   void FinalizeSnapshotSyncOnIOThread(const fileapi::FileSystemURL& url);
 
-  void DidRemoveExistingEntryForApplyRemoteChange(
+  void HandleRemoteDelete(
+      fileapi::FileSystemContext* file_system_context,
+      const fileapi::FileSystemURL& url,
+      const SyncStatusCallback& callback);
+  void HandleRemoteAddOrUpdate(
+      fileapi::FileSystemContext* file_system_context,
+      const FileChange& change,
+      const base::FilePath& local_path,
+      const fileapi::FileSystemURL& url,
+      const SyncStatusCallback& callback);
+  void DidRemoveExistingEntryForRemoteAddOrUpdate(
       fileapi::FileSystemContext* file_system_context,
       const FileChange& change,
       const base::FilePath& local_path,
@@ -338,6 +349,10 @@ class LocalFileSyncContext
   base::Time last_notified_changes_;
   scoped_ptr<base::OneShotTimer<LocalFileSyncContext> > timer_on_io_;
   std::set<GURL> origins_with_pending_changes_;
+
+  // Populated while root directory deletion is being handled for
+  // ApplyRemoteChange(). Modified only on IO thread.
+  scoped_ptr<RootDeleteHelper> root_delete_helper_;
 
   ObserverList<LocalOriginChangeObserver> origin_change_observers_;
 

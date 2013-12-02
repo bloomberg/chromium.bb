@@ -14,8 +14,10 @@
 #include "chrome/browser/sync_file_system/file_change.h"
 #include "chrome/browser/sync_file_system/local/local_file_change_tracker.h"
 #include "chrome/browser/sync_file_system/local/local_origin_change_observer.h"
+#include "chrome/browser/sync_file_system/local/root_delete_helper.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/sync_file_system/local/syncable_file_operation_runner.h"
+#include "chrome/browser/sync_file_system/logger.h"
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -271,27 +273,65 @@ void LocalFileSyncContext::ApplyRemoteChange(
   DCHECK(!sync_status()->IsWriting(url));
 
   FileSystemOperation::StatusCallback operation_callback;
-  if (change.change() == FileChange::FILE_CHANGE_ADD_OR_UPDATE) {
-    operation_callback = base::Bind(
-        &LocalFileSyncContext::DidRemoveExistingEntryForApplyRemoteChange,
-        this,
-        make_scoped_refptr(file_system_context),
-        change,
-        local_path,
-        url,
-        callback);
-  } else {
-    DCHECK_EQ(FileChange::FILE_CHANGE_DELETE, change.change());
-    operation_callback = base::Bind(
-        &LocalFileSyncContext::DidApplyRemoteChange, this, url, callback);
+  switch (change.change()) {
+    case FileChange::FILE_CHANGE_DELETE:
+      HandleRemoteDelete(file_system_context, url, callback);
+      return;
+    case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
+      HandleRemoteAddOrUpdate(
+          file_system_context, change, local_path, url, callback);
+      return;
   }
-  FileSystemURL url_for_sync = CreateSyncableFileSystemURLForSync(
-      file_system_context, url);
-  file_system_context->operation_runner()->Remove(
-      url_for_sync, true /* recursive */, operation_callback);
+  NOTREACHED();
+  callback.Run(SYNC_STATUS_FAILED);
 }
 
-void LocalFileSyncContext::DidRemoveExistingEntryForApplyRemoteChange(
+void LocalFileSyncContext::HandleRemoteDelete(
+    FileSystemContext* file_system_context,
+    const FileSystemURL& url,
+    const SyncStatusCallback& callback) {
+  FileSystemURL url_for_sync = CreateSyncableFileSystemURLForSync(
+      file_system_context, url);
+
+  // Handle root directory case differently.
+  if (fileapi::VirtualPath::IsRootPath(url.path())) {
+    DCHECK(!root_delete_helper_);
+    root_delete_helper_.reset(new RootDeleteHelper(
+        file_system_context, sync_status(), url,
+        base::Bind(&LocalFileSyncContext::DidApplyRemoteChange,
+                   this, url, callback)));
+    root_delete_helper_->Run();
+    return;
+  }
+
+  file_system_context->operation_runner()->Remove(
+      url_for_sync, true /* recursive */,
+      base::Bind(&LocalFileSyncContext::DidApplyRemoteChange,
+                 this, url, callback));
+}
+
+void LocalFileSyncContext::HandleRemoteAddOrUpdate(
+    FileSystemContext* file_system_context,
+    const FileChange& change,
+    const base::FilePath& local_path,
+    const FileSystemURL& url,
+    const SyncStatusCallback& callback) {
+  FileSystemURL url_for_sync = CreateSyncableFileSystemURLForSync(
+      file_system_context, url);
+
+  file_system_context->operation_runner()->Remove(
+      url_for_sync, true /* recursive */,
+      base::Bind(
+          &LocalFileSyncContext::DidRemoveExistingEntryForRemoteAddOrUpdate,
+          this,
+          make_scoped_refptr(file_system_context),
+          change,
+          local_path,
+          url,
+          callback));
+}
+
+void LocalFileSyncContext::DidRemoveExistingEntryForRemoteAddOrUpdate(
     FileSystemContext* file_system_context,
     const FileChange& change,
     const base::FilePath& local_path,
@@ -511,6 +551,7 @@ void LocalFileSyncContext::NotifyAvailableChanges(
 void LocalFileSyncContext::ShutdownOnIOThread() {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   operation_runner_.reset();
+  root_delete_helper_.reset();
   sync_status_.reset();
   timer_on_io_.reset();
 }
@@ -846,6 +887,7 @@ void LocalFileSyncContext::DidApplyRemoteChange(
     const SyncStatusCallback& callback_on_ui,
     base::PlatformFileError file_error) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
+  root_delete_helper_.reset();
   ui_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(callback_on_ui,
