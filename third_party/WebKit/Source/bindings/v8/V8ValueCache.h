@@ -26,7 +26,6 @@
 #ifndef V8ValueCache_h
 #define V8ValueCache_h
 
-#include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/UnsafePersistent.h"
 #include <v8.h>
 #include "wtf/HashMap.h"
@@ -58,7 +57,7 @@ public:
     }
 
 private:
-    static void makeWeakCallback(v8::Isolate*, v8::Persistent<v8::String>*, StringImpl*);
+    static void setWeakCallback(const v8::WeakCallbackData<v8::String, StringImpl>&);
 
     v8::Handle<v8::String> v8ExternalStringSlow(StringImpl*, v8::Isolate*);
     void setReturnValueFromStringSlow(v8::ReturnValue<v8::Value>, StringImpl*);
