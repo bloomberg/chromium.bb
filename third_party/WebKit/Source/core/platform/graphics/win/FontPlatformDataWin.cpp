@@ -354,7 +354,7 @@ bool FontPlatformData::isFixedPitch() const
             // FIXME: Handle gracefully the error if this call also fails.
             // See http://crbug.com/6401.
             if (!GetTextMetrics(dc, &textMetric))
-                LOG_ERROR("Unable to get the text metrics after second attempt");
+                WTF_LOG_ERROR("Unable to get the text metrics after second attempt");
         }
     }
 
@@ -409,7 +409,7 @@ SCRIPT_FONTPROPERTIES* FontPlatformData::scriptFontProperties() const
                     // FIXME: Handle gracefully the error if this call also fails.
                     hr = ScriptGetFontProperties(dc, scriptCache(), m_scriptFontProperties.get());
                     if (S_OK != hr) {
-                        LOG_ERROR("Unable to get the font properties after second attempt");
+                        WTF_LOG_ERROR("Unable to get the font properties after second attempt");
                     }
                 }
             }

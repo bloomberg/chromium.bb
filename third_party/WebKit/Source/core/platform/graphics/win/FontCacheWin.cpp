@@ -284,7 +284,7 @@ static bool fontContainsCharacter(const FontPlatformData* fontData,
     if (!count && FontPlatformData::ensureFontLoaded(hfont))
         count = GetFontUnicodeRanges(hdc, 0);
     if (!count) {
-        LOG_ERROR("Unable to get the font unicode range after second attempt");
+        WTF_LOG_ERROR("Unable to get the font unicode range after second attempt");
         SelectObject(hdc, oldFont);
         return true;
     }

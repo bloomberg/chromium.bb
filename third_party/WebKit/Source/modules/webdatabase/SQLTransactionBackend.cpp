@@ -479,7 +479,7 @@ void SQLTransactionBackend::computeNextStateAndCleanupIfNeeded()
             || m_nextState == SQLTransactionState::CleanupAndTerminate
             || m_nextState == SQLTransactionState::CleanupAfterTransactionErrorCallback);
 
-        LOG(StorageAPI, "State %s\n", nameForSQLTransactionState(m_nextState));
+        WTF_LOG(StorageAPI, "State %s\n", nameForSQLTransactionState(m_nextState));
         return;
     }
 
@@ -489,7 +489,7 @@ void SQLTransactionBackend::computeNextStateAndCleanupIfNeeded()
     m_nextState = SQLTransactionState::End;
 
     // If the database was stopped, don't do anything and cancel queued work
-    LOG(StorageAPI, "Database was stopped or interrupted - cancelling work for this transaction");
+    WTF_LOG(StorageAPI, "Database was stopped or interrupted - cancelling work for this transaction");
 
     // The current SQLite transaction should be stopped, as well
     if (m_sqliteTransaction) {
@@ -549,7 +549,7 @@ SQLTransactionState SQLTransactionBackend::openTransactionAndPreflight()
     ASSERT(!m_database->sqliteDatabase().transactionInProgress());
     ASSERT(m_lockAcquired);
 
-    LOG(StorageAPI, "Opening and preflighting transaction %p", this);
+    WTF_LOG(StorageAPI, "Opening and preflighting transaction %p", this);
 
     // Set the maximum usage for this transaction if this transactions is not read-only
     if (!m_readOnly)
@@ -751,7 +751,7 @@ SQLTransactionState SQLTransactionBackend::cleanupAndTerminate()
     ASSERT(m_lockAcquired);
 
     // Spec 4.3.2.9: End transaction steps. There is no next step.
-    LOG(StorageAPI, "Transaction %p is complete\n", this);
+    WTF_LOG(StorageAPI, "Transaction %p is complete\n", this);
     ASSERT(!m_database->sqliteDatabase().transactionInProgress());
 
     // Phase 5 cleanup. See comment on the SQLTransaction life-cycle above.
@@ -775,7 +775,7 @@ SQLTransactionState SQLTransactionBackend::cleanupAfterTransactionErrorCallback(
 {
     ASSERT(m_lockAcquired);
 
-    LOG(StorageAPI, "Transaction %p is complete with an error\n", this);
+    WTF_LOG(StorageAPI, "Transaction %p is complete with an error\n", this);
     m_database->disableAuthorizer();
     if (m_sqliteTransaction) {
         // Spec 4.3.2.10: Rollback the transaction.
@@ -796,7 +796,7 @@ SQLTransactionState SQLTransactionBackend::cleanupAfterTransactionErrorCallback(
 // modify is m_requestedState which is meant for this purpose.
 void SQLTransactionBackend::requestTransitToState(SQLTransactionState nextState)
 {
-    LOG(StorageAPI, "Scheduling %s for transaction %p\n", nameForSQLTransactionState(nextState), this);
+    WTF_LOG(StorageAPI, "Scheduling %s for transaction %p\n", nameForSQLTransactionState(nextState), this);
     m_requestedState = nextState;
     ASSERT(m_requestedState != SQLTransactionState::End);
     m_database->scheduleTransactionStep(this);

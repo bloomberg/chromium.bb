@@ -254,8 +254,8 @@ void FFTFrame::print()
     FFTFrame& frame = *this;
     float* realP = frame.realData();
     float* imagP = frame.imagData();
-    LOG(WebAudio, "**** \n");
-    LOG(WebAudio, "DC = %f : nyquist = %f\n", realP[0], imagP[0]);
+    WTF_LOG(WebAudio, "**** \n");
+    WTF_LOG(WebAudio, "DC = %f : nyquist = %f\n", realP[0], imagP[0]);
 
     int n = m_FFTSize / 2;
 
@@ -263,9 +263,9 @@ void FFTFrame::print()
         double mag = sqrt(realP[i] * realP[i] + imagP[i] * imagP[i]);
         double phase = atan2(realP[i], imagP[i]);
 
-        LOG(WebAudio, "[%d] (%f %f)\n", i, mag, phase);
+        WTF_LOG(WebAudio, "[%d] (%f %f)\n", i, mag, phase);
     }
-    LOG(WebAudio, "****\n");
+    WTF_LOG(WebAudio, "****\n");
 }
 #endif // NDEBUG
 

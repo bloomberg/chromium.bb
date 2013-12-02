@@ -67,7 +67,7 @@ void DatabaseThread::requestTermination(DatabaseTaskSynchronizer *cleanupSync)
     ASSERT(!m_terminationRequested);
     m_terminationRequested = true;
     m_cleanupSync = cleanupSync;
-    LOG(StorageAPI, "DatabaseThread %p was asked to terminate\n", this);
+    WTF_LOG(StorageAPI, "DatabaseThread %p was asked to terminate\n", this);
     m_thread->postTask(new Task(WTF::bind(&DatabaseThread::cleanupDatabaseThread, this)));
 }
 
@@ -85,7 +85,7 @@ bool DatabaseThread::terminationRequested(DatabaseTaskSynchronizer* taskSynchron
 
 void DatabaseThread::cleanupDatabaseThread()
 {
-    LOG(StorageAPI, "Cleaning up DatabaseThread %p", this);
+    WTF_LOG(StorageAPI, "Cleaning up DatabaseThread %p", this);
 
     // Clean up the list of all pending transactions on this database thread
     m_transactionCoordinator->shutdown();

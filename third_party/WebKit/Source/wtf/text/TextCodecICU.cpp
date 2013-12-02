@@ -287,7 +287,7 @@ void TextCodecICU::createICUConverter() const
     m_converterICU = ucnv_open(m_encoding.name(), &err);
 #if !LOG_DISABLED
     if (err == U_AMBIGUOUS_ALIAS_WARNING)
-        LOG_ERROR("ICU ambiguous alias warning for encoding: %s", m_encoding.name());
+        WTF_LOG_ERROR("ICU ambiguous alias warning for encoding: %s", m_encoding.name());
 #endif
     if (m_converterICU)
         ucnv_setFallback(m_converterICU, TRUE);
@@ -344,7 +344,7 @@ String TextCodecICU::decode(const char* bytes, size_t length, bool flush, bool s
         createICUConverter();
         ASSERT(m_converterICU);
         if (!m_converterICU) {
-            LOG_ERROR("error creating ICU encoder even though encoding was in table");
+            WTF_LOG_ERROR("error creating ICU encoder even though encoding was in table");
             return String();
         }
     }

@@ -54,7 +54,7 @@ inline HTMLTrackElement::HTMLTrackElement(Document& document)
     : HTMLElement(trackTag, document)
     , m_loadTimer(this, &HTMLTrackElement::loadTimerFired)
 {
-    LOG(Media, "HTMLTrackElement::HTMLTrackElement - %p", this);
+    WTF_LOG(Media, "HTMLTrackElement::HTMLTrackElement - %p", this);
     ScriptWrappable::init(this);
 }
 
@@ -71,7 +71,7 @@ PassRefPtr<HTMLTrackElement> HTMLTrackElement::create(Document& document)
 
 Node::InsertionNotificationRequest HTMLTrackElement::insertedInto(ContainerNode* insertionPoint)
 {
-    LOG(Media, "HTMLTrackElement::insertedInto");
+    WTF_LOG(Media, "HTMLTrackElement::insertedInto");
 
     // Since we've moved to a new parent, we may now be able to load.
     scheduleLoad();
@@ -146,7 +146,7 @@ bool HTMLTrackElement::isURLAttribute(const Attribute& attribute) const
 
 void HTMLTrackElement::scheduleLoad()
 {
-    LOG(Media, "HTMLTrackElement::scheduleLoad");
+    WTF_LOG(Media, "HTMLTrackElement::scheduleLoad");
 
     // 1. If another occurrence of this algorithm is already running for this text track and its track element,
     // abort these steps, letting that other algorithm take care of this element.
@@ -170,7 +170,7 @@ void HTMLTrackElement::loadTimerFired(Timer<HTMLTrackElement>*)
     if (!fastHasAttribute(srcAttr))
         return;
 
-    LOG(Media, "HTMLTrackElement::loadTimerFired");
+    WTF_LOG(Media, "HTMLTrackElement::loadTimerFired");
 
     // 6. Set the text track readiness state to loading.
     setReadyState(HTMLTrackElement::LOADING);
@@ -203,7 +203,7 @@ bool HTMLTrackElement::canLoadUrl(const KURL& url)
         return false;
 
     if (!document().contentSecurityPolicy()->allowMediaFromSource(url)) {
-        LOG(Media, "HTMLTrackElement::canLoadUrl(%s) -> rejected by Content Security Policy", urlForLoggingTrack(url).utf8().data());
+        WTF_LOG(Media, "HTMLTrackElement::canLoadUrl(%s) -> rejected by Content Security Policy", urlForLoggingTrack(url).utf8().data());
         return false;
     }
 

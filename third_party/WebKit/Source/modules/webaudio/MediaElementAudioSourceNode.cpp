@@ -71,7 +71,7 @@ void MediaElementAudioSourceNode::setFormat(size_t numberOfChannels, float sourc
     if (numberOfChannels != m_sourceNumberOfChannels || sourceSampleRate != m_sourceSampleRate) {
         if (!numberOfChannels || numberOfChannels > AudioContext::maxNumberOfChannels() || sourceSampleRate < minSampleRate || sourceSampleRate > maxSampleRate) {
             // process() will generate silence for these uninitialized values.
-            LOG(Media, "MediaElementAudioSourceNode::setFormat(%u, %f) - unhandled format change", static_cast<unsigned>(numberOfChannels), sourceSampleRate);
+            WTF_LOG(Media, "MediaElementAudioSourceNode::setFormat(%u, %f) - unhandled format change", static_cast<unsigned>(numberOfChannels), sourceSampleRate);
             m_sourceNumberOfChannels = 0;
             m_sourceSampleRate = 0;
             return;

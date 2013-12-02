@@ -71,7 +71,7 @@ bool SQLiteDatabase::open(const String& filename, bool forWebSQLDatabase)
     m_openError = SQLiteFileSystem::openDatabase(filename, &m_db, forWebSQLDatabase);
     if (m_openError != SQLITE_OK) {
         m_openErrorMessage = m_db ? sqlite3_errmsg(m_db) : "sqlite_open returned null";
-        LOG_ERROR("SQLite database failed to load from %s\nCause - %s", filename.ascii().data(),
+        WTF_LOG_ERROR("SQLite database failed to load from %s\nCause - %s", filename.ascii().data(),
             m_openErrorMessage.data());
         sqlite3_close(m_db);
         m_db = 0;
@@ -81,7 +81,7 @@ bool SQLiteDatabase::open(const String& filename, bool forWebSQLDatabase)
     m_openError = sqlite3_extended_result_codes(m_db, 1);
     if (m_openError != SQLITE_OK) {
         m_openErrorMessage = sqlite3_errmsg(m_db);
-        LOG_ERROR("SQLite database error when enabling extended errors - %s", m_openErrorMessage.data());
+        WTF_LOG_ERROR("SQLite database error when enabling extended errors - %s", m_openErrorMessage.data());
         sqlite3_close(m_db);
         m_db = 0;
         return false;
@@ -93,7 +93,7 @@ bool SQLiteDatabase::open(const String& filename, bool forWebSQLDatabase)
         m_openErrorMessage = "sqlite_open returned null";
 
     if (!SQLiteStatement(*this, "PRAGMA temp_store = MEMORY;").executeCommand())
-        LOG_ERROR("SQLite database could not set temp_store to memory");
+        WTF_LOG_ERROR("SQLite database could not set temp_store to memory");
 
     return isOpen();
 }
@@ -176,9 +176,9 @@ void SQLiteDatabase::setMaximumSize(int64_t size)
     statement.prepare();
     if (statement.step() != SQLResultRow)
 #if OS(WIN)
-        LOG_ERROR("Failed to set maximum size of database to %I64i bytes", static_cast<long long>(size));
+        WTF_LOG_ERROR("Failed to set maximum size of database to %I64i bytes", static_cast<long long>(size));
 #else
-        LOG_ERROR("Failed to set maximum size of database to %lli bytes", static_cast<long long>(size));
+        WTF_LOG_ERROR("Failed to set maximum size of database to %lli bytes", static_cast<long long>(size));
 #endif
 
     enableAuthorizer(true);
@@ -243,7 +243,7 @@ void SQLiteDatabase::setBusyTimeout(int ms)
     if (m_db)
         sqlite3_busy_timeout(m_db, ms);
     else
-        LOG(SQLDatabase, "BusyTimeout set on non-open database");
+        WTF_LOG(SQLDatabase, "BusyTimeout set on non-open database");
 }
 
 void SQLiteDatabase::setBusyHandler(int(*handler)(void*, int))
@@ -251,7 +251,7 @@ void SQLiteDatabase::setBusyHandler(int(*handler)(void*, int))
     if (m_db)
         sqlite3_busy_handler(m_db, handler, NULL);
     else
-        LOG(SQLDatabase, "Busy handler set on non-open database");
+        WTF_LOG(SQLDatabase, "Busy handler set on non-open database");
 }
 
 bool SQLiteDatabase::executeCommand(const String& sql)
@@ -281,7 +281,7 @@ void SQLiteDatabase::clearAllTables()
     String query = "SELECT name FROM sqlite_master WHERE type='table';";
     Vector<String> tables;
     if (!SQLiteStatement(*this, query).returnTextResults(0, tables)) {
-        LOG(SQLDatabase, "Unable to retrieve list of tables from database");
+        WTF_LOG(SQLDatabase, "Unable to retrieve list of tables from database");
         return;
     }
 
@@ -289,14 +289,14 @@ void SQLiteDatabase::clearAllTables()
         if (*table == "sqlite_sequence")
             continue;
         if (!executeCommand("DROP TABLE " + *table))
-            LOG(SQLDatabase, "Unable to drop table %s", (*table).ascii().data());
+            WTF_LOG(SQLDatabase, "Unable to drop table %s", (*table).ascii().data());
     }
 }
 
 int SQLiteDatabase::runVacuumCommand()
 {
     if (!executeCommand("VACUUM;"))
-        LOG(SQLDatabase, "Unable to vacuum database - %s", lastErrorMsg());
+        WTF_LOG(SQLDatabase, "Unable to vacuum database - %s", lastErrorMsg());
     return lastError();
 }
 
@@ -306,7 +306,7 @@ int SQLiteDatabase::runIncrementalVacuumCommand()
     enableAuthorizer(false);
 
     if (!executeCommand("PRAGMA incremental_vacuum"))
-        LOG(SQLDatabase, "Unable to run incremental vacuum - %s", lastErrorMsg());
+        WTF_LOG(SQLDatabase, "Unable to run incremental vacuum - %s", lastErrorMsg());
 
     enableAuthorizer(true);
     return lastError();
@@ -438,7 +438,7 @@ int SQLiteDatabase::authorizerFunction(void* userData, int actionCode, const cha
 void SQLiteDatabase::setAuthorizer(PassRefPtr<DatabaseAuthorizer> auth)
 {
     if (!m_db) {
-        LOG_ERROR("Attempt to set an authorizer on a non-open SQL database");
+        WTF_LOG_ERROR("Attempt to set an authorizer on a non-open SQL database");
         ASSERT_NOT_REACHED();
         return;
     }

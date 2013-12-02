@@ -104,7 +104,7 @@ void ProgressTracker::reset()
 
 void ProgressTracker::progressStarted(Frame* frame)
 {
-    LOG(Progress, "Progress started (%p) - frame %p(\"%s\"), value %f, tracked frames %d, originating frame %p", this, frame, frame->tree().uniqueName().string().utf8().data(), m_progressValue, m_numProgressTrackedFrames, m_originatingProgressFrame.get());
+    WTF_LOG(Progress, "Progress started (%p) - frame %p(\"%s\"), value %f, tracked frames %d, originating frame %p", this, frame, frame->tree().uniqueName().string().utf8().data(), m_progressValue, m_numProgressTrackedFrames, m_originatingProgressFrame.get());
 
     if (m_numProgressTrackedFrames == 0 || m_originatingProgressFrame == frame) {
         reset();
@@ -119,7 +119,7 @@ void ProgressTracker::progressStarted(Frame* frame)
 
 void ProgressTracker::progressCompleted(Frame* frame)
 {
-    LOG(Progress, "Progress completed (%p) - frame %p(\"%s\"), value %f, tracked frames %d, originating frame %p", this, frame, frame->tree().uniqueName().string().utf8().data(), m_progressValue, m_numProgressTrackedFrames, m_originatingProgressFrame.get());
+    WTF_LOG(Progress, "Progress completed (%p) - frame %p(\"%s\"), value %f, tracked frames %d, originating frame %p", this, frame, frame->tree().uniqueName().string().utf8().data(), m_progressValue, m_numProgressTrackedFrames, m_originatingProgressFrame.get());
 
     if (m_numProgressTrackedFrames <= 0)
         return;
@@ -130,7 +130,7 @@ void ProgressTracker::progressCompleted(Frame* frame)
 
 void ProgressTracker::finalProgressComplete()
 {
-    LOG(Progress, "Final progress complete (%p)", this);
+    WTF_LOG(Progress, "Final progress complete (%p)", this);
 
     RefPtr<Frame> frame = m_originatingProgressFrame.release();
 
@@ -148,7 +148,7 @@ void ProgressTracker::finalProgressComplete()
 
 void ProgressTracker::incrementProgress(unsigned long identifier, const ResourceResponse& response)
 {
-    LOG(Progress, "Progress incremented (%p) - value %f, tracked frames %d, originating frame %p", this, m_progressValue, m_numProgressTrackedFrames, m_originatingProgressFrame.get());
+    WTF_LOG(Progress, "Progress incremented (%p) - value %f, tracked frames %d, originating frame %p", this, m_progressValue, m_numProgressTrackedFrames, m_originatingProgressFrame.get());
 
     if (m_numProgressTrackedFrames <= 0)
         return;
@@ -207,7 +207,7 @@ void ProgressTracker::incrementProgress(unsigned long identifier, const char*, i
     double now = currentTime();
     double notifiedProgressTimeDelta = now - m_lastNotifiedProgressTime;
 
-    LOG(Progress, "Progress incremented (%p) - value %f, tracked frames %d", this, m_progressValue, m_numProgressTrackedFrames);
+    WTF_LOG(Progress, "Progress incremented (%p) - value %f, tracked frames %d", this, m_progressValue, m_numProgressTrackedFrames);
     double notificationProgressDelta = m_progressValue - m_lastNotifiedProgressValue;
     if ((notificationProgressDelta >= m_progressNotificationInterval ||
          notifiedProgressTimeDelta >= m_progressNotificationTimeInterval) &&

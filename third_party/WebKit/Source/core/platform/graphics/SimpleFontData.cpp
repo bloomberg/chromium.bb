@@ -104,7 +104,7 @@ void SimpleFontData::platformGlyphInit()
 {
     GlyphPage* glyphPageZero = GlyphPageTreeNode::getRootChild(this, 0)->page();
     if (!glyphPageZero) {
-        LOG_ERROR("Failed to get glyph page zero.");
+        WTF_LOG_ERROR("Failed to get glyph page zero.");
         m_spaceGlyph = 0;
         m_spaceWidth = 0;
         m_zeroGlyph = 0;
@@ -136,7 +136,7 @@ void SimpleFontData::platformGlyphInit()
     // are mapped to the ZERO WIDTH SPACE glyph.
     if (m_zeroWidthSpaceGlyph == m_spaceGlyph) {
         m_zeroWidthSpaceGlyph = 0;
-        LOG_ERROR("Font maps SPACE and ZERO WIDTH SPACE to the same glyph. Glyph width will not be overridden.");
+        WTF_LOG_ERROR("Font maps SPACE and ZERO WIDTH SPACE to the same glyph. Glyph width will not be overridden.");
     }
 
     m_missingGlyphData.fontData = this;

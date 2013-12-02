@@ -297,7 +297,7 @@ bool PageSerializer::shouldAddURL(const KURL& url)
 void PageSerializer::addToResources(Resource* resource, PassRefPtr<SharedBuffer> data, const KURL& url)
 {
     if (!data) {
-        LOG_ERROR("No data for resource %s", url.string().utf8().data());
+        WTF_LOG_ERROR("No data for resource %s", url.string().utf8().data());
         return;
     }
 

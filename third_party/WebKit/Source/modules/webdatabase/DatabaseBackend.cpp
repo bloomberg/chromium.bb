@@ -135,7 +135,7 @@ void DatabaseBackend::scheduleTransaction()
 
     if (transaction && databaseContext()->databaseThread()) {
         OwnPtr<DatabaseTransactionTask> task = DatabaseTransactionTask::create(transaction);
-        LOG(StorageAPI, "Scheduling DatabaseTransactionTask %p for transaction %p\n", task.get(), task->transaction());
+        WTF_LOG(StorageAPI, "Scheduling DatabaseTransactionTask %p for transaction %p\n", task.get(), task->transaction());
         m_transactionInProgress = true;
         databaseContext()->databaseThread()->scheduleTask(task.release());
     } else
@@ -148,7 +148,7 @@ void DatabaseBackend::scheduleTransactionStep(SQLTransactionBackend* transaction
         return;
 
     OwnPtr<DatabaseTransactionTask> task = DatabaseTransactionTask::create(transaction);
-    LOG(StorageAPI, "Scheduling DatabaseTransactionTask %p for the transaction step\n", task.get());
+    WTF_LOG(StorageAPI, "Scheduling DatabaseTransactionTask %p for the transaction step\n", task.get());
     databaseContext()->databaseThread()->scheduleTask(task.release());
 }
 

@@ -72,7 +72,7 @@ public:
             }
 
             if (U_FAILURE(openStatus)) {
-                LOG_ERROR("icu::BreakIterator construction failed with status %d", openStatus);
+                WTF_LOG_ERROR("icu::BreakIterator construction failed with status %d", openStatus);
                 return 0;
             }
         }
@@ -494,14 +494,14 @@ static TextBreakIterator* wordBreakIterator(const LChar* string, int length)
     UErrorCode openStatus = U_ZERO_ERROR;
     UText* text = textOpenLatin1(&textLocal, string, length, 0, 0, &openStatus);
     if (U_FAILURE(openStatus)) {
-        LOG_ERROR("textOpenLatin1 failed with status %d", openStatus);
+        WTF_LOG_ERROR("textOpenLatin1 failed with status %d", openStatus);
         return 0;
     }
 
     UErrorCode setTextStatus = U_ZERO_ERROR;
     breakIter->setText(text, setTextStatus);
     if (U_FAILURE(setTextStatus))
-        LOG_ERROR("BreakIterator::seText failed with status %d", setTextStatus);
+        WTF_LOG_ERROR("BreakIterator::seText failed with status %d", setTextStatus);
 
     utext_close(text);
 
@@ -555,14 +555,14 @@ TextBreakIterator* acquireLineBreakIterator(const LChar* string, int length, con
     UErrorCode openStatus = U_ZERO_ERROR;
     UText* text = textOpenLatin1(&textLocal, string, length, priorContext, priorContextLength, &openStatus);
     if (U_FAILURE(openStatus)) {
-        LOG_ERROR("textOpenLatin1 failed with status %d", openStatus);
+        WTF_LOG_ERROR("textOpenLatin1 failed with status %d", openStatus);
         return 0;
     }
 
     UErrorCode setTextStatus = U_ZERO_ERROR;
     iterator->setText(text, setTextStatus);
     if (U_FAILURE(setTextStatus)) {
-        LOG_ERROR("ubrk_setUText failed with status %d", setTextStatus);
+        WTF_LOG_ERROR("ubrk_setUText failed with status %d", setTextStatus);
         return 0;
     }
 
@@ -582,14 +582,14 @@ TextBreakIterator* acquireLineBreakIterator(const UChar* string, int length, con
     UErrorCode openStatus = U_ZERO_ERROR;
     UText* text = textOpenUTF16(&textLocal, string, length, priorContext, priorContextLength, &openStatus);
     if (U_FAILURE(openStatus)) {
-        LOG_ERROR("textOpenUTF16 failed with status %d", openStatus);
+        WTF_LOG_ERROR("textOpenUTF16 failed with status %d", openStatus);
         return 0;
     }
 
     UErrorCode setTextStatus = U_ZERO_ERROR;
     iterator->setText(text, setTextStatus);
     if (U_FAILURE(setTextStatus)) {
-        LOG_ERROR("ubrk_setUText failed with status %d", setTextStatus);
+        WTF_LOG_ERROR("ubrk_setUText failed with status %d", setTextStatus);
         return 0;
     }
 

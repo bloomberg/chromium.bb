@@ -226,7 +226,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getSVGPropertyCSSValue(CSSProp
         // in either this switch statement or the one in CSSComputedStyleDelcaration::getPropertyCSSValue
         ASSERT_WITH_MESSAGE(0, "unimplemented propertyID: %d", propertyID);
     }
-    LOG_ERROR("unimplemented propertyID: %d", propertyID);
+    WTF_LOG_ERROR("unimplemented propertyID: %d", propertyID);
     return 0;
 }
 

@@ -171,7 +171,7 @@ void MediaSourceBase::setReadyState(const AtomicString& state)
     ASSERT(state == openKeyword() || state == closedKeyword() || state == endedKeyword());
 
     AtomicString oldState = readyState();
-    LOG(Media, "MediaSourceBase::setReadyState() %p : %s -> %s", this, oldState.string().ascii().data(), state.string().ascii().data());
+    WTF_LOG(Media, "MediaSourceBase::setReadyState() %p : %s -> %s", this, oldState.string().ascii().data(), state.string().ascii().data());
 
     if (state == closedKeyword()) {
         m_webMediaSource.clear();

@@ -155,7 +155,7 @@ Resource::~Resource()
 
 void Resource::failBeforeStarting()
 {
-    LOG(ResourceLoading, "Cannot start loading '%s'", url().string().latin1().data());
+    WTF_LOG(ResourceLoading, "Cannot start loading '%s'", url().string().latin1().data());
     error(Resource::LoadError);
 }
 
@@ -589,7 +589,7 @@ void Resource::setResourceToRevalidate(Resource* resource)
     ASSERT(m_handlesToRevalidate.isEmpty());
     ASSERT(resource->type() == type());
 
-    LOG(ResourceLoading, "Resource %p setResourceToRevalidate %p", this, resource);
+    WTF_LOG(ResourceLoading, "Resource %p setResourceToRevalidate %p", this, resource);
 
     // The following assert should be investigated whenever it occurs. Although it should never fire, it currently does in rare circumstances.
     // https://bugs.webkit.org/show_bug.cgi?id=28604.
@@ -622,7 +622,7 @@ void Resource::switchClientsToRevalidatedResource()
     ASSERT(m_resourceToRevalidate->inCache());
     ASSERT(!inCache());
 
-    LOG(ResourceLoading, "Resource %p switchClientsToRevalidatedResource %p", this, m_resourceToRevalidate);
+    WTF_LOG(ResourceLoading, "Resource %p switchClientsToRevalidatedResource %p", this, m_resourceToRevalidate);
 
     m_resourceToRevalidate->m_identifier = m_identifier;
 
@@ -710,7 +710,7 @@ void Resource::revalidationSucceeded(const ResourceResponse& response)
 void Resource::revalidationFailed()
 {
     ASSERT(WTF::isMainThread());
-    LOG(ResourceLoading, "Revalidation failed for %p", this);
+    WTF_LOG(ResourceLoading, "Revalidation failed for %p", this);
     ASSERT(resourceToRevalidate());
     clearResourceToRevalidate();
 }
@@ -768,13 +768,13 @@ bool Resource::mustRevalidateDueToCacheHeaders(CachePolicy cachePolicy) const
         return true;
 
     if (m_response.cacheControlContainsNoCache() || m_response.cacheControlContainsNoStore()) {
-        LOG(ResourceLoading, "Resource %p mustRevalidate because of m_response.cacheControlContainsNoCache() || m_response.cacheControlContainsNoStore()\n", this);
+        WTF_LOG(ResourceLoading, "Resource %p mustRevalidate because of m_response.cacheControlContainsNoCache() || m_response.cacheControlContainsNoStore()\n", this);
         return true;
     }
 
     if (cachePolicy == CachePolicyCache) {
         if (m_response.cacheControlContainsMustRevalidate() && isExpired()) {
-            LOG(ResourceLoading, "Resource %p mustRevalidate because of cachePolicy == CachePolicyCache and m_response.cacheControlContainsMustRevalidate() && isExpired()\n", this);
+            WTF_LOG(ResourceLoading, "Resource %p mustRevalidate because of cachePolicy == CachePolicyCache and m_response.cacheControlContainsMustRevalidate() && isExpired()\n", this);
             return true;
         }
         return false;
@@ -782,7 +782,7 @@ bool Resource::mustRevalidateDueToCacheHeaders(CachePolicy cachePolicy) const
 
     // CachePolicyVerify
     if (isExpired()) {
-        LOG(ResourceLoading, "Resource %p mustRevalidate because of isExpired()\n", this);
+        WTF_LOG(ResourceLoading, "Resource %p mustRevalidate because of isExpired()\n", this);
         return true;
     }
 

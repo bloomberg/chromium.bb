@@ -239,7 +239,7 @@ void AnimationBase::updateStateMachine(AnimStateInput input, double param)
         case AnimationStateEnding:
 #if !LOG_DISABLED
             if (input != AnimationStateInputEndTimerFired && input != AnimationStateInputPlayStatePaused)
-                LOG_ERROR("State is AnimationStateEnding, but input is not AnimationStateInputEndTimerFired or AnimationStateInputPlayStatePaused. It is %d.", input);
+                WTF_LOG_ERROR("State is AnimationStateEnding, but input is not AnimationStateInputEndTimerFired or AnimationStateInputPlayStatePaused. It is %d.", input);
 #endif
             if (input == AnimationStateInputEndTimerFired) {
 

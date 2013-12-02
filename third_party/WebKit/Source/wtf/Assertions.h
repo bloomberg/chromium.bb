@@ -316,30 +316,30 @@ while (0)
 } while (0)
 #endif
 
-/* LOG_ERROR */
+/* WTF_LOG_ERROR */
 
 #if ERROR_DISABLED
-#define LOG_ERROR(...) ((void)0)
+#define WTF_LOG_ERROR(...) ((void)0)
 #else
-#define LOG_ERROR(...) WTFReportError(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, __VA_ARGS__)
+#define WTF_LOG_ERROR(...) WTFReportError(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, __VA_ARGS__)
 #endif
 
-/* LOG */
+/* WTF_LOG */
 
 #if LOG_DISABLED
-#define LOG(channel, ...) ((void)0)
+#define WTF_LOG(channel, ...) ((void)0)
 #else
-#define LOG(channel, ...) WTFLog(&JOIN_LOG_CHANNEL_WITH_PREFIX(LOG_CHANNEL_PREFIX, channel), __VA_ARGS__)
+#define WTF_LOG(channel, ...) WTFLog(&JOIN_LOG_CHANNEL_WITH_PREFIX(LOG_CHANNEL_PREFIX, channel), __VA_ARGS__)
 #define JOIN_LOG_CHANNEL_WITH_PREFIX(prefix, channel) JOIN_LOG_CHANNEL_WITH_PREFIX_LEVEL_2(prefix, channel)
 #define JOIN_LOG_CHANNEL_WITH_PREFIX_LEVEL_2(prefix, channel) prefix ## channel
 #endif
 
-/* LOG_VERBOSE */
+/* WTF_LOG_VERBOSE */
 
 #if LOG_DISABLED
-#define LOG_VERBOSE(channel, ...) ((void)0)
+#define WTF_LOG_VERBOSE(channel, ...) ((void)0)
 #else
-#define LOG_VERBOSE(channel, ...) WTFLogVerbose(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, &JOIN_LOG_CHANNEL_WITH_PREFIX(LOG_CHANNEL_PREFIX, channel), __VA_ARGS__)
+#define WTF_LOG_VERBOSE(channel, ...) WTFLogVerbose(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, &JOIN_LOG_CHANNEL_WITH_PREFIX(LOG_CHANNEL_PREFIX, channel), __VA_ARGS__)
 #endif
 
 /* UNREACHABLE_FOR_PLATFORM */

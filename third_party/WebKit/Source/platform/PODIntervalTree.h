@@ -240,7 +240,7 @@ private:
         if (!(localMaxValue == node->data().maxHigh())) {
 #ifndef NDEBUG
             String localMaxValueString = ValueToString<T>::string(localMaxValue);
-            LOG_ERROR("PODIntervalTree verification failed at node 0x%p: localMaxValue=%s and data=%s",
+            WTF_LOG_ERROR("PODIntervalTree verification failed at node 0x%p: localMaxValue=%s and data=%s",
                 node, localMaxValueString.utf8().data(), node->data().toString().utf8().data());
 #endif
             return false;

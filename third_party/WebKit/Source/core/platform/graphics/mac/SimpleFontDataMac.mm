@@ -174,18 +174,18 @@ void SimpleFontData::platformInit()
                 m_platformData.setFont([[NSFontManager sharedFontManager] convertFont:m_platformData.font() toFamily:webFallbackFontFamily()]);
                 if (!initFontData(this)) {
                     // We tried, Times, Times New Roman, and the system font. No joy. We have to give up.
-                    LOG_ERROR("unable to initialize with font %@", initialFont.get());
+                    WTF_LOG_ERROR("unable to initialize with font %@", initialFont.get());
                     failedSetup = true;
                 }
             } else {
                 // We tried the requested font and the system font. No joy. We have to give up.
-                LOG_ERROR("unable to initialize with font %@", initialFont.get());
+                WTF_LOG_ERROR("unable to initialize with font %@", initialFont.get());
                 failedSetup = true;
             }
         }
 
         // Report the problem.
-        LOG_ERROR("Corrupt font detected, using %@ in place of %@.",
+        WTF_LOG_ERROR("Corrupt font detected, using %@ in place of %@.",
             [m_platformData.font() familyName], [initialFont.get() familyName]);
     }
 
@@ -193,7 +193,7 @@ void SimpleFontData::platformInit()
     // This is probably because Times and Times New Roman are both unavailable.
     if (failedSetup) {
         m_platformData.setFont([NSFont systemFontOfSize:[m_platformData.font() pointSize]]);
-        LOG_ERROR("failed to set up font, using system font %s", m_platformData.font());
+        WTF_LOG_ERROR("failed to set up font, using system font %s", m_platformData.font());
         initFontData(this);
     }
     
@@ -390,7 +390,7 @@ float SimpleFontData::platformWidthForGlyph(Glyph glyph) const
             float pointSize = platformData().m_size;
             CGAffineTransform m = CGAffineTransformMakeScale(pointSize, pointSize);
             if (!CGFontGetGlyphAdvancesForStyle(platformData().cgFont(), &m, cgFontRenderingModeForNSFont(font), &glyph, 1, &advance)) {
-                LOG_ERROR("Unable to cache glyph widths for %@ %f", [font displayName], pointSize);
+                WTF_LOG_ERROR("Unable to cache glyph widths for %@ %f", [font displayName], pointSize);
                 advance.width = 0;
             }
         }

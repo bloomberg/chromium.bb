@@ -178,7 +178,7 @@ static void logOpenDatabaseError(ExecutionContext* context, const String& name)
 {
     UNUSED_PARAM(context);
     UNUSED_PARAM(name);
-    LOG(StorageAPI, "Database %s for origin %s not allowed to be established", name.ascii().data(),
+    WTF_LOG(StorageAPI, "Database %s for origin %s not allowed to be established", name.ascii().data(),
         context->securityOrigin()->toString().ascii().data());
 }
 
@@ -234,7 +234,7 @@ PassRefPtr<Database> DatabaseManager::openDatabase(ExecutionContext* context,
     InspectorInstrumentation::didOpenDatabase(context, database, context->securityOrigin()->host(), name, expectedVersion);
 
     if (backend->isNew() && creationCallback.get()) {
-        LOG(StorageAPI, "Scheduling DatabaseCreationCallbackTask for database %p\n", database.get());
+        WTF_LOG(StorageAPI, "Scheduling DatabaseCreationCallbackTask for database %p\n", database.get());
         database->m_executionContext->postTask(DatabaseCreationCallbackTask::create(database, creationCallback));
     }
 
@@ -259,7 +259,7 @@ PassRefPtr<DatabaseSync> DatabaseManager::openDatabaseSync(ExecutionContext* con
     RefPtr<DatabaseSync> database = DatabaseSync::create(context, backend);
 
     if (backend->isNew() && creationCallback.get()) {
-        LOG(StorageAPI, "Invoking the creation callback for database %p\n", database.get());
+        WTF_LOG(StorageAPI, "Invoking the creation callback for database %p\n", database.get());
         creationCallback->handleEvent(database.get());
     }
 

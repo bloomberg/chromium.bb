@@ -63,7 +63,7 @@ void PrintContext::computePageRects(const FloatRect& printRect, float headerHeig
         return;
 
     if (userScaleFactor <= 0) {
-        LOG_ERROR("userScaleFactor has bad value %.2f", userScaleFactor);
+        WTF_LOG_ERROR("userScaleFactor has bad value %.2f", userScaleFactor);
         return;
     }
 
@@ -77,7 +77,7 @@ void PrintContext::computePageRects(const FloatRect& printRect, float headerHeig
     pageHeight -= headerHeight + footerHeight;
 
     if (pageHeight <= 0) {
-        LOG_ERROR("pageHeight has bad value %.2f", pageHeight);
+        WTF_LOG_ERROR("pageHeight has bad value %.2f", pageHeight);
         return;
     }
 

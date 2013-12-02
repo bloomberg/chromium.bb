@@ -58,7 +58,7 @@ PassRefPtr<MediaSource> MediaSource::create(ExecutionContext* context)
 MediaSource::MediaSource(ExecutionContext* context)
     : MediaSourceBase(context)
 {
-    LOG(Media, "MediaSource::MediaSource %p", this);
+    WTF_LOG(Media, "MediaSource::MediaSource %p", this);
     ScriptWrappable::init(this);
     m_sourceBuffers = SourceBufferList::create(executionContext(), asyncEventQueue());
     m_activeSourceBuffers = SourceBufferList::create(executionContext(), asyncEventQueue());
@@ -66,13 +66,13 @@ MediaSource::MediaSource(ExecutionContext* context)
 
 MediaSource::~MediaSource()
 {
-    LOG(Media, "MediaSource::~MediaSource %p", this);
+    WTF_LOG(Media, "MediaSource::~MediaSource %p", this);
     ASSERT(isClosed());
 }
 
 SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& exceptionState)
 {
-    LOG(Media, "MediaSource::addSourceBuffer(%s) %p", type.ascii().data(), this);
+    WTF_LOG(Media, "MediaSource::addSourceBuffer(%s) %p", type.ascii().data(), this);
 
     // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
     // 1. If type is null or an empty then throw an InvalidAccessError exception and
@@ -118,7 +118,7 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
 
 void MediaSource::removeSourceBuffer(SourceBuffer* buffer, ExceptionState& exceptionState)
 {
-    LOG(Media, "MediaSource::removeSourceBuffer() %p", this);
+    WTF_LOG(Media, "MediaSource::removeSourceBuffer() %p", this);
     RefPtr<SourceBuffer> protect(buffer);
 
     // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-removeSourceBuffer-void-SourceBuffer-sourceBuffer
@@ -188,7 +188,7 @@ Vector<RefPtr<TimeRanges> > MediaSource::activeRanges() const
 
 bool MediaSource::isTypeSupported(const String& type)
 {
-    LOG(Media, "MediaSource::isTypeSupported(%s)", type.ascii().data());
+    WTF_LOG(Media, "MediaSource::isTypeSupported(%s)", type.ascii().data());
 
     // Section 2.2 isTypeSupported() method steps.
     // https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#widl-MediaSource-isTypeSupported-boolean-DOMString-type

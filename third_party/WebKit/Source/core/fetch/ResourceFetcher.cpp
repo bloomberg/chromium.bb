@@ -426,7 +426,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     if (document() && !document()->securityOrigin()->canDisplay(url)) {
         if (!forPreload)
             context().reportLocalLoadFailed(url);
-        LOG(ResourceLoading, "ResourceFetcher::requestResource URL was not allowed by SecurityOrigin::canDisplay");
+        WTF_LOG(ResourceLoading, "ResourceFetcher::requestResource URL was not allowed by SecurityOrigin::canDisplay");
         return 0;
     }
 
@@ -575,7 +575,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, Fetc
 
     KURL url = request.resourceRequest().url();
 
-    LOG(ResourceLoading, "ResourceFetcher::requestResource '%s', charset '%s', priority=%d, forPreload=%u, type=%s", url.elidedString().latin1().data(), request.charset().latin1().data(), request.priority(), request.forPreload(), ResourceTypeName(type));
+    WTF_LOG(ResourceLoading, "ResourceFetcher::requestResource '%s', charset '%s', priority=%d, forPreload=%u, type=%s", url.elidedString().latin1().data(), request.charset().latin1().data(), request.priority(), request.forPreload(), ResourceTypeName(type));
 
     // If only the fragment identifiers differ, it is the same resource.
     url = MemoryCache::removeFragmentIdentifierIfNeeded(url);
@@ -752,7 +752,7 @@ ResourcePtr<Resource> ResourceFetcher::revalidateResource(const FetchRequest& re
 
     ResourcePtr<Resource> newResource = createResource(resource->type(), revalidatingRequest, resource->encoding());
 
-    LOG(ResourceLoading, "Resource %p created to revalidate %p", newResource.get(), resource);
+    WTF_LOG(ResourceLoading, "Resource %p created to revalidate %p", newResource.get(), resource);
     newResource->setResourceToRevalidate(resource);
 
     memoryCache()->remove(resource);
@@ -766,7 +766,7 @@ ResourcePtr<Resource> ResourceFetcher::loadResource(Resource::Type type, FetchRe
 {
     ASSERT(!memoryCache()->resourceForURL(request.resourceRequest().url()));
 
-    LOG(ResourceLoading, "Loading Resource for '%s'.", request.resourceRequest().url().elidedString().latin1().data());
+    WTF_LOG(ResourceLoading, "Loading Resource for '%s'.", request.resourceRequest().url().elidedString().latin1().data());
 
     addAdditionalRequestHeaders(request.mutableResourceRequest(), type);
     ResourcePtr<Resource> resource = createResource(type, request.mutableResourceRequest(), charset);
@@ -807,7 +807,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
 
     // If the same URL has been loaded as a different type, we need to reload.
     if (existingResource->type() != type) {
-        LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to type mismatch.");
+        WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to type mismatch.");
         return Reload;
     }
 
@@ -844,7 +844,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
 
     // Don't reuse resources with Cache-control: no-store.
     if (existingResource->response().cacheControlContainsNoStore()) {
-        LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to Cache-control: no-store.");
+        WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to Cache-control: no-store.");
         return Reload;
     }
 
@@ -855,7 +855,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     // "Access-Control-Allow-Origin: *" all the time, but some of the
     // client's requests are made without CORS and some with.
     if (existingResource->resourceRequest().allowCookies() != request.allowCookies()) {
-        LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to difference in credentials settings.");
+        WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to difference in credentials settings.");
         return Reload;
     }
 
@@ -866,13 +866,13 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
 
     // CachePolicyReload always reloads
     if (context().cachePolicy(type) == CachePolicyReload) {
-        LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to CachePolicyReload.");
+        WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to CachePolicyReload.");
         return Reload;
     }
 
     // We'll try to reload the resource if it failed last time.
     if (existingResource->errorOccurred()) {
-        LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicye reloading due to resource being in the error state");
+        WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicye reloading due to resource being in the error state");
         return Reload;
     }
 
@@ -887,7 +887,7 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
             return Revalidate;
 
         // No, must reload.
-        LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to missing cache validators.");
+        WTF_LOG(ResourceLoading, "ResourceFetcher::determineRevalidationPolicy reloading due to missing cache validators.");
         return Reload;
     }
 

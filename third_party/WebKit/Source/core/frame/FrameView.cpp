@@ -2946,7 +2946,7 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
 
     RenderView* renderView = this->renderView();
     if (!renderView) {
-        LOG_ERROR("called FrameView::paint with nil renderer");
+        WTF_LOG_ERROR("called FrameView::paint with nil renderer");
         return;
     }
 

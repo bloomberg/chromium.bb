@@ -124,7 +124,7 @@ bool SQLStatementBackend::execute(DatabaseBackend* db)
     int result = statement.prepare();
 
     if (result != SQLResultOk) {
-        LOG(StorageAPI, "Unable to verify correctness of statement %s - error %i (%s)", m_statement.ascii().data(), result, database->lastErrorMsg());
+        WTF_LOG(StorageAPI, "Unable to verify correctness of statement %s - error %i (%s)", m_statement.ascii().data(), result, database->lastErrorMsg());
         if (result == SQLResultInterrupt)
             m_error = SQLError::create(SQLError::DATABASE_ERR, "could not prepare statement", result, "interrupted");
         else
@@ -136,7 +136,7 @@ bool SQLStatementBackend::execute(DatabaseBackend* db)
     // FIXME: If the statement uses the ?### syntax supported by sqlite, the bind parameter count is very likely off from the number of question marks.
     // If this is the case, they might be trying to do something fishy or malicious
     if (statement.bindParameterCount() != m_arguments.size()) {
-        LOG(StorageAPI, "Bind parameter count doesn't match number of question marks");
+        WTF_LOG(StorageAPI, "Bind parameter count doesn't match number of question marks");
         m_error = SQLError::create(db->isInterrupted() ? SQLError::DATABASE_ERR : SQLError::SYNTAX_ERR, "number of '?'s in statement string does not match argument count");
         db->reportExecuteStatementResult(2, m_error->code(), 0);
         return false;
@@ -150,7 +150,7 @@ bool SQLStatementBackend::execute(DatabaseBackend* db)
         }
 
         if (result != SQLResultOk) {
-            LOG(StorageAPI, "Failed to bind value index %i to statement for query '%s'", i + 1, m_statement.ascii().data());
+            WTF_LOG(StorageAPI, "Failed to bind value index %i to statement for query '%s'", i + 1, m_statement.ascii().data());
             db->reportExecuteStatementResult(3, SQLError::DATABASE_ERR, result);
             m_error = SQLError::create(SQLError::DATABASE_ERR, "could not bind value", result, database->lastErrorMsg());
             return false;

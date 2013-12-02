@@ -75,7 +75,7 @@ ThreadIdentifier createThread(ThreadFunction entryPoint, void* data, const char*
     // be truncated silently, but we'd like callers to know about the limit.
 #if !LOG_DISABLED
     if (name && strlen(name) > 31)
-        LOG_ERROR("Thread name \"%s\" is longer than 31 characters and will be truncated by Visual Studio", name);
+        WTF_LOG_ERROR("Thread name \"%s\" is longer than 31 characters and will be truncated by Visual Studio", name);
 #endif
 
     NewThreadContext* context = new NewThreadContext(entryPoint, data, name);

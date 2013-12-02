@@ -1476,7 +1476,7 @@ static void logUnimplementedPropertyID(CSSPropertyID propertyID)
     if (!propertyIDSet.add(propertyID).isNewEntry)
         return;
 
-    LOG_ERROR("WebKit does not yet implement getComputedStyle for '%s'.", getPropertyName(propertyID));
+    WTF_LOG_ERROR("WebKit does not yet implement getComputedStyle for '%s'.", getPropertyName(propertyID));
 }
 
 static PassRefPtr<CSSValueList> valueForFontFamily(RenderStyle& style)

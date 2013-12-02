@@ -230,7 +230,7 @@ void InsertionAndDeletionTest(int32_t seed, int treeSize)
         PODInterval<int> interval(left, left + length);
         tree.add(interval);
 #ifdef DEBUG_INSERTION_AND_DELETION_TEST
-        LOG_ERROR("*** Adding element %s", ValueToString<PODInterval<int> >::string(interval).ascii().data());
+        WTF_LOG_ERROR("*** Adding element %s", ValueToString<PODInterval<int> >::string(interval).ascii().data());
 #endif
         addedElements.append(interval);
     }
@@ -239,7 +239,7 @@ void InsertionAndDeletionTest(int32_t seed, int treeSize)
     for (int i = 0; i < treeSize / 2; i++) {
         int index = nextRandom(addedElements.size());
 #ifdef DEBUG_INSERTION_AND_DELETION_TEST
-        LOG_ERROR("*** Removing element %s", ValueToString<PODInterval<int> >::string(addedElements[index]).ascii().data());
+        WTF_LOG_ERROR("*** Removing element %s", ValueToString<PODInterval<int> >::string(addedElements[index]).ascii().data());
 #endif
         ASSERT_TRUE(tree.contains(addedElements[index])) << "Test failed for seed " << seed;
         tree.remove(addedElements[index]);
@@ -259,7 +259,7 @@ void InsertionAndDeletionTest(int32_t seed, int treeSize)
         if (add) {
             int index = nextRandom(removedElements.size());
 #ifdef DEBUG_INSERTION_AND_DELETION_TEST
-            LOG_ERROR("*** Adding element %s", ValueToString<PODInterval<int> >::string(removedElements[index]).ascii().data());
+            WTF_LOG_ERROR("*** Adding element %s", ValueToString<PODInterval<int> >::string(removedElements[index]).ascii().data());
 #endif
             tree.add(removedElements[index]);
             addedElements.append(removedElements[index]);
@@ -267,7 +267,7 @@ void InsertionAndDeletionTest(int32_t seed, int treeSize)
         } else {
             int index = nextRandom(addedElements.size());
 #ifdef DEBUG_INSERTION_AND_DELETION_TEST
-            LOG_ERROR("*** Removing element %s", ValueToString<PODInterval<int> >::string(addedElements[index]).ascii().data());
+            WTF_LOG_ERROR("*** Removing element %s", ValueToString<PODInterval<int> >::string(addedElements[index]).ascii().data());
 #endif
             ASSERT_TRUE(tree.contains(addedElements[index])) << "Test failed for seed " << seed;
             ASSERT_TRUE(tree.remove(addedElements[index])) << "Test failed for seed " << seed;

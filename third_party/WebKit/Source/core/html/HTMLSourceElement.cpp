@@ -42,7 +42,7 @@ inline HTMLSourceElement::HTMLSourceElement(Document& document)
     : HTMLElement(sourceTag, document)
     , m_errorEventTimer(this, &HTMLSourceElement::errorEventTimerFired)
 {
-    LOG(Media, "HTMLSourceElement::HTMLSourceElement - %p", this);
+    WTF_LOG(Media, "HTMLSourceElement::HTMLSourceElement - %p", this);
     ScriptWrappable::init(this);
 }
 
@@ -97,7 +97,7 @@ void HTMLSourceElement::setType(const String& type)
 
 void HTMLSourceElement::scheduleErrorEvent()
 {
-    LOG(Media, "HTMLSourceElement::scheduleErrorEvent - %p", this);
+    WTF_LOG(Media, "HTMLSourceElement::scheduleErrorEvent - %p", this);
     if (m_errorEventTimer.isActive())
         return;
 
@@ -106,13 +106,13 @@ void HTMLSourceElement::scheduleErrorEvent()
 
 void HTMLSourceElement::cancelPendingErrorEvent()
 {
-    LOG(Media, "HTMLSourceElement::cancelPendingErrorEvent - %p", this);
+    WTF_LOG(Media, "HTMLSourceElement::cancelPendingErrorEvent - %p", this);
     m_errorEventTimer.stop();
 }
 
 void HTMLSourceElement::errorEventTimerFired(Timer<HTMLSourceElement>*)
 {
-    LOG(Media, "HTMLSourceElement::errorEventTimerFired - %p", this);
+    WTF_LOG(Media, "HTMLSourceElement::errorEventTimerFired - %p", this);
     dispatchEvent(Event::createCancelable(EventTypeNames::error));
 }
 

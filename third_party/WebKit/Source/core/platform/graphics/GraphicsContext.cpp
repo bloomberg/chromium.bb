@@ -141,7 +141,7 @@ void GraphicsContext::restore()
         return;
 
     if (m_stateStack.size() == 1) {
-        LOG_ERROR("ERROR void GraphicsContext::restore() stack is empty");
+        WTF_LOG_ERROR("ERROR void GraphicsContext::restore() stack is empty");
         return;
     }
 

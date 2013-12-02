@@ -119,7 +119,7 @@ SQLTransaction::StateFunction SQLTransaction::stateFunctionFor(SQLTransactionSta
 // modify is m_requestedState which is meant for this purpose.
 void SQLTransaction::requestTransitToState(SQLTransactionState nextState)
 {
-    LOG(StorageAPI, "Scheduling %s for transaction %p\n", nameForSQLTransactionState(nextState), this);
+    WTF_LOG(StorageAPI, "Scheduling %s for transaction %p\n", nameForSQLTransactionState(nextState), this);
     m_requestedState = nextState;
     m_database->scheduleTransactionCallback(this);
 }
@@ -281,7 +281,7 @@ bool SQLTransaction::computeNextStateAndCleanupIfNeeded()
             || m_nextState == SQLTransactionState::DeliverQuotaIncreaseCallback
             || m_nextState == SQLTransactionState::DeliverSuccessCallback);
 
-        LOG(StorageAPI, "Callback %s\n", nameForSQLTransactionState(m_nextState));
+        WTF_LOG(StorageAPI, "Callback %s\n", nameForSQLTransactionState(m_nextState));
         return false;
     }
 

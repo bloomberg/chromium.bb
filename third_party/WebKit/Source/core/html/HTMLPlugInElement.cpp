@@ -434,8 +434,8 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     if (!renderer || useFallback)
         return false;
 
-    LOG(Plugins, "%p Plug-in URL: %s", this, m_url.utf8().data());
-    LOG(Plugins, "   Loaded URL: %s", url.string().utf8().data());
+    WTF_LOG(Plugins, "%p Plug-in URL: %s", this, m_url.utf8().data());
+    WTF_LOG(Plugins, "   Loaded URL: %s", url.string().utf8().data());
     m_loadedUrl = url;
 
     IntSize contentSize = roundedIntSize(LayoutSize(renderer->contentWidth(), renderer->contentHeight()));

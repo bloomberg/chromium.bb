@@ -78,7 +78,7 @@ void DefaultAudioDestinationNode::uninitialize()
 void DefaultAudioDestinationNode::createDestination()
 {
     float hardwareSampleRate = AudioDestination::hardwareSampleRate();
-    LOG(WebAudio, ">>>> hardwareSampleRate = %f\n", hardwareSampleRate);
+    WTF_LOG(WebAudio, ">>>> hardwareSampleRate = %f\n", hardwareSampleRate);
 
     m_destination = AudioDestination::create(*this, m_inputDeviceId, m_numberOfInputChannels, channelCount(), hardwareSampleRate);
 }

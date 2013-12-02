@@ -217,7 +217,7 @@ void HistoryController::setDefersLoading(bool defer)
 //
 void HistoryController::updateForStandardLoad(Frame* frame)
 {
-    LOG(History, "WebCoreHistory: Updating History for Standard Load in frame %s", frame->loader().documentLoader()->url().string().ascii().data());
+    WTF_LOG(History, "WebCoreHistory: Updating History for Standard Load in frame %s", frame->loader().documentLoader()->url().string().ascii().data());
     createNewBackForwardItem(frame, true);
 }
 
@@ -236,7 +236,7 @@ void HistoryController::updateForCommit(Frame* frame)
 {
 #if !LOG_DISABLED
     if (frame->document())
-        LOG(History, "WebCoreHistory: Updating History for commit in frame %s", frame->document()->title().utf8().data());
+        WTF_LOG(History, "WebCoreHistory: Updating History for commit in frame %s", frame->document()->title().utf8().data());
 #endif
     FrameLoadType type = frame->loader().loadType();
     if (isBackForwardLoadType(type)) {

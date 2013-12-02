@@ -209,7 +209,7 @@ Vector<String> Database::performGetTableNames()
 
     SQLiteStatement statement(sqliteDatabase(), "SELECT name FROM sqlite_master WHERE type='table';");
     if (statement.prepare() != SQLResultOk) {
-        LOG_ERROR("Unable to retrieve list of tables for database %s", databaseDebugName().ascii().data());
+        WTF_LOG_ERROR("Unable to retrieve list of tables for database %s", databaseDebugName().ascii().data());
         enableAuthorizer();
         return Vector<String>();
     }
@@ -225,7 +225,7 @@ Vector<String> Database::performGetTableNames()
     enableAuthorizer();
 
     if (result != SQLResultDone) {
-        LOG_ERROR("Error getting tables for database %s", databaseDebugName().ascii().data());
+        WTF_LOG_ERROR("Error getting tables for database %s", databaseDebugName().ascii().data());
         return Vector<String>();
     }
 

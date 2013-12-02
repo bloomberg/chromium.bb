@@ -65,7 +65,7 @@ int SQLiteStatement::prepare()
 
     CString query = m_query.stripWhiteSpace().utf8();
 
-    LOG(SQLDatabase, "SQL - prepare - %s", query.data());
+    WTF_LOG(SQLDatabase, "SQL - prepare - %s", query.data());
 
     // Pass the length of the string including the null character to sqlite3_prepare_v2;
     // this lets SQLite avoid an extra string copy.
@@ -75,7 +75,7 @@ int SQLiteStatement::prepare()
     int error = sqlite3_prepare_v2(m_database.sqlite3Handle(), query.data(), lengthIncludingNullCharacter, &m_statement, &tail);
 
     if (error != SQLITE_OK)
-        LOG(SQLDatabase, "sqlite3_prepare16 failed (%i)\n%s\n%s", error, query.data(), sqlite3_errmsg(m_database.sqlite3Handle()));
+        WTF_LOG(SQLDatabase, "sqlite3_prepare16 failed (%i)\n%s\n%s", error, query.data(), sqlite3_errmsg(m_database.sqlite3Handle()));
 
     if (tail && *tail)
         error = SQLITE_ERROR;
@@ -100,10 +100,10 @@ int SQLiteStatement::step()
     // in order to compute properly the lastChanges() return value.
     m_database.updateLastChangesCount();
 
-    LOG(SQLDatabase, "SQL - step - %s", m_query.ascii().data());
+    WTF_LOG(SQLDatabase, "SQL - step - %s", m_query.ascii().data());
     int error = sqlite3_step(m_statement);
     if (error != SQLITE_DONE && error != SQLITE_ROW) {
-        LOG(SQLDatabase, "sqlite3_step failed (%i)\nQuery - %s\nError - %s",
+        WTF_LOG(SQLDatabase, "sqlite3_step failed (%i)\nQuery - %s\nError - %s",
             error, m_query.ascii().data(), sqlite3_errmsg(m_database.sqlite3Handle()));
     }
 
@@ -117,7 +117,7 @@ int SQLiteStatement::finalize()
 #endif
     if (!m_statement)
         return SQLITE_OK;
-    LOG(SQLDatabase, "SQL - finalize - %s", m_query.ascii().data());
+    WTF_LOG(SQLDatabase, "SQL - finalize - %s", m_query.ascii().data());
     int result = sqlite3_finalize(m_statement);
     m_statement = 0;
     return result;
@@ -128,7 +128,7 @@ int SQLiteStatement::reset()
     ASSERT(m_isPrepared);
     if (!m_statement)
         return SQLITE_OK;
-    LOG(SQLDatabase, "SQL - reset - %s", m_query.ascii().data());
+    WTF_LOG(SQLDatabase, "SQL - reset - %s", m_query.ascii().data());
     return sqlite3_reset(m_statement);
 }
 
@@ -423,13 +423,13 @@ const void* SQLiteStatement::getColumnBlob(int col, int& size)
     size = 0;
 
     if (finalize() != SQLITE_OK)
-        LOG(SQLDatabase, "Finalize failed");
+        WTF_LOG(SQLDatabase, "Finalize failed");
     if (prepare() != SQLITE_OK) {
-        LOG(SQLDatabase, "Prepare failed");
+        WTF_LOG(SQLDatabase, "Prepare failed");
         return 0;
     }
     if (step() != SQLITE_ROW) {
-        LOG(SQLDatabase, "Step wasn't a row");
+        WTF_LOG(SQLDatabase, "Step wasn't a row");
         return 0;
     }
 
@@ -460,7 +460,7 @@ bool SQLiteStatement::returnTextResults(int col, Vector<String>& v)
     bool result = true;
     if (m_database.lastError() != SQLITE_DONE) {
         result = false;
-        LOG(SQLDatabase, "Error reading results from database query %s", m_query.ascii().data());
+        WTF_LOG(SQLDatabase, "Error reading results from database query %s", m_query.ascii().data());
     }
     finalize();
     return result;
@@ -480,7 +480,7 @@ bool SQLiteStatement::returnIntResults(int col, Vector<int>& v)
     bool result = true;
     if (m_database.lastError() != SQLITE_DONE) {
         result = false;
-        LOG(SQLDatabase, "Error reading results from database query %s", m_query.ascii().data());
+        WTF_LOG(SQLDatabase, "Error reading results from database query %s", m_query.ascii().data());
     }
     finalize();
     return result;
@@ -500,7 +500,7 @@ bool SQLiteStatement::returnInt64Results(int col, Vector<int64_t>& v)
     bool result = true;
     if (m_database.lastError() != SQLITE_DONE) {
         result = false;
-        LOG(SQLDatabase, "Error reading results from database query %s", m_query.ascii().data());
+        WTF_LOG(SQLDatabase, "Error reading results from database query %s", m_query.ascii().data());
     }
     finalize();
     return result;
@@ -520,7 +520,7 @@ bool SQLiteStatement::returnDoubleResults(int col, Vector<double>& v)
     bool result = true;
     if (m_database.lastError() != SQLITE_DONE) {
         result = false;
-        LOG(SQLDatabase, "Error reading results from database query %s", m_query.ascii().data());
+        WTF_LOG(SQLDatabase, "Error reading results from database query %s", m_query.ascii().data());
     }
     finalize();
     return result;

@@ -65,7 +65,7 @@ void SimpleFontData::platformInit()
             // FIXME: Handle gracefully the error if this call also fails.
             // See http://crbug.com/6401.
             if (!GetTextMetrics(dc, &textMetric))
-                LOG_ERROR("Unable to get the text metrics after second attempt");
+                WTF_LOG_ERROR("Unable to get the text metrics after second attempt");
         }
     }
 
@@ -144,7 +144,7 @@ FloatRect SimpleFontData::platformBoundsForGlyph(Glyph glyph) const
             // FIXME: Handle gracefully the error if this call also fails.
             // See http://crbug.com/6401.
             if (GetGlyphOutline(hdc, glyph, GGO_METRICS | GGO_GLYPH_INDEX, &gdiMetrics, 0, 0, &identity) == -1)
-                LOG_ERROR("Unable to get the glyph metrics after second attempt");
+                WTF_LOG_ERROR("Unable to get the glyph metrics after second attempt");
         }
     }
 
@@ -169,7 +169,7 @@ float SimpleFontData::platformWidthForGlyph(Glyph glyph) const
             // FIXME: Handle gracefully the error if this call also fails.
             // See http://crbug.com/6401.
             if (!GetCharWidthI(dc, glyph, 1, 0, &width))
-                LOG_ERROR("Unable to get the char width after second attempt");
+                WTF_LOG_ERROR("Unable to get the char width after second attempt");
         }
     }
 

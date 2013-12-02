@@ -251,7 +251,7 @@ void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
         if (isValidSetting)
             m_width = number;
         else
-            LOG(Media, "VTTRegion::parseSettingValue, invalid Width");
+            WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid Width");
         break;
     case Height:
         position = 0;
@@ -262,27 +262,27 @@ void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
         if (isValidSetting && number >= 0)
             m_heightInLines = number;
         else
-            LOG(Media, "VTTRegion::parseSettingValue, invalid Height");
+            WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid Height");
         break;
     case RegionAnchor:
         anchorPosition = VTTParser::parseFloatPercentageValuePair(value, ',', isValidSetting);
         if (isValidSetting)
             m_regionAnchor = anchorPosition;
         else
-            LOG(Media, "VTTRegion::parseSettingValue, invalid RegionAnchor");
+            WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid RegionAnchor");
         break;
     case ViewportAnchor:
         anchorPosition = VTTParser::parseFloatPercentageValuePair(value, ',', isValidSetting);
         if (isValidSetting)
             m_viewportAnchor = anchorPosition;
         else
-            LOG(Media, "VTTRegion::parseSettingValue, invalid ViewportAnchor");
+            WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid ViewportAnchor");
         break;
     case Scroll:
         if (value == scrollUpValueKeyword)
             m_scroll = true;
         else
-            LOG(Media, "VTTRegion::parseSettingValue, invalid Scroll");
+            WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid Scroll");
         break;
     case None:
         break;
@@ -339,7 +339,7 @@ PassRefPtr<HTMLDivElement> VTTRegion::getDisplayTree(Document& document)
 
 void VTTRegion::willRemoveTextTrackCueBox(TextTrackCueBox* box)
 {
-    LOG(Media, "VTTRegion::willRemoveTextTrackCueBox");
+    WTF_LOG(Media, "VTTRegion::willRemoveTextTrackCueBox");
     ASSERT(m_cueContainer->contains(box));
 
     double boxHeight = box->getBoundingClientRect()->bottom() - box->getBoundingClientRect()->top();
@@ -364,7 +364,7 @@ void VTTRegion::appendTextTrackCueBox(PassRefPtr<TextTrackCueBox> displayBox)
 
 void VTTRegion::displayLastTextTrackCueBox()
 {
-    LOG(Media, "VTTRegion::displayLastTextTrackCueBox");
+    WTF_LOG(Media, "VTTRegion::displayLastTextTrackCueBox");
     ASSERT(m_cueContainer);
 
     // FIXME: This should not be causing recalc styles in a loop to set the "top" css
@@ -453,7 +453,7 @@ void VTTRegion::prepareRegionDisplayTree()
 
 void VTTRegion::startTimer()
 {
-    LOG(Media, "VTTRegion::startTimer");
+    WTF_LOG(Media, "VTTRegion::startTimer");
 
     if (m_scrollTimer.isActive())
         return;
@@ -464,7 +464,7 @@ void VTTRegion::startTimer()
 
 void VTTRegion::stopTimer()
 {
-    LOG(Media, "VTTRegion::stopTimer");
+    WTF_LOG(Media, "VTTRegion::stopTimer");
 
     if (m_scrollTimer.isActive())
         m_scrollTimer.stop();
@@ -472,7 +472,7 @@ void VTTRegion::stopTimer()
 
 void VTTRegion::scrollTimerFired(Timer<VTTRegion>*)
 {
-    LOG(Media, "VTTRegion::scrollTimerFired");
+    WTF_LOG(Media, "VTTRegion::scrollTimerFired");
 
     stopTimer();
     displayLastTextTrackCueBox();

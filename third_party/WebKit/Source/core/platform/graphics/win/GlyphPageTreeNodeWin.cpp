@@ -61,7 +61,7 @@ static bool getGlyphIndices(HFONT font, HDC dc, const UChar* characters, unsigne
             return true;
         // FIXME: Handle gracefully the error if this call also fails.
         // See http://crbug.com/6401
-        LOG_ERROR("Unable to get the glyph indices after second attempt");
+        WTF_LOG_ERROR("Unable to get the glyph indices after second attempt");
     }
     return false;
 }
@@ -92,7 +92,7 @@ static bool fillBMPGlyphs(unsigned offset,
             if (!GetTextMetrics(dc, &tm)) {
                 // FIXME: Handle gracefully the error if this call also fails.
                 // See http://crbug.com/6401
-                LOG_ERROR("Unable to get the text metrics after second attempt");
+                WTF_LOG_ERROR("Unable to get the text metrics after second attempt");
 
                 SelectObject(dc, oldFont);
                 fillEmptyGlyphs(page);

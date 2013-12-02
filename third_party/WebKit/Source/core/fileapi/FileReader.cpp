@@ -163,7 +163,7 @@ void FileReader::readAsArrayBuffer(Blob* blob, ExceptionState& exceptionState)
     if (!blob)
         return;
 
-    LOG(FileAPI, "FileReader: reading as array buffer: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
+    WTF_LOG(FileAPI, "FileReader: reading as array buffer: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
 
     readInternal(blob, FileReaderLoader::ReadAsArrayBuffer, exceptionState);
 }
@@ -173,7 +173,7 @@ void FileReader::readAsBinaryString(Blob* blob, ExceptionState& exceptionState)
     if (!blob)
         return;
 
-    LOG(FileAPI, "FileReader: reading as binary: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
+    WTF_LOG(FileAPI, "FileReader: reading as binary: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
 
     readInternal(blob, FileReaderLoader::ReadAsBinaryString, exceptionState);
 }
@@ -183,7 +183,7 @@ void FileReader::readAsText(Blob* blob, const String& encoding, ExceptionState& 
     if (!blob)
         return;
 
-    LOG(FileAPI, "FileReader: reading as text: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
+    WTF_LOG(FileAPI, "FileReader: reading as text: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
 
     m_encoding = encoding;
     readInternal(blob, FileReaderLoader::ReadAsText, exceptionState);
@@ -199,7 +199,7 @@ void FileReader::readAsDataURL(Blob* blob, ExceptionState& exceptionState)
     if (!blob)
         return;
 
-    LOG(FileAPI, "FileReader: reading as data URL: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
+    WTF_LOG(FileAPI, "FileReader: reading as data URL: %s %s\n", utf8BlobUUID(blob).data(), utf8FilePath(blob).data());
 
     readInternal(blob, FileReaderLoader::ReadAsDataURL, exceptionState);
 }
@@ -238,7 +238,7 @@ static void delayedAbort(ExecutionContext*, FileReader* reader)
 
 void FileReader::abort()
 {
-    LOG(FileAPI, "FileReader: aborting\n");
+    WTF_LOG(FileAPI, "FileReader: aborting\n");
 
     if (m_loadingState != LoadingStateLoading
         && m_loadingState != LoadingStatePending) {

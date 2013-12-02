@@ -121,7 +121,7 @@ NewWebSocketChannelImpl::~NewWebSocketChannelImpl()
 
 void NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
 {
-    LOG(Network, "NewWebSocketChannelImpl %p connect()", this);
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p connect()", this);
     if (!m_handle)
         return;
     m_url = url;
@@ -146,19 +146,19 @@ void NewWebSocketChannelImpl::connect(const KURL& url, const String& protocol)
 
 String NewWebSocketChannelImpl::subprotocol()
 {
-    LOG(Network, "NewWebSocketChannelImpl %p subprotocol()", this);
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p subprotocol()", this);
     return m_subprotocol;
 }
 
 String NewWebSocketChannelImpl::extensions()
 {
-    LOG(Network, "NewWebSocketChannelImpl %p extensions()", this);
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p extensions()", this);
     return m_extensions;
 }
 
 WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const String& message)
 {
-    LOG(Network, "NewWebSocketChannelImpl %p sendText(%s)", this, message.utf8().data());
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p sendText(%s)", this, message.utf8().data());
     if (m_identifier) {
         // FIXME: Change the inspector API to show the entire message instead
         // of individual frames.
@@ -173,7 +173,7 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const String& message
 
 WebSocketChannel::SendResult NewWebSocketChannelImpl::send(PassRefPtr<BlobDataHandle> blobDataHandle)
 {
-    LOG(Network, "NewWebSocketChannelImpl %p sendBlob(%s, %s, %llu)", this, blobDataHandle->uuid().utf8().data(), blobDataHandle->type().utf8().data(), blobDataHandle->size());
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p sendBlob(%s, %s, %llu)", this, blobDataHandle->uuid().utf8().data(), blobDataHandle->type().utf8().data(), blobDataHandle->size());
     if (m_identifier) {
         // FIXME: Change the inspector API to show the entire message instead
         // of individual frames.
@@ -190,7 +190,7 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(PassRefPtr<BlobDataHa
 
 WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const ArrayBuffer& buffer, unsigned byteOffset, unsigned byteLength)
 {
-    LOG(Network, "NewWebSocketChannelImpl %p sendArrayBuffer(%p, %u, %u)", this, buffer.data(), byteOffset, byteLength);
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p sendArrayBuffer(%p, %u, %u)", this, buffer.data(), byteOffset, byteLength);
     if (m_identifier) {
         // FIXME: Change the inspector API to show the entire message instead
         // of individual frames.
@@ -205,20 +205,20 @@ WebSocketChannel::SendResult NewWebSocketChannelImpl::send(const ArrayBuffer& bu
 
 unsigned long NewWebSocketChannelImpl::bufferedAmount() const
 {
-    LOG(Network, "NewWebSocketChannelImpl %p bufferedAmount()", this);
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p bufferedAmount()", this);
     return m_bufferedAmount;
 }
 
 void NewWebSocketChannelImpl::close(int code, const String& reason)
 {
-    LOG(Network, "NewWebSocketChannelImpl %p close(%d, %s)", this, code, reason.utf8().data());
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p close(%d, %s)", this, code, reason.utf8().data());
     ASSERT(m_handle);
     m_handle->close(static_cast<unsigned short>(code), reason);
 }
 
 void NewWebSocketChannelImpl::fail(const String& reason, MessageLevel level, const String& sourceURL, unsigned lineNumber)
 {
-    LOG(Network, "NewWebSocketChannelImpl %p fail(%s)", this, reason.utf8().data());
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p fail(%s)", this, reason.utf8().data());
     // m_handle and m_client can be null here.
 
     if (m_identifier)
@@ -236,7 +236,7 @@ void NewWebSocketChannelImpl::fail(const String& reason, MessageLevel level, con
 
 void NewWebSocketChannelImpl::disconnect()
 {
-    LOG(Network, "NewWebSocketChannelImpl %p disconnect()", this);
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p disconnect()", this);
     if (m_identifier)
         InspectorInstrumentation::didCloseWebSocket(document(), m_identifier);
     abortAsyncOperations();
@@ -247,12 +247,12 @@ void NewWebSocketChannelImpl::disconnect()
 
 void NewWebSocketChannelImpl::suspend()
 {
-    LOG(Network, "NewWebSocketChannelImpl %p suspend()", this);
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p suspend()", this);
 }
 
 void NewWebSocketChannelImpl::resume()
 {
-    LOG(Network, "NewWebSocketChannelImpl %p resume()", this);
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p resume()", this);
 }
 
 NewWebSocketChannelImpl::Message::Message(const String& text)
@@ -352,7 +352,7 @@ Document* NewWebSocketChannelImpl::document()
 
 void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, const blink::WebString& selectedProtocol, const blink::WebString& extensions)
 {
-    LOG(Network, "NewWebSocketChannelImpl %p didConnect(%p, %d, %s, %s)", this, handle, fail, selectedProtocol.utf8().data(), extensions.utf8().data());
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p didConnect(%p, %d, %s, %s)", this, handle, fail, selectedProtocol.utf8().data(), extensions.utf8().data());
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
     ASSERT(m_client);
@@ -368,21 +368,21 @@ void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, con
 
 void NewWebSocketChannelImpl::didStartOpeningHandshake(WebSocketHandle* handle, const blink::WebSocketHandshakeRequestInfo& request)
 {
-    LOG(Network, "NewWebSocketChannelImpl %p didStartOpeningHandshake(%p)", this, handle);
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p didStartOpeningHandshake(%p)", this, handle);
     if (m_identifier)
         InspectorInstrumentation::willSendWebSocketHandshakeRequest(document(), m_identifier, request.toCoreRequest());
 }
 
 void NewWebSocketChannelImpl::didFinishOpeningHandshake(WebSocketHandle* handle, const blink::WebSocketHandshakeResponseInfo& response)
 {
-    LOG(Network, "NewWebSocketChannelImpl %p didFinishOpeningHandshake(%p)", this, handle);
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p didFinishOpeningHandshake(%p)", this, handle);
     if (m_identifier)
         InspectorInstrumentation::didReceiveWebSocketHandshakeResponse(document(), m_identifier, response.toCoreResponse());
 }
 
 void NewWebSocketChannelImpl::didFail(WebSocketHandle* handle, const blink::WebString& message)
 {
-    LOG(Network, "NewWebSocketChannelImpl %p didFail(%p, %s)", this, handle, message.utf8().data());
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p didFail(%p, %s)", this, handle, message.utf8().data());
     // This function is called when the browser is required to fail the
     // WebSocketConnection. Hence we fail this channel by calling
     // |this->failAsError| function.
@@ -392,7 +392,7 @@ void NewWebSocketChannelImpl::didFail(WebSocketHandle* handle, const blink::WebS
 
 void NewWebSocketChannelImpl::didReceiveData(WebSocketHandle* handle, bool fin, WebSocketHandle::MessageType type, const char* data, size_t size)
 {
-    LOG(Network, "NewWebSocketChannelImpl %p didReceiveData(%p, %d, %d, (%p, %zu))", this, handle, fin, type, data, size);
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p didReceiveData(%p, %d, %d, (%p, %zu))", this, handle, fin, type, data, size);
     ASSERT(m_handle);
     ASSERT(handle == m_handle);
     ASSERT(m_client);
@@ -443,7 +443,7 @@ void NewWebSocketChannelImpl::didReceiveData(WebSocketHandle* handle, bool fin, 
 
 void NewWebSocketChannelImpl::didClose(WebSocketHandle* handle, bool wasClean, unsigned short code, const blink::WebString& reason)
 {
-    LOG(Network, "NewWebSocketChannelImpl %p didClose(%p, %d, %u, %s)", this, handle, wasClean, code, String(reason).utf8().data());
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p didClose(%p, %d, %u, %s)", this, handle, wasClean, code, String(reason).utf8().data());
     ASSERT(m_handle);
     m_handle.clear();
     if (m_identifier) {
@@ -457,7 +457,7 @@ void NewWebSocketChannelImpl::didClose(WebSocketHandle* handle, bool wasClean, u
 
 void NewWebSocketChannelImpl::didReceiveFlowControl(WebSocketHandle* handle, int64_t quota)
 {
-    LOG(Network, "NewWebSocketChannelImpl %p didReceiveFlowControl(%p, %ld)", this, handle, static_cast<long>(quota));
+    WTF_LOG(Network, "NewWebSocketChannelImpl %p didReceiveFlowControl(%p, %ld)", this, handle, static_cast<long>(quota));
     ASSERT(m_handle);
     m_sendingQuota += quota;
     sendInternal();

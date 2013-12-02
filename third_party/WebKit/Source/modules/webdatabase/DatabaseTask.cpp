@@ -90,7 +90,7 @@ void DatabaseTask::run()
         return;
     }
 
-    LOG(StorageAPI, "Performing %s %p\n", debugTaskName(), this);
+    WTF_LOG(StorageAPI, "Performing %s %p\n", debugTaskName(), this);
 
     m_database->resetAuthorizer();
     doPerformTask();

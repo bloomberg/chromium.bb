@@ -615,12 +615,12 @@ void SourceBuffer::clearAppendStreamState()
 
 void SourceBuffer::didStartLoading()
 {
-    LOG(Media, "SourceBuffer::didStartLoading() %p", this);
+    WTF_LOG(Media, "SourceBuffer::didStartLoading() %p", this);
 }
 
 void SourceBuffer::didReceiveDataForClient(const char* data, unsigned dataLength)
 {
-    LOG(Media, "SourceBuffer::didReceiveDataForClient(%d) %p", dataLength, this);
+    WTF_LOG(Media, "SourceBuffer::didReceiveDataForClient(%d) %p", dataLength, this);
     ASSERT(m_updating);
     ASSERT(m_loader);
 
@@ -629,13 +629,13 @@ void SourceBuffer::didReceiveDataForClient(const char* data, unsigned dataLength
 
 void SourceBuffer::didFinishLoading()
 {
-    LOG(Media, "SourceBuffer::didFinishLoading() %p", this);
+    WTF_LOG(Media, "SourceBuffer::didFinishLoading() %p", this);
     appendStreamDone(true);
 }
 
 void SourceBuffer::didFail(FileError::ErrorCode errorCode)
 {
-    LOG(Media, "SourceBuffer::didFail(%d) %p", errorCode, this);
+    WTF_LOG(Media, "SourceBuffer::didFail(%d) %p", errorCode, this);
     appendStreamDone(false);
 }
 
