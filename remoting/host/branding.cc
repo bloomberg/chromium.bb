@@ -46,7 +46,7 @@ base::FilePath GetConfigDir() {
 #elif defined(OS_MACOSX)
   PathService::Get(base::DIR_APP_DATA, &app_data_dir);
 #else
-  app_data_dir = file_util::GetHomeDir();
+  app_data_dir = base::GetHomeDir();
 #endif
 
   return app_data_dir.Append(kConfigDir);

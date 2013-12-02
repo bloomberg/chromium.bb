@@ -399,7 +399,7 @@ bool SharedMemory::FilePathForMemoryName(const std::string& mem_name,
   DCHECK_EQ(std::string::npos, mem_name.find('\0'));
 
   FilePath temp_dir;
-  if (!file_util::GetShmemTempDir(&temp_dir, false))
+  if (!GetShmemTempDir(false, &temp_dir))
     return false;
 
 #if !defined(OS_MACOSX)

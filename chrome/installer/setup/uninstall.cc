@@ -447,7 +447,7 @@ bool ScheduleParentAndGrandparentForDeletion(const base::FilePath& path) {
 // directory is deleted, DELETE_NOT_EMPTY if it is not empty, and DELETE_FAILED
 // otherwise.
 DeleteResult DeleteEmptyDir(const base::FilePath& path) {
-  if (!file_util::IsDirectoryEmpty(path))
+  if (!base::IsDirectoryEmpty(path))
     return DELETE_NOT_EMPTY;
 
   if (base::DeleteFile(path, true))

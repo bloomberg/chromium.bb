@@ -46,7 +46,7 @@ namespace {
 // to the desktop on any platform.
 bool DownloadPathIsDangerous(const base::FilePath& download_path) {
 #if defined(OS_LINUX)
-  base::FilePath home_dir = file_util::GetHomeDir();
+  base::FilePath home_dir = base::GetHomeDir();
   if (download_path == home_dir) {
     return true;
   }

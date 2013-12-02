@@ -92,7 +92,7 @@ const base::FilePath::CharType kRLZDisabledFlagName[] =
     FILE_PATH_LITERAL(".rlz_disabled");
 
 base::FilePath GetRlzDisabledFlagPath() {
-  return file_util::GetHomeDir().Append(kRLZDisabledFlagName);
+  return base::GetHomeDir().Append(kRLZDisabledFlagName);
 }
 #endif
 

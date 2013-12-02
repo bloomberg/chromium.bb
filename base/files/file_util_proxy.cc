@@ -213,7 +213,7 @@ PlatformFileError DeleteAdapter(const FilePath& file_path, bool recursive) {
     return PLATFORM_FILE_ERROR_NOT_FOUND;
   }
   if (!base::DeleteFile(file_path, recursive)) {
-    if (!recursive && !file_util::IsDirectoryEmpty(file_path)) {
+    if (!recursive && !base::IsDirectoryEmpty(file_path)) {
       return PLATFORM_FILE_ERROR_NOT_EMPTY;
     }
     return PLATFORM_FILE_ERROR_FAILED;

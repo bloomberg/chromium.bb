@@ -280,8 +280,7 @@ bool SessionStorageDatabase::LazyOpen(bool create_if_needed) {
     return true;
 
   if (!create_if_needed &&
-      (!base::PathExists(file_path_) ||
-       file_util::IsDirectoryEmpty(file_path_))) {
+      (!base::PathExists(file_path_) || base::IsDirectoryEmpty(file_path_))) {
     // If the directory doesn't exist already and we haven't been asked to
     // create a file on disk, then we don't bother opening the database. This
     // means we wait until we absolutely need to put something onto disk before

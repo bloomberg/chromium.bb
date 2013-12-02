@@ -1328,7 +1328,7 @@ bool RemoveShortcutFolderIfEmpty(ShellUtil::ShortcutLocation location,
     LOG(WARNING) << "Cannot find path at location " << location;
     return false;
   }
-  if (file_util::IsDirectoryEmpty(shortcut_folder) &&
+  if (base::IsDirectoryEmpty(shortcut_folder) &&
       !base::DeleteFile(shortcut_folder, true)) {
     LOG(ERROR) << "Cannot remove folder " << shortcut_folder.value();
     return false;

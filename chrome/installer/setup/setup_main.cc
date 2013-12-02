@@ -1339,7 +1339,7 @@ google_breakpad::ExceptionHandler* InitializeCrashReporting(
 
   // Get the alternate dump directory. We use the temp path.
   base::FilePath temp_directory;
-  if (!file_util::GetTempDir(&temp_directory) || temp_directory.empty())
+  if (!base::GetTempDir(&temp_directory) || temp_directory.empty())
     return NULL;
 
   wchar_t exe_path[MAX_PATH * 2] = {0};

@@ -55,7 +55,7 @@ TEST(ScopedTempDir, TempDir) {
     test_path = dir.path();
     EXPECT_TRUE(DirectoryExists(test_path));
     FilePath tmp_dir;
-    EXPECT_TRUE(file_util::GetTempDir(&tmp_dir));
+    EXPECT_TRUE(base::GetTempDir(&tmp_dir));
     EXPECT_TRUE(test_path.value().find(tmp_dir.value()) != std::string::npos);
   }
   EXPECT_FALSE(DirectoryExists(test_path));

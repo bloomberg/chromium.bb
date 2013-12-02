@@ -24,7 +24,7 @@ bool PathProvider(int key, FilePath* result) {
       cur = cur.DirName();
       break;
     case DIR_TEMP:
-      if (!file_util::GetTempDir(&cur))
+      if (!base::GetTempDir(&cur))
         return false;
       break;
     case DIR_TEST_DATA:

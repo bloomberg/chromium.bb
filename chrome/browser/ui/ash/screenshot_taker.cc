@@ -365,7 +365,7 @@ bool GetScreenshotDirectory(base::FilePath* directory) {
         ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
     *directory = download_prefs->DownloadPath();
   } else  {
-    if (!file_util::GetTempDir(directory)) {
+    if (!base::GetTempDir(directory)) {
       LOG(ERROR) << "Failed to find temporary directory.";
       return false;
     }

@@ -240,14 +240,14 @@ DiagnosticsTest* MakeSqliteHistoryDbTest() {
 
 #if defined(OS_CHROMEOS)
 DiagnosticsTest* MakeSqliteNssCertDbTest() {
-  base::FilePath home_dir = file_util::GetHomeDir();
+  base::FilePath home_dir = base::GetHomeDir();
   return new SqliteIntegrityTest(SqliteIntegrityTest::REMOVE_IF_CORRUPT,
                                  DIAGNOSTICS_SQLITE_INTEGRITY_NSS_CERT_TEST,
                                  home_dir.Append(chromeos::kNssCertDbPath));
 }
 
 DiagnosticsTest* MakeSqliteNssKeyDbTest() {
-  base::FilePath home_dir = file_util::GetHomeDir();
+  base::FilePath home_dir = base::GetHomeDir();
   return new SqliteIntegrityTest(SqliteIntegrityTest::REMOVE_IF_CORRUPT,
                                  DIAGNOSTICS_SQLITE_INTEGRITY_NSS_KEY_TEST,
                                  home_dir.Append(chromeos::kNssKeyDbPath));

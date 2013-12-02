@@ -145,6 +145,14 @@ bool ReadFileToString(const FilePath& path, std::string* contents) {
   return true;
 }
 
+bool IsDirectoryEmpty(const FilePath& dir_path) {
+  FileEnumerator files(dir_path, false,
+      FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
+  if (files.Next().empty())
+    return true;
+  return false;
+}
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
@@ -154,14 +162,6 @@ namespace file_util {
 using base::FileEnumerator;
 using base::FilePath;
 using base::kMaxUniqueFiles;
-
-bool IsDirectoryEmpty(const FilePath& dir_path) {
-  FileEnumerator files(dir_path, false,
-      FileEnumerator::FILES | FileEnumerator::DIRECTORIES);
-  if (files.Next().empty())
-    return true;
-  return false;
-}
 
 FILE* CreateAndOpenTemporaryFile(FilePath* path) {
   FilePath directory;

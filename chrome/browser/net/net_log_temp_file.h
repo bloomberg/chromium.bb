@@ -23,7 +23,7 @@ class NetLogLogger;
 class ChromeNetLog;
 
 // NetLogTempFile logs all the NetLog entries into a temporary file
-// "chrome-net-export-log.json" created in file_util::GetTempDir() directory.
+// "chrome-net-export-log.json" created in base::GetTempDir() directory.
 //
 // NetLogTempFile maintains the current state (state_) of the logging into a
 // chrome-net-export-log.json file.
@@ -65,8 +65,8 @@ class NetLogTempFile {
   // process.
   explicit NetLogTempFile(ChromeNetLog* chrome_net_log);
 
-  // Returns path name to file_util::GetTempDir() directory. Returns false if
-  // file_util::GetTempDir() fails.
+  // Returns path name to base::GetTempDir() directory. Returns false if
+  // base::GetTempDir() fails.
   virtual bool GetNetExportLogDirectory(base::FilePath* path);
 
   // Returns true if |log_path_| exists.
@@ -100,7 +100,7 @@ class NetLogTempFile {
   bool EnsureInit();
 
   // Start collecting NetLog data into chrome-net-export-log.json file in
-  // file_util::GetTempDir() directory. It is a no-op if we are already
+  // base::GetTempDir() directory. It is a no-op if we are already
   // collecting data into a file.
   void StartNetLog();
 
@@ -109,7 +109,7 @@ class NetLogTempFile {
   void StopNetLog();
 
   // Updates |log_path_| with base::FilePath to |log_filename_| in the
-  // file_util::GetTempDir() directory. Returns false if file_util::GetTempDir()
+  // base::GetTempDir() directory. Returns false if base::GetTempDir()
   // fails.
   bool GetNetExportLog();
 

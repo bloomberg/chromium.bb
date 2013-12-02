@@ -150,6 +150,47 @@ std::string TempFileName() {
 #endif
 }
 
+// Creates and opens a temporary file in |directory|, returning the
+// file descriptor. |path| is set to the temporary file path.
+// This function does NOT unlink() the file.
+int CreateAndOpenFdForTemporaryFile(FilePath directory, FilePath* path) {
+  ThreadRestrictions::AssertIOAllowed();  // For call to mkstemp().
+  *path = directory.Append(base::TempFileName());
+  const std::string& tmpdir_string = path->value();
+  // this should be OK since mkstemp just replaces characters in place
+  char* buffer = const_cast<char*>(tmpdir_string.c_str());
+
+  return HANDLE_EINTR(mkstemp(buffer));
+}
+
+#if defined(OS_LINUX)
+// Determine if /dev/shm files can be mapped and then mprotect'd PROT_EXEC.
+// This depends on the mount options used for /dev/shm, which vary among
+// different Linux distributions and possibly local configuration.  It also
+// depends on details of kernel--ChromeOS uses the noexec option for /dev/shm
+// but its kernel allows mprotect with PROT_EXEC anyway.
+bool DetermineDevShmExecutable() {
+  bool result = false;
+  FilePath path;
+  int fd = CreateAndOpenFdForTemporaryFile(FilePath("/dev/shm"), &path);
+  if (fd >= 0) {
+    file_util::ScopedFD shm_fd_closer(&fd);
+    DeleteFile(path, false);
+    long sysconf_result = sysconf(_SC_PAGESIZE);
+    CHECK_GE(sysconf_result, 0);
+    size_t pagesize = static_cast<size_t>(sysconf_result);
+    CHECK_GE(sizeof(pagesize), sizeof(sysconf_result));
+    void *mapping = mmap(NULL, pagesize, PROT_READ, MAP_SHARED, fd, 0);
+    if (mapping != MAP_FAILED) {
+      if (mprotect(mapping, pagesize, PROT_READ | PROT_EXEC) == 0)
+        result = true;
+      munmap(mapping, pagesize);
+    }
+  }
+  return result;
+}
+#endif  // defined(OS_LINUX)
+
 }  // namespace
 
 FilePath MakeAbsoluteFilePath(const FilePath& input) {
@@ -405,6 +446,73 @@ bool SetPosixFilePermissions(const FilePath& path,
   return true;
 }
 
+#if !defined(OS_MACOSX)
+// This is implemented in file_util_mac.mm for Mac.
+bool GetTempDir(FilePath* path) {
+  const char* tmp = getenv("TMPDIR");
+  if (tmp) {
+    *path = FilePath(tmp);
+  } else {
+#if defined(OS_ANDROID)
+    return PathService::Get(base::DIR_CACHE, path);
+#else
+    *path = FilePath("/tmp");
+#endif
+  }
+  return true;
+}
+#endif  // !defined(OS_MACOSX)
+
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+// This is implemented in file_util_mac.mm and file_util_android.cc for those
+// platforms.
+bool GetShmemTempDir(bool executable, FilePath* path) {
+#if defined(OS_LINUX)
+  bool use_dev_shm = true;
+  if (executable) {
+    static const bool s_dev_shm_executable = DetermineDevShmExecutable();
+    use_dev_shm = s_dev_shm_executable;
+  }
+  if (use_dev_shm) {
+    *path = FilePath("/dev/shm");
+    return true;
+  }
+#endif
+  return GetTempDir(path);
+}
+#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
+
+#if !defined(OS_MACOSX)
+FilePath GetHomeDir() {
+#if defined(OS_CHROMEOS)
+  if (SysInfo::IsRunningOnChromeOS())
+    return FilePath("/home/chronos/user");
+#endif
+
+  const char* home_dir = getenv("HOME");
+  if (home_dir && home_dir[0])
+    return FilePath(home_dir);
+
+#if defined(OS_ANDROID)
+  DLOG(WARNING) << "OS_ANDROID: Home directory lookup not yet implemented.";
+#elif defined(USE_GLIB) && !defined(OS_CHROMEOS)
+  // g_get_home_dir calls getpwent, which can fall through to LDAP calls.
+  ThreadRestrictions::AssertIOAllowed();
+
+  home_dir = g_get_home_dir();
+  if (home_dir && home_dir[0])
+    return FilePath(home_dir);
+#endif
+
+  FilePath rv;
+  if (GetTempDir(&rv))
+    return rv;
+
+  // Last resort.
+  return FilePath("/tmp");
+}
+#endif  // !defined(OS_MACOSX)
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
@@ -414,25 +522,13 @@ namespace file_util {
 using base::stat_wrapper_t;
 using base::CallStat;
 using base::CallLstat;
+using base::CreateAndOpenFdForTemporaryFile;
 using base::DirectoryExists;
 using base::FileEnumerator;
 using base::FilePath;
 using base::MakeAbsoluteFilePath;
 using base::RealPath;
 using base::VerifySpecificPathControlledByUser;
-
-// Creates and opens a temporary file in |directory|, returning the
-// file descriptor. |path| is set to the temporary file path.
-// This function does NOT unlink() the file.
-int CreateAndOpenFdForTemporaryFile(FilePath directory, FilePath* path) {
-  base::ThreadRestrictions::AssertIOAllowed();  // For call to mkstemp().
-  *path = directory.Append(base::TempFileName());
-  const std::string& tmpdir_string = path->value();
-  // this should be OK since mkstemp just replaces characters in place
-  char* buffer = const_cast<char*>(tmpdir_string.c_str());
-
-  return HANDLE_EINTR(mkstemp(buffer));
-}
 
 bool CreateTemporaryFile(FilePath* path) {
   base::ThreadRestrictions::AssertIOAllowed();  // For call to close().
@@ -448,7 +544,7 @@ bool CreateTemporaryFile(FilePath* path) {
 
 FILE* CreateAndOpenTemporaryShmemFile(FilePath* path, bool executable) {
   FilePath directory;
-  if (!GetShmemTempDir(&directory, executable))
+  if (!GetShmemTempDir(executable, &directory))
     return NULL;
 
   return CreateAndOpenTemporaryFileInDir(directory, path);
@@ -724,101 +820,6 @@ bool NormalizeFilePath(const FilePath& path, FilePath* normalized_path) {
   *normalized_path = real_path_result;
   return true;
 }
-
-#if !defined(OS_MACOSX)
-bool GetTempDir(FilePath* path) {
-  const char* tmp = getenv("TMPDIR");
-  if (tmp)
-    *path = FilePath(tmp);
-  else
-#if defined(OS_ANDROID)
-    return PathService::Get(base::DIR_CACHE, path);
-#else
-    *path = FilePath("/tmp");
-#endif
-  return true;
-}
-
-#if !defined(OS_ANDROID)
-
-#if defined(OS_LINUX)
-// Determine if /dev/shm files can be mapped and then mprotect'd PROT_EXEC.
-// This depends on the mount options used for /dev/shm, which vary among
-// different Linux distributions and possibly local configuration.  It also
-// depends on details of kernel--ChromeOS uses the noexec option for /dev/shm
-// but its kernel allows mprotect with PROT_EXEC anyway.
-
-namespace {
-
-bool DetermineDevShmExecutable() {
-  bool result = false;
-  FilePath path;
-  int fd = CreateAndOpenFdForTemporaryFile(FilePath("/dev/shm"), &path);
-  if (fd >= 0) {
-    ScopedFD shm_fd_closer(&fd);
-    DeleteFile(path, false);
-    long sysconf_result = sysconf(_SC_PAGESIZE);
-    CHECK_GE(sysconf_result, 0);
-    size_t pagesize = static_cast<size_t>(sysconf_result);
-    CHECK_GE(sizeof(pagesize), sizeof(sysconf_result));
-    void *mapping = mmap(NULL, pagesize, PROT_READ, MAP_SHARED, fd, 0);
-    if (mapping != MAP_FAILED) {
-      if (mprotect(mapping, pagesize, PROT_READ | PROT_EXEC) == 0)
-        result = true;
-      munmap(mapping, pagesize);
-    }
-  }
-  return result;
-}
-
-};  // namespace
-#endif  // defined(OS_LINUX)
-
-bool GetShmemTempDir(FilePath* path, bool executable) {
-#if defined(OS_LINUX)
-  bool use_dev_shm = true;
-  if (executable) {
-    static const bool s_dev_shm_executable = DetermineDevShmExecutable();
-    use_dev_shm = s_dev_shm_executable;
-  }
-  if (use_dev_shm) {
-    *path = FilePath("/dev/shm");
-    return true;
-  }
-#endif
-  return GetTempDir(path);
-}
-#endif  // !defined(OS_ANDROID)
-
-FilePath GetHomeDir() {
-#if defined(OS_CHROMEOS)
-  if (base::SysInfo::IsRunningOnChromeOS())
-    return FilePath("/home/chronos/user");
-#endif
-
-  const char* home_dir = getenv("HOME");
-  if (home_dir && home_dir[0])
-    return FilePath(home_dir);
-
-#if defined(OS_ANDROID)
-  DLOG(WARNING) << "OS_ANDROID: Home directory lookup not yet implemented.";
-#elif defined(USE_GLIB) && !defined(OS_CHROMEOS)
-  // g_get_home_dir calls getpwent, which can fall through to LDAP calls.
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  home_dir = g_get_home_dir();
-  if (home_dir && home_dir[0])
-    return FilePath(home_dir);
-#endif
-
-  FilePath rv;
-  if (file_util::GetTempDir(&rv))
-    return rv;
-
-  // Last resort.
-  return FilePath("/tmp");
-}
-#endif  // !defined(OS_MACOSX)
 
 bool VerifyPathControlledByUser(const FilePath& base,
                                 const FilePath& path,

@@ -224,7 +224,7 @@ bool DaemonControllerDelegateMac::DoShowPreferencePane(
     const std::string& config_data) {
   if (!config_data.empty()) {
     base::FilePath config_path;
-    if (!file_util::GetTempDir(&config_path)) {
+    if (!base::GetTempDir(&config_path)) {
       LOG(ERROR) << "Failed to get filename for saving configuration data.";
       return false;
     }

@@ -43,14 +43,14 @@ base::FilePath g_testing_rlz_store_path_;
 // Returns file path of the RLZ storage.
 base::FilePath GetRlzStorePath() {
   return g_testing_rlz_store_path_.empty() ?
-      file_util::GetHomeDir().Append(kRLZDataFileName) :
+      base::GetHomeDir().Append(kRLZDataFileName) :
       g_testing_rlz_store_path_.Append(kRLZDataFileName);
 }
 
 // Returns file path of the RLZ storage lock file.
 base::FilePath GetRlzStoreLockPath() {
   return g_testing_rlz_store_path_.empty() ?
-      file_util::GetHomeDir().Append(kRLZLockFileName) :
+      base::GetHomeDir().Append(kRLZLockFileName) :
       g_testing_rlz_store_path_.Append(kRLZLockFileName);
 }
 

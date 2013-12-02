@@ -972,7 +972,7 @@ TEST_F(FileCacheTest, ClearAll) {
 
   // Verify that the cache is removed.
   EXPECT_FALSE(cache_->GetCacheEntry(id, &cache_entry));
-  EXPECT_TRUE(file_util::IsDirectoryEmpty(cache_files_dir_));
+  EXPECT_TRUE(base::IsDirectoryEmpty(cache_files_dir_));
 }
 
 }  // namespace internal

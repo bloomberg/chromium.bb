@@ -151,7 +151,7 @@ int ShellBrowserMain(
       // We're outside of the message loop here, and this is a test.
       base::ThreadRestrictions::ScopedAllowIO allow_io;
       base::FilePath temp_path;
-      file_util::GetTempDir(&temp_path);
+      base::GetTempDir(&temp_path);
       test_controller.SetTempPath(temp_path);
     }
     std::string test_string;

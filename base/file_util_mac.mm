@@ -23,9 +23,6 @@ bool CopyFileUnsafe(const FilePath& from_path, const FilePath& to_path) {
 }
 
 }  // namespace internal
-}  // namepsace base
-
-namespace file_util {
 
 bool GetTempDir(base::FilePath* path) {
   NSString* tmp = NSTemporaryDirectory();
@@ -35,8 +32,8 @@ bool GetTempDir(base::FilePath* path) {
   return true;
 }
 
-bool GetShmemTempDir(base::FilePath* path, bool executable) {
+bool GetShmemTempDir(bool executable, base::FilePath* path) {
   return GetTempDir(path);
 }
 
-}  // namespace
+}  // namespace base

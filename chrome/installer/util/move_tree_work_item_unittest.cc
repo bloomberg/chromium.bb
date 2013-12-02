@@ -439,7 +439,7 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExistsCheckForDuplicatesFull) {
   EXPECT_TRUE(base::PathExists(to_dir));
   EXPECT_TRUE(base::PathExists(orig_to_file));
   // Make sure that the backup path is not empty.
-  EXPECT_FALSE(file_util::IsDirectoryEmpty(temp_to_dir_.path()));
+  EXPECT_FALSE(base::IsDirectoryEmpty(temp_to_dir_.path()));
 
   // Check that the work item believes the source to have been moved.
   EXPECT_TRUE(work_item->source_moved_to_backup_);
@@ -515,7 +515,7 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExistsCheckForDuplicatesPartial) {
   EXPECT_TRUE(base::PathExists(to_dir));
   EXPECT_TRUE(base::PathExists(orig_to_file));
   // Make sure that the backup path is not empty.
-  EXPECT_FALSE(file_util::IsDirectoryEmpty(temp_to_dir_.path()));
+  EXPECT_FALSE(base::IsDirectoryEmpty(temp_to_dir_.path()));
   // Make sure that the "new" file is also present.
   base::FilePath new_to_file2(to_dir2);
   new_to_file2 = new_to_file2.AppendASCII("From_File2");

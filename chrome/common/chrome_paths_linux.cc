@@ -34,7 +34,7 @@ bool GetUserMediaDirectory(const std::string& xdg_name,
 #else
   *result = GetXDGUserDirectory(xdg_name.c_str(), fallback_name.c_str());
 
-  base::FilePath home = file_util::GetHomeDir();
+  base::FilePath home = base::GetHomeDir();
   if (*result != home) {
     base::FilePath desktop;
     if (!PathService::Get(base::DIR_USER_DESKTOP, &desktop))
@@ -116,7 +116,7 @@ bool GetUserDocumentsDirectory(base::FilePath* result) {
 }
 
 bool GetUserDownloadsDirectorySafe(base::FilePath* result) {
-  base::FilePath home = file_util::GetHomeDir();
+  base::FilePath home = base::GetHomeDir();
   *result = home.Append(kDownloadsDir);
   return true;
 }

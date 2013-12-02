@@ -17,7 +17,7 @@ typedef testing::Test OsCompatAndroidTest;
 // passes.
 TEST_F(OsCompatAndroidTest, DISABLED_TestMkdTemp) {
   FilePath tmp_dir;
-  EXPECT_TRUE(file_util::GetTempDir(&tmp_dir));
+  EXPECT_TRUE(base::GetTempDir(&tmp_dir));
 
   // Not six XXXXXX at the suffix of the path.
   FilePath sub_dir = tmp_dir.Append("XX");

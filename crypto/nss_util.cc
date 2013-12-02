@@ -79,7 +79,7 @@ std::string GetNSSErrorMessage() {
 
 #if defined(USE_NSS)
 base::FilePath GetDefaultConfigDirectory() {
-  base::FilePath dir = file_util::GetHomeDir();
+  base::FilePath dir = base::GetHomeDir();
   if (dir.empty()) {
     LOG(ERROR) << "Failed to get home directory.";
     return dir;

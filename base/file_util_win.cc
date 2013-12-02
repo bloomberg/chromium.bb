@@ -213,18 +213,8 @@ bool DirectoryExists(const FilePath& path) {
   return false;
 }
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
-using base::DirectoryExists;
-using base::FilePath;
-using base::kFileShareAll;
-
 bool GetTempDir(FilePath* path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
 
   wchar_t temp_path[MAX_PATH + 1];
   DWORD path_len = ::GetTempPath(MAX_PATH, temp_path);
@@ -237,9 +227,19 @@ bool GetTempDir(FilePath* path) {
   return true;
 }
 
-bool GetShmemTempDir(FilePath* path, bool executable) {
+bool GetShmemTempDir(bool executable, FilePath* path) {
   return GetTempDir(path);
 }
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
+
+using base::DirectoryExists;
+using base::FilePath;
+using base::kFileShareAll;
 
 bool CreateTemporaryFile(FilePath* path) {
   base::ThreadRestrictions::AssertIOAllowed();

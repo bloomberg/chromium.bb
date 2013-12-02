@@ -181,26 +181,42 @@ BASE_EXPORT bool SetPosixFilePermissions(const FilePath& path, int mode);
 
 #endif  // OS_POSIX
 
+// Returns true if the given directory is empty
+BASE_EXPORT bool IsDirectoryEmpty(const FilePath& dir_path);
+
+// Get the temporary directory provided by the system.
+//
+// WARNING: In general, you should use CreateTemporaryFile variants below
+// instead of this function. Those variants will ensure that the proper
+// permissions are set so that other users on the system can't edit them while
+// they're open (which can lead to security issues).
+BASE_EXPORT bool GetTempDir(FilePath* path);
+
+// Get a temporary directory for shared memory files. The directory may depend
+// on whether the destination is intended for executable files, which in turn
+// depends on how /dev/shmem was mounted. As a result, you must supply whether
+// you intend to create executable shmem segments so this function can find
+// an appropriate location.
+//
+// Only useful on POSIX; redirects to GetTempDir() on Windows.
+BASE_EXPORT bool GetShmemTempDir(bool executable, FilePath* path);
+
+#if defined(OS_POSIX)
+// Get the home directory.  This is more complicated than just getenv("HOME")
+// as it knows to fall back on getpwent() etc.
+//
+// This function is not currently implemented on Windows or Mac because we
+// don't use it. Generally you would use one of PathService's APP_DATA
+// directories on those platforms. If we need it, this could be implemented
+// there to return the appropriate directory.
+BASE_EXPORT FilePath GetHomeDir();
+#endif  // OS_POSIX
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
 
 namespace file_util {
-
-// Return true if the given directory is empty
-BASE_EXPORT bool IsDirectoryEmpty(const base::FilePath& dir_path);
-
-// Get the temporary directory provided by the system.
-// WARNING: DON'T USE THIS. If you want to create a temporary file, use one of
-// the functions below.
-BASE_EXPORT bool GetTempDir(base::FilePath* path);
-// Get a temporary directory for shared memory files.
-// Only useful on POSIX; redirects to GetTempDir() on Windows.
-BASE_EXPORT bool GetShmemTempDir(base::FilePath* path, bool executable);
-
-// Get the home directory.  This is more complicated than just getenv("HOME")
-// as it knows to fall back on getpwent() etc.
-BASE_EXPORT base::FilePath GetHomeDir();
 
 // Creates a temporary file. The full path is placed in |path|, and the
 // function returns true if was successful in creating the file. The file will

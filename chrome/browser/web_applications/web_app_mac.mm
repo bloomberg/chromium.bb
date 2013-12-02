@@ -281,7 +281,7 @@ void DeletePathAndParentIfEmpty(const base::FilePath& app_path) {
   DCHECK(!app_path.empty());
   base::DeleteFile(app_path, true);
   base::FilePath apps_folder = app_path.DirName();
-  if (file_util::IsDirectoryEmpty(apps_folder))
+  if (base::IsDirectoryEmpty(apps_folder))
     base::DeleteFile(apps_folder, false);
 }
 

@@ -21,7 +21,7 @@ const wchar_t kStandardLogFile[] = L"operation_log.txt";
 
 bool GetCrashServiceDirectory(base::FilePath* dir) {
   base::FilePath temp_dir;
-  if (!file_util::GetTempDir(&temp_dir))
+  if (!base::GetTempDir(&temp_dir))
     return false;
   temp_dir = temp_dir.Append(L"chrome_crashes");
   if (!base::PathExists(temp_dir)) {

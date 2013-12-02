@@ -54,7 +54,7 @@ enum EventType {
 
 string MakeSocketPath(const string& socket_file_name) {
   base::FilePath temp_dir;
-  file_util::GetTempDir(&temp_dir);
+  base::GetTempDir(&temp_dir);
   return temp_dir.Append(socket_file_name).value();
 }
 

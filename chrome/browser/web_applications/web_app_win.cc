@@ -460,7 +460,7 @@ void DeletePlatformShortcuts(
   base::FilePath chrome_apps_dir;
   if (PathService::Get(base::DIR_START_MENU, &chrome_apps_dir)) {
     chrome_apps_dir = chrome_apps_dir.Append(GetAppShortcutsSubdirName());
-    if (file_util::IsDirectoryEmpty(chrome_apps_dir))
+    if (base::IsDirectoryEmpty(chrome_apps_dir))
       base::DeleteFile(chrome_apps_dir, false);
   }
 }
@@ -473,7 +473,7 @@ void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
   base::FilePath chrome_apps_dir;
   if (PathService::Get(base::DIR_START_MENU, &chrome_apps_dir)) {
     chrome_apps_dir = chrome_apps_dir.Append(GetAppShortcutsSubdirName());
-    if (file_util::IsDirectoryEmpty(chrome_apps_dir))
+    if (base::IsDirectoryEmpty(chrome_apps_dir))
       base::DeleteFile(chrome_apps_dir, false);
   }
 }

@@ -1564,7 +1564,7 @@ TEST_F(FileUtilTest, GetTempDirTest) {
   for (unsigned int i = 0; i < arraysize(kTmpValues); ++i) {
     FilePath path;
     ::_tputenv_s(kTmpKey, kTmpValues[i]);
-    file_util::GetTempDir(&path);
+    base::GetTempDir(&path);
     EXPECT_TRUE(path.IsAbsolute()) << "$TMP=" << kTmpValues[i] <<
         " result=" << path.value();
   }
@@ -1637,7 +1637,7 @@ TEST_F(FileUtilTest, CreateNewTemporaryDirInDirTest) {
 
 TEST_F(FileUtilTest, GetShmemTempDirTest) {
   FilePath dir;
-  EXPECT_TRUE(file_util::GetShmemTempDir(&dir, false));
+  EXPECT_TRUE(GetShmemTempDir(false, &dir));
   EXPECT_TRUE(DirectoryExists(dir));
 }
 
@@ -1933,13 +1933,13 @@ TEST_F(FileUtilTest, IsDirectoryEmpty) {
 
   ASSERT_TRUE(file_util::CreateDirectory(empty_dir));
 
-  EXPECT_TRUE(file_util::IsDirectoryEmpty(empty_dir));
+  EXPECT_TRUE(base::IsDirectoryEmpty(empty_dir));
 
   FilePath foo(empty_dir.Append(FILE_PATH_LITERAL("foo.txt")));
   std::string bar("baz");
   ASSERT_TRUE(file_util::WriteFile(foo, bar.c_str(), bar.length()));
 
-  EXPECT_FALSE(file_util::IsDirectoryEmpty(empty_dir));
+  EXPECT_FALSE(base::IsDirectoryEmpty(empty_dir));
 }
 
 #if defined(OS_POSIX)

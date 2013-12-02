@@ -135,7 +135,7 @@ void PicasaDataProvider::OnTempDirWatchStarted(
 void PicasaDataProvider::OnTempDirChanged(const base::FilePath& temp_dir_path,
                                           bool error) {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
-  if (file_util::IsDirectoryEmpty(temp_dir_path))
+  if (base::IsDirectoryEmpty(temp_dir_path))
     InvalidateData();
 }
 

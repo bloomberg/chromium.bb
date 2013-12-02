@@ -7,10 +7,10 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 
-namespace file_util {
+namespace base {
 
-bool GetShmemTempDir(base::FilePath* path, bool executable) {
+bool GetShmemTempDir(bool executable, base::FilePath* path) {
   return PathService::Get(base::DIR_CACHE, path);
 }
 
-}  // namespace file_util
+}  // namespace base

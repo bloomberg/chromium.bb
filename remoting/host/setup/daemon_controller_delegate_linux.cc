@@ -55,7 +55,7 @@ std::string GetMd5(const std::string& value) {
 
 base::FilePath GetConfigPath() {
   std::string filename = "host#" + GetMd5(net::GetHostName()) + ".json";
-  return file_util::GetHomeDir().
+  return base::GetHomeDir().
       Append(".config/chrome-remote-desktop").Append(filename);
 }
 

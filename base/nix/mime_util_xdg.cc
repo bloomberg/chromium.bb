@@ -414,7 +414,7 @@ void AddXDGDataDir(const FilePath& dir) {
 
 // Add all the xdg icon directories.
 void InitIconDir() {
-  FilePath home = file_util::GetHomeDir();
+  FilePath home = GetHomeDir();
   if (!home.empty()) {
       FilePath legacy_data_dir(home);
       legacy_data_dir = legacy_data_dir.AppendASCII(".icons");

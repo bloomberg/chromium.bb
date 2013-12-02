@@ -110,7 +110,7 @@ bool PathProviderPosix(int key, FilePath* result) {
       return true;
     }
     case base::DIR_HOME:
-      *result = file_util::GetHomeDir();
+      *result = GetHomeDir();
       return true;
   }
   return false;

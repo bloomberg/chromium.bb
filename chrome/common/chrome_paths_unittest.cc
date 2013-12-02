@@ -29,7 +29,7 @@ TEST(ChromePaths, UserCacheDir) {
   base::FilePath expected_cache_dir;
   ASSERT_TRUE(PathService::Get(base::DIR_CACHE, &expected_cache_dir));
 #elif(OS_POSIX)
-  base::FilePath homedir = file_util::GetHomeDir();
+  base::FilePath homedir = base::GetHomeDir();
   // Note: we assume XDG_CACHE_HOME/XDG_CONFIG_HOME are at their
   // default settings.
   test_profile_dir = homedir.Append(".config/foobar");
