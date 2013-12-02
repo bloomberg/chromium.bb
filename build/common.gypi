@@ -2007,6 +2007,10 @@
       'ANGLE_DX11',
     ],
     'conditions': [
+      # TODO(jochen): Enable this unconditionally.
+      ['OS!="mac"', {
+        'defines': ['V8_DEPRECATION_WARNINGS'],
+      }],
       ['(OS=="mac" or OS=="ios") and asan==1', {
         'dependencies': [
           '<(DEPTH)/build/mac/asan.gyp:asan_dynamic_runtime',
