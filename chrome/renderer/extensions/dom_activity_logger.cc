@@ -39,7 +39,9 @@ void DOMActivityLogger::log(
   scoped_ptr<ListValue> argv_list_value(new ListValue());
   for (int i =0; i < argc; i++) {
     argv_list_value->Set(
-        i, converter->FromV8Value(argv[i], v8::Context::GetCurrent()));
+        i,
+        converter->FromV8Value(argv[i],
+                               v8::Isolate::GetCurrent()->GetCurrentContext()));
   }
   ExtensionHostMsg_DOMAction_Params params;
   params.url = url;

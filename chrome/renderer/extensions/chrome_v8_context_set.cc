@@ -60,12 +60,14 @@ ChromeV8ContextSet::ContextSet ChromeV8ContextSet::GetAll() const {
 }
 
 ChromeV8Context* ChromeV8ContextSet::GetCurrent() const {
-  return v8::Context::InContext() ?
-      GetByV8Context(v8::Context::GetCurrent()) : NULL;
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  return isolate->InContext() ? GetByV8Context(isolate->GetCurrentContext())
+                              : NULL;
 }
 
 ChromeV8Context* ChromeV8ContextSet::GetCalling() const {
-  v8::Local<v8::Context> calling = v8::Context::GetCalling();
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::Local<v8::Context> calling = isolate->GetCallingContext();
   return calling.IsEmpty() ? NULL : GetByV8Context(calling);
 }
 

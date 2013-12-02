@@ -43,11 +43,11 @@ void APIActivityLogger::LogInternal(
   DCHECK(args[1]->IsString());
   DCHECK(args[2]->IsArray());
 
-  std::string ext_id = *v8::String::AsciiValue(args[0]);
+  std::string ext_id = *v8::String::Utf8Value(args[0]);
   ExtensionHostMsg_APIActionOrEvent_Params params;
-  params.api_call = *v8::String::AsciiValue(args[1]);
+  params.api_call = *v8::String::Utf8Value(args[1]);
   if (args.Length() == 4)  // Extras are optional.
-    params.extra = *v8::String::AsciiValue(args[3]);
+    params.extra = *v8::String::Utf8Value(args[3]);
   else
     params.extra = "";
 
@@ -62,7 +62,7 @@ void APIActivityLogger::LogInternal(
     for (size_t i = 0; i < arg_array->Length(); ++i) {
       arg_list->Set(i,
                     converter->FromV8Value(arg_array->Get(i),
-                    v8::Context::GetCurrent()));
+                    args.GetIsolate()->GetCurrentContext()));
     }
     params.arguments.Swap(arg_list.get());
   }

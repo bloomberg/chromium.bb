@@ -49,13 +49,13 @@ void LoggingNativeHandler::DcheckIsOn(
 void LoggingNativeHandler::Log(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
-  LOG(INFO) << *v8::String::AsciiValue(args[0]);
+  LOG(INFO) << *v8::String::Utf8Value(args[0]);
 }
 
 void LoggingNativeHandler::Warning(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
-  LOG(WARNING) << *v8::String::AsciiValue(args[0]);
+  LOG(WARNING) << *v8::String::Utf8Value(args[0]);
 }
 
 void LoggingNativeHandler::ParseArgs(
@@ -66,7 +66,7 @@ void LoggingNativeHandler::ParseArgs(
   *check_value = args[0]->BooleanValue();
   if (args.Length() == 2) {
     *error_message = "Error: " + std::string(
-        *v8::String::AsciiValue(args[1]));
+        *v8::String::Utf8Value(args[1]));
   }
 
   v8::Handle<v8::StackTrace> stack_trace =
@@ -91,7 +91,7 @@ std::string LoggingNativeHandler::ToStringOrDefault(
     const std::string& dflt) {
   if (v8_string.IsEmpty())
     return dflt;
-  std::string ascii_value = *v8::String::AsciiValue(v8_string);
+  std::string ascii_value = *v8::String::Utf8Value(v8_string);
   return ascii_value.empty() ? dflt : ascii_value;
 }
 

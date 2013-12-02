@@ -46,7 +46,7 @@ bool CheckAccessToAppDetails(WebFrame* frame, v8::Isolate* isolate) {
   if (!IsCheckoutURL(frame->document().url().spec())) {
     std::string error("Access denied for URL: ");
     error += frame->document().url().spec();
-    v8::ThrowException(v8::String::NewFromUtf8(isolate, error.c_str()));
+    isolate->ThrowException(v8::String::NewFromUtf8(isolate, error.c_str()));
     return false;
   }
 
@@ -95,13 +95,13 @@ void AppBindings::GetDetailsForFrame(
     return;
 
   if (args.Length() < 0) {
-    v8::ThrowException(
+    context()->isolate()->ThrowException(
         v8::String::NewFromUtf8(context()->isolate(), "Not enough arguments."));
     return;
   }
 
   if (!args[0]->IsObject()) {
-    v8::ThrowException(v8::String::NewFromUtf8(
+    context()->isolate()->ThrowException(v8::String::NewFromUtf8(
         context()->isolate(), "Argument 0 must be an object."));
     return;
   }
@@ -112,7 +112,7 @@ void AppBindings::GetDetailsForFrame(
 
   WebFrame* target_frame = WebFrame::frameForContext(context);
   if (!target_frame) {
-    console::Error(v8::Context::GetCalling(),
+    console::Error(args.GetIsolate()->GetCallingContext(),
                    "Could not find frame for specified object.");
     return;
   }
@@ -122,15 +122,16 @@ void AppBindings::GetDetailsForFrame(
 
 v8::Handle<v8::Value> AppBindings::GetDetailsForFrameImpl(
     WebFrame* frame) {
+  v8::Isolate* isolate = frame->mainWorldScriptContext()->GetIsolate();
   if (frame->document().securityOrigin().isUnique())
-    return v8::Null();
+    return v8::Null(isolate);
 
   const Extension* extension =
       dispatcher_->extensions()->GetExtensionOrAppByURL(
           frame->document().url());
 
   if (!extension)
-    return v8::Null();
+    return v8::Null(isolate);
 
   scoped_ptr<base::DictionaryValue> manifest_copy(
       extension->manifest()->value()->DeepCopy());
@@ -146,8 +147,8 @@ void AppBindings::GetInstallState(
   int callback_id = 0;
   if (args.Length() == 1) {
     if (!args[0]->IsInt32()) {
-      v8::ThrowException(v8::String::NewFromUtf8(context()->isolate(),
-                                                 kInvalidCallbackIdError));
+      context()->isolate()->ThrowException(v8::String::NewFromUtf8(
+          context()->isolate(), kInvalidCallbackIdError));
       return;
     }
     callback_id = args[0]->Int32Value();

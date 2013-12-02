@@ -31,7 +31,7 @@ template<typename T> class UnsafePersistent {
   // V8_ALLOW_ACCESS_TO_RAW_HANDLE_CONSTRUCTOR to be defined
   void dispose() {
     v8::Persistent<T> handle(value_);
-    handle.Dispose();
+    handle.Reset();
     value_ = 0;
   }
 

@@ -45,7 +45,7 @@ bool SetIconNatives::ConvertImageDataToBitmapValue(
       image_data->Get(v8::String::NewFromUtf8(isolate, "height"))->Int32Value();
 
   if (width <= 0 || height <= 0) {
-    v8::ThrowException(v8::Exception::Error(
+    isolate->ThrowException(v8::Exception::Error(
         v8::String::NewFromUtf8(isolate, kInvalidDimensions)));
     return false;
   }
@@ -54,7 +54,7 @@ bool SetIconNatives::ConvertImageDataToBitmapValue(
   // without overflowing below.
   int max_width = (std::numeric_limits<int>::max() / 4) / height;
   if (width > max_width) {
-    v8::ThrowException(v8::Exception::Error(
+    isolate->ThrowException(v8::Exception::Error(
         v8::String::NewFromUtf8(isolate, kInvalidDimensions)));
     return false;
   }
@@ -62,7 +62,7 @@ bool SetIconNatives::ConvertImageDataToBitmapValue(
   int data_length =
       data->Get(v8::String::NewFromUtf8(isolate, "length"))->Int32Value();
   if (data_length != 4 * width * height) {
-    v8::ThrowException(
+    isolate->ThrowException(
         v8::Exception::Error(v8::String::NewFromUtf8(isolate, kInvalidData)));
     return false;
   }
@@ -70,7 +70,7 @@ bool SetIconNatives::ConvertImageDataToBitmapValue(
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, width, height);
   if (!bitmap.allocPixels()) {
-    v8::ThrowException(
+    isolate->ThrowException(
         v8::Exception::Error(v8::String::NewFromUtf8(isolate, kNoMemory)));
     return false;
   }
@@ -144,7 +144,7 @@ void SetIconNatives::SetIconCommon(
   ListValue list_value;
   list_value.Append(dict);
 
-  std::string name = *v8::String::AsciiValue(args[0]);
+  std::string name = *v8::String::Utf8Value(args[0]);
   int request_id = args[2]->Int32Value();
   bool has_callback = args[3]->BooleanValue();
   bool for_io_thread = args[4]->BooleanValue();

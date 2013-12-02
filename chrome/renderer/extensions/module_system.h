@@ -165,7 +165,7 @@ class ModuleSystem : public ObjectBackedNativeHandler {
                                   v8::Handle<v8::String> name);
 
   void RequireForJs(const v8::FunctionCallbackInfo<v8::Value>& args);
-  v8::Handle<v8::Value> RequireForJsInner(v8::Handle<v8::String> module_name);
+  v8::Local<v8::Value> RequireForJsInner(v8::Handle<v8::String> module_name);
 
   typedef v8::Handle<v8::Value> (ModuleSystem::*RequireFunction)(
       const std::string&);

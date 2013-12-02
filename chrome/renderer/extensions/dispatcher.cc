@@ -228,7 +228,7 @@ class V8ContextNativeHandler : public ObjectBackedNativeHandler {
   void GetAvailability(const v8::FunctionCallbackInfo<v8::Value>& args) {
     CHECK_EQ(args.Length(), 1);
     v8::Isolate* isolate = args.GetIsolate();
-    std::string api_name = *v8::String::AsciiValue(args[0]->ToString());
+    std::string api_name = *v8::String::Utf8Value(args[0]->ToString());
     Feature::Availability availability = context_->GetAvailability(api_name);
 
     v8::Handle<v8::Object> ret = v8::Object::New();
@@ -401,7 +401,7 @@ class ProcessInfoNativeHandler : public ChromeV8Extension {
   void HasSwitch(const v8::FunctionCallbackInfo<v8::Value>& args) {
     CHECK(args.Length() == 1 && args[0]->IsString());
     bool has_switch = CommandLine::ForCurrentProcess()->HasSwitch(
-        *v8::String::AsciiValue(args[0]));
+        *v8::String::Utf8Value(args[0]));
     args.GetReturnValue().Set(v8::Boolean::New(args.GetIsolate(), has_switch));
   }
 
@@ -1568,7 +1568,7 @@ bool Dispatcher::CheckContextAccessToExtensionAPI(
   }
 
   if (!context->extension()) {
-    v8::ThrowException(v8::Exception::Error(
+    context->isolate()->ThrowException(v8::Exception::Error(
         v8::String::NewFromUtf8(context->isolate(), "Not in an extension.")));
     return false;
   }
@@ -1580,15 +1580,16 @@ bool Dispatcher::CheckContextAccessToExtensionAPI(
     static const char kMessage[] =
         "%s cannot be used within a sandboxed frame.";
     std::string error_msg = base::StringPrintf(kMessage, function_name.c_str());
-    v8::ThrowException(v8::Exception::Error(
+    context->isolate()->ThrowException(v8::Exception::Error(
         v8::String::NewFromUtf8(context->isolate(), error_msg.c_str())));
     return false;
   }
 
   Feature::Availability availability = context->GetAvailability(function_name);
   if (!availability.is_available()) {
-    v8::ThrowException(v8::Exception::Error(v8::String::NewFromUtf8(
-        context->isolate(), availability.message().c_str())));
+    context->isolate()->ThrowException(
+        v8::Exception::Error(v8::String::NewFromUtf8(
+            context->isolate(), availability.message().c_str())));
   }
 
   return availability.is_available();

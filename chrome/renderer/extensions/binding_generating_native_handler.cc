@@ -19,7 +19,7 @@ BindingGeneratingNativeHandler::BindingGeneratingNativeHandler(
 
 v8::Handle<v8::Object> BindingGeneratingNativeHandler::NewInstance() {
   v8::Isolate* isolate = module_system_->GetIsolate();
-  v8::HandleScope scope(isolate);
+  v8::EscapableHandleScope scope(isolate);
   v8::Handle<v8::Object> binding_module =
       module_system_->Require("binding")->ToObject();
   v8::Handle<v8::Object> binding = binding_module
@@ -32,14 +32,14 @@ v8::Handle<v8::Object> BindingGeneratingNativeHandler::NewInstance() {
       create_binding->Call(binding, arraysize(argv), argv)->ToObject();
   v8::Handle<v8::Function> generate = binding_instance
       ->Get(v8::String::NewFromUtf8(isolate, "generate")).As<v8::Function>();
-  v8::Handle<v8::Object> object = v8::Object::New();
+  v8::Local<v8::Object> object = v8::Object::New();
   v8::Handle<v8::Value> compiled_schema =
       generate->Call(binding_instance, 0, NULL);
   if (!compiled_schema.IsEmpty()) {
     object->Set(v8::String::NewFromUtf8(isolate, bind_to_.c_str()),
                 compiled_schema);
   }
-  return scope.Close(object);
+  return scope.Escape(object);
 }
 
 } // namespace extensions

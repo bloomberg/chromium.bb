@@ -55,13 +55,13 @@ void Fatal(ChromeV8Context* context, const std::string& message) {
 
   // <= dev means dev, canary, and trunk.
   if (GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV)
-    console::Fatal(v8::Context::GetCalling(), full_message);
+    console::Fatal(context->isolate()->GetCallingContext(), full_message);
   else
-    console::Error(v8::Context::GetCalling(), full_message);
+    console::Error(context->isolate()->GetCallingContext(), full_message);
 }
 
-void Warn(const std::string& message) {
-  console::Warn(v8::Context::GetCalling(), message);
+void Warn(v8::Isolate* isolate, const std::string& message) {
+  console::Warn(isolate->GetCallingContext(), message);
 }
 
 // Default exception handler which logs the exception.
@@ -182,8 +182,8 @@ void ModuleSystem::HandleException(const v8::TryCatch& try_catch) {
 }
 
 v8::Handle<v8::Value> ModuleSystem::Require(const std::string& module_name) {
-  v8::HandleScope handle_scope(GetIsolate());
-  return handle_scope.Close(RequireForJsInner(
+  v8::EscapableHandleScope handle_scope(GetIsolate());
+  return handle_scope.Escape(RequireForJsInner(
       v8::String::NewFromUtf8(GetIsolate(), module_name.c_str())));
 }
 
@@ -193,9 +193,9 @@ void ModuleSystem::RequireForJs(
   args.GetReturnValue().Set(RequireForJsInner(module_name));
 }
 
-v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
+v8::Local<v8::Value> ModuleSystem::RequireForJsInner(
     v8::Handle<v8::String> module_name) {
-  v8::HandleScope handle_scope(GetIsolate());
+  v8::EscapableHandleScope handle_scope(GetIsolate());
   v8::Context::Scope context_scope(context()->v8_context());
 
   v8::Handle<v8::Object> global(context()->v8_context()->Global());
@@ -206,20 +206,20 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
   v8::Handle<v8::Value> modules_value = global->GetHiddenValue(
       v8::String::NewFromUtf8(GetIsolate(), kModulesField));
   if (modules_value.IsEmpty() || modules_value->IsUndefined()) {
-    Warn("Extension view no longer exists");
-    return v8::Undefined();
+    Warn(GetIsolate(), "Extension view no longer exists");
+    return v8::Undefined(GetIsolate());
   }
 
   v8::Handle<v8::Object> modules(v8::Handle<v8::Object>::Cast(modules_value));
-  v8::Handle<v8::Value> exports(modules->Get(module_name));
+  v8::Local<v8::Value> exports(modules->Get(module_name));
   if (!exports->IsUndefined())
-    return handle_scope.Close(exports);
+    return handle_scope.Escape(exports);
 
   std::string module_name_str = *v8::String::Utf8Value(module_name);
   v8::Handle<v8::Value> source(GetSource(module_name_str));
   if (source.IsEmpty() || source->IsUndefined()) {
     Fatal(context_, "No source for require(" + module_name_str + ")");
-    return v8::Undefined();
+    return v8::Undefined(GetIsolate());
   }
   v8::Handle<v8::String> wrapped_source(WrapSource(
       v8::Handle<v8::String>::Cast(source)));
@@ -227,7 +227,7 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
   v8::Handle<v8::Value> func_as_value = RunString(wrapped_source, module_name);
   if (func_as_value.IsEmpty() || func_as_value->IsUndefined()) {
     Fatal(context_, "Bad source for require(" + module_name_str + ")");
-    return v8::Undefined();
+    return v8::Undefined(GetIsolate());
   }
 
   v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(func_as_value);
@@ -238,31 +238,32 @@ v8::Handle<v8::Value> ModuleSystem::RequireForJsInner(
 
   // These must match the argument order in WrapSource.
   v8::Handle<v8::Value> args[] = {
-    // CommonJS.
-    natives->Get(v8::String::NewSymbol("require")),
-    natives->Get(v8::String::NewSymbol("requireNative")),
-    exports,
-    // Libraries that we magically expose to every module.
-    console::AsV8Object(),
-    // Each safe builtin. Keep in order with the arguments in WrapSource.
-    context_->safe_builtins()->GetArray(),
-    context_->safe_builtins()->GetFunction(),
-    context_->safe_builtins()->GetJSON(),
-    context_->safe_builtins()->GetObjekt(),
-    context_->safe_builtins()->GetRegExp(),
-    context_->safe_builtins()->GetString(),
-  };
+      // CommonJS.
+      natives->Get(v8::String::NewFromUtf8(
+          GetIsolate(), "require", v8::String::kInternalizedString)),
+      natives->Get(v8::String::NewFromUtf8(GetIsolate(), "requireNative",
+                                           v8::String::kInternalizedString)),
+      exports,
+      // Libraries that we magically expose to every module.
+      console::AsV8Object(),
+      // Each safe builtin. Keep in order with the arguments in WrapSource.
+      context_->safe_builtins()->GetArray(),
+      context_->safe_builtins()->GetFunction(),
+      context_->safe_builtins()->GetJSON(),
+      context_->safe_builtins()->GetObjekt(),
+      context_->safe_builtins()->GetRegExp(),
+      context_->safe_builtins()->GetString(), };
   {
     v8::TryCatch try_catch;
     try_catch.SetCaptureMessage(true);
     context_->CallFunction(func, arraysize(args), args);
     if (try_catch.HasCaught()) {
       HandleException(try_catch);
-      return v8::Undefined();
+      return v8::Undefined(GetIsolate());
     }
   }
   modules->Set(module_name, exports);
-  return handle_scope.Close(exports);
+  return handle_scope.Escape(exports);
 }
 
 v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
@@ -290,7 +291,7 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
                "module_name", module_name,
                "method_name", method_name);
 
-  v8::HandleScope handle_scope(GetIsolate());
+  v8::EscapableHandleScope handle_scope(GetIsolate());
   v8::Context::Scope context_scope(context()->v8_context());
 
   v8::Local<v8::Value> module;
@@ -303,7 +304,8 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
   if (module.IsEmpty() || !module->IsObject()) {
     Fatal(context_,
           "Failed to get module " + module_name + " to call " + method_name);
-    return handle_scope.Close(v8::Undefined());
+    return handle_scope.Escape(
+        v8::Local<v8::Primitive>(v8::Undefined(GetIsolate())));
   }
 
   v8::Local<v8::Value> value =
@@ -311,7 +313,8 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
           v8::String::NewFromUtf8(GetIsolate(), method_name.c_str()));
   if (value.IsEmpty() || !value->IsFunction()) {
     Fatal(context_, module_name + "." + method_name + " is not a function");
-    return handle_scope.Close(v8::Undefined());
+    return handle_scope.Escape(
+        v8::Local<v8::Primitive>(v8::Undefined(GetIsolate())));
   }
 
   v8::Handle<v8::Function> func = v8::Handle<v8::Function>::Cast(value);
@@ -323,7 +326,7 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
     if (try_catch.HasCaught())
       HandleException(try_catch);
   }
-  return handle_scope.Close(result);
+  return handle_scope.Escape(result);
 }
 
 void ModuleSystem::RegisterNativeHandler(const std::string& name,
@@ -375,7 +378,8 @@ void ModuleSystem::LazyFieldGetterInner(
   if (module_system_value.IsEmpty() || !module_system_value->IsExternal()) {
     // ModuleSystem has been deleted.
     // TODO(kalman): See comment in header file.
-    Warn("Module system has been deleted, does extension view exist?");
+    Warn(info.GetIsolate(),
+         "Module system has been deleted, does extension view exist?");
     return;
   }
 
@@ -472,7 +476,7 @@ v8::Isolate* ModuleSystem::GetIsolate() const {
 
 v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
                                               v8::Handle<v8::String> name) {
-  v8::HandleScope handle_scope(GetIsolate());
+  v8::EscapableHandleScope handle_scope(GetIsolate());
   v8::Context::Scope context_scope(context()->v8_context());
 
   // Prepend extensions:: to |name| so that internal code can be differentiated
@@ -491,23 +495,24 @@ v8::Handle<v8::Value> ModuleSystem::RunString(v8::Handle<v8::String> code,
                                               internal_name.size())));
   if (try_catch.HasCaught()) {
     HandleException(try_catch);
-    return v8::Undefined();
+    return v8::Undefined(GetIsolate());
   }
 
-  v8::Handle<v8::Value> result = script->Run();
+  v8::Local<v8::Value> result = script->Run();
   if (try_catch.HasCaught()) {
     HandleException(try_catch);
-    return v8::Undefined();
+    return v8::Undefined(GetIsolate());
   }
 
-  return handle_scope.Close(result);
+  return handle_scope.Escape(result);
 }
 
 v8::Handle<v8::Value> ModuleSystem::GetSource(const std::string& module_name) {
-  v8::HandleScope handle_scope(GetIsolate());
+  v8::EscapableHandleScope handle_scope(GetIsolate());
   if (!source_map_->Contains(module_name))
-    return v8::Undefined();
-  return handle_scope.Close(source_map_->GetSource(GetIsolate(), module_name));
+    return v8::Undefined(GetIsolate());
+  return handle_scope.Escape(
+      v8::Local<v8::Value>(source_map_->GetSource(GetIsolate(), module_name)));
 }
 
 void ModuleSystem::RequireNative(
@@ -524,11 +529,11 @@ v8::Handle<v8::Value> ModuleSystem::RequireNativeFromString(
     // logic; however, under normal circumstances, this is programmer error so
     // we could crash.
     if (exception_handler_) {
-      return v8::ThrowException(
+      return GetIsolate()->ThrowException(
           v8::String::NewFromUtf8(GetIsolate(), "Natives disabled"));
     }
     Fatal(context_, "Natives disabled for requireNative(" + native_name + ")");
-    return v8::Undefined();
+    return v8::Undefined(GetIsolate());
   }
 
   if (overridden_native_handlers_.count(native_name) > 0u) {
@@ -540,13 +545,13 @@ v8::Handle<v8::Value> ModuleSystem::RequireNativeFromString(
   if (i == native_handler_map_.end()) {
     Fatal(context_,
           "Couldn't find native for requireNative(" + native_name + ")");
-    return v8::Undefined();
+    return v8::Undefined(GetIsolate());
   }
   return i->second->NewInstance();
 }
 
 v8::Handle<v8::String> ModuleSystem::WrapSource(v8::Handle<v8::String> source) {
-  v8::HandleScope handle_scope(GetIsolate());
+  v8::EscapableHandleScope handle_scope(GetIsolate());
   // Keep in order with the arguments in RequireForJsInner.
   v8::Handle<v8::String> left = v8::String::NewFromUtf8(GetIsolate(),
       "(function(require, requireNative, exports, "
@@ -554,8 +559,8 @@ v8::Handle<v8::String> ModuleSystem::WrapSource(v8::Handle<v8::String> source) {
                 "$Array, $Function, $JSON, $Object, $RegExp, $String) {"
        "'use strict';");
   v8::Handle<v8::String> right = v8::String::NewFromUtf8(GetIsolate(), "\n})");
-  return handle_scope.Close(
-      v8::String::Concat(left, v8::String::Concat(source, right)));
+  return handle_scope.Escape(v8::Local<v8::String>(
+      v8::String::Concat(left, v8::String::Concat(source, right))));
 }
 
 }  // namespace extensions

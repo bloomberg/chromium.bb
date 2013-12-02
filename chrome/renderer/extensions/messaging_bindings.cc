@@ -109,7 +109,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
 
     int port_id = args[0]->Int32Value();
     if (!HasPortData(port_id)) {
-      v8::ThrowException(v8::Exception::Error(
+      args.GetIsolate()->ThrowException(v8::Exception::Error(
           v8::String::NewFromUtf8(args.GetIsolate(), kPortClosedError)));
       return;
     }
@@ -117,7 +117,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
     renderview->Send(new ExtensionHostMsg_PostMessage(
         renderview->GetRoutingID(), port_id,
         extensions::Message(
-            *v8::String::AsciiValue(args[1]),
+            *v8::String::Utf8Value(args[1]),
             blink::WebUserGestureIndicator::isProcessingUserGesture())));
   }
 
@@ -178,18 +178,19 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
                      v8::Handle<v8::Function> callback,
                      v8::Isolate* isolate) {
       GCCallback* cb = new GCCallback(object, callback, isolate);
-      cb->object_.MakeWeak(cb, NearDeathCallback);
+      cb->object_.SetWeak(cb, NearDeathCallback);
     }
 
    private:
-    static void NearDeathCallback(v8::Isolate* isolate,
-                                  v8::Persistent<v8::Object>* object,
-                                  GCCallback* self) {
+    static void NearDeathCallback(
+        const v8::WeakCallbackData<v8::Object, GCCallback>& data) {
       // v8 says we need to explicitly reset weak handles from their callbacks.
       // It's not implicit as one might expect.
-      self->object_.reset();
-      base::MessageLoop::current()->PostTask(FROM_HERE,
-          base::Bind(&GCCallback::RunCallback, base::Owned(self)));
+      data.GetParameter()->object_.reset();
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(&GCCallback::RunCallback,
+                     base::Owned(data.GetParameter())));
     }
 
     GCCallback(v8::Handle<v8::Object> object,
@@ -269,11 +270,11 @@ void MessagingBindings::DispatchOnConnect(
     if ((*it)->v8_context().IsEmpty())
       continue;
 
-    v8::Handle<v8::Value> tab = v8::Null();
+    v8::Handle<v8::Value> tab = v8::Null(isolate);
     if (!source_tab.empty())
       tab = converter->ToV8Value(&source_tab, (*it)->v8_context());
 
-    v8::Handle<v8::Value> tls_channel_id_value = v8::Undefined();
+    v8::Handle<v8::Value> tls_channel_id_value = v8::Undefined(isolate);
     if ((*it)->extension()) {
       ExternallyConnectableInfo* externally_connectable =
           ExternallyConnectableInfo::Get((*it)->extension());
@@ -407,7 +408,7 @@ void MessagingBindings::DispatchOnDisconnect(
       arguments.push_back(
           v8::String::NewFromUtf8(isolate, error_message.c_str()));
     } else {
-      arguments.push_back(v8::Null());
+      arguments.push_back(v8::Null(isolate));
     }
     (*it)->module_system()->CallModuleMethod("messaging",
                                              "dispatchOnDisconnect",

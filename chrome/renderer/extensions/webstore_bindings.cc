@@ -78,7 +78,7 @@ void WebstoreBindings::Install(
     if (args[0]->IsString()) {
       preferred_store_link_url = std::string(*v8::String::Utf8Value(args[0]));
     } else {
-      v8::ThrowException(v8::String::NewFromUtf8(
+      args.GetIsolate()->ThrowException(v8::String::NewFromUtf8(
           args.GetIsolate(), kPreferredStoreLinkUrlNotAString));
       return;
     }
@@ -88,20 +88,20 @@ void WebstoreBindings::Install(
   std::string error;
   if (!GetWebstoreItemIdFromFrame(
       frame, preferred_store_link_url, &webstore_item_id, &error)) {
-    v8::ThrowException(
+    args.GetIsolate()->ThrowException(
         v8::String::NewFromUtf8(args.GetIsolate(), error.c_str()));
     return;
   }
 
   int install_id = g_next_install_id++;
   if (!args[1]->IsUndefined() && !args[1]->IsFunction()) {
-    v8::ThrowException(v8::String::NewFromUtf8(
+    args.GetIsolate()->ThrowException(v8::String::NewFromUtf8(
         args.GetIsolate(), kSuccessCallbackNotAFunctionError));
     return;
   }
 
   if (!args[2]->IsUndefined() && !args[2]->IsFunction()) {
-    v8::ThrowException(v8::String::NewFromUtf8(
+    args.GetIsolate()->ThrowException(v8::String::NewFromUtf8(
         args.GetIsolate(), kFailureCallbackNotAFunctionError));
     return;
   }

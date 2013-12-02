@@ -34,10 +34,7 @@ class ScopedPersistent {
   }
 
   void reset() {
-    if (handle_.IsEmpty())
-      return;
-    handle_.Dispose();
-    handle_.Clear();
+    handle_.Reset();
   }
 
   bool IsEmpty() const {
@@ -56,10 +53,10 @@ class ScopedPersistent {
     return v8::Local<T>::New(isolate, handle_);
   }
 
-  template<typename P>
-  void MakeWeak(P* parameters,
-                typename v8::WeakReferenceCallbacks<T, P>::Revivable callback) {
-    handle_.MakeWeak(parameters, callback);
+  template <typename P>
+  void SetWeak(P* parameters,
+               typename v8::WeakCallbackData<T, P>::Callback callback) {
+    handle_.SetWeak(parameters, callback);
   }
 
  private:

@@ -77,21 +77,21 @@ v8::Local<v8::Value> ChromeV8Context::CallFunction(
     v8::Handle<v8::Function> function,
     int argc,
     v8::Handle<v8::Value> argv[]) const {
-  v8::HandleScope handle_scope(isolate());
+  v8::EscapableHandleScope handle_scope(isolate());
   v8::Context::Scope scope(v8_context());
 
   blink::WebScopedMicrotaskSuppression suppression;
-  if (!is_valid())
-    return handle_scope.Close(v8::Undefined());
+  if (!is_valid()) {
+    return handle_scope.Escape(
+        v8::Local<v8::Primitive>(v8::Undefined(isolate())));
+  }
 
   v8::Handle<v8::Object> global = v8_context()->Global();
   if (!web_frame_)
-    return handle_scope.Close(function->Call(global, argc, argv));
-  return handle_scope.Close(
-      web_frame_->callFunctionEvenIfScriptDisabled(function,
-                                                   global,
-                                                   argc,
-                                                   argv));
+    return handle_scope.Escape(function->Call(global, argc, argv));
+  return handle_scope.Escape(
+      v8::Local<v8::Value>(web_frame_->callFunctionEvenIfScriptDisabled(
+          function, global, argc, argv)));
 }
 
 bool ChromeV8Context::IsAnyFeatureAvailableToContext(
@@ -154,7 +154,7 @@ void ChromeV8Context::OnResponseReceived(const std::string& name,
   // string if a validation error has occured.
   if (DCHECK_IS_ON()) {
     if (!retval.IsEmpty() && !retval->IsUndefined()) {
-      std::string error = *v8::String::AsciiValue(retval);
+      std::string error = *v8::String::Utf8Value(retval);
       DCHECK(false) << error;
     }
   }

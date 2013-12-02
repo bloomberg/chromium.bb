@@ -159,7 +159,7 @@ void RuntimeCustomBindings::GetExtensionViews(
 
   std::vector<content::RenderView*> views = ExtensionHelper::GetExtensionViews(
       extension_id, browser_window_id, view_type);
-  v8::Local<v8::Array> v8_views = v8::Array::New();
+  v8::Local<v8::Array> v8_views = v8::Array::New(args.GetIsolate());
   int v8_index = 0;
   for (size_t i = 0; i < views.size(); ++i) {
     v8::Local<v8::Context> context =
