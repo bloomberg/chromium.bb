@@ -714,10 +714,8 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_Selection) {
   // Set up ibus text with one underline attribute.
   chromeos::IBusText ibus_text;
   ibus_text.set_text(kSampleText);
-  chromeos::IBusText::SelectionAttribute selection;
-  selection.start_index = 1UL;
-  selection.end_index = 4UL;
-  ibus_text.mutable_selection_attributes()->push_back(selection);
+  ibus_text.set_selection_start(1UL);
+  ibus_text.set_selection_end(4UL);
 
   CompositionText composition_text;
   ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
@@ -725,9 +723,9 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_Selection) {
   EXPECT_EQ(kCursorPos, composition_text.selection.start());
   EXPECT_EQ(kCursorPos, composition_text.selection.end());
   ASSERT_EQ(1UL, composition_text.underlines.size());
-  EXPECT_EQ(GetOffsetInUTF16(kSampleText, selection.start_index),
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, ibus_text.selection_start()),
             composition_text.underlines[0].start_offset);
-  EXPECT_EQ(GetOffsetInUTF16(kSampleText, selection.end_index),
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, ibus_text.selection_end()),
             composition_text.underlines[0].end_offset);
   EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
   EXPECT_TRUE(composition_text.underlines[0].thick);
@@ -742,24 +740,22 @@ TEST_F(InputMethodIBusTest,
   // Set up ibus text with one underline attribute.
   chromeos::IBusText ibus_text;
   ibus_text.set_text(kSampleText);
-  chromeos::IBusText::SelectionAttribute selection;
-  selection.start_index = kCursorPos;
-  selection.end_index = 4UL;
-  ibus_text.mutable_selection_attributes()->push_back(selection);
+  ibus_text.set_selection_start(kCursorPos);
+  ibus_text.set_selection_end(4UL);
 
   CompositionText composition_text;
   ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
   EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
   // If the cursor position is same as selection bounds, selection start
   // position become opposit side of selection from cursor.
-  EXPECT_EQ(GetOffsetInUTF16(kSampleText, selection.end_index),
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, ibus_text.selection_end()),
             composition_text.selection.start());
   EXPECT_EQ(GetOffsetInUTF16(kSampleText, kCursorPos),
             composition_text.selection.end());
   ASSERT_EQ(1UL, composition_text.underlines.size());
-  EXPECT_EQ(GetOffsetInUTF16(kSampleText, selection.start_index),
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, ibus_text.selection_start()),
             composition_text.underlines[0].start_offset);
-  EXPECT_EQ(GetOffsetInUTF16(kSampleText, selection.end_index),
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, ibus_text.selection_end()),
             composition_text.underlines[0].end_offset);
   EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
   EXPECT_TRUE(composition_text.underlines[0].thick);
@@ -773,24 +769,22 @@ TEST_F(InputMethodIBusTest, ExtractCompositionTextTest_SelectionEndWithCursor) {
   // Set up ibus text with one underline attribute.
   chromeos::IBusText ibus_text;
   ibus_text.set_text(kSampleText);
-  chromeos::IBusText::SelectionAttribute selection;
-  selection.start_index = 1UL;
-  selection.end_index = kCursorPos;
-  ibus_text.mutable_selection_attributes()->push_back(selection);
+  ibus_text.set_selection_start(1UL);
+  ibus_text.set_selection_end(kCursorPos);
 
   CompositionText composition_text;
   ime_->ExtractCompositionText(ibus_text, kCursorPos, &composition_text);
   EXPECT_EQ(UTF8ToUTF16(kSampleText), composition_text.text);
   // If the cursor position is same as selection bounds, selection start
   // position become opposit side of selection from cursor.
-  EXPECT_EQ(GetOffsetInUTF16(kSampleText, selection.start_index),
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, ibus_text.selection_start()),
             composition_text.selection.start());
   EXPECT_EQ(GetOffsetInUTF16(kSampleText, kCursorPos),
             composition_text.selection.end());
   ASSERT_EQ(1UL, composition_text.underlines.size());
-  EXPECT_EQ(GetOffsetInUTF16(kSampleText, selection.start_index),
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, ibus_text.selection_start()),
             composition_text.underlines[0].start_offset);
-  EXPECT_EQ(GetOffsetInUTF16(kSampleText, selection.end_index),
+  EXPECT_EQ(GetOffsetInUTF16(kSampleText, ibus_text.selection_end()),
             composition_text.underlines[0].end_offset);
   EXPECT_EQ(SK_ColorBLACK, composition_text.underlines[0].color);
   EXPECT_TRUE(composition_text.underlines[0].thick);

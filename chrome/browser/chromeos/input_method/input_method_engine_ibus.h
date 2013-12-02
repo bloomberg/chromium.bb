@@ -126,7 +126,7 @@ class InputMethodEngineIBus : public InputMethodEngine,
   std::string ibus_id_;
 
   // The current auxialy text and it's visiblity.
-  scoped_ptr<IBusText> aux_text_;
+  std::string aux_text_;
   bool aux_text_visible_;
 
   // Pointer to the object recieving events for this IME.

@@ -628,9 +628,6 @@ void InputMethodIBus::ExtractCompositionText(
 
   const std::vector<chromeos::IBusText::UnderlineAttribute>&
       underline_attributes = text.underline_attributes();
-  const std::vector<chromeos::IBusText::SelectionAttribute>&
-      selection_attributes = text.selection_attributes();
-
   if (!underline_attributes.empty()) {
     for (size_t i = 0; i < underline_attributes.size(); ++i) {
       const uint32 start = underline_attributes[i].start_index;
@@ -650,28 +647,24 @@ void InputMethodIBus::ExtractCompositionText(
     }
   }
 
-  if (!selection_attributes.empty()) {
-    LOG_IF(ERROR, selection_attributes.size() != 1)
-        << "Chrome does not support multiple selection";
-    for (uint32 i = 0; i < selection_attributes.size(); ++i) {
-      const uint32 start = selection_attributes[i].start_index;
-      const uint32 end = selection_attributes[i].end_index;
-      if (start >= end)
-        continue;
-      CompositionUnderline underline(
-          char16_offsets[start], char16_offsets[end],
-          SK_ColorBLACK, true /* thick */);
-      out_composition->underlines.push_back(underline);
-      // If the cursor is at start or end of this underline, then we treat
-      // it as the selection range as well, but make sure to set the cursor
-      // position to the selection end.
-      if (underline.start_offset == cursor_offset) {
-        out_composition->selection.set_start(underline.end_offset);
-        out_composition->selection.set_end(cursor_offset);
-      } else if (underline.end_offset == cursor_offset) {
-        out_composition->selection.set_start(underline.start_offset);
-        out_composition->selection.set_end(cursor_offset);
-      }
+  DCHECK(text.selection_start() <= text.selection_end());
+  if (text.selection_start() < text.selection_end()) {
+    const uint32 start = text.selection_start();
+    const uint32 end = text.selection_end();
+    CompositionUnderline underline(
+        char16_offsets[start], char16_offsets[end],
+        SK_ColorBLACK, true /* thick */);
+    out_composition->underlines.push_back(underline);
+
+    // If the cursor is at start or end of this underline, then we treat
+    // it as the selection range as well, but make sure to set the cursor
+    // position to the selection end.
+    if (underline.start_offset == cursor_offset) {
+      out_composition->selection.set_start(underline.end_offset);
+      out_composition->selection.set_end(cursor_offset);
+    } else if (underline.end_offset == cursor_offset) {
+      out_composition->selection.set_start(underline.start_offset);
+      out_composition->selection.set_end(cursor_offset);
     }
   }
 

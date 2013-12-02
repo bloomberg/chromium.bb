@@ -50,11 +50,11 @@ void UpdatePreedit(const IBusText& ibus_text,
 
 // Notifies CandidateWindowHandler that the auxilary text is changed.
 // Auxilary text is usually footer text.
-void UpdateAuxiliaryText(const IBusText& ibus_text, bool is_visible) {
+void UpdateAuxiliaryText(const std::string& text, bool is_visible) {
   IBusPanelCandidateWindowHandlerInterface* candidate_window =
       IBusBridge::Get()->GetCandidateWindowHandler();
   if (candidate_window)
-    candidate_window->UpdateAuxiliaryText(ibus_text.text(), is_visible);
+    candidate_window->UpdateAuxiliaryText(text, is_visible);
 }
 
 }  // namespace
@@ -64,7 +64,6 @@ InputMethodEngineIBus::InputMethodEngineIBus()
       active_(false),
       context_id_(0),
       next_context_id_(1),
-      aux_text_(new IBusText()),
       aux_text_visible_(false),
       observer_(NULL),
       preedit_text_(new IBusText()),
@@ -145,11 +144,8 @@ bool InputMethodEngineIBus::SetComposition(
   preedit_text_.reset(new IBusText());
   preedit_text_->set_text(text);
 
-  preedit_text_->mutable_selection_attributes()->clear();
-  IBusText::SelectionAttribute selection;
-  selection.start_index = selection_start;
-  selection.end_index = selection_end;
-  preedit_text_->mutable_selection_attributes()->push_back(selection);
+  preedit_text_->set_selection_start(selection_start);
+  preedit_text_->set_selection_end(selection_end);
 
   // TODO: Add support for displaying selected text in the composition string.
   for (std::vector<SegmentInfo>::const_iterator segment = segments.begin();
@@ -254,10 +250,10 @@ bool InputMethodEngineIBus::SetCandidateWindowVisible(bool visible,
 }
 
 void InputMethodEngineIBus::SetCandidateWindowAuxText(const char* text) {
-  aux_text_->set_text(text);
+  aux_text_.assign(text);
   if (active_) {
     // Should not show auxiliary text if the whole window visibility is false.
-    UpdateAuxiliaryText(*aux_text_, window_visible_ && aux_text_visible_);
+    UpdateAuxiliaryText(aux_text_, window_visible_ && aux_text_visible_);
   }
 }
 
@@ -265,7 +261,7 @@ void InputMethodEngineIBus::SetCandidateWindowAuxTextVisible(bool visible) {
   aux_text_visible_ = visible;
   if (active_) {
     // Should not show auxiliary text if the whole window visibility is false.
-    UpdateAuxiliaryText(*aux_text_, window_visible_ && aux_text_visible_);
+    UpdateAuxiliaryText(aux_text_, window_visible_ && aux_text_visible_);
   }
 }
 

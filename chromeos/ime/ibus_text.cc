@@ -6,17 +6,17 @@
 
 namespace chromeos {
 
-IBusText::IBusText() {}
+IBusText::IBusText()
+  : selection_start_(0),
+    selection_end_(0) {}
 
 IBusText::~IBusText() {}
 
 void IBusText::CopyFrom(const IBusText& obj) {
   text_ = obj.text();
-  annotation_ = obj.annotation();
-  description_title_ = obj.description_title();
-  description_body_ = obj.description_body();
   underline_attributes_ = obj.underline_attributes();
-  selection_attributes_ = obj.selection_attributes();
+  selection_start_ = obj.selection_start();
+  selection_end_ = obj.selection_end();
 }
 
 }  // namespace chromeos
