@@ -160,7 +160,7 @@ def cpp_value(interface, method, number_of_arguments):
     def cpp_argument(argument):
         if argument.idl_type in ['NodeFilter', 'XPathNSResolver']:
             # FIXME: remove this special case
-            return '%s.get()' % argument.name
+            return '%s.release()' % argument.name
         return argument.name
 
     # Truncate omitted optional arguments
