@@ -28,6 +28,8 @@
 namespace mojo {
 namespace system {
 
+namespace {
+
 const size_t kReadSize = 4096;
 
 class RawChannelPosix : public RawChannel,
@@ -391,6 +393,8 @@ void RawChannelPosix::CancelPendingWritesNoLock() {
   }
   write_message_queue_.clear();
 }
+
+}  // namespace
 
 // -----------------------------------------------------------------------------
 

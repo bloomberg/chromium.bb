@@ -2,17 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(vtl): Factor out the POSIX-specific bits of this test (once we have a
-// non-POSIX implementation).
+// TODO(vtl): The POSIX-specific bits have been factored out. Apply this test to
+// non-POSIX once we have a non-POSIX implementation.
 
 #include "mojo/system/message_pipe.h"
 
-#include <fcntl.h>
 #include <stdint.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
 
 #include "base/basictypes.h"
 #include "base/bind.h"
@@ -24,7 +20,7 @@
 #include "base/threading/thread.h"
 #include "mojo/system/channel.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
-#include "mojo/system/platform_channel_handle.h"
+#include "mojo/system/platform_channel.h"
 #include "mojo/system/proxy_message_pipe_endpoint.h"
 #include "mojo/system/test_utils.h"
 #include "mojo/system/waiter.h"
@@ -89,19 +85,20 @@ class RemoteMessagePipeTest : public testing::Test {
   void SetUpOnIOThread() {
     CHECK_EQ(base::MessageLoop::current(), io_thread_message_loop());
 
-    // Create the socket.
-    int fds[2];
-    PCHECK(socketpair(AF_UNIX, SOCK_STREAM, 0, fds) == 0);
-
-    // Set the ends to non-blocking.
-    PCHECK(fcntl(fds[0], F_SETFL, O_NONBLOCK) == 0);
-    PCHECK(fcntl(fds[1], F_SETFL, O_NONBLOCK) == 0);
+    scoped_ptr<PlatformServerChannel> server_channel(
+        PlatformServerChannel::Create("channel"));
+    CHECK(server_channel.get());
+    CHECK(server_channel->is_valid());
+    scoped_ptr<PlatformClientChannel> client_channel(
+        server_channel->CreateClientChannel());
+    CHECK(client_channel.get());
+    CHECK(client_channel->is_valid());
 
     // Create and initialize |Channel|s.
     channels_[0] = new Channel();
-    CHECK(channels_[0]->Init(PlatformChannelHandle(fds[0])));
+    CHECK(channels_[0]->Init(server_channel->PassHandle()));
     channels_[1] = new Channel();
-    CHECK(channels_[1]->Init(PlatformChannelHandle(fds[1])));
+    CHECK(channels_[1]->Init(client_channel->PassHandle()));
   }
 
   void TearDownOnIOThread() {
