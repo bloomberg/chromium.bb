@@ -2098,10 +2098,16 @@ void RenderWidgetHostViewMac::FrameSwapped() {
       // The cursor is over a nonWebContentView - ignore this mouse event.
       return YES;
     }
-    if ([view isKindOfClass:[self class]] && ![view isEqual:self]) {
+    if ([view isKindOfClass:[self class]] && ![view isEqual:self] &&
+        !hasOpenMouseDown_) {
       // The cursor is over an overlapping render widget. This check is done by
       // both views so the one that's returned by -hitTest: will end up
       // processing the event.
+      // Note that while dragging, we only get events for the render view where
+      // drag started, even if mouse is  actually over another view or outside
+      // the window. Cocoa does this for us. We should handle these events and
+      // not ignore (since there is no other render view to handle them). Thus
+      // the |!hasOpenMouseDown_| check above.
       return YES;
     }
     view = [view superview];
