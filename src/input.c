@@ -1365,12 +1365,12 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 	case WL_TOUCH_DOWN:
 		weston_compositor_idle_inhibit(ec);
 
-		seat->num_tp++;
+		touch->num_tp++;
 
 		/* the first finger down picks the view, and all further go
 		 * to that view for the remainder of the touch session i.e.
 		 * until all touch points are up again. */
-		if (seat->num_tp == 1) {
+		if (touch->num_tp == 1) {
 			ev = weston_compositor_pick_view(ec, x, y, &sx, &sy);
 			weston_touch_set_focus(seat, ev);
 		} else if (touch->focus) {
@@ -1381,12 +1381,12 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 			 * there is no focused surface.
 			 */
 			weston_log("touch event received with %d points down"
-				   "but no surface focused\n", seat->num_tp);
+				   "but no surface focused\n", touch->num_tp);
 			return;
 		}
 
 		grab->interface->down(grab, time, touch_id, sx, sy);
-		if (seat->num_tp == 1) {
+		if (touch->num_tp == 1) {
 			touch->grab_serial =
 				wl_display_get_serial(ec->wl_display);
 			touch->grab_touch_id = touch_id;
@@ -1406,10 +1406,10 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 		break;
 	case WL_TOUCH_UP:
 		weston_compositor_idle_release(ec);
-		seat->num_tp--;
+		touch->num_tp--;
 
 		grab->interface->up(grab, time, touch_id);
-		if (seat->num_tp == 0)
+		if (touch->num_tp == 0)
 			weston_touch_set_focus(seat, NULL);
 		break;
 	}
@@ -2062,7 +2062,6 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec,
 
 	seat->compositor = ec;
 	seat->modifier_state = 0;
-	seat->num_tp = 0;
 	seat->seat_name = strdup(seat_name);
 
 	wl_list_insert(ec->seat_list.prev, &seat->link);

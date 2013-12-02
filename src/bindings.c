@@ -346,7 +346,7 @@ weston_compositor_run_touch_binding(struct weston_compositor *compositor,
 {
 	struct weston_binding *b;
 
-	if (seat->num_tp != 1 || touch_type != WL_TOUCH_DOWN)
+	if (seat->touch->num_tp != 1 || touch_type != WL_TOUCH_DOWN)
 		return;
 
 	wl_list_for_each(b, &compositor->touch_binding_list, link) {

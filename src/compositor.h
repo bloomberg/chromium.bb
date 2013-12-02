@@ -340,6 +340,8 @@ struct weston_touch {
 	uint32_t focus_serial;
 	struct wl_signal focus_signal;
 
+	uint32_t num_tp;
+
 	struct weston_touch_grab *grab;
 	struct weston_touch_grab default_grab;
 	int grab_touch_id;
@@ -492,8 +494,6 @@ struct weston_seat {
 	struct weston_data_source *selection_data_source;
 	struct wl_listener selection_data_source_listener;
 	struct wl_signal selection_signal;
-
-	uint32_t num_tp;
 
 	void (*led_update)(struct weston_seat *ws, enum weston_led leds);
 

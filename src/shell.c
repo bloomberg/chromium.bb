@@ -1457,7 +1457,7 @@ touch_move_grab_up(struct weston_touch_grab *grab, uint32_t time, int touch_id)
 		(struct weston_touch_move_grab *) container_of(
 			grab, struct shell_touch_grab, grab);
 
-	if (grab->touch->seat->num_tp == 0) {
+	if (grab->touch->num_tp == 0) {
 		shell_touch_grab_end(&move->base);
 		free(move);
 	}
