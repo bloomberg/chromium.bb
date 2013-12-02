@@ -106,37 +106,6 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // opened it.
   struct Stream;
 
-  // An enumeration request is identified by pair (request_id, handler).
-  // It allows multiple clients to make requests and each client could have
-  // its own request_id sequence.
-  struct EnumerationRequest {
-    EnumerationRequest(
-        const base::WeakPtr<MediaStreamDispatcherEventHandler>& handler,
-        int request_id);
-    ~EnumerationRequest();
-    bool IsThisRequest(
-        int request_id,
-        const base::WeakPtr<MediaStreamDispatcherEventHandler>& handler);
-
-    base::WeakPtr<MediaStreamDispatcherEventHandler> handler;
-    int request_id;
-  };
-
-  // List of requests made to EnumerateDevices.
-  typedef std::list<EnumerationRequest> EnumerationRequestList;
-
-  struct EnumerationState {
-    EnumerationState();
-    ~EnumerationState();
-
-    struct CachedDevices;
-
-    // If |ipc_id| >= 0, then we've started.
-    int ipc_id;
-    scoped_ptr<CachedDevices> cached_devices;
-    EnumerationRequestList requests;
-  };
-
   // RenderViewObserver OVERRIDE.
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
@@ -152,7 +121,6 @@ class CONTENT_EXPORT MediaStreamDispatcher
                        const StreamDeviceInfo& device_info);
   void OnDevicesEnumerated(
       int request_id,
-      const std::string& label,
       const StreamDeviceInfoArray& device_array);
   void OnDevicesEnumerationFailed(int request_id);
   void OnDeviceOpened(
@@ -161,11 +129,6 @@ class CONTENT_EXPORT MediaStreamDispatcher
       const StreamDeviceInfo& device_info);
   void OnDeviceOpenFailed(int request_id);
 
-  void RemoveEnumerationRequest(
-      int request_id,
-      const base::WeakPtr<MediaStreamDispatcherEventHandler>& event_handler,
-      EnumerationState* state);
-
   // Used for DCHECKs so methods calls won't execute in the wrong thread.
   scoped_refptr<base::MessageLoopProxy> main_loop_;
 
@@ -173,10 +136,8 @@ class CONTENT_EXPORT MediaStreamDispatcher
   typedef std::map<std::string, Stream> LabelStreamMap;
   LabelStreamMap label_stream_map_;
 
-  EnumerationState audio_enumeration_state_;
-  EnumerationState video_enumeration_state_;
-
-  // List of calls made to GenerateStream that have not yet completed.
+  // List of calls made to the browser process that have not yet completed or
+  // been canceled.
   typedef std::list<Request> RequestList;
   RequestList requests_;
 

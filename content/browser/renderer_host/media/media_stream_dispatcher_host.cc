@@ -72,7 +72,7 @@ void MediaStreamDispatcherHost::DevicesEnumerated(
   StreamRequest request = it->second;
 
   Send(new MediaStreamMsg_DevicesEnumerated(
-      request.render_view_id, request.page_request_id, label, devices));
+      request.render_view_id, request.page_request_id, devices));
 }
 
 void MediaStreamDispatcherHost::DeviceOpened(
@@ -200,18 +200,13 @@ void MediaStreamDispatcherHost::OnEnumerateDevices(
 
 void MediaStreamDispatcherHost::OnCancelEnumerateDevices(
     int render_view_id,
-    const std::string& label) {
+    int page_request_id) {
   DVLOG(1) << "MediaStreamDispatcherHost::OnCancelEnumerateDevices("
            << render_view_id << ", "
-           << label << ")";
+           << page_request_id << ")";
 
-  if (streams_.find(label) == streams_.end()) {
-    // According to the comments in MediaStreamDispatcher::OnDevicesEnumerated,
-    // OnCancelEnumerateDevices can be called several times with the same label.
-    DVLOG(1) << "Enumeration request with label " << label
-             << "does not exist.";
-    return;
-  }
+  std::string label;
+  GetRequestLabel(render_view_id, page_request_id, &label);
   media_stream_manager_->CancelRequest(label);
   PopRequest(label);
 }
@@ -261,6 +256,19 @@ MediaStreamDispatcherHost::PopRequest(const std::string& label) {
   StreamRequest request = it->second;
   streams_.erase(it);
   return request;
+}
+
+void MediaStreamDispatcherHost::GetRequestLabel(
+    int render_view_id, int page_request_id, std::string* label) {
+  for (StreamMap::const_iterator it = streams_.begin(); it != streams_.end();
+       ++it) {
+    if (it->second.render_view_id == render_view_id &&
+        it->second.page_request_id == page_request_id) {
+      *label = it->first;
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 }  // namespace content

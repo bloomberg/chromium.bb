@@ -527,12 +527,6 @@ void MediaStreamImpl::OnDevicesEnumerated(
   NOTIMPLEMENTED();
 }
 
-void MediaStreamImpl::OnDevicesEnumerationFailed(int request_id) {
-  DVLOG(1) << "MediaStreamImpl::OnDevicesEnumerationFailed("
-           << request_id << ")";
-  NOTIMPLEMENTED();
-}
-
 void MediaStreamImpl::OnDeviceOpened(
     int request_id,
     const std::string& label,

@@ -183,12 +183,10 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
 
   void OnDevicesEnumerated(const IPC::Message& msg,
                            int request_id,
-                           const std::string& label,
                            const StreamDeviceInfoArray& devices) {
     base::Closure quit_closure = quit_closures_.front();
     quit_closures_.pop();
     message_loop_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
-    label_ = label;
     enumerated_devices_ = devices;
   }
 

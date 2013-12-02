@@ -82,7 +82,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
                           const GURL& security_origin);
 
   void OnCancelEnumerateDevices(int render_view_id,
-                                const std::string& label);
+                                int page_request_id);
 
   void OnOpenDevice(int render_view_id,
                     int page_request_id,
@@ -97,6 +97,9 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
                     int page_request_id,
                     const std::string& label);
   StreamRequest PopRequest(const std::string& label);
+  void GetRequestLabel(int render_view_id,
+                       int page_request_id,
+                       std::string* label);
 
   int render_process_id_;
   ResourceContext* resource_context_;

@@ -35,9 +35,6 @@ class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
       int request_id,
       const StreamDeviceInfoArray& device_array) = 0;
 
-  // Failed to enumerate devices.
-  virtual void OnDevicesEnumerationFailed(int request_id) = 0;
-
   // A device has been opened.
   virtual void OnDeviceOpened(
       int request_id,

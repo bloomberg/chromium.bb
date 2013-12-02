@@ -81,7 +81,6 @@ class CONTENT_EXPORT MediaStreamImpl
   virtual void OnDevicesEnumerated(
       int request_id,
       const StreamDeviceInfoArray& device_array) OVERRIDE;
-  virtual void OnDevicesEnumerationFailed(int request_id) OVERRIDE;
   virtual void OnDeviceOpened(
       int request_id,
       const std::string& label,

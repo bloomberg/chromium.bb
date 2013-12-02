@@ -63,17 +63,13 @@ IPC_MESSAGE_ROUTED2(MediaStreamMsg_DeviceStopped,
                     std::string /* label */,
                     content::StreamDeviceInfo /* the device */)
 
-// The browser has enumerated devices successfully.
+// The browser has enumerated devices. If no devices are found
+// |device_list| is empty.
 // Used by Pepper.
 // TODO(vrk,wjia): Move this to pepper code.
-IPC_MESSAGE_ROUTED3(MediaStreamMsg_DevicesEnumerated,
+IPC_MESSAGE_ROUTED2(MediaStreamMsg_DevicesEnumerated,
                     int /* request id */,
-                    std::string /* label */,
                     content::StreamDeviceInfoArray /* device_list */)
-
-// The browser has failed to enumerate devices.
-IPC_MESSAGE_ROUTED1(MediaStreamMsg_DevicesEnumerationFailed,
-                    int /* request id */)
 
 // TODO(wjia): should DeviceOpen* messages be merged with
 // StreamGenerat* ones?
@@ -129,7 +125,7 @@ IPC_MESSAGE_CONTROL4(MediaStreamHostMsg_EnumerateDevices,
 // Request to stop enumerating devices.
 IPC_MESSAGE_CONTROL2(MediaStreamHostMsg_CancelEnumerateDevices,
                      int /* render view id */,
-                     std::string /* label */)
+                     int /* request id */)
 
 // Request to open the device.
 IPC_MESSAGE_CONTROL5(MediaStreamHostMsg_OpenDevice,

@@ -43,7 +43,6 @@ class CONTENT_EXPORT PepperDeviceEnumerationHostHelper {
 
     typedef base::Callback<
         void (int /* request_id */,
-              bool /* succeeded */,
               const std::vector<ppapi::DeviceRefData>& /* devices */)>
         EnumerateDevicesCallback;
 
@@ -87,12 +86,10 @@ class CONTENT_EXPORT PepperDeviceEnumerationHostHelper {
 
   void OnEnumerateDevicesComplete(
       int request_id,
-      bool succeeded,
       const std::vector<ppapi::DeviceRefData>& devices);
   void OnNotifyDeviceChange(
       uint32_t callback_id,
       int request_id,
-      bool succeeded,
       const std::vector<ppapi::DeviceRefData>& devices);
 
   // Non-owning pointers.
