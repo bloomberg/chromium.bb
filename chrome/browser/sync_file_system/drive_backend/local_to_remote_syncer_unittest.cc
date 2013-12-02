@@ -171,6 +171,15 @@ class LocalToRemoteSyncerTest : public testing::Test,
     return entries.Pass();
   }
 
+  std::string GetFileIDForParentAndTitle(const std::string& parent_folder_id,
+                                         const std::string& title) {
+    ScopedVector<google_apis::ResourceEntry> entries =
+        GetResourceEntriesForParentAndTitle(parent_folder_id, title);
+    if (entries.size() != 1)
+      return std::string();
+    return entries[0]->resource_id();
+  }
+
   void VerifyTitleUniqueness(const std::string& parent_folder_id,
                              const std::string& title,
                              google_apis::DriveEntryKind kind) {
@@ -204,7 +213,7 @@ class LocalToRemoteSyncerTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(LocalToRemoteSyncerTest);
 };
 
-TEST_F(LocalToRemoteSyncerTest, CreateLocalFile) {
+TEST_F(LocalToRemoteSyncerTest, CreateFile) {
   const GURL kOrigin("chrome-extension://example");
   const std::string sync_root = CreateSyncRoot();
   const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
@@ -214,19 +223,56 @@ TEST_F(LocalToRemoteSyncerTest, CreateLocalFile) {
   EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_FILE),
-      URL(kOrigin, "file")));
+      URL(kOrigin, "file1")));
   EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_DIRECTORY),
       URL(kOrigin, "folder")));
+  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_FILE),
+      URL(kOrigin, "folder/file2")));
 
-  VerifyTitleUniqueness(app_root, "file", google_apis::ENTRY_KIND_FILE);
+  std::string folder_id = GetFileIDForParentAndTitle(app_root, "folder");
+  ASSERT_FALSE(folder_id.empty());
+
+  VerifyTitleUniqueness(app_root, "file1", google_apis::ENTRY_KIND_FILE);
   VerifyTitleUniqueness(app_root, "folder", google_apis::ENTRY_KIND_FOLDER);
-
-  // TODO(nhiroki): Test nested files case.
+  VerifyTitleUniqueness(folder_id, "file2", google_apis::ENTRY_KIND_FILE);
 }
 
-TEST_F(LocalToRemoteSyncerTest, DeleteLocalFile) {
+TEST_F(LocalToRemoteSyncerTest, CreateFileOnMissingPath) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+
+  // Run the syncer 3 times to create missing folder1 and folder2.
+  EXPECT_EQ(SYNC_STATUS_RETRY, RunSyncer(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_FILE),
+      URL(kOrigin, "folder1/folder2/file")));
+  EXPECT_EQ(SYNC_STATUS_RETRY, RunSyncer(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_FILE),
+      URL(kOrigin, "folder1/folder2/file")));
+  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_FILE),
+      URL(kOrigin, "folder1/folder2/file")));
+
+  std::string folder_id1 = GetFileIDForParentAndTitle(app_root, "folder1");
+  ASSERT_FALSE(folder_id1.empty());
+  std::string folder_id2 = GetFileIDForParentAndTitle(folder_id1, "folder2");
+  ASSERT_FALSE(folder_id2.empty());
+
+  VerifyTitleUniqueness(app_root, "folder1", google_apis::ENTRY_KIND_FOLDER);
+  VerifyTitleUniqueness(folder_id1, "folder2", google_apis::ENTRY_KIND_FOLDER);
+  VerifyTitleUniqueness(folder_id2, "file", google_apis::ENTRY_KIND_FILE);
+}
+
+TEST_F(LocalToRemoteSyncerTest, DeleteFile) {
   const GURL kOrigin("chrome-extension://example");
   const std::string sync_root = CreateSyncRoot();
   const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
@@ -280,7 +326,7 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFileOnFolder) {
   EXPECT_EQ(google_apis::ENTRY_KIND_FILE, entries[1]->kind());
 }
 
-TEST_F(LocalToRemoteSyncerTest, Conflict_FolderOnFile) {
+TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFolderOnFile) {
   const GURL kOrigin("chrome-extension://example");
   const std::string sync_root = CreateSyncRoot();
   const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
