@@ -23,6 +23,7 @@
 #include "ui/compositor/layer_type.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_target.h"
+#include "ui/events/event_targeter.h"
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/native_widget_types.h"
@@ -154,6 +155,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // The Window takes ownership of the LayoutManager.
   void SetLayoutManager(LayoutManager* layout_manager);
   LayoutManager* layout_manager() { return layout_manager_.get(); }
+
+  void set_event_targeter(scoped_ptr<ui::EventTargeter> targeter) {
+    targeter_ = targeter.Pass();
+  }
 
   // Changes the bounds of the window. If present, the window's parent's
   // LayoutManager may adjust the bounds.
@@ -481,6 +486,10 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Overridden from ui::EventTarget:
   virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
   virtual EventTarget* GetParentTarget() OVERRIDE;
+  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const OVERRIDE;
+  virtual ui::EventTargeter* GetEventTargeter() OVERRIDE;
+  virtual void ConvertEventToTarget(ui::EventTarget* target,
+                                    ui::LocatedEvent* event) OVERRIDE;
 
   // Updates the layer name with a name based on the window's name and id.
   void UpdateLayerName(const std::string& name);
@@ -524,6 +533,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
 
   scoped_ptr<ui::EventHandler> event_filter_;
   scoped_ptr<LayoutManager> layout_manager_;
+  scoped_ptr<ui::EventTargeter> targeter_;
 
   void* user_data_;
 

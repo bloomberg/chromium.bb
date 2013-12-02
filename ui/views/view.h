@@ -722,6 +722,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Overridden from ui::EventTarget:
   virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
   virtual ui::EventTarget* GetParentTarget() OVERRIDE;
+  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const OVERRIDE;
+  virtual ui::EventTargeter* GetEventTargeter() OVERRIDE;
 
   // Overridden from ui::EventHandler:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;

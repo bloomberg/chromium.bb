@@ -5,19 +5,23 @@
 #ifndef UI_EVENTS_EVENT_TARGET_H_
 #define UI_EVENTS_EVENT_TARGET_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/events_export.h"
 
 namespace ui {
 
 class EventDispatcher;
+class EventTargeter;
+class EventTargetIterator;
+class LocatedEvent;
 
 class EVENTS_EXPORT EventTarget : public EventHandler {
  public:
-  typedef std::vector<EventTarget*> EventTargets;
-
   class DispatcherApi {
    public:
     explicit DispatcherApi(EventTarget* target) : target_(target) {}
@@ -36,8 +40,23 @@ class EVENTS_EXPORT EventTarget : public EventHandler {
   EventTarget();
   virtual ~EventTarget();
 
-  virtual bool CanAcceptEvent(const ui::Event& event) = 0;
+  virtual bool CanAcceptEvent(const Event& event) = 0;
+
+  // Returns the parent EventTarget in the event-target tree.
   virtual EventTarget* GetParentTarget() = 0;
+
+  // Returns an iterator an EventTargeter can use to iterate over the list of
+  // child EventTargets.
+  virtual scoped_ptr<EventTargetIterator> GetChildIterator() const = 0;
+
+  // Returns the EventTargeter that should be used to find the target for an
+  // event in the subtree rooted at this EventTarget.
+  virtual EventTargeter* GetEventTargeter() = 0;
+
+  // Updates the states in |event| (e.g. location) to be suitable for |target|,
+  // so that |event| can be dispatched to |target|.
+  virtual void ConvertEventToTarget(EventTarget* target,
+                                    LocatedEvent* event);
 
   // Adds a handler to receive events before the target. The handler must be
   // explicitly removed from the target before the handler is destroyed. The

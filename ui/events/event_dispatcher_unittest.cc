@@ -6,6 +6,9 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event.h"
+#include "ui/events/event_dispatcher.h"
+#include "ui/events/event_target.h"
+#include "ui/events/event_target_iterator.h"
 #include "ui/events/event_utils.h"
 
 namespace ui {
@@ -41,6 +44,14 @@ class TestTarget : public EventTarget {
 
   virtual EventTarget* GetParentTarget() OVERRIDE {
     return parent_;
+  }
+
+  virtual scoped_ptr<EventTargetIterator> GetChildIterator() const OVERRIDE {
+    return scoped_ptr<EventTargetIterator>();
+  }
+
+  virtual EventTargeter* GetEventTargeter() OVERRIDE {
+    return NULL;
   }
 
   TestTarget* parent_;

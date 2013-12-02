@@ -91,6 +91,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/events/event_target_iterator.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
@@ -994,6 +995,15 @@ bool Shell::CanAcceptEvent(const ui::Event& event) {
 
 ui::EventTarget* Shell::GetParentTarget() {
   return aura::Env::GetInstance();
+}
+
+scoped_ptr<ui::EventTargetIterator> Shell::GetChildIterator() const {
+  return scoped_ptr<ui::EventTargetIterator>();
+}
+
+ui::EventTargeter* Shell::GetEventTargeter() {
+  NOTREACHED();
+  return NULL;
 }
 
 void Shell::OnEvent(ui::Event* event) {

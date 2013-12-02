@@ -92,6 +92,8 @@ class AURA_EXPORT Env : public ui::EventTarget {
   // Overridden from ui::EventTarget:
   virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
   virtual ui::EventTarget* GetParentTarget() OVERRIDE;
+  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const OVERRIDE;
+  virtual ui::EventTargeter* GetEventTargeter() OVERRIDE;
 
   ObserverList<EnvObserver> observers_;
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID) && !defined(USE_X11)

@@ -559,6 +559,8 @@ class ASH_EXPORT Shell
   // Overridden from ui::EventTarget:
   virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE;
   virtual EventTarget* GetParentTarget() OVERRIDE;
+  virtual scoped_ptr<ui::EventTargetIterator> GetChildIterator() const OVERRIDE;
+  virtual ui::EventTargeter* GetEventTargeter() OVERRIDE;
   virtual void OnEvent(ui::Event* event) OVERRIDE;
 
   // Overridden from aura::client::ActivationChangeObserver:

@@ -18,6 +18,10 @@ EventTarget::EventTarget()
 EventTarget::~EventTarget() {
 }
 
+void EventTarget::ConvertEventToTarget(EventTarget* target,
+                                       LocatedEvent* event) {
+}
+
 void EventTarget::AddPreTargetHandler(EventHandler* handler) {
   pre_target_list_.push_back(handler);
 }

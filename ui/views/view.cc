@@ -22,6 +22,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/events/event_target_iterator.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/interpolated_transform.h"
 #include "ui/gfx/path.h"
@@ -1116,6 +1117,15 @@ bool View::CanAcceptEvent(const ui::Event& event) {
 
 ui::EventTarget* View::GetParentTarget() {
   return parent_;
+}
+
+scoped_ptr<ui::EventTargetIterator> View::GetChildIterator() const {
+  return scoped_ptr<ui::EventTargetIterator>(
+      new ui::EventTargetIteratorImpl<View>(children_));
+}
+
+ui::EventTargeter* View::GetEventTargeter() {
+  return NULL;
 }
 
 // Accelerators ----------------------------------------------------------------

@@ -28,6 +28,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
+#include "ui/events/event_target_iterator.h"
 #include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
@@ -827,9 +828,8 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
       if (client && !client->CanProcessEventsWithinSubtree(child))
         continue;
       if (delegate_ && !delegate_->ShouldDescendIntoChildForEventHandling(
-              child, local_point)) {
+              child, local_point))
         continue;
-      }
     }
 
     gfx::Point point_in_child_coords(local_point);
@@ -1197,6 +1197,21 @@ ui::EventTarget* Window::GetParentTarget() {
             Env::GetInstance();
   }
   return parent_;
+}
+
+scoped_ptr<ui::EventTargetIterator> Window::GetChildIterator() const {
+  return scoped_ptr<ui::EventTargetIterator>(
+      new ui::EventTargetIteratorImpl<Window>(children()));
+}
+
+ui::EventTargeter* Window::GetEventTargeter() {
+  return targeter_.get();
+}
+
+void Window::ConvertEventToTarget(ui::EventTarget* target,
+                                  ui::LocatedEvent* event) {
+  event->ConvertLocationToTarget(this,
+                                 static_cast<Window*>(target));
 }
 
 void Window::UpdateLayerName(const std::string& name) {
