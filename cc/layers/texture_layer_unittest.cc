@@ -1683,40 +1683,30 @@ class TextureLayerNoExtraCommitForMailboxTest
     : public LayerTreeTest,
       public TextureLayerClient {
  public:
-  TextureLayerNoExtraCommitForMailboxTest()
-      : prepare_mailbox_count_(0) {}
-
   // TextureLayerClient implementation.
   virtual unsigned PrepareTexture() OVERRIDE {
     NOTREACHED();
     return 0;
   }
-
   virtual bool PrepareTextureMailbox(
-      cc::TextureMailbox* mailbox,
+      TextureMailbox* mailbox,
       scoped_ptr<SingleReleaseCallback>* release_callback,
       bool use_shared_memory) OVERRIDE {
-    prepare_mailbox_count_++;
-    // Alternate between two mailboxes to ensure that the TextureLayer updates
-    // and commits.
-    if (prepare_mailbox_count_ % 2 == 0)
-      *mailbox = MakeMailbox('1');
-    else
-      *mailbox = MakeMailbox('2');
+    if (layer_tree_host()->source_frame_number() == 1) {
+      *mailbox = TextureMailbox();
+      return true;
+    }
 
-    // Non-zero mailboxes need a callback.
+    *mailbox = TextureMailbox(std::string(64, '1'));
     *release_callback = SingleReleaseCallback::Create(
         base::Bind(&TextureLayerNoExtraCommitForMailboxTest::MailboxReleased,
                    base::Unretained(this)));
-    // If the test fails, this would cause an infinite number of commits.
     return true;
   }
 
-  TextureMailbox MakeMailbox(char name) {
-    return TextureMailbox(std::string(64, name));
-  }
-
   void MailboxReleased(unsigned sync_point, bool lost_resource) {
+    EXPECT_EQ(2, layer_tree_host()->source_frame_number());
+    EndTest();
   }
 
   virtual void SetupTree() OVERRIDE {
@@ -1750,16 +1740,39 @@ class TextureLayerNoExtraCommitForMailboxTest
     PostSetNeedsCommitToMainThread();
   }
 
-
-  virtual void DidCommit() OVERRIDE {
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
     switch (layer_tree_host()->source_frame_number()) {
       case 1:
-        EndTest();
+        EXPECT_FALSE(proxy()->CommitPendingForTesting());
+        // Invalidate the texture layer to clear the mailbox before
+        // ending the test.
+        texture_layer_->SetNeedsDisplay();
+        break;
+      case 2:
         break;
       default:
         NOTREACHED();
         break;
     }
+  }
+
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
+                                   bool result) OVERRIDE {
+    ASSERT_TRUE(result);
+    DelegatedFrameData* delegated_frame_data =
+        output_surface()->last_sent_frame().delegated_frame_data.get();
+    if (!delegated_frame_data)
+      return;
+
+    // Return all resources immediately.
+    TransferableResourceArray resources_to_return =
+        output_surface()->resources_held_by_parent();
+
+    CompositorFrameAck ack;
+    for (size_t i = 0; i < resources_to_return.size(); ++i)
+      output_surface()->ReturnResource(resources_to_return[i].id, &ack);
+    host_impl->ReclaimResources(&ack);
+    host_impl->OnSwapBuffersComplete();
   }
 
   virtual void AfterTest() OVERRIDE {}
@@ -1768,12 +1781,9 @@ class TextureLayerNoExtraCommitForMailboxTest
   scoped_refptr<SolidColorLayer> solid_layer_;
   scoped_refptr<Layer> parent_layer_;
   scoped_refptr<TextureLayer> texture_layer_;
-
-  int prepare_mailbox_count_;
 };
 
-// Disabled, crashes: http://crbug.com/317854 .
-// SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerNoExtraCommitForMailboxTest);
+SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerNoExtraCommitForMailboxTest);
 
 // Checks that changing a mailbox in the client for a TextureLayer that's
 // invisible correctly works and uses the new mailbox as soon as the layer
