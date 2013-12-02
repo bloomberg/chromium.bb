@@ -116,7 +116,7 @@ bool V8TestCallback::callbackWithTestInterfaceEmptyArg(TestInterfaceEmpty* class
             CRASH();
         return true;
     }
-    v8::Handle<v8::Value> strArgHandle = v8String(strArg, isolate);
+    v8::Handle<v8::Value> strArgHandle = v8String(isolate, strArg);
     if (strArgHandle.IsEmpty()) {
         if (!isScriptControllerTerminating())
             CRASH();

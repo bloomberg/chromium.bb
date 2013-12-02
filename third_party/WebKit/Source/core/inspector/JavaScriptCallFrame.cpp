@@ -147,7 +147,7 @@ v8::Handle<v8::Value> JavaScriptCallFrame::evaluate(const String& expression)
 {
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Handle<v8::Function> evalFunction = v8::Handle<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, "evaluate")));
-    v8::Handle<v8::Value> argv[] = { v8String(expression, m_debuggerContext.newLocal(m_isolate)->GetIsolate()) };
+    v8::Handle<v8::Value> argv[] = { v8String(m_debuggerContext.newLocal(m_isolate)->GetIsolate(), expression) };
     return evalFunction->Call(callFrame, 1, argv);
 }
 
@@ -172,7 +172,7 @@ ScriptValue JavaScriptCallFrame::setVariableValue(int scopeNumber, const String&
     v8::Handle<v8::Function> setVariableValueFunction = v8::Handle<v8::Function>::Cast(callFrame->Get(v8AtomicString(m_isolate, "setVariableValue")));
     v8::Handle<v8::Value> argv[] = {
         v8::Handle<v8::Value>(v8::Integer::New(scopeNumber, m_isolate)),
-        v8String(variableName, m_isolate),
+        v8String(m_isolate, variableName),
         newValue.v8Value()
     };
     return ScriptValue(setVariableValueFunction->Call(callFrame, 3, argv), m_isolate);

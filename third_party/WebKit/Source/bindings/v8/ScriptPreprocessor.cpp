@@ -82,7 +82,7 @@ String ScriptPreprocessor::preprocessSourceCode(const String& sourceCode, const 
     if (!isValid())
         return sourceCode;
 
-    v8::Handle<v8::String> functionNameString = v8String(functionName, m_isolate);
+    v8::Handle<v8::String> functionNameString = v8String(m_isolate, functionName);
     return preprocessSourceCode(sourceCode, sourceName, functionNameString);
 }
 
@@ -94,8 +94,8 @@ String ScriptPreprocessor::preprocessSourceCode(const String& sourceCode, const 
     v8::HandleScope handleScope(m_isolate);
     v8::Context::Scope contextScope(m_context.newLocal(m_isolate));
 
-    v8::Handle<v8::String> sourceCodeString = v8String(sourceCode, m_isolate);
-    v8::Handle<v8::String> sourceNameString = v8String(sourceName, m_isolate);
+    v8::Handle<v8::String> sourceCodeString = v8String(m_isolate, sourceCode);
+    v8::Handle<v8::String> sourceNameString = v8String(m_isolate, sourceName);
     v8::Handle<v8::Value> argv[] = { sourceCodeString, sourceNameString, functionName};
 
     v8::TryCatch tryCatch;

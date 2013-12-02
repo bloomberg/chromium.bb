@@ -199,7 +199,7 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(v8::Handle<v8
         v8::TryCatch tryCatch;
         tryCatch.SetVerbose(true);
 
-        v8::Handle<v8::String> code = v8String(source.source(), m_isolate);
+        v8::Handle<v8::String> code = v8String(m_isolate, source.source());
         OwnPtr<v8::ScriptData> scriptData = V8ScriptRunner::precompileScript(code, source.resource());
 
         // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
@@ -334,7 +334,7 @@ void ScriptController::bindToWindowObject(Frame* frame, const String& key, NPObj
 
     // Attach to the global object.
     v8::Handle<v8::Object> global = v8Context->Global();
-    global->Set(v8String(key, m_isolate), value);
+    global->Set(v8String(m_isolate, key), value);
 }
 
 void ScriptController::enableEval()
@@ -352,7 +352,7 @@ void ScriptController::disableEval(const String& errorMessage)
     v8::HandleScope handleScope(m_isolate);
     v8::Local<v8::Context> v8Context = m_windowShell->context();
     v8Context->AllowCodeGenerationFromStrings(false);
-    v8Context->SetErrorMessageForCodeGenerationFromStrings(v8String(errorMessage, m_isolate));
+    v8Context->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, errorMessage));
 }
 
 PassRefPtr<SharedPersistent<v8::Object> > ScriptController::createPluginWrapper(Widget* widget)

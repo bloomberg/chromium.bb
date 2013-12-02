@@ -327,7 +327,7 @@ static NPObject* makeStringArrayImpl(const WebVector<WebString>& data, v8::Isola
     v8::HandleScope handleScope(isolate);
     v8::Handle<v8::Array> result = v8::Array::New(isolate, data.size());
     for (size_t i = 0; i < data.size(); ++i)
-        result->Set(i, v8String(data[i], isolate));
+        result->Set(i, v8String(isolate, data[i]));
 
     DOMWindow* window = toDOMWindow(isolate->GetCurrentContext());
     return npCreateV8ScriptObject(0, result, window, isolate);

@@ -62,7 +62,7 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String&
         return v8Undefined();
 
     // Attach an Error object to the DOMException. This is then lazily used to get the stack value.
-    v8::Handle<v8::Value> error = v8::Exception::Error(v8String(domException->message(), isolate));
+    v8::Handle<v8::Value> error = v8::Exception::Error(v8String(isolate, domException->message()));
     ASSERT(!error.IsEmpty());
     ASSERT(exception->IsObject());
     exception->ToObject()->SetAccessor(v8AtomicString(isolate, "stack"), domExceptionStackGetter, domExceptionStackSetter, error);
@@ -84,15 +84,15 @@ v8::Handle<v8::Value> V8ThrowException::createError(V8ErrorType type, const Stri
 {
     switch (type) {
     case v8RangeError:
-        return v8::Exception::RangeError(v8String(message, isolate));
+        return v8::Exception::RangeError(v8String(isolate, message));
     case v8ReferenceError:
-        return v8::Exception::ReferenceError(v8String(message, isolate));
+        return v8::Exception::ReferenceError(v8String(isolate, message));
     case v8SyntaxError:
-        return v8::Exception::SyntaxError(v8String(message, isolate));
+        return v8::Exception::SyntaxError(v8String(isolate, message));
     case v8TypeError:
-        return v8::Exception::TypeError(v8String(message, isolate));
+        return v8::Exception::TypeError(v8String(isolate, message));
     case v8GeneralError:
-        return v8::Exception::Error(v8String(message, isolate));
+        return v8::Exception::Error(v8String(isolate, message));
     default:
         ASSERT_NOT_REACHED();
         return v8Undefined();
@@ -109,7 +109,7 @@ v8::Handle<v8::Value> V8ThrowException::throwError(V8ErrorType type, const Strin
 
 v8::Handle<v8::Value> V8ThrowException::createTypeError(const String& message, v8::Isolate* isolate)
 {
-    return v8::Exception::TypeError(v8String(message.isNull() ? "Type error" : message, isolate));
+    return v8::Exception::TypeError(v8String(isolate, message.isNull() ? "Type error" : message));
 }
 
 v8::Handle<v8::Value> V8ThrowException::throwTypeError(const String& message, v8::Isolate* isolate)

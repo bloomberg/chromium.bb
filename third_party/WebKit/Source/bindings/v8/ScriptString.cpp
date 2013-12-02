@@ -37,7 +37,7 @@ ScriptString ScriptString::concatenateWith(const String& string)
 {
     v8::Isolate* nonNullIsolate = isolate();
     v8::HandleScope handleScope(nonNullIsolate);
-    v8::Handle<v8::String> b = v8String(string, nonNullIsolate);
+    v8::Handle<v8::String> b = v8String(nonNullIsolate, string);
     if (hasNoValue())
         return ScriptString(b, nonNullIsolate);
     v8::Handle<v8::String> a = v8::Handle<v8::String>::Cast(v8Value());

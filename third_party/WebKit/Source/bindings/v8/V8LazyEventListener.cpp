@@ -159,7 +159,7 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
             "};"
         "}}}})";
 
-    v8::Handle<v8::String> codeExternalString = v8String(code, isolate);
+    v8::Handle<v8::String> codeExternalString = v8String(isolate, code);
 
     v8::Local<v8::Value> result = V8ScriptRunner::compileAndRunInternalScript(codeExternalString, isolate, m_sourceURL, m_position, 0);
     if (result.IsEmpty())
@@ -211,11 +211,11 @@ void V8LazyEventListener::prepareListenerObject(ExecutionContext* context)
         toStringFunction = toStringTemplate->GetFunction();
     if (!toStringFunction.IsEmpty()) {
         String toStringString = "function " + m_functionName + "(" + m_eventParameterName + ") {\n  " + m_code + "\n}";
-        wrappedFunction->SetHiddenValue(V8HiddenPropertyName::toStringString(isolate), v8String(toStringString, isolate));
+        wrappedFunction->SetHiddenValue(V8HiddenPropertyName::toStringString(isolate), v8String(isolate, toStringString));
         wrappedFunction->Set(v8AtomicString(isolate, "toString"), toStringFunction);
     }
 
-    wrappedFunction->SetName(v8String(m_functionName, isolate));
+    wrappedFunction->SetName(v8String(isolate, m_functionName));
 
     // FIXME: Remove the following comment-outs.
     // See https://bugs.webkit.org/show_bug.cgi?id=85152 for more details.

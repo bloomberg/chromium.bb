@@ -70,7 +70,7 @@ void ScriptProfiler::start(const String& title)
     if (!profiler)
         return;
     v8::HandleScope handleScope(isolate);
-    profiler->StartCpuProfiling(v8String(title, isolate), true);
+    profiler->StartCpuProfiling(v8String(isolate, title), true);
 }
 
 PassRefPtr<ScriptProfile> ScriptProfiler::stop(const String& title)
@@ -80,7 +80,7 @@ PassRefPtr<ScriptProfile> ScriptProfiler::stop(const String& title)
     if (!profiler)
         return 0;
     v8::HandleScope handleScope(isolate);
-    const v8::CpuProfile* profile = profiler->StopCpuProfiling(v8String(title, isolate));
+    const v8::CpuProfile* profile = profiler->StopCpuProfiling(v8String(isolate, title));
     if (!profile)
         return 0;
 
@@ -249,7 +249,7 @@ PassRefPtr<ScriptHeapSnapshot> ScriptProfiler::takeHeapSnapshot(const String& ti
     ASSERT(control);
     ActivityControlAdapter adapter(control);
     GlobalObjectNameResolver resolver;
-    const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot(v8String(title, isolate), &adapter, &resolver);
+    const v8::HeapSnapshot* snapshot = profiler->TakeHeapSnapshot(v8String(isolate, title), &adapter, &resolver);
     return snapshot ? ScriptHeapSnapshot::create(snapshot) : 0;
 }
 

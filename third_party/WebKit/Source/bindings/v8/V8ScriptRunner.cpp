@@ -67,7 +67,7 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code,
 {
     TRACE_EVENT0("v8", "v8.compile");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "Compile");
-    v8::Handle<v8::String> name = v8String(fileName, isolate);
+    v8::Handle<v8::String> name = v8String(isolate, fileName);
     v8::Handle<v8::Integer> line = v8::Integer::New(scriptStartPosition.m_line.zeroBasedInt(), isolate);
     v8::Handle<v8::Integer> column = v8::Integer::New(scriptStartPosition.m_column.zeroBasedInt(), isolate);
     v8::Handle<v8::Boolean> isSharedCrossOrigin = corsStatus == SharableCrossOrigin ? v8::True(isolate) : v8::False(isolate);

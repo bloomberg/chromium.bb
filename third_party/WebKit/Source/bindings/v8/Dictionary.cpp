@@ -102,7 +102,7 @@ bool Dictionary::hasProperty(const String& key) const
 
     ASSERT(m_isolate);
     ASSERT(m_isolate == v8::Isolate::GetCurrent());
-    v8::Handle<v8::String> v8Key = v8String(key, m_isolate);
+    v8::Handle<v8::String> v8Key = v8String(m_isolate, key);
     if (!options->Has(v8Key))
         return false;
 
@@ -118,7 +118,7 @@ bool Dictionary::getKey(const String& key, v8::Local<v8::Value>& value) const
 
     ASSERT(m_isolate);
     ASSERT(m_isolate == v8::Isolate::GetCurrent());
-    v8::Handle<v8::String> v8Key = v8String(key, m_isolate);
+    v8::Handle<v8::String> v8Key = v8String(m_isolate, key);
     if (!options->Has(v8Key))
         return false;
     value = options->Get(v8Key);

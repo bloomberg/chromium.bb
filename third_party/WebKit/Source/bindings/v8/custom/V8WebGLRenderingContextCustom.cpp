@@ -141,7 +141,7 @@ static v8::Handle<v8::Value> toV8Object(const WebGLGetInfo& args, v8::Handle<v8:
     case WebGLGetInfo::kTypeNull:
         return v8::Null(isolate);
     case WebGLGetInfo::kTypeString:
-        return v8String(args.getString(), isolate);
+        return v8String(isolate, args.getString());
     case WebGLGetInfo::kTypeUnsignedInt:
         return v8::Integer::NewFromUnsigned(args.getUnsignedInt(), isolate);
     case WebGLGetInfo::kTypeWebGLBuffer:
@@ -429,7 +429,7 @@ void V8WebGLRenderingContext::getSupportedExtensionsMethodCustom(const v8::Funct
     Vector<String> value = imp->getSupportedExtensions();
     v8::Local<v8::Array> array = v8::Array::New(info.GetIsolate(), value.size());
     for (size_t ii = 0; ii < value.size(); ++ii)
-        array->Set(v8::Integer::New(ii, info.GetIsolate()), v8String(value[ii], info.GetIsolate()));
+        array->Set(v8::Integer::New(ii, info.GetIsolate()), v8String(info.GetIsolate(), value[ii]));
     v8SetReturnValue(info, array);
 }
 

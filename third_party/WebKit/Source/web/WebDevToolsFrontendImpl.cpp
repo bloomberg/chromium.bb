@@ -160,7 +160,7 @@ void WebDevToolsFrontendImpl::doDispatchOnInspectorFrontend(const WebString& mes
     }
     v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(dispatchFunction);
     Vector< v8::Handle<v8::Value> > args;
-    args.append(v8String(message, isolate));
+    args.append(v8String(isolate, message));
     v8::TryCatch tryCatch;
     tryCatch.SetVerbose(true);
     ScriptController::callFunction(frame->frame()->document(), function, dispatcherObject, args.size(), args.data(), isolate);

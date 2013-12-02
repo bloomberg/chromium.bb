@@ -217,7 +217,7 @@ namespace WebCore {
     // Return a V8 external string that shares the underlying buffer with the given
     // WebCore string. The reference counting mechanism is used to keep the
     // underlying buffer alive while the string is still live in the V8 engine.
-    inline v8::Handle<v8::String> v8String(const String& string, v8::Isolate* isolate)
+    inline v8::Handle<v8::String> v8String(v8::Isolate* isolate, const String& string)
     {
         if (string.isNull())
             return v8::String::Empty(isolate);
@@ -241,7 +241,7 @@ namespace WebCore {
     struct V8ValueTraits<String> {
         static inline v8::Handle<v8::Value> arrayV8Value(const String& value, v8::Isolate* isolate)
         {
-            return v8String(value, isolate);
+            return v8String(isolate, value);
         }
     };
 

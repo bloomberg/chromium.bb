@@ -145,7 +145,7 @@ v8::Local<v8::Object> V8PerContextData::prototypeForType(const WrapperTypeInfo* 
     v8::Local<v8::Object> constructor = constructorForType(type);
     if (constructor.IsEmpty())
         return v8::Local<v8::Object>();
-    return constructor->Get(v8String("prototype", m_isolate)).As<v8::Object>();
+    return constructor->Get(v8String(m_isolate, "prototype")).As<v8::Object>();
 }
 
 void V8PerContextData::addCustomElementBinding(CustomElementDefinition* definition, PassOwnPtr<CustomElementBinding> binding)

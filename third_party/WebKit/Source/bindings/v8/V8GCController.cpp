@@ -419,7 +419,7 @@ void V8GCController::collectGarbage(v8::Isolate* isolate)
     if (context.IsEmpty())
         return;
     v8::Context::Scope contextScope(context);
-    V8ScriptRunner::compileAndRunInternalScript(v8String("if (gc) gc();", isolate), isolate);
+    V8ScriptRunner::compileAndRunInternalScript(v8String(isolate, "if (gc) gc();"), isolate);
 }
 
 }  // namespace WebCore

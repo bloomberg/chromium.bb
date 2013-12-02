@@ -65,7 +65,7 @@ void V8SQLResultSetRowList::itemMethodCustom(const v8::FunctionCallbackInfo<v8::
         v8::Handle<v8::Value> value;
         switch(sqlValue.type()) {
             case SQLValue::StringValue:
-                value = v8String(sqlValue.string(), info.GetIsolate());
+                value = v8String(info.GetIsolate(), sqlValue.string());
                 break;
             case SQLValue::NullValue:
                 value = v8::Null(info.GetIsolate());
@@ -77,7 +77,7 @@ void V8SQLResultSetRowList::itemMethodCustom(const v8::FunctionCallbackInfo<v8::
                 ASSERT_NOT_REACHED();
         }
 
-        item->Set(v8String(rowList->columnNames()[i], info.GetIsolate()), value, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly));
+        item->Set(v8String(info.GetIsolate(), rowList->columnNames()[i]), value, static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly));
     }
 
     v8SetReturnValue(info, item);

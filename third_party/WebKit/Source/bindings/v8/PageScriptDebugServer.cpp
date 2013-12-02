@@ -230,7 +230,7 @@ void PageScriptDebugServer::preprocessBeforeCompile(const v8::Debug::EventDetail
 
     String preprocessedSource  = m_scriptPreprocessor->preprocessSourceCode(script, scriptName);
 
-    v8::Handle<v8::Value> argvPreprocessedScript[] = { eventData, v8String(preprocessedSource, debugContext->GetIsolate()) };
+    v8::Handle<v8::Value> argvPreprocessedScript[] = { eventData, v8String(debugContext->GetIsolate(), preprocessedSource) };
     callDebuggerMethod("setScriptSource", WTF_ARRAY_LENGTH(argvPreprocessedScript), argvPreprocessedScript);
 }
 

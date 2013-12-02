@@ -82,7 +82,7 @@ String V8CustomXPathNSResolver::lookupNamespaceURI(const String& prefix)
     tryCatch.SetVerbose(true); // Print exceptions to console.
 
     const int argc = 1;
-    v8::Handle<v8::Value> argv[argc] = { v8String(prefix, m_isolate) };
+    v8::Handle<v8::Value> argv[argc] = { v8String(m_isolate, prefix) };
     v8::Handle<v8::Function> function = lookupNamespaceURIFunc.IsEmpty() ? v8::Handle<v8::Function>::Cast(m_resolver) : lookupNamespaceURIFunc;
 
     v8::Handle<v8::Value> retval = ScriptController::callFunction(activeExecutionContext(), function, m_resolver, argc, argv, m_isolate);

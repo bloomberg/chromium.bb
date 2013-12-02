@@ -53,7 +53,7 @@ RegularExpression::RegularExpression(const String& pattern, TextCaseSensitivity 
         flags |= v8::RegExp::kMultiline;
 
     v8::TryCatch tryCatch;
-    v8::Local<v8::RegExp> regex = v8::RegExp::New(v8String(pattern, context->GetIsolate()), static_cast<v8::RegExp::Flags>(flags));
+    v8::Local<v8::RegExp> regex = v8::RegExp::New(v8String(context->GetIsolate(), pattern), static_cast<v8::RegExp::Flags>(flags));
 
     // If the regex failed to compile we'll get an empty handle.
     if (!regex.IsEmpty())
@@ -83,7 +83,7 @@ int RegularExpression::match(const String& string, int startFrom, int* matchLeng
     v8::Local<v8::RegExp> regex = m_regex.newLocal(isolate);
     v8::Local<v8::Function> exec = regex->Get(v8AtomicString(isolate, "exec")).As<v8::Function>();
 
-    v8::Handle<v8::Value> argv[] = { v8String(string.substring(startFrom), context->GetIsolate()) };
+    v8::Handle<v8::Value> argv[] = { v8String(context->GetIsolate(), string.substring(startFrom)) };
     v8::Local<v8::Value> returnValue = exec->Call(regex, 1, argv);
 
     // RegExp#exec returns null if there's no match, otherwise it returns an

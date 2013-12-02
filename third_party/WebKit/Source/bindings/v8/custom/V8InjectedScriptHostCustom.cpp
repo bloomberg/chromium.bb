@@ -295,7 +295,7 @@ void V8InjectedScriptHost::getEventListenersMethodCustom(const v8::FunctionCallb
         if (!listeners->Length())
             continue;
         AtomicString eventType = listenersArray[i].eventType;
-        result->Set(v8String(eventType, info.GetIsolate()), listeners);
+        result->Set(v8String(info.GetIsolate(), eventType), listeners);
     }
 
     v8SetReturnValue(info, result);

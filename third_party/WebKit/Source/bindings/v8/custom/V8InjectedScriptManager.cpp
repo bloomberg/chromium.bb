@@ -94,7 +94,7 @@ ScriptObject InjectedScriptManager::createInjectedScript(const String& scriptSou
     // inspector's stuff) the function is called a few lines below with InjectedScriptHost wrapper,
     // injected script id and explicit reference to the inspected global object. The function is expected
     // to create and configure InjectedScript instance that is going to be used by the inspector.
-    v8::Local<v8::Value> value = V8ScriptRunner::compileAndRunInternalScript(v8String(scriptSource, isolate), isolate);
+    v8::Local<v8::Value> value = V8ScriptRunner::compileAndRunInternalScript(v8String(isolate, scriptSource), isolate);
     ASSERT(!value.IsEmpty());
     ASSERT(value->IsFunction());
 

@@ -218,9 +218,9 @@ void V8CustomElementLifecycleCallbacks::attributeChanged(Element* element, const
         return;
 
     v8::Handle<v8::Value> argv[] = {
-        v8String(name, isolate),
-        oldValue.isNull() ? v8::Handle<v8::Value>(v8::Null(isolate)) : v8::Handle<v8::Value>(v8String(oldValue, isolate)),
-        newValue.isNull() ? v8::Handle<v8::Value>(v8::Null(isolate)) : v8::Handle<v8::Value>(v8String(newValue, isolate))
+        v8String(isolate, name),
+        oldValue.isNull() ? v8::Handle<v8::Value>(v8::Null(isolate)) : v8::Handle<v8::Value>(v8String(isolate, oldValue)),
+        newValue.isNull() ? v8::Handle<v8::Value>(v8::Null(isolate)) : v8::Handle<v8::Value>(v8String(isolate, newValue))
     };
 
     v8::TryCatch exceptionCatcher;

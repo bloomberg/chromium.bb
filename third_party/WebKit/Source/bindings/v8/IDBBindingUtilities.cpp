@@ -61,7 +61,7 @@ v8::Handle<v8::Value> toV8(IDBKey* key, v8::Handle<v8::Object> creationContext, 
     case IDBKey::NumberType:
         return v8::Number::New(isolate, key->number());
     case IDBKey::StringType:
-        return v8String(key->string(), isolate);
+        return v8String(isolate, key->string());
     case IDBKey::BinaryType:
         return toV8(Uint8Array::create(reinterpret_cast<const unsigned char*>(key->binary()->data()), key->binary()->size()), creationContext, isolate);
     case IDBKey::DateType:
@@ -148,7 +148,7 @@ static bool get(v8::Handle<v8::Value>& object, const String& keyPathElement, v8:
         result = v8::Number::New(isolate, length);
         return true;
     }
-    return object->IsObject() && getValueFrom(v8String(keyPathElement, isolate), result);
+    return object->IsObject() && getValueFrom(v8String(isolate, keyPathElement), result);
 }
 
 static bool canSet(v8::Handle<v8::Value>& object, const String& keyPathElement)
@@ -158,7 +158,7 @@ static bool canSet(v8::Handle<v8::Value>& object, const String& keyPathElement)
 
 static bool set(v8::Handle<v8::Value>& object, const String& keyPathElement, const v8::Handle<v8::Value>& v8Value, v8::Isolate* isolate)
 {
-    return canSet(object, keyPathElement) && setValue(object, v8String(keyPathElement, isolate), v8Value);
+    return canSet(object, keyPathElement) && setValue(object, v8String(isolate, keyPathElement), v8Value);
 }
 
 static v8::Handle<v8::Value> getNthValueOnKeyPath(v8::Handle<v8::Value>& rootValue, const Vector<String>& keyPathElements, size_t index, v8::Isolate* isolate)

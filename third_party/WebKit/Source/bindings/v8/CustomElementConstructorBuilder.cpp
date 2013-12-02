@@ -151,7 +151,7 @@ PassRefPtr<CustomElementLifecycleCallbacks> CustomElementConstructorBuilder::cre
 
 v8::Handle<v8::Function> CustomElementConstructorBuilder::retrieveCallback(v8::Isolate* isolate, const char* name)
 {
-    v8::Handle<v8::Value> value = m_prototype->Get(v8String(name, isolate));
+    v8::Handle<v8::Value> value = m_prototype->Get(v8String(isolate, name));
     if (value.IsEmpty() || !value->IsFunction())
         return v8::Handle<v8::Function>();
     return value.As<v8::Function>();
@@ -178,21 +178,21 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
 
     const CustomElementDescriptor& descriptor = definition->descriptor();
 
-    v8::Handle<v8::String> v8TagName = v8String(descriptor.localName(), isolate);
+    v8::Handle<v8::String> v8TagName = v8String(isolate, descriptor.localName());
     v8::Handle<v8::Value> v8Type;
     if (descriptor.isTypeExtension())
-        v8Type = v8String(descriptor.type(), isolate);
+        v8Type = v8String(isolate, descriptor.type());
     else
         v8Type = v8::Null(isolate);
 
     m_constructor->SetName(v8Type->IsNull() ? v8TagName : v8Type.As<v8::String>());
 
     V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "customElementDocument", toV8(document, m_context->Global(), isolate));
-    V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "customElementNamespaceURI", v8String(descriptor.namespaceURI(), isolate));
+    V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "customElementNamespaceURI", v8String(isolate, descriptor.namespaceURI()));
     V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "customElementTagName", v8TagName);
     V8HiddenPropertyName::setNamedHiddenReference(m_constructor, "customElementType", v8Type);
 
-    v8::Handle<v8::String> prototypeKey = v8String("prototype", isolate);
+    v8::Handle<v8::String> prototypeKey = v8String(isolate, "prototype");
     ASSERT(m_constructor->HasOwnProperty(prototypeKey));
     // This sets the property *value*; calling Set is safe because
     // "prototype" is a non-configurable data property so there can be
@@ -204,7 +204,7 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     m_constructor->ForceSet(prototypeKey, m_prototype, v8::PropertyAttribute(v8::ReadOnly | v8::DontEnum | v8::DontDelete));
 
     V8HiddenPropertyName::setNamedHiddenReference(m_prototype, "customElementIsInterfacePrototypeObject", v8::True(isolate));
-    m_prototype->ForceSet(v8String("constructor", isolate), m_constructor, v8::DontEnum);
+    m_prototype->ForceSet(v8String(isolate, "constructor"), m_constructor, v8::DontEnum);
 
     return true;
 }
@@ -216,7 +216,7 @@ bool CustomElementConstructorBuilder::prototypeIsValid(const AtomicString& type,
         return false;
     }
 
-    if (m_prototype->GetPropertyAttributes(v8String("constructor", m_context->GetIsolate())) & v8::DontDelete) {
+    if (m_prototype->GetPropertyAttributes(v8String(m_context->GetIsolate(), "constructor")) & v8::DontDelete) {
         CustomElementException::throwException(CustomElementException::ConstructorPropertyNotConfigurable, type, exceptionState);
         return false;
     }

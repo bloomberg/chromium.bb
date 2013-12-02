@@ -49,7 +49,7 @@ static v8::Handle<v8::Value> toV8(const IDBKeyPath& value, v8::Handle<v8::Object
     case IDBKeyPath::NullType:
         return v8::Null(isolate);
     case IDBKeyPath::StringType:
-        return v8String(value.string(), isolate);
+        return v8String(isolate, value.string());
     case IDBKeyPath::ArrayType:
         RefPtr<DOMStringList> keyPaths = DOMStringList::create();
         for (Vector<String>::const_iterator it = value.array().begin(); it != value.array().end(); ++it)
@@ -89,7 +89,7 @@ v8::Handle<v8::Value> toV8(IDBAny* impl, v8::Handle<v8::Object> creationContext,
     case IDBAny::BufferType:
         return deserializeIDBValueBuffer(impl->buffer(), isolate);
     case IDBAny::StringType:
-        return v8String(impl->string(), isolate);
+        return v8String(isolate, impl->string());
     case IDBAny::IntegerType:
         return v8::Number::New(isolate, impl->integer());
     case IDBAny::KeyType:

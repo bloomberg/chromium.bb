@@ -4119,7 +4119,7 @@ static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& i
         return;
     v8::Handle<v8::Array> v8names = v8::Array::New(info.GetIsolate(), names.size());
     for (size_t i = 0; i < names.size(); ++i)
-        v8names->Set(v8::Integer::New(info.GetIsolate(), i), v8String(names[i], info.GetIsolate()));
+        v8names->Set(v8::Integer::New(info.GetIsolate(), i), v8String(info.GetIsolate(), names[i]));
     v8SetReturnValue(info, v8names);
 }
 
@@ -5826,7 +5826,7 @@ sub NativeToJSValue
                 die "Unknown value for TreatReturnedNullStringAs extended attribute";
             }
         } else {
-            $returnValue = "v8String($nativeValue, $getIsolate)";
+            $returnValue = "v8String($getIsolate, $nativeValue)";
         }
         return "$indent$receiver $returnValue;";
     }

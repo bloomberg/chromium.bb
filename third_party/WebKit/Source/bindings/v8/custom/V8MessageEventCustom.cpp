@@ -77,7 +77,7 @@ void V8MessageEvent::dataAttributeGetterCustom(const v8::PropertyCallbackInfo<v8
 
     case MessageEvent::DataTypeString: {
         String stringValue = event->dataAsString();
-        result = v8String(stringValue, info.GetIsolate());
+        result = v8String(info.GetIsolate(), stringValue);
         break;
     }
 
