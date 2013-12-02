@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -39,7 +40,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/policy/cloud_external_data_manager_base.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base_test_util.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
@@ -300,14 +300,11 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest {
     DevicePolicyCrosBrowserTest::SetUp();
   }
 
-  void SetUpCommandLineExceptDeviceManagementURL(CommandLine* command_line) {
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    DevicePolicyCrosBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
-  }
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    SetUpCommandLineExceptDeviceManagementURL(command_line);
     command_line->AppendSwitchASCII(
         switches::kDeviceManagementUrl, test_server_.GetServiceURL().spec());
   }
@@ -358,8 +355,6 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest {
 
   void UploadDeviceLocalAccountPolicy() {
     BuildDeviceLocalAccountPolicy();
-    ASSERT_TRUE(session_manager_client()->device_local_account_policy(
-        kAccountId1).empty());
     test_server_.UpdatePolicy(
         dm_protocol::kChromePublicAccountPolicyType, kAccountId1,
         device_local_account_policy_.payload().SerializeAsString());
@@ -816,35 +811,8 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
   EXPECT_FALSE(PathExists(cached_extension));
 }
 
-class DeviceLocalAccountExternalDataTest : public DeviceLocalAccountTest {
- protected:
-  DeviceLocalAccountExternalDataTest();
-  virtual ~DeviceLocalAccountExternalDataTest();
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
-};
-
-DeviceLocalAccountExternalDataTest::DeviceLocalAccountExternalDataTest() {
-}
-
-DeviceLocalAccountExternalDataTest::~DeviceLocalAccountExternalDataTest() {
-}
-
-void DeviceLocalAccountExternalDataTest::SetUpCommandLine(
-    CommandLine* command_line) {
-  // This test modifies policy in memory by injecting an ExternalDataFetcher. Do
-  // not point the browser at the test_server_ so that no policy can be received
-  // from it and the modification does not get undone while the test is running.
-  // TODO(bartfab): Remove this and the whole DeviceLocalAccountExternalDataTest
-  // class once the first policy referencing external data is added and it is no
-  // longer necessary to inject an ExternalDataFetcher.
-  SetUpCommandLineExceptDeviceManagementURL(command_line);
-}
-
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountExternalDataTest, ExternalData) {
-  CloudExternalDataManagerBase::SetMaxExternalDataSizeForTesting(1000);
-
-  UploadAndInstallDeviceLocalAccountPolicy();
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
+  UploadDeviceLocalAccountPolicy();
   AddPublicSessionToDevicePolicy(kAccountId1);
 
   // This observes the display name becoming available as this indicates
@@ -852,13 +820,6 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountExternalDataTest, ExternalData) {
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_USER_LIST_CHANGED,
       base::Bind(&DisplayNameMatches, user_id_1_, kDisplayName)).Wait();
-
-  scoped_ptr<base::DictionaryValue> metadata =
-      test::ConstructExternalDataReference(kExternalDataURL, kExternalData);
-  DeviceLocalAccountPolicyBroker* broker =
-      g_browser_process->browser_policy_connector()->
-          GetDeviceLocalAccountPolicyService()->GetBrokerForUser(user_id_1_);
-  ASSERT_TRUE(broker);
 
   // Start serving external data at |kExternalDataURL|.
   scoped_ptr<base::RunLoop> run_loop(new base::RunLoop);
@@ -873,13 +834,19 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountExternalDataTest, ExternalData) {
                                    net::HTTP_OK,
                                    net::URLRequestStatus::SUCCESS);
 
-  // TODO(bartfab): The test injects an ExternalDataFetcher for an arbitrary
-  // policy. This is only done because there are no policies that reference
-  // external data yet. Once the first such policy is added, switch the test to
-  // that policy and stop injecting a manually instantiated ExternalDataFetcher.
-  test::SetExternalDataReference(broker->core(),
-                                 key::kHomepageLocation,
-                                 make_scoped_ptr(metadata->DeepCopy()));
+  // Specify an external data reference for the key::kUserAvatarImage policy.
+  scoped_ptr<base::DictionaryValue> metadata =
+      test::ConstructExternalDataReference(kExternalDataURL, kExternalData);
+  std::string policy;
+  base::JSONWriter::Write(metadata.get(), &policy);
+  device_local_account_policy_.payload().mutable_useravatarimage()->set_value(
+      policy);
+  UploadAndInstallDeviceLocalAccountPolicy();
+  DeviceLocalAccountPolicyBroker* broker =
+      g_browser_process->browser_policy_connector()->
+          GetDeviceLocalAccountPolicyService()->GetBrokerForUser(user_id_1_);
+  ASSERT_TRUE(broker);
+  broker->core()->store()->Load();
 
   // The external data should be fetched and cached automatically. Wait for this
   // fetch.
@@ -889,7 +856,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountExternalDataTest, ExternalData) {
   fetcher_factory.reset();
 
   const PolicyMap::Entry* policy_entry =
-      broker->core()->store()->policy_map().Get(key::kHomepageLocation);
+      broker->core()->store()->policy_map().Get(key::kUserAvatarImage);
   ASSERT_TRUE(policy_entry);
   ASSERT_TRUE(policy_entry->external_data_fetcher);
 
@@ -942,7 +909,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountExternalDataTest, ExternalData) {
   ASSERT_TRUE(policy_connector);
   const PolicyMap& policies = policy_connector->policy_service()->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
-  policy_entry = policies.Get(key::kHomepageLocation);
+  policy_entry = policies.Get(key::kUserAvatarImage);
   ASSERT_TRUE(policy_entry);
   EXPECT_TRUE(base::Value::Equals(metadata.get(), policy_entry->value));
   ASSERT_TRUE(policy_entry->external_data_fetcher);
