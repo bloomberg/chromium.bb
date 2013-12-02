@@ -33,6 +33,8 @@ tryPostMessage('cyclicObject', false, "cyclicObject");
 cyclicArray=[];
 cyclicArray[0] = cyclicArray;
 tryPostMessage('cyclicArray', false, "cyclicArray");
+var cyclicObjectGetter = {get self() { return cyclicObjectGetter; }};
+tryPostMessage('cyclicObjectGetter', false, 'cyclicObject');
 objectGraph = {};
 object = {};
 objectGraph.graph1 = object;
@@ -154,13 +156,14 @@ tryPostMessage(thunk(
         doPassFail((v.b.p === 42 && v.a.p === 42) ||
                    (v.b.p === null && v.a.p === null), "accessors used (opposite order)");
     });
-// We should nullify the results from accessors more than one level deep,
-// but leave other fields untouched.
+
+// Tests to verify that accessor and non-accessor properties are
+// treated equivalently.
 tryPostMessage(thunk(
         'var obja = {get p() { return 42; }, q: 43}; ' +
         'return {get a() { return obja; }};'
     ), false, "evalThunk", function(v) {
-        doPassFail(v.a.p === null, "accessor value was nullified");
+        doPassFail(v.a.p === 42, "accessor value was not nullified");
         doPassFail(v.a.q === 43, "non-accessor value was not nullified");
     });
 tryPostMessage(thunk(
@@ -168,10 +171,10 @@ tryPostMessage(thunk(
         'var obja = {get p() { return 42; }, q: 43, s: objb}; ' +
         'return {get a() { return obja; }};'
     ), false, "evalThunk", function(v) {
-        doPassFail(v.a.p === null, "accessor value was nullified");
+        doPassFail(v.a.p === 42, "accessor value was not nullified");
         doPassFail(v.a.q === 43, "non-accessor value was not nullified");
         doPassFail(v.s !== null, "non-accessor value was not nullified");
-        doPassFail(v.a.s.r === null, "accessor value was nullified");
+        doPassFail(v.a.s.r === 44, "accessor value was not nullified");
         doPassFail(v.a.s.t === 45, "non-accessor value was not nullified");
     });
 tryPostMessage(thunk(
@@ -181,13 +184,13 @@ tryPostMessage(thunk(
     ), false, "evalThunk", function(v) {
         doPassFail(v.b === 46, "accessor value was not nullified");
         doPassFail(v.c === 47, "accessor value was not nullified");
-        doPassFail(v.a.p === null, "accessor value was nullified");
+        doPassFail(v.a.p === 42, "accessor value was not nullified");
         doPassFail(v.a.q === 43, "non-accessor value was not nullified");
         doPassFail(v.a.s !== null, "non-accessor value was not nullified");
         doPassFail(v.a.s !== undefined, "non-accessor value is defined");
         doPassFail(v.a.s[0] !== null, "non-accessor value was not nullified");
         doPassFail(v.a.s[0] !== undefined, "non-accessor value is defined");
-        doPassFail(v.a.s[0].r === null, "accessor value was nullified");
+        doPassFail(v.a.s[0].r === 44, "accessor value was not nullified");
         doPassFail(v.a.s[0].t === 45, "non-accessor value was not nullified");
     });
 
@@ -195,12 +198,10 @@ tryPostMessage(thunk(
 tryPostMessage(thunk(
         'return {get a() { throw "accessor-exn"; }};'
     ), true, null, 'accessor-exn');
-// We should still return the exception raised from nulled-out accessors.
 tryPostMessage(thunk(
         'var obja = {get p() { throw "accessor-exn"; }}; ' +
         'return {get a() { return obja; }};'
     ), true, null, 'accessor-exn');
-// We should run the first nullified accessor, but no more.
 tryPostMessage(thunk(
         'window.bcalled = undefined; ' +
         'window.acalled = undefined; ' +
@@ -209,10 +210,10 @@ tryPostMessage(thunk(
         'var obja = {get a() { window.acalled = true; return objb; }}; ' +
         'return { get p() { window.pcalled = true; return obja; }};'
     ), false, "evalThunk", function(v) {
-        doPassFail(v.p.a === null, "accessor value was nullified");
+        doPassFail(v.p.a.b === 42, "accessor value was not nullified");
         doPassFail(window.pcalled === true, "window.pcalled === true");
         doPassFail(window.acalled === true, "window.acalled === true");
-        doPassFail(window.bcalled === undefined, "window.bcalled === undefined");
+        doPassFail(window.bcalled === true, "window.bcalled === true");
     });
 
 // Reference equality between Boolean objects must be maintained.

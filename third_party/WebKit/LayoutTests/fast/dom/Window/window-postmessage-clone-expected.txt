@@ -35,6 +35,7 @@ PASS: eventData is gnirts of type object
 PASS: eventData is 42 of type object
 PASS: eventData is === to eventData.self
 PASS: eventData is === to eventData[0]
+PASS: eventData is === to eventData.self
 PASS: eventData.graph1 is === to eventData.graph2
 PASS: eventData[0] is === to eventData[1]
 PASS: eventData is [object ImageData] of type object
@@ -67,27 +68,27 @@ PASS: reference equality preserved
 PASS: accessors used
 PASS: reference equality preserved (opposite order)
 PASS: accessors used (opposite order)
-PASS: accessor value was nullified
+PASS: accessor value was not nullified
 PASS: non-accessor value was not nullified
-PASS: accessor value was nullified
+PASS: accessor value was not nullified
 PASS: non-accessor value was not nullified
 PASS: non-accessor value was not nullified
-PASS: accessor value was nullified
+PASS: accessor value was not nullified
 PASS: non-accessor value was not nullified
 PASS: accessor value was not nullified
 PASS: accessor value was not nullified
-PASS: accessor value was nullified
+PASS: accessor value was not nullified
 PASS: non-accessor value was not nullified
 PASS: non-accessor value was not nullified
 PASS: non-accessor value is defined
 PASS: non-accessor value was not nullified
 PASS: non-accessor value is defined
-PASS: accessor value was nullified
+PASS: accessor value was not nullified
 PASS: non-accessor value was not nullified
-PASS: accessor value was nullified
+PASS: accessor value was not nullified
 PASS: window.pcalled === true
 PASS: window.acalled === true
-PASS: window.bcalled === undefined
+PASS: window.bcalled === true
 PASS: Boolean values correct (0)
 PASS: Boolean values correct (3)
 PASS: Boolean values correct (1,2)
