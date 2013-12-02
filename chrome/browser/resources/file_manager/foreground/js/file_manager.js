@@ -1032,7 +1032,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (!entry)
       return;
 
-    var driveVolume = this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE);
+    var driveVolume = this.volumeManager_.getVolumeInfo(entry);
     var visible =
         DirectoryTreeUtil.isEligiblePathForDirectoryTree(entry.fullPath) &&
         driveVolume && !driveVolume.error;
@@ -2230,7 +2230,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
   FileManager.prototype.updateUnformattedVolumeStatus_ = function() {
     var volumeInfo = this.volumeManager_.getVolumeInfo(
-        this.directoryModel_.getCurrentDirPath());
+        this.directoryModel_.getCurrentDirEntry());
 
     if (volumeInfo && volumeInfo.error) {
       this.dialogDom_.setAttribute('unformatted', '');
