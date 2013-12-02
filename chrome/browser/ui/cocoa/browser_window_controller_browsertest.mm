@@ -8,8 +8,8 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
@@ -69,25 +69,6 @@ enum ViewID {
   VIEW_ID_COUNT,
 };
 
-// A very simple info bar implementation used to show an infobar on the browser
-// window.
-class DummyInfoBar : public ConfirmInfoBarDelegate {
- public:
-  explicit DummyInfoBar(InfoBarService* service)
-      : ConfirmInfoBarDelegate(service) {
-  }
-
-  virtual ~DummyInfoBar() {
-  }
-
-  virtual string16 GetMessageText() const OVERRIDE {
-    return string16();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DummyInfoBar);
-};
-
 }  // namespace
 
 class BrowserWindowControllerTest : public InProcessBrowserTest {
@@ -105,13 +86,11 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
         browser()->window()->GetNativeWindow()];
   }
 
-  void ShowInfoBar() {
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    InfoBarService* service =
-        InfoBarService::FromWebContents(web_contents);
-    scoped_ptr<InfoBarDelegate> info_bar_delegate(new DummyInfoBar(service));
-    service->AddInfoBar(info_bar_delegate.Pass());
+  static void ShowInfoBar(Browser* browser) {
+    SimpleAlertInfoBarDelegate::Create(
+        InfoBarService::FromWebContents(
+            browser->tab_strip_model()->GetActiveWebContents()),
+        0, string16(), false);
   }
 
   NSView* GetViewWithID(ViewID view_id) const {
@@ -350,7 +329,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, SheetPosition) {
 // Verify that the info bar tip is hidden when the toolbar is not visible.
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
                        InfoBarTipHiddenForWindowWithoutToolbar) {
-  ShowInfoBar();
+  ShowInfoBar(browser());
   EXPECT_FALSE(
       [[controller() infoBarContainerController] shouldSuppressTopInfoBarTip]);
 
@@ -365,11 +344,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   EXPECT_FALSE([popupController hasToolbar]);
 
   // Show infobar for controller.
-  content::WebContents* web_contents =
-      popup_browser->tab_strip_model()->GetActiveWebContents();
-  InfoBarService* service = InfoBarService::FromWebContents(web_contents);
-  scoped_ptr<InfoBarDelegate> info_bar_delegate(new DummyInfoBar(service));
-  service->AddInfoBar(info_bar_delegate.Pass());
+  ShowInfoBar(popup_browser);
   EXPECT_TRUE(
       [[popupController infoBarContainerController]
           shouldSuppressTopInfoBarTip]);

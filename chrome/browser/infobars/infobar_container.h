@@ -91,14 +91,12 @@ class InfoBarContainer : public content::NotificationObserver {
   // AddInfoBar()).
   virtual void PlatformSpecificAddInfoBar(InfoBar* infobar,
                                           size_t position) = 0;
-  virtual void PlatformSpecificRemoveInfoBar(InfoBar* infobar) = 0;
-#if defined(OS_ANDROID)
-  // This is a temporary hook that can be removed once infobar code for
-  // Android is upstreamed and the translate infobar implemented as three
-  // different infobars like GTK does.
+  // TODO(miguelg): Remove this; it is only necessary for Android, and only
+  // until the translate infobar is implemented as three different infobars like
+  // GTK does.
   virtual void PlatformSpecificReplaceInfoBar(InfoBar* old_infobar,
                                               InfoBar* new_infobar) {}
-#endif
+  virtual void PlatformSpecificRemoveInfoBar(InfoBar* infobar) = 0;
   virtual void PlatformSpecificInfoBarStateChanged(bool is_animating) {}
 
  private:
@@ -122,9 +120,6 @@ class InfoBarContainer : public content::NotificationObserver {
 
   // Hides all infobars in this container without animation.
   void HideAllInfoBars();
-
-  void ReplaceInfoBar(InfoBarDelegate* old_delegate,
-                      InfoBarDelegate* new_delegate);
 
   // Adds |infobar| to this container before the existing infobar at position
   // |position| and calls Show() on it.  |animate| is passed along to

@@ -80,7 +80,7 @@ class TranslateBrowserTest : public InProcessBrowserTest {
         infobar_service_ = InfoBarService::FromWebContents(web_contents);
     }
     if (!infobar_service_) {
-      EXPECT_TRUE(false) << "infobar service is not available";
+      ADD_FAILURE() << "infobar service is not available";
       return NULL;
     }
 

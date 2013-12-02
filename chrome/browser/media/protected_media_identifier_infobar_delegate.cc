@@ -27,10 +27,7 @@ InfoBarDelegate* ProtectedMediaIdentifierInfoBarDelegate::Create(
       infobar_service->web_contents()->GetController().GetLastCommittedEntry();
   return infobar_service->AddInfoBar(
       scoped_ptr<InfoBarDelegate>(new ProtectedMediaIdentifierInfoBarDelegate(
-          infobar_service,
-          controller,
-          id,
-          requesting_frame,
+          infobar_service, controller, id, requesting_frame,
           committed_entry ? committed_entry->GetUniqueID() : 0,
           display_languages)));
 }
@@ -49,10 +46,12 @@ ProtectedMediaIdentifierInfoBarDelegate::
       id_(id),
       requesting_frame_(requesting_frame),
       contents_unique_id_(contents_unique_id),
-      display_languages_(display_languages) {}
+      display_languages_(display_languages) {
+}
 
 ProtectedMediaIdentifierInfoBarDelegate::
-    ~ProtectedMediaIdentifierInfoBarDelegate() {}
+    ~ProtectedMediaIdentifierInfoBarDelegate() {
+}
 
 bool ProtectedMediaIdentifierInfoBarDelegate::Accept() {
   SetPermission(true, true);
@@ -62,11 +61,9 @@ bool ProtectedMediaIdentifierInfoBarDelegate::Accept() {
 void ProtectedMediaIdentifierInfoBarDelegate::SetPermission(
     bool update_content_setting,
     bool allowed) {
-  controller_->OnPermissionSet(id_,
-                               requesting_frame_,
+  controller_->OnPermissionSet(id_, requesting_frame_,
                                web_contents()->GetLastCommittedURL(),
-                               update_content_setting,
-                               allowed);
+                               update_content_setting, allowed);
 }
 
 void ProtectedMediaIdentifierInfoBarDelegate::InfoBarDismissed() {
@@ -77,8 +74,8 @@ int ProtectedMediaIdentifierInfoBarDelegate::GetIconID() const {
   return IDR_PROTECTED_MEDIA_IDENTIFIER_INFOBAR_ICON;
 }
 
-InfoBarDelegate::Type ProtectedMediaIdentifierInfoBarDelegate::GetInfoBarType()
-    const {
+InfoBarDelegate::Type
+    ProtectedMediaIdentifierInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
 }
 
@@ -101,9 +98,9 @@ string16 ProtectedMediaIdentifierInfoBarDelegate::GetMessageText() const {
 
 string16 ProtectedMediaIdentifierInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16(
-      (button == BUTTON_OK) ? IDS_PROTECTED_MEDIA_IDENTIFIER_ALLOW_BUTTON
-                            : IDS_PROTECTED_MEDIA_IDENTIFIER_DENY_BUTTON);
+  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
+      IDS_PROTECTED_MEDIA_IDENTIFIER_ALLOW_BUTTON :
+      IDS_PROTECTED_MEDIA_IDENTIFIER_DENY_BUTTON);
 }
 
 bool ProtectedMediaIdentifierInfoBarDelegate::Cancel() {

@@ -90,6 +90,13 @@ void InfoBar::CloseSoon() {
   MaybeDelete();
 }
 
+void InfoBar::SetBarTargetHeight(int height) {
+  if (bar_target_height_ != height) {
+    bar_target_height_ = height;
+    RecalculateHeights(false);
+  }
+}
+
 void InfoBar::AnimationProgressed(const gfx::Animation* animation) {
   RecalculateHeights(false);
 }
@@ -105,13 +112,6 @@ void InfoBar::RemoveSelf() {
   // checking |owner_| here will avoid a NULL deref.
   if (owner_)
     owner_->RemoveInfoBar(delegate_);
-}
-
-void InfoBar::SetBarTargetHeight(int height) {
-  if (bar_target_height_ != height) {
-    bar_target_height_ = height;
-    RecalculateHeights(false);
-  }
 }
 
 int InfoBar::OffsetY(const gfx::Size& prefsize) const {

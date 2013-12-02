@@ -26,9 +26,6 @@ class InfoBar : public gfx::AnimationDelegate {
   typedef std::pair<InfoBarDelegate*, bool> RemovedDetails;
   typedef std::pair<InfoBarDelegate*, InfoBarDelegate*> ReplacedDetails;
 
-  InfoBar(InfoBarService* owner, InfoBarDelegate* delegate);
-  virtual ~InfoBar();
-
   // Platforms must define these.
   static const int kDefaultBarTargetHeight;
   static const int kSeparatorLineHeight;
@@ -38,6 +35,9 @@ class InfoBar : public gfx::AnimationDelegate {
   // default and maximum values proportionally to how the height scales to its.
   static const int kDefaultArrowTargetHalfWidth;
   static const int kMaximumArrowTargetHalfWidth;
+
+  InfoBar(InfoBarService* owner, InfoBarDelegate* delegate);
+  virtual ~InfoBar();
 
   static SkColor GetTopColor(InfoBarDelegate::Type infobar_type);
   static SkColor GetBottomColor(InfoBarDelegate::Type infobar_type);

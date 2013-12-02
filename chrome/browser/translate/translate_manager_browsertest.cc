@@ -52,7 +52,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/web/WebContextMenuData.h"
 
-using content::RenderViewHostTester;
 
 // An observer that keeps track of whether a navigation entry was committed.
 class NavEntryCommittedObserver : public content::NotificationObserver {
@@ -104,7 +103,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
                                              bool page_translatable) {
     LanguageDetectionDetails details;
     details.adopted_language = lang;
-    RenderViewHostTester::TestOnMessageReceived(
+    content::RenderViewHostTester::TestOnMessageReceived(
         rvh(),
         ChromeViewHostMsg_TranslateLanguageDetermined(
             0, details, page_translatable));
@@ -114,7 +113,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
                                 const std::string& source_lang,
                                 const std::string& target_lang,
                                 TranslateErrors::Type error) {
-    RenderViewHostTester::TestOnMessageReceived(
+    content::RenderViewHostTester::TestOnMessageReceived(
         rvh(),
         ChromeViewHostMsg_PageTranslated(
             routing_id, 0, source_lang, target_lang, error));
@@ -458,10 +457,8 @@ TEST_F(TranslateManagerBrowserTest, NormalTranslate) {
   EXPECT_EQ("en", target_lang);
   // Simulate the render notifying the translation has been done.
   SimulateOnPageTranslated(new_original_lang, "en");
-  // infobar is now invalid.
-  TranslateInfoBarDelegate* new_infobar = GetTranslateInfoBar();
-  ASSERT_TRUE(new_infobar != NULL);
-  infobar = new_infobar;
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
 
   // Simulate changing the target language and translating.
   process()->sink().ClearMessages();
@@ -473,24 +470,21 @@ TEST_F(TranslateManagerBrowserTest, NormalTranslate) {
   EXPECT_EQ(new_target_lang, target_lang);
   // Simulate the render notifying the translation has been done.
   SimulateOnPageTranslated(new_original_lang, new_target_lang);
-  // infobar is now invalid.
-  new_infobar = GetTranslateInfoBar();
-  ASSERT_TRUE(new_infobar != NULL);
-  EXPECT_EQ(new_target_lang, new_infobar->target_language_code());
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  EXPECT_EQ(new_target_lang, infobar->target_language_code());
 
   // Reloading should trigger translation iff Always Translate is on.
   ReloadAndWait(true);
-  new_infobar = GetTranslateInfoBar();
-  ASSERT_TRUE(new_infobar != NULL);
-  infobar = new_infobar;
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE,
             infobar->infobar_type());
   infobar->UpdateTargetLanguageIndex(1);
   infobar->ToggleAlwaysTranslate();
   ReloadAndWait(true);
-  new_infobar = GetTranslateInfoBar();
-  ASSERT_TRUE(new_infobar != NULL);
-  infobar = new_infobar;
+  infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::TRANSLATING, infobar->infobar_type());
   EXPECT_EQ(new_target_lang, infobar->target_language_code());
 }
@@ -781,18 +775,17 @@ TEST_F(TranslateManagerBrowserTest, Reload) {
 
   EXPECT_TRUE(CloseTranslateInfoBar());
 
-  // Reload should bring back the infobar if the page succeds
+  // Reload should bring back the infobar if the reload succeeds.
   ReloadAndWait(true);
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
-
   EXPECT_TRUE(CloseTranslateInfoBar());
 
-  // And not show it if the reload fails
+  // ...But not show it if the reload fails.
   ReloadAndWait(false);
-  EXPECT_EQ(NULL, GetTranslateInfoBar());
+  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
 
-  // Set reload attempts to a high value, we will not see the infobar
-  // immediatly.
+  // If we set reload attempts to a high value, we will not see the infobar
+  // immediately.
   TranslateManager::GetInstance()->set_translate_max_reload_attemps(100);
   ReloadAndWait(true);
   EXPECT_TRUE(GetTranslateInfoBar() == NULL);

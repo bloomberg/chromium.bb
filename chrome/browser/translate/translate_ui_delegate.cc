@@ -25,6 +25,8 @@ TranslateUIDelegate::TranslateUIDelegate(content::WebContents* web_contents,
     : web_contents_(web_contents),
       original_language_index_(NO_INDEX),
       target_language_index_(NO_INDEX) {
+  DCHECK(web_contents_);
+
   languages_ =
       GetSortedLanguageNames(g_browser_process->GetApplicationLocale());
 
@@ -38,7 +40,7 @@ TranslateUIDelegate::TranslateUIDelegate(content::WebContents* web_contents,
   }
 
   Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   prefs_.reset(new TranslatePrefs(profile->GetPrefs()));
 }
 

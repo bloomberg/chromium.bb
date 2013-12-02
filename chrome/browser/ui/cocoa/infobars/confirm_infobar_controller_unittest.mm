@@ -91,10 +91,9 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
         WebContents::Create(WebContents::CreateParams(profile())));
     InfoBarService::CreateForWebContents(web_contents_.get());
 
-    InfoBarService* infobar_service =
-        InfoBarService::FromWebContents(web_contents_.get());
     delegate_ = new MockConfirmInfoBarDelegate(this);
-    infobar_.reset(new InfoBarCocoa(infobar_service, delegate_));
+    infobar_.reset(new InfoBarCocoa(
+        InfoBarService::FromWebContents(web_contents_.get()), delegate_));
 
     controller_.reset([[TestConfirmInfoBarController alloc]
         initWithInfoBar:infobar_.get()]);

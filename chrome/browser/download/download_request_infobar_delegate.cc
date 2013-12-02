@@ -10,7 +10,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 DownloadRequestInfoBarDelegate::FakeCreateCallback*
-  DownloadRequestInfoBarDelegate::callback_ = NULL;
+    DownloadRequestInfoBarDelegate::callback_ = NULL;
 
 DownloadRequestInfoBarDelegate::~DownloadRequestInfoBarDelegate() {
   if (!responded_ && host_)
@@ -45,7 +45,7 @@ void DownloadRequestInfoBarDelegate::SetCallbackForTesting(
     FakeCreateCallback* callback) {
   DownloadRequestInfoBarDelegate::callback_ = callback;
 }
-#
+
 DownloadRequestInfoBarDelegate::DownloadRequestInfoBarDelegate(
     InfoBarService* infobar_service,
     base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host)

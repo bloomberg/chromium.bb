@@ -30,14 +30,15 @@ class MIDIPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
                                  const GURL& requesting_frame,
                                  const std::string& display_languages);
 
- protected:
+ private:
   MIDIPermissionInfoBarDelegate(InfoBarService* infobar_service,
                                 PermissionQueueController* controller,
                                 const PermissionRequestID& id,
                                 const GURL& requesting_frame,
+                                int contents_unique_id,
                                 const std::string& display_languages);
+  virtual ~MIDIPermissionInfoBarDelegate();
 
- private:
   // ConfirmInfoBarDelegate:
   virtual void InfoBarDismissed() OVERRIDE;
   virtual int GetIconID() const OVERRIDE;
@@ -49,7 +50,7 @@ class MIDIPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
-  // Callback to the controller to inform of the user's decision.
+  // Calls back to the controller to inform it of the user's decision.
   void SetPermission(bool update_content_setting, bool allowed);
 
  private:

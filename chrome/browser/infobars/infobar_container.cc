@@ -130,7 +130,12 @@ void InfoBarContainer::Observe(int type,
     case chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED: {
       InfoBar::ReplacedDetails* replaced_details =
           content::Details<InfoBar::ReplacedDetails>(details).ptr();
-      ReplaceInfoBar(replaced_details->first, replaced_details->second);
+      InfoBar* old_infobar = FindInfoBar(replaced_details->first);
+      InfoBar* new_infobar =
+          replaced_details->second->CreateInfoBar(infobar_service_);
+      PlatformSpecificReplaceInfoBar(old_infobar, new_infobar);
+      AddInfoBar(new_infobar, HideInfoBar(old_infobar, false), false,
+                 WANT_CALLBACK);
       break;
     }
 
@@ -138,17 +143,6 @@ void InfoBarContainer::Observe(int type,
       NOTREACHED();
       break;
   }
-}
-
-void InfoBarContainer::ReplaceInfoBar(InfoBarDelegate* old_delegate,
-                                      InfoBarDelegate* new_delegate) {
-  InfoBar* new_infobar = new_delegate->CreateInfoBar(infobar_service_);
-  InfoBar* old_infobar = FindInfoBar(old_delegate);
-#if defined(OS_ANDROID)
-  PlatformSpecificReplaceInfoBar(old_infobar, new_infobar);
-#endif
-  AddInfoBar(
-      new_infobar, HideInfoBar(old_infobar, false), false, WANT_CALLBACK);
 }
 
 InfoBar* InfoBarContainer::FindInfoBar(InfoBarDelegate* delegate) {

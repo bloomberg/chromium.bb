@@ -23,12 +23,13 @@ InfoBarDelegate* MIDIPermissionInfoBarDelegate::Create(
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     const std::string& display_languages) {
+  const content::NavigationEntry* committed_entry =
+      infobar_service->web_contents()->GetController().GetLastCommittedEntry();
   return infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new MIDIPermissionInfoBarDelegate(infobar_service,
-                                        controller,
-                                        id,
-                                        requesting_frame,
-                                        display_languages)));
+      new MIDIPermissionInfoBarDelegate(
+          infobar_service, controller, id, requesting_frame,
+          committed_entry ? committed_entry->GetUniqueID() : 0,
+          display_languages)));
 }
 
 MIDIPermissionInfoBarDelegate::MIDIPermissionInfoBarDelegate(
@@ -36,15 +37,17 @@ MIDIPermissionInfoBarDelegate::MIDIPermissionInfoBarDelegate(
     PermissionQueueController* controller,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
+    int contents_unique_id,
     const std::string& display_languages)
     : ConfirmInfoBarDelegate(infobar_service),
       controller_(controller),
       id_(id),
       requesting_frame_(requesting_frame),
+      contents_unique_id_(contents_unique_id),
       display_languages_(display_languages) {
-  const content::NavigationEntry* committed_entry = infobar_service->
-      web_contents()->GetController().GetLastCommittedEntry();
-  contents_unique_id_ = committed_entry ? committed_entry->GetUniqueID() : 0;
+}
+
+MIDIPermissionInfoBarDelegate::~MIDIPermissionInfoBarDelegate() {
 }
 
 void MIDIPermissionInfoBarDelegate::InfoBarDismissed() {
@@ -94,8 +97,6 @@ bool MIDIPermissionInfoBarDelegate::Cancel() {
 
 void MIDIPermissionInfoBarDelegate::SetPermission(bool update_content_setting,
                                                   bool allowed) {
-  controller_->OnPermissionSet(id_, requesting_frame_,
-                               web_contents()->GetURL(),
+  controller_->OnPermissionSet(id_, requesting_frame_, web_contents()->GetURL(),
                                update_content_setting, allowed);
 }
-

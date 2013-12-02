@@ -26,14 +26,6 @@
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using content::NavigationEntry;
-
-namespace {
-
-const char kCloseInfobar[] = "Translate.DeclineTranslateCloseInfobar";
-const char kShowErrorInfobar[] = "Translate.ShowErrorInfobar";
-
-}  // namespace
 
 const size_t TranslateInfoBarDelegate::kNoIndex = TranslateUIDelegate::NO_INDEX;
 
@@ -62,6 +54,16 @@ void TranslateInfoBarDelegate::Create(
     }
   }
 
+  // Do not create the after translate infobar if we are auto translating.
+  if ((infobar_type == TranslateInfoBarDelegate::AFTER_TRANSLATE) ||
+      (infobar_type == TranslateInfoBarDelegate::TRANSLATING)) {
+    TranslateTabHelper* translate_tab_helper =
+      TranslateTabHelper::FromWebContents(infobar_service->web_contents());
+    if (!translate_tab_helper ||
+         translate_tab_helper->language_state().InTranslateNavigation())
+      return;
+  }
+
   // Find any existing translate infobar delegate.
   TranslateInfoBarDelegate* old_delegate = NULL;
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
@@ -73,30 +75,15 @@ void TranslateInfoBarDelegate::Create(
     }
   }
 
-  // Create the new delegate.
-  scoped_ptr<TranslateInfoBarDelegate> infobar(
+  // Add the new delegate.
+  scoped_ptr<InfoBarDelegate> infobar(
       new TranslateInfoBarDelegate(infobar_service, infobar_type, old_delegate,
                                    original_language, target_language,
                                    error_type, prefs, shortcut_config));
-
-  // Do not create the after translate infobar if we are auto translating.
-  if ((infobar_type == TranslateInfoBarDelegate::AFTER_TRANSLATE) ||
-      (infobar_type == TranslateInfoBarDelegate::TRANSLATING)) {
-    TranslateTabHelper* translate_tab_helper =
-      TranslateTabHelper::FromWebContents(infobar_service->web_contents());
-    if (!translate_tab_helper ||
-         translate_tab_helper->language_state().InTranslateNavigation())
-      return;
-  }
-
-  // Add the new delegate if necessary.
-  if (!old_delegate) {
-    infobar_service->AddInfoBar(infobar.PassAs<InfoBarDelegate>());
-  } else {
-    DCHECK(replace_existing_infobar);
-    infobar_service->ReplaceInfoBar(old_delegate,
-                                    infobar.PassAs<InfoBarDelegate>());
-  }
+  if (old_delegate)
+    infobar_service->ReplaceInfoBar(old_delegate, infobar.Pass());
+  else
+    infobar_service->AddInfoBar(infobar.Pass());
 }
 
 
@@ -261,7 +248,7 @@ string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
   }
 
   DCHECK_EQ(TRANSLATION_ERROR, infobar_type_);
-  UMA_HISTOGRAM_ENUMERATION(kShowErrorInfobar,
+  UMA_HISTOGRAM_ENUMERATION("Translate.ShowErrorInfobar",
                             error_type_,
                             TranslateErrors::TRANSLATE_ERROR_MAX);
   switch (error_type_) {
@@ -413,7 +400,7 @@ void TranslateInfoBarDelegate::InfoBarDismissed() {
 
   // The user closed the infobar without clicking the translate button.
   TranslationDeclined();
-  UMA_HISTOGRAM_BOOLEAN(kCloseInfobar, true);
+  UMA_HISTOGRAM_BOOLEAN("Translate.DeclineTranslateCloseInfobar", true);
 }
 
 int TranslateInfoBarDelegate::GetIconID() const {
