@@ -320,8 +320,9 @@ void Slider::OnPaintFocusBorder(gfx::Canvas* canvas) {
   if (!focus_border_color_) {
     View::OnPaintFocusBorder(canvas);
   } else if (HasFocus()) {
-    canvas->DrawRect(gfx::Rect(1, 1, width() - 3, height() - 3),
-                     focus_border_color_);
+    canvas->DrawSolidFocusRect(
+        gfx::Rect(1, 1, width() - 3, height() - 3),
+        focus_border_color_);
   }
 }
 

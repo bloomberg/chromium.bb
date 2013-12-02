@@ -243,22 +243,6 @@ class LauncherFocusSearch : public views::FocusSearch {
   DISALLOW_COPY_AND_ASSIGN(LauncherFocusSearch);
 };
 
-class ShelfButtonFocusBorder : public views::FocusBorder {
- public:
-  ShelfButtonFocusBorder() {}
-  virtual ~ShelfButtonFocusBorder() {}
-
- private:
-  // views::FocusBorder overrides:
-  virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE {
-    gfx::Rect rect(view.GetLocalBounds());
-    rect.Inset(1, 1);
-    canvas->DrawRect(rect, kFocusBorderColor);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(ShelfButtonFocusBorder);
-};
-
 // AnimationDelegate used when inserting a new item. This steadily increases the
 // opacity of the layer as the animation progress.
 class FadeInAnimationDelegate
@@ -952,7 +936,9 @@ views::View* ShelfView::CreateViewForItem(const LauncherItem& item) {
       break;
   }
   view->set_context_menu_controller(this);
-  view->set_focus_border(new ShelfButtonFocusBorder);
+  view->set_focus_border(views::FocusBorder::CreateSolidFocusBorder(
+      kFocusBorderColor,
+      gfx::Insets(1, 1, 1, 1)));
 
   DCHECK(view);
   ConfigureChildView(view);

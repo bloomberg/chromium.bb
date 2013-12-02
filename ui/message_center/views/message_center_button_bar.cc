@@ -50,7 +50,6 @@ class NotificationCenterButton : public views::ToggleImageButton {
  protected:
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   gfx::Size size_;
@@ -76,16 +75,13 @@ NotificationCenterButton::NotificationCenterButton(
 
   set_focusable(true);
   set_request_focus_on_press(false);
+
+  set_focus_border(views::FocusBorder::CreateSolidFocusBorder(
+      kFocusBorderColor,
+      gfx::Insets(1, 2, 2, 2)));
 }
 
 gfx::Size NotificationCenterButton::GetPreferredSize() { return size_; }
-
-void NotificationCenterButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus()) {
-    canvas->DrawRect(gfx::Rect(2, 1, width() - 4, height() - 3),
-                     kFocusBorderColor);
-  }
-}
 
 // MessageCenterButtonBar /////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////

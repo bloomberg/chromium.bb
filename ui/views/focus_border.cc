@@ -5,11 +5,13 @@
 #include "ui/views/focus_border.h"
 
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/view.h"
 
 namespace views {
 namespace {
+
 class DashedFocusBorder : public FocusBorder {
  public:
   DashedFocusBorder(
@@ -34,6 +36,29 @@ class DashedFocusBorder : public FocusBorder {
 
   DISALLOW_COPY_AND_ASSIGN(DashedFocusBorder);
 };
+
+class SolidFocusBorder : public FocusBorder {
+ public:
+  SolidFocusBorder(SkColor focus_color, const gfx::Insets& insets)
+      : focus_color_(focus_color), insets_(insets) {
+  }
+
+  virtual void Paint(const View& view, gfx::Canvas* canvas) const OVERRIDE {
+    gfx::Rect rect(view.GetLocalBounds());
+    rect.Inset(insets_);
+    canvas->DrawSolidFocusRect(rect, focus_color_);
+  }
+
+ private:
+  // The focus color to use.
+  SkColor focus_color_;
+
+  // The insets to use.
+  gfx::Insets insets_;
+
+  DISALLOW_COPY_AND_ASSIGN(SolidFocusBorder);
+};
+
 }  // namespace
 
 FocusBorder::~FocusBorder() {
@@ -48,6 +73,12 @@ FocusBorder* FocusBorder::CreateDashedFocusBorder() {
 FocusBorder* FocusBorder::CreateDashedFocusBorder(
     int left, int top, int right, int bottom) {
   return new DashedFocusBorder(left, top, right, bottom);
+}
+
+// static
+FocusBorder* FocusBorder::CreateSolidFocusBorder(
+    SkColor focus_color, const gfx::Insets& insets) {
+  return new SolidFocusBorder(focus_color, insets);
 }
 
 FocusBorder::FocusBorder() {

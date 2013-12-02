@@ -20,16 +20,12 @@ TrayPopupLabelButton::TrayPopupLabelButton(views::ButtonListener* listener,
   set_request_focus_on_press(false);
   set_animate_on_state_change(false);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  set_focus_border(views::FocusBorder::CreateSolidFocusBorder(
+      kFocusBorderColor,
+      gfx::Insets(1, 1, 2, 2)));
 }
 
 TrayPopupLabelButton::~TrayPopupLabelButton() {}
-
-void TrayPopupLabelButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus()) {
-    canvas->DrawRect(gfx::Rect(1, 1, width() - 3, height() - 3),
-                     ash::kFocusBorderColor);
-  }
-}
 
 }  // namespace internal
 }  // namespace ash

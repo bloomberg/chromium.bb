@@ -24,8 +24,8 @@ ActionableView::~ActionableView() {
 
 void ActionableView::DrawBorder(gfx::Canvas* canvas, const gfx::Rect& bounds) {
   gfx::Rect rect = bounds;
-  rect.Inset(1, 1, 3, 3);
-  canvas->DrawRect(rect, kFocusBorderColor);
+  rect.Inset(1, 1, 3, 2);
+  canvas->DrawSolidFocusRect(rect, kFocusBorderColor);
 }
 
 const char* ActionableView::GetClassName() const {

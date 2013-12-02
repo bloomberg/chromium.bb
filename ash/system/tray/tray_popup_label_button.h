@@ -21,8 +21,6 @@ class TrayPopupLabelButton : public views::LabelButton {
   virtual ~TrayPopupLabelButton();
 
  private:
-  // Overridden from views::LabelButton:
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(TrayPopupLabelButton);
 };

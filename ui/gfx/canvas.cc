@@ -332,6 +332,22 @@ void Canvas::DrawFocusRect(const Rect& rect) {
   DrawDashedRect(rect, SK_ColorGRAY);
 }
 
+void Canvas::DrawSolidFocusRect(const Rect& rect, SkColor color) {
+  SkPaint paint;
+  paint.setColor(color);
+  paint.setStrokeWidth(SkIntToScalar(1));
+  // Note: We cannot use DrawRect since it would create a path and fill it which
+  // would cause problems near the edge of the canvas.
+  int x1 = std::min(rect.x(), rect.right());
+  int x2 = std::max(rect.x(), rect.right());
+  int y1 = std::min(rect.y(), rect.bottom());
+  int y2 = std::max(rect.y(), rect.bottom());
+  DrawLine(Point(x1, y1), Point(x2, y1), paint);
+  DrawLine(Point(x1, y2), Point(x2, y2), paint);
+  DrawLine(Point(x1, y1), Point(x1, y2), paint);
+  DrawLine(Point(x2, y1), Point(x2, y2 + 1), paint);
+}
+
 void Canvas::DrawImageInt(const ImageSkia& image, int x, int y) {
   SkPaint paint;
   DrawImageInt(image, x, y, paint);

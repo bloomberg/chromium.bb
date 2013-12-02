@@ -16,6 +16,9 @@ PaddedButton::PaddedButton(views::ButtonListener* listener)
   : views::ImageButton(listener) {
   set_focusable(true);
   set_request_focus_on_press(false);
+  set_focus_border(views::FocusBorder::CreateSolidFocusBorder(
+      kFocusBorderColor,
+      gfx::Insets(1, 2, 2, 2)));
 }
 
 PaddedButton::~PaddedButton() {
@@ -71,13 +74,6 @@ void PaddedButton::OnPaint(gfx::Canvas* canvas) {
 void PaddedButton::OnFocus() {
   views::ImageButton::OnFocus();
   ScrollRectToVisible(GetLocalBounds());
-}
-
-void PaddedButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus()) {
-    canvas->DrawRect(gfx::Rect(2, 1, width() - 4, height() - 3),
-                     message_center::kFocusBorderColor);
-  }
 }
 
 gfx::Point PaddedButton::ComputePaddedImagePaintPosition(

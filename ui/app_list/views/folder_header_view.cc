@@ -36,6 +36,10 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
  public:
   FolderNameView() {
     set_border(views::Border::CreateEmptyBorder(1, 1, 1, 1));
+    const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
+    set_focus_border(views::FocusBorder::CreateSolidFocusBorder(
+          kFocusBorderColor,
+          gfx::Insets(0, 0, 1, 1)));
   }
 
   virtual ~FolderNameView() {
@@ -44,15 +48,6 @@ class FolderHeaderView::FolderNameView : public views::Textfield {
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE {
     return gfx::Size(kFolderNameWidth, kFolderNameHeight);
-  }
-
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE {
-    const SkColor kFocusBorderColor = SkColorSetRGB(64, 128, 250);
-    if (HasFocus()) {
-      gfx::Rect rect = GetLocalBounds();
-      rect.Inset(0, 0, 1, 1);
-      canvas->DrawRect(rect, kFocusBorderColor);
-    }
   }
 
  private:

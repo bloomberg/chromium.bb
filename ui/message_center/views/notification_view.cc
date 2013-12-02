@@ -322,7 +322,6 @@ class NotificationButton : public views::CustomButton {
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual int GetHeightForWidth(int width) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
-  virtual void OnPaintFocusBorder(gfx::Canvas* canvas) OVERRIDE;
 
   // Overridden from views::CustomButton:
   virtual void StateChanged() OVERRIDE;
@@ -344,6 +343,9 @@ NotificationButton::NotificationButton(views::ButtonListener* listener)
                            message_center::kButtonHorizontalPadding,
                            kButtonVecticalPadding,
                            message_center::kButtonIconToTitlePadding));
+  set_focus_border(views::FocusBorder::CreateSolidFocusBorder(
+      message_center::kFocusBorderColor,
+      gfx::Insets(1, 2, 2, 2)));
 }
 
 NotificationButton::~NotificationButton() {
@@ -395,13 +397,6 @@ int NotificationButton::GetHeightForWidth(int width) {
 void NotificationButton::OnFocus() {
   views::CustomButton::OnFocus();
   ScrollRectToVisible(GetLocalBounds());
-}
-
-void NotificationButton::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus()) {
-    canvas->DrawRect(gfx::Rect(2, 1, width() - 4, height() - 3),
-                     message_center::kFocusBorderColor);
-  }
 }
 
 void NotificationButton::StateChanged() {

@@ -171,6 +171,10 @@ MessageView::MessageView(const string16& display_source)
   close->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
   close_button_.reset(close);
+
+  set_focus_border(views::FocusBorder::CreateSolidFocusBorder(
+      kFocusBorderColor,
+      gfx::Insets(0, 1, 3, 2)));
 }
 
 MessageView::~MessageView() {
@@ -257,13 +261,6 @@ void MessageView::OnGestureEvent(ui::GestureEvent* event) {
   if (scroller_)
     scroller_->OnGestureEvent(event);
   event->SetHandled();
-}
-
-void MessageView::OnPaintFocusBorder(gfx::Canvas* canvas) {
-  if (HasFocus()) {
-    canvas->DrawRect(gfx::Rect(1, 0, width() - 2, height() - 2),
-                     message_center::kFocusBorderColor);
-  }
 }
 
 void MessageView::ButtonPressed(views::Button* sender,

@@ -21,7 +21,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
 #include "ui/message_center/message_center_style.h"
-#include "ui/message_center/views/message_center_focus_border.h"
 #include "ui/message_center/views/message_center_view.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -124,6 +123,11 @@ const int kComputedTitleTopMargin =
 const int kComputedTitleElementSpacing =
     settings::kDescriptionToSwitcherSpace - kButtonPainterInsets - 1;
 
+// A function to create a focus border.
+views::FocusBorder* CreateFocusBorder() {
+  return views::FocusBorder::CreateSolidFocusBorder(kFocusBorderColor,
+                                                    gfx::Insets(1, 2, 3, 2));
+}
 
 // EntryView ------------------------------------------------------------------
 
@@ -147,7 +151,7 @@ class EntryView : public views::View {
 };
 
 EntryView::EntryView(views::View* contents) {
-  set_focus_border(new MessageCenterFocusBorder());
+  set_focus_border(CreateFocusBorder());
   AddChildView(contents);
 }
 
@@ -290,7 +294,7 @@ NotifierSettingsView::NotifierButton::NotifierButton(
   if (ShouldHaveLearnMoreButton()) {
     // Create a more-info button that will be right-aligned.
     learn_more_ = new views::ImageButton(this);
-    learn_more_->set_focus_border(new MessageCenterFocusBorder());
+    learn_more_->set_focus_border(CreateFocusBorder());
     learn_more_->set_request_focus_on_press(false);
     learn_more_->set_focusable(true);
 

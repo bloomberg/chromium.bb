@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_FOCUS_BORDER_H_
 #define UI_VIEWS_FOCUS_BORDER_H_
 
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/insets.h"
 #include "ui/views/views_export.h"
 #include "base/basictypes.h"
 
@@ -33,6 +35,11 @@ class VIEWS_EXPORT FocusBorder {
   static FocusBorder* CreateDashedFocusBorder();
   static FocusBorder* CreateDashedFocusBorder(
       int left, int top, int right, int bottom);
+
+  // Creates a focus border with a given |inset| and |focus_color| which is one
+  // pixel thick.
+  static FocusBorder* CreateSolidFocusBorder(
+      SkColor focus_color, const gfx::Insets& insets);
 
   // Renders the focus border for the specified view.
   virtual void Paint(const View& view, gfx::Canvas* canvas) const = 0;

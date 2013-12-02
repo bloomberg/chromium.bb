@@ -78,8 +78,6 @@
         'views/message_center_bubble.h',
         'views/message_center_button_bar.cc',
         'views/message_center_button_bar.h',
-        'views/message_center_focus_border.h',
-        'views/message_center_focus_border.cc',
         'views/message_center_view.cc',
         'views/message_center_view.h',
         'views/message_popup_collection.cc',

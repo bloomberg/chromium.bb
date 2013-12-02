@@ -409,6 +409,10 @@ class GFX_EXPORT Canvas {
   // Draws a dotted gray rectangle used for focus purposes.
   void DrawFocusRect(const Rect& rect);
 
+  // Draws a |rect| in the specified region with the specified |color| with a
+  // with of one logical pixel which might be more device pixels.
+  void DrawSolidFocusRect(const Rect& rect, SkColor color);
+
   // Tiles the image in the specified region.
   // Parameters are specified relative to current canvas scale not in pixels.
   // Thus, |x| is 2 pixels if canvas scale = 2 & |x| = 1.
