@@ -185,6 +185,7 @@ class UserGesturesNativeHandler : public ObjectBackedNativeHandler {
   void IsProcessingUserGesture(
       const v8::FunctionCallbackInfo<v8::Value>& args) {
     args.GetReturnValue().Set(v8::Boolean::New(
+        args.GetIsolate(),
         blink::WebUserGestureIndicator::isProcessingUserGesture()));
   }
 
@@ -226,16 +227,16 @@ class V8ContextNativeHandler : public ObjectBackedNativeHandler {
  private:
   void GetAvailability(const v8::FunctionCallbackInfo<v8::Value>& args) {
     CHECK_EQ(args.Length(), 1);
+    v8::Isolate* isolate = args.GetIsolate();
     std::string api_name = *v8::String::AsciiValue(args[0]->ToString());
     Feature::Availability availability = context_->GetAvailability(api_name);
 
     v8::Handle<v8::Object> ret = v8::Object::New();
-    ret->Set(v8::String::NewFromUtf8(args.GetIsolate(), "is_available"),
-             v8::Boolean::New(availability.is_available()));
-    ret->Set(v8::String::NewFromUtf8(args.GetIsolate(), "message"),
-             v8::String::NewFromUtf8(args.GetIsolate(),
-                                     availability.message().c_str()));
-    ret->Set(v8::String::NewFromUtf8(args.GetIsolate(), "result"),
+    ret->Set(v8::String::NewFromUtf8(isolate, "is_available"),
+             v8::Boolean::New(isolate, availability.is_available()));
+    ret->Set(v8::String::NewFromUtf8(isolate, "message"),
+             v8::String::NewFromUtf8(isolate, availability.message().c_str()));
+    ret->Set(v8::String::NewFromUtf8(isolate, "result"),
              v8::Integer::New(availability.result()));
     args.GetReturnValue().Set(ret);
   }
@@ -401,7 +402,7 @@ class ProcessInfoNativeHandler : public ChromeV8Extension {
     CHECK(args.Length() == 1 && args[0]->IsString());
     bool has_switch = CommandLine::ForCurrentProcess()->HasSwitch(
         *v8::String::AsciiValue(args[0]));
-    args.GetReturnValue().Set(v8::Boolean::New(has_switch));
+    args.GetReturnValue().Set(v8::Boolean::New(args.GetIsolate(), has_switch));
   }
 
   std::string extension_id_;

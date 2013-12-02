@@ -70,7 +70,7 @@ void LoggingNativeHandler::ParseArgs(
   }
 
   v8::Handle<v8::StackTrace> stack_trace =
-      v8::StackTrace::CurrentStackTrace(10);
+      v8::StackTrace::CurrentStackTrace(args.GetIsolate(), 10);
   if (stack_trace.IsEmpty() || stack_trace->GetFrameCount() <= 0) {
     *error_message += "\n    <no stack trace>";
   } else {
@@ -96,4 +96,3 @@ std::string LoggingNativeHandler::ToStringOrDefault(
 }
 
 }  // namespace extensions
-
