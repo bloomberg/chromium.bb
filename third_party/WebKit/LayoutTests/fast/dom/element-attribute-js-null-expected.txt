@@ -112,9 +112,10 @@ TEST SUCCEEDED: The value was the empty string. [tested HTMLHeadElement.profile]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLHeadingElement.align]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLHRElement.align]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLHRElement.size]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLHRElement.width]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLHRElement.align]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLHRElement.color]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLHRElement.size]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLHRElement.width]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLHtmlElement.version]
 
