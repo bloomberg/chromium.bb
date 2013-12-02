@@ -3719,6 +3719,8 @@ usage(int error_code)
 		"  --single-buffer\tUse single-buffered Dispmanx elements.\n"
 		"  --transform=TR\tThe output transformation, TR is one of:\n"
 		"\tnormal 90 180 270 flipped flipped-90 flipped-180 flipped-270\n"
+		"  --opaque-regions\tEnable support for opaque regions, can be "
+		"very slow without support in the GPU firmware.\n"
 		"\n");
 #endif
 

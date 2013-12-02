@@ -79,12 +79,16 @@
 /* If we had a fully featured vc_dispmanx_resource_write_data()... */
 /*#define HAVE_RESOURCE_WRITE_DATA_RECT 1*/
 
+/* If we had a vc_dispmanx_element_set_opaque_rect()... */
+/*#define HAVE_ELEMENT_SET_OPAQUE_RECT 1*/
+
 struct rpi_resource {
 	DISPMANX_RESOURCE_HANDLE_T handle;
 	int width;
 	int height; /* height of the image (valid pixel data) */
 	int stride; /* bytes */
 	int buffer_height; /* height of the buffer */
+	int enable_opaque_regions;
 	VC_IMAGE_TYPE_T ifmt;
 };
 
@@ -108,6 +112,7 @@ struct rpir_surface {
 	int visible_views;
 	int need_swap;
 	int single_buffer;
+	int enable_opaque_regions;
 
 	struct rpi_resource resources[2];
 	struct rpi_resource *front;
@@ -160,6 +165,7 @@ struct rpi_renderer {
 	struct weston_renderer base;
 
 	int single_buffer;
+	int enable_opaque_regions;
 
 #ifdef ENABLE_EGL
 	EGLDisplay egl_display;
@@ -306,9 +312,47 @@ shm_buffer_get_vc_format(struct wl_shm_buffer *buffer)
 	}
 }
 
+#ifndef HAVE_ELEMENT_SET_OPAQUE_RECT
+static uint32_t *
+apply_opaque_region(struct wl_shm_buffer *buffer,
+		    pixman_region32_t *opaque_region)
+{
+	uint32_t *src, *dst;
+	int width;
+	int height;
+	int stride;
+	int x, y;
+
+	width = wl_shm_buffer_get_width(buffer);
+	height = wl_shm_buffer_get_height(buffer);
+	stride = wl_shm_buffer_get_stride(buffer);
+	src = wl_shm_buffer_get_data(buffer);
+
+	dst = malloc(height * stride);
+	if (dst == NULL) {
+		weston_log("rpi-renderer error: out of memory\n");
+		return NULL;
+	}
+
+	for (y = 0; y < height; y++) {
+		for (x = 0; x < width; x++) {
+			int i = y * stride / 4 + x;
+			pixman_box32_t box;
+			if (pixman_region32_contains_point (opaque_region, x, y, &box)) {
+				dst[i] = src[i] | 0xff000000;
+			} else {
+				dst[i] = src[i];
+			}
+		}
+	}
+
+	return dst;
+}
+#endif
+
 static int
 rpi_resource_update(struct rpi_resource *resource, struct weston_buffer *buffer,
-		    pixman_region32_t *region)
+		    pixman_region32_t *region, pixman_region32_t *opaque_region)
 {
 	pixman_region32_t write_region;
 	pixman_box32_t *r;
@@ -331,6 +375,17 @@ rpi_resource_update(struct rpi_resource *resource, struct weston_buffer *buffer,
 	height = wl_shm_buffer_get_height(buffer->shm_buffer);
 	stride = wl_shm_buffer_get_stride(buffer->shm_buffer);
 	pixels = wl_shm_buffer_get_data(buffer->shm_buffer);
+
+#ifndef HAVE_ELEMENT_SET_OPAQUE_RECT
+	if (pixman_region32_not_empty(opaque_region) &&
+	    wl_shm_buffer_get_format(buffer->shm_buffer) == WL_SHM_FORMAT_ARGB8888 &&
+	    resource->enable_opaque_regions) {
+		pixels = apply_opaque_region(buffer->shm_buffer, opaque_region);
+
+		if (!pixels)
+			return -1;
+	}
+#endif
 
 	ret = rpi_resource_realloc(resource, ifmt & ~PREMULT_ALPHA_FLAG,
 				   width, height, stride, height);
@@ -381,6 +436,13 @@ rpi_resource_update(struct rpi_resource *resource, struct weston_buffer *buffer,
 	wl_shm_buffer_end_access(buffer->shm_buffer);
 
 	pixman_region32_fini(&write_region);
+
+#ifndef HAVE_ELEMENT_SET_OPAQUE_RECT
+	if (pixman_region32_not_empty(opaque_region) &&
+	    wl_shm_buffer_get_format(buffer->shm_buffer) == WL_SHM_FORMAT_ARGB8888 &&
+	    resource->enable_opaque_regions)
+		free(pixels);
+#endif
 
 	return ret ? -1 : 0;
 }
@@ -435,6 +497,7 @@ rpir_surface_create(struct rpi_renderer *renderer)
 	wl_list_init(&surface->views);
 	surface->visible_views = 0;
 	surface->single_buffer = renderer->single_buffer;
+	surface->enable_opaque_regions = renderer->enable_opaque_regions;
 	rpi_resource_init(&surface->resources[0]);
 	rpi_resource_init(&surface->resources[1]);
 	surface->front = &surface->resources[0];
@@ -442,6 +505,10 @@ rpir_surface_create(struct rpi_renderer *renderer)
 		surface->back = &surface->resources[0];
 	else
 		surface->back = &surface->resources[1];
+
+	surface->front->enable_opaque_regions = renderer->enable_opaque_regions;
+	surface->back->enable_opaque_regions = renderer->enable_opaque_regions;
+
 	surface->buffer_type = BUFFER_TYPE_NULL;
 
 	pixman_region32_init(&surface->prev_damage);
@@ -487,11 +554,13 @@ rpir_surface_damage(struct rpir_surface *surface, struct weston_buffer *buffer,
 	/* XXX: todo: if no surface->handle, update front buffer directly
 	 * to avoid creating a new back buffer */
 	if (surface->single_buffer) {
-		ret = rpi_resource_update(surface->front, buffer, damage);
+		ret = rpi_resource_update(surface->front, buffer, damage,
+					  &surface->surface->opaque);
 	} else {
 		pixman_region32_init(&upload);
 		pixman_region32_union(&upload, &surface->prev_damage, damage);
-		ret = rpi_resource_update(surface->back, buffer, &upload);
+		ret = rpi_resource_update(surface->back, buffer, &upload,
+					  &surface->surface->opaque);
 		pixman_region32_fini(&upload);
 	}
 
@@ -849,7 +918,6 @@ vc_image2dispmanx_transform(VC_IMAGE_TRANSFORM_T t)
 	}
 }
 
-
 static DISPMANX_RESOURCE_HANDLE_T
 rpir_surface_get_resource(struct rpir_surface *surface)
 {
@@ -864,6 +932,37 @@ rpir_surface_get_resource(struct rpir_surface *surface)
 		return DISPMANX_NO_HANDLE;
 	}
 }
+
+#ifdef HAVE_ELEMENT_SET_OPAQUE_RECT
+static int
+rpir_surface_set_opaque_rect(struct rpir_surface *surface,
+			     DISPMANX_UPDATE_HANDLE_T update)
+{
+	int ret;
+
+	if (pixman_region32_not_empty(&surface->surface->opaque) &&
+	    surface->opaque_regions) {
+		pixman_box32_t *box;
+		VC_RECT_T opaque_rect;
+
+		box = pixman_region32_extents(&surface->surface->opaque);
+		opaque_rect.x = box->x1;
+		opaque_rect.y = box->y1;
+		opaque_rect.width = box->x2 - box->x1;
+		opaque_rect.height = box->y2 - box->y1;
+
+		ret = vc_dispmanx_element_set_opaque_rect(update,
+							  surface->handle,
+							  &opaque_rect);
+		if (ret) {
+			weston_log("vc_dispmanx_element_set_opaque_rect failed\n");
+			return -1;
+		}
+	}
+
+	return 0;
+}
+#endif
 
 static int
 rpir_view_dmx_add(struct rpir_view *view, struct rpir_output *output,
@@ -912,6 +1011,12 @@ rpir_view_dmx_add(struct rpir_view *view, struct rpir_output *output,
 
 	if (view->handle == DISPMANX_NO_HANDLE)
 		return -1;
+
+#ifdef HAVE_ELEMENT_SET_OPAQUE_RECT
+	ret = rpir_surface_set_opaque_rect(surface, update);
+	if (ret < 0)
+		return -1;
+#endif
 
 	view->surface->visible_views++;
 
@@ -988,6 +1093,12 @@ rpir_view_dmx_move(struct rpir_view *view,
 
 	if (ret)
 		return -1;
+
+#ifdef HAVE_ELEMENT_SET_OPAQUE_RECT
+	ret = rpir_surface_set_opaque_rect(surface, update);
+	if (ret < 0)
+		return -1;
+#endif
 
 	return 1;
 }
@@ -1618,6 +1729,7 @@ rpi_renderer_create(struct weston_compositor *compositor,
 		return -1;
 
 	renderer->single_buffer = params->single_buffer;
+	renderer->enable_opaque_regions = params->opaque_regions;
 
 	renderer->base.read_pixels = rpi_renderer_read_pixels;
 	renderer->base.repaint_output = rpi_renderer_repaint_output;

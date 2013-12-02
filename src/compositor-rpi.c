@@ -821,6 +821,7 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 		.tty = 0, /* default to current tty */
 		.renderer.single_buffer = 0,
 		.output_transform = WL_OUTPUT_TRANSFORM_NORMAL,
+		.renderer.opaque_regions = 0,
 	};
 
 	const struct weston_option rpi_options[] = {
@@ -828,6 +829,8 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 		{ WESTON_OPTION_BOOLEAN, "single-buffer", 0,
 		  &param.renderer.single_buffer },
 		{ WESTON_OPTION_STRING, "transform", 0, &transform },
+		{ WESTON_OPTION_BOOLEAN, "opaque-regions", 0,
+		  &param.renderer.opaque_regions },
 	};
 
 	parse_options(rpi_options, ARRAY_LENGTH(rpi_options), argc, argv);

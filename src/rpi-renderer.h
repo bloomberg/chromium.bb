@@ -25,6 +25,7 @@
 
 struct rpi_renderer_parameters {
 	int single_buffer;
+	int opaque_regions;
 };
 
 int
