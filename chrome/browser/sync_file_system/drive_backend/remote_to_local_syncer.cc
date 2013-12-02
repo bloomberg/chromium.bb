@@ -76,6 +76,7 @@ scoped_ptr<FileMetadata> GetFileMetadata(MetadataDatabase* database,
 RemoteToLocalSyncer::RemoteToLocalSyncer(SyncEngineContext* sync_context)
     : sync_context_(sync_context),
       sync_action_(SYNC_ACTION_NONE),
+      prepared_(false),
       weak_ptr_factory_(this) {
 }
 
@@ -91,7 +92,9 @@ void RemoteToLocalSyncer::Run(const SyncStatusCallback& callback) {
 
   SyncStatusCallback wrapped_callback = base::Bind(
       &RemoteToLocalSyncer::SyncCompleted, weak_ptr_factory_.GetWeakPtr(),
-      callback);
+      base::Bind(&RemoteToLocalSyncer::FinalizeSync,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
 
   dirty_tracker_ = make_scoped_ptr(new FileTracker);
   if (metadata_database()->GetNormalPriorityDirtyTracker(
@@ -530,6 +533,17 @@ void RemoteToLocalSyncer::SyncCompleted(const SyncStatusCallback& callback,
                                      callback);
 }
 
+void RemoteToLocalSyncer::FinalizeSync(const SyncStatusCallback& callback,
+                                       SyncStatusCode status) {
+  if (prepared_) {
+    remote_change_processor()->FinalizeRemoteSync(
+        url_, false /* clear_local_change */, base::Bind(callback, status));
+    return;
+  }
+
+  callback.Run(status);
+}
+
 void RemoteToLocalSyncer::Prepare(const SyncStatusCallback& callback) {
   bool should_success = BuildFileSystemURL(
       metadata_database(), *dirty_tracker_, &url_);
@@ -550,6 +564,7 @@ void RemoteToLocalSyncer::DidPrepare(const SyncStatusCallback& callback,
     callback.Run(status);
     return;
   }
+  prepared_ = true;
 
   local_metadata_.reset(new SyncFileMetadata(local_metadata));
   local_changes_.reset(new FileChangeList(local_changes));

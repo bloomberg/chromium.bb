@@ -159,6 +159,8 @@ class RemoteToLocalSyncer : public SyncTask {
       scoped_ptr<google_apis::ResourceList> resource_list);
 
   void SyncCompleted(const SyncStatusCallback& callback, SyncStatusCode status);
+  void FinalizeSync(const SyncStatusCallback& callback, SyncStatusCode status);
+
 
   void Prepare(const SyncStatusCallback& callback);
   void DidPrepare(const SyncStatusCallback& callback,
@@ -194,6 +196,8 @@ class RemoteToLocalSyncer : public SyncTask {
 
   fileapi::FileSystemURL url_;
   SyncAction sync_action_;
+
+  bool prepared_;
 
   scoped_ptr<SyncFileMetadata> local_metadata_;
   scoped_ptr<FileChangeList> local_changes_;
