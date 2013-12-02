@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/logging_win.h"
 #include "base/path_service.h"
@@ -107,7 +108,9 @@ class ChromeTabModule : public CAtlDllModuleT<ChromeTabModule> {
  public:
   typedef CAtlDllModuleT<ChromeTabModule> ParentClass;
 
-  ChromeTabModule() : do_system_registration_(true), crash_reporting_(NULL) {}
+  ChromeTabModule() : do_system_registration_(true),
+                      crash_reporting_(NULL),
+                      icu_initialized_(false) {}
 
   DECLARE_LIBID(LIBID_ChromeTabLib)
   DECLARE_REGISTRY_APPID_RESOURCEID(IDR_CHROMETAB,
@@ -199,13 +202,20 @@ class ChromeTabModule : public CAtlDllModuleT<ChromeTabModule> {
 
   // The module is "locked" when an object takes a reference on it. The first
   // time it is locked, take a reference on crash reporting to bind its lifetime
-  // to the module.
+  // to the module and initialize ICU.
   virtual LONG Lock() throw() {
     LONG result = ParentClass::Lock();
     if (result == 1) {
       DCHECK_EQ(crash_reporting_,
                 static_cast<chrome_frame::ScopedCrashReporting*>(NULL));
       crash_reporting_ = new chrome_frame::ScopedCrashReporting();
+
+      // Initialize ICU if this is the first time the module has been locked.
+      if (!icu_initialized_) {
+        icu_initialized_ = true;
+        // Best-effort since something is better than nothing here.
+        ignore_result(base::i18n::InitializeICU());
+      }
     }
     return result;
   }
@@ -233,6 +243,10 @@ class ChromeTabModule : public CAtlDllModuleT<ChromeTabModule> {
   // reporting to shut down at exit, which would lead to problems with the
   // loader lock.
   chrome_frame::ScopedCrashReporting* crash_reporting_;
+
+  // Initially false, this is flipped to true to indicate that ICU has been
+  // initialized for the module.
+  bool icu_initialized_;
 };
 
 ChromeTabModule _AtlModule;
