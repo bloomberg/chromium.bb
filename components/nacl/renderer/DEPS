@@ -1,0 +1,14 @@
+include_rules = [
+  "+content/public/renderer",
+  "+ppapi/c",
+  "+ppapi/native_client/src/trusted/plugin/nacl_entry_points.h",  # For NaCl registration.
+  "+ppapi/proxy",
+  "+ppapi/shared_impl",
+
+  # TODO(raymes): Once all of the resources are refactored to the new pepper
+  # resource model, these includes shouldn't be needed.
+  "+ppapi/thunk",
+
+  "+v8/include",
+  "+third_party/WebKit/public/web",
+]

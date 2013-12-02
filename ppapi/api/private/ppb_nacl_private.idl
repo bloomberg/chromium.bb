@@ -146,10 +146,6 @@ interface PPB_NaCl_Private {
   void ReportTranslationFinished([in] PP_Instance instance,
                                  [in] PP_Bool success);
 
-  /* Return true if we are off the record.
-   */
-  PP_Bool IsOffTheRecord();
-
   /* Display a UI message to the user. */
   PP_ExternalPluginResult ReportNaClError([in] PP_Instance instance,
                                           [in] PP_NaClError message_id);

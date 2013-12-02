@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/pepper/ppb_nacl_private_impl.h"
+#include "components/nacl/renderer/ppb_nacl_private_impl.h"
 
 #ifndef DISABLE_NACL
 
@@ -10,18 +10,16 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/renderer/chrome_render_process_observer.h"
-#include "chrome/renderer/pepper/pnacl_translation_resource_host.h"
 #include "components/nacl/common/nacl_host_messages.h"
 #include "components/nacl/common/nacl_types.h"
+#include "components/nacl/renderer/pnacl_translation_resource_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
-#include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
@@ -291,10 +289,6 @@ void ReportTranslationFinished(PP_Instance instance, PP_Bool success) {
   g_pnacl_resource_host.Get()->ReportTranslationFinished(instance, success);
 }
 
-PP_Bool IsOffTheRecord() {
-  return PP_FromBool(ChromeRenderProcessObserver::is_incognito_process());
-}
-
 PP_ExternalPluginResult ReportNaClError(PP_Instance instance,
                               PP_NaClError error_id) {
   IPC::Sender* sender = content::RenderThread::Get();
@@ -415,7 +409,7 @@ void SetReadOnlyProperty(PP_Instance instance,
   plugin_instance->SetEmbedProperty(key, value);
 }
 
-const PPB_NaCl_Private nacl_interface = {
+PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
   &UrandomFD,
@@ -425,7 +419,6 @@ const PPB_NaCl_Private nacl_interface = {
   &CreateTemporaryFile,
   &GetNexeFd,
   &ReportTranslationFinished,
-  &IsOffTheRecord,
   &ReportNaClError,
   &OpenNaClExecutable,
   &DispatchEvent,
@@ -434,8 +427,12 @@ const PPB_NaCl_Private nacl_interface = {
 
 }  // namespace
 
-const PPB_NaCl_Private* PPB_NaCl_Private_Impl::GetInterface() {
+namespace nacl {
+
+PPB_NaCl_Private* GetNaClPrivateInterface() {
   return &nacl_interface;
 }
+
+}  // namespace nacl
 
 #endif  // DISABLE_NACL

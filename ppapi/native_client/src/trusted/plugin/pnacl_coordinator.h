@@ -219,9 +219,6 @@ class PnaclCoordinator: public CallbackSource<FileStreamData> {
   // was already run/consumed.
   bool error_already_reported_;
 
-  // True if compilation is off_the_record.
-  bool off_the_record_;
-
   // State for timing and size information for UMA stats.
   int64_t pnacl_init_time_;
   int64_t pexe_size_;  // Count as we stream -- will converge to pexe size.

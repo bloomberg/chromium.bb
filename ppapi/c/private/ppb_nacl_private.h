@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Nov 14 08:29:25 2013. */
+/* From private/ppb_nacl_private.idl modified Fri Nov 29 09:11:40 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -160,9 +160,6 @@ struct PPB_NaCl_Private_1_0 {
    * the plugin.)
    */
   void (*ReportTranslationFinished)(PP_Instance instance, PP_Bool success);
-  /* Return true if we are off the record.
-   */
-  PP_Bool (*IsOffTheRecord)(void);
   /* Display a UI message to the user. */
   PP_ExternalPluginResult (*ReportNaClError)(PP_Instance instance,
                                              PP_NaClError message_id);

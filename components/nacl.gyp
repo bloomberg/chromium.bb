@@ -137,6 +137,31 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [4267, ],
         },
+        {
+          'target_name': 'nacl_renderer',
+          'type': 'static_library',
+          'sources': [
+            'nacl/renderer/pnacl_translation_resource_host.cc',
+            'nacl/renderer/pnacl_translation_resource_host.h',
+            'nacl/renderer/ppb_nacl_private_impl.cc',
+            'nacl/renderer/ppb_nacl_private_impl.h',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'dependencies': [
+            '../content/content.gyp:content_renderer',
+            '../webkit/common/webkit_common.gyp:webkit_common',
+          ],
+          'defines': [
+            '<@(nacl_defines)',
+          ],
+          'direct_dependent_settings': {
+            'defines': [
+              '<@(nacl_defines)',
+            ],
+          },
+        }
       ],
       'conditions': [
         ['OS=="linux"', {

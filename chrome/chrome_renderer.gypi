@@ -43,14 +43,6 @@
         # Needed by chrome_content_renderer_client.cc.
         '<(SHARED_INTERMEDIATE_DIR)',
       ],
-      'defines': [
-        '<@(nacl_defines)',
-      ],
-      'direct_dependent_settings': {
-        'defines': [
-          '<@(nacl_defines)',
-        ],
-      },
       'sources': [
         'renderer/benchmarking_extension.cc',
         'renderer/benchmarking_extension.h',
@@ -270,10 +262,6 @@
         'renderer/pepper/pepper_pdf_host.h',
         'renderer/pepper/pepper_shared_memory_message_filter.cc',
         'renderer/pepper/pepper_shared_memory_message_filter.h',
-        'renderer/pepper/pnacl_translation_resource_host.cc',
-        'renderer/pepper/pnacl_translation_resource_host.h',
-        'renderer/pepper/ppb_nacl_private_impl.cc',
-        'renderer/pepper/ppb_nacl_private_impl.h',
         'renderer/pepper/ppb_pdf_impl.cc',
         'renderer/pepper/ppb_pdf_impl.h',
         'renderer/plugins/chrome_plugin_placeholder.cc',
@@ -358,6 +346,7 @@
         ['disable_nacl!=1', {
           'dependencies': [
             '../components/nacl.gyp:nacl',
+            '../components/nacl.gyp:nacl_renderer',
           ],
         }],
         ['enable_plugins==1', {
