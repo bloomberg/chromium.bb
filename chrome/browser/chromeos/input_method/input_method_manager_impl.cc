@@ -447,9 +447,6 @@ void InputMethodManagerImpl::AddInputMethodExtension(
     // Ensure that the input method daemon is running.
     MaybeInitializeCandidateWindowController();
   }
-
-  extra_input_method_instances_[id] =
-      static_cast<InputMethodEngineIBus*>(engine);
 }
 
 void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
@@ -465,16 +462,6 @@ void InputMethodManagerImpl::RemoveInputMethodExtension(const std::string& id) {
   // If |current_input_method| is no longer in |active_input_method_ids_|,
   // switch to the first one in |active_input_method_ids_|.
   ChangeInputMethod(current_input_method_.id());
-
-  std::map<std::string, InputMethodEngineIBus*>::iterator ite =
-      extra_input_method_instances_.find(id);
-  if (ite == extra_input_method_instances_.end()) {
-    DVLOG(1) << "The engine instance of " << id << " has already gone.";
-  } else {
-    // Do NOT release the actual instance here. This class does not take an
-    // onwership of engine instance.
-    extra_input_method_instances_.erase(ite);
-  }
 }
 
 void InputMethodManagerImpl::GetInputMethodExtensions(

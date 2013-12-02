@@ -190,7 +190,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   // Extra input methods that have been explicitly added to the menu, such as
   // those created by extension.
   std::map<std::string, InputMethodDescriptor> extra_input_methods_;
-  std::map<std::string, InputMethodEngineIBus*> extra_input_method_instances_;
 
   // Property list of the input method.  This is set by extension IMEs.
   InputMethodPropertyList property_list_;
