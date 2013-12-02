@@ -201,8 +201,9 @@ void CustomButton::OnGestureEvent(ui::GestureEvent* event) {
 
   if (event->type() == ui::ET_GESTURE_TAP && IsTriggerableEvent(*event)) {
     // Set the button state to hot and start the animation fully faded in. The
-    // TAP_UP event issued immediately after will set the state to STATE_NORMAL
-    // beginning the fade out animation. See http://crbug.com/131184.
+    // GESTURE_END event issued immediately after will set the state to
+    // STATE_NORMAL beginning the fade out animation. See
+    // http://crbug.com/131184.
     SetState(STATE_HOVERED);
     hover_animation_->Reset(1.0);
     NotifyClick(*event);
@@ -213,7 +214,8 @@ void CustomButton::OnGestureEvent(ui::GestureEvent* event) {
     if (request_focus_on_press_)
       RequestFocus();
     event->StopPropagation();
-  } else {
+  } else if (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
+             event->type() == ui::ET_GESTURE_END) {
     SetState(STATE_NORMAL);
   }
   if (!event->handled())

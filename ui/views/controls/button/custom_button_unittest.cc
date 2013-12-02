@@ -31,6 +31,16 @@ class TestCustomButton : public CustomButton {
   DISALLOW_COPY_AND_ASSIGN(TestCustomButton);
 };
 
+#if defined(USE_AURA)
+void PerformGesture(CustomButton* button, ui::EventType event_type) {
+  ui::GestureEventDetails gesture_details(event_type, 0, 0);
+  base::TimeDelta time_stamp = base::TimeDelta::FromMicroseconds(0);
+  ui::GestureEvent gesture_event(gesture_details.type(), 0, 0, 0, time_stamp,
+                                 gesture_details, 1);
+  button->OnGestureEvent(&gesture_event);
+}
+#endif  // USE_AURA
+
 }  // namespace
 
 typedef ViewsTestBase CustomButtonTest;
@@ -100,5 +110,37 @@ TEST_F(CustomButtonTest, HoverStateOnVisibilityChange) {
   EXPECT_EQ(CustomButton::STATE_NORMAL, button->state());
 #endif
 }
+
+#if defined(USE_AURA)
+// Tests that gesture events correctly change the button state.
+TEST_F(CustomButtonTest, GestureEventsSetState) {
+  // Create a widget so that the CustomButton can query the hover state
+  // correctly.
+  scoped_ptr<Widget> widget(new Widget);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(0, 0, 650, 650);
+  widget->Init(params);
+  widget->Show();
+
+  aura::test::TestCursorClient cursor_client(
+      widget->GetNativeView()->GetRootWindow());
+
+  TestCustomButton* button = new TestCustomButton(NULL);
+  widget->SetContentsView(button);
+
+  EXPECT_EQ(CustomButton::STATE_NORMAL, button->state());
+
+  PerformGesture(button, ui::ET_GESTURE_TAP_DOWN);
+  EXPECT_EQ(CustomButton::STATE_PRESSED, button->state());
+
+  PerformGesture(button, ui::ET_GESTURE_SHOW_PRESS);
+  EXPECT_EQ(CustomButton::STATE_PRESSED, button->state());
+
+  PerformGesture(button, ui::ET_GESTURE_TAP_CANCEL);
+  EXPECT_EQ(CustomButton::STATE_NORMAL, button->state());
+}
+
+#endif  // USE_AURA
 
 }  // namespace views
