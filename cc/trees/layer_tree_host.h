@@ -279,7 +279,7 @@ class CC_EXPORT LayerTreeHost {
   virtual gfx::Size GetUIResourceSize(UIResourceId id) const;
 
   bool UsingSharedMemoryResources();
-  int id() const { return tree_id_; }
+  int id() const { return id_; }
 
   bool ScheduleMicroBenchmark(const std::string& benchmark_name,
                               scoped_ptr<base::Value> value,
@@ -427,7 +427,7 @@ class CC_EXPORT LayerTreeHost {
     int64 total_num_cc_layers_will_use_lcd_text;
   };
   LCDTextMetrics lcd_text_metrics_;
-  int tree_id_;
+  int id_;
   bool next_commit_forces_redraw_;
 
   scoped_refptr<Layer> page_scale_layer_;

@@ -8,15 +8,18 @@
 #include "base/auto_reset.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
+#include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "ui/gfx/frame_time.h"
 
 namespace cc {
 
 Scheduler::Scheduler(SchedulerClient* client,
-                     const SchedulerSettings& scheduler_settings)
+                     const SchedulerSettings& scheduler_settings,
+                     int layer_tree_host_id)
     : settings_(scheduler_settings),
       client_(client),
+      layer_tree_host_id_(layer_tree_host_id),
       last_set_needs_begin_impl_frame_(false),
       state_machine_(scheduler_settings),
       inside_process_scheduled_actions_(false),
@@ -216,7 +219,7 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
     return;
 
   state_machine_.OnBeginImplFrameDeadlinePending();
-
+  devtools_instrumentation::didBeginFrame(layer_tree_host_id_);
   if (settings_.using_synchronous_renderer_compositor) {
     // The synchronous renderer compositor has to make its GL calls
     // within this call to BeginImplFrame.

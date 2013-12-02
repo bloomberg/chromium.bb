@@ -60,8 +60,10 @@ class CC_EXPORT Scheduler {
  public:
   static scoped_ptr<Scheduler> Create(
       SchedulerClient* client,
-      const SchedulerSettings& scheduler_settings) {
-    return make_scoped_ptr(new Scheduler(client,  scheduler_settings));
+      const SchedulerSettings& scheduler_settings,
+      int layer_tree_host_id) {
+    return make_scoped_ptr(
+        new Scheduler(client, scheduler_settings, layer_tree_host_id));
   }
 
   virtual ~Scheduler();
@@ -127,7 +129,8 @@ class CC_EXPORT Scheduler {
 
  private:
   Scheduler(SchedulerClient* client,
-            const SchedulerSettings& scheduler_settings);
+            const SchedulerSettings& scheduler_settings,
+            int layer_tree_host_id);
 
   void PostBeginImplFrameDeadline(base::TimeTicks deadline);
   void SetupNextBeginImplFrameIfNeeded();
@@ -142,6 +145,7 @@ class CC_EXPORT Scheduler {
 
   const SchedulerSettings settings_;
   SchedulerClient* client_;
+  int layer_tree_host_id_;
 
   bool last_set_needs_begin_impl_frame_;
   BeginFrameArgs last_begin_impl_frame_args_;

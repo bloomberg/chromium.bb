@@ -12,12 +12,15 @@ namespace devtools_instrumentation {
 
 namespace internal {
 const char kCategory[] = "cc,devtools";
+const char kFrameId[] = "frameId";
 const char kLayerId[] = "layerId";
 const char kLayerTreeId[] = "layerTreeId";
 const char kPixelRefId[] = "pixelRefId";
 
 const char kImageDecodeTask[] = "ImageDecodeTask";
-}
+const char kBeginFrame[] = "BeginFrame";
+const char kActivateLayerTree[] = "ActivateLayerTree";
+}  // namespace internal
 
 const char kPaintLayer[] = "PaintLayer";
 const char kRasterTask[] = "RasterTask";
@@ -57,10 +60,11 @@ class ScopedLayerTreeTask {
  public:
   ScopedLayerTreeTask(const char* event_name,
                       int layer_id,
-                      uint64 tree_id)
+                      int layer_tree_host_id)
     : event_name_(event_name) {
     TRACE_EVENT_BEGIN2(internal::kCategory, event_name_,
-        internal::kLayerId, layer_id, internal::kLayerTreeId, tree_id);
+        internal::kLayerId, layer_id,
+        internal::kLayerTreeId, layer_tree_host_id);
   }
   ~ScopedLayerTreeTask() {
     TRACE_EVENT_END0(internal::kCategory, event_name_);
@@ -83,6 +87,21 @@ struct ScopedLayerObjectTracker
  private:
   DISALLOW_COPY_AND_ASSIGN(ScopedLayerObjectTracker);
 };
+
+inline void didActivateLayerTree(int layer_tree_host_id, int frame_id) {
+  TRACE_EVENT_INSTANT2(internal::kCategory,
+                       internal::kActivateLayerTree,
+                       TRACE_EVENT_SCOPE_THREAD,
+                       internal::kLayerTreeId, layer_tree_host_id,
+                       internal::kFrameId, frame_id);
+}
+
+inline void didBeginFrame(int layer_tree_host_id) {
+  TRACE_EVENT_INSTANT1(internal::kCategory,
+                       internal::kBeginFrame,
+                       TRACE_EVENT_SCOPE_THREAD,
+                       internal::kLayerTreeId, layer_tree_host_id);
+}
 
 }  // namespace devtools_instrumentation
 }  // namespace cc

@@ -61,7 +61,7 @@ class FakeSchedulerClient : public SchedulerClient {
   }
 
   Scheduler* CreateScheduler(const SchedulerSettings& settings) {
-    scheduler_ = Scheduler::Create(this, settings);
+    scheduler_ = Scheduler::Create(this, settings, 0);
     return scheduler_.get();
   }
 

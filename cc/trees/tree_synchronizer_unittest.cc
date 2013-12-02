@@ -553,7 +553,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeAnimations) {
   DebugScopedSetImplThread impl(&proxy);
   FakeRenderingStatsInstrumentation stats_instrumentation;
   scoped_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
-      settings, NULL, &proxy, &stats_instrumentation, NULL);
+      settings, NULL, &proxy, &stats_instrumentation, NULL, 0);
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   host_->SetRootLayer(layer_tree_root);
@@ -585,7 +585,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeScrollParent) {
   DebugScopedSetImplThread impl(&proxy);
   FakeRenderingStatsInstrumentation stats_instrumentation;
   scoped_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
-      settings, NULL, &proxy, &stats_instrumentation, NULL);
+      settings, NULL, &proxy, &stats_instrumentation, NULL, 0);
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   scoped_refptr<Layer> scroll_parent = Layer::Create();
@@ -660,7 +660,7 @@ TEST_F(TreeSynchronizerTest, SynchronizeClipParent) {
   DebugScopedSetImplThread impl(&proxy);
   FakeRenderingStatsInstrumentation stats_instrumentation;
   scoped_ptr<LayerTreeHostImpl> host_impl = LayerTreeHostImpl::Create(
-      settings, NULL, &proxy, &stats_instrumentation, NULL);
+      settings, NULL, &proxy, &stats_instrumentation, NULL, 0);
 
   scoped_refptr<Layer> layer_tree_root = Layer::Create();
   scoped_refptr<Layer> clip_parent = Layer::Create();

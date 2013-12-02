@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "cc/base/swap_promise.h"
 #include "cc/debug/benchmark_instrumentation.h"
+#include "cc/debug/devtools_instrumentation.h"
 #include "cc/input/input_handler.h"
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
@@ -113,7 +114,8 @@ ThreadProxy::ThreadProxy(
       begin_main_frame_to_commit_duration_history_(kDurationHistorySize),
       commit_to_activate_duration_history_(kDurationHistorySize),
       weak_factory_on_impl_thread_(this),
-      weak_factory_(this) {
+      weak_factory_(this),
+      layer_tree_host_id_(layer_tree_host->id()) {
   TRACE_EVENT0("cc", "ThreadProxy::ThreadProxy");
   DCHECK(IsMainThread());
   DCHECK(this->layer_tree_host());
@@ -1406,7 +1408,8 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
       settings.using_synchronous_renderer_compositor;
   scheduler_settings.throttle_frame_production =
       settings.throttle_frame_production;
-  scheduler_on_impl_thread_ = Scheduler::Create(this, scheduler_settings);
+  scheduler_on_impl_thread_ = Scheduler::Create(this, scheduler_settings,
+      layer_tree_host_id_);
   scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());
 
   impl_thread_weak_ptr_ = weak_factory_on_impl_thread_.GetWeakPtr();

@@ -8,15 +8,14 @@
 #include <stack>
 #include <string>
 
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
-#include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/synchronization/lock.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/base/math_util.h"
@@ -43,14 +42,7 @@
 #include "ui/gfx/size_conversions.h"
 
 namespace {
-static base::LazyInstance<base::Lock>::Leaky
-    s_next_tree_id_lock = LAZY_INSTANCE_INITIALIZER;
-
-inline int GetNextTreeId() {
-  static int s_next_tree_id = 1;
-  base::AutoLock lock(s_next_tree_id_lock.Get());
-  return s_next_tree_id++;
-}
+static base::StaticAtomicSequenceNumber s_layer_tree_host_sequence_number;
 }
 
 namespace cc {
@@ -125,7 +117,7 @@ LayerTreeHost::LayerTreeHost(
       partial_texture_update_requests_(0),
       in_paint_layer_contents_(false),
       total_frames_used_for_lcd_text_metrics_(0),
-      tree_id_(GetNextTreeId()),
+      id_(s_layer_tree_host_sequence_number.GetNext() + 1),
       next_commit_forces_redraw_(false),
       shared_bitmap_manager_(manager) {
   if (settings_.accelerated_animation_enabled)
@@ -423,6 +415,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     // If we're not in impl-side painting, the tree is immediately
     // considered active.
     sync_tree->DidBecomeActive();
+    devtools_instrumentation::didActivateLayerTree(id_, source_frame_number_);
   }
 
   micro_benchmark_controller_.ScheduleImplBenchmarks(host_impl);
@@ -463,7 +456,8 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
                                 client,
                                 proxy_.get(),
                                 rendering_stats_instrumentation_.get(),
-                                shared_bitmap_manager_);
+                                shared_bitmap_manager_,
+                                id_);
   shared_bitmap_manager_ = NULL;
   if (settings_.calculate_top_controls_position &&
       host_impl->top_controls_manager()) {

@@ -289,6 +289,8 @@ class ThreadProxy : public Proxy,
   base::WeakPtrFactory<ThreadProxy> weak_factory_on_impl_thread_;
   base::WeakPtrFactory<ThreadProxy> weak_factory_;
 
+  const int layer_tree_host_id_;
+
   DISALLOW_COPY_AND_ASSIGN(ThreadProxy);
 };
 

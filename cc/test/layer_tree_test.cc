@@ -72,7 +72,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
                           host_impl_client,
                           proxy,
                           stats_instrumentation,
-                          NULL),
+                          NULL,
+                          0),
         test_hooks_(test_hooks),
         block_notify_ready_to_activate_for_testing_(false),
         notify_ready_to_activate_was_blocked_(false) {}

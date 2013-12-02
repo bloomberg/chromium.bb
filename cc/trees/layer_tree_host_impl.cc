@@ -20,6 +20,7 @@
 #include "cc/base/util.h"
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/debug/debug_rect_history.h"
+#include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/frame_rate_counter.h"
 #include "cc/debug/overdraw_metrics.h"
 #include "cc/debug/paint_time_counter.h"
@@ -207,9 +208,10 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHostImpl::Create(
     LayerTreeHostImplClient* client,
     Proxy* proxy,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
-    SharedBitmapManager* manager) {
+    SharedBitmapManager* manager,
+    int id) {
   return make_scoped_ptr(new LayerTreeHostImpl(
-      settings, client, proxy, rendering_stats_instrumentation, manager));
+      settings, client, proxy, rendering_stats_instrumentation, manager, id));
 }
 
 LayerTreeHostImpl::LayerTreeHostImpl(
@@ -217,7 +219,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     LayerTreeHostImplClient* client,
     Proxy* proxy,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
-    SharedBitmapManager* manager)
+    SharedBitmapManager* manager,
+    int id)
     : client_(client),
       proxy_(proxy),
       input_handler_client_(NULL),
@@ -258,7 +261,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
 #ifndef NDEBUG
       did_lose_called_(false),
 #endif
-      shared_bitmap_manager_(manager) {
+      shared_bitmap_manager_(manager),
+      id_(id) {
   DCHECK(proxy_->IsImplThread());
   DidVisibilityChange(this, visible_);
 
@@ -1583,6 +1587,8 @@ void LayerTreeHostImpl::ActivatePendingTree() {
 
   if (time_source_client_adapter_ && time_source_client_adapter_->Active())
     DCHECK(active_tree_->root_layer());
+  devtools_instrumentation::didActivateLayerTree(id_,
+      active_tree_->source_frame_number());
 }
 
 void LayerTreeHostImpl::SetVisible(bool visible) {

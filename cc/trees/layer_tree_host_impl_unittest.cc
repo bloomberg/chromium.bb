@@ -155,7 +155,7 @@ class LayerTreeHostImplTest : public testing::Test,
   bool CreateHostImpl(const LayerTreeSettings& settings,
                       scoped_ptr<OutputSurface> output_surface) {
     host_impl_ = LayerTreeHostImpl::Create(
-        settings, this, &proxy_, &stats_instrumentation_, NULL);
+        settings, this, &proxy_, &stats_instrumentation_, NULL, 0);
     bool init = host_impl_->InitializeRenderer(output_surface.Pass());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
     return init;
@@ -1128,7 +1128,8 @@ class LayerTreeHostImplOverridePhysicalTime : public LayerTreeHostImpl {
                           client,
                           proxy,
                           rendering_stats_instrumentation,
-                          NULL) {}
+                          NULL,
+                          0) {}
 
   virtual base::TimeTicks CurrentPhysicalTimeTicks() const OVERRIDE {
     return fake_current_physical_time_;
@@ -3414,7 +3415,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   settings.partial_swap_enabled = true;
   scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl =
       LayerTreeHostImpl::Create(
-          settings, this, &proxy_, &stats_instrumentation_, NULL);
+          settings, this, &proxy_, &stats_instrumentation_, NULL, 0);
   layer_tree_host_impl->InitializeRenderer(output_surface.Pass());
   layer_tree_host_impl->SetViewportSize(gfx::Size(500, 500));
 
@@ -3718,7 +3719,7 @@ static scoped_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
   LayerTreeSettings settings;
   settings.partial_swap_enabled = partial_swap;
   scoped_ptr<LayerTreeHostImpl> my_host_impl = LayerTreeHostImpl::Create(
-      settings, client, proxy, stats_instrumentation, NULL);
+      settings, client, proxy, stats_instrumentation, NULL, 0);
   my_host_impl->InitializeRenderer(output_surface.Pass());
   my_host_impl->SetViewportSize(gfx::Size(100, 100));
 
@@ -5051,7 +5052,7 @@ TEST_F(LayerTreeHostImplTestDeferredInitialize, Fails_OffscreenContext) {
 TEST_F(LayerTreeHostImplTest, DefaultMemoryAllocation) {
   LayerTreeSettings settings;
   host_impl_ = LayerTreeHostImpl::Create(
-      settings, this, &proxy_, &stats_instrumentation_, NULL);
+      settings, this, &proxy_, &stats_instrumentation_, NULL, 0);
 
   scoped_ptr<OutputSurface> output_surface(
       FakeOutputSurface::Create3d(TestWebGraphicsContext3D::Create()));
