@@ -212,10 +212,10 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLOutputElement.value
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLParagraphElement.align]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLParamElement.name]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLParamElement.type]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLParamElement.value]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLParamElement.valueType]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLParamElement.name]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLParamElement.type]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLParamElement.value]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLParamElement.valueType]
 
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLQuoteElement.cite]
 
