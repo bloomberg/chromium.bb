@@ -128,6 +128,15 @@ class DesktopCaptureApiTest : public ExtensionApiTest {
         SetPickerFactoryForTests(NULL);
   }
 
+#if defined(OS_CHROMEOS)
+  virtual void SetUp() OVERRIDE {
+    // The GPU accelerated desktop capture path needs real GL contexts.
+    UseRealGLContexts();
+
+    ExtensionApiTest::SetUp();
+  }
+#endif
+
  protected:
   GURL GetURLForPath(const std::string& host, const std::string& path) {
     std::string port = base::IntToString(embedded_test_server()->port());
@@ -143,8 +152,7 @@ class DesktopCaptureApiTest : public ExtensionApiTest {
 }  // namespace
 
 // Flaky on Windows: http://crbug.com/301887
-// Failing on ChromeOS: http://crbug.com/324179
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN)
 #define MAYBE_ChooseDesktopMedia DISABLED_ChooseDesktopMedia
 #else
 #define MAYBE_ChooseDesktopMedia ChooseDesktopMedia
