@@ -181,8 +181,8 @@ TEST SUCCEEDED: The value was the empty string. [tested HTMLMetaElement.httpEqui
 TEST SUCCEEDED: The value was the empty string. [tested HTMLMetaElement.name]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLMetaElement.scheme]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLModElement.cite]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLModElement.dateTime]
+TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLModElement.cite]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLModElement.dateTime]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLObjectElement.code]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLObjectElement.align]
