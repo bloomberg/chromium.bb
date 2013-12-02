@@ -26,14 +26,14 @@ PASS input.formTarget is "http://example.com"
 PASS input.formTarget is "nta"
 
 Setting null for input:
-PASS input.formEnctype is ""
-PASS input.getAttribute("formEnctype") is null
 PASS input.formEnctype is "application/x-www-form-urlencoded"
-PASS input.formMethod is ""
-PASS input.getAttribute("formMethod") is null
+PASS input.getAttribute("formEnctype") is "null"
+PASS input.formEnctype is "application/x-www-form-urlencoded"
 PASS input.formMethod is "get"
-PASS input.formTarget is ""
-PASS input.getAttribute("formTarget") is null
+PASS input.getAttribute("formMethod") is "null"
+PASS input.formMethod is "get"
+PASS input.formTarget is "null"
+PASS input.getAttribute("formTarget") is "null"
 PASS input.formTarget is "null"
 
 Setting undefined for input:

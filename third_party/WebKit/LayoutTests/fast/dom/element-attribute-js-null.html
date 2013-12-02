@@ -351,16 +351,38 @@
                     type: 'HTMLInputElement',
                     elementToUse: document.createElement('input'),
                     attributes: [
-                        {name: 'accept', expectedNull: ''},
+                        {name: 'accept', expectedNull: 'null'},
                         {name: 'accessKey', expectedNull: ''},
-                        {name: 'align', expectedNull: ''},
-                        {name: 'alt', expectedNull: ''},
-                        {name: 'defaultValue', expectedNull: ''},
-                        {name: 'name', expectedNull: ''},
-                        {name: 'src', expectedNull: ''},
+                        {name: 'align', expectedNull: 'null'},
+                        {name: 'alt', expectedNull: 'null'},
+                        {name: 'autocomplete', expectedNull: 'null'},
+                        {name: 'defaultValue', expectedNull: 'null'},
+                        {name: 'dirName', expectedNull: 'null'},
+                        {name: 'formAction', expectedNull: 'null', isUrl: true},
+                        {name: 'formEnctype', expectedNull: 'application/x-www-form-urlencoded'},
+                        {name: 'formMethod', expectedNull: 'get'},
+                        {name: 'formTarget', expectedNull: 'null'},
+                        {name: 'max', expectedNull: 'null'},
+                        {name: 'min', expectedNull: 'null'},
+                        {name: 'name', expectedNull: 'null'},
+                        {name: 'pattern', expectedNull: 'null'},
+                        {name: 'placeholder', expectedNull: 'null'},
+                        {name: 'src', expectedNull: 'null', isUrl: true},
+                        {name: 'step', expectedNull: 'null'},
                         {name: 'type', expectedNull: 'text'},
-                        {name: 'useMap', expectedNull: ''},
-                        {name: 'value', expectedNull: ''},
+                        {name: 'useMap', expectedNull: 'null'}
+                    ]
+                },
+                // [TreatNullAs=NullString] is not identical to [TreatNullAs=EmptyString] because
+                // null and empty string can be distinguished. A side-effect is that setting
+                // HTMLInputElement.value to null does clear the old value. This would be fixed by
+                // using [TreatNullAs=EmptyString], but until then test value separately to avoid
+                // interference from the defaultValue test.
+                {
+                    type: 'HTMLInputElement',
+                    elementToUse: document.createElement('input'),
+                    attributes: [
+                        {name: 'value', expectedNull: ''}
                     ]
                 },
                 {

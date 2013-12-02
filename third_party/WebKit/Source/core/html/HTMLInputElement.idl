@@ -19,47 +19,48 @@
  * Boston, MA 02110-1301, USA.
  */
 
-[
-] interface HTMLInputElement : HTMLElement {
-    [Reflect, TreatNullAs=NullString] attribute DOMString accept;
-    [Reflect, TreatNullAs=NullString] attribute DOMString alt;
-    [Reflect, TreatNullAs=NullString] attribute DOMString autocomplete;
+interface HTMLInputElement : HTMLElement {
+    [Reflect] attribute DOMString accept;
+    [Reflect] attribute DOMString align;
+    [Reflect] attribute DOMString alt;
+    [Reflect] attribute DOMString autocomplete;
     [Reflect] attribute boolean autofocus;
     [Reflect=checked] attribute boolean defaultChecked;
     attribute boolean checked;
-    [Reflect, TreatNullAs=NullString] attribute DOMString dirName;
+    [Reflect] attribute DOMString dirName;
     [Reflect] attribute boolean disabled;
     readonly attribute HTMLFormElement form;
     // The 'files' attribute is intentionally not readonly.
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22682
     attribute FileList files;
-    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString formAction;
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString formEnctype;
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString formMethod;
+    [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString formAction;
+    [CustomElementCallbacks] attribute DOMString formEnctype;
+    [CustomElementCallbacks] attribute DOMString formMethod;
     [Reflect] attribute boolean formNoValidate;
-    [Reflect, TreatNullAs=NullString] attribute DOMString formTarget;
+    [Reflect] attribute DOMString formTarget;
     [CustomElementCallbacks] attribute unsigned long height;
     attribute boolean indeterminate;
+    [RuntimeEnabled=InputModeAttribute, Reflect] attribute DOMString inputMode;
     [RuntimeEnabled=DataListElement] readonly attribute HTMLElement list;
-    [Reflect, TreatNullAs=NullString] attribute DOMString max;
+    [Reflect] attribute DOMString max;
     [RaisesException=Setter, CustomElementCallbacks] attribute long maxLength;
-    [Reflect, TreatNullAs=NullString] attribute DOMString min;
+    [Reflect] attribute DOMString min;
     [Reflect] attribute boolean multiple;
-    [Reflect, TreatNullAs=NullString] attribute DOMString name;
-    [Reflect, TreatNullAs=NullString] attribute DOMString pattern;
-    [Reflect, TreatNullAs=NullString] attribute DOMString placeholder;
+    [Reflect] attribute DOMString name;
+    [Reflect] attribute DOMString pattern;
+    [Reflect] attribute DOMString placeholder;
     [Reflect] attribute boolean readOnly;
     [Reflect] attribute boolean required;
     [RaisesException=Setter, CustomElementCallbacks] attribute unsigned long size; // Changed string -> long -> unsigned long
-    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
-    [Reflect, TreatNullAs=NullString] attribute DOMString step;
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString type; // readonly dropped as part of DOM level 2
-    [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString defaultValue;
+    [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
+    [Reflect] attribute DOMString step;
+    [CustomElementCallbacks] attribute DOMString type; // readonly dropped as part of DOM level 2
+    [CustomElementCallbacks] attribute DOMString defaultValue;
+    [Reflect] attribute DOMString useMap;
     // See the discussion in https://bugs.webkit.org/show_bug.cgi?id=100085
     [TreatNullAs=NullString, RaisesException=Setter, CustomElementCallbacks] attribute DOMString value;
     [RaisesException=Setter, CustomElementCallbacks] attribute Date valueAsDate;
     [RaisesException=Setter, CustomElementCallbacks] attribute double valueAsNumber;
-    [RuntimeEnabled=InputModeAttribute, Reflect, TreatNullAs=NullString] attribute DOMString inputMode;
 
     [RaisesException, CustomElementCallbacks] void stepUp(optional long n);
     [RaisesException, CustomElementCallbacks] void stepDown(optional long n);
@@ -90,9 +91,7 @@
                            optional DOMString direction);
 
     // Non-standard attributes
-    [Reflect, TreatNullAs=NullString] attribute DOMString align;
     [Reflect, RuntimeEnabled=DirectoryUpload] attribute boolean webkitdirectory;
-    [Reflect, TreatNullAs=NullString] attribute DOMString useMap;
     [Reflect] attribute boolean incremental;
     [Conditional=INPUT_SPEECH, Reflect, RuntimeEnabled=SpeechInput] attribute boolean webkitSpeech;
     [Conditional=INPUT_SPEECH, Reflect, RuntimeEnabled=SpeechInput] attribute boolean webkitGrammar;

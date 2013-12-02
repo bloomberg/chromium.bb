@@ -9,8 +9,8 @@ PASS input.inputMode is "abc"
 PASS input.getAttribute("inputmode") is "foo"
 PASS input.getAttribute("inputmode") is ""
 Setting null to inputMode:
-PASS input.inputMode is ""
-PASS input.getAttribute("inputmode") is null
+PASS input.inputMode is "null"
+PASS input.getAttribute("inputmode") is "null"
 PASS input.inputMode is "null"
 Setting undefined to inputMode:
 PASS input.inputMode is "undefined"
