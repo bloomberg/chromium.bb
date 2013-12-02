@@ -88,7 +88,6 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(success);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
-    void markEarlyDeath();
     void setCursorDetails(IndexedDB::CursorType, IndexedDB::CursorDirection);
     void setPendingCursor(PassRefPtr<IDBCursor>);
     void abort();
@@ -120,6 +119,9 @@ public:
     using EventTarget::dispatchEvent;
     virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
 
+    // Called by a version change transaction that has finished to set this
+    // request back from DONE (following "upgradeneeded") back to PENDING (for
+    // the upcoming "success" or "error").
     void transactionDidFinishAndDispatch();
 
     virtual void deref() OVERRIDE
@@ -136,6 +138,7 @@ public:
 protected:
     IDBRequest(ExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);
     void enqueueEvent(PassRefPtr<Event>);
+    void dequeueEvent(Event*);
     virtual bool shouldEnqueueEvent() const;
     void onSuccessInternal(PassRefPtr<IDBAny>);
     void setResult(PassRefPtr<IDBAny>);
@@ -159,10 +162,13 @@ private:
     // Only used if the result type will be a cursor.
     IndexedDB::CursorType m_cursorType;
     IndexedDB::CursorDirection m_cursorDirection;
+    // When a cursor is continued/advanced, m_result is cleared and m_pendingCursor holds it.
     RefPtr<IDBCursor> m_pendingCursor;
+    // New state is not applied to the cursor object until the event is dispatched.
     RefPtr<IDBKey> m_cursorKey;
     RefPtr<IDBKey> m_cursorPrimaryKey;
     RefPtr<SharedBuffer> m_cursorValue;
+
     bool m_didFireUpgradeNeededEvent;
     bool m_preventPropagation;
     bool m_resultDirty;

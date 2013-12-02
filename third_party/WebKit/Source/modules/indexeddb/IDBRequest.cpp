@@ -119,16 +119,6 @@ const String& IDBRequest::readyState() const
     return done;
 }
 
-void IDBRequest::markEarlyDeath()
-{
-    ASSERT(m_readyState == PENDING);
-    m_readyState = EarlyDeath;
-    if (m_transaction) {
-        m_transaction->unregisterRequest(this);
-        m_transaction.clear();
-    }
-}
-
 void IDBRequest::abort()
 {
     ASSERT(!m_requestAborted);
@@ -385,8 +375,18 @@ void IDBRequest::stop()
 
     m_contextStopped = true;
     m_requestState.clear();
-    if (m_readyState == PENDING)
-        markEarlyDeath();
+
+    RefPtr<IDBRequest> protect(this);
+
+    if (m_readyState == PENDING) {
+        m_readyState = EarlyDeath;
+        if (m_transaction) {
+            m_transaction->unregisterRequest(this);
+            m_transaction.clear();
+        }
+    }
+
+    m_enqueuedEvents.clear();
 }
 
 const AtomicString& IDBRequest::interfaceName() const
@@ -402,23 +402,18 @@ ExecutionContext* IDBRequest::executionContext() const
 bool IDBRequest::dispatchEvent(PassRefPtr<Event> event)
 {
     IDB_TRACE("IDBRequest::dispatchEvent");
+    if (!executionContext())
+        return false;
     ASSERT(m_readyState == PENDING);
-    ASSERT(!m_contextStopped);
     ASSERT(m_hasPendingActivity);
     ASSERT(m_enqueuedEvents.size());
-    ASSERT(executionContext());
     ASSERT(event->target() == this);
-    ASSERT_WITH_MESSAGE(m_readyState < DONE, "When dispatching event %s, m_readyState < DONE(%d), was %d", event->type().string().utf8().data(), DONE, m_readyState);
 
     DOMRequestState::Scope scope(m_requestState);
 
     if (event->type() != EventTypeNames::blocked)
         m_readyState = DONE;
-
-    for (size_t i = 0; i < m_enqueuedEvents.size(); ++i) {
-        if (m_enqueuedEvents[i].get() == event.get())
-            m_enqueuedEvents.remove(i);
-    }
+    dequeueEvent(event.get());
 
     Vector<RefPtr<EventTarget> > targets;
     targets.append(this);
@@ -431,7 +426,7 @@ bool IDBRequest::dispatchEvent(PassRefPtr<Event> event)
         targets.append(m_transaction->db());
     }
 
-    // Cursor properties should not updated until the success event is being dispatched.
+    // Cursor properties should not be updated until the success event is being dispatched.
     RefPtr<IDBCursor> cursorToNotify;
     if (event->type() == EventTypeNames::success) {
         cursorToNotify = getResultCursor();
@@ -472,6 +467,8 @@ bool IDBRequest::dispatchEvent(PassRefPtr<Event> event)
     if (cursorToNotify)
         cursorToNotify->postSuccessHandlerCallback();
 
+    // An upgradeneeded event will always be followed by a success or error event, so must
+    // be kept alive.
     if (m_readyState == DONE && event->type() != EventTypeNames::upgradeneeded)
         m_hasPendingActivity = false;
 
@@ -490,9 +487,14 @@ void IDBRequest::transactionDidFinishAndDispatch()
 {
     ASSERT(m_transaction);
     ASSERT(m_transaction->isVersionChange());
+    ASSERT(m_didFireUpgradeNeededEvent);
     ASSERT(m_readyState == DONE);
     ASSERT(executionContext());
     m_transaction.clear();
+
+    if (m_contextStopped)
+        return;
+
     m_readyState = PENDING;
 }
 
@@ -508,8 +510,19 @@ void IDBRequest::enqueueEvent(PassRefPtr<Event> event)
     EventQueue* eventQueue = executionContext()->eventQueue();
     event->setTarget(this);
 
+    // Keep track of enqueued events in case we need to abort prior to dispatch,
+    // in which case these must be cancelled. If the events not dispatched for
+    // other reasons they must be removed from this list via dequeueEvent().
     if (eventQueue->enqueueEvent(event.get()))
         m_enqueuedEvents.append(event);
+}
+
+void IDBRequest::dequeueEvent(Event* event)
+{
+    for (size_t i = 0; i < m_enqueuedEvents.size(); ++i) {
+        if (m_enqueuedEvents[i].get() == event)
+            m_enqueuedEvents.remove(i);
+    }
 }
 
 } // namespace WebCore
