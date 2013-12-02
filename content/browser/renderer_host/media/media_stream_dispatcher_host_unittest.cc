@@ -17,6 +17,7 @@
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/test/mock_resource_context.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
@@ -43,9 +44,10 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                                       public TestContentBrowserClient {
  public:
   MockMediaStreamDispatcherHost(
+      ResourceContext* resource_context,
       const scoped_refptr<base::MessageLoopProxy>& message_loop,
       MediaStreamManager* manager)
-      : MediaStreamDispatcherHost(kProcessId, manager),
+      : MediaStreamDispatcherHost(kProcessId, resource_context, manager),
         message_loop_(message_loop) {}
 
   // A list of mock methods.
@@ -213,8 +215,10 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     // Make sure we use fake devices to avoid long delays.
     media_stream_manager_->UseFakeDevice();
 
-    host_ = new MockMediaStreamDispatcherHost(base::MessageLoopProxy::current(),
-                                              media_stream_manager_.get());
+    host_ = new MockMediaStreamDispatcherHost(
+        browser_context_.GetResourceContext(),
+        base::MessageLoopProxy::current(),
+        media_stream_manager_.get());
 
     // Use the fake content client and browser.
     content_client_.reset(new TestContentClient());
@@ -329,9 +333,11 @@ class MediaStreamDispatcherHostTest : public testing::Test {
       media::AudioDeviceNames::const_iterator audio_it =
           physical_audio_devices_.begin();
       for (; audio_it != physical_audio_devices_.end(); ++audio_it) {
-        if (content::DoesMediaDeviceIDMatchHMAC(origin,
-                                                devices[i].device.id,
-                                                audio_it->unique_id)) {
+        if (content::DoesMediaDeviceIDMatchHMAC(
+            browser_context_.GetResourceContext(),
+            origin,
+            devices[i].device.id,
+            audio_it->unique_id)) {
           EXPECT_FALSE(found_match);
           found_match = true;
         }
@@ -339,9 +345,11 @@ class MediaStreamDispatcherHostTest : public testing::Test {
       media::VideoCaptureDevice::Names::const_iterator video_it =
           physical_video_devices_.begin();
       for (; video_it != physical_video_devices_.end(); ++video_it) {
-        if (content::DoesMediaDeviceIDMatchHMAC(origin,
-                                                devices[i].device.id,
-                                                video_it->id())) {
+        if (content::DoesMediaDeviceIDMatchHMAC(
+            browser_context_.GetResourceContext(),
+            origin,
+            devices[i].device.id,
+            video_it->id())) {
           EXPECT_FALSE(found_match);
           found_match = true;
         }
@@ -358,6 +366,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   ContentBrowserClient* old_browser_client_;
   scoped_ptr<ContentClient> content_client_;
   content::TestBrowserThreadBundle thread_bundle_;
+  content::TestBrowserContext browser_context_;
   media::AudioDeviceNames physical_audio_devices_;
   media::VideoCaptureDevice::Names physical_video_devices_;
   GURL origin_;
@@ -510,6 +519,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithSourceId) {
     StreamOptions options(MEDIA_DEVICE_AUDIO_CAPTURE,
                           MEDIA_DEVICE_VIDEO_CAPTURE);
     options.audio_device_id = content::GetHMACForMediaDeviceID(
+        browser_context_.GetResourceContext(),
         origin_,
         audio_it->unique_id);
     ASSERT_FALSE(options.audio_device_id.empty());
@@ -525,8 +535,10 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithSourceId) {
   for (; video_it != physical_video_devices_.end(); ++video_it) {
     StreamOptions options(MEDIA_DEVICE_AUDIO_CAPTURE,
                           MEDIA_DEVICE_VIDEO_CAPTURE);
-    options.video_device_id = content::GetHMACForMediaDeviceID(origin_,
-                                                               video_it->id());
+    options.video_device_id = content::GetHMACForMediaDeviceID(
+        browser_context_.GetResourceContext(),
+        origin_,
+        video_it->id());
     ASSERT_FALSE(options.video_device_id.empty());
 
     // Generate first stream.

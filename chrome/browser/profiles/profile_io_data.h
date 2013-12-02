@@ -31,6 +31,7 @@ class ChromeNetworkDelegate;
 class CookieSettings;
 class HostContentSettingsMap;
 class ManagedModeURLFilter;
+class MediaDeviceIDSalt;
 class Profile;
 class ProtocolHandlerRegistry;
 class SigninNamesOnIOThread;
@@ -169,6 +170,8 @@ class ProfileIOData {
   BooleanPrefMember* signin_allowed() const {
     return &signin_allowed_;
   }
+
+  std::string GetMediaDeviceIDSalt() const;
 
   net::TransportSecurityState* transport_security_state() const {
     return transport_security_state_.get();
@@ -353,6 +356,7 @@ class ProfileIOData {
     virtual scoped_ptr<net::ClientCertStore> CreateClientCertStore() OVERRIDE;
     virtual bool AllowMicAccess(const GURL& origin) OVERRIDE;
     virtual bool AllowCameraAccess(const GURL& origin) OVERRIDE;
+    virtual std::string GetMediaDeviceIDSalt() OVERRIDE;
 
    private:
     friend class ProfileIOData;
@@ -452,6 +456,8 @@ class ProfileIOData {
   std::string reverse_autologin_pending_email_;
 
   mutable StringListPrefMember one_click_signin_rejected_email_list_;
+
+  mutable scoped_ptr<MediaDeviceIDSalt> media_device_id_salt_;
 
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember enable_referrers_;

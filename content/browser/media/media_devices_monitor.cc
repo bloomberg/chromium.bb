@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,8 +12,10 @@ namespace content {
 namespace {
 void EnsureMonitorCaptureDevicesInternal(
     MediaStreamManager* media_stream_manager) {
+  // TODO(perkj): The argument list suggests that this is the wrong design. Can
+  // we add a separate method for device monitoring?
   media_stream_manager->EnumerateDevices(
-      NULL, -1, -1, -1, MEDIA_DEVICE_AUDIO_CAPTURE, GURL());
+      NULL, -1, -1, NULL, -1, MEDIA_DEVICE_AUDIO_CAPTURE, GURL());
 }
 }
 

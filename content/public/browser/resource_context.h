@@ -55,6 +55,12 @@ class CONTENT_EXPORT ResourceContext : public base::SupportsUserData {
   // determine what level of authorization is given to |origin| to access
   // resource metadata.
   virtual bool AllowCameraAccess(const GURL& origin) = 0;
+
+  // Returns a random salt string that is used for creating media device IDs.
+  // The salt should be stored in the current user profile and should be reset
+  // if cookies are cleared. Returns an empty string per default.
+  // TODO(perkj): Make this method pure virtual when crbug/315022 is fixed.
+  virtual std::string GetMediaDeviceIDSalt();
 };
 
 }  // namespace content

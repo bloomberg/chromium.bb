@@ -14,8 +14,10 @@
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/resource_context.h"
 
 namespace content {
+
 class MediaStreamManager;
 
 // MediaStreamDispatcherHost is a delegate for Media Stream API messages used by
@@ -25,6 +27,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
                                                  public MediaStreamRequester {
  public:
   MediaStreamDispatcherHost(int render_process_id,
+                            ResourceContext* resource_context,
                             MediaStreamManager* media_stream_manager);
 
   // MediaStreamRequester implementation.
@@ -96,6 +99,7 @@ class CONTENT_EXPORT MediaStreamDispatcherHost : public BrowserMessageFilter,
   StreamRequest PopRequest(const std::string& label);
 
   int render_process_id_;
+  ResourceContext* resource_context_;
   MediaStreamManager* media_stream_manager_;
 
   // Active requests. When the MediaStreamManager responds to a a request the

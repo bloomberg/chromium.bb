@@ -55,6 +55,10 @@ ResourceContext::~ResourceContext() {
   DetachUserDataThread();
 }
 
+std::string ResourceContext::GetMediaDeviceIDSalt() {
+  return std::string();
+}
+
 scoped_ptr<net::ClientCertStore> ResourceContext::CreateClientCertStore() {
   return scoped_ptr<net::ClientCertStore>();
 }

@@ -292,6 +292,7 @@ void WebrtcAudioPrivateGetAssociatedSinkFunction::OnGetDevicesDone() {
       base::Bind(&WebrtcAudioPrivateGetAssociatedSinkFunction::
                  GetRawSourceIDOnIOThread,
                  this,
+                 GetProfile()->GetResourceContext(),
                  GURL(params_->security_origin),
                  params_->source_id_in_origin),
       base::Bind(
@@ -301,7 +302,9 @@ void WebrtcAudioPrivateGetAssociatedSinkFunction::OnGetDevicesDone() {
 
 std::string
 WebrtcAudioPrivateGetAssociatedSinkFunction::GetRawSourceIDOnIOThread(
-    GURL security_origin, const std::string& source_id_in_origin) {
+    content::ResourceContext* context,
+    GURL security_origin,
+    const std::string& source_id_in_origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   // Find the raw source ID for source_id_in_origin.
@@ -311,7 +314,10 @@ WebrtcAudioPrivateGetAssociatedSinkFunction::GetRawSourceIDOnIOThread(
        ++it) {
     const std::string& id = it->unique_id;
     if (content::DoesMediaDeviceIDMatchHMAC(
-            security_origin, source_id_in_origin, id)) {
+            context,
+            security_origin,
+            source_id_in_origin,
+            id)) {
       raw_source_id = id;
       DVLOG(2) << "Found raw ID " << raw_source_id
                << " for source ID in origin " << source_id_in_origin;

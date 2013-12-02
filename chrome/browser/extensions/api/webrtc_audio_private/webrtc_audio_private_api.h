@@ -153,7 +153,8 @@ class WebrtcAudioPrivateGetAssociatedSinkFunction
 
   // Takes the parameters of the function, returns the raw source
   // device ID, or the empty string if none.
-  std::string GetRawSourceIDOnIOThread(GURL security_origin,
+  std::string GetRawSourceIDOnIOThread(content::ResourceContext* context,
+                                       GURL security_origin,
                                        const std::string& source_id_in_origin);
   void OnGetRawSourceIDDone(const std::string& raw_source_id);
 

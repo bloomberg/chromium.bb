@@ -29,6 +29,7 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/password_manager/password_store.h"
@@ -420,6 +421,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
       }
     }
 #endif
+    MediaDeviceIDSalt::Reset(profile_->GetPrefs());
   }
 
   // Server bound certs are not separated for protected and unprotected web

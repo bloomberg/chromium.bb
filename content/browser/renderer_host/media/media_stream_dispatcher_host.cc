@@ -14,8 +14,10 @@ namespace content {
 
 MediaStreamDispatcherHost::MediaStreamDispatcherHost(
     int render_process_id,
+    ResourceContext* resource_context,
     MediaStreamManager* media_stream_manager)
     : render_process_id_(render_process_id),
+      resource_context_(resource_context),
       media_stream_manager_(media_stream_manager) {
 }
 
@@ -145,7 +147,8 @@ void MediaStreamDispatcherHost::OnGenerateStream(
            << security_origin.spec() << ")";
 
   const std::string& label = media_stream_manager_->GenerateStream(
-      this, render_process_id_, render_view_id, page_request_id,
+      this, render_process_id_, render_view_id, resource_context_,
+      page_request_id,
       components, security_origin);
   CHECK(!label.empty());
   StoreRequest(render_view_id, page_request_id, label);
@@ -190,8 +193,8 @@ void MediaStreamDispatcherHost::OnEnumerateDevices(
            << security_origin.spec() << ")";
 
   const std::string& label = media_stream_manager_->EnumerateDevices(
-      this, render_process_id_, render_view_id, page_request_id,
-      type, security_origin);
+      this, render_process_id_, render_view_id, resource_context_,
+      page_request_id, type, security_origin);
   StoreRequest(render_view_id, page_request_id, label);
 }
 
@@ -227,8 +230,8 @@ void MediaStreamDispatcherHost::OnOpenDevice(
            << security_origin.spec() << ")";
 
   const std::string& label = media_stream_manager_->OpenDevice(
-      this, render_process_id_, render_view_id, page_request_id,
-      device_id, type, security_origin);
+      this, render_process_id_, render_view_id, resource_context_,
+      page_request_id, device_id, type, security_origin);
   StoreRequest(render_view_id, page_request_id, label);
 }
 

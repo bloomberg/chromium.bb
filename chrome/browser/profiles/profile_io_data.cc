@@ -34,6 +34,7 @@
 #include "chrome/browser/extensions/extension_resource_protocols.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/net/about_protocol_handler.h"
 #include "chrome/browser/net/chrome_cookie_notification_details.h"
 #include "chrome/browser/net/chrome_fraudulent_certificate_reporter.h"
@@ -293,6 +294,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   printing_enabled_.Init(prefs::kPrintingEnabled, pref_service);
   printing_enabled_.MoveToThread(io_message_loop_proxy);
 #endif
+
   chrome_http_user_agent_settings_.reset(
       new ChromeHttpUserAgentSettings(pref_service));
 
@@ -323,6 +325,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     signin_allowed_.Init(prefs::kSigninAllowed, pref_service);
     signin_allowed_.MoveToThread(io_message_loop_proxy);
   }
+
+  media_device_id_salt_.reset(new MediaDeviceIDSalt(pref_service,
+                                                    is_incognito()));
 
 #if defined(OS_CHROMEOS)
   cert_verifier_ = policy::PolicyCertServiceFactory::CreateForProfile(profile);
@@ -613,6 +618,10 @@ HostContentSettingsMap* ProfileIOData::GetHostContentSettingsMap() const {
   return host_content_settings_map_.get();
 }
 
+std::string ProfileIOData::GetMediaDeviceIDSalt() const {
+  return media_device_id_salt_->GetSalt();
+}
+
 void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 #if defined(OS_CHROMEOS)
@@ -713,6 +722,10 @@ bool ProfileIOData::ResourceContext::AllowContentAccess(
   ContentSetting setting = content_settings->GetContentSetting(
       origin, origin, type, NO_RESOURCE_IDENTIFIER);
   return setting == CONTENT_SETTING_ALLOW;
+}
+
+std::string ProfileIOData::ResourceContext::GetMediaDeviceIDSalt() {
+  return io_data_->GetMediaDeviceIDSalt();
 }
 
 // static
@@ -923,6 +936,8 @@ void ProfileIOData::ShutdownOnUIThread() {
   printing_enabled_.Destroy();
   sync_disabled_.Destroy();
   signin_allowed_.Destroy();
+  if (media_device_id_salt_)
+    media_device_id_salt_->ShutdownOnUIThread();
   session_startup_pref_.Destroy();
 #if defined(ENABLE_CONFIGURATION_POLICY)
   if (url_blacklist_manager_)

@@ -174,6 +174,10 @@ class MockRTCResourceContext : public ResourceContext {
     return false;
   }
 
+  virtual std::string GetMediaDeviceIDSalt() OVERRIDE {
+    return "";
+  }
+
  private:
   net::URLRequestContext* test_request_context_;
 

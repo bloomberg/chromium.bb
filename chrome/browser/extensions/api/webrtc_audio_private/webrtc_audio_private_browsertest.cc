@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -110,6 +111,30 @@ class WebrtcAudioPrivateTest : public AudioWaitingExtensionTest {
       enumeration_event_.Wait();
     } else {
       (audio_manager->*EnumerationFunc)(device_names);
+      enumeration_event_.Signal();
+    }
+  }
+
+  // Synchronously (from the calling thread's point of view) retrieve the
+  // source id in the |origin| on the IO thread. On return,
+  // |source_id_in_origin| contains the id |raw_device_id| is known by in
+  // the origin.
+  void GetSourceIDInOrigin(content::ResourceContext* resource_context,
+                           GURL origin,
+                           const std::string& raw_device_id,
+                           std::string* source_id_in_origin) {
+    if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::IO, FROM_HERE,
+          base::Bind(&WebrtcAudioPrivateTest::GetSourceIDInOrigin,
+                     this, resource_context, origin, raw_device_id,
+                     source_id_in_origin));
+     enumeration_event_.Wait();
+    } else {
+      *source_id_in_origin = content::GetHMACForMediaDeviceID(
+          resource_context,
+          origin,
+          raw_device_id);
       enumeration_event_.Signal();
     }
   }
@@ -263,11 +288,17 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAssociatedSink) {
   for (AudioDeviceNames::const_iterator device = devices.begin();
        device != devices.end();
        ++device) {
-    std::string raw_source_id = device->unique_id;
-    VLOG(2) << "Trying to find associated sink for device " << raw_source_id;
+    scoped_refptr<WebrtcAudioPrivateGetAssociatedSinkFunction> function =
+        new WebrtcAudioPrivateGetAssociatedSinkFunction();
+
+    std::string raw_device_id = device->unique_id;
+    VLOG(2) << "Trying to find associated sink for device " << raw_device_id;
+    std::string source_id_in_origin;
     GURL origin(GURL("http://www.google.com/").GetOrigin());
-    std::string source_id_in_origin =
-        content::GetHMACForMediaDeviceID(origin, raw_source_id);
+    GetSourceIDInOrigin(profile()->GetResourceContext(),
+                        origin,
+                        raw_device_id,
+                        &source_id_in_origin);
 
     ListValue parameters;
     parameters.AppendString(origin.spec());
@@ -275,8 +306,6 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAssociatedSink) {
     std::string parameter_string;
     JSONWriter::Write(&parameters, &parameter_string);
 
-    scoped_refptr<WebrtcAudioPrivateGetAssociatedSinkFunction> function =
-        new WebrtcAudioPrivateGetAssociatedSinkFunction();
     scoped_ptr<base::Value> result(
         RunFunctionAndReturnSingleResult(function.get(),
                                          parameter_string,

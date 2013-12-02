@@ -20,7 +20,9 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/video_capture_messages.h"
 #include "content/public/test/mock_resource_context.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/test/test_content_browser_client.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/video_frame.h"
 #include "media/video/capture/video_capture_types.h"
@@ -243,6 +245,7 @@ class VideoCaptureHostTest : public testing::Test {
         opened_session_id_(kInvalidMediaCaptureSessionId) {}
 
   virtual void SetUp() OVERRIDE {
+    SetBrowserClientForTesting(&browser_client_);
     // Create our own MediaStreamManager.
     audio_manager_.reset(media::AudioManager::Create());
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
@@ -290,6 +293,7 @@ class VideoCaptureHostTest : public testing::Test {
           &stream_requester_,
           render_process_id,
           render_view_id,
+          browser_context_.GetResourceContext(),
           page_request_id,
           MEDIA_DEVICE_VIDEO_CAPTURE,
           security_origin);
@@ -312,6 +316,7 @@ class VideoCaptureHostTest : public testing::Test {
           &stream_requester_,
           render_process_id,
           render_view_id,
+          browser_context_.GetResourceContext(),
           page_request_id,
           devices[0].device.id,
           MEDIA_DEVICE_VIDEO_CAPTURE,
@@ -432,6 +437,8 @@ class VideoCaptureHostTest : public testing::Test {
   scoped_ptr<media::AudioManager> audio_manager_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
+  content::TestBrowserContext browser_context_;
+  content::TestContentBrowserClient browser_client_;
   scoped_refptr<base::MessageLoopProxy> message_loop_;
   int opened_session_id_;
   std::string opened_device_label_;

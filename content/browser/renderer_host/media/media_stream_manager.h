@@ -51,6 +51,7 @@ class FakeMediaStreamUIProxy;
 class MediaStreamDeviceSettings;
 class MediaStreamRequester;
 class MediaStreamUIProxy;
+class ResourceContext;
 class VideoCaptureManager;
 
 // MediaStreamManager is used to generate and close new media devices, not to
@@ -96,6 +97,7 @@ class CONTENT_EXPORT MediaStreamManager
   std::string GenerateStream(MediaStreamRequester* requester,
                              int render_process_id,
                              int render_view_id,
+                             ResourceContext* rc,
                              int page_request_id,
                              const StreamOptions& components,
                              const GURL& security_origin);
@@ -119,6 +121,7 @@ class CONTENT_EXPORT MediaStreamManager
   virtual std::string EnumerateDevices(MediaStreamRequester* requester,
                                        int render_process_id,
                                        int render_view_id,
+                                       ResourceContext* rc,
                                        int page_request_id,
                                        MediaStreamType type,
                                        const GURL& security_origin);
@@ -129,6 +132,7 @@ class CONTENT_EXPORT MediaStreamManager
   std::string OpenDevice(MediaStreamRequester* requester,
                          int render_process_id,
                          int render_view_id,
+                         ResourceContext* rc,
                          int page_request_id,
                          const std::string& device_id,
                          MediaStreamType type,
@@ -234,17 +238,15 @@ class CONTENT_EXPORT MediaStreamManager
   // needed. If a certain source id has been requested, the source id is
   // translated to a real device id before the request is posted to UI.
   void PostRequestToUI(const std::string& label, DeviceRequest* request);
-  // Returns true if a device with |device_id| has already been requested by
-  // |render_process_id| and |render_view_id| of type |type|. If it has been
-  // requested, |device_info| contain information about the device.
-  bool FindExistingRequestedDeviceInfo(int render_process_id,
-                                       int render_view_id,
-                                       const GURL& security_origin,
-                                       MediaStreamRequestType type,
-                                       const std::string& device_id,
-                                       MediaStreamType device_type,
-                                       StreamDeviceInfo* device_info,
-                                       MediaRequestState* request_state) const;
+  // Returns true if a device with |device_id| has already been requested with
+  // a render procecss_id and render_view_id and type equal to the the values
+  // in |request|. If it has been requested, |device_info| contain information
+  // about the device.
+  bool FindExistingRequestedDeviceInfo(
+      const DeviceRequest& new_request,
+      const MediaStreamDevice& new_device_info,
+      StreamDeviceInfo* existing_device_info,
+      MediaRequestState* existing_request_state) const;
 
   void FinalizeGenerateStream(const std::string& label,
                               DeviceRequest* request);
@@ -273,8 +275,8 @@ class CONTENT_EXPORT MediaStreamManager
   void StartMonitoring();
   void StopMonitoring();
 
-  bool TranslateRequestedSourceIdToDeviceId(MediaStreamRequest* request);
-  void TranslateDeviceIdToSourceId(const MediaStreamRequest& request,
+  bool TranslateRequestedSourceIdToDeviceId(DeviceRequest* request);
+  void TranslateDeviceIdToSourceId(DeviceRequest* request,
                                    MediaStreamDevice* device);
 
   // Finds and returns the device id corresponding to the given
@@ -282,6 +284,7 @@ class CONTENT_EXPORT MediaStreamManager
   // given |source_id|, false if nothing matched it.
   bool TranslateSourceIdToDeviceId(
       MediaStreamType stream_type,
+      ResourceContext* rc,
       const GURL& security_origin,
       const std::string& source_id,
       std::string* device_id);
