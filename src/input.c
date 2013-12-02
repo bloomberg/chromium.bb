@@ -431,6 +431,12 @@ pointer_handle_sprite_destroy(struct wl_listener *listener, void *data)
 	pointer->sprite = NULL;
 }
 
+static void
+weston_pointer_reset_state(struct weston_pointer *pointer)
+{
+	pointer->button_count = 0;
+}
+
 WL_EXPORT struct weston_pointer *
 weston_pointer_create(struct weston_seat *seat)
 {
@@ -2013,6 +2019,7 @@ weston_seat_release_pointer(struct weston_seat *seat)
 		if (pointer->sprite)
 			pointer_unmap_sprite(pointer);
 
+		weston_pointer_reset_state(pointer);
 		seat_send_updated_caps(seat);
 	}
 }
