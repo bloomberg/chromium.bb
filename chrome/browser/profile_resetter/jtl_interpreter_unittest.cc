@@ -4,6 +4,8 @@
 
 #include "chrome/browser/profile_resetter/jtl_interpreter.h"
 
+#include <numeric>
+
 #include "base/strings/string_util.h"
 #include "base/test/values_test_util.h"
 #include "chrome/browser/profile_resetter/jtl_foundation.h"
@@ -28,6 +30,15 @@ const char seed[] = "foobar";
 
 std::string GetHash(const std::string& input) {
   return jtl_foundation::Hasher(seed).GetHash(input);
+}
+
+std::string EncodeUint32(uint32 value) {
+  std::string bytecode;
+  for (int i = 0; i < 4; ++i) {
+    bytecode.push_back(static_cast<char>(value & 0xFFu));
+    value >>= 8;
+  }
+  return bytecode;
 }
 
 // escaped_json_param may contain ' characters that are replaced with ". This
@@ -479,6 +490,49 @@ TEST(JtlInterpreter, CompareNodeToStoredHash) {
           true, *interpreter.working_memory(), VAR_HASH_2);
     } else {
       EXPECT_FALSE(interpreter.working_memory()->HasKey(VAR_HASH_2));
+    }
+  }
+}
+
+TEST(JtlInterpreter, CompareSubstring) {
+  struct TestCase {
+    std::string pattern;
+    const char* json;
+    bool expected_success;
+  } cases[] = {
+    { "abc", "{ 'KEY_HASH_1': 'abcdefghijklmnopqrstuvwxyz' }", true },
+    { "xyz", "{ 'KEY_HASH_1': 'abcdefghijklmnopqrstuvwxyz' }", true },
+    { "m", "{ 'KEY_HASH_1': 'abcdefghijklmnopqrstuvwxyz' }", true },
+    { "abc", "{ 'KEY_HASH_1': 'abc' }", true },
+    { "cba", "{ 'KEY_HASH_1': 'abcdefghijklmnopqrstuvwxyz' }", false },
+    { "acd", "{ 'KEY_HASH_1': 'abcdefghijklmnopqrstuvwxyz' }", false },
+    { "waaaaaaay_too_long", "{ 'KEY_HASH_1': 'abc' }", false },
+
+    { VALUE_HASH_1, "{ 'KEY_HASH_1': true }", false },
+    { VALUE_HASH_1, "{ 'KEY_HASH_1': 1 }", false },
+    { VALUE_HASH_1, "{ 'KEY_HASH_1': 1.1 }", false },
+    { VALUE_HASH_1, "{ 'KEY_HASH_1': [1] }", false },
+    { VALUE_HASH_1, "{ 'KEY_HASH_1': {'a': 'b'} }", false },
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    SCOPED_TRACE(testing::Message() << "Iteration " << i);
+    std::string pattern = cases[i].pattern;
+    uint32 pattern_sum = std::accumulate(
+        pattern.begin(), pattern.end(), static_cast<uint32>(0u));
+    INIT_INTERPRETER(
+        OP_NAVIGATE(KEY_HASH_1) +
+        OP_COMPARE_NODE_SUBSTRING(GetHash(pattern),
+                                  EncodeUint32(pattern.size()),
+                                  EncodeUint32(pattern_sum)) +
+        OP_STORE_BOOL(VAR_HASH_1, VALUE_TRUE),
+        cases[i].json);
+    EXPECT_EQ(JtlInterpreter::OK, interpreter.result());
+    if (cases[i].expected_success) {
+      base::ExpectDictBooleanValue(
+          true, *interpreter.working_memory(), VAR_HASH_1);
+    } else {
+      EXPECT_FALSE(interpreter.working_memory()->HasKey(VAR_HASH_1));
     }
   }
 }

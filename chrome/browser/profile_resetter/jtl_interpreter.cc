@@ -4,6 +4,8 @@
 
 #include "chrome/browser/profile_resetter/jtl_interpreter.h"
 
+#include <numeric>
+
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -400,6 +402,46 @@ class CompareNodeToStored : public Operation {
   DISALLOW_COPY_AND_ASSIGN(CompareNodeToStored);
 };
 
+class CompareNodeSubstring : public Operation {
+ public:
+  explicit CompareNodeSubstring(const std::string& hashed_pattern,
+                                size_t pattern_length,
+                                uint32 pattern_sum)
+      : hashed_pattern_(hashed_pattern),
+        pattern_length_(pattern_length),
+        pattern_sum_(pattern_sum) {
+    DCHECK(pattern_length_);
+  }
+  virtual ~CompareNodeSubstring() {}
+  virtual bool Execute(ExecutionContext* context) OVERRIDE {
+    std::string value_as_string;
+    if (!context->current_node()->GetAsString(&value_as_string) ||
+        !pattern_length_ || value_as_string.size() < pattern_length_)
+      return true;
+    // Go over the string with a sliding window. Meanwhile, maintain the sum in
+    // an incremental fashion, and only calculate the SHA-256 hash when the sum
+    // checks out so as to improve performance.
+    std::string::const_iterator window_begin = value_as_string.begin();
+    std::string::const_iterator window_end = window_begin + pattern_length_ - 1;
+    uint32 window_sum =
+        std::accumulate(window_begin, window_end, static_cast<uint32>(0u));
+    while (window_end != value_as_string.end()) {
+      window_sum += *window_end++;
+      if (window_sum == pattern_sum_ && context->GetHash(std::string(
+          window_begin, window_end)) == hashed_pattern_)
+        return context->ContinueExecution();
+      window_sum -= *window_begin++;
+    }
+    return true;
+  }
+
+ private:
+  std::string hashed_pattern_;
+  size_t pattern_length_;
+  uint32 pattern_sum_;
+  DISALLOW_COPY_AND_ASSIGN(CompareNodeSubstring);
+};
+
 class StopExecutingSentenceOperation : public Operation {
  public:
   StopExecutingSentenceOperation() {}
@@ -551,6 +593,19 @@ class Parser {
           operators.push_back(new CompareNodeToStored<false>(hashed_name));
           break;
         }
+        case jtl_foundation::COMPARE_NODE_SUBSTRING: {
+          std::string hashed_pattern;
+          uint32 pattern_length = 0, pattern_sum = 0;
+          if (!ReadHash(&hashed_pattern))
+            return false;
+          if (!ReadUint32(&pattern_length) || pattern_length == 0)
+            return false;
+          if (!ReadUint32(&pattern_sum))
+            return false;
+          operators.push_back(new CompareNodeSubstring(
+              hashed_pattern, pattern_length, pattern_sum));
+          break;
+        }
         case jtl_foundation::STOP_EXECUTING_SENTENCE:
           operators.push_back(new StopExecutingSentenceOperation);
           break;
@@ -572,6 +627,7 @@ class Parser {
  private:
   // Reads an uint8 and returns whether this operation was successful.
   bool ReadUint8(uint8* out) {
+    DCHECK(out);
     if (next_instruction_index_ + 1u > program_.size())
       return false;
     *out = static_cast<uint8>(program_[next_instruction_index_]);
@@ -579,10 +635,25 @@ class Parser {
     return true;
   }
 
+  // Reads an uint32 and returns whether this operation was successful.
+  bool ReadUint32(uint32* out) {
+    DCHECK(out);
+    if (next_instruction_index_ + 4u > program_.size())
+      return false;
+    *out = 0u;
+    for (int i = 0; i < 4; ++i) {
+      *out >>= 8;
+      *out |= static_cast<uint8>(program_[next_instruction_index_]) << 24;
+      ++next_instruction_index_;
+    }
+    return true;
+  }
+
   // Reads an operator code and returns whether this operation was successful.
   bool ReadOpCode(uint8* out) { return ReadUint8(out); }
 
   bool ReadHash(std::string* out) {
+    DCHECK(out);
     if (next_instruction_index_ + jtl_foundation::kHashSizeInBytes >
         program_.size())
       return false;
@@ -594,6 +665,7 @@ class Parser {
   }
 
   bool ReadBool(bool* out) {
+    DCHECK(out);
     uint8 value = 0;
     if (!ReadUint8(&value))
       return false;

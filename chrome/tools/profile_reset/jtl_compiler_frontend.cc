@@ -34,6 +34,7 @@ const char kMismatchedDoubleQuotes[] = "Mismatched double-quotes before EOL.";
 const char kParsingError[] = "Parsing error. Input is ill-formed.";
 const char kArgumentCountError[] = "Wrong number of arguments for operation.";
 const char kArgumentTypeError[] = "Wrong argument type(s) for operation.";
+const char kArgumentValueError[] = "Wrong argument value(s) for operation.";
 const char kUnknownOperationError[] = "No operation by this name.";
 const char kUnknownError[] = "Unknown error.";
 
@@ -47,6 +48,8 @@ const char* ResolveErrorCode(JtlCompiler::CompileError::ErrorCode code) {
       return kArgumentCountError;
     case JtlCompiler::CompileError::INVALID_ARGUMENT_TYPE:
       return kArgumentTypeError;
+    case JtlCompiler::CompileError::INVALID_ARGUMENT_VALUE:
+      return kArgumentValueError;
     case JtlCompiler::CompileError::INVALID_OPERATION_NAME:
       return kUnknownOperationError;
     default:

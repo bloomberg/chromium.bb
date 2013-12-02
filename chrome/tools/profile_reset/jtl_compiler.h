@@ -42,7 +42,8 @@ class JtlCompiler {
       PARSING_ERROR,
       INVALID_OPERATION_NAME,
       INVALID_ARGUMENT_COUNT,
-      INVALID_ARGUMENT_TYPE
+      INVALID_ARGUMENT_TYPE,
+      INVALID_ARGUMENT_VALUE
     };
 
     CompileError() : line_number(0), error_code(ERROR_NONE) {}

@@ -4,7 +4,9 @@
 
 #include "chrome/tools/profile_reset/jtl_compiler.h"
 
+#include <limits>
 #include <map>
+#include <numeric>
 
 #include "base/logging.h"
 #include "chrome/browser/profile_resetter/jtl_foundation.h"
@@ -21,6 +23,12 @@ class ByteCodeWriter {
   ~ByteCodeWriter() {}
 
   void WriteUint8(uint8 value) { output_->push_back(static_cast<char>(value)); }
+  void WriteUint32(uint32 value) {
+    for (int i = 0; i < 4; ++i) {
+      output_->push_back(static_cast<char>(value & 0xFFu));
+      value >>= 8;
+    }
+  }
   void WriteOpCode(uint8 op_code) { WriteUint8(op_code); }
   void WriteHash(const std::string& hash) {
     CHECK(jtl::Hasher::IsHash(hash));
@@ -76,6 +84,9 @@ class InstructionSet {
     Add(Instruction("compare_to_stored_hash",
                     jtl::COMPARE_NODE_TO_STORED_HASH,
                     Arguments(String)));
+    Add(Instruction("compare_substring_hashed",
+                    jtl::COMPARE_NODE_SUBSTRING,
+                    Arguments(StringPattern)));
     Add(Instruction("break", jtl::STOP_EXECUTING_SENTENCE, Arguments()));
   }
 
@@ -107,6 +118,20 @@ class InstructionSet {
           target->WriteHash(hasher.GetHash(value));
           break;
         }
+        case StringPattern: {
+          std::string value;
+          if (!arguments.GetString(i, &value))
+            return JtlCompiler::CompileError::INVALID_ARGUMENT_TYPE;
+          if (value.empty() ||
+              value.size() > std::numeric_limits<uint32>::max())
+            return JtlCompiler::CompileError::INVALID_ARGUMENT_VALUE;
+          target->WriteHash(hasher.GetHash(value));
+          target->WriteUint32(static_cast<uint32>(value.size()));
+          uint32 pattern_sum = std::accumulate(
+              value.begin(), value.end(), static_cast<uint32>(0u));
+          target->WriteUint32(pattern_sum);
+          break;
+        }
         case HashString: {
           std::string hash_value;
           if (!arguments.GetString(i, &hash_value) ||
@@ -131,6 +156,7 @@ class InstructionSet {
     None,
     Bool,
     String,
+    StringPattern,
     HashString
   };
 

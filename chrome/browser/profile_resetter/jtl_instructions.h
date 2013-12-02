@@ -29,6 +29,8 @@
 #define OP_COMPARE_NODE_HASH_NOT(value) std::string(1, '\x22') + value
 #define OP_COMPARE_NODE_TO_STORED_BOOL(name) std::string(1, '\x23') + name
 #define OP_COMPARE_NODE_TO_STORED_HASH(name) std::string(1, '\x24') + name
+#define OP_COMPARE_NODE_SUBSTRING(pattern, pattern_length, pattern_sum) \
+    std::string(1, '\x25') + pattern + pattern_length + pattern_sum
 #define OP_STOP_EXECUTING_SENTENCE std::string(1, '\x30')
 #define OP_END_OF_SENTENCE std::string(1, '\x31')
 

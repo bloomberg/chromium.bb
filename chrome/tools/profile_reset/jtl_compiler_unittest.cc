@@ -22,6 +22,15 @@ std::string GetHash(const std::string& input) {
   return jtl_foundation::Hasher(kTestHashSeed).GetHash(input);
 }
 
+static std::string EncodeUint32(uint32 value) {
+  std::string bytecode;
+  for (int i = 0; i < 4; ++i) {
+    bytecode.push_back(static_cast<char>(value & 0xFFu));
+    value >>= 8;
+  }
+  return bytecode;
+}
+
 // Tests ---------------------------------------------------------------------
 
 // Note: Parsing and parsing-related errors are unit-tested separately in more
@@ -34,8 +43,7 @@ TEST(JtlCompiler, CompileSingleInstructions) {
     std::string expected_bytecode;
   } cases[] = {
         {"go(\"foo\").", OP_NAVIGATE(GetHash("foo"))},
-        {"go(\"has whitespace\t\").",
-         OP_NAVIGATE(GetHash("has whitespace\t"))},
+        {"go(\"has whitespace\t\").", OP_NAVIGATE(GetHash("has whitespace\t"))},
         {"any.", OP_NAVIGATE_ANY},
         {"back.", OP_NAVIGATE_BACK},
         {"store_bool(\"name\", true).",
@@ -46,10 +54,8 @@ TEST(JtlCompiler, CompileSingleInstructions) {
          OP_STORE_HASH(GetHash("name"), GetHash("value"))},
         {"store_hashed(\"name\", \"value\").",
          OP_STORE_HASH(GetHash("name"), GetHash("value"))},
-        {"store_node_bool(\"name\").",
-         OP_STORE_NODE_BOOL(GetHash("name"))},
-        {"store_node_hash(\"name\").",
-         OP_STORE_NODE_HASH(GetHash("name"))},
+        {"store_node_bool(\"name\").", OP_STORE_NODE_BOOL(GetHash("name"))},
+        {"store_node_hash(\"name\").", OP_STORE_NODE_HASH(GetHash("name"))},
         {"store_node_effective_sld_hash(\"name\").",
          OP_STORE_NODE_EFFECTIVE_SLD_HASH(GetHash("name"))},
         {"compare_stored_hashed(\"name\", \"value\", \"default\").",
@@ -64,6 +70,9 @@ TEST(JtlCompiler, CompileSingleInstructions) {
          OP_COMPARE_NODE_TO_STORED_BOOL(GetHash("name"))},
         {"compare_to_stored_hash(\"name\").",
          OP_COMPARE_NODE_TO_STORED_HASH(GetHash("name"))},
+        {"compare_substring_hashed(\"pattern\").",
+         OP_COMPARE_NODE_SUBSTRING(
+             GetHash("pattern"), EncodeUint32(7), EncodeUint32(766))},
         {"break.", OP_STOP_EXECUTING_SENTENCE},
         {"break;", OP_STOP_EXECUTING_SENTENCE + OP_END_OF_SENTENCE}};
 
@@ -142,7 +151,9 @@ TEST(JtlCompiler, InvalidArgumentType) {
         {"compare_stored_bool",
          "any()\n.\ncompare_stored_bool(\"name\", \"need a bool\", false);"},
         {"compare_stored_bool",
-         "any()\n.\ncompare_stored_bool(\"name\", false, \"need a bool\");"}};
+         "any()\n.\ncompare_stored_bool(\"name\", false, \"need a bool\");"},
+        {"compare_substring_hashed",
+         "any()\n.\ncompare_substring_hashed(true);"}};
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
     SCOPED_TRACE(cases[i].source_code);
@@ -154,6 +165,27 @@ TEST(JtlCompiler, InvalidArgumentType) {
                 testing::StartsWith(cases[i].expected_context_prefix));
     EXPECT_EQ(2u, error.line_number);
     EXPECT_EQ(JtlCompiler::CompileError::INVALID_ARGUMENT_TYPE,
+              error.error_code);
+  }
+}
+
+TEST(JtlCompiler, InvalidArgumentValue) {
+  struct TestCase {
+    std::string expected_context_prefix;
+    std::string source_code;
+  } cases[] = {
+        {"compare_substring_hashed", "compare_substring_hashed(\"\");"}};
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); ++i) {
+    SCOPED_TRACE(cases[i].source_code);
+    std::string bytecode;
+    JtlCompiler::CompileError error;
+    EXPECT_FALSE(JtlCompiler::Compile(
+        cases[i].source_code, kTestHashSeed, &bytecode, &error));
+    EXPECT_THAT(error.context,
+                testing::StartsWith(cases[i].expected_context_prefix));
+    EXPECT_EQ(0u, error.line_number);
+    EXPECT_EQ(JtlCompiler::CompileError::INVALID_ARGUMENT_VALUE,
               error.error_code);
   }
 }
