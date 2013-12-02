@@ -10,7 +10,7 @@
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/backing_store.h"
 #include "content/browser/renderer_host/input/gesture_event_filter.h"
-#include "content/browser/renderer_host/input/immediate_input_router.h"
+#include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller.h"
 #include "content/browser/renderer_host/input/tap_suppression_controller_client.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
@@ -198,8 +198,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
       int routing_id)
       : RenderWidgetHostImpl(delegate, process, routing_id, false),
         unresponsive_timer_fired_(false) {
-    immediate_input_router_ =
-        static_cast<ImmediateInputRouter*>(input_router_.get());
+    input_router_impl_ = static_cast<InputRouterImpl*>(input_router_.get());
   }
 
   // Allow poking at a few private members.
@@ -318,24 +317,24 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   const TouchEventQueue* touch_event_queue() const {
-    return immediate_input_router_->touch_event_queue_.get();
+    return input_router_impl_->touch_event_queue_.get();
   }
 
   const GestureEventFilter* gesture_event_filter() const {
-    return immediate_input_router_->gesture_event_filter_.get();
+    return input_router_impl_->gesture_event_filter_.get();
   }
 
   GestureEventFilter* gesture_event_filter() {
-    return immediate_input_router_->gesture_event_filter_.get();
+    return input_router_impl_->gesture_event_filter_.get();
   }
 
  private:
   bool unresponsive_timer_fired_;
 
-  // |immediate_input_router_| and |mock_input_router_| are owned by
-  // RenderWidgetHostImpl |input_router_|. Below are provided for convenience so
+  // |input_router_impl_| and |mock_input_router_| are owned by
+  // RenderWidgetHostImpl.  The handles below are provided for convenience so
   // that we don't have to reinterpret_cast it all the time.
-  ImmediateInputRouter* immediate_input_router_;
+  InputRouterImpl* input_router_impl_;
   MockInputRouter* mock_input_router_;
 
   scoped_ptr<TestOverscrollDelegate> overscroll_delegate_;

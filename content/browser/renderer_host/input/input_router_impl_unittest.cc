@@ -6,8 +6,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/renderer_host/input/gesture_event_filter.h"
-#include "content/browser/renderer_host/input/immediate_input_router.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
+#include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/mock_input_ack_handler.h"
 #include "content/browser/renderer_host/input/mock_input_router_client.h"
 #include "content/common/content_constants_internal.h"
@@ -105,10 +105,10 @@ bool EventListIsSubset(const ScopedVector<ui::TouchEvent>& subset,
 
 }  // namespace
 
-class ImmediateInputRouterTest : public testing::Test {
+class InputRouterImplTest : public testing::Test {
  public:
-  ImmediateInputRouterTest() {}
-  virtual ~ImmediateInputRouterTest() {}
+  InputRouterImplTest() {}
+  virtual ~InputRouterImplTest() {}
 
  protected:
   // testing::Test
@@ -117,12 +117,10 @@ class ImmediateInputRouterTest : public testing::Test {
     process_.reset(new MockRenderProcessHost(browser_context_.get()));
     client_.reset(new MockInputRouterClient());
     ack_handler_.reset(new MockInputAckHandler());
-    input_router_.reset(new ImmediateInputRouter(process_.get(),
-                                                 client_.get(),
-                                                 ack_handler_.get(),
-                                                 MSG_ROUTING_NONE));
-    input_router_->gesture_event_filter_->
-        set_debounce_enabled_for_testing(false);
+    input_router_.reset(new InputRouterImpl(
+        process_.get(), client_.get(), ack_handler_.get(), MSG_ROUTING_NONE));
+    input_router_->gesture_event_filter_->set_debounce_enabled_for_testing(
+        false);
     client_->set_input_router(input_router());
     ack_handler_->set_input_router(input_router());
   }
@@ -258,7 +256,7 @@ class ImmediateInputRouterTest : public testing::Test {
     input_router_->OnMessageReceived(*response);
   }
 
-  ImmediateInputRouter* input_router() const {
+  InputRouterImpl* input_router() const {
     return input_router_.get();
   }
 
@@ -279,7 +277,7 @@ class ImmediateInputRouterTest : public testing::Test {
   scoped_ptr<MockRenderProcessHost> process_;
   scoped_ptr<MockInputRouterClient> client_;
   scoped_ptr<MockInputAckHandler> ack_handler_;
-  scoped_ptr<ImmediateInputRouter> input_router_;
+  scoped_ptr<InputRouterImpl> input_router_;
 
  private:
   base::MessageLoopForUI message_loop_;
@@ -288,7 +286,7 @@ class ImmediateInputRouterTest : public testing::Test {
   scoped_ptr<TestBrowserContext> browser_context_;
 };
 
-TEST_F(ImmediateInputRouterTest, CoalescesRangeSelection) {
+TEST_F(InputRouterImplTest, CoalescesRangeSelection) {
   input_router_->SendInput(scoped_ptr<IPC::Message>(
       new InputMsg_SelectRange(0, gfx::Point(1, 2), gfx::Point(3, 4))));
   ExpectIPCMessageWithArg2<InputMsg_SelectRange>(
@@ -327,7 +325,7 @@ TEST_F(ImmediateInputRouterTest, CoalescesRangeSelection) {
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 }
 
-TEST_F(ImmediateInputRouterTest, CoalescesCaretMove) {
+TEST_F(InputRouterImplTest, CoalescesCaretMove) {
   input_router_->SendInput(
       scoped_ptr<IPC::Message>(new InputMsg_MoveCaret(0, gfx::Point(1, 2))));
   ExpectIPCMessageWithArg1<InputMsg_MoveCaret>(
@@ -362,7 +360,7 @@ TEST_F(ImmediateInputRouterTest, CoalescesCaretMove) {
   EXPECT_EQ(0u, GetSentMessageCountAndResetSink());
 }
 
-TEST_F(ImmediateInputRouterTest, HandledInputEvent) {
+TEST_F(InputRouterImplTest, HandledInputEvent) {
   client_->set_filter_state(INPUT_EVENT_ACK_STATE_CONSUMED);
 
   // Simulate a keyboard event.
@@ -379,7 +377,7 @@ TEST_F(ImmediateInputRouterTest, HandledInputEvent) {
   ASSERT_EQ(NULL, input_router_->GetLastKeyboardEvent());
 }
 
-TEST_F(ImmediateInputRouterTest, ClientCanceledKeyboardEvent) {
+TEST_F(InputRouterImplTest, ClientCanceledKeyboardEvent) {
   client_->set_filter_state(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
 
   // Simulate a keyboard event that has no consumer.
@@ -399,7 +397,7 @@ TEST_F(ImmediateInputRouterTest, ClientCanceledKeyboardEvent) {
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
 }
 
-TEST_F(ImmediateInputRouterTest, ShortcutKeyboardEvent) {
+TEST_F(InputRouterImplTest, ShortcutKeyboardEvent) {
   SimulateKeyboardEvent(WebInputEvent::RawKeyDown, true);
   EXPECT_TRUE(GetIsShortcutFromHandleInputEventMessage(
       process_->sink().GetMessageAt(0)));
@@ -411,7 +409,7 @@ TEST_F(ImmediateInputRouterTest, ShortcutKeyboardEvent) {
       process_->sink().GetMessageAt(0)));
 }
 
-TEST_F(ImmediateInputRouterTest, NoncorrespondingKeyEvents) {
+TEST_F(InputRouterImplTest, NoncorrespondingKeyEvents) {
   SimulateKeyboardEvent(WebInputEvent::RawKeyDown, false);
 
   SendInputEventACK(WebInputEvent::KeyUp,
@@ -421,7 +419,7 @@ TEST_F(ImmediateInputRouterTest, NoncorrespondingKeyEvents) {
 
 // Tests ported from RenderWidgetHostTest --------------------------------------
 
-TEST_F(ImmediateInputRouterTest, HandleKeyEventsWeSent) {
+TEST_F(InputRouterImplTest, HandleKeyEventsWeSent) {
   // Simulate a keyboard event.
   SimulateKeyboardEvent(WebInputEvent::RawKeyDown, false);
   ASSERT_TRUE(input_router_->GetLastKeyboardEvent());
@@ -441,7 +439,7 @@ TEST_F(ImmediateInputRouterTest, HandleKeyEventsWeSent) {
             ack_handler_->acked_keyboard_event().type);
 }
 
-TEST_F(ImmediateInputRouterTest, IgnoreKeyEventsWeDidntSend) {
+TEST_F(InputRouterImplTest, IgnoreKeyEventsWeDidntSend) {
   // Send a simulated, unrequested key response. We should ignore this.
   SendInputEventACK(WebInputEvent::RawKeyDown,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
@@ -449,7 +447,7 @@ TEST_F(ImmediateInputRouterTest, IgnoreKeyEventsWeDidntSend) {
   EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
 }
 
-TEST_F(ImmediateInputRouterTest, CoalescesWheelEvents) {
+TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   // Simulate wheel events.
   SimulateWheelEvent(0, -5, 0, false);  // sent directly
   SimulateWheelEvent(0, -10, 0, false);  // enqueued
@@ -461,7 +459,7 @@ TEST_F(ImmediateInputRouterTest, CoalescesWheelEvents) {
                   InputMsg_HandleInputEvent::ID));
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
 
-  // Check that the ACK sends the second message via ImmediateInputForwarder
+  // Check that the ACK sends the second message immediately.
   SendInputEventACK(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_CONSUMED);
   // The coalesced events can queue up a delayed ack
@@ -490,7 +488,7 @@ TEST_F(ImmediateInputRouterTest, CoalescesWheelEvents) {
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
 }
 
-TEST_F(ImmediateInputRouterTest,
+TEST_F(InputRouterImplTest,
        CoalescesWheelEventsQueuedPhaseEndIsNotDropped) {
   // Send an initial gesture begin and ACK it.
   SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
@@ -529,7 +527,7 @@ TEST_F(ImmediateInputRouterTest,
 }
 
 // Tests that touch-events are queued properly.
-TEST_F(ImmediateInputRouterTest, TouchEventQueue) {
+TEST_F(InputRouterImplTest, TouchEventQueue) {
   PressTouchPoint(1, 1);
   SendTouchEvent();
   EXPECT_TRUE(client_->GetAndResetFilterEventCalled());
@@ -563,7 +561,7 @@ TEST_F(ImmediateInputRouterTest, TouchEventQueue) {
 
 // Tests that the touch-queue is emptied if a page stops listening for touch
 // events.
-TEST_F(ImmediateInputRouterTest, TouchEventQueueFlush) {
+TEST_F(InputRouterImplTest, TouchEventQueueFlush) {
   input_router_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
   EXPECT_TRUE(client_->has_touch_handler());
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
@@ -590,7 +588,7 @@ TEST_F(ImmediateInputRouterTest, TouchEventQueueFlush) {
 #if defined(OS_WIN) || defined(USE_AURA)
 // Tests that the acked events have correct state. (ui::Events are used only on
 // windows and aura)
-TEST_F(ImmediateInputRouterTest, AckedTouchEventState) {
+TEST_F(InputRouterImplTest, AckedTouchEventState) {
   input_router_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_TRUE(TouchEventQueueEmpty());
@@ -674,7 +672,7 @@ TEST_F(ImmediateInputRouterTest, AckedTouchEventState) {
 }
 #endif  // defined(OS_WIN) || defined(USE_AURA)
 
-TEST_F(ImmediateInputRouterTest, UnhandledWheelEvent) {
+TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
   // Simulate wheel events.
   SimulateWheelEvent(0, -5, 0, false);  // sent directly
   SimulateWheelEvent(0, -10, 0, false);  // enqueued
@@ -702,7 +700,7 @@ TEST_F(ImmediateInputRouterTest, UnhandledWheelEvent) {
   EXPECT_EQ(ack_handler_->acked_wheel_event().deltaY, -5);
 }
 
-TEST_F(ImmediateInputRouterTest, TouchTypesIgnoringAck) {
+TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
   int start_type = static_cast<int>(WebInputEvent::TouchStart);
   int end_type = static_cast<int>(WebInputEvent::TouchCancel);
   for (int i = start_type; i <= end_type; ++i) {
@@ -729,7 +727,7 @@ TEST_F(ImmediateInputRouterTest, TouchTypesIgnoringAck) {
   }
 }
 
-TEST_F(ImmediateInputRouterTest, GestureTypesIgnoringAck) {
+TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
   int start_type = static_cast<int>(WebInputEvent::GestureScrollBegin);
   int end_type = static_cast<int>(WebInputEvent::GesturePinchUpdate);
   for (int i = start_type; i <= end_type; ++i) {
@@ -748,7 +746,7 @@ TEST_F(ImmediateInputRouterTest, GestureTypesIgnoringAck) {
 
 // Test that GestureShowPress, GestureTapDown and GestureTapCancel events don't
 // wait for ACKs.
-TEST_F(ImmediateInputRouterTest, GestureTypesIgnoringAckInterleaved) {
+TEST_F(InputRouterImplTest, GestureTypesIgnoringAckInterleaved) {
   // Interleave a few events that do and do not ignore acks, ensuring that
   // ack-ignoring events aren't dispatched until all prior events which observe
   // their ack disposition have been dispatched.
@@ -821,7 +819,7 @@ TEST_F(ImmediateInputRouterTest, GestureTypesIgnoringAckInterleaved) {
 
 // Test that GestureShowPress events don't get out of order due to
 // ignoring their acks.
-TEST_F(ImmediateInputRouterTest, GestureShowPressIsInOrder) {
+TEST_F(InputRouterImplTest, GestureShowPressIsInOrder) {
   SimulateGestureEvent(WebInputEvent::GestureTap,
                        WebGestureEvent::Touchscreen);
 

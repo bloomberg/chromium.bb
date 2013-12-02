@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/immediate_input_router.h"
+#include "content/browser/renderer_host/input/input_router_impl.h"
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -72,10 +72,10 @@ const char* GetEventAckName(InputEventAckState ack_result) {
 
 } // namespace
 
-ImmediateInputRouter::ImmediateInputRouter(IPC::Sender* sender,
-                                           InputRouterClient* client,
-                                           InputAckHandler* ack_handler,
-                                           int routing_id)
+InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
+                                 InputRouterClient* client,
+                                 InputAckHandler* ack_handler,
+                                 int routing_id)
     : sender_(sender),
       client_(client),
       ack_handler_(ack_handler),
@@ -93,12 +93,11 @@ ImmediateInputRouter::ImmediateInputRouter(IPC::Sender* sender,
   DCHECK(ack_handler);
 }
 
-ImmediateInputRouter::~ImmediateInputRouter() {
-}
+InputRouterImpl::~InputRouterImpl() {}
 
-void ImmediateInputRouter::Flush() {}
+void InputRouterImpl::Flush() {}
 
-bool ImmediateInputRouter::SendInput(scoped_ptr<IPC::Message> message) {
+bool InputRouterImpl::SendInput(scoped_ptr<IPC::Message> message) {
   DCHECK(IPC_MESSAGE_ID_CLASS(message->type()) == InputMsgStart);
   switch (message->type()) {
     // Check for types that require an ACK.
@@ -114,7 +113,7 @@ bool ImmediateInputRouter::SendInput(scoped_ptr<IPC::Message> message) {
   }
 }
 
-void ImmediateInputRouter::SendMouseEvent(
+void InputRouterImpl::SendMouseEvent(
     const MouseEventWithLatencyInfo& mouse_event) {
   // Order is important here; we need to convert all MouseEvents before they
   // propagate further, e.g., to the tap suppression controller.
@@ -136,7 +135,7 @@ void ImmediateInputRouter::SendMouseEvent(
   SendMouseEventImmediately(mouse_event);
 }
 
-void ImmediateInputRouter::SendWheelEvent(
+void InputRouterImpl::SendWheelEvent(
     const MouseWheelEventWithLatencyInfo& wheel_event) {
   // If there's already a mouse wheel event waiting to be sent to the renderer,
   // add the new deltas to that event. Not doing so (e.g., by dropping the old
@@ -160,10 +159,9 @@ void ImmediateInputRouter::SendWheelEvent(
   FilterAndSendWebInputEvent(wheel_event.event, wheel_event.latency, false);
 }
 
-void ImmediateInputRouter::SendKeyboardEvent(
-    const NativeWebKeyboardEvent& key_event,
-    const ui::LatencyInfo& latency_info,
-    bool is_keyboard_shortcut) {
+void InputRouterImpl::SendKeyboardEvent(const NativeWebKeyboardEvent& key_event,
+                                        const ui::LatencyInfo& latency_info,
+                                        bool is_keyboard_shortcut) {
   // Put all WebKeyboardEvent objects in a queue since we can't trust the
   // renderer and we need to give something to the HandleKeyboardEvent
   // handler.
@@ -176,7 +174,7 @@ void ImmediateInputRouter::SendKeyboardEvent(
   FilterAndSendWebInputEvent(key_event, latency_info, is_keyboard_shortcut);
 }
 
-void ImmediateInputRouter::SendGestureEvent(
+void InputRouterImpl::SendGestureEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
   HandleGestureScroll(gesture_event);
 
@@ -191,14 +189,14 @@ void ImmediateInputRouter::SendGestureEvent(
   FilterAndSendWebInputEvent(gesture_event.event, gesture_event.latency, false);
 }
 
-void ImmediateInputRouter::SendTouchEvent(
+void InputRouterImpl::SendTouchEvent(
     const TouchEventWithLatencyInfo& touch_event) {
   touch_event_queue_->QueueEvent(touch_event);
 }
 
 // Forwards MouseEvent without passing it through
 // TouchpadTapSuppressionController.
-void ImmediateInputRouter::SendMouseEventImmediately(
+void InputRouterImpl::SendMouseEventImmediately(
     const MouseEventWithLatencyInfo& mouse_event) {
   // Avoid spamming the renderer with mouse move events.  It is important
   // to note that WM_MOUSEMOVE events are anyways synthetic, but since our
@@ -218,25 +216,24 @@ void ImmediateInputRouter::SendMouseEventImmediately(
   FilterAndSendWebInputEvent(mouse_event.event, mouse_event.latency, false);
 }
 
-void ImmediateInputRouter::SendTouchEventImmediately(
+void InputRouterImpl::SendTouchEventImmediately(
     const TouchEventWithLatencyInfo& touch_event) {
   FilterAndSendWebInputEvent(touch_event.event, touch_event.latency, false);
 }
 
-void ImmediateInputRouter::SendGestureEventImmediately(
+void InputRouterImpl::SendGestureEventImmediately(
     const GestureEventWithLatencyInfo& gesture_event) {
   HandleGestureScroll(gesture_event);
   FilterAndSendWebInputEvent(gesture_event.event, gesture_event.latency, false);
 }
 
-const NativeWebKeyboardEvent*
-    ImmediateInputRouter::GetLastKeyboardEvent() const {
+const NativeWebKeyboardEvent* InputRouterImpl::GetLastKeyboardEvent() const {
   if (key_queue_.empty())
     return NULL;
   return &key_queue_.front();
 }
 
-bool ImmediateInputRouter::ShouldForwardTouchEvent() const {
+bool InputRouterImpl::ShouldForwardTouchEvent() const {
   // Always send a touch event if the renderer has a touch-event handler. It is
   // possible that a renderer stops listening to touch-events while there are
   // still events in the touch-queue. In such cases, the new events should still
@@ -244,10 +241,10 @@ bool ImmediateInputRouter::ShouldForwardTouchEvent() const {
   return has_touch_handler_ || !touch_event_queue_->empty();
 }
 
-bool ImmediateInputRouter::OnMessageReceived(const IPC::Message& message) {
+bool InputRouterImpl::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   bool message_is_ok = true;
-  IPC_BEGIN_MESSAGE_MAP_EX(ImmediateInputRouter, message, message_is_ok)
+  IPC_BEGIN_MESSAGE_MAP_EX(InputRouterImpl, message, message_is_ok)
     IPC_MESSAGE_HANDLER(InputHostMsg_HandleInputEvent_ACK, OnInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_MoveCaret_ACK, OnMsgMoveCaretAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectRange_ACK, OnSelectRangeAck)
@@ -262,20 +259,19 @@ bool ImmediateInputRouter::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void ImmediateInputRouter::OnTouchEventAck(
-    const TouchEventWithLatencyInfo& event,
-    InputEventAckState ack_result) {
+void InputRouterImpl::OnTouchEventAck(const TouchEventWithLatencyInfo& event,
+                                      InputEventAckState ack_result) {
   ack_handler_->OnTouchEventAck(event, ack_result);
 }
 
-void ImmediateInputRouter::OnGestureEventAck(
+void InputRouterImpl::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
     InputEventAckState ack_result) {
   ProcessAckForOverscroll(event.event, ack_result);
   ack_handler_->OnGestureEventAck(event, ack_result);
 }
 
-bool ImmediateInputRouter::SendSelectRange(scoped_ptr<IPC::Message> message) {
+bool InputRouterImpl::SendSelectRange(scoped_ptr<IPC::Message> message) {
   DCHECK(message->type() == InputMsg_SelectRange::ID);
   if (select_range_pending_) {
     next_selection_range_ = message.Pass();
@@ -286,7 +282,7 @@ bool ImmediateInputRouter::SendSelectRange(scoped_ptr<IPC::Message> message) {
   return Send(message.release());
 }
 
-bool ImmediateInputRouter::SendMoveCaret(scoped_ptr<IPC::Message> message) {
+bool InputRouterImpl::SendMoveCaret(scoped_ptr<IPC::Message> message) {
   DCHECK(message->type() == InputMsg_MoveCaret::ID);
   if (move_caret_pending_) {
     next_move_caret_ = message.Pass();
@@ -297,16 +293,18 @@ bool ImmediateInputRouter::SendMoveCaret(scoped_ptr<IPC::Message> message) {
   return Send(message.release());
 }
 
-bool ImmediateInputRouter::Send(IPC::Message* message) {
+bool InputRouterImpl::Send(IPC::Message* message) {
   return sender_->Send(message);
 }
 
-void ImmediateInputRouter::FilterAndSendWebInputEvent(
+void InputRouterImpl::FilterAndSendWebInputEvent(
     const WebInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
     bool is_keyboard_shortcut) {
-  TRACE_EVENT1("input", "ImmediateInputRouter::FilterAndSendWebInputEvent",
-               "type", WebInputEventTraits::GetName(input_event.type));
+  TRACE_EVENT1("input",
+               "InputRouterImpl::FilterAndSendWebInputEvent",
+               "type",
+               WebInputEventTraits::GetName(input_event.type));
 
   // Transmit any pending wheel events on a non-wheel event. This ensures that
   // final PhaseEnded wheel event is received, which is necessary to terminate
@@ -327,9 +325,9 @@ void ImmediateInputRouter::FilterAndSendWebInputEvent(
   OfferToHandlers(input_event, latency_info, is_keyboard_shortcut);
 }
 
-void ImmediateInputRouter::OfferToHandlers(const WebInputEvent& input_event,
-                                           const ui::LatencyInfo& latency_info,
-                                           bool is_keyboard_shortcut) {
+void InputRouterImpl::OfferToHandlers(const WebInputEvent& input_event,
+                                      const ui::LatencyInfo& latency_info,
+                                      bool is_keyboard_shortcut) {
   if (OfferToOverscrollController(input_event, latency_info))
     return;
 
@@ -347,7 +345,7 @@ void ImmediateInputRouter::OfferToHandlers(const WebInputEvent& input_event,
   }
 }
 
-bool ImmediateInputRouter::OfferToOverscrollController(
+bool InputRouterImpl::OfferToOverscrollController(
     const WebInputEvent& input_event,
     const ui::LatencyInfo& latency_info) {
   OverscrollController* controller = client_->GetOverscrollController();
@@ -382,8 +380,8 @@ bool ImmediateInputRouter::OfferToOverscrollController(
   return consumed;
 }
 
-bool ImmediateInputRouter::OfferToClient(const WebInputEvent& input_event,
-                                         const ui::LatencyInfo& latency_info) {
+bool InputRouterImpl::OfferToClient(const WebInputEvent& input_event,
+                                    const ui::LatencyInfo& latency_info) {
   bool consumed = false;
 
   InputEventAckState filter_ack =
@@ -408,7 +406,7 @@ bool ImmediateInputRouter::OfferToClient(const WebInputEvent& input_event,
   return consumed;
 }
 
-bool ImmediateInputRouter::OfferToRenderer(const WebInputEvent& input_event,
+bool InputRouterImpl::OfferToRenderer(const WebInputEvent& input_event,
                                            const ui::LatencyInfo& latency_info,
                                            bool is_keyboard_shortcut) {
   input_event_start_time_ = TimeTicks::Now();
@@ -420,10 +418,9 @@ bool ImmediateInputRouter::OfferToRenderer(const WebInputEvent& input_event,
   return false;
 }
 
-void ImmediateInputRouter::OnInputEventAck(
-    WebInputEvent::Type event_type,
-    InputEventAckState ack_result,
-    const ui::LatencyInfo& latency_info) {
+void InputRouterImpl::OnInputEventAck(WebInputEvent::Type event_type,
+                                      InputEventAckState ack_result,
+                                      const ui::LatencyInfo& latency_info) {
   // Log the time delta for processing an input event.
   TimeDelta delta = TimeTicks::Now() - input_event_start_time_;
   UMA_HISTOGRAM_TIMES("MPArch.IIR_InputEventDelta", delta);
@@ -451,19 +448,19 @@ void ImmediateInputRouter::OnInputEventAck(
       Details<int>(&type));
 }
 
-void ImmediateInputRouter::OnMsgMoveCaretAck() {
+void InputRouterImpl::OnMsgMoveCaretAck() {
   move_caret_pending_ = false;
   if (next_move_caret_)
     SendMoveCaret(next_move_caret_.Pass());
 }
 
-void ImmediateInputRouter::OnSelectRangeAck() {
+void InputRouterImpl::OnSelectRangeAck() {
   select_range_pending_ = false;
   if (next_selection_range_)
     SendSelectRange(next_selection_range_.Pass());
 }
 
-void ImmediateInputRouter::OnHasTouchEventHandlers(bool has_handlers) {
+void InputRouterImpl::OnHasTouchEventHandlers(bool has_handlers) {
  if (has_touch_handler_ == has_handlers)
     return;
   has_touch_handler_ = has_handlers;
@@ -472,12 +469,12 @@ void ImmediateInputRouter::OnHasTouchEventHandlers(bool has_handlers) {
   client_->OnHasTouchEventHandlers(has_handlers);
 }
 
-void ImmediateInputRouter::ProcessInputEventAck(
+void InputRouterImpl::ProcessInputEventAck(
     WebInputEvent::Type event_type,
     InputEventAckState ack_result,
     const ui::LatencyInfo& latency_info,
     AckSource ack_source) {
-  TRACE_EVENT2("input", "ImmediateInputRouter::ProcessInputEventAck",
+  TRACE_EVENT2("input", "InputRouterImpl::ProcessInputEventAck",
                "type", WebInputEventTraits::GetName(event_type),
                "ack", GetEventAckName(ack_result));
 
@@ -506,9 +503,8 @@ void ImmediateInputRouter::ProcessInputEventAck(
   }
 }
 
-void ImmediateInputRouter::ProcessKeyboardAck(
-    blink::WebInputEvent::Type type,
-    InputEventAckState ack_result) {
+void InputRouterImpl::ProcessKeyboardAck(blink::WebInputEvent::Type type,
+                                         InputEventAckState ack_result) {
   if (key_queue_.empty()) {
     ack_handler_->OnUnexpectedEventAck(InputAckHandler::UNEXPECTED_ACK);
   } else if (key_queue_.front().type != type) {
@@ -521,15 +517,15 @@ void ImmediateInputRouter::ProcessKeyboardAck(
     key_queue_.pop_front();
 
     ack_handler_->OnKeyboardEventAck(front_item, ack_result);
-    // WARNING: This ImmediateInputRouter can be deallocated at this point
+    // WARNING: This InputRouterImpl can be deallocated at this point
     // (i.e.  in the case of Ctrl+W, where the call to
-    // HandleKeyboardEvent destroys this ImmediateInputRouter).
+    // HandleKeyboardEvent destroys this InputRouterImpl).
     // TODO(jdduke): crbug.com/274029 - Make ack-triggered shutdown async.
   }
 }
 
-void ImmediateInputRouter::ProcessMouseAck(blink::WebInputEvent::Type type,
-                                           InputEventAckState ack_result) {
+void InputRouterImpl::ProcessMouseAck(blink::WebInputEvent::Type type,
+                                      InputEventAckState ack_result) {
   if (type != WebInputEvent::MouseMove)
     return;
 
@@ -543,8 +539,8 @@ void ImmediateInputRouter::ProcessMouseAck(blink::WebInputEvent::Type type,
   }
 }
 
-void ImmediateInputRouter::ProcessWheelAck(InputEventAckState ack_result,
-                                           const ui::LatencyInfo& latency) {
+void InputRouterImpl::ProcessWheelAck(InputEventAckState ack_result,
+                                      const ui::LatencyInfo& latency) {
   ProcessAckForOverscroll(current_wheel_event_.event, ack_result);
 
   // TODO(miletus): Add renderer side latency to each uncoalesced mouse
@@ -564,9 +560,9 @@ void ImmediateInputRouter::ProcessWheelAck(InputEventAckState ack_result,
   }
 }
 
-void ImmediateInputRouter::ProcessGestureAck(WebInputEvent::Type type,
-                                             InputEventAckState ack_result,
-                                             const ui::LatencyInfo& latency) {
+void InputRouterImpl::ProcessGestureAck(WebInputEvent::Type type,
+                                        InputEventAckState ack_result,
+                                        const ui::LatencyInfo& latency) {
   // If |ack_result| originated from the overscroll controller, only
   // feed |gesture_event_filter_| the ack if it was expecting one.
   if (current_ack_source_ == OVERSCROLL_CONTROLLER &&
@@ -578,16 +574,15 @@ void ImmediateInputRouter::ProcessGestureAck(WebInputEvent::Type type,
   gesture_event_filter_->ProcessGestureAck(ack_result, type, latency);
 }
 
-void ImmediateInputRouter::ProcessTouchAck(
+void InputRouterImpl::ProcessTouchAck(
     InputEventAckState ack_result,
     const ui::LatencyInfo& latency) {
   // |touch_event_queue_| will forward to OnTouchEventAck when appropriate.
   touch_event_queue_->ProcessTouchAck(ack_result, latency);
 }
 
-void ImmediateInputRouter::ProcessAckForOverscroll(
-    const WebInputEvent& event,
-    InputEventAckState ack_result) {
+void InputRouterImpl::ProcessAckForOverscroll(const WebInputEvent& event,
+                                              InputEventAckState ack_result) {
   // Acks sent from the overscroll controller need not be fed back into the
   // overscroll controller.
   if (current_ack_source_ == OVERSCROLL_CONTROLLER)
@@ -601,12 +596,12 @@ void ImmediateInputRouter::ProcessAckForOverscroll(
       event, (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result));
 }
 
-void ImmediateInputRouter::HandleGestureScroll(
+void InputRouterImpl::HandleGestureScroll(
     const GestureEventWithLatencyInfo& gesture_event) {
   touch_event_queue_->OnGestureScrollEvent(gesture_event);
 }
 
-void ImmediateInputRouter::SimulateTouchGestureWithMouse(
+void InputRouterImpl::SimulateTouchGestureWithMouse(
     const MouseEventWithLatencyInfo& event) {
   const WebMouseEvent& mouse_event = event.event;
   int x = mouse_event.x, y = mouse_event.y;
@@ -686,7 +681,7 @@ void ImmediateInputRouter::SimulateTouchGestureWithMouse(
   }
 }
 
-bool ImmediateInputRouter::IsInOverscrollGesture() const {
+bool InputRouterImpl::IsInOverscrollGesture() const {
   OverscrollController* controller = client_->GetOverscrollController();
   return controller && controller->overscroll_mode() != OVERSCROLL_NONE;
 }

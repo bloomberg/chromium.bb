@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_IMMEDIATE_INPUT_ROUTER_H_
-#define CONTENT_BROWSER_RENDERER_HOST_INPUT_IMMEDIATE_INPUT_ROUTER_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_IMPL_H_
+#define CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_IMPL_H_
 
 #include <queue>
 
@@ -31,19 +31,18 @@ class InputRouterClient;
 class OverscrollController;
 class RenderWidgetHostImpl;
 
-// A default implementation for browser input event routing. Input commands are
-// forwarded to the renderer immediately upon receipt.
-class CONTENT_EXPORT ImmediateInputRouter
+// A default implementation for browser input event routing.
+class CONTENT_EXPORT InputRouterImpl
     : public NON_EXPORTED_BASE(InputRouter),
       public NON_EXPORTED_BASE(GestureEventFilterClient),
       public NON_EXPORTED_BASE(TouchEventQueueClient),
       public NON_EXPORTED_BASE(TouchpadTapSuppressionControllerClient) {
  public:
-  ImmediateInputRouter(IPC::Sender* sender,
-                       InputRouterClient* client,
-                       InputAckHandler* ack_handler,
-                       int routing_id);
-  virtual ~ImmediateInputRouter();
+  InputRouterImpl(IPC::Sender* sender,
+                  InputRouterClient* client,
+                  InputAckHandler* ack_handler,
+                  int routing_id);
+  virtual ~InputRouterImpl();
 
   // InputRouter
   virtual void Flush() OVERRIDE;
@@ -67,7 +66,7 @@ class CONTENT_EXPORT ImmediateInputRouter
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
 private:
-  friend class ImmediateInputRouterTest;
+  friend class InputRouterImplTest;
   friend class MockRenderWidgetHost;
 
   // TouchpadTapSuppressionControllerClient
@@ -242,9 +241,9 @@ private:
   scoped_ptr<TouchEventQueue> touch_event_queue_;
   scoped_ptr<GestureEventFilter> gesture_event_filter_;
 
-  DISALLOW_COPY_AND_ASSIGN(ImmediateInputRouter);
+  DISALLOW_COPY_AND_ASSIGN(InputRouterImpl);
 };
 
 }  // namespace content
 
-#endif // CONTENT_BROWSER_RENDERER_HOST_INPUT_IMMEDIATE_INPUT_ROUTER_H_
+#endif // CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_IMPL_H_
