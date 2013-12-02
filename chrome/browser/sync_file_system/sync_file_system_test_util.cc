@@ -30,16 +30,18 @@ AssignAndQuitCallback(base::RunLoop* run_loop, R* result) {
   return base::Bind(&AssignAndQuit<R>, run_loop, base::Unretained(result));
 }
 
-template <typename Arg>
-void ReceiveResult1(bool* done, Arg* arg_out, Arg arg) {
+template <typename Arg, typename Param>
+void ReceiveResult1(bool* done, Arg* arg_out, Param arg) {
   EXPECT_FALSE(*done);
   *done = true;
   *arg_out = base::internal::CallbackForward(arg);
 }
 
 template <typename Arg>
-base::Callback<void(Arg)> CreateResultReceiver(Arg* arg_out) {
-  return base::Bind(&ReceiveResult1<Arg>,
+base::Callback<void(typename TypeTraits<Arg>::ParamType)>
+CreateResultReceiver(Arg* arg_out) {
+  typedef typename TypeTraits<Arg>::ParamType Param;
+  return base::Bind(&ReceiveResult1<Arg, Param>,
                     base::Owned(new bool(false)), arg_out);
 }
 
