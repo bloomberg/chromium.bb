@@ -96,7 +96,8 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
   // been fully processed.  Then they simply delegate to the sequencer.
   virtual size_t Readv(const struct iovec* iov, size_t iov_len);
   virtual int GetReadableRegions(iovec* iov, size_t iov_len);
-  virtual bool IsHalfClosed() const;
+  // Returns true when all data has been read from the peer, including the fin.
+  virtual bool IsDoneReading() const;
   virtual bool HasBytesToRead() const;
 
   // Called by the session when a decompression blocked stream

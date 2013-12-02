@@ -13,13 +13,15 @@ using std::min;
 
 namespace net {
 
-QuicReceivedPacketManager::QuicReceivedPacketManager()
+QuicReceivedPacketManager::QuicReceivedPacketManager(
+    CongestionFeedbackType congestion_type)
     : packets_entropy_hash_(0),
       largest_sequence_number_(0),
       peer_largest_observed_packet_(0),
       least_packet_awaited_by_peer_(1),
       peer_least_packet_awaiting_ack_(0),
-      time_largest_observed_(QuicTime::Zero()) {
+      time_largest_observed_(QuicTime::Zero()),
+      receive_algorithm_(ReceiveAlgorithmInterface::Create(congestion_type)) {
   received_info_.largest_observed = 0;
   received_info_.entropy_hash = 0;
 }
@@ -27,8 +29,10 @@ QuicReceivedPacketManager::QuicReceivedPacketManager()
 QuicReceivedPacketManager::~QuicReceivedPacketManager() {}
 
 void QuicReceivedPacketManager::RecordPacketReceived(
+    QuicByteCount bytes,
     const QuicPacketHeader& header,
-    QuicTime receipt_time) {
+    QuicTime receipt_time,
+    bool revived) {
   QuicPacketSequenceNumber sequence_number = header.packet_sequence_number;
   DCHECK(IsAwaitingPacket(sequence_number));
 
@@ -48,6 +52,12 @@ void QuicReceivedPacketManager::RecordPacketReceived(
     time_largest_observed_ = receipt_time;
   }
   RecordPacketEntropyHash(sequence_number, header.entropy_hash);
+
+  // Don't update the receive algorithm for revived packets.
+  if (!revived) {
+    receive_algorithm_->RecordIncomingPacket(
+        bytes, sequence_number, receipt_time, revived);
+  }
 }
 
 bool QuicReceivedPacketManager::IsAwaitingPacket(
@@ -92,6 +102,11 @@ void QuicReceivedPacketManager::RecordPacketEntropyHash(
            << static_cast<int>(packets_entropy_hash_)
            << " updated with sequence number " << sequence_number
            << " entropy hash: " << static_cast<int>(entropy_hash);
+}
+
+bool QuicReceivedPacketManager::GenerateCongestionFeedback(
+    QuicCongestionFeedbackFrame* feedback) {
+  return receive_algorithm_->GenerateCongestionFeedback(feedback);
 }
 
 QuicPacketEntropyHash QuicReceivedPacketManager::EntropyHash(

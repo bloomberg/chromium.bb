@@ -775,10 +775,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   // close.
   bool connected_;
 
-  // True if the last ack received from the peer may have been truncated.  False
-  // otherwise.
-  bool received_truncated_ack_;
-
   // Set to true if the udp packet headers have a new self or peer address.
   // This is checked later on validating a data or version negotiation packet.
   bool address_migrating_;

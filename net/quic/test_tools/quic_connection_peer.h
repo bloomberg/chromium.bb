@@ -23,6 +23,7 @@ class QuicFecGroup;
 class QuicFramer;
 class QuicPacketCreator;
 class QuicPacketWriter;
+class QuicReceivedPacketManager;
 class ReceiveAlgorithmInterface;
 class SendAlgorithmInterface;
 
@@ -48,7 +49,8 @@ class QuicConnectionPeer {
 
   static QuicPacketCreator* GetPacketCreator(QuicConnection* connection);
 
-  static bool GetReceivedTruncatedAck(QuicConnection* connection);
+  static QuicReceivedPacketManager* GetReceivedPacketManager(
+      QuicConnection* connection);
 
   static QuicTime::Delta GetNetworkTimeout(QuicConnection* connection);
 

@@ -380,7 +380,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                              SpdyPriority priority,
                              uint8 credential_slot,
                              SpdyControlFlags flags,
-                             bool compressed,
                              const SpdyHeaderBlock* headers);
   SpdySerializedFrame* SerializeSynStream(const SpdySynStreamIR& syn_stream);
 
@@ -392,7 +391,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // |headers| is the header block to include in the frame.
   SpdyFrame* CreateSynReply(SpdyStreamId stream_id,
                             SpdyControlFlags flags,
-                            bool compressed,
                             const SpdyHeaderBlock* headers);
   SpdySerializedFrame* SerializeSynReply(const SpdySynReplyIR& syn_reply);
 
@@ -424,7 +422,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // arguments are the same as for CreateSynReply.
   SpdyFrame* CreateHeaders(SpdyStreamId stream_id,
                            SpdyControlFlags flags,
-                           bool compressed,
                            const SpdyHeaderBlock* headers);
   SpdySerializedFrame* SerializeHeaders(const SpdyHeadersIR& headers);
 

@@ -86,18 +86,18 @@ void AckNotifierManager::OnSerializedPacket(
   for (QuicFrames::const_iterator it = frames->frames().begin();
        it != frames->frames().end(); ++it) {
     if (it->type == STREAM_FRAME && it->stream_frame->notifier != NULL) {
+      QuicAckNotifier* notifier = it->stream_frame->notifier;
+
       // The AckNotifier needs to know it is tracking this packet's sequence
       // number.
-      it->stream_frame->notifier->AddSequenceNumber(
-          serialized_packet.sequence_number);
-
-      // Add the AckNotifier to our set of AckNotifiers.
-      ack_notifiers_.insert(it->stream_frame->notifier);
+      notifier->AddSequenceNumber(serialized_packet.sequence_number);
 
       // Update the mapping in the other direction, from sequence
       // number to AckNotifier.
-      ack_notifier_map_[serialized_packet.sequence_number]
-          .insert(it->stream_frame->notifier);
+      ack_notifier_map_[serialized_packet.sequence_number].insert(notifier);
+
+      // Take ownership of the AckNotifier.
+      ack_notifiers_.insert(notifier);
     }
   }
 }

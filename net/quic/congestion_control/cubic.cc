@@ -19,8 +19,10 @@ const int kCubeScale = 40;  // 1024*1024^3 (first 1024 is from 0.100^3)
                             // where 0.100 is 100 ms which is the scaling
                             // round trip time.
 const int kCubeCongestionWindowScale = 410;
-const uint64 kCubeFactor = (1ull << kCubeScale) / kCubeCongestionWindowScale;
-const uint32 kBeta = 717;  // Back off factor after loss.
+const uint64 kCubeFactor = (GG_UINT64_C(1) << kCubeScale) /
+    kCubeCongestionWindowScale;
+const uint32 kBetaSPDY = 939;  // Back off factor after loss for SPDY, reduces
+                               // the CWND by 1/12th.
 const uint32 kBetaLastMax = 871;  // Additional back off factor after loss for
                                   // the stored max value.
 
@@ -129,7 +131,7 @@ QuicTcpCongestionWindow Cubic::CongestionWindowAfterPacketLoss(
     last_max_congestion_window_ = current_congestion_window;
   }
   epoch_ = QuicTime::Zero();  // Reset time.
-  return (current_congestion_window * kBeta) >> 10;
+  return (current_congestion_window * kBetaSPDY) >> 10;
 }
 
 QuicTcpCongestionWindow Cubic::CongestionWindowAfterAck(

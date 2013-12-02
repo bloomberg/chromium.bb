@@ -465,7 +465,7 @@ TEST_F(QuicStreamSequencerTest, TerminateWithReadv) {
   sequencer_->OnFinFrame(3, "");
   EXPECT_EQ(3u, sequencer_->close_offset());
 
-  EXPECT_FALSE(sequencer_->IsHalfClosed());
+  EXPECT_FALSE(sequencer_->IsClosed());
 
   EXPECT_CALL(stream_, ProcessData(StrEq("abc"), 3)).WillOnce(Return(0));
   EXPECT_TRUE(sequencer_->OnFrame(0, "abc"));
@@ -473,7 +473,7 @@ TEST_F(QuicStreamSequencerTest, TerminateWithReadv) {
   iovec iov = { &buffer[0], 3 };
   int bytes_read = sequencer_->Readv(&iov, 1);
   EXPECT_EQ(3, bytes_read);
-  EXPECT_TRUE(sequencer_->IsHalfClosed());
+  EXPECT_TRUE(sequencer_->IsClosed());
 }
 
 TEST_F(QuicStreamSequencerTest, MutipleOffsets) {

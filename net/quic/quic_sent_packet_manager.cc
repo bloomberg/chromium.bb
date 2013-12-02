@@ -117,9 +117,8 @@ void QuicSentPacketManager::OnRetransmittedPacket(
 }
 
 void QuicSentPacketManager::OnPacketAcked(
-    const ReceivedPacketInfo& received_info,
-    bool is_truncated_ack) {
-  HandleAckForSentPackets(received_info, is_truncated_ack);
+    const ReceivedPacketInfo& received_info) {
+  HandleAckForSentPackets(received_info);
   HandleAckForSentFecPackets(received_info);
 }
 
@@ -129,8 +128,7 @@ void QuicSentPacketManager::DiscardUnackedPacket(
 }
 
 void QuicSentPacketManager::HandleAckForSentPackets(
-    const ReceivedPacketInfo& received_info,
-    bool is_truncated_ack) {
+    const ReceivedPacketInfo& received_info) {
   // Go through the packets we have not received an ack for and see if this
   // incoming_ack shows they've been seen by the peer.
   UnackedPacketMap::iterator it = unacked_packets_.begin();
@@ -159,7 +157,7 @@ void QuicSentPacketManager::HandleAckForSentPackets(
   // If we have received a trunacted ack, then we need to
   // clear out some previous transmissions to allow the peer
   // to actually ACK new packets.
-  if (is_truncated_ack) {
+  if (received_info.is_truncated) {
     size_t num_to_clear = received_info.missing_packets.size() / 2;
     UnackedPacketMap::iterator it = unacked_packets_.begin();
     while (it != unacked_packets_.end() && num_to_clear > 0) {

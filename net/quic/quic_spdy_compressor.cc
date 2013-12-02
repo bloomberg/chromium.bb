@@ -40,7 +40,7 @@ string QuicSpdyCompressor::CompressHeadersInternal(
   // CreateCompressedHeaderBlock method, or some such.
   SpdyStreamId stream_id = 3;    // unused.
   scoped_ptr<SpdyFrame> frame(spdy_framer_.CreateHeaders(
-      stream_id, CONTROL_FLAG_NONE, true, &headers));
+      stream_id, CONTROL_FLAG_NONE, &headers));
 
   // The size of the spdy HEADER frame's fixed prefix which
   // needs to be stripped off from the resulting frame.

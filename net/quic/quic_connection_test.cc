@@ -896,8 +896,8 @@ TEST_F(QuicConnectionTest, RejectPacketTooFarOut) {
 
 TEST_F(QuicConnectionTest, TruncatedAck) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
-  int num_packets = 256 * 2 + 1;
-  for (int i = 0; i < num_packets; ++i) {
+  QuicPacketSequenceNumber num_packets = 256 * 2 + 1;
+  for (QuicPacketSequenceNumber i = 0; i < num_packets; ++i) {
     SendStreamDataToPeer(1, "foo", i * 3, !kFin, NULL);
   }
 
@@ -913,7 +913,11 @@ TEST_F(QuicConnectionTest, TruncatedAck) {
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(10);
   ProcessAckPacket(&frame);
 
-  EXPECT_TRUE(QuicConnectionPeer::GetReceivedTruncatedAck(&connection_));
+  QuicReceivedPacketManager* received_packet_manager =
+      QuicConnectionPeer::GetReceivedPacketManager(&connection_);
+  // A truncated ack will not have the true largest observed.
+  EXPECT_GT(num_packets,
+            received_packet_manager->peer_largest_observed_packet());
 
   frame.received_info.missing_packets.erase(192);
 
@@ -922,7 +926,8 @@ TEST_F(QuicConnectionTest, TruncatedAck) {
   EXPECT_CALL(*send_algorithm_, OnPacketLost(_, _)).Times(10);
   EXPECT_CALL(*send_algorithm_, OnPacketAbandoned(_, _)).Times(10);
   ProcessAckPacket(&frame);
-  EXPECT_FALSE(QuicConnectionPeer::GetReceivedTruncatedAck(&connection_));
+  EXPECT_EQ(num_packets,
+            received_packet_manager->peer_largest_observed_packet());
 }
 
 TEST_F(QuicConnectionTest, AckReceiptCausesAckSendBadEntropy) {

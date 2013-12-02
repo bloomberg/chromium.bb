@@ -21,12 +21,14 @@ namespace {
 
 class QuicReceivedPacketManagerTest : public ::testing::Test {
  protected:
+  QuicReceivedPacketManagerTest() : received_manager_(kTCP) { }
+
   void RecordPacketEntropyHash(QuicPacketSequenceNumber sequence_number,
                                QuicPacketEntropyHash entropy_hash) {
     QuicPacketHeader header;
     header.packet_sequence_number = sequence_number;
     header.entropy_hash = entropy_hash;
-    received_manager_.RecordPacketReceived(header, QuicTime::Zero());;
+    received_manager_.RecordPacketReceived(0u, header, QuicTime::Zero(), false);
   }
 
   QuicReceivedPacketManager received_manager_;
@@ -103,9 +105,9 @@ TEST_F(QuicReceivedPacketManagerTest, RecalculateEntropyHash) {
 TEST_F(QuicReceivedPacketManagerTest, DontWaitForPacketsBefore) {
   QuicPacketHeader header;
   header.packet_sequence_number = 2u;
-  received_manager_.RecordPacketReceived(header, QuicTime::Zero());
+  received_manager_.RecordPacketReceived(0u, header, QuicTime::Zero(), false);
   header.packet_sequence_number = 7u;
-  received_manager_.RecordPacketReceived(header, QuicTime::Zero());
+  received_manager_.RecordPacketReceived(0u, header, QuicTime::Zero(), false);
   EXPECT_TRUE(received_manager_.IsAwaitingPacket(3u));
   EXPECT_TRUE(received_manager_.IsAwaitingPacket(6u));
   EXPECT_TRUE(QuicReceivedPacketManagerPeer::DontWaitForPacketsBefore(
@@ -118,7 +120,7 @@ TEST_F(QuicReceivedPacketManagerTest, UpdateReceivedPacketInfo) {
   QuicPacketHeader header;
   header.packet_sequence_number = 2u;
   QuicTime two_ms = QuicTime::Zero().Add(QuicTime::Delta::FromMilliseconds(2));
-  received_manager_.RecordPacketReceived(header, two_ms);
+  received_manager_.RecordPacketReceived(0u, header, two_ms, false);
 
   ReceivedPacketInfo info;
   received_manager_.UpdateReceivedPacketInfo(&info, QuicTime::Zero());

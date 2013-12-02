@@ -109,10 +109,10 @@ TEST_F(CubicTest, LossEvents) {
   clock_.AdvanceTime(one_ms_);
   EXPECT_EQ(expected_cwnd,
             cubic_->CongestionWindowAfterAck(current_cwnd, rtt_min));
-  expected_cwnd = current_cwnd * 717 / 1024;
+  expected_cwnd = current_cwnd * 939 / 1024;
   EXPECT_EQ(expected_cwnd,
             cubic_->CongestionWindowAfterPacketLoss(current_cwnd));
-  expected_cwnd = current_cwnd * 717 / 1024;
+  expected_cwnd = current_cwnd * 939 / 1024;
   EXPECT_EQ(expected_cwnd,
             cubic_->CongestionWindowAfterPacketLoss(current_cwnd));
 }
@@ -126,7 +126,7 @@ TEST_F(CubicTest, BelowOrgin) {
   clock_.AdvanceTime(one_ms_);
   EXPECT_EQ(expected_cwnd,
             cubic_->CongestionWindowAfterAck(current_cwnd, rtt_min));
-  expected_cwnd = current_cwnd * 717 / 1024;
+  expected_cwnd = current_cwnd * 939 / 1024;
   EXPECT_EQ(expected_cwnd,
             cubic_->CongestionWindowAfterPacketLoss(current_cwnd));
   current_cwnd = expected_cwnd;
@@ -142,7 +142,7 @@ TEST_F(CubicTest, BelowOrgin) {
     clock_.AdvanceTime(hundred_ms_);
     current_cwnd = cubic_->CongestionWindowAfterAck(current_cwnd, rtt_min);
   }
-  expected_cwnd = 422;
+  expected_cwnd = 440;
   EXPECT_EQ(expected_cwnd, current_cwnd);
 }
 

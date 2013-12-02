@@ -79,24 +79,6 @@ class NET_EXPORT_PRIVATE QuicCongestionManager {
                                         HasRetransmittableData retransmittable,
                                         IsHandshake handshake);
 
-  // Should be called before sending an ACK packet, to decide if we need
-  // to attach a QuicCongestionFeedbackFrame block.
-  // Returns false if no QuicCongestionFeedbackFrame block is needed.
-  // Otherwise fills in feedback and returns true.
-  virtual bool GenerateCongestionFeedback(
-      QuicCongestionFeedbackFrame* feedback);
-
-  // Should be called for each incoming packet.
-  // bytes: the packet size in bytes including Quic Headers.
-  // sequence_number: the unique sequence number from the QUIC packet header.
-  // timestamp: the arrival time of the packet.
-  // revived: true if the packet was lost and then recovered with help of a
-  // FEC packet.
-  virtual void RecordIncomingPacket(QuicByteCount bytes,
-                                    QuicPacketSequenceNumber sequence_number,
-                                    QuicTime timestamp,
-                                    bool revived);
-
   const QuicTime::Delta DefaultRetransmissionTime();
 
   // Returns amount of time for delayed ack timer.
@@ -132,7 +114,6 @@ class NET_EXPORT_PRIVATE QuicCongestionManager {
   void CleanupPacketHistory();
 
   const QuicClock* clock_;
-  scoped_ptr<ReceiveAlgorithmInterface> receive_algorithm_;
   scoped_ptr<SendAlgorithmInterface> send_algorithm_;
   // Tracks the send time, size, and nack count of sent packets.  Packets are
   // removed after 5 seconds and they've been removed from pending_packets_.

@@ -56,10 +56,9 @@ COMPILE_ASSERT(kHistoryPeriodMs >= kBitrateSmoothingPeriodMs,
 
 QuicCongestionManager::QuicCongestionManager(
     const QuicClock* clock,
-    CongestionFeedbackType type)
+    CongestionFeedbackType congestion_type)
     : clock_(clock),
-      receive_algorithm_(ReceiveAlgorithmInterface::Create(clock, type)),
-      send_algorithm_(SendAlgorithmInterface::Create(clock, type)),
+      send_algorithm_(SendAlgorithmInterface::Create(clock, congestion_type)),
       rtt_sample_(QuicTime::Delta::Infinite()),
       consecutive_rto_count_(0),
       using_pacing_(false) {
@@ -74,7 +73,7 @@ void QuicCongestionManager::SetFromConfig(const QuicConfig& config,
   if (config.initial_round_trip_time_us() > 0 &&
       rtt_sample_.IsInfinite()) {
     // The initial rtt should already be set on the client side.
-    DLOG_IF(INFO, !is_server)
+    DVLOG_IF(1, !is_server)
         << "Client did not set an initial RTT, but did negotiate one.";
     rtt_sample_ =
         QuicTime::Delta::FromMicroseconds(config.initial_round_trip_time_us());
@@ -254,20 +253,6 @@ QuicTime::Delta QuicCongestionManager::TimeUntilSend(
     IsHandshake handshake) {
   return send_algorithm_->TimeUntilSend(now, transmission_type, retransmittable,
                                         handshake);
-}
-
-bool QuicCongestionManager::GenerateCongestionFeedback(
-    QuicCongestionFeedbackFrame* feedback) {
-  return receive_algorithm_->GenerateCongestionFeedback(feedback);
-}
-
-void QuicCongestionManager::RecordIncomingPacket(
-    QuicByteCount bytes,
-    QuicPacketSequenceNumber sequence_number,
-    QuicTime timestamp,
-    bool revived) {
-  receive_algorithm_->RecordIncomingPacket(bytes, sequence_number, timestamp,
-                                           revived);
 }
 
 const QuicTime::Delta QuicCongestionManager::DefaultRetransmissionTime() {

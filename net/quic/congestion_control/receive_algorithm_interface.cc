@@ -11,7 +11,6 @@ namespace net {
 
 // Factory for receive side congestion control algorithm.
 ReceiveAlgorithmInterface* ReceiveAlgorithmInterface::Create(
-    const QuicClock* clock,
     CongestionFeedbackType type) {
   switch (type) {
     case kTCP:

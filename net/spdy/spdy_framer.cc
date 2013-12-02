@@ -61,9 +61,9 @@ const size_t SpdyFramer::kControlFrameBufferSize = 18;
 #ifdef DEBUG_SPDY_STATE_CHANGES
 #define CHANGE_STATE(newstate)                                  \
   do {                                                          \
-    LOG(INFO) << "Changing state from: "                        \
-              << StateToString(state_)                          \
-              << " to " << StateToString(newstate) << "\n";     \
+    DVLOG(1) << "Changing state from: "                         \
+             << StateToString(state_)                           \
+             << " to " << StateToString(newstate) << "\n";      \
     DCHECK(state_ != SPDY_ERROR);                               \
     DCHECK_EQ(previous_state_, state_);                         \
     previous_state_ = state_;                                   \
@@ -652,8 +652,8 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
   } else if (version != spdy_version_) {
     // We check version before we check validity: version can never be
     // 'invalid', it can only be unsupported.
-    DLOG(INFO) << "Unsupported SPDY version " << version
-               << " (expected " << spdy_version_ << ")";
+    DVLOG(1) << "Unsupported SPDY version " << version
+             << " (expected " << spdy_version_ << ")";
     set_error(SPDY_UNSUPPORTED_VERSION);
   } else {
     ProcessControlFrameHeader(control_frame_type_field);
@@ -675,7 +675,7 @@ void SpdyFramer::ProcessControlFrameHeader(uint16 control_frame_type_field) {
   current_frame_type_ = static_cast<SpdyFrameType>(control_frame_type_field);
 
   if (current_frame_type_ == NOOP) {
-    DLOG(INFO) << "NOOP control frame found. Ignoring.";
+    DVLOG(1) << "NOOP control frame found. Ignoring.";
     CHANGE_STATE(SPDY_AUTO_RESET);
     return;
   }
@@ -1517,13 +1517,13 @@ size_t SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
   if (spdy_version_ < 3) {
     uint16 temp;
     if (!reader.ReadUInt16(&temp)) {
-      DLOG(INFO) << "Unable to read number of headers.";
+      DVLOG(1) << "Unable to read number of headers.";
       return 0;
     }
     num_headers = temp;
   } else {
     if (!reader.ReadUInt32(&num_headers)) {
-      DLOG(INFO) << "Unable to read number of headers.";
+      DVLOG(1) << "Unable to read number of headers.";
       return 0;
     }
   }
@@ -1535,8 +1535,8 @@ size_t SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
     // Read header name.
     if ((spdy_version_ < 3) ? !reader.ReadStringPiece16(&temp)
                             : !reader.ReadStringPiece32(&temp)) {
-      DLOG(INFO) << "Unable to read header name (" << index + 1 << " of "
-                 << num_headers << ").";
+      DVLOG(1) << "Unable to read header name (" << index + 1 << " of "
+               << num_headers << ").";
       return 0;
     }
     std::string name = temp.as_string();
@@ -1544,16 +1544,16 @@ size_t SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
     // Read header value.
     if ((spdy_version_ < 3) ? !reader.ReadStringPiece16(&temp)
                             : !reader.ReadStringPiece32(&temp)) {
-      DLOG(INFO) << "Unable to read header value (" << index + 1 << " of "
-                 << num_headers << ").";
+      DVLOG(1) << "Unable to read header value (" << index + 1 << " of "
+               << num_headers << ").";
       return 0;
     }
     std::string value = temp.as_string();
 
     // Ensure no duplicates.
     if (block->find(name) != block->end()) {
-      DLOG(INFO) << "Duplicate header '" << name << "' (" << index + 1 << " of "
-                 << num_headers << ").";
+      DVLOG(1) << "Duplicate header '" << name << "' (" << index + 1 << " of "
+               << num_headers << ").";
       return 0;
     }
 
@@ -1639,10 +1639,8 @@ SpdyFrame* SpdyFramer::CreateSynStream(
     SpdyPriority priority,
     uint8 credential_slot,
     SpdyControlFlags flags,
-    bool compressed,
     const SpdyHeaderBlock* headers) {
   DCHECK_EQ(0, flags & ~CONTROL_FLAG_FIN & ~CONTROL_FLAG_UNIDIRECTIONAL);
-  DCHECK_EQ(enable_compression_, compressed);
 
   SpdySynStreamIR syn_stream(stream_id);
   syn_stream.set_associated_to_stream_id(associated_stream_id);
@@ -1706,10 +1704,8 @@ SpdySerializedFrame* SpdyFramer::SerializeSynStream(
 SpdyFrame* SpdyFramer::CreateSynReply(
     SpdyStreamId stream_id,
     SpdyControlFlags flags,
-    bool compressed,
     const SpdyHeaderBlock* headers) {
   DCHECK_EQ(0, flags & ~CONTROL_FLAG_FIN);
-  DCHECK_EQ(enable_compression_, compressed);
 
   SpdySynReplyIR syn_reply(stream_id);
   syn_reply.set_fin(flags & CONTROL_FLAG_FIN);
@@ -1884,11 +1880,9 @@ SpdySerializedFrame* SpdyFramer::SerializeGoAway(
 SpdyFrame* SpdyFramer::CreateHeaders(
     SpdyStreamId stream_id,
     SpdyControlFlags flags,
-    bool compressed,
     const SpdyHeaderBlock* header_block) {
   // Basically the same as CreateSynReply().
   DCHECK_EQ(0, flags & (!CONTROL_FLAG_FIN));
-  DCHECK_EQ(enable_compression_, compressed);
 
   SpdyHeadersIR headers(stream_id);
   headers.set_fin(flags & CONTROL_FLAG_FIN);

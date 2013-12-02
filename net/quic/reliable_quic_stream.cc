@@ -177,11 +177,11 @@ int ReliableQuicStream::GetReadableRegions(iovec* iov, size_t iov_len) {
   return 1;
 }
 
-bool ReliableQuicStream::IsHalfClosed() const {
+bool ReliableQuicStream::IsDoneReading() const {
   if (!headers_decompressed_ || !decompressed_headers_.empty()) {
     return false;
   }
-  return sequencer_.IsHalfClosed();
+  return sequencer_.IsClosed();
 }
 
 bool ReliableQuicStream::HasBytesToRead() const {
@@ -445,7 +445,7 @@ void ReliableQuicStream::OnDecompressorAvailable() {
 
   // Either the headers are complete, or the all data as been consumed.
   ProcessHeaderData();  // Unprocessed headers remain in decompressed_headers_.
-  if (IsHalfClosed()) {
+  if (IsDoneReading()) {
     TerminateFromPeer(true);
   } else if (headers_decompressed_ && decompressed_headers_.empty()) {
     sequencer_.FlushBufferedFrames();

@@ -205,6 +205,7 @@ QuicConnection::QuicConnection(QuicGuid guid,
       largest_seen_packet_with_ack_(0),
       pending_version_negotiation_packet_(false),
       write_blocked_(false),
+      received_packet_manager_(kTCP),
       ack_alarm_(helper->CreateAlarm(new AckAlarm(this))),
       retransmission_alarm_(helper->CreateAlarm(new RetransmissionAlarm(this))),
       abandon_fec_alarm_(helper->CreateAlarm(new AbandonFecAlarm(this))),
@@ -226,7 +227,6 @@ QuicConnection::QuicConnection(QuicGuid guid,
       version_negotiation_state_(START_NEGOTIATION),
       is_server_(is_server),
       connected_(true),
-      received_truncated_ack_(false),
       address_migrating_(false) {
   if (!is_server_) {
     // Pacing will be enabled if the client negotiates it.
@@ -513,8 +513,6 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
 
   largest_seen_packet_with_ack_ = last_header_.packet_sequence_number;
 
-  received_truncated_ack_ = incoming_ack.received_info.is_truncated;
-
   received_packet_manager_.UpdatePacketInformationReceivedByPeer(incoming_ack);
   received_packet_manager_.UpdatePacketInformationSentByPeer(incoming_ack);
   // Possibly close any FecGroups which are now irrelevant.
@@ -523,8 +521,7 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
   sent_entropy_manager_.ClearEntropyBefore(
       received_packet_manager_.least_packet_awaited_by_peer() - 1);
 
-  sent_packet_manager_.OnPacketAcked(incoming_ack.received_info,
-                                     received_truncated_ack_);
+  sent_packet_manager_.OnPacketAcked(incoming_ack.received_info);
 
   // Get the updated least unacked sequence number.
   QuicPacketSequenceNumber least_unacked_sent_after =
@@ -706,11 +703,6 @@ void QuicConnection::OnPacketComplete() {
              << last_close_frames_.size() << " closes, "
              << last_stream_frames_.size()
              << " stream frames for " << last_header_.public_header.guid;
-  if (!last_packet_revived_) {
-    congestion_manager_.RecordIncomingPacket(
-        last_size_, last_header_.packet_sequence_number,
-        time_of_last_received_packet_, last_packet_revived_);
-  }
 
   // Must called before ack processing, because processing acks removes entries
   // from unacket_packets_, increasing the least_unacked.
@@ -727,8 +719,10 @@ void QuicConnection::OnPacketComplete() {
   // processing the rest of the packet.
   if (last_stream_frames_.empty() ||
       visitor_->OnStreamFrames(last_stream_frames_)) {
-    received_packet_manager_.RecordPacketReceived(
-        last_header_, time_of_last_received_packet_);
+    received_packet_manager_.RecordPacketReceived(last_size_,
+                                                  last_header_,
+                                                  time_of_last_received_packet_,
+                                                  last_packet_revived_);
     for (size_t i = 0; i < last_stream_frames_.size(); ++i) {
       stats_.stream_bytes_received +=
           last_stream_frames_[i].data.TotalBufferSize();
@@ -874,7 +868,7 @@ QuicConsumedData QuicConnection::SendStreamData(
   }
 
   // This notifier will be owned by the AckNotifierManager (or deleted below if
-  // no data was consumed).
+  // no data or FIN was consumed).
   QuicAckNotifier* notifier = NULL;
   if (delegate) {
     notifier = new QuicAckNotifier(delegate);
@@ -886,8 +880,9 @@ QuicConsumedData QuicConnection::SendStreamData(
   QuicConsumedData consumed_data =
       packet_generator_.ConsumeData(id, data, offset, fin, notifier);
 
-  if (notifier && consumed_data.bytes_consumed == 0) {
-    // No data was consumed, delete the notifier.
+  if (notifier &&
+      (consumed_data.bytes_consumed == 0 && !consumed_data.fin_consumed)) {
+    // No data was consumed, nor was a fin consumed, so delete the notifier.
     delete notifier;
   }
 
@@ -1482,7 +1477,7 @@ void QuicConnection::SendAck() {
   // method is invoked.  This requires changes SetShouldSendAck
   // to be a no-arg method, and re-jiggering its implementation.
   bool send_feedback = false;
-  if (congestion_manager_.GenerateCongestionFeedback(
+  if (received_packet_manager_.GenerateCongestionFeedback(
           &outgoing_congestion_feedback_)) {
     DVLOG(1) << ENDPOINT << "Sending feedback: "
              << outgoing_congestion_feedback_;

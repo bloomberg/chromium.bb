@@ -65,8 +65,8 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   // Returns true if the sequncer has bytes available for reading.
   bool HasBytesToRead() const;
 
-  // Returns true if the sequencer has delivered a half close.
-  bool IsHalfClosed() const;
+  // Returns true if the sequencer has delivered the fin.
+  bool IsClosed() const;
 
   // Returns true if the sequencer has received this frame before.
   bool IsDuplicate(const QuicStreamFrame& frame) const;
@@ -91,7 +91,7 @@ class NET_EXPORT_PRIVATE QuicStreamSequencer {
   FrameMap frames_;  // sequence number -> frame
   size_t max_frame_memory_;  //  the maximum memory the sequencer can buffer.
   // The offset, if any, we got a stream termination for.  When this many bytes
-  // have been processed, the stream will be half closed.
+  // have been processed, the sequencer will be closed.
   QuicStreamOffset close_offset_;
 };
 

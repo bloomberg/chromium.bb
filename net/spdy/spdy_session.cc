@@ -813,7 +813,7 @@ scoped_ptr<SpdyFrame> SpdySession::CreateSynStream(
   scoped_ptr<SpdyFrame> syn_frame(
       buffered_spdy_framer_->CreateSynStream(
           stream_id, 0, spdy_priority,
-          credential_slot, flags, enable_compression_, &headers));
+          credential_slot, flags, &headers));
 
   base::StatsCounter spdy_requests("spdy.requests");
   spdy_requests.Increment();

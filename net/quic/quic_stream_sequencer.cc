@@ -143,7 +143,7 @@ void QuicStreamSequencer::CloseStreamAtOffset(QuicStreamOffset offset) {
 }
 
 bool QuicStreamSequencer::MaybeCloseStream() {
-  if (IsHalfClosed()) {
+  if (IsClosed()) {
     DVLOG(1) << "Passing up termination, as we've processed "
              << num_bytes_consumed_ << " of " << close_offset_
              << " bytes.";
@@ -251,7 +251,7 @@ bool QuicStreamSequencer::HasBytesToRead() const {
   return it != frames_.end() && it->first == num_bytes_consumed_;
 }
 
-bool QuicStreamSequencer::IsHalfClosed() const {
+bool QuicStreamSequencer::IsClosed() const {
   return num_bytes_consumed_ >= close_offset_;
 }
 

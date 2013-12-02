@@ -173,7 +173,6 @@ class SpdyFramerTestUtil {
                                  priority,
                                  slot,
                                  static_cast<SpdyControlFlags>(flags),
-                                 false,
                                  &null_headers));
       ResetBuffer();
       memcpy(buffer_.get(), frame->data(), framer.GetSynStreamMinimumSize());
@@ -191,7 +190,6 @@ class SpdyFramerTestUtil {
       scoped_ptr<SpdyFrame> frame(
           framer.CreateHeaders(stream_id,
                                static_cast<SpdyControlFlags>(flags),
-                               false,
                                &null_headers));
       ResetBuffer();
       memcpy(buffer_.get(), frame->data(), framer.GetHeadersMinimumSize());
@@ -226,7 +224,6 @@ class SpdyFramerTestUtil {
       scoped_ptr<SpdyFrame> frame(
           framer.CreateHeaders(stream_id,
                                static_cast<SpdyControlFlags>(flags),
-                               false,
                                &null_headers));
       ResetBuffer();
       memcpy(buffer_.get(), frame->data(), framer.GetHeadersMinimumSize());
@@ -674,7 +671,6 @@ TEST_P(SpdyFramerTest, HeaderBlockInBuffer) {
                              1,  // priority
                              0,  // credential slot
                              CONTROL_FLAG_NONE,
-                             false,  // compress
                              &headers));
   EXPECT_TRUE(frame.get() != NULL);
   base::StringPiece serialized_headers =
@@ -704,7 +700,6 @@ TEST_P(SpdyFramerTest, UndersizedHeaderBlockInBuffer) {
                              1,  // priority
                              0,  // credential slot
                              CONTROL_FLAG_NONE,
-                             false,  // compress
                              &headers));
   EXPECT_TRUE(frame.get() != NULL);
 
@@ -772,7 +767,6 @@ TEST_P(SpdyFramerTest, SynStreamWithStreamIdZero) {
                              1,  // priority
                              0,  // credential slot
                              CONTROL_FLAG_NONE,
-                             true,  // compress
                              &headers));
   ASSERT_TRUE(frame.get() != NULL);
 
@@ -796,7 +790,6 @@ TEST_P(SpdyFramerTest, SynReplyWithStreamIdZero) {
   scoped_ptr<SpdySerializedFrame> frame(
       framer.CreateSynReply(0,  // stream id
                             CONTROL_FLAG_NONE,
-                            true,  // compress
                             &headers));
   ASSERT_TRUE(frame.get() != NULL);
 
@@ -820,7 +813,6 @@ TEST_P(SpdyFramerTest, HeadersWithStreamIdZero) {
   scoped_ptr<SpdySerializedFrame> frame(
       framer.CreateHeaders(0,  // stream id
                            CONTROL_FLAG_NONE,
-                           true,  // compress
                            &headers));
   ASSERT_TRUE(frame.get() != NULL);
 
@@ -1103,7 +1095,6 @@ TEST_P(SpdyFramerTest, BasicCompression) {
                              1,  // priority
                              0,  // credential slot
                              CONTROL_FLAG_NONE,
-                             true,  // compress
                              &headers));
   size_t uncompressed_size1 = visitor->last_payload_len_;
   size_t compressed_size1 =
@@ -1129,7 +1120,6 @@ TEST_P(SpdyFramerTest, BasicCompression) {
                              1,  // priority
                              0,  // credential slot
                              CONTROL_FLAG_NONE,
-                             true,  // compress
                              &headers));
   size_t uncompressed_size2 = visitor->last_payload_len_;
   size_t compressed_size2 =
@@ -1183,7 +1173,6 @@ TEST_P(SpdyFramerTest, BasicCompression) {
                              1,  // priority
                              0,  // credential slot
                              CONTROL_FLAG_NONE,
-                             false,  // compress
                              &headers));
   CompareFrames("Uncompressed SYN_STREAM", *frame3, *uncompressed_frame);
 }
@@ -1207,7 +1196,6 @@ TEST_P(SpdyFramerTest, CompressEmptyHeaders) {
                              1,  // priority
                              0,  // credential slot
                              CONTROL_FLAG_NONE,
-                             true,  // compress
                              &headers));
 }
 
@@ -1610,7 +1598,6 @@ TEST_P(SpdyFramerTest, HeaderCompression) {
                                   0,  // priority
                                   0,  // credential slot
                                   flags,
-                                  true,  // compress
                                   &block));
   EXPECT_TRUE(syn_frame_2.get() != NULL);
 
@@ -1668,7 +1655,6 @@ TEST_P(SpdyFramerTest, UnclosedStreamDataCompressors) {
                                   0,  // priority
                                   0,  // credential slot
                                   flags,
-                                  true,  // compress
                                   &block));
   EXPECT_TRUE(syn_frame.get() != NULL);
 
@@ -1721,7 +1707,6 @@ TEST_P(SpdyFramerTest, UnclosedStreamDataCompressorsOneByteAtATime) {
                                   0,  // priority
                                   0,  // credential slot
                                   flags,
-                                  true,  // compress
                                   &block));
   EXPECT_TRUE(syn_frame.get() != NULL);
 
@@ -1999,7 +1984,6 @@ TEST_P(SpdyFramerTest, CreateSynStreamUncompressed) {
                                framer.GetLowestPriority(),
                                kCre,  // credential slot
                                CONTROL_FLAG_NONE,
-                               false,  // compress
                                &headers));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
@@ -2064,7 +2048,6 @@ TEST_P(SpdyFramerTest, CreateSynStreamUncompressed) {
                                framer.GetHighestPriority(),
                                0,  // credential slot
                                CONTROL_FLAG_FIN,
-                               false,  // compress
                                &headers));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
@@ -2130,7 +2113,6 @@ TEST_P(SpdyFramerTest, CreateSynStreamUncompressed) {
                                1,  // priority
                                0,  // credential slot
                                CONTROL_FLAG_FIN,
-                               false,  // compress
                                &headers));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
@@ -2217,7 +2199,6 @@ TEST_P(SpdyFramerTest, CreateSynStreamCompressed) {
                                priority,
                                0,  // credential slot
                                CONTROL_FLAG_NONE,
-                               true,  // compress
                                &headers));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
@@ -2278,7 +2259,7 @@ TEST_P(SpdyFramerTest, CreateSynReplyUncompressed) {
       0x03, 'b',  'a',  'r'
     };
     scoped_ptr<SpdyFrame> frame(framer.CreateSynReply(
-        1, CONTROL_FLAG_NONE, false, &headers));
+        1, CONTROL_FLAG_NONE, &headers));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
     } else if (IsSpdy3()) {
@@ -2333,7 +2314,7 @@ TEST_P(SpdyFramerTest, CreateSynReplyUncompressed) {
       'r'
     };
     scoped_ptr<SpdyFrame> frame(framer.CreateSynReply(
-        0x7fffffff, CONTROL_FLAG_FIN, false, &headers));
+        0x7fffffff, CONTROL_FLAG_FIN, &headers));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
     } else if (IsSpdy3()) {
@@ -2388,7 +2369,7 @@ TEST_P(SpdyFramerTest, CreateSynReplyUncompressed) {
       0x00
     };
     scoped_ptr<SpdyFrame> frame(framer.CreateSynReply(
-        0x7fffffff, CONTROL_FLAG_FIN, false, &headers));
+        0x7fffffff, CONTROL_FLAG_FIN, &headers));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
     } else if (IsSpdy3()) {
@@ -2464,7 +2445,7 @@ TEST_P(SpdyFramerTest, CreateSynReplyCompressed) {
       0xff,
     };
     scoped_ptr<SpdyFrame> frame(framer.CreateSynReply(
-        1, CONTROL_FLAG_NONE, true, &headers));
+        1, CONTROL_FLAG_NONE, &headers));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
     } else if (IsSpdy3()) {
@@ -2800,7 +2781,7 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
       0x03, 'b',  'a',  'r'
     };
     scoped_ptr<SpdyFrame> frame(framer.CreateHeaders(
-        1, CONTROL_FLAG_NONE, false, &headers));
+        1, CONTROL_FLAG_NONE, &headers));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
     } else if (IsSpdy3()) {
@@ -2855,7 +2836,7 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
       'r'
     };
     scoped_ptr<SpdyFrame> frame(framer.CreateHeaders(
-        0x7fffffff, CONTROL_FLAG_FIN, false, &headers));
+        0x7fffffff, CONTROL_FLAG_FIN, &headers));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
     } else if (IsSpdy3()) {
@@ -2910,7 +2891,7 @@ TEST_P(SpdyFramerTest, CreateHeadersUncompressed) {
       0x00
     };
     scoped_ptr<SpdyFrame> frame(framer.CreateHeaders(
-        0x7fffffff, CONTROL_FLAG_FIN, false, &headers));
+        0x7fffffff, CONTROL_FLAG_FIN, &headers));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
     } else if (IsSpdy3()) {
@@ -2986,7 +2967,7 @@ TEST_P(SpdyFramerTest, CreateHeadersCompressed) {
       0xff
     };
     scoped_ptr<SpdyFrame> frame(framer.CreateHeaders(
-        1, CONTROL_FLAG_NONE, true, &headers));
+        1, CONTROL_FLAG_NONE, &headers));
     if (IsSpdy2()) {
       CompareFrame(kDescription, *frame, kV2FrameData, arraysize(kV2FrameData));
     } else if (IsSpdy3()) {
@@ -3163,7 +3144,6 @@ TEST_P(SpdyFramerTest, ReadCompressedSynStreamHeaderBlock) {
                              1,                     // priority
                              0,                     // credential_slot
                              CONTROL_FLAG_NONE,
-                             true,                  // compress
                              &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
   TestSpdyVisitor visitor(spdy_version_);
@@ -3183,7 +3163,6 @@ TEST_P(SpdyFramerTest, ReadCompressedSynReplyHeaderBlock) {
   scoped_ptr<SpdyFrame> control_frame(
       framer.CreateSynReply(1,                     // stream_id
                             CONTROL_FLAG_NONE,
-                            true,                  // compress
                             &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
   TestSpdyVisitor visitor(spdy_version_);
@@ -3203,7 +3182,6 @@ TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlock) {
   scoped_ptr<SpdyFrame> control_frame(
       framer.CreateHeaders(1,                     // stream_id
                            CONTROL_FLAG_NONE,
-                           true,                  // compress
                            &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
   TestSpdyVisitor visitor(spdy_version_);
@@ -3230,7 +3208,6 @@ TEST_P(SpdyFramerTest, ReadCompressedHeadersHeaderBlockWithHalfClose) {
   scoped_ptr<SpdyFrame> control_frame(
       framer.CreateHeaders(1,                     // stream_id
                            CONTROL_FLAG_FIN,
-                           true,                  // compress
                            &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
   TestSpdyVisitor visitor(spdy_version_);
@@ -3262,7 +3239,6 @@ TEST_P(SpdyFramerTest, ControlFrameAtMaxSizeLimit) {
                              1,                     // priority
                              0,                     // credential_slot
                              CONTROL_FLAG_NONE,
-                             false,                 // compress
                              &headers));
   const size_t kBigValueSize =
       framer.GetControlFrameBufferMaxSize() - control_frame->size();
@@ -3276,7 +3252,6 @@ TEST_P(SpdyFramerTest, ControlFrameAtMaxSizeLimit) {
                              1,                     // priority
                              0,                     // credential_slot
                              CONTROL_FLAG_NONE,
-                             false,                 // compress
                              &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
   EXPECT_EQ(framer.GetControlFrameBufferMaxSize(), control_frame->size());
@@ -3306,7 +3281,6 @@ TEST_P(SpdyFramerTest, ControlFrameTooLarge) {
                              1,                     // priority
                              0,                     // credential_slot
                              CONTROL_FLAG_NONE,
-                             false,                 // compress
                              &headers));
   const size_t kBigValueSize =
       framer.GetControlFrameBufferMaxSize() - control_frame->size() + 1;
@@ -3320,7 +3294,6 @@ TEST_P(SpdyFramerTest, ControlFrameTooLarge) {
                              1,                     // priority
                              0,                     // credential_slot
                              CONTROL_FLAG_NONE,
-                             false,                 // compress
                              &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
   EXPECT_EQ(framer.GetControlFrameBufferMaxSize() + 1,
@@ -3357,7 +3330,6 @@ TEST_P(SpdyFramerTest, ControlFrameMuchTooLarge) {
                              1,                     // priority
                              0,                     // credential_slot
                              CONTROL_FLAG_FIN,      // half close
-                             true,                  // compress
                              &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
   TestSpdyVisitor visitor(spdy_version_);
@@ -3401,7 +3373,6 @@ TEST_P(SpdyFramerTest, DecompressCorruptHeaderBlock) {
                              1,                     // priority
                              0,                     // credential_slot
                              CONTROL_FLAG_NONE,
-                             false,                 // compress
                              &headers));
   TestSpdyVisitor visitor(spdy_version_);
   visitor.use_compression_ = true;
@@ -4073,7 +4044,7 @@ TEST_P(SpdyFramerTest, SynStreamFrameFlags) {
     SpdyHeaderBlock headers;
     headers["foo"] = "bar";
     scoped_ptr<SpdyFrame> frame(
-        framer.CreateSynStream(8, 3, 1, 0, CONTROL_FLAG_NONE, true, &headers));
+        framer.CreateSynStream(8, 3, 1, 0, CONTROL_FLAG_NONE, &headers));
     SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags & ~(CONTROL_FLAG_FIN | CONTROL_FLAG_UNIDIRECTIONAL)) {
@@ -4114,7 +4085,7 @@ TEST_P(SpdyFramerTest, SynReplyFrameFlags) {
     SpdyHeaderBlock headers;
     headers["foo"] = "bar";
     scoped_ptr<SpdyFrame> frame(
-        framer.CreateSynReply(37, CONTROL_FLAG_NONE, true, &headers));
+        framer.CreateSynReply(37, CONTROL_FLAG_NONE, &headers));
     SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags & ~CONTROL_FLAG_FIN) {
@@ -4252,7 +4223,7 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
     SpdyHeaderBlock headers;
     headers["foo"] = "bar";
     scoped_ptr<SpdyFrame> frame(
-        framer.CreateHeaders(57, CONTROL_FLAG_NONE, true, &headers));
+        framer.CreateHeaders(57, CONTROL_FLAG_NONE, &headers));
     SetFrameFlags(frame.get(), flags, spdy_version_);
 
     if (flags & ~CONTROL_FLAG_FIN) {
@@ -4431,8 +4402,7 @@ TEST_P(SpdyFramerTest, EmptySynStream) {
   EXPECT_CALL(debug_visitor, OnSendCompressedFrame(1, SYN_STREAM, _, _));
 
   scoped_ptr<SpdyFrame>
-      frame(framer.CreateSynStream(1, 0, 1, 0, CONTROL_FLAG_NONE, true,
-                                   &headers));
+      frame(framer.CreateSynStream(1, 0, 1, 0, CONTROL_FLAG_NONE, &headers));
   // Adjust size to remove the name/value block.
   if (IsSpdy4()) {
     SetFrameLength(

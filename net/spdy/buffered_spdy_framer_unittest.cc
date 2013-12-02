@@ -220,7 +220,6 @@ TEST_P(BufferedSpdyFramerTest, ReadSynStreamHeaderBlock) {
                              1,                        // priority
                              0,                        // credential_slot
                              CONTROL_FLAG_NONE,
-                             true,                     // compress
                              &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 
@@ -243,7 +242,6 @@ TEST_P(BufferedSpdyFramerTest, ReadSynReplyHeaderBlock) {
   scoped_ptr<SpdyFrame> control_frame(
       framer.CreateSynReply(1,                        // stream_id
                             CONTROL_FLAG_NONE,
-                            true,                     // compress
                             &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 
@@ -266,7 +264,6 @@ TEST_P(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
   scoped_ptr<SpdyFrame> control_frame(
       framer.CreateHeaders(1,                        // stream_id
                            CONTROL_FLAG_NONE,
-                           true,                    // compress
                            &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 

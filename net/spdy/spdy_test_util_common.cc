@@ -752,19 +752,19 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyFrame(
                                        header_info.priority,
                                        credential_slot,
                                        header_info.control_flags,
-                                       header_info.compressed, headers.get());
+                                       headers.get());
       }
       break;
     case SYN_REPLY:
       frame = framer.CreateSynReply(header_info.id, header_info.control_flags,
-                                    header_info.compressed, headers.get());
+                                    headers.get());
       break;
     case RST_STREAM:
       frame = framer.CreateRstStream(header_info.id, header_info.status);
       break;
     case HEADERS:
       frame = framer.CreateHeaders(header_info.id, header_info.control_flags,
-                                   header_info.compressed, headers.get());
+                                   headers.get());
       break;
     default:
       ADD_FAILURE();
