@@ -793,6 +793,7 @@ const char kSavedIPMtuProperty[] = "SavedIP.Mtu";
 const char kSavedIPNameServersProperty[] = "SavedIP.NameServers";
 const char kSavedIPPeerAddressProperty[] = "SavedIP.PeerAddress";
 const char kSavedIPPrefixlenProperty[] = "SavedIP.Prefixlen";
+const char kTetheringProperty[] = "Tethering";
 const char kVPNMTUProperty[] = "VPN.MTU";
 const char kWifiFrequencyListProperty[] = "WiFi.FrequencyList";
 const char kWifiVendorInformationProperty[] = "WiFi.VendorInformation";
@@ -801,6 +802,11 @@ const char kWifiProtectedManagementFrameRequiredProperty[] =
 
 // Profile property names.
 const char kUserHashProperty[] = "UserHash";
+
+// Service Tethering property values.
+const char kTetheringNotDetectedState[] = "NotDetected";
+const char kTetheringSuspectedState[] = "Suspected";
+const char kTetheringConfirmedState[] = "Confirmed";
 
 // WiFi Service Vendor Information dictionary properties.
 const char kVendorWPSManufacturerProperty[] = "Manufacturer";
