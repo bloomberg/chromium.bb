@@ -183,8 +183,6 @@ FrameView::FrameView(Frame* frame)
     , m_deferredRepaintTimer(this, &FrameView::deferredRepaintTimerFired)
     , m_isTrackingRepaints(false)
     , m_shouldUpdateWhileOffscreen(true)
-    , m_deferSetNeedsLayouts(0)
-    , m_setNeedsLayoutWasDeferred(false)
     , m_scrollCorner(0)
     , m_shouldAutoSize(false)
     , m_inAutoSize(false)
@@ -534,8 +532,6 @@ void FrameView::setContentsSize(const IntSize& size)
     if (size == contentsSize())
         return;
 
-    m_deferSetNeedsLayouts++;
-
     ScrollView::setContentsSize(size);
     ScrollView::contentsResized();
 
@@ -545,12 +541,7 @@ void FrameView::setContentsSize(const IntSize& size)
 
     updateScrollableAreaSet();
 
-    page->chrome().contentsSizeChanged(m_frame.get(), size); // Notify only.
-
-    m_deferSetNeedsLayouts--;
-
-    if (!m_deferSetNeedsLayouts)
-        m_setNeedsLayoutWasDeferred = false; // FIXME: Find a way to make the deferred layout actually happen.
+    page->chrome().contentsSizeChanged(m_frame.get(), size);
 }
 
 void FrameView::adjustViewSize()
@@ -981,7 +972,6 @@ void FrameView::layout(bool allowSubtree)
 
     m_layoutTimer.stop();
     m_delayedLayout = false;
-    m_setNeedsLayoutWasDeferred = false;
 
     // we shouldn't enter layout() while painting
     ASSERT(!isPainting());
@@ -2043,17 +2033,11 @@ bool FrameView::needsLayout() const
     RenderView* renderView = this->renderView();
     return layoutPending()
         || (renderView && renderView->needsLayout())
-        || m_layoutRoot
-        || (m_deferSetNeedsLayouts && m_setNeedsLayoutWasDeferred);
+        || m_layoutRoot;
 }
 
 void FrameView::setNeedsLayout()
 {
-    if (m_deferSetNeedsLayouts) {
-        m_setNeedsLayoutWasDeferred = true;
-        return;
-    }
-
     if (RenderView* renderView = this->renderView())
         renderView->setNeedsLayout();
 }
