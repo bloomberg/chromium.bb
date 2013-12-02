@@ -189,10 +189,13 @@ void InspectorHeapProfilerAgent::pushHeapStatsUpdate(const uint32_t* const data,
     m_frontend->heapStatsUpdate(statsDiff.release());
 }
 
-void InspectorHeapProfilerAgent::stopTrackingHeapObjects(ErrorString*)
+void InspectorHeapProfilerAgent::stopTrackingHeapObjects(ErrorString* error)
 {
     if (!m_heapStatsUpdateTask)
         return;
+    requestHeapStatsUpdate();
+    const bool reportProgress = true;
+    takeHeapSnapshot(error, &reportProgress);
     ScriptProfiler::stopTrackingHeapObjects();
     m_heapStatsUpdateTask->resetTimer();
     m_heapStatsUpdateTask.clear();
