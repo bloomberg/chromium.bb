@@ -23,7 +23,9 @@
         '.',
       ],
       'defines': [
-        'WITH_SIMD', 'MOTION_JPEG_SUPPORTED',
+        'WITH_SIMD',
+        'MOTION_JPEG_SUPPORTED',
+        'NO_GETENV',
       ],
       'sources': [
         'jcapimin.c',
