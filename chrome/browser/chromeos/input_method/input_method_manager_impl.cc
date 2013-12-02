@@ -314,10 +314,10 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
     // Disable the current engine and enable the next engine.
     if (engine)
       engine->Disable();
-    IBusBridge::Get()->CreateEngine(input_method_id_to_switch);
+
     IBusEngineHandlerInterface* next_engine =
-        IBusBridge::Get()->GetEngineHandler();
-    IBusBridge::Get()->SetEngineHandler(next_engine);
+        IBusBridge::Get()->SetEngineHandlerById(input_method_id_to_switch);
+
     if (next_engine)
       next_engine->Enable();
   }

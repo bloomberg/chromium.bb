@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 #include <vector>
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "ui/base/ime/chromeos/ibus_bridge.h"
 #include "url/gurl.h"
@@ -100,13 +99,6 @@ class InputMethodEngineIBus : public InputMethodEngine,
   void MenuItemToProperty(const MenuItem& item,
                           input_method::InputMethodProperty* property);
 
-  // Registers the engine component.
-  void RegisterComponent();
-
-  // Called when the IBusBrige executes CreateEngine with
-  // corresponding engine id.
-  void CreateEngineHandler();
-
   // True if the current context has focus.
   bool focused_;
 
@@ -150,9 +142,6 @@ class InputMethodEngineIBus : public InputMethodEngine,
 
   // Mapping of candidate id to index.
   std::map<int, int> candidate_indexes_;
-
-  // Used for making callbacks.
-  base::WeakPtrFactory<InputMethodEngineIBus> weak_ptr_factory_;
 
   // Used for input view window.
   GURL input_view_url_;

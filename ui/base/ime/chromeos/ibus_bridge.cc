@@ -37,6 +37,15 @@ class IBusBridgeImpl : public IBusBridge {
   }
 
   // IBusBridge override.
+  virtual void InitEngineHandler(
+      const std::string& engine_id,
+      IBusEngineHandlerInterface* handler) OVERRIDE {
+    DCHECK(!engine_id.empty());
+    DCHECK(handler);
+    engine_handler_map_[engine_id] = handler;
+  }
+
+  // IBusBridge override.
   virtual IBusEngineHandlerInterface* GetEngineHandler() const OVERRIDE {
     return engine_handler_;
   }
@@ -44,6 +53,19 @@ class IBusBridgeImpl : public IBusBridge {
   // IBusBridge override.
   virtual void SetEngineHandler(IBusEngineHandlerInterface* handler) OVERRIDE {
     engine_handler_ = handler;
+  }
+
+  // IBusBridge override.
+  virtual IBusEngineHandlerInterface* SetEngineHandlerById(
+      const std::string& engine_id) OVERRIDE {
+    if (engine_id.empty()) {
+      engine_handler_ = NULL;
+      return NULL;
+    }
+
+    DCHECK(engine_handler_map_.find(engine_id) != engine_handler_map_.end());
+    engine_handler_ = engine_handler_map_[engine_id];
+    return engine_handler_;
   }
 
   // IBusBridge override.
@@ -58,31 +80,11 @@ class IBusBridgeImpl : public IBusBridge {
     candidate_window_handler_ = handler;
   }
 
-  virtual void SetCreateEngineHandler(
-      const std::string& engine_id,
-      const CreateEngineHandler& handler) OVERRIDE {
-    create_engine_handler_map_[engine_id] = handler;
-  }
-
-  // IBusBridge override.
-  virtual void UnsetCreateEngineHandler(const std::string& engine_id) OVERRIDE {
-    create_engine_handler_map_.erase(engine_id);
-  }
-
-  // IBusBridge override.
-  virtual void CreateEngine(const std::string& engine_id) OVERRIDE {
-    // TODO(nona): Change following condition to DCHECK once all legacy IME is
-    // migrated to extension IME.
-    if (create_engine_handler_map_[engine_id].is_null())
-      return;
-    create_engine_handler_map_[engine_id].Run();
-  }
-
  private:
   IBusInputContextHandlerInterface* input_context_handler_;
   IBusEngineHandlerInterface* engine_handler_;
   IBusPanelCandidateWindowHandlerInterface* candidate_window_handler_;
-  std::map<std::string, CreateEngineHandler> create_engine_handler_map_;
+  std::map<std::string, IBusEngineHandlerInterface*> engine_handler_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IBusBridgeImpl);
 };

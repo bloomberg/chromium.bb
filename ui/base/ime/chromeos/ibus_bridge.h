@@ -144,8 +144,6 @@ class UI_EXPORT IBusPanelCandidateWindowHandlerInterface {
 // or EngineService) directly by using this class.
 class UI_EXPORT IBusBridge {
  public:
-  typedef base::Callback<void()> CreateEngineHandler;
-
   virtual ~IBusBridge();
 
   // Allocates the global instance. Must be called before any calls to Get().
@@ -166,6 +164,12 @@ class UI_EXPORT IBusBridge {
   virtual void SetInputContextHandler(
       IBusInputContextHandlerInterface* handler) = 0;
 
+  // Initializes the mapping from |engine_id| to |handler|.
+  // |engine_id| must not be empty and |handler| must not be null.
+  virtual void InitEngineHandler(
+      const std::string& engine_id,
+      IBusEngineHandlerInterface* handler) = 0;
+
   // Returns current EngineHandler. This function returns NULL if current engine
   // is not ready to use.
   virtual IBusEngineHandlerInterface* GetEngineHandler() const = 0;
@@ -173,6 +177,12 @@ class UI_EXPORT IBusBridge {
   // Updates current EngineHandler. If there is no active engine service, pass
   // NULL for |handler|. Caller must release |handler|.
   virtual void SetEngineHandler(IBusEngineHandlerInterface* handler) = 0;
+
+  // Updates current EngineHandler by Engine ID. If there is no active
+  // engine service, pass an empty string for |engine_id|.  The set
+  // IBusEngineHandlerInterface is returned.
+  virtual IBusEngineHandlerInterface* SetEngineHandlerById(
+      const std::string& engine_id) = 0;
 
   // Returns current CandidateWindowHandler. This function returns NULL if
   // current candidate window is not ready to use.
@@ -183,20 +193,6 @@ class UI_EXPORT IBusBridge {
   // window service, pass NULL for |handler|. Caller must release |handler|.
   virtual void SetCandidateWindowHandler(
       IBusPanelCandidateWindowHandlerInterface* handler) = 0;
-
-  // Sets create engine handler for |engine_id|. |engine_id| must not be empty
-  // and |handler| must not be null.
-  virtual void SetCreateEngineHandler(
-      const std::string& engine_id,
-      const CreateEngineHandler& handler) = 0;
-
-  // Unsets create engine handler for |engine_id|. |engine_id| must not be
-  // empty.
-  virtual void UnsetCreateEngineHandler(const std::string& engine_id) = 0;
-
-  // Creates engine. Do not call this function before SetCreateEngineHandler
-  // call with |engine_id|.
-  virtual void CreateEngine(const std::string& engine_id) = 0;
 
  protected:
   IBusBridge();

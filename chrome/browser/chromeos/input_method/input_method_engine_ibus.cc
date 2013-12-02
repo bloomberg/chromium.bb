@@ -14,7 +14,6 @@
 #include <map>
 
 #include "ash/shell.h"
-#include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -69,14 +68,15 @@ InputMethodEngineIBus::InputMethodEngineIBus()
       preedit_text_(new IBusText()),
       preedit_cursor_(0),
       candidate_window_(new input_method::CandidateWindow()),
-      window_visible_(false),
-      weak_ptr_factory_(this) {}
+      window_visible_(false) {}
 
 InputMethodEngineIBus::~InputMethodEngineIBus() {
   input_method::InputMethodManager::Get()->RemoveInputMethodExtension(ibus_id_);
 
   // Do not unset engine before removing input method extension, above
   // function may call reset function of engine object.
+  //
+  // TODO(komatsu): Move this logic to InputMethodManager.
   if (IBusBridge::Get()->GetEngineHandler() == this)
     IBusBridge::Get()->SetEngineHandler(NULL);
 }
@@ -113,7 +113,7 @@ void InputMethodEngineIBus::Initialize(
 
   manager->AddInputMethodExtension(ibus_id_, engine_name, layouts, languages,
                                    options_page, input_view, this);
-  RegisterComponent();
+  IBusBridge::Get()->InitEngineHandler(ibus_id_, this);
 }
 
 void InputMethodEngineIBus::StartIme() {
@@ -583,17 +583,6 @@ void InputMethodEngineIBus::MenuItemToProperty(
   }
 
   // TODO(nona): Support item.children.
-}
-
-void InputMethodEngineIBus::RegisterComponent() {
-  IBusBridge::Get()->SetCreateEngineHandler(
-      ibus_id_,
-      base::Bind(&InputMethodEngineIBus::CreateEngineHandler,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void InputMethodEngineIBus::CreateEngineHandler() {
-  IBusBridge::Get()->SetEngineHandler(this);
 }
 
 }  // namespace chromeos
