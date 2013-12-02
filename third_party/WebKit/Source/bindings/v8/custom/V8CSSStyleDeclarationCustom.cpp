@@ -229,7 +229,7 @@ void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::String> name
         return;
 
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, propertyValue, value);
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, getPropertyName(static_cast<CSSPropertyID>(propInfo->propID)), "CSSStyleDeclaration", info.Holder(), info.GetIsolate());
     imp->setPropertyInternal(static_cast<CSSPropertyID>(propInfo->propID), propertyValue, false, exceptionState);
 
     if (exceptionState.throwIfNeeded())

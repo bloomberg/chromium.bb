@@ -3133,7 +3133,7 @@ String CSSComputedStyleDeclaration::getPropertyValueInternal(CSSPropertyID prope
 
 void CSSComputedStyleDeclaration::setPropertyInternal(CSSPropertyID id, const String&, bool, ExceptionState& exceptionState)
 {
-    exceptionState.throwDOMException(NoModificationAllowedError, "Failed to set the '" + getPropertyNameString(id) + "' property on a computed 'CSSStyleDeclaration': computed styles are read-only.");
+    exceptionState.throwDOMException(NoModificationAllowedError, "This object is computed, and therefore read-only.");
 }
 
 const HashMap<AtomicString, String>* CSSComputedStyleDeclaration::variableMap() const
