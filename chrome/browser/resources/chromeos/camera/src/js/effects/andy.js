@@ -32,11 +32,11 @@ camera.effects.Andy.prototype = {
  * @override
  */
 camera.effects.Andy.prototype.filterFrame = function(canvas) {
-  var face = this.tracker_.face;
+  var face = this.tracker_.getFaceForCanvas(canvas);
   x = canvas.width * (face.x + (face.width / 2));
   y = canvas.height * face.y;
-  radius = Math.sqrt(face.width * face.width +
-                     face.height * face.height) * canvas.width / 5;
+  var radius = Math.sqrt(Math.pow(face.width * canvas.width, 2) +
+                         Math.pow(face.height * canvas.height, 2));
   canvas.bulgePinch(x, y - radius, radius, -1);
 };
 

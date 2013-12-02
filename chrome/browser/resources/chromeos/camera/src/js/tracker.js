@@ -26,7 +26,7 @@ camera.Tracker = function(input) {
    * @type {camera.Tracker.Face}
    * @private
    */
-  this.face_ = new camera.Tracker.Face();
+  this.face_ = new camera.Tracker.Face(0.5, 0.5, 0.3, 0.3, 1);
 
   /**
    * @type {boolean}
@@ -46,68 +46,74 @@ camera.Tracker = function(input) {
 
 /**
  * Represents a detected face.
+ *
+ * @param {number} x Initial x coordinate, between 0 and 1.
+ * @param {number} y Initial y coordinate, between 0 and 1.
+ * @param {number} width Initial width, between 0 and 1.
+ * @param {number} height Initial height, between 0 and 1.
+ * @param {number} confidence Initial confidence, between 0 and 1.
  * @constructor
  */
-camera.Tracker.Face = function() {
+camera.Tracker.Face = function(x, y, width, height, confidence) {
   /**
    * @type {number}
    * @private
    */
-  this.x_ = 0;
+  this.x_ = x;
 
   /**
    * @type {number}
    * @private
    */
-  this.y_ = 0;
+  this.y_ = y;
 
   /**
    * @type {number}
    * @private
    */
-  this.targetX_ = 0;
+  this.targetX_ = x;
 
   /**
    * @type {number}
    * @private
    */
-  this.targetY_ = 0;
+  this.targetY_ = y;
 
   /**
    * @type {number}
    * @private
    */
-  this.width_ = 0.3;
+  this.width_ = width;
 
   /**
    * @type {number}
    * @private
    */
-  this.height_ = 0.3;
+  this.height_ = height;
 
   /**
    * @type {number}
    * @private
    */
-  this.targetWidth_ = 0.3;
+  this.targetWidth_ = width;
 
   /**
    * @type {number}
    * @private
    */
-  this.targetHeight_ = 0.3;
+  this.targetHeight_ = height;
 
   /**
    * @type {number}
    * @private
    */
-  this.confidence_ = 0;
+  this.confidence_ = confidence;
 
   /**
    * @type {number}
    * @private
    */
-  this.targetConfidence_ = 0;
+  this.targetConfidence_ = confidence;
 
   // End of properties. Seal the object.
   Object.seal(this);
@@ -208,14 +214,6 @@ camera.Tracker.Face.prototype.update = function() {
 };
 
 camera.Tracker.prototype = {
- /**
-  * Returns detected faces by the last call of update().
-  * @return {camera.Tracker.Face} Detected face object.
-  */
-  get face() {
-    return this.face_;
-  },
-
   /**
    * Returns number of frames analyzed per second (without interpolating).
    * @return {number}
@@ -284,5 +282,30 @@ camera.Tracker.prototype.detect = function() {
  */
 camera.Tracker.prototype.update = function() {
   this.face_.update();
+};
+
+/**
+ * Returns detected faces by the last call of update(), mapped to the canvas
+ * coordinates.
+ *
+ * @param {Canvas} canvas Canvas used to map the face coordinates onto.
+ * @return {camera.Tracker.Face} Detected face object.
+ */
+camera.Tracker.prototype.getFaceForCanvas = function(canvas) {
+  var inputFace = this.face_;
+
+  var inputAspect = this.input_.width / this.input_.height;
+  var outputAspect = canvas.width / canvas.height;
+  var scaleWidth = inputAspect / outputAspect;
+
+  var outputX = (inputFace.x - 0.5) * scaleWidth + 0.5;
+  var outputWidth = inputFace.width * scaleWidth;
+
+  var outputFace = new camera.Tracker.Face(outputX,
+                                           inputFace.y,
+                                           outputWidth,
+                                           inputFace.height,
+                                           inputFace.confidence);
+  return outputFace;
 };
 
