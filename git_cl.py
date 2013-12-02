@@ -21,6 +21,7 @@ import textwrap
 import threading
 import urllib2
 import urlparse
+import webbrowser
 
 try:
   import readline  # pylint: disable=F0401,W0611
@@ -2133,7 +2134,6 @@ def CMDupstream(parser, args):
   _, args = parser.parse_args(args)
   if len(args) > 1:
     parser.error('Unrecognized args: %s' % ' '.join(args))
-    return 0
 
   cl = Changelist()
   if args:
@@ -2143,6 +2143,21 @@ def CMDupstream(parser, args):
     print "Upstream branch set to " + cl.GetUpstreamBranch()
   else:
     print cl.GetUpstreamBranch()
+  return 0
+
+
+def CMDweb(parser, args):
+  """Opens the current CL in the web browser."""
+  _, args = parser.parse_args(args)
+  if args:
+    parser.error('Unrecognized args: %s' % ' '.join(args))
+
+  issue_url = Changelist().GetIssueURL()
+  if not issue_url:
+    print >> sys.stderr, 'ERROR No issue to open'
+    return 1
+
+  webbrowser.open(issue_url)
   return 0
 
 
