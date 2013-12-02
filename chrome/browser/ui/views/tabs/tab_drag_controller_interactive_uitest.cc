@@ -2150,15 +2150,18 @@ IN_PROC_BROWSER_TEST_P(DetachToDockedTabDragControllerTest,
   EXPECT_TRUE(IsWindowPositionManaged(
       new_browser->window()->GetNativeWindow()));
 
-  // The new window should be docked and not maximized if docking is allowed.
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(new_browser->window()->GetNativeWindow());
+  // The new window should not be maximized because it gets docked or snapped.
+  EXPECT_FALSE(new_browser->window()->IsMaximized());
   if (docked_windows_enabled()) {
-    EXPECT_FALSE(new_browser->window()->IsMaximized());
+    // The new window should be docked and not snapped if docking is allowed.
     EXPECT_TRUE(window_state->IsDocked());
+    EXPECT_FALSE(window_state->IsSnapped());
   } else {
-    EXPECT_TRUE(new_browser->window()->IsMaximized());
+    // The new window should be snapped and not docked if docking is disabled.
     EXPECT_FALSE(window_state->IsDocked());
+    EXPECT_TRUE(window_state->IsSnapped());
   }
 }
 

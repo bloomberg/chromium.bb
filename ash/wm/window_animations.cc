@@ -325,7 +325,8 @@ base::TimeDelta CrossFadeImpl(aura::Window* window,
   const bool old_on_top = (old_bounds.width() > new_bounds.width());
 
   // Shorten the animation if there's not much visual movement.
-  const base::TimeDelta duration = GetCrossFadeDuration(old_bounds, new_bounds);
+  const base::TimeDelta duration = GetCrossFadeDuration(window,
+                                                        old_bounds, new_bounds);
 
   // Scale up the old layer while translating to new position.
   {
@@ -417,9 +418,10 @@ void CrossFadeToBounds(aura::Window* window, const gfx::Rect& new_bounds) {
   CrossFadeImpl(window, old_layer, gfx::Tween::EASE_OUT);
 }
 
-base::TimeDelta GetCrossFadeDuration(const gfx::Rect& old_bounds,
+base::TimeDelta GetCrossFadeDuration(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) {
-  if (views::corewm::WindowAnimationsDisabled(NULL))
+  if (views::corewm::WindowAnimationsDisabled(window))
     return base::TimeDelta();
 
   int old_area = old_bounds.width() * old_bounds.height();

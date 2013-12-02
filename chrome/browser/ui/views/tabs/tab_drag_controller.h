@@ -457,6 +457,25 @@ class TabDragController : public content::WebContentsDelegate,
   // |source_tabstrip_|.
   bool AreTabsConsecutive();
 
+  // Calculates and returns new bounds for the dragged browser window.
+  // Takes into consideration current and restore bounds of |source| tab strip
+  // preventing the dragged size from being too small. Positions the new bounds
+  // such that the tab that was dragged remains under the |point_in_screen|.
+  // Offsets |drag_bounds| if necessary when dragging to the right from the
+  // source browser.
+  gfx::Rect CalculateDraggedBrowserBounds(TabStrip* source,
+                                          const gfx::Point& point_in_screen,
+                                          std::vector<gfx::Rect>* drag_bounds);
+
+  // Calculates scaled |drag_bounds| for dragged tabs and sets the tabs bounds.
+  // Layout of the tabstrip is performed and a new tabstrip width calculated.
+  // When |last_tabstrip_width| is larger than the new tabstrip width the tabs
+  // in attached tabstrip are scaled and the attached browser is positioned such
+  // that the tab that was dragged remains under the |point_in_screen|.
+  void AdjustBrowserAndTabBoundsForDrag(int last_tabstrip_width,
+                                        const gfx::Point& point_in_screen,
+                                        std::vector<gfx::Rect>* drag_bounds);
+
   // Creates and returns a new Browser to handle the drag.
   Browser* CreateBrowserForDrag(TabStrip* source,
                                 const gfx::Point& point_in_screen,
