@@ -295,17 +295,17 @@ VolumeManagerWrapper.prototype.unmount = function(
 };
 
 /**
- * Resolves the path to an entry instance.
+ * Resolves the absolute path to an entry instance.
  * @param {string} path The path to be resolved.
  * @param {function(Entry)} successCallback Called with the resolved entry
  *     on success.
  * @param {function(FileError)} errorCallback Called with the error on error.
  */
-VolumeManagerWrapper.prototype.resolvePath = function(
+VolumeManagerWrapper.prototype.resolveAbsolutePath = function(
     path, successCallback, errorCallback) {
   if (this.pendingTasks_) {
-    this.pendingTasks_.push(
-        this.resolvePath.bind(this, path, successCallback, errorCallback));
+    this.pendingTasks_.push(this.resolveAbsolutePath.bind(
+        this, path, successCallback, errorCallback));
     return;
   }
 
@@ -316,7 +316,7 @@ VolumeManagerWrapper.prototype.resolvePath = function(
     return;
   }
 
-  this.volumeManager_.resolvePath(path, successCallback, errorCallback);
+  this.volumeManager_.resolveAbsolutePath(path, successCallback, errorCallback);
 };
 
 /**

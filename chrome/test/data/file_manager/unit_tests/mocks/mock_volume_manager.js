@@ -35,7 +35,7 @@ MockVolumeManager.prototype.getVolumeInfo = function(path) {
  * @param {function(FileEntry)} successCallback Callback on success.
  * @param {function()} errorCallback Callback on error.
  */
-MockVolumeManager.prototype.resolvePath = function(
+MockVolumeManager.prototype.resolveAbsolutePath = function(
     path, successCallback, errorCallback) {
   var mockFileEntry = new MockFileEntry();
   mockFileEntry.fullPath = path;

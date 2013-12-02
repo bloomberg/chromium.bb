@@ -546,13 +546,14 @@ VolumeManager.prototype.unmount = function(mountPath,
 };
 
 /**
- * Resolve the path to its entry.
+ * Resolves the absolute path to its entry. Shouldn't be used outside of the
+ * Files app's initialization.
  * @param {string} path The path to be resolved.
  * @param {function(Entry)} successCallback Called with the resolved entry on
  *     success.
  * @param {function(FileError)} errorCallback Called on error.
  */
-VolumeManager.prototype.resolvePath = function(
+VolumeManager.prototype.resolveAbsolutePath = function(
     path, successCallback, errorCallback) {
   // Make sure the path is in the mounted volume.
   var volumeInfo = this.getVolumeInfo(path);

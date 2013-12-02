@@ -38,6 +38,7 @@ var RootType = Object.freeze({
 
 /**
  * Top directory for each root type.
+ * TODO(mtomasz): Deprecated. Remove this.
  * @enum {string}
  * @const
  */
@@ -65,11 +66,12 @@ var DriveSubRootDirectory = Object.freeze({
 var PathUtil = {};
 
 /**
- * The path to the default directory.
+ * The default mount point.
+ * TODO(mtomasz): Deprecated. Use the volume manager instead.
  * @type {string}
  * @const
  */
-PathUtil.DEFAULT_DIRECTORY = RootDirectory.DOWNLOADS;
+PathUtil.DEFAULT_MOUNT_POINT = '/Downloads';
 
 /**
  * Checks if the given path represents a special search. Fake entries in

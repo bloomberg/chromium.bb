@@ -1413,106 +1413,160 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
   /**
    * Restores current directory and may be a selected item after page load (or
-   * reload) or popping a state (after click on back/forward). If location.hash
-   * is present it means that the user has navigated somewhere and that place
-   * will be restored. defaultPath primarily is used with save/open dialogs.
+   * reload) or popping a state (after click on back/forward). defaultPath
+   * primarily is used with save/open dialogs.
    * Default path may also contain a file name. Freshly opened file manager
    * window has neither.
    *
    * @private
    */
   FileManager.prototype.setupCurrentDirectory_ = function() {
-    var path = location.hash ?  // Location hash has the highest priority.
-        decodeURIComponent(location.hash.substr(1)) :
-        this.defaultPath;
-
-    if (!path) {
-      path = PathUtil.DEFAULT_DIRECTORY;
-    } else if (path.indexOf('/') == -1) {
-      // Path is a file name.
-      path = PathUtil.DEFAULT_DIRECTORY + '/' + path;
-    }
-
     var tracker = this.directoryModel_.createDirectoryChangeTracker();
     tracker.start();
+
+    // Wait until the volume manager is initialized.
     this.volumeManager_.ensureInitialized(function() {
-      tracker.stop();
-      if (tracker.hasChanged)
+      if (tracker.hasChanged) {
+        tracker.stop();
         return;
+      }
 
-      // If Drive is disabled but the path points to Drive's entry,
-      // fallback to DEFAULT_DIRECTORY.
+      // The default path contains a full path, including the mount point. This
+      // should be avoided.
+      var path = this.defaultPath;
+
+      if (!path) {
+        path = PathUtil.DEFAULT_MOUNT_POINT;
+      } else if (path.indexOf('/') == -1) {
+        // Path is a file name.
+        path = PathUtil.DEFAULT_MOUNT_POINT + '/' + path;
+      }
+
+      // If Drive is disabled but the path points to Drive's entry, fallback to
+      // DEFAULT_MOUNT_POINT.
       if (PathUtil.isDriveBasedPath(path) &&
-          !this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE))
-        path = PathUtil.DEFAULT_DIRECTORY + '/' + PathUtil.basename(path);
+          !this.volumeManager_.getVolumeInfo(RootDirectory.DRIVE)) {
+        path = PathUtil.DEFAULT_MOUNT_POINT + '/' + PathUtil.basename(path);
+      }
 
-      this.finishSetupCurrentDirectory_(path);
+      var resolveEntries = function(callback) {
+        // Convert the path to the directory entry and an optional selection
+        // entry.
+        // TODO(hirono): There may be a race here. The path on Drive, may not
+        // be available yet.
+        this.volumeManager_.resolveAbsolutePath(path, function(entry) {
+          if (entry.isDirectory) {
+            callback(entry);
+            return;
+          }
+          // The entry exists, but it is not a directory. Therefore use a
+          // parent.
+          entry.getParent(function(parentEntry) {
+            callback(parentEntry, entry);
+          }, function() {
+            // Errors are unexpected, throw an exception.
+            throw new Error('Unable to resolve parent for: ' + path);
+          });
+        }, function() {
+          // The entry doesn't exist, most probably because the path contains a
+          // suggested name. Therefore try to open its parent.
+          var pathNodes = path.split('/');
+          var suggestedName = pathNodes.pop();
+          var parentPath = pathNodes.join('/');
+          this.volumeManager_.resolveAbsolutePath(
+              parentPath,
+              function(parentEntry) {
+                callback(parentEntry,
+                         undefined,  // opt_selectionEntry
+                         suggestedName);
+              },
+              function() {
+                throw new Error('Failed to setup an initial directory: ' +
+                    path);
+              });
+        }.bind(this));
+      }.bind(this);
+
+      // Convert the path to a directoryEntry, used to navigate the directory
+      // model to, selection entry, to select the file within it (optional),
+      // and a suggested name, if the selection entry has not been found, but a
+      // name got passed (optional).
+      resolveEntries(
+          function(directoryEntry, opt_selectionEntry, opt_suggestedName) {
+            tracker.stop();
+            if (tracker.hasChanged)
+              return;
+            this.finishSetupCurrentDirectory_(
+                directoryEntry, opt_selectionEntry, opt_suggestedName);
+          }.bind(this));
     }.bind(this));
   };
 
   /**
-   * @param {string} path Path to setup.
+   * @param {DirectoryEntry} directoryEntry Directory to be opened.
+   * @param {Entry=} opt_selectionEntry Entry to be selected.
+   * @param {string=} opt_suggestedName Suggested name for a non-existing\
+   *     selection.
    * @private
    */
-  FileManager.prototype.finishSetupCurrentDirectory_ = function(path) {
-    this.directoryModel_.setupPath(path, function(baseName, leafName, exists) {
-      if (this.dialogType == DialogType.FULL_PAGE) {
-        // In the FULL_PAGE mode if the hash path points to a file we might have
-        // to invoke a task after selecting it.
-        // If the file path is in params_ we only want to select the file.
-        if (this.params_.action == 'select')
-          return;
-
-        var task = null;
-        if (!exists || leafName == '') {
-          // Non-existent file or a directory.
-          if (this.params_.gallery) {
-            // Reloading while the Gallery is open with empty or multiple
-            // selection. Open the Gallery when the directory is scanned.
-            task = function() {
-              new FileTasks(this, this.params_).openGallery([]);
-            }.bind(this);
-          }
-        } else {
-          // There are 3 ways we can get here:
-          // 1. Invoked from file_manager_util::ViewFile. This can only
-          //    happen for 'gallery' and 'mount-archive' actions.
-          // 2. Reloading a Gallery page. Must be an image or a video file.
-          // 3. A user manually entered a URL pointing to a file.
-          // We call the appropriate methods of FileTasks directly as we do
-          // not need any of the preparations that |execute| method does.
-          var mediaType = FileType.getMediaType(path);
-          if (mediaType == 'image' || mediaType == 'video') {
-            task = function() {
-              new FileTasks(this, this.params_).openGallery(
-                  [util.makeFilesystemUrl(path)]);
-            }.bind(this);
-          } else if (mediaType == 'archive') {
-            task = function() {
-              new FileTasks(this, this.params_).mountArchives(
-                  [util.makeFilesystemUrl(path)]);
-            }.bind(this);
-          }
-        }
-
-        // If there is a task to be run, run it after the scan is completed.
-        if (task) {
-          var listener = function() {
-            this.directoryModel_.removeEventListener(
-                'scan-completed', listener);
-            task();
-          }.bind(this);
-          this.directoryModel_.addEventListener('scan-completed', listener);
-        }
-        return;
-      }
-
-      if (this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
-        this.filenameInput_.value = leafName;
-        this.selectDefaultPathInFilenameInput_();
-        return;
-      }
+  FileManager.prototype.finishSetupCurrentDirectory_ = function(
+      directoryEntry, opt_selectionEntry, opt_suggestedName) {
+    // Open the directory, and select the selection (if passed).
+    this.directoryModel_.changeDirectoryEntry(directoryEntry, function() {
+      if (opt_selectionEntry)
+        this.directoryModel_.selectEntry(opt_selectionEntry);
     }.bind(this));
+
+    if (this.dialogType == DialogType.FULL_PAGE) {
+      // In the FULL_PAGE mode if the restored path points to a file we might
+      // have to invoke a task after selecting it.
+      if (this.params_.action == 'select')
+        return;
+
+      var task = null;
+      if (opt_suggestedName) {
+        // Non-existent file or a directory.
+        if (this.params_.gallery) {
+          // Reloading while the Gallery is open with empty or multiple
+          // selection. Open the Gallery when the directory is scanned.
+          task = function() {
+            new FileTasks(this, this.params_).openGallery([]);
+          }.bind(this);
+        }
+      } else if (opt_selectionEntry) {
+        // There is a file to be selected. It means, that we are recovering
+        // the Files app.
+        // We call the appropriate methods of FileTasks directly as we do
+        // not need any of the preparations that |execute| method does.
+        // TODO(mtomasz): Change Entry.fullPath to Entry.
+        var mediaType = FileType.getMediaType(opt_selectionEntry.fullPath);
+        if (mediaType == 'image' || mediaType == 'video') {
+          task = function() {
+            // TODO(mtomasz): Replace the url with an entry.
+            new FileTasks(this, this.params_).openGallery(
+                [opt_selectionEntry.toURL()]);
+          }.bind(this);
+        } else if (mediaType == 'archive') {
+          task = function() {
+            new FileTasks(this, this.params_).mountArchives(
+                [opt_selectionEntry.toURL()]);
+          }.bind(this);
+        }
+      }
+
+      // If there is a task to be run, run it after the scan is completed.
+      if (task) {
+        var listener = function() {
+          this.directoryModel_.removeEventListener(
+              'scan-completed', listener);
+          task();
+        }.bind(this);
+        this.directoryModel_.addEventListener('scan-completed', listener);
+      }
+    } else if (this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
+      this.filenameInput_.value = opt_suggestedName || '';
+      this.selectDefaultPathInFilenameInput_();
+    }
   };
 
   /**

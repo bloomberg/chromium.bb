@@ -36,6 +36,7 @@ NavigationModelItem.prototype.getCachedEntry = function() {
 };
 
 /**
+ * TODO(mtomasz): Use Entry instead of path.
  * @param {VolumeManagerWrapper} volumeManager VolumeManagerWrapper instance.
  * @param {string} path Path.
  * @param {DirectoryEntry} entry Entry. Can be null.
@@ -50,7 +51,7 @@ NavigationModelItem.create = function(
   // If the given entry is null, try to resolve path to get an entry.
   if (!entry) {
     item.resolvingQueue_.run(function(continueCallback) {
-      volumeManager.resolvePath(
+      volumeManager.resolveAbsolutePath(
           path,
           function(entry) {
             if (entry.isDirectory)

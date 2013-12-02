@@ -745,22 +745,26 @@ DirectoryModel.prototype.createDirectory = function(name, successCallback,
     return;
   }
 
+  var tracker = this.createDirectoryChangeTracker();
+  tracker.start();
+
   var onSuccess = function(newEntry) {
     // Do not change anything or call the callback if current
     // directory changed.
-    if (entry.fullPath != this.getCurrentDirPath())
+    tracker.stop();
+    if (tracker.hasChanged)
       return;
 
     var existing = this.getFileList().slice().filter(
         function(e) {return e.name == name;});
 
     if (existing.length) {
-      this.selectEntry(name);
+      this.selectEntry(newEntry);
       successCallback(existing[0]);
     } else {
       this.fileListSelection_.beginChange();
       this.getFileList().splice(0, 0, newEntry);
-      this.selectEntry(name);
+      this.selectEntry(newEntry);
       this.fileListSelection_.endChange();
       successCallback(newEntry);
     }
@@ -784,7 +788,7 @@ DirectoryModel.prototype.changeDirectory = function(path, opt_errorCallback) {
   }
 
   this.resolveDirectory(path, function(directoryEntry) {
-    this.changeDirectoryEntry_(directoryEntry);
+    this.changeDirectoryEntry(directoryEntry);
   }.bind(this), function(error) {
     console.error('Error changing directory to ' + path + ': ', error);
     if (opt_errorCallback)
@@ -825,7 +829,8 @@ DirectoryModel.prototype.resolveDirectory = function(
     errorCallback(error);
   }.bind(this);
 
-  this.volumeManager_.resolvePath(
+  // TODO(mtomasz): Use Entry instead of a path.
+  this.volumeManager_.resolveAbsolutePath(
       path,
       function(entry) {
         if (entry.isFile) {
@@ -868,9 +873,8 @@ DirectoryModel.prototype.changeDirectoryEntrySilent_ = function(dirEntry,
  * @param {DirectoryEntry} dirEntry The absolute path to the new directory.
  * @param {function()=} opt_callback Executed if the directory loads
  *     successfully.
- * @private
  */
-DirectoryModel.prototype.changeDirectoryEntry_ = function(
+DirectoryModel.prototype.changeDirectoryEntry = function(
     dirEntry, opt_callback) {
   this.fileWatcher_.changeWatchedDirectory(dirEntry, function() {
     var previous = this.currentDirContents_.getDirectoryEntry();
@@ -922,98 +926,12 @@ DirectoryModel.prototype.createDirectoryChangeTracker = function() {
 };
 
 /**
- * Change the state of the model to reflect the specified path (either a
- * file or directory).
- * TODO(hidehiko): This logic should be merged with
- * FileManager.setupCurrentDirectory_.
- *
- * @param {string} path The root path to use.
- * @param {function(string, string, boolean)=} opt_pathResolveCallback Invoked
- *     as soon as the path has been resolved, and called with the base and leaf
- *     portions of the path name, and a flag indicating if the entry exists.
- *     Will be called even if another directory change happened while setupPath
- *     was in progress, but will pass |false| as |exist| parameter.
+ * @param {Entry} entry Entry to be selected.
  */
-DirectoryModel.prototype.setupPath = function(path, opt_pathResolveCallback) {
-  var tracker = this.createDirectoryChangeTracker();
-  tracker.start();
-
-  var self = this;
-  var resolveCallback = function(directoryPath, fileName, exists) {
-    tracker.stop();
-    if (!opt_pathResolveCallback)
-      return;
-    opt_pathResolveCallback(directoryPath, fileName,
-                            exists && !tracker.hasChanged);
-  };
-
-  var changeDirectoryEntry = function(directoryEntry, opt_callback) {
-    tracker.stop();
-    if (!tracker.hasChanged)
-      self.changeDirectoryEntry_(directoryEntry, opt_callback);
-  };
-
-  var EXISTS = true;
-
-  var changeToDefault = function(leafName) {
-    var def = PathUtil.DEFAULT_DIRECTORY;
-    self.resolveDirectory(def, function(directoryEntry) {
-      resolveCallback(def, leafName, !EXISTS);
-      changeDirectoryEntry(directoryEntry);
-    }, function(error) {
-      console.error('Failed to resolve default directory: ' + def, error);
-      resolveCallback('/', leafName, !EXISTS);
-    });
-  };
-
-  var noParentDirectory = function(leafName, error) {
-    console.warn('Can\'t resolve parent directory: ' + path, error);
-    changeToDefault(leafName);
-  };
-
-  if (DirectoryModel.isSystemDirectory(path)) {
-    changeToDefault('');
-    return;
-  }
-
-  this.resolveDirectory(path, function(directoryEntry) {
-    resolveCallback(directoryEntry.fullPath, '', !EXISTS);
-    changeDirectoryEntry(directoryEntry);
-  }, function(error) {
-    // Usually, leaf does not exist, because it's just a suggested file name.
-    var fileExists = error.code == FileError.TYPE_MISMATCH_ERR;
-    var nameDelimiter = path.lastIndexOf('/');
-    var parentDirectoryPath = path.substr(0, nameDelimiter);
-    var leafName = path.substr(nameDelimiter + 1);
-    if (fileExists || error.code == FileError.NOT_FOUND_ERR) {
-      if (DirectoryModel.isSystemDirectory(parentDirectoryPath)) {
-        changeToDefault(leafName);
-        return;
-      }
-      self.resolveDirectory(parentDirectoryPath,
-                            function(parentDirectoryEntry) {
-        var fileName = path.substr(nameDelimiter + 1);
-        resolveCallback(parentDirectoryEntry.fullPath, fileName, fileExists);
-        changeDirectoryEntry(parentDirectoryEntry,
-                             function() {
-                               self.selectEntry(fileName);
-                             });
-      }, noParentDirectory.bind(null, leafName));
-    } else {
-      // Unexpected errors.
-      console.error('Directory resolving error: ', error);
-      changeToDefault(leafName);
-    }
-  });
-};
-
-/**
- * @param {string} name Filename.
- */
-DirectoryModel.prototype.selectEntry = function(name) {
+DirectoryModel.prototype.selectEntry = function(entry) {
   var fileList = this.getFileList();
   for (var i = 0; i < fileList.length; i++) {
-    if (fileList.item(i).name == name) {
+    if (fileList.item(i).toURL() === entry.toURL()) {
       this.selectIndex(i);
       return;
     }
@@ -1059,7 +977,7 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
     if (currentDirEntry) {
       if (currentDirEntry === DirectoryModel.fakeDriveEntry_) {
         // Replace the fake entry by real DirectoryEntry silently.
-        this.volumeManager_.resolvePath(
+        this.volumeManager_.resolveAbsolutePath(
             DirectoryModel.fakeDriveEntry_.fullPath,
             function(entry) {
               // If the current entry is still fake drive entry, replace it.
@@ -1080,20 +998,13 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
   }
 
   // When the volume where we are is unmounted, fallback to
-  // DEFAULT_DIRECTORY. If current directory path is empty, stop the fallback
+  // DEFAULT_MOUNT_POINT. If current directory path is empty, stop the fallback
   // since the current directory is initializing now.
+  // TODO(mtomasz): DEFAULT_MOUNT_POINT is deprecated. Use VolumeManager::
+  // getDefaultVolume() after it is implemented.
   if (this.getCurrentDirPath() &&
       !this.volumeManager_.getVolumeInfo(this.getCurrentDirPath()))
-    this.changeDirectory(PathUtil.DEFAULT_DIRECTORY);
-};
-
-/**
- * @param {string} path Path.
- * @return {boolean} If current directory is system.
- */
-DirectoryModel.isSystemDirectory = function(path) {
-  path = path.replace(/\/+$/, '');
-  return path === RootDirectory.REMOVABLE || path === RootDirectory.ARCHIVE;
+    this.changeDirectory(PathUtil.DEFAULT_MOUNT_POINT);
 };
 
 /**
@@ -1215,11 +1126,9 @@ DirectoryModel.prototype.specialSearch = function(path, opt_query) {
       dirEntry = DirectoryModel.fakeDriveRecentEntry_;
       searchOption =
           DriveMetadataSearchContentScanner.SearchType.SEARCH_RECENT_FILES;
-
     } else {
       // Unknown path.
-      this.changeDirectory(PathUtil.DEFAULT_DIRECTORY);
-      return;
+      throw new Error('Unknown path for special search.');
     }
 
     var newDirContents = DirectoryContents.createForDriveMetadataSearch(
