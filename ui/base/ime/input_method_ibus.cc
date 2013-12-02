@@ -82,17 +82,10 @@ bool InputMethodIBus::OnUntranslatedIMEMessage(const base::NativeEvent& event,
 void InputMethodIBus::ProcessKeyEventDone(uint32 id,
                                           ui::KeyEvent* event,
                                           bool is_handled) {
-  DCHECK(event);
-
-  // TODO(komatsu): Support fabricated key events.
-  if (!event->HasNativeEvent())
-    return;
-
-  std::set<uint32>::iterator it = pending_key_events_.find(id);
-
-  if (it == pending_key_events_.end())
+  if (pending_key_events_.find(id) == pending_key_events_.end())
    return;  // Abandoned key event.
 
+  DCHECK(event);
   if (event->type() == ET_KEY_PRESSED) {
     if (is_handled) {
       // IME event has a priority to be handled, so that character composer
@@ -108,8 +101,7 @@ void InputMethodIBus::ProcessKeyEventDone(uint32 id,
   if (event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED)
     ProcessKeyEventPostIME(*event, is_handled);
 
-  // Do not use |it| for erasing, ProcessKeyEventPostIME may change the
-  // |pending_key_events_|.
+  // ProcessKeyEventPostIME may change the |pending_key_events_|.
   pending_key_events_.erase(id);
 }
 
@@ -356,12 +348,7 @@ void InputMethodIBus::UpdateContextFocusState() {
 void InputMethodIBus::ProcessKeyEventPostIME(
     const ui::KeyEvent& event,
     bool handled) {
-  // TODO(komatsu): Support fabricated key events.
-  if (!event.HasNativeEvent())
-    return;
-
   TextInputClient* client = GetTextInputClient();
-
   if (!client) {
     // As ibus works asynchronously, there is a chance that the focused client
     // loses focus before this method gets called.
