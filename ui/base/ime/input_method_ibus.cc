@@ -132,7 +132,7 @@ bool InputMethodIBus::DispatchKeyEvent(const ui::KeyEvent& event) {
 
   pending_key_events_.insert(current_keyevent_id_);
 
-  ui::KeyEvent* copied_event = event.Copy();
+  ui::KeyEvent* copied_event = new ui::KeyEvent(event);
   GetEngine()->ProcessKeyEvent(
       event,
       base::Bind(&InputMethodIBus::ProcessKeyEventDone,

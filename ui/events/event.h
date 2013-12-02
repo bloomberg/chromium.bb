@@ -528,9 +528,6 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // BMP characters.
   uint16 GetCharacter() const;
 
-  // Returns the copy of this key event. Used in NativeWebKeyboardEvent.
-  KeyEvent* Copy() const;
-
   KeyboardCode key_code() const { return key_code_; }
   bool is_char() const { return is_char_; }
 

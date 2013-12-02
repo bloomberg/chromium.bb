@@ -820,8 +820,8 @@ bool DesktopRootWindowHostWin::HandleKeyEvent(const ui::KeyEvent& event) {
 
 bool DesktopRootWindowHostWin::HandleUntranslatedKeyEvent(
     const ui::KeyEvent& event) {
-  scoped_ptr<ui::KeyEvent> duplicate_event(event.Copy());
-  return delegate_->OnHostKeyEvent(duplicate_event.get());
+  ui::KeyEvent duplicate_event(event);
+  return delegate_->OnHostKeyEvent(&duplicate_event);
 }
 
 void DesktopRootWindowHostWin::HandleTouchEvent(

@@ -48,7 +48,7 @@ void MockIMEEngineHandler::ProcessKeyEvent(
     const ui::KeyEvent& key_event,
     const KeyEventDoneCallback& callback) {
   ++process_key_event_call_count_;
-  last_processed_key_event_.reset(key_event.Copy());
+  last_processed_key_event_.reset(new ui::KeyEvent(key_event));
   last_passed_callback_ = callback;
 }
 

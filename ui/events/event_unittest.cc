@@ -264,7 +264,7 @@ TEST(EventTest, NormalizeKeyEventFlags) {
 
 TEST(EventTest, KeyEventCopy) {
   KeyEvent key(ET_KEY_PRESSED, VKEY_A, EF_NONE, false);
-  scoped_ptr<KeyEvent> copied_key(key.Copy());
+  scoped_ptr<KeyEvent> copied_key(new KeyEvent(key));
   EXPECT_EQ(copied_key->type(), key.type());
   EXPECT_EQ(copied_key->key_code(), key.key_code());
 }

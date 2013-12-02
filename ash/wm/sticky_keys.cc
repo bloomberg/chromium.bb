@@ -269,7 +269,7 @@ bool StickyKeysHandler::HandleDisabledState(ui::KeyEvent* event) {
       if (preparing_to_enable_) {
         preparing_to_enable_ = false;
         current_state_ = ENABLED;
-        modifier_up_event_.reset(event->Copy());
+        modifier_up_event_.reset(new ui::KeyEvent(*event));
         return true;
       }
       return false;

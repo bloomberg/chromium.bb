@@ -44,7 +44,7 @@ class EventBuffer : public ui::EventHandler {
  private:
   // ui::EventHandler overrides:
   virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
-    events_.push_back(event->Copy());
+    events_.push_back(new ui::KeyEvent(*event));
   }
 
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
@@ -92,7 +92,7 @@ class MockStickyKeysHandlerDelegate :
       delegate_->OnShortcutPressed();
     }
 
-    events_.push_back(event->Copy());
+    events_.push_back(new ui::KeyEvent(*event));
   }
 
   virtual void DispatchMouseEvent(ui::MouseEvent* event,

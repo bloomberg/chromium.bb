@@ -15,7 +15,7 @@ namespace {
 // RenderViewHostDelegate::HandledKeybardEvent after the original aura
 // event is destroyed.
 ui::Event* CopyEvent(ui::Event* event) {
-  return event ? static_cast<ui::KeyEvent*>(event)->Copy() : NULL;
+  return event ? new ui::KeyEvent(*static_cast<ui::KeyEvent*>(event)) : NULL;
 }
 
 int EventFlagsToWebInputEventModifiers(int flags) {
