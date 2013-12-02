@@ -12,9 +12,12 @@ const char kNameKey[] = "name";
 const char kContextKey[] = "context";
 const char kDetailsKey[] = "details";
 const char kValueKey[] = "details.value";
+const char kChildrenCountKey[] = "details.childrenCount";
 const char kPasswordKey[] = "details.isPassword";
 const char kItemCountKey[] = "details.itemCount";
+const char kItemDepthKey[] = "details.itemDepth";
 const char kItemIndexKey[] = "details.itemIndex";
+const char kItemExpandedKey[] = "details.isItemExpanded";
 const char kSelectionStartKey[] = "details.selectionStart";
 const char kSelectionEndKey[] = "details.selectionEnd";
 const char kCheckedKey[] = "details.isChecked";
@@ -35,6 +38,8 @@ const char kTypeRadioButton[] = "radiobutton";
 const char kTypeSlider[] = "slider";
 const char kTypeTab[] = "tab";
 const char kTypeTextBox[] = "textbox";
+const char kTypeTree[] = "tree";
+const char kTypeTreeItem[] = "treeitem";
 const char kTypeWindow[] = "window";
 
 }  // namespace extension_accessibility_api_constants

@@ -265,6 +265,45 @@ void AccessibilityMenuItemInfo::SerializeToDict(DictionaryValue *dict) const {
   dict->SetInteger(keys::kItemCountKey, item_count_);
 }
 
+AccessibilityTreeInfo::AccessibilityTreeInfo(Profile* profile,
+                                             const std::string& menu_name)
+    : AccessibilityControlInfo(profile, menu_name) {
+}
+
+const char* AccessibilityTreeInfo::type() const {
+  return keys::kTypeTree;
+}
+
+AccessibilityTreeItemInfo::AccessibilityTreeItemInfo(Profile* profile,
+                                                     const std::string& name,
+                                                     const std::string& context,
+                                                     int item_depth,
+                                                     int item_index,
+                                                     int item_count,
+                                                     int children_count,
+                                                     bool is_expanded)
+    : AccessibilityControlInfo(profile, name),
+      item_depth_(item_depth),
+      item_index_(item_index),
+      item_count_(item_count),
+      children_count_(children_count),
+      is_expanded_(is_expanded) {
+  set_context(context);
+}
+
+const char* AccessibilityTreeItemInfo::type() const {
+  return keys::kTypeTreeItem;
+}
+
+void AccessibilityTreeItemInfo::SerializeToDict(DictionaryValue *dict) const {
+  AccessibilityControlInfo::SerializeToDict(dict);
+  dict->SetInteger(keys::kItemDepthKey, item_depth_);
+  dict->SetInteger(keys::kItemIndexKey, item_index_);
+  dict->SetInteger(keys::kItemCountKey, item_count_);
+  dict->SetInteger(keys::kChildrenCountKey, children_count_);
+  dict->SetBoolean(keys::kItemExpandedKey, is_expanded_);
+}
+
 AccessibilitySliderInfo::AccessibilitySliderInfo(Profile* profile,
                                                  const std::string& name,
                                                  const std::string& context,

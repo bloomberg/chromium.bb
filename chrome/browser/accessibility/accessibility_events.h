@@ -225,6 +225,7 @@ class AccessibilityComboBoxInfo : public AccessibilityControlInfo {
   int item_count_;
 };
 
+
 // Accessibility information about a text box, passed to onControlFocused,
 // onControlAction, and onTextChanged event listeners.
 class AccessibilityTextBoxInfo : public AccessibilityControlInfo {
@@ -323,6 +324,52 @@ class AccessibilityMenuItemInfo : public AccessibilityControlInfo {
   // The 0-based index of the current item and the number of total items.
   int item_index_;
   int item_count_;
+};
+
+// Accessibility information about a tree; this class is used by
+// onControlFocused event listeners.
+class AccessibilityTreeInfo : public AccessibilityControlInfo {
+ public:
+  AccessibilityTreeInfo(Profile* profile, const std::string& menu_name);
+
+  virtual const char* type() const OVERRIDE;
+};
+
+// Accessibility information about a tree item; this class is used by
+// onControlFocused event listeners.
+class AccessibilityTreeItemInfo : public AccessibilityControlInfo {
+ public:
+  AccessibilityTreeItemInfo(Profile* profile,
+                            const std::string& name,
+                            const std::string& context,
+                            int item_depth,
+                            int item_index,
+                            int item_count,
+                            int children_count,
+                            bool is_expanded);
+
+  virtual const char* type() const OVERRIDE;
+
+  virtual void SerializeToDict(base::DictionaryValue* dict) const OVERRIDE;
+
+  int item_depth() const { return item_depth_; }
+  int item_index() const { return item_index_; }
+  int item_count() const { return item_count_; }
+  int children_count() const { return children_count_; }
+  bool is_expanded() const { return is_expanded_; }
+
+ private:
+  // 0-based item depth.
+  int item_depth_;
+  // The 0-based index of the current item and the number of total items at the
+  // current depth.
+  int item_index_;
+  // Count of items at the current depth.
+  int item_count_;
+  // Count of children of the current item.
+  int children_count_;
+  // True if the node is expanded.
+  bool is_expanded_;
 };
 
 // Accessibility information about a slider passed to onControlFocused

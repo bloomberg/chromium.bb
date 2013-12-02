@@ -18,6 +18,7 @@
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/submenu_view.h"
+#include "ui/views/controls/tree/tree_view.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -208,6 +209,12 @@ void AccessibilityEventRouterViews::DispatchAccessibilityEvent(
   case ui::AccessibilityTypes::ROLE_SLIDER:
     SendSliderNotification(view, type, profile);
     break;
+  case ui::AccessibilityTypes::ROLE_OUTLINE:
+    SendTreeNotification(view, type, profile);
+    break;
+  case ui::AccessibilityTypes::ROLE_OUTLINEITEM:
+    SendTreeItemNotification(view, type, profile);
+    break;
   default:
     // If this is encountered, please file a bug with the role that wasn't
     // caught so we can add accessibility extension API support.
@@ -270,6 +277,60 @@ void AccessibilityEventRouterViews::SendMenuItemNotification(
 
   AccessibilityMenuItemInfo info(
       profile, name, context, has_submenu, index, count);
+  SendControlAccessibilityNotification(event, &info);
+}
+
+// static
+void AccessibilityEventRouterViews::SendTreeNotification(
+    views::View* view,
+    ui::AccessibilityTypes::Event event,
+    Profile* profile) {
+  AccessibilityTreeInfo info(profile, GetViewName(view));
+  SendControlAccessibilityNotification(event, &info);
+}
+
+// static
+void AccessibilityEventRouterViews::SendTreeItemNotification(
+    views::View* view,
+    ui::AccessibilityTypes::Event event,
+    Profile* profile) {
+  std::string name = GetViewName(view);
+  std::string context = GetViewContext(view);
+
+  if (strcmp(view->GetClassName(), views::TreeView::kViewClassName) != 0) {
+    NOTREACHED();
+    return;
+  }
+
+  views::TreeView* tree = static_cast<views::TreeView*>(view);
+  ui::TreeModelNode* selected_node = tree->GetSelectedNode();
+  ui::TreeModel* model = tree->model();
+
+  int siblings_count = model->GetChildCount(model->GetRoot());
+  int children_count = -1;
+  int index = -1;
+  int depth = -1;
+  bool is_expanded = false;
+
+  if (selected_node) {
+    children_count = model->GetChildCount(selected_node);
+    is_expanded = tree->IsExpanded(selected_node);
+    ui::TreeModelNode* parent_node = model->GetParent(selected_node);
+    if (parent_node) {
+      index = model->GetIndexOf(parent_node, selected_node);
+      siblings_count = model->GetChildCount(parent_node);
+    }
+    // Get node depth.
+    depth = 0;
+    while (parent_node) {
+      depth++;
+      parent_node = model->GetParent(parent_node);
+    }
+  }
+
+  AccessibilityTreeItemInfo info(
+      profile, name, context, depth, index, siblings_count, children_count,
+      is_expanded);
   SendControlAccessibilityNotification(event, &info);
 }
 

@@ -94,6 +94,25 @@
         }
       },
       {
+        "id": "TreeDetails",
+        "type": "object",
+        "description": "Information about the state of a tree control.",
+        "properties": {
+        }
+      },
+      {
+        "id": "TreeItemDetails",
+        "type": "object",
+        "description": "Information about a selected tree control item.",
+        "properties": {
+          "itemDepth": {"type": "integer", "description": "The 0-based depth of this tree item."},
+          "itemCount": {"type": "integer", "description": "The number of items in the current depth."},
+          "itemIndex": {"type": "integer", "description": "The 0-based index of this tree item at the current tree depth."},
+          "childrenCount": {"type": "integer", "description": "The number of children of the current tree item."},
+          "isItemExpanded": {"type": "boolean", "description": "True if this if this tree item is expanded."}
+        }
+      },
+      {
         "id": "AlertInfo",
         "type": "object",
         "description": "Information about an alert",
@@ -112,7 +131,7 @@
           "type": {
             "type": "string",
             "description": "The type of this object, which determines the contents of 'details'.",
-            "enum": ["alert", "button", "checkbox", "combobox", "link", "menu", "menuitem", "radiobutton", "slider", "tab", "textbox", "window"]
+            "enum": ["alert", "button", "checkbox", "combobox", "link", "menu", "menuitem", "radiobutton", "slider", "tab", "textbox", "tree", "treeitem", "window"]
           },
           "name": {
             "type": "string",
@@ -134,7 +153,9 @@
               { "$ref": "RadioButtonDetails" },
               { "$ref": "SliderDetails" },
               { "$ref": "TabDetails" },
-              { "$ref": "TextBoxDetails" }
+              { "$ref": "TextBoxDetails" },
+              { "$ref": "TreeDetails" },
+              { "$ref": "TreeItemDetails" }
             ]
           }
         }

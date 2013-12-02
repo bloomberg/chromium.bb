@@ -36,6 +36,9 @@ class VIEWS_EXPORT TreeView : public ui::TreeModelObserver,
                               public FocusChangeListener,
                               public PrefixDelegate {
  public:
+  // The tree view's class name.
+  static const char kViewClassName[];
+
   TreeView();
   virtual ~TreeView();
 
@@ -122,6 +125,7 @@ class VIEWS_EXPORT TreeView : public ui::TreeModelObserver,
   virtual void ShowContextMenu(const gfx::Point& p,
                                ui::MenuSourceType source_type) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
+  virtual const char* GetClassName() const OVERRIDE;
 
   // TreeModelObserver overrides:
   virtual void TreeNodesAdded(ui::TreeModel* model,

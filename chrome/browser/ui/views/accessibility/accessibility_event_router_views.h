@@ -100,6 +100,14 @@ class AccessibilityEventRouterViews : public content::NotificationObserver {
       views::View* view,
       ui::AccessibilityTypes::Event event,
       Profile* profile);
+  static void SendTreeNotification(
+      views::View* view,
+      ui::AccessibilityTypes::Event event,
+      Profile* profile);
+  static void SendTreeItemNotification(
+      views::View* view,
+      ui::AccessibilityTypes::Event event,
+      Profile* profile);
   static void SendTextfieldNotification(
       views::View* view,
       ui::AccessibilityTypes::Event event,
