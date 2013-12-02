@@ -97,6 +97,10 @@ PassRefPtr<AnimatableValue> AnimatableLength::interpolateTo(const AnimatableValu
     if (type != UnitTypeCalc)
         return AnimatableLength::create(blend(m_number, length->m_number, fraction), type);
 
+    // FIXME(crbug.com/168840): Support for viewport units in calc needs to be added before we can blend them with other units.
+    if (isViewportUnit() || length->isViewportUnit())
+        return defaultInterpolateTo(this, value, fraction);
+
     return AnimatableLength::create(scale(1 - fraction).get(), length->scale(fraction).get());
 }
 

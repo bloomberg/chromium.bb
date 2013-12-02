@@ -102,6 +102,11 @@ private:
         return m_unitType == UnitTypeCalc;
     }
 
+    bool isViewportUnit() const
+    {
+        return m_unitType == UnitTypeViewportWidth || m_unitType == UnitTypeViewportHeight || m_unitType == UnitTypeViewportMin || m_unitType == UnitTypeViewportMax;
+    }
+
     static PassRefPtr<AnimatableLength> create(const AnimatableLength* leftAddend, const AnimatableLength* rightAddend)
     {
         ASSERT(leftAddend && rightAddend);

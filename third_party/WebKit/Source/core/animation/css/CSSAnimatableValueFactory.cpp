@@ -98,19 +98,14 @@ static PassRefPtr<AnimatableValue> createFromLength(const Length& length, const 
 
 static PassRefPtr<AnimatableValue> createFromLineHeight(const Length& length, const RenderStyle& style)
 {
-    double value = length.value();
-    switch (length.type()) {
-    case Fixed:
-        return AnimatableLength::create(adjustFloatForAbsoluteZoom(value, style), AnimatableLength::UnitTypePixels);
-    case Percent:
+    if (length.type() == Percent) {
+        double value = length.value();
         // -100% is used to represent "normal" line height.
         if (value == -100)
             return AnimatableUnknown::create(CSSValueNormal);
         return AnimatableDouble::create(value);
-    default:
-        ASSERT_NOT_REACHED();
-        return 0;
     }
+    return createFromLength(length, style);
 }
 
 inline static PassRefPtr<AnimatableValue> createFromDouble(double value, AnimatableDouble::Constraint constraint = AnimatableDouble::Unconstrained)
