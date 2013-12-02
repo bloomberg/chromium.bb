@@ -62,7 +62,6 @@ public:
     virtual void notifyError(CSSSegmentedFontFace*) OVERRIDE;
     void loaded(Document*);
     void error(Document*);
-    void resolve();
 
 private:
     LoadFontPromiseResolver(int numLoading, ScriptPromise promise, ExecutionContext* context)
@@ -84,7 +83,11 @@ void LoadFontPromiseResolver::loaded(Document* document)
     if (m_numLoading || !document)
         return;
 
-    FontFaceSet::from(document)->scheduleResolve(this);
+    ScriptScope scope(m_scriptState);
+    if (m_errorOccured)
+        m_resolver->reject(ScriptValue::createNull());
+    else
+        m_resolver->resolve(ScriptValue::createNull());
 }
 
 void LoadFontPromiseResolver::error(Document* document)
@@ -103,15 +106,6 @@ void LoadFontPromiseResolver::notifyError(CSSSegmentedFontFace* face)
     error(face->fontSelector()->document());
 }
 
-void LoadFontPromiseResolver::resolve()
-{
-    ScriptScope scope(m_scriptState);
-    if (m_errorOccured)
-        m_resolver->reject(ScriptValue::createNull());
-    else
-        m_resolver->resolve(ScriptValue::createNull());
-}
-
 class FontsReadyPromiseResolver {
 public:
     static PassOwnPtr<FontsReadyPromiseResolver> create(ScriptPromise promise, ExecutionContext* context)
@@ -119,7 +113,7 @@ public:
         return adoptPtr(new FontsReadyPromiseResolver(promise, context));
     }
 
-    void call(PassRefPtr<FontFaceSet> fontFaceSet)
+    void resolve(PassRefPtr<FontFaceSet> fontFaceSet)
     {
         ScriptScope scope(m_scriptState);
         m_resolver->resolve(fontFaceSet);
@@ -137,6 +131,7 @@ private:
 FontFaceSet::FontFaceSet(Document* document)
     : ActiveDOMObject(document)
     , m_loadingCount(0)
+    , m_shouldFireLoadingEvent(false)
     , m_asyncRunner(this, &FontFaceSet::handlePendingEventsAndPromises)
 {
     suspendIfNeeded();
@@ -188,26 +183,16 @@ void FontFaceSet::didLayout()
 
 void FontFaceSet::handlePendingEventsAndPromises()
 {
-    firePendingEvents();
-    resolvePendingLoadPromises();
+    fireLoadingEvent();
     fireDoneEventIfPossible();
 }
 
-void FontFaceSet::scheduleEvent(PassRefPtr<Event> event)
+void FontFaceSet::fireLoadingEvent()
 {
-    m_pendingEvents.append(event);
-    handlePendingEventsAndPromisesSoon();
-}
-
-void FontFaceSet::firePendingEvents()
-{
-    if (m_pendingEvents.isEmpty())
-        return;
-
-    Vector<RefPtr<Event> > pendingEvents;
-    m_pendingEvents.swap(pendingEvents);
-    for (size_t index = 0; index < pendingEvents.size(); ++index)
-        dispatchEvent(pendingEvents[index].release());
+    if (m_shouldFireLoadingEvent) {
+        m_shouldFireLoadingEvent = false;
+        dispatchEvent(CSSFontFaceLoadEvent::createForFontFaces(EventTypeNames::loading));
+    }
 }
 
 void FontFaceSet::suspend()
@@ -225,31 +210,17 @@ void FontFaceSet::stop()
     m_asyncRunner.stop();
 }
 
-void FontFaceSet::scheduleResolve(LoadFontPromiseResolver* resolver)
-{
-    m_pendingLoadResolvers.append(resolver);
-    handlePendingEventsAndPromisesSoon();
-}
-
-void FontFaceSet::resolvePendingLoadPromises()
-{
-    if (m_pendingLoadResolvers.isEmpty())
-        return;
-
-    Vector<RefPtr<LoadFontPromiseResolver> > resolvers;
-    m_pendingLoadResolvers.swap(resolvers);
-    for (size_t index = 0; index < resolvers.size(); ++index)
-        resolvers[index]->resolve();
-}
-
 void FontFaceSet::beginFontLoading(FontFace* fontFace)
 {
     m_histogram.incrementCount();
     if (!RuntimeEnabledFeatures::fontLoadEventsEnabled())
         return;
 
-    if (!m_loadingCount && !hasLoadedFonts())
-        scheduleEvent(CSSFontFaceLoadEvent::createForFontFaces(EventTypeNames::loading));
+    if (!m_loadingCount && !hasLoadedFonts()) {
+        ASSERT(!m_shouldFireLoadingEvent);
+        m_shouldFireLoadingEvent = true;
+        handlePendingEventsAndPromisesSoon();
+    }
     ++m_loadingCount;
 }
 
@@ -288,7 +259,7 @@ ScriptPromise FontFaceSet::ready()
 
 void FontFaceSet::fireDoneEventIfPossible()
 {
-    if (!m_pendingEvents.isEmpty() || !m_pendingLoadResolvers.isEmpty())
+    if (m_shouldFireLoadingEvent)
         return;
     if (m_loadingCount || (!hasLoadedFonts() && m_readyResolvers.isEmpty()))
         return;
@@ -318,7 +289,7 @@ void FontFaceSet::fireDoneEventIfPossible()
         Vector<OwnPtr<FontsReadyPromiseResolver> > resolvers;
         m_readyResolvers.swap(resolvers);
         for (size_t index = 0; index < resolvers.size(); ++index)
-            resolvers[index]->call(this);
+            resolvers[index]->resolve(this);
     }
 }
 
