@@ -60,7 +60,7 @@ bool IsValidCandidate(aura::Window* window) {
       window->layer() &&
       window->layer()->type() != ui::LAYER_NOT_DRAWN &&
       window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_NONE &&
-      !window->GetProperty(ash::kConstrainedWindowKey);
+      !window->GetProperty(aura::client::kConstrainedWindowKey);
 }
 
 // Schedule's a paint of the window's entire bounds.

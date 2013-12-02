@@ -9,8 +9,6 @@
 
 namespace ash {
 
-DEFINE_WINDOW_PROPERTY_KEY(bool, kConstrainedWindowKey, false);
-
 const int kResizeAreaCornerSize = 16;
 const int kResizeOutsideBoundsSize = 6;
 const int kResizeOutsideBoundsScaleForTouch = 5;

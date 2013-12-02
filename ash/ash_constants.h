@@ -13,11 +13,6 @@ typedef unsigned int SkColor;
 
 namespace ash {
 
-// The window is a constrained window and lives therefore entirely within
-// another aura window.
-ASH_EXPORT extern const aura::WindowProperty<bool>* const
-    kConstrainedWindowKey;
-
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
 ASH_EXPORT extern const int kResizeAreaCornerSize;

@@ -272,7 +272,7 @@ TEST_F(SoloWindowTrackerTest, Constrained) {
 
   // Create a fake constrained window.
   scoped_ptr<aura::Window> w2(CreateWindowInPrimary());
-  w2->SetProperty(ash::kConstrainedWindowKey, true);
+  w2->SetProperty(aura::client::kConstrainedWindowKey, true);
   w2->Show();
 
   // Despite two windows, the first window should still be considered "solo"

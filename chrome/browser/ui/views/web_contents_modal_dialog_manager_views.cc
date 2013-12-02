@@ -92,7 +92,6 @@ class NativeWebContentsModalDialogManagerViews
     }
 
     // TODO(wittman): remove once the new visual style is complete
-    widget->GetNativeWindow()->SetProperty(ash::kConstrainedWindowKey, true);
     views::corewm::SetModalParent(
         widget->GetNativeWindow(),
         platform_util::GetParent(widget->GetNativeView()));
