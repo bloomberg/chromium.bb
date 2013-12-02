@@ -994,30 +994,34 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
     }
   }
 
-  // Check if the tracker's parent is still in |parent_tracker_ids|.
-  // If not, there should exist another tracker for the new parent, so delete
-  // old tracker.
-  DCHECK(ContainsKey(tracker_by_id_, tracker->parent_tracker_id()));
-  FileTracker* parent_tracker = tracker_by_id_[tracker->parent_tracker_id()];
-  if (!HasFileAsParent(updated_details, parent_tracker->file_id())) {
-    RemoveTracker(tracker->tracker_id(), batch.get());
-    WriteToDatabase(batch.Pass(), callback);
-    return;
-  }
+  // TODO(tzik): Handle modification to sync-root.
 
-  if (tracker->has_synced_details()) {
-    // Check if the tracker was retitled.  If it was, there should exist another
-    // tracker for the new title, so delete old tracker.
-    if (tracker->synced_details().title() != updated_details.title()) {
+  if (tracker_id != GetSyncRootTrackerID()) {
+    // Check if the tracker's parent is still in |parent_tracker_ids|.
+    // If not, there should exist another tracker for the new parent, so delete
+    // old tracker.
+    DCHECK(ContainsKey(tracker_by_id_, tracker->parent_tracker_id()));
+    FileTracker* parent_tracker = tracker_by_id_[tracker->parent_tracker_id()];
+    if (!HasFileAsParent(updated_details, parent_tracker->file_id())) {
       RemoveTracker(tracker->tracker_id(), batch.get());
       WriteToDatabase(batch.Pass(), callback);
       return;
     }
-  } else {
-    int64 parent_tracker_id = parent_tracker->tracker_id();
-    const std::string& title = updated_details.title();
-    trackers_by_parent_and_title_[parent_tracker_id][title].Insert(
-        tracker);
+
+    if (tracker->has_synced_details()) {
+      // Check if the tracker was retitled.  If it was, there should exist
+      // another tracker for the new title, so delete old tracker.
+      if (tracker->synced_details().title() != updated_details.title()) {
+        RemoveTracker(tracker->tracker_id(), batch.get());
+        WriteToDatabase(batch.Pass(), callback);
+        return;
+      }
+    } else {
+      int64 parent_tracker_id = parent_tracker->tracker_id();
+      const std::string& title = updated_details.title();
+      trackers_by_parent_and_title_[parent_tracker_id][title].Insert(
+          tracker);
+    }
   }
 
   *tracker->mutable_synced_details() = updated_details;
