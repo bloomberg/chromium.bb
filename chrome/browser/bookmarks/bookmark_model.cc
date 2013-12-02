@@ -13,7 +13,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
@@ -42,25 +41,6 @@ namespace {
 // Helper to get a mutable bookmark node.
 BookmarkNode* AsMutable(const BookmarkNode* node) {
   return const_cast<BookmarkNode*>(node);
-}
-
-// Helper to recursively determine if a Dictionary has any valid values.
-bool HasValues(const base::DictionaryValue& root) {
-  if (root.empty())
-    return false;
-  for (base::DictionaryValue::Iterator iter(root); !iter.IsAtEnd();
-       iter.Advance()) {
-    const base::Value& value = iter.value();
-    if (value.IsType(base::Value::TYPE_DICTIONARY)) {
-      const base::DictionaryValue* dict_value = NULL;
-      if (value.GetAsDictionary(&dict_value) && HasValues(*dict_value))
-        return true;
-    } else {
-      // A non dictionary type was encountered, assume it's a valid value.
-      return true;
-    }
-  }
-  return false;
 }
 
 // Whitespace characters to strip from bookmark titles.
@@ -151,7 +131,6 @@ void BookmarkNode::SetMetaInfoMap(const MetaInfoMap& meta_info_map) {
 const BookmarkNode::MetaInfoMap* BookmarkNode::GetMetaInfoMap() const {
   return meta_info_map_.get();
 }
-
 
 void BookmarkNode::Initialize(int64 id) {
   id_ = id;
