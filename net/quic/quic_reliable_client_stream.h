@@ -55,7 +55,7 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public ReliableQuicStream {
 
   // ReliableQuicStream
   virtual uint32 ProcessData(const char* data, uint32 data_len) OVERRIDE;
-  virtual void TerminateFromPeer(bool half_close) OVERRIDE;
+  virtual void OnFinRead() OVERRIDE;
   virtual void OnCanWrite() OVERRIDE;
   virtual QuicPriority EffectivePriority() const OVERRIDE;
 

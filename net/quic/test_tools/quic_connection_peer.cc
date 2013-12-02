@@ -5,7 +5,6 @@
 #include "net/quic/test_tools/quic_connection_peer.h"
 
 #include "base/stl_util.h"
-#include "net/quic/congestion_control/quic_congestion_manager.h"
 #include "net/quic/congestion_control/receive_algorithm_interface.h"
 #include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_connection.h"
@@ -34,7 +33,7 @@ void QuicConnectionPeer::SetReceiveAlgorithm(
 void QuicConnectionPeer::SetSendAlgorithm(
     QuicConnection* connection,
     SendAlgorithmInterface* send_algorithm) {
-  connection->congestion_manager_.send_algorithm_.reset(send_algorithm);
+  connection->sent_packet_manager_.send_algorithm_.reset(send_algorithm);
 }
 
 // static

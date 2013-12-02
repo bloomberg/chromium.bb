@@ -44,18 +44,14 @@ uint32 QuicSpdyServerStream::ProcessData(const char* data, uint32 length) {
   return length;
 }
 
-void QuicSpdyServerStream::TerminateFromPeer(bool half_close) {
-  ReliableQuicStream::TerminateFromPeer(half_close);
-  // This is a full close: do not send a response.
-  if (!half_close) {
-    return;
-  }
+void QuicSpdyServerStream::OnFinRead() {
+  ReliableQuicStream::OnFinRead();
   if (write_side_closed() || fin_buffered()) {
     return;
   }
 
   if (!request_headers_received_) {
-    SendErrorResponse();  // We're not done writing headers.
+    SendErrorResponse();  // We're not done reading headers.
   } else if ((headers().content_length_status() ==
              BalsaHeadersEnums::VALID_CONTENT_LENGTH) &&
              mutable_body()->size() != headers().content_length()) {

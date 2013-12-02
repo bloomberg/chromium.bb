@@ -97,7 +97,8 @@ bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
 
 void ReliableQuicStream::OnStreamReset(QuicRstStreamErrorCode error) {
   stream_error_ = error;
-  TerminateFromPeer(false);  // Full close.
+  CloseWriteSide();
+  CloseReadSide();
 }
 
 void ReliableQuicStream::OnConnectionClosed(QuicErrorCode error,
@@ -110,29 +111,20 @@ void ReliableQuicStream::OnConnectionClosed(QuicErrorCode error,
     connection_error_ = error;
   }
 
-  if (from_peer) {
-    TerminateFromPeer(false);
-  } else {
-    CloseWriteSide();
-    CloseReadSide();
-  }
-}
-
-void ReliableQuicStream::TerminateFromPeer(bool half_close) {
-  if (!half_close) {
-    CloseWriteSide();
-  }
+  CloseWriteSide();
   CloseReadSide();
 }
 
-void ReliableQuicStream::Close(QuicRstStreamErrorCode error) {
+void ReliableQuicStream::OnFinRead() {
+  DCHECK(sequencer_.IsClosed());
+  CloseReadSide();
+}
+
+void ReliableQuicStream::Reset(QuicRstStreamErrorCode error) {
+  DCHECK_NE(QUIC_STREAM_NO_ERROR, error);
   stream_error_ = error;
-  if (error != QUIC_STREAM_NO_ERROR)  {
-    // Sending a RstStream results in calling CloseStream.
-    session()->SendRstStream(id(), error);
-  } else {
-    session_->CloseStream(id());
-  }
+  // Sending a RstStream results in calling CloseStream.
+  session()->SendRstStream(id(), error);
 }
 
 void ReliableQuicStream::CloseConnection(QuicErrorCode error) {
@@ -446,7 +438,7 @@ void ReliableQuicStream::OnDecompressorAvailable() {
   // Either the headers are complete, or the all data as been consumed.
   ProcessHeaderData();  // Unprocessed headers remain in decompressed_headers_.
   if (IsDoneReading()) {
-    TerminateFromPeer(true);
+    OnFinRead();
   } else if (headers_decompressed_ && decompressed_headers_.empty()) {
     sequencer_.FlushBufferedFrames();
   }

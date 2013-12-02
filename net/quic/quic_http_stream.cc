@@ -207,7 +207,7 @@ void QuicHttpStream::Close(bool not_reusable) {
   // Note: the not_reusable flag has no meaning for SPDY streams.
   if (stream_) {
     stream_->SetDelegate(NULL);
-    stream_->Close(QUIC_STREAM_CANCELLED);
+    stream_->Reset(QUIC_STREAM_CANCELLED);
     stream_ = NULL;
   }
 }

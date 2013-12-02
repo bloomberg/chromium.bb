@@ -33,18 +33,18 @@ uint32 QuicReliableClientStream::ProcessData(const char* data,
   int rv = delegate_->OnDataReceived(data, data_len);
   if (rv != OK) {
     DLOG(ERROR) << "Delegate refused data, rv: " << rv;
-    Close(QUIC_BAD_APPLICATION_PAYLOAD);
+    Reset(QUIC_BAD_APPLICATION_PAYLOAD);
     return 0;
   }
   return data_len;
 }
 
-void QuicReliableClientStream::TerminateFromPeer(bool half_close) {
+void QuicReliableClientStream::OnFinRead() {
   if (delegate_) {
     delegate_->OnClose(connection_error());
     delegate_ = NULL;
   }
-  ReliableQuicStream::TerminateFromPeer(half_close);
+  ReliableQuicStream::OnFinRead();
 }
 
 void QuicReliableClientStream::OnCanWrite() {

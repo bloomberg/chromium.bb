@@ -222,15 +222,14 @@ QuicConnection::QuicConnection(QuicGuid guid,
       time_of_last_received_packet_(clock_->ApproximateNow()),
       time_of_last_sent_packet_(clock_->ApproximateNow()),
       sequence_number_of_last_inorder_packet_(0),
-      congestion_manager_(clock_, kTCP),
-      sent_packet_manager_(is_server, this),
+      sent_packet_manager_(is_server, this, clock_, kTCP),
       version_negotiation_state_(START_NEGOTIATION),
       is_server_(is_server),
       connected_(true),
       address_migrating_(false) {
   if (!is_server_) {
     // Pacing will be enabled if the client negotiates it.
-    congestion_manager_.MaybeEnablePacing();
+    sent_packet_manager_.MaybeEnablePacing();
   }
   DVLOG(1) << ENDPOINT << "Created connection with guid: " << guid;
   timeout_alarm_->Set(clock_->ApproximateNow().Add(idle_network_timeout_));
@@ -250,7 +249,7 @@ QuicConnection::~QuicConnection() {
 void QuicConnection::SetFromConfig(const QuicConfig& config) {
   DCHECK_LT(0u, config.server_initial_congestion_window());
   SetIdleNetworkTimeout(config.idle_connection_state_lifetime());
-  congestion_manager_.SetFromConfig(config, is_server_);
+  sent_packet_manager_.SetFromConfig(config);
   // TODO(satyamshekhar): Set congestion control and ICSL also.
 }
 
@@ -528,7 +527,7 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
       sent_packet_manager_.GetLeastUnackedSentPacket();
 
   SequenceNumberSet retransmission_packets =
-      congestion_manager_.OnIncomingAckFrame(incoming_ack,
+      sent_packet_manager_.OnIncomingAckFrame(incoming_ack,
                                              time_of_last_received_packet_);
 
   for (SequenceNumberSet::const_iterator it = retransmission_packets.begin();
@@ -538,7 +537,7 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
 
   // Used to set RTO and FEC alarms.
   QuicTime::Delta retransmission_delay =
-      congestion_manager_.GetRetransmissionDelay();
+      sent_packet_manager_.GetRetransmissionDelay();
 
   // If there are outstanding packets, and the least unacked sequence number
   // has increased after processing this latest AckFrame, then reschedule the
@@ -550,7 +549,9 @@ void QuicConnection::ProcessAckFrame(const QuicAckFrame& incoming_ack) {
     }
     retransmission_alarm_->Set(
         clock_->ApproximateNow().Add(retransmission_delay));
-    congestion_manager_.OnLeastUnackedIncreased();
+    // TODO(ianswett): Remove this call now that the SentPacketManager and the
+    // QuicCongestionManager have merged.
+    sent_packet_manager_.OnLeastUnackedIncreased();
   } else if (!sent_packet_manager_.HasUnackedPackets()) {
     retransmission_alarm_->Cancel();
   }
@@ -740,7 +741,7 @@ void QuicConnection::OnPacketComplete() {
     ProcessAckFrame(last_ack_frames_[i]);
   }
   for (size_t i = 0; i < last_congestion_frames_.size(); ++i) {
-    congestion_manager_.OnIncomingQuicCongestionFeedbackFrame(
+    sent_packet_manager_.OnIncomingQuicCongestionFeedbackFrame(
         last_congestion_frames_[i], time_of_last_received_packet_);
   }
   if (!last_close_frames_.empty()) {
@@ -812,7 +813,7 @@ void QuicConnection::MaybeSendInResponseToPacket(
       DCHECK(!ack_alarm_->IsSet());
     } else {
       ack_alarm_->Set(clock_->ApproximateNow().Add(
-          congestion_manager_.DelayedAckTime()));
+          sent_packet_manager_.DelayedAckTime()));
       DVLOG(1) << "Ack timer set; next packet or timer will trigger ACK.";
     }
   }
@@ -820,7 +821,7 @@ void QuicConnection::MaybeSendInResponseToPacket(
   if (!last_ack_frames_.empty()) {
     // Now the we have received an ack, we might be able to send packets which
     // are queued locally, or drain streams which are blocked.
-    QuicTime::Delta delay = congestion_manager_.TimeUntilSend(
+    QuicTime::Delta delay = sent_packet_manager_.TimeUntilSend(
         time_of_last_received_packet_, NOT_RETRANSMISSION,
         HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE);
     if (delay.IsZero()) {
@@ -900,9 +901,9 @@ void QuicConnection::SendRstStream(QuicStreamId id,
 
 const QuicConnectionStats& QuicConnection::GetStats() {
   // Update rtt and estimated bandwidth.
-  stats_.rtt = congestion_manager_.SmoothedRtt().ToMicroseconds();
+  stats_.rtt = sent_packet_manager_.SmoothedRtt().ToMicroseconds();
   stats_.estimated_bandwidth =
-      congestion_manager_.BandwidthEstimate().ToBytesPerSecond();
+      sent_packet_manager_.BandwidthEstimate().ToBytesPerSecond();
   return stats_;
 }
 
@@ -1102,7 +1103,7 @@ void QuicConnection::RetransmitUnackedPackets(
       // TODO(satyamshekhar): Think about congestion control here.
       // Specifically, about the retransmission count of packets being sent
       // proactively to achieve 0 (minimal) RTT.
-      congestion_manager_.OnPacketAbandoned(*unacked_it);
+      sent_packet_manager_.OnPacketAbandoned(*unacked_it);
       RetransmitPacket(*unacked_it, NACK_RETRANSMISSION);
     }
   }
@@ -1153,7 +1154,7 @@ bool QuicConnection::CanWrite(TransmissionType transmission_type,
   }
 
   QuicTime now = clock_->Now();
-  QuicTime::Delta delay = congestion_manager_.TimeUntilSend(
+  QuicTime::Delta delay = sent_packet_manager_.TimeUntilSend(
       now, transmission_type, retransmittable, handshake);
   if (delay.IsInfinite()) {
     return false;
@@ -1184,7 +1185,7 @@ void QuicConnection::SetupRetransmission(
   }
 
   QuicTime::Delta retransmission_delay =
-      congestion_manager_.GetRetransmissionDelay();
+      sent_packet_manager_.GetRetransmissionDelay();
   retransmission_alarm_->Set(
       clock_->ApproximateNow().Add(retransmission_delay));
 }
@@ -1195,7 +1196,7 @@ void QuicConnection::SetupAbandonFecTimer(
     return;
   }
   QuicTime::Delta retransmission_delay =
-      congestion_manager_.GetRetransmissionDelay();
+      sent_packet_manager_.GetRetransmissionDelay();
   abandon_fec_alarm_->Set(clock_->ApproximateNow().Add(retransmission_delay));
 }
 
@@ -1407,10 +1408,10 @@ bool QuicConnection::OnPacketSent(WriteResult result) {
   // options by a more explicit API than setting a struct value directly.
   packet_creator_.UpdateSequenceNumberLength(
       received_packet_manager_.least_packet_awaited_by_peer(),
-      congestion_manager_.BandwidthEstimate().ToBytesPerPeriod(
-          congestion_manager_.SmoothedRtt()));
+      sent_packet_manager_.BandwidthEstimate().ToBytesPerPeriod(
+          sent_packet_manager_.SmoothedRtt()));
 
-  congestion_manager_.OnPacketSent(sequence_number, now, length,
+  sent_packet_manager_.OnPacketSent(sequence_number, now, length,
                                    transmission_type, retransmittable);
 
   stats_.bytes_sent += result.bytes_written;
@@ -1494,7 +1495,8 @@ void QuicConnection::OnRetransmissionTimeout() {
 
   ++stats_.rto_count;
 
-  congestion_manager_.OnRetransmissionTimeout();
+  // TODO(ianswett): Move most of this handling into the SentPacketManager.
+  sent_packet_manager_.OnRetransmissionTimeout();
 
   // Attempt to send all the unacked packets when the RTO fires, let the
   // congestion manager decide how many to send immediately and the remaining
@@ -1526,7 +1528,7 @@ QuicTime QuicConnection::OnAbandonFecTimeout() {
   // Abandon all the FEC packets older than the current RTO, then reschedule
   // the alarm if there are more pending fec packets.
   QuicTime::Delta retransmission_delay =
-      congestion_manager_.GetRetransmissionDelay();
+      sent_packet_manager_.GetRetransmissionDelay();
   QuicTime max_send_time =
       clock_->ApproximateNow().Subtract(retransmission_delay);
   bool abandoned_packet = false;
@@ -1540,7 +1542,7 @@ QuicTime QuicConnection::OnAbandonFecTimeout() {
     }
     abandoned_packet = true;
     sent_packet_manager_.DiscardFecPacket(oldest_unacked_fec);
-    congestion_manager_.OnPacketAbandoned(oldest_unacked_fec);
+    sent_packet_manager_.OnPacketAbandoned(oldest_unacked_fec);
   }
   if (abandoned_packet) {
     // If a packet was abandoned, then the congestion window may have

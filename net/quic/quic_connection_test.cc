@@ -15,6 +15,7 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_sent_packet_manager.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
@@ -2170,7 +2171,7 @@ TEST_F(QuicConnectionTest, DelayRTOWithAckReceipt) {
   EXPECT_TRUE(retransmission_alarm->IsSet());
   QuicTime next_rto_time = retransmission_alarm->deadline();
   QuicTime::Delta expected_rto =
-      connection_.congestion_manager().GetRetransmissionDelay();
+      connection_.sent_packet_manager().GetRetransmissionDelay();
   EXPECT_EQ(next_rto_time, clock_.ApproximateNow().Add(expected_rto));
 }
 
@@ -3294,8 +3295,8 @@ TEST_F(QuicConnectionTest, Pacing) {
                         true);
   TestConnection client(guid_, IPEndPoint(), helper_.get(), writer_.get(),
                         false);
-  EXPECT_TRUE(client.congestion_manager().using_pacing());
-  EXPECT_FALSE(server.congestion_manager().using_pacing());
+  EXPECT_TRUE(client.sent_packet_manager().using_pacing());
+  EXPECT_FALSE(server.sent_packet_manager().using_pacing());
 }
 
 }  // namespace

@@ -77,7 +77,7 @@ TEST_F(QuicClientStreamTest, DISABLED_TestFramingExtraData) {
   EXPECT_EQ(200u, stream_->headers().parsed_response_code());
 
   stream_->ProcessData(large_body.c_str(), large_body.size());
-  stream_->TerminateFromPeer(true);
+  stream_->OnFinRead();
 
   EXPECT_NE(QUIC_STREAM_NO_ERROR, stream_->stream_error());
 }

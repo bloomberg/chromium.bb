@@ -11,13 +11,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "net/base/ip_endpoint.h"
-#include "net/quic/congestion_control/quic_congestion_manager.h"
 #include "net/quic/congestion_control/tcp_cubic_sender.h"
 #include "net/quic/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_sent_packet_manager.h"
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/quic/test_tools/quic_session_peer.h"
 #include "net/quic/test_tools/quic_test_writer.h"
@@ -680,6 +680,8 @@ TEST_P(EndToEndTest, LimitMaxOpenStreams) {
 // TODO(rtenneti): DISABLED_LimitCongestionWindowAndRTT seems to be flaky.
 // http://crbug.com/321870.
 TEST_P(EndToEndTest, DISABLED_LimitCongestionWindowAndRTT) {
+  server_config_.set_server_initial_congestion_window(kMaxInitialWindow,
+                                                      kDefaultInitialWindow);
   // Client tries to negotiate twice the server's max and negotiation settles
   // on the max.
   client_config_.set_server_initial_congestion_window(2 * kMaxInitialWindow,
@@ -698,10 +700,10 @@ TEST_P(EndToEndTest, DISABLED_LimitCongestionWindowAndRTT) {
   QuicSession* session = dispatcher->session_map().begin()->second;
   QuicConfig* client_negotiated_config = client_->client()->session()->config();
   QuicConfig* server_negotiated_config = session->config();
-  const QuicCongestionManager& client_congestion_manager =
-      client_->client()->session()->connection()->congestion_manager();
-  const QuicCongestionManager& server_congestion_manager =
-      session->connection()->congestion_manager();
+  const QuicSentPacketManager& client_sent_packet_manager =
+      client_->client()->session()->connection()->sent_packet_manager();
+  const QuicSentPacketManager& server_sent_packet_manager =
+      session->connection()->sent_packet_manager();
 
   EXPECT_EQ(kMaxInitialWindow,
             client_negotiated_config->server_initial_congestion_window());
@@ -709,12 +711,14 @@ TEST_P(EndToEndTest, DISABLED_LimitCongestionWindowAndRTT) {
             server_negotiated_config->server_initial_congestion_window());
   // The client shouldn't set it's initial window based on the negotiated value.
   EXPECT_EQ(kDefaultInitialWindow * kDefaultTCPMSS,
-            client_congestion_manager.GetCongestionWindow());
+            client_sent_packet_manager.GetCongestionWindow());
   EXPECT_EQ(kMaxInitialWindow * kDefaultTCPMSS,
-            server_congestion_manager.GetCongestionWindow());
+            server_sent_packet_manager.GetCongestionWindow());
 
-  EXPECT_EQ(FLAGS_enable_quic_pacing, server_congestion_manager.using_pacing());
-  EXPECT_EQ(FLAGS_enable_quic_pacing, client_congestion_manager.using_pacing());
+  EXPECT_EQ(FLAGS_enable_quic_pacing,
+            server_sent_packet_manager.using_pacing());
+  EXPECT_EQ(FLAGS_enable_quic_pacing,
+            client_sent_packet_manager.using_pacing());
 
   EXPECT_EQ(1u, client_negotiated_config->initial_round_trip_time_us());
   EXPECT_EQ(1u, server_negotiated_config->initial_round_trip_time_us());
@@ -753,10 +757,10 @@ TEST_P(EndToEndTest, InitialRTT) {
   QuicSession* session = dispatcher->session_map().begin()->second;
   QuicConfig* client_negotiated_config = client_->client()->session()->config();
   QuicConfig* server_negotiated_config = session->config();
-  const QuicCongestionManager& client_congestion_manager =
-      client_->client()->session()->connection()->congestion_manager();
-  const QuicCongestionManager& server_congestion_manager =
-      session->connection()->congestion_manager();
+  const QuicSentPacketManager& client_sent_packet_manager =
+      client_->client()->session()->connection()->sent_packet_manager();
+  const QuicSentPacketManager& server_sent_packet_manager =
+      session->connection()->sent_packet_manager();
 
   EXPECT_EQ(kMaxInitialRoundTripTimeUs,
             client_negotiated_config->initial_round_trip_time_us());
@@ -764,9 +768,9 @@ TEST_P(EndToEndTest, InitialRTT) {
             server_negotiated_config->initial_round_trip_time_us());
   // Now that acks have been exchanged, the RTT estimate has decreased on the
   // server and is not infinite on the client.
-  EXPECT_FALSE(client_congestion_manager.SmoothedRtt().IsInfinite());
+  EXPECT_FALSE(client_sent_packet_manager.SmoothedRtt().IsInfinite());
   EXPECT_GE(static_cast<int64>(kMaxInitialRoundTripTimeUs),
-            server_congestion_manager.SmoothedRtt().ToMicroseconds());
+            server_sent_packet_manager.SmoothedRtt().ToMicroseconds());
 }
 
 TEST_P(EndToEndTest, ResetConnection) {

@@ -27,7 +27,6 @@
 #include "base/logging.h"
 #include "net/base/iovec.h"
 #include "net/base/ip_endpoint.h"
-#include "net/quic/congestion_control/quic_congestion_manager.h"
 #include "net/quic/iovector.h"
 #include "net/quic/quic_ack_notifier.h"
 #include "net/quic/quic_ack_notifier_manager.h"
@@ -414,9 +413,9 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   bool is_server() const { return is_server_; }
 
-  // Returns the underlying congestion manager.
-  const QuicCongestionManager& congestion_manager() const {
-    return congestion_manager_;
+  // Returns the underlying sent packet manager.
+  const QuicSentPacketManager& sent_packet_manager() const {
+    return sent_packet_manager_;
   }
 
   bool CanWrite(TransmissionType transmission_type,
@@ -757,12 +756,9 @@ class NET_EXPORT_PRIVATE QuicConnection
   // re-ordering.
   QuicPacketSequenceNumber sequence_number_of_last_inorder_packet_;
 
-  // Congestion manager which controls the rate the connection sends packets
-  // as well as collecting and generating congestion feedback.
-  QuicCongestionManager congestion_manager_;
-
   // Sent packet manager which tracks the status of packets sent by this
-  // connection.
+  // connection and contains the send and receive algorithms to determine when
+  // to send packets.
   QuicSentPacketManager sent_packet_manager_;
 
   // The state of connection in version negotiation finite state machine.

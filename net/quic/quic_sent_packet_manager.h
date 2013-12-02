@@ -15,18 +15,29 @@
 
 #include "base/containers/hash_tables.h"
 #include "net/base/linked_hash_map.h"
+#include "net/quic/congestion_control/send_algorithm_interface.h"
 #include "net/quic/quic_ack_notifier_manager.h"
 #include "net/quic/quic_protocol.h"
 
 NET_EXPORT_PRIVATE extern bool FLAGS_track_retransmission_history;
+NET_EXPORT_PRIVATE extern bool FLAGS_limit_rto_increase_for_tests;
+NET_EXPORT_PRIVATE extern bool FLAGS_enable_quic_pacing;
 
 namespace net {
 
-// Class which tracks the set of packets sent on a QUIC connection.
-// It keeps track of the retransmittable data associated with each
-// packets. If a packet is retransmitted, it will keep track of each
-// version of a packet so that if a previous transmission is acked,
-// the data will not be retransmitted.
+namespace test {
+class QuicConnectionPeer;
+class QuicSentPacketManagerPeer;
+}  // namespace test
+
+class QuicClock;
+class QuicConfig;
+
+// Class which tracks the set of packets sent on a QUIC connection and contains
+// a send algorithm to decide when to send new packets.  It keeps track of any
+// retransmittable data associated with each packet. If a packet is
+// retransmitted, it will keep track of each version of a packet so that if a
+// previous transmission is acked, the data will not be retransmitted.
 class NET_EXPORT_PRIVATE QuicSentPacketManager {
  public:
   // Struct to store the pending retransmission information.
@@ -56,8 +67,15 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
     virtual QuicPacketSequenceNumber GetNextPacketSequenceNumber() = 0;
   };
 
-  QuicSentPacketManager(bool is_server, HelperInterface* helper);
+  QuicSentPacketManager(bool is_server,
+                        HelperInterface* helper,
+                        const QuicClock* clock,
+                        CongestionFeedbackType congestion_type);
   virtual ~QuicSentPacketManager();
+
+  virtual void SetFromConfig(const QuicConfig& config);
+
+  virtual void SetMaxPacketSize(QuicByteCount max_packet_size);
 
   // Called when a new packet is serialized.  If the packet contains
   // retransmittable data, it will be added to the unacked packet map.
@@ -141,7 +159,81 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // Returns true if |sequence_number| is a previous transmission of packet.
   bool IsPreviousTransmission(QuicPacketSequenceNumber sequence_number) const;
 
+  // TODO(ianswett): Combine the congestion control related methods below with
+  // some of the methods above and cleanup the resulting code.
+  // Called when we have received an ack frame from peer.
+  // Returns a set containing all the sequence numbers to be nack retransmitted
+  // as a result of the ack.
+  virtual SequenceNumberSet OnIncomingAckFrame(const QuicAckFrame& frame,
+                                               QuicTime ack_receive_time);
+
+  // Called when a congestion feedback frame is received from peer.
+  virtual void OnIncomingQuicCongestionFeedbackFrame(
+      const QuicCongestionFeedbackFrame& frame,
+      QuicTime feedback_receive_time);
+
+  // Called when we have sent bytes to the peer.  This informs the manager both
+  // the number of bytes sent and if they were retransmitted.
+  virtual void OnPacketSent(QuicPacketSequenceNumber sequence_number,
+                            QuicTime sent_time,
+                            QuicByteCount bytes,
+                            TransmissionType transmission_type,
+                            HasRetransmittableData has_retransmittable_data);
+
+  // Called when the retransmission timer expires.
+  virtual void OnRetransmissionTimeout();
+
+  // Called when the least unacked sequence number increases, indicating the
+  // consecutive rto count should be reset to 0.
+  virtual void OnLeastUnackedIncreased();
+
+  // Called when a packet is timed out, such as an RTO.  Removes the bytes from
+  // the congestion manager, but does not change the congestion window size.
+  virtual void OnPacketAbandoned(QuicPacketSequenceNumber sequence_number);
+
+  // Calculate the time until we can send the next packet to the wire.
+  // Note 1: When kUnknownWaitTime is returned, there is no need to poll
+  // TimeUntilSend again until we receive an OnIncomingAckFrame event.
+  // Note 2: Send algorithms may or may not use |retransmit| in their
+  // calculations.
+  virtual QuicTime::Delta TimeUntilSend(QuicTime now,
+                                        TransmissionType transmission_type,
+                                        HasRetransmittableData retransmittable,
+                                        IsHandshake handshake);
+
+  const QuicTime::Delta DefaultRetransmissionTime();
+
+  // Returns amount of time for delayed ack timer.
+  const QuicTime::Delta DelayedAckTime();
+
+  // Returns the current RTO delay.
+  const QuicTime::Delta GetRetransmissionDelay() const;
+
+  // Returns the estimated smoothed RTT calculated by the congestion algorithm.
+  const QuicTime::Delta SmoothedRtt() const;
+
+  // Returns the estimated bandwidth calculated by the congestion algorithm.
+  QuicBandwidth BandwidthEstimate() const;
+
+  // Returns the size of the current congestion window in bytes.  Note, this is
+  // not the *available* window.  Some send algorithms may not use a congestion
+  // window and will return 0.
+  QuicByteCount GetCongestionWindow() const;
+
+  // Sets the value of the current congestion window to |window|.
+  void SetCongestionWindow(QuicByteCount window);
+
+  // Enables pacing if it has not already been enabled, and if
+  // FLAGS_enable_quic_pacing is set.
+  void MaybeEnablePacing();
+
+  bool using_pacing() const { return using_pacing_; }
+
+
  private:
+  friend class test::QuicConnectionPeer;
+  friend class test::QuicSentPacketManagerPeer;
+
   struct TransmissionInfo {
     TransmissionInfo() {}
     TransmissionInfo(RetransmittableFrames* retransmittable_frames,
@@ -188,6 +280,8 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   QuicPacketSequenceNumber GetMostRecentTransmission(
       QuicPacketSequenceNumber sequence_number) const;
 
+  void CleanupPacketHistory();
+
   // When new packets are created which may be retransmitted, they are added
   // to this map, which contains owning pointers to the contained frames.  If
   // a packet is retransmitted, this map will contain entries for both the old
@@ -221,6 +315,18 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   // all packets that a given block of data was sent in. The AckNotifierManager
   // maintains the currently active notifiers.
   AckNotifierManager ack_notifier_manager_;
+
+  const QuicClock* clock_;
+  scoped_ptr<SendAlgorithmInterface> send_algorithm_;
+  // Tracks the send time, size, and nack count of sent packets.  Packets are
+  // removed after 5 seconds and they've been removed from pending_packets_.
+  SendAlgorithmInterface::SentPacketsMap packet_history_map_;
+  // Packets that are outstanding and have not been abandoned or lost.
+  SequenceNumberSet pending_packets_;
+  QuicTime::Delta rtt_sample_;  // RTT estimate from the most recent ACK.
+  // Number of times the RTO timer has fired in a row without receiving an ack.
+  size_t consecutive_rto_count_;
+  bool using_pacing_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSentPacketManager);
 };

@@ -105,7 +105,7 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
       return true;
     }
     if (bytes_consumed > data_len) {
-      stream_->Close(QUIC_ERROR_PROCESSING_STREAM);
+      stream_->Reset(QUIC_ERROR_PROCESSING_STREAM);
       return false;
     } else if (bytes_consumed == data_len) {
       FlushBufferedFrames();
@@ -133,7 +133,7 @@ void QuicStreamSequencer::CloseStreamAtOffset(QuicStreamOffset offset) {
   // If we have a scheduled termination or close, any new offset should match
   // it.
   if (close_offset_ != kMaxOffset && offset != close_offset_) {
-    stream_->Close(QUIC_MULTIPLE_TERMINATION_OFFSETS);
+    stream_->Reset(QUIC_MULTIPLE_TERMINATION_OFFSETS);
     return;
   }
 
@@ -149,7 +149,7 @@ bool QuicStreamSequencer::MaybeCloseStream() {
              << " bytes.";
     // Technically it's an error if num_bytes_consumed isn't exactly
     // equal, but error handling seems silly at this point.
-    stream_->TerminateFromPeer(true);
+    stream_->OnFinRead();
     return true;
   }
   return false;
@@ -225,7 +225,7 @@ void QuicStreamSequencer::MarkConsumed(size_t num_bytes_consumed) {
                   << " end_offset: " << end_offset
                   << " offset: " << it->first
                   << " length: " << it->second.length();
-      stream_->Close(QUIC_ERROR_PROCESSING_STREAM);
+      stream_->Reset(QUIC_ERROR_PROCESSING_STREAM);
       return;
     }
 
@@ -276,7 +276,7 @@ void QuicStreamSequencer::FlushBufferedFrames() {
       return;
     }
     if (bytes_consumed > data->size()) {
-      stream_->Close(QUIC_ERROR_PROCESSING_STREAM);  // Programming error
+      stream_->Reset(QUIC_ERROR_PROCESSING_STREAM);  // Programming error
       return;
     } else if (bytes_consumed == data->size()) {
       frames_.erase(it);

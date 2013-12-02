@@ -168,7 +168,7 @@ TEST_F(QuicReliableServerStreamTest, TestFramingExtraData) {
   string large_body = "hello world!!!!!!";
 
   // We'll automatically write out an error (headers + body)
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(2).
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _)).Times(AnyNumber()).
       WillRepeatedly(Invoke(ConsumeAllData));
 
   EXPECT_EQ(headers_string_.size(), stream_->ProcessData(
@@ -176,7 +176,6 @@ TEST_F(QuicReliableServerStreamTest, TestFramingExtraData) {
   // Content length is still 11.  This will register as an error and we won't
   // accept the bytes.
   stream_->ProcessData(large_body.c_str(), large_body.size());
-  stream_->TerminateFromPeer(true);
   EXPECT_EQ(11u, stream_->headers().content_length());
   EXPECT_EQ("https://www.google.com/", stream_->headers().request_uri());
   EXPECT_EQ("POST", stream_->headers().request_method());

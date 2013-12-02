@@ -32,7 +32,7 @@ class QuicSpdyServerStream : public QuicReliableServerStream {
   int ParseRequestHeaders();
 
  protected:
-  virtual void TerminateFromPeer(bool half_close) OVERRIDE;
+  virtual void OnFinRead() OVERRIDE;
 
   // Buffer into which response header data is read.
   scoped_refptr<GrowableIOBuffer> read_buf_;

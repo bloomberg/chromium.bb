@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
-#include "net/quic/congestion_control/quic_congestion_manager.h"
+#include "net/quic/quic_sent_packet_manager.h"
 
 using std::string;
 
@@ -332,7 +332,7 @@ void QuicConfig::SetDefaults() {
                                   kDefaultMaxStreamsPerConnection);
   max_time_before_crypto_handshake_ = QuicTime::Delta::FromSeconds(
       kDefaultMaxTimeForCryptoHandshakeSecs);
-  server_initial_congestion_window_.set(kMaxInitialWindow,
+  server_initial_congestion_window_.set(kDefaultInitialWindow,
                                         kDefaultInitialWindow);
 }
 
