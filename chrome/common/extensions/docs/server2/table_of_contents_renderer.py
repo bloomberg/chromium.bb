@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from extensions_paths import PRIVATE_TEMPLATES
+from file_system import FileNotFoundError
 
 
 class TableOfContentsRenderer(object):
@@ -20,8 +21,11 @@ class TableOfContentsRenderer(object):
     '''Renders a list of DocumentSections |sections| and returns a tuple
     (text, warnings).
     '''
-    table_of_contents_template = self._templates.GetFromFile(
-        '%s/table_of_contents.html' % PRIVATE_TEMPLATES).Get()
+    path = '%s/table_of_contents.html' % PRIVATE_TEMPLATES
+    try:
+      table_of_contents_template = self._templates.GetFromFile(path).Get()
+    except FileNotFoundError:
+      return '', ['%s not found' % path]
 
     def make_toc_items(entries):
       return [{

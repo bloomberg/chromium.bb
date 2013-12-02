@@ -1,19 +1,5 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    {{+partials.header_head/}}
-    <title>$(title) - Google Chrome</title>
-  </head>
-  <body>
-    {{+partials.header_body title:strings.apps_title platform:strings.app/}}
-    <div id="gc-container">
-      {{+partials.sidenav items:sidenavs.apps/}}
-      <div id="gc-pagecontent">
-        $(table_of_contents)
-{{- This may contain <pre> tags so it is not indented -}}
-{{+article platform:strings.app is_apps:true/}}
-      </div>
-    </div>
-  </body>
-  {{+partials.footer/}}
-</html>
+{{+partials.article
+       article:(article is_apps:true)
+       sidenav:sidenavs.apps
+       platform:strings.app
+       platformTitle:strings.appsTitle /}}

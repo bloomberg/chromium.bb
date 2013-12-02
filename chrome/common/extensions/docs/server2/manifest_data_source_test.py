@@ -16,7 +16,7 @@ from object_store_creator import ObjectStoreCreator
 
 convert_and_annotate_docs = {
   'name': {
-    'example': "My {{title}}",
+    'example': "My {{platform}}",
     'name': 'name',
     'level': 'required'
   },

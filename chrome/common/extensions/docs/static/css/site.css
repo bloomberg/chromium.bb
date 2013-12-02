@@ -664,3 +664,46 @@ div.summary .subdued {
 .optional {
   color: #7D7D7D;
 }
+
+/*
+ * Samples.
+ */
+
+#samples-controls {
+  margin: 10px 0;
+  background: #EEE;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+#samples-controls #search_input {
+  width: 30em;
+}
+
+#samples-controls .label {
+  font-weight: bold;
+}
+
+#samples-controls td {
+  border: none;
+}
+
+#samples-controls td.label {
+  min-width: 150px;
+  text-align: right;
+  vertical-align: top;
+  padding-right: 10px;
+}
+
+#samples-controls .sample {
+  position: relative;
+  padding-left: 80px;
+}
+
+#samples-controls img.icon {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  left: 0;
+  top: 40px;
+}

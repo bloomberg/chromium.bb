@@ -9,7 +9,6 @@ import re
 
 from data_source import DataSource
 from docs_server_utils import FormatKey
-from document_parser import ParseDocument
 from extensions_paths import INTROS_TEMPLATES, ARTICLES_TEMPLATES
 from file_system import FileNotFoundError
 from future import Future

@@ -103,12 +103,15 @@ class CronServletTest(unittest.TestCase):
           'static.txt': 'static.txt contents'
         },
         'templates': {
+          'private': {
+            'table_of_contents.html': 'table_of_contents.html contents',
+          },
           'public': {
             'apps': {
-              'storage.html': 'storage.html contents'
+              'storage.html': '<h1>storage.html</h1> contents'
             },
             'extensions': {
-              'storage.html': 'storage.html contents'
+              'storage.html': '<h1>storage.html</h1> contents'
             },
           },
           'json': {
@@ -162,24 +165,24 @@ class CronServletTest(unittest.TestCase):
     CronServlet(Request.ForTest('trunk'), delegate_for_test=delegate).Get()
     self.assertEqual(AppYamlHelper.GenerateAppYaml('2-0-8'),
                      file_systems[-1].ReadSingle(APP_YAML).Get())
-    self.assertEqual('storage.html contents',
+    self.assertEqual('<h1>storage.html</h1> contents',
                      file_systems[-1].ReadSingle(storage_html_path).Get())
 
     # Apply updates to storage.html.
     updates.append(storage_html_update('interim contents'))
-    updates.append(storage_html_update('new contents'))
+    updates.append(storage_html_update('<h1>new</h1> contents'))
 
     CronServlet(Request.ForTest('trunk'), delegate_for_test=delegate).Get()
     self.assertEqual(AppYamlHelper.GenerateAppYaml('2-0-8'),
                      file_systems[-1].ReadSingle(APP_YAML).Get())
-    self.assertEqual('new contents',
+    self.assertEqual('<h1>new</h1> contents',
                      file_systems[-1].ReadSingle(storage_html_path).Get())
 
     # Apply several updates to storage.html and app.yaml. The file system
     # should be pinned at the version before app.yaml changed.
-    updates.append(storage_html_update('stuck here contents'))
+    updates.append(storage_html_update('<h1>stuck here</h1> contents'))
 
-    double_update = storage_html_update('newer contents')
+    double_update = storage_html_update('<h1>newer</h1> contents')
     double_update.update(app_yaml_update('2-0-10'))
     updates.append(double_update)
 
@@ -188,16 +191,16 @@ class CronServletTest(unittest.TestCase):
     CronServlet(Request.ForTest('trunk'), delegate_for_test=delegate).Get()
     self.assertEqual(AppYamlHelper.GenerateAppYaml('2-0-8'),
                      file_systems[-1].ReadSingle(APP_YAML).Get())
-    self.assertEqual('stuck here contents',
+    self.assertEqual('<h1>stuck here</h1> contents',
                      file_systems[-1].ReadSingle(storage_html_path).Get())
 
     # Further pushes to storage.html will keep it pinned.
-    updates.append(storage_html_update('y u not update!'))
+    updates.append(storage_html_update('<h1>y</h1> u not update!'))
 
     CronServlet(Request.ForTest('trunk'), delegate_for_test=delegate).Get()
     self.assertEqual(AppYamlHelper.GenerateAppYaml('2-0-8'),
                      file_systems[-1].ReadSingle(APP_YAML).Get())
-    self.assertEqual('stuck here contents',
+    self.assertEqual('<h1>stuck here</h1> contents',
                      file_systems[-1].ReadSingle(storage_html_path).Get())
 
     # Likewise app.yaml.
@@ -206,7 +209,7 @@ class CronServletTest(unittest.TestCase):
     CronServlet(Request.ForTest('trunk'), delegate_for_test=delegate).Get()
     self.assertEqual(AppYamlHelper.GenerateAppYaml('2-0-8'),
                      file_systems[-1].ReadSingle(APP_YAML).Get())
-    self.assertEqual('stuck here contents',
+    self.assertEqual('<h1>stuck here</h1> contents',
                      file_systems[-1].ReadSingle(storage_html_path).Get())
 
     # And updates to other content won't happen either.
@@ -215,7 +218,7 @@ class CronServletTest(unittest.TestCase):
     CronServlet(Request.ForTest('trunk'), delegate_for_test=delegate).Get()
     self.assertEqual(AppYamlHelper.GenerateAppYaml('2-0-8'),
                      file_systems[-1].ReadSingle(APP_YAML).Get())
-    self.assertEqual('stuck here contents',
+    self.assertEqual('<h1>stuck here</h1> contents',
                      file_systems[-1].ReadSingle(storage_html_path).Get())
     self.assertEqual('static.txt contents',
                      file_systems[-1].ReadSingle(static_txt_path).Get())
@@ -226,7 +229,7 @@ class CronServletTest(unittest.TestCase):
     CronServlet(Request.ForTest('trunk'), delegate_for_test=delegate).Get()
     self.assertEqual(AppYamlHelper.GenerateAppYaml('2-1-0'),
                      file_systems[-1].ReadSingle(APP_YAML).Get())
-    self.assertEqual('y u not update!',
+    self.assertEqual('<h1>y</h1> u not update!',
                      file_systems[-1].ReadSingle(storage_html_path).Get())
     self.assertEqual('important content!',
                      file_systems[-1].ReadSingle(static_txt_path).Get())

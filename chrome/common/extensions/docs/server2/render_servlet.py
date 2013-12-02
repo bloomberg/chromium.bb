@@ -103,7 +103,8 @@ class RenderServlet(Servlet):
           server_instance.template_renderer.Render(content, self._request),
           render_title=path != 'google2ed1af765c529f57.html')
       if warnings:
-        logging.warning('\n'.join(warnings))
+        sep = '\n - '
+        logging.warning('Rendering %s:%s%s' % (path, sep, sep.join(warnings)))
 
     content_type = content_and_type.content_type
     if isinstance(content, unicode):

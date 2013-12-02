@@ -1,8 +1,8 @@
 {
   "app": "app",
-  "apps_title": "Apps",
+  "appsTitle": "Apps",
   "extension": "extension",
-  "extensions_title": "Extensions",
+  "extensionsTitle": "Extensions",
   "events": "events",
   "methods": "methods",
   "properties": "properties"

@@ -56,10 +56,12 @@ def _ListifyAndSortDocs(features, app_name):
         features[key]['children'] = convert_and_sort(value['children'])
     return sorted(features.values(), key=sort_key)
 
-  # Replace {{title}} in the 'name' manifest property example with |app_name|
+  # Replace {{platform}} in the 'name' manifest property example with
+  # |app_name|, the convention that the normal template rendering uses.
+  # TODO(kalman): Make the example a template and pass this through there.
   if 'name' in features:
     name = features['name']
-    name['example'] = name['example'].replace('{{title}}', app_name)
+    name['example'] = name['example'].replace('{{platform}}', app_name)
 
   features = convert_and_sort(features)
 
@@ -114,11 +116,11 @@ class ManifestDataSource(DataSource):
       def for_templates(manifest_features, platform):
         return _AddLevelAnnotations(_ListifyAndSortDocs(
             ConvertDottedKeysToNested(
-                features_utility.Filtered(manifest_features, platform)),
+                features_utility.Filtered(manifest_features, platform + 's')),
             app_name=platform.capitalize()))
       return {
-        'apps': for_templates(manifest_features, 'apps'),
-        'extensions': for_templates(manifest_features, 'extensions')
+        'apps': for_templates(manifest_features, 'app'),
+        'extensions': for_templates(manifest_features, 'extension')
       }
     return Future(delegate=Gettable(resolve))
 

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import logging
+
 from extensions_paths import JSON_TEMPLATES
 from data_source import DataSource
 
@@ -21,4 +23,7 @@ class StringsDataSource(DataSource):
     return self._GetStringsData()
 
   def get(self, key):
-    return self._GetStringsData().Get().get(key)
+    string = self._GetStringsData().Get().get(key)
+    if string is None:
+      logging.warning('String "%s" not found' % key)
+    return string

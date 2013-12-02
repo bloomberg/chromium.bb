@@ -97,7 +97,7 @@
   },
   "name": {
     "documentation": "manifest/name.html#name",
-    "example": "My {{title}}",
+    "example": "My {{platform}}",
     "level": "required"
   },
   "offline_enabled": {

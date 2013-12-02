@@ -63,7 +63,7 @@ class ContentProvider(object):
     elif mimetype == 'text/html':
       content = ToUnicode(text)
       if self._supports_templates:
-        content = Handlebar(content)
+        content = Handlebar(content, name=path)
     elif (mimetype.startswith('text/') or
           mimetype in ('application/javascript', 'application/json')):
       content = ToUnicode(text)

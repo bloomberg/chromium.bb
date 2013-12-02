@@ -2,7 +2,7 @@
 <div>
   <h3 id="{{id}}">{{name}}</h3>
   <div class="summary">
-    <div class="line">{{+partials.api_namespace api:api/}}{{name}}</div>
+    <div class="line">{{api.namespace}}.{{name}}</div>
   </div>
   <div>
     <dt><span class="property">{{name}}</span> {{+partials.type_name link:link type:property/}}</dt>

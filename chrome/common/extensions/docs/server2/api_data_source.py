@@ -101,8 +101,13 @@ class _JSCModel(object):
   def ToDict(self):
     if self._namespace is None:
       return {}
+    chrome_dot_name = 'chrome.%s' % self._namespace.name
     as_dict = {
       'name': self._namespace.name,
+      'namespace': self._namespace.documentation_options.get('namespace',
+                                                             chrome_dot_name),
+      'title': self._namespace.documentation_options.get('title',
+                                                         chrome_dot_name),
       'documentationOptions': self._namespace.documentation_options,
       'types': self._GenerateTypes(self._namespace.types.values()),
       'functions': self._GenerateFunctions(self._namespace.functions),
