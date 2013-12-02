@@ -709,13 +709,6 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
   DCHECK(!directory_fetch_info.empty());
   DVLOG(1) << "Start loading directory: " << directory_fetch_info.ToString();
 
-  if (directory_fetch_info.resource_id() == util::kDriveOtherDirLocalId) {
-    // Load for a <other> directory is meaningless in the server.
-    // Let it succeed and use what we have locally.
-    callback.Run(FILE_ERROR_OK);
-    return;
-  }
-
   if (directory_fetch_info.resource_id() == util::kDriveGrandRootLocalId) {
     // Load for a grand root directory means slightly different from other
     // directories. It should have two directories; <other> and mydrive root.

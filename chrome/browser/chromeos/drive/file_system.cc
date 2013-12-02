@@ -696,6 +696,12 @@ void FileSystem::LoadDirectoryIfNeededAfterGetEntry(
     return;
   }
 
+  // drive/other does not exist on the server.
+  if (entry->local_id() == util::kDriveOtherDirLocalId) {
+    callback.Run(FILE_ERROR_OK);
+    return;
+  }
+
   // Pass the directory fetch info so we can fetch the contents of the
   // directory before loading change lists.
   internal::DirectoryFetchInfo directory_fetch_info(
