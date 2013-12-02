@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "core/css/CSSToStyleMap.h"
+#include "core/css/resolver/CSSToStyleMap.h"
 
 #include "CSSValueKeywords.h"
 #include "core/css/CSSBorderImageSliceValue.h"

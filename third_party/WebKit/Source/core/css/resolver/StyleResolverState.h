@@ -27,7 +27,7 @@
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSToLengthConversionData.h"
-#include "core/css/CSSToStyleMap.h"
+#include "core/css/resolver/CSSToStyleMap.h"
 #include "core/css/resolver/ElementResolveContext.h"
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/css/resolver/FontBuilder.h"
