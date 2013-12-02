@@ -38,6 +38,8 @@ void CompareCharArraysWithHexError(const std::string& description,
                                    const char* expected,
                                    const int expected_len);
 
+bool DecodeHexString(const base::StringPiece& hex, std::string* bytes);
+
 // Returns the length of a QuicPacket that is capable of holding either a
 // stream frame or a minimal ack frame.  Sets |*payload_length| to the number
 // of bytes of stream data that will fit in such a packet.

@@ -5,6 +5,7 @@
 #include "net/quic/test_tools/quic_test_utils.h"
 
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "net/quic/crypto/crypto_framer.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_utils.h"
@@ -401,6 +402,18 @@ void CompareCharArraysWithHexError(
       << HexDumpWithMarks(expected, expected_len, marks.get(), max_len)
       << "\nActual:\n"
       << HexDumpWithMarks(actual, actual_len, marks.get(), max_len);
+}
+
+bool DecodeHexString(const base::StringPiece& hex, std::string* bytes) {
+  bytes->clear();
+  if (hex.empty())
+    return true;
+  std::vector<uint8> v;
+  if (!base::HexStringToBytes(hex.as_string(), &v))
+    return false;
+  if (!v.empty())
+    bytes->assign(reinterpret_cast<const char*>(&v[0]), v.size());
+  return true;
 }
 
 static QuicPacket* ConstructPacketFromHandshakeMessage(

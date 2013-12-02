@@ -201,43 +201,6 @@ const TestVector* const test_group_array[] = {
   test_group_5,
 };
 
-// Returns true if |ch| is a lowercase hexadecimal digit.
-bool IsHexDigit(char ch) {
-  return ('0' <= ch && ch <= '9') || ('a' <= ch && ch <= 'f');
-}
-
-// Converts a lowercase hexadecimal digit to its integer value.
-int HexDigitToInt(char ch) {
-  if ('0' <= ch && ch <= '9') {
-    return ch - '0';
-  }
-  return ch - 'a' + 10;
-}
-
-// |in| is a string consisting of lowercase hexadecimal digits, where
-// every two digits represent one byte. |out| is a buffer of size |max_len|.
-// Converts |in| to bytes and stores the bytes in the |out| buffer. The
-// number of bytes converted is returned in |*out_len|. Returns true on
-// success, false on failure.
-bool DecodeHexString(const char* in,
-                     char* out,
-                     size_t* out_len,
-                     size_t max_len) {
-  *out_len = 0;
-  while (*in != '\0') {
-    if (!IsHexDigit(*in) || !IsHexDigit(*(in + 1))) {
-      return false;
-    }
-    if (*out_len >= max_len) {
-      return false;
-    }
-    out[*out_len] = HexDigitToInt(*in) * 16 + HexDigitToInt(*(in + 1));
-    (*out_len)++;
-    in += 2;
-  }
-  return true;
-}
-
 }  // namespace
 
 namespace net {
@@ -261,18 +224,12 @@ QuicData* EncryptWithNonce(Aes128Gcm12Encrypter* encrypter,
 }
 
 TEST(Aes128Gcm12EncrypterTest, Encrypt) {
-  char key[1024];
-  size_t key_len;
-  char iv[1024];
-  size_t iv_len;
-  char pt[1024];
-  size_t pt_len;
-  char aad[1024];
-  size_t aad_len;
-  char ct[1024];
-  size_t ct_len;
-  char tag[1024];
-  size_t tag_len;
+  string key;
+  string iv;
+  string pt;
+  string aad;
+  string ct;
+  string tag;
 
   for (size_t i = 0; i < arraysize(test_group_array); i++) {
     SCOPED_TRACE(i);
@@ -280,47 +237,44 @@ TEST(Aes128Gcm12EncrypterTest, Encrypt) {
     const TestGroupInfo& test_info = test_group_info[i];
     for (size_t j = 0; test_vector[j].key != NULL; j++) {
       // Decode the test vector.
-      ASSERT_TRUE(
-          DecodeHexString(test_vector[j].key, key, &key_len, sizeof(key)));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].iv, iv, &iv_len, sizeof(iv)));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].pt, pt, &pt_len, sizeof(pt)));
-      ASSERT_TRUE(
-          DecodeHexString(test_vector[j].aad, aad, &aad_len, sizeof(aad)));
-      ASSERT_TRUE(DecodeHexString(test_vector[j].ct, ct, &ct_len, sizeof(ct)));
-      ASSERT_TRUE(
-          DecodeHexString(test_vector[j].tag, tag, &tag_len, sizeof(tag)));
+      ASSERT_TRUE(DecodeHexString(test_vector[j].key, &key));
+      ASSERT_TRUE(DecodeHexString(test_vector[j].iv, &iv));
+      ASSERT_TRUE(DecodeHexString(test_vector[j].pt, &pt));
+      ASSERT_TRUE(DecodeHexString(test_vector[j].aad, &aad));
+      ASSERT_TRUE(DecodeHexString(test_vector[j].ct, &ct));
+      ASSERT_TRUE(DecodeHexString(test_vector[j].tag, &tag));
 
       // The test vector's lengths should look sane. Note that the lengths
       // in |test_info| are in bits.
-      EXPECT_EQ(test_info.key_len, key_len * 8);
-      EXPECT_EQ(test_info.iv_len, iv_len * 8);
-      EXPECT_EQ(test_info.pt_len, pt_len * 8);
-      EXPECT_EQ(test_info.aad_len, aad_len * 8);
-      EXPECT_EQ(test_info.pt_len, ct_len * 8);
-      EXPECT_EQ(test_info.tag_len, tag_len * 8);
+      EXPECT_EQ(test_info.key_len, key.size() * 8);
+      EXPECT_EQ(test_info.iv_len, iv.size() * 8);
+      EXPECT_EQ(test_info.pt_len, pt.size() * 8);
+      EXPECT_EQ(test_info.aad_len, aad.size() * 8);
+      EXPECT_EQ(test_info.pt_len, ct.size() * 8);
+      EXPECT_EQ(test_info.tag_len, tag.size() * 8);
 
       Aes128Gcm12Encrypter encrypter;
-      ASSERT_TRUE(encrypter.SetKey(StringPiece(key, key_len)));
+      ASSERT_TRUE(encrypter.SetKey(key));
       scoped_ptr<QuicData> encrypted(EncryptWithNonce(
-          &encrypter, StringPiece(iv, iv_len),
+          &encrypter, iv,
           // OpenSSL fails if NULL is set as the AAD, as opposed to a
           // zero-length, non-NULL pointer. This deliberately tests that we
           // handle this case.
-          StringPiece(aad_len ? aad : NULL, aad_len), StringPiece(pt, pt_len)));
+          aad.size() ? aad : StringPiece(), pt));
       ASSERT_TRUE(encrypted.get());
 
       // The test vectors have 16 byte authenticators but this code only uses
       // the first 12.
       ASSERT_LE(static_cast<size_t>(Aes128Gcm12Encrypter::kAuthTagSize),
-                tag_len);
-      tag_len = Aes128Gcm12Encrypter::kAuthTagSize;
+                tag.size());
+      size_t tag_len = Aes128Gcm12Encrypter::kAuthTagSize;
 
-      ASSERT_EQ(ct_len + tag_len, encrypted->length());
+      ASSERT_EQ(ct.size() + tag_len, encrypted->length());
       test::CompareCharArraysWithHexError("ciphertext", encrypted->data(),
-                                          ct_len, ct, ct_len);
+                                          ct.size(), ct.data(), ct.size());
       test::CompareCharArraysWithHexError(
-          "authentication tag", encrypted->data() + ct_len, tag_len, tag,
-          tag_len);
+          "authentication tag", encrypted->data() + ct.size(), tag_len,
+          tag.data(), tag_len);
     }
   }
 }
