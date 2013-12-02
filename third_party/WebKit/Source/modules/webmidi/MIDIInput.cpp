@@ -55,30 +55,16 @@ void MIDIInput::didReceiveMIDIData(unsigned portIndex, const unsigned char* data
 {
     ASSERT(isMainThread());
 
-    // The received MIDI data may contain one or more messages.
-    // The Web MIDI API requires that a separate event be dispatched for each message,
-    // so we walk through the data and dispatch one at a time.
-    size_t i = 0;
-    while (i < length) {
-        unsigned char status = data[i];
-        unsigned char strippedStatus = status & 0xf0;
+    if (!length)
+        return;
 
-        // FIXME: integrate sending side filtering and implement more extensive filtering.
-        if (strippedStatus >= 0xf0 && !m_access->sysExEnabled())
-            break;
-
-        // All non System Exclusive messages have a total size of 3 except for Program Change and Channel Pressure.
-        size_t totalMessageSize = (strippedStatus == 0xc0 || strippedStatus == 0xd0) ? 2 : 3;
-
-        if (i + totalMessageSize <= length) {
-            RefPtr<Uint8Array> array = Uint8Array::create(totalMessageSize);
-            array->setRange(data + i, totalMessageSize, 0);
-
-            dispatchEvent(MIDIMessageEvent::create(timeStamp, array));
-        }
-
-        i += totalMessageSize;
-    }
+    // Drop SysEx message here when the client does not request it. Note that this is not a security check but an
+    // automatic filtering for clients that do not want SysEx message. Also note that SysEx message will never be sent
+    // unless the current process has an explicit permission to handle SysEx message.
+    if (data[0] == 0xf0 && !m_access->sysExEnabled())
+        return;
+    RefPtr<Uint8Array> array = Uint8Array::create(data, length);
+    dispatchEvent(MIDIMessageEvent::create(timeStamp, array));
 }
 
 } // namespace WebCore
