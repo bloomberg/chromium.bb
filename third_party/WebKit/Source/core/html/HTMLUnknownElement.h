@@ -51,11 +51,12 @@ private:
     }
 };
 
-inline HTMLUnknownElement* toHTMLUnknownElement(HTMLElement* element)
+inline bool isHTMLUnknownElement(const Node& node)
 {
-    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->isHTMLUnknownElement());
-    return static_cast<HTMLUnknownElement*>(element);
+    return node.isElementNode() && toHTMLElement(node).isHTMLUnknownElement();
 }
+
+DEFINE_NODE_TYPE_CASTS_WITH_FUNCTION(HTMLUnknownElement);
 
 } // namespace
 
