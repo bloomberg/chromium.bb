@@ -176,10 +176,10 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLinkElement.type]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLMapElement.name]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLMetaElement.content]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLMetaElement.httpEquiv]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLMetaElement.name]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLMetaElement.scheme]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLMetaElement.content]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLMetaElement.httpEquiv]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLMetaElement.name]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLMetaElement.scheme]
 
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLModElement.cite]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLModElement.dateTime]
