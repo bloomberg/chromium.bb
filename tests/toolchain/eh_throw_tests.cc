@@ -304,6 +304,30 @@ void test_throw_catch_nested_in_dtor() {
 }
 
 
+// If setjmp() is declared without __attribute__((nothrow)) (as it is
+// currently in the newlib headers) and is used in an
+// exception-catching context, Clang will call it via an "invoke"
+// instruction rather than a "call" instruction.  Check that this
+// works.
+//
+// This tests for a bug in PNaClSjLjEH in which the setjmp() call is
+// moved into a helper function.
+void test_setjmp_called_via_invoke() {
+  try {
+    jmp_buf buf;
+    if (!setjmp(buf)) {
+      longjmp(buf, 1);
+      // When the bug applies, longjmp() returns to an old stack frame
+      // where the return address has been overwritten with
+      // longjmp()'s return address, so we return here.
+      assert(false);
+    }
+  } catch (...) {
+    assert(false);
+  }
+}
+
+
 class RethrowExc {};
 
 bool g_dtor_called;
@@ -464,6 +488,7 @@ int main() {
   RUN_TEST(test_multiple_inheritance_exception());
   RUN_TEST(test_multiple_inheritance_exception_ptr());
   RUN_TEST(test_throw_catch_nested_in_dtor());
+  RUN_TEST(test_setjmp_called_via_invoke());
   RUN_TEST(test_exception_spec());
   RUN_TEST(test_exception_spec_rethrow_inside_unexpected_handler());
   RUN_TEST(test_exception_spec_convert_to_bad_exception());
