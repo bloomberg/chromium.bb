@@ -19,6 +19,7 @@ QuotaReservationBuffer::QuotaReservationBuffer(
       origin_(origin),
       type_(type),
       reserved_quota_(0) {
+  DCHECK(origin.is_valid());
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   reservation_manager_->IncrementDirtyCount(origin, type);
 }
@@ -87,6 +88,7 @@ bool QuotaReservationBuffer::DecrementDirtyCount(
     const GURL& origin,
     FileSystemType type,
     base::PlatformFileError error) {
+  DCHECK(origin.is_valid());
   if (error == base::PLATFORM_FILE_OK && reservation_manager) {
     reservation_manager->DecrementDirtyCount(origin, type);
     return true;

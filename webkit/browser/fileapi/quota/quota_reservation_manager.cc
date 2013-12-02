@@ -25,6 +25,7 @@ void QuotaReservationManager::ReserveQuota(
     FileSystemType type,
     int64 size,
     const ReserveQuotaCallback& callback) {
+  DCHECK(origin.is_valid());
   backend_->ReserveQuota(origin, type, size, callback);
 }
 
@@ -32,6 +33,7 @@ void QuotaReservationManager::ReleaseReservedQuota(
     const GURL& origin,
     FileSystemType type,
     int64 size) {
+  DCHECK(origin.is_valid());
   backend_->ReleaseReservedQuota(origin, type, size);
 }
 
@@ -39,16 +41,19 @@ void QuotaReservationManager::CommitQuotaUsage(
     const GURL& origin,
     FileSystemType type,
     int64 delta) {
+  DCHECK(origin.is_valid());
   backend_->CommitQuotaUsage(origin, type, delta);
 }
 
 void QuotaReservationManager::IncrementDirtyCount(const GURL& origin,
                                                  FileSystemType type) {
+  DCHECK(origin.is_valid());
   backend_->IncrementDirtyCount(origin, type);
 }
 
 void QuotaReservationManager::DecrementDirtyCount(const GURL& origin,
                                                  FileSystemType type) {
+  DCHECK(origin.is_valid());
   backend_->DecrementDirtyCount(origin, type);
 }
 
@@ -57,6 +62,7 @@ QuotaReservationManager::GetReservationBuffer(
     const GURL& origin,
     FileSystemType type) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  DCHECK(origin.is_valid());
   QuotaReservationBuffer** buffer =
       &reservation_buffers_[std::make_pair(origin, type)];
   if (!*buffer) {
@@ -78,6 +84,7 @@ void QuotaReservationManager::ReleaseReservationBuffer(
 scoped_refptr<QuotaReservation> QuotaReservationManager::CreateReservation(
     const GURL& origin,
     FileSystemType type) {
+  DCHECK(origin.is_valid());
   return GetReservationBuffer(origin, type)->CreateReservation();;
 }
 
