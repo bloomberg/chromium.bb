@@ -13,7 +13,6 @@ import org.chromium.android_webview.AwQuotaManagerBridge;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.AwQuotaManagerBridgeTestUtil;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -160,22 +159,17 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
               "window.applicationCache.update();");
     }
 
-    /*
     @LargeTest
     @Feature({"AndroidWebView", "WebStore"})
-    http://crbug.com/324714
-    */
-    @DisabledTest
     public void testDeleteAllWithAppCache() throws Exception {
-        long currentUsage = getUsageForOrigin(mOrigin);
-        assertEquals(0, currentUsage);
+        final long initialUsage = getUsageForOrigin(mOrigin);
 
         useAppCache();
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return getUsageForOrigin(mOrigin) > 0;
+                    return getUsageForOrigin(mOrigin) > initialUsage;
                 } catch (Exception e) {
                     return false;
                 }
@@ -198,15 +192,14 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
     @LargeTest
     @Feature({"AndroidWebView", "WebStore"})
     public void testDeleteOriginWithAppCache() throws Exception {
-        long currentUsage = getUsageForOrigin(mOrigin);
-        assertEquals(0, currentUsage);
+        final long initialUsage = getUsageForOrigin(mOrigin);
 
         useAppCache();
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return getUsageForOrigin(mOrigin) > 0;
+                    return getUsageForOrigin(mOrigin) > initialUsage;
                 } catch (Exception e) {
                     return false;
                 }
