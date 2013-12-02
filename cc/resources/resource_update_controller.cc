@@ -32,11 +32,7 @@ size_t ResourceUpdateController::MaxPartialTextureUpdates() {
 
 size_t ResourceUpdateController::MaxFullUpdatesPerTick(
     ResourceProvider* resource_provider) {
-  double textures_per_second = resource_provider->EstimatedUploadsPerSecond();
-  size_t textures_per_tick =
-      floor(resource_provider->TextureUpdateTickRate().InSecondsF() *
-            textures_per_second);
-  return textures_per_tick ? textures_per_tick : 1;
+  return resource_provider->EstimatedUploadsPerTick();
 }
 
 ResourceUpdateController::ResourceUpdateController(
@@ -113,12 +109,9 @@ void ResourceUpdateController::OnTimerFired() {
     client_->ReadyToFinalizeTextureUpdates();
 }
 
-base::TimeTicks ResourceUpdateController::Now() const {
-  return gfx::FrameTime::Now();
-}
-
-base::TimeDelta ResourceUpdateController::UpdateMoreTexturesTime() const {
-  return resource_provider_->TextureUpdateTickRate();
+base::TimeTicks ResourceUpdateController::UpdateMoreTexturesCompletionTime() {
+  return resource_provider_->EstimatedUploadCompletionTime(
+      texture_updates_per_tick_);
 }
 
 size_t ResourceUpdateController::UpdateMoreTexturesSize() const {
@@ -129,25 +122,14 @@ size_t ResourceUpdateController::MaxBlockingUpdates() const {
   return UpdateMoreTexturesSize() * kMaxBlockingUpdateIntervals;
 }
 
-base::TimeDelta ResourceUpdateController::PendingUpdateTime() const {
-  base::TimeDelta update_one_resource_time =
-      UpdateMoreTexturesTime() / UpdateMoreTexturesSize();
-  return update_one_resource_time * resource_provider_->NumBlockingUploads();
-}
-
 bool ResourceUpdateController::UpdateMoreTexturesIfEnoughTimeRemaining() {
   while (resource_provider_->NumBlockingUploads() < MaxBlockingUpdates()) {
     if (!queue_->FullUploadSize())
       return false;
 
     if (!time_limit_.is_null()) {
-      // Estimated completion time of all pending updates.
-      base::TimeTicks completion_time = Now() + PendingUpdateTime();
-
-      // Time remaining based on current completion estimate.
-      base::TimeDelta time_remaining = time_limit_ - completion_time;
-
-      if (time_remaining < UpdateMoreTexturesTime())
+      base::TimeTicks completion_time = UpdateMoreTexturesCompletionTime();
+      if (completion_time > time_limit_)
         return true;
     }
 

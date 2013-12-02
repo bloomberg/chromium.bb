@@ -1464,6 +1464,8 @@ gfx::SizeF LayerTreeHostImpl::UnscaledScrollableViewportSize() const {
 }
 
 void LayerTreeHostImpl::DidLoseOutputSurface() {
+  if (resource_provider_)
+    resource_provider_->DidLoseOutputSurface();
   // TODO(jamesr): The renderer_ check is needed to make some of the
   // LayerTreeHostContextTest tests pass, but shouldn't be necessary (or
   // important) in production. We should adjust the test to not need this.
@@ -1716,8 +1718,6 @@ bool LayerTreeHostImpl::InitializeRenderer(
   // the old resources (i.e. render_surfaces and texture IDs). Clear them
   // before we destroy the old resource provider.
   ReleaseTreeResources();
-  if (resource_provider_)
-    resource_provider_->DidLoseOutputSurface();
 
   // Note: order is important here.
   renderer_.reset();

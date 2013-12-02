@@ -23,6 +23,7 @@
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "ui/gfx/frame_time.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
 
@@ -649,11 +650,14 @@ void ResourceProvider::MarkPendingUploadsAsNonBlocking() {
   texture_uploader_->MarkPendingUploadsAsNonBlocking();
 }
 
-double ResourceProvider::EstimatedUploadsPerSecond() {
+size_t ResourceProvider::EstimatedUploadsPerTick() {
   if (!texture_uploader_)
-    return 0.0;
+    return 1u;
 
-  return texture_uploader_->EstimatedTexturesPerSecond();
+  double textures_per_second = texture_uploader_->EstimatedTexturesPerSecond();
+  size_t textures_per_tick = floor(
+      kTextureUploadTickRate * textures_per_second);
+  return textures_per_tick ? textures_per_tick : 1u;
 }
 
 void ResourceProvider::FlushUploads() {
@@ -670,13 +674,25 @@ void ResourceProvider::ReleaseCachedData() {
   texture_uploader_->ReleaseCachedQueries();
 }
 
-base::TimeDelta ResourceProvider::TextureUpdateTickRate() {
+base::TimeTicks ResourceProvider::EstimatedUploadCompletionTime(
+    size_t uploads_per_tick) {
+  if (lost_output_surface_)
+    return base::TimeTicks();
+
   // Software resource uploads happen on impl thread, so don't bother batching
   // them up and trying to wait for them to complete.
-  double rate =
-      texture_uploader_ ? kTextureUploadTickRate : kSoftwareUploadTickRate;
-  return base::TimeDelta::FromMicroseconds(base::Time::kMicrosecondsPerSecond *
-                                           rate);
+  if (!texture_uploader_) {
+    return gfx::FrameTime::Now() + base::TimeDelta::FromMicroseconds(
+        base::Time::kMicrosecondsPerSecond * kSoftwareUploadTickRate);
+  }
+
+  base::TimeDelta upload_one_texture_time =
+      base::TimeDelta::FromMicroseconds(
+          base::Time::kMicrosecondsPerSecond * kTextureUploadTickRate) /
+      uploads_per_tick;
+
+  size_t total_uploads = NumBlockingUploads() + uploads_per_tick;
+  return gfx::FrameTime::Now() + upload_one_texture_time * total_uploads;
 }
 
 void ResourceProvider::Flush() {

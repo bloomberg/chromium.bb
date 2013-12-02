@@ -937,10 +937,10 @@ TEST_F(LayerTreeHostContextTestLostContextAndEvictTextures,
   RunTest(true, true, true);
 }
 
-class DISABLED_LayerTreeHostContextTestLostContextWhileUpdatingResources
+class LayerTreeHostContextTestLostContextWhileUpdatingResources
     : public LayerTreeHostContextTest {
  public:
-  DISABLED_LayerTreeHostContextTestLostContextWhileUpdatingResources()
+  LayerTreeHostContextTestLostContextWhileUpdatingResources()
       : parent_(FakeContentLayer::Create(&client_)),
         num_children_(50),
         times_to_lose_on_end_query_(3) {}
@@ -974,8 +974,8 @@ class DISABLED_LayerTreeHostContextTestLostContextWhileUpdatingResources
     PostSetNeedsCommitToMainThread();
   }
 
-  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    LayerTreeHostContextTest::CommitCompleteOnThread(impl);
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    EXPECT_EQ(0, times_to_lose_on_end_query_);
     EndTest();
   }
 
@@ -994,9 +994,8 @@ class DISABLED_LayerTreeHostContextTestLostContextWhileUpdatingResources
   int times_to_lose_on_end_query_;
 };
 
-// Disabled (crbug.com/313790)
 SINGLE_AND_MULTI_THREAD_NOIMPL_TEST_F(
-    DISABLED_LayerTreeHostContextTestLostContextWhileUpdatingResources);
+    LayerTreeHostContextTestLostContextWhileUpdatingResources);
 
 class LayerTreeHostContextTestLayersNotified
     : public LayerTreeHostContextTest {

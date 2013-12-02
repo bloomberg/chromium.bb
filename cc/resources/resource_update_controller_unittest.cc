@@ -355,12 +355,14 @@ class FakeResourceUpdateController : public ResourceUpdateController {
   }
 
   void SetNow(base::TimeTicks time) { now_ = time; }
-  virtual base::TimeTicks Now() const OVERRIDE { return now_; }
-  void SetUpdateMoreTexturesTime(base::TimeDelta time) {
-    update_more_textures_time_ = time;
+  base::TimeTicks Now() const { return now_; }
+  void SetUpdateTextureTime(base::TimeDelta time) {
+    update_textures_time_ = time;
   }
-  virtual base::TimeDelta UpdateMoreTexturesTime() const OVERRIDE {
-    return update_more_textures_time_;
+  virtual base::TimeTicks UpdateMoreTexturesCompletionTime() OVERRIDE {
+    size_t total_updates =
+        resource_provider_->NumBlockingUploads() + update_more_textures_size_;
+    return now_ + total_updates * update_textures_time_;
   }
   void SetUpdateMoreTexturesSize(size_t size) {
     update_more_textures_size_ = size;
@@ -376,10 +378,12 @@ class FakeResourceUpdateController : public ResourceUpdateController {
                                ResourceProvider* resource_provider)
       : ResourceUpdateController(
           client, task_runner, queue.Pass(), resource_provider),
+        resource_provider_(resource_provider),
         update_more_textures_size_(0) {}
 
+  ResourceProvider* resource_provider_;
   base::TimeTicks now_;
-  base::TimeDelta update_more_textures_time_;
+  base::TimeDelta update_textures_time_;
   size_t update_more_textures_size_;
 };
 
@@ -408,14 +412,14 @@ TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures) {
                                            resource_provider_.get()));
 
   controller->SetNow(controller->Now() + base::TimeDelta::FromMilliseconds(1));
-  controller->SetUpdateMoreTexturesTime(base::TimeDelta::FromMilliseconds(100));
+  controller->SetUpdateTextureTime(base::TimeDelta::FromMilliseconds(100));
   controller->SetUpdateMoreTexturesSize(1);
   // Not enough time for any updates.
   controller->PerformMoreUpdates(controller->Now() +
                                  base::TimeDelta::FromMilliseconds(90));
   EXPECT_FALSE(task_runner->HasPendingTask());
 
-  controller->SetUpdateMoreTexturesTime(base::TimeDelta::FromMilliseconds(100));
+  controller->SetUpdateTextureTime(base::TimeDelta::FromMilliseconds(100));
   controller->SetUpdateMoreTexturesSize(1);
   // Only enough time for 1 update.
   controller->PerformMoreUpdates(controller->Now() +
@@ -426,7 +430,7 @@ TEST_F(ResourceUpdateControllerTest, UpdateMoreTextures) {
   // Complete one upload.
   MakeQueryResultAvailable();
 
-  controller->SetUpdateMoreTexturesTime(base::TimeDelta::FromMilliseconds(100));
+  controller->SetUpdateTextureTime(base::TimeDelta::FromMilliseconds(100));
   controller->SetUpdateMoreTexturesSize(1);
   // Enough time for 2 updates.
   controller->PerformMoreUpdates(controller->Now() +
@@ -455,7 +459,7 @@ TEST_F(ResourceUpdateControllerTest, NoMoreUpdates) {
                                            resource_provider_.get()));
 
   controller->SetNow(controller->Now() + base::TimeDelta::FromMilliseconds(1));
-  controller->SetUpdateMoreTexturesTime(base::TimeDelta::FromMilliseconds(100));
+  controller->SetUpdateTextureTime(base::TimeDelta::FromMilliseconds(100));
   controller->SetUpdateMoreTexturesSize(1);
   // Enough time for 3 updates but only 2 necessary.
   controller->PerformMoreUpdates(controller->Now() +
@@ -465,7 +469,7 @@ TEST_F(ResourceUpdateControllerTest, NoMoreUpdates) {
   EXPECT_TRUE(client.ReadyToFinalizeCalled());
   EXPECT_EQ(2, num_total_uploads_);
 
-  controller->SetUpdateMoreTexturesTime(base::TimeDelta::FromMilliseconds(100));
+  controller->SetUpdateTextureTime(base::TimeDelta::FromMilliseconds(100));
   controller->SetUpdateMoreTexturesSize(1);
   // Enough time for updates but no more updates left.
   controller->PerformMoreUpdates(controller->Now() +
@@ -495,7 +499,7 @@ TEST_F(ResourceUpdateControllerTest, UpdatesCompleteInFiniteTime) {
                                            resource_provider_.get()));
 
   controller->SetNow(controller->Now() + base::TimeDelta::FromMilliseconds(1));
-  controller->SetUpdateMoreTexturesTime(base::TimeDelta::FromMilliseconds(500));
+  controller->SetUpdateTextureTime(base::TimeDelta::FromMilliseconds(500));
   controller->SetUpdateMoreTexturesSize(1);
 
   for (int i = 0; i < 100; i++) {

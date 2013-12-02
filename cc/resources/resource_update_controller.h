@@ -48,9 +48,8 @@ class CC_EXPORT ResourceUpdateController {
 
 
   // Virtual for testing.
-  virtual base::TimeTicks Now() const;
-  virtual base::TimeDelta UpdateMoreTexturesTime() const;
   virtual size_t UpdateMoreTexturesSize() const;
+  virtual base::TimeTicks UpdateMoreTexturesCompletionTime();
 
  protected:
   ResourceUpdateController(ResourceUpdateControllerClient* client,
@@ -62,7 +61,6 @@ class CC_EXPORT ResourceUpdateController {
   static size_t MaxFullUpdatesPerTick(ResourceProvider* resource_provider);
 
   size_t MaxBlockingUpdates() const;
-  base::TimeDelta PendingUpdateTime() const;
 
   void UpdateTexture(ResourceUpdate update);
 

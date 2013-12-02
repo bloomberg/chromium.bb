@@ -138,10 +138,10 @@ class CC_EXPORT ResourceProvider {
   // Check upload status.
   size_t NumBlockingUploads();
   void MarkPendingUploadsAsNonBlocking();
-  double EstimatedUploadsPerSecond();
+  size_t EstimatedUploadsPerTick();
   void FlushUploads();
   void ReleaseCachedData();
-  base::TimeDelta TextureUpdateTickRate();
+  base::TimeTicks EstimatedUploadCompletionTime(size_t uploads_per_tick);
 
   // Flush all context operations, kicking uploads and ensuring ordering with
   // respect to other contexts.

@@ -520,9 +520,11 @@ bool SingleThreadProxy::DoComposite(
         layer_tree_host_impl_->CurrentFrameTime());
     UpdateBackgroundAnimateTicking();
 
-    layer_tree_host_impl_->PrepareToDraw(frame, device_viewport_damage_rect);
-    layer_tree_host_impl_->DrawLayers(frame, frame_begin_time);
-    layer_tree_host_impl_->DidDrawAllLayers(*frame);
+    if (!layer_tree_host_impl_->IsContextLost()) {
+      layer_tree_host_impl_->PrepareToDraw(frame, device_viewport_damage_rect);
+      layer_tree_host_impl_->DrawLayers(frame, frame_begin_time);
+      layer_tree_host_impl_->DidDrawAllLayers(*frame);
+    }
     lost_output_surface = layer_tree_host_impl_->IsContextLost();
 
     bool start_ready_animations = true;
