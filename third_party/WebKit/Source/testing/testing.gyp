@@ -128,46 +128,6 @@
             'msvs_disabled_warnings': [ 4267, ],
         },
         {
-            # FIXME: This is only used by webkit_unit_tests now, move it to WebKitUnitTests.gyp.
-            'target_name': 'DumpRenderTree_resources',
-            'type': 'none',
-            'dependencies': [
-                '<(DEPTH)/net/net.gyp:net_resources',
-                '<(DEPTH)/ui/resources/ui_resources.gyp:ui_resources',
-                '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
-                '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
-            ],
-            'actions': [{
-                'action_name': 'repack_local',
-                'variables': {
-                    'repack_path': '<(DEPTH)/tools/grit/grit/format/repack.py',
-                    'pak_inputs': [
-                        '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
-                        '<(SHARED_INTERMEDIATE_DIR)/ui/ui_resources/ui_resources_100_percent.pak',
-                        '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.pak',
-                        '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.pak',
-                        '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources_100_percent.pak',
-                ]},
-                'inputs': [
-                    '<(repack_path)',
-                    '<@(pak_inputs)',
-                ],
-                'outputs': [
-                    '<(PRODUCT_DIR)/DumpRenderTree.pak',
-                ],
-                'action': ['python', '<(repack_path)', '<@(_outputs)', '<@(pak_inputs)'],
-            }],
-            'conditions': [
-                ['OS=="mac"', {
-                    'all_dependent_settings': {
-                        'mac_bundle_resources': [
-                            '<(PRODUCT_DIR)/DumpRenderTree.pak',
-                        ],
-                    },
-                }],
-            ]
-        },
-        {
             'target_name': 'TestRunner_resources',
             'type': 'none',
             'dependencies': [
