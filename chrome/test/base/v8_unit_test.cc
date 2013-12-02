@@ -90,13 +90,13 @@ bool V8UnitTest::RunJavascriptTestF(
   if (!ExecuteJavascriptLibraries())
     return false;
 
-  v8::Context::Scope context_scope(isolate_, context_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
 
   v8::Handle<v8::Value> functionProperty =
-      context->Global()->Get(v8::String::New("runTest"));
+      context->Global()->Get(v8::String::NewFromUtf8(isolate_, "runTest"));
   EXPECT_FALSE(functionProperty.IsEmpty());
   if (::testing::Test::HasNonfatalFailure())
     return false;
@@ -106,12 +106,20 @@ bool V8UnitTest::RunJavascriptTestF(
   v8::Handle<v8::Function> function =
       v8::Handle<v8::Function>::Cast(functionProperty);
 
-  v8::Local<v8::Array> params = v8::Array::New();
-  params->Set(0, v8::String::New(testFixture.data(), testFixture.size()));
-  params->Set(1, v8::String::New(testName.data(), testName.size()));
+  v8::Local<v8::Array> params = v8::Array::New(isolate_);
+  params->Set(0,
+              v8::String::NewFromUtf8(isolate_,
+                                      testFixture.data(),
+                                      v8::String::kNormalString,
+                                      testFixture.size()));
+  params->Set(1,
+              v8::String::NewFromUtf8(isolate_,
+                                      testName.data(),
+                                      v8::String::kNormalString,
+                                      testName.size()));
   v8::Handle<v8::Value> args[] = {
-    v8::Boolean::New(false),
-    v8::String::New("RUN_TEST_F"),
+    v8::Boolean::New(isolate_, false),
+    v8::String::NewFromUtf8(isolate_, "RUN_TEST_F"),
     params
   };
 
@@ -156,46 +164,60 @@ void V8UnitTest::InitPathsAndLibraries() {
 }
 
 void V8UnitTest::SetUp() {
-  v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New();
-  v8::Handle<v8::String> logString = v8::String::New("log");
+  v8::Handle<v8::ObjectTemplate> global = v8::ObjectTemplate::New(isolate_);
+  v8::Handle<v8::String> logString = v8::String::NewFromUtf8(isolate_, "log");
   v8::Handle<v8::FunctionTemplate> logFunction =
       v8::FunctionTemplate::New(&V8UnitTest::Log);
   global->Set(logString, logFunction);
 
   // Set up chrome object for chrome.send().
-  v8::Handle<v8::ObjectTemplate> chrome = v8::ObjectTemplate::New();
-  global->Set(v8::String::New("chrome"), chrome);
-  chrome->Set(v8::String::New("send"),
-              v8::FunctionTemplate::New(&V8UnitTest::ChromeSend));
+  v8::Handle<v8::ObjectTemplate> chrome = v8::ObjectTemplate::New(isolate_);
+  global->Set(v8::String::NewFromUtf8(isolate_, "chrome"), chrome);
+  chrome->Set(v8::String::NewFromUtf8(isolate_, "send"),
+              v8::FunctionTemplate::New(isolate_, &V8UnitTest::ChromeSend));
 
   // Set up console object for console.log(), etc.
-  v8::Handle<v8::ObjectTemplate> console = v8::ObjectTemplate::New();
-  global->Set(v8::String::New("console"), console);
+  v8::Handle<v8::ObjectTemplate> console = v8::ObjectTemplate::New(isolate_);
+  global->Set(v8::String::NewFromUtf8(isolate_, "console"), console);
   console->Set(logString, logFunction);
-  console->Set(v8::String::New("info"), logFunction);
-  console->Set(v8::String::New("warn"), logFunction);
-  console->Set(v8::String::New("error"),
-               v8::FunctionTemplate::New(&V8UnitTest::Error));
+  console->Set(v8::String::NewFromUtf8(isolate_, "info"), logFunction);
+  console->Set(v8::String::NewFromUtf8(isolate_, "warn"), logFunction);
+  console->Set(v8::String::NewFromUtf8(isolate_, "error"),
+               v8::FunctionTemplate::New(isolate_, &V8UnitTest::Error));
 
   context_.Reset(isolate_, v8::Context::New(isolate_, NULL, global));
 }
 
 void V8UnitTest::SetGlobalStringVar(const std::string& var_name,
                                     const std::string& value) {
-  v8::Context::Scope context_scope(isolate_, context_);
-  v8::Local<v8::Context>::New(isolate_, context_)->Global()
-      ->Set(v8::String::New(var_name.c_str(), var_name.length()),
-            v8::String::New(value.c_str(), value.length()));
+  v8::Local<v8::Context> context =
+      v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
+  context->Global()->Set(
+      v8::String::NewFromUtf8(isolate_,
+                              var_name.c_str(),
+                              v8::String::kNormalString,
+                              var_name.length()),
+      v8::String::NewFromUtf8(
+          isolate_, value.c_str(), v8::String::kNormalString, value.length()));
 }
 
 void V8UnitTest::ExecuteScriptInContext(const base::StringPiece& script_source,
                                         const base::StringPiece& script_name) {
-  v8::Context::Scope context_scope(isolate_, context_);
   v8::HandleScope handle_scope(isolate_);
-  v8::Handle<v8::String> source = v8::String::New(script_source.data(),
-                                                  script_source.size());
-  v8::Handle<v8::String> name = v8::String::New(script_name.data(),
-                                                script_name.size());
+  v8::Local<v8::Context> context =
+      v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
+  v8::Handle<v8::String> source =
+      v8::String::NewFromUtf8(isolate_,
+                              script_source.data(),
+                              v8::String::kNormalString,
+                              script_source.size());
+  v8::Handle<v8::String> name =
+      v8::String::NewFromUtf8(isolate_,
+                              script_name.data(),
+                              v8::String::kNormalString,
+                              script_name.size());
 
   v8::TryCatch try_catch;
   v8::Handle<v8::Script> script = v8::Script::Compile(source, name);
@@ -229,13 +251,13 @@ std::string V8UnitTest::ExceptionToString(const v8::TryCatch& try_catch) {
 }
 
 void V8UnitTest::TestFunction(const std::string& function_name) {
-  v8::Context::Scope context_scope(isolate_, context_);
   v8::HandleScope handle_scope(isolate_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
 
-  v8::Handle<v8::Value> functionProperty =
-      context->Global()->Get(v8::String::New(function_name.c_str()));
+  v8::Handle<v8::Value> functionProperty = context->Global()->Get(
+      v8::String::NewFromUtf8(isolate_, function_name.c_str()));
   ASSERT_FALSE(functionProperty.IsEmpty());
   ASSERT_TRUE(functionProperty->IsFunction());
   v8::Handle<v8::Function> function =
