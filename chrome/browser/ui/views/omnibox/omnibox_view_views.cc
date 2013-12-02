@@ -494,8 +494,8 @@ void OmniboxViewViews::SetWindowTextAndCaretPos(const string16& text,
 }
 
 void OmniboxViewViews::SetForcedQuery() {
-  const string16 current_text(text());
-  const size_t start = current_text.find_first_not_of(kWhitespaceUTF16);
+  const base::string16 current_text(text());
+  const size_t start = current_text.find_first_not_of(base::kWhitespaceUTF16);
   if (start == string16::npos || (current_text[start] != '?'))
     OmniboxView::SetUserText(ASCIIToUTF16("?"));
   else

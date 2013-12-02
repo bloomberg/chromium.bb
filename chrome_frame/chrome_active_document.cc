@@ -252,7 +252,7 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
     return E_INVALIDARG;
   }
 
-  std::string referrer(mgr ? mgr->referrer() : EmptyString());
+  std::string referrer(mgr ? mgr->referrer() : std::string());
   RendererType renderer_type = cf_url.is_chrome_protocol() ?
       RENDERER_TYPE_CHROME_GCF_PROTOCOL : RENDERER_TYPE_UNDETERMINED;
 
@@ -399,8 +399,7 @@ STDMETHODIMP ChromeActiveDocument::LoadHistory(IStream* stream,
     return E_INVALIDARG;
   }
 
-  const std::string& referrer = EmptyString();
-  if (!LaunchUrl(cf_url, referrer)) {
+  if (!LaunchUrl(cf_url, std::string())) {
     NOTREACHED() << __FUNCTION__ << " Failed to launch url:" << url;
     return E_INVALIDARG;
   }

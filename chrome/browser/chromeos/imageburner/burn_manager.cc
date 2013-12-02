@@ -120,12 +120,12 @@ const std::string& ConfigFile::GetProperty(
       if (property != block_it->properties.end()) {
         return property->second;
       } else {
-        return EmptyString();
+        return base::EmptyString();
       }
     }
   }
 
-  return EmptyString();
+  return base::EmptyString();
 }
 
 // Check if last block has a hwid associated with it, and erase it if it

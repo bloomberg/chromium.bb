@@ -393,7 +393,7 @@ uint32_t MediaDrmBridge::DetermineReferenceId(const std::string& session_id) {
 const std::string& MediaDrmBridge::LookupSessionId(uint32 reference_id) {
   // Session may not exist if error happens during GenerateKeyRequest().
   SessionMap::iterator it = session_map_.find(reference_id);
-  return (it != session_map_.end()) ? it->second : EmptyString();
+  return (it != session_map_.end()) ? it->second : base::EmptyString();
 }
 
 }  // namespace media

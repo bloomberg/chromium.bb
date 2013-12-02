@@ -264,7 +264,7 @@ const std::string& ProxyDecryptor::LookupSessionId(uint32 reference_id) {
 
   // Session may not exist if error happens during GenerateKeyRequest().
   SessionIdMap::iterator it = sessions_.find(reference_id);
-  return (it != sessions_.end()) ? it->second : EmptyString();
+  return (it != sessions_.end()) ? it->second : base::EmptyString();
 }
 
 }  // namespace content

@@ -209,7 +209,8 @@ void MultiUserWindowManagerChromeOS::SetWindowOwner(
 const std::string& MultiUserWindowManagerChromeOS::GetWindowOwner(
     aura::Window* window) {
   WindowToEntryMap::iterator it = window_to_entry_.find(window);
-  return it != window_to_entry_.end() ? it->second->owner() : EmptyString();
+  return it != window_to_entry_.end() ? it->second->owner()
+                                      : base::EmptyString();
 }
 
 void MultiUserWindowManagerChromeOS::ShowWindowForUser(
@@ -264,7 +265,7 @@ const std::string& MultiUserWindowManagerChromeOS::GetUserPresentingWindow(
   // If the window is not owned by anyone it is shown on all desktops and we
   // return the empty string.
   if (it == window_to_entry_.end())
-    return EmptyString();
+    return base::EmptyString();
   // Otherwise we ask the object for its desktop.
   return it->second->show_for_user();
 }

@@ -147,7 +147,7 @@ const std::string& GoogleServiceAuthError::token() const {
     default:
       NOTREACHED();
   }
-  return EmptyString();
+  return base::EmptyString();
 }
 
 const std::string& GoogleServiceAuthError::error_message() const {

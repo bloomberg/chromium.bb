@@ -353,7 +353,7 @@ void URLRequestHttpJob::Start() {
       HttpRequestHeaders::kUserAgent,
       http_user_agent_settings_ ?
           http_user_agent_settings_->GetUserAgent(request_->url()) :
-          EmptyString());
+          std::string());
 
   AddExtraHeaders();
   AddCookieHeaderAndStart();

@@ -4,6 +4,8 @@
 
 #include "base/strings/string_util.h"
 
+namespace base {
+
 #define WHITESPACE_UNICODE \
   0x0009, /* <control-0009> to <control-000D> */ \
   0x000A,                                        \
@@ -53,3 +55,5 @@ const char kWhitespaceASCII[] = {
 };
 
 const char kUtf8ByteOrderMark[] = "\xEF\xBB\xBF";
+
+}  // namespace base

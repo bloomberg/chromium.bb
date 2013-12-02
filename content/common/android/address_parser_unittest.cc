@@ -16,9 +16,9 @@ class AddressParserTest : public testing::Test {
  public:
   AddressParserTest() {}
 
-  void TokenizeWords(const string16& content, WordList* words) const {
+  void TokenizeWords(const base::string16& content, WordList* words) const {
     String16Tokenizer tokenizer(content.begin(), content.end(),
-                                kWhitespaceUTF16);
+                                base::kWhitespaceUTF16);
     while (tokenizer.GetNext()) {
       words->push_back(Word(tokenizer.token_begin(), tokenizer.token_end()));
     }
@@ -40,9 +40,9 @@ class AddressParserTest : public testing::Test {
   }
 
   bool GetState(const std::string& state, size_t* state_index) const {
-    string16 state_16 = UTF8ToUTF16(state);
+    base::string16 state_16 = UTF8ToUTF16(state);
     String16Tokenizer tokenizer(state_16.begin(), state_16.end(),
-                                kWhitespaceUTF16);
+                                base::kWhitespaceUTF16);
     if (!tokenizer.GetNext())
       return false;
 

@@ -92,7 +92,7 @@ Texture::~Texture() {
 }
 
 std::string Texture::Produce() {
-  return EmptyString();
+  return std::string();
 }
 
 CompositorLock::CompositorLock(Compositor* compositor)

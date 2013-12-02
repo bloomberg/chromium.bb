@@ -148,7 +148,7 @@ const std::string& FakeSessionManagerClient::user_policy(
     const std::string& username) const {
   std::map<std::string, std::string>::const_iterator it =
       user_policies_.find(username);
-  return it == user_policies_.end() ? EmptyString() : it->second;
+  return it == user_policies_.end() ? base::EmptyString() : it->second;
 }
 
 void FakeSessionManagerClient::set_user_policy(const std::string& username,
@@ -161,7 +161,7 @@ const std::string& FakeSessionManagerClient::device_local_account_policy(
   std::map<std::string, std::string>::const_iterator entry =
       device_local_account_policy_.find(account_id);
   return entry != device_local_account_policy_.end() ? entry->second
-                                                     : EmptyString();
+                                                     : base::EmptyString();
 }
 
 void FakeSessionManagerClient::set_device_local_account_policy(

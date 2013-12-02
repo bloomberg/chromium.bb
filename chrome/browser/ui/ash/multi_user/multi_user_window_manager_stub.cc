@@ -16,7 +16,7 @@ void MultiUserWindowManagerStub::SetWindowOwner(aura::Window* window,
 
 const std::string& MultiUserWindowManagerStub::GetWindowOwner(
     aura::Window* window) {
-  return EmptyString();
+  return base::EmptyString();
 }
 
 void MultiUserWindowManagerStub::ShowWindowForUser(aura::Window* window,
@@ -36,7 +36,7 @@ bool MultiUserWindowManagerStub::IsWindowOnDesktopOfUser(
 
 const std::string& MultiUserWindowManagerStub::GetUserPresentingWindow(
     aura::Window* window) {
-  return EmptyString();
+  return base::EmptyString();
 }
 
 void MultiUserWindowManagerStub::AddUser(Profile* profile) {

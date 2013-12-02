@@ -860,9 +860,9 @@ void MetricsLog::RecordProfilerData(
 void MetricsLog::RecordOmniboxOpenedURL(const OmniboxLog& log) {
   DCHECK(!locked());
 
-  std::vector<string16> terms;
+  std::vector<base::string16> terms;
   const int num_terms =
-      static_cast<int>(Tokenize(log.text, kWhitespaceUTF16, &terms));
+      static_cast<int>(Tokenize(log.text, base::kWhitespaceUTF16, &terms));
 
   OmniboxEventProto* omnibox_event = uma_proto()->add_omnibox_event();
   omnibox_event->set_time(MetricsLogBase::GetCurrentTime());

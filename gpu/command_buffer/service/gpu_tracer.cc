@@ -271,7 +271,7 @@ void GPUTracerImpl::Process() {
 
 const std::string& GPUTracerImpl::CurrentName() const {
   if (!current_trace_.get())
-    return EmptyString();
+    return base::EmptyString();
   return current_trace_->name();
 }
 

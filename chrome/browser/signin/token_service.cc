@@ -110,7 +110,7 @@ bool TokenService::HasTokenForService(const char* service) const {
 
 const std::string& TokenService::GetTokenForService(
     const char* const service) const {
-  return EmptyString();
+  return base::EmptyString();
 }
 
 bool TokenService::HasOAuthLoginToken() const {

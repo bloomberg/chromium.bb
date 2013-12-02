@@ -234,7 +234,8 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   // escaped whitespace. When the user types "colspec=ID%20Mstone Release" we
   // get two 'terms': "colspec=id%20mstone" and "release".
   history::String16Vector lower_raw_terms;
-  if (Tokenize(lower_raw_string, kWhitespaceUTF16, &lower_raw_terms) == 0) {
+  if (Tokenize(lower_raw_string, base::kWhitespaceUTF16,
+               &lower_raw_terms) == 0) {
     // Don't score matches when there are no terms to score against.  (It's
     // possible that the word break iterater that extracts words to search
     // for in the database allows some whitespace "words" whereas Tokenize

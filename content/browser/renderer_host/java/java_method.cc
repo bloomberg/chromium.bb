@@ -86,7 +86,7 @@ std::string BinaryNameToJNIName(const std::string& binary_name,
       return jni_name;
   }
   NOTREACHED();
-  return EmptyString();
+  return std::string();
 }
 
 }  // namespace

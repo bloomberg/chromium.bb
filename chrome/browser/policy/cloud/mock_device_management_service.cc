@@ -50,7 +50,7 @@ class MockRequestJobBase : public DeviceManagementRequestJob {
         return entry->second;
     }
 
-    return EmptyString();
+    return base::EmptyString();
   }
 
   MockDeviceManagementService* service_;

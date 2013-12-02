@@ -28,9 +28,9 @@ const int kWildcardPortNumber = 0;
 const int kInvalidPort = -1;
 
 bool StartsOrEndsWithWhitespace(const std::string& str) {
-  if (str.find_first_not_of(kWhitespaceASCII) != 0)
+  if (str.find_first_not_of(base::kWhitespaceASCII) != 0)
     return true;
-  if (str.find_last_not_of(kWhitespaceASCII) != str.length() - 1)
+  if (str.find_last_not_of(base::kWhitespaceASCII) != str.length() - 1)
     return true;
   return false;
 }

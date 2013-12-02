@@ -69,9 +69,9 @@ bool FindAddress(const string16::const_iterator& begin,
   // by a valid zip code for that state. Also keep a look for any other
   // possible house numbers to continue from in case of no match and for
   // state names not followed by a zip code (e.g. New York, NY 10000).
-  const string16 newline_delimiters = kNewlineDelimiters;
-  const string16 delimiters = kWhitespaceUTF16 + newline_delimiters;
-  for (string16::const_iterator it = begin; it != end; ) {
+  const base::string16 newline_delimiters = kNewlineDelimiters;
+  const base::string16 delimiters = base::kWhitespaceUTF16 + newline_delimiters;
+  for (base::string16::const_iterator it = begin; it != end; ) {
     Word house_number;
     if (!house_number_parser.Parse(it, end, &house_number))
       return false;

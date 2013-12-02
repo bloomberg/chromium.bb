@@ -90,7 +90,7 @@ LauncherID TestLauncherDelegate::GetLauncherIDForAppID(
 }
 
 const std::string& TestLauncherDelegate::GetAppIDForLauncherID(LauncherID id) {
-  return EmptyString();
+  return base::EmptyString();
 }
 
 void TestLauncherDelegate::PinAppWithID(const std::string& app_id) {

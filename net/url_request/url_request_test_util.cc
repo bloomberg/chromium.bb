@@ -120,7 +120,7 @@ void TestURLRequestContext::Init() {
   }
   if (!http_user_agent_settings()) {
     context_storage_.set_http_user_agent_settings(
-        new StaticHttpUserAgentSettings("en-us,fr", EmptyString()));
+        new StaticHttpUserAgentSettings("en-us,fr", std::string()));
   }
   if (!job_factory())
     context_storage_.set_job_factory(new URLRequestJobFactoryImpl);

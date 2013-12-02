@@ -100,9 +100,6 @@ bool IsWprintfFormatPortable(const wchar_t* format) {
   return true;
 }
 
-}  // namespace base
-
-
 const std::string& EmptyString() {
   return EmptyStrings::GetInstance()->s;
 }
@@ -114,6 +111,8 @@ const std::wstring& EmptyWString() {
 const string16& EmptyString16() {
   return EmptyStrings::GetInstance()->s16;
 }
+
+}  // namespace base
 
 template<typename STR>
 bool ReplaceCharsT(const STR& input,
@@ -241,16 +240,16 @@ void TruncateUTF8ToByteSize(const std::string& input,
     output->clear();
 }
 
-TrimPositions TrimWhitespace(const string16& input,
+TrimPositions TrimWhitespace(const base::string16& input,
                              TrimPositions positions,
-                             string16* output) {
-  return TrimStringT(input, kWhitespaceUTF16, positions, output);
+                             base::string16* output) {
+  return TrimStringT(input, base::kWhitespaceUTF16, positions, output);
 }
 
 TrimPositions TrimWhitespaceASCII(const std::string& input,
                                   TrimPositions positions,
                                   std::string* output) {
-  return TrimStringT(input, kWhitespaceASCII, positions, output);
+  return TrimStringT(input, base::kWhitespaceASCII, positions, output);
 }
 
 // This function is only for backward-compatibility.
@@ -321,8 +320,8 @@ bool ContainsOnlyWhitespaceASCII(const std::string& str) {
   return true;
 }
 
-bool ContainsOnlyWhitespace(const string16& str) {
-  return str.find_first_not_of(kWhitespaceUTF16) == string16::npos;
+bool ContainsOnlyWhitespace(const base::string16& str) {
+  return str.find_first_not_of(base::kWhitespaceUTF16) == string16::npos;
 }
 
 template<typename STR>

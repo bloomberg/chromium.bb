@@ -221,9 +221,9 @@ static bool LoadScriptContent(UserScript::File* script_file,
   }
 
   // Remove BOM from the content.
-  std::string::size_type index = content.find(kUtf8ByteOrderMark);
+  std::string::size_type index = content.find(base::kUtf8ByteOrderMark);
   if (index == 0) {
-    script_file->set_content(content.substr(strlen(kUtf8ByteOrderMark)));
+    script_file->set_content(content.substr(strlen(base::kUtf8ByteOrderMark)));
   } else {
     script_file->set_content(content);
   }

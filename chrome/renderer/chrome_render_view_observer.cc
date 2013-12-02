@@ -958,8 +958,8 @@ void ChromeRenderViewObserver::CaptureText(WebFrame* frame,
   // partial word indexed at the end that might have been clipped. Therefore,
   // terminate the string at the last space to ensure no words are clipped.
   if (contents->size() == kMaxIndexChars) {
-    size_t last_space_index = contents->find_last_of(kWhitespaceUTF16);
-    if (last_space_index == std::wstring::npos)
+    size_t last_space_index = contents->find_last_of(base::kWhitespaceUTF16);
+    if (last_space_index == base::string16::npos)
       return;  // don't index if we got a huge block of text with no spaces
     contents->resize(last_space_index);
   }

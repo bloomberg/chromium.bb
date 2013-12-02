@@ -162,12 +162,12 @@ std::string TranslateQuery(const std::string& original_query) {
   // In order to handle non-ascii white spaces correctly, convert to UTF16.
   base::string16 query = UTF8ToUTF16(original_query);
   const base::string16 kDelimiter(
-      kWhitespaceUTF16 + base::string16(1, static_cast<char16>('"')));
+      base::kWhitespaceUTF16 + base::string16(1, static_cast<char16>('"')));
 
   std::string result;
-  for (size_t index = query.find_first_not_of(kWhitespaceUTF16);
+  for (size_t index = query.find_first_not_of(base::kWhitespaceUTF16);
        index != base::string16::npos;
-       index = query.find_first_not_of(kWhitespaceUTF16, index)) {
+       index = query.find_first_not_of(base::kWhitespaceUTF16, index)) {
     bool is_exclusion = (query[index] == '-');
     if (is_exclusion)
       ++index;

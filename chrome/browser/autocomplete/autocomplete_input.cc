@@ -121,12 +121,12 @@ std::string AutocompleteInput::TypeToString(Type type) {
 
 // static
 AutocompleteInput::Type AutocompleteInput::Parse(
-    const string16& text,
-    const string16& desired_tld,
+    const base::string16& text,
+    const base::string16& desired_tld,
     url_parse::Parsed* parts,
-    string16* scheme,
+    base::string16* scheme,
     GURL* canonicalized_url) {
-  const size_t first_non_white = text.find_first_not_of(kWhitespaceUTF16, 0);
+  size_t first_non_white = text.find_first_not_of(base::kWhitespaceUTF16, 0);
   if (first_non_white == string16::npos)
     return INVALID;  // All whitespace.
 

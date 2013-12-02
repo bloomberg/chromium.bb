@@ -61,7 +61,7 @@ class WebServerListener {
 // MockWebServer mock(9999, "0.0.0.0");
 // EXPECT_CALL(mock, Get(_, StrEq("/favicon.ico"), _)).WillRepeatedly(SendFast(
 //     "HTTP/1.1 404 Not Found"
-//     "text/html; charset=UTF-8", EmptyString()));
+//     "text/html; charset=UTF-8", std::string()));
 //
 // EXPECT_CALL(mock, Get(_, StrEq("/book"), _)).WillRepeatedly(Send(
 //     "HTTP/1.1 302 Found\r\n"

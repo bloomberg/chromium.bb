@@ -588,7 +588,7 @@ class DiskMountManagerImpl : public DiskMountManager {
   // Finds system path prefix from |system_path|.
   const std::string& FindSystemPathPrefix(const std::string& system_path) {
     if (system_path.empty())
-      return EmptyString();
+      return base::EmptyString();
     for (SystemPathPrefixSet::const_iterator it = system_path_prefixes_.begin();
          it != system_path_prefixes_.end();
          ++it) {
@@ -596,7 +596,7 @@ class DiskMountManagerImpl : public DiskMountManager {
       if (StartsWithASCII(system_path, prefix, true))
         return prefix;
     }
-    return EmptyString();
+    return base::EmptyString();
   }
 
   // Mount event change observers.

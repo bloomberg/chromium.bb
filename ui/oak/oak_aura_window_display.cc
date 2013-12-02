@@ -99,7 +99,7 @@ int OakAuraWindowDisplay::RowCount() {
 
 base::string16 OakAuraWindowDisplay::GetText(int row, int column_id) {
   if (!window_)
-    return EmptyString16();
+    return base::string16();
 
   base::string16 text;
   switch (row) {
@@ -153,7 +153,7 @@ base::string16 OakAuraWindowDisplay::GetText(int row, int column_id) {
       NOTREACHED();
       break;
   }
-  return EmptyString16();
+  return base::string16();
 }
 
 void OakAuraWindowDisplay::SetObserver(ui::TableModelObserver* observer) {

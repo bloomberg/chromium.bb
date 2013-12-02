@@ -13,7 +13,7 @@ namespace {
 
 void ParseArgsFromString(const std::string& command_line,
                          std::vector<std::string>* args) {
-  base::StringTokenizer tokenizer(command_line, kWhitespaceASCII);
+  base::StringTokenizer tokenizer(command_line, base::kWhitespaceASCII);
   tokenizer.set_quote_chars("\"");
   while (tokenizer.GetNext()) {
     std::string token;

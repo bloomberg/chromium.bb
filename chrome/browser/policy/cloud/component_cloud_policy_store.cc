@@ -104,7 +104,7 @@ const std::string& ComponentCloudPolicyStore::GetCachedHash(
   DCHECK(CalledOnValidThread());
   std::map<PolicyNamespace, std::string>::const_iterator it =
       cached_hashes_.find(ns);
-  return it == cached_hashes_.end() ? EmptyString() : it->second;
+  return it == cached_hashes_.end() ? base::EmptyString() : it->second;
 }
 
 void ComponentCloudPolicyStore::SetCredentials(const std::string& username,

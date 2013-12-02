@@ -49,7 +49,7 @@ TEST(ManifestHighlighterUnitTest, ManifestHighlighterUnitTest) {
       "    /* This is a tricky comment because it has brackets }]*/\n"
       "    \"tabs\"\n"
       "  ]";
-  ManifestHighlighter permissions(kManifest, "permissions", EmptyString());
+  ManifestHighlighter permissions(kManifest, "permissions", std::string());
   EXPECT_EQ(kPermissionsFeature, permissions.GetFeature());
 
   // Get a specific portion of a key.
@@ -70,14 +70,14 @@ TEST(ManifestHighlighterUnitTest, ManifestHighlighterUnitTest) {
   EXPECT_EQ(kMatchesFeature, matches.GetFeature());
 
   // If a feature isn't present, we should get an empty string.
-  ManifestHighlighter not_present(kManifest, "a_fake_feature", EmptyString());
-  EXPECT_EQ(EmptyString(), not_present.GetFeature());
+  ManifestHighlighter not_present(kManifest, "a_fake_feature", std::string());
+  EXPECT_EQ(std::string(), not_present.GetFeature());
 
   // If we request a specific portion of a key which is not found, we should
   // get an empty string.
   ManifestHighlighter specific_portion_not_present(
       kManifest, "permissions", "a_fake_feature");
-  EXPECT_EQ(EmptyString(), specific_portion_not_present.GetFeature());
+  EXPECT_EQ(std::string(), specific_portion_not_present.GetFeature());
 
   const char kEscapedQuotedFeature[] = "\"escaped_quoted\\\"\"";
   ManifestHighlighter escaped_quoted(
@@ -91,7 +91,7 @@ TEST(ManifestHighlighterUnitTest, ManifestHighlighterUnitTest) {
   // Check with non-ascii characters.
   const char kInternationalFeature[] = "\"international_key\": \"還是不要\"";
   ManifestHighlighter international_feature(
-      kManifest, "international_key", EmptyString());
+      kManifest, "international_key", std::string());
   EXPECT_EQ(kInternationalFeature, international_feature.GetFeature());
 }
 
@@ -111,10 +111,10 @@ TEST(SouceHighlighterUnitTest, SourceHighlighterUnitTest) {
   EXPECT_EQ(kNoNewlineSourceFile, full_line.GetFeature());
 
   SourceHighlighter line_zero(kNoNewlineSourceFile, 0u);
-  EXPECT_EQ(EmptyString(), line_zero.GetFeature());
+  EXPECT_EQ(std::string(), line_zero.GetFeature());
 
   SourceHighlighter out_of_bounds(kNoNewlineSourceFile, 2u);
-  EXPECT_EQ(EmptyString(), out_of_bounds.GetFeature());
+  EXPECT_EQ(std::string(), out_of_bounds.GetFeature());
 }
 
 }  // namespace extensions

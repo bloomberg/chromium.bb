@@ -105,7 +105,7 @@ string16 KeywordProvider::SplitKeywordFromInput(
     string16* remaining_input) {
   // Find end of first token.  The AutocompleteController has trimmed leading
   // whitespace, so we need not skip over that.
-  const size_t first_white(input.find_first_of(kWhitespaceUTF16));
+  const size_t first_white(input.find_first_of(base::kWhitespaceUTF16));
   DCHECK_NE(0U, first_white);
   if (first_white == string16::npos)
     return input;  // Only one token provided.
@@ -113,7 +113,8 @@ string16 KeywordProvider::SplitKeywordFromInput(
   // Set |remaining_input| to everything after the first token.
   DCHECK(remaining_input != NULL);
   const size_t remaining_start = trim_leading_whitespace ?
-      input.find_first_not_of(kWhitespaceUTF16, first_white) : first_white + 1;
+      input.find_first_not_of(base::kWhitespaceUTF16, first_white) :
+      first_white + 1;
 
   if (remaining_start < input.length())
     remaining_input->assign(input.begin() + remaining_start, input.end());

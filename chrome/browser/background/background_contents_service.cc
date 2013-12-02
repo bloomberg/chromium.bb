@@ -748,7 +748,7 @@ const string16& BackgroundContentsService::GetParentApplicationId(
     if (contents == it->second.contents)
       return it->first;
   }
-  return EmptyString16();
+  return base::EmptyString16();
 }
 
 void BackgroundContentsService::AddWebContents(

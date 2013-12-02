@@ -25,7 +25,7 @@ const char kKeyword[] = "keyword";
 const std::string& OmniboxInfo::GetKeyword(const Extension* extension) {
   OmniboxInfo* info = static_cast<OmniboxInfo*>(
       extension->GetManifestData(manifest_keys::kOmnibox));
-  return info ? info->keyword : EmptyString();
+  return info ? info->keyword : base::EmptyString();
 }
 
 OmniboxHandler::OmniboxHandler() {
