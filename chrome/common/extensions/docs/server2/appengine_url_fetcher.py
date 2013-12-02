@@ -5,7 +5,7 @@
 import base64
 import posixpath
 
-from appengine_wrappers import urlfetch
+from appengine_wrappers import GetAppVersion, urlfetch
 from future import Future
 
 
@@ -18,9 +18,12 @@ class _AsyncFetchDelegate(object):
 
 
 def _MakeHeaders(username, password):
-  headers = { 'Cache-Control': 'max-age=0' }
+  headers = {
+    'User-Agent': 'Chromium docserver %s' % GetAppVersion(),
+    'Cache-Control': 'max-age=0',
+  }
   if username is not None and password is not None:
-    headers['Authorization'] = 'Basic %s' % base64.encodestring(
+    headers['Authorization'] = 'Basic %s' % base64.b64encode(
         '%s:%s' % (username, password))
   return headers
 
