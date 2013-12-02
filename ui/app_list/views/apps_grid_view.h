@@ -20,7 +20,7 @@
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 #include "ui/base/dragdrop/drag_source_win.h"
 #endif
 
@@ -36,7 +36,7 @@ class WebView;
 
 namespace app_list {
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 class SynchronousDrag;
 #endif
 
@@ -371,7 +371,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Page the drag started on.
   int drag_start_page_;
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // Created when a drag is started (ie: drag exceeds the drag threshold), but
   // not Run() until supplied with a shortcut path.
   scoped_refptr<SynchronousDrag> synchronous_drag_;

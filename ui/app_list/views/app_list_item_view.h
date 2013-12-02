@@ -49,12 +49,17 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   gfx::ImageSkia GetDragImage();
   void OnDragEnded();
+  gfx::Point GetDragImageOffset();
 
   void SetAsAttemptedFolderTarget(bool is_target_folder);
 
   AppListItemModel* model() const { return model_; }
 
   const views::Label* title() const { return title_; }
+
+  // In a synchronous drag the item view isn't informed directly of the drag
+  // ending, so the runner of the drag should call this.
+  void OnSyncDragEnd();
 
  private:
   enum UIState {

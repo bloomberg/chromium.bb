@@ -22,6 +22,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -143,16 +144,25 @@ void AppListItemView::SetUIState(UIState state) {
   ui_state_ = state;
 
 #if defined(USE_AURA)
-  ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
   switch (ui_state_) {
     case UI_STATE_NORMAL:
       title_->SetVisible(!model_->is_installing());
       progress_bar_->SetVisible(model_->is_installing());
+      break;
+    case UI_STATE_DRAGGING:
+      title_->SetVisible(false);
+      progress_bar_->SetVisible(false);
+      break;
+    case UI_STATE_DROPPING_IN_FOLDER:
+      break;
+  }
+#if !defined(OS_WIN)
+  ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
+  switch (ui_state_) {
+    case UI_STATE_NORMAL:
       layer()->SetTransform(gfx::Transform());
       break;
     case UI_STATE_DRAGGING: {
-      title_->SetVisible(false);
-      progress_bar_->SetVisible(false);
       const gfx::Rect bounds(layer()->bounds().size());
       layer()->SetTransform(gfx::GetScaleTransform(
           bounds.CenterPoint(),
@@ -164,7 +174,8 @@ void AppListItemView::SetUIState(UIState state) {
   }
 
   SchedulePaint();
-#endif
+#endif  // !OS_WIN
+#endif  // USE_AURA
 }
 
 void AppListItemView::SetTouchDragging(bool touch_dragging) {
@@ -196,6 +207,11 @@ gfx::ImageSkia AppListItemView::GetDragImage() {
 void AppListItemView::OnDragEnded() {
   mouse_drag_timer_.Stop();
   SetUIState(UI_STATE_NORMAL);
+}
+
+gfx::Point AppListItemView::GetDragImageOffset() {
+  gfx::Point image = icon_->GetImageBounds().origin();
+  return gfx::Point(icon_->x() + image.x(), icon_->y() + image.y());
 }
 
 void AppListItemView::SetAsAttemptedFolderTarget(bool is_target_folder) {
@@ -440,6 +456,10 @@ void AppListItemView::OnGestureEvent(ui::GestureEvent* event) {
   }
   if (!event->handled())
     CustomButton::OnGestureEvent(event);
+}
+
+void AppListItemView::OnSyncDragEnd() {
+  SetUIState(UI_STATE_NORMAL);
 }
 
 }  // namespace app_list

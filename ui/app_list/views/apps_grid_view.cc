@@ -31,9 +31,12 @@
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
-#endif
+#if defined(OS_WIN)
+#include "ui/views/win/hwnd_util.h"
+#endif  // defined(OS_WIN)
+#endif  // defined(USE_AURA)
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/win/shortcut.h"
@@ -213,7 +216,7 @@ size_t MergeItems(AppListItemList* item_list,
 
 }  // namespace
 
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
 // Interprets drag events sent from Windows via the drag/drop API and forwards
 // them to AppsGridView.
 // On Windows, in order to have the OS perform the drag properly we need to
@@ -263,6 +266,7 @@ class SynchronousDrag : public ui::DragSourceWin {
 
     // Restore the dragged view to its original size.
     drag_view_->SetSize(drag_view_size);
+    drag_view_->OnSyncDragEnd();
 
     grid_view_->EndDrag(canceled_ || !IsCursorWithinGridView());
   }
@@ -287,12 +291,12 @@ class SynchronousDrag : public ui::DragSourceWin {
     drag_utils::SetDragImageOnDataObject(
         image,
         image.size(),
-        gfx::Vector2d(drag_view_offset_.x(), drag_view_offset_.y()),
+        drag_view_offset_ - drag_view_->GetDragImageOffset(),
         data);
   }
 
   HWND GetGridViewHWND() {
-    return grid_view_->GetWidget()->GetTopLevelWidget()->GetNativeView();
+    return views::HWNDForView(grid_view_);
   }
 
   bool IsCursorWithinGridView() {
@@ -320,7 +324,7 @@ class SynchronousDrag : public ui::DragSourceWin {
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousDrag);
 };
-#endif  // defined(OS_WIN) && !defined(USE_AURA)
+#endif  // defined(OS_WIN)
 
 AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
                            PaginationModel* pagination_model,
@@ -460,7 +464,7 @@ void AppsGridView::InitiateDrag(AppListItemView* view,
 }
 
 void AppsGridView::OnGotShortcutPath(const base::FilePath& path) {
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   // Drag may have ended before we get the shortcut path.
   if (!synchronous_drag_)
     return;
@@ -474,7 +478,7 @@ void AppsGridView::OnGotShortcutPath(const base::FilePath& path) {
 }
 
 void AppsGridView::StartSettingUpSynchronousDrag() {
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   if (!delegate_)
     return;
 
@@ -486,7 +490,7 @@ void AppsGridView::StartSettingUpSynchronousDrag() {
 }
 
 bool AppsGridView::RunSynchronousDrag() {
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   if (synchronous_drag_ && synchronous_drag_->CanRun()) {
     synchronous_drag_->Run();
     synchronous_drag_ = NULL;
@@ -497,7 +501,7 @@ bool AppsGridView::RunSynchronousDrag() {
 }
 
 void AppsGridView::CleanUpSynchronousDrag() {
-#if defined(OS_WIN) && !defined(USE_AURA)
+#if defined(OS_WIN)
   synchronous_drag_ = NULL;
 #endif
 }
@@ -1097,7 +1101,7 @@ void AppsGridView::AnimationBetweenRows(views::View* view,
 
 void AppsGridView::ExtractDragLocation(const ui::LocatedEvent& event,
                                        gfx::Point* drag_point) {
-#if defined(USE_AURA)
+#if defined(USE_AURA) && !defined(OS_WIN)
   // Use root location of |event| instead of location in |drag_view_|'s
   // coordinates because |drag_view_| has a scale transform and location
   // could have integer round error and causes jitter.
