@@ -533,10 +533,12 @@ CommandHandler.COMMANDS_['rename'] = {
     fileManager.initiateRename();
   },
   canExecute: function(event, fileManager) {
+    var allowRenamingWhileOffline =
+        fileManager.directoryModel.getCurrentRootType() === RootType.DRIVE;
     var selection = fileManager.getSelection();
     event.canExecute =
         !fileManager.isRenamingInProgress() &&
-        !fileManager.isOnReadonlyDirectory() &&
+        (!fileManager.isOnReadonlyDirectory() || allowRenamingWhileOffline) &&
         selection &&
         selection.totalCount == 1;
   }
