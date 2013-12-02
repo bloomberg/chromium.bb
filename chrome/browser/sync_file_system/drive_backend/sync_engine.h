@@ -50,12 +50,6 @@ class SyncEngine : public RemoteFileSyncService,
   static void AppendDependsOnFactories(
       std::set<BrowserContextKeyedServiceFactory*>* factories);
 
-  SyncEngine(const base::FilePath& base_dir,
-             base::SequencedTaskRunner* task_runner,
-             scoped_ptr<drive::DriveServiceInterface> drive_service,
-             scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
-             drive::DriveNotificationManager* notification_manager,
-             ExtensionServiceInterface* extension_service);
   virtual ~SyncEngine();
 
   void Initialize();
@@ -130,6 +124,14 @@ class SyncEngine : public RemoteFileSyncService,
 
  private:
   friend class SyncEngineTest;
+
+  SyncEngine(const base::FilePath& base_dir,
+             base::SequencedTaskRunner* task_runner,
+             scoped_ptr<drive::DriveServiceInterface> drive_service,
+             scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+             drive::DriveNotificationManager* notification_manager,
+             ExtensionServiceInterface* extension_service);
+
   void DoDisableApp(const std::string& app_id,
                     const SyncStatusCallback& callback);
   void DoEnableApp(const std::string& app_id,

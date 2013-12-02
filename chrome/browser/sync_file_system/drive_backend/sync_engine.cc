@@ -110,28 +110,6 @@ void SyncEngine::AppendDependsOnFactories(
   factories->insert(extensions::ExtensionSystemFactory::GetInstance());
 }
 
-SyncEngine::SyncEngine(
-    const base::FilePath& base_dir,
-    base::SequencedTaskRunner* task_runner,
-    scoped_ptr<drive::DriveServiceInterface> drive_service,
-    scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
-    drive::DriveNotificationManager* notification_manager,
-    ExtensionServiceInterface* extension_service)
-    : base_dir_(base_dir),
-      task_runner_(task_runner),
-      drive_service_(drive_service.Pass()),
-      drive_uploader_(drive_uploader.Pass()),
-      notification_manager_(notification_manager),
-      extension_service_(extension_service),
-      remote_change_processor_(NULL),
-      service_state_(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE),
-      should_check_remote_change_(true),
-      sync_enabled_(false),
-      conflict_resolution_policy_(CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN),
-      network_available_(false),
-      weak_ptr_factory_(this) {
-}
-
 SyncEngine::~SyncEngine() {
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
   drive_service_->RemoveObserver(this);
@@ -395,6 +373,28 @@ RemoteChangeProcessor* SyncEngine::GetRemoteChangeProcessor() {
 
 base::SequencedTaskRunner* SyncEngine::GetBlockingTaskRunner() {
   return task_runner_.get();
+}
+
+SyncEngine::SyncEngine(
+    const base::FilePath& base_dir,
+    base::SequencedTaskRunner* task_runner,
+    scoped_ptr<drive::DriveServiceInterface> drive_service,
+    scoped_ptr<drive::DriveUploaderInterface> drive_uploader,
+    drive::DriveNotificationManager* notification_manager,
+    ExtensionServiceInterface* extension_service)
+    : base_dir_(base_dir),
+      task_runner_(task_runner),
+      drive_service_(drive_service.Pass()),
+      drive_uploader_(drive_uploader.Pass()),
+      notification_manager_(notification_manager),
+      extension_service_(extension_service),
+      remote_change_processor_(NULL),
+      service_state_(REMOTE_SERVICE_TEMPORARY_UNAVAILABLE),
+      should_check_remote_change_(true),
+      sync_enabled_(false),
+      conflict_resolution_policy_(CONFLICT_RESOLUTION_POLICY_LAST_WRITE_WIN),
+      network_available_(false),
+      weak_ptr_factory_(this) {
 }
 
 void SyncEngine::DoDisableApp(const std::string& app_id,
