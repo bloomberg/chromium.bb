@@ -722,12 +722,16 @@ def _WritePolicyCode(f, policy):
           '      if (do_set) {\n')
   f.write('        base::Value* value = %s;\n' %
           (_CreateValue(policy.policy_type, 'policy_proto.value()')))
-  f.write('        ExternalDataFetcher* external_data_fetcher = %s;\n' %
+  # TODO(bartfab): |value| == NULL indicates that the policy value could not be
+  # parsed successfully. Surface such errors in the UI.
+  f.write('        if (value) {\n')
+  f.write('          ExternalDataFetcher* external_data_fetcher = %s;\n' %
           _CreateExternalDataFetcher(policy.policy_type, policy.name))
-  f.write('        map->Set(key::k%s, level, POLICY_SCOPE_USER,\n' %
+  f.write('          map->Set(key::k%s, level, POLICY_SCOPE_USER,\n' %
           policy.name)
-  f.write('                 value, external_data_fetcher);\n')
-  f.write('      }\n'
+  f.write('                   value, external_data_fetcher);\n'
+          '        }\n'
+          '      }\n'
           '    }\n'
           '  }\n')
 
