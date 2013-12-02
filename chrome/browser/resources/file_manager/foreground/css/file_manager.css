@@ -409,10 +409,6 @@ div.splitter {
   opacity: 1;
 }
 
-#directory-tree .tree-row > div.root-eject:hover {
-  opacity: 1;
-}
-
 #directory-tree .root-item[disabled] {
   opacity: 0.5;
   pointer-events: none;

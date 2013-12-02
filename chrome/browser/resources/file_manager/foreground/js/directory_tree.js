@@ -213,7 +213,6 @@ DirectoryItem.prototype.decorate = function(
       ' <span class="expand-icon"></span>' +
       ' <span class="icon"></span>' +
       ' <span class="label"></span>' +
-      ' <div class="root-eject"></div>' +
       '</div>' +
       '<div class="tree-children"></div>';
   this.setAttribute('role', 'treeitem');
@@ -238,17 +237,6 @@ DirectoryItem.prototype.decorate = function(
     icon.setAttribute('volume-type-icon', iconType);
   else
     icon.setAttribute('file-type-icon', 'folder');
-
-  var eject = this.querySelector('.root-eject');
-  eject.hidden = !PathUtil.isUnmountableByUser(path);
-  eject.addEventListener('click',
-      function(event) {
-        event.stopPropagation();
-        if (!PathUtil.isUnmountableByUser(path))
-          return;
-
-        tree.volumeManager.unmount(path, function() {}, function() {});
-      }.bind(this));
 
   if (this.parentTree_.contextMenuForSubitems)
     this.setContextMenu(this.parentTree_.contextMenuForSubitems);
