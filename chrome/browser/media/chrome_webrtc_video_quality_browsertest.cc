@@ -30,6 +30,14 @@
 #include "net/test/python_utils.h"
 #include "testing/perf/perf_test.h"
 
+// Temporarily disabled on Linux.
+// http://crbug.com/281268.
+#if defined(OS_LINUX)
+#define MAYBE_WebrtcVideoQualityBrowserTest DISABLED_WebrtcVideoQualityBrowserTest
+#else
+#define MAYBE_WebrtcVideoQualityBrowserTest WebrtcVideoQualityBrowserTest
+#endif
+
 static const base::FilePath::CharType kFrameAnalyzerExecutable[] =
 #if defined(OS_WIN)
     FILE_PATH_LITERAL("frame_analyzer.exe");
@@ -92,9 +100,9 @@ static const char kPyWebSocketPortNumber[] = "12221";
 // frame_analyzer. Both tools can be found under third_party/webrtc/tools. The
 // test also runs a stand alone Python implementation of a WebSocket server
 // (pywebsocket) and a barcode_decoder script.
-class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
+class MAYBE_WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
  public:
-  WebrtcVideoQualityBrowserTest()
+  MAYBE_WebrtcVideoQualityBrowserTest()
       : pywebsocket_server_(0),
         environment_(base::Environment::Create()) {}
 
@@ -323,7 +331,7 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
   scoped_ptr<base::Environment> environment_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
+IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcVideoQualityBrowserTest,
                        MANUAL_TestVGAVideoQuality) {
   ASSERT_TRUE(HasAllRequiredResources());
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
