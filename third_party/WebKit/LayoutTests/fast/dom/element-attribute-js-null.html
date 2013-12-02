@@ -335,14 +335,16 @@
                     type: 'HTMLImageElement',
                     elementToUse: document.createElement('img'),
                     attributes: [
-                        {name: 'name', expectedNull: ''},
-                        {name: 'align', expectedNull: ''},
-                        {name: 'alt', expectedNull: ''},
+                        {name: 'align', expectedNull: 'null'},
+                        {name: 'alt', expectedNull: 'null'},
                         {name: 'border', expectedNull: ''},
-                        {name: 'longDesc', expectedNull: ''},
-                        {name: 'src', expectedNull: ''},
-                        {name: 'useMap', expectedNull: ''},
-                        {name: 'lowsrc', expectedNull: ''}
+                        {name: 'crossOrigin', expectedNull: 'null'},
+                        {name: 'longDesc', expectedNull: 'null', isUrl: true},
+                        {name: 'lowsrc', expectedNull: 'null', isUrl: true},
+                        {name: 'name', expectedNull: 'null'},
+                        {name: 'src', expectedNull: 'null', isUrl: true},
+                        {name: 'srcset', expectedNull: 'null'},
+                        {name: 'useMap', expectedNull: 'null'}
                     ]
                 },
                 {

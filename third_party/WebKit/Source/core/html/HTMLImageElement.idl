@@ -23,26 +23,26 @@
 [
     NamedConstructor=Image([Default=Undefined] optional long width, [Default=Undefined] optional long height)
 ] interface HTMLImageElement : HTMLElement {
-    [Reflect, TreatNullAs=NullString] attribute DOMString name;
-    [Reflect, TreatNullAs=NullString] attribute DOMString align;
-    [Reflect, TreatNullAs=NullString] attribute DOMString alt;
+    [Reflect] attribute DOMString align;
+    [Reflect] attribute DOMString alt;
     [Reflect, TreatNullAs=NullString] attribute DOMString border;
-    [Reflect, TreatNullAs=NullString] attribute DOMString crossOrigin;
+    readonly attribute boolean complete;
+    [Reflect] attribute DOMString crossOrigin;
     attribute long height;
     [Reflect] attribute long hspace;
     [Reflect] attribute boolean isMap;
-    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString longDesc;
-    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
-    [Reflect, TreatNullAs=NullString, RuntimeEnabled=Srcset] attribute DOMString srcset;
-    [Reflect, TreatNullAs=NullString] attribute DOMString useMap;
+    [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString longDesc;
+    [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString lowsrc;
+    [Reflect] attribute DOMString name;
+    readonly attribute long naturalHeight;
+    readonly attribute long naturalWidth;
+    [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
+    [Reflect, RuntimeEnabled=Srcset] attribute DOMString srcset;
+    [Reflect] attribute DOMString useMap;
     [Reflect] attribute long vspace;
     attribute long width;
 
     // Extensions
-    readonly attribute boolean complete;
-    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString lowsrc;
-    readonly attribute long naturalHeight;
-    readonly attribute long naturalWidth;
     readonly attribute long x;
     readonly attribute long y;
 };
