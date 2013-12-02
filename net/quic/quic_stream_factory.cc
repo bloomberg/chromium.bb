@@ -261,8 +261,6 @@ QuicStreamFactory::QuicStreamFactory(
   config_.set_idle_connection_state_lifetime(
       QuicTime::Delta::FromSeconds(30),
       QuicTime::Delta::FromSeconds(30));
-  config_.set_server_initial_congestion_window(kDefaultInitialWindow,
-                                               kDefaultInitialWindow);
 
   cannoncial_suffixes_.push_back(string(".c.youtube.com"));
   cannoncial_suffixes_.push_back(string(".googlevideo.com"));
