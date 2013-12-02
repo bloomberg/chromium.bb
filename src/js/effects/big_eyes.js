@@ -47,7 +47,7 @@ camera.effects.BigEyes.prototype.randomize = function() {
  * @override
  */
 camera.effects.BigEyes.prototype.filterFrame = function(canvas) {
-  var face = this.tracker_.face;
+  var face = this.tracker_.getFaceForCanvas(canvas);
   var x = canvas.width * (face.x + (face.width / 2));
   var y = canvas.height * face.y;
 

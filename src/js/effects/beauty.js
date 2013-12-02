@@ -54,8 +54,9 @@ camera.effects.Beauty.prototype.randomize = function() {
  * @override
  */
 camera.effects.Beauty.prototype.filterFrame = function(canvas) {
+  var face = this.tracker_.getFaceForCanvas(canvas);
   var factor = 720 / canvas.width * 2;
-  var exponent = 50 * (1 - this.tracker_.face.width) * factor;
+  var exponent = 50 * (1 - face.width) * factor;
   canvas.denoise(exponent);
   canvas.brightnessContrast(this.brightness_, this.contrast_);
 };

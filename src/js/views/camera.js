@@ -67,6 +67,15 @@ camera.views.Camera = function(context, router) {
   this.previewInputCanvas_ = document.createElement('canvas');
 
   /**
+   * Canvas element with the current frame downsampled to small resolution, to
+   * be used by the head tracker.
+   *
+   * @type {Canvas}
+   * @private
+   */
+  this.trackerInputCanvas_ = document.createElement('canvas');
+
+  /**
    * @type {boolean}
    * @private
    */
@@ -153,7 +162,7 @@ camera.views.Camera = function(context, router) {
    * @type {camera.Tracker}
    * @private
    */
-  this.tracker_ = new camera.Tracker(this.previewInputCanvas_);
+  this.tracker_ = new camera.Tracker(this.trackerInputCanvas_);
 
   /**
    * Current frame.
@@ -319,6 +328,11 @@ camera.views.Camera = function(context, router) {
   this.video_.addEventListener('loadedmetadata',
       this.synchronizeBounds_.bind(this));
   this.synchronizeBounds_();
+
+  // Sets dimensions of the input canvas for the effects' preview on the ribbon.
+  // Keep in sync with CSS.
+  this.previewInputCanvas_.width = 80
+  this.previewInputCanvas_.height = 80;
 
   // Handle the 'Take' button.
   document.querySelector('#take-picture').addEventListener(
@@ -924,15 +938,15 @@ camera.views.Camera.prototype.synchronizeBounds_ = function() {
   // Add 1 pixel to avoid artifacts.
   var zoom = (width + 1) / this.video_.videoWidth;
 
-  // Set resolution of the low-resolution preview input canvas.
+  // Set resolution of the low-resolution tracker input canvas.
   if (videoRatio < 1.5) {
     // For resolutions: 800x600.
-    this.previewInputCanvas_.width = 120;
-    this.previewInputCanvas_.height = 90;
+    this.trackerInputCanvas_.width = 120;
+    this.trackerInputCanvas_.height = 90;
   } else {
     // For wide resolutions (any other).
-    this.previewInputCanvas_.width = 192;
-    this.previewInputCanvas_.height = 108;
+    this.trackerInputCanvas_.width = 192;
+    this.trackerInputCanvas_.height = 108;
   }
 };
 
@@ -1141,18 +1155,41 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
   var finishMeasuring = this.performanceMonitor_.startMeasuring();
 
   // Copy the video frame to the back buffer. The back buffer is low
-  // resolution, since it is only used by the effects' previews as by the
-  // head tracker.
+  // resolution, since it is only used by the effects' previews.
   if (this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
     var context = this.previewInputCanvas_.getContext('2d');
+    // Since the preview input canvas may have a different aspect ratio, cut
+    // the center of it.
+    var ratio =
+        this.previewInputCanvas_.width / this.previewInputCanvas_.height;
+    var scale = this.previewInputCanvas_.height / this.video_.height;
+    var sh = this.video_.height;
+    var sw = Math.round(this.video_.height * ratio);
+    var sy = 0;
+    var sx = Math.round(this.video_.width / 2 - sw / 2);
     context.drawImage(this.video_,
+                      sx,
+                      sy,
+                      sw,
+                      sh,
                       0,
                       0,
                       this.previewInputCanvas_.width,
                       this.previewInputCanvas_.height);
     this.previewCanvasTexture_.loadContentsOf(this.previewInputCanvas_);
-    if (!this.tracker_.busy)
-      this.tracker_.detect();
+  }
+
+  // Copy the video frame to the back buffer. The back buffer is low
+  // resolution, since it is only used by the head tracker.
+  if (!this.tracker_.busy) {
+    var context = this.trackerInputCanvas_.getContext('2d');
+    // Aspect ratios are required to be same.
+    context.drawImage(this.video_,
+                      0,
+                      0,
+                      this.trackerInputCanvas_.width,
+                      this.trackerInputCanvas_.height);
+    this.tracker_.detect();
   }
 
   // Update internal state of the tracker.
