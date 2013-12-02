@@ -2347,8 +2347,7 @@ TEST_F(FileUtilTest, NonExistentContentUriTest) {
   EXPECT_FALSE(PathExists(path));
   // Size should be smaller than 0.
   int64 size;
-  file_util::GetFileSize(path, &size);
-  EXPECT_GT(0, size);
+  EXPECT_FALSE(file_util::GetFileSize(path, &size));
 
   // We should not be able to read the file.
   int fd = OpenContentUriForRead(path);
