@@ -1,0 +1,134 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script>
+function initialize_timelineFrameController()
+{
+
+InspectorTest.dumpFrame = function(frame)
+{
+    var fieldsToDump = ["cpuTime", "duration", "startTime", "endTime", "id", "mainThreadFrameId", "isBackground", "timeByCategory", "other", "scripting"];
+    function formatFields(object)
+    {
+        var result = {};
+        for (var key in object) {
+            if (fieldsToDump.indexOf(key) < 0)
+                continue;
+            var value = object[key];
+            if (typeof value === "number")
+                value = Number(value.toFixed(7));
+            else if (typeof value === "object" && value)
+                value = formatFields(value);
+            result[key] = value;
+        }
+        return result;
+    }
+    InspectorTest.addObject(formatFields(frame));
+}
+
+}
+
+function test()
+{
+    var records = [
+        {"startTime": 999.990, "type":"BeginFrame", "thread":"implSide"},
+        {"startTime": 1000.000, "data":{},"endTime":1003.999, "type":"Program", "children":[
+            {"startTime":1000.001, "type":"BeginFrame", "data":{"id":"1"}},
+            {"startTime":1000.002, "endTime":1003.999, "type":"FunctionCall" }
+        ]},
+        {"startTime": 1005.000, "type":"ActivateLayerTree", "data":{"id":"1"},"thread":"implSide"},
+        {"startTime": 1015.990, "type":"BeginFrame", "thread":"implSide"},
+        {"startTime": 1016.000, "data":{}, "endTime":1019.999,"type":"Program", "children":[
+            {"startTime":1016.001, "type":"BeginFrame", "data":{"id":"2"}},
+            {"startTime":1016.002, "endTime":1019.999, "type":"FunctionCall" }
+        ]},
+        {"startTime": 1021.000, "type":"ActivateLayerTree", "data":{"id":"2"}, "thread":"implSide"},
+        {"startTime": 1031.990, "type":"BeginFrame", "thread":"implSide"},
+        {"startTime": 1032.000, "data":{}, "endTime":1035.999, "type":"Program", "children":[
+            {"startTime":1032.001, "type":"BeginFrame", "data":{"id":"3"}},
+            {"startTime":1032.002, "endTime":1035.999, "type":"FunctionCall" }
+        ]},
+        {"startTime": 1041.000, "type":"ActivateLayerTree", "data":{"id":"3"}, "thread":"implSide"},
+        {"startTime": 1047.990, "type":"BeginFrame", "thread":"implSide"},
+        {"startTime": 1048.000, "data":{}, "endTime":1091.999, "type":"Program", "children":[
+            {"startTime":1048.001, "type":"BeginFrame", "data":{"id":"4"}},
+            {"startTime":1048.002, "endTime":1091.999, "type":"FunctionCall" }
+        ]},
+        {"startTime": 1092.000, "type":"ActivateLayerTree", "data":{"id":"4"}, "thread":"implSide"},
+        {"startTime": 1063.990, "type":"BeginFrame", "thread":"implSide"},
+        {"startTime": 1079.990, "type":"BeginFrame", "thread":"implSide"},
+        {"startTime": 1095.990, "type":"BeginFrame", "thread":"implSide"},
+        {"startTime": 1100.000, "data":{}, "endTime":1103.999,"type":"Program", "children":[
+            {"startTime":1100.001, "type":"BeginFrame", "data":{"id":"5"}},
+            {"startTime":1100.002, "endTime":1103.999, "type":"FunctionCall" }
+        ]},
+        {"startTime": 1105.000, "type":"ActivateLayerTree", "data":{"id":"5"}, "thread":"implSide"},
+        {"startTime": 1115.990, "type":"BeginFrame", "thread":"implSide"},
+        {"startTime": 1116.000,"data":{}, "endTime":1119.999, "type":"Program", "children":[
+            {"startTime":1116.001, "type":"BeginFrame", "data":{"id":"6"}},
+            {"startTime":1116.002, "endTime":1119.999, "type":"FunctionCall" }
+        ]},
+        {"startTime": 1121.000, "type":"ActivateLayerTree", "data":{"id":"6"}, "thread":"implSide"},
+        {"startTime": 1131.990, "type":"BeginFrame", "thread":"implSide"},
+        {"startTime": 1132.000, "data":{}, "endTime":1135.999, "type":"Program", "children":[
+            {"startTime":1132.001, "type":"BeginFrame", "data":{"id":"7"}},
+            {"startTime":1132.002, "endTime":1135.999, "type":"FunctionCall" }
+        ]},
+        {"startTime": 1137.000, "type":"ActivateLayerTree", "data":{"id":"7"},"thread":"implSide"},
+        {"startTime": 1147.990, "type":"BeginFrame", "thread":"implSide"},
+        {"startTime": 1148.000, "data":{}, "endTime":1191.999, "type":"Program", "children":[
+            {"startTime":1148.001, "type":"BeginFrame", "data":{"id":"8"}},
+            {"startTime":1148.002, "endTime":1191.999, "type":"FunctionCall" }
+        ]},
+        {"startTime": 1192.000, "type":"ActivateLayerTree", "data":{"id":"8"}, "thread":"implSide"},
+        {"startTime": 1163.990, "type":"BeginFrame", "thread":"implSide"},
+        {"startTime": 1179.990, "type":"BeginFrame", "thread":"implSide"},
+        {"startTime": 1195.990, "type":"BeginFrame", "thread":"implSide"},
+        {"startTime": 1200.000, "data":{}, "endTime":1203.999,"type":"Program", "children":[
+            {"startTime":1200.001, "type":"BeginFrame", "data":{"id":"9"}},
+            {"startTime":1200.002, "endTime":1203.999, "type":"FunctionCall" }
+        ]},
+        {"startTime": 1205.000, "type":"ActivateLayerTree", "data":{"id":"9"}, "thread":"implSide"},
+        {"startTime": 1215.990, "type":"BeginFrame","thread":"implSide"},
+        {"startTime": 1216.000, "data":{}, "endTime":1219.999, "type":"Program", "children":[
+            {"startTime":1216.001, "type":"BeginFrame", "data":{"id":"10"}},
+            {"startTime":1216.002, "endTime":1219.999, "type":"FunctionCall" }
+        ]},
+        {"startTime": 1221.000, "type":"ActivateLayerTree", "data":{"id":"10"}, "thread":"implSide"},
+        {"startTime": 1231.990, "type":"BeginFrame","thread":"implSide"},
+        {"startTime": 1232.000, "data":{}, "endTime":1235.999, "type":"Program", "children":[
+            {"startTime":1232.001, "type":"BeginFrame","data":{"id":"11"}},
+            {"startTime":1232.002, "endTime":1235.999, "type":"FunctionCall" }
+        ]},
+        {"startTime": 1237.000, "type":"ActivateLayerTree", "data":{"id":"11"}, "thread":"implSide"},
+        {"startTime": 1247.990, "type":"BeginFrame", "thread":"implSide"},
+        {"startTime": 1248.000, "data":{}, "endTime":1291.999, "type":"Program", "children":[
+            {"startTime":1248.001, "type":"BeginFrame", "data":{"id":"12"}},
+            {"startTime":1248.002, "endTime":1291.999, "type":"FunctionCall" }
+        ]}
+    ];
+
+    InspectorTest.loadTimelineRecords(records);
+
+    var timelinePanel = WebInspector.panels.timeline;
+    var overview = timelinePanel._overviewPane;
+    overview.setMode(WebInspector.TimelineOverviewPane.Mode.Frames);
+    var frameOverview = overview._overviewControl;
+    InspectorTest.addResult("Main thread frames:");
+    frameOverview._mainThreadFrames.forEach(InspectorTest.dumpFrame, InspectorTest);
+    InspectorTest.addResult("Background frames:");
+    frameOverview._backgroundFrames.forEach(InspectorTest.dumpFrame, InspectorTest);
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Test timeline records coalescing
+</p>
+
+</body>
+</html>
