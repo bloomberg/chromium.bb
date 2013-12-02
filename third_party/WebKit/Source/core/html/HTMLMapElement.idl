@@ -20,6 +20,5 @@
 
 interface HTMLMapElement : HTMLElement {
     readonly attribute HTMLCollection areas;
-    [Reflect, TreatNullAs=NullString] attribute DOMString name;
+    [Reflect] attribute DOMString name;
 };
-

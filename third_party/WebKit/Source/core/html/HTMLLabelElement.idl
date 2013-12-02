@@ -20,7 +20,6 @@
 
 interface HTMLLabelElement : HTMLElement {
     readonly attribute HTMLFormElement form;
-    [Reflect=for, TreatNullAs=NullString] attribute DOMString htmlFor;
+    [Reflect=for] attribute DOMString htmlFor;
     readonly attribute HTMLElement control;
 };
-

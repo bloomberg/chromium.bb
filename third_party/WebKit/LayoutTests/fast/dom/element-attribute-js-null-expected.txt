@@ -158,10 +158,10 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLKeygenElement.keyty
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLKeygenElement.name]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLLabelElement.accessKey]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLLabelElement.htmlFor]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLabelElement.htmlFor]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLLegendElement.accessKey]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLLegendElement.align]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLegendElement.align]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLIElement.type]
 
@@ -174,7 +174,7 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLinkElement.rev]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLinkElement.target]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLinkElement.type]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLMapElement.name]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLMapElement.name]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLMetaElement.content]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLMetaElement.httpEquiv]
@@ -200,7 +200,7 @@ TEST SUCCEEDED: The value was the empty string. [tested HTMLObjectElement.width]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLOListElement.type]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLOptGroupElement.label]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLOptGroupElement.label]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLOptionElement.text]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLOptionElement.label]
@@ -233,8 +233,8 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLSourceElement.media
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLSourceElement.src]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLSourceElement.type]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLStyleElement.media]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLStyleElement.type]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLStyleElement.media]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLStyleElement.type]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLTableCaptionElement.align]
 
@@ -282,7 +282,7 @@ TEST SUCCEEDED: The value was the empty string. [tested HTMLTextAreaElement.acce
 TEST SUCCEEDED: The value was the empty string. [tested HTMLTextAreaElement.name]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLTextAreaElement.value]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLTitleElement.text]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTitleElement.text]
 
 TEST SUCCEEDED: The value was the string 'subtitles'. [tested HTMLTrackElement.kind]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTrackElement.label]
