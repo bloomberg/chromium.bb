@@ -233,6 +233,22 @@ class CONTENT_EXPORT RenderWidget
   void OnSwapBuffersComplete();
   void OnSwapBuffersAborted();
 
+  // Checks if the text input state and compose inline mode have been changed.
+  // If they are changed, the new value will be sent to the browser process.
+  void UpdateTextInputType();
+
+  // Checks if the selection bounds have been changed. If they are changed,
+  // the new value will be sent to the browser process.
+  void UpdateSelectionBounds();
+
+
+#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
+  // Checks if the composition range or composition character bounds have been
+  // changed. If they are changed, the new value will be sent to the browser
+  // process.
+  void UpdateCompositionInfo(bool should_update_range);
+#endif
+
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
@@ -428,10 +444,6 @@ class CONTENT_EXPORT RenderWidget
   void set_next_paint_is_restore_ack();
   void set_next_paint_is_repaint_ack();
 
-  // Checks if the text input state and compose inline mode have been changed.
-  // If they are changed, the new value will be sent to the browser process.
-  void UpdateTextInputType();
-
 #if defined(OS_ANDROID)
   // |show_ime_if_needed| should be true iff the update may cause the ime to be
   // displayed, e.g. after a tap on an input field on mobile.
@@ -442,10 +454,6 @@ class CONTENT_EXPORT RenderWidget
   void UpdateTextInputState(bool show_ime_if_needed, bool send_ime_ack);
 #endif
 
-  // Checks if the selection bounds have been changed. If they are changed,
-  // the new value will be sent to the browser process.
-  virtual void UpdateSelectionBounds();
-
   // Override point to obtain that the current input method state and caret
   // position.
   virtual ui::TextInputType GetTextInputType();
@@ -454,11 +462,6 @@ class CONTENT_EXPORT RenderWidget
       blink::WebTextInputType type);
 
 #if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
-  // Checks if the composition range or composition character bounds have been
-  // changed. If they are changed, the new value will be sent to the browser
-  // process.
-  void UpdateCompositionInfo(bool should_update_range);
-
   // Override point to obtain that the current composition character bounds.
   // In the case of surrogate pairs, the character is treated as two characters:
   // the bounds for first character is actual one, and the bounds for second

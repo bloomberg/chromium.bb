@@ -50,6 +50,7 @@ class HostDispatcherWrapper;
 class PepperPluginInstanceImpl;
 class PepperBroker;
 class RendererPpapiHostImpl;
+class RenderFrameImpl;
 class RenderViewImpl;
 struct WebPluginInfo;
 
@@ -139,7 +140,7 @@ class CONTENT_EXPORT PluginModule :
   const ppapi::PpapiPermissions& permissions() const { return permissions_; }
 
   PepperPluginInstanceImpl* CreateInstance(
-      RenderViewImpl* render_view,
+      RenderFrameImpl* render_frame,
       blink::WebPluginContainer* container,
       const GURL& plugin_url);
 

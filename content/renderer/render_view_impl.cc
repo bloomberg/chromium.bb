@@ -15,7 +15,6 @@
 #include "base/debug/alias.h"
 #include "base/debug/trace_event.h"
 #include "base/files/file_path.h"
-#include "base/i18n/char_iterator.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
@@ -871,10 +870,6 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
 #if defined(OS_WIN)
       focused_plugin_id_(-1),
 #endif
-#if defined(ENABLE_PLUGINS)
-      focused_pepper_plugin_(NULL),
-      pepper_last_mouse_event_target_(NULL),
-#endif
       enumeration_completion_id_(0),
       load_progress_tracker_(new LoadProgressTracker(this)),
       session_storage_namespace_id_(params->session_storage_namespace_id),
@@ -1163,113 +1158,9 @@ blink::WebView* RenderViewImpl::webview() const {
 }
 
 #if defined(ENABLE_PLUGINS)
-void RenderViewImpl::PepperInstanceCreated(PepperPluginInstanceImpl* instance) {
-  active_pepper_instances_.insert(instance);
-}
-
-void RenderViewImpl::PepperInstanceDeleted(PepperPluginInstanceImpl* instance) {
-  active_pepper_instances_.erase(instance);
-
-  if (pepper_last_mouse_event_target_ == instance)
-    pepper_last_mouse_event_target_ = NULL;
-  if (focused_pepper_plugin_ == instance)
-    PepperFocusChanged(instance, false);
-}
-
-void RenderViewImpl::PepperDidChangeCursor(
-    PepperPluginInstanceImpl* instance,
-    const blink::WebCursorInfo& cursor) {
-  // Update the cursor appearance immediately if the requesting plugin is the
-  // one which receives the last mouse event. Otherwise, the new cursor won't be
-  // picked up until the plugin gets the next input event. That is bad if, e.g.,
-  // the plugin would like to set an invisible cursor when there isn't any user
-  // input for a while.
-  if (instance == pepper_last_mouse_event_target_)
-    didChangeCursor(cursor);
-}
-
-void RenderViewImpl::PepperDidReceiveMouseEvent(
-    PepperPluginInstanceImpl* instance) {
-  pepper_last_mouse_event_target_ = instance;
-}
-
-void RenderViewImpl::PepperFocusChanged(PepperPluginInstanceImpl* instance,
-                                        bool focused) {
-  if (focused)
-    focused_pepper_plugin_ = instance;
-  else if (focused_pepper_plugin_ == instance)
-    focused_pepper_plugin_ = NULL;
-
-  UpdateTextInputType();
-  UpdateSelectionBounds();
-}
-
-void RenderViewImpl::PepperTextInputTypeChanged(
-    PepperPluginInstanceImpl* instance) {
-  if (instance != focused_pepper_plugin_)
-    return;
-
-  UpdateTextInputType();
-  if (renderer_accessibility_)
-    renderer_accessibility_->FocusedNodeChanged(WebNode());
-}
-
-void RenderViewImpl::PepperCaretPositionChanged(
-    PepperPluginInstanceImpl* instance) {
-  if (instance != focused_pepper_plugin_)
-    return;
-  UpdateSelectionBounds();
-}
-
-void RenderViewImpl::PepperCancelComposition(
-    PepperPluginInstanceImpl* instance) {
-  if (instance != focused_pepper_plugin_)
-    return;
-  Send(new ViewHostMsg_ImeCancelComposition(routing_id()));;
-#if defined(OS_MACOSX) || defined(OS_WIN) || defined(USE_AURA)
-  UpdateCompositionInfo(true);
-#endif
-}
-
-void RenderViewImpl::PepperSelectionChanged(
-    PepperPluginInstanceImpl* instance) {
-  if (instance != focused_pepper_plugin_)
-    return;
-  SyncSelectionIfRequired();
-}
-
-RenderWidgetFullscreenPepper* RenderViewImpl::CreatePepperFullscreenContainer(
-    PepperPluginInstanceImpl* plugin) {
-  GURL active_url;
-  if (webview() && webview()->mainFrame())
-    active_url = GURL(webview()->mainFrame()->document().url());
-  RenderWidgetFullscreenPepper* widget = RenderWidgetFullscreenPepper::Create(
-      routing_id_, plugin, active_url, screen_info_);
-  widget->show(blink::WebNavigationPolicyIgnore);
-  return widget;
-}
-
 void RenderViewImpl::PepperPluginCreated(RendererPpapiHost* host) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_,
                     DidCreatePepperPlugin(host));
-}
-
-bool RenderViewImpl::GetPepperCaretBounds(gfx::Rect* rect) {
-  if (!focused_pepper_plugin_)
-    return false;
-  *rect = focused_pepper_plugin_->GetCaretBounds();
-  return true;
-}
-
-bool RenderViewImpl::IsPepperAcceptingCompositionEvents() const {
-  if (!focused_pepper_plugin_)
-    return false;
-  return focused_pepper_plugin_->IsPluginAcceptingCompositionEvents();
-}
-
-void RenderViewImpl::PluginCrashed(const base::FilePath& plugin_path,
-                                   base::ProcessId plugin_pid) {
-  Send(new ViewHostMsg_CrashedPlugin(routing_id_, plugin_path, plugin_pid));
 }
 
 void RenderViewImpl::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
@@ -1303,20 +1194,6 @@ bool RenderViewImpl::GetPluginInfo(const GURL& url,
       routing_id_, url, page_url, mime_type, &found, plugin_info,
       actual_mime_type));
   return found;
-}
-
-void RenderViewImpl::SimulateImeSetComposition(
-    const string16& text,
-    const std::vector<blink::WebCompositionUnderline>& underlines,
-    int selection_start,
-    int selection_end) {
-  OnImeSetComposition(text, underlines, selection_start, selection_end);
-}
-
-void RenderViewImpl::SimulateImeConfirmComposition(
-    const string16& text,
-    const gfx::Range& replacement_range) {
-  OnImeConfirmComposition(text, replacement_range, false);
 }
 
 #if defined(OS_WIN)
@@ -4252,17 +4129,13 @@ bool RenderViewImpl::ShouldUpdateSelectionTextFromContextMenuParams(
 void RenderViewImpl::reportFindInPageMatchCount(int request_id,
                                                 int count,
                                                 bool final_update) {
-  // TODO(jam): switch PepperPluginInstanceImpl to take a RenderFrame
-  main_render_frame_->reportFindInPageMatchCount(
-      request_id, count, final_update);
+  NOTREACHED();
 }
 
 void RenderViewImpl::reportFindInPageSelection(int request_id,
                                                int active_match_ordinal,
                                                const WebRect& selection_rect) {
-  // TODO(jam): switch PepperPluginInstanceImpl to take a RenderFrame
-  main_render_frame_->reportFindInPageSelection(
-      request_id, active_match_ordinal, selection_rect);
+  NOTREACHED();
 }
 
 void RenderViewImpl::requestStorageQuota(
@@ -4575,8 +4448,9 @@ void RenderViewImpl::SyncSelectionIfRequired() {
   size_t offset;
   gfx::Range range;
 #if defined(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_) {
-    focused_pepper_plugin_->GetSurroundingText(&text, &range);
+  if (main_render_frame_->focused_pepper_plugin()) {
+    main_render_frame_->focused_pepper_plugin()->GetSurroundingText(
+        &text, &range);
     offset = 0;  // Pepper API does not support offset reporting.
     // TODO(kinaba): cut as needed.
   } else
@@ -5550,44 +5424,13 @@ void RenderViewImpl::OnResize(const ViewMsg_Resize_Params& params) {
 
 void RenderViewImpl::DidInitiatePaint() {
 #if defined(ENABLE_PLUGINS)
-  // Notify all instances that we painted.  The same caveats apply as for
-  // ViewFlushedPaint regarding instances closing themselves, so we take
-  // similar precautions.
-  PepperPluginSet plugins = active_pepper_instances_;
-  for (PepperPluginSet::iterator i = plugins.begin(); i != plugins.end(); ++i) {
-    if (active_pepper_instances_.find(*i) != active_pepper_instances_.end())
-      (*i)->ViewInitiatedPaint();
-  }
+  main_render_frame_->DidInitiatePaint();
 #endif
 }
 
 void RenderViewImpl::DidFlushPaint() {
 #if defined(ENABLE_PLUGINS)
-  // Notify all instances that we flushed. This will call into the plugin, and
-  // we it may ask to close itself as a result. This will, in turn, modify our
-  // set, possibly invalidating the iterator. So we iterate on a copy that
-  // won't change out from under us.
-  PepperPluginSet plugins = active_pepper_instances_;
-  for (PepperPluginSet::iterator i = plugins.begin(); i != plugins.end(); ++i) {
-    // The copy above makes sure our iterator is never invalid if some plugins
-    // are destroyed. But some plugin may decide to close all of its views in
-    // response to a paint in one of them, so we need to make sure each one is
-    // still "current" before using it.
-    //
-    // It's possible that a plugin was destroyed, but another one was created
-    // with the same address. In this case, we'll call ViewFlushedPaint on that
-    // new plugin. But that's OK for this particular case since we're just
-    // notifying all of our instances that the view flushed, and the new one is
-    // one of our instances.
-    //
-    // What about the case where a new one is created in a callback at a new
-    // address and we don't issue the callback? We're still OK since this
-    // callback is used for flush callbacks and we could not have possibly
-    // started a new paint for the new plugin while processing a previous paint
-    // for an existing one.
-    if (active_pepper_instances_.find(*i) != active_pepper_instances_.end())
-      (*i)->ViewFlushedPaint();
-  }
+  main_render_frame_->DidFlushPaint();
 #endif
 
   // If the RenderWidget is closing down then early-exit, otherwise we'll crash.
@@ -5631,16 +5474,8 @@ PepperPluginInstanceImpl* RenderViewImpl::GetBitmapForOptimizedPluginPaint(
     gfx::Rect* clip,
     float* scale_factor) {
 #if defined(ENABLE_PLUGINS)
-  for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
-       i != active_pepper_instances_.end(); ++i) {
-    PepperPluginInstanceImpl* instance = *i;
-    // In Flash fullscreen , the plugin contents should be painted onto the
-    // fullscreen widget instead of the web page.
-    if (!instance->FlashIsFullscreenOrPending() &&
-        instance->GetBitmapForOptimizedPluginPaint(paint_bounds, dib, location,
-                                                   clip, scale_factor))
-      return *i;
-  }
+  return main_render_frame_->GetBitmapForOptimizedPluginPaint(
+      paint_bounds, dib, location, clip, scale_factor);
 #endif
   return NULL;
 }
@@ -5749,14 +5584,7 @@ bool RenderViewImpl::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
       gfx::Point(event.globalX, event.globalY);
 
 #if defined(ENABLE_PLUGINS)
-  // This method is called for every mouse event that the render view receives.
-  // And then the mouse event is forwarded to WebKit, which dispatches it to the
-  // event target. Potentially a Pepper plugin will receive the event.
-  // In order to tell whether a plugin gets the last mouse event and which it
-  // is, we set |pepper_last_mouse_event_target_| to NULL here. If a plugin gets
-  // the event, it will notify us via DidReceiveMouseEvent() and set itself as
-  // |pepper_last_mouse_event_target_|.
-  pepper_last_mouse_event_target_ = NULL;
+  main_render_frame_->WillHandleMouseEvent(event);
 #endif
 
   // If the mouse is locked, only the current owner of the mouse lock can
@@ -5805,10 +5633,7 @@ void RenderViewImpl::OnWasHidden() {
     webview()->setVisibilityState(visibilityState(), false);
 
 #if defined(ENABLE_PLUGINS)
-  // Inform PPAPI plugins that their page is no longer visible.
-  for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
-       i != active_pepper_instances_.end(); ++i)
-    (*i)->PageVisibilityChanged(false);
+  main_render_frame_->PageVisibilityChanged(false);
 
 #if defined(OS_MACOSX)
   // Inform NPAPI plugins that their container is no longer visible.
@@ -5833,10 +5658,7 @@ void RenderViewImpl::OnWasShown(bool needs_repainting) {
     webview()->setVisibilityState(visibilityState(), false);
 
 #if defined(ENABLE_PLUGINS)
-  // Inform PPAPI plugins that their page is visible.
-  for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
-       i != active_pepper_instances_.end(); ++i)
-    (*i)->PageVisibilityChanged(true);
+  main_render_frame_->PageVisibilityChanged(true);
 
 #if defined(OS_MACOSX)
   // Inform NPAPI plugins that their container is now visible.
@@ -5879,10 +5701,7 @@ void RenderViewImpl::OnSetFocus(bool enable) {
       (*plugin_it)->SetContentAreaFocus(enable);
     }
   }
-  // Notify all Pepper plugins.
-  for (PepperPluginSet::iterator i = active_pepper_instances_.begin();
-       i != active_pepper_instances_.end(); ++i)
-    (*i)->SetContentAreaFocus(enable);
+  main_render_frame_->OnSetFocus(enable);
 #endif
   // Notify all BrowserPlugins of the RenderView's focus state.
   if (browser_plugin_manager_.get())
@@ -5895,30 +5714,9 @@ void RenderViewImpl::OnImeSetComposition(
     int selection_start,
     int selection_end) {
 #if defined(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_) {
-    // When a PPAPI plugin has focus, we bypass WebKit.
-    if (!IsPepperAcceptingCompositionEvents()) {
-      pepper_composition_text_ = text;
-    } else {
-      // TODO(kinaba) currently all composition events are sent directly to
-      // plugins. Use DOM event mechanism after WebKit is made aware about
-      // plugins that support composition.
-      // The code below mimics the behavior of WebCore::Editor::setComposition.
-
-      // Empty -> nonempty: composition started.
-      if (pepper_composition_text_.empty() && !text.empty())
-        focused_pepper_plugin_->HandleCompositionStart(string16());
-      // Nonempty -> empty: composition canceled.
-      if (!pepper_composition_text_.empty() && text.empty())
-        focused_pepper_plugin_->HandleCompositionEnd(string16());
-      pepper_composition_text_ = text;
-      // Nonempty: composition is ongoing.
-      if (!pepper_composition_text_.empty()) {
-        focused_pepper_plugin_->HandleCompositionUpdate(
-            pepper_composition_text_, underlines, selection_start,
-            selection_end);
-      }
-    }
+  if (main_render_frame_->focused_pepper_plugin()) {
+    main_render_frame_->OnImeSetComposition(
+        text, underlines, selection_start, selection_end);
     return;
   }
 
@@ -5959,45 +5757,9 @@ void RenderViewImpl::OnImeConfirmComposition(
     const gfx::Range& replacement_range,
     bool keep_selection) {
 #if defined(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_) {
-    // When a PPAPI plugin has focus, we bypass WebKit.
-    // Here, text.empty() has a special meaning. It means to commit the last
-    // update of composition text (see
-    // RenderWidgetHost::ImeConfirmComposition()).
-    const string16& last_text = text.empty() ? pepper_composition_text_ : text;
-
-    // last_text is empty only when both text and pepper_composition_text_ is.
-    // Ignore it.
-    if (last_text.empty())
-      return;
-
-    if (!IsPepperAcceptingCompositionEvents()) {
-      base::i18n::UTF16CharIterator iterator(&last_text);
-      int32 i = 0;
-      while (iterator.Advance()) {
-        blink::WebKeyboardEvent char_event;
-        char_event.type = blink::WebInputEvent::Char;
-        char_event.timeStampSeconds = base::Time::Now().ToDoubleT();
-        char_event.modifiers = 0;
-        char_event.windowsKeyCode = last_text[i];
-        char_event.nativeKeyCode = last_text[i];
-
-        const int32 char_start = i;
-        for (; i < iterator.array_pos(); ++i) {
-          char_event.text[i - char_start] = last_text[i];
-          char_event.unmodifiedText[i - char_start] = last_text[i];
-        }
-
-        if (webwidget())
-          webwidget()->handleInputEvent(char_event);
-      }
-    } else {
-      // Mimics the order of events sent by WebKit.
-      // See WebCore::Editor::setComposition() for the corresponding code.
-      focused_pepper_plugin_->HandleCompositionEnd(last_text);
-      focused_pepper_plugin_->HandleTextInput(last_text);
-    }
-    pepper_composition_text_.clear();
+  if (main_render_frame_->focused_pepper_plugin()) {
+    main_render_frame_->OnImeConfirmComposition(
+        text, replacement_range, keep_selection);
     return;
   }
 #if defined(OS_WIN)
@@ -6058,20 +5820,21 @@ void RenderViewImpl::SetDeviceScaleFactor(float device_scale_factor) {
 
 ui::TextInputType RenderViewImpl::GetTextInputType() {
 #if defined(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_)
-    return focused_pepper_plugin_->text_input_type();
+  if (main_render_frame_->focused_pepper_plugin())
+    return main_render_frame_->focused_pepper_plugin()->text_input_type();
 #endif
   return RenderWidget::GetTextInputType();
 }
 
 void RenderViewImpl::GetSelectionBounds(gfx::Rect* start, gfx::Rect* end) {
 #if defined(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_) {
+  if (main_render_frame_->focused_pepper_plugin()) {
     // TODO(kinaba) http://crbug.com/101101
     // Current Pepper IME API does not handle selection bounds. So we simply
     // use the caret position as an empty range for now. It will be updated
     // after Pepper API equips features related to surrounding text retrieval.
-    gfx::Rect caret = focused_pepper_plugin_->GetCaretBounds();
+    gfx::Rect caret =
+        main_render_frame_->focused_pepper_plugin()->GetCaretBounds();
     *start = caret;
     *end = caret;
     return;
@@ -6087,7 +5850,7 @@ void RenderViewImpl::GetCompositionCharacterBounds(
   bounds->clear();
 
 #if defined(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_) {
+  if (main_render_frame_->focused_pepper_plugin()) {
     return;
   }
 #endif
@@ -6119,7 +5882,7 @@ void RenderViewImpl::GetCompositionCharacterBounds(
 
 void RenderViewImpl::GetCompositionRange(gfx::Range* range) {
 #if defined(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_) {
+  if (main_render_frame_->focused_pepper_plugin()) {
     return;
   }
 #endif
@@ -6129,8 +5892,8 @@ void RenderViewImpl::GetCompositionRange(gfx::Range* range) {
 
 bool RenderViewImpl::CanComposeInline() {
 #if defined(ENABLE_PLUGINS)
-  if (focused_pepper_plugin_)
-    return IsPepperAcceptingCompositionEvents();
+  if (main_render_frame_->focused_pepper_plugin())
+    return main_render_frame_->IsPepperAcceptingCompositionEvents();
 #endif
   return true;
 }
@@ -6659,10 +6422,6 @@ void RenderViewImpl::SetMediaStreamClientForTesting(
   DCHECK(!media_stream_client_);
   DCHECK(!web_user_media_client_);
   media_stream_client_ = media_stream_client;
-}
-
-bool RenderViewImpl::IsPluginFullscreenAllowed() {
-  return renderer_preferences_.plugin_fullscreen_allowed;
 }
 
 void RenderViewImpl::OnReleaseDisambiguationPopupDIB(

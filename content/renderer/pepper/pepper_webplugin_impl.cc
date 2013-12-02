@@ -85,7 +85,7 @@ blink::WebPluginContainer* PepperWebPluginImpl::container() const {
 bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
   // The plugin delegate may have gone away.
   instance_ = init_data_->module->CreateInstance(
-      init_data_->render_view.get(), container, init_data_->url);
+      init_data_->render_view->main_render_frame(), container, init_data_->url);
   if (!instance_.get())
     return false;
 

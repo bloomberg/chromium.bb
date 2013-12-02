@@ -551,11 +551,11 @@ bool PluginModule::SupportsInterface(const char* name) {
 }
 
 PepperPluginInstanceImpl* PluginModule::CreateInstance(
-    RenderViewImpl* render_view,
+    RenderFrameImpl* render_frame,
     blink::WebPluginContainer* container,
     const GURL& plugin_url) {
   PepperPluginInstanceImpl* instance = PepperPluginInstanceImpl::Create(
-      render_view, this, container, plugin_url);
+      render_frame, this, container, plugin_url);
   if (!instance) {
     LOG(WARNING) << "Plugin doesn't support instance interface, failing.";
     return NULL;

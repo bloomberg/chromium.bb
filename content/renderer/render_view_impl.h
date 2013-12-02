@@ -111,7 +111,6 @@ class WebTouchEvent;
 class WebURLRequest;
 class WebUserMediaClient;
 struct WebActiveWheelFlingParameters;
-struct WebCursorInfo;
 struct WebDateTimeChooserParams;
 struct WebFileChooserParams;
 struct WebFindOptions;
@@ -153,9 +152,7 @@ class RenderViewObserver;
 class RenderViewTest;
 class RendererAccessibility;
 class RendererDateTimePicker;
-class RendererPpapiHost;
 class RendererWebColorChooserImpl;
-class RenderWidgetFullscreenPepper;
 class SpeechRecognitionDispatcher;
 class StatsCollectionController;
 class WebPluginDelegateProxy;
@@ -222,12 +219,22 @@ class CONTENT_EXPORT RenderViewImpl
     return webkit_preferences_;
   }
 
+  const RendererPreferences& renderer_preferences() const {
+    return renderer_preferences_;
+  }
+
   void set_send_content_state_immediately(bool value) {
     send_content_state_immediately_ = value;
   }
 
+  RenderFrameImpl* main_render_frame() { return main_render_frame_.get(); }
+
   MediaStreamDispatcher* media_stream_dispatcher() {
     return media_stream_dispatcher_;
+  }
+
+  RendererAccessibility* renderer_accessibility() {
+    return renderer_accessibility_;
   }
 
   MouseLockDispatcher* mouse_lock_dispatcher() {
@@ -268,60 +275,8 @@ class CONTENT_EXPORT RenderViewImpl
   // Plugin-related functions --------------------------------------------------
 
 #if defined(ENABLE_PLUGINS)
-  // Indicates that the given instance has been created.
-  void PepperInstanceCreated(PepperPluginInstanceImpl* instance);
-
-  // Indicates that the given instance is being destroyed. This is called from
-  // the destructor, so it's important that the instance is not dereferenced
-  // from this call.
-  void PepperInstanceDeleted(PepperPluginInstanceImpl* instance);
-
-  // Notifies that |instance| has changed the cursor.
-  // This will update the cursor appearance if it is currently over the plugin
-  // instance.
-  void PepperDidChangeCursor(PepperPluginInstanceImpl* instance,
-                             const blink::WebCursorInfo& cursor);
-
-  // Notifies that |instance| has received a mouse event.
-  void PepperDidReceiveMouseEvent(PepperPluginInstanceImpl* instance);
-
-  // Notification that the given plugin is focused or unfocused.
-  void PepperFocusChanged(PepperPluginInstanceImpl* instance, bool focused);
-
-  // Informs the render view that a PPAPI plugin has changed text input status.
-  void PepperTextInputTypeChanged(PepperPluginInstanceImpl* instance);
-  void PepperCaretPositionChanged(PepperPluginInstanceImpl* instance);
-
-  // Cancels current composition.
-  void PepperCancelComposition(PepperPluginInstanceImpl* instance);
-
-  // Informs the render view that a PPAPI plugin has changed selection.
-  void PepperSelectionChanged(PepperPluginInstanceImpl* instance);
-
-  // Creates a fullscreen container for a pepper plugin instance.
-  RenderWidgetFullscreenPepper* CreatePepperFullscreenContainer(
-      PepperPluginInstanceImpl* plugin);
-
   // Notification that a PPAPI plugin has been created.
   void PepperPluginCreated(RendererPpapiHost* host);
-
-  // Retrieves the current caret position if a PPAPI plugin has focus.
-  bool GetPepperCaretBounds(gfx::Rect* rect);
-
-  bool IsPepperAcceptingCompositionEvents() const;
-
-  // Notification that the given plugin has crashed.
-  void PluginCrashed(const base::FilePath& plugin_path,
-                     base::ProcessId plugin_pid);
-
-  // Simulates IME events for testing purpose.
-  void SimulateImeSetComposition(
-      const string16& text,
-      const std::vector<blink::WebCompositionUnderline>& underlines,
-      int selection_start,
-      int selection_end);
-  void SimulateImeConfirmComposition(const string16& text,
-                                     const gfx::Range& replacement_range);
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // Informs the render view that the given plugin has gained or lost focus.
@@ -394,9 +349,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Overrides the MediaStreamClient used when creating MediaStream players.
   // Must be called before any players are created.
   void SetMediaStreamClientForTesting(MediaStreamClient* media_stream_client);
-
-  // Determines whether plugins are allowed to enter fullscreen mode.
-  bool IsPluginFullscreenAllowed();
 
   // IPC::Listener implementation ----------------------------------------------
 
@@ -1466,24 +1418,6 @@ class CONTENT_EXPORT RenderViewImpl
 #if defined(OS_WIN)
   // The ID of the focused NPAPI plug-in.
   int focused_plugin_id_;
-#endif
-
-#if defined(ENABLE_PLUGINS)
-  typedef std::set<PepperPluginInstanceImpl*> PepperPluginSet;
-  PepperPluginSet active_pepper_instances_;
-
-  // Whether or not the focus is on a PPAPI plugin
-  PepperPluginInstanceImpl* focused_pepper_plugin_;
-
-  // Current text input composition text. Empty if no composition is in
-  // progress.
-  string16 pepper_composition_text_;
-
-  // The plugin instance that received the last mouse event. It is set to NULL
-  // if the last mouse event went to elements other than Pepper plugins.
-  // |pepper_last_mouse_event_target_| is not owned by this class. We can know
-  // about when it is destroyed via InstanceDeleted().
-  PepperPluginInstanceImpl* pepper_last_mouse_event_target_;
 #endif
 
   // Misc ----------------------------------------------------------------------

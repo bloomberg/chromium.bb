@@ -52,7 +52,7 @@ void TextInputClientObserver::OnCharacterIndexForPoint(gfx::Point point) {
 void TextInputClientObserver::OnFirstRectForCharacterRange(gfx::Range range) {
   gfx::Rect rect;
 #if defined(ENABLE_PLUGINS)
-  if (!render_view_impl_->GetPepperCaretBounds(&rect))
+  if (!render_view_impl_->main_render_frame()->GetPepperCaretBounds(&rect))
 #endif
   {
     blink::WebFrame* frame = webview()->focusedFrame();

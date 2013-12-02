@@ -140,7 +140,7 @@ RenderView* RendererPpapiHostImpl::GetRenderViewForInstance(
 
   // Since we're the embedder, we can make assumptions about the helper on
   // the instance and get back to our RenderView.
-  return instance_object->render_view();
+  return instance_object->render_frame()->render_view();
 }
 
 bool RendererPpapiHostImpl::IsValidInstance(PP_Instance instance) const {

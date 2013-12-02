@@ -84,7 +84,7 @@ int32_t PPB_Broker_Impl::Connect(
 
   RenderThreadImpl::current()->Send(
       new ViewHostMsg_RequestPpapiBrokerPermission(
-          plugin_instance->render_view()->GetRoutingID(),
+          plugin_instance->render_frame()->render_view()->GetRoutingID(),
           routing_id_,
           GetDocumentUrl(),
           broker_path));
