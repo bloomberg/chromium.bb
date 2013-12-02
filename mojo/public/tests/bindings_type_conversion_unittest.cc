@@ -83,6 +83,11 @@ TEST_F(BindingsTypeConversionTest, String) {
   EXPECT_EQ(std::string(kText), c.To<std::string>());
 }
 
+TEST_F(BindingsTypeConversionTest, String_Null) {
+  String a;
+  EXPECT_EQ(std::string(), a.To<std::string>());
+}
+
 TEST_F(BindingsTypeConversionTest, String_ShallowCopy) {
   AllocationScope scope;
 
@@ -129,6 +134,15 @@ TEST_F(BindingsTypeConversionTest, CustomSimilarityTraits) {
   EXPECT_EQ(rect.height(), rect2.height());
 }
 
+TEST_F(BindingsTypeConversionTest, CustomSimilarityTraits_Array_Null) {
+  Array<test_structs::Rect> rects;
+
+  std::vector<RedmondRect> redmond_rects =
+      rects.To<std::vector<RedmondRect> >();
+
+  EXPECT_TRUE(redmond_rects.empty());
+}
+
 TEST_F(BindingsTypeConversionTest, CustomSimilarityTraits_Array) {
   AllocationScope scope;
 
@@ -171,7 +185,7 @@ TEST_F(BindingsTypeConversionTest, CustomSimilarityTraits_Array) {
   }
 }
 
-TEST_F(BindingsTypeConversionTest, CustomSimilarityTraits_Array2) {
+TEST_F(BindingsTypeConversionTest, CustomSimilarityTraits_Nested) {
   AllocationScope scope;
 
   RedmondNamedRegion redmond_region;

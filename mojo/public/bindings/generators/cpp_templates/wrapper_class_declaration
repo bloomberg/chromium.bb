@@ -18,6 +18,11 @@ class $CLASS {
   }
 
   template <typename U>
+  operator U() const {
+    return To<U>();
+  }
+
+  template <typename U>
   U To() const {
     return mojo::SimilarityTraits<$CLASS,U>::CopyTo(*this);
   }

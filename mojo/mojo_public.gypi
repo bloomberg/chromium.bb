@@ -58,6 +58,7 @@
         '..'
       ],
       'sources': [
+        'public/bindings/lib/bindings.cc',
         'public/bindings/lib/bindings.h',
         'public/bindings/lib/bindings_internal.h',
         'public/bindings/lib/bindings_serialization.cc',

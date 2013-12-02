@@ -39,6 +39,11 @@ class Array {
   }
 
   template <typename U>
+  operator U() const {
+    return To<U>();
+  }
+
+  template <typename U>
   U To() const {
     return SimilarityTraits<Array<T>,U>::CopyTo(*this);
   }
@@ -95,14 +100,8 @@ typedef Array<char> String;
 template <>
 class SimilarityTraits<String, std::string> {
  public:
-  static String CopyFrom(const std::string& input, Buffer* buf) {
-    String::Builder result(input.size(), buf);
-    memcpy(&result[0], input.data(), input.size());
-    return result.Finish();
-  }
-  static std::string CopyTo(const String& input) {
-    return std::string(&input[0], &input[0] + input.size());
-  }
+  static String CopyFrom(const std::string& input, Buffer* buf);
+  static std::string CopyTo(const String& input);
 };
 
 template <size_t N>
@@ -127,12 +126,7 @@ class SimilarityTraits<String, const char[N]> {
 template <>
 class SimilarityTraits<String, const char*> {
  public:
-  static String CopyFrom(const char* input, Buffer* buf) {
-    size_t size = strlen(input);
-    String::Builder result(size, buf);
-    memcpy(&result[0], input, size);
-    return result.Finish();
-  }
+  static String CopyFrom(const char* input, Buffer* buf);
   // NOTE: |CopyTo| explicitly not implemented since String is not null
   // terminated (and may have embedded null bytes).
 };
@@ -147,13 +141,15 @@ class SimilarityTraits<Array<T>, std::vector<E> > {
     return result.Finish();
   }
   static std::vector<E> CopyTo(const Array<T>& input) {
-    std::vector<E> result(input.size());
-    for (size_t i = 0; i < input.size(); ++i)
-      result[i] = SimilarityTraits<T, E>::CopyTo(input[i]);
+    std::vector<E> result;
+    if (!input.is_null()) {
+      result.resize(input.size());
+      for (size_t i = 0; i < input.size(); ++i)
+        result[i] = SimilarityTraits<T, E>::CopyTo(input[i]);
+    }
     return result;
   }
 };
-
 
 }  // namespace mojo
 

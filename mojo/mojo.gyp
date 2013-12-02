@@ -146,6 +146,8 @@
       'sources': [
         'common/bindings_support_impl.cc',
         'common/bindings_support_impl.h',
+        'common/common_similarity_traits.cc',
+        'common/common_similarity_traits.h',
         'common/handle_watcher.cc',
         'common/handle_watcher.h',
         'common/message_pump_mojo.cc',
@@ -168,11 +170,14 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_message_loop_tests',
         '../testing/gtest.gyp:gtest',
+        'mojo_bindings',
         'mojo_common_lib',
+        'mojo_public_test_support',
         'mojo_run_all_unittests',
         'mojo_system',
       ],
       'sources': [
+        'common/common_similarity_traits_unittest.cc',
         'common/handle_watcher_unittest.cc',
         'common/message_pump_mojo_unittest.cc',
       ],
