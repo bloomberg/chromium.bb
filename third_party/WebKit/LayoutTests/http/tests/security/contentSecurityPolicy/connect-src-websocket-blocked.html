@@ -16,7 +16,7 @@ function log(msg)
 }
 
 try {
-    var ws = new WebSocket("ws://localhost:8880/websocket/tests/hybi/echo");
+    var ws = new WebSocket("ws://localhost:8880/echo");
     log("Fail");
 } catch(e) {
     log("Pass");

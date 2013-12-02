@@ -40,7 +40,7 @@ def web_socket_do_extra_handshake(request):
     request.extra_headers.append(('Set-Cookie',
         'WK-WebSocket-test-domain-fail=1; Domain=example.com' + max_age))
     request.extra_headers.append(('Set-Cookie',
-        'WK-WebSocket-test-path-pass=1; Path=/websocket/tests/hybi' + max_age))
+        'WK-WebSocket-test-path-pass=1; Path=/' + max_age))
     request.extra_headers.append(('Set-Cookie',
         'WK-WebSocket-test-path-fail=1; Path=/foo/bar' + max_age))
     request.extra_headers.append(('Set-Cookie',

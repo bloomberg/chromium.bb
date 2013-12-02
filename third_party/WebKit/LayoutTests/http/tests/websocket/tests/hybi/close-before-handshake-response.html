@@ -11,7 +11,7 @@ description("Test if WebSocket fires error and close event when handshake is not
 
 window.jsTestIsAsync = true;
 
-var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/handshake-fail-by-just-close");
+var ws = new WebSocket("ws://127.0.0.1:8880/handshake-fail-by-just-close");
 ws.onopen = function() {
   testFailed("Unexpected open event");
 };

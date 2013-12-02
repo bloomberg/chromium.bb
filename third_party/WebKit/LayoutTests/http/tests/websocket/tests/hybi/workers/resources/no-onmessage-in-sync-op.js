@@ -1,4 +1,4 @@
-var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/workers/resources/no-onmessage-in-sync-op");
+var ws = new WebSocket("ws://127.0.0.1:8880/workers/resources/no-onmessage-in-sync-op");
 
 var events = [];
 // Message receipt should be recorded after bufferedAmount and send() calls.

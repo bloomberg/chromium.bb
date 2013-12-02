@@ -11,7 +11,7 @@ description("Test whether WebSocket handles zero length text frame correctly.");
 
 window.jsTestIsAsync = true;
 
-var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/zero-length-text");
+var ws = new WebSocket("ws://127.0.0.1:8880/zero-length-text");
 var closeEvent;
 var sequence = 0;
 var receivedText = "";

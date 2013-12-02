@@ -11,7 +11,7 @@ description("Make sure event handler called serially.");
 
 window.jsTestIsAsync = true;
 
-var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/send2");
+var ws = new WebSocket("ws://127.0.0.1:8880/send2");
 
 ws.onopen = function()
 {

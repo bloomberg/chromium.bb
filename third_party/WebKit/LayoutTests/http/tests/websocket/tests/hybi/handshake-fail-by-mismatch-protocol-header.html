@@ -11,7 +11,7 @@ description("Test whether WebSocket handshake fails if the server sends mismatch
 
 window.jsTestIsAsync = true;
 
-var url = "ws://localhost:8880/websocket/tests/hybi/handshake-fail-by-mismatch-protocol-header";
+var url = "ws://localhost:8880/handshake-fail-by-mismatch-protocol-header";
 var closeEvent;
 var ws;
 var protocolCase = ["", "MatchProtocol", ["MatchProtocol1", "MatchProtocol2"]];

@@ -19,7 +19,7 @@ function endTest()
     finishJSTest();
 };
 
-var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/echo");
+var ws = new WebSocket("ws://127.0.0.1:8880/echo");
 ws.onclose = function() {
     countCloseEvent += 1;
 };

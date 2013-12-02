@@ -20,7 +20,7 @@ function createArrayBufferContainingAllDistinctBytes()
     return array.buffer;
 }
 
-var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/workers/resources/binary-frames");
+var ws = new WebSocket("ws://127.0.0.1:8880/workers/resources/binary-frames");
 if (ws.binaryType === "blob")
     postMessage("PASS: ws.binaryType is \"blob\"");
 else

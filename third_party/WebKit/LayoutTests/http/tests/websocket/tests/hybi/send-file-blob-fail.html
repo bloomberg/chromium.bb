@@ -84,7 +84,7 @@ function didRemoveFile()
 {
     debug("File deleted.");
     fileEntry = null; // To prevent the file from getting deleted again.
-    var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/echo");
+    var ws = new WebSocket("ws://127.0.0.1:8880/echo");
     ws.onopen = function()
     {
         ws.send(fileObject); // This operation should fail and the connection should be aborted.

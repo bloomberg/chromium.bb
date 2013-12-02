@@ -19,7 +19,7 @@ function endTest()
     finishJSTest();
 }
 
-var url = "ws://localhost:8880/websocket/tests/hybi/protocol-test?protocol=sub-protocol";
+var url = "ws://localhost:8880/protocol-test?protocol=sub-protocol";
 var ws = new WebSocket(url, "sub-protocol");
 
 ws.onopen = function()

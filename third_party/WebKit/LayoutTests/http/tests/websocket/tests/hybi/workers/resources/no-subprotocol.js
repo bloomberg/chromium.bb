@@ -1,4 +1,4 @@
-var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/workers/resources/simple");
+var ws = new WebSocket("ws://127.0.0.1:8880/workers/resources/simple");
 
 if (ws.protocol === "")
     postMessage("PASS: ws.protocol is equal to \"\"");

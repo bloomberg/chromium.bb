@@ -1,11 +1,11 @@
 <html>
 <head>
 <script src="inspector-test.js"></script>
-<script src="../../../../js-test-resources/js-test.js"></script>
+<script src="/js-test-resources/js-test.js"></script>
 <script>
 var ws;
 function sendMessages() {
-    ws = new WebSocket("ws://localhost:8000/websocket/tests/hybi/does_not_exist");
+    ws = new WebSocket("ws://localhost:8000/does_not_exist");
     ws.onclose = function()
     {
         debug("Closed.");

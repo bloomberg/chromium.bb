@@ -17,7 +17,7 @@ var totalTestSize = 4;
 
 function doTest(curTest)
 {
-    var url = "ws://127.0.0.1:8880/websocket/tests/hybi/invalid-encode-length?case=" + payload_extended[curTest];
+    var url = "ws://127.0.0.1:8880/invalid-encode-length?case=" + payload_extended[curTest];
     var ws = new WebSocket(url);
 
     debug("Case " + payload_extended[curTest] + ": Test started.");

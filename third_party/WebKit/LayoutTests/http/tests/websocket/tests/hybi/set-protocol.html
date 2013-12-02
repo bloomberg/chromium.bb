@@ -11,7 +11,7 @@ description("WebSocket.protocol should not be modified.");
 
 window.jsTestIsAsync = true;
 
-var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/accept-first-subprotocol", "chat");
+var ws = new WebSocket("ws://127.0.0.1:8880/accept-first-subprotocol", "chat");
 var closeEvent;
 
 shouldBeEqualToString("ws.protocol", "");

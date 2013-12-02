@@ -21,7 +21,7 @@ var closeEvent;
 
 function doTest(curTestIndex)
 {
-    var url = "ws://localhost:8880/websocket/tests/hybi/reserved-bits?" + compressedAndBitNumberParameters[curTestIndex];
+    var url = "ws://localhost:8880/reserved-bits?" + compressedAndBitNumberParameters[curTestIndex];
     var ws = new WebSocket(url);
 
     debug("Case " + compressedAndBitNumberParameters[curTestIndex] + ": Test started.");

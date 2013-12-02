@@ -26,7 +26,7 @@ function doTest(opcode)
 
     debug("Opcode " + opcode + ": Test started.");
 
-    var url = "ws://localhost:8880/websocket/tests/hybi/reserved-opcodes?opcode=" + opcode;
+    var url = "ws://localhost:8880/reserved-opcodes?opcode=" + opcode;
     var ws = new WebSocket(url);
 
     ws.onopen = function()

@@ -43,7 +43,7 @@ function doTest(queryIndex)
     var query = queries[queryIndex];
     debug("Testing query: \"" + query + "\"");
 
-    var url = "ws://localhost:8880/websocket/tests/hybi/deflate-frame?" + query;
+    var url = "ws://localhost:8880/deflate-frame?" + query;
     ws = new WebSocket(url);
     messageIndex = 0;
 

@@ -17,7 +17,7 @@ function endTest()
     finishJSTest();
 }
 
-var ws = new WebSocket("ws://localhost:8880/websocket/tests/hybi/send");
+var ws = new WebSocket("ws://localhost:8880/send");
 
 var FIRST_MESSAGE_TO_SEND = {
     toString: function() { throw "Pickles"; }

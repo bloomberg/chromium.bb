@@ -73,7 +73,7 @@ var closeEvent;
 function didGetFile(file)
 {
     debug("Got File object.");
-    var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/send-file-blob");
+    var ws = new WebSocket("ws://127.0.0.1:8880/send-file-blob");
     ws.onopen = function()
     {
         ws.send(file);

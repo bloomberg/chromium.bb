@@ -34,7 +34,7 @@ function createAllBytesValue()
     return array.buffer;
 }
 
-var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/fragmented-binary-frames");
+var ws = new WebSocket("ws://127.0.0.1:8880/fragmented-binary-frames");
 shouldBeEqualToString("ws.binaryType", "blob");
 
 var closeEvent;

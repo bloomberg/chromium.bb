@@ -10,7 +10,7 @@ description('Test that the browser doesn\'t crash for lots of Set-Cookies in a W
 
 window.jsTestIsAsync = true;
 
-var ws = new WebSocket('ws://127.0.0.1:8880/websocket/tests/hybi/cookie-flood');
+var ws = new WebSocket('ws://127.0.0.1:8880/cookie-flood');
 
 ws.onopen = function () {
     debug('A WebSocket connection is opened.');

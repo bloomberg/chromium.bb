@@ -22,7 +22,7 @@ function createArrayBufferViewContainingAllDistinctBytes()
     return array;
 }
 
-var url = "ws://127.0.0.1:8880/websocket/tests/hybi/workers/resources/check-binary-messages";
+var url = "ws://127.0.0.1:8880/workers/resources/check-binary-messages";
 var ws = new WebSocket(url);
 
 ws.onopen = function()

@@ -19,7 +19,7 @@ function runTests()
             postMessage("PASS: worker: WebSocket exists");
         else
             postMessage("PASS: worker: no WebSocket");
-        ws = new WebSocket('ws://localhost:8880/websocket/tests/hybi/workers/resources/simple');
+        ws = new WebSocket('ws://localhost:8880/workers/resources/simple');
         ws.onopen = function() {
             postMessage("PASS: worker: Connected.");
         };

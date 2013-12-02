@@ -21,7 +21,7 @@ var messages = [
     "Goodbye"
 ];
 
-ws = new WebSocket("ws://localhost:8880/websocket/tests/hybi/deflate-frame?set_bfinal");
+ws = new WebSocket("ws://localhost:8880/deflate-frame?set_bfinal");
 
 ws.onopen = function(event)
 {

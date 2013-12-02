@@ -11,7 +11,7 @@ description("Receive unmasked WebSocket frames.");
 
 window.jsTestIsAsync = true;
 
-var url = "ws://localhost:8880/websocket/tests/hybi/unmasked-frames";
+var url = "ws://localhost:8880/unmasked-frames";
 var ws = new WebSocket(url);
 var closeEvent;
 var expectedMessages = ["First message", "Fragmented message", ""];

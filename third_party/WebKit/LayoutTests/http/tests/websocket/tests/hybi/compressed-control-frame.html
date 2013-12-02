@@ -11,7 +11,7 @@ description("Test whether a compressed control frame is rejected");
 
 window.jsTestIsAsync = true;
 
-var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/compressed-control-frame");
+var ws = new WebSocket("ws://127.0.0.1:8880/compressed-control-frame");
 var closeEvent;
 
 ws.onopen = function()

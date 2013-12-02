@@ -15,7 +15,7 @@ var frameDiv;
 var closedSocket;
 var closeCode;
 
-var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/close-on-unload");
+var ws = new WebSocket("ws://127.0.0.1:8880/close-on-unload");
 ws.onopen = function()
 {
     debug("PASS ws on master document is ready.");

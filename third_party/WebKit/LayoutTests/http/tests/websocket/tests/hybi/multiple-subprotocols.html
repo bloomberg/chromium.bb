@@ -11,7 +11,7 @@ description("Test WebSocket subprotocol negotiation.");
 
 window.jsTestIsAsync = true;
 
-var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/protocol-test?protocol=superchat", ["chat", "superchat"]);
+var ws = new WebSocket("ws://127.0.0.1:8880/protocol-test?protocol=superchat", ["chat", "superchat"]);
 var closeEvent;
 var receivedMessage;
 

@@ -1,4 +1,4 @@
-var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/workers/resources/protocol-test?protocol=superchat", ["chat", "superchat"]);
+var ws = new WebSocket("ws://127.0.0.1:8880/workers/resources/protocol-test?protocol=superchat", ["chat", "superchat"]);
 
 if (ws.protocol === "")
     postMessage("PASS: ws.protocol is equal to \"\"");

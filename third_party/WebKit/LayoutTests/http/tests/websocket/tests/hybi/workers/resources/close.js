@@ -49,7 +49,7 @@ var invalidAccessErr = "InvalidAccessError";
 var syntaxErr = "SyntaxError";
 var normalClosure = 1000;
 var abnormalClosure = 1006;
-var url = "ws://127.0.0.1:8880/websocket/tests/hybi/close";
+var url = "ws://127.0.0.1:8880/close";
 var ws;
 var testId;
 

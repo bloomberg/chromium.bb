@@ -1,11 +1,11 @@
 <html>
 <head>
 <script src="../inspector-test.js"></script>
-<script src="../../../../../js-test-resources/js-test.js"></script>
+<script src="/js-test-resources/js-test.js"></script>
 <script>
 var ws;
 function sendMessages() {
-    ws = new WebSocket("ws://localhost:8880/websocket/tests/hybi/echo");
+    ws = new WebSocket("ws://localhost:8880/echo");
     ws.onopen = function()
     {
         debug("Connected.");

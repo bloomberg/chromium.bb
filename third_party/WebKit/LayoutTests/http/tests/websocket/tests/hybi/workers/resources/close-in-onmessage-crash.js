@@ -1,7 +1,7 @@
 function runTests()
 {
     try {
-        var url = 'ws://localhost:8880/websocket/tests/hybi/workers/resources/simple';
+        var url = 'ws://localhost:8880/workers/resources/simple';
         var ws = new WebSocket(url);
 
         ws.onopen = function()

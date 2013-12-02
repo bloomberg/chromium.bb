@@ -1,0 +1,3 @@
+# websocket handler map file.
+# request to '/' will be handled by echo-host_wsh.py
+/ /echo-host

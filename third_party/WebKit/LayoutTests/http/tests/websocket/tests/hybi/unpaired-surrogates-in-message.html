@@ -11,7 +11,7 @@ description("Checks whether unpaired surrogates are replaced with U+FFFD.");
 
 window.jsTestIsAsync = true;
 
-var ws = new WebSocket("ws://localhost:8880/websocket/tests/hybi/echo");
+var ws = new WebSocket("ws://localhost:8880/echo");
 var message;
 
 ws.onopen = function()

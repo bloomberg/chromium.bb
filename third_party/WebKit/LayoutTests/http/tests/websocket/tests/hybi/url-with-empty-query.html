@@ -11,10 +11,10 @@ description("Make sure handshake with URL with empty query components success.")
 
 window.jsTestIsAsync = true;
 
-var url = "ws://127.0.0.1:8880/websocket/tests/hybi/echo-path?";
+var url = "ws://127.0.0.1:8880/echo-path?";
 var handshake_success = false;
 var path;
-var expected_path = "/websocket/tests/hybi/echo-path?";
+var expected_path = "/echo-path?";
 
 function endTest()
 {

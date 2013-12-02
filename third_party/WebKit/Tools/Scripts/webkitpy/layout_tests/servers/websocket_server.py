@@ -93,11 +93,11 @@ class PyWebSocket(http_server.Lighttpd):
         # The port objects are supposed to abstract this.
         if self._root:
             self._layout_tests = self._filesystem.abspath(self._root)
-            self._web_socket_tests = self._filesystem.abspath(self._filesystem.join(self._root, 'http', 'tests', 'websocket', 'tests'))
+            self._web_socket_tests = self._filesystem.abspath(self._filesystem.join(self._root, 'http', 'tests', 'websocket', 'tests', 'hybi'))
         else:
             try:
                 self._layout_tests = self._port_obj.layout_tests_dir()
-                self._web_socket_tests = self._filesystem.join(self._layout_tests, 'http', 'tests', 'websocket', 'tests')
+                self._web_socket_tests = self._filesystem.join(self._layout_tests, 'http', 'tests', 'websocket', 'tests', 'hybi')
             except:
                 self._web_socket_tests = None
 
@@ -126,10 +126,9 @@ class PyWebSocket(http_server.Lighttpd):
             python_interp, '-u', pywebsocket_script,
             '--server-host', 'localhost',
             '--port', str(self._port),
-            # FIXME: Don't we have a self._port_obj.layout_test_path?
-            '--document-root', self._filesystem.join(self._layout_tests, 'http', 'tests'),
+            '--document-root', self._web_socket_tests,
             '--scan-dir', self._web_socket_tests,
-            '--cgi-paths', '/websocket/tests',
+            '--cgi-paths', '/',
             '--log-file', error_log,
         ]
 

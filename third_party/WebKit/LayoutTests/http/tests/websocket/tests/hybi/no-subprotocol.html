@@ -11,7 +11,7 @@ description("WebSocket's protocol attribute should be an empty string if the ser
 
 window.jsTestIsAsync = true;
 
-var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/simple");
+var ws = new WebSocket("ws://127.0.0.1:8880/simple");
 var closeEvent;
 
 shouldBeEqualToString("ws.protocol", "");

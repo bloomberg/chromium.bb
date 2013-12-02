@@ -11,7 +11,7 @@ description("WebSocket: Test server-initiated close.");
 
 window.jsTestIsAsync = true;
 
-var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/server-close");
+var ws = new WebSocket("ws://127.0.0.1:8880/server-close");
 var closeEvent;
 
 ws.onopen = function()

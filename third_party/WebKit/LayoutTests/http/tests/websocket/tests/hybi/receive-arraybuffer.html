@@ -33,7 +33,7 @@ function createArrayBufferContainingAllDistinctBytes()
     return array.buffer;
 }
 
-var ws = new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/binary-frames");
+var ws = new WebSocket("ws://127.0.0.1:8880/binary-frames");
 ws.binaryType = "arraybuffer";
 shouldBeEqualToString("ws.binaryType", "arraybuffer");
 
