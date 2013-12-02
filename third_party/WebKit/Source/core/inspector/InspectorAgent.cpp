@@ -176,12 +176,5 @@ KURL InspectorAgent::inspectedURL() const
     return m_inspectedPage->mainFrame()->document()->url();
 }
 
-KURL InspectorAgent::inspectedURLWithoutFragment() const
-{
-    KURL url = inspectedURL();
-    url.removeFragmentIdentifier();
-    return url;
-}
-
 } // namespace WebCore
 

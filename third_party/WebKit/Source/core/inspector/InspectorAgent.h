@@ -67,7 +67,6 @@ public:
     void reset(ErrorString*);
 
     KURL inspectedURL() const;
-    KURL inspectedURLWithoutFragment() const;
 
     InspectorFrontend* frontend() const { return m_frontend; }
 
