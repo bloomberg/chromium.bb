@@ -908,7 +908,7 @@ void SVGSMILElement::resolveFirstInterval()
     }
 }
 
-bool SVGSMILElement::resolveNextInterval(bool notifyDependents)
+bool SVGSMILElement::resolveNextInterval()
 {
     SMILTime begin;
     SMILTime end;
@@ -918,8 +918,7 @@ bool SVGSMILElement::resolveNextInterval(bool notifyDependents)
     if (!begin.isUnresolved() && begin != m_intervalBegin) {
         m_intervalBegin = begin;
         m_intervalEnd = end;
-        if (notifyDependents)
-            notifyDependentsIntervalChanged();
+        notifyDependentsIntervalChanged();
         m_nextProgressTime = min(m_nextProgressTime, m_intervalBegin);
         return true;
     }
@@ -1001,7 +1000,7 @@ void SVGSMILElement::checkRestart(SMILTime elapsed)
     }
 
     if (elapsed >= m_intervalEnd)
-        resolveNextInterval(true);
+        resolveNextInterval();
 }
 
 void SVGSMILElement::seekToIntervalCorrespondingToTime(SMILTime elapsed)
@@ -1023,14 +1022,14 @@ void SVGSMILElement::seekToIntervalCorrespondingToTime(SMILTime elapsed)
         if (nextBegin < m_intervalEnd && elapsed >= nextBegin) {
             // End current interval, and start a new interval from the 'nextBegin' time.
             m_intervalEnd = nextBegin;
-            if (!resolveNextInterval(false))
+            if (!resolveNextInterval())
                 break;
             continue;
         }
 
         // If the desired 'elapsed' time is past the current interval, advance to the next.
         if (elapsed >= m_intervalEnd) {
-            if (!resolveNextInterval(false))
+            if (!resolveNextInterval())
                 break;
             continue;
         }
@@ -1108,6 +1107,9 @@ bool SVGSMILElement::progress(SMILTime elapsed, SVGSMILElement* resultElement, b
     ASSERT(resultElement);
     ASSERT(m_timeContainer);
     ASSERT(m_isWaitingForFirstInterval || m_intervalBegin.isFinite());
+
+    if (!m_conditionsConnected)
+        connectConditions();
 
     if (!m_intervalBegin.isFinite()) {
         ASSERT(m_activeState == Inactive);
