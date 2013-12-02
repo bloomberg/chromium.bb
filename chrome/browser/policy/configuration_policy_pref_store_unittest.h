@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/policy/configuration_policy_handler_list.h"
+#include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_service_impl.h"
-#include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {

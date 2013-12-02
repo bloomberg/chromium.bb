@@ -23,7 +23,7 @@
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/browser_policy_connector.h"
-#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
 #include "policy/policy_constants.h"
 #endif

@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "components/policy/core/common/configuration_policy_provider.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
 #include "components/policy/core/common/policy_namespace.h"
 
 namespace policy {

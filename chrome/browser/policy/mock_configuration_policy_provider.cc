@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/mock_configuration_policy_provider.h"
 
 #include <string>
 

@@ -16,7 +16,7 @@
 #include "chrome/browser/policy/cloud/cloud_policy_core.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/component_cloud_policy_service.h"
-#include "components/policy/core/common/configuration_policy_provider.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
 
 namespace base {
 class FilePath;

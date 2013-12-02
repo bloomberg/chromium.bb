@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_POLICY_CORE_COMMON_CONFIGURATION_POLICY_PROVIDER_H_
-#define COMPONENTS_POLICY_CORE_COMMON_CONFIGURATION_POLICY_PROVIDER_H_
+#ifndef CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_H_
+#define CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -12,17 +12,15 @@
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/schema_registry.h"
-#include "components/policy/policy_export.h"
 
 namespace policy {
 
 // A mostly-abstract super class for platform-specific policy providers.
 // Platform-specific policy providers (Windows Group Policy, gconf,
 // etc.) should implement a subclass of this class.
-class POLICY_EXPORT ConfigurationPolicyProvider
-    : public SchemaRegistry::Observer {
+class ConfigurationPolicyProvider : public SchemaRegistry::Observer {
  public:
-  class POLICY_EXPORT Observer {
+  class Observer {
    public:
     virtual ~Observer();
     virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) = 0;
@@ -100,4 +98,4 @@ class POLICY_EXPORT ConfigurationPolicyProvider
 
 }  // namespace policy
 
-#endif  // COMPONENTS_POLICY_CORE_COMMON_CONFIGURATION_POLICY_PROVIDER_H_
+#endif  // CHROME_BROWSER_POLICY_CONFIGURATION_POLICY_PROVIDER_H_

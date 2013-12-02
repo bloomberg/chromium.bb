@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
-#include "components/policy/core/common/configuration_policy_provider.h"
+#include "chrome/browser/policy/configuration_policy_provider.h"
 
 namespace policy {
 
