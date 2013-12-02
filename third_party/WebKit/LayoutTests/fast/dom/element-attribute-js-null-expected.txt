@@ -188,6 +188,12 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLinkElement.type]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLMapElement.name]
 
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLMarqueeElement.behavior]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLMarqueeElement.bgColor]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLMarqueeElement.direction]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLMarqueeElement.height]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLMarqueeElement.width]
+
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLMetaElement.content]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLMetaElement.httpEquiv]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLMetaElement.name]
