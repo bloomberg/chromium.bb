@@ -30,6 +30,8 @@ class Visitor(object):
 
   def VisitNode(self, node):
     """Called for every node in the tree."""
+    if not node.enabled:
+      return self
     try:
       try:
         self.stack.append(node)
