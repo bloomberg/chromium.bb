@@ -475,7 +475,6 @@ void VolumeManager::OnExternalStorageDisabledChanged() {
     while (!disk_mount_manager_->mount_points().empty()) {
       std::string mount_path =
           disk_mount_manager_->mount_points().begin()->second.mount_path;
-      LOG(INFO) << "Unmounting " << mount_path << " because of preference.";
       disk_mount_manager_->UnmountPath(
           mount_path,
           chromeos::UNMOUNT_OPTIONS_NONE,

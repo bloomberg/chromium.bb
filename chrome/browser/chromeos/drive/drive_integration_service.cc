@@ -148,8 +148,8 @@ FileError InitializeMetadata(
     metadata_storage->RecoverCacheInfoFromTrashedResourceMap(
         &recovered_cache_info);
 
-    LOG(INFO) << "DB could not be opened for some reasons. "
-              << "Recovering cache files to " << dest_directory.value();
+    LOG(WARNING) << "DB could not be opened for some reasons. "
+                 << "Recovering cache files to " << dest_directory.value();
     if (!cache->RecoverFilesFromCacheDirectory(dest_directory,
                                                recovered_cache_info)) {
       LOG(WARNING) << "Failed to recover cache files.";

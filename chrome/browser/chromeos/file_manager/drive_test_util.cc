@@ -69,9 +69,9 @@ void WaitUntilDriveMountPointIsAdded(Profile* profile) {
     return;
 
   DriveMountPointWaiter mount_point_waiter(integration_service);
-  LOG(INFO) << "Waiting for drive mount point to get mounted.";
+  VLOG(1) << "Waiting for drive mount point to get mounted.";
   mount_point_waiter.Wait();
-  LOG(INFO) << "Drive mount point found.";
+  VLOG(1) << "Drive mount point found.";
 }
 
 }  // namespace test_util
