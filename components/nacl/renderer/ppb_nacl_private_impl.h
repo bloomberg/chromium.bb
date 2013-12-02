@@ -12,7 +12,7 @@
 
 namespace nacl {
 
-PPB_NaCl_Private* GetNaClPrivateInterface();
+const PPB_NaCl_Private* GetNaClPrivateInterface();
 
 }  // namespace nacl
 

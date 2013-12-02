@@ -409,7 +409,7 @@ void SetReadOnlyProperty(PP_Instance instance,
   plugin_instance->SetEmbedProperty(key, value);
 }
 
-PPB_NaCl_Private nacl_interface = {
+const PPB_NaCl_Private nacl_interface = {
   &LaunchSelLdr,
   &StartPpapiProxy,
   &UrandomFD,
@@ -429,7 +429,7 @@ PPB_NaCl_Private nacl_interface = {
 
 namespace nacl {
 
-PPB_NaCl_Private* GetNaClPrivateInterface() {
+const PPB_NaCl_Private* GetNaClPrivateInterface() {
   return &nacl_interface;
 }
 
