@@ -463,9 +463,8 @@ public:
     // there is ranged selection.
     virtual bool selectWordAroundCaret() = 0;
 
-    // DEPRECATED: Use moveRangeSelection/moveCaretSelection.
+    // DEPRECATED: Use moveRangeSelection.
     virtual void selectRange(const WebPoint& base, const WebPoint& extent) = 0;
-    virtual void moveCaretSelectionTowardsWindowPoint(const WebPoint&) = 0;
 
     virtual void selectRange(const WebRange&) = 0;
 

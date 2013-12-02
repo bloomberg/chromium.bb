@@ -1319,11 +1319,6 @@ void WebFrameImpl::selectRange(const WebRange& webRange)
         frame()->selection().setSelectedRange(range.get(), WebCore::VP_DEFAULT_AFFINITY, false);
 }
 
-void WebFrameImpl::moveCaretSelectionTowardsWindowPoint(const WebPoint& point)
-{
-    moveCaretSelection(point);
-}
-
 void WebFrameImpl::moveRangeSelection(const WebPoint& base, const WebPoint& extent)
 {
     VisiblePosition basePosition = visiblePositionForWindowPoint(base);
