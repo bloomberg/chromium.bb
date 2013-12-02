@@ -120,20 +120,6 @@ private:
     CSSSelectorList m_selectorList;
 };
 
-inline const StyleRule* toStyleRule(const StyleRuleBase* rule)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!rule || rule->isStyleRule());
-    return static_cast<const StyleRule*>(rule);
-}
-
-inline StyleRule* toStyleRule(StyleRuleBase* rule)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!rule || rule->isStyleRule());
-    return static_cast<StyleRule*>(rule);
-}
-
-void toStyleRule(const StyleRule*);
-
 class StyleRuleFontFace : public StyleRuleBase {
 public:
     static PassRefPtr<StyleRuleFontFace> create() { return adoptRef(new StyleRuleFontFace); }
@@ -153,12 +139,6 @@ private:
 
     RefPtr<StylePropertySet> m_properties;
 };
-
-inline const StyleRuleFontFace* toStyleRuleFontFace(const StyleRuleBase* rule)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!rule || rule->isFontFaceRule());
-    return static_cast<const StyleRuleFontFace*>(rule);
-}
 
 class StyleRulePage : public StyleRuleBase {
 public:
@@ -274,36 +254,6 @@ private:
     RefPtr<StylePropertySet> m_properties;
 };
 
-inline const StyleRuleMedia* toStyleRuleMedia(const StyleRuleGroup* rule)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!rule || rule->isMediaRule());
-    return static_cast<const StyleRuleMedia*>(rule);
-}
-
-inline const StyleRuleMedia* toStyleRuleMedia(const StyleRuleBase* rule)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!rule || rule->isMediaRule());
-    return static_cast<const StyleRuleMedia*>(rule);
-}
-
-inline const StyleRuleSupports* toStyleRuleSupports(const StyleRuleGroup* rule)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!rule || rule->isSupportsRule());
-    return static_cast<const StyleRuleSupports*>(rule);
-}
-
-inline const StyleRuleRegion* toStyleRuleRegion(const StyleRuleGroup* rule)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!rule || rule->isRegionRule());
-    return static_cast<const StyleRuleRegion*>(rule);
-}
-
-inline StyleRuleViewport* toStyleRuleViewport(StyleRuleBase* rule)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!rule || rule->isViewportRule());
-    return static_cast<StyleRuleViewport*>(rule);
-}
-
 class StyleRuleFilter : public StyleRuleBase {
 public:
     static PassRefPtr<StyleRuleFilter> create(const String& filterName) { return adoptRef(new StyleRuleFilter(filterName)); }
@@ -326,6 +276,18 @@ private:
     String m_filterName;
     RefPtr<StylePropertySet> m_properties;
 };
+
+#define DEFINE_STYLE_RULE_TYPE_CASTS(Type) \
+    DEFINE_TYPE_CASTS(StyleRule##Type, StyleRuleBase, rule, rule->is##Type##Rule(), rule.is##Type##Rule())
+
+DEFINE_TYPE_CASTS(StyleRule, StyleRuleBase, rule, rule->isStyleRule(), rule.isStyleRule());
+DEFINE_STYLE_RULE_TYPE_CASTS(FontFace);
+DEFINE_STYLE_RULE_TYPE_CASTS(Page);
+DEFINE_STYLE_RULE_TYPE_CASTS(Media);
+DEFINE_STYLE_RULE_TYPE_CASTS(Supports);
+DEFINE_STYLE_RULE_TYPE_CASTS(Region);
+DEFINE_STYLE_RULE_TYPE_CASTS(Viewport);
+DEFINE_STYLE_RULE_TYPE_CASTS(Filter);
 
 } // namespace WebCore
 

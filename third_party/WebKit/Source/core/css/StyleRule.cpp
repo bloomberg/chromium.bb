@@ -61,31 +61,31 @@ void StyleRuleBase::destroy()
         delete toStyleRule(this);
         return;
     case Page:
-        delete static_cast<StyleRulePage*>(this);
+        delete toStyleRulePage(this);
         return;
     case FontFace:
-        delete static_cast<StyleRuleFontFace*>(this);
+        delete toStyleRuleFontFace(this);
         return;
     case Media:
-        delete static_cast<StyleRuleMedia*>(this);
+        delete toStyleRuleMedia(this);
         return;
     case Supports:
-        delete static_cast<StyleRuleSupports*>(this);
+        delete toStyleRuleSupports(this);
         return;
     case Region:
-        delete static_cast<StyleRuleRegion*>(this);
+        delete toStyleRuleRegion(this);
         return;
     case Import:
-        delete static_cast<StyleRuleImport*>(this);
+        delete toStyleRuleImport(this);
         return;
     case Keyframes:
-        delete static_cast<StyleRuleKeyframes*>(this);
+        delete toStyleRuleKeyframes(this);
         return;
     case Viewport:
-        delete static_cast<StyleRuleViewport*>(this);
+        delete toStyleRuleViewport(this);
         return;
     case Filter:
-        delete static_cast<StyleRuleFilter*>(this);
+        delete toStyleRuleFilter(this);
         return;
     case Unknown:
     case Charset:
@@ -140,31 +140,31 @@ PassRefPtr<CSSRule> StyleRuleBase::createCSSOMWrapper(CSSStyleSheet* parentSheet
         rule = CSSStyleRule::create(toStyleRule(self), parentSheet);
         break;
     case Page:
-        rule = CSSPageRule::create(static_cast<StyleRulePage*>(self), parentSheet);
+        rule = CSSPageRule::create(toStyleRulePage(self), parentSheet);
         break;
     case FontFace:
-        rule = CSSFontFaceRule::create(static_cast<StyleRuleFontFace*>(self), parentSheet);
+        rule = CSSFontFaceRule::create(toStyleRuleFontFace(self), parentSheet);
         break;
     case Media:
-        rule = CSSMediaRule::create(static_cast<StyleRuleMedia*>(self), parentSheet);
+        rule = CSSMediaRule::create(toStyleRuleMedia(self), parentSheet);
         break;
     case Supports:
-        rule = CSSSupportsRule::create(static_cast<StyleRuleSupports*>(self), parentSheet);
+        rule = CSSSupportsRule::create(toStyleRuleSupports(self), parentSheet);
         break;
     case Region:
-        rule = CSSRegionRule::create(static_cast<StyleRuleRegion*>(self), parentSheet);
+        rule = CSSRegionRule::create(toStyleRuleRegion(self), parentSheet);
         break;
     case Import:
-        rule = CSSImportRule::create(static_cast<StyleRuleImport*>(self), parentSheet);
+        rule = CSSImportRule::create(toStyleRuleImport(self), parentSheet);
         break;
     case Keyframes:
-        rule = CSSKeyframesRule::create(static_cast<StyleRuleKeyframes*>(self), parentSheet);
+        rule = CSSKeyframesRule::create(toStyleRuleKeyframes(self), parentSheet);
         break;
     case Viewport:
-        rule = CSSViewportRule::create(static_cast<StyleRuleViewport*>(self), parentSheet);
+        rule = CSSViewportRule::create(toStyleRuleViewport(self), parentSheet);
         break;
     case Filter:
-        rule = CSSFilterRule::create(static_cast<StyleRuleFilter*>(self), parentSheet);
+        rule = CSSFilterRule::create(toStyleRuleFilter(self), parentSheet);
         break;
     case Unknown:
     case Charset:

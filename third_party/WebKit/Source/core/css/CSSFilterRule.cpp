@@ -77,8 +77,7 @@ String CSSFilterRule::cssText() const
 void CSSFilterRule::reattach(StyleRuleBase* rule)
 {
     ASSERT(rule);
-    ASSERT_WITH_SECURITY_IMPLICATION(rule->isFilterRule());
-    m_filterRule = static_cast<StyleRuleFilter*>(rule);
+    m_filterRule = toStyleRuleFilter(rule);
     if (m_propertiesCSSOMWrapper)
         m_propertiesCSSOMWrapper->reattach(m_filterRule->mutableProperties());
 }

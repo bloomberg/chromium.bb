@@ -127,7 +127,7 @@ void StyleSheetContents::parserAppendRule(PassRefPtr<StyleRuleBase> rule)
     if (rule->isImportRule()) {
         // Parser enforces that @import rules come before anything else except @charset.
         ASSERT(m_childRules.isEmpty());
-        m_importRules.append(static_cast<StyleRuleImport*>(rule.get()));
+        m_importRules.append(toStyleRuleImport(rule.get()));
         m_importRules.last()->setParentStyleSheet(this);
         m_importRules.last()->requestStyleSheet();
         return;
@@ -135,7 +135,7 @@ void StyleSheetContents::parserAppendRule(PassRefPtr<StyleRuleBase> rule)
 
     // Add warning message to inspector if dpi/dpcm values are used for screen media.
     if (rule->isMediaRule())
-        reportMediaQueryWarningIfNeeded(singleOwnerDocument(), static_cast<StyleRuleMedia*>(rule.get())->mediaQueries());
+        reportMediaQueryWarningIfNeeded(singleOwnerDocument(), toStyleRuleMedia(rule.get())->mediaQueries());
 
     m_childRules.append(rule);
 }
@@ -210,7 +210,7 @@ bool StyleSheetContents::wrapperInsertRule(PassRefPtr<StyleRuleBase> rule, unsig
         // Inserting non-import rule before @import is not allowed.
         if (!rule->isImportRule())
             return false;
-        m_importRules.insert(childVectorIndex, static_cast<StyleRuleImport*>(rule.get()));
+        m_importRules.insert(childVectorIndex, toStyleRuleImport(rule.get()));
         m_importRules[childVectorIndex]->setParentStyleSheet(this);
         m_importRules[childVectorIndex]->requestStyleSheet();
         // FIXME: Stylesheet doesn't actually change meaningfully before the imported sheets are loaded.
@@ -411,7 +411,7 @@ void StyleSheetContents::addSubresourceStyleURLs(ListHashSet<KURL>& urls)
             if (rule->isStyleRule())
                 toStyleRule(rule)->properties()->addSubresourceStyleURLs(urls, this);
             else if (rule->isFontFaceRule())
-                static_cast<StyleRuleFontFace*>(rule)->properties()->addSubresourceStyleURLs(urls, this);
+                toStyleRuleFontFace(rule)->properties()->addSubresourceStyleURLs(urls, this);
         }
     }
 }

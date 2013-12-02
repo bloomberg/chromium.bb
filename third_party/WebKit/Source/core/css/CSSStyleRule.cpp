@@ -123,8 +123,7 @@ String CSSStyleRule::cssText() const
 void CSSStyleRule::reattach(StyleRuleBase* rule)
 {
     ASSERT(rule);
-    ASSERT_WITH_SECURITY_IMPLICATION(rule->isStyleRule());
-    m_styleRule = static_cast<StyleRule*>(rule);
+    m_styleRule = toStyleRule(rule);
     if (m_propertiesCSSOMWrapper)
         m_propertiesCSSOMWrapper->reattach(m_styleRule->mutableProperties());
 }

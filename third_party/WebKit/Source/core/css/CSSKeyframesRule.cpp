@@ -198,8 +198,7 @@ CSSRuleList* CSSKeyframesRule::cssRules()
 void CSSKeyframesRule::reattach(StyleRuleBase* rule)
 {
     ASSERT(rule);
-    ASSERT_WITH_SECURITY_IMPLICATION(rule->isKeyframesRule());
-    m_keyframesRule = static_cast<StyleRuleKeyframes*>(rule);
+    m_keyframesRule = toStyleRuleKeyframes(rule);
 }
 
 } // namespace WebCore

@@ -81,6 +81,8 @@ private:
     bool m_loading;
 };
 
+DEFINE_STYLE_RULE_TYPE_CASTS(Import);
+
 } // namespace WebCore
 
 #endif

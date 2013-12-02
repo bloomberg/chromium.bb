@@ -76,9 +76,7 @@ String CSSViewportRule::cssText() const
 void CSSViewportRule::reattach(StyleRuleBase* rule)
 {
     ASSERT(rule);
-    ASSERT_WITH_SECURITY_IMPLICATION(rule->isViewportRule());
-    m_viewportRule = static_cast<StyleRuleViewport*>(rule);
-
+    m_viewportRule = toStyleRuleViewport(rule);
     if (m_propertiesCSSOMWrapper)
         m_propertiesCSSOMWrapper->reattach(m_viewportRule->mutableProperties());
 }

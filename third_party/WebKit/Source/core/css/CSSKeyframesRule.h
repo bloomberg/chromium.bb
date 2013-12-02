@@ -68,6 +68,8 @@ private:
     bool m_isPrefixed;
 };
 
+DEFINE_STYLE_RULE_TYPE_CASTS(Keyframes);
+
 class CSSKeyframesRule FINAL : public CSSRule {
 public:
     static PassRefPtr<CSSKeyframesRule> create(StyleRuleKeyframes* rule, CSSStyleSheet* sheet) { return adoptRef(new CSSKeyframesRule(rule, sheet)); }
