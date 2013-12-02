@@ -182,9 +182,12 @@ TEST(GlobalKeyboardShortcuts, KeyCharacterForEvent) {
   // cmd-'z' / cmd-shift-';' on dvorak-qwerty
   EXPECT_EQ('z', KeyCharacterForEvent(
       KeyEvent(true,  true,  false, false, @"z", @":")));
-  // cmd-shift-'[' in an RTL context.
+  // cmd-shift-'[' in an RTL context pre 10.9.
   EXPECT_EQ('{', KeyCharacterForEvent(
       KeyEvent(true,  true,  false, false, @"{", @"}")));
+  // cmd-shift-'[' in an RTL context on 10.9.
+  EXPECT_EQ('{', KeyCharacterForEvent(
+      KeyEvent(true,  true,  false, false, @"[", @"}")));
   // Test if getting dead-key events return 0 and do not hang.
   EXPECT_EQ(0,   KeyCharacterForEvent(
       KeyEvent(false, false, false, false, @"",  @"")));
