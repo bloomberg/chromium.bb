@@ -100,6 +100,11 @@ void WebDialogView::ViewHierarchyChanged(
 }
 
 bool WebDialogView::CanClose() {
+  // Don't close UI if |delegate_| does not allow users to close it by
+  // clicking on "x" button or pressing Esc shortcut key on hosting dialog.
+  if (!delegate_->CanCloseDialog() && !close_contents_called_)
+    return false;
+
   // If CloseContents() is called before CanClose(), which is called by
   // RenderViewHostImpl::ClosePageIgnoringUnloadEvents, it indicates
   // beforeunload event should not be fired during closing.

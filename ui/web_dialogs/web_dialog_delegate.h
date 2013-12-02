@@ -63,6 +63,12 @@ class WEB_DIALOGS_EXPORT WebDialogDelegate {
   // Gets the JSON string input to use when showing the dialog.
   virtual std::string GetDialogArgs() const = 0;
 
+  // Returns true to signal that the dialog can be closed. Specialized
+  // WebDialogDelegate subclasses can override this default behavior to allow
+  // the close to be blocked until the user corrects mistakes, accepts an
+  // agreement, etc.
+  virtual bool CanCloseDialog() const;
+
   // A callback to notify the delegate that |source|'s loading state has
   // changed.
   virtual void OnLoadingStateChanged(content::WebContents* source) {}
