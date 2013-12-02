@@ -91,9 +91,12 @@ LongPressTypingTester.prototype = {
       assertTrue(!!altKey, errorMessage(candidateLabel));
       assertTrue(!!baseKey, errorMessage(baseLabel));
 
-      // A keyout event should be dispatched before a keyover event.
-      baseKey.out({pointerId: 1, relatedTarget: baseKey});
-      altKey.over({pointerId: 1, relatedTarget: altKey});
+      // A keyout event should be dispatched before a keyover event if the
+      // candidateLabel is not the baseLabel.
+      if (baseLabel != candidateLabel) {
+        baseKey.out({pointerId: 1, relatedTarget: baseKey});
+        altKey.over({pointerId: 1, relatedTarget: altKey});
+      }
 
       // Verify that the candidate key is typed on release of the longpress.
       var send = chrome.virtualKeyboardPrivate.sendKeyEvent;
@@ -218,6 +221,9 @@ function testLongPressTypeAccentedCharacterAsync(testDoneCallback) {
   tester.wait(1000, Keyset.LOWER);
   tester.abortSelection('e');
   tester.verifyClosedPopup();
+
+  // Mock longpress q then release it. Catches regression in crbug/305649.
+  checkLongPressType('q', 'q', 0x51);
 
   tester.scheduleTest('testLongPressTypeAccentedCharacterAsync',
                       testDoneCallback);

@@ -72,19 +72,32 @@
           this.fire('key-down', {});
         }
       },
+
       out: function(event) {
         if (isRelevantEvent(this, event)) {
           this.classList.remove('active');
         }
       },
+
       up: function(event) {
         var detail = {
-            char: this.char || this.textContent
+            char: this.charValue
         };
         this.fire('key-up', detail);
       },
+
       // TODO(bshe): kb-altkey should extend from kb-key-base.
       autoRelease: function() {
+      },
+
+      /**
+       * Character value associated with the key. Typically, the value is a
+       * single character, but may be multi-character in cases like a ".com"
+       * button.
+       * @return {string}
+       */
+      get charValue() {
+        return this.char || this.textContent;
       }
     });
   </script>
