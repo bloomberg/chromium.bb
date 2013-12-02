@@ -450,6 +450,9 @@ void SyncEngine::MaybeStartFetchChanges() {
   if (GetCurrentState() == REMOTE_SERVICE_DISABLED)
     return;
 
+  if (!metadata_database_)
+    return;
+
   base::TimeTicks now = base::TimeTicks::Now();
   if (!should_check_remote_change_ && now < time_to_check_changes_)
     return;
