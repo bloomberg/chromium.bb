@@ -2010,8 +2010,7 @@
       'ANGLE_DX11',
     ],
     'conditions': [
-      # TODO(jochen): Also make this work on Mac.
-      ['v8_deprecation_warnings==1 and OS!="mac" and OS!="ios"', {
+      ['v8_deprecation_warnings==1', {
         'defines': ['V8_DEPRECATION_WARNINGS',],
       }],
       ['(OS=="mac" or OS=="ios") and asan==1', {
