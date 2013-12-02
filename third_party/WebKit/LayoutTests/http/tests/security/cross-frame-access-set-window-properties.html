@@ -59,7 +59,7 @@
                 'toolbar'
             ];
             for (var i = 0; i < ReplaceableProperties.length; i++) {
-                shouldThrow('iWindow.' + ReplaceableProperties[i] + ' = 1;', ex);
+                shouldThrow('iWindow.' + ReplaceableProperties[i] + ' = 1;');
             }
             
             finishJSTest();

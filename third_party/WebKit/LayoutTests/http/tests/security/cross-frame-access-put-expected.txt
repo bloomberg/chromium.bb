@@ -97,7 +97,7 @@ ALERT: PASS: window.devicePixelRatio should be '1' and is.
 ALERT: PASS: window.document should be '[object HTMLDocument]' and is.
 ALERT: PASS: window.embeds should be 'undefined' and is.
 ALERT: PASS: window.event should be 'undefined' and is.
-ALERT: PASS: 'window.frameElement' threw 'SecurityError: Blocked a frame with origin "http://localhost:8000" from accessing a cross-origin frame.'.
+ALERT: PASS: 'window.frameElement' threw 'SecurityError: Failed to read the 'frame' property from 'Window': Blocked a frame with origin "http://localhost:8000" from accessing a cross-origin frame.'.
 ALERT: PASS: window.frames should be '[object Window]' and is.
 ALERT: PASS: window.history should be '[object History]' and is.
 ALERT: PASS: window.images should be 'undefined' and is.
@@ -325,7 +325,7 @@ PASS: Unable to set property onsearch: SecurityError: Blocked a frame with origi
 PASS: Unable to set property onselect: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property onsubmit: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property onunload: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
-PASS: Unable to set property opener: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
+PASS: Unable to set property opener: SecurityError: Failed to set the 'opener' property on 'Window': Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property outerHeight: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property outerWidth: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property pageXOffset: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
