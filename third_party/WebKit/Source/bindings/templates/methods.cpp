@@ -227,7 +227,7 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
     WrapperWorldType currentWorldType = worldType(info.GetIsolate());
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
     {# FIXME: 1 case of [DoNotCheckSignature] in Window.idl may differ #}
-    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, {{cpp_class_name}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&{{v8_class_name}}::wrapperTypeInfo, currentWorldType)), {{method.number_of_required_or_variadic_arguments}});
+    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, {{cpp_class_name}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&{{v8_class_name}}::wrapperTypeInfo, currentWorldType)), {{method.number_of_required_or_variadic_arguments}});
 
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class_name}}::GetTemplate(info.GetIsolate(), currentWorldType));
     if (holder.IsEmpty()) {
@@ -239,12 +239,12 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateUniqueKey;
-        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, {{cpp_class_name}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&{{v8_class_name}}::wrapperTypeInfo, currentWorldType)), {{method.number_of_required_or_variadic_arguments}});
+        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, {{cpp_class_name}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&{{v8_class_name}}::wrapperTypeInfo, currentWorldType)), {{method.number_of_required_or_variadic_arguments}});
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
     }
 
-    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8AtomicString(info.GetIsolate(), "{{method.name}}"));
+    v8::Local<v8::Value> hiddenValue = info.This()->GetHiddenValue(v8::String::NewFromUtf8(info.GetIsolate(), "{{method.name}}", v8::String::kInternalizedString));
     if (!hiddenValue.IsEmpty()) {
         v8SetReturnValue(info, hiddenValue);
         return;
