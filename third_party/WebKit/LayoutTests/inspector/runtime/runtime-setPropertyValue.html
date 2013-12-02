@@ -20,6 +20,12 @@ function dumpObject(label)
     }
 }
 
+function checkNegativeZero()
+{
+    console.log("===== Checking negative zero =====");
+    console.log("1/-0 = " + (1 / object1.foo));
+}
+
 function test()
 {
     var obj1, obj2;
@@ -135,6 +141,16 @@ function test()
             function step3(error)
             {
                 InspectorTest.evaluateInPage("dumpObject('Set non-finite numbers')", next);
+            }
+        },
+
+        function testNegativeZero(next)
+        {
+            obj1.setPropertyValue("foo", "1/-Infinity", step1);
+
+            function step1(error)
+            {
+                InspectorTest.evaluateInPage("checkNegativeZero()", next);
             }
         },
 

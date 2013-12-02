@@ -25,6 +25,8 @@ CONSOLE MESSAGE: line 13:
 CONSOLE MESSAGE: line 11: ===== Set non-finite numbers =====
 CONSOLE MESSAGE: line 12: {"foo":"NaN","foo1":"Infinity","foo2":"-Infinity"}
 CONSOLE MESSAGE: line 13: 
+CONSOLE MESSAGE: line 25: ===== Checking negative zero =====
+CONSOLE MESSAGE: line 26: 1/-0 = -Infinity
 Tests WebInspector.RemoveObject.setPropertyValue implementation.
 
 
@@ -46,6 +48,8 @@ Running: testSetException
 exception
 
 Running: testSetNonFiniteNumbers
+
+Running: testNegativeZero
 
 Running: testReleaseObjectIsCalled
 
