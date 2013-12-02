@@ -1097,6 +1097,16 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_WebM) {
   EXPECT_EQ(last_video_frame_format_, VideoFrame::YV12A);
 }
 
+// Verify that VP8A video with odd width/height can be played back.
+TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_Odd_WebM) {
+  EXPECT_CALL(*this, OnSetOpaque(false)).Times(AnyNumber());
+  ASSERT_TRUE(Start(GetTestDataFilePath("bear-vp8a-odd-dimensions.webm"),
+                    PIPELINE_OK));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_EQ(last_video_frame_format_, VideoFrame::YV12A);
+}
+
 // Verify that VP8 video with inband text track can be played back.
 TEST_F(PipelineIntegrationTest,
        BasicPlayback_VP8_WebVTT_WebM) {

@@ -337,8 +337,6 @@ void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,
                                      const struct vpx_image* vpx_image_alpha,
                                      scoped_refptr<VideoFrame>* video_frame) {
   CHECK(vpx_image);
-  CHECK_EQ(vpx_image->d_w % 2, 0U);
-  CHECK_EQ(vpx_image->d_h % 2, 0U);
   CHECK(vpx_image->fmt == VPX_IMG_FMT_I420 ||
         vpx_image->fmt == VPX_IMG_FMT_YV12);
 
@@ -357,11 +355,11 @@ void VpxVideoDecoder::CopyVpxImageTo(const vpx_image* vpx_image,
              video_frame->get());
   CopyUPlane(vpx_image->planes[VPX_PLANE_U],
              vpx_image->stride[VPX_PLANE_U],
-             vpx_image->d_h / 2,
+             (vpx_image->d_h + 1) / 2,
              video_frame->get());
   CopyVPlane(vpx_image->planes[VPX_PLANE_V],
              vpx_image->stride[VPX_PLANE_V],
-             vpx_image->d_h / 2,
+             (vpx_image->d_h + 1) / 2,
              video_frame->get());
   if (!vpx_codec_alpha_)
     return;
