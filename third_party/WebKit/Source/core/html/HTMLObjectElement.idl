@@ -22,22 +22,22 @@
     CustomLegacyCall
 ] interface HTMLObjectElement : HTMLElement {
     readonly attribute HTMLFormElement form;
-    [Reflect, TreatNullAs=NullString] attribute DOMString code;
-    [Reflect, TreatNullAs=NullString] attribute DOMString align;
-    [Reflect, TreatNullAs=NullString] attribute DOMString archive;
+    [Reflect] attribute DOMString code;
+    [Reflect] attribute DOMString align;
+    [Reflect] attribute DOMString archive;
     [Reflect, TreatNullAs=NullString] attribute DOMString border;
-    [Reflect, TreatNullAs=NullString] attribute DOMString codeBase;
-    [Reflect, TreatNullAs=NullString] attribute DOMString codeType;
-    [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString data;
+    [Reflect, URL] attribute DOMString codeBase;
+    [Reflect] attribute DOMString codeType;
+    [Reflect, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString data;
     [Reflect] attribute boolean declare;
-    [Reflect, TreatNullAs=NullString] attribute DOMString height;
+    [Reflect] attribute DOMString height;
     [Reflect] attribute long hspace;
-    [Reflect, TreatNullAs=NullString] attribute DOMString name;
-    [Reflect, TreatNullAs=NullString] attribute DOMString standby;
-    [Reflect, TreatNullAs=NullString] attribute DOMString type;
-    [Reflect, TreatNullAs=NullString] attribute DOMString useMap;
+    [Reflect] attribute DOMString name;
+    [Reflect] attribute DOMString standby;
+    [Reflect] attribute DOMString type;
+    [Reflect] attribute DOMString useMap;
     [Reflect] attribute long vspace;
-    [Reflect, TreatNullAs=NullString] attribute DOMString width;
+    [Reflect] attribute DOMString width;
     readonly attribute boolean willValidate;
     readonly attribute ValidityState validity;
     readonly attribute DOMString validationMessage;
@@ -53,4 +53,3 @@
 
     [CheckSecurity=Node, RaisesException] SVGDocument getSVGDocument();
 };
-
