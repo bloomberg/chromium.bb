@@ -41,9 +41,9 @@ v8::Handle<v8::Object> wrap(CanvasRenderingContext* impl, v8::Handle<v8::Object>
 {
     ASSERT(impl);
     if (impl->is2d())
-        return wrap(static_cast<CanvasRenderingContext2D*>(impl), creationContext, isolate);
+        return wrap(toCanvasRenderingContext2D(impl), creationContext, isolate);
     if (impl->is3d())
-        return wrap(static_cast<WebGLRenderingContext*>(impl), creationContext, isolate);
+        return wrap(toWebGLRenderingContext(impl), creationContext, isolate);
     ASSERT_NOT_REACHED();
     return v8::Handle<v8::Object>();
 }

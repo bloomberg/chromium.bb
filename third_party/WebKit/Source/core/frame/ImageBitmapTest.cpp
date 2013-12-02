@@ -203,7 +203,7 @@ TEST_F(ImageBitmapTest, ImageResourceLifetime)
     }
     CanvasRenderingContext* context = canvasElement->getContext("2d");
     TrackExceptionState exceptionState;
-    static_cast<CanvasRenderingContext2D*>(context)->drawImage(imageBitmapDerived.get(), 0, 0, exceptionState);
+    toCanvasRenderingContext2D(context)->drawImage(imageBitmapDerived.get(), 0, 0, exceptionState);
 }
 
 } // namespace

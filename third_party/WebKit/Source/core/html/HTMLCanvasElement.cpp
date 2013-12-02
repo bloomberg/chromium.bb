@@ -247,10 +247,8 @@ void HTMLCanvasElement::reset()
         m_contextStateSaver->save();
     }
 
-    if (m_context && m_context->is2d()) {
-        CanvasRenderingContext2D* context2D = static_cast<CanvasRenderingContext2D*>(m_context.get());
-        context2D->reset();
-    }
+    if (m_context && m_context->is2d())
+        toCanvasRenderingContext2D(m_context.get())->reset();
 
     IntSize oldSize = size();
     IntSize newSize(w, h);
@@ -269,7 +267,7 @@ void HTMLCanvasElement::reset()
     setSurfaceSize(newSize);
 
     if (m_context && m_context->is3d() && oldSize != size())
-        static_cast<WebGLRenderingContext*>(m_context.get())->reshape(width(), height());
+        toWebGLRenderingContext(m_context.get())->reshape(width(), height());
 
     if (RenderObject* renderer = this->renderer()) {
         if (m_rendererIsCanvas) {
@@ -328,7 +326,7 @@ void HTMLCanvasElement::paint(GraphicsContext* context, const LayoutRect& r, boo
     }
 
     if (is3D())
-        static_cast<WebGLRenderingContext*>(m_context.get())->markLayerComposited();
+        toWebGLRenderingContext(m_context.get())->markLayerComposited();
 }
 
 bool HTMLCanvasElement::is3D() const
@@ -398,10 +396,7 @@ PassRefPtr<ImageData> HTMLCanvasElement::getImageData()
 {
     if (!m_context || !m_context->is3d())
        return 0;
-
-    WebGLRenderingContext* ctx = static_cast<WebGLRenderingContext*>(m_context.get());
-
-    return ctx->paintRenderingResultsToImageData();
+    return toWebGLRenderingContext(m_context.get())->paintRenderingResultsToImageData();
 }
 
 IntSize HTMLCanvasElement::convertLogicalToDevice(const IntSize& logicalSize) const
@@ -534,9 +529,9 @@ void HTMLCanvasElement::clearImageBuffer()
     m_didClearImageBuffer = true;
 
     if (m_context->is2d()) {
-        CanvasRenderingContext2D* context2D = static_cast<CanvasRenderingContext2D*>(m_context.get());
-        // No need to undo transforms/clip/etc. because we are called right after the context is reset.
-        context2D->clearRect(0, 0, width(), height());
+        // No need to undo transforms/clip/etc. because we are called right
+        // after the context is reset.
+        toCanvasRenderingContext2D(m_context.get())->clearRect(0, 0, width(), height());
     }
 }
 

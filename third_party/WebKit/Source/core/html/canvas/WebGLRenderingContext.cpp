@@ -3457,7 +3457,7 @@ void WebGLRenderingContext::texImage2D(GC3Denum target, GC3Dint level, GC3Denum 
                 return;
             }
         } else {
-            WebGLRenderingContext* gl = static_cast<WebGLRenderingContext*>(canvas->renderingContext());
+            WebGLRenderingContext* gl = toWebGLRenderingContext(canvas->renderingContext());
             if (gl && gl->m_drawingBuffer->copyToPlatformTexture(*m_context.get(), texture->object(), internalformat, type,
                 level, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
                 texture->setLevelInfo(target, level, internalformat, canvas->width(), canvas->height(), type);

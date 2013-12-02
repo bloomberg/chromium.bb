@@ -926,6 +926,8 @@ public:
     static IntSize oldestContextSize();
 };
 
+DEFINE_TYPE_CASTS(WebGLRenderingContext, CanvasRenderingContext, context, context->is3d(), context.is3d());
+
 } // namespace WebCore
 
 #endif

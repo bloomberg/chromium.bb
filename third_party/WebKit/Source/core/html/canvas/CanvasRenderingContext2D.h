@@ -339,6 +339,8 @@ private:
     MutableStylePropertyMap m_fetchedFonts;
 };
 
+DEFINE_TYPE_CASTS(CanvasRenderingContext2D, CanvasRenderingContext, context, context->is2d(), context.is2d());
+
 } // namespace WebCore
 
 #endif
