@@ -32,8 +32,6 @@
 #include "core/animation/KeyframeAnimationEffect.h"
 
 #include "core/animation/TimedItem.h"
-
-#include "wtf/MathExtras.h"
 #include "wtf/text/StringHash.h"
 
 namespace {
@@ -117,7 +115,7 @@ private:
 namespace WebCore {
 
 Keyframe::Keyframe()
-    : m_offset(std::numeric_limits<double>::quiet_NaN())
+    : m_offset(nullValue())
     , m_composite(AnimationEffect::CompositeReplace)
 { }
 
@@ -202,18 +200,18 @@ KeyframeAnimationEffect::KeyframeVector KeyframeAnimationEffect::normalizedKeyfr
     // Set offsets at 0.0 and 1.0 at ends if unset.
     if (keyframes.size() >= 2) {
         Keyframe* firstKeyframe = keyframes.first().get();
-        if (std::isnan(firstKeyframe->offset()))
+        if (isNull(firstKeyframe->offset()))
             firstKeyframe->setOffset(0.0);
     }
     if (keyframes.size() >= 1) {
         Keyframe* lastKeyframe = keyframes.last().get();
-        if (lastKeyframe && std::isnan(lastKeyframe->offset()))
+        if (lastKeyframe && isNull(lastKeyframe->offset()))
             lastKeyframe->setOffset(1.0);
     }
 
     // FIXME: Distribute offsets where missing.
     for (KeyframeVector::iterator iter = keyframes.begin(); iter != keyframes.end(); ++iter)
-        ASSERT(!std::isnan((*iter)->offset()));
+        ASSERT(!isNull((*iter)->offset()));
 
     // Sort by offset.
     std::stable_sort(keyframes.begin(), keyframes.end(), Keyframe::compareOffsets);
@@ -263,7 +261,7 @@ KeyframeAnimationEffect::PropertySpecificKeyframe::PropertySpecificKeyframe(doub
     : m_offset(offset)
     , m_value(value)
 {
-    ASSERT(!std::isnan(m_offset));
+    ASSERT(!isNull(m_offset));
 }
 
 PassOwnPtr<KeyframeAnimationEffect::PropertySpecificKeyframe> KeyframeAnimationEffect::PropertySpecificKeyframe::cloneWithOffset(double offset) const
