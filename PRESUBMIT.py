@@ -849,9 +849,12 @@ def _CheckSpamLogging(input_api, output_api):
     contents = input_api.ReadFile(f, 'rb')
     if re.search(r"\bD?LOG\s*\(\s*INFO\s*\)", contents):
       log_info.append(f.LocalPath())
-    if re.search(r"\bD?LOG_IF\s*\(\s*INFO\s*,", contents):
+    elif re.search(r"\bD?LOG_IF\s*\(\s*INFO\s*,", contents):
       log_info.append(f.LocalPath())
-    if re.search(r"\bf?printf\((stdout|stderr)", contents):
+
+    if re.search(r"\bprintf\(", contents):
+      printf.append(f.LocalPath())
+    elif re.search(r"\bfprintf\((stdout|stderr)", contents):
       printf.append(f.LocalPath())
 
   if log_info:
