@@ -342,24 +342,28 @@ void ClientSideDetectionHost::DidNavigateMainFrame(
 
 void ClientSideDetectionHost::OnSafeBrowsingHit(
     const SafeBrowsingUIManager::UnsafeResource& resource) {
-  // Check that this notification is really for us and that it corresponds to
-  // either a malware or phishing hit.  In this case we store the unique page
-  // ID for later.
-  if (web_contents() &&
-      web_contents()->GetRenderProcessHost()->GetID() ==
-          resource.render_process_host_id &&
-      web_contents()->GetRenderViewHost()->GetRoutingID() ==
-          resource.render_view_id &&
-      (resource.threat_type == SB_THREAT_TYPE_URL_PHISHING ||
-       resource.threat_type == SB_THREAT_TYPE_URL_MALWARE) &&
-      web_contents()->GetController().GetActiveEntry()) {
-    unsafe_unique_page_id_ =
-        web_contents()->GetController().GetActiveEntry()->GetUniqueID();
-    // We also keep the resource around in order to be able to send the
-    // malicious URL to the server.
-    unsafe_resource_.reset(new SafeBrowsingUIManager::UnsafeResource(resource));
-    unsafe_resource_->callback.Reset();  // Don't do anything stupid.
-  }
+  if (!web_contents() || !web_contents()->GetController().GetActiveEntry())
+    return;
+
+  // Check that the hit is either malware or phishing.
+  if (resource.threat_type != SB_THREAT_TYPE_URL_PHISHING &&
+      resource.threat_type != SB_THREAT_TYPE_URL_MALWARE)
+    return;
+
+  // Check that this notification is really for us.
+  content::RenderViewHost* hit_rvh = content::RenderViewHost::FromID(
+      resource.render_process_host_id, resource.render_view_id);
+  if (!hit_rvh ||
+      web_contents() != content::WebContents::FromRenderViewHost(hit_rvh))
+    return;
+
+  // Store the unique page ID for later.
+  unsafe_unique_page_id_ =
+      web_contents()->GetController().GetActiveEntry()->GetUniqueID();
+  // We also keep the resource around in order to be able to send the
+  // malicious URL to the server.
+  unsafe_resource_.reset(new SafeBrowsingUIManager::UnsafeResource(resource));
+  unsafe_resource_->callback.Reset();  // Don't do anything stupid.
 }
 
 scoped_refptr<SafeBrowsingDatabaseManager>

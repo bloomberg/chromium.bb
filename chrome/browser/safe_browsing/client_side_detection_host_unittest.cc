@@ -19,10 +19,12 @@
 #include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/web_contents_tester.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -297,7 +299,23 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     csd_host_->browse_info_->referrer = referrer;
   }
 
-  void SetUnsafeResourceToCurrent() {
+  void TestUnsafeResourceCopied(const UnsafeResource& resource) {
+    ASSERT_TRUE(csd_host_->unsafe_resource_.get());
+    // Test that the resource from OnSafeBrowsingHit notification was copied
+    // into the CSDH.
+    EXPECT_EQ(resource.url, csd_host_->unsafe_resource_->url);
+    EXPECT_EQ(resource.original_url, csd_host_->unsafe_resource_->original_url);
+    EXPECT_EQ(resource.is_subresource,
+              csd_host_->unsafe_resource_->is_subresource);
+    EXPECT_EQ(resource.threat_type, csd_host_->unsafe_resource_->threat_type);
+    EXPECT_TRUE(csd_host_->unsafe_resource_->callback.is_null());
+    EXPECT_EQ(resource.render_process_host_id,
+              csd_host_->unsafe_resource_->render_process_host_id);
+    EXPECT_EQ(resource.render_view_id,
+              csd_host_->unsafe_resource_->render_view_id);
+  }
+
+  void SetUnsafeSubResourceForCurrent() {
     UnsafeResource resource;
     resource.url = GURL("http://www.malware.com/");
     resource.original_url = web_contents()->GetURL();
@@ -311,18 +329,39 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
     csd_host_->OnSafeBrowsingHit(resource);
     resource.callback.Reset();
     ASSERT_TRUE(csd_host_->DidShowSBInterstitial());
-    ASSERT_TRUE(csd_host_->unsafe_resource_.get());
-    // Test that the resource above was copied.
-    EXPECT_EQ(resource.url, csd_host_->unsafe_resource_->url);
-    EXPECT_EQ(resource.original_url, csd_host_->unsafe_resource_->original_url);
-    EXPECT_EQ(resource.is_subresource,
-              csd_host_->unsafe_resource_->is_subresource);
-    EXPECT_EQ(resource.threat_type, csd_host_->unsafe_resource_->threat_type);
-    EXPECT_TRUE(csd_host_->unsafe_resource_->callback.is_null());
-    EXPECT_EQ(resource.render_process_host_id,
-              csd_host_->unsafe_resource_->render_process_host_id);
-    EXPECT_EQ(resource.render_view_id,
-              csd_host_->unsafe_resource_->render_view_id);
+    TestUnsafeResourceCopied(resource);
+  }
+
+  void NavigateWithSBHitAndCommit(const GURL& url) {
+    // Create a pending navigation.
+    controller().LoadURL(
+        url, content::Referrer(), content::PAGE_TRANSITION_LINK, std::string());
+
+    ASSERT_TRUE(pending_rvh());
+    if (web_contents()->GetRenderViewHost()->GetProcess()->GetID() ==
+        pending_rvh()->GetProcess()->GetID()) {
+      EXPECT_NE(web_contents()->GetRenderViewHost()->GetRoutingID(),
+                pending_rvh()->GetRoutingID());
+    }
+
+    // Simulate a safebrowsing hit before navigation completes.
+    UnsafeResource resource;
+    resource.url = url;
+    resource.original_url = url;
+    resource.is_subresource = false;
+    resource.threat_type = SB_THREAT_TYPE_URL_MALWARE;
+    resource.callback = base::Bind(&EmptyUrlCheckCallback);
+    resource.render_process_host_id = pending_rvh()->GetProcess()->GetID();
+    resource.render_view_id = pending_rvh()->GetRoutingID();
+    csd_host_->OnSafeBrowsingHit(resource);
+    resource.callback.Reset();
+
+    // LoadURL created a navigation entry, now simulate the RenderView sending
+    // a notification that it actually navigated.
+    content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
+
+    ASSERT_TRUE(csd_host_->DidShowSBInterstitial());
+    TestUnsafeResourceCopied(resource);
   }
 
  protected:
@@ -601,9 +640,9 @@ TEST_F(ClientSideDetectionHostTest,
 }
 
 TEST_F(ClientSideDetectionHostTest,
-       OnPhishingDetectionDoneVerdictNotPhishingButSBMatch) {
+       OnPhishingDetectionDoneVerdictNotPhishingButSBMatchSubResource) {
   // Case 7: renderer sends a verdict string that isn't phishing but the URL
-  // was on the regular phishing or malware lists.
+  // of a subresource was on the regular phishing or malware lists.
   GURL url("http://not-phishing.com/");
   ClientPhishingRequest verdict;
   verdict.set_url(url.spec());
@@ -615,7 +654,45 @@ TEST_F(ClientSideDetectionHostTest,
                                 &kFalse, &kFalse);
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
-  SetUnsafeResourceToCurrent();
+  SetUnsafeSubResourceForCurrent();
+
+  EXPECT_CALL(*csd_service_,
+              SendClientReportPhishingRequest(
+                  Pointee(PartiallyEqualVerdict(verdict)), CallbackIsNull()))
+      .WillOnce(DoAll(DeleteArg<0>(), QuitUIMessageLoop()));
+  std::vector<GURL> redirect_chain;
+  redirect_chain.push_back(url);
+  SetRedirectChain(redirect_chain);
+  OnPhishingDetectionDone(verdict.SerializeAsString());
+  base::MessageLoop::current()->Run();
+  EXPECT_TRUE(Mock::VerifyAndClear(csd_host_.get()));
+}
+
+TEST_F(ClientSideDetectionHostTest,
+       OnPhishingDetectionDoneVerdictNotPhishingButSBMatchOnNewRVH) {
+  // When navigating to a different host (thus creating a pending RVH) which
+  // matches regular malware list, and after navigation the renderer sends a
+  // verdict string that isn't phishing, we should still send the report.
+
+  // Do an initial navigation to a safe host.
+  GURL start_url("http://safe.example.com/");
+  ExpectPreClassificationChecks(
+      start_url, &kFalse, &kFalse, &kFalse, &kFalse, &kFalse, &kFalse);
+  NavigateAndCommit(start_url);
+  WaitAndCheckPreClassificationChecks();
+
+  // Now navigate to a different host which will have a malware hit before the
+  // navigation commits.
+  GURL url("http://malware-but-not-phishing.com/");
+  ClientPhishingRequest verdict;
+  verdict.set_url(url.spec());
+  verdict.set_client_score(0.1f);
+  verdict.set_is_phishing(false);
+
+  ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
+                                &kFalse, &kFalse);
+  NavigateWithSBHitAndCommit(url);
+  WaitAndCheckPreClassificationChecks();
 
   EXPECT_CALL(*csd_service_,
               SendClientReportPhishingRequest(
