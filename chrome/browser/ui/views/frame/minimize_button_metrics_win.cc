@@ -12,18 +12,35 @@
 namespace {
 
 int GetMinimizeButtonOffsetForWindow(HWND hwnd) {
-  // The WM_GETTITLEBARINFOEX message can fail if we are not active/visible.
+  // The WM_GETTITLEBARINFOEX message can fail if we are not active/visible. By
+  // fail we get a location of 0; the return status code is always the same and
+  // similarly the state never seems to change (titlebar_info.rgstate).
   TITLEBARINFOEX titlebar_info = {0};
   titlebar_info.cbSize = sizeof(TITLEBARINFOEX);
   SendMessage(hwnd, WM_GETTITLEBARINFOEX, 0,
               reinterpret_cast<WPARAM>(&titlebar_info));
 
-  // NOTE: TITLEBARINFOEX coordinates are not scaled (they are physical). As
-  // Chrome is not DPIAware we need to properly scale the coordinates as
-  // MapWindowPoints() expects scaled coordinates.
-  POINT minimize_button_corner = { titlebar_info.rgrect[2].left /
-                                   gfx::win::GetUndocumentedDPIScale(),
-                                   0 };
+  if (titlebar_info.rgrect[2].left == titlebar_info.rgrect[2].right ||
+      (titlebar_info.rgstate[2] & (STATE_SYSTEM_INVISIBLE ||
+                                   STATE_SYSTEM_OFFSCREEN ||
+                                   STATE_SYSTEM_UNAVAILABLE))) {
+    return 0;
+  }
+
+  // Most versions of Windows return screen coordinates for
+  // WM_GETTITLEBARINFOEX. Since chrome is not dpi aware (currently) we need to
+  // unscale these coordinates. Surface Pro seems to be unique, in that it
+  // returns local coordinates (eg they don't need to be scaled). There doesn't
+  // appear to be a clear way to detect this, so we assume that if the minimize
+  // button is outside the bounds of the window coordinates are scaled.
+  RECT window_rect = {0};
+  GetWindowRect(hwnd, &window_rect);
+  POINT minimize_button_corner = { titlebar_info.rgrect[2].left, 0 };
+  if (minimize_button_corner.x > window_rect.right) {
+    minimize_button_corner.x =
+        static_cast<int>(minimize_button_corner.x /
+                         gfx::win::GetUndocumentedDPIScale());
+  }
   MapWindowPoints(HWND_DESKTOP, hwnd, &minimize_button_corner, 1);
   return minimize_button_corner.x / gfx::win::GetDeviceScaleFactor();
 }
