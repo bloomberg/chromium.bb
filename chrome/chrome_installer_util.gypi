@@ -112,7 +112,6 @@
             '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
             '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
             '<(DEPTH)/chrome/common_constants.gyp:common_constants',
-            '<(DEPTH)/content/content.gyp:content_common',
             '<(DEPTH)/courgette/courgette.gyp:courgette_lib',
             '<(DEPTH)/crypto/crypto.gyp:crypto',
             '<(DEPTH)/third_party/bspatch/bspatch.gyp:bspatch',
@@ -161,14 +160,6 @@
             'installer/util/user_experiment.cc',
             'installer/util/user_experiment.h',
           ],
-          'conditions': [
-            ['component=="shared_library"', {
-              'sources': [ '../content/public/common/content_switches.cc' ],
-              'defines': [ 'COMPILE_CONTENT_STATICALLY'],
-            }, {
-              'dependencies': ['<(DEPTH)/content/content.gyp:content_common'],
-            }],
-          ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         },
@@ -210,7 +201,6 @@
             '<(DEPTH)/base/base.gyp:base',
             '<(DEPTH)/chrome/chrome_resources.gyp:chrome_resources',
             '<(DEPTH)/chrome/chrome_resources.gyp:chrome_strings',
-            '<(DEPTH)/chrome/common_constants.gyp:common_constants',
           ],
           'sources': [
             'installer/util/google_update_experiment_util.cc',
@@ -222,12 +212,6 @@
           ],
           'include_dirs': [
             '<(DEPTH)',
-          ],
-          'conditions': [
-            ['component == "shared_library"', {
-              'sources': [ '../content/public/common/content_switches.cc' ],
-              'defines': [ 'COMPILE_CONTENT_STATICALLY'],
-            }],
           ],
         }
       ],

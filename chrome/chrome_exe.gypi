@@ -22,7 +22,8 @@
         'app/client_util.h',
         'app/metro_driver_win.cc',
         'app/metro_driver_win.h',
-        '../content/app/startup_helper_win.cc',
+        '<(DEPTH)/content/app/startup_helper_win.cc',
+        '<(DEPTH)/content/public/common/content_switches.cc',
       ],
       'mac_bundle_resources': [
         'app/app-Info.plist',

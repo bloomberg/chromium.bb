@@ -42,6 +42,7 @@
         '../../base/base.gyp:base',
         '../../breakpad/breakpad.gyp:breakpad_handler',
         '../../chrome/chrome.gyp:installer_util',
+        '../../content/content.gyp:content_common',
         '../../google_update/google_update.gyp:google_update',
         '../../ui/gfx/gfx.gyp:gfx',
         '../../ui/ui.gyp:ui',
