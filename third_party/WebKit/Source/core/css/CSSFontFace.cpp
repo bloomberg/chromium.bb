@@ -67,13 +67,15 @@ void CSSFontFace::setSegmentedFontFace(CSSSegmentedFontFace* segmentedFontFace)
     m_segmentedFontFace = segmentedFontFace;
 }
 
-void CSSFontFace::beginLoadingFontSoon(FontResource* resource)
+void CSSFontFace::beginLoadIfNeeded(CSSFontFaceSource* source)
 {
     if (!m_segmentedFontFace)
         return;
 
-    CSSFontSelector* fontSelector = m_segmentedFontFace->fontSelector();
-    fontSelector->beginLoadingFontSoon(resource);
+    if (source->resource() && source->resource()->stillNeedsLoad()) {
+        CSSFontSelector* fontSelector = m_segmentedFontFace->fontSelector();
+        fontSelector->beginLoadingFontSoon(source->resource());
+    }
 
     if (loadStatus() == FontFace::Unloaded)
         setLoadStatus(FontFace::Loading);
@@ -113,12 +115,9 @@ PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontD
     if (!isValid())
         return 0;
 
-    ASSERT(m_segmentedFontFace);
-    CSSFontSelector* fontSelector = m_segmentedFontFace->fontSelector();
-
     size_t size = m_sources.size();
     for (size_t i = 0; i < size; ++i) {
-        if (RefPtr<SimpleFontData> result = m_sources[i]->getFontData(fontDescription, fontSelector)) {
+        if (RefPtr<SimpleFontData> result = m_sources[i]->getFontData(fontDescription)) {
             m_activeSource = m_sources[i].get();
             if (loadStatus() == FontFace::Unloaded && (m_sources[i]->isLoading() || m_sources[i]->isLoaded()))
                 setLoadStatus(FontFace::Loading);
@@ -155,9 +154,9 @@ void CSSFontFace::willUseFontData(const FontDescription& fontDescription)
     for (size_t i = 0; i < size; ++i) {
         if (!m_sources[i]->isValid() || (m_sources[i]->isLocal() && !m_sources[i]->isLocalFontAvailable(fontDescription)))
             continue;
-        if (!m_sources[i]->isLocal()) {
+        if (!m_sources[i]->isLocal() && !m_sources[i]->isLoaded()) {
             m_activeSource = m_sources[i].get();
-            m_sources[i]->willUseFontData();
+            beginLoadIfNeeded(m_activeSource);
         }
         break;
     }

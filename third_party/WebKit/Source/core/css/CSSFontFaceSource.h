@@ -36,7 +36,6 @@ namespace WebCore {
 
 class FontResource;
 class CSSFontFace;
-class CSSFontSelector;
 class FontDescription;
 class SimpleFontData;
 #if ENABLE(SVG_FONTS)
@@ -55,14 +54,13 @@ public:
     bool isLoaded() const;
     bool isValid() const;
 
+    FontResource* resource() { return m_font.get(); }
     void setFontFace(CSSFontFace* face) { m_face = face; }
 
     virtual void didStartFontLoad(FontResource*) OVERRIDE;
     virtual void fontLoaded(FontResource*);
 
-    PassRefPtr<SimpleFontData> getFontData(const FontDescription&, CSSFontSelector*);
-
-    void pruneTable();
+    PassRefPtr<SimpleFontData> getFontData(const FontDescription&);
 
 #if ENABLE(SVG_FONTS)
     SVGFontFaceElement* svgFontFaceElement() const;
@@ -73,8 +71,7 @@ public:
 
     bool ensureFontData();
     bool isLocalFontAvailable(const FontDescription&);
-    void willUseFontData();
-    void beginLoadingFontSoon();
+    void beginLoadIfNeeded();
 
 private:
     typedef HashMap<unsigned, RefPtr<SimpleFontData> > FontDataTable; // The hash key is composed of size synthetic styles.
@@ -82,7 +79,6 @@ private:
     class FontLoadHistograms {
     public:
         FontLoadHistograms() : m_loadStartTime(0) { }
-        void willUseFontData();
         void loadStarted();
         void recordLocalFont(bool loadSuccess);
         void recordRemoteFont(const FontResource*);
@@ -91,6 +87,7 @@ private:
         double m_loadStartTime;
     };
 
+    void pruneTable();
     void startLoadingTimerFired(Timer<CSSFontFaceSource>*);
 
     AtomicString m_string; // URI for remote, built-in font name for local.

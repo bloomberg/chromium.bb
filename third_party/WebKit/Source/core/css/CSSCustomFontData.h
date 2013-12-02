@@ -39,7 +39,7 @@ public:
     {
         if (!m_isUsed && m_isLoadingFallback && m_fontFaceSource) {
             m_isUsed = true;
-            m_fontFaceSource->beginLoadingFontSoon();
+            m_fontFaceSource->beginLoadIfNeeded();
         }
     }
 
