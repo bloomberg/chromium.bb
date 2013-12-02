@@ -58,7 +58,7 @@ class V8ValueConverterImplTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    context_.Dispose();
+    context_.Reset();
   }
 
   std::string GetString(base::DictionaryValue* value, const std::string& key) {
@@ -72,7 +72,8 @@ class V8ValueConverterImplTest : public testing::Test {
 
   std::string GetString(v8::Handle<v8::Object> value, const std::string& key) {
     v8::Handle<v8::String> temp =
-        value->Get(v8::String::New(key.c_str())).As<v8::String>();
+        value->Get(v8::String::NewFromUtf8(isolate_, key.c_str()))
+            .As<v8::String>();
     if (temp.IsEmpty()) {
       ADD_FAILURE();
       return std::string();
@@ -110,7 +111,8 @@ class V8ValueConverterImplTest : public testing::Test {
   }
 
   bool IsNull(v8::Handle<v8::Object> value, const std::string& key) {
-    v8::Handle<v8::Value> child = value->Get(v8::String::New(key.c_str()));
+    v8::Handle<v8::Value> child =
+        value->Get(v8::String::NewFromUtf8(isolate_, key.c_str()));
     if (child.IsEmpty()) {
       ADD_FAILURE();
       return false;
@@ -153,7 +155,7 @@ class V8ValueConverterImplTest : public testing::Test {
     }
 
     v8::Handle<v8::Object> object(v8::Object::New());
-    object->Set(v8::String::New("test"), val);
+    object->Set(v8::String::NewFromUtf8(isolate_, "test"), val);
     scoped_ptr<base::DictionaryValue> dictionary(
         static_cast<base::DictionaryValue*>(
             converter.FromV8Value(object, context)));
@@ -168,7 +170,7 @@ class V8ValueConverterImplTest : public testing::Test {
       EXPECT_FALSE(dictionary->HasKey("test"));
     }
 
-    v8::Handle<v8::Array> array(v8::Array::New());
+    v8::Handle<v8::Array> array(v8::Array::New(isolate_));
     array->Set(0, val);
     scoped_ptr<base::ListValue> list(
         static_cast<base::ListValue*>(converter.FromV8Value(array, context)));
@@ -216,9 +218,9 @@ TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
       "}");
 
   v8::HandleScope handle_scope(isolate_);
-  v8::Context::Scope context_scope(isolate_, context_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
 
   V8ValueConverterImpl converter;
   v8::Handle<v8::Object> v8_object =
@@ -227,21 +229,34 @@ TEST_F(V8ValueConverterImplTest, BasicRoundTrip) {
 
   EXPECT_EQ(static_cast<const base::DictionaryValue&>(*original_root).size(),
             v8_object->GetPropertyNames()->Length());
-  EXPECT_TRUE(v8_object->Get(v8::String::New("null"))->IsNull());
-  EXPECT_TRUE(v8_object->Get(v8::String::New("true"))->IsTrue());
-  EXPECT_TRUE(v8_object->Get(v8::String::New("false"))->IsFalse());
-  EXPECT_TRUE(v8_object->Get(v8::String::New("positive-int"))->IsInt32());
-  EXPECT_TRUE(v8_object->Get(v8::String::New("negative-int"))->IsInt32());
-  EXPECT_TRUE(v8_object->Get(v8::String::New("zero"))->IsInt32());
-  EXPECT_TRUE(v8_object->Get(v8::String::New("double"))->IsNumber());
   EXPECT_TRUE(
-      v8_object->Get(v8::String::New("big-integral-double"))->IsNumber());
-  EXPECT_TRUE(v8_object->Get(v8::String::New("string"))->IsString());
-  EXPECT_TRUE(v8_object->Get(v8::String::New("empty-string"))->IsString());
-  EXPECT_TRUE(v8_object->Get(v8::String::New("dictionary"))->IsObject());
-  EXPECT_TRUE(v8_object->Get(v8::String::New("empty-dictionary"))->IsObject());
-  EXPECT_TRUE(v8_object->Get(v8::String::New("list"))->IsArray());
-  EXPECT_TRUE(v8_object->Get(v8::String::New("empty-list"))->IsArray());
+      v8_object->Get(v8::String::NewFromUtf8(isolate_, "null"))->IsNull());
+  EXPECT_TRUE(
+      v8_object->Get(v8::String::NewFromUtf8(isolate_, "true"))->IsTrue());
+  EXPECT_TRUE(
+      v8_object->Get(v8::String::NewFromUtf8(isolate_, "false"))->IsFalse());
+  EXPECT_TRUE(v8_object->Get(v8::String::NewFromUtf8(isolate_, "positive-int"))
+                  ->IsInt32());
+  EXPECT_TRUE(v8_object->Get(v8::String::NewFromUtf8(isolate_, "negative-int"))
+                  ->IsInt32());
+  EXPECT_TRUE(
+      v8_object->Get(v8::String::NewFromUtf8(isolate_, "zero"))->IsInt32());
+  EXPECT_TRUE(
+      v8_object->Get(v8::String::NewFromUtf8(isolate_, "double"))->IsNumber());
+  EXPECT_TRUE(v8_object->Get(v8::String::NewFromUtf8(
+                                 isolate_, "big-integral-double"))->IsNumber());
+  EXPECT_TRUE(
+      v8_object->Get(v8::String::NewFromUtf8(isolate_, "string"))->IsString());
+  EXPECT_TRUE(v8_object->Get(v8::String::NewFromUtf8(isolate_, "empty-string"))
+                  ->IsString());
+  EXPECT_TRUE(v8_object->Get(v8::String::NewFromUtf8(isolate_, "dictionary"))
+                  ->IsObject());
+  EXPECT_TRUE(v8_object->Get(v8::String::NewFromUtf8(
+                                 isolate_, "empty-dictionary"))->IsObject());
+  EXPECT_TRUE(
+      v8_object->Get(v8::String::NewFromUtf8(isolate_, "list"))->IsArray());
+  EXPECT_TRUE(v8_object->Get(v8::String::NewFromUtf8(isolate_, "empty-list"))
+                  ->IsArray());
 
   scoped_ptr<base::Value> new_root(converter.FromV8Value(v8_object, context));
   EXPECT_NE(original_root.get(), new_root.get());
@@ -253,9 +268,9 @@ TEST_F(V8ValueConverterImplTest, KeysWithDots) {
       base::test::ParseJson("{ \"foo.bar\": \"baz\" }");
 
   v8::HandleScope handle_scope(isolate_);
-  v8::Context::Scope context_scope(isolate_, context_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
 
   V8ValueConverterImpl converter;
   scoped_ptr<base::Value> copy(
@@ -267,9 +282,9 @@ TEST_F(V8ValueConverterImplTest, KeysWithDots) {
 
 TEST_F(V8ValueConverterImplTest, ObjectExceptions) {
   v8::HandleScope handle_scope(isolate_);
-  v8::Context::Scope context_scope(isolate_, context_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
 
   // Set up objects to throw when reading or writing 'foo'.
   const char* source =
@@ -278,11 +293,13 @@ TEST_F(V8ValueConverterImplTest, ObjectExceptions) {
       "Object.prototype.__defineGetter__('foo', "
       "    function() { throw new Error('muah!'); });";
 
-  v8::Handle<v8::Script> script(v8::Script::New(v8::String::New(source)));
+  v8::Handle<v8::Script> script(
+      v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
   script->Run();
 
-  v8::Handle<v8::Object> object(v8::Object::New());
-  object->Set(v8::String::New("bar"), v8::String::New("bar"));
+  v8::Handle<v8::Object> object(v8::Object::New(isolate_));
+  object->Set(v8::String::NewFromUtf8(isolate_, "bar"),
+              v8::String::NewFromUtf8(isolate_, "bar"));
 
   // Converting from v8 value should replace the foo property with null.
   V8ValueConverterImpl converter;
@@ -307,9 +324,9 @@ TEST_F(V8ValueConverterImplTest, ObjectExceptions) {
 
 TEST_F(V8ValueConverterImplTest, ArrayExceptions) {
   v8::HandleScope handle_scope(isolate_);
-  v8::Context::Scope context_scope(isolate_, context_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
 
   const char* source = "(function() {"
       "var arr = [];"
@@ -321,7 +338,8 @@ TEST_F(V8ValueConverterImplTest, ArrayExceptions) {
       "return arr;"
       "})();";
 
-  v8::Handle<v8::Script> script(v8::Script::New(v8::String::New(source)));
+  v8::Handle<v8::Script> script(
+      v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
   v8::Handle<v8::Array> array = script->Run().As<v8::Array>();
   ASSERT_FALSE(array.IsEmpty());
 
@@ -346,18 +364,20 @@ TEST_F(V8ValueConverterImplTest, ArrayExceptions) {
 
 TEST_F(V8ValueConverterImplTest, WeirdTypes) {
   v8::HandleScope handle_scope(isolate_);
-  v8::Context::Scope context_scope(isolate_, context_);
+  v8::Local<v8::Context> context =
+      v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
 
-  v8::Handle<v8::RegExp> regex(
-      v8::RegExp::New(v8::String::New("."), v8::RegExp::kNone));
+  v8::Handle<v8::RegExp> regex(v8::RegExp::New(
+      v8::String::NewFromUtf8(isolate_, "."), v8::RegExp::kNone));
 
   V8ValueConverterImpl converter;
   TestWeirdType(converter,
-                v8::Undefined(),
+                v8::Undefined(isolate_),
                 base::Value::TYPE_NULL,  // Arbitrary type, result is NULL.
                 scoped_ptr<base::Value>());
   TestWeirdType(converter,
-                v8::Date::New(1000),
+                v8::Date::New(isolate_, 1000),
                 base::Value::TYPE_DICTIONARY,
                 scoped_ptr<base::Value>(new base::DictionaryValue()));
   TestWeirdType(converter,
@@ -367,7 +387,7 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
 
   converter.SetDateAllowed(true);
   TestWeirdType(converter,
-                v8::Date::New(1000),
+                v8::Date::New(isolate_, 1000),
                 base::Value::TYPE_DOUBLE,
                 scoped_ptr<base::Value>(new base::FundamentalValue(1.0)));
 
@@ -380,16 +400,17 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
 
 TEST_F(V8ValueConverterImplTest, Prototype) {
   v8::HandleScope handle_scope(isolate_);
-  v8::Context::Scope context_scope(isolate_, context_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
 
   const char* source = "(function() {"
       "Object.prototype.foo = 'foo';"
       "return {};"
       "})();";
 
-  v8::Handle<v8::Script> script(v8::Script::New(v8::String::New(source)));
+  v8::Handle<v8::Script> script(
+      v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
   v8::Handle<v8::Object> object = script->Run().As<v8::Object>();
   ASSERT_FALSE(object.IsEmpty());
 
@@ -403,15 +424,16 @@ TEST_F(V8ValueConverterImplTest, Prototype) {
 
 TEST_F(V8ValueConverterImplTest, StripNullFromObjects) {
   v8::HandleScope handle_scope(isolate_);
-  v8::Context::Scope context_scope(isolate_, context_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
 
   const char* source = "(function() {"
       "return { foo: undefined, bar: null };"
       "})();";
 
-  v8::Handle<v8::Script> script(v8::Script::New(v8::String::New(source)));
+  v8::Handle<v8::Script> script(
+      v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
   v8::Handle<v8::Object> object = script->Run().As<v8::Object>();
   ASSERT_FALSE(object.IsEmpty());
 
@@ -427,16 +449,17 @@ TEST_F(V8ValueConverterImplTest, StripNullFromObjects) {
 
 TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
   v8::HandleScope handle_scope(isolate_);
-  v8::Context::Scope context_scope(isolate_, context_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
 
   V8ValueConverterImpl converter;
 
   v8::Handle<v8::Object> object = v8::Object::New().As<v8::Object>();
   ASSERT_FALSE(object.IsEmpty());
-  object->Set(v8::String::New("foo"), v8::String::New("bar"));
-  object->Set(v8::String::New("obj"), object);
+  object->Set(v8::String::NewFromUtf8(isolate_, "foo"),
+              v8::String::NewFromUtf8(isolate_, "bar"));
+  object->Set(v8::String::NewFromUtf8(isolate_, "obj"), object);
 
   scoped_ptr<base::DictionaryValue> object_result(
       static_cast<base::DictionaryValue*>(
@@ -445,9 +468,9 @@ TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
   EXPECT_EQ(2u, object_result->size());
   EXPECT_TRUE(IsNull(object_result.get(), "obj"));
 
-  v8::Handle<v8::Array> array = v8::Array::New().As<v8::Array>();
+  v8::Handle<v8::Array> array = v8::Array::New(isolate_).As<v8::Array>();
   ASSERT_FALSE(array.IsEmpty());
-  array->Set(0, v8::String::New("1"));
+  array->Set(0, v8::String::NewFromUtf8(isolate_, "1"));
   array->Set(1, array);
 
   scoped_ptr<base::ListValue> list_result(
@@ -459,9 +482,9 @@ TEST_F(V8ValueConverterImplTest, RecursiveObjects) {
 
 TEST_F(V8ValueConverterImplTest, WeirdProperties) {
   v8::HandleScope handle_scope(isolate_);
-  v8::Context::Scope context_scope(isolate_, context_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
 
   const char* source = "(function() {"
       "return {"
@@ -474,7 +497,8 @@ TEST_F(V8ValueConverterImplTest, WeirdProperties) {
       "};"
       "})();";
 
-  v8::Handle<v8::Script> script(v8::Script::New(v8::String::New(source)));
+  v8::Handle<v8::Script> script(
+      v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
   v8::Handle<v8::Object> object = script->Run().As<v8::Object>();
   ASSERT_FALSE(object.IsEmpty());
 
@@ -496,9 +520,9 @@ TEST_F(V8ValueConverterImplTest, WeirdProperties) {
 
 TEST_F(V8ValueConverterImplTest, ArrayGetters) {
   v8::HandleScope handle_scope(isolate_);
-  v8::Context::Scope context_scope(isolate_, context_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
 
   const char* source = "(function() {"
       "var a = [0];"
@@ -506,7 +530,8 @@ TEST_F(V8ValueConverterImplTest, ArrayGetters) {
       "return a;"
       "})();";
 
-  v8::Handle<v8::Script> script(v8::Script::New(v8::String::New(source)));
+  v8::Handle<v8::Script> script(
+      v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
   v8::Handle<v8::Array> array = script->Run().As<v8::Array>();
   ASSERT_FALSE(array.IsEmpty());
 
@@ -519,16 +544,17 @@ TEST_F(V8ValueConverterImplTest, ArrayGetters) {
 
 TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
   v8::HandleScope handle_scope(isolate_);
-  v8::Context::Scope context_scope(isolate_, context_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
 
   v8::Handle<v8::Object> object;
   {
     const char* source = "(function() {"
         "return { foo: undefined, bar: null, baz: function(){} };"
         "})();";
-    v8::Handle<v8::Script> script(v8::Script::New(v8::String::New(source)));
+    v8::Handle<v8::Script> script(
+        v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
     object = script->Run().As<v8::Object>();
     ASSERT_FALSE(object.IsEmpty());
   }
@@ -538,7 +564,8 @@ TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
     const char* source = "(function() {"
         "return [ undefined, null, function(){} ];"
         "})();";
-    v8::Handle<v8::Script> script(v8::Script::New(v8::String::New(source)));
+    v8::Handle<v8::Script> script(
+        v8::Script::New(v8::String::NewFromUtf8(isolate_, source)));
     array = script->Run().As<v8::Array>();
     ASSERT_FALSE(array.IsEmpty());
   }
@@ -558,9 +585,9 @@ TEST_F(V8ValueConverterImplTest, UndefinedValueBehavior) {
 
 TEST_F(V8ValueConverterImplTest, ObjectsWithClashingIdentityHash) {
   v8::HandleScope handle_scope(isolate_);
-  v8::Context::Scope context_scope(isolate_, context_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
   V8ValueConverterImpl converter;
 
   // We check that the converter checks identity correctly by disabling the
@@ -568,11 +595,11 @@ TEST_F(V8ValueConverterImplTest, ObjectsWithClashingIdentityHash) {
   ScopedAvoidIdentityHashForTesting scoped_hash_avoider(&converter);
 
   // Create the v8::Object to be converted.
-  v8::Handle<v8::Array> root(v8::Array::New(4));
-  root->Set(0, v8::Handle<v8::Object>(v8::Object::New()));
-  root->Set(1, v8::Handle<v8::Object>(v8::Object::New()));
-  root->Set(2, v8::Handle<v8::Object>(v8::Array::New(0)));
-  root->Set(3, v8::Handle<v8::Object>(v8::Array::New(0)));
+  v8::Handle<v8::Array> root(v8::Array::New(isolate_, 4));
+  root->Set(0, v8::Handle<v8::Object>(v8::Object::New(isolate_)));
+  root->Set(1, v8::Handle<v8::Object>(v8::Object::New(isolate_)));
+  root->Set(2, v8::Handle<v8::Object>(v8::Array::New(isolate_, 0)));
+  root->Set(3, v8::Handle<v8::Object>(v8::Array::New(isolate_, 0)));
 
   // The expected base::Value result.
   scoped_ptr<base::Value> expected = base::test::ParseJson("[{},{},[],[]]");
@@ -587,13 +614,13 @@ TEST_F(V8ValueConverterImplTest, ObjectsWithClashingIdentityHash) {
 
 TEST_F(V8ValueConverterImplTest, DetectCycles) {
   v8::HandleScope handle_scope(isolate_);
-  v8::Context::Scope context_scope(isolate_, context_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
   V8ValueConverterImpl converter;
 
   // Create a recursive array.
-  v8::Handle<v8::Array> recursive_array(v8::Array::New(1));
+  v8::Handle<v8::Array> recursive_array(v8::Array::New(isolate_, 1));
   recursive_array->Set(0, recursive_array);
 
   // The first repetition should be trimmed and replaced by a null value.
@@ -611,8 +638,10 @@ TEST_F(V8ValueConverterImplTest, DetectCycles) {
   const std::string key("key");
   v8::Handle<v8::Object> recursive_object(v8::Object::New());
   v8::TryCatch try_catch;
-  recursive_object->Set(v8::String::New(key.c_str(), key.length()),
-                        recursive_object);
+  recursive_object->Set(
+      v8::String::NewFromUtf8(
+          isolate_, key.c_str(), v8::String::kNormalString, key.length()),
+      recursive_object);
   ASSERT_FALSE(try_catch.HasCaught());
 
   // The first repetition should be trimmed and replaced by a null value.
@@ -629,9 +658,9 @@ TEST_F(V8ValueConverterImplTest, DetectCycles) {
 
 TEST_F(V8ValueConverterImplTest, MaxRecursionDepth) {
   v8::HandleScope handle_scope(isolate_);
-  v8::Context::Scope context_scope(isolate_, context_);
   v8::Local<v8::Context> context =
       v8::Local<v8::Context>::New(isolate_, context_);
+  v8::Context::Scope context_scope(context);
 
   // Must larger than kMaxRecursionDepth in v8_value_converter_impl.cc.
   int kDepth = 1000;
@@ -642,7 +671,7 @@ TEST_F(V8ValueConverterImplTest, MaxRecursionDepth) {
   v8::Local<v8::Object> leaf = deep_object;
   for (int i = 0; i < kDepth; ++i) {
     v8::Local<v8::Object> new_object = v8::Object::New();
-    leaf->Set(v8::String::New(kKey), new_object);
+    leaf->Set(v8::String::NewFromUtf8(isolate_, kKey), new_object);
     leaf = new_object;
   }
 
