@@ -34,6 +34,7 @@ void WrenchToolbarButton::OnPaint(gfx::Canvas* canvas) {
 
   wrench_icon_painter_->Paint(
       canvas, GetThemeProvider(), gfx::Rect(size()), GetCurrentBezelType());
+  OnPaintFocusBorder(canvas);
 }
 
 void WrenchToolbarButton::ScheduleWrenchIconPaint() {
