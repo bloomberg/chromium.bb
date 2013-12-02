@@ -202,7 +202,7 @@ void ConflictResolver::RemoveNonPrimaryFiles(
 void ConflictResolver::DidRemoveFile(const SyncStatusCallback& callback,
                                      const std::string& file_id,
                                      google_apis::GDataErrorCode error) {
-  if (error != google_apis::HTTP_PRECONDITION) {
+  if (error == google_apis::HTTP_PRECONDITION) {
     callback.Run(SYNC_STATUS_RETRY);
     return;
   }
