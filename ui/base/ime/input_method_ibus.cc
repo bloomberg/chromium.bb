@@ -4,12 +4,6 @@
 
 #include "ui/base/ime/input_method_ibus.h"
 
-#include <X11/X.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#undef FocusIn
-#undef FocusOut
-
 #include <algorithm>
 #include <cstring>
 #include <set>
@@ -600,16 +594,7 @@ void InputMethodIBus::DeleteSurroundingText(int32 offset, uint32 length) {
 }
 
 bool InputMethodIBus::ExecuteCharacterComposer(const ui::KeyEvent& event) {
-  if (!event.HasNativeEvent())
-    return false;
-  XEvent* xevent = event.native_event();
-  if (xevent->type == KeyPress || xevent->type == KeyRelease)
-    return false;
-  XKeyEvent x_key = xevent->xkey;
-  KeySym keysym = NoSymbol;
-  ::XLookupString(&x_key, NULL, 0, &keysym, NULL);
-  bool consumed = character_composer_.FilterKeyPress(keysym, x_key.keycode,
-                                                     event.flags());
+  bool consumed = character_composer_.FilterKeyPress(event);
 
   suppress_next_result_ = false;
   chromeos::IBusText preedit;

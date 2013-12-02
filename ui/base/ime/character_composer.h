@@ -11,6 +11,7 @@
 #include "ui/base/ui_export.h"
 
 namespace ui {
+class KeyEvent;
 
 // A class to recognize compose and dead key sequence.
 // Outputs composed character.
@@ -22,6 +23,31 @@ class UI_EXPORT CharacterComposer {
   void Reset();
 
   // Filters keypress.
+  // Returns true if the keypress is recognized as a part of composition
+  // sequence.
+  // Fabricated events which don't have the native event, are not supported.
+  bool FilterKeyPress(const ui::KeyEvent& event);
+
+  // Returns a string consisting of composed character.
+  // Empty string is returned when there is no composition result.
+  const string16& composed_character() const { return composed_character_; }
+
+  // Returns the preedit string.
+  const string16& preedit_string() const { return preedit_string_; }
+
+ private:
+  friend class CharacterComposerTest;
+
+  // An enum to describe composition mode.
+  enum CompositionMode {
+    // This is the initial state.
+    // Composite a character with dead-keys and compose-key.
+    KEY_SEQUENCE_MODE,
+    // Composite a character with a hexadecimal unicode sequence.
+    HEX_MODE,
+  };
+
+  // Filters keypress using IBus defined value.
   // Returns true if the keypress is recognized as a part of composition
   // sequence.
   // |keyval| must be a GDK_KEY_* constant.
@@ -39,28 +65,11 @@ class UI_EXPORT CharacterComposer {
   //
   // TODO(nona): Actually a X KeySym is passed to |keyval|, so we should use
   // XK_* rather than GDK_KEY_*.
-  bool FilterKeyPress(unsigned int keyval, unsigned int keycode, int flags);
-
-  // Returns a string consisting of composed character.
-  // Empty string is returned when there is no composition result.
-  const string16& composed_character() const { return composed_character_; }
-
-  // Returns the preedit string.
-  const string16& preedit_string() const { return preedit_string_; }
-
- private:
-  // An enum to describe composition mode.
-  enum CompositionMode {
-    // This is the initial state.
-    // Composite a character with dead-keys and compose-key.
-    KEY_SEQUENCE_MODE,
-    // Composite a character with a hexadecimal unicode sequence.
-    HEX_MODE,
-  };
+  bool FilterKeyPressInternal(unsigned int keyval, unsigned int keycode,
+                              int flags);
 
   // Filters keypress in key sequence mode.
-  bool FilterKeyPressSequenceMode(unsigned int keyval, unsigned int keycode,
-                                  int flags);
+  bool FilterKeyPressSequenceMode(unsigned int keyval, int flags);
 
   // Filters keypress in hexadecimal mode.
   bool FilterKeyPressHexMode(unsigned int keyval, unsigned int keycode,

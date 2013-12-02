@@ -12,118 +12,134 @@
 
 namespace ui {
 
-namespace {
+class CharacterComposerTest : public testing::Test {
+ protected:
+  bool FilterKeyPress(CharacterComposer* character_composer,
+                      uint key,
+                      uint keycode,
+                      int flags) {
+    return character_composer->FilterKeyPressInternal(key, keycode, flags);
+  }
 
-// Expects key is not filtered and no character is composed.
-void ExpectKeyNotFiltered(CharacterComposer* character_composer,
-                          uint key,
-                          int flags) {
-  EXPECT_FALSE(character_composer->FilterKeyPress(key, 0, flags));
-  EXPECT_TRUE(character_composer->composed_character().empty());
-}
+  // Expects key is not filtered and no character is composed.
+  void ExpectKeyNotFilteredWithKeyCode(CharacterComposer* character_composer,
+                                       uint key,
+                                       uint keycode,
+                                       int flags) {
+    EXPECT_FALSE(character_composer->FilterKeyPressInternal(key, keycode,
+                                                            flags));
+    EXPECT_TRUE(character_composer->composed_character().empty());
+  }
 
-// Expects key is filtered and no character is composed.
-void ExpectKeyFiltered(CharacterComposer* character_composer,
-                       uint key,
-                       int flags) {
-  EXPECT_TRUE(character_composer->FilterKeyPress(key, 0, flags));
-  EXPECT_TRUE(character_composer->composed_character().empty());
-}
+  // Expects key is filtered and no character is composed.
+  void ExpectKeyFilteredWithKeycode(CharacterComposer* character_composer,
+                                    uint key,
+                                    uint keycode,
+                                    int flags) {
+    EXPECT_TRUE(character_composer->FilterKeyPressInternal(key, keycode,
+                                                           flags));
+    EXPECT_TRUE(character_composer->composed_character().empty());
+  }
 
-// Expects key is filtered and no character is composed.
-void ExpectKeyFilteredWithKeycode(CharacterComposer* character_composer,
-                                  uint key,
-                                  uint keycode,
-                                  int flags) {
-  EXPECT_TRUE(character_composer->FilterKeyPress(key, keycode, flags));
-  EXPECT_TRUE(character_composer->composed_character().empty());
-}
+  // Expects key is not filtered and no character is composed.
+  void ExpectKeyNotFiltered(CharacterComposer* character_composer,
+                            uint key,
+                            int flags) {
+    ExpectKeyNotFilteredWithKeyCode(character_composer, key, 0, flags);
+  }
 
-// Expects |expected_character| is composed after sequence [key1, key2].
-void ExpectCharacterComposed(CharacterComposer* character_composer,
-                             uint key1,
+  // Expects key is filtered and no character is composed.
+  void ExpectKeyFiltered(CharacterComposer* character_composer,
+                         uint key,
+                         int flags) {
+    ExpectKeyFilteredWithKeycode(character_composer, key, 0, flags);
+  }
+
+  // Expects |expected_character| is composed after sequence [key1, key2].
+  void ExpectCharacterComposed(CharacterComposer* character_composer,
+                               uint key1,
                              uint key2,
-                             int flags,
-                             const string16& expected_character) {
-  ExpectKeyFiltered(character_composer, key1, flags);
-  EXPECT_TRUE(character_composer->FilterKeyPress(key2, 0, flags));
-  EXPECT_EQ(expected_character, character_composer->composed_character());
-}
+                               int flags,
+                               const string16& expected_character) {
+    ExpectKeyFiltered(character_composer, key1, flags);
+    EXPECT_TRUE(character_composer->FilterKeyPressInternal(key2, 0, flags));
+    EXPECT_EQ(expected_character, character_composer->composed_character());
+  }
 
-// Expects |expected_character| is composed after sequence [key1, key2, key3].
-void ExpectCharacterComposed(CharacterComposer* character_composer,
-                             uint key1,
-                             uint key2,
-                             uint key3,
-                             int flags,
-                             const string16& expected_character) {
-  ExpectKeyFiltered(character_composer, key1, flags);
-  ExpectCharacterComposed(character_composer, key2, key3, flags,
-                          expected_character);
-}
+  // Expects |expected_character| is composed after sequence [key1, key2, key3].
+  void ExpectCharacterComposed(CharacterComposer* character_composer,
+                               uint key1,
+                               uint key2,
+                               uint key3,
+                               int flags,
+                               const string16& expected_character) {
+    ExpectKeyFiltered(character_composer, key1, flags);
+    ExpectCharacterComposed(character_composer, key2, key3, flags,
+                            expected_character);
+  }
 
-// Expects |expected_character| is composed after sequence [key1, key2, key3,
-// key 4].
-void ExpectCharacterComposed(CharacterComposer* character_composer,
-                             uint key1,
-                             uint key2,
-                             uint key3,
-                             uint key4,
-                             int flags,
-                             const string16& expected_character) {
-  ExpectKeyFiltered(character_composer, key1, flags);
-  ExpectCharacterComposed(character_composer, key2, key3, key4, flags,
-                          expected_character);
-}
+  // Expects |expected_character| is composed after sequence [key1, key2, key3,
+  // key 4].
+  void ExpectCharacterComposed(CharacterComposer* character_composer,
+                               uint key1,
+                               uint key2,
+                               uint key3,
+                               uint key4,
+                               int flags,
+                               const string16& expected_character) {
+    ExpectKeyFiltered(character_composer, key1, flags);
+    ExpectCharacterComposed(character_composer, key2, key3, key4, flags,
+                            expected_character);
+  }
 
-// Expects |expected_character| is composed after sequence [key1, key2, key3,
-// key 4, key5].
-void ExpectCharacterComposed(CharacterComposer* character_composer,
-                             uint key1,
-                             uint key2,
-                             uint key3,
-                             uint key4,
-                             uint key5,
-                             int flags,
-                             const string16& expected_character) {
-  ExpectKeyFiltered(character_composer, key1, flags);
-  ExpectCharacterComposed(character_composer, key2, key3, key4, key5, flags,
-                          expected_character);
-}
+  // Expects |expected_character| is composed after sequence [key1, key2, key3,
+  // key 4, key5].
+  void ExpectCharacterComposed(CharacterComposer* character_composer,
+                               uint key1,
+                               uint key2,
+                               uint key3,
+                               uint key4,
+                               uint key5,
+                               int flags,
+                               const string16& expected_character) {
+    ExpectKeyFiltered(character_composer, key1, flags);
+    ExpectCharacterComposed(character_composer, key2, key3, key4, key5, flags,
+                            expected_character);
+  }
 
-// Expects |expected_character| is composed after sequence [key1, key2, key3,
-// key 4, key5, key6].
-void ExpectCharacterComposed(CharacterComposer* character_composer,
-                             uint key1,
-                             uint key2,
-                             uint key3,
-                             uint key4,
-                             uint key5,
-                             uint key6,
-                             int flags,
-                             const string16& expected_character) {
-  ExpectKeyFiltered(character_composer, key1, flags);
-  ExpectCharacterComposed(character_composer, key2, key3, key4, key5, key6,
-                          flags, expected_character);
-}
+  // Expects |expected_character| is composed after sequence [key1, key2, key3,
+  // key 4, key5, key6].
+  void ExpectCharacterComposed(CharacterComposer* character_composer,
+                               uint key1,
+                               uint key2,
+                               uint key3,
+                               uint key4,
+                               uint key5,
+                               uint key6,
+                               int flags,
+                               const string16& expected_character) {
+    ExpectKeyFiltered(character_composer, key1, flags);
+    ExpectCharacterComposed(character_composer, key2, key3, key4, key5, key6,
+                            flags, expected_character);
+  }
 
-// Expects |expected_character| is composed after sequence [{key1, keycode1}].
-void ExpectCharacterComposedWithKeyCode(CharacterComposer* character_composer,
-                                        uint key1, uint keycode1,
-                                        int flags,
-                                        const string16& expected_character) {
-  EXPECT_TRUE(character_composer->FilterKeyPress(key1, keycode1, flags));
-  EXPECT_EQ(expected_character, character_composer->composed_character());
-}
+  // Expects |expected_character| is composed after sequence [{key1, keycode1}].
+  void ExpectCharacterComposedWithKeyCode(CharacterComposer* character_composer,
+                                          uint key1, uint keycode1,
+                                          int flags,
+                                          const string16& expected_character) {
+    EXPECT_TRUE(character_composer->FilterKeyPressInternal(key1, keycode1,
+                                                           flags));
+    EXPECT_EQ(expected_character, character_composer->composed_character());
+  }
+};
 
-} // namespace
-
-TEST(CharacterComposerTest, InitialState) {
+TEST_F(CharacterComposerTest, InitialState) {
   CharacterComposer character_composer;
   EXPECT_TRUE(character_composer.composed_character().empty());
 }
 
-TEST(CharacterComposerTest, NormalKeyIsNotFiltered) {
+TEST_F(CharacterComposerTest, NormalKeyIsNotFiltered) {
   CharacterComposer character_composer;
   ExpectKeyNotFiltered(&character_composer, GDK_KEY_B, 0);
   ExpectKeyNotFiltered(&character_composer, GDK_KEY_Z, 0);
@@ -134,22 +150,20 @@ TEST(CharacterComposerTest, NormalKeyIsNotFiltered) {
   ExpectKeyNotFiltered(&character_composer, GDK_KEY_8, 0);
 }
 
-TEST(CharacterComposerTest, PartiallyMatchingSequence) {
+TEST_F(CharacterComposerTest, PartiallyMatchingSequence) {
   CharacterComposer character_composer;
 
   // Composition with sequence ['dead acute', '1'] will fail.
   ExpectKeyFiltered(&character_composer, GDK_KEY_dead_acute, 0);
-  EXPECT_TRUE(character_composer.FilterKeyPress(GDK_KEY_1, 0, 0));
-  EXPECT_TRUE(character_composer.composed_character().empty());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_1, 0);
 
   // Composition with sequence ['dead acute', 'dead circumflex', '1'] will fail.
   ExpectKeyFiltered(&character_composer, GDK_KEY_dead_acute, 0);
   ExpectKeyFiltered(&character_composer, GDK_KEY_dead_circumflex, 0);
-  EXPECT_TRUE(character_composer.FilterKeyPress(GDK_KEY_1, 0, 0));
-  EXPECT_TRUE(character_composer.composed_character().empty());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_1, 0);
 }
 
-TEST(CharacterComposerTest, FullyMatchingSequences) {
+TEST_F(CharacterComposerTest, FullyMatchingSequences) {
   CharacterComposer character_composer;
   // LATIN SMALL LETTER A WITH ACUTE
   ExpectCharacterComposed(&character_composer, GDK_KEY_dead_acute, GDK_KEY_a, 0,
@@ -175,20 +189,19 @@ TEST(CharacterComposerTest, FullyMatchingSequences) {
                           string16(1, 0x00E7));
 }
 
-TEST(CharacterComposerTest, FullyMatchingSequencesAfterMatchingFailure) {
+TEST_F(CharacterComposerTest, FullyMatchingSequencesAfterMatchingFailure) {
   CharacterComposer character_composer;
   // Composition with sequence ['dead acute', 'dead circumflex', '1'] will fail.
   ExpectKeyFiltered(&character_composer, GDK_KEY_dead_acute, 0);
   ExpectKeyFiltered(&character_composer, GDK_KEY_dead_circumflex, 0);
-  EXPECT_TRUE(character_composer.FilterKeyPress(GDK_KEY_1, 0, 0));
-  EXPECT_TRUE(character_composer.composed_character().empty());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_1, 0);
   // LATIN SMALL LETTER A WITH CIRCUMFLEX AND ACUTE
   ExpectCharacterComposed(&character_composer, GDK_KEY_dead_acute,
                           GDK_KEY_dead_circumflex, GDK_KEY_a, 0,
                           string16(1, 0x1EA5));
 }
 
-TEST(CharacterComposerTest, ComposedCharacterIsClearedAfterReset) {
+TEST_F(CharacterComposerTest, ComposedCharacterIsClearedAfterReset) {
   CharacterComposer character_composer;
   ExpectCharacterComposed(&character_composer, GDK_KEY_dead_acute, GDK_KEY_a, 0,
                           string16(1, 0x00E1));
@@ -196,30 +209,29 @@ TEST(CharacterComposerTest, ComposedCharacterIsClearedAfterReset) {
   EXPECT_TRUE(character_composer.composed_character().empty());
 }
 
-TEST(CharacterComposerTest, CompositionStateIsClearedAfterReset) {
+TEST_F(CharacterComposerTest, CompositionStateIsClearedAfterReset) {
   CharacterComposer character_composer;
   // Even though sequence ['dead acute', 'a'] will compose 'a with acute',
   // no character is composed here because of reset.
   ExpectKeyFiltered(&character_composer, GDK_KEY_dead_acute, 0);
   character_composer.Reset();
-  EXPECT_FALSE(character_composer.FilterKeyPress(GDK_KEY_a, 0, 0));
-  EXPECT_TRUE(character_composer.composed_character().empty());
+  ExpectKeyNotFiltered(&character_composer, GDK_KEY_a, 0);
 }
 
-TEST(CharacterComposerTest, KeySequenceCompositionPreedit) {
+TEST_F(CharacterComposerTest, KeySequenceCompositionPreedit) {
   CharacterComposer character_composer;
   // LATIN SMALL LETTER A WITH ACUTE
   // preedit_string() is always empty in key sequence composition mode.
   ExpectKeyFiltered(&character_composer, GDK_KEY_dead_acute, 0);
   EXPECT_TRUE(character_composer.preedit_string().empty());
-  EXPECT_TRUE(character_composer.FilterKeyPress(GDK_KEY_a, 0, 0));
+  EXPECT_TRUE(FilterKeyPress(&character_composer, GDK_KEY_a, 0, 0));
   EXPECT_EQ(string16(1, 0x00E1), character_composer.composed_character());
   EXPECT_TRUE(character_composer.preedit_string().empty());
 }
 
 // ComposeCheckerWithCompactTable in character_composer.cc is depending on the
 // assumption that the data in gtkimcontextsimpleseqs.h is correctly ordered.
-TEST(CharacterComposerTest, MainTableIsCorrectlyOrdered) {
+TEST_F(CharacterComposerTest, MainTableIsCorrectlyOrdered) {
   // This file is included here intentionally, instead of the top of the file,
   // because including this file at the top of the file will define a
   // global constant and contaminate the global namespace.
@@ -263,7 +275,7 @@ TEST(CharacterComposerTest, MainTableIsCorrectlyOrdered) {
   }
 }
 
-TEST(CharacterComposerTest, HexadecimalComposition) {
+TEST_F(CharacterComposerTest, HexadecimalComposition) {
   CharacterComposer character_composer;
   // HIRAGANA LETTER A (U+3042)
   ExpectKeyFiltered(&character_composer, GDK_KEY_U,
@@ -281,7 +293,7 @@ TEST(CharacterComposerTest, HexadecimalComposition) {
                                    arraysize(kMusicalKeyboard)));
 }
 
-TEST(CharacterComposerTest, HexadecimalCompositionPreedit) {
+TEST_F(CharacterComposerTest, HexadecimalCompositionPreedit) {
   CharacterComposer character_composer;
   // HIRAGANA LETTER A (U+3042)
   ExpectKeyFiltered(&character_composer, GDK_KEY_U,
@@ -319,7 +331,7 @@ TEST(CharacterComposerTest, HexadecimalCompositionPreedit) {
   EXPECT_EQ(ASCIIToUTF16(""), character_composer.preedit_string());
 }
 
-TEST(CharacterComposerTest, HexadecimalCompositionWithNonHexKey) {
+TEST_F(CharacterComposerTest, HexadecimalCompositionWithNonHexKey) {
   CharacterComposer character_composer;
 
   // Sequence [Ctrl+Shift+U, x, space] does not compose a character.
@@ -337,7 +349,7 @@ TEST(CharacterComposerTest, HexadecimalCompositionWithNonHexKey) {
                           string16(1, 0x3042));
 }
 
-TEST(CharacterComposerTest, HexadecimalCompositionWithAdditionalModifiers) {
+TEST_F(CharacterComposerTest, HexadecimalCompositionWithAdditionalModifiers) {
   CharacterComposer character_composer;
 
   // Ctrl+Shift+Alt+U
@@ -352,7 +364,7 @@ TEST(CharacterComposerTest, HexadecimalCompositionWithAdditionalModifiers) {
                        EF_SHIFT_DOWN | EF_CONTROL_DOWN | EF_CAPS_LOCK_DOWN);
 }
 
-TEST(CharacterComposerTest, CancelHexadecimalComposition) {
+TEST_F(CharacterComposerTest, CancelHexadecimalComposition) {
   CharacterComposer character_composer;
   // Cancel composition with ESC.
   ExpectKeyFiltered(&character_composer, GDK_KEY_U,
@@ -369,7 +381,7 @@ TEST(CharacterComposerTest, CancelHexadecimalComposition) {
                           GDK_KEY_2, GDK_KEY_space, 0, string16(1, 0x3042));
 }
 
-TEST(CharacterComposerTest, HexadecimalCompositionWithBackspace) {
+TEST_F(CharacterComposerTest, HexadecimalCompositionWithBackspace) {
   CharacterComposer character_composer;
   // HIRAGANA LETTER A (U+3042)
   ExpectKeyFiltered(&character_composer, GDK_KEY_U,
@@ -382,7 +394,7 @@ TEST(CharacterComposerTest, HexadecimalCompositionWithBackspace) {
                           GDK_KEY_space, 0, string16(1, 0x3042));
 }
 
-TEST(CharacterComposerTest, CancelHexadecimalCompositionWithBackspace) {
+TEST_F(CharacterComposerTest, CancelHexadecimalCompositionWithBackspace) {
   CharacterComposer character_composer;
 
   // Backspace just after Ctrl+Shift+U.
@@ -400,7 +412,8 @@ TEST(CharacterComposerTest, CancelHexadecimalCompositionWithBackspace) {
   ExpectKeyNotFiltered(&character_composer, GDK_KEY_3, 0);
 }
 
-TEST(CharacterComposerTest, HexadecimalCompositionPreeditWithModifierPressed) {
+TEST_F(CharacterComposerTest, HexadecimalCompositionPreeditWithModifierPressed)
+{
   // This test case supposes X Window System uses 101 keyboard layout.
   CharacterComposer character_composer;
   const int control_shift =  EF_CONTROL_DOWN | EF_SHIFT_DOWN;
@@ -456,15 +469,14 @@ TEST(CharacterComposerTest, HexadecimalCompositionPreeditWithModifierPressed) {
   EXPECT_EQ(ASCIIToUTF16(""), character_composer.preedit_string());
 }
 
-TEST(CharacterComposerTest, InvalidHexadecimalSequence) {
+TEST_F(CharacterComposerTest, InvalidHexadecimalSequence) {
   CharacterComposer character_composer;
   // U+FFFFFFFF
   ExpectKeyFiltered(&character_composer, GDK_KEY_U,
                     EF_SHIFT_DOWN | EF_CONTROL_DOWN);
   for (int i = 0; i < 8; ++i)
     ExpectKeyFiltered(&character_composer, GDK_KEY_f, 0);
-  EXPECT_TRUE(character_composer.FilterKeyPress(GDK_KEY_space, 0, 0));
-  EXPECT_TRUE(character_composer.composed_character().empty());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_space, 0);
 
   // U+0000 (Actually, this is a valid unicode character, but we don't
   // compose a string with a character '\0')
@@ -472,8 +484,7 @@ TEST(CharacterComposerTest, InvalidHexadecimalSequence) {
                     EF_SHIFT_DOWN | EF_CONTROL_DOWN);
   for (int i = 0; i < 4; ++i)
     ExpectKeyFiltered(&character_composer, GDK_KEY_0, 0);
-  EXPECT_TRUE(character_composer.FilterKeyPress(GDK_KEY_space, 0, 0));
-  EXPECT_TRUE(character_composer.composed_character().empty());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_space, 0);
 
   // U+10FFFF
   ExpectKeyFiltered(&character_composer, GDK_KEY_U,
@@ -482,8 +493,7 @@ TEST(CharacterComposerTest, InvalidHexadecimalSequence) {
   ExpectKeyFiltered(&character_composer, GDK_KEY_0, 0);
   for (int i = 0; i < 4; ++i)
     ExpectKeyFiltered(&character_composer, GDK_KEY_f, 0);
-  EXPECT_TRUE(character_composer.FilterKeyPress(GDK_KEY_space, 0, 0));
-  EXPECT_TRUE(character_composer.composed_character().empty());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_space, 0);
 
   // U+110000
   ExpectKeyFiltered(&character_composer, GDK_KEY_U,
@@ -492,11 +502,10 @@ TEST(CharacterComposerTest, InvalidHexadecimalSequence) {
   ExpectKeyFiltered(&character_composer, GDK_KEY_1, 0);
   for (int i = 0; i < 4; ++i)
     ExpectKeyFiltered(&character_composer, GDK_KEY_0, 0);
-  EXPECT_TRUE(character_composer.FilterKeyPress(GDK_KEY_space, 0, 0));
-  EXPECT_TRUE(character_composer.composed_character().empty());
+  ExpectKeyFiltered(&character_composer, GDK_KEY_space, 0);
 }
 
-TEST(CharacterComposerTest, HexadecimalSequenceAndDeadKey) {
+TEST_F(CharacterComposerTest, HexadecimalSequenceAndDeadKey) {
   CharacterComposer character_composer;
   // LATIN SMALL LETTER A WITH ACUTE
   ExpectCharacterComposed(&character_composer, GDK_KEY_dead_acute, GDK_KEY_a, 0,
@@ -509,15 +518,15 @@ TEST(CharacterComposerTest, HexadecimalSequenceAndDeadKey) {
                           GDK_KEY_space, 0, string16(1, 0x3042));
   // LATIN CAPITAL LETTER U WITH ACUTE while 'U' is pressed with Ctrl+Shift.
   ExpectKeyFiltered(&character_composer, GDK_KEY_dead_acute, 0);
-  EXPECT_TRUE(character_composer.FilterKeyPress(
-      GDK_KEY_U, 0, EF_SHIFT_DOWN | EF_CONTROL_DOWN));
+  EXPECT_TRUE(FilterKeyPress(&character_composer, GDK_KEY_U, 0,
+                             EF_SHIFT_DOWN | EF_CONTROL_DOWN));
   EXPECT_EQ(string16(1, 0x00DA), character_composer.composed_character());
 }
 
-TEST(CharacterComposerTest, BlacklistedKeyeventsTest) {
+TEST_F(CharacterComposerTest, BlacklistedKeyeventsTest) {
   CharacterComposer character_composer;
-  EXPECT_TRUE(character_composer.FilterKeyPress(GDK_KEY_dead_acute, 0, 0));
-  EXPECT_FALSE(character_composer.FilterKeyPress(GDK_KEY_s, 0, 0));
+  EXPECT_TRUE(FilterKeyPress(&character_composer, GDK_KEY_dead_acute, 0, 0));
+  EXPECT_FALSE(FilterKeyPress(&character_composer, GDK_KEY_s, 0, 0));
   ASSERT_EQ(1U, character_composer.composed_character().size());
   EXPECT_EQ(GDK_KEY_apostrophe, character_composer.composed_character().at(0));
 }

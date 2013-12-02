@@ -5,6 +5,7 @@
 #include "ui/base/ime/character_composer.h"
 
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 
 #include <algorithm>
 #include <iterator>
@@ -15,6 +16,7 @@
 // '#define GDK_KeyName 0xNNNN' macros and does not #include any Gtk headers.
 #include "third_party/gtk+/gdk/gdkkeysyms.h"
 #include "ui/base/glib/glib_integers.h"
+#include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -409,9 +411,23 @@ void CharacterComposer::Reset() {
   composition_mode_ = KEY_SEQUENCE_MODE;
 }
 
-bool CharacterComposer::FilterKeyPress(unsigned int keyval,
-                                       unsigned int keycode,
-                                       int flags) {
+bool CharacterComposer::FilterKeyPress(const ui::KeyEvent& event) {
+  if (!event.HasNativeEvent() ||
+      (event.type() != ET_KEY_PRESSED && event.type() != ET_KEY_RELEASED))
+    return false;
+
+  XEvent* xevent = event.native_event();
+  DCHECK(xevent);
+  KeySym keysym = NoSymbol;
+  ::XLookupString(&xevent->xkey, NULL, 0, &keysym, NULL);
+
+  return FilterKeyPressInternal(keysym, xevent->xkey.keycode, event.flags());
+}
+
+
+bool CharacterComposer::FilterKeyPressInternal(unsigned int keyval,
+                                               unsigned int keycode,
+                                               int flags) {
   composed_character_.clear();
   preedit_string_.clear();
 
@@ -435,7 +451,7 @@ bool CharacterComposer::FilterKeyPress(unsigned int keyval,
   // Filter key press in an appropriate manner.
   switch (composition_mode_) {
     case KEY_SEQUENCE_MODE:
-      return FilterKeyPressSequenceMode(keyval, keycode, flags);
+      return FilterKeyPressSequenceMode(keyval, flags);
     case HEX_MODE:
       return FilterKeyPressHexMode(keyval, keycode, flags);
     default:
@@ -445,7 +461,6 @@ bool CharacterComposer::FilterKeyPress(unsigned int keyval,
 }
 
 bool CharacterComposer::FilterKeyPressSequenceMode(unsigned int keyval,
-                                                   unsigned int keycode,
                                                    int flags) {
   DCHECK(composition_mode_ == KEY_SEQUENCE_MODE);
   compose_buffer_.push_back(keyval);
