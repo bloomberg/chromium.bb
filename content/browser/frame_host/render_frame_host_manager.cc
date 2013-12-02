@@ -783,9 +783,13 @@ bool RenderFrameHostManager::InitRenderView(RenderViewHost* render_view_host,
     render_view_host->AllowBindings(pending_web_ui()->GetBindings());
   } else {
     // Ensure that we don't create an unprivileged RenderView in a WebUI-enabled
-    // process.
-    CHECK(!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
-              render_view_host->GetProcess()->GetID()));
+    // process unless it's swapped out.
+    RenderViewHostImpl* rvh_impl =
+        static_cast<RenderViewHostImpl*>(render_view_host);
+    if (!rvh_impl->is_swapped_out()) {
+      CHECK(!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+                render_view_host->GetProcess()->GetID()));
+    }
   }
 
   return delegate_->CreateRenderViewForRenderManager(render_view_host,
