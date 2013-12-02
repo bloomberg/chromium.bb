@@ -43,7 +43,6 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
-#include "platform/JSONValues.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -141,11 +140,6 @@ void InspectorAgent::domContentLoadedEventFired(Frame* frame)
     m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();
 }
 
-bool InspectorAgent::isMainResourceLoader(DocumentLoader* loader, const KURL& requestUrl)
-{
-    return loader->frame() == m_inspectedPage->mainFrame() && requestUrl == loader->requestURL();
-}
-
 void InspectorAgent::evaluateForTestInFrontend(long callId, const String& script)
 {
     if (m_state->getBoolean(InspectorAgentState::inspectorAgentEnabled))
@@ -169,11 +163,6 @@ void InspectorAgent::inspect(PassRefPtr<TypeBuilder::Runtime::RemoteObject> obje
     }
     m_pendingInspectData.first = objectToInspect;
     m_pendingInspectData.second = hints;
-}
-
-KURL InspectorAgent::inspectedURL() const
-{
-    return m_inspectedPage->mainFrame()->document()->url();
 }
 
 } // namespace WebCore

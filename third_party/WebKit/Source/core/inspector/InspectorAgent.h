@@ -31,11 +31,9 @@
 #define InspectorAgent_h
 
 #include "core/inspector/InspectorBaseAgent.h"
-#include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -46,7 +44,6 @@ class InjectedScriptManager;
 class InspectorFrontend;
 class InstrumentingAgents;
 class JSONObject;
-class KURL;
 class Page;
 
 typedef String ErrorString;
@@ -65,10 +62,6 @@ public:
     void enable(ErrorString*);
     void disable(ErrorString*);
     void reset(ErrorString*);
-
-    KURL inspectedURL() const;
-
-    InspectorFrontend* frontend() const { return m_frontend; }
 
     virtual void setFrontend(InspectorFrontend*);
     virtual void clearFrontend();
@@ -89,12 +82,6 @@ public:
 
 private:
     InspectorAgent(Page*, InjectedScriptManager*, InstrumentingAgents*, InspectorCompositeState*);
-
-    void unbindAllResources();
-
-    void toggleRecordButton(bool);
-
-    bool isMainResourceLoader(DocumentLoader*, const KURL& requestUrl);
 
     Page* m_inspectedPage;
     InspectorFrontend* m_frontend;
