@@ -24,6 +24,7 @@ class CandidateWindowController {
    public:
     virtual ~Observer() {}
 
+    virtual void CandidateClicked(int index) = 0;
     virtual void CandidateWindowOpened() = 0;
     virtual void CandidateWindowClosed() = 0;
   };

@@ -272,9 +272,8 @@ void CandidateWindowControllerImpl::UpdatePreeditText(
 }
 
 void CandidateWindowControllerImpl::OnCandidateCommitted(int index) {
-  IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
-  if (engine)
-    engine->CandidateClicked(index);
+  FOR_EACH_OBSERVER(CandidateWindowController::Observer, observers_,
+                    CandidateClicked(index));
 }
 
 void CandidateWindowControllerImpl::OnCandidateWindowOpened() {

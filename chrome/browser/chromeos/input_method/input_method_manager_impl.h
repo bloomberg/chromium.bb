@@ -108,6 +108,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   void PropertyChanged();
 
   // CandidateWindowController::Observer overrides:
+  virtual void CandidateClicked(int index) OVERRIDE;
   virtual void CandidateWindowOpened() OVERRIDE;
   virtual void CandidateWindowClosed() OVERRIDE;
 

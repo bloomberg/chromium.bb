@@ -730,6 +730,12 @@ void InputMethodManagerImpl::PropertyChanged() {
                     InputMethodPropertyChanged(this));
 }
 
+void InputMethodManagerImpl::CandidateClicked(int index) {
+  IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
+  if (engine)
+    engine->CandidateClicked(index);
+}
+
 void InputMethodManagerImpl::CandidateWindowOpened() {
   FOR_EACH_OBSERVER(InputMethodManager::CandidateWindowObserver,
                     candidate_window_observers_,
