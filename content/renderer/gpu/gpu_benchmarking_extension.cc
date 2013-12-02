@@ -288,11 +288,11 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "      chrome.gpuBenchmarking.DEFAULT_INPUT;"
           "  speed_in_pixels_s = opt_speed_in_pixels_s || 800;"
           "  native function BeginSmoothScroll();"
-          "  if (typeof opt_mouse_event_x !== 'undefined' &&"
-          "      typeof opt_mouse_event_y !== 'undefined') {"
+          "  if (typeof opt_start_x !== 'undefined' &&"
+          "      typeof opt_start_y !== 'undefined') {"
           "    return BeginSmoothScroll(pixels_to_scroll, callback,"
           "                             gesture_source_type, speed_in_pixels_s,"
-          "                             opt_mouse_event_x, opt_mouse_event_y);"
+          "                             opt_start_x, opt_start_y);"
           "  } else {"
           "    return BeginSmoothScroll(pixels_to_scroll, callback,"
           "                             gesture_source_type,"
@@ -489,7 +489,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
     if (!context.Init(false))
       return;
 
-    // Account for the 2 optional arguments, mouse_event_x and mouse_event_y.
+    // Account for the 2 optional arguments, start_x and start_y.
     int arglen = args.Length();
     if (arglen < 4 ||
         !args[0]->IsNumber() ||
