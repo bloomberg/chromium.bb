@@ -340,7 +340,7 @@ RootInlineBox* RenderBlockFlow::constructLine(BidiRunList<BidiRun>& bidiRuns, co
     return lastRootBox();
 }
 
-ETextAlign RenderBlock::textAlignmentForLine(bool endsWithSoftBreak) const
+ETextAlign RenderBlockFlow::textAlignmentForLine(bool endsWithSoftBreak) const
 {
     ETextAlign alignment = style()->textAlign();
     if (endsWithSoftBreak)

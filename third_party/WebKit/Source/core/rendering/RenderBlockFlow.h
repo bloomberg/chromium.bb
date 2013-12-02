@@ -38,6 +38,7 @@
 
 #include "core/rendering/FloatingObjects.h"
 #include "core/rendering/RenderBlock.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 
 namespace WebCore {
 
@@ -353,6 +354,7 @@ protected:
         }
     }
 
+    virtual ETextAlign textAlignmentForLine(bool endsWithSoftBreak) const;
 private:
     virtual LayoutUnit collapsedMarginBefore() const OVERRIDE FINAL { return maxPositiveMarginBefore() - maxNegativeMarginBefore(); }
     virtual LayoutUnit collapsedMarginAfter() const OVERRIDE FINAL { return maxPositiveMarginAfter() - maxNegativeMarginAfter(); }
