@@ -26,6 +26,9 @@ class Browser;
 class AvatarMenuButton : public views::MenuButton,
                          public views::MenuButtonListener {
  public:
+  // Internal class name.
+  static const char kViewClassName[];
+
   // Creates a new button. If |disabled| is true and we're not in managed mode,
   // clicking on the button will cause the profile menu to be displayed.
   AvatarMenuButton(Browser* browser, bool disabled);
@@ -33,12 +36,18 @@ class AvatarMenuButton : public views::MenuButton,
   virtual ~AvatarMenuButton();
 
   // views::MenuButton:
+  virtual const char* GetClassName() const OVERRIDE;
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual bool HitTestRect(const gfx::Rect& rect) const OVERRIDE;
 
   // Sets the image for the avatar button. Rectangular images, as opposed
   // to Chrome avatar icons, will be resized and modified for the title bar.
   virtual void SetAvatarIcon(const gfx::Image& icon, bool is_rectangle);
+
+  void set_button_on_right(bool button_on_right) {
+    button_on_right_ = button_on_right;
+  }
+  bool button_on_right() { return button_on_right_; }
 
   void ShowAvatarBubble();
 
@@ -56,6 +65,8 @@ class AvatarMenuButton : public views::MenuButton,
   gfx::ImageSkia button_icon_;
   bool is_rectangle_;
   int old_height_;
+  // True if the avatar button is on the right side of the browser window.
+  bool button_on_right_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarMenuButton);
 };

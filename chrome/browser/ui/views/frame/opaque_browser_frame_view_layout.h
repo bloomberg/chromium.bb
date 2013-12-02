@@ -9,6 +9,7 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/window/frame_buttons.h"
 
+class AvatarMenuButton;
 class NewAvatarButton;
 class OpaqueBrowserFrameViewLayoutDelegate;
 
@@ -99,10 +100,14 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
     ALIGN_TRAILING
   };
 
+  // Determines whether the avatar should be shown on the right side of the tab
+  // strip (instead of the usual left).
+  bool ShouldAvatarBeOnRight() const;
+
   // Layout various sub-components of this view.
   void LayoutWindowControls(views::View* host);
   void LayoutTitleBar(views::View* host);
-  void LayoutAvatar();
+  void LayoutAvatar(views::View* host);
   void LayoutNewStyleAvatar(views::View* host);
 
   void ConfigureButton(views::View* host,
@@ -170,7 +175,7 @@ class OpaqueBrowserFrameViewLayout : public views::LayoutManager {
   views::Label* window_title_;
 
   views::View* avatar_label_;
-  views::View* avatar_button_;
+  AvatarMenuButton* avatar_button_;
   views::View* new_avatar_button_;
 
   std::vector<views::FrameButton> leading_buttons_;

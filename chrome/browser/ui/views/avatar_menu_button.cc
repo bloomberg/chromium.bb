@@ -25,6 +25,9 @@ static inline int Round(double x) {
   return static_cast<int>(x + 0.5);
 }
 
+// static
+const char AvatarMenuButton::kViewClassName[] = "AvatarMenuButton";
+
 AvatarMenuButton::AvatarMenuButton(Browser* browser, bool disabled)
     : MenuButton(NULL, string16(), this, false),
       browser_(browser),
@@ -36,6 +39,10 @@ AvatarMenuButton::AvatarMenuButton(Browser* browser, bool disabled)
 }
 
 AvatarMenuButton::~AvatarMenuButton() {
+}
+
+const char* AvatarMenuButton::GetClassName() const {
+  return kViewClassName;
 }
 
 void AvatarMenuButton::OnPaint(gfx::Canvas* canvas) {
@@ -96,14 +103,16 @@ void AvatarMenuButton::ShowAvatarBubble() {
   gfx::Point origin;
   views::View::ConvertPointToScreen(this, &origin);
   gfx::Rect bounds(origin, size());
+  views::BubbleBorder::Arrow arrow = button_on_right_ ?
+      views::BubbleBorder::TOP_RIGHT : views::BubbleBorder::TOP_LEFT;
   if (profiles::IsNewProfileManagementEnabled()) {
     ProfileChooserView::ShowBubble(
-        this, views::BubbleBorder::TOP_LEFT,
-        views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bounds, browser_);
+        this, arrow, views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bounds,
+        browser_);
   } else {
     AvatarMenuBubbleView::ShowBubble(
-        this, views::BubbleBorder::TOP_LEFT,
-        views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bounds, browser_);
+        this, arrow, views::BubbleBorder::ALIGN_ARROW_TO_MID_ANCHOR, bounds,
+        browser_);
   }
 
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
