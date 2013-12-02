@@ -583,7 +583,8 @@ void RemoteToLocalSyncer::DeleteLocalFile(const SyncStatusCallback& callback) {
 void RemoteToLocalSyncer::DownloadFile(const SyncStatusCallback& callback) {
   base::PostTaskAndReplyWithResult(
       sync_context_->GetBlockingTaskRunner(), FROM_HERE,
-      base::Bind(&sync_file_system::drive_backend::CreateTemporaryFile),
+      base::Bind(&sync_file_system::drive_backend::CreateTemporaryFile,
+                 make_scoped_refptr(sync_context_->GetBlockingTaskRunner())),
       base::Bind(&RemoteToLocalSyncer::DidCreateTemporaryFileForDownload,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }

@@ -124,7 +124,8 @@ scoped_ptr<FileMetadata> CreateDeletedFileMetadata(
   return file.Pass();
 }
 
-webkit_blob::ScopedFile CreateTemporaryFile() {
+webkit_blob::ScopedFile CreateTemporaryFile(
+    base::TaskRunner* file_task_runner) {
   base::FilePath temp_file_path;
   if (!file_util::CreateTemporaryFile(&temp_file_path))
     return webkit_blob::ScopedFile();
@@ -132,7 +133,7 @@ webkit_blob::ScopedFile CreateTemporaryFile() {
   return webkit_blob::ScopedFile(
       temp_file_path,
       webkit_blob::ScopedFile::DELETE_ON_SCOPE_OUT,
-      base::MessageLoopProxy::current().get());
+      file_task_runner);
 }
 
 std::string FileKindToString(FileKind file_kind) {
