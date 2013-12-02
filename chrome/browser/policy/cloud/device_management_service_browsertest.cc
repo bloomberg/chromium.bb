@@ -130,7 +130,8 @@ class DeviceManagementServiceIntegrationTest
                   InvokeWithoutArgs(base::MessageLoop::current(),
                                     &base::MessageLoop::Quit)));
     scoped_ptr<DeviceManagementRequestJob> job(
-        service_->CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION));
+        service_->CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION,
+                            g_browser_process->system_request_context()));
     job->SetGaiaToken("gaia_auth_token");
     job->SetOAuthToken("oauth_token");
     job->SetClientID("testid");
@@ -144,8 +145,7 @@ class DeviceManagementServiceIntegrationTest
     std::string service_url((this->*(GetParam()))());
     service_.reset(new DeviceManagementService(
         scoped_ptr<DeviceManagementService::Configuration>(
-            new MockDeviceManagementServiceConfiguration(service_url)),
-        g_browser_process->system_request_context()));
+            new MockDeviceManagementServiceConfiguration(service_url))));
     service_->ScheduleInitialization(0);
   }
 
@@ -191,7 +191,8 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest,
                 InvokeWithoutArgs(base::MessageLoop::current(),
                                   &base::MessageLoop::Quit)));
   scoped_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
-      DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH));
+      DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH,
+      g_browser_process->system_request_context()));
   job->SetDMToken(token_);
   job->SetClientID("testid");
   em::DeviceServiceApiAccessRequest* request =
@@ -212,7 +213,8 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, PolicyFetch) {
       .WillOnce(InvokeWithoutArgs(base::MessageLoop::current(),
                                   &base::MessageLoop::Quit));
   scoped_ptr<DeviceManagementRequestJob> job(
-      service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH));
+      service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH,
+                          g_browser_process->system_request_context()));
   job->SetDMToken(token_);
   job->SetUserAffiliation(USER_AFFILIATION_NONE);
   job->SetClientID("testid");
@@ -232,7 +234,8 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, Unregistration) {
       .WillOnce(InvokeWithoutArgs(base::MessageLoop::current(),
                                   &base::MessageLoop::Quit));
   scoped_ptr<DeviceManagementRequestJob> job(
-      service_->CreateJob(DeviceManagementRequestJob::TYPE_UNREGISTRATION));
+      service_->CreateJob(DeviceManagementRequestJob::TYPE_UNREGISTRATION,
+                          g_browser_process->system_request_context()));
   job->SetDMToken(token_);
   job->SetClientID("testid");
   job->GetRequest()->mutable_unregister_request();
@@ -247,7 +250,8 @@ IN_PROC_BROWSER_TEST_P(DeviceManagementServiceIntegrationTest, AutoEnrollment) {
       .WillOnce(InvokeWithoutArgs(base::MessageLoop::current(),
                                   &base::MessageLoop::Quit));
   scoped_ptr<DeviceManagementRequestJob> job(
-      service_->CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT));
+      service_->CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT,
+                          g_browser_process->system_request_context()));
   job->SetClientID("testid");
   job->GetRequest()->mutable_auto_enrollment_request()->set_remainder(0);
   job->GetRequest()->mutable_auto_enrollment_request()->set_modulus(1);

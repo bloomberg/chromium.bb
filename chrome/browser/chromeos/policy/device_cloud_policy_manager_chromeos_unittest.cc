@@ -290,7 +290,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     // Trigger enrollment.
     MockDeviceManagementJob* register_job = NULL;
     EXPECT_CALL(device_management_service_,
-                CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION))
+                CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION, _))
         .Times(AtMost(1))
         .WillOnce(device_management_service_.CreateAsyncJob(&register_job));
     EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
@@ -312,7 +312,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
     ASSERT_TRUE(register_job);
     MockDeviceManagementJob* policy_fetch_job = NULL;
     EXPECT_CALL(device_management_service_,
-                CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
+                CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
         .Times(AtMost(1))
         .WillOnce(device_management_service_.CreateAsyncJob(&policy_fetch_job));
     EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
@@ -333,8 +333,8 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
 
     // Process verification.
     MockDeviceManagementJob* robot_auth_fetch_job = NULL;
-    EXPECT_CALL(device_management_service_,
-                CreateJob(DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH))
+    EXPECT_CALL(device_management_service_, CreateJob(
+        DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH, _))
         .Times(AtMost(1))
         .WillOnce(device_management_service_.CreateAsyncJob(
             &robot_auth_fetch_job));

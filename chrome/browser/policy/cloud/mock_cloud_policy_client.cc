@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/cloud/mock_cloud_policy_client.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace em = enterprise_management;
 
@@ -13,6 +14,7 @@ MockCloudPolicyClient::MockCloudPolicyClient()
     : CloudPolicyClient(std::string(),
                         std::string(),
                         USER_AFFILIATION_NONE,
+                        NULL,
                         NULL,
                         NULL) {}
 

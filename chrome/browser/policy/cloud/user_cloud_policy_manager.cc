@@ -73,11 +73,16 @@ void UserCloudPolicyManager::Connect(
 // static
 scoped_ptr<CloudPolicyClient>
 UserCloudPolicyManager::CreateCloudPolicyClient(
-    DeviceManagementService* device_management_service) {
+    DeviceManagementService* device_management_service,
+    scoped_refptr<net::URLRequestContextGetter> request_context) {
   return make_scoped_ptr(
-      new CloudPolicyClient(std::string(), std::string(),
-                            USER_AFFILIATION_NONE,
-                            NULL, device_management_service)).Pass();
+      new CloudPolicyClient(
+          std::string(),
+          std::string(),
+          USER_AFFILIATION_NONE,
+          NULL,
+          device_management_service,
+          request_context)).Pass();
 }
 
 void UserCloudPolicyManager::DisconnectAndRemovePolicy() {

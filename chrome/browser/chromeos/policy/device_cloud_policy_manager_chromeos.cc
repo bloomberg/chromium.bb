@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
@@ -16,11 +17,14 @@
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/device_management_service.h"
+#include "chrome/browser/policy/cloud/system_policy_request_context.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/system/statistics_provider.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_client.h"
+#include "url/gurl.h"
 
 using content::BrowserThread;
 
@@ -239,11 +243,18 @@ std::string DeviceCloudPolicyManagerChromeOS::GetRobotAccountId() {
 }
 
 scoped_ptr<CloudPolicyClient> DeviceCloudPolicyManagerChromeOS::CreateClient() {
+  scoped_refptr<net::URLRequestContextGetter> request_context =
+      new SystemPolicyRequestContext(
+          g_browser_process->system_request_context(),
+          content::GetUserAgent(GURL(
+              device_management_service_->GetServerURL())));
+
   return make_scoped_ptr(
       new CloudPolicyClient(GetMachineID(), GetMachineModel(),
                             USER_AFFILIATION_NONE,
                             device_status_provider_.get(),
-                            device_management_service_));
+                            device_management_service_,
+                            request_context));
 }
 
 void DeviceCloudPolicyManagerChromeOS::EnrollmentCompleted(

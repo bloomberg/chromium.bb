@@ -17,6 +17,10 @@
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace policy {
 
 class DeviceManagementRequestJob;
@@ -82,11 +86,13 @@ class CloudPolicyClient {
 
   // |provider| and |service| are weak pointers and it's the caller's
   // responsibility to keep them valid for the lifetime of CloudPolicyClient.
-  CloudPolicyClient(const std::string& machine_id,
-                    const std::string& machine_model,
-                    UserAffiliation user_affiliation,
-                    StatusProvider* provider,
-                    DeviceManagementService* service);
+  CloudPolicyClient(
+      const std::string& machine_id,
+      const std::string& machine_model,
+      UserAffiliation user_affiliation,
+      StatusProvider* provider,
+      DeviceManagementService* service,
+      scoped_refptr<net::URLRequestContextGetter> request_context);
   virtual ~CloudPolicyClient();
 
   // Sets the DMToken, thereby establishing a registration with the server. A
@@ -199,6 +205,8 @@ class CloudPolicyClient {
     return fetched_invalidation_version_;
   }
 
+  scoped_refptr<net::URLRequestContextGetter> GetRequestContext();
+
  protected:
   // A set of PolicyNamespaceKeys to fetch.
   typedef std::set<PolicyNamespaceKey> NamespaceSet;
@@ -277,6 +285,7 @@ class CloudPolicyClient {
   DeviceManagementStatus status_;
 
   ObserverList<Observer, true> observers_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyClient);

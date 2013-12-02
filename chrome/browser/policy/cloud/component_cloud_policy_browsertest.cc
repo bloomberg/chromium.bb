@@ -142,10 +142,12 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
         UserCloudPolicyManagerFactory::GetForBrowserContext(
             browser()->profile());
     ASSERT_TRUE(policy_manager);
-    policy_manager->Connect(g_browser_process->local_state(),
-                            g_browser_process->system_request_context(),
-                            UserCloudPolicyManager::CreateCloudPolicyClient(
-                                connector->device_management_service()).Pass());
+    policy_manager->Connect(
+        g_browser_process->local_state(),
+        g_browser_process->system_request_context(),
+        UserCloudPolicyManager::CreateCloudPolicyClient(
+            connector->device_management_service(),
+            g_browser_process->system_request_context()).Pass());
 #endif  // defined(OS_CHROMEOS)
 
     // Register the cloud policy client.

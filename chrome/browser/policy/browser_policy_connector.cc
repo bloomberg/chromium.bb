@@ -156,10 +156,6 @@ class DeviceManagementServiceConfiguration
       return kDefaultDeviceManagementServerUrl;
   }
 
-  virtual std::string GetUserAgent() OVERRIDE {
-    return content::GetUserAgent(GURL(GetServerUrl()));
-  }
-
   virtual std::string GetAgentParameter() OVERRIDE {
     chrome::VersionInfo version_info;
     return base::StringPrintf("%s %s(%s)",
@@ -284,7 +280,7 @@ void BrowserPolicyConnector::Init(
   scoped_ptr<DeviceManagementService::Configuration> configuration(
       new DeviceManagementServiceConfiguration);
   device_management_service_.reset(
-      new DeviceManagementService(configuration.Pass(), request_context));
+      new DeviceManagementService(configuration.Pass()));
   device_management_service_->ScheduleInitialization(
       kServiceInitializationStartupDelay);
 

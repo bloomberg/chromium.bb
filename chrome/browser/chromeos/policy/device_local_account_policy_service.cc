@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_external_data_service.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_store.h"
@@ -24,13 +25,16 @@
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/cloud_policy_refresh_scheduler.h"
 #include "chrome/browser/policy/cloud/device_management_service.h"
+#include "chrome/browser/policy/cloud/system_policy_request_context.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
+#include "content/public/common/content_client.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "policy/policy_constants.h"
+#include "url/gurl.h"
 
 namespace em = enterprise_management;
 
@@ -43,7 +47,8 @@ namespace {
 // enterprise-enrolled).
 scoped_ptr<CloudPolicyClient> CreateClient(
     chromeos::DeviceSettingsService* device_settings_service,
-    DeviceManagementService* device_management_service) {
+    DeviceManagementService* device_management_service,
+    scoped_refptr<net::URLRequestContextGetter> system_request_context) {
   const em::PolicyData* policy_data = device_settings_service->policy_data();
   if (!policy_data ||
       !policy_data->has_request_token() ||
@@ -52,10 +57,16 @@ scoped_ptr<CloudPolicyClient> CreateClient(
     return scoped_ptr<CloudPolicyClient>();
   }
 
+  scoped_refptr<net::URLRequestContextGetter> request_context =
+      new SystemPolicyRequestContext(
+          system_request_context,
+          content::GetUserAgent(GURL(
+              device_management_service->GetServerURL())));
+
   scoped_ptr<CloudPolicyClient> client(
       new CloudPolicyClient(std::string(), std::string(),
                             USER_AFFILIATION_MANAGED,
-                            NULL, device_management_service));
+                            NULL, device_management_service, request_context));
   client->SetupRegistration(policy_data->request_token(),
                             policy_data->device_id());
   return client.Pass();
@@ -142,7 +153,8 @@ void DeviceLocalAccountPolicyBroker::ConnectIfPossible(
     return;
 
   scoped_ptr<CloudPolicyClient> client(CreateClient(device_settings_service,
-                                                    device_management_service));
+                                                    device_management_service,
+                                                    request_context));
   if (!client)
     return;
 

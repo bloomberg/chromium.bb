@@ -64,7 +64,8 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
   UserPolicySigninServiceBase(
       Profile* profile,
       PrefService* local_state,
-      DeviceManagementService* device_management_service);
+      DeviceManagementService* device_management_service,
+      scoped_refptr<net::URLRequestContextGetter> system_request_context);
   virtual ~UserPolicySigninServiceBase();
 
   // Initiates a policy fetch as part of user signin, using a |dm_token| and
@@ -92,11 +93,13 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
   // BrowserContextKeyedService implementation:
   virtual void Shutdown() OVERRIDE;
 
-  void SetRequestContext(
+  void SetSystemRequestContext(
       scoped_refptr<net::URLRequestContextGetter> request_context);
 
  protected:
-  net::URLRequestContextGetter* request_context() { return request_context_; }
+  net::URLRequestContextGetter* system_request_context() {
+    return system_request_context_;
+  }
 
   // Returns true if policy should be loaded even when Gaia reports that the
   // account doesn't have management enabled.
@@ -104,7 +107,8 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
 
   // Returns a CloudPolicyClient to perform a registration with the DM server,
   // or NULL if |username| shouldn't register for policy management.
-  scoped_ptr<CloudPolicyClient> PrepareToRegister(const std::string& username);
+  scoped_ptr<CloudPolicyClient> CreateClientForRegistrationOnly(
+      const std::string& username);
 
   // Returns false if cloud policy is disabled or if the passed |email_address|
   // is definitely not from a hosted domain (according to the blacklist in
@@ -148,14 +152,18 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
   SigninManager* GetSigninManager();
 
  private:
+  // Helper functions to create a request context for use by CloudPolicyClients.
+  scoped_refptr<net::URLRequestContextGetter> CreateUserRequestContext();
+  scoped_refptr<net::URLRequestContextGetter> CreateSystemRequestContext();
+
   // Weak pointer to the profile this service is associated with.
   Profile* profile_;
 
   content::NotificationRegistrar registrar_;
 
   PrefService* local_state_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
   DeviceManagementService* device_management_service_;
+  scoped_refptr<net::URLRequestContextGetter> system_request_context_;
 
   base::WeakPtrFactory<UserPolicySigninServiceBase> weak_factory_;
 

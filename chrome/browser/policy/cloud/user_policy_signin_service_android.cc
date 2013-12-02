@@ -40,10 +40,12 @@ UserPolicySigninService::UserPolicySigninService(
     Profile* profile,
     PrefService* local_state,
     DeviceManagementService* device_management_service,
+    scoped_refptr<net::URLRequestContextGetter> system_request_context,
     ProfileOAuth2TokenService* token_service)
     : UserPolicySigninServiceBase(profile,
                                   local_state,
-                                  device_management_service),
+                                  device_management_service,
+                                  system_request_context),
       weak_factory_(this),
       oauth2_token_service_(token_service) {}
 
@@ -53,7 +55,8 @@ void UserPolicySigninService::RegisterForPolicy(
     const std::string& username,
     const PolicyRegistrationCallback& callback) {
   // Create a new CloudPolicyClient for fetching the DMToken.
-  scoped_ptr<CloudPolicyClient> policy_client = PrepareToRegister(username);
+  scoped_ptr<CloudPolicyClient> policy_client = CreateClientForRegistrationOnly(
+      username);
   if (!policy_client) {
     callback.Run(std::string(), std::string());
     return;
@@ -65,7 +68,6 @@ void UserPolicySigninService::RegisterForPolicy(
   // alive for the length of the registration process.
   const bool force_load_policy = false;
   registration_helper_.reset(new CloudPolicyClientRegistrationHelper(
-      request_context(),
       policy_client.get(),
       force_load_policy,
       GetRegistrationType()));
@@ -146,7 +148,6 @@ void UserPolicySigninService::RegisterCloudPolicyService() {
 
   const bool force_load_policy = false;
   registration_helper_.reset(new CloudPolicyClientRegistrationHelper(
-      request_context(),
       GetManager()->core()->client(),
       force_load_policy,
       GetRegistrationType()));

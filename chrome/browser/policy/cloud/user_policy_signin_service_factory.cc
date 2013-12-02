@@ -76,10 +76,8 @@ UserPolicySigninServiceFactory::BuildServiceInstanceFor(
       profile,
       g_browser_process->local_state(),
       device_management_service,
+      g_browser_process->system_request_context(),
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile));
-  // TODO(atwilson): Remove this once UserPolicySigninServiceBase is able to
-  // create its own URLRequestContextGetter and DeviceManagementService.
-  service->SetRequestContext(g_browser_process->system_request_context());
   return service;
 }
 

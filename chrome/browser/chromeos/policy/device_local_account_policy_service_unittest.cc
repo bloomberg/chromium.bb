@@ -36,6 +36,7 @@
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/schema_registry.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_test_util.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/cloud_policy.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -185,7 +186,8 @@ void DeviceLocalAccountPolicyServiceTestBase::CreatePolicyService() {
       extension_cache_task_runner_,
       loop_.message_loop_proxy(),
       loop_.message_loop_proxy(),
-      NULL));
+      new net::TestURLRequestContextGetter(
+          base::MessageLoop::current()->message_loop_proxy())));
 }
 
 void DeviceLocalAccountPolicyServiceTestBase::
@@ -417,7 +419,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, FetchPolicy) {
   response.mutable_policy_response()->add_response()->CopyFrom(
       device_local_account_policy_.policy());
   EXPECT_CALL(mock_device_management_service_,
-              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
+              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
       .WillOnce(mock_device_management_service_.SucceedJob(response));
   EXPECT_CALL(mock_device_management_service_,
               StartJob(dm_protocol::kValueRequestPolicy,
@@ -467,7 +469,7 @@ TEST_F(DeviceLocalAccountPolicyServiceTest, RefreshPolicy) {
   em::DeviceManagementResponse response;
   response.mutable_policy_response()->add_response()->CopyFrom(
       device_local_account_policy_.policy());
-  EXPECT_CALL(mock_device_management_service_, CreateJob(_))
+  EXPECT_CALL(mock_device_management_service_, CreateJob(_, _))
       .WillOnce(mock_device_management_service_.SucceedJob(response));
   EXPECT_CALL(mock_device_management_service_, StartJob(_, _, _, _, _, _, _));
   EXPECT_CALL(*this, OnRefreshDone(true)).Times(1);
@@ -914,7 +916,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, RefreshPolicies) {
 
   // Bring up the cloud connection. The refresh scheduler may fire refreshes at
   // this point which are not relevant for the test.
-  EXPECT_CALL(mock_device_management_service_, CreateJob(_))
+  EXPECT_CALL(mock_device_management_service_, CreateJob(_, _))
       .WillRepeatedly(
           mock_device_management_service_.FailJob(DM_STATUS_REQUEST_FAILED));
   EXPECT_CALL(mock_device_management_service_, StartJob(_, _, _, _, _, _, _))
@@ -926,7 +928,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, RefreshPolicies) {
   // No callbacks until the refresh completes.
   EXPECT_CALL(provider_observer_, OnUpdatePolicy(_)).Times(0);
   MockDeviceManagementJob* request_job;
-  EXPECT_CALL(mock_device_management_service_, CreateJob(_))
+  EXPECT_CALL(mock_device_management_service_, CreateJob(_, _))
       .WillOnce(mock_device_management_service_.CreateAsyncJob(&request_job));
   EXPECT_CALL(mock_device_management_service_, StartJob(_, _, _, _, _, _, _));
   provider_->RefreshPolicies();

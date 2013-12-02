@@ -64,8 +64,7 @@ class DeviceManagementServiceTestBase : public testing::Test {
   void ResetService() {
     scoped_ptr<DeviceManagementService::Configuration> configuration(
         new MockDeviceManagementServiceConfiguration(kServiceUrl));
-    service_.reset(
-        new DeviceManagementService(configuration.Pass(), request_context_));
+    service_.reset(new DeviceManagementService(configuration.Pass()));
   }
 
   void InitializeService() {
@@ -79,7 +78,8 @@ class DeviceManagementServiceTestBase : public testing::Test {
 
   DeviceManagementRequestJob* StartRegistrationJob() {
     DeviceManagementRequestJob* job =
-        service_->CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION);
+        service_->CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION,
+                            request_context_);
     job->SetGaiaToken(kGaiaAuthToken);
     job->SetOAuthToken(kOAuthToken);
     job->SetClientID(kClientID);
@@ -93,7 +93,8 @@ class DeviceManagementServiceTestBase : public testing::Test {
 
   DeviceManagementRequestJob* StartApiAuthCodeFetchJob() {
     DeviceManagementRequestJob* job = service_->CreateJob(
-        DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH);
+        DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH,
+        request_context_);
     job->SetGaiaToken(kGaiaAuthToken);
     job->SetOAuthToken(kOAuthToken);
     job->SetClientID(kClientID);
@@ -107,7 +108,8 @@ class DeviceManagementServiceTestBase : public testing::Test {
 
   DeviceManagementRequestJob* StartUnregistrationJob() {
     DeviceManagementRequestJob* job =
-        service_->CreateJob(DeviceManagementRequestJob::TYPE_UNREGISTRATION);
+        service_->CreateJob(DeviceManagementRequestJob::TYPE_UNREGISTRATION,
+                            request_context_);
     job->SetDMToken(kDMToken);
     job->SetClientID(kClientID);
     job->GetRequest()->mutable_unregister_request();
@@ -120,7 +122,8 @@ class DeviceManagementServiceTestBase : public testing::Test {
 
   DeviceManagementRequestJob* StartPolicyFetchJob() {
     DeviceManagementRequestJob* job =
-        service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH);
+        service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH,
+                            request_context_);
     job->SetGaiaToken(kGaiaAuthToken);
     job->SetOAuthToken(kOAuthToken);
     job->SetClientID(kClientID);
@@ -136,7 +139,8 @@ class DeviceManagementServiceTestBase : public testing::Test {
 
   DeviceManagementRequestJob* StartAutoEnrollmentJob() {
     DeviceManagementRequestJob* job =
-        service_->CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT);
+        service_->CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT,
+                            request_context_);
     job->SetClientID(kClientID);
     em::DeviceAutoEnrollmentRequest* request =
         job->GetRequest()->mutable_auto_enrollment_request();

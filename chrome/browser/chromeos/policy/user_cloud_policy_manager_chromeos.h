@@ -65,10 +65,11 @@ class UserCloudPolicyManagerChromeOS
 
   // Initializes the cloud connection. |local_state| and
   // |device_management_service| must stay valid until this object is deleted.
-  void Connect(PrefService* local_state,
-               DeviceManagementService* device_management_service,
-               scoped_refptr<net::URLRequestContextGetter> request_context,
-               UserAffiliation user_affiliation);
+  void Connect(
+      PrefService* local_state,
+      DeviceManagementService* device_management_service,
+      scoped_refptr<net::URLRequestContextGetter> system_request_context,
+      UserAffiliation user_affiliation);
 
   // This class is one of the policy providers, and must be ready for the
   // creation of the Profile's PrefService; all the other

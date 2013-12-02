@@ -11,6 +11,7 @@
 #include "chrome/browser/policy/cloud/device_management_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "net/url_request/url_request_context_getter.h"
 
 namespace em = enterprise_management;
 
@@ -46,11 +47,13 @@ void CloudPolicyClient::Observer::OnRobotAuthCodesFetched(
 
 CloudPolicyClient::StatusProvider::~StatusProvider() {}
 
-CloudPolicyClient::CloudPolicyClient(const std::string& machine_id,
-                                     const std::string& machine_model,
-                                     UserAffiliation user_affiliation,
-                                     StatusProvider* status_provider,
-                                     DeviceManagementService* service)
+CloudPolicyClient::CloudPolicyClient(
+    const std::string& machine_id,
+    const std::string& machine_model,
+    UserAffiliation user_affiliation,
+    StatusProvider* status_provider,
+    DeviceManagementService* service,
+    scoped_refptr<net::URLRequestContextGetter> request_context)
     : machine_id_(machine_id),
       machine_model_(machine_model),
       user_affiliation_(user_affiliation),
@@ -62,7 +65,8 @@ CloudPolicyClient::CloudPolicyClient(const std::string& machine_id,
       fetched_invalidation_version_(0),
       service_(service),                  // Can be NULL for unit tests.
       status_provider_(status_provider),  // Can be NULL for unit tests.
-      status_(DM_STATUS_SUCCESS) {
+      status_(DM_STATUS_SUCCESS),
+      request_context_(request_context) {
 }
 
 CloudPolicyClient::~CloudPolicyClient() {
@@ -102,7 +106,8 @@ void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
   }
 
   request_job_.reset(
-      service_->CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION));
+      service_->CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION,
+                          GetRequestContext()));
   request_job_->SetOAuthToken(auth_token);
   request_job_->SetClientID(client_id_);
 
@@ -139,7 +144,8 @@ void CloudPolicyClient::FetchPolicy() {
   CHECK(!namespaces_to_fetch_.empty());
 
   request_job_.reset(
-      service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH));
+      service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH,
+                          GetRequestContext()));
   request_job_->SetDMToken(dm_token_);
   request_job_->SetClientID(client_id_);
   request_job_->SetUserAffiliation(user_affiliation_);
@@ -207,7 +213,8 @@ void CloudPolicyClient::FetchRobotAuthCodes(const std::string& auth_token) {
   DCHECK(!auth_token.empty());
 
   request_job_.reset(service_->CreateJob(
-      DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH));
+      DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH,
+      GetRequestContext()));
   // The credentials of a domain user are needed in order to mint a new OAuth2
   // authorization token for the robot account.
   request_job_->SetOAuthToken(auth_token);
@@ -228,7 +235,8 @@ void CloudPolicyClient::FetchRobotAuthCodes(const std::string& auth_token) {
 void CloudPolicyClient::Unregister() {
   DCHECK(service_);
   request_job_.reset(
-      service_->CreateJob(DeviceManagementRequestJob::TYPE_UNREGISTRATION));
+      service_->CreateJob(DeviceManagementRequestJob::TYPE_UNREGISTRATION,
+                          GetRequestContext()));
   request_job_->SetDMToken(dm_token_);
   request_job_->SetClientID(client_id_);
   request_job_->GetRequest()->mutable_unregister_request();
@@ -241,7 +249,8 @@ void CloudPolicyClient::UploadCertificate(
     const CloudPolicyClient::StatusCallback& callback) {
   CHECK(is_registered());
   request_job_.reset(
-      service_->CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_CERTIFICATE));
+      service_->CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_CERTIFICATE,
+                          GetRequestContext()));
   request_job_->SetDMToken(dm_token_);
   request_job_->SetClientID(client_id_);
 
@@ -276,6 +285,11 @@ const em::PolicyFetchResponse* CloudPolicyClient::GetPolicyFor(
     const PolicyNamespaceKey& key) const {
   ResponseMap::const_iterator it = responses_.find(key);
   return it == responses_.end() ? NULL : it->second;
+}
+
+scoped_refptr<net::URLRequestContextGetter>
+CloudPolicyClient::GetRequestContext() {
+  return request_context_;
 }
 
 void CloudPolicyClient::OnRetryRegister(DeviceManagementRequestJob* job) {

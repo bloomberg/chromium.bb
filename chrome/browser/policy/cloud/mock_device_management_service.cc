@@ -4,10 +4,9 @@
 
 #include "chrome/browser/policy/cloud/mock_device_management_service.h"
 
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_util.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/url_request_test_util.h"
+#include "net/url_request/url_request_context_getter.h"
 
 using testing::Action;
 
@@ -137,10 +136,6 @@ std::string MockDeviceManagementServiceConfiguration::GetServerUrl() {
   return server_url_;
 }
 
-std::string MockDeviceManagementServiceConfiguration::GetUserAgent() {
-  return kUserAgent;
-}
-
 std::string MockDeviceManagementServiceConfiguration::GetAgentParameter() {
   return kUserAgent;
 }
@@ -151,9 +146,7 @@ std::string MockDeviceManagementServiceConfiguration::GetPlatformParameter() {
 
 MockDeviceManagementService::MockDeviceManagementService()
     : DeviceManagementService(scoped_ptr<Configuration>(
-                                  new MockDeviceManagementServiceConfiguration),
-                              new net::TestURLRequestContextGetter(
-                                  base::MessageLoopProxy::current())) {}
+          new MockDeviceManagementServiceConfiguration)) {}
 
 MockDeviceManagementService::~MockDeviceManagementService() {}
 

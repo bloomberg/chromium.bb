@@ -15,6 +15,7 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_token_service.h"
+#include "net/url_request/url_request_context_getter.h"
 
 #if !defined(OS_ANDROID)
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
@@ -158,11 +159,10 @@ void CloudPolicyClientRegistrationHelper::LoginTokenHelper::OnGetTokenFailure(
 #endif
 
 CloudPolicyClientRegistrationHelper::CloudPolicyClientRegistrationHelper(
-    net::URLRequestContextGetter* context,
     CloudPolicyClient* client,
     bool should_force_load_policy,
     enterprise_management::DeviceRegisterRequest::Type registration_type)
-    : context_(context),
+    : context_(client->GetRequestContext()),
       client_(client),
       should_force_load_policy_(should_force_load_policy),
       registration_type_(registration_type) {

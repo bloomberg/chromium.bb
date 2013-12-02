@@ -17,6 +17,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/sha2.h"
+#include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -58,12 +60,15 @@ class AutoEnrollmentClientTest : public testing::Test {
     base::Closure callback =
         base::Bind(&AutoEnrollmentClientTest::CompletionCallback,
                    base::Unretained(this));
-    client_.reset(new AutoEnrollmentClient(callback,
-                                           service_.get(),
-                                           local_state_,
-                                           serial,
-                                           power_initial,
-                                           power_limit));
+    client_.reset(new AutoEnrollmentClient(
+        callback,
+        service_.get(),
+        local_state_,
+        new net::TestURLRequestContextGetter(
+            base::MessageLoop::current()->message_loop_proxy()),
+        serial,
+        power_initial,
+        power_limit));
   }
 
   void CompletionCallback() {
@@ -73,7 +78,7 @@ class AutoEnrollmentClientTest : public testing::Test {
   void ServerWillFail(DeviceManagementStatus error) {
     em::DeviceManagementResponse dummy_response;
     EXPECT_CALL(*service_,
-                CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT))
+                CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT, _))
         .WillOnce(service_->FailJob(error));
   }
 
@@ -96,13 +101,13 @@ class AutoEnrollmentClientTest : public testing::Test {
                                                crypto::kSHA256Length);
     }
     EXPECT_CALL(*service_,
-                CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT))
+                CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT, _))
         .WillOnce(service_->SucceedJob(response));
   }
 
   void ServerWillReplyAsync(MockDeviceManagementJob** job) {
     EXPECT_CALL(*service_,
-                CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT))
+                CreateJob(DeviceManagementRequestJob::TYPE_AUTO_ENROLLMENT, _))
         .WillOnce(service_->CreateAsyncJob(job));
   }
 
@@ -315,7 +320,7 @@ TEST_F(AutoEnrollmentClientTest, MoreThan32BitsUploaded) {
 }
 
 TEST_F(AutoEnrollmentClientTest, ReuseCachedDecision) {
-  EXPECT_CALL(*service_, CreateJob(_)).Times(0);
+  EXPECT_CALL(*service_, CreateJob(_, _)).Times(0);
   local_state_->SetUserPref(prefs::kShouldAutoEnroll,
                             Value::CreateBooleanValue(true));
   local_state_->SetUserPref(prefs::kAutoEnrollmentPowerLimit,

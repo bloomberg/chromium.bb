@@ -13,7 +13,6 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
@@ -112,9 +111,6 @@ class DeviceManagementService : public net::URLFetcherDelegate {
     // Server at which to contact the service.
     virtual std::string GetServerUrl() = 0;
 
-    // Value for the User-Agent header.
-    virtual std::string GetUserAgent() = 0;
-
     // Agent reported in the "agent" query parameter.
     virtual std::string GetAgentParameter() = 0;
 
@@ -122,9 +118,7 @@ class DeviceManagementService : public net::URLFetcherDelegate {
     virtual std::string GetPlatformParameter() = 0;
   };
 
-  DeviceManagementService(
-      scoped_ptr<Configuration> configuration,
-      scoped_refptr<net::URLRequestContextGetter> request_context);
+  explicit DeviceManagementService(scoped_ptr<Configuration> configuration);
   virtual ~DeviceManagementService();
 
   // The ID of URLFetchers created by the DeviceManagementService. This can be
@@ -135,14 +129,17 @@ class DeviceManagementService : public net::URLFetcherDelegate {
   // Creates a new device management request job. Ownership is transferred to
   // the caller.
   virtual DeviceManagementRequestJob* CreateJob(
-      DeviceManagementRequestJob::JobType type);
+      DeviceManagementRequestJob::JobType type,
+      net::URLRequestContextGetter* request_context);
 
   // Schedules a task to run |Initialize| after |delay_milliseconds| had passed.
   void ScheduleInitialization(int64 delay_milliseconds);
 
-  // Makes the service stop all requests and drop the reference to the request
-  // context.
+  // Makes the service stop all requests.
   void Shutdown();
+
+  // Gets the URL that the DMServer requests are sent to.
+  std::string GetServerURL();
 
  private:
   typedef std::map<const net::URLFetcher*,
@@ -154,8 +151,7 @@ class DeviceManagementService : public net::URLFetcherDelegate {
   // net::URLFetcherDelegate override.
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
-  // Does the actual initialization using the request context specified for
-  // |PrepareInitialization|. This will also fire any pending network requests.
+  // Starts processing any queued jobs.
   void Initialize();
 
   // Starts a job.
@@ -172,12 +168,6 @@ class DeviceManagementService : public net::URLFetcherDelegate {
   // A Configuration implementation that is used to obtain various parameters
   // used to talk to the device management server.
   scoped_ptr<Configuration> configuration_;
-
-  // The request context is wrapped by the |request_context_getter_|.
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
-
-  // The request context we use. This is a wrapper of |request_context_|.
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   // The jobs we currently have in flight.
   JobFetcherMap pending_jobs_;

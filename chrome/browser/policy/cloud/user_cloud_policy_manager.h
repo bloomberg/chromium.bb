@@ -81,7 +81,8 @@ class UserCloudPolicyManager : public CloudPolicyManager,
   // callers want to create a DMToken without actually initializing the
   // profile's policy infrastructure.
   static scoped_ptr<CloudPolicyClient> CreateCloudPolicyClient(
-      DeviceManagementService* device_management_service);
+      DeviceManagementService* device_management_service,
+      scoped_refptr<net::URLRequestContextGetter> request_context);
 
  private:
   // The context this instance belongs to.

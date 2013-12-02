@@ -33,6 +33,7 @@ class UserPolicySigninService : public UserPolicySigninServiceBase {
       Profile* profile,
       PrefService* local_state,
       DeviceManagementService* device_management_service,
+      scoped_refptr<net::URLRequestContextGetter> system_request_context,
       ProfileOAuth2TokenService* token_service);
   virtual ~UserPolicySigninService();
 

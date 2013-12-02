@@ -16,8 +16,12 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
 #include "chrome/browser/policy/cloud/cloud_policy_refresh_scheduler.h"
+#include "chrome/browser/policy/cloud/device_management_service.h"
+#include "chrome/browser/policy/cloud/system_policy_request_context.h"
 #include "components/policy/core/common/policy_pref_names.h"
+#include "content/public/common/content_client.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
 
 namespace em = enterprise_management;
 
@@ -80,14 +84,28 @@ UserCloudPolicyManagerChromeOS::~UserCloudPolicyManagerChromeOS() {}
 void UserCloudPolicyManagerChromeOS::Connect(
     PrefService* local_state,
     DeviceManagementService* device_management_service,
-    scoped_refptr<net::URLRequestContextGetter> request_context,
+    scoped_refptr<net::URLRequestContextGetter> system_request_context,
     UserAffiliation user_affiliation) {
   DCHECK(device_management_service);
   DCHECK(local_state);
   local_state_ = local_state;
+  scoped_refptr<net::URLRequestContextGetter> request_context;
+  if (system_request_context) {
+    // |system_request_context| can be null for tests.
+    // Use the system request context here instead of a context derived
+    // from the Profile because Connect() is called before the profile is
+    // fully initialized (required so we can perform the initial policy load).
+    // TODO(atwilson): Change this to use a UserPolicyRequestContext once
+    // Connect() is called after profile initialization. http://crbug.com/323591
+    request_context = new SystemPolicyRequestContext(
+        system_request_context,
+        content::GetUserAgent(GURL(
+            device_management_service->GetServerURL())));
+  }
   scoped_ptr<CloudPolicyClient> cloud_policy_client(
       new CloudPolicyClient(std::string(), std::string(), user_affiliation,
-                            NULL, device_management_service));
+                            NULL, device_management_service,
+                            request_context));
   core()->Connect(cloud_policy_client.Pass());
   client()->AddObserver(this);
 

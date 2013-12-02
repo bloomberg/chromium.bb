@@ -211,7 +211,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     // which triggers the registration request.
     MockDeviceManagementJob* register_request = NULL;
     EXPECT_CALL(device_management_service_,
-                CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION))
+                CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION, _))
         .WillOnce(device_management_service_.CreateAsyncJob(&register_request));
 
     if (!has_request_token) {
@@ -271,7 +271,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   void FetchPolicy(const base::Closure& trigger_fetch) {
     MockDeviceManagementJob* policy_request = NULL;
     EXPECT_CALL(device_management_service_,
-                CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
+                CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
         .WillOnce(device_management_service_.CreateAsyncJob(&policy_request));
     trigger_fetch.Run();
     ASSERT_TRUE(policy_request);
@@ -467,7 +467,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchPolicyFetchError) {
   // fetch.
   MockDeviceManagementJob* policy_request = NULL;
   EXPECT_CALL(device_management_service_,
-              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
+              CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH, _))
       .WillOnce(device_management_service_.CreateAsyncJob(&policy_request));
   register_request->SendResponse(DM_STATUS_SUCCESS, register_blob_);
   Mock::VerifyAndClearExpectations(&device_management_service_);

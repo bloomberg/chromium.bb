@@ -80,7 +80,8 @@ class CloudPolicyManagerTest : public InProcessBrowserTest {
         g_browser_process->local_state(),
         g_browser_process->system_request_context(),
         UserCloudPolicyManager::CreateCloudPolicyClient(
-            connector->device_management_service()).Pass());
+            connector->device_management_service(),
+            g_browser_process->system_request_context()).Pass());
 #endif
   }
 

@@ -34,7 +34,6 @@ class CloudPolicyClientRegistrationHelper : public UserInfoFetcher::Delegate,
   // performed even if Gaia indicates that this account doesn't have management
   // enabled.
   CloudPolicyClientRegistrationHelper(
-      net::URLRequestContextGetter* context,
       CloudPolicyClient* client,
       bool should_force_load_policy,
       enterprise_management::DeviceRegisterRequest::Type registration_type);

@@ -32,7 +32,6 @@ class MockDeviceManagementServiceConfiguration
   virtual ~MockDeviceManagementServiceConfiguration();
 
   virtual std::string GetServerUrl() OVERRIDE;
-  virtual std::string GetUserAgent() OVERRIDE;
   virtual std::string GetAgentParameter() OVERRIDE;
   virtual std::string GetPlatformParameter() OVERRIDE;
 
@@ -48,9 +47,9 @@ class MockDeviceManagementService : public DeviceManagementService {
   virtual ~MockDeviceManagementService();
 
   typedef DeviceManagementRequestJob* CreateJobFunction(
-      DeviceManagementRequestJob::JobType);
+      DeviceManagementRequestJob::JobType, net::URLRequestContextGetter*);
 
-  MOCK_METHOD1(CreateJob, CreateJobFunction);
+  MOCK_METHOD2(CreateJob, CreateJobFunction);
   MOCK_METHOD7(
       StartJob,
       void(const std::string& request_type,
