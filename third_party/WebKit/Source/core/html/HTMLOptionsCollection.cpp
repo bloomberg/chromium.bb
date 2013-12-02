@@ -52,12 +52,12 @@ void HTMLOptionsCollection::add(PassRefPtr<HTMLOptionElement> element, int index
     HTMLOptionElement* newOption = element.get();
 
     if (!newOption) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::failedToExecute("add", "HTMLOptionsCollection", "The element provided was not an HTMLOptionElement."));
+        exceptionState.throwTypeError("The element provided was not an HTMLOptionElement.");
         return;
     }
 
     if (index < -1) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("add", "HTMLOptionsCollection", "The index provided (" + String::number(index) + ") is less than -1."));
+        exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is less than -1.");
         return;
     }
 
@@ -125,7 +125,7 @@ bool HTMLOptionsCollection::anonymousIndexedSetter(unsigned index, PassRefPtr<HT
 {
     HTMLSelectElement* base = toHTMLSelectElement(ownerNode());
     if (!value) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::failedToSet(String::number(index), "HTMLOptionsCollection", "The element provided was not an HTMLOptionElement."));
+        exceptionState.throwTypeError(ExceptionMessages::failedToSet(String::number(index), "HTMLOptionsCollection", "The element provided was not an HTMLOptionElement."));
         return true;
     }
     base->setOption(index, value.get(), exceptionState);

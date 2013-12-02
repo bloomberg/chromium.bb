@@ -45,7 +45,7 @@ v8::Handle<v8::Value> toV8(TextTrackCue* impl, v8::Handle<v8::Object> creationCo
 void V8TextTrackCue::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 3)) {
-        throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TextTrackCue", ExceptionMessages::notEnoughArguments(3, info.Length())), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToConstruct("TextTrackCue", ExceptionMessages::notEnoughArguments(3, info.Length())), info.GetIsolate());
         return;
     }
     V8TRYCATCH_VOID(double, startTime, static_cast<double>(info[0]->NumberValue()));

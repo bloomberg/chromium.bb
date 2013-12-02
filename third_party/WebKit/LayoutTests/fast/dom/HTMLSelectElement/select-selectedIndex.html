@@ -137,5 +137,10 @@ mySelect.options[1/0] = document.createElement("option");
 shouldBe("mySelect.options.length", "10");
 shouldBe("mySelect.selectedIndex", "-1");
 
+debug((++i) + ") trying to add a non-option element");
+shouldThrow("mySelect.options.add({})");
+shouldBe("mySelect.options.length", "10");
+shouldBe("mySelect.selectedIndex", "-1");
+
 debug("");
 </script>

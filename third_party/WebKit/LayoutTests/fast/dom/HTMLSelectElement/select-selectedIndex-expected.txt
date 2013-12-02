@@ -57,7 +57,7 @@ PASS mySelect.selectedIndex is -1
 PASS mySelect.options.length is 10
 PASS mySelect.selectedIndex is -1
 19) trying to set an element that's not an option: select element
-PASS mySelect.options[10] = mySelect; threw exception TypeMismatchError: Failed to set the '10' property on 'HTMLOptionsCollection': The element provided was not an HTMLOptionElement..
+PASS mySelect.options[10] = mySelect; threw exception TypeError: Failed to set the '10' property on 'HTMLOptionsCollection': The element provided was not an HTMLOptionElement..
 PASS mySelect.options.length is 10
 PASS mySelect.selectedIndex is -1
 20) trying to set a option element using an invalid index: negative infinity
@@ -67,6 +67,10 @@ PASS mySelect.selectedIndex is -1
 PASS mySelect.options.length is 10
 PASS mySelect.selectedIndex is -1
 22) trying to set a option element using an invalid index: positive infinity
+PASS mySelect.options.length is 10
+PASS mySelect.selectedIndex is -1
+23) trying to add a non-option element
+PASS mySelect.options.add({}) threw exception TypeError: Failed to execute 'add' on 'HTMLOptionsCollection': The element provided was not an HTMLOptionElement..
 PASS mySelect.options.length is 10
 PASS mySelect.selectedIndex is -1
 

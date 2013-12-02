@@ -18,6 +18,16 @@
                 assert_true(cue instanceof TextTrackCue);
                 assert_true(cue instanceof VTTCue);
             }, "TextTrackCue constructor returns a VTTCue");
+            test(function()
+            {
+                try { 
+                    new TextTrackCue(0);
+                    assert_unreached("Expected a TypeError");
+                } catch (e) {
+                    assert_true(e instanceof TypeError);
+                    assert_equals(e.message, "Failed to construct 'TextTrackCue': 3 arguments required, but only 1 present.");
+                }
+            }, "When not fully applied, TextTrackCue constructor throws a TypeError");
         </script>
     </body>
 </html>

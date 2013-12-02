@@ -73,23 +73,23 @@ void V8HTMLOptionsCollection::namedItemMethodCustom(const v8::FunctionCallbackIn
 
 void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "add", "HTMLOptionsCollection", info.Holder(), info.GetIsolate());
     if (!V8HTMLOptionElement::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
-        setDOMException(TypeMismatchError, info.GetIsolate());
-        return;
-    }
-    HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(info.Holder());
-    HTMLOptionElement* option = V8HTMLOptionElement::toNative(v8::Handle<v8::Object>(v8::Handle<v8::Object>::Cast(info[0])));
+        exceptionState.throwTypeError("The element provided was not an HTMLOptionElement.");
+    } else {
+        HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(info.Holder());
+        HTMLOptionElement* option = V8HTMLOptionElement::toNative(v8::Handle<v8::Object>(v8::Handle<v8::Object>::Cast(info[0])));
 
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    if (info.Length() < 2)
-        imp->add(option, exceptionState);
-    else {
-        bool ok;
-        V8TRYCATCH_VOID(int, index, toInt32(info[1], ok));
-        if (!ok)
-            exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::failedToExecute("add", "HTMLOptionsCollection", "The index provided could not be interpreted as an integer."));
-        else
-            imp->add(option, index, exceptionState);
+        if (info.Length() < 2) {
+            imp->add(option, exceptionState);
+        } else {
+            bool ok;
+            V8TRYCATCH_VOID(int, index, toInt32(info[1], ok));
+            if (!ok)
+                exceptionState.throwTypeError("The index provided could not be interpreted as an integer.");
+            else
+                imp->add(option, index, exceptionState);
+        }
     }
 
     exceptionState.throwIfNeeded();
@@ -100,10 +100,10 @@ void V8HTMLOptionsCollection::lengthAttributeSetterCustom(v8::Local<v8::Value> v
     HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(info.Holder());
     double v = value->NumberValue();
     unsigned newLength = 0;
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::SetterContext, "length", "HTMLOptionsCollection", info.Holder(), info.GetIsolate());
     if (!std::isnan(v) && !std::isinf(v)) {
         if (v < 0.0)
-            exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("length", "HTMLOptionsCollection", "The value provided (" + String::number(v) + ") is negative. Lengths must be greater than or equal to 0."));
+            exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(v) + ") is negative. Lengths must be greater than or equal to 0.");
         else if (v > static_cast<double>(UINT_MAX))
             newLength = UINT_MAX;
         else
