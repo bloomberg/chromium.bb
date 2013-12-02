@@ -1766,7 +1766,7 @@ void Document::updateLayout()
 {
     ASSERT(isMainThread());
 
-    FrameView* frameView = view();
+    RefPtr<FrameView> frameView = view();
     if (frameView && frameView->isInLayout()) {
         // View layout should not be re-entrant.
         ASSERT_NOT_REACHED();
@@ -1779,10 +1779,10 @@ void Document::updateLayout()
     updateStyleIfNeeded();
 
     // Only do a layout if changes have occurred that make it necessary.
-    if (frameView && renderView() && (frameView->layoutPending() || renderView()->needsLayout()))
+    if (isActive() && frameView && renderView() && (frameView->layoutPending() || renderView()->needsLayout()))
         frameView->layout();
 
-    if (frameView)
+    if (isActive() && frameView)
         frameView->partialLayout().reset();
 
     setNeedsFocusedElementCheck();
