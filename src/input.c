@@ -517,6 +517,12 @@ weston_keyboard_destroy(struct weston_keyboard *keyboard)
 	free(keyboard);
 }
 
+static void
+weston_touch_reset_state(struct weston_touch *touch)
+{
+	touch->num_tp = 0;
+}
+
 WL_EXPORT struct weston_touch *
 weston_touch_create(void)
 {
@@ -2041,6 +2047,7 @@ weston_seat_release_touch(struct weston_seat *seat)
 	if (seat->touch_device_count == 0) {
 		weston_touch_set_focus(seat, NULL);
 		weston_touch_cancel_grab(seat->touch);
+		weston_touch_reset_state(seat->touch);
 		seat_send_updated_caps(seat);
 	}
 }
