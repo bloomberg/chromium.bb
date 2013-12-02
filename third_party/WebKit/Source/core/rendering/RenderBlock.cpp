@@ -289,7 +289,7 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
 
     RenderStyle* newStyle = style();
 
-    updateShapeInsideInfoAfterStyleChange(newStyle->resolvedShapeInside(), oldStyle ? oldStyle->resolvedShapeInside() : 0);
+    updateShapeInsideInfoAfterStyleChange(newStyle->resolvedShapeInside(), oldStyle ? oldStyle->resolvedShapeInside() : RenderStyle::initialShapeInside());
 
     if (!isAnonymousBlock()) {
         // Ensure that all of our continuation blocks pick up the new style.

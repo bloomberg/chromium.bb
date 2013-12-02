@@ -1606,10 +1606,4 @@ void RenderStyle::setBorderImageOutset(const BorderImageLengthBox& outset)
     surround.access()->border.m_image.setOutset(outset);
 }
 
-ShapeValue* RenderStyle::initialShapeInside()
-{
-    DEFINE_STATIC_REF(ShapeValue, sOutsideValue, (ShapeValue::createOutsideValue()));
-    return sOutsideValue;
-}
-
 } // namespace WebCore
