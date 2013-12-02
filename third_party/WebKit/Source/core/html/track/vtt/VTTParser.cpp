@@ -542,25 +542,29 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document)
         break;
     }
     case VTTTokenTypes::StartTag: {
-        RefPtr<VTTElement> child;
         VTTNodeType nodeType = tokenToNodeType(m_token);
-        if (nodeType != VTTNodeTypeNone)
-            child = VTTElement::create(nodeType, &document);
-        if (child) {
-            if (!m_token.classes().isEmpty())
-                child->setAttribute(classAttr, m_token.classes());
+        if (nodeType == VTTNodeTypeNone)
+            break;
 
-            if (child->webVTTNodeType() == VTTNodeTypeVoice) {
-                child->setAttribute(VTTElement::voiceAttributeName(), m_token.annotation());
-            } else if (child->webVTTNodeType() == VTTNodeTypeLanguage) {
-                m_languageStack.append(m_token.annotation());
-                child->setAttribute(VTTElement::langAttributeName(), m_languageStack.last());
-            }
-            if (!m_languageStack.isEmpty())
-                child->setLanguage(m_languageStack.last());
-            m_currentNode->parserAppendChild(child);
-            m_currentNode = child;
+        VTTNodeType currentType = m_currentNode->isVTTElement() ? toVTTElement(m_currentNode.get())->webVTTNodeType() : VTTNodeTypeNone;
+        // <rt> is only allowed if the current node is <ruby>.
+        if (nodeType == VTTNodeTypeRubyText && currentType != VTTNodeTypeRuby)
+            break;
+
+        RefPtr<VTTElement> child = VTTElement::create(nodeType, &document);
+        if (!m_token.classes().isEmpty())
+            child->setAttribute(classAttr, m_token.classes());
+
+        if (nodeType == VTTNodeTypeVoice) {
+            child->setAttribute(VTTElement::voiceAttributeName(), m_token.annotation());
+        } else if (nodeType == VTTNodeTypeLanguage) {
+            m_languageStack.append(m_token.annotation());
+            child->setAttribute(VTTElement::langAttributeName(), m_languageStack.last());
         }
+        if (!m_languageStack.isEmpty())
+            child->setLanguage(m_languageStack.last());
+        m_currentNode->parserAppendChild(child);
+        m_currentNode = child;
         break;
     }
     case VTTTokenTypes::EndTag: {

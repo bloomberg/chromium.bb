@@ -7,7 +7,7 @@ PASS WebVTT cue data parser test tree-building - 71de37451e7d5524eacc8a190d21cd6
 PASS WebVTT cue data parser test tree-building - 985284b688a09f1f55e3c9aab49d7e4ca11f870a 
 PASS WebVTT cue data parser test tree-building - fa6993eaa94404648d8b52e2830e53369404fdcb 
 PASS WebVTT cue data parser test tree-building - e4d351e1a6b40a7dace801b722efaa200c4895f2 
-FAIL WebVTT cue data parser test tree-building - 68e1d0376f827ebe0c047751a2067594ff41b612 assert_equals: expected "#document-fragment\n| \"test\"" but got "#document-fragment\n| <rt>\n|   \"test\""
+PASS WebVTT cue data parser test tree-building - 68e1d0376f827ebe0c047751a2067594ff41b612 
 PASS WebVTT cue data parser test tree-building - 2564487cfc7e317428fb437ef8de8de4f4963426 
 PASS WebVTT cue data parser test tree-building - 9b1902c975558eeaff4afbaf0a6dc100e1978769 
 PASS WebVTT cue data parser test tree-building - 119c596ea09649d3bd03934485e3067e89377412 
