@@ -24,7 +24,8 @@ class TranslateInfoBarBase : public InfoBarView {
                                 const string16& text);
 
  protected:
-  explicit TranslateInfoBarBase(scoped_ptr<TranslateInfoBarDelegate> delegate);
+  TranslateInfoBarBase(InfoBarService* owner,
+                       TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBarBase();
 
   // InfoBarView:

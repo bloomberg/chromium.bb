@@ -12,7 +12,7 @@
 
 class ConfirmInfoBar : public InfoBarAndroid {
  public:
-  explicit ConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate> delegate);
+  ConfirmInfoBar(InfoBarService* owner, InfoBarDelegate* delegate);
   virtual ~ConfirmInfoBar();
 
  private:

@@ -42,17 +42,18 @@ namespace {
 
 class SSLCertResultInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates an SSL cert result infobar and delegate.  If |previous_infobar| is
+  // Creates an SSL cert result infobar delegate.  If |previous_infobar| is
   // NULL, adds the infobar to |infobar_service|; otherwise, replaces
   // |previous_infobar|.  Returns the new infobar if it was successfully added.
   // |cert| is valid iff cert addition was successful.
-  static InfoBar* Create(InfoBarService* infobar_service,
-                         InfoBar* previous_infobar,
-                         const string16& message,
-                         net::X509Certificate* cert);
+  static InfoBarDelegate* Create(InfoBarService* infobar_service,
+                                 InfoBarDelegate* previous_infobar,
+                                 const string16& message,
+                                 net::X509Certificate* cert);
 
  private:
-  SSLCertResultInfoBarDelegate(const string16& message,
+  SSLCertResultInfoBarDelegate(InfoBarService* infobar_service,
+                               const string16& message,
                                net::X509Certificate* cert);
   virtual ~SSLCertResultInfoBarDelegate();
 
@@ -71,22 +72,23 @@ class SSLCertResultInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 // static
-InfoBar* SSLCertResultInfoBarDelegate::Create(InfoBarService* infobar_service,
-                                              InfoBar* previous_infobar,
-                                              const string16& message,
-                                              net::X509Certificate* cert) {
-  scoped_ptr<InfoBar> infobar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
-          new SSLCertResultInfoBarDelegate(message, cert))));
+InfoBarDelegate* SSLCertResultInfoBarDelegate::Create(
+    InfoBarService* infobar_service,
+    InfoBarDelegate* previous_infobar,
+    const string16& message,
+    net::X509Certificate* cert) {
+  scoped_ptr<InfoBarDelegate> infobar(
+     new SSLCertResultInfoBarDelegate(infobar_service, message, cert));
   return previous_infobar ?
       infobar_service->ReplaceInfoBar(previous_infobar, infobar.Pass()) :
       infobar_service->AddInfoBar(infobar.Pass());
 }
 
 SSLCertResultInfoBarDelegate::SSLCertResultInfoBarDelegate(
+    InfoBarService* infobar_service,
     const string16& message,
     net::X509Certificate* cert)
-    : ConfirmInfoBarDelegate(),
+    : ConfirmInfoBarDelegate(infobar_service),
       message_(message),
       cert_(cert) {
 }
@@ -145,7 +147,7 @@ class SSLTabHelper::SSLAddCertData
                        const content::NotificationDetails& details) OVERRIDE;
 
   InfoBarService* infobar_service_;
-  InfoBar* infobar_;
+  InfoBarDelegate* infobar_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLAddCertData);

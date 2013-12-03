@@ -12,7 +12,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/managed_mode/managed_mode_interstitial.h"
 #include "chrome/browser/managed_mode/managed_mode_resource_throttle.h"
@@ -81,12 +80,12 @@ void GoBackToSafety(content::WebContents* web_contents) {
 
 class ManagedModeWarningInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a managed mode warning infobar and delegate and adds the infobar to
-  // |infobar_service|.  Returns the infobar if it was successfully added.
-  static InfoBar* Create(InfoBarService* infobar_service);
+  // Creates a managed mode warning infobar delegate and adds it to
+  // |infobar_service|.  Returns the delegate if it was successfully added.
+  static InfoBarDelegate* Create(InfoBarService* infobar_service);
 
  private:
-  ManagedModeWarningInfoBarDelegate();
+  explicit ManagedModeWarningInfoBarDelegate(InfoBarService* infobar_service);
   virtual ~ManagedModeWarningInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
@@ -102,15 +101,15 @@ class ManagedModeWarningInfoBarDelegate : public ConfirmInfoBarDelegate {
 };
 
 // static
-InfoBar* ManagedModeWarningInfoBarDelegate::Create(
+InfoBarDelegate* ManagedModeWarningInfoBarDelegate::Create(
     InfoBarService* infobar_service) {
-  return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
-          new ManagedModeWarningInfoBarDelegate())));
+  return infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new ManagedModeWarningInfoBarDelegate(infobar_service)));
 }
 
-ManagedModeWarningInfoBarDelegate::ManagedModeWarningInfoBarDelegate()
-    : ConfirmInfoBarDelegate() {
+ManagedModeWarningInfoBarDelegate::ManagedModeWarningInfoBarDelegate(
+    InfoBarService* infobar_service)
+    : ConfirmInfoBarDelegate(infobar_service) {
 }
 
 ManagedModeWarningInfoBarDelegate::~ManagedModeWarningInfoBarDelegate() {

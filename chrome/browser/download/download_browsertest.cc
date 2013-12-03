@@ -42,7 +42,6 @@
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -2816,9 +2815,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
   ASSERT_EQ(1u, infobar_service->infobar_count());
 
   // Get the infobar at index 0.
-  InfoBar* infobar = infobar_service->infobar_at(0);
-  ConfirmInfoBarDelegate* confirm_infobar =
-      infobar->delegate()->AsConfirmInfoBarDelegate();
+  InfoBarDelegate* infobar = infobar_service->infobar_at(0);
+  ConfirmInfoBarDelegate* confirm_infobar = infobar->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(confirm_infobar != NULL);
 
   // Verify multi download warning infobar message.

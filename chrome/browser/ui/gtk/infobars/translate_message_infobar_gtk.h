@@ -12,14 +12,14 @@ class TranslateInfoBarDelegate;
 
 class TranslateMessageInfoBar : public TranslateInfoBarBase {
  public:
-  explicit TranslateMessageInfoBar(
-      scoped_ptr<TranslateInfoBarDelegate> delegate);
+  TranslateMessageInfoBar(InfoBarService* owner,
+                          TranslateInfoBarDelegate* delegate);
 
  private:
   virtual ~TranslateMessageInfoBar();
 
   // TranslateInfoBarBase:
-  virtual void PlatformSpecificSetOwner() OVERRIDE;
+  virtual void InitWidgets() OVERRIDE;
 
   CHROMEGTK_CALLBACK_0(TranslateMessageInfoBar, void, OnButtonPressed);
 

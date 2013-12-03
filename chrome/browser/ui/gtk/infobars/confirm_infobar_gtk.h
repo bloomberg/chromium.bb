@@ -18,13 +18,14 @@ typedef struct _GtkWidget GtkWidget;
 // "Would you like to do X? [Yes] [No]                         _Learn More_ [x]"
 class ConfirmInfoBarGtk : public InfoBarGtk {
  public:
-  explicit ConfirmInfoBarGtk(scoped_ptr<ConfirmInfoBarDelegate> delegate);
+  ConfirmInfoBarGtk(InfoBarService* owner,
+                    ConfirmInfoBarDelegate* delegate);
 
  private:
   virtual ~ConfirmInfoBarGtk();
 
   // InfoBarGtk:
-  virtual void PlatformSpecificSetOwner() OVERRIDE;
+  virtual void InitWidgets() OVERRIDE;
 
   ConfirmInfoBarDelegate* GetDelegate();
 

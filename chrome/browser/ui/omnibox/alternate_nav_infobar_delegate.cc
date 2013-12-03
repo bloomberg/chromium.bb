@@ -9,7 +9,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/shortcuts_backend.h"
 #include "chrome/browser/history/shortcuts_backend_factory.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
@@ -17,9 +16,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-
-AlternateNavInfoBarDelegate::~AlternateNavInfoBarDelegate() {
-}
 
 // static
 void AlternateNavInfoBarDelegate::Create(
@@ -29,18 +25,20 @@ void AlternateNavInfoBarDelegate::Create(
     const GURL& search_url) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
-  infobar_service->AddInfoBar(AlternateNavInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<AlternateNavInfoBarDelegate>(new AlternateNavInfoBarDelegate(
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new AlternateNavInfoBarDelegate(
+          infobar_service,
           Profile::FromBrowserContext(web_contents->GetBrowserContext()), text,
-          match, search_url))));
+          match, search_url)));
 }
 
 AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
+    InfoBarService* owner,
     Profile* profile,
     const string16& text,
     const AutocompleteMatch& match,
     const GURL& search_url)
-    : InfoBarDelegate(),
+    : InfoBarDelegate(owner),
       profile_(profile),
       text_(text),
       match_(match),
@@ -49,8 +47,8 @@ AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
   DCHECK(search_url_.is_valid());
 }
 
-// AlternateNavInfoBarDelegate::CreateInfoBar() is implemented in
-// platform-specific files.
+AlternateNavInfoBarDelegate::~AlternateNavInfoBarDelegate() {
+}
 
 string16 AlternateNavInfoBarDelegate::GetMessageTextWithOffset(
     size_t* link_offset) const {

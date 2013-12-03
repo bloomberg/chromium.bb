@@ -11,14 +11,13 @@ class InfoBarService;
 
 class PopupBlockedInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a popup blocked infobar and delegate and adds the infobar to
-  // |infobar_service|.
+  // Creates a popup blocked infobar delegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service, int num_popups);
 
   virtual ~PopupBlockedInfoBarDelegate();
 
  private:
-  explicit PopupBlockedInfoBarDelegate(int num_popups);
+  PopupBlockedInfoBarDelegate(InfoBarService* infobar_service, int num_popups);
 
   // ConfirmInfoBarDelegate:
   virtual int GetIconID() const OVERRIDE;

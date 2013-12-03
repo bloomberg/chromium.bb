@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_container.h"
@@ -99,8 +100,11 @@
 }
 
 - (void)removeInfoBar:(InfoBarCocoa*)infobar {
-  [infobar->controller() infobarWillHide];
-  [self removeController:infobar->controller()];
+  InfoBarController* controller = infobar->controller();
+  [controller infobarWillClose];
+  infobar->set_controller(nil);
+  [self removeController:controller];
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, infobar);
 }
 
 - (void)positionInfoBarsAndRedraw:(BOOL)isAnimating {

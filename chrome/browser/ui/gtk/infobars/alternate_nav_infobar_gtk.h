@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_GTK_INFOBARS_ALTERNATE_NAV_INFOBAR_GTK_H_
 #define CHROME_BROWSER_UI_GTK_INFOBARS_ALTERNATE_NAV_INFOBAR_GTK_H_
 
-#include "base/memory/scoped_ptr.h"
+#include "base/basictypes.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
 #include "ui/base/gtk/gtk_signal.h"
 
@@ -14,14 +14,14 @@ class AlternateNavInfoBarDelegate;
 // An infobar that shows a string with an embedded link.
 class AlternateNavInfoBarGtk : public InfoBarGtk {
  public:
-  explicit AlternateNavInfoBarGtk(
-      scoped_ptr<AlternateNavInfoBarDelegate> delegate);
+  AlternateNavInfoBarGtk(InfoBarService* owner,
+                         AlternateNavInfoBarDelegate* delegate);
 
  private:
   virtual ~AlternateNavInfoBarGtk();
 
   // InfoBarGtk:
-  virtual void PlatformSpecificSetOwner() OVERRIDE;
+  virtual void InitWidgets() OVERRIDE;
 
   AlternateNavInfoBarDelegate* GetDelegate();
 

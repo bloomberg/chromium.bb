@@ -16,18 +16,16 @@
 
 // ConfirmInfoBarDelegate ------------------------------------------------------
 
-// static
-scoped_ptr<InfoBar> ConfirmInfoBarDelegate::CreateInfoBar(
-    scoped_ptr<ConfirmInfoBarDelegate> delegate) {
-  return scoped_ptr<InfoBar>(new ConfirmInfoBarGtk(delegate.Pass()));
+InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
+  return new ConfirmInfoBarGtk(owner, this);
 }
 
 
 // ConfirmInfoBarGtk -----------------------------------------------------------
 
-ConfirmInfoBarGtk::ConfirmInfoBarGtk(
-    scoped_ptr<ConfirmInfoBarDelegate> delegate)
-    : InfoBarGtk(delegate.PassAs<InfoBarDelegate>()),
+ConfirmInfoBarGtk::ConfirmInfoBarGtk(InfoBarService* owner,
+                                     ConfirmInfoBarDelegate* delegate)
+    : InfoBarGtk(owner, delegate),
       confirm_hbox_(NULL),
       size_group_(NULL) {
 }
@@ -37,8 +35,8 @@ ConfirmInfoBarGtk::~ConfirmInfoBarGtk() {
     g_object_unref(size_group_);
 }
 
-void ConfirmInfoBarGtk::PlatformSpecificSetOwner() {
-  InfoBarGtk::PlatformSpecificSetOwner();
+void ConfirmInfoBarGtk::InitWidgets() {
+  InfoBarGtk::InitWidgets();
 
   confirm_hbox_ = gtk_chrome_shrinkable_hbox_new(FALSE, FALSE,
                                                  kEndOfLabelSpacing);

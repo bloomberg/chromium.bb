@@ -38,8 +38,9 @@ void WebRtcTestBase::GetUserMediaAndAccept(
 void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndAccept(
     content::WebContents* tab_contents,
     const std::string& constraints) const {
-  InfoBar* infobar = GetUserMediaAndWaitForInfoBar(tab_contents, constraints);
-  infobar->delegate()->AsConfirmInfoBarDelegate()->Accept();
+  MediaStreamInfoBarDelegate* infobar =
+      GetUserMediaAndWaitForInfoBar(tab_contents, constraints);
+  infobar->Accept();
   CloseInfoBarInTab(tab_contents, infobar);
 
   // Wait for WebRTC to call the success callback.
@@ -56,8 +57,9 @@ void WebRtcTestBase::GetUserMediaAndDeny(content::WebContents* tab_contents) {
 void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndDeny(
     content::WebContents* tab_contents,
     const std::string& constraints) const {
-  InfoBar* infobar = GetUserMediaAndWaitForInfoBar(tab_contents, constraints);
-  infobar->delegate()->AsConfirmInfoBarDelegate()->Cancel();
+  MediaStreamInfoBarDelegate* infobar =
+      GetUserMediaAndWaitForInfoBar(tab_contents, constraints);
+  infobar->Cancel();
   CloseInfoBarInTab(tab_contents, infobar);
 
   // Wait for WebRTC to call the fail callback.
@@ -67,9 +69,9 @@ void WebRtcTestBase::GetUserMediaWithSpecificConstraintsAndDeny(
 
 void WebRtcTestBase::GetUserMediaAndDismiss(
     content::WebContents* tab_contents) const {
-  InfoBar* infobar =
+  MediaStreamInfoBarDelegate* infobar =
       GetUserMediaAndWaitForInfoBar(tab_contents, kAudioVideoCallConstraints);
-  infobar->delegate()->InfoBarDismissed();
+  infobar->InfoBarDismissed();
   CloseInfoBarInTab(tab_contents, infobar);
 
   // A dismiss should be treated like a deny.
@@ -97,7 +99,7 @@ void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,
   EXPECT_EQ("ok-requested", result);
 }
 
-InfoBar* WebRtcTestBase::GetUserMediaAndWaitForInfoBar(
+MediaStreamInfoBarDelegate* WebRtcTestBase::GetUserMediaAndWaitForInfoBar(
     content::WebContents* tab_contents,
     const std::string& constraints) const {
   content::WindowedNotificationObserver infobar_added(
@@ -110,8 +112,9 @@ InfoBar* WebRtcTestBase::GetUserMediaAndWaitForInfoBar(
   // Wait for the bar to pop up, then return it.
   infobar_added.Wait();
   content::Details<InfoBar::AddedDetails> details(infobar_added.details());
-  EXPECT_TRUE(details->delegate()->AsMediaStreamInfoBarDelegate());
-  return details.ptr();
+  MediaStreamInfoBarDelegate* infobar = details->AsMediaStreamInfoBarDelegate();
+  EXPECT_TRUE(infobar);
+  return infobar;
 }
 
 content::WebContents* WebRtcTestBase::OpenPageAndAcceptUserMedia(
@@ -127,9 +130,10 @@ content::WebContents* WebRtcTestBase::OpenPageAndAcceptUserMedia(
   content::WebContents* tab_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::Details<InfoBar::AddedDetails> details(infobar_added.details());
-  InfoBar* infobar = details.ptr();
+  MediaStreamInfoBarDelegate* infobar =
+      details->AsMediaStreamInfoBarDelegate();
   EXPECT_TRUE(infobar);
-  infobar->delegate()->AsMediaStreamInfoBarDelegate()->Accept();
+  infobar->Accept();
 
   CloseInfoBarInTab(tab_contents, infobar);
   return tab_contents;
@@ -137,7 +141,7 @@ content::WebContents* WebRtcTestBase::OpenPageAndAcceptUserMedia(
 
 void WebRtcTestBase::CloseInfoBarInTab(
     content::WebContents* tab_contents,
-    InfoBar* infobar) const {
+    MediaStreamInfoBarDelegate* infobar) const {
   content::WindowedNotificationObserver infobar_removed(
       chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
       content::NotificationService::AllSources());

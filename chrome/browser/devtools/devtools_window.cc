@@ -23,7 +23,6 @@
 #include "chrome/browser/extensions/extension_web_contents_observer.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -86,6 +85,7 @@ class DevToolsConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   DevToolsConfirmInfoBarDelegate(
+      InfoBarService* infobar_service,
       const DevToolsWindow::InfoBarCallback& callback,
       const string16& message);
   virtual ~DevToolsConfirmInfoBarDelegate();
@@ -110,15 +110,15 @@ void DevToolsConfirmInfoBarDelegate::Create(
     return;
   }
 
-  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
-          new DevToolsConfirmInfoBarDelegate(callback, message))));
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new DevToolsConfirmInfoBarDelegate(infobar_service, callback, message)));
 }
 
 DevToolsConfirmInfoBarDelegate::DevToolsConfirmInfoBarDelegate(
+    InfoBarService* infobar_service,
     const DevToolsWindow::InfoBarCallback& callback,
     const string16& message)
-    : ConfirmInfoBarDelegate(),
+    : ConfirmInfoBarDelegate(infobar_service),
       callback_(callback),
       message_(message) {
 }

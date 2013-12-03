@@ -19,8 +19,8 @@ class MenuButton;
 class BeforeTranslateInfoBar : public TranslateInfoBarBase,
                                public views::MenuButtonListener {
  public:
-  explicit BeforeTranslateInfoBar(
-      scoped_ptr<TranslateInfoBarDelegate> delegate);
+  BeforeTranslateInfoBar(InfoBarService* owner,
+                         TranslateInfoBarDelegate* delegate);
 
  private:
   virtual ~BeforeTranslateInfoBar();

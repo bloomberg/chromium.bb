@@ -34,7 +34,7 @@ class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
   static scoped_ptr<DownloadRequestInfoBarDelegate> Create(
       base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host) {
     return scoped_ptr<DownloadRequestInfoBarDelegate>(
-        new DownloadRequestInfoBarDelegate(host));
+        new DownloadRequestInfoBarDelegate(NULL, host));
   }
 #endif
 
@@ -43,7 +43,8 @@ class DownloadRequestInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   static FakeCreateCallback* callback_;
 
-  explicit DownloadRequestInfoBarDelegate(
+  DownloadRequestInfoBarDelegate(
+      InfoBarService* infobar_service,
       base::WeakPtr<DownloadRequestLimiter::TabDownloadState> host);
 
   // ConfirmInfoBarDelegate:

@@ -13,6 +13,7 @@ class GoogleLocationSettingsHelper;
 class GeolocationInfoBarDelegateAndroid : public GeolocationInfoBarDelegate {
  public:
   GeolocationInfoBarDelegateAndroid(
+      InfoBarService* infobar_service,
       PermissionQueueController* controller,
       const PermissionRequestID& id,
       const GURL& requesting_frame_url,

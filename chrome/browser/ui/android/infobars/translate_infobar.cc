@@ -16,17 +16,16 @@
 // TranslateInfoBarDelegate ---------------------------------------------------
 
 // static
-scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
-    scoped_ptr<TranslateInfoBarDelegate> delegate) {
-  return scoped_ptr<InfoBar>(new TranslateInfoBar(delegate.Pass()));
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
+  return new TranslateInfoBar(owner, this);
 }
 
 
 // TranslateInfoBar -----------------------------------------------------------
 
-TranslateInfoBar::TranslateInfoBar(
-    scoped_ptr<TranslateInfoBarDelegate> delegate)
-    : InfoBarAndroid(delegate.PassAs<InfoBarDelegate>()),
+TranslateInfoBar::TranslateInfoBar(InfoBarService* owner,
+                                   TranslateInfoBarDelegate* delegate)
+    : InfoBarAndroid(owner, delegate),
       java_translate_delegate_() {
 }
 

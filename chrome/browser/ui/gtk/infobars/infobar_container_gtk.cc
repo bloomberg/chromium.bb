@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -52,6 +53,7 @@ bool InfoBarContainerGtk::ContainsInfobars() const {
 void InfoBarContainerGtk::PlatformSpecificAddInfoBar(InfoBar* infobar,
                                                      size_t position) {
   InfoBarGtk* infobar_gtk = static_cast<InfoBarGtk*>(infobar);
+  infobar_gtk->InitWidgets();
   infobars_gtk_.insert(infobars_gtk_.begin() + position, infobar_gtk);
 
   if (infobars_gtk_.back() == infobar_gtk) {
@@ -79,6 +81,8 @@ void InfoBarContainerGtk::PlatformSpecificRemoveInfoBar(InfoBar* infobar) {
       std::find(infobars_gtk_.begin(), infobars_gtk_.end(), infobar);
   if (it != infobars_gtk_.end())
     infobars_gtk_.erase(it);
+
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, infobar);
 }
 
 void InfoBarContainerGtk::PlatformSpecificInfoBarStateChanged(

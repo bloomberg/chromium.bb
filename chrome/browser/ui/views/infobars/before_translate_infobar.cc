@@ -16,8 +16,9 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 
 BeforeTranslateInfoBar::BeforeTranslateInfoBar(
-    scoped_ptr<TranslateInfoBarDelegate> delegate)
-    : TranslateInfoBarBase(delegate.Pass()),
+    InfoBarService* owner,
+    TranslateInfoBarDelegate* delegate)
+    : TranslateInfoBarBase(owner, delegate),
       label_1_(NULL),
       label_2_(NULL),
       language_menu_button_(NULL),

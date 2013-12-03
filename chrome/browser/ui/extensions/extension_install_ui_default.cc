@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/theme_installed_infobar_delegate.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -81,13 +80,13 @@ void ShowExtensionInstalledBubble(const extensions::Extension* extension,
 // Helper class to put up an infobar when installation fails.
 class ErrorInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates an error infobar and delegate and adds the infobar to
-  // |infobar_service|.
+  // Creates an error infobar delegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      const extensions::CrxInstallerError& error);
 
  private:
-  explicit ErrorInfoBarDelegate(const extensions::CrxInstallerError& error);
+  ErrorInfoBarDelegate(InfoBarService* infobar_service,
+                       const extensions::CrxInstallerError& error);
   virtual ~ErrorInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:
@@ -104,13 +103,14 @@ class ErrorInfoBarDelegate : public ConfirmInfoBarDelegate {
 // static
 void ErrorInfoBarDelegate::Create(InfoBarService* infobar_service,
                                   const extensions::CrxInstallerError& error) {
-  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(new ErrorInfoBarDelegate(error))));
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new ErrorInfoBarDelegate(infobar_service, error)));
 }
 
 ErrorInfoBarDelegate::ErrorInfoBarDelegate(
+    InfoBarService* infobar_service,
     const extensions::CrxInstallerError& error)
-    : ConfirmInfoBarDelegate(),
+    : ConfirmInfoBarDelegate(infobar_service),
       error_(error) {
 }
 

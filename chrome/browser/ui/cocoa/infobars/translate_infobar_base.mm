@@ -27,13 +27,11 @@ using InfoBarUtilities::VerifyControlOrderAndSpacing;
 using InfoBarUtilities::CreateLabel;
 using InfoBarUtilities::AddMenuItem;
 
-// static
-scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
-    scoped_ptr<TranslateInfoBarDelegate> delegate) {
-  scoped_ptr<InfoBarCocoa> infobar(
-      new InfoBarCocoa(delegate.PassAs<InfoBarDelegate>()));
+// TranslateInfoBarDelegate views specific method:
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
+  scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(owner, this));
   base::scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller;
-  switch (infobar->delegate()->AsTranslateInfoBarDelegate()->infobar_type()) {
+  switch (infobar_type_) {
     case BEFORE_TRANSLATE:
       infobar_controller.reset([[BeforeTranslateInfobarController alloc]
           initWithInfoBar:infobar.get()]);
@@ -51,7 +49,7 @@ scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
       NOTREACHED();
   }
   infobar->set_controller(infobar_controller);
-  return infobar.PassAs<InfoBar>();
+  return infobar.release();
 }
 
 @implementation TranslateInfoBarControllerBase (FrameChangeObserver)
@@ -361,17 +359,12 @@ scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
   [self updateState];
 }
 
-- (void)infobarWillHide {
-  [[fromLanguagePopUp_ menu] cancelTracking];
-  [[toLanguagePopUp_ menu] cancelTracking];
-  [[optionsPopUp_ menu] cancelTracking];
-  [super infobarWillHide];
-}
-
 - (void)infobarWillClose {
   [self disablePopUpMenu:[fromLanguagePopUp_ menu]];
   [self disablePopUpMenu:[toLanguagePopUp_ menu]];
   [self disablePopUpMenu:[optionsPopUp_ menu]];
+  // [super infobarWillClose] clears the owner field which is relied on by the
+  // notification handler, so remove the handler first.
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super infobarWillClose];
 }
@@ -465,6 +458,9 @@ scoped_ptr<InfoBar> TranslateInfoBarDelegate::CreateInfoBar(
 }
 
 - (void)dealloc {
+  // Perhaps this was removed as an observer in -infobarWillClose, but there's
+  // no guarantee that that was the case.
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
   [showOriginalButton_ setTarget:nil];
   [translateMessageButton_ setTarget:nil];
   [super dealloc];

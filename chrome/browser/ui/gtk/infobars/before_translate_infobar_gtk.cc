@@ -13,15 +13,16 @@
 #include "ui/base/l10n/l10n_util.h"
 
 BeforeTranslateInfoBar::BeforeTranslateInfoBar(
-    scoped_ptr<TranslateInfoBarDelegate> delegate)
-    : TranslateInfoBarBase(delegate.Pass()) {
+    InfoBarService* owner,
+    TranslateInfoBarDelegate* delegate)
+    : TranslateInfoBarBase(owner, delegate) {
 }
 
 BeforeTranslateInfoBar::~BeforeTranslateInfoBar() {
 }
 
-void BeforeTranslateInfoBar::PlatformSpecificSetOwner() {
-  TranslateInfoBarBase::PlatformSpecificSetOwner();
+void BeforeTranslateInfoBar::InitWidgets() {
+  TranslateInfoBarBase::InitWidgets();
 
   GtkWidget* new_hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
   gtk_util::CenterWidgetInHBox(hbox(), new_hbox, false, 0);

@@ -16,12 +16,11 @@ class InfoBarService;
 // a "Learn More" link.
 class ObsoleteOSInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates an obsolete OS infobar and delegate and adds the infobar to
-  // |infobar_service|.
+  // Creates an obsolete OS infobar delegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service);
 
  private:
-  ObsoleteOSInfoBarDelegate();
+  explicit ObsoleteOSInfoBarDelegate(InfoBarService* infobar_service);
   virtual ~ObsoleteOSInfoBarDelegate();
 
   virtual string16 GetMessageText() const OVERRIDE;

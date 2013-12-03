@@ -10,25 +10,24 @@
 
 // AlternateNavInfoBarDelegate -------------------------------------------------
 
-// static
-scoped_ptr<InfoBar> AlternateNavInfoBarDelegate::CreateInfoBar(
-    scoped_ptr<AlternateNavInfoBarDelegate> delegate) {
-  return scoped_ptr<InfoBar>(new AlternateNavInfoBarGtk(delegate.Pass()));
+InfoBar* AlternateNavInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
+  return new AlternateNavInfoBarGtk(owner, this);
 }
 
 
 // AlternateNavInfoBarGtk ------------------------------------------------------
 
 AlternateNavInfoBarGtk::AlternateNavInfoBarGtk(
-    scoped_ptr<AlternateNavInfoBarDelegate> delegate)
-    : InfoBarGtk(delegate.PassAs<InfoBarDelegate>()) {
+    InfoBarService* owner,
+    AlternateNavInfoBarDelegate* delegate)
+    : InfoBarGtk(owner, delegate) {
 }
 
 AlternateNavInfoBarGtk::~AlternateNavInfoBarGtk() {
 }
 
-void AlternateNavInfoBarGtk::PlatformSpecificSetOwner() {
-  InfoBarGtk::PlatformSpecificSetOwner();
+void AlternateNavInfoBarGtk::InitWidgets() {
+  InfoBarGtk::InitWidgets();
 
   size_t link_offset;
   string16 display_text = GetDelegate()->GetMessageTextWithOffset(&link_offset);

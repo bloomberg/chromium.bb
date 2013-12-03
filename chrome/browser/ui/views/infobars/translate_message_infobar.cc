@@ -9,8 +9,9 @@
 #include "ui/views/controls/label.h"
 
 TranslateMessageInfoBar::TranslateMessageInfoBar(
-    scoped_ptr<TranslateInfoBarDelegate> delegate)
-    : TranslateInfoBarBase(delegate.Pass()),
+    InfoBarService* owner,
+    TranslateInfoBarDelegate* delegate)
+    : TranslateInfoBarBase(owner, delegate),
       label_(NULL),
       button_(NULL) {
 }

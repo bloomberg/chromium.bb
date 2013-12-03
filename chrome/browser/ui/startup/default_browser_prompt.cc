@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
@@ -59,14 +58,15 @@ void SetChromeAsDefaultBrowser(bool interactive_flow, PrefService* prefs) {
 // The delegate for the infobar shown when Chrome is not the default browser.
 class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a default browser infobar and delegate and adds the infobar to
+  // Creates a default browser infobar delegate and adds it to
   // |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      PrefService* prefs,
                      bool interactive_flow_required);
 
  private:
-  DefaultBrowserInfoBarDelegate(PrefService* prefs,
+  DefaultBrowserInfoBarDelegate(InfoBarService* infobar_service,
+                                PrefService* prefs,
                                 bool interactive_flow_required);
   virtual ~DefaultBrowserInfoBarDelegate();
 
@@ -105,15 +105,16 @@ class DefaultBrowserInfoBarDelegate : public ConfirmInfoBarDelegate {
 void DefaultBrowserInfoBarDelegate::Create(InfoBarService* infobar_service,
                                            PrefService* prefs,
                                            bool interactive_flow_required) {
-  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(new DefaultBrowserInfoBarDelegate(
-          prefs, interactive_flow_required))));
+  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
+      new DefaultBrowserInfoBarDelegate(infobar_service, prefs,
+                                        interactive_flow_required)));
 }
 
 DefaultBrowserInfoBarDelegate::DefaultBrowserInfoBarDelegate(
+    InfoBarService* infobar_service,
     PrefService* prefs,
     bool interactive_flow_required)
-    : ConfirmInfoBarDelegate(),
+    : ConfirmInfoBarDelegate(infobar_service),
       prefs_(prefs),
       action_taken_(false),
       should_expire_(false),

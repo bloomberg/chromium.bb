@@ -6,7 +6,6 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
@@ -19,17 +18,16 @@
 // static
 void PopupBlockedInfoBarDelegate::Create(InfoBarService* infobar_service,
                                          int num_popups) {
-  scoped_ptr<InfoBar> infobar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
-          new PopupBlockedInfoBarDelegate(num_popups))));
+  scoped_ptr<InfoBarDelegate> infobar(
+      new PopupBlockedInfoBarDelegate(infobar_service, num_popups));
 
   // See if there is an existing popup infobar already.
   // TODO(dfalcantara) When triggering more than one popup the infobar
   // will be shown once, then hide then be shown again.
   // This will be fixed once we have an in place replace infobar mechanism.
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
-    InfoBar* existing_infobar = infobar_service->infobar_at(i);
-    if (existing_infobar->delegate()->AsPopupBlockedInfoBarDelegate()) {
+    InfoBarDelegate* existing_infobar = infobar_service->infobar_at(i);
+    if (existing_infobar->AsPopupBlockedInfoBarDelegate()) {
       infobar_service->ReplaceInfoBar(existing_infobar, infobar.Pass());
       return;
     }
@@ -50,8 +48,10 @@ PopupBlockedInfoBarDelegate*
   return this;
 }
 
-PopupBlockedInfoBarDelegate::PopupBlockedInfoBarDelegate(int num_popups)
-    : ConfirmInfoBarDelegate(),
+PopupBlockedInfoBarDelegate::PopupBlockedInfoBarDelegate(
+    InfoBarService* infobar_service,
+    int num_popups)
+    : ConfirmInfoBarDelegate(infobar_service),
       num_popups_(num_popups) {
 }
 
@@ -71,16 +71,17 @@ string16 PopupBlockedInfoBarDelegate::GetButtonLabel(
 
 bool PopupBlockedInfoBarDelegate::Accept() {
   // Create exceptions.
-  const GURL& url = web_contents()->GetURL();
+  content::WebContents* web_contents =  owner()->web_contents();
+  const GURL& url = web_contents->GetURL();
   Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
+      web_contents->GetBrowserContext());
   profile->GetHostContentSettingsMap()->AddExceptionForURL(
       url, url, CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
       CONTENT_SETTING_ALLOW);
 
   // Launch popups.
   PopupBlockerTabHelper* popup_blocker_helper =
-      PopupBlockerTabHelper::FromWebContents(web_contents());
+      PopupBlockerTabHelper::FromWebContents(web_contents);
   DCHECK(popup_blocker_helper);
   PopupBlockerTabHelper::PopupIdMap blocked_popups =
       popup_blocker_helper->GetBlockedPopupRequests();

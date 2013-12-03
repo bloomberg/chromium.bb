@@ -31,7 +31,7 @@ class InfoBarAndroid : public InfoBar {
     ACTION_TRANSLATE_SHOW_ORIGINAL = 4,
   };
 
-  explicit InfoBarAndroid(scoped_ptr<InfoBarDelegate> delegate);
+  InfoBarAndroid(InfoBarService* owner, InfoBarDelegate* delegate);
   virtual ~InfoBarAndroid();
 
   // InfoBar:

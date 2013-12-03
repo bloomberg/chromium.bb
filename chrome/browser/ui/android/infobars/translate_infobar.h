@@ -12,7 +12,7 @@
 
 class TranslateInfoBar : public InfoBarAndroid {
  public:
-  explicit TranslateInfoBar(scoped_ptr<TranslateInfoBarDelegate> delegate);
+  TranslateInfoBar(InfoBarService* owner, TranslateInfoBarDelegate* delegate);
   virtual ~TranslateInfoBar();
 
   // JNI methods specific to translate.

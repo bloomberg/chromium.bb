@@ -6,7 +6,6 @@
 
 #include "base/metrics/histogram.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/render_view_host.h"
@@ -19,20 +18,18 @@
 // static
 void InsecureContentInfoBarDelegate::Create(InfoBarService* infobar_service,
                                             InfoBarType type) {
-  scoped_ptr<InfoBar> new_infobar(ConfirmInfoBarDelegate::CreateInfoBar(
-      scoped_ptr<ConfirmInfoBarDelegate>(
-          new InsecureContentInfoBarDelegate(type))));
+  scoped_ptr<InfoBarDelegate> new_infobar(
+      new InsecureContentInfoBarDelegate(infobar_service, type));
 
   // Only supsersede an existing insecure content infobar if we are upgrading
   // from DISPLAY to RUN.
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
-    InfoBar* old_infobar = infobar_service->infobar_at(i);
     InsecureContentInfoBarDelegate* delegate =
-        old_infobar->delegate()->AsInsecureContentInfoBarDelegate();
+        infobar_service->infobar_at(i)->AsInsecureContentInfoBarDelegate();
     if (delegate != NULL) {
       if ((type == RUN) && (delegate->type_ == DISPLAY))
         return;
-      infobar_service->ReplaceInfoBar(old_infobar, new_infobar.Pass());
+      infobar_service->ReplaceInfoBar(delegate, new_infobar.Pass());
       break;
     }
   }
@@ -44,8 +41,10 @@ void InsecureContentInfoBarDelegate::Create(InfoBarService* infobar_service,
       NUM_EVENTS);
 }
 
-InsecureContentInfoBarDelegate::InsecureContentInfoBarDelegate(InfoBarType type)
-    : ConfirmInfoBarDelegate(),
+InsecureContentInfoBarDelegate::InsecureContentInfoBarDelegate(
+    InfoBarService* infobar_service,
+    InfoBarType type)
+    : ConfirmInfoBarDelegate(infobar_service),
       type_(type) {
 }
 

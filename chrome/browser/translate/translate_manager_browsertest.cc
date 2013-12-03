@@ -153,8 +153,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
   // infobar.
   TranslateInfoBarDelegate* GetTranslateInfoBar() {
     return (infobar_service()->infobar_count() == 1) ?
-        infobar_service()->infobar_at(0)->delegate()->
-            AsTranslateInfoBarDelegate() : NULL;
+        infobar_service()->infobar_at(0)->AsTranslateInfoBarDelegate() : NULL;
   }
 
   // If there is 1 infobar and it is a translate infobar, closes it and returns
@@ -164,7 +163,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
     if (!infobar)
       return false;
     infobar->InfoBarDismissed();  // Simulates closing the infobar.
-    infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
+    infobar_service()->RemoveInfoBar(infobar);
     return true;
   }
 
@@ -187,7 +186,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
     if (!infobar)
       return false;
     infobar->TranslationDeclined();
-    infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
+    infobar_service()->RemoveInfoBar(infobar);
     return true;
   }
 
@@ -214,7 +213,7 @@ class TranslateManagerBrowserTest : public ChromeRenderViewHostTestHarness,
                        const content::NotificationDetails& details) {
     DCHECK_EQ(chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED, type);
     removed_infobars_.insert(
-        content::Details<InfoBar::RemovedDetails>(details)->first->delegate());
+        content::Details<InfoBar::RemovedDetails>(details)->first);
   }
 
   MOCK_METHOD1(OnPreferenceChanged, void(const std::string&));

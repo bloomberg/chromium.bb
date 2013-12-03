@@ -72,10 +72,6 @@ class InfoBarService;
 - (void)addAdditionalControls;
 
 // Subclasses must override this method to perform cleanup just before the
-// infobar hides.
-- (void)infobarWillHide;
-
-// Subclasses must override this method to perform cleanup just before the
 // infobar closes.
 - (void)infobarWillClose;
 
@@ -89,8 +85,8 @@ class InfoBarService;
 @end
 
 @interface InfoBarController (Protected)
-// Disables the provided menu.  Subclasses should call this for each popup menu
-// in -infobarWillClose.
+// Closes and disables the provided menu.  Subclasses should call this for each
+// popup menu in -infobarWillClose.
 - (void)disablePopUpMenu:(NSMenu*)menu;
 @end
 

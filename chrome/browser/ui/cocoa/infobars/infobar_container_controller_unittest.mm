@@ -9,7 +9,6 @@
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
-#import "chrome/browser/ui/cocoa/infobars/confirm_infobar_controller.h"
 #include "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 #include "chrome/browser/ui/cocoa/infobars/mock_confirm_infobar_delegate.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
@@ -60,16 +59,17 @@ TEST_F(InfoBarContainerControllerTest, BWCPong) {
 TEST_F(InfoBarContainerControllerTest, AddAndRemoveInfoBars) {
   NSView* view = [controller_ view];
 
-  scoped_ptr<InfoBarDelegate> confirm_delegate(
-      new MockConfirmInfoBarDelegate(NULL));
-  scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(confirm_delegate.Pass()));
-  base::scoped_nsobject<ConfirmInfoBarController> controller(
-      [[ConfirmInfoBarController alloc] initWithInfoBar:infobar.get()]);
-  infobar->set_controller(controller);
+  // This delegate deletes itself when they're told their infobars have closed.
+  InfoBarDelegate* confirmDelegate = new MockConfirmInfoBarDelegate(NULL);
+
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents_.get());
+  scoped_ptr<InfoBarCocoa> infobar(static_cast<InfoBarCocoa*>(
+      confirmDelegate->CreateInfoBar(infobar_service)));
   [controller_ addInfoBar:infobar.get() position:0];
   EXPECT_EQ(1U, [[view subviews] count]);
 
-  [controller_ removeInfoBar:infobar.get()];
+  [controller_ removeInfoBar:infobar.release()];
   EXPECT_EQ(0U, [[view subviews] count]);
 }
 

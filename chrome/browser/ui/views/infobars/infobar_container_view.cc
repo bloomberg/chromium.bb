@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 
+#include "base/message_loop/message_loop.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "grit/generated_resources.h"
@@ -59,4 +60,5 @@ void InfoBarContainerView::PlatformSpecificAddInfoBar(InfoBar* infobar,
 
 void InfoBarContainerView::PlatformSpecificRemoveInfoBar(InfoBar* infobar) {
   RemoveChildView(static_cast<InfoBarView*>(infobar));
+  base::MessageLoop::current()->DeleteSoon(FROM_HERE, infobar);
 }

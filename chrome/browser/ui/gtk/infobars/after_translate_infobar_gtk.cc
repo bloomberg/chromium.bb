@@ -15,16 +15,17 @@
 #include "ui/base/l10n/l10n_util.h"
 
 AfterTranslateInfoBar::AfterTranslateInfoBar(
-    scoped_ptr<TranslateInfoBarDelegate> delegate)
-    : TranslateInfoBarBase(delegate.Pass()),
+    InfoBarService* owner,
+    TranslateInfoBarDelegate* delegate)
+    : TranslateInfoBarBase(owner, delegate),
       weak_factory_(this) {
 }
 
 AfterTranslateInfoBar::~AfterTranslateInfoBar() {
 }
 
-void AfterTranslateInfoBar::PlatformSpecificSetOwner() {
-  TranslateInfoBarBase::PlatformSpecificSetOwner();
+void AfterTranslateInfoBar::InitWidgets() {
+  TranslateInfoBarBase::InitWidgets();
 
   bool swapped_language_combos = false;
   bool autodetermined_source_language =

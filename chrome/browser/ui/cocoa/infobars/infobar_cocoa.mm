@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 
-#import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
-
 const int InfoBar::kSeparatorLineHeight = 1;
 const int InfoBar::kDefaultArrowTargetHeight = 11;
 const int InfoBar::kMaximumArrowTargetHeight = 24;
@@ -13,14 +11,16 @@ const int InfoBar::kDefaultArrowTargetHalfWidth = kDefaultArrowTargetHeight;
 const int InfoBar::kMaximumArrowTargetHalfWidth = 14;
 const int InfoBar::kDefaultBarTargetHeight = 36;
 
-InfoBarCocoa::InfoBarCocoa(scoped_ptr<InfoBarDelegate> delegate)
-    : InfoBar(delegate.Pass()),
+InfoBarCocoa::InfoBarCocoa(InfoBarService* owner, InfoBarDelegate* delegate)
+    : InfoBar(owner, delegate),
       weak_ptr_factory_(this) {
 }
 
 InfoBarCocoa::~InfoBarCocoa() {
-  if (controller())
-    [controller() infobarWillClose];
+}
+
+void InfoBarCocoa::RemoveSelfCocoa() {
+  RemoveSelf();
 }
 
 InfoBarService* InfoBarCocoa::OwnerCocoa() {

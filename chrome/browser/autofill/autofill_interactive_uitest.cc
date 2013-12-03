@@ -18,7 +18,6 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
@@ -169,8 +168,7 @@ class WindowedPersonalDataManagerObserver
                        const content::NotificationDetails& details) OVERRIDE {
     infobar_service_ = InfoBarService::FromWebContents(
         browser_->tab_strip_model()->GetActiveWebContents());
-    infobar_service_->infobar_at(0)->delegate()->AsConfirmInfoBarDelegate()->
-        Accept();
+    infobar_service_->infobar_at(0)->AsConfirmInfoBarDelegate()->Accept();
   }
 
   void Wait() {
@@ -833,9 +831,8 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
 
   // Wait for the translation bar to appear and get it.
   infobar_observer.Wait();
-  TranslateInfoBarDelegate* delegate =
-      InfoBarService::FromWebContents(GetWebContents())->infobar_at(0)->
-          delegate()->AsTranslateInfoBarDelegate();
+  TranslateInfoBarDelegate* delegate = InfoBarService::FromWebContents(
+      GetWebContents())->infobar_at(0)->AsTranslateInfoBarDelegate();
   ASSERT_TRUE(delegate);
   EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE,
             delegate->infobar_type());

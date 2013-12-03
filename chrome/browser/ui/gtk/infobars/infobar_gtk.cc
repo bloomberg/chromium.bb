@@ -52,8 +52,8 @@ const int InfoBar::kDefaultBarTargetHeight = 36;
 // static
 const int InfoBarGtk::kEndOfLabelSpacing = 6;
 
-InfoBarGtk::InfoBarGtk(scoped_ptr<InfoBarDelegate> delegate)
-    : InfoBar(delegate.Pass()),
+InfoBarGtk::InfoBarGtk(InfoBarService* owner, InfoBarDelegate* delegate)
+    : InfoBar(owner, delegate),
       bg_box_(NULL),
       hbox_(NULL),
       theme_service_(NULL),
@@ -63,32 +63,7 @@ InfoBarGtk::InfoBarGtk(scoped_ptr<InfoBarDelegate> delegate)
 InfoBarGtk::~InfoBarGtk() {
 }
 
-GdkColor InfoBarGtk::GetBorderColor() const {
-  DCHECK(theme_service_);
-  return theme_service_->GetBorderColor();
-}
-
-int InfoBarGtk::AnimatingHeight() const {
-  return animation().is_animating() ? bar_target_height() : 0;
-}
-
-SkColor InfoBarGtk::ConvertGetColor(ColorGetter getter) {
-  double r, g, b;
-  (this->*getter)(delegate()->GetInfoBarType(), &r, &g, &b);
-  return SkColorSetARGB(255, 255 * r, 255 * g, 255 * b);
-}
-
-void InfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
-                             double* r, double* g, double* b) {
-  GetBackgroundColor(InfoBar::GetTopColor(type), r, g, b);
-}
-
-void InfoBarGtk::GetBottomColor(InfoBarDelegate::Type type,
-                                double* r, double* g, double* b) {
-  GetBackgroundColor(InfoBar::GetBottomColor(type), r, g, b);
-}
-
-void InfoBarGtk::PlatformSpecificSetOwner() {
+void InfoBarGtk::InitWidgets() {
   DCHECK(owner());
   DCHECK(!theme_service_);
   theme_service_ = GtkThemeService::GetFrom(Profile::FromBrowserContext(
@@ -137,6 +112,31 @@ void InfoBarGtk::PlatformSpecificSetOwner() {
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(theme_service_));
   UpdateBorderColor();
+}
+
+GdkColor InfoBarGtk::GetBorderColor() const {
+  DCHECK(theme_service_);
+  return theme_service_->GetBorderColor();
+}
+
+int InfoBarGtk::AnimatingHeight() const {
+  return animation().is_animating() ? bar_target_height() : 0;
+}
+
+SkColor InfoBarGtk::ConvertGetColor(ColorGetter getter) {
+  double r, g, b;
+  (this->*getter)(delegate()->GetInfoBarType(), &r, &g, &b);
+  return SkColorSetARGB(255, 255 * r, 255 * g, 255 * b);
+}
+
+void InfoBarGtk::GetTopColor(InfoBarDelegate::Type type,
+                             double* r, double* g, double* b) {
+  GetBackgroundColor(InfoBar::GetTopColor(type), r, g, b);
+}
+
+void InfoBarGtk::GetBottomColor(InfoBarDelegate::Type type,
+                                double* r, double* g, double* b) {
+  GetBackgroundColor(InfoBar::GetBottomColor(type), r, g, b);
 }
 
 void InfoBarGtk::PlatformSpecificShow(bool animate) {
@@ -274,7 +274,7 @@ void InfoBarGtk::UpdateBorderColor() {
 void InfoBarGtk::OnCloseButton(GtkWidget* button) {
   // If we're not owned, we're already closing, so don't call
   // InfoBarDismissed(), since this can lead to us double-recording dismissals.
-  if (owner())
+  if (delegate() && owner())
     delegate()->InfoBarDismissed();
   RemoveSelf();
 }

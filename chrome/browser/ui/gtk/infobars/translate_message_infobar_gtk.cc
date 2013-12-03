@@ -11,15 +11,16 @@
 #include "ui/base/gtk/gtk_signal_registrar.h"
 
 TranslateMessageInfoBar::TranslateMessageInfoBar(
-    scoped_ptr<TranslateInfoBarDelegate> delegate)
-    : TranslateInfoBarBase(delegate.Pass()) {
+    InfoBarService* owner,
+    TranslateInfoBarDelegate* delegate)
+    : TranslateInfoBarBase(owner, delegate) {
 }
 
 TranslateMessageInfoBar::~TranslateMessageInfoBar() {
 }
 
-void TranslateMessageInfoBar::PlatformSpecificSetOwner() {
-  TranslateInfoBarBase::PlatformSpecificSetOwner();
+void TranslateMessageInfoBar::InitWidgets() {
+  TranslateInfoBarBase::InitWidgets();
 
   GtkWidget* new_hbox = gtk_hbox_new(FALSE, ui::kControlSpacing);
   gtk_util::CenterWidgetInHBox(hbox(), new_hbox, false, 0);

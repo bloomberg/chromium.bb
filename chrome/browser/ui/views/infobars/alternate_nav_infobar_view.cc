@@ -13,18 +13,17 @@
 
 // AlternateNavInfoBarDelegate -------------------------------------------------
 
-// static
-scoped_ptr<InfoBar> AlternateNavInfoBarDelegate::CreateInfoBar(
-    scoped_ptr<AlternateNavInfoBarDelegate> delegate) {
-  return scoped_ptr<InfoBar>(new AlternateNavInfoBarView(delegate.Pass()));
+InfoBar* AlternateNavInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
+  return new AlternateNavInfoBarView(owner, this);
 }
 
 
 // AlternateNavInfoBarView -----------------------------------------------------
 
 AlternateNavInfoBarView::AlternateNavInfoBarView(
-    scoped_ptr<AlternateNavInfoBarDelegate> delegate)
-    : InfoBarView(delegate.PassAs<InfoBarDelegate>()),
+    InfoBarService* owner,
+    AlternateNavInfoBarDelegate* delegate)
+    : InfoBarView(owner, delegate),
       label_1_(NULL),
       link_(NULL),
       label_2_(NULL) {

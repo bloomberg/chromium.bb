@@ -14,11 +14,12 @@ class GoogleURLTracker;
 // changed.
 class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a Google URL tracker infobar and delegate and adds the infobar to
-  // |infobar_service|.  Returns the infobar if it was successfully added.
-  static InfoBar* Create(InfoBarService* infobar_service,
-                         GoogleURLTracker* google_url_tracker,
-                         const GURL& search_url);
+  // Creates a Google URL tracker infobar delegate and adds it to
+  // |infobar_service|.  Returns the delegate if it was successfully added.
+  static GoogleURLTrackerInfoBarDelegate* Create(
+      InfoBarService* infobar_service,
+      GoogleURLTracker* google_url_tracker,
+      const GURL& search_url);
 
   // ConfirmInfoBarDelegate:
   virtual bool Accept() OVERRIDE;
@@ -35,7 +36,8 @@ class GoogleURLTrackerInfoBarDelegate : public ConfirmInfoBarDelegate {
   virtual void Close(bool redo_search);
 
  protected:
-  GoogleURLTrackerInfoBarDelegate(GoogleURLTracker* google_url_tracker,
+  GoogleURLTrackerInfoBarDelegate(InfoBarService* infobar_service,
+                                  GoogleURLTracker* google_url_tracker,
                                   const GURL& search_url);
   virtual ~GoogleURLTrackerInfoBarDelegate();
 
