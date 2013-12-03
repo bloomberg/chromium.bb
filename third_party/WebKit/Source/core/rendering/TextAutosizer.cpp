@@ -68,6 +68,14 @@ struct TextAutosizingClusterInfo {
     Vector<TextAutosizingClusterInfo> narrowDescendants;
 };
 
+#ifdef AUTOSIZING_DOM_DEBUG_INFO
+static void writeDebugInfo(RenderObject* renderObject, const AtomicString& output)
+{
+    Node* node = renderObject->node();
+    if (node && node->isElementNode())
+        toElement(node)->setAttribute("data-autosizing", output, ASSERT_NO_EXCEPTION);
+}
+#endif
 
 static const Vector<QualifiedName>& formInputTags()
 {
@@ -182,6 +190,9 @@ float TextAutosizer::clusterMultiplier(WritingMode writingMode, const TextAutosi
 void TextAutosizer::processClusterInternal(TextAutosizingClusterInfo& clusterInfo, RenderBlock* container, RenderObject* subtreeRoot, const TextAutosizingWindowInfo& windowInfo, float multiplier)
 {
     processContainer(multiplier, container, clusterInfo, subtreeRoot, windowInfo);
+#ifdef AUTOSIZING_DOM_DEBUG_INFO
+    writeDebugInfo(clusterInfo.root, String::format("cluster:%f", multiplier));
+#endif
 
     Vector<Vector<TextAutosizingClusterInfo> > narrowDescendantsGroups;
     getNarrowDescendantsGroupedByWidth(clusterInfo, narrowDescendantsGroups);
@@ -227,6 +238,9 @@ void TextAutosizer::processCompositeCluster(Vector<TextAutosizingClusterInfo>& c
 void TextAutosizer::processContainer(float multiplier, RenderBlock* container, TextAutosizingClusterInfo& clusterInfo, RenderObject* subtreeRoot, const TextAutosizingWindowInfo& windowInfo)
 {
     ASSERT(isAutosizingContainer(container));
+#ifdef AUTOSIZING_DOM_DEBUG_INFO
+    writeDebugInfo(container, "container");
+#endif
 
     float localMultiplier = containerShouldBeAutosized(container) ? multiplier: 1;
 
