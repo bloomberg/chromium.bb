@@ -374,32 +374,23 @@ void SendReport(scoped_refptr<FeedbackData> data) {
 bool ZipString(const base::FilePath& filename,
                const std::string& data, std::string* compressed_logs) {
   base::FilePath temp_path;
-
-  // Create a temporary directory, put the logs into a file in it.
-  if (!file_util::CreateNewTempDirectory(FILE_PATH_LITERAL(""), &temp_path))
-    return false;
-
-  base::FilePath temp_file = temp_path.Append(filename);
-  if (file_util::WriteFile(temp_file, data.c_str(), data.size()) == -1)
-    return false;
-
-  return ZipFile(temp_file, compressed_logs);
-}
-
-bool ZipFile(const base::FilePath& filename, std::string* compressed_logs) {
   base::FilePath zip_file;
 
-  // Create a temporary file to receive the zip file in it.
+  // Create a temporary directory, put the logs into a file in it. Create
+  // another temporary file to receive the zip file in.
+  if (!file_util::CreateNewTempDirectory(FILE_PATH_LITERAL(""), &temp_path))
+    return false;
+  if (file_util::WriteFile(temp_path.Append(filename),
+                           data.c_str(), data.size()) == -1)
+    return false;
   if (!file_util::CreateTemporaryFile(&zip_file))
     return false;
 
-  if (!zip::Zip(filename, zip_file, false))
+  if (!zip::Zip(temp_path, zip_file, false))
     return false;
 
   if (!base::ReadFileToString(zip_file, compressed_logs))
     return false;
-
-  base::DeleteFile(zip_file, false);
 
   return true;
 }

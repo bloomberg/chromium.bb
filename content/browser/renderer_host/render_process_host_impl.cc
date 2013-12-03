@@ -101,6 +101,7 @@
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/streams/stream_context.h"
+#include "content/browser/tracing/trace_controller_impl.h"
 #include "content/browser/tracing/trace_message_filter.h"
 #include "content/browser/vibration/vibration_message_filter.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"

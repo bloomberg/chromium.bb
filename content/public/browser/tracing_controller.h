@@ -6,9 +6,8 @@
 #define CONTENT_PUBLIC_BROWSER_TRACING_CONTROLLER_H_
 
 #include <set>
-#include <string>
 
-#include "base/callback.h"
+#include "base/debug/trace_event.h"
 #include "content/common/content_export.h"
 
 namespace base {
@@ -26,7 +25,6 @@ class TracingController;
 class TracingController {
  public:
   enum Options {
-    DEFAULT_OPTIONS = 0,
     ENABLE_SYSTRACE = 1 << 0,
     ENABLE_SAMPLING = 1 << 1,
     RECORD_CONTINUOUSLY = 1 << 2,  // For EnableRecording() only.
@@ -42,7 +40,7 @@ class TracingController {
   // groups.
   typedef base::Callback<void(const std::set<std::string>&)>
       GetCategoriesDoneCallback;
-  virtual bool GetCategories(
+  virtual void GetCategories(
       const GetCategoriesDoneCallback& callback) = 0;
 
   // Start recording on all processes.
@@ -53,8 +51,8 @@ class TracingController {
   // Once all child processes have acked to the EnableRecording request,
   // EnableRecordingDoneCallback will be called back.
   //
-  // |category_filter| is a filter to control what category groups should be
-  // traced. A filter can have an optional '-' prefix to exclude category groups
+  // |filter| is a filter to control what category groups should be traced.
+  // A filter can have an optional '-' prefix to exclude category groups
   // that contain a matching category. Having both included and excluded
   // category patterns in the same list would not be supported.
   //
@@ -65,7 +63,7 @@ class TracingController {
   // |options| controls what kind of tracing is enabled.
   typedef base::Callback<void()> EnableRecordingDoneCallback;
   virtual bool EnableRecording(
-      const std::string& category_filter,
+      const base::debug::CategoryFilter& filter,
       TracingController::Options options,
       const EnableRecordingDoneCallback& callback) = 0;
 
@@ -99,13 +97,11 @@ class TracingController {
   // Once all child processes have acked to the EnableMonitoring request,
   // EnableMonitoringDoneCallback will be called back.
   //
-  // |category_filter| is a filter to control what category groups should be
-  // traced.
+  // |filter| is a filter to control what category groups should be traced.
   //
   // |options| controls what kind of tracing is enabled.
   typedef base::Callback<void()> EnableMonitoringDoneCallback;
-  virtual bool EnableMonitoring(
-      const std::string& category_filter,
+  virtual bool EnableMonitoring(const base::debug::CategoryFilter& filter,
       TracingController::Options options,
       const EnableMonitoringDoneCallback& callback) = 0;
 
@@ -119,8 +115,8 @@ class TracingController {
 
   // Get the current monitoring configuration.
   virtual void GetMonitoringStatus(bool* out_enabled,
-                                   std::string* out_category_filter,
-                                   TracingController::Options* out_options) = 0;
+      base::debug::CategoryFilter* out_filter,
+      TracingController::Options* out_options) = 0;
 
   // Get the current monitoring traced data.
   //
@@ -139,7 +135,7 @@ class TracingController {
   //
   // If |result_file_path| is empty and |callback| is null, trace data won't be
   // written to any file.
-  virtual bool CaptureMonitoringSnapshot(
+  virtual void CaptureMonitoringSnapshot(
       const base::FilePath& result_file_path,
       const TracingFileResultCallback& callback) = 0;
 
@@ -149,17 +145,6 @@ class TracingController {
   typedef base::Callback<void(float)> GetTraceBufferPercentFullCallback;
   virtual bool GetTraceBufferPercentFull(
       const GetTraceBufferPercentFullCallback& callback) = 0;
-
-  // |callback| will will be called every time the given event occurs on any
-  // process.
-  typedef base::Callback<void()> WatchEventCallback;
-  virtual bool SetWatchEvent(const std::string& category_name,
-                             const std::string& event_name,
-                             const WatchEventCallback& callback) = 0;
-
-  // Cancel the watch event. If tracing is enabled, this may race with the
-  // watch event callback.
-  virtual bool CancelWatchEvent() = 0;
 
  protected:
   virtual ~TracingController() {}

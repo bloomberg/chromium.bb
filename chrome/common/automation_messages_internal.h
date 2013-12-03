@@ -934,7 +934,15 @@ IPC_SYNC_MESSAGE_CONTROL1_1(AutomationMsg_BeginTracing,
 // End tracing (called after BeginTracing). This blocks until tracing has
 // stopped on all processes and all the events are ready to be retrieved.
 IPC_SYNC_MESSAGE_CONTROL0_2(AutomationMsg_EndTracing,
-                            base::FilePath /* result_file_path */,
+                            size_t /* num_trace_chunks */,
+                            bool /* success */)
+
+// Retrieve trace event data (called after EndTracing). Must call exactly
+// |num_trace_chunks| times.
+// TODO(jbates): See bug 100255, IPC send fails if message is too big. This
+// code can be removed if that limitation is fixed.
+IPC_SYNC_MESSAGE_CONTROL0_2(AutomationMsg_GetTracingOutput,
+                            std::string /* trace_chunk */,
                             bool /* success */)
 
 // Used on Mac OS X to read the number of active Mach ports used in the browser

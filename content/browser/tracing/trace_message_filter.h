@@ -45,7 +45,7 @@ class TraceMessageFilter : public BrowserMessageFilter {
   void OnChildSupportsTracing();
   void OnEndTracingAck(const std::vector<std::string>& known_categories);
   void OnCaptureMonitoringSnapshotAcked();
-  void OnWatchEventMatched();
+  void OnTraceNotification(int notification);
   void OnTraceBufferPercentFullReply(float percent_full);
   void OnTraceDataCollected(const std::string& data);
   void OnMonitoringTraceDataCollected(const std::string& data);
