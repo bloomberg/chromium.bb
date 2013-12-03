@@ -35,6 +35,12 @@ class WebLayerClient;
 struct WebFloatRect;
 }
 
+namespace base {
+namespace debug {
+class ConvertableToTraceFormat;
+}
+}
+
 namespace webkit {
 
 class WebToCCAnimationDelegateAdapter;
@@ -125,6 +131,8 @@ class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
 
   // LayerClient implementation.
   virtual std::string DebugName() OVERRIDE;
+  virtual scoped_refptr<base::debug::ConvertableToTraceFormat>
+      TakeDebugInfo() OVERRIDE;
 
   virtual void setScrollParent(blink::WebLayer* parent);
   virtual void setClipParent(blink::WebLayer* parent);

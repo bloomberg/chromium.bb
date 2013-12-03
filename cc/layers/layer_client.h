@@ -7,13 +7,26 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
+
+namespace base {
+namespace debug {
+class ConvertableToTraceFormat;
+}
+}
 
 namespace cc {
 
 class CC_EXPORT LayerClient {
  public:
   virtual std::string DebugName() = 0;
+
+  // Returns a pointer to a debug info object, if one has been computed.
+  // If not, returns NULL. If the returned pointer is non-NULL, the caller takes
+  // ownership of the pointer.
+  virtual scoped_refptr<base::debug::ConvertableToTraceFormat>
+      TakeDebugInfo() = 0;
 
  protected:
   virtual ~LayerClient() {}

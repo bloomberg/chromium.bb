@@ -5,7 +5,9 @@
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event_impl.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_checker.h"
 #include "cc/animation/animation.h"
 #include "cc/base/region.h"
 #include "cc/layers/layer.h"
@@ -13,6 +15,7 @@
 #include "third_party/WebKit/public/platform/WebCompositingReasons.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
+#include "third_party/WebKit/public/platform/WebGraphicsLayerDebugInfo.h"
 #include "third_party/WebKit/public/platform/WebLayerClient.h"
 #include "third_party/WebKit/public/platform/WebLayerPositionConstraint.h"
 #include "third_party/WebKit/public/platform/WebLayerScrollClient.h"
@@ -370,6 +373,37 @@ bool WebLayerImpl::isOrphan() const { return !layer_->layer_tree_host(); }
 
 void WebLayerImpl::setWebLayerClient(blink::WebLayerClient* client) {
   web_layer_client_ = client;
+}
+
+// TODO(chrishtr): move DebugName into this class.
+class TracedDebugInfo : public base::debug::ConvertableToTraceFormat {
+ public:
+  // This object takes ownership of the debug_info object.
+  explicit TracedDebugInfo(blink::WebGraphicsLayerDebugInfo* debug_info) :
+    debug_info_(debug_info) {}
+  virtual void AppendAsTraceFormat(std::string* out) const OVERRIDE {
+    DCHECK(thread_checker_.CalledOnValidThread());
+    blink::WebString web_string;
+    debug_info_->appendAsTraceFormat(&web_string);
+    out->append(web_string.utf8());
+  }
+ private:
+  virtual ~TracedDebugInfo() {}
+  scoped_ptr<blink::WebGraphicsLayerDebugInfo> debug_info_;
+  base::ThreadChecker thread_checker_;
+};
+
+scoped_refptr<base::debug::ConvertableToTraceFormat>
+    WebLayerImpl::TakeDebugInfo() {
+  if (!web_layer_client_)
+    return NULL;
+  blink::WebGraphicsLayerDebugInfo* debug_info =
+      web_layer_client_->takeDebugInfo();
+
+  if (debug_info)
+    return new TracedDebugInfo(debug_info);
+  else
+    return NULL;
 }
 
 std::string WebLayerImpl::DebugName() {

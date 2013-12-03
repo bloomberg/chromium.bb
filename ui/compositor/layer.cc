@@ -667,6 +667,11 @@ std::string Layer::DebugName() {
   return name_;
 }
 
+scoped_refptr<base::debug::ConvertableToTraceFormat> Layer::TakeDebugInfo() {
+  // TODO: return something useful here.
+  return NULL;
+}
+
 void Layer::OnAnimationStarted(const cc::AnimationEvent& event) {
   if (animator_.get())
     animator_->OnThreadedAnimationStarted(event);

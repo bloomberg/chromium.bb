@@ -876,10 +876,12 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   bool is_tracing;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                                      &is_tracing);
-  if (is_tracing)
-      layer->SetDebugName(DebugName());
-  else
-      layer->SetDebugName(std::string());
+  if (is_tracing) {
+    layer->SetDebugName(DebugName());
+    layer->SetDebugInfo(TakeDebugInfo());
+  } else {
+    layer->SetDebugName(std::string());
+  }
 
   layer->SetCompositingReasons(compositing_reasons_);
   layer->SetDoubleSided(double_sided_);
@@ -1036,6 +1038,14 @@ bool Layer::NeedMoreUpdates() {
 std::string Layer::DebugName() {
   return client_ ? client_->DebugName() : std::string();
 }
+
+scoped_refptr<base::debug::ConvertableToTraceFormat> Layer::TakeDebugInfo() {
+  if (client_)
+    return client_->TakeDebugInfo();
+  else
+    return NULL;
+}
+
 
 void Layer::SetCompositingReasons(CompositingReasons reasons) {
   compositing_reasons_ = reasons;

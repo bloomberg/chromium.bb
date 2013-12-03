@@ -36,6 +36,10 @@
 #include "ui/gfx/transform.h"
 
 namespace base {
+namespace debug {
+class ConvertableToTraceFormat;
+}
+
 class DictionaryValue;
 }
 
@@ -511,6 +515,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
 
   virtual void RunMicroBenchmark(MicroBenchmarkImpl* benchmark);
 
+  virtual void SetDebugInfo(
+      scoped_refptr<base::debug::ConvertableToTraceFormat> other);
+
  protected:
   LayerImpl(LayerTreeImpl* layer_impl, int id);
 
@@ -650,6 +657,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   // Group of properties that need to be computed based on the layer tree
   // hierarchy before layers can be drawn.
   DrawProperties<LayerImpl> draw_properties_;
+
+  scoped_refptr<base::debug::ConvertableToTraceFormat> debug_info_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };

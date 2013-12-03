@@ -5,6 +5,7 @@
 #include "cc/layers/layer_impl.h"
 
 #include "base/debug/trace_event.h"
+#include "base/json/json_reader.h"
 #include "base/strings/stringprintf.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/scrollbar_animation_controller.h"
@@ -157,6 +158,11 @@ void LayerImpl::SetScrollParent(LayerImpl* parent) {
     scroll_parent_->RemoveScrollChild(this);
 
   scroll_parent_ = parent;
+}
+
+void LayerImpl::SetDebugInfo(
+    scoped_refptr<base::debug::ConvertableToTraceFormat> other) {
+  debug_info_ = other;
 }
 
 void LayerImpl::SetScrollChildren(std::set<LayerImpl*>* children) {
@@ -594,6 +600,8 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   // Reset any state that should be cleared for the next update.
   stacking_order_changed_ = false;
   update_rect_ = gfx::RectF();
+
+  layer->SetDebugInfo(debug_info_);
 }
 
 base::DictionaryValue* LayerImpl::LayerTreeAsJson() const {
@@ -1383,6 +1391,19 @@ void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
     gfx::BoxF inflated;
     if (layer_animation_controller_->AnimatedBoundsForBox(box, &inflated))
       state->Set("animated_bounds", MathUtil::AsValue(inflated).release());
+  }
+
+  if (debug_info_.get()) {
+    std::string str;
+    debug_info_->AppendAsTraceFormat(&str);
+    base::JSONReader json_reader;
+    // Parsing the JSON and re-encoding it is not very efficient,
+    // but it's the simplest way to achieve the desired effect, which
+    // is to output:
+    // {..., layout_rects: [{geometry_rect: ...}, ...], ...}
+    // rather than:
+    // {layout_rects: "[{geometry_rect: ...}, ...]", ...}
+    state->Set("layout_rects", json_reader.ReadToValue(str));
   }
 }
 

@@ -39,6 +39,12 @@ namespace gfx {
 class BoxF;
 }
 
+namespace base {
+namespace debug {
+class ConvertableToTraceFormat;
+}
+}
+
 namespace cc {
 
 class Animation;
@@ -358,6 +364,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   virtual void OnOutputSurfaceCreated() {}
 
   virtual std::string DebugName();
+  virtual scoped_refptr<base::debug::ConvertableToTraceFormat> TakeDebugInfo();
 
   void SetLayerClient(LayerClient* client) { client_ = client; }
 

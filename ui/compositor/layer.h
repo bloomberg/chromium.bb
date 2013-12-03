@@ -336,6 +336,9 @@ class COMPOSITOR_EXPORT Layer
   // LayerClient
   virtual std::string DebugName() OVERRIDE;
 
+  virtual scoped_refptr<base::debug::ConvertableToTraceFormat>
+      TakeDebugInfo() OVERRIDE;
+
   // LayerAnimationEventObserver
   virtual void OnAnimationStarted(const cc::AnimationEvent& event) OVERRIDE;
 
