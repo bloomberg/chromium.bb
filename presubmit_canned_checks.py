@@ -321,15 +321,28 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
       'mk': 200,
       '': maxlen,
   }
-  # Note: these are C++ specific but processed on all languages. :(
-  MACROS = ('#define', '#include', '#import', '#pragma', '#if', '#endif')
 
-  # Special java statements.
-  SPECIAL_JAVA_STARTS = ('package ', 'import ')
+  # Language specific exceptions to max line length.
+  # '.h' is considered an obj-c file extension, since OBJC_EXCEPTIONS are a
+  # superset of CPP_EXCEPTIONS.
+  CPP_FILE_EXTS = ('c', 'cc')
+  CPP_EXCEPTIONS = ('#define', '#endif', '#if', '#include', '#pragma')
+  JAVA_FILE_EXTS = ('java',)
+  JAVA_EXCEPTIONS = ('import ', 'package ')
+  OBJC_FILE_EXTS = ('h', 'm', 'mm')
+  OBJC_EXCEPTIONS = ('#define', '#endif', '#if', '#import', '#include',
+                     '#pragma')
+
+  LANGUAGE_EXCEPTIONS = [
+    (CPP_FILE_EXTS, CPP_EXCEPTIONS),
+    (JAVA_FILE_EXTS, JAVA_EXCEPTIONS),
+    (OBJC_FILE_EXTS, OBJC_EXCEPTIONS),
+  ]
 
   def no_long_lines(file_extension, line):
-    # Allow special java statements to be as long as necessary.
-    if file_extension == 'java' and line.startswith(SPECIAL_JAVA_STARTS):
+    # Check for language specific exceptions.
+    if any(file_extension in exts and line.startswith(exceptions)
+           for exts, exceptions in LANGUAGE_EXCEPTIONS):
       return True
 
     file_maxlen = maxlens.get(file_extension, maxlens[''])
@@ -346,7 +359,6 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
       return False
 
     return (
-        line.startswith(MACROS) or
         any((url in line) for url in ('http://', 'https://')) or
         input_api.re.match(
           r'.*[A-Za-z][A-Za-z_0-9]{%d,}.*' % long_symbol, line))

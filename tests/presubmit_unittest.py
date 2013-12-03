@@ -2071,6 +2071,12 @@ class CannedChecksUnittest(PresubmitTestsBase):
                      'importSomething ' + 'A ' * 50, 'foo.java',
                      presubmit.OutputApi.PresubmitPromptWarning)
 
+  def testCannedCheckObjCExceptionLongLines(self):
+    check = lambda x, y, _: presubmit_canned_checks.CheckLongLines(x, y, 80)
+    self.ContentTest(check, '#import ' + 'A ' * 150, 'foo.mm',
+                     'import' + 'A ' * 150, 'foo.mm',
+                     presubmit.OutputApi.PresubmitPromptWarning)
+
   def testCannedCheckMakefileLongLines(self):
     check = lambda x, y, _: presubmit_canned_checks.CheckLongLines(x, y, 80)
     self.ContentTest(check, 'A ' * 100, 'foo.mk', 'A ' * 100 + 'B', 'foo.mk',
@@ -2081,15 +2087,14 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.ContentTest(check, '012345678\n', None, '0123456789\n', None,
                      presubmit.OutputApi.PresubmitPromptWarning)
 
-  def testCannedCheckLongLinesMacro(self):
+  def testCannedCheckCppExceptionLongLines(self):
     check = lambda x, y, z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
     self.ContentTest(
         check,
-        # Put a space in so it doesn't trigger long symbols. Allow 1/3 more.
-        '#if 56 89 12 45',
-        None,
-        '#if 56 89 12 456',
-        None,
+        '#if 56 89 12 45 9191919191919',
+        'foo.cc',
+        '#nif 56 89 12 45 9191919191919',
+        'foo.cc',
         presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCannedCheckLongLinesHttp(self):
