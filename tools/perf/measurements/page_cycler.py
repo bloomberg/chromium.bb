@@ -40,8 +40,6 @@ class PageCycler(page_measurement.PageMeasurement):
     self._memory_metric = None
     self._cpu_metric = None
     self._v8_object_stats_metric = None
-    self._number_warm_runs = None
-    self._cold_runs_requested = False
     self._cold_run_start_index = None
     self._has_loaded_page = collections.defaultdict(int)
 
@@ -106,39 +104,39 @@ class PageCycler(page_measurement.PageMeasurement):
     if options.report_speed_index:
       self._report_speed_index = True
 
-    self._cold_runs_requested = (options.cold_load_percent != None)
+    cold_runs_percent_set = (options.cold_load_percent != None)
     # Handle requests for cold cache runs
-    if (self._cold_runs_requested and
+    if (cold_runs_percent_set and
         (options.repeat_options.page_repeat_secs or
          options.repeat_options.pageset_repeat_secs)):
       raise Exception('--cold-load-percent is incompatible with timed repeat')
 
-    if (self._cold_runs_requested and
+    if (cold_runs_percent_set and
         (options.cold_load_percent < 0 or options.cold_load_percent > 100)):
       raise Exception('--cold-load-percent must be in the range [0-100]')
 
-    # TODO(rdsmith): Properly handle interaction of page_repeat with
-    # dropping the first run.
-    number_warm_pageset_runs = int(
-        (int(options.repeat_options.pageset_repeat_iters) - 1) *
-        (100 - int(options.cold_load_percent or 0)) / 100)
-
-    # Make sure _number_cold_runs is an integer multiple of page_repeat.
+    # Make sure _cold_run_start_index is an integer multiple of page_repeat.
     # Without this, --pageset_shuffle + --page_repeat could lead to
     # assertion failures on _started_warm in WillNavigateToPage.
-    self._number_warm_runs = (number_warm_pageset_runs *
-                              options.repeat_options.page_repeat_iters)
-    self._cold_run_start_index = (self._number_warm_runs +
-        options.repeat_options.page_repeat_iters)
-    self.discard_first_result = ((self._cold_runs_requested and
-                                  not options.cold_load_percent) or
-                                 self.discard_first_result)
+    if cold_runs_percent_set:
+      number_warm_pageset_runs = int(
+          (int(options.repeat_options.pageset_repeat_iters) - 1) *
+          (100 - options.cold_load_percent) / 100)
+      number_warm_runs = (number_warm_pageset_runs *
+                          options.repeat_options.page_repeat_iters)
+      self._cold_run_start_index = (number_warm_runs +
+          options.repeat_options.page_repeat_iters)
+      self.discard_first_result = (not options.cold_load_percent or
+                                   self.discard_first_result)
+    else:
+      self._cold_run_start_index = (
+          options.repeat_options.pageset_repeat_iters *
+          options.repeat_options.page_repeat_iters)
 
   def MeasurePage(self, page, tab, results):
     tab.WaitForJavaScriptExpression('__pc_load_time', 60)
 
-    chart_name_prefix = ('' if not self._cold_runs_requested else
-                         'cold_' if self.IsRunCold(page.url) else
+    chart_name_prefix = ('cold_' if self.IsRunCold(page.url) else
                          'warm_')
 
     results.Add('page_load_time', 'ms',
@@ -171,8 +169,7 @@ class PageCycler(page_measurement.PageMeasurement):
 
   def IsRunCold(self, url):
     return (self.ShouldRunCold(url) or
-            (self._cold_runs_requested and
-             self._has_loaded_page[url] == 0))
+            self._has_loaded_page[url] == 0)
 
   def ShouldRunCold(self, url):
     # We do the warm runs first for two reasons.  The first is so we can
@@ -182,8 +179,7 @@ class PageCycler(page_measurement.PageMeasurement):
     # contribute to the cold data and warm the catch for the following
     # warm run, and clearing the cache before the load of the following
     # URL would eliminate the intended warmup for the previous URL.
-    return (self._cold_runs_requested and
-            self._has_loaded_page[url] >= self._cold_run_start_index)
+    return (self._has_loaded_page[url] >= self._cold_run_start_index)
 
   def results_are_the_same_on_every_page(self):
-    return not self._cold_runs_requested
+    return False
