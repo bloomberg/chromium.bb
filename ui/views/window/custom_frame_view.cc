@@ -388,54 +388,68 @@ void CustomFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
   int client_area_top = client_area_bounds.y();
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::ImageSkia* top_left = rb.GetImageNamed(
-      IDR_APP_TOP_LEFT).ToImageSkia();
-  const gfx::ImageSkia* top = rb.GetImageNamed(
-      IDR_APP_TOP_CENTER).ToImageSkia();
-  const gfx::ImageSkia* top_right = rb.GetImageNamed(
-      IDR_APP_TOP_RIGHT).ToImageSkia();
-  const gfx::ImageSkia* right = rb.GetImageNamed(
-      IDR_CONTENT_RIGHT_SIDE).ToImageSkia();
-  const gfx::ImageSkia* bottom_right = rb.GetImageNamed(
-      IDR_CONTENT_BOTTOM_RIGHT_CORNER).ToImageSkia();
-  const gfx::ImageSkia* bottom = rb.GetImageNamed(
-      IDR_CONTENT_BOTTOM_CENTER).ToImageSkia();
-  const gfx::ImageSkia* bottom_left = rb.GetImageNamed(
-      IDR_CONTENT_BOTTOM_LEFT_CORNER).ToImageSkia();
-  const gfx::ImageSkia* left = rb.GetImageNamed(
-      IDR_CONTENT_LEFT_SIDE).ToImageSkia();
 
-  // Top.
-  int top_edge_y = client_area_top - top->height();
-  canvas->DrawImageInt(*top_left, client_area_bounds.x() - top_left->width(),
+  // Top: left, center, right sides.
+  const gfx::ImageSkia* top_left = rb.GetImageSkiaNamed(IDR_APP_TOP_LEFT);
+  const gfx::ImageSkia* top_center = rb.GetImageSkiaNamed(IDR_APP_TOP_CENTER);
+  const gfx::ImageSkia* top_right = rb.GetImageSkiaNamed(IDR_APP_TOP_RIGHT);
+  int top_edge_y = client_area_top - top_center->height();
+  canvas->DrawImageInt(*top_left,
+                       client_area_bounds.x() - top_left->width(),
                        top_edge_y);
-  canvas->TileImageInt(*top, client_area_bounds.x(), top_edge_y,
-                       client_area_bounds.width(), top->height());
+  canvas->TileImageInt(*top_center,
+                       client_area_bounds.x(),
+                       top_edge_y,
+                       client_area_bounds.width(),
+                       top_center->height());
   canvas->DrawImageInt(*top_right, client_area_bounds.right(), top_edge_y);
 
-  // Right.
+  // Right side.
+  const gfx::ImageSkia* right = rb.GetImageSkiaNamed(IDR_CONTENT_RIGHT_SIDE);
   int client_area_bottom =
       std::max(client_area_top, client_area_bounds.bottom());
   int client_area_height = client_area_bottom - client_area_top;
-  canvas->TileImageInt(*right, client_area_bounds.right(), client_area_top,
-                       right->width(), client_area_height);
+  canvas->TileImageInt(*right,
+                       client_area_bounds.right(),
+                       client_area_top,
+                       right->width(),
+                       client_area_height);
 
-  // Bottom.
-  canvas->DrawImageInt(*bottom_right, client_area_bounds.right(),
-                       client_area_bottom);
-  canvas->TileImageInt(*bottom, client_area_bounds.x(), client_area_bottom,
-                       client_area_bounds.width(), bottom_right->height());
+  // Bottom: left, center, right sides.
+  const gfx::ImageSkia* bottom_left =
+      rb.GetImageSkiaNamed(IDR_CONTENT_BOTTOM_LEFT_CORNER);
+  const gfx::ImageSkia* bottom_center =
+      rb.GetImageSkiaNamed(IDR_CONTENT_BOTTOM_CENTER);
+  const gfx::ImageSkia* bottom_right =
+      rb.GetImageSkiaNamed(IDR_CONTENT_BOTTOM_RIGHT_CORNER);
+
   canvas->DrawImageInt(*bottom_left,
-      client_area_bounds.x() - bottom_left->width(), client_area_bottom);
+                       client_area_bounds.x() - bottom_left->width(),
+                       client_area_bottom);
 
-  // Left.
-  canvas->TileImageInt(*left, client_area_bounds.x() - left->width(),
-      client_area_top, left->width(), client_area_height);
+  canvas->TileImageInt(*bottom_center,
+                       client_area_bounds.x(),
+                       client_area_bottom,
+                       client_area_bounds.width(),
+                       bottom_right->height());
+
+  canvas->DrawImageInt(*bottom_right,
+                       client_area_bounds.right(),
+                       client_area_bottom);
+  // Left side.
+  const gfx::ImageSkia* left = rb.GetImageSkiaNamed(IDR_CONTENT_LEFT_SIDE);
+  canvas->TileImageInt(*left,
+                       client_area_bounds.x() - left->width(),
+                       client_area_top,
+                       left->width(),
+                       client_area_height);
 
   // Draw the color to fill in the edges.
-  canvas->FillRect(gfx::Rect(client_area_bounds.x() - 1, client_area_top - 1,
-      client_area_bounds.width() + 1, client_area_bottom - client_area_top + 1),
-      kClientEdgeColor);
+  canvas->FillRect(gfx::Rect(client_area_bounds.x() - 1,
+                             client_area_top - 1,
+                             client_area_bounds.width() + 1,
+                             client_area_bottom - client_area_top + 1),
+                   kClientEdgeColor);
 }
 
 SkColor CustomFrameView::GetFrameColor() const {
