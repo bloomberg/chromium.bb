@@ -259,7 +259,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   content::NativeWebKeyboardEvent webEvent(event);
 
   // Only handle keyDown, to handle key repeats without duplicates.
-  if (webEvent.type != content::NativeWebKeyboardEvent::KeyDown)
+  if (webEvent.type != content::NativeWebKeyboardEvent::RawKeyDown)
     return kKeyEventNotHandled;
 
   // Allow the delegate to intercept key messages.
