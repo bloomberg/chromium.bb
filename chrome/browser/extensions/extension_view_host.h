@@ -7,6 +7,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
+#include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/views/extensions/extension_view_views.h"
@@ -30,7 +32,10 @@ namespace extensions {
 // The ExtensionHost for an extension that backs a view in the browser UI. For
 // example, this could be an extension popup, infobar or dialog, but not a
 // background page.
-class ExtensionViewHost : public ExtensionHost {
+class ExtensionViewHost
+    : public ExtensionHost,
+      public web_modal::WebContentsModalDialogManagerDelegate,
+      public web_modal::WebContentsModalDialogHost {
  public:
   ExtensionViewHost(const Extension* extension,
                     content::SiteInstance* site_instance,
@@ -70,6 +75,7 @@ class ExtensionViewHost : public ExtensionHost {
   // ExtensionHost
   virtual void OnDidStopLoading() OVERRIDE;
   virtual void OnDocumentAvailable() OVERRIDE;
+  virtual void LoadInitialURL() OVERRIDE;
   virtual bool IsBackgroundPage() const OVERRIDE;
 
   // content::WebContentsDelegate
@@ -90,15 +96,30 @@ class ExtensionViewHost : public ExtensionHost {
   virtual void RenderViewCreated(
       content::RenderViewHost* render_view_host) OVERRIDE;
 
-#if !defined(OS_ANDROID)
+  // web_modal::WebContentsModalDialogManagerDelegate
+  virtual web_modal::WebContentsModalDialogHost*
+      GetWebContentsModalDialogHost() OVERRIDE;
+  virtual bool IsWebContentsVisible(
+      content::WebContents* web_contents) OVERRIDE;
+
   // web_modal::WebContentsModalDialogHost
   virtual gfx::NativeView GetHostView() const OVERRIDE;
-#endif
+  virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE;
+  virtual gfx::Size GetMaximumDialogSize() OVERRIDE;
+  virtual void AddObserver(
+      web_modal::ModalDialogHostObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(
+      web_modal::ModalDialogHostObserver* observer) OVERRIDE;
 
   // ExtensionFunctionDispatcher::Delegate
   virtual WindowController* GetExtensionWindowController() const OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
   virtual content::WebContents* GetVisibleWebContents() const OVERRIDE;
+
+  // content::NotificationObserver
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   // Insert a default style sheet for Extension Infobars.

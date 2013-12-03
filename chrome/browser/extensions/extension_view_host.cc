@@ -5,10 +5,18 @@
 #include "chrome/browser/extensions/extension_view_host.h"
 
 #include "base/strings/string_piece.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension_messages.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -18,6 +26,7 @@ using content::OpenURLParams;
 using content::RenderViewHost;
 using content::WebContents;
 using content::WebContentsObserver;
+using web_modal::WebContentsModalDialogManager;
 
 namespace extensions {
 
@@ -55,7 +64,14 @@ ExtensionViewHost::ExtensionViewHost(
          host_type == VIEW_TYPE_EXTENSION_POPUP);
 }
 
-ExtensionViewHost::~ExtensionViewHost() {}
+ExtensionViewHost::~ExtensionViewHost() {
+  // The hosting WebContents will be deleted in the base class, so unregister
+  // this object before it deletes the attached WebContentsModalDialogManager.
+  WebContentsModalDialogManager* manager =
+      WebContentsModalDialogManager::FromWebContents(host_contents());
+  if (manager)
+    manager->SetDelegate(NULL);
+}
 
 void ExtensionViewHost::CreateView(Browser* browser) {
 #if defined(TOOLKIT_VIEWS)
@@ -86,8 +102,6 @@ void ExtensionViewHost::SetAssociatedWebContents(WebContents* web_contents) {
   }
 }
 
-// ExtensionHost overrides:
-
 void ExtensionViewHost::UnhandledKeyboardEvent(
     WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
@@ -106,6 +120,8 @@ void ExtensionViewHost::UnhandledKeyboardEvent(
   }
 }
 
+// ExtensionHost overrides:
+
 void ExtensionViewHost::OnDidStopLoading() {
   DCHECK(did_stop_loading());
 #if defined(TOOLKIT_VIEWS) || defined(OS_MACOSX)
@@ -118,6 +134,26 @@ void ExtensionViewHost::OnDocumentAvailable() {
     // No style sheet for other types, at the moment.
     InsertInfobarCSS();
   }
+}
+
+void ExtensionViewHost::LoadInitialURL() {
+  if (!ExtensionSystem::GetForBrowserContext(browser_context())->
+          extension_service()->IsBackgroundPageReady(extension())) {
+    // Make sure the background page loads before any others.
+    registrar()->Add(this,
+                     chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+                     content::Source<Extension>(extension()));
+    return;
+  }
+
+  // Popups may spawn modal dialogs, which need positioning information.
+  if (extension_host_type() == VIEW_TYPE_EXTENSION_POPUP) {
+    WebContentsModalDialogManager::CreateForWebContents(host_contents());
+    WebContentsModalDialogManager::FromWebContents(
+        host_contents())->SetDelegate(this);
+  }
+
+  ExtensionHost::LoadInitialURL();
 }
 
 bool ExtensionViewHost::IsBackgroundPage() const {
@@ -202,11 +238,41 @@ void ExtensionViewHost::RenderViewCreated(RenderViewHost* render_view_host) {
   }
 }
 
-#if !defined(OS_ANDROID)
+web_modal::WebContentsModalDialogHost*
+ExtensionViewHost::GetWebContentsModalDialogHost() {
+  return this;
+}
+
+bool ExtensionViewHost::IsWebContentsVisible(WebContents* web_contents) {
+  return platform_util::IsVisible(web_contents->GetView()->GetNativeView());
+}
+
 gfx::NativeView ExtensionViewHost::GetHostView() const {
   return view_->native_view();
 }
-#endif  // !defined(OS_ANDROID)
+
+gfx::Point ExtensionViewHost::GetDialogPosition(const gfx::Size& size) {
+  if (!GetVisibleWebContents())
+    return gfx::Point();
+  gfx::Rect bounds = GetVisibleWebContents()->GetView()->GetViewBounds();
+  return gfx::Point(
+      std::max(0, (bounds.width() - size.width()) / 2),
+      std::max(0, (bounds.height() - size.height()) / 2));
+}
+
+gfx::Size ExtensionViewHost::GetMaximumDialogSize() {
+  if (!GetVisibleWebContents())
+    return gfx::Size();
+  return GetVisibleWebContents()->GetView()->GetViewBounds().size();
+}
+
+void ExtensionViewHost::AddObserver(
+    web_modal::ModalDialogHostObserver* observer) {
+}
+
+void ExtensionViewHost::RemoveObserver(
+    web_modal::ModalDialogHostObserver* observer) {
+}
 
 WindowController* ExtensionViewHost::GetExtensionWindowController() const {
   return view_->browser() ? view_->browser()->extension_window_controller()
@@ -223,6 +289,18 @@ WebContents* ExtensionViewHost::GetVisibleWebContents() const {
   if (extension_host_type() == VIEW_TYPE_EXTENSION_POPUP)
     return host_contents();
   return NULL;
+}
+
+void ExtensionViewHost::Observe(int type,
+                                const content::NotificationSource& source,
+                                const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY) {
+    DCHECK(ExtensionSystem::GetForBrowserContext(browser_context())->
+               extension_service()->IsBackgroundPageReady(extension()));
+    LoadInitialURL();
+    return;
+  }
+  ExtensionHost::Observe(type, source, details);
 }
 
 void ExtensionViewHost::InsertInfobarCSS() {

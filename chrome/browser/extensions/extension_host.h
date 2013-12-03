@@ -20,11 +20,6 @@
 #include "extensions/common/stack_frame.h"
 #include "extensions/common/view_type.h"
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
-#include "components/web_modal/web_contents_modal_dialog_host.h"
-#endif
-
 class PrefsTabHelper;
 
 namespace content {
@@ -42,13 +37,7 @@ class WindowController;
 // It handles setting up the renderer process, if needed, with special
 // privileges available to extensions.  It may have a view to be shown in the
 // browser UI, or it may be hidden.
-// TODO(jamescook): Move the ChromeWebModalDialogManagerDelegate interface to
-// ExtensionViewHost.
 class ExtensionHost : public content::WebContentsDelegate,
-#if !defined(OS_ANDROID)
-                      public ChromeWebModalDialogManagerDelegate,
-                      public web_modal::WebContentsModalDialogHost,
-#endif
                       public content::WebContentsObserver,
                       public ExtensionFunctionDispatcher::Delegate,
                       public content::NotificationObserver {
@@ -128,12 +117,17 @@ class ExtensionHost : public content::WebContentsDelegate,
                        const content::NotificationDetails& details) OVERRIDE;
 
  protected:
+  content::NotificationRegistrar* registrar() { return &registrar_; }
+
   // Called after the extension page finishes loading but before the
   // EXTENSION_HOST_DID_STOP_LOADING notification is sent.
   virtual void OnDidStopLoading();
 
   // Called once when the document first becomes available.
   virtual void OnDocumentAvailable();
+
+  // Navigates to the initial page.
+  virtual void LoadInitialURL();
 
   // Returns true if we're hosting a background page.
   virtual bool IsBackgroundPage() const;
@@ -146,25 +140,6 @@ class ExtensionHost : public content::WebContentsDelegate,
 
   // Actually create the RenderView for this host. See CreateRenderViewSoon.
   void CreateRenderViewNow();
-
-  // Navigates to the initial page.
-  void LoadInitialURL();
-
-#if !defined(OS_ANDROID)
-  // TODO(jamescook): Move this to ExtensionViewHost.
-  // ChromeWebModalDialogManagerDelegate
-  virtual web_modal::WebContentsModalDialogHost*
-      GetWebContentsModalDialogHost() OVERRIDE;
-
-  // web_modal::WebContentsModalDialogHost
-  virtual gfx::NativeView GetHostView() const OVERRIDE;
-  virtual gfx::Point GetDialogPosition(const gfx::Size& size) OVERRIDE;
-  virtual gfx::Size GetMaximumDialogSize() OVERRIDE;
-  virtual void AddObserver(
-      web_modal::ModalDialogHostObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(
-      web_modal::ModalDialogHostObserver* observer) OVERRIDE;
-#endif
 
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
