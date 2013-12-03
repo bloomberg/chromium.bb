@@ -182,10 +182,10 @@ static struct wl_data_source_interface data_source_interface = {
 
 static void
 drag_surface_configure(struct weston_drag *drag,
-		struct weston_pointer *pointer,
-		struct weston_touch   *touch,
-		struct weston_surface *es, int32_t sx, int32_t sy,
-		int32_t width, int32_t height)
+		       struct weston_pointer *pointer,
+		       struct weston_touch *touch,
+		       struct weston_surface *es,
+		       int32_t sx, int32_t sy)
 {
 	struct wl_list *list;
 	float fx, fy;
@@ -222,25 +222,26 @@ drag_surface_configure(struct weston_drag *drag,
 }
 
 static void
-pointer_drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_t width, int32_t height)
+pointer_drag_surface_configure(struct weston_surface *es,
+			       int32_t sx, int32_t sy)
 {
 	struct weston_pointer_drag *drag = es->configure_private;
 	struct weston_pointer *pointer = drag->grab.pointer;
 
 	assert(es->configure == pointer_drag_surface_configure);
 
-	drag_surface_configure(&drag->base, pointer, NULL, es, sx, sy, width, height);
+	drag_surface_configure(&drag->base, pointer, NULL, es, sx, sy);
 }
 
 static void
-touch_drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy, int32_t width, int32_t height)
+touch_drag_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 {
 	struct weston_touch_drag *drag = es->configure_private;
 	struct weston_touch *touch = drag->grab.touch;
 
 	assert(es->configure == touch_drag_surface_configure);
 
-	drag_surface_configure(&drag->base, NULL, touch, es, sx, sy, width, height);
+	drag_surface_configure(&drag->base, NULL, touch, es, sx, sy);
 }
 
 static void
