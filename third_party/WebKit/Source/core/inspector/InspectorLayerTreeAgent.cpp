@@ -233,8 +233,10 @@ GraphicsLayer* InspectorLayerTreeAgent::layerById(ErrorString* errorString, cons
         return 0;
     }
     RenderLayerCompositor* compositor = renderLayerCompositor();
-    if (!compositor)
+    if (!compositor) {
+        *errorString = "Not in compositing mode";
         return 0;
+    }
 
     GraphicsLayer* result = findLayerById(compositor->rootGraphicsLayer(), id);
     if (!result)

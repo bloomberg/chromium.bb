@@ -268,8 +268,8 @@ function StackTraceV8(stackTraceLimit, topMostFunctionToIgnore)
 
     /**
      * @param {Object} error
-     * @param {Array.<CallSite>} structuredStackTrace
-     * @return {Array.<{sourceURL: string, lineNumber: number, columnNumber: number}>}
+     * @param {!Array.<CallSite>} structuredStackTrace
+     * @return {!Array.<{sourceURL: string, lineNumber: number, columnNumber: number}>}
      */
     Error.prepareStackTrace = function(error, structuredStackTrace)
     {
@@ -282,7 +282,7 @@ function StackTraceV8(stackTraceLimit, topMostFunctionToIgnore)
         });
     }
 
-    var holder = /** @type {{stack: Array.<{sourceURL: string, lineNumber: number, columnNumber: number}>}} */ ({});
+    var holder = /** @type {{stack: !Array.<{sourceURL: string, lineNumber: number, columnNumber: number}>}} */ ({});
     Error.captureStackTrace(holder, topMostFunctionToIgnore || arguments.callee);
     this._stackTrace = holder.stack;
 
@@ -364,7 +364,7 @@ Cache.prototype = {
  * @constructor
  * @param {Resource|Object} thisObject
  * @param {string} functionName
- * @param {Array|Arguments} args
+ * @param {!Array|Arguments} args
  * @param {Resource|*=} result
  * @param {StackTrace=} stackTrace
  */
@@ -552,7 +552,7 @@ Call.prototype = {
  * @constructor
  * @param {ReplayableResource} thisObject
  * @param {string} functionName
- * @param {Array.<ReplayableResource|*>} args
+ * @param {!Array.<ReplayableResource|*>} args
  * @param {ReplayableResource|*} result
  * @param {StackTrace} stackTrace
  * @param {Object.<string, Object>} attachments
@@ -612,7 +612,7 @@ ReplayableCall.prototype = {
     },
 
     /**
-     * @return {Array.<ReplayableResource|*>}
+     * @return {!Array.<ReplayableResource|*>}
      */
     args: function()
     {
@@ -987,7 +987,7 @@ Resource.prototype = {
         var proxy = Object.create(wrappedObject.__proto__); // In order to emulate "instanceof".
 
         var customWrapFunctions = this._customWrapFunctions();
-        /** @type {Array.<string>} */
+        /** @type {!Array.<string>} */
         this._proxyStatePropertyNames = [];
 
         /**
@@ -1120,7 +1120,7 @@ Resource.prototype = {
  * @param {Object} originalObject
  * @param {Function} originalFunction
  * @param {string} functionName
- * @param {Array|Arguments} args
+ * @param {!Array|Arguments} args
  */
 Resource.WrapFunction = function(originalObject, originalFunction, functionName, args)
 {
@@ -4292,9 +4292,9 @@ InjectedCanvasModule.prototype = {
         var alive = this._manager.capturing() && this._manager.lastTraceLog() === traceLog;
         var result = {
             id: id,
-            /** @type {Array.<CanvasAgent.Call>} */
+            /** @type {!Array.<CanvasAgent.Call>} */
             calls: [],
-            /** @type {Array.<CanvasAgent.CallArgument>} */
+            /** @type {!Array.<CanvasAgent.CallArgument>} */
             contexts: [],
             alive: alive,
             startOffset: fromIndex,
