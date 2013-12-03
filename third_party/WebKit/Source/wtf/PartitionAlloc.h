@@ -157,7 +157,6 @@ struct PartitionFreelistEntry {
 };
 
 struct PartitionPage {
-    uintptr_t* guard; // Points to self, used as a fast type of canary.
     PartitionFreelistEntry* freelistHead;
     int numAllocatedSlots; // Deliberately signed.
     unsigned numUnprovisionedSlots;
@@ -354,18 +353,9 @@ ALWAYS_INLINE bool partitionPointerIsValid(PartitionRoot* root, void* ptr)
     return false;
 }
 
-ALWAYS_INLINE void partitionValidatePage(PartitionPage* page)
-{
-    // Force the read by referencing a volatile version of the guard.
-    volatile uintptr_t* guard = page->guard;
-    *guard;
-    ASSERT(*guard == reinterpret_cast<uintptr_t>(&page->guard));
-}
-
 ALWAYS_INLINE void* partitionBucketAlloc(PartitionBucket* bucket)
 {
     PartitionPage* page = bucket->currPage;
-    partitionValidatePage(page);
     void* ret = page->freelistHead;
     if (LIKELY(ret != 0)) {
         // If these asserts fire, you probably corrupted memory.
@@ -411,7 +401,6 @@ ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
 ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPage* page)
 {
     // If these asserts fire, you probably corrupted memory.
-    partitionValidatePage(page);
 #ifndef NDEBUG
     size_t bucketSize = partitionBucketSize(page->bucket);
     void* ptrEnd = static_cast<char*>(ptr) + bucketSize;
