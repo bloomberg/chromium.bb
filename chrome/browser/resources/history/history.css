@@ -377,7 +377,7 @@ html[dir='rtl'] .site-domain {
 
 .filter-status > div {
   -webkit-flex: 0 0 auto;
-  -webkit-transition: background-color 500ms ease-in-out;
+  -webkit-transition: background-color 150ms;
   border-radius: 3px;
   display: none;
   font-size: 11px;
