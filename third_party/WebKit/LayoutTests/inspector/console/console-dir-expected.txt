@@ -14,7 +14,7 @@ Array[2]
 
 NodeList[1]
     0: html
-    length: (...)
+    length: 1
     __proto__: NodeList console-dir.html:10
 
 XPathResult
