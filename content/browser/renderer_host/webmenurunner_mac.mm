@@ -82,6 +82,14 @@
       [[NSAttributedString alloc] initWithString:title attributes:attrs]);
   [menuItem setAttributedTitle:attrTitle];
 
+  // We set the title as well as the attributed title here. The attributed title
+  // will be displayed in the menu, but typeahead will use the non-attributed
+  // string that doesn't contain any leading or trailing whitespace. This is
+  // what Apple uses in WebKit as well:
+  // http://trac.webkit.org/browser/trunk/Source/WebKit2/UIProcess/mac/WebPopupMenuProxyMac.mm#L90
+  NSCharacterSet* whitespaceSet = [NSCharacterSet whitespaceCharacterSet];
+  [menuItem setTitle:[title stringByTrimmingCharactersInSet:whitespaceSet]];
+
   [menuItem setTag:[menu_ numberOfItems] - 1];
 }
 
