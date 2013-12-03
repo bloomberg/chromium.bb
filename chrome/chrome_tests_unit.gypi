@@ -163,8 +163,6 @@
         'browser/policy/cloud/mock_device_management_service.h',
         'browser/policy/cloud/policy_builder.cc',
         'browser/policy/cloud/policy_builder.h',
-        'browser/policy/mock_configuration_policy_provider.cc',
-        'browser/policy/mock_configuration_policy_provider.h',
         'browser/policy/preferences_mock_mac.cc',
         'browser/policy/preferences_mock_mac.h',
         'browser/policy/test/local_policy_test_server.cc',
@@ -348,9 +346,11 @@
         ['configuration_policy==1', {
           'dependencies': [
             'app/policy/cloud_policy_codegen.gyp:policy_test_support',
+            '../components/components.gyp:policy_component_test_support',
           ],
           'export_dependent_settings': [
             'app/policy/cloud_policy_codegen.gyp:policy_test_support',
+            '../components/components.gyp:policy_component_test_support',
           ],
         }],
         ['safe_browsing!=1', {
@@ -1114,8 +1114,6 @@
         'browser/policy/configuration_policy_handler_unittest.cc',
         'browser/policy/configuration_policy_pref_store_unittest.cc',
         'browser/policy/configuration_policy_pref_store_unittest.h',
-        'browser/policy/configuration_policy_provider_test.cc',
-        'browser/policy/configuration_policy_provider_test.h',
         'browser/policy/file_selection_dialogs_policy_handler_unittest.cc',
         'browser/policy/forwarding_policy_provider_unittest.cc',
         'browser/policy/generate_policy_source_unittest.cc',

@@ -21,11 +21,13 @@
       'conditions': [
         ['configuration_policy==1', {
           'sources': [
-            'policy/core/common/policy_bundle.cc',
-            'policy/core/common/policy_bundle.h',
+            'policy/core/common/configuration_policy_provider.cc',
+            'policy/core/common/configuration_policy_provider.h',
             'policy/core/common/external_data_fetcher.cc',
             'policy/core/common/external_data_fetcher.h',
             'policy/core/common/external_data_manager.h',
+            'policy/core/common/policy_bundle.cc',
+            'policy/core/common/policy_bundle.h',
             'policy/core/common/policy_details.h',
             'policy/core/common/policy_namespace.cc',
             'policy/core/common/policy_namespace.h',
@@ -63,5 +65,34 @@
         }],
       ],
     },
+  ],
+  'conditions': [
+    ['configuration_policy==1', {
+      'targets': [
+        {
+          'target_name': 'policy_component_test_support',
+          'type': 'static_library',
+          # This must be undefined so that POLICY_EXPORT works correctly in
+          # the static_library build.
+          'defines!': [
+            'POLICY_COMPONENT_IMPLEMENTATION',
+          ],
+          'dependencies': [
+            'policy_component',
+            '../testing/gmock.gyp:gmock',
+            '../testing/gtest.gyp:gtest',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'policy/core/common/configuration_policy_provider_test.cc',
+            'policy/core/common/configuration_policy_provider_test.h',
+            'policy/core/common/mock_configuration_policy_provider.cc',
+            'policy/core/common/mock_configuration_policy_provider.h',
+          ],
+        },
+      ],
+    }],
   ],
 }

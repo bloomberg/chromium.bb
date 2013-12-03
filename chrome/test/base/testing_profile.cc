@@ -76,10 +76,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
-#include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_service_impl.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/policy/schema_registry_service_factory.h"
+#include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/schema.h"
 #else
 #include "chrome/browser/policy/policy_service_stub.h"

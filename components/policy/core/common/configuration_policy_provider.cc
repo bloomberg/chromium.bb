@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/configuration_policy_provider.h"
+#include "components/policy/core/common/configuration_policy_provider.h"
 
 #include "base/callback.h"
 #include "components/policy/core/common/external_data_fetcher.h"
