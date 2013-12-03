@@ -40,7 +40,7 @@ camera.effects.BigEyes.prototype = {
  * @override
  */
 camera.effects.BigEyes.prototype.randomize = function() {
-  this.amount_ = Math.random() * 0.5 + 0.1
+  this.amount_ = Math.random() * 0.5 + 0.1;
 };
 
 /**

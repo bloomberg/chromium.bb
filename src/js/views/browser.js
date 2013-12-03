@@ -289,7 +289,7 @@ camera.views.Browser.prototype.exportSelection_ = function() {
     mimeTypes: ['image/jpeg']
   }];
 
-  var fileName = this.currentPicture().picture.imageEntry.name;
+  var picture = this.currentPicture().picture;
 
   var onError = function() {
     // TODO(mtomasz): Check if it works.
@@ -300,15 +300,16 @@ camera.views.Browser.prototype.exportSelection_ = function() {
 
   chrome.fileSystem.chooseEntry({
     type: 'saveFile',
-    suggestedName: fileName,
+    suggestedName: picture.imageEntry.name,
     accepts: accepts
   }, function(fileEntry) {
       if (!fileEntry)
         return;
-      this.model.exportPicture(fileName,
-                fileEntry,
-                function() {},
-                onError);
+      this.model.exportPicture(
+          picture,
+          fileEntry,
+          function() {},
+          onError);
   }.bind(this));
 };
 
