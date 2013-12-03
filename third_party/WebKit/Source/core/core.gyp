@@ -258,8 +258,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/blink/CSSValueKeywords.cpp',
 
         # Additional .cpp files from make_core_derived_sources actions.
-        '<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/Event.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventHeaders.h',
         '<(SHARED_INTERMEDIATE_DIR)/blink/EventInterfaces.h',
@@ -279,7 +277,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/blink/HTMLNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/InputTypeNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/MathMLNames.cpp',
-        '<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/SVGNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/UserAgentStyleSheetsData.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/blink/V8HTMLElementWrapperFactory.cpp',

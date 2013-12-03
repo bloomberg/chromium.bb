@@ -45,7 +45,6 @@
             'type': '<(component)',
             'variables': { 'enable_wexit_time_destructors': 1, },
             'dependencies': [
-                'picker_resources',
                 '../config.gyp:config',
                 '../platform/blink_platform.gyp:blink_common',
                 '../core/core.gyp:webcore',
@@ -242,6 +241,86 @@
                     ],
                 }],
             ],
+            'actions': [
+                {
+                    'action_name': 'PickerCommon',
+                    'process_outputs_as_sources': 1,
+                    'variables': {
+                        'resources': [
+                            'resources/pickerCommon.css',
+                            'resources/pickerCommon.js',
+                        ],
+                    },
+                    'inputs': [
+                        'scripts/make-file-arrays.py',
+                        '<@(resources)',
+                    ],
+                    'outputs': [
+                        '<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.h',
+                        '<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.cpp',
+                        ],
+                    'action': [
+                        'python',
+                        'scripts/make-file-arrays.py',
+                        '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.h',
+                        '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.cpp',
+                        '<@(resources)',
+                    ],
+                },
+                {
+                    'action_name': 'CalendarPicker',
+                    'process_outputs_as_sources': 1,
+                    'variables': {
+                        'resources': [
+                            'resources/calendarPicker.css',
+                            'resources/calendarPicker.js',
+                            'resources/pickerButton.css',
+                            'resources/suggestionPicker.css',
+                            'resources/suggestionPicker.js',
+                        ],
+                    },
+                    'inputs': [
+                        'scripts/make-file-arrays.py',
+                        '<@(resources)'
+                    ],
+                    'outputs': [
+                        '<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.h',
+                        '<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.cpp',
+                    ],
+                    'action': [
+                        'python',
+                        'scripts/make-file-arrays.py',
+                        '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.h',
+                        '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.cpp',
+                        '<@(resources)',
+                    ],
+               },
+                {
+                    'action_name': 'ColorSuggestionPicker',
+                    'process_outputs_as_sources': 1,
+                    'variables': {
+                        'resources': [
+                            'resources/colorSuggestionPicker.css',
+                            'resources/colorSuggestionPicker.js',
+                        ],
+                    },
+                    'inputs': [
+                        'scripts/make-file-arrays.py',
+                        '<@(resources)',
+                    ],
+                    'outputs': [
+                        '<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.h',
+                        '<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.cpp',
+                    ],
+                    'action': [
+                        'python',
+                        'scripts/make-file-arrays.py',
+                        '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.h',
+                        '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.cpp',
+                        '<@(resources)',
+                    ],
+                },
+            ],
         },
         {
             'target_name': 'webkit_test_support',
@@ -266,91 +345,6 @@
                         'WebTestingSupport.cpp',
                     ],
                 }],
-            ],
-        },
-        {
-            'target_name': 'picker_resources',
-            'type': 'none',
-            'hard_dependency': 1,
-            'variables': {
-                'make_file_arrays': 'scripts/make-file-arrays.py',
-            },
-            'actions': [
-                {
-                    'action_name': 'PickerCommon',
-                    'variables': {
-                        'resources': [
-                            'resources/pickerCommon.css',
-                            'resources/pickerCommon.js',
-                        ],
-                    },
-                    'inputs': [
-                        '<(make_file_arrays)',
-                        '<@(resources)',
-                    ],
-                    'outputs': [
-                        '<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.h',
-                        '<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.cpp',
-                        ],
-                    'action': [
-                        'python',
-                        '<(make_file_arrays)',
-                        '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.h',
-                        '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/PickerCommon.cpp',
-                        '<@(resources)',
-                    ],
-                },
-                {
-                    'action_name': 'CalendarPicker',
-                    'variables': {
-                        'resources': [
-                            'resources/calendarPicker.css',
-                            'resources/calendarPicker.js',
-                            'resources/pickerButton.css',
-                            'resources/suggestionPicker.css',
-                            'resources/suggestionPicker.js',
-                        ],
-                    },
-                    'inputs': [
-                        '<(make_file_arrays)',
-                        '<@(resources)'
-                    ],
-                    'outputs': [
-                        '<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.h',
-                        '<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.cpp',
-                    ],
-                    'action': [
-                        'python',
-                        '<(make_file_arrays)',
-                        '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.h',
-                        '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/CalendarPicker.cpp',
-                        '<@(resources)',
-                    ],
-               },
-                {
-                    'action_name': 'ColorSuggestionPicker',
-                    'variables': {
-                        'resources': [
-                            'resources/colorSuggestionPicker.css',
-                            'resources/colorSuggestionPicker.js',
-                        ],
-                    },
-                    'inputs': [
-                        '<(make_file_arrays)',
-                        '<@(resources)',
-                    ],
-                    'outputs': [
-                        '<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.h',
-                        '<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.cpp',
-                    ],
-                    'action': [
-                        'python',
-                        '<(make_file_arrays)',
-                        '--out-h=<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.h',
-                        '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/blink/ColorSuggestionPicker.cpp',
-                        '<@(resources)',
-                    ],
-                },
             ],
         },
     ], # targets
