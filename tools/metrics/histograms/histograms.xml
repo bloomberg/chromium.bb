@@ -3271,16 +3271,33 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Drive.CacheDBOpenStatus" enum="DriveCacheDBOpenStatus">
+  <obsolete>
+    Deperecated 8/2013.
+  </obsolete>
   <summary>Status of drive cache metadata database open.</summary>
 </histogram>
 
+<histogram name="Drive.DirectoryFeedLoadTime" units="milliseconds">
+  <summary>
+    Time spent to load the list of files in a single directory from Google Drive
+    server.
+  </summary>
+</histogram>
+
 <histogram name="Drive.EntireFeedLoadTime" units="microseconds">
+  <obsolete>
+    Deprecated 12/2013 due to the UMA stat bucket layout change. We'll use
+    Drive.FullFeedLoadTime instead.
+  </obsolete>
   <summary>
     Time spent to load the entire file system information from the server
   </summary>
 </histogram>
 
 <histogram name="Drive.EntryKind" enum="DriveEntryKind">
+  <obsolete>
+    Deprecated 10/2012.
+  </obsolete>
   <summary>
     Provides breakdown of specific formats for hosted documents. Recorded when
     feed is loaded from the server.
@@ -3288,13 +3305,27 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="Drive.FileFormat" enum="DriveFileFormat">
+  <obsolete>
+    Deprecated 10/2012.
+  </obsolete>
   <summary>
     Provides breakdown of specific file formats for regular files. Recorded when
     feed is loaded from the server.
   </summary>
 </histogram>
 
+<histogram name="Drive.FullFeedLoadTime" units="milliseconds">
+  <summary>
+    Time spent to load the entire file system information from the server
+  </summary>
+</histogram>
+
 <histogram name="Drive.InitialFeedLoadTime" units="microseconds">
+  <obsolete>
+    Deperecated 12/2013 since it did not record meaningful information.
+    Drive.DirectoryFeedLoadTime should be checked for measuring the time until
+    the user sees the first response of file lists.
+  </obsolete>
   <summary>
     Time spent to load the initial part of the file system information from the
     server

@@ -53,7 +53,7 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!callback.is_null());
 
-    // Rememeber the time stamp for usage stats.
+    // Remember the time stamp for usage stats.
     start_time_ = base::TimeTicks::Now();
 
     // This is full resource list fetch.
@@ -69,13 +69,6 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
       scoped_ptr<google_apis::ResourceList> resource_list) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK(!callback.is_null());
-
-    // Looks the UMA stats we take here is useless as many methods use this
-    // callback. crbug.com/229407
-    if (change_lists_.empty()) {
-      UMA_HISTOGRAM_TIMES("Drive.InitialFeedLoadTime",
-                          base::TimeTicks::Now() - start_time_);
-    }
 
     FileError error = GDataToFileError(status);
     if (error != FILE_ERROR_OK) {
@@ -96,9 +89,8 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
       return;
     }
 
-    // This UMA stats looks also different from what we want. crbug.com/229407
-    UMA_HISTOGRAM_TIMES("Drive.EntireFeedLoadTime",
-                        base::TimeTicks::Now() - start_time_);
+    UMA_HISTOGRAM_LONG_TIMES("Drive.FullFeedLoadTime",
+                             base::TimeTicks::Now() - start_time_);
 
     // Note: The fetcher is managed by ChangeListLoader, and the instance
     // will be deleted in the callback. Do not touch the fields after this
@@ -193,6 +185,9 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
   }
 
   virtual void Run(const FeedFetcherCallback& callback) OVERRIDE {
+    // Remember the time stamp for usage stats.
+    start_time_ = base::TimeTicks::Now();
+
     if (util::IsDriveV2ApiEnabled() && root_folder_id_.empty()) {
       // The root folder id is not available yet. Fetch from the server.
       scheduler_->GetAboutResource(
@@ -276,6 +271,9 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
       return;
     }
 
+    UMA_HISTOGRAM_TIMES("Drive.DirectoryFeedLoadTime",
+                        base::TimeTicks::Now() - start_time_);
+
     // Note: The fetcher is managed by ChangeListLoader, and the instance
     // will be deleted in the callback. Do not touch the fields after this
     // invocation.
@@ -309,6 +307,7 @@ class FastFetchFeedFetcher : public ChangeListLoader::FeedFetcher {
   std::string directory_resource_id_;
   std::string root_folder_id_;
   ScopedVector<ChangeList> change_lists_;
+  base::TimeTicks start_time_;
   base::WeakPtrFactory<FastFetchFeedFetcher> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(FastFetchFeedFetcher);
 };
