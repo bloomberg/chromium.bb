@@ -1007,6 +1007,18 @@ class _ManifestShim(object):
     """
     return [self.checkout]
 
+  def GetProjectsTrackingBranch(self, *_args, **_kwargs):
+    """Get the tracking branch for this project."""
+    return self.checkout['tracking_branch']
+
+  def GetProjectPath(self, *_args, **_kwargs):
+    """Return the path to this repository."""
+    return self.checkout['path']
+
+  def ProjectExists(self, *_args, **_kwargs):
+    """Check whether this project exists."""
+    return True
+
   def ProjectIsContentMerging(self, *_args, **_kwargs):
     """Check whether this project has content-merging enabled."""
     return self.content_merging
