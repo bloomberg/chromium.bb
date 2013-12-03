@@ -81,6 +81,7 @@ class CC_EXPORT LayerTreeImpl {
   void SetNeedsCommit();
   gfx::Size DrawViewportSize() const;
   void StartScrollbarAnimation();
+  void DidAnimateScrollOffset();
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------

@@ -21,13 +21,8 @@ class CC_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
 
   virtual ~ScrollOffsetAnimationCurve();
 
-  void set_duration(double duration) { duration_ = duration; }
-
-  void set_initial_value(gfx::Vector2dF initial_value) {
-    initial_value_ = initial_value;
-  }
-
-  virtual gfx::Vector2dF GetValue(double t) const;
+  void SetInitialValue(gfx::Vector2dF initial_value);
+  gfx::Vector2dF GetValue(double t) const;
 
   // AnimationCurve implementation
   virtual double Duration() const OVERRIDE;

@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/layer_animation_value_observer.h"
+#include "cc/animation/layer_animation_value_provider.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "cc/base/scoped_ptr_vector.h"
@@ -58,7 +59,8 @@ enum DrawMode {
   DRAW_MODE_RESOURCELESS_SOFTWARE
 };
 
-class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
+class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
+                            public LayerAnimationValueProvider {
  public:
   typedef LayerImplList RenderSurfaceListType;
   typedef LayerImplList LayerListType;
@@ -72,10 +74,14 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
 
   int id() const { return layer_id_; }
 
+  // LayerAnimationValueProvider implementation.
+  virtual gfx::Vector2dF ScrollOffsetForAnimation() const OVERRIDE;
+
   // LayerAnimationValueObserver implementation.
   virtual void OnFilterAnimated(const FilterOperations& filters) OVERRIDE;
   virtual void OnOpacityAnimated(float opacity) OVERRIDE;
   virtual void OnTransformAnimated(const gfx::Transform& transform) OVERRIDE;
+  virtual void OnScrollOffsetAnimated(gfx::Vector2dF scroll_offset) OVERRIDE;
   virtual void OnAnimationWaitingForDeletion() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
 

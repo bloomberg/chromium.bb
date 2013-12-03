@@ -74,13 +74,17 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
   layer_animation_controller_ =
       registrar->GetAnimationControllerForId(layer_id_);
   layer_animation_controller_->AddValueObserver(this);
+  if (IsActive())
+    layer_animation_controller_->set_value_provider(this);
 }
 
 LayerImpl::~LayerImpl() {
   DCHECK_EQ(DRAW_MODE_NONE, current_draw_mode_);
 
-  layer_tree_impl_->UnregisterLayer(this);
   layer_animation_controller_->RemoveValueObserver(this);
+  layer_animation_controller_->remove_value_provider(this);
+
+  layer_tree_impl_->UnregisterLayer(this);
 
   if (scroll_children_) {
     for (std::set<LayerImpl*>::iterator it = scroll_children_->begin();
@@ -687,6 +691,10 @@ bool LayerImpl::LayerIsAlwaysDamaged() const {
   return false;
 }
 
+gfx::Vector2dF LayerImpl::ScrollOffsetForAnimation() const {
+  return TotalScrollOffset();
+}
+
 void LayerImpl::OnFilterAnimated(const FilterOperations& filters) {
   SetFilters(filters);
 }
@@ -697,6 +705,18 @@ void LayerImpl::OnOpacityAnimated(float opacity) {
 
 void LayerImpl::OnTransformAnimated(const gfx::Transform& transform) {
   SetTransform(transform);
+}
+
+void LayerImpl::OnScrollOffsetAnimated(gfx::Vector2dF scroll_offset) {
+  // Only layers in the active tree should need to do anything here, since
+  // layers in the pending tree will find out about these changes as a
+  // result of the call to SetScrollDelta.
+  if (!IsActive())
+    return;
+
+  SetScrollDelta(scroll_offset - scroll_offset_);
+
+  layer_tree_impl_->DidAnimateScrollOffset();
 }
 
 void LayerImpl::OnAnimationWaitingForDeletion() {}

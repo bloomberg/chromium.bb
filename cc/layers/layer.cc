@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_events.h"
+#include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/layers/layer_client.h"
 #include "cc/layers/layer_impl.h"
@@ -72,6 +73,7 @@ Layer::Layer()
 
   layer_animation_controller_ = LayerAnimationController::Create(layer_id_);
   layer_animation_controller_->AddValueObserver(this);
+  layer_animation_controller_->set_value_provider(this);
 }
 
 Layer::~Layer() {
@@ -83,6 +85,7 @@ Layer::~Layer() {
   DCHECK(!layer_tree_host());
 
   layer_animation_controller_->RemoveValueObserver(this);
+  layer_animation_controller_->remove_value_provider(this);
 
   // Remove the parent reference from all children and dependents.
   RemoveAllChildren();
@@ -1048,6 +1051,10 @@ void Layer::ClearRenderSurface() {
   draw_properties_.render_surface.reset();
 }
 
+gfx::Vector2dF Layer::ScrollOffsetForAnimation() const {
+  return TotalScrollOffset();
+}
+
 // On<Property>Animated is called due to an ongoing accelerated animation.
 // Since this animation is also being run on the compositor thread, there
 // is no need to request a commit to push this value over, so the value is
@@ -1062,6 +1069,12 @@ void Layer::OnOpacityAnimated(float opacity) {
 
 void Layer::OnTransformAnimated(const gfx::Transform& transform) {
   transform_ = transform;
+}
+
+void Layer::OnScrollOffsetAnimated(gfx::Vector2dF scroll_offset) {
+  // Do nothing. Scroll deltas will be sent from the compositor thread back
+  // to the main thread in the same manner as during non-animated
+  // compositor-driven scrolling.
 }
 
 void Layer::OnAnimationWaitingForDeletion() {

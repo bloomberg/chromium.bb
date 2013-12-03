@@ -205,6 +205,11 @@ void FakeLayerAnimationValueObserver::OnTransformAnimated(
   transform_ = transform;
 }
 
+void FakeLayerAnimationValueObserver::OnScrollOffsetAnimated(
+    gfx::Vector2dF scroll_offset) {
+  scroll_offset_ = scroll_offset;
+}
+
 void FakeLayerAnimationValueObserver::OnAnimationWaitingForDeletion() {
   animation_waiting_for_deletion_ = true;
 }
@@ -215,6 +220,11 @@ bool FakeLayerAnimationValueObserver::IsActive() const {
 
 bool FakeInactiveLayerAnimationValueObserver::IsActive() const {
   return false;
+}
+
+gfx::Vector2dF FakeLayerAnimationValueProvider::ScrollOffsetForAnimation()
+    const {
+  return scroll_offset_;
 }
 
 scoped_ptr<cc::AnimationCurve> FakeFloatTransition::Clone() const {

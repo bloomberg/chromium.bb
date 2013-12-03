@@ -6,6 +6,7 @@
 
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/layer_animation_controller.h"
+#include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/timing_function.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
@@ -927,6 +928,58 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
 
 MULTI_THREAD_TEST_F(
     LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations);
+
+// Verifies that when scroll offset is animated on the impl thread, updates
+// are sent back to the main thread.
+class LayerTreeHostAnimationTestScrollOffsetChangesArePropagated
+    : public LayerTreeHostAnimationTest {
+ public:
+  LayerTreeHostAnimationTestScrollOffsetChangesArePropagated() {}
+
+  virtual void SetupTree() OVERRIDE {
+    LayerTreeHostAnimationTest::SetupTree();
+
+    scroll_layer_ = FakeContentLayer::Create(&client_);
+    scroll_layer_->SetScrollable(true);
+    scroll_layer_->SetBounds(gfx::Size(1000, 1000));
+    scroll_layer_->SetScrollOffset(gfx::Vector2d(10, 20));
+    layer_tree_host()->root_layer()->AddChild(scroll_layer_);
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void DidCommit() OVERRIDE {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1: {
+        scoped_ptr<ScrollOffsetAnimationCurve> curve(
+            ScrollOffsetAnimationCurve::Create(
+                gfx::Vector2dF(500.f, 550.f),
+                EaseInOutTimingFunction::Create()));
+        scoped_ptr<Animation> animation(Animation::Create(
+            curve.PassAs<AnimationCurve>(), 1, 0, Animation::ScrollOffset));
+        animation->set_needs_synchronized_start_time(true);
+        scroll_layer_->AddAnimation(animation.Pass());
+        break;
+      }
+      default:
+        if (scroll_layer_->scroll_offset().x() > 10 &&
+            scroll_layer_->scroll_offset().y() > 20)
+          EndTest();
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  FakeContentLayerClient client_;
+  scoped_refptr<FakeContentLayer> scroll_layer_;
+};
+
+// SingleThreadProxy doesn't send scroll updates from LayerTreeHostImpl to
+// LayerTreeHost.
+MULTI_THREAD_TEST_F(LayerTreeHostAnimationTestScrollOffsetChangesArePropagated);
 
 }  // namespace
 }  // namespace cc

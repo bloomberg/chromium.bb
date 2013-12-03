@@ -9,6 +9,7 @@
 #include "cc/animation/animation_delegate.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/keyframed_animation_curve.h"
+#include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/animation/transform_operations.h"
 #include "cc/test/animation_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -549,6 +550,208 @@ TEST(LayerAnimationControllerTest, FilterTransitionOnImplOnly) {
   EXPECT_TRUE(end_filter_event);
   EXPECT_EQ(end_filters, end_filter_event->filters);
   EXPECT_TRUE(end_filter_event->is_impl_only);
+}
+
+TEST(LayerAnimationControllerTest, ScrollOffsetTransition) {
+  FakeLayerAnimationValueObserver dummy_impl;
+  FakeLayerAnimationValueProvider dummy_provider_impl;
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  controller_impl->AddValueObserver(&dummy_impl);
+  controller_impl->set_value_provider(&dummy_provider_impl);
+  scoped_ptr<AnimationEventsVector> events(
+      make_scoped_ptr(new AnimationEventsVector));
+  FakeLayerAnimationValueObserver dummy;
+  FakeLayerAnimationValueProvider dummy_provider;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+  controller->set_value_provider(&dummy_provider);
+
+  gfx::Vector2dF initial_value(100.f, 300.f);
+  gfx::Vector2dF target_value(300.f, 200.f);
+  scoped_ptr<ScrollOffsetAnimationCurve> curve(
+      ScrollOffsetAnimationCurve::Create(
+          target_value,
+          EaseInOutTimingFunction::Create().Pass()));
+
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve.PassAs<AnimationCurve>(), 1, 0, Animation::ScrollOffset));
+  animation->set_needs_synchronized_start_time(true);
+  controller->AddAnimation(animation.Pass());
+
+  dummy_provider_impl.set_scroll_offset(initial_value);
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  EXPECT_TRUE(controller_impl->GetAnimation(Animation::ScrollOffset));
+  double duration = controller_impl->GetAnimation(
+      Animation::ScrollOffset)->curve()->Duration();
+
+  EXPECT_EQ(
+      duration,
+      controller->GetAnimation(Animation::ScrollOffset)->curve()->Duration());
+
+  controller->Animate(0.0);
+  controller->UpdateState(true, NULL);
+  EXPECT_TRUE(controller->HasActiveAnimation());
+  EXPECT_EQ(initial_value, dummy.scroll_offset());
+
+  double start_time = 1.0;
+  controller_impl->Animate(start_time);
+  controller_impl->UpdateState(true, events.get());
+  EXPECT_TRUE(controller_impl->HasActiveAnimation());
+  EXPECT_EQ(initial_value, dummy_impl.scroll_offset());
+  // Scroll offset animations should not generate property updates.
+  const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
+  EXPECT_FALSE(event);
+
+  controller->NotifyAnimationStarted((*events)[0], 0.0);
+  controller->Animate(start_time + duration/2.0);
+  controller->UpdateState(true, NULL);
+  EXPECT_TRUE(controller->HasActiveAnimation());
+  EXPECT_VECTOR2DF_EQ(gfx::Vector2dF(200.f, 250.f), dummy.scroll_offset());
+
+  controller_impl->Animate(start_time + duration/2.0);
+  controller_impl->UpdateState(true, events.get());
+  EXPECT_VECTOR2DF_EQ(gfx::Vector2dF(200.f, 250.f),
+                      dummy_impl.scroll_offset());
+  event = GetMostRecentPropertyUpdateEvent(events.get());
+  EXPECT_FALSE(event);
+
+  controller_impl->Animate(start_time + duration);
+  controller_impl->UpdateState(true, events.get());
+  EXPECT_VECTOR2DF_EQ(target_value, dummy_impl.scroll_offset());
+  EXPECT_FALSE(controller_impl->HasActiveAnimation());
+  event = GetMostRecentPropertyUpdateEvent(events.get());
+  EXPECT_FALSE(event);
+
+  controller->Animate(start_time + duration);
+  controller->UpdateState(true, NULL);
+  EXPECT_VECTOR2DF_EQ(target_value, dummy.scroll_offset());
+  EXPECT_FALSE(controller->HasActiveAnimation());
+}
+
+// Ensure that when the impl controller doesn't have a value provider,
+// the main-thread controller's value provider is used to obtain the intial
+// scroll offset.
+TEST(LayerAnimationControllerTest, ScrollOffsetTransitionNoImplProvider) {
+  FakeLayerAnimationValueObserver dummy_impl;
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  controller_impl->AddValueObserver(&dummy_impl);
+  scoped_ptr<AnimationEventsVector> events(
+      make_scoped_ptr(new AnimationEventsVector));
+  FakeLayerAnimationValueObserver dummy;
+  FakeLayerAnimationValueProvider dummy_provider;
+  scoped_refptr<LayerAnimationController> controller(
+      LayerAnimationController::Create(0));
+  controller->AddValueObserver(&dummy);
+  controller->set_value_provider(&dummy_provider);
+
+  gfx::Vector2dF initial_value(500.f, 100.f);
+  gfx::Vector2dF target_value(300.f, 200.f);
+  scoped_ptr<ScrollOffsetAnimationCurve> curve(
+      ScrollOffsetAnimationCurve::Create(
+          target_value,
+          EaseInOutTimingFunction::Create().Pass()));
+
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve.PassAs<AnimationCurve>(), 1, 0, Animation::ScrollOffset));
+  animation->set_needs_synchronized_start_time(true);
+  controller->AddAnimation(animation.Pass());
+
+  dummy_provider.set_scroll_offset(initial_value);
+  controller->PushAnimationUpdatesTo(controller_impl.get());
+  EXPECT_TRUE(controller_impl->GetAnimation(Animation::ScrollOffset));
+  double duration = controller_impl->GetAnimation(
+      Animation::ScrollOffset)->curve()->Duration();
+
+  EXPECT_EQ(
+      duration,
+      controller->GetAnimation(Animation::ScrollOffset)->curve()->Duration());
+
+  controller->Animate(0.0);
+  controller->UpdateState(true, NULL);
+  EXPECT_TRUE(controller->HasActiveAnimation());
+  EXPECT_EQ(initial_value, dummy.scroll_offset());
+
+  double start_time = 1.0;
+  controller_impl->Animate(start_time);
+  controller_impl->UpdateState(true, events.get());
+  EXPECT_TRUE(controller_impl->HasActiveAnimation());
+  EXPECT_EQ(initial_value, dummy_impl.scroll_offset());
+  // Scroll offset animations should not generate property updates.
+  const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
+  EXPECT_FALSE(event);
+
+  controller->NotifyAnimationStarted((*events)[0], 0.0);
+  controller->Animate(start_time + duration/2.0);
+  controller->UpdateState(true, NULL);
+  EXPECT_TRUE(controller->HasActiveAnimation());
+  EXPECT_VECTOR2DF_EQ(gfx::Vector2dF(400.f, 150.f), dummy.scroll_offset());
+
+  controller_impl->Animate(start_time + duration/2.0);
+  controller_impl->UpdateState(true, events.get());
+  EXPECT_VECTOR2DF_EQ(gfx::Vector2dF(400.f, 150.f),
+                      dummy_impl.scroll_offset());
+  event = GetMostRecentPropertyUpdateEvent(events.get());
+  EXPECT_FALSE(event);
+
+  controller_impl->Animate(start_time + duration);
+  controller_impl->UpdateState(true, events.get());
+  EXPECT_VECTOR2DF_EQ(target_value, dummy_impl.scroll_offset());
+  EXPECT_FALSE(controller_impl->HasActiveAnimation());
+  event = GetMostRecentPropertyUpdateEvent(events.get());
+  EXPECT_FALSE(event);
+
+  controller->Animate(start_time + duration);
+  controller->UpdateState(true, NULL);
+  EXPECT_VECTOR2DF_EQ(target_value, dummy.scroll_offset());
+  EXPECT_FALSE(controller->HasActiveAnimation());
+}
+
+TEST(LayerAnimationControllerTest, ScrollOffsetTransitionOnImplOnly) {
+  FakeLayerAnimationValueObserver dummy_impl;
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+  controller_impl->AddValueObserver(&dummy_impl);
+  scoped_ptr<AnimationEventsVector> events(
+      make_scoped_ptr(new AnimationEventsVector));
+
+  gfx::Vector2dF initial_value(100.f, 300.f);
+  gfx::Vector2dF target_value(300.f, 200.f);
+  scoped_ptr<ScrollOffsetAnimationCurve> curve(
+      ScrollOffsetAnimationCurve::Create(
+          target_value,
+          EaseInOutTimingFunction::Create().Pass()));
+  curve->SetInitialValue(initial_value);
+  double duration = curve->Duration();
+
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve.PassAs<AnimationCurve>(), 1, 0, Animation::ScrollOffset));
+  animation->set_is_impl_only(true);
+  controller_impl->AddAnimation(animation.Pass());
+
+  controller_impl->Animate(0.0);
+  controller_impl->UpdateState(true, events.get());
+  EXPECT_TRUE(controller_impl->HasActiveAnimation());
+  EXPECT_EQ(initial_value, dummy_impl.scroll_offset());
+  // Scroll offset animations should not generate property updates.
+  const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
+  EXPECT_FALSE(event);
+
+  controller_impl->Animate(duration/2.0);
+  controller_impl->UpdateState(true, events.get());
+  EXPECT_VECTOR2DF_EQ(gfx::Vector2dF(200.f, 250.f),
+                      dummy_impl.scroll_offset());
+  event = GetMostRecentPropertyUpdateEvent(events.get());
+  EXPECT_FALSE(event);
+
+  controller_impl->Animate(duration);
+  controller_impl->UpdateState(true, events.get());
+  EXPECT_VECTOR2DF_EQ(target_value, dummy_impl.scroll_offset());
+  EXPECT_FALSE(controller_impl->HasActiveAnimation());
+  event = GetMostRecentPropertyUpdateEvent(events.get());
+  EXPECT_FALSE(event);
 }
 
 class FakeAnimationDelegate : public AnimationDelegate {

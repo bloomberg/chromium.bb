@@ -13,6 +13,7 @@
 #include "base/observer_list.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/layer_animation_value_observer.h"
+#include "cc/animation/layer_animation_value_provider.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "cc/base/scoped_ptr_vector.h"
@@ -59,7 +60,8 @@ struct AnimationEvent;
 // Base class for composited layers. Special layer types are derived from
 // this class.
 class CC_EXPORT Layer : public base::RefCounted<Layer>,
-                        public LayerAnimationValueObserver {
+                        public LayerAnimationValueObserver,
+                        public LayerAnimationValueProvider {
  public:
   typedef RenderSurfaceLayerList RenderSurfaceListType;
   typedef LayerList LayerListType;
@@ -538,10 +540,14 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   // This should only be called from RemoveFromParent().
   void RemoveChildOrDependent(Layer* child);
 
+  // LayerAnimationValueProvider implementation.
+  virtual gfx::Vector2dF ScrollOffsetForAnimation() const OVERRIDE;
+
   // LayerAnimationValueObserver implementation.
   virtual void OnFilterAnimated(const FilterOperations& filters) OVERRIDE;
   virtual void OnOpacityAnimated(float opacity) OVERRIDE;
   virtual void OnTransformAnimated(const gfx::Transform& transform) OVERRIDE;
+  virtual void OnScrollOffsetAnimated(gfx::Vector2dF scroll_offset) OVERRIDE;
   virtual void OnAnimationWaitingForDeletion() OVERRIDE;
   virtual bool IsActive() const OVERRIDE;
 

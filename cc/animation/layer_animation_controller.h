@@ -30,6 +30,7 @@ class AnimationRegistrar;
 class FilterOperations;
 class KeyframeValueList;
 class LayerAnimationValueObserver;
+class LayerAnimationValueProvider;
 
 class CC_EXPORT LayerAnimationController
     : public base::RefCounted<LayerAnimationController> {
@@ -95,6 +96,15 @@ class CC_EXPORT LayerAnimationController
   void AddEventObserver(LayerAnimationEventObserver* observer);
   void RemoveEventObserver(LayerAnimationEventObserver* observer);
 
+  void set_value_provider(LayerAnimationValueProvider* provider) {
+    value_provider_ = provider;
+  }
+
+  void remove_value_provider(LayerAnimationValueProvider* provider) {
+    if (value_provider_ == provider)
+      value_provider_ = NULL;
+  }
+
   void set_layer_animation_delegate(AnimationDelegate* delegate) {
     layer_animation_delegate_ = delegate;
   }
@@ -136,6 +146,7 @@ class CC_EXPORT LayerAnimationController
   void NotifyObserversOpacityAnimated(float opacity);
   void NotifyObserversTransformAnimated(const gfx::Transform& transform);
   void NotifyObserversFilterAnimated(const FilterOperations& filter);
+  void NotifyObserversScrollOffsetAnimated(gfx::Vector2dF scroll_offset);
 
   void NotifyObserversAnimationWaitingForDeletion();
 
@@ -153,6 +164,8 @@ class CC_EXPORT LayerAnimationController
 
   ObserverList<LayerAnimationValueObserver> value_observers_;
   ObserverList<LayerAnimationEventObserver> event_observers_;
+
+  LayerAnimationValueProvider* value_provider_;
 
   AnimationDelegate* layer_animation_delegate_;
 

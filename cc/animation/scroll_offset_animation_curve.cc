@@ -4,9 +4,14 @@
 
 #include "cc/animation/scroll_offset_animation_curve.h"
 
+#include <algorithm>
+#include <cmath>
+
 #include "base/logging.h"
 #include "cc/animation/timing_function.h"
 #include "ui/gfx/animation/tween.h"
+
+const double kDurationDivisor = 60.0;
 
 namespace cc {
 
@@ -25,6 +30,20 @@ ScrollOffsetAnimationCurve::ScrollOffsetAnimationCurve(
       timing_function_(timing_function.Pass()) {}
 
 ScrollOffsetAnimationCurve::~ScrollOffsetAnimationCurve() {}
+
+void ScrollOffsetAnimationCurve::SetInitialValue(gfx::Vector2dF initial_value) {
+  initial_value_ = initial_value;
+
+  // The duration of a scroll animation depends on the size of the scroll.
+  // The exact relationship between the size and the duration isn't specified
+  // by the CSSOM View smooth scroll spec and is instead left up to user agents
+  // to decide. The calculation performed here will very likely be further
+  // tweaked before the smooth scroll API ships.
+  float delta_x = std::abs(target_value_.x() - initial_value_.x());
+  float delta_y = std::abs(target_value_.y() - initial_value_.y());
+  float max_delta = std::max(delta_x, delta_y);
+  duration_ = std::sqrt(max_delta)/kDurationDivisor;
+}
 
 gfx::Vector2dF ScrollOffsetAnimationCurve::GetValue(double t) const {
   if (t <= 0)
@@ -53,8 +72,8 @@ scoped_ptr<AnimationCurve> ScrollOffsetAnimationCurve::Clone() const {
       static_cast<TimingFunction*>(timing_function_->Clone().release()));
   scoped_ptr<ScrollOffsetAnimationCurve> curve_clone =
       Create(target_value_, timing_function.Pass());
-  curve_clone->set_initial_value(initial_value_);
-  curve_clone->set_duration(duration_);
+  curve_clone->initial_value_ = initial_value_;
+  curve_clone->duration_ = duration_;
   return curve_clone.PassAs<AnimationCurve>();
 }
 

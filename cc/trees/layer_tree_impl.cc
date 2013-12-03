@@ -611,6 +611,10 @@ void LayerTreeImpl::StartScrollbarAnimation() {
   layer_tree_host_impl_->StartScrollbarAnimation();
 }
 
+void LayerTreeImpl::DidAnimateScrollOffset() {
+  layer_tree_host_impl_->DidAnimateScrollOffset();
+}
+
 void LayerTreeImpl::SetNeedsRedraw() {
   layer_tree_host_impl_->SetNeedsRedraw();
 }

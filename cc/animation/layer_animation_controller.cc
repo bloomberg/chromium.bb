@@ -11,6 +11,8 @@
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_value_observer.h"
+#include "cc/animation/layer_animation_value_provider.h"
+#include "cc/animation/scroll_offset_animation_curve.h"
 #include "cc/base/scoped_ptr_algorithm.h"
 #include "cc/output/filter_operations.h"
 #include "ui/gfx/box_f.h"
@@ -23,6 +25,7 @@ LayerAnimationController::LayerAnimationController(int id)
       id_(id),
       is_active_(false),
       last_tick_time_(0),
+      value_provider_(NULL),
       layer_animation_delegate_(NULL) {}
 
 LayerAnimationController::~LayerAnimationController() {
@@ -182,6 +185,13 @@ void LayerAnimationController::AccumulatePropertyUpdates(
       }
 
       case Animation::BackgroundColor: { break; }
+
+      case Animation::ScrollOffset: {
+        // Impl-side changes to scroll offset are already sent back to the
+        // main thread (e.g. for user-driven scrolling), so a PropertyUpdate
+        // isn't needed.
+        break;
+      }
 
       case Animation::TargetPropertyEnumSize:
         NOTREACHED();
@@ -409,6 +419,21 @@ void LayerAnimationController::PushNewAnimationsToImplThread(
     // a synchronized start time.
     if (!active_animations_[i]->needs_synchronized_start_time())
       continue;
+
+    // Scroll animations always start at the current scroll offset.
+    if (active_animations_[i]->target_property() == Animation::ScrollOffset) {
+      gfx::Vector2dF current_scroll_offset;
+      if (controller_impl->value_provider_) {
+        current_scroll_offset =
+            controller_impl->value_provider_->ScrollOffsetForAnimation();
+      } else {
+        // The owning layer isn't yet in the active tree, so the main thread
+        // scroll offset will be up-to-date.
+        current_scroll_offset = value_provider_->ScrollOffsetForAnimation();
+      }
+      active_animations_[i]->curve()->ToScrollOffsetAnimationCurve()
+          ->SetInitialValue(current_scroll_offset);
+    }
 
     // The new animation should be set to run as soon as possible.
     Animation::RunState initial_run_state =
@@ -677,6 +702,15 @@ void LayerAnimationController::TickAnimations(double monotonic_time) {
           break;
         }
 
+        case Animation::ScrollOffset: {
+          const ScrollOffsetAnimationCurve* scroll_offset_animation_curve =
+              active_animations_[i]->curve()->ToScrollOffsetAnimationCurve();
+          const gfx::Vector2dF scroll_offset =
+              scroll_offset_animation_curve->GetValue(trimmed);
+          NotifyObserversScrollOffsetAnimated(scroll_offset);
+          break;
+        }
+
         // Do nothing for sentinel value.
         case Animation::TargetPropertyEnumSize:
           NOTREACHED();
@@ -722,6 +756,13 @@ void LayerAnimationController::NotifyObserversFilterAnimated(
   FOR_EACH_OBSERVER(LayerAnimationValueObserver,
                     value_observers_,
                     OnFilterAnimated(filters));
+}
+
+void LayerAnimationController::NotifyObserversScrollOffsetAnimated(
+    gfx::Vector2dF scroll_offset) {
+  FOR_EACH_OBSERVER(LayerAnimationValueObserver,
+                    value_observers_,
+                    OnScrollOffsetAnimated(scroll_offset));
 }
 
 void LayerAnimationController::NotifyObserversAnimationWaitingForDeletion() {

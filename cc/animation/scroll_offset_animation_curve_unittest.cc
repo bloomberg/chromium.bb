@@ -11,16 +11,61 @@
 namespace cc {
 namespace {
 
-TEST(ScrollOffsetAnimationCurveTest, GetValue) {
-  gfx::Vector2dF initial_value(2.f, 40.f);
-  gfx::Vector2dF target_value(10.f, 20.f);
-  double duration = 10.0;
+TEST(ScrollOffsetAnimationCurveTest, Duration) {
+  gfx::Vector2dF target_value(100.f, 200.f);
   scoped_ptr<ScrollOffsetAnimationCurve> curve(
       ScrollOffsetAnimationCurve::Create(
           target_value,
           EaseInOutTimingFunction::Create().Pass()));
-  curve->set_duration(duration);
-  curve->set_initial_value(initial_value);
+
+  curve->SetInitialValue(target_value);
+  EXPECT_DOUBLE_EQ(0.0, curve->Duration());
+
+  // x decreases, y stays the same.
+  curve->SetInitialValue(gfx::Vector2dF(136.f, 200.f));
+  EXPECT_DOUBLE_EQ(0.1, curve->Duration());
+
+  // x increases, y stays the same.
+  curve->SetInitialValue(gfx::Vector2dF(19.f, 200.f));
+  EXPECT_DOUBLE_EQ(0.15, curve->Duration());
+
+  // x stays the same, y decreases.
+  curve->SetInitialValue(gfx::Vector2dF(100.f, 344.f));
+  EXPECT_DOUBLE_EQ(0.2, curve->Duration());
+
+  // x stays the same, y increases.
+  curve->SetInitialValue(gfx::Vector2dF(100.f, 191.f));
+  EXPECT_DOUBLE_EQ(0.05, curve->Duration());
+
+  // x decreases, y decreases.
+  curve->SetInitialValue(gfx::Vector2dF(32500.f, 500.f));
+  EXPECT_DOUBLE_EQ(3.0, curve->Duration());
+
+  // x decreases, y increases.
+  curve->SetInitialValue(gfx::Vector2dF(150.f, 119.f));
+  EXPECT_DOUBLE_EQ(0.15, curve->Duration());
+
+  // x increases, y decreases.
+  curve->SetInitialValue(gfx::Vector2dF(0.f, 14600.f));
+  EXPECT_DOUBLE_EQ(2.0, curve->Duration());
+
+  // x increases, y increases.
+  curve->SetInitialValue(gfx::Vector2dF(95.f, 191.f));
+  EXPECT_DOUBLE_EQ(0.05, curve->Duration());
+}
+
+TEST(ScrollOffsetAnimationCurveTest, GetValue) {
+  gfx::Vector2dF initial_value(2.f, 40.f);
+  gfx::Vector2dF target_value(10.f, 20.f);
+  scoped_ptr<ScrollOffsetAnimationCurve> curve(
+      ScrollOffsetAnimationCurve::Create(
+          target_value,
+          EaseInOutTimingFunction::Create().Pass()));
+  curve->SetInitialValue(initial_value);
+
+  double duration = curve->Duration();
+  EXPECT_GT(curve->Duration(), 0);
+  EXPECT_LT(curve->Duration(), 0.1);
 
   EXPECT_EQ(AnimationCurve::ScrollOffset, curve->Type());
   EXPECT_EQ(duration, curve->Duration());
@@ -41,13 +86,12 @@ TEST(ScrollOffsetAnimationCurveTest, GetValue) {
 TEST(ScrollOffsetAnimationCurveTest, Clone) {
   gfx::Vector2dF initial_value(2.f, 40.f);
   gfx::Vector2dF target_value(10.f, 20.f);
-  double duration = 10.0;
   scoped_ptr<ScrollOffsetAnimationCurve> curve(
       ScrollOffsetAnimationCurve::Create(
           target_value,
           EaseInOutTimingFunction::Create().Pass()));
-  curve->set_duration(duration);
-  curve->set_initial_value(initial_value);
+  curve->SetInitialValue(initial_value);
+  double duration = curve->Duration();
 
   scoped_ptr<AnimationCurve> clone(curve->Clone().Pass());
 
@@ -74,7 +118,6 @@ TEST(ScrollOffsetAnimationCurveTest, Clone) {
   EXPECT_NEAR(3.0333f, value.x(), 0.00015f);
   EXPECT_NEAR(37.4168f, value.y(), 0.00015f);
 }
-
 
 }  // namespace
 }  // namespace cc

@@ -168,6 +168,7 @@ class CC_EXPORT LayerTreeHostImpl
   virtual void UpdateAnimationState(bool start_ready_animations);
   void MainThreadHasStoppedFlinging();
   void UpdateBackgroundAnimateTicking(bool should_background_tick);
+  void DidAnimateScrollOffset();
   void SetViewportDamage(gfx::Rect damage_rect);
 
   virtual void ManageTiles();
