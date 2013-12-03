@@ -79,7 +79,6 @@
 //<include src="ui/file_manager_dialog_base.js"/>
 //
 //<include src="app_installer.js"/>
-//<include src="butter_bar.js"/>
 //<include src="cws_container_client.js"/>
 //<include src="directory_contents.js"/>
 //<include src="directory_model.js"/>

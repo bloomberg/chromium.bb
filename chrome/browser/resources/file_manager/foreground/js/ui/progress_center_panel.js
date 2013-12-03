@@ -45,15 +45,6 @@ var ProgressCenterPanel = function(element) {
 };
 
 /**
- * Whether to use the new progress center UI or not.
- * TODO(hirono): Remove the flag after replacing the old butter bar with the new
- * progress center.
- * @type {boolean}
- * @private
- */
-ProgressCenterPanel.ENABLED_ = true;
-
-/**
  * Updates attributes of the item element.
  * @param {!HTMLElement} element Element to be updated.
  * @param {!ProgressCenterItem} item Progress center item.

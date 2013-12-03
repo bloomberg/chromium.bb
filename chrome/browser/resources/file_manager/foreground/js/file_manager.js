@@ -384,10 +384,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.fileOperationManager_ = FileOperationManagerWrapper.getInstance(
         this.backgroundPage_);
 
-    this.butterBar_ = new ButterBar(
-        this.dialogDom_, this.fileOperationManager_);
-
-    // CopyManager and ButterBar are required for 'Delete' operation in
+    // CopyManager are required for 'Delete' operation in
     // Open and Save dialogs. But drag-n-drop and copy-paste are not needed.
     if (this.dialogType != DialogType.FULL_PAGE) return;
 
@@ -2333,8 +2330,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.filePopup_.contentWindow &&
         this.filePopup_.contentWindow.unload)
       this.filePopup_.contentWindow.unload(true /* exiting */);
-    if (this.butterBar_)
-      this.butterBar_.dispose();
     if (this.progressCenterPanel_)
       this.backgroundPage_.background.progressCenter.removePanel(
           this.progressCenterPanel_);
