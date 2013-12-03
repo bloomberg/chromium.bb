@@ -367,7 +367,7 @@ PrinterJobHandler::HandlePrintDataResponse(const net::URLFetcher* source,
                                            const std::string& data) {
   VLOG(1) << "CP_CONNECTOR: Handling print data response"
           << ", printer id: " << printer_info_cloud_.printer_id;
-  if (file_util::CreateTemporaryFile(&job_details_.print_data_file_path_)) {
+  if (base::CreateTemporaryFile(&job_details_.print_data_file_path_)) {
     UMA_HISTOGRAM_ENUMERATION("CloudPrint.JobHandlerEvent", JOB_HANDLER_DATA,
                               JOB_HANDLER_MAX);
     int ret = file_util::WriteFile(job_details_.print_data_file_path_,

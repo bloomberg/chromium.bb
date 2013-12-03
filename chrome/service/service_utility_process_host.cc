@@ -104,8 +104,8 @@ bool ServiceUtilityProcessHost::StartRenderPDFPagesToMetafile(
   scratch_metafile_dir_.reset(new base::ScopedTempDir);
   if (!scratch_metafile_dir_->CreateUniqueTempDir())
     return false;
-  if (!file_util::CreateTemporaryFileInDir(scratch_metafile_dir_->path(),
-                                           &metafile_path_)) {
+  if (!base::CreateTemporaryFileInDir(scratch_metafile_dir_->path(),
+                                      &metafile_path_)) {
     return false;
   }
 

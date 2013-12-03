@@ -139,7 +139,7 @@ base::FilePath CreateTempImageFile(gfx::ImageSkia* image_ptr,
   // Create a new temporary directory for each image since using a single
   // temporary directory seems to have issues when changing icons in quick
   // succession.
-  if (!file_util::CreateNewTempDirectory("", &temp_dir))
+  if (!base::CreateNewTempDirectory(base::FilePath::StringType(), &temp_dir))
     return base::FilePath();
   new_file_path =
       temp_dir.Append(id + base::StringPrintf("_%d.png", icon_change_count));

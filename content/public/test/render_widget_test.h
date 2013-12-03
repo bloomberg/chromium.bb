@@ -52,7 +52,7 @@ class RenderWidgetTest : public RenderViewTest {
   // This can be used for debugging if you want to output a bitmap
   // image to a file.
   // FilePath tmp_path;
-  // file_util::CreateTemporaryFile(&tmp_path);
+  // base::CreateTemporaryFile(&tmp_path);
   // OutputBitmapToFile(bitmap, tmp_path);
   // VLOG(0) << "Bitmap image stored at: " << tmp_path.value();
   void OutputBitmapToFile(const SkBitmap& bitmap,

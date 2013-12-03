@@ -438,7 +438,7 @@ class SpdyNetworkTransactionTest
   const HttpRequestInfo& CreateFilePostRequest() {
     if (!google_post_request_initialized_) {
       base::FilePath file_path;
-      CHECK(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &file_path));
+      CHECK(base::CreateTemporaryFileInDir(temp_dir_.path(), &file_path));
       CHECK_EQ(static_cast<int>(kUploadDataSize),
                file_util::WriteFile(file_path, kUploadData, kUploadDataSize));
 
@@ -465,7 +465,7 @@ class SpdyNetworkTransactionTest
       return google_post_request_;
 
     base::FilePath file_path;
-    CHECK(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &file_path));
+    CHECK(base::CreateTemporaryFileInDir(temp_dir_.path(), &file_path));
     CHECK_EQ(static_cast<int>(kUploadDataSize),
              file_util::WriteFile(file_path, kUploadData, kUploadDataSize));
     CHECK(file_util::MakeFileUnreadable(file_path));
@@ -494,7 +494,7 @@ class SpdyNetworkTransactionTest
       CHECK_LT(kFileRangeOffset + kFileRangeLength, kUploadDataSize);
 
       base::FilePath file_path;
-      CHECK(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &file_path));
+      CHECK(base::CreateTemporaryFileInDir(temp_dir_.path(), &file_path));
       CHECK_EQ(static_cast<int>(kUploadDataSize),
                file_util::WriteFile(file_path, kUploadData, kUploadDataSize));
 

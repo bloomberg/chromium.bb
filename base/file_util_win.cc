@@ -231,18 +231,8 @@ bool GetShmemTempDir(bool executable, FilePath* path) {
   return GetTempDir(path);
 }
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
-using base::DirectoryExists;
-using base::FilePath;
-using base::kFileShareAll;
-
 bool CreateTemporaryFile(FilePath* path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
 
   FilePath temp_file;
 
@@ -258,7 +248,7 @@ bool CreateTemporaryFile(FilePath* path) {
 }
 
 FILE* CreateAndOpenTemporaryShmemFile(FilePath* path, bool executable) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   return CreateAndOpenTemporaryFile(path);
 }
 
@@ -267,24 +257,24 @@ FILE* CreateAndOpenTemporaryShmemFile(FilePath* path, bool executable) {
 // TODO(jrg): is there equivalent call to use on Windows instead of
 // going 2-step?
 FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
   if (!CreateTemporaryFileInDir(dir, path)) {
     return NULL;
   }
   // Open file in binary mode, to avoid problems with fwrite. On Windows
   // it replaces \n's with \r\n's, which may surprise you.
   // Reference: http://msdn.microsoft.com/en-us/library/h9t88zwz(VS.71).aspx
-  return OpenFile(*path, "wb+");
+  return file_util::OpenFile(*path, "wb+");
 }
 
-bool CreateTemporaryFileInDir(const FilePath& dir,
-                              FilePath* temp_file) {
-  base::ThreadRestrictions::AssertIOAllowed();
+bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
+  ThreadRestrictions::AssertIOAllowed();
 
   wchar_t temp_name[MAX_PATH + 1];
 
   if (!GetTempFileName(dir.value().c_str(), L"", 0, temp_name)) {
-    DPLOG(WARNING) << "Failed to get temporary file name in " << dir.value();
+    DPLOG(WARNING) << "Failed to get temporary file name in "
+                   << UTF16ToUTF8(dir.value());
     return false;
   }
 
@@ -305,7 +295,7 @@ bool CreateTemporaryFileInDir(const FilePath& dir,
 bool CreateTemporaryDirInDir(const FilePath& base_dir,
                              const FilePath::StringType& prefix,
                              FilePath* new_dir) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
 
   FilePath path_to_create;
 
@@ -314,9 +304,9 @@ bool CreateTemporaryDirInDir(const FilePath& base_dir,
     // the one exists, keep trying another path name until we reach some limit.
     string16 new_dir_name;
     new_dir_name.assign(prefix);
-    new_dir_name.append(base::IntToString16(::base::GetCurrentProcId()));
+    new_dir_name.append(IntToString16(GetCurrentProcId()));
     new_dir_name.push_back('_');
-    new_dir_name.append(base::IntToString16(base::RandInt(0, kint16max)));
+    new_dir_name.append(IntToString16(RandInt(0, kint16max)));
 
     path_to_create = base_dir.Append(new_dir_name);
     if (::CreateDirectory(path_to_create.value().c_str(), NULL)) {
@@ -330,7 +320,7 @@ bool CreateTemporaryDirInDir(const FilePath& base_dir,
 
 bool CreateNewTempDirectory(const FilePath::StringType& prefix,
                             FilePath* new_temp_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  ThreadRestrictions::AssertIOAllowed();
 
   FilePath system_temp_dir;
   if (!GetTempDir(&system_temp_dir))
@@ -338,6 +328,16 @@ bool CreateNewTempDirectory(const FilePath::StringType& prefix,
 
   return CreateTemporaryDirInDir(system_temp_dir, prefix, new_temp_path);
 }
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
+
+using base::DirectoryExists;
+using base::FilePath;
+using base::kFileShareAll;
 
 bool CreateDirectoryAndGetError(const FilePath& full_path,
                                 base::PlatformFileError* error) {

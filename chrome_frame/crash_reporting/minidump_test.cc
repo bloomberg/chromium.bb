@@ -57,7 +57,7 @@ class MinidumpTest: public testing::Test {
     ASSERT_TRUE(urlmon != NULL);
     ASSERT_TRUE(::FreeLibrary(urlmon));
 
-    ASSERT_TRUE(file_util::CreateTemporaryFile(&dump_file_));
+    ASSERT_TRUE(base::CreateTemporaryFile(&dump_file_));
     dump_file_handle_.Set(::CreateFile(dump_file_.value().c_str(),
                                        GENERIC_WRITE | GENERIC_READ,
                                        0,

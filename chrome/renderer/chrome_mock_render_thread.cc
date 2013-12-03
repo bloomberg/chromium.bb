@@ -103,7 +103,7 @@ void ChromeMockRenderThread::OnAllocateTempFileForPrinting(
   renderer_fd->auto_close = false;
 
   base::FilePath path;
-  if (file_util::CreateTemporaryFile(&path)) {
+  if (base::CreateTemporaryFile(&path)) {
     int fd = open(path.value().c_str(), O_WRONLY);
     DCHECK_GE(fd, 0);
     renderer_fd->fd = *browser_fd = fd;

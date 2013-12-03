@@ -22,7 +22,7 @@ namespace {
 
 GURL CreateResource(const std::string& content) {
   base::FilePath path;
-  EXPECT_TRUE(file_util::CreateTemporaryFile(&path));
+  EXPECT_TRUE(base::CreateTemporaryFile(&path));
   EXPECT_TRUE(file_util::WriteFile(path, content.c_str(), content.size()));
   return GURL("file:///" + path.AsUTF8Unsafe());
 }

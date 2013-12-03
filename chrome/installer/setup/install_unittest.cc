@@ -318,8 +318,7 @@ TEST_F(InstallShortcutTest, CreateAllShortcutsButQuickLaunchShortcut) {
 TEST_F(InstallShortcutTest, ReplaceAll) {
   base::win::ShortcutProperties dummy_properties;
   base::FilePath dummy_target;
-  ASSERT_TRUE(
-      file_util::CreateTemporaryFileInDir(temp_dir_.path(), &dummy_target));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &dummy_target));
   dummy_properties.set_target(dummy_target);
   dummy_properties.set_working_dir(fake_user_desktop_.path());
   dummy_properties.set_arguments(L"--dummy --args");
@@ -349,8 +348,7 @@ TEST_F(InstallShortcutTest, ReplaceAll) {
 TEST_F(InstallShortcutTest, ReplaceExisting) {
   base::win::ShortcutProperties dummy_properties;
   base::FilePath dummy_target;
-  ASSERT_TRUE(
-      file_util::CreateTemporaryFileInDir(temp_dir_.path(), &dummy_target));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &dummy_target));
   dummy_properties.set_target(dummy_target);
   dummy_properties.set_working_dir(fake_user_desktop_.path());
   dummy_properties.set_arguments(L"--dummy --args");
@@ -372,8 +370,7 @@ TEST_F(InstallShortcutTest, ReplaceExisting) {
 TEST_F(InstallShortcutTest, CreateIfNoSystemLevelAllSystemShortcutsExist) {
   base::win::ShortcutProperties dummy_properties;
   base::FilePath dummy_target;
-  ASSERT_TRUE(
-      file_util::CreateTemporaryFileInDir(temp_dir_.path(), &dummy_target));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &dummy_target));
   dummy_properties.set_target(dummy_target);
 
   ASSERT_TRUE(base::win::CreateOrUpdateShortcutLink(
@@ -410,8 +407,7 @@ TEST_F(InstallShortcutTest, CreateIfNoSystemLevelNoSystemShortcutsExist) {
 TEST_F(InstallShortcutTest, CreateIfNoSystemLevelSomeSystemShortcutsExist) {
   base::win::ShortcutProperties dummy_properties;
   base::FilePath dummy_target;
-  ASSERT_TRUE(
-      file_util::CreateTemporaryFileInDir(temp_dir_.path(), &dummy_target));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &dummy_target));
   dummy_properties.set_target(dummy_target);
 
   ASSERT_TRUE(base::win::CreateOrUpdateShortcutLink(

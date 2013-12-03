@@ -65,8 +65,7 @@ class NetLogTempFileTest : public ::testing::Test {
     // Get a temporary file name for unit tests.
     base::FilePath net_log_dir;
     ASSERT_TRUE(net_log_temp_file_->GetNetExportLogDirectory(&net_log_dir));
-    ASSERT_TRUE(file_util::CreateTemporaryFileInDir(net_log_dir,
-                                                    &net_export_log_));
+    ASSERT_TRUE(base::CreateTemporaryFileInDir(net_log_dir, &net_export_log_));
 
     net_log_temp_file_->log_filename_ = net_export_log_.BaseName().value();
 

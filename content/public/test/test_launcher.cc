@@ -222,8 +222,8 @@ size_t WrapperTestLauncherDelegate::RunTests(
 
     if (!ContainsKey(user_data_dir_map_, full_name)) {
       base::FilePath temp_dir;
-      CHECK(file_util::CreateTemporaryDirInDir(
-                temp_dir_.path(), FILE_PATH_LITERAL("d"), &temp_dir));
+      CHECK(base::CreateTemporaryDirInDir(temp_dir_.path(),
+                                          FILE_PATH_LITERAL("d"), &temp_dir));
       user_data_dir_map_[full_name] = temp_dir;
     }
 
@@ -278,8 +278,8 @@ size_t WrapperTestLauncherDelegate::RetryTests(
     std::string test_name_no_pre(RemoveAnyPrePrefixes(full_name));
     if (!ContainsKey(user_data_dir_map_, test_name_no_pre)) {
       base::FilePath temp_dir;
-      CHECK(file_util::CreateTemporaryDirInDir(
-                temp_dir_.path(), FILE_PATH_LITERAL("d"), &temp_dir));
+      CHECK(base::CreateTemporaryDirInDir(temp_dir_.path(),
+                                          FILE_PATH_LITERAL("d"), &temp_dir));
       user_data_dir_map_[test_name_no_pre] = temp_dir;
     }
 

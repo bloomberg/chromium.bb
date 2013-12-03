@@ -135,7 +135,7 @@ TEST_F(SetupUtilTestWithDir, GetMaxVersionFromArchiveDirTest) {
 
 TEST_F(SetupUtilTestWithDir, DeleteFileFromTempProcess) {
   base::FilePath test_file;
-  file_util::CreateTemporaryFileInDir(test_dir_.path(), &test_file);
+  base::CreateTemporaryFileInDir(test_dir_.path(), &test_file);
   ASSERT_TRUE(base::PathExists(test_file));
   file_util::WriteFile(test_file, "foo", 3);
   EXPECT_TRUE(installer::DeleteFileFromTempProcess(test_file, 0));

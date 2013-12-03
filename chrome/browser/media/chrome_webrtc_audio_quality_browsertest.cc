@@ -156,7 +156,7 @@ class WebrtcAudioQualityBrowserTest : public WebRtcTestBase {
 
   base::FilePath CreateTemporaryWaveFile() {
     base::FilePath filename;
-    EXPECT_TRUE(file_util::CreateTemporaryFile(&filename));
+    EXPECT_TRUE(base::CreateTemporaryFile(&filename));
     base::FilePath wav_filename =
         filename.AddExtension(FILE_PATH_LITERAL(".wav"));
     EXPECT_TRUE(base::Move(filename, wav_filename));

@@ -103,7 +103,7 @@ bool FontLoadingTestCase::SandboxedTest() {
 
 TEST_F(MacSandboxTest, FontLoadingTest) {
   base::FilePath temp_file_path;
-  FILE* temp_file = file_util::CreateAndOpenTemporaryFile(&temp_file_path);
+  FILE* temp_file = base::CreateAndOpenTemporaryFile(&temp_file_path);
   ASSERT_TRUE(temp_file);
   file_util::ScopedFILE temp_file_closer(temp_file);
 

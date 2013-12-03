@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, MANUAL_CpuUsage15Seconds) {
   ASSERT_TRUE(peerconnection_server_.Start());
 
   base::FilePath results_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFile(&results_file));
+  ASSERT_TRUE(base::CreateTemporaryFile(&results_file));
 
   content::WebContents* left_tab = OpenTestPageAndGetUserMediaInNewTab();
 

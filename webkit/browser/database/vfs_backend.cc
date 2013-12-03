@@ -112,7 +112,7 @@ void VfsBackend::OpenTempFileInDirectory(
 
   // Get a unique temp file name in the database directory.
   base::FilePath temp_file_path;
-  if (!file_util::CreateTemporaryFileInDir(dir_path, &temp_file_path))
+  if (!base::CreateTemporaryFileInDir(dir_path, &temp_file_path))
     return;
 
   OpenFile(temp_file_path, desired_flags, file_handle);

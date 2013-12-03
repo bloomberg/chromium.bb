@@ -312,8 +312,8 @@ scoped_refptr<Extension> CreateExtension(const base::FilePath& base_dir,
     ADD_FAILURE();
     return NULL;
   }
-  if (!file_util::CreateTemporaryDirInDir(
-          base_dir, sub_dir.value(), &extension_dir)) {
+  if (!base::CreateTemporaryDirInDir(base_dir, sub_dir.value(),
+                                     &extension_dir)) {
     ADD_FAILURE();
     return NULL;
   }

@@ -60,8 +60,8 @@ base::FilePath GetDriveTempDownloadPath(
   DCHECK(created) << "Can not create temp download directory at "
                   << drive_tmp_download_dir.value();
   base::FilePath drive_tmp_download_path;
-  created = file_util::CreateTemporaryFileInDir(drive_tmp_download_dir,
-                                                &drive_tmp_download_path);
+  created = base::CreateTemporaryFileInDir(drive_tmp_download_dir,
+                                           &drive_tmp_download_path);
   DCHECK(created) << "Temporary download file creation failed";
   return drive_tmp_download_path;
 }

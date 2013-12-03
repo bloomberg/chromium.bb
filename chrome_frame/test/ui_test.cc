@@ -497,7 +497,7 @@ class ContextMenuTest : public MockIEEventSinkTest, public testing::Test {
 
     // Get safe download name using temporary file.
     base::FilePath temp_file_path;
-    ASSERT_TRUE(file_util::CreateTemporaryFile(&temp_file_path));
+    ASSERT_TRUE(base::CreateTemporaryFile(&temp_file_path));
     ASSERT_TRUE(file_util::DieFileDie(temp_file_path, false));
     temp_file_path = temp_file_path.ReplaceExtension(file_ext);
 

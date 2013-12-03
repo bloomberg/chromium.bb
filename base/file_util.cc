@@ -153,6 +153,14 @@ bool IsDirectoryEmpty(const FilePath& dir_path) {
   return false;
 }
 
+FILE* CreateAndOpenTemporaryFile(FilePath* path) {
+  FilePath directory;
+  if (!GetTempDir(&directory))
+    return NULL;
+
+  return CreateAndOpenTemporaryFileInDir(directory, path);
+}
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
@@ -162,14 +170,6 @@ namespace file_util {
 using base::FileEnumerator;
 using base::FilePath;
 using base::kMaxUniqueFiles;
-
-FILE* CreateAndOpenTemporaryFile(FilePath* path) {
-  FilePath directory;
-  if (!GetTempDir(&directory))
-    return NULL;
-
-  return CreateAndOpenTemporaryFileInDir(directory, path);
-}
 
 bool CreateDirectory(const base::FilePath& full_path) {
   return CreateDirectoryAndGetError(full_path, NULL);

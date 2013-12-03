@@ -126,7 +126,7 @@ class SyncableFileOperationRunnerTest : public testing::Test {
   }
 
   bool CreateTempFile(base::FilePath* path) {
-    return file_util::CreateTemporaryFileInDir(dir_.path(), path);
+    return base::CreateTemporaryFileInDir(dir_.path(), path);
   }
 
   ScopedEnableSyncFSDirectoryOperation enable_directory_operation_;

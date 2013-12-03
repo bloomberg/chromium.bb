@@ -592,8 +592,9 @@ Status ExecuteUploadFile(
       return Status(kUnknownError, "unable to create temp dir");
   }
   base::FilePath upload_dir;
-  if (!file_util::CreateTemporaryDirInDir(
-          session->temp_dir.path(), FILE_PATH_LITERAL("upload"), &upload_dir)) {
+  if (!base::CreateTemporaryDirInDir(session->temp_dir.path(),
+                                     FILE_PATH_LITERAL("upload"),
+                                     &upload_dir)) {
     return Status(kUnknownError, "unable to create temp dir");
   }
   std::string error_msg;

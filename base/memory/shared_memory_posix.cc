@@ -141,8 +141,7 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
     DCHECK(!options.open_existing);
     // Q: Why not use the shm_open() etc. APIs?
     // A: Because they're limited to 4mb on OS X.  FFFFFFFUUUUUUUUUUU
-    fp.reset(
-        file_util::CreateAndOpenTemporaryShmemFile(&path, options.executable));
+    fp.reset(base::CreateAndOpenTemporaryShmemFile(&path, options.executable));
 
     if (fp) {
       // Also open as readonly so that we can ShareReadOnlyToProcess.

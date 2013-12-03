@@ -259,7 +259,7 @@ int32_t PepperFlashFileMessageFilter::OnCreateTemporaryFile(
   }
 
   base::FilePath file_path;
-  if (!file_util::CreateTemporaryFileInDir(validated_dir_path, &file_path)) {
+  if (!base::CreateTemporaryFileInDir(validated_dir_path, &file_path)) {
     return ppapi::PlatformFileErrorToPepperError(
         base::PLATFORM_FILE_ERROR_FAILED);
   }

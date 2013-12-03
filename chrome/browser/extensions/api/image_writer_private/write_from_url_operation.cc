@@ -67,7 +67,7 @@ void WriteFromUrlOperation::CreateTempFile() {
 
   tmp_file_.reset(new base::FilePath());
 
-  if (file_util::CreateTemporaryFile(tmp_file_.get())) {
+  if (base::CreateTemporaryFile(tmp_file_.get())) {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,

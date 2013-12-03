@@ -513,25 +513,8 @@ FilePath GetHomeDir() {
 }
 #endif  // !defined(OS_MACOSX)
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
-using base::stat_wrapper_t;
-using base::CallStat;
-using base::CallLstat;
-using base::CreateAndOpenFdForTemporaryFile;
-using base::DirectoryExists;
-using base::FileEnumerator;
-using base::FilePath;
-using base::MakeAbsoluteFilePath;
-using base::RealPath;
-using base::VerifySpecificPathControlledByUser;
-
 bool CreateTemporaryFile(FilePath* path) {
-  base::ThreadRestrictions::AssertIOAllowed();  // For call to close().
+  ThreadRestrictions::AssertIOAllowed();  // For call to close().
   FilePath directory;
   if (!GetTempDir(&directory))
     return false;
@@ -562,7 +545,7 @@ FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* path) {
 }
 
 bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
-  base::ThreadRestrictions::AssertIOAllowed();  // For call to close().
+  ThreadRestrictions::AssertIOAllowed();  // For call to close().
   int fd = CreateAndOpenFdForTemporaryFile(dir, temp_file);
   return ((fd >= 0) && !IGNORE_EINTR(close(fd)));
 }
@@ -570,7 +553,7 @@ bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
 static bool CreateTemporaryDirInDirImpl(const FilePath& base_dir,
                                         const FilePath::StringType& name_tmpl,
                                         FilePath* new_dir) {
-  base::ThreadRestrictions::AssertIOAllowed();  // For call to mkdtemp().
+  ThreadRestrictions::AssertIOAllowed();  // For call to mkdtemp().
   DCHECK(name_tmpl.find("XXXXXX") != FilePath::StringType::npos)
       << "Directory name template must contain \"XXXXXX\".";
 
@@ -602,9 +585,26 @@ bool CreateNewTempDirectory(const FilePath::StringType& prefix,
   if (!GetTempDir(&tmpdir))
     return false;
 
-  return CreateTemporaryDirInDirImpl(tmpdir, base::TempFileName(),
-                                     new_temp_path);
+  return CreateTemporaryDirInDirImpl(tmpdir, TempFileName(), new_temp_path);
 }
+
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
+
+using base::stat_wrapper_t;
+using base::CallStat;
+using base::CallLstat;
+using base::CreateAndOpenFdForTemporaryFile;
+using base::DirectoryExists;
+using base::FileEnumerator;
+using base::FilePath;
+using base::MakeAbsoluteFilePath;
+using base::RealPath;
+using base::VerifySpecificPathControlledByUser;
 
 bool CreateDirectoryAndGetError(const FilePath& full_path,
                                 base::PlatformFileError* error) {

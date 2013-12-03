@@ -58,7 +58,7 @@ CrashDumpManager::~CrashDumpManager() {
 int CrashDumpManager::CreateMinidumpFile(int child_process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::PROCESS_LAUNCHER));
   base::FilePath minidump_path;
-  if (!file_util::CreateTemporaryFile(&minidump_path))
+  if (!base::CreateTemporaryFile(&minidump_path))
     return base::kInvalidPlatformFileValue;
 
   base::PlatformFileError error;

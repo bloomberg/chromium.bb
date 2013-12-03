@@ -126,8 +126,8 @@ TEST(HttpStreamParser, ShouldMergeRequestHeadersAndBody_FileBody) {
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     base::FilePath temp_file_path;
-    ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir.path(),
-                                                    &temp_file_path));
+    ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(),
+                                               &temp_file_path));
 
     element_readers.push_back(
         new UploadFileElementReader(base::MessageLoopProxy::current().get(),

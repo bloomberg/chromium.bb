@@ -138,8 +138,7 @@ TEST_F(FileManagerFileWatcherTest, WatchLocalFile) {
   // Create a temporary file in the temporary directory. The file watcher
   // should detect the change in the directory.
   base::FilePath temp_file_path;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir.path(),
-                                                  &temp_file_path));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(), &temp_file_path));
   // Wait until the directory change is notified.
   run_loop.Run();
   ASSERT_FALSE(on_change_error);

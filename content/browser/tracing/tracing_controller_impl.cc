@@ -66,7 +66,7 @@ TracingControllerImpl::ResultFile::ResultFile(const base::FilePath& path)
 
 void TracingControllerImpl::ResultFile::OpenTask() {
   if (path_.empty())
-    file_util::CreateTemporaryFile(&path_);
+    base::CreateTemporaryFile(&path_);
   file_ = file_util::OpenFile(path_, "w");
   if (!file_) {
     LOG(ERROR) << "Failed to open " << path_.value();

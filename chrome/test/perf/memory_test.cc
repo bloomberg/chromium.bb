@@ -233,7 +233,7 @@ class MemoryTest : public UIPerfTest {
     // We create a copy of the test dir and use it so that each
     // run of this test starts with the same data.  Running this
     // test has the side effect that it will change the profile.
-    if (!file_util::CreateNewTempDirectory(kTempDirName, &temp_dir_)) {
+    if (!base::CreateNewTempDirectory(kTempDirName, &temp_dir_)) {
       LOG(ERROR) << "Could not create temp directory:" << kTempDirName;
       return false;
     }

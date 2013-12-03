@@ -164,7 +164,7 @@ TEST_F(EtwTraceControllerTest, StartFileSession) {
   ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   FilePath temp;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir.path(), &temp));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(), &temp));
 
   EtwTraceController controller;
   HRESULT hr = controller.StartFileSession(session_name_.c_str(),

@@ -340,8 +340,8 @@ void NetInternalsTest::MessageHandler::GetNetLogLoggerLog(
   base::ScopedTempDir temp_directory;
   ASSERT_TRUE(temp_directory.CreateUniqueTempDir());
   base::FilePath temp_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_directory.path(),
-                                                  &temp_file));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_directory.path(),
+                                             &temp_file));
   FILE* temp_file_handle = file_util::OpenFile(temp_file, "w");
   ASSERT_TRUE(temp_file_handle);
 

@@ -233,7 +233,7 @@ bool CreateIconFile(const SkBitmap& bitmap,
   // We don't have to care about the extension of this temporary file because
   // JumpList does not care about it.
   base::FilePath path;
-  if (!file_util::CreateTemporaryFileInDir(icon_dir, &path))
+  if (!base::CreateTemporaryFileInDir(icon_dir, &path))
     return false;
 
   // Create an icon file from the favicon attached to the given |page|, and

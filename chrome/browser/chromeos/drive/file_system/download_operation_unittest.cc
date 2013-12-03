@@ -197,7 +197,7 @@ TEST_F(DownloadOperationTest,
 
 TEST_F(DownloadOperationTest, EnsureFileDownloadedByPath_FromCache) {
   base::FilePath temp_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir(), &temp_file));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir(), &temp_file));
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   ResourceEntry src_entry;
@@ -364,7 +364,7 @@ TEST_F(DownloadOperationTest,
 
 TEST_F(DownloadOperationTest, EnsureFileDownloadedByLocalId_FromCache) {
   base::FilePath temp_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir(), &temp_file));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir(), &temp_file));
 
   base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
   ResourceEntry src_entry;

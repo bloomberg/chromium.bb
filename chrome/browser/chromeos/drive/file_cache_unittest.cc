@@ -58,8 +58,8 @@ class FileCacheTestOnUIThread : public testing::Test {
     ASSERT_TRUE(file_util::CreateDirectory(metadata_dir));
     ASSERT_TRUE(file_util::CreateDirectory(cache_dir));
 
-    ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
-                                                    &dummy_file_path_));
+    ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(),
+                                               &dummy_file_path_));
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
     scoped_refptr<base::SequencedWorkerPool> pool =
@@ -803,7 +803,7 @@ TEST_F(FileCacheTest, RecoverFilesFromCacheDirectory) {
 
 TEST_F(FileCacheTest, Iterator) {
   base::FilePath src_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
 
   // Prepare entries.
   std::map<std::string, std::string> md5s;
@@ -828,7 +828,7 @@ TEST_F(FileCacheTest, Iterator) {
 
 TEST_F(FileCacheTest, FreeDiskSpaceIfNeededFor) {
   base::FilePath src_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
 
   // Store a file as a 'temporary' file and remember the path.
   const std::string id_tmp = "id_tmp", md5_tmp = "md5_tmp";
@@ -959,7 +959,7 @@ TEST_F(FileCacheTest, ClearAll) {
 
   // Store an existing file.
   base::FilePath src_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &src_file));
   ASSERT_EQ(FILE_ERROR_OK,
             cache_->Store(id, md5, src_file, FileCache::FILE_OPERATION_COPY));
 

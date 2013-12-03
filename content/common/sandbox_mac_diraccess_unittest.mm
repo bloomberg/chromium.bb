@@ -148,7 +148,8 @@ TEST_F(MacDirAccessSandboxTest, SandboxAccess) {
   using file_util::CreateDirectory;
 
   base::FilePath tmp_dir;
-  ASSERT_TRUE(file_util::CreateNewTempDirectory("", &tmp_dir));
+  ASSERT_TRUE(base::CreateNewTempDirectory(base::FilePath::StringType(),
+                                           &tmp_dir));
   // This step is important on OS X since the sandbox only understands "real"
   // paths and the paths CreateNewTempDirectory() returns are empirically in
   // /var which is a symlink to /private/var .

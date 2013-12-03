@@ -20,7 +20,7 @@ namespace {
 class MasterPreferencesTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    ASSERT_TRUE(file_util::CreateTemporaryFile(&prefs_file_));
+    ASSERT_TRUE(base::CreateTemporaryFile(&prefs_file_));
   }
 
   virtual void TearDown() {
@@ -241,7 +241,7 @@ TEST(MasterPrefsExtension, ValidateExtensionJSON) {
 TEST_F(MasterPreferencesTest, GetInstallPreferencesTest) {
   // Create a temporary prefs file.
   base::FilePath prefs_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFile(&prefs_file));
+  ASSERT_TRUE(base::CreateTemporaryFile(&prefs_file));
   const char text[] =
     "{ \n"
     "  \"distribution\": { \n"

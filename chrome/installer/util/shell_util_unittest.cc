@@ -73,7 +73,7 @@ class ShellUtilShortcutTest : public testing::Test {
                                      fake_common_start_menu_.path()));
 
     base::FilePath icon_path;
-    file_util::CreateTemporaryFileInDir(temp_dir_.path(), &icon_path);
+    base::CreateTemporaryFileInDir(temp_dir_.path(), &icon_path);
     test_properties_.set_target(chrome_exe_);
     test_properties_.set_arguments(L"--test --chrome");
     test_properties_.set_description(L"Makes polar bears dance.");

@@ -157,8 +157,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     // per run to ensure clean state and make it possible to launch multiple
     // processes in parallel.
     base::FilePath output_file;
-    CHECK(file_util::CreateNewTempDirectory(FilePath::StringType(),
-                                            &output_file));
+    CHECK(CreateNewTempDirectory(FilePath::StringType(), &output_file));
     output_file = output_file.AppendASCII("test_results.xml");
 
     std::vector<std::string> current_test_names;
@@ -192,8 +191,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
     // per run to ensure clean state and make it possible to launch multiple
     // processes in parallel.
     base::FilePath output_file;
-    CHECK(file_util::CreateNewTempDirectory(FilePath::StringType(),
-                                            &output_file));
+    CHECK(CreateNewTempDirectory(FilePath::StringType(), &output_file));
     output_file = output_file.AppendASCII("test_results.xml");
 
     CommandLine cmd_line(

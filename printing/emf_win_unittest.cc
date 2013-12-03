@@ -172,8 +172,8 @@ TEST(EmfTest, FileBackedEmf) {
   base::ScopedTempDir scratch_metafile_dir;
   ASSERT_TRUE(scratch_metafile_dir.CreateUniqueTempDir());
   base::FilePath metafile_path;
-  EXPECT_TRUE(file_util::CreateTemporaryFileInDir(scratch_metafile_dir.path(),
-                                                  &metafile_path));
+  EXPECT_TRUE(base::CreateTemporaryFileInDir(scratch_metafile_dir.path(),
+                                             &metafile_path));
   uint32 size;
   std::vector<BYTE> data;
   {

@@ -226,7 +226,7 @@ GDataErrorCode FakeDriveServiceHelper::ReadFile(
 
   error = google_apis::GDATA_OTHER_ERROR;
   base::FilePath temp_file;
-  EXPECT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_, &temp_file));
+  EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_dir_, &temp_file));
   fake_drive_service_->DownloadFile(
       temp_file, file->resource_id(),
       base::Bind(&DownloadResultCallback, &error),
@@ -285,7 +285,7 @@ void FakeDriveServiceHelper::Initialize() {
 base::FilePath FakeDriveServiceHelper::WriteToTempFile(
     const std::string& content) {
   base::FilePath temp_file;
-  EXPECT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_, &temp_file));
+  EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_dir_, &temp_file));
   EXPECT_EQ(static_cast<int>(content.size()),
             file_util::WriteFile(temp_file, content.data(), content.size()));
   return temp_file;

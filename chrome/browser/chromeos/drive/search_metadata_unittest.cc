@@ -63,8 +63,7 @@ class SearchMetadataTest : public testing::Test {
 
   void AddEntriesToMetadata() {
     base::FilePath temp_file;
-    EXPECT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
-                                                    &temp_file));
+    EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &temp_file));
     const std::string temp_file_md5 = "md5";
 
     ResourceEntry entry;

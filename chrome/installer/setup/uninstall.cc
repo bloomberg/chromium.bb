@@ -477,7 +477,7 @@ base::FilePath BackupLocalStateFile(
         local_state_folder.Append(chrome::kLocalStateFilename));
     if (!base::PathExists(state_file))
       continue;
-    if (!file_util::CreateTemporaryFile(&backup))
+    if (!base::CreateTemporaryFile(&backup))
       LOG(ERROR) << "Failed to create temporary file for Local State.";
     else
       base::CopyFile(state_file, backup);
@@ -535,7 +535,7 @@ bool MoveSetupOutOfInstallFolder(const InstallerState& installer_state,
   base::FilePath temp_file;
   if (!PathService::Get(base::DIR_TEMP, &tmp_dir)) {
     NOTREACHED();
-  } else if (!file_util::CreateTemporaryFileInDir(tmp_dir, &temp_file)) {
+  } else if (!base::CreateTemporaryFileInDir(tmp_dir, &temp_file)) {
     LOG(ERROR) << "Failed to create temporary file for setup.exe.";
   } else {
     VLOG(1) << "Changing current directory to: " << tmp_dir.value();

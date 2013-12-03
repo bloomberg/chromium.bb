@@ -90,7 +90,7 @@ bool PageCaptureSaveAsMHTMLFunction::OnMessageReceivedFromRenderView(
 
 void PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  bool success = file_util::CreateTemporaryFile(&mhtml_path_);
+  bool success = base::CreateTemporaryFile(&mhtml_path_);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&PageCaptureSaveAsMHTMLFunction::TemporaryFileCreated, this,

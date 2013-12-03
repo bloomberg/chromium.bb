@@ -171,8 +171,8 @@ TEST_F(UploadDataStreamTest, ConsumeAllBytes) {
 
 TEST_F(UploadDataStreamTest, File) {
   base::FilePath temp_file_path;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
-                                                  &temp_file_path));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(),
+                                             &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
             file_util::WriteFile(temp_file_path, kTestData, kTestDataSize));
 
@@ -205,8 +205,8 @@ TEST_F(UploadDataStreamTest, File) {
 
 TEST_F(UploadDataStreamTest, FileSmallerThanLength) {
   base::FilePath temp_file_path;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
-                                                  &temp_file_path));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(),
+                                             &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
             file_util::WriteFile(temp_file_path, kTestData, kTestDataSize));
   const uint64 kFakeSize = kTestDataSize*2;
@@ -323,8 +323,8 @@ TEST_F(UploadDataStreamTest, ReadErrorAsync) {
 
 TEST_F(UploadDataStreamTest, FileAndBytes) {
   base::FilePath temp_file_path;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
-                                                  &temp_file_path));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(),
+                                             &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
             file_util::WriteFile(temp_file_path, kTestData, kTestDataSize));
 
@@ -549,8 +549,8 @@ void UploadDataStreamTest::FileChangedHelper(const base::FilePath& file_path,
 
 TEST_F(UploadDataStreamTest, FileChanged) {
   base::FilePath temp_file_path;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
-                                                  &temp_file_path));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(),
+                                             &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
             file_util::WriteFile(temp_file_path, kTestData, kTestDataSize));
 
@@ -568,8 +568,8 @@ TEST_F(UploadDataStreamTest, FileChanged) {
 
 TEST_F(UploadDataStreamTest, MultipleInit) {
   base::FilePath temp_file_path;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
-                                                  &temp_file_path));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(),
+                                             &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
             file_util::WriteFile(temp_file_path, kTestData, kTestDataSize));
 
@@ -612,8 +612,8 @@ TEST_F(UploadDataStreamTest, MultipleInit) {
 
 TEST_F(UploadDataStreamTest, MultipleInitAsync) {
   base::FilePath temp_file_path;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
-                                                  &temp_file_path));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(),
+                                             &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
             file_util::WriteFile(temp_file_path, kTestData, kTestDataSize));
   TestCompletionCallback test_callback;
@@ -655,8 +655,8 @@ TEST_F(UploadDataStreamTest, MultipleInitAsync) {
 
 TEST_F(UploadDataStreamTest, InitToReset) {
   base::FilePath temp_file_path;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
-                                                  &temp_file_path));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(),
+                                             &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
             file_util::WriteFile(temp_file_path, kTestData, kTestDataSize));
 
@@ -712,8 +712,8 @@ TEST_F(UploadDataStreamTest, InitToReset) {
 
 TEST_F(UploadDataStreamTest, InitDuringAsyncInit) {
   base::FilePath temp_file_path;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
-                                                  &temp_file_path));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(),
+                                             &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
             file_util::WriteFile(temp_file_path, kTestData, kTestDataSize));
 
@@ -760,8 +760,8 @@ TEST_F(UploadDataStreamTest, InitDuringAsyncInit) {
 
 TEST_F(UploadDataStreamTest, InitDuringAsyncRead) {
   base::FilePath temp_file_path;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
-                                                  &temp_file_path));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(),
+                                             &temp_file_path));
   ASSERT_EQ(static_cast<int>(kTestDataSize),
             file_util::WriteFile(temp_file_path, kTestData, kTestDataSize));
 

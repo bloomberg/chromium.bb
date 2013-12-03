@@ -84,7 +84,7 @@ class ScopedTempDirectory {
   // Creates a temporary directory.
   bool Initialize() {
     DCHECK(directory_.empty());
-    if (!file_util::CreateNewTempDirectory(&kTempDirPrefix[0], &directory_)) {
+    if (!base::CreateNewTempDirectory(&kTempDirPrefix[0], &directory_)) {
       LOG(DFATAL) << "Failed creating temporary directory.";
       return false;
     }

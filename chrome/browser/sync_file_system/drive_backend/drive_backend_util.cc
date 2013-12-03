@@ -127,7 +127,7 @@ scoped_ptr<FileMetadata> CreateDeletedFileMetadata(
 webkit_blob::ScopedFile CreateTemporaryFile(
     base::TaskRunner* file_task_runner) {
   base::FilePath temp_file_path;
-  if (!file_util::CreateTemporaryFile(&temp_file_path))
+  if (!base::CreateTemporaryFile(&temp_file_path))
     return webkit_blob::ScopedFile();
 
   return webkit_blob::ScopedFile(

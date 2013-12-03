@@ -168,7 +168,7 @@ void PrintingMessageFilter::OnAllocateTempFileForPrinting(
   *sequence_number = g_printing_file_descriptor_map.Get().sequence++;
 
   base::FilePath path;
-  if (file_util::CreateTemporaryFile(&path)) {
+  if (base::CreateTemporaryFile(&path)) {
     int fd = open(path.value().c_str(), O_WRONLY);
     if (fd >= 0) {
       SequenceToPathMap::iterator it = map->find(*sequence_number);

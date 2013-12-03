@@ -83,7 +83,7 @@ class FirstRunMasterPrefsBrowserTestBase : public InProcessBrowserTest {
     // before this class' SetUp() is invoked.
     ASSERT_TRUE(text_.get());
 
-    ASSERT_TRUE(file_util::CreateTemporaryFile(&prefs_file_));
+    ASSERT_TRUE(base::CreateTemporaryFile(&prefs_file_));
     EXPECT_TRUE(file_util::WriteFile(prefs_file_, text_->c_str(),
                                      text_->size()));
     first_run::SetMasterPrefsPathForTesting(prefs_file_);

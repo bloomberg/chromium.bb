@@ -26,7 +26,7 @@ bool InitColumnReaderFromBytes(
     return false;
 
   base::FilePath temp_path;
-  if (!file_util::CreateTemporaryFileInDir(temp_dir.path(), &temp_path))
+  if (!base::CreateTemporaryFileInDir(temp_dir.path(), &temp_path))
     return false;
 
   // Explicit conversion from signed to unsigned.

@@ -172,7 +172,7 @@ void DeleteProgramDir(const std::string& delete_switch) {
   if (!IsProgramsFilesParent(installer_source))
     return;
   base::FilePath temp_path;
-  if (!file_util::CreateTemporaryFile(&temp_path))
+  if (!base::CreateTemporaryFile(&temp_path))
     return;
   base::CopyFile(installer_source, temp_path);
   base::DeleteFileAfterReboot(temp_path);

@@ -247,8 +247,8 @@ void WebContentsDragWin::PrepareDragForDownload(
                             UTF16ToUTF8(mime_type),
                             default_name);
   base::FilePath temp_dir_path;
-  if (!file_util::CreateNewTempDirectory(
-          FILE_PATH_LITERAL("chrome_drag"), &temp_dir_path))
+  if (!base::CreateNewTempDirectory(FILE_PATH_LITERAL("chrome_drag"),
+                                    &temp_dir_path))
     return;
   base::FilePath download_path =
       temp_dir_path.Append(generated_download_file_name);

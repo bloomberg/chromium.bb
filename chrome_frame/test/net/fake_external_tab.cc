@@ -899,7 +899,7 @@ void CFUrlRequestUnittestRunner::PostDestroyThreads() {
 }
 
 void CFUrlRequestUnittestRunner::StartFileLogger() {
-  if (file_util::CreateTemporaryFile(&log_file_)) {
+  if (base::CreateTemporaryFile(&log_file_)) {
     file_logger_.reset(new logging_win::FileLogger());
     file_logger_->Initialize();
     file_logger_->StartLogging(log_file_);

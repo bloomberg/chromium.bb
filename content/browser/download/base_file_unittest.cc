@@ -482,7 +482,7 @@ TEST_F(BaseFileTest, RenameWithError) {
 // Write data to the file multiple times.
 TEST_F(BaseFileTest, MultipleWritesWithError) {
   base::FilePath path;
-  ASSERT_TRUE(file_util::CreateTemporaryFile(&path));
+  ASSERT_TRUE(base::CreateTemporaryFile(&path));
   // Create a new file stream.  scoped_ptr takes ownership and passes it to
   // BaseFile; we use the pointer anyway and rely on the BaseFile not
   // deleting the MockFileStream until the BaseFile is reset.
@@ -623,8 +623,7 @@ TEST_F(BaseFileTest, CreatedInDefaultDirectory) {
   // be a string-wise match to base_file_->full_path().DirName() even though
   // they are in the same directory.
   base::FilePath temp_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
-                                                  &temp_file));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &temp_file));
   ASSERT_FALSE(temp_file.empty());
   EXPECT_STREQ(temp_file.DirName().value().c_str(),
                base_file_->full_path().DirName().value().c_str());

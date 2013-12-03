@@ -402,9 +402,9 @@ bool DatabaseTracker::DeleteOrigin(const std::string& origin_identifier,
   // as we can't delete the origin directory on windows if it contains opened
   // files.
   base::FilePath new_origin_dir;
-  file_util::CreateTemporaryDirInDir(db_dir_,
-                                     kTemporaryDirectoryPrefix,
-                                     &new_origin_dir);
+  base::CreateTemporaryDirInDir(db_dir_,
+                                kTemporaryDirectoryPrefix,
+                                &new_origin_dir);
   base::FileEnumerator databases(
       origin_dir,
       false,

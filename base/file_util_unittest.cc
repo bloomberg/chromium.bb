@@ -531,7 +531,7 @@ TEST_F(FileUtilTest, CreateTemporaryFileInDirLongPathTest) {
   ASSERT_STRNE(kLongDirName, short_test_dir.BaseName().value().c_str());
 
   FilePath temp_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(short_test_dir, &temp_file));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(short_test_dir, &temp_file));
   EXPECT_STREQ(kLongDirName, temp_file.DirName().BaseName().value().c_str());
   EXPECT_TRUE(PathExists(temp_file));
 
@@ -548,7 +548,7 @@ TEST_F(FileUtilTest, CreateTemporaryFileInDirLongPathTest) {
   ASSERT_TRUE(file_util::MakeFileUnreadable(long_test_dir));
 
   // Use the short form of the directory to create a temporary filename.
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(
       short_test_dir.Append(kTestSubDirName), &temp_file));
   EXPECT_TRUE(PathExists(temp_file));
   EXPECT_TRUE(short_test_dir.IsParent(temp_file.DirName()));
@@ -1582,7 +1582,7 @@ TEST_F(FileUtilTest, GetTempDirTest) {
 TEST_F(FileUtilTest, CreateTemporaryFileTest) {
   FilePath temp_files[3];
   for (int i = 0; i < 3; i++) {
-    ASSERT_TRUE(file_util::CreateTemporaryFile(&(temp_files[i])));
+    ASSERT_TRUE(base::CreateTemporaryFile(&(temp_files[i])));
     EXPECT_TRUE(PathExists(temp_files[i]));
     EXPECT_FALSE(DirectoryExists(temp_files[i]));
   }
@@ -1599,7 +1599,7 @@ TEST_F(FileUtilTest, CreateAndOpenTemporaryFileTest) {
 
   // Create; make sure they are open and exist.
   for (i = 0; i < 3; ++i) {
-    fps[i] = file_util::CreateAndOpenTemporaryFile(&(names[i]));
+    fps[i] = base::CreateAndOpenTemporaryFile(&(names[i]));
     ASSERT_TRUE(fps[i]);
     EXPECT_TRUE(PathExists(names[i]));
   }
@@ -1618,15 +1618,14 @@ TEST_F(FileUtilTest, CreateAndOpenTemporaryFileTest) {
 
 TEST_F(FileUtilTest, CreateNewTempDirectoryTest) {
   FilePath temp_dir;
-  ASSERT_TRUE(file_util::CreateNewTempDirectory(FilePath::StringType(),
-                                                &temp_dir));
+  ASSERT_TRUE(base::CreateNewTempDirectory(FilePath::StringType(), &temp_dir));
   EXPECT_TRUE(PathExists(temp_dir));
   EXPECT_TRUE(DeleteFile(temp_dir, false));
 }
 
 TEST_F(FileUtilTest, CreateNewTemporaryDirInDirTest) {
   FilePath new_dir;
-  ASSERT_TRUE(file_util::CreateTemporaryDirInDir(
+  ASSERT_TRUE(base::CreateTemporaryDirInDir(
                   temp_dir_.path(),
                   FILE_PATH_LITERAL("CreateNewTemporaryDirInDirTest"),
                   &new_dir));

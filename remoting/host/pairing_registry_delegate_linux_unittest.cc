@@ -19,7 +19,7 @@ class PairingRegistryDelegateLinuxTest : public testing::Test {
     // Create a temporary directory in order to get a unique name and use a
     // subdirectory to ensure that PairingRegistryDelegateLinux::Save() creates
     // the parent directory if it doesn't exist.
-    file_util::CreateNewTempDirectory("chromoting-test", &temp_dir_);
+    base::CreateNewTempDirectory("chromoting-test", &temp_dir_);
     temp_registry_ = temp_dir_.Append("paired-clients");
   }
 

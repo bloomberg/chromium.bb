@@ -52,7 +52,7 @@ class ShortcutTest : public testing::Test {
                            arraysize(kFileContents2));
 
       FilePath icon_path_2;
-      file_util::CreateTemporaryFileInDir(temp_dir_.path(), &icon_path_2);
+      base::CreateTemporaryFileInDir(temp_dir_.path(), &icon_path_2);
 
       link_properties_2_.set_target(target_file_2);
       link_properties_2_.set_working_dir(temp_dir_2_.path());

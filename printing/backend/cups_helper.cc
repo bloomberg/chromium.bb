@@ -341,7 +341,7 @@ bool ParsePpdCapabilities(
     const std::string& printer_capabilities,
     PrinterSemanticCapsAndDefaults* printer_info) {
   base::FilePath ppd_file_path;
-  if (!file_util::CreateTemporaryFile(&ppd_file_path))
+  if (!base::CreateTemporaryFile(&ppd_file_path))
     return false;
 
   int data_size = printer_capabilities.length();

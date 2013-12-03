@@ -145,7 +145,7 @@ bool CreateTemporaryFile(const base::FilePath& dir_path,
                          webkit_blob::ScopedFile* temp_file) {
   base::FilePath temp_file_path;
   const bool success = file_util::CreateDirectory(dir_path) &&
-      file_util::CreateTemporaryFileInDir(dir_path, &temp_file_path);
+      base::CreateTemporaryFileInDir(dir_path, &temp_file_path);
   if (!success)
     return success;
   *temp_file =

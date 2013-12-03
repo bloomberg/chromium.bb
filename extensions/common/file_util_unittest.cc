@@ -56,7 +56,7 @@ TEST_F(FileUtilTest, ExtensionURLToRelativeFilePath) {
 TEST_F(FileUtilTest, ExtensionResourceURLToFilePath) {
   // Setup filesystem for testing.
   base::FilePath root_path;
-  ASSERT_TRUE(file_util::CreateNewTempDirectory(
+  ASSERT_TRUE(base::CreateNewTempDirectory(
       base::FilePath::StringType(), &root_path));
   root_path = base::MakeAbsoluteFilePath(root_path);
   ASSERT_FALSE(root_path.empty());

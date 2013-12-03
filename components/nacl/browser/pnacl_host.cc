@@ -136,8 +136,8 @@ void PnaclHost::DoCreateTemporaryFile(base::FilePath temp_dir,
   base::FilePath file_path;
   base::PlatformFile file_handle(base::kInvalidPlatformFileValue);
   bool rv = temp_dir.empty()
-                ? file_util::CreateTemporaryFile(&file_path)
-                : file_util::CreateTemporaryFileInDir(temp_dir, &file_path);
+                ? base::CreateTemporaryFile(&file_path)
+                : base::CreateTemporaryFileInDir(temp_dir, &file_path);
   if (!rv) {
     PLOG(ERROR) << "Temp file creation failed.";
   } else {

@@ -844,7 +844,7 @@ TEST_F(FullTabDownloadTest, CF_DownloadFileFromPost) {
   EXPECT_CALL(download_window_mock, OnQuit()).Times(testing::AtMost(1));
 
   base::FilePath temp_file_path;
-  ASSERT_TRUE(file_util::CreateTemporaryFile(&temp_file_path));
+  ASSERT_TRUE(base::CreateTemporaryFile(&temp_file_path));
   file_util::DieFileDie(temp_file_path, false);
 
   temp_file_path = temp_file_path.ReplaceExtension(L"txt");

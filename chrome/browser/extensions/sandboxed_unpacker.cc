@@ -124,7 +124,7 @@ bool VerifyJunctionFreeLocation(base::FilePath* temp_dir) {
     return false;
 
   base::FilePath temp_file;
-  if (!file_util::CreateTemporaryFileInDir(*temp_dir, &temp_file)) {
+  if (!base::CreateTemporaryFileInDir(*temp_dir, &temp_file)) {
     LOG(ERROR) << temp_dir->value() << " is not writable";
     return false;
   }

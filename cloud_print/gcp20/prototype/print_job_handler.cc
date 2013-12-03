@@ -230,7 +230,7 @@ bool PrintJobHandler::SavePrintJob(const std::string& content,
                    create_time_exploded.hour,
                    create_time_exploded.minute,
                    create_time_exploded.second);
-  if (!file_util::CreateTemporaryDirInDir(directory, job_prefix, &directory)) {
+  if (!base::CreateTemporaryDirInDir(directory, job_prefix, &directory)) {
     LOG(WARNING) << "Cannot create directory for " << job_prefix;
     return false;
   }

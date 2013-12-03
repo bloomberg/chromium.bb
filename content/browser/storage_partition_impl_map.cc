@@ -290,8 +290,8 @@ void BlockingGarbageCollect(
 
   base::FileEnumerator enumerator(storage_root, false, kAllFileTypes);
   base::FilePath trash_directory;
-  if (!file_util::CreateTemporaryDirInDir(storage_root, kTrashDirname,
-                                          &trash_directory)) {
+  if (!base::CreateTemporaryDirInDir(storage_root, kTrashDirname,
+                                     &trash_directory)) {
     // Unable to continue without creating the trash directory so give up.
     return;
   }

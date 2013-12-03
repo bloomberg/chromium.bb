@@ -33,7 +33,7 @@ size_t PluginStream::WriteBytes(const char* buf, size_t length) {
 bool PluginStream::OpenTempFile() {
   DCHECK_EQ(static_cast<FILE*>(NULL), temp_file_);
 
-  if (file_util::CreateTemporaryFile(&temp_file_path_))
+  if (base::CreateTemporaryFile(&temp_file_path_))
     temp_file_ = file_util::OpenFile(temp_file_path_, "a");
 
   if (!temp_file_) {

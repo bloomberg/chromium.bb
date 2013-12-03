@@ -58,7 +58,7 @@ bool ImportantFileWriter::WriteFileAtomically(const FilePath& path,
   // as target file, so it can be moved in one step, and that the temp file
   // is securely created.
   FilePath tmp_file_path;
-  if (!file_util::CreateTemporaryFileInDir(path.DirName(), &tmp_file_path)) {
+  if (!base::CreateTemporaryFileInDir(path.DirName(), &tmp_file_path)) {
     LogFailure(path, FAILED_CREATING, "could not create temporary file");
     return false;
   }

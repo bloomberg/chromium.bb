@@ -474,7 +474,7 @@ TEST_F(InstallerStateTest, IsFileInUse) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   base::FilePath temp_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir.path(), &temp_file));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir.path(), &temp_file));
 
   EXPECT_FALSE(MockInstallerState::IsFileInUse(temp_file));
 

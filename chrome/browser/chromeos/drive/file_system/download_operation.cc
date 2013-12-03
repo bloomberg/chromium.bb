@@ -62,8 +62,8 @@ FileError CheckPreConditionForEnsureFileDownloaded(
   if (entry->file_specific_info().is_hosted_document()) {
     base::FilePath gdoc_file_path;
     base::PlatformFileInfo file_info;
-    if (!file_util::CreateTemporaryFileInDir(temporary_file_directory,
-                                             &gdoc_file_path) ||
+    if (!base::CreateTemporaryFileInDir(temporary_file_directory,
+                                        &gdoc_file_path) ||
         !util::CreateGDocFile(gdoc_file_path,
                               GURL(entry->file_specific_info().alternate_url()),
                               entry->resource_id()) ||
@@ -146,7 +146,7 @@ FileError CheckPreConditionForEnsureFileDownloadedByPath(
 // processes (e.g., cros_disks for mounting zip files).
 bool CreateTemporaryReadableFileInDir(const base::FilePath& dir,
                                       base::FilePath* temp_file) {
-  if (!file_util::CreateTemporaryFileInDir(dir, temp_file))
+  if (!base::CreateTemporaryFileInDir(dir, temp_file))
     return false;
   return base::SetPosixFilePermissions(
       *temp_file,

@@ -212,49 +212,49 @@ BASE_EXPORT bool GetShmemTempDir(bool executable, FilePath* path);
 BASE_EXPORT FilePath GetHomeDir();
 #endif  // OS_POSIX
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
 // Creates a temporary file. The full path is placed in |path|, and the
 // function returns true if was successful in creating the file. The file will
 // be empty and all handles closed after this function returns.
-BASE_EXPORT bool CreateTemporaryFile(base::FilePath* path);
+BASE_EXPORT bool CreateTemporaryFile(FilePath* path);
 
 // Same as CreateTemporaryFile but the file is created in |dir|.
-BASE_EXPORT bool CreateTemporaryFileInDir(const base::FilePath& dir,
-                                          base::FilePath* temp_file);
+BASE_EXPORT bool CreateTemporaryFileInDir(const FilePath& dir,
+                                          FilePath* temp_file);
 
 // Create and open a temporary file.  File is opened for read/write.
 // The full path is placed in |path|.
 // Returns a handle to the opened file or NULL if an error occurred.
-BASE_EXPORT FILE* CreateAndOpenTemporaryFile(base::FilePath* path);
+BASE_EXPORT FILE* CreateAndOpenTemporaryFile(FilePath* path);
+
 // Like above but for shmem files.  Only useful for POSIX.
 // The executable flag says the file needs to support using
 // mprotect with PROT_EXEC after mapping.
-BASE_EXPORT FILE* CreateAndOpenTemporaryShmemFile(base::FilePath* path,
+BASE_EXPORT FILE* CreateAndOpenTemporaryShmemFile(FilePath* path,
                                                   bool executable);
+
 // Similar to CreateAndOpenTemporaryFile, but the file is created in |dir|.
-BASE_EXPORT FILE* CreateAndOpenTemporaryFileInDir(const base::FilePath& dir,
-                                                  base::FilePath* path);
+BASE_EXPORT FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir,
+                                                  FilePath* path);
 
 // Create a new directory. If prefix is provided, the new directory name is in
 // the format of prefixyyyy.
 // NOTE: prefix is ignored in the POSIX implementation.
 // If success, return true and output the full path of the directory created.
-BASE_EXPORT bool CreateNewTempDirectory(
-    const base::FilePath::StringType& prefix,
-    base::FilePath* new_temp_path);
+BASE_EXPORT bool CreateNewTempDirectory(const FilePath::StringType& prefix,
+                                        FilePath* new_temp_path);
 
 // Create a directory within another directory.
 // Extra characters will be appended to |prefix| to ensure that the
 // new directory does not have the same name as an existing directory.
-BASE_EXPORT bool CreateTemporaryDirInDir(
-    const base::FilePath& base_dir,
-    const base::FilePath::StringType& prefix,
-    base::FilePath* new_dir);
+BASE_EXPORT bool CreateTemporaryDirInDir(const FilePath& base_dir,
+                                         const FilePath::StringType& prefix,
+                                         FilePath* new_dir);
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
 
 // Creates a directory, as well as creating any parent directories, if they
 // don't exist. Returns 'true' on successful creation, or if the directory

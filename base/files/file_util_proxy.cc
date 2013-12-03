@@ -76,7 +76,7 @@ class CreateTemporaryHelper {
   void RunWork(int additional_file_flags) {
     // TODO(darin): file_util should have a variant of CreateTemporaryFile
     // that returns a FilePath and a PlatformFile.
-    file_util::CreateTemporaryFile(&file_path_);
+    base::CreateTemporaryFile(&file_path_);
 
     int file_flags =
         PLATFORM_FILE_WRITE |

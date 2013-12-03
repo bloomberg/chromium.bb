@@ -125,7 +125,7 @@ bool IsEULANotAccepted(installer::MasterPreferences* install_prefs) {
 bool WriteEULAtoTempFile(base::FilePath* eula_path) {
   std::string terms = l10n_util::GetStringUTF8(IDS_TERMS_HTML);
   return (!terms.empty() &&
-          file_util::CreateTemporaryFile(eula_path) &&
+          base::CreateTemporaryFile(eula_path) &&
           file_util::WriteFile(*eula_path, terms.data(), terms.size()) != -1);
 }
 

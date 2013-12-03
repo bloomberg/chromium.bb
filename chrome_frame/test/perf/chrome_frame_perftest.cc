@@ -1340,7 +1340,7 @@ class EtwPerfSession {
     // To ensure there is no session leftover from crashes, previous runs, etc.
     base::win::EtwTraceProperties ignore;
     base::win::EtwTraceController::Stop(L"cf_perf", &ignore);
-    ASSERT_TRUE(file_util::CreateTemporaryFile(&etl_log_file_));
+    ASSERT_TRUE(base::CreateTemporaryFile(&etl_log_file_));
     ASSERT_HRESULT_SUCCEEDED(controller_.StartFileSession(L"cf_perf",
         etl_log_file_.value().c_str(), false));
     ASSERT_HRESULT_SUCCEEDED(controller_.EnableProvider(

@@ -356,7 +356,7 @@ class ProxyConfigServiceLinuxTest : public PlatformTest {
     PlatformTest::SetUp();
     // Set up a temporary KDE home directory.
     std::string prefix("ProxyConfigServiceLinuxTest_user_home");
-    file_util::CreateNewTempDirectory(prefix, &user_home_);
+    base::CreateNewTempDirectory(prefix, &user_home_);
     kde_home_ = user_home_.Append(FILE_PATH_LITERAL(".kde"));
     base::FilePath path = kde_home_.Append(FILE_PATH_LITERAL("share"));
     path = path.Append(FILE_PATH_LITERAL("config"));

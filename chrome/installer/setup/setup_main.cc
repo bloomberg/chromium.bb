@@ -691,9 +691,9 @@ bool CreateTemporaryAndUnpackDirectories(
   }
   VLOG(1) << "Created path " << temp_path->path().value();
 
-  if (!file_util::CreateTemporaryDirInDir(temp_path->path(),
-                                          installer::kInstallSourceDir,
-                                          unpack_path)) {
+  if (!base::CreateTemporaryDirInDir(temp_path->path(),
+                                     installer::kInstallSourceDir,
+                                     unpack_path)) {
     PLOG(ERROR) << "Could not create temporary path for unpacked archive.";
     return false;
   }

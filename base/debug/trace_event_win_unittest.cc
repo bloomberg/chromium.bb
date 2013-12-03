@@ -115,7 +115,7 @@ class TraceEventWinTest: public testing::Test {
     }
 
     // Create the log file.
-    ASSERT_TRUE(file_util::CreateTemporaryFile(&log_file_));
+    ASSERT_TRUE(base::CreateTemporaryFile(&log_file_));
 
     // Create a private log session on the file.
     EtwTraceProperties prop;

@@ -179,9 +179,9 @@ void Operation::UnzipStart(scoped_ptr<base::FilePath> zip_file) {
   SetStage(image_writer_api::STAGE_UNZIP);
 
   base::FilePath tmp_dir;
-  if (!file_util::CreateTemporaryDirInDir(zip_file->DirName(),
-                                          FILE_PATH_LITERAL("image_writer"),
-                                          &tmp_dir)) {
+  if (!base::CreateTemporaryDirInDir(zip_file->DirName(),
+                                     FILE_PATH_LITERAL("image_writer"),
+                                     &tmp_dir)) {
     Error(error::kTempDir);
     return;
   }

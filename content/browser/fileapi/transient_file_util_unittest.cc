@@ -40,8 +40,7 @@ class TransientFileUtilTest : public testing::Test {
   void CreateAndRegisterTemporaryFile(
       FileSystemURL* file_url,
       base::FilePath* file_path) {
-    EXPECT_TRUE(
-        file_util::CreateTemporaryFileInDir(data_dir_.path(), file_path));
+    EXPECT_TRUE(base::CreateTemporaryFileInDir(data_dir_.path(), file_path));
     IsolatedContext* isolated_context = IsolatedContext::GetInstance();
     std::string name = "tmp";
     std::string fsid = isolated_context->RegisterFileSystemForPath(

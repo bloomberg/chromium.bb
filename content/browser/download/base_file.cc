@@ -82,8 +82,8 @@ DownloadInterruptReason BaseFile::Initialize(
     // |initial_directory| can still be empty if ContentBrowserClient returned
     // an empty path for the downloads directory.
     if ((initial_directory.empty() ||
-         !file_util::CreateTemporaryFileInDir(initial_directory, &temp_file)) &&
-        !file_util::CreateTemporaryFile(&temp_file)) {
+         !base::CreateTemporaryFileInDir(initial_directory, &temp_file)) &&
+        !base::CreateTemporaryFile(&temp_file)) {
       return LogInterruptReason("Unable to create", 0,
                                 DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
     }

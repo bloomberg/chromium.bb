@@ -362,8 +362,8 @@ class HistoryBackendTest : public testing::Test {
  protected:
   // testing::Test
   virtual void SetUp() {
-    if (!file_util::CreateNewTempDirectory(FILE_PATH_LITERAL("BackendTest"),
-                                           &test_dir_))
+    if (!base::CreateNewTempDirectory(FILE_PATH_LITERAL("BackendTest"),
+                                      &test_dir_))
       return;
     backend_ = new HistoryBackend(test_dir_,
                                   0,

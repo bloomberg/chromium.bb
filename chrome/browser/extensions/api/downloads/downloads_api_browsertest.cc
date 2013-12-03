@@ -707,7 +707,7 @@ class HTML5FileWriter {
                                    int length) {
     // Create a temp file.
     base::FilePath temp_file;
-    if (!file_util::CreateTemporaryFile(&temp_file) ||
+    if (!base::CreateTemporaryFile(&temp_file) ||
         file_util::WriteFile(temp_file, data, length) != length) {
       return false;
     }

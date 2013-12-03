@@ -220,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, EnableAndDisableRecording) {
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,
                        EnableAndDisableRecordingWithFilePath) {
   base::FilePath file_path;
-  file_util::CreateTemporaryFile(&file_path);
+  base::CreateTemporaryFile(&file_path);
   TestEnableAndDisableRecording(file_path);
   EXPECT_EQ(file_path.value(), last_actual_recording_file_path().value());
 }
@@ -246,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
 IN_PROC_BROWSER_TEST_F(TracingControllerTest,
                        EnableCaptureAndDisableMonitoringWithFilePath) {
   base::FilePath file_path;
-  file_util::CreateTemporaryFile(&file_path);
+  base::CreateTemporaryFile(&file_path);
   TestEnableCaptureAndDisableMonitoring(file_path);
   EXPECT_EQ(file_path.value(), last_actual_monitoring_file_path().value());
 }

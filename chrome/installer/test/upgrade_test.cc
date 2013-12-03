@@ -22,7 +22,7 @@ class UpgradeTest : public testing::Test {
   static void SetUpTestCase() {
     base::FilePath dir_exe;
     ASSERT_TRUE(PathService::Get(base::DIR_EXE, &dir_exe));
-    ASSERT_TRUE(file_util::CreateTemporaryFile(&next_mini_installer_path_));
+    ASSERT_TRUE(base::CreateTemporaryFile(&next_mini_installer_path_));
     ASSERT_TRUE(
         upgrade_test::GenerateAlternateVersion(
             dir_exe.Append(&kMiniInstallerExe[0]),

@@ -52,8 +52,7 @@ class FileMetadataLinuxTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
-                                                    &test_file_));
+    ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &test_file_));
     int result = setxattr(test_file_.value().c_str(),
                           "user.test", "test", 4, 0);
     is_xattr_supported_ = (!result) || (errno != ENOTSUP);

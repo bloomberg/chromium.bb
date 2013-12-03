@@ -793,8 +793,8 @@ void LocalFileSyncContext::DidGetWritingStatusForSync(
   webkit_blob::ScopedFile snapshot;
   if (file_error == base::PLATFORM_FILE_OK && sync_mode == SYNC_SNAPSHOT) {
     base::FilePath snapshot_path;
-    file_util::CreateTemporaryFileInDir(local_base_path_.Append(kSnapshotDir),
-                                        &snapshot_path);
+    base::CreateTemporaryFileInDir(local_base_path_.Append(kSnapshotDir),
+                                   &snapshot_path);
     if (base::CopyFile(platform_path, snapshot_path)) {
       platform_path = snapshot_path;
       snapshot = webkit_blob::ScopedFile(

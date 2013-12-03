@@ -432,7 +432,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB_Unknown) {
 TEST_F(ResourceMetadataStorageTest, WrongPath) {
   // Create a file.
   base::FilePath path;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &path));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &path));
 
   storage_.reset(new ResourceMetadataStorage(
       path, base::MessageLoopProxy::current().get()));

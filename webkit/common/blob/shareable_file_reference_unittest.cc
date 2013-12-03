@@ -21,7 +21,7 @@ TEST(ShareableFileReferenceTest, TestReferences) {
 
   // Create a file.
   base::FilePath file;
-  file_util::CreateTemporaryFileInDir(temp_dir.path(), &file);
+  base::CreateTemporaryFileInDir(temp_dir.path(), &file);
   EXPECT_TRUE(base::PathExists(file));
 
   // Create a first reference to that file.

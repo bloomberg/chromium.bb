@@ -94,7 +94,7 @@ void ConfigFileWatcherTest::TearDown() {
 
 // Verifies that the initial notification is delivered.
 TEST_F(ConfigFileWatcherTest, Basic) {
-  EXPECT_TRUE(file_util::CreateTemporaryFile(&config_file_));
+  EXPECT_TRUE(base::CreateTemporaryFile(&config_file_));
 
   std::string data("test");
   EXPECT_NE(file_util::WriteFile(config_file_, data.c_str(),
@@ -116,7 +116,7 @@ MATCHER_P(EqualsString, s, "") {
 
 // Verifies that an update notification is sent when the file is changed.
 TEST_F(ConfigFileWatcherTest, Update) {
-  EXPECT_TRUE(file_util::CreateTemporaryFile(&config_file_));
+  EXPECT_TRUE(base::CreateTemporaryFile(&config_file_));
 
   EXPECT_CALL(delegate_, OnConfigUpdated(EqualsString("test")))
       .Times(1)

@@ -983,8 +983,8 @@ Status ChromiumEnv::UnlockFile(FileLock* lock) {
 Status ChromiumEnv::GetTestDirectory(std::string* path) {
   mu_.Acquire();
   if (test_directory_.empty()) {
-    if (!::file_util::CreateNewTempDirectory(kLevelDBTestDirectoryPrefix,
-                                             &test_directory_)) {
+    if (!base::CreateNewTempDirectory(kLevelDBTestDirectoryPrefix,
+                                      &test_directory_)) {
       mu_.Release();
       RecordErrorAt(kGetTestDirectory);
       return MakeIOError(

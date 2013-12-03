@@ -274,7 +274,7 @@ void PrintDialogGtk::PrintDocument(const printing::Metafile* metafile,
   AddRef();
 
   bool error = false;
-  if (!file_util::CreateTemporaryFile(&path_to_pdf_)) {
+  if (!base::CreateTemporaryFile(&path_to_pdf_)) {
     LOG(ERROR) << "Creating temporary file failed";
     error = true;
   }

@@ -248,7 +248,7 @@ void DoLaunchChildTestProcess(
 
   // Redirect child process output to a file.
   base::FilePath output_file;
-  CHECK(file_util::CreateTemporaryFile(&output_file));
+  CHECK(base::CreateTemporaryFile(&output_file));
 
   LaunchOptions options;
 #if defined(OS_WIN)

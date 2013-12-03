@@ -36,10 +36,10 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     // A path to a random target.
-    file_util::CreateTemporaryFileInDir(temp_dir_.path(), &other_target_);
+    base::CreateTemporaryFileInDir(temp_dir_.path(), &other_target_);
 
     // This doesn't need to actually have a base name of "chrome.exe".
-    file_util::CreateTemporaryFileInDir(temp_dir_.path(), &chrome_exe_);
+    base::CreateTemporaryFileInDir(temp_dir_.path(), &chrome_exe_);
 
     chrome_app_id_ =
         ShellUtil::GetBrowserModelId(BrowserDistribution::GetDistribution(),

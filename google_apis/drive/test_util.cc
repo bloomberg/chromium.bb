@@ -65,7 +65,7 @@ bool CreateFileOfSpecifiedSize(const base::FilePath& temp_dir,
                                size_t size,
                                base::FilePath* path,
                                std::string* data) {
-  if (!file_util::CreateTemporaryFileInDir(temp_dir, path))
+  if (!base::CreateTemporaryFileInDir(temp_dir, path))
     return false;
 
   if (size == 0) {

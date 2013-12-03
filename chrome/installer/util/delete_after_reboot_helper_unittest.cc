@@ -24,13 +24,12 @@ class DeleteAfterRebootHelperTest : public testing::Test {
  protected:
   virtual void SetUp() {
     // Create a temporary directory for testing and fill it with some files.
-    std::wstring no_prefix;
-    file_util::CreateNewTempDirectory(no_prefix, &temp_dir_);
-    file_util::CreateTemporaryFileInDir(temp_dir_, &temp_file_);
+    base::CreateNewTempDirectory(base::FilePath::StringType(), &temp_dir_);
+    base::CreateTemporaryFileInDir(temp_dir_, &temp_file_);
 
     temp_subdir_ = temp_dir_.Append(L"subdir");
     file_util::CreateDirectory(temp_subdir_);
-    file_util::CreateTemporaryFileInDir(temp_subdir_, &temp_subdir_file_);
+    base::CreateTemporaryFileInDir(temp_subdir_, &temp_subdir_file_);
 
     // Copy the current pending moves and then clear it if we can:
     if (IsUserAnAdmin()) {

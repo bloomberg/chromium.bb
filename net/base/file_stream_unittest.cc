@@ -46,7 +46,7 @@ class FileStreamTest : public PlatformTest {
   virtual void SetUp() {
     PlatformTest::SetUp();
 
-    file_util::CreateTemporaryFile(&temp_file_path_);
+    base::CreateTemporaryFile(&temp_file_path_);
     file_util::WriteFile(temp_file_path_, kTestData, kTestDataSize);
   }
   virtual void TearDown() {

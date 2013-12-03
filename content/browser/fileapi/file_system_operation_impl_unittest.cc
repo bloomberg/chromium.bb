@@ -664,7 +664,7 @@ TEST_F(FileSystemOperationImplTest, TestCopySuccessSrcDirRecursive) {
 
 TEST_F(FileSystemOperationImplTest, TestCopyInForeignFileSuccess) {
   base::FilePath src_local_disk_file_path;
-  file_util::CreateTemporaryFile(&src_local_disk_file_path);
+  base::CreateTemporaryFile(&src_local_disk_file_path);
   const char test_data[] = "foo";
   int data_size = ARRAYSIZE_UNSAFE(test_data);
   file_util::WriteFile(src_local_disk_file_path, test_data, data_size);
@@ -697,7 +697,7 @@ TEST_F(FileSystemOperationImplTest, TestCopyInForeignFileSuccess) {
 
 TEST_F(FileSystemOperationImplTest, TestCopyInForeignFileFailureByQuota) {
   base::FilePath src_local_disk_file_path;
-  file_util::CreateTemporaryFile(&src_local_disk_file_path);
+  base::CreateTemporaryFile(&src_local_disk_file_path);
   const char test_data[] = "foo";
   file_util::WriteFile(src_local_disk_file_path, test_data,
                        ARRAYSIZE_UNSAFE(test_data));

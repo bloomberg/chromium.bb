@@ -170,7 +170,7 @@ TEST_F(FileApiWorkerTest, OpenFileForCreateWrite) {
   const std::string kWriteData = "byebye";
 
   base::FilePath temp_path;
-  file_util::CreateTemporaryFile(&temp_path);
+  base::CreateTemporaryFile(&temp_path);
 
   // CREATE => CREATE (fails if file existed.)
   TestFileSystemForOpenFile file_system(temp_path, CREATE_FILE);
@@ -190,7 +190,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenAlwaysWrite) {
   const std::string kInitialData = "hello";
 
   base::FilePath temp_path;
-  file_util::CreateTemporaryFile(&temp_path);
+  base::CreateTemporaryFile(&temp_path);
   google_apis::test_util::WriteStringToFile(temp_path, kInitialData);
 
   // OPEN_ALWAYS => OPEN_OR_CREATE (success whether file exists or not.)
@@ -212,7 +212,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenTruncatedWrite) {
   const std::string kWriteData = "byebye";
 
   base::FilePath temp_path;
-  file_util::CreateTemporaryFile(&temp_path);
+  base::CreateTemporaryFile(&temp_path);
   google_apis::test_util::WriteStringToFile(temp_path, kInitialData);
 
   // OPEN_TRUNCATED => OPEN (failure when the file did not exist.)
@@ -234,7 +234,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenCreateAlwaysWrite) {
   const std::string kWriteData = "byebye";
 
   base::FilePath temp_path;
-  file_util::CreateTemporaryFile(&temp_path);
+  base::CreateTemporaryFile(&temp_path);
   google_apis::test_util::WriteStringToFile(temp_path, kInitialData);
 
   // CREATE_ALWAYS => OPEN_OR_CREATE (success whether file exists or not.)
@@ -255,7 +255,7 @@ TEST_F(FileApiWorkerTest, OpenFileForOpenRead) {
   const std::string kInitialData = "hello";
 
   base::FilePath temp_path;
-  file_util::CreateTemporaryFile(&temp_path);
+  base::CreateTemporaryFile(&temp_path);
   google_apis::test_util::WriteStringToFile(temp_path, kInitialData);
 
   // OPEN => OPEN (failure when the file did not exist.)

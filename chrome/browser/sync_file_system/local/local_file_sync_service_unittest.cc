@@ -211,8 +211,7 @@ TEST_F(LocalFileSyncServiceTest, RemoteSyncStepsSimple) {
   const int kTestFileDataSize = static_cast<int>(arraysize(kTestFileData) - 1);
 
   base::FilePath local_path;
-  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(),
-                                                  &local_path));
+  ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(), &local_path));
   ASSERT_EQ(kTestFileDataSize,
             file_util::WriteFile(local_path, kTestFileData, kTestFileDataSize));
 

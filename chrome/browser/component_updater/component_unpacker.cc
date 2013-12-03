@@ -146,8 +146,8 @@ ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
     error_ = kInvalidId;
     return;
   }
-  if (!file_util::CreateNewTempDirectory(FILE_PATH_LITERAL(""),
-                                         &unpack_path_)) {
+  if (!base::CreateNewTempDirectory(base::FilePath::StringType(),
+                                    &unpack_path_)) {
     error_ = kUnzipPathError;
     return;
   }
@@ -155,8 +155,8 @@ ComponentUnpacker::ComponentUnpacker(const std::vector<uint8>& pk_hash,
     // We want a different temp directory for the delta files; we'll put the
     // patch output into unpack_path_.
     base::FilePath unpack_diff_path;
-    if (!file_util::CreateNewTempDirectory(FILE_PATH_LITERAL(""),
-                                           &unpack_diff_path)) {
+    if (!base::CreateNewTempDirectory(base::FilePath::StringType(),
+                                      &unpack_diff_path)) {
       error_ = kUnzipPathError;
       return;
     }

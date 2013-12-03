@@ -429,7 +429,7 @@ BOOL WINAPI Monitor2StartDocPort(HANDLE port_handle,
     return FALSE;
   DeleteLeakedFiles(app_data_dir);
   if (!file_util::CreateDirectory(app_data_dir) ||
-      !file_util::CreateTemporaryFileInDir(app_data_dir, &file_path)) {
+      !base::CreateTemporaryFileInDir(app_data_dir, &file_path)) {
     LOG(ERROR) << "Can't create temporary file in " << app_data_dir.value();
     return FALSE;
   }

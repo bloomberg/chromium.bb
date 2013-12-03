@@ -218,7 +218,7 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 #if !(defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS))
 base::FilePath GetTemporaryFile() {
   base::FilePath temp_file;
-  CHECK(file_util::CreateTemporaryFile(&temp_file));
+  CHECK(base::CreateTemporaryFile(&temp_file));
   return temp_file;
 }
 

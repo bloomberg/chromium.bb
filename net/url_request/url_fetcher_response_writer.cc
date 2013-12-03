@@ -72,7 +72,7 @@ int URLFetcherFileWriter::Initialize(const CompletionCallback& callback) {
     base::PostTaskAndReplyWithResult(
         file_task_runner_.get(),
         FROM_HERE,
-        base::Bind(&file_util::CreateTemporaryFile, temp_file_path),
+        base::Bind(&base::CreateTemporaryFile, temp_file_path),
         base::Bind(&URLFetcherFileWriter::DidCreateTempFile,
                    weak_factory_.GetWeakPtr(),
                    callback,
