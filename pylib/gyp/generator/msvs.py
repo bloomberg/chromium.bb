@@ -1412,6 +1412,11 @@ def _AdjustSourcesAndConvertToFilterHierarchy(
   sources = _ConvertSourcesToFilterHierarchy(sources, excluded=fully_excluded,
                                              list_excluded=list_excluded)
 
+  # Prune filters with a single child to flatten ugly directory structures
+  # such as ../../src/modules/module1 etc.
+  while len(sources) == 1 and isinstance(sources[0], MSVSProject.Filter):
+    sources = sources[0].contents
+
   return sources, excluded_sources, excluded_idl
 
 
