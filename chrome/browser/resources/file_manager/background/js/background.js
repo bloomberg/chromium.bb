@@ -353,8 +353,7 @@ var FILE_MANAGER_WINDOW_CREATE_OPTIONS = Object.freeze({
   minHeight: 240,
   frame: 'none',
   hidden: true,
-  transparentBackground: true,
-  singleton: false
+  transparentBackground: true
 });
 
 /**
@@ -527,8 +526,7 @@ var AUDIO_PLAYER_CREATE_OPTIONS = Object.freeze({
   minHeight: 35 + 58,
   minWidth: 280,
   height: 35 + 58,
-  width: 280,
-  singleton: false
+  width: 280
 });
 
 var audioPlayer = new SingletonAppWindowWrapper('mediaplayer.html',
