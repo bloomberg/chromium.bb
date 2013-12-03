@@ -38,7 +38,7 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
-#include "platform/AsyncMethodRunner.h"
+#include "platform/Timer.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Deque.h"
 #include "wtf/Forward.h"
@@ -55,6 +55,9 @@ class WebSocket : public RefCounted<WebSocket>, public ScriptWrappable, public E
     REFCOUNTED_EVENT_TARGET(WebSocket);
 public:
     static const char* subProtocolSeperator();
+    // WebSocket instances must be used with a wrapper since this class's
+    // lifetime management is designed assuming the V8 holds a ref on it while
+    // hasPendingActivity() returns true.
     static PassRefPtr<WebSocket> create(ExecutionContext*, const String& url, ExceptionState&);
     static PassRefPtr<WebSocket> create(ExecutionContext*, const String& url, const String& protocol, ExceptionState&);
     static PassRefPtr<WebSocket> create(ExecutionContext*, const String& url, const Vector<String>& protocols, ExceptionState&);
@@ -106,6 +109,9 @@ public:
 
     // ActiveDOMObject functions.
     virtual void contextDestroyed() OVERRIDE;
+    // Prevent this instance from being collected while it's not in CLOSED
+    // state.
+    virtual bool hasPendingActivity() const OVERRIDE;
     virtual void suspend() OVERRIDE;
     virtual void resume() OVERRIDE;
     virtual void stop() OVERRIDE;
@@ -164,10 +170,6 @@ private:
     // not.
     void closeInternal(int, const String&, ExceptionState&);
 
-    // Calls unsetPendingActivity(). Used with m_dropProtectionRunner to drop
-    // the reference for protection asynchronously.
-    void dropProtection();
-
     size_t getFramingOverhead(size_t payloadSize);
 
     // Checks the result of WebSocketChannel::send() method, and shows console
@@ -193,7 +195,6 @@ private:
     String m_subprotocol;
     String m_extensions;
 
-    AsyncMethodRunner<WebSocket> m_dropProtectionRunner;
     RefPtr<EventQueue> m_eventQueue;
 };
 

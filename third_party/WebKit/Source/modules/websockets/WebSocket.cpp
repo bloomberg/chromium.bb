@@ -222,7 +222,6 @@ WebSocket::WebSocket(ExecutionContext* context)
     , m_binaryType(BinaryTypeBlob)
     , m_subprotocol("")
     , m_extensions("")
-    , m_dropProtectionRunner(this, &WebSocket::dropProtection)
     , m_eventQueue(EventQueue::create(this))
 {
     ScriptWrappable::init(this);
@@ -351,7 +350,6 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
         protocolString = joinStrings(protocols, subProtocolSeperator());
 
     m_channel->connect(m_url, protocolString);
-    ActiveDOMObject::setPendingActivity(this);
 }
 
 void WebSocket::handleSendResult(WebSocketChannel::SendResult result, ExceptionState& exceptionState)
@@ -554,6 +552,11 @@ void WebSocket::contextDestroyed()
     ActiveDOMObject::contextDestroyed();
 }
 
+bool WebSocket::hasPendingActivity() const
+{
+    return m_state != CLOSED;
+}
+
 void WebSocket::suspend()
 {
     if (m_channel)
@@ -568,18 +571,12 @@ void WebSocket::resume()
     m_eventQueue->resume();
 }
 
-void WebSocket::dropProtection()
-{
-    unsetPendingActivity(this);
-}
-
 void WebSocket::stop()
 {
     m_eventQueue->stop();
 
     if (!hasPendingActivity()) {
         ASSERT(!m_channel);
-        ASSERT(m_state == CLOSED);
         return;
     }
     if (m_channel) {
@@ -588,14 +585,6 @@ void WebSocket::stop()
         m_channel = 0;
     }
     m_state = CLOSED;
-
-    ActiveDOMObject::stop();
-
-    // ContextLifecycleNotifier is iterating over the set of ActiveDOMObject
-    // instances. Deleting this WebSocket instance synchronously leads to
-    // ContextLifecycleNotifier::removeObserver() call which is prohibited
-    // to be called during iteration. Defer it.
-    m_dropProtectionRunner.runAsync();
 }
 
 void WebSocket::didConnect()
@@ -672,8 +661,6 @@ void WebSocket::didClose(unsigned long unhandledBufferedAmount, ClosingHandshake
         m_channel->disconnect();
         m_channel = 0;
     }
-    if (hasPendingActivity())
-        ActiveDOMObject::unsetPendingActivity(this);
 }
 
 size_t WebSocket::getFramingOverhead(size_t payloadSize)
