@@ -442,6 +442,17 @@ class MsvsSettings(object):
     if def_file:
       ldflags.append('/DEF:"%s"' % def_file)
 
+  def GetPGDName(self, config, expand_special):
+    """Gets the explicitly overridden pgd name for a target or returns None
+    if it's not overridden."""
+    config = self._TargetConfig(config)
+    output_file = self._Setting(
+        ('VCLinkerTool', 'ProfileGuidedDatabase'), config)
+    if output_file:
+      output_file = expand_special(self.ConvertVSMacros(
+          output_file, config=config))
+    return output_file
+
   def GetLdflags(self, config, gyp_to_build_path, expand_special,
                  manifest_base_name, is_executable):
     """Returns the flags that need to be added to link commands, and the
@@ -462,6 +473,9 @@ class MsvsSettings(object):
     pdb = self.GetPDBName(config, expand_special)
     if pdb:
       ldflags.append('/PDB:' + pdb)
+    pgd = self.GetPGDName(config, expand_special)
+    if pgd:
+      ldflags.append('/PGD:' + pgd)
     map_file = self.GetMapFileName(config, expand_special)
     ld('GenerateMapFile', map={'true': '/MAP:' + map_file if map_file
         else '/MAP'})
@@ -487,7 +501,10 @@ class MsvsSettings(object):
         map={'1': ':NO', '2': ''}, prefix='/NXCOMPAT')
     ld('OptimizeReferences', map={'1': 'NOREF', '2': 'REF'}, prefix='/OPT:')
     ld('EnableCOMDATFolding', map={'1': 'NOICF', '2': 'ICF'}, prefix='/OPT:')
-    ld('LinkTimeCodeGeneration', map={'1': '/LTCG'})
+    ld('LinkTimeCodeGeneration',
+        map={'1': '', '2': ':PGINSTRUMENT', '3': ':PGOPTIMIZE',
+             '4': ':PGUPDATE'},
+        prefix='/LTCG')
     ld('IgnoreDefaultLibraryNames', prefix='/NODEFAULTLIB:')
     ld('ResourceOnlyDLL', map={'true': '/NOENTRY'})
     ld('EntryPointSymbol', prefix='/ENTRY:')
