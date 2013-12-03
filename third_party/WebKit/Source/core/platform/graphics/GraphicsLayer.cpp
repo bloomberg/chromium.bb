@@ -478,24 +478,23 @@ void GraphicsLayer::setContentsTo(WebLayer* layer)
 
 void GraphicsLayer::setupContentsLayer(WebLayer* contentsLayer)
 {
+    ASSERT(contentsLayer);
     m_contentsLayer = contentsLayer;
     m_contentsLayerId = m_contentsLayer->id();
 
-    if (m_contentsLayer) {
-        m_contentsLayer->setWebLayerClient(this);
-        m_contentsLayer->setAnchorPoint(FloatPoint(0, 0));
-        m_contentsLayer->setUseParentBackfaceVisibility(true);
+    m_contentsLayer->setWebLayerClient(this);
+    m_contentsLayer->setAnchorPoint(FloatPoint(0, 0));
+    m_contentsLayer->setUseParentBackfaceVisibility(true);
 
-        // It is necessary to call setDrawsContent as soon as we receive the new contentsLayer, for
-        // the correctness of early exit conditions in setDrawsContent() and setContentsVisible().
-        m_contentsLayer->setDrawsContent(m_contentsVisible);
+    // It is necessary to call setDrawsContent as soon as we receive the new contentsLayer, for
+    // the correctness of early exit conditions in setDrawsContent() and setContentsVisible().
+    m_contentsLayer->setDrawsContent(m_contentsVisible);
 
-        // Insert the content layer first. Video elements require this, because they have
-        // shadow content that must display in front of the video.
-        m_layer->layer()->insertChild(m_contentsLayer, 0);
-        WebLayer* borderWebLayer = m_contentsClippingMaskLayer ? m_contentsClippingMaskLayer->platformLayer() : 0;
-        m_contentsLayer->setMaskLayer(borderWebLayer);
-    }
+    // Insert the content layer first. Video elements require this, because they have
+    // shadow content that must display in front of the video.
+    m_layer->layer()->insertChild(m_contentsLayer, 0);
+    WebLayer* borderWebLayer = m_contentsClippingMaskLayer ? m_contentsClippingMaskLayer->platformLayer() : 0;
+    m_contentsLayer->setMaskLayer(borderWebLayer);
 }
 
 void GraphicsLayer::clearContentsLayerIfUnregistered()
@@ -757,8 +756,6 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
             ts << "(hasClipParent 1)\n";
         }
     }
-
-    dumpAdditionalProperties(ts, indent, flags);
 
     if (m_children.size()) {
         writeIndent(ts, indent + 1);

@@ -241,8 +241,6 @@ public:
 
     // Callback from the underlying graphics system to draw layer contents.
     void paintGraphicsLayerContents(GraphicsContext&, const IntRect& clip);
-    // Callback from the underlying graphics system when the layer has been displayed
-    void layerDidDisplay(blink::WebLayer*) { }
 
     // For hosting this GraphicsLayer in a native layer hierarchy.
     blink::WebLayer* platformLayer() const;
@@ -253,7 +251,7 @@ public:
     void setContentsOrientation(CompositingCoordinatesOrientation orientation) { m_contentsOrientation = orientation; }
     CompositingCoordinatesOrientation contentsOrientation() const { return m_contentsOrientation; }
 
-    void dumpLayer(TextStream&, int indent = 0, LayerTreeFlags = LayerTreeNormal) const;
+    void dumpLayer(TextStream&, int indent, LayerTreeFlags) const;
 
     int paintCount() const { return m_paintCount; }
 
@@ -327,7 +325,6 @@ private:
     int incrementPaintCount() { return ++m_paintCount; }
 
     void dumpProperties(TextStream&, int indent, LayerTreeFlags) const;
-    void dumpAdditionalProperties(TextStream&, int /*indent*/, LayerTreeFlags) const { }
 
     // Helper functions used by settors to keep layer's the state consistent.
     void updateChildList();
