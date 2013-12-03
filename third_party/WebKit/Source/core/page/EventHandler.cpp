@@ -2267,9 +2267,12 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
         || gestureEvent.type() == PlatformEvent::GestureTapUnconfirmed) {
         adjustGesturePosition(gestureEvent, adjustedPoint);
         hitType |= HitTestRequest::Active;
-    } else if (gestureEvent.type() == PlatformEvent::GestureTapDownCancel)
+    } else if (gestureEvent.type() == PlatformEvent::GestureTapDownCancel) {
         hitType |= HitTestRequest::Release;
-    else if (gestureEvent.type() == PlatformEvent::GestureTap) {
+        // A TapDownCancel received when no element is active shouldn't really be changing hover state.
+        if (!m_frame->document()->activeElement())
+            hitType |= HitTestRequest::ReadOnly;
+    } else if (gestureEvent.type() == PlatformEvent::GestureTap) {
         // The mouseup event synthesized for this gesture will clear the active state of the
         // targeted node, so performing a ReadOnly hit test here is fine.
         hitType |= HitTestRequest::ReadOnly;
