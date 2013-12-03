@@ -1258,9 +1258,10 @@ void AutofillDialogViews::UpdateAccountChooser() {
       const std::vector<gfx::Range>& link_ranges =
           delegate_->LegalDocumentLinks();
       for (size_t i = 0; i < link_ranges.size(); ++i) {
-        legal_document_view_->AddStyleRange(
-            link_ranges[i],
-            views::StyledLabel::RangeStyleInfo::CreateForLink());
+        views::StyledLabel::RangeStyleInfo link_range_info =
+            views::StyledLabel::RangeStyleInfo::CreateForLink();
+        link_range_info.disable_line_wrapping = false;
+        legal_document_view_->AddStyleRange(link_ranges[i], link_range_info);
       }
     }
 
