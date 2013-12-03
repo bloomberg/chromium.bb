@@ -195,6 +195,11 @@ class LocalFileSyncService
       SyncStatusCode status,
       const fileapi::FileSystemURL& url);
 
+  // Callback for ApplyRemoteChange.
+  void DidApplyRemoteChange(
+      const SyncStatusCallback& callback,
+      SyncStatusCode status);
+
   // Callbacks for ProcessLocalChange.
   void DidGetFileForLocalSync(
       SyncStatusCode status,

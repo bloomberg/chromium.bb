@@ -284,9 +284,13 @@ void SyncEngine::ApplyLocalChange(
     const SyncFileMetadata& /* unused */,
     const fileapi::FileSystemURL& url,
     const SyncStatusCallback& callback) {
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "[Local->Remote] ApplyLocalChange: %s on %s",
+            local_change.DebugString().c_str(),
+            url.DebugString().c_str());
+
   LocalToRemoteSyncer* syncer = new LocalToRemoteSyncer(
       this, local_change, local_path, url);
-
   task_manager_->ScheduleSyncTask(
       scoped_ptr<SyncTask>(syncer),
       base::Bind(&SyncEngine::DidApplyLocalChange,
@@ -434,6 +438,10 @@ void SyncEngine::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
 void SyncEngine::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
                                      const SyncStatusCallback& callback,
                                      SyncStatusCode status) {
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "[Local->Remote] ApplyLocalChange finished --> %s",
+            SyncStatusCodeToString(status));
+
   if ((status == SYNC_STATUS_OK || status == SYNC_STATUS_RETRY) &&
       syncer->url().is_valid() &&
       syncer->sync_action() != SYNC_ACTION_NONE) {

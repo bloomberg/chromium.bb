@@ -247,9 +247,16 @@ void LocalFileSyncService::ApplyRemoteChange(
     const FileSystemURL& url,
     const SyncStatusCallback& callback) {
   DCHECK(ContainsKey(origin_to_contexts_, url.origin()));
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "[Remote->Local] ApplyRemoteChange: %s on %s",
+            change.DebugString().c_str(),
+            url.DebugString().c_str());
+
   sync_context_->ApplyRemoteChange(
       origin_to_contexts_[url.origin()],
-      change, local_path, url, callback);
+      change, local_path, url,
+      base::Bind(&LocalFileSyncService::DidApplyRemoteChange, AsWeakPtr(),
+                 callback));
 }
 
 void LocalFileSyncService::FinalizeRemoteSync(
@@ -361,6 +368,15 @@ void LocalFileSyncService::RunLocalSyncCallback(
   SyncFileCallback callback = local_sync_callback_;
   local_sync_callback_.Reset();
   callback.Run(status, url);
+}
+
+void LocalFileSyncService::DidApplyRemoteChange(
+    const SyncStatusCallback& callback,
+    SyncStatusCode status) {
+  util::Log(logging::LOG_VERBOSE, FROM_HERE,
+            "[Remote->Local] ApplyRemoteChange finished --> %s",
+            SyncStatusCodeToString(status));
+  callback.Run(status);
 }
 
 void LocalFileSyncService::DidGetFileForLocalSync(

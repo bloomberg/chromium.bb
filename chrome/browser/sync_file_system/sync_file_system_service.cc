@@ -47,7 +47,7 @@ namespace sync_file_system {
 namespace {
 
 const char kLocalSyncName[] = "Local sync";
-const char kRemoteSyncNameV1[] = "Remote sync (v1)";
+const char kRemoteSyncName[] = "Remote sync";
 const char kRemoteSyncNameV2[] = "Remote sync (v2)";
 
 SyncServiceState RemoteStateToSyncServiceState(
@@ -397,7 +397,7 @@ void SyncFileSystemService::Initialize(
   scoped_ptr<LocalSyncRunner> local_syncer(
       new LocalSyncRunner(kLocalSyncName, this));
   scoped_ptr<RemoteSyncRunner> remote_syncer(
-      new RemoteSyncRunner(kRemoteSyncNameV1, this, remote_service_.get()));
+      new RemoteSyncRunner(kRemoteSyncName, this, remote_service_.get()));
 
   local_service_->AddChangeObserver(local_syncer.get());
   local_service_->SetLocalChangeProcessorCallback(
