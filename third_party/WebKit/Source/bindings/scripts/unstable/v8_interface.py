@@ -40,7 +40,7 @@ from v8_globals import includes
 import v8_methods
 import v8_types
 import v8_utilities
-from v8_utilities import conditional_string, cpp_name, runtime_enabled_function_name
+from v8_utilities import conditional_string, cpp_name, has_extended_attribute, runtime_enabled_function_name
 
 
 INTERFACE_H_INCLUDES = set([
@@ -67,18 +67,27 @@ def generate_interface(interface):
     extended_attributes = interface.extended_attributes
     v8_class_name = v8_utilities.v8_class_name(interface)
 
+    # [CheckSecurity]
     is_check_security = 'CheckSecurity' in extended_attributes
     if is_check_security:
         includes.update(['bindings/v8/BindingSecurity.h',
                          'bindings/v8/ExceptionMessages.h',
                          'bindings/v8/ExceptionState.h'])
 
+    # [GenerateVisitDOMWrapper]
+    generate_visit_dom_wrapper_function = extended_attributes.get('GenerateVisitDOMWrapper')
+    if generate_visit_dom_wrapper_function:
+        includes.update(['bindings/v8/V8GCController.h',
+                         'core/dom/Element.h'])
+
     template_contents = {
         'conditional_string': conditional_string(interface),  # [Conditional]
         'cpp_class_name': cpp_name(interface),
+        'generate_visit_dom_wrapper_function': generate_visit_dom_wrapper_function,
         'has_custom_legacy_call': 'CustomLegacyCall' in extended_attributes,  # [CustomLegacyCall]
         'has_custom_wrap': 'CustomWrap' in extended_attributes,  # [CustomWrap]
-        'has_visit_dom_wrapper': 'CustomVisitDOMWrapper' in extended_attributes,  # [CustomVisitDOMWrapper]
+        'has_visit_dom_wrapper': has_extended_attribute(interface,
+            ['CustomVisitDOMWrapper', 'GenerateVisitDOMWrapper']),
         'header_includes': INTERFACE_H_INCLUDES,
         'interface_name': interface.name,
         'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]

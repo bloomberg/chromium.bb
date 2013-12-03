@@ -60,7 +60,7 @@ DoNotCheckSignature
 DoNotGenerateToV8
 EnforceRange
 ExposeJSAccessors
-GenerateVisitDOMWrapper=*
+GenerateVisitDOMWrapper=document|element|owner|ownerNode
 GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGlobalScope|ServiceWorkerGlobalScope
 Immutable
 ImplementedAs=*

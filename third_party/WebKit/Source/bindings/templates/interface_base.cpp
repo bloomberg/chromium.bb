@@ -116,6 +116,7 @@ template <typename T> void V8_USE(T) { }
 {% block origin_safe_method_setter %}{% endblock %}
 } // namespace {{cpp_class_name}}V8Internal
 
+{% block visit_dom_wrapper %}{% endblock %}
 {% block class_attributes %}{% endblock %}
 {% block class_accessors %}{% endblock %}
 {% block class_methods %}{% endblock %}

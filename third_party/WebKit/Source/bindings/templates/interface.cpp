@@ -128,6 +128,23 @@ static void {{cpp_class_name}}OriginSafeMethodSetterCallback(v8::Local<v8::Strin
 
 
 {##############################################################################}
+{% block visit_dom_wrapper %}
+{% if generate_visit_dom_wrapper_function %}
+void {{v8_class_name}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+{
+    {{cpp_class_name}}* impl = fromInternalPointer(object);
+    if (Node* owner = impl->{{generate_visit_dom_wrapper_function}}()) {
+        setObjectGroup(V8GCController::opaqueRootForGC(owner, isolate), wrapper, isolate);
+        return;
+    }
+    setObjectGroup(object, wrapper, isolate);
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
 {% block class_attributes %}
 {# FIXME: rename to install_attributes and put into configure_class_template #}
 {% if attributes %}
