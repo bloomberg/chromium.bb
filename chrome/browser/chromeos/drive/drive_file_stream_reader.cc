@@ -360,7 +360,7 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
     // needed and and invalidate weak pointers so that we won't
     // receive unwanted callbacks.
     if (!ui_cancel_download_closure.is_null())
-      ui_cancel_download_closure.Run();
+      RunTaskOnUIThread(ui_cancel_download_closure);
     weak_ptr_factory_.InvalidateWeakPtrs();
     callback.Run(
         net::ERR_REQUEST_RANGE_NOT_SATISFIABLE, scoped_ptr<ResourceEntry>());
