@@ -29,8 +29,25 @@ class PrefixSetTest : public PlatformTest {
 
   // Generate a set of random prefixes to share between tests.  For
   // most tests this generation was a large fraction of the test time.
+  //
+  // The set should contain sparse areas where adjacent items are more
+  // than 2^16 apart, and dense areas where adjacent items are less
+  // than 2^16 apart.
   static void SetUpTestCase() {
-    for (size_t i = 0; i < 50000; ++i) {
+    // Distribute clusters of prefixes.
+    for (size_t i = 0; i < 250; ++i) {
+      // Unsigned for overflow characteristics.
+      const uint32 base = static_cast<uint32>(base::RandUint64());
+      for (size_t j = 0; j < 10; ++j) {
+        const uint32 delta = static_cast<uint32>(base::RandUint64() & 0xFFFF);
+        const SBPrefix prefix = static_cast<SBPrefix>(base + delta);
+        shared_prefixes_.push_back(prefix);
+      }
+    }
+
+    // Lay down a sparsely-distributed layer.
+    const size_t count = shared_prefixes_.size();
+    for (size_t i = 0; i < count; ++i) {
       const SBPrefix prefix = static_cast<SBPrefix>(base::RandUint64());
       shared_prefixes_.push_back(prefix);
     }
