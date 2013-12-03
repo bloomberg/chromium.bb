@@ -442,11 +442,10 @@ bool GetSwitchValueAsInt(const std::string& switch_name, int* result) {
   return true;
 }
 
-}  // namespace
-
-int LaunchUnitTests(int argc,
-                    char** argv,
-                    const RunTestSuiteCallback& run_test_suite) {
+int LaunchUnitTestsInternal(int argc,
+                            char** argv,
+                            const RunTestSuiteCallback& run_test_suite,
+                            int default_jobs) {
   CommandLine::Init(argc, argv);
   if (CommandLine::ForCurrentProcess()->HasSwitch(kGTestHelpFlag) ||
       CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessTestsFlag) ||
@@ -477,7 +476,7 @@ int LaunchUnitTests(int argc,
 
   MessageLoopForIO message_loop;
 
-  base::UnitTestLauncherDelegate delegate(batch_limit);
+  UnitTestLauncherDelegate delegate(batch_limit);
   base::TestLauncher launcher(&delegate, SysInfo::NumberOfProcessors());
   bool success = launcher.Run(argc, argv);
 
@@ -487,6 +486,21 @@ int LaunchUnitTests(int argc,
   fflush(stdout);
 
   return (success ? 0 : 1);
+}
+
+}  // namespace
+
+int LaunchUnitTests(int argc,
+                    char** argv,
+                    const RunTestSuiteCallback& run_test_suite) {
+  return LaunchUnitTestsInternal(
+      argc, argv, run_test_suite, SysInfo::NumberOfProcessors());
+}
+
+int LaunchUnitTestsSerially(int argc,
+                            char** argv,
+                            const RunTestSuiteCallback& run_test_suite) {
+  return LaunchUnitTestsInternal(argc, argv, run_test_suite, 1);
 }
 
 }  // namespace base

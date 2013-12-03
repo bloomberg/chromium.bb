@@ -17,6 +17,11 @@ int LaunchUnitTests(int argc,
                     char** argv,
                     const RunTestSuiteCallback& run_test_suite);
 
+// Same as above, but always runs tests serially.
+int LaunchUnitTestsSerially(int argc,
+                            char** argv,
+                            const RunTestSuiteCallback& run_test_suite);
+
 }   // namespace base
 
 #endif  // BASE_TEST_LAUNCHER_UNIT_TEST_LAUNCHER_H_
