@@ -1987,6 +1987,29 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 	return 0;
 }
 
+static void
+weston_keyboard_reset_state(struct weston_keyboard *keyboard)
+{
+	struct weston_seat *seat = keyboard->seat;
+	struct xkb_state *state;
+
+#ifdef ENABLE_XKBCOMMON
+	if (seat->compositor->use_xkbcommon) {
+		state = xkb_state_new(keyboard->xkb_info->keymap);
+		if (!state) {
+			weston_log("failed to reset XKB state\n");
+			return;
+		}
+		xkb_state_unref(keyboard->xkb_state.state);
+		keyboard->xkb_state.state = state;
+
+		keyboard->xkb_state.leds = 0;
+	}
+#endif
+
+	seat->modifier_state = 0;
+}
+
 WL_EXPORT void
 weston_seat_release_keyboard(struct weston_seat *seat)
 {
@@ -1994,6 +2017,7 @@ weston_seat_release_keyboard(struct weston_seat *seat)
 	if (seat->keyboard_device_count == 0) {
 		weston_keyboard_set_focus(seat->keyboard, NULL);
 		weston_keyboard_cancel_grab(seat->keyboard);
+		weston_keyboard_reset_state(seat->keyboard);
 		seat_send_updated_caps(seat);
 	}
 }
