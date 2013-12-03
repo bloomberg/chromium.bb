@@ -35,10 +35,9 @@ ExtensionToolbarModelFactory::~ExtensionToolbarModelFactory() {}
 BrowserContextKeyedService*
     ExtensionToolbarModelFactory::BuildServiceInstanceFor(
         content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
   return new ExtensionToolbarModel(
-      profile,
-      extensions::ExtensionPrefsFactory::GetForProfile(profile));
+      Profile::FromBrowserContext(context),
+      extensions::ExtensionPrefsFactory::GetForBrowserContext(context));
 }
 
 content::BrowserContext* ExtensionToolbarModelFactory::GetBrowserContextToUse(

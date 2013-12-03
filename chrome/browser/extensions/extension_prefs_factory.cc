@@ -10,19 +10,18 @@
 #include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "content/public/browser/browser_context.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/constants.h"
 
 namespace extensions {
 
 // static
-ExtensionPrefs* ExtensionPrefsFactory::GetForProfile(Profile* profile) {
+ExtensionPrefs* ExtensionPrefsFactory::GetForBrowserContext(
+    content::BrowserContext* context) {
   return static_cast<ExtensionPrefs*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
@@ -46,21 +45,19 @@ ExtensionPrefsFactory::~ExtensionPrefsFactory() {
 
 BrowserContextKeyedService* ExtensionPrefsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  Profile* profile = Profile::FromBrowserContext(context);
-  bool extensions_disabled =
-      profile->GetPrefs()->GetBoolean(prefs::kDisableExtensions) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableExtensions);
+  ExtensionsBrowserClient* client = ExtensionsBrowserClient::Get();
   return ExtensionPrefs::Create(
-      profile->GetPrefs(),
-      profile->GetPath().AppendASCII(extensions::kInstallDirectoryName),
-      ExtensionPrefValueMapFactory::GetForBrowserContext(profile),
-      ExtensionsBrowserClient::Get()->CreateAppSorting().Pass(),
-      extensions_disabled);
+      client->GetPrefServiceForContext(context),
+      context->GetPath().AppendASCII(extensions::kInstallDirectoryName),
+      ExtensionPrefValueMapFactory::GetForBrowserContext(context),
+      client->CreateAppSorting().Pass(),
+      client->AreExtensionsDisabled(
+          *CommandLine::ForCurrentProcess(), context));
 }
 
 content::BrowserContext* ExtensionPrefsFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  return ExtensionsBrowserClient::Get()->GetOriginalContext(context);
 }
 
 }  // namespace extensions

@@ -7,6 +7,9 @@
 
 #include "base/memory/scoped_ptr.h"
 
+class CommandLine;
+class PrefService;
+
 namespace content {
 class BrowserContext;
 }
@@ -27,6 +30,11 @@ class ExtensionsBrowserClient {
 
   // Returns true if the embedder has started shutting down.
   virtual bool IsShuttingDown() = 0;
+
+  // Returns true if extensions have been disabled (e.g. via a command-line flag
+  // or preference).
+  virtual bool AreExtensionsDisabled(const CommandLine& command_line,
+                                     content::BrowserContext* context) = 0;
 
   // Returns true if the |context| is known to the embedder.
   virtual bool IsValidContext(content::BrowserContext* context) = 0;
@@ -49,6 +57,10 @@ class ExtensionsBrowserClient {
   // Return the original "recording" context. This method returns |context| if
   // |context| is not incognito.
   virtual content::BrowserContext* GetOriginalContext(
+      content::BrowserContext* context) = 0;
+
+  // Returns the PrefService associated with |context|.
+  virtual PrefService* GetPrefServiceForContext(
       content::BrowserContext* context) = 0;
 
   // Returns true if loading background pages should be deferred.

@@ -348,8 +348,8 @@ ExtensionPrefs::~ExtensionPrefs() {
 }
 
 // static
-ExtensionPrefs* ExtensionPrefs::Get(Profile* profile) {
-  return ExtensionPrefsFactory::GetInstance()->GetForProfile(profile);
+ExtensionPrefs* ExtensionPrefs::Get(content::BrowserContext* context) {
+  return ExtensionPrefsFactory::GetInstance()->GetForBrowserContext(context);
 }
 
 static base::FilePath::StringType MakePathRelative(const base::FilePath& parent,

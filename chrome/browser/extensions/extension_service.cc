@@ -337,10 +337,9 @@ ExtensionService::ExtensionService(Profile* profile,
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Figure out if extension installation should be enabled.
-  if (command_line->HasSwitch(switches::kDisableExtensions) ||
-      profile->GetPrefs()->GetBoolean(prefs::kDisableExtensions)) {
+  if (extensions::ExtensionsBrowserClient::Get()->AreExtensionsDisabled(
+          *command_line, profile))
     extensions_enabled_ = false;
-  }
 
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllBrowserContextsAndSources());

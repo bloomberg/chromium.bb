@@ -15,7 +15,7 @@ class ExtensionPrefs;
 
 class ExtensionPrefsFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static ExtensionPrefs* GetForProfile(Profile* profile);
+  static ExtensionPrefs* GetForBrowserContext(content::BrowserContext* context);
 
   static ExtensionPrefsFactory* GetInstance();
 
@@ -29,7 +29,7 @@ class ExtensionPrefsFactory : public BrowserContextKeyedServiceFactory {
   virtual ~ExtensionPrefsFactory();
 
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const OVERRIDE;
+      content::BrowserContext* context) const OVERRIDE;
   virtual content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const OVERRIDE;
 };

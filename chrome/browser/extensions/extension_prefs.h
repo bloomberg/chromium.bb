@@ -24,7 +24,10 @@
 
 class ExtensionPrefValueMap;
 class PrefService;
-class Profile;
+
+namespace content {
+class BrowserContext;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -158,8 +161,8 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
 
   virtual ~ExtensionPrefs();
 
-  // Convenience function to get the ExtensionPrefs for a Profile.
-  static ExtensionPrefs* Get(Profile* profile);
+  // Convenience function to get the ExtensionPrefs for a BrowserContext.
+  static ExtensionPrefs* Get(content::BrowserContext* context);
 
   // Returns all installed extensions from extension preferences provided by
   // |pref_service|. This is exposed for ProtectedPrefsWatcher because it needs

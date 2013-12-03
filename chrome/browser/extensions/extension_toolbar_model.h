@@ -17,6 +17,7 @@
 class Browser;
 class ExtensionService;
 class PrefService;
+class Profile;
 
 // Model for the browser actions toolbar.
 class ExtensionToolbarModel : public content::NotificationObserver,

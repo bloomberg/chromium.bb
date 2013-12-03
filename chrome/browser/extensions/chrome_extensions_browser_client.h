@@ -12,6 +12,8 @@
 #include "chrome/browser/extensions/chrome_notification_observer.h"
 #include "extensions/browser/extensions_browser_client.h"
 
+class CommandLine;
+
 namespace content {
 class BrowserContext;
 }
@@ -31,6 +33,8 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
 
   // BrowserClient overrides:
   virtual bool IsShuttingDown() OVERRIDE;
+  virtual bool AreExtensionsDisabled(const CommandLine& command_line,
+                                     content::BrowserContext* context) OVERRIDE;
   virtual bool IsValidContext(content::BrowserContext* context) OVERRIDE;
   virtual bool IsSameContext(content::BrowserContext* first,
                              content::BrowserContext* second) OVERRIDE;
@@ -39,6 +43,8 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   virtual content::BrowserContext* GetOffTheRecordContext(
       content::BrowserContext* context) OVERRIDE;
   virtual content::BrowserContext* GetOriginalContext(
+      content::BrowserContext* context) OVERRIDE;
+  virtual PrefService* GetPrefServiceForContext(
       content::BrowserContext* context) OVERRIDE;
   virtual bool DeferLoadingBackgroundHosts(
       content::BrowserContext* context) const OVERRIDE;

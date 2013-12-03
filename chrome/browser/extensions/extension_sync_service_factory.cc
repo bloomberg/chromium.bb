@@ -41,7 +41,7 @@ BrowserContextKeyedService*
   Profile* profile = Profile::FromBrowserContext(context);
   return new ExtensionSyncService(
       profile,
-      extensions::ExtensionPrefsFactory::GetForProfile(profile),
+      extensions::ExtensionPrefsFactory::GetForBrowserContext(profile),
       extensions::ExtensionSystemFactory::GetForProfile(profile)->
           extension_service());
 }

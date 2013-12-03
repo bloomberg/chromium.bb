@@ -34,6 +34,14 @@ bool ChromeExtensionsBrowserClient::IsShuttingDown() {
   return g_browser_process->IsShuttingDown();
 }
 
+bool ChromeExtensionsBrowserClient::AreExtensionsDisabled(
+    const CommandLine& command_line,
+    content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
+  return command_line.HasSwitch(switches::kDisableExtensions) ||
+      profile->GetPrefs()->GetBoolean(prefs::kDisableExtensions);
+}
+
 bool ChromeExtensionsBrowserClient::IsValidContext(
     content::BrowserContext* context) {
   Profile* profile = static_cast<Profile*>(context);
@@ -60,6 +68,11 @@ content::BrowserContext* ChromeExtensionsBrowserClient::GetOffTheRecordContext(
 content::BrowserContext* ChromeExtensionsBrowserClient::GetOriginalContext(
     content::BrowserContext* context) {
   return static_cast<Profile*>(context)->GetOriginalProfile();
+}
+
+PrefService* ChromeExtensionsBrowserClient::GetPrefServiceForContext(
+    content::BrowserContext* context) {
+  return static_cast<Profile*>(context)->GetPrefs();
 }
 
 bool ChromeExtensionsBrowserClient::DeferLoadingBackgroundHosts(

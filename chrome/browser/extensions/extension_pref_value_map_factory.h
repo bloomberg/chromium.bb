@@ -9,7 +9,6 @@
 #include "components/browser_context_keyed_service/browser_context_keyed_service_factory.h"
 
 class ExtensionPrefValueMap;
-class Profile;
 
 // The usual factory boilerplate for ExtensionPrefValueMap.
 class ExtensionPrefValueMapFactory : public BrowserContextKeyedServiceFactory {
