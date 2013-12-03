@@ -103,6 +103,14 @@ bool IdentityGetAuthTokenFunction::RunImpl() {
     return false;
   }
 
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(GetProfile());
+
+  std::set<std::string> scopes(oauth2_info.scopes.begin(),
+                               oauth2_info.scopes.end());
+  token_key_.reset(new ExtensionTokenKey(
+      GetExtension()->id(), token_service->GetPrimaryAccountId(), scopes));
+
   // Balanced in CompleteFunctionWithResult|CompleteFunctionWithError
   AddRef();
 
@@ -161,9 +169,6 @@ void IdentityGetAuthTokenFunction::StartMintTokenFlow(
 
   // Flows are serialized to prevent excessive traffic to GAIA, and
   // to consolidate UI pop-ups.
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
-  std::set<std::string> scopes(oauth2_info.scopes.begin(),
-                               oauth2_info.scopes.end());
   IdentityAPI* id_api =
       extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(
           GetProfile());
@@ -177,17 +182,13 @@ void IdentityGetAuthTokenFunction::StartMintTokenFlow(
       return;
     }
     if (!id_api->mint_queue()->empty(
-            IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE,
-            GetExtension()->id(), scopes)) {
+            IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE, *token_key_)) {
       // Another call is going through a consent UI.
       CompleteFunctionWithError(identity_constants::kNoGrant);
       return;
     }
   }
-  id_api->mint_queue()->RequestStart(type,
-                                     GetExtension()->id(),
-                                     scopes,
-                                     this);
+  id_api->mint_queue()->RequestStart(type, *token_key_, this);
 }
 
 void IdentityGetAuthTokenFunction::CompleteMintTokenFlow() {
@@ -200,7 +201,7 @@ void IdentityGetAuthTokenFunction::CompleteMintTokenFlow() {
   extensions::IdentityAPI::GetFactoryInstance()
       ->GetForProfile(GetProfile())
       ->mint_queue()
-      ->RequestComplete(type, GetExtension()->id(), scopes, this);
+      ->RequestComplete(type, *token_key_, this);
 }
 
 void IdentityGetAuthTokenFunction::StartMintToken(
@@ -208,8 +209,7 @@ void IdentityGetAuthTokenFunction::StartMintToken(
   const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
   IdentityAPI* id_api =
       IdentityAPI::GetFactoryInstance()->GetForProfile(GetProfile());
-  IdentityTokenCacheValue cache_entry = id_api->GetCachedToken(
-      GetExtension()->id(), oauth2_info.scopes);
+  IdentityTokenCacheValue cache_entry = id_api->GetCachedToken(*token_key_);
   IdentityTokenCacheValue::CacheValueStatus cache_status =
       cache_entry.status();
 
@@ -266,12 +266,11 @@ void IdentityGetAuthTokenFunction::StartMintToken(
 
 void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
     const std::string& access_token, int time_to_live) {
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
   IdentityTokenCacheValue token(access_token,
                                 base::TimeDelta::FromSeconds(time_to_live));
   IdentityAPI::GetFactoryInstance()
       ->GetForProfile(GetProfile())
-      ->SetCachedToken(GetExtension()->id(), oauth2_info.scopes, token);
+      ->SetCachedToken(*token_key_, token);
 
   CompleteMintTokenFlow();
   CompleteFunctionWithResult(access_token);
@@ -306,11 +305,9 @@ void IdentityGetAuthTokenFunction::OnMintTokenFailure(
 
 void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
     const IssueAdviceInfo& issue_advice) {
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
   IdentityAPI::GetFactoryInstance()
       ->GetForProfile(GetProfile())
-      ->SetCachedToken(GetExtension()->id(),
-                       oauth2_info.scopes,
+      ->SetCachedToken(*token_key_,
                        IdentityTokenCacheValue(issue_advice));
   CompleteMintTokenFlow();
 
@@ -373,12 +370,11 @@ void IdentityGetAuthTokenFunction::OnGaiaFlowCompleted(
 
   int time_to_live;
   if (!expiration.empty() && base::StringToInt(expiration, &time_to_live)) {
-    const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
     IdentityTokenCacheValue token_value(
         access_token, base::TimeDelta::FromSeconds(time_to_live));
     IdentityAPI::GetFactoryInstance()
         ->GetForProfile(GetProfile())
-        ->SetCachedToken(GetExtension()->id(), oauth2_info.scopes, token_value);
+        ->SetCachedToken(*token_key_, token_value);
   }
 
   CompleteMintTokenFlow();
@@ -682,12 +678,8 @@ IdentityMintRequestQueue* IdentityAPI::mint_queue() {
     return &mint_queue_;
 }
 
-void IdentityAPI::SetCachedToken(const std::string& extension_id,
-                                 const std::vector<std::string> scopes,
+void IdentityAPI::SetCachedToken(const ExtensionTokenKey& key,
                                  const IdentityTokenCacheValue& token_data) {
-  std::set<std::string> scopeset(scopes.begin(), scopes.end());
-  TokenCacheKey key(extension_id, scopeset);
-
   CachedTokens::iterator it = token_cache_.find(key);
   if (it != token_cache_.end() && it->second.status() <= token_data.status())
     token_cache_.erase(it);
@@ -713,9 +705,7 @@ void IdentityAPI::EraseAllCachedTokens() {
 }
 
 const IdentityTokenCacheValue& IdentityAPI::GetCachedToken(
-    const std::string& extension_id, const std::vector<std::string> scopes) {
-  std::set<std::string> scopeset(scopes.begin(), scopes.end());
-  TokenCacheKey key(extension_id, scopeset);
+    const ExtensionTokenKey& key) {
   return token_cache_[key];
 }
 
@@ -763,25 +753,6 @@ template <>
 void ProfileKeyedAPIFactory<IdentityAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionSystemFactory::GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
-}
-
-IdentityAPI::TokenCacheKey::TokenCacheKey(const std::string& extension_id,
-                                          const std::set<std::string> scopes)
-    : extension_id(extension_id),
-      scopes(scopes) {
-}
-
-IdentityAPI::TokenCacheKey::~TokenCacheKey() {
-}
-
-bool IdentityAPI::TokenCacheKey::operator<(
-    const IdentityAPI::TokenCacheKey& rhs) const {
-  if (extension_id < rhs.extension_id)
-    return true;
-  else if (rhs.extension_id < extension_id)
-    return false;
-
-  return scopes < rhs.scopes;
 }
 
 }  // namespace extensions

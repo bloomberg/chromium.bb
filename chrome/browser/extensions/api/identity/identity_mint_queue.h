@@ -10,6 +10,8 @@
 #include <set>
 #include <string>
 
+#include "chrome/browser/extensions/api/identity/extension_token_key.h"
+
 namespace extensions {
 
 // getAuthToken requests are serialized to avoid excessive traffic to
@@ -37,36 +39,26 @@ class IdentityMintRequestQueue {
     virtual void StartMintToken(IdentityMintRequestQueue::MintType type) = 0;
   };
 
-  struct RequestKey {
-    RequestKey(IdentityMintRequestQueue::MintType type,
-               const std::string& extension_id,
-               const std::set<std::string> scopes);
-    ~RequestKey();
-    bool operator<(const RequestKey& rhs) const;
-    IdentityMintRequestQueue::MintType type;
-    std::string extension_id;
-    std::set<std::string> scopes;
-  };
-
-  // Adds a request to the queue specified by the id and scopes.
+  // Adds a request to the queue specified by the token key.
   void RequestStart(IdentityMintRequestQueue::MintType type,
-                    const std::string& extension_id,
-                    const std::set<std::string> scopes,
+                    const ExtensionTokenKey& key,
                     IdentityMintRequestQueue::Request* request);
-  // Removes a request from the queue specified by the id and scopes.
+  // Removes a request from the queue specified by the token key.
   void RequestComplete(IdentityMintRequestQueue::MintType type,
-                       const std::string& extension_id,
-                       const std::set<std::string> scopes,
+                       const ExtensionTokenKey& key,
                        IdentityMintRequestQueue::Request* request);
   bool empty(IdentityMintRequestQueue::MintType type,
-             const std::string& extension_id,
-             const std::set<std::string> scopes) const;
+             const ExtensionTokenKey& key);
 
  private:
-  typedef std::list<IdentityMintRequestQueue::Request*> RequestList;
-  std::map<RequestKey, RequestList> request_queue_;
-};
+  typedef std::list<IdentityMintRequestQueue::Request*> RequestQueue;
+  typedef std::map<const ExtensionTokenKey, RequestQueue> RequestQueueMap;
 
+  RequestQueueMap& GetRequestQueueMap(IdentityMintRequestQueue::MintType type);
+
+  RequestQueueMap interactive_request_queue_map_;
+  RequestQueueMap noninteractive_request_queue_map_;
+};
 
 }  // namespace extensions
 

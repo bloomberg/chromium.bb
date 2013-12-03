@@ -6,6 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/extensions/api/identity/extension_token_key.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -49,8 +50,11 @@ void IdentityInternalsUIBrowserTest::AddTokenToCache(
   extensions::IdentityTokenCacheValue token_cache_value =
       extensions::IdentityTokenCacheValue(token_id,
           base::TimeDelta::FromSeconds(time_to_live));
+  extensions::ExtensionTokenKey key(
+      extension_id,
+      "test@example.com",
+      std::set<std::string>(scopes.begin(), scopes.end()));
   extensions::IdentityAPI::GetFactoryInstance()->
       GetForProfile(browser()->profile())->
-          SetCachedToken(extension_id, scopes, token_cache_value);
+          SetCachedToken(key, token_cache_value);
 }
-

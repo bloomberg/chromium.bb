@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/api/identity/account_tracker.h"
+#include "chrome/browser/extensions/api/identity/extension_token_key.h"
 #include "chrome/browser/extensions/api/identity/gaia_web_auth_flow.h"
 #include "chrome/browser/extensions/api/identity/identity_mint_queue.h"
 #include "chrome/browser/extensions/api/identity/identity_signin_flow.h"
@@ -169,6 +170,7 @@ class IdentityGetAuthTokenFunction : public ChromeAsyncExtensionFunction,
   OAuth2MintTokenFlow::Mode gaia_mint_token_mode_;
   bool should_prompt_for_signin_;
 
+  scoped_ptr<ExtensionTokenKey> token_key_;
   std::string oauth2_client_id_;
   // When launched in interactive mode, and if there is no existing grant,
   // a permissions prompt will be popped up to the user.
@@ -252,16 +254,7 @@ class IdentityTokenCacheValue {
 class IdentityAPI : public ProfileKeyedAPI,
                     public AccountTracker::Observer {
  public:
-  struct TokenCacheKey {
-    TokenCacheKey(const std::string& extension_id,
-                  const std::set<std::string> scopes);
-    ~TokenCacheKey();
-    bool operator<(const TokenCacheKey& rhs) const;
-    std::string extension_id;
-    std::set<std::string> scopes;
-  };
-
-  typedef std::map<TokenCacheKey, IdentityTokenCacheValue> CachedTokens;
+  typedef std::map<ExtensionTokenKey, IdentityTokenCacheValue> CachedTokens;
 
   explicit IdentityAPI(Profile* profile);
   virtual ~IdentityAPI();
@@ -270,14 +263,12 @@ class IdentityAPI : public ProfileKeyedAPI,
   IdentityMintRequestQueue* mint_queue();
 
   // Token cache
-  void SetCachedToken(const std::string& extension_id,
-                      const std::vector<std::string> scopes,
+  void SetCachedToken(const ExtensionTokenKey& key,
                       const IdentityTokenCacheValue& token_data);
   void EraseCachedToken(const std::string& extension_id,
                         const std::string& token);
   void EraseAllCachedTokens();
-  const IdentityTokenCacheValue& GetCachedToken(
-      const std::string& extension_id, const std::vector<std::string> scopes);
+  const IdentityTokenCacheValue& GetCachedToken(const ExtensionTokenKey& key);
 
   const CachedTokens& GetAllCachedTokens();
 

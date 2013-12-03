@@ -13,6 +13,8 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/api/identity/oauth2_manifest_handler.h"
@@ -267,6 +269,10 @@ class ExperimentalGetAuthTokenFunctionTest : public AsyncExtensionBrowserTest {
       oauth2_info.scopes.push_back("scope1");
       oauth2_info.scopes.push_back("scope2");
     }
+
+    extension_id_ = ext->id();
+    oauth_scopes_ = std::set<std::string>(oauth2_info.scopes.begin(),
+                                          oauth2_info.scopes.end());
     return ext;
   }
 
@@ -274,6 +280,18 @@ class ExperimentalGetAuthTokenFunctionTest : public AsyncExtensionBrowserTest {
     return IdentityAPI::GetFactoryInstance()->GetForProfile(
         browser()->profile());
   }
+
+  const IdentityTokenCacheValue& GetCachedToken() {
+    ProfileOAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile());
+    ExtensionTokenKey key(
+        extension_id_, token_service->GetPrimaryAccountId(), oauth_scopes_);
+    return id_api()->GetCachedToken(key);
+  }
+
+ private:
+  std::string extension_id_;
+  std::set<std::string> oauth_scopes_;
 };
 
 IN_PROC_BROWSER_TEST_F(ExperimentalGetAuthTokenFunctionTest, NoClientId) {
@@ -355,10 +373,8 @@ IN_PROC_BROWSER_TEST_F(ExperimentalGetAuthTokenFunctionTest,
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->install_ui_shown());
 
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
-  EXPECT_EQ(
-      IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND,
-      id_api()->GetCachedToken(extension->id(), oauth2_info.scopes).status());
+  EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND,
+            GetCachedToken().status());
 }
 
 IN_PROC_BROWSER_TEST_F(ExperimentalGetAuthTokenFunctionTest,
@@ -389,7 +405,6 @@ IN_PROC_BROWSER_TEST_F(ExperimentalGetAuthTokenFunctionTest,
       new ExperimentalMockGetAuthTokenFunction());
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_extension(extension.get());
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
   EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(true));
   TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
       TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS, func.get());
@@ -401,9 +416,8 @@ IN_PROC_BROWSER_TEST_F(ExperimentalGetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->install_ui_shown());
-  EXPECT_EQ(
-      IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND,
-      id_api()->GetCachedToken(extension->id(), oauth2_info.scopes).status());
+  EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND,
+            GetCachedToken().status());
 }
 
 IN_PROC_BROWSER_TEST_F(ExperimentalGetAuthTokenFunctionTest,
@@ -546,7 +560,6 @@ IN_PROC_BROWSER_TEST_F(ExperimentalGetAuthTokenFunctionTest,
       new ExperimentalMockGetAuthTokenFunction());
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_extension(extension.get());
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
   EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(false));
   func->set_login_ui_result(true);
   TestOAuth2MintTokenFlow* flow1 = new TestOAuth2MintTokenFlow(
@@ -564,9 +577,8 @@ IN_PROC_BROWSER_TEST_F(ExperimentalGetAuthTokenFunctionTest,
   EXPECT_EQ(std::string(kAccessToken), access_token);
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_TRUE(func->install_ui_shown());
-  EXPECT_EQ(
-      IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND,
-      id_api()->GetCachedToken(extension->id(), oauth2_info.scopes).status());
+  EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND,
+            GetCachedToken().status());
 }
 
 IN_PROC_BROWSER_TEST_F(ExperimentalGetAuthTokenFunctionTest,

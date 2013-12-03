@@ -14,6 +14,8 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
@@ -356,6 +358,10 @@ class GetAuthTokenFunctionTest : public AsyncExtensionBrowserTest {
       oauth2_info.scopes.push_back("scope1");
       oauth2_info.scopes.push_back("scope2");
     }
+
+    extension_id_ = ext->id();
+    oauth_scopes_ = std::set<std::string>(oauth2_info.scopes.begin(),
+                                          oauth2_info.scopes.end());
     return ext;
   }
 
@@ -363,6 +369,38 @@ class GetAuthTokenFunctionTest : public AsyncExtensionBrowserTest {
     return IdentityAPI::GetFactoryInstance()->GetForProfile(
         browser()->profile());
   }
+
+  const std::string GetPrimaryAccountId() {
+    ProfileOAuth2TokenService* token_service =
+        ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile());
+    return token_service->GetPrimaryAccountId();
+  }
+
+  void SetCachedToken(const IdentityTokenCacheValue& token_data) {
+    ExtensionTokenKey key(extension_id_, GetPrimaryAccountId(), oauth_scopes_);
+    id_api()->SetCachedToken(key, token_data);
+  }
+
+  const IdentityTokenCacheValue& GetCachedToken() {
+    ExtensionTokenKey key(extension_id_, GetPrimaryAccountId(), oauth_scopes_);
+    return id_api()->GetCachedToken(key);
+  }
+
+  void QueueRequestStart(IdentityMintRequestQueue::MintType type,
+                         IdentityMintRequestQueue::Request* request) {
+    ExtensionTokenKey key(extension_id_, GetPrimaryAccountId(), oauth_scopes_);
+    id_api()->mint_queue()->RequestStart(type, key, request);
+  }
+
+  void QueueRequestComplete(IdentityMintRequestQueue::MintType type,
+                            IdentityMintRequestQueue::Request* request) {
+    ExtensionTokenKey key(extension_id_, GetPrimaryAccountId(), oauth_scopes_);
+    id_api()->mint_queue()->RequestComplete(type, key, request);
+  }
+
+ private:
+  std::string extension_id_;
+  std::set<std::string> oauth_scopes_;
 };
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -442,10 +480,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
 
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
-  EXPECT_EQ(
-      IdentityTokenCacheValue::CACHE_STATUS_ADVICE,
-      id_api()->GetCachedToken(extension->id(), oauth2_info.scopes).status());
+  EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_ADVICE,
+            GetCachedToken().status());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -475,7 +511,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_extension(extension.get());
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
   EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(true));
   TestOAuth2MintTokenFlow* flow = new TestOAuth2MintTokenFlow(
       TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS, func.get());
@@ -488,8 +523,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
-            id_api()->GetCachedToken(extension->id(),
-                                     oauth2_info.scopes).status());
+            GetCachedToken().status());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -728,7 +762,6 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        InteractiveApprovalSuccess) {
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
   scoped_refptr<MockGetAuthTokenFunction> func(new MockGetAuthTokenFunction());
   func->set_extension(extension.get());
   EXPECT_CALL(*func.get(), HasLoginToken()).WillOnce(Return(true));
@@ -746,8 +779,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(func->scope_ui_shown());
 
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
-            id_api()->GetCachedToken(extension->id(),
-                                     oauth2_info.scopes).status());
+            GetCachedToken().status());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveQueue) {
@@ -756,19 +788,12 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveQueue) {
   func->set_extension(extension.get());
 
   // Create a fake request to block the queue.
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
-  std::set<std::string> scopes(oauth2_info.scopes.begin(),
-                               oauth2_info.scopes.end());
-  IdentityAPI* id_api =
-      extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(
-          browser()->profile());
-  IdentityMintRequestQueue* queue = id_api->mint_queue();
   MockQueuedMintRequest queued_request;
   IdentityMintRequestQueue::MintType type =
       IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE;
 
   EXPECT_CALL(queued_request, StartMintToken(type)).Times(1);
-  queue->RequestStart(type, extension->id(), scopes, &queued_request);
+  QueueRequestStart(type, &queued_request);
 
   // The real request will start processing, but wait in the queue behind
   // the blocker.
@@ -782,7 +807,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, NoninteractiveQueue) {
       TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS, func.get());
   EXPECT_CALL(*func.get(), CreateMintTokenFlow(_)).WillOnce(Return(flow));
 
-  queue->RequestComplete(type, extension->id(), scopes, &queued_request);
+  QueueRequestComplete(type, &queued_request);
 
   scoped_ptr<base::Value> value(WaitForSingleResult(func.get()));
   std::string access_token;
@@ -798,19 +823,12 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveQueue) {
   func->set_extension(extension.get());
 
   // Create a fake request to block the queue.
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
-  std::set<std::string> scopes(oauth2_info.scopes.begin(),
-                               oauth2_info.scopes.end());
-  IdentityAPI* id_api =
-      extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(
-          browser()->profile());
-  IdentityMintRequestQueue* queue = id_api->mint_queue();
   MockQueuedMintRequest queued_request;
   IdentityMintRequestQueue::MintType type =
       IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE;
 
   EXPECT_CALL(queued_request, StartMintToken(type)).Times(1);
-  queue->RequestStart(type, extension->id(), scopes, &queued_request);
+  QueueRequestStart(type, &queued_request);
 
   // The real request will start processing, but wait in the queue behind
   // the blocker.
@@ -825,7 +843,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, InteractiveQueue) {
 
   // The UI will be displayed and a token retrieved after the first
   // queued request clears.
-  queue->RequestComplete(type, extension->id(), scopes, &queued_request);
+  QueueRequestComplete(type, &queued_request);
 
   scoped_ptr<base::Value> value(WaitForSingleResult(func.get()));
   std::string access_token;
@@ -842,19 +860,12 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_extension(extension.get());
 
   // Create a fake request to block the interactive queue.
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
-  std::set<std::string> scopes(oauth2_info.scopes.begin(),
-                               oauth2_info.scopes.end());
-  IdentityAPI* id_api =
-      extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(
-          browser()->profile());
-  IdentityMintRequestQueue* queue = id_api->mint_queue();
   MockQueuedMintRequest queued_request;
   IdentityMintRequestQueue::MintType type =
       IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE;
 
   EXPECT_CALL(queued_request, StartMintToken(type)).Times(1);
-  queue->RequestStart(type, extension->id(), scopes, &queued_request);
+  QueueRequestStart(type, &queued_request);
 
   // Non-interactive requests fail without hitting GAIA, because a
   // consent UI is known to be up.
@@ -865,7 +876,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_FALSE(func->login_ui_shown());
   EXPECT_FALSE(func->scope_ui_shown());
 
-  queue->RequestComplete(type, extension->id(), scopes, &queued_request);
+  QueueRequestComplete(type, &queued_request);
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
@@ -875,10 +886,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_extension(extension.get());
 
   // pre-populate the cache with a token
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
   IdentityTokenCacheValue token(kAccessToken,
                                 base::TimeDelta::FromSeconds(3600));
-  id_api()->SetCachedToken(extension->id(), oauth2_info.scopes, token);
+  SetCachedToken(token);
 
   // Get a token. Should not require a GAIA request.
   EXPECT_CALL(*func.get(), HasLoginToken())
@@ -899,10 +909,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_extension(extension.get());
 
   // pre-populate the cache with advice
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
   IssueAdviceInfo info;
   IdentityTokenCacheValue token(info);
-  id_api()->SetCachedToken(extension->id(), oauth2_info.scopes, token);
+  SetCachedToken(token);
 
   // Should return an error without a GAIA request.
   EXPECT_CALL(*func.get(), HasLoginToken())
@@ -921,16 +930,12 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_extension(extension.get());
 
   // Create a fake request to block the queue.
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
-  std::set<std::string> scopes(oauth2_info.scopes.begin(),
-                               oauth2_info.scopes.end());
-  IdentityMintRequestQueue* queue = id_api()->mint_queue();
   MockQueuedMintRequest queued_request;
   IdentityMintRequestQueue::MintType type =
       IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE;
 
   EXPECT_CALL(queued_request, StartMintToken(type)).Times(1);
-  queue->RequestStart(type, extension->id(), scopes, &queued_request);
+  QueueRequestStart(type, &queued_request);
 
   // The real request will start processing, but wait in the queue behind
   // the blocker.
@@ -943,12 +948,12 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   // Populate the cache with a token while the request is blocked.
   IdentityTokenCacheValue token(kAccessToken,
                                 base::TimeDelta::FromSeconds(3600));
-  id_api()->SetCachedToken(extension->id(), oauth2_info.scopes, token);
+  SetCachedToken(token);
 
   // When we wake up the request, it returns the cached token without
   // displaying a UI, or hitting GAIA.
 
-  queue->RequestComplete(type, extension->id(), scopes, &queued_request);
+  QueueRequestComplete(type, &queued_request);
 
   scoped_ptr<base::Value> value(WaitForSingleResult(func.get()));
   std::string access_token;
@@ -965,10 +970,9 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_extension(extension.get());
 
   // pre-populate the cache with a token
-  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(extension.get());
   IdentityTokenCacheValue token(kAccessToken,
                                 base::TimeDelta::FromSeconds(3600));
-  id_api()->SetCachedToken(extension->id(), oauth2_info.scopes, token);
+  SetCachedToken(token);
 
   // Because the user is not signed in, the token will be removed,
   // and we'll hit GAIA for new tokens.
@@ -988,8 +992,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   EXPECT_TRUE(func->login_ui_shown());
   EXPECT_TRUE(func->scope_ui_shown());
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
-            id_api()->GetCachedToken(extension->id(),
-                                     oauth2_info.scopes).status());
+            GetCachedToken().status());
 }
 
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ComponentWithChromeClientId) {
@@ -1030,14 +1033,17 @@ class RemoveCachedAuthTokenFunctionTest : public ExtensionBrowserTest {
   }
 
   void SetCachedToken(IdentityTokenCacheValue& token_data) {
-    id_api()->SetCachedToken(extensions::id_util::GenerateId(kExtensionId),
-                             std::vector<std::string>(), token_data);
+    ExtensionTokenKey key(extensions::id_util::GenerateId(kExtensionId),
+                          "test@example.com",
+                          std::set<std::string>());
+    id_api()->SetCachedToken(key, token_data);
   }
 
   const IdentityTokenCacheValue& GetCachedToken() {
     return id_api()->GetCachedToken(
-        extensions::id_util::GenerateId(kExtensionId),
-        std::vector<std::string>());
+        ExtensionTokenKey(extensions::id_util::GenerateId(kExtensionId),
+                          "test@example.com",
+                          std::set<std::string>()));
   }
 };
 
@@ -1070,6 +1076,8 @@ IN_PROC_BROWSER_TEST_F(RemoveCachedAuthTokenFunctionTest, MatchingToken) {
   IdentityTokenCacheValue token(kAccessToken,
                                 base::TimeDelta::FromSeconds(3600));
   SetCachedToken(token);
+  EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
+            GetCachedToken().status());
   EXPECT_TRUE(InvalidateDefaultToken());
   EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND,
             GetCachedToken().status());
