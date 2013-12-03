@@ -119,6 +119,8 @@ public:
 static void setViewportSettings(WebSettings* settings)
 {
     settings->setViewportEnabled(true);
+    settings->setViewportMetaEnabled(true);
+    settings->setMainFrameResizesAreOrientationChanges(true);
 }
 
 static PageScaleConstraints runViewportTest(Page* page, int initialWidth, int initialHeight)
