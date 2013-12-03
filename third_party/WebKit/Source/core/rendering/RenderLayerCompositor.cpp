@@ -177,6 +177,7 @@ struct CompositingRecursionData {
     CompositingRecursionData(RenderLayer* compAncestor, bool testOverlap)
         : m_compositingAncestor(compAncestor)
         , m_subtreeIsCompositing(false)
+        , m_hasUnisolatedCompositedBlendingDescendant(false)
         , m_testingOverlap(testOverlap)
 #ifndef NDEBUG
         , m_depth(0)
@@ -187,6 +188,7 @@ struct CompositingRecursionData {
     CompositingRecursionData(const CompositingRecursionData& other)
         : m_compositingAncestor(other.m_compositingAncestor)
         , m_subtreeIsCompositing(other.m_subtreeIsCompositing)
+        , m_hasUnisolatedCompositedBlendingDescendant(other.m_hasUnisolatedCompositedBlendingDescendant)
         , m_testingOverlap(other.m_testingOverlap)
 #ifndef NDEBUG
         , m_depth(other.m_depth + 1)
@@ -196,6 +198,7 @@ struct CompositingRecursionData {
 
     RenderLayer* m_compositingAncestor;
     bool m_subtreeIsCompositing;
+    bool m_hasUnisolatedCompositedBlendingDescendant;
     bool m_testingOverlap;
 #ifndef NDEBUG
     int m_depth;
@@ -912,6 +915,13 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     if (overlapMap && childRecursionData.m_compositingAncestor && !childRecursionData.m_compositingAncestor->isRootLayer())
         addToOverlapMap(*overlapMap, layer, absBounds, haveComputedBounds);
 
+    if (layer->stackingNode()->isStackingContext()) {
+        layer->setShouldIsolateCompositedDescendants(childRecursionData.m_hasUnisolatedCompositedBlendingDescendant);
+    } else {
+        layer->setShouldIsolateCompositedDescendants(false);
+        currentRecursionData.m_hasUnisolatedCompositedBlendingDescendant = childRecursionData.m_hasUnisolatedCompositedBlendingDescendant;
+    }
+
     // Now check for reasons to become composited that depend on the state of descendant layers.
     CompositingReasons subtreeCompositingReasons = subtreeReasonsForCompositing(layer->renderer(), childRecursionData.m_subtreeIsCompositing, anyDescendantHas3DTransform);
     reasonsToComposite |= subtreeCompositingReasons;
@@ -937,6 +947,9 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
     // Subsequent layers in the parent's stacking context may also need to composite.
     if (childRecursionData.m_subtreeIsCompositing)
         currentRecursionData.m_subtreeIsCompositing = true;
+
+    if (willBeComposited && layer->hasBlendMode())
+        currentRecursionData.m_hasUnisolatedCompositedBlendingDescendant = true;
 
     // Set the flag to say that this SC has compositing children.
     layer->setHasCompositingDescendant(childRecursionData.m_subtreeIsCompositing);
@@ -1722,6 +1735,11 @@ CompositingReasons RenderLayerCompositor::subtreeReasonsForCompositing(RenderObj
     if (hasCompositedDescendants) {
         if (layer->transform())
             subtreeReasons |= CompositingReasonTransformWithCompositedDescendants;
+
+        if (layer->shouldIsolateCompositedDescendants()) {
+            ASSERT(layer->stackingNode()->isStackingContext());
+            subtreeReasons |= CompositingReasonIsolateCompositedDescendants;
+        }
 
         // If the implementation of createsGroup changes, we need to be aware of that in this part of code.
         ASSERT((renderer->isTransparent() || renderer->hasMask() || renderer->hasFilter() || renderer->hasBlendMode()) == renderer->createsGroup());

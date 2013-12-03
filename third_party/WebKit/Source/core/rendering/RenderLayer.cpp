@@ -3941,6 +3941,15 @@ inline bool RenderLayer::needsCompositingLayersRebuiltForFilters(const RenderSty
     return false;
 }
 
+inline bool RenderLayer::needsCompositingLayersRebuiltForBlending(const RenderStyle* oldStyle, const RenderStyle* newStyle) const
+{
+    ASSERT(newStyle);
+    if (!hasCompositedLayerMapping())
+        return false;
+    return (shouldIsolateCompositedDescendants() && !stackingNode()->isStackingContext())
+        || (oldStyle && (oldStyle->hasBlendMode() != newStyle->hasBlendMode()));
+}
+
 void RenderLayer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle)
 {
     if (!hasOrHadFilters(oldStyle, newStyle))
@@ -3987,7 +3996,8 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
     if (compositor()->updateLayerCompositingState(this)
         || needsCompositingLayersRebuiltForClip(oldStyle, newStyle)
         || needsCompositingLayersRebuiltForOverflow(oldStyle, newStyle)
-        || needsCompositingLayersRebuiltForFilters(oldStyle, newStyle, didPaintWithFilters))
+        || needsCompositingLayersRebuiltForFilters(oldStyle, newStyle, didPaintWithFilters)
+        || needsCompositingLayersRebuiltForBlending(oldStyle, newStyle))
         compositor()->setCompositingLayersNeedRebuild();
     else if (hasCompositedLayerMapping())
         compositedLayerMapping()->updateGraphicsLayerGeometry();

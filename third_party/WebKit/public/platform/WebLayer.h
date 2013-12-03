@@ -27,6 +27,7 @@
 #define WebLayer_h
 
 #include "WebAnimation.h"
+#include "WebBlendMode.h"
 #include "WebColor.h"
 #include "WebCommon.h"
 #include "WebCompositingReasons.h"
@@ -85,6 +86,14 @@ public:
 
     virtual void setOpacity(float) = 0;
     virtual float opacity() const = 0;
+
+    // FIXME: Make pure virtual after implementation lands.
+    virtual void setBlendMode(WebBlendMode) { }
+    virtual WebBlendMode blendMode() const { return WebBlendModeNormal; }
+
+    // FIXME: Make pure virtual after implementation lands.
+    virtual void setIsRootForIsolatedGroup(bool) { }
+    virtual bool isRootForIsolatedGroup() { return false; }
 
     virtual void setOpaque(bool) = 0;
     virtual bool opaque() const = 0;

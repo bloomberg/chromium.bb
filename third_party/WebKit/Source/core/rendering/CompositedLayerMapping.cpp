@@ -211,8 +211,10 @@ void CompositedLayerMapping::createPrimaryGraphicsLayer()
     updateTransform(renderer()->style());
     updateFilters(renderer()->style());
 
-    if (RuntimeEnabledFeatures::cssCompositingEnabled())
+    if (RuntimeEnabledFeatures::cssCompositingEnabled()) {
         updateLayerBlendMode(renderer()->style());
+        updateIsRootForIsolatedGroup();
+    }
 }
 
 void CompositedLayerMapping::destroyGraphicsLayers()
@@ -269,8 +271,19 @@ void CompositedLayerMapping::updateFilters(const RenderStyle* style)
     }
 }
 
-void CompositedLayerMapping::updateLayerBlendMode(const RenderStyle*)
+void CompositedLayerMapping::updateLayerBlendMode(const RenderStyle* style)
 {
+    setBlendMode(style->blendMode());
+}
+
+void CompositedLayerMapping::updateIsRootForIsolatedGroup()
+{
+    bool isolate = m_owningLayer->shouldIsolateCompositedDescendants();
+
+    // non stacking context layers should never isolate
+    ASSERT(m_owningLayer->stackingNode()->isStackingContext() || !isolate);
+
+    m_graphicsLayer->setIsRootForIsolatedGroup(isolate);
 }
 
 void CompositedLayerMapping::updateContentsOpaque()
@@ -537,9 +550,6 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
         : !renderer()->animation().isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyOpacity))
         updateOpacity(renderer()->style());
 
-    if (RuntimeEnabledFeatures::cssCompositingEnabled())
-        updateLayerBlendMode(renderer()->style());
-
     bool isSimpleContainer = isSimpleContainerCompositingLayer();
 
     m_owningLayer->updateDescendantDependentFlags();
@@ -786,6 +796,11 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
     // We can't make this call in RenderLayerCompositor::allocateOrClearCompositedLayerMapping
     // since it depends on whether compAncestor draws content, which gets updated later.
     updateRequiresOwnBackingStoreForAncestorReasons(compAncestor);
+
+    if (RuntimeEnabledFeatures::cssCompositingEnabled()) {
+        updateLayerBlendMode(style);
+        updateIsRootForIsolatedGroup();
+    }
 
     updateContentsRect(isSimpleContainer);
     updateBackgroundColor(isSimpleContainer);
@@ -1589,8 +1604,15 @@ void CompositedLayerMapping::paintsIntoCompositedAncestorChanged()
     compositor()->repaintInCompositedAncestor(m_owningLayer, compositedBounds());
 }
 
-void CompositedLayerMapping::setBlendMode(blink::WebBlendMode)
+void CompositedLayerMapping::setBlendMode(blink::WebBlendMode blendMode)
 {
+    if (m_ancestorClippingLayer) {
+        ASSERT(childForSuperlayers() == m_ancestorClippingLayer.get());
+        m_graphicsLayer->setBlendMode(blink::WebBlendModeNormal);
+    } else {
+        ASSERT(childForSuperlayers() == m_graphicsLayer.get());
+    }
+    childForSuperlayers()->setBlendMode(blendMode);
 }
 
 void CompositedLayerMapping::setContentsNeedDisplay()

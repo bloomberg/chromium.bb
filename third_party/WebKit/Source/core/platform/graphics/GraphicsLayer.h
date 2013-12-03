@@ -198,6 +198,12 @@ public:
     float opacity() const { return m_opacity; }
     void setOpacity(float);
 
+    blink::WebBlendMode blendMode() const { return m_blendMode; }
+    void setBlendMode(blink::WebBlendMode);
+
+    bool isRootForIsolatedGroup() const { return m_isRootForIsolatedGroup; }
+    void setIsRootForIsolatedGroup(bool);
+
     const FilterOperations& filters() const { return m_filters; }
 
     // Returns true if filter can be rendered by the compositor
@@ -351,6 +357,8 @@ private:
     float m_opacity;
     float m_zPosition;
 
+    blink::WebBlendMode m_blendMode;
+
     FilterOperations m_filters;
 
     bool m_contentsOpaque : 1;
@@ -359,6 +367,7 @@ private:
     bool m_masksToBounds : 1;
     bool m_drawsContent : 1;
     bool m_contentsVisible : 1;
+    bool m_isRootForIsolatedGroup : 1;
 
     bool m_hasScrollParent : 1;
     bool m_hasClipParent : 1;

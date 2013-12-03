@@ -71,6 +71,7 @@ const uint64_t CompositingReasonLayerForBackground                     = static_
 const uint64_t CompositingReasonLayerForMask                           = static_cast<uint64_t>(1) << 31;
 const uint64_t CompositingReasonOverflowScrollingParent                = static_cast<uint64_t>(1) << 32;
 const uint64_t CompositingReasonOutOfFlowClipping                      = static_cast<uint64_t>(1) << 33;
+const uint64_t CompositingReasonIsolateCompositedDescendants           = static_cast<uint64_t>(1) << 35;
 
 typedef uint64_t WebCompositingReasons;
 

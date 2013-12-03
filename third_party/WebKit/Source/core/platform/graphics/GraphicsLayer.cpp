@@ -82,12 +82,14 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     , m_anchorPoint(0.5f, 0.5f, 0)
     , m_opacity(1)
     , m_zPosition(0)
+    , m_blendMode(blink::WebBlendModeNormal)
     , m_contentsOpaque(false)
     , m_preserves3D(false)
     , m_backfaceVisibility(true)
     , m_masksToBounds(false)
     , m_drawsContent(false)
     , m_contentsVisible(true)
+    , m_isRootForIsolatedGroup(false)
     , m_hasScrollParent(false)
     , m_hasClipParent(false)
     , m_paintingPhase(GraphicsLayerPaintAllWithOverflowClip)
@@ -609,6 +611,16 @@ void GraphicsLayer::dumpProperties(TextStream& ts, int indent, LayerTreeFlags fl
         ts << "(opacity " << m_opacity << ")\n";
     }
 
+    if (m_blendMode != blink::WebBlendModeNormal) {
+        writeIndent(ts, indent + 1);
+        ts << "(blendMode " << compositeOperatorName(CompositeSourceOver, m_blendMode) << ")\n";
+    }
+
+    if (m_isRootForIsolatedGroup) {
+        writeIndent(ts, indent + 1);
+        ts << "(isolate " << m_isRootForIsolatedGroup << ")\n";
+    }
+
     if (m_contentsOpaque) {
         writeIndent(ts, indent + 1);
         ts << "(contentsOpaque " << m_contentsOpaque << ")\n";
@@ -943,6 +955,22 @@ void GraphicsLayer::setOpacity(float opacity)
     float clampedOpacity = std::max(std::min(opacity, 1.0f), 0.0f);
     m_opacity = clampedOpacity;
     platformLayer()->setOpacity(opacity);
+}
+
+void GraphicsLayer::setBlendMode(blink::WebBlendMode blendMode)
+{
+    if (m_blendMode == blendMode)
+        return;
+    m_blendMode = blendMode;
+    platformLayer()->setBlendMode(blink::WebBlendMode(blendMode));
+}
+
+void GraphicsLayer::setIsRootForIsolatedGroup(bool isolated)
+{
+    if (m_isRootForIsolatedGroup == isolated)
+        return;
+    m_isRootForIsolatedGroup = isolated;
+    platformLayer()->setIsRootForIsolatedGroup(isolated);
 }
 
 void GraphicsLayer::setContentsNeedsDisplay()

@@ -281,7 +281,8 @@ void InspectorLayerTreeAgent::compositingReasons(ErrorString* errorString, const
         { CompositingReasonLayerForForeground, "layerForForeground" },
         { CompositingReasonLayerForBackground, "layerForBackground" },
         { CompositingReasonLayerForMask, "layerForMask" },
-        { CompositingReasonLayerForVideoOverlay, "layerForVideoOverlay" }
+        { CompositingReasonLayerForVideoOverlay, "layerForVideoOverlay" },
+        { CompositingReasonIsolateCompositedDescendants, "isolateCompositedDescendants" }
     };
 
     const GraphicsLayer* graphicsLayer = layerById(errorString, layerId);

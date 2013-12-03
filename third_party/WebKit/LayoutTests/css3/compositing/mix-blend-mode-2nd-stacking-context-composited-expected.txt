@@ -7,20 +7,25 @@
       (children 1
         (GraphicsLayer
           (bounds 800.00 600.00)
-          (isolate 1)
           (drawsContent 1)
-          (children 1
+          (children 2
             (GraphicsLayer
-              (position 8.00 18.00)
-              (bounds 10.00 10.00)
-              (blendMode multiply)
+              (position 8.00 8.00)
+              (anchor 0.00 0.00)
+              (bounds 160.00 90.00)
               (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #FF0000)
               (children 1
                 (GraphicsLayer
-                  (bounds 10.00 10.00)
-                  (contentsOpaque 1)
+                  (bounds 160.00 90.00)
+                  (drawsContent 1)
                 )
               )
+            )
+            (GraphicsLayer
+              (bounds 800.00 600.00)
+              (drawsContent 1)
             )
           )
         )

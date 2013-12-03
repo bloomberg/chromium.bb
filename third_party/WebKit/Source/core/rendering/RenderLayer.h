@@ -364,6 +364,7 @@ public:
     bool needsCompositingLayersRebuiltForClip(const RenderStyle* oldStyle, const RenderStyle* newStyle) const;
     bool needsCompositingLayersRebuiltForOverflow(const RenderStyle* oldStyle, const RenderStyle* newStyle) const;
     bool needsCompositingLayersRebuiltForFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle, bool didPaintWithFilters) const;
+    bool needsCompositingLayersRebuiltForBlending(const RenderStyle* oldStyle, const RenderStyle* newStyle) const;
 
     bool paintsWithTransparency(PaintBehavior paintBehavior) const
     {
@@ -601,6 +602,9 @@ private:
     bool hasNonCompositedChild() const { return m_compositingProperties.hasNonCompositedChild; }
     void setHasNonCompositedChild(bool b)  { m_compositingProperties.hasNonCompositedChild = b; }
 
+    bool shouldIsolateCompositedDescendants() const { return m_compositingProperties.shouldIsolateCompositedDescendants; }
+    void setShouldIsolateCompositedDescendants(bool b)  { m_compositingProperties.shouldIsolateCompositedDescendants = b; }
+
     void setCompositingReasons(CompositingReasons reasons) { m_compositingProperties.compositingReasons = reasons; }
     CompositingReasons compositingReasons() const { return m_compositingProperties.compositingReasons; }
 
@@ -693,6 +697,7 @@ protected:
         CompositingProperties()
             : hasCompositingDescendant(false)
             , hasNonCompositedChild(false)
+            , shouldIsolateCompositedDescendants(false)
             , viewportConstrainedNotCompositedReason(NoNotCompositedReason)
             , compositingReasons(CompositingReasonNone)
         { }
@@ -703,6 +708,9 @@ protected:
         // Applies to the real render layer tree (i.e., the tree determined by the layer's parent and children and
         // as opposed to the tree formed by the z-order and normal flow lists).
         bool hasNonCompositedChild : 1;
+
+        // Should be for stacking contexts having unisolated blending descendants.
+        bool shouldIsolateCompositedDescendants : 1;
 
         // The reason, if any exists, that a fixed-position layer is chosen not to be composited.
         unsigned viewportConstrainedNotCompositedReason : 2;
