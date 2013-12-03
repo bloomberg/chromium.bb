@@ -67,11 +67,6 @@ class CC_EXPORT CopyOutputRequest {
 
   void SendResult(scoped_ptr<CopyOutputResult> result);
 
-  bool Equals(const CopyOutputRequest& other) const {
-    return result_callback_.Equals(other.result_callback_) &&
-        force_bitmap_result_ == other.force_bitmap_result_;
-  }
-
  private:
   CopyOutputRequest();
   explicit CopyOutputRequest(bool force_bitmap_result,
