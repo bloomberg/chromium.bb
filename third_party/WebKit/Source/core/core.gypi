@@ -991,6 +991,8 @@
             'fetch/ResourceLoaderOptions.h',
             'fetch/ResourceLoaderSet.cpp',
             'fetch/ResourceLoaderSet.h',
+            'fetch/ResourceLoadPriorityOptimizer.cpp',
+            'fetch/ResourceLoadPriorityOptimizer.h',
             'fetch/ResourcePtr.cpp',
             'fetch/ResourcePtr.h',
             'fetch/FetchInitiatorInfo.h',
