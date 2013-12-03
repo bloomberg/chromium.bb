@@ -182,6 +182,9 @@ class TabStrip : public views::View,
   // ongoing this does a layout.
   void StopAnimating(bool layout);
 
+  // Called to indicate whether the given URL is a supported file.
+  void FileSupported(const GURL& url, bool supported);
+
   // TabController overrides:
   virtual const ui::ListSelectionModel& GetSelectionModel() OVERRIDE;
   virtual bool SupportsMultipleSelection() OVERRIDE;
@@ -294,6 +297,12 @@ class TabStrip : public views::View,
     // Renders the drop indicator.
     views::Widget* arrow_window;
     views::ImageView* arrow_view;
+
+    // The URL for the drop event.
+    GURL url;
+
+    // Whether the MIME type of the file pointed to by |url| is supported.
+    bool file_supported;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(DropInfo);

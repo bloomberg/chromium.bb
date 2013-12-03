@@ -46,15 +46,9 @@ void DragDownloadItem(const content::DownloadItem* download,
   const base::FilePath full_path = download->GetTargetFilePath();
   data.SetFilename(full_path);
 
-  std::string mime_type = download->GetMimeType();
-  if (mime_type.empty())
-    net::GetMimeTypeFromFile(full_path, &mime_type);
-
   // Add URL so that we can load supported files when dragged to WebContents.
-  if (net::IsSupportedMimeType(mime_type)) {
-    data.SetURL(net::FilePathToFileURL(full_path),
-                download->GetFileNameToReportUser().LossyDisplayName());
-  }
+  data.SetURL(net::FilePathToFileURL(full_path),
+              download->GetFileNameToReportUser().LossyDisplayName());
 
 #if !defined(TOOLKIT_GTK)
 #if defined(USE_AURA)
