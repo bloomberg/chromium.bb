@@ -333,7 +333,7 @@ function VolumeManager() {
   // TODO(hidehiko): Remove them after the migration.
   this.driveConnectionState_ = {
     type: util.DriveConnectionType.OFFLINE,
-    reasons: [util.DriveConnectionReason.NO_SERVICE]
+    reason: util.DriveConnectionReason.NO_SERVICE
   };
 
   chrome.fileBrowserPrivate.onDriveConnectionStatusChanged.addListener(

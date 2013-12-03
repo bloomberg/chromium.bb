@@ -205,7 +205,7 @@ VolumeManagerWrapper.prototype.getDriveConnectionState = function() {
   if (!this.driveEnabled_ || !this.volumeManager_) {
     return {
       type: util.DriveConnectionType.OFFLINE,
-      reasons: [util.DriveConnectionReason.NO_SERVICE]
+      reason: util.DriveConnectionReason.NO_SERVICE
     };
   }
 

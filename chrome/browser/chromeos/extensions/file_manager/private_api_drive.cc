@@ -28,13 +28,13 @@ namespace extensions {
 namespace {
 
 // List of connection types of drive.
-// Keep this in sync with the DriveConnectionType in volume_manager.js.
+// Keep this in sync with the DriveConnectionType in common/js/util.js.
 const char kDriveConnectionTypeOffline[] = "offline";
 const char kDriveConnectionTypeMetered[] = "metered";
 const char kDriveConnectionTypeOnline[] = "online";
 
 // List of reasons of kDriveConnectionType*.
-// Keep this in sync with the DriveConnectionReason in volume_manager.js.
+// Keep this in sync with the DriveConnectionReason in common/js/util.js.
 const char kDriveConnectionReasonNotReady[] = "not_ready";
 const char kDriveConnectionReasonNoNetwork[] = "no_network";
 const char kDriveConnectionReasonNoService[] = "no_service";
@@ -510,31 +510,27 @@ void FileBrowserPrivateSearchDriveMetadataFunction::OnSearchMetadata(
 }
 
 bool FileBrowserPrivateGetDriveConnectionStateFunction::RunImpl() {
-  drive::DriveServiceInterface* const drive_service =
-      drive::util::GetDriveServiceByProfile(GetProfile());
-
   api::file_browser_private::GetDriveConnectionState::Results::Result result;
 
-  const bool ready = drive_service && drive_service->CanSendRequest();
-  const bool is_connection_cellular =
-      net::NetworkChangeNotifier::IsConnectionCellular(
-          net::NetworkChangeNotifier::GetConnectionType());
-
-  if (net::NetworkChangeNotifier::IsOffline() || !ready) {
-    result.type = kDriveConnectionTypeOffline;
-    if (net::NetworkChangeNotifier::IsOffline())
-      result.reasons.push_back(kDriveConnectionReasonNoNetwork);
-    if (!ready)
-      result.reasons.push_back(kDriveConnectionReasonNotReady);
-    if (!drive_service)
-      result.reasons.push_back(kDriveConnectionReasonNoService);
-  } else if (
-      is_connection_cellular &&
-      GetProfile()->GetPrefs()->GetBoolean(
-        prefs::kDisableDriveOverCellular)) {
-    result.type = kDriveConnectionTypeMetered;
-  } else {
-    result.type = kDriveConnectionTypeOnline;
+  switch (drive::util::GetDriveConnectionStatus(GetProfile())) {
+    case drive::util::DRIVE_DISCONNECTED_NOSERVICE:
+      result.type = kDriveConnectionTypeOffline;
+      result.reason.reset(new std::string(kDriveConnectionReasonNoService));
+      break;
+    case drive::util::DRIVE_DISCONNECTED_NONETWORK:
+      result.type = kDriveConnectionTypeOffline;
+      result.reason.reset(new std::string(kDriveConnectionReasonNoNetwork));
+      break;
+    case drive::util::DRIVE_DISCONNECTED_NOTREADY:
+      result.type = kDriveConnectionTypeOffline;
+      result.reason.reset(new std::string(kDriveConnectionReasonNotReady));
+      break;
+    case drive::util::DRIVE_CONNECTED_METERED:
+      result.type = kDriveConnectionTypeMetered;
+      break;
+    case drive::util::DRIVE_CONNECTED:
+      result.type = kDriveConnectionTypeOnline;
+      break;
   }
 
   results_ = api::file_browser_private::GetDriveConnectionState::Results::

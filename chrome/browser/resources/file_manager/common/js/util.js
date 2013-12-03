@@ -1186,7 +1186,7 @@ util.VolumeError = Object.freeze({
  * List of connection types of drive.
  *
  * Keep this in sync with the kDriveConnectionType* constants in
- * file_browser_private_api.cc.
+ * private_api_dirve.cc.
  *
  * @enum {string}
  * @const
@@ -1201,7 +1201,7 @@ util.DriveConnectionType = Object.freeze({
  * List of reasons of DriveConnectionType.
  *
  * Keep this in sync with the kDriveConnectionReason constants in
- * file_browser_private_api.cc.
+ * private_api_drive.cc.
  *
  * @enum {string}
  * @const

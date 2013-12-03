@@ -389,5 +389,27 @@ bool IsDriveEnabledForProfile(Profile* profile) {
   return true;
 }
 
+ConnectionStatusType GetDriveConnectionStatus(Profile* profile) {
+  drive::DriveServiceInterface* const drive_service =
+      drive::util::GetDriveServiceByProfile(profile);
+
+  if (!drive_service)
+    return DRIVE_DISCONNECTED_NOSERVICE;
+  if (net::NetworkChangeNotifier::IsOffline())
+    return DRIVE_DISCONNECTED_NONETWORK;
+  if (!drive_service->CanSendRequest())
+    return DRIVE_DISCONNECTED_NOTREADY;
+
+  const bool is_connection_cellular =
+      net::NetworkChangeNotifier::IsConnectionCellular(
+          net::NetworkChangeNotifier::GetConnectionType());
+  const bool disable_sync_over_celluar =
+      profile->GetPrefs()->GetBoolean(prefs::kDisableDriveOverCellular);
+
+  if (is_connection_cellular && disable_sync_over_celluar)
+    return DRIVE_CONNECTED_METERED;
+  return DRIVE_CONNECTED;
+}
+
 }  // namespace util
 }  // namespace drive

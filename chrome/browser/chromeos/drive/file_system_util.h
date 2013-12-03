@@ -204,6 +204,25 @@ std::string ReadResourceIdFromGDocFile(const base::FilePath& file_path);
 // Returns true if Drive is enabled for the given Profile.
 bool IsDriveEnabledForProfile(Profile* profile);
 
+// Enum type for describing the current connection status to Drive.
+enum ConnectionStatusType {
+  // Disconnected because Drive service is unavailable for this account (either
+  // disabled by a flag or the account has no Google account (e.g., guests)).
+  DRIVE_DISCONNECTED_NOSERVICE,
+  // Disconnected because no network is available.
+  DRIVE_DISCONNECTED_NONETWORK,
+  // Disconnected because authentication is not ready.
+  DRIVE_DISCONNECTED_NOTREADY,
+  // Connected by cellular network. Background sync is disabled.
+  DRIVE_CONNECTED_METERED,
+  // Connected without condition (WiFi, Ethernet, or cellular with the
+  // disable-sync preference turned off.)
+  DRIVE_CONNECTED,
+};
+
+// Returns the Drive connection status for the |profile|.
+ConnectionStatusType GetDriveConnectionStatus(Profile* profile);
+
 }  // namespace util
 }  // namespace drive
 

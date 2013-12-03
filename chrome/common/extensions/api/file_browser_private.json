@@ -947,10 +947,10 @@
                 "type": "object",
                 "properties": {
                   "type": {"type": "string"},
-                  "reasons": {
-                    "type": "array",
+                  "reason": {
+                    "type": "string",
                     "description": "Reasons of offline.",
-                    "items": { "type": "string" }
+                    "optional": true
                   }
                 }
               }
