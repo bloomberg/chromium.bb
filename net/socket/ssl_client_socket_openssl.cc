@@ -23,6 +23,7 @@
 #include "net/cert/single_request_cert_verifier.h"
 #include "net/cert/x509_certificate_net_log_param.h"
 #include "net/socket/ssl_error_params.h"
+#include "net/socket/ssl_session_cache_openssl.h"
 #include "net/ssl/openssl_client_key_store.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -40,9 +41,6 @@ namespace {
 #else
 #define GotoState(s) next_handshake_state_ = s
 #endif
-
-const int kSessionCacheTimeoutSeconds = 60 * 60;
-const size_t kSessionCacheMaxEntires = 1024;
 
 // This constant can be any non-negative/non-zero value (eg: it does not
 // overlap with any value of the net::Error range, including net::OK).
@@ -218,108 +216,6 @@ int NoOpVerifyCallback(X509_STORE_CTX*, void *) {
   return 1;
 }
 
-// OpenSSL manages a cache of SSL_SESSION, this class provides the application
-// side policy for that cache about session re-use: we retain one session per
-// unique HostPortPair, per shard.
-class SSLSessionCache {
- public:
-  SSLSessionCache() {}
-
-  void OnSessionAdded(const HostPortPair& host_and_port,
-                      const std::string& shard,
-                      SSL_SESSION* session) {
-    // Declare the session cleaner-upper before the lock, so any call into
-    // OpenSSL to free the session will happen after the lock is released.
-    crypto::ScopedOpenSSL<SSL_SESSION, SSL_SESSION_free> session_to_free;
-    base::AutoLock lock(lock_);
-
-    DCHECK_EQ(0U, session_map_.count(session));
-    const std::string cache_key = GetCacheKey(host_and_port, shard);
-
-    std::pair<HostPortMap::iterator, bool> res =
-        host_port_map_.insert(std::make_pair(cache_key, session));
-    if (!res.second) {  // Already exists: replace old entry.
-      session_to_free.reset(res.first->second);
-      session_map_.erase(session_to_free.get());
-      res.first->second = session;
-    }
-    DVLOG(2) << "Adding session " << session << " => "
-             << cache_key << ", new entry = " << res.second;
-    DCHECK(host_port_map_[cache_key] == session);
-    session_map_[session] = res.first;
-    DCHECK_EQ(host_port_map_.size(), session_map_.size());
-    DCHECK_LE(host_port_map_.size(), kSessionCacheMaxEntires);
-  }
-
-  void OnSessionRemoved(SSL_SESSION* session) {
-    // Declare the session cleaner-upper before the lock, so any call into
-    // OpenSSL to free the session will happen after the lock is released.
-    crypto::ScopedOpenSSL<SSL_SESSION, SSL_SESSION_free> session_to_free;
-    base::AutoLock lock(lock_);
-
-    SessionMap::iterator it = session_map_.find(session);
-    if (it == session_map_.end())
-      return;
-    DVLOG(2) << "Remove session " << session << " => " << it->second->first;
-    DCHECK(it->second->second == session);
-    host_port_map_.erase(it->second);
-    session_map_.erase(it);
-    session_to_free.reset(session);
-    DCHECK_EQ(host_port_map_.size(), session_map_.size());
-  }
-
-  // Looks up the host:port in the cache, and if a session is found it is added
-  // to |ssl|, returning true on success.
-  bool SetSSLSession(SSL* ssl, const HostPortPair& host_and_port,
-                     const std::string& shard) {
-    base::AutoLock lock(lock_);
-    const std::string cache_key = GetCacheKey(host_and_port, shard);
-    HostPortMap::iterator it = host_port_map_.find(cache_key);
-    if (it == host_port_map_.end())
-      return false;
-    DVLOG(2) << "Lookup session: " << it->second << " => " << cache_key;
-    SSL_SESSION* session = it->second;
-    DCHECK(session);
-    DCHECK(session_map_[session] == it);
-    // Ideally we'd release |lock_| before calling into OpenSSL here, however
-    // that opens a small risk |session| will go out of scope before it is used.
-    // Alternatively we would take a temporary local refcount on |session|,
-    // except OpenSSL does not provide a public API for adding a ref (c.f.
-    // SSL_SESSION_free which decrements the ref).
-    return SSL_set_session(ssl, session) == 1;
-  }
-
-  // Flush removes all entries from the cache. This is called when a client
-  // certificate is added.
-  void Flush() {
-    base::AutoLock lock(lock_);
-    for (HostPortMap::iterator i = host_port_map_.begin();
-         i != host_port_map_.end(); i++) {
-      SSL_SESSION_free(i->second);
-    }
-    host_port_map_.clear();
-    session_map_.clear();
-  }
-
- private:
-  static std::string GetCacheKey(const HostPortPair& host_and_port,
-                                 const std::string& shard) {
-    return host_and_port.ToString() + "/" + shard;
-  }
-
-  // A pair of maps to allow bi-directional lookups between host:port and an
-  // associated session.
-  typedef std::map<std::string, SSL_SESSION*> HostPortMap;
-  typedef std::map<SSL_SESSION*, HostPortMap::iterator> SessionMap;
-  HostPortMap host_port_map_;
-  SessionMap session_map_;
-
-  // Protects access to both the above maps.
-  base::Lock lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(SSLSessionCache);
-};
-
 // Utility to construct the appropriate set & clear masks for use the OpenSSL
 // options and mode configuration functions. (SSL_set_options etc)
 struct SslSetClearMask {
@@ -333,15 +229,24 @@ struct SslSetClearMask {
   long clear_mask;
 };
 
+// Compute a unique key string for the SSL session cache. |socket| is an
+// input socket object. Return a string.
+std::string GetSocketSessionCacheKey(const SSLClientSocketOpenSSL& socket) {
+  std::string result = socket.host_and_port().ToString();
+  result.append("/");
+  result.append(socket.ssl_session_cache_shard());
+  return result;
+}
+
 }  // namespace
 
 class SSLClientSocketOpenSSL::SSLContext {
  public:
   static SSLContext* GetInstance() { return Singleton<SSLContext>::get(); }
   SSL_CTX* ssl_ctx() { return ssl_ctx_.get(); }
-  SSLSessionCache* session_cache() { return &session_cache_; }
+  SSLSessionCacheOpenSSL* session_cache() { return &session_cache_; }
 
-  SSLClientSocketOpenSSL* GetClientSocketFromSSL(SSL* ssl) {
+  SSLClientSocketOpenSSL* GetClientSocketFromSSL(const SSL* ssl) {
     DCHECK(ssl);
     SSLClientSocketOpenSSL* socket = static_cast<SSLClientSocketOpenSSL*>(
         SSL_get_ex_data(ssl, ssl_socket_data_index_));
@@ -361,12 +266,8 @@ class SSLClientSocketOpenSSL::SSLContext {
     ssl_socket_data_index_ = SSL_get_ex_new_index(0, 0, 0, 0, 0);
     DCHECK_NE(ssl_socket_data_index_, -1);
     ssl_ctx_.reset(SSL_CTX_new(SSLv23_client_method()));
+    session_cache_.Reset(ssl_ctx_.get(), kDefaultSessionCacheConfig);
     SSL_CTX_set_cert_verify_callback(ssl_ctx_.get(), NoOpVerifyCallback, NULL);
-    SSL_CTX_set_session_cache_mode(ssl_ctx_.get(), SSL_SESS_CACHE_CLIENT);
-    SSL_CTX_sess_set_new_cb(ssl_ctx_.get(), NewSessionCallbackStatic);
-    SSL_CTX_sess_set_remove_cb(ssl_ctx_.get(), RemoveSessionCallbackStatic);
-    SSL_CTX_set_timeout(ssl_ctx_.get(), kSessionCacheTimeoutSeconds);
-    SSL_CTX_sess_set_cache_size(ssl_ctx_.get(), kSessionCacheMaxEntires);
     SSL_CTX_set_client_cert_cb(ssl_ctx_.get(), ClientCertCallback);
     SSL_CTX_set_channel_id_cb(ssl_ctx_.get(), ChannelIDCallback);
 #if defined(OPENSSL_NPN_NEGOTIATED)
@@ -378,26 +279,13 @@ class SSLClientSocketOpenSSL::SSLContext {
 #endif
   }
 
-  static int NewSessionCallbackStatic(SSL* ssl, SSL_SESSION* session) {
-    return GetInstance()->NewSessionCallback(ssl, session);
+  static std::string GetSessionCacheKey(const SSL* ssl) {
+    SSLClientSocketOpenSSL* socket = GetInstance()->GetClientSocketFromSSL(ssl);
+    DCHECK(socket);
+    return GetSocketSessionCacheKey(*socket);
   }
 
-  int NewSessionCallback(SSL* ssl, SSL_SESSION* session) {
-    SSLClientSocketOpenSSL* socket = GetClientSocketFromSSL(ssl);
-    session_cache_.OnSessionAdded(socket->host_and_port(),
-                                  socket->ssl_session_cache_shard(),
-                                  session);
-    return 1;  // 1 => We took ownership of |session|.
-  }
-
-  static void RemoveSessionCallbackStatic(SSL_CTX* ctx, SSL_SESSION* session) {
-    return GetInstance()->RemoveSessionCallback(ctx, session);
-  }
-
-  void RemoveSessionCallback(SSL_CTX* ctx, SSL_SESSION* session) {
-    DCHECK(ctx == ssl_ctx());
-    session_cache_.OnSessionRemoved(session);
-  }
+  static SSLSessionCacheOpenSSL::Config kDefaultSessionCacheConfig;
 
   static int ClientCertCallback(SSL* ssl, X509** x509, EVP_PKEY** pkey) {
     SSLClientSocketOpenSSL* socket = GetInstance()->GetClientSocketFromSSL(ssl);
@@ -423,11 +311,18 @@ class SSLClientSocketOpenSSL::SSLContext {
   // SSLClientSocketOpenSSL object from an SSL instance.
   int ssl_socket_data_index_;
 
-  // session_cache_ must appear before |ssl_ctx_| because the destruction of
-  // |ssl_ctx_| may trigger callbacks into |session_cache_|. Therefore,
-  // |session_cache_| must be destructed after |ssl_ctx_|.
-  SSLSessionCache session_cache_;
   crypto::ScopedOpenSSL<SSL_CTX, SSL_CTX_free> ssl_ctx_;
+  // |session_cache_| must be destroyed before |ssl_ctx_|.
+  SSLSessionCacheOpenSSL session_cache_;
+};
+
+// static
+SSLSessionCacheOpenSSL::Config
+    SSLClientSocketOpenSSL::SSLContext::kDefaultSessionCacheConfig = {
+        &GetSessionCacheKey,  // key_func
+        1024,                 // max_entries
+        256,                  // expiration_check_count
+        60 * 60,              // timeout_seconds
 };
 
 // static
@@ -756,9 +651,8 @@ bool SSLClientSocketOpenSSL::Init() {
   if (!SSL_set_tlsext_host_name(ssl_, host_and_port_.host().c_str()))
     return false;
 
-  trying_cached_session_ =
-      context->session_cache()->SetSSLSession(ssl_, host_and_port_,
-                                              ssl_session_cache_shard_);
+  trying_cached_session_ = context->session_cache()->SetSSLSessionWithKey(
+      ssl_, GetSocketSessionCacheKey(*this));
 
   BIO* ssl_bio = NULL;
   // 0 => use default buffer sizes.

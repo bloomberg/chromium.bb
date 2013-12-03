@@ -950,6 +950,8 @@
         'socket/ssl_server_socket_nss.cc',
         'socket/ssl_server_socket_nss.h',
         'socket/ssl_server_socket_openssl.cc',
+        'socket/ssl_session_cache_openssl.cc',
+        'socket/ssl_session_cache_openssl.h',
         'socket/ssl_socket.h',
         'socket/stream_listen_socket.cc',
         'socket/stream_listen_socket.h',
@@ -1343,6 +1345,8 @@
               'socket/ssl_client_socket_openssl.cc',
               'socket/ssl_client_socket_openssl.h',
               'socket/ssl_server_socket_openssl.cc',
+              'socket/ssl_session_cache_openssl.cc',
+              'socket/ssl_session_cache_openssl.h',
               'ssl/openssl_client_key_store.cc',
               'ssl/openssl_client_key_store.h',
             ],
@@ -1883,6 +1887,7 @@
         'socket/ssl_client_socket_pool_unittest.cc',
         'socket/ssl_client_socket_unittest.cc',
         'socket/ssl_server_socket_unittest.cc',
+        'socket/ssl_session_cache_openssl_unittest.cc',
         'socket/tcp_client_socket_unittest.cc',
         'socket/tcp_listen_socket_unittest.cc',
         'socket/tcp_listen_socket_unittest.h',
@@ -2040,16 +2045,24 @@
             'net_test_jni_headers',
           ],
         }],
-        [ 'desktop_linux == 1 or chromeos == 1', {
-            'dependencies': [
-              '../build/linux/system.gyp:ssl',
-            ],
-          }, {  # desktop_linux == 0 and chromeos == 0
-            'sources!': [
-              'cert/nss_cert_database_unittest.cc',
-            ],
-          },
-        ],
+        [ 'use_openssl == 1', {
+          # Avoid compiling/linking with the system library.
+          'dependencies': [
+            '../third_party/openssl/openssl.gyp:openssl',
+          ],
+        }, {  # use_openssl == 0
+          'conditions': [
+            [ 'desktop_linux == 1 or chromeos == 1', {
+              'dependencies': [
+                '../build/linux/system.gyp:ssl',
+              ],
+            }, {  # desktop_linux == 0 and chromeos == 0
+              'sources!': [
+                'cert/nss_cert_database_unittest.cc',
+              ],
+            }],
+          ],
+        }],
         [ 'toolkit_uses_gtk == 1', {
             'dependencies': [
               '../build/linux/system.gyp:gtk',
@@ -2102,6 +2115,7 @@
               'cert/x509_util_openssl_unittest.cc',
               'quic/test_tools/crypto_test_utils_openssl.cc',
               'socket/ssl_client_socket_openssl_unittest.cc',
+              'socket/ssl_session_cache_openssl_unittest.cc',
               'ssl/openssl_client_key_store_unittest.cc',
             ],
           },
