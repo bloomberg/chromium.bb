@@ -60,7 +60,14 @@ class WebGLInfoBarTest : public InProcessBrowserTest {
   base::FilePath gpu_test_dir_;
 };
 
-IN_PROC_BROWSER_TEST_F(WebGLInfoBarTest, ContextLossRaisesInfoBar) {
+// This test is flaky on Mac. http://crbug.com/324555
+#if defined(OS_MACOSX)
+#define MAYBE_ContextLossRaisesInfoBar DISABLED_ContextLossRaisesInfoBar
+#else
+#define MAYBE_ContextLossRaisesInfoBar ContextLossRaisesInfoBar
+#endif
+IN_PROC_BROWSER_TEST_F(WebGLInfoBarTest, MAYBE_ContextLossRaisesInfoBar) {
+#undef MAYBE_ContextLossRaisesInfoBard
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
@@ -93,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(WebGLInfoBarTest, ContextLossRaisesInfoBar) {
 
 // This test is flaky on Mac. http://crbug.com/324555
 #if defined(OS_MACOSX)
-#define MAYBE_ContextLossInfoBarReload FLAKY_ContextLossInfoBarReload
+#define MAYBE_ContextLossInfoBarReload DISABLED_ContextLossInfoBarReload
 #else
 #define MAYBE_ContextLossInfoBarReload ContextLossInfoBarReload
 #endif
