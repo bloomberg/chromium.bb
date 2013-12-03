@@ -2273,6 +2273,8 @@ extern OMXResult (*omxSP_FFTFwd_RToCCS_F32)(
     OMX_F32* pDst,
     const OMXFFTSpec_R_F32* pFFTSpec
 );
+#else
+#define omxSP_FFTFwd_RToCCS_F32 omxSP_FFTFwd_RToCCS_F32_Sfs
 #endif
 
 /**
@@ -2484,6 +2486,8 @@ extern OMXResult (*omxSP_FFTInv_CCSToR_F32)(
     const OMX_F32* pSrc,
     OMX_F32* pDst,
     const OMXFFTSpec_R_F32* pFFTSpec);
+#else
+#define omxSP_FFTInv_CCSToR_F32 omxSP_FFTInv_CCSToR_F32_Sfs    
 #endif
 
 #ifdef __cplusplus
