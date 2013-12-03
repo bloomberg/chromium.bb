@@ -21,8 +21,7 @@ class TestSwarm(unittest.TestCase):
     # A user should be able to trigger a swarm job and return results.
     cmd = [
       sys.executable,
-      os.path.normpath(
-          os.path.join(BASE_DIR, '..', 'example', 'run_example_swarm.py')),
+      '4_swarming_two_steps.py',
       '--isolate-server', ISOLATE_SERVER,
       '--swarming', SWARMING_SERVER,
     ]
@@ -30,6 +29,7 @@ class TestSwarm(unittest.TestCase):
       cmd.append('--verbose')
     p = subprocess.Popen(
         cmd,
+        cwd=os.path.join(BASE_DIR, '..', 'example'),
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)

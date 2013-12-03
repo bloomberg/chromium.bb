@@ -17,7 +17,9 @@ import subprocess
 import sys
 import tempfile
 
-from . import common
+# Pylint can't find common.py that's in the same directory as this file.
+# pylint: disable=F0401
+import common
 
 
 def main():

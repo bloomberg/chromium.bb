@@ -912,14 +912,20 @@ def get_storage(_isolate_server, _namespace):
 
 
 class TestArchive(TestCase):
+  @staticmethod
+  def get_isolateserver_prog():
+    """Returns 'isolateserver.py' or 'isolateserver.pyc'."""
+    return os.path.basename(sys.modules[isolateserver.__name__].__file__)
+
   def test_archive_no_server(self):
     with self.assertRaises(SystemExit):
       isolateserver.main(['archive', '.'])
+    prog = self.get_isolateserver_prog()
     self.checkOutput(
         '',
-        'Usage: isolateserver.py archive [options] <file1..fileN> or - to read '
+        'Usage: %(prog)s archive [options] <file1..fileN> or - to read '
         'from stdin\n\n'
-        'isolateserver.py: error: --isolate-server is required.\n')
+        '%(prog)s: error: --isolate-server is required.\n' % {'prog': prog})
 
   def test_archive_duplicates(self):
     with self.assertRaises(SystemExit):
@@ -929,11 +935,12 @@ class TestArchive(TestCase):
             # Effective dupes.
             '.', os.getcwd(),
           ])
+    prog = self.get_isolateserver_prog()
     self.checkOutput(
         '',
-        'Usage: isolateserver.py archive [options] <file1..fileN> or - to read '
+        'Usage: %(prog)s archive [options] <file1..fileN> or - to read '
         'from stdin\n\n'
-        'isolateserver.py: error: Duplicate entries found.\n')
+        '%(prog)s: error: Duplicate entries found.\n' % {'prog': prog})
 
   def test_archive_files(self):
     old_cwd = os.getcwd()
