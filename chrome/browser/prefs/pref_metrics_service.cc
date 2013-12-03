@@ -67,6 +67,7 @@ const char* kTrackedPrefs[] = {
   kUnregisteredPreference,
 #endif
   prefs::kExtensionKnownDisabled,
+  prefs::kProfileResetPromptMemento,
 };
 
 const size_t kSHA256DigestSize = 32;
