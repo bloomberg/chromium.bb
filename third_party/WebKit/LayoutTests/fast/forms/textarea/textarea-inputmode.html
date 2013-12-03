@@ -26,8 +26,8 @@ shouldBe('textarea.getAttribute("inputmode")', '""');
 // Null.
 debug('Setting null to inputMode:');
 textarea.inputMode = null;
-shouldBe('textarea.inputMode', '""');
-shouldBe('textarea.getAttribute("inputmode")', 'null');
+shouldBe('textarea.inputMode', '"null"');
+shouldBe('textarea.getAttribute("inputmode")', '"null"');
 textarea.setAttribute('inputmode', null);
 shouldBe('textarea.inputMode', '"null"');
 

@@ -5,7 +5,7 @@
 <script>
 var element;
 
-function testDOMStringReflection(elementName, contentAttributeName, idlAttributeName, treatNullAsString) {
+function testDOMStringReflection(elementName, contentAttributeName, idlAttributeName) {
     idlAttributeName = idlAttributeName || contentAttributeName;
     element = document.createElement(elementName);
     debug('Reflected DOMString attribute test for ' + elementName + '/@' + contentAttributeName);
@@ -22,13 +22,8 @@ function testDOMStringReflection(elementName, contentAttributeName, idlAttribute
     shouldBeEqualToString('element.getAttribute("' + contentAttributeName + '")', ' bar\n');
 
     debug('Setting null via the IDL attribute:');
-    if (treatNullAsString) {
-        shouldBeEqualToString('element.' + idlAttributeName + ' = null; element.' + idlAttributeName, 'null');
-        shouldBeEqualToString('element.getAttribute("' + contentAttributeName + '")', 'null');
-    } else {
-        shouldBeEqualToString('element.' + idlAttributeName + ' = null; element.' + idlAttributeName, '');
-        shouldBeNull('element.getAttribute("' + contentAttributeName + '")');
-    }
+    shouldBeEqualToString('element.' + idlAttributeName + ' = null; element.' + idlAttributeName, 'null');
+    shouldBeEqualToString('element.getAttribute("' + contentAttributeName + '")', 'null');
 
     debug('Setting null via the content attribute:');
     shouldBeEqualToString('element.setAttribute("' + contentAttributeName + '", null); element.' + idlAttributeName, 'null');
@@ -53,15 +48,15 @@ function testDOMStringReflection(elementName, contentAttributeName, idlAttribute
     debug('\n');
 }
 
-testDOMStringReflection('button', 'name', 'name', true);
-testDOMStringReflection('fieldset', 'name', 'name', true);
-testDOMStringReflection('form', 'name', 'name', true);
-testDOMStringReflection('input', 'name', 'name', true);
-testDOMStringReflection('input', 'step', 'step', true);
-testDOMStringReflection('keygen', 'name', 'name', true);
-testDOMStringReflection('object', 'name', 'name', true);
-testDOMStringReflection('output', 'name', 'name', true);
-testDOMStringReflection('select', 'name', 'name', true);
+testDOMStringReflection('button', 'name');
+testDOMStringReflection('fieldset', 'name');
+testDOMStringReflection('form', 'name');
+testDOMStringReflection('input', 'name');
+testDOMStringReflection('input', 'step');
+testDOMStringReflection('keygen', 'name');
+testDOMStringReflection('object', 'name');
+testDOMStringReflection('output', 'name');
+testDOMStringReflection('select', 'name');
 testDOMStringReflection('textarea', 'name');
 
 // Add more DOMString attributes!

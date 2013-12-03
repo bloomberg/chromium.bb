@@ -664,10 +664,14 @@
                     type: 'HTMLTextAreaElement',
                     elementToUse: document.createElement('textarea'),
                     attributes: [
-                        {name: 'defaultValue', expectedNull: ''},
                         {name: 'accessKey', expectedNull: ''},
-                        {name: 'name', expectedNull: ''},
-                        {name: 'value', expectedNull: ''}
+                        {name: 'defaultValue', expectedNull: 'null'},
+                        {name: 'dirName', expectedNull: 'null'},
+                        {name: 'inputMode', expectedNull: 'null'},
+                        {name: 'name', expectedNull: 'null'},
+                        {name: 'placeholder', expectedNull: 'null'},
+                        {name: 'value', expectedNull: ''},
+                        {name: 'wrap', expectedNull: 'null'}
                     ]
                 },
                 {

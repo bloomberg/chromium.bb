@@ -297,10 +297,14 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTableSectionElement
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTableSectionElement.chOff]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTableSectionElement.vAlign]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLTextAreaElement.defaultValue]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLTextAreaElement.accessKey]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLTextAreaElement.name]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTextAreaElement.defaultValue]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTextAreaElement.dirName]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTextAreaElement.inputMode]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTextAreaElement.name]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTextAreaElement.placeholder]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLTextAreaElement.value]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTextAreaElement.wrap]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTitleElement.text]
 

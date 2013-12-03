@@ -9,8 +9,8 @@ PASS textarea.inputMode is "abc"
 PASS textarea.getAttribute("inputmode") is "foo"
 PASS textarea.getAttribute("inputmode") is ""
 Setting null to inputMode:
-PASS textarea.inputMode is ""
-PASS textarea.getAttribute("inputmode") is null
+PASS textarea.inputMode is "null"
+PASS textarea.getAttribute("inputmode") is "null"
 PASS textarea.inputMode is "null"
 Setting undefined to inputMode:
 PASS textarea.inputMode is "undefined"
