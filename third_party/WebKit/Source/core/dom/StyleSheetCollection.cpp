@@ -174,10 +174,6 @@ static bool cssStyleSheetHasFontFaceRule(const Vector<RefPtr<CSSStyleSheet> > sh
 
 void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updateMode, const StyleSheetCollectionBase& newCollection, StyleSheetChange& change)
 {
-    // No point in doing the analysis work if we're just going to recalc the whole document anyways.
-    if (document()->hasPendingForcedStyleRecalc())
-        return;
-
     if (activeLoadingStyleSheetLoaded(newCollection.activeAuthorStyleSheets()))
         return;
 
@@ -211,6 +207,12 @@ void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updat
     // FIXME: If styleResolverUpdateType is Reconstruct, we should return early here since
     // we need to recalc the whole document. It's wrong to use StyleInvalidationAnalysis since
     // it only looks at the addedSheets.
+
+    // No point in doing the analysis work if we're just going to recalc the whole document anyways.
+    // This needs to be done after the compareStyleSheets calls above to ensure we don't throw away
+    // the StyleResolver if we don't need to.
+    if (document()->hasPendingForcedStyleRecalc())
+        return;
 
     // If we are already parsing the body and so may have significant amount of elements, put some effort into trying to avoid style recalcs.
     if (!document()->body() || document()->hasNodesWithPlaceholderStyle())
