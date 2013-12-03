@@ -82,7 +82,11 @@ public:
 private:
     V8WindowShell(Frame*, PassRefPtr<DOMWrapperWorld>, v8::Isolate*);
 
-    void disposeContext();
+    enum GlobalDetachmentBehavior {
+        DoNotDetachGlobal,
+        DetachGlobal
+    };
+    void disposeContext(GlobalDetachmentBehavior);
 
     void setSecurityToken();
 

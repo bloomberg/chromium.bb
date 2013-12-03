@@ -90,7 +90,7 @@ V8WindowShell::V8WindowShell(Frame* frame, PassRefPtr<DOMWrapperWorld> world, v8
 {
 }
 
-void V8WindowShell::disposeContext()
+void V8WindowShell::disposeContext(GlobalDetachmentBehavior behavior)
 {
     m_perContextData.clear();
 
@@ -98,7 +98,11 @@ void V8WindowShell::disposeContext()
         return;
 
     v8::HandleScope handleScope(m_isolate);
-    m_frame->loader().client()->willReleaseScriptContext(m_context.newLocal(m_isolate), m_world->worldId());
+    v8::Handle<v8::Context> context = m_context.newLocal(m_isolate);
+    m_frame->loader().client()->willReleaseScriptContext(context, m_world->worldId());
+
+    if (behavior == DetachGlobal)
+        context->DetachGlobal();
 
     m_context.clear();
 
@@ -117,7 +121,7 @@ void V8WindowShell::clearForClose(bool destroyGlobal)
         return;
 
     m_document.clear();
-    disposeContext();
+    disposeContext(DoNotDetachGlobal);
 }
 
 void V8WindowShell::clearForNavigation()
@@ -139,8 +143,7 @@ void V8WindowShell::clearForNavigation()
     v8::Handle<v8::Object> windowWrapper = m_global.newLocal(m_isolate)->FindInstanceInPrototypeChain(V8Window::GetTemplate(m_isolate, worldTypeInMainThread(m_isolate)));
     ASSERT(!windowWrapper.IsEmpty());
     windowWrapper->TurnOnAccessCheck();
-    context->DetachGlobal();
-    disposeContext();
+    disposeContext(DetachGlobal);
 }
 
 // Create a new environment and setup the global object.
@@ -202,7 +205,7 @@ bool V8WindowShell::initializeIfNeeded()
     if (m_global.isEmpty()) {
         m_global.set(m_isolate, context->Global());
         if (m_global.isEmpty()) {
-            disposeContext();
+            disposeContext(DoNotDetachGlobal);
             return false;
         }
     }
@@ -215,12 +218,12 @@ bool V8WindowShell::initializeIfNeeded()
 
     m_perContextData = V8PerContextData::create(context);
     if (!m_perContextData->init()) {
-        disposeContext();
+        disposeContext(DoNotDetachGlobal);
         return false;
     }
     m_perContextData->setActivityLogger(DOMWrapperWorld::activityLogger(m_world->worldId()));
     if (!installDOMWindow()) {
-        disposeContext();
+        disposeContext(DoNotDetachGlobal);
         return false;
     }
 
