@@ -5,10 +5,11 @@
 #ifndef CHROME_BROWSER_INFOBARS_CONFIRM_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_INFOBARS_CONFIRM_INFOBAR_DELEGATE_H_
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
+
+class InfoBar;
 
 // An interface derived from InfoBarDelegate implemented by objects wishing to
 // control a ConfirmInfoBar.
@@ -60,14 +61,17 @@ class ConfirmInfoBarDelegate : public InfoBarDelegate {
   virtual bool LinkClicked(WindowOpenDisposition disposition);
 
  protected:
-  explicit ConfirmInfoBarDelegate(InfoBarService* infobar_service);
+  ConfirmInfoBarDelegate();
+
+  // Returns a confirm infobar that owns |delegate|.
+  static scoped_ptr<InfoBar> CreateInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate> delegate);
 
   virtual bool ShouldExpireInternal(
       const content::LoadCommittedDetails& details) const OVERRIDE;
 
  private:
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar(InfoBarService* owner) OVERRIDE;
   virtual bool EqualsDelegate(InfoBarDelegate* delegate) const OVERRIDE;
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate() OVERRIDE;
 

@@ -13,14 +13,13 @@ class TranslateInfoBarDelegate;
 
 class AfterTranslateInfoBar : public TranslateInfoBarBase {
  public:
-  AfterTranslateInfoBar(InfoBarService* owner,
-                        TranslateInfoBarDelegate* delegate);
+  explicit AfterTranslateInfoBar(scoped_ptr<TranslateInfoBarDelegate> delegate);
 
  private:
   virtual ~AfterTranslateInfoBar();
 
   // TranslateInfoBarBase:
-  virtual void InitWidgets() OVERRIDE;
+  virtual void PlatformSpecificSetOwner() OVERRIDE;
   virtual bool ShowOptionsMenuButton() const OVERRIDE;
 
   // These methods set the original/target language on the

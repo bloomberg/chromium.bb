@@ -7,6 +7,7 @@
 #include "base/metrics/histogram.h"
 #include "chrome/browser/content_settings/permission_queue_controller.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -61,7 +62,7 @@ void RecordUmaEvent(GeolocationInfoBarDelegateEvent event) {
 }  // namespace
 
 // static
-InfoBarDelegate* GeolocationInfoBarDelegate::Create(
+InfoBar* GeolocationInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     PermissionQueueController* controller,
     const PermissionRequestID& id,
@@ -70,20 +71,20 @@ InfoBarDelegate* GeolocationInfoBarDelegate::Create(
   RecordUmaEvent(GEOLOCATION_INFO_BAR_DELEGATE_EVENT_CREATE);
   const content::NavigationEntry* committed_entry =
       infobar_service->web_contents()->GetController().GetLastCommittedEntry();
-  return infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new DelegateType(infobar_service, controller, id, requesting_frame,
-                       committed_entry ? committed_entry->GetUniqueID() : 0,
-                       display_languages)));
+  return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(new DelegateType(
+          controller, id, requesting_frame,
+          committed_entry ? committed_entry->GetUniqueID() : 0,
+          display_languages))));
 }
 
 GeolocationInfoBarDelegate::GeolocationInfoBarDelegate(
-    InfoBarService* infobar_service,
     PermissionQueueController* controller,
     const PermissionRequestID& id,
     const GURL& requesting_frame,
     int contents_unique_id,
     const std::string& display_languages)
-    : ConfirmInfoBarDelegate(infobar_service),
+    : ConfirmInfoBarDelegate(),
       controller_(controller),
       id_(id),
       requesting_frame_(requesting_frame.GetOrigin()),

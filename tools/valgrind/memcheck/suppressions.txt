@@ -2479,13 +2479,6 @@
    fun:_ZN3net13CookieMonster17CookieMonsterTask14InvokeCallbackEN4base8CallbackIFvvEEE
 }
 {
-   bug_96365
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN27PasswordManagerDelegateImpl33AddSavePasswordInfoBarIfPermittedEP19PasswordFormManager
-   fun:_ZN15PasswordManager23OnPasswordFormsRenderedERKSt6vectorIN6webkit5forms12PasswordFormESaIS3_EE
-}
-{
    bug_96369
    Memcheck:Leak
    fun:malloc
@@ -4219,15 +4212,6 @@
    fun:_ZN7content18ResourceDispatcher17OnRequestCompleteEiRKN3net16URLRequestStatusERKSsRKN4base9TimeTicksE
 }
 {
-   bug_145698
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN6chrome24ShowSessionCrashedPromptEP7Browser
-   fun:_ZN25StartupBrowserCreatorImpl22AddInfoBarsIfNecessaryEP7BrowserN6chrome7startup16IsProcessStartupE
-   fun:_ZN25StartupBrowserCreatorImpl17ProcessLaunchURLsEbRKSt6vectorI4GURLSaIS1_EE
-   fun:_ZN25StartupBrowserCreatorImpl6LaunchEP7ProfileRKSt6vectorI4GURLSaIS3_EEb
-}
-{
    bug_145699
    Memcheck:Leak
    fun:_Znw*
@@ -4295,16 +4279,6 @@
    fun:_ZN10extensions13ExtensionHost9OnRequestERK31ExtensionHostMsg_Request_Params
 }
 {
-   bug_145733
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN25ExtensionInstallUIDefault35GetNewThemeInstalledInfoBarDelegateEP11TabContentsPKN10extensions9ExtensionERKSsb
-   fun:_ZN25ExtensionInstallUIDefault16ShowThemeInfoBarERKSsbPKN10extensions9ExtensionEP7Profile
-   fun:_ZN25ExtensionInstallUIDefault16OnInstallSuccessEPKN10extensions9ExtensionEP8SkBitmap
-   fun:_ZN22ExtensionInstallPrompt16OnInstallSuccessEPKN10extensions9ExtensionEP8SkBitmap
-   fun:_ZN10extensions12CrxInstaller25ReportSuccessFromUIThreadEv
-}
-{
    bug_145735
    Memcheck:Leak
    fun:_Znw*
@@ -4313,24 +4287,6 @@
    fun:_ZNSt12_Vector_baseIcSaIcEEC2EmRKS0_
    fun:_ZNSt6vectorIcSaIcEEC1EmRKcRKS0_
    fun:_ZN4base5files12_GLOBAL__N_121InotifyReaderCallbackEPNS1_13InotifyReaderEii
-}
-{
-   bug_145747a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN24TranslateInfoBarDelegate19CreateErrorDelegateEN15TranslateErrors4TypeEP14InfoBarServiceP11PrefServiceRKSsS7_
-   fun:_ZN16TranslateManager14PageTranslatedEPN7content11WebContentsEP21PageTranslatedDetails
-   fun:_ZN16TranslateManager7ObserveEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
-   fun:_ZN23NotificationServiceImpl6NotifyEiRKN7content18NotificationSourceERKNS0_19NotificationDetailsE
-   fun:_ZN18TranslateTabHelper16OnPageTranslatedEiRKSsS1_N15TranslateErrors4TypeE
-}
-{
-   bug_145747b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN24TranslateInfoBarDelegate19CreateErrorDelegateEN15TranslateErrors4TypeEP14InfoBarServiceP11PrefServiceRKSsS7_
-   fun:_ZN16TranslateManager18OnURLFetchCompleteEPKN3net10URLFetcherE
-   fun:_ZN20TranslateManagerTest31SimulateTranslateScriptURLFetchEb
 }
 {
    bug_146464

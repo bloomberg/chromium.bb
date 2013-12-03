@@ -15,6 +15,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/profiles/profile.h"
@@ -43,8 +44,7 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
   static void Create();
 
  private:
-  KeystonePromotionInfoBarDelegate(InfoBarService* infobar_service,
-                                   PrefService* prefs);
+  explicit KeystonePromotionInfoBarDelegate(PrefService* prefs);
   virtual ~KeystonePromotionInfoBarDelegate();
 
   // Sets this info bar to be able to expire.  Called a predetermined amount
@@ -83,17 +83,15 @@ void KeystonePromotionInfoBarDelegate::Create() {
     return;
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(webContents);
-  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new KeystonePromotionInfoBarDelegate(
-          infobar_service,
+  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(new KeystonePromotionInfoBarDelegate(
           Profile::FromBrowserContext(
-              webContents->GetBrowserContext())->GetPrefs())));
+              webContents->GetBrowserContext())->GetPrefs()))));
 }
 
 KeystonePromotionInfoBarDelegate::KeystonePromotionInfoBarDelegate(
-    InfoBarService* infobar_service,
     PrefService* prefs)
-    : ConfirmInfoBarDelegate(infobar_service),
+    : ConfirmInfoBarDelegate(),
       prefs_(prefs),
       can_expire_(false),
       weak_ptr_factory_(this) {

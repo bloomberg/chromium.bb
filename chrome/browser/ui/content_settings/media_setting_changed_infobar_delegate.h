@@ -13,12 +13,12 @@ class InfoBarService;
 // settings, and allows a reload via a button on the infobar.
 class MediaSettingChangedInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a media setting changed infobar delegate and adds it to
-  // |infobar_service|.
+  // Creates a media setting changed infobar and delegate and adds the infobar
+  // to |infobar_service|.
   static void Create(InfoBarService* infobar_service);
 
  private:
-  explicit MediaSettingChangedInfoBarDelegate(InfoBarService* infobar_service);
+  MediaSettingChangedInfoBarDelegate();
   virtual ~MediaSettingChangedInfoBarDelegate();
 
   // ConfirmInfoBarDelegate:

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -17,14 +18,13 @@
 
 
 // static
-GoogleURLTrackerInfoBarDelegate* GoogleURLTrackerInfoBarDelegate::Create(
+InfoBar* GoogleURLTrackerInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     GoogleURLTracker* google_url_tracker,
     const GURL& search_url) {
-  return static_cast<GoogleURLTrackerInfoBarDelegate*>(
-      infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-          new GoogleURLTrackerInfoBarDelegate(
-              infobar_service, google_url_tracker, search_url))));
+  return infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(new GoogleURLTrackerInfoBarDelegate(
+          google_url_tracker, search_url))));
 }
 
 bool GoogleURLTrackerInfoBarDelegate::Accept() {
@@ -60,7 +60,7 @@ void GoogleURLTrackerInfoBarDelegate::Close(bool redo_search) {
   }
 
   content::WebContents* contents = web_contents();
-  owner()->RemoveInfoBar(this);
+  infobar()->RemoveSelf();
   // WARNING: |this| may be deleted at this point!  Do not access any members!
 
   if (new_search_url.is_valid()) {
@@ -71,10 +71,9 @@ void GoogleURLTrackerInfoBarDelegate::Close(bool redo_search) {
 }
 
 GoogleURLTrackerInfoBarDelegate::GoogleURLTrackerInfoBarDelegate(
-    InfoBarService* infobar_service,
     GoogleURLTracker* google_url_tracker,
     const GURL& search_url)
-    : ConfirmInfoBarDelegate(infobar_service),
+    : ConfirmInfoBarDelegate(),
       google_url_tracker_(google_url_tracker),
       search_url_(search_url),
       pending_id_(0) {

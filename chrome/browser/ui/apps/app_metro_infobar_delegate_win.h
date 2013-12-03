@@ -22,16 +22,14 @@ class AppMetroInfoBarDelegateWin : public ConfirmInfoBarDelegate {
     LAUNCH_PACKAGED_APP
   };
 
-  // Creates an app metro infobar delegate, adds it to a new browser tab, then
-  // activates Metro mode.
+  // Creates an app metro infobar and delegate, adds the infobar to a new
+  // browser tab, then activates Metro mode.
   static void Create(Profile* profile,
                      Mode mode,
                      const std::string& extension_id);
 
  private:
-  AppMetroInfoBarDelegateWin(InfoBarService* infobar_service,
-                             Mode mode,
-                             const std::string& extension_id);
+  AppMetroInfoBarDelegateWin(Mode mode, const std::string& extension_id);
   virtual ~AppMetroInfoBarDelegateWin();
 
   // ConfirmInfoBarDelegate overrides:

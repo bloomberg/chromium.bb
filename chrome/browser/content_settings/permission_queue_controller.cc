@@ -51,7 +51,7 @@ class PermissionQueueController::PendingInfoBarRequest {
   const PermissionRequestID& id() const { return id_; }
   const GURL& requesting_frame() const { return requesting_frame_; }
   bool has_infobar() const { return !!infobar_; }
-  InfoBarDelegate* infobar() { return infobar_; }
+  InfoBar* infobar() { return infobar_; }
 
   void RunCallback(bool allowed);
   void CreateInfoBar(PermissionQueueController* controller,
@@ -63,7 +63,7 @@ class PermissionQueueController::PendingInfoBarRequest {
   GURL requesting_frame_;
   GURL embedder_;
   PermissionDecidedCallback callback_;
-  InfoBarDelegate* infobar_;
+  InfoBar* infobar_;
 
   // Purposefully do not disable copying, as this is stored in STL containers.
 };
@@ -196,10 +196,10 @@ void PermissionQueueController::OnPermissionSet(
     if (i->IsForPair(requesting_frame, embedder)) {
       requests_to_notify.push_back(*i);
       if (i->id().Equals(id)) {
-        // The infobar that called us is i->infobar(), and it's currently in
-        // either Accept() or Cancel(). This means that RemoveInfoBar() will be
-        // called later on, and that will trigger a notification we're
-        // observing.
+        // The infobar that called us is i->infobar(), and its delegate is
+        // currently in either Accept() or Cancel(). This means that
+        // RemoveInfoBar() will be called later on, and that will trigger a
+        // notification we're observing.
         ++i;
       } else if (i->has_infobar()) {
         // This infobar is for the same frame/embedder pair, but in a different
@@ -240,8 +240,7 @@ void PermissionQueueController::Observe(
   // pending_infobar_requests_ will not have received any new entries between
   // the NotificationService's call to InfoBarContainer::Observe and this
   // method.
-  InfoBarDelegate* infobar =
-      content::Details<InfoBar::RemovedDetails>(details)->first;
+  InfoBar* infobar = content::Details<InfoBar::RemovedDetails>(details)->first;
   for (PendingInfoBarRequests::iterator i = pending_infobar_requests_.begin();
        i != pending_infobar_requests_.end(); ++i) {
     if (i->infobar() == infobar) {

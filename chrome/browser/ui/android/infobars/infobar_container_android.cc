@@ -79,7 +79,6 @@ void InfoBarContainerAndroid::PlatformSpecificReplaceInfoBar(
 void InfoBarContainerAndroid::PlatformSpecificRemoveInfoBar(InfoBar* infobar) {
   InfoBarAndroid* android_infobar = static_cast<InfoBarAndroid*>(infobar);
   android_infobar->CloseJavaInfoBar();
-  base::MessageLoop::current()->DeleteSoon(FROM_HERE, infobar);
 }
 
 

@@ -27,8 +27,8 @@ namespace autofill {
 // card information gathered from a form submission.
 class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates an autofill credit card infobar delegate and adds it to
-  // |infobar_service|.
+  // Creates an autofill credit card infobar and delegate and adds the infobar
+  // to |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      const AutofillMetrics* metric_logger,
                      const base::Closure& save_card_callback);
@@ -38,13 +38,12 @@ class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
       const AutofillMetrics* metric_logger,
       const base::Closure& save_card_callback) {
     return scoped_ptr<ConfirmInfoBarDelegate>(
-        new AutofillCCInfoBarDelegate(NULL, metric_logger, save_card_callback));
+        new AutofillCCInfoBarDelegate(metric_logger, save_card_callback));
   }
 #endif
 
  private:
-  AutofillCCInfoBarDelegate(InfoBarService* infobar_service,
-                            const AutofillMetrics* metric_logger,
+  AutofillCCInfoBarDelegate(const AutofillMetrics* metric_logger,
                             const base::Closure& save_card_callback);
   virtual ~AutofillCCInfoBarDelegate();
 

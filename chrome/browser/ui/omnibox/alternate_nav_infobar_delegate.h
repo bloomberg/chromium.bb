@@ -5,15 +5,16 @@
 #ifndef CHROME_BROWSER_UI_OMNIBOX_ALTERNATE_NAV_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_UI_OMNIBOX_ALTERNATE_NAV_INFOBAR_DELEGATE_H_
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 
 class AlternateNavInfoBarDelegate : public InfoBarDelegate {
  public:
-  // Creates an alternate nav infobar delegate and adds it to the infobar
-  // service for |web_contents|.
+  virtual ~AlternateNavInfoBarDelegate();
+
+  // Creates an alternate nav infobar and delegate and adds the infobar to the
+  // infobar service for |web_contents|.
   static void Create(content::WebContents* web_contents,
                      const string16& text,
                      const AutocompleteMatch& match,
@@ -24,15 +25,16 @@ class AlternateNavInfoBarDelegate : public InfoBarDelegate {
   bool LinkClicked(WindowOpenDisposition disposition);
 
  private:
-  AlternateNavInfoBarDelegate(InfoBarService* owner,
-                              Profile* profile,
+  AlternateNavInfoBarDelegate(Profile* profile,
                               const string16& text,
                               const AutocompleteMatch& match,
                               const GURL& search_url);
-  virtual ~AlternateNavInfoBarDelegate();
+
+  // Returns an alternate nav infobar that owns |delegate|.
+  static scoped_ptr<InfoBar> CreateInfoBar(
+      scoped_ptr<AlternateNavInfoBarDelegate> delegate);
 
   // InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar(InfoBarService* owner) OVERRIDE;
   virtual int GetIconID() const OVERRIDE;
   virtual Type GetInfoBarType() const OVERRIDE;
 

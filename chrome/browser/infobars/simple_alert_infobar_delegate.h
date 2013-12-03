@@ -12,15 +12,15 @@
 
 class SimpleAlertInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a simple alert infobar delegate and adds it to |infobar_service|.
+  // Creates a simple alert infobar and delegate and adds the infobar to
+  // |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      int icon_id,  // May be |kNoIconID| if no icon is shown.
                      const string16& message,
                      bool auto_expire);
 
  private:
-  SimpleAlertInfoBarDelegate(InfoBarService* infobar_service,
-                             int icon_id,
+  SimpleAlertInfoBarDelegate(int icon_id,
                              const string16& message,
                              bool auto_expire);
   virtual ~SimpleAlertInfoBarDelegate();

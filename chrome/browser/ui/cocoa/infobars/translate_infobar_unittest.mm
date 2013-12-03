@@ -36,13 +36,11 @@ TranslateInfoBarDelegate::Type kTranslateToolbarStates[] = {
 
 class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
  public:
-  MockTranslateInfoBarDelegate(InfoBarService* infobar_service,
-                               TranslateInfoBarDelegate::Type type,
+  MockTranslateInfoBarDelegate(TranslateInfoBarDelegate::Type type,
                                TranslateErrors::Type error,
                                PrefService* prefs,
                                ShortcutConfiguration config)
-      : TranslateInfoBarDelegate(infobar_service, type, NULL, "en", "es", error,
-                                 prefs, config) {
+      : TranslateInfoBarDelegate(type, NULL, "en", "es", error, prefs, config) {
   }
 
   MOCK_METHOD0(Translate, void());
@@ -58,8 +56,13 @@ class MockTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
   MOCK_METHOD0(ToggleAlwaysTranslate, void());
 };
 
+}  // namespace
+
 class TranslationInfoBarTest : public CocoaProfileTest {
  public:
+  TranslationInfoBarTest() : CocoaProfileTest(), infobar_(NULL) {
+  }
+
   // Each test gets a single Mock translate delegate for the lifetime of
   // the test.
   virtual void SetUp() OVERRIDE {
@@ -68,32 +71,37 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     web_contents_.reset(
         WebContents::Create(WebContents::CreateParams(profile())));
     InfoBarService::CreateForWebContents(web_contents_.get());
-    CreateInfoBar();
   }
 
-  void CreateInfoBar() {
-    CreateInfoBar(TranslateInfoBarDelegate::BEFORE_TRANSLATE);
+  virtual void TearDown() OVERRIDE {
+    if (infobar_) {
+      infobar_->CloseSoon();
+      infobar_ = NULL;
+    }
+    CocoaProfileTest::TearDown();
   }
 
   void CreateInfoBar(TranslateInfoBarDelegate::Type type) {
     TranslateErrors::Type error = TranslateErrors::NONE;
     if (type == TranslateInfoBarDelegate::TRANSLATION_ERROR)
       error = TranslateErrors::NETWORK;
-    InfoBarService* infobar_service =
-        InfoBarService::FromWebContents(web_contents_.get());
     Profile* profile =
         Profile::FromBrowserContext(web_contents_->GetBrowserContext());
     ShortcutConfiguration config;
     config.never_translate_min_count = 3;
     config.always_translate_min_count = 3;
-    infobar_delegate_.reset(new MockTranslateInfoBarDelegate(
-        infobar_service, type, error, profile->GetPrefs(), config));
     [[infobar_controller_ view] removeFromSuperview];
 
-    InfoBarDelegate* base =
-        static_cast<InfoBarDelegate*>(infobar_delegate_.get());
-    infobar_.reset(
-        static_cast<InfoBarCocoa*>(base->CreateInfoBar(infobar_service)));
+    scoped_ptr<TranslateInfoBarDelegate> delegate(
+        new MockTranslateInfoBarDelegate(type, error, profile->GetPrefs(),
+                                         config));
+    scoped_ptr<InfoBar> infobar(
+        TranslateInfoBarDelegate::CreateInfoBar(delegate.Pass()));
+    if (infobar_)
+      infobar_->CloseSoon();
+    infobar_ = static_cast<InfoBarCocoa*>(infobar.release());
+    infobar_->SetOwner(InfoBarService::FromWebContents(web_contents_.get()));
+
     infobar_controller_.reset([static_cast<TranslateInfoBarControllerBase*>(
         infobar_->controller()) retain]);
 
@@ -104,23 +112,26 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     [[test_window() contentView] addSubview:[infobar_controller_ view]];
   }
 
+  MockTranslateInfoBarDelegate* infobar_delegate() const {
+    return static_cast<MockTranslateInfoBarDelegate*>(infobar_->delegate());
+  }
+
   scoped_ptr<WebContents> web_contents_;
-  scoped_ptr<MockTranslateInfoBarDelegate> infobar_delegate_;
-  scoped_ptr<InfoBarCocoa> infobar_;
+  InfoBarCocoa* infobar_;  // weak, deletes itself
   base::scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller_;
 };
 
 // Check that we can instantiate a Translate Infobar correctly.
 TEST_F(TranslationInfoBarTest, Instantiate) {
-  CreateInfoBar();
+  CreateInfoBar(TranslateInfoBarDelegate::BEFORE_TRANSLATE);
   ASSERT_TRUE(infobar_controller_.get());
 }
 
 // Check that clicking the Translate button calls Translate().
 TEST_F(TranslationInfoBarTest, TranslateCalledOnButtonPress) {
-  CreateInfoBar();
+  CreateInfoBar(TranslateInfoBarDelegate::BEFORE_TRANSLATE);
 
-  EXPECT_CALL(*infobar_delegate_, Translate()).Times(1);
+  EXPECT_CALL(*infobar_delegate(), Translate()).Times(1);
   [infobar_controller_ ok:nil];
 }
 
@@ -129,22 +140,23 @@ TEST_F(TranslationInfoBarTest, TranslateCalledOnButtonPress) {
 TEST_F(TranslationInfoBarTest, TranslateCalledInErrorMode) {
   CreateInfoBar(TranslateInfoBarDelegate::TRANSLATION_ERROR);
 
-  EXPECT_CALL(*infobar_delegate_, Translate()).Times(1);
+  EXPECT_CALL(*infobar_delegate(), Translate()).Times(1);
 
   [infobar_controller_ ok:nil];
 }
 
 // Check that clicking the "Show Original button calls RevertTranslation().
 TEST_F(TranslationInfoBarTest, RevertCalledOnButtonPress) {
-  CreateInfoBar();
+  CreateInfoBar(TranslateInfoBarDelegate::BEFORE_TRANSLATE);
 
-  EXPECT_CALL(*infobar_delegate_, RevertTranslation()).Times(1);
+  EXPECT_CALL(*infobar_delegate(), RevertTranslation()).Times(1);
   [infobar_controller_ showOriginal:nil];
 }
 
 // Check that items in the options menu are hooked up correctly.
 TEST_F(TranslationInfoBarTest, OptionsMenuItemsHookedUp) {
-  EXPECT_CALL(*infobar_delegate_, Translate())
+  CreateInfoBar(TranslateInfoBarDelegate::BEFORE_TRANSLATE);
+  EXPECT_CALL(*infobar_delegate(), Translate())
     .Times(0);
 
   [infobar_controller_ rebuildOptionsMenu:NO];
@@ -168,19 +180,19 @@ TEST_F(TranslationInfoBarTest, OptionsMenuItemsHookedUp) {
   NSMenuItem* aboutTranslateItem = [optionsMenuItems objectAtIndex:6];
 
   {
-    EXPECT_CALL(*infobar_delegate_, ToggleAlwaysTranslate())
+    EXPECT_CALL(*infobar_delegate(), ToggleAlwaysTranslate())
     .Times(1);
     [infobar_controller_ optionsMenuChanged:alwaysTranslateLanguateItem];
   }
 
   {
-    EXPECT_CALL(*infobar_delegate_, ToggleTranslatableLanguageByPrefs())
+    EXPECT_CALL(*infobar_delegate(), ToggleTranslatableLanguageByPrefs())
     .Times(1);
     [infobar_controller_ optionsMenuChanged:neverTranslateLanguateItem];
   }
 
   {
-    EXPECT_CALL(*infobar_delegate_, ToggleSiteBlacklist())
+    EXPECT_CALL(*infobar_delegate(), ToggleSiteBlacklist())
     .Times(1);
     [infobar_controller_ optionsMenuChanged:neverTranslateSiteItem];
   }
@@ -198,13 +210,13 @@ TEST_F(TranslationInfoBarTest, OptionsMenuItemsHookedUp) {
 // translate" mode doesn't trigger a translation or change state.
 // http://crbug.com/36666
 TEST_F(TranslationInfoBarTest, Bug36666) {
-  EXPECT_CALL(*infobar_delegate_, Translate())
+  CreateInfoBar(TranslateInfoBarDelegate::BEFORE_TRANSLATE);
+  EXPECT_CALL(*infobar_delegate(), Translate())
     .Times(0);
 
-  CreateInfoBar();
   int arbitrary_index = 2;
   [infobar_controller_ sourceLanguageModified:arbitrary_index];
-  EXPECT_CALL(*infobar_delegate_, Translate())
+  EXPECT_CALL(*infobar_delegate(), Translate())
     .Times(0);
 }
 
@@ -212,11 +224,10 @@ TEST_F(TranslationInfoBarTest, Bug36666) {
 // each of the states.
 // http://crbug.com/36895
 TEST_F(TranslationInfoBarTest, Bug36895) {
-  EXPECT_CALL(*infobar_delegate_, Translate())
-    .Times(0);
-
   for (size_t i = 0; i < arraysize(kTranslateToolbarStates); ++i) {
     CreateInfoBar(kTranslateToolbarStates[i]);
+    EXPECT_CALL(*infobar_delegate(), Translate())
+      .Times(0);
     EXPECT_TRUE(
         [infobar_controller_ verifyLayout]) << "Layout wrong, for state #" << i;
   }
@@ -251,5 +262,3 @@ TEST_F(TranslationInfoBarTest, TriggerShowNeverTranslateButton) {
   EXPECT_TRUE([[controller alwaysTranslateButton] superview] == nil);
   EXPECT_TRUE([[controller neverTranslateButton] superview] != nil);
 }
-
-} // namespace

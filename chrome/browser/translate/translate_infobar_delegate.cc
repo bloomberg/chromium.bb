@@ -10,6 +10,7 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_accept_languages.h"
@@ -58,16 +59,18 @@ void TranslateInfoBarDelegate::Create(
   if ((infobar_type == TranslateInfoBarDelegate::AFTER_TRANSLATE) ||
       (infobar_type == TranslateInfoBarDelegate::TRANSLATING)) {
     TranslateTabHelper* translate_tab_helper =
-      TranslateTabHelper::FromWebContents(infobar_service->web_contents());
+        TranslateTabHelper::FromWebContents(infobar_service->web_contents());
     if (!translate_tab_helper ||
-         translate_tab_helper->language_state().InTranslateNavigation())
+        translate_tab_helper->language_state().InTranslateNavigation())
       return;
   }
 
   // Find any existing translate infobar delegate.
+  InfoBar* old_infobar = NULL;
   TranslateInfoBarDelegate* old_delegate = NULL;
   for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
-    old_delegate = infobar_service->infobar_at(i)->AsTranslateInfoBarDelegate();
+    old_infobar = infobar_service->infobar_at(i);
+    old_delegate = old_infobar->delegate()->AsTranslateInfoBarDelegate();
     if (old_delegate) {
       if (!replace_existing_infobar)
         return;
@@ -76,12 +79,12 @@ void TranslateInfoBarDelegate::Create(
   }
 
   // Add the new delegate.
-  scoped_ptr<InfoBarDelegate> infobar(
-      new TranslateInfoBarDelegate(infobar_service, infobar_type, old_delegate,
-                                   original_language, target_language,
-                                   error_type, prefs, shortcut_config));
+  scoped_ptr<InfoBar> infobar(CreateInfoBar(
+      scoped_ptr<TranslateInfoBarDelegate>(new TranslateInfoBarDelegate(
+          infobar_type, old_delegate, original_language, target_language,
+          error_type, prefs, shortcut_config))));
   if (old_delegate)
-    infobar_service->ReplaceInfoBar(old_delegate, infobar.Pass());
+    infobar_service->ReplaceInfoBar(old_infobar, infobar.Pass());
   else
     infobar_service->AddInfoBar(infobar.Pass());
 }
@@ -125,7 +128,7 @@ void TranslateInfoBarDelegate::RevertTranslation() {
   TranslateManager::GetInstance()->RevertTranslation(web_contents());
   UMA_HISTOGRAM_BOOLEAN(TranslateBrowserMetrics::GetMetricsName(
       TranslateBrowserMetrics::UMA_REVERT_TRANSLATION), true);
-  RemoveSelf();
+  infobar()->RemoveSelf();
 }
 
 void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
@@ -168,7 +171,7 @@ void TranslateInfoBarDelegate::ToggleTranslatableLanguageByPrefs() {
         TranslateTabHelper::FromWebContents(web_contents());
     DCHECK(translate_tab_helper);
     translate_tab_helper->language_state().SetTranslateEnabled(false);
-    RemoveSelf();
+    infobar()->RemoveSelf();
   }
 
   UMA_HISTOGRAM_BOOLEAN(TranslateBrowserMetrics::GetMetricsName(
@@ -193,7 +196,7 @@ void TranslateInfoBarDelegate::ToggleSiteBlacklist() {
         TranslateTabHelper::FromWebContents(web_contents());
     DCHECK(translate_tab_helper);
     translate_tab_helper->language_state().SetTranslateEnabled(false);
-    RemoveSelf();
+    infobar()->RemoveSelf();
   }
 
   UMA_HISTOGRAM_BOOLEAN(TranslateBrowserMetrics::GetMetricsName(
@@ -237,7 +240,7 @@ void TranslateInfoBarDelegate::NeverTranslatePageLanguage() {
   UMA_HISTOGRAM_BOOLEAN(TranslateBrowserMetrics::GetMetricsName(
       TranslateBrowserMetrics::UMA_NEVER_TRANSLATE_LANG), true);
 
-  RemoveSelf();
+    infobar()->RemoveSelf();
 }
 
 string16 TranslateInfoBarDelegate::GetMessageInfoBarText() {
@@ -359,7 +362,6 @@ void TranslateInfoBarDelegate::GetAfterTranslateStrings(
 }
 
 TranslateInfoBarDelegate::TranslateInfoBarDelegate(
-    InfoBarService* infobar_service,
     Type infobar_type,
     TranslateInfoBarDelegate* old_delegate,
     const std::string& original_language,
@@ -367,7 +369,7 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     TranslateErrors::Type error_type,
     PrefService* prefs,
     ShortcutConfiguration shortcut_config)
-    : InfoBarDelegate(infobar_service),
+    : InfoBarDelegate(),
       infobar_type_(infobar_type),
       background_animation_(NONE),
       original_language_index_(kNoIndex),
@@ -393,6 +395,9 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
       target_language_index_ = iter - languages_.begin();
   }
 }
+
+// TranslateInfoBarDelegate::CreateInfoBar() is implemented in platform-specific
+// files.
 
 void TranslateInfoBarDelegate::InfoBarDismissed() {
   if (infobar_type_ != BEFORE_TRANSLATE)

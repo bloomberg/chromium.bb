@@ -12,7 +12,7 @@
 #include "chrome/browser/content_settings/content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/infobars/infobar_delegate.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/common/content_settings.h"
@@ -391,9 +391,5 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
   website_settings()->OnUIClosing();
   ASSERT_EQ(1u, infobar_service()->infobar_count());
 
-  // Removing an |InfoBarDelegate| from the |InfoBarService| does not delete
-  // it. Hence the |delegate| must be cleaned up after it was removed from the
-  // |infobar_service|.
-  scoped_ptr<InfoBarDelegate> delegate(infobar_service()->infobar_at(0));
-  infobar_service()->RemoveInfoBar(delegate.get());
+  infobar_service()->RemoveInfoBar(infobar_service()->infobar_at(0));
 }

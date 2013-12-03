@@ -19,17 +19,16 @@ class InfoBarService;
 // and handling of geolocation permission infobars to the user.
 class GeolocationInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a geolocation infobar delegate and adds it to |infobar_service|.
-  // Returns the delegate if it was successfully added.
-  static InfoBarDelegate* Create(InfoBarService* infobar_service,
-                                 PermissionQueueController* controller,
-                                 const PermissionRequestID& id,
-                                 const GURL& requesting_frame,
-                                 const std::string& display_languages);
+  // Creates a geolocation infobar and delegate and adds the infobar to
+  // |infobar_service|.  Returns the infobar if it was successfully added.
+  static InfoBar* Create(InfoBarService* infobar_service,
+                         PermissionQueueController* controller,
+                         const PermissionRequestID& id,
+                         const GURL& requesting_frame,
+                         const std::string& display_languages);
 
  protected:
-  GeolocationInfoBarDelegate(InfoBarService* infobar_service,
-                             PermissionQueueController* controller,
+  GeolocationInfoBarDelegate(PermissionQueueController* controller,
                              const PermissionRequestID& id,
                              const GURL& requesting_frame,
                              int contents_unique_id,

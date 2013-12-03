@@ -12,9 +12,9 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "ui/gfx/animation/slide_animation.h"
 
-InfoBar::InfoBar(InfoBarService* owner, InfoBarDelegate* delegate)
-    : owner_(owner),
-      delegate_(delegate),
+InfoBar::InfoBar(scoped_ptr<InfoBarDelegate> delegate)
+    : owner_(NULL),
+      delegate_(delegate.Pass()),
       container_(NULL),
       animation_(this),
       arrow_height_(0),
@@ -22,12 +22,13 @@ InfoBar::InfoBar(InfoBarService* owner, InfoBarDelegate* delegate)
       arrow_half_width_(0),
       bar_height_(0),
       bar_target_height_(kDefaultBarTargetHeight) {
-  DCHECK(owner_ != NULL);
   DCHECK(delegate_ != NULL);
   animation_.SetTweenType(gfx::Tween::LINEAR);
+  delegate_->set_infobar(this);
 }
 
 InfoBar::~InfoBar() {
+  DCHECK(!owner_);
 }
 
 // static
@@ -48,6 +49,13 @@ SkColor InfoBar::GetBottomColor(InfoBarDelegate::Type infobar_type) {
       SkColorSetRGB(217, 217, 217);  // Gray
   return (infobar_type == InfoBarDelegate::WARNING_TYPE) ?
       kWarningBackgroundColorBottom : kPageActionBackgroundColorBottom;
+}
+
+void InfoBar::SetOwner(InfoBarService* owner) {
+  DCHECK(!owner_);
+  owner_ = owner;
+  delegate_->StoreActiveEntryUniqueID();
+  PlatformSpecificSetOwner();
 }
 
 void InfoBar::Show(bool animate) {
@@ -90,6 +98,11 @@ void InfoBar::CloseSoon() {
   MaybeDelete();
 }
 
+void InfoBar::RemoveSelf() {
+  if (owner_)
+    owner_->RemoveInfoBar(this);
+}
+
 void InfoBar::SetBarTargetHeight(int height) {
   if (bar_target_height_ != height) {
     bar_target_height_ = height;
@@ -99,19 +112,6 @@ void InfoBar::SetBarTargetHeight(int height) {
 
 void InfoBar::AnimationProgressed(const gfx::Animation* animation) {
   RecalculateHeights(false);
-}
-
-void InfoBar::RemoveSelf() {
-  // |owner_| should never be NULL here.  If it is, then someone violated what
-  // they were supposed to do -- e.g. a ConfirmInfoBarDelegate subclass returned
-  // true from Accept() or Cancel() even though the infobar was already closing.
-  // In the worst case, if we also switched tabs during that process, then
-  // |this| has already been destroyed.  But if that's the case, then we're
-  // going to deref a garbage |this| pointer here whether we check |owner_| or
-  // not, and in other cases (where we're still closing and |this| is valid),
-  // checking |owner_| here will avoid a NULL deref.
-  if (owner_)
-    owner_->RemoveInfoBar(delegate_);
 }
 
 int InfoBar::OffsetY(const gfx::Size& prefsize) const {
@@ -173,10 +173,9 @@ void InfoBar::RecalculateHeights(bool force_notify) {
 }
 
 void InfoBar::MaybeDelete() {
-  if (!owner_ && delegate_ && (animation_.GetCurrentValue() == 0.0)) {
+  if (!owner_ && (animation_.GetCurrentValue() == 0.0)) {
     if (container_)
       container_->RemoveInfoBar(this);
-    delete delegate_;
-    delegate_ = NULL;
+    delete this;
   }
 }

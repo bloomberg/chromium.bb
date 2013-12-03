@@ -9,7 +9,7 @@
 const char MockConfirmInfoBarDelegate::kMessage[] = "MockConfirmInfoBarMessage";
 
 MockConfirmInfoBarDelegate::MockConfirmInfoBarDelegate(Owner* owner)
-    : ConfirmInfoBarDelegate(NULL),
+    : ConfirmInfoBarDelegate(),
       owner_(owner),
       closes_on_action_(true),
       icon_accessed_(false),

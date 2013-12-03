@@ -15,15 +15,16 @@
 // ConfirmInfoBarDelegate -----------------------------------------------------
 
 // static
-InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
-  return new ConfirmInfoBar(owner, this);
+scoped_ptr<InfoBar> ConfirmInfoBarDelegate::CreateInfoBar(
+    scoped_ptr<ConfirmInfoBarDelegate> delegate) {
+  return scoped_ptr<InfoBar>(new ConfirmInfoBar(delegate.Pass()));
 }
 
 
 // ConfirmInfoBar -------------------------------------------------------------
 
-ConfirmInfoBar::ConfirmInfoBar(InfoBarService* owner, InfoBarDelegate* delegate)
-    : InfoBarAndroid(owner, delegate),
+ConfirmInfoBar::ConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate> delegate)
+    : InfoBarAndroid(delegate.PassAs<InfoBarDelegate>()),
       java_confirm_delegate_() {
 }
 

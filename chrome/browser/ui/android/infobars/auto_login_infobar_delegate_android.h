@@ -11,7 +11,7 @@
 
 class AutoLoginInfoBarDelegateAndroid : public AutoLoginInfoBarDelegate {
  public:
-  AutoLoginInfoBarDelegateAndroid(InfoBarService* owner, const Params& params);
+  explicit AutoLoginInfoBarDelegateAndroid(const Params& params);
   virtual ~AutoLoginInfoBarDelegateAndroid();
 
   // AutoLoginInfoBarDelegate:

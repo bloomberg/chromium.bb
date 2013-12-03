@@ -31,11 +31,12 @@ class AutoLoginInfoBarDelegate : public ConfirmInfoBarDelegate,
     std::string username;
   };
 
-  // Creates an autologin infobar delegate and adds it to |infobar_service|.
+  // Creates an autologin infobar and delegate and adds the infobar to
+  // |infobar_service|.
   static void Create(InfoBarService* infobar_service, const Params& params);
 
  protected:
-  AutoLoginInfoBarDelegate(InfoBarService* owner, const Params& params);
+  explicit AutoLoginInfoBarDelegate(const Params& params);
   virtual ~AutoLoginInfoBarDelegate();
 
  private:

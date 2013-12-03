@@ -16,11 +16,11 @@ class InfoBarService;
 class GoogleApiKeysInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // If Google API keys are missing, creates a missing Google API Keys infobar
-  // delegate and adds it to |infobar_service|.
+  // and delegate and adds the infobar to |infobar_service|.
   static void Create(InfoBarService* infobar_service);
 
  private:
-  explicit GoogleApiKeysInfoBarDelegate(InfoBarService* infobar_service);
+  GoogleApiKeysInfoBarDelegate();
   virtual ~GoogleApiKeysInfoBarDelegate();
 
   virtual string16 GetMessageText() const OVERRIDE;

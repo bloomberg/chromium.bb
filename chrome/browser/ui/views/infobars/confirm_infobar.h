@@ -22,7 +22,7 @@ class Label;
 class ConfirmInfoBar : public InfoBarView,
                        public views::LinkListener {
  public:
-  ConfirmInfoBar(InfoBarService* owner, ConfirmInfoBarDelegate* delegate);
+  explicit ConfirmInfoBar(scoped_ptr<ConfirmInfoBarDelegate> delegate);
 
  private:
   virtual ~ConfirmInfoBar();

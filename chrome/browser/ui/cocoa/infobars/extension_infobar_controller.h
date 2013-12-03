@@ -20,9 +20,6 @@ class InfobarBridge;
   // The native extension view retrieved from the extension host. Weak.
   NSView* extensionView_;
 
-  // The window containing this InfoBar. Weak.
-  NSWindow* window_;
-
   // The InfoBar's button with the Extension's icon that launches the context
   // menu.
   base::scoped_nsobject<MenuButton> dropdownButton_;

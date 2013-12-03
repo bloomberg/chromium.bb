@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/notifications/notification.h"
@@ -67,8 +68,8 @@ using blink::WebTextDirection;
 // permissions.
 class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a notification permission infobar delegate and adds it to
-  // |infobar_service|.
+  // Creates a notification permission infobar and delegate and adds the infobar
+  // to |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      DesktopNotificationService* notification_service,
                      const GURL& origin,
@@ -79,7 +80,6 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
 
  private:
   NotificationPermissionInfoBarDelegate(
-      InfoBarService* infobar_service,
       DesktopNotificationService* notification_service,
       const GURL& origin,
       const string16& display_name,
@@ -127,21 +127,21 @@ void NotificationPermissionInfoBarDelegate::Create(
     int process_id,
     int route_id,
     int callback_context) {
-  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new NotificationPermissionInfoBarDelegate(
-          infobar_service, notification_service, origin, display_name,
-          process_id, route_id, callback_context)));
+  infobar_service->AddInfoBar(ConfirmInfoBarDelegate::CreateInfoBar(
+      scoped_ptr<ConfirmInfoBarDelegate>(
+          new NotificationPermissionInfoBarDelegate(
+              notification_service, origin, display_name, process_id, route_id,
+              callback_context))));
 }
 
 NotificationPermissionInfoBarDelegate::NotificationPermissionInfoBarDelegate(
-    InfoBarService* infobar_service,
     DesktopNotificationService* notification_service,
     const GURL& origin,
     const string16& display_name,
     int process_id,
     int route_id,
     int callback_context)
-    : ConfirmInfoBarDelegate(infobar_service),
+    : ConfirmInfoBarDelegate(),
       origin_(origin),
       display_name_(display_name),
       notification_service_(notification_service),

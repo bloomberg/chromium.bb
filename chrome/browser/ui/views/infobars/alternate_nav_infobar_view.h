@@ -5,8 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_INFOBARS_ALTERNATE_NAV_INFOBAR_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_INFOBARS_ALTERNATE_NAV_INFOBAR_VIEW_H_
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "ui/views/controls/link_listener.h"
 
@@ -16,8 +15,8 @@ class AlternateNavInfoBarDelegate;
 class AlternateNavInfoBarView : public InfoBarView,
                                 public views::LinkListener {
  public:
-  AlternateNavInfoBarView(InfoBarService* owner,
-                          AlternateNavInfoBarDelegate* delegate);
+  explicit AlternateNavInfoBarView(
+      scoped_ptr<AlternateNavInfoBarDelegate> delegate);
 
  private:
   virtual ~AlternateNavInfoBarView();

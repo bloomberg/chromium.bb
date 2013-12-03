@@ -116,11 +116,14 @@
 }
 
 - (void)removeSelf {
-  infobar_->RemoveSelfCocoa();
+  infobar_->RemoveSelf();
 }
 
 - (void)addAdditionalControls {
   // Default implementation does nothing.
+}
+
+- (void)infobarWillHide {
 }
 
 - (void)infobarWillClose {
@@ -149,9 +152,6 @@
 }
 
 - (void)disablePopUpMenu:(NSMenu*)menu {
-  // Remove the menu if visible.
-  [menu cancelTracking];
-
   // If the menu is re-opened, prevent queries to update items.
   [menu setDelegate:nil];
 
