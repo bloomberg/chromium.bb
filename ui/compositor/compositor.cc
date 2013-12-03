@@ -508,7 +508,7 @@ void Compositor::Layout() {
 }
 
 scoped_ptr<cc::OutputSurface> Compositor::CreateOutputSurface(bool fallback) {
-  return ContextFactory::GetInstance()->CreateOutputSurface(this);
+  return ContextFactory::GetInstance()->CreateOutputSurface(this, fallback);
 }
 
 void Compositor::DidCommit() {

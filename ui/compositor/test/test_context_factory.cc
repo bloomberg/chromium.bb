@@ -15,7 +15,8 @@ TestContextFactory::TestContextFactory() {}
 TestContextFactory::~TestContextFactory() {}
 
 scoped_ptr<cc::OutputSurface> TestContextFactory::CreateOutputSurface(
-    Compositor* compositor) {
+    Compositor* compositor, bool software_fallback) {
+  DCHECK(!software_fallback);
   return make_scoped_ptr(
       new cc::OutputSurface(cc::TestContextProvider::Create()));
 }

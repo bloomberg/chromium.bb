@@ -30,7 +30,8 @@ bool DefaultContextFactory::Initialize() {
 }
 
 scoped_ptr<cc::OutputSurface> DefaultContextFactory::CreateOutputSurface(
-    Compositor* compositor) {
+    Compositor* compositor, bool software_fallback) {
+  DCHECK(!software_fallback);
   blink::WebGraphicsContext3D::Attributes attrs;
   attrs.depth = false;
   attrs.stencil = false;

@@ -86,7 +86,7 @@ class COMPOSITOR_EXPORT ContextFactory {
   // per-compositor data (e.g. a shared context), that needs to be cleaned up
   // by calling RemoveCompositor when the compositor gets destroyed.
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
-      Compositor* compositor) = 0;
+      Compositor* compositor, bool software_fallback) = 0;
 
   // Creates a reflector that copies the content of the |mirrored_compositor|
   // onto |mirroing_layer|.

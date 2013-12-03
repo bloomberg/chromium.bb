@@ -23,7 +23,7 @@ class DefaultContextFactory : public ContextFactory {
 
   // ContextFactory implementation
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
-      Compositor* compositor) OVERRIDE;
+      Compositor* compositor, bool software_fallback) OVERRIDE;
 
   virtual scoped_refptr<Reflector> CreateReflector(
       Compositor* compositor,

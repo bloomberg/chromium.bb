@@ -179,7 +179,7 @@ scoped_ptr<cc::SoftwareOutputDevice> CreateSoftwareOutputDevice(
 }
 
 scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
-    ui::Compositor* compositor) {
+    ui::Compositor* compositor, bool software_fallback) {
   PerCompositorData* data = per_compositor_data_[compositor];
   if (!data)
     data = CreatePerCompositorData(compositor);
@@ -187,7 +187,8 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kUIEnableSoftwareCompositing)) {
+  if (!command_line->HasSwitch(switches::kUIEnableSoftwareCompositing) &&
+      !software_fallback) {
     context_provider = ContextProviderCommandBuffer::Create(
         GpuProcessTransportFactory::CreateContextCommon(data->surface_id),
         "Compositor");

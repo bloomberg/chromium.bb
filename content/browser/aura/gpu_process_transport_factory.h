@@ -36,7 +36,7 @@ class GpuProcessTransportFactory
 
   // ui::ContextFactory implementation.
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
-      ui::Compositor* compositor) OVERRIDE;
+      ui::Compositor* compositor, bool software_fallback) OVERRIDE;
   virtual scoped_refptr<ui::Reflector> CreateReflector(
       ui::Compositor* source,
       ui::Layer* target) OVERRIDE;
