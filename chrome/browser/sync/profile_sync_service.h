@@ -700,6 +700,9 @@ class ProfileSyncService
   browser_sync::FaviconCache* GetFaviconCache();
 
  protected:
+  // Used by test classes that derive from ProfileSyncService.
+  virtual browser_sync::SyncBackendHost* GetBackendForTest();
+
   // Helper to configure the priority data types.
   void ConfigurePriorityDataTypes();
 

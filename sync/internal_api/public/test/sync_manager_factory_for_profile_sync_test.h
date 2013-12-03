@@ -15,12 +15,14 @@ namespace syncer {
 
 class SyncManagerFactoryForProfileSyncTest : public syncer::SyncManagerFactory {
  public:
-  SyncManagerFactoryForProfileSyncTest(base::Closure init_callback);
+  SyncManagerFactoryForProfileSyncTest(base::Closure init_callback,
+                                       bool set_initial_sync_ended);
   virtual ~SyncManagerFactoryForProfileSyncTest();
   virtual scoped_ptr<syncer::SyncManager> CreateSyncManager(
       std::string name) OVERRIDE;
  private:
   base::Closure init_callback_;
+  bool set_initial_sync_ended_;
 };
 
 }  // namespace syncer
