@@ -52,6 +52,7 @@ using WebCore::TypeBuilder::Debugger::CallFrame;
 using WebCore::TypeBuilder::Debugger::FunctionDetails;
 using WebCore::TypeBuilder::Debugger::Location;
 using WebCore::TypeBuilder::Debugger::ScriptId;
+using WebCore::TypeBuilder::Debugger::StackTrace;
 using WebCore::TypeBuilder::Runtime::RemoteObject;
 
 namespace WebCore {
@@ -443,12 +444,13 @@ void InspectorDebuggerAgent::getStepInPositions(ErrorString* errorString, const 
     injectedScript.getStepInPositions(errorString, m_currentCallStack, callFrameId, positions);
 }
 
-void InspectorDebuggerAgent::getBacktrace(ErrorString* errorString, RefPtr<Array<CallFrame> >& callFrames)
+void InspectorDebuggerAgent::getBacktrace(ErrorString* errorString, RefPtr<Array<CallFrame> >& callFrames, RefPtr<StackTrace>& asyncStackTrace)
 {
     if (!assertPaused(errorString))
         return;
     scriptDebugServer().updateCallStack(&m_currentCallStack);
     callFrames = currentCallFrames();
+    asyncStackTrace = currentAsyncStackTrace();
 }
 
 String InspectorDebuggerAgent::scriptURL(JavaScriptCallFrame* frame)
@@ -591,18 +593,20 @@ void InspectorDebuggerAgent::searchInContent(ErrorString* error, const String& s
         *error = "No script for id: " + scriptId;
 }
 
-void InspectorDebuggerAgent::setScriptSource(ErrorString* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, const String& scriptId, const String& newContent, const bool* const preview, RefPtr<Array<CallFrame> >& newCallFrames, RefPtr<JSONObject>& result)
+void InspectorDebuggerAgent::setScriptSource(ErrorString* error, RefPtr<TypeBuilder::Debugger::SetScriptSourceError>& errorData, const String& scriptId, const String& newContent, const bool* const preview, RefPtr<Array<CallFrame> >& newCallFrames, RefPtr<JSONObject>& result, RefPtr<StackTrace>& asyncStackTrace)
 {
     bool previewOnly = preview && *preview;
     ScriptObject resultObject;
     if (!scriptDebugServer().setScriptSource(scriptId, newContent, previewOnly, error, errorData, &m_currentCallStack, &resultObject))
         return;
     newCallFrames = currentCallFrames();
+    asyncStackTrace = currentAsyncStackTrace();
     RefPtr<JSONObject> object = scriptToInspectorObject(resultObject);
     if (object)
         result = object;
 }
-void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String& callFrameId, RefPtr<Array<CallFrame> >& newCallFrames, RefPtr<JSONObject>& result)
+
+void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String& callFrameId, RefPtr<Array<CallFrame> >& newCallFrames, RefPtr<JSONObject>& result, RefPtr<StackTrace>& asyncStackTrace)
 {
     if (!isPaused() || m_currentCallStack.isNull()) {
         *errorString = "Attempt to access callframe when debugger is not on pause";
@@ -617,6 +621,7 @@ void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String
     injectedScript.restartFrame(errorString, m_currentCallStack, callFrameId, &result);
     scriptDebugServer().updateCallStack(&m_currentCallStack);
     newCallFrames = currentCallFrames();
+    asyncStackTrace = currentAsyncStackTrace();
 }
 
 void InspectorDebuggerAgent::getScriptSource(ErrorString* error, const String& scriptId, String* scriptSource)
@@ -905,6 +910,12 @@ PassRefPtr<Array<CallFrame> > InspectorDebuggerAgent::currentCallFrames()
     return injectedScript.wrapCallFrames(m_currentCallStack);
 }
 
+PassRefPtr<StackTrace> InspectorDebuggerAgent::currentAsyncStackTrace()
+{
+    // FIXME: Implement async stack traces.
+    return 0;
+}
+
 String InspectorDebuggerAgent::sourceMapURLForScript(const Script& script)
 {
     bool deprecated;
@@ -1006,7 +1017,7 @@ void InspectorDebuggerAgent::didPause(ScriptState* scriptState, const ScriptValu
         }
     }
 
-    m_frontend->paused(currentCallFrames(), m_breakReason, m_breakAuxData, hitBreakpointIds);
+    m_frontend->paused(currentCallFrames(), m_breakReason, m_breakAuxData, hitBreakpointIds, currentAsyncStackTrace());
     m_javaScriptPauseScheduled = false;
 
     if (!m_continueToLocationBreakpointId.isEmpty()) {
