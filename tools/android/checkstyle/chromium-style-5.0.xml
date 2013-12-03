@@ -24,8 +24,10 @@
       <message key="import.unused" value="Unused import: {0}. Use :JavaImportOrganize (ECLIM) or Ctrl+Shift+O (Eclipse) to sort imports"/>
     </module>
     <module name="JavadocType">
-      <property name="severity" value="warning"/>
-      <property name="scope" value="protected"/>
+      <property name="severity" value="error"/>
+      <property name="tokens" value="INTERFACE_DEF, CLASS_DEF"/>
+      <property name="scope" value="public"/>
+      <message key="javadoc.missing" value="Public classes and interfaces require JavaDoc comments."/>
     </module>
     <module name="JavadocMethod">
       <property name="severity" value="warning"/>
@@ -95,7 +97,9 @@
       <property name="severity" value="error"/>
       <property name="reliefPattern" value=".*"/>
     </module>
-    <module name="ModifierOrder"/>
+    <module name="ModifierOrder">
+      <property name="severity" value="error"/>
+    </module>
     <module name="WhitespaceAround">
       <property name="severity" value="error"/>
       <property name="tokens" value="ASSIGN, BAND, BAND_ASSIGN, BOR, BOR_ASSIGN, BSR, BSR_ASSIGN, BXOR, BXOR_ASSIGN, COLON, DIV, DIV_ASSIGN, EQUAL, GE, GT, LAND, LE, LITERAL_ASSERT, LITERAL_CATCH, LITERAL_DO, LITERAL_ELSE, LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF, LITERAL_RETURN, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, LOR, LT, MINUS, MINUS_ASSIGN, MOD, MOD_ASSIGN, NOT_EQUAL, PLUS, PLUS_ASSIGN, QUESTION, SL, SLIST, SL_ASSIGN, SR, SR_ASSIGN, STAR, STAR_ASSIGN, TYPE_EXTENSION_AND" />
@@ -121,9 +125,9 @@
       <property name="severity" value="warning"/>
     </module>
     <module name="ImportOrder">
-      <property name="severity" value="warning"/>
+      <property name="severity" value="error"/>
       <message key="import.ordering" value="Wrong order for {0} import. Use :JavaImportOrganize (ECLIM) or Ctrl+Shift+O (Eclipse) to sort imports"/>
-      <property name="groups" value="android, com, org, java"/>
+      <property name="groups" value="android, com, dalvik, gov, junit, libcore, net, org, java, javax"/>
       <property name="ordered" value="true"/>
       <property name="option" value="top"/>
       <property name="separated" value="true"/>
@@ -142,6 +146,7 @@
     <property name="message" value="All TODOs should be named.  e.g. &quot;TODO(johndoe):"/>
   </module>
   <module name="RegexpSingleline">
+    <property name="severity" value="error"/>
     <property name="format" value="[ \t]+$"/>
     <property name="message" value="Trailing whitespace"/>
     </module>
