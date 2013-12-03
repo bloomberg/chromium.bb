@@ -141,7 +141,7 @@ public:
 
     void didModifySeamlessParentStyleSheet() { m_dirtyTreeScopes.markDocument(); }
     void didRemoveShadowRoot(ShadowRoot*);
-    void appendActiveAuthorStyleSheets(StyleResolver*);
+    void appendActiveAuthorStyleSheets();
     void getActiveAuthorStyleSheets(Vector<const Vector<RefPtr<CSSStyleSheet> >*>& activeAuthorStyleSheets) const;
 
     StyleResolver* resolverIfExists() const
@@ -161,13 +161,17 @@ public:
 
     bool hasResolver() const { return m_resolver.get(); }
     void clearResolver();
+    void clearMasterResolver();
 
     CSSFontSelector* fontSelector();
     void didAttach();
     void didDetach();
     bool shouldClearResolver() const;
-    StyleResolverChange resolverChanged(StyleResolverUpdateMode);
+    StyleResolverChange resolverChanged(RecalcStyleTime, StyleResolverUpdateMode);
     unsigned resolverAccessCount() const;
+
+    void collectDocumentActiveStyleSheets(StyleSheetCollectionBase&);
+    void markDocumentDirty() { m_dirtyTreeScopes.markDocument(); }
 
 private:
     StyleEngine(Document&);
@@ -178,6 +182,9 @@ private:
     bool shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode);
     void resolverThrowawayTimerFired(Timer<StyleEngine>*);
 
+    bool isMaster() const { return m_isMaster; }
+    Document* master();
+
     typedef ListHashSet<TreeScope*, 16> TreeScopeSet;
     static void insertTreeScopeInDocumentOrder(TreeScopeSet&, TreeScope*);
     void clearMediaQueryRuleSetOnTreeScopeStyleSheets(TreeScopeSet treeScopes);
@@ -185,6 +192,7 @@ private:
     void createResolver();
 
     Document& m_document;
+    bool m_isMaster;
 
     // Track the number of currently loading top-level stylesheets needed for rendering.
     // Sheets loaded using the @import directive are not included in this count.

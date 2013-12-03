@@ -41,7 +41,7 @@ public:
     explicit StyleTreeScopeTracker(Document&);
 
     void mark(TreeScope&);
-    void markDocument() { m_isDocumentMarked = true; }
+    void markDocument();
     bool isSubscopeMarked() const { return m_set.isEmpty(); }
     bool isDocumentMarked() const { return m_isDocumentMarked; }
     void clear();

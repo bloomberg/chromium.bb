@@ -166,8 +166,6 @@ StyleResolver::StyleResolver(Document& document)
             fontSelector()->addFontFaceRule((*it)->fontFaceRule());
     }
 #endif
-
-    document.styleEngine()->appendActiveAuthorStyleSheets(this);
 }
 
 void StyleResolver::initWatchedSelectorRules(const Vector<RefPtr<StyleRule> >& watchedSelectors)

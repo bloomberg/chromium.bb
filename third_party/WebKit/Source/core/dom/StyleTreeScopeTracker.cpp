@@ -28,6 +28,8 @@
 #include "core/dom/StyleTreeScopeTracker.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/StyleEngine.h" // FIXME: This dependency is unfortuante. Probably we should flatten this class again to StyleEngine.
+#include "core/html/HTMLImport.h"
 
 namespace WebCore {
 
@@ -35,6 +37,13 @@ StyleTreeScopeTracker::StyleTreeScopeTracker(Document& document)
     : m_document(document)
     , m_isDocumentMarked(true)
 {
+}
+
+void StyleTreeScopeTracker::markDocument()
+{
+    m_isDocumentMarked = true;
+    if (!HTMLImport::isMaster(&m_document))
+        m_document.import()->master()->styleEngine()->markDocumentDirty();
 }
 
 void StyleTreeScopeTracker::mark(TreeScope& scope)

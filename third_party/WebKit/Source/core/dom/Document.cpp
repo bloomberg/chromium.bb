@@ -3171,8 +3171,12 @@ void Document::evaluateMediaQueryList()
 
 void Document::styleResolverChanged(RecalcStyleTime updateTime, StyleResolverUpdateMode updateMode)
 {
-    StyleResolverChange change = m_styleEngine->resolverChanged(updateMode);
+    // styleResolverChanged() can be invoked during Document destruction.
+    // We just skip that case.
+    if (!m_styleEngine)
+        return;
 
+    StyleResolverChange change = m_styleEngine->resolverChanged(updateTime, updateMode);
     if (change.needsRepaint()) {
         // We need to manually repaint because we avoid doing all repaints in layout or style
         // recalc while sheets are still loading to avoid FOUC.
@@ -5202,19 +5206,21 @@ DocumentLifecycleNotifier& Document::lifecycleNotifier()
 
 void Document::removedStyleSheet(StyleSheet* sheet, RecalcStyleTime when, StyleResolverUpdateMode updateMode)
 {
-    if (!isActive())
-        return;
-
-    styleEngine()->modifiedStyleSheet(sheet);
+    // If we're in document teardown, then we don't need this notification of our sheet's removal.
+    // styleResolverChanged() is needed even when the document is inactive so that
+    // imported docuements (which is inactive) notifies the change to the master document.
+    if (isActive())
+        styleEngine()->modifiedStyleSheet(sheet);
     styleResolverChanged(when, updateMode);
 }
 
 void Document::modifiedStyleSheet(StyleSheet* sheet, RecalcStyleTime when, StyleResolverUpdateMode updateMode)
 {
-    if (!isActive())
-        return;
-
-    styleEngine()->modifiedStyleSheet(sheet);
+    // If we're in document teardown, then we don't need this notification of our sheet's removal.
+    // styleResolverChanged() is needed even when the document is inactive so that
+    // imported docuements (which is inactive) notifies the change to the master document.
+    if (isActive())
+        styleEngine()->modifiedStyleSheet(sheet);
     styleResolverChanged(when, updateMode);
 }
 

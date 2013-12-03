@@ -45,6 +45,7 @@ class HTMLImportsController;
 class HTMLImport : public TreeNode<HTMLImport> {
 public:
     static bool unblock(HTMLImport*);
+    static bool isMaster(Document*);
 
     virtual ~HTMLImport() { }
 

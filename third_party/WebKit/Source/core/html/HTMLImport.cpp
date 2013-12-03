@@ -145,5 +145,11 @@ void HTMLImport::blockAfter(HTMLImport* child)
         parent->blockAfter(this);
 }
 
+bool HTMLImport::isMaster(Document* document)
+{
+    if (!document->import())
+        return true;
+    return (document->import()->master() == document);
+}
 
 } // namespace WebCore

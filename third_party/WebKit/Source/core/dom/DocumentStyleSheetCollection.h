@@ -43,10 +43,16 @@ class DocumentStyleSheetCollection FINAL : public StyleSheetCollection {
 public:
     explicit DocumentStyleSheetCollection(TreeScope&);
 
+    enum CollectFor {
+        CollectForList,
+        DontCollectForList
+    };
+
     bool updateActiveStyleSheets(StyleEngine*, StyleResolverUpdateMode);
+    void collectStyleSheets(StyleEngine*, StyleSheetCollectionBase&, CollectFor);
 
 private:
-    void collectStyleSheets(StyleEngine*, StyleSheetCollectionBase&);
+    void collectStyleSheetsFromCandidates(StyleEngine*, StyleSheetCollectionBase&, CollectFor);
 };
 
 }

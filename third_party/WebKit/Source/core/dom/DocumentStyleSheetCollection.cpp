@@ -52,7 +52,7 @@ DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope& treeScope)
     ASSERT(treeScope.rootNode() == treeScope.rootNode()->document());
 }
 
-void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* engine, StyleSheetCollectionBase& collection)
+void DocumentStyleSheetCollection::collectStyleSheetsFromCandidates(StyleEngine* engine, StyleSheetCollectionBase& collection, DocumentStyleSheetCollection::CollectFor collectFor)
 {
     DocumentOrderedList::iterator begin = m_styleSheetCandidateNodes.begin();
     DocumentOrderedList::iterator end = m_styleSheetCandidateNodes.end();
@@ -130,7 +130,7 @@ void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* engine, Style
                 activeSheet = 0;
         }
 
-        if (sheet)
+        if (sheet && collectFor == CollectForList)
             collection.appendSheetForList(sheet);
         if (activeSheet)
             collection.appendActiveStyleSheet(activeSheet);
@@ -145,19 +145,25 @@ static void collectActiveCSSStyleSheetsFromSeamlessParents(StyleSheetCollectionB
     collection.appendActiveStyleSheets(seamlessParentIFrame->document().styleEngine()->activeAuthorStyleSheets());
 }
 
-bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, StyleResolverUpdateMode updateMode)
+void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* engine, StyleSheetCollectionBase& collection, DocumentStyleSheetCollection::CollectFor colletFor)
 {
-    StyleSheetCollectionBase collection;
+    ASSERT(document()->styleEngine() == engine);
     collection.appendActiveStyleSheets(engine->injectedAuthorStyleSheets());
     collection.appendActiveStyleSheets(engine->documentAuthorStyleSheets());
     collectActiveCSSStyleSheetsFromSeamlessParents(collection, document());
-    collectStyleSheets(engine, collection);
+    collectStyleSheetsFromCandidates(engine, collection, colletFor);
+}
+
+bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleEngine* engine, StyleResolverUpdateMode updateMode)
+{
+    StyleSheetCollectionBase collection;
+    engine->collectDocumentActiveStyleSheets(collection);
 
     StyleSheetChange change;
     analyzeStyleSheetChange(updateMode, collection, change);
 
     if (change.styleResolverUpdateType == Reconstruct) {
-        engine->clearResolver();
+        engine->clearMasterResolver();
     } else if (StyleResolver* styleResolver = engine->resolverIfExists()) {
         // FIXME: We might have already had styles in child treescope. In this case, we cannot use buildScopedStyleTreeInDocumentOrder.
         // Need to change "false" to some valid condition.

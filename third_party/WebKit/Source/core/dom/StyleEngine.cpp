@@ -38,6 +38,7 @@
 #include "core/dom/ShadowTreeStyleSheetCollection.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/html/HTMLImport.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -53,6 +54,7 @@ using namespace HTMLNames;
 
 StyleEngine::StyleEngine(Document& document)
     : m_document(document)
+    , m_isMaster(HTMLImport::isMaster(&document))
     , m_pendingStylesheets(0)
     , m_injectedStyleSheetCacheValid(false)
     , m_needsUpdateActiveStylesheetsOnStyleRecalc(false)
@@ -77,6 +79,16 @@ StyleEngine::~StyleEngine()
         m_injectedAuthorStyleSheets[i]->clearOwnerNode();
     for (unsigned i = 0; i < m_authorStyleSheets.size(); ++i)
         m_authorStyleSheets[i]->clearOwnerNode();
+}
+
+inline Document* StyleEngine::master()
+{
+    if (isMaster())
+        return &m_document;
+    HTMLImport* import = m_document.import();
+    if (!import) // Document::import() can return null while executing its destructor.
+        return 0;
+    return import->master();
 }
 
 void StyleEngine::insertTreeScopeInDocumentOrder(TreeScopeSet& treeScopes, TreeScope* treeScope)
@@ -320,8 +332,29 @@ void StyleEngine::clearMediaQueryRuleSetStyleSheets()
     clearMediaQueryRuleSetOnTreeScopeStyleSheets(m_dirtyTreeScopes.subscope());
 }
 
+void StyleEngine::collectDocumentActiveStyleSheets(StyleSheetCollectionBase& collection)
+{
+    ASSERT(isMaster());
+
+    if (HTMLImport* rootImport = m_document.import()) {
+        for (HTMLImport* import = traverseFirstPostOrder(rootImport); import; import = traverseNextPostOrder(import)) {
+            Document* document = import->document();
+            if (!document)
+                continue;
+            StyleEngine* engine = document->styleEngine();
+            DocumentStyleSheetCollection::CollectFor collectFor = document == &m_document ?
+                DocumentStyleSheetCollection::CollectForList : DocumentStyleSheetCollection::DontCollectForList;
+            engine->m_documentStyleSheetCollection.collectStyleSheets(engine, collection, collectFor);
+        }
+    } else {
+        m_documentStyleSheetCollection.collectStyleSheets(this, collection, DocumentStyleSheetCollection::CollectForList);
+    }
+}
+
 bool StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
 {
+    ASSERT(isMaster());
+
     if (m_document.inStyleRecalc()) {
         // SVG <use> element may manage to invalidate style selector in the middle of a style recalc.
         // https://bugs.webkit.org/show_bug.cgi?id=54344
@@ -394,23 +427,23 @@ void StyleEngine::didRemoveShadowRoot(ShadowRoot* shadowRoot)
     m_styleSheetCollectionMap.remove(shadowRoot);
 }
 
-void StyleEngine::appendActiveAuthorStyleSheets(StyleResolver* styleResolver)
+void StyleEngine::appendActiveAuthorStyleSheets()
 {
-    ASSERT(styleResolver);
+    ASSERT(isMaster());
 
-    styleResolver->setBuildScopedStyleTreeInDocumentOrder(true);
-    styleResolver->appendAuthorStyleSheets(0, m_documentStyleSheetCollection.activeAuthorStyleSheets());
+    m_resolver->setBuildScopedStyleTreeInDocumentOrder(true);
+    m_resolver->appendAuthorStyleSheets(0, m_documentStyleSheetCollection.activeAuthorStyleSheets());
 
     TreeScopeSet::iterator begin = m_activeTreeScopes.begin();
     TreeScopeSet::iterator end = m_activeTreeScopes.end();
     for (TreeScopeSet::iterator it = begin; it != end; ++it) {
         if (StyleSheetCollection* collection = m_styleSheetCollectionMap.get(*it)) {
-            styleResolver->setBuildScopedStyleTreeInDocumentOrder(!collection->scopingNodesForStyleScoped());
-            styleResolver->appendAuthorStyleSheets(0, collection->activeAuthorStyleSheets());
+            m_resolver->setBuildScopedStyleTreeInDocumentOrder(!collection->scopingNodesForStyleScoped());
+            m_resolver->appendAuthorStyleSheets(0, collection->activeAuthorStyleSheets());
         }
     }
-    styleResolver->finishAppendAuthorStyleSheets();
-    styleResolver->setBuildScopedStyleTreeInDocumentOrder(false);
+    m_resolver->finishAppendAuthorStyleSheets();
+    m_resolver->setBuildScopedStyleTreeInDocumentOrder(false);
 }
 
 void StyleEngine::createResolver()
@@ -422,13 +455,21 @@ void StyleEngine::createResolver()
     ASSERT(m_document.frame());
 
     m_resolver = adoptPtr(new StyleResolver(m_document));
+    appendActiveAuthorStyleSheets();
     combineCSSFeatureFlags(m_resolver->ensureRuleFeatureSet());
 }
 
 void StyleEngine::clearResolver()
 {
     ASSERT(!m_document.inStyleRecalc());
+    ASSERT(isMaster() || !m_resolver);
     m_resolver.clear();
+}
+
+void StyleEngine::clearMasterResolver()
+{
+    if (Document* master = this->master())
+        master->styleEngine()->clearResolver();
 }
 
 unsigned StyleEngine::resolverAccessCount() const
@@ -464,9 +505,15 @@ bool StyleEngine::shouldClearResolver() const
     return !m_didCalculateResolver && !haveStylesheetsLoaded();
 }
 
-StyleResolverChange StyleEngine::resolverChanged(StyleResolverUpdateMode mode)
+StyleResolverChange StyleEngine::resolverChanged(RecalcStyleTime time, StyleResolverUpdateMode mode)
 {
     StyleResolverChange change;
+
+    if (!isMaster()) {
+        if (Document* master = this->master())
+            master->styleResolverChanged(time, mode);
+        return change;
+    }
 
     // Don't bother updating, since we haven't loaded all our style info yet
     // and haven't calculated the style selector for the first time.
