@@ -35,12 +35,13 @@ function updateDriveRelatedPreferences(preferences) {
 }
 
 /**
- * Updates the Authentication Status section.
- * @param {Object} authStatus Dictionary containing auth status.
+ * Updates the Connection Status section.
+ * @param {Object} connStatus Dictionary containing connection status.
  */
-function updateAuthStatus(authStatus) {
-  $('has-refresh-token').textContent = authStatus['has-refresh-token'];
-  $('has-access-token').textContent = authStatus['has-access-token'];
+function updateConnectionStatus(connStatus) {
+  $('connection-status').textContent = connStatus['status'];
+  $('has-refresh-token').textContent = connStatus['has-refresh-token'];
+  $('has-access-token').textContent = connStatus['has-access-token'];
 }
 
 /**
