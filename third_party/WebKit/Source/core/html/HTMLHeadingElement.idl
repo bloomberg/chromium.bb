@@ -18,6 +18,5 @@
  */
 
 interface HTMLHeadingElement : HTMLElement {
-    [Reflect, TreatNullAs=NullString] attribute DOMString align;
+    [Reflect] attribute DOMString align;
 };
-

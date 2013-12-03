@@ -110,7 +110,7 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLFrameSetElement.row
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLHeadElement.profile]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLHeadingElement.align]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLHeadingElement.align]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLHRElement.align]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLHRElement.color]
