@@ -550,7 +550,6 @@ def GetUnitTests(input_api, output_api, unit_tests):
       cmd = [input_api.python_executable]
     cmd.append(unit_test)
     if input_api.verbose:
-      print('Running %s' % unit_test)
       cmd.append('--verbose')
     results.append(input_api.Command(
         name=unit_test,

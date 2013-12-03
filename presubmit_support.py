@@ -15,7 +15,6 @@ __version__ = '1.7.0'
 import cpplint
 import cPickle  # Exposed through the API.
 import cStringIO  # Exposed through the API.
-import collections
 import contextlib
 import fnmatch
 import glob
@@ -56,8 +55,14 @@ class PresubmitFailure(Exception):
   pass
 
 
-CommandData = collections.namedtuple('CommandData',
-                                     ['name', 'cmd', 'kwargs', 'message'])
+class CommandData(object):
+  def __init__(self, name, cmd, kwargs, message):
+    self.name = name
+    self.cmd = cmd
+    self.kwargs = kwargs
+    self.message = message
+    self.info = None
+
 
 def normpath(path):
   '''Version of os.path.normpath that also changes backward slashes to
@@ -468,8 +473,7 @@ class InputApi(object):
     """Returns if a change is TBR'ed."""
     return 'TBR' in self.change.tags
 
-  @staticmethod
-  def RunTests(tests_mix, parallel=True):
+  def RunTests(self, tests_mix, parallel=True):
     tests = []
     msgs = []
     for t in tests_mix:
@@ -478,6 +482,8 @@ class InputApi(object):
       else:
         assert issubclass(t.message, _PresubmitResult)
         tests.append(t)
+        if self.verbose:
+          t.info = _PresubmitNotifyResult
     if len(tests) > 1 and parallel:
       pool = multiprocessing.Pool()
       # async recipe works around multiprocessing bug handling Ctrl-C
@@ -1352,17 +1358,28 @@ def canned_check_filter(method_names):
     for name, method in filtered.iteritems():
       setattr(presubmit_canned_checks, name, method)
 
+
 def CallCommand(cmd_data):
-  # multiprocessing needs a top level function with a single argument.
+  """Runs an external program, potentially from a child process created by the
+  multiprocessing module.
+
+  multiprocessing needs a top level function with a single argument.
+  """
   cmd_data.kwargs['stdout'] = subprocess.PIPE
   cmd_data.kwargs['stderr'] = subprocess.STDOUT
   try:
+    start = time.time()
     (out, _), code = subprocess.communicate(cmd_data.cmd, **cmd_data.kwargs)
-    if code != 0:
-      return cmd_data.message('%s failed\n%s' % (cmd_data.name, out))
+    duration = time.time() - start
   except OSError as e:
+    duration = time.time() - start
     return cmd_data.message(
-        '%s exec failure\n   %s' % (cmd_data.name, e))
+        '%s exec failure (%4.2fs)\n   %s' % (cmd_data.name, duration, e))
+  if code != 0:
+    return cmd_data.message(
+        '%s (%4.2fs) failed\n%s' % (cmd_data.name, duration, out))
+  if cmd_data.info:
+    return cmd_data.info('%s (%4.2fs)' % (cmd_data.name, duration))
 
 
 def Main(argv):

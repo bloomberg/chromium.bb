@@ -7,6 +7,7 @@
 
 # pylint: disable=E1101,E1103
 
+import functools
 import logging
 import os
 import StringIO
@@ -169,7 +170,7 @@ class PresubmitUnittest(PresubmitTestsBase):
       'marshal', 'normpath', 'optparse', 'os', 'owners', 'pickle',
       'presubmit_canned_checks', 'random', 're', 'rietveld', 'scm',
       'subprocess', 'sys', 'tempfile', 'time', 'traceback', 'types', 'unittest',
-      'urllib2', 'warn', 'collections', 'multiprocessing',
+      'urllib2', 'warn', 'multiprocessing',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit, members)
@@ -1720,7 +1721,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.time = time
     input_api.canned_checks = presubmit_canned_checks
     input_api.Command = presubmit.CommandData
-    input_api.RunTests = presubmit.InputApi.RunTests
+    input_api.RunTests = functools.partial(
+        presubmit.InputApi.RunTests, input_api)
     return input_api
 
   def testMembersChanged(self):
@@ -2362,7 +2364,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__,
                       presubmit.OutputApi.PresubmitNotifyResult)
-    self.assertEquals('test_module failed\nfoo', results[0]._message)
+    self.assertEquals('test_module (0.00s) failed\nfoo', results[0]._message)
 
   def testRunPythonUnitTestsFailureCommitting(self):
     input_api = self.MockInputApi(None, True)
@@ -2374,7 +2376,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         input_api, presubmit.OutputApi, ['test_module'])
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__, presubmit.OutputApi.PresubmitError)
-    self.assertEquals('test_module failed\nfoo', results[0]._message)
+    self.assertEquals('test_module (0.00s) failed\nfoo', results[0]._message)
 
   def testRunPythonUnitTestsSuccess(self):
     input_api = self.MockInputApi(None, False)
@@ -2660,10 +2662,12 @@ class CannedChecksUnittest(PresubmitTestsBase):
         input_api,
         presubmit.OutputApi,
         unit_tests)
-    self.assertEqual(1, len(results))
+    self.assertEqual(2, len(results))
     self.assertEqual(
-        presubmit.OutputApi.PresubmitPromptWarning, results[0].__class__)
-    self.checkstdout('Running allo\nRunning bar.py\n')
+        presubmit.OutputApi.PresubmitNotifyResult, results[0].__class__)
+    self.assertEqual(
+        presubmit.OutputApi.PresubmitPromptWarning, results[1].__class__)
+    self.checkstdout('')
 
   def testCannedRunUnitTestsInDirectory(self):
     change = presubmit.Change(
@@ -2689,9 +2693,10 @@ class CannedChecksUnittest(PresubmitTestsBase):
         'random_directory',
         whitelist=['^a$', '^b$'],
         blacklist=['a'])
-    self.assertEqual(results, [])
-    self.checkstdout(
-        'Running %s\n' % presubmit.os.path.join('random_directory', 'b'))
+    self.assertEqual(1, len(results))
+    self.assertEqual(
+        presubmit.OutputApi.PresubmitNotifyResult, results[0].__class__)
+    self.checkstdout('')
 
   def testPanProjectChecks(self):
     # Make sure it accepts both list and tuples.
