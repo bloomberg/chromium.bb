@@ -11,6 +11,7 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/events/gestures/gesture_configuration.h"
 
 using blink::WebTouchEvent;
 using blink::WebMouseWheelEvent;
@@ -68,6 +69,12 @@ bool SyntheticGestureTargetAura::SupportsSyntheticGestureSourceType(
     SyntheticGestureParams::GestureSourceType gesture_source_type) const {
   return gesture_source_type == SyntheticGestureParams::TOUCH_INPUT ||
       gesture_source_type == SyntheticGestureParams::MOUSE_INPUT;
+}
+
+int SyntheticGestureTargetAura::GetTouchSlopInDips() const {
+  // - 1 because Aura considers a pointer to be moving if it has moved at least
+  // 'max_touch_move_in_pixels_for_click' pixels.
+  return ui::GestureConfiguration::max_touch_move_in_pixels_for_click() - 1;
 }
 
 }  // namespace content

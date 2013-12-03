@@ -25,6 +25,11 @@ namespace {
 // fling on Android.
 const int kPointerAssumedStoppedTimeMs = 50;
 
+// SyntheticGestureTargetBase passes input events straight on to the renderer
+// without going through a gesture recognition framework. There is thus no touch
+// slop.
+const int kTouchSlopInDips = 0;
+
 }  // namespace
 
 SyntheticGestureTargetBase::SyntheticGestureTargetBase(
@@ -108,6 +113,10 @@ bool SyntheticGestureTargetBase::SupportsSyntheticGestureSourceType(
 base::TimeDelta SyntheticGestureTargetBase::PointerAssumedStoppedTime()
     const {
   return base::TimeDelta::FromMilliseconds(kPointerAssumedStoppedTimeMs);
+}
+
+int SyntheticGestureTargetBase::GetTouchSlopInDips() const {
+  return kTouchSlopInDips;
 }
 
 }  // namespace content

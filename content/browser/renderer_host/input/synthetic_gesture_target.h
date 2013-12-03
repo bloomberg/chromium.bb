@@ -44,6 +44,10 @@ class CONTENT_EXPORT SyntheticGestureTarget {
   // After how much time of inaction does the target assume that a pointer has
   // stopped moving.
   virtual base::TimeDelta PointerAssumedStoppedTime() const = 0;
+
+  // Returns the maximum number of DIPs a touch pointer can move without being
+  // considered moving by the platform.
+  virtual int GetTouchSlopInDips() const = 0;
 };
 
 }  // namespace content

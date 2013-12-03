@@ -25,6 +25,7 @@ namespace {
 
 const int kFlushInputRateInMs = 16;
 const int kPointerAssumedStoppedTimeMs = 43;
+const int kTouchSlopInDips = 7;
 
 class MockSyntheticGesture : public SyntheticGesture {
  public:
@@ -98,6 +99,10 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
 
   void set_pointer_assumed_stopped_time_ms(int time_ms) {
     pointer_assumed_stopped_time_ms_ = time_ms;
+  }
+
+  virtual int GetTouchSlopInDips() const OVERRIDE {
+    return kTouchSlopInDips;
   }
 
   int num_success() const { return num_success_; }
@@ -373,7 +378,7 @@ TEST_F(SyntheticGestureControllerTest, SmoothScrollGestureTouch) {
 
   EXPECT_EQ(1, target_->num_success());
   EXPECT_EQ(0, target_->num_failure());
-  EXPECT_FLOAT_EQ(params.distance,
+  EXPECT_FLOAT_EQ(params.distance + target_->GetTouchSlopInDips(),
                   static_cast<MockSyntheticSmoothScrollTouchTarget*>(target_)
                       ->scroll_distance());
 }
@@ -397,10 +402,28 @@ TEST_F(SyntheticGestureControllerTest, SmoothScrollGestureTouchLongStop) {
 
   EXPECT_EQ(1, target_->num_success());
   EXPECT_EQ(0, target_->num_failure());
-  EXPECT_FLOAT_EQ(params.distance,
+  EXPECT_FLOAT_EQ(params.distance + target_->GetTouchSlopInDips(),
                   static_cast<MockSyntheticSmoothScrollTouchTarget*>(target_)
                       ->scroll_distance());
   EXPECT_GE(GetTotalTime(), target_->PointerAssumedStoppedTime());
+}
+
+TEST_F(SyntheticGestureControllerTest, SmoothScrollGestureTouchZeroDistance) {
+  CreateControllerAndTarget<MockSyntheticSmoothScrollTouchTarget>();
+
+  SyntheticSmoothScrollGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.distance = 0;
+
+  scoped_ptr<SyntheticSmoothScrollGesture> gesture(
+      new SyntheticSmoothScrollGesture(params));
+  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  FlushInputUntilComplete();
+
+  EXPECT_EQ(1, target_->num_success());
+  EXPECT_EQ(0, target_->num_failure());
+  EXPECT_FLOAT_EQ(0, static_cast<MockSyntheticSmoothScrollTouchTarget*>(target_)
+                         ->scroll_distance());
 }
 
 TEST_F(SyntheticGestureControllerTest, SmoothScrollGestureMouse) {
@@ -439,9 +462,10 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomIn) {
   EXPECT_EQ(
       static_cast<MockSyntheticPinchTouchTarget*>(target_)->zoom_direction(),
       MockSyntheticPinchTouchTarget::ZOOM_IN);
-  EXPECT_FLOAT_EQ(params.total_num_pixels_covered,
-                  static_cast<MockSyntheticPinchTouchTarget*>(target_)
-                      ->total_num_pixels_covered());
+  EXPECT_FLOAT_EQ(
+      params.total_num_pixels_covered + 2 * target_->GetTouchSlopInDips(),
+      static_cast<MockSyntheticPinchTouchTarget*>(target_)
+          ->total_num_pixels_covered());
 }
 
 TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomOut) {
@@ -461,9 +485,31 @@ TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZoomOut) {
   EXPECT_EQ(
       static_cast<MockSyntheticPinchTouchTarget*>(target_)->zoom_direction(),
       MockSyntheticPinchTouchTarget::ZOOM_OUT);
-  EXPECT_FLOAT_EQ(params.total_num_pixels_covered,
-                  static_cast<MockSyntheticPinchTouchTarget*>(target_)
-                      ->total_num_pixels_covered());
+  EXPECT_FLOAT_EQ(
+      params.total_num_pixels_covered + 2 * target_->GetTouchSlopInDips(),
+      static_cast<MockSyntheticPinchTouchTarget*>(target_)
+          ->total_num_pixels_covered());
+}
+
+TEST_F(SyntheticGestureControllerTest, PinchGestureTouchZeroPixelsCovered) {
+  CreateControllerAndTarget<MockSyntheticPinchTouchTarget>();
+
+  SyntheticPinchGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.zoom_in = true;
+  params.total_num_pixels_covered = 0;
+
+  scoped_ptr<SyntheticPinchGesture> gesture(new SyntheticPinchGesture(params));
+  controller_->QueueSyntheticGesture(gesture.PassAs<SyntheticGesture>());
+  FlushInputUntilComplete();
+
+  EXPECT_EQ(1, target_->num_success());
+  EXPECT_EQ(0, target_->num_failure());
+  EXPECT_EQ(
+      static_cast<MockSyntheticPinchTouchTarget*>(target_)->zoom_direction(),
+      MockSyntheticPinchTouchTarget::ZOOM_DIRECTION_UNKNOWN);
+  EXPECT_FLOAT_EQ(0, static_cast<MockSyntheticPinchTouchTarget*>(target_)
+                         ->total_num_pixels_covered());
 }
 
 }  // namespace

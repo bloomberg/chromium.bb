@@ -52,6 +52,13 @@ int ViewConfiguration::GetMinimumFlingVelocityInPixelsPerSecond() {
   return Java_ViewConfiguration_getScaledMinimumFlingVelocity(env, view.obj());
 }
 
+int ViewConfiguration::GetTouchSlopInPixels() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> view =
+      Java_ViewConfiguration_get(env, GetApplicationContext());
+  return Java_ViewConfiguration_getScaledTouchSlop(env, view.obj());
+}
+
 bool ViewConfiguration::RegisterViewConfiguration(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

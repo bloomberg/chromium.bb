@@ -5,8 +5,11 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
 
 #include "content/browser/android/content_view_core_impl.h"
+#include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/common/android/view_configuration.h"
 #include "jni/TouchEventSynthesizer_jni.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
+#include "ui/gfx/screen.h"
 
 using blink::WebTouchEvent;
 
@@ -78,6 +81,12 @@ SyntheticGestureTargetAndroid::GetDefaultSyntheticGestureSourceType() const {
 bool SyntheticGestureTargetAndroid::SupportsSyntheticGestureSourceType(
     SyntheticGestureParams::GestureSourceType gesture_source_type) const {
   return gesture_source_type == SyntheticGestureParams::TOUCH_INPUT;
+}
+
+int SyntheticGestureTargetAndroid::GetTouchSlopInDips() const {
+  float device_scale_factor =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().device_scale_factor();
+  return ViewConfiguration::GetTouchSlopInPixels() / device_scale_factor;
 }
 
 }  // namespace content

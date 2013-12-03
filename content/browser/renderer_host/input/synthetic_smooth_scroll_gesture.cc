@@ -51,10 +51,14 @@ void SyntheticSmoothScrollGesture::ForwardTouchInputEvents(
   switch (state_) {
     case STARTED:
       // Check for an early finish.
-      if (HasScrolledEntireDistance()) {
+      if (params_.distance == 0) {
         state_ = DONE;
         break;
       }
+      if (params_.distance > 0)
+        params_.distance += target->GetTouchSlopInDips();
+      else
+        params_.distance -= target->GetTouchSlopInDips();
       touch_event_.PressPoint(params_.anchor.x(), current_y_);
       ForwardTouchEvent(target);
       state_ = MOVING;

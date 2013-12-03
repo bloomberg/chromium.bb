@@ -22,6 +22,8 @@ class ViewConfiguration {
   static int GetMaximumFlingVelocityInPixelsPerSecond();
   static int GetMinimumFlingVelocityInPixelsPerSecond();
 
+  static int GetTouchSlopInPixels();
+
   // Registers methods with JNI and returns true if succeeded.
   static bool RegisterViewConfiguration(JNIEnv* env);
 };

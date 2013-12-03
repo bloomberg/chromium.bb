@@ -30,6 +30,8 @@ class SyntheticGestureTargetAura : public SyntheticGestureTargetBase {
       SyntheticGestureParams::GestureSourceType gesture_source_type) const
       OVERRIDE;
 
+  virtual int GetTouchSlopInDips() const OVERRIDE;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureTargetAura);
 };

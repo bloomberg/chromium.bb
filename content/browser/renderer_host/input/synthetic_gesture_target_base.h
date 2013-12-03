@@ -55,8 +55,10 @@ class SyntheticGestureTargetBase : public SyntheticGestureTarget {
 
   virtual base::TimeDelta PointerAssumedStoppedTime() const OVERRIDE;
 
+  virtual int GetTouchSlopInDips() const OVERRIDE;
+
  protected:
-  RenderWidgetHostImpl* render_widget_host() { return host_; }
+  RenderWidgetHostImpl* render_widget_host() const { return host_; }
 
  private:
   RenderWidgetHostImpl* host_;

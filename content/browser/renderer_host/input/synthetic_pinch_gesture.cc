@@ -11,35 +11,16 @@
 #include "ui/events/latency_info.h"
 
 namespace content {
-namespace {
-
-// TODO(dominikg): Use touch slop to compute this value.
-const float kMinPointerDistance = 40.0f;
-
-}
 
 SyntheticPinchGesture::SyntheticPinchGesture(
     const SyntheticPinchGestureParams& params)
-    : params_(params), started_(false) {
+    : params_(params),
+      current_y_0_(0.0f),
+      current_y_1_(0.0f),
+      target_y_0_(0.0f),
+      target_y_1_(0.0f),
+      started_(false) {
   DCHECK_GE(params_.total_num_pixels_covered, 0);
-
-  float inner_distance_to_anchor = kMinPointerDistance / 2.0f;
-  float outer_distance_to_anchor =
-      inner_distance_to_anchor + params_.total_num_pixels_covered / 2.0f;
-
-  // Move pointers away from each other to zoom in
-  // or towards each other to zoom out.
-  if (params_.zoom_in) {
-    current_y_0_ = params_.anchor.y() - inner_distance_to_anchor;
-    current_y_1_ = params_.anchor.y() + inner_distance_to_anchor;
-    target_y_0_ = params_.anchor.y() - outer_distance_to_anchor;
-    target_y_1_ = params_.anchor.y() + outer_distance_to_anchor;
-  } else {
-    current_y_0_ = params_.anchor.y() - outer_distance_to_anchor;
-    current_y_1_ = params_.anchor.y() + outer_distance_to_anchor;
-    target_y_0_ = params_.anchor.y() - inner_distance_to_anchor;
-    target_y_1_ = params_.anchor.y() + inner_distance_to_anchor;
-  }
 }
 
 SyntheticPinchGesture::~SyntheticPinchGesture() {}
@@ -63,10 +44,12 @@ SyntheticGesture::Result SyntheticPinchGesture::ForwardInputEvents(
 
 SyntheticGesture::Result SyntheticPinchGesture::ForwardTouchInputEvents(
     const base::TimeDelta& interval, SyntheticGestureTarget* target) {
-  if (HasFinished())
-    return SyntheticGesture::GESTURE_FINISHED;
-
   if (!started_) {
+    if (params_.total_num_pixels_covered == 0)
+      return SyntheticGesture::GESTURE_FINISHED;
+
+    SetupCoordinates(target);
+
     touch_event_.PressPoint(params_.anchor.x(), current_y_0_);
     touch_event_.PressPoint(params_.anchor.x(), current_y_1_);
     ForwardTouchEvent(target);
@@ -100,6 +83,28 @@ SyntheticGesture::Result SyntheticPinchGesture::ForwardTouchInputEvents(
 void SyntheticPinchGesture::ForwardTouchEvent(SyntheticGestureTarget* target) {
   target->DispatchInputEventToPlatform(
       InputEvent(touch_event_, ui::LatencyInfo(), false));
+}
+
+void SyntheticPinchGesture::SetupCoordinates(SyntheticGestureTarget* target) {
+  const float kTouchSlopInDips = target->GetTouchSlopInDips();
+  float inner_distance_to_anchor = 2 * kTouchSlopInDips;
+  float outer_distance_to_anchor = inner_distance_to_anchor +
+                                   params_.total_num_pixels_covered / 2.0f +
+                                   kTouchSlopInDips;
+
+  // Move pointers away from each other to zoom in
+  // or towards each other to zoom out.
+  if (params_.zoom_in) {
+    current_y_0_ = params_.anchor.y() - inner_distance_to_anchor;
+    current_y_1_ = params_.anchor.y() + inner_distance_to_anchor;
+    target_y_0_ = params_.anchor.y() - outer_distance_to_anchor;
+    target_y_1_ = params_.anchor.y() + outer_distance_to_anchor;
+  } else {
+    current_y_0_ = params_.anchor.y() - outer_distance_to_anchor;
+    current_y_1_ = params_.anchor.y() + outer_distance_to_anchor;
+    target_y_0_ = params_.anchor.y() - inner_distance_to_anchor;
+    target_y_1_ = params_.anchor.y() + inner_distance_to_anchor;
+  }
 }
 
 float SyntheticPinchGesture::GetDeltaForPointer0(

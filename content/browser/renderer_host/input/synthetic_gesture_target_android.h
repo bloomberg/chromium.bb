@@ -33,6 +33,8 @@ class SyntheticGestureTargetAndroid : public SyntheticGestureTargetBase {
       SyntheticGestureParams::GestureSourceType gesture_source_type) const
       OVERRIDE;
 
+  virtual int GetTouchSlopInDips() const OVERRIDE;
+
  private:
   // Enum values below need to be kept in sync with TouchEventSynthesizer.java
   enum Action {

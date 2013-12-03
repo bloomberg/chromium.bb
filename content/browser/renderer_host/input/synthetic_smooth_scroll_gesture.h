@@ -32,12 +32,6 @@ class CONTENT_EXPORT SyntheticSmoothScrollGesture : public SyntheticGesture {
     STOPPING,
     DONE
   };
-  SyntheticSmoothScrollGestureParams params_;
-  float current_y_;
-  SyntheticWebTouchEvent touch_event_;
-  SyntheticGestureParams::GestureSourceType gesture_source_type_;
-  GestureState state_;
-  base::TimeDelta total_stopping_wait_time_;
 
   void ForwardTouchInputEvents(
       const base::TimeDelta& interval, SyntheticGestureTarget* target);
@@ -51,6 +45,13 @@ class CONTENT_EXPORT SyntheticSmoothScrollGesture : public SyntheticGesture {
   float GetPositionDelta(const base::TimeDelta& interval) const;
   float ComputeAbsoluteRemainingDistance() const;
   bool HasScrolledEntireDistance() const;
+
+  SyntheticSmoothScrollGestureParams params_;
+  float current_y_;
+  SyntheticWebTouchEvent touch_event_;
+  SyntheticGestureParams::GestureSourceType gesture_source_type_;
+  GestureState state_;
+  base::TimeDelta total_stopping_wait_time_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticSmoothScrollGesture);
 };

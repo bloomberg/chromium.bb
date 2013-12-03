@@ -36,6 +36,7 @@ class CONTENT_EXPORT SyntheticPinchGesture : public SyntheticGesture {
 
   void ForwardTouchEvent(SyntheticGestureTarget* target);
 
+  void SetupCoordinates(SyntheticGestureTarget* target);
   float GetDeltaForPointer0(const base::TimeDelta& interval) const;
   float ComputeAbsoluteRemainingDistance() const;
   bool HasFinished() const;
