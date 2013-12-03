@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_WEBRTC_NATIVE_HANDLER_H_
-#define CHROME_RENDERER_EXTENSIONS_WEBRTC_NATIVE_HANDLER_H_
+#ifndef CHROME_RENDERER_EXTENSIONS_CAST_STREAMING_NATIVE_HANDLER_H_
+#define CHROME_RENDERER_EXTENSIONS_CAST_STREAMING_NATIVE_HANDLER_H_
 
 #include <map>
 
@@ -13,7 +13,7 @@
 #include "chrome/renderer/extensions/scoped_persistent.h"
 #include "v8/include/v8.h"
 
-class CastSendTransport;
+class CastRtpStream;
 class CastUdpTransport;
 
 namespace extensions {
@@ -21,24 +21,24 @@ namespace extensions {
 class ChromeV8Context;
 
 // Native code that handle chrome.webrtc custom bindings.
-class WebRtcNativeHandler : public ObjectBackedNativeHandler {
+class CastStreamingNativeHandler : public ObjectBackedNativeHandler {
  public:
-  explicit WebRtcNativeHandler(ChromeV8Context* context);
-  virtual ~WebRtcNativeHandler();
+  explicit CastStreamingNativeHandler(ChromeV8Context* context);
+  virtual ~CastStreamingNativeHandler();
 
  private:
   void CreateCastSession(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  void DestroyCastSendTransport(
+  void DestroyCastRtpStream(
       const v8::FunctionCallbackInfo<v8::Value>& args);
-  void CreateParamsCastSendTransport(
+  void CreateParamsCastRtpStream(
       const v8::FunctionCallbackInfo<v8::Value>& args);
-  void GetCapsCastSendTransport(
+  void GetCapsCastRtpStream(
       const v8::FunctionCallbackInfo<v8::Value>& args);
-  void StartCastSendTransport(
+  void StartCastRtpStream(
       const v8::FunctionCallbackInfo<v8::Value>& args);
-  void StopCastSendTransport(
+  void StopCastRtpStream(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
   void DestroyCastUdpTransport(
@@ -50,30 +50,30 @@ class WebRtcNativeHandler : public ObjectBackedNativeHandler {
 
   // Helper method to call the v8 callback function after a session is
   // created.
-  void CallCreateCallback(scoped_ptr<CastSendTransport> stream1,
-                          scoped_ptr<CastSendTransport> stream2,
+  void CallCreateCallback(scoped_ptr<CastRtpStream> stream1,
+                          scoped_ptr<CastRtpStream> stream2,
                           scoped_ptr<CastUdpTransport> udp_transport);
 
-  // Gets the Send or UDP transport indexed by |transport_id|.
+  // Gets the RTP stream or UDP transport indexed by an ID.
   // If not found, returns NULL and throws a V8 exception.
-  CastSendTransport* GetSendTransportOrThrow(int transport_id) const;
+  CastRtpStream* GetRtpStreamOrThrow(int stream_id) const;
   CastUdpTransport* GetUdpTransportOrThrow(int transport_id) const;
 
   int last_transport_id_;
 
-  typedef std::map<int, linked_ptr<CastSendTransport> > SendTransportMap;
-  SendTransportMap send_transport_map_;
+  typedef std::map<int, linked_ptr<CastRtpStream> > RtpStreamMap;
+  RtpStreamMap rtp_stream_map_;
 
   typedef std::map<int, linked_ptr<CastUdpTransport> > UdpTransportMap;
   UdpTransportMap udp_transport_map_;
 
-  base::WeakPtrFactory<WebRtcNativeHandler> weak_factory_;
+  base::WeakPtrFactory<CastStreamingNativeHandler> weak_factory_;
 
   extensions::ScopedPersistent<v8::Function> create_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebRtcNativeHandler);
+  DISALLOW_COPY_AND_ASSIGN(CastStreamingNativeHandler);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_RENDERER_EXTENSIONS_WEBRTC_NATIVE_HANDLER_H_
+#endif  // CHROME_RENDERER_EXTENSIONS_CAST_STREAMING_NATIVE_HANDLER_H_

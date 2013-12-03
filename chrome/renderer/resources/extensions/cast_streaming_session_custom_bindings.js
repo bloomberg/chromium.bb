@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the Cast streaming API.
+// Custom binding for the Cast Streaming Session API.
 
 var binding = require('binding').Binding.create('cast.streaming.session');
-var natives = requireNative('webrtc_natives');
+var natives = requireNative('cast_streaming_natives');
 
 binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;

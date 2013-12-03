@@ -1,0 +1,96 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// The <code>chrome.cast.streaming.rtpStream</code> API allows configuration
+// of encoding parameters and RTP parameters used in a Cast streaming
+// session.
+namespace cast.streaming.rtpStream {
+  // Params for audio and video codec.
+  dictionary CodecSpecificParams {
+    DOMString key;
+    DOMString value;
+  };
+
+  // RTP payload param.
+  dictionary RtpPayloadParams {
+    long payloadType;
+
+    DOMString codecName;
+
+    // Synchronization source identifier.
+    long? ssrc;
+
+    long? clockRate;
+
+    long? minBitrate;
+
+    long? maxBitrate;
+
+    // The number of channels.
+    long? channels;
+
+    // Video width in pixels.
+    long? width;
+
+    // Video height in pixels.
+    long? height;
+
+    // A list of codec specific params.
+    CodecSpecificParams[] codecSpecificParams;
+  };
+
+  // Cast RTP capabilities.
+  dictionary RtpCaps {
+    // RTP payload params.
+    RtpPayloadParams[] payloads;
+
+    DOMString[] rtcpFeatures;
+  };
+
+  // Cast RTP parameters.
+  dictionary RtpParams {
+    // RTP payload params.
+    RtpPayloadParams[] payloads;
+
+    DOMString[] rtcpFeatures;
+  };
+
+  // Callback from the <code>create</code> method.
+  // |id| : The ID for the RTP stream.
+  callback CreateCallback = void (long streamId);
+
+  interface Functions {
+    // Destroys a Cast RTP stream.
+    // |streamId| : The RTP stream ID.
+    [nocompile] static void destroy(long streamId);
+
+    // Returns capabilities of the RTP stream.
+    // |streamId| : The RTP stream ID.
+    [nocompile] static RtpCaps getCaps(long streamId);
+
+    // Activates the RTP stream by providing the parameters.
+    // |streamId| : The RTP stream ID.
+    // |params| : Parameters set for this stream.
+    [nocompile] static void start(long streamId, RtpParams params);
+
+    // Stops activity on the specified stream.
+    // |streamId| : The RTP stream ID.
+    [nocompile] static void stop(long streamId);
+  };
+
+  interface Events {
+    // Event fired when a Cast RTP stream has started.
+    // |streamId| : The ID of the RTP stream.
+    static void onStarted(long streamId);
+
+    // Event fired when a Cast RTP stream has stopped.
+    // |streamId| : The ID of the RTP stream.
+    static void onStopped(long streamId);
+
+    // Event fired when a Cast RTP stream has error.
+    // |streamId| : The ID of the RTP stream.
+    // |errorString| : The error info.
+    static void onError(long streamId, DOMString errorString);
+  };
+};

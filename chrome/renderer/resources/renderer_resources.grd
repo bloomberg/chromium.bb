@@ -51,7 +51,9 @@ without changes to the corresponding grd file. fb9 -->
         <include name="IDR_APP_RUNTIME_CUSTOM_BINDINGS_JS" file="extensions\app_runtime_custom_bindings.js" type="BINDATA" />
         <include name="IDR_APP_WINDOW_CUSTOM_BINDINGS_JS" file="extensions\app_window_custom_bindings.js" type="BINDATA" />
         <include name="IDR_BROWSER_ACTION_CUSTOM_BINDINGS_JS" file="extensions\browser_action_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_CAST_STREAMING_RTP_STREAM_CUSTOM_BINDINGS_JS" file="extensions\cast_streaming_rtp_stream_custom_bindings.js" type="BINDATA" />
         <include name="IDR_CAST_STREAMING_SESSION_CUSTOM_BINDINGS_JS" file="extensions\cast_streaming_session_custom_bindings.js" type="BINDATA" />
+        <include name="IDR_CAST_STREAMING_UDP_TRANSPORT_CUSTOM_BINDINGS_JS" file="extensions\cast_streaming_udp_transport_custom_bindings.js" type="BINDATA" />
         <include name="IDR_CHROME_DIRECT_SETTING_JS"
         file="extensions\chrome_direct_setting.js" type="BINDATA" />
         <include name="IDR_CHROME_SETTING_JS" file="extensions\chrome_setting.js" type="BINDATA" />
@@ -94,8 +96,6 @@ without changes to the corresponding grd file. fb9 -->
         <include name="IDR_WINDOW_CONTROLS_TEMPLATE_HTML" file="extensions\window_controls_template.html" type="BINDATA" />
         <include name="IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS" file="extensions\web_request_custom_bindings.js" type="BINDATA" />
         <include name="IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS" file="extensions\web_request_internal_custom_bindings.js" type="BINDATA" />
-        <include name="IDR_WEBRTC_CAST_SEND_TRANSPORT_CUSTOM_BINDINGS_JS" file="extensions\webrtc_cast_send_transport_custom_bindings.js" type="BINDATA" />
-        <include name="IDR_WEBRTC_CAST_UDP_TRANSPORT_CUSTOM_BINDINGS_JS" file="extensions\webrtc_cast_udp_transport_custom_bindings.js" type="BINDATA" />
         <include name="IDR_WEBSTORE_CUSTOM_BINDINGS_JS" file="extensions\webstore_custom_bindings.js" type="BINDATA" />
         <include name="IDR_WEB_VIEW_DENY_JS" file="extensions\web_view_deny.js" type="BINDATA" />
         <include name="IDR_WEB_VIEW_EXPERIMENTAL_JS" file="extensions\web_view_experimental.js" type="BINDATA" />

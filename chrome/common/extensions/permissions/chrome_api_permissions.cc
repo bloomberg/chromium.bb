@@ -355,7 +355,6 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
     { APIPermission::kPointerLock, "pointerLock" },
     { APIPermission::kFullscreen, "fullscreen" },
     { APIPermission::kAudio, "audio" },
-    { APIPermission::kWebRtc, "webrtc" },
     { APIPermission::kCastStreaming, "cast.streaming" },
     { APIPermission::kOverrideEscFullscreen, "overrideEscFullscreen" },
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/media/cast_send_transport.h"
+#include "chrome/renderer/media/cast_rtp_stream.h"
 
 #include "base/logging.h"
 #include "chrome/renderer/media/cast_session.h"
@@ -118,28 +118,28 @@ CastRtpCaps::CastRtpCaps() {
 CastRtpCaps::~CastRtpCaps() {
 }
 
-CastSendTransport::CastSendTransport(
+CastRtpStream::CastRtpStream(
     const blink::WebMediaStreamTrack& track,
     const scoped_refptr<CastSession>& session)
     : track_(track),
       cast_session_(session) {
 }
 
-CastSendTransport::~CastSendTransport() {
+CastRtpStream::~CastRtpStream() {
 }
 
-CastRtpCaps CastSendTransport::GetCaps() {
+CastRtpCaps CastRtpStream::GetCaps() {
   if (IsAudio())
     return DefaultAudioCaps();
   else
     return DefaultVideoCaps();
 }
 
-CastRtpParams CastSendTransport::GetParams() {
+CastRtpParams CastRtpStream::GetParams() {
   return params_;
 }
 
-void CastSendTransport::Start(const CastRtpParams& params) {
+void CastRtpStream::Start(const CastRtpParams& params) {
   if (IsAudio()) {
     AudioSenderConfig config;
     if (!ToAudioSenderConfig(params, &config)) {
@@ -155,10 +155,10 @@ void CastSendTransport::Start(const CastRtpParams& params) {
   }
 }
 
-void CastSendTransport::Stop() {
+void CastRtpStream::Stop() {
   NOTIMPLEMENTED();
 }
 
-bool CastSendTransport::IsAudio() const {
+bool CastRtpStream::IsAudio() const {
   return track_.source().type() == blink::WebMediaStreamSource::TypeAudio;
 }

@@ -664,6 +664,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kAppWindow);
   skip.insert(APIPermission::kAudio);
   skip.insert(APIPermission::kBrowsingData);
+  skip.insert(APIPermission::kCastStreaming);
   skip.insert(APIPermission::kContextMenus);
   skip.insert(APIPermission::kDiagnostics);
   skip.insert(APIPermission::kDns);
@@ -687,7 +688,6 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kSystemStorage);
   skip.insert(APIPermission::kTts);
   skip.insert(APIPermission::kUnlimitedStorage);
-  skip.insert(APIPermission::kWebRtc);
   skip.insert(APIPermission::kWebView);
   skip.insert(APIPermission::kOverrideEscFullscreen);
 

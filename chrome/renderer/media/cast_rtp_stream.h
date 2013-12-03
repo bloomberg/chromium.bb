@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_MEDIA_CAST_SEND_TRANSPORT_H_
-#define CHROME_RENDERER_MEDIA_CAST_SEND_TRANSPORT_H_
+#ifndef CHROME_RENDERER_MEDIA_CAST_RTP_STREAM_H_
+#define CHROME_RENDERER_MEDIA_CAST_RTP_STREAM_H_
 
 #include <string>
 #include <vector>
@@ -79,11 +79,11 @@ typedef CastRtpCaps CastRtpParams;
 // Note that this object does not actually output packets. It allows
 // configuration of encoding and RTP parameters and control such a logical
 // stream.
-class CastSendTransport {
+class CastRtpStream {
  public:
-  CastSendTransport(const blink::WebMediaStreamTrack& track,
+  CastRtpStream(const blink::WebMediaStreamTrack& track,
                     const scoped_refptr<CastSession>& session);
-  ~CastSendTransport();
+  ~CastRtpStream();
 
   // Return capabilities currently supported by this transport.
   CastRtpCaps GetCaps();
@@ -107,7 +107,7 @@ class CastSendTransport {
   const scoped_refptr<CastSession> cast_session_;
   CastRtpParams params_;
 
-  DISALLOW_COPY_AND_ASSIGN(CastSendTransport);
+  DISALLOW_COPY_AND_ASSIGN(CastRtpStream);
 };
 
-#endif  // CHROME_RENDERER_MEDIA_CAST_SEND_TRANSPORT_H_
+#endif  // CHROME_RENDERER_MEDIA_CAST_RTP_STREAM_H_

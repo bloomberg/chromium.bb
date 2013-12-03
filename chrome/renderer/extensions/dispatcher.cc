@@ -99,7 +99,7 @@
 #include "v8/include/v8.h"
 
 #if defined(ENABLE_WEBRTC)
-#include "chrome/renderer/extensions/webrtc_native_handler.h"
+#include "chrome/renderer/extensions/cast_streaming_native_handler.h"
 #endif
 
 using blink::WebDataSource;
@@ -944,8 +944,8 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler("webstore",
       scoped_ptr<NativeHandler>(new WebstoreBindings(this, context)));
 #if defined(ENABLE_WEBRTC)
-  module_system->RegisterNativeHandler("webrtc_natives",
-      scoped_ptr<NativeHandler>(new WebRtcNativeHandler(context)));
+  module_system->RegisterNativeHandler("cast_streaming_natives",
+      scoped_ptr<NativeHandler>(new CastStreamingNativeHandler(context)));
 #endif
 }
 
@@ -1024,12 +1024,13 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("webRequestInternal",
                              IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS);
 #if defined(ENABLE_WEBRTC)
+  source_map_.RegisterSource("cast.streaming.rtpStream",
+                             IDR_CAST_STREAMING_RTP_STREAM_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("cast.streaming.session",
                              IDR_CAST_STREAMING_SESSION_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("webrtc.castSendTransport",
-                             IDR_WEBRTC_CAST_SEND_TRANSPORT_CUSTOM_BINDINGS_JS);
-  source_map_.RegisterSource("webrtc.castUdpTransport",
-                             IDR_WEBRTC_CAST_UDP_TRANSPORT_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource(
+      "cast.streaming.udpTransport",
+      IDR_CAST_STREAMING_UDP_TRANSPORT_CUSTOM_BINDINGS_JS);
 #endif
   source_map_.RegisterSource("webstore", IDR_WEBSTORE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("windowControls", IDR_WINDOW_CONTROLS_JS);

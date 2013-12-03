@@ -9,7 +9,7 @@
 
 namespace extensions {
 
-class WebrtcCastApiTest : public ExtensionApiTest {
+class CastStreamingApiTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
@@ -34,8 +34,8 @@ class WebrtcCastApiTest : public ExtensionApiTest {
 };
 
 // Test running the test extension for Cast Mirroring API.
-IN_PROC_BROWSER_TEST_F(WebrtcCastApiTest, Basics) {
-  ASSERT_TRUE(RunExtensionSubtest("webrtc_cast", "basics.html"));
+IN_PROC_BROWSER_TEST_F(CastStreamingApiTest, Basics) {
+  ASSERT_TRUE(RunExtensionSubtest("cast_streaming", "basics.html"));
 }
 
 }  // namespace extensions

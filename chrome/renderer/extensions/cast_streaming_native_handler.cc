@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/extensions/webrtc_native_handler.h"
+#include "chrome/renderer/extensions/cast_streaming_native_handler.h"
 
 #include <functional>
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/common/extensions/api/webrtc_cast_send_transport.h"
-#include "chrome/common/extensions/api/webrtc_cast_udp_transport.h"
+#include "chrome/common/extensions/api/cast_streaming_rtp_stream.h"
+#include "chrome/common/extensions/api/cast_streaming_udp_transport.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
-#include "chrome/renderer/media/cast_send_transport.h"
+#include "chrome/renderer/media/cast_rtp_stream.h"
 #include "chrome/renderer/media/cast_session.h"
 #include "chrome/renderer/media/cast_udp_transport.h"
 #include "content/public/renderer/v8_value_converter.h"
@@ -22,16 +22,16 @@
 using content::V8ValueConverter;
 
 // Extension types.
-using extensions::api::webrtc_cast_send_transport::CodecSpecificParams;
-using extensions::api::webrtc_cast_send_transport::RtpCaps;
-using extensions::api::webrtc_cast_send_transport::RtpParams;
-using extensions::api::webrtc_cast_send_transport::RtpPayloadParams;
-using extensions::api::webrtc_cast_udp_transport::UdpParams;
+using extensions::api::cast_streaming_rtp_stream::CodecSpecificParams;
+using extensions::api::cast_streaming_rtp_stream::RtpCaps;
+using extensions::api::cast_streaming_rtp_stream::RtpParams;
+using extensions::api::cast_streaming_rtp_stream::RtpPayloadParams;
+using extensions::api::cast_streaming_udp_transport::UdpParams;
 
 namespace extensions {
 
 namespace {
-const char kSendTransportNotFound[] = "The send transport cannot be found";
+const char kRtpStreamNotFound[] = "The RTP stream cannot be found";
 const char kUdpTransportNotFound[] = "The UDP transport cannot be found";
 const char kInvalidUdpParams[] = "Invalid UDP params";
 const char kInvalidRtpParams[] = "Invalid value for RTP params";
@@ -122,37 +122,37 @@ void ToCastRtpParams(const RtpParams& ext_params, CastRtpParams* cast_params) {
 
 }  // namespace
 
-WebRtcNativeHandler::WebRtcNativeHandler(ChromeV8Context* context)
+CastStreamingNativeHandler::CastStreamingNativeHandler(ChromeV8Context* context)
     : ObjectBackedNativeHandler(context),
       last_transport_id_(0),
       weak_factory_(this) {
   RouteFunction("CreateSession",
-      base::Bind(&WebRtcNativeHandler::CreateCastSession,
+      base::Bind(&CastStreamingNativeHandler::CreateCastSession,
                  base::Unretained(this)));
-  RouteFunction("DestroyCastSendTransport",
-      base::Bind(&WebRtcNativeHandler::DestroyCastSendTransport,
+  RouteFunction("DestroyCastRtpStream",
+      base::Bind(&CastStreamingNativeHandler::DestroyCastRtpStream,
                  base::Unretained(this)));
-  RouteFunction("GetCapsCastSendTransport",
-      base::Bind(&WebRtcNativeHandler::GetCapsCastSendTransport,
+  RouteFunction("GetCapsCastRtpStream",
+      base::Bind(&CastStreamingNativeHandler::GetCapsCastRtpStream,
                  base::Unretained(this)));
-  RouteFunction("StartCastSendTransport",
-      base::Bind(&WebRtcNativeHandler::StartCastSendTransport,
+  RouteFunction("StartCastRtpStream",
+      base::Bind(&CastStreamingNativeHandler::StartCastRtpStream,
                  base::Unretained(this)));
-  RouteFunction("StopCastSendTransport",
-      base::Bind(&WebRtcNativeHandler::StopCastSendTransport,
+  RouteFunction("StopCastRtpStream",
+      base::Bind(&CastStreamingNativeHandler::StopCastRtpStream,
                  base::Unretained(this)));
   RouteFunction("DestroyCastUdpTransport",
-      base::Bind(&WebRtcNativeHandler::DestroyCastUdpTransport,
+      base::Bind(&CastStreamingNativeHandler::DestroyCastUdpTransport,
                  base::Unretained(this)));
   RouteFunction("StartCastUdpTransport",
-      base::Bind(&WebRtcNativeHandler::StartCastUdpTransport,
+      base::Bind(&CastStreamingNativeHandler::StartCastUdpTransport,
                  base::Unretained(this)));
 }
 
-WebRtcNativeHandler::~WebRtcNativeHandler() {
+CastStreamingNativeHandler::~CastStreamingNativeHandler() {
 }
 
-void WebRtcNativeHandler::CreateCastSession(
+void CastStreamingNativeHandler::CreateCastSession(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(3, args.Length());
   CHECK(args[0]->IsObject());
@@ -169,10 +169,10 @@ void WebRtcNativeHandler::CreateCastSession(
     return;
 
   scoped_refptr<CastSession> session(new CastSession());
-  scoped_ptr<CastSendTransport> stream1(
-      new CastSendTransport(track1.component(), session));
-  scoped_ptr<CastSendTransport> stream2(
-      new CastSendTransport(track2.component(), session));
+  scoped_ptr<CastRtpStream> stream1(
+      new CastRtpStream(track1.component(), session));
+  scoped_ptr<CastRtpStream> stream2(
+      new CastRtpStream(track2.component(), session));
   scoped_ptr<CastUdpTransport> udp_transport(
       new CastUdpTransport(session));
 
@@ -181,26 +181,26 @@ void WebRtcNativeHandler::CreateCastSession(
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(
-          &WebRtcNativeHandler::CallCreateCallback,
+          &CastStreamingNativeHandler::CallCreateCallback,
           weak_factory_.GetWeakPtr(),
           base::Passed(&stream1),
           base::Passed(&stream2),
           base::Passed(&udp_transport)));
 }
 
-void WebRtcNativeHandler::CallCreateCallback(
-    scoped_ptr<CastSendTransport> stream1,
-    scoped_ptr<CastSendTransport> stream2,
+void CastStreamingNativeHandler::CallCreateCallback(
+    scoped_ptr<CastRtpStream> stream1,
+    scoped_ptr<CastRtpStream> stream2,
     scoped_ptr<CastUdpTransport> udp_transport) {
   v8::HandleScope handle_scope(context()->isolate());
   v8::Context::Scope context_scope(context()->v8_context());
 
   const int stream1_id = last_transport_id_++;
-  send_transport_map_[stream1_id] =
-      linked_ptr<CastSendTransport>(stream1.release());
+  rtp_stream_map_[stream1_id] =
+      linked_ptr<CastRtpStream>(stream1.release());
   const int stream2_id = last_transport_id_++;
-  send_transport_map_[stream2_id] =
-      linked_ptr<CastSendTransport>(stream2.release());
+  rtp_stream_map_[stream2_id] =
+      linked_ptr<CastRtpStream>(stream2.release());
   const int udp_id = last_transport_id_++;
   udp_transport_map_[udp_id] =
       linked_ptr<CastUdpTransport>(udp_transport.release());
@@ -214,24 +214,24 @@ void WebRtcNativeHandler::CallCreateCallback(
   create_callback_.reset();
 }
 
-void WebRtcNativeHandler::DestroyCastSendTransport(
+void CastStreamingNativeHandler::DestroyCastRtpStream(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsInt32());
 
   const int transport_id = args[0]->ToInt32()->Value();
-  if (!GetSendTransportOrThrow(transport_id))
+  if (!GetRtpStreamOrThrow(transport_id))
     return;
-  send_transport_map_.erase(transport_id);
+  rtp_stream_map_.erase(transport_id);
 }
 
-void WebRtcNativeHandler::GetCapsCastSendTransport(
+void CastStreamingNativeHandler::GetCapsCastRtpStream(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsInt32());
 
   const int transport_id = args[0]->ToInt32()->Value();
-  CastSendTransport* transport = GetSendTransportOrThrow(transport_id);
+  CastRtpStream* transport = GetRtpStreamOrThrow(transport_id);
   if (!transport)
     return;
 
@@ -245,14 +245,14 @@ void WebRtcNativeHandler::GetCapsCastSendTransport(
       caps_value.get(), context()->v8_context()));
 }
 
-void WebRtcNativeHandler::StartCastSendTransport(
+void CastStreamingNativeHandler::StartCastRtpStream(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(2, args.Length());
   CHECK(args[0]->IsInt32());
   CHECK(args[1]->IsObject());
 
   const int transport_id = args[0]->ToInt32()->Value();
-  CastSendTransport* transport = GetSendTransportOrThrow(transport_id);
+  CastRtpStream* transport = GetRtpStreamOrThrow(transport_id);
   if (!transport)
     return;
 
@@ -276,19 +276,19 @@ void WebRtcNativeHandler::StartCastSendTransport(
   transport->Start(cast_params);
 }
 
-void WebRtcNativeHandler::StopCastSendTransport(
+void CastStreamingNativeHandler::StopCastRtpStream(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsInt32());
 
   const int transport_id = args[0]->ToInt32()->Value();
-  CastSendTransport* transport = GetSendTransportOrThrow(transport_id);
+  CastRtpStream* transport = GetRtpStreamOrThrow(transport_id);
   if (!transport)
     return;
   transport->Stop();
 }
 
-void WebRtcNativeHandler::DestroyCastUdpTransport(
+void CastStreamingNativeHandler::DestroyCastUdpTransport(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsInt32());
@@ -299,7 +299,7 @@ void WebRtcNativeHandler::DestroyCastUdpTransport(
   udp_transport_map_.erase(transport_id);
 }
 
-void WebRtcNativeHandler::StartCastUdpTransport(
+void CastStreamingNativeHandler::StartCastUdpTransport(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(2, args.Length());
   CHECK(args[0]->IsInt32());
@@ -327,19 +327,19 @@ void WebRtcNativeHandler::StartCastUdpTransport(
   transport->Start(net::HostPortPair(udp_params->address, udp_params->port));
 }
 
-CastSendTransport* WebRtcNativeHandler::GetSendTransportOrThrow(
+CastRtpStream* CastStreamingNativeHandler::GetRtpStreamOrThrow(
     int transport_id) const {
-  SendTransportMap::const_iterator iter = send_transport_map_.find(
+  RtpStreamMap::const_iterator iter = rtp_stream_map_.find(
       transport_id);
-  if (iter != send_transport_map_.end())
+  if (iter != rtp_stream_map_.end())
     return iter->second.get();
   v8::Isolate* isolate = context()->v8_context()->GetIsolate();
-  isolate->ThrowException(v8::Exception::RangeError(
-      v8::String::NewFromUtf8(isolate, kSendTransportNotFound)));
+  isolate->ThrowException(v8::Exception::RangeError(v8::String::NewFromUtf8(
+      isolate, kRtpStreamNotFound)));
   return NULL;
 }
 
-CastUdpTransport* WebRtcNativeHandler::GetUdpTransportOrThrow(
+CastUdpTransport* CastStreamingNativeHandler::GetUdpTransportOrThrow(
     int transport_id) const {
   UdpTransportMap::const_iterator iter = udp_transport_map_.find(
       transport_id);

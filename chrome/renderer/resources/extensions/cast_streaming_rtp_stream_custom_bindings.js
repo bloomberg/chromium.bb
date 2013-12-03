@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Custom binding for the webrtc custom transport API.
+// Custom binding for the Cast Streaming RtpStream API.
 
-var binding = require('binding').Binding.create('webrtc.castSendTransport');
-var webrtc = requireNative('webrtc_natives');
+var binding = require('binding').Binding.create('cast.streaming.rtpStream');
+var natives = requireNative('cast_streaming_natives');
 
 binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
   apiFunctions.setHandleRequest('destroy',
       function(transportId) {
-        webrtc.DestroyCastSendTransport(transportId);
+        natives.DestroyCastRtpStream(transportId);
   });
   apiFunctions.setHandleRequest('getCaps',
       function(transportId) {
-        return webrtc.GetCapsCastSendTransport(transportId);
+        return natives.GetCapsCastRtpStream(transportId);
   });
   apiFunctions.setHandleRequest('start',
       function(transportId, params) {
-        webrtc.StartCastSendTransport(transportId, params);
+        natives.StartCastRtpStream(transportId, params);
   });
   apiFunctions.setHandleRequest('stop',
       function(transportId) {
-        webrtc.StopCastSendTransport(transportId);
+        natives.StopCastRtpStream(transportId);
   });
 });
 

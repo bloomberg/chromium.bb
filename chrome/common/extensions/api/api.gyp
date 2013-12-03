@@ -166,9 +166,9 @@
           }],
           ['enable_webrtc==1', {
             'schema_files': [
+              'cast_streaming_rtp_stream.idl',
               'cast_streaming_session.idl',
-              'webrtc_cast_send_transport.idl',
-              'webrtc_cast_udp_transport.idl',
+              'cast_streaming_udp_transport.idl',
               'webrtc_logging_private.idl',
             ],
           }],
