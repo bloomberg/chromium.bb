@@ -374,6 +374,9 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
         type == LaunchType.FOCUS_ANY_OR_CREATE) {
       if (opt_appState && opt_appState.defaultPath) {
         for (var key in background.appWindows) {
+          if (!key.match(FILES_ID_PATTERN))
+            continue;
+
           var contentWindow = background.appWindows[key].contentWindow;
           if (contentWindow.appState &&
               opt_appState.defaultPath == contentWindow.appState.defaultPath) {
@@ -391,6 +394,9 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
     if (type == LaunchType.FOCUS_ANY_OR_CREATE) {
       // If there is already a focused window, then finish.
       for (var key in background.appWindows) {
+        if (!key.match(FILES_ID_PATTERN))
+          continue;
+
         // The isFocused() method should always be available, but in case
         // Files.app's failed on some error, wrap it with try catch.
         try {
@@ -406,6 +412,9 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
       }
       // Try to focus the first non-minimized window.
       for (var key in background.appWindows) {
+        if (!key.match(FILES_ID_PATTERN))
+          continue;
+
         if (!background.appWindows[key].isMinimized()) {
           background.appWindows[key].focus();
           if (opt_callback)
@@ -416,6 +425,9 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
       }
       // Restore and focus any window.
       for (var key in background.appWindows) {
+        if (!key.match(FILES_ID_PATTERN))
+          continue;
+
         background.appWindows[key].focus();
         if (opt_callback)
           opt_callback(key);
