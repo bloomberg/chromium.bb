@@ -64,27 +64,23 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
  private:
   friend class PepperFileSystemBrowserHostTest;
 
-  void OpenExistingWithContext(
-      const base::Closure& callback,
-      scoped_refptr<fileapi::FileSystemContext> file_system_context);
-  void GotFileSystemContext(
+  void OpenExistingFileSystem(
+      const base::Closure& callback);
+  void OpenFileSystem(
       ppapi::host::ReplyMessageContext reply_context,
-      fileapi::FileSystemType file_system_type,
-      scoped_refptr<fileapi::FileSystemContext> file_system_context);
+      fileapi::FileSystemType file_system_type);
   void OpenFileSystemComplete(
       ppapi::host::ReplyMessageContext reply_context,
       const GURL& root,
       const std::string& name,
       base::PlatformFileError error);
-  void GotIsolatedFileSystemContext(
+  void OpenIsolatedFileSystem(
       ppapi::host::ReplyMessageContext reply_context,
       const std::string& fsid,
-      PP_IsolatedFileSystemType_Private type,
-      scoped_refptr<fileapi::FileSystemContext> file_system_context);
+      PP_IsolatedFileSystemType_Private type);
   void OpenPluginPrivateFileSystem(
       ppapi::host::ReplyMessageContext reply_context,
-      const std::string& fsid,
-      scoped_refptr<fileapi::FileSystemContext> file_system_context);
+      const std::string& fsid);
   void OpenPluginPrivateFileSystemComplete(
       ppapi::host::ReplyMessageContext reply_context,
       const std::string& fsid,
@@ -102,7 +98,8 @@ class CONTENT_EXPORT PepperFileSystemBrowserHost
       const std::string& fsid,
       int32_t error);
 
-  void SetFileSystemContext(
+  void GotFileSystemContext(
+      const base::Closure& closure,
       scoped_refptr<fileapi::FileSystemContext> file_system_context);
 
   std::string GetPluginMimeType() const;
