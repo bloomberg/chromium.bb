@@ -103,4 +103,6 @@ std::string MockAudioManager::GetAssociatedOutputDeviceID(
   return std::string();
 }
 
+void MockAudioManager::FixWedgedAudio() {}
+
 }  // namespace media.
