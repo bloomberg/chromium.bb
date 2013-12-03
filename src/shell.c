@@ -303,7 +303,9 @@ struct shell_surface {
 	enum shell_surface_type type, next_type;
 	char *title, *class;
 	int32_t saved_x, saved_y;
+	int32_t saved_width, saved_height;
 	bool saved_position_valid;
+	bool saved_size_valid;
 	bool saved_rotation_valid;
 	int unresponsive, grabbed;
 
@@ -2549,6 +2551,9 @@ set_full_output(struct shell_surface *shsurf)
 {
 	shsurf->saved_x = shsurf->view->geometry.x;
 	shsurf->saved_y = shsurf->view->geometry.y;
+	shsurf->saved_width = shsurf->surface->width;
+	shsurf->saved_height = shsurf->surface->height;
+	shsurf->saved_size_valid = true;
 	shsurf->saved_position_valid = true;
 
 	if (!wl_list_empty(&shsurf->rotation.transform.link)) {
@@ -3121,6 +3126,7 @@ create_common_surface(void *shell, struct weston_surface *surface,
 	shsurf->shell = (struct desktop_shell *) shell;
 	shsurf->unresponsive = 0;
 	shsurf->saved_position_valid = false;
+	shsurf->saved_size_valid = false;
 	shsurf->saved_rotation_valid = false;
 	shsurf->surface = surface;
 	shsurf->fullscreen.type = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
@@ -3316,12 +3322,28 @@ xdg_surface_unset_fullscreen(struct wl_client *client,
 			     struct wl_resource *resource)
 {
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+	int32_t width, height;
 
 	if (shsurf->type != SHELL_SURFACE_TOPLEVEL)
 		return;
 
+	if (!shsurf->next_state.fullscreen)
+		return;
+
 	shsurf->next_state.fullscreen = false;
 	shsurf->state_changed = true;
+
+	if (shsurf->saved_size_valid) {
+		width = shsurf->saved_width;
+		height = shsurf->saved_height;
+		shsurf->saved_size_valid = false;
+	} else {
+		width = shsurf->surface->width;
+		height = shsurf->surface->height;
+	}
+
+	shsurf->client->send_configure(shsurf->surface, 0, width, height);
+	shsurf->next_type = shsurf->type;
 }
 
 static void
@@ -3345,12 +3367,28 @@ xdg_surface_unset_maximized(struct wl_client *client,
 			    struct wl_resource *resource)
 {
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+	int32_t width, height;
 
 	if (shsurf->type != SHELL_SURFACE_TOPLEVEL)
 		return;
 
+	if (!shsurf->next_state.maximized)
+		return;
+
 	shsurf->next_state.maximized = false;
 	shsurf->state_changed = true;
+
+	if (shsurf->saved_size_valid) {
+		width = shsurf->saved_width;
+		height = shsurf->saved_height;
+		shsurf->saved_size_valid = false;
+	} else {
+		width = shsurf->surface->width;
+		height = shsurf->surface->height;
+	}
+
+	shsurf->client->send_configure(shsurf->surface, 0, width, height);
+	shsurf->next_type = shsurf->type;
 }
 
 static const struct xdg_surface_interface xdg_surface_implementation = {
