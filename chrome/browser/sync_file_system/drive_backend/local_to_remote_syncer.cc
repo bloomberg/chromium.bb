@@ -335,15 +335,16 @@ void LocalToRemoteSyncer::DidDeleteRemoteFile(
     google_apis::GDataErrorCode error) {
   if (error != google_apis::HTTP_SUCCESS &&
       error != google_apis::HTTP_NOT_FOUND &&
-      error != google_apis::HTTP_PRECONDITION) {
+      error != google_apis::HTTP_PRECONDITION &&
+      error != google_apis::HTTP_CONFLICT) {
     callback.Run(GDataErrorCodeToSyncStatusCode(error));
     return;
   }
 
   // Handle NOT_FOUND case as SUCCESS case.
-  // For PRECONDITION case, the remote file is modified since the last sync
-  // completed.  As our policy for deletion-modification conflict resolution,
-  // ignore the local deletion.
+  // For PRECONDITION / CONFLICT case, the remote file is modified since the
+  // last sync completed.  As our policy for deletion-modification conflict
+  // resolution, ignore the local deletion.
   callback.Run(SYNC_STATUS_OK);
 }
 
@@ -386,7 +387,8 @@ void LocalToRemoteSyncer::DidUploadExistingFile(
     google_apis::GDataErrorCode error,
     const GURL&,
     scoped_ptr<google_apis::ResourceEntry> entry) {
-  if (error == google_apis::HTTP_PRECONDITION) {
+  if (error == google_apis::HTTP_PRECONDITION ||
+      error == google_apis::HTTP_CONFLICT) {
     // The remote file has unfetched remote change.  Fetch latest metadata and
     // update database with it.
     // TODO(tzik): Consider adding local side low-priority dirtiness handling to
