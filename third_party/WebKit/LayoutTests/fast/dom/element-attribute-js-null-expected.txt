@@ -4,16 +4,19 @@ TEST SUCCEEDED: The value was null. [tested Node.nodeValue]
 TEST SUCCEEDED: The value was null. [tested Node.prefix]
 TEST SUCCEEDED: The value was the empty string. [tested Node.textContent]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLElement.title]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLElement.id]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLElement.lang]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLElement.dir]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLElement.className]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLElement.innerHTML]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLElement.innerText]
-TEST SUCCEEDED: Exception (SyntaxError: Failed to set the 'contentEditable' property on 'HTMLElement': The value provided ('') is not one of 'true', 'false', 'plaintext-only', or 'inherit'.) was thrown as expected. [tested HTMLElement.contentEditable]
+TEST SUCCEEDED: The value was the empty string. [tested Element.id]
+TEST SUCCEEDED: The value was the empty string. [tested Element.className]
+TEST SUCCEEDED: The value was the empty string. [tested Element.innerHTML]
+TEST SUCCEEDED: Exception (NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed.) was thrown as expected. [tested Element.outerHTML]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLAnchorElement.accessKey]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLElement.accessKey]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLElement.title]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLElement.lang]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLElement.dir]
+TEST SUCCEEDED: The value was the empty string. [tested HTMLElement.innerText]
+TEST SUCCEEDED: Exception (NoModificationAllowedError: Failed to set the 'outerText' property on 'HTMLElement': The element has no parent.) was thrown as expected. [tested HTMLElement.outerText]
+TEST SUCCEEDED: Exception (SyntaxError: Failed to set the 'contentEditable' property on 'HTMLElement': The value provided ('null') is not one of 'true', 'false', 'plaintext-only', or 'inherit'.) was thrown as expected. [tested HTMLElement.contentEditable]
+
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAnchorElement.charset]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAnchorElement.coords]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAnchorElement.download]
@@ -37,7 +40,6 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAppletElement.name]
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLAppletElement.object]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAppletElement.width]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLAreaElement.accessKey]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAreaElement.alt]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLAreaElement.coords]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLAreaElement.href]
@@ -63,7 +65,6 @@ TEST SUCCEEDED: The value was the empty string. [tested HTMLBodyElement.vLink]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLBRElement.clear]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLButtonElement.accessKey]
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLButtonElement.formAction]
 TEST SUCCEEDED: The value was the string 'application/x-www-form-urlencoded'. [tested HTMLButtonElement.formEnctype]
 TEST SUCCEEDED: The value was the string 'get'. [tested HTMLButtonElement.formMethod]
@@ -143,7 +144,6 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLImageElement.srcset
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLImageElement.useMap]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLInputElement.accept]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLInputElement.accessKey]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLInputElement.align]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLInputElement.alt]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLInputElement.autocomplete]
@@ -169,10 +169,8 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLKeygenElement.chall
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLKeygenElement.keytype]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLKeygenElement.name]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLLabelElement.accessKey]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLabelElement.htmlFor]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLLegendElement.accessKey]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLegendElement.align]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLLIElement.type]
@@ -297,7 +295,6 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTableSectionElement
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTableSectionElement.chOff]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTableSectionElement.vAlign]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLTextAreaElement.accessKey]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTextAreaElement.defaultValue]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTextAreaElement.dirName]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLTextAreaElement.inputMode]

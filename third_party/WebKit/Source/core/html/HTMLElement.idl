@@ -21,16 +21,16 @@
 [
     CustomWrap,
 ] interface HTMLElement : Element {
-    [Reflect, TreatNullAs=NullString] attribute DOMString title;
-    [Reflect, TreatNullAs=NullString] attribute DOMString lang;
-    attribute boolean             translate;
-    [Reflect, TreatNullAs=NullString] attribute DOMString dir;
+    [Reflect] attribute DOMString title;
+    [Reflect] attribute DOMString lang;
+    attribute boolean translate;
+    [Reflect] attribute DOMString dir;
 
     [CustomElementCallbacks] attribute long              tabIndex;
     [CustomElementCallbacks] attribute boolean           draggable;
     [Reflect, TreatNullAs=NullString] attribute DOMString webkitdropzone;
     [Reflect] attribute boolean hidden;
-    [Reflect, TreatNullAs=NullString] attribute DOMString accessKey;
+    [Reflect] attribute DOMString accessKey;
 
     // Extensions
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString innerText;
@@ -45,7 +45,7 @@
 
     [RuntimeEnabled=IMEAPI] readonly attribute InputMethodContext inputMethodContext;
 
-    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString contentEditable;
+    [CustomElementCallbacks, RaisesException=Setter] attribute DOMString contentEditable;
     readonly attribute boolean isContentEditable;
 
              attribute boolean spellcheck;

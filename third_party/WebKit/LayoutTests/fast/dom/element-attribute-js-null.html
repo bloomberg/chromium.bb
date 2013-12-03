@@ -85,19 +85,25 @@
                     ]
                 },
                 {
-                    type: 'HTMLElement',
-                    elementToUse: document.createElement('div'),
+                    type: 'Element',
+                    elementToUse: document.createElementNS('http://example.com/', 'example'),
                     attributes: [
-                        {name: 'title', expectedNull: ''},
                         {name: 'id', expectedNull: ''},
-                        {name: 'lang', expectedNull: ''},
-                        {name: 'dir', expectedNull: ''},
                         {name: 'className', expectedNull: ''},
                         {name: 'innerHTML', expectedNull: ''},
+                        {name: 'outerHTML', expectedNull: 'exception'}
+                    ]
+                },
+                {
+                    type: 'HTMLElement',
+                    elementToUse: document.createElement('abbr'),
+                    attributes: [
+                        {name: 'accessKey', expectedNull: 'null'},
+                        {name: 'title', expectedNull: 'null'},
+                        {name: 'lang', expectedNull: 'null'},
+                        {name: 'dir', expectedNull: 'null'},
                         {name: 'innerText', expectedNull: ''},
-                        // FIXME: TEST THESE
-                        // {name: 'outerHTML', expectedNull: ''},
-                        // {name: 'outerText', expectedNull: ''},
+                        {name: 'outerText', expectedNull: 'exception'},
                         {name: 'contentEditable', expectedNull: 'exception'}
                     ]
                 },
@@ -105,7 +111,6 @@
                     type: 'HTMLAnchorElement',
                     elementToUse: document.createElement('a'),
                     attributes: [
-                        {name: 'accessKey', expectedNull: ''},
                         {name: 'charset', expectedNull: 'null'},
                         {name: 'coords', expectedNull: 'null'},
                         {name: 'download', expectedNull: 'null'},
@@ -139,7 +144,6 @@
                     type: 'HTMLAreaElement',
                     elementToUse: document.createElement('area'),
                     attributes: [
-                        {name: 'accessKey', expectedNull: ''},
                         {name: 'alt', expectedNull: 'null'},
                         {name: 'coords', expectedNull: 'null'},
                         {name: 'href', expectedNull: ''},
@@ -195,7 +199,6 @@
                     type: 'HTMLButtonElement',
                     elementToUse: document.createElement('button'),
                     attributes: [
-                        {name: 'accessKey', expectedNull: ''},
                         {name: 'formAction', expectedNull: 'null', isUrl: true},
                         {name: 'formEnctype', expectedNull: 'application/x-www-form-urlencoded'},
                         {name: 'formMethod', expectedNull: 'get'},
@@ -352,7 +355,6 @@
                     elementToUse: document.createElement('input'),
                     attributes: [
                         {name: 'accept', expectedNull: 'null'},
-                        {name: 'accessKey', expectedNull: ''},
                         {name: 'align', expectedNull: 'null'},
                         {name: 'alt', expectedNull: 'null'},
                         {name: 'autocomplete', expectedNull: 'null'},
@@ -398,7 +400,6 @@
                     type: 'HTMLLabelElement',
                     elementToUse: document.createElement('label'),
                     attributes: [
-                        {name: 'accessKey', expectedNull: ''},
                         {name: 'htmlFor', expectedNull: 'null'}
                     ]
                 },
@@ -406,7 +407,6 @@
                     type: 'HTMLLegendElement',
                     elementToUse: document.createElement('legend'),
                     attributes: [
-                        {name: 'accessKey', expectedNull: ''},
                         {name: 'align', expectedNull: 'null'}
                     ]
                 },
@@ -664,7 +664,6 @@
                     type: 'HTMLTextAreaElement',
                     elementToUse: document.createElement('textarea'),
                     attributes: [
-                        {name: 'accessKey', expectedNull: ''},
                         {name: 'defaultValue', expectedNull: 'null'},
                         {name: 'dirName', expectedNull: 'null'},
                         {name: 'inputMode', expectedNull: 'null'},
