@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewAshTest,
   EXPECT_FALSE(frame_view->ShouldPaint());
 
   // The client view abuts top of the window.
-  EXPECT_EQ(0, frame_view->NonClientTopBorderHeight());
+  EXPECT_EQ(0, frame_view->GetBoundsForClientView().y());
 
   // The frame should be painted again when fullscreen is exited and the caption
   // buttons should be visible.

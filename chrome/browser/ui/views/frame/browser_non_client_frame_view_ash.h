@@ -77,9 +77,6 @@ class BrowserNonClientFrameViewAsh
   // strip.
   int GetTabStripRightInset() const;
 
-  // Distance between top of window and client area.
-  int NonClientTopBorderHeight() const;
-
   // Returns true if we should use a short header, such as for popup windows.
   bool UseShortHeader() const;
 

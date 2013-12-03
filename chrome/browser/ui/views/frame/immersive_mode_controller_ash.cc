@@ -74,12 +74,6 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
     return;
 
   EnableWindowObservers(enabled);
-
-  // Use a short "light bar" version of the tab strip when the top-of-window
-  // views are closed. If the user additionally enters into tab fullscreen,
-  // the tab indicators will be hidden.
-  use_tab_indicators_ = enabled;
-
   controller_->SetEnabled(enabled);
 }
 
@@ -169,16 +163,28 @@ void ImmersiveModeControllerAsh::SetRenderWindowTopInsetsForTouch(
   }
 }
 
-void ImmersiveModeControllerAsh::SetTabIndicatorsVisible(bool visible) {
-  DCHECK(!visible || use_tab_indicators_);
-  if (browser_view_->tabstrip())
-    browser_view_->tabstrip()->SetImmersiveStyle(visible);
+bool ImmersiveModeControllerAsh::UpdateTabIndicators() {
+  bool has_tabstrip = browser_view_->IsBrowserTypeNormal();
+  if (!IsEnabled() || !has_tabstrip) {
+    use_tab_indicators_ = false;
+  } else {
+    bool in_tab_fullscreen = browser_view_->browser()->fullscreen_controller()->
+        IsFullscreenForTabOrPending();
+    use_tab_indicators_ = !in_tab_fullscreen;
+  }
+
+  bool show_tab_indicators = use_tab_indicators_ && !IsRevealed();
+  if (show_tab_indicators != browser_view_->tabstrip()->IsImmersiveStyle()) {
+    browser_view_->tabstrip()->SetImmersiveStyle(show_tab_indicators);
+    return true;
+  }
+  return false;
 }
 
 void ImmersiveModeControllerAsh::OnImmersiveRevealStarted() {
   visible_fraction_ = 0;
   browser_view_->top_container()->SetPaintToLayer(true);
-  SetTabIndicatorsVisible(false);
+  UpdateTabIndicators();
   SetRenderWindowTopInsetsForTouch(0);
   LayoutBrowserRootView();
   FOR_EACH_OBSERVER(Observer, observers_, OnImmersiveRevealStarted());
@@ -187,7 +193,7 @@ void ImmersiveModeControllerAsh::OnImmersiveRevealStarted() {
 void ImmersiveModeControllerAsh::OnImmersiveRevealEnded() {
   visible_fraction_ = 0;
   browser_view_->top_container()->SetPaintToLayer(false);
-  SetTabIndicatorsVisible(use_tab_indicators_);
+  UpdateTabIndicators();
   SetRenderWindowTopInsetsForTouch(
       kStealTouchEventsFromWebContentsRegionHeightPx);
   LayoutBrowserRootView();
@@ -195,7 +201,7 @@ void ImmersiveModeControllerAsh::OnImmersiveRevealEnded() {
 
 void ImmersiveModeControllerAsh::OnImmersiveFullscreenExited() {
   browser_view_->top_container()->SetPaintToLayer(false);
-  SetTabIndicatorsVisible(false);
+  UpdateTabIndicators();
   SetRenderWindowTopInsetsForTouch(0);
   LayoutBrowserRootView();
 }
@@ -247,21 +253,18 @@ void ImmersiveModeControllerAsh::Observe(
   if (!controller_->IsEnabled())
     return;
 
-  bool in_tab_fullscreen = content::Source<FullscreenController>(source)->
-      IsFullscreenForTabOrPending();
-
-  bool used_tab_indicators = use_tab_indicators_;
-  use_tab_indicators_ = !in_tab_fullscreen;
-  SetTabIndicatorsVisible(use_tab_indicators_ && !controller_->IsRevealed());
+  bool tab_indicator_visibility_changed = UpdateTabIndicators();
 
   // Auto hide the shelf in immersive browser fullscreen. When auto hidden, the
   // shelf displays a 3px 'light bar' when it is closed. When in immersive
   // browser fullscreen and tab fullscreen, hide the shelf completely and
   // prevent it from being revealed.
+  bool in_tab_fullscreen = content::Source<FullscreenController>(source)->
+      IsFullscreenForTabOrPending();
   ash::wm::GetWindowState(native_window_)->set_hide_shelf_when_fullscreen(
       in_tab_fullscreen);
   ash::Shell::GetInstance()->UpdateShelfVisibility();
 
-  if (use_tab_indicators_ != used_tab_indicators)
+  if (tab_indicator_visibility_changed)
     LayoutBrowserRootView();
 }

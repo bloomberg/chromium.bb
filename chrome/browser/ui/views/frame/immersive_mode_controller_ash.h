@@ -57,8 +57,9 @@ class ImmersiveModeControllerAsh
   // consuming all touch events sent to it.
   void SetRenderWindowTopInsetsForTouch(int top_inset);
 
-  // Sets whether the tab strip is painted in a short "light bar" style.
-  void SetTabIndicatorsVisible(bool visible);
+  // Updates whether the tab strip is painted in a short "light bar" style.
+  // Returns true if the visibility of the tab indicators has changed.
+  bool UpdateTabIndicators();
 
   // ImmersiveFullscreenController::Delegate overrides:
   virtual void OnImmersiveRevealStarted() OVERRIDE;

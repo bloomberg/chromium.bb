@@ -23,7 +23,7 @@ class TopContainerView : public views::View {
   // views::View overrides:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual const char* GetClassName() const OVERRIDE;
-  virtual void PaintChildren(gfx::Canvas* canvas) OVERRIDE;
+  virtual void OnPaintBackground(gfx::Canvas* canvas) OVERRIDE;
 
  private:
   // The parent of this view. Not owned.

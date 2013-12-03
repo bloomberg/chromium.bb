@@ -433,7 +433,7 @@ void HeaderPainter::PaintTitleBar(gfx::Canvas* canvas,
   views::WidgetDelegate* delegate = frame_->widget_delegate();
   if (delegate && delegate->ShouldShowWindowTitle()) {
     gfx::Rect title_bounds = GetTitleBounds(title_font);
-    SkColor title_color = frame_->IsMaximized() ?
+    SkColor title_color = (frame_->IsMaximized() || frame_->IsFullscreen()) ?
         kMaximizedWindowTitleTextColor : kNonMaximizedWindowTitleTextColor;
     canvas->DrawStringInt(delegate->GetWindowTitle(),
                           title_font,

@@ -159,15 +159,18 @@ void BrowserNonClientFrameViewAsh::UpdateThrobber(bool running) {
 // views::NonClientFrameView overrides:
 
 gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForClientView() const {
-  int top_height = NonClientTopBorderHeight();
-  return ash::HeaderPainter::GetBoundsForClientView(top_height, bounds());
+  // The ClientView must be flush with the top edge of the widget so that the
+  // web contents can take up the entire screen in immersive fullscreen (with
+  // or without the top-of-window views revealed). When in immersive fullscreen
+  // and the top-of-window views are revealed, the TopContainerView paints the
+  // window header by redirecting paints from its background to
+  // BrowserNonClientFrameViewAsh.
+  return ash::HeaderPainter::GetBoundsForClientView(0, bounds());
 }
 
 gfx::Rect BrowserNonClientFrameViewAsh::GetWindowBoundsForClientBounds(
     const gfx::Rect& client_bounds) const {
-  int top_height = NonClientTopBorderHeight();
-  return ash::HeaderPainter::GetWindowBoundsForClientBounds(top_height,
-                                                            client_bounds);
+  return ash::HeaderPainter::GetWindowBoundsForClientBounds(0, client_bounds);
 }
 
 int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
@@ -264,7 +267,6 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
 }
 
 void BrowserNonClientFrameViewAsh::Layout() {
-  header_painter_->LayoutHeader(UseShortHeader());
   int header_height = 0;
   if (browser_view()->IsTabStripVisible()) {
     header_height = GetTopInset() +
@@ -272,13 +274,12 @@ void BrowserNonClientFrameViewAsh::Layout() {
   } else if (browser_view()->IsToolbarVisible()) {
     // Set the header's height so that it overlaps with the toolbar because the
     // top few pixels of the toolbar are not opaque.
-    gfx::Point toolbar_origin(browser_view()->GetToolbarBounds().origin());
-    View::ConvertPointToTarget(browser_view(), this, &toolbar_origin);
-    header_height = toolbar_origin.y() + kFrameShadowThickness * 2;
+    header_height = GetTopInset() + kFrameShadowThickness * 2;
   } else {
-    header_height = NonClientTopBorderHeight();
+    header_height = GetTopInset();
   }
   header_painter_->set_header_height(header_height);
+  header_painter_->LayoutHeader(UseShortHeader());
   if (avatar_button())
     LayoutAvatar();
   BrowserNonClientFrameView::Layout();
@@ -293,40 +294,25 @@ bool BrowserNonClientFrameViewAsh::HitTestRect(const gfx::Rect& rect) const {
     // |rect| is outside BrowserNonClientFrameViewAsh's bounds.
     return false;
   }
-  // If the rect is outside the bounds of the client area, claim it.
-  gfx::RectF rect_in_client_view_coords_f(rect);
-  View::ConvertRectToTarget(this, frame()->client_view(),
-      &rect_in_client_view_coords_f);
-  gfx::Rect rect_in_client_view_coords = gfx::ToEnclosingRect(
-      rect_in_client_view_coords_f);
-  if (!frame()->client_view()->HitTestRect(rect_in_client_view_coords))
-    return true;
 
-  // Otherwise, claim |rect| only if it is above the bottom of the tabstrip in
-  // a non-tab portion.
   TabStrip* tabstrip = browser_view()->tabstrip();
-  if (!tabstrip || !browser_view()->IsTabStripVisible())
-    return false;
+  if (tabstrip && browser_view()->IsTabStripVisible()) {
+    // Claim |rect| only if it is above the bottom of the tabstrip in a non-tab
+    // portion.
+    gfx::RectF rect_in_tabstrip_coords_f(rect);
+    View::ConvertRectToTarget(this, tabstrip, &rect_in_tabstrip_coords_f);
+    gfx::Rect rect_in_tabstrip_coords = gfx::ToEnclosingRect(
+        rect_in_tabstrip_coords_f);
 
-  gfx::RectF rect_in_tabstrip_coords_f(rect);
-  View::ConvertRectToTarget(this, tabstrip, &rect_in_tabstrip_coords_f);
-  gfx::Rect rect_in_tabstrip_coords = gfx::ToEnclosingRect(
-      rect_in_tabstrip_coords_f);
+     if (rect_in_tabstrip_coords.y() > tabstrip->height())
+       return false;
 
-  if (rect_in_tabstrip_coords.y() > tabstrip->GetLocalBounds().bottom()) {
-    // |rect| is below the tabstrip.
-    return false;
+    return !tabstrip->HitTestRect(rect_in_tabstrip_coords) ||
+        tabstrip->IsRectInWindowCaption(rect_in_tabstrip_coords);
   }
 
-  if (tabstrip->HitTestRect(rect_in_tabstrip_coords)) {
-    // Claim |rect| if it is in a non-tab portion of the tabstrip.
-    return tabstrip->IsRectInWindowCaption(rect_in_tabstrip_coords);
-  }
-
-  // We claim |rect| because it is above the bottom of the tabstrip, but
-  // not in the tabstrip. In particular, the window controls are right of
-  // the tabstrip.
-  return true;
+  // Claim |rect| if it is above the top of the topmost view in the client area.
+  return rect.y() < GetTopInset();
 }
 
 void BrowserNonClientFrameViewAsh::GetAccessibleState(
@@ -346,8 +332,7 @@ gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() {
     min_width = std::max(min_width,
         min_tabstrip_width + GetTabStripLeftInset() + GetTabStripRightInset());
   }
-  return gfx::Size(min_width,
-      NonClientTopBorderHeight() + min_client_view_size.height());
+  return gfx::Size(min_width, min_client_view_size.height());
 }
 
 void BrowserNonClientFrameViewAsh::OnThemeChanged() {
@@ -384,16 +369,6 @@ int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
 
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
   return header_painter_->GetRightInset() + kTabstripRightSpacing;
-}
-
-int BrowserNonClientFrameViewAsh::NonClientTopBorderHeight() const {
-  if (!ShouldPaint() || browser_view()->IsTabStripVisible())
-    return 0;
-
-  int caption_buttons_bottom = caption_button_container_->bounds().bottom();
-  if (browser_view()->IsToolbarVisible())
-    return caption_buttons_bottom - kContentShadowHeight;
-  return caption_buttons_bottom + kClientEdgeThickness;
 }
 
 bool BrowserNonClientFrameViewAsh::UseShortHeader() const {
@@ -444,9 +419,11 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
   // We need to paint when in immersive fullscreen and either:
   // - The top-of-window views are revealed.
   // - The lightbar style tabstrip is visible.
-  // Because immersive fullscreen is only supported for tabbed browser windows,
-  // checking whether the tab strip is visible is sufficient.
-  return browser_view()->IsTabStripVisible();
+  ImmersiveModeController* immersive_mode_controller =
+      browser_view()->immersive_mode_controller();
+  return immersive_mode_controller->IsEnabled() &&
+      (immersive_mode_controller->IsRevealed() ||
+       UseImmersiveLightbarHeaderStyle());
 }
 
 void BrowserNonClientFrameViewAsh::PaintImmersiveLightbarStyleHeader(

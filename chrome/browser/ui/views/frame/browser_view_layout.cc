@@ -204,7 +204,8 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
 
   gfx::Size contents_size(contents_split_->GetMinimumSize());
 
-  int min_height = tabstrip_size.height() + toolbar_size.height() +
+  int min_height = delegate_->GetTopInsetInBrowserView() +
+      tabstrip_size.height() + toolbar_size.height() +
       bookmark_bar_size.height() + contents_size.height();
   int widths[] = {
         tabstrip_size.width(),
@@ -532,8 +533,11 @@ void BrowserViewLayout::LayoutContentsSplitView(int top, int bottom) {
 void BrowserViewLayout::UpdateTopContainerBounds() {
   gfx::Rect top_container_bounds(top_container_->GetPreferredSize());
 
-  // If the immersive mode controller is animating the top-of-window views,
-  // part of the top container may be offscreen.
+  // If the immersive mode controller is animating the top container, it may be
+  // partly offscreen. The top container is positioned relative to the top of
+  // the client view instead of relative to GetTopInsetInBrowserView() because
+  // the top container paints parts of the frame (title, window controls) during
+  // an immersive reveal.
   top_container_bounds.set_y(
       immersive_mode_controller_->GetTopContainerVerticalOffset(
           top_container_bounds.size()));

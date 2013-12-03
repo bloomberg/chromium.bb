@@ -21,9 +21,18 @@ gfx::Size TopContainerView::GetPreferredSize() {
   // be above the bottom of the toolbar while the bookmark bar is animating.
   int height = 0;
   for (int i = 0; i < child_count(); ++i) {
-    int child_bottom = child_at(i)->bounds().bottom();
+    views::View* child = child_at(i);
+    if (!child->visible())
+      continue;
+    int child_bottom = child->bounds().bottom();
     if (child_bottom > height)
       height = child_bottom;
+  }
+  if (browser_view_->immersive_mode_controller()->IsRevealed()) {
+    // In immersive fullscreen, the TopContainerView paints the window header
+    // (themes, window title, window controls). The TopContainerView must still
+    // paint these even if it does not have any visible children.
+    height = std::max(height, browser_view_->frame()->GetTopInset());
   }
   return gfx::Size(browser_view_->width(), height);
 }
@@ -32,14 +41,12 @@ const char* TopContainerView::GetClassName() const {
   return "TopContainerView";
 }
 
-void TopContainerView::PaintChildren(gfx::Canvas* canvas) {
+void TopContainerView::OnPaintBackground(gfx::Canvas* canvas) {
   if (browser_view_->immersive_mode_controller()->IsRevealed()) {
-    // Top-views depend on parts of the frame (themes, window buttons) being
-    // painted underneath them. Clip rect has already been set to the bounds
-    // of this view, so just paint the frame.
+    // Top-views depend on parts of the frame (themes, window title,
+    // window controls) being painted underneath them. Clip rect has already
+    // been set to the bounds of this view, so just paint the frame.
     views::View* frame = browser_view_->frame()->GetFrameView();
     frame->Paint(canvas);
   }
-
-  views::View::PaintChildren(canvas);
 }

@@ -4,6 +4,7 @@
 
 #include "ash/wm/window_state.h"
 
+#include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell_window_ids.h"
@@ -12,6 +13,7 @@
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_types.h"
+#include "base/command_line.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -44,6 +46,16 @@ WindowState::WindowState(aura::Window* window)
       minimum_visibility_(false),
       window_show_type_(ToWindowShowType(GetShowState())) {
   window_->AddObserver(this);
+
+#if defined(OS_CHROMEOS)
+  // NOTE(pkotwicz): Animating to immersive fullscreen does not look good. When
+  // the kAshEnableImmersiveFullscreenForAllWindows flag is set most windows
+  // can be put into immersive fullscreen. It is not worth the added complexity
+  // to only animate to fullscreen if the window is put into immersive
+  // fullscreen.
+  animate_to_fullscreen_ = !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAshEnableImmersiveFullscreenForAllWindows);
+#endif
 }
 
 WindowState::~WindowState() {

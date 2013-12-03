@@ -132,6 +132,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 #if defined(USE_ASH)
+#include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
@@ -2321,7 +2322,12 @@ bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
     return false;
   bool is_browser_fullscreen = url.is_empty();
-  return is_browser_fullscreen && IsBrowserTypeNormal();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshEnableImmersiveFullscreenForAllWindows)) {
+    return is_browser_fullscreen;
+  } else {
+    return is_browser_fullscreen && IsBrowserTypeNormal();
+  }
 #else
   return false;
 #endif

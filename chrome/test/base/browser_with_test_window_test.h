@@ -141,6 +141,12 @@ class BrowserWithTestWindowTest : public testing::Test {
   // value. Can return NULL to use the default window created by Browser.
   virtual BrowserWindow* CreateBrowserWindow();
 
+  // Creates the browser given |profile|, |host_desktop_type| and
+  // |browser_window|. The caller owns the return value.
+  virtual Browser* CreateBrowser(Profile* profile,
+                                 chrome::HostDesktopType host_desktop_type,
+                                 BrowserWindow* browser_window);
+
  private:
   // We need to create a MessageLoop, otherwise a bunch of things fails.
   content::TestBrowserThreadBundle thread_bundle_;

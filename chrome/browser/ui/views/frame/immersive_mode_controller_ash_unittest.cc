@@ -2,13 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// For now, immersive fullscreen is Chrome OS only.
+#if defined(OS_CHROMEOS)
+
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
+#include "ash/ash_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -20,9 +25,6 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/webview/webview.h"
-
-// For now, immersive fullscreen is Chrome OS only.
-#if defined(OS_CHROMEOS)
 
 class ImmersiveModeControllerAshTest : public TestWithBrowserView {
  public:
@@ -249,6 +251,95 @@ TEST_F(ImmersiveModeControllerAshTest, TabAndBrowserFullscreen) {
   ASSERT_FALSE(controller()->IsEnabled());
   EXPECT_EQ(ash::SHELF_VISIBLE, shelf->visibility_state());
   EXPECT_TRUE(controller()->ShouldHideTabIndicators());
+}
+
+class ImmersiveModeControllerAshTestHostedApp
+    : public ImmersiveModeControllerAshTest {
+ public:
+  ImmersiveModeControllerAshTestHostedApp() {}
+  virtual ~ImmersiveModeControllerAshTestHostedApp() {}
+
+  // ImmersiveModeControllerAshTest override:
+  virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kAshEnableImmersiveFullscreenForAllWindows);
+    ImmersiveModeControllerAshTest::SetUp();
+  }
+
+  // BrowserWithTestWindowTest override:
+  virtual Browser* CreateBrowser(Profile* profile,
+                                 chrome::HostDesktopType host_desktop_type,
+                                 BrowserWindow* browser_window) OVERRIDE {
+    Browser::CreateParams params(profile, host_desktop_type);
+    params.type = Browser::TYPE_POPUP;
+    params.app_name = "Test";
+    params.window = browser_window;
+    return new Browser(params);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerAshTestHostedApp);
+};
+
+// Test the layout and visibility of the TopContainerView and web contents when
+// a hosted app is put into immersive fullscreen.
+TEST_F(ImmersiveModeControllerAshTestHostedApp, Layout) {
+  // Add a tab because the browser starts out without any tabs at all.
+  AddTab(browser(), GURL("about:blank"));
+
+  TabStrip* tabstrip = browser_view()->tabstrip();
+  ToolbarView* toolbar = browser_view()->toolbar();
+  views::WebView* contents_web_view =
+      browser_view()->GetContentsWebViewForTest();
+  views::View* top_container = browser_view()->top_container();
+
+  // Immersive fullscreen starts out disabled.
+  ASSERT_FALSE(browser_view()->GetWidget()->IsFullscreen());
+  ASSERT_FALSE(controller()->IsEnabled());
+
+  // The tabstrip and toolbar are not visible for hosted apps.
+  EXPECT_FALSE(tabstrip->visible());
+  EXPECT_FALSE(toolbar->visible());
+
+  // The window header should be above the web contents.
+  int header_height = GetBoundsInWidget(contents_web_view).y();
+
+  ToggleFullscreen();
+  EXPECT_TRUE(browser_view()->GetWidget()->IsFullscreen());
+  EXPECT_TRUE(controller()->IsEnabled());
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // Entering immersive fullscreen should make the web contents flush with the
+  // top of the widget.
+  EXPECT_FALSE(tabstrip->visible());
+  EXPECT_FALSE(toolbar->visible());
+  EXPECT_TRUE(top_container->GetVisibleBounds().IsEmpty());
+  EXPECT_EQ(0, GetBoundsInWidget(contents_web_view).y());
+
+  // Reveal the window header.
+  AttemptReveal();
+
+  // The tabstrip and toolbar should still be hidden and the web contents should
+  // still be flush with the top of the screen.
+  EXPECT_FALSE(tabstrip->visible());
+  EXPECT_FALSE(toolbar->visible());
+  EXPECT_EQ(0, GetBoundsInWidget(contents_web_view).y());
+
+  // During an immersive reveal, the window header should be painted to the
+  // TopContainerView. The TopContainerView should be flush with the top of the
+  // widget and have |header_height|.
+  gfx::Rect top_container_bounds_in_widget(GetBoundsInWidget(top_container));
+  EXPECT_EQ(0, top_container_bounds_in_widget.y());
+  EXPECT_EQ(header_height, top_container_bounds_in_widget.height());
+
+  // Exit immersive fullscreen. The web contents should be back below the window
+  // header.
+  ToggleFullscreen();
+  EXPECT_FALSE(browser_view()->GetWidget()->IsFullscreen());
+  EXPECT_FALSE(controller()->IsEnabled());
+  EXPECT_FALSE(tabstrip->visible());
+  EXPECT_FALSE(toolbar->visible());
+  EXPECT_EQ(header_height, GetBoundsInWidget(contents_web_view).y());
 }
 
 #endif  // defined(OS_CHROMEOS)
