@@ -244,6 +244,20 @@ TEST_F(BubbleDelegateTest, NonClientHitTest) {
   }
 }
 
+TEST_F(BubbleDelegateTest, CloseWhenAnchorWidgetBoundsChanged) {
+  scoped_ptr<Widget> anchor_widget(CreateTestWidget());
+  BubbleDelegateView* bubble_delegate = new BubbleDelegateView(
+      anchor_widget->GetContentsView(), BubbleBorder::NONE);
+  Widget* bubble_widget = BubbleDelegateView::CreateBubble(bubble_delegate);
+  test::TestWidgetObserver bubble_observer(bubble_widget);
+  EXPECT_FALSE(bubble_observer.widget_closed());
+
+  bubble_widget->Show();
+  EXPECT_TRUE(bubble_widget->IsVisible());
+  anchor_widget->SetBounds(gfx::Rect(10, 10, 100, 100));
+  EXPECT_FALSE(bubble_widget->IsVisible());
+}
+
 // This class provides functionality to verify that the BubbleView shows up
 // when we call BubbleDelegateView::StartFade(true) and is destroyed when we
 // call BubbleDelegateView::StartFade(false).
