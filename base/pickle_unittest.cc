@@ -10,6 +10,9 @@
 #include "base/strings/string16.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// Remove when this file is in the base namespace.
+using base::string16;
+
 namespace {
 
 const int testint = 2093847192;

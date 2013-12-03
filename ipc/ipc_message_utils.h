@@ -265,8 +265,8 @@ struct ParamTraits<std::wstring> {
 // need this trait.
 #if !defined(WCHAR_T_IS_UTF16)
 template <>
-struct ParamTraits<string16> {
-  typedef string16 param_type;
+struct ParamTraits<base::string16> {
+  typedef base::string16 param_type;
   static void Write(Message* m, const param_type& p) {
     m->WriteString16(p);
   }

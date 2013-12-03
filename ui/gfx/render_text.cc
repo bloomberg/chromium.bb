@@ -28,7 +28,7 @@ namespace {
 // All chars are replaced by this char when the password style is set.
 // TODO(benrg): GTK uses the first of U+25CF, U+2022, U+2731, U+273A, '*'
 // that's available in the font (find_invisible_char() in gtkentry.c).
-const char16 kPasswordReplacementChar = '*';
+const base::char16 kPasswordReplacementChar = '*';
 
 // Default color used for the text and cursor.
 const SkColor kDefaultColor = SK_ColorBLACK;
@@ -879,7 +879,7 @@ const BreakList<size_t>& RenderText::GetLineBreaks() {
   if (line_breaks_.max() != 0)
     return line_breaks_;
 
-  const string16& layout_text = GetLayoutText();
+  const base::string16& layout_text = GetLayoutText();
   const size_t text_length = layout_text.length();
   line_breaks_.SetValue(0);
   line_breaks_.SetMax(text_length);

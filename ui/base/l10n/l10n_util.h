@@ -55,13 +55,15 @@ bool IsLocaleSupportedByOS(const std::string& locale);
 // in the UI thread.
 // If |is_for_ui| is true, U+200F is appended so that it can be
 // rendered properly in a RTL Chrome.
-UI_EXPORT string16 GetDisplayNameForLocale(const std::string& locale,
-                                           const std::string& display_locale,
-                                           bool is_for_ui);
+UI_EXPORT base::string16 GetDisplayNameForLocale(
+    const std::string& locale,
+    const std::string& display_locale,
+    bool is_for_ui);
 
 // Returns the display name of the |country_code| in |display_locale|.
-UI_EXPORT string16 GetDisplayNameForCountry(const std::string& country_code,
-                                            const std::string& display_locale);
+UI_EXPORT base::string16 GetDisplayNameForCountry(
+    const std::string& country_code,
+    const std::string& display_locale);
 
 // Converts all - into _, to be consistent with ICU and file system names.
 UI_EXPORT std::string NormalizeLocale(const std::string& locale);
@@ -88,79 +90,81 @@ UI_EXPORT bool IsValidLocaleSyntax(const std::string& locale);
 
 // Pulls resource string from the string bundle and returns it.
 UI_EXPORT std::string GetStringUTF8(int message_id);
-UI_EXPORT string16 GetStringUTF16(int message_id);
+UI_EXPORT base::string16 GetStringUTF16(int message_id);
 
 // Get a resource string and replace $i with replacements[i] for all
 // i < replacements.size(). Additionally, $$ is replaced by $.
 // If non-NULL |offsets| will be replaced with the start points of the replaced
 // strings.
-UI_EXPORT string16 GetStringFUTF16(int message_id,
-                                   const std::vector<string16>& replacements,
-                                   std::vector<size_t>* offsets);
+UI_EXPORT base::string16 GetStringFUTF16(
+    int message_id,
+    const std::vector<base::string16>& replacements,
+    std::vector<size_t>* offsets);
 
 // Convenience wrappers for the above.
-UI_EXPORT string16 GetStringFUTF16(int message_id,
-                                   const string16& a);
-UI_EXPORT string16 GetStringFUTF16(int message_id,
-                                   const string16& a,
-                                   const string16& b);
-UI_EXPORT string16 GetStringFUTF16(int message_id,
-                                   const string16& a,
-                                   const string16& b,
-                                   const string16& c);
-UI_EXPORT string16 GetStringFUTF16(int message_id,
-                                   const string16& a,
-                                   const string16& b,
-                                   const string16& c,
-                                   const string16& d);
-UI_EXPORT string16 GetStringFUTF16(int message_id,
-                                   const string16& a,
-                                   const string16& b,
-                                   const string16& c,
-                                   const string16& d,
-                                   const string16& e);
+UI_EXPORT base::string16 GetStringFUTF16(int message_id,
+                                         const base::string16& a);
+UI_EXPORT base::string16 GetStringFUTF16(int message_id,
+                                         const base::string16& a,
+                                         const base::string16& b);
+UI_EXPORT base::string16 GetStringFUTF16(int message_id,
+                                         const base::string16& a,
+                                         const base::string16& b,
+                                         const base::string16& c);
+UI_EXPORT base::string16 GetStringFUTF16(int message_id,
+                                         const base::string16& a,
+                                         const base::string16& b,
+                                         const base::string16& c,
+                                         const base::string16& d);
+UI_EXPORT base::string16 GetStringFUTF16(int message_id,
+                                         const base::string16& a,
+                                         const base::string16& b,
+                                         const base::string16& c,
+                                         const base::string16& d,
+                                         const base::string16& e);
 UI_EXPORT std::string GetStringFUTF8(int message_id,
-                                     const string16& a);
+                                     const base::string16& a);
 UI_EXPORT std::string GetStringFUTF8(int message_id,
-                                     const string16& a,
-                                     const string16& b);
+                                     const base::string16& a,
+                                     const base::string16& b);
 UI_EXPORT std::string GetStringFUTF8(int message_id,
-                                     const string16& a,
-                                     const string16& b,
-                                     const string16& c);
+                                     const base::string16& a,
+                                     const base::string16& b,
+                                     const base::string16& c);
 UI_EXPORT std::string GetStringFUTF8(int message_id,
-                                     const string16& a,
-                                     const string16& b,
-                                     const string16& c,
-                                     const string16& d);
+                                     const base::string16& a,
+                                     const base::string16& b,
+                                     const base::string16& c,
+                                     const base::string16& d);
 
 // Variants that return the offset(s) of the replaced parameters. The
 // vector based version returns offsets ordered by parameter. For example if
 // invoked with a and b offsets[0] gives the offset for a and offsets[1] the
 // offset of b regardless of where the parameters end up in the string.
-UI_EXPORT string16 GetStringFUTF16(int message_id,
-                                   const string16& a,
-                                   size_t* offset);
-UI_EXPORT string16 GetStringFUTF16(int message_id,
-                                   const string16& a,
-                                   const string16& b,
-                                   std::vector<size_t>* offsets);
+UI_EXPORT base::string16 GetStringFUTF16(int message_id,
+                                         const base::string16& a,
+                                         size_t* offset);
+UI_EXPORT base::string16 GetStringFUTF16(int message_id,
+                                         const base::string16& a,
+                                         const base::string16& b,
+                                         std::vector<size_t>* offsets);
 
 // Convenience functions to get a string with a single number as a parameter.
-UI_EXPORT string16 GetStringFUTF16Int(int message_id, int a);
-string16 GetStringFUTF16Int(int message_id, int64 a);
+UI_EXPORT base::string16 GetStringFUTF16Int(int message_id, int a);
+base::string16 GetStringFUTF16Int(int message_id, int64 a);
 
 // Get a resource string using |number| to decide which of |message_ids| should
 // be used. |message_ids| must be size 6 and in order: default, singular, zero,
 // two, few, many.
-UI_EXPORT string16 GetPluralStringFUTF16(const std::vector<int>& message_ids,
-                                         int number);
+UI_EXPORT base::string16 GetPluralStringFUTF16(
+    const std::vector<int>& message_ids,
+    int number);
 UI_EXPORT std::string GetPluralStringFUTF8(const std::vector<int>& message_ids,
                                            int number);
 
-// In place sorting of string16 strings using collation rules for |locale|.
+// In place sorting of base::string16 strings using collation rules for |locale|.
 UI_EXPORT void SortStrings16(const std::string& locale,
-                             std::vector<string16>* strings);
+                             std::vector<base::string16>* strings);
 
 // Returns a vector of available locale codes. E.g., a vector containing
 // en-US, es, fr, fi, pt-PT, pt-BR, etc.

@@ -10,6 +10,9 @@
 
 //------------------------------------------------------------------------------
 
+using base::char16;
+using base::string16;
+
 // static
 const int Pickle::kPayloadUnit = 64;
 

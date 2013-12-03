@@ -33,26 +33,27 @@ class UI_EXPORT ScopedClipboardWriter {
   ~ScopedClipboardWriter();
 
   // Converts |text| to UTF-8 and adds it to the clipboard.
-  void WriteText(const string16& text);
+  void WriteText(const base::string16& text);
 
   // Converts the text of the URL to UTF-8 and adds it to the clipboard, then
   // notifies the Clipboard that we just wrote a URL.
-  void WriteURL(const string16& text);
+  void WriteURL(const base::string16& text);
 
   // Adds HTML to the clipboard.  The url parameter is optional, but especially
   // useful if the HTML fragment contains relative links.
-  void WriteHTML(const string16& markup, const std::string& source_url);
+  void WriteHTML(const base::string16& markup, const std::string& source_url);
 
   // Adds RTF to the clipboard.
   void WriteRTF(const std::string& rtf_data);
 
   // Adds a bookmark to the clipboard.
-  void WriteBookmark(const string16& bookmark_title,
+  void WriteBookmark(const base::string16& bookmark_title,
                      const std::string& url);
 
   // Adds an html hyperlink (<a href>) to the clipboard. |anchor_text| and
   // |url| will be escaped as needed.
-  void WriteHyperlink(const string16& anchor_text, const std::string& url);
+  void WriteHyperlink(const base::string16& anchor_text,
+                      const std::string& url);
 
   // Used by WebKit to determine whether WebKit wrote the clipboard last
   void WriteWebSmartPaste();
@@ -67,7 +68,7 @@ class UI_EXPORT ScopedClipboardWriter {
  protected:
   // Converts |text| to UTF-8 and adds it to the clipboard.  If it's a URL, we
   // also notify the clipboard of that fact.
-  void WriteTextOrURL(const string16& text, bool is_url);
+  void WriteTextOrURL(const base::string16& text, bool is_url);
 
   // We accumulate the data passed to the various targets in the |objects_|
   // vector, and pass it to Clipboard::WriteObjects() during object destruction.

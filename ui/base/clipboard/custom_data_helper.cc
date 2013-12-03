@@ -32,14 +32,14 @@ bool SkippablePickle::SkipString16(PickleIterator* iter) {
   int len;
   if (!ReadLength(iter, &len))
     return false;
-  return iter->SkipBytes(len * sizeof(char16));
+  return iter->SkipBytes(len * sizeof(base::char16));
 }
 
 }  // namespace
 
 void ReadCustomDataTypes(const void* data,
                          size_t data_length,
-                         std::vector<string16>* types) {
+                         std::vector<base::string16>* types) {
   SkippablePickle pickle(data, data_length);
   PickleIterator iter(pickle);
 
@@ -53,7 +53,7 @@ void ReadCustomDataTypes(const void* data,
   uint64 original_size = types->size();
 
   for (uint64 i = 0; i < size; ++i) {
-    types->push_back(string16());
+    types->push_back(base::string16());
     if (!pickle.ReadString16(&iter, &types->back()) ||
         !pickle.SkipString16(&iter)) {
       types->resize(original_size);
@@ -64,8 +64,8 @@ void ReadCustomDataTypes(const void* data,
 
 void ReadCustomDataForType(const void* data,
                            size_t data_length,
-                           const string16& type,
-                           string16* result) {
+                           const base::string16& type,
+                           base::string16* result) {
   SkippablePickle pickle(data, data_length);
   PickleIterator iter(pickle);
 
@@ -74,7 +74,7 @@ void ReadCustomDataForType(const void* data,
     return;
 
   for (uint64 i = 0; i < size; ++i) {
-    string16 deserialized_type;
+    base::string16 deserialized_type;
     if (!pickle.ReadString16(&iter, &deserialized_type))
       return;
     if (deserialized_type == type) {
@@ -88,7 +88,7 @@ void ReadCustomDataForType(const void* data,
 
 void ReadCustomDataIntoMap(const void* data,
                            size_t data_length,
-                           std::map<string16, string16>* result) {
+                           std::map<base::string16, base::string16>* result) {
   Pickle pickle(reinterpret_cast<const char*>(data), data_length);
   PickleIterator iter(pickle);
 
@@ -97,14 +97,14 @@ void ReadCustomDataIntoMap(const void* data,
     return;
 
   for (uint64 i = 0; i < size; ++i) {
-    string16 type;
+    base::string16 type;
     if (!pickle.ReadString16(&iter, &type)) {
       // Data is corrupt, return an empty map.
       result->clear();
       return;
     }
-    std::pair<std::map<string16, string16>::iterator, bool> insert_result =
-        result->insert(std::make_pair(type, string16()));
+    std::pair<std::map<base::string16, base::string16>::iterator, bool>
+        insert_result = result->insert(std::make_pair(type, base::string16()));
     if (!pickle.ReadString16(&iter, &insert_result.first->second)) {
       // Data is corrupt, return an empty map.
       result->clear();
@@ -113,10 +113,12 @@ void ReadCustomDataIntoMap(const void* data,
   }
 }
 
-void WriteCustomDataToPickle(const std::map<string16, string16>& data,
-                             Pickle* pickle) {
+void WriteCustomDataToPickle(
+    const std::map<base::string16, base::string16>& data,
+    Pickle* pickle) {
   pickle->WriteUInt64(data.size());
-  for (std::map<string16, string16>::const_iterator it = data.begin();
+  for (std::map<base::string16, base::string16>::const_iterator it =
+           data.begin();
        it != data.end();
        ++it) {
     pickle->WriteString16(it->first);

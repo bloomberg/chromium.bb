@@ -26,6 +26,10 @@
 #include "base/third_party/icu/icu_utf.h"
 #include "build/build_config.h"
 
+// Remove when this entire file is in the base namespace.
+using base::char16;
+using base::string16;
+
 namespace {
 
 // Force the singleton used by Empty[W]String[16] to be a unique type. This

@@ -9,6 +9,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace base {
+
 #if defined(WCHAR_T_IS_UTF32)
 
 // We define a custom operator<< for string16 so we can use it with logging.
@@ -52,3 +54,5 @@ TEST(String16Test, OutputStream) {
 }
 
 #endif
+
+}  // namespace base

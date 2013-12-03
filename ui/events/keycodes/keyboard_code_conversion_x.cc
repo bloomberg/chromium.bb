@@ -448,7 +448,7 @@ uint16 GetCharacterFromXEvent(XEvent* xev) {
   int bytes_written = XLookupString(&xev->xkey, buf, 6, NULL, NULL);
   DCHECK_LE(bytes_written, 6);
 
-  string16 result;
+  base::string16 result;
   return (bytes_written > 0 && UTF8ToUTF16(buf, bytes_written, &result) &&
           result.length() == 1) ? result[0] : 0;
 }

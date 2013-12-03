@@ -15,7 +15,7 @@ namespace file_util {
 
 // Returns true if file_name does not have any illegal character. The input
 // param has the same restriction as that for ReplaceIllegalCharacters.
-BASE_I18N_EXPORT bool IsFilenameLegal(const string16& file_name);
+BASE_I18N_EXPORT bool IsFilenameLegal(const base::string16& file_name);
 
 // Replaces characters in 'file_name' that are illegal for file names with
 // 'replace_char'. 'file_name' must not be a full or relative path, but just the

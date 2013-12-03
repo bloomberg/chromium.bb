@@ -36,17 +36,19 @@ UI_EXPORT extern const char kMimeTypeWebCustomData[];
 
 UI_EXPORT void ReadCustomDataTypes(const void* data,
                                    size_t data_length,
-                                   std::vector<string16>* types);
+                                   std::vector<base::string16>* types);
 UI_EXPORT void ReadCustomDataForType(const void* data,
                                      size_t data_length,
-                                     const string16& type,
-                                     string16* result);
-UI_EXPORT void ReadCustomDataIntoMap(const void* data,
-                                     size_t data_length,
-                                     std::map<string16, string16>* result);
+                                     const base::string16& type,
+                                     base::string16* result);
+UI_EXPORT void ReadCustomDataIntoMap(
+    const void* data,
+    size_t data_length,
+    std::map<base::string16, base::string16>* result);
 
-UI_EXPORT void WriteCustomDataToPickle(const std::map<string16, string16>& data,
-                                       Pickle* pickle);
+UI_EXPORT void WriteCustomDataToPickle(
+    const std::map<base::string16, base::string16>& data,
+    Pickle* pickle);
 
 }  // namespace ui
 

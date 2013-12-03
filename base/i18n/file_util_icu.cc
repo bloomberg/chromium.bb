@@ -19,6 +19,8 @@
 #include "third_party/icu/source/common/unicode/uniset.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 
+using base::string16;
+
 namespace {
 
 class IllegalCharacters {

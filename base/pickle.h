@@ -37,7 +37,7 @@ class BASE_EXPORT PickleIterator {
   bool ReadFloat(float* result) WARN_UNUSED_RESULT;
   bool ReadString(std::string* result) WARN_UNUSED_RESULT;
   bool ReadWString(std::wstring* result) WARN_UNUSED_RESULT;
-  bool ReadString16(string16* result) WARN_UNUSED_RESULT;
+  bool ReadString16(base::string16* result) WARN_UNUSED_RESULT;
   bool ReadData(const char** data, int* length) WARN_UNUSED_RESULT;
   bool ReadBytes(const char** data, int length) WARN_UNUSED_RESULT;
 
@@ -179,7 +179,7 @@ class BASE_EXPORT Pickle {
     return iter->ReadWString(result);
   }
   bool ReadString16(PickleIterator* iter,
-                    string16* result) const WARN_UNUSED_RESULT {
+                    base::string16* result) const WARN_UNUSED_RESULT {
     return iter->ReadString16(result);
   }
   // A pointer to the data will be placed in *data, and the length will be
@@ -243,7 +243,7 @@ class BASE_EXPORT Pickle {
   }
   bool WriteString(const std::string& value);
   bool WriteWString(const std::wstring& value);
-  bool WriteString16(const string16& value);
+  bool WriteString16(const base::string16& value);
   // "Data" is a blob with a length. When you read it out you will be given the
   // length. See also WriteBytes.
   bool WriteData(const char* data, int length);

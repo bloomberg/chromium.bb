@@ -226,7 +226,8 @@ static void SetupPangoLayoutWithoutFont(
     if (flags & Canvas::HIDE_PREFIX) {
       DCHECK_EQ(1, g_unichar_to_utf8(kAcceleratorChar, NULL));
       base::string16 accelerator_removed =
-          RemoveAcceleratorChar(text, static_cast<char16>(kAcceleratorChar),
+          RemoveAcceleratorChar(text,
+                                static_cast<base::char16>(kAcceleratorChar),
                                 NULL, NULL);
       utf8 = UTF16ToUTF8(accelerator_removed);
     } else {

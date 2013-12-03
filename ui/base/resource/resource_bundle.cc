@@ -442,8 +442,8 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
   return base::StringPiece();
 }
 
-string16 ResourceBundle::GetLocalizedString(int message_id) {
-  string16 string;
+base::string16 ResourceBundle::GetLocalizedString(int message_id) {
+  base::string16 string;
   if (delegate_ && delegate_->GetLocalizedString(message_id, &string))
     return string;
 
@@ -455,7 +455,7 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
   // string (better than crashing).
   if (!locale_resources_data_.get()) {
     LOG(WARNING) << "locale resources are not loaded";
-    return string16();
+    return base::string16();
   }
 
   base::StringPiece data;
@@ -465,7 +465,7 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
     data = GetRawDataResource(message_id);
     if (data.empty()) {
       NOTREACHED() << "unable to find resource: " << message_id;
-      return string16();
+      return base::string16();
     }
   }
 
@@ -476,10 +476,10 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
       << "requested localized string from binary pack file";
 
   // Data pack encodes strings as either UTF8 or UTF16.
-  string16 msg;
+  base::string16 msg;
   if (encoding == ResourceHandle::UTF16) {
-    msg = string16(reinterpret_cast<const char16*>(data.data()),
-                   data.length() / 2);
+    msg = base::string16(reinterpret_cast<const base::char16*>(data.data()),
+                         data.length() / 2);
   } else if (encoding == ResourceHandle::UTF8) {
     msg = UTF8ToUTF16(data);
   }

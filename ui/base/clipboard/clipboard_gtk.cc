@@ -317,8 +317,8 @@ void Clipboard::WriteBitmap(const SkBitmap& bitmap) {
 void Clipboard::WriteBookmark(const char* title_data, size_t title_len,
                               const char* url_data, size_t url_len) {
   // Write as a mozilla url (UTF16: URL, newline, title).
-  string16 url = UTF8ToUTF16(std::string(url_data, url_len) + "\n");
-  string16 title = UTF8ToUTF16(std::string(title_data, title_len));
+  base::string16 url = UTF8ToUTF16(std::string(url_data, url_len) + "\n");
+  base::string16 title = UTF8ToUTF16(std::string(title_data, title_len));
   if (title.length() >= std::numeric_limits<size_t>::max() / 4 ||
       url.length() >= std::numeric_limits<size_t>::max() / 4)
     return;
@@ -407,7 +407,7 @@ void Clipboard::Clear(ClipboardType type) {
 }
 
 void Clipboard::ReadAvailableTypes(ClipboardType type,
-                                   std::vector<string16>* types,
+                                   std::vector<base::string16>* types,
                                    bool* contains_filenames) const {
   DCHECK(CalledOnValidThread());
   if (!types || !contains_filenames) {
@@ -441,7 +441,7 @@ void Clipboard::ReadAvailableTypes(ClipboardType type,
 }
 
 
-void Clipboard::ReadText(ClipboardType type, string16* result) const {
+void Clipboard::ReadText(ClipboardType type, base::string16* result) const {
   DCHECK(CalledOnValidThread());
   GtkClipboard* clipboard = LookupBackingClipboard(type);
   if (clipboard == NULL)
@@ -478,7 +478,7 @@ void Clipboard::ReadAsciiText(ClipboardType type,
 // TODO(estade): handle different charsets.
 // TODO(port): set *src_url.
 void Clipboard::ReadHTML(ClipboardType type,
-                         string16* markup,
+                         base::string16* markup,
                          std::string* src_url,
                          uint32* fragment_start,
                          uint32* fragment_end) const {
@@ -547,8 +547,8 @@ SkBitmap Clipboard::ReadImage(ClipboardType type) const {
 }
 
 void Clipboard::ReadCustomData(ClipboardType clipboard_type,
-                               const string16& type,
-                               string16* result) const {
+                               const base::string16& type,
+                               base::string16* result) const {
   DCHECK(CalledOnValidThread());
   GtkClipboard* clipboard = LookupBackingClipboard(clipboard_type);
   if (!clipboard)
@@ -564,7 +564,7 @@ void Clipboard::ReadCustomData(ClipboardType clipboard_type,
   gtk_selection_data_free(data);
 }
 
-void Clipboard::ReadBookmark(string16* title, std::string* url) const {
+void Clipboard::ReadBookmark(base::string16* title, std::string* url) const {
   // TODO(estade): implement this.
   NOTIMPLEMENTED();
 }

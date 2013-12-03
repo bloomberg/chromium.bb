@@ -230,11 +230,11 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   void Clear(ClipboardType type);
 
   void ReadAvailableTypes(ClipboardType type,
-                          std::vector<string16>* types,
+                          std::vector<base::string16>* types,
                           bool* contains_filenames) const;
 
   // Reads UNICODE text from the clipboard, if available.
-  void ReadText(ClipboardType type, string16* result) const;
+  void ReadText(ClipboardType type, base::string16* result) const;
 
   // Reads ASCII text from the clipboard, if available.
   void ReadAsciiText(ClipboardType type, std::string* result) const;
@@ -244,7 +244,7 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // markup indicating the beginning and end of the actual fragment. Otherwise,
   // they will contain 0 and markup->size().
   void ReadHTML(ClipboardType type,
-                string16* markup,
+                base::string16* markup,
                 std::string* src_url,
                 uint32* fragment_start,
                 uint32* fragment_end) const;
@@ -257,11 +257,11 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   SkBitmap ReadImage(ClipboardType type) const;
 
   void ReadCustomData(ClipboardType clipboard_type,
-                      const string16& type,
-                      string16* result) const;
+                      const base::string16& type,
+                      base::string16* result) const;
 
   // Reads a bookmark from the clipboard, if available.
-  void ReadBookmark(string16* title, std::string* url) const;
+  void ReadBookmark(base::string16* title, std::string* url) const;
 
   // Reads raw data from the clipboard with the given format type. Stores result
   // as a byte vector.
@@ -346,8 +346,8 @@ class UI_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
   // Safely write to system clipboard. Free |handle| on failure.
   void WriteToClipboard(unsigned int format, HANDLE handle);
 
-  static void ParseBookmarkClipboardFormat(const string16& bookmark,
-                                           string16* title,
+  static void ParseBookmarkClipboardFormat(const base::string16& bookmark,
+                                           base::string16* title,
                                            std::string* url);
 
   // Free a handle depending on its type (as intuited from format)

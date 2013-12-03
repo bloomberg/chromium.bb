@@ -344,7 +344,7 @@ void ParamTraits<std::wstring>::Log(const param_type& p, std::string* l) {
 }
 
 #if !defined(WCHAR_T_IS_UTF16)
-void ParamTraits<string16>::Log(const param_type& p, std::string* l) {
+void ParamTraits<base::string16>::Log(const param_type& p, std::string* l) {
   l->append(UTF16ToUTF8(p));
 }
 #endif
@@ -536,7 +536,7 @@ void ParamTraits<base::NullableString16>::Write(Message* m,
 bool ParamTraits<base::NullableString16>::Read(const Message* m,
                                                PickleIterator* iter,
                                                param_type* r) {
-  string16 string;
+  base::string16 string;
   if (!ReadParam(m, iter, &string))
     return false;
   bool is_null;

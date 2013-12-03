@@ -36,7 +36,7 @@ struct UI_EXPORT CompositionText {
   void Clear();
 
   // Content of the composition text.
-  string16 text;
+  base::string16 text;
 
   // Underline information of the composition text.
   // They must be sorted in ascending order by their start_offset and cannot be

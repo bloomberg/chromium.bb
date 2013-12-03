@@ -103,7 +103,7 @@ DEFINE_TRIVIAL_HASH(unsigned long long);
     }
 
 DEFINE_STRING_HASH(std::string);
-DEFINE_STRING_HASH(string16);
+DEFINE_STRING_HASH(base::string16);
 
 #undef DEFINE_STRING_HASH
 

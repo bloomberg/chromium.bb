@@ -9,12 +9,12 @@
 
 namespace gfx {
 
-bool IsValidCodePointIndex(const string16& s, size_t index) {
+bool IsValidCodePointIndex(const base::string16& s, size_t index) {
   return index == 0 || index == s.length() ||
     !(CBU16_IS_TRAIL(s[index]) && CBU16_IS_LEAD(s[index - 1]));
 }
 
-ptrdiff_t UTF16IndexToOffset(const string16& s, size_t base, size_t pos) {
+ptrdiff_t UTF16IndexToOffset(const base::string16& s, size_t base, size_t pos) {
   // The indices point between UTF-16 words (range 0 to s.length() inclusive).
   // In order to consistently handle indices that point to the middle of a
   // surrogate pair, we count the first word in that surrogate pair and not
@@ -30,7 +30,9 @@ ptrdiff_t UTF16IndexToOffset(const string16& s, size_t base, size_t pos) {
   return delta;
 }
 
-size_t UTF16OffsetToIndex(const string16& s, size_t base, ptrdiff_t offset) {
+size_t UTF16OffsetToIndex(const base::string16& s,
+                          size_t base,
+                          ptrdiff_t offset) {
   DCHECK_LE(base, s.length());
   // As in UTF16IndexToOffset, we count the first half of a surrogate pair, not
   // the second. When stepping from pos to pos+1 we check s[pos:pos+1] == s[pos]

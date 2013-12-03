@@ -21,8 +21,8 @@ namespace l10n_util {
 // operator (), comparing the string results using a collator.
 template <class T, class Method>
 class StringMethodComparatorWithCollator
-    : public std::binary_function<const string16&,
-                                  const string16&,
+    : public std::binary_function<const base::string16&,
+                                  const base::string16&,
                                   bool> {
  public:
   StringMethodComparatorWithCollator(icu::Collator* collator, Method method)
@@ -43,9 +43,10 @@ class StringMethodComparatorWithCollator
 // Used by SortStringsUsingMethod. Invokes a method on the objects passed to
 // operator (), comparing the string results using <.
 template <class T, class Method>
-class StringMethodComparator : public std::binary_function<const string16&,
-                                                           const string16&,
-                                                           bool> {
+class StringMethodComparator
+    : public std::binary_function<const base::string16&,
+                                  const base::string16&,
+                                  bool> {
  public:
   explicit StringMethodComparator(Method method) : method_(method) { }
 
@@ -93,10 +94,10 @@ class StringComparator : public std::binary_function<const Element&,
 
   // Returns true if lhs precedes rhs.
   bool operator()(const Element& lhs, const Element& rhs) {
-    const string16& lhs_string_key = lhs.GetStringKey();
-    const string16& rhs_string_key = rhs.GetStringKey();
+    const base::string16& lhs_string_key = lhs.GetStringKey();
+    const base::string16& rhs_string_key = rhs.GetStringKey();
 
-    return StringComparator<string16>(collator_)(lhs_string_key,
+    return StringComparator<base::string16>(collator_)(lhs_string_key,
                                                  rhs_string_key);
   }
 
@@ -106,8 +107,8 @@ class StringComparator : public std::binary_function<const Element&,
 
 // Specialization of operator() method for string16 version.
 template <> UI_EXPORT
-bool StringComparator<string16>::operator()(const string16& lhs,
-                                            const string16& rhs);
+bool StringComparator<base::string16>::operator()(const base::string16& lhs,
+                                                  const base::string16& rhs);
 
 // In place sorting of |elements| of a vector according to the string key of
 // each element in the vector by using collation rules for |locale|.

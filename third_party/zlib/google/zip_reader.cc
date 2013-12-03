@@ -39,7 +39,7 @@ ZipReader::EntryInfo::EntryInfo(const std::string& file_name_in_zip,
   is_unsafe_ = file_name_in_zip.find("..") != std::string::npos;
 
   // We also consider that the file name is unsafe, if it's invalid UTF-8.
-  string16 file_name_utf16;
+  base::string16 file_name_utf16;
   if (!UTF8ToUTF16(file_name_in_zip.data(), file_name_in_zip.size(),
                    &file_name_utf16)) {
     is_unsafe_ = true;

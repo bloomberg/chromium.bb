@@ -66,21 +66,21 @@ class FileVersionInfo {
 
   // Accessors to the different version properties.
   // Returns an empty string if the property is not found.
-  virtual string16 company_name() = 0;
-  virtual string16 company_short_name() = 0;
-  virtual string16 product_name() = 0;
-  virtual string16 product_short_name() = 0;
-  virtual string16 internal_name() = 0;
-  virtual string16 product_version() = 0;
-  virtual string16 private_build() = 0;
-  virtual string16 special_build() = 0;
-  virtual string16 comments() = 0;
-  virtual string16 original_filename() = 0;
-  virtual string16 file_description() = 0;
-  virtual string16 file_version() = 0;
-  virtual string16 legal_copyright() = 0;
-  virtual string16 legal_trademarks() = 0;
-  virtual string16 last_change() = 0;
+  virtual base::string16 company_name() = 0;
+  virtual base::string16 company_short_name() = 0;
+  virtual base::string16 product_name() = 0;
+  virtual base::string16 product_short_name() = 0;
+  virtual base::string16 internal_name() = 0;
+  virtual base::string16 product_version() = 0;
+  virtual base::string16 private_build() = 0;
+  virtual base::string16 special_build() = 0;
+  virtual base::string16 comments() = 0;
+  virtual base::string16 original_filename() = 0;
+  virtual base::string16 file_description() = 0;
+  virtual base::string16 file_version() = 0;
+  virtual base::string16 legal_copyright() = 0;
+  virtual base::string16 legal_trademarks() = 0;
+  virtual base::string16 last_change() = 0;
   virtual bool is_official_build() = 0;
 };
 

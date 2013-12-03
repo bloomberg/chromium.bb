@@ -281,10 +281,10 @@ icu::PluralFormat* TimeFormatter::createFallbackFormat(
   return format;
 }
 
-string16 FormatTimeImpl(const TimeDelta& delta, FormatType format_type) {
+base::string16 FormatTimeImpl(const TimeDelta& delta, FormatType format_type) {
   if (delta.ToInternalValue() < 0) {
     NOTREACHED() << "Negative duration";
-    return string16();
+    return base::string16();
   }
 
   int number;
@@ -323,7 +323,7 @@ string16 FormatTimeImpl(const TimeDelta& delta, FormatType format_type) {
   DCHECK(U_SUCCESS(error));
   int capacity = time_string.length() + 1;
   DCHECK_GT(capacity, 1);
-  string16 result;
+  base::string16 result;
   time_string.extract(static_cast<UChar*>(WriteInto(&result, capacity)),
                       capacity, error);
   DCHECK(U_SUCCESS(error));
@@ -335,32 +335,32 @@ string16 FormatTimeImpl(const TimeDelta& delta, FormatType format_type) {
 namespace ui {
 
 // static
-string16 TimeFormat::TimeElapsed(const TimeDelta& delta) {
+base::string16 TimeFormat::TimeElapsed(const TimeDelta& delta) {
   return FormatTimeImpl(delta, FORMAT_ELAPSED);
 }
 
 // static
-string16 TimeFormat::TimeRemaining(const TimeDelta& delta) {
+base::string16 TimeFormat::TimeRemaining(const TimeDelta& delta) {
   return FormatTimeImpl(delta, FORMAT_REMAINING);
 }
 
 // static
-string16 TimeFormat::TimeRemainingLong(const TimeDelta& delta) {
+base::string16 TimeFormat::TimeRemainingLong(const TimeDelta& delta) {
   return FormatTimeImpl(delta, FORMAT_REMAINING_LONG);
 }
 
 // static
-string16 TimeFormat::TimeRemainingShort(const TimeDelta& delta) {
+base::string16 TimeFormat::TimeRemainingShort(const TimeDelta& delta) {
   return FormatTimeImpl(delta, FORMAT_SHORT);
 }
 
 // static
-string16 TimeFormat::TimeDurationLong(const TimeDelta& delta) {
+base::string16 TimeFormat::TimeDurationLong(const TimeDelta& delta) {
   return FormatTimeImpl(delta, FORMAT_DURATION_LONG);
 }
 
 // static
-string16 TimeFormat::RelativeDate(
+base::string16 TimeFormat::RelativeDate(
     const Time& time,
     const Time* optional_midnight_today) {
   Time midnight_today = optional_midnight_today ? *optional_midnight_today :
@@ -369,12 +369,12 @@ string16 TimeFormat::RelativeDate(
   Time tomorrow = midnight_today + day;
   Time yesterday = midnight_today - day;
   if (time >= tomorrow)
-    return string16();
+    return base::string16();
   else if (time >= midnight_today)
     return l10n_util::GetStringUTF16(IDS_PAST_TIME_TODAY);
   else if (time >= yesterday)
     return l10n_util::GetStringUTF16(IDS_PAST_TIME_YESTERDAY);
-  return string16();
+  return base::string16();
 }
 
 }  // namespace ui
