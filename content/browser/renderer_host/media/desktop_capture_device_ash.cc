@@ -41,6 +41,9 @@ class DesktopVideoCaptureMachine
   virtual void Stop() OVERRIDE;
 
   // Implements aura::WindowObserver.
+  virtual void OnWindowBoundsChanged(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
   // Implements ui::CompositorObserver.
@@ -59,6 +62,9 @@ class DesktopVideoCaptureMachine
   // Captures a frame.
   // |dirty| is false for timer polls and true for compositor updates.
   void Capture(bool dirty);
+
+  // Update capture size. Must be called on the UI thread.
+  void UpdateCaptureSize();
 
   // Response callback for cc::Layer::RequestCopyOfOutput().
   void DidCopyOutput(
@@ -117,6 +123,9 @@ bool DesktopVideoCaptureMachine::Start(
   DCHECK(oracle_proxy.get());
   oracle_proxy_ = oracle_proxy;
 
+  // Update capture size.
+  UpdateCaptureSize();
+
   // Start observing window events.
   desktop_window_->AddObserver(this);
 
@@ -154,6 +163,14 @@ void DesktopVideoCaptureMachine::Stop() {
   timer_.Stop();
 
   started_ = false;
+}
+
+void DesktopVideoCaptureMachine::UpdateCaptureSize() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (oracle_proxy_ && desktop_layer_) {
+    oracle_proxy_->UpdateCaptureSize(ui::ConvertSizeToPixel(
+        desktop_layer_, desktop_layer_->bounds().size()));
+  }
 }
 
 void DesktopVideoCaptureMachine::Capture(bool dirty) {
@@ -246,6 +263,17 @@ void DesktopVideoCaptureMachine::DidCopyOutput(
       texture_mailbox.name(), texture_mailbox.sync_point(), video_frame.get(),
       base::Bind(&CopyOutputFinishedForVideo, start_time, capture_frame_cb,
                  base::Passed(&release_callback)));
+}
+
+void DesktopVideoCaptureMachine::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds) {
+  DCHECK(desktop_window_ && window == desktop_window_);
+
+  // Post task to update capture size on UI thread.
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
+      &DesktopVideoCaptureMachine::UpdateCaptureSize, AsWeakPtr()));
 }
 
 void DesktopVideoCaptureMachine::OnWindowDestroyed(aura::Window* window) {

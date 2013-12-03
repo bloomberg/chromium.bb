@@ -23,6 +23,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 #include "media/video/capture/video_capture_types.h"
 #include "ui/gfx/rect.h"
 
@@ -44,12 +45,18 @@ void DeleteCaptureMachineOnUIThread(
 ThreadSafeCaptureOracle::ThreadSafeCaptureOracle(
     scoped_ptr<media::VideoCaptureDevice::Client> client,
     scoped_ptr<VideoCaptureOracle> oracle,
-    const gfx::Size& capture_size,
-    int frame_rate)
+    const media::VideoCaptureParams& params)
     : client_(client.Pass()),
       oracle_(oracle.Pass()),
-      capture_size_(capture_size),
-      frame_rate_(frame_rate) {}
+      params_(params),
+      capture_size_updated_(false) {
+  // Frame dimensions must each be an even integer since the client wants (or
+  // will convert to) YUV420.
+  capture_size_ = gfx::Size(
+      MakeEven(params.requested_format.frame_size.width()),
+      MakeEven(params.requested_format.frame_size.height()));
+  frame_rate_ = params.requested_format.frame_rate;
+}
 
 ThreadSafeCaptureOracle::~ThreadSafeCaptureOracle() {}
 
@@ -122,6 +129,23 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
   return true;
 }
 
+void ThreadSafeCaptureOracle::UpdateCaptureSize(const gfx::Size& source_size) {
+  base::AutoLock guard(lock_);
+
+  // If this is the first call to UpdateCaptureSize(), or the receiver supports
+  // variable resolution, then determine the capture size by treating the
+  // requested width and height as maxima.
+  if (!capture_size_updated_ || params_.allow_resolution_change) {
+    // The capture resolution should not exceed the source frame size.
+    // In other words it should downscale the image but not upscale it.
+    gfx::Rect capture_rect = media::ComputeLetterboxRegion(
+        gfx::Rect(params_.requested_format.frame_size), source_size);
+    capture_size_ = gfx::Size(MakeEven(capture_rect.width()),
+                              MakeEven(capture_rect.height()));
+    capture_size_updated_ = true;
+  }
+}
+
 void ThreadSafeCaptureOracle::Stop() {
   base::AutoLock guard(lock_);
   client_.reset();
@@ -173,13 +197,10 @@ void VideoCaptureDeviceImpl::AllocateAndStart(
     return;
   }
 
-  // Frame dimensions must each be a positive, even integer, since the client
-  // wants (or will convert to) YUV420.
-  gfx::Size frame_size(MakeEven(params.requested_format.frame_size.width()),
-                       MakeEven(params.requested_format.frame_size.height()));
-  if (frame_size.width() < kMinFrameWidth ||
-      frame_size.height() < kMinFrameHeight) {
-    DVLOG(1) << "invalid frame size: " << frame_size.ToString();
+  if (params.requested_format.frame_size.width() < kMinFrameWidth ||
+      params.requested_format.frame_size.height() < kMinFrameHeight) {
+    DVLOG(1) << "invalid frame size: "
+             << params.requested_format.frame_size.ToString();
     client->OnError();
     return;
   }
@@ -191,10 +212,7 @@ void VideoCaptureDeviceImpl::AllocateAndStart(
       new VideoCaptureOracle(capture_period,
                              kAcceleratedSubscriberIsSupported));
   oracle_proxy_ =
-      new ThreadSafeCaptureOracle(client.Pass(),
-                                  oracle.Pass(),
-                                  frame_size,
-                                  params.requested_format.frame_rate);
+      new ThreadSafeCaptureOracle(client.Pass(), oracle.Pass(), params);
 
   // Starts the capture machine asynchronously.
   BrowserThread::PostTaskAndReplyWithResult(

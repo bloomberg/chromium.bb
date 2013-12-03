@@ -45,8 +45,7 @@ class ThreadSafeCaptureOracle
  public:
   ThreadSafeCaptureOracle(scoped_ptr<media::VideoCaptureDevice::Client> client,
                           scoped_ptr<VideoCaptureOracle> oracle,
-                          const gfx::Size& capture_size,
-                          int frame_rate);
+                          const media::VideoCaptureParams& params);
 
   // Called when a captured frame is available or an error has occurred.
   // If |success| is true then the frame provided is valid and |timestamp|
@@ -63,6 +62,10 @@ class ThreadSafeCaptureOracle
   base::TimeDelta capture_period() const {
     return oracle_->capture_period();
   }
+
+  // Updates capture resolution based on the supplied source size and the
+  // maximum frame size.
+  void UpdateCaptureSize(const gfx::Size& source_size);
 
   // Stop new captures from happening (but doesn't forget the client).
   void Stop();
@@ -89,9 +92,15 @@ class ThreadSafeCaptureOracle
   // Makes the decision to capture a frame.
   const scoped_ptr<VideoCaptureOracle> oracle_;
 
+  // The video capture parameters used to construct the oracle proxy.
+  const media::VideoCaptureParams params_;
+
+  // Indicates if capture size has been updated after construction.
+  bool capture_size_updated_;
+
   // The current capturing resolution and frame rate.
-  const gfx::Size capture_size_;
-  const int frame_rate_;
+  gfx::Size capture_size_;
+  int frame_rate_;
 };
 
 // Keeps track of the video capture source frames and executes copying on the
