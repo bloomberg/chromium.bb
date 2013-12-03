@@ -9,6 +9,11 @@ class Media(test.Test):
   test = media.Media
   page_set = 'page_sets/tough_video_cases.json'
 
+class MediaNetworkSimulation(test.Test):
+  """Obtains media metrics under different network simulations."""
+  test = media.Media
+  page_set = 'page_sets/media_cns_cases.json'
+
 class MediaAndroid(test.Test):
   """Obtains media metrics for key user scenarios on Android."""
   test = media.Media
