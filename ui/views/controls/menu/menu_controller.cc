@@ -103,18 +103,17 @@ bool TitleMatchesMnemonic(MenuItemView* menu, char16 key) {
 }  // namespace
 
 // Returns the first descendant of |view| that is hot tracked.
-static View* GetFirstHotTrackedView(View* view) {
+static CustomButton* GetFirstHotTrackedView(View* view) {
   if (!view)
     return NULL;
-
-  if (!strcmp(view->GetClassName(), CustomButton::kViewClassName)) {
-    CustomButton* button = static_cast<CustomButton*>(view);
+  CustomButton* button = CustomButton::AsCustomButton(view);
+  if (button) {
     if (button->IsHotTracked())
       return button;
   }
 
   for (int i = 0; i < view->child_count(); ++i) {
-    View* hot_view = GetFirstHotTrackedView(view->child_at(i));
+    CustomButton* hot_view = GetFirstHotTrackedView(view->child_at(i));
     if (hot_view)
       return hot_view;
   }
@@ -808,12 +807,9 @@ void MenuController::SetSelection(MenuItemView* menu_item,
 
   bool pending_item_changed = pending_state_.item != menu_item;
   if (pending_item_changed && pending_state_.item) {
-    View* current_hot_view = GetFirstHotTrackedView(pending_state_.item);
-    if (current_hot_view && !strcmp(current_hot_view->GetClassName(),
-                                    CustomButton::kViewClassName)) {
-      CustomButton* button = static_cast<CustomButton*>(current_hot_view);
+    CustomButton* button = GetFirstHotTrackedView(pending_state_.item);
+    if (button)
       button->SetHotTracked(false);
-    }
   }
 
   // Notify the old path it isn't selected.
@@ -1189,16 +1185,14 @@ MenuController::~MenuController() {
 
 MenuController::SendAcceleratorResultType
     MenuController::SendAcceleratorToHotTrackedView() {
-  View* hot_view = GetFirstHotTrackedView(pending_state_.item);
+  CustomButton* hot_view = GetFirstHotTrackedView(pending_state_.item);
   if (!hot_view)
     return ACCELERATOR_NOT_PROCESSED;
 
   ui::Accelerator accelerator(ui::VKEY_RETURN, ui::EF_NONE);
   hot_view->AcceleratorPressed(accelerator);
-  if (!strcmp(hot_view->GetClassName(), CustomButton::kViewClassName)) {
-    CustomButton* button = static_cast<CustomButton*>(hot_view);
-    button->SetHotTracked(true);
-  }
+  CustomButton* button = static_cast<CustomButton*>(hot_view);
+  button->SetHotTracked(true);
   return (exit_type_ == EXIT_NONE) ?
       ACCELERATOR_PROCESSED : ACCELERATOR_PROCESSED_EXIT;
 }
@@ -1944,23 +1938,19 @@ void MenuController::IncrementSelection(int delta) {
   }
 
   if (item->has_children()) {
-    View* hot_view = GetFirstHotTrackedView(item);
-    if (hot_view &&
-        !strcmp(hot_view->GetClassName(), CustomButton::kViewClassName)) {
-      CustomButton* button = static_cast<CustomButton*>(hot_view);
+    CustomButton* button = GetFirstHotTrackedView(item);
+    if (button) {
       button->SetHotTracked(false);
       View* to_make_hot = GetNextFocusableView(item, button, delta == 1);
-      if (to_make_hot &&
-          !strcmp(to_make_hot->GetClassName(), CustomButton::kViewClassName)) {
-        CustomButton* button_hot = static_cast<CustomButton*>(to_make_hot);
+      CustomButton* button_hot = CustomButton::AsCustomButton(to_make_hot);
+      if (button_hot) {
         button_hot->SetHotTracked(true);
         return;
       }
     } else {
       View* to_make_hot = GetInitialFocusableView(item, delta == 1);
-      if (to_make_hot &&
-          !strcmp(to_make_hot->GetClassName(), CustomButton::kViewClassName)) {
-        CustomButton* button_hot = static_cast<CustomButton*>(to_make_hot);
+      CustomButton* button_hot = CustomButton::AsCustomButton(to_make_hot);
+      if (button_hot) {
         button_hot->SetHotTracked(true);
         return;
       }
@@ -1979,11 +1969,9 @@ void MenuController::IncrementSelection(int delta) {
             break;
           SetSelection(to_select, SELECTION_DEFAULT);
           View* to_make_hot = GetInitialFocusableView(to_select, delta == 1);
-          if (to_make_hot && !strcmp(to_make_hot->GetClassName(),
-                                     CustomButton::kViewClassName)) {
-            CustomButton* button_hot = static_cast<CustomButton*>(to_make_hot);
+          CustomButton* button_hot = CustomButton::AsCustomButton(to_make_hot);
+          if (button_hot)
             button_hot->SetHotTracked(true);
-          }
           break;
         }
       }

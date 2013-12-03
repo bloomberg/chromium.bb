@@ -7,6 +7,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/radio_button.h"
+#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/link.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 
 #if defined(USE_AURA)
@@ -142,5 +149,35 @@ TEST_F(CustomButtonTest, GestureEventsSetState) {
 }
 
 #endif  // USE_AURA
+
+// Make sure all subclasses of CustomButton are correctly recognized
+// as CustomButton.
+TEST_F(CustomButtonTest, AsCustomButton) {
+  string16 text;
+
+  TextButton text_button(NULL, text);
+  EXPECT_TRUE(CustomButton::AsCustomButton(&text_button));
+
+  ImageButton image_button(NULL);
+  EXPECT_TRUE(CustomButton::AsCustomButton(&image_button));
+
+  Checkbox checkbox(text);
+  EXPECT_TRUE(CustomButton::AsCustomButton(&checkbox));
+
+  RadioButton radio_button(text, 0);
+  EXPECT_TRUE(CustomButton::AsCustomButton(&radio_button));
+
+  MenuButton menu_button(NULL, text, NULL, false);
+  EXPECT_TRUE(CustomButton::AsCustomButton(&menu_button));
+
+  Label label;
+  EXPECT_FALSE(CustomButton::AsCustomButton(&label));
+
+  Link link(text);
+  EXPECT_FALSE(CustomButton::AsCustomButton(&link));
+
+  Textfield textfield(Textfield::STYLE_DEFAULT);
+  EXPECT_FALSE(CustomButton::AsCustomButton(&textfield));
+}
 
 }  // namespace views

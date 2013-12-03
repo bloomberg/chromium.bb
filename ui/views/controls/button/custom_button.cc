@@ -9,6 +9,13 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/animation/throb_animation.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/controls/button/blue_button.h"
+#include "ui/views/controls/button/checkbox.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/menu_button.h"
+#include "ui/views/controls/button/radio_button.h"
+#include "ui/views/controls/button/text_button.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -21,6 +28,27 @@ const char CustomButton::kViewClassName[] = "CustomButton";
 
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, public:
+
+// static
+const CustomButton* CustomButton::AsCustomButton(const views::View* view) {
+  return AsCustomButton(const_cast<views::View*>(view));
+}
+
+CustomButton* CustomButton::AsCustomButton(views::View* view) {
+  if (view) {
+    const char* classname = view->GetClassName();
+    if (!strcmp(classname, Checkbox::kViewClassName) ||
+        !strcmp(classname, CustomButton::kViewClassName) ||
+        !strcmp(classname, ImageButton::kViewClassName) ||
+        !strcmp(classname, LabelButton::kViewClassName) ||
+        !strcmp(classname, RadioButton::kViewClassName) ||
+        !strcmp(classname, MenuButton::kViewClassName) ||
+        !strcmp(classname, TextButton::kViewClassName)) {
+      return static_cast<CustomButton*>(view);
+    }
+  }
+  return NULL;
+}
 
 CustomButton::~CustomButton() {
 }

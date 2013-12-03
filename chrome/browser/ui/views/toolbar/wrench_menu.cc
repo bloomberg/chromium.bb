@@ -39,8 +39,8 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/background.h"
@@ -73,13 +73,6 @@ using views::MenuItemView;
 using views::View;
 
 namespace {
-
-// Colors used for buttons.
-const SkColor kEnabledTouchBackgroundColor = SkColorSetARGB(247, 255, 255, 255);
-const SkColor kHoverTouchBackgroundColor = SkColorSetARGB(247, 242, 242, 242);
-const SkColor kFocusedTouchBackgroundColor = SkColorSetARGB(247, 235, 235, 235);
-
-const SkColor kTouchButtonText = 0xff5a5a5a;
 
 // Horizontal padding on the edges of the buttons.
 const int kHorizontalPadding = 6;
@@ -188,75 +181,74 @@ class MenuButtonBackground : public views::Background {
 
   // Overridden from views::Background.
   virtual void Paint(gfx::Canvas* canvas, View* view) const OVERRIDE {
-    CustomButton::ButtonState state =
-        (!strcmp(view->GetClassName(), views::Label::kViewClassName)) ?
-        CustomButton::STATE_NORMAL : static_cast<CustomButton*>(view)->state();
+    CustomButton* button = CustomButton::AsCustomButton(view);
+    views::Button::ButtonState state =
+        button ? button->state() : views::Button::STATE_NORMAL;
     int w = view->width();
     int h = view->height();
 #if defined(USE_AURA)
-    if (use_new_menu_ &&
-        view->GetNativeTheme() == ui::NativeThemeAura::instance()) {
-      // Normal buttons get a border drawn on the right side and the rest gets
-      // filled in. The left button however does not get a line to combine
-      // buttons.
-      int border = 0;
-      if (type_ != RIGHT_BUTTON) {
-        border = 1;
-        canvas->FillRect(gfx::Rect(0, 0, border, h),
-                         BorderColor(view, CustomButton::STATE_NORMAL));
-      }
-      canvas->FillRect(gfx::Rect(border, 0, w - border, h),
-                       touch_background_color(state));
+    // Normal buttons get a border drawn on the right side and the rest gets
+    // filled in. The left button however does not get a line to combine
+    // buttons.
+    int border = 0;
+    if (type_ != RIGHT_BUTTON) {
+      border = 1;
+      canvas->FillRect(gfx::Rect(0, 0, border, h),
+                       BorderColor(view, views::Button::STATE_NORMAL));
+    }
+    if (use_new_menu_) {
+      gfx::Rect bounds(view->GetLocalBounds());
+      bounds.set_x(view->GetMirroredXForRect(bounds));
+      DrawBackground(canvas, view, bounds, state);
       return;
     }
 #endif
-    const SkColor background = BackgroundColor(view, state);
-    const SkColor border = BorderColor(view, state);
+    const SkColor border_color = BorderColor(view, state);
     switch (TypeAdjustedForRTL()) {
       // TODO(pkasting): Why don't all the following use SkPaths with rounded
       // corners?
       case LEFT_BUTTON:
-        canvas->FillRect(gfx::Rect(1, 1, w, h - 2), background);
-        canvas->FillRect(gfx::Rect(2, 0, w, 1), border);
-        canvas->FillRect(gfx::Rect(1, 1, 1, 1), border);
-        canvas->FillRect(gfx::Rect(0, 2, 1, h - 4), border);
-        canvas->FillRect(gfx::Rect(1, h - 2, 1, 1), border);
-        canvas->FillRect(gfx::Rect(2, h - 1, w, 1), border);
+        DrawBackground(canvas, view, gfx::Rect(1, 1, w, h - 2), state);
+        canvas->FillRect(gfx::Rect(2, 0, w, 1), border_color);
+        canvas->FillRect(gfx::Rect(1, 1, 1, 1), border_color);
+        canvas->FillRect(gfx::Rect(0, 2, 1, h - 4), border_color);
+        canvas->FillRect(gfx::Rect(1, h - 2, 1, 1), border_color);
+        canvas->FillRect(gfx::Rect(2, h - 1, w, 1), border_color);
         break;
 
       case CENTER_BUTTON: {
-        canvas->FillRect(gfx::Rect(1, 1, w - 2, h - 2), background);
-        SkColor left_color = state != CustomButton::STATE_NORMAL ?
-            border : BorderColor(view, left_button_->state());
+        DrawBackground(canvas, view, gfx::Rect(1, 1, w - 2, h - 2), state);
+        SkColor left_color = state != views::Button::STATE_NORMAL ?
+            border_color : BorderColor(view, left_button_->state());
         canvas->FillRect(gfx::Rect(0, 0, 1, h), left_color);
-        canvas->FillRect(gfx::Rect(1, 0, w - 2, 1), border);
+        canvas->FillRect(gfx::Rect(1, 0, w - 2, 1), border_color);
         canvas->FillRect(gfx::Rect(1, h - 1, w - 2, 1),
-                         border);
-        SkColor right_color = state != CustomButton::STATE_NORMAL ?
-            border : BorderColor(view, right_button_->state());
+                         border_color);
+        SkColor right_color = state != views::Button::STATE_NORMAL ?
+            border_color : BorderColor(view, right_button_->state());
         canvas->FillRect(gfx::Rect(w - 1, 0, 1, h), right_color);
         break;
       }
 
       case RIGHT_BUTTON:
-        canvas->FillRect(gfx::Rect(0, 1, w - 1, h - 2), background);
-        canvas->FillRect(gfx::Rect(0, 0, w - 2, 1), border);
-        canvas->FillRect(gfx::Rect(w - 2, 1, 1, 1), border);
-        canvas->FillRect(gfx::Rect(w - 1, 2, 1, h - 4), border);
-        canvas->FillRect(gfx::Rect(w - 2, h - 2, 1, 1), border);
-        canvas->FillRect(gfx::Rect(0, h - 1, w - 2, 1), border);
+        DrawBackground(canvas, view, gfx::Rect(0, 1, w - 1, h - 2), state);
+        canvas->FillRect(gfx::Rect(0, 0, w - 2, 1), border_color);
+        canvas->FillRect(gfx::Rect(w - 2, 1, 1, 1), border_color);
+        canvas->FillRect(gfx::Rect(w - 1, 2, 1, h - 4), border_color);
+        canvas->FillRect(gfx::Rect(w - 2, h - 2, 1, 1), border_color);
+        canvas->FillRect(gfx::Rect(0, h - 1, w - 2, 1), border_color);
         break;
 
       case SINGLE_BUTTON:
-        canvas->FillRect(gfx::Rect(1, 1, w - 2, h - 2), background);
-        canvas->FillRect(gfx::Rect(2, 0, w - 4, 1), border);
-        canvas->FillRect(gfx::Rect(1, 1, 1, 1), border);
-        canvas->FillRect(gfx::Rect(0, 2, 1, h - 4), border);
-        canvas->FillRect(gfx::Rect(1, h - 2, 1, 1), border);
-        canvas->FillRect(gfx::Rect(2, h - 1, w - 4, 1), border);
-        canvas->FillRect(gfx::Rect(w - 2, 1, 1, 1), border);
-        canvas->FillRect(gfx::Rect(w - 1, 2, 1, h - 4), border);
-        canvas->FillRect(gfx::Rect(w - 2, h - 2, 1, 1), border);
+        DrawBackground(canvas, view, gfx::Rect(1, 1, w - 2, h - 2), state);
+        canvas->FillRect(gfx::Rect(2, 0, w - 4, 1), border_color);
+        canvas->FillRect(gfx::Rect(1, 1, 1, 1), border_color);
+        canvas->FillRect(gfx::Rect(0, 2, 1, h - 4), border_color);
+        canvas->FillRect(gfx::Rect(1, h - 2, 1, 1), border_color);
+        canvas->FillRect(gfx::Rect(2, h - 1, w - 4, 1), border_color);
+        canvas->FillRect(gfx::Rect(w - 2, 1, 1, 1), border_color);
+        canvas->FillRect(gfx::Rect(w - 1, 2, 1, h - 4), border_color);
+        canvas->FillRect(gfx::Rect(w - 2, h - 2, 1, 1), border_color);
         break;
 
       default:
@@ -266,13 +258,13 @@ class MenuButtonBackground : public views::Background {
   }
 
  private:
-  static SkColor BorderColor(View* view, CustomButton::ButtonState state) {
+  static SkColor BorderColor(View* view, views::Button::ButtonState state) {
     ui::NativeTheme* theme = view->GetNativeTheme();
     switch (state) {
-      case CustomButton::STATE_HOVERED:
+      case views::Button::STATE_HOVERED:
         return theme->GetSystemColor(
             ui::NativeTheme::kColorId_HoverMenuButtonBorderColor);
-      case CustomButton::STATE_PRESSED:
+      case views::Button::STATE_PRESSED:
         return theme->GetSystemColor(
             ui::NativeTheme::kColorId_FocusedMenuButtonBorderColor);
       default:
@@ -281,13 +273,16 @@ class MenuButtonBackground : public views::Background {
     }
   }
 
-  static SkColor BackgroundColor(View* view, CustomButton::ButtonState state) {
-    ui::NativeTheme* theme = view->GetNativeTheme();
+  static SkColor BackgroundColor(const View* view,
+                                 views::Button::ButtonState state) {
+    const ui::NativeTheme* theme = view->GetNativeTheme();
     switch (state) {
-      case CustomButton::STATE_HOVERED:
+      case views::Button::STATE_HOVERED:
+        // Hovered should be handled in DrawBackground.
+        NOTREACHED();
         return theme->GetSystemColor(
             ui::NativeTheme::kColorId_HoverMenuItemBackgroundColor);
-      case CustomButton::STATE_PRESSED:
+      case views::Button::STATE_PRESSED:
         return theme->GetSystemColor(
             ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
       default:
@@ -296,12 +291,21 @@ class MenuButtonBackground : public views::Background {
     }
   }
 
-  static SkColor touch_background_color(CustomButton::ButtonState state) {
-    switch (state) {
-      case CustomButton::STATE_HOVERED: return kHoverTouchBackgroundColor;
-      case CustomButton::STATE_PRESSED: return kFocusedTouchBackgroundColor;
-      default:                          return kEnabledTouchBackgroundColor;
+  void DrawBackground(gfx::Canvas* canvas,
+                      const views::View* view,
+                      const gfx::Rect& bounds,
+                      views::Button::ButtonState state) const {
+    if (state == views::Button::STATE_HOVERED) {
+      view->GetNativeTheme()->Paint(canvas->sk_canvas(),
+                                    ui::NativeTheme::kMenuItemBackground,
+                                    ui::NativeTheme::kHovered,
+                                    bounds,
+                                    ui::NativeTheme::ExtraParams());
+      return;
     }
+    if (use_new_menu_)
+      return;
+    canvas->FillRect(bounds, BackgroundColor(view, state));
   }
 
   ButtonType TypeAdjustedForRTL() const {
@@ -368,9 +372,9 @@ class WrenchMenuView : public views::View,
   }
 
   LabelButton* CreateAndConfigureButton(int string_id,
-                                       MenuButtonBackground::ButtonType type,
-                                       int index,
-                                       MenuButtonBackground** background) {
+                                        MenuButtonBackground::ButtonType type,
+                                        int index,
+                                        MenuButtonBackground** background) {
     return CreateButtonWithAccName(
       string_id, type, index, background, string_id);
   }
@@ -401,7 +405,27 @@ class WrenchMenuView : public views::View,
         new MenuButtonBorder(menu_config, menu_->use_new_menu()));
     button->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     button->SetFont(menu_config.font);
+    ui::NativeTheme* native_theme = button->GetNativeTheme();
+    button->SetTextColor(
+        views::Button::STATE_DISABLED,
+        native_theme->GetSystemColor(
+            ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor));
+    button->SetTextColor(
+        views::Button::STATE_HOVERED,
+        native_theme->GetSystemColor(
+            ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor));
+    button->SetTextColor(
+        views::Button::STATE_PRESSED,
+        native_theme->GetSystemColor(
+            ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor));
+    button->SetTextColor(
+        views::Button::STATE_NORMAL,
+        native_theme->GetSystemColor(
+            ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor));
     AddChildView(button);
+    // all buttons on menu should must be a custom button in order for
+    // the keyboard nativigation work.
+    DCHECK(CustomButton::AsCustomButton(button));
     return button;
   }
 
@@ -455,6 +479,43 @@ class ButtonContainerMenuItemView : public MenuItemView {
   DISALLOW_COPY_AND_ASSIGN(ButtonContainerMenuItemView);
 };
 
+// Generate the button image for hover state.
+class HoveredImageSource : public gfx::ImageSkiaSource {
+ public:
+  HoveredImageSource(const gfx::ImageSkia& image, SkColor color)
+      : image_(image),
+        color_(color) {
+  }
+  virtual ~HoveredImageSource() {}
+
+  virtual gfx::ImageSkiaRep GetImageForScale(float scale) OVERRIDE {
+    const gfx::ImageSkiaRep& rep = image_.GetRepresentation(scale);
+    SkBitmap bitmap = rep.sk_bitmap();
+    SkBitmap white;
+    white.setConfig(SkBitmap::kARGB_8888_Config,
+                    bitmap.width(), bitmap.height(), 0);
+    white.allocPixels();
+    white.eraseARGB(0, 0, 0, 0);
+    bitmap.lockPixels();
+    for (int y = 0; y < bitmap.height(); ++y) {
+      uint32* image_row = bitmap.getAddr32(0, y);
+      uint32* dst_row = white.getAddr32(0, y);
+      for (int x = 0; x < bitmap.width(); ++x) {
+        uint32 image_pixel = image_row[x];
+        // Fill the non transparent pixels with |color_|.
+        dst_row[x] = (image_pixel & 0xFF000000) == 0x0 ? 0x0 : color_;
+      }
+    }
+    bitmap.unlockPixels();
+    return gfx::ImageSkiaRep(white, scale);
+  }
+
+ private:
+  const gfx::ImageSkia image_;
+  const SkColor color_;
+  DISALLOW_COPY_AND_ASSIGN(HoveredImageSource);
+};
+
 }  // namespace
 
 // CutCopyPasteView ------------------------------------------------------------
@@ -471,12 +532,10 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
       : WrenchMenuView(menu, menu_model) {
     LabelButton* cut = CreateAndConfigureButton(
         IDS_CUT, MenuButtonBackground::LEFT_BUTTON, cut_index, NULL);
-
     MenuButtonBackground* copy_background = NULL;
-    LabelButton* copy = CreateAndConfigureButton(
+    CreateAndConfigureButton(
         IDS_COPY, MenuButtonBackground::CENTER_BUTTON, copy_index,
         &copy_background);
-
     LabelButton* paste = CreateAndConfigureButton(
         IDS_PASTE,
         menu->use_new_menu() && menu->supports_new_separators_ ?
@@ -484,17 +543,6 @@ class WrenchMenu::CutCopyPasteView : public WrenchMenuView {
             MenuButtonBackground::RIGHT_BUTTON,
         paste_index,
         NULL);
-    if (menu->use_new_menu()) {
-      cut->SetTextColor(views::Button::STATE_NORMAL, kTouchButtonText);
-      copy->SetTextColor(views::Button::STATE_NORMAL, kTouchButtonText);
-      paste->SetTextColor(views::Button::STATE_NORMAL, kTouchButtonText);
-    } else {
-      SkColor text_color = native_theme->GetSystemColor(
-          ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
-      cut->SetTextColor(views::Button::STATE_NORMAL, text_color);
-      copy->SetTextColor(views::Button::STATE_NORMAL, text_color);
-      paste->SetTextColor(views::Button::STATE_NORMAL, text_color);
-    }
     copy_background->SetOtherButtons(cut, paste);
   }
 
@@ -589,32 +637,32 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
     center_bg->SetOtherButtons(decrement_button_, increment_button_);
 
     fullscreen_button_ = new FullscreenButton(this);
+    // all buttons on menu should must be a custom button in order for
+    // the keyboard nativigation work.
+    DCHECK(CustomButton::AsCustomButton(fullscreen_button_));
     gfx::ImageSkia* full_screen_image =
         ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
             IDR_FULLSCREEN_MENU_BUTTON);
     fullscreen_button_->SetImage(ImageButton::STATE_NORMAL, full_screen_image);
-    if (menu->use_new_menu()) {
-      zoom_label_->SetEnabledColor(kTouchButtonText);
-      decrement_button_->SetTextColor(views::Button::STATE_NORMAL,
-                                      kTouchButtonText);
-      increment_button_->SetTextColor(views::Button::STATE_NORMAL,
-                                      kTouchButtonText);
-    } else {
-      SkColor enabled_text_color = native_theme->GetSystemColor(
-          ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
-      zoom_label_->SetEnabledColor(enabled_text_color);
-      decrement_button_->SetTextColor(views::Button::STATE_NORMAL,
-                                      enabled_text_color);
-      increment_button_->SetTextColor(views::Button::STATE_NORMAL,
-                                      enabled_text_color);
-      SkColor disabled_text_color = native_theme->GetSystemColor(
-          ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor);
-      decrement_button_->SetTextColor(views::Button::STATE_DISABLED,
-                                      disabled_text_color);
-      increment_button_->SetTextColor(views::Button::STATE_DISABLED,
-                                      disabled_text_color);
-    }
-
+    SkColor fg_color = native_theme->GetSystemColor(
+        ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor);
+    fullscreen_button_->SetImage(
+        ImageButton::STATE_HOVERED,
+        new gfx::ImageSkia(new HoveredImageSource(*full_screen_image, fg_color),
+                           full_screen_image->size()));
+    SkColor enabled_text_color = native_theme->GetSystemColor(
+        ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
+    zoom_label_->SetEnabledColor(enabled_text_color);
+    decrement_button_->SetTextColor(views::Button::STATE_NORMAL,
+                                    enabled_text_color);
+    increment_button_->SetTextColor(views::Button::STATE_NORMAL,
+                                    enabled_text_color);
+    SkColor disabled_text_color = native_theme->GetSystemColor(
+        ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor);
+    decrement_button_->SetTextColor(views::Button::STATE_DISABLED,
+                                    disabled_text_color);
+    increment_button_->SetTextColor(views::Button::STATE_DISABLED,
+                                    disabled_text_color);
     fullscreen_button_->set_focusable(true);
     fullscreen_button_->set_request_focus_on_press(false);
     fullscreen_button_->set_tag(fullscreen_index);

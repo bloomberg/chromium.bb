@@ -27,11 +27,6 @@ namespace gfx {
 class Font;
 }
 
-namespace ui {
-class MenuModel;
-class NativeTheme;
-}
-
 namespace views {
 
 namespace internal {

@@ -29,6 +29,9 @@ class VIEWS_EXPORT CustomButton : public Button,
   // The menu button's class name.
   static const char kViewClassName[];
 
+  static const CustomButton* AsCustomButton(const views::View* view);
+  static CustomButton* AsCustomButton(views::View* view);
+
   virtual ~CustomButton();
 
   // Get/sets the current display state of the button.
