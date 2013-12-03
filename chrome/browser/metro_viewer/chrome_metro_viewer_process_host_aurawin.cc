@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_aurawin.h"
+#include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -79,8 +80,14 @@ void ChromeMetroViewerProcessHost::OnChannelError() {
 
   aura::RemoteRootWindowHostWin::Instance()->Disconnected();
   g_browser_process->ReleaseModule();
-  CloseOpenAshBrowsers();
-  chrome::CloseAsh();
+
+  // If browser is trying to quit, we shouldn't reenter the process.
+  // TODO(shrikant): In general there seem to be issues with how AttemptExit
+  // reentry works. In future release please clean up related code.
+  if (!browser_shutdown::IsTryingToQuit()) {
+    CloseOpenAshBrowsers();
+    chrome::CloseAsh();
+  }
   // Tell the rest of Chrome about it.
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_ASH_SESSION_ENDED,
