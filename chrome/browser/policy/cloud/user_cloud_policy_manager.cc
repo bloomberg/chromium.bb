@@ -66,6 +66,7 @@ void UserCloudPolicyManager::Connect(
                                 policy_prefs::kUserPolicyRefreshRate);
   if (external_data_manager_)
     external_data_manager_->Connect(request_context);
+
   CreateComponentCloudPolicyService(component_policy_cache_path_,
                                     request_context);
 }
@@ -89,6 +90,12 @@ void UserCloudPolicyManager::DisconnectAndRemovePolicy() {
   if (external_data_manager_)
     external_data_manager_->Disconnect();
   core()->Disconnect();
+
+  // store_->Clear() will publish the updated, empty policy. The component
+  // policy service must be cleared before OnStoreLoaded() is issued, so that
+  // component policies are also empty at CheckAndPublishPolicy().
+  ClearAndDestroyComponentCloudPolicyService();
+
   // When the |store_| is cleared, it informs the |external_data_manager_| that
   // all external data references have been removed, causing the
   // |external_data_manager_| to clear its cache as well.

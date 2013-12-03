@@ -77,6 +77,8 @@ class CloudPolicyManager : public ConfigurationPolicyProvider,
       const base::FilePath& policy_cache_path,
       const scoped_refptr<net::URLRequestContextGetter>& request_context);
 
+  void ClearAndDestroyComponentCloudPolicyService();
+
   // Convenience accessors to core() components.
   CloudPolicyClient* client() { return core_.client(); }
   const CloudPolicyClient* client() const { return core_.client(); }

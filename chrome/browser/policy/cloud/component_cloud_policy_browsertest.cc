@@ -4,11 +4,14 @@
 
 #include <string>
 
+#include "base/base64.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
@@ -22,6 +25,7 @@
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/policy/test/policy_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "extensions/common/extension.h"
@@ -80,6 +84,15 @@ const char kTestPolicy2[] =
 
 const char kTestPolicy2JSON[] = "{\"Another\":\"turn_it_off\"}";
 
+// Same encoding as ResourceCache does for its keys.
+bool Base64Encode(const std::string& value, std::string* encoded) {
+  if (value.empty() || !base::Base64Encode(value, encoded))
+    return false;
+  ReplaceChars(*encoded, "+", "-", encoded);
+  ReplaceChars(*encoded, "/", "_", encoded);
+  return true;
+}
+
 class ComponentCloudPolicyTest : public ExtensionBrowserTest {
  protected:
   ComponentCloudPolicyTest() {}
@@ -121,6 +134,32 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     ASSERT_EQ(kTestExtension, extension_->id());
     EXPECT_TRUE(ready_listener.WaitUntilSatisfied());
 
+    // And start with a signed-in user.
+    SignInAndRegister();
+
+    // The extension will receive an update event.
+    EXPECT_TRUE(event_listener_->WaitUntilSatisfied());
+
+    ExtensionBrowserTest::SetUpOnMainThread();
+  }
+
+  scoped_refptr<const extensions::Extension> LoadExtension(
+      const base::FilePath::CharType* path) {
+    base::FilePath full_path;
+    if (!PathService::Get(chrome::DIR_TEST_DATA, &full_path)) {
+      ADD_FAILURE();
+      return NULL;
+    }
+    scoped_refptr<const extensions::Extension> extension(
+        ExtensionBrowserTest::LoadExtension(full_path.Append(path)));
+    if (!extension.get()) {
+      ADD_FAILURE();
+      return NULL;
+    }
+    return extension;
+  }
+
+  void SignInAndRegister() {
     BrowserPolicyConnector* connector =
         g_browser_process->browser_policy_connector();
     connector->ScheduleServiceInitialization(0);
@@ -161,28 +200,16 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     run_loop.Run();
     Mock::VerifyAndClearExpectations(&observer);
     policy_manager->core()->client()->RemoveObserver(&observer);
-
-    // The extension will receive an update event.
-    EXPECT_TRUE(event_listener_->WaitUntilSatisfied());
-
-    ExtensionBrowserTest::SetUpOnMainThread();
   }
 
-  scoped_refptr<const extensions::Extension> LoadExtension(
-      const base::FilePath::CharType* path) {
-    base::FilePath full_path;
-    if (!PathService::Get(chrome::DIR_TEST_DATA, &full_path)) {
-      ADD_FAILURE();
-      return NULL;
-    }
-    scoped_refptr<const extensions::Extension> extension(
-        ExtensionBrowserTest::LoadExtension(full_path.Append(path)));
-    if (!extension.get()) {
-      ADD_FAILURE();
-      return NULL;
-    }
-    return extension;
+#if !defined(OS_CHROMEOS)
+  void SignOut() {
+    SigninManager* signin_manager =
+        SigninManagerFactory::GetForProfile(browser()->profile());
+    ASSERT_TRUE(signin_manager);
+    signin_manager->SignOut();
   }
+#endif
 
   void RefreshPolicies() {
     ProfilePolicyConnector* profile_connector =
@@ -247,5 +274,62 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, InstallNewExtension) {
   // and after verifying it has the expected value. Otherwise it sends 'fail'.
   EXPECT_TRUE(result_listener.WaitUntilSatisfied());
 }
+
+// Signing out on Chrome OS is a different process from signing out on the
+// Desktop platforms. On Chrome OS the session is ended, and the user goes back
+// to the sign-in screen; the Profile data is not affected. On the Desktop the
+// session goes on though, and all the signed-in services are disconnected;
+// in particular, the policy caches are dropped if the user signs out.
+// This test verifies that when the user signs out then any existing component
+// policy caches are dropped, and that it's still possible to sign back in and
+// get policy for components working again.
+#if !defined(OS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, SignOutAndBackIn) {
+  // Read the initial policy.
+  ExtensionTestMessageListener initial_policy_listener(kTestPolicyJSON, true);
+  event_listener_->Reply("get-policy-Name");
+  EXPECT_TRUE(initial_policy_listener.WaitUntilSatisfied());
+
+  // Verify that the policy cache exists.
+  std::string cache_key;
+  ASSERT_TRUE(Base64Encode("extension-policy", &cache_key));
+  std::string cache_subkey;
+  ASSERT_TRUE(Base64Encode(kTestExtension, &cache_subkey));
+  base::FilePath cache_path = browser()->profile()->GetPath()
+      .Append(FILE_PATH_LITERAL("Policy"))
+      .Append(FILE_PATH_LITERAL("Components"))
+      .AppendASCII(cache_key)
+      .AppendASCII(cache_subkey);
+  EXPECT_TRUE(base::PathExists(cache_path));
+
+  // Now sign-out. The policy cache should be removed, and the extension should
+  // get an empty policy update.
+  ExtensionTestMessageListener event_listener("event", true);
+  initial_policy_listener.Reply("idle");
+  SignOut();
+  EXPECT_TRUE(event_listener.WaitUntilSatisfied());
+
+  // The extension got an update event; verify that the policy was empty.
+  ExtensionTestMessageListener signout_policy_listener("{}", true);
+  event_listener.Reply("get-policy-Name");
+  EXPECT_TRUE(signout_policy_listener.WaitUntilSatisfied());
+
+  // Verify that the cache is gone.
+  EXPECT_FALSE(base::PathExists(cache_path));
+
+  // Verify that the policy is fetched again if the user signs back in.
+  ExtensionTestMessageListener event_listener2("event", true);
+  SignInAndRegister();
+  EXPECT_TRUE(event_listener2.WaitUntilSatisfied());
+
+  // The extension got updated policy; verify it.
+  ExtensionTestMessageListener signin_policy_listener(kTestPolicyJSON, true);
+  event_listener2.Reply("get-policy-Name");
+  EXPECT_TRUE(signin_policy_listener.WaitUntilSatisfied());
+
+  // And the cache is back.
+  EXPECT_TRUE(base::PathExists(cache_path));
+}
+#endif
 
 }  // namespace policy

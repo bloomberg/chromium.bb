@@ -92,6 +92,9 @@ class ComponentCloudPolicyService : public CloudPolicyClient::Observer,
   // Returns the current policies for components.
   const PolicyBundle& policy() const { return policy_; }
 
+  // Deletes all the cached component policy.
+  void ClearCache();
+
   // SchemaRegistry::Observer implementation:
   virtual void OnSchemaRegistryReady() OVERRIDE;
   virtual void OnSchemaRegistryUpdated(bool has_new_schemas) OVERRIDE;

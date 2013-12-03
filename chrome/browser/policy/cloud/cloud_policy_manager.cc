@@ -132,6 +132,15 @@ void CloudPolicyManager::CreateComponentCloudPolicyService(
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 }
 
+void CloudPolicyManager::ClearAndDestroyComponentCloudPolicyService() {
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  if (component_policy_service_) {
+    component_policy_service_->ClearCache();
+    component_policy_service_.reset();
+  }
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+}
+
 void CloudPolicyManager::OnRefreshComplete(bool success) {
   waiting_for_policy_refresh_ = false;
   CheckAndPublishPolicy();

@@ -269,6 +269,15 @@ bool ComponentCloudPolicyService::SupportsDomain(PolicyDomain domain) {
   return ComponentCloudPolicyStore::SupportsDomain(domain);
 }
 
+void ComponentCloudPolicyService::ClearCache() {
+  DCHECK(CalledOnValidThread());
+  // Empty credentials will wipe the cache.
+  backend_task_runner_->PostTask(FROM_HERE,
+                                 base::Bind(&Backend::SetCredentials,
+                                            base::Unretained(backend_.get()),
+                                            std::string(), std::string()));
+}
+
 void ComponentCloudPolicyService::OnSchemaRegistryReady() {
   DCHECK(CalledOnValidThread());
   InitializeIfReady();
