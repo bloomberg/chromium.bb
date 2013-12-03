@@ -385,7 +385,7 @@ void LocalToRemoteSyncer::DidUploadExistingFile(
     const SyncStatusCallback& callback,
     google_apis::GDataErrorCode error,
     const GURL&,
-    scoped_ptr<google_apis::ResourceEntry>) {
+    scoped_ptr<google_apis::ResourceEntry> entry) {
   if (error == google_apis::HTTP_PRECONDITION) {
     // The remote file has unfetched remote change.  Fetch latest metadata and
     // update database with it.
@@ -395,7 +395,34 @@ void LocalToRemoteSyncer::DidUploadExistingFile(
     return;
   }
 
-  callback.Run(GDataErrorCodeToSyncStatusCode(error));
+  metadata_database()->UpdateByFileResource(
+      *drive::util::ConvertResourceEntryToFileResource(*entry),
+      base::Bind(&LocalToRemoteSyncer::DidUpdateDatabaseForUploadExistingFile,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
+}
+
+void LocalToRemoteSyncer::DidUpdateDatabaseForUploadExistingFile(
+    const SyncStatusCallback& callback,
+    SyncStatusCode status) {
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  FileMetadata file;
+  bool should_success = metadata_database()->FindFileByFileID(
+      remote_file_tracker_->file_id(), &file);
+  if (!should_success) {
+    NOTREACHED();
+    callback.Run(SYNC_STATUS_FAILED);
+    return;
+  }
+
+  metadata_database()->UpdateTracker(
+      remote_file_tracker_->tracker_id(),
+      file.details(),
+      callback);
 }
 
 void LocalToRemoteSyncer::UpdateRemoteMetadata(
@@ -480,12 +507,12 @@ void LocalToRemoteSyncer::DidUploadNewFile(
   // MetadataDatabase.
   metadata_database()->UpdateByFileResource(
       *drive::util::ConvertResourceEntryToFileResource(*entry),
-      base::Bind(&LocalToRemoteSyncer::DidUpdateDatabaseForUpload,
+      base::Bind(&LocalToRemoteSyncer::DidUpdateDatabaseForUploadNewFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback, entry->resource_id()));
 }
 
-void LocalToRemoteSyncer::DidUpdateDatabaseForUpload(
+void LocalToRemoteSyncer::DidUpdateDatabaseForUploadNewFile(
     const SyncStatusCallback& callback,
     const std::string& file_id,
     SyncStatusCode status) {
