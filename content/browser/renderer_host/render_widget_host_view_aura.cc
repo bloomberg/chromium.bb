@@ -2979,6 +2979,17 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
         (screen->GetDisplayNearestWindow(window_).id() !=
          screen->GetDisplayNearestWindow(gained_focus).id());
     if (is_fullscreen_ && !in_shutdown_ && !focusing_other_display) {
+#if defined(OS_WIN)
+      // On Windows, if we are switching to a non Aura Window on a different
+      // screen we should not close the fullscreen window.
+      if (!gained_focus) {
+        POINT point = {0};
+        ::GetCursorPos(&point);
+        if (screen->GetDisplayNearestWindow(window_).id() !=
+            screen->GetDisplayNearestPoint(gfx::Point(point)).id())
+          return;
+      }
+#endif
       in_shutdown_ = true;
       host_->Shutdown();
     }
