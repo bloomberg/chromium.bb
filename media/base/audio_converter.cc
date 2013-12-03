@@ -98,10 +98,8 @@ AudioConverter::AudioConverter(const AudioParameters& input_params,
 AudioConverter::~AudioConverter() {}
 
 void AudioConverter::AddInput(InputCallback* input) {
-  // TODO(dalecurtis): Speculative CHECK for http://crbug.com/233026, should be
-  // converted to a DCHECK once resolved.
-  CHECK(std::find(transform_inputs_.begin(), transform_inputs_.end(), input) ==
-        transform_inputs_.end());
+  DCHECK(std::find(transform_inputs_.begin(), transform_inputs_.end(), input) ==
+         transform_inputs_.end());
   transform_inputs_.push_back(input);
 }
 
