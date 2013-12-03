@@ -35,22 +35,20 @@ void ContentLayerUpdater::set_rendering_stats_instrumentation(
 }
 
 void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
-                                        gfx::Rect content_rect,
+                                        gfx::Point origin,
                                         float contents_width_scale,
                                         float contents_height_scale,
                                         gfx::Rect* resulting_opaque_rect) {
-  TRACE_EVENT2("cc",
-               "ContentLayerUpdater::PaintContents",
-               "width",
-               content_rect.width(),
-               "height",
-               content_rect.height());
-  gfx::Point origin = content_rect.origin();
+  TRACE_EVENT0("cc", "ContentLayerUpdater::PaintContents");
   canvas->save();
   canvas->translate(SkFloatToScalar(-origin.x()),
                     SkFloatToScalar(-origin.y()));
 
+  SkBaseDevice* device = canvas->getDevice();
+  gfx::Rect content_rect(origin, gfx::Size(device->width(), device->height()));
+
   gfx::Rect layer_rect = content_rect;
+
   if (contents_width_scale != 1.f || contents_height_scale != 1.f) {
     canvas->scale(SkFloatToScalar(contents_width_scale),
                   SkFloatToScalar(contents_height_scale));

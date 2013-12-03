@@ -32,7 +32,7 @@ void SkPictureContentLayerUpdater::PrepareToUpdate(
   base::TimeTicks start_time =
       rendering_stats_instrumentation_->StartRecording();
   PaintContents(canvas,
-                content_rect,
+                content_rect.origin(),
                 contents_width_scale,
                 contents_height_scale,
                 resulting_opaque_rect);

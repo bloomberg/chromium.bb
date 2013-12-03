@@ -31,7 +31,7 @@ class CC_EXPORT ContentLayerUpdater : public LayerUpdater {
   virtual ~ContentLayerUpdater();
 
   void PaintContents(SkCanvas* canvas,
-                     gfx::Rect content_rect,
+                     gfx::Point origin,
                      float contents_width_scale,
                      float contents_height_scale,
                      gfx::Rect* resulting_opaque_rect);
