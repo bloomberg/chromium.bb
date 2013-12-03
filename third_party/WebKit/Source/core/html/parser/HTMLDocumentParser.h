@@ -29,6 +29,7 @@
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/fetch/ResourceClient.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/parser/BackgroundHTMLInputStream.h"
 #include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLInputStream.h"
@@ -95,6 +96,8 @@ public:
         TokenPreloadScannerCheckpoint preloadScannerCheckpoint;
     };
     void didReceiveParsedChunkFromBackgroundParser(PassOwnPtr<ParsedChunk>);
+
+    UseCounter* useCounter() { return UseCounter::getFrom(contextForParsingSession()); }
 
 protected:
     virtual void insert(const SegmentedString&) OVERRIDE;

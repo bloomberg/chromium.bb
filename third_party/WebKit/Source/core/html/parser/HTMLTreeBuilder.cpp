@@ -493,6 +493,10 @@ void HTMLTreeBuilder::processIsindexStartTagForInBody(AtomicHTMLToken* token)
 {
     ASSERT(token->type() == HTMLToken::StartTag);
     ASSERT(token->name() == isindexTag);
+
+    if (m_parser->useCounter())
+        m_parser->useCounter()->count(UseCounter::IsIndexElement);
+
     parseError(token);
     if (m_tree.form())
         return;
