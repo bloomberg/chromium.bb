@@ -28,13 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// WebKit Web Facing API
-var console = { }
-/** @param {...*} vararg */
-console.log = function(vararg) { }
-/** @param {...*} vararg */
-console.table = function(vararg) { }
-
 /**
  * @constructor
  */
