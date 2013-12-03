@@ -51,7 +51,6 @@ class FakeBaseTabStripController : public TabStripController {
   virtual void LayoutTypeMaybeChanged() OVERRIDE;
   virtual void OnStartedDraggingTabs() OVERRIDE;
   virtual void OnStoppedDraggingTabs() OVERRIDE;
-  virtual void CheckFileSupported(const GURL& url) OVERRIDE;
 
  private:
   TabStrip* tab_strip_;
