@@ -18,7 +18,13 @@ import struct
 import sys
 
 
-LOGGER = logging.getLogger('procfs')
+class _NullHandler(logging.Handler):
+  def emit(self, record):
+    pass
+
+
+_LOGGER = logging.getLogger('procfs')
+_LOGGER.addHandler(_NullHandler())
 
 
 class ProcStat(object):
@@ -547,6 +553,7 @@ class ProcPagemap(object):
     total_vsize = 0
     in_process_dup = 0
     vma_internals = collections.OrderedDict()
+    process_pageframe_set = set()
 
     pagemap_fd = os.open(
         os.path.join('/proc', str(pid), 'pagemap'), os.O_RDONLY)
@@ -555,22 +562,21 @@ class ProcPagemap(object):
       swapped = 0
       vsize = 0
       pageframes = collections.defaultdict(int)
-      pageframes_set = set()
       begin_offset = ProcPagemap._offset(vma.begin)
       chunk_size = ProcPagemap._offset(vma.end) - begin_offset
       os.lseek(pagemap_fd, begin_offset, os.SEEK_SET)
       buf = os.read(pagemap_fd, chunk_size)
       if len(buf) < chunk_size:
-        LOGGER.warn('Failed to read pagemap at 0x%x.' % vma.begin)
+        _LOGGER.warn('Failed to read pagemap at 0x%x in %d.' % (vma.begin, pid))
       pagemap_values = struct.unpack(
           '=%dQ' % (len(buf) / ProcPagemap._BYTES_PER_PAGEMAP_VALUE), buf)
       for pagemap_value in pagemap_values:
         vsize += ProcPagemap._BYTES_PER_OS_PAGE
         if pagemap_value & ProcPagemap._MASK_PRESENT:
-          if (pagemap_value & ProcPagemap._MASK_PFN) in pageframes_set:
+          if (pagemap_value & ProcPagemap._MASK_PFN) in process_pageframe_set:
             in_process_dup += ProcPagemap._BYTES_PER_OS_PAGE
           else:
-            pageframes_set.add(pagemap_value & ProcPagemap._MASK_PFN)
+            process_pageframe_set.add(pagemap_value & ProcPagemap._MASK_PFN)
           if (pagemap_value & ProcPagemap._MASK_PFN) not in pageframes:
             present += ProcPagemap._BYTES_PER_OS_PAGE
           pageframes[pagemap_value & ProcPagemap._MASK_PFN] += 1
@@ -680,13 +686,12 @@ class _ProcessMemory(object):
 
 def main(argv):
   """The main function for manual testing."""
-
-  LOGGER.setLevel(logging.DEBUG)
+  _LOGGER.setLevel(logging.WARNING)
   handler = logging.StreamHandler()
-  handler.setLevel(logging.INFO)
-  formatter = logging.Formatter('%(message)s')
-  handler.setFormatter(formatter)
-  LOGGER.addHandler(handler)
+  handler.setLevel(logging.WARNING)
+  handler.setFormatter(logging.Formatter(
+      '%(asctime)s:%(name)s:%(levelname)s:%(message)s'))
+  _LOGGER.addHandler(handler)
 
   pids = []
   for arg in argv[1:]:
