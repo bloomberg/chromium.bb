@@ -92,6 +92,7 @@
         'system/message_pipe_endpoint.h',
         'system/platform_channel.cc',
         'system/platform_channel.h',
+        'system/platform_channel_handle.cc',
         'system/platform_channel_handle.h',
         'system/platform_channel_posix.cc',
         'system/proxy_message_pipe_endpoint.cc',

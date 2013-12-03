@@ -9,20 +9,27 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/posix/global_descriptors.h"
+#include "base/strings/string_number_conversions.h"
 
 namespace mojo {
 namespace system {
 
 namespace {
 
-void CloseIfNecessary(PlatformChannelHandle* handle) {
-  if (!handle->is_valid())
-    return;
+const char kMojoChannelDescriptorSwitch[] = "mojo-channel-descriptor";
 
-  PCHECK(close(handle->fd) == 0);
-  *handle = PlatformChannelHandle();
+bool IsTargetDescriptorUsed(
+    const base::FileHandleMappingVector& file_handle_mapping,
+    int target_fd) {
+  for (size_t i = 0; i < file_handle_mapping.size(); i++) {
+    if (file_handle_mapping[i].second == target_fd)
+      return true;
+  }
+  return false;
 }
 
 class PlatformServerChannelPosix : public PlatformServerChannel {
@@ -59,10 +66,7 @@ PlatformServerChannelPosix::PlatformServerChannelPosix(
 }
 
 PlatformServerChannelPosix::~PlatformServerChannelPosix() {
-  if (is_valid())
-    CloseIfNecessary(mutable_handle());
-  if (client_handle_.is_valid())
-    CloseIfNecessary(&client_handle_);
+  client_handle_.CloseIfNecessary();
 }
 
 scoped_ptr<PlatformClientChannel>
@@ -82,13 +86,39 @@ scoped_ptr<PlatformClientChannel>
 void PlatformServerChannelPosix::GetDataNeededToPassClientChannelToChildProcess(
     CommandLine* command_line,
     base::FileHandleMappingVector* file_handle_mapping) const {
-  // TODO(vtl)
-  NOTIMPLEMENTED();
+  DCHECK(command_line);
+  DCHECK(file_handle_mapping);
+  // This is an arbitrary sanity check. (Note that this guarantees that the loop
+  // below will terminate sanely.)
+  CHECK_LT(file_handle_mapping->size(), 1000u);
+
+  DCHECK(client_handle_.is_valid());
+
+  // Find a suitable FD to map our client handle to in the child process.
+  // This has quadratic time complexity in the size of |*file_handle_mapping|,
+  // but |*file_handle_mapping| should be very small (usually/often empty).
+  int target_fd = base::GlobalDescriptors::kBaseDescriptor;
+  while (IsTargetDescriptorUsed(*file_handle_mapping, target_fd))
+    target_fd++;
+
+  file_handle_mapping->push_back(std::pair<int, int>(client_handle_.fd,
+                                                     target_fd));
+  // Log a warning if the command line already has the switch, but "clobber" it
+  // anyway, since it's reasonably likely that all the switches were just copied
+  // from the parent.
+  LOG_IF(WARNING, command_line->HasSwitch(kMojoChannelDescriptorSwitch))
+      << "Child command line already has switch --"
+      << kMojoChannelDescriptorSwitch << "="
+      << command_line->GetSwitchValueASCII(kMojoChannelDescriptorSwitch);
+  // (Any existing switch won't actually be removed from the command line, but
+  // the last one appended takes precedence.)
+  command_line->AppendSwitchASCII(kMojoChannelDescriptorSwitch,
+                                  base::IntToString(target_fd));
 }
 
 void PlatformServerChannelPosix::ChildProcessLaunched() {
-  // TODO(vtl)
-  NOTIMPLEMENTED();
+  DCHECK(client_handle_.is_valid());
+  client_handle_.CloseIfNecessary();
 }
 
 }  // namespace
@@ -110,9 +140,17 @@ scoped_ptr<PlatformServerChannel> PlatformServerChannel::Create(
 scoped_ptr<PlatformClientChannel>
     PlatformClientChannel::CreateFromParentProcess(
         const CommandLine& command_line) {
-  // TODO(vtl)
-  NOTIMPLEMENTED();
-  return scoped_ptr<PlatformClientChannel>();
+  std::string client_fd_string =
+      command_line.GetSwitchValueASCII(kMojoChannelDescriptorSwitch);
+  int client_fd = -1;
+  if (client_fd_string.empty() ||
+      !base::StringToInt(client_fd_string, &client_fd) ||
+      client_fd < base::GlobalDescriptors::kBaseDescriptor) {
+    LOG(ERROR) << "Missing or invalid --" << kMojoChannelDescriptorSwitch;
+    return scoped_ptr<PlatformClientChannel>();
+  }
+
+  return CreateFromHandle(PlatformChannelHandle(client_fd));
 }
 
 }  // namespace system

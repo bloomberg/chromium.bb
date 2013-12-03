@@ -39,9 +39,11 @@ class MultiprocessTestBase : public base::MultiProcessTest {
   // For use by |MOJO_MULTIPROCESS_TEST_CHILD_MAIN()| only:
   static void ChildSetup();
 
-  system::PlatformServerChannel* platform_server_channel() {
-    return platform_server_channel_.get();
-  }
+  // For use in the main process:
+  scoped_ptr<system::PlatformServerChannel> platform_server_channel;
+
+  // For use (and only valid) in the child process:
+  static scoped_ptr<system::PlatformClientChannel> platform_client_channel;
 
  private:
   virtual CommandLine MakeCmdLine(const std::string& procname,
@@ -49,8 +51,6 @@ class MultiprocessTestBase : public base::MultiProcessTest {
 
   // Valid after |StartChild()| and before |WaitForChildShutdown()|.
   base::ProcessHandle test_child_handle_;
-
-  scoped_ptr<system::PlatformServerChannel> platform_server_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiprocessTestBase);
 };

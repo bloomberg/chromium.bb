@@ -19,6 +19,8 @@ struct PlatformChannelHandle {
   PlatformChannelHandle() : fd(-1) {}
   explicit PlatformChannelHandle(int fd) : fd(fd) {}
 
+  void CloseIfNecessary();
+
   bool is_valid() const { return fd != -1; }
 
   int fd;
@@ -27,6 +29,8 @@ struct PlatformChannelHandle {
 struct PlatformChannelHandle {
   PlatformChannelHandle() : handle(INVALID_HANDLE_VALUE) {}
   explicit PlatformChannelHandle(HANDLE handle) : handle(handle) {}
+
+  void CloseIfNecessary();
 
   bool is_valid() const { return handle != INVALID_HANDLE_VALUE; }
 

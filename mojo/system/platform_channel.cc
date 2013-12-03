@@ -10,9 +10,7 @@ namespace mojo {
 namespace system {
 
 PlatformChannel::~PlatformChannel() {
-  // Implementations must close the handle if necessary (e.g., if no one else
-  // has taken ownership).
-  DCHECK(!is_valid());
+  handle_.CloseIfNecessary();
 }
 
 PlatformChannelHandle PlatformChannel::PassHandle() {
@@ -34,6 +32,7 @@ PlatformServerChannel::PlatformServerChannel(const std::string& name)
 // static
 scoped_ptr<PlatformClientChannel> PlatformClientChannel::CreateFromHandle(
       const PlatformChannelHandle& handle) {
+  DCHECK(handle.is_valid());
   scoped_ptr<PlatformClientChannel> rv(new PlatformClientChannel());
   *rv->mutable_handle() = handle;
   return rv.Pass();
