@@ -7,8 +7,9 @@
 #include "base/logging.h"
 #include "chrome/renderer/media/cast_session.h"
 
-CastUdpTransport::CastUdpTransport()
-    : cast_session_(new CastSession()) {
+CastUdpTransport::CastUdpTransport(
+    const scoped_refptr<CastSession>& session)
+    : cast_session_(session) {
 }
 
 CastUdpTransport::~CastUdpTransport() {

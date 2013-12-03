@@ -61,16 +61,6 @@ namespace webrtc.castSendTransport {
   callback CreateCallback = void (long transportId);
 
   interface Functions {
-    // Creates a cast send transport.
-    // |innerTransportId| : the ID of the inner transport. The transport to be
-    //   created will send data on the inner transport.
-    // |track| : the media track encoded by this transport.
-    // |callback| : Called when the transport has been created.
-    [nocompile] static void create(
-        long innerTransportId,
-        [instanceOf=MediaStreamTrack] object track,
-        CreateCallback callback);
-
     // Destroys a cast send transport.
     // |transportId| : The transport ID.
     [nocompile] static void destroy(long transportId);

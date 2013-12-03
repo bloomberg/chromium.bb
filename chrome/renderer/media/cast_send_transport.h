@@ -13,7 +13,6 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
 class CastSession;
-class CastUdpTransport;
 
 // A key value pair structure for codec specific parameters.
 struct CastCodecSpecificParams {
@@ -75,14 +74,15 @@ struct CastRtpCaps {
 
 typedef CastRtpCaps CastRtpParams;
 
-// This class takes input from audio and/or video WebMediaStreamTracks
-// and then send the encoded streams to the underlying transport,
-// e.g. a UDP transport. It also allows configuration of the encoded
+// This object represents a RTP stream that encodes and optionally
+// encrypt audio or video data from a WebMediaStreamTrack.
+// Note that this object does not actually output packets. It allows
+// configuration of encoding and RTP parameters and control such a logical
 // stream.
 class CastSendTransport {
  public:
-  CastSendTransport(CastUdpTransport* udp_transport,
-                    const blink::WebMediaStreamTrack& track);
+  CastSendTransport(const blink::WebMediaStreamTrack& track,
+                    const scoped_refptr<CastSession>& session);
   ~CastSendTransport();
 
   // Return capabilities currently supported by this transport.
@@ -103,8 +103,8 @@ class CastSendTransport {
   // track is a video track.
   bool IsAudio() const;
 
-  const scoped_refptr<CastSession> cast_session_;
   blink::WebMediaStreamTrack track_;
+  const scoped_refptr<CastSession> cast_session_;
   CastRtpParams params_;
 
   DISALLOW_COPY_AND_ASSIGN(CastSendTransport);

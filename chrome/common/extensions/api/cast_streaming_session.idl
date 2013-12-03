@@ -1,0 +1,34 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// The <code>chrome.cast.streaming.session</code> API creates a Cast
+// session using WebMediaStreamTrack as sources. The session is composed
+// by RTP streams and a network transport.
+//
+// Calling this API will generate corresponding resources for use with
+// chrome.webrtc.castSendTransport and chrome.webrtc.castUdpTransport
+// APIs.
+namespace cast.streaming.session {
+  // Callback from the <code>create</code> method.
+  // |audioTransportId| : The audio transport ID.
+  // |videoTransportId| : The video transport ID.
+  // |udpTransportId| : The UDP transport ID.
+  callback CreateCallback = void (long audioTransportId,
+                                  long videoTransportId,
+                                  long udpTransportId);
+
+  interface Functions {
+    // Creates a Cast session using the provided audio and video track as
+    // source. This will create two RTP streams and a UDP transport that
+    // builds the session.
+    //
+    // |audioTrack| : the source audio track.
+    // |videoTrack| : the source video track.
+    // |callback| : Called when the sesion has been created.
+    [nocompile] static void create(
+        [instanceOf=MediaStreamTrack] object audioTrack,
+        [instanceOf=MediaStreamTrack] object videoTrack,
+        CreateCallback callback);
+  };
+};

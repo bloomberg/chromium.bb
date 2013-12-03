@@ -52,6 +52,7 @@ class APIPermission {
     kBrailleDisplayPrivate,
     kBrowsingData,
     kCast,
+    kCastStreaming,
     kChromeosInfoPrivate,
     kClipboardRead,
     kClipboardWrite,

@@ -10,9 +10,6 @@ var webrtc = requireNative('webrtc_natives');
 binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
-  apiFunctions.setHandleRequest('create', function(callback) {
-    webrtc.CreateCastUdpTransport(callback);
-  });
   apiFunctions.setHandleRequest('destroy', function(transportId) {
     webrtc.DestroyCastUdpTransport(transportId);
   });

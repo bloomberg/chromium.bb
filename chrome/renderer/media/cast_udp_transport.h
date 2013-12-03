@@ -11,25 +11,16 @@
 
 class CastSession;
 
-// This class represents an end point to which communication is done by
-// UDP. The interface does not allow direct access to a UDP socket but
-// represents a transport mechanism.
-//
-// CastUdpTransport creates a CastSession and then shares it with
-// multiple CastSendTransports. This is because CastSession corresponds
-// to only one remote peer.
+// This class represents the transport mechanism used by Cast RTP streams
+// to connect to a remote client. It specifies the destination address
+// and network protocol used to send Cast RTP streams.
 class CastUdpTransport {
  public:
-  CastUdpTransport();
+  explicit CastUdpTransport(const scoped_refptr<CastSession>& session);
   ~CastUdpTransport();
 
-  // Begin the transport by specifying the remote IP address.
-  // The transport will use UDP.
+  // Specify the remote IP address.
   void Start(const net::HostPortPair& remote_address);
-
-  scoped_refptr<CastSession> cast_session() const {
-    return cast_session_;
-  }
 
  private:
   const scoped_refptr<CastSession> cast_session_;

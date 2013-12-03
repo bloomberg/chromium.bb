@@ -7,6 +7,7 @@
 #include <functional>
 
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "chrome/common/extensions/api/webrtc_cast_send_transport.h"
 #include "chrome/common/extensions/api/webrtc_cast_udp_transport.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
@@ -123,9 +124,10 @@ void ToCastRtpParams(const RtpParams& ext_params, CastRtpParams* cast_params) {
 
 WebRtcNativeHandler::WebRtcNativeHandler(ChromeV8Context* context)
     : ObjectBackedNativeHandler(context),
-      last_transport_id_(0) {
-  RouteFunction("CreateCastSendTransport",
-      base::Bind(&WebRtcNativeHandler::CreateCastSendTransport,
+      last_transport_id_(0),
+      weak_factory_(this) {
+  RouteFunction("CreateSession",
+      base::Bind(&WebRtcNativeHandler::CreateCastSession,
                  base::Unretained(this)));
   RouteFunction("DestroyCastSendTransport",
       base::Bind(&WebRtcNativeHandler::DestroyCastSendTransport,
@@ -139,9 +141,6 @@ WebRtcNativeHandler::WebRtcNativeHandler(ChromeV8Context* context)
   RouteFunction("StopCastSendTransport",
       base::Bind(&WebRtcNativeHandler::StopCastSendTransport,
                  base::Unretained(this)));
-  RouteFunction("CreateCastUdpTransport",
-      base::Bind(&WebRtcNativeHandler::CreateCastUdpTransport,
-                 base::Unretained(this)));
   RouteFunction("DestroyCastUdpTransport",
       base::Bind(&WebRtcNativeHandler::DestroyCastUdpTransport,
                  base::Unretained(this)));
@@ -153,31 +152,66 @@ WebRtcNativeHandler::WebRtcNativeHandler(ChromeV8Context* context)
 WebRtcNativeHandler::~WebRtcNativeHandler() {
 }
 
-void WebRtcNativeHandler::CreateCastSendTransport(
+void WebRtcNativeHandler::CreateCastSession(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(3, args.Length());
-  CHECK(args[0]->IsInt32());
+  CHECK(args[0]->IsObject());
   CHECK(args[1]->IsObject());
   CHECK(args[2]->IsFunction());
 
-  const int inner_transport_id = args[0]->ToInt32()->Value();
-  CastUdpTransport* inner_transport = GetUdpTransportOrThrow(
-      inner_transport_id);
-  if (!inner_transport)
+  blink::WebDOMMediaStreamTrack track1 =
+      blink::WebDOMMediaStreamTrack::fromV8Value(args[0]);
+  if (track1.isNull())
     return;
-
-  blink::WebDOMMediaStreamTrack track =
+  blink::WebDOMMediaStreamTrack track2 =
       blink::WebDOMMediaStreamTrack::fromV8Value(args[1]);
-  if (track.isNull())
+  if (track2.isNull())
     return;
-  const int transport_id = last_transport_id_++;
-  send_transport_map_[transport_id] =
-      linked_ptr<CastSendTransport>(
-          new CastSendTransport(inner_transport, track.component()));
 
-  v8::Handle<v8::Value> transport_id_v8 = v8::Integer::New(transport_id);
-  context()->CallFunction(v8::Handle<v8::Function>::Cast(args[2]), 1,
-                          &transport_id_v8);
+  scoped_refptr<CastSession> session(new CastSession());
+  scoped_ptr<CastSendTransport> stream1(
+      new CastSendTransport(track1.component(), session));
+  scoped_ptr<CastSendTransport> stream2(
+      new CastSendTransport(track2.component(), session));
+  scoped_ptr<CastUdpTransport> udp_transport(
+      new CastUdpTransport(session));
+
+  create_callback_.reset(args[2].As<v8::Function>());
+
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &WebRtcNativeHandler::CallCreateCallback,
+          weak_factory_.GetWeakPtr(),
+          base::Passed(&stream1),
+          base::Passed(&stream2),
+          base::Passed(&udp_transport)));
+}
+
+void WebRtcNativeHandler::CallCreateCallback(
+    scoped_ptr<CastSendTransport> stream1,
+    scoped_ptr<CastSendTransport> stream2,
+    scoped_ptr<CastUdpTransport> udp_transport) {
+  v8::HandleScope handle_scope(context()->isolate());
+  v8::Context::Scope context_scope(context()->v8_context());
+
+  const int stream1_id = last_transport_id_++;
+  send_transport_map_[stream1_id] =
+      linked_ptr<CastSendTransport>(stream1.release());
+  const int stream2_id = last_transport_id_++;
+  send_transport_map_[stream2_id] =
+      linked_ptr<CastSendTransport>(stream2.release());
+  const int udp_id = last_transport_id_++;
+  udp_transport_map_[udp_id] =
+      linked_ptr<CastUdpTransport>(udp_transport.release());
+
+  v8::Handle<v8::Value> callback_args[3];
+  callback_args[0] = v8::Integer::New(stream1_id);
+  callback_args[1] = v8::Integer::New(stream2_id);
+  callback_args[2] = v8::Integer::New(udp_id);
+  context()->CallFunction(create_callback_.NewHandle(context()->isolate()),
+                          3, callback_args);
+  create_callback_.reset();
 }
 
 void WebRtcNativeHandler::DestroyCastSendTransport(
@@ -252,20 +286,6 @@ void WebRtcNativeHandler::StopCastSendTransport(
   if (!transport)
     return;
   transport->Stop();
-}
-
-void WebRtcNativeHandler::CreateCastUdpTransport(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  CHECK_EQ(1, args.Length());
-  CHECK(args[0]->IsFunction());
-
-  const int transport_id = last_transport_id_++;
-  udp_transport_map_[transport_id] =
-      linked_ptr<CastUdpTransport>(new CastUdpTransport());
-
-  v8::Handle<v8::Value> transport_id_v8 = v8::Integer::New(transport_id);
-  context()->CallFunction(v8::Handle<v8::Function>::Cast(args[0]), 1,
-                          &transport_id_v8);
 }
 
 void WebRtcNativeHandler::DestroyCastUdpTransport(

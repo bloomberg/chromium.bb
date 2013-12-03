@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The <code>chrome.webrtc.castUdpTransport</code> API creates a UDP
-// transport for outer transport to send and receive data. This API is not
-// useful when standalone since it does not have send and receive methods.
-// It should be used as an inner transport for other transports such as
-// castSendTransport.
+// The <code>chrome.webrtc.castUdpTransport</code> API represents a UDP
+// transport for Cast RTP streams. This API is not useful when standalone
+// since it does not have send and receive methods.
+// It is used to configure the UDP transport used in Cast session.
 namespace webrtc.castUdpTransport {
   // The UDP socket address and port.
   dictionary UdpParams {
@@ -14,16 +13,7 @@ namespace webrtc.castUdpTransport {
     long port;
   };
 
-  // Callback from the <code>create</code> method.
-  // |transportId| : The transport ID.
-  // A null value indicates an error.
-  callback CreateCallback = void (long transportId);
-
   interface Functions {
-    // Creates a UDP transport.
-    // |callback| : Called when the transport has been created.
-    [nocompile] static void create(CreateCallback callback);
-
     // Destroys a UDP transport.
     // |transportId| : The transport ID.
     [nocompile] static void destroy(long transportId);

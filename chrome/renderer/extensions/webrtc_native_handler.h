@@ -8,7 +8,9 @@
 #include <map>
 
 #include "base/memory/linked_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/renderer/extensions/object_backed_native_handler.h"
+#include "chrome/renderer/extensions/scoped_persistent.h"
 #include "v8/include/v8.h"
 
 class CastSendTransport;
@@ -25,8 +27,9 @@ class WebRtcNativeHandler : public ObjectBackedNativeHandler {
   virtual ~WebRtcNativeHandler();
 
  private:
-  void CreateCastSendTransport(
+  void CreateCastSession(
       const v8::FunctionCallbackInfo<v8::Value>& args);
+
   void DestroyCastSendTransport(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   void CreateParamsCastSendTransport(
@@ -38,14 +41,18 @@ class WebRtcNativeHandler : public ObjectBackedNativeHandler {
   void StopCastSendTransport(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  void CreateCastUdpTransport(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
   void DestroyCastUdpTransport(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   void StartCastUdpTransport(
       const v8::FunctionCallbackInfo<v8::Value>& args);
   void StopCastUdpTransport(
       const v8::FunctionCallbackInfo<v8::Value>& args);
+
+  // Helper method to call the v8 callback function after a session is
+  // created.
+  void CallCreateCallback(scoped_ptr<CastSendTransport> stream1,
+                          scoped_ptr<CastSendTransport> stream2,
+                          scoped_ptr<CastUdpTransport> udp_transport);
 
   // Gets the Send or UDP transport indexed by |transport_id|.
   // If not found, returns NULL and throws a V8 exception.
@@ -59,6 +66,10 @@ class WebRtcNativeHandler : public ObjectBackedNativeHandler {
 
   typedef std::map<int, linked_ptr<CastUdpTransport> > UdpTransportMap;
   UdpTransportMap udp_transport_map_;
+
+  base::WeakPtrFactory<WebRtcNativeHandler> weak_factory_;
+
+  extensions::ScopedPersistent<v8::Function> create_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcNativeHandler);
 };

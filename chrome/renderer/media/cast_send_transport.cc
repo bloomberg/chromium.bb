@@ -119,9 +119,10 @@ CastRtpCaps::~CastRtpCaps() {
 }
 
 CastSendTransport::CastSendTransport(
-    CastUdpTransport* udp_transport,
-    const blink::WebMediaStreamTrack& track)
-    : cast_session_(udp_transport->cast_session()), track_(track) {
+    const blink::WebMediaStreamTrack& track,
+    const scoped_refptr<CastSession>& session)
+    : track_(track),
+      cast_session_(session) {
 }
 
 CastSendTransport::~CastSendTransport() {

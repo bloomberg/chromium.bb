@@ -1024,6 +1024,8 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("webRequestInternal",
                              IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS);
 #if defined(ENABLE_WEBRTC)
+  source_map_.RegisterSource("cast.streaming.session",
+                             IDR_CAST_STREAMING_SESSION_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("webrtc.castSendTransport",
                              IDR_WEBRTC_CAST_SEND_TRANSPORT_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("webrtc.castUdpTransport",
