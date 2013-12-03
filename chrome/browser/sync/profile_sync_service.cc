@@ -45,9 +45,11 @@
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
+#include "chrome/browser/sync/glue/sync_start_util.h"
 #include "chrome/browser/sync/glue/synced_device_tracker.h"
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_components_factory_impl.h"
+#include "chrome/browser/sync/sessions2/notification_service_sessions_router.h"
 #include "chrome/browser/sync/sessions2/sessions_sync_manager.h"
 #include "chrome/browser/sync/sync_global_error.h"
 #include "chrome/browser/sync/user_selectable_sync_type.h"
@@ -91,6 +93,7 @@ using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
 using browser_sync::FailedDataTypesHandler;
+using browser_sync::NotificationServiceSessionsRouter;
 using browser_sync::SyncBackendHost;
 using syncer::ModelType;
 using syncer::ModelTypeSet;
@@ -196,7 +199,12 @@ ProfileSyncService::ProfileSyncService(
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableSyncSessionsV2)) {
-    sessions_sync_manager_.reset(new SessionsSyncManager(profile, this));
+    syncer::SyncableService::StartSyncFlare flare(
+        sync_start_util::GetFlareForSyncableService(profile->GetPath()));
+    scoped_ptr<browser_sync::LocalSessionEventRouter> router(
+        new NotificationServiceSessionsRouter(profile, flare));
+    sessions_sync_manager_.reset(
+        new SessionsSyncManager(profile, this, router.Pass()));
   }
 }
 

@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -45,14 +46,46 @@ class DataTypeErrorHandler;
 class SyncedTabDelegate;
 class SyncedWindowDelegate;
 
+// An interface defining the ways in which local open tab events can interact
+// with session sync.  All local tab events flow to sync via this interface.
+// In that way it is analogous to sync changes flowing to the local model
+// via ProcessSyncChanges, just with a more granular breakdown.
+class LocalSessionEventHandler {
+ public:
+  // A local navigation event took place that affects the synced session
+  // for this instance of Chrome.
+  virtual void OnLocalTabModified(SyncedTabDelegate* modified_tab) = 0;
+
+  // A local navigation occurred that triggered updates to favicon data for
+  // each URL in |updated_page_urls|.  This is routed through Sessions Sync so
+  // that we can filter (exclude) favicon updates for pages that aren't
+  // currently part of the set of local open tabs, and pass relevant updates
+  // on to FaviconCache for out-of-band favicon syncing.
+  virtual void OnFaviconPageUrlsUpdated(
+      const std::set<GURL>& updated_page_urls) = 0;
+};
+
+// The LocalSessionEventRouter is responsible for hooking itself up to various
+// notification sources in the browser process and forwarding relevant
+// events to a handler as defined in the LocalSessionEventHandler contract.
+class LocalSessionEventRouter {
+ public:
+  virtual ~LocalSessionEventRouter();
+  virtual void StartRoutingTo(LocalSessionEventHandler* handler) = 0;
+  virtual void Stop() = 0;
+};
+
 // Contains all logic for associating the Chrome sessions model and
 // the sync sessions model.
 class SessionsSyncManager : public syncer::SyncableService,
-                            public OpenTabsUIDelegate {
+                            public OpenTabsUIDelegate,
+                            public LocalSessionEventHandler {
  public:
   // Isolates SessionsSyncManager from having to depend on sync internals.
   class SyncInternalApiDelegate {
    public:
+    virtual ~SyncInternalApiDelegate() {}
+
     // Returns sync's representation of the local device info.
     // Return value is an empty scoped_ptr if the device info is unavailable.
     virtual scoped_ptr<DeviceInfo> GetLocalDeviceInfo() const = 0;
@@ -62,32 +95,9 @@ class SessionsSyncManager : public syncer::SyncableService,
   };
 
   SessionsSyncManager(Profile* profile,
-                      SyncInternalApiDelegate* delegate);
+                      SyncInternalApiDelegate* delegate,
+                      scoped_ptr<LocalSessionEventRouter> router);
   virtual ~SessionsSyncManager();
-
-  // A local navigation event took place that affects the synced session
-  // for this instance of Chrome.
-  void OnLocalTabModified(const SyncedTabDelegate& modified_tab,
-                          syncer::SyncError* error);
-
-  // When a Browser window is opened, we want to know so we can make sure our
-  // bookkeeping of open windows / sessions on this device is up-to-date.
-  void OnBrowserOpened();
-
-  // A local navigation occurred that triggered updates to favicon data for
-  // each URL in |updated_page_urls|.  This is routed through Sessions Sync so
-  // that we can filter (exclude) favicon updates for pages that aren't
-  // currently part of the set of local open tabs, and pass relevant updates
-  // on to FaviconCache for out-of-band favicon syncing.
-  void ForwardRelevantFaviconUpdatesToFaviconCache(
-      const std::set<GURL>& updated_favicon_page_urls);
-
-  // Returns the tag used to uniquely identify this machine's session in the
-  // sync model.
-  const std::string& current_machine_tag() const {
-    DCHECK(!current_machine_tag_.empty());
-    return current_machine_tag_;
-  }
 
   // syncer::SyncableService implementation.
   virtual syncer::SyncMergeResult MergeDataAndStartSyncing(
@@ -102,14 +112,6 @@ class SessionsSyncManager : public syncer::SyncableService,
       const tracked_objects::Location& from_here,
       const syncer::SyncChangeList& change_list) OVERRIDE;
 
-  // Return the virtual URL of the current tab, even if it's pending.
-  static GURL GetCurrentVirtualURL(const SyncedTabDelegate& tab_delegate);
-
-  // Return the favicon url of the current tab, even if it's pending.
-  static GURL GetCurrentFaviconURL(const SyncedTabDelegate& tab_delegate);
-
-  FaviconCache* GetFaviconCache();
-
   // OpenTabsUIDelegate implementation.
   virtual bool GetSyncedFaviconForPageURL(
       const std::string& pageurl,
@@ -123,6 +125,26 @@ class SessionsSyncManager : public syncer::SyncableService,
                              const SessionID::id_type tab_id,
                              const SessionTab** tab) OVERRIDE;
   virtual void DeleteForeignSession(const std::string& tag) OVERRIDE;
+
+  // LocalSessionEventHandler implementation.
+  virtual void OnLocalTabModified(SyncedTabDelegate* modified_tab) OVERRIDE;
+  virtual void OnFaviconPageUrlsUpdated(
+      const std::set<GURL>& updated_favicon_page_urls) OVERRIDE;
+
+  // Returns the tag used to uniquely identify this machine's session in the
+  // sync model.
+  const std::string& current_machine_tag() const {
+    DCHECK(!current_machine_tag_.empty());
+    return current_machine_tag_;
+  }
+
+  // Return the virtual URL of the current tab, even if it's pending.
+  static GURL GetCurrentVirtualURL(const SyncedTabDelegate& tab_delegate);
+
+  // Return the favicon url of the current tab, even if it's pending.
+  static GURL GetCurrentFaviconURL(const SyncedTabDelegate& tab_delegate);
+
+  FaviconCache* GetFaviconCache();
 
  private:
   // Keep all the links to local tab data in one place. A tab_node_id and tab
@@ -307,6 +329,8 @@ class SessionsSyncManager : public syncer::SyncableService,
   // SyncID for the sync node containing all the window information for this
   // client.
   int local_session_header_node_id_;
+
+  scoped_ptr<LocalSessionEventRouter> local_event_router_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionsSyncManager);
 };

@@ -71,7 +71,7 @@ NavigationEntry* TabContentsSyncedTabDelegate::GetEntryAtIndex(int i) const {
 }
 
 NavigationEntry* TabContentsSyncedTabDelegate::GetActiveEntry() const {
-  return web_contents_->GetController().GetActiveEntry();
+  return web_contents_->GetController().GetVisibleEntry();
 }
 
 bool TabContentsSyncedTabDelegate::ProfileIsManaged() const {

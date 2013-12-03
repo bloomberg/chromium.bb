@@ -37,15 +37,23 @@ static const int kMaxSyncFavicons = 200;
 // The maximum number of navigations in each direction we care to sync.
 static const int kMaxSyncNavigationCount = 6;
 
+// The URL at which the set of synced tabs is displayed. We treat it differently
+// from all other URL's as accessing it triggers a sync refresh of Sessions.
+static const char kNTPOpenTabSyncURL[] = "chrome://newtab/#open_tabs";
+
 SessionsSyncManager::SessionsSyncManager(
     Profile* profile,
-    SyncInternalApiDelegate* delegate)
+    SyncInternalApiDelegate* delegate,
+    scoped_ptr<LocalSessionEventRouter> router)
     : favicon_cache_(profile, kMaxSyncFavicons),
       sync_prefs_(profile->GetPrefs()),
       profile_(profile),
       delegate_(delegate),
-      local_session_header_node_id_(TabNodePool2::kInvalidTabNodeID) {
+      local_session_header_node_id_(TabNodePool2::kInvalidTabNodeID),
+      local_event_router_(router.Pass()) {
 }
+
+LocalSessionEventRouter::~LocalSessionEventRouter() {}
 
 SessionsSyncManager::~SessionsSyncManager() {
 }
@@ -116,6 +124,8 @@ syncer::SyncMergeResult SessionsSyncManager::MergeDataAndStartSyncing(
 
   merge_result.set_error(
       sync_processor_->ProcessSyncChanges(FROM_HERE, new_changes));
+
+  local_event_router_->StartRoutingTo(this);
   return merge_result;
 }
 
@@ -293,13 +303,43 @@ void SessionsSyncManager::AssociateTab(SyncedTabDelegate* const tab,
       base::Time::Now();
 }
 
-void SessionsSyncManager::OnLocalTabModified(
-    const SyncedTabDelegate& modified_tab, syncer::SyncError* error) {
-  NOTIMPLEMENTED() << "TODO(tim): SessionModelAssociator::Observe equivalent.";
+void SessionsSyncManager::OnLocalTabModified(SyncedTabDelegate* modified_tab) {
+  const content::NavigationEntry* entry = modified_tab->GetActiveEntry();
+  if (!modified_tab->IsBeingDestroyed() &&
+      entry &&
+      entry->GetVirtualURL().is_valid() &&
+      entry->GetVirtualURL().spec() == kNTPOpenTabSyncURL) {
+    DVLOG(1) << "Triggering sync refresh for sessions datatype.";
+    const syncer::ModelTypeSet types(syncer::SESSIONS);
+    content::NotificationService::current()->Notify(
+        chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
+        content::Source<Profile>(profile_),
+        content::Details<const syncer::ModelTypeSet>(&types));
+  }
+
+  syncer::SyncChangeList changes;
+  // Associate tabs first so the synced session tracker is aware of them.
+  AssociateTab(modified_tab, &changes);
+  // Note, we always associate windows because it's possible a tab became
+  // "interesting" by going to a valid URL, in which case it needs to be added
+  // to the window's tab information.
+  AssociateWindows(DONT_RELOAD_TABS, &changes);
+  sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
-void SessionsSyncManager::OnBrowserOpened() {
-  NOTIMPLEMENTED() << "TODO(tim): SessionModelAssociator::Observe equivalent.";
+void SessionsSyncManager::OnFaviconPageUrlsUpdated(
+    const std::set<GURL>& updated_favicon_page_urls) {
+  // TODO(zea): consider a separate container for tabs with outstanding favicon
+  // loads so we don't have to iterate through all tabs comparing urls.
+  for (std::set<GURL>::const_iterator i = updated_favicon_page_urls.begin();
+       i != updated_favicon_page_urls.end(); ++i) {
+    for (TabLinksMap::iterator tab_iter = local_tab_map_.begin();
+         tab_iter != local_tab_map_.end();
+         ++tab_iter) {
+      if (tab_iter->second->url() == *i)
+        favicon_cache_.OnPageFaviconUpdated(*i);
+    }
+  }
 }
 
 bool SessionsSyncManager::ShouldSyncTab(const SyncedTabDelegate& tab) const {
@@ -345,21 +385,6 @@ bool SessionsSyncManager::ShouldSyncWindow(
   return window->IsTypeTabbed() || window->IsTypePopup();
 }
 
-void SessionsSyncManager::ForwardRelevantFaviconUpdatesToFaviconCache(
-    const std::set<GURL>& updated_favicon_page_urls) {
-  // TODO(zea): consider a separate container for tabs with outstanding favicon
-  // loads so we don't have to iterate through all tabs comparing urls.
-  for (std::set<GURL>::const_iterator i = updated_favicon_page_urls.begin();
-       i != updated_favicon_page_urls.end(); ++i) {
-    for (TabLinksMap::iterator tab_iter = local_tab_map_.begin();
-         tab_iter != local_tab_map_.end();
-         ++tab_iter) {
-      if (tab_iter->second->url() == *i)
-        favicon_cache_.OnPageFaviconUpdated(*i);
-    }
-  }
-}
-
 void SessionsSyncManager::StopSyncing(syncer::ModelType type) {
   NOTIMPLEMENTED();
 }
@@ -396,6 +421,8 @@ syncer::SyncError SessionsSyncManager::ProcessSyncChanges(
           // Another client has attempted to delete our local data (possibly by
           // error or a clock is inaccurate). Just ignore the deletion for now
           // to avoid any possible ping-pong delete/reassociate sequence.
+          // TODO(tim): Bug 98892.  This corrupts TabNodePool. Perform full
+          // re-association.
           LOG(WARNING) << "Local session data deleted. Ignoring until next "
                        << "local navigation event.";
         } else if (session.has_header()) {
@@ -867,7 +894,6 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
   }
   session_tab->session_storage_persistent_id.clear();
 }
-
 
 FaviconCache* SessionsSyncManager::GetFaviconCache() {
   return &favicon_cache_;

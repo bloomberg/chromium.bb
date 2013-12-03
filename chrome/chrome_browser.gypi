@@ -2340,6 +2340,8 @@
         'browser/sync/profile_sync_service_observer.h',
         'browser/sync/retry_verifier.cc',
         'browser/sync/retry_verifier.h',
+        'browser/sync/sessions2/notification_service_sessions_router.cc',
+        'browser/sync/sessions2/notification_service_sessions_router.h',
         'browser/sync/sessions2/session_data_type_controller2.cc',
         'browser/sync/sessions2/session_data_type_controller2.h',
         'browser/sync/sessions2/sessions_sync_manager.cc',
