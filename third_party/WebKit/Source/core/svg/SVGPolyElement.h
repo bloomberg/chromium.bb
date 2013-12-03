@@ -56,12 +56,12 @@ private:
     static void synchronizePoints(SVGElement* contextElement);
     static PassRefPtr<SVGAnimatedProperty> lookupOrCreatePointsWrapper(SVGElement* contextElement);
 
+    mutable SVGSynchronizableAnimatedProperty<SVGPointList> m_points;
+
+private:
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGPolyElement)
         DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
-
-protected:
-    mutable SVGSynchronizableAnimatedProperty<SVGPointList> m_points;
 };
 
 inline SVGPolyElement* toSVGPolyElement(SVGElement* element)

@@ -71,12 +71,12 @@ END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGMarkerElement::SVGMarkerElement(Document& document)
     : SVGElement(SVGNames::markerTag, document)
+    , m_orientType(SVGMarkerOrientAngle)
     , m_refX(LengthModeWidth)
     , m_refY(LengthModeHeight)
     , m_markerWidth(LengthModeWidth, "3")
     , m_markerHeight(LengthModeHeight, "3")
     , m_markerUnits(SVGMarkerUnitsStrokeWidth)
-    , m_orientType(SVGMarkerOrientAngle)
 {
     // Spec: If the markerWidth/markerHeight attribute is not specified, the effect is as if a value of "3" were specified.
     ScriptWrappable::init(this);

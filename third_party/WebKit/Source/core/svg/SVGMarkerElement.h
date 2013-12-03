@@ -120,6 +120,14 @@ public:
 
     static const SVGPropertyInfo* orientTypePropertyInfo();
 
+    // Custom 'orientType' property.
+    static void synchronizeOrientType(SVGElement* contextElement);
+    static PassRefPtr<SVGAnimatedProperty> lookupOrCreateOrientTypeWrapper(SVGElement* contextElement);
+    SVGMarkerOrientType& orientTypeCurrentValue() const { return m_orientType.value; }
+    SVGMarkerOrientType& orientTypeBaseValue() const { return m_orientType.value; }
+    void setOrientTypeBaseValue(const SVGMarkerOrientType& type) { m_orientType.value = type; }
+    PassRefPtr<SVGAnimatedEnumerationPropertyTearOff<SVGMarkerOrientType> > orientType();
+
 private:
     explicit SVGMarkerElement(Document&);
 
@@ -140,6 +148,8 @@ private:
     static const AtomicString& orientTypeIdentifier();
     static const AtomicString& orientAngleIdentifier();
 
+    mutable SVGSynchronizableAnimatedProperty<SVGMarkerOrientType> m_orientType;
+
     BEGIN_DECLARE_ANIMATED_PROPERTIES(SVGMarkerElement)
         DECLARE_ANIMATED_LENGTH(RefX, refX)
         DECLARE_ANIMATED_LENGTH(RefY, refY)
@@ -151,18 +161,6 @@ private:
         DECLARE_ANIMATED_RECT(ViewBox, viewBox)
         DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio)
     END_DECLARE_ANIMATED_PROPERTIES
-
-public:
-    // Custom 'orientType' property.
-    static void synchronizeOrientType(SVGElement* contextElement);
-    static PassRefPtr<SVGAnimatedProperty> lookupOrCreateOrientTypeWrapper(SVGElement* contextElement);
-    SVGMarkerOrientType& orientTypeCurrentValue() const { return m_orientType.value; }
-    SVGMarkerOrientType& orientTypeBaseValue() const { return m_orientType.value; }
-    void setOrientTypeBaseValue(const SVGMarkerOrientType& type) { m_orientType.value = type; }
-    PassRefPtr<SVGAnimatedEnumerationPropertyTearOff<SVGMarkerOrientType> > orientType();
-
-private:
-    mutable SVGSynchronizableAnimatedProperty<SVGMarkerOrientType> m_orientType;
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGMarkerElement, hasTagName(SVGNames::markerTag));
