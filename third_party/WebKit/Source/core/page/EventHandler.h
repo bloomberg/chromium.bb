@@ -176,6 +176,8 @@ public:
 
     bool useHandCursor(Node*, bool isOverLink, bool shiftKey);
 
+    void notifyElementActivated();
+
 private:
     static DragState& dragState();
 
@@ -198,7 +200,7 @@ private:
 
     bool handlePasteGlobalSelection(const PlatformMouseEvent&);
 
-    bool handleGestureTap(const PlatformGestureEvent&);
+    bool handleGestureTap(const PlatformGestureEvent&, const IntPoint& adjustedPoint);
     bool handleGestureLongPress(const PlatformGestureEvent&, const IntPoint& adjustedPoint);
     bool handleGestureLongTap(const PlatformGestureEvent&, const IntPoint& adjustedPoint);
     bool handleGestureTwoFingerTap(const PlatformGestureEvent&, const IntPoint& adjustedPoint);
@@ -213,6 +215,7 @@ private:
 
     void hoverTimerFired(Timer<EventHandler>*);
     void cursorUpdateTimerFired(Timer<EventHandler>*);
+    void activeIntervalTimerFired(Timer<EventHandler>*);
 
     bool logicalScrollOverflow(ScrollLogicalDirection, ScrollGranularity, Node* startingNode = 0);
 
@@ -376,6 +379,11 @@ private:
     OwnPtr<IntPoint> m_lastSyntheticPinchAnchorDip;
     OwnPtr<IntPoint> m_lastSyntheticPanLocation;
     float m_syntheticPageScaleFactor;
+
+    Timer<EventHandler> m_activeIntervalTimer;
+    double m_lastShowPressTimestamp;
+    bool m_shouldKeepActiveForMinInterval;
+    RefPtr<Element> m_lastDeferredTapElement;
 };
 
 } // namespace WebCore

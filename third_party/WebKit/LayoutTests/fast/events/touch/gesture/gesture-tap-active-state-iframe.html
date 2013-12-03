@@ -37,7 +37,7 @@ function runTests(ba)
         debug('GestureShowPress is not supported by this platform');
         return;
     }
-    
+
     // Scroll so the box is at the top
     window.scrollTo(0, 400);
 
@@ -48,13 +48,23 @@ function runTests(ba)
     eventSender.gestureShowPress(450, 50);
     shouldBeTrue("isBoxActive()");
     eventSender.gestureTap(450, 50);
-    shouldBeFalse("isBoxActive()");
+    // FIXME: Enable after implementing mocked timers (http://crbug.com/319529)
+    // shouldBeTrue("isBoxActive()");
+    waitUntilActiveCleared();
+}
 
-    isSuccessfullyParsed();
-    testRunner.notifyDone();
+function waitUntilActiveCleared()
+{
+    if(isBoxActive()) {
+        return setTimeout(waitUntilActiveCleared, 10);
+    }
+
+    shouldBeFalse("isBoxActive()");
+    finishJSTest();
 }
 
 if (window.testRunner) {
+    window.jsTestIsAsync = true;
     testRunner.waitUntilDone();
 }
 

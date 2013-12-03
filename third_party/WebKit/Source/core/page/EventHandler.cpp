@@ -127,6 +127,10 @@ static const int maximumCursorSize = 128;
 // dividing cursor sizes (limited above) by the scale.
 static const double minimumCursorScale = 0.001;
 
+// The minimum amount of time an element stays active after a ShowPress
+// This is roughly 2 frames, which should be long enough to be noticeable.
+static const double minimumActiveInterval = 0.032;
+
 #if OS(MACOSX)
 static const double TextDragDelay = 0.15;
 #else
@@ -299,6 +303,9 @@ EventHandler::EventHandler(Frame* frame)
     , m_didStartDrag(false)
     , m_longTapShouldInvokeContextMenu(false)
     , m_syntheticPageScaleFactor(0)
+    , m_activeIntervalTimer(this, &EventHandler::activeIntervalTimerFired)
+    , m_lastShowPressTimestamp(0)
+    , m_shouldKeepActiveForMinInterval(false)
 {
 }
 
@@ -318,6 +325,7 @@ void EventHandler::clear()
     m_hoverTimer.stop();
     m_cursorUpdateTimer.stop();
     m_fakeMouseMoveEventTimer.stop();
+    m_activeIntervalTimer.stop();
     m_resizeScrollableArea = 0;
     m_nodeUnderMouse = 0;
     m_lastNodeUnderMouse = 0;
@@ -353,6 +361,9 @@ void EventHandler::clear()
     m_touchPressed = false;
     m_mouseDownMayStartSelect = false;
     m_mouseDownMayStartDrag = false;
+    m_lastShowPressTimestamp = 0;
+    m_shouldKeepActiveForMinInterval = false;
+    m_lastDeferredTapElement = 0;
 }
 
 void EventHandler::nodeWillBeRemoved(Node& nodeToBeRemoved)
@@ -1653,13 +1664,19 @@ bool EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
         return !dispatchMouseEvent(EventTypeNames::mouseup, m_lastNodeUnderMouse.get(), cancelable, m_clickCount, mouseEvent, setUnder);
     }
 
-    HitTestRequest request(HitTestRequest::Release | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
+    HitTestRequest::HitTestRequestType hitType = HitTestRequest::Release | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent;
+    if (m_shouldKeepActiveForMinInterval)
+        hitType |= HitTestRequest::ReadOnly;
+    HitTestRequest request(hitType);
     MouseEventWithHitTestResults mev = prepareMouseEvent(request, mouseEvent);
     Frame* subframe = m_capturingMouseEventsNode.get() ? subframeForTargetNode(m_capturingMouseEventsNode.get()) : subframeForHitTestResult(mev);
     if (m_eventHandlerWillResetCapturingMouseEventsNode)
         m_capturingMouseEventsNode = 0;
     if (subframe && passMouseReleaseEventToSubframe(mev, subframe))
         return true;
+
+    if (m_shouldKeepActiveForMinInterval)
+        m_lastDeferredTapElement = mev.hitTestResult().innerElement();
 
     bool swallowMouseUpEvent = !dispatchMouseEvent(EventTypeNames::mouseup, mev.targetNode(), true, m_clickCount, mouseEvent, false);
 
@@ -2224,6 +2241,8 @@ void EventHandler::defaultWheelEventHandler(Node* startNode, WheelEvent* wheelEv
 
 bool EventHandler::handleGestureShowPress()
 {
+    m_lastShowPressTimestamp = WTF::currentTime();
+
     FrameView* view = m_frame->view();
     if (!view)
         return false;
@@ -2244,13 +2263,34 @@ bool EventHandler::handleGestureShowPress()
 bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
 {
     IntPoint adjustedPoint = gestureEvent.position();
-    if (gestureEvent.type() == PlatformEvent::GestureLongPress
-        || gestureEvent.type() == PlatformEvent::GestureLongTap
-        || gestureEvent.type() == PlatformEvent::GestureTwoFingerTap) {
+    RefPtr<Frame> subframe = 0;
+    switch (gestureEvent.type()) {
+    case PlatformEvent::GestureScrollBegin:
+    case PlatformEvent::GestureScrollUpdate:
+    case PlatformEvent::GestureScrollUpdateWithoutPropagation:
+    case PlatformEvent::GestureScrollEnd:
+        // Handle directly in main frame
+        break;
+
+    case PlatformEvent::GestureTap:
+    case PlatformEvent::GestureTapUnconfirmed:
+    case PlatformEvent::GestureTapDown:
+    case PlatformEvent::GestureShowPress:
+    case PlatformEvent::GestureTapDownCancel:
+    case PlatformEvent::GestureTwoFingerTap:
+    case PlatformEvent::GestureLongPress:
+    case PlatformEvent::GestureLongTap:
+    case PlatformEvent::GesturePinchBegin:
+    case PlatformEvent::GesturePinchEnd:
+    case PlatformEvent::GesturePinchUpdate:
         adjustGesturePosition(gestureEvent, adjustedPoint);
-        RefPtr<Frame> subframe = getSubFrameForGestureEvent(adjustedPoint, gestureEvent);
+        subframe = getSubFrameForGestureEvent(adjustedPoint, gestureEvent);
         if (subframe)
             return subframe->eventHandler().handleGestureEvent(gestureEvent);
+        break;
+
+    default:
+        ASSERT_NOT_REACHED();
     }
 
     Node* eventTarget = 0;
@@ -2265,7 +2305,6 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::TouchEvent;
     if (gestureEvent.type() == PlatformEvent::GestureShowPress
         || gestureEvent.type() == PlatformEvent::GestureTapUnconfirmed) {
-        adjustGesturePosition(gestureEvent, adjustedPoint);
         hitType |= HitTestRequest::Active;
     } else if (gestureEvent.type() == PlatformEvent::GestureTapDownCancel) {
         hitType |= HitTestRequest::Release;
@@ -2331,7 +2370,7 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
     case PlatformEvent::GestureScrollEnd:
         return handleGestureScrollEnd(gestureEvent);
     case PlatformEvent::GestureTap:
-        return handleGestureTap(gestureEvent);
+        return handleGestureTap(gestureEvent, adjustedPoint);
     case PlatformEvent::GestureShowPress:
         return handleGestureShowPress();
     case PlatformEvent::GestureLongPress:
@@ -2354,11 +2393,9 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
     return false;
 }
 
-bool EventHandler::handleGestureTap(const PlatformGestureEvent& gestureEvent)
+bool EventHandler::handleGestureTap(const PlatformGestureEvent& gestureEvent, const IntPoint& adjustedPoint)
 {
     // FIXME: Refactor this code to not hit test multiple times. We use the adjusted position to ensure that the correct node is targeted by the later redundant hit tests.
-    IntPoint adjustedPoint = gestureEvent.position();
-    adjustGesturePosition(gestureEvent, adjustedPoint);
 
     PlatformMouseEvent fakeMouseMove(adjustedPoint, gestureEvent.globalPosition(),
         NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
@@ -2374,7 +2411,16 @@ bool EventHandler::handleGestureTap(const PlatformGestureEvent& gestureEvent)
     PlatformMouseEvent fakeMouseUp(adjustedPoint, gestureEvent.globalPosition(),
         LeftButton, PlatformEvent::MouseReleased, gestureEvent.tapCount(),
         gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), gestureEvent.timestamp());
+
+    // If the Tap is received very shortly after ShowPress, we want to delay clearing
+    // of the active state so that it's visible to the user for at least one frame.
+    double activeInterval = WTF::currentTime() - m_lastShowPressTimestamp;
+    m_shouldKeepActiveForMinInterval = m_lastShowPressTimestamp && activeInterval < minimumActiveInterval;
     defaultPrevented |= handleMouseReleaseEvent(fakeMouseUp);
+
+    if (m_shouldKeepActiveForMinInterval)
+        m_activeIntervalTimer.startOneShot(minimumActiveInterval - activeInterval);
+    m_shouldKeepActiveForMinInterval = false;
 
     return defaultPrevented;
 }
@@ -2953,6 +2999,28 @@ void EventHandler::hoverTimerFired(Timer<EventHandler>*)
             m_frame->document()->updateHoverActiveState(request, result.innerElement());
         }
     }
+}
+
+void EventHandler::activeIntervalTimerFired(Timer<EventHandler>*)
+{
+    m_activeIntervalTimer.stop();
+
+    if (m_frame
+        && m_frame->document()
+        && m_lastDeferredTapElement
+        && m_lastDeferredTapElement.get() == m_frame->document()->activeElement()) {
+        HitTestRequest request(HitTestRequest::Release | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
+        m_frame->document()->updateHoverActiveState(request, m_lastDeferredTapElement.get());
+    }
+    m_lastDeferredTapElement = 0;
+}
+
+void EventHandler::notifyElementActivated()
+{
+    // Since another element has been set to active, stop current timer and clear reference.
+    if (m_activeIntervalTimer.isActive())
+        m_activeIntervalTimer.stop();
+    m_lastDeferredTapElement = 0;
 }
 
 bool EventHandler::handleAccessKey(const PlatformKeyboardEvent& evt)

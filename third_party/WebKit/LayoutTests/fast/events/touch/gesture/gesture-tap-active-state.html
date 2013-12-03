@@ -52,6 +52,11 @@ function runTests()
         return;
     }
 
+    if (window.testRunner) {
+        window.jsTestIsAsync = true;
+        testRunner.waitUntilDone();
+    }
+
     debug("Verify active isn't initially set");
     shouldBeFalse("isBoxActive()");
 
@@ -59,6 +64,17 @@ function runTests()
     eventSender.gestureShowPress(50, 50);
     shouldBeTrue("isBoxActive()");
     eventSender.gestureTap(50, 50);
+    // FIXME: Enable after implementing mocked timers (http://crbug.com/319529)
+    // shouldBeTrue("isBoxActive()");
+    waitUntilActiveCleared();
+}
+
+function waitUntilActiveCleared()
+{
+    if(isBoxActive()) {
+        return setTimeout(waitUntilActiveCleared, 10);
+    }
+
     shouldBeFalse("isBoxActive()");
 
     debug("Verify tapdown,tapcancel on the element sets and clears active");
@@ -95,8 +111,8 @@ function runTests()
     eventSender.releaseTouchPoint(0);
     eventSender.touchEnd();
     shouldBeTrue("isBoxActive()");
-    eventSender.gestureTap(50, 50);
-    shouldBeFalse("isBoxActive()");
+
+    finishJSTest();
 }
 
 runTests();

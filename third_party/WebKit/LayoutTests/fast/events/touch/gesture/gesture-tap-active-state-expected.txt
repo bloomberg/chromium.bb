@@ -26,7 +26,6 @@ Verify that touchstart/touchend doesn't cancel active
 PASS isBoxActive() is true
 PASS isBoxActive() is true
 PASS isBoxActive() is true
-PASS isBoxActive() is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
