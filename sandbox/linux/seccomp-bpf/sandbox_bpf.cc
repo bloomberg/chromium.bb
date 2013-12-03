@@ -104,9 +104,9 @@ bool IsSingleThreaded(int proc_fd) {
   struct stat sb;
   int task = -1;
   if ((task = openat(proc_fd, "self/task", O_RDONLY | O_DIRECTORY)) < 0 ||
-      fstat(task, &sb) != 0 || sb.st_nlink != 3 || HANDLE_EINTR(close(task))) {
+      fstat(task, &sb) != 0 || sb.st_nlink != 3 || IGNORE_EINTR(close(task))) {
     if (task >= 0) {
-      if (HANDLE_EINTR(close(task))) {
+      if (IGNORE_EINTR(close(task))) {
       }
     }
     return false;
@@ -287,7 +287,7 @@ bool Sandbox::RunFunctionInPolicy(void (*code_in_sandbox)(),
     Die::EnableSimpleExit();
 
     errno = 0;
-    if (HANDLE_EINTR(close(fds[0]))) {
+    if (IGNORE_EINTR(close(fds[0]))) {
       // This call to close() has been failing in strange ways. See
       // crbug.com/152530. So we only fail in debug mode now.
 #if !defined(NDEBUG)
@@ -309,7 +309,7 @@ bool Sandbox::RunFunctionInPolicy(void (*code_in_sandbox)(),
       SANDBOX_DIE(NULL);
 #endif
     }
-    if (HANDLE_EINTR(close(fds[1]))) {
+    if (IGNORE_EINTR(close(fds[1]))) {
       // This call to close() has been failing in strange ways. See
       // crbug.com/152530. So we only fail in debug mode now.
 #if !defined(NDEBUG)
@@ -329,7 +329,7 @@ bool Sandbox::RunFunctionInPolicy(void (*code_in_sandbox)(),
   }
 
   // In the parent process.
-  if (HANDLE_EINTR(close(fds[1]))) {
+  if (IGNORE_EINTR(close(fds[1]))) {
     SANDBOX_DIE("close() failed");
   }
   if (sigprocmask(SIG_SETMASK, &old_mask, NULL)) {
@@ -357,7 +357,7 @@ bool Sandbox::RunFunctionInPolicy(void (*code_in_sandbox)(),
       SANDBOX_DIE(buf);
     }
   }
-  if (HANDLE_EINTR(close(fds[0]))) {
+  if (IGNORE_EINTR(close(fds[0]))) {
     SANDBOX_DIE("close() failed");
   }
 
@@ -451,7 +451,7 @@ void Sandbox::StartSandbox() {
   // before installing the filters, just in case that our policy denies
   // close().
   if (proc_fd_ >= 0) {
-    if (HANDLE_EINTR(close(proc_fd_))) {
+    if (IGNORE_EINTR(close(proc_fd_))) {
       SANDBOX_DIE("Failed to close file descriptor for /proc");
     }
     proc_fd_ = -1;

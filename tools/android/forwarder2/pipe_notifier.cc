@@ -25,8 +25,8 @@ PipeNotifier::PipeNotifier() {
 }
 
 PipeNotifier::~PipeNotifier() {
-  (void) HANDLE_EINTR(close(receiver_fd_));
-  (void) HANDLE_EINTR(close(sender_fd_));
+  close(receiver_fd_);
+  close(sender_fd_);
 }
 
 bool PipeNotifier::Notify() {

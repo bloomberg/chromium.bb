@@ -206,9 +206,9 @@ bool SocketPair(int* fd1, int* fd2) {
   if (fcntl(pipe_fds[0], F_SETFL, O_NONBLOCK) == -1 ||
       fcntl(pipe_fds[1], F_SETFL, O_NONBLOCK) == -1) {
     PLOG(ERROR) << "fcntl(O_NONBLOCK)";
-    if (HANDLE_EINTR(close(pipe_fds[0])) < 0)
+    if (IGNORE_EINTR(close(pipe_fds[0])) < 0)
       PLOG(ERROR) << "close";
-    if (HANDLE_EINTR(close(pipe_fds[1])) < 0)
+    if (IGNORE_EINTR(close(pipe_fds[1])) < 0)
       PLOG(ERROR) << "close";
     return false;
   }
@@ -547,7 +547,7 @@ void Channel::ChannelImpl::CloseClientFileDescriptor() {
   base::AutoLock lock(client_pipe_lock_);
   if (client_pipe_ != -1) {
     PipeMap::GetInstance()->Remove(pipe_name_);
-    if (HANDLE_EINTR(close(client_pipe_)) < 0)
+    if (IGNORE_EINTR(close(client_pipe_)) < 0)
       PLOG(ERROR) << "close " << pipe_name_;
     client_pipe_ = -1;
   }
@@ -571,18 +571,18 @@ void Channel::ChannelImpl::ResetToAcceptingConnectionState() {
   read_watcher_.StopWatchingFileDescriptor();
   write_watcher_.StopWatchingFileDescriptor();
   if (pipe_ != -1) {
-    if (HANDLE_EINTR(close(pipe_)) < 0)
+    if (IGNORE_EINTR(close(pipe_)) < 0)
       PLOG(ERROR) << "close pipe_ " << pipe_name_;
     pipe_ = -1;
   }
 #if defined(IPC_USES_READWRITE)
   if (fd_pipe_ != -1) {
-    if (HANDLE_EINTR(close(fd_pipe_)) < 0)
+    if (IGNORE_EINTR(close(fd_pipe_)) < 0)
       PLOG(ERROR) << "close fd_pipe_ " << pipe_name_;
     fd_pipe_ = -1;
   }
   if (remote_fd_pipe_ != -1) {
-    if (HANDLE_EINTR(close(remote_fd_pipe_)) < 0)
+    if (IGNORE_EINTR(close(remote_fd_pipe_)) < 0)
       PLOG(ERROR) << "close remote_fd_pipe_ " << pipe_name_;
     remote_fd_pipe_ = -1;
   }
@@ -602,7 +602,7 @@ void Channel::ChannelImpl::ResetToAcceptingConnectionState() {
   for (std::set<int>::iterator i = fds_to_close_.begin();
        i != fds_to_close_.end();
        ++i) {
-    if (HANDLE_EINTR(close(*i)) < 0)
+    if (IGNORE_EINTR(close(*i)) < 0)
       PLOG(ERROR) << "close";
   }
   fds_to_close_.clear();
@@ -637,7 +637,7 @@ void Channel::ChannelImpl::OnFileCanReadWithoutBlocking(int fd) {
       // close our new descriptor.
       if (HANDLE_EINTR(shutdown(new_pipe, SHUT_RDWR)) < 0)
         DPLOG(ERROR) << "shutdown " << pipe_name_;
-      if (HANDLE_EINTR(close(new_pipe)) < 0)
+      if (IGNORE_EINTR(close(new_pipe)) < 0)
         DPLOG(ERROR) << "close " << pipe_name_;
       listener()->OnChannelDenied();
       return;
@@ -927,7 +927,7 @@ bool Channel::ChannelImpl::ExtractFileDescriptorsFromMsghdr(msghdr* msg) {
 
 void Channel::ChannelImpl::ClearInputFDs() {
   for (size_t i = 0; i < input_fds_.size(); ++i) {
-    if (HANDLE_EINTR(close(input_fds_[i])) < 0)
+    if (IGNORE_EINTR(close(input_fds_[i])) < 0)
       PLOG(ERROR) << "close ";
   }
   input_fds_.clear();
@@ -996,7 +996,7 @@ void Channel::ChannelImpl::HandleInternalMessage(const Message& msg) {
         NOTREACHED();
       if (hops == 0) {
         if (fds_to_close_.erase(fd) > 0) {
-          if (HANDLE_EINTR(close(fd)) < 0)
+          if (IGNORE_EINTR(close(fd)) < 0)
             PLOG(ERROR) << "close";
         } else {
           NOTREACHED();
@@ -1020,7 +1020,7 @@ void Channel::ChannelImpl::Close() {
     must_unlink_ = false;
   }
   if (server_listen_pipe_ != -1) {
-    if (HANDLE_EINTR(close(server_listen_pipe_)) < 0)
+    if (IGNORE_EINTR(close(server_listen_pipe_)) < 0)
       DPLOG(ERROR) << "close " << server_listen_pipe_;
     server_listen_pipe_ = -1;
     // Unregister libevent for the listening socket and close it.

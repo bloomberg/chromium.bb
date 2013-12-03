@@ -83,7 +83,7 @@ void UDPSocketLibevent::Close() {
   ok = write_socket_watcher_.StopWatchingFileDescriptor();
   DCHECK(ok);
 
-  if (HANDLE_EINTR(close(socket_)) < 0)
+  if (IGNORE_EINTR(close(socket_)) < 0)
     PLOG(ERROR) << "close";
 
   socket_ = kInvalidSocket;

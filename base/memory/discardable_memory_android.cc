@@ -12,7 +12,6 @@
 #include "base/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/posix/eintr_wrapper.h"
 #include "base/synchronization/lock.h"
 #include "third_party/ashmem/ashmem.h"
 

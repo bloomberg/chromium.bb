@@ -221,7 +221,7 @@ FILE* FdopenPlatformFile(PlatformFile file, const char* mode) {
 
 bool ClosePlatformFile(PlatformFile file) {
   base::ThreadRestrictions::AssertIOAllowed();
-  return !HANDLE_EINTR(close(file));
+  return !IGNORE_EINTR(close(file));
 }
 
 int64 SeekPlatformFile(PlatformFile file,

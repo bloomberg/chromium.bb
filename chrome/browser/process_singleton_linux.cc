@@ -125,7 +125,7 @@ int SetCloseOnExec(int fd) {
 
 // Close a socket and check return value.
 void CloseSocket(int fd) {
-  int rv = HANDLE_EINTR(close(fd));
+  int rv = IGNORE_EINTR(close(fd));
   DCHECK_EQ(0, rv) << "Error closing socket: " << safe_strerror(errno);
 }
 

@@ -73,7 +73,7 @@ void TCPListenSocketTester::TearDown() {
 #if defined(OS_WIN)
   ASSERT_EQ(0, closesocket(test_socket_));
 #elif defined(OS_POSIX)
-  ASSERT_EQ(0, HANDLE_EINTR(close(test_socket_)));
+  ASSERT_EQ(0, IGNORE_EINTR(close(test_socket_)));
 #endif
   NextAction();
   ASSERT_EQ(ACTION_CLOSE, last_action_.type());

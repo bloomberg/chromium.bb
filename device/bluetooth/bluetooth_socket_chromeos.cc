@@ -44,7 +44,7 @@ BluetoothSocketChromeOS::BluetoothSocketChromeOS(int fd)
 }
 
 BluetoothSocketChromeOS::~BluetoothSocketChromeOS() {
-  HANDLE_EINTR(close(fd_));
+  close(fd_);
 }
 
 bool BluetoothSocketChromeOS::Receive(net::GrowableIOBuffer *buffer) {

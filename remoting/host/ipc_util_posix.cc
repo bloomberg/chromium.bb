@@ -33,9 +33,9 @@ bool CreateConnectedIpcChannel(
   if (fcntl(pipe_fds[0], F_SETFL, O_NONBLOCK) == -1 ||
       fcntl(pipe_fds[1], F_SETFL, O_NONBLOCK) == -1) {
     PLOG(ERROR) << "fcntl(O_NONBLOCK)";
-    if (HANDLE_EINTR(close(pipe_fds[0])) < 0)
+    if (IGNORE_EINTR(close(pipe_fds[0])) < 0)
       PLOG(ERROR) << "close()";
-    if (HANDLE_EINTR(close(pipe_fds[1])) < 0)
+    if (IGNORE_EINTR(close(pipe_fds[1])) < 0)
       PLOG(ERROR) << "close()";
     return false;
   }

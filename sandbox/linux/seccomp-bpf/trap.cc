@@ -13,7 +13,6 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/seccomp-bpf/codegen.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"

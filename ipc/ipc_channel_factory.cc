@@ -76,7 +76,7 @@ void ChannelFactory::OnFileCanWriteWithoutBlocking(int fd) {
 void ChannelFactory::Close() {
   if (listen_fd_ < 0)
     return;
-  if (HANDLE_EINTR(close(listen_fd_)) < 0)
+  if (IGNORE_EINTR(close(listen_fd_)) < 0)
     PLOG(ERROR) << "close";
   listen_fd_ = -1;
   if (unlink(path_.value().c_str()) < 0)

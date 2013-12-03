@@ -206,7 +206,7 @@ void NaClForkDelegate::Init(const int sandboxdesc) {
       status_ = kNaClHelperLaunchFailed;
     // parent and error cases are handled below
   }
-  if (HANDLE_EINTR(close(fds[1])) != 0)
+  if (IGNORE_EINTR(close(fds[1])) != 0)
     LOG(ERROR) << "close(fds[1]) failed";
   if (status_ == kNaClHelperUnused) {
     const ssize_t kExpectedLength = strlen(kNaClHelperStartupAck);
@@ -228,7 +228,7 @@ void NaClForkDelegate::Init(const int sandboxdesc) {
   // TODO(bradchen): Make this LOG(ERROR) when the NaCl helper
   // becomes the default.
   fd_ = -1;
-  if (HANDLE_EINTR(close(fds[0])) != 0)
+  if (IGNORE_EINTR(close(fds[0])) != 0)
     LOG(ERROR) << "close(fds[0]) failed";
 }
 
@@ -243,7 +243,7 @@ void NaClForkDelegate::InitialUMA(std::string* uma_name,
 NaClForkDelegate::~NaClForkDelegate() {
   // side effect of close: delegate process will terminate
   if (status_ == kNaClHelperSuccess) {
-    if (HANDLE_EINTR(close(fd_)) != 0)
+    if (IGNORE_EINTR(close(fd_)) != 0)
       LOG(ERROR) << "close(fd_) failed";
   }
 }

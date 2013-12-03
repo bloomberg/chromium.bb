@@ -50,7 +50,7 @@ void BecomeNaClLoader(const std::vector<int>& child_fds,
                       const NaClLoaderSystemInfo& system_info) {
   VLOG(1) << "NaCl loader: setting up IPC descriptor";
   // don't need zygote FD any more
-  if (HANDLE_EINTR(close(kNaClZygoteDescriptor)) != 0)
+  if (IGNORE_EINTR(close(kNaClZygoteDescriptor)) != 0)
     LOG(ERROR) << "close(kNaClZygoteDescriptor) failed.";
   bool sandbox_initialized = InitializeBpfSandbox();
   if (!sandbox_initialized) {
@@ -98,9 +98,9 @@ void ChildNaClLoaderInit(const std::vector<int>& child_fds,
       validack = true;
     }
   }
-  if (HANDLE_EINTR(close(dummy_fd)) != 0)
+  if (IGNORE_EINTR(close(dummy_fd)) != 0)
     LOG(ERROR) << "close(dummy_fd) failed";
-  if (HANDLE_EINTR(close(parent_fd)) != 0)
+  if (IGNORE_EINTR(close(parent_fd)) != 0)
     LOG(ERROR) << "close(parent_fd) failed";
   if (validack) {
     BecomeNaClLoader(child_fds, system_info);
@@ -137,7 +137,7 @@ bool HandleForkRequest(const std::vector<int>& child_fds,
   // First, close the dummy_fd so the sandbox won't find me when
   // looking for the child's pid in /proc. Also close other fds.
   for (size_t i = 0; i < child_fds.size(); i++) {
-    if (HANDLE_EINTR(close(child_fds[i])) != 0)
+    if (IGNORE_EINTR(close(child_fds[i])) != 0)
       LOG(ERROR) << "close(child_fds[i]) failed";
   }
   VLOG(1) << "nacl_helper: child_pid is " << child_pid;
@@ -180,7 +180,7 @@ bool HandleGetTerminationStatusRequest(PickleIterator* input_iter,
 bool IsSandboxed() {
   int proc_fd = open("/proc/self/exe", O_RDONLY);
   if (proc_fd >= 0) {
-    HANDLE_EINTR(close(proc_fd));
+    close(proc_fd);
     return false;
   }
   return true;

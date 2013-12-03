@@ -78,7 +78,7 @@ class MultiProcessLockLinux : public MultiProcessLock {
       DVLOG(1) << "Couldn't bind socket - "
                << &(address.sun_path[1])
                << " Length: " << length;
-      if (HANDLE_EINTR(close(socket_fd)) < 0) {
+      if (IGNORE_EINTR(close(socket_fd)) < 0) {
         PLOG(ERROR) << "close";
       }
       return false;
@@ -90,7 +90,7 @@ class MultiProcessLockLinux : public MultiProcessLock {
       DLOG(ERROR) << "Over-unlocked MultiProcessLock - " << name_;
       return;
     }
-    if (HANDLE_EINTR(close(fd_)) < 0) {
+    if (IGNORE_EINTR(close(fd_)) < 0) {
       DPLOG(ERROR) << "close";
     }
     fd_ = -1;

@@ -133,12 +133,12 @@ void ServiceProcessState::StateData::SignalReady(base::WaitableEvent* signal,
 
 ServiceProcessState::StateData::~StateData() {
   if (sockets_[0] != -1) {
-    if (HANDLE_EINTR(close(sockets_[0]))) {
+    if (IGNORE_EINTR(close(sockets_[0]))) {
       DPLOG(ERROR) << "close";
     }
   }
   if (sockets_[1] != -1) {
-    if (HANDLE_EINTR(close(sockets_[1]))) {
+    if (IGNORE_EINTR(close(sockets_[1]))) {
       DPLOG(ERROR) << "close";
     }
   }

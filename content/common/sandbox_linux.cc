@@ -289,7 +289,7 @@ bool LinuxSandbox::HasOpenDirectories() {
 
 void LinuxSandbox::SealSandbox() {
   if (proc_fd_ >= 0) {
-    int ret = HANDLE_EINTR(close(proc_fd_));
+    int ret = IGNORE_EINTR(close(proc_fd_));
     CHECK_EQ(0, ret);
     proc_fd_ = -1;
   }

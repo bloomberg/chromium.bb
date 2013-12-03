@@ -221,13 +221,13 @@ ExynosVideoDecodeAccelerator::~ExynosVideoDecodeAccelerator() {
   DCHECK(!device_poll_thread_.IsRunning());
 
   if (device_poll_interrupt_fd_ != -1) {
-    HANDLE_EINTR(close(device_poll_interrupt_fd_));
+    close(device_poll_interrupt_fd_);
     device_poll_interrupt_fd_ = -1;
   }
   if (mfc_fd_ != -1) {
     DestroyMfcInputBuffers();
     DestroyMfcOutputBuffers();
-    HANDLE_EINTR(close(mfc_fd_));
+    close(mfc_fd_);
     mfc_fd_ = -1;
   }
 
@@ -1906,7 +1906,7 @@ void ExynosVideoDecodeAccelerator::DestroyMfcOutputBuffers() {
         MfcOutputRecord& output_record = mfc_output_buffer_map_[i];
         for (size_t j = 0; j < arraysize(output_record.fds); ++j) {
           if (output_record.fds[j] != -1)
-            HANDLE_EINTR(close(output_record.fds[j]));
+            close(output_record.fds[j]);
           if (output_record.egl_image != EGL_NO_IMAGE_KHR)
             eglDestroyImageKHR(egl_display_, output_record.egl_image);
           if (output_record.egl_sync != EGL_NO_SYNC_KHR)

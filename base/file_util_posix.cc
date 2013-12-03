@@ -538,7 +538,7 @@ bool CreateTemporaryFile(FilePath* path) {
   int fd = CreateAndOpenFdForTemporaryFile(directory, path);
   if (fd < 0)
     return false;
-  ignore_result(HANDLE_EINTR(close(fd)));
+  close(fd);
   return true;
 }
 
@@ -557,14 +557,14 @@ FILE* CreateAndOpenTemporaryFileInDir(const FilePath& dir, FilePath* path) {
 
   FILE* file = fdopen(fd, "a+");
   if (!file)
-    ignore_result(HANDLE_EINTR(close(fd)));
+    close(fd);
   return file;
 }
 
 bool CreateTemporaryFileInDir(const FilePath& dir, FilePath* temp_file) {
   base::ThreadRestrictions::AssertIOAllowed();  // For call to close().
   int fd = CreateAndOpenFdForTemporaryFile(dir, temp_file);
-  return ((fd >= 0) && !HANDLE_EINTR(close(fd)));
+  return ((fd >= 0) && !IGNORE_EINTR(close(fd)));
 }
 
 static bool CreateTemporaryDirInDirImpl(const FilePath& base_dir,
@@ -740,7 +740,7 @@ int ReadFile(const FilePath& filename, char* data, int size) {
     return -1;
 
   ssize_t bytes_read = HANDLE_EINTR(read(fd, data, size));
-  if (int ret = HANDLE_EINTR(close(fd)) < 0)
+  if (int ret = IGNORE_EINTR(close(fd)) < 0)
     return ret;
   return bytes_read;
 }
@@ -752,7 +752,7 @@ int WriteFile(const FilePath& filename, const char* data, int size) {
     return -1;
 
   int bytes_written = WriteFileDescriptor(fd, data, size);
-  if (int ret = HANDLE_EINTR(close(fd)) < 0)
+  if (int ret = IGNORE_EINTR(close(fd)) < 0)
     return ret;
   return bytes_written;
 }
@@ -779,7 +779,7 @@ int AppendToFile(const FilePath& filename, const char* data, int size) {
     return -1;
 
   int bytes_written = WriteFileDescriptor(fd, data, size);
-  if (int ret = HANDLE_EINTR(close(fd)) < 0)
+  if (int ret = IGNORE_EINTR(close(fd)) < 0)
     return ret;
   return bytes_written;
 }
@@ -936,7 +936,7 @@ bool CopyFileUnsafe(const FilePath& from_path, const FilePath& to_path) {
 
   int outfile = HANDLE_EINTR(creat(to_path.value().c_str(), 0666));
   if (outfile < 0) {
-    ignore_result(HANDLE_EINTR(close(infile)));
+    close(infile);
     return false;
   }
 
@@ -967,9 +967,9 @@ bool CopyFileUnsafe(const FilePath& from_path, const FilePath& to_path) {
     } while (bytes_written_per_read < bytes_read);
   }
 
-  if (HANDLE_EINTR(close(infile)) < 0)
+  if (IGNORE_EINTR(close(infile)) < 0)
     result = false;
-  if (HANDLE_EINTR(close(outfile)) < 0)
+  if (IGNORE_EINTR(close(outfile)) < 0)
     result = false;
 
   return result;

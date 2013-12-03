@@ -306,7 +306,7 @@ void AddressTrackerLinux::OnFileCanReadWithoutBlocking(int fd) {
 void AddressTrackerLinux::OnFileCanWriteWithoutBlocking(int /* fd */) {}
 
 void AddressTrackerLinux::CloseSocket() {
-  if (netlink_fd_ >= 0 && HANDLE_EINTR(close(netlink_fd_)) < 0)
+  if (netlink_fd_ >= 0 && IGNORE_EINTR(close(netlink_fd_)) < 0)
     PLOG(ERROR) << "Could not close NETLINK socket.";
   netlink_fd_ = -1;
 }

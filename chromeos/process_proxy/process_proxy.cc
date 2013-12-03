@@ -244,7 +244,7 @@ void ProcessProxy::CloseFdPair(int* pipe) {
 
 void ProcessProxy::CloseFd(int* fd) {
   if (*fd != kInvalidFd) {
-    if (HANDLE_EINTR(close(*fd)) != 0)
+    if (IGNORE_EINTR(close(*fd)) != 0)
       DPLOG(WARNING) << "close fd failed.";
   }
   *fd = kInvalidFd;

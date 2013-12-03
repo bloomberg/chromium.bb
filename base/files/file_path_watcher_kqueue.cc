@@ -210,7 +210,7 @@ void FilePathWatcherImpl::CloseFileDescriptor(uintptr_t* fd) {
     return;
   }
 
-  if (HANDLE_EINTR(close(*fd)) != 0) {
+  if (IGNORE_EINTR(close(*fd)) != 0) {
     DPLOG(ERROR) << "close";
   }
   *fd = kNoFileDescriptor;
@@ -497,7 +497,7 @@ void FilePathWatcherImpl::CancelOnMessageLoopThread() {
   if (!is_cancelled()) {
     set_cancelled();
     kqueue_watcher_.StopWatchingFileDescriptor();
-    if (HANDLE_EINTR(close(kqueue_)) != 0) {
+    if (IGNORE_EINTR(close(kqueue_)) != 0) {
       DPLOG(ERROR) << "close kqueue";
     }
     kqueue_ = -1;

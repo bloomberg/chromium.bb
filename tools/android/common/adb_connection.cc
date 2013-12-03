@@ -22,7 +22,7 @@ namespace {
 void CloseSocket(int fd) {
   if (fd >= 0) {
     int old_errno = errno;
-    (void) HANDLE_EINTR(close(fd));
+    close(fd);
     errno = old_errno;
   }
 }

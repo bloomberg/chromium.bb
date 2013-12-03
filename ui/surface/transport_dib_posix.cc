@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
-#include "base/posix/eintr_wrapper.h"
 #include "skia/ext/platform_canvas.h"
 
 TransportDIB::TransportDIB()

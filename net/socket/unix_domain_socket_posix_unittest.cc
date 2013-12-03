@@ -306,7 +306,7 @@ TEST_F(UnixDomainSocketTest, TestWithClient) {
   ASSERT_EQ(kMsg, socket_delegate_->ReceivedData());
 
   // Close the client socket.
-  ret = HANDLE_EINTR(close(sock));
+  ret = IGNORE_EINTR(close(sock));
   event = event_manager_->WaitForEvent();
   ASSERT_EQ(EVENT_CLOSE, event);
 }

@@ -127,8 +127,8 @@ public:
     // Send stop signal. It is not important which string we send.
     EXPECT_EQ(1, file_util::WriteFileDescriptor(stop_pipe[1], "q", 1));
 
-    EXPECT_NE(-1, HANDLE_EINTR(close(stop_pipe[1])));
-    EXPECT_NE(-1, HANDLE_EINTR(close(pt_pipe[1])));
+    EXPECT_NE(-1, IGNORE_EINTR(close(stop_pipe[1])));
+    EXPECT_NE(-1, IGNORE_EINTR(close(pt_pipe[1])));
 
     output_watch_thread.Stop();
   }

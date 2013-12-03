@@ -5,6 +5,7 @@
 #include "content/zygote/zygote_main.h"
 
 #include <dlfcn.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -21,7 +22,6 @@
 #include "base/linux_util.h"
 #include "base/native_library.h"
 #include "base/pickle.h"
-#include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/rand_util.h"
 #include "base/sys_info.h"
@@ -311,7 +311,7 @@ static void PreSandboxInit() {
 }
 
 static void CloseFdAndHandleEintr(int fd) {
-  (void) HANDLE_EINTR(close(fd));
+  close(fd);
 }
 
 // This will set the *using_suid_sandbox variable to true if the SUID sandbox

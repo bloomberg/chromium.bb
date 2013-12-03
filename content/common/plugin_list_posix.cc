@@ -173,7 +173,7 @@ bool ELFMatchesCurrentArchitecture(const base::FilePath& filename) {
   if (fd < 0)
     return false;
   bool ret = (fstat(fd, &stat_buf) >= 0 && S_ISREG(stat_buf.st_mode));
-  if (HANDLE_EINTR(close(fd)) < 0)
+  if (IGNORE_EINTR(close(fd)) < 0)
     return false;
   if (!ret)
     return false;

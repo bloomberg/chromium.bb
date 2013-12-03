@@ -33,7 +33,7 @@ SkStream* StreamFromFD(int fd) {
 }
 
 void CloseFD(int fd) {
-  int err = HANDLE_EINTR(close(fd));
+  int err = IGNORE_EINTR(close(fd));
   DCHECK(!err);
 }
 

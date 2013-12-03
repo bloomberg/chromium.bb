@@ -58,13 +58,26 @@ PlatformFile IntToPlatformFile(int32_t handle) {
 }
 
 #if defined(OS_POSIX)
+
 #define HANDLE_EINTR(x) ({ \
-  typeof(x) __eintr_result__; \
+  typeof(x) eintr_wrapper_result; \
   do { \
-    __eintr_result__ = x; \
-  } while (__eintr_result__ == -1 && errno == EINTR); \
-  __eintr_result__;\
+    eintr_wrapper_result = (x); \
+  } while (eintr_wrapper_result == -1 && errno == EINTR); \
+  eintr_wrapper_result; \
 })
+
+#define IGNORE_EINTR(x) ({ \
+  typeof(x) eintr_wrapper_result; \
+  do { \
+    eintr_wrapper_result = (x); \
+    if (eintr_wrapper_result == -1 && errno == EINTR) { \
+      eintr_wrapper_result = 0; \
+    } \
+  } while (0); \
+  eintr_wrapper_result; \
+})
+
 #endif
 
 bool ReadMessage(PlatformFile file, size_t message_len, char* message) {
@@ -121,7 +134,7 @@ bool ClosePlatformFile(PlatformFile file) {
 #if defined(OS_WIN)
   return !!::CloseHandle(file);
 #elif defined(OS_POSIX)
-  return !HANDLE_EINTR(::close(file));
+  return !IGNORE_EINTR(::close(file));
 #endif
 }
 
@@ -147,7 +160,7 @@ bool VerifyIsUnsandboxed() {
   if (-1 == fd)
     return false;
 
-  if (HANDLE_EINTR(::close(fd))) {
+  if (IGNORE_EINTR(::close(fd))) {
     ::remove(file_name);
     return false;
   }

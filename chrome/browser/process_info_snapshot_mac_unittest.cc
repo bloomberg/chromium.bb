@@ -116,7 +116,7 @@ TEST_F(ProcessInfoSnapshotMacTest, EffectiveVsRealUserIDTest) {
   base::LaunchOptions options;
   options.fds_to_remap = &fds_to_remap;
   ASSERT_TRUE(base::LaunchProcess(argv, options, &process_handle));
-  PCHECK(HANDLE_EINTR(close(fds[1])) == 0);
+  PCHECK(IGNORE_EINTR(close(fds[1])) == 0);
 
   // Wait until there's some output form top. This is an easy way to tell that
   // the exec() call is done and top is actually running.
@@ -136,5 +136,5 @@ TEST_F(ProcessInfoSnapshotMacTest, EffectiveVsRealUserIDTest) {
   EXPECT_EQ(proc_info.uid, geteuid());
 
   ASSERT_TRUE(base::KillProcess(process_handle, 0, true));
-  PCHECK(HANDLE_EINTR(close(fds[0])) == 0);
+  PCHECK(IGNORE_EINTR(close(fds[0])) == 0);
 }

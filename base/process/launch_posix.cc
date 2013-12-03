@@ -230,7 +230,7 @@ void CloseSuperfluousFds(const base::InjectiveMultimap& saved_mapping) {
 
       // Since we're just trying to close anything we can find,
       // ignore any error return values of close().
-      ignore_result(HANDLE_EINTR(close(fd)));
+      close(fd);
     }
     return;
   }
@@ -264,7 +264,7 @@ void CloseSuperfluousFds(const base::InjectiveMultimap& saved_mapping) {
     // these FDs are >= |max_fds|, so we can check against that here
     // before closing.  See https://bugs.kde.org/show_bug.cgi?id=191758
     if (fd < static_cast<int>(max_fds)) {
-      int ret = HANDLE_EINTR(close(fd));
+      int ret = IGNORE_EINTR(close(fd));
       DPCHECK(ret == 0);
     }
   }

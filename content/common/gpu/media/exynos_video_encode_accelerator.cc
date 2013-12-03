@@ -115,19 +115,19 @@ ExynosVideoEncodeAccelerator::~ExynosVideoEncodeAccelerator() {
   DCHECK(!device_poll_thread_.IsRunning());
 
   if (device_poll_interrupt_fd_ != -1) {
-    HANDLE_EINTR(close(device_poll_interrupt_fd_));
+    close(device_poll_interrupt_fd_);
     device_poll_interrupt_fd_ = -1;
   }
   if (gsc_fd_ != -1) {
     DestroyGscInputBuffers();
     DestroyGscOutputBuffers();
-    HANDLE_EINTR(close(gsc_fd_));
+    close(gsc_fd_);
     gsc_fd_ = -1;
   }
   if (mfc_fd_ != -1) {
     DestroyMfcInputBuffers();
     DestroyMfcOutputBuffers();
-    HANDLE_EINTR(close(mfc_fd_));
+    close(mfc_fd_);
     mfc_fd_ = -1;
   }
 }
@@ -1512,7 +1512,7 @@ void ExynosVideoEncodeAccelerator::DestroyMfcInputBuffers() {
     MfcInputRecord& input_record = mfc_input_buffer_map_[buf];
 
     for (size_t plane = 0; plane < arraysize(input_record.fd); ++plane)
-      HANDLE_EINTR(close(mfc_input_buffer_map_[buf].fd[plane]));
+      close(mfc_input_buffer_map_[buf].fd[plane]);
   }
 
   struct v4l2_requestbuffers reqbufs;

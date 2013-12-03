@@ -19,7 +19,6 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
-#include "base/posix/eintr_wrapper.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/udp/datagram_client_socket.h"
 

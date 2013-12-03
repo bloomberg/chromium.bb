@@ -150,7 +150,7 @@ void UnitTests::RunTestInProcess(UnitTests::Test test,
     _exit(kExpectedValue);
   }
 
-  (void)HANDLE_EINTR(close(fds[1]));
+  close(fds[1]);
   std::vector<char> msg_buf;
   ssize_t rc;
 
@@ -175,7 +175,7 @@ void UnitTests::RunTestInProcess(UnitTests::Test test,
   }
   ASSERT_NE(poll_ret, -1) << "poll() failed";
   ASSERT_NE(poll_ret, 0) << "Timeout while reading child state";
-  (void)HANDLE_EINTR(close(fds[0]));
+  close(fds[0]);
   std::string msg(msg_buf.begin(), msg_buf.end());
 
   int status = 0;

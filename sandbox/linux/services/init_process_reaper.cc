@@ -33,9 +33,9 @@ bool CreateInitProcessReaper(base::Closure* post_fork_parent_callback) {
   pid_t child_pid = fork();
   if (child_pid == -1) {
     int close_ret;
-    close_ret = HANDLE_EINTR(close(sync_fds[0]));
+    close_ret = IGNORE_EINTR(close(sync_fds[0]));
     DPCHECK(!close_ret);
-    close_ret = HANDLE_EINTR(close(sync_fds[1]));
+    close_ret = IGNORE_EINTR(close(sync_fds[1]));
     DPCHECK(!close_ret);
     return false;
   }
@@ -50,7 +50,7 @@ bool CreateInitProcessReaper(base::Closure* post_fork_parent_callback) {
     CHECK(sigaction(SIGCHLD, &action, NULL) == 0);
 
     int close_ret;
-    close_ret = HANDLE_EINTR(close(sync_fds[0]));
+    close_ret = IGNORE_EINTR(close(sync_fds[0]));
     DPCHECK(!close_ret);
     close_ret = shutdown(sync_fds[1], SHUT_RD);
     DPCHECK(!close_ret);
@@ -58,7 +58,7 @@ bool CreateInitProcessReaper(base::Closure* post_fork_parent_callback) {
       post_fork_parent_callback->Run();
     // Tell the child to continue
     CHECK(HANDLE_EINTR(send(sync_fds[1], "C", 1, MSG_NOSIGNAL)) == 1);
-    close_ret = HANDLE_EINTR(close(sync_fds[1]));
+    close_ret = IGNORE_EINTR(close(sync_fds[1]));
     DPCHECK(!close_ret);
 
     for (;;) {
@@ -83,13 +83,13 @@ bool CreateInitProcessReaper(base::Closure* post_fork_parent_callback) {
     // The child needs to wait for the parent to run the callback to avoid a
     // race condition.
     int close_ret;
-    close_ret = HANDLE_EINTR(close(sync_fds[1]));
+    close_ret = IGNORE_EINTR(close(sync_fds[1]));
     DPCHECK(!close_ret);
     close_ret = shutdown(sync_fds[0], SHUT_WR);
     DPCHECK(!close_ret);
     char should_continue;
     int read_ret = HANDLE_EINTR(read(sync_fds[0], &should_continue, 1));
-    close_ret = HANDLE_EINTR(close(sync_fds[0]));
+    close_ret = IGNORE_EINTR(close(sync_fds[0]));
     DPCHECK(!close_ret);
     if (read_ret == 1)
       return true;

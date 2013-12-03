@@ -153,7 +153,7 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendFdsClient) {
   struct stat st;
   int fd = open(kDevZeroPath, O_RDONLY);
   fstat(fd, &st);
-  EXPECT_GE(HANDLE_EINTR(close(fd)), 0);
+  EXPECT_GE(IGNORE_EINTR(close(fd)), 0);
   return SendFdsClientCommon("SendFdsClient", st.st_ino);
 }
 
@@ -169,7 +169,7 @@ MULTIPROCESS_IPC_TEST_CLIENT_MAIN(SendFdsSandboxedClient) {
   struct stat st;
   const int fd = open(kDevZeroPath, O_RDONLY);
   fstat(fd, &st);
-  if (HANDLE_EINTR(close(fd)) < 0)
+  if (IGNORE_EINTR(close(fd)) < 0)
     return -1;
 
   // Enable the sandbox.
@@ -321,7 +321,7 @@ class IPCMultiSendingFdsTest : public testing::Test {
                      pipe_fds.second));
       char tmp = 'x';
       CHECK_EQ(1, HANDLE_EINTR(write(pipe_fds.first, &tmp, 1)));
-      CHECK_EQ(0, HANDLE_EINTR(close(pipe_fds.first)));
+      CHECK_EQ(0, IGNORE_EINTR(close(pipe_fds.first)));
       received_.Wait();
     }
   }
@@ -330,7 +330,7 @@ class IPCMultiSendingFdsTest : public testing::Test {
     char tmp = 'y';
     CHECK_EQ(1, HANDLE_EINTR(read(fd, &tmp, 1)));
     CHECK_EQ(tmp, 'x');
-    CHECK_EQ(0, HANDLE_EINTR(close(fd)));
+    CHECK_EQ(0, IGNORE_EINTR(close(fd)));
     received_.Signal();
   }
 

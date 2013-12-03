@@ -686,7 +686,7 @@ net::SocketDescriptor NaClProcessHost::GetDebugStubSocketHandle() {
   }
   if (listen(s, 1)) {
     LOG(ERROR) << "listen() failed on debug stub socket";
-    if (HANDLE_EINTR(close(s)) < 0)
+    if (IGNORE_EINTR(close(s)) < 0)
       PLOG(ERROR) << "failed to close debug stub socket";
     return net::kInvalidSocket;
   }

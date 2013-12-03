@@ -241,7 +241,7 @@ class SandboxIPCProcess  {
     SendRendererReply(fds, reply, result_fd);
 
     if (result_fd >= 0) {
-      int err = HANDLE_EINTR(close(result_fd));
+      int err = IGNORE_EINTR(close(result_fd));
       DCHECK(!err);
     }
   }
@@ -516,7 +516,7 @@ class SandboxIPCProcess  {
     SendRendererReply(fds, reply, font_fd);
 
     if (font_fd >= 0) {
-      if (HANDLE_EINTR(close(font_fd)) < 0)
+      if (IGNORE_EINTR(close(font_fd)) < 0)
         PLOG(ERROR) << "close";
     }
   }
@@ -718,9 +718,9 @@ void RenderSandboxHostLinux::Init(const std::string& sandbox_path) {
 #endif
   pid_ = fork();
   if (pid_ == 0) {
-    if (HANDLE_EINTR(close(fds[0])) < 0)
+    if (IGNORE_EINTR(close(fds[0])) < 0)
       DPLOG(ERROR) << "close";
-    if (HANDLE_EINTR(close(pipefds[1])) < 0)
+    if (IGNORE_EINTR(close(pipefds[1])) < 0)
       DPLOG(ERROR) << "close";
 
     SandboxIPCProcess handler(child_lifeline_fd, browser_socket, sandbox_path);
@@ -731,9 +731,9 @@ void RenderSandboxHostLinux::Init(const std::string& sandbox_path) {
 
 RenderSandboxHostLinux::~RenderSandboxHostLinux() {
   if (initialized_) {
-    if (HANDLE_EINTR(close(renderer_socket_)) < 0)
+    if (IGNORE_EINTR(close(renderer_socket_)) < 0)
       PLOG(ERROR) << "close";
-    if (HANDLE_EINTR(close(childs_lifeline_fd_)) < 0)
+    if (IGNORE_EINTR(close(childs_lifeline_fd_)) < 0)
       PLOG(ERROR) << "close";
   }
 }

@@ -219,7 +219,7 @@ TEST_F(IPCChannelPosixTest, BasicConnected) {
   ASSERT_TRUE(channel.Connect());
   ASSERT_FALSE(channel.AcceptsConnections());
   channel.Close();
-  ASSERT_TRUE(HANDLE_EINTR(close(pipe_fds[1])) == 0);
+  ASSERT_TRUE(IGNORE_EINTR(close(pipe_fds[1])) == 0);
 
   // Make sure that we can use the socket that is created for us by
   // a standard channel.

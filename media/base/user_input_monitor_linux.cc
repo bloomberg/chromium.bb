@@ -18,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_libevent.h"
-#include "base/posix/eintr_wrapper.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "media/base/keyboard_event_counter.h"

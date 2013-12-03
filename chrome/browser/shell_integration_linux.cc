@@ -147,14 +147,14 @@ bool CreateShortcutOnDesktop(const base::FilePath& shortcut_filename,
                   O_CREAT | O_EXCL | O_WRONLY,
                   S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
   if (fd < 0) {
-    if (HANDLE_EINTR(close(desktop_fd)) < 0)
+    if (IGNORE_EINTR(close(desktop_fd)) < 0)
       PLOG(ERROR) << "close";
     return false;
   }
 
   ssize_t bytes_written = file_util::WriteFileDescriptor(fd, contents.data(),
                                                          contents.length());
-  if (HANDLE_EINTR(close(fd)) < 0)
+  if (IGNORE_EINTR(close(fd)) < 0)
     PLOG(ERROR) << "close";
 
   if (bytes_written != static_cast<ssize_t>(contents.length())) {
@@ -165,7 +165,7 @@ bool CreateShortcutOnDesktop(const base::FilePath& shortcut_filename,
     unlinkat(desktop_fd, shortcut_filename.value().c_str(), 0);
   }
 
-  if (HANDLE_EINTR(close(desktop_fd)) < 0)
+  if (IGNORE_EINTR(close(desktop_fd)) < 0)
     PLOG(ERROR) << "close";
 
   return true;

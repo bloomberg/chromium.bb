@@ -4,6 +4,7 @@
 
 #include "tools/android/common/daemon.h"
 
+#include <errno.h>
 #include <signal.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -11,7 +12,6 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/posix/eintr_wrapper.h"
 
 namespace {
 
@@ -25,7 +25,7 @@ void Exit(int unused) {
 
 void CloseFileDescriptor(int fd) {
   int old_errno = errno;
-  (void) HANDLE_EINTR(close(fd));
+  close(fd);
   errno = old_errno;
 }
 

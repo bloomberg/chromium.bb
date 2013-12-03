@@ -48,7 +48,7 @@ class ScopedTemporaryFile {
   }
   ~ScopedTemporaryFile() {
     CHECK_EQ(0, unlink(full_file_name_));
-    CHECK_EQ(0, HANDLE_EINTR(close(fd_)));
+    CHECK_EQ(0, IGNORE_EINTR(close(fd_)));
   }
 
   int fd() const { return fd_; }

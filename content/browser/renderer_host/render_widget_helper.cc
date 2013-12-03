@@ -381,7 +381,7 @@ void RenderWidgetHelper::FreeTransportDIB(TransportDIB::Id dib_id) {
     i = allocated_dibs_.find(dib_id);
 
   if (i != allocated_dibs_.end()) {
-    if (HANDLE_EINTR(close(i->second)) < 0)
+    if (IGNORE_EINTR(close(i->second)) < 0)
       PLOG(ERROR) << "close";
     allocated_dibs_.erase(i);
   } else {
@@ -392,7 +392,7 @@ void RenderWidgetHelper::FreeTransportDIB(TransportDIB::Id dib_id) {
 void RenderWidgetHelper::ClearAllocatedDIBs() {
   for (std::map<TransportDIB::Id, int>::iterator
        i = allocated_dibs_.begin(); i != allocated_dibs_.end(); ++i) {
-    if (HANDLE_EINTR(close(i->second)) < 0)
+    if (IGNORE_EINTR(close(i->second)) < 0)
       PLOG(ERROR) << "close: " << i->first;
   }
 

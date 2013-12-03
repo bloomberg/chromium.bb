@@ -202,6 +202,30 @@ _BANNED_CPP_FUNCTIONS = (
       True,
       (),
     ),
+    (
+      r'/HANDLE_EINTR\(.*close',
+      (
+       'HANDLE_EINTR(close) is invalid. If close fails with EINTR, the file',
+       'descriptor will be closed, and it is incorrect to retry the close.',
+       'Either call close directly and ignore its return value, or wrap close',
+       'in IGNORE_EINTR to use its return value. See http://crbug.com/269623'
+      ),
+      True,
+      (),
+    ),
+    (
+      r'/IGNORE_EINTR\((?!.*close)',
+      (
+       'IGNORE_EINTR is only valid when wrapping close. To wrap other system',
+       'calls, use HANDLE_EINTR. See http://crbug.com/269623',
+      ),
+      True,
+      (
+        # Files that #define IGNORE_EINTR.
+        r'^base[\\\/]posix[\\\/]eintr_wrapper\.h$',
+        r'^ppapi[\\\/]tests[\\\/]test_broker\.cc$',
+      ),
+    ),
 )
 
 
@@ -375,7 +399,14 @@ def _CheckNoBannedFunctions(input_api, output_api):
           return False
         if IsBlacklisted(f, excluded_paths):
           continue
-        if func_name in line:
+        matched = False
+        if func_name[0:1] == '/':
+          regex = func_name[1:]
+          if input_api.re.search(regex, line):
+            matched = True
+        elif func_name in line:
+            matched = True
+        if matched:
           problems = warnings;
           if error:
             problems = errors;

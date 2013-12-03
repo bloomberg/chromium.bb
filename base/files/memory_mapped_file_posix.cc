@@ -9,7 +9,6 @@
 #include <unistd.h>
 
 #include "base/logging.h"
-#include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_restrictions.h"
 
 namespace base {
@@ -44,7 +43,7 @@ void MemoryMappedFile::CloseHandles() {
   if (data_ != NULL)
     munmap(data_, length_);
   if (file_ != kInvalidPlatformFileValue)
-    ignore_result(HANDLE_EINTR(close(file_)));
+    close(file_);
 
   data_ = NULL;
   length_ = 0;

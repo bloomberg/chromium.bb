@@ -30,9 +30,9 @@ class MessagePumpLibeventTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    if (HANDLE_EINTR(close(pipefds_[0])) < 0)
+    if (IGNORE_EINTR(close(pipefds_[0])) < 0)
       PLOG(ERROR) << "close";
-    if (HANDLE_EINTR(close(pipefds_[1])) < 0)
+    if (IGNORE_EINTR(close(pipefds_[1])) < 0)
       PLOG(ERROR) << "close";
   }
 

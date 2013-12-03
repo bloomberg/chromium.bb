@@ -8,7 +8,6 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
-#include "base/posix/eintr_wrapper.h"
 #include "testing/multiprocess_func_list.h"
 
 namespace base {
@@ -42,7 +41,7 @@ ProcessHandle MultiProcessTest::SpawnChildImpl(
   const int kFdForAndroidLogging = 3;  // FD used by __android_log_write().
   for (int fd = kFdForAndroidLogging + 1; fd < getdtablesize(); ++fd) {
     if (fds_to_keep_open.find(fd) == fds_to_keep_open.end()) {
-      HANDLE_EINTR(close(fd));
+      close(fd);
     }
   }
   for (FileHandleMappingVector::const_iterator it = fds_to_remap.begin();
@@ -52,7 +51,7 @@ ProcessHandle MultiProcessTest::SpawnChildImpl(
     if (dup2(old_fd, new_fd) < 0) {
       PLOG(FATAL) << "dup2";
     }
-    HANDLE_EINTR(close(old_fd));
+    close(old_fd);
   }
   _exit(multi_process_function_list::InvokeChildProcessTest(procname));
   return 0;

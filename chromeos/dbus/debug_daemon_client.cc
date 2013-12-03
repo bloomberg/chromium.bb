@@ -56,7 +56,7 @@ class PipeReader {
   virtual ~PipeReader() {
     // Don't close pipe_fd_[0] as it's closed by data_stream_.
     if (pipe_fd_[1] != -1)
-      if (HANDLE_EINTR(close(pipe_fd_[1])) < 0)
+      if (IGNORE_EINTR(close(pipe_fd_[1])) < 0)
         PLOG(ERROR) << "close[1]";
   }
 
@@ -66,7 +66,7 @@ class PipeReader {
   // Closes writeable descriptor; normally used in parent process after fork.
   void CloseWriteFD() {
     if (pipe_fd_[1] != -1) {
-      if (HANDLE_EINTR(close(pipe_fd_[1])) < 0)
+      if (IGNORE_EINTR(close(pipe_fd_[1])) < 0)
         PLOG(ERROR) << "close";
       pipe_fd_[1] = -1;
     }

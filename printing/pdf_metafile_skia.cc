@@ -212,7 +212,7 @@ bool PdfMetafileSkia::SaveToFD(const base::FileDescriptor& fd) const {
   }
 
   if (fd.auto_close) {
-    if (HANDLE_EINTR(close(fd.fd)) < 0) {
+    if (IGNORE_EINTR(close(fd.fd)) < 0) {
       DPLOG(WARNING) << "close";
       result = false;
     }

@@ -110,7 +110,7 @@ bool ProcessSingleton::Create() {
 void ProcessSingleton::Cleanup() {
   // Closing the file also releases the lock.
   if (lock_fd_ != -1) {
-    int rc = HANDLE_EINTR(close(lock_fd_));
+    int rc = IGNORE_EINTR(close(lock_fd_));
     DPCHECK(!rc) << "Closing lock_fd_:";
   }
   lock_fd_ = -1;

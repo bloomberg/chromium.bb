@@ -130,7 +130,7 @@ SocketDescriptor UnixDomainSocket::CreateAndBind(const std::string& path,
     LOG(ERROR) << "Could not bind unix domain socket to " << path;
     if (use_abstract_namespace)
       LOG(ERROR) << " (with abstract namespace enabled)";
-    if (HANDLE_EINTR(close(s)) < 0)
+    if (IGNORE_EINTR(close(s)) < 0)
       LOG(ERROR) << "close() error";
     return kInvalidSocket;
   }
@@ -145,7 +145,7 @@ void UnixDomainSocket::Accept() {
   gid_t group_id;
   if (!GetPeerIds(conn, &user_id, &group_id) ||
       !auth_callback_.Run(user_id, group_id)) {
-    if (HANDLE_EINTR(close(conn)) < 0)
+    if (IGNORE_EINTR(close(conn)) < 0)
       LOG(ERROR) << "close() error";
     return;
   }

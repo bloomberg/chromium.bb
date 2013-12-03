@@ -64,7 +64,7 @@ TEST(Syscall, TrivialSyscallOneArg) {
   int new_fd;
   // Duplicate standard error and close it.
   ASSERT_GE(new_fd = SandboxSyscall(__NR_dup, 2), 0);
-  int close_return_value = HANDLE_EINTR(SandboxSyscall(__NR_close, new_fd));
+  int close_return_value = IGNORE_EINTR(SandboxSyscall(__NR_close, new_fd));
   ASSERT_EQ(close_return_value, 0);
 }
 
@@ -160,7 +160,7 @@ TEST(Syscall, ComplexSyscallSixArgs) {
 
   // Clean up
   EXPECT_EQ(0, SandboxSyscall(__NR_munmap, addr1, 4096L));
-  EXPECT_EQ(0, HANDLE_EINTR(SandboxSyscall(__NR_close, fd)));
+  EXPECT_EQ(0, IGNORE_EINTR(SandboxSyscall(__NR_close, fd)));
 
   // Check that the offset argument (i.e. the sixth argument) is processed
   // correctly.
@@ -193,7 +193,7 @@ TEST(Syscall, ComplexSyscallSixArgs) {
   // Clean up
   EXPECT_EQ(0, SandboxSyscall(__NR_munmap, addr2, 8192L));
   EXPECT_EQ(0, SandboxSyscall(__NR_munmap, addr3, 4096L));
-  EXPECT_EQ(0, HANDLE_EINTR(SandboxSyscall(__NR_close, fd)));
+  EXPECT_EQ(0, IGNORE_EINTR(SandboxSyscall(__NR_close, fd)));
 }
 
 }  // namespace

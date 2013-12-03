@@ -521,7 +521,7 @@ void TCPSocketLibevent::Close() {
   DCHECK(ok);
 
   if (socket_ != kInvalidSocket) {
-    if (HANDLE_EINTR(close(socket_)) < 0)
+    if (IGNORE_EINTR(close(socket_)) < 0)
       PLOG(ERROR) << "close";
     socket_ = kInvalidSocket;
   }
@@ -590,7 +590,7 @@ int TCPSocketLibevent::AcceptInternal(scoped_ptr<TCPSocketLibevent>* socket,
   IPEndPoint ip_end_point;
   if (!ip_end_point.FromSockAddr(storage.addr, storage.addr_len)) {
     NOTREACHED();
-    if (HANDLE_EINTR(close(new_socket)) < 0)
+    if (IGNORE_EINTR(close(new_socket)) < 0)
       PLOG(ERROR) << "close";
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_TCP_ACCEPT,
                                       ERR_ADDRESS_INVALID);

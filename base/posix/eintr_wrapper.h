@@ -9,6 +9,9 @@
 // caller will nonetheless see an EINTR in Debug builds.
 //
 // On Windows, this wrapper macro does nothing.
+//
+// Don't wrap close calls in HANDLE_EINTR. Use IGNORE_EINTR if the return
+// value of close is significant. See http://crbug.com/269623.
 
 #ifndef BASE_POSIX_EINTR_WRAPPER_H_
 #define BASE_POSIX_EINTR_WRAPPER_H_
@@ -20,6 +23,7 @@
 #include <errno.h>
 
 #if defined(NDEBUG)
+
 #define HANDLE_EINTR(x) ({ \
   typeof(x) eintr_wrapper_result; \
   do { \
@@ -42,9 +46,21 @@
 
 #endif  // NDEBUG
 
+#define IGNORE_EINTR(x) ({ \
+  typeof(x) eintr_wrapper_result; \
+  do { \
+    eintr_wrapper_result = (x); \
+    if (eintr_wrapper_result == -1 && errno == EINTR) { \
+      eintr_wrapper_result = 0; \
+    } \
+  } while (0); \
+  eintr_wrapper_result; \
+})
+
 #else
 
 #define HANDLE_EINTR(x) (x)
+#define IGNORE_EINTR(x) (x)
 
 #endif  // OS_POSIX
 

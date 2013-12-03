@@ -17,7 +17,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_libevent.h"
-#include "base/posix/eintr_wrapper.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "remoting/host/client_session_control.h"

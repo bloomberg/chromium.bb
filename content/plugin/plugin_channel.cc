@@ -23,7 +23,6 @@
 #include "third_party/WebKit/public/web/WebBindings.h"
 
 #if defined(OS_POSIX)
-#include "base/posix/eintr_wrapper.h"
 #include "ipc/ipc_channel_posix.h"
 #endif
 

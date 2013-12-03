@@ -19,7 +19,7 @@ void PError(const char* msg) {
 
 void CloseFD(int fd) {
   const int errno_copy = errno;
-  if (HANDLE_EINTR(close(fd)) < 0) {
+  if (IGNORE_EINTR(close(fd)) < 0) {
     PError("close");
     errno = errno_copy;
   }

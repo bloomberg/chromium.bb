@@ -537,7 +537,7 @@ Status ChromiumWritableFile::SyncParent() {
     s = MakeIOError(
         parent_dir_, strerror(saved_errno), kSyncParent, saved_errno);
   };
-  HANDLE_EINTR(close(parent_fd));
+  close(parent_fd);
 #endif
   return s;
 }
