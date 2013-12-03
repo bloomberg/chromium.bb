@@ -274,8 +274,7 @@ TextIterator::TextIterator(const Range* r, TextIteratorBehavior behavior)
         return;
     setUpFullyClippedStack(m_fullyClippedStack, m_node);
     m_offset = m_node == m_startContainer ? m_startOffset : 0;
-    m_handledNode = false;
-    m_handledChildren = false;
+    m_iterationProgress = HandledNone;
 
     // calculate first out of bounds node
     m_pastEndNode = nextInPreOrderCrossingShadowBoundaries(endContainer, endOffset);
@@ -350,23 +349,25 @@ void TextIterator::advance()
 
         RenderObject* renderer = m_node->renderer();
         if (!renderer) {
-            m_handledNode = true;
-            m_handledChildren = true;
+            m_iterationProgress = HandledChildren;
         } else {
             // handle current node according to its type
-            if (!m_handledNode) {
+            if (m_iterationProgress < HandledNode) {
+                bool handledNode = false;
                 if (renderer->isText() && m_node->nodeType() == Node::TEXT_NODE) { // FIXME: What about CDATA_SECTION_NODE?
-                    m_handledNode = handleTextNode();
+                    handledNode = handleTextNode();
                 } else if (renderer && (renderer->isImage() || renderer->isWidget()
                     || (renderer->node() && renderer->node()->isElementNode()
                     && (toElement(renderer->node())->isFormControlElement()
                     || toElement(renderer->node())->hasTagName(legendTag)
                     || toElement(renderer->node())->hasTagName(meterTag)
                     || toElement(renderer->node())->hasTagName(progressTag))))) {
-                    m_handledNode = handleReplacedElement();
+                    handledNode = handleReplacedElement();
                 } else {
-                    m_handledNode = handleNonTextNode();
+                    handledNode = handleNonTextNode();
                 }
+                if (handledNode)
+                    m_iterationProgress = HandledNode;
                 if (m_positionNode)
                     return;
             }
@@ -374,7 +375,7 @@ void TextIterator::advance()
 
         // find a new current node to handle in depth-first manner,
         // calling exitNode() as we come back thru a parent node
-        Node* next = m_handledChildren ? 0 : m_node->firstChild();
+        Node* next = m_iterationProgress < HandledChildren ? m_node->firstChild() : 0;
         m_offset = 0;
         if (!next) {
             next = m_node->nextSibling();
@@ -391,8 +392,7 @@ void TextIterator::advance()
                     if (haveRenderer)
                         exitNode();
                     if (m_positionNode) {
-                        m_handledNode = true;
-                        m_handledChildren = true;
+                        m_iterationProgress = HandledChildren;
                         return;
                     }
                     next = m_node->nextSibling();
@@ -405,8 +405,7 @@ void TextIterator::advance()
         m_node = next;
         if (m_node)
             pushFullyClippedState(m_fullyClippedStack, m_node);
-        m_handledNode = false;
-        m_handledChildren = false;
+        m_iterationProgress = HandledNone;
         m_handledFirstLetter = false;
         m_firstLetterText = 0;
 
