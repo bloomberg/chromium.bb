@@ -70,6 +70,9 @@ bool WillHandleBrowserAboutURL(GURL* url,
     // gtk objects after they are destoyed by BrowserWindowGtk::Close().
     base::MessageLoop::current()->PostTask(FROM_HERE,
         base::Bind(&chrome::AttemptRestart));
+  } else if (host == chrome::kChromeUIQuitHost) {
+    base::MessageLoop::current()->PostTask(FROM_HERE,
+        base::Bind(&chrome::AttemptExit));
   }
 
   GURL::Replacements replacements;

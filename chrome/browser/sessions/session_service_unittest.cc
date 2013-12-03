@@ -20,6 +20,7 @@
 #include "chrome/browser/sessions/session_service_test_helper.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
@@ -982,4 +983,36 @@ TEST_F(SessionServiceTest, RestoreActivation2) {
   SessionID::id_type active_window_id = 0;
   ReadWindows(&(windows.get()), &active_window_id);
   EXPECT_EQ(window2_id.id(), active_window_id);
+}
+
+// Makes sure we don't track blacklisted URLs.
+TEST_F(SessionServiceTest, IgnoreBlacklistedUrls) {
+  SessionID tab_id;
+
+  SerializedNavigationEntry nav1 =
+      SerializedNavigationEntryTestHelper::CreateNavigation(
+          "http://google.com", "abc");
+  SerializedNavigationEntry nav2 =
+      SerializedNavigationEntryTestHelper::CreateNavigation(
+          chrome::kChromeUIQuitURL, "quit");
+  SerializedNavigationEntry nav3 =
+      SerializedNavigationEntryTestHelper::CreateNavigation(
+          chrome::kChromeUIRestartURL, "restart");
+
+  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
+  UpdateNavigation(window_id, tab_id, nav1, true);
+  UpdateNavigation(window_id, tab_id, nav2, true);
+  UpdateNavigation(window_id, tab_id, nav3, true);
+
+  ScopedVector<SessionWindow> windows;
+  ReadWindows(&(windows.get()), NULL);
+
+  ASSERT_EQ(1U, windows.size());
+  ASSERT_EQ(0, windows[0]->selected_tab_index);
+  ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
+  ASSERT_EQ(1U, windows[0]->tabs.size());
+
+  SessionTab* tab = windows[0]->tabs[0];
+  helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
+  helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
 }

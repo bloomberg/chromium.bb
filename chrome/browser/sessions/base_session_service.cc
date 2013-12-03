@@ -14,6 +14,7 @@
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/common/referrer.h"
@@ -264,7 +265,11 @@ bool BaseSessionService::RestoreSetWindowAppNameCommand(
 }
 
 bool BaseSessionService::ShouldTrackEntry(const GURL& url) {
-  return url.is_valid();
+  // Blacklist chrome://quit and chrome://restart to avoid quit or restart
+  // loops.
+  return url.is_valid() && !(url.SchemeIs(chrome::kChromeUIScheme) &&
+                             (url.host() == chrome::kChromeUIQuitHost ||
+                              url.host() == chrome::kChromeUIRestartHost));
 }
 
 CancelableTaskTracker::TaskId
