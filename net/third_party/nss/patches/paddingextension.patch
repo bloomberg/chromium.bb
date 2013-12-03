@@ -100,7 +100,7 @@ index 0415770..cdebcc9 100644
 +	return -1;
 +    if (SECSuccess != ssl3_AppendHandshakeNumber(ss, paddingLen, 2))
 +	return -1;
-+    memset(padding, ' ', paddingLen);
++    memset(padding, 0, paddingLen);
 +    if (SECSuccess != ssl3_AppendHandshake(ss, padding, paddingLen))
 +	return -1;
 +

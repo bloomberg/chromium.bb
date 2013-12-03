@@ -2367,7 +2367,7 @@ ssl3_AppendPaddingExtension(sslSocket *ss, unsigned int extensionLen,
 	return -1;
     if (SECSuccess != ssl3_AppendHandshakeNumber(ss, paddingLen, 2))
 	return -1;
-    memset(padding, ' ', paddingLen);
+    memset(padding, 0, paddingLen);
     if (SECSuccess != ssl3_AppendHandshake(ss, padding, paddingLen))
 	return -1;
 
