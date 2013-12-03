@@ -36,7 +36,9 @@ class IntroDataSource(DataSource):
     # Guess the name of the API from the path to the intro.
     api_name = os.path.splitext(intro_path.split('/')[-1])[0]
     return Handlebar(
-        self._ref_resolver.ResolveAllLinks(intro, namespace=api_name),
+        self._ref_resolver.ResolveAllLinks(intro,
+                                           relative_to=self._request.path,
+                                           namespace=api_name),
         name=intro_path)
 
   def get(self, key):

@@ -170,13 +170,20 @@ class ReferenceResolver(object):
       'name': ref
     }
 
-  def ResolveAllLinks(self, text, namespace=None):
+  def ResolveAllLinks(self, text, relative_to='', namespace=None):
     """This method will resolve all $ref links in |text| using namespace
     |namespace| if not None. Any links that cannot be resolved will be replaced
     using the default link format that |SafeGetLink| uses.
+    The links will be generated relative to |relative_to|.
     """
     if text is None or '$ref:' not in text:
       return text
+
+    # requestPath should be of the form (apps|extensions)/...../page.html.
+    # link_prefix should  that the target will point to
+    # (apps|extensions)/target.html. Note multiplying a string by a negative
+    # number gives the empty string.
+    link_prefix = '../' * (relative_to.count('/') - 1)
     split_text = text.split('$ref:')
     # |split_text| is an array of text chunks that all start with the
     # argument to '$ref:'.
@@ -204,6 +211,6 @@ class ReferenceResolver(object):
           rest = ref_and_rest[match.end():]
 
       ref_dict = self.SafeGetLink(ref, namespace=namespace, title=title)
-      formatted_text.append('<a href="%(href)s">%(text)s</a>%(rest)s' %
-          { 'href': ref_dict['href'], 'text': ref_dict['text'], 'rest': rest })
+      formatted_text.append('<a href="%s%s">%s</a>%s' %
+          (link_prefix, ref_dict['href'], ref_dict['text'], rest))
     return ''.join(formatted_text)

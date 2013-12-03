@@ -5,6 +5,7 @@
 
 from intro_data_source import IntroDataSource
 from server_instance import ServerInstance
+from servlet import Request
 from test_data.canned_data import CANNED_TEST_FILE_SYSTEM_DATA
 from test_file_system import TestFileSystem
 import unittest
@@ -15,7 +16,8 @@ class IntroDataSourceTest(unittest.TestCase):
         TestFileSystem(CANNED_TEST_FILE_SYSTEM_DATA))
 
   def testIntro(self):
-    intro_data_source = IntroDataSource(self._server_instance, None)
+    intro_data_source = IntroDataSource(
+        self._server_instance, Request.ForTest(''))
     intro_data = intro_data_source.get('test_intro')
     article_data = intro_data_source.get('test_article')
 

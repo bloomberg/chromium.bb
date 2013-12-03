@@ -170,5 +170,47 @@ class APIDataSourceTest(unittest.TestCase):
         resolver.ResolveAllLinks('$ref:bar.bon.',
                                  namespace='baz'))
 
+    # If a request is provided it should construct an appropriate relative link.
+    self.assertEqual(
+        'Hi <a href="../../bar.bon.html#property-bar_bon_p3">bar_bon_p3</a>, '
+            '<a href="../../bar.bon.html#property-bar_bon_p3">Bon Bon</a>, '
+            '<a href="../../bar.bon.html#property-bar_bon_p3">bar_bon_p3</a>',
+        resolver.ResolveAllLinks(
+            'Hi $ref:bar_bon_p3, $ref:[bar_bon_p3 Bon Bon], $ref:bar_bon_p3',
+            relative_to='big/long/path/bar.html',
+            namespace='bar.bon'))
+    self.assertEqual(
+        'Hi <a href="bar.bon.html#property-bar_bon_p3">bar_bon_p3</a>, '
+            '<a href="bar.bon.html#property-bar_bon_p3">Bon Bon</a>, '
+            '<a href="bar.bon.html#property-bar_bon_p3">bar_bon_p3</a>',
+        resolver.ResolveAllLinks(
+            'Hi $ref:bar_bon_p3, $ref:[bar_bon_p3 Bon Bon], $ref:bar_bon_p3',
+            relative_to='',
+            namespace='bar.bon'))
+    self.assertEqual(
+        'Hi <a href="bar.bon.html#property-bar_bon_p3">bar_bon_p3</a>, '
+            '<a href="bar.bon.html#property-bar_bon_p3">Bon Bon</a>, '
+            '<a href="bar.bon.html#property-bar_bon_p3">bar_bon_p3</a>',
+        resolver.ResolveAllLinks(
+            'Hi $ref:bar_bon_p3, $ref:[bar_bon_p3 Bon Bon], $ref:bar_bon_p3',
+            relative_to='bar.html',
+            namespace='bar.bon'))
+    self.assertEqual(
+        'Hi <a href="bar.bon.html#property-bar_bon_p3">bar_bon_p3</a>, '
+            '<a href="bar.bon.html#property-bar_bon_p3">Bon Bon</a>, '
+            '<a href="bar.bon.html#property-bar_bon_p3">bar_bon_p3</a>',
+        resolver.ResolveAllLinks(
+            'Hi $ref:bar_bon_p3, $ref:[bar_bon_p3 Bon Bon], $ref:bar_bon_p3',
+            relative_to='foo/bar.html',
+            namespace='bar.bon'))
+    self.assertEqual(
+        'Hi <a href="../bar.bon.html#property-bar_bon_p3">bar_bon_p3</a>, '
+            '<a href="../bar.bon.html#property-bar_bon_p3">Bon Bon</a>, '
+            '<a href="../bar.bon.html#property-bar_bon_p3">bar_bon_p3</a>',
+        resolver.ResolveAllLinks(
+            'Hi $ref:bar_bon_p3, $ref:[bar_bon_p3 Bon Bon], $ref:bar_bon_p3',
+            relative_to='foo/baz/bar.html',
+            namespace='bar.bon'))
+
 if __name__ == '__main__':
   unittest.main()
