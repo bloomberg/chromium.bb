@@ -24,6 +24,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -36,6 +37,7 @@
 
 using content::NavigationController;
 using content::RenderViewHost;
+using content::SiteInstance;
 using content::WebContents;
 using extensions::Extension;
 
@@ -831,4 +833,49 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_ReloadAppAfterCrash) {
       "window.domAutomationController.send(chrome.app.isInstalled)",
       &is_installed));
   ASSERT_TRUE(is_installed);
+}
+
+// Test that a cross-process navigation away from a hosted app stays in the same
+// BrowsingInstance, so that postMessage calls to the app's other windows still
+// work.
+IN_PROC_BROWSER_TEST_F(AppApiTest, SameBrowsingInstanceAfterSwap) {
+  extensions::ProcessMap* process_map = extensions::ExtensionSystem::Get(
+      browser()->profile())->extension_service()->process_map();
+
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  GURL base_url = GetTestBaseURL("app_process");
+
+  // Load app and start URL (in the app).
+  const Extension* app =
+      LoadExtension(test_data_dir_.AppendASCII("app_process"));
+  ASSERT_TRUE(app);
+
+  ui_test_utils::NavigateToURL(browser(),
+                               base_url.Resolve("path1/iframe.html"));
+  content::SiteInstance* app_instance =
+      browser()->tab_strip_model()->GetWebContentsAt(0)->GetSiteInstance();
+  EXPECT_TRUE(process_map->Contains(app_instance->GetProcess()->GetID()));
+
+  // Popup window should be in the app's process.
+  const BrowserList* active_browser_list =
+      BrowserList::GetInstance(chrome::GetActiveDesktop());
+  EXPECT_EQ(2U, active_browser_list->size());
+  content::WebContents* popup_contents =
+      active_browser_list->get(1)->tab_strip_model()->GetActiveWebContents();
+  content::WaitForLoadStop(popup_contents);
+
+  SiteInstance* popup_instance = popup_contents->GetSiteInstance();
+  EXPECT_EQ(app_instance, popup_instance);
+
+  // Navigate the popup to another process outside the app.
+  GURL non_app_url(base_url.Resolve("path3/empty.html"));
+  ui_test_utils::NavigateToURL(active_browser_list->get(1), non_app_url);
+  SiteInstance* new_instance = popup_contents->GetSiteInstance();
+  EXPECT_NE(app_instance, new_instance);
+
+  // It should still be in the same BrowsingInstance, allowing postMessage to
+  // work.
+  EXPECT_TRUE(app_instance->IsRelatedSiteInstance(new_instance));
 }

@@ -1326,26 +1326,8 @@ bool ChromeContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
     SiteInstance* site_instance,
     const GURL& current_url,
     const GURL& new_url) {
-  if (current_url.is_empty()) {
-    // Always choose a new process when navigating to extension URLs. The
-    // process grouping logic will combine all of a given extension's pages
-    // into the same process.
-    if (new_url.SchemeIs(extensions::kExtensionScheme))
-      return true;
-
-    return false;
-  }
-
-  // Also, we must switch if one is an extension and the other is not the exact
-  // same extension.
-  if (current_url.SchemeIs(extensions::kExtensionScheme) ||
-      new_url.SchemeIs(extensions::kExtensionScheme)) {
-    if (current_url.GetOrigin() != new_url.GetOrigin())
-      return true;
-  }
-
-  // The checks below only matter if we can retrieve which extensions are
-  // installed.
+  // If we don't have an ExtensionService, then rely on the SiteInstance logic
+  // in RenderViewHostManager to decide when to swap.
   Profile* profile =
       Profile::FromBrowserContext(site_instance->GetBrowserContext());
   ExtensionService* service =
@@ -1353,23 +1335,41 @@ bool ChromeContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
   if (!service)
     return false;
 
-  // We must swap if the URL is for an extension and we are not using an
-  // extension process.
+  // We must use a new BrowsingInstance (forcing a process swap and disabling
+  // scripting by existing tabs) if one of the URLs is an extension and the
+  // other is not the exact same extension.
+  //
+  // We ignore hosted apps here so that other tabs in their BrowsingInstance can
+  // use postMessage with them.  (The exception is the Chrome Web Store, which
+  // is a hosted app that requires its own BrowsingInstance.)  Navigations
+  // to/from a hosted app will still trigger a SiteInstance swap in
+  // RenderViewHostManager.
+  const Extension* current_extension =
+      service->extensions()->GetExtensionOrAppByURL(current_url);
+  if (current_extension &&
+      current_extension->is_hosted_app() &&
+      current_extension->id() != extension_misc::kWebStoreAppId)
+    current_extension = NULL;
+
   const Extension* new_extension =
       service->extensions()->GetExtensionOrAppByURL(new_url);
-  // Ignore all hosted apps except the Chrome Web Store, since they do not
-  // require their own BrowsingInstance (e.g., postMessage is ok).
   if (new_extension &&
       new_extension->is_hosted_app() &&
       new_extension->id() != extension_misc::kWebStoreAppId)
     new_extension = NULL;
+
+  // First do a process check.  We should force a BrowsingInstance swap if the
+  // current process doesn't know about new_extension, even if current_extension
+  // is somehow the same as new_extension.
   if (new_extension &&
       site_instance->HasProcess() &&
       !service->process_map()->Contains(new_extension->id(),
                                         site_instance->GetProcess()->GetID()))
     return true;
 
-  return false;
+  // Otherwise, swap BrowsingInstances if current_extension and new_extension
+  // differ.
+  return current_extension != new_extension;
 }
 
 bool ChromeContentBrowserClient::ShouldSwapProcessesForRedirect(
