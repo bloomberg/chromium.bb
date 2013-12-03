@@ -247,7 +247,7 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLScriptElement.cross
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLScriptElement.nonce]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLSelectElement.value]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLSelectElement.name]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLSelectElement.name]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLSourceElement.media]
 TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLSourceElement.src]

@@ -24,7 +24,7 @@ interface HTMLSelectElement : HTMLElement {
     [Reflect] attribute boolean disabled;
     readonly attribute HTMLFormElement form;
     attribute boolean multiple;
-    [Reflect, TreatNullAs=NullString] attribute DOMString name;
+    [Reflect] attribute DOMString name;
     [Reflect] attribute boolean required;
     attribute long size;
 
@@ -43,7 +43,7 @@ interface HTMLSelectElement : HTMLElement {
     [RaisesException] void remove();
     readonly attribute HTMLCollection selectedOptions;
     attribute long selectedIndex;
-    [TreatNullAs=NullString] attribute DOMString value;
+    attribute DOMString value;
 
     readonly attribute boolean willValidate;
     readonly attribute ValidityState validity;
