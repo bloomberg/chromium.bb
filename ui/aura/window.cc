@@ -36,6 +36,38 @@
 
 namespace aura {
 
+namespace {
+
+WindowLayerType UILayerTypeToWindowLayerType(ui::LayerType layer_type) {
+  switch (layer_type) {
+    case ui::LAYER_NOT_DRAWN:
+      return WINDOW_LAYER_NOT_DRAWN;
+    case ui::LAYER_TEXTURED:
+      return WINDOW_LAYER_TEXTURED;
+    case ui::LAYER_SOLID_COLOR:
+      return WINDOW_LAYER_SOLID_COLOR;
+  }
+  NOTREACHED();
+  return WINDOW_LAYER_NOT_DRAWN;
+}
+
+ui::LayerType WindowLayerTypeToUILayerType(WindowLayerType window_layer_type) {
+  switch (window_layer_type) {
+    case WINDOW_LAYER_NONE:
+      break;
+    case WINDOW_LAYER_NOT_DRAWN:
+      return ui::LAYER_NOT_DRAWN;
+    case WINDOW_LAYER_TEXTURED:
+      return ui::LAYER_TEXTURED;
+    case WINDOW_LAYER_SOLID_COLOR:
+      return ui::LAYER_SOLID_COLOR;
+  }
+  NOTREACHED();
+  return ui::LAYER_NOT_DRAWN;
+}
+
+}  // namespace
+
 class ScopedCursorHider {
  public:
   explicit ScopedCursorHider(Window* window)
@@ -155,12 +187,18 @@ Window::~Window() {
 }
 
 void Window::Init(ui::LayerType layer_type) {
-  layer_ = new ui::Layer(layer_type);
-  layer_owner_.reset(layer_);
-  layer_->SetVisible(false);
-  layer_->set_delegate(this);
-  UpdateLayerName(name_);
-  layer_->SetFillsBoundsOpaquely(!transparent_);
+  InitWithWindowLayerType(UILayerTypeToWindowLayerType(layer_type));
+}
+
+void Window::InitWithWindowLayerType(WindowLayerType window_layer_type) {
+  if (window_layer_type != WINDOW_LAYER_NONE) {
+    layer_ = new ui::Layer(WindowLayerTypeToUILayerType(window_layer_type));
+    layer_owner_.reset(layer_);
+    layer_->SetVisible(false);
+    layer_->set_delegate(this);
+    UpdateLayerName(name_);
+    layer_->SetFillsBoundsOpaquely(!transparent_);
+  }
 
   Env::GetInstance()->NotifyWindowInitialized(this);
 }
@@ -204,20 +242,20 @@ ui::Layer* Window::RecreateLayer() {
 
 void Window::SetType(client::WindowType type) {
   // Cannot change type after the window is initialized.
-  DCHECK(!layer());
+  DCHECK(!layer_);
   type_ = type;
 }
 
 void Window::SetName(const std::string& name) {
   name_ = name;
 
-  if (layer())
+  if (layer_)
     UpdateLayerName(name_);
 }
 
 void Window::SetTransparent(bool transparent) {
   transparent_ = transparent;
-  if (layer())
+  if (layer_)
     layer_->SetFillsBoundsOpaquely(!transparent_);
 }
 
@@ -258,7 +296,13 @@ bool Window::IsVisible() const {
   // when a Window is hidden, we want this function to return false immediately
   // after, even though the client may decide to animate the hide effect (and
   // so the layer will be visible for some time after Hide() is called).
-  return visible_ && layer_ && layer_->IsDrawn();
+  for (const Window* window = this; window; window = window->parent()) {
+    if (!window->visible_)
+      return false;
+    if (window->layer_)
+      return window->layer_->IsDrawn();
+  }
+  return false;
 }
 
 gfx::Rect Window::GetBoundsInRootWindow() const {
@@ -288,10 +332,15 @@ gfx::Rect Window::GetBoundsInScreen() const {
 }
 
 void Window::SetTransform(const gfx::Transform& transform) {
+  if (!layer_) {
+    // Transforms aren't supported on layerless windows.
+    NOTREACHED();
+    return;
+  }
   WindowEventDispatcher* dispatcher = GetDispatcher();
   bool contained_mouse = IsVisible() && dispatcher &&
       ContainsPointInRoot(dispatcher->GetLastMouseLocationInRoot());
-  layer()->SetTransform(transform);
+  layer_->SetTransform(transform);
   if (dispatcher)
     dispatcher->OnWindowTransformed(this, contained_mouse);
 }
@@ -331,15 +380,20 @@ void Window::SetBoundsInScreen(const gfx::Rect& new_bounds_in_screen,
 }
 
 gfx::Rect Window::GetTargetBounds() const {
-  return layer_->GetTargetBounds();
-}
-
-const gfx::Rect& Window::bounds() const {
-  return layer_->bounds();
+  // TODO(sky): this needs to be updated when there is a layerless ancestor.
+  return !layer_ ? bounds() : layer_->GetTargetBounds();
 }
 
 void Window::SchedulePaintInRect(const gfx::Rect& rect) {
-  if (layer_->SchedulePaint(rect)) {
+  if (!layer_ && parent_) {
+    // Notification of paint scheduled happens for the window with a layer.
+    gfx::Rect parent_rect(bounds().size());
+    parent_rect.Intersect(rect);
+    if (!parent_rect.IsEmpty()) {
+      parent_rect.Offset(bounds().origin().OffsetFromOrigin());
+      parent_->SchedulePaintInRect(parent_rect);
+    }
+  } else if (layer_ && layer_->SchedulePaint(rect)) {
     FOR_EACH_OBSERVER(
         WindowObserver, observers_, OnWindowPaintScheduled(this, rect));
   }
@@ -379,9 +433,15 @@ void Window::AddChild(Window* child) {
       children_.end());
   if (child->parent())
     child->parent()->RemoveChildImpl(child, this);
-  child->parent_ = this;
 
-  layer_->Add(child->layer_);
+  gfx::Vector2d offset;
+  aura::Window* ancestor_with_layer = GetAncestorWithLayer(&offset);
+  if (ancestor_with_layer) {
+    offset += child->bounds().OffsetFromOrigin();
+    child->ReparentLayers(ancestor_with_layer->layer(), offset);
+  }
+
+  child->parent_ = this;
 
   children_.push_back(child);
   if (layout_manager_)
@@ -474,7 +534,7 @@ void Window::ConvertPointToTarget(const Window* source,
         client::GetScreenPositionClient(target->GetRootWindow());
     target_client->ConvertPointFromScreen(target, point);
   } else {
-    ui::Layer::ConvertPointToLayer(source->layer(), target->layer(), point);
+    ui::Layer::ConvertPointToLayer(source->layer_, target->layer_, point);
   }
 }
 
@@ -745,13 +805,27 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
 
   // Always need to set the layer's bounds -- even if it is to the same thing.
   // This may cause important side effects such as stopping animation.
-  layer_->SetBounds(actual_new_bounds);
+  if (!layer_) {
+    const gfx::Vector2d origin_delta = new_bounds.OffsetFromOrigin() -
+        bounds_.OffsetFromOrigin();
+    bounds_ = new_bounds;
+    OffsetLayerBounds(origin_delta);
+  } else {
+    if (parent_ && !parent_->layer_) {
+      gfx::Vector2d offset;
+      const aura::Window* ancestor_with_layer =
+          parent_->GetAncestorWithLayer(&offset);
+      if (ancestor_with_layer)
+        actual_new_bounds.Offset(offset);
+    }
+    layer_->SetBounds(actual_new_bounds);
+  }
 
   // If we are currently not the layer's delegate, we will not get bounds
   // changed notification from the layer (this typically happens after animating
   // hidden). We must notify ourselves.
-  if (layer_->delegate() != this)
-    OnLayerBoundsChanged(old_bounds, ContainsMouse());
+  if (!layer_ || layer_->delegate() != this)
+    OnWindowBoundsChanged(old_bounds, ContainsMouse());
 }
 
 void Window::SetVisible(bool visible) {
@@ -855,18 +929,71 @@ void Window::RemoveChildImpl(Window* child, Window* new_parent) {
         child, new_root_window);
     child->NotifyRemovingFromRootWindow();
   }
+
+  gfx::Vector2d offset;
+  GetAncestorWithLayer(&offset);
+  child->UnparentLayers(!layer_, offset);
   child->parent_ = NULL;
-  // We should only remove the child's layer if the child still owns that layer.
-  // Someone else may have acquired ownership of it via AcquireLayer() and may
-  // expect the hierarchy to go unchanged as the Window is destroyed.
-  if (child->layer_owner_)
-    layer_->Remove(child->layer_);
   Windows::iterator i = std::find(children_.begin(), children_.end(), child);
   DCHECK(i != children_.end());
   children_.erase(i);
   child->OnParentChanged();
   if (layout_manager_)
     layout_manager_->OnWindowRemovedFromLayout(child);
+}
+
+void Window::UnparentLayers(bool has_layerless_ancestor,
+                            const gfx::Vector2d& offset) {
+  if (!layer_) {
+    const gfx::Vector2d new_offset = offset + bounds().OffsetFromOrigin();
+    for (size_t i = 0; i < children_.size(); ++i) {
+      children_[i]->UnparentLayers(true, new_offset);
+    }
+  } else {
+    // Only remove the layer if we still own it.  Someone else may have acquired
+    // ownership of it via AcquireLayer() and may expect the hierarchy to go
+    // unchanged as the Window is destroyed.
+    if (layer_owner_) {
+      if (layer_->parent())
+        layer_->parent()->Remove(layer_);
+      if (has_layerless_ancestor) {
+        const gfx::Rect real_bounds(bounds_);
+        gfx::Rect layer_bounds(layer_->bounds());
+        layer_bounds.Offset(-offset);
+        layer_->SetBounds(layer_bounds);
+        bounds_ = real_bounds;
+      }
+    }
+  }
+}
+
+void Window::ReparentLayers(ui::Layer* parent_layer,
+                            const gfx::Vector2d& offset) {
+  if (!layer_) {
+    for (size_t i = 0; i < children_.size(); ++i) {
+      children_[i]->ReparentLayers(
+          parent_layer,
+          offset + children_[i]->bounds().OffsetFromOrigin());
+    }
+  } else {
+    const gfx::Rect real_bounds(bounds());
+    parent_layer->Add(layer_);
+    gfx::Rect layer_bounds(layer_->bounds().size());
+    layer_bounds += offset;
+    layer_->SetBounds(layer_bounds);
+    bounds_ = real_bounds;
+  }
+}
+
+void Window::OffsetLayerBounds(const gfx::Vector2d& offset) {
+  if (!layer_) {
+    for (size_t i = 0; i < children_.size(); ++i)
+      children_[i]->OffsetLayerBounds(offset);
+  } else {
+    gfx::Rect layer_bounds(layer_->bounds());
+    layer_bounds += offset;
+    layer_->SetBounds(layer_bounds);
+  }
 }
 
 void Window::OnParentChanged() {
@@ -947,7 +1074,7 @@ void Window::StackChildRelativeTo(Window* child,
   // for an explanation of this.
   while (final_target_i > 0 &&
          children_[direction == STACK_ABOVE ? final_target_i :
-                                              final_target_i - 1]->layer()
+                                              final_target_i - 1]->layer_
              ->delegate() == NULL) {
     --final_target_i;
   }
@@ -955,7 +1082,7 @@ void Window::StackChildRelativeTo(Window* child,
   Window* final_target = children_[final_target_i];
 
   // If we couldn't find a valid target position, don't move anything.
-  if (direction == STACK_ABOVE && final_target->layer()->delegate() == NULL)
+  if (direction == STACK_ABOVE && final_target->layer_->delegate() == NULL)
     return;
 
   // Don't try to stack a child above itself.
@@ -1007,9 +1134,9 @@ void Window::StackChildRelativeToImpl(Window* child,
   children_.insert(children_.begin() + dest_i, child);
 
   if (direction == STACK_ABOVE)
-    layer()->StackAbove(child->layer(), target->layer());
+    layer_->StackAbove(child->layer_, target->layer_);
   else
-    layer()->StackBelow(child->layer(), target->layer());
+    layer_->StackBelow(child->layer_, target->layer_);
 
   child->OnStackingChanged();
 }
@@ -1140,8 +1267,19 @@ void Window::NotifyWindowVisibilityChangedUp(aura::Window* target,
   }
 }
 
-void Window::OnLayerBoundsChanged(const gfx::Rect& old_bounds,
-                                  bool contained_mouse) {
+void Window::OnWindowBoundsChanged(const gfx::Rect& old_bounds,
+                                   bool contained_mouse) {
+  if (layer_) {
+    bounds_ = layer_->bounds();
+    if (parent_ && !parent_->layer_) {
+      gfx::Vector2d offset;
+      aura::Window* ancestor_with_layer =
+          parent_->GetAncestorWithLayer(&offset);
+      if (ancestor_with_layer)
+        bounds_.Offset(-offset);
+    }
+  }
+
   if (layout_manager_)
     layout_manager_->OnWindowResized();
   if (delegate_)
@@ -1160,7 +1298,7 @@ void Window::OnPaintLayer(gfx::Canvas* canvas) {
 }
 
 base::Closure Window::PrepareForLayerBoundsChange() {
-  return base::Bind(&Window::OnLayerBoundsChanged, base::Unretained(this),
+  return base::Bind(&Window::OnWindowBoundsChanged, base::Unretained(this),
                     bounds(), ContainsMouse());
 }
 
@@ -1216,7 +1354,7 @@ void Window::ConvertEventToTarget(ui::EventTarget* target,
 
 void Window::UpdateLayerName(const std::string& name) {
 #if !defined(NDEBUG)
-  DCHECK(layer());
+  DCHECK(layer_);
 
   std::string layer_name(name_);
   if (layer_name.empty())
@@ -1227,7 +1365,7 @@ void Window::UpdateLayerName(const std::string& name) {
     base::snprintf(id_buf, sizeof(id_buf), " %d", id_);
     layer_name.append(id_buf);
   }
-  layer()->set_name(layer_name);
+  layer_->set_name(layer_name);
 #endif
 }
 
@@ -1239,6 +1377,16 @@ bool Window::ContainsMouse() {
         ContainsPointInRoot(dispatcher->GetLastMouseLocationInRoot());
   }
   return contains_mouse;
+}
+
+const Window* Window::GetAncestorWithLayer(gfx::Vector2d* offset) const {
+  for (const aura::Window* window = this; window; window = window->parent()) {
+    if (window->layer_)
+      return window;
+    *offset += window->bounds().OffsetFromOrigin();
+  }
+  *offset = gfx::Vector2d();
+  return NULL;
 }
 
 }  // namespace aura

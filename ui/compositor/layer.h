@@ -287,6 +287,8 @@ class COMPOSITOR_EXPORT Layer
   // |compostior_| to repaint the content.
   void SendDamagedRects();
 
+  const SkRegion& damaged_region() const { return damaged_region_; }
+
   // Suppresses painting the content by disgarding damaged region and ignoring
   // new paint requests.
   void SuppressPaint();

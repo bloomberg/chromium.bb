@@ -40,6 +40,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
+#include "ui/gfx/skia_util.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(const char*)
 DECLARE_WINDOW_PROPERTY_TYPE(int)
@@ -2879,7 +2880,7 @@ TEST_F(WindowTest, DelegateNotifiedAsBoundsChangeInHiddenLayer) {
   // No bounds changed notification at the end of animation since layer
   // delegate is NULL.
   EXPECT_FALSE(delegate.bounds_changed());
-  EXPECT_NE("0,0 100x100", window->bounds().ToString());
+  EXPECT_NE("0,0 100x100", window->layer()->bounds().ToString());
 }
 
 namespace {
@@ -3183,6 +3184,186 @@ TEST_F(WindowTest, NotifyDelegateAfterDeletingTransients) {
   ASSERT_EQ(2u, destruction_order.size());
   EXPECT_EQ("transient", destruction_order[0]);
   EXPECT_EQ("parent", destruction_order[1]);
+}
+
+// Verifies SchedulePaint() on a layerless window results in damaging the right
+// thing.
+TEST_F(WindowTest, LayerlessWindowSchedulePaint) {
+  Window root(NULL);
+  root.Init(ui::LAYER_NOT_DRAWN);
+  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  Window* layerless_window = new Window(NULL);  // Owned by |root|.
+  layerless_window->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  layerless_window->SetBounds(gfx::Rect(10, 11, 12, 13));
+  root.AddChild(layerless_window);
+
+  root.layer()->SendDamagedRects();
+  layerless_window->SchedulePaintInRect(gfx::Rect(1, 2, 100, 4));
+  // Note the the region is clipped by the parent hence 100 going to 11.
+  EXPECT_EQ("11,13 11x4",
+            gfx::SkIRectToRect(root.layer()->damaged_region().getBounds()).
+            ToString());
+
+  Window* layerless_window2 = new Window(NULL);  // Owned by |layerless_window|.
+  layerless_window2->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  layerless_window2->SetBounds(gfx::Rect(1, 2, 3, 4));
+  layerless_window->AddChild(layerless_window2);
+
+  root.layer()->SendDamagedRects();
+  layerless_window2->SchedulePaintInRect(gfx::Rect(1, 2, 100, 4));
+  // Note the the region is clipped by the |layerless_window| hence 100 going to
+  // 2.
+  EXPECT_EQ("12,15 2x2",
+            gfx::SkIRectToRect(root.layer()->damaged_region().getBounds()).
+            ToString());
+}
+
+// Verifies bounds of layerless windows are correctly updated when adding
+// removing.
+TEST_F(WindowTest, NestedLayerlessWindowsBoundsOnAddRemove) {
+  // Creates the following structure (all children owned by root):
+  // root
+  //   w1ll      1,2
+  //     w11ll   3,4
+  //       w111  5,6
+  //     w12     7,8
+  //       w121  9,10
+  //
+  // ll: layer less, eg no layer
+  Window root(NULL);
+  root.InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  Window* w1ll = new Window(NULL);
+  w1ll->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  w1ll->SetBounds(gfx::Rect(1, 2, 100, 100));
+
+  Window* w11ll = new Window(NULL);
+  w11ll->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  w11ll->SetBounds(gfx::Rect(3, 4, 100, 100));
+  w1ll->AddChild(w11ll);
+
+  Window* w111 = new Window(NULL);
+  w111->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w111->SetBounds(gfx::Rect(5, 6, 100, 100));
+  w11ll->AddChild(w111);
+
+  Window* w12 = new Window(NULL);
+  w12->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w12->SetBounds(gfx::Rect(7, 8, 100, 100));
+  w1ll->AddChild(w12);
+
+  Window* w121 = new Window(NULL);
+  w121->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w121->SetBounds(gfx::Rect(9, 10, 100, 100));
+  w12->AddChild(w121);
+
+  root.AddChild(w1ll);
+
+  // All layers should be parented to the root.
+  EXPECT_EQ(root.layer(), w111->layer()->parent());
+  EXPECT_EQ(root.layer(), w12->layer()->parent());
+  EXPECT_EQ(w12->layer(), w121->layer()->parent());
+
+  // Ensure bounds are what we expect.
+  EXPECT_EQ("1,2 100x100", w1ll->bounds().ToString());
+  EXPECT_EQ("3,4 100x100", w11ll->bounds().ToString());
+  EXPECT_EQ("5,6 100x100", w111->bounds().ToString());
+  EXPECT_EQ("7,8 100x100", w12->bounds().ToString());
+  EXPECT_EQ("9,10 100x100", w121->bounds().ToString());
+
+  // Bounds of layers are relative to the nearest ancestor with a layer.
+  EXPECT_EQ("8,10 100x100", w12->layer()->bounds().ToString());
+  EXPECT_EQ("9,12 100x100", w111->layer()->bounds().ToString());
+  EXPECT_EQ("9,10 100x100", w121->layer()->bounds().ToString());
+
+  // Remove and repeat.
+  root.RemoveChild(w1ll);
+
+  EXPECT_TRUE(w111->layer()->parent() == NULL);
+  EXPECT_TRUE(w12->layer()->parent() == NULL);
+
+  // Verify bounds haven't changed again.
+  EXPECT_EQ("1,2 100x100", w1ll->bounds().ToString());
+  EXPECT_EQ("3,4 100x100", w11ll->bounds().ToString());
+  EXPECT_EQ("5,6 100x100", w111->bounds().ToString());
+  EXPECT_EQ("7,8 100x100", w12->bounds().ToString());
+  EXPECT_EQ("9,10 100x100", w121->bounds().ToString());
+
+  // Bounds of layers should now match that of windows.
+  EXPECT_EQ("7,8 100x100", w12->layer()->bounds().ToString());
+  EXPECT_EQ("5,6 100x100", w111->layer()->bounds().ToString());
+  EXPECT_EQ("9,10 100x100", w121->layer()->bounds().ToString());
+
+  delete w1ll;
+}
+
+// Verifies bounds of layerless windows are correctly updated when bounds
+// of ancestor changes.
+TEST_F(WindowTest, NestedLayerlessWindowsBoundsOnSetBounds) {
+  // Creates the following structure (all children owned by root):
+  // root
+  //   w1ll      1,2
+  //     w11ll   3,4
+  //       w111  5,6
+  //     w12     7,8
+  //       w121  9,10
+  //
+  // ll: layer less, eg no layer
+  Window root(NULL);
+  root.InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  Window* w1ll = new Window(NULL);
+  w1ll->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  w1ll->SetBounds(gfx::Rect(1, 2, 100, 100));
+
+  Window* w11ll = new Window(NULL);
+  w11ll->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  w11ll->SetBounds(gfx::Rect(3, 4, 100, 100));
+  w1ll->AddChild(w11ll);
+
+  Window* w111 = new Window(NULL);
+  w111->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w111->SetBounds(gfx::Rect(5, 6, 100, 100));
+  w11ll->AddChild(w111);
+
+  Window* w12 = new Window(NULL);
+  w12->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w12->SetBounds(gfx::Rect(7, 8, 100, 100));
+  w1ll->AddChild(w12);
+
+  Window* w121 = new Window(NULL);
+  w121->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w121->SetBounds(gfx::Rect(9, 10, 100, 100));
+  w12->AddChild(w121);
+
+  root.AddChild(w1ll);
+
+  w111->SetBounds(gfx::Rect(7, 8, 11, 12));
+  EXPECT_EQ("7,8 11x12", w111->bounds().ToString());
+  EXPECT_EQ("11,14 11x12", w111->layer()->bounds().ToString());
+
+  // Set back.
+  w111->SetBounds(gfx::Rect(5, 6, 100, 100));
+  EXPECT_EQ("5,6 100x100", w111->bounds().ToString());
+  EXPECT_EQ("9,12 100x100", w111->layer()->bounds().ToString());
+
+  // Setting the bounds of a layerless window needs to adjust the bounds of
+  // layered children.
+  w11ll->SetBounds(gfx::Rect(5, 6, 100, 100));
+  EXPECT_EQ("5,6 100x100", w11ll->bounds().ToString());
+  EXPECT_EQ("5,6 100x100", w111->bounds().ToString());
+  EXPECT_EQ("11,14 100x100", w111->layer()->bounds().ToString());
+
+  root.RemoveChild(w1ll);
+
+  w111->SetBounds(gfx::Rect(7, 8, 11, 12));
+  EXPECT_EQ("7,8 11x12", w111->bounds().ToString());
+  EXPECT_EQ("7,8 11x12", w111->layer()->bounds().ToString());
+
+  delete w1ll;
 }
 
 }  // namespace test
