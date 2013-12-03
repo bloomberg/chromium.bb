@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/run_loop.h"
 #include "chrome/browser/media/desktop_media_list_observer.h"
+#include "chrome/browser/media/fake_desktop_media_list.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest_mac.h"
@@ -35,71 +36,6 @@
   return items_;
 }
 @end
-
-class FakeDesktopMediaList : public DesktopMediaList {
- public:
-  FakeDesktopMediaList() : observer_(NULL) {
-  }
-
-  void AddSource(int id) {
-    Source source;
-    source.id =
-        content::DesktopMediaID(content::DesktopMediaID::TYPE_WINDOW, id);
-    source.name = base::Int64ToString16(id);
-
-    sources_.push_back(source);
-    observer_->OnSourceAdded(sources_.size() - 1);
-  }
-
-  void RemoveSource(int index) {
-    sources_.erase(sources_.begin() + index);
-    observer_->OnSourceRemoved(sources_.size() - 1);
-  }
-
-  void SetSourceThumbnail(int index) {
-    sources_[index].thumbnail = thumbnail_;
-    observer_->OnSourceThumbnailChanged(index);
-  }
-
-  void SetSourceName(int index, string16 name) {
-    sources_[index].name = name;
-    observer_->OnSourceNameChanged(index);
-  }
-
-  // DesktopMediaList implementation:
-  virtual void SetUpdatePeriod(base::TimeDelta period) OVERRIDE {
-  }
-
-  virtual void SetThumbnailSize(const gfx::Size& thumbnail_size) OVERRIDE {
-  }
-
-  virtual void SetViewDialogWindowId(
-      content::DesktopMediaID::Id dialog_id) OVERRIDE {
-  }
-
-  virtual void StartUpdating(DesktopMediaListObserver* observer) OVERRIDE {
-    observer_ = observer;
-
-    SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 150, 150);
-    bitmap.allocPixels();
-    bitmap.eraseRGB(0, 255, 0);
-    thumbnail_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-  }
-
-  virtual int GetSourceCount() const OVERRIDE {
-    return sources_.size();
-  }
-
-  virtual const Source& GetSource(int index) const OVERRIDE {
-    return sources_[index];
-  }
-
- private:
-  std::vector<Source> sources_;
-  DesktopMediaListObserver* observer_;
-  gfx::ImageSkia thumbnail_;
-};
 
 class DesktopMediaPickerControllerTest : public CocoaTest {
  public:

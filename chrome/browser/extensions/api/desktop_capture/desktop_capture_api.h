@@ -27,9 +27,8 @@ class DesktopCaptureChooseDesktopMediaFunction
   // Used for tests to supply fake picker.
   class PickerFactory {
    public:
-    virtual scoped_ptr<DesktopMediaList> CreateModel(
-        scoped_ptr<webrtc::ScreenCapturer> screen_capturer,
-        scoped_ptr<webrtc::WindowCapturer> window_capturer) = 0;
+    virtual scoped_ptr<DesktopMediaList> CreateModel(bool show_screens,
+                                                     bool show_windows) = 0;
     virtual scoped_ptr<DesktopMediaPicker> CreatePicker() = 0;
    protected:
     virtual ~PickerFactory() {}

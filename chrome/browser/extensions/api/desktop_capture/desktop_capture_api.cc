@@ -16,6 +16,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/window_capturer.h"
 
@@ -126,8 +127,9 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
   render_process_id_ = render_view->GetProcess()->GetID();
   render_view_id_ = render_view->GetRoutingID();
 
-  scoped_ptr<webrtc::ScreenCapturer> screen_capturer;
-  scoped_ptr<webrtc::WindowCapturer> window_capturer;
+
+  bool show_screens = false;
+  bool show_windows = false;
 
   for (std::vector<api::desktop_capture::DesktopCaptureSourceType>::iterator
        it = params->sources.begin(); it != params->sources.end(); ++it) {
@@ -137,17 +139,11 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
         return false;
 
       case api::desktop_capture::DESKTOP_CAPTURE_SOURCE_TYPE_SCREEN:
-#if defined(OS_WIN)
-        // ScreenCapturerWin disables Aero by default.
-        screen_capturer.reset(
-            webrtc::ScreenCapturer::CreateWithDisableAero(false));
-#else
-        screen_capturer.reset(webrtc::ScreenCapturer::Create());
-#endif
+        show_screens = true;
         break;
 
       case api::desktop_capture::DESKTOP_CAPTURE_SOURCE_TYPE_WINDOW:
-        window_capturer.reset(webrtc::WindowCapturer::Create());
+        show_windows = true;
         break;
 
       case api::desktop_capture::DESKTOP_CAPTURE_SOURCE_TYPE_TAB:
@@ -156,7 +152,7 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
     }
   }
 
-  if (!screen_capturer && !window_capturer) {
+  if (!show_screens && !show_windows) {
     error_ = kEmptySourcesListError;
     return false;
   }
@@ -164,19 +160,25 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
   scoped_ptr<DesktopMediaList> media_list;
   if (g_picker_factory) {
     media_list = g_picker_factory->CreateModel(
-        screen_capturer.Pass(), window_capturer.Pass());
+        show_screens, show_windows);
     picker_ = g_picker_factory->CreatePicker();
   } else {
     // DesktopMediaPicker is implemented only for Windows, OSX and
     // Aura Linux builds.
 #if (defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
+    webrtc::DesktopCaptureOptions options =
+        webrtc::DesktopCaptureOptions::CreateDefault();
+    options.set_disable_effects(false);
+    scoped_ptr<webrtc::ScreenCapturer> screen_capturer(
+        show_screens ? webrtc::ScreenCapturer::Create(options) : NULL);
+    scoped_ptr<webrtc::WindowCapturer> window_capturer(
+        show_windows ? webrtc::WindowCapturer::Create(options) : NULL);
+
     media_list.reset(new NativeDesktopMediaList(
         screen_capturer.Pass(), window_capturer.Pass()));
     picker_ = DesktopMediaPicker::Create();
 #else
-    const char kNotImplementedError[] =
-        "Desktop Capture API is not yet implemented for this platform.";
-    error_ = kNotImplementedError;
+    error_ = "Desktop Capture API is not yet implemented for this platform.";
     return false;
 #endif
   }

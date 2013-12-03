@@ -139,6 +139,8 @@
         'browser/extensions/test_extension_service.h',
         'browser/extensions/test_extension_system.cc',
         'browser/extensions/test_extension_system.h',
+        'browser/media/fake_desktop_media_list.cc',
+        'browser/media/fake_desktop_media_list.h',
         'browser/media_galleries/media_galleries_test_util.cc',
         'browser/media_galleries/media_galleries_test_util.h',
         'browser/net/dns_probe_test_util.cc',

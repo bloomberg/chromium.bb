@@ -9,7 +9,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/api/desktop_capture/desktop_capture_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/media/desktop_media_picker.h"
+#include "chrome/browser/media/fake_desktop_media_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -17,8 +17,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
-#include "third_party/webrtc/modules/desktop_capture/window_capturer.h"
 
 namespace extensions {
 
@@ -88,15 +86,14 @@ class FakeDesktopMediaPickerFactory :
 
   // DesktopCaptureChooseDesktopMediaFunction::PickerFactory interface.
   virtual scoped_ptr<DesktopMediaList> CreateModel(
-      scoped_ptr<webrtc::ScreenCapturer> screen_capturer,
-      scoped_ptr<webrtc::WindowCapturer> window_capturer) OVERRIDE {
+      bool show_screens,
+      bool show_windows) OVERRIDE {
     EXPECT_TRUE(!expectations_.empty());
     if (!expectations_.empty()) {
-      EXPECT_EQ(expectations_.front().screens, !!screen_capturer.get());
-      EXPECT_EQ(expectations_.front().windows, !!window_capturer.get());
+      EXPECT_EQ(expectations_.front().screens, show_screens);
+      EXPECT_EQ(expectations_.front().windows, show_windows);
     }
-    return scoped_ptr<DesktopMediaList>(new NativeDesktopMediaList(
-        screen_capturer.Pass(), window_capturer.Pass()));
+    return scoped_ptr<DesktopMediaList>(new FakeDesktopMediaList());
   }
   virtual scoped_ptr<DesktopMediaPicker> CreatePicker() OVERRIDE {
     content::DesktopMediaID next_source;
