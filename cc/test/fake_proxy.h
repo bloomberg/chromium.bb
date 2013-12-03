@@ -38,7 +38,7 @@ class FakeProxy : public Proxy {
   virtual void MainThreadHasStoppedFlinging() OVERRIDE {}
   virtual bool BeginMainFrameRequested() const OVERRIDE;
   virtual bool CommitRequested() const OVERRIDE;
-  virtual void Start(scoped_ptr<OutputSurface> first_output_surface) OVERRIDE {}
+  virtual void Start() OVERRIDE {}
   virtual void Stop() OVERRIDE {}
   virtual void ForceSerializeOnSwapBuffers() OVERRIDE {}
   virtual size_t MaxPartialTextureUpdates() const OVERRIDE;

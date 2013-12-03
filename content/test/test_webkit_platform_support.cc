@@ -303,8 +303,7 @@ TestWebKitPlatformSupport::createLayerTreeViewForTesting() {
   scoped_ptr<WebLayerTreeViewImplForTesting> view(
       new WebLayerTreeViewImplForTesting());
 
-  if (!view->Initialize())
-    return NULL;
+  view->Initialize();
   return view.release();
 }
 

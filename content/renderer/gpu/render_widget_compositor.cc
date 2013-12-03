@@ -279,8 +279,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   }
 #endif
 
-  if (!compositor->Initialize(settings))
-    return scoped_ptr<RenderWidgetCompositor>();
+  compositor->Initialize(settings);
 
   return compositor.Pass();
 }
@@ -387,7 +386,7 @@ bool RenderWidgetCompositor::ScheduleMicroBenchmark(
   return layer_tree_host_->ScheduleMicroBenchmark(name, value.Pass(), callback);
 }
 
-bool RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
+void RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy =
       RenderThreadImpl::current()->compositor_message_loop_proxy();
   if (compositor_message_loop_proxy.get()) {
@@ -397,7 +396,7 @@ bool RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
     layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
         this, this, NULL, settings);
   }
-  return layer_tree_host_;
+  DCHECK(layer_tree_host_);
 }
 
 void RenderWidgetCompositor::setSurfaceReady() {

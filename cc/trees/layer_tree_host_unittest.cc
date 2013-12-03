@@ -2308,7 +2308,7 @@ class LayerTreeHostWithProxy : public LayerTreeHost {
                          scoped_ptr<FakeProxy> proxy)
       : LayerTreeHost(client, NULL, settings) {
     proxy->SetLayerTreeHost(this);
-    EXPECT_TRUE(InitializeForTesting(proxy.PassAs<Proxy>()));
+    InitializeForTesting(proxy.PassAs<Proxy>());
   }
 };
 
