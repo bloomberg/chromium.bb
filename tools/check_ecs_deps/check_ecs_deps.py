@@ -6,7 +6,6 @@
 ''' Verifies that builds of the embedded content_shell do not included
 unnecessary dependencies.'''
 
-import getopt
 import os
 import re
 import string
@@ -50,7 +49,7 @@ kAllowedLibraryList = [
 
 binary_target = 'content_shell'
 
-def stdmsg(final, errors):
+def stdmsg(_final, errors):
   if errors:
     for message in errors:
       print message
@@ -70,6 +69,7 @@ def _main():
     'warn': lambda x: stdmsg('WARNING', x),
     'abend': lambda x: stdmsg('FAILED', x),
     'ok': lambda x: stdmsg('SUCCESS', x),
+    'verbose': lambda x: None,
   }
 
   parser = optparse.OptionParser(
@@ -80,8 +80,13 @@ def _main():
   parser.add_option("-b", "--build-dir",
                     help="the location of the compiler output")
   parser.add_option("--target", help="Debug or Release")
+  parser.add_option('-v', '--verbose', default=False, action='store_true')
 
   options, args = parser.parse_args()
+  if args:
+    parser.usage()
+    return -1
+
   # Bake target into build_dir.
   if options.target and options.build_dir:
     assert (options.target !=
@@ -90,24 +95,32 @@ def _main():
                                      options.target)
 
   if options.build_dir != None:
-      target = os.path.join(options.build_dir, binary_target)
+    target = os.path.join(options.build_dir, binary_target)
   else:
     target = binary_target
 
   if options.annotate:
-    output = {
+    output.update({
       'message': lambda x: bbmsg(None, x),
       'fail': lambda x: bbmsg('FAILURE', x),
       'warn': lambda x: bbmsg('WARNINGS', x),
       'abend': lambda x: bbmsg('EXCEPTIONS', x),
       'ok': lambda x: bbmsg(None, x),
-    }
+    })
+
+  if options.verbose:
+    output['verbose'] = lambda x: stdmsg(None, x)
 
   forbidden_regexp = re.compile(string.join(map(re.escape,
                                                 kUndesiredLibraryList), '|'))
-  mapping_regexp = re.compile(r"\s*([^/]*) => ")
+  mapping_regexp = re.compile(r"\s*([^/]*) => (.*)")
   blessed_regexp = re.compile(r"(%s)[-0-9.]*\.so" % string.join(map(re.escape,
       kAllowedLibraryList), '|'))
+  if options.build_dir != None:
+    built_regexp = re.compile(re.escape(options.build_dir))
+  else:
+    built_regexp = re.compile(re.escape('lib'))
+
   success = 0
   warning = 0
 
@@ -131,15 +144,20 @@ def _main():
   success = 1
   deps = string.split(out, '\n')
   for d in deps:
-      libmatch = mapping_regexp.match(d)
-      if libmatch:
-        lib = libmatch.group(1)
-        if forbidden_regexp.search(lib):
-          success = 0
-          output['message'](['Forbidden library: ' +  lib])
-        if not blessed_regexp.match(lib):
-          warning = 1
-          output['message'](['Unexpected library: ' +  lib])
+    libmatch = mapping_regexp.match(d)
+    if libmatch:
+      lib = libmatch.group(1)
+      source = libmatch.group(2)
+      if forbidden_regexp.search(lib):
+        success = 0
+        output['message'](['Forbidden library: ' + lib])
+      elif built_regexp.match(source):
+        output['verbose'](['Built library: ' + lib])
+      elif blessed_regexp.match(lib):
+        output['verbose'](['Blessed library: ' + lib])
+      else:
+        warning = 1
+        output['message'](['Unexpected library: ' + lib])
 
   if success == 1:
     if warning == 1:
