@@ -19,19 +19,50 @@ _SAMPLE_DATA = json.load(open(os.path.join(_TEST_DIR, 'sample_timeline.json')))
 _SAMPLE_EVENTS = model.TimelineModel(event_data=_SAMPLE_DATA).GetAllEvents()
 
 
+class FakeTimelineModel(object):
+
+  def __init__(self):
+    self._events = []
+
+  def SetAllEvents(self, events):
+    self._events = events
+
+  def GetAllEvents(self):
+    return self._events
+
+
+class FakeTab(object):
+
+  def __init__(self):
+    self._timeline_model = FakeTimelineModel()
+    self._javascript_result = None
+
+  @property
+  def timeline_model(self):
+    return self._timeline_model
+
+  def SetEvaluateJavaScriptResult(self, result):
+    self._javascript_result = result
+
+  def EvaluateJavaScript(self, _):
+    return self._javascript_result
+
+
 class IncludedPaintEventsTest(unittest.TestCase):
   def testNumberPaintEvents(self):
+    impl = speedindex.PaintRectSpeedIndexImpl(None)
     # In the sample data, there's one event that occurs before the layout event,
     # and one paint event that's not a leaf paint event.
-    events = speedindex._IncludedPaintEvents(_SAMPLE_EVENTS)
+    events = impl._IncludedPaintEvents(_SAMPLE_EVENTS)
     self.assertEquals(len(events), 5)
 
 
 class TimeAreaDictTest(unittest.TestCase):
   def testAdjustedAreaDict(self):
-    paint_events = speedindex._IncludedPaintEvents(_SAMPLE_EVENTS)
+    impl = speedindex.PaintRectSpeedIndexImpl(None)
+    paint_events = impl._IncludedPaintEvents(_SAMPLE_EVENTS)
     viewport = 1000, 1000
-    time_area_dict = speedindex._TimeAreaDict(paint_events, viewport)
+    time_area_dict = impl._TimeAreaDict(paint_events, viewport)
     self.assertEquals(len(time_area_dict), 4)
     # The event that ends at time 100 is a fullscreen; it's discounted by half.
     self.assertEquals(time_area_dict[100], 500000)
@@ -42,6 +73,8 @@ class TimeAreaDictTest(unittest.TestCase):
 
 class SpeedIndexTest(unittest.TestCase):
   def testWithSampleData(self):
+    tab = FakeTab()
+    impl = speedindex.PaintRectSpeedIndexImpl(tab)
     viewport = 1000, 1000
     # Add up the parts of the speed index for each time interval.
     # Each part is the time interval multiplied by the proportion of the
@@ -52,7 +85,9 @@ class SpeedIndexTest(unittest.TestCase):
     parts.append(100 * 0.4)
     parts.append(400 * 0.2)
     expected = sum(parts)  # 330.0
-    actual = speedindex._SpeedIndex(_SAMPLE_EVENTS, viewport)
+    tab.timeline_model.SetAllEvents(_SAMPLE_EVENTS)
+    tab.SetEvaluateJavaScriptResult(viewport)
+    actual = impl.CalculateSpeedIndex()
     self.assertEqual(actual, expected)
 
 
@@ -71,11 +106,15 @@ class WPTComparisonTest(unittest.TestCase):
       filename: Filename of a json file which contains a
       expected: The result expected based on the WPT result.
     """
+    tab = FakeTab()
+    impl = speedindex.PaintRectSpeedIndexImpl(tab)
     file_path = os.path.join(_TEST_DIR, filename)
     with open(file_path) as json_file:
       raw_events = json.load(json_file)
-      events = model.TimelineModel(event_data=raw_events).GetAllEvents()
-      actual = speedindex._SpeedIndex(events, viewport)
+      tab.timeline_model.SetAllEvents(
+          model.TimelineModel(event_data=raw_events).GetAllEvents())
+      tab.SetEvaluateJavaScriptResult(viewport)
+      actual = impl.CalculateSpeedIndex()
       # The result might differ by 1 or more milliseconds due to rounding,
       # so compare to the nearest 10 milliseconds.
       self.assertAlmostEqual(actual, expected, places=-1)
