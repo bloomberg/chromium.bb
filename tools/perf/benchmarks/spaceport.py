@@ -6,6 +6,7 @@
 
 import logging
 import os
+import sys
 
 from telemetry import test
 from telemetry.core import util
@@ -55,6 +56,8 @@ class _SpaceportMeasurement(page_measurement.PageMeasurement):
 class Spaceport(test.Test):
   """spaceport.io's PerfMarks benchmark."""
   test = _SpaceportMeasurement
+
+  enabled = sys.platform != 'darwin'
 
   def CreatePageSet(self, options):
     spaceport_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
