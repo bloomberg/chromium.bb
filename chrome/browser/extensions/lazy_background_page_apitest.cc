@@ -81,9 +81,9 @@ class LazyBackgroundPageApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpCommandLine(command_line);
     // Set shorter delays to prevent test timeouts.
     command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageIdleTime, "1");
+        extensions::switches::kEventPageIdleTime, "1000");
     command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageSuspendingTime, "1");
+        extensions::switches::kEventPageSuspendingTime, "1000");
   }
 
   // Loads the extension, which temporarily starts the lazy background page
@@ -405,6 +405,40 @@ IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, Messaging) {
 
   // Navigate away, closing the message channel and therefore the background
   // page.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+  lazybg.WaitUntilClosed();
+
+  EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id()));
+}
+
+// Tests that a KeepaliveImpulse increments the keep alive count, but eventually
+// times out and background page will still close.
+IN_PROC_BROWSER_TEST_F(LazyBackgroundPageApiTest, ImpulseAddsCount) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  const Extension* extension = LoadExtensionAndWait("messaging");
+  ASSERT_TRUE(extension);
+
+  // Lazy Background Page doesn't exist yet.
+  extensions::ProcessManager* pm =
+      extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
+  EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id()));
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+  // Navigate to a page that opens a message channel to the background page.
+  ResultCatcher catcher;
+  LazyBackgroundObserver lazybg;
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/extensions/test_file.html"));
+  lazybg.WaitUntilLoaded();
+
+  // Add an impulse and the keep alive count increases.
+  int previous_keep_alive_count = pm->GetLazyKeepaliveCount(extension);
+  pm->KeepaliveImpulse(extension);
+  EXPECT_EQ(previous_keep_alive_count + 1,
+            pm->GetLazyKeepaliveCount(extension));
+
+  // Navigate away, closing the message channel and therefore the background
+  // page after the impulse times out.
   ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
   lazybg.WaitUntilClosed();
 

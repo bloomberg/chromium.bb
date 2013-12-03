@@ -133,6 +133,10 @@ struct ProcessManager::BackgroundPageData {
   // The count of things keeping the lazy background page alive.
   int lazy_keepalive_count;
 
+  // Tracks if an impulse event has occured since the last polling check.
+  bool keepalive_impulse;
+  bool previous_keepalive_impulse;
+
   // This is used with the ShouldSuspend message, to ensure that the extension
   // remained idle between sending the message and receiving the ack.
   int close_sequence_id;
@@ -147,7 +151,11 @@ struct ProcessManager::BackgroundPageData {
   linked_ptr<base::ElapsedTimer> since_suspended;
 
   BackgroundPageData()
-      : lazy_keepalive_count(0), close_sequence_id(0), is_closing(false) {}
+      : lazy_keepalive_count(0),
+        keepalive_impulse(false),
+        previous_keepalive_impulse(false),
+        close_sequence_id(0),
+        is_closing(false) {}
 };
 
 //
@@ -197,22 +205,25 @@ ProcessManager::ProcessManager(BrowserContext* context,
   }
 
   event_page_idle_time_ = base::TimeDelta::FromSeconds(10);
-  unsigned idle_time_sec = 0;
+  unsigned idle_time_msec = 0;
   if (base::StringToUint(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          extensions::switches::kEventPageIdleTime), &idle_time_sec)) {
-    event_page_idle_time_ = base::TimeDelta::FromSeconds(idle_time_sec);
+          extensions::switches::kEventPageIdleTime), &idle_time_msec)) {
+    CHECK(idle_time_msec > 0);  // OnKeepaliveImpulseCheck requires non zero.
+    event_page_idle_time_ = base::TimeDelta::FromMilliseconds(idle_time_msec);
   }
   event_page_suspending_time_ = base::TimeDelta::FromSeconds(5);
-  unsigned suspending_time_sec = 0;
+  unsigned suspending_time_msec = 0;
   if (base::StringToUint(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
                              extensions::switches::kEventPageSuspendingTime),
-                         &suspending_time_sec)) {
+                         &suspending_time_msec)) {
     event_page_suspending_time_ =
-        base::TimeDelta::FromSeconds(suspending_time_sec);
+        base::TimeDelta::FromMilliseconds(suspending_time_msec);
   }
 
   content::DevToolsManager::GetInstance()->AddAgentStateCallback(
       devtools_callback_);
+
+  OnKeepaliveImpulseCheck();
 }
 
 ProcessManager::~ProcessManager() {
@@ -346,38 +357,38 @@ int ProcessManager::GetLazyKeepaliveCount(const Extension* extension) {
   return background_page_data_[extension->id()].lazy_keepalive_count;
 }
 
-int ProcessManager::IncrementLazyKeepaliveCount(const Extension* extension) {
+void ProcessManager::IncrementLazyKeepaliveCount(const Extension* extension) {
   if (!BackgroundInfo::HasLazyBackgroundPage(extension))
-    return 0;
+    return;
 
   int& count = background_page_data_[extension->id()].lazy_keepalive_count;
   if (++count == 1)
     OnLazyBackgroundPageActive(extension->id());
-
-  return count;
 }
 
-int ProcessManager::DecrementLazyKeepaliveCount(const Extension* extension) {
+void ProcessManager::DecrementLazyKeepaliveCount(const Extension* extension) {
   if (!BackgroundInfo::HasLazyBackgroundPage(extension))
-    return 0;
+    return;
+  DecrementLazyKeepaliveCount(extension->id());
+}
 
-  int& count = background_page_data_[extension->id()].lazy_keepalive_count;
+void ProcessManager::DecrementLazyKeepaliveCount(
+    const std::string& extension_id) {
+  int& count = background_page_data_[extension_id].lazy_keepalive_count;
   DCHECK_GT(count, 0);
 
   // If we reach a zero keepalive count when the lazy background page is about
   // to be closed, incrementing close_sequence_id will cancel the close
   // sequence and cause the background page to linger. So check is_closing
   // before initiating another close sequence.
-  if (--count == 0 && !background_page_data_[extension->id()].is_closing) {
+  if (--count == 0 && !background_page_data_[extension_id].is_closing) {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(&ProcessManager::OnLazyBackgroundPageIdle,
-                   weak_ptr_factory_.GetWeakPtr(), extension->id(),
-                   ++background_page_data_[extension->id()].close_sequence_id),
+                   weak_ptr_factory_.GetWeakPtr(), extension_id,
+                   ++background_page_data_[extension_id].close_sequence_id),
         event_page_idle_time_);
   }
-
-  return count;
 }
 
 void ProcessManager::IncrementLazyKeepaliveCountForView(
@@ -391,6 +402,51 @@ void ProcessManager::IncrementLazyKeepaliveCountForView(
         render_view_host);
     if (extension)
       IncrementLazyKeepaliveCount(extension);
+  }
+}
+
+// This implementation layers on top of the keepalive count. An impulse sets
+// a per extension flag. On a regular interval that flag is checked. Changes
+// from the flag not being set to set cause an IncrementLazyKeepaliveCount.
+void ProcessManager::KeepaliveImpulse(const Extension* extension) {
+  if (!BackgroundInfo::HasLazyBackgroundPage(extension))
+    return;
+
+  BackgroundPageData& bd = background_page_data_[extension->id()];
+
+  if (!bd.keepalive_impulse) {
+    bd.keepalive_impulse = true;
+    if (!bd.previous_keepalive_impulse) {
+      IncrementLazyKeepaliveCount(extension);
+    }
+  }
+}
+
+// DecrementLazyKeepaliveCount is called when no calls to KeepaliveImpulse
+// have been made for at least event_page_idle_time_. In the best case an
+// impulse was made just before being cleared, and the decrement will occur
+// event_page_idle_time_ later, causing a 2 * event_page_idle_time_ total time
+// for extension to be shut down based on impulses. Worst case is an impulse
+// just after a clear, adding one check cycle and resulting in 3x total time.
+void ProcessManager::OnKeepaliveImpulseCheck() {
+  for (BackgroundPageDataMap::iterator i = background_page_data_.begin();
+       i != background_page_data_.end();
+       ++i) {
+    if (i->second.previous_keepalive_impulse && !i->second.keepalive_impulse)
+      DecrementLazyKeepaliveCount(i->first);
+
+    i->second.previous_keepalive_impulse = i->second.keepalive_impulse;
+    i->second.keepalive_impulse = false;
+  }
+
+  // OnKeepaliveImpulseCheck() is always called in constructor, but in unit
+  // tests there will be no message loop. In that event don't schedule tasks.
+  if (base::MessageLoop::current()) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ProcessManager::OnKeepaliveImpulseCheck,
+                   weak_ptr_factory_.GetWeakPtr()),
+        event_page_idle_time_);
   }
 }
 

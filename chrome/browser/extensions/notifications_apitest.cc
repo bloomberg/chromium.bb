@@ -21,9 +21,9 @@ class NotificationIdleTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpCommandLine(command_line);
 
     command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageIdleTime, "1");
+        extensions::switches::kEventPageIdleTime, "1000");
     command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageSuspendingTime, "1");
+        extensions::switches::kEventPageSuspendingTime, "1000");
   }
 
   const extensions::Extension* LoadExtensionAndWait(

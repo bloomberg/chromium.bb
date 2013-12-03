@@ -21,9 +21,9 @@ class SystemIndicatorApiTest : public ExtensionApiTest {
     // Set shorter delays to prevent test timeouts in tests that need to wait
     // for the event page to unload.
     command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageIdleTime, "1");
+        extensions::switches::kEventPageIdleTime, "1000");
     command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageSuspendingTime, "1");
+        extensions::switches::kEventPageSuspendingTime, "1000");
   }
 
   const extensions::Extension* LoadExtensionAndWait(

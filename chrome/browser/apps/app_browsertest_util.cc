@@ -36,8 +36,8 @@ void PlatformAppBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   ExtensionBrowserTest::SetUpCommandLine(command_line);
 
   // Make event pages get suspended quicker.
-  command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "1");
-  command_line->AppendSwitchASCII(switches::kEventPageSuspendingTime, "1");
+  command_line->AppendSwitchASCII(switches::kEventPageIdleTime, "1000");
+  command_line->AppendSwitchASCII(switches::kEventPageSuspendingTime, "1000");
 }
 
 // static

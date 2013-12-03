@@ -609,7 +609,7 @@ class ExtensionContextMenuBrowserLazyTest :
     ExtensionContextMenuBrowserTest::SetUpCommandLine(command_line);
     // Set shorter delays to prevent test timeouts.
     command_line->AppendSwitchASCII(
-        extensions::switches::kEventPageIdleTime, "0");
+        extensions::switches::kEventPageIdleTime, "1");
     command_line->AppendSwitchASCII(
         extensions::switches::kEventPageSuspendingTime, "0");
   }
