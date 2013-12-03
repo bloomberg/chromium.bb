@@ -38,10 +38,6 @@ class NotificationProvider : public RenderViewObserver,
   virtual void requestPermission(const blink::WebSecurityOrigin& origin,
       blink::WebNotificationPermissionCallback* callback);
 
-  // Internal methods used to show notifications.
-  bool ShowHTML(const blink::WebNotification& notification, int id);
-  bool ShowText(const blink::WebNotification& notification, int id);
-
   // IPC handlers.
   void OnDisplay(int id);
   void OnError(int id, const blink::WebString& message);

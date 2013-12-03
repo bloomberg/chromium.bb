@@ -494,17 +494,14 @@ bool DesktopNotificationService::ShowDesktopNotification(
                                   source == WorkerNotification);
 
   string16 display_source = DisplayNameForOriginInProcessId(origin, process_id);
-  if (params.is_html) {
-    ShowNotification(Notification(origin, params.contents_url, display_source,
-        params.replace_id, proxy));
-  } else {
-    Notification notification(origin, params.icon_url, params.title,
-        params.body, params.direction, display_source, params.replace_id,
-        proxy);
-    // The webkit notification doesn't timeout.
-    notification.set_never_timeout(true);
-    ShowNotification(notification);
-  }
+  Notification notification(origin, params.icon_url, params.title,
+      params.body, params.direction, display_source, params.replace_id,
+      proxy);
+
+  // The webkit notification doesn't timeout.
+  notification.set_never_timeout(true);
+
+  ShowNotification(notification);
   return true;
 }
 

@@ -145,7 +145,6 @@ DesktopNotificationsTest::StandardTestNotification() {
   content::ShowDesktopNotificationHostMsgParams params;
   params.notification_id = 0;
   params.origin = GURL("http://www.google.com");
-  params.is_html = false;
   params.icon_url = GURL("/icon.png");
   params.title = ASCIIToUTF16("Title");
   params.body = ASCIIToUTF16("Text");
@@ -163,11 +162,11 @@ TEST_F(DesktopNotificationsTest, TestShow) {
   base::MessageLoopForUI::current()->RunUntilIdle();
   EXPECT_EQ(1, balloon_collection_->count());
 
-  content::ShowDesktopNotificationHostMsgParams params2;
-  params2.origin = GURL("http://www.google.com");
-  params2.is_html = true;
-  params2.contents_url = GURL("http://www.google.com/notification.html");
+  content::ShowDesktopNotificationHostMsgParams params2 =
+      StandardTestNotification();
   params2.notification_id = 2;
+  params2.origin = GURL("http://www.google.com");
+  params2.body = ASCIIToUTF16("Text");
 
   EXPECT_TRUE(service_->ShowDesktopNotification(
       params2, 0, 0, DesktopNotificationService::PageNotification));
@@ -254,7 +253,6 @@ TEST_F(DesktopNotificationsTest, TestPositioning) {
 TEST_F(DesktopNotificationsTest, TestVariableSize) {
   content::ShowDesktopNotificationHostMsgParams params;
   params.origin = GURL("http://long.google.com");
-  params.is_html = false;
   params.icon_url = GURL("/icon.png");
   params.title = ASCIIToUTF16("Really Really Really Really Really Really "
                               "Really Really Really Really Really Really "

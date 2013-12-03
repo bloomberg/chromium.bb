@@ -19,12 +19,6 @@ struct CONTENT_EXPORT ShowDesktopNotificationHostMsgParams {
   // URL which is the origin that created this notification.
   GURL origin;
 
-  // True if this is HTML
-  bool is_html;
-
-  // URL which contains the HTML contents (if is_html is true), otherwise empty.
-  GURL contents_url;
-
   // Contents of the notification if is_html is false.
   GURL icon_url;
   string16 title;

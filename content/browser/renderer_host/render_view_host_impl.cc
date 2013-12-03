@@ -2203,15 +2203,6 @@ void RenderViewHostImpl::OnRequestDesktopNotificationPermission(
 
 void RenderViewHostImpl::OnShowDesktopNotification(
     const ShowDesktopNotificationHostMsgParams& params) {
-  // Disallow HTML notifications from javascript: and file: schemes as this
-  // allows unwanted cross-domain access.
-  GURL url = params.contents_url;
-  if (params.is_html &&
-      (url.SchemeIs(kJavaScriptScheme) ||
-       url.SchemeIs(chrome::kFileScheme))) {
-    return;
-  }
-
   GetContentClient()->browser()->ShowDesktopNotification(
       params, GetProcess()->GetID(), GetRoutingID(), false);
 }
