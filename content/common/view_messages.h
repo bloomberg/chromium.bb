@@ -1105,6 +1105,11 @@ IPC_MESSAGE_ROUTED2(ViewMsg_SetWebUIProperty,
 IPC_MESSAGE_ROUTED1(ViewMsg_SetInputMethodActive,
                     bool /* is_active */)
 
+// IME API oncandidatewindow* events for InputMethodContext.
+IPC_MESSAGE_ROUTED0(ViewMsg_CandidateWindowShown)
+IPC_MESSAGE_ROUTED0(ViewMsg_CandidateWindowUpdated)
+IPC_MESSAGE_ROUTED0(ViewMsg_CandidateWindowHidden)
+
 // This message sends a string being composed with an input method.
 IPC_MESSAGE_ROUTED4(
     ViewMsg_ImeSetComposition,

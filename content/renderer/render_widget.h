@@ -347,6 +347,9 @@ class CONTENT_EXPORT RenderWidget
   void OnUpdateVideoAck(int32 video_id);
   void OnRequestMoveAck();
   void OnSetInputMethodActive(bool is_active);
+  void OnCandidateWindowShown();
+  void OnCandidateWindowUpdated();
+  void OnCandidateWindowHidden();
   virtual void OnImeSetComposition(
       const string16& text,
       const std::vector<blink::WebCompositionUnderline>& underlines,

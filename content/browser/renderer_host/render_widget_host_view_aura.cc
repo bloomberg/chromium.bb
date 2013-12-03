@@ -2386,12 +2386,15 @@ void RenderWidgetHostViewAura::EnsureCaretInRect(const gfx::Rect& rect) {
 }
 
 void RenderWidgetHostViewAura::OnCandidateWindowShown() {
+  host_->CandidateWindowShown();
 }
 
 void RenderWidgetHostViewAura::OnCandidateWindowUpdated() {
+  host_->CandidateWindowUpdated();
 }
 
 void RenderWidgetHostViewAura::OnCandidateWindowHidden() {
+  host_->CandidateWindowHidden();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

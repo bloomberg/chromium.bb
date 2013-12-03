@@ -795,6 +795,7 @@ class CONTENT_EXPORT RenderViewImpl
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, TextInputTypeWithPepper);
   FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest,
                            MessageOrderInDidChangeSelection);
+  FRIEND_TEST_ALL_PREFIXES(RenderViewImplTest, SendCandidateWindowEvents);
   FRIEND_TEST_ALL_PREFIXES(SuppressErrorPageTest, Suppresses);
   FRIEND_TEST_ALL_PREFIXES(SuppressErrorPageTest, DoesNotSuppress);
 

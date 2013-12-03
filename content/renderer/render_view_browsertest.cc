@@ -2112,4 +2112,42 @@ TEST_F(SuppressErrorPageTest, MAYBE_DoesNotSuppress) {
             UTF16ToASCII(web_frame->contentAsText(kMaxOutputCharacters)));
 }
 
+// Tests if IME API's candidatewindow* events sent from browser are handled
+// in renderer.
+TEST_F(RenderViewImplTest, SendCandidateWindowEvents) {
+  // Sends an HTML with an <input> element and scripts to the renderer.
+  // The script handles all 3 of candidatewindow* events for an
+  // InputMethodContext object and once it received 'show', 'update', 'hide'
+  // should appear in the result div.
+  LoadHTML("<input id='test'>"
+           "<div id='result'>Result: </div>"
+           "<script>"
+           "window.onload = function() {"
+           "  var result = document.getElementById('result');"
+           "  var test = document.getElementById('test');"
+           "  test.focus();"
+           "  var context = test.inputMethodContext;"
+           "  if (context) {"
+           "    context.oncandidatewindowshow = function() {"
+           "        result.innerText += 'show'; };"
+           "    context.oncandidatewindowupdate = function(){"
+           "        result.innerText += 'update'; };"
+           "    context.oncandidatewindowhide = function(){"
+           "        result.innerText += 'hide'; };"
+           "  }"
+           "};"
+           "</script>");
+
+  // Fire candidatewindow events.
+  view()->OnCandidateWindowShown();
+  view()->OnCandidateWindowUpdated();
+  view()->OnCandidateWindowHidden();
+
+  // Retrieve the content and check if it is expected.
+  const int kMaxOutputCharacters = 50;
+  std::string output = UTF16ToUTF8(
+      GetMainFrame()->contentAsText(kMaxOutputCharacters));
+  EXPECT_EQ(output, "\nResult:showupdatehide");
+}
+
 }  // namespace content

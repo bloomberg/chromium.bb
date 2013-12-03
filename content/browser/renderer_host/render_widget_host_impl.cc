@@ -1308,6 +1308,18 @@ void RenderWidgetHostImpl::SetInputMethodActive(bool activate) {
   Send(new ViewMsg_SetInputMethodActive(GetRoutingID(), activate));
 }
 
+void RenderWidgetHostImpl::CandidateWindowShown() {
+  Send(new ViewMsg_CandidateWindowShown(GetRoutingID()));
+}
+
+void RenderWidgetHostImpl::CandidateWindowUpdated() {
+  Send(new ViewMsg_CandidateWindowUpdated(GetRoutingID()));
+}
+
+void RenderWidgetHostImpl::CandidateWindowHidden() {
+  Send(new ViewMsg_CandidateWindowHidden(GetRoutingID()));
+}
+
 void RenderWidgetHostImpl::ImeSetComposition(
     const string16& text,
     const std::vector<blink::WebCompositionUnderline>& underlines,

@@ -588,6 +588,10 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateRect_ACK, OnUpdateRectAck)
     IPC_MESSAGE_HANDLER(ViewMsg_SwapBuffers_ACK, OnSwapBuffersComplete)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInputMethodActive, OnSetInputMethodActive)
+    IPC_MESSAGE_HANDLER(ViewMsg_CandidateWindowShown, OnCandidateWindowShown)
+    IPC_MESSAGE_HANDLER(ViewMsg_CandidateWindowUpdated,
+                        OnCandidateWindowUpdated)
+    IPC_MESSAGE_HANDLER(ViewMsg_CandidateWindowHidden, OnCandidateWindowHidden)
     IPC_MESSAGE_HANDLER(ViewMsg_ImeSetComposition, OnImeSetComposition)
     IPC_MESSAGE_HANDLER(ViewMsg_ImeConfirmComposition, OnImeConfirmComposition)
     IPC_MESSAGE_HANDLER(ViewMsg_PaintAtSize, OnPaintAtSize)
@@ -2077,6 +2081,18 @@ void RenderWidget::OnSetInputMethodActive(bool is_active) {
   // a browser process, we permit the renderer process to send IPC messages
   // only during the input method attached to the browser process is active.
   input_method_is_active_ = is_active;
+}
+
+void RenderWidget::OnCandidateWindowShown() {
+  webwidget_->didShowCandidateWindow();
+}
+
+void RenderWidget::OnCandidateWindowUpdated() {
+  webwidget_->didUpdateCandidateWindow();
+}
+
+void RenderWidget::OnCandidateWindowHidden() {
+  webwidget_->didHideCandidateWindow();
 }
 
 void RenderWidget::OnImeSetComposition(
