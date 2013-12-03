@@ -30,10 +30,15 @@ class SyncJsControllerTest : public testing::Test {
   base::MessageLoop message_loop_;
 };
 
+ACTION_P(ReplyToMessage, reply_name) {
+  arg2.Call(FROM_HERE, &JsReplyHandler::HandleJsReply, reply_name, JsArgList());
+}
+
 TEST_F(SyncJsControllerTest, Messages) {
   InSequence dummy;
   // |mock_backend| needs to outlive |sync_js_controller|.
   StrictMock<MockJsBackend> mock_backend;
+  StrictMock<MockJsReplyHandler> mock_reply_handler;
   SyncJsController sync_js_controller;
 
   base::ListValue arg_list1, arg_list2;
@@ -41,17 +46,23 @@ TEST_F(SyncJsControllerTest, Messages) {
   arg_list2.Append(new base::FundamentalValue(5));
   JsArgList args1(&arg_list1), args2(&arg_list2);
 
-  // TODO(akalin): Write matchers for WeakHandle and use them here
-  // instead of _.
   EXPECT_CALL(mock_backend, SetJsEventHandler(_));
-  EXPECT_CALL(mock_backend, ProcessJsMessage("test1", HasArgs(args2), _));
-  EXPECT_CALL(mock_backend, ProcessJsMessage("test2", HasArgs(args1), _));
+  EXPECT_CALL(mock_backend, ProcessJsMessage("test1", HasArgs(args2), _))
+      .WillOnce(ReplyToMessage("test1_reply"));
+  EXPECT_CALL(mock_backend, ProcessJsMessage("test2", HasArgs(args1), _))
+      .WillOnce(ReplyToMessage("test2_reply"));
 
   sync_js_controller.AttachJsBackend(mock_backend.AsWeakHandle());
-  sync_js_controller.ProcessJsMessage("test1", args2,
-                                      WeakHandle<JsReplyHandler>());
-  sync_js_controller.ProcessJsMessage("test2", args1,
-                                      WeakHandle<JsReplyHandler>());
+  sync_js_controller.ProcessJsMessage("test1",
+                                      args2,
+                                      mock_reply_handler.AsWeakHandle());
+  sync_js_controller.ProcessJsMessage("test2",
+                                      args1,
+                                      mock_reply_handler.AsWeakHandle());
+
+  // The replies should be waiting on our message loop.
+  EXPECT_CALL(mock_reply_handler, HandleJsReply("test1_reply", _));
+  EXPECT_CALL(mock_reply_handler, HandleJsReply("test2_reply", _));
   PumpLoop();
 
   // Let destructor of |sync_js_controller| call RemoveBackend().
@@ -60,6 +71,7 @@ TEST_F(SyncJsControllerTest, Messages) {
 TEST_F(SyncJsControllerTest, QueuedMessages) {
   // |mock_backend| needs to outlive |sync_js_controller|.
   StrictMock<MockJsBackend> mock_backend;
+  StrictMock<MockJsReplyHandler> mock_reply_handler;
   SyncJsController sync_js_controller;
 
   base::ListValue arg_list1, arg_list2;
@@ -68,20 +80,29 @@ TEST_F(SyncJsControllerTest, QueuedMessages) {
   JsArgList args1(&arg_list1), args2(&arg_list2);
 
   // Should queue messages.
-  sync_js_controller.ProcessJsMessage("test1", args2,
-                                      WeakHandle<JsReplyHandler>());
-  sync_js_controller.ProcessJsMessage("test2", args1,
-                                      WeakHandle<JsReplyHandler>());
+  sync_js_controller.ProcessJsMessage(
+      "test1",
+      args2,
+      mock_reply_handler.AsWeakHandle());
+  sync_js_controller.ProcessJsMessage(
+      "test2",
+      args1,
+      mock_reply_handler.AsWeakHandle());
 
+  // Should do nothing.
+  PumpLoop();
   Mock::VerifyAndClearExpectations(&mock_backend);
 
-  // TODO(akalin): Write matchers for WeakHandle and use them here
-  // instead of _.
-  EXPECT_CALL(mock_backend, SetJsEventHandler(_));
-  EXPECT_CALL(mock_backend, ProcessJsMessage("test1", HasArgs(args2), _));
-  EXPECT_CALL(mock_backend, ProcessJsMessage("test2", HasArgs(args1), _));
 
   // Should call the queued messages.
+  EXPECT_CALL(mock_backend, SetJsEventHandler(_));
+  EXPECT_CALL(mock_backend, ProcessJsMessage("test1", HasArgs(args2), _))
+      .WillOnce(ReplyToMessage("test1_reply"));
+  EXPECT_CALL(mock_backend, ProcessJsMessage("test2", HasArgs(args1), _))
+      .WillOnce(ReplyToMessage("test2_reply"));
+  EXPECT_CALL(mock_reply_handler, HandleJsReply("test1_reply", _));
+  EXPECT_CALL(mock_reply_handler, HandleJsReply("test2_reply", _));
+
   sync_js_controller.AttachJsBackend(mock_backend.AsWeakHandle());
   PumpLoop();
 
