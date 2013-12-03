@@ -761,7 +761,6 @@ struct weston_view {
 	 */
 	struct {
 		float x, y; /* surface translation on display */
-		int32_t width, height;
 
 		/* struct weston_transform */
 		struct wl_list transformation_list;
@@ -875,7 +874,7 @@ struct weston_surface {
 	 * a new buffer has been set up for this surface. The integer params
 	 * are the sx and sy paramerters supplied to surface::attach .
 	 */
-	void (*configure)(struct weston_surface *es, int32_t sx, int32_t sy, int32_t width, int32_t height);
+	void (*configure)(struct weston_surface *es, int32_t sx, int32_t sy);
 	void *configure_private;
 
 	/* Parent's list of its sub-surfaces, weston_subsurface:parent_link.
@@ -1121,10 +1120,6 @@ weston_view_create(struct weston_surface *surface);
 
 void
 weston_view_destroy(struct weston_view *view);
-
-void
-weston_view_configure(struct weston_view *view,
-		      float x, float y, int width, int height);
 
 void
 weston_view_set_position(struct weston_view *view,

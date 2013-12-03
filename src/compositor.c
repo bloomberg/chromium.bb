@@ -863,8 +863,8 @@ weston_view_update_transform_disable(struct weston_view *view)
 	pixman_region32_init_rect(&view->transform.boundingbox,
 				  view->geometry.x,
 				  view->geometry.y,
-				  view->geometry.width,
-				  view->geometry.height);
+				  view->surface->width,
+				  view->surface->height);
 
 	if (view->alpha == 1.0) {
 		pixman_region32_copy(&view->transform.opaque,
@@ -904,8 +904,8 @@ weston_view_update_transform_enable(struct weston_view *view)
 		return -1;
 	}
 
-	view_compute_bbox(view, 0, 0, view->geometry.width,
-			  view->geometry.height,
+	view_compute_bbox(view, 0, 0,
+			  view->surface->width, view->surface->height,
 			  &view->transform.boundingbox);
 
 	return 0;
@@ -1070,19 +1070,11 @@ weston_surface_damage(struct weston_surface *surface)
 }
 
 WL_EXPORT void
-weston_view_configure(struct weston_view *view,
-		      float x, float y, int width, int height)
-{
-	view->geometry.x = x;
-	view->geometry.y = y;
-	view->geometry.width = width;
-	view->geometry.height = height;
-	weston_view_geometry_dirty(view);
-}
-
-WL_EXPORT void
 weston_view_set_position(struct weston_view *view, float x, float y)
 {
+	if (view->geometry.x == x && view->geometry.y == y)
+		return;
+
 	view->geometry.x = x;
 	view->geometry.y = y;
 	weston_view_geometry_dirty(view);
@@ -1141,13 +1133,28 @@ weston_surface_is_mapped(struct weston_surface *surface)
 }
 
 static void
+weston_surface_set_size(struct weston_surface *surface,
+			int32_t width, int32_t height)
+{
+	struct weston_view *view;
+
+	if (surface->width == width && surface->height == height)
+		return;
+
+	surface->width = width;
+	surface->height = height;
+
+	wl_list_for_each(view, &surface->views, surface_link)
+		weston_view_geometry_dirty(view);
+}
+
+static void
 weston_surface_set_size_from_buffer(struct weston_surface *surface)
 {
 	int32_t width, height;
 
 	if (!surface->buffer_ref.buffer) {
-		surface->width = 0;
-		surface->height = 0;
+		weston_surface_set_size(surface, 0, 0);
 		return;
 	}
 
@@ -1165,8 +1172,9 @@ weston_surface_set_size_from_buffer(struct weston_surface *surface)
 		break;
 	}
 
-	surface->width = width / surface->buffer_viewport.scale;
-	surface->height = height / surface->buffer_viewport.scale;
+	width = width / surface->buffer_viewport.scale;
+	height = height / surface->buffer_viewport.scale;
+	weston_surface_set_size(surface, width, height);
 }
 
 WL_EXPORT uint32_t
@@ -1589,11 +1597,9 @@ view_list_add_subsurface_view(struct weston_compositor *compositor,
 		wl_list_insert(&sub->surface->views, &view->surface_link);
 	} else {
 		view = weston_view_create(sub->surface);
-		weston_view_configure(view,
-				      sub->position.x,
-				      sub->position.y,
-				      sub->surface->width,
-				      sub->surface->height);
+		weston_view_set_position(view,
+					 sub->position.x,
+					 sub->position.y);
 		weston_view_set_transform_parent(view, parent);
 	}
 
@@ -1957,8 +1963,7 @@ weston_surface_commit(struct weston_surface *surface)
 
 	if (surface->configure && surface->pending.newly_attached)
 		surface->configure(surface,
-				   surface->pending.sx, surface->pending.sy,
-				   surface->width, surface->height);
+				   surface->pending.sx, surface->pending.sy);
 
 	if (surface->pending.buffer)
 		wl_list_remove(&surface->pending.buffer_destroy_listener.link);
@@ -2183,8 +2188,7 @@ weston_subsurface_commit_from_cache(struct weston_subsurface *sub)
 	weston_surface_set_size_from_buffer(surface);
 
 	if (surface->configure && sub->cached.newly_attached)
-		surface->configure(surface, sub->cached.sx, sub->cached.sy,
-				   surface->width, surface->height);
+		surface->configure(surface, sub->cached.sx, sub->cached.sy);
 	sub->cached.sx = 0;
 	sub->cached.sy = 0;
 	sub->cached.newly_attached = 0;
@@ -2355,17 +2359,15 @@ weston_subsurface_parent_commit(struct weston_subsurface *sub,
 }
 
 static void
-subsurface_configure(struct weston_surface *surface, int32_t dx, int32_t dy,
-		     int32_t width, int32_t height)
+subsurface_configure(struct weston_surface *surface, int32_t dx, int32_t dy)
 {
 	struct weston_compositor *compositor = surface->compositor;
 	struct weston_view *view;
 
 	wl_list_for_each(view, &surface->views, surface_link)
-		weston_view_configure(view,
-				      view->geometry.x + dx,
-				      view->geometry.y + dy,
-				      width, height);
+		weston_view_set_position(view,
+					 view->geometry.x + dx,
+					 view->geometry.y + dy);
 
 	/* No need to check parent mappedness, because if parent is not
 	 * mapped, parent is not in a visible layer, so this sub-surface

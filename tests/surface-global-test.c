@@ -38,7 +38,9 @@ surface_to_from_global(void *data)
 	assert(surface);
 	view = weston_view_create(surface);
 	assert(view);
-	weston_view_configure(view, 5, 10, 50, 50);
+	surface->width = 50;
+	surface->height = 50;
+	weston_view_set_position(view, 5, 10);
 	weston_view_update_transform(view);
 
 	weston_view_to_global_float(view, 33, 22, &x, &y);

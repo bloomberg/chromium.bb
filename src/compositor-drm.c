@@ -777,8 +777,8 @@ drm_output_check_sprite_format(struct drm_sprite *s,
 		pixman_region32_t r;
 
 		pixman_region32_init_rect(&r, 0, 0,
-					  ev->geometry.width,
-					  ev->geometry.height);
+					  ev->surface->width,
+					  ev->surface->height);
 		pixman_region32_subtract(&r, &r, &ev->surface->opaque);
 
 		if (!pixman_region32_not_empty(&r))
@@ -919,18 +919,18 @@ drm_output_prepare_overlay_view(struct weston_output *output_base,
 		sx1 = 0;
 	if (sy1 < 0)
 		sy1 = 0;
-	if (sx2 > wl_fixed_from_int(ev->geometry.width))
-		sx2 = wl_fixed_from_int(ev->geometry.width);
-	if (sy2 > wl_fixed_from_int(ev->geometry.height))
-		sy2 = wl_fixed_from_int(ev->geometry.height);
+	if (sx2 > wl_fixed_from_int(ev->surface->width))
+		sx2 = wl_fixed_from_int(ev->surface->width);
+	if (sy2 > wl_fixed_from_int(ev->surface->height))
+		sy2 = wl_fixed_from_int(ev->surface->height);
 
 	tbox.x1 = sx1;
 	tbox.y1 = sy1;
 	tbox.x2 = sx2;
 	tbox.y2 = sy2;
 
-	tbox = weston_transformed_rect(wl_fixed_from_int(ev->geometry.width),
-				       wl_fixed_from_int(ev->geometry.height),
+	tbox = weston_transformed_rect(wl_fixed_from_int(ev->surface->width),
+				       wl_fixed_from_int(ev->surface->height),
 				       ev->surface->buffer_viewport.transform,
 				       ev->surface->buffer_viewport.scale,
 				       tbox);
@@ -964,7 +964,7 @@ drm_output_prepare_cursor_view(struct weston_output *output_base,
 		return NULL;
 	if (ev->surface->buffer_ref.buffer == NULL ||
 	    !wl_shm_buffer_get(ev->surface->buffer_ref.buffer->resource) ||
-	    ev->geometry.width > 64 || ev->geometry.height > 64)
+	    ev->surface->width > 64 || ev->surface->height > 64)
 		return NULL;
 
 	output->cursor_view = ev;
@@ -1003,9 +1003,9 @@ drm_output_set_cursor(struct drm_output *output)
 		stride = wl_shm_buffer_get_stride(buffer->shm_buffer);
 		s = wl_shm_buffer_get_data(buffer->shm_buffer);
 		wl_shm_buffer_begin_access(buffer->shm_buffer);
-		for (i = 0; i < ev->geometry.height; i++)
+		for (i = 0; i < ev->surface->height; i++)
 			memcpy(buf + i * 64, s + i * stride,
-			       ev->geometry.width * 4);
+			       ev->surface->width * 4);
 		wl_shm_buffer_end_access(buffer->shm_buffer);
 
 		if (gbm_bo_write(bo, buf, sizeof buf) < 0)
@@ -1071,7 +1071,7 @@ drm_assign_planes(struct weston_output *output)
 		if (c->use_pixman ||
 		    (es->buffer_ref.buffer &&
 		    (!wl_shm_buffer_get(es->buffer_ref.buffer->resource) ||
-		     (ev->geometry.width <= 64 && ev->geometry.height <= 64))))
+		     (ev->surface->width <= 64 && ev->surface->height <= 64))))
 			es->keep_buffer = 1;
 		else
 			es->keep_buffer = 0;

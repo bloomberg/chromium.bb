@@ -1431,12 +1431,12 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 
 static void
 pointer_cursor_surface_configure(struct weston_surface *es,
-				 int32_t dx, int32_t dy, int32_t width, int32_t height)
+				 int32_t dx, int32_t dy)
 {
 	struct weston_pointer *pointer = es->configure_private;
 	int x, y;
 
-	if (width == 0)
+	if (es->width == 0)
 		return;
 
 	assert(es == pointer->sprite->surface);
@@ -1447,7 +1447,7 @@ pointer_cursor_surface_configure(struct weston_surface *es,
 	x = wl_fixed_to_int(pointer->x) - pointer->hotspot_x;
 	y = wl_fixed_to_int(pointer->y) - pointer->hotspot_y;
 
-	weston_view_configure(pointer->sprite, x, y, width, height);
+	weston_view_set_position(pointer->sprite, x, y);
 
 	empty_region(&es->pending.input);
 
@@ -1507,8 +1507,7 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 	pointer->hotspot_y = y;
 
 	if (surface->buffer_ref.buffer)
-		pointer_cursor_surface_configure(surface, 0, 0, surface->width,
-								surface->height);
+		pointer_cursor_surface_configure(surface, 0, 0);
 }
 
 static void

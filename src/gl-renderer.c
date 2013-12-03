@@ -550,7 +550,7 @@ draw_view(struct weston_view *ev, struct weston_output *output,
 
 	/* blended region is whole surface minus opaque region: */
 	pixman_region32_init_rect(&surface_blend, 0, 0,
-				  ev->geometry.width, ev->geometry.height);
+				  ev->surface->width, ev->surface->height);
 	pixman_region32_subtract(&surface_blend, &surface_blend, &ev->surface->opaque);
 
 	/* XXX: Should we be using ev->transform.opaque here? */

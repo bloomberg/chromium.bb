@@ -75,7 +75,7 @@ notify_pointer_position(struct weston_test *test, struct wl_resource *resource)
 }
 
 static void
-test_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy, int32_t width, int32_t height)
+test_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy)
 {
 	struct weston_test_surface *test_surface = surface->configure_private;
 	struct weston_test *test = test_surface->test;
@@ -84,9 +84,8 @@ test_surface_configure(struct weston_surface *surface, int32_t sx, int32_t sy, i
 		wl_list_insert(&test->layer.view_list,
 			       &test_surface->view->layer_link);
 
-	weston_view_configure(test_surface->view,
-			      test_surface->x, test_surface->y,
-			      width, height);
+	weston_view_set_position(test_surface->view,
+				 test_surface->x, test_surface->y);
 
 	weston_view_update_transform(test_surface->view);
 }

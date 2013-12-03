@@ -143,13 +143,13 @@ get_surface_view(struct weston_surface *surface, int create)
 
 static void
 tablet_shell_surface_configure(struct weston_surface *surface,
-			       int32_t sx, int32_t sy, int32_t width, int32_t height)
+			       int32_t sx, int32_t sy)
 {
 	struct tablet_shell *shell = get_shell(surface->compositor);
 	struct weston_view *view = get_surface_view(surface, 0);
 	assert(view);
 
-	if (weston_surface_is_mapped(surface) || width == 0)
+	if (weston_surface_is_mapped(surface) || surface->width == 0)
 		return;
 
 	if (surface == shell->lockscreen_surface) {
@@ -178,7 +178,7 @@ tablet_shell_surface_configure(struct weston_surface *surface,
 	}
 
 	if (view) {
-		weston_view_configure(view, 0, 0, width, height);
+		weston_view_set_position(view, 0, 0);
 		weston_view_update_transform(view);
 	}
 }

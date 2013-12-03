@@ -218,7 +218,7 @@ drag_surface_configure(struct weston_drag *drag,
 		fx = wl_fixed_to_double(touch->grab_x) + drag->dx;
 		fy = wl_fixed_to_double(touch->grab_y) + drag->dy;
 	}
-	weston_view_configure(drag->icon, fx, fy, width, height);
+	weston_view_set_position(drag->icon, fx, fy);
 }
 
 static void

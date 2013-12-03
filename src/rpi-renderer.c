@@ -732,8 +732,8 @@ rpir_view_compute_rects(struct rpir_view *view,
 		}
 	}
 
-	p2.f[0] = view->view->geometry.width;
-	p2.f[1] = view->view->geometry.height;
+	p2.f[0] = view->view->surface->width;
+	p2.f[1] = view->view->surface->height;
 
 	/* transform top-left and bot-right corner into screen coordinates */
 	weston_matrix_transform(&matrix, &p1);
