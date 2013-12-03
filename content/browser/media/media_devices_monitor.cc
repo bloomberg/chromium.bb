@@ -12,10 +12,7 @@ namespace content {
 namespace {
 void EnsureMonitorCaptureDevicesInternal(
     MediaStreamManager* media_stream_manager) {
-  // TODO(perkj): The argument list suggests that this is the wrong design. Can
-  // we add a separate method for device monitoring?
-  media_stream_manager->EnumerateDevices(
-      NULL, -1, -1, NULL, -1, MEDIA_DEVICE_AUDIO_CAPTURE, GURL());
+  media_stream_manager->EnsureDeviceMonitorStarted();
 }
 }
 

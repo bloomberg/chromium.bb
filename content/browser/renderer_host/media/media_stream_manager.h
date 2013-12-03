@@ -138,6 +138,10 @@ class CONTENT_EXPORT MediaStreamManager
                          MediaStreamType type,
                          const GURL& security_origin);
 
+  // Called by UI to make sure the device monitor is started so that UI receive
+  // notifications about device changes.
+  void EnsureDeviceMonitorStarted();
+
   // Implements MediaStreamProviderListener.
   virtual void Opened(MediaStreamType stream_type,
                       int capture_session_id) OVERRIDE;

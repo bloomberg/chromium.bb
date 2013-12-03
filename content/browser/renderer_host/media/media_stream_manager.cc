@@ -413,17 +413,9 @@ std::string MediaStreamManager::EnumerateDevices(
     MediaStreamType type,
     const GURL& security_origin) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(requester);
   DCHECK(type == MEDIA_DEVICE_AUDIO_CAPTURE ||
          type == MEDIA_DEVICE_VIDEO_CAPTURE);
-
-  // When the requester is NULL, the request is made by the UI to ensure MSM
-  // starts monitoring devices.
-  if (!requester) {
-    if (!monitoring_started_)
-      StartMonitoring();
-
-    return std::string();
-  }
 
   // Create a new request.
   StreamOptions options;
@@ -532,6 +524,12 @@ std::string MediaStreamManager::OpenDevice(
 
   DVLOG(1) << "OpenDevice ({label = " << label <<  "})";
   return label;
+}
+
+void MediaStreamManager::EnsureDeviceMonitorStarted() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!monitoring_started_)
+    StartMonitoring();
 }
 
 void MediaStreamManager::StopRemovedDevices(
