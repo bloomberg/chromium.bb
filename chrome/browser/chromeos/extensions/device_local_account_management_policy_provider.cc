@@ -25,12 +25,12 @@ const char* kDeviceLocalAccountWhitelist[] = {
   "iabmpiboiopbgfabjmgeedhcmjenhbla",  // VNC Viewer
 
   // Retail mode:
-  "ehcabepphndocfmgbdkbjibfodelmpbb",  // Angry Birds
-  "kgimkbnclbekdkabkpjhpakhhalfanda",  // Bejeweled
+  "ehcabepphndocfmgbdkbjibfodelmpbb",  // Angry Birds demo
+  "kgimkbnclbekdkabkpjhpakhhalfanda",  // Bejeweled demo
   "joodangkbfjnajiiifokapkpmhfnpleo",  // Calculator
-  "fpgfohogebplgnamlafljlcidjedbdeb",  // Calendar
+  "fpgfohogebplgnamlafljlcidjedbdeb",  // Calendar demo
   "hfhhnacclhffhdffklopdkcgdhifgngh",  // Camera
-  "cdjikkcakjcdjemakobkmijmikhkegcj",  // Chrome Remote Desktop
+  "cdjikkcakjcdjemakobkmijmikhkegcj",  // Chrome Remote Desktop demo
   "jkoildpomkimndcphjpffmephmcmkfhn",  // Chromebook Demo App
   "ielkookhdphmgbipcfmafkaiagademfp",  // Custom bookmarks
   "kogjlbfgggambihdjcpijgcbmenblimd",  // Custom bookmarks
@@ -41,28 +41,30 @@ const char* kDeviceLocalAccountWhitelist[] = {
   "iggnealjakkgfofealilhkkclnbnfnmo",  // Custom bookmarks
   "lplkobnahgbopmpkdapaihnnojkphahc",  // Custom bookmarks
   "lejnflfhjpcannpaghnahbedlabpmhoh",  // Custom bookmarks
-  "ebkhfdfghngbimnpgelagnfacdafhaba",  // Deezer
-  "npnjdccdffhdndcbeappiamcehbhjibf",  // Docs.app
-  "iddohohhpmajlkbejjjcfednjnhlnenk",  // Evernote
-  "bjdhhokmhgelphffoafoejjmlfblpdha",  // Gmail
-  "mdhnphfgagkpdhndljccoackjjhghlif",  // Google Drive
-  "fgjnkhlabjcaajddbaenilcmpcidahll",  // Google+
-  "cgmlfbhkckbedohgdepgbkflommbfkep",  // Hangouts.app
-  "edhhaiphkklkcfcbnlbpbiepchnkgkpn",  // Helper.extension
-  "diehajhcjifpahdplfdkhiboknagmfii",  // Kindle
-  "nhpmmldpbfjofkipjaieeomhnmcgihfm",  // Menu.app
-  "onbhgdmifjebcabplolilidlpgeknifi",  // Music.app
-  "kkkbcoabfhgekpnddfkaphobhinociem",  // Netflix
-  "adlphlfdhhjenpgimjochcpelbijkich",  // New York Times
-  "cgefhjmlaifaamhhoojmpcnihlbddeki",  // Pandora
-  "kpjjigggmcjinapdeipapdcnmnjealll",  // Pixlr
-  "aleodiobpjillgfjdkblghiiaegggmcm",  // Quickoffice
-  "nifkmgcdokhkjghdlgflonppnefddien",  // Sheets
-  "hdmobeajeoanbanmdlabnbnlopepchip",  // Slides
-  "dgohlccohkojjgkkfholmobjjoledflp",  // Spotify
-  "dhmdaeekeihmajjnmichlhiffffdbpde",  // Store.app
-  "jeabmjjifhfcejonjjhccaeigpnnjaak",  // TweetDeck
-  "pbdihpaifchmclcmkfdgffnnpfbobefh",  // YouTube
+  "ebkhfdfghngbimnpgelagnfacdafhaba",  // Deezer demo
+  "npnjdccdffhdndcbeappiamcehbhjibf",  // Docs.app demo
+  "iddohohhpmajlkbejjjcfednjnhlnenk",  // Evernote demo
+  "bjdhhokmhgelphffoafoejjmlfblpdha",  // Gmail demo
+  "mdhnphfgagkpdhndljccoackjjhghlif",  // Google Drive demo
+  "dondgdlndnpianbklfnehgdhkickdjck",  // Google Keep demo
+  "fgjnkhlabjcaajddbaenilcmpcidahll",  // Google+ demo
+  "ifpkhncdnjfipfjlhfidljjffdgklanh",  // Google+ Photos demo
+  "cgmlfbhkckbedohgdepgbkflommbfkep",  // Hangouts.app demo
+  "edhhaiphkklkcfcbnlbpbiepchnkgkpn",  // Helper.extension demo
+  "diehajhcjifpahdplfdkhiboknagmfii",  // Kindle demo
+  "nhpmmldpbfjofkipjaieeomhnmcgihfm",  // Menu.app demo
+  "onbhgdmifjebcabplolilidlpgeknifi",  // Music.app demo
+  "kkkbcoabfhgekpnddfkaphobhinociem",  // Netflix demo
+  "adlphlfdhhjenpgimjochcpelbijkich",  // New York Times demo
+  "cgefhjmlaifaamhhoojmpcnihlbddeki",  // Pandora demo
+  "kpjjigggmcjinapdeipapdcnmnjealll",  // Pixlr demo
+  "aleodiobpjillgfjdkblghiiaegggmcm",  // Quickoffice demo
+  "nifkmgcdokhkjghdlgflonppnefddien",  // Sheets demo
+  "hdmobeajeoanbanmdlabnbnlopepchip",  // Slides demo
+  "dgohlccohkojjgkkfholmobjjoledflp",  // Spotify demo
+  "dhmdaeekeihmajjnmichlhiffffdbpde",  // Store.app demo
+  "jeabmjjifhfcejonjjhccaeigpnnjaak",  // TweetDeck demo
+  "pbdihpaifchmclcmkfdgffnnpfbobefh",  // YouTube demo
 };
 
 }  // namespace
