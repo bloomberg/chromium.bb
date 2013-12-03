@@ -71,7 +71,6 @@
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #else
 #include "chrome/browser/apps/app_url_redirector.h"
-#include "chrome/browser/apps/ephemeral_app_throttle.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -251,13 +250,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
         AppUrlRedirector::MaybeCreateThrottleFor(request, io_data);
     if (url_to_app_throttle)
       throttles->push_back(url_to_app_throttle);
-
-    // Experimental: Launch ephemeral apps from search results.
-    content::ResourceThrottle* ephemeral_app_throttle =
-        EphemeralAppThrottle::MaybeCreateThrottleForLaunch(
-            request, io_data);
-    if (ephemeral_app_throttle)
-      throttles->push_back(ephemeral_app_throttle);
 #endif
   }
 

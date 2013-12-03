@@ -69,8 +69,6 @@
         'browser/apps/chrome_apps_client.h',
         'browser/apps/ephemeral_app_launcher.cc',
         'browser/apps/ephemeral_app_launcher.h',
-        'browser/apps/ephemeral_app_throttle.cc',
-        'browser/apps/ephemeral_app_throttle.h',
         'browser/apps/shortcut_manager.cc',
         'browser/apps/shortcut_manager.h',
         'browser/apps/shortcut_manager_factory.cc',
