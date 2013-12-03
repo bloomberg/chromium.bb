@@ -360,8 +360,8 @@ camera.models.Gallery.prototype.exportPicture = function(
     picture, fileEntry, onSuccess, onFailure) {
   var onDataLoaded = function(data) {
     fileEntry.createWriter(function(fileWriter) {
-      fileWriter.onwrite = function() {};
-      fileWriter.onerror = onError;
+      fileWriter.onwriteend = onSuccess;
+      fileWriter.onerror = onFailure;
       // Blob has to be a Blob instance to be saved.
       var array = new Uint8Array(data.length);
       for (var index = 0; index < data.length; index++) {
@@ -369,7 +369,6 @@ camera.models.Gallery.prototype.exportPicture = function(
       }
       var blob = new Blob([array], {type: 'image/jpeg'});
       fileWriter.write(blob);
-      onSuccess();
     }.bind(this),
     onFailure);
   }.bind(this);
@@ -381,7 +380,7 @@ camera.models.Gallery.prototype.exportPicture = function(
     };
     reader.onerror = onFailure;
     reader.readAsBinaryString(file);
-  }.bind(this));
+  }.bind(this), onFailure);
 };
 
 /**
