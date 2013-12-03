@@ -1327,7 +1327,7 @@ bool ChromeContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
     const GURL& current_url,
     const GURL& new_url) {
   // If we don't have an ExtensionService, then rely on the SiteInstance logic
-  // in RenderViewHostManager to decide when to swap.
+  // in RenderFrameHostManager to decide when to swap.
   Profile* profile =
       Profile::FromBrowserContext(site_instance->GetBrowserContext());
   ExtensionService* service =
@@ -1343,7 +1343,7 @@ bool ChromeContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
   // use postMessage with them.  (The exception is the Chrome Web Store, which
   // is a hosted app that requires its own BrowsingInstance.)  Navigations
   // to/from a hosted app will still trigger a SiteInstance swap in
-  // RenderViewHostManager.
+  // RenderFrameHostManager.
   const Extension* current_extension =
       service->extensions()->GetExtensionOrAppByURL(current_url);
   if (current_extension &&
