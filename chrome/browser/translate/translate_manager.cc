@@ -433,7 +433,8 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
     language_state.SetTranslateEnabled(true);
     if (language_state.HasLanguageChanged()) {
       ShowBubble(web_contents,
-                 TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE);
+                 TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
+                 TranslateErrors::NONE);
     }
   } else {
     // Prompts the user if he/she wants the page translated.
@@ -494,7 +495,8 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
     source_lang = std::string(translate::kUnknownLanguageCode);
 
   if (IsEnabledTranslateNewUX()) {
-    ShowBubble(web_contents, TranslateBubbleModel::VIEW_STATE_TRANSLATING);
+    ShowBubble(web_contents, TranslateBubbleModel::VIEW_STATE_TRANSLATING,
+               TranslateErrors::NONE);
   } else {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -619,7 +621,7 @@ void TranslateManager::PageTranslated(WebContents* web_contents,
         (details->error_type == TranslateErrors::NONE) ?
         TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE :
         TranslateBubbleModel::VIEW_STATE_ERROR;
-    ShowBubble(web_contents, view_state);
+    ShowBubble(web_contents, view_state, details->error_type);
   } else {
     PrefService* prefs = Profile::FromBrowserContext(
         web_contents->GetBrowserContext())->GetPrefs();
@@ -689,7 +691,8 @@ void TranslateManager::OnTranslateScriptFetchComplete(
                       request.source_lang, request.target_lang);
     } else {
       if (IsEnabledTranslateNewUX()) {
-        ShowBubble(web_contents, TranslateBubbleModel::VIEW_STATE_ERROR);
+        ShowBubble(web_contents, TranslateBubbleModel::VIEW_STATE_ERROR,
+                   TranslateErrors::NETWORK);
       } else {
         Profile* profile =
             Profile::FromBrowserContext(web_contents->GetBrowserContext());
@@ -713,7 +716,8 @@ void TranslateManager::OnTranslateScriptFetchComplete(
 }
 
 void TranslateManager::ShowBubble(WebContents* web_contents,
-                                  TranslateBubbleModel::ViewState view_state) {
+                                  TranslateBubbleModel::ViewState view_state,
+                                  TranslateErrors::Type error_type) {
   // The bubble is implemented only on the desktop platforms.
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
@@ -721,7 +725,7 @@ void TranslateManager::ShowBubble(WebContents* web_contents,
   // |browser| might be NULL when testing. In this case, Show(...) should be
   // called because the implementation for testing is used.
   if (!browser) {
-    TranslateBubbleFactory::Show(NULL, web_contents, view_state);
+    TranslateBubbleFactory::Show(NULL, web_contents, view_state, error_type);
     return;
   }
 
@@ -738,7 +742,8 @@ void TranslateManager::ShowBubble(WebContents* web_contents,
     return;
   }
 
-  TranslateBubbleFactory::Show(browser->window(), web_contents, view_state);
+  TranslateBubbleFactory::Show(browser->window(), web_contents, view_state,
+                               error_type);
 #else
   NOTREACHED();
 #endif

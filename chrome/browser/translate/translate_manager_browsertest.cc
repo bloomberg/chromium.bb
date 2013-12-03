@@ -338,7 +338,8 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
   virtual void ShowImplementation(
       BrowserWindow* window,
       content::WebContents* web_contents,
-      TranslateBubbleModel::ViewState view_state) OVERRIDE {
+      TranslateBubbleModel::ViewState view_state,
+      TranslateErrors::Type error_type) OVERRIDE {
     if (model_) {
       model_->SetViewState(view_state);
       return;
@@ -353,7 +354,8 @@ class MockTranslateBubbleFactory : public TranslateBubbleFactory {
     scoped_ptr<TranslateUIDelegate> ui_delegate(
         new TranslateUIDelegate(web_contents,
                                 source_language,
-                                target_language));
+                                target_language,
+                                error_type));
     model_.reset(
         new TranslateBubbleModelImpl(view_state, ui_delegate.Pass()));
   }

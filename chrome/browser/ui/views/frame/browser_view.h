@@ -328,7 +328,8 @@ class BrowserView : public BrowserWindow,
   virtual void ShowBookmarkPrompt() OVERRIDE;
   virtual void ShowTranslateBubble(
       content::WebContents* contents,
-      TranslateBubbleModel::ViewState view_state) OVERRIDE;
+      TranslateBubbleModel::ViewState view_state,
+      TranslateErrors::Type error_type) OVERRIDE;
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   virtual void ShowOneClickSigninBubble(
       OneClickSigninBubbleType type,

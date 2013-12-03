@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/translate/translate_errors.h"
 
 class TranslatePrefs;
 
@@ -36,7 +37,8 @@ class TranslateUIDelegate {
 
   TranslateUIDelegate(content::WebContents* web_contents,
                       const std::string& original_language,
-                      const std::string& target_language);
+                      const std::string& target_language,
+                      TranslateErrors::Type error_type);
   virtual ~TranslateUIDelegate();
 
   // Retrieves the displayable names of the supported languages, based on
@@ -49,6 +51,12 @@ class TranslateUIDelegate {
   static std::string GetPageHost(content::WebContents* web_contents);
 
   content::WebContents* web_contents() { return web_contents_; }
+
+  TranslateErrors::Type error_type() const { return error_type_; }
+
+  void set_error_type(TranslateErrors::Type error_type) {
+    error_type_ = error_type;
+  }
 
   // Returns the number of languages supported.
   size_t GetNumberOfLanguages() const;
@@ -123,6 +131,9 @@ class TranslateUIDelegate {
 
   // The translation related preferences.
   scoped_ptr<TranslatePrefs> prefs_;
+
+  // The error type.
+  TranslateErrors::Type error_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateUIDelegate);
 };

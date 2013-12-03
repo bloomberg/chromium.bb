@@ -21,10 +21,12 @@
 
 TranslateUIDelegate::TranslateUIDelegate(content::WebContents* web_contents,
                                          const std::string& original_language,
-                                         const std::string& target_language)
+                                         const std::string& target_language,
+                                         TranslateErrors::Type error_type)
     : web_contents_(web_contents),
       original_language_index_(NO_INDEX),
-      target_language_index_(NO_INDEX) {
+      target_language_index_(NO_INDEX),
+      error_type_(error_type) {
   DCHECK(web_contents_);
 
   languages_ =

@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/ui/translate/language_combobox_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
+#include "chrome/common/translate/translate_errors.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -41,6 +42,7 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   static void ShowBubble(views::View* anchor_view,
                          content::WebContents* web_contents,
                          TranslateBubbleModel::ViewState type,
+                         TranslateErrors::Type error_type,
                          Browser* browser);
 
   // If true, the Translate bubble is being shown.

@@ -1035,7 +1035,9 @@ void BrowserWindowGtk::ShowBookmarkBubble(const GURL& url,
 
 void BrowserWindowGtk::ShowTranslateBubble(
     content::WebContents* contents,
-    TranslateBubbleModel::ViewState view_state) {
+    TranslateBubbleModel::ViewState view_state,
+    TranslateErrors::Type error_type) {
+  NOTIMPLEMENTED();
 }
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)

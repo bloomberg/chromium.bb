@@ -19,6 +19,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
  public:
   explicit MockTranslateBubbleModel(TranslateBubbleModel::ViewState view_state)
       : view_state_transition_(view_state),
+        error_type_(TranslateErrors::NONE),
         original_language_index_(0),
         target_language_index_(1),
         never_translate_language_(false),
@@ -37,6 +38,14 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
   virtual void SetViewState(TranslateBubbleModel::ViewState view_state)
       OVERRIDE {
     view_state_transition_.SetViewState(view_state);
+  }
+
+  virtual TranslateErrors::Type GetErrorType() const OVERRIDE {
+    return error_type_;
+  }
+
+  virtual void SetErrorType(TranslateErrors::Type error_type) OVERRIDE {
+    error_type_ = error_type;
   }
 
   virtual void GoBackFromAdvanced() OVERRIDE {
@@ -97,6 +106,7 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
   }
 
   TranslateBubbleViewStateTransition view_state_transition_;
+  TranslateErrors::Type error_type_;
   int original_language_index_;
   int target_language_index_;
   bool never_translate_language_;
@@ -178,6 +188,9 @@ TEST_F(TranslateBubbleViewTest, ShowOriginalButton) {
 
 TEST_F(TranslateBubbleViewTest, TryAgainButton) {
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ERROR);
+  bubble_->model()->SetErrorType(TranslateErrors::NETWORK);
+
+  EXPECT_EQ(TranslateErrors::NETWORK, bubble_->model()->GetErrorType());
 
   // Click the "Try again" button to translate.
   EXPECT_FALSE(mock_model_->translate_called_);

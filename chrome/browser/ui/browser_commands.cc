@@ -700,7 +700,8 @@ void Translate(Browser* browser) {
     else if (translate_tab_helper->language_state().IsPageTranslated())
       view_state = TranslateBubbleModel::VIEW_STATE_AFTER_TRANSLATE;
   }
-  browser->window()->ShowTranslateBubble(web_contents, view_state);
+  browser->window()->ShowTranslateBubble(web_contents, view_state,
+                                         TranslateErrors::NONE);
 }
 
 void TogglePagePinnedToStartScreen(Browser* browser) {

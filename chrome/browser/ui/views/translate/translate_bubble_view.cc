@@ -141,6 +141,7 @@ TranslateBubbleView::~TranslateBubbleView() {
 void TranslateBubbleView::ShowBubble(views::View* anchor_view,
                                      content::WebContents* web_contents,
                                      TranslateBubbleModel::ViewState type,
+                                     TranslateErrors::Type error_type,
                                      Browser* browser) {
   // During auto-translating, the bubble should not be shown.
   if (type == TranslateBubbleModel::VIEW_STATE_TRANSLATING ||
@@ -162,6 +163,7 @@ void TranslateBubbleView::ShowBubble(views::View* anchor_view,
       return;
     }
     translate_bubble_view_->SwitchView(type);
+    translate_bubble_view_->model()->SetErrorType(error_type);
     return;
   }
 
@@ -170,7 +172,8 @@ void TranslateBubbleView::ShowBubble(views::View* anchor_view,
   GetTranslateLanguages(web_contents, &source_language, &target_language);
 
   scoped_ptr<TranslateUIDelegate> ui_delegate(
-      new TranslateUIDelegate(web_contents, source_language, target_language));
+      new TranslateUIDelegate(web_contents, source_language, target_language,
+                              error_type));
   scoped_ptr<TranslateBubbleModel> model(
       new TranslateBubbleModelImpl(type, ui_delegate.Pass()));
   TranslateBubbleView* view = new TranslateBubbleView(anchor_view,

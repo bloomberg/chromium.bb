@@ -1200,14 +1200,16 @@ void BrowserView::ShowBookmarkPrompt() {
 
 void BrowserView::ShowTranslateBubble(
     content::WebContents* web_contents,
-    TranslateBubbleModel::ViewState view_state) {
+    TranslateBubbleModel::ViewState view_state,
+    TranslateErrors::Type error_type) {
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(web_contents);
   LanguageState& language_state = translate_tab_helper->language_state();
   language_state.SetTranslateEnabled(true);
 
   TranslateBubbleView::ShowBubble(GetToolbarView()->GetTranslateBubbleAnchor(),
-                                  web_contents, view_state, browser_.get());
+                                  web_contents, view_state, error_type,
+                                  browser_.get());
 }
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)

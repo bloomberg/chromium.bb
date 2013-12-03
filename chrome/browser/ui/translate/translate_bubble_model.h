@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "chrome/common/translate/translate_errors.h"
 
 // The model for the Translate bubble UX. This manages the user's manipulation
 // of the bubble and offers the data to show on the bubble.
@@ -38,6 +39,12 @@ class TranslateBubbleModel {
 
   // Transitions the view state.
   virtual void SetViewState(ViewState view_state) = 0;
+
+  // Returns the error type.
+  virtual TranslateErrors::Type GetErrorType() const = 0;
+
+  // Sets the error type.
+  virtual void SetErrorType(TranslateErrors::Type error_type) = 0;
 
   // Goes back from the 'Advanced' view state.
   virtual void GoBackFromAdvanced() = 0;

@@ -25,6 +25,14 @@ void TranslateBubbleModelImpl::SetViewState(
   view_state_transition_.SetViewState(view_state);
 }
 
+TranslateErrors::Type TranslateBubbleModelImpl::GetErrorType() const {
+  return ui_delegate_->error_type();
+}
+
+void TranslateBubbleModelImpl::SetErrorType(TranslateErrors::Type error_type) {
+  ui_delegate_->set_error_type(error_type);
+}
+
 void TranslateBubbleModelImpl::GoBackFromAdvanced() {
   view_state_transition_.GoBackFromAdvanced();
 }

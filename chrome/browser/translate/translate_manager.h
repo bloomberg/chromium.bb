@@ -199,7 +199,8 @@ class TranslateManager : public content::NotificationObserver {
 
   // Shows the translate bubble.
   void ShowBubble(content::WebContents* web_contents,
-                  TranslateBubbleModel::ViewState view_state);
+                  TranslateBubbleModel::ViewState view_state,
+                  TranslateErrors::Type error_type);
 
   // Returns the different parameters used to decide whether extra shortcuts
   // are needed.
