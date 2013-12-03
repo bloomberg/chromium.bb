@@ -872,6 +872,8 @@ class ProfileSyncService
                                     bool delete_sync_database,
                                     UnrecoverableErrorReason reason);
 
+  bool IsSessionsDataTypeControllerRunning() const;
+
   // Returns the username (in form of an email address) that should be used in
   // the credentials.
   std::string GetEffectiveUsername();

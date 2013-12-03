@@ -41,6 +41,10 @@ static const int kMaxSyncNavigationCount = 6;
 // from all other URL's as accessing it triggers a sync refresh of Sessions.
 static const char kNTPOpenTabSyncURL[] = "chrome://newtab/#open_tabs";
 
+// Default number of days without activity after which a session is considered
+// stale and becomes a candidate for garbage collection.
+static const size_t kDefaultStaleSessionThresholdDays = 14;  // 2 weeks.
+
 SessionsSyncManager::SessionsSyncManager(
     Profile* profile,
     SyncInternalApiDelegate* delegate,
@@ -50,6 +54,7 @@ SessionsSyncManager::SessionsSyncManager(
       profile_(profile),
       delegate_(delegate),
       local_session_header_node_id_(TabNodePool2::kInvalidTabNodeID),
+      stale_session_threshold_days_(kDefaultStaleSessionThresholdDays),
       local_event_router_(router.Pass()) {
 }
 
@@ -897,6 +902,33 @@ void SessionsSyncManager::SetSessionTabFromDelegate(
 
 FaviconCache* SessionsSyncManager::GetFaviconCache() {
   return &favicon_cache_;
+}
+
+void SessionsSyncManager::DoGarbageCollection() {
+  std::vector<const SyncedSession*> sessions;
+  if (!GetAllForeignSessions(&sessions))
+    return;  // No foreign sessions.
+
+  // Iterate through all the sessions and delete any with age older than
+  // |stale_session_threshold_days_|.
+  syncer::SyncChangeList changes;
+  for (std::vector<const SyncedSession*>::const_iterator iter =
+           sessions.begin(); iter != sessions.end(); ++iter) {
+    const SyncedSession* session = *iter;
+    int session_age_in_days =
+        (base::Time::Now() - session->modified_time).InDays();
+    std::string session_tag = session->session_tag;
+    if (session_age_in_days > 0 &&  // If false, local clock is not trustworty.
+        static_cast<size_t>(session_age_in_days) >
+            stale_session_threshold_days_) {
+      DVLOG(1) << "Found stale session " << session_tag
+               << " with age " << session_age_in_days << ", deleting.";
+      DeleteForeignSessionInternal(session_tag, &changes);
+    }
+  }
+
+  if (!changes.empty())
+    sync_processor_->ProcessSyncChanges(FROM_HERE, changes);
 }
 
 };  // namespace browser_sync

@@ -146,6 +146,12 @@ class SessionsSyncManager : public syncer::SyncableService,
 
   FaviconCache* GetFaviconCache();
 
+  // Triggers garbage collection of stale sessions (as defined by
+  // |stale_session_threshold_days_|). This is called automatically every
+  // time we start up (via AssociateModels) and when new sessions data is
+  // downloaded (sync cycles complete).
+  void DoGarbageCollection();
+
  private:
   // Keep all the links to local tab data in one place. A tab_node_id and tab
   // must be passed at creation. The tab_node_id is not mutable, although
@@ -329,6 +335,10 @@ class SessionsSyncManager : public syncer::SyncableService,
   // SyncID for the sync node containing all the window information for this
   // client.
   int local_session_header_node_id_;
+
+  // Number of days without activity after which we consider a session to be
+  // stale and a candidate for garbage collection.
+  size_t stale_session_threshold_days_;
 
   scoped_ptr<LocalSessionEventRouter> local_event_router_;
 

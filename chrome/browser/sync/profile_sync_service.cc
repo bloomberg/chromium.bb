@@ -365,12 +365,8 @@ void ProfileSyncService::RegisterDataTypeController(
 
 browser_sync::SessionModelAssociator*
     ProfileSyncService::GetSessionModelAssociatorDeprecated() {
-  if (data_type_controllers_.find(syncer::SESSIONS) ==
-      data_type_controllers_.end() ||
-      data_type_controllers_.find(syncer::SESSIONS)->second->state() !=
-      DataTypeController::RUNNING) {
+  if (!IsSessionsDataTypeControllerRunning())
     return NULL;
-  }
 
   // If we're using sessions V2, there's no model associator.
   if (sessions_sync_manager_.get())
@@ -381,13 +377,16 @@ browser_sync::SessionModelAssociator*
       syncer::SESSIONS)->second.get())->GetModelAssociator();
 }
 
+bool ProfileSyncService::IsSessionsDataTypeControllerRunning() const {
+  return data_type_controllers_.find(syncer::SESSIONS) !=
+      data_type_controllers_.end() &&
+      data_type_controllers_.find(syncer::SESSIONS)->second->state() ==
+      DataTypeController::RUNNING;
+}
+
 browser_sync::OpenTabsUIDelegate* ProfileSyncService::GetOpenTabsUIDelegate() {
-  if (data_type_controllers_.find(syncer::SESSIONS) ==
-      data_type_controllers_.end() ||
-      data_type_controllers_.find(syncer::SESSIONS)->second->state() !=
-      DataTypeController::RUNNING) {
+  if (!IsSessionsDataTypeControllerRunning())
     return NULL;
-  }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableSyncSessionsV2)) {
@@ -1069,15 +1068,19 @@ void ProfileSyncService::OnBackendInitialized(
 
 void ProfileSyncService::OnSyncCycleCompleted() {
   UpdateLastSyncedTime();
-  if (GetSessionModelAssociatorDeprecated()) {
+  if (IsSessionsDataTypeControllerRunning()) {
     // Trigger garbage collection of old sessions now that we've downloaded
-    // any new session data. TODO(zea): Have this be a notification the session
-    // model associator listens too. Also consider somehow plumbing the current
-    // server time as last reported by CheckServerReachable, so we don't have to
-    // rely on the local clock, which may be off significantly.
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-        base::Bind(&browser_sync::SessionModelAssociator::DeleteStaleSessions,
-                   GetSessionModelAssociatorDeprecated()->AsWeakPtr()));
+    // any new session data.
+    if (sessions_sync_manager_) {
+      // Sessions V2.
+      base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+          &browser_sync::SessionsSyncManager::DoGarbageCollection,
+              base::AsWeakPtr(sessions_sync_manager_.get())));
+    } else {
+      base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+          &browser_sync::SessionModelAssociator::DeleteStaleSessions,
+              GetSessionModelAssociatorDeprecated()->AsWeakPtr()));
+    }
   }
   DVLOG(2) << "Notifying observers sync cycle completed";
   NotifySyncCycleCompleted();

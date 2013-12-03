@@ -202,6 +202,7 @@ class SessionsSyncManagerTest
   TestSyncProcessorStub* test_processor_;
 };
 
+// Test that the SyncSessionManager can properly fill in a SessionHeader.
 TEST_F(SessionsSyncManagerTest, PopulateSessionHeader) {
   sync_pb::SessionHeader header_s;
   header_s.set_client_name("Client 1");
@@ -216,6 +217,7 @@ TEST_F(SessionsSyncManagerTest, PopulateSessionHeader) {
   ASSERT_EQ(time, session.modified_time);
 }
 
+// Test translation between protobuf types and chrome session types.
 TEST_F(SessionsSyncManagerTest, PopulateSessionWindow) {
   sync_pb::SessionWindow window_s;
   window_s.add_tab(0);
@@ -524,6 +526,8 @@ TEST_F(SessionsSyncManagerTest, BlockedNavigations) {
   EXPECT_TRUE(session_tab.session_storage_persistent_id.empty());
 }
 
+// Tests that the local session header objects is created properly in
+// presence of no other session activity, once and only once.
 TEST_F(SessionsSyncManagerTest, MergeLocalSessionNoTabs) {
   syncer::SyncChangeList out;
   InitWithSyncDataTakeOutput(syncer::SyncDataList(), &out);
@@ -570,6 +574,7 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionNoTabs) {
   EXPECT_TRUE(out[0].sync_data().GetSpecifics().session().has_header());
 }
 
+// Tests MergeDataAndStartSyncing with sync data but no local data.
 TEST_F(SessionsSyncManagerTest, MergeWithInitialForeignSession) {
   std::string tag = "tag1";
 
@@ -685,6 +690,8 @@ TEST_F(SessionsSyncManagerTest, MergeWithLocalAndForeignTabs) {
   EXPECT_EQ(1U, foreign_sessions.size());
 }
 
+// Tests the common scenario.  Merge with both local and foreign session data
+// followed by updates flowing from sync and local.
 TEST_F(SessionsSyncManagerTest, UpdatesAfterMixedMerge) {
   // Add local and foreign data.
   AddTab(browser(), GURL("http://foo1"));
@@ -778,6 +785,8 @@ TEST_F(SessionsSyncManagerTest, UpdatesAfterMixedMerge) {
   helper()->VerifySyncedSession(tag1, meta1_reference, *(foreign_sessions[0]));
 }
 
+// Tests that this SyncSessionManager knows how to delete foreign sessions
+// if it wants to.
 TEST_F(SessionsSyncManagerTest, DeleteForeignSession) {
   InitWithNoSyncData();
   std::string tag = "tag1";
@@ -906,6 +915,8 @@ TEST_F(SessionsSyncManagerTest, WriteForeignSessionToNodeMissingTabs) {
   helper()->VerifySyncedSession(tag, session_reference, *(foreign_sessions[0]));
 }
 
+// Test that receiving a session delete from sync removes the session
+// from tracking.
 TEST_F(SessionsSyncManagerTest, ProcessForeignDelete) {
   InitWithNoSyncData();
   SessionID::id_type n[] = {5};
@@ -1021,6 +1032,7 @@ TEST_F(SessionsSyncManagerTest, AssociateWindowsDontReloadTabs) {
   EXPECT_EQ(1, header_s.window(0).tab_size());
 }
 
+// Tests that the SyncSessionManager responds to local tab events properly.
 TEST_F(SessionsSyncManagerTest, OnLocalTabModified) {
   syncer::SyncChangeList out;
   // Init with no local data, relies on MergeLocalSessionNoTabs.
@@ -1190,6 +1202,113 @@ TEST_F(SessionsSyncManagerTest, MergeLocalSessionExistingTabs) {
       GetEntryAtIndex(1)->GetVirtualURL());
 }
 
+// Test garbage collection of stale foreign sessions.
+TEST_F(SessionsSyncManagerTest, DoGarbageCollection) {
+  // Fill two instances of session specifics with a foreign session's data.
+  std::string tag1 = "tag1";
+  SessionID::id_type n1[] = {5, 10, 13, 17};
+  std::vector<SessionID::id_type> tab_list1(n1, n1 + arraysize(n1));
+  std::vector<sync_pb::SessionSpecifics> tabs1;
+  sync_pb::SessionSpecifics meta(helper()->BuildForeignSession(
+      tag1, tab_list1, &tabs1));
+  std::string tag2 = "tag2";
+  SessionID::id_type n2[] = {8, 15, 18, 20};
+  std::vector<SessionID::id_type> tab_list2(n2, n2 + arraysize(n2));
+  std::vector<sync_pb::SessionSpecifics> tabs2;
+  sync_pb::SessionSpecifics meta2(helper()->BuildForeignSession(
+      tag2, tab_list2, &tabs2));
+  // Set the modification time for tag1 to be 21 days ago, tag2 to 5 days ago.
+  base::Time tag1_time = base::Time::Now() - base::TimeDelta::FromDays(21);
+  base::Time tag2_time = base::Time::Now() - base::TimeDelta::FromDays(5);
+
+  syncer::SyncDataList foreign_data;
+  sync_pb::EntitySpecifics entity1, entity2;
+  entity1.mutable_session()->CopyFrom(meta);
+  entity2.mutable_session()->CopyFrom(meta2);
+  foreign_data.push_back(SyncData::CreateRemoteData(1, entity1, tag1_time));
+  foreign_data.push_back(SyncData::CreateRemoteData(1, entity2, tag2_time));
+  AddTabsToSyncDataList(tabs1, &foreign_data);
+  AddTabsToSyncDataList(tabs2, &foreign_data);
+
+  syncer::SyncChangeList output;
+  InitWithSyncDataTakeOutput(foreign_data, &output);
+  ASSERT_EQ(2U, output.size());
+  output.clear();
+
+  // Check that the foreign session was associated and retrieve the data.
+  std::vector<const SyncedSession*> foreign_sessions;
+  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_EQ(2U, foreign_sessions.size());
+  foreign_sessions.clear();
+
+  // Now garbage collect and verify the non-stale session is still there.
+  manager()->DoGarbageCollection();
+  ASSERT_EQ(5U, output.size());
+  EXPECT_EQ(SyncChange::ACTION_DELETE, output[0].change_type());
+  const SyncData data(output[0].sync_data());
+  EXPECT_EQ(tag1, data.GetTag());
+  for (int i = 1; i < 5; i++) {
+    EXPECT_EQ(SyncChange::ACTION_DELETE, output[i].change_type());
+    const SyncData data(output[i].sync_data());
+    EXPECT_EQ(TabNodePool2::TabIdToTag(tag1, i), data.GetTag());
+  }
+
+  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_EQ(1U, foreign_sessions.size());
+  std::vector<std::vector<SessionID::id_type> > session_reference;
+  session_reference.push_back(tab_list2);
+  helper()->VerifySyncedSession(tag2, session_reference,
+                                *(foreign_sessions[0]));
+}
+
+// Test that an update to a previously considered "stale" session,
+// prior to garbage collection, will save the session from deletion.
+TEST_F(SessionsSyncManagerTest, GarbageCollectionHonoursUpdate) {
+  std::string tag1 = "tag1";
+  SessionID::id_type n1[] = {5, 10, 13, 17};
+  std::vector<SessionID::id_type> tab_list1(n1, n1 + arraysize(n1));
+  std::vector<sync_pb::SessionSpecifics> tabs1;
+  sync_pb::SessionSpecifics meta(helper()->BuildForeignSession(
+      tag1, tab_list1, &tabs1));
+  syncer::SyncDataList foreign_data;
+  sync_pb::EntitySpecifics entity1;
+  base::Time tag1_time = base::Time::Now() - base::TimeDelta::FromDays(21);
+  entity1.mutable_session()->CopyFrom(meta);
+  foreign_data.push_back(SyncData::CreateRemoteData(1, entity1, tag1_time));
+  AddTabsToSyncDataList(tabs1, &foreign_data);
+  syncer::SyncChangeList output;
+  InitWithSyncDataTakeOutput(foreign_data, &output);
+  ASSERT_EQ(2U, output.size());
+
+  // Update to a non-stale time.
+  sync_pb::EntitySpecifics update_entity;
+  update_entity.mutable_session()->CopyFrom(tabs1[0]);
+  syncer::SyncChangeList changes;
+  changes.push_back(syncer::SyncChange(
+      FROM_HERE,
+      SyncChange::ACTION_UPDATE,
+      syncer::SyncData::CreateRemoteData(1, update_entity,
+                                         base::Time::Now())));
+  manager()->ProcessSyncChanges(FROM_HERE, changes);
+
+  // Check that the foreign session was associated and retrieve the data.
+  std::vector<const SyncedSession*> foreign_sessions;
+  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_EQ(1U, foreign_sessions.size());
+  foreign_sessions.clear();
+
+  // Verify the now non-stale session does not get deleted.
+  manager()->DoGarbageCollection();
+  ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
+  ASSERT_EQ(1U, foreign_sessions.size());
+  std::vector<std::vector<SessionID::id_type> > session_reference;
+  session_reference.push_back(tab_list1);
+  helper()->VerifySyncedSession(
+      tag1, session_reference, *(foreign_sessions[0]));
+}
+
+// Test that swapping WebContents for a tab is properly observed and handled
+// by the SessionsSyncManager.
 TEST_F(SessionsSyncManagerTest, CheckPrerenderedWebContentsSwap) {
   AddTab(browser(), GURL("http://foo1"));
   NavigateAndCommitActiveTab(GURL("http://foo2"));
@@ -1275,6 +1394,7 @@ class SessionNotificationObserver : public content::NotificationObserver {
 };
 }  // namespace
 
+// Test that NOTIFICATION_FOREIGN_SESSION_UPDATED is sent.
 TEST_F(SessionsSyncManagerTest, NotifiedOfUpdates) {
   SessionNotificationObserver observer;
   ASSERT_FALSE(observer.notified_of_update());
