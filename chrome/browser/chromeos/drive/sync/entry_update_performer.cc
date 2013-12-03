@@ -178,7 +178,8 @@ void EntryUpdatePerformer::UpdateEntryAfterFinish(
     return;
   }
 
-  if (entry->metadata_edit_state() == ResourceEntry::DIRTY) {
+  if (entry->metadata_edit_state() == ResourceEntry::DIRTY ||
+      entry->parent_local_id() == util::kDriveTrashDirLocalId) {
     // The entry was edited during the update. Update again.
     UpdateEntry(entry->local_id(), callback);
     return;
