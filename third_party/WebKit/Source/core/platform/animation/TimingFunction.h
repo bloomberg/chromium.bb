@@ -284,6 +284,7 @@ private:
 
         // FIXME: Come up with a public API for the segments and remove this.
         friend class CompositorAnimationsImpl;
+        friend class CompositorAnimations;
 
         // Allow the compositor to reverse the timing function.
         friend class CompositorAnimationsTimingFunctionReverser;
@@ -303,6 +304,7 @@ private:
 
     // FIXME: Come up with a public API for the segments and remove this.
     friend class CompositorAnimationsImpl;
+    friend class CompositorAnimations;
 
     // Allow the compositor to reverse the timing function.
     friend class CompositorAnimationsTimingFunctionReverser;

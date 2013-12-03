@@ -149,8 +149,102 @@ bool CompositorAnimations::isCandidateForAnimationOnCompositor(const Timing& tim
 {
     const KeyframeAnimationEffect& keyframeEffect = *toKeyframeAnimationEffect(&effect);
 
-    return CompositorAnimationsImpl::isCandidateForCompositor(keyframeEffect)
-        && CompositorAnimationsImpl::isCandidateForCompositor(timing, keyframeEffect.getFrames());
+    // Are the keyframes convertible?
+    const KeyframeAnimationEffect::KeyframeVector frames = keyframeEffect.getFrames();
+    for (size_t i = 0; i < frames.size(); ++i) {
+        // Only replace mode can be accelerated
+        if (frames[i]->composite() != AnimationEffect::CompositeReplace)
+            return false;
+
+        // Check all the properties can be accelerated
+        const PropertySet properties = frames[i]->properties(); // FIXME: properties creates a whole new PropertySet!
+
+        if (properties.isEmpty())
+            return false;
+
+        for (PropertySet::const_iterator it = properties.begin(); it != properties.end(); ++it) {
+            switch (*it) {
+            case CSSPropertyOpacity:
+                continue;
+            case CSSPropertyWebkitTransform:
+                if (toAnimatableTransform(frames[i]->propertyValue(CSSPropertyWebkitTransform))->transformOperations().dependsOnBoxSize())
+                    return false;
+                continue;
+            case CSSPropertyWebkitFilter: {
+                const FilterOperations& operations = toAnimatableFilterOperations(frames[i]->propertyValue(CSSPropertyWebkitFilter))->operations();
+                if (operations.hasFilterThatMovesPixels())
+                    return false;
+                for (size_t i = 0; i < operations.size(); i++) {
+                    const FilterOperation& op = *operations.at(i);
+                    if (op.type() == FilterOperation::VALIDATED_CUSTOM || op.type() == FilterOperation::CUSTOM)
+                        return false;
+                }
+                continue;
+            }
+            default:
+                return false;
+            }
+        }
+    }
+
+    // Is the timing object convertible?
+    CompositorAnimationsImpl::CompositorTiming out;
+    if (!CompositorAnimationsImpl::convertTimingForCompositor(timing, out))
+        return false;
+
+    // Is the timing function convertible?
+    switch (timing.timingFunction->type()) {
+    case TimingFunction::LinearFunction:
+        break;
+
+    case TimingFunction::CubicBezierFunction:
+        // Can have a cubic if we don't have to split it (IE only have two frames).
+        if (frames.size() != 2)
+            return false;
+
+        ASSERT(frames[0]->offset() == 0.0 && frames[1]->offset() == 1.0);
+        break;
+
+    case TimingFunction::StepsFunction:
+        return false;
+
+    case TimingFunction::ChainedFunction: {
+        // Currently we only support chained segments in the form the CSS code
+        // generates. These chained segments are only one level deep and have
+        // one timing function per frame.
+        const ChainedTimingFunction* chained = static_cast<const ChainedTimingFunction*>(timing.timingFunction.get());
+        if (!chained->m_segments.size())
+            return false;
+
+        if (frames.size() != chained->m_segments.size() + 1)
+            return false;
+
+        for (size_t timeIndex = 0; timeIndex < chained->m_segments.size(); timeIndex++) {
+            const ChainedTimingFunction::Segment& segment = chained->m_segments[timeIndex];
+
+            if (frames[timeIndex]->offset() != segment.m_min || frames[timeIndex + 1]->offset() != segment.m_max)
+                return false;
+
+            switch (segment.m_timingFunction->type()) {
+            case TimingFunction::LinearFunction:
+            case TimingFunction::CubicBezierFunction:
+                continue;
+
+            case TimingFunction::StepsFunction:
+            case TimingFunction::ChainedFunction:
+            default:
+                return false;
+            }
+        }
+
+        break;
+    }
+    default:
+        ASSERT_NOT_REACHED();
+        return false;
+    }
+
+    return true;
 }
 
 bool CompositorAnimations::canStartAnimationOnCompositor(const Element& element)
@@ -200,108 +294,9 @@ void CompositorAnimations::pauseAnimationForTestingOnCompositor(const Element& e
     toRenderBoxModelObject(element.renderer())->layer()->compositedLayerMapping()->mainGraphicsLayer()->pauseAnimation(id, pauseTime);
 }
 
-bool CompositorAnimationsImpl::isCandidateForCompositor(const Keyframe& keyframe)
-{
-    // Only replace mode can be accelerated
-    if (keyframe.composite() != AnimationEffect::CompositeReplace)
-        return false;
-    // Check all the properties can be accelerated
-    const PropertySet properties = keyframe.properties();
-    if (properties.isEmpty())
-        return false;
-    for (PropertySet::const_iterator it = properties.begin(); it != properties.end(); ++it) {
-        switch (*it) {
-        case CSSPropertyOpacity:
-            continue;
-        case CSSPropertyWebkitTransform:
-            if (toAnimatableTransform(keyframe.propertyValue(CSSPropertyWebkitTransform))->transformOperations().dependsOnBoxSize())
-                return false;
-            continue;
-        case CSSPropertyWebkitFilter: {
-            const FilterOperations& operations = toAnimatableFilterOperations(keyframe.propertyValue(CSSPropertyWebkitFilter))->operations();
-            if (operations.hasFilterThatMovesPixels())
-                return false;
-            for (size_t i = 0; i < operations.size(); i++) {
-                const FilterOperation& op = *operations.at(i);
-                if (op.type() == FilterOperation::VALIDATED_CUSTOM || op.type() == FilterOperation::CUSTOM)
-                    return false;
-            }
-            continue;
-        }
-        default:
-            return false;
-        }
-    }
-    return true;
-}
-
-bool CompositorAnimationsImpl::isCandidateForCompositor(const KeyframeAnimationEffect& effect)
-{
-    const KeyframeAnimationEffect::KeyframeVector frames = effect.getFrames();
-    for (size_t i = 0; i < frames.size(); ++i) {
-        if (!isCandidateForCompositor(*frames[i].get()))
-            return false;
-    }
-    return true;
-}
-
-bool CompositorAnimationsImpl::isCandidateForCompositor(const Timing& timing, const KeyframeAnimationEffect::KeyframeVector& frames)
-{
-    CompositorTiming out;
-    if (!convertTimingForCompositor(timing, out))
-        return false;
-
-    return isCandidateForCompositor(*timing.timingFunction.get(), &frames);
-}
-
-bool CompositorAnimationsImpl::isCandidateForCompositor(const TimingFunction& timingFunction, const KeyframeAnimationEffect::KeyframeVector* frames, bool isNestedCall)
-{
-    switch (timingFunction.type()) {
-    case TimingFunction::LinearFunction:
-        return true;
-
-    case TimingFunction::CubicBezierFunction:
-        // Can have a cubic if we don't have to split it (IE only have two frames).
-        if (!(isNestedCall || (frames && frames->size() == 2)))
-            return false;
-
-        ASSERT(!frames || (frames->at(0)->offset() == 0.0 && frames->at(1)->offset() == 1.0));
-
-        return true;
-
-    case TimingFunction::StepsFunction:
-        return false;
-
-    case TimingFunction::ChainedFunction: {
-        // Currently we only support chained segments in the form the CSS code
-        // generates. These chained segments are only one level deep and have
-        // one timing function per frame.
-        const ChainedTimingFunction& chained = toChainedTimingFunction(timingFunction);
-        if (isNestedCall)
-            return false;
-
-        if (!chained.m_segments.size())
-            return false;
-
-        if (frames->size() != chained.m_segments.size() + 1)
-            return false;
-
-        for (size_t timeIndex = 0; timeIndex < chained.m_segments.size(); timeIndex++) {
-            const ChainedTimingFunction::Segment& segment = chained.m_segments[timeIndex];
-
-            if (frames->at(timeIndex)->offset() != segment.m_min || frames->at(timeIndex + 1)->offset() != segment.m_max)
-                return false;
-
-            if (!isCandidateForCompositor(*segment.m_timingFunction.get(), 0, true))
-                return false;
-        }
-        return true;
-    }
-    default:
-        ASSERT_NOT_REACHED();
-    };
-    return false;
-}
+// -----------------------------------------------------------------------
+// CompositorAnimationsImpl
+// -----------------------------------------------------------------------
 
 bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, CompositorTiming& out)
 {

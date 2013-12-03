@@ -72,7 +72,9 @@ protected:
     Timing m_timing;
     CompositorAnimationsImpl::CompositorTiming m_compositorTiming;
     KeyframeAnimationEffect::KeyframeVector m_keyframeVector2;
+    RefPtr<KeyframeAnimationEffect> m_keyframeAnimationEffect2;
     KeyframeAnimationEffect::KeyframeVector m_keyframeVector5;
+    RefPtr<KeyframeAnimationEffect> m_keyframeAnimationEffect5;
 
     virtual void SetUp()
     {
@@ -90,7 +92,10 @@ protected:
         ASSERT(convertTimingForCompositor(m_timing, m_compositorTiming));
 
         m_keyframeVector2 = createCompositableFloatKeyframeVector(2);
+        m_keyframeAnimationEffect2 = KeyframeAnimationEffect::create(m_keyframeVector2);
+
         m_keyframeVector5 = createCompositableFloatKeyframeVector(5);
+        m_keyframeAnimationEffect5 = KeyframeAnimationEffect::create(m_keyframeVector5);
     }
 
 public:
@@ -99,25 +104,23 @@ public:
     {
         return CompositorAnimationsImpl::convertTimingForCompositor(t, out);
     }
-    bool isCandidateForCompositor(const Timing& t, const KeyframeAnimationEffect::KeyframeVector& frames)
+    bool isCandidateForAnimationOnCompositor(const Timing& timing, const AnimationEffect& effect)
     {
-        return CompositorAnimationsImpl::isCandidateForCompositor(t, frames);
-    }
-    bool isCandidateForCompositor(TimingFunction& t, const KeyframeAnimationEffect::KeyframeVector* frames)
-    {
-        return CompositorAnimationsImpl::isCandidateForCompositor(t, frames);
-    }
-    bool isCandidateForCompositor(const Keyframe& k)
-    {
-        return CompositorAnimationsImpl::isCandidateForCompositor(k);
-    }
-    bool isCandidateForCompositor(const KeyframeAnimationEffect& k)
-    {
-        return CompositorAnimationsImpl::isCandidateForCompositor(k);
+        return CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(timing, effect);
     }
     void getAnimationOnCompositor(Timing& timing, KeyframeAnimationEffect& effect, Vector<OwnPtr<blink::WebAnimation> >& animations)
     {
         return CompositorAnimationsImpl::getAnimationOnCompositor(timing, effect, animations);
+    }
+
+    bool isCandidateHelperForSingleKeyframe(Keyframe* frame)
+    {
+        EXPECT_EQ(frame->offset(), 0);
+        KeyframeAnimationEffect::KeyframeVector frames;
+        frames.append(frame);
+        EXPECT_EQ(m_keyframeVector2[1]->offset(), 1.0);
+        frames.append(m_keyframeVector2[1]);
+        return isCandidateForAnimationOnCompositor(m_timing, *KeyframeAnimationEffect::create(frames).get());
     }
 
     // -------------------------------------------------------------------
@@ -234,43 +237,15 @@ public:
 // -----------------------------------------------------------------------
 // -----------------------------------------------------------------------
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorKeyframeCSSPropertySupported)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKeyframeMultipleCSSProperties)
 {
-    EXPECT_TRUE(
-        isCandidateForCompositor(
-            *createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace).get()));
-
-    EXPECT_TRUE(
-        isCandidateForCompositor(
-            *createDefaultKeyframe(CSSPropertyWebkitTransform, AnimationEffect::CompositeReplace).get()));
-
-    EXPECT_FALSE(
-        isCandidateForCompositor(
-            *createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeAdd).get()));
-}
-
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorKeyframeCSSPropertyNotSupported)
-{
-    EXPECT_FALSE(
-        isCandidateForCompositor(
-            *createDefaultKeyframe(CSSPropertyColor, AnimationEffect::CompositeReplace).get()));
-
-    EXPECT_FALSE(
-        isCandidateForCompositor(
-            *createDefaultKeyframe(CSSPropertyColor, AnimationEffect::CompositeAdd).get()));
-}
-
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorKeyframeMultipleCSSProperties)
-{
-    // In this test, we cheat by using an AnimatableDouble even with Transform
-    // as the actual value isn't considered.
     RefPtr<Keyframe> keyframeGoodMultiple = createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace);
     keyframeGoodMultiple->setPropertyValue(CSSPropertyWebkitTransform, AnimatableTransform::create(TransformOperations()).get());
-    EXPECT_TRUE(isCandidateForCompositor(*keyframeGoodMultiple.get()));
+    EXPECT_TRUE(isCandidateHelperForSingleKeyframe(keyframeGoodMultiple.get()));
 
     RefPtr<Keyframe> keyframeBadMultipleOp = createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeAdd);
     keyframeBadMultipleOp->setPropertyValue(CSSPropertyWebkitTransform, AnimatableDouble::create(10.0).get());
-    EXPECT_FALSE(isCandidateForCompositor(*keyframeBadMultipleOp.get()));
+    EXPECT_FALSE(isCandidateHelperForSingleKeyframe(keyframeBadMultipleOp.get()));
 
     // Check both an unsupported property which hashes before and after the
     // supported property.
@@ -278,82 +253,68 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorKeyframeMultip
 
     RefPtr<Keyframe> keyframeBadMultiple1ID = createDefaultKeyframe(CSSPropertyColor, AnimationEffect::CompositeReplace);
     keyframeBadMultiple1ID->setPropertyValue(CSSPropertyOpacity, AnimatableDouble::create(10.0).get());
-    EXPECT_FALSE(isCandidateForCompositor(*keyframeBadMultiple1ID.get()));
+    EXPECT_FALSE(isCandidateHelperForSingleKeyframe(keyframeBadMultiple1ID.get()));
     EXPECT_LT(HashFunctions::hash(CSSPropertyColor), HashFunctions::hash(CSSPropertyOpacity));
 
     RefPtr<Keyframe> keyframeBadMultiple2ID = createDefaultKeyframe(CSSPropertyWebkitTransform, AnimationEffect::CompositeReplace);
     keyframeBadMultiple2ID->setPropertyValue(CSSPropertyWidth, AnimatableDouble::create(10.0).get());
-    EXPECT_FALSE(isCandidateForCompositor(*keyframeBadMultiple2ID.get()));
+    EXPECT_FALSE(isCandidateHelperForSingleKeyframe(keyframeBadMultiple2ID.get()));
     EXPECT_GT(HashFunctions::hash(CSSPropertyWebkitTransform), HashFunctions::hash(CSSPropertyWidth));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorTransformDependsOnBoxSize)
+TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorAnimationTransformDependsOnBoxSize)
 {
     TransformOperations ops;
     ops.operations().append(TranslateTransformOperation::create(Length(2, WebCore::Fixed), Length(2, WebCore::Fixed), TransformOperation::TranslateX));
     RefPtr<Keyframe> goodKeyframe = createReplaceOpKeyframe(CSSPropertyWebkitTransform, AnimatableTransform::create(ops).get());
-    EXPECT_TRUE(isCandidateForCompositor(*goodKeyframe.get()));
+    EXPECT_TRUE(isCandidateHelperForSingleKeyframe(goodKeyframe.get()));
 
     ops.operations().append(TranslateTransformOperation::create(Length(50, WebCore::Percent), Length(2, WebCore::Fixed), TransformOperation::TranslateX));
     RefPtr<Keyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyWebkitTransform, AnimatableTransform::create(ops).get());
-    EXPECT_FALSE(isCandidateForCompositor(*badKeyframe.get()));
+    EXPECT_FALSE(isCandidateHelperForSingleKeyframe(badKeyframe.get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorCustomFilter)
+TEST_F(AnimationCompositorAnimationsTest, isNotCandidateForCompositorAnimationCustomFilter)
 {
     FilterOperations ops;
     ops.operations().append(BasicColorMatrixFilterOperation::create(0.5, FilterOperation::SATURATE));
     RefPtr<Keyframe> goodKeyframe = createReplaceOpKeyframe(CSSPropertyWebkitFilter, AnimatableFilterOperations::create(ops).get());
-    EXPECT_TRUE(isCandidateForCompositor(*goodKeyframe.get()));
+    EXPECT_TRUE(isCandidateHelperForSingleKeyframe(goodKeyframe.get()));
 
     ops.operations().append(CustomFilterOperationMock::create());
     RefPtr<Keyframe> badKeyframe = createReplaceOpKeyframe(CSSPropertyFilter, AnimatableFilterOperations::create(ops).get());
-    EXPECT_FALSE(isCandidateForCompositor(*badKeyframe.get()));
+    EXPECT_FALSE(isCandidateHelperForSingleKeyframe(badKeyframe.get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorKeyframeEffectGoodSingleFrame)
-{
-    KeyframeAnimationEffect::KeyframeVector frames;
-    frames.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace).get());
-    EXPECT_TRUE(isCandidateForCompositor(*KeyframeAnimationEffect::create(frames).get()));
-}
-
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorKeyframeEffectBadSingleFrame)
-{
-    KeyframeAnimationEffect::KeyframeVector framesBadSingle;
-    framesBadSingle.append(createDefaultKeyframe(CSSPropertyColor, AnimationEffect::CompositeReplace).get());
-    EXPECT_FALSE(isCandidateForCompositor(*KeyframeAnimationEffect::create(framesBadSingle).get()));
-}
-
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorKeyframeEffectMultipleFramesOkay)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKeyframeEffectMultipleFramesOkay)
 {
     KeyframeAnimationEffect::KeyframeVector framesSame;
     framesSame.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
     framesSame.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 1.0).get());
-    EXPECT_TRUE(isCandidateForCompositor(*KeyframeAnimationEffect::create(framesSame).get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *KeyframeAnimationEffect::create(framesSame).get()));
 
     KeyframeAnimationEffect::KeyframeVector framesMixed;
     framesMixed.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
     framesMixed.append(createDefaultKeyframe(CSSPropertyWebkitTransform, AnimationEffect::CompositeReplace, 1.0).get());
-    EXPECT_TRUE(isCandidateForCompositor(*KeyframeAnimationEffect::create(framesMixed).get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *KeyframeAnimationEffect::create(framesMixed).get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorKeyframeEffectMultipleFramesNotOkay)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorKeyframeEffectMultipleFramesNotOkay)
 {
     KeyframeAnimationEffect::KeyframeVector framesSame;
     framesSame.append(createDefaultKeyframe(CSSPropertyColor, AnimationEffect::CompositeReplace, 0.0).get());
     framesSame.append(createDefaultKeyframe(CSSPropertyColor, AnimationEffect::CompositeReplace, 1.0).get());
-    EXPECT_FALSE(isCandidateForCompositor(*KeyframeAnimationEffect::create(framesSame).get()));
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *KeyframeAnimationEffect::create(framesSame).get()));
 
     KeyframeAnimationEffect::KeyframeVector framesMixedProperties;
     framesMixedProperties.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
     framesMixedProperties.append(createDefaultKeyframe(CSSPropertyColor, AnimationEffect::CompositeReplace, 1.0).get());
-    EXPECT_FALSE(isCandidateForCompositor(*KeyframeAnimationEffect::create(framesMixedProperties).get()));
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *KeyframeAnimationEffect::create(framesMixedProperties).get()));
 
     KeyframeAnimationEffect::KeyframeVector framesMixedOps;
     framesMixedOps.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
     framesMixedOps.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeAdd, 1.0).get());
-    EXPECT_FALSE(isCandidateForCompositor(*KeyframeAnimationEffect::create(framesMixedOps).get()));
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *KeyframeAnimationEffect::create(framesMixedOps).get()));
 }
 
 TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorStartDelay)
@@ -495,143 +456,161 @@ TEST_F(AnimationCompositorAnimationsTest, ConvertTimingForCompositorDirectionIte
     EXPECT_TRUE(m_compositorTiming.reverse);
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorTimingTimingFunctionPassThru)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingTimingFunctionPassThru)
 {
     m_timing.timingFunction = m_stepTimingFunction;
-    EXPECT_FALSE(isCandidateForCompositor(m_timing, m_keyframeVector2));
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorTimingFunctionLinear)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionLinear)
 {
-    EXPECT_TRUE(isCandidateForCompositor(*m_linearTimingFunction.get(), &m_keyframeVector2));
-    EXPECT_TRUE(isCandidateForCompositor(*m_linearTimingFunction.get(), &m_keyframeVector5));
+    m_timing.timingFunction = m_linearTimingFunction;
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorTimingFunctionCubic)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionCubic)
 {
     // Cubic bezier are okay if we only have two keyframes
-    EXPECT_TRUE(isCandidateForCompositor(*m_cubicEaseTimingFunction.get(), &m_keyframeVector2));
-    EXPECT_FALSE(isCandidateForCompositor(*m_cubicEaseTimingFunction.get(), &m_keyframeVector5));
+    m_timing.timingFunction = m_cubicEaseTimingFunction;
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 
-    EXPECT_TRUE(isCandidateForCompositor(*m_cubicCustomTimingFunction.get(), &m_keyframeVector2));
-    EXPECT_FALSE(isCandidateForCompositor(*m_cubicCustomTimingFunction.get(), &m_keyframeVector5));
+    m_timing.timingFunction = m_cubicCustomTimingFunction;
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorTimingFunctionSteps)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionSteps)
 {
-    RefPtr<TimingFunction> stepTiming = StepsTimingFunction::create(1, false);
-    EXPECT_FALSE(isCandidateForCompositor(*m_stepTimingFunction.get(), &m_keyframeVector2));
-    EXPECT_FALSE(isCandidateForCompositor(*m_stepTimingFunction.get(), &m_keyframeVector5));
+    m_timing.timingFunction = m_stepTimingFunction;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorTimingFunctionChainedEmpty)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionChainedEmpty)
 {
     RefPtr<ChainedTimingFunction> chainedEmpty = ChainedTimingFunction::create();
-    EXPECT_FALSE(isCandidateForCompositor(*chainedEmpty.get(), &m_keyframeVector2));
-    EXPECT_FALSE(isCandidateForCompositor(*chainedEmpty.get(), &m_keyframeVector5));
+    m_timing.timingFunction = chainedEmpty;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorTimingFunctionChainedLinear)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionChainedLinear)
 {
     RefPtr<ChainedTimingFunction> chainedLinearSingle = ChainedTimingFunction::create();
     chainedLinearSingle->appendSegment(1.0, m_linearTimingFunction.get());
-    EXPECT_TRUE(isCandidateForCompositor(*chainedLinearSingle.get(), &m_keyframeVector2));
+    m_timing.timingFunction = chainedLinearSingle;
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
 
     RefPtr<ChainedTimingFunction> chainedLinearMultiple = ChainedTimingFunction::create();
     chainedLinearMultiple->appendSegment(0.25, m_linearTimingFunction.get());
     chainedLinearMultiple->appendSegment(0.5, m_linearTimingFunction.get());
     chainedLinearMultiple->appendSegment(0.75, m_linearTimingFunction.get());
     chainedLinearMultiple->appendSegment(1.0, m_linearTimingFunction.get());
-    EXPECT_TRUE(isCandidateForCompositor(*chainedLinearMultiple.get(), &m_keyframeVector5));
+    m_timing.timingFunction = chainedLinearMultiple;
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 
     // FIXME: Technically a chained timing function of linear functions don't
     // have to be aligned to keyframes. We don't support that currently as
     // nothing generates that yet.
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorTimingFunctionChainedCubicMatchingOffsets)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionChainedCubicMatchingOffsets)
 {
     RefPtr<ChainedTimingFunction> chainedSingleAGood = ChainedTimingFunction::create();
     chainedSingleAGood->appendSegment(1.0, m_cubicEaseTimingFunction.get());
-    EXPECT_TRUE(isCandidateForCompositor(*chainedSingleAGood.get(), &m_keyframeVector2));
+    m_timing.timingFunction = chainedSingleAGood;
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
 
     RefPtr<ChainedTimingFunction> chainedSingleBGood = ChainedTimingFunction::create();
     chainedSingleBGood->appendSegment(1.0, m_cubicCustomTimingFunction.get());
-    EXPECT_TRUE(isCandidateForCompositor(*chainedSingleBGood.get(), &m_keyframeVector2));
+    m_timing.timingFunction = chainedSingleBGood;
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
 
     RefPtr<ChainedTimingFunction> chainedMultipleGood = ChainedTimingFunction::create();
     chainedMultipleGood->appendSegment(0.25, m_cubicEaseTimingFunction.get());
     chainedMultipleGood->appendSegment(0.5, m_cubicCustomTimingFunction.get());
     chainedMultipleGood->appendSegment(0.75, m_cubicCustomTimingFunction.get());
     chainedMultipleGood->appendSegment(1.0, m_cubicCustomTimingFunction.get());
-    EXPECT_TRUE(isCandidateForCompositor(*chainedMultipleGood.get(), &m_keyframeVector5));
+    m_timing.timingFunction = chainedMultipleGood;
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorTimingFunctionChainedCubicNonMatchingOffsets)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionChainedCubicNonMatchingOffsets)
 {
     RefPtr<ChainedTimingFunction> chained0 = ChainedTimingFunction::create();
     chained0->appendSegment(0.5, m_cubicEaseTimingFunction.get());
-    EXPECT_FALSE(isCandidateForCompositor(*chained0.get(), &m_keyframeVector2));
+    m_timing.timingFunction = chained0;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
 
     RefPtr<ChainedTimingFunction> chained1 = ChainedTimingFunction::create();
     chained1->appendSegment(0.24, m_cubicEaseTimingFunction.get());
     chained1->appendSegment(0.5, m_cubicEaseTimingFunction.get());
     chained1->appendSegment(0.75, m_cubicEaseTimingFunction.get());
     chained1->appendSegment(1.0, m_cubicEaseTimingFunction.get());
-    EXPECT_FALSE(isCandidateForCompositor(*chained1.get(), &m_keyframeVector5));
+    m_timing.timingFunction = chained1;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 
     RefPtr<ChainedTimingFunction> chained2 = ChainedTimingFunction::create();
     chained2->appendSegment(0.25, m_cubicEaseTimingFunction.get());
     chained2->appendSegment(0.51, m_cubicEaseTimingFunction.get());
     chained2->appendSegment(0.75, m_cubicEaseTimingFunction.get());
     chained2->appendSegment(1.0, m_cubicEaseTimingFunction.get());
-    EXPECT_FALSE(isCandidateForCompositor(*chained2.get(), &m_keyframeVector5));
+    m_timing.timingFunction = chained2;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 
     RefPtr<ChainedTimingFunction> chained3 = ChainedTimingFunction::create();
     chained3->appendSegment(0.25, m_cubicEaseTimingFunction.get());
     chained3->appendSegment(0.5, m_cubicEaseTimingFunction.get());
     chained3->appendSegment(0.75, m_cubicEaseTimingFunction.get());
     chained3->appendSegment(0.8, m_cubicEaseTimingFunction.get());
-    EXPECT_FALSE(isCandidateForCompositor(*chained3.get(), &m_keyframeVector5));
+    m_timing.timingFunction = chained3;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 
     RefPtr<ChainedTimingFunction> chained4 = ChainedTimingFunction::create();
     chained4->appendSegment(0.25, m_cubicEaseTimingFunction.get());
     chained4->appendSegment(0.5, m_cubicEaseTimingFunction.get());
     chained4->appendSegment(0.75, m_cubicEaseTimingFunction.get());
     chained4->appendSegment(1.1, m_cubicEaseTimingFunction.get());
-    EXPECT_FALSE(isCandidateForCompositor(*chained4.get(), &m_keyframeVector5));
+    m_timing.timingFunction = chained4;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorTimingFunctionMissingFrames)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionMissingFrames)
 {
     // Missing first
     RefPtr<ChainedTimingFunction> chained1 = ChainedTimingFunction::create();
     chained1->appendSegment(0.5, m_cubicEaseTimingFunction.get());
     chained1->appendSegment(0.75, m_cubicEaseTimingFunction.get());
     chained1->appendSegment(1.0, m_cubicEaseTimingFunction.get());
-    EXPECT_FALSE(isCandidateForCompositor(*chained1.get(), &m_keyframeVector5));
+    m_timing.timingFunction = chained1;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 
     // Missing middle
     RefPtr<ChainedTimingFunction> chained2 = ChainedTimingFunction::create();
     chained2->appendSegment(0.25, m_cubicEaseTimingFunction.get());
     chained2->appendSegment(0.75, m_cubicEaseTimingFunction.get());
     chained2->appendSegment(1.0, m_cubicEaseTimingFunction.get());
-    EXPECT_FALSE(isCandidateForCompositor(*chained2.get(), &m_keyframeVector5));
+    m_timing.timingFunction = chained2;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 
     // Missing last
     RefPtr<ChainedTimingFunction> chained3 = ChainedTimingFunction::create();
     chained3->appendSegment(0.25, m_cubicEaseTimingFunction.get());
     chained3->appendSegment(0.5, m_cubicEaseTimingFunction.get());
     chained3->appendSegment(0.75, m_cubicEaseTimingFunction.get());
-    EXPECT_FALSE(isCandidateForCompositor(*chained3.get(), &m_keyframeVector5));
+    m_timing.timingFunction = chained3;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorTimingFunctionToManyFrames)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionToManyFrames)
 {
     RefPtr<ChainedTimingFunction> chained1 = ChainedTimingFunction::create();
     chained1->appendSegment(0.1, m_cubicEaseTimingFunction.get());
     chained1->appendSegment(0.5, m_cubicEaseTimingFunction.get());
-    EXPECT_FALSE(isCandidateForCompositor(*chained1.get(), &m_keyframeVector2));
+    m_timing.timingFunction = chained1;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
 
     RefPtr<ChainedTimingFunction> chained2 = ChainedTimingFunction::create();
     chained2->appendSegment(0.1, m_cubicEaseTimingFunction.get());
@@ -639,45 +618,51 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorTimingFunction
     chained2->appendSegment(0.5, m_cubicEaseTimingFunction.get());
     chained2->appendSegment(0.75, m_cubicEaseTimingFunction.get());
     chained2->appendSegment(1.0, m_cubicEaseTimingFunction.get());
-    EXPECT_FALSE(isCandidateForCompositor(*chained2.get(), &m_keyframeVector5));
+    m_timing.timingFunction = chained2;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorTimingFunctionMixedGood)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionMixedGood)
 {
     RefPtr<ChainedTimingFunction> chainedMixed = ChainedTimingFunction::create();
     chainedMixed->appendSegment(0.25, m_linearTimingFunction.get());
     chainedMixed->appendSegment(0.5, m_cubicEaseTimingFunction.get());
     chainedMixed->appendSegment(0.75, m_cubicEaseTimingFunction.get());
     chainedMixed->appendSegment(1.0, m_linearTimingFunction.get());
-    EXPECT_TRUE(isCandidateForCompositor(*chainedMixed.get(), &m_keyframeVector5));
+    m_timing.timingFunction = chainedMixed;
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorTimingFunctionWithStepNotOkay)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionWithStepNotOkay)
 {
     RefPtr<ChainedTimingFunction> chainedStepSingle = ChainedTimingFunction::create();
     chainedStepSingle->appendSegment(1.0, m_stepTimingFunction.get());
-    EXPECT_FALSE(isCandidateForCompositor(*chainedStepSingle.get(), &m_keyframeVector2));
+    m_timing.timingFunction = chainedStepSingle;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect2.get()));
 
     RefPtr<ChainedTimingFunction> chainedStepMixedA = ChainedTimingFunction::create();
     chainedStepMixedA->appendSegment(0.25, m_stepTimingFunction.get());
     chainedStepMixedA->appendSegment(0.5, m_linearTimingFunction.get());
     chainedStepMixedA->appendSegment(1.0, m_cubicEaseTimingFunction.get());
-    EXPECT_FALSE(isCandidateForCompositor(*chainedStepMixedA.get(), &m_keyframeVector5));
+    m_timing.timingFunction = chainedStepMixedA;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 
     RefPtr<ChainedTimingFunction> chainedStepMixedB = ChainedTimingFunction::create();
     chainedStepMixedB->appendSegment(0.25, m_linearTimingFunction.get());
     chainedStepMixedB->appendSegment(0.5, m_stepTimingFunction.get());
     chainedStepMixedB->appendSegment(1.0, m_cubicEaseTimingFunction.get());
-    EXPECT_FALSE(isCandidateForCompositor(*chainedStepMixedB.get(), &m_keyframeVector5));
+    m_timing.timingFunction = chainedStepMixedB;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 
     RefPtr<ChainedTimingFunction> chainedStepMixedC = ChainedTimingFunction::create();
     chainedStepMixedC->appendSegment(0.25, m_linearTimingFunction.get());
     chainedStepMixedC->appendSegment(0.5, m_cubicEaseTimingFunction.get());
     chainedStepMixedC->appendSegment(1.0, m_stepTimingFunction.get());
-    EXPECT_FALSE(isCandidateForCompositor(*chainedStepMixedC.get(), &m_keyframeVector5));
+    m_timing.timingFunction = chainedStepMixedC;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorTimingFunctionNestedNotOkay)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositorTimingFunctionNestedNotOkay)
 {
     RefPtr<ChainedTimingFunction> chainedChild = ChainedTimingFunction::create();
     chainedChild->appendSegment(1.0, m_linearTimingFunction.get());
@@ -687,10 +672,11 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositorTimingFunction
     chainedParent->appendSegment(0.5, chainedChild.get());
     chainedParent->appendSegment(0.75, m_linearTimingFunction.get());
     chainedParent->appendSegment(1.0, m_linearTimingFunction.get());
-    EXPECT_FALSE(isCandidateForCompositor(*chainedParent.get(), &m_keyframeVector5));
+    m_timing.timingFunction = chainedParent;
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(m_timing, *m_keyframeAnimationEffect5.get()));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositor)
+TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositor)
 {
     Timing linearTiming(createCompositableTiming());
 
@@ -709,10 +695,10 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForCompositor)
     basicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 1.0).get());
     RefPtr<KeyframeAnimationEffect> basicFrames = KeyframeAnimationEffect::create(basicFramesVector).get();
 
-    EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(linearTiming, *basicFrames.get()));
-    EXPECT_TRUE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(cubicTiming, *basicFrames.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(linearTiming, *basicFrames.get()));
+    EXPECT_TRUE(isCandidateForAnimationOnCompositor(cubicTiming, *basicFrames.get()));
     // number of timing function and keyframes don't match
-    EXPECT_FALSE(CompositorAnimations::instance()->isCandidateForAnimationOnCompositor(chainedTiming, *basicFrames.get()));
+    EXPECT_FALSE(isCandidateForAnimationOnCompositor(chainedTiming, *basicFrames.get()));
 
     KeyframeAnimationEffect::KeyframeVector nonBasicFramesVector;
     nonBasicFramesVector.append(createDefaultKeyframe(CSSPropertyOpacity, AnimationEffect::CompositeReplace, 0.0).get());
