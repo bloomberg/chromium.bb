@@ -95,7 +95,7 @@ v8::Local<v8::String> StringCache::createStringAndInsertIntoCache(StringImpl* st
 
     stringImpl->ref();
     wrapper.MarkIndependent();
-    wrapper.SetWeak(stringImpl, &setWeakCallback);
+    wrapper.MakeWeak(stringImpl, &makeWeakCallback);
     m_lastV8String = UnsafePersistent<v8::String>(wrapper);
     m_lastStringImpl = stringImpl;
     m_stringCache.set(stringImpl, m_lastV8String);
@@ -103,15 +103,15 @@ v8::Local<v8::String> StringCache::createStringAndInsertIntoCache(StringImpl* st
     return newString;
 }
 
-void StringCache::setWeakCallback(const v8::WeakCallbackData<v8::String, StringImpl>& data)
+void StringCache::makeWeakCallback(v8::Isolate* isolate, v8::Persistent<v8::String>* wrapper, StringImpl* stringImpl)
 {
-    StringCache* stringCache = V8PerIsolateData::from(data.GetIsolate())->stringCache();
+    StringCache* stringCache = V8PerIsolateData::from(isolate)->stringCache();
     stringCache->m_lastStringImpl = 0;
     stringCache->m_lastV8String.clear();
-    ASSERT(stringCache->m_stringCache.contains(data.GetParameter()));
-    stringCache->m_stringCache.get(data.GetParameter()).dispose();
-    stringCache->m_stringCache.remove(data.GetParameter());
-    data.GetParameter()->deref();
+    ASSERT(stringCache->m_stringCache.contains(stringImpl));
+    stringCache->m_stringCache.remove(stringImpl);
+    stringImpl->deref();
+    wrapper->Reset();
 }
 
 } // namespace WebCore
