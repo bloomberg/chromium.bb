@@ -491,10 +491,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         CSSPropertyID id = *iter;
         ASSERT(m_transitions.contains(id));
         Player* player = m_transitions.take(id).transition->player();
-        if (activeAnimations && activeAnimations->hasActiveAnimationsOnCompositor(id) && update->newTransitions().find(id) != update->newTransitions().end()) {
+        if (activeAnimations && activeAnimations->hasActiveAnimationsOnCompositor(id) && update->newTransitions().find(id) != update->newTransitions().end())
             retargetedCompositorTransitions.add(id, std::pair<RefPtr<Animation>, double>(toAnimation(player->source()), player->startTime()));
-            break;
-        }
         player->cancel();
     }
 
