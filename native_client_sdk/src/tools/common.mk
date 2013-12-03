@@ -473,9 +473,14 @@ CHROME_PATH ?= $(shell $(GETOS) --chrome 2> $(DEV_NULL))
 #
 # Verify we can find the Chrome executable if we need to launch it.
 #
+
+NULL :=
+SPACE := $(NULL) # one space after NULL is required
+CHROME_PATH_ESCAPE := $(subst $(SPACE),\ ,$(CHROME_PATH))
+
 .PHONY: check_for_chrome
 check_for_chrome:
-ifeq (,$(wildcard $(CHROME_PATH)))
+ifeq (,$(wildcard $(CHROME_PATH_ESCAPE)))
 	$(warning No valid Chrome found at CHROME_PATH=$(CHROME_PATH))
 	$(error Set CHROME_PATH via an environment variable, or command-line.)
 else
@@ -487,15 +492,16 @@ PAGE_TC_CONFIG ?= "$(PAGE)?tc=$(TOOLCHAIN)&config=$(CONFIG)"
 .PHONY: run
 run: check_for_chrome all $(PAGE)
 	$(RUN_PY) -C $(CURDIR) -P $(PAGE_TC_CONFIG) \
-	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH) $(CHROME_ARGS) \
-	    --no-sandbox --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
+	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH_ESCAPE) \
+	    $(CHROME_ARGS) --no-sandbox \
+	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
 
 .PHONY: run_package
 run_package: check_for_chrome all
 	@echo "$(TOOLCHAIN) $(CONFIG)" > $(CURDIR)/run_package_config
-	$(CHROME_PATH) --load-and-launch-app=$(CURDIR) $(CHROME_ARGS)
+	$(CHROME_PATH_ESCAPE) --load-and-launch-app=$(CURDIR) $(CHROME_ARGS)
 
-GDB_ARGS += -D $(TC_PATH)/$(OSNAME)_x86_newlib/bin/$(SYSARCH)-nacl-gdb
+GDB_ARGS += -D $(TC_PATH)/$(OSNAME)_x86_newlib/bin/x86_64-nacl-gdb
 GDB_ARGS += -D --eval-command="nacl-manifest $(abspath $(OUTDIR))/$(TARGET).nmf"
 GDB_ARGS += -D $(GDB_DEBUG_TARGET)
 
@@ -503,8 +509,8 @@ GDB_ARGS += -D $(GDB_DEBUG_TARGET)
 debug: check_for_chrome all $(PAGE)
 	$(RUN_PY) $(GDB_ARGS) \
 	    -C $(CURDIR) -P $(PAGE_TC_CONFIG) \
-	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH) $(CHROME_ARGS) \
-	    --enable-nacl-debug \
+	    $(addprefix -E ,$(CHROME_ENV)) -- $(CHROME_PATH_ESCAPE) \
+	    $(CHROME_ARGS) --enable-nacl-debug \
 	    --register-pepper-plugins="$(PPAPI_DEBUG),$(PPAPI_RELEASE)"
 
 .PHONY: serve

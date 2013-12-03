@@ -20,7 +20,11 @@ import oshelpers
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-CHROME_EXE_BASENAME = 'google-chrome'
+CHROME_DEFAULT_PATH = {
+  'win': r'c:\Program Files (x86)\Google\Chrome\Application\chrome.exe',
+  'mac': '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+  'linux': '/usr/bin/google-chrome',
+}
 
 
 if sys.version_info < (2, 6, 0):
@@ -102,18 +106,27 @@ def GetSystemArch(platform):
   return arch
 
 
-def GetChromePath():
+def GetChromePath(platform):
+  # If CHROME_PATH is defined and exists, use that.
   chrome_path = os.environ.get('CHROME_PATH')
   if chrome_path:
     if not os.path.exists(chrome_path):
       raise Error('Invalid CHROME_PATH: %s' % chrome_path)
-  else:
-    chrome_path = oshelpers.FindExeInPath(CHROME_EXE_BASENAME)
-    if not chrome_path:
-      raise Error('CHROME_PATH is undefined, and %s not found in PATH.' %
-                  CHROME_EXE_BASENAME)
+    return os.path.realpath(chrome_path)
 
-  return os.path.realpath(chrome_path)
+  # Otherwise look in the PATH environment variable.
+  chrome_path = CHROME_DEFAULT_PATH[platform]
+  basename = os.path.basename(chrome_path)
+  chrome_path = oshelpers.FindExeInPath(basename)
+  if chrome_path:
+    return os.path.realpath(chrome_path)
+
+  # Finally, try the default paths to Chrome.
+  if os.path.exists(chrome_path):
+    return os.path.realpath(chrome_path)
+
+  raise Error('CHROME_PATH is undefined, and %s not found in PATH, nor %s.' % (
+              basename, chrome_path))
 
 
 def GetNaClArch(platform):
@@ -126,7 +139,7 @@ def GetNaClArch(platform):
 
   # On linux the nacl arch matches to chrome arch, so we inspect the chrome
   # binary using objdump
-  chrome_path = GetChromePath()
+  chrome_path = GetChromePath(platform)
 
   # If CHROME_PATH is set to point to google-chrome or google-chrome
   # was found in the PATH and we are running on UNIX then google-chrome
@@ -239,7 +252,7 @@ def main(args):
   elif options.nacl_arch:
     out = GetNaClArch(platform)
   elif options.chrome:
-    out = GetChromePath()
+    out = GetChromePath(platform)
   elif options.helper:
     out = GetHelperPath(platform)
   elif options.irtbin:
