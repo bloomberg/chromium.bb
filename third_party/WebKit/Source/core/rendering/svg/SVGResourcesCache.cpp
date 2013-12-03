@@ -46,8 +46,8 @@ void SVGResourcesCache::addResourcesFromRenderObject(RenderObject* object, const
     ASSERT(svgStyle);
 
     // Build a list of all resources associated with the passed RenderObject
-    OwnPtr<SVGResources> newResources = adoptPtr(new SVGResources);
-    if (!newResources->buildResources(object, svgStyle))
+    OwnPtr<SVGResources> newResources = SVGResources::buildResources(object, svgStyle);
+    if (!newResources)
         return;
 
     // Put object in cache.

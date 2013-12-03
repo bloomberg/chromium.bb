@@ -42,7 +42,7 @@ class SVGResources {
 public:
     SVGResources();
 
-    bool buildResources(const RenderObject*, const SVGRenderStyle*);
+    static PassOwnPtr<SVGResources> buildResources(const RenderObject*, const SVGRenderStyle*);
     void layoutIfNeeded();
 
     // Ordinary resources
@@ -79,6 +79,8 @@ public:
 private:
     friend class SVGResourcesCycleSolver;
 
+    bool hasResourceData() const;
+
     // Only used by SVGResourcesCache cycle detection logic
     void resetClipper();
     void resetFilter();
@@ -90,7 +92,6 @@ private:
     void resetStroke();
     void resetLinkedResource();
 
-private:
     bool setClipper(RenderSVGResourceClipper*);
     bool setFilter(RenderSVGResourceFilter*);
     bool setMarkerStart(RenderSVGResourceMarker*);

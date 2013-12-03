@@ -177,7 +177,23 @@ static inline void registerPendingResource(SVGDocumentExtensions* extensions, co
     extensions->addPendingResource(id, element);
 }
 
-bool SVGResources::buildResources(const RenderObject* object, const SVGRenderStyle* style)
+bool SVGResources::hasResourceData() const
+{
+    return !m_clipperFilterMaskerData
+        && !m_markerData
+        && !m_fillStrokeData
+        && !m_linkedResource;
+}
+
+static inline SVGResources* ensureResources(OwnPtr<SVGResources>& resources)
+{
+    if (!resources)
+        resources = adoptPtr(new SVGResources);
+
+    return resources.get();
+}
+
+PassOwnPtr<SVGResources> SVGResources::buildResources(const RenderObject* object, const SVGRenderStyle* style)
 {
     ASSERT(object);
     ASSERT(style);
@@ -188,7 +204,7 @@ bool SVGResources::buildResources(const RenderObject* object, const SVGRenderSty
 
     SVGElement* element = toSVGElement(node);
     if (!element)
-        return false;
+        return nullptr;
 
     Document& document = object->document();
 
@@ -197,52 +213,40 @@ bool SVGResources::buildResources(const RenderObject* object, const SVGRenderSty
 
     const AtomicString& tagName = element->localName();
     if (tagName.isNull())
-        return false;
+        return nullptr;
 
-    bool foundResources = false;
+    OwnPtr<SVGResources> resources;
     if (clipperFilterMaskerTags().contains(tagName)) {
         if (style->hasClipper()) {
             AtomicString id(style->clipperResource());
-            if (setClipper(getRenderSVGResourceById<RenderSVGResourceClipper>(document, id)))
-                foundResources = true;
-            else
+            if (!ensureResources(resources)->setClipper(getRenderSVGResourceById<RenderSVGResourceClipper>(document, id)))
                 registerPendingResource(extensions, id, element);
         }
 
         if (style->hasFilter()) {
             AtomicString id(style->filterResource());
-            if (setFilter(getRenderSVGResourceById<RenderSVGResourceFilter>(document, id)))
-                foundResources = true;
-            else
+            if (!ensureResources(resources)->setFilter(getRenderSVGResourceById<RenderSVGResourceFilter>(document, id)))
                 registerPendingResource(extensions, id, element);
         }
 
         if (style->hasMasker()) {
             AtomicString id(style->maskerResource());
-            if (setMasker(getRenderSVGResourceById<RenderSVGResourceMasker>(document, id)))
-                foundResources = true;
-            else
+            if (!ensureResources(resources)->setMasker(getRenderSVGResourceById<RenderSVGResourceMasker>(document, id)))
                 registerPendingResource(extensions, id, element);
         }
     }
 
     if (markerTags().contains(tagName) && style->hasMarkers()) {
         AtomicString markerStartId(style->markerStartResource());
-        if (setMarkerStart(getRenderSVGResourceById<RenderSVGResourceMarker>(document, markerStartId)))
-            foundResources = true;
-        else
+        if (!ensureResources(resources)->setMarkerStart(getRenderSVGResourceById<RenderSVGResourceMarker>(document, markerStartId)))
             registerPendingResource(extensions, markerStartId, element);
 
         AtomicString markerMidId(style->markerMidResource());
-        if (setMarkerMid(getRenderSVGResourceById<RenderSVGResourceMarker>(document, markerMidId)))
-            foundResources = true;
-        else
+        if (!ensureResources(resources)->setMarkerMid(getRenderSVGResourceById<RenderSVGResourceMarker>(document, markerMidId)))
             registerPendingResource(extensions, markerMidId, element);
 
         AtomicString markerEndId(style->markerEndResource());
-        if (setMarkerEnd(getRenderSVGResourceById<RenderSVGResourceMarker>(document, markerEndId)))
-            foundResources = true;
-        else
+        if (!ensureResources(resources)->setMarkerEnd(getRenderSVGResourceById<RenderSVGResourceMarker>(document, markerEndId)))
             registerPendingResource(extensions, markerEndId, element);
     }
 
@@ -250,31 +254,29 @@ bool SVGResources::buildResources(const RenderObject* object, const SVGRenderSty
         if (style->hasFill()) {
             bool hasPendingResource = false;
             AtomicString id;
-            if (setFill(paintingResourceFromSVGPaint(document, style->fillPaintType(), style->fillPaintUri(), id, hasPendingResource)))
-                foundResources = true;
-            else if (hasPendingResource)
+            RenderSVGResourceContainer* resource = paintingResourceFromSVGPaint(document, style->fillPaintType(), style->fillPaintUri(), id, hasPendingResource);
+            if (!ensureResources(resources)->setFill(resource) && hasPendingResource) {
                 registerPendingResource(extensions, id, element);
+            }
         }
 
         if (style->hasStroke()) {
             bool hasPendingResource = false;
             AtomicString id;
-            if (setStroke(paintingResourceFromSVGPaint(document, style->strokePaintType(), style->strokePaintUri(), id, hasPendingResource)))
-                foundResources = true;
-            else if (hasPendingResource)
+            RenderSVGResourceContainer* resource = paintingResourceFromSVGPaint(document, style->strokePaintType(), style->strokePaintUri(), id, hasPendingResource);
+            if (!ensureResources(resources)->setStroke(resource) && hasPendingResource) {
                 registerPendingResource(extensions, id, element);
+            }
         }
     }
 
     if (chainableResourceTags().contains(tagName)) {
         AtomicString id(targetReferenceFromResource(element));
-        if (setLinkedResource(getRenderSVGResourceContainerById(document, id)))
-            foundResources = true;
-        else
+        if (!ensureResources(resources)->setLinkedResource(getRenderSVGResourceContainerById(document, id)))
             registerPendingResource(extensions, id, element);
     }
 
-    return foundResources;
+    return (!resources || resources->hasResourceData()) ? nullptr : resources.release();
 }
 
 void SVGResources::layoutIfNeeded()
@@ -310,7 +312,7 @@ void SVGResources::layoutIfNeeded()
 
 void SVGResources::removeClientFromCache(RenderObject* object, bool markForInvalidation) const
 {
-    if (!m_clipperFilterMaskerData && !m_markerData && !m_fillStrokeData && !m_linkedResource)
+    if (hasResourceData())
         return;
 
     if (m_linkedResource) {
@@ -350,7 +352,7 @@ void SVGResources::removeClientFromCache(RenderObject* object, bool markForInval
 void SVGResources::resourceDestroyed(RenderSVGResourceContainer* resource)
 {
     ASSERT(resource);
-    if (!m_clipperFilterMaskerData && !m_markerData && !m_fillStrokeData && !m_linkedResource)
+    if (hasResourceData())
         return;
 
     if (m_linkedResource == resource) {
@@ -424,7 +426,7 @@ void SVGResources::resourceDestroyed(RenderSVGResourceContainer* resource)
 
 void SVGResources::buildSetOfResources(HashSet<RenderSVGResourceContainer*>& set)
 {
-    if (!m_clipperFilterMaskerData && !m_markerData && !m_fillStrokeData && !m_linkedResource)
+    if (hasResourceData())
         return;
 
     if (m_linkedResource) {
