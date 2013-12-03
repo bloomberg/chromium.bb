@@ -13,7 +13,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     }
     {% endif %}
     {% if not method.is_static %}
-    {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
+    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     {% endif %}
     {% if method.is_custom_element_callbacks %}
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
@@ -108,7 +108,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     if method_name == 'addEventListener' else
     ('ListenerFindOnly', 'listener.get()', 'removeHiddenDependency')
 %}
-EventTarget* impl = {{v8_class_name}}::toNative(info.Holder());
+EventTarget* impl = {{v8_class}}::toNative(info.Holder());
 if (DOMWindow* window = impl->toDOMWindow()) {
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
@@ -123,7 +123,7 @@ if (listener) {
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
     impl->{{method_name}}(eventName, {{listener}}, info[2]->BooleanValue());
     if (!impl->toNode())
-        {{hidden_dependency_action}}(info.Holder(), info[1], {{v8_class_name}}::eventListenerCacheIndex, info.GetIsolate());
+        {{hidden_dependency_action}}(info.Holder(), info[1], {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
 }
 {% endmacro %}
 
@@ -207,9 +207,9 @@ static void {{method.name}}MethodCallback{{world_suffix}}(const v8::FunctionCall
     }
     {% endif %}
     {% if method.is_custom %}
-    {{v8_class_name}}::{{method.name}}MethodCustom(info);
+    {{v8_class}}::{{method.name}}MethodCustom(info);
     {% else %}
-    {{cpp_class_name}}V8Internal::{{method.name}}Method{{world_suffix}}(info);
+    {{cpp_class}}V8Internal::{{method.name}}Method{{world_suffix}}(info);
     {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -227,19 +227,19 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
     WrapperWorldType currentWorldType = worldType(info.GetIsolate());
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
     {# FIXME: 1 case of [DoNotCheckSignature] in Window.idl may differ #}
-    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, {{cpp_class_name}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&{{v8_class_name}}::wrapperTypeInfo, currentWorldType)), {{method.number_of_required_or_variadic_arguments}});
+    v8::Handle<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&{{v8_class}}::wrapperTypeInfo, currentWorldType)), {{method.number_of_required_or_variadic_arguments}});
 
-    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class_name}}::GetTemplate(info.GetIsolate(), currentWorldType));
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class}}::GetTemplate(info.GetIsolate(), currentWorldType));
     if (holder.IsEmpty()) {
         // This is only reachable via |object.__proto__.func|, in which case it
         // has already passed the same origin security check
         v8SetReturnValue(info, privateTemplate->GetFunction());
         return;
     }
-    {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(holder);
+    {{cpp_class}}* imp = {{v8_class}}::toNative(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError)) {
         static int sharedTemplateUniqueKey;
-        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, {{cpp_class_name}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&{{v8_class_name}}::wrapperTypeInfo, currentWorldType)), {{method.number_of_required_or_variadic_arguments}});
+        v8::Handle<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, {{cpp_class}}V8Internal::{{method.name}}MethodCallback{{world_suffix}}, v8Undefined(), v8::Signature::New(info.GetIsolate(), V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&{{v8_class}}::wrapperTypeInfo, currentWorldType)), {{method.number_of_required_or_variadic_arguments}});
         v8SetReturnValue(info, sharedTemplate->GetFunction());
         return;
     }
@@ -256,7 +256,7 @@ static void {{method.name}}OriginSafeMethodGetter{{world_suffix}}(const v8::Prop
 static void {{method.name}}OriginSafeMethodGetterCallback{{world_suffix}}(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    {{cpp_class_name}}V8Internal::{{method.name}}OriginSafeMethodGetter{{world_suffix}}(info);
+    {{cpp_class}}V8Internal::{{method.name}}OriginSafeMethodGetter{{world_suffix}}(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 {% endmacro %}

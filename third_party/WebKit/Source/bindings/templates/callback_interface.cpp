@@ -34,26 +34,26 @@
 
 #include "config.h"
 {% filter conditional(conditional_string) %}
-#include "{{v8_class_name}}.h"
+#include "{{v8_class}}.h"
 
 {% for filename in cpp_includes %}
 #include "{{filename}}"
 {% endfor %}
 namespace WebCore {
 
-{{v8_class_name}}::{{v8_class_name}}(v8::Handle<v8::Object> callback, ExecutionContext* context)
+{{v8_class}}::{{v8_class}}(v8::Handle<v8::Object> callback, ExecutionContext* context)
     : ActiveDOMCallback(context)
     , m_callback(toIsolate(context), callback)
     , m_world(DOMWrapperWorld::current())
 {
 }
 
-{{v8_class_name}}::~{{v8_class_name}}()
+{{v8_class}}::~{{v8_class}}()
 {
 }
 
 {% for method in methods if not method.custom %}
-{{method.return_cpp_type}} {{v8_class_name}}::{{method.name}}({{method.argument_declarations | join(', ')}})
+{{method.return_cpp_type}} {{v8_class}}::{{method.name}}({{method.argument_declarations | join(', ')}})
 {
     if (!canInvokeCallback())
         return true;

@@ -123,9 +123,9 @@ def generate_method(interface, method):
         'number_of_required_or_variadic_arguments': len([
             argument for argument in arguments
             if not argument.is_optional]),
-        'per_context_enabled_function_name': v8_utilities.per_context_enabled_function_name(method),  # [PerContextEnabled]
+        'per_context_enabled_function': v8_utilities.per_context_enabled_function_name(method),  # [PerContextEnabled]
         'property_attributes': property_attributes(method),
-        'runtime_enabled_function_name': v8_utilities.runtime_enabled_function_name(method),  # [RuntimeEnabled]
+        'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(method),  # [RuntimeEnabled]
         'signature': signature(),
         'v8_set_return_value': v8_set_return_value(method, this_cpp_value),
         'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in extended_attributes else [''],  # [PerWorldBindings]

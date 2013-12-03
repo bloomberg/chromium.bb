@@ -65,7 +65,6 @@ def generate_interface(interface):
     includes.clear()
     includes.update(INTERFACE_CPP_INCLUDES)
     extended_attributes = interface.extended_attributes
-    v8_class_name = v8_utilities.v8_class_name(interface)
 
     # [CheckSecurity]
     is_check_security = 'CheckSecurity' in extended_attributes
@@ -82,7 +81,7 @@ def generate_interface(interface):
 
     template_contents = {
         'conditional_string': conditional_string(interface),  # [Conditional]
-        'cpp_class_name': cpp_name(interface),
+        'cpp_class': cpp_name(interface),
         'generate_visit_dom_wrapper_function': generate_visit_dom_wrapper_function,
         'has_custom_legacy_call': 'CustomLegacyCall' in extended_attributes,  # [CustomLegacyCall]
         'has_custom_wrap': 'CustomWrap' in extended_attributes,  # [CustomWrap]
@@ -93,7 +92,7 @@ def generate_interface(interface):
         'is_active_dom_object': 'ActiveDOMObject' in extended_attributes,  # [ActiveDOMObject]
         'is_check_security': is_check_security,
         'is_dependent_lifetime': 'DependentLifetime' in extended_attributes,  # [DependentLifetime]
-        'v8_class_name': v8_class_name,
+        'v8_class': v8_utilities.v8_class_name(interface),
     }
 
     template_contents.update({
@@ -107,7 +106,7 @@ def generate_interface(interface):
         'attributes': attributes,
         'has_accessors': any(attribute['is_expose_js_accessors'] for attribute in attributes),
         'has_constructor_attributes': any(attribute['constructor_type'] for attribute in attributes),
-        'has_per_context_enabled_attributes': any(attribute['per_context_enabled_function_name'] for attribute in attributes),
+        'has_per_context_enabled_attributes': any(attribute['per_context_enabled_function'] for attribute in attributes),
         'has_replaceable_attributes': any(attribute['is_replaceable'] for attribute in attributes),
     })
 
@@ -117,7 +116,7 @@ def generate_interface(interface):
     for method in methods:
         method['do_generate_method_configuration'] = (
             method['do_not_check_signature'] and
-            not method['per_context_enabled_function_name'] and
+            not method['per_context_enabled_function'] and
             # For overloaded methods, only generate one accessor
             ('overload_index' not in method or method['overload_index'] == 1))
 
@@ -126,7 +125,7 @@ def generate_interface(interface):
             method['is_check_security_for_frame'] and not method['is_read_only']
             for method in methods),
         'has_method_configuration': any(method['do_generate_method_configuration'] for method in methods),
-        'has_per_context_enabled_methods': any(method['per_context_enabled_function_name'] for method in methods),
+        'has_per_context_enabled_methods': any(method['per_context_enabled_function'] for method in methods),
         'methods': methods,
     })
 
@@ -146,7 +145,7 @@ def generate_constant(constant):
         'name': constant.name,
         # FIXME: use 'reflected_name' as correct 'name'
         'reflected_name': constant.extended_attributes.get('Reflect', constant.name),
-        'runtime_enabled_function_name': runtime_enabled_function_name(constant),
+        'runtime_enabled_function': runtime_enabled_function_name(constant),
         'value': value,
     }
     return constant_parameter

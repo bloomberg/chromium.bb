@@ -34,7 +34,7 @@
 
 #include "config.h"
 {% filter conditional(conditional_string) %}
-#include "{{v8_class_name}}.h"
+#include "{{v8_class}}.h"
 
 {% for filename in cpp_includes %}
 #include "{{filename}}"
@@ -42,10 +42,10 @@
 
 namespace WebCore {
 
-static void initializeScriptWrappableForInterface({{cpp_class_name}}* object)
+static void initializeScriptWrappableForInterface({{cpp_class}}* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-        ScriptWrappable::setTypeInfoInObject(object, &{{v8_class_name}}::wrapperTypeInfo);
+        ScriptWrappable::setTypeInfoInObject(object, &{{v8_class}}::wrapperTypeInfo);
     else
         ASSERT_NOT_REACHED();
 }
@@ -56,19 +56,19 @@ static void initializeScriptWrappableForInterface({{cpp_class_name}}* object)
 // the local declaration does not pick up the surrounding namespace. Therefore, we provide this function
 // in the global namespace.
 // (More info on the MSVC bug here: http://connect.microsoft.com/VisualStudio/feedback/details/664619/the-namespace-of-local-function-declarations-in-c)
-void webCoreInitializeScriptWrappableForInterface(WebCore::{{cpp_class_name}}* object)
+void webCoreInitializeScriptWrappableForInterface(WebCore::{{cpp_class}}* object)
 {
     WebCore::initializeScriptWrappableForInterface(object);
 }
 
 namespace WebCore {
-{% set to_active_dom_object = '%s::toActiveDOMObject' % v8_class_name
+{% set to_active_dom_object = '%s::toActiveDOMObject' % v8_class
                               if is_active_dom_object else '0' %}
-{% set visit_dom_wrapper = '%s::visitDOMWrapper' % v8_class_name
+{% set visit_dom_wrapper = '%s::visitDOMWrapper' % v8_class
                            if has_visit_dom_wrapper else '0' %}
-const WrapperTypeInfo {{v8_class_name}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class_name}}::GetTemplate, {{v8_class_name}}::derefObject, {{to_active_dom_object}}, 0, {{visit_dom_wrapper}}, {{v8_class_name}}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}::GetTemplate, {{v8_class}}::derefObject, {{to_active_dom_object}}, 0, {{visit_dom_wrapper}}, {{v8_class}}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
-namespace {{cpp_class_name}}V8Internal {
+namespace {{cpp_class}}V8Internal {
 
 template <typename T> void V8_USE(T) { }
 
@@ -114,7 +114,7 @@ template <typename T> void V8_USE(T) { }
 {% endfor %}
 {% endfor %}
 {% block origin_safe_method_setter %}{% endblock %}
-} // namespace {{cpp_class_name}}V8Internal
+} // namespace {{cpp_class}}V8Internal
 
 {% block visit_dom_wrapper %}{% endblock %}
 {% block class_attributes %}{% endblock %}

@@ -9,14 +9,14 @@ const v8::PropertyCallbackInfo<v8::Value>& info
 {%- endif %})
 {
     {% if attribute.is_unforgeable %}
-    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class_name}}::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class}}::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
     if (holder.IsEmpty())
         return;
-    {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(holder);
+    {{cpp_class}}* imp = {{v8_class}}::toNative(holder);
     {% endif %}
     {% if attribute.cached_attribute_validation_method %}
     v8::Handle<v8::String> propertyName = v8::String::NewFromUtf8(info.GetIsolate(), "{{attribute.name}}", v8::String::kInternalizedString);
-    {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
+    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     if (!imp->{{attribute.cached_attribute_validation_method}}()) {
         v8::Handle<v8::Value> jsValue = info.Holder()->GetHiddenValue(propertyName);
         if (!jsValue.IsEmpty()) {
@@ -25,7 +25,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
         }
     }
     {% elif not (attribute.is_static or attribute.is_unforgeable) %}
-    {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
+    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     {% endif %}
     {% if attribute.is_call_with_execution_context %}
     ExecutionContext* scriptContext = getExecutionContext();
@@ -102,9 +102,9 @@ v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info
         contextData->activityLogger()->log("{{interface_name}}.{{attribute.name}}", 0, 0, "Getter");
     {% endif %}
     {% if attribute.has_custom_getter %}
-    {{v8_class_name}}::{{attribute.name}}AttributeGetterCustom(info);
+    {{v8_class}}::{{attribute.name}}AttributeGetterCustom(info);
     {% else %}
-    {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeGetter{{world_suffix}}(info);
+    {{cpp_class}}V8Internal::{{attribute.name}}AttributeGetter{{world_suffix}}(info);
     {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
@@ -131,7 +131,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     }
     {% endif %}
     {% if not attribute.is_static %}
-    {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
+    {{cpp_class}}* imp = {{v8_class}}::toNative(info.Holder());
     {% endif %}
     {% if attribute.idl_type == 'EventHandler' and interface_name == 'Window' %}
     if (!imp->document())
@@ -140,7 +140,7 @@ v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info
     {% if attribute.idl_type != 'EventHandler' %}
     {{attribute.v8_value_to_local_cpp_value}};
     {% else %}{# EventHandler hack #}
-    transferHiddenDependency(info.Holder(), {{attribute.event_handler_getter_expression}}, jsValue, {{v8_class_name}}::eventListenerCacheIndex, info.GetIsolate());
+    transferHiddenDependency(info.Holder(), {{attribute.event_handler_getter_expression}}, jsValue, {{v8_class}}::eventListenerCacheIndex, info.GetIsolate());
     {% endif %}
     {% if attribute.enum_validation_expression %}
     {# Setter ignores invalid enum values: http://www.w3.org/TR/WebIDL/#idl-enums #}
@@ -200,9 +200,9 @@ v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackI
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {% if attribute.has_custom_setter %}
-    {{v8_class_name}}::{{attribute.name}}AttributeSetterCustom(jsValue, info);
+    {{v8_class}}::{{attribute.name}}AttributeSetterCustom(jsValue, info);
     {% else %}
-    {{cpp_class_name}}V8Internal::{{attribute.name}}AttributeSetter{{world_suffix}}(jsValue, info);
+    {{cpp_class}}V8Internal::{{attribute.name}}AttributeSetter{{world_suffix}}(jsValue, info);
     {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }

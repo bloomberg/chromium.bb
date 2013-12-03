@@ -83,13 +83,13 @@ static void {{interface_name}}ReplaceableAttributeSetterCallback(v8::Local<v8::S
 {% if is_check_security and interface_name != 'Window' %}
 bool indexedSecurityCheck(v8::Local<v8::Object> host, uint32_t index, v8::AccessType type, v8::Local<v8::Value>)
 {
-    {{cpp_class_name}}* imp =  {{v8_class_name}}::toNative(host);
+    {{cpp_class}}* imp =  {{v8_class}}::toNative(host);
     return BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError);
 }
 
 bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)
 {
-    {{cpp_class_name}}* imp =  {{v8_class_name}}::toNative(host);
+    {{cpp_class}}* imp =  {{v8_class}}::toNative(host);
     return BindingSecurity::shouldAllowAccessToFrame(imp->frame(), DoNotReportSecurityError);
 }
 
@@ -100,13 +100,13 @@ bool namedSecurityCheck(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8
 {##############################################################################}
 {% block origin_safe_method_setter %}
 {% if has_origin_safe_method_setter %}
-static void {{cpp_class_name}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void {{cpp_class}}OriginSafeMethodSetter(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     {# FIXME: don't call GetIsolate 3 times #}
-    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class_name}}::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
+    v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain({{v8_class}}::GetTemplate(info.GetIsolate(), worldType(info.GetIsolate())));
     if (holder.IsEmpty())
         return;
-    {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(holder);
+    {{cpp_class}}* imp = {{v8_class}}::toNative(holder);
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
@@ -116,10 +116,10 @@ static void {{cpp_class_name}}OriginSafeMethodSetter(v8::Local<v8::String> name,
     info.This()->SetHiddenValue(name, jsValue);
 }
 
-static void {{cpp_class_name}}OriginSafeMethodSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    {{cpp_class_name}}V8Internal::{{cpp_class_name}}OriginSafeMethodSetter(name, jsValue, info);
+    {{cpp_class}}V8Internal::{{cpp_class}}OriginSafeMethodSetter(name, jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -130,9 +130,9 @@ static void {{cpp_class_name}}OriginSafeMethodSetterCallback(v8::Local<v8::Strin
 {##############################################################################}
 {% block visit_dom_wrapper %}
 {% if generate_visit_dom_wrapper_function %}
-void {{v8_class_name}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+void {{v8_class}}::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
-    {{cpp_class_name}}* impl = fromInternalPointer(object);
+    {{cpp_class}}* impl = fromInternalPointer(object);
     if (Node* owner = impl->{{generate_visit_dom_wrapper_function}}()) {
         setObjectGroup(V8GCController::opaqueRootForGC(owner, isolate), wrapper, isolate);
         return;
@@ -148,12 +148,12 @@ void {{v8_class_name}}::visitDOMWrapper(void* object, const v8::Persistent<v8::O
 {% block class_attributes %}
 {# FIXME: rename to install_attributes and put into configure_class_template #}
 {% if attributes %}
-static const V8DOMConfiguration::AttributeConfiguration {{v8_class_name}}Attributes[] = {
+static const V8DOMConfiguration::AttributeConfiguration {{v8_class}}Attributes[] = {
     {% for attribute in attributes
        if not (attribute.is_expose_js_accessors or
                attribute.is_static or
-               attribute.runtime_enabled_function_name or
-               attribute.per_context_enabled_function_name) %}
+               attribute.runtime_enabled_function or
+               attribute.per_context_enabled_function) %}
     {% filter conditional(attribute.conditional_string) %}
     {{attribute_configuration(attribute)}},
     {% endfilter %}
@@ -168,7 +168,7 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class_name}}Attribu
 {% block class_accessors %}
 {# FIXME: rename install_accessors and put into configure_class_template #}
 {% if has_accessors %}
-static const V8DOMConfiguration::AccessorConfiguration {{v8_class_name}}Accessors[] = {
+static const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
     {% for attribute in attributes if attribute.is_expose_js_accessors %}
     {{attribute_configuration(attribute)}},
     {% endfor %}
@@ -182,7 +182,7 @@ static const V8DOMConfiguration::AccessorConfiguration {{v8_class_name}}Accessor
 {% block class_methods %}
 {# FIXME: rename to install_methods and put into configure_class_template #}
 {% if has_method_configuration %}
-static const V8DOMConfiguration::MethodConfiguration {{v8_class_name}}Methods[] = {
+static const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
     {% for method in methods if method.do_generate_method_configuration %}
     {% filter conditional(method.conditional_string) %}
     {{method_configuration(method)}},
@@ -196,25 +196,25 @@ static const V8DOMConfiguration::MethodConfiguration {{v8_class_name}}Methods[] 
 
 {##############################################################################}
 {% block configure_class_template %}
-{# FIXME: rename to install_dom_template and Install{{v8_class_name}}DOMTemplate #}
-static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+{# FIXME: rename to install_dom_template and Install{{v8_class}}DOMTemplate #}
+static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "{{interface_name}}", v8::Local<v8::FunctionTemplate>(), {{v8_class_name}}::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "{{interface_name}}", v8::Local<v8::FunctionTemplate>(), {{v8_class}}::internalFieldCount,
         {# Test needed as size 0 constant arrays are not allowed in VC++ #}
         {% set attributes_name, attributes_length =
-               ('%sAttributes' % v8_class_name,
-                'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class_name)
+               ('%sAttributes' % v8_class,
+                'WTF_ARRAY_LENGTH(%sAttributes)' % v8_class)
            if attributes else (0, 0) %}
         {% set accessors_name, accessors_length =
-               ('%sAccessors' % v8_class_name,
-                'WTF_ARRAY_LENGTH(%sAccessors)' % v8_class_name)
+               ('%sAccessors' % v8_class,
+                'WTF_ARRAY_LENGTH(%sAccessors)' % v8_class)
            if has_accessors else (0, 0) %}
         {% set methods_name, methods_length =
-               ('%sMethods' % v8_class_name,
-                'WTF_ARRAY_LENGTH(%sMethods)' % v8_class_name)
+               ('%sMethods' % v8_class,
+                'WTF_ARRAY_LENGTH(%sMethods)' % v8_class)
            if has_method_configuration else (0, 0) %}
         {{attributes_name}}, {{attributes_length}},
         {{accessors_name}}, {{accessors_length}},
@@ -226,11 +226,11 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     UNUSED_PARAM(instanceTemplate);
     UNUSED_PARAM(prototypeTemplate);
     {% if is_check_security and interface_name != 'Window' %}
-    instanceTemplate->SetAccessCheckCallbacks({{cpp_class_name}}V8Internal::namedSecurityCheck, {{cpp_class_name}}V8Internal::indexedSecurityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class_name}}::wrapperTypeInfo)));
+    instanceTemplate->SetAccessCheckCallbacks({{cpp_class}}V8Internal::namedSecurityCheck, {{cpp_class}}V8Internal::indexedSecurityCheck, v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
     {% endif %}
-    {% for attribute in attributes if attribute.runtime_enabled_function_name %}
+    {% for attribute in attributes if attribute.runtime_enabled_function %}
     {% filter conditional(attribute.conditional_string) %}
-    if ({{attribute.runtime_enabled_function_name}}()) {
+    if ({{attribute.runtime_enabled_function}}()) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {{attribute_configuration(attribute)}};
         V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate, currentWorldType);
@@ -264,16 +264,16 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     {% else %}{# is_do_not_check_security #}
     {% if method.is_per_world_bindings %}
     if (currentWorldType == MainWorld) {
-        {% filter runtime_enabled(method.runtime_enabled_function_name) %}
+        {% filter runtime_enabled(method.runtime_enabled_function) %}
         {{install_custom_signature(method, 'ForMainWorld')}}
         {% endfilter %}
     } else {
-        {% filter runtime_enabled(method.runtime_enabled_function_name) %}
+        {% filter runtime_enabled(method.runtime_enabled_function) %}
         {{install_custom_signature(method)}}
         {% endfilter %}
     }
     {% else %}
-    {% filter runtime_enabled(method.runtime_enabled_function_name) %}
+    {% filter runtime_enabled(method.runtime_enabled_function) %}
     {{install_custom_signature(method)}}
     {% endfilter %}
     {% endif %}
@@ -290,7 +290,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     {{install_constants() | indent}}
     {% endif %}
     {% if has_custom_legacy_call %}
-    functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class_name}}::legacyCallCustom);
+    functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
     {% endif %}
 
     // Custom toString template
@@ -310,9 +310,9 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
    This is achieved by storing the changed value as a hidden property. #}
 {% set getter_callback =
        '%sV8Internal::%sOriginSafeMethodGetterCallback%s' %
-       (cpp_class_name, method.name, world_suffix) %}
+       (cpp_class, method.name, world_suffix) %}
 {% set setter_callback =
-    '{0}V8Internal::{0}OriginSafeMethodSetterCallback'.format(cpp_class_name)
+    '{0}V8Internal::{0}OriginSafeMethodSetterCallback'.format(cpp_class)
     if not method.is_read_only else '0' %}
 {% set property_attribute =
     'static_cast<v8::PropertyAttribute>(%s)' %
@@ -336,15 +336,15 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
 {% macro install_constants() %}
 {# FIXME: should use reflected_name instead of name #}
 {# Normal (always enabled) constants #}
-static const V8DOMConfiguration::ConstantConfiguration {{v8_class_name}}Constants[] = {
-    {% for constant in constants if not constant.runtime_enabled_function_name %}
+static const V8DOMConfiguration::ConstantConfiguration {{v8_class}}Constants[] = {
+    {% for constant in constants if not constant.runtime_enabled_function %}
     {"{{constant.name}}", {{constant.value}}},
     {% endfor %}
 };
-V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, {{v8_class_name}}Constants, WTF_ARRAY_LENGTH({{v8_class_name}}Constants), isolate);
+V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, {{v8_class}}Constants, WTF_ARRAY_LENGTH({{v8_class}}Constants), isolate);
 {# Runtime-enabled constants #}
-{% for constant in constants if constant.runtime_enabled_function_name %}
-if ({{constant.runtime_enabled_function_name}}()) {
+{% for constant in constants if constant.runtime_enabled_function %}
+if ({{constant.runtime_enabled_function}}()) {
     static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"{{constant.name}}", static_cast<signed int>({{constant.value}})};
     V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, &constantConfiguration, 1, isolate);
 }
@@ -352,7 +352,7 @@ if ({{constant.runtime_enabled_function_name}}()) {
 {# Check constants #}
 {% if not do_not_check_constants %}
 {% for constant in constants %}
-COMPILE_ASSERT({{constant.value}} == {{cpp_class_name}}::{{constant.reflected_name}}, TheValueOf{{cpp_class_name}}_{{constant.reflected_name}}DoesntMatchWithImplementation);
+COMPILE_ASSERT({{constant.value}} == {{cpp_class}}::{{constant.reflected_name}}, TheValueOf{{cpp_class}}_{{constant.reflected_name}}DoesntMatchWithImplementation);
 {% endfor %}
 {% endif %}
 {% endmacro %}
@@ -361,7 +361,7 @@ COMPILE_ASSERT({{constant.value}} == {{cpp_class_name}}::{{constant.reflected_na
 {##############################################################################}
 {% block get_template %}
 {# FIXME: rename to get_dom_template and GetDOMTemplate #}
-v8::Handle<v8::FunctionTemplate> {{v8_class_name}}::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> {{v8_class}}::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -371,7 +371,7 @@ v8::Handle<v8::FunctionTemplate> {{v8_class_name}}::GetTemplate(v8::Isolate* iso
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        Configure{{v8_class_name}}Template(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        Configure{{v8_class}}Template(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }
@@ -381,12 +381,12 @@ v8::Handle<v8::FunctionTemplate> {{v8_class_name}}::GetTemplate(v8::Isolate* iso
 
 {##############################################################################}
 {% block has_instance_and_has_instance_in_any_world %}
-bool {{v8_class_name}}::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+bool {{v8_class}}::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, currentWorldType);
 }
 
-bool {{v8_class_name}}::hasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
+bool {{v8_class}}::hasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, MainWorld)
         || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, IsolatedWorld)
@@ -399,11 +399,11 @@ bool {{v8_class_name}}::hasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8:
 {##############################################################################}
 {% block install_per_context_attributes %}
 {% if has_per_context_enabled_attributes %}
-void {{v8_class_name}}::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceTemplate, {{cpp_class_name}}* impl, v8::Isolate* isolate)
+void {{v8_class}}::installPerContextEnabledProperties(v8::Handle<v8::Object> instanceTemplate, {{cpp_class}}* impl, v8::Isolate* isolate)
 {
     v8::Local<v8::Object> prototypeTemplate = v8::Local<v8::Object>::Cast(instanceTemplate->GetPrototype());
-    {% for attribute in attributes if attribute.per_context_enabled_function_name %}
-    if ({{attribute.per_context_enabled_function_name}}(impl->document())) {
+    {% for attribute in attributes if attribute.per_context_enabled_function %}
+    if ({{attribute.per_context_enabled_function}}(impl->document())) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
         {{attribute_configuration(attribute)}};
         V8DOMConfiguration::installAttribute(instanceTemplate, prototypeTemplate, attributeConfiguration, isolate);
@@ -418,7 +418,7 @@ void {{v8_class_name}}::installPerContextEnabledProperties(v8::Handle<v8::Object
 {##############################################################################}
 {% block install_per_context_methods %}
 {% if has_per_context_enabled_methods %}
-void {{v8_class_name}}::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate)
+void {{v8_class}}::installPerContextEnabledMethods(v8::Handle<v8::Object> prototypeTemplate, v8::Isolate* isolate)
 {
     UNUSED_PARAM(prototypeTemplate);
     {# Define per-context enabled operations #}
@@ -426,9 +426,9 @@ void {{v8_class_name}}::installPerContextEnabledMethods(v8::Handle<v8::Object> p
     UNUSED_PARAM(defaultSignature);
 
     ExecutionContext* context = toExecutionContext(prototypeTemplate->CreationContext());
-    {% for method in methods if method.per_context_enabled_function_name %}
-    if (context && context->isDocument() && {{method.per_context_enabled_function_name}}(toDocument(context)))
-        prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "{{method.name}}", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, {{cpp_class_name}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}})->GetFunction());
+    {% for method in methods if method.per_context_enabled_function %}
+    if (context && context->isDocument() && {{method.per_context_enabled_function}}(toDocument(context)))
+        prototypeTemplate->Set(v8::String::NewFromUtf8(isolate, "{{method.name}}", v8::String::kInternalizedString), v8::FunctionTemplate::New(isolate, {{cpp_class}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}})->GetFunction());
     {% endfor %}
 }
 
@@ -439,7 +439,7 @@ void {{v8_class_name}}::installPerContextEnabledMethods(v8::Handle<v8::Object> p
 {##############################################################################}
 {% block to_active_dom_object %}
 {% if is_active_dom_object %}
-ActiveDOMObject* {{v8_class_name}}::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
+ActiveDOMObject* {{v8_class}}::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
 {
     return toNative(wrapper);
 }
@@ -450,10 +450,10 @@ ActiveDOMObject* {{v8_class_name}}::toActiveDOMObject(v8::Handle<v8::Object> wra
 
 {##############################################################################}
 {% block create_wrapper_and_deref_object %}
-v8::Handle<v8::Object> {{v8_class_name}}::createWrapper(PassRefPtr<{{cpp_class_name}}> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Object> {{v8_class}}::createWrapper(PassRefPtr<{{cpp_class}}> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<{{v8_class_name}}>(impl.get(), isolate));
+    ASSERT(!DOMDataStore::containsWrapper<{{v8_class}}>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
         // Might be a XXXConstructor::wrapperTypeInfo instead of an XXX::wrapperTypeInfo. These will both have
@@ -471,17 +471,17 @@ v8::Handle<v8::Object> {{v8_class_name}}::createWrapper(PassRefPtr<{{cpp_class_n
                                        is_active_dom_object or
                                        is_dependent_lifetime) else
                                    'WrapperConfiguration::Independent' %}
-    V8DOMWrapper::associateObjectWithWrapper<{{v8_class_name}}>(impl, &wrapperTypeInfo, wrapper, isolate, {{wrapper_configuration}});
+    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(impl, &wrapperTypeInfo, wrapper, isolate, {{wrapper_configuration}});
     return wrapper;
 }
 
-void {{v8_class_name}}::derefObject(void* object)
+void {{v8_class}}::derefObject(void* object)
 {
     fromInternalPointer(object)->deref();
 }
 
 template<>
-v8::Handle<v8::Value> toV8NoInline({{cpp_class_name}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8NoInline({{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl, creationContext, isolate);
 }
