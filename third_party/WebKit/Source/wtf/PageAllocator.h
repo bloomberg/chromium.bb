@@ -90,52 +90,6 @@ void decommitSystemPages(void* addr, size_t len);
 // provide reasonable ASLR.
 char* getRandomSuperPageBase();
 
-#if CPU(32BIT)
-class SuperPageBitmap {
-public:
-    ALWAYS_INLINE static bool isAvailable()
-    {
-        return true;
-    }
-
-    ALWAYS_INLINE static bool isPointerInSuperPage(void* ptr)
-    {
-        uintptr_t raw = reinterpret_cast<uintptr_t>(ptr);
-        raw >>= kSuperPageShift;
-        size_t byteIndex = raw >> 3;
-        size_t bit = raw & 7;
-        ASSERT(byteIndex < sizeof(s_bitmap));
-        return s_bitmap[byteIndex] & (1 << bit);
-    }
-
-    static void registerSuperPage(void* ptr);
-    static void unregisterSuperPage(void* ptr);
-
-private:
-    WTF_EXPORT static unsigned char s_bitmap[1 << (32 - kSuperPageShift - 3)];
-};
-
-#else // CPU(32BIT)
-
-class SuperPageBitmap {
-public:
-    ALWAYS_INLINE static bool isAvailable()
-    {
-        return false;
-    }
-
-    ALWAYS_INLINE static bool isPointerInSuperPage(void* ptr)
-    {
-        ASSERT(false);
-        return false;
-    }
-
-    static void registerSuperPage(void* ptr) { }
-    static void unregisterSuperPage(void* ptr) { }
-};
-
-#endif // CPU(32BIT)
-
 } // namespace WTF
 
 #endif // WTF_PageAllocator_h

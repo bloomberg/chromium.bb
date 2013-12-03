@@ -97,7 +97,6 @@ void* allocSuperPages(void* addr, size_t len)
     RELEASE_ASSERT(ret);
 #endif // OS(POSIX)
 
-    SuperPageBitmap::registerSuperPage(ret);
     return ret;
 }
 
@@ -112,8 +111,6 @@ void freeSuperPages(void* addr, size_t len)
     BOOL ret = VirtualFree(addr, 0, MEM_RELEASE);
     RELEASE_ASSERT(ret);
 #endif
-
-    SuperPageBitmap::unregisterSuperPage(addr);
 }
 
 void setSystemPagesInaccessible(void* addr, size_t len)
@@ -211,40 +208,6 @@ char* getRandomSuperPageBase()
 #endif // CPU(X86_64)
     return reinterpret_cast<char*>(random);
 }
-
-#if CPU(32BIT)
-unsigned char SuperPageBitmap::s_bitmap[1 << (32 - kSuperPageShift - 3)];
-
-static int bitmapLock = 0;
-
-void SuperPageBitmap::registerSuperPage(void* ptr)
-{
-    ASSERT(!isPointerInSuperPage(ptr));
-    uintptr_t raw = reinterpret_cast<uintptr_t>(ptr);
-    raw >>= kSuperPageShift;
-    size_t byteIndex = raw >> 3;
-    size_t bit = raw & 7;
-    ASSERT(byteIndex < sizeof(s_bitmap));
-    // The read/modify/write is not guaranteed atomic, so take a lock.
-    spinLockLock(&bitmapLock);
-    s_bitmap[byteIndex] |= (1 << bit);
-    spinLockUnlock(&bitmapLock);
-}
-
-void SuperPageBitmap::unregisterSuperPage(void* ptr)
-{
-    ASSERT(isPointerInSuperPage(ptr));
-    uintptr_t raw = reinterpret_cast<uintptr_t>(ptr);
-    raw >>= kSuperPageShift;
-    size_t byteIndex = raw >> 3;
-    size_t bit = raw & 7;
-    ASSERT(byteIndex < sizeof(s_bitmap));
-    // The read/modify/write is not guaranteed atomic, so take a lock.
-    spinLockLock(&bitmapLock);
-    s_bitmap[byteIndex] &= ~(1 << bit);
-    spinLockUnlock(&bitmapLock);
-}
-#endif
 
 } // namespace WTF
 

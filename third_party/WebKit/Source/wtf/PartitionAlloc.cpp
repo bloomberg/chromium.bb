@@ -161,8 +161,10 @@ bool partitionAllocShutdown(PartitionRoot* root)
         entry = entry->next;
     }
     ASSERT(numSuperPages == root->totalSizeOfSuperPages / kSuperPageSize);
-    for (size_t i = 0; i < numSuperPages; ++i)
+    for (size_t i = 0; i < numSuperPages; ++i) {
+        SuperPageBitmap::unregisterSuperPage(superPages[i]);
         freeSuperPages(superPages[i], kSuperPageSize);
+    }
 
     return noLeaks;
 }
@@ -194,6 +196,7 @@ static ALWAYS_INLINE PartitionPageHeader* partitionAllocPage(PartitionRoot* root
         root->nextSuperPage = getRandomSuperPageBase();
     }
     char* superPage = reinterpret_cast<char*>(allocSuperPages(root->nextSuperPage, kSuperPageSize));
+    SuperPageBitmap::registerSuperPage(superPage);
     char* ret = superPage;
     if (superPage != root->nextSuperPage) {
         needsGuard = true;
@@ -486,6 +489,40 @@ void* partitionReallocGeneric(PartitionRoot* root, void* ptr, size_t newSize)
     return ret;
 #endif
 }
+
+#if CPU(32BIT)
+unsigned char SuperPageBitmap::s_bitmap[1 << (32 - kSuperPageShift - 3)];
+
+static int bitmapLock = 0;
+
+void SuperPageBitmap::registerSuperPage(void* ptr)
+{
+    ASSERT(!isPointerInSuperPage(ptr));
+    uintptr_t raw = reinterpret_cast<uintptr_t>(ptr);
+    raw >>= kSuperPageShift;
+    size_t byteIndex = raw >> 3;
+    size_t bit = raw & 7;
+    ASSERT(byteIndex < sizeof(s_bitmap));
+    // The read/modify/write is not guaranteed atomic, so take a lock.
+    spinLockLock(&bitmapLock);
+    s_bitmap[byteIndex] |= (1 << bit);
+    spinLockUnlock(&bitmapLock);
+}
+
+void SuperPageBitmap::unregisterSuperPage(void* ptr)
+{
+    ASSERT(isPointerInSuperPage(ptr));
+    uintptr_t raw = reinterpret_cast<uintptr_t>(ptr);
+    raw >>= kSuperPageShift;
+    size_t byteIndex = raw >> 3;
+    size_t bit = raw & 7;
+    ASSERT(byteIndex < sizeof(s_bitmap));
+    // The read/modify/write is not guaranteed atomic, so take a lock.
+    spinLockLock(&bitmapLock);
+    s_bitmap[byteIndex] &= ~(1 << bit);
+    spinLockUnlock(&bitmapLock);
+}
+#endif
 
 #ifndef NDEBUG
 
