@@ -21,7 +21,6 @@ typedef OperationTestBase TouchOperationTest;
 TEST_F(TouchOperationTest, TouchFile) {
   TouchOperation operation(blocking_task_runner(),
                            observer(),
-                           scheduler(),
                            metadata());
 
   const base::FilePath kTestPath(FILE_PATH_LITERAL("drive/root/File 1.txt"));
@@ -47,6 +46,13 @@ TEST_F(TouchOperationTest, TouchFile) {
             base::Time::FromInternalValue(entry.file_info().last_accessed()));
   EXPECT_EQ(base::Time::FromUTCExploded(kLastModifiedTime),
             base::Time::FromInternalValue(entry.file_info().last_modified()));
+  EXPECT_EQ(ResourceEntry::DIRTY, entry.metadata_edit_state());
+
+  EXPECT_EQ(1U, observer()->get_changed_paths().size());
+  EXPECT_TRUE(observer()->get_changed_paths().count(kTestPath.DirName()));
+
+  EXPECT_EQ(1U, observer()->updated_local_ids().size());
+  EXPECT_TRUE(observer()->updated_local_ids().count(entry.local_id()));
 }
 
 }  // namespace file_system

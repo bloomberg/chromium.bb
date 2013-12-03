@@ -299,7 +299,7 @@ void FileSystem::ResetComponents() {
                                        resource_metadata_,
                                        cache_));
   touch_operation_.reset(new file_system::TouchOperation(
-      blocking_task_runner_.get(), observer, scheduler_, resource_metadata_));
+      blocking_task_runner_.get(), observer, resource_metadata_));
   truncate_operation_.reset(
       new file_system::TruncateOperation(blocking_task_runner_.get(),
                                          observer,
