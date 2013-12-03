@@ -11,6 +11,9 @@
         {
           'target_name': 'libjpeg',
           'type': 'static_library',
+          'defines': [
+            'NO_GETENV',  # getenv() is not thread-safe.
+          ],
           'sources': [
             'jcapimin.c',
             'jcapistd.c',
