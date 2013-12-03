@@ -24,7 +24,6 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/win/xlate_system_error.h"
 
-#include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/internal_errno.h"
 
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
@@ -37,9 +36,33 @@
 #define SSIZE_T_MAX ((ssize_t) ((~(size_t) 0) >> 1))
 
 
+static int NaClHostDirInit(struct NaClHostDir *d) {
+  int retval;
+
+  d->handle = FindFirstFile(d->pattern, &d->find_data);
+  d->off = 0;
+  d->done = 0;
+
+  if (INVALID_HANDLE_VALUE != d->handle) {
+    retval = 0;
+  } else {
+    int win_error = GetLastError();
+    NaClLog(LOG_ERROR, "NaClHostDirInit: failed: %d\n", win_error);
+    if (ERROR_NO_MORE_FILES == win_error) {
+      d->done = 1;
+      retval = 0;
+    } else if (ERROR_PATH_NOT_FOUND == win_error) {
+      retval = -NACL_ABI_ENOTDIR;
+    } else {
+      /* TODO(sehr): fix the errno handling */
+      retval = -NaClXlateSystemError(win_error);
+    }
+  }
+  return retval;
+}
+
 int NaClHostDirOpen(struct NaClHostDir  *d,
                     char                *path) {
-  wchar_t pattern[NACL_CONFIG_PATH_MAX + 1];
   int     err;
   int     retval;
 
@@ -57,8 +80,8 @@ int NaClHostDirOpen(struct NaClHostDir  *d,
     *
     * NOTE: %hs specifies a single-byte-char string.
     */
-  err = _snwprintf_s(pattern,
-                     NACL_CONFIG_PATH_MAX + 1,
+  err = _snwprintf_s(d->pattern,
+                     NACL_ARRAY_SIZE(d->pattern),
                      _TRUNCATE, L"%hs\\*.*", path);
   if (err < 0) {
     return -NACL_ABI_EOVERFLOW;
@@ -66,26 +89,8 @@ int NaClHostDirOpen(struct NaClHostDir  *d,
   if (!NaClMutexCtor(&d->mu)) {
     return -NACL_ABI_ENOMEM;
   }
-  d->handle = FindFirstFile(pattern, &d->find_data);
-  d->off = 0;
-  d->done = 0;
 
-  if (INVALID_HANDLE_VALUE != d->handle) {
-    retval = 0;
-  } else {
-    int win_error = GetLastError();
-    NaClLog(LOG_ERROR, "NaClHostDirOpen: failed: %d\n", win_error);
-    if (ERROR_NO_MORE_FILES == win_error) {
-      d->done = 1;
-      retval = 0;
-    } else if (ERROR_PATH_NOT_FOUND == win_error) {
-      retval = -NACL_ABI_ENOTDIR;
-    } else {
-      /* TODO(sehr): fix the errno handling */
-      retval = -NaClXlateSystemError(win_error);
-    }
-  }
-
+  retval = NaClHostDirInit(d);
   if (0 != retval) {
     NaClMutexDtor(&d->mu);
   }
@@ -143,6 +148,12 @@ ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
     size_t rec_length;
     uint16_t nacl_abi_rec_length;
     int err;
+
+    /* Handle case where NaClHostDirRewind() failed. */
+    if (d->handle == INVALID_HANDLE_VALUE) {
+      retval = -NACL_ABI_ENOENT;
+      goto done;
+    }
 
     if (d->done) {
       retval = 0;
@@ -214,6 +225,36 @@ ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
     }
   }
 done:
+  NaClXMutexUnlock(&d->mu);
+  return retval;
+}
+
+int NaClHostDirRewind(struct NaClHostDir *d) {
+  int retval;
+  if (NULL == d) {
+    NaClLog(LOG_FATAL, "NaClHostDirRewind: 'this' is NULL\n");
+  }
+
+  NaClXMutexLock(&d->mu);
+
+  /* Close the handle and reopen it at the beginning. */
+  if (!FindClose(d->handle)) {
+    /*
+     * It's not clear why FindClose() would fail.  Abort because we
+     * don't want to leave d->handle in an undefined state.
+     */
+    NaClLog(LOG_FATAL, "NaClHostDirRewind(): FindClose() failed\n");
+  }
+
+  retval = NaClHostDirInit(d);
+  if (retval != 0) {
+    /*
+     * If FindFirstFile fails for some reason mark the handle as invalid so that
+     * future calls to NaClHostDirGetdents can report the error.
+     */
+    d->handle = INVALID_HANDLE_VALUE;
+  }
+
   NaClXMutexUnlock(&d->mu);
   return retval;
 }

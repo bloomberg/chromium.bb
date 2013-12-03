@@ -293,7 +293,7 @@ static ssize_t NaClStreamDirents(struct NaClHostDir *d,
 ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
                             void                *buf,
                             size_t              len) {
-  int                     retval;
+  int retval;
 
   if (NULL == d) {
     NaClLog(LOG_FATAL, "NaClHostDirGetdents: 'this' is NULL\n");
@@ -310,6 +310,13 @@ ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
  cleanup:
   NaClLog(3, "NaClHostDirGetdents: returned %d\n", retval);
   return retval;
+}
+
+int NaClHostDirRewind(struct NaClHostDir *d) {
+  if (NULL == d) {
+    NaClLog(LOG_FATAL, "NaClHostDirRewind: 'this' is NULL\n");
+  }
+  return -NaClXlateErrno(lseek64(d->fd, 0, SEEK_SET));
 }
 
 int NaClHostDirClose(struct NaClHostDir *d) {

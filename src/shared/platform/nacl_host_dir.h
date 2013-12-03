@@ -45,7 +45,7 @@ extern int NaClXlateErrno(int errnum);
  * with a largely POSIX-ish interface, since e.g. windows handles may
  * be negative and might look like negative errno returns.
  *
- * Underlying host-OS functions: opendir(Mac) / open(Linux) / FindFirstFile
+ * Underlying function: opendir(Mac) / open(Linux) / FindFirstFile(Windows)
  */
 extern int NaClHostDirOpen(struct NaClHostDir *d,
                            char               *path);
@@ -53,16 +53,25 @@ extern int NaClHostDirOpen(struct NaClHostDir *d,
 /*
  * Read data from an opened directory into a memory buffer.
  *
- * Underlying host-OS functions: readdir(Mac) / getdents(Linux) / FindNextFile
+ * Underlying function: readdir(Mac) / getdents(Linux) / FindNextFile(Windows)
  */
 extern ssize_t NaClHostDirGetdents(struct NaClHostDir *d,
                                    void               *buf,
                                    size_t             len);
 
 /*
+ * Rewind the NaClHostDir object such that future calls
+ * to NaClHostDirGetdents read from the beginning of the
+ * directory as if the object was newly created.
+ *
+ * Underlying functions: rewinddir(Mac) / lseek(Linux) / FindFirstFile(Windows)
+ */
+extern int NaClHostDirRewind(struct NaClHostDir *d);
+
+/*
  * Dtor for the NaClHostDir object. Close the directory.
  *
- * Underlying host-OS functions:  closedir(Mac) / close(Linux) / FindClose
+ * Underlying function: closedir(Mac) / close(Linux) / FindClose(Windows)
  */
 extern int NaClHostDirClose(struct NaClHostDir  *d);
 

@@ -7,4 +7,5 @@ TEST PASSED: test_unlink: all
 TEST PASSED: test_chdir: all
 TEST PASSED: test_getcwd: all
 TEST PASSED: test_mkdir_rmdir: all
+TEST PASSED: test_readdir: all
 All tests PASSED

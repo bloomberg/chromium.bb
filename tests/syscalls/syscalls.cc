@@ -8,6 +8,7 @@
  * NaCl tests for simple syscalls
  */
 
+#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -22,6 +23,15 @@
 
 #define PRINT_HEADER 0
 #define TEXT_LINE_SIZE 1024
+
+/*
+ * TODO(sbc): remove this test once rewinddir() declaration
+ * gets added to the prebuilt newlib toolchain:
+ * http://codereview.chromium.org/86593002/
+ */
+#ifndef __GLIBC__
+extern "C" void rewinddir(DIR *dirp);
+#endif
 
 /*
  * function failed(testname, msg)
@@ -517,6 +527,48 @@ bool test_lseek(const char *test_file) {
   return passed(testname, "all");
 }
 
+bool test_readdir(const char *test_file) {
+  // Read the directory containing the test file
+  char dirname[PATH_MAX];
+  strncpy(dirname, test_file, PATH_MAX);
+
+  // Strip off the trailing filename
+  char *basename = strrchr(dirname, '/');
+  if (basename == NULL) {
+    basename = strrchr(dirname, '\\');
+    ASSERT_NE_MSG(basename, NULL, "test_file contains no dir seperator");
+  }
+  basename[0] = '\0';
+  basename++;
+
+  // Read the directory listing and verify that the test_file is
+  // present.
+  int found = 0;
+  DIR *d = opendir(dirname);
+  ASSERT_NE_MSG(d, NULL, "opendir failed");
+  int count = 0;
+  struct dirent *ent;
+  while (1) {
+    ent = readdir(d);
+    if (!ent)
+      break;
+    if (!strcmp(ent->d_name, basename))
+      found = 1;
+    count++;
+  }
+  ASSERT_EQ_MSG(1, found, "failed to find test file in directory listing");
+
+  // Rewind directory and verify that the number of elements
+  // matches the previous count.
+  rewinddir(d);
+  while (readdir(d))
+    count--;
+  ASSERT_EQ_MSG(0, count, "readdir after rewinddir was inconsistent");
+
+  ASSERT_EQ(0, closedir(d));
+  return passed("test_readdir", "all");
+}
+
 /*
  * function testSuite()
  *
@@ -539,6 +591,7 @@ bool testSuite(const char *test_file) {
   ret &= test_chdir();
   ret &= test_getcwd();
   ret &= test_mkdir_rmdir(test_file);
+  ret &= test_readdir(test_file);
   return ret;
 }
 

@@ -133,6 +133,15 @@ ssize_t NaClHostDirGetdents(struct NaClHostDir  *d,
   return (ssize_t) i;
 }
 
+int NaClHostDirRewind(struct NaClHostDir *d) {
+  if (NULL == d) {
+    NaClLog(LOG_FATAL, "NaClHostDirRewind: 'this' is NULL\n");
+  }
+  rewinddir(d->dirp);
+  d->dp = readdir(d->dirp);
+  return 0;
+}
+
 int NaClHostDirClose(struct NaClHostDir *d) {
   int retval;
 

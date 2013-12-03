@@ -14,6 +14,7 @@
 #include <windows.h>
 
 #include "native_client/src/shared/platform/nacl_sync.h"
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 struct NaClHostDir {
   struct NaClMutex  mu;
@@ -35,6 +36,12 @@ struct NaClHostDir {
    * valid.
    */
   int               done;
+  /*
+   * Pattern representing the directory we are listing.
+   * This is cached in the descriptor so that it can be restarted
+   * (i.e. rewinddir)
+   */
+  wchar_t           pattern[NACL_CONFIG_PATH_MAX + 1];
 };
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_WIN_NACL_HOST_DIR_TYPES_H_ */

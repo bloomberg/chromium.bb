@@ -88,7 +88,7 @@ struct NaClDescDirDesc *NaClDescDirDescMake(struct NaClHostDir *nhdp) {
   return ndp;
 }
 
-struct NaClDescDirDesc *NaClDescDirDescOpen(char  *path) {
+struct NaClDescDirDesc *NaClDescDirDescOpen(char *path) {
   struct NaClHostDir  *nhdp;
 
   nhdp = malloc(sizeof *nhdp);
@@ -131,6 +131,18 @@ static ssize_t NaClDescDirDescRead(struct NaClDesc         *vself,
   /* return -NACL_ABI_EINVAL; */
 }
 
+static nacl_off64_t NaClDescDirDescSeek(struct NaClDesc *vself,
+                                        nacl_off64_t    offset,
+                                        int             whence) {
+  struct NaClDescDirDesc *self = (struct NaClDescDirDesc *) vself;
+  /* Special case to handle rewinddir() */
+  if (offset == 0 || whence == SEEK_SET) {
+    NaClHostDirRewind(self->hd);
+    return 0;
+  }
+  return -NACL_ABI_EINVAL;
+}
+
 static int NaClDescDirDescFstat(struct NaClDesc          *vself,
                                 struct nacl_abi_stat     *statbuf) {
   UNREFERENCED_PARAMETER(vself);
@@ -153,7 +165,7 @@ static struct NaClDescVtbl const kNaClDescDirDescVtbl = {
   NACL_DESC_UNMAP_NOT_IMPLEMENTED
   NaClDescDirDescRead,
   NaClDescWriteNotImplemented,
-  NaClDescSeekNotImplemented,
+  NaClDescDirDescSeek,
   NaClDescPReadNotImplemented,
   NaClDescPWriteNotImplemented,
   NaClDescIoctlNotImplemented,
