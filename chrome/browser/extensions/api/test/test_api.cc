@@ -54,7 +54,7 @@ TestNotifyPassFunction::~TestNotifyPassFunction() {}
 bool TestNotifyPassFunction::RunImpl() {
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_TEST_PASSED,
-      content::Source<Profile>(dispatcher()->profile()),
+      content::Source<content::BrowserContext>(dispatcher()->browser_context()),
       content::NotificationService::NoDetails());
   return true;
 }
@@ -66,7 +66,7 @@ bool TestNotifyFailFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_TEST_FAILED,
-      content::Source<Profile>(dispatcher()->profile()),
+      content::Source<content::BrowserContext>(dispatcher()->browser_context()),
       content::Details<std::string>(&params->message));
   return true;
 }

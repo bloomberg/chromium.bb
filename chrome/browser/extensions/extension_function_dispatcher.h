@@ -15,7 +15,6 @@
 #include "url/gurl.h"
 
 class ChromeRenderMessageFilter;
-class Profile;
 struct ExtensionHostMsg_Request_Params;
 
 namespace content {
@@ -119,8 +118,8 @@ class ExtensionFunctionDispatcher
   // a response (if any) to the extension.
   void OnExtensionFunctionCompleted(const extensions::Extension* extension);
 
-  // The profile that this dispatcher is associated with.
-  Profile* profile() { return profile_; }
+  // The BrowserContext that this dispatcher is associated with.
+  content::BrowserContext* browser_context() { return browser_context_; }
 
  private:
   // For a given RenderViewHost instance, UIThreadResponseCallbackWrapper
@@ -157,7 +156,7 @@ class ExtensionFunctionDispatcher
   static void SendAccessDenied(
       const ExtensionFunction::ResponseCallback& callback);
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
 
   Delegate* delegate_;
 
