@@ -15,17 +15,18 @@
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dbus_thread_manager_observer.h"
-#include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/dbus/fake_debug_daemon_client.h"
+#include "chromeos/dbus/fake_introspectable_client.h"
+#include "chromeos/dbus/fake_modem_messaging_client.h"
 #include "chromeos/dbus/fake_nfc_adapter_client.h"
 #include "chromeos/dbus/fake_nfc_device_client.h"
 #include "chromeos/dbus/fake_nfc_manager_client.h"
 #include "chromeos/dbus/fake_nfc_record_client.h"
 #include "chromeos/dbus/fake_nfc_tag_client.h"
+#include "chromeos/dbus/fake_permission_broker_client.h"
+#include "chromeos/dbus/fake_sms_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/image_burner_client.h"
-#include "chromeos/dbus/introspectable_client.h"
-#include "chromeos/dbus/modem_messaging_client.h"
-#include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -34,7 +35,6 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
-#include "chromeos/dbus/sms_client.h"
 #include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/dbus/update_engine_client.h"
 
@@ -68,7 +68,7 @@ void FakeDBusThreadManager::SetFakeClients() {
   SetCryptohomeClient(
       scoped_ptr<CryptohomeClient>(CryptohomeClient::Create(client_type)));
   SetDebugDaemonClient(
-      scoped_ptr<DebugDaemonClient>(DebugDaemonClient::Create(client_type)));
+      scoped_ptr<DebugDaemonClient>(new FakeDebugDaemonClient));
   SetShillManagerClient(
       scoped_ptr<ShillManagerClient>(ShillManagerClient::Create(client_type)));
   SetShillDeviceClient(
@@ -82,22 +82,22 @@ void FakeDBusThreadManager::SetFakeClients() {
   SetGsmSMSClient(scoped_ptr<GsmSMSClient>(GsmSMSClient::Create(client_type)));
   SetImageBurnerClient(
       scoped_ptr<ImageBurnerClient>(ImageBurnerClient::Create(client_type)));
-  SetIntrospectableClient(scoped_ptr<IntrospectableClient>(
-      IntrospectableClient::Create(client_type)));
-  SetModemMessagingClient(scoped_ptr<ModemMessagingClient>(
-      ModemMessagingClient::Create(client_type)));
+  SetIntrospectableClient(
+      scoped_ptr<IntrospectableClient>(new FakeIntrospectableClient));
+  SetModemMessagingClient(
+      scoped_ptr<ModemMessagingClient>(new FakeModemMessagingClient));
   SetNfcAdapterClient(scoped_ptr<NfcAdapterClient>(new FakeNfcAdapterClient));
   SetNfcDeviceClient(scoped_ptr<NfcDeviceClient>(new FakeNfcDeviceClient));
   SetNfcManagerClient(scoped_ptr<NfcManagerClient>(new FakeNfcManagerClient));
   SetNfcRecordClient(scoped_ptr<NfcRecordClient>(new FakeNfcRecordClient));
   SetNfcTagClient(scoped_ptr<NfcTagClient>(new FakeNfcTagClient));
-  SetPermissionBrokerClient(scoped_ptr<PermissionBrokerClient>(
-      PermissionBrokerClient::Create(client_type)));
+  SetPermissionBrokerClient(
+      scoped_ptr<PermissionBrokerClient>(new FakePermissionBrokerClient));
   SetPowerManagerClient(
       scoped_ptr<PowerManagerClient>(PowerManagerClient::Create(client_type)));
   SetSessionManagerClient(scoped_ptr<SessionManagerClient>(
       SessionManagerClient::Create(client_type)));
-  SetSMSClient(scoped_ptr<SMSClient>(SMSClient::Create(client_type)));
+  SetSMSClient(scoped_ptr<SMSClient>(new FakeSMSClient));
   SetSystemClockClient(
       scoped_ptr<SystemClockClient>(SystemClockClient::Create(client_type)));
   SetUpdateEngineClient(

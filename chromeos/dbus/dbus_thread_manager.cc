@@ -249,7 +249,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     cras_audio_client_.reset(CrasAudioClient::Create(client_type));
     cros_disks_client_.reset(CrosDisksClient::Create(client_type));
     cryptohome_client_.reset(CryptohomeClient::Create(client_type));
-    debug_daemon_client_.reset(DebugDaemonClient::Create(client_type));
+    debug_daemon_client_.reset(DebugDaemonClient::Create());
     shill_manager_client_.reset(
         ShillManagerClient::Create(client_type_override));
     shill_device_client_.reset(
@@ -262,8 +262,8 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         ShillProfileClient::Create(client_type_override));
     gsm_sms_client_.reset(GsmSMSClient::Create(client_type_override));
     image_burner_client_.reset(ImageBurnerClient::Create(client_type));
-    introspectable_client_.reset(IntrospectableClient::Create(client_type));
-    modem_messaging_client_.reset(ModemMessagingClient::Create(client_type));
+    introspectable_client_.reset(IntrospectableClient::Create());
+    modem_messaging_client_.reset(ModemMessagingClient::Create());
     // Create the NFC clients in the correct order based on their dependencies.
     nfc_manager_client_.reset(NfcManagerClient::Create(client_type));
     nfc_adapter_client_.reset(
@@ -275,12 +275,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     nfc_record_client_.reset(
         NfcRecordClient::Create(
             client_type, nfc_device_client_.get(), nfc_tag_client_.get()));
-    permission_broker_client_.reset(
-        PermissionBrokerClient::Create(client_type));
+    permission_broker_client_.reset(PermissionBrokerClient::Create());
     power_manager_client_.reset(
         PowerManagerClient::Create(client_type_override));
     session_manager_client_.reset(SessionManagerClient::Create(client_type));
-    sms_client_.reset(SMSClient::Create(client_type));
+    sms_client_.reset(SMSClient::Create());
     system_clock_client_.reset(SystemClockClient::Create(client_type));
     update_engine_client_.reset(UpdateEngineClient::Create(client_type));
 

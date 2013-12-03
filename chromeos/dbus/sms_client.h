@@ -35,7 +35,7 @@ class CHROMEOS_EXPORT SMSClient : public DBusClient {
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static SMSClient* Create(DBusClientImplementationType type);
+  static SMSClient* Create();
 
   // Calls GetAll method.  |callback| is called after the method call succeeds.
   virtual void GetAll(const std::string& service_name,

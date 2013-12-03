@@ -103,7 +103,7 @@ TEST_F(NetworkSmsHandlerTest, SmsHandlerDbusStub) {
   // Note: The following string corresponds to values in
   // ModemMessagingClientStubImpl and SmsClientStubImpl.
   // TODO(stevenjb): Use a TestInterface to set this up to remove dependency.
-  const char kMessage1[] = "SMSClientStubImpl: Test Message: /SMS/0";
+  const char kMessage1[] = "FakeSMSClient: Test Message: /SMS/0";
   EXPECT_EQ(messages.find(kMessage1), messages.end());
 
   // Test for messages delivered by signals.

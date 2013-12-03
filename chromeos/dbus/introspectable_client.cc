@@ -91,20 +91,6 @@ class IntrospectableClientImpl : public IntrospectableClient {
   DISALLOW_COPY_AND_ASSIGN(IntrospectableClientImpl);
 };
 
-// The IntrospectableClient implementation used on Linux desktop, which does
-// nothing.
-class IntrospectableClientStubImpl : public IntrospectableClient {
- public:
-  // IntrospectableClient override.
-  virtual void Init(dbus::Bus* bus) OVERRIDE {}
-  virtual void Introspect(const std::string& service_name,
-                          const dbus::ObjectPath& object_path,
-                          const IntrospectCallback& callback) OVERRIDE {
-    VLOG(1) << "Introspect: " << service_name << " " << object_path.value();
-    callback.Run(service_name, object_path, "", false);
-  }
-};
-
 IntrospectableClient::IntrospectableClient() {
 }
 
@@ -145,12 +131,8 @@ IntrospectableClient::GetInterfacesFromIntrospectResult(
 }
 
 // static
-IntrospectableClient* IntrospectableClient::Create(
-    DBusClientImplementationType type) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new IntrospectableClientImpl();
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new IntrospectableClientStubImpl();
+IntrospectableClient* IntrospectableClient::Create() {
+  return new IntrospectableClientImpl();
 }
 
 }  // namespace chromeos

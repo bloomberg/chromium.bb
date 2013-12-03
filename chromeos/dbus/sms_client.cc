@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/location.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -85,49 +86,6 @@ class SMSClientImpl : public SMSClient {
   DISALLOW_COPY_AND_ASSIGN(SMSClientImpl);
 };
 
-class SMSClientStubImpl : public SMSClient {
- public:
-  SMSClientStubImpl() : weak_ptr_factory_(this) {}
-  virtual ~SMSClientStubImpl() {}
-
-  virtual void Init(dbus::Bus* bus) OVERRIDE {}
-
-  virtual void GetAll(const std::string& service_name,
-                      const dbus::ObjectPath& object_path,
-                      const GetAllCallback& callback) OVERRIDE {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            chromeos::switches::kSmsTestMessages))
-      return;
-
-    // Ownership passed to callback
-    base::DictionaryValue *sms = new base::DictionaryValue();
-    sms->SetString("Number", "000-000-0000");
-    sms->SetString("Text",
-                   "SMSClientStubImpl: Test Message: " + object_path.value());
-    sms->SetString("Timestamp", "Fri Jun  8 13:26:04 EDT 2012");
-
-    // Run callback asynchronously.
-    if (callback.is_null())
-      return;
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&SMSClientStubImpl::OnGetAll,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Owned(sms),
-                   callback));
-  }
-
- private:
-  void OnGetAll(base::DictionaryValue *sms,
-                const GetAllCallback& callback) {
-    callback.Run(*sms);
-  }
-
-  base::WeakPtrFactory<SMSClientStubImpl> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(SMSClientStubImpl);
-};
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -139,12 +97,8 @@ SMSClient::~SMSClient() {}
 
 
 // static
-SMSClient* SMSClient::Create(DBusClientImplementationType type) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION) {
-    return new SMSClientImpl();
-  }
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new SMSClientStubImpl();
+SMSClient* SMSClient::Create() {
+  return new SMSClientImpl();
 }
 
 }  // namespace chromeos

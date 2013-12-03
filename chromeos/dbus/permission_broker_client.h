@@ -31,7 +31,7 @@ class CHROMEOS_EXPORT PermissionBrokerClient : public DBusClient {
 
   virtual ~PermissionBrokerClient();
 
-  static PermissionBrokerClient* Create(DBusClientImplementationType type);
+  static PermissionBrokerClient* Create();
 
   // RequestPathAccess requests access to a single device node identified by
   // |path|. If |interface_id| value is passed (different than
