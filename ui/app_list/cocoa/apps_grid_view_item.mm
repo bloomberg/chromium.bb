@@ -458,4 +458,11 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
             inView:controlView];
 }
 
+// Workaround for http://crbug.com/324365: AppKit in Mavericks tries to call
+// - [NSButtonCell item] when inspecting accessibility. Without this, an
+// unrecognized selector exception is thrown inside AppKit, crashing Chrome.
+- (id)item {
+  return nil;
+}
+
 @end
