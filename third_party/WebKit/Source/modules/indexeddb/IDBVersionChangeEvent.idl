@@ -24,8 +24,8 @@
  */
 
 interface IDBVersionChangeEvent : Event {
-    readonly attribute IDBAny oldVersion;
-    readonly attribute IDBAny newVersion;
+    [CallWith=ExecutionContext] readonly attribute any oldVersion;
+    [CallWith=ExecutionContext] readonly attribute any newVersion;
 
     // FIXME: These are non-standard, see
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22370

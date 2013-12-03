@@ -64,7 +64,7 @@ public:
 
     // Implement the IDL
     const String& name() const { return m_metadata.name; }
-    PassRefPtr<IDBAny> version() const;
+    ScriptValue version(ExecutionContext*) const;
     PassRefPtr<DOMStringList> objectStoreNames() const;
 
     PassRefPtr<IDBObjectStore> createObjectStore(const String& name, const Dictionary&, ExceptionState&);

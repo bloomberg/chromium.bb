@@ -53,7 +53,7 @@ public:
     // Implement the IDL
     const String& name() const { return m_metadata.name; }
     PassRefPtr<IDBObjectStore> objectStore() const { return m_objectStore; }
-    PassRefPtr<IDBAny> keyPath() const { return IDBAny::create(m_metadata.keyPath); }
+    ScriptValue keyPath(ExecutionContext*) const;
     bool unique() const { return m_metadata.unique; }
     bool multiEntry() const { return m_metadata.multiEntry; }
 

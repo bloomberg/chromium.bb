@@ -332,6 +332,12 @@ ScriptValue IDBCursor::value(ExecutionContext* context)
     return idbAnyToScriptValue(&requestState, value);
 }
 
+ScriptValue IDBCursor::source(ExecutionContext* context) const
+{
+    DOMRequestState requestState(context);
+    return idbAnyToScriptValue(&requestState, m_source);
+}
+
 void IDBCursor::setValueReady(PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer> value)
 {
     m_key = key;

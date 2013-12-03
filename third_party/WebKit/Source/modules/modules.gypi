@@ -71,7 +71,6 @@
       'geolocation/PositionErrorCallback.idl',
       'imagebitmap/ImageBitmapFactories.idl',
       'imagebitmap/WindowImageBitmapFactories.idl',
-      'indexeddb/IDBAny.idl',
       'indexeddb/IDBCursor.idl',
       'indexeddb/IDBCursorWithValue.idl',
       'indexeddb/IDBDatabase.idl',

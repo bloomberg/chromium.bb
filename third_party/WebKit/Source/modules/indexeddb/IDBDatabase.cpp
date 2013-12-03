@@ -28,6 +28,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "bindings/v8/IDBBindingUtilities.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/EventQueue.h"
 #include "core/inspector/ScriptCallStack.h"
@@ -157,12 +158,14 @@ PassRefPtr<DOMStringList> IDBDatabase::objectStoreNames() const
     return objectStoreNames.release();
 }
 
-PassRefPtr<IDBAny> IDBDatabase::version() const
+ScriptValue IDBDatabase::version(ExecutionContext* context) const
 {
+    DOMRequestState requestState(context);
     int64_t intVersion = m_metadata.intVersion;
     if (intVersion == IDBDatabaseMetadata::NoIntVersion)
-        return IDBAny::createString(m_metadata.version);
-    return IDBAny::create(intVersion);
+        return idbAnyToScriptValue(&requestState, IDBAny::createString(m_metadata.version));
+
+    return idbAnyToScriptValue(&requestState, IDBAny::create(intVersion));
 }
 
 PassRefPtr<IDBObjectStore> IDBDatabase::createObjectStore(const String& name, const Dictionary& options, ExceptionState& exceptionState)

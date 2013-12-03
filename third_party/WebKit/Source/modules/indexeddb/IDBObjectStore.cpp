@@ -61,6 +61,12 @@ IDBObjectStore::IDBObjectStore(const IDBObjectStoreMetadata& metadata, IDBTransa
     ScriptWrappable::init(this);
 }
 
+ScriptValue IDBObjectStore::keyPath(ExecutionContext* context) const
+{
+    DOMRequestState requestState(context);
+    return idbAnyToScriptValue(&requestState, IDBAny::create(m_metadata.keyPath));
+}
+
 PassRefPtr<DOMStringList> IDBObjectStore::indexNames() const
 {
     IDB_TRACE("IDBObjectStore::indexNames");

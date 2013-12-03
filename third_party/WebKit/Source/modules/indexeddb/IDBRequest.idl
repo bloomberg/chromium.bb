@@ -33,7 +33,7 @@
     [RaisesException=Getter, CachedAttribute=isResultDirty] readonly attribute any result;
     [RaisesException=Getter] readonly attribute DOMError error;
 
-    readonly attribute IDBAny source;
+    [CallWith=ExecutionContext] readonly attribute any source;
     readonly attribute IDBTransaction transaction;
 
     // States

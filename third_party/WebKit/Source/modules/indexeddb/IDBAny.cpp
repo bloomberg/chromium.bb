@@ -61,57 +61,57 @@ IDBAny::~IDBAny()
 {
 }
 
-DOMStringList* IDBAny::domStringList()
+DOMStringList* IDBAny::domStringList() const
 {
     ASSERT(m_type == DOMStringListType);
     return m_domStringList.get();
 }
 
-IDBCursor* IDBAny::idbCursor()
+IDBCursor* IDBAny::idbCursor() const
 {
     ASSERT(m_type == IDBCursorType);
     ASSERT_WITH_SECURITY_IMPLICATION(m_idbCursor->isKeyCursor());
     return m_idbCursor.get();
 }
 
-IDBCursorWithValue* IDBAny::idbCursorWithValue()
+IDBCursorWithValue* IDBAny::idbCursorWithValue() const
 {
     ASSERT(m_type == IDBCursorWithValueType);
     ASSERT_WITH_SECURITY_IMPLICATION(m_idbCursor->isCursorWithValue());
     return toIDBCursorWithValue(m_idbCursor.get());
 }
 
-IDBDatabase* IDBAny::idbDatabase()
+IDBDatabase* IDBAny::idbDatabase() const
 {
     ASSERT(m_type == IDBDatabaseType);
     return m_idbDatabase.get();
 }
 
-IDBFactory* IDBAny::idbFactory()
+IDBFactory* IDBAny::idbFactory() const
 {
     ASSERT(m_type == IDBFactoryType);
     return m_idbFactory.get();
 }
 
-IDBIndex* IDBAny::idbIndex()
+IDBIndex* IDBAny::idbIndex() const
 {
     ASSERT(m_type == IDBIndexType);
     return m_idbIndex.get();
 }
 
-IDBObjectStore* IDBAny::idbObjectStore()
+IDBObjectStore* IDBAny::idbObjectStore() const
 {
     ASSERT(m_type == IDBObjectStoreType);
     return m_idbObjectStore.get();
 }
 
-IDBTransaction* IDBAny::idbTransaction()
+IDBTransaction* IDBAny::idbTransaction() const
 {
     ASSERT(m_type == IDBTransactionType);
     return m_idbTransaction.get();
 }
 
-IDBKey* IDBAny::key()
+IDBKey* IDBAny::key() const
 {
     ASSERT(m_type == KeyType || m_type == BufferKeyAndKeyPathType);
     return m_idbKey.get();
@@ -123,19 +123,19 @@ const IDBKeyPath& IDBAny::keyPath() const
     return m_idbKeyPath;
 }
 
-SharedBuffer* IDBAny::buffer()
+SharedBuffer* IDBAny::buffer() const
 {
     ASSERT(m_type == BufferType || m_type == BufferKeyAndKeyPathType);
     return m_buffer.get();
 }
 
-const String& IDBAny::string()
+const String& IDBAny::string() const
 {
     ASSERT(m_type == StringType);
     return m_string;
 }
 
-int64_t IDBAny::integer()
+int64_t IDBAny::integer() const
 {
     ASSERT(m_type == IntegerType);
     return m_integer;

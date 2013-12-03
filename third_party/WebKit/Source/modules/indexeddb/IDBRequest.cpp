@@ -97,9 +97,10 @@ PassRefPtr<DOMError> IDBRequest::error(ExceptionState& exceptionState) const
     return m_error;
 }
 
-PassRefPtr<IDBAny> IDBRequest::source() const
+ScriptValue IDBRequest::source(ExecutionContext* context) const
 {
-    return m_source;
+    DOMRequestState requestState(context);
+    return idbAnyToScriptValue(&requestState, m_source);
 }
 
 PassRefPtr<IDBTransaction> IDBRequest::transaction() const

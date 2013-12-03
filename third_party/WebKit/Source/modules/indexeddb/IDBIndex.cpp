@@ -27,6 +27,7 @@
 #include "modules/indexeddb/IDBIndex.h"
 
 #include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/IDBBindingUtilities.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/indexeddb/IDBDatabase.h"
@@ -55,6 +56,12 @@ IDBIndex::IDBIndex(const IDBIndexMetadata& metadata, IDBObjectStore* objectStore
 
 IDBIndex::~IDBIndex()
 {
+}
+
+ScriptValue IDBIndex::keyPath(ExecutionContext* context) const
+{
+    DOMRequestState requestState(context);
+    return idbAnyToScriptValue(&requestState, IDBAny::create(m_metadata.keyPath));
 }
 
 PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& exceptionState)

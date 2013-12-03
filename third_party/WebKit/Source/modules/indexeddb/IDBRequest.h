@@ -66,7 +66,7 @@ public:
 
     ScriptValue result(ExceptionState&);
     PassRefPtr<DOMError> error(ExceptionState&) const;
-    PassRefPtr<IDBAny> source() const;
+    ScriptValue source(ExecutionContext*) const;
     PassRefPtr<IDBTransaction> transaction() const;
 
     bool isResultDirty() const { return m_resultDirty; }

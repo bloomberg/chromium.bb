@@ -40,10 +40,8 @@ class IDBKeyRange;
 class SerializedScriptValue;
 class SharedBuffer;
 
-// For use by bindings/v8/custom:
-v8::Handle<v8::Value> toV8(IDBKey*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+// Exposed for unit testing:
 bool injectV8KeyIntoV8Value(v8::Handle<v8::Value> key, v8::Handle<v8::Value>, const IDBKeyPath&, v8::Isolate*);
-v8::Handle<v8::Value> deserializeIDBValueBuffer(SharedBuffer*, v8::Isolate*);
 
 // For use by Source/modules/indexeddb:
 PassRefPtr<IDBKey> createIDBKeyFromScriptValueAndKeyPath(DOMRequestState*, const ScriptValue&, const IDBKeyPath&);

@@ -98,18 +98,18 @@ public:
 
     Type type() const { return m_type; }
     // Use type() to figure out which one of these you're allowed to call.
-    DOMStringList* domStringList();
-    IDBCursor* idbCursor();
-    IDBCursorWithValue* idbCursorWithValue();
-    IDBDatabase* idbDatabase();
-    IDBFactory* idbFactory();
-    IDBIndex* idbIndex();
-    IDBObjectStore* idbObjectStore();
-    IDBTransaction* idbTransaction();
-    SharedBuffer* buffer();
-    int64_t integer();
-    const String& string();
-    IDBKey* key();
+    DOMStringList* domStringList() const;
+    IDBCursor* idbCursor() const;
+    IDBCursorWithValue* idbCursorWithValue() const;
+    IDBDatabase* idbDatabase() const;
+    IDBFactory* idbFactory() const;
+    IDBIndex* idbIndex() const;
+    IDBObjectStore* idbObjectStore() const;
+    IDBTransaction* idbTransaction() const;
+    SharedBuffer* buffer() const;
+    int64_t integer() const;
+    const String& string() const;
+    IDBKey* key() const;
     const IDBKeyPath& keyPath() const;
 
 private:

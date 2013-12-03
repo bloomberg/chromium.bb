@@ -26,18 +26,25 @@
 #include "config.h"
 #include "bindings/v8/IDBBindingUtilities.h"
 
-#include "V8IDBAny.h"
+#include "V8DOMStringList.h"
+#include "V8IDBCursor.h"
+#include "V8IDBCursorWithValue.h"
+#include "V8IDBDatabase.h"
+#include "V8IDBFactory.h"
+#include "V8IDBIndex.h"
 #include "V8IDBKeyRange.h"
+#include "V8IDBObjectStore.h"
+#include "V8IDBTransaction.h"
 #include "bindings/v8/DOMRequestState.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 #include "bindings/v8/custom/V8Uint8ArrayCustom.h"
-#include "platform/SharedBuffer.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBTracing.h"
+#include "platform/SharedBuffer.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Uint8Array.h"
@@ -45,7 +52,26 @@
 
 namespace WebCore {
 
-v8::Handle<v8::Value> toV8(IDBKey* key, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> deserializeIDBValueBuffer(SharedBuffer*, v8::Isolate*);
+
+static v8::Handle<v8::Value> toV8(const IDBKeyPath& value, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    switch (value.type()) {
+    case IDBKeyPath::NullType:
+        return v8::Null(isolate);
+    case IDBKeyPath::StringType:
+        return v8String(isolate, value.string());
+    case IDBKeyPath::ArrayType:
+        RefPtr<DOMStringList> keyPaths = DOMStringList::create();
+        for (Vector<String>::const_iterator it = value.array().begin(); it != value.array().end(); ++it)
+            keyPaths->append(*it);
+        return toV8(keyPaths.release(), creationContext, isolate);
+    }
+    ASSERT_NOT_REACHED();
+    return v8::Undefined(isolate);
+}
+
+v8::Handle<v8::Value> toV8(const IDBKey* key, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (!key) {
         // This should be undefined, not null.
@@ -77,6 +103,55 @@ v8::Handle<v8::Value> toV8(IDBKey* key, v8::Handle<v8::Object> creationContext, 
 
     ASSERT_NOT_REACHED();
     return v8Undefined();
+}
+
+v8::Handle<v8::Value> toV8(const IDBAny* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    if (!impl)
+        return v8::Null(isolate);
+
+    switch (impl->type()) {
+    case IDBAny::UndefinedType:
+        return v8::Undefined(isolate);
+    case IDBAny::NullType:
+        return v8::Null(isolate);
+    case IDBAny::DOMStringListType:
+        return toV8(impl->domStringList(), creationContext, isolate);
+    case IDBAny::IDBCursorType:
+        return toV8(impl->idbCursor(), creationContext, isolate);
+    case IDBAny::IDBCursorWithValueType:
+        return toV8(impl->idbCursorWithValue(), creationContext, isolate);
+    case IDBAny::IDBDatabaseType:
+        return toV8(impl->idbDatabase(), creationContext, isolate);
+    case IDBAny::IDBFactoryType:
+        return toV8(impl->idbFactory(), creationContext, isolate);
+    case IDBAny::IDBIndexType:
+        return toV8(impl->idbIndex(), creationContext, isolate);
+    case IDBAny::IDBObjectStoreType:
+        return toV8(impl->idbObjectStore(), creationContext, isolate);
+    case IDBAny::IDBTransactionType:
+        return toV8(impl->idbTransaction(), creationContext, isolate);
+    case IDBAny::BufferType:
+        return deserializeIDBValueBuffer(impl->buffer(), isolate);
+    case IDBAny::StringType:
+        return v8String(isolate, impl->string());
+    case IDBAny::IntegerType:
+        return v8::Number::New(isolate, impl->integer());
+    case IDBAny::KeyType:
+        return toV8(impl->key(), creationContext, isolate);
+    case IDBAny::KeyPathType:
+        return toV8(impl->keyPath(), creationContext, isolate);
+    case IDBAny::BufferKeyAndKeyPathType: {
+        v8::Handle<v8::Value> value = deserializeIDBValueBuffer(impl->buffer(), isolate);
+        v8::Handle<v8::Value> key = toV8(impl->key(), creationContext, isolate);
+        bool injected = injectV8KeyIntoV8Value(key, value, impl->keyPath(), isolate);
+        ASSERT_UNUSED(injected, injected);
+        return value;
+    }
+    }
+
+    ASSERT_NOT_REACHED();
+    return v8::Undefined(isolate);
 }
 
 static const size_t maximumDepth = 2000;

@@ -26,6 +26,7 @@
 #include "config.h"
 #include "modules/indexeddb/IDBVersionChangeEvent.h"
 
+#include "bindings/v8/IDBBindingUtilities.h"
 #include "core/events/ThreadLocalEventNames.h"
 
 namespace WebCore {
@@ -47,6 +48,18 @@ IDBVersionChangeEvent::IDBVersionChangeEvent(PassRefPtr<IDBAny> oldVersion, Pass
 
 IDBVersionChangeEvent::~IDBVersionChangeEvent()
 {
+}
+
+ScriptValue IDBVersionChangeEvent::oldVersion(ExecutionContext* context) const
+{
+    DOMRequestState requestState(context);
+    return idbAnyToScriptValue(&requestState, m_oldVersion);
+}
+
+ScriptValue IDBVersionChangeEvent::newVersion(ExecutionContext* context) const
+{
+    DOMRequestState requestState(context);
+    return idbAnyToScriptValue(&requestState, m_newVersion);
 }
 
 const AtomicString& IDBVersionChangeEvent::dataLoss()
