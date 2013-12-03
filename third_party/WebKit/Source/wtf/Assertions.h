@@ -40,6 +40,7 @@
 
 */
 
+#include "wtf/Compiler.h"
 #include "wtf/WTFExport.h"
 
 #ifdef NDEBUG
@@ -75,12 +76,6 @@
 
 #ifndef LOG_DISABLED
 #define LOG_DISABLED ASSERTIONS_DISABLED_DEFAULT
-#endif
-
-#if COMPILER(GCC)
-#define WTF_PRETTY_FUNCTION __PRETTY_FUNCTION__
-#else
-#define WTF_PRETTY_FUNCTION __FUNCTION__
 #endif
 
 /* WTF logging functions can process %@ in the format string to log a NSObject* but the printf format attribute

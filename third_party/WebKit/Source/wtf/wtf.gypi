@@ -63,6 +63,8 @@
             'HashTableDeletedValueType.h',
             'HashTraits.h',
             'HexNumber.h',
+            'InstanceCounter.cpp',
+            'InstanceCounter.h',
             'Int16Array.h',
             'Int32Array.h',
             'Int8Array.h',

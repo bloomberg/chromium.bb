@@ -123,6 +123,7 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/WebLayer.h"
+#include "wtf/InstanceCounter.h"
 #include "wtf/dtoa.h"
 #include "wtf/text/StringBuffer.h"
 
@@ -1524,6 +1525,11 @@ unsigned Internals::numberOfLiveNodes() const
 unsigned Internals::numberOfLiveDocuments() const
 {
     return InspectorCounters::counterValue(InspectorCounters::DocumentCounter);
+}
+
+String Internals::dumpRefCountedInstanceCounts() const
+{
+    return WTF::dumpRefCountedInstanceCounts();
 }
 
 Vector<String> Internals::consoleMessageArgumentCounts(Document* document) const

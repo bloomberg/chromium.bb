@@ -22,6 +22,7 @@
 #define RefCounted_h
 
 #include "wtf/FastAllocBase.h"
+#include "wtf/InstanceCounter.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/WTFExport.h"
 
@@ -172,6 +173,7 @@ inline void adopted(RefCountedBase* object)
 template<typename T> class RefCounted : public RefCountedBase {
     WTF_MAKE_NONCOPYABLE(RefCounted);
     WTF_MAKE_FAST_ALLOCATED;
+
 public:
     void deref()
     {
@@ -180,10 +182,21 @@ public:
     }
 
 protected:
-    RefCounted() { }
+#ifdef ENABLE_INSTANCE_COUNTER
+    RefCounted()
+    {
+        incrementInstanceCount<T>(static_cast<T*>(this));
+    }
+
     ~RefCounted()
     {
+        decrementInstanceCount<T>(static_cast<T*>(this));
     }
+#else
+    RefCounted()
+    {
+    }
+#endif
 };
 
 } // namespace WTF

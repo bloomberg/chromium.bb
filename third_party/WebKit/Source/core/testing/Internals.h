@@ -241,6 +241,7 @@ public:
 
     unsigned numberOfLiveNodes() const;
     unsigned numberOfLiveDocuments() const;
+    String dumpRefCountedInstanceCounts() const;
     Vector<String> consoleMessageArgumentCounts(Document*) const;
     PassRefPtr<DOMWindow> openDummyInspectorFrontend(const String& url);
     void closeDummyInspectorFrontend();

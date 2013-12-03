@@ -203,6 +203,7 @@
 
     unsigned long numberOfLiveNodes();
     unsigned long numberOfLiveDocuments();
+    DOMString dumpRefCountedInstanceCounts();
     sequence<DOMString> consoleMessageArgumentCounts(Document document);
     Window openDummyInspectorFrontend(DOMString url);
     void closeDummyInspectorFrontend();

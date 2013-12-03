@@ -4,7 +4,14 @@ function doLeakTest(src, tolerance) {
     function getCounterValues() {
         testRunner.resetTestHelperControllers();
         gc();
-        return {'numberOfLiveDocuments': window.internals.numberOfLiveDocuments()};
+
+        var ret = {'numberOfLiveDocuments': window.internals.numberOfLiveDocuments()};
+
+        var refCountedInstances = JSON.parse(window.internals.dumpRefCountedInstanceCounts());
+        for (typename in refCountedInstances)
+            ret['numberOfInstances-'+typename] = refCountedInstances[typename];
+
+        return ret;
     }
 
     var frame = document.createElement('iframe');
@@ -27,7 +34,7 @@ function doLeakTest(src, tolerance) {
             var before = countersBefore[type];
             var after = countersAfter[type];
 
-            if(after - before <= tolerance[type])
+            if (after - before <= tolerance[type])
                 testPassed('The difference of counter "'+type+'" before and after the cycle is under the threshold of '+tolerance[type]+'.');
             else
                 testFailed('counter "'+type+'" was '+before+' before and now '+after+' after the cycle. This exceeds the threshold of '+tolerance[type]+'.');
