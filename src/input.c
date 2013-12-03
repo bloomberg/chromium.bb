@@ -513,10 +513,24 @@ weston_keyboard_create(void)
 	return keyboard;
 }
 
+static void
+weston_xkb_info_destroy(struct weston_xkb_info *xkb_info);
+
 WL_EXPORT void
 weston_keyboard_destroy(struct weston_keyboard *keyboard)
 {
 	/* XXX: What about keyboard->resource_list? */
+
+#ifdef ENABLE_XKBCOMMON
+	if (keyboard->seat->compositor->use_xkbcommon) {
+		if (keyboard->xkb_state.state != NULL)
+			xkb_state_unref(keyboard->xkb_state.state);
+		if (keyboard->xkb_info)
+			weston_xkb_info_destroy(keyboard->xkb_info);
+		if (keyboard->pending_keymap)
+			xkb_keymap_unref(keyboard->pending_keymap);
+	}
+#endif
 
 	wl_array_release(&keyboard->keys);
 	wl_list_remove(&keyboard->focus_resource_listener.link);
@@ -855,16 +869,17 @@ static void
 run_modifier_bindings(struct weston_seat *seat, uint32_t old, uint32_t new)
 {
 	struct weston_compositor *compositor = seat->compositor;
+	struct weston_keyboard *keyboard = seat->keyboard;
 	uint32_t diff;
 	unsigned int i;
 	struct {
 		uint32_t xkb;
 		enum weston_keyboard_modifier weston;
 	} mods[] = {
-		{ seat->xkb_info->ctrl_mod, MODIFIER_CTRL },
-		{ seat->xkb_info->alt_mod, MODIFIER_ALT },
-		{ seat->xkb_info->super_mod, MODIFIER_SUPER },
-		{ seat->xkb_info->shift_mod, MODIFIER_SHIFT },
+		{ keyboard->xkb_info->ctrl_mod, MODIFIER_CTRL },
+		{ keyboard->xkb_info->alt_mod, MODIFIER_ALT },
+		{ keyboard->xkb_info->super_mod, MODIFIER_SUPER },
+		{ keyboard->xkb_info->shift_mod, MODIFIER_SHIFT },
 	};
 
 	diff = new & ~old;
@@ -990,13 +1005,13 @@ notify_modifiers(struct weston_seat *seat, uint32_t serial)
 
 	/* Serialize and update our internal state, checking to see if it's
 	 * different to the previous state. */
-	mods_depressed = xkb_state_serialize_mods(seat->xkb_state.state,
+	mods_depressed = xkb_state_serialize_mods(keyboard->xkb_state.state,
 						  XKB_STATE_DEPRESSED);
-	mods_latched = xkb_state_serialize_mods(seat->xkb_state.state,
+	mods_latched = xkb_state_serialize_mods(keyboard->xkb_state.state,
 						XKB_STATE_LATCHED);
-	mods_locked = xkb_state_serialize_mods(seat->xkb_state.state,
+	mods_locked = xkb_state_serialize_mods(keyboard->xkb_state.state,
 					       XKB_STATE_LOCKED);
-	group = xkb_state_serialize_group(seat->xkb_state.state,
+	group = xkb_state_serialize_group(keyboard->xkb_state.state,
 					  XKB_STATE_EFFECTIVE);
 
 	if (mods_depressed != seat->keyboard->modifiers.mods_depressed ||
@@ -1016,28 +1031,28 @@ notify_modifiers(struct weston_seat *seat, uint32_t serial)
 	/* And update the modifier_state for bindings. */
 	mods_lookup = mods_depressed | mods_latched;
 	seat->modifier_state = 0;
-	if (mods_lookup & (1 << seat->xkb_info->ctrl_mod))
+	if (mods_lookup & (1 << keyboard->xkb_info->ctrl_mod))
 		seat->modifier_state |= MODIFIER_CTRL;
-	if (mods_lookup & (1 << seat->xkb_info->alt_mod))
+	if (mods_lookup & (1 << keyboard->xkb_info->alt_mod))
 		seat->modifier_state |= MODIFIER_ALT;
-	if (mods_lookup & (1 << seat->xkb_info->super_mod))
+	if (mods_lookup & (1 << keyboard->xkb_info->super_mod))
 		seat->modifier_state |= MODIFIER_SUPER;
-	if (mods_lookup & (1 << seat->xkb_info->shift_mod))
+	if (mods_lookup & (1 << keyboard->xkb_info->shift_mod))
 		seat->modifier_state |= MODIFIER_SHIFT;
 
 	/* Finally, notify the compositor that LEDs have changed. */
-	if (xkb_state_led_index_is_active(seat->xkb_state.state,
-					  seat->xkb_info->num_led))
+	if (xkb_state_led_index_is_active(keyboard->xkb_state.state,
+					  keyboard->xkb_info->num_led))
 		leds |= LED_NUM_LOCK;
-	if (xkb_state_led_index_is_active(seat->xkb_state.state,
-					  seat->xkb_info->caps_led))
+	if (xkb_state_led_index_is_active(keyboard->xkb_state.state,
+					  keyboard->xkb_info->caps_led))
 		leds |= LED_CAPS_LOCK;
-	if (xkb_state_led_index_is_active(seat->xkb_state.state,
-					  seat->xkb_info->scroll_led))
+	if (xkb_state_led_index_is_active(keyboard->xkb_state.state,
+					  keyboard->xkb_info->scroll_led))
 		leds |= LED_SCROLL_LOCK;
-	if (leds != seat->xkb_state.leds && seat->led_update)
+	if (leds != keyboard->xkb_state.leds && seat->led_update)
 		seat->led_update(seat, leds);
-	seat->xkb_state.leds = leds;
+	keyboard->xkb_state.leds = leds;
 
 	if (changed) {
 		grab->interface->modifiers(grab,
@@ -1053,6 +1068,7 @@ static void
 update_modifier_state(struct weston_seat *seat, uint32_t serial, uint32_t key,
 		      enum wl_keyboard_key_state state)
 {
+	struct weston_keyboard *keyboard = seat->keyboard;
 	enum xkb_key_direction direction;
 
 	/* Keyboard modifiers don't exist in raw keyboard mode */
@@ -1066,7 +1082,7 @@ update_modifier_state(struct weston_seat *seat, uint32_t serial, uint32_t key,
 
 	/* Offset the keycode by 8, as the evdev XKB rules reflect X's
 	 * broken keycode system, which starts at 8. */
-	xkb_state_update_key(seat->xkb_state.state, key + 8, direction);
+	xkb_state_update_key(keyboard->xkb_state.state, key + 8, direction);
 
 	notify_modifiers(seat, serial);
 }
@@ -1092,22 +1108,21 @@ send_modifiers(struct wl_resource *resource, uint32_t serial, struct weston_keyb
 
 static struct weston_xkb_info *
 weston_xkb_info_create(struct xkb_keymap *keymap);
-static void
-weston_xkb_info_destroy(struct weston_xkb_info *xkb_info);
 
 static void
 update_keymap(struct weston_seat *seat)
 {
+	struct weston_keyboard *keyboard = seat->keyboard;
 	struct wl_resource *resource;
 	struct weston_xkb_info *xkb_info;
 	struct xkb_state *state;
 	xkb_mod_mask_t latched_mods;
 	xkb_mod_mask_t locked_mods;
 
-	xkb_info = weston_xkb_info_create(seat->pending_keymap);
+	xkb_info = weston_xkb_info_create(keyboard->pending_keymap);
 
-	xkb_keymap_unref(seat->pending_keymap);
-	seat->pending_keymap = NULL;
+	xkb_keymap_unref(keyboard->pending_keymap);
+	keyboard->pending_keymap = NULL;
 
 	if (!xkb_info) {
 		weston_log("failed to create XKB info\n");
@@ -1121,19 +1136,21 @@ update_keymap(struct weston_seat *seat)
 		return;
 	}
 
-	latched_mods = xkb_state_serialize_mods(seat->xkb_state.state, XKB_STATE_MODS_LATCHED);
-	locked_mods = xkb_state_serialize_mods(seat->xkb_state.state, XKB_STATE_MODS_LOCKED);
+	latched_mods = xkb_state_serialize_mods(keyboard->xkb_state.state,
+						XKB_STATE_MODS_LATCHED);
+	locked_mods = xkb_state_serialize_mods(keyboard->xkb_state.state,
+					       XKB_STATE_MODS_LOCKED);
 	xkb_state_update_mask(state,
 			      0, /* depressed */
 			      latched_mods,
 			      locked_mods,
 			      0, 0, 0);
 
-	weston_xkb_info_destroy(seat->xkb_info);
-	seat->xkb_info = xkb_info;
+	weston_xkb_info_destroy(keyboard->xkb_info);
+	keyboard->xkb_info = xkb_info;
 
-	xkb_state_unref(seat->xkb_state.state);
-	seat->xkb_state.state = state;
+	xkb_state_unref(keyboard->xkb_state.state);
+	keyboard->xkb_state.state = state;
 
 	wl_resource_for_each(resource, &seat->keyboard->resource_list)
 		send_keymap(resource, xkb_info);
@@ -1215,7 +1232,7 @@ notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 
 	grab->interface->key(grab, time, key, state);
 
-	if (seat->pending_keymap &&
+	if (keyboard->pending_keymap &&
 	    keyboard->keys.size == 0)
 		update_keymap(seat);
 
@@ -1598,6 +1615,7 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 		  uint32_t id)
 {
 	struct weston_seat *seat = wl_resource_get_user_data(resource);
+	struct weston_keyboard *keyboard = seat->keyboard;
 	struct wl_resource *cr;
 
 	if (!seat->keyboard)
@@ -1619,8 +1637,8 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 
 	if (seat->compositor->use_xkbcommon) {
 		wl_keyboard_send_keymap(cr, WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
-					seat->xkb_info->keymap_fd,
-					seat->xkb_info->keymap_size);
+					keyboard->xkb_info->keymap_fd,
+					keyboard->xkb_info->keymap_size);
 	} else {
 		int null_fd = open("/dev/null", O_RDONLY);
 		wl_keyboard_send_keymap(cr, WL_KEYBOARD_KEYMAP_FORMAT_NO_KEYMAP,
@@ -1911,8 +1929,8 @@ weston_seat_update_keymap(struct weston_seat *seat, struct xkb_keymap *keymap)
 	if (!seat->compositor->use_xkbcommon)
 		return;
 
-	xkb_keymap_unref(seat->pending_keymap);
-	seat->pending_keymap = xkb_keymap_ref(keymap);
+	xkb_keymap_unref(seat->keyboard->pending_keymap);
+	seat->keyboard->pending_keymap = xkb_keymap_ref(keymap);
 
 	if (seat->keyboard->keys.size == 0)
 		update_keymap(seat);
@@ -1931,29 +1949,6 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 		return 0;
 	}
 
-#ifdef ENABLE_XKBCOMMON
-	if (seat->compositor->use_xkbcommon) {
-		if (keymap != NULL) {
-			seat->xkb_info = weston_xkb_info_create(keymap);
-			if (seat->xkb_info == NULL)
-				return -1;
-		} else {
-			if (weston_compositor_build_global_keymap(seat->compositor) < 0)
-				return -1;
-			seat->xkb_info = seat->compositor->xkb_info;
-			seat->xkb_info->ref_count++;
-		}
-
-		seat->xkb_state.state = xkb_state_new(seat->xkb_info->keymap);
-		if (seat->xkb_state.state == NULL) {
-			weston_log("failed to initialise XKB state\n");
-			return -1;
-		}
-
-		seat->xkb_state.leds = 0;
-	}
-#endif
-
 	keyboard = weston_keyboard_create();
 	if (keyboard == NULL) {
 		weston_log("failed to allocate weston keyboard struct\n");
@@ -1963,6 +1958,29 @@ weston_seat_init_keyboard(struct weston_seat *seat, struct xkb_keymap *keymap)
 	seat->keyboard = keyboard;
 	seat->keyboard_device_count = 1;
 	keyboard->seat = seat;
+
+#ifdef ENABLE_XKBCOMMON
+	if (seat->compositor->use_xkbcommon) {
+		if (keymap != NULL) {
+			keyboard->xkb_info = weston_xkb_info_create(keymap);
+			if (keyboard->xkb_info == NULL)
+				return -1;
+		} else {
+			if (weston_compositor_build_global_keymap(seat->compositor) < 0)
+				return -1;
+			keyboard->xkb_info = seat->compositor->xkb_info;
+			keyboard->xkb_info->ref_count++;
+		}
+
+		keyboard->xkb_state.state = xkb_state_new(keyboard->xkb_info->keymap);
+		if (keyboard->xkb_state.state == NULL) {
+			weston_log("failed to initialise XKB state\n");
+			return -1;
+		}
+
+		keyboard->xkb_state.leds = 0;
+	}
+#endif
 
 	seat_send_updated_caps(seat);
 
@@ -2088,17 +2106,6 @@ WL_EXPORT void
 weston_seat_release(struct weston_seat *seat)
 {
 	wl_list_remove(&seat->link);
-
-#ifdef ENABLE_XKBCOMMON
-	if (seat->compositor->use_xkbcommon) {
-		if (seat->xkb_state.state != NULL)
-			xkb_state_unref(seat->xkb_state.state);
-		if (seat->xkb_info)
-			weston_xkb_info_destroy(seat->xkb_info);
-		if (seat->pending_keymap)
-			xkb_keymap_unref (seat->pending_keymap);
-	}
-#endif
 
 	if (seat->pointer)
 		weston_pointer_destroy(seat->pointer);

@@ -1270,7 +1270,7 @@ input_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 	else
 		serial_out = wl_display_next_serial(c->base.wl_display);
 
-	xkb_state_update_mask(input->base.xkb_state.state,
+	xkb_state_update_mask(input->base.keyboard->xkb_state.state,
 			      mods_depressed, mods_latched,
 			      mods_locked, 0, 0, group);
 	notify_modifiers(&input->base, serial_out);

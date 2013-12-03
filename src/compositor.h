@@ -466,6 +466,13 @@ struct weston_keyboard {
 
 	struct weston_keyboard_grab input_method_grab;
 	struct wl_resource *input_method_resource;
+
+	struct weston_xkb_info *xkb_info;
+	struct {
+		struct xkb_state *state;
+		enum weston_led leds;
+	} xkb_state;
+	struct xkb_keymap *pending_keymap;
 };
 
 struct weston_seat {
@@ -496,13 +503,6 @@ struct weston_seat {
 	struct wl_signal selection_signal;
 
 	void (*led_update)(struct weston_seat *ws, enum weston_led leds);
-
-	struct weston_xkb_info *xkb_info;
-	struct {
-		struct xkb_state *state;
-		enum weston_led leds;
-	} xkb_state;
-	struct xkb_keymap *pending_keymap;
 
 	struct input_method *input_method;
 	char *seat_name;

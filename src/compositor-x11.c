@@ -162,7 +162,7 @@ x11_compositor_get_keymap(struct x11_compositor *c)
 static uint32_t
 get_xkb_mod_mask(struct x11_compositor *c, uint32_t in)
 {
-	struct weston_xkb_info *info = c->core_seat.xkb_info;
+	struct weston_xkb_info *info = c->core_seat.keyboard->xkb_info;
 	uint32_t ret = 0;
 
 	if ((in & ShiftMask) && info->shift_mod != XKB_MOD_INVALID)
@@ -273,7 +273,7 @@ x11_compositor_setup_xkb(struct x11_compositor *c)
 		return;
 	}
 
-	xkb_state_update_mask(c->core_seat.xkb_state.state,
+	xkb_state_update_mask(c->core_seat.keyboard->xkb_state.state,
 			      get_xkb_mod_mask(c, state_reply->baseMods),
 			      get_xkb_mod_mask(c, state_reply->latchedMods),
 			      get_xkb_mod_mask(c, state_reply->lockedMods),
@@ -920,7 +920,7 @@ x11_compositor_find_output(struct x11_compositor *c, xcb_window_t window)
 static void
 update_xkb_state(struct x11_compositor *c, xcb_xkb_state_notify_event_t *state)
 {
-	xkb_state_update_mask(c->core_seat.xkb_state.state,
+	xkb_state_update_mask(c->core_seat.keyboard->xkb_state.state,
 			      get_xkb_mod_mask(c, state->baseMods),
 			      get_xkb_mod_mask(c, state->latchedMods),
 			      get_xkb_mod_mask(c, state->lockedMods),
@@ -950,7 +950,7 @@ update_xkb_state_from_core(struct x11_compositor *c, uint16_t x11_mask)
 	uint32_t mask = get_xkb_mod_mask(c, x11_mask);
 	struct weston_keyboard *keyboard = c->core_seat.keyboard;
 
-	xkb_state_update_mask(c->core_seat.xkb_state.state,
+	xkb_state_update_mask(c->core_seat.keyboard->xkb_state.state,
 			      keyboard->modifiers.mods_depressed & mask,
 			      keyboard->modifiers.mods_latched & mask,
 			      keyboard->modifiers.mods_locked & mask,
