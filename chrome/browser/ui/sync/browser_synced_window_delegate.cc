@@ -47,7 +47,8 @@ bool BrowserSyncedWindowDelegate::IsTabPinned(
     if (tab == current)
       return browser_->tab_strip_model()->IsTabPinned(i);
   }
-  NOTREACHED();
+  // The window and tab are not always updated atomically, so it's possible
+  // one of the values was stale. We'll retry later, just ignore for now.
   return false;
 }
 
