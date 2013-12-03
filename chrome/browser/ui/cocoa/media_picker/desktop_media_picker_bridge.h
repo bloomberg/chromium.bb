@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_UI_COCOA_MEDIA_PICKER_DESKTOP_MEDIA_PICKER_BRIDGE_H_
 
 #include "base/basictypes.h"
-#include "chrome/browser/media/desktop_media_picker_model.h"
+#include "chrome/browser/media/desktop_media_list_observer.h"
 
-// Protocol corresponding to |DesktopMediaPickerModel::Observer|.
+// Protocol corresponding to |DesktopMediaListObserver|.
 @protocol DesktopMediaPickerObserver
 - (void)sourceAddedAtIndex:(int)index;
 - (void)sourceRemovedAtIndex:(int)index;
@@ -16,15 +16,15 @@
 - (void)sourceThumbnailChangedAtIndex:(int)index;
 @end
 
-// Provides a |DesktopMediaPickerModel::Observer| implementation that forwards
+// Provides a |DesktopMediaListObserver| implementation that forwards
 // notifications to a objective-c object implementing the
 // |DesktopMediaPickerObserver| protocol.
-class DesktopMediaPickerBridge : public DesktopMediaPickerModel::Observer {
+class DesktopMediaPickerBridge : public DesktopMediaListObserver {
  public:
   DesktopMediaPickerBridge(id<DesktopMediaPickerObserver> observer);
   virtual ~DesktopMediaPickerBridge();
 
-  // DesktopMediaPickerModel::Observer overrides
+  // DesktopMediaListObserver overrides.
   virtual void OnSourceAdded(int index) OVERRIDE;
   virtual void OnSourceRemoved(int index) OVERRIDE;
   virtual void OnSourceNameChanged(int index) OVERRIDE;

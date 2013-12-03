@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/media/desktop_streams_registry.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/native_desktop_media_list.h"
 #include "chrome/common/extensions/api/tabs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -160,16 +161,16 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
     return false;
   }
 
-  scoped_ptr<DesktopMediaPickerModel> model;
+  scoped_ptr<DesktopMediaList> media_list;
   if (g_picker_factory) {
-    model = g_picker_factory->CreateModel(
+    media_list = g_picker_factory->CreateModel(
         screen_capturer.Pass(), window_capturer.Pass());
     picker_ = g_picker_factory->CreatePicker();
   } else {
     // DesktopMediaPicker is implemented only for Windows, OSX and
     // Aura Linux builds.
 #if (defined(TOOLKIT_VIEWS) && !defined(OS_CHROMEOS)) || defined(OS_MACOSX)
-    model.reset(new DesktopMediaPickerModelImpl(
+    media_list.reset(new NativeDesktopMediaList(
         screen_capturer.Pass(), window_capturer.Pass()));
     picker_ = DesktopMediaPicker::Create();
 #else
@@ -184,7 +185,7 @@ bool DesktopCaptureChooseDesktopMediaFunction::RunImpl() {
 
   picker_->Show(parent_window, parent_window,
                 UTF8ToUTF16(GetExtension()->name()),
-                model.Pass(), callback);
+                media_list.Pass(), callback);
   return true;
 }
 

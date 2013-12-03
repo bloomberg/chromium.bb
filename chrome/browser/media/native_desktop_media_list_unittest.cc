@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/desktop_media_picker_model.h"
+#include "chrome/browser/media/native_desktop_media_list.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
+#include "chrome/browser/media/desktop_media_list_observer.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,7 +20,7 @@ using testing::DoAll;
 
 namespace {
 
-class MockObserver : public DesktopMediaPickerModel::Observer {
+class MockObserver : public DesktopMediaListObserver {
  public:
   MOCK_METHOD1(OnSourceAdded, void(int index));
   MOCK_METHOD1(OnSourceRemoved, void(int index));
@@ -119,9 +120,9 @@ class FakeWindowCapturer : public webrtc::WindowCapturer {
   DISALLOW_COPY_AND_ASSIGN(FakeWindowCapturer);
 };
 
-class DesktopMediaPickerModelTest : public testing::Test {
+class DesktopMediaListTest : public testing::Test {
  public:
-  DesktopMediaPickerModelTest()
+  DesktopMediaListTest()
       : window_capturer_(NULL),
         ui_thread_(content::BrowserThread::UI,
                    &message_loop_) {
@@ -129,7 +130,7 @@ class DesktopMediaPickerModelTest : public testing::Test {
 
   void CreateWithDefaultCapturers() {
     window_capturer_ = new FakeWindowCapturer();
-    model_.reset(new DesktopMediaPickerModelImpl(
+    model_.reset(new NativeDesktopMediaList(
         scoped_ptr<webrtc::ScreenCapturer>(new FakeScreenCapturer()),
         scoped_ptr<webrtc::WindowCapturer>(window_capturer_)));
 
@@ -144,23 +145,23 @@ class DesktopMediaPickerModelTest : public testing::Test {
   // Owned by |model_|;
   FakeWindowCapturer* window_capturer_;
 
-  scoped_ptr<DesktopMediaPickerModelImpl> model_;
+  scoped_ptr<NativeDesktopMediaList> model_;
 
   base::MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
 
-  DISALLOW_COPY_AND_ASSIGN(DesktopMediaPickerModelTest);
+  DISALLOW_COPY_AND_ASSIGN(DesktopMediaListTest);
 };
 
 ACTION_P2(CheckListSize, model, expected_list_size) {
-  EXPECT_EQ(expected_list_size, model->source_count());
+  EXPECT_EQ(expected_list_size, model->GetSourceCount());
 }
 
 ACTION_P(QuitMessageLoop, message_loop) {
   message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
-TEST_F(DesktopMediaPickerModelTest, InitialSourceList) {
+TEST_F(DesktopMediaListTest, InitialSourceList) {
   CreateWithDefaultCapturers();
 
   webrtc::WindowCapturer::WindowList list;
@@ -184,16 +185,16 @@ TEST_F(DesktopMediaPickerModelTest, InitialSourceList) {
 
   message_loop_.Run();
 
-  EXPECT_EQ(model_->source(0).id.type, content::DesktopMediaID::TYPE_SCREEN);
-  EXPECT_EQ(model_->source(0).id.id, 0);
-  EXPECT_EQ(model_->source(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
-  EXPECT_EQ(model_->source(1).id.id, 0);
-  EXPECT_EQ(model_->source(1).name, UTF8ToUTF16(window.title));
+  EXPECT_EQ(model_->GetSource(0).id.type, content::DesktopMediaID::TYPE_SCREEN);
+  EXPECT_EQ(model_->GetSource(0).id.id, 0);
+  EXPECT_EQ(model_->GetSource(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
+  EXPECT_EQ(model_->GetSource(1).id.id, 0);
+  EXPECT_EQ(model_->GetSource(1).name, UTF8ToUTF16(window.title));
 }
 
 // Verifies that the window specified with SetViewDialogWindowId() is filtered
 // from the results.
-TEST_F(DesktopMediaPickerModelTest, Filtering) {
+TEST_F(DesktopMediaListTest, Filtering) {
   CreateWithDefaultCapturers();
 
   webrtc::WindowCapturer::WindowList list;
@@ -224,16 +225,16 @@ TEST_F(DesktopMediaPickerModelTest, Filtering) {
   model_->StartUpdating(&observer_);
   message_loop_.Run();
 
-  EXPECT_EQ(model_->source(0).id.type, content::DesktopMediaID::TYPE_SCREEN);
-  EXPECT_EQ(model_->source(0).id.id, 0);
-  EXPECT_EQ(model_->source(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
-  EXPECT_EQ(model_->source(1).id.id, 1);
-  EXPECT_EQ(model_->source(1).name, UTF8ToUTF16(window.title));
+  EXPECT_EQ(model_->GetSource(0).id.type, content::DesktopMediaID::TYPE_SCREEN);
+  EXPECT_EQ(model_->GetSource(0).id.id, 0);
+  EXPECT_EQ(model_->GetSource(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
+  EXPECT_EQ(model_->GetSource(1).id.id, 1);
+  EXPECT_EQ(model_->GetSource(1).name, UTF8ToUTF16(window.title));
 }
 
-TEST_F(DesktopMediaPickerModelTest, WindowsOnly) {
+TEST_F(DesktopMediaListTest, WindowsOnly) {
   window_capturer_ = new FakeWindowCapturer();
-  model_.reset(new DesktopMediaPickerModelImpl(
+  model_.reset(new NativeDesktopMediaList(
       scoped_ptr<webrtc::ScreenCapturer>(),
       scoped_ptr<webrtc::WindowCapturer>(window_capturer_)));
 
@@ -255,11 +256,11 @@ TEST_F(DesktopMediaPickerModelTest, WindowsOnly) {
 
   message_loop_.Run();
 
-  EXPECT_EQ(model_->source(0).id.type, content::DesktopMediaID::TYPE_WINDOW);
+  EXPECT_EQ(model_->GetSource(0).id.type, content::DesktopMediaID::TYPE_WINDOW);
 }
 
-TEST_F(DesktopMediaPickerModelTest, ScreenOnly) {
-  model_.reset(new DesktopMediaPickerModelImpl(
+TEST_F(DesktopMediaListTest, ScreenOnly) {
+  model_.reset(new NativeDesktopMediaList(
       scoped_ptr<webrtc::ScreenCapturer>(new FakeScreenCapturer),
       scoped_ptr<webrtc::WindowCapturer>()));
 
@@ -274,10 +275,10 @@ TEST_F(DesktopMediaPickerModelTest, ScreenOnly) {
 
   message_loop_.Run();
 
-  EXPECT_EQ(model_->source(0).id.type, content::DesktopMediaID::TYPE_SCREEN);
+  EXPECT_EQ(model_->GetSource(0).id.type, content::DesktopMediaID::TYPE_SCREEN);
 }
 
-TEST_F(DesktopMediaPickerModelTest, AddWindow) {
+TEST_F(DesktopMediaListTest, AddWindow) {
   CreateWithDefaultCapturers();
 
   webrtc::WindowCapturer::WindowList list;
@@ -314,11 +315,11 @@ TEST_F(DesktopMediaPickerModelTest, AddWindow) {
 
   message_loop_.Run();
 
-  EXPECT_EQ(model_->source(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
-  EXPECT_EQ(model_->source(1).id.id, 0);
+  EXPECT_EQ(model_->GetSource(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
+  EXPECT_EQ(model_->GetSource(1).id.id, 0);
 }
 
-TEST_F(DesktopMediaPickerModelTest, RemoveWindow) {
+TEST_F(DesktopMediaListTest, RemoveWindow) {
   CreateWithDefaultCapturers();
 
   webrtc::WindowCapturer::WindowList list;
@@ -360,7 +361,7 @@ TEST_F(DesktopMediaPickerModelTest, RemoveWindow) {
   message_loop_.Run();
 }
 
-TEST_F(DesktopMediaPickerModelTest, UpdateTitle) {
+TEST_F(DesktopMediaListTest, UpdateTitle) {
   CreateWithDefaultCapturers();
 
   webrtc::WindowCapturer::WindowList list;
@@ -396,10 +397,10 @@ TEST_F(DesktopMediaPickerModelTest, UpdateTitle) {
 
   message_loop_.Run();
 
-  EXPECT_EQ(model_->source(1).name, base::UTF8ToUTF16(kTestTitle));
+  EXPECT_EQ(model_->GetSource(1).name, base::UTF8ToUTF16(kTestTitle));
 }
 
-TEST_F(DesktopMediaPickerModelTest, UpdateThumbnail) {
+TEST_F(DesktopMediaListTest, UpdateThumbnail) {
   CreateWithDefaultCapturers();
 
   webrtc::WindowCapturer::WindowList list;

@@ -38,7 +38,7 @@ class FakeDesktopMediaPicker : public DesktopMediaPicker {
   virtual void Show(gfx::NativeWindow context,
                     gfx::NativeWindow parent,
                     const string16& app_name,
-                    scoped_ptr<DesktopMediaPickerModel> model,
+                    scoped_ptr<DesktopMediaList> model,
                     const DoneCallback& done_callback) OVERRIDE {
     if (!expect_cancelled_) {
       // Post a task to call the callback asynchronously.
@@ -87,7 +87,7 @@ class FakeDesktopMediaPickerFactory :
   }
 
   // DesktopCaptureChooseDesktopMediaFunction::PickerFactory interface.
-  virtual scoped_ptr<DesktopMediaPickerModel> CreateModel(
+  virtual scoped_ptr<DesktopMediaList> CreateModel(
       scoped_ptr<webrtc::ScreenCapturer> screen_capturer,
       scoped_ptr<webrtc::WindowCapturer> window_capturer) OVERRIDE {
     EXPECT_TRUE(!expectations_.empty());
@@ -95,9 +95,8 @@ class FakeDesktopMediaPickerFactory :
       EXPECT_EQ(expectations_.front().screens, !!screen_capturer.get());
       EXPECT_EQ(expectations_.front().windows, !!window_capturer.get());
     }
-    return scoped_ptr<DesktopMediaPickerModel>(
-      new DesktopMediaPickerModelImpl(screen_capturer.Pass(),
-                                      window_capturer.Pass()));
+    return scoped_ptr<DesktopMediaList>(new NativeDesktopMediaList(
+        screen_capturer.Pass(), window_capturer.Pass()));
   }
   virtual scoped_ptr<DesktopMediaPicker> CreatePicker() OVERRIDE {
     content::DesktopMediaID next_source;

@@ -12,8 +12,8 @@
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/media/desktop_media_list.h"
 #include "chrome/browser/media/desktop_media_picker.h"
-#include "chrome/browser/media/desktop_media_picker_model.h"
 #import "chrome/browser/ui/cocoa/media_picker/desktop_media_picker_bridge.h"
 
 // A controller for the Desktop Media Picker. Presents the user with a list of
@@ -33,7 +33,7 @@
 
   // Provides source information (including thumbnails) to fill up |items_| and
   // to render in |sourceBrowser_|.
-  scoped_ptr<DesktopMediaPickerModel> model_;
+  scoped_ptr<DesktopMediaList> media_list_;
 
   // To be called with the user selection.
   DesktopMediaPicker::DoneCallback doneCallback_;
@@ -41,7 +41,7 @@
   // Array of |DesktopMediaPickerItem| used as data for |sourceBrowser_|.
   base::scoped_nsobject<NSMutableArray> items_;
 
-  // C++ bridge to use as an observer to |model_|, that forwards obj-c
+  // C++ bridge to use as an observer to |media_list_|, that forwards obj-c
   // notifications to this object.
   scoped_ptr<DesktopMediaPickerBridge> bridge_;
 
@@ -53,9 +53,9 @@
 // To show the dialog, use |NSWindowController|'s |showWindow:|.
 // |callback| will be called to report the user's selection.
 // |appName| will be used to format the dialog's title and the label.
-- (id)initWithModel:(scoped_ptr<DesktopMediaPickerModel>)model
-           callback:(const DesktopMediaPicker::DoneCallback&)callback
-            appName:(const string16&)appName;
+- (id)initWithMediaList:(scoped_ptr<DesktopMediaList>)media_list
+               callback:(const DesktopMediaPicker::DoneCallback&)callback
+                appName:(const string16&)appName;
 
 @end
 

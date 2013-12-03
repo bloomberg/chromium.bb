@@ -8,7 +8,7 @@
 #import <AppKit/AppKit.h>
 
 #import "base/mac/scoped_nsobject.h"
-#include "chrome/browser/media/desktop_media_picker_model.h"
+#include "chrome/browser/media/desktop_media_list.h"
 
 // Stores the data representing a |DesktopMediaPicker| source for displaying in
 // a |IKImageBrowserView|. Implements the |IKImageBrowserItem| informal
@@ -23,7 +23,7 @@
 }
 
 // Designated initializer.
-// |sourceID| is the corresponding source's ID as provided by the model.
+// |sourceID| is the corresponding source's ID as provided by the media list.
 // |imageUID| is a unique number in the context of the |IKImageBrowserView|
 // instance.
 // |imageTitle| is the source's name to be used as the label in

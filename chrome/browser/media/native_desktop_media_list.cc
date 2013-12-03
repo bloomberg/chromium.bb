@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/media/desktop_media_picker_model.h"
+#include "chrome/browser/media/native_desktop_media_list.h"
 
 #include <map>
 
@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/media/desktop_media_list_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "media/base/video_util.h"
@@ -75,22 +76,17 @@ gfx::ImageSkia ScaleDesktopFrame(scoped_ptr<webrtc::DesktopFrame> frame,
 
 }  // namespace
 
-DesktopMediaPickerModel::Source::Source(DesktopMediaID id, const string16& name)
-    : id(id),
-      name(name) {
-}
-
-DesktopMediaPickerModelImpl::SourceDescription::SourceDescription(
+NativeDesktopMediaList::SourceDescription::SourceDescription(
     DesktopMediaID id,
     const string16& name)
     : id(id),
       name(name) {
 }
 
-class DesktopMediaPickerModelImpl::Worker
+class NativeDesktopMediaList::Worker
     : public webrtc::DesktopCapturer::Callback {
  public:
-  Worker(base::WeakPtr<DesktopMediaPickerModelImpl> model,
+  Worker(base::WeakPtr<NativeDesktopMediaList> media_list,
          scoped_ptr<webrtc::ScreenCapturer> screen_capturer,
          scoped_ptr<webrtc::WindowCapturer> window_capturer);
   virtual ~Worker();
@@ -105,7 +101,7 @@ class DesktopMediaPickerModelImpl::Worker
   virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
   virtual void OnCaptureCompleted(webrtc::DesktopFrame* frame) OVERRIDE;
 
-  base::WeakPtr<DesktopMediaPickerModelImpl> model_;
+  base::WeakPtr<NativeDesktopMediaList> media_list_;
 
   scoped_ptr<webrtc::ScreenCapturer> screen_capturer_;
   scoped_ptr<webrtc::WindowCapturer> window_capturer_;
@@ -117,11 +113,11 @@ class DesktopMediaPickerModelImpl::Worker
   DISALLOW_COPY_AND_ASSIGN(Worker);
 };
 
-DesktopMediaPickerModelImpl::Worker::Worker(
-    base::WeakPtr<DesktopMediaPickerModelImpl> model,
+NativeDesktopMediaList::Worker::Worker(
+    base::WeakPtr<NativeDesktopMediaList> media_list,
     scoped_ptr<webrtc::ScreenCapturer> screen_capturer,
     scoped_ptr<webrtc::WindowCapturer> window_capturer)
-    : model_(model),
+    : media_list_(media_list),
       screen_capturer_(screen_capturer.Pass()),
       window_capturer_(window_capturer.Pass()) {
   if (screen_capturer_)
@@ -130,9 +126,9 @@ DesktopMediaPickerModelImpl::Worker::Worker(
     window_capturer_->Start(this);
 }
 
-DesktopMediaPickerModelImpl::Worker::~Worker() {}
+NativeDesktopMediaList::Worker::~Worker() {}
 
-void DesktopMediaPickerModelImpl::Worker::Refresh(
+void NativeDesktopMediaList::Worker::Refresh(
     const gfx::Size& thumbnail_size,
     content::DesktopMediaID::Id view_dialog_id) {
   std::vector<SourceDescription> sources;
@@ -165,7 +161,8 @@ void DesktopMediaPickerModelImpl::Worker::Refresh(
   // Update list of windows before updating thumbnails.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DesktopMediaPickerModelImpl::OnSourcesList, model_, sources));
+      base::Bind(&NativeDesktopMediaList::OnSourcesList,
+                 media_list_, sources));
 
   ImageHashesMap new_image_hashes;
 
@@ -202,8 +199,8 @@ void DesktopMediaPickerModelImpl::Worker::Refresh(
             ScaleDesktopFrame(current_frame_.Pass(), thumbnail_size);
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::Bind(&DesktopMediaPickerModelImpl::OnSourceThumbnail, model_,
-                       i, thumbnail));
+            base::Bind(&NativeDesktopMediaList::OnSourceThumbnail,
+                        media_list_, i, thumbnail));
       }
     }
   }
@@ -212,20 +209,20 @@ void DesktopMediaPickerModelImpl::Worker::Refresh(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DesktopMediaPickerModelImpl::OnRefreshFinished, model_));
+      base::Bind(&NativeDesktopMediaList::OnRefreshFinished, media_list_));
 }
 
-webrtc::SharedMemory* DesktopMediaPickerModelImpl::Worker::CreateSharedMemory(
+webrtc::SharedMemory* NativeDesktopMediaList::Worker::CreateSharedMemory(
     size_t size) {
   return NULL;
 }
 
-void DesktopMediaPickerModelImpl::Worker::OnCaptureCompleted(
+void NativeDesktopMediaList::Worker::OnCaptureCompleted(
     webrtc::DesktopFrame* frame) {
   current_frame_.reset(frame);
 }
 
-DesktopMediaPickerModelImpl::DesktopMediaPickerModelImpl(
+NativeDesktopMediaList::NativeDesktopMediaList(
     scoped_ptr<webrtc::ScreenCapturer> screen_capturer,
     scoped_ptr<webrtc::WindowCapturer> window_capturer)
     : screen_capturer_(screen_capturer.Pass()),
@@ -240,26 +237,26 @@ DesktopMediaPickerModelImpl::DesktopMediaPickerModelImpl(
       worker_pool->GetSequenceToken());
 }
 
-DesktopMediaPickerModelImpl::~DesktopMediaPickerModelImpl() {
+NativeDesktopMediaList::~NativeDesktopMediaList() {
   capture_task_runner_->DeleteSoon(FROM_HERE, worker_.release());
 }
 
-void DesktopMediaPickerModelImpl::SetUpdatePeriod(base::TimeDelta period) {
+void NativeDesktopMediaList::SetUpdatePeriod(base::TimeDelta period) {
   DCHECK(!observer_);
   update_period_ = period;
 }
 
-void DesktopMediaPickerModelImpl::SetThumbnailSize(
+void NativeDesktopMediaList::SetThumbnailSize(
     const gfx::Size& thumbnail_size) {
   thumbnail_size_ = thumbnail_size;
 }
 
-void DesktopMediaPickerModelImpl::SetViewDialogWindowId(
+void NativeDesktopMediaList::SetViewDialogWindowId(
     content::DesktopMediaID::Id dialog_id) {
   view_dialog_id_ = dialog_id;
 }
 
-void DesktopMediaPickerModelImpl::StartUpdating(Observer* observer) {
+void NativeDesktopMediaList::StartUpdating(DesktopMediaListObserver* observer) {
   DCHECK(!observer_);
   DCHECK(screen_capturer_ || window_capturer_);
 
@@ -270,28 +267,28 @@ void DesktopMediaPickerModelImpl::StartUpdating(Observer* observer) {
   Refresh();
 }
 
-int DesktopMediaPickerModelImpl::source_count() const {
+int NativeDesktopMediaList::GetSourceCount() const {
   return sources_.size();
 }
 
-const DesktopMediaPickerModel::Source& DesktopMediaPickerModelImpl::source(
+const DesktopMediaList::Source& NativeDesktopMediaList::GetSource(
     int index) const {
   return sources_[index];
 }
 
 // static
-bool DesktopMediaPickerModelImpl::CompareSources(const SourceDescription& a,
-                                             const SourceDescription& b) {
+bool NativeDesktopMediaList::CompareSources(const SourceDescription& a,
+                                            const SourceDescription& b) {
   return a.id < b.id;
 }
 
-void DesktopMediaPickerModelImpl::Refresh() {
+void NativeDesktopMediaList::Refresh() {
   capture_task_runner_->PostTask(
       FROM_HERE, base::Bind(&Worker::Refresh, base::Unretained(worker_.get()),
                             thumbnail_size_, view_dialog_id_));
 }
 
-void DesktopMediaPickerModelImpl::OnSourcesList(
+void NativeDesktopMediaList::OnSourcesList(
     const std::vector<SourceDescription>& new_sources) {
   // Step through |new_sources| adding and removing entries from |sources_|, and
   // notifying the |observer_|, until two match. Requires that |sources| and
@@ -307,8 +304,9 @@ void DesktopMediaPickerModelImpl::OnSourcesList(
     }
 
     if (pos == sources_.size() || !(sources_[pos].id == new_sources[pos].id)) {
-      sources_.insert(sources_.begin() + pos,
-                      Source(new_sources[pos].id, new_sources[pos].name));
+      sources_.insert(sources_.begin() + pos, Source());
+      sources_[pos].id = new_sources[pos].id;
+      sources_[pos].name = new_sources[pos].name;
       observer_->OnSourceAdded(pos);
     } else if (sources_[pos].name != new_sources[pos].name) {
       sources_[pos].name = new_sources[pos].name;
@@ -321,17 +319,18 @@ void DesktopMediaPickerModelImpl::OnSourcesList(
   DCHECK_EQ(new_sources.size(), sources_.size());
 }
 
-void DesktopMediaPickerModelImpl::OnSourceThumbnail(int index,
-                                                const gfx::ImageSkia& image) {
+void NativeDesktopMediaList::OnSourceThumbnail(
+    int index,
+    const gfx::ImageSkia& image) {
   DCHECK_LT(index, static_cast<int>(sources_.size()));
   sources_[index].thumbnail = image;
   observer_->OnSourceThumbnailChanged(index);
 }
 
-void DesktopMediaPickerModelImpl::OnRefreshFinished() {
+void NativeDesktopMediaList::OnRefreshFinished() {
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DesktopMediaPickerModelImpl::Refresh,
+      base::Bind(&NativeDesktopMediaList::Refresh,
                  weak_factory_.GetWeakPtr()),
       update_period_);
 }

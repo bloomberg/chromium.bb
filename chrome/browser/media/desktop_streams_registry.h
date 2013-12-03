@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "chrome/browser/media/desktop_media_picker_model.h"
+#include "chrome/browser/media/desktop_media_list.h"
 #include "url/gurl.h"
 
 // DesktopStreamsRegistry is used to store accepted desktop media streams for
