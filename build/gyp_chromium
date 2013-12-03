@@ -75,7 +75,7 @@ def GetVarsStringForGN(supplemental_files):
       for v in variables:
         vars_dict[v] = '"' + variables[v] + '"'
 
-  env_string = os.environ.get('GYP_DEFINES', [])
+  env_string = os.environ.get('GYP_DEFINES', '')
   items = shlex.split(env_string)
   for item in items:
     tokens = item.split('=', 1)
