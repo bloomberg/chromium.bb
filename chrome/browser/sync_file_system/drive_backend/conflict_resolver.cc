@@ -61,7 +61,7 @@ void ConflictResolver::Run(const SyncStatusCallback& callback) {
       FileTracker parent_tracker;
       bool should_success = metadata_database()->FindTrackerByTrackerID(
           tracker.parent_tracker_id(), &parent_tracker);
-      if (should_success) {
+      if (!should_success) {
         NOTREACHED();
         callback.Run(SYNC_STATUS_FAILED);
         return;
