@@ -37,7 +37,7 @@ if env.Bit('tests_use_irt'):
 # instead.
 
 if env.Bit('nacl_glibc'):
-  env.Append(LINKFLAGS=['-lrt'])
+  env.Append(LIBS=['-lrt'])
 
 clock_get_test_nexe = env.ComponentProgram('clock_get_test',
                                            'clock_get_test.c',

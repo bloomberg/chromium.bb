@@ -19,7 +19,7 @@ if env.Bit('bitcode'):
   else:
     env.Append(LINKFLAGS=['--pnacl-allow-native', '-Wn,--build-id'])
 
-env['COMPONENT_STATIC'] = not env.Bit('nacl_glibc')
+env['COMPONENT_STATIC'] = env.Bit('nacl_static_link')
 env.ComponentLibrary('minidump_test_lib', 'minidump_test_lib.c')
 nexe = env.ComponentProgram(
     'minidump_test', 'minidump_test.c',

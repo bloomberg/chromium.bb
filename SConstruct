@@ -3011,13 +3011,11 @@ def GetLinkerScriptBaseName(env):
 
 if (nacl_env.Bit('nacl_glibc') and
     nacl_env.Bit('nacl_static_link')):
-  if nacl_env.IsNewLinker():
-    nacl_env.Append(LINKFLAGS=['-static'])
-  else:
+  nacl_env.Append(LINKFLAGS=['-static'])
+  if nacl_env.Bit('target_x86'):
     # The "-lc" is necessary because libgcc_eh depends on libc but for
     # some reason nacl-gcc is not linking with "--start-group/--end-group".
     nacl_env.Append(LINKFLAGS=[
-        '-static',
         '-T', 'ldscripts/%s.x.static' % GetLinkerScriptBaseName(nacl_env),
         '-lc'])
 
