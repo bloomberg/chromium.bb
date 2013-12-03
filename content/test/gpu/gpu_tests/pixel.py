@@ -8,7 +8,7 @@ import os
 import re
 
 from telemetry import test
-from telemetry.core.backends import png_bitmap
+from telemetry.core import bitmap
 from telemetry.page import page_test
 
 test_data_dir = os.path.abspath(os.path.join(
@@ -110,7 +110,7 @@ class PixelValidator(page_test.PageTest):
     image_path = image_path + '_' + str(cur_revision) + '.png'
 
     try:
-      ref_png = png_bitmap.PngBitmap.FromFile(image_path)
+      ref_png = bitmap.Bitmap.FromPngFile(image_path)
     except IOError:
       ref_png = None
 
