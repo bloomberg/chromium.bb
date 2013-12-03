@@ -187,7 +187,7 @@ void HTMLVideoElement::paintCurrentFrameInContext(GraphicsContext* context, cons
     MediaPlayer* player = HTMLMediaElement::player();
     if (!player)
         return;
-    player->paintCurrentFrameInContext(context, destRect);
+    player->paint(context, destRect);
 }
 
 bool HTMLVideoElement::copyVideoTextureToPlatformTexture(GraphicsContext3D* context, Platform3DObject texture, GC3Dint level, GC3Denum type, GC3Denum internalFormat, bool premultiplyAlpha, bool flipY)

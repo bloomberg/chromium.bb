@@ -76,6 +76,8 @@ private:
 
     void updatePlayer();
 
+    bool acceleratedRenderingInUse();
+
     LayoutSize m_cachedImageSize;
 };
 

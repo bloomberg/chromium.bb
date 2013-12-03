@@ -96,7 +96,6 @@ public:
     virtual void load(const WTF::String& url) OVERRIDE;
     virtual void load(const WTF::String& url, PassRefPtr<WebCore::HTMLMediaSource>) OVERRIDE;
 
-    virtual blink::WebLayer* platformLayer() const OVERRIDE;
     virtual void play() OVERRIDE;
     virtual void pause() OVERRIDE;
     virtual void prepareToPlay() OVERRIDE;
@@ -120,7 +119,6 @@ public:
     virtual WTF::PassRefPtr<WebCore::TimeRanges> buffered() const OVERRIDE;
     virtual bool didLoadingProgress() const OVERRIDE;
     virtual void paint(WebCore::GraphicsContext*, const WebCore::IntRect&) OVERRIDE;
-    virtual void paintCurrentFrameInContext(WebCore::GraphicsContext*, const WebCore::IntRect&) OVERRIDE;
     virtual bool copyVideoTextureToPlatformTexture(WebCore::GraphicsContext3D*, Platform3DObject texture, GC3Dint level, GC3Denum type, GC3Denum internalFormat, bool premultiplyAlpha, bool flipY) OVERRIDE;
     virtual void setPreload(WebCore::MediaPlayer::Preload) OVERRIDE;
     virtual bool hasSingleSecurityOrigin() const OVERRIDE;
@@ -139,8 +137,6 @@ public:
     virtual WebCore::AudioSourceProvider* audioSourceProvider() OVERRIDE;
 #endif
 
-    virtual bool supportsAcceleratedRendering() const OVERRIDE;
-
     virtual WebCore::MediaPlayer::MediaKeyException generateKeyRequest(const String& keySystem, const unsigned char* initData, unsigned initDataLength) OVERRIDE;
     virtual WebCore::MediaPlayer::MediaKeyException addKey(const String& keySystem, const unsigned char* key, unsigned keyLength, const unsigned char* initData, unsigned initDataLength, const String& sessionId) OVERRIDE;
     virtual WebCore::MediaPlayer::MediaKeyException cancelKeyRequest(const String& keySystem, const String& sessionId) OVERRIDE;
@@ -151,8 +147,6 @@ private:
     void startDelayedLoad();
     void loadRequested();
     void loadInternal();
-
-    bool acceleratedRenderingInUse();
 
 #if OS(ANDROID)
     // FIXME: This path "only works" on Android. It is a workaround for the problem that Skia could not handle Android's GL_TEXTURE_EXTERNAL_OES
@@ -169,8 +163,6 @@ private:
     bool m_delayingLoad;
     WebCore::MediaPlayer::Preload m_preload;
     RefPtr<WebHelperPluginImpl> m_helperPlugin;
-    WebLayer* m_videoLayer;
-    bool m_opaque;
     bool m_needsWebLayerForVideo;
     double m_volume;
     bool m_muted;

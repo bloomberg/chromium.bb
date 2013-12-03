@@ -370,7 +370,8 @@ private:
 
     virtual CORSMode mediaPlayerCORSMode() const OVERRIDE;
 
-    virtual void mediaPlayerScheduleLayerUpdate() OVERRIDE;
+    virtual void mediaPlayerSetWebLayer(blink::WebLayer*) OVERRIDE;
+    virtual void mediaPlayerSetOpaque(bool) OVERRIDE;
 
     void loadTimerFired(Timer<HTMLMediaElement>*);
     void progressEventTimerFired(Timer<HTMLMediaElement>*);
@@ -494,6 +495,8 @@ private:
     RefPtr<Node> m_nextChildNodeToConsider;
 
     OwnPtr<MediaPlayer> m_player;
+    blink::WebLayer* m_webLayer;
+    bool m_opaque;
 
     BehaviorRestrictions m_restrictions;
 

@@ -92,8 +92,6 @@ void WebMediaPlayerClientImpl::timeChanged()
 
 void WebMediaPlayerClientImpl::repaint()
 {
-    if (m_videoLayer)
-        m_videoLayer->invalidate();
     m_client->mediaPlayerRepaint();
 }
 
@@ -109,9 +107,7 @@ void WebMediaPlayerClientImpl::sizeChanged()
 
 void WebMediaPlayerClientImpl::setOpaque(bool opaque)
 {
-    m_opaque = opaque;
-    if (m_videoLayer)
-        m_videoLayer->setOpaque(m_opaque);
+    m_client->mediaPlayerSetOpaque(opaque);
 }
 
 double WebMediaPlayerClientImpl::volume() const
@@ -175,22 +171,9 @@ void WebMediaPlayerClientImpl::closeHelperPluginSoon(WebFrame* frame)
     toWebViewImpl(frame->view())->closeHelperPluginSoon(m_helperPlugin.release());
 }
 
-void WebMediaPlayerClientImpl::setWebLayer(WebLayer* layer)
+void WebMediaPlayerClientImpl::setWebLayer(blink::WebLayer* layer)
 {
-    if (layer == m_videoLayer)
-        return;
-
-    // If either of the layers is null we need to enable or disable compositing. This is done by triggering a style recalc.
-    if (!m_videoLayer || !layer)
-        m_client->mediaPlayerScheduleLayerUpdate();
-
-    if (m_videoLayer)
-        GraphicsLayer::unregisterContentsLayer(m_videoLayer);
-    m_videoLayer = layer;
-    if (m_videoLayer) {
-        m_videoLayer->setOpaque(m_opaque);
-        GraphicsLayer::registerContentsLayer(m_videoLayer);
-    }
+    m_client->mediaPlayerSetWebLayer(layer);
 }
 
 void WebMediaPlayerClientImpl::addTextTrack(WebInbandTextTrack* textTrack)
@@ -281,11 +264,6 @@ void WebMediaPlayerClientImpl::loadInternal()
         WebMediaPlayer::CORSMode corsMode = static_cast<WebMediaPlayer::CORSMode>(m_client->mediaPlayerCORSMode());
         m_webMediaPlayer->load(loadType, m_url, corsMode);
     }
-}
-
-WebLayer* WebMediaPlayerClientImpl::platformLayer() const
-{
-    return m_videoLayer;
 }
 
 void WebMediaPlayerClientImpl::play()
@@ -480,15 +458,6 @@ bool WebMediaPlayerClientImpl::didLoadingProgress() const
 
 void WebMediaPlayerClientImpl::paint(GraphicsContext* context, const IntRect& rect)
 {
-    // If we are using GPU to render video, ignore requests to paint frames into
-    // canvas because it will be taken care of by the VideoLayer.
-    if (acceleratedRenderingInUse())
-        return;
-    paintCurrentFrameInContext(context, rect);
-}
-
-void WebMediaPlayerClientImpl::paintCurrentFrameInContext(GraphicsContext* context, const IntRect& rect)
-{
     // Normally GraphicsContext operations do nothing when painting is disabled.
     // Since we're accessing platformContext() directly we have to manually
     // check.
@@ -598,16 +567,6 @@ bool WebMediaPlayerClientImpl::needsWebLayerForVideo() const
     return m_needsWebLayerForVideo;
 }
 
-bool WebMediaPlayerClientImpl::supportsAcceleratedRendering() const
-{
-    return !!m_videoLayer;
-}
-
-bool WebMediaPlayerClientImpl::acceleratedRenderingInUse()
-{
-    return m_videoLayer && !m_videoLayer->isOrphan();
-}
-
 PassOwnPtr<MediaPlayer> WebMediaPlayerClientImpl::create(MediaPlayerClient* client)
 {
     return adoptPtr(new WebMediaPlayerClientImpl(client));
@@ -665,8 +624,6 @@ WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
     , m_delayingLoad(false)
     , m_preload(MediaPlayer::Auto)
     , m_helperPlugin(0)
-    , m_videoLayer(0)
-    , m_opaque(false)
     , m_needsWebLayerForVideo(false)
     , m_volume(1.0)
     , m_muted(false)

@@ -59,6 +59,7 @@
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
@@ -263,6 +264,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_lastTimeUpdateEventWallTime(0)
     , m_lastTimeUpdateEventMovieTime(numeric_limits<double>::max())
     , m_loadState(WaitingForSource)
+    , m_webLayer(0)
+    , m_opaque(false)
     , m_restrictions(RequirePageConsentToLoadMediaRestriction)
     , m_preload(MediaPlayer::Auto)
     , m_displayMode(Unknown)
@@ -3130,6 +3133,9 @@ void HTMLMediaElement::mediaPlayerRequestSeek(double time)
 // MediaPlayerPresentation methods
 void HTMLMediaElement::mediaPlayerRepaint()
 {
+    if (m_webLayer)
+        m_webLayer->invalidate();
+
     updateDisplayState();
     if (renderer())
         renderer()->repaint();
@@ -3483,7 +3489,7 @@ void HTMLMediaElement::willStopBeingFullscreenElement()
 
 blink::WebLayer* HTMLMediaElement::platformLayer() const
 {
-    return m_player ? m_player->platformLayer() : 0;
+    return m_webLayer;
 }
 
 bool HTMLMediaElement::hasClosedCaptions() const
@@ -3882,9 +3888,29 @@ void HTMLMediaElement::removeBehaviorsRestrictionsAfterFirstUserGesture()
     m_restrictions = NoRestrictions;
 }
 
-void HTMLMediaElement::mediaPlayerScheduleLayerUpdate()
+void HTMLMediaElement::mediaPlayerSetWebLayer(blink::WebLayer* webLayer)
 {
-    scheduleLayerUpdate();
+    if (webLayer == m_webLayer)
+        return;
+
+    // If either of the layers is null we need to enable or disable compositing. This is done by triggering a style recalc.
+    if (!m_webLayer || !webLayer)
+        scheduleLayerUpdate();
+
+    if (m_webLayer)
+        GraphicsLayer::unregisterContentsLayer(m_webLayer);
+    m_webLayer = webLayer;
+    if (m_webLayer) {
+        m_webLayer->setOpaque(m_opaque);
+        GraphicsLayer::registerContentsLayer(m_webLayer);
+    }
+}
+
+void HTMLMediaElement::mediaPlayerSetOpaque(bool opaque)
+{
+    m_opaque = opaque;
+    if (m_webLayer)
+        m_webLayer->setOpaque(m_opaque);
 }
 
 bool HTMLMediaElement::isInteractiveContent() const

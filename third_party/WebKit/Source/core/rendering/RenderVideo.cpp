@@ -170,13 +170,17 @@ void RenderVideo::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintOf
 
     if (displayingPoster)
         paintIntoRect(context, rect);
-    else if (document().view() && document().view()->paintBehavior() & PaintBehaviorFlattenCompositingLayers)
-        mediaPlayer->paintCurrentFrameInContext(context, pixelSnappedIntRect(rect));
-    else
+    else if ((document().view() && document().view()->paintBehavior() & PaintBehaviorFlattenCompositingLayers) || !acceleratedRenderingInUse())
         mediaPlayer->paint(context, pixelSnappedIntRect(rect));
 
     if (clip)
         context->restore();
+}
+
+bool RenderVideo::acceleratedRenderingInUse()
+{
+    blink::WebLayer* webLayer = mediaElement()->platformLayer();
+    return webLayer && !webLayer->isOrphan();
 }
 
 void RenderVideo::layout()
@@ -229,11 +233,7 @@ LayoutUnit RenderVideo::minimumReplacedHeight() const
 
 bool RenderVideo::supportsAcceleratedRendering() const
 {
-    MediaPlayer* p = mediaElement()->player();
-    if (p)
-        return p->supportsAcceleratedRendering();
-
-    return false;
+    return !!mediaElement()->platformLayer();
 }
 
 static const RenderBlock* rendererPlaceholder(const RenderObject* renderer)
