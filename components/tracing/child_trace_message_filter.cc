@@ -19,14 +19,11 @@ ChildTraceMessageFilter::ChildTraceMessageFilter(
 
 void ChildTraceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   channel_ = channel;
-  TraceLog::GetInstance()->SetNotificationCallback(
-      base::Bind(&ChildTraceMessageFilter::OnTraceNotification, this));
   channel_->Send(new TracingHostMsg_ChildSupportsTracing());
 }
 
 void ChildTraceMessageFilter::OnFilterRemoved() {
-  TraceLog::GetInstance()->SetNotificationCallback(
-      TraceLog::NotificationCallback());
+  channel_ = NULL;
 }
 
 bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -110,12 +107,22 @@ void ChildTraceMessageFilter::OnGetTraceBufferPercentFull() {
 
 void ChildTraceMessageFilter::OnSetWatchEvent(const std::string& category_name,
                                               const std::string& event_name) {
-  TraceLog::GetInstance()->SetWatchEvent(category_name.c_str(),
-                                         event_name.c_str());
+  TraceLog::GetInstance()->SetWatchEvent(
+      category_name, event_name,
+      base::Bind(&ChildTraceMessageFilter::OnWatchEventMatched, this));
 }
 
 void ChildTraceMessageFilter::OnCancelWatchEvent() {
   TraceLog::GetInstance()->CancelWatchEvent();
+}
+
+void ChildTraceMessageFilter::OnWatchEventMatched() {
+  if (!ipc_message_loop_->BelongsToCurrentThread()) {
+    ipc_message_loop_->PostTask(FROM_HERE,
+        base::Bind(&ChildTraceMessageFilter::OnWatchEventMatched, this));
+    return;
+  }
+  channel_->Send(new TracingHostMsg_WatchEventMatched);
 }
 
 void ChildTraceMessageFilter::OnTraceDataCollected(
@@ -155,16 +162,6 @@ void ChildTraceMessageFilter::OnMonitoringTraceDataCollected(
 
   if (!has_more_events)
     channel_->Send(new TracingHostMsg_CaptureMonitoringSnapshotAck());
-}
-
-void ChildTraceMessageFilter::OnTraceNotification(int notification) {
-  if (!ipc_message_loop_->BelongsToCurrentThread()) {
-    ipc_message_loop_->PostTask(FROM_HERE,
-        base::Bind(&ChildTraceMessageFilter::OnTraceNotification, this,
-                   notification));
-    return;
-  }
-  channel_->Send(new TracingHostMsg_TraceNotification(notification));
 }
 
 }  // namespace tracing

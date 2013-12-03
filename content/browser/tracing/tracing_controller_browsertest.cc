@@ -122,8 +122,7 @@ class TracingControllerTest : public ContentBrowserTest {
                      base::Unretained(this),
                      run_loop.QuitClosure());
       bool result = controller->EnableRecording(
-          base::debug::CategoryFilter(""), TracingController::Options(),
-          callback);
+          "", TracingController::DEFAULT_OPTIONS, callback);
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(enable_recording_done_callback_count(), 1);
@@ -155,8 +154,7 @@ class TracingControllerTest : public ContentBrowserTest {
                      base::Unretained(this),
                      run_loop.QuitClosure());
       bool result = controller->EnableMonitoring(
-          base::debug::CategoryFilter(""), TracingController::ENABLE_SAMPLING,
-          callback);
+          "", TracingController::ENABLE_SAMPLING, callback);
       ASSERT_TRUE(result);
       run_loop.Run();
       EXPECT_EQ(enable_monitoring_done_callback_count(), 1);
@@ -169,7 +167,8 @@ class TracingControllerTest : public ContentBrowserTest {
                          CaptureMonitoringSnapshotDoneCallbackTest,
                      base::Unretained(this),
                      run_loop.QuitClosure());
-      controller->CaptureMonitoringSnapshot(result_file_path, callback);
+      ASSERT_TRUE(controller->CaptureMonitoringSnapshot(result_file_path,
+                                                        callback));
       run_loop.Run();
       EXPECT_EQ(capture_monitoring_snapshot_done_callback_count(), 1);
     }
@@ -208,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest, GetCategories) {
       base::Bind(&TracingControllerTest::GetCategoriesDoneCallbackTest,
                  base::Unretained(this),
                  run_loop.QuitClosure());
-  controller->GetCategories(callback);
+  ASSERT_TRUE(controller->GetCategories(callback));
   run_loop.Run();
   EXPECT_EQ(get_categories_done_callback_count(), 1);
 }
@@ -231,7 +230,7 @@ IN_PROC_BROWSER_TEST_F(TracingControllerTest,
 
   TracingController* controller = TracingController::GetInstance();
   EXPECT_TRUE(controller->EnableRecording(
-      base::debug::CategoryFilter(""), TracingController::Options(),
+      "", TracingController::DEFAULT_OPTIONS,
       TracingController::EnableRecordingDoneCallback()));
   EXPECT_TRUE(controller->DisableRecording(
       base::FilePath(), TracingController::TracingFileResultCallback()));
@@ -258,7 +257,7 @@ IN_PROC_BROWSER_TEST_F(
 
   TracingController* controller = TracingController::GetInstance();
   EXPECT_TRUE(controller->EnableMonitoring(
-      base::debug::CategoryFilter(""), TracingController::ENABLE_SAMPLING,
+      "", TracingController::ENABLE_SAMPLING,
       TracingController::EnableMonitoringDoneCallback()));
   controller->CaptureMonitoringSnapshot(
       base::FilePath(), TracingController::TracingFileResultCallback());
