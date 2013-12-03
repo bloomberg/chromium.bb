@@ -84,6 +84,7 @@ LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
       local_change_(local_change),
       local_path_(local_path),
       url_(url),
+      sync_action_(SYNC_ACTION_NONE),
       weak_ptr_factory_(this) {
 }
 
@@ -320,6 +321,7 @@ void LocalToRemoteSyncer::DeleteRemoteFile(
   DCHECK(remote_file_tracker_);
   DCHECK(remote_file_tracker_->has_synced_details());
 
+  sync_action_ = SYNC_ACTION_DELETED;
   drive_service()->DeleteResource(
       remote_file_tracker_->file_id(),
       remote_file_tracker_->synced_details().etag(),
@@ -367,6 +369,7 @@ void LocalToRemoteSyncer::DidGetMD5ForUpload(
     return;
   }
 
+  sync_action_ = SYNC_ACTION_UPDATED;
   drive_uploader()->UploadExistingFile(
       remote_file_tracker_->file_id(),
       local_path_,
@@ -449,6 +452,7 @@ void LocalToRemoteSyncer::DidDeleteForCreateFolder(
 void LocalToRemoteSyncer::UploadNewFile(const SyncStatusCallback& callback) {
   DCHECK(remote_parent_folder_tracker_);
 
+  sync_action_ = SYNC_ACTION_ADDED;
   base::FilePath title = fileapi::VirtualPath::BaseName(target_path_);
   drive_uploader()->UploadNewFile(
       remote_parent_folder_tracker_->file_id(),
@@ -515,6 +519,7 @@ void LocalToRemoteSyncer::CreateRemoteFolder(
     const SyncStatusCallback& callback) {
   base::FilePath title = fileapi::VirtualPath::BaseName(target_path_);
   DCHECK(remote_parent_folder_tracker_);
+  sync_action_ = SYNC_ACTION_ADDED;
   drive_service()->AddNewDirectory(
       remote_parent_folder_tracker_->file_id(),
       title.AsUTF8Unsafe(),

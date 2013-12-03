@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/sync_file_system/file_change.h"
+#include "chrome/browser/sync_file_system/sync_action.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "chrome/browser/sync_file_system/sync_task.h"
@@ -42,6 +43,10 @@ class LocalToRemoteSyncer : public SyncTask {
                       const fileapi::FileSystemURL& url);
   virtual ~LocalToRemoteSyncer();
   virtual void Run(const SyncStatusCallback& callback) OVERRIDE;
+
+  const fileapi::FileSystemURL& url() const { return url_; }
+  const base::FilePath& target_path() const { return target_path_; }
+  SyncAction sync_action() const { return sync_action_; }
 
  private:
   void SyncCompleted(const SyncStatusCallback& callback,
@@ -102,6 +107,7 @@ class LocalToRemoteSyncer : public SyncTask {
   FileChange local_change_;
   base::FilePath local_path_;
   fileapi::FileSystemURL url_;
+  SyncAction sync_action_;
 
   scoped_ptr<FileTracker> remote_file_tracker_;
   scoped_ptr<FileTracker> remote_parent_folder_tracker_;

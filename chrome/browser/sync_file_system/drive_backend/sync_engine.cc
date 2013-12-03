@@ -434,6 +434,22 @@ void SyncEngine::DidProcessRemoteChange(RemoteToLocalSyncer* syncer,
 void SyncEngine::DidApplyLocalChange(LocalToRemoteSyncer* syncer,
                                      const SyncStatusCallback& callback,
                                      SyncStatusCode status) {
+  if ((status == SYNC_STATUS_OK || status == SYNC_STATUS_RETRY) &&
+      syncer->url().is_valid() &&
+      syncer->sync_action() != SYNC_ACTION_NONE) {
+    fileapi::FileSystemURL updated_url = syncer->url();
+    if (!syncer->target_path().empty()) {
+      updated_url = CreateSyncableFileSystemURL(syncer->url().origin(),
+                                                syncer->target_path());
+    }
+    FOR_EACH_OBSERVER(FileStatusObserver,
+                      file_status_observers_,
+                      OnFileStatusChanged(updated_url,
+                                          SYNC_FILE_STATUS_SYNCED,
+                                          syncer->sync_action(),
+                                          SYNC_DIRECTION_LOCAL_TO_REMOTE));
+  }
+
   if (status != SYNC_STATUS_OK &&
       status != SYNC_STATUS_NO_CHANGE_TO_SYNC) {
     callback.Run(status);
