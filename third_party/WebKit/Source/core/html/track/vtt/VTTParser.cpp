@@ -54,12 +54,32 @@ String VTTParser::collectDigits(const String& input, unsigned* position)
     return digits.toString();
 }
 
+unsigned VTTParser::collectDigitsToInt(const String& input, unsigned* position, int& number)
+{
+    String digits = collectDigits(input, position);
+    bool validNumber;
+    number = digits.toInt(&validNumber);
+    // Since we know that |digits| only contain valid (ASCII) digits
+    // (disregarding the 'empty' case), the remaining failure mode for toInt()
+    // is overflow, so if |validNumber| is not true, then set |number| to the
+    // maximum int value.
+    if (!digits.isEmpty() && !validNumber)
+        number = std::numeric_limits<int>::max();
+    return digits.length();
+}
+
 String VTTParser::collectWord(const String& input, unsigned* position)
 {
     StringBuilder string;
     while (*position < input.length() && !isASpace(input[*position]))
         string.append(input[(*position)++]);
     return string.toString();
+}
+
+void VTTParser::skipWhiteSpace(const String& line, unsigned* position)
+{
+    while (*position < line.length() && isASpace(line[*position]))
+        (*position)++;
 }
 
 float VTTParser::parseFloatPercentageValue(const String& value, bool& isValidSetting)
@@ -451,12 +471,10 @@ double VTTParser::collectTimeStamp(const String& line, unsigned* position)
     if (*position >= line.length() || !isASCIIDigit(line[*position]))
         return malformedTime;
 
-    // Steps 5 - 6 - Collect a sequence of characters that are 0-9.
-    String digits1 = collectDigits(line, position);
-    int value1 = digits1.toInt();
-
-    // Step 7 - If not 2 characters or value is greater than 59, interpret as hours.
-    if (digits1.length() != 2 || value1 > 59)
+    int value1;
+    // Steps 5 - 7 - Collect a sequence of characters that are 0-9.
+    // If not 2 characters or value is greater than 59, interpret as hours.
+    if (collectDigitsToInt(line, position, value1) != 2 || value1 > 59)
         mode = Hours;
 
     // Steps 8 - 11 - Collect the next sequence of 0-9 after ':' (must be 2 chars).
@@ -464,9 +482,8 @@ double VTTParser::collectTimeStamp(const String& line, unsigned* position)
         return malformedTime;
     if (*position >= line.length() || !isASCIIDigit(line[(*position)]))
         return malformedTime;
-    String digits2 = collectDigits(line, position);
-    int value2 = digits2.toInt();
-    if (digits2.length() != 2)
+    int value2;
+    if (collectDigitsToInt(line, position, value2) != 2)
         return malformedTime;
 
     // Step 12 - Detect whether this timestamp includes hours.
@@ -476,10 +493,8 @@ double VTTParser::collectTimeStamp(const String& line, unsigned* position)
             return malformedTime;
         if (*position >= line.length() || !isASCIIDigit(line[*position]))
             return malformedTime;
-        String digits3 = collectDigits(line, position);
-        if (digits3.length() != 2)
+        if (collectDigitsToInt(line, position, value3) != 2)
             return malformedTime;
-        value3 = digits3.toInt();
     } else {
         value3 = value2;
         value2 = value1;
@@ -491,10 +506,9 @@ double VTTParser::collectTimeStamp(const String& line, unsigned* position)
         return malformedTime;
     if (*position >= line.length() || !isASCIIDigit(line[*position]))
         return malformedTime;
-    String digits4 = collectDigits(line, position);
-    if (digits4.length() != 3)
+    int value4;
+    if (collectDigitsToInt(line, position, value4) != 3)
         return malformedTime;
-    int value4 = digits4.toInt();
     if (value2 > 59 || value3 > 59)
         return malformedTime;
 
@@ -605,12 +619,6 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document)
     default:
         break;
     }
-}
-
-void VTTParser::skipWhiteSpace(const String& line, unsigned* position)
-{
-    while (*position < line.length() && isASpace(line[*position]))
-        (*position)++;
 }
 
 }

@@ -93,7 +93,7 @@ public:
         // U+0020 SPACE characters or U+0009 CHARACTER TABULATION (tab) characters.
         return c == ' ' || c == '\t';
     }
-    static String collectDigits(const String&, unsigned*);
+    static unsigned collectDigitsToInt(const String& input, unsigned* position, int& number);
     static String collectWord(const String&, unsigned*);
     static double collectTimeStamp(const String&, unsigned*);
 
@@ -133,7 +133,8 @@ private:
     void collectMetadataHeader(const String&);
     void createNewRegion(const String& headerValue);
 
-    void skipWhiteSpace(const String&, unsigned*);
+    static String collectDigits(const String&, unsigned*);
+    static void skipWhiteSpace(const String&, unsigned*);
 
     BufferedLineReader m_lineReader;
     OwnPtr<TextResourceDecoder> m_decoder;

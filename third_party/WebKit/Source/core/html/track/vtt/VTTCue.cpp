@@ -967,8 +967,8 @@ void VTTCue::parseSettings(const String& input)
             //    U+0030 DIGIT ZERO (0) to U+0039 DIGIT NINE (9), then jump to the step labeled next setting.
             // 2. If value does not contain at least one character in the range U+0030 DIGIT ZERO (0) to U+0039 DIGIT NINE (9),
             //    then jump to the step labeled next setting.
-            String textPosition = VTTParser::collectDigits(input, &position);
-            if (textPosition.isEmpty())
+            int number;
+            if (!VTTParser::collectDigitsToInt(input, &position, number))
                 break;
             if (position >= input.length())
                 break;
@@ -985,10 +985,6 @@ void VTTCue::parseSettings(const String& input)
             // 5. Ignoring the trailing percent sign, interpret value as an integer, and let number be that number.
             // 6. If number is not in the range 0 ≤ number ≤ 100, then jump to the step labeled next setting.
             // NOTE: toInt ignores trailing non-digit characters, such as '%'.
-            bool validNumber;
-            int number = textPosition.toInt(&validNumber);
-            if (!validNumber)
-                break;
             if (number < 0 || number > 100)
                 break;
 
@@ -1002,8 +998,8 @@ void VTTCue::parseSettings(const String& input)
             //    range U+0030 DIGIT ZERO (0) to U+0039 DIGIT NINE (9), then jump to the step labeled next setting.
             // 2. If value does not contain at least one character in the range U+0030 DIGIT ZERO (0) to U+0039 DIGIT
             //    NINE (9), then jump to the step labeled next setting.
-            String cueSize = VTTParser::collectDigits(input, &position);
-            if (cueSize.isEmpty())
+            int number;
+            if (!VTTParser::collectDigitsToInt(input, &position, number))
                 break;
             if (position >= input.length())
                 break;
@@ -1019,10 +1015,6 @@ void VTTCue::parseSettings(const String& input)
 
             // 5. Ignoring the trailing percent sign, interpret value as an integer, and let number be that number.
             // 6. If number is not in the range 0 ≤ number ≤ 100, then jump to the step labeled next setting.
-            bool validNumber;
-            int number = cueSize.toInt(&validNumber);
-            if (!validNumber)
-                break;
             if (number < 0 || number > 100)
                 break;
 

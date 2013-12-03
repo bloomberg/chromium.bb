@@ -238,7 +238,6 @@ void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
     bool isValidSetting;
     String numberAsString;
     int number;
-    unsigned position;
     FloatPoint anchorPosition;
 
     switch (setting) {
@@ -253,17 +252,14 @@ void VTTRegion::parseSettingValue(RegionSetting setting, const String& value)
         else
             WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid Width");
         break;
-    case Height:
-        position = 0;
-
-        numberAsString = VTTParser::collectDigits(value, &position);
-        number = value.toInt(&isValidSetting);
-
-        if (isValidSetting && number >= 0)
+    case Height: {
+        unsigned position = 0;
+        if (VTTParser::collectDigitsToInt(value, &position, number) && position == value.length())
             m_heightInLines = number;
         else
             WTF_LOG(Media, "VTTRegion::parseSettingValue, invalid Height");
         break;
+    }
     case RegionAnchor:
         anchorPosition = VTTParser::parseFloatPercentageValuePair(value, ',', isValidSetting);
         if (isValidSetting)
