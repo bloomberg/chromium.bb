@@ -10,6 +10,7 @@
 import glob
 import gyp_helper
 import os
+import pipes
 import shlex
 import subprocess
 import sys
@@ -149,6 +150,34 @@ if __name__ == '__main__':
   elif sys.platform == 'darwin' and not os.environ.get('GYP_GENERATORS') and \
       not 'OS=ios' in os.environ.get('GYP_DEFINES', []):
     os.environ['GYP_GENERATORS'] = 'ninja'
+
+  # If using ninja on windows, and not opting out of the the automatic
+  # toolchain, then set up variables for the automatic toolchain. Opt-out is
+  # on by default, for now.
+  if (sys.platform in ('win32', 'cygwin') and
+      os.environ.get('GYP_GENERATORS') == 'ninja' and
+      os.environ.get('GYP_MSVS_USE_SYSTEM_TOOLCHAIN', '1') != '1'):
+    # For now, call the acquisition script here so that there's only one
+    # opt-in step required. This will be moved to a separate DEPS step once
+    # it's on by default.
+    subprocess.check_call([
+        sys.executable,
+        os.path.normpath(os.path.join(script_dir, '..', 'tools', 'win',
+                                      'toolchain',
+                                      'get_toolchain_if_necessary.py'))])
+    toolchain = os.path.normpath(os.path.join(
+        script_dir, '..', 'third_party', 'win_toolchain', 'files'))
+    os.environ['GYP_MSVS_OVERRIDE_PATH'] = toolchain
+    os.environ['GYP_MSVS_VERSION'] = '2013'
+    # We need to make sure windows_sdk_path is set to the automated toolchain
+    # values in GYP_DEFINES, but don't want to override any other values there.
+    gyp_defines_dict = gyp.NameValueListToDict(gyp.ShlexEnv('GYP_DEFINES'))
+    win8sdk = os.path.join(toolchain, 'win8sdk')
+    gyp_defines_dict['windows_sdk_path'] = win8sdk
+    os.environ['WINDOWSSDKDIR'] = win8sdk
+    os.environ['GYP_DEFINES'] = ' '.join('%s=%s' % (k, pipes.quote(str(v)))
+        for k, v in gyp_defines_dict.iteritems())
+    print('Using automatic toolchain in %s.' % toolchain)
 
   # If CHROMIUM_GYP_SYNTAX_CHECK is set to 1, it will invoke gyp with --check
   # to enfore syntax checking.
