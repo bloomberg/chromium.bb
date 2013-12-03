@@ -14,7 +14,7 @@ import re
 import maps_expectations
 
 from telemetry import test
-from telemetry.core.backends import bitmap
+from telemetry.core import bitmap
 from telemetry.core import util
 from telemetry.page import page_test
 from telemetry.page import page_set
