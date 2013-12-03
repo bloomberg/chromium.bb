@@ -5428,11 +5428,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DEVICE_DISCOVERY_NOTIFICATIONS_DESCRIPTION" desc="Description of the 'device discovery notifications' flag.">
         Device discovery notifications on local network.
       </message>
-      <message name="IDS_FLAGS_ENABLE_PRIVET_LOCAL_PRINTING_NAME">
-        Enable Privet local printing
+      <message name="IDS_FLAGS_DISABLE_PRIVET_LOCAL_PRINTING_NAME">
+        Disable Privet local printing
       </message>
-      <message name="IDS_FLAGS_ENABLE_PRIVET_LOCAL_PRINTING_DESCRIPTION">
-        Print to printers on the local network using the Privet protocol.
+      <message name="IDS_FLAGS_DISABLE_PRIVET_LOCAL_PRINTING_DESCRIPTION">
+        Disable printing to printers on the local network using the Privet protocol.
       </message>
       <message name="IDS_FLAGS_TOUCH_OPTIMIZED_UI_NAME" desc="Title of the touch-optimized UI flag." >
         Touch Optimized UI

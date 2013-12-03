@@ -402,6 +402,9 @@ const char kDisablePreconnect[]             = "disable-preconnect";
 const char kDisablePrerenderLocalPredictor[] =
     "disable-prerender-local-predictor";
 
+// Disable Privet local printing.
+const char kDisablePrivetLocalPrinting[]     = "disable-privet-local-printing";
+
 // Normally when the user attempts to navigate to a page that was the result of
 // a post we prompt to make sure they want to. This switch may be used to
 // disable that check. This switch is used during automated testing.
@@ -689,9 +692,6 @@ const char kDisablePnacl[]                  = "disable-pnacl";
 // Enables the proactive populating of the disk cache with Web resources that
 // are likely to be needed in future page fetches.
 const char kEnablePrecache[]                = "enable-precache";
-
-// Enable Privet local printing.
-const char kEnablePrivetLocalPrinting[]     = "enable-privet-local-printing";
 
 // Enables tracking of tasks in profiler for viewing via about:profiler.
 // To predominantly disable tracking (profiling), use the command line switch:
