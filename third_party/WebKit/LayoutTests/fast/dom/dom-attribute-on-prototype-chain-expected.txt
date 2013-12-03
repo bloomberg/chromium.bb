@@ -1,0 +1,8 @@
+PASS div.hasOwnProperty("id") is false
+PASS div.__proto__.__proto__.__proto__.hasOwnProperty("id") is true
+PASS xhr = new XMLHttpRequest(); xhr.__proto__ = HTMLDivElement.prototype; xhr.id threw exception TypeError: Illegal invocation.
+PASS obj = Object.create(div); obj.id threw exception TypeError: Illegal invocation.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

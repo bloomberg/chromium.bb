@@ -59,7 +59,7 @@
     // DOM4
     // iht.com relies on id returning the empty string when no id is present.
     // Other browsers do this as well. So we don't convert null to JS null.
-    [Reflect, TreatNullAs=NullString] attribute DOMString id;
+    [Reflect, TreatNullAs=NullString, ExposeJSAccessors] attribute DOMString id;
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString namespaceURI;
     [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, RaisesException=Setter] attribute DOMString prefix;
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString localName;
@@ -92,7 +92,7 @@
 
     // HTML 5
     NodeList getElementsByClassName([Default=Undefined] optional DOMString name);
-    [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds, RaisesException=Setter] attribute DOMString innerHTML;
+    [TreatNullAs=NullString, CustomElementCallbacks, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds, RaisesException=Setter, ExposeJSAccessors] attribute DOMString innerHTML;
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString outerHTML;
 
     [Reflect=class, TreatNullAs=NullString, PerWorldBindings] attribute DOMString className;
