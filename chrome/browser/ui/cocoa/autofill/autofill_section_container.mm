@@ -117,6 +117,9 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 // Refresh all field icons based on |delegate_| status.
 - (void)updateFieldIcons;
 
+// Refresh the enabled/disabled state of all input fields.
+- (void)updateEditability;
+
 @end
 
 @implementation AutofillSectionContainer
@@ -282,6 +285,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   delegate_->FocusMoved();
   [validationDelegate_ hideErrorBubble];
   [self validateFor:autofill::VALIDATE_EDIT];
+  [self updateEditability];
 }
 
 - (void)updateSuggestionState {
@@ -378,7 +382,10 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 
 - (void)addInputsToArray:(NSMutableArray*)array {
   [array addObjectsFromArray:[inputs_ subviews]];
-  [array addObject:[suggestContainer_ inputField]];
+
+  // Only credit card sections can have a suggestion input.
+  if ([self isCreditCardSection])
+    [array addObject:[suggestContainer_ inputField]];
 }
 
 #pragma mark Internal API for AutofillSectionContainer.
@@ -434,6 +441,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   // Update the icon if necessary.
   if (delegate_->FieldControlsIcons(type))
     [self updateFieldIcons];
+  [self updateEditability];
 }
 
 - (autofill::ServerFieldType)fieldTypeForControl:(NSControl*)control {
@@ -486,16 +494,13 @@ bool CompareInputRows(const autofill::DetailInput* input1,
     NSControl<AutofillInputField>* field = [inputs_ viewWithTag:iter->type];
     DCHECK(field);
 
-    // TODO(groby): We need to account for the fact editability state can change
-    // after any input in the same section is edited by the user.
-    [field setEnabled:delegate_->InputIsEditable(*iter, section_)];
-
     if (shouldClobber || [field isDefault]) {
       [field setFieldValue:base::SysUTF16ToNSString(iter->initial_value)];
     }
     if (shouldClobber)
       [field setValidityMessage:@""];
   }
+  [self updateEditability];
   [self updateFieldIcons];
   [self modelChanged];
 }
@@ -621,6 +626,17 @@ bool CompareInputRows(const autofill::DetailInput* input1,
     AutofillTextField* textfield = base::mac::ObjCCastStrict<AutofillTextField>(
         [inputs_ viewWithTag:iter->first]);
     [[textfield cell] setIcon:iter->second.ToNSImage()];
+  }
+}
+
+- (void)updateEditability {
+
+  base::scoped_nsobject<NSMutableArray> controls([[NSMutableArray alloc] init]);
+  [self addInputsToArray:controls];
+  for (NSControl<AutofillInputField>* control in controls.get()) {
+    autofill::ServerFieldType type = [self fieldTypeForControl:control];
+    const autofill::DetailInput* input = [self detailInputForType:type];
+    [control setEnabled:delegate_->InputIsEditable(*input, section_)];
   }
 }
 
