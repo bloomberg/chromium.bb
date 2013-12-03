@@ -670,32 +670,6 @@ CancelCallback DriveAPIService::RenameResource(
   return sender_->StartRequestWithRetry(request);
 }
 
-CancelCallback DriveAPIService::TouchResource(
-    const std::string& resource_id,
-    const base::Time& modified_date,
-    const base::Time& last_viewed_by_me_date,
-    const GetResourceEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!modified_date.is_null());
-  DCHECK(!last_viewed_by_me_date.is_null());
-  DCHECK(!callback.is_null());
-
-  FilesPatchRequest* request = new FilesPatchRequest(
-      sender_.get(), url_generator_,
-      base::Bind(&ConvertFileEntryToResourceEntryAndRun, callback));
-  // Need to set setModifiedDate to true to overwrite modifiedDate.
-  request->set_set_modified_date(true);
-
-  // Need to set updateViewedDate to false, otherwise the lastViewedByMeDate
-  // will be set to the request time (not the specified time via request).
-  request->set_update_viewed_date(false);
-
-  request->set_modified_date(modified_date);
-  request->set_last_viewed_by_me_date(last_viewed_by_me_date);
-  request->set_fields(kFileResourceFields);
-  return sender_->StartRequestWithRetry(request);
-}
-
 CancelCallback DriveAPIService::AddResourceToDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,

@@ -137,11 +137,6 @@ class DriveAPIService : public DriveServiceInterface,
       const std::string& resource_id,
       const std::string& new_title,
       const google_apis::EntryActionCallback& callback) OVERRIDE;
-  virtual google_apis::CancelCallback TouchResource(
-      const std::string& resource_id,
-      const base::Time& modified_date,
-      const base::Time& last_viewed_by_me_date,
-      const google_apis::GetResourceEntryCallback& callback) OVERRIDE;
   virtual google_apis::CancelCallback AddResourceToDirectory(
       const std::string& parent_resource_id,
       const std::string& resource_id,

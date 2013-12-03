@@ -138,12 +138,6 @@ CancelCallback DummyDriveService::RenameResource(
     const std::string& new_title,
     const EntryActionCallback& callback) { return CancelCallback(); }
 
-CancelCallback DummyDriveService::TouchResource(
-    const std::string& resource_id,
-    const base::Time& modified_date,
-    const base::Time& last_viewed_by_me_date,
-    const GetResourceEntryCallback& callback) { return CancelCallback(); }
-
 CancelCallback DummyDriveService::AddResourceToDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,

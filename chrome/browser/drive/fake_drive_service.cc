@@ -863,47 +863,6 @@ CancelCallback FakeDriveService::RenameResource(
       base::Bind(&EntryActionCallbackAdapter, callback));
 }
 
-CancelCallback FakeDriveService::TouchResource(
-    const std::string& resource_id,
-    const base::Time& modified_date,
-    const base::Time& last_viewed_by_me_date,
-    const GetResourceEntryCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!modified_date.is_null());
-  DCHECK(!last_viewed_by_me_date.is_null());
-  DCHECK(!callback.is_null());
-
-  if (offline_) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, GDATA_NO_CONNECTION,
-                   base::Passed(scoped_ptr<ResourceEntry>())));
-    return CancelCallback();
-  }
-
-  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
-  if (!entry) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, HTTP_NOT_FOUND,
-                   base::Passed(scoped_ptr<ResourceEntry>())));
-    return CancelCallback();
-  }
-
-  entry->SetString("updated.$t",
-                   google_apis::util::FormatTimeAsString(modified_date));
-  entry->SetString(
-      "gd$lastViewed.$t",
-      google_apis::util::FormatTimeAsString(last_viewed_by_me_date));
-  AddNewChangestampAndETag(entry);
-
-  scoped_ptr<ResourceEntry> parsed_entry(ResourceEntry::CreateFrom(*entry));
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, HTTP_SUCCESS, base::Passed(&parsed_entry)));
-  return CancelCallback();
-}
-
 CancelCallback FakeDriveService::AddResourceToDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
