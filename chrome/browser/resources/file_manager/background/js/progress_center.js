@@ -535,10 +535,10 @@ ProgressCenterHandler.getMessage_ = function(event) {
 
       default:
         switch (event.status.operationType) {
-          case 'COPY': return strf('COPY_UNEXPECTED_ERROR', event.error);
-          case 'MOVE': return strf('MOVE_UNEXPECTED_ERROR', event.error);
-          case 'ZIP': return strf('ZIP_UNEXPECTED_ERROR', event.error);
-          default: return strf('TRANSFER_UNEXPECTED_ERROR', event.error);
+          case 'COPY': return strf('COPY_UNEXPECTED_ERROR', event.error.code);
+          case 'MOVE': return strf('MOVE_UNEXPECTED_ERROR', event.error.code);
+          case 'ZIP': return strf('ZIP_UNEXPECTED_ERROR', event.error.code);
+          default: return strf('TRANSFER_UNEXPECTED_ERROR', event.error.code);
         }
     }
   } else if (event.status.numRemainingItems === 1) {
@@ -638,7 +638,7 @@ ProgressCenterHandler.prototype.onCopyProgress_ = function(event) {
       if (!item) {
         // ERROR events can be dispatched before BEGIN events.
         item = new ProgressCenterItem();
-        item.type = ProgressCenterHandler.getType(event.status.operationType);
+        item.type = ProgressCenterHandler.getType_(event.status.operationType);
         item.id = event.taskId;
         item.progressMax = 1;
       }
@@ -647,7 +647,7 @@ ProgressCenterHandler.prototype.onCopyProgress_ = function(event) {
         item.state = ProgressItemState.COMPLETED;
         item.progressValue = item.progressMax;
       } else if (event.reason === 'CANCELED') {
-        item.message = ProgressCenterHandler.getMessage_(event);
+        item.message = '';
         item.state = ProgressItemState.CANCELED;
       } else {
         item.message = ProgressCenterHandler.getMessage_(event);

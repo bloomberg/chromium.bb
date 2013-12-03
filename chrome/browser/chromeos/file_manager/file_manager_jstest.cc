@@ -33,3 +33,9 @@ IN_PROC_BROWSER_TEST_F(
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("navigation_list_model_unittest.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(
+    FileManagerJsTest, ProgressCenterHandlerTest) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("progress_center_handler_unittest.html")));
+}
