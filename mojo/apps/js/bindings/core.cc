@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/bindings/js/core.h"
+#include "mojo/apps/js/bindings/core.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -14,7 +14,7 @@
 #include "gin/object_template_builder.h"
 #include "gin/per_isolate_data.h"
 #include "gin/public/wrapper_info.h"
-#include "mojo/public/bindings/js/handle.h"
+#include "mojo/apps/js/bindings/handle.h"
 
 namespace mojo {
 namespace js {
@@ -86,7 +86,7 @@ gin::WrapperInfo g_wrapper_info = { gin::kEmbedderNativeGin };
 
 }  // namespace
 
-const char Core::kModuleName[] = "mojo/public/bindings/js/core";
+const char Core::kModuleName[] = "mojo/apps/js/bindings/core";
 
 v8::Local<v8::ObjectTemplate> Core::GetTemplate(v8::Isolate* isolate) {
   gin::PerIsolateData* data = gin::PerIsolateData::From(isolate);

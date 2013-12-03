@@ -78,30 +78,6 @@
       ],
     },
     {
-      'target_name': 'mojo_js_bindings',
-      'type': 'static_library',
-      'include_dirs': [
-        '..'
-      ],
-      'dependencies': [
-        '../gin/gin.gyp:gin',
-        'mojo_system',
-      ],
-      'export_dependent_settings': [
-        '../gin/gin.gyp:gin',
-      ],
-      'sources': [
-        'public/bindings/js/core.cc',
-        'public/bindings/js/core.h',
-        'public/bindings/js/handle.cc',
-        'public/bindings/js/handle.h',
-        'public/bindings/js/support.cc',
-        'public/bindings/js/support.h',
-        'public/bindings/js/waiting_callback.cc',
-        'public/bindings/js/waiting_callback.h',
-      ],
-    },
-    {
       'target_name': 'sample_service',
       'type': 'static_library',
       'sources': [
@@ -124,19 +100,6 @@
         'mojo_public_test_support',
         'mojo_run_all_unittests',
         'sample_service',
-      ],
-    },
-    {
-      'target_name': 'mojo_js_bindings_unittests',
-      'type': 'executable',
-      'dependencies': [
-        '../gin/gin.gyp:gin_test',
-        'mojo_js_bindings',
-        'mojo_run_all_unittests',
-        'sample_service',
-      ],
-      'sources': [
-        'public/bindings/js/test/run_js_tests.cc',
       ],
     },
     {

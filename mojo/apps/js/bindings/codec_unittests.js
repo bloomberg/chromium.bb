@@ -4,7 +4,7 @@
 
 define([
     "gin/test/expect",
-    "mojo/public/bindings/js/codec",
+    "mojo/apps/js/bindings/codec",
     "mojom/sample_service",
   ], function(expect, codec, sample) {
   testBar();

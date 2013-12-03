@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/bindings/js/waiting_callback.h"
+#include "mojo/apps/js/bindings/waiting_callback.h"
 
 #include "gin/per_context_data.h"
 #include "gin/per_isolate_data.h"

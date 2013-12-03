@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_BINDINGS_JS_HANDLE_H_
-#define MOJO_PUBLIC_BINDINGS_JS_HANDLE_H_
+#ifndef MOJO_APPS_JS_BINDINGS_HANDLE_H_
+#define MOJO_APPS_JS_BINDINGS_HANDLE_H_
 
 #include "gin/converter.h"
 #include "mojo/public/system/core_cpp.h"
@@ -20,4 +20,4 @@ struct Converter<mojo::Handle> {
 
 }  // namespace gin
 
-#endif  // MOJO_PUBLIC_BINDINGS_JS_HANDLE_H_
+#endif  // MOJO_APPS_JS_BINDINGS_HANDLE_H_

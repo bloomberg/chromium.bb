@@ -1,6 +1,0 @@
-include_rules = [
-  "+base",
-  "+gin",
-  "+testing",
-  "+v8",
-]

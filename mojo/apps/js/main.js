@@ -4,10 +4,10 @@
 
 define([
     "console",
-    "mojo/apps/js/threading",
-    "mojo/public/bindings/js/connector",
+    "mojo/apps/js/bindings/connector",
+    "mojo/apps/js/bindings/threading",
     "mojom/hello_world_service",
-], function(console, threading, connector, hello) {
+], function(console, connector, threading, hello) {
 
   function HelloWorldClientImpl() {
   }

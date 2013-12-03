@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 define([
-  "mojo/public/bindings/js/codec",
-  "mojo/public/bindings/js/core",
-  "mojo/public/bindings/js/support",
+  "mojo/apps/js/bindings/codec",
+  "mojo/apps/js/bindings/core",
+  "mojo/apps/js/bindings/support",
 ], function(codec, core, support) {
 
   function Connector(handle) {

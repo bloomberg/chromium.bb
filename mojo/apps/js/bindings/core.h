@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_BINDINGS_JS_CORE_H_
-#define MOJO_PUBLIC_BINDINGS_JS_CORE_H_
+#ifndef MOJO_APPS_JS_BINDINGS_CORE_H_
+#define MOJO_APPS_JS_BINDINGS_CORE_H_
 
 #include "v8/include/v8.h"
 
@@ -19,4 +19,4 @@ class Core {
 }  // namespace js
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_BINDINGS_JS_CORE_H_
+#endif  // MOJO_APPS_JS_BINDINGS_CORE_H_

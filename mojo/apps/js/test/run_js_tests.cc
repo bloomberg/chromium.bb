@@ -7,7 +7,7 @@
 #include "gin/modules/module_registry.h"
 #include "gin/test/file_runner.h"
 #include "gin/test/gtest.h"
-#include "mojo/public/bindings/js/core.h"
+#include "mojo/apps/js/bindings/core.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -28,9 +28,9 @@ void RunTest(std::string test) {
   base::FilePath path;
   PathService::Get(base::DIR_SOURCE_ROOT, &path);
   path = path.AppendASCII("mojo")
-             .AppendASCII("public")
-             .AppendASCII("bindings")
+             .AppendASCII("apps")
              .AppendASCII("js")
+             .AppendASCII("bindings")
              .AppendASCII(test);
   TestRunnerDelegate delegate;
   gin::RunTestFromFile(path, &delegate);

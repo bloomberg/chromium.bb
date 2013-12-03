@@ -10,9 +10,9 @@
 #include "gin/modules/console.h"
 #include "gin/modules/module_registry.h"
 #include "gin/try_catch.h"
-#include "mojo/apps/js/threading.h"
-#include "mojo/public/bindings/js/core.h"
-#include "mojo/public/bindings/js/support.h"
+#include "mojo/apps/js/bindings/core.h"
+#include "mojo/apps/js/bindings/support.h"
+#include "mojo/apps/js/bindings/threading.h"
 
 namespace mojo {
 namespace apps {
