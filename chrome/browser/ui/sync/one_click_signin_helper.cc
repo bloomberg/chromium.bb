@@ -365,16 +365,6 @@ void RedirectToNtpOrAppsPageWithIds(int child_id,
   RedirectToNtpOrAppsPage(web_contents, source);
 }
 
-// If the |source| is not settings page/webstore, redirects to
-// the NTP/Apps page.
-void RedirectToNtpOrAppsPageIfNecessary(content::WebContents* contents,
-                                        signin::Source source) {
-  if (source != signin::SOURCE_SETTINGS &&
-      source != signin::SOURCE_WEBSTORE_INSTALL) {
-    RedirectToNtpOrAppsPage(contents, source);
-  }
-}
-
 // Start syncing with the given user information.
 void StartSync(const StartSyncArgs& args,
                OneClickSigninSyncStarter::StartSyncMode start_mode) {
@@ -419,7 +409,8 @@ void StartExplicitSync(const StartSyncArgs& args,
                        ConfirmEmailDialogDelegate::Action action) {
   if (action == ConfirmEmailDialogDelegate::START_SYNC) {
     StartSync(args, start_mode);
-    RedirectToNtpOrAppsPageIfNecessary(contents, args.source);
+    OneClickSigninHelper::RedirectToNtpOrAppsPageIfNecessary(
+        contents, args.source);
   } else {
     // Perform a redirection to the NTP/Apps page to hide the blank page when
     // the action is CLOSE or CREATE_NEW_USER. The redirection is useful when
@@ -1028,6 +1019,7 @@ void OneClickSigninHelper::RemoveSigninRedirectURLHistoryItem(
   }
 }
 
+// static
 void OneClickSigninHelper::ShowSigninErrorBubble(Browser* browser,
                                                  const std::string& error) {
   DCHECK(!error.empty());
@@ -1040,6 +1032,15 @@ void OneClickSigninHelper::ShowSigninErrorBubble(Browser* browser,
       // TODO(rogerta): Separate out the bubble API so we don't have to pass
       // ignored |email| and |callback| params.
       BrowserWindow::StartSyncCallback());
+}
+
+// static
+void OneClickSigninHelper::RedirectToNtpOrAppsPageIfNecessary(
+    content::WebContents* contents, signin::Source source) {
+  if (source != signin::SOURCE_SETTINGS &&
+      source != signin::SOURCE_WEBSTORE_INSTALL) {
+    RedirectToNtpOrAppsPage(contents, source);
+  }
 }
 
 void OneClickSigninHelper::RedirectToSignin() {

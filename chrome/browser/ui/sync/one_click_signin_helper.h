@@ -120,6 +120,13 @@ class OneClickSigninHelper
                                     int child_id,
                                     int route_id);
 
+  // If the |source| is not settings page/webstore, redirects to
+  // the NTP/Apps page.
+  static void RedirectToNtpOrAppsPageIfNecessary(
+      content::WebContents* contents, signin::Source source);
+
+  static void ShowSigninErrorBubble(Browser* browser, const std::string& error);
+
   // Remove the item currently at the top of the history list if it's
   // the Gaia redirect URL. Due to limitations of the NavigationController
   // this cannot be done until a new page becomes "current".
@@ -208,7 +215,6 @@ class OneClickSigninHelper
                                   int route_id);
 
   void RedirectToSignin();
-  void ShowSigninErrorBubble(Browser* browser, const std::string& error);
 
   // Clear all data member of the helper, except for the error.
   void CleanTransientState();

@@ -25,6 +25,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/sync/one_click_signin_helper.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -90,10 +91,10 @@ class InlineLoginUIOAuth2Delegate
  private:
   content::WebUI* web_ui_;
 };
-#elif !defined(OS_ANDROID)
+#else
 // Global SequenceNumber used for generating unique webview partition IDs.
 base::StaticAtomicSequenceNumber next_partition_id;
-#endif
+#endif // OS_CHROMEOS
 
 class InlineLoginUIHandler : public content::WebUIMessageHandler {
  public:
@@ -136,7 +137,7 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
         enable_inline ? kInlineAuthMode : kDefaultAuthMode);
 
     // Set parameters specific for inline signin flow.
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !defined(OS_CHROMEOS)
     if (enable_inline) {
       // Set continueUrl param for the inline sign in flow. It should point to
       // the oauth2 auth code URL so that later we can grab the auth code from
@@ -176,7 +177,7 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
           "gaia-webview-" + base::IntToString(next_partition_id.GetNext());
       params.SetString("partitionId", partition_id_);
     }
-#endif
+#endif // OS_CHROMEOS
 
     web_ui()->CallJavascriptFunction("inline.login.loadAuthExtension", params);
   }
@@ -194,7 +195,7 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
     oauth2_token_fetcher_.reset(new chromeos::OAuth2TokenFetcher(
         oauth2_delegate_.get(), profile_->GetRequestContext()));
     oauth2_token_fetcher_->StartExchangeFromCookies();
-#elif !defined(OS_ANDROID)
+#else
     const base::DictionaryValue* dict = NULL;
     string16 email;
     string16 password;
@@ -207,6 +208,18 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
     dict->GetBoolean("chooseWhatToSync", &choose_what_to_sync_);
 
     content::WebContents* web_contents = web_ui()->GetWebContents();
+    std::string error_msg;
+    OneClickSigninHelper::CanOffer(
+        web_contents, OneClickSigninHelper::CAN_OFFER_FOR_ALL,
+        UTF16ToASCII(email), &error_msg);
+    if (!error_msg.empty()) {
+      SyncStarterCallback(
+          OneClickSigninSyncStarter::SYNC_SETUP_FAILURE);
+      Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+      OneClickSigninHelper::ShowSigninErrorBubble(browser, error_msg);
+      return;
+    }
+
     content::StoragePartition* partition =
         content::BrowserContext::GetStoragePartitionForSite(
             web_contents->GetBrowserContext(),
@@ -219,7 +232,7 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
         GURL(GaiaUrls::GetInstance()->client_login_to_oauth2_url()),
         base::Bind(&InlineLoginUIHandler::OnGaiaCookiesFetched,
                    weak_factory_.GetWeakPtr(), email, password));
-#endif
+#endif // OS_CHROMEOS
   }
 
   void OnGaiaCookiesFetched(
@@ -285,21 +298,10 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
         FROM_HERE,
         base::Bind(
             &InlineLoginUIHandler::CloseTab, weak_factory_.GetWeakPtr()));
-    } else if (source != signin::SOURCE_UNKNOWN &&
-        source != signin::SOURCE_SETTINGS &&
-        source != signin::SOURCE_WEBSTORE_INSTALL) {
-      // Redirect to NTP/Apps page and display a confirmation bubble.
-      // TODO(guohui): should redirect to the given continue url for webstore
-      // install flows.
-      GURL url(source == signin::SOURCE_APPS_PAGE_LINK ?
-               chrome::kChromeUIAppsURL : chrome::kChromeUINewTabURL);
-      content::OpenURLParams params(url,
-                                    content::Referrer(),
-                                    CURRENT_TAB,
-                                    content::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                                    false);
-      contents->OpenURL(params);
+      return;
     }
+
+    OneClickSigninHelper::RedirectToNtpOrAppsPageIfNecessary(contents, source);
   }
 
   void CloseTab() {

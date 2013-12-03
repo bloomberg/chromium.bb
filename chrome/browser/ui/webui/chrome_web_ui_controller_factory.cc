@@ -254,8 +254,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<FlagsUI>;
   if (url.host() == chrome::kChromeUIHistoryFrameHost)
     return &NewWebUI<HistoryUI>;
-  if (url.host() == chrome::kChromeUIChromeSigninHost)
-    return &NewWebUI<InlineLoginUI>;
   if (url.host() == chrome::kChromeUIInstantHost)
     return &NewWebUI<InstantUI>;
   if (url.host() == chrome::kChromeUIManagedUserPassphrasePageHost)
@@ -407,6 +405,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUINetworkHost)
     return &NewWebUI<chromeos::NetworkUI>;
 #endif  // defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  if (url.host() == chrome::kChromeUIChromeSigninHost)
+    return &NewWebUI<InlineLoginUI>;
+#endif
 
   /****************************************************************************
    * Other #defines and special logics.
