@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/input_method/delayable_widget.h"
 #include "chrome/browser/chromeos/input_method/infolist_window_view.h"
 #include "chrome/browser/chromeos/input_method/mode_indicator_controller.h"
-#include "chrome/browser/chromeos/input_method/mode_indicator_widget.h"
 #include "ui/views/widget/widget.h"
 
 
@@ -83,7 +82,7 @@ void CandidateWindowControllerImpl::CreateView() {
 
   // Create the mode indicator controller.
   mode_indicator_controller_.reset(
-      new ModeIndicatorController(new ModeIndicatorWidget));
+      new ModeIndicatorController(InputMethodManager::Get()));
 }
 
 void CandidateWindowControllerImpl::Hide() {

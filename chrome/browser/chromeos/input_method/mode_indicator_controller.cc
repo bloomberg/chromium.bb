@@ -2,36 +2,60 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/input_method/mode_indicator_controller.h"
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/input_method/mode_indicator_controller.h"
-#include "chrome/browser/chromeos/input_method/mode_indicator_widget.h"
+#include "chrome/browser/chromeos/input_method/mode_indicator_delegate_view.h"
 #include "chromeos/chromeos_switches.h"
 
 namespace chromeos {
 namespace input_method {
 
-ModeIndicatorController::ModeIndicatorController(
-    ModeIndicatorWidget* mi_widget)
-    : is_focused_(false) {
-  mi_widget_.reset(mi_widget);
+class ModeIndicatorObserver : public views::WidgetObserver {
+ public:
+  ModeIndicatorObserver()
+    : active_widget_(NULL) {}
 
-  InputMethodManager* imm = InputMethodManager::Get();
-  DCHECK(imm);
-  imm->AddObserver(this);
+  virtual ~ModeIndicatorObserver() {}
+
+  // If other active mode indicator widget is shown, close it immedicately
+  // without fading animation.  Then store this widget as the active widget.
+  void UpdateActiveModeIndicator(views::Widget* widget) {
+    if (active_widget_)
+      active_widget_->Close();
+    active_widget_ = widget;
+    widget->AddObserver(this);
+  }
+
+  // views::WidgetObserver override:
+  virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE {
+    if (widget == active_widget_)
+      active_widget_ = NULL;
+  }
+
+ private:
+  views::Widget* active_widget_;
+};
+
+
+ModeIndicatorController::ModeIndicatorController(InputMethodManager* imm)
+    : imm_(imm),
+      is_focused_(false),
+      mi_observer_(new ModeIndicatorObserver) {
+  DCHECK(imm_);
+  imm_->AddObserver(this);
 }
 
 ModeIndicatorController::~ModeIndicatorController() {
-  InputMethodManager* imm = InputMethodManager::Get();
-  DCHECK(imm);
-  imm->RemoveObserver(this);
+  imm_->RemoveObserver(this);
 }
 
 void ModeIndicatorController::SetCursorBounds(
     const gfx::Rect& cursor_bounds) {
-  mi_widget_->SetCursorBounds(cursor_bounds);
+  cursor_bounds_ = cursor_bounds;
 }
 
 void ModeIndicatorController::FocusStateChanged(bool is_focused) {
@@ -43,7 +67,7 @@ void ModeIndicatorController::InputMethodChanged(InputMethodManager* manager,
   if (!show_message)
     return;
 
-  ShowModeIndicator(manager);
+  ShowModeIndicator();
 }
 
 void ModeIndicatorController::InputMethodPropertyChanged(
@@ -51,7 +75,7 @@ void ModeIndicatorController::InputMethodPropertyChanged(
   // Do nothing.
 }
 
-void ModeIndicatorController::ShowModeIndicator(InputMethodManager* manager) {
+void ModeIndicatorController::ShowModeIndicator() {
   // TODO(komatsu): When this is permanently enabled by defalut,
   // delete command_line.h and chromeos_switches.h from the header
   // files.
@@ -67,19 +91,16 @@ void ModeIndicatorController::ShowModeIndicator(InputMethodManager* manager) {
   if (!is_focused_)
     return;
 
-  DCHECK(manager);
-  DCHECK(mi_widget_.get());
-
   // Get the short name of the changed input method (e.g. US, JA, etc.)
-  const InputMethodDescriptor descriptor = manager->GetCurrentInputMethod();
-  const std::string short_name = UTF16ToUTF8(
-      manager->GetInputMethodUtil()->GetInputMethodShortName(descriptor));
-  mi_widget_->SetLabelTextUtf8(short_name);
+  const InputMethodDescriptor descriptor = imm_->GetCurrentInputMethod();
+  const string16 short_name =
+      imm_->GetInputMethodUtil()->GetInputMethodShortName(descriptor);
 
-  // Show the widget and hide it after 750msec.
-  mi_widget_->Show();
-  const int kDelayMSec = 750;
-  mi_widget_->DelayHide(kDelayMSec);
+  ModeIndicatorDelegateView* mi_delegate_view =
+      new ModeIndicatorDelegateView(cursor_bounds_, short_name);
+  views::BubbleDelegateView::CreateBubble(mi_delegate_view);
+  mi_observer_->UpdateActiveModeIndicator(mi_delegate_view->GetWidget());
+  mi_delegate_view->ShowAndFadeOut();
 }
 
 }  // namespace input_method
