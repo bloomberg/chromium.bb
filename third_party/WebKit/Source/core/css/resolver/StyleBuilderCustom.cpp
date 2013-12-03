@@ -37,11 +37,10 @@
  */
 
 #include "config.h"
-#include "core/css/resolver/StyleBuilderCustom.h"
+#include "StyleBuilderFunctions.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "StyleBuilderFunctions.h"
 #include "StylePropertyShorthand.h"
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSAspectRatioValue.h"
@@ -58,10 +57,8 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSProperty.h"
 #include "core/css/CSSReflectValue.h"
-#include "core/css/CSSShadowValue.h"
 #include "core/css/CSSVariableValue.h"
 #include "core/css/Counter.h"
-#include "core/css/Pair.h"
 #include "core/css/Rect.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
@@ -82,7 +79,6 @@
 #include "core/rendering/style/StyleGeneratedImage.h"
 #include "core/svg/SVGColor.h"
 #include "core/svg/SVGPaint.h"
-#include "core/svg/SVGURIReference.h"
 #include "platform/fonts/FontDescription.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
@@ -827,144 +823,6 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextUnderlinePosition(StyleReso
     }
     state.style()->setTextUnderlinePosition(static_cast<TextUnderlinePosition>(t));
 }
-
-String StyleBuilderConverter::convertFragmentIdentifier(StyleResolverState& state, CSSValue* value)
-{
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->isURI())
-        return SVGURIReference::fragmentIdentifierFromIRIString(primitiveValue->getStringValue(), state.document());
-    return String();
-}
-
-Length StyleBuilderConverter::convertLength(StyleResolverState& state, CSSValue* value)
-{
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    Length result = primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
-    ASSERT(!result.isUndefined());
-    result.setQuirk(primitiveValue->isQuirkValue());
-    return result;
-}
-
-Length StyleBuilderConverter::convertLengthOrAuto(StyleResolverState& state, CSSValue* value)
-{
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    Length result = primitiveValue->convertToLength<FixedConversion | PercentConversion | AutoConversion>(state.cssToLengthConversionData());
-    ASSERT(!result.isUndefined());
-    result.setQuirk(primitiveValue->isQuirkValue());
-    return result;
-}
-
-Length StyleBuilderConverter::convertLengthSizing(StyleResolverState& state, CSSValue* value)
-{
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    switch (primitiveValue->getValueID()) {
-    case CSSValueInvalid:
-        return convertLength(state, value);
-    case CSSValueIntrinsic:
-        return Length(Intrinsic);
-    case CSSValueMinIntrinsic:
-        return Length(MinIntrinsic);
-    case CSSValueWebkitMinContent:
-        return Length(MinContent);
-    case CSSValueWebkitMaxContent:
-        return Length(MaxContent);
-    case CSSValueWebkitFillAvailable:
-        return Length(FillAvailable);
-    case CSSValueWebkitFitContent:
-        return Length(FitContent);
-    case CSSValueAuto:
-        return Length(Auto);
-    default:
-        ASSERT_NOT_REACHED();
-        return Length();
-    }
-}
-
-Length StyleBuilderConverter::convertLengthMaxSizing(StyleResolverState& state, CSSValue* value)
-{
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID() == CSSValueNone)
-        return Length(Undefined);
-    return convertLengthSizing(state, value);
-}
-
-LengthPoint StyleBuilderConverter::convertLengthPoint(StyleResolverState& state, CSSValue* value)
-{
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    Pair* pair = primitiveValue->getPairValue();
-    Length x = pair->first()->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
-    Length y = pair->second()->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
-    return LengthPoint(x, y);
-}
-
-float StyleBuilderConverter::convertNumberOrPercentage(StyleResolverState& state, CSSValue* value)
-{
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    ASSERT(primitiveValue->isNumber() || primitiveValue->isPercentage());
-    if (primitiveValue->isNumber())
-        return primitiveValue->getFloatValue();
-    return primitiveValue->getFloatValue() / 100.0f;
-}
-
-LengthSize StyleBuilderConverter::convertRadius(StyleResolverState& state, CSSValue* value)
-{
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    Pair* pair = primitiveValue->getPairValue();
-    Length radiusWidth = pair->first()->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
-    Length radiusHeight = pair->second()->convertToLength<FixedConversion | PercentConversion>(state.cssToLengthConversionData());
-    float width = radiusWidth.value();
-    float height = radiusHeight.value();
-    ASSERT(width >= 0 && height >= 0);
-    if (width <= 0 || height <= 0)
-        return LengthSize(Length(0, Fixed), Length(0, Fixed));
-    return LengthSize(radiusWidth, radiusHeight);
-}
-
-PassRefPtr<ShadowList> StyleBuilderConverter::convertShadow(StyleResolverState& state, CSSValue* value)
-{
-    if (value->isPrimitiveValue()) {
-        ASSERT(toCSSPrimitiveValue(value)->getValueID() == CSSValueNone);
-        return PassRefPtr<ShadowList>();
-    }
-
-    const CSSValueList* valueList = toCSSValueList(value);
-    size_t shadowCount = valueList->length();
-    ShadowDataVector shadows;
-    for (size_t i = 0; i < shadowCount; ++i) {
-        const CSSShadowValue* item = toCSSShadowValue(valueList->item(i));
-        int x = item->x->computeLength<int>(state.cssToLengthConversionData());
-        int y = item->y->computeLength<int>(state.cssToLengthConversionData());
-        int blur = item->blur ? item->blur->computeLength<int>(state.cssToLengthConversionData()) : 0;
-        int spread = item->spread ? item->spread->computeLength<int>(state.cssToLengthConversionData()) : 0;
-        ShadowStyle shadowStyle = item->style && item->style->getValueID() == CSSValueInset ? Inset : Normal;
-        Color color;
-        if (item->color)
-            color = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->color());
-        else
-            color = state.style()->color();
-
-        if (!color.isValid())
-            color = Color::transparent;
-        shadows.append(ShadowData(IntPoint(x, y), blur, spread, shadowStyle, color));
-    }
-    return ShadowList::adopt(shadows);
-}
-
-float StyleBuilderConverter::convertSpacing(StyleResolverState& state, CSSValue* value)
-{
-    CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    if (primitiveValue->getValueID() == CSSValueNormal)
-        return 0;
-    if (state.useSVGZoomRules())
-        return primitiveValue->computeLength<float>(state.cssToLengthConversionData().copyWithAdjustedZoom(1));
-    return primitiveValue->computeLength<float>(state.cssToLengthConversionData());
-}
-
-SVGLength StyleBuilderConverter::convertSVGLength(StyleResolverState&, CSSValue* value)
-{
-    return SVGLength::fromCSSPrimitiveValue(toCSSPrimitiveValue(value));
-}
-
 
 // Everything below this line is from the old StyleResolver::applyProperty
 // and eventually needs to move into new StyleBuilderFunctions calls intead.
