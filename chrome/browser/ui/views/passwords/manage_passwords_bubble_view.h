@@ -38,14 +38,14 @@ class ManagePasswordsBubbleView : public views::BubbleDelegateView,
   static bool IsShowing();
 
  private:
-  ManagePasswordsBubbleView(views::View* anchor_view,
-                            content::WebContents* web_contents,
+  ManagePasswordsBubbleView(content::WebContents* web_contents,
+                            views::View* anchor_view,
                             ManagePasswordsIconView* icon_view);
   virtual ~ManagePasswordsBubbleView();
 
-  // Returns the maximum width needed for the username or password field(s).
-  // Both can take a maximum of 22 characters. If username is set it will return
-  // the maximum width for the username, else the one for the password fields.
+  // Returns the maximum width needed for the username (if |username| is set) or
+  // password field, based on the actual usernames and passwords that need to be
+  // shown.
   int GetMaximumUsernameOrPasswordWidth(bool username);
 
   // If the bubble is not anchored to a view, places the bubble in the top

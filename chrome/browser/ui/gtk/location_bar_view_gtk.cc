@@ -66,7 +66,7 @@
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
-#include "chrome/browser/ui/passwords/manage_passwords_icon_controller.h"
+#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "chrome/browser/ui/zoom/zoom_controller.h"
@@ -1615,10 +1615,10 @@ void LocationBarViewGtk::UpdateManagePasswordsIcon() {
   if (!manage_passwords_icon_.get() || !web_contents)
     return;
 
-  ManagePasswordsIconController* manage_passwords_icon_controller =
-      ManagePasswordsIconController::FromWebContents(web_contents);
-  if (!manage_passwords_icon_controller ||
-      !manage_passwords_icon_controller->password_to_be_saved() ||
+  ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
+      ManagePasswordsBubbleUIController::FromWebContents(web_contents);
+  if (!manage_passwords_bubble_ui_controller ||
+      !manage_passwords_bubble_ui_controller->password_to_be_saved() ||
       GetToolbarModel()->input_in_progress()) {
     gtk_widget_hide(manage_passwords_icon_.get());
     ManagePasswordsBubbleGtk::CloseBubble();
@@ -1635,10 +1635,10 @@ void LocationBarViewGtk::UpdateManagePasswordsIcon() {
                               UTF16ToUTF8(tooltip).c_str());
 
   gtk_widget_show(manage_passwords_icon_.get());
-  if (manage_passwords_icon_controller->
+  if (manage_passwords_bubble_ui_controller->
           manage_passwords_bubble_needs_showing()) {
     ShowManagePasswordsBubble();
-    manage_passwords_icon_controller->OnBubbleShown();
+    manage_passwords_bubble_ui_controller->OnBubbleShown();
   }
 }
 

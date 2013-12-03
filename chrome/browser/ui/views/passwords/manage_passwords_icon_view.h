@@ -6,11 +6,10 @@
 #define CHROME_BROWSER_UI_VIEWS_PASSWORDS_MANAGE_PASSWORDS_ICON_VIEW_H_
 
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
-#include "chrome/browser/ui/passwords/manage_passwords_icon_controller.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/views/controls/image_view.h"
 
-class ManagePasswordsIconController;
+class ManagePasswordsBubbleUIController;
 
 // View for the password icon in the Omnibox.
 class ManagePasswordsIconView : public views::ImageView {
@@ -26,11 +25,12 @@ class ManagePasswordsIconView : public views::ImageView {
 
   // Updates the image and its tooltip appropriately, hiding or showing the icon
   // as needed.
-  void Update(ManagePasswordsIconController* manage_passwords_icon_controller);
+  void Update(
+      ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller);
 
   // Shows a bubble from the icon if a password form was submitted.
   void ShowBubbleIfNeeded(
-      ManagePasswordsIconController* manage_passwords_icon_controller);
+      ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller);
 
   void SetTooltip(bool password_to_be_saved);
 

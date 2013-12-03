@@ -87,10 +87,10 @@ ManagePasswordItemView::ManagePasswordItemView(
 // static
 string16 ManagePasswordItemView::GetPasswordDisplayString(
     const string16& password) {
-  const wchar_t password_bullet = 0x2022;
-  const size_t max_password_char = 22;
-  return string16(std::min(password.length(), max_password_char),
-                  password_bullet);
+  const wchar_t kPasswordBullet = 0x2022;
+  const size_t kMaxPasswordChar = 22;
+  return string16(std::min(password.length(), kMaxPasswordChar),
+                  kPasswordBullet);
 }
 
 ManagePasswordItemView::~ManagePasswordItemView() {
@@ -107,14 +107,14 @@ void ManagePasswordItemView::Refresh() {
     delete_or_undo_button_->SetImage(
         views::Button::STATE_NORMAL,
         *rb->GetImageSkiaNamed(IDR_PASSWORD_UNDO_ARROW));
-    manage_passwords_bubble_model_->PasswordAction(password_form_, true);
+    manage_passwords_bubble_model_->OnPasswordAction(password_form_, true);
   } else {
     label_1_->SetText(password_form_.username_value);
     label_2_->SetText(GetPasswordDisplayString(password_form_.password_value));
     label_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     delete_or_undo_button_->SetImage(views::Button::STATE_NORMAL,
                                      *rb->GetImageSkiaNamed(IDR_CLOSE_2));
-    manage_passwords_bubble_model_->PasswordAction(password_form_, false);
+    manage_passwords_bubble_model_->OnPasswordAction(password_form_, false);
   }
 }
 

@@ -33,7 +33,7 @@
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
-#include "chrome/browser/ui/passwords/manage_passwords_icon_controller.h"
+#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_prompt_view.h"
@@ -1394,7 +1394,7 @@ bool LocationBarView::RefreshManagePasswordsIconView() {
     return false;
   const bool was_visible = manage_passwords_icon_view_->visible();
   manage_passwords_icon_view_->Update(
-      ManagePasswordsIconController::FromWebContents(web_contents));
+      ManagePasswordsBubbleUIController::FromWebContents(web_contents));
   return was_visible != manage_passwords_icon_view_->visible();
 }
 
@@ -1417,7 +1417,7 @@ void LocationBarView::ShowManagePasswordsBubbleIfNeeded() {
   if (!web_contents)
     return;
   manage_passwords_icon_view_->ShowBubbleIfNeeded(
-      ManagePasswordsIconController::FromWebContents(web_contents));
+      ManagePasswordsBubbleUIController::FromWebContents(web_contents));
 }
 
 bool LocationBarView::HasValidSuggestText() const {

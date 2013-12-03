@@ -34,7 +34,6 @@
 #include "net/cookies/canonical_cookie.h"
 #include "webkit/common/fileapi/file_system_types.h"
 
-using autofill::PasswordFormMap;
 using content::BrowserThread;
 using content::NavigationController;
 using content::NavigationEntry;
@@ -42,21 +41,6 @@ using content::RenderViewHost;
 using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(TabSpecificContentSettings);
-
-TabSpecificContentSettings::PasswordObserver::PasswordObserver(
-    TabSpecificContentSettings* tab_specific_content_settings)
-    : tab_specific_content_settings_(tab_specific_content_settings) {
-  tab_specific_content_settings_->SetPasswordObserver(this);
-}
-
-TabSpecificContentSettings::PasswordObserver::~PasswordObserver() {
-  if (tab_specific_content_settings_)
-    tab_specific_content_settings_->SetPasswordObserver(NULL);
-}
-
-void TabSpecificContentSettings::PasswordObserver::ContentSettingsDestroyed() {
-  tab_specific_content_settings_ = NULL;
-}
 
 TabSpecificContentSettings::SiteDataObserver::SiteDataObserver(
     TabSpecificContentSettings* tab_specific_content_settings)
@@ -75,7 +59,6 @@ void TabSpecificContentSettings::SiteDataObserver::ContentSettingsDestroyed() {
 
 TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
     : content::WebContentsObserver(tab),
-      password_observer_(NULL),
       profile_(Profile::FromBrowserContext(tab->GetBrowserContext())),
       allowed_local_shared_objects_(profile_),
       blocked_local_shared_objects_(profile_),
@@ -84,11 +67,7 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
       pending_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       previous_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       pending_protocol_handler_setting_(CONTENT_SETTING_DEFAULT),
-      load_plugins_link_enabled_(true),
-      manage_passwords_icon_to_be_shown_(false),
-      password_to_be_saved_(false),
-      manage_passwords_bubble_needs_showing_(false),
-      password_submitted_(false) {
+      load_plugins_link_enabled_(true) {
   ClearBlockedContentSettingsExceptForCookies();
   ClearCookieSpecificContentSettings();
 
@@ -100,8 +79,6 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
 TabSpecificContentSettings::~TabSpecificContentSettings() {
   FOR_EACH_OBSERVER(
       SiteDataObserver, observer_list_, ContentSettingsDestroyed());
-  if (password_observer_)
-    password_observer_->ContentSettingsDestroyed();
 }
 
 TabSpecificContentSettings* TabSpecificContentSettings::Get(
@@ -494,27 +471,6 @@ void TabSpecificContentSettings::OnProtectedMediaIdentifierPermissionSet(
 }
 #endif
 
-void TabSpecificContentSettings::OnPasswordSubmitted(
-    PasswordFormManager* form_manager) {
-  form_manager_.reset(form_manager);
-  password_form_map_ = form_manager_->best_matches();
-  manage_passwords_icon_to_be_shown_ = true;
-  password_to_be_saved_ = true;
-  manage_passwords_bubble_needs_showing_ = true;
-  password_submitted_ = true;
-  NotifyPasswordObserver();
-}
-
-void TabSpecificContentSettings::OnPasswordAutofilled(
-    const PasswordFormMap& password_form_map) {
-  password_form_map_ = password_form_map;
-  manage_passwords_icon_to_be_shown_ = true;
-  password_to_be_saved_ = false;
-  manage_passwords_bubble_needs_showing_ = false;
-  password_submitted_ = false;
-  NotifyPasswordObserver();
-}
-
 TabSpecificContentSettings::MicrophoneCameraState
 TabSpecificContentSettings::GetMicrophoneCameraState() const {
   if (IsContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) &&
@@ -698,12 +654,6 @@ void TabSpecificContentSettings::DidNavigateMainFrame(
     ClearBlockedContentSettingsExceptForCookies();
     GeolocationDidNavigate(details);
     MIDIDidNavigate(details);
-    // Reset password states for next page.
-    manage_passwords_icon_to_be_shown_ = false;
-    password_to_be_saved_ = false;
-    manage_passwords_bubble_needs_showing_ = false;
-    NotifySiteDataObservers();
-    NotifyPasswordObserver();
   }
 }
 
@@ -739,11 +689,6 @@ void TabSpecificContentSettings::AppCacheAccessed(const GURL& manifest_url,
   }
 }
 
-void TabSpecificContentSettings::SavePassword() {
-  DCHECK(form_manager_.get());
-  form_manager_->Save();
-}
-
 void TabSpecificContentSettings::Observe(
     int type,
     const content::NotificationSource& source,
@@ -767,16 +712,6 @@ void TabSpecificContentSettings::Observe(
                                    &rules);
     Send(new ChromeViewMsg_SetContentSettingRules(rules));
   }
-}
-
-void TabSpecificContentSettings::SetPasswordObserver(
-    PasswordObserver* observer) {
-  password_observer_ = observer;
-}
-
-void TabSpecificContentSettings::NotifyPasswordObserver() {
-  if (password_observer_)
-    password_observer_->OnPasswordAction();
 }
 
 void TabSpecificContentSettings::AddSiteDataObserver(

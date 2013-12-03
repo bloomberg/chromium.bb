@@ -8,7 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/passwords/manage_passwords_icon_controller.h"
+#include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_item_view.h"
@@ -23,8 +23,13 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
 
+
+// Helpers --------------------------------------------------------------------
+
 namespace {
 
+// Updates either the biggest possible width for the username field in the
+// manage passwords bubble or the biggest possible width for the password field.
 void UpdateBiggestWidth(const autofill::PasswordForm& password_form,
                         bool username,
                         int* biggest_width) {
@@ -39,6 +44,9 @@ void UpdateBiggestWidth(const autofill::PasswordForm& password_form,
 }
 
 }  // namespace
+
+
+// ManagePasswordsBubbleView --------------------------------------------------
 
 // static
 ManagePasswordsBubbleView* ManagePasswordsBubbleView::manage_passwords_bubble_ =
@@ -58,7 +66,7 @@ void ManagePasswordsBubbleView::ShowBubble(content::WebContents* web_contents,
   views::View* anchor_view = is_fullscreen ?
       NULL : browser_view->GetLocationBarView()->manage_passwords_icon_view();
   manage_passwords_bubble_ =
-      new ManagePasswordsBubbleView(anchor_view, web_contents, icon_view);
+      new ManagePasswordsBubbleView(web_contents, anchor_view, icon_view);
 
   if (is_fullscreen) {
     manage_passwords_bubble_->set_parent_window(
@@ -90,8 +98,8 @@ bool ManagePasswordsBubbleView::IsShowing() {
 }
 
 ManagePasswordsBubbleView::ManagePasswordsBubbleView(
-    views::View* anchor_view,
     content::WebContents* web_contents,
+    views::View* anchor_view,
     ManagePasswordsIconView* icon_view)
     : BubbleDelegateView(
           anchor_view,
@@ -152,19 +160,21 @@ void ManagePasswordsBubbleView::Init() {
   SetLayoutManager(layout);
 
   // This calculates the necessary widths for the list of credentials in the
-  // bubble.
+  // bubble. We do not need to clamp the password field width because
+  // ManagePasswordItemView::GetPasswordFisplayString() does this.
 
   ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
-  const int kPredefinedFieldMaxWidth =
+  const int predefined_username_field_max_width =
       rb->GetFont(ui::ResourceBundle::BaseFont).GetAverageCharacterWidth() * 22;
-  const int kMaxUsernameFieldWidth = std::min(
-      GetMaximumUsernameOrPasswordWidth(true), kPredefinedFieldMaxWidth);
-  const int kFirstFieldWidth = std::max(kMaxUsernameFieldWidth,
+  const int max_username_or_password_width =
+      std::min(GetMaximumUsernameOrPasswordWidth(true),
+               predefined_username_field_max_width);
+  const int first_field_width = std::max(max_username_or_password_width,
       views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED)).
           GetPreferredSize().width());
 
-  const int kMaxPasswordFieldWidth = GetMaximumUsernameOrPasswordWidth(false);
-  const int kSecondFieldWidth = std::max(kMaxPasswordFieldWidth,
+  const int second_field_width = std::max(
+      GetMaximumUsernameOrPasswordWidth(false),
       views::Label(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO)).
           GetPreferredSize().width());
 
@@ -198,8 +208,8 @@ void ManagePasswordsBubbleView::Init() {
     layout->StartRow(0, kSingleColumnCredentialsId);
     ManagePasswordItemView* item = new ManagePasswordItemView(
         manage_passwords_bubble_model_,
-        manage_passwords_bubble_model_->pending_credentials(), kFirstFieldWidth,
-        kSecondFieldWidth);
+        manage_passwords_bubble_model_->pending_credentials(),
+        first_field_width, second_field_width);
     item->set_border(views::Border::CreateSolidSidedBorder(
         1, 0, 1, 0, GetNativeTheme()->GetSystemColor(
             ui::NativeTheme::kColorId_EnabledMenuButtonBorderColor)));
@@ -254,8 +264,8 @@ void ManagePasswordsBubbleView::Init() {
            i != manage_passwords_bubble_model_->best_matches().end(); ++i) {
         layout->StartRow(0, kSingleColumnCredentialsId);
         ManagePasswordItemView* item = new ManagePasswordItemView(
-            manage_passwords_bubble_model_, *i->second, kFirstFieldWidth,
-            kSecondFieldWidth);
+            manage_passwords_bubble_model_, *i->second, first_field_width,
+            second_field_width);
         if (i == manage_passwords_bubble_model_->best_matches().begin()) {
           item->set_border(views::Border::CreateSolidSidedBorder(
               1, 0, 1, 0, GetNativeTheme()->GetSystemColor(
@@ -280,7 +290,7 @@ void ManagePasswordsBubbleView::Init() {
       ManagePasswordItemView* item = new ManagePasswordItemView(
           manage_passwords_bubble_model_,
           manage_passwords_bubble_model_->pending_credentials(),
-          kFirstFieldWidth, kSecondFieldWidth);
+          first_field_width, second_field_width);
       if (manage_passwords_bubble_model_->best_matches().empty()) {
         item->set_border(views::Border::CreateSolidSidedBorder(1, 0, 1, 0,
             GetNativeTheme()->GetSystemColor(

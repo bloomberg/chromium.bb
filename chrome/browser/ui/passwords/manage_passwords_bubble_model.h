@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_MODEL_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_BUBBLE_MODEL_H_
 
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "components/autofill/core/common/password_form.h"
+#include "content/public/browser/web_contents_observer.h"
+
+class ManagePasswordsIconController;
 
 namespace content {
 class WebContents;
@@ -35,7 +38,7 @@ class ManagePasswordsBubbleModel : public content::WebContentsObserver {
 
   // Called by the view code to delete or add a password form to the
   // PasswordStore.
-  void PasswordAction(autofill::PasswordForm password_form, bool remove);
+  void OnPasswordAction(autofill::PasswordForm password_form, bool remove);
 
   // Called by the view code when the ManagePasswordItemView is destroyed and
   // the user chose to delete the password.

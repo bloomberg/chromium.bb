@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -17,15 +18,16 @@ using content::WebContents;
 using autofill::PasswordFormMap;
 
 ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
-    WebContents* web_contents)
+    content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       web_contents_(web_contents) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
+  ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
+      ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
 
-  password_submitted_ = content_settings->password_submitted();
+  password_submitted_ =
+      manage_passwords_bubble_ui_controller->password_submitted();
   if (password_submitted_) {
-    if (content_settings->password_to_be_saved())
+    if (manage_passwords_bubble_ui_controller->password_to_be_saved())
       manage_passwords_bubble_state_ = PASSWORD_TO_BE_SAVED;
     else
       manage_passwords_bubble_state_ = MANAGE_PASSWORDS_AFTER_SAVING;
@@ -36,9 +38,11 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   title_ = l10n_util::GetStringUTF16(
       (manage_passwords_bubble_state_ == PASSWORD_TO_BE_SAVED) ?
           IDS_SAVE_PASSWORD : IDS_MANAGE_PASSWORDS);
-  if (password_submitted_)
-    pending_credentials_ = content_settings->pending_credentials();
-  best_matches_ = content_settings->best_matches();
+  if (password_submitted_) {
+    pending_credentials_ =
+        manage_passwords_bubble_ui_controller->pending_credentials();
+  }
+  best_matches_ = manage_passwords_bubble_ui_controller->best_matches();
   manage_link_ =
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK);
 }
@@ -50,10 +54,10 @@ void ManagePasswordsBubbleModel::OnCancelClicked() {
 }
 
 void ManagePasswordsBubbleModel::OnSaveClicked() {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents_);
-  content_settings->SavePassword();
-  content_settings->unset_password_to_be_saved();
+  ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
+      ManagePasswordsBubbleUIController::FromWebContents(web_contents_);
+  manage_passwords_bubble_ui_controller->SavePassword();
+  manage_passwords_bubble_ui_controller->unset_password_to_be_saved();
   manage_passwords_bubble_state_ = MANAGE_PASSWORDS_AFTER_SAVING;
 }
 
@@ -62,8 +66,9 @@ void ManagePasswordsBubbleModel::OnManageLinkClicked() {
                               chrome::kPasswordManagerSubPage);
 }
 
-void ManagePasswordsBubbleModel::PasswordAction(
-    autofill::PasswordForm password_form, bool remove) {
+void ManagePasswordsBubbleModel::OnPasswordAction(
+    autofill::PasswordForm password_form,
+    bool remove) {
   if (!web_contents_)
     return;
   Profile* profile =
@@ -78,17 +83,15 @@ void ManagePasswordsBubbleModel::PasswordAction(
   // This is necessary in case the bubble is instantiated again, we thus do not
   // display the pending credentials if they were deleted.
   if (password_form.username_value == pending_credentials_.username_value) {
-    TabSpecificContentSettings* content_settings =
-        TabSpecificContentSettings::FromWebContents(web_contents_);
-    content_settings->password_submitted(!remove);
+    ManagePasswordsBubbleUIController::FromWebContents(web_contents_)->
+        set_password_submitted(!remove);
   }
 }
 
 void ManagePasswordsBubbleModel::DeleteFromBestMatches(
     autofill::PasswordForm password_form) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents_);
-  content_settings->remove_from_best_matches(password_form);
+  ManagePasswordsBubbleUIController::FromWebContents(web_contents_)->
+      RemoveFromBestMatches(password_form);
 }
 
 void ManagePasswordsBubbleModel::WebContentsDestroyed(

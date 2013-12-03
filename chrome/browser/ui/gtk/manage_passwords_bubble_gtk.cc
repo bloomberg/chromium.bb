@@ -5,14 +5,13 @@
 #include "chrome/browser/ui/gtk/manage_passwords_bubble_gtk.h"
 
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
-#include "chrome/browser/ui/passwords/manage_passwords_icon_controller.h"
+#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "grit/generated_resources.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -122,9 +121,8 @@ void ManagePasswordsBubbleGtk::OnDestroy(GtkWidget* widget) {
 }
 
 void ManagePasswordsBubbleGtk::OnSaveButtonClicked(GtkWidget* button) {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents_);
-  content_settings->SavePassword();
+  ManagePasswordsBubbleUIController::FromWebContents(web_contents_)->
+      SavePassword();
   Close();
 }
 

@@ -11,11 +11,11 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/password_manager/password_manager_delegate.h"
 #include "chrome/browser/password_manager/password_manager_metrics_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
@@ -340,10 +340,10 @@ void PasswordManager::OnPasswordFormsRendered(
   if (ShouldShowSavePasswordInfoBar()) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableSavePasswordBubble)) {
-      TabSpecificContentSettings* content_settings =
-          TabSpecificContentSettings::FromWebContents(web_contents());
-      if (content_settings) {
-        content_settings->OnPasswordSubmitted(
+      ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
+          ManagePasswordsBubbleUIController::FromWebContents(web_contents());
+      if (manage_passwords_bubble_ui_controller) {
+        manage_passwords_bubble_ui_controller->OnPasswordSubmitted(
             provisional_save_manager_.release());
       } else {
         provisional_save_manager_.reset();
@@ -429,8 +429,8 @@ void PasswordManager::Autofill(
       break;
   }
 
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
-  if (content_settings)
-    content_settings->OnPasswordAutofilled(best_matches);
+  ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller =
+      ManagePasswordsBubbleUIController::FromWebContents(web_contents());
+  if (manage_passwords_bubble_ui_controller)
+    manage_passwords_bubble_ui_controller->OnPasswordAutofilled(best_matches);
 }

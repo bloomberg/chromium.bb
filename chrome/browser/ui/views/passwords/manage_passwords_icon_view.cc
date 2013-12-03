@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
 
+#include "chrome/browser/ui/passwords/manage_passwords_bubble_ui_controller.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -22,10 +23,10 @@ ManagePasswordsIconView::ManagePasswordsIconView(
 ManagePasswordsIconView::~ManagePasswordsIconView() {}
 
 void ManagePasswordsIconView::Update(
-    ManagePasswordsIconController* manage_passwords_icon_controller) {
-  SetVisible(
-      manage_passwords_icon_controller &&
-      manage_passwords_icon_controller->manage_passwords_icon_to_be_shown() &&
+    ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller) {
+  SetVisible(manage_passwords_bubble_ui_controller &&
+      manage_passwords_bubble_ui_controller->
+          manage_passwords_icon_to_be_shown() &&
       !location_bar_delegate_->GetToolbarModel()->input_in_progress());
   if (!visible()) {
     ManagePasswordsBubbleView::CloseBubble();
@@ -33,17 +34,18 @@ void ManagePasswordsIconView::Update(
   }
   SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
       IDR_SAVE_PASSWORD));
-  SetTooltip(manage_passwords_icon_controller->password_to_be_saved());
+  SetTooltip(manage_passwords_bubble_ui_controller->password_to_be_saved());
 }
 
 void ManagePasswordsIconView::ShowBubbleIfNeeded(
-    ManagePasswordsIconController* manage_passwords_icon_controller) {
-  if (manage_passwords_icon_controller->
+    ManagePasswordsBubbleUIController* manage_passwords_bubble_ui_controller) {
+  if (manage_passwords_bubble_ui_controller->
           manage_passwords_bubble_needs_showing() &&
-      visible() && !ManagePasswordsBubbleView::IsShowing()) {
+      visible() &&
+      !ManagePasswordsBubbleView::IsShowing()) {
     ManagePasswordsBubbleView::ShowBubble(
         location_bar_delegate_->GetWebContents(), this);
-    manage_passwords_icon_controller->OnBubbleShown();
+    manage_passwords_bubble_ui_controller->OnBubbleShown();
   }
 }
 
