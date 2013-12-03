@@ -21,7 +21,7 @@ DEFAULT_SMTP_SERVER = 'localhost'
 
 
 def SendEmail(subject, recipients, smtp_server=None, message='',
-              attachment=None):
+              attachment=None, extra_fields=None):
   """Send an e-mail job notification with the given message in the body.
 
   Args:
@@ -31,10 +31,15 @@ def SendEmail(subject, recipients, smtp_server=None, message='',
                  email. Defaults to DEFAULT_SMTP_SERVER.
     message: (optional) Message to put in the e-mail body.
     attachment: (optional) text to attach.
+    extra_fields: (optional) A dictionary of additional message header fields
+                  to be added to the message. Custom fields names should begin
+                  with the prefix 'X-'.
   """
   # Ignore if the list of recipients is empty.
   if not recipients:
     return
+
+  extra_fields = extra_fields or {}
 
   if not smtp_server:
     smtp_server = DEFAULT_SMTP_SERVER
@@ -42,6 +47,8 @@ def SendEmail(subject, recipients, smtp_server=None, message='',
   sender = socket.getfqdn()
   email_recipients = recipients
   msg = MIMEMultipart()
+  for key, val in extra_fields.iteritems():
+    msg[key] = val
   msg['From'] = sender
   msg['Subject'] = subject
   msg['To'] = ', '.join(recipients)
@@ -62,7 +69,7 @@ def SendEmail(subject, recipients, smtp_server=None, message='',
 
 
 def SendEmailLog(subject, recipients, smtp_server=None, message='',
-                 inc_trace=True, log=None):
+                 inc_trace=True, log=None, extra_fields=None):
   """Send an e-mail with a stack trace and log snippets.
 
   Args:
@@ -73,6 +80,9 @@ def SendEmailLog(subject, recipients, smtp_server=None, message='',
     message: Message to put at the top of the e-mail body.
     inc_trace: Append a backtrace of the current stack.
     log: List of lines (log data) to include in the notice.
+    extra_fields: (optional) A dictionary of additional message header fields
+                  to be added to the message. Custom fields names should begin
+                  with the prefix 'X-'.
   """
   if not message:
     message = subject
@@ -93,4 +103,4 @@ def SendEmailLog(subject, recipients, smtp_server=None, message='',
     attachment = ''.join(log)
 
   SendEmail(subject, recipients, smtp_server, message=message,
-            attachment=attachment)
+            attachment=attachment, extra_fields=extra_fields)
