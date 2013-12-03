@@ -133,9 +133,7 @@ void ZeroSuggestProvider::OnURLFetchComplete(const net::URLFetcher* source) {
       source->GetStatus().is_success() && source->GetResponseCode() == 200;
 
   if (request_succeeded) {
-    JSONStringValueSerializer deserializer(json_data);
-    deserializer.set_allow_trailing_comma(true);
-    scoped_ptr<Value> data(deserializer.Deserialize(NULL, NULL));
+    scoped_ptr<Value> data(SearchProvider::DeserializeJsonData(json_data));
     if (data.get())
       ParseSuggestResults(*data.get());
   }

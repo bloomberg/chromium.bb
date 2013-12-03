@@ -653,24 +653,8 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
       }
     }
 
-    // The JSON response should be an array.
-    for (size_t response_start_index = json_data.find("["), i = 0;
-         response_start_index != std::string::npos && i < 5;
-         response_start_index = json_data.find("[", 1), i++) {
-      // Remove any XSSI guards to allow for JSON parsing.
-      if (response_start_index > 0)
-        json_data.erase(0, response_start_index);
-
-      JSONStringValueSerializer deserializer(json_data);
-      deserializer.set_allow_trailing_comma(true);
-      int error_code = 0;
-      scoped_ptr<Value> data(deserializer.Deserialize(&error_code, NULL));
-      if (error_code == 0) {
-        results_updated = data.get() &&
-            ParseSuggestResults(data.get(), is_keyword);
-        break;
-      }
-    }
+    scoped_ptr<Value> data(DeserializeJsonData(json_data));
+    results_updated = data.get() && ParseSuggestResults(data.get(), is_keyword);
   }
 
   UpdateMatches();
@@ -1038,6 +1022,25 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
   fetcher->SetExtraRequestHeaders(headers.ToString());
   fetcher->Start();
   return fetcher;
+}
+
+scoped_ptr<Value> SearchProvider::DeserializeJsonData(std::string json_data) {
+  // The JSON response should be an array.
+  for (size_t response_start_index = json_data.find("["), i = 0;
+       response_start_index != std::string::npos && i < 5;
+       response_start_index = json_data.find("[", 1), i++) {
+    // Remove any XSSI guards to allow for JSON parsing.
+    if (response_start_index > 0)
+      json_data.erase(0, response_start_index);
+
+    JSONStringValueSerializer deserializer(json_data);
+    deserializer.set_allow_trailing_comma(true);
+    int error_code = 0;
+    scoped_ptr<Value> data(deserializer.Deserialize(&error_code, NULL));
+    if (error_code == 0)
+      return data.Pass();
+  }
+  return scoped_ptr<Value>();
 }
 
 bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {

@@ -410,6 +410,11 @@ class SearchProvider : public AutocompleteProvider,
                                         const TemplateURL* template_url,
                                         const AutocompleteInput& input);
 
+  // Parses JSON response received from the provider, stripping XSSI
+  // protection if needed. Returns the parsed data if successful, NULL
+  // otherwise.
+  static scoped_ptr<base::Value> DeserializeJsonData(std::string json_data);
+
   // Parses results from the suggest server and updates the appropriate suggest
   // and navigation result lists, depending on whether |is_keyword| is true.
   // Returns whether the appropriate result list members were updated.

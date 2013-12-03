@@ -3748,9 +3748,35 @@ TEST_F(SearchProviderTest, PrefetchMetadataParsing) {
   }
 }
 
+TEST_F(SearchProviderTest, XSSIGuardedJSONParsing_InvalidResponse) {
+  ClearAllResults();
+
+  std::string input_str("abc");
+  QueryForInput(ASCIIToUTF16(input_str), false, false);
+
+  // Set up a default fetcher with provided results.
+  net::TestURLFetcher* fetcher =
+      test_factory_.GetFetcherByID(
+          SearchProvider::kDefaultProviderURLFetcherID);
+  ASSERT_TRUE(fetcher);
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString("this is a bad non-json response");
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  RunTillProviderDone();
+
+  const ACMatches& matches = provider_->matches();
+
+  // Should have exactly one "search what you typed" match
+  ASSERT_TRUE(matches.size() == 1);
+  EXPECT_EQ(input_str, UTF16ToUTF8(matches[0].contents));
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+            matches[0].type);
+}
+
 // A basic test that verifies that the XSSI guarded JSON response is parsed
 // correctly.
-TEST_F(SearchProviderTest, XSSIGuardedJSONParsing) {
+TEST_F(SearchProviderTest, XSSIGuardedJSONParsing_ValidResponses) {
   struct Match {
     std::string contents;
     AutocompleteMatchType::Type type;
