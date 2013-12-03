@@ -2252,8 +2252,6 @@ surface_clear_next_states(struct shell_surface *shsurf)
 static void
 set_toplevel(struct shell_surface *shsurf)
 {
-	shell_surface_set_parent(shsurf, NULL);
-
 	shsurf->next_type = SHELL_SURFACE_TOPLEVEL;
 
 	/* The layer_link is updated in set_surface_type(),
@@ -2265,6 +2263,8 @@ shell_surface_set_toplevel(struct wl_client *client,
 			   struct wl_resource *resource)
 {
 	struct shell_surface *surface = wl_resource_get_user_data(resource);
+
+	shell_surface_set_parent(surface, NULL);
 
 	surface_clear_next_states(surface);
 	set_toplevel(surface);
@@ -2279,8 +2279,6 @@ set_transient(struct shell_surface *shsurf,
 	shsurf->transient.x = x;
 	shsurf->transient.y = y;
 	shsurf->transient.flags = flags;
-
-	shell_surface_set_parent(shsurf, parent);
 
 	shsurf->next_state.relative = true;
 
@@ -2298,6 +2296,8 @@ shell_surface_set_transient(struct wl_client *client,
 	struct weston_surface *parent =
 		wl_resource_get_user_data(parent_resource);
 
+	shell_surface_set_parent(shsurf, parent);
+
 	surface_clear_next_states(shsurf);
 	set_transient(shsurf, parent, x, y, flags);
 }
@@ -2313,8 +2313,6 @@ set_fullscreen(struct shell_surface *shsurf,
 	shsurf->fullscreen_output = shsurf->output;
 	shsurf->fullscreen.type = method;
 	shsurf->fullscreen.framerate = framerate;
-
-	shell_surface_set_parent(shsurf, NULL);
 
 	shsurf->next_type = shsurf->type;
 
@@ -2372,6 +2370,8 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	else
 		output = NULL;
 
+	shell_surface_set_parent(shsurf, NULL);
+
 	surface_clear_next_states(shsurf);
 	shsurf->next_state.fullscreen = true;
 	shsurf->state_changed = true;
@@ -2393,8 +2393,6 @@ set_popup(struct shell_surface *shsurf,
 	shsurf->popup.x = x;
 	shsurf->popup.y = y;
 
-	shell_surface_set_parent(shsurf, parent);
-
 	shsurf->next_type = SHELL_SURFACE_POPUP;
 }
 
@@ -2407,10 +2405,14 @@ shell_surface_set_popup(struct wl_client *client,
 			int32_t x, int32_t y, uint32_t flags)
 {
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+	struct weston_surface *parent =
+		wl_resource_get_user_data(parent_resource);
+
+	shell_surface_set_parent(shsurf, parent);
 
 	surface_clear_next_states(shsurf);
 	set_popup(shsurf,
-	          wl_resource_get_user_data(parent_resource),
+	          parent,
 	          wl_resource_get_user_data(seat_resource),
 	          serial, x, y);
 }
@@ -2431,8 +2433,6 @@ set_maximized(struct shell_surface *shsurf,
 	shsurf->client->send_configure(shsurf->surface, edges,
 	                               shsurf->output->width,
 	                               shsurf->output->height - panel_height);
-
-	shell_surface_set_parent(shsurf, NULL);
 
 	shsurf->next_type = shsurf->type;
 }
@@ -2467,6 +2467,8 @@ shell_surface_set_maximized(struct wl_client *client,
 		output = wl_resource_get_user_data(output_resource);
 	else
 		output = NULL;
+
+	shell_surface_set_parent(shsurf, NULL);
 
 	surface_clear_next_states(shsurf);
 	shsurf->next_state.maximized = true;
