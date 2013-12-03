@@ -1428,15 +1428,10 @@ void BrowserPluginGuest::OnResizeGuest(
   }
   // Invalid damage buffer means we are in HW compositing mode,
   // so just resize the WebContents and repaint if needed.
-  if (!base::SharedMemory::IsHandleValid(params.damage_buffer_handle)) {
-    if (!params.view_rect.size().IsEmpty())
-      GetWebContents()->GetView()->SizeContents(params.view_rect.size());
-    if (params.repaint)
-      Send(new ViewMsg_Repaint(routing_id(), params.view_rect.size()));
-    return;
-  }
-  SetDamageBuffer(params);
-  GetWebContents()->GetView()->SizeContents(params.view_rect.size());
+  if (base::SharedMemory::IsHandleValid(params.damage_buffer_handle))
+    SetDamageBuffer(params);
+  if (!params.view_rect.size().IsEmpty())
+    GetWebContents()->GetView()->SizeContents(params.view_rect.size());
   if (params.repaint)
     Send(new ViewMsg_Repaint(routing_id(), params.view_rect.size()));
 }
