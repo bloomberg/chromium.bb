@@ -149,14 +149,14 @@ public:
         return m_resolver.get();
     }
 
-    StyleResolver* resolver()
+    StyleResolver& ensureResolver()
     {
         if (!m_resolver) {
             createResolver();
         } else if (m_resolver->hasPendingAuthorStyleSheets()) {
             m_resolver->appendPendingAuthorStyleSheets();
         }
-        return m_resolver.get();
+        return *m_resolver.get();
     }
 
     bool hasResolver() const { return m_resolver.get(); }

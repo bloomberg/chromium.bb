@@ -115,7 +115,7 @@ public:
     {
         if (m_pushedStyleResolver)
             return;
-        m_pushedStyleResolver = m_parent.document().styleResolver();
+        m_pushedStyleResolver = &m_parent.document().ensureStyleResolver();
         m_pushedStyleResolver->pushParentElement(m_parent);
     }
     ~StyleResolverParentPusher()
@@ -126,8 +126,8 @@ public:
 
         // This tells us that our pushed style selector is in a bad state,
         // so we should just bail out in that scenario.
-        ASSERT(m_pushedStyleResolver == m_parent.document().styleResolver());
-        if (m_pushedStyleResolver != m_parent.document().styleResolver())
+        ASSERT(m_pushedStyleResolver == m_parent.document().styleResolverIfExists());
+        if (m_pushedStyleResolver != m_parent.document().styleResolverIfExists())
             return;
 
         m_pushedStyleResolver->popParentElement(m_parent);
@@ -1501,7 +1501,7 @@ PassRefPtr<RenderStyle> Element::styleForRenderer()
 
 PassRefPtr<RenderStyle> Element::originalStyleForRenderer()
 {
-    return document().styleResolver()->styleForElement(this);
+    return document().ensureStyleResolver().styleForElement(this);
 }
 
 void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
@@ -1582,7 +1582,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
     // all the way down the tree. This is simpler than having to maintain a cache of objects (and such font size changes should be rare anyway).
     if (document().styleEngine()->usesRemUnits() && document().documentElement() == this && oldStyle->fontSize() != newStyle->fontSize()) {
         // Cached RenderStyles may depend on the re units.
-        document().styleResolver()->invalidateMatchedPropertiesCache();
+        document().ensureStyleResolver().invalidateMatchedPropertiesCache();
         return Force;
     }
 
@@ -1617,7 +1617,7 @@ void Element::recalcChildStyle(StyleRecalcChange change)
     // a potentially n^2 loop to find the insertion point while resolving style. Having us start from the last
     // child and work our way back means in the common case, we'll find the insertion point in O(1) time.
     // See crbug.com/288225
-    StyleResolver& styleResolver = *document().styleResolver();
+    StyleResolver& styleResolver = document().ensureStyleResolver();
     Text* lastTextNode = 0;
     for (Node* child = lastChild(); child; child = child->previousSibling()) {
         if (child->isTextNode()) {
@@ -3013,7 +3013,7 @@ void Element::updateLabel(TreeScope& scope, const AtomicString& oldForAttributeV
 
 static bool hasSelectorForAttribute(Document* document, const AtomicString& localName)
 {
-    return document->styleResolver() && document->styleResolver()->ensureRuleFeatureSet().hasSelectorForAttribute(localName);
+    return document->ensureStyleResolver().ensureRuleFeatureSet().hasSelectorForAttribute(localName);
 }
 
 void Element::willModifyAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue)
@@ -3497,7 +3497,7 @@ bool Element::supportsStyleSharing() const
     if (isSVGElement() && toSVGElement(this)->animatedSMILStyleProperties())
         return false;
     // Ids stop style sharing if they show up in the stylesheets.
-    if (hasID() && document().styleResolver()->hasRulesForId(idForStyleResolution()))
+    if (hasID() && document().ensureStyleResolver().hasRulesForId(idForStyleResolution()))
         return false;
     // Active and hovered elements always make a chain towards the document node
     // and no siblings or cousins will have the same state.

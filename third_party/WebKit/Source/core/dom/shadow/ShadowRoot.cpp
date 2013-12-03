@@ -167,8 +167,8 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
     // ShadowRoot doesn't support custom callbacks.
     ASSERT(!hasCustomStyleCallbacks());
 
-    StyleResolver* styleResolver = document().styleResolver();
-    styleResolver->pushParentShadowRoot(*this);
+    StyleResolver& styleResolver = document().ensureStyleResolver();
+    styleResolver.pushParentShadowRoot(*this);
 
     if (styleChangeType() >= SubtreeStyleChange)
         change = Force;
@@ -190,7 +190,7 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
         }
     }
 
-    styleResolver->popParentShadowRoot(*this);
+    styleResolver.popParentShadowRoot(*this);
 
     clearChildNeedsStyleRecalc();
 }
@@ -246,10 +246,10 @@ void ShadowRoot::setResetStyleInheritance(bool value)
 
 void ShadowRoot::attach(const AttachContext& context)
 {
-    StyleResolver* styleResolver = document().styleResolver();
-    styleResolver->pushParentShadowRoot(*this);
+    StyleResolver& styleResolver = document().ensureStyleResolver();
+    styleResolver.pushParentShadowRoot(*this);
     DocumentFragment::attach(context);
-    styleResolver->popParentShadowRoot(*this);
+    styleResolver.popParentShadowRoot(*this);
 }
 
 Node::InsertionNotificationRequest ShadowRoot::insertedInto(ContainerNode* insertionPoint)

@@ -315,7 +315,7 @@ void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
 {
     if (RenderText* renderer = toRenderText(this->renderer())) {
         if (change != NoChange || needsStyleRecalc())
-            renderer->setStyle(document().styleResolver()->styleForText(this));
+            renderer->setStyle(document().ensureStyleResolver().styleForText(this));
         if (needsStyleRecalc())
             renderer->setText(dataImpl());
         clearNeedsStyleRecalc();

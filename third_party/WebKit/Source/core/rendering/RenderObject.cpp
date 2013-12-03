@@ -2936,12 +2936,12 @@ PassRefPtr<RenderStyle> RenderObject::getUncachedPseudoStyle(const PseudoStyleRe
     Element* element = toElement(n);
 
     if (pseudoStyleRequest.pseudoId == FIRST_LINE_INHERITED) {
-        RefPtr<RenderStyle> result = document().styleResolver()->styleForElement(element, parentStyle, DisallowStyleSharing);
+        RefPtr<RenderStyle> result = document().ensureStyleResolver().styleForElement(element, parentStyle, DisallowStyleSharing);
         result->setStyleType(FIRST_LINE_INHERITED);
         return result.release();
     }
 
-    return document().styleResolver()->pseudoStyleForElement(element, pseudoStyleRequest, parentStyle);
+    return document().ensureStyleResolver().pseudoStyleForElement(element, pseudoStyleRequest, parentStyle);
 }
 
 bool RenderObject::hasBlendMode() const

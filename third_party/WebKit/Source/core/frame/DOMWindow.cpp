@@ -1342,7 +1342,7 @@ PassRefPtr<CSSRuleList> DOMWindow::getMatchedCSSRules(Element* element, const St
 
     PseudoId pseudoId = CSSSelector::pseudoId(pseudoType);
 
-    return m_frame->document()->styleResolver()->pseudoCSSRulesForElement(element, pseudoId, rulesToInclude);
+    return m_frame->document()->ensureStyleResolver().pseudoCSSRulesForElement(element, pseudoId, rulesToInclude);
 }
 
 PassRefPtr<DOMPoint> DOMWindow::webkitConvertPointFromNodeToPage(Node* node, const DOMPoint* p) const

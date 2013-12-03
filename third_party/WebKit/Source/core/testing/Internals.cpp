@@ -314,29 +314,29 @@ void Internals::setStyleResolverStatsEnabled(bool enabled)
 {
     Document* document = contextDocument();
     if (enabled)
-        document->styleResolver()->enableStats(StyleResolver::ReportSlowStats);
+        document->ensureStyleResolver().enableStats(StyleResolver::ReportSlowStats);
     else
-        document->styleResolver()->disableStats();
+        document->ensureStyleResolver().disableStats();
 }
 
 String Internals::styleResolverStatsReport(ExceptionState& exceptionState) const
 {
     Document* document = contextDocument();
-    if (!document->styleResolver()->stats()) {
+    if (!document->ensureStyleResolver().stats()) {
         exceptionState.throwDOMException(InvalidStateError, "Style resolver stats not enabled");
         return String();
     }
-    return document->styleResolver()->stats()->report();
+    return document->ensureStyleResolver().stats()->report();
 }
 
 String Internals::styleResolverStatsTotalsReport(ExceptionState& exceptionState) const
 {
     Document* document = contextDocument();
-    if (!document->styleResolver()->statsTotals()) {
+    if (!document->ensureStyleResolver().statsTotals()) {
         exceptionState.throwDOMException(InvalidStateError, "Style resolver stats not enabled");
         return String();
     }
-    return document->styleResolver()->statsTotals()->report();
+    return document->ensureStyleResolver().statsTotals()->report();
 }
 
 PassRefPtr<Element> Internals::createContentElement(ExceptionState& exceptionState)

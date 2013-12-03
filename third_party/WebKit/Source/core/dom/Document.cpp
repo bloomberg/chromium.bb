@@ -1600,7 +1600,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
 
     RefPtr<RenderStyle> documentElementStyle = documentElement()->renderStyle();
     if (!documentElementStyle || documentElement()->needsStyleRecalc() || change == Force)
-        documentElementStyle = styleResolver()->styleForElement(documentElement());
+        documentElementStyle = ensureStyleResolver().styleForElement(documentElement());
 
     WritingMode rootWritingMode = documentElementStyle->writingMode();
     TextDirection rootDirection = documentElementStyle->direction();
@@ -1609,7 +1609,7 @@ void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
     if (body) {
         RefPtr<RenderStyle> bodyStyle = body->renderStyle();
         if (!bodyStyle || body->needsStyleRecalc() || documentElement()->needsStyleRecalc() || change == Force)
-            bodyStyle = styleResolver()->styleForElement(body, documentElementStyle.get());
+            bodyStyle = ensureStyleResolver().styleForElement(body, documentElementStyle.get());
         if (!writingModeSetOnDocumentElement())
             rootWritingMode = bodyStyle->writingMode();
         if (!directionSetOnDocumentElement())
@@ -1684,7 +1684,7 @@ void Document::recalcStyle(StyleRecalcChange change)
         if (styleChangeType() >= SubtreeStyleChange)
             change = Force;
 
-        // FIXME: Cannot access the styleResolver() before calling styleForDocument below because
+        // FIXME: Cannot access the ensureStyleResolver() before calling styleForDocument below because
         // apparently the StyleResolver's constructor has side effects. We should fix it.
         // See printing/setPrinting.html, printing/width-overflow.html though they only fail on
         // mac when accessing the resolver by what appears to be a viewport size difference.
@@ -1703,9 +1703,9 @@ void Document::recalcStyle(StyleRecalcChange change)
         // Optionally pass StyleResolver::ReportSlowStats to print numbers that require crawling the
         // entire DOM (where collecting them is very slow).
         // FIXME: Expose this as a runtime flag.
-        // styleResolver()->enableStats(/*StyleResolver::ReportSlowStats*/);
+        // ensureStyleResolver().enableStats(/*StyleResolver::ReportSlowStats*/);
 
-        if (StyleResolverStats* stats = styleResolver()->stats())
+        if (StyleResolverStats* stats = ensureStyleResolver().stats())
             stats->reset();
 
         if (Element* documentElement = this->documentElement()) {
@@ -1714,7 +1714,7 @@ void Document::recalcStyle(StyleRecalcChange change)
                 documentElement->recalcStyle(change);
         }
 
-        styleResolver()->printStats();
+        ensureStyleResolver().printStats();
 
         view()->updateCompositingLayersAfterStyleChange();
 
@@ -1728,8 +1728,9 @@ void Document::recalcStyle(StyleRecalcChange change)
 
         if (m_styleEngine->hasResolver()) {
             // Pseudo element removal and similar may only work with these flags still set. Reset them after the style recalc.
-            m_styleEngine->resetCSSFeatureFlags(m_styleEngine->resolver()->ensureRuleFeatureSet());
-            m_styleEngine->resolver()->clearStyleSharingList();
+            StyleResolver& resolver = m_styleEngine->ensureResolver();
+            m_styleEngine->resetCSSFeatureFlags(resolver.ensureRuleFeatureSet());
+            resolver.clearStyleSharingList();
         }
     }
 
@@ -1879,12 +1880,12 @@ PassRefPtr<RenderStyle> Document::styleForElementIgnoringPendingStylesheets(Elem
 {
     ASSERT_ARG(element, element->document() == this);
     StyleEngine::IgnoringPendingStylesheet ignoring(m_styleEngine.get());
-    return styleResolver()->styleForElement(element, element->parentNode() ? element->parentNode()->computedStyle() : 0);
+    return ensureStyleResolver().styleForElement(element, element->parentNode() ? element->parentNode()->computedStyle() : 0);
 }
 
 PassRefPtr<RenderStyle> Document::styleForPage(int pageIndex)
 {
-    return styleResolver()->styleForPage(pageIndex);
+    return ensureStyleResolver().styleForPage(pageIndex);
 }
 
 bool Document::isPageBoxVisible(int pageIndex)
@@ -1946,9 +1947,9 @@ StyleResolver* Document::styleResolverIfExists() const
     return m_styleEngine->resolverIfExists();
 }
 
-StyleResolver* Document::styleResolver() const
+StyleResolver& Document::ensureStyleResolver() const
 {
-    return m_styleEngine->resolver();
+    return m_styleEngine->ensureResolver();
 }
 
 void Document::clearStyleResolver()
