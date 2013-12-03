@@ -239,7 +239,6 @@ struct desktop_shell {
 enum shell_surface_type {
 	SHELL_SURFACE_NONE,
 	SHELL_SURFACE_TOPLEVEL,
-	SHELL_SURFACE_TRANSIENT,
 	SHELL_SURFACE_POPUP,
 	SHELL_SURFACE_XWAYLAND
 };
@@ -344,6 +343,7 @@ struct shell_surface {
 	struct {
 		bool maximized;
 		bool fullscreen;
+		bool relative;
 	} state, next_state; /* surface states */
 	bool state_changed;
 };
@@ -2121,25 +2121,23 @@ shell_surface_calculate_layer_link (struct shell_surface *shsurf)
 		break;
 	}
 
-	case SHELL_SURFACE_TRANSIENT: {
-		/* Move the surface to its parent layer so that surfaces which
-		 * are transient for fullscreen surfaces don't get hidden by the
-		 * fullscreen surfaces. However, unlike popups, transient
-		 * surfaces are stacked in front of their parent but not in
-		 * front of other surfaces of the same type. */
-		struct weston_view *parent;
-
-		/* TODO: Handle a parent with multiple views */
-		parent = get_default_view(shsurf->parent);
-		if (parent)
-			return parent->layer_link.prev;
-
-		break;
-	}
-
 	case SHELL_SURFACE_TOPLEVEL: {
-		if (shsurf->state.fullscreen)
+		if (shsurf->state.fullscreen) {
 			return &shsurf->shell->fullscreen_layer.view_list;
+		} else if (shsurf->parent) {
+			/* Move the surface to its parent layer so that
+			 * surfaces which are transient for fullscreen surfaces
+			 * don't get hidden by the fullscreen surfaces.
+			 * However, unlike popups, transient surfaces are
+			 * stacked in front of their parent but not in front of
+			 * other surfaces of the same type. */
+			struct weston_view *parent;
+
+			/* TODO: Handle a parent with multiple views */
+			parent = get_default_view(shsurf->parent);
+			if (parent)
+				return parent->layer_link.prev;
+		}
 		break;
 	}
 
@@ -2284,7 +2282,7 @@ set_transient(struct shell_surface *shsurf,
 
 	shell_surface_set_parent(shsurf, parent);
 
-	shsurf->next_type = SHELL_SURFACE_TRANSIENT;
+	shsurf->next_state.relative = true;
 
 	/* The layer_link is updated in set_surface_type(),
 	 * called from configure. */
@@ -2520,15 +2518,13 @@ set_surface_type(struct shell_surface *shsurf)
 
 	switch (shsurf->type) {
 	case SHELL_SURFACE_TOPLEVEL:
-		if (shsurf->state.maximized || shsurf->state.fullscreen)
+		if (shsurf->state.maximized || shsurf->state.fullscreen) {
 			set_full_output(shsurf);
-		break;
-	case SHELL_SURFACE_TRANSIENT:
-		if (pev)
+		} else if (shsurf->state.relative && pev) {
 			weston_view_set_position(shsurf->view,
 						 pev->geometry.x + shsurf->transient.x,
 						 pev->geometry.y + shsurf->transient.y);
-		break;
+		}
 
 	case SHELL_SURFACE_XWAYLAND:
 		weston_view_set_position(shsurf->view, shsurf->transient.x,
@@ -3738,10 +3734,11 @@ static const struct weston_keyboard_grab_interface alt_tab_grab = {
 static int
 view_for_alt_tab(struct weston_view *view)
 {
-	if (!get_shell_surface(view->surface))
+	struct shell_surface *shsurf = get_shell_surface(view->surface);
+	if (!shsurf)
 		return 0;
 
-	if (get_shell_surface_type(view->surface) == SHELL_SURFACE_TRANSIENT)
+	if (shsurf->parent)
 		return 0;
 
 	if (view != get_default_view(view->surface))
@@ -4505,6 +4502,7 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 
 	/* initial positioning, see also configure() */
 	switch (shsurf->type) {
+	case SHELL_SURFACE_TOPLEVEL:
 		if (shsurf->state.fullscreen) {
 			center_on_output(shsurf->view, shsurf->fullscreen_output);
 			shell_map_fullscreen(shsurf);
@@ -4517,7 +4515,7 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 						 shsurf->output->x - surf_x,
 						 shsurf->output->y +
 						 panel_height - surf_y);
-		} else {
+		} else if (!shsurf->state.relative) {
 			weston_view_set_initial_position(shsurf->view, shell);
 		}
 		break;
@@ -4529,7 +4527,6 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 					 shsurf->view->geometry.x + sx,
 					 shsurf->view->geometry.y + sy);
 		break;
-	case SHELL_SURFACE_TRANSIENT:
 	case SHELL_SURFACE_XWAYLAND:
 	default:
 		;
@@ -4546,18 +4543,24 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 		}
 	}
 
+	if ((shsurf->type == SHELL_SURFACE_XWAYLAND || shsurf->state.relative) &&
+	    shsurf->transient.flags == WL_SHELL_SURFACE_TRANSIENT_INACTIVE) {
+	}
+
 	switch (shsurf->type) {
 	/* XXX: xwayland's using the same fields for transient type */
 	case SHELL_SURFACE_XWAYLAND:
-	case SHELL_SURFACE_TRANSIENT:
 		if (shsurf->transient.flags ==
 				WL_SHELL_SURFACE_TRANSIENT_INACTIVE)
 			break;
 	case SHELL_SURFACE_TOPLEVEL:
-		if (!shell->locked) {
-			wl_list_for_each(seat, &compositor->seat_list, link)
-				activate(shell, shsurf->surface, seat);
-		}
+		if (shsurf->state.relative &&
+		    shsurf->transient.flags == WL_SHELL_SURFACE_TRANSIENT_INACTIVE)
+			break;
+		if (!shell->locked)
+			break;
+		wl_list_for_each(seat, &compositor->seat_list, link)
+			activate(shell, shsurf->surface, seat);
 		break;
 	case SHELL_SURFACE_POPUP:
 	case SHELL_SURFACE_NONE:
@@ -5070,8 +5073,11 @@ switcher_next(struct switcher *switcher)
 	struct workspace *ws = get_current_workspace(switcher->shell);
 
 	wl_list_for_each(view, &ws->layer.view_list, layer_link) {
-		switch (get_shell_surface_type(view->surface)) {
+		shsurf = get_shell_surface(view->surface);
+		switch (shsurf->type) {
 		case SHELL_SURFACE_TOPLEVEL:
+			if (shsurf->parent)
+				break;
 			if (first == NULL)
 				first = view->surface;
 			if (prev == switcher->current)
@@ -5081,7 +5087,6 @@ switcher_next(struct switcher *switcher)
 			weston_view_geometry_dirty(view);
 			weston_surface_damage(view->surface);
 			break;
-		case SHELL_SURFACE_TRANSIENT:
 		case SHELL_SURFACE_POPUP:
 		case SHELL_SURFACE_XWAYLAND:
 		case SHELL_SURFACE_NONE:
