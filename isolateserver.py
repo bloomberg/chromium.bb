@@ -1963,41 +1963,39 @@ def CMDdownload(parser, args):
     parser.error('Use one of --isolated or --file, and only one.')
 
   options.target = os.path.abspath(options.target)
-  storage = get_storage(options.isolate_server, options.namespace)
-  cache = MemoryCache()
-  algo = get_hash_algo(options.namespace)
 
-  # Fetching individual files.
-  if options.file:
-    channel = threading_utils.TaskChannel()
-    pending = {}
-    for digest, dest in options.file:
-      pending[digest] = dest
-      storage.async_fetch(
-          channel,
-          WorkerPool.MED,
-          digest,
-          UNKNOWN_FILE_SIZE,
-          functools.partial(file_write, os.path.join(options.target, dest)))
-    while pending:
-      fetched = channel.pull()
-      dest = pending.pop(fetched)
-      logging.info('%s: %s', fetched, dest)
+  with get_storage(options.isolate_server, options.namespace) as storage:
+    # Fetching individual files.
+    if options.file:
+      channel = threading_utils.TaskChannel()
+      pending = {}
+      for digest, dest in options.file:
+        pending[digest] = dest
+        storage.async_fetch(
+            channel,
+            WorkerPool.MED,
+            digest,
+            UNKNOWN_FILE_SIZE,
+            functools.partial(file_write, os.path.join(options.target, dest)))
+      while pending:
+        fetched = channel.pull()
+        dest = pending.pop(fetched)
+        logging.info('%s: %s', fetched, dest)
 
-  # Fetching whole isolated tree.
-  if options.isolated:
-    settings = fetch_isolated(
-        isolated_hash=options.isolated,
-        storage=storage,
-        cache=cache,
-        algo=algo,
-        outdir=options.target,
-        os_flavor=None,
-        require_command=False)
-    rel = os.path.join(options.target, settings.relative_cwd)
-    print('To run this test please run from the directory %s:' %
-          os.path.join(options.target, rel))
-    print('  ' + ' '.join(settings.command))
+    # Fetching whole isolated tree.
+    if options.isolated:
+      settings = fetch_isolated(
+          isolated_hash=options.isolated,
+          storage=storage,
+          cache=MemoryCache(),
+          algo=get_hash_algo(options.namespace),
+          outdir=options.target,
+          os_flavor=None,
+          require_command=False)
+      rel = os.path.join(options.target, settings.relative_cwd)
+      print('To run this test please run from the directory %s:' %
+            os.path.join(options.target, rel))
+      print('  ' + ' '.join(settings.command))
 
   return 0
 

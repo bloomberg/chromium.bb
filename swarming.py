@@ -131,7 +131,8 @@ class Manifest(object):
 
     try:
       start_time = time.time()
-      uploaded = self.storage.upload_items([self._isolate_item])
+      with self.storage:
+        uploaded = self.storage.upload_items([self._isolate_item])
       elapsed = time.time() - start_time
     except (IOError, OSError) as exc:
       tools.report_error('Failed to upload the zip file: %s' % exc)

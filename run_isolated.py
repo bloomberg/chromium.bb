@@ -700,15 +700,16 @@ def main():
   options.cache = os.path.abspath(options.cache)
   policies = CachePolicies(
       options.max_cache_size, options.min_free_space, options.max_items)
-  storage = isolateserver.get_storage(options.isolate_server, options.namespace)
   algo = isolateserver.get_hash_algo(options.namespace)
 
   try:
     # |options.cache| may not exist until DiskCache() instance is created.
     cache = DiskCache(options.cache, policies, algo)
     outdir = make_temp_dir('run_tha_test', options.cache)
-    return run_tha_test(
-        options.isolated or options.hash, storage, cache, algo, outdir)
+    with isolateserver.get_storage(
+        options.isolate_server, options.namespace) as storage:
+      return run_tha_test(
+          options.isolated or options.hash, storage, cache, algo, outdir)
   except Exception as e:
     # Make sure any exception is logged.
     tools.report_error(e)

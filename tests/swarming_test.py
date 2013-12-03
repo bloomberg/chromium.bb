@@ -490,6 +490,12 @@ class MockedStorage(object):
   def __init__(self, warm_cache):
     self._warm_cache = warm_cache
 
+  def __enter__(self):
+    pass
+
+  def __exit__(self, *_args):
+    pass
+
   def upload_items(self, items):
     return [] if self._warm_cache else items
 
