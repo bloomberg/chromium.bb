@@ -103,6 +103,10 @@ class LayerTreeTest : public testing::Test, public TestHooks {
  public:
   virtual ~LayerTreeTest();
 
+  virtual void AfterTest() = 0;
+  virtual void BeginTest() = 0;
+  virtual void SetupTree();
+
   virtual void EndTest();
   void EndTestAfterDelay(int delay_milliseconds);
 
@@ -142,11 +146,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DispatchSetNextCommitForcesRedraw();
   void DispatchComposite();
   void DispatchDidAddAnimation();
-
-  virtual void AfterTest() = 0;
-  virtual void WillBeginTest();
-  virtual void BeginTest() = 0;
-  virtual void SetupTree();
 
   virtual void RunTest(bool threaded,
                        bool delegating_renderer,

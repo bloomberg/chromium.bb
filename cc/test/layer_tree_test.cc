@@ -288,10 +288,12 @@ class LayerTreeHostForTesting : public LayerTreeHost {
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
     scoped_ptr<LayerTreeHostForTesting> layer_tree_host(
         new LayerTreeHostForTesting(test_hooks, client, settings));
+    bool success;
     if (impl_task_runner.get())
-      layer_tree_host->InitializeThreaded(impl_task_runner);
+      success = layer_tree_host->InitializeThreaded(impl_task_runner);
     else
-      layer_tree_host->InitializeSingleThreaded(client);
+      success = layer_tree_host->InitializeSingleThreaded(client);
+    EXPECT_TRUE(success);
     return layer_tree_host.Pass();
   }
 
@@ -456,10 +458,6 @@ void LayerTreeTest::PostSetNextCommitForcesRedrawToMainThread() {
                  main_thread_weak_ptr_));
 }
 
-void LayerTreeTest::WillBeginTest() {
-  layer_tree_host_->SetLayerTreeHostClientReady();
-}
-
 void LayerTreeTest::DoBeginTest() {
   client_ = LayerTreeHostClientForTesting::Create(this);
 
@@ -474,7 +472,7 @@ void LayerTreeTest::DoBeginTest() {
   started_ = true;
   beginning_ = true;
   SetupTree();
-  WillBeginTest();
+  layer_tree_host_->SetLayerTreeHostClientReady();
   BeginTest();
   beginning_ = false;
   if (end_when_begin_returns_)

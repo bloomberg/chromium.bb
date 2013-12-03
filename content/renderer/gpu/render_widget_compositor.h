@@ -137,7 +137,7 @@ class RenderWidgetCompositor : public blink::WebLayerTreeView,
  private:
   RenderWidgetCompositor(RenderWidget* widget, bool threaded);
 
-  void Initialize(cc::LayerTreeSettings settings);
+  bool Initialize(cc::LayerTreeSettings settings);
 
   bool threaded_;
   bool suppress_schedule_composite_;

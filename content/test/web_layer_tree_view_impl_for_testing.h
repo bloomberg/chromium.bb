@@ -26,7 +26,7 @@ class WebLayerTreeViewImplForTesting
   WebLayerTreeViewImplForTesting();
   virtual ~WebLayerTreeViewImplForTesting();
 
-  void Initialize();
+  bool Initialize();
 
   // blink::WebLayerTreeView implementation.
   virtual void setSurfaceReady();

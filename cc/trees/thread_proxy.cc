@@ -267,8 +267,9 @@ void ThreadProxy::DoCreateAndInitializeOutputSurface() {
   TRACE_EVENT0("cc", "ThreadProxy::DoCreateAndInitializeOutputSurface");
   DCHECK(IsMainThread());
 
-  scoped_ptr<OutputSurface> output_surface =
-      layer_tree_host()->CreateOutputSurface();
+  scoped_ptr<OutputSurface> output_surface = first_output_surface_.Pass();
+  if (!output_surface)
+    output_surface = layer_tree_host()->CreateOutputSurface();
 
   RendererCapabilities capabilities;
   bool success = !!output_surface;
@@ -641,9 +642,10 @@ ThreadProxy::contents_texture_manager_on_impl_thread() {
   return contents_texture_manager_unsafe_;
 }
 
-void ThreadProxy::Start() {
+void ThreadProxy::Start(scoped_ptr<OutputSurface> first_output_surface) {
   DCHECK(IsMainThread());
   DCHECK(Proxy::HasImplThread());
+  DCHECK(first_output_surface);
 
   // Create LayerTreeHostImpl.
   DebugScopedSetMainThreadBlocked main_thread_blocked(this);
@@ -656,6 +658,7 @@ void ThreadProxy::Start() {
   completion.Wait();
 
   main_thread_weak_ptr_ = weak_factory_.GetWeakPtr();
+  first_output_surface_ = first_output_surface.Pass();
 
   started_ = true;
 }
