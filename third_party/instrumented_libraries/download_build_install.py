@@ -11,8 +11,18 @@ import shutil
 import subprocess
 import sys
 
-# Should be a dict from 'sanitizer type' to 'compiler flag'.
-SUPPORTED_SANITIZERS = {'asan': 'address'}
+# Build parameters for different sanitizers
+SUPPORTED_SANITIZERS = {
+  'asan': {
+    'compiler_flags': '-fsanitize=address -gline-tables-only -fPIC -w',
+    'linker_flags': '-fsanitize=address -Wl,-z,origin -Wl,-R,XORIGIN/.'
+  },
+  'msan': {
+    'compiler_flags': '-fsanitize=memory -fsanitize-memory-track-origins '
+                      '-gline-tables-only -fPIC -w',
+    'linker_flags': '-fsanitize=memory -Wl,-z,origin -Wl,-R,XORIGIN/.'
+  },
+}
 
 
 class ScopedChangeDirectory(object):
@@ -37,23 +47,25 @@ def get_library_build_dependencies(library):
   command = 'apt-get -s build-dep %s | grep Inst | cut -d " " -f 2' % library
   command_result = subprocess.Popen(command, stdout=subprocess.PIPE,
       shell=True)
+  if command_result.wait():
+    raise Exception("Failed to determine build dependencies for %s" % library)
   build_dependencies = [l.strip() for l in command_result.stdout]
   return build_dependencies
 
 
 def download_build_install(parsed_arguments):
-  sanitizer_flag = SUPPORTED_SANITIZERS[parsed_arguments.sanitizer_type]
+  sanitizer_params = SUPPORTED_SANITIZERS[parsed_arguments.sanitizer_type]
   
   environment = os.environ.copy()
-  environment['CFLAGS'] = '-fsanitize=%s -g -fPIC -w' % sanitizer_flag
-  environment['CXXFLAGS'] = '-fsanitize=%s -g -fPIC -w' % sanitizer_flag
+  environment['CFLAGS'] = sanitizer_params['compiler_flags']
+  environment['CXXFLAGS'] = sanitizer_params['compiler_flags']
   # We use XORIGIN as RPATH and after building library replace it to $ORIGIN
   # The reason: this flag goes through configure script and makefiles
   # differently for different libraries. So the dollar sign '$' should be
   # differently escaped. Instead of having problems with that it just
   # uses XORIGIN to build library and after that replaces it to $ORIGIN
   # directly in .so file.
-  environment['LDFLAGS'] = '-Wl,-z,origin -Wl,-R,XORIGIN/.'
+  environment['LDFLAGS'] = sanitizer_params['linker_flags']
 
   library_directory = '%s/%s' % (parsed_arguments.intermediate_directory,
       parsed_arguments.library)

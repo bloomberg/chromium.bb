@@ -14,9 +14,14 @@
         'download_build_install.py',
       ],
       'outputs': [
-        '<(PRODUCT_DIR)/instrumented_libraries/asan/<(_target_name).txt',
+        '<(PRODUCT_DIR)/instrumented_libraries/<(_sanitizer_type)/<(_target_name).txt',
       ],
-      'action': ['./download_build_install.py', '-i', '<(PRODUCT_DIR)', '-l', '<(_target_name)', '-m', '<(INTERMEDIATE_DIR)', '-s', 'asan'],
+      'action': ['<(DEPTH)/third_party/instrumented_libraries/download_build_install.py',
+        '--product-directory=<(PRODUCT_DIR)',
+        '--library=<(_target_name)',
+        '--intermediate-directory=<(INTERMEDIATE_DIR)',
+        '--sanitizer-type=<(_sanitizer_type)',
+      ],
     },
   ],
 }

@@ -3,6 +3,14 @@
 # found in the LICENSE file.
 
 {
+  'conditions': [
+    ['asan==1', {
+      'sanitizer_type': 'asan',
+    }],
+    ['msan==1', {
+      'sanitizer_type': 'msan',
+    }],
+  ],
   'targets': [
     {
       'target_name': 'instrumented_libraries',
@@ -22,9 +30,12 @@
             'fix_rpaths.sh',
           ],
           'outputs': [
-            '<(PRODUCT_DIR)/instrumented_libraries/asan/rpaths.fixed.txt',
+            '<(PRODUCT_DIR)/instrumented_libraries/<(_sanitizer_type)/rpaths.fixed.txt',
           ],
-          'action': ['./fix_rpaths.sh', '<(PRODUCT_DIR)/instrumented_libraries/asan'],
+          'action': [
+            '<(DEPTH)/third_party/instrumented_libraries/fix_rpaths.sh',
+            '<(PRODUCT_DIR)/instrumented_libraries/<(_sanitizer_type)'
+          ],
         },
       ],
     },
