@@ -420,8 +420,8 @@ def DeviceStatusCheck(options):
 
 def GetDeviceSetupStepCmds():
   return [
-      ('provision_devices', ProvisionDevices),
       ('device_status_check', DeviceStatusCheck),
+      ('provision_devices', ProvisionDevices),
   ]
 
 
