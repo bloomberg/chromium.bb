@@ -83,8 +83,9 @@ void FontResource::beginLoadIfNeeded(ResourceFetcher* dl)
 
 bool FontResource::ensureCustomFontData()
 {
-    if (!m_fontData && !errorOccurred() && !isLoading() && m_data) {
-        m_fontData = FontCustomPlatformData::create(m_data.get());
+    if (!m_fontData && !errorOccurred() && !isLoading()) {
+        if (m_data)
+            m_fontData = FontCustomPlatformData::create(m_data.get());
         if (!m_fontData)
             setStatus(DecodeError);
     }
@@ -104,17 +105,21 @@ FontPlatformData FontResource::platformDataFromCustomData(float size, bool bold,
 #if ENABLE(SVG_FONTS)
 bool FontResource::ensureSVGFontData()
 {
-    if (!m_externalSVGDocument && !errorOccurred() && !isLoading() && m_data) {
-        m_externalSVGDocument = SVGDocument::create();
+    if (!m_externalSVGDocument && !errorOccurred() && !isLoading()) {
+        if (m_data) {
+            m_externalSVGDocument = SVGDocument::create();
 
-        OwnPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("application/xml");
-        String svgSource = decoder->decode(m_data->data(), m_data->size());
-        svgSource.append(decoder->flush());
+            OwnPtr<TextResourceDecoder> decoder = TextResourceDecoder::create("application/xml");
+            String svgSource = decoder->decode(m_data->data(), m_data->size());
+            svgSource.append(decoder->flush());
 
-        m_externalSVGDocument->setContent(svgSource);
+            m_externalSVGDocument->setContent(svgSource);
 
-        if (decoder->sawError())
-            m_externalSVGDocument = 0;
+            if (decoder->sawError())
+                m_externalSVGDocument = 0;
+        }
+        if (!m_externalSVGDocument)
+            setStatus(DecodeError);
     }
 
     return m_externalSVGDocument;

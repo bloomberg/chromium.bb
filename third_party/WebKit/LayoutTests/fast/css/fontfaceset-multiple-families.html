@@ -12,6 +12,16 @@
     src: url(../../resources/Ahem.ttf);
     unicode-range: u+61-7a; /* 'a'-'z' */
 }
+
+@font-face {
+    font-family: TestFont3;
+    src: url(data:application/x-truetype-font,) format(truetype);
+}
+
+@font-face {
+    font-family: TestFont4;
+    src: url(data:application/xml,) format(svg);
+}
 </style>
 <script>
 description('Test load events for fonts.loadFont() with multiple font families.');
@@ -21,9 +31,10 @@ window.jsTestIsAsync = true;
 function runTests() {
     document.fonts.addEventListener('loading', onLoading);
     document.fonts.addEventListener('loadingdone', onLoadingDone);
+    document.fonts.addEventListener('loadingerror', onLoadingError);
     document.fonts.ready().then(finish);
 
-    document.fonts.load('10px TestFont1, TestFont2', 'abc');
+    document.fonts.load('10px TestFont1, TestFont2, TestFont3, TestFont4', 'abc');
 }
 
 var event;
@@ -39,6 +50,8 @@ function onLoadingDone(e) {
     shouldBe("event.fontfaces.length", "2");
     shouldBeEqualToString("event.fontfaces[0].status", "loaded");
     shouldBeEqualToString("event.fontfaces[1].status", "loaded");
+    loadedFonts = e.fontfaces.map(function(face){return face.family;}).sort();
+    shouldBe('loadedFonts', "['TestFont1', 'TestFont2']");
     shouldBeTrue("document.fonts.check('10px TestFont1')");
     shouldBeTrue("document.fonts.check('10px TestFont2')");
     shouldBeTrue("document.fonts.check('10px TestFont1, TestFont2')");
@@ -46,10 +59,18 @@ function onLoadingDone(e) {
 
 function onLoadingError(e) {
     firedEvents.push(e.type);
+    event = e;
+    shouldBe("event.fontfaces.length", "2");
+    shouldBeEqualToString("event.fontfaces[0].status", "error");
+    shouldBeEqualToString("event.fontfaces[1].status", "error");
+    failedFonts = e.fontfaces.map(function(face){return face.family;}).sort();
+    shouldBe('failedFonts', "['TestFont3', 'TestFont4']");
+    shouldBeFalse("document.fonts.check('10px TestFont3')");
+    shouldBeFalse("document.fonts.check('10px TestFont4')");
 }
 
 function finish() {
-    shouldBe("firedEvents", "['loading', 'loadingdone']");
+    shouldBe("firedEvents", "['loading', 'loadingdone', 'loadingerror']");
     finishJSTest();
 }
 
