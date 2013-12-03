@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import argparse
 import logging
 import os
 import platform
@@ -14,18 +15,17 @@ import buildbot_lib
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 NACL_DIR = os.path.dirname(SCRIPT_DIR)
 
-# Put python_lib_dir at the front of the path to ensure that all platforms
-# use the same argparse. If we add more modules, we should factor this into
-# a call that just adds all the python_libs directories to the path.
-python_lib_dir = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
-                              'python_libs', 'argparse')
-sys.path.insert(0, python_lib_dir)
-import argparse
-
-
 # As this is a buildbot script, we want verbose logging. Note however, that
 # toolchain_build has its own log settings, controlled by its CLI flags.
 logging.getLogger().setLevel(logging.DEBUG)
+
+parser = argparse.ArgumentParser(description='PNaCl toolchain buildbot script')
+group = parser.add_mutually_exclusive_group()
+group.add_argument('--buildbot', action='store_true',
+                 help='Buildbot mode (build and archive the toolchain)')
+group.add_argument('--trybot', action='store_true',
+                 help='Trybot mode (build but do not archove the toolchain)')
+args = parser.parse_args()
 
 host_os = buildbot_lib.GetHostPlatform()
 
@@ -76,8 +76,15 @@ with buildbot_lib.Step('Sync build.sh repos', status, halt_on_fail=True):
 # toolchain_build outputs its own buildbot annotations, so don't use
 # buildbot_lib.Step to run it here.
 try:
-  logging.info('Running: ' + ' '.join(toolchain_build_cmd))
-  subprocess.check_call(toolchain_build_cmd)
+  gsd_arg = []
+  if args.buildbot:
+    gsd_arg = ['--buildbot']
+  elif args.trybot:
+    gsd_arg = ['--trybot']
+
+  cmd = toolchain_build_cmd + gsd_arg
+  logging.info('Running: ' + ' '.join(cmd))
+  subprocess.check_call(cmd)
 except subprocess.CalledProcessError:
   # Ignore any failures and keep going (but make the bot stage red).
   if host_os == 'win':
@@ -119,13 +126,6 @@ else:
   print 'Unrecognized platform: ', host_os
   sys.exit(1)
 
-parser = argparse.ArgumentParser(description='PNaCl toolchain buildbot script')
-group = parser.add_mutually_exclusive_group()
-group.add_argument('--buildbot', action='store_true',
-                 help='Buildbot mode (build and archive the toolchain)')
-group.add_argument('--trybot', action='store_true',
-                 help='Trybot mode (build but do not archove the toolchain)')
-args = parser.parse_args()
 if args.buildbot:
   trybot_mode = 'false'
 elif args.trybot:
