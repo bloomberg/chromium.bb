@@ -138,25 +138,10 @@ class ImmersiveFullscreenControllerTest : public ash::test::AshTestBase {
         new MockImmersiveFullscreenControllerDelegate(top_container_));
     controller_.reset(new ImmersiveFullscreenController);
     controller_->Init(delegate_.get(), widget_, top_container_);
-    SetAnimationsDisabled(true);
+    controller_->SetupForTest();
 
     // The mouse is moved so that it is not over |top_container_| by
     // AshTestBase.
-  }
-
-  // Enable or disable the ImmersiveFullscreenController's animations. When the
-  // ImmersiveFullscreenController's animations are disabled, some behavior is
-  // slightly different. In particular, the behavior is different when there
-  // is a transfer in which lock keeps the top-of-window views revealed (eg
-  // bubble keeps top-of-window views revealed -> mouse keeps top-of-window
-  // views revealed). It is necessary to temporarily enable the
-  // ImmersiveFullscreenController's animations to get the correct behavior in
-  // tests.
-  void SetAnimationsDisabled(bool disabled) {
-    controller_->animations_disabled_for_test_ = disabled;
-    // Force any in progress animations to finish.
-    if (disabled)
-      controller_->animation_->End();
   }
 
   // Attempt to reveal the top-of-window views via |modality|.
@@ -398,7 +383,7 @@ TEST_F(ImmersiveFullscreenControllerTest, OnMouseEvent) {
                               top_container_bounds_in_screen.bottom() + 50);
   EXPECT_FALSE(controller()->IsRevealed());
 
-  // The mouse position cannot cause a reveal when TopContainerView's widget
+  // The mouse position cannot cause a reveal when the top container's widget
   // has capture.
   views::Widget* widget = top_container()->GetWidget();
   widget->SetCapture(top_container());
@@ -406,7 +391,7 @@ TEST_F(ImmersiveFullscreenControllerTest, OnMouseEvent) {
   EXPECT_FALSE(controller()->IsRevealed());
   widget->ReleaseCapture();
 
-  // The mouse position cannot end the reveal while TopContainerView's widget
+  // The mouse position cannot end the reveal while the top container's widget
   // has capture.
   AttemptReveal(MODALITY_MOUSE);
   EXPECT_TRUE(controller()->IsRevealed());
@@ -417,6 +402,64 @@ TEST_F(ImmersiveFullscreenControllerTest, OnMouseEvent) {
 
   // Releasing capture should end the reveal.
   widget->ReleaseCapture();
+  EXPECT_FALSE(controller()->IsRevealed());
+}
+
+// Test mouse event processing for top-of-screen reveal triggering when the
+// top container's widget is inactive.
+TEST_F(ImmersiveFullscreenControllerTest, Inactive) {
+  // Set up initial state.
+  views::Widget* popup_widget = views::Widget::CreateWindowWithContextAndBounds(
+      NULL,
+      CurrentContext(),
+      gfx::Rect(0, 0, 200, 200));
+  popup_widget->Show();
+  ASSERT_FALSE(top_container()->GetWidget()->IsActive());
+
+  controller()->SetEnabled(true);
+  ASSERT_TRUE(controller()->IsEnabled());
+  ASSERT_FALSE(controller()->IsRevealed());
+
+  gfx::Rect top_container_bounds_in_screen =
+      top_container()->GetBoundsInScreen();
+  gfx::Rect popup_bounds_in_screen = popup_widget->GetWindowBoundsInScreen();
+  ASSERT_EQ(top_container_bounds_in_screen.origin().ToString(),
+            popup_bounds_in_screen.origin().ToString());
+  ASSERT_GT(top_container_bounds_in_screen.right(),
+            popup_bounds_in_screen.right());
+
+  // The top-of-window views should stay hidden if the cursor is at the top edge
+  // but above an obscured portion of the top-of-window views.
+  MoveMouse(popup_bounds_in_screen.x(),
+            top_container_bounds_in_screen.y());
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // The top-of-window views should reveal if the cursor is at the top edge and
+  // above an unobscured portion of the top-of-window views.
+  MoveMouse(top_container_bounds_in_screen.right() - 1,
+            top_container_bounds_in_screen.y());
+  EXPECT_TRUE(controller()->IsRevealed());
+
+  // The top-of-window views should stay revealed if the cursor is moved off
+  // of the top edge.
+  MoveMouse(top_container_bounds_in_screen.right() - 1,
+            top_container_bounds_in_screen.bottom() - 1);
+  EXPECT_TRUE(controller()->IsRevealed());
+
+  // Moving way off of the top-of-window views should end the immersive reveal.
+  MoveMouse(top_container_bounds_in_screen.right() - 1,
+            top_container_bounds_in_screen.bottom() + 50);
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // Moving way off of the top-of-window views in a region where the
+  // top-of-window views are obscured should also end the immersive reveal.
+  // Ideally, the immersive reveal would end immediately when the cursor moves
+  // to an obscured portion of the top-of-window views.
+  MoveMouse(top_container_bounds_in_screen.right() - 1,
+            top_container_bounds_in_screen.y());
+  EXPECT_TRUE(controller()->IsRevealed());
+  MoveMouse(top_container_bounds_in_screen.x(),
+            top_container_bounds_in_screen.bottom() + 50);
   EXPECT_FALSE(controller()->IsRevealed());
 }
 
@@ -495,6 +538,20 @@ TEST_F(ImmersiveFullscreenControllerTest, MouseEventsVerticalDisplayLayout) {
   // the bottom region of the secondary display.
   event_generator.MoveMouseTo(x, y_top_edge - 20);
   EXPECT_FALSE(controller()->IsRevealed());
+
+  // Test that it is possible to reveal the top-of-window views by overshooting
+  // the top edge slightly when the top container's widget is not active.
+  views::Widget* popup_widget = views::Widget::CreateWindowWithContextAndBounds(
+      NULL,
+      CurrentContext(),
+      gfx::Rect(0, 200, 100, 100));
+  popup_widget->Show();
+  ASSERT_FALSE(top_container()->GetWidget()->IsActive());
+  ASSERT_FALSE(top_container()->GetBoundsInScreen().Intersects(
+      popup_widget->GetWindowBoundsInScreen()));
+  event_generator.MoveMouseTo(x, y_top_edge + 1);
+  MoveMouse(x, y_top_edge - 2);
+  EXPECT_TRUE(controller()->IsRevealed());
 }
 
 // Test behavior when the mouse becomes hovered without moving.
@@ -676,10 +733,9 @@ TEST_F(ImmersiveFullscreenControllerTest, Focus) {
   EXPECT_FALSE(controller()->IsRevealed());
 }
 
-// Test how activation affects whether the top-of-window views are revealed.
-// The behavior when a bubble is activated is tested in
-// ImmersiveFullscreenControllerTest.Bubbles.
-TEST_F(ImmersiveFullscreenControllerTest, Activation) {
+// Test how transient windows affect whether the top-of-window views are
+// revealed.
+TEST_F(ImmersiveFullscreenControllerTest, Transient) {
   views::Widget* top_container_widget = top_container()->GetWidget();
 
   controller()->SetEnabled(true);
@@ -692,36 +748,34 @@ TEST_F(ImmersiveFullscreenControllerTest, Activation) {
   transient_params.ownership =
       views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   transient_params.parent = top_container_widget->GetNativeView();
-  transient_params.bounds = gfx::Rect(0, 0, 100, 100);
+  transient_params.bounds = gfx::Rect(0, 100, 100, 100);
   scoped_ptr<views::Widget> transient_widget(new views::Widget());
   transient_widget->Init(transient_params);
-  transient_widget->Show();
 
   EXPECT_FALSE(controller()->IsRevealed());
-  top_container_widget->Activate();
   AttemptReveal(MODALITY_MOUSE);
   EXPECT_TRUE(controller()->IsRevealed());
-  transient_widget->Activate();
+  transient_widget->Show();
   SetHovered(false);
   EXPECT_TRUE(controller()->IsRevealed());
   transient_widget.reset();
   EXPECT_FALSE(controller()->IsRevealed());
 
-  // 2) Test that activating a non-transient window ends the reveal if any.
+  // 2) Test that activating a non-transient window does not keep the
+  // top-of-window views revealed.
   views::Widget::InitParams non_transient_params;
   non_transient_params.ownership =
       views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   non_transient_params.context = top_container_widget->GetNativeView();
-  non_transient_params.bounds = gfx::Rect(0, 0, 100, 100);
+  non_transient_params.bounds = gfx::Rect(0, 100, 100, 100);
   scoped_ptr<views::Widget> non_transient_widget(new views::Widget());
   non_transient_widget->Init(non_transient_params);
-  non_transient_widget->Show();
 
   EXPECT_FALSE(controller()->IsRevealed());
-  top_container_widget->Activate();
   AttemptReveal(MODALITY_MOUSE);
   EXPECT_TRUE(controller()->IsRevealed());
-  non_transient_widget->Activate();
+  non_transient_widget->Show();
+  SetHovered(false);
   EXPECT_FALSE(controller()->IsRevealed());
 }
 
@@ -774,11 +828,7 @@ TEST_F(ImmersiveFullscreenControllerTest, Bubbles) {
   bubble_widget3->Show();
   SetHovered(true);
   EXPECT_TRUE(controller()->IsRevealed());
-
-  SetAnimationsDisabled(false);
-  // Activating |top_container_widget| will close |bubble_widget3|.
   top_container_widget->Activate();
-  SetAnimationsDisabled(true);
   EXPECT_TRUE(controller()->IsRevealed());
 
   // 3) Test that the top-of-window views stay revealed as long as at least one

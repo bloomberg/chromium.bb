@@ -287,7 +287,7 @@ void ImmersiveFullscreenController::SetEnabled(bool enabled) {
 
     if (reveal_state_ == REVEALED) {
       // Reveal was unsuccessful. Reacquire the revealed locks if appropriate.
-      UpdateLocatedEventRevealedLock(NULL, ALLOW_REVEAL_WHILE_CLOSING_NO);
+      UpdateLocatedEventRevealedLock(NULL);
       UpdateFocusRevealedLock();
     }
   } else {
@@ -332,7 +332,7 @@ void ImmersiveFullscreenController::SetupForTest() {
   }
   gfx::Point cursor_pos(0, bottommost_in_screen + 100);
   aura::Env::GetInstance()->set_last_mouse_location(cursor_pos);
-  UpdateLocatedEventRevealedLock(NULL, ALLOW_REVEAL_WHILE_CLOSING_NO);
+  UpdateLocatedEventRevealedLock(NULL);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -349,30 +349,29 @@ void ImmersiveFullscreenController::OnMouseEvent(ui::MouseEvent* event) {
     return;
   }
 
-  // Mouse hover should not initiate revealing the top-of-window views while
-  // |native_window_| is inactive.
-  if (!views::Widget::GetWidgetForNativeWindow(native_window_)->IsActive())
-    return;
+  // Mouse hover can initiate revealing the top-of-window views while |widget_|
+  // is inactive.
 
-  // Mouse hover should not initiate revealing the top-of-window views while
-  // a window has mouse capture.
-  if (aura::client::GetCaptureWindow(native_window_))
-    return;
-
-  if (IsRevealed())
-    UpdateLocatedEventRevealedLock(event, ALLOW_REVEAL_WHILE_CLOSING_NO);
-
-  // Trigger a reveal if the cursor pauses at the top of the screen for a
-  // while.
-  if (event->type() != ui::ET_MOUSE_CAPTURE_CHANGED)
+  if (reveal_state_ == SLIDING_OPEN || reveal_state_ == REVEALED) {
+    top_edge_hover_timer_.Stop();
+    UpdateLocatedEventRevealedLock(event);
+  } else if (event->type() != ui::ET_MOUSE_CAPTURE_CHANGED) {
+    // Trigger a reveal if the cursor pauses at the top of the screen for a
+    // while.
     UpdateTopEdgeHoverTimer(event);
+  }
 }
 
 void ImmersiveFullscreenController::OnTouchEvent(ui::TouchEvent* event) {
   if (!enabled_ || event->type() != ui::ET_TOUCH_PRESSED)
     return;
 
-  UpdateLocatedEventRevealedLock(event, ALLOW_REVEAL_WHILE_CLOSING_NO);
+  // Touch should not initiate revealing the top-of-window views while |widget_|
+  // is inactive.
+  if (!widget_->IsActive())
+    return;
+
+  UpdateLocatedEventRevealedLock(event);
 }
 
 void ImmersiveFullscreenController::OnGestureEvent(ui::GestureEvent* event) {
@@ -380,8 +379,8 @@ void ImmersiveFullscreenController::OnGestureEvent(ui::GestureEvent* event) {
     return;
 
   // Touch gestures should not initiate revealing the top-of-window views while
-  // |native_window_| is inactive.
-  if (!views::Widget::GetWidgetForNativeWindow(native_window_)->IsActive())
+  // |widget_| is inactive.
+  if (!widget_->IsActive())
     return;
 
   switch (event->type()) {
@@ -436,21 +435,7 @@ void ImmersiveFullscreenController::OnWidgetDestroying(views::Widget* widget) {
 void ImmersiveFullscreenController::OnWidgetActivationChanged(
     views::Widget* widget,
     bool active) {
-  // Mouse hover should not initiate revealing the top-of-window views while
-  // |native_window_| is inactive.
-  top_edge_hover_timer_.Stop();
-
   UpdateFocusRevealedLock();
-
-  // Allow the top-of-window views to stay revealed if all of the revealed locks
-  // were released in the process of activating |widget| but the mouse is still
-  // hovered above the top-of-window views. For instance, if the bubble which
-  // has been keeping the top-of-window views revealed is hidden but the mouse
-  // is hovered above the top-of-window views, the top-of-window views should
-  // stay revealed. We cannot call UpdateLocatedEventRevealedLock() from
-  // BubbleManager::UpdateRevealedLock() because |widget| is not yet active
-  // at that time.
-  UpdateLocatedEventRevealedLock(NULL, ALLOW_REVEAL_WHILE_CLOSING_YES);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -520,19 +505,17 @@ void ImmersiveFullscreenController::EnableWindowObservers(bool enable) {
     return;
   observers_enabled_ = enable;
 
-  views::Widget* widget =
-      views::Widget::GetWidgetForNativeWindow(native_window_);
-  views::FocusManager* focus_manager = widget->GetFocusManager();
+  views::FocusManager* focus_manager = widget_->GetFocusManager();
 
   if (enable) {
-    widget->AddObserver(this);
+    widget_->AddObserver(this);
     focus_manager->AddFocusChangeListener(this);
     Shell::GetInstance()->AddPreTargetHandler(this);
     native_window_->AddObserver(this);
 
     RecreateBubbleManager();
   } else {
-    widget->RemoveObserver(this);
+    widget_->RemoveObserver(this);
     focus_manager->RemoveFocusChangeListener(this);
     Shell::GetInstance()->RemovePreTargetHandler(this);
     native_window_->RemoveObserver(this);
@@ -550,11 +533,21 @@ void ImmersiveFullscreenController::EnableWindowObservers(bool enable) {
 void ImmersiveFullscreenController::UpdateTopEdgeHoverTimer(
     ui::MouseEvent* event) {
   DCHECK(enabled_);
-  // Stop the timer if the top-of-window views are already revealed.
-  if (reveal_state_ == SLIDING_OPEN || reveal_state_ == REVEALED) {
-    top_edge_hover_timer_.Stop();
+  DCHECK(reveal_state_ == SLIDING_CLOSED || reveal_state_ == CLOSED);
+
+  // Check whether |native_window_| is the event target's parent window instead
+  // of checking for activation. This allows the timer to be started when
+  // |widget_| is inactive but prevents starting the timer if the mouse is over
+  // a portion of the top edge obscured by an unrelated widget.
+  if (!top_edge_hover_timer_.IsRunning() &&
+      !native_window_->Contains(static_cast<aura::Window*>(event->target()))) {
     return;
   }
+
+  // Mouse hover should not initiate revealing the top-of-window views while a
+  // window has mouse capture.
+  if (aura::client::GetCaptureWindow(native_window_))
+    return;
 
   gfx::Point location_in_screen = GetEventLocationInScreen(*event);
   if (ShouldIgnoreMouseEventAtLocation(location_in_screen))
@@ -591,8 +584,7 @@ void ImmersiveFullscreenController::UpdateTopEdgeHoverTimer(
 }
 
 void ImmersiveFullscreenController::UpdateLocatedEventRevealedLock(
-    ui::LocatedEvent* event,
-    AllowRevealWhileClosing allow_reveal_while_closing) {
+    ui::LocatedEvent* event) {
   if (!enabled_)
     return;
   DCHECK(!event || event->IsMouseEvent() || event->IsTouchEvent());
@@ -601,18 +593,14 @@ void ImmersiveFullscreenController::UpdateLocatedEventRevealedLock(
   // views are sliding closed or are closed with the following exceptions:
   // - Hovering at y = 0 which is handled in OnMouseEvent().
   // - Doing a SWIPE_OPEN edge gesture which is handled in OnGestureEvent().
-  if (reveal_state_ == CLOSED ||
-      (reveal_state_ == SLIDING_CLOSED &&
-       allow_reveal_while_closing == ALLOW_REVEAL_WHILE_CLOSING_NO)) {
+  if (reveal_state_ == CLOSED || reveal_state_ == SLIDING_CLOSED)
     return;
-  }
 
-  // Neither the mouse nor touch should keep the top-of-window views revealed if
-  // |native_window_| is not active.
-  if (!views::Widget::GetWidgetForNativeWindow(native_window_)->IsActive()) {
-    located_event_revealed_lock_.reset();
-    return;
-  }
+  // For the sake of simplicity, ignore |widget_|'s activation in computing
+  // whether the top-of-window views should stay revealed. Ideally, the
+  // top-of-window views would stay revealed only when the mouse cursor is
+  // hovered above a non-obscured portion of the top-of-window views. The
+  // top-of-window views may be partially obscured when |widget_| is inactive.
 
   // Ignore all events while a window has capture. This keeps the top-of-window
   // views revealed during a drag.
@@ -679,10 +667,8 @@ void ImmersiveFullscreenController::UpdateFocusRevealedLock() {
     return;
 
   bool hold_lock = false;
-  views::Widget* widget =
-      views::Widget::GetWidgetForNativeWindow(native_window_);
-  if (widget->IsActive()) {
-    views::View* focused_view = widget->GetFocusManager()->GetFocusedView();
+  if (widget_->IsActive()) {
+    views::View* focused_view = widget_->GetFocusManager()->GetFocusedView();
     if (top_container_->Contains(focused_view))
       hold_lock = true;
   } else {
@@ -729,7 +715,7 @@ bool ImmersiveFullscreenController::UpdateRevealedLocksForSwipe(
 
   // Swipes while |native_window_| is inactive should have been filtered out in
   // OnGestureEvent().
-  DCHECK(views::Widget::GetWidgetForNativeWindow(native_window_)->IsActive());
+  DCHECK(widget_->IsActive());
 
   if (reveal_state_ == SLIDING_CLOSED || reveal_state_ == CLOSED) {
     if (swipe_type == SWIPE_OPEN && !located_event_revealed_lock_.get()) {
@@ -747,7 +733,7 @@ bool ImmersiveFullscreenController::UpdateRevealedLocksForSwipe(
         return true;
 
       // Ending the reveal was unsuccessful. Reaquire the locks if appropriate.
-      UpdateLocatedEventRevealedLock(NULL, ALLOW_REVEAL_WHILE_CLOSING_NO);
+      UpdateLocatedEventRevealedLock(NULL);
       UpdateFocusRevealedLock();
     }
   }
@@ -808,7 +794,7 @@ void ImmersiveFullscreenController::OnSlideOpenAnimationCompleted() {
 
   // The user may not have moved the mouse since the reveal was initiated.
   // Update the revealed lock to reflect the mouse's current state.
-  UpdateLocatedEventRevealedLock(NULL, ALLOW_REVEAL_WHILE_CLOSING_NO);
+  UpdateLocatedEventRevealedLock(NULL);
 }
 
 void ImmersiveFullscreenController::MaybeEndReveal(Animate animate) {
@@ -880,6 +866,7 @@ bool ImmersiveFullscreenController::ShouldIgnoreMouseEventAtLocation(
 
 bool ImmersiveFullscreenController::ShouldHandleGestureEvent(
     const gfx::Point& location) const {
+  DCHECK(widget_->IsActive());
   if (reveal_state_ == REVEALED) {
     std::vector<gfx::Rect> hit_bounds_in_screen(
         delegate_->GetVisibleBoundsInScreen());

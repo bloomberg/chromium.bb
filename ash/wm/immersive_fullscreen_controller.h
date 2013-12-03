@@ -143,10 +143,6 @@ class ASH_EXPORT ImmersiveFullscreenController
  private:
   friend class ImmersiveFullscreenControllerTest;
 
-  enum AllowRevealWhileClosing {
-    ALLOW_REVEAL_WHILE_CLOSING_YES,
-    ALLOW_REVEAL_WHILE_CLOSING_NO
-  };
   enum Animate {
     ANIMATE_NO,
     ANIMATE_SLOW,
@@ -176,12 +172,7 @@ class ASH_EXPORT ImmersiveFullscreenController
   // Updates |located_event_revealed_lock_| based on the current mouse state and
   // the current touch state.
   // |event| is NULL if the source event is not known.
-  // |allow_reveal_while_closing| indicates whether the mouse and touch
-  // are allowed to initiate a reveal while the top-of-window views are sliding
-  // closed.
-  void UpdateLocatedEventRevealedLock(
-      ui::LocatedEvent* event,
-      AllowRevealWhileClosing allow_reveal_while_closing);
+  void UpdateLocatedEventRevealedLock(ui::LocatedEvent* event);
 
   // Acquires |located_event_revealed_lock_| if it is not already held.
   void AcquireLocatedEventRevealedLock();

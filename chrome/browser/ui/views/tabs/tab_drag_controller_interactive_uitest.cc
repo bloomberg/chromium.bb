@@ -1698,6 +1698,11 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   EXPECT_EQ("0 100", IDString(browser2->tab_strip_model()));
   EXPECT_EQ("1", IDString(browser()->tab_strip_model()));
 
+  // Move the mouse off of browser2's top chrome.
+  aura::Window* primary_root = roots[0];
+  ASSERT_TRUE(ui_test_utils::SendMouseMoveSync(
+                  primary_root->GetBoundsInScreen().CenterPoint()));
+
   // The first browser window should not be in immersive fullscreen.
   // browser2 should still be in immersive fullscreen, but the top chrome should
   // no longer be revealed.
