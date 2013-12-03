@@ -52,8 +52,7 @@ private:
 
     static void getAnimationOnCompositor(const Timing&, const KeyframeAnimationEffect&, Vector<OwnPtr<blink::WebAnimation> >& animations);
 
-    template<typename PlatformAnimationCurveType, typename PlatformAnimationKeyframeType>
-    static void addKeyframesToCurve(PlatformAnimationCurveType&, const KeyframeVector&, const TimingFunction&);
+    static void addKeyframesToCurve(blink::WebAnimationCurve&, const KeyframeVector&, const TimingFunction&);
 
     friend class CompositorAnimations;
     friend class AnimationCompositorAnimationsTest;
