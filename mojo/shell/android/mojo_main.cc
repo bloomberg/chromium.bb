@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/threading/thread.h"
 #include "jni/MojoMain_jni.h"
 #include "mojo/shell/init.h"
 #include "mojo/shell/run.h"
@@ -27,27 +26,8 @@ base::AtExitManager* g_at_exit = 0;
 LazyInstance<scoped_ptr<base::MessageLoop> > g_java_message_loop =
     LAZY_INSTANCE_INITIALIZER;
 
-LazyInstance<scoped_ptr<base::Thread> > g_shell_thread =
-    LAZY_INSTANCE_INITIALIZER;
-
 LazyInstance<scoped_ptr<shell::Context> > g_context =
     LAZY_INSTANCE_INITIALIZER;
-
-struct ShellInit {
-  scoped_refptr<base::SingleThreadTaskRunner> java_runner;
-  base::android::ScopedJavaGlobalRef<jobject> activity;
-};
-
-void StartOnShellThread(ShellInit* init) {
-  shell::Context* context = new shell::Context();
-
-  context->set_activity(init->activity.obj());
-  context->task_runners()->set_java_runner(init->java_runner.get());
-  delete init;
-
-  g_context.Get().reset(context);
-  shell::Run(context);
-}
 
 }  // namspace
 
@@ -83,16 +63,13 @@ static void Start(JNIEnv* env, jclass clazz, jobject context, jstring jurl) {
     CommandLine::ForCurrentProcess()->InitFromArgv(argv);
   }
 
-  ShellInit* init = new ShellInit();
-  init->java_runner = base::MessageLoopForUI::current()->message_loop_proxy();
-  init->activity.Reset(env, context);
+  base::android::ScopedJavaGlobalRef<jobject> activity;
+  activity.Reset(env, context);
 
-  g_shell_thread.Get().reset(new base::Thread("shell_thread"));
-  g_shell_thread.Get()->Start();
-  g_shell_thread.Get()->message_loop()->PostTask(FROM_HERE,
-      base::Bind(StartOnShellThread, init));
-
-  // TODO(abarth): Currently we leak g_shell_thread.
+  shell::Context* shell_context = new shell::Context();
+  shell_context->set_activity(activity.obj());
+  g_context.Get().reset(shell_context);
+  shell::Run(shell_context);
 }
 
 bool RegisterMojoMain(JNIEnv* env) {

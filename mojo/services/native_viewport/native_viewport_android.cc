@@ -71,10 +71,7 @@ void NativeViewportAndroid::Init() {
   init->ui_runner = context_->task_runners()->ui_runner();
   init->native_viewport = GetWeakPtr();
 
-  context_->task_runners()->java_runner()->PostTask(FROM_HERE,
-      base::Bind(MojoViewport::CreateForActivity,
-                 context_->activity(),
-                 init));
+  MojoViewport::CreateForActivity(context_->activity(), init);
 }
 
 void NativeViewportAndroid::Close() {
