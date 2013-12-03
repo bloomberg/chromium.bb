@@ -13462,6 +13462,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PLT.UserTiming_Mark" units="milliseconds">
+  <summary>
+    This time is based on the User Timing spec and measures the time from
+    Navigation Timing navigationStart until the point where the page called
+    performance.mark().
+  </summary>
+</histogram>
+
+<histogram name="PLT.UserTiming_MeasureDuration" units="milliseconds">
+  <summary>
+    This time is based on the User Timing spec and reports the time between two
+    arbitrary points defined by the page being loaded and directly matches the
+    measurement exposed by performance.measure().
+  </summary>
+</histogram>
+
 <histogram name="Plugin.PpapiBrokerLoadResult" enum="PluginLoadResult">
   <summary>The result from an attempt to load a PPAPI broker.</summary>
 </histogram>
