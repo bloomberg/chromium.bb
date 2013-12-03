@@ -664,7 +664,15 @@ class PatchSeries(object):
 
   @_PatchWrapException
   def _AddChangeToPlanWithDeps(self, change, plan, seen, limit_to=None):
-    """Add a change and its dependencies into a plan.
+    """Add a change and its dependencies into a |plan|.
+
+    Args:
+      change: The change to add to the plan.
+      plan: The list of changes to apply, in order. This function will append
+        |change| and any necessary dependencies to |plan|.
+      seen: The changes whose Gerrit dependencies have already been processed.
+      limit_to: If non-None, limit the allowed uncommitted patches to
+        what's in that container/mapping.
 
     Raises:
       DependencyError: If we could not resolve a dependency.
@@ -700,7 +708,10 @@ class PatchSeries(object):
       paladin_deps = self._LookupUncommittedChanges(
           change, paladin_deps, limit_to=limit_to)
       for dep in paladin_deps:
-        self._AddChangeToPlanWithDeps(dep, plan, seen, limit_to=limit_to)
+        # Add the requested change (plus deps) to our plan, if it we aren't
+        # already in the process of doing that.
+        if dep not in seen:
+          self._AddChangeToPlanWithDeps(dep, plan, seen, limit_to=limit_to)
 
   @_PatchWrapException
   def GetDepsForChange(self, change):

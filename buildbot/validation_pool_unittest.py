@@ -1189,11 +1189,14 @@ class TestCreateDisjointTransactions(Base):
 
   def testCircularPlans(self):
     """Verify that circular plans are handled correctly."""
-    # It is not possible to truncate a circular plan. Verify that an error
-    # is reported in this case.
     patches = self.GetPatches(5)
     self.patch_mock.SetGerritDependencies(patches[0], [patches[-1]])
+
+    # Verify that all patches can be submitted normally.
     self.verifyTransactions([patches], circular=True)
+
+    # It is not possible to truncate a circular plan. Verify that an error
+    # is reported in this case.
     with cros_test_lib.LoggingCapturer():
       call_count = self.runUnresolvedPlan(patches, max_txn_length=3)
     self.assertEqual(5, call_count)
@@ -1332,6 +1335,13 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
     self.patch_mock.SetGerritDependencies(self.patches[1], [])
     self.patch_mock.SetGerritDependencies(self.patches[0], [self.patches[1]])
     self.SubmitPool(submitted=self.patches[::-1])
+
+  def testRedundantCQDepend(self):
+    """Submit a cycle with redundant CQ-DEPEND specifications."""
+    self.patches = self.GetPatches(4)
+    self.patch_mock.SetCQDependencies(self.patches[0], [self.patches[-1]])
+    self.patch_mock.SetCQDependencies(self.patches[1], [self.patches[-1]])
+    self.SubmitPool(submitted=self.patches)
 
   def testSubmitPartialCycle(self):
     """Submit a failed cyclic set of dependencies"""
