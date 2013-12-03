@@ -41,6 +41,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/vector2d.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(const char*)
 DECLARE_WINDOW_PROPERTY_TYPE(int)
@@ -3364,6 +3365,106 @@ TEST_F(WindowTest, NestedLayerlessWindowsBoundsOnSetBounds) {
   EXPECT_EQ("7,8 11x12", w111->layer()->bounds().ToString());
 
   delete w1ll;
+}
+
+namespace {
+
+// Tracks the number of times paint is invoked along with what the clip and
+// translate was.
+class PaintWindowDelegate : public TestWindowDelegate {
+ public:
+  PaintWindowDelegate() : paint_count_(0) {}
+  virtual ~PaintWindowDelegate() {}
+
+  const gfx::Rect& most_recent_paint_clip_bounds() const {
+    return most_recent_paint_clip_bounds_;
+  }
+
+  const gfx::Vector2d& most_recent_paint_matrix_offset() const {
+    return most_recent_paint_matrix_offset_;
+  }
+
+  void clear_paint_count() { paint_count_ = 0; }
+  int paint_count() const { return paint_count_; }
+
+  // TestWindowDelegate::
+  virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE {
+    paint_count_++;
+    canvas->GetClipBounds(&most_recent_paint_clip_bounds_);
+    const SkMatrix& matrix = canvas->sk_canvas()->getTotalMatrix();
+    most_recent_paint_matrix_offset_ = gfx::Vector2d(
+        SkScalarFloorToInt(matrix.getTranslateX()),
+        SkScalarFloorToInt(matrix.getTranslateY()));
+  }
+
+ private:
+  int paint_count_;
+  gfx::Rect most_recent_paint_clip_bounds_;
+  gfx::Vector2d most_recent_paint_matrix_offset_;
+
+  DISALLOW_COPY_AND_ASSIGN(PaintWindowDelegate);
+};
+
+}  // namespace
+
+// Assertions around layerless children being painted when non-layerless window
+// is painted.
+TEST_F(WindowTest, PaintLayerless) {
+  // Creates the following structure (all children owned by root):
+  // root
+  //   w1ll      1,2 40x50
+  //     w11ll   3,4 11x12
+  //       w111  5,6
+  //
+  // ll: layer less, eg no layer
+  PaintWindowDelegate w1ll_delegate;
+  PaintWindowDelegate w11ll_delegate;
+  PaintWindowDelegate w111_delegate;
+
+  Window root(NULL);
+  root.InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+
+  Window* w1ll = new Window(&w1ll_delegate);
+  w1ll->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  w1ll->SetBounds(gfx::Rect(1, 2, 40, 50));
+  w1ll->Show();
+  root.AddChild(w1ll);
+
+  Window* w11ll = new Window(&w11ll_delegate);
+  w11ll->InitWithWindowLayerType(WINDOW_LAYER_NONE);
+  w11ll->SetBounds(gfx::Rect(3, 4, 11, 12));
+  w11ll->Show();
+  w1ll->AddChild(w11ll);
+
+  Window* w111 = new Window(&w111_delegate);
+  w111->InitWithWindowLayerType(WINDOW_LAYER_NOT_DRAWN);
+  w111->SetBounds(gfx::Rect(5, 6, 100, 100));
+  w111->Show();
+  w11ll->AddChild(w111);
+
+  EXPECT_EQ(0, w1ll_delegate.paint_count());
+  EXPECT_EQ(0, w11ll_delegate.paint_count());
+  EXPECT_EQ(0, w111_delegate.paint_count());
+
+  // Paint the root, this should trigger painting of the two layerless
+  // descendants but not the layered descendant.
+  gfx::Canvas canvas(gfx::Size(200, 200), 1.0f, true);
+  static_cast<ui::LayerDelegate&>(root).OnPaintLayer(&canvas);
+
+  // NOTE: SkCanvas::getClipBounds() extends the clip 1 pixel to the left and up
+  // and 2 pixels down and to the right.
+  EXPECT_EQ(1, w1ll_delegate.paint_count());
+  EXPECT_EQ("-1,-1 42x52",
+            w1ll_delegate.most_recent_paint_clip_bounds().ToString());
+  EXPECT_EQ("[1 2]",
+            w1ll_delegate.most_recent_paint_matrix_offset().ToString());
+  EXPECT_EQ(1, w11ll_delegate.paint_count());
+  EXPECT_EQ("-1,-1 13x14",
+            w11ll_delegate.most_recent_paint_clip_bounds().ToString());
+  EXPECT_EQ("[4 6]",
+            w11ll_delegate.most_recent_paint_matrix_offset().ToString());
+  EXPECT_EQ(0, w111_delegate.paint_count());
 }
 
 }  // namespace test

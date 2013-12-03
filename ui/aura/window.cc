@@ -32,6 +32,7 @@
 #include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/screen.h"
 
 namespace aura {
@@ -829,7 +830,8 @@ void Window::SetBoundsInternal(const gfx::Rect& new_bounds) {
 }
 
 void Window::SetVisible(bool visible) {
-  if (visible == layer_->GetTargetVisibility())
+  if ((layer_ && visible == layer_->GetTargetVisibility()) ||
+      (!layer_ && visible == visible_))
     return;  // No change.
 
   FOR_EACH_OBSERVER(WindowObserver, observers_,
@@ -843,7 +845,7 @@ void Window::SetVisible(bool visible) {
       client::GetVisibilityClient(this);
   if (visibility_client)
     visibility_client->UpdateLayerVisibility(this, visible);
-  else
+  else if (layer_)
     layer_->SetVisible(visible);
   visible_ = visible;
   SchedulePaint();
@@ -861,6 +863,25 @@ void Window::SetVisible(bool visible) {
 
 void Window::SchedulePaint() {
   SchedulePaintInRect(gfx::Rect(0, 0, bounds().width(), bounds().height()));
+}
+
+void Window::Paint(gfx::Canvas* canvas) {
+  if (delegate_)
+    delegate_->OnPaint(canvas);
+  PaintLayerlessChildren(canvas);
+}
+
+void Window::PaintLayerlessChildren(gfx::Canvas* canvas) {
+  for (size_t i = 0, count = children_.size(); i < count; ++i) {
+    Window* child = children_[i];
+    if (!child->layer_ && child->visible_) {
+      gfx::ScopedCanvas scoped_canvas(canvas);
+      if (canvas->ClipRect(child->bounds())) {
+        canvas->Translate(child->bounds().OffsetFromOrigin());
+        child->Paint(canvas);
+      }
+    }
+  }
 }
 
 Window* Window::GetWindowForPoint(const gfx::Point& local_point,
@@ -1293,8 +1314,7 @@ void Window::OnWindowBoundsChanged(const gfx::Rect& old_bounds,
 }
 
 void Window::OnPaintLayer(gfx::Canvas* canvas) {
-  if (delegate_)
-    delegate_->OnPaint(canvas);
+  Paint(canvas);
 }
 
 base::Closure Window::PrepareForLayerBoundsChange() {
