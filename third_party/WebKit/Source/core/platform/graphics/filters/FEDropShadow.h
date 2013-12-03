@@ -55,6 +55,7 @@ public:
     virtual FloatRect mapRect(const FloatRect&, bool forward = true) OVERRIDE FINAL;
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;
+    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) OVERRIDE;
 
 private:
     FEDropShadow(Filter*, float, float, float, float, const Color&, float);

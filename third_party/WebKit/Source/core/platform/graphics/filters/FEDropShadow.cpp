@@ -24,9 +24,11 @@
 
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/filters/FEGaussianBlur.h"
+#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/effects/SkBlurImageFilter.h"
+#include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 
 using namespace std;
 
@@ -118,6 +120,18 @@ void FEDropShadow::applySoftware()
     resultContext->drawBitmap(nativeImage->bitmap(), drawingRegion.x() + offset.width(), drawingRegion.y() + offset.height(), &paint);
     resultContext->drawBitmap(nativeImage->bitmap(), drawingRegion.x(), drawingRegion.y());
 }
+
+PassRefPtr<SkImageFilter> FEDropShadow::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    RefPtr<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
+    float dx = filter()->applyHorizontalScale(m_dx);
+    float dy = filter()->applyVerticalScale(m_dy);
+    float stdX = filter()->applyHorizontalScale(m_stdX);
+    float stdY = filter()->applyHorizontalScale(m_stdY);
+    SkImageFilter::CropRect cropRect = getCropRect(builder->cropOffset());
+    return adoptRef(new SkDropShadowImageFilter(SkFloatToScalar(dx), SkFloatToScalar(dy), SkFloatToScalar(stdX), SkFloatToScalar(stdY), m_shadowColor.rgb(), input.get(), &cropRect));
+}
+
 
 TextStream& FEDropShadow::externalRepresentation(TextStream& ts, int indent) const
 {

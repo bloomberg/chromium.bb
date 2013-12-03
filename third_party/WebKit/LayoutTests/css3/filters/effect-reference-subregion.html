@@ -54,9 +54,13 @@
     <filter id="turbulence" color-interpolation-filters="sRGB">
       <feTurbulence type="turbulence" baseFrequency="0.05" numOctaves="2" x="10" y="10" width="140" height="70"/>
     </filter>
-    <filter id="tile">
+    <filter id="tile" color-interpolation-filters="sRGB">
       <feColorMatrix x="0" y="0" width="40" height="40"/>
       <feTile x="10" y="10" width="140" height="70"/>
+    </filter>
+    <filter id="drop-shadow" color-interpolation-filters="sRGB">
+      <feOffset dx="50" dy="-20"/>
+      <feDropShadow dx="10" dy="5" stdDeviation="4" x="10" y="10" width="140" height="70"/>
     </filter>
   </defs>
 </svg>
@@ -78,3 +82,4 @@ img {
 <img style="-webkit-filter: url(#flood); filter: url(#flood);" src="resources/reference.png">
 <img style="-webkit-filter: url(#turbulence); filter: url(#turbulence);" src="resources/reference.png">
 <img style="-webkit-filter: url(#tile); filter: url(#tile);" src="resources/reference.png">
+<img style="-webkit-filter: url(#drop-shadow); filter: url(#drop-shadow);" src="resources/reference.png">
