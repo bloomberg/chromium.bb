@@ -75,7 +75,7 @@ class DomPerf(test.Test):
   means better performance: Bigger is better!"""
   test = _DomPerfMeasurement
 
-  enabled = not sys.platform.startwith('linux')
+  enabled = not sys.platform.startswith('linux')
 
   def CreatePageSet(self, options):
     dom_perf_dir = os.path.join(util.GetChromiumSrcDir(), 'data', 'dom_perf')
