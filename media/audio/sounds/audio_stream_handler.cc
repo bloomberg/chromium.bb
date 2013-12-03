@@ -19,6 +19,9 @@ namespace {
 // Volume percent.
 const double kOutputVolumePercent = 0.8;
 
+// The number of frames each OnMoreData() call will request.
+const int kDefaultFrameCount = 1024;
+
 AudioStreamHandler::TestObserver* g_observer_for_testing = NULL;
 AudioOutputStream::AudioSourceCallback* g_audio_source_for_testing = NULL;
 
@@ -124,12 +127,11 @@ AudioStreamHandler::AudioStreamHandler(const base::StringPiece& wav_data)
     LOG(ERROR) << "Can't get access to audio manager.";
     return;
   }
-  AudioParameters params(
-      AudioParameters::AUDIO_PCM_LOW_LATENCY,
-      GuessChannelLayout(wav_audio_.num_channels()),
-      wav_audio_.sample_rate(),
-      wav_audio_.bits_per_sample(),
-      manager->GetDefaultOutputStreamParameters().frames_per_buffer());
+  AudioParameters params(AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                         GuessChannelLayout(wav_audio_.num_channels()),
+                         wav_audio_.sample_rate(),
+                         wav_audio_.bits_per_sample(),
+                         kDefaultFrameCount);
   if (!params.IsValid()) {
     LOG(ERROR) << "Audio params are invalid.";
     return;
