@@ -21,6 +21,9 @@ chrome_src = os.path.abspath(os.path.join(script_dir, os.pardir))
 sys.path.insert(0, os.path.join(chrome_src, 'tools', 'gyp', 'pylib'))
 import gyp
 
+# Assume this file is in a one-level-deep subdirectory of the source root.
+SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 # Add paths so that pymod_do_main(...) can import files.
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'generate_shim_headers'))
 sys.path.insert(1, os.path.join(chrome_src, 'tools', 'grit'))
@@ -51,10 +54,49 @@ if sys.platform == 'win32':
 else:
   psyco = None
 
-def additional_include_files(args=[]):
+
+def GetSupplementalFiles():
+  """Returns a list of the supplemental files that are included in all GYP
+  sources."""
+  return glob.glob(os.path.join(chrome_src, '*', 'supplement.gypi'))
+
+
+def GetVarsStringForGN(supplemental_files):
+  vars_dict = {}
+
+  for supplement in supplemental_files:
+    with open(supplement, 'r') as f:
+      try:
+        file_data = eval(f.read(), {'__builtins__': None}, None)
+      except SyntaxError, e:
+        e.filename = os.path.abspath(supplement)
+        raise
+      variables = file_data.get('variables')
+      for v in variables:
+        vars_dict[v] = '"' + variables[v] + '"'
+
+  env_string = os.environ.get('GYP_DEFINES', [])
+  items = shlex.split(env_string)
+  for item in items:
+    tokens = item.split('=', 1)
+    if len(tokens) == 2:
+      # Escape $ characters which have special meaning to GN.
+      vars_dict[tokens[0]] = '"' + tokens[1].replace("$", "\\$") + '"'
+    else:
+      # No value supplied, treat it as a boolean and set it.
+      vars_dict[tokens[0]] = 'true'
+
+  vars_string = ''
+  for v in vars_dict:
+    vars_string = vars_string + v + '=' + vars_dict[v] + ' '
+  return vars_string.strip()  # Remove trailing space.
+
+
+def additional_include_files(supplemental_files, args=[]):
   """
-  Returns a list of additional (.gypi) files to include, without
-  duplicating ones that are already specified on the command line.
+  Returns a list of additional (.gypi) files to include, without duplicating
+  ones that are already specified on the command line. The list of supplemental
+  include files is passed in as an argument.
   """
   # Determine the include files specified on the command line.
   # This doesn't cover all the different option formats you can use,
@@ -74,11 +116,45 @@ def additional_include_files(args=[]):
   AddInclude(os.path.join(script_dir, 'common.gypi'))
 
   # Optionally add supplemental .gypi files if present.
-  supplements = glob.glob(os.path.join(chrome_src, '*', 'supplement.gypi'))
-  for supplement in supplements:
+  for supplement in supplemental_files:
     AddInclude(supplement)
 
   return result
+
+
+def RunGN(supplemental_includes):
+  """Runs GN, returning True if it succeeded, printing an error and returning
+  false if not."""
+
+  # The binaries in platform-specific subdirectories in src/tools/gn/bin.
+  gnpath = SRC_DIR + '/tools/gn/bin/'
+  if sys.platform == 'win32':
+    gnpath += 'win/gn.exe'
+  elif sys.platform.startswith('linux'):
+    # On Linux we have 32-bit and 64-bit versions. Checking /sbin/init avoids
+    # uname's confusion when running a 32-bit userland on a 64-bit kernel.
+    if subprocess.check_output(["file", "/sbin/init"]).find("ELF 64-bit") >= 0:
+      gnpath += 'linux/gn'
+    else:
+      gnpath += 'linux/gn32'
+  elif sys.platform == 'darwin':
+    gnpath += 'mac/gn'
+  else:
+    print 'Unknown platform for GN: ', sys.platform
+    return False
+
+  print 'Generating gyp files from GN...'
+  gyp_vars = GetVarsStringForGN(supplemental_includes)
+
+  # Need to pass both the source root (the bots don't run this command from
+  # within the source tree) as well as set the is_gyp value so the BUILD files
+  # to know they're being run under GYP.
+  args = [gnpath, 'gyp', '-q',
+          '--root=' + chrome_src,
+          '--args=is_gyp=true',
+          '--gyp_vars=' + gyp_vars + '']
+  return subprocess.call(args) == 0
+
 
 if __name__ == '__main__':
   args = sys.argv[1:]
@@ -126,7 +202,13 @@ if __name__ == '__main__':
     else:
       args.append(os.path.join(script_dir, 'all.gyp'))
 
-  args.extend(['-I' + i for i in additional_include_files(args)])
+  supplemental_includes = GetSupplementalFiles()
+
+  if not RunGN(supplemental_includes):
+    sys.exit(1)
+
+  args.extend(
+      ['-I' + i for i in additional_include_files(supplemental_includes, args)])
 
   # There shouldn't be a circular dependency relationship between .gyp files,
   # but in Chromium's .gyp files, on non-Mac platforms, circular relationships
