@@ -28,25 +28,24 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Utility class for creating a temporary file for unit tests
-// that is deleted in the destructor. Only supported on Posix systems.
-#ifndef GOOGLE_BREAKPAD_COMMON_TESTS_AUTO_TESTFILE
-#define GOOGLE_BREAKPAD_COMMON_TESTS_AUTO_TESTFILE
+// that is deleted in the destructor.
+
+#ifndef GOOGLE_BREAKPAD_COMMON_LINUX_TESTS_AUTO_TESTFILE
+#define GOOGLE_BREAKPAD_COMMON_LINUX_TESTS_AUTO_TESTFILE
 
 #include <unistd.h>
 #include <sys/types.h>
+
 #include <string>
 
 #include "breakpad_googletest_includes.h"
+#include "common/linux/eintr_wrapper.h"
 #include "common/tests/auto_tempdir.h"
 
 namespace google_breakpad {
 
-#ifdef _WIN32
-#error "This header cannot be used on Windows"
-#else
-
 class AutoTestFile {
-public:
+ public:
   // Create a new empty test file.
   // test_prefix: (input) test-specific prefix, can't be NULL.
   explicit AutoTestFile(const char* test_prefix) {
@@ -89,13 +88,13 @@ public:
     return fd_;
   }
 
-private:
+ private:
   void Init(const char* test_prefix) {
     fd_ = -1;
     char path_templ[PATH_MAX];
     int ret = snprintf(path_templ, sizeof(path_templ),
-                      TEMPDIR "/%s-unittest.XXXXXX",
-                      test_prefix);
+                       TEMPDIR "/%s-unittest.XXXXXX",
+                       test_prefix);
     if (ret >= static_cast<int>(sizeof(path_templ)))
       return;
 
@@ -107,8 +106,8 @@ private:
   }
 
   void WriteText(const char* text, size_t text_len) {
-    int r = HANDLE_EINTR(write(fd_, text, text_len));
-    if (r != static_cast<int>(text_len)) {
+    ssize_t r = HANDLE_EINTR(write(fd_, text, text_len));
+    if (r != static_cast<ssize_t>(text_len)) {
       close(fd_);
       fd_ = -1;
       return;
@@ -120,8 +119,6 @@ private:
   int fd_;
 };
 
-#endif  // !_WIN32
-
 }  // namespace google_breakpad
 
-#endif  // GOOGLE_BREAKPAD_COMMON_TESTS_AUTO_TESTFILE
+#endif  // GOOGLE_BREAKPAD_COMMON_LINUX_TESTS_AUTO_TESTFILE
