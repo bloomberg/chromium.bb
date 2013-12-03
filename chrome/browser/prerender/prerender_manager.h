@@ -660,7 +660,7 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                           bool timed_out,
                           content::SessionStorageNamespace::MergeResult result);
 
-  void RecordEvent(PrerenderEvent event) const;
+  void RecordEvent(PrerenderContents* contents, PrerenderEvent event) const;
 
   // Swaps a prerender for |url| into the tab, replacing |web_contents|.
   // Returns the new WebContents that was swapped in, or NULL if a swap-in

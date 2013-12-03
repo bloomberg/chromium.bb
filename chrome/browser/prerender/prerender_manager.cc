@@ -443,13 +443,16 @@ void PrerenderManager::ProcessMergeResult(
   // No pending_swap should never happen. If it does anyways (in a retail
   // build), log this and bail.
   if (!pending_swap) {
-    RecordEvent(PRERENDER_EVENT_MERGE_RESULT_NO_PENDING_SWAPIN);
+    RecordEvent(prerender_data->contents(),
+                PRERENDER_EVENT_MERGE_RESULT_NO_PENDING_SWAPIN);
     return;
   }
   if (timed_out) {
-    RecordEvent(PRERENDER_EVENT_MERGE_RESULT_TIMEOUT_CB);
+    RecordEvent(prerender_data->contents(),
+                PRERENDER_EVENT_MERGE_RESULT_TIMEOUT_CB);
   } else {
-    RecordEvent(PRERENDER_EVENT_MERGE_RESULT_RESULT_CB);
+    RecordEvent(prerender_data->contents(),
+                PRERENDER_EVENT_MERGE_RESULT_RESULT_CB);
     UMA_HISTOGRAM_TIMES("Prerender.SessionStorageNamespaceMergeTime",
                         pending_swap->GetElapsedTime());
   }
@@ -459,35 +462,44 @@ void PrerenderManager::ProcessMergeResult(
   // in. In that case, SwapInternal will take care of deleting
   // |prerender_data| and sending the appropriate notifications to the tracker.
   if (timed_out) {
-    RecordEvent(PRERENDER_EVENT_MERGE_RESULT_TIMED_OUT);
+    RecordEvent(prerender_data->contents(),
+                PRERENDER_EVENT_MERGE_RESULT_TIMED_OUT);
     prerender_data->ClearPendingSwap();
     return;
   }
 
-  RecordEvent(PRERENDER_EVENT_MERGE_RESULT_MERGE_DONE);
+  RecordEvent(prerender_data->contents(),
+              PRERENDER_EVENT_MERGE_RESULT_MERGE_DONE);
 
   // Log the exact merge result in a histogram.
   switch (result) {
     case content::SessionStorageNamespace::MERGE_RESULT_NAMESPACE_NOT_FOUND:
-      RecordEvent(PRERENDER_EVENT_MERGE_RESULT_RESULT_NAMESPACE_NOT_FOUND);
+      RecordEvent(prerender_data->contents(),
+                  PRERENDER_EVENT_MERGE_RESULT_RESULT_NAMESPACE_NOT_FOUND);
       break;
     case content::SessionStorageNamespace::MERGE_RESULT_NAMESPACE_NOT_ALIAS:
-      RecordEvent(PRERENDER_EVENT_MERGE_RESULT_RESULT_NAMESPACE_NOT_ALIAS);
+      RecordEvent(prerender_data->contents(),
+                  PRERENDER_EVENT_MERGE_RESULT_RESULT_NAMESPACE_NOT_ALIAS);
       break;
     case content::SessionStorageNamespace::MERGE_RESULT_NOT_LOGGING:
-      RecordEvent(PRERENDER_EVENT_MERGE_RESULT_RESULT_NOT_LOGGING);
+      RecordEvent(prerender_data->contents(),
+                  PRERENDER_EVENT_MERGE_RESULT_RESULT_NOT_LOGGING);
       break;
     case content::SessionStorageNamespace::MERGE_RESULT_NO_TRANSACTIONS:
-      RecordEvent(PRERENDER_EVENT_MERGE_RESULT_RESULT_NO_TRANSACTIONS);
+      RecordEvent(prerender_data->contents(),
+                  PRERENDER_EVENT_MERGE_RESULT_RESULT_NO_TRANSACTIONS);
       break;
     case content::SessionStorageNamespace::MERGE_RESULT_TOO_MANY_TRANSACTIONS:
-      RecordEvent(PRERENDER_EVENT_MERGE_RESULT_RESULT_TOO_MANY_TRANSACTIONS);
+      RecordEvent(prerender_data->contents(),
+                  PRERENDER_EVENT_MERGE_RESULT_RESULT_TOO_MANY_TRANSACTIONS);
       break;
     case content::SessionStorageNamespace::MERGE_RESULT_NOT_MERGEABLE:
-      RecordEvent(PRERENDER_EVENT_MERGE_RESULT_RESULT_NOT_MERGEABLE);
+      RecordEvent(prerender_data->contents(),
+                  PRERENDER_EVENT_MERGE_RESULT_RESULT_NOT_MERGEABLE);
       break;
     case content::SessionStorageNamespace::MERGE_RESULT_MERGEABLE:
-      RecordEvent(PRERENDER_EVENT_MERGE_RESULT_RESULT_MERGEABLE);
+      RecordEvent(prerender_data->contents(),
+                  PRERENDER_EVENT_MERGE_RESULT_RESULT_MERGEABLE);
       break;
     default:
       NOTREACHED();
@@ -496,12 +508,14 @@ void PrerenderManager::ProcessMergeResult(
   if (result != content::SessionStorageNamespace::MERGE_RESULT_MERGEABLE &&
       result !=
       content::SessionStorageNamespace::MERGE_RESULT_NO_TRANSACTIONS) {
-    RecordEvent(PRERENDER_EVENT_MERGE_RESULT_MERGE_FAILED);
+    RecordEvent(prerender_data->contents(),
+                PRERENDER_EVENT_MERGE_RESULT_MERGE_FAILED);
     prerender_data->ClearPendingSwap();
     return;
   }
 
-  RecordEvent(PRERENDER_EVENT_MERGE_RESULT_SWAPPING_IN);
+  RecordEvent(prerender_data->contents(),
+              PRERENDER_EVENT_MERGE_RESULT_SWAPPING_IN);
   // Notice that SwapInInternal, on success, will delete |prerender_data|
   // and |pending_swap|. Therefore, we have to pass a new GURL object rather
   // than a reference to the one in |pending_swap|.
@@ -509,10 +523,9 @@ void PrerenderManager::ProcessMergeResult(
       SwapInternal(GURL(pending_swap->url()),
                    pending_swap->target_contents(),
                    prerender_data);
-  if (new_web_contents) {
-    RecordEvent(PRERENDER_EVENT_MERGE_RESULT_SWAPIN_SUCCESSFUL);
-  } else {
-    RecordEvent(PRERENDER_EVENT_MERGE_RESULT_SWAPIN_FAILED);
+  if (!new_web_contents) {
+    RecordEvent(prerender_data->contents(),
+                PRERENDER_EVENT_MERGE_RESULT_SWAPIN_FAILED);
     prerender_data->ClearPendingSwap();
   }
 }
@@ -553,7 +566,7 @@ content::WebContents* PrerenderManager::SwapInternal(
   // We check this by examining whether its CoreTabHelper has a delegate.
   CoreTabHelper* core_tab_helper = CoreTabHelper::FromWebContents(web_contents);
   if (!core_tab_helper || !core_tab_helper->delegate()) {
-    RecordEvent(PRERENDER_EVENT_SWAPIN_NO_DELEGATE);
+    RecordEvent(NULL, PRERENDER_EVENT_SWAPIN_NO_DELEGATE);
     return NULL;
   }
 
@@ -569,12 +582,13 @@ content::WebContents* PrerenderManager::SwapInternal(
   if (!prerender_data) {
     prerender_data = FindPrerenderData(url, NULL);
   } else {
-    RecordEvent(PRERENDER_EVENT_SWAPIN_CANDIDATE_NAMESPACE_MATCHES);
+    RecordEvent(prerender_data->contents(),
+                PRERENDER_EVENT_SWAPIN_CANDIDATE_NAMESPACE_MATCHES);
   }
 
   if (!prerender_data)
     return NULL;
-  RecordEvent(PRERENDER_EVENT_SWAPIN_CANDIDATE);
+  RecordEvent(prerender_data->contents(), PRERENDER_EVENT_SWAPIN_CANDIDATE);
   DCHECK(prerender_data->contents());
 
   // If there is currently a merge pending for this prerender data,
@@ -584,7 +598,8 @@ content::WebContents* PrerenderManager::SwapInternal(
     return NULL;
   }
 
-  RecordEvent(PRERENDER_EVENT_SWAPIN_NO_MERGE_PENDING);
+  RecordEvent(prerender_data->contents(),
+              PRERENDER_EVENT_SWAPIN_NO_MERGE_PENDING);
   SessionStorageNamespace* target_namespace =
       web_contents->GetController().GetDefaultSessionStorageNamespace();
   SessionStorageNamespace* prerender_namespace =
@@ -594,10 +609,12 @@ content::WebContents* PrerenderManager::SwapInternal(
   if (prerender_namespace && prerender_namespace != target_namespace &&
       !prerender_namespace->IsAliasOf(target_namespace)) {
     if (!ShouldMergeSessionStorageNamespaces()) {
-      RecordEvent(PRERENDER_EVENT_SWAPIN_MERGING_DISABLED);
+      RecordEvent(prerender_data->contents(),
+                  PRERENDER_EVENT_SWAPIN_MERGING_DISABLED);
       return NULL;
     }
-    RecordEvent(PRERENDER_EVENT_SWAPIN_ISSUING_MERGE);
+    RecordEvent(prerender_data->contents(),
+                PRERENDER_EVENT_SWAPIN_ISSUING_MERGE);
     // There should never be a |pending_swap| if we get to here:
     // Per check above, |pending_swap| may only be != NULL when
     // processing a successful merge, as indicated by |swap_candidate|
@@ -605,7 +622,8 @@ content::WebContents* PrerenderManager::SwapInternal(
     DCHECK(!prerender_data->pending_swap());
     if (prerender_data->pending_swap()) {
       // In retail builds, log this error and bail.
-      RecordEvent(PRERENDER_EVENT_MERGE_FOR_SWAPIN_CANDIDATE);
+      RecordEvent(prerender_data->contents(),
+                  PRERENDER_EVENT_MERGE_FOR_SWAPIN_CANDIDATE);
       return NULL;
     }
     PendingSwap* pending_swap = new PendingSwap(
@@ -1923,8 +1941,13 @@ void PrerenderManager::LoggedInPredictorDataReceived(
   logged_in_state_.swap(new_map);
 }
 
-void PrerenderManager::RecordEvent(PrerenderEvent event) const {
-  histograms_->RecordEvent(event);
+void PrerenderManager::RecordEvent(PrerenderContents* contents,
+                                   PrerenderEvent event) const {
+  if (!contents)
+    histograms_->RecordEvent(ORIGIN_NONE, kNoExperiment, event);
+  else
+    histograms_->RecordEvent(contents->origin(), contents->experiment_id(),
+                             event);
 }
 
 }  // namespace prerender

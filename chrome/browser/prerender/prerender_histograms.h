@@ -89,7 +89,8 @@ class PrerenderHistograms {
   void RecordFractionPixelsFinalAtSwapin(Origin origin, double fraction) const;
 
   // Records a prerender event.
-  void RecordEvent(PrerenderEvent event) const;
+  void RecordEvent(Origin origin, uint8 experiment_id, PrerenderEvent event)
+      const;
 
  private:
   base::TimeTicks GetCurrentTimeTicks() const;

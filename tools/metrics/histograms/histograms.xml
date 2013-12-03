@@ -32055,6 +32055,7 @@ other types of suffix sets.
   <group name="web" label="Link triggered prerender."/>
   <group name="webcross" label="Link triggered prerender, cross domain."/>
   <group name="websame" label="Link triggered prerender, same domain."/>
+  <affected-histogram name="Prerender.Event"/>
   <affected-histogram name="Prerender.FinalStatus"/>
   <affected-histogram name="Prerender.FinalStatus_Prerender5minTTL"/>
   <affected-histogram name="Prerender.FinalStatus_PrerenderControl"/>
