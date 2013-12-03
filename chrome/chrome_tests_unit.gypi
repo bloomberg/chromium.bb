@@ -1364,6 +1364,7 @@
         'browser/sync/test/test_http_bridge_factory.h',
         'browser/sync/test_profile_sync_service.cc',
         'browser/sync/test_profile_sync_service.h',
+        'browser/sync_file_system/drive_backend/conflict_resolver_unittest.cc',
         'browser/sync_file_system/drive_backend/drive_backend_test_util.cc',
         'browser/sync_file_system/drive_backend/drive_backend_test_util.h',
         'browser/sync_file_system/drive_backend/list_changes_task_unittest.cc',
