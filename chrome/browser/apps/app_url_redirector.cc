@@ -57,7 +57,7 @@ bool LaunchAppWithUrl(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
-  DVLOG(0) << "Launching app handler with URL: "
+  DVLOG(1) << "Launching app handler with URL: "
            << params.url().spec() << " -> "
            << app->name() << "(" << app->id() << "):" << handler_id;
   apps::LaunchPlatformAppWithUrl(
@@ -72,7 +72,7 @@ bool LaunchAppWithUrl(
 content::ResourceThrottle*
 AppUrlRedirector::MaybeCreateThrottleFor(net::URLRequest* request,
                                          ProfileIOData* profile_io_data) {
-  DVLOG(0) << "Considering URL for redirection: "
+  DVLOG(1) << "Considering URL for redirection: "
            << request->method() << " " << request->url().spec();
 
   // Support only GET for now.
