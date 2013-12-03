@@ -229,10 +229,10 @@ class DatabaseTracker_TestHelper_Test {
     tracker->DatabaseOpened(kOrigin2, kDB3, kDescription, 0,
                             &database_size);
 
-    EXPECT_TRUE(file_util::CreateDirectory(
+    EXPECT_TRUE(base::CreateDirectory(
         tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
             tracker->GetOriginDirectory(kOrigin1)))));
-    EXPECT_TRUE(file_util::CreateDirectory(
+    EXPECT_TRUE(base::CreateDirectory(
         tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
             tracker->GetOriginDirectory(kOrigin2)))));
     EXPECT_EQ(1, file_util::WriteFile(
@@ -264,7 +264,7 @@ class DatabaseTracker_TestHelper_Test {
     // Recreate db1.
     tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
                             &database_size);
-    EXPECT_TRUE(file_util::CreateDirectory(
+    EXPECT_TRUE(base::CreateDirectory(
         tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
             tracker->GetOriginDirectory(kOrigin1)))));
     EXPECT_EQ(1, file_util::WriteFile(
@@ -357,10 +357,10 @@ class DatabaseTracker_TestHelper_Test {
 
     // Write some data to each file and check that the listeners are
     // called with the appropriate values.
-    EXPECT_TRUE(file_util::CreateDirectory(
+    EXPECT_TRUE(base::CreateDirectory(
         tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
             tracker->GetOriginDirectory(kOrigin1)))));
-    EXPECT_TRUE(file_util::CreateDirectory(
+    EXPECT_TRUE(base::CreateDirectory(
         tracker->DatabaseDirectory().Append(base::FilePath::FromUTF16Unsafe(
             tracker->GetOriginDirectory(kOrigin2)))));
     EXPECT_EQ(1, file_util::WriteFile(
@@ -484,7 +484,7 @@ class DatabaseTracker_TestHelper_Test {
     test_quota_proxy->reset();
 
     base::FilePath db_file(tracker->GetFullDBFilePath(kOriginId, kName));
-    EXPECT_TRUE(file_util::CreateDirectory(db_file.DirName()));
+    EXPECT_TRUE(base::CreateDirectory(db_file.DirName()));
     EXPECT_TRUE(EnsureFileOfSize(db_file, 10));
     tracker->DatabaseModified(kOriginId, kName);
     EXPECT_TRUE(test_quota_proxy->WasModificationNotified(kOrigin, 10));
@@ -512,7 +512,7 @@ class DatabaseTracker_TestHelper_Test {
     test_quota_proxy->reset();
 
     db_file = tracker->GetFullDBFilePath(kOriginId, kName);
-    EXPECT_TRUE(file_util::CreateDirectory(db_file.DirName()));
+    EXPECT_TRUE(base::CreateDirectory(db_file.DirName()));
     EXPECT_TRUE(EnsureFileOfSize(db_file, 100));
     tracker->DatabaseModified(kOriginId, kName);
     EXPECT_TRUE(test_quota_proxy->WasModificationNotified(kOrigin, 100));
@@ -538,7 +538,7 @@ class DatabaseTracker_TestHelper_Test {
     EXPECT_TRUE(test_quota_proxy->WasAccessNotified(kOrigin));
     test_quota_proxy->reset();
     db_file = tracker->GetFullDBFilePath(kOriginId, kName);
-    EXPECT_TRUE(file_util::CreateDirectory(db_file.DirName()));
+    EXPECT_TRUE(base::CreateDirectory(db_file.DirName()));
     EXPECT_TRUE(EnsureFileOfSize(db_file, 100));
     DatabaseConnections crashed_renderer_connections;
     crashed_renderer_connections.AddConnection(kOriginId, kName);
@@ -589,11 +589,11 @@ class DatabaseTracker_TestHelper_Test {
       // Write some data to each file.
       base::FilePath db_file;
       db_file = tracker->GetFullDBFilePath(kOrigin1, kDB1);
-      EXPECT_TRUE(file_util::CreateDirectory(db_file.DirName()));
+      EXPECT_TRUE(base::CreateDirectory(db_file.DirName()));
       EXPECT_TRUE(EnsureFileOfSize(db_file, 1));
 
       db_file = tracker->GetFullDBFilePath(kOrigin2, kDB2);
-      EXPECT_TRUE(file_util::CreateDirectory(db_file.DirName()));
+      EXPECT_TRUE(base::CreateDirectory(db_file.DirName()));
       EXPECT_TRUE(EnsureFileOfSize(db_file, 2));
 
       // Store the origin database directories as long as they still exist.
@@ -670,11 +670,11 @@ class DatabaseTracker_TestHelper_Test {
       // Write some data to each file.
       base::FilePath db_file;
       db_file = tracker->GetFullDBFilePath(kOrigin1, kDB1);
-      EXPECT_TRUE(file_util::CreateDirectory(db_file.DirName()));
+      EXPECT_TRUE(base::CreateDirectory(db_file.DirName()));
       EXPECT_TRUE(EnsureFileOfSize(db_file, 1));
 
       db_file = tracker->GetFullDBFilePath(kOrigin2, kDB2);
-      EXPECT_TRUE(file_util::CreateDirectory(db_file.DirName()));
+      EXPECT_TRUE(base::CreateDirectory(db_file.DirName()));
       EXPECT_TRUE(EnsureFileOfSize(db_file, 2));
 
       // Store the origin database directories as long as they still exist.
@@ -790,7 +790,7 @@ class DatabaseTracker_TestHelper_Test {
                             &database_size);
     base::FilePath spoof_db_file = tracker->GetFullDBFilePath(kOriginId, kName);
     EXPECT_FALSE(tracker->GetFullDBFilePath(kOriginId, kName).empty());
-    EXPECT_TRUE(file_util::CreateDirectory(spoof_db_file.DirName()));
+    EXPECT_TRUE(base::CreateDirectory(spoof_db_file.DirName()));
     EXPECT_TRUE(EnsureFileOfSize(spoof_db_file, 1));
 
     // Verify does no harm with a non-error is reported.
@@ -819,7 +819,7 @@ class DatabaseTracker_TestHelper_Test {
     base::FilePath spoof_db_file2 = tracker->GetFullDBFilePath(kOriginId, kName);
     EXPECT_FALSE(tracker->GetFullDBFilePath(kOriginId, kName).empty());
     EXPECT_NE(spoof_db_file, spoof_db_file2);
-    EXPECT_TRUE(file_util::CreateDirectory(spoof_db_file2.DirName()));
+    EXPECT_TRUE(base::CreateDirectory(spoof_db_file2.DirName()));
     EXPECT_TRUE(EnsureFileOfSize(spoof_db_file2, 1));
 
     // Verify that with no connection open, the db is deleted immediately.

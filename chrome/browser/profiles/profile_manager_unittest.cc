@@ -63,7 +63,7 @@ class UnittestProfileManager : public ::ProfileManagerWithoutInit {
   virtual Profile* CreateProfileHelper(
       const base::FilePath& file_path) OVERRIDE {
     if (!base::PathExists(file_path)) {
-      if (!file_util::CreateDirectory(file_path))
+      if (!base::CreateDirectory(file_path))
         return NULL;
     }
     return new TestingProfile(file_path, NULL);
@@ -74,7 +74,7 @@ class UnittestProfileManager : public ::ProfileManagerWithoutInit {
     // This is safe while all file operations are done on the FILE thread.
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
-        base::Bind(base::IgnoreResult(&file_util::CreateDirectory), path));
+        base::Bind(base::IgnoreResult(&base::CreateDirectory), path));
 
     return new TestingProfile(path, this);
   }

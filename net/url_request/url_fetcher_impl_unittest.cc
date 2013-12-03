@@ -1458,7 +1458,7 @@ TEST_F(URLFetcherFileTest, TryToOverwriteDirectory) {
   // Create a directory before trying to fetch.
   static const char kFileToFetch[] = "simple.html";
   file_path_ = temp_dir.path().AppendASCII(kFileToFetch);
-  ASSERT_TRUE(file_util::CreateDirectory(file_path_));
+  ASSERT_TRUE(base::CreateDirectory(file_path_));
   ASSERT_TRUE(base::PathExists(file_path_));
 
   // Get a small file.

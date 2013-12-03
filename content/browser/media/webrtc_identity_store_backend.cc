@@ -369,7 +369,7 @@ void WebRTCIdentityStoreBackend::SqlLiteStorage::Load(IdentityMap* out_map) {
   // Ensure the parent directory for storing certs is created before reading
   // from it.
   const base::FilePath dir = path_.DirName();
-  if (!base::PathExists(dir) && !file_util::CreateDirectory(dir)) {
+  if (!base::PathExists(dir) && !base::CreateDirectory(dir)) {
     DLOG(ERROR) << "Unable to open DB file path.";
     return;
   }

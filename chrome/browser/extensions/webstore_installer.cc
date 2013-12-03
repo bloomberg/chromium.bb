@@ -109,7 +109,7 @@ void GetDownloadFilePath(
   // Ensure the download directory exists. TODO(asargent) - make this use
   // common code from the downloads system.
   if (!base::DirectoryExists(directory)) {
-    if (!file_util::CreateDirectory(directory)) {
+    if (!base::CreateDirectory(directory)) {
       BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                               base::Bind(callback, base::FilePath()));
       return;

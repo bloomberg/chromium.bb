@@ -1208,7 +1208,7 @@ TEST_F(HistoryBackendTest, MigrationVisitSource) {
   // in Teardown.
   base::FilePath new_history_path(getTestDir());
   base::DeleteFile(new_history_path, true);
-  file_util::CreateDirectory(new_history_path);
+  base::CreateDirectory(new_history_path);
   base::FilePath new_history_file =
       new_history_path.Append(chrome::kHistoryFilename);
   ASSERT_TRUE(base::CopyFile(old_history_path, new_history_file));
@@ -2556,7 +2556,7 @@ TEST_F(HistoryBackendTest, MigrationVisitDuration) {
   // in Teardown.
   base::FilePath new_history_path(getTestDir());
   base::DeleteFile(new_history_path, true);
-  file_util::CreateDirectory(new_history_path);
+  base::CreateDirectory(new_history_path);
   base::FilePath new_history_file =
       new_history_path.Append(chrome::kHistoryFilename);
   base::FilePath new_archived_file =

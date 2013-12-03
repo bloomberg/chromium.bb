@@ -58,7 +58,7 @@ base::FilePath GetTileImagesDir() {
 
   tile_images_dir = tile_images_dir.Append(L"TileImages");
   if (!base::DirectoryExists(tile_images_dir) &&
-      !file_util::CreateDirectory(tile_images_dir))
+      !base::CreateDirectory(tile_images_dir))
     return base::FilePath();
 
   return tile_images_dir;

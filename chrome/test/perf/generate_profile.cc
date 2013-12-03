@@ -205,7 +205,7 @@ void InsertURLBatch(Profile* profile,
 bool GenerateProfile(GenerateProfileTypes types,
                      int url_count,
                      const base::FilePath& dst_dir) {
-  if (!file_util::CreateDirectory(dst_dir)) {
+  if (!base::CreateDirectory(dst_dir)) {
     PLOG(ERROR) << "Unable to create directory " << dst_dir.value().c_str();
     return false;
   }

@@ -60,7 +60,7 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     base::FilePath profile_dir;
     PathService::Get(chrome::DIR_USER_DATA, &profile_dir);
     profile_dir = profile_dir.AppendASCII(TestingProfile::kTestUserProfileDir);
-    file_util::CreateDirectory(profile_dir);
+    base::CreateDirectory(profile_dir);
 
     preferences_file_ = profile_dir.AppendASCII("Preferences");
     user_scripts_dir_ = profile_dir.AppendASCII("User Scripts");

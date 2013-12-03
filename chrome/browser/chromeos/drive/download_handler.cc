@@ -56,7 +56,7 @@ DriveUserData* GetDriveUserData(DownloadItem* download) {
 // operations.
 base::FilePath GetDriveTempDownloadPath(
     const base::FilePath& drive_tmp_download_dir) {
-  bool created = file_util::CreateDirectory(drive_tmp_download_dir);
+  bool created = base::CreateDirectory(drive_tmp_download_dir);
   DCHECK(created) << "Can not create temp download directory at "
                   << drive_tmp_download_dir.value();
   base::FilePath drive_tmp_download_path;

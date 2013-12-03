@@ -178,7 +178,7 @@ bool CopyDirectory(const FilePath& from_path, const FilePath& to_path,
     // Except that Vista fails to do that, and instead do a recursive copy if
     // the target directory doesn't exist.
     if (base::win::GetVersion() >= base::win::VERSION_VISTA)
-      file_util::CreateDirectory(to_path);
+      CreateDirectory(to_path);
     else
       ShellCopy(from_path, to_path, false);
   }
@@ -329,19 +329,9 @@ bool CreateNewTempDirectory(const FilePath::StringType& prefix,
   return CreateTemporaryDirInDir(system_temp_dir, prefix, new_temp_path);
 }
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
-using base::DirectoryExists;
-using base::FilePath;
-using base::kFileShareAll;
-
 bool CreateDirectoryAndGetError(const FilePath& full_path,
-                                base::PlatformFileError* error) {
-  base::ThreadRestrictions::AssertIOAllowed();
+                                PlatformFileError* error) {
+  ThreadRestrictions::AssertIOAllowed();
 
   // If the path exists, we've succeeded if it's a directory, failed otherwise.
   const wchar_t* full_path_str = full_path.value().c_str();
@@ -355,7 +345,7 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
     DLOG(WARNING) << "CreateDirectory(" << full_path_str << "), "
                   << "conflicts with existing file.";
     if (error) {
-      *error = base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
+      *error = PLATFORM_FILE_ERROR_NOT_A_DIRECTORY;
     }
     return false;
   }
@@ -368,14 +358,14 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
   FilePath parent_path(full_path.DirName());
   if (parent_path.value() == full_path.value()) {
     if (error) {
-      *error = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+      *error = PLATFORM_FILE_ERROR_NOT_FOUND;
     }
     return false;
   }
   if (!CreateDirectoryAndGetError(parent_path, error)) {
     DLOG(WARNING) << "Failed to create one of the parent directories.";
     if (error) {
-      DCHECK(*error != base::PLATFORM_FILE_OK);
+      DCHECK(*error != PLATFORM_FILE_OK);
     }
     return false;
   }
@@ -390,7 +380,7 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
       return true;
     } else {
       if (error)
-        *error = base::LastErrorToPlatformFileError(error_code);
+        *error = LastErrorToPlatformFileError(error_code);
       DLOG(WARNING) << "Failed to create directory " << full_path_str
                     << ", last error is " << error_code << ".";
       return false;
@@ -399,6 +389,16 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
     return true;
   }
 }
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
+
+using base::DirectoryExists;
+using base::FilePath;
+using base::kFileShareAll;
 
 // TODO(rkc): Work out if we want to handle NTFS junctions here or not, handle
 // them if we do decide to.

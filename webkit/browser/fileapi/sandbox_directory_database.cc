@@ -753,7 +753,7 @@ bool SandboxDirectoryDatabase::Init(RecoveryOption recovery_option) {
       LOG(WARNING) << "Clearing SandboxDirectoryDatabase.";
       if (!base::DeleteFile(filesystem_data_directory_, true))
         return false;
-      if (!file_util::CreateDirectory(filesystem_data_directory_))
+      if (!base::CreateDirectory(filesystem_data_directory_))
         return false;
       return Init(FAIL_ON_CORRUPTION);
   }

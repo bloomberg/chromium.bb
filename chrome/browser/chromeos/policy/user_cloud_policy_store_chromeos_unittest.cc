@@ -125,7 +125,7 @@ class UserCloudPolicyStoreChromeOSTest : public testing::Test {
   }
 
   void StoreUserPolicyKey(const std::vector<uint8>& public_key) {
-    ASSERT_TRUE(file_util::CreateDirectory(user_policy_key_file().DirName()));
+    ASSERT_TRUE(base::CreateDirectory(user_policy_key_file().DirName()));
     ASSERT_TRUE(
         file_util::WriteFile(user_policy_key_file(),
                              reinterpret_cast<const char*>(public_key.data()),

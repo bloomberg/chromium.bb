@@ -559,7 +559,7 @@ void ExtensionServiceTestBase::InitializeInstalledExtensionService(
   path = path.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
   EXPECT_TRUE(base::DeleteFile(path, true));
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  EXPECT_TRUE(file_util::CreateDirectoryAndGetError(path, &error)) << error;
+  EXPECT_TRUE(base::CreateDirectoryAndGetError(path, &error)) << error;
   base::FilePath temp_prefs = path.Append(FILE_PATH_LITERAL("Preferences"));
   EXPECT_TRUE(base::CopyFile(prefs_file, temp_prefs));
 
@@ -637,14 +637,14 @@ ExtensionServiceTestBase::CreateDefaultInitParamsInTempDir(
   path = path.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
   EXPECT_TRUE(base::DeleteFile(path, true));
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  EXPECT_TRUE(file_util::CreateDirectoryAndGetError(path, &error)) << error;
+  EXPECT_TRUE(base::CreateDirectoryAndGetError(path, &error)) << error;
   base::FilePath prefs_filename =
       path.Append(FILE_PATH_LITERAL("TestPreferences"));
   base::FilePath extensions_install_dir =
       path.Append(FILE_PATH_LITERAL("Extensions"));
   EXPECT_TRUE(base::DeleteFile(extensions_install_dir, true));
-  EXPECT_TRUE(file_util::CreateDirectoryAndGetError(extensions_install_dir,
-                                                    &error)) << error;
+  EXPECT_TRUE(base::CreateDirectoryAndGetError(extensions_install_dir,
+                                               &error)) << error;
 
   params.profile_path = path;
   params.pref_file = prefs_filename;
@@ -4282,7 +4282,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
       profile_->GetPath().AppendASCII("Local Storage");
   base::FilePath lso_file_path = lso_dir_path.AppendASCII(origin_id)
       .AddExtension(FILE_PATH_LITERAL(".localstorage"));
-  EXPECT_TRUE(file_util::CreateDirectory(lso_dir_path));
+  EXPECT_TRUE(base::CreateDirectory(lso_dir_path));
   EXPECT_EQ(0, file_util::WriteFile(lso_file_path, NULL, 0));
   EXPECT_TRUE(base::PathExists(lso_file_path));
 
@@ -4294,7 +4294,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   idb_context->SetTaskRunnerForTesting(
       base::MessageLoop::current()->message_loop_proxy().get());
   base::FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
-  EXPECT_TRUE(file_util::CreateDirectory(idb_path));
+  EXPECT_TRUE(base::CreateDirectory(idb_path));
   EXPECT_TRUE(base::DirectoryExists(idb_path));
 
   // Uninstall the extension.
@@ -4398,7 +4398,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
       profile_->GetPath().AppendASCII("Local Storage");
   base::FilePath lso_file_path = lso_dir_path.AppendASCII(origin_id)
       .AddExtension(FILE_PATH_LITERAL(".localstorage"));
-  EXPECT_TRUE(file_util::CreateDirectory(lso_dir_path));
+  EXPECT_TRUE(base::CreateDirectory(lso_dir_path));
   EXPECT_EQ(0, file_util::WriteFile(lso_file_path, NULL, 0));
   EXPECT_TRUE(base::PathExists(lso_file_path));
 
@@ -4410,7 +4410,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   idb_context->SetTaskRunnerForTesting(
       base::MessageLoop::current()->message_loop_proxy().get());
   base::FilePath idb_path = idb_context->GetFilePathForTesting(origin_id);
-  EXPECT_TRUE(file_util::CreateDirectory(idb_path));
+  EXPECT_TRUE(base::CreateDirectory(idb_path));
   EXPECT_TRUE(base::DirectoryExists(idb_path));
 
   // Uninstall one of them, unlimited storage should still be granted

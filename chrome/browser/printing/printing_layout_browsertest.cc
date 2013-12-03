@@ -173,7 +173,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
   // Makes sure the directory exists and is empty.
   void CleanupDumpDirectory() {
     EXPECT_TRUE(file_util::DieFileDie(emf_path_, true));
-    EXPECT_TRUE(file_util::CreateDirectory(emf_path_));
+    EXPECT_TRUE(base::CreateDirectory(emf_path_));
   }
 
   // Returns if Clear Type is currently enabled.

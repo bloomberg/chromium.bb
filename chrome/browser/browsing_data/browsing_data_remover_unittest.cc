@@ -554,7 +554,7 @@ class RemoveLocalStorageTester {
     // stores data in the host file system.
     base::FilePath storage_path =
         profile_->GetPath().AppendASCII("Local Storage");
-    file_util::CreateDirectory(storage_path);
+    base::CreateDirectory(storage_path);
 
     // Write some files.
     file_util::WriteFile(storage_path.Append(kDomStorageOrigin1), NULL, 0);

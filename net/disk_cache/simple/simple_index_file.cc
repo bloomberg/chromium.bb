@@ -203,7 +203,7 @@ void SimpleIndexFile::SyncWriteToDisk(net::CacheType cache_type,
   }
   SerializeFinalData(cache_dir_mtime, pickle.get());
   if (!WritePickleFile(pickle.get(), temp_index_filename)) {
-    if (!file_util::CreateDirectory(temp_index_filename.DirName())) {
+    if (!base::CreateDirectory(temp_index_filename.DirName())) {
       LOG(ERROR) << "Could not create a directory to hold the index file";
       return;
     }

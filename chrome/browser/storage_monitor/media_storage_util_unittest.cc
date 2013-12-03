@@ -54,7 +54,7 @@ class MediaStorageUtilTest : public testing::Test {
     base::FilePath path(scoped_temp_dir_.path());
     if (create_dcim_dir)
       path = path.Append(kDCIMDirectoryName);
-    if (!file_util::CreateDirectory(path))
+    if (!base::CreateDirectory(path))
       return base::FilePath();
     return scoped_temp_dir_.path();
   }

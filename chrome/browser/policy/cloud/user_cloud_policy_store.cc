@@ -77,7 +77,7 @@ void StorePolicyToDiskOnBackgroundThread(
     return;
   }
 
-  if (!file_util::CreateDirectory(path.DirName())) {
+  if (!base::CreateDirectory(path.DirName())) {
     DLOG(WARNING) << "Failed to create directory " << path.DirName().value();
     return;
   }

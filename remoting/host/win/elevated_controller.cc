@@ -354,7 +354,7 @@ STDMETHODIMP ElevatedController::GetVersion(BSTR* version_out) {
 STDMETHODIMP ElevatedController::SetConfig(BSTR config) {
   // Determine the config directory path and create it if necessary.
   base::FilePath config_dir = remoting::GetConfigDir();
-  if (!file_util::CreateDirectory(config_dir)) {
+  if (!base::CreateDirectory(config_dir)) {
     return HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED);
   }
 

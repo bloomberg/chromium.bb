@@ -71,7 +71,7 @@ base::FilePath InstallExtension(const base::FilePath& unpacked_source_dir,
 
   // Create the extension directory if it doesn't exist already.
   if (!base::PathExists(extension_dir)) {
-    if (!file_util::CreateDirectory(extension_dir))
+    if (!base::CreateDirectory(extension_dir))
       return base::FilePath();
   }
 
@@ -517,7 +517,7 @@ base::FilePath GetInstallTempDir(const base::FilePath& extensions_dir) {
   }
 
   // Directory doesn't exist, so create it.
-  if (!file_util::CreateDirectory(temp_path)) {
+  if (!base::CreateDirectory(temp_path)) {
     DLOG(WARNING) << "Couldn't create directory: " << temp_path.value();
     return base::FilePath();
   }

@@ -41,14 +41,14 @@ class BrowsingDataDatabaseHelperTest : public InProcessBrowserTest {
     db_tracker->DatabaseClosed(kTestIdentifier1, db_name);
     base::FilePath db_path1 =
         db_tracker->GetFullDBFilePath(kTestIdentifier1, db_name);
-    file_util::CreateDirectory(db_path1.DirName());
+    base::CreateDirectory(db_path1.DirName());
     ASSERT_EQ(0, file_util::WriteFile(db_path1, NULL, 0));
     db_tracker->DatabaseOpened(kTestIdentifierExtension, db_name, description,
                                1, &size);
     db_tracker->DatabaseClosed(kTestIdentifierExtension, db_name);
     base::FilePath db_path2 =
         db_tracker->GetFullDBFilePath(kTestIdentifierExtension, db_name);
-    file_util::CreateDirectory(db_path2.DirName());
+    base::CreateDirectory(db_path2.DirName());
     ASSERT_EQ(0, file_util::WriteFile(db_path2, NULL, 0));
     std::vector<webkit_database::OriginInfo> origins;
     db_tracker->GetAllOriginsInfo(&origins);

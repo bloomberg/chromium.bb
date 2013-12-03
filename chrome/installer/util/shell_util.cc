@@ -1515,7 +1515,7 @@ bool ShellUtil::CreateOrUpdateShortcut(
   if (should_install_shortcut) {
     // Make sure the parent directories exist when creating the shortcut.
     if (shortcut_operation == base::win::SHORTCUT_CREATE_ALWAYS &&
-        !file_util::CreateDirectory(chosen_path->DirName())) {
+        !base::CreateDirectory(chosen_path->DirName())) {
       NOTREACHED();
       return false;
     }

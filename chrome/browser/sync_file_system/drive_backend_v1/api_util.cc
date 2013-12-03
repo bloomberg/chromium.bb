@@ -144,7 +144,7 @@ std::string GetMimeTypeFromTitle(const std::string& title) {
 bool CreateTemporaryFile(const base::FilePath& dir_path,
                          webkit_blob::ScopedFile* temp_file) {
   base::FilePath temp_file_path;
-  const bool success = file_util::CreateDirectory(dir_path) &&
+  const bool success = base::CreateDirectory(dir_path) &&
       base::CreateTemporaryFileInDir(dir_path, &temp_file_path);
   if (!success)
     return success;

@@ -103,7 +103,7 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest,
                                                         username_hash,
                                                         id);
     if (!base::DirectoryExists(wallpaper_path.DirName()))
-      file_util::CreateDirectory(wallpaper_path.DirName());
+      base::CreateDirectory(wallpaper_path.DirName());
 
     return wallpaper_path;
   }

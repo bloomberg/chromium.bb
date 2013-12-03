@@ -44,7 +44,7 @@ using base::SequencedWorkerPool;
 using base::SingleThreadTaskRunner;
 using base::Time;
 using base::DirectoryExists;
-using file_util::CreateDirectory;
+using base::CreateDirectory;
 
 namespace disk_cache {
 
@@ -124,7 +124,7 @@ void MaybeHistogramFdLimit(net::CacheType cache_type) {
 // backend type and version. If the directory contains no cache, occupies it
 // with the fresh structure.
 bool FileStructureConsistent(const base::FilePath& path) {
-  if (!base::PathExists(path) && !file_util::CreateDirectory(path)) {
+  if (!base::PathExists(path) && !base::CreateDirectory(path)) {
     LOG(ERROR) << "Failed to create directory: " << path.LossyDisplayName();
     return false;
   }

@@ -127,7 +127,7 @@ DeviceLocalAccountExternalPolicyLoaderTest::
 void DeviceLocalAccountExternalPolicyLoaderTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   cache_dir_ = temp_dir_.path().Append(kCacheDir);
-  ASSERT_TRUE(file_util::CreateDirectoryAndGetError(cache_dir_, NULL));
+  ASSERT_TRUE(base::CreateDirectoryAndGetError(cache_dir_, NULL));
   request_context_getter_ =
       new net::TestURLRequestContextGetter(base::MessageLoopProxy::current());
   TestingBrowserProcess::GetGlobal()->SetSystemRequestContext(

@@ -216,10 +216,10 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     base::FilePath test_path = temp_dir_.path().AppendASCII("ImporterTest");
     base::DeleteFile(test_path, true);
-    file_util::CreateDirectory(test_path);
+    base::CreateDirectory(test_path);
     profile_path_ = test_path.AppendASCII("profile");
     app_path_ = test_path.AppendASCII("app");
-    file_util::CreateDirectory(app_path_);
+    base::CreateDirectory(app_path_);
 
     // This will launch the browser test and thus needs to happen last.
     InProcessBrowserTest::SetUp();
@@ -240,7 +240,7 @@ class FirefoxProfileImporterBrowserTest : public InProcessBrowserTest {
 
     base::FilePath search_engine_path = app_path_;
     search_engine_path = search_engine_path.AppendASCII("searchplugins");
-    file_util::CreateDirectory(search_engine_path);
+    base::CreateDirectory(search_engine_path);
     if (import_search_plugins) {
       ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &data_path));
       data_path = data_path.AppendASCII("firefox3_searchplugins");

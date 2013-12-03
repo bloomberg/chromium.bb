@@ -178,7 +178,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
     FileSystemApiGetDisplayPathPrettifyMac) {
   // On Mac, "test.localized" will be localized into just "test".
   base::FilePath test_path = TempFilePath("test.localized", false);
-  ASSERT_TRUE(file_util::CreateDirectory(test_path));
+  ASSERT_TRUE(base::CreateDirectory(test_path));
 
   base::FilePath test_file = test_path.AppendASCII("gold.txt");
   base::FilePath source = test_root_folder_.AppendASCII("gold.txt");

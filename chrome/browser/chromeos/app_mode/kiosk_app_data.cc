@@ -54,7 +54,7 @@ void SaveIconToLocalOnBlockingPool(
 
   base::FilePath dir = icon_path.DirName();
   if (!base::PathExists(dir))
-    CHECK(file_util::CreateDirectory(dir));
+    CHECK(base::CreateDirectory(dir));
 
   CHECK_EQ(static_cast<int>(raw_icon->size()),
            file_util::WriteFile(icon_path,

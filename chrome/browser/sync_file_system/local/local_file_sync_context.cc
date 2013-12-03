@@ -622,7 +622,7 @@ SyncStatusCode LocalFileSyncContext::InitializeChangeTrackerOnFileThread(
   }
 
   // Creates snapshot directory.
-  file_util::CreateDirectory(local_base_path_.Append(kSnapshotDir));
+  base::CreateDirectory(local_base_path_.Append(kSnapshotDir));
 
   return status;
 }

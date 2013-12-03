@@ -121,7 +121,7 @@ void UserPolicyDiskCache::StoreOnFileThread(
     return;
   }
 
-  if (!file_util::CreateDirectory(backing_file_path_.DirName())) {
+  if (!base::CreateDirectory(backing_file_path_.DirName())) {
     LOG(WARNING) << "Failed to create directory "
                  << backing_file_path_.DirName().value();
     UMA_HISTOGRAM_ENUMERATION(policy::kMetricPolicy,

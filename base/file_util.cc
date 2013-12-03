@@ -161,6 +161,10 @@ FILE* CreateAndOpenTemporaryFile(FilePath* path) {
   return CreateAndOpenTemporaryFileInDir(directory, path);
 }
 
+bool CreateDirectory(const FilePath& full_path) {
+  return CreateDirectoryAndGetError(full_path, NULL);
+}
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
@@ -170,10 +174,6 @@ namespace file_util {
 using base::FileEnumerator;
 using base::FilePath;
 using base::kMaxUniqueFiles;
-
-bool CreateDirectory(const base::FilePath& full_path) {
-  return CreateDirectoryAndGetError(full_path, NULL);
-}
 
 bool GetFileSize(const FilePath& file_path, int64* file_size) {
   base::PlatformFileInfo info;

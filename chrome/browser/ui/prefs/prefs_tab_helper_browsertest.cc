@@ -30,7 +30,7 @@ class PrefsTabHelperBrowserTest : public InProcessBrowserTest {
     PathService::Get(chrome::DIR_USER_DATA, &user_data_directory);
     base::FilePath default_profile =
         user_data_directory.AppendASCII(TestingProfile::kTestUserProfileDir);
-    if (!file_util::CreateDirectory(default_profile)) {
+    if (!base::CreateDirectory(default_profile)) {
       LOG(ERROR) << "Can't create " << default_profile.MaybeAsASCII();
       return false;
     }

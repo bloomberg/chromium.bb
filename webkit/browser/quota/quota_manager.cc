@@ -199,7 +199,7 @@ bool UpdateModifiedTimeOnDBThread(const GURL& origin,
 
 int64 CallSystemGetAmountOfFreeDiskSpace(const base::FilePath& profile_path) {
   // Ensure the profile path exists.
-  if(!file_util::CreateDirectory(profile_path)) {
+  if(!base::CreateDirectory(profile_path)) {
     LOG(WARNING) << "Create directory failed for path" << profile_path.value();
     return 0;
   }

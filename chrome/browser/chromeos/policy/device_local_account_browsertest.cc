@@ -723,7 +723,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
 
   // Pre-populate the device local account's extension cache with a hosted app
   // and an extension.
-  EXPECT_TRUE(file_util::CreateDirectory(
+  EXPECT_TRUE(base::CreateDirectory(
       GetCacheDirectoryForAccountID(kAccountId1)));
   base::FilePath test_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));

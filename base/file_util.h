@@ -250,22 +250,22 @@ BASE_EXPORT bool CreateTemporaryDirInDir(const FilePath& base_dir,
                                          const FilePath::StringType& prefix,
                                          FilePath* new_dir);
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
 // Creates a directory, as well as creating any parent directories, if they
 // don't exist. Returns 'true' on successful creation, or if the directory
 // already exists.  The directory is only readable by the current user.
 // Returns true on success, leaving *error unchanged.
 // Returns false on failure and sets *error appropriately, if it is non-NULL.
-BASE_EXPORT bool CreateDirectoryAndGetError(const base::FilePath& full_path,
-                                            base::PlatformFileError* error);
+BASE_EXPORT bool CreateDirectoryAndGetError(const FilePath& full_path,
+                                            PlatformFileError* error);
 
 // Backward-compatible convenience method for the above.
-BASE_EXPORT bool CreateDirectory(const base::FilePath& full_path);
+BASE_EXPORT bool CreateDirectory(const FilePath& full_path);
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
 
 // Returns the file size. Returns true on success.
 BASE_EXPORT bool GetFileSize(const base::FilePath& file_path, int64* file_size);

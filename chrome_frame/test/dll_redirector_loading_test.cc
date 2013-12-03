@@ -55,7 +55,7 @@ class DllRedirectorLoadingTest : public testing::Test {
     // Make a versioned dir for the original chrome frame dll to run under.
     base::FilePath original_version_dir(
         temp_dir_.path().AppendASCII(original_version_->GetString()));
-    ASSERT_TRUE(file_util::CreateDirectory(original_version_dir));
+    ASSERT_TRUE(base::CreateDirectory(original_version_dir));
 
     // Now move the original DLL that we will operate on into a named-version
     // folder.
@@ -90,7 +90,7 @@ class DllRedirectorLoadingTest : public testing::Test {
     // Now move the new Chrome Frame dll to its final resting place:
     base::FilePath new_version_dir(
         temp_dir_.path().AppendASCII(new_version_->GetString()));
-    ASSERT_TRUE(file_util::CreateDirectory(new_version_dir));
+    ASSERT_TRUE(base::CreateDirectory(new_version_dir));
     new_chrome_frame_dll_ =
         new_version_dir.Append(build_chrome_frame_dll.BaseName());
     ASSERT_TRUE(base::Move(temporary_new_chrome_frame_dll,

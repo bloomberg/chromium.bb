@@ -2085,7 +2085,7 @@ class LaunchBrowserWithNonAsciiUserDatadir : public BrowserTest {
     base::FilePath tmp_profile = temp_dir_.path().AppendASCII("tmp_profile");
     tmp_profile = tmp_profile.Append(L"Test Chrome G\u00E9raldine");
 
-    ASSERT_TRUE(file_util::CreateDirectory(tmp_profile));
+    ASSERT_TRUE(base::CreateDirectory(tmp_profile));
     command_line->AppendSwitchPath(switches::kUserDataDir, tmp_profile);
   }
 

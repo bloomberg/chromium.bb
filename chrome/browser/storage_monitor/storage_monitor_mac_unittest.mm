@@ -128,7 +128,7 @@ TEST_F(StorageMonitorMacTest, UpdateVolumeName) {
 TEST_F(StorageMonitorMacTest, DCIM) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  ASSERT_TRUE(file_util::CreateDirectory(
+  ASSERT_TRUE(base::CreateDirectory(
       temp_dir.path().Append(kDCIMDirectoryName)));
 
   base::FilePath mount_point = temp_dir.path();

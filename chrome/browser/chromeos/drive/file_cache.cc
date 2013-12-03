@@ -474,7 +474,7 @@ bool FileCache::RecoverFilesFromCacheDirectory(
     // Add file number to the file name and move.
     const base::FilePath& dest_path = dest_directory.Append(dest_base_name)
         .InsertBeforeExtensionASCII(base::StringPrintf("%08d", file_number++));
-    if (!file_util::CreateDirectory(dest_directory) ||
+    if (!base::CreateDirectory(dest_directory) ||
         !base::Move(current, dest_path)) {
       LOG(WARNING) << "Failed to move: " << current.value()
                    << " to " << dest_path.value();

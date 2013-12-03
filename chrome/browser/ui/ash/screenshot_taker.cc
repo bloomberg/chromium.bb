@@ -214,7 +214,7 @@ void SaveScreenshot(const ShowNotificationCallback& callback,
   DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   DCHECK(!screenshot_path.empty());
 
-  if (!file_util::CreateDirectory(screenshot_path.DirName())) {
+  if (!base::CreateDirectory(screenshot_path.DirName())) {
     LOG(ERROR) << "Failed to ensure the existence of "
                << screenshot_path.DirName().value();
     content::BrowserThread::PostTask(

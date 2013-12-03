@@ -55,8 +55,8 @@ class FileCacheTestOnUIThread : public testing::Test {
     const base::FilePath cache_dir =
         temp_dir_.path().AppendASCII(kCacheFileDirectory);
 
-    ASSERT_TRUE(file_util::CreateDirectory(metadata_dir));
-    ASSERT_TRUE(file_util::CreateDirectory(cache_dir));
+    ASSERT_TRUE(base::CreateDirectory(metadata_dir));
+    ASSERT_TRUE(base::CreateDirectory(cache_dir));
 
     ASSERT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.path(),
                                                &dummy_file_path_));
@@ -720,8 +720,8 @@ class FileCacheTest : public testing::Test {
     const base::FilePath metadata_dir = temp_dir_.path().AppendASCII("meta");
     cache_files_dir_ = temp_dir_.path().AppendASCII(kCacheFileDirectory);
 
-    ASSERT_TRUE(file_util::CreateDirectory(metadata_dir));
-    ASSERT_TRUE(file_util::CreateDirectory(cache_files_dir_));
+    ASSERT_TRUE(base::CreateDirectory(metadata_dir));
+    ASSERT_TRUE(base::CreateDirectory(cache_files_dir_));
 
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 

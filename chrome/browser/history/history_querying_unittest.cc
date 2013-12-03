@@ -159,7 +159,7 @@ class HistoryQueryTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     history_dir_ = temp_dir_.path().AppendASCII("HistoryTest");
-    ASSERT_TRUE(file_util::CreateDirectory(history_dir_));
+    ASSERT_TRUE(base::CreateDirectory(history_dir_));
 
     history_.reset(new HistoryService);
     if (!history_->Init(history_dir_, NULL)) {

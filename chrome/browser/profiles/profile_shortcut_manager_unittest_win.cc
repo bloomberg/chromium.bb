@@ -81,7 +81,7 @@ class ProfileShortcutManagerTest : public testing::Test {
   base::FilePath CreateProfileDirectory(const string16& profile_name) {
     const base::FilePath profile_path =
         profile_info_cache_->GetUserDataDir().Append(profile_name);
-    file_util::CreateDirectory(profile_path);
+    base::CreateDirectory(profile_path);
     return profile_path;
   }
 

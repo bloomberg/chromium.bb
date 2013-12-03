@@ -741,19 +741,19 @@ void WallpaperManager::EnsureCustomWallpaperDirectories(
   dir = GetCustomWallpaperDir(kSmallWallpaperSubDir);
   dir = dir.Append(user_id_hash);
   if (!base::PathExists(dir))
-    file_util::CreateDirectory(dir);
+    base::CreateDirectory(dir);
   dir = GetCustomWallpaperDir(kLargeWallpaperSubDir);
   dir = dir.Append(user_id_hash);
   if (!base::PathExists(dir))
-    file_util::CreateDirectory(dir);
+    base::CreateDirectory(dir);
   dir = GetCustomWallpaperDir(kOriginalWallpaperSubDir);
   dir = dir.Append(user_id_hash);
   if (!base::PathExists(dir))
-    file_util::CreateDirectory(dir);
+    base::CreateDirectory(dir);
   dir = GetCustomWallpaperDir(kThumbnailWallpaperSubDir);
   dir = dir.Append(user_id_hash);
   if (!base::PathExists(dir))
-    file_util::CreateDirectory(dir);
+    base::CreateDirectory(dir);
 }
 
 CommandLine* WallpaperManager::GetComandLine() {

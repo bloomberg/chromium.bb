@@ -300,7 +300,7 @@ class PerformanceMonitorUncleanExitBrowserTest
 
     base::FilePath first_profile =
         user_data_directory.AppendASCII(first_profile_name_);
-    CHECK(file_util::CreateDirectory(first_profile));
+    CHECK(base::CreateDirectory(first_profile));
 
     base::FilePath stock_prefs_file;
     PathService::Get(chrome::DIR_TEST_DATA, &stock_prefs_file);
@@ -319,7 +319,7 @@ class PerformanceMonitorUncleanExitBrowserTest
 
     base::FilePath second_profile =
         user_data_directory.AppendASCII(second_profile_name_);
-    CHECK(file_util::CreateDirectory(second_profile));
+    CHECK(base::CreateDirectory(second_profile));
 
     base::FilePath second_profile_prefs_file =
         second_profile.Append(chrome::kPreferencesFilename);

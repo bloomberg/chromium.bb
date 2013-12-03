@@ -304,7 +304,7 @@ TEST_F(ItunesFileUtilTest, ItunesAutoAddDirEnumerateNested) {
   data_provider()->SetProvideAutoAddDir(true);
   base::FilePath nested_dir =
       data_provider()->auto_add_path().AppendASCII("foo").AppendASCII("bar");
-  ASSERT_TRUE(file_util::CreateDirectory(nested_dir));
+  ASSERT_TRUE(base::CreateDirectory(nested_dir));
   ASSERT_EQ(0,
             file_util::WriteFile(nested_dir.AppendASCII("baz.ogg"), NULL, 0));
 

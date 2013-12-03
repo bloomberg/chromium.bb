@@ -1347,7 +1347,7 @@ void SavePackage::CreateDirectoryOnFileThread(
   if (!skip_dir_check && !base::DirectoryExists(website_save_dir)) {
     // If the default download dir doesn't exist, create it.
     if (!base::DirectoryExists(download_save_dir)) {
-      bool res = file_util::CreateDirectory(download_save_dir);
+      bool res = base::CreateDirectory(download_save_dir);
       DCHECK(res);
     }
     save_dir = download_save_dir;

@@ -74,7 +74,7 @@ class PreferenceServiceTest : public InProcessBrowserTest {
           base::FilePath().Append(chrome::kPreferencesFilename));
       tmp_pref_file_ =
           user_data_directory.AppendASCII(TestingProfile::kTestUserProfileDir);
-      CHECK(file_util::CreateDirectory(tmp_pref_file_));
+      CHECK(base::CreateDirectory(tmp_pref_file_));
       tmp_pref_file_ = tmp_pref_file_.Append(chrome::kPreferencesFilename);
     } else {
       reference_pref_file = ui_test_utils::GetTestFilePath(

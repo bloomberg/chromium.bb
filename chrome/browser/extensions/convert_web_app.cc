@@ -153,7 +153,7 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
 
   // Write the icon files.
   base::FilePath icons_dir = temp_dir.path().AppendASCII(kIconsDirName);
-  if (!file_util::CreateDirectory(icons_dir)) {
+  if (!base::CreateDirectory(icons_dir)) {
     LOG(ERROR) << "Could not create icons directory.";
     return NULL;
   }

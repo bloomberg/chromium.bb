@@ -234,7 +234,7 @@ static void CopyLevelDBToProfile(Shell* shell,
   // If we don't create the destination directory first, the contents of the
   // leveldb directory are copied directly into profile/IndexedDB instead of
   // profile/IndexedDB/file__0.xxx/
-  ASSERT_TRUE(file_util::CreateDirectory(dest));
+  ASSERT_TRUE(base::CreateDirectory(dest));
   const bool kRecursive = true;
   ASSERT_TRUE(base::CopyDirectory(test_data_dir,
                                   context->data_path(),

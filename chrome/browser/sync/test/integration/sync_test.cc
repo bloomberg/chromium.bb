@@ -228,7 +228,7 @@ Profile* SyncTest::MakeProfile(const base::FilePath::StringType name) {
   path = path.Append(name);
 
   if (!base::PathExists(path))
-    CHECK(file_util::CreateDirectory(path));
+    CHECK(base::CreateDirectory(path));
 
   Profile* profile =
       Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);

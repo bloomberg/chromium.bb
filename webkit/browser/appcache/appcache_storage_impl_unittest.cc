@@ -1634,7 +1634,7 @@ class AppCacheStorageImplTest : public testing::Test {
     const std::string kCorruptData("deadbeef");
     base::FilePath disk_cache_directory =
         temp_directory_.path().AppendASCII("Cache");
-    ASSERT_TRUE(file_util::CreateDirectory(disk_cache_directory));
+    ASSERT_TRUE(base::CreateDirectory(disk_cache_directory));
     base::FilePath index_file = disk_cache_directory.AppendASCII("index");
     EXPECT_EQ(static_cast<int>(kCorruptData.length()),
               file_util::WriteFile(

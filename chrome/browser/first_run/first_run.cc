@@ -175,7 +175,7 @@ base::FilePath GetDefaultPrefFilePath(bool create_profile_dir,
       profiles::GetDefaultProfileDir(user_data_dir);
   if (create_profile_dir) {
     if (!base::PathExists(default_pref_dir)) {
-      if (!file_util::CreateDirectory(default_pref_dir))
+      if (!base::CreateDirectory(default_pref_dir))
         return base::FilePath();
     }
   }

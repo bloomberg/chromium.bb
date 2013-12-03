@@ -339,7 +339,7 @@ TEST_F(FilePathWatcherTest, NonExistentDirectory) {
   scoped_ptr<TestDelegate> delegate(new TestDelegate(collector()));
   ASSERT_TRUE(SetupWatch(file, &watcher, delegate.get(), false));
 
-  ASSERT_TRUE(file_util::CreateDirectory(dir));
+  ASSERT_TRUE(base::CreateDirectory(dir));
 
   ASSERT_TRUE(WriteFile(file, "content"));
 
@@ -376,7 +376,7 @@ TEST_F(FilePathWatcherTest, DirectoryChain) {
   for (std::vector<std::string>::const_iterator d(dir_names.begin());
        d != dir_names.end(); ++d) {
     sub_path = sub_path.AppendASCII(*d);
-    ASSERT_TRUE(file_util::CreateDirectory(sub_path));
+    ASSERT_TRUE(base::CreateDirectory(sub_path));
   }
   VLOG(1) << "Create File";
   ASSERT_TRUE(WriteFile(file, "content"));
@@ -397,7 +397,7 @@ TEST_F(FilePathWatcherTest, DisappearingDirectory) {
   FilePathWatcher watcher;
   FilePath dir(temp_dir_.path().AppendASCII("dir"));
   FilePath file(dir.AppendASCII("file"));
-  ASSERT_TRUE(file_util::CreateDirectory(dir));
+  ASSERT_TRUE(base::CreateDirectory(dir));
   ASSERT_TRUE(WriteFile(file, "content"));
   scoped_ptr<TestDelegate> delegate(new TestDelegate(collector()));
   ASSERT_TRUE(SetupWatch(file, &watcher, delegate.get(), false));
@@ -432,7 +432,7 @@ TEST_F(FilePathWatcherTest, WatchDirectory) {
   scoped_ptr<TestDelegate> delegate(new TestDelegate(collector()));
   ASSERT_TRUE(SetupWatch(dir, &watcher, delegate.get(), false));
 
-  ASSERT_TRUE(file_util::CreateDirectory(dir));
+  ASSERT_TRUE(base::CreateDirectory(dir));
   VLOG(1) << "Waiting for directory creation";
   ASSERT_TRUE(WaitForEvents());
 
@@ -471,7 +471,7 @@ TEST_F(FilePathWatcherTest, MoveParent) {
                          false));
 
   // Setup a directory hierarchy.
-  ASSERT_TRUE(file_util::CreateDirectory(subdir));
+  ASSERT_TRUE(base::CreateDirectory(subdir));
   ASSERT_TRUE(WriteFile(file, "content"));
   VLOG(1) << "Waiting for file creation";
   ASSERT_TRUE(WaitForEvents());
@@ -492,7 +492,7 @@ TEST_F(FilePathWatcherTest, RecursiveWatch) {
   ASSERT_TRUE(SetupWatch(dir, &watcher, delegate.get(), true));
 
   // Main directory("dir") creation.
-  ASSERT_TRUE(file_util::CreateDirectory(dir));
+  ASSERT_TRUE(base::CreateDirectory(dir));
   ASSERT_TRUE(WaitForEvents());
 
   // Create "$dir/file1".
@@ -502,7 +502,7 @@ TEST_F(FilePathWatcherTest, RecursiveWatch) {
 
   // Create "$dir/subdir".
   FilePath subdir(dir.AppendASCII("subdir"));
-  ASSERT_TRUE(file_util::CreateDirectory(subdir));
+  ASSERT_TRUE(base::CreateDirectory(subdir));
   ASSERT_TRUE(WaitForEvents());
 
   // Create "$dir/subdir/subdir_file1".
@@ -512,7 +512,7 @@ TEST_F(FilePathWatcherTest, RecursiveWatch) {
 
   // Create "$dir/subdir/subdir_child_dir".
   FilePath subdir_child_dir(subdir.AppendASCII("subdir_child_dir"));
-  ASSERT_TRUE(file_util::CreateDirectory(subdir_child_dir));
+  ASSERT_TRUE(base::CreateDirectory(subdir_child_dir));
   ASSERT_TRUE(WaitForEvents());
 
   // Create "$dir/subdir/subdir_child_dir/child_dir_file1".
@@ -559,7 +559,7 @@ TEST_F(FilePathWatcherTest, MoveChild) {
   FilePath dest_file(dest_subdir.AppendASCII("file"));
 
   // Setup a directory hierarchy.
-  ASSERT_TRUE(file_util::CreateDirectory(source_subdir));
+  ASSERT_TRUE(base::CreateDirectory(source_subdir));
   ASSERT_TRUE(WriteFile(source_file, "content"));
 
   scoped_ptr<TestDelegate> file_delegate(new TestDelegate(collector()));
@@ -683,7 +683,7 @@ TEST_F(FilePathWatcherTest, LinkedDirectoryPart1) {
   FilePath linkfile(link_dir.AppendASCII("file"));
   scoped_ptr<TestDelegate> delegate(new TestDelegate(collector()));
   // dir/file should exist.
-  ASSERT_TRUE(file_util::CreateDirectory(dir));
+  ASSERT_TRUE(base::CreateDirectory(dir));
   ASSERT_TRUE(WriteFile(file, "content"));
   // Note that we are watching dir.lnk/file which doesn't exist yet.
   ASSERT_TRUE(SetupWatch(linkfile, &watcher, delegate.get(), false));
@@ -717,7 +717,7 @@ TEST_F(FilePathWatcherTest, LinkedDirectoryPart2) {
   // Note that we are watching dir.lnk/file.
   ASSERT_TRUE(SetupWatch(linkfile, &watcher, delegate.get(), false));
 
-  ASSERT_TRUE(file_util::CreateDirectory(dir));
+  ASSERT_TRUE(base::CreateDirectory(dir));
   ASSERT_TRUE(WriteFile(file, "content"));
   VLOG(1) << "Waiting for dir/file creation";
   ASSERT_TRUE(WaitForEvents());
@@ -741,7 +741,7 @@ TEST_F(FilePathWatcherTest, LinkedDirectoryPart3) {
   FilePath file(dir.AppendASCII("file"));
   FilePath linkfile(link_dir.AppendASCII("file"));
   scoped_ptr<TestDelegate> delegate(new TestDelegate(collector()));
-  ASSERT_TRUE(file_util::CreateDirectory(dir));
+  ASSERT_TRUE(base::CreateDirectory(dir));
   ASSERT_TRUE(CreateSymbolicLink(dir, link_dir));
   // Note that we are watching dir.lnk/file but the file doesn't exist yet.
   ASSERT_TRUE(SetupWatch(linkfile, &watcher, delegate.get(), false));
@@ -812,8 +812,8 @@ TEST_F(FilePathWatcherTest, DirAttributesChanged) {
   FilePath test_dir2(test_dir1.AppendASCII("DirAttributesChangedDir2"));
   FilePath test_file(test_dir2.AppendASCII("DirAttributesChangedFile"));
   // Setup a directory hierarchy.
-  ASSERT_TRUE(file_util::CreateDirectory(test_dir1));
-  ASSERT_TRUE(file_util::CreateDirectory(test_dir2));
+  ASSERT_TRUE(base::CreateDirectory(test_dir1));
+  ASSERT_TRUE(base::CreateDirectory(test_dir2));
   ASSERT_TRUE(WriteFile(test_file, "content"));
 
   FilePathWatcher watcher;

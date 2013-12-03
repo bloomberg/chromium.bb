@@ -82,7 +82,7 @@ void WriteLevel(const std::vector<int>& repo_path,
 
   // Don't keep the file open while recursing.
   {
-    file_util::CreateDirectory(dirname);
+    base::CreateDirectory(dirname);
 
     std::ofstream file;
     file.open(FilePathToUTF8(filename).c_str(),

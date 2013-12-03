@@ -501,7 +501,7 @@ TEST(URLFixerUpperTest, FixupRelativeFile) {
   base::FilePath sub_file(
       FILE_PATH_LITERAL("url fixer-upper existing file.txt"));
   base::FilePath new_dir = dir.Append(sub_dir);
-  file_util::CreateDirectory(new_dir);
+  base::CreateDirectory(new_dir);
   ASSERT_TRUE(MakeTempFile(new_dir, sub_file, &full_path));
   full_path = base::MakeAbsoluteFilePath(full_path);
   ASSERT_FALSE(full_path.empty());

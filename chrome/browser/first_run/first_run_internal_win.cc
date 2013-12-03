@@ -136,7 +136,7 @@ bool CreateEULASentinel() {
   if (!GetEULASentinelFilePath(&eula_sentinel))
     return false;
 
-  return (file_util::CreateDirectory(eula_sentinel.DirName()) &&
+  return (base::CreateDirectory(eula_sentinel.DirName()) &&
           file_util::WriteFile(eula_sentinel, "", 0) != -1);
 }
 

@@ -210,7 +210,7 @@ class VisitedLinkTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     history_dir_ = temp_dir_.path().AppendASCII("VisitedLinkTest");
-    ASSERT_TRUE(file_util::CreateDirectory(history_dir_));
+    ASSERT_TRUE(base::CreateDirectory(history_dir_));
 
     visited_file_ = history_dir_.Append(FILE_PATH_LITERAL("VisitedLinks"));
   }

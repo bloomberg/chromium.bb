@@ -544,7 +544,7 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
   base::Time start = base::Time::Now();
 
   const base::FilePath dir = path_.DirName();
-  if (!base::PathExists(dir) && !file_util::CreateDirectory(dir)) {
+  if (!base::PathExists(dir) && !base::CreateDirectory(dir)) {
     return false;
   }
 

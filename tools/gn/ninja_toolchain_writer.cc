@@ -47,7 +47,7 @@ bool NinjaToolchainWriter::RunAndWriteFile(
           settings->build_settings())));
   ScopedTrace trace(TraceItem::TRACE_FILE_WRITE, FilePathToUTF8(ninja_file));
 
-  file_util::CreateDirectory(ninja_file.DirName());
+  base::CreateDirectory(ninja_file.DirName());
 
   std::ofstream file;
   file.open(FilePathToUTF8(ninja_file).c_str(),

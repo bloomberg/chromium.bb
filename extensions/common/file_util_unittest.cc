@@ -62,7 +62,7 @@ TEST_F(FileUtilTest, ExtensionResourceURLToFilePath) {
   ASSERT_FALSE(root_path.empty());
 
   base::FilePath api_path = root_path.Append(FILE_PATH_LITERAL("apiname"));
-  ASSERT_TRUE(file_util::CreateDirectory(api_path));
+  ASSERT_TRUE(base::CreateDirectory(api_path));
 
   const char data[] = "Test Data";
   base::FilePath resource_path = api_path.Append(FILE_PATH_LITERAL("test.js"));

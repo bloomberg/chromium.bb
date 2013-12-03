@@ -86,7 +86,7 @@ class WrappedSimpleIndexFile : public SimpleIndexFile {
   }
 
   bool CreateIndexFileDirectory() const {
-    return file_util::CreateDirectory(index_file_.DirName());
+    return base::CreateDirectory(index_file_.DirName());
   }
 };
 

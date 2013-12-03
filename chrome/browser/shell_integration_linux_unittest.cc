@@ -182,7 +182,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     base::FilePath desktop_path = temp_dir.path();
 
     MockEnvironment env;
-    ASSERT_TRUE(file_util::CreateDirectory(desktop_path));
+    ASSERT_TRUE(base::CreateDirectory(desktop_path));
     ASSERT_FALSE(file_util::WriteFile(
         desktop_path.AppendASCII(kTemplateFilename),
         "", 0));
@@ -203,7 +203,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
 
     MockEnvironment env;
     env.Set("XDG_DATA_HOME", temp_dir.path().value());
-    ASSERT_TRUE(file_util::CreateDirectory(apps_path));
+    ASSERT_TRUE(base::CreateDirectory(apps_path));
     ASSERT_FALSE(file_util::WriteFile(
         apps_path.AppendASCII(kTemplateFilename),
         "", 0));
@@ -224,7 +224,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
 
     MockEnvironment env;
     env.Set("XDG_DATA_HOME", temp_dir.path().value());
-    ASSERT_TRUE(file_util::CreateDirectory(apps_path));
+    ASSERT_TRUE(base::CreateDirectory(apps_path));
     ASSERT_TRUE(file_util::WriteFile(
         apps_path.AppendASCII(kTemplateFilename),
         kNoDisplayDesktopFile, strlen(kNoDisplayDesktopFile)));
@@ -249,12 +249,12 @@ TEST(ShellIntegrationTest, GetExistingShortcutLocations) {
     base::FilePath apps_path = temp_dir2.path().AppendASCII("applications");
 
     MockEnvironment env;
-    ASSERT_TRUE(file_util::CreateDirectory(desktop_path));
+    ASSERT_TRUE(base::CreateDirectory(desktop_path));
     ASSERT_FALSE(file_util::WriteFile(
         desktop_path.AppendASCII(kTemplateFilename),
         "", 0));
     env.Set("XDG_DATA_HOME", temp_dir2.path().value());
-    ASSERT_TRUE(file_util::CreateDirectory(apps_path));
+    ASSERT_TRUE(base::CreateDirectory(apps_path));
     ASSERT_FALSE(file_util::WriteFile(
         apps_path.AppendASCII(kTemplateFilename),
         "", 0));
@@ -288,7 +288,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
     ASSERT_TRUE(file_util::WriteFile(
         temp_dir.path().AppendASCII(kTemplateFilename),
         kTestData2, strlen(kTestData2)));
-    ASSERT_TRUE(file_util::CreateDirectory(
+    ASSERT_TRUE(base::CreateDirectory(
         temp_dir.path().AppendASCII("applications")));
     ASSERT_TRUE(file_util::WriteFile(
         temp_dir.path().AppendASCII("applications")
@@ -308,7 +308,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
 
     MockEnvironment env;
     env.Set("HOME", temp_dir.path().value());
-    ASSERT_TRUE(file_util::CreateDirectory(
+    ASSERT_TRUE(base::CreateDirectory(
         temp_dir.path().AppendASCII(".local/share/applications")));
     ASSERT_TRUE(file_util::WriteFile(
         temp_dir.path().AppendASCII(".local/share/applications")
@@ -328,7 +328,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
 
     MockEnvironment env;
     env.Set("XDG_DATA_DIRS", temp_dir.path().value());
-    ASSERT_TRUE(file_util::CreateDirectory(
+    ASSERT_TRUE(base::CreateDirectory(
         temp_dir.path().AppendASCII("applications")));
     ASSERT_TRUE(file_util::WriteFile(
         temp_dir.path().AppendASCII("applications")
@@ -356,7 +356,7 @@ TEST(ShellIntegrationTest, GetExistingShortcutContents) {
         temp_dir1.path().AppendASCII(kTemplateFilename),
         kTestData1, strlen(kTestData1)));
     // Only create a findable desktop file in the second path.
-    ASSERT_TRUE(file_util::CreateDirectory(
+    ASSERT_TRUE(base::CreateDirectory(
         temp_dir2.path().AppendASCII("applications")));
     ASSERT_TRUE(file_util::WriteFile(
         temp_dir2.path().AppendASCII("applications")

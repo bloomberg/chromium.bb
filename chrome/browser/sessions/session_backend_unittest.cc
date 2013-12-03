@@ -35,7 +35,7 @@ class SessionBackendTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     path_ = temp_dir_.path().Append(FILE_PATH_LITERAL("SessionTestDirs"));
-    file_util::CreateDirectory(path_);
+    base::CreateDirectory(path_);
   }
 
   void AssertCommandEqualsData(const TestData& data, SessionCommand* command) {

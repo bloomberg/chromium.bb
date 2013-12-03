@@ -178,7 +178,7 @@ void InProcessBrowserTest::SetUp() {
 #if defined(OS_CHROMEOS)
   // Make sure that the log directory exists.
   base::FilePath log_dir = logging::GetSessionLogFile(*command_line).DirName();
-  file_util::CreateDirectory(log_dir);
+  base::CreateDirectory(log_dir);
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)

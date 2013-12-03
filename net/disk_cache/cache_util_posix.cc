@@ -19,7 +19,7 @@ bool MoveCache(const base::FilePath& from_path, const base::FilePath& to_path) {
   // to see these directories anymore in an unmounted encrypted
   // filesystem, so we just move each item in the cache to a new
   // directory.
-  if (!file_util::CreateDirectory(to_path)) {
+  if (!base::CreateDirectory(to_path)) {
     LOG(ERROR) << "Unable to create destination cache directory.";
     return false;
   }

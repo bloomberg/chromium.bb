@@ -183,7 +183,7 @@ void CreateReservation(
       (create_directory ||
        (!default_download_path.empty() &&
         (default_download_path == target_dir)))) {
-    file_util::CreateDirectory(target_dir);
+    base::CreateDirectory(target_dir);
   }
 
   // Check writability of the suggested path. If we can't write to it, default

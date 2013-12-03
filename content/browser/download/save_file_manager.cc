@@ -482,7 +482,7 @@ void SaveFileManager::RenameAllFiles(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   if (!resource_dir.empty() && !base::PathExists(resource_dir))
-    file_util::CreateDirectory(resource_dir);
+    base::CreateDirectory(resource_dir);
 
   for (FinalNameList::const_iterator i = final_names.begin();
       i != final_names.end(); ++i) {

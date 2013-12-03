@@ -31,7 +31,7 @@ namespace disk_cache {
 
 TEST_F(DiskCacheTest, BlockFiles_Grow) {
   ASSERT_TRUE(CleanupCacheDir());
-  ASSERT_TRUE(file_util::CreateDirectory(cache_path_));
+  ASSERT_TRUE(base::CreateDirectory(cache_path_));
 
   BlockFiles files(cache_path_);
   ASSERT_TRUE(files.Init(true));
@@ -57,7 +57,7 @@ TEST_F(DiskCacheTest, BlockFiles_Grow) {
 // We should be able to delete empty block files.
 TEST_F(DiskCacheTest, BlockFiles_Shrink) {
   ASSERT_TRUE(CleanupCacheDir());
-  ASSERT_TRUE(file_util::CreateDirectory(cache_path_));
+  ASSERT_TRUE(base::CreateDirectory(cache_path_));
 
   BlockFiles files(cache_path_);
   ASSERT_TRUE(files.Init(true));
@@ -80,7 +80,7 @@ TEST_F(DiskCacheTest, BlockFiles_Shrink) {
 // Handling of block files not properly closed.
 TEST_F(DiskCacheTest, BlockFiles_Recover) {
   ASSERT_TRUE(CleanupCacheDir());
-  ASSERT_TRUE(file_util::CreateDirectory(cache_path_));
+  ASSERT_TRUE(base::CreateDirectory(cache_path_));
 
   BlockFiles files(cache_path_);
   ASSERT_TRUE(files.Init(true));
@@ -157,7 +157,7 @@ TEST_F(DiskCacheTest, BlockFiles_Recover) {
 // Handling of truncated files.
 TEST_F(DiskCacheTest, BlockFiles_ZeroSizeFile) {
   ASSERT_TRUE(CleanupCacheDir());
-  ASSERT_TRUE(file_util::CreateDirectory(cache_path_));
+  ASSERT_TRUE(base::CreateDirectory(cache_path_));
 
   BlockFiles files(cache_path_);
   ASSERT_TRUE(files.Init(true));
@@ -178,7 +178,7 @@ TEST_F(DiskCacheTest, BlockFiles_ZeroSizeFile) {
 // Handling of truncated files (non empty).
 TEST_F(DiskCacheTest, BlockFiles_TruncatedFile) {
   ASSERT_TRUE(CleanupCacheDir());
-  ASSERT_TRUE(file_util::CreateDirectory(cache_path_));
+  ASSERT_TRUE(base::CreateDirectory(cache_path_));
 
   BlockFiles files(cache_path_);
   ASSERT_TRUE(files.Init(true));
@@ -201,7 +201,7 @@ TEST_F(DiskCacheTest, BlockFiles_TruncatedFile) {
 // Tests detection of out of sync counters.
 TEST_F(DiskCacheTest, BlockFiles_Counters) {
   ASSERT_TRUE(CleanupCacheDir());
-  ASSERT_TRUE(file_util::CreateDirectory(cache_path_));
+  ASSERT_TRUE(base::CreateDirectory(cache_path_));
 
   BlockFiles files(cache_path_);
   ASSERT_TRUE(files.Init(true));
@@ -256,7 +256,7 @@ TEST_F(DiskCacheTest, BlockFiles_Counters) {
 // An invalid file can be detected after init.
 TEST_F(DiskCacheTest, BlockFiles_InvalidFile) {
   ASSERT_TRUE(CleanupCacheDir());
-  ASSERT_TRUE(file_util::CreateDirectory(cache_path_));
+  ASSERT_TRUE(base::CreateDirectory(cache_path_));
 
   BlockFiles files(cache_path_);
   ASSERT_TRUE(files.Init(true));
@@ -302,7 +302,7 @@ TEST_F(DiskCacheTest, BlockFiles_Stats) {
 // Tests that we add and remove blocks correctly.
 TEST_F(DiskCacheTest, AllocationMap) {
   ASSERT_TRUE(CleanupCacheDir());
-  ASSERT_TRUE(file_util::CreateDirectory(cache_path_));
+  ASSERT_TRUE(base::CreateDirectory(cache_path_));
 
   BlockFiles files(cache_path_);
   ASSERT_TRUE(files.Init(true));

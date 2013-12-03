@@ -205,7 +205,7 @@ class LocalTestVolume {
 
     return mount_points->RegisterFileSystem(
         kDownloads, fileapi::kFileSystemTypeNativeLocal, local_path_) &&
-        file_util::CreateDirectory(local_path_);
+        base::CreateDirectory(local_path_);
   }
 
   void CreateEntry(const TestEntryInfo& entry) {
@@ -224,7 +224,7 @@ class LocalTestVolume {
         break;
       }
       case DIRECTORY:
-        ASSERT_TRUE(file_util::CreateDirectory(target_path)) <<
+        ASSERT_TRUE(base::CreateDirectory(target_path)) <<
             "Failed to create a directory: " << target_path.value();
         break;
     }

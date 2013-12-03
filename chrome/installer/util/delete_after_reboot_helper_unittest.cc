@@ -28,7 +28,7 @@ class DeleteAfterRebootHelperTest : public testing::Test {
     base::CreateTemporaryFileInDir(temp_dir_, &temp_file_);
 
     temp_subdir_ = temp_dir_.Append(L"subdir");
-    file_util::CreateDirectory(temp_subdir_);
+    base::CreateDirectory(temp_subdir_);
     base::CreateTemporaryFileInDir(temp_subdir_, &temp_subdir_file_);
 
     // Copy the current pending moves and then clear it if we can:

@@ -247,7 +247,7 @@ TEST_F(FileUtilProxyTest, GetFileInfo_File) {
 
 TEST_F(FileUtilProxyTest, GetFileInfo_Directory) {
   // Setup.
-  ASSERT_TRUE(file_util::CreateDirectory(test_path()));
+  ASSERT_TRUE(base::CreateDirectory(test_path()));
   PlatformFileInfo expected_info;
   file_util::GetFileInfo(test_path(), &expected_info);
 

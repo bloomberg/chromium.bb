@@ -98,7 +98,7 @@ void PopulateDirectoryWithTestCases(const base::FilePath& dir,
   for (size_t i = 0; i < n; ++i) {
     base::FilePath path = dir.Append(test_cases[i].path);
     if (test_cases[i].is_directory) {
-      ASSERT_TRUE(file_util::CreateDirectory(path));
+      ASSERT_TRUE(base::CreateDirectory(path));
     } else {
       ASSERT_TRUE(test_cases[i].content != NULL);
       int len = strlen(test_cases[i].content);
@@ -117,7 +117,7 @@ class NativeMediaFileUtilTest : public testing::Test {
 
   virtual void SetUp() {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(file_util::CreateDirectory(root_path()));
+    ASSERT_TRUE(base::CreateDirectory(root_path()));
 
     scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
         new quota::MockSpecialStoragePolicy();
@@ -287,7 +287,7 @@ TEST_F(NativeMediaFileUtilTest, CopySourceFiltering) {
       // Always start with an empty destination directory.
       // Copying to a non-empty destination directory is an invalid operation.
       ASSERT_TRUE(base::DeleteFile(dest_path, true));
-      ASSERT_TRUE(file_util::CreateDirectory(dest_path));
+      ASSERT_TRUE(base::CreateDirectory(dest_path));
 
       FileSystemURL root_url = CreateURL(FPL(""));
       FileSystemURL url = CreateURL(kFilteringTestCases[i].path);
@@ -320,7 +320,7 @@ TEST_F(NativeMediaFileUtilTest, CopyDestFiltering) {
       // Reset the test directory between the two loops to remove old
       // directories and create new ones that should pre-exist.
       ASSERT_TRUE(base::DeleteFile(root_path(), true));
-      ASSERT_TRUE(file_util::CreateDirectory(root_path()));
+      ASSERT_TRUE(base::CreateDirectory(root_path()));
       PopulateDirectoryWithTestCases(root_path(),
                                      kFilteringTestCases,
                                      arraysize(kFilteringTestCases));
@@ -392,7 +392,7 @@ TEST_F(NativeMediaFileUtilTest, MoveSourceFiltering) {
       // Always start with an empty destination directory.
       // Moving to a non-empty destination directory is an invalid operation.
       ASSERT_TRUE(base::DeleteFile(dest_path, true));
-      ASSERT_TRUE(file_util::CreateDirectory(dest_path));
+      ASSERT_TRUE(base::CreateDirectory(dest_path));
 
       FileSystemURL root_url = CreateURL(FPL(""));
       FileSystemURL url = CreateURL(kFilteringTestCases[i].path);
@@ -423,7 +423,7 @@ TEST_F(NativeMediaFileUtilTest, MoveDestFiltering) {
       // Reset the test directory between the two loops to remove old
       // directories and create new ones that should pre-exist.
       ASSERT_TRUE(base::DeleteFile(root_path(), true));
-      ASSERT_TRUE(file_util::CreateDirectory(root_path()));
+      ASSERT_TRUE(base::CreateDirectory(root_path()));
       PopulateDirectoryWithTestCases(root_path(),
                                      kFilteringTestCases,
                                      arraysize(kFilteringTestCases));

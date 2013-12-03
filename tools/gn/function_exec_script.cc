@@ -356,7 +356,7 @@ Value RunExecScript(Scope* scope,
   //
   // If this shows up on benchmarks, we can cache whether we've done this
   // or not and skip creating the directory.
-  file_util::CreateDirectory(startup_dir);
+  base::CreateDirectory(startup_dir);
 
   // Execute the process.
   // TODO(brettw) set the environment block.

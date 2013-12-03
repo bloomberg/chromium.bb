@@ -122,7 +122,7 @@ class DirectoryListerTest : public PlatformTest {
         for (int i = 0; i < kBranchingFactor; i++) {
           std::string dir_name = base::StringPrintf("child_dir_%d", i);
           base::FilePath dir_path = dir_data.first.AppendASCII(dir_name);
-          ASSERT_TRUE(file_util::CreateDirectory(dir_path));
+          ASSERT_TRUE(base::CreateDirectory(dir_path));
           directories.push_back(std::make_pair(dir_path, dir_data.second + 1));
         }
       }

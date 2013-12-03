@@ -349,7 +349,7 @@ void SyncBackendHostCore::DoInitialize(
 
   // Make sure that the directory exists before initializing the backend.
   // If it already exists, this will do no harm.
-  if (!file_util::CreateDirectory(sync_data_folder_path_)) {
+  if (!base::CreateDirectory(sync_data_folder_path_)) {
     DLOG(FATAL) << "Sync Data directory creation failed.";
   }
 

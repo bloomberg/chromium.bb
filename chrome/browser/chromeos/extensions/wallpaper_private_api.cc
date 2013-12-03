@@ -66,7 +66,7 @@ bool SaveData(int key, const std::string& file_name, const std::string& data) {
   base::FilePath data_dir;
   CHECK(PathService::Get(key, &data_dir));
   if (!base::DirectoryExists(data_dir) &&
-      !file_util::CreateDirectory(data_dir)) {
+      !base::CreateDirectory(data_dir)) {
     return false;
   }
   base::FilePath file_path = data_dir.Append(file_name);
@@ -83,7 +83,7 @@ bool SaveData(int key, const std::string& file_name, const std::string& data) {
 bool GetData(const base::FilePath& path, std::string* data) {
   base::FilePath data_dir = path.DirName();
   if (!base::DirectoryExists(data_dir) &&
-      !file_util::CreateDirectory(data_dir))
+      !base::CreateDirectory(data_dir))
     return false;
 
   return !base::PathExists(path) ||
@@ -573,7 +573,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
       sequence_token_));
   chromeos::UserImage wallpaper(*image.get());
   if (!base::PathExists(thumbnail_path.DirName()))
-    file_util::CreateDirectory(thumbnail_path.DirName());
+    base::CreateDirectory(thumbnail_path.DirName());
 
   scoped_refptr<base::RefCountedBytes> data;
   chromeos::WallpaperManager::Get()->ResizeWallpaper(

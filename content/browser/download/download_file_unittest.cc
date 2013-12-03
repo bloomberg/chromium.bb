@@ -461,7 +461,7 @@ TEST_F(DownloadFileTest, RenameError) {
   // Create a subdirectory.
   base::FilePath tempdir(
       initial_path.DirName().Append(FILE_PATH_LITERAL("tempdir")));
-  ASSERT_TRUE(file_util::CreateDirectory(tempdir));
+  ASSERT_TRUE(base::CreateDirectory(tempdir));
   base::FilePath target_path(tempdir.Append(initial_path.BaseName()));
 
   // Targets

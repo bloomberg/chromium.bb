@@ -2894,7 +2894,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_CrazyFilenames) {
   static const int kFlags = (base::PLATFORM_FILE_CREATE |
                base::PLATFORM_FILE_WRITE);
   base::FilePath origin(FILE_PATH_LITERAL("origin"));
-  ASSERT_TRUE(file_util::CreateDirectory(DestinationFile(browser(), origin)));
+  ASSERT_TRUE(base::CreateDirectory(DestinationFile(browser(), origin)));
 
   for (size_t index = 0; index < arraysize(kCrazyFilenames); ++index) {
     string16 crazy16;

@@ -38,7 +38,7 @@ void CreateShortcut(int dir_key, bool with_subdir,
   base::FilePath path = GetShortcutPath(dir_key, with_subdir);
   if (path.empty())
     return;
-  file_util::CreateDirectory(path.DirName());
+  base::CreateDirectory(path.DirName());
   base::win::ShortcutProperties properties;
 
   base::FilePath exe_path;

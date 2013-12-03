@@ -588,27 +588,9 @@ bool CreateNewTempDirectory(const FilePath::StringType& prefix,
   return CreateTemporaryDirInDirImpl(tmpdir, TempFileName(), new_temp_path);
 }
 
-
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
-using base::stat_wrapper_t;
-using base::CallStat;
-using base::CallLstat;
-using base::CreateAndOpenFdForTemporaryFile;
-using base::DirectoryExists;
-using base::FileEnumerator;
-using base::FilePath;
-using base::MakeAbsoluteFilePath;
-using base::RealPath;
-using base::VerifySpecificPathControlledByUser;
-
 bool CreateDirectoryAndGetError(const FilePath& full_path,
-                                base::PlatformFileError* error) {
-  base::ThreadRestrictions::AssertIOAllowed();  // For call to mkdir().
+                                PlatformFileError* error) {
+  ThreadRestrictions::AssertIOAllowed();  // For call to mkdir().
   std::vector<FilePath> subpaths;
 
   // Collect a list of all parent directories.
@@ -634,12 +616,29 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
     int saved_errno = errno;
     if (!DirectoryExists(*i)) {
       if (error)
-        *error = base::ErrnoToPlatformFileError(saved_errno);
+        *error = ErrnoToPlatformFileError(saved_errno);
       return false;
     }
   }
   return true;
 }
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
+
+using base::stat_wrapper_t;
+using base::CallStat;
+using base::CallLstat;
+using base::CreateAndOpenFdForTemporaryFile;
+using base::DirectoryExists;
+using base::FileEnumerator;
+using base::FilePath;
+using base::MakeAbsoluteFilePath;
+using base::RealPath;
+using base::VerifySpecificPathControlledByUser;
 
 base::FilePath MakeUniqueDirectory(const base::FilePath& path) {
   const int kMaxAttempts = 20;

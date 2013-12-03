@@ -63,7 +63,7 @@ TestExtensionPrefs::TestExtensionPrefs(base::SequencedTaskRunner* task_runner)
   EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
   preferences_file_ = temp_dir_.path().AppendASCII("Preferences");
   extensions_dir_ = temp_dir_.path().AppendASCII("Extensions");
-  EXPECT_TRUE(file_util::CreateDirectory(extensions_dir_));
+  EXPECT_TRUE(base::CreateDirectory(extensions_dir_));
 
   ResetPrefRegistry();
   RecreateExtensionPrefs();

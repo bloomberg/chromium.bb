@@ -96,7 +96,7 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
     PathService::Get(base::DIR_TEMP, &tmp_path);
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDirUnderPath(tmp_path));
     downloads_dir_ = tmp_dir_.path().Append("Downloads");
-    file_util::CreateDirectory(downloads_dir_);
+    base::CreateDirectory(downloads_dir_);
 
     // Must run after our setup because it actually runs the test.
     ExtensionBrowserTest::SetUp();

@@ -105,7 +105,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
     base::FilePath base = base_dir_.path();
     base::FilePath src_path = base.AppendASCII("src_fs");
-    ASSERT_TRUE(file_util::CreateDirectory(src_path));
+    ASSERT_TRUE(base::CreateDirectory(src_path));
 
     ScopedVector<fileapi::FileSystemBackend> additional_providers;
     additional_providers.push_back(new fileapi::TestFileSystemBackend(
@@ -126,7 +126,7 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
               file_util::WriteFile(test_file, content.data(), test_file_size_));
 
     base::FilePath dest_path = base.AppendASCII("dest_fs");
-    ASSERT_TRUE(file_util::CreateDirectory(dest_path));
+    ASSERT_TRUE(base::CreateDirectory(dest_path));
     std::string dest_fsid =
         fileapi::IsolatedContext::GetInstance()->RegisterFileSystemForPath(
             fileapi::kFileSystemTypeNativeMedia, dest_path, NULL);

@@ -100,11 +100,11 @@ FileError InitializeMetadata(
     internal::ResourceMetadata* resource_metadata,
     const ResourceIdCanonicalizer& id_canonicalizer,
     const base::FilePath& downloads_directory) {
-  if (!file_util::CreateDirectory(cache_root_directory.Append(
+  if (!base::CreateDirectory(cache_root_directory.Append(
           kMetadataDirectory)) ||
-      !file_util::CreateDirectory(cache_root_directory.Append(
+      !base::CreateDirectory(cache_root_directory.Append(
           kCacheFileDirectory)) ||
-      !file_util::CreateDirectory(cache_root_directory.Append(
+      !base::CreateDirectory(cache_root_directory.Append(
           kTemporaryFileDirectory))) {
     LOG(WARNING) << "Failed to create directories.";
     return FILE_ERROR_FAILED;

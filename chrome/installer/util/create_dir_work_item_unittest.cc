@@ -28,7 +28,7 @@ namespace {
 TEST_F(CreateDirWorkItemTest, CreatePath) {
   base::FilePath parent_dir(temp_dir_.path());
   parent_dir = parent_dir.AppendASCII("a");
-  file_util::CreateDirectory(parent_dir);
+  base::CreateDirectory(parent_dir);
   ASSERT_TRUE(base::PathExists(parent_dir));
 
   base::FilePath top_dir_to_create(parent_dir);
@@ -55,7 +55,7 @@ TEST_F(CreateDirWorkItemTest, CreatePath) {
 TEST_F(CreateDirWorkItemTest, CreateExistingPath) {
   base::FilePath dir_to_create(temp_dir_.path());
   dir_to_create = dir_to_create.AppendASCII("aa");
-  file_util::CreateDirectory(dir_to_create);
+  base::CreateDirectory(dir_to_create);
   ASSERT_TRUE(base::PathExists(dir_to_create));
 
   scoped_ptr<CreateDirWorkItem> work_item(
@@ -92,7 +92,7 @@ TEST_F(CreateDirWorkItemTest, CreateSharedPath) {
   // Create another directory under dir_to_create_2
   base::FilePath dir_to_create_4(dir_to_create_2);
   dir_to_create_4 = dir_to_create_4.AppendASCII("ddd");
-  file_util::CreateDirectory(dir_to_create_4);
+  base::CreateDirectory(dir_to_create_4);
   ASSERT_TRUE(base::PathExists(dir_to_create_4));
 
   work_item->Rollback();

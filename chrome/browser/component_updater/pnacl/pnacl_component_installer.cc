@@ -325,7 +325,7 @@ void StartPnaclUpdateRegistration(PnaclComponentInstaller* pci) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::FilePath path = pci->GetPnaclBaseDirectory();
   if (!base::PathExists(path)) {
-    if (!file_util::CreateDirectory(path)) {
+    if (!base::CreateDirectory(path)) {
       NOTREACHED() << "Could not create base Pnacl directory.";
       return;
     }

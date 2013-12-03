@@ -25,7 +25,7 @@ bool GetCrashServiceDirectory(base::FilePath* dir) {
     return false;
   temp_dir = temp_dir.Append(L"chrome_crashes");
   if (!base::PathExists(temp_dir)) {
-    if (!file_util::CreateDirectory(temp_dir))
+    if (!base::CreateDirectory(temp_dir))
       return false;
   }
   *dir = temp_dir;

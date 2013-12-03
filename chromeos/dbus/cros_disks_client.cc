@@ -476,7 +476,7 @@ class CrosDisksClientStubImpl : public CrosDisksClient {
     }
 
     // Just create an empty directory and shows it as the mounted directory.
-    if (!file_util::CreateDirectory(mounted_path)) {
+    if (!base::CreateDirectory(mounted_path)) {
       DLOG(ERROR) << "Failed to create directory at " << mounted_path.value();
       return MOUNT_ERROR_DIRECTORY_CREATION_FAILED;
     }

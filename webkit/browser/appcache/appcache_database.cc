@@ -1011,7 +1011,7 @@ bool AppCacheDatabase::LazyOpen(bool create_if_needed) {
   bool opened = false;
   if (use_in_memory_db) {
     opened = db_->OpenInMemory();
-  } else if (!file_util::CreateDirectory(db_file_path_.DirName())) {
+  } else if (!base::CreateDirectory(db_file_path_.DirName())) {
     LOG(ERROR) << "Failed to create appcache directory.";
   } else {
     opened = db_->Open(db_file_path_);
@@ -1196,7 +1196,7 @@ bool AppCacheDatabase::DeleteExistingAndCreateNewDatabase() {
   // This also deletes the disk cache data.
   base::FilePath directory = db_file_path_.DirName();
   if (!base::DeleteFile(directory, true) ||
-      !file_util::CreateDirectory(directory)) {
+      !base::CreateDirectory(directory)) {
     return false;
   }
 

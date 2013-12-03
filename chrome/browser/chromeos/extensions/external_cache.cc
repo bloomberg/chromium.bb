@@ -290,7 +290,7 @@ void ExternalCache::BackendCheckCacheContentsInternal(
   // Start by verifying that the cache_dir exists.
   if (!base::DirectoryExists(cache_dir)) {
     // Create it now.
-    if (!file_util::CreateDirectory(cache_dir)) {
+    if (!base::CreateDirectory(cache_dir)) {
       LOG(ERROR) << "Failed to create ExternalCache directory at "
                  << cache_dir.value();
     }
@@ -492,7 +492,7 @@ void ExternalCache::BackendInstallCacheEntry(
   if (!base::DirectoryExists(cache_dir)) {
     LOG(ERROR) << "AppPack cache directory does not exist, creating now: "
                << cache_dir.value();
-    if (!file_util::CreateDirectory(cache_dir)) {
+    if (!base::CreateDirectory(cache_dir)) {
       LOG(ERROR) << "Failed to create the AppPack cache dir!";
       base::DeleteFile(path, true /* recursive */);
       return;

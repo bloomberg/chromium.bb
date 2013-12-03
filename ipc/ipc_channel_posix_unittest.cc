@@ -159,7 +159,7 @@ void IPCChannelPosixTest::SetUpSocket(IPC::ChannelHandle *handle,
     // Make sure the path we need exists.
     base::FilePath path(name);
     base::FilePath dir_path = path.DirName();
-    ASSERT_TRUE(file_util::CreateDirectory(dir_path));
+    ASSERT_TRUE(base::CreateDirectory(dir_path));
     ASSERT_GE(bind(socket_fd,
                    reinterpret_cast<struct sockaddr *>(&server_address),
                    server_address_len), 0) << server_address.sun_path

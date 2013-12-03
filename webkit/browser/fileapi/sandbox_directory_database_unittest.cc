@@ -83,7 +83,7 @@ class SandboxDirectoryDatabaseTest : public testing::Test {
 
     base::FilePath local_path = path().Append(data_path);
     if (!base::DirectoryExists(local_path.DirName()))
-      ASSERT_TRUE(file_util::CreateDirectory(local_path.DirName()));
+      ASSERT_TRUE(base::CreateDirectory(local_path.DirName()));
 
     bool created = false;
     base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
@@ -102,7 +102,7 @@ class SandboxDirectoryDatabaseTest : public testing::Test {
   void ClearDatabaseAndDirectory() {
     db_.reset();
     ASSERT_TRUE(base::DeleteFile(path(), true /* recursive */));
-    ASSERT_TRUE(file_util::CreateDirectory(path()));
+    ASSERT_TRUE(base::CreateDirectory(path()));
     db_.reset(new SandboxDirectoryDatabase(path()));
   }
 

@@ -43,7 +43,7 @@ void SetUpOneTestCase(const base::FilePath& root_path,
                       const TestCaseRecord& test_case) {
   base::FilePath path = root_path.Append(test_case.path);
   if (test_case.is_directory) {
-    ASSERT_TRUE(file_util::CreateDirectory(path));
+    ASSERT_TRUE(base::CreateDirectory(path));
     return;
   }
   base::PlatformFileError error_code;

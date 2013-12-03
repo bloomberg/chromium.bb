@@ -142,7 +142,7 @@ void TestHarness::WriteConfigFile(const base::DictionaryValue& dict,
   JSONStringValueSerializer serializer(&data);
   serializer.Serialize(dict);
   const base::FilePath mandatory_dir(test_dir().Append(kMandatoryPath));
-  ASSERT_TRUE(file_util::CreateDirectory(mandatory_dir));
+  ASSERT_TRUE(base::CreateDirectory(mandatory_dir));
   const base::FilePath file_path(mandatory_dir.AppendASCII(file_name));
   ASSERT_EQ((int) data.size(),
             file_util::WriteFile(file_path, data.c_str(), data.size()));

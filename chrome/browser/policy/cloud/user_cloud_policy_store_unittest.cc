@@ -115,7 +115,7 @@ TEST_F(UserCloudPolicyStoreTest, LoadWithInvalidFile) {
   EXPECT_TRUE(store_->policy_map().empty());
 
   // Create a bogus file.
-  ASSERT_TRUE(file_util::CreateDirectory(policy_file().DirName()));
+  ASSERT_TRUE(base::CreateDirectory(policy_file().DirName()));
   std::string bogus_data = "bogus_data";
   int size = bogus_data.size();
   ASSERT_EQ(size, file_util::WriteFile(policy_file(),
@@ -148,7 +148,7 @@ TEST_F(UserCloudPolicyStoreTest, LoadImmediatelyWithInvalidFile) {
   EXPECT_TRUE(store_->policy_map().empty());
 
   // Create a bogus file.
-  ASSERT_TRUE(file_util::CreateDirectory(policy_file().DirName()));
+  ASSERT_TRUE(base::CreateDirectory(policy_file().DirName()));
   std::string bogus_data = "bogus_data";
   int size = bogus_data.size();
   ASSERT_EQ(size, file_util::WriteFile(policy_file(),

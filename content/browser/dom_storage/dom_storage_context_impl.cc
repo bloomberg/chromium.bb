@@ -68,7 +68,7 @@ DOMStorageNamespace* DOMStorageContextImpl::GetStorageNamespace(
   if (found == namespaces_.end()) {
     if (namespace_id == kLocalStorageNamespaceId) {
       if (!localstorage_directory_.empty()) {
-        if (!file_util::CreateDirectory(localstorage_directory_)) {
+        if (!base::CreateDirectory(localstorage_directory_)) {
           LOG(ERROR) << "Failed to create 'Local Storage' directory,"
                         " falling back to in-memory only.";
           localstorage_directory_ = base::FilePath();

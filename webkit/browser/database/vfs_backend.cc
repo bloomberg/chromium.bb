@@ -63,7 +63,7 @@ void VfsBackend::OpenFile(const base::FilePath& file_path,
   // Verify the flags for consistency and create the database
   // directory if it doesn't exist.
   if (!OpenFileFlagsAreConsistent(desired_flags) ||
-      !file_util::CreateDirectory(file_path.DirName()))
+      !base::CreateDirectory(file_path.DirName()))
     return;
 
   int flags = 0;

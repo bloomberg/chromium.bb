@@ -216,7 +216,7 @@ bool PrintJobHandler::SavePrintJob(const std::string& content,
   base::FilePath directory(kJobsPath);
 
   if (!base::DirectoryExists(directory) &&
-      !file_util::CreateDirectory(directory)) {
+      !base::CreateDirectory(directory)) {
     return false;
   }
 

@@ -2407,7 +2407,7 @@ TEST_F(ObfuscatedFileUtilTest, MigrationBackFromIsolated) {
 
     // Populate the origin directory with some fake data.
     old_directory_db_path = data_dir_path().Append(path);
-    ASSERT_TRUE(file_util::CreateDirectory(old_directory_db_path));
+    ASSERT_TRUE(base::CreateDirectory(old_directory_db_path));
     EXPECT_EQ(static_cast<int>(kFakeDirectoryData.size()),
               file_util::WriteFile(old_directory_db_path.AppendASCII("dummy"),
                                    kFakeDirectoryData.data(),

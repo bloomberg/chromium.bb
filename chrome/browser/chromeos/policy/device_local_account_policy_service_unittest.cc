@@ -549,12 +549,12 @@ TEST_F(DeviceLocalAccountPolicyExtensionCacheTest, Startup) {
       base::StringPrintf("%s-%s.crx", kExtensionID, kExtensionVersion);
 
   // Create and pre-populate a cache directory for account 1.
-  EXPECT_TRUE(file_util::CreateDirectory(cache_dir_1_));
+  EXPECT_TRUE(base::CreateDirectory(cache_dir_1_));
   EXPECT_TRUE(CopyFile(source_crx_file,
                        cache_dir_1_.Append(target_crx_file_name)));
 
   // Create and pre-populate a cache directory for account 3.
-  EXPECT_TRUE(file_util::CreateDirectory(cache_dir_3_));
+  EXPECT_TRUE(base::CreateDirectory(cache_dir_3_));
   EXPECT_TRUE(CopyFile(source_crx_file,
                        cache_dir_3_.Append(target_crx_file_name)));
 

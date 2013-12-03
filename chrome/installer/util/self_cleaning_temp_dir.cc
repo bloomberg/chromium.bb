@@ -58,7 +58,7 @@ bool SelfCleaningTempDir::Initialize(const base::FilePath& parent_dir,
   base::FilePath base_dir;
   GetTopDirToCreate(parent_dir, &base_dir);
 
-  if (file_util::CreateDirectory(temp_dir)) {
+  if (base::CreateDirectory(temp_dir)) {
     base_dir_ = base_dir;
     temp_dir_ = temp_dir;
     return true;

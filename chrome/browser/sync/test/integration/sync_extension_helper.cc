@@ -308,7 +308,7 @@ scoped_refptr<Extension> CreateExtension(const base::FilePath& base_dir,
   const base::FilePath sub_dir = base::FilePath().AppendASCII(name);
   base::FilePath extension_dir;
   if (!base::PathExists(base_dir) &&
-      !file_util::CreateDirectory(base_dir)) {
+      !base::CreateDirectory(base_dir)) {
     ADD_FAILURE();
     return NULL;
   }

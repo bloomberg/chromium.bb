@@ -236,7 +236,7 @@ base::FilePath StorageMonitorCrosTest::CreateMountPoint(
   base::FilePath path(return_path);
   if (with_dcim_dir)
     path = path.Append(kDCIMDirectoryName);
-  if (!file_util::CreateDirectory(path))
+  if (!base::CreateDirectory(path))
     return base::FilePath();
   return return_path;
 }

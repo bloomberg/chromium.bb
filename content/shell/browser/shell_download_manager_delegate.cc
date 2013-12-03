@@ -112,7 +112,7 @@ void ShellDownloadManagerDelegate::GenerateFilename(
     const base::FilePath& suggested_directory) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!base::PathExists(suggested_directory))
-    file_util::CreateDirectory(suggested_directory);
+    base::CreateDirectory(suggested_directory);
 
   base::FilePath suggested_path(suggested_directory.Append(generated_name));
   BrowserThread::PostTask(

@@ -513,7 +513,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_ATTEMPT_NON_ASCII,
                         origin_url);
   }
-  if (!file_util::CreateDirectory(path_base)) {
+  if (!base::CreateDirectory(path_base)) {
     LOG(ERROR) << "Unable to create IndexedDB database path "
                << path_base.AsUTF8Unsafe();
     HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_DIRECTORY,

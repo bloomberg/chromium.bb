@@ -59,7 +59,7 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestDownloadDirPref) {
   }
 
   // Create the new downloads directory.
-  file_util::CreateDirectory(new_download_dir);
+  base::CreateDirectory(new_download_dir);
   // Set pref to download in new_download_dir.
   browser()->profile()->GetPrefs()->SetFilePath(
       prefs::kDownloadDefaultDirectory,

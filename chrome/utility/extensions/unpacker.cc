@@ -170,7 +170,7 @@ bool Unpacker::Run() {
   temp_install_dir_ =
       extension_path_.DirName().AppendASCII(kTempExtensionName);
 
-  if (!file_util::CreateDirectory(temp_install_dir_)) {
+  if (!base::CreateDirectory(temp_install_dir_)) {
     SetUTF16Error(
         l10n_util::GetStringFUTF16(
             IDS_EXTENSION_PACKAGE_DIRECTORY_ERROR,

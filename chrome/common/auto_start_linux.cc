@@ -33,7 +33,7 @@ bool AutoStart::AddApplication(const std::string& autostart_filename,
   scoped_ptr<base::Environment> environment(base::Environment::Create());
   base::FilePath autostart_directory = GetAutostartDirectory(environment.get());
   if (!base::DirectoryExists(autostart_directory) &&
-      !file_util::CreateDirectory(autostart_directory)) {
+      !base::CreateDirectory(autostart_directory)) {
     return false;
   }
 

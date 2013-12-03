@@ -55,7 +55,7 @@ TEST_F(LzmaUtilTest, UnPackTest) {
   base::FilePath extract_dir(temp_dir_.path());
   extract_dir = extract_dir.AppendASCII("UnPackTest");
   ASSERT_FALSE(base::PathExists(extract_dir));
-  EXPECT_TRUE(file_util::CreateDirectory(extract_dir));
+  EXPECT_TRUE(base::CreateDirectory(extract_dir));
   ASSERT_TRUE(base::PathExists(extract_dir));
 
   base::FilePath archive = data_dir_.AppendASCII("archive1.7z");
@@ -96,7 +96,7 @@ TEST_F(LzmaUtilTest, UnPackArchiveTest) {
   base::FilePath extract_dir(temp_dir_.path());
   extract_dir = extract_dir.AppendASCII("UnPackArchiveTest");
   ASSERT_FALSE(base::PathExists(extract_dir));
-  EXPECT_TRUE(file_util::CreateDirectory(extract_dir));
+  EXPECT_TRUE(base::CreateDirectory(extract_dir));
   ASSERT_TRUE(base::PathExists(extract_dir));
 
   base::FilePath archive = data_dir_.AppendASCII("archive1.7z");

@@ -111,7 +111,7 @@ bool NinjaBuildWriter::RunAndWriteFile(
 
   base::FilePath ninja_file(build_settings->GetFullPath(
       SourceFile(build_settings->build_dir().value() + "build.ninja")));
-  file_util::CreateDirectory(ninja_file.DirName());
+  base::CreateDirectory(ninja_file.DirName());
 
   std::ofstream file;
   file.open(FilePathToUTF8(ninja_file).c_str(),

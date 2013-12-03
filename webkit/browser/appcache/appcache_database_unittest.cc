@@ -55,7 +55,7 @@ TEST(AppCacheDatabaseTest, ReCreate) {
   const base::FilePath kDbFile = temp_dir.path().AppendASCII("appcache.db");
   const base::FilePath kNestedDir = temp_dir.path().AppendASCII("nested");
   const base::FilePath kOtherFile =  kNestedDir.AppendASCII("other_file");
-  EXPECT_TRUE(file_util::CreateDirectory(kNestedDir));
+  EXPECT_TRUE(base::CreateDirectory(kNestedDir));
   EXPECT_EQ(3, file_util::WriteFile(kOtherFile, "foo", 3));
 
   AppCacheDatabase db(kDbFile);

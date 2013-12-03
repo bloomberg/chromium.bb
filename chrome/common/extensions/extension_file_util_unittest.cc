@@ -36,11 +36,11 @@ TEST_F(ExtensionFileUtilTest, InstallUninstallGarbageCollect) {
   std::string extension_id("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   std::string version("1.0");
   base::FilePath src = temp.path().AppendASCII(extension_id);
-  ASSERT_TRUE(file_util::CreateDirectory(src));
+  ASSERT_TRUE(base::CreateDirectory(src));
 
   // Create a extensions tree.
   base::FilePath all_extensions = temp.path().AppendASCII("extensions");
-  ASSERT_TRUE(file_util::CreateDirectory(all_extensions));
+  ASSERT_TRUE(base::CreateDirectory(all_extensions));
 
   // Install in empty directory. Should create parent directories as needed.
   base::FilePath version_1 = extension_file_util::InstallExtension(
@@ -57,7 +57,7 @@ TEST_F(ExtensionFileUtilTest, InstallUninstallGarbageCollect) {
   ASSERT_FALSE(base::DirectoryExists(src));
 
   // Install again. Should create a new one with different name.
-  ASSERT_TRUE(file_util::CreateDirectory(src));
+  ASSERT_TRUE(base::CreateDirectory(src));
   base::FilePath version_2 = extension_file_util::InstallExtension(
       src,
       extension_id,
@@ -72,7 +72,7 @@ TEST_F(ExtensionFileUtilTest, InstallUninstallGarbageCollect) {
   ASSERT_FALSE(base::DirectoryExists(src));
 
   // Install yet again. Should create a new one with a different name.
-  ASSERT_TRUE(file_util::CreateDirectory(src));
+  ASSERT_TRUE(base::CreateDirectory(src));
   base::FilePath version_3 = extension_file_util::InstallExtension(
       src,
       extension_id,
@@ -139,7 +139,7 @@ TEST_F(ExtensionFileUtilTest, CheckIllegalFilenamesNoUnderscores) {
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   base::FilePath src_path = temp.path().AppendASCII("some_dir");
-  ASSERT_TRUE(file_util::CreateDirectory(src_path));
+  ASSERT_TRUE(base::CreateDirectory(src_path));
 
   std::string data = "{ \"name\": { \"message\": \"foobar\" } }";
   ASSERT_TRUE(file_util::WriteFile(src_path.AppendASCII("some_file.txt"),
@@ -158,7 +158,7 @@ TEST_F(ExtensionFileUtilTest, CheckIllegalFilenamesOnlyReserved) {
 
   for (size_t i = 0; i < arraysize(folders); i++) {
     base::FilePath src_path = temp.path().Append(folders[i]);
-    ASSERT_TRUE(file_util::CreateDirectory(src_path));
+    ASSERT_TRUE(base::CreateDirectory(src_path));
   }
 
   std::string error;
@@ -171,10 +171,10 @@ TEST_F(ExtensionFileUtilTest, CheckIllegalFilenamesReservedAndIllegal) {
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   base::FilePath src_path = temp.path().Append(extensions::kLocaleFolder);
-  ASSERT_TRUE(file_util::CreateDirectory(src_path));
+  ASSERT_TRUE(base::CreateDirectory(src_path));
 
   src_path = temp.path().AppendASCII("_some_dir");
-  ASSERT_TRUE(file_util::CreateDirectory(src_path));
+  ASSERT_TRUE(base::CreateDirectory(src_path));
 
   std::string error;
   EXPECT_FALSE(extension_file_util::CheckForIllegalFilenames(temp.path(),
@@ -357,7 +357,7 @@ TEST_F(ExtensionFileUtilTest, FindPrivateKeyFiles) {
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   base::FilePath src_path = temp.path().AppendASCII("some_dir");
-  ASSERT_TRUE(file_util::CreateDirectory(src_path));
+  ASSERT_TRUE(base::CreateDirectory(src_path));
 
   ASSERT_TRUE(file_util::WriteFile(src_path.AppendASCII("a_key.pem"),
                                    private_key, arraysize(private_key)));
@@ -383,7 +383,7 @@ TEST_F(ExtensionFileUtilTest, WarnOnPrivateKey) {
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   base::FilePath ext_path = temp.path().AppendASCII("ext_root");
-  ASSERT_TRUE(file_util::CreateDirectory(ext_path));
+  ASSERT_TRUE(base::CreateDirectory(ext_path));
 
   const char manifest[] =
       "{\n"

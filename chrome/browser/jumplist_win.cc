@@ -737,7 +737,7 @@ void JumpList::RunUpdate() {
   if (base::PathExists(icon_dir_old))
     base::DeleteFile(icon_dir_old, true);
   base::Move(icon_dir_, icon_dir_old);
-  file_util::CreateDirectory(icon_dir_);
+  base::CreateDirectory(icon_dir_);
 
   // Create temporary icon files for shortcuts in the "Most Visited" category.
   CreateIconFiles(local_most_visited_pages);

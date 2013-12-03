@@ -50,9 +50,9 @@ TEST(ExtensionResourceTest, ResourcesOutsideOfPath) {
   ASSERT_TRUE(temp.CreateUniqueTempDir());
 
   base::FilePath inner_dir = temp.path().AppendASCII("directory");
-  ASSERT_TRUE(file_util::CreateDirectory(inner_dir));
+  ASSERT_TRUE(base::CreateDirectory(inner_dir));
   base::FilePath sub_dir = inner_dir.AppendASCII("subdir");
-  ASSERT_TRUE(file_util::CreateDirectory(sub_dir));
+  ASSERT_TRUE(base::CreateDirectory(sub_dir));
   base::FilePath inner_file = inner_dir.AppendASCII("inner");
   base::FilePath outer_file = temp.path().AppendASCII("outer");
   ASSERT_TRUE(file_util::WriteFile(outer_file, "X", 1));
@@ -128,7 +128,7 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   // Create l10n resources (for current locale and its parents).
   base::FilePath l10n_path =
       temp.path().Append(kLocaleFolder);
-  ASSERT_TRUE(file_util::CreateDirectory(l10n_path));
+  ASSERT_TRUE(base::CreateDirectory(l10n_path));
 
   std::vector<std::string> locales;
   l10n_util::GetParentLocales(l10n_util::GetApplicationLocale(std::string()),
@@ -137,7 +137,7 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   for (size_t i = 0; i < locales.size(); i++) {
     base::FilePath make_path;
     make_path = l10n_path.AppendASCII(locales[i]);
-    ASSERT_TRUE(file_util::CreateDirectory(make_path));
+    ASSERT_TRUE(base::CreateDirectory(make_path));
     ASSERT_TRUE(file_util::WriteFile(make_path.AppendASCII(filename),
         data.c_str(), data.length()));
   }

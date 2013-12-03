@@ -209,7 +209,7 @@ void RegisterSwiftShaderPath(ComponentUpdateService* cus) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::FilePath path = GetSwiftShaderBaseDirectory();
   if (!base::PathExists(path)) {
-    if (!file_util::CreateDirectory(path)) {
+    if (!base::CreateDirectory(path)) {
       NOTREACHED() << "Could not create SwiftShader directory.";
       return;
     }

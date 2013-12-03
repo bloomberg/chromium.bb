@@ -65,9 +65,9 @@ class PortMonitorTest : public testing::Test  {
     base::FilePath path;
     PathService::Get(base::DIR_LOCAL_APP_DATA, &path);
     base::FilePath main_path = path.Append(kChromeExePath);
-    ASSERT_TRUE(file_util::CreateDirectory(main_path));
+    ASSERT_TRUE(base::CreateDirectory(main_path));
     base::FilePath alternate_path = path.Append(kAlternateChromeExePath);
-    ASSERT_TRUE(file_util::CreateDirectory(alternate_path));
+    ASSERT_TRUE(base::CreateDirectory(alternate_path));
   }
 
   virtual void DeleteTempChromeExeFiles() {

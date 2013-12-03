@@ -84,7 +84,7 @@ TEST_F(CopyTreeWorkItemTest, CopyFile) {
   // Create destination path
   base::FilePath dir_name_to(test_dir_.path());
   dir_name_to = dir_name_to.AppendASCII("Copy_To_Subdir");
-  file_util::CreateDirectory(dir_name_to);
+  base::CreateDirectory(dir_name_to);
   ASSERT_TRUE(base::PathExists(dir_name_to));
 
   base::FilePath file_name_to(dir_name_to);
@@ -124,7 +124,7 @@ TEST_F(CopyTreeWorkItemTest, CopyFileOverwrite) {
   // Create destination file
   base::FilePath dir_name_to(test_dir_.path());
   dir_name_to = dir_name_to.AppendASCII("Copy_To_Subdir");
-  file_util::CreateDirectory(dir_name_to);
+  base::CreateDirectory(dir_name_to);
   ASSERT_TRUE(base::PathExists(dir_name_to));
 
   base::FilePath file_name_to(dir_name_to);
@@ -194,7 +194,7 @@ TEST_F(CopyTreeWorkItemTest, CopyFileSameContent) {
   // Create destination file
   base::FilePath dir_name_to(test_dir_.path());
   dir_name_to = dir_name_to.AppendASCII("Copy_To_Subdir");
-  file_util::CreateDirectory(dir_name_to);
+  base::CreateDirectory(dir_name_to);
   ASSERT_TRUE(base::PathExists(dir_name_to));
 
   base::FilePath file_name_to(dir_name_to);
@@ -275,7 +275,7 @@ TEST_F(CopyTreeWorkItemTest, CopyFileAndCleanup) {
   // Create destination file
   base::FilePath dir_name_to(test_dir_.path());
   dir_name_to = dir_name_to.AppendASCII("Copy_To_Subdir");
-  file_util::CreateDirectory(dir_name_to);
+  base::CreateDirectory(dir_name_to);
   ASSERT_TRUE(base::PathExists(dir_name_to));
 
   base::FilePath file_name_to(dir_name_to);
@@ -331,7 +331,7 @@ TEST_F(CopyTreeWorkItemTest, CopyFileInUse) {
 
   base::FilePath dir_name_to(test_dir_.path());
   dir_name_to = dir_name_to.AppendASCII("Copy_To_Subdir");
-  file_util::CreateDirectory(dir_name_to);
+  base::CreateDirectory(dir_name_to);
   ASSERT_TRUE(base::PathExists(dir_name_to));
 
   base::FilePath file_name_to(dir_name_to);
@@ -410,7 +410,7 @@ TEST_F(CopyTreeWorkItemTest, NewNameAndCopyTest) {
 
   base::FilePath dir_name_to(test_dir_.path());
   dir_name_to = dir_name_to.AppendASCII("Copy_To_Subdir");
-  file_util::CreateDirectory(dir_name_to);
+  base::CreateDirectory(dir_name_to);
   ASSERT_TRUE(base::PathExists(dir_name_to));
 
   base::FilePath file_name_to(dir_name_to), alternate_to(dir_name_to);
@@ -521,7 +521,7 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_IfNotPresentTest) {
 
   base::FilePath dir_name_to(test_dir_.path());
   dir_name_to = dir_name_to.AppendASCII("Copy_To_Subdir");
-  file_util::CreateDirectory(dir_name_to);
+  base::CreateDirectory(dir_name_to);
   ASSERT_TRUE(base::PathExists(dir_name_to));
   base::FilePath file_name_to(dir_name_to);
   file_name_to = file_name_to.AppendASCII("File_To");
@@ -603,7 +603,7 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_CopyFileInUseAndCleanup) {
 
   base::FilePath dir_name_to(test_dir_.path());
   dir_name_to = dir_name_to.AppendASCII("Copy_To_Subdir");
-  file_util::CreateDirectory(dir_name_to);
+  base::CreateDirectory(dir_name_to);
   ASSERT_TRUE(base::PathExists(dir_name_to));
 
   base::FilePath file_name_to(dir_name_to);
@@ -666,17 +666,17 @@ TEST_F(CopyTreeWorkItemTest, DISABLED_CopyTree) {
   // Create source tree
   base::FilePath dir_name_from(test_dir_.path());
   dir_name_from = dir_name_from.AppendASCII("from");
-  file_util::CreateDirectory(dir_name_from);
+  base::CreateDirectory(dir_name_from);
   ASSERT_TRUE(base::PathExists(dir_name_from));
 
   base::FilePath dir_name_from_1(dir_name_from);
   dir_name_from_1 = dir_name_from_1.AppendASCII("1");
-  file_util::CreateDirectory(dir_name_from_1);
+  base::CreateDirectory(dir_name_from_1);
   ASSERT_TRUE(base::PathExists(dir_name_from_1));
 
   base::FilePath dir_name_from_2(dir_name_from);
   dir_name_from_2 = dir_name_from_2.AppendASCII("2");
-  file_util::CreateDirectory(dir_name_from_2);
+  base::CreateDirectory(dir_name_from_2);
   ASSERT_TRUE(base::PathExists(dir_name_from_2));
 
   base::FilePath file_name_from_1(dir_name_from_1);

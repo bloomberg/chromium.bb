@@ -88,19 +88,19 @@ bool InitializeLocalFileSystem(base::ScopedTempDir* tmp_dir,
 
   *mount_point_dir = tmp_dir->path().AppendASCII("mount");
   // Create the mount point.
-  if (!file_util::CreateDirectory(*mount_point_dir))
+  if (!base::CreateDirectory(*mount_point_dir))
     return false;
 
   base::FilePath test_dir = mount_point_dir->AppendASCII("test_dir");
-  if (!file_util::CreateDirectory(test_dir))
+  if (!base::CreateDirectory(test_dir))
     return false;
 
   base::FilePath test_subdir = test_dir.AppendASCII("empty_test_dir");
-  if (!file_util::CreateDirectory(test_subdir))
+  if (!base::CreateDirectory(test_subdir))
     return false;
 
   test_subdir = test_dir.AppendASCII("subdir");
-  if (!file_util::CreateDirectory(test_subdir))
+  if (!base::CreateDirectory(test_subdir))
     return false;
 
   base::FilePath test_file = test_dir.AppendASCII("test_file.xul");

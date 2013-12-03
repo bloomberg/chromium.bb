@@ -279,7 +279,7 @@ GDataErrorCode FakeDriveServiceHelper::CompleteListing(
 void FakeDriveServiceHelper::Initialize() {
   ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
   temp_dir_ = base_dir_.path().Append(FPL("tmp"));
-  ASSERT_TRUE(file_util::CreateDirectory(temp_dir_));
+  ASSERT_TRUE(base::CreateDirectory(temp_dir_));
 }
 
 base::FilePath FakeDriveServiceHelper::WriteToTempFile(

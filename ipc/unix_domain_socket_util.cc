@@ -84,7 +84,7 @@ bool CreateServerUnixDomainSocket(const base::FilePath& socket_path,
   file_util::ScopedFD scoped_fd(&fd);
 
   // Make sure the path we need exists.
-  if (!file_util::CreateDirectory(socket_dir)) {
+  if (!base::CreateDirectory(socket_dir)) {
     LOG(ERROR) << "Couldn't create directory: " << socket_dir.value();
     return false;
   }

@@ -45,7 +45,7 @@ void CreateSnapshotFileOnBlockingPool(
   DCHECK(snapshot_file_path);
   base::FilePath isolated_media_file_system_dir_path =
       profile_path.AppendASCII(kDeviceMediaAsyncFileUtilTempDir);
-  if (!file_util::CreateDirectory(isolated_media_file_system_dir_path) ||
+  if (!base::CreateDirectory(isolated_media_file_system_dir_path) ||
       !base::CreateTemporaryFileInDir(isolated_media_file_system_dir_path,
                                       snapshot_file_path)) {
     LOG(WARNING) << "Could not create media snapshot file "

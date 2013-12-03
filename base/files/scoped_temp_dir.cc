@@ -34,7 +34,7 @@ bool ScopedTempDir::CreateUniqueTempDirUnderPath(const FilePath& base_path) {
     return false;
 
   // If |base_path| does not exist, create it.
-  if (!file_util::CreateDirectory(base_path))
+  if (!base::CreateDirectory(base_path))
     return false;
 
   // Create a new, uniquely named directory under |base_path|.
@@ -50,7 +50,7 @@ bool ScopedTempDir::Set(const FilePath& path) {
   if (!path_.empty())
     return false;
 
-  if (!DirectoryExists(path) && !file_util::CreateDirectory(path))
+  if (!DirectoryExists(path) && !base::CreateDirectory(path))
     return false;
 
   path_ = path;

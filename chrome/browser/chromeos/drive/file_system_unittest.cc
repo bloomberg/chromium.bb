@@ -100,13 +100,13 @@ class FileSystemTest : public testing::Test {
 
   void SetUpResourceMetadataAndFileSystem() {
     const base::FilePath metadata_dir = temp_dir_.path().AppendASCII("meta");
-    ASSERT_TRUE(file_util::CreateDirectory(metadata_dir));
+    ASSERT_TRUE(base::CreateDirectory(metadata_dir));
     metadata_storage_.reset(new internal::ResourceMetadataStorage(
         metadata_dir, base::MessageLoopProxy::current().get()));
     ASSERT_TRUE(metadata_storage_->Initialize());
 
     const base::FilePath cache_dir = temp_dir_.path().AppendASCII("files");
-    ASSERT_TRUE(file_util::CreateDirectory(cache_dir));
+    ASSERT_TRUE(base::CreateDirectory(cache_dir));
     cache_.reset(new internal::FileCache(
         metadata_storage_.get(),
         cache_dir,
@@ -119,7 +119,7 @@ class FileSystemTest : public testing::Test {
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata_->Initialize());
 
     const base::FilePath temp_file_dir = temp_dir_.path().AppendASCII("tmp");
-    ASSERT_TRUE(file_util::CreateDirectory(temp_file_dir));
+    ASSERT_TRUE(base::CreateDirectory(temp_file_dir));
     file_system_.reset(new FileSystem(
         pref_service_.get(),
         cache_.get(),
@@ -192,7 +192,7 @@ class FileSystemTest : public testing::Test {
     resource_metadata_.reset();
 
     const base::FilePath metadata_dir = temp_dir_.path().AppendASCII("meta");
-    ASSERT_TRUE(file_util::CreateDirectory(metadata_dir));
+    ASSERT_TRUE(base::CreateDirectory(metadata_dir));
     scoped_ptr<internal::ResourceMetadataStorage,
                test_util::DestroyHelperForTests> metadata_storage(
         new internal::ResourceMetadataStorage(

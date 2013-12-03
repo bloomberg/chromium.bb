@@ -175,7 +175,7 @@ const char* const kPrefExitTypeSessionEnded = "SessionEnded";
 void CreateDirectoryAndSignal(const base::FilePath& path,
                               base::WaitableEvent* done_creating) {
   DVLOG(1) << "Creating directory " << path.value();
-  file_util::CreateDirectory(path);
+  base::CreateDirectory(path);
   done_creating->Signal();
 }
 
@@ -278,7 +278,7 @@ Profile* Profile::CreateProfile(const base::FilePath& path,
       // TODO(tc): http://b/1094718 Bad things happen if we can't write to the
       // profile directory.  We should eventually be able to run in this
       // situation.
-      if (!file_util::CreateDirectory(path))
+      if (!base::CreateDirectory(path))
         return NULL;
     }
   } else {

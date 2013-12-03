@@ -162,13 +162,13 @@ TEST(SandboxPrioritizedOriginDatabaseTest, MigrationTest) {
 
     // Populate the origin directory with some fake data.
     old_dir_db_path1 = dir.path().Append(path1);
-    ASSERT_TRUE(file_util::CreateDirectory(old_dir_db_path1));
+    ASSERT_TRUE(base::CreateDirectory(old_dir_db_path1));
     EXPECT_EQ(static_cast<int>(kFakeDirectoryData1.size()),
               file_util::WriteFile(old_dir_db_path1.AppendASCII("dummy"),
                                    kFakeDirectoryData1.data(),
                                    kFakeDirectoryData1.size()));
     old_dir_db_path2 = dir.path().Append(path2);
-    ASSERT_TRUE(file_util::CreateDirectory(old_dir_db_path2));
+    ASSERT_TRUE(base::CreateDirectory(old_dir_db_path2));
     EXPECT_EQ(static_cast<int>(kFakeDirectoryData2.size()),
               file_util::WriteFile(old_dir_db_path2.AppendASCII("dummy"),
                                    kFakeDirectoryData2.data(),

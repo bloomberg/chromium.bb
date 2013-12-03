@@ -166,16 +166,16 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
         picasa::MakePicasaDatabasePath(picasa_app_data_root);
     base::FilePath picasa_temp_dir_path =
         picasa_database_path.DirName().AppendASCII(picasa::kPicasaTempDirName);
-    ASSERT_TRUE(file_util::CreateDirectory(picasa_database_path));
-    ASSERT_TRUE(file_util::CreateDirectory(picasa_temp_dir_path));
+    ASSERT_TRUE(base::CreateDirectory(picasa_database_path));
+    ASSERT_TRUE(base::CreateDirectory(picasa_temp_dir_path));
 
     // Create fake folder directories.
     base::FilePath folders_root =
         ensure_media_directories_exists_->GetFakePicasaFoldersRootPath();
     base::FilePath fake_folder_1 = folders_root.AppendASCII("folder1");
     base::FilePath fake_folder_2 = folders_root.AppendASCII("folder2");
-    ASSERT_TRUE(file_util::CreateDirectory(fake_folder_1));
-    ASSERT_TRUE(file_util::CreateDirectory(fake_folder_2));
+    ASSERT_TRUE(base::CreateDirectory(fake_folder_1));
+    ASSERT_TRUE(base::CreateDirectory(fake_folder_2));
 
     // Write folder and album contents.
     picasa::WriteTestAlbumTable(

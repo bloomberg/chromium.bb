@@ -635,7 +635,7 @@ Status PrepareUserDataDir(
     const base::DictionaryValue* custom_prefs,
     const base::DictionaryValue* custom_local_state) {
   base::FilePath default_dir = user_data_dir.AppendASCII("Default");
-  if (!file_util::CreateDirectory(default_dir))
+  if (!base::CreateDirectory(default_dir))
     return Status(kUnknownError, "cannot create default profile directory");
 
   Status status = WritePrefsFile(

@@ -162,7 +162,7 @@ void WallpaperSetWallpaperFunction::GenerateThumbnail(
       sequence_token_));
   chromeos::UserImage wallpaper(*image.get());
   if (!base::PathExists(thumbnail_path.DirName()))
-    file_util::CreateDirectory(thumbnail_path.DirName());
+    base::CreateDirectory(thumbnail_path.DirName());
 
   scoped_refptr<base::RefCountedBytes> data;
   chromeos::WallpaperManager::Get()->ResizeWallpaper(

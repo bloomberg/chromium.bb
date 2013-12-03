@@ -63,7 +63,7 @@ bool PathProvider(int key, base::FilePath* result) {
   }
 
   if (create_dir && !base::PathExists(cur) &&
-      !file_util::CreateDirectory(cur))
+      !base::CreateDirectory(cur))
     return false;
 
   *result = cur;

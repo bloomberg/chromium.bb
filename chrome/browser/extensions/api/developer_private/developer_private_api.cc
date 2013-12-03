@@ -1093,7 +1093,7 @@ void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::SnapshotFileCallback(
 void DeveloperPrivateExportSyncfsFolderToLocalfsFunction::CopyFile(
     const base::FilePath& src_path,
     const base::FilePath& target_path) {
-  if (!file_util::CreateDirectory(target_path.DirName())) {
+  if (!base::CreateDirectory(target_path.DirName())) {
     SetError("Error in copying files from sync filesystem.");
     success_ = false;
   }

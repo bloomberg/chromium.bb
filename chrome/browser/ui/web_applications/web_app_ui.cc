@@ -286,7 +286,7 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
   // Ensure web_app_path exists. web_app_path could be missing for a legacy
   // shortcut created by Gears.
   if (!base::PathExists(web_app_path) &&
-      !file_util::CreateDirectory(web_app_path)) {
+      !base::CreateDirectory(web_app_path)) {
     NOTREACHED();
     return;
   }

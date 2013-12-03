@@ -65,13 +65,13 @@ bool SafeCreateDirectory(const base::FilePath& path) {
   // Now create the full path
   return CreateDirectoryW(path.value().c_str(), NULL) == TRUE;
 #else
-  return file_util::CreateDirectory(path);
+  return base::CreateDirectory(path);
 #endif
 }
 
 DiskDumper::DiskDumper(const base::FilePath& path)
     : path_(path), entry_(NULL) {
-  file_util::CreateDirectory(path);
+  base::CreateDirectory(path);
 }
 
 int DiskDumper::CreateEntry(const std::string& key,

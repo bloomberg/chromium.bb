@@ -61,7 +61,7 @@ class ITunesFinderWinTest : public InProcessBrowserTest {
   void WritePrefFile(const std::string& data) {
     base::FilePath pref_dir =
         app_data_dir().AppendASCII("Apple Computer").AppendASCII("iTunes");
-    ASSERT_TRUE(file_util::CreateDirectory(pref_dir));
+    ASSERT_TRUE(base::CreateDirectory(pref_dir));
     ASSERT_EQ(data.size(),
               file_util::WriteFile(pref_dir.AppendASCII("iTunesPrefs.xml"),
                                    data.data(), data.size()));
@@ -69,7 +69,7 @@ class ITunesFinderWinTest : public InProcessBrowserTest {
 
   void TouchDefault() {
     base::FilePath default_dir = music_dir().AppendASCII("iTunes");
-    ASSERT_TRUE(file_util::CreateDirectory(default_dir));
+    ASSERT_TRUE(base::CreateDirectory(default_dir));
     TouchFile(default_dir.AppendASCII("iTunes Music Library.xml"));
   }
 

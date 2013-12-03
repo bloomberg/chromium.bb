@@ -127,7 +127,7 @@ void CreateIconAndSetRelaunchDetails(
       shortcut_info.title, hwnd);
 
   if (!base::PathExists(web_app_path) &&
-      !file_util::CreateDirectory(web_app_path))
+      !base::CreateDirectory(web_app_path))
     return;
 
   ui::win::SetAppIconForWindow(icon_file.value(), hwnd);

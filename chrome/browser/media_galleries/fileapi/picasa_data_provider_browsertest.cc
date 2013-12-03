@@ -241,9 +241,9 @@ class PicasaDataProviderTest : public InProcessBrowserTest {
     ASSERT_TRUE(test_folder_1_.CreateUniqueTempDir());
     ASSERT_TRUE(test_folder_2_.CreateUniqueTempDir());
     ASSERT_TRUE(picasa_root_dir_.CreateUniqueTempDir());
-    ASSERT_TRUE(file_util::CreateDirectory(
+    ASSERT_TRUE(base::CreateDirectory(
         picasa_root_dir_.path().AppendASCII(kPicasaDatabaseDirName)));
-    ASSERT_TRUE(file_util::CreateDirectory(
+    ASSERT_TRUE(base::CreateDirectory(
         picasa_root_dir_.path().AppendASCII(kPicasaTempDirName)));
 
     picasa_data_provider_.reset(new TestPicasaDataProvider(

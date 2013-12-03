@@ -218,7 +218,7 @@ bool ResourceCache::VerifyKeyPath(const std::string& key,
   if (!Base64Encode(key, &encoded))
     return false;
   *path = cache_dir_.AppendASCII(encoded);
-  return allow_create ? file_util::CreateDirectory(*path) :
+  return allow_create ? base::CreateDirectory(*path) :
                         base::DirectoryExists(*path);
 }
 

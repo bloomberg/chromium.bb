@@ -165,7 +165,7 @@ class StorageMonitorLinuxTest : public testing::Test {
     // Create and set up a temp dir with files for the test.
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
     base::FilePath test_dir = scoped_temp_dir_.path().AppendASCII("test_etc");
-    ASSERT_TRUE(file_util::CreateDirectory(test_dir));
+    ASSERT_TRUE(base::CreateDirectory(test_dir));
     mtab_file_ = test_dir.AppendASCII("test_mtab");
     MtabTestData initial_test_data[] = {
       MtabTestData("dummydevice", "dummydir", kInvalidFS),
@@ -266,7 +266,7 @@ class StorageMonitorLinuxTest : public testing::Test {
     base::FilePath path(return_path);
     if (with_dcim_dir)
       path = path.Append(kDCIMDirectoryName);
-    if (!file_util::CreateDirectory(path))
+    if (!base::CreateDirectory(path))
       return base::FilePath();
     return return_path;
   }

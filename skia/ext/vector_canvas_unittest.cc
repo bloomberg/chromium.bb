@@ -245,7 +245,7 @@ class ImageTest : public testing::Test {
 
     if (action_ == GENERATE) {
       // Make sure the directory exist.
-      file_util::CreateDirectory(test_dir_);
+      base::CreateDirectory(test_dir_);
     }
   }
 

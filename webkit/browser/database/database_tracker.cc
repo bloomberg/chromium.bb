@@ -480,7 +480,7 @@ bool DatabaseTracker::LazyInit() {
     meta_table_.reset(new sql::MetaTable());
 
     is_initialized_ =
-        file_util::CreateDirectory(db_dir_) &&
+        base::CreateDirectory(db_dir_) &&
         (db_->is_open() ||
          (is_incognito_ ? db_->OpenInMemory() :
           db_->Open(kTrackerDatabaseFullPath))) &&

@@ -447,7 +447,7 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
     base::FilePath dirpath(
         base::FilePath::StringType(*dirname, *dirname + dirname.length()));
-    if (!file_util::CreateDirectory(dirpath) ||
+    if (!base::CreateDirectory(dirpath) ||
         !base::PathIsWritable(dirpath)) {
       std::string msg("Path is not writable: ");
       msg.append(dirpath.MaybeAsASCII());

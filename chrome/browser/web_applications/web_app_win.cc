@@ -167,7 +167,7 @@ bool CreateShortcutsInPaths(
     std::vector<base::FilePath>* out_filenames) {
   // Ensure web_app_path exists.
   if (!base::PathExists(web_app_path) &&
-      !file_util::CreateDirectory(web_app_path)) {
+      !base::CreateDirectory(web_app_path)) {
     return false;
   }
 
@@ -244,7 +244,7 @@ bool CreateShortcutsInPaths(
     shortcut_properties.set_app_id(app_id);
     shortcut_properties.set_dual_mode(false);
     if (!base::PathExists(shortcut_file.DirName()) &&
-        !file_util::CreateDirectory(shortcut_file.DirName())) {
+        !base::CreateDirectory(shortcut_file.DirName())) {
       NOTREACHED();
       return false;
     }

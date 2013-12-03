@@ -628,7 +628,7 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
   static void StoreFileInBackground(const base::FilePath& path,
                                     const std::string& data) {
     const int size = static_cast<int>(data.size());
-    if (!file_util::CreateDirectory(path.DirName()) ||
+    if (!base::CreateDirectory(path.DirName()) ||
         file_util::WriteFile(path, data.data(), size) != size) {
       LOG(WARNING) << "Failed to write policy key to " << path.value();
     }

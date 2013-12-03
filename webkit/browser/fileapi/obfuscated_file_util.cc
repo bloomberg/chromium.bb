@@ -852,7 +852,7 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForOriginAndType(
   base::FilePath path = origin_dir.AppendASCII(type_string);
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   if (!base::DirectoryExists(path) &&
-      (!create || !file_util::CreateDirectory(path))) {
+      (!create || !base::CreateDirectory(path))) {
     error = create ?
           base::PLATFORM_FILE_ERROR_FAILED :
           base::PLATFORM_FILE_ERROR_NOT_FOUND;
@@ -1210,7 +1210,7 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForOrigin(
   }
 
   if (!exists_in_fs) {
-    if (!create || !file_util::CreateDirectory(path)) {
+    if (!create || !base::CreateDirectory(path)) {
       if (error_code)
         *error_code = create ?
             base::PLATFORM_FILE_ERROR_FAILED :
@@ -1262,7 +1262,7 @@ bool ObfuscatedFileUtil::InitOriginDatabase(const GURL& origin_hint,
 
   if (!create && !base::DirectoryExists(file_system_directory_))
     return false;
-  if (!file_util::CreateDirectory(file_system_directory_)) {
+  if (!base::CreateDirectory(file_system_directory_)) {
     LOG(WARNING) << "Failed to create FileSystem directory: " <<
         file_system_directory_.value();
     return false;

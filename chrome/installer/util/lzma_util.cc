@@ -242,7 +242,7 @@ void LzmaUtil::CloseArchive() {
 bool LzmaUtil::CreateDirectory(const base::FilePath& dir) {
   bool ret = true;
   if (directories_created_.find(dir.value()) == directories_created_.end()) {
-    ret = file_util::CreateDirectory(dir);
+    ret = base::CreateDirectory(dir);
     if (ret)
       directories_created_.insert(dir.value());
   }

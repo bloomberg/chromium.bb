@@ -331,7 +331,7 @@ bool BackendImpl::CreateBackingStore(disk_cache::File* file) {
 }
 
 bool BackendImpl::InitBackingStore(bool* file_created) {
-  if (!file_util::CreateDirectory(path_))
+  if (!base::CreateDirectory(path_))
     return false;
 
   base::FilePath index_name = path_.AppendASCII(kIndexName);

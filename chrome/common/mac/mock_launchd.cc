@@ -37,7 +37,7 @@ bool MockLaunchd::MakeABundle(const base::FilePath& dst,
   *executable = mac_os.Append(name);
   base::FilePath info_plist = contents.Append("Info.plist");
 
-  if (!file_util::CreateDirectory(mac_os)) {
+  if (!base::CreateDirectory(mac_os)) {
     return false;
   }
   const char *data = "#! testbundle\n";

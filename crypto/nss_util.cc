@@ -85,7 +85,7 @@ base::FilePath GetDefaultConfigDirectory() {
     return dir;
   }
   dir = dir.AppendASCII(".pki").AppendASCII("nssdb");
-  if (!file_util::CreateDirectory(dir)) {
+  if (!base::CreateDirectory(dir)) {
     LOG(ERROR) << "Failed to create " << dir.value() << " directory.";
     dir.clear();
   }

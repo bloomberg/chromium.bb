@@ -51,7 +51,7 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target,
   if (g_scheduler->verbose_logging())
     g_scheduler->Log("Writing", FilePathToUTF8(ninja_file));
 
-  file_util::CreateDirectory(ninja_file.DirName());
+  base::CreateDirectory(ninja_file.DirName());
 
   // It's rediculously faster to write to a string and then write that to
   // disk in one operation than to use an fstream here.

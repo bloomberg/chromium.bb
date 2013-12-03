@@ -137,7 +137,7 @@ PlatformFileError NativeFileUtil::CreateDirectory(
   if (path_exists && !base::DirectoryExists(path))
     return base::PLATFORM_FILE_ERROR_EXISTS;
 
-  if (!file_util::CreateDirectory(path))
+  if (!base::CreateDirectory(path))
     return base::PLATFORM_FILE_ERROR_FAILED;
 
   if (!SetPlatformSpecificDirectoryPermissions(path)) {

@@ -140,7 +140,7 @@ class HistoryBackendDBTest : public HistoryUnitTestBase {
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     history_dir_ = temp_dir_.path().AppendASCII("HistoryBackendDBTest");
-    ASSERT_TRUE(file_util::CreateDirectory(history_dir_));
+    ASSERT_TRUE(base::CreateDirectory(history_dir_));
   }
 
   void DeleteBackend() {
@@ -912,7 +912,7 @@ class HistoryTest : public testing::Test {
   virtual void SetUp() {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     history_dir_ = temp_dir_.path().AppendASCII("HistoryTest");
-    ASSERT_TRUE(file_util::CreateDirectory(history_dir_));
+    ASSERT_TRUE(base::CreateDirectory(history_dir_));
     history_service_.reset(new HistoryService);
     if (!history_service_->Init(history_dir_, NULL)) {
       history_service_.reset();

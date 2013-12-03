@@ -125,7 +125,7 @@ void SaveBitmap(ImageData* data,
 
   // Make sure the destination directory exists.
   base::FilePath dir = image_path.DirName();
-  if (!base::DirectoryExists(dir) && !file_util::CreateDirectory(dir)) {
+  if (!base::DirectoryExists(dir) && !base::CreateDirectory(dir)) {
     LOG(ERROR) << "Failed to create parent directory.";
     return;
   }

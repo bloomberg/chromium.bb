@@ -123,7 +123,7 @@ bool CreateTargetFolder(const base::FilePath& path, RankCrashes action,
   if (base::PathExists(*full_path))
     return false;
 
-  return file_util::CreateDirectory(*full_path);
+  return base::CreateDirectory(*full_path);
 }
 
 // Makes sure that any pending task is processed.

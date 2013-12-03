@@ -111,7 +111,7 @@ bool SandboxOriginDatabase::Init(InitOption init_option,
     case DELETE_ON_CORRUPTION:
       if (!base::DeleteFile(file_system_directory_, true))
         return false;
-      if (!file_util::CreateDirectory(file_system_directory_))
+      if (!base::CreateDirectory(file_system_directory_))
         return false;
       return Init(init_option, FAIL_ON_CORRUPTION);
   }

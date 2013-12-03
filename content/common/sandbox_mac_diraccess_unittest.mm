@@ -145,7 +145,7 @@ typedef scoped_ptr_malloc<base::FilePath, ScopedDirectoryDelete>
     ScopedDirectory;
 
 TEST_F(MacDirAccessSandboxTest, SandboxAccess) {
-  using file_util::CreateDirectory;
+  using base::CreateDirectory;
 
   base::FilePath tmp_dir;
   ASSERT_TRUE(base::CreateNewTempDirectory(base::FilePath::StringType(),

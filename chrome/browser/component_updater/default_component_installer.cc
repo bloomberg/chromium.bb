@@ -112,7 +112,7 @@ void DefaultComponentInstaller::StartRegistration(
     ComponentUpdateService* cus) {
   base::FilePath base_dir = installer_traits_->GetBaseDirectory();
   if (!base::PathExists(base_dir) &&
-      !file_util::CreateDirectory(base_dir)) {
+      !base::CreateDirectory(base_dir)) {
     NOTREACHED() << "Could not create the base directory for "
                  << installer_traits_->GetName() << " ("
                  << base_dir.MaybeAsASCII() << ").";

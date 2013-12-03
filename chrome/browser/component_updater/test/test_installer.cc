@@ -63,7 +63,7 @@ bool VersionedTestInstaller::Install(const base::DictionaryValue& manifest,
 
   base::FilePath path;
   path = install_directory_.AppendASCII(version.GetString());
-  file_util::CreateDirectory(path.DirName());
+  base::CreateDirectory(path.DirName());
   if (!base::Move(unpack_path, path))
     return false;
   current_version_ = version;

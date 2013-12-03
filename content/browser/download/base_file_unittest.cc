@@ -464,7 +464,7 @@ TEST_F(BaseFileTest, RenameWithError) {
   // TestDir is a subdirectory in |temp_dir_| that we will make read-only so
   // that the rename will fail.
   base::FilePath test_dir(temp_dir_.path().AppendASCII("TestDir"));
-  ASSERT_TRUE(file_util::CreateDirectory(test_dir));
+  ASSERT_TRUE(base::CreateDirectory(test_dir));
 
   base::FilePath new_path(test_dir.AppendASCII("TestFile"));
   EXPECT_FALSE(base::PathExists(new_path));

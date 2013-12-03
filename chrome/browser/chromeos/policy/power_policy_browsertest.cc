@@ -181,7 +181,7 @@ void PowerPolicyBrowserTestBase::InstallUserKey() {
                    .AppendASCII("policy.pub");
   std::vector<uint8> user_key_bits;
   ASSERT_TRUE(user_policy_.GetSigningKey()->ExportPublicKey(&user_key_bits));
-  ASSERT_TRUE(file_util::CreateDirectory(user_key_file.DirName()));
+  ASSERT_TRUE(base::CreateDirectory(user_key_file.DirName()));
   ASSERT_EQ(file_util::WriteFile(
                 user_key_file,
                 reinterpret_cast<const char*>(user_key_bits.data()),

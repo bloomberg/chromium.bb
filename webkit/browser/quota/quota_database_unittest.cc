@@ -418,7 +418,7 @@ class QuotaDatabaseTest : public testing::Test {
     if (kDbFile.empty()) {
       return db->OpenInMemory();
     }
-    if (!file_util::CreateDirectory(kDbFile.DirName()))
+    if (!base::CreateDirectory(kDbFile.DirName()))
       return false;
     if (!db->Open(kDbFile))
       return false;

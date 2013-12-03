@@ -107,7 +107,7 @@ void ShellBrowserContext::InitWhileIOAllowed() {
 #endif
 
   if (!base::PathExists(path_))
-    file_util::CreateDirectory(path_);
+    base::CreateDirectory(path_);
 }
 
 base::FilePath ShellBrowserContext::GetPath() const {

@@ -294,7 +294,7 @@ void TestingProfile::CreateTempProfileDir() {
     base::FilePath fallback_dir(
         system_tmp_dir.AppendASCII("TestingProfilePath"));
     base::DeleteFile(fallback_dir, true);
-    file_util::CreateDirectory(fallback_dir);
+    base::CreateDirectory(fallback_dir);
     if (!temp_dir_.Set(fallback_dir)) {
       // That shouldn't happen, but if it does, try to recover.
       LOG(ERROR) << "Failed to use a fallback temporary directory.";
@@ -322,7 +322,7 @@ void TestingProfile::Init() {
     CreateTestingPrefService();
 
   if (!base::PathExists(profile_path_))
-    file_util::CreateDirectory(profile_path_);
+    base::CreateDirectory(profile_path_);
 
   // TODO(joaodasilva): remove this once this PKS isn't created in ProfileImpl
   // anymore, after converting the PrefService to a PKS. Until then it must

@@ -165,7 +165,7 @@ DownloadInterruptReason BaseFile::Rename(const base::FilePath& new_path) {
       net::NetLog::TYPE_DOWNLOAD_FILE_RENAMED,
       base::Bind(&FileRenamedNetLogCallback, &full_path_, &new_path));
   Close();
-  file_util::CreateDirectory(new_path.DirName());
+  base::CreateDirectory(new_path.DirName());
 
   // A simple rename wouldn't work here since we want the file to have
   // permissions / security descriptors that makes sense in the new directory.

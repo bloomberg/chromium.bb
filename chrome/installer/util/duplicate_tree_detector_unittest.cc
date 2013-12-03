@@ -39,7 +39,7 @@ class DuplicateTreeDetectorTest : public testing::Test {
                                      const base::FilePath& second_root) {
     base::FilePath d1(first_root);
     d1 = d1.AppendASCII("D1");
-    file_util::CreateDirectory(d1);
+    base::CreateDirectory(d1);
     ASSERT_TRUE(base::PathExists(d1));
 
     base::FilePath f1(d1);
@@ -49,7 +49,7 @@ class DuplicateTreeDetectorTest : public testing::Test {
 
     base::FilePath d2(d1);
     d2 = d2.AppendASCII("D2");
-    file_util::CreateDirectory(d2);
+    base::CreateDirectory(d2);
     ASSERT_TRUE(base::PathExists(d2));
 
     base::FilePath f2(d2);

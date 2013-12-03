@@ -47,7 +47,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     path_ = temp_dir_.path().Append(FILE_PATH_LITERAL("SessionTestDirs"));
-    ASSERT_TRUE(file_util::CreateDirectory(path_));
+    ASSERT_TRUE(base::CreateDirectory(path_));
     path_ = path_.AppendASCII(b);
 
     SessionService* session_service = new SessionService(path_);

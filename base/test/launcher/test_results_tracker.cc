@@ -130,7 +130,7 @@ bool TestResultsTracker::Init(const CommandLine& command_line) {
     LOG(WARNING) << "The output directory does not exist. "
                  << "Creating the directory: " << dir_name.value();
     // Create the directory if necessary (because the gtest does the same).
-    if (!file_util::CreateDirectory(dir_name)) {
+    if (!base::CreateDirectory(dir_name)) {
       LOG(ERROR) << "Failed to created directory " << dir_name.value();
       return false;
     }

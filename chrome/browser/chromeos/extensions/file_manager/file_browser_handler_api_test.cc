@@ -164,7 +164,7 @@ class FileBrowserHandlerExtensionTest : public ExtensionApiTest {
     // directory with an unique name.
     ASSERT_TRUE(scoped_tmp_dir_.CreateUniqueTempDir());
     tmp_mount_point_ = scoped_tmp_dir_.path().Append("tmp");
-    file_util::CreateDirectory(tmp_mount_point_);
+    base::CreateDirectory(tmp_mount_point_);
 
     ExtensionApiTest::SetUp();
   }

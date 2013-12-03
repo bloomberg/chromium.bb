@@ -218,7 +218,7 @@ void SessionBackend::Init() {
   inited_ = true;
 
   // Create the directory for session info.
-  file_util::CreateDirectory(path_to_dir_);
+  base::CreateDirectory(path_to_dir_);
 
   MoveCurrentSessionToLastSession();
 }

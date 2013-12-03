@@ -691,7 +691,7 @@ TEST_F(SyncBackendHostTest, TestStartupWithOldSyncData) {
   base::FilePath temp_directory =
       profile_->GetPath().AppendASCII("Sync Data");
   base::FilePath sync_file = temp_directory.AppendASCII("SyncData.sqlite3");
-  ASSERT_TRUE(file_util::CreateDirectory(temp_directory));
+  ASSERT_TRUE(base::CreateDirectory(temp_directory));
   ASSERT_NE(-1, file_util::WriteFile(sync_file, nonsense, strlen(nonsense)));
 
   InitializeBackend(true);

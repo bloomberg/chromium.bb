@@ -109,7 +109,7 @@ bool PairingRegistryDelegateLinux::Save(
     const PairingRegistry::Pairing& pairing) {
   base::FilePath registry_path = GetRegistryPath();
   base::PlatformFileError error;
-  if (!file_util::CreateDirectoryAndGetError(registry_path, &error)) {
+  if (!base::CreateDirectoryAndGetError(registry_path, &error)) {
     LOG(ERROR) << "Could not create pairing registry directory: " << error;
     return false;
   }

@@ -104,7 +104,7 @@ void ExtensionSessionsTest::CreateTestProfileSyncService() {
   PathService::Get(chrome::DIR_USER_DATA, &path);
   path = path.AppendASCII("test_profile");
   if (!base::PathExists(path))
-    CHECK(file_util::CreateDirectory(path));
+    CHECK(base::CreateDirectory(path));
   Profile* profile =
       Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
   profile_manager->RegisterTestingProfile(profile, true, false);

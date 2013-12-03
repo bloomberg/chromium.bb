@@ -42,7 +42,7 @@ Storage::Storage() {
 #endif
 
   if (!base::PathExists(profile_path_))
-    file_util::CreateDirectory(profile_path_);
+    base::CreateDirectory(profile_path_);
 }
 
 Storage::~Storage() {

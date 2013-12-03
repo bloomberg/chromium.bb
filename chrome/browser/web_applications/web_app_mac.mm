@@ -137,7 +137,7 @@ base::FilePath GetWritableApplicationsDirectory() {
   base::FilePath path;
   if (base::mac::GetUserDirectory(NSApplicationDirectory, &path)) {
     if (!base::DirectoryExists(path)) {
-      if (!file_util::CreateDirectory(path))
+      if (!base::CreateDirectory(path))
         return base::FilePath();
 
       // Create a zero-byte ".localized" file to inherit localizations from OSX
@@ -258,7 +258,7 @@ base::FilePath GetLocalizableAppShortcutsSubdirName() {
 void UpdateAppShortcutsSubdirLocalizedName(
     const base::FilePath& apps_directory) {
   base::FilePath localized = apps_directory.Append(".localized");
-  if (!file_util::CreateDirectory(localized))
+  if (!base::CreateDirectory(localized))
     return;
 
   base::FilePath directory_name = apps_directory.BaseName().RemoveExtension();
@@ -437,7 +437,7 @@ size_t WebAppShortcutCreator::CreateShortcutsIn(
   for (std::vector<base::FilePath>::const_iterator it = folders.begin();
        it != folders.end(); ++it) {
     const base::FilePath& dst_path = *it;
-    if (!file_util::CreateDirectory(dst_path)) {
+    if (!base::CreateDirectory(dst_path)) {
       LOG(ERROR) << "Creating directory " << dst_path.value() << " failed.";
       return succeeded;
     }
@@ -623,7 +623,7 @@ bool WebAppShortcutCreator::UpdateDisplayName(
   // OSX searches for the best language in the order of preferred languages.
   // Since we only have one localization directory, it will choose this one.
   base::FilePath localized_dir = GetResourcesPath(app_path).Append("en.lproj");
-  if (!file_util::CreateDirectory(localized_dir))
+  if (!base::CreateDirectory(localized_dir))
     return false;
 
   NSString* bundle_name = base::SysUTF16ToNSString(info_.title);
@@ -670,7 +670,7 @@ bool WebAppShortcutCreator::UpdateIcon(const base::FilePath& app_path) const {
     return false;
 
   base::FilePath resources_path = GetResourcesPath(app_path);
-  if (!file_util::CreateDirectory(resources_path))
+  if (!base::CreateDirectory(resources_path))
     return false;
 
   return icon_family.WriteDataToFile(resources_path.Append("app.icns"));

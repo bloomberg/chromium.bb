@@ -36,7 +36,7 @@ bool CreateDirWorkItem::Do() {
     return true;
 
   VLOG(1) << "top directory that needs to be created: " << top_path_.value();
-  bool result = file_util::CreateDirectory(path_);
+  bool result = base::CreateDirectory(path_);
   VLOG(1) << "directory creation result: " << result;
 
   rollback_needed_ = true;
