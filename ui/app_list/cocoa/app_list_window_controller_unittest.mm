@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #import "ui/app_list/cocoa/app_list_view_controller.h"
 #import "ui/app_list/cocoa/app_list_window_controller.h"
+#include "ui/app_list/search_box_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
 #import "ui/base/test/ui_cocoa_test_helper.h"
 
@@ -67,4 +69,27 @@ TEST_F(AppListWindowControllerTest, DismissWithEscape) {
   EXPECT_EQ(0, delegate()->dismiss_count());
   [[controller_ window] cancelOperation:controller_];
   EXPECT_EQ(1, delegate()->dismiss_count());
+}
+
+// Test that search results are cleared when the window closes, not when a
+// search result is selected. If cleared upon selection, the animation showing
+// the results sliding away is seen as the window closes, which looks weird.
+TEST_F(AppListWindowControllerTest, CloseClearsSearch) {
+  [[controller_ window] makeKeyAndOrderFront:nil];
+  app_list::SearchBoxModel* model = delegate()->GetModel()->search_box();
+  AppListViewController* view_controller = [controller_ appListViewController];
+
+  EXPECT_FALSE([view_controller showingSearchResults]);
+
+  const base::string16 search_text(ASCIIToUTF16("test"));
+  model->SetText(search_text);
+  EXPECT_TRUE([view_controller showingSearchResults]);
+
+  EXPECT_EQ(0, delegate()->open_search_result_count());
+  [view_controller openResult:nil];
+  EXPECT_EQ(1, delegate()->open_search_result_count());
+
+  EXPECT_TRUE([view_controller showingSearchResults]);
+  [[controller_ window] close];  // Hide.
+  EXPECT_FALSE([view_controller showingSearchResults]);
 }

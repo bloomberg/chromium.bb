@@ -24,6 +24,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   virtual ~AppListTestViewDelegate();
 
   int dismiss_count() { return dismiss_count_; }
+  int open_search_result_count() { return open_search_result_count_; }
   void set_test_signin_delegate(SigninDelegate* signin_delegate) {
     test_signin_delegate_ = signin_delegate;
   }
@@ -43,7 +44,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
   virtual void StartSearch() OVERRIDE {}
   virtual void StopSearch() OVERRIDE {}
   virtual void OpenSearchResult(SearchResult* result,
-                                int event_flags) OVERRIDE {}
+                                int event_flags) OVERRIDE;
   virtual void InvokeSearchResultAction(SearchResult* result,
                                         int action_index,
                                         int event_flags) OVERRIDE {}
@@ -66,6 +67,7 @@ class AppListTestViewDelegate : public AppListViewDelegate {
 
  private:
   int dismiss_count_;
+  int open_search_result_count_;
   Users users_;
   SigninDelegate* test_signin_delegate_;  // Weak. Owned by test.
   scoped_ptr<AppListTestModel> model_;

@@ -51,6 +51,9 @@ APP_LIST_EXPORT
   BOOL showingSearchResults_;
 }
 
+@property(readonly, nonatomic) AppsSearchBoxController*
+    searchBoxController;
+
 - (app_list::AppListViewDelegate*)delegate;
 - (void)setDelegate:(scoped_ptr<app_list::AppListViewDelegate>)newDelegate;
 - (void)onSigninStatusChanged;
@@ -58,6 +61,8 @@ APP_LIST_EXPORT
 @end
 
 @interface AppListViewController (TestingAPI)
+
+@property(nonatomic, readonly) BOOL showingSearchResults;
 
 - (AppsGridController*)appsGridController;
 - (NSSegmentedControl*)pagerControl;

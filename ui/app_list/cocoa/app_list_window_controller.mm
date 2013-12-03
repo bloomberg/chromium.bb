@@ -7,6 +7,7 @@
 #include "ui/app_list/app_list_view_delegate.h"
 #import "ui/app_list/cocoa/app_list_view_controller.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
+#import "ui/app_list/cocoa/apps_search_box_controller.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
 @interface AppListWindow : NSWindow;
@@ -57,6 +58,10 @@
 - (void)windowDidResignMain:(NSNotification*)notification {
   if ([appListViewController_ delegate])
     [appListViewController_ delegate]->Dismiss();
+}
+
+- (void)windowWillClose:(NSNotification*)notification {
+  [[appListViewController_ searchBoxController] clearSearch];
 }
 
 @end

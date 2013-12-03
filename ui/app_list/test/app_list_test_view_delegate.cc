@@ -17,6 +17,7 @@ namespace test {
 
 AppListTestViewDelegate::AppListTestViewDelegate()
     : dismiss_count_(0),
+      open_search_result_count_(0),
       test_signin_delegate_(NULL),
       model_(new AppListTestModel) {
 }
@@ -39,6 +40,11 @@ void AppListTestViewDelegate::GetShortcutPathForApp(
     const std::string& app_id,
     const base::Callback<void(const base::FilePath&)>& callback) {
   callback.Run(base::FilePath());
+}
+
+void AppListTestViewDelegate::OpenSearchResult(SearchResult* result,
+                                               int event_flags) {
+  ++open_search_result_count_;
 }
 
 void AppListTestViewDelegate::Dismiss() {

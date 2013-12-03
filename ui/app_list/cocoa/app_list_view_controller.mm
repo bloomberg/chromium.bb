@@ -134,6 +134,14 @@ void AppListModelObserverBridge::OnAppListModelSigninStatusChanged() {
   [super dealloc];
 }
 
+- (AppsSearchBoxController*)searchBoxController {
+  return appsSearchBoxController_;
+}
+
+- (BOOL)showingSearchResults {
+  return showingSearchResults_;
+}
+
 - (AppsGridController*)appsGridController {
   return appsGridController_;
 }
@@ -315,8 +323,6 @@ void AppListModelObserverBridge::OnAppListModelSigninStatusChanged() {
 - (void)openResult:(app_list::SearchResult*)result {
   if (delegate_)
     delegate_->OpenSearchResult(result, 0 /* event flags */);
-
-  [appsSearchBoxController_ clearSearch];
 }
 
 - (void)redoSearch {
