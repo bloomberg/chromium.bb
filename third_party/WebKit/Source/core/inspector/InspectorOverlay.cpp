@@ -597,12 +597,12 @@ Page* InspectorOverlay::overlayPage()
     Settings& settings = m_page->settings();
     Settings& overlaySettings = m_overlayPage->settings();
 
-    overlaySettings.setStandardFontFamily(settings.standardFontFamily());
-    overlaySettings.setSerifFontFamily(settings.serifFontFamily());
-    overlaySettings.setSansSerifFontFamily(settings.sansSerifFontFamily());
-    overlaySettings.setCursiveFontFamily(settings.cursiveFontFamily());
-    overlaySettings.setFantasyFontFamily(settings.fantasyFontFamily());
-    overlaySettings.setPictographFontFamily(settings.pictographFontFamily());
+    overlaySettings.genericFontFamilySettings().setStandard(settings.genericFontFamilySettings().standard());
+    overlaySettings.genericFontFamilySettings().setSerif(settings.genericFontFamilySettings().serif());
+    overlaySettings.genericFontFamilySettings().setSansSerif(settings.genericFontFamilySettings().sansSerif());
+    overlaySettings.genericFontFamilySettings().setCursive(settings.genericFontFamilySettings().cursive());
+    overlaySettings.genericFontFamilySettings().setFantasy(settings.genericFontFamilySettings().fantasy());
+    overlaySettings.genericFontFamilySettings().setPictograph(settings.genericFontFamilySettings().pictograph());
     overlaySettings.setMinimumFontSize(settings.minimumFontSize());
     overlaySettings.setMinimumLogicalFontSize(settings.minimumLogicalFontSize());
     overlaySettings.setMediaEnabled(false);

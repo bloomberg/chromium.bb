@@ -30,11 +30,9 @@
 #include "SettingsMacros.h"
 #include "core/editing/EditingBehaviorTypes.h"
 #include "platform/Timer.h"
+#include "platform/fonts/GenericFontFamilySettings.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/AtomicString.h"
-#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 
@@ -48,42 +46,12 @@ enum EditableLinkBehavior {
     EditableLinkNeverLive
 };
 
-// UScriptCode uses -1 and 0 for UScriptInvalidCode and UScriptCommon.
-// We need to use -2 and -3 for empty value and deleted value.
-struct UScriptCodeHashTraits : WTF::GenericHashTraits<int> {
-    static const bool emptyValueIsZero = false;
-    static int emptyValue() { return -2; }
-    static void constructDeletedValue(int& slot) { slot = -3; }
-    static bool isDeletedValue(int value) { return value == -3; }
-};
-
-typedef HashMap<int, AtomicString, DefaultHash<int>::Hash, UScriptCodeHashTraits> ScriptFontFamilyMap;
-
 class Settings {
     WTF_MAKE_NONCOPYABLE(Settings); WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassOwnPtr<Settings> create(Page*);
 
-    void setStandardFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    const AtomicString& standardFontFamily(UScriptCode = USCRIPT_COMMON) const;
-
-    void setFixedFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    const AtomicString& fixedFontFamily(UScriptCode = USCRIPT_COMMON) const;
-
-    void setSerifFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    const AtomicString& serifFontFamily(UScriptCode = USCRIPT_COMMON) const;
-
-    void setSansSerifFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    const AtomicString& sansSerifFontFamily(UScriptCode = USCRIPT_COMMON) const;
-
-    void setCursiveFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    const AtomicString& cursiveFontFamily(UScriptCode = USCRIPT_COMMON) const;
-
-    void setFantasyFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    const AtomicString& fantasyFontFamily(UScriptCode = USCRIPT_COMMON) const;
-
-    void setPictographFontFamily(const AtomicString&, UScriptCode = USCRIPT_COMMON);
-    const AtomicString& pictographFontFamily(UScriptCode = USCRIPT_COMMON) const;
+    GenericFontFamilySettings& genericFontFamilySettings() { return m_genericFontFamilySettings; }
 
     void setTextAutosizingEnabled(bool);
     bool textAutosizingEnabled() const;
@@ -111,9 +79,6 @@ public:
     // Only set by Layout Tests.
     void setMediaTypeOverride(const String&);
     const String& mediaTypeOverride() const { return m_mediaTypeOverride; }
-
-    // Only called by InternalSettings to clear font family maps.
-    void resetFontFamilies();
 
     // Unlike areImagesEnabled, this only suppresses the network load of
     // the image URL.  A cached image will still be rendered if requested.
@@ -176,13 +141,7 @@ private:
     Page* m_page;
 
     String m_mediaTypeOverride;
-    ScriptFontFamilyMap m_standardFontFamilyMap;
-    ScriptFontFamilyMap m_serifFontFamilyMap;
-    ScriptFontFamilyMap m_fixedFontFamilyMap;
-    ScriptFontFamilyMap m_sansSerifFontFamilyMap;
-    ScriptFontFamilyMap m_cursiveFontFamilyMap;
-    ScriptFontFamilyMap m_fantasyFontFamilyMap;
-    ScriptFontFamilyMap m_pictographFontFamilyMap;
+    GenericFontFamilySettings m_genericFontFamilySettings;
     float m_accessibilityFontScaleFactor;
     float m_deviceScaleAdjustment;
     IntSize m_textAutosizingWindowSizeOverride;

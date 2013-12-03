@@ -288,6 +288,8 @@
       'fonts/FontFeatureSettings.cpp',
       'fonts/FontFeatureSettings.h',
       'fonts/FontRenderStyle.h',
+      'fonts/GenericFontFamilySettings.cpp',
+      'fonts/GenericFontFamilySettings.h',
       'fonts/GlyphBuffer.h',
       'fonts/GlyphMetricsMap.h',
       'fonts/GlyphPage.h',

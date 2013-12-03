@@ -89,7 +89,7 @@ void FontBuilder::setInitial(float effectiveZoom)
     scope.reset();
     scope.fontDescription().setGenericFamily(FontDescription::StandardFamily);
     scope.fontDescription().setUsePrinterFont(m_document->printing());
-    const AtomicString& standardFontFamily = m_document->settings()->standardFontFamily();
+    const AtomicString& standardFontFamily = m_document->settings()->genericFontFamilySettings().standard();
     if (!standardFontFamily.isEmpty()) {
         scope.fontDescription().firstFamily().setFamily(standardFontFamily);
         scope.fontDescription().firstFamily().appendFamily(0);
@@ -183,7 +183,7 @@ void FontBuilder::setFontFamilyValue(CSSValue* value, float effectiveZoom)
         } else if (settings) {
             switch (contentValue->getValueID()) {
             case CSSValueWebkitBody:
-                face = settings->standardFontFamily();
+                face = settings->genericFontFamilySettings().standard();
                 break;
             case CSSValueSerif:
                 face = FontFamilyNames::webkit_serif;
@@ -643,7 +643,7 @@ void FontBuilder::createFontForDocument(PassRefPtr<FontSelector> fontSelector, R
     fontDescription.setScript(localeToScriptCodeForFontSelection(documentStyle->locale()));
     if (Settings* settings = m_document->settings()) {
         fontDescription.setUsePrinterFont(m_document->printing());
-        const AtomicString& standardFont = settings->standardFontFamily(fontDescription.script());
+        const AtomicString& standardFont = settings->genericFontFamilySettings().standard(fontDescription.script());
         if (!standardFont.isEmpty()) {
             fontDescription.setGenericFamily(FontDescription::StandardFamily);
             fontDescription.firstFamily().setFamily(standardFont);

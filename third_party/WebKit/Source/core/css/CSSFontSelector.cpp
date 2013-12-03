@@ -169,25 +169,25 @@ static AtomicString familyNameFromSettings(Settings* settings, const FontDescrip
     UScriptCode script = fontDescription.script();
 
     if (fontDescription.genericFamily() == FontDescription::StandardFamily && !fontDescription.isSpecifiedFont())
-        return settings->standardFontFamily(script);
+        return settings->genericFontFamilySettings().standard(script);
 
 #if OS(ANDROID)
     return FontCache::getGenericFamilyNameForScript(genericFamilyName, script);
 #else
     if (genericFamilyName == FontFamilyNames::webkit_serif)
-        return settings->serifFontFamily(script);
+        return settings->genericFontFamilySettings().serif(script);
     if (genericFamilyName == FontFamilyNames::webkit_sans_serif)
-        return settings->sansSerifFontFamily(script);
+        return settings->genericFontFamilySettings().sansSerif(script);
     if (genericFamilyName == FontFamilyNames::webkit_cursive)
-        return settings->cursiveFontFamily(script);
+        return settings->genericFontFamilySettings().cursive(script);
     if (genericFamilyName == FontFamilyNames::webkit_fantasy)
-        return settings->fantasyFontFamily(script);
+        return settings->genericFontFamilySettings().fantasy(script);
     if (genericFamilyName == FontFamilyNames::webkit_monospace)
-        return settings->fixedFontFamily(script);
+        return settings->genericFontFamilySettings().fixed(script);
     if (genericFamilyName == FontFamilyNames::webkit_pictograph)
-        return settings->pictographFontFamily(script);
+        return settings->genericFontFamilySettings().pictograph(script);
     if (genericFamilyName == FontFamilyNames::webkit_standard)
-        return settings->standardFontFamily(script);
+        return settings->genericFontFamilySettings().standard(script);
 #endif
     return emptyAtom;
 }

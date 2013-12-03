@@ -102,7 +102,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setCompositorDrivenAcceleratedScrollingEnabled(m_originalCompositorDrivenAcceleratedScrollEnabled);
     settings->setLayerSquashingEnabled(m_originalLayerSquashingEnabled);
     settings->setPasswordGenerationDecorationEnabled(m_originalPasswordGenerationDecorationEnabled);
-    settings->resetFontFamilies();
+    settings->genericFontFamilySettings().reset();
 }
 
 // We can't use RefCountedSupplement because that would try to make InternalSettings RefCounted
@@ -216,54 +216,74 @@ void InternalSettings::setLayerSquashingEnabled(bool enabled, ExceptionState& ex
     settings()->setLayerSquashingEnabled(enabled);
 }
 
-typedef void (Settings::*SetFontFamilyFunction)(const AtomicString&, UScriptCode);
-static void setFontFamily(Settings* settings, const String& family, const String& script, SetFontFamilyFunction setter)
-{
-    UScriptCode code = scriptNameToCode(script);
-    if (code != USCRIPT_INVALID_CODE)
-        (settings->*setter)(family, code);
-}
-
 void InternalSettings::setStandardFontFamily(const String& family, const String& script, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
-    setFontFamily(settings(), family, script, &Settings::setStandardFontFamily);
+    UScriptCode code = scriptNameToCode(script);
+    if (code == USCRIPT_INVALID_CODE)
+        return;
+    settings()->genericFontFamilySettings().setStandard(family, code);
+    m_page->setNeedsRecalcStyleInAllFrames();
 }
 
 void InternalSettings::setSerifFontFamily(const String& family, const String& script, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
-    setFontFamily(settings(), family, script, &Settings::setSerifFontFamily);
+    UScriptCode code = scriptNameToCode(script);
+    if (code == USCRIPT_INVALID_CODE)
+        return;
+    settings()->genericFontFamilySettings().setSerif(family, code);
+    m_page->setNeedsRecalcStyleInAllFrames();
 }
 
 void InternalSettings::setSansSerifFontFamily(const String& family, const String& script, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
-    setFontFamily(settings(), family, script, &Settings::setSansSerifFontFamily);
+    UScriptCode code = scriptNameToCode(script);
+    if (code == USCRIPT_INVALID_CODE)
+        return;
+    settings()->genericFontFamilySettings().setSansSerif(family, code);
+    m_page->setNeedsRecalcStyleInAllFrames();
 }
 
 void InternalSettings::setFixedFontFamily(const String& family, const String& script, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
-    setFontFamily(settings(), family, script, &Settings::setFixedFontFamily);
+    UScriptCode code = scriptNameToCode(script);
+    if (code == USCRIPT_INVALID_CODE)
+        return;
+    settings()->genericFontFamilySettings().setFixed(family, code);
+    m_page->setNeedsRecalcStyleInAllFrames();
 }
 
 void InternalSettings::setCursiveFontFamily(const String& family, const String& script, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
-    setFontFamily(settings(), family, script, &Settings::setCursiveFontFamily);
+    UScriptCode code = scriptNameToCode(script);
+    if (code == USCRIPT_INVALID_CODE)
+        return;
+    settings()->genericFontFamilySettings().setCursive(family, code);
+    m_page->setNeedsRecalcStyleInAllFrames();
 }
 
 void InternalSettings::setFantasyFontFamily(const String& family, const String& script, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
-    setFontFamily(settings(), family, script, &Settings::setFantasyFontFamily);
+    UScriptCode code = scriptNameToCode(script);
+    if (code == USCRIPT_INVALID_CODE)
+        return;
+    settings()->genericFontFamilySettings().setFantasy(family, code);
+    m_page->setNeedsRecalcStyleInAllFrames();
 }
 
 void InternalSettings::setPictographFontFamily(const String& family, const String& script, ExceptionState& exceptionState)
 {
     InternalSettingsGuardForSettings();
-    setFontFamily(settings(), family, script, &Settings::setPictographFontFamily);
+    UScriptCode code = scriptNameToCode(script);
+    if (code == USCRIPT_INVALID_CODE)
+        return;
+    settings()->genericFontFamilySettings().setPictograph(family, code);
+    m_page->setNeedsRecalcStyleInAllFrames();
 }
 
 void InternalSettings::setTextAutosizingEnabled(bool enabled, ExceptionState& exceptionState)
