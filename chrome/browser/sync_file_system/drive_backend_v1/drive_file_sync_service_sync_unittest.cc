@@ -22,6 +22,7 @@
 #include "chrome/browser/sync_file_system/local/local_file_sync_context.h"
 #include "chrome/browser/sync_file_system/local/local_file_sync_service.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
+#include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -41,40 +42,6 @@ namespace sync_file_system {
 using drive_backend::APIUtil;
 using drive_backend::APIUtilInterface;
 using drive_backend::FakeDriveServiceHelper;
-
-namespace {
-
-void SyncResultCallback(bool* done,
-                        SyncStatusCode* status_out,
-                        fileapi::FileSystemURL* url_out,
-                        SyncStatusCode status,
-                        const fileapi::FileSystemURL& url) {
-  EXPECT_FALSE(*done);
-  *status_out = status;
-  *url_out = url;
-  *done = true;
-}
-
-void SyncStatusResultCallback(bool* done,
-                              SyncStatusCode* status_out,
-                              SyncStatusCode status) {
-  EXPECT_FALSE(*done);
-  *status_out = status;
-  *done = true;
-}
-
-void DatabaseInitResultCallback(bool* done,
-                                SyncStatusCode* status_out,
-                                bool* created_out,
-                                SyncStatusCode status,
-                                bool created) {
-  EXPECT_FALSE(*done);
-  *status_out = status;
-  *created_out = created;
-  *done = true;
-}
-
-}  // namespace
 
 class DriveFileSyncServiceSyncTest : public testing::Test {
  public:
@@ -103,16 +70,13 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
     fake_drive_helper_.reset(new FakeDriveServiceHelper(
         fake_drive_service_, drive_uploader_));
 
-    bool done = false;
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     bool created = false;
     scoped_ptr<DriveMetadataStore> metadata_store(
         new DriveMetadataStore(fake_drive_helper_->base_dir_path(),
                                base::MessageLoopProxy::current().get()));
-    metadata_store->Initialize(
-        base::Bind(&DatabaseInitResultCallback, &done, &status, &created));
+    metadata_store->Initialize(CreateResultReceiver(&status, &created));
     FlushMessageLoop();
-    EXPECT_TRUE(done);
     EXPECT_EQ(SYNC_STATUS_OK, status);
     EXPECT_TRUE(created);
 
@@ -159,14 +123,12 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
               .get());
 
-      bool done = false;
       SyncStatusCode status = SYNC_STATUS_UNKNOWN;
       file_system->SetUp();
       local_sync_service_->MaybeInitializeFileSystemContext(
           origin, file_system->file_system_context(),
-          base::Bind(&SyncStatusResultCallback, &done, &status));
+          CreateResultReceiver(&status));
       FlushMessageLoop();
-      EXPECT_TRUE(done);
       EXPECT_EQ(SYNC_STATUS_OK, status);
 
       file_system->backend()->sync_context()->
@@ -176,12 +138,10 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
       file_systems_[origin] = file_system;
     }
 
-    bool done = false;
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     remote_sync_service_->RegisterOrigin(
-        origin, base::Bind(&SyncStatusResultCallback, &done, &status));
+        origin, CreateResultReceiver(&status));
     FlushMessageLoop();
-    EXPECT_TRUE(done);
     EXPECT_EQ(SYNC_STATUS_OK, status);
   }
 
@@ -224,24 +184,20 @@ class DriveFileSyncServiceSyncTest : public testing::Test {
   }
 
   SyncStatusCode ProcessLocalChange() {
-    bool done = false;
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     fileapi::FileSystemURL url;
     local_sync_service_->ProcessLocalChange(
-        base::Bind(&SyncResultCallback, &done, &status, &url));
+        CreateResultReceiver(&status, &url));
     FlushMessageLoop();
-    EXPECT_TRUE(done);
     return status;
   }
 
   SyncStatusCode ProcessRemoteChange() {
-    bool done = false;
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     fileapi::FileSystemURL url;
     remote_sync_service_->ProcessRemoteChange(
-        base::Bind(&SyncResultCallback, &done, &status, &url));
+        CreateResultReceiver(&status, &url));
     FlushMessageLoop();
-    EXPECT_TRUE(done);
     return status;
   }
 

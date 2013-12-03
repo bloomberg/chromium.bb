@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_TEST_UTIL_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_SYNC_FILE_SYSTEM_TEST_UTIL_H_
 
+#include <vector>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,6 +29,11 @@ struct TypeTraits {
 template <>
 struct TypeTraits<fileapi::FileSystemURL> {
   typedef const fileapi::FileSystemURL& ParamType;
+};
+
+template <typename T>
+struct TypeTraits<std::vector<T> > {
+  typedef const std::vector<T>& ParamType;
 };
 
 template <typename Arg1, typename Arg2, typename Param1, typename Param2>
