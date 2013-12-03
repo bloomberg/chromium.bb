@@ -2173,15 +2173,9 @@ TEST_F(AutofillDialogControllerTest, NotProdNotification) {
       "",
       command_line->GetSwitchValueASCII(switches::kWalletServiceUseSandbox));
 
-#if defined(OS_MACOSX)
-  // Default on Mac is to use sandbox (which shows a warning).
-  EXPECT_EQ(1U,
-            NotificationsOfType(DialogNotification::DEVELOPER_WARNING).size());
-#else
-  // Default everywhere else is to use prod (no warning).
+  // Default everywhere is to use prod (no warning).
   EXPECT_EQ(0U,
             NotificationsOfType(DialogNotification::DEVELOPER_WARNING).size());
-#endif
 
   command_line->AppendSwitchASCII(switches::kWalletServiceUseSandbox, "1");
   EXPECT_EQ(1U,

@@ -81,11 +81,7 @@ TEST(WalletServiceSandboxUrl, CheckProdUrls) {
 }
 
 TEST(WalletServiceUrl, IsUsingProd) {
-#if defined(OS_MACOSX)
-  EXPECT_FALSE(IsUsingProd());
-#else
   EXPECT_TRUE(IsUsingProd());
-#endif
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   command_line->AppendSwitchASCII(switches::kWalletServiceUseSandbox, "1");

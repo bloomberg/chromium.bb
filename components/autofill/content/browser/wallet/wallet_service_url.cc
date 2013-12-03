@@ -35,11 +35,7 @@ bool IsWalletProductionEnabled() {
       command_line->GetSwitchValueASCII(switches::kWalletServiceUseSandbox));
   if (!sandbox_enabled.empty())
     return sandbox_enabled != "1";
-#if defined(OS_MACOSX)
-  return false;
-#else
   return true;
-#endif
 }
 
 GURL GetWalletHostUrl() {
