@@ -115,10 +115,18 @@ bool ProcessNeedsProfileDir(const std::string& process_type) {
   // On windows we don't want subprocesses other than the browser process and
   // service processes to be able to use the profile directory because if it
   // lies on a network share the sandbox will prevent us from accessing it.
-  return process_type.empty() ||
-         process_type == switches::kServiceProcess ||
-         process_type == switches::kNaClBrokerProcess ||
-         process_type == switches::kNaClLoaderProcess;
+
+  if (process_type.empty() || process_type == switches::kServiceProcess)
+    return true;
+
+#if !defined(DISABLE_NACL)
+  if (process_type == switches::kNaClBrokerProcess ||
+      process_type == switches::kNaClLoaderProcess) {
+    return true;
+  }
+#endif
+
+  return false;
 }
 
 }  // namespace chrome
