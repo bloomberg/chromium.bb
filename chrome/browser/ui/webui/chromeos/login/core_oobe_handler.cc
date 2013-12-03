@@ -36,6 +36,7 @@ const char kJsApiEnableLargeCursor[] = "enableLargeCursor";
 const char kJsApiEnableSpokenFeedback[] = "enableSpokenFeedback";
 const char kJsApiScreenStateInitialize[] = "screenStateInitialize";
 const char kJsApiSkipUpdateEnrollAfterEula[] = "skipUpdateEnrollAfterEula";
+const char kJsApiScreenAssetsLoaded[] = "screenAssetsLoaded";
 
 }  // namespace
 
@@ -131,6 +132,8 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableSpokenFeedback);
   AddCallback("setDeviceRequisition",
               &CoreOobeHandler::HandleSetDeviceRequisition);
+  AddCallback(kJsApiScreenAssetsLoaded,
+              &CoreOobeHandler::HandleScreenAssetsLoaded);
   AddRawCallback("skipToLoginForTesting",
                  &CoreOobeHandler::HandleSkipToLoginForTesting);
 }
@@ -236,6 +239,11 @@ void CoreOobeHandler::HandleSetDeviceRequisition(
       SetDeviceRequisition(requisition);
   // Exit Chrome to force the restart as soon as a new requisition is set.
   chrome::ExitCleanly();
+}
+
+void CoreOobeHandler::HandleScreenAssetsLoaded(
+    const std::string& screen_async_load_id) {
+  oobe_ui_->OnScreenAssetsLoaded(screen_async_load_id);
 }
 
 void CoreOobeHandler::HandleSkipToLoginForTesting(

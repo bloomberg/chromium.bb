@@ -87,6 +87,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   void HandleSkipUpdateEnrollAfterEula();
   void HandleUpdateCurrentScreen(const std::string& screen);
   void HandleSetDeviceRequisition(const std::string& requisition);
+  void HandleScreenAssetsLoaded(const std::string& screen_async_load_id);
   void HandleSkipToLoginForTesting(const base::ListValue* args);
 
   // Updates a11y menu state based on the current a11y features state(on/off).

@@ -83,6 +83,9 @@ class WizardController : public ScreenObserver {
   // Terms of Service, user image selection).
   static void SkipPostLoginScreensForTesting();
 
+  // Checks whether OOBE should start enrollment automatically.
+  static bool ShouldAutoStartEnrollment();
+
   // Shows the first screen defined by |first_screen_name| or by default
   // if the parameter is empty. Takes ownership of |screen_parameters|.
   void Init(const std::string& first_screen_name,
@@ -233,9 +236,6 @@ class WizardController : public ScreenObserver {
 
   // Launched kiosk app configured for auto-launch.
   void AutoLaunchKioskApp();
-
-  // Checks whether OOBE should start enrollment automatically.
-  bool ShouldAutoStartEnrollment() const;
 
   // Checks whether the user is allowed to exit enrollment.
   bool CanExitEnrollment() const;

@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/prefs/pref_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
-using ::testing::_;
-using ::testing::AnyNumber;
-using ::testing::Return;
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/common/pref_names.h"
 
 namespace chromeos {
 
@@ -43,6 +41,19 @@ IN_PROC_BROWSER_TEST_F(LoginUITest, LoginUIVisible) {
            ".user.emailAddress == '" + std::string(kTestUser1) + "'");
   JSExpect("document.querySelectorAll('.pod:not(#user-pod-template)')[1]"
            ".user.emailAddress == '" + std::string(kTestUser2) + "'");
+}
+
+IN_PROC_BROWSER_TEST_F(LoginUITest, PRE_ShowEnrollmentFirst) {
+  StartupUtils::MarkOobeCompleted();
+
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetBoolean(prefs::kDeviceEnrollmentAutoStart, true);
+}
+
+// Tests that the default first screen is the enrollment screen after OOBE
+// when auto enrollment is enabled and device is not yet enrolled.
+IN_PROC_BROWSER_TEST_F(LoginUITest, ShowEnrollmentFirst) {
+  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_ENROLLMENT).Wait();
 }
 
 }  // namespace chromeos

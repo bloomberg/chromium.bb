@@ -102,6 +102,10 @@ class OobeUI : public OobeDisplay,
   // Initializes the handlers.
   void InitializeHandlers();
 
+  // Invoked after the async assets load. The screen handler that has the same
+  // async assets load id will be initialized.
+  void OnScreenAssetsLoaded(const std::string& async_assets_load_id);
+
   // Shows or hides OOBE UI elements.
   void ShowOobeUI(bool show);
 

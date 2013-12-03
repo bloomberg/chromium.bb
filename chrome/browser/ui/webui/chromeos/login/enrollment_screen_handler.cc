@@ -77,6 +77,7 @@ EnrollmentScreenHandler::EnrollmentScreenHandler()
       is_auto_enrollment_(false),
       can_exit_enrollment_(true),
       browsing_data_remover_(NULL) {
+  set_async_assets_load_id(OobeUI::kScreenOobeEnrollment);
 }
 
 EnrollmentScreenHandler::~EnrollmentScreenHandler() {

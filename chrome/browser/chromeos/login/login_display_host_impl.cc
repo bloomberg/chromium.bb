@@ -1122,11 +1122,20 @@ void ShowLoginWizard(const std::string& first_screen_name) {
 
   bool show_app_launch_splash_screen = (first_screen_name ==
       chromeos::WizardController::kAppLaunchSplashScreenName);
-
   if (show_app_launch_splash_screen) {
     const std::string& auto_launch_app_id =
         chromeos::KioskAppManager::Get()->GetAutoLaunchApp();
     display_host->StartAppLaunch(auto_launch_app_id);
+    return;
+  }
+
+  bool should_show_enrollment_screen =
+      first_screen_name.empty() && oobe_complete &&
+      chromeos::WizardController::ShouldAutoStartEnrollment() &&
+      !g_browser_process->browser_policy_connector()->IsEnterpriseManaged();
+  if (should_show_enrollment_screen) {
+    display_host->StartWizard(chromeos::WizardController::kEnrollmentScreenName,
+                              scoped_ptr<DictionaryValue>());
     return;
   }
 

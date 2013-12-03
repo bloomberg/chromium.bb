@@ -94,6 +94,13 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
   // via virtual Initialize() method (see below).
   void InitializeBase();
 
+  void set_async_assets_load_id(const std::string& async_assets_load_id) {
+    async_assets_load_id_ = async_assets_load_id;
+  }
+  const std::string& async_assets_load_id() const {
+    return async_assets_load_id_;
+  }
+
  protected:
   // All subclasses should implement this method to provide localized values.
   virtual void DeclareLocalizedValues(LocalizedValuesBuilder* builder) = 0;
@@ -220,6 +227,11 @@ class BaseScreenHandler : public content::WebUIMessageHandler {
   // there are no corresponding screen object or several different
   // objects.
   std::string js_screen_path_prefix_;
+
+  // The string id used in the async asset load in JS. If it is set to a
+  // non empty value, the Initialize will be deferred until the underlying load
+  // is finished.
+  std::string async_assets_load_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseScreenHandler);
 };

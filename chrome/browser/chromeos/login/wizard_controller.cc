@@ -420,10 +420,6 @@ void WizardController::SkipToLoginForTesting(
   ShowLoginScreen(context);
 }
 
-void WizardController::SkipPostLoginScreensForTesting() {
-  skip_post_login_screens_ = true;
-}
-
 void WizardController::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -723,7 +719,7 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
 ///////////////////////////////////////////////////////////////////////////////
 // WizardController, chromeos::ScreenObserver overrides:
 void WizardController::OnExit(ExitCodes exit_code) {
-  LOG(INFO) << "Wizard screen exit code: " << exit_code;
+  VLOG(1) << "Wizard screen exit code: " << exit_code;
   switch (exit_code) {
     case NETWORK_CONNECTED:
       OnNetworkConnected();
@@ -827,17 +823,23 @@ void WizardController::AutoLaunchKioskApp() {
 }
 
 // static
-bool WizardController::IsZeroDelayEnabled() {
-  return zero_delay_enabled_;
-}
-
-// static
 void WizardController::SetZeroDelays() {
   kShowDelayMs = 0;
   zero_delay_enabled_ = true;
 }
 
-bool WizardController::ShouldAutoStartEnrollment() const {
+// static
+bool WizardController::IsZeroDelayEnabled() {
+  return zero_delay_enabled_;
+}
+
+// static
+void WizardController::SkipPostLoginScreensForTesting() {
+  skip_post_login_screens_ = true;
+}
+
+// static
+bool WizardController::ShouldAutoStartEnrollment() {
   return g_browser_process->browser_policy_connector()->
       GetDeviceCloudPolicyManager()->ShouldAutoStartEnrollment();
 }

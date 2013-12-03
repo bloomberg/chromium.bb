@@ -153,7 +153,10 @@ cr.define('cr.ui.login.ResourceLoader', function() {
     var assets = ASSETS[id];
     console.log('Finished loading asset bundle', id);
     assets.loaded = true;
-    window.setTimeout(assets.callback, 0);
+    window.setTimeout(function() {
+      assets.callback();
+      chrome.send('screenAssetsLoaded', [id]);
+    }, 0);
   }
 
   /**
