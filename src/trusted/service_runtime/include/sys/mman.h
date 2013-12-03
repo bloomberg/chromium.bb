@@ -15,6 +15,8 @@
 
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 
+#ifdef __native_client__
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,5 +34,7 @@ extern int mprotect(void *start, size_t length, int prot);
 #ifdef __cplusplus
 }
 #endif
+
+#endif  // __native_client__
 
 #endif

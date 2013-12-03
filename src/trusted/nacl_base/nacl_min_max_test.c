@@ -47,7 +47,7 @@ int main(void) {
 
   /* port_win and/or local system defns */
 #define TEST(T, MAX_VAL_MACRO,EXPECTED_VALUE, FMT) do {  \
-    printf("expected %"FMT", actual %"FMT"\n",        \
+    printf("expected %" FMT ", actual %" FMT "\n",    \
            (T) EXPECTED_VALUE, (T) MAX_VAL_MACRO);    \
     if (EXPECTED_VALUE != MAX_VAL_MACRO) {            \
       ++num_errors;                                   \

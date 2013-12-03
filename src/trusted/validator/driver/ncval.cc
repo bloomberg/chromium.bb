@@ -223,7 +223,7 @@ bool ValidateX86(
   if (segment.size % kBundleSize != 0) {
     char buf[100];
     SNPRINTF(buf, sizeof buf,
-             "Text segment size (0x%"NACL_PRIx32") is not "
+             "Text segment size (0x%" NACL_PRIx32 ") is not "
              "multiple of bundle size.",
              segment.size);
     errors->push_back(Error(segment.vaddr + segment.size, buf));

@@ -40,8 +40,13 @@
 
 #if NACL_LINUX
 # include "native_client/src/shared/platform/posix/nacl_file_lock.h"
-# define PREAD pread64
-# define PWRITE pwrite64
+# if NACL_ANDROID
+#  define PREAD pread
+#  define PWRITE pwrite
+# else
+#  define PREAD pread64
+#  define PWRITE pwrite64
+# endif
 #elif NACL_OSX
 # define PREAD pread
 # define PWRITE pwrite

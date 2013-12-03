@@ -407,7 +407,7 @@ int64_t ReverseEmulate::RequestQuotaForWrite(nacl::string file_id,
                                              int64_t offset,
                                              int64_t length) {
   NaClLog(1, "ReverseEmulate::RequestQuotaForWrite (file_id=%s, offset=%"
-          NACL_PRId64", length=%"NACL_PRId64")\n", file_id.c_str(), offset,
+          NACL_PRId64 ", length=%" NACL_PRId64 ")\n", file_id.c_str(), offset,
           length);
   return length;
 }

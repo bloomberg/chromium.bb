@@ -111,7 +111,7 @@ Architecture GetElfArch(const Image &image) {
     case EM_ARM:
       return ARM;
     default:
-      printf("Unsupported e_machine %"NACL_PRIu16".\n", header.e_machine);
+      printf("Unsupported e_machine %" NACL_PRIu16 ".\n", header.e_machine);
       exit(1);
   }
 }

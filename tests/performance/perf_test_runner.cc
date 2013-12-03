@@ -130,28 +130,28 @@ void PerfTestCycleCount(const char *description_string, const char *test_name,
   // this.
   printf("  first runs (cycles):   ");
   for (size_t i = 0; i < 10; i++)
-    printf(" %"PRId64, times[i]);
+    printf(" %" PRId64, times[i]);
   printf(" ...\n");
 
   qsort(times, NACL_ARRAY_SIZE(times), sizeof(times[0]), CompareUint64);
 
   printf("  slowest runs (cycles):  ...");
   for (size_t i = NACL_ARRAY_SIZE(times) - 10; i < NACL_ARRAY_SIZE(times); i++)
-    printf(" %"PRId64, times[i]);
+    printf(" %" PRId64, times[i]);
   printf("\n");
 
   int count = NACL_ARRAY_SIZE(times) - 1;
   uint64_t q1 = times[count * 1 / 4];  // First quartile
   uint64_t q2 = times[count * 1 / 2];  // Median
   uint64_t q3 = times[count * 3 / 4];  // Third quartile
-  printf("  min:     %"PRId64" cycles\n", times[0]);
-  printf("  q1:      %"PRId64" cycles\n", q1);
-  printf("  median:  %"PRId64" cycles\n", q2);
-  printf("  q3:      %"PRId64" cycles\n", q3);
-  printf("  max:     %"PRId64" cycles\n", times[count]);
+  printf("  min:     %" PRId64 " cycles\n", times[0]);
+  printf("  q1:      %" PRId64 " cycles\n", q1);
+  printf("  median:  %" PRId64 " cycles\n", q2);
+  printf("  q3:      %" PRId64 " cycles\n", q3);
+  printf("  max:     %" PRId64 " cycles\n", times[count]);
   // The "{...}" RESULT syntax usually means standard deviation but
   // here we report the interquartile range.
-  printf("RESULT %s_CycleCount: %s= {%"PRId64", %"PRId64"} cycles\n",
+  printf("RESULT %s_CycleCount: %s= {%" PRId64 ", %" PRId64 "} cycles\n",
          test_name, description_string, q2, q3 - q1);
   *result_cycles = q2;
 }

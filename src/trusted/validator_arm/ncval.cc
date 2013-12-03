@@ -55,7 +55,7 @@ ReportProblemMessage(nacl_arm_dec::Violation violation,
                      const char* message) {
   UNREFERENCED_PARAMETER(vaddr);
   UNREFERENCED_PARAMETER(violation);
-  printf("%8"NACL_PRIx32": %s\n", vaddr, message);
+  printf("%8" NACL_PRIx32 ": %s\n", vaddr, message);
 }
 
 const uint32_t kOneGig = 1U * 1024 * 1024 * 1024;

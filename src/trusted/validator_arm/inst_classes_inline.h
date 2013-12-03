@@ -79,7 +79,7 @@ static inline void generate_loadstore_diagnostics(
         LOADSTORE_CROSSES_BUNDLE_VIOLATION,
         second.addr(),
         "Load/store base %s is not properly masked, "
-        "because instruction pair [%08"NACL_PRIx32", %08"NACL_PRIx32
+        "because instruction pair [%08" NACL_PRIx32 ", %08" NACL_PRIx32
         "] crosses bundle boundary.",
         second.base_address_register().ToString(), first.addr(), second.addr());
   }
@@ -93,7 +93,8 @@ static inline void generate_loadstore_diagnostics(
               LOADSTORE_VIOLATION,
               second.addr(),
               "Load/store base %s is not properly masked, "
-              "because instruction %08"NACL_PRIx32" sets APSR condition flags.",
+              "because instruction %08" NACL_PRIx32
+              " sets APSR condition flags.",
               base.ToString(),
               first.addr());
         } else {
@@ -102,7 +103,8 @@ static inline void generate_loadstore_diagnostics(
               second.addr(),
               "Load/store base %s is not properly masked, "
               "because the conditions (%s, %s) on "
-              "[%08"NACL_PRIx32", %08"NACL_PRIx32"] don't guarantee atomicity",
+              "[%08" NACL_PRIx32 ", %08" NACL_PRIx32
+              "] don't guarantee atomicity",
               base.ToString(),
               Instruction::ToString(first.inst().GetCondition()),
               Instruction::ToString(second.inst().GetCondition()),
@@ -122,7 +124,7 @@ static inline void generate_loadstore_diagnostics(
             LOADSTORE_VIOLATION,
             second.addr(),
             "Load/store base %s is not properly masked, because "
-            "%08"NACL_PRIx32" is not conditional on EQ",
+            "%08" NACL_PRIx32 " is not conditional on EQ",
             base.ToString(),
             second.addr());
       } else {
@@ -130,7 +132,7 @@ static inline void generate_loadstore_diagnostics(
             LOADSTORE_VIOLATION,
             second.addr(),
             "Load/store base %s is not properly masked, "
-            "because [%08"NACL_PRIx32", %08"NACL_PRIx32"] instruction "
+            "because [%08" NACL_PRIx32 ", %08" NACL_PRIx32 "] instruction "
             "pair is disallowed on this CPU",
             base.ToString(),
             first.addr(),
@@ -193,7 +195,7 @@ static inline void generate_branch_mask_diagnostics(
         BRANCH_MASK_CROSSES_BUNDLE_VIOLATION,
         second.addr(),
         "Destination branch on %s is not properly masked, "
-        "because instruction pair [%08"NACL_PRIx32", %08"NACL_PRIx32"] "
+        "because instruction pair [%08" NACL_PRIx32 ", %08" NACL_PRIx32 "] "
         "crosses bundle boundary",
         second.branch_target_register().ToString(),
         first.addr(),
@@ -208,7 +210,8 @@ static inline void generate_branch_mask_diagnostics(
               BRANCH_MASK_VIOLATION,
               second.addr(),
               "Destination branch on %s is not properly masked, "
-              "because instruction %08"NACL_PRIx32" sets APSR condition flags",
+              "because instruction %08" NACL_PRIx32
+              " sets APSR condition flags",
               target.ToString(),
               first.addr());
         } else {
@@ -217,7 +220,8 @@ static inline void generate_branch_mask_diagnostics(
               second.addr(),
               "Destination branch on %s is not properly masked, "
               "because the conditions (%s, %s) on "
-              "[%08"NACL_PRIx32", %08"NACL_PRIx32"] don't guarantee atomicity",
+              "[%08" NACL_PRIx32 ", %08" NACL_PRIx32
+              "] don't guarantee atomicity",
               target.ToString(),
               Instruction::ToString(first.inst().GetCondition()),
               Instruction::ToString(second.inst().GetCondition()),
@@ -293,7 +297,7 @@ static inline void generate_data_register_update_diagnostics(
             DATA_REGISTER_UPDATE_CROSSES_BUNDLE_VIOLATION,
             first.addr(),
             "Updating %s without masking in following instruction, "
-            "because instruction pair [%08"NACL_PRIx32", %08"NACL_PRIx32
+            "because instruction pair [%08" NACL_PRIx32 ", %08" NACL_PRIx32
             "] crosses bundle boundary.",
             reg.ToString(),
             first.addr(),
@@ -314,7 +318,7 @@ static inline void generate_data_register_update_diagnostics(
                 DATA_REGISTER_UPDATE_VIOLATION,
                 first.addr(),
                 "Updating %s without masking in following instruction, "
-                "because instruction %08"NACL_PRIx32" sets APSR "
+                "because instruction %08" NACL_PRIx32 " sets APSR "
                 "condition flags.",
                 reg.ToString(),
                 first.addr());
@@ -324,7 +328,7 @@ static inline void generate_data_register_update_diagnostics(
                 first.addr(),
                 "Updating %s without masking in following instruction, "
                 "because the conditions (%s, %s) on "
-                "[%08"NACL_PRIx32", %08"NACL_PRIx32"] don't "
+                "[%08" NACL_PRIx32 ", %08" NACL_PRIx32 "] don't "
                 "guarantee atomicity",
                 reg.ToString(),
                 Instruction::ToString(first.inst().GetCondition()),

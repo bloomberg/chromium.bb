@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
   elf_load::Segment segment = elf_load::GetElfTextSegment(image);
 
   if (segment.size % kBundleSize != 0) {
-    printf("Text segment size (0x%"NACL_PRIx32") is not "
+    printf("Text segment size (0x%" NACL_PRIx32 ") is not "
            "multiple of bundle size.\n",
            segment.size);
     exit(1);

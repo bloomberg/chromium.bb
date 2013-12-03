@@ -210,7 +210,7 @@ bool SfiValidator::ValidateSegmentPair(const CodeSegment& old_code,
       if (out == NULL) return false;
       out->ReportProblemDiagnostic(nacl_arm_dec::OTHER_VIOLATION,
                                    va,
-                                   "Sentinels at %08"NACL_PRIx32" differ.",
+                                   "Sentinels at %08" NACL_PRIx32 " differ.",
                                    va);
       complete_success = false;
     }
@@ -363,7 +363,7 @@ nacl_arm_dec::ViolationSet SfiValidator::validate_branches(
             nacl_arm_dec::BRANCH_SPLITS_PATTERN_VIOLATION,
             va,
             "Instruction branches into middle of 2-instruction "
-            "pattern at %08"NACL_PRIx32".",
+            "pattern at %08" NACL_PRIx32 ".",
             target_va);
       }
     } else {
@@ -407,7 +407,7 @@ nacl_arm_dec::ViolationSet SfiValidator::validate_branches(
         out->ReportProblemDiagnostic(
             nacl_arm_dec::BRANCH_OUT_OF_RANGE_VIOLATION,
             va,
-            "Instruction branches to invalid address %08"NACL_PRIx32".",
+            "Instruction branches to invalid address %08" NACL_PRIx32 ".",
             target_va);
       }
     }

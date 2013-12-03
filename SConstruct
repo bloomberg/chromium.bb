@@ -2513,11 +2513,11 @@ def SetupAndroidEnv(env):
     ndk_tctarget = 'x86'
     arch = 'x86'
     libarch = 'x86'
-  ndk_version = '4.6'
+  ndk_version = '4.8'
   if not ndk or not sdk:
     print 'Please define ANDROID_NDK_ROOT and ANDROID_SDK_ROOT'
     sys.exit(-1)
-  tc = '%s/toolchains/%s-%s/prebuilt/linux-x86/bin/' \
+  tc = '%s/toolchains/%s-%s/prebuilt/linux-x86_64/bin/' \
       % (ndk, ndk_tctarget, ndk_version)
   tc_prefix = '%s/%s-' % (tc, ndk_target)
   platform_prefix = '%s/platforms/android-14/arch-%s' % (ndk, arch)
@@ -2552,7 +2552,7 @@ def SetupAndroidEnv(env):
                        '-fno-exceptions',
                        ],
              LINKFLAGS=['-Wl,-rpath-link=' + platform_prefix + '/usr/lib',
-                        '-Wl,-Ttext-segment,0x50000000',
+                        '-Wl,-Ttext,0x50000000',
                         '-static',
                         '-nostdlib',
                         '-L%s/../lib/gcc/%s/%s' \

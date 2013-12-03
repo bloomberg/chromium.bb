@@ -8,7 +8,7 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_SERIALIZATION_SERIALIZATION_H_
 #define NATIVE_CLIENT_SRC_SHARED_SERIALIZATION_SERIALIZATION_H_
 
-#if defined(__native_client__) || NACL_LINUX
+#if defined(__native_client__) || (NACL_LINUX && !NACL_ANDROID)
 # define NACL_HAS_IEEE_754
 // Make sure fp is not dead code and is tested.  DO NOT USE the fp
 // interface until we have a portability version of ieee754.h!
