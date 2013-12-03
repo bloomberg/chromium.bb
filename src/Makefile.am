@@ -294,7 +294,9 @@ desktop_shell_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 desktop_shell_la_SOURCES =			\
 	shell.c					\
 	desktop-shell-protocol.c		\
-	desktop-shell-server-protocol.h
+	desktop-shell-server-protocol.h 	\
+	xdg-shell-protocol.c			\
+	xdg-shell-server-protocol.h
 endif
 
 if ENABLE_TABLET_SHELL
@@ -355,6 +357,8 @@ BUILT_SOURCES =					\
 	input-method-server-protocol.h		\
 	workspaces-server-protocol.h		\
 	workspaces-protocol.c			\
+	xdg-shell-protocol.c			\
+	xdg-shell-server-protocol.h		\
 	git-version.h
 
 CLEANFILES = $(BUILT_SOURCES)

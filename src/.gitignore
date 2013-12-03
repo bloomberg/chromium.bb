@@ -19,3 +19,5 @@ workspaces-protocol.c
 workspaces-server-protocol.h
 input-method-protocol.c
 input-method-server-protocol.h
+xdg-shell-protocol.c
+xdg-shell-server-protocol.h

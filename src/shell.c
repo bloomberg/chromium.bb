@@ -40,6 +40,7 @@
 #include "input-method-server-protocol.h"
 #include "workspaces-server-protocol.h"
 #include "../shared/config-parser.h"
+#include "xdg-shell-server-protocol.h"
 
 #define DEFAULT_NUM_WORKSPACES 1
 #define DEFAULT_WORKSPACE_CHANGE_ANIMATION_LENGTH 200
@@ -416,6 +417,19 @@ get_shell_seat(struct weston_seat *seat);
 
 static void
 shell_surface_update_child_surface_layers(struct shell_surface *shsurf);
+
+static bool
+shell_surface_is_wl_shell_surface(struct shell_surface *shsurf);
+
+static bool
+shell_surface_is_xdg_surface(struct shell_surface *shsurf);
+
+static bool
+shell_surface_is_xdg_popup(struct shell_surface *shsurf);
+
+static void
+shell_surface_set_parent(struct shell_surface *shsurf,
+                         struct weston_surface *parent);
 
 static bool
 shell_surface_is_top_fullscreen(struct shell_surface *shsurf)
@@ -1622,8 +1636,8 @@ surface_move(struct shell_surface *shsurf, struct weston_seat *seat)
 }
 
 static void
-shell_surface_move(struct wl_client *client, struct wl_resource *resource,
-		   struct wl_resource *seat_resource, uint32_t serial)
+common_surface_move(struct wl_resource *resource,
+		    struct wl_resource *seat_resource, uint32_t serial)
 {
 	struct weston_seat *seat = wl_resource_get_user_data(seat_resource);
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
@@ -1643,6 +1657,13 @@ shell_surface_move(struct wl_client *client, struct wl_resource *resource,
 		    (surface_touch_move(shsurf, seat) < 0))
 			wl_resource_post_no_memory(resource);
 	}
+}
+
+static void
+shell_surface_move(struct wl_client *client, struct wl_resource *resource,
+		   struct wl_resource *seat_resource, uint32_t serial)
+{
+	common_surface_move(resource, seat_resource, serial);
 }
 
 struct weston_resize_grab {
@@ -1799,9 +1820,9 @@ surface_resize(struct shell_surface *shsurf,
 }
 
 static void
-shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
-		     struct wl_resource *seat_resource, uint32_t serial,
-		     uint32_t edges)
+common_surface_resize(struct wl_resource *resource,
+		      struct wl_resource *seat_resource, uint32_t serial,
+		      uint32_t edges)
 {
 	struct weston_seat *seat = wl_resource_get_user_data(seat_resource);
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
@@ -1818,6 +1839,14 @@ shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
 
 	if (surface_resize(shsurf, seat, edges) < 0)
 		wl_resource_post_no_memory(resource);
+}
+
+static void
+shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
+		     struct wl_resource *seat_resource, uint32_t serial,
+		     uint32_t edges)
+{
+	common_surface_resize(resource, seat_resource, serial, edges);
 }
 
 static void
@@ -1960,7 +1989,12 @@ ping_handler(struct weston_surface *surface, uint32_t serial)
 			wl_event_loop_add_timer(loop, ping_timeout_handler, shsurf);
 		wl_event_source_timer_update(shsurf->ping_timer->source, ping_timeout);
 
-		wl_shell_surface_send_ping(shsurf->resource, serial);
+		if (shell_surface_is_wl_shell_surface(shsurf))
+			wl_shell_surface_send_ping(shsurf->resource, serial);
+		else if (shell_surface_is_xdg_surface(shsurf))
+			xdg_surface_send_ping(shsurf->resource, serial);
+		else if (shell_surface_is_xdg_popup(shsurf))
+			xdg_popup_send_ping(shsurf->resource, serial);
 	}
 }
 
@@ -2001,12 +2035,22 @@ create_pointer_focus_listener(struct weston_seat *seat)
 }
 
 static void
-shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
-							uint32_t serial)
+xdg_surface_set_transient_for(struct wl_client *client,
+                             struct wl_resource *resource,
+                             struct wl_resource *parent_resource)
 {
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
-	struct weston_seat *seat;
+	struct weston_surface *parent =
+		wl_resource_get_user_data(parent_resource);
+
+	shell_surface_set_parent(shsurf, parent);
+}
+
+static void
+surface_pong(struct shell_surface *shsurf, uint32_t serial)
+{
 	struct weston_compositor *ec = shsurf->surface->compositor;
+	struct weston_seat *seat;
 
 	if (shsurf->ping_timer == NULL)
 		/* Just ignore unsolicited pong. */
@@ -2020,6 +2064,16 @@ shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
 		}
 		ping_timer_destroy(shsurf);
 	}
+}
+
+static void
+shell_surface_pong(struct wl_client *client, struct wl_resource *resource,
+							uint32_t serial)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+
+	surface_pong(shsurf, serial);
+
 }
 
 static void
@@ -2867,6 +2921,16 @@ static const struct weston_pointer_grab_interface popup_grab_interface = {
 };
 
 static void
+shell_surface_send_popup_done(struct shell_surface *shsurf)
+{
+	if (shell_surface_is_wl_shell_surface(shsurf))
+		wl_shell_surface_send_popup_done(shsurf->resource);
+	else if (shell_surface_is_xdg_popup(shsurf))
+		xdg_popup_send_popup_done(shsurf->resource,
+					  shsurf->popup.serial);
+}
+
+static void
 popup_grab_end(struct weston_pointer *pointer)
 {
 	struct weston_pointer_grab *grab = pointer->grab;
@@ -2882,7 +2946,7 @@ popup_grab_end(struct weston_pointer *pointer)
 		assert(!wl_list_empty(&shseat->popup_grab.surfaces_list));
 		/* Send the popup_done event to all the popups open */
 		wl_list_for_each(shsurf, &shseat->popup_grab.surfaces_list, popup.grab_link) {
-			wl_shell_surface_send_popup_done(shsurf->resource);
+			shell_surface_send_popup_done(shsurf);
 			shsurf->popup.shseat = NULL;
 			if (prev) {
 				wl_list_init(&prev->popup.grab_link);
@@ -2944,7 +3008,7 @@ shell_map_popup(struct shell_surface *shsurf)
 	if (shseat->seat->pointer->grab_serial == shsurf->popup.serial) {
 		add_popup_grab(shsurf, shseat);
 	} else {
-		wl_shell_surface_send_popup_done(shsurf->resource);
+		shell_surface_send_popup_done(shsurf);
 		shseat->popup_grab.client = NULL;
 	}
 }
@@ -3027,9 +3091,9 @@ get_shell_surface(struct weston_surface *surface)
 		return NULL;
 }
 
-static 	struct shell_surface *
-create_shell_surface(void *shell, struct weston_surface *surface,
-		     const struct weston_shell_client *client)
+static struct shell_surface *
+create_common_surface(void *shell, struct weston_surface *surface,
+		      const struct weston_shell_client *client)
 {
 	struct shell_surface *shsurf;
 
@@ -3092,6 +3156,19 @@ create_shell_surface(void *shell, struct weston_surface *surface,
 	return shsurf;
 }
 
+static struct shell_surface *
+create_shell_surface(void *shell, struct weston_surface *surface,
+		     const struct weston_shell_client *client)
+{
+	struct shell_surface *shsurf;
+	shsurf = create_common_surface(shell, surface, client);
+
+	shsurf->type = SHELL_SURFACE_NONE;
+	shsurf->next_type = SHELL_SURFACE_NONE;
+
+	return shsurf;
+}
+
 static struct weston_view *
 get_primary_view(void *shell, struct shell_surface *shsurf)
 {
@@ -3132,9 +3209,402 @@ shell_get_shell_surface(struct wl_client *client,
 				       shsurf, shell_destroy_shell_surface);
 }
 
+static bool
+shell_surface_is_wl_shell_surface(struct shell_surface *shsurf)
+{
+	return wl_resource_instance_of(shsurf->resource,
+				       &wl_shell_surface_interface,
+				       &shell_surface_implementation);
+}
+
 static const struct wl_shell_interface shell_implementation = {
 	shell_get_shell_surface
 };
+
+/****************************
+ * xdg-shell implementation */
+
+static void
+xdg_surface_destroy(struct wl_client *client,
+		    struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static void
+xdg_surface_pong(struct wl_client *client,
+		 struct wl_resource *resource,
+		 uint32_t serial)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+
+	surface_pong(shsurf, serial);
+}
+
+static void
+xdg_surface_set_app_id(struct wl_client *client,
+		       struct wl_resource *resource,
+		       const char *app_id)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+
+	free(shsurf->class);
+	shsurf->class = strdup(app_id);
+}
+
+static void
+xdg_surface_set_title(struct wl_client *client,
+			struct wl_resource *resource, const char *title)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+
+	set_title(shsurf, title);
+}
+
+static void
+xdg_surface_move(struct wl_client *client, struct wl_resource *resource,
+		 struct wl_resource *seat_resource, uint32_t serial)
+{
+	common_surface_move(resource, seat_resource, serial);
+}
+
+static void
+xdg_surface_resize(struct wl_client *client, struct wl_resource *resource,
+		   struct wl_resource *seat_resource, uint32_t serial,
+		   uint32_t edges)
+{
+	common_surface_resize(resource, seat_resource, serial, edges);
+}
+
+static void
+xdg_surface_set_output(struct wl_client *client,
+		       struct wl_resource *resource,
+		       struct wl_resource *output_resource)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+	struct weston_output *output;
+
+	if (output_resource)
+		output = wl_resource_get_user_data(output_resource);
+	else
+		output = NULL;
+
+	if (!weston_surface_is_mapped(shsurf->surface))
+		shsurf->output = output;
+}
+
+static void
+xdg_surface_set_fullscreen(struct wl_client *client,
+			   struct wl_resource *resource)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+
+	if (shsurf->type != SHELL_SURFACE_TOPLEVEL)
+		return;
+
+	if (!shsurf->next_state.fullscreen) {
+		shsurf->next_state.fullscreen = true;
+		shsurf->state_changed = true;
+		set_fullscreen(shsurf,
+			       WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
+			       0, shsurf->output);
+	}
+}
+
+static void
+xdg_surface_unset_fullscreen(struct wl_client *client,
+			     struct wl_resource *resource)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+
+	if (shsurf->type != SHELL_SURFACE_TOPLEVEL)
+		return;
+
+	shsurf->next_state.fullscreen = false;
+	shsurf->state_changed = true;
+}
+
+static void
+xdg_surface_set_maximized(struct wl_client *client,
+			  struct wl_resource *resource)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+
+	if (shsurf->type != SHELL_SURFACE_TOPLEVEL)
+		return;
+
+	if (!shsurf->next_state.maximized) {
+		shsurf->next_state.maximized = true;
+		shsurf->state_changed = true;
+		set_maximized(shsurf, shsurf->output);
+	}
+}
+
+static void
+xdg_surface_unset_maximized(struct wl_client *client,
+			    struct wl_resource *resource)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+
+	if (shsurf->type != SHELL_SURFACE_TOPLEVEL)
+		return;
+
+	shsurf->next_state.maximized = false;
+	shsurf->state_changed = true;
+}
+
+static const struct xdg_surface_interface xdg_surface_implementation = {
+	xdg_surface_destroy,
+	xdg_surface_set_transient_for,
+	xdg_surface_set_title,
+	xdg_surface_set_app_id,
+	xdg_surface_pong,
+	xdg_surface_move,
+	xdg_surface_resize,
+	xdg_surface_set_output,
+	xdg_surface_set_fullscreen,
+	xdg_surface_unset_fullscreen,
+	xdg_surface_set_maximized,
+	xdg_surface_unset_maximized,
+	NULL /* set_minimized */
+};
+
+static void
+xdg_send_configure(struct weston_surface *surface,
+	       uint32_t edges, int32_t width, int32_t height)
+{
+	struct shell_surface *shsurf = get_shell_surface(surface);
+
+	xdg_surface_send_configure(shsurf->resource, edges, width, height);
+}
+
+static const struct weston_shell_client xdg_client = {
+	xdg_send_configure
+};
+
+static void
+xdg_use_unstable_version(struct wl_client *client,
+			 struct wl_resource *resource,
+			 int32_t version)
+{
+	if (version > 1) {
+		wl_resource_post_error(resource,
+				       1,
+				       "xdg-shell:: version not implemented yet.");
+		return;
+	}
+}
+
+static struct shell_surface *
+create_xdg_surface(void *shell, struct weston_surface *surface,
+		   const struct weston_shell_client *client)
+{
+	struct shell_surface *shsurf;
+	shsurf = create_common_surface(shell, surface, client);
+
+	shsurf->type = SHELL_SURFACE_NONE;
+	shsurf->next_type = SHELL_SURFACE_TOPLEVEL;
+
+	return shsurf;
+}
+
+static void
+xdg_get_xdg_surface(struct wl_client *client,
+		    struct wl_resource *resource,
+		    uint32_t id,
+		    struct wl_resource *surface_resource)
+{
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
+	struct shell_surface *shsurf;
+
+	if (get_shell_surface(surface)) {
+		wl_resource_post_error(surface_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "desktop_shell::get_shell_surface already requested");
+		return;
+	}
+
+	shsurf = create_xdg_surface(shell, surface, &xdg_client);
+	if (!shsurf) {
+		wl_resource_post_error(surface_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "surface->configure already set");
+		return;
+	}
+
+	shsurf->resource =
+		wl_resource_create(client,
+				   &xdg_surface_interface, 1, id);
+	wl_resource_set_implementation(shsurf->resource,
+				       &xdg_surface_implementation,
+				       shsurf, shell_destroy_shell_surface);
+}
+
+static bool
+shell_surface_is_xdg_surface(struct shell_surface *shsurf)
+{
+	return wl_resource_instance_of(shsurf->resource,
+				       &xdg_surface_interface,
+				       &xdg_surface_implementation);
+}
+
+/* xdg-popup implementation */
+
+static void
+xdg_popup_destroy(struct wl_client *client,
+		  struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static void
+xdg_popup_pong(struct wl_client *client,
+	       struct wl_resource *resource,
+	       uint32_t serial)
+{
+	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
+
+	surface_pong(shsurf, serial);
+}
+
+static const struct xdg_popup_interface xdg_popup_implementation = {
+	xdg_popup_destroy,
+	xdg_popup_pong
+};
+
+static void
+xdg_popup_send_configure(struct weston_surface *surface,
+			 uint32_t edges, int32_t width, int32_t height)
+{
+}
+
+static const struct weston_shell_client xdg_popup_client = {
+	xdg_popup_send_configure
+};
+
+static struct shell_surface *
+create_xdg_popup(void *shell, struct weston_surface *surface,
+		 const struct weston_shell_client *client,
+		 struct weston_surface *parent,
+		 struct shell_seat *seat,
+		 uint32_t serial,
+		 int32_t x, int32_t y)
+{
+	struct shell_surface *shsurf;
+	shsurf = create_common_surface(shell, surface, client);
+
+	shsurf->type = SHELL_SURFACE_NONE;
+	shsurf->next_type = SHELL_SURFACE_POPUP;
+	shsurf->popup.shseat = seat;
+	shsurf->popup.serial = serial;
+	shsurf->popup.x = x;
+	shsurf->popup.y = y;
+	shell_surface_set_parent(shsurf, parent);
+
+	return shsurf;
+}
+
+static void
+xdg_get_xdg_popup(struct wl_client *client,
+		  struct wl_resource *resource,
+		  uint32_t id,
+		  struct wl_resource *surface_resource,
+		  struct wl_resource *parent_resource,
+		  struct wl_resource *seat_resource,
+		  uint32_t serial,
+		  int32_t x, int32_t y, uint32_t flags)
+{
+	struct weston_surface *surface =
+		wl_resource_get_user_data(surface_resource);
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
+	struct shell_surface *shsurf;
+	struct weston_surface *parent;
+	struct shell_seat *seat;
+
+	if (get_shell_surface(surface)) {
+		wl_resource_post_error(surface_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "desktop_shell::get_shell_surface already requested");
+		return;
+	}
+
+	if (!parent_resource) {
+		wl_resource_post_error(surface_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "xdg_shell::get_xdg_popup requires a parent shell surface");
+	}
+
+	parent = wl_resource_get_user_data(parent_resource);
+	seat = get_shell_seat(wl_resource_get_user_data(seat_resource));;
+
+	shsurf = create_xdg_popup(shell, surface, &xdg_popup_client,
+				  parent, seat, serial, x, y);
+	if (!shsurf) {
+		wl_resource_post_error(surface_resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "surface->configure already set");
+		return;
+	}
+
+	shsurf->resource =
+		wl_resource_create(client,
+				   &xdg_popup_interface, 1, id);
+	wl_resource_set_implementation(shsurf->resource,
+				       &xdg_popup_implementation,
+				       shsurf, shell_destroy_shell_surface);
+}
+
+static bool
+shell_surface_is_xdg_popup(struct shell_surface *shsurf)
+{
+	return wl_resource_instance_of(shsurf->resource,
+				       &xdg_popup_interface,
+				       &xdg_popup_implementation);
+}
+
+static const struct xdg_shell_interface xdg_implementation = {
+	xdg_use_unstable_version,
+	xdg_get_xdg_surface,
+	xdg_get_xdg_popup
+};
+
+static int
+xdg_shell_unversioned_dispatch(const void *implementation,
+			       void *_target, uint32_t opcode,
+			       const struct wl_message *message,
+			       union wl_argument *args)
+{
+	struct wl_resource *resource = _target;
+	struct desktop_shell *shell = wl_resource_get_user_data(resource);
+
+	if (opcode != 0) {
+		wl_resource_post_error(resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "must call use_unstable_version first");
+		return 0;
+	}
+
+#define XDG_SERVER_VERSION 1
+
+	if (args[0].i != XDG_SERVER_VERSION) {
+		wl_resource_post_error(resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "incompatible version, server is %d "
+				       "client wants %d",
+				       XDG_SERVER_VERSION, args[0].i);
+		return 0;
+	}
+
+	wl_resource_set_implementation(resource, &xdg_implementation,
+				       shell, NULL);
+
+	return 1;
+}
+
+/* end of xdg-shell implementation */
+/***********************************/
 
 static void
 shell_fade(struct desktop_shell *shell, enum fade_type type);
@@ -4719,6 +5189,19 @@ bind_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 }
 
 static void
+bind_xdg_shell(struct wl_client *client, void *data, uint32_t version, uint32_t id)
+{
+	struct desktop_shell *shell = data;
+	struct wl_resource *resource;
+
+	resource = wl_resource_create(client, &xdg_shell_interface, 1, id);
+	if (resource)
+		wl_resource_set_dispatcher(resource,
+					   xdg_shell_unversioned_dispatch,
+					   NULL, shell, NULL);
+}
+
+static void
 unbind_desktop_shell(struct wl_resource *resource)
 {
 	struct desktop_shell *shell = wl_resource_get_user_data(resource);
@@ -6291,6 +6774,10 @@ module_init(struct weston_compositor *ec,
 
 	if (wl_global_create(ec->wl_display, &wl_shell_interface, 1,
 				  shell, bind_shell) == NULL)
+		return -1;
+
+	if (wl_global_create(ec->wl_display, &xdg_shell_interface, 1,
+				  shell, bind_xdg_shell) == NULL)
 		return -1;
 
 	if (wl_global_create(ec->wl_display,
