@@ -807,6 +807,7 @@ struct drm_radeon_gem_create {
 #define RADEON_TILING_MACRO				0x1
 #define RADEON_TILING_MICRO				0x2
 #define RADEON_TILING_SWAP_16BIT			0x4
+#define RADEON_TILING_R600_NO_SCANOUT                   RADEON_TILING_SWAP_16BIT
 #define RADEON_TILING_SWAP_32BIT			0x8
 /* this object requires a surface when mapped - i.e. front buffer */
 #define RADEON_TILING_SURFACE				0x10
