@@ -11,6 +11,7 @@
 0xe9d2339d6b9225c7	AboutFlags_disable-outdated-plugins
 0x40c0bddfe31a67c2	AboutFlags_disable-pnacl
 0xf73b5212b48e2a75	AboutFlags_disable-print-preview
+0x973035dcbd7da57d	AboutFlags_disable-views-rect-based-targeting
 0x088990bbea59a185	AboutFlags_disable-website-settings
 0xdddbf34cee2c636c	AboutFlags_dns-server
 0x3add7fc42803849e	AboutFlags_downloads-new-ui
@@ -408,6 +409,7 @@
 0xb63daeca06ecea16	EnterFullScreenWithWrenchMenu
 0xfef46e5063ce3dc7	Exit
 0xcf0c759bda6783fd	ExtensionNotFound_ED
+0x29c354a2e25e4bc9	ExtensionWipeoutNotificationShown
 0xdf56dffe242f621a	Extensions.ExtensionInstalled
 0x4f07c158c8047ab9	Extensions.ExtensionUninstalled
 0x08566bf746b7f665	Extensions.IDChangedError
@@ -1264,6 +1266,8 @@
 0xa86d43452b05bf72	Notifications.ShowMessageCenter
 0x9a102e132f96503f	Notifications.ShowSettings
 0xd2175e238a75b56a	Notifications.Unmute
+0xbace688dcdf180fe	Omnibox.ServerSuggestDelete.Failure
+0x65a8c968a93ddb00	Omnibox.ServerSuggestDelete.Success
 0xa72c673a1f44d11f	OmniboxDestinationURLIsSearchOnDSP
 0x6048dbd4f2f2ca50	OmniboxDestinationURLMatchesDefaultSearchProvider
 0x268376698078c71b	OmniboxInputInProgress
@@ -1629,6 +1633,7 @@
 0x2fbe99005588ef01	StartupTick
 0x11a755d598c0c417	Stop
 0x926a51baad949d12	Strikethrough
+0x055a197053882ccd	SuspiciousExtensionBubbleDismissed
 0x197787e3bdf50f03	SyncedNotifications.SendingServiceDisabled
 0xb789d5822bf411fe	SyncedNotifications.SendingServiceEnabled
 0xc3100ff8c8a00184	SystemBack

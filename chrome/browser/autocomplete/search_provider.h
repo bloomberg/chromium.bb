@@ -18,6 +18,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
@@ -29,6 +30,7 @@
 
 class Profile;
 class SearchProviderTest;
+class SuggestionDeletionHandler;
 class TemplateURLService;
 
 namespace base {
@@ -57,6 +59,9 @@ class SearchProvider : public AutocompleteProvider,
 
   // ID used in creating URLFetcher for keyword provider's suggest results.
   static const int kKeywordProviderURLFetcherID;
+
+  // ID used in creating URLFetcher for deleting suggestion results.
+  static const int kDeletionURLFetcherID;
 
   SearchProvider(AutocompleteProviderListener* listener, Profile* profile);
 
@@ -103,6 +108,7 @@ class SearchProvider : public AutocompleteProvider,
 
   // AutocompleteProvider:
   virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
+  virtual void DeleteMatch(const AutocompleteMatch& match) OVERRIDE;
   virtual void ResetSession() OVERRIDE;
 
   bool field_trial_triggered_in_session() const {
@@ -113,6 +119,9 @@ class SearchProvider : public AutocompleteProvider,
   void set_current_page_url(const GURL& current_page_url) {
     current_page_url_ = current_page_url;
   }
+
+ protected:
+  virtual ~SearchProvider();
 
  private:
   // TODO(hfung): Remove ZeroSuggestProvider as a friend class after
@@ -125,6 +134,7 @@ class SearchProvider : public AutocompleteProvider,
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, NavigationInlineSchemeSubstring);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, RemoveStaleResultsTest);
   FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, SuggestRelevanceExperiment);
+  FRIEND_TEST_ALL_PREFIXES(SearchProviderTest, TestDeleteMatch);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, GetDestinationURL);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedPrefetchTest, ClearPrefetchedResults);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedPrefetchTest, SetPrefetchQuery);
@@ -233,6 +243,7 @@ class SearchProvider : public AutocompleteProvider,
                   const string16& match_contents,
                   const string16& annotation,
                   const std::string& suggest_query_params,
+                  const std::string& deletion_url,
                   bool from_keyword_provider,
                   int relevance,
                   bool relevance_from_server,
@@ -245,6 +256,7 @@ class SearchProvider : public AutocompleteProvider,
     const std::string& suggest_query_params() const {
       return suggest_query_params_;
     }
+    const std::string& deletion_url() const { return deletion_url_; }
     bool should_prefetch() const { return should_prefetch_; }
 
     // Result:
@@ -267,6 +279,11 @@ class SearchProvider : public AutocompleteProvider,
 
     // Optional additional parameters to be added to the search URL.
     std::string suggest_query_params_;
+
+    // Optional deletion URL provided with suggestions. Fetching this URL
+    // should result in some reasonable deletion behaviour on the server,
+    // e.g. deleting this term out of a user's server-side search history.
+    std::string deletion_url_;
 
     // Should this result be prefetched?
     bool should_prefetch_;
@@ -313,6 +330,7 @@ class SearchProvider : public AutocompleteProvider,
   typedef std::vector<history::KeywordSearchTermVisit> HistoryResults;
   typedef std::pair<string16, std::string> MatchKey;
   typedef std::map<MatchKey, AutocompleteMatch> MatchMap;
+  typedef ScopedVector<SuggestionDeletionHandler> SuggestionDeletionHandlers;
 
   // A simple structure bundling most of the information (including
   // both SuggestResults and NavigationResults) returned by a call to
@@ -349,8 +367,6 @@ class SearchProvider : public AutocompleteProvider,
     DISALLOW_COPY_AND_ASSIGN(Results);
   };
 
-  virtual ~SearchProvider();
-
   // Removes non-inlineable results until either the top result can inline
   // autocomplete the current input or verbatim outscores the top result.
   static void RemoveStaleResults(const string16& input,
@@ -370,6 +386,19 @@ class SearchProvider : public AutocompleteProvider,
 
   // net::URLFetcherDelegate:
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+  // This gets called when we have requested a suggestion deletion from the
+  // server to handle the results of the deletion.
+  void OnDeletionComplete(bool success,
+                          SuggestionDeletionHandler* handler);
+
+  // Records in UMA whether the deletion request resulted in success.
+  // This is virtual so test code can override it to check that we
+  // correctly handle the request result.
+  virtual void RecordDeletionResult(bool success);
+
+  // Removes the deleted match from the list of |matches_|.
+  void DeleteMatchFromMatches(const AutocompleteMatch& match);
 
   // Called when timer_ expires.
   void Run();
@@ -492,7 +521,7 @@ class SearchProvider : public AutocompleteProvider,
 
   // Gets the relevance score for the keyword verbatim result.
   // |relevance_from_server| is handled as in GetVerbatimRelevance().
-  // TODO(mpearson): Refactor so this duplication isn't necesary or
+  // TODO(mpearson): Refactor so this duplication isn't necessary or
   // restructure so one static function takes all the parameters it needs
   // (rather than looking at internal state).
   int GetKeywordVerbatimRelevance(bool* relevance_from_server) const;
@@ -523,6 +552,7 @@ class SearchProvider : public AutocompleteProvider,
                      const string16& query_string,
                      int accepted_suggestion,
                      const std::string& suggest_query_params,
+                     const std::string& deletion_url,
                      MatchMap* map);
 
   // Returns an AutocompleteMatch for a navigational suggestion.
@@ -587,6 +617,9 @@ class SearchProvider : public AutocompleteProvider,
   // prefetching.
   static const char kSuggestMetadataKey[];
 
+  // Used to store a deletion request url for server-provided suggestions.
+  static const char kDeletionUrlKey[];
+
   // These are the values for the above keys.
   static const char kTrue[];
   static const char kFalse[];
@@ -622,6 +655,11 @@ class SearchProvider : public AutocompleteProvider,
   // Results from the default and keyword search providers.
   Results default_results_;
   Results keyword_results_;
+
+  // Each deletion handler in this vector corresponds to an outstanding request
+  // that a server delete a personalized suggestion. Making this a ScopedVector
+  // causes us to auto-cancel all such requests on shutdown.
+  SuggestionDeletionHandlers deletion_handlers_;
 
   // Whether a field trial, if any, has triggered in the most recent
   // autocomplete query.  This field is set to false in Start() and may be set

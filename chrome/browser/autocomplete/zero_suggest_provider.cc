@@ -266,8 +266,8 @@ void ZeroSuggestProvider::FillResults(
       }
     } else {
       suggest_results->push_back(SearchProvider::SuggestResult(
-          result, result, string16(), std::string(), false, relevance,
-          relevances != NULL, false));
+          result, result, string16(), std::string(), std::string(), false,
+          relevance, relevances != NULL, false));
     }
   }
 }

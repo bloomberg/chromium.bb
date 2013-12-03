@@ -56,6 +56,36 @@ ACMatches::const_iterator FindDefaultMatch(const ACMatches& matches) {
   return it;
 }
 
+class SuggestionDeletionHandler;
+class SearchProviderForTest : public SearchProvider {
+ public:
+  SearchProviderForTest(
+      AutocompleteProviderListener* listener,
+      Profile* profile);
+  bool is_success() { return is_success_; };
+
+ protected:
+  virtual ~SearchProviderForTest();
+
+ private:
+  virtual void RecordDeletionResult(bool success) OVERRIDE;
+  bool is_success_;
+  DISALLOW_COPY_AND_ASSIGN(SearchProviderForTest);
+};
+
+SearchProviderForTest::SearchProviderForTest(
+    AutocompleteProviderListener* listener,
+    Profile* profile)
+    : SearchProvider(listener, profile), is_success_(false) {
+}
+
+SearchProviderForTest::~SearchProviderForTest() {
+}
+
+void SearchProviderForTest::RecordDeletionResult(bool success) {
+  is_success_ = success;
+}
+
 } // namespace
 
 // SearchProviderTest ---------------------------------------------------------
@@ -187,7 +217,7 @@ class SearchProviderTest : public testing::Test,
   TestingProfile profile_;
 
   // The provider.
-  scoped_refptr<SearchProvider> provider_;
+  scoped_refptr<SearchProviderForTest> provider_;
 
   // If non-NULL, OnProviderUpdate quits the current |run_loop_|.
   base::RunLoop* run_loop_;
@@ -245,7 +275,7 @@ void SearchProviderTest::SetUp() {
   // requests to ensure the InMemoryDatabase is the state we expect it.
   profile_.BlockUntilHistoryProcessesPendingRequests();
 
-  provider_ = new SearchProvider(this, &profile_);
+  provider_ = new SearchProviderForTest(this, &profile_);
   provider_->kMinimumTimeBetweenSuggestQueriesMs = 0;
 }
 
@@ -3354,7 +3384,8 @@ TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
       } else {
         provider_->default_results_.suggest_results.push_back(
             SearchProvider::SuggestResult(ASCIIToUTF16(suggestion), string16(),
-                                          string16(), std::string(), false,
+                                          string16(), std::string(),
+                                          std::string(), false,
                                           cases[i].results[j].relevance,
                                           false, false));
       }
@@ -3781,8 +3812,9 @@ TEST_F(SearchProviderTest, XSSIGuardedJSONParsing_ValidResponses) {
     std::string contents;
     AutocompleteMatchType::Type type;
   };
-  const Match kEmptyMatch = { kNotApplicable,
-                              AutocompleteMatchType::NUM_TYPES};
+  const Match kEmptyMatch = {
+      kNotApplicable, AutocompleteMatchType::NUM_TYPES
+  };
 
   struct {
     const std::string input_text;
@@ -3861,6 +3893,82 @@ TEST_F(SearchProviderTest, XSSIGuardedJSONParsing_ValidResponses) {
   }
 }
 
+// Test that deletion url gets set on an AutocompleteMatch when available for a
+// personalized query.
+TEST_F(SearchProviderTest, ParseDeletionUrl) {
+   struct Match {
+     std::string contents;
+     std::string deletion_url;
+     AutocompleteMatchType::Type type;
+   };
+
+   const Match kEmptyMatch = {
+       kNotApplicable, "", AutocompleteMatchType::NUM_TYPES
+   };
+
+   const char url[] = "https://www.google.com/complete/deleteitems"
+       "?delq=ab&client=chrome&deltok=xsrf123";
+
+   struct {
+       const std::string input_text;
+       const std::string response_json;
+       const Match matches[4];
+     } cases[] = {
+       // A deletion URL on a personalized query should be reflected in the
+       // resulting AutocompleteMatch.
+       { "a",
+         "[\"a\",[\"ab\", \"ac\"],[],[],"
+         "{\"google:suggesttype\":[\"PERSONALIZED_QUERY\",\"QUERY\"],"
+         "\"google:suggestrelevance\":[1, 2],"
+         "\"google:suggestdetail\":[{\"du\":"
+         "\"https://www.google.com/complete/deleteitems?delq=ab&client=chrome"
+         "&deltok=xsrf123\"}, {}]}]",
+         { { "a", "", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
+           { "ac", "", AutocompleteMatchType::SEARCH_SUGGEST },
+           { "ab", url, AutocompleteMatchType::SEARCH_SUGGEST },
+           kEmptyMatch,
+         },
+       },
+       // Personalized queries without deletion URLs shouldn't cause errors.
+       { "a",
+         "[\"a\",[\"ab\", \"ac\"],[],[],"
+         "{\"google:suggesttype\":[\"PERSONALIZED_QUERY\",\"QUERY\"],"
+         "\"google:suggestrelevance\":[1, 2],"
+         "\"google:suggestdetail\":[{}, {}]}]",
+         { { "a", "", AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED },
+           { "ac", "", AutocompleteMatchType::SEARCH_SUGGEST },
+           { "ab", "", AutocompleteMatchType::SEARCH_SUGGEST },
+           kEmptyMatch,
+         },
+       },
+     };
+
+     for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
+       QueryForInput(ASCIIToUTF16(cases[i].input_text), false, false);
+
+       net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+           SearchProvider::kDefaultProviderURLFetcherID);
+       ASSERT_TRUE(fetcher);
+       fetcher->set_response_code(200);
+       fetcher->SetResponseString(cases[i].response_json);
+       fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+       RunTillProviderDone();
+
+       const ACMatches& matches = provider_->matches();
+       ASSERT_FALSE(matches.empty());
+
+       SCOPED_TRACE("for input with json = " + cases[i].response_json);
+
+       for (size_t j = 0; j < matches.size(); ++j) {
+         const Match& match = cases[i].matches[j];
+         SCOPED_TRACE(" and match index: " + base::IntToString(j));
+         EXPECT_EQ(match.contents, UTF16ToUTF8(matches[j].contents));
+         EXPECT_EQ(match.deletion_url, matches[j].GetAdditionalInfo(
+             "deletion_url"));
+       }
+     }
+}
 
 TEST_F(SearchProviderTest, ReflectsBookmarkBarState) {
   profile_.GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, false);
@@ -4006,4 +4114,39 @@ TEST_F(SearchProviderTest, CanSendURL) {
       GURL("http://www.google.com/search"),
       GURL("https://www.google.com/complete/search"), &google_template_url,
       AutocompleteInput::OTHER, &profile_));
+}
+
+TEST_F(SearchProviderTest, TestDeleteMatch) {
+  AutocompleteMatch match(provider_, 0, true,
+                          AutocompleteMatchType::SEARCH_SUGGEST);
+  match.RecordAdditionalInfo(
+      SearchProvider::kDeletionUrlKey,
+      "https://www.google.com/complete/deleteitem?q=foo");
+
+  // Test a successful deletion request.
+  provider_->matches_.push_back(match);
+  provider_->DeleteMatch(match);
+  EXPECT_FALSE(provider_->deletion_handlers_.empty());
+  EXPECT_TRUE(provider_->matches_.empty());
+  // Set up a default fetcher with provided results.
+  net::TestURLFetcher* fetcher = test_factory_.GetFetcherByID(
+      SearchProvider::kDeletionURLFetcherID);
+  ASSERT_TRUE(fetcher);
+  fetcher->set_response_code(200);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_TRUE(provider_->deletion_handlers_.empty());
+  EXPECT_TRUE(provider_->is_success());
+
+  // Test a failing deletion request.
+  provider_->matches_.push_back(match);
+  provider_->DeleteMatch(match);
+  EXPECT_FALSE(provider_->deletion_handlers_.empty());
+  // Set up a default fetcher with provided results.
+  fetcher = test_factory_.GetFetcherByID(
+      SearchProvider::kDeletionURLFetcherID);
+  ASSERT_TRUE(fetcher);
+  fetcher->set_response_code(500);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_TRUE(provider_->deletion_handlers_.empty());
+  EXPECT_FALSE(provider_->is_success());
 }

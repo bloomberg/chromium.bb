@@ -45,6 +45,7 @@
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -175,6 +176,61 @@ void SetAndClassifyMatchContents(const string16& query_string,
 }  // namespace
 
 
+// SuggestionDeletionHandler -------------------------------------------------
+
+// This class handles making requests to the server in order to delete
+// personalized suggestions.
+class SuggestionDeletionHandler : public net::URLFetcherDelegate {
+ public:
+  typedef base::Callback<void(bool, SuggestionDeletionHandler*)>
+      DeletionCompletedCallback;
+
+  SuggestionDeletionHandler(
+      const std::string& deletion_url,
+      Profile* profile,
+      const DeletionCompletedCallback& callback);
+
+  virtual ~SuggestionDeletionHandler();
+
+ private:
+  // net::URLFetcherDelegate:
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
+
+  scoped_ptr<net::URLFetcher> deletion_fetcher_;
+  DeletionCompletedCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(SuggestionDeletionHandler);
+};
+
+
+SuggestionDeletionHandler::SuggestionDeletionHandler(
+    const std::string& deletion_url,
+    Profile* profile,
+    const DeletionCompletedCallback& callback) : callback_(callback) {
+  GURL url(deletion_url);
+  DCHECK(url.is_valid());
+
+  deletion_fetcher_.reset(net::URLFetcher::Create(
+      SearchProvider::kDeletionURLFetcherID,
+      url,
+      net::URLFetcher::GET,
+      this));
+  deletion_fetcher_->SetRequestContext(profile->GetRequestContext());
+  deletion_fetcher_->Start();
+};
+
+SuggestionDeletionHandler::~SuggestionDeletionHandler() {
+};
+
+void SuggestionDeletionHandler::OnURLFetchComplete(
+    const net::URLFetcher* source) {
+  DCHECK(source == deletion_fetcher_.get());
+  callback_.Run(
+      source->GetStatus().is_success() && (source->GetResponseCode() == 200),
+      this);
+};
+
+
 // SearchProvider::Providers --------------------------------------------------
 
 SearchProvider::Providers::Providers(TemplateURLService* template_url_service)
@@ -213,6 +269,7 @@ SearchProvider::SuggestResult::SuggestResult(
     const string16& match_contents,
     const string16& annotation,
     const std::string& suggest_query_params,
+    const std::string& deletion_url,
     bool from_keyword_provider,
     int relevance,
     bool relevance_from_server,
@@ -222,6 +279,7 @@ SearchProvider::SuggestResult::SuggestResult(
       match_contents_(match_contents),
       annotation_(annotation),
       suggest_query_params_(suggest_query_params),
+      deletion_url_(deletion_url),
       should_prefetch_(should_prefetch) {
 }
 
@@ -326,10 +384,12 @@ bool SearchProvider::Results::HasServerProvidedScores() const {
 // static
 const int SearchProvider::kDefaultProviderURLFetcherID = 1;
 const int SearchProvider::kKeywordProviderURLFetcherID = 2;
+const int SearchProvider::kDeletionURLFetcherID = 3;
 int SearchProvider::kMinimumTimeBetweenSuggestQueriesMs = 100;
 const char SearchProvider::kRelevanceFromServerKey[] = "relevance_from_server";
 const char SearchProvider::kShouldPrefetchKey[] = "should_prefetch";
 const char SearchProvider::kSuggestMetadataKey[] = "suggest_metadata";
+const char SearchProvider::kDeletionUrlKey[] = "deletion_url";
 const char SearchProvider::kTrue[] = "true";
 const char SearchProvider::kFalse[] = "false";
 
@@ -432,6 +492,20 @@ void SearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
           field_trial_hashes[i]);
     }
   }
+}
+
+void SearchProvider::DeleteMatch(const AutocompleteMatch& match) {
+  // TODO(mariakhomenko): Add support for deleting search history suggestions.
+  DCHECK(match.deletable);
+
+  deletion_handlers_.push_back(new SuggestionDeletionHandler(
+      match.GetAdditionalInfo(SearchProvider::kDeletionUrlKey),
+      profile_,
+      base::Bind(&SearchProvider::OnDeletionComplete, base::Unretained(this))));
+
+  // Immediately update the list of matches to show the match was deleted,
+  // regardless of whether the server request actually succeeds.
+  DeleteMatchFromMatches(match);
 }
 
 void SearchProvider::ResetSession() {
@@ -638,6 +712,7 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
         source->GetResponseHeaders();
     std::string json_data;
     source->GetResponseAsString(&json_data);
+
     // JSON is supposed to be UTF-8, but some suggest service providers send
     // JSON files in non-UTF-8 encodings.  The actual encoding is usually
     // specified in the Content-Type header field.
@@ -660,6 +735,41 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   UpdateMatches();
   if (done_ || results_updated)
     listener_->OnProviderUpdate(results_updated);
+}
+
+void SearchProvider::OnDeletionComplete(bool success,
+                                        SuggestionDeletionHandler* handler) {
+  RecordDeletionResult(success);
+  SuggestionDeletionHandlers::iterator it = std::find(
+      deletion_handlers_.begin(), deletion_handlers_.end(), handler);
+  DCHECK(it != deletion_handlers_.end());
+  deletion_handlers_.erase(it);
+}
+
+
+void SearchProvider::RecordDeletionResult(bool success) {
+  if (success) {
+    content::RecordAction(
+        content::UserMetricsAction("Omnibox.ServerSuggestDelete.Success"));
+  } else {
+    content::RecordAction(
+        content::UserMetricsAction("Omnibox.ServerSuggestDelete.Failure"));
+  }
+}
+
+void SearchProvider::DeleteMatchFromMatches(const AutocompleteMatch& match) {
+  for (ACMatches::iterator i(matches_.begin()); i != matches_.end(); ++i) {
+    // Find the desired match to delete by checking the type and contents.
+    // We can't check the destination URL, because the autocomplete controller
+    // may have reformulated that. Not that while checking for matching
+    // contents works for personalized suggestions, if more match types gain
+    // deletion support, this algorithm may need to be re-examined.
+    if (i->contents == match.contents && i->type == match.type) {
+      matches_.erase(i);
+      break;
+    }
+  }
+  listener_->OnProviderUpdate(true);
 }
 
 void SearchProvider::Run() {
@@ -919,69 +1029,6 @@ void SearchProvider::ApplyCalculatedNavigationRelevance(
   }
 }
 
-bool SearchProvider::CanSendURL(
-    const GURL& current_page_url,
-    const GURL& suggest_url,
-    const TemplateURL* template_url,
-    AutocompleteInput::PageClassification page_classification,
-    Profile* profile) {
-  if (!current_page_url.is_valid())
-    return false;
-
-  // TODO(hfung): Show Most Visited on NTP with appropriate verbatim
-  // description when the user actively focuses on the omnibox as discussed in
-  // crbug/305366 if Most Visited (or something similar) will launch.
-  if ((page_classification ==
-       AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS) ||
-      (page_classification ==
-       AutocompleteInput::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS))
-    return false;
-
-  // Only allow HTTP URLs or HTTPS URLs for the same domain as the search
-  // provider.
-  if ((current_page_url.scheme() != content::kHttpScheme) &&
-      ((current_page_url.scheme() != content::kHttpsScheme) ||
-       !net::registry_controlled_domains::SameDomainOrHost(
-           current_page_url, suggest_url,
-           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)))
-    return false;
-
-  // Make sure we are sending the suggest request through HTTPS to prevent
-  // exposing the current page URL to networks before the search provider.
-  if (!suggest_url.SchemeIs(content::kHttpsScheme))
-    return false;
-
-  // Don't run if there's no profile or in incognito mode.
-  if (profile == NULL || profile->IsOffTheRecord())
-    return false;
-
-  // Don't run if we can't get preferences or search suggest is not enabled.
-  PrefService* prefs = profile->GetPrefs();
-  if (!prefs->GetBoolean(prefs::kSearchSuggestEnabled))
-    return false;
-
-  // Only make the request if we know that the provider supports zero suggest
-  // (currently only the prepopulated Google provider).
-  if (template_url == NULL || !template_url->SupportsReplacement() ||
-      TemplateURLPrepopulateData::GetEngineType(*template_url) !=
-      SEARCH_ENGINE_GOOGLE)
-    return false;
-
-  // Check field trials and settings allow sending the URL on suggest requests.
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  browser_sync::SyncPrefs sync_prefs(prefs);
-  if (!OmniboxFieldTrial::InZeroSuggestFieldTrial() ||
-      service == NULL ||
-      !service->IsSyncEnabledAndLoggedIn() ||
-      !sync_prefs.GetPreferredDataTypes(syncer::UserTypes()).Has(
-          syncer::PROXY_TABS) ||
-      service->GetEncryptedDataTypes().Has(syncer::SESSIONS))
-    return false;
-
-  return true;
-}
-
 net::URLFetcher* SearchProvider::CreateSuggestFetcher(
     int id,
     const TemplateURL* template_url,
@@ -1134,22 +1181,32 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
       bool should_prefetch = static_cast<int>(index) == prefetch_index;
       DictionaryValue* suggestion_detail = NULL;
       string16 match_contents = suggestion;
-      string16 disambiguating_query;
       string16 annotation;
       std::string suggest_query_params;
-      if (suggestion_details && (type == "ENTITY") &&
-          suggestion_details->GetDictionary(index, &suggestion_detail) &&
-          suggestion_detail) {
-        suggestion_detail->GetString("a", &annotation);
-        if (suggestion_detail->GetString("dq", &disambiguating_query) &&
-            !disambiguating_query.empty())
-          suggestion = disambiguating_query;
-        suggestion_detail->GetString("q", &suggest_query_params);
+      std::string deletion_url;
+
+      if (suggestion_details) {
+        suggestion_details->GetDictionary(index, &suggestion_detail);
+        if (suggestion_detail) {
+          suggestion_detail->GetString("du", &deletion_url);
+
+          if (type == "ENTITY") {
+            suggestion_detail->GetString("a", &annotation);
+
+            string16 disambiguating_query;
+            if (suggestion_detail->GetString("dq", &disambiguating_query) &&
+                !disambiguating_query.empty())
+              suggestion = disambiguating_query;
+
+            suggestion_detail->GetString("q", &suggest_query_params);
+          }
+        }
       }
+
       // TODO(kochi): Improve calculator suggestion presentation.
       results->suggest_results.push_back(SuggestResult(
           suggestion, match_contents, annotation, suggest_query_params,
-          is_keyword, relevance, true, should_prefetch));
+          deletion_url, is_keyword, relevance, true, should_prefetch));
     }
   }
 
@@ -1209,6 +1266,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
                   input_.text(),
                   did_not_accept_default_suggestion,
                   std::string(),
+                  std::string(),
                   &map);
   }
   if (!keyword_input_.text().empty()) {
@@ -1236,6 +1294,7 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
                       string16(),
                       keyword_input_.text(),
                       did_not_accept_keyword_suggestion,
+                      std::string(),
                       std::string(),
                       &map);
       }
@@ -1545,6 +1604,7 @@ void SearchProvider::AddHistoryResultsToMap(const HistoryResults& results,
                   i->suggestion(),
                   did_not_accept_suggestion,
                   std::string(),
+                  std::string(),
                   map);
   }
   UMA_HISTOGRAM_TIMES("Omnibox.SearchProvider.AddHistoryResultsTime",
@@ -1595,7 +1655,7 @@ SearchProvider::SuggestResults SearchProvider::ScoreHistoryResults(
         prevent_search_history_inlining);
     scored_results.push_back(
         SuggestResult(i->term, string16(), string16(), std::string(),
-                      is_keyword, relevance, false, false));
+                      std::string(), is_keyword, relevance, false, false));
   }
 
   // History returns results sorted for us.  However, we may have docked some
@@ -1634,6 +1694,7 @@ void SearchProvider::AddSuggestResultsToMap(const SuggestResults& results,
                   results[i].suggestion(),
                   i,
                   results[i].suggest_query_params(),
+                  results[i].deletion_url(),
                   map);
   }
 }
@@ -1758,6 +1819,7 @@ void SearchProvider::AddMatchToMap(const string16& input_text,
                                    const string16& query_string,
                                    int accepted_suggestion,
                                    const std::string& suggest_query_params,
+                                   const std::string& deletion_url,
                                    MatchMap* map) {
   // On non-mobile, ask the instant controller for the appropriate start margin.
   // On mobile the start margin is unused, so leave the value as default there.
@@ -1789,6 +1851,11 @@ void SearchProvider::AddMatchToMap(const string16& input_text,
                              relevance_from_server ? kTrue : kFalse);
   match.RecordAdditionalInfo(kShouldPrefetchKey,
                              should_prefetch ? kTrue : kFalse);
+
+  if (!deletion_url.empty() && GURL(deletion_url).is_valid()) {
+    match.RecordAdditionalInfo(kDeletionUrlKey, deletion_url);
+    match.deletable = true;
+  }
 
   // Metadata is needed only for prefetching queries.
   if (should_prefetch)
@@ -1954,4 +2021,67 @@ void SearchProvider::UpdateDone() {
   // We're done when the timer isn't running, there are no suggest queries
   // pending, and we're not waiting on Instant.
   done_ = !timer_.IsRunning() && (suggest_results_pending_ == 0);
+}
+
+bool SearchProvider::CanSendURL(
+    const GURL& current_page_url,
+    const GURL& suggest_url,
+    const TemplateURL* template_url,
+    AutocompleteInput::PageClassification page_classification,
+    Profile* profile) {
+  if (!current_page_url.is_valid())
+    return false;
+
+  // TODO(hfung): Show Most Visited on NTP with appropriate verbatim
+  // description when the user actively focuses on the omnibox as discussed in
+  // crbug/305366 if Most Visited (or something similar) will launch.
+  if ((page_classification ==
+       AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS) ||
+      (page_classification ==
+       AutocompleteInput::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS))
+    return false;
+
+  // Only allow HTTP URLs or HTTPS URLs for the same domain as the search
+  // provider.
+  if ((current_page_url.scheme() != content::kHttpScheme) &&
+      ((current_page_url.scheme() != content::kHttpsScheme) ||
+       !net::registry_controlled_domains::SameDomainOrHost(
+           current_page_url, suggest_url,
+           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)))
+    return false;
+
+  // Make sure we are sending the suggest request through HTTPS to prevent
+  // exposing the current page URL to networks before the search provider.
+  if (!suggest_url.SchemeIs(content::kHttpsScheme))
+    return false;
+
+  // Don't run if there's no profile or in incognito mode.
+  if (profile == NULL || profile->IsOffTheRecord())
+    return false;
+
+  // Don't run if we can't get preferences or search suggest is not enabled.
+  PrefService* prefs = profile->GetPrefs();
+  if (!prefs->GetBoolean(prefs::kSearchSuggestEnabled))
+    return false;
+
+  // Only make the request if we know that the provider supports zero suggest
+  // (currently only the prepopulated Google provider).
+  if (template_url == NULL || !template_url->SupportsReplacement() ||
+      TemplateURLPrepopulateData::GetEngineType(*template_url) !=
+      SEARCH_ENGINE_GOOGLE)
+    return false;
+
+  // Check field trials and settings allow sending the URL on suggest requests.
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  browser_sync::SyncPrefs sync_prefs(prefs);
+  if (!OmniboxFieldTrial::InZeroSuggestFieldTrial() ||
+      service == NULL ||
+      !service->IsSyncEnabledAndLoggedIn() ||
+      !sync_prefs.GetPreferredDataTypes(syncer::UserTypes()).Has(
+          syncer::PROXY_TABS) ||
+      service->GetEncryptedDataTypes().Has(syncer::SESSIONS))
+    return false;
+
+  return true;
 }
