@@ -16,8 +16,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
-#include "chrome/browser/google_apis/drive_api_url_generator.h"
-#include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -36,6 +34,8 @@
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
+#include "google_apis/drive/drive_api_url_generator.h"
+#include "google_apis/drive/gdata_wapi_url_generator.h"
 #include "webkit/common/blob/scoped_file.h"
 
 namespace sync_file_system {

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_DRIVE_DUMMY_DRIVE_SERVICE_H_
 
 #include "chrome/browser/drive/drive_service_interface.h"
-#include "chrome/browser/google_apis/auth_service_interface.h"
+#include "google_apis/drive/auth_service_interface.h"
 
 namespace drive {
 

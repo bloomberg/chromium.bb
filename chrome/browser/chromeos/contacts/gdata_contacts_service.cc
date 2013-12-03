@@ -21,11 +21,11 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
-#include "chrome/browser/google_apis/gdata_contacts_requests.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
-#include "chrome/browser/google_apis/request_sender.h"
-#include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/drive/gdata_contacts_requests.h"
+#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/request_sender.h"
+#include "google_apis/drive/time_util.h"
 
 using content::BrowserThread;
 

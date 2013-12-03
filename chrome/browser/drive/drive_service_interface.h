@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "chrome/browser/google_apis/auth_service_interface.h"
-#include "chrome/browser/google_apis/base_requests.h"
-#include "chrome/browser/google_apis/drive_common_callbacks.h"
+#include "google_apis/drive/auth_service_interface.h"
+#include "google_apis/drive/base_requests.h"
+#include "google_apis/drive/drive_common_callbacks.h"
 
 namespace base {
 class Time;

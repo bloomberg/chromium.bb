@@ -6,8 +6,8 @@
 
 #include "base/callback.h"
 #include "base/logging.h"
-#include "chrome/browser/google_apis/task_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/drive/task_util.h"
 
 using content::BrowserThread;
 

@@ -14,8 +14,8 @@
 #include "chrome/browser/chromeos/drive/file_system/update_operation.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/sync/entry_update_performer.h"
-#include "chrome/browser/google_apis/task_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/drive/task_util.h"
 
 using content::BrowserThread;
 

@@ -12,10 +12,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/drive/drive_service_interface.h"
-#include "chrome/browser/google_apis/auth_service_interface.h"
-#include "chrome/browser/google_apis/auth_service_observer.h"
-#include "chrome/browser/google_apis/gdata_wapi_requests.h"
-#include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
+#include "google_apis/drive/auth_service_interface.h"
+#include "google_apis/drive/auth_service_observer.h"
+#include "google_apis/drive/gdata_wapi_requests.h"
+#include "google_apis/drive/gdata_wapi_url_generator.h"
 
 class GURL;
 class OAuth2TokenService;

@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/file_manager/app_installer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/page_zoom.h"
+#include "google_apis/drive/auth_service.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "url/gurl.h"
 

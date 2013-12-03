@@ -8,7 +8,7 @@
 #include <string>
 
 #include "chrome/browser/chromeos/drive/file_cache.h"
-#include "chrome/browser/google_apis/test_util.h"
+#include "google_apis/drive/test_util.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/network_change_notifier.h"

@@ -12,10 +12,10 @@
 #include "base/values.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
-#include "chrome/browser/google_apis/test_util.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/fake_drive_service_helper.h"
+#include "google_apis/drive/gdata_errorcode.h"
+#include "google_apis/drive/test_util.h"
 #include "net/base/escape.h"
 
 namespace sync_file_system {

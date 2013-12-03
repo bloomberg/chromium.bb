@@ -9,9 +9,9 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/drive/drive_service_interface.h"
-#include "chrome/browser/google_apis/drive_common_callbacks.h"
-#include "chrome/browser/google_apis/drive_entry_kinds.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
+#include "google_apis/drive/drive_common_callbacks.h"
+#include "google_apis/drive/drive_entry_kinds.h"
+#include "google_apis/drive/gdata_errorcode.h"
 
 class GURL;
 

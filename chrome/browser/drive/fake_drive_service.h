@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/values.h"
 #include "chrome/browser/drive/drive_service_interface.h"
-#include "chrome/browser/google_apis/auth_service_interface.h"
+#include "google_apis/drive/auth_service_interface.h"
 
 namespace drive {
 

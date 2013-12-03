@@ -8,8 +8,8 @@
 
 #include "chrome/browser/chromeos/contacts/contact.pb.h"
 #include "chrome/browser/chromeos/contacts/contact_test_util.h"
-#include "chrome/browser/google_apis/time_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/drive/time_util.h"
 
 using content::BrowserThread;
 

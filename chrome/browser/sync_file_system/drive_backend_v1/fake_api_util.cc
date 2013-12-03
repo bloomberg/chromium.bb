@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "chrome/browser/google_apis/drive_entry_kinds.h"
+#include "google_apis/drive/drive_entry_kinds.h"
 #include "webkit/common/blob/scoped_file.h"
 
 namespace sync_file_system {

@@ -14,8 +14,8 @@
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/drive/fake_drive_service.h"
-#include "chrome/browser/google_apis/test_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "google_apis/drive/test_util.h"
 
 namespace drive {
 namespace file_system {

@@ -11,9 +11,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/drive/drive_service_interface.h"
-#include "chrome/browser/google_apis/drive_api_url_generator.h"
-#include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/api_util_interface.h"
+#include "google_apis/drive/drive_api_url_generator.h"
+#include "google_apis/drive/gdata_wapi_url_generator.h"
 #include "net/base/network_change_notifier.h"
 #include "webkit/common/blob/scoped_file.h"
 

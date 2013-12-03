@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_system_metadata.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
-#include "chrome/browser/google_apis/base_requests.h"
+#include "google_apis/drive/base_requests.h"
 
 namespace drive {
 

@@ -7,7 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/platform_file.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
+#include "google_apis/drive/gdata_errorcode.h"
 
 namespace drive {
 

@@ -5,9 +5,9 @@
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 
 #include "base/run_loop.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
 #include "content/public/test/test_utils.h"
+#include "google_apis/drive/gdata_errorcode.h"
 
 using content::BrowserThread;
 
