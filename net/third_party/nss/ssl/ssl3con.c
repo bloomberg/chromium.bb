@@ -10712,7 +10712,7 @@ ssl3_SendEncryptedExtensions(sslSocket *ss)
     spki = SECKEY_EncodeDERSubjectPublicKeyInfo(ss->ssl3.channelIDPub);
 
     if (spki->len != sizeof(P256_SPKI_PREFIX) + CHANNEL_ID_PUBLIC_KEY_LENGTH ||
-	memcmp(spki->data, P256_SPKI_PREFIX, sizeof(P256_SPKI_PREFIX) != 0)) {
+	memcmp(spki->data, P256_SPKI_PREFIX, sizeof(P256_SPKI_PREFIX)) != 0) {
 	PORT_SetError(SSL_ERROR_INVALID_CHANNEL_ID_KEY);
 	rv = SECFailure;
 	goto loser;
