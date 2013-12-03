@@ -55,7 +55,7 @@ void Connector::OnHandleReady(Callback* callback, MojoResult result) {
 void Connector::WaitToReadMore() {
   read_callback_.SetOwnerToNotify(this);
   read_callback_.SetAsyncWaitID(
-      BindingsSupport::Get()->AsyncWait(message_pipe_,
+      BindingsSupport::Get()->AsyncWait(message_pipe_.get(),
                                         MOJO_WAIT_FLAG_READABLE,
                                         &read_callback_));
 }
@@ -63,7 +63,7 @@ void Connector::WaitToReadMore() {
 void Connector::WaitToWriteMore() {
   write_callback_.SetOwnerToNotify(this);
   write_callback_.SetAsyncWaitID(
-      BindingsSupport::Get()->AsyncWait(message_pipe_,
+      BindingsSupport::Get()->AsyncWait(message_pipe_.get(),
                                         MOJO_WAIT_FLAG_WRITABLE,
                                         &write_callback_));
 }
@@ -73,7 +73,7 @@ void Connector::ReadMore() {
     MojoResult rv;
 
     uint32_t num_bytes = 0, num_handles = 0;
-    rv = ReadMessageRaw(message_pipe_,
+    rv = ReadMessageRaw(message_pipe_.get(),
                         NULL,
                         &num_bytes,
                         NULL,
@@ -92,7 +92,7 @@ void Connector::ReadMore() {
     message.data = static_cast<MessageData*>(malloc(num_bytes));
     message.handles.resize(num_handles);
 
-    rv = ReadMessageRaw(message_pipe_,
+    rv = ReadMessageRaw(message_pipe_.get(),
                         message.data,
                         &num_bytes,
                         message.handles.empty() ? NULL :
@@ -129,7 +129,7 @@ void Connector::WriteOne(Message* message, bool* wait_to_write) {
   *wait_to_write = false;
 
   MojoResult rv = WriteMessageRaw(
-      message_pipe_,
+      message_pipe_.get(),
       message->data,
       message->data->header.num_bytes,
       message->handles.empty() ? NULL :

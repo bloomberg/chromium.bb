@@ -34,7 +34,6 @@ class ScopedHandleBase {
     return *this;
   }
 
-  operator HandleType() const { return handle_; }
   const HandleType& get() const { return handle_; }
 
   void swap(ScopedHandleBase& other) {

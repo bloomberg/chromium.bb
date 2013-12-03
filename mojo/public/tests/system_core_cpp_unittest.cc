@@ -89,10 +89,10 @@ TEST(CoreCppTest, Basic) {
     EXPECT_EQ(kInvalidHandleValue, h.get().value());
 
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              Wait(h, MOJO_WAIT_FLAG_EVERYTHING, 1000000));
+              Wait(h.get(), MOJO_WAIT_FLAG_EVERYTHING, 1000000));
 
     std::vector<Handle> wh;
-    wh.push_back(h);
+    wh.push_back(h.get());
     std::vector<MojoWaitFlags> wf;
     wf.push_back(MOJO_WAIT_FLAG_EVERYTHING);
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
@@ -144,10 +144,10 @@ TEST(CoreCppTest, Basic) {
       MojoHandle hv_1 = h_1.get().value();
 
       EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-                Wait(h_0, MOJO_WAIT_FLAG_READABLE, 0));
+                Wait(h_0.get(), MOJO_WAIT_FLAG_READABLE, 0));
       std::vector<Handle> wh;
-      wh.push_back(h_0);
-      wh.push_back(h_1);
+      wh.push_back(h_0.get());
+      wh.push_back(h_1.get());
       std::vector<MojoWaitFlags> wf;
       wf.push_back(MOJO_WAIT_FLAG_READABLE);
       wf.push_back(MOJO_WAIT_FLAG_WRITABLE);
@@ -164,7 +164,8 @@ TEST(CoreCppTest, Basic) {
                          MOJO_DEADLINE_INDEFINITE));
 
       EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-                Wait(h_0, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE));
+                Wait(h_0.get(), MOJO_WAIT_FLAG_READABLE,
+                     MOJO_DEADLINE_INDEFINITE));
     }
     // |hv_0| should have been closed when |h_0| went out of scope, so this
     // close should fail.
@@ -179,16 +180,17 @@ TEST(CoreCppTest, Basic) {
       const char kHello[] = "hello";
       const uint32_t kHelloSize = static_cast<uint32_t>(sizeof(kHello));
       EXPECT_EQ(MOJO_RESULT_OK,
-                WriteMessageRaw(h_0,
+                WriteMessageRaw(h_0.get(),
                                 kHello, kHelloSize,
                                 NULL, 0,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
       EXPECT_EQ(MOJO_RESULT_OK,
-                Wait(h_1, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE));
+                Wait(h_1.get(), MOJO_WAIT_FLAG_READABLE,
+                     MOJO_DEADLINE_INDEFINITE));
       char buffer[10] = { 0 };
       uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
       EXPECT_EQ(MOJO_RESULT_OK,
-                ReadMessageRaw(h_1,
+                ReadMessageRaw(h_1.get(),
                                buffer, &buffer_size,
                                NULL, NULL,
                                MOJO_READ_MESSAGE_FLAG_NONE));
@@ -204,7 +206,7 @@ TEST(CoreCppTest, Basic) {
       const char kWorld[] = "world!";
       const uint32_t kWorldSize = static_cast<uint32_t>(sizeof(kWorld));
       EXPECT_EQ(MOJO_RESULT_OK,
-                WriteMessageRaw(h_2,
+                WriteMessageRaw(h_2.get(),
                                 kWorld, kWorldSize,
                                 NULL, 0,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
@@ -216,7 +218,7 @@ TEST(CoreCppTest, Basic) {
       EXPECT_FALSE(h_3.get().is_valid());
       uint32_t handles_count = 1;
       EXPECT_EQ(MOJO_RESULT_OK,
-                WriteMessageRaw(h_1,
+                WriteMessageRaw(h_1.get(),
                                 kHello, kHelloSize,
                                 handles, handles_count,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
@@ -225,14 +227,15 @@ TEST(CoreCppTest, Basic) {
 
       // Read "hello" and the sent handle.
       EXPECT_EQ(MOJO_RESULT_OK,
-                Wait(h_0, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE));
+                Wait(h_0.get(), MOJO_WAIT_FLAG_READABLE,
+                     MOJO_DEADLINE_INDEFINITE));
       memset(buffer, 0, sizeof(buffer));
       buffer_size = static_cast<uint32_t>(sizeof(buffer));
       for (size_t i = 0; i < MOJO_ARRAYSIZE(handles); i++)
         handles[i] = kInvalidHandleValue;
       handles_count = static_cast<uint32_t>(MOJO_ARRAYSIZE(handles));
       EXPECT_EQ(MOJO_RESULT_OK,
-                ReadMessageRaw(h_0,
+                ReadMessageRaw(h_0.get(),
                                buffer, &buffer_size,
                                handles, &handles_count,
                                MOJO_READ_MESSAGE_FLAG_NONE));
@@ -246,14 +249,15 @@ TEST(CoreCppTest, Basic) {
       // Save |handles[0]| to check that it gets properly closed.
       hv_0 = handles[0];
       EXPECT_EQ(MOJO_RESULT_OK,
-                Wait(h_3, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE));
+                Wait(h_3.get(), MOJO_WAIT_FLAG_READABLE,
+                     MOJO_DEADLINE_INDEFINITE));
       memset(buffer, 0, sizeof(buffer));
       buffer_size = static_cast<uint32_t>(sizeof(buffer));
       for (size_t i = 0; i < MOJO_ARRAYSIZE(handles); i++)
         handles[i] = kInvalidHandleValue;
       handles_count = static_cast<uint32_t>(MOJO_ARRAYSIZE(handles));
       EXPECT_EQ(MOJO_RESULT_OK,
-                ReadMessageRaw(h_3,
+                ReadMessageRaw(h_3.get(),
                                buffer, &buffer_size,
                                handles, &handles_count,
                                MOJO_READ_MESSAGE_FLAG_NONE));
@@ -285,13 +289,13 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
     const char kWorld[] = "world!";
     const uint32_t kWorldSize = static_cast<uint32_t>(sizeof(kWorld));
     EXPECT_EQ(MOJO_RESULT_OK,
-              WriteMessageRaw(h_2,
+              WriteMessageRaw(h_2.get(),
                               kWorld, kWorldSize,
                               NULL, 0,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
     // And also a message to |h_3|.
     EXPECT_EQ(MOJO_RESULT_OK,
-              WriteMessageRaw(h_3,
+              WriteMessageRaw(h_3.get(),
                               kWorld, kWorldSize,
                               NULL, 0,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
@@ -304,7 +308,7 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
     EXPECT_NE(kInvalidHandleValue, h_3_value);
     EXPECT_FALSE(h_3.get().is_valid());
     EXPECT_EQ(MOJO_RESULT_OK,
-              WriteMessageRaw(h_1,
+              WriteMessageRaw(h_1.get(),
                               kHello, kHelloSize,
                               &h_3_value, 1,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
@@ -332,13 +336,13 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
     const char kWorld[] = "world!";
     const uint32_t kWorldSize = static_cast<uint32_t>(sizeof(kWorld));
     EXPECT_EQ(MOJO_RESULT_OK,
-              WriteMessageRaw(h_2,
+              WriteMessageRaw(h_2.get(),
                               kWorld, kWorldSize,
                               NULL, 0,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
     // And also a message to |h_3|.
     EXPECT_EQ(MOJO_RESULT_OK,
-              WriteMessageRaw(h_3,
+              WriteMessageRaw(h_3.get(),
                               kWorld, kWorldSize,
                               NULL, 0,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
@@ -351,7 +355,7 @@ TEST(CoreCppTest, TearDownWithMessagesEnqueued) {
     EXPECT_NE(kInvalidHandleValue, h_3_value);
     EXPECT_FALSE(h_3.get().is_valid());
     EXPECT_EQ(MOJO_RESULT_OK,
-              WriteMessageRaw(h_1,
+              WriteMessageRaw(h_1.get(),
                               kHello, kHelloSize,
                               &h_3_value, 1,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));

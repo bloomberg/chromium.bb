@@ -125,7 +125,7 @@ void MessagePumpMojo::DoInternalWork(bool block) {
   if (result == 0) {
     // Control pipe was written to.
     uint32_t num_bytes = 0;
-    ReadMessageRaw(run_state_->read_handle, NULL, &num_bytes, NULL, NULL,
+    ReadMessageRaw(run_state_->read_handle.get(), NULL, &num_bytes, NULL, NULL,
                    MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
   } else if (result > 0) {
     const size_t index = static_cast<size_t>(result);
@@ -187,13 +187,13 @@ void MessagePumpMojo::SignalControlPipe() {
     return;
 
   // TODO(sky): deal with error?
-  WriteMessageRaw(run_state_->write_handle, NULL, 0, NULL, 0,
+  WriteMessageRaw(run_state_->write_handle.get(), NULL, 0, NULL, 0,
                   MOJO_WRITE_MESSAGE_FLAG_NONE);
 }
 
 MessagePumpMojo::WaitState MessagePumpMojo::GetWaitState() const {
   WaitState wait_state;
-  wait_state.handles.push_back(run_state_->read_handle);
+  wait_state.handles.push_back(run_state_->read_handle.get());
   wait_state.wait_flags.push_back(MOJO_WAIT_FLAG_READABLE);
 
   for (HandleToHandler::const_iterator i = handlers_.begin();
