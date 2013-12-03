@@ -8,7 +8,6 @@
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
 
 namespace chromeos {
 
@@ -33,7 +32,7 @@ class CHROMEOS_EXPORT SystemClockClient : public DBusClient {
   virtual bool HasObserver(Observer* observer) = 0;
 
   // Creates the instance.
-  static SystemClockClient* Create(DBusClientImplementationType type);
+  static SystemClockClient* Create();
 
  protected:
   // Create() should be used instead.

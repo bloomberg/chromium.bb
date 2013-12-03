@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "chromeos/dbus/fake_shill_ipconfig_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -172,12 +171,8 @@ ShillIPConfigClient::ShillIPConfigClient() {}
 ShillIPConfigClient::~ShillIPConfigClient() {}
 
 // static
-ShillIPConfigClient* ShillIPConfigClient::Create(
-    DBusClientImplementationType type) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new ShillIPConfigClientImpl();
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new FakeShillIPConfigClient();
+ShillIPConfigClient* ShillIPConfigClient::Create() {
+  return new ShillIPConfigClientImpl();
 }
 
 }  // namespace chromeos

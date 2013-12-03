@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
 
 namespace base {
 class DictionaryValue;
@@ -39,7 +38,7 @@ class CHROMEOS_EXPORT GsmSMSClient : public DBusClient {
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static GsmSMSClient* Create(DBusClientImplementationType type);
+  static GsmSMSClient* Create();
 
   // Sets SmsReceived signal handler.
   virtual void SetSmsReceivedHandler(const std::string& service_name,

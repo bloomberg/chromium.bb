@@ -7,7 +7,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/dbus/fake_nfc_manager_client.h"
 #include "dbus/bus.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -166,11 +165,8 @@ NfcManagerClient::~NfcManagerClient() {
 }
 
 // static
-NfcManagerClient* NfcManagerClient::Create(DBusClientImplementationType type) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new NfcManagerClientImpl();
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new FakeNfcManagerClient();
+NfcManagerClient* NfcManagerClient::Create() {
+  return new NfcManagerClientImpl();
 }
 
 }  // namespace chromeos

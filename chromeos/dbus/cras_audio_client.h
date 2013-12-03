@@ -10,7 +10,6 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/audio_node.h"
 #include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/volume_state.h"
 
 namespace chromeos {
@@ -97,7 +96,7 @@ class CHROMEOS_EXPORT CrasAudioClient : public DBusClient {
   virtual void SetActiveInputNode(uint64 node_id) = 0;
 
   // Creates the instance.
-  static CrasAudioClient* Create(DBusClientImplementationType type);
+  static CrasAudioClient* Create();
 
  protected:
   // Create() should be used instead.

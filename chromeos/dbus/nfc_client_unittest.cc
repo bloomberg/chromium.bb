@@ -201,20 +201,12 @@ class NfcClientTest : public testing::Test {
     EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
 
     // Create the clients.
-    manager_client_.reset(
-        NfcManagerClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION));
-    adapter_client_.reset(
-        NfcAdapterClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION,
-                                 manager_client_.get()));
-    device_client_.reset(
-        NfcDeviceClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION,
-                                adapter_client_.get()));
-    tag_client_.reset(
-        NfcTagClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION,
-                             adapter_client_.get()));
+    manager_client_.reset(NfcManagerClient::Create());
+    adapter_client_.reset(NfcAdapterClient::Create(manager_client_.get()));
+    device_client_.reset(NfcDeviceClient::Create(adapter_client_.get()));
+    tag_client_.reset(NfcTagClient::Create(adapter_client_.get()));
     record_client_.reset(
-        NfcRecordClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION,
-                               device_client_.get(), tag_client_.get()));
+        NfcRecordClient::Create(device_client_.get(), tag_client_.get()));
     manager_client_->Init(mock_bus_.get());
     adapter_client_->Init(mock_bus_.get());
     device_client_->Init(mock_bus_.get());

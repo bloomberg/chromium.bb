@@ -10,7 +10,6 @@
 #include "base/basictypes.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill_client_helper.h"
 
@@ -109,7 +108,7 @@ class CHROMEOS_EXPORT ShillManagerClient : public DBusClient {
 
   // Factory function, creates a new instance which is owned by the caller.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static ShillManagerClient* Create(DBusClientImplementationType type);
+  static ShillManagerClient* Create();
 
   // Adds a property changed |observer|.
   virtual void AddPropertyChangedObserver(

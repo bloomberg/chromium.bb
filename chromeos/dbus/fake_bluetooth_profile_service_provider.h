@@ -10,7 +10,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/bluetooth_profile_service_provider.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "dbus/file_descriptor.h"
 #include "dbus/object_path.h"
 

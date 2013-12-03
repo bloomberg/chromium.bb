@@ -5,7 +5,6 @@
 #include "chromeos/dbus/system_clock_client.h"
 
 #include "base/bind.h"
-#include "chromeos/dbus/fake_system_clock_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -84,13 +83,8 @@ SystemClockClient::~SystemClockClient() {
 }
 
 // static
-SystemClockClient* SystemClockClient::Create(
-    DBusClientImplementationType type) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION) {
-    return new SystemClockClientImpl();
-  }
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new FakeSystemClockClient();
+SystemClockClient* SystemClockClient::Create() {
+  return new SystemClockClientImpl();
 }
 
 }  // namespace chromeos

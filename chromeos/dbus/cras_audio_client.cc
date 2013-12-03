@@ -401,12 +401,8 @@ CrasAudioClient::~CrasAudioClient() {
 }
 
 // static
-CrasAudioClient* CrasAudioClient::Create(DBusClientImplementationType type) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION) {
-    return new CrasAudioClientImpl();
-  }
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new CrasAudioClientStubImpl();
+CrasAudioClient* CrasAudioClient::Create() {
+  return new CrasAudioClientImpl();
 }
 
 }  // namespace chromeos

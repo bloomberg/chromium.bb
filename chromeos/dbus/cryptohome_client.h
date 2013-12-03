@@ -13,7 +13,6 @@
 #include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 
 namespace chromeos {
@@ -64,7 +63,7 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static CryptohomeClient* Create(DBusClientImplementationType type);
+  static CryptohomeClient* Create();
 
   // Returns the sanitized |username| that the stub implementation would return.
   static std::string GetStubSanitizedUsername(const std::string& username);

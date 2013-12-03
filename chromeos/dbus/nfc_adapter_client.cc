@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/dbus/fake_nfc_adapter_client.h"
 #include "chromeos/dbus/nfc_manager_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -215,12 +214,8 @@ NfcAdapterClient::NfcAdapterClient() {
 NfcAdapterClient::~NfcAdapterClient() {
 }
 
-NfcAdapterClient* NfcAdapterClient::Create(DBusClientImplementationType type,
-                                           NfcManagerClient* manager_client) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new NfcAdapterClientImpl(manager_client);
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new FakeNfcAdapterClient();
+NfcAdapterClient* NfcAdapterClient::Create(NfcManagerClient* manager_client) {
+  return new NfcAdapterClientImpl(manager_client);
 }
 
 }  // namespace chromeos

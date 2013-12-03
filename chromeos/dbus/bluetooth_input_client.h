@@ -12,7 +12,6 @@
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 
@@ -68,7 +67,7 @@ class CHROMEOS_EXPORT BluetoothInputClient : public DBusClient {
   virtual Properties* GetProperties(const dbus::ObjectPath& object_path) = 0;
 
   // Creates the instance.
-  static BluetoothInputClient* Create(DBusClientImplementationType type);
+  static BluetoothInputClient* Create();
 
  protected:
   BluetoothInputClient();

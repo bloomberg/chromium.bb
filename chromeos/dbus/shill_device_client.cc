@@ -8,7 +8,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "chromeos/dbus/fake_shill_device_client.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -235,12 +234,8 @@ ShillDeviceClient::ShillDeviceClient() {}
 ShillDeviceClient::~ShillDeviceClient() {}
 
 // static
-ShillDeviceClient* ShillDeviceClient::Create(
-    DBusClientImplementationType type) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new ShillDeviceClientImpl();
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new FakeShillDeviceClient();
+ShillDeviceClient* ShillDeviceClient::Create() {
+  return new ShillDeviceClientImpl();
 }
 
 }  // namespace chromeos

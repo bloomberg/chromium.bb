@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/dbus/fake_nfc_record_client.h"
 #include "chromeos/dbus/nfc_device_client.h"
 #include "chromeos/dbus/nfc_tag_client.h"
 #include "dbus/bus.h"
@@ -247,13 +246,9 @@ NfcRecordClient::NfcRecordClient() {
 NfcRecordClient::~NfcRecordClient() {
 }
 
-NfcRecordClient* NfcRecordClient::Create(DBusClientImplementationType type,
-                                         NfcDeviceClient* device_client,
+NfcRecordClient* NfcRecordClient::Create(NfcDeviceClient* device_client,
                                          NfcTagClient* tag_client) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new NfcRecordClientImpl(device_client, tag_client);
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new FakeNfcRecordClient();
+  return new NfcRecordClientImpl(device_client, tag_client);
 }
 
 }  // namespace chromeos

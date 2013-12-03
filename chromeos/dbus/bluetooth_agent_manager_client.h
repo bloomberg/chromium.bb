@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "dbus/object_path.h"
 
 namespace chromeos {
@@ -52,7 +51,7 @@ class CHROMEOS_EXPORT BluetoothAgentManagerClient : public DBusClient {
                                    const ErrorCallback& error_callback) = 0;
 
   // Creates the instance.
-  static BluetoothAgentManagerClient* Create(DBusClientImplementationType type);
+  static BluetoothAgentManagerClient* Create();
 
   // Constants used to indicate exceptional error conditions.
   static const char kNoResponseError[];

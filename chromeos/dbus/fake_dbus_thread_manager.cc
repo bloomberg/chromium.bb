@@ -4,18 +4,22 @@
 
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
 
-#include "chromeos/dbus/bluetooth_adapter_client.h"
-#include "chromeos/dbus/bluetooth_agent_manager_client.h"
-#include "chromeos/dbus/bluetooth_device_client.h"
-#include "chromeos/dbus/bluetooth_input_client.h"
-#include "chromeos/dbus/bluetooth_profile_manager_client.h"
-#include "chromeos/dbus/cras_audio_client.h"
+#include "base/command_line.h"
+#include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/cras_audio_client_stub_impl.h"
 #include "chromeos/dbus/cros_disks_client.h"
-#include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/dbus_thread_manager_observer.h"
+#include "chromeos/dbus/fake_bluetooth_adapter_client.h"
+#include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
+#include "chromeos/dbus/fake_bluetooth_device_client.h"
+#include "chromeos/dbus/fake_bluetooth_input_client.h"
+#include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
+#include "chromeos/dbus/fake_cryptohome_client.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
+#include "chromeos/dbus/fake_gsm_sms_client.h"
+#include "chromeos/dbus/fake_image_burner_client.h"
 #include "chromeos/dbus/fake_introspectable_client.h"
 #include "chromeos/dbus/fake_modem_messaging_client.h"
 #include "chromeos/dbus/fake_nfc_adapter_client.h"
@@ -24,18 +28,16 @@
 #include "chromeos/dbus/fake_nfc_record_client.h"
 #include "chromeos/dbus/fake_nfc_tag_client.h"
 #include "chromeos/dbus/fake_permission_broker_client.h"
+#include "chromeos/dbus/fake_shill_device_client.h"
+#include "chromeos/dbus/fake_shill_ipconfig_client.h"
+#include "chromeos/dbus/fake_shill_manager_client.h"
+#include "chromeos/dbus/fake_shill_profile_client.h"
+#include "chromeos/dbus/fake_shill_service_client.h"
 #include "chromeos/dbus/fake_sms_client.h"
-#include "chromeos/dbus/gsm_sms_client.h"
-#include "chromeos/dbus/image_burner_client.h"
+#include "chromeos/dbus/fake_system_clock_client.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "chromeos/dbus/shill_device_client.h"
-#include "chromeos/dbus/shill_ipconfig_client.h"
-#include "chromeos/dbus/shill_manager_client.h"
-#include "chromeos/dbus/shill_profile_client.h"
-#include "chromeos/dbus/shill_service_client.h"
-#include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/dbus/update_engine_client.h"
 
 namespace chromeos {
@@ -51,37 +53,41 @@ FakeDBusThreadManager::~FakeDBusThreadManager() {
 void FakeDBusThreadManager::SetFakeClients() {
   const DBusClientImplementationType client_type =
       STUB_DBUS_CLIENT_IMPLEMENTATION;
-  SetBluetoothAdapterClient(scoped_ptr<BluetoothAdapterClient>(
-      BluetoothAdapterClient::Create(client_type)));
+  SetBluetoothAdapterClient(
+      scoped_ptr<BluetoothAdapterClient>(new FakeBluetoothAdapterClient));
   SetBluetoothAgentManagerClient(scoped_ptr<BluetoothAgentManagerClient>(
-      BluetoothAgentManagerClient::Create(client_type)));
-  SetBluetoothDeviceClient(scoped_ptr<BluetoothDeviceClient>(
-      BluetoothDeviceClient::Create(client_type)));
-  SetBluetoothInputClient(scoped_ptr<BluetoothInputClient>(
-      BluetoothInputClient::Create(client_type)));
+      new FakeBluetoothAgentManagerClient));
+  SetBluetoothDeviceClient(
+      scoped_ptr<BluetoothDeviceClient>(new FakeBluetoothDeviceClient));
+  SetBluetoothInputClient(
+      scoped_ptr<BluetoothInputClient>(new FakeBluetoothInputClient));
   SetBluetoothProfileManagerClient(scoped_ptr<BluetoothProfileManagerClient>(
-      BluetoothProfileManagerClient::Create(client_type)));
-  SetCrasAudioClient(
-      scoped_ptr<CrasAudioClient>(CrasAudioClient::Create(client_type)));
+      new FakeBluetoothProfileManagerClient));
   SetCrosDisksClient(
       scoped_ptr<CrosDisksClient>(CrosDisksClient::Create(client_type)));
-  SetCryptohomeClient(
-      scoped_ptr<CryptohomeClient>(CryptohomeClient::Create(client_type)));
+  SetCrasAudioClient(scoped_ptr<CrasAudioClient>(new CrasAudioClientStubImpl));
+  SetCryptohomeClient(scoped_ptr<CryptohomeClient>(new FakeCryptohomeClient));
   SetDebugDaemonClient(
       scoped_ptr<DebugDaemonClient>(new FakeDebugDaemonClient));
   SetShillManagerClient(
-      scoped_ptr<ShillManagerClient>(ShillManagerClient::Create(client_type)));
+      scoped_ptr<ShillManagerClient>(new FakeShillManagerClient));
   SetShillDeviceClient(
-      scoped_ptr<ShillDeviceClient>(ShillDeviceClient::Create(client_type)));
-  SetShillIPConfigClient(scoped_ptr<ShillIPConfigClient>(
-      ShillIPConfigClient::Create(client_type)));
+      scoped_ptr<ShillDeviceClient>(new FakeShillDeviceClient));
+  SetShillIPConfigClient(
+      scoped_ptr<ShillIPConfigClient>(new FakeShillIPConfigClient));
   SetShillServiceClient(
-      scoped_ptr<ShillServiceClient>(ShillServiceClient::Create(client_type)));
+      scoped_ptr<ShillServiceClient>(new FakeShillServiceClient));
   SetShillProfileClient(
-      scoped_ptr<ShillProfileClient>(ShillProfileClient::Create(client_type)));
-  SetGsmSMSClient(scoped_ptr<GsmSMSClient>(GsmSMSClient::Create(client_type)));
+      scoped_ptr<ShillProfileClient>(new FakeShillProfileClient));
+
+  FakeGsmSMSClient* gsm_sms_client = new FakeGsmSMSClient();
+  gsm_sms_client->set_sms_test_message_switch_present(
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kSmsTestMessages));
+  SetGsmSMSClient(scoped_ptr<GsmSMSClient>(gsm_sms_client));
+
   SetImageBurnerClient(
-      scoped_ptr<ImageBurnerClient>(ImageBurnerClient::Create(client_type)));
+      scoped_ptr<ImageBurnerClient>(new FakeImageBurnerClient));
   SetIntrospectableClient(
       scoped_ptr<IntrospectableClient>(new FakeIntrospectableClient));
   SetModemMessagingClient(
@@ -99,7 +105,7 @@ void FakeDBusThreadManager::SetFakeClients() {
       SessionManagerClient::Create(client_type)));
   SetSMSClient(scoped_ptr<SMSClient>(new FakeSMSClient));
   SetSystemClockClient(
-      scoped_ptr<SystemClockClient>(SystemClockClient::Create(client_type)));
+      scoped_ptr<SystemClockClient>(new FakeSystemClockClient));
   SetUpdateEngineClient(
       scoped_ptr<UpdateEngineClient>(UpdateEngineClient::Create(client_type)));
 

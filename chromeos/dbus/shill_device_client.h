@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/shill_client_helper.h"
 
 namespace base {
@@ -62,7 +61,7 @@ class CHROMEOS_EXPORT ShillDeviceClient : public DBusClient {
 
   // Factory function, creates a new instance which is owned by the caller.
   // For normal usage, access the singleton via DBusThreadManager::Get().
-  static ShillDeviceClient* Create(DBusClientImplementationType type);
+  static ShillDeviceClient* Create();
 
   // Adds a property changed |observer| for the device at |device_path|.
   virtual void AddPropertyChangedObserver(

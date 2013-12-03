@@ -8,7 +8,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/stringprintf.h"
-#include "chromeos/dbus/fake_nfc_device_client.h"
 #include "chromeos/dbus/nfc_adapter_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -233,12 +232,8 @@ NfcDeviceClient::NfcDeviceClient() {
 NfcDeviceClient::~NfcDeviceClient() {
 }
 
-NfcDeviceClient* NfcDeviceClient::Create(DBusClientImplementationType type,
-                                         NfcAdapterClient* adapter_client) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new NfcDeviceClientImpl(adapter_client);
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new FakeNfcDeviceClient();
+NfcDeviceClient* NfcDeviceClient::Create(NfcAdapterClient* adapter_client) {
+  return new NfcDeviceClientImpl(adapter_client);
 }
 
 }  // namespace chromeos

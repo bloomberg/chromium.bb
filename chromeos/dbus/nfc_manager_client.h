@@ -9,7 +9,6 @@
 
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/nfc_property_set.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
@@ -62,7 +61,7 @@ class CHROMEOS_EXPORT NfcManagerClient : public DBusClient {
   virtual Properties* GetProperties() = 0;
 
   // Creates the instance.
-  static NfcManagerClient* Create(DBusClientImplementationType type);
+  static NfcManagerClient* Create();
 
  protected:
   friend class NfcClientTest;

@@ -99,7 +99,7 @@ class GsmSMSClientTest : public testing::Test {
     EXPECT_CALL(*mock_bus_.get(), ShutdownAndBlock()).WillOnce(Return());
 
     // Create a client with the mock bus.
-    client_.reset(GsmSMSClient::Create(REAL_DBUS_CLIENT_IMPLEMENTATION));
+    client_.reset(GsmSMSClient::Create());
     client_->Init(mock_bus_.get());
   }
 

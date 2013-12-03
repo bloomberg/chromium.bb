@@ -8,15 +8,12 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/fake_gsm_sms_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
@@ -247,16 +244,8 @@ GsmSMSClient::GsmSMSClient() {}
 GsmSMSClient::~GsmSMSClient() {}
 
 // static
-GsmSMSClient* GsmSMSClient::Create(DBusClientImplementationType type) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new GsmSMSClientImpl();
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-
-  FakeGsmSMSClient* fake = new FakeGsmSMSClient();
-  fake->set_sms_test_message_switch_present(
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kSmsTestMessages));
-  return fake;
+GsmSMSClient* GsmSMSClient::Create() {
+  return new GsmSMSClientImpl();
 }
 
 }  // namespace chromeos

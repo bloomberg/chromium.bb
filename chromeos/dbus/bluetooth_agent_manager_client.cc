@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -143,12 +142,8 @@ BluetoothAgentManagerClient::BluetoothAgentManagerClient() {
 BluetoothAgentManagerClient::~BluetoothAgentManagerClient() {
 }
 
-BluetoothAgentManagerClient* BluetoothAgentManagerClient::Create(
-    DBusClientImplementationType type) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new BluetoothAgentManagerClientImpl();
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new FakeBluetoothAgentManagerClient();
+BluetoothAgentManagerClient* BluetoothAgentManagerClient::Create() {
+  return new BluetoothAgentManagerClientImpl();
 }
 
 }  // namespace chromeos

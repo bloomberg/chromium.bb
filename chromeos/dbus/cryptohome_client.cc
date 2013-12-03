@@ -10,7 +10,6 @@
 #include "base/message_loop/message_loop.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/blocking_method_caller.h"
-#include "chromeos/dbus/fake_cryptohome_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -946,11 +945,8 @@ CryptohomeClient::CryptohomeClient() {}
 CryptohomeClient::~CryptohomeClient() {}
 
 // static
-CryptohomeClient* CryptohomeClient::Create(DBusClientImplementationType type) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new CryptohomeClientImpl();
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new FakeCryptohomeClient();
+CryptohomeClient* CryptohomeClient::Create() {
+  return new CryptohomeClientImpl();
 }
 
 // static

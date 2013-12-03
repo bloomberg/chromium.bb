@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
-#include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/nfc_client_helpers.h"
 #include "chromeos/dbus/nfc_property_set.h"
 #include "dbus/object_path.h"
@@ -110,8 +109,7 @@ class CHROMEOS_EXPORT NfcAdapterClient : public DBusClient {
       const nfc_client_helpers::ErrorCallback& error_callback) = 0;
 
   // Creates the instance.
-  static NfcAdapterClient* Create(DBusClientImplementationType type,
-                                  NfcManagerClient* manager_client);
+  static NfcAdapterClient* Create(NfcManagerClient* manager_client);
 
  protected:
   friend class NfcClientTest;

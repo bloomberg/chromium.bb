@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "chromeos/dbus/fake_image_burner_client.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
@@ -144,12 +143,8 @@ ImageBurnerClient::~ImageBurnerClient() {
 }
 
 // static
-ImageBurnerClient* ImageBurnerClient::Create(
-    DBusClientImplementationType type) {
-  if (type == REAL_DBUS_CLIENT_IMPLEMENTATION)
-    return new ImageBurnerClientImpl();
-  DCHECK_EQ(STUB_DBUS_CLIENT_IMPLEMENTATION, type);
-  return new FakeImageBurnerClient();
+ImageBurnerClient* ImageBurnerClient::Create() {
+  return new ImageBurnerClientImpl();
 }
 
 }  // namespace chromeos
