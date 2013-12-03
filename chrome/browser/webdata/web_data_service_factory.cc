@@ -141,21 +141,6 @@ scoped_refptr<TokenWebData> WebDataServiceWrapper::GetTokenWebData() {
 }
 
 // static
-scoped_refptr<AutofillWebDataService>
-AutofillWebDataService::FromBrowserContext(content::BrowserContext* context) {
-  // For this service, the implicit/explicit distinction doesn't
-  // really matter; it's just used for a DCHECK.  So we currently
-  // cheat and always say EXPLICIT_ACCESS.
-  WebDataServiceWrapper* wrapper =
-      WebDataServiceFactory::GetForProfile(
-          static_cast<Profile*>(context), Profile::EXPLICIT_ACCESS);
-  if (wrapper)
-    return wrapper->GetAutofillWebData();
-  // |wrapper| can be NULL in Incognito mode.
-  return scoped_refptr<AutofillWebDataService>(NULL);
-}
-
-// static
 scoped_refptr<TokenWebData> TokenWebData::FromBrowserContext(
     content::BrowserContext* context) {
   // For this service, the implicit/explicit distinction doesn't
@@ -196,10 +181,11 @@ WebDataServiceFactory::~WebDataServiceFactory() {}
 
 // static
 WebDataServiceWrapper* WebDataServiceFactory::GetForProfile(
-    Profile* profile, Profile::ServiceAccessType access_type) {
+    Profile* profile,
+    Profile::ServiceAccessType access_type) {
   // If |access_type| starts being used for anything other than this
   // DCHECK, we need to start taking it as a parameter to
-  // AutofillWebDataService::FromBrowserContext (see above).
+  // the *WebDataService::FromBrowserContext() functions (see above).
   DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
   return static_cast<WebDataServiceWrapper*>(
           GetInstance()->GetServiceForBrowserContext(profile, true));
@@ -207,13 +193,27 @@ WebDataServiceWrapper* WebDataServiceFactory::GetForProfile(
 
 // static
 WebDataServiceWrapper* WebDataServiceFactory::GetForProfileIfExists(
-    Profile* profile, Profile::ServiceAccessType access_type) {
+    Profile* profile,
+    Profile::ServiceAccessType access_type) {
   // If |access_type| starts being used for anything other than this
   // DCHECK, we need to start taking it as a parameter to
-  // AutofillWebDataService::FromBrowserContext (see above).
+  // the *WebDataService::FromBrowserContext() functions (see above).
   DCHECK(access_type != Profile::IMPLICIT_ACCESS || !profile->IsOffTheRecord());
   return static_cast<WebDataServiceWrapper*>(
           GetInstance()->GetServiceForBrowserContext(profile, false));
+}
+
+// static
+scoped_refptr<AutofillWebDataService>
+WebDataServiceFactory::GetAutofillWebDataForProfile(
+    Profile* profile,
+    Profile::ServiceAccessType access_type) {
+  WebDataServiceWrapper* wrapper =
+      WebDataServiceFactory::GetForProfile(profile, access_type);
+  // |wrapper| can be NULL in Incognito mode.
+  return wrapper ?
+      wrapper->GetAutofillWebData() :
+      scoped_refptr<AutofillWebDataService>(NULL);
 }
 
 // static

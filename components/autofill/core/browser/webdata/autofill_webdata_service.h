@@ -24,10 +24,6 @@ namespace base {
 class MessageLoopProxy;
 }
 
-namespace content {
-class BrowserContext;
-}
-
 namespace autofill {
 
 class AutofillChange;
@@ -48,11 +44,6 @@ class AutofillWebDataService : public AutofillWebData,
                          scoped_refptr<base::MessageLoopProxy> ui_thread,
                          scoped_refptr<base::MessageLoopProxy> db_thread,
                          const ProfileErrorCallback& callback);
-
-  // Retrieve an AutofillWebDataService for the given context.
-  // Can return NULL in some contexts.
-  static scoped_refptr<AutofillWebDataService> FromBrowserContext(
-      content::BrowserContext* context);
 
   // WebDataServiceBase implementation.
   virtual void ShutdownOnUIThread() OVERRIDE;

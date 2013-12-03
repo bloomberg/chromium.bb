@@ -53,14 +53,19 @@ class WebDataServiceWrapper : public BrowserContextKeyedService {
 // Profiles.
 class WebDataServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  // Returns the |WebDataServiceWrapper| associated with the |profile|.
-  // |access_type| is either EXPLICIT_ACCESS or IMPLICIT_ACCESS
-  // (see its definition).
+  // Returns the WebDataServiceWrapper associated with the |profile|.
   static WebDataServiceWrapper* GetForProfile(
-      Profile* profile, Profile::ServiceAccessType access_type);
+      Profile* profile,
+      Profile::ServiceAccessType access_type);
 
   static WebDataServiceWrapper* GetForProfileIfExists(
-      Profile* profile, Profile::ServiceAccessType access_type);
+      Profile* profile,
+      Profile::ServiceAccessType access_type);
+
+  // Returns the AutofillWebDataService associated with the |profile|.
+  static scoped_refptr<autofill::AutofillWebDataService>
+      GetAutofillWebDataForProfile(Profile* profile,
+                                   Profile::ServiceAccessType access_type);
 
   static WebDataServiceFactory* GetInstance();
 

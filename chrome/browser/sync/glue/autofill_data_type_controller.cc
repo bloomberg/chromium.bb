@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/webdata/autocomplete_syncable_service.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/api/sync_error.h"
@@ -59,7 +60,8 @@ bool AutofillDataTypeController::StartModels() {
   DCHECK_EQ(MODEL_STARTING, state());
 
   autofill::AutofillWebDataService* web_data_service =
-      autofill::AutofillWebDataService::FromBrowserContext(profile()).get();
+      WebDataServiceFactory::GetAutofillWebDataForProfile(
+          profile(), Profile::EXPLICIT_ACCESS).get();
 
   if (!web_data_service)
     return false;
@@ -87,7 +89,8 @@ void AutofillDataTypeController::StartAssociating(
       profile());
   DCHECK(sync);
   scoped_refptr<autofill::AutofillWebDataService> web_data_service =
-      autofill::AutofillWebDataService::FromBrowserContext(profile());
+      WebDataServiceFactory::GetAutofillWebDataForProfile(
+          profile(), Profile::EXPLICIT_ACCESS);
   bool cull_expired_entries = sync->current_experiments().autofill_culling;
   // First, post the update task to the DB thread, which guarantees us it
   // would run before anything StartAssociating does (e.g.

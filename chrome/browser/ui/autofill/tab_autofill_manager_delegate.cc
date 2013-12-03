@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "components/autofill/core/common/autofill_messages.h"
@@ -62,8 +63,10 @@ PersonalDataManager* TabAutofillManagerDelegate::GetPersonalDataManager() {
 
 scoped_refptr<AutofillWebDataService>
     TabAutofillManagerDelegate::GetDatabase() {
-  return AutofillWebDataService::FromBrowserContext(
-      web_contents_->GetBrowserContext());
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+  return WebDataServiceFactory::GetAutofillWebDataForProfile(
+      profile, Profile::EXPLICIT_ACCESS);
 }
 
 PrefService* TabAutofillManagerDelegate::GetPrefs() {

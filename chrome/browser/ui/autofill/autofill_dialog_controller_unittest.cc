@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/mock_new_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/test_generated_credit_card_bubble_controller.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -257,7 +258,9 @@ class TestAutofillDialogController
 
   void Init(content::BrowserContext* browser_context) {
     test_manager_.Init(
-        AutofillWebDataService::FromBrowserContext(browser_context),
+        WebDataServiceFactory::GetAutofillWebDataForProfile(
+            Profile::FromBrowserContext(browser_context),
+            Profile::EXPLICIT_ACCESS),
         user_prefs::UserPrefs::Get(browser_context),
         browser_context->IsOffTheRecord());
   }

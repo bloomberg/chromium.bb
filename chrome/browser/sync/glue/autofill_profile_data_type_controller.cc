@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_components_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -51,7 +52,8 @@ void AutofillProfileDataTypeController::OnPersonalDataChanged() {
 
   personal_data_->RemoveObserver(this);
   autofill::AutofillWebDataService* web_data_service =
-      autofill::AutofillWebDataService::FromBrowserContext(profile()).get();
+      WebDataServiceFactory::GetAutofillWebDataForProfile(
+          profile(), Profile::EXPLICIT_ACCESS).get();
 
   if (!web_data_service)
     return;
@@ -88,7 +90,8 @@ bool AutofillProfileDataTypeController::StartModels() {
   }
 
   autofill::AutofillWebDataService* web_data_service =
-      AutofillWebDataService::FromBrowserContext(profile()).get();
+      WebDataServiceFactory::GetAutofillWebDataForProfile(
+          profile(), Profile::EXPLICIT_ACCESS).get();
 
   if (!web_data_service)
     return false;

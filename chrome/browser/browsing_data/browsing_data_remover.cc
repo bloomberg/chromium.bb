@@ -48,6 +48,7 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #if defined(OS_CHROMEOS)
@@ -353,7 +354,8 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
     // which these profiles and credit cards were learned.  These are a form of
     // history, so clear them as well.
     scoped_refptr<autofill::AutofillWebDataService> web_data_service =
-        autofill::AutofillWebDataService::FromBrowserContext(profile_);
+        WebDataServiceFactory::GetAutofillWebDataForProfile(
+            profile_, Profile::EXPLICIT_ACCESS);
     if (web_data_service.get()) {
       waiting_for_clear_autofill_origin_urls_ = true;
       web_data_service->RemoveOriginURLsModifiedBetween(
@@ -495,7 +497,8 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
   if (remove_mask & REMOVE_FORM_DATA) {
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Autofill"));
     scoped_refptr<autofill::AutofillWebDataService> web_data_service =
-        autofill::AutofillWebDataService::FromBrowserContext(profile_);
+        WebDataServiceFactory::GetAutofillWebDataForProfile(
+            profile_, Profile::EXPLICIT_ACCESS);
 
     if (web_data_service.get()) {
       waiting_for_clear_form_ = true;

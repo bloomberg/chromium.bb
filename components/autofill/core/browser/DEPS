@@ -12,7 +12,6 @@ include_rules = [
   #
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
-  "!content/public/browser/browser_context.h",
   "!content/public/browser/render_view_host.h",
   "!content/public/browser/web_contents.h",
   "!third_party/WebKit/public/web/WebAutofillClient.h",
@@ -30,6 +29,7 @@ specific_include_rules = {
     # Do not add to the list of temporarily-allowed dependencies below,
     # and please do not introduce more #includes of these files.
     "!components/user_prefs/user_prefs.h",
+    "!content/public/browser/browser_context.h",
   ],
   '.*_[a-z]*test\.cc': [
     # TODO(blundell): Bring this list to zero.
@@ -37,6 +37,7 @@ specific_include_rules = {
     # Do not add to the list of temporarily-allowed dependencies below,
     # and please do not introduce more #includes of these files.
     "!components/user_prefs/user_prefs.h",
+    "!content/public/browser/browser_context.h",
     "!content/public/browser/browser_thread.h",
     "!content/public/test",
 

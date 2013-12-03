@@ -35,7 +35,8 @@ PersonalDataManagerServiceImpl::PersonalDataManagerServiceImpl(
   personal_data_manager_.reset(new PersonalDataManager(
       g_browser_process->GetApplicationLocale()));
   personal_data_manager_->Init(
-      AutofillWebDataService::FromBrowserContext(profile),
+      WebDataServiceFactory::GetAutofillWebDataForProfile(
+          profile, Profile::EXPLICIT_ACCESS),
       profile->GetPrefs(),
       profile->IsOffTheRecord());
 }

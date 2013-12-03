@@ -529,7 +529,8 @@ class ProfileSyncServiceAutofillTest
     EXPECT_CALL(*personal_data_manager_, LoadCreditCards()).Times(1);
 
     personal_data_manager_->Init(
-        autofill::AutofillWebDataService::FromBrowserContext(profile_.get()),
+        WebDataServiceFactory::GetAutofillWebDataForProfile(
+            profile_.get(), Profile::EXPLICIT_ACCESS),
         profile_->GetPrefs(),
         profile_->IsOffTheRecord());
 

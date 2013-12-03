@@ -6,6 +6,7 @@
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_content_browser_client.h"
+#include "android_webview/browser/aw_form_database_service.h"
 #include "android_webview/browser/aw_pref_store.h"
 #include "android_webview/native/aw_contents.h"
 #include "base/android/jni_android.h"
@@ -74,8 +75,10 @@ AwAutofillManagerDelegate::GetPersonalDataManager() {
 
 scoped_refptr<autofill::AutofillWebDataService>
 AwAutofillManagerDelegate::GetDatabase() {
-  return autofill::AutofillWebDataService::FromBrowserContext(
-      web_contents_->GetBrowserContext());
+  android_webview::AwFormDatabaseService* service =
+      static_cast<android_webview::AwBrowserContext*>(
+          web_contents_->GetBrowserContext())->GetFormDatabaseService();
+  return service->get_autofill_webdata_service();
 }
 
 void AwAutofillManagerDelegate::ShowAutofillPopup(

@@ -10,21 +10,7 @@
 #include "base/android/jni_android.h"
 #include "base/logging.h"
 #include "base/time/time.h"
-#include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "jni/AwFormDatabase_jni.h"
-
-// static
-scoped_refptr<autofill::AutofillWebDataService>
-autofill::AutofillWebDataService::FromBrowserContext(
-    content::BrowserContext* context) {
-
-  DCHECK(context);
-  android_webview::AwFormDatabaseService* service =
-      static_cast<android_webview::AwBrowserContext*>(
-          context)->GetFormDatabaseService();
-  DCHECK(service);
-  return service->get_autofill_webdata_service();
-}
 
 namespace android_webview {
 
@@ -38,7 +24,6 @@ AwFormDatabaseService* GetFormDatabaseService() {
 }
 
 } // anonymous namespace
-
 
 // static
 jboolean HasFormData(JNIEnv*, jclass) {

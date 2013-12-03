@@ -11,6 +11,7 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/webdata/web_data_service_factory.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -164,7 +165,8 @@ AutofillProfile CreateAutofillProfile(ProfileType type) {
 }
 
 scoped_refptr<AutofillWebDataService> GetWebDataService(int index) {
-  return AutofillWebDataService::FromBrowserContext(test()->GetProfile(index));
+  return WebDataServiceFactory::GetAutofillWebDataForProfile(
+      test()->GetProfile(index), Profile::EXPLICIT_ACCESS);
 }
 
 PersonalDataManager* GetPersonalDataManager(int index) {

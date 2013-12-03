@@ -222,7 +222,8 @@ class SyncAutofillDataTypeControllerTest : public testing::Test {
 TEST_F(SyncAutofillDataTypeControllerTest, StartWDSReady) {
   FakeWebDataService* web_db =
       static_cast<FakeWebDataService*>(
-          AutofillWebDataService::FromBrowserContext(&profile_).get());
+          WebDataServiceFactory::GetAutofillWebDataForProfile(
+              &profile_, Profile::EXPLICIT_ACCESS).get());
   web_db->LoadDatabase();
   autofill_dtc_->LoadModels(
     base::Bind(&SyncAutofillDataTypeControllerTest::OnLoadFinished,
@@ -255,7 +256,8 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSNotReady) {
 
   FakeWebDataService* web_db =
       static_cast<FakeWebDataService*>(
-        AutofillWebDataService::FromBrowserContext(&profile_).get());
+          WebDataServiceFactory::GetAutofillWebDataForProfile(
+              &profile_, Profile::EXPLICIT_ACCESS).get());
   web_db->LoadDatabase();
 
   EXPECT_CALL(*change_processor_.get(), Connect(_, _, _, _, _))
@@ -274,7 +276,8 @@ TEST_F(SyncAutofillDataTypeControllerTest, StartWDSNotReady) {
 TEST_F(SyncAutofillDataTypeControllerTest, UpdateAutofillCullingSettings) {
   FakeWebDataService* web_db =
       static_cast<FakeWebDataService*>(
-          AutofillWebDataService::FromBrowserContext(&profile_).get());
+          WebDataServiceFactory::GetAutofillWebDataForProfile(
+              &profile_, Profile::EXPLICIT_ACCESS).get());
 
   // Set up the experiments state.
   ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(
