@@ -13,6 +13,7 @@
 
 #include "base/compiler_specific.h"
 #include "url/url_canon.h"
+#include "url/url_export.h"
 
 namespace url_canon {
 
@@ -32,31 +33,15 @@ namespace url_canon {
 //
 // Therefore, the user should call Complete() before using the string that
 // this class wrote into.
-class StdStringCanonOutput : public CanonOutput {
+class URL_EXPORT StdStringCanonOutput : public CanonOutput {
  public:
-  StdStringCanonOutput(std::string* str)
-      : CanonOutput(),
-        str_(str) {
-    cur_len_ = static_cast<int>(str_->size());  // Append to existing data.
-    str_->resize(str_->capacity());
-    buffer_ = str_->empty() ? NULL : &(*str_)[0];
-    buffer_len_ = static_cast<int>(str_->size());
-  }
-  virtual ~StdStringCanonOutput() {
-    // Nothing to do, we don't own the string.
-  }
+  StdStringCanonOutput(std::string* str);
+  virtual ~StdStringCanonOutput();
 
   // Must be called after writing has completed but before the string is used.
-  void Complete() {
-    str_->resize(cur_len_);
-    buffer_len_ = cur_len_;
-  }
+  void Complete();
 
-  virtual void Resize(int sz) OVERRIDE {
-    str_->resize(sz);
-    buffer_ = str_->empty() ? NULL : &(*str_)[0];
-    buffer_len_ = sz;
-  }
+  virtual void Resize(int sz) OVERRIDE;
 
  protected:
   std::string* str_;
