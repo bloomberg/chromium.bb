@@ -36,6 +36,7 @@ class AutofillDialogCocoa;
 - (void)updateAccountChooser;
 - (void)updateButtonStrip;
 - (void)updateSection:(autofill::DialogSection)section;
+- (void)updateForErrors;
 - (void)fillSection:(autofill::DialogSection)section
            forInput:(const autofill::DetailInput&)input;
 - (void)getInputs:(autofill::FieldValueMap*)outputs

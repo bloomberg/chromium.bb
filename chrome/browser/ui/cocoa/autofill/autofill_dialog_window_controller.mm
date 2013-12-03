@@ -368,6 +368,10 @@ const CGFloat kMinimumContentsHeight = 101;
   [mainContainer_ updateSaveInChrome];
 }
 
+- (void)updateForErrors {
+  [mainContainer_ validate];
+}
+
 - (content::NavigationController*)showSignIn {
   [self updateSignInSizeConstraints];
   [signInContainer_ loadSignInPage];

@@ -83,6 +83,7 @@ void AutofillDialogCocoa::UpdateDetailArea() {
 }
 
 void AutofillDialogCocoa::UpdateForErrors() {
+  [sheet_delegate_ updateForErrors];
 }
 
 void AutofillDialogCocoa::UpdateNotificationArea() {
