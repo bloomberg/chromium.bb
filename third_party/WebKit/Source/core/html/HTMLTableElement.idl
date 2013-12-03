@@ -25,17 +25,17 @@ interface HTMLTableElement : HTMLElement {
 
     readonly attribute HTMLCollection rows;
     readonly attribute HTMLCollection tBodies;
-    [Reflect, TreatNullAs=NullString] attribute DOMString align;
+    [Reflect] attribute DOMString align;
     [Reflect, TreatNullAs=NullString] attribute DOMString bgColor;
-    [Reflect, TreatNullAs=NullString] attribute DOMString border;
+    [Reflect] attribute DOMString border;
     [Reflect, TreatNullAs=NullString] attribute DOMString cellPadding;
     [Reflect, TreatNullAs=NullString] attribute DOMString cellSpacing;
 
-    [Reflect, TreatNullAs=NullString] attribute DOMString frame;
+    [Reflect] attribute DOMString frame;
 
-    [Reflect, TreatNullAs=NullString] attribute DOMString rules;
-    [Reflect, TreatNullAs=NullString] attribute DOMString summary;
-    [Reflect, TreatNullAs=NullString] attribute DOMString width;
+    [Reflect] attribute DOMString rules;
+    [Reflect] attribute DOMString summary;
+    [Reflect] attribute DOMString width;
 
     HTMLElement createTHead();
     void deleteTHead();
@@ -48,4 +48,3 @@ interface HTMLTableElement : HTMLElement {
     [RaisesException] HTMLElement insertRow([Default=Undefined] optional long index);
     [RaisesException] void deleteRow([Default=Undefined] optional long index);
 };
-
