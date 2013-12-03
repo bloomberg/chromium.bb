@@ -140,14 +140,18 @@ void Combobox::SetAccessibleName(const string16& name) {
 }
 
 void Combobox::SetInvalid(bool invalid) {
+  if (invalid == invalid_)
+    return;
+
   invalid_ = invalid;
-  if (invalid) {
+  if (invalid_) {
     text_border_->SetColor(kWarningColor);
     set_background(new InvalidBackground());
   } else {
     text_border_->UseDefaultColor();
     set_background(NULL);
   }
+  SchedulePaint();
 }
 
 ui::TextInputClient* Combobox::GetTextInputClient() {
