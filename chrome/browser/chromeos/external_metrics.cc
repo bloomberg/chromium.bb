@@ -91,9 +91,9 @@ void SetupProgressiveScanFieldTrial() {
   // Write the group to the file to be read by ChromeOS.
   int size = static_cast<int>(group_char.length());
   if (file_util::WriteFile(group_file_path, group_char.c_str(), size) == size) {
-    LOG(INFO) << "Configured in group '" << trial->group_name()
-              << "' ('" << group_char << "') for "
-              << name_of_experiment << " field trial";
+    VLOG(1) << "Configured in group '" << trial->group_name()
+            << "' ('" << group_char << "') for "
+            << name_of_experiment << " field trial";
   } else {
     LOG(ERROR) << "Couldn't write to " << group_file_path.value();
   }
@@ -110,8 +110,8 @@ ExternalMetrics::~ExternalMetrics() {}
 
 void ExternalMetrics::Start() {
   // Register user actions external to the browser.
-  // chrome/tools/extract_actions.py won't understand these lines, so all of
-  // these are explicitly added in that script.
+  // tools/metrics/actions/extract_actions.py won't understand these lines, so
+  // all of these are explicitly added in that script.
   // TODO(derat): We shouldn't need to verify actions before reporting them;
   // remove all of this once http://crosbug.com/11125 is fixed.
   valid_user_actions_.insert("Cryptohome.PKCS11InitFail");

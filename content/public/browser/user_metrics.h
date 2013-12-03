@@ -51,7 +51,7 @@ CONTENT_EXPORT void RecordAction(const UserMetricsAction& action);
 // not automatically found by the action-processing scripts.  It can be used
 // when it's a pain to enumerate all possible actions, but if you use this
 // you need to also update the rules for extracting known actions in
-// chrome/tools/extract_actions.py.
+// tools/metrics/actions/extract_actions.py.
 CONTENT_EXPORT void RecordComputedAction(const std::string& action);
 
 // Called with the action string.
