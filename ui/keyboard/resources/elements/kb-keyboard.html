@@ -351,7 +351,7 @@
 
       ready: function() {
         this.voiceInput_ = new VoiceInput(this);
-        this.swipeHandler = this.updateSwipeTracker.bind(this);
+        this.swipeHandler = this.move.bind(this);
       },
 
       /**
@@ -472,7 +472,7 @@
        * status so that PointerEvents can be converted to Swipe events.
        * @param {PointerEvent} event.
        */
-      updateSwipeTracker: function(event) {
+      move: function(event) {
         if (!swipeTracker.update(event))
           return;
         // Conversion was successful, swipe is now in progress.

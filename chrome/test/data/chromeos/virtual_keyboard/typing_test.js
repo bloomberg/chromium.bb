@@ -311,3 +311,105 @@ function testFingerOutType(testDoneCallback) {
   };
   onKeyboardReady('testFingerOutType', runTest, testDoneCallback);
 }
+
+/**
+ * Tests that flicking upwards on a key with hintText types the hint text.
+ * @param {Function} testDoneCallback The callback function on completion.
+ */
+function testSwipeFlick(testDoneCallback) {
+  var mockEvent = function(xOffset, yOffset, target, relatedTarget) {
+    var bounds = target.getBoundingClientRect();
+    return {
+      pointerId: 1,
+      isPrimary: true,
+      screenX: bounds.left + xOffset,
+      // Note: Y is negative in the 'up' direction.
+      screenY: bounds.bottom - yOffset,
+      target: target,
+      relatedTarget: relatedTarget
+    };
+  }
+  var runTest = function() {
+    var key = findKey('.');
+    var send = chrome.virtualKeyboardPrivate.sendKeyEvent;
+    // Test flick on the '.', expect '?' to appear.
+    send.addExpectation({
+      type: 'keydown',
+      charValue: '?'.charCodeAt(0),
+      keyCode: 0xBF,
+      modifiers: Modifier.SHIFT
+    });
+    send.addExpectation({
+      type: 'keyup',
+      charValue: '?'.charCodeAt(0),
+      keyCode: 0xBF,
+      modifiers: Modifier.SHIFT
+    });
+    var height = key.clientHeight;
+    var width = key.clientWidth;
+    $('keyboard').down(mockEvent(0, 0, key));
+    $('keyboard').move(mockEvent(0, height/2, key));
+    $('keyboard').up(mockEvent(0, height/2, key));
+
+    // Test flick that exits the keyboard area. Expect '1' to appear.
+    var qKey = findKey('q');
+    send.addExpectation({
+      type: 'keydown',
+      charValue: '1'.charCodeAt(0),
+      keyCode: 0x31,
+      modifiers: Modifier.NONE
+    });
+    send.addExpectation({
+      type: 'keyup',
+      charValue: '1'.charCodeAt(0),
+      keyCode: 0x31,
+      modifiers: Modifier.NONE
+    });
+    $('keyboard').down(mockEvent(width/2, height/2, qKey));
+    $('keyboard').move(mockEvent(width/2, height, qKey));
+    $('keyboard').out(mockEvent(width/2, 2*height, qKey, $('keyboard')));
+
+    // Test basic long flick. Should not have any output.
+    $('keyboard').down(mockEvent(0, 0, key));
+    $('keyboard').move(mockEvent(0, height/2, key));
+    $('keyboard').move(mockEvent(0, 2*height, key));
+    $('keyboard').up(mockEvent(0, 2*height, key));
+
+    // Test flick that crosses the original key boundary.
+    send.addExpectation({
+      type: 'keydown',
+      charValue: '?'.charCodeAt(0),
+      keyCode: 0xBF,
+      modifiers: Modifier.SHIFT
+    });
+    send.addExpectation({
+      type: 'keyup',
+      charValue: '?'.charCodeAt(0),
+      keyCode: 0xBF,
+      modifiers: Modifier.SHIFT
+    });
+    var lKey = findKey('l');
+    $('keyboard').down(mockEvent(0, height/2, key));
+    $('keyboard').move(mockEvent(0, height, key));
+    key.out(mockEvent(0, height, key, lKey));
+    $('keyboard').move(mockEvent(0, height/2, lKey));
+    $('keyboard').up(mockEvent(0, height/2, lKey));
+
+    // Test long flick that crosses the original key boundary.
+    $('keyboard').down(mockEvent(0, 0, key));
+    $('keyboard').move(mockEvent(0, height/2, key));
+    key.out(mockEvent(0, height, key, lKey));
+    $('keyboard').move(mockEvent(0, height, lKey));
+    $('keyboard').up(mockEvent(0, height, lKey));
+
+    // Test composed swipe and flick. Should not have any output.
+    var move = chrome.virtualKeyboardPrivate.moveCursor;
+    move.addExpectation(SwipeDirection.RIGHT,
+                        Modifier.CONTROL & Modifier.SHIFT);
+    $('keyboard').down(mockEvent(0, 0, key));
+    $('keyboard').move(mockEvent(0, height, key));
+    $('keyboard').move(mockEvent(width, height, key));
+    $('keyboard').up(mockEvent(width, height, key));
+  };
+  onKeyboardReady('testSwipeFlick', runTest, testDoneCallback);
+}
