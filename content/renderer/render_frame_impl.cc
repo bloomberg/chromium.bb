@@ -26,6 +26,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/accessibility/renderer_accessibility.h"
 #include "content/renderer/browser_plugin/browser_plugin.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
@@ -129,6 +130,8 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
 }
 
 RenderFrameImpl::~RenderFrameImpl() {
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, RenderFrameGone());
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_, OnDestruct());
 }
 
 RenderWidget* RenderFrameImpl::GetRenderWidget() {
@@ -423,10 +426,6 @@ void RenderFrameImpl::OnImeConfirmComposition(
 
 #endif  // ENABLE_PLUGINS
 
-int RenderFrameImpl::GetRoutingID() const {
-  return routing_id_;
-}
-
 bool RenderFrameImpl::Send(IPC::Message* message) {
   if (is_detaching_ ||
       ((is_swapped_out_ || render_view_->is_swapped_out()) &&
@@ -439,6 +438,13 @@ bool RenderFrameImpl::Send(IPC::Message* message) {
 }
 
 bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
+  ObserverListBase<RenderFrameObserver>::Iterator it(observers_);
+  RenderFrameObserver* observer;
+  while ((observer = it.GetNext()) != NULL) {
+    if (observer->OnMessageReceived(msg))
+      return true;
+  }
+
   // TODO(ajwong): Fill in with message handlers as various components
   // are migrated over to understand frames.
   return false;
@@ -530,7 +536,7 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
     // Synchronously notify the browser of a child frame creation to get the
     // routing_id for the RenderFrame.
     int routing_id;
-    Send(new FrameHostMsg_CreateChildFrame(GetRoutingID(),
+    Send(new FrameHostMsg_CreateChildFrame(routing_id_,
                                            parent->identifier(),
                                            child_frame_identifier,
                                            UTF16ToUTF8(name),
@@ -563,7 +569,7 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
   if (frame->parent())
     parent_frame_id = frame->parent()->identifier();
 
-  Send(new FrameHostMsg_Detach(GetRoutingID(), parent_frame_id,
+  Send(new FrameHostMsg_Detach(routing_id_, parent_frame_id,
                                frame->identifier()));
 
   // Currently multiple WebCore::Frames can send frameDetached to a single
@@ -1284,6 +1290,15 @@ void RenderFrameImpl::didLoseWebGLContext(blink::WebFrame* frame,
       GURL(frame->top()->document().securityOrigin().toString()),
       THREE_D_API_TYPE_WEBGL,
       arb_robustness_status_code));
+}
+
+void RenderFrameImpl::AddObserver(RenderFrameObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void RenderFrameImpl::RemoveObserver(RenderFrameObserver* observer) {
+  observer->RenderFrameGone();
+  observers_.RemoveObserver(observer);
 }
 
 }  // namespace content

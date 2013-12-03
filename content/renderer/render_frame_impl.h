@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/observer_list.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string16.h"
 #include "content/public/renderer/render_frame.h"
@@ -34,6 +35,7 @@ namespace content {
 
 class PepperPluginInstanceImpl;
 class RendererPpapiHost;
+class RenderFrameObserver;
 class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
@@ -56,6 +58,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(jam): this is a temporary getter until all the code is transitioned
   // to using RenderFrame instead of RenderView.
   RenderViewImpl* render_view() { return render_view_; }
+
+  int routing_id() const { return routing_id_; }
 
   // Returns the RenderWidget associated with this frame.
   RenderWidget* GetRenderWidget();
@@ -301,7 +305,11 @@ class CONTENT_EXPORT RenderFrameImpl
   RenderFrameImpl(RenderViewImpl* render_view, int32 routing_id);
 
  private:
-  int GetRoutingID() const;
+  friend class RenderFrameObserver;
+
+  // Functions to add and remove observers for this object.
+  void AddObserver(RenderFrameObserver* observer);
+  void RemoveObserver(RenderFrameObserver* observer);
 
   RenderViewImpl* render_view_;
   int routing_id_;
@@ -325,6 +333,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // about when it is destroyed via InstanceDeleted().
   PepperPluginInstanceImpl* pepper_last_mouse_event_target_;
 #endif
+
+  // All the registered observers.
+  ObserverList<RenderFrameObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameImpl);
 };
