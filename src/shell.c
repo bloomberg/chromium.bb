@@ -240,8 +240,6 @@ enum shell_surface_type {
 	SHELL_SURFACE_NONE,
 	SHELL_SURFACE_TOPLEVEL,
 	SHELL_SURFACE_TRANSIENT,
-	SHELL_SURFACE_FULLSCREEN,
-	SHELL_SURFACE_MAXIMIZED,
 	SHELL_SURFACE_POPUP,
 	SHELL_SURFACE_XWAYLAND
 };
@@ -342,6 +340,12 @@ struct shell_surface {
 	struct wl_list link;
 
 	const struct weston_shell_client *client;
+
+	struct {
+		bool maximized;
+		bool fullscreen;
+	} state, next_state; /* surface states */
+	bool state_changed;
 };
 
 struct shell_grab {
@@ -1510,7 +1514,7 @@ surface_touch_move(struct shell_surface *shsurf, struct weston_seat *seat)
 	if (!shsurf)
 		return -1;
 
-	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
+	if (shsurf->state.fullscreen)
 		return 0;
 	if (shsurf->grabbed)
 		return 0;
@@ -1599,7 +1603,7 @@ surface_move(struct shell_surface *shsurf, struct weston_seat *seat)
 
 	if (shsurf->grabbed)
 		return 0;
-	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
+	if (shsurf->state.fullscreen)
 		return 0;
 
 	move = malloc(sizeof *move);
@@ -1773,8 +1777,7 @@ surface_resize(struct shell_surface *shsurf,
 {
 	struct weston_resize_grab *resize;
 
-	if (shsurf->type == SHELL_SURFACE_FULLSCREEN ||
-	    shsurf->type == SHELL_SURFACE_MAXIMIZED)
+	if (shsurf->state.fullscreen || shsurf->state.maximized)
 		return 0;
 
 	if (edges == 0 || edges > 15 ||
@@ -1804,7 +1807,7 @@ shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 	struct weston_surface *surface;
 
-	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
+	if (shsurf->state.fullscreen)
 		return;
 
 	surface = weston_surface_get_main_surface(seat->pointer->focus->surface);
@@ -2134,12 +2137,13 @@ shell_surface_calculate_layer_link (struct shell_surface *shsurf)
 		break;
 	}
 
-	case SHELL_SURFACE_FULLSCREEN:
-		return &shsurf->shell->fullscreen_layer.view_list;
+	case SHELL_SURFACE_TOPLEVEL: {
+		if (shsurf->state.fullscreen)
+			return &shsurf->shell->fullscreen_layer.view_list;
+		break;
+	}
 
 	case SHELL_SURFACE_XWAYLAND:
-	case SHELL_SURFACE_TOPLEVEL:
-	case SHELL_SURFACE_MAXIMIZED:
 	case SHELL_SURFACE_NONE:
 	default:
 		/* Go to the fallback, below. */
@@ -2237,6 +2241,17 @@ shell_surface_set_output(struct shell_surface *shsurf,
 }
 
 static void
+surface_clear_next_states(struct shell_surface *shsurf)
+{
+	shsurf->next_state.maximized = false;
+	shsurf->next_state.fullscreen = false;
+
+	if ((shsurf->next_state.maximized != shsurf->state.maximized) ||
+	    (shsurf->next_state.fullscreen != shsurf->state.fullscreen))
+		shsurf->state_changed = true;
+}
+
+static void
 set_toplevel(struct shell_surface *shsurf)
 {
 	shell_surface_set_parent(shsurf, NULL);
@@ -2253,6 +2268,7 @@ shell_surface_set_toplevel(struct wl_client *client,
 {
 	struct shell_surface *surface = wl_resource_get_user_data(resource);
 
+	surface_clear_next_states(surface);
 	set_toplevel(surface);
 }
 
@@ -2284,6 +2300,7 @@ shell_surface_set_transient(struct wl_client *client,
 	struct weston_surface *parent =
 		wl_resource_get_user_data(parent_resource);
 
+	surface_clear_next_states(shsurf);
 	set_transient(shsurf, parent, x, y, flags);
 }
 
@@ -2301,7 +2318,7 @@ set_fullscreen(struct shell_surface *shsurf,
 
 	shell_surface_set_parent(shsurf, NULL);
 
-	shsurf->next_type = SHELL_SURFACE_FULLSCREEN;
+	shsurf->next_type = shsurf->type;
 
 	shsurf->client->send_configure(shsurf->surface, 0,
 				       shsurf->output->width,
@@ -2357,6 +2374,9 @@ shell_surface_set_fullscreen(struct wl_client *client,
 	else
 		output = NULL;
 
+	surface_clear_next_states(shsurf);
+	shsurf->next_state.fullscreen = true;
+	shsurf->state_changed = true;
 	set_fullscreen(shsurf, method, framerate, output);
 }
 
@@ -2390,6 +2410,7 @@ shell_surface_set_popup(struct wl_client *client,
 {
 	struct shell_surface *shsurf = wl_resource_get_user_data(resource);
 
+	surface_clear_next_states(shsurf);
 	set_popup(shsurf,
 	          wl_resource_get_user_data(parent_resource),
 	          wl_resource_get_user_data(seat_resource),
@@ -2415,7 +2436,7 @@ set_maximized(struct shell_surface *shsurf,
 
 	shell_surface_set_parent(shsurf, NULL);
 
-	shsurf->next_type = SHELL_SURFACE_MAXIMIZED;
+	shsurf->next_type = shsurf->type;
 }
 
 static void
@@ -2449,6 +2470,9 @@ shell_surface_set_maximized(struct wl_client *client,
 	else
 		output = NULL;
 
+	surface_clear_next_states(shsurf);
+	shsurf->next_state.maximized = true;
+	shsurf->state_changed = true;
 	set_maximized(shsurf, output);
 }
 
@@ -2457,24 +2481,28 @@ shell_surface_set_maximized(struct wl_client *client,
 static int
 reset_surface_type(struct shell_surface *surface)
 {
-	switch (surface->type) {
-	case SHELL_SURFACE_FULLSCREEN:
+	if (surface->state.fullscreen)
 		unset_fullscreen(surface);
-		break;
-	case SHELL_SURFACE_MAXIMIZED:
+	if (surface->state.maximized)
 		unset_maximized(surface);
-		break;
-	case SHELL_SURFACE_NONE:
-	case SHELL_SURFACE_TOPLEVEL:
-	case SHELL_SURFACE_TRANSIENT:
-	case SHELL_SURFACE_POPUP:
-	case SHELL_SURFACE_XWAYLAND:
-	default:
-		break;
-	}
 
 	surface->type = SHELL_SURFACE_NONE;
 	return 0;
+}
+
+static void
+set_full_output(struct shell_surface *shsurf)
+{
+	shsurf->saved_x = shsurf->view->geometry.x;
+	shsurf->saved_y = shsurf->view->geometry.y;
+	shsurf->saved_position_valid = true;
+
+	if (!wl_list_empty(&shsurf->rotation.transform.link)) {
+		wl_list_remove(&shsurf->rotation.transform.link);
+		wl_list_init(&shsurf->rotation.transform.link);
+		weston_view_geometry_dirty(shsurf->view);
+		shsurf->saved_rotation_valid = true;
+	}
 }
 
 static void
@@ -2486,30 +2514,20 @@ set_surface_type(struct shell_surface *shsurf)
 	reset_surface_type(shsurf);
 
 	shsurf->type = shsurf->next_type;
+	shsurf->state = shsurf->next_state;
 	shsurf->next_type = SHELL_SURFACE_NONE;
+	shsurf->state_changed = false;
 
 	switch (shsurf->type) {
 	case SHELL_SURFACE_TOPLEVEL:
+		if (shsurf->state.maximized || shsurf->state.fullscreen)
+			set_full_output(shsurf);
 		break;
 	case SHELL_SURFACE_TRANSIENT:
 		if (pev)
 			weston_view_set_position(shsurf->view,
 						 pev->geometry.x + shsurf->transient.x,
 						 pev->geometry.y + shsurf->transient.y);
-		break;
-
-	case SHELL_SURFACE_MAXIMIZED:
-	case SHELL_SURFACE_FULLSCREEN:
-		shsurf->saved_x = shsurf->view->geometry.x;
-		shsurf->saved_y = shsurf->view->geometry.y;
-		shsurf->saved_position_valid = true;
-
-		if (!wl_list_empty(&shsurf->rotation.transform.link)) {
-			wl_list_remove(&shsurf->rotation.transform.link);
-			wl_list_init(&shsurf->rotation.transform.link);
-			weston_view_geometry_dirty(shsurf->view);
-			shsurf->saved_rotation_valid = true;
-		}
 		break;
 
 	case SHELL_SURFACE_XWAYLAND:
@@ -2576,7 +2594,7 @@ shell_ensure_fullscreen_black_view(struct shell_surface *shsurf)
 {
 	struct weston_output *output = shsurf->fullscreen_output;
 
-	assert(shsurf->type == SHELL_SURFACE_FULLSCREEN);
+	assert(shsurf->state.fullscreen);
 
 	if (!shsurf->fullscreen.black_view)
 		shsurf->fullscreen.black_view =
@@ -2694,6 +2712,7 @@ static void
 set_xwayland(struct shell_surface *shsurf, int x, int y, uint32_t flags)
 {
 	/* XXX: using the same fields for transient type */
+	surface_clear_next_states(shsurf);
 	shsurf->transient.x = x;
 	shsurf->transient.y = y;
 	shsurf->transient.flags = flags;
@@ -3429,8 +3448,8 @@ move_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *dat
 		return;
 
 	shsurf = get_shell_surface(surface);
-	if (shsurf == NULL || shsurf->type == SHELL_SURFACE_FULLSCREEN ||
-	    shsurf->type == SHELL_SURFACE_MAXIMIZED)
+	if (shsurf == NULL || shsurf->state.fullscreen ||
+	    shsurf->state.maximized)
 		return;
 
 	surface_move(shsurf, (struct weston_seat *) seat);
@@ -3448,8 +3467,8 @@ touch_move_binding(struct weston_seat *seat, uint32_t time, void *data)
 		return;
 
 	shsurf = get_shell_surface(surface);
-	if (shsurf == NULL || shsurf->type == SHELL_SURFACE_FULLSCREEN ||
-	    shsurf->type == SHELL_SURFACE_MAXIMIZED)
+	if (shsurf == NULL || shsurf->state.fullscreen ||
+	    shsurf->state.maximized)
 		return;
 
 	surface_touch_move(shsurf, (struct weston_seat *) seat);
@@ -3469,8 +3488,8 @@ resize_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *d
 		return;
 
 	shsurf = get_shell_surface(surface);
-	if (!shsurf || shsurf->type == SHELL_SURFACE_FULLSCREEN ||
-	    shsurf->type == SHELL_SURFACE_MAXIMIZED)
+	if (shsurf == NULL || shsurf->state.fullscreen ||
+	    shsurf->state.maximized)
 		return;
 
 	weston_view_from_global(shsurf->view,
@@ -3991,8 +4010,8 @@ rotate_binding(struct weston_seat *seat, uint32_t time, uint32_t button,
 		return;
 
 	surface = get_shell_surface(base_surface);
-	if (!surface || surface->type == SHELL_SURFACE_FULLSCREEN ||
-	    surface->type == SHELL_SURFACE_MAXIMIZED)
+	if (surface == NULL || surface->state.fullscreen ||
+	    surface->state.maximized)
 		return;
 
 	surface_rotate(surface, seat);
@@ -4026,6 +4045,7 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	struct focus_state *state;
 	struct workspace *ws;
 	struct weston_surface *old_es;
+	struct shell_surface *shsurf;
 
 	main_surface = weston_surface_get_main_surface(es);
 
@@ -4040,21 +4060,11 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	wl_list_remove(&state->surface_destroy_listener.link);
 	wl_signal_add(&es->destroy_signal, &state->surface_destroy_listener);
 
-	switch (get_shell_surface_type(main_surface)) {
-	case SHELL_SURFACE_FULLSCREEN:
-		/* should on top of panels */
-		shell_configure_fullscreen(get_shell_surface(main_surface));
-		return;
-	case SHELL_SURFACE_TOPLEVEL:
-	case SHELL_SURFACE_TRANSIENT:
-	case SHELL_SURFACE_MAXIMIZED:
-	case SHELL_SURFACE_POPUP:
-	case SHELL_SURFACE_XWAYLAND:
-	case SHELL_SURFACE_NONE:
-	default:
+	shsurf = get_shell_surface(main_surface);
+	if (shsurf->state.fullscreen)
+		shell_configure_fullscreen(shsurf);
+	else
 		restore_all_output_modes(shell->compositor);
-		break;
-	}
 
 	if (shell->focus_animation_type != ANIMATION_NONE) {
 		ws = get_current_workspace(shell);
@@ -4495,21 +4505,21 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 
 	/* initial positioning, see also configure() */
 	switch (shsurf->type) {
-	case SHELL_SURFACE_TOPLEVEL:
-		weston_view_set_initial_position(shsurf->view, shell);
-		break;
-	case SHELL_SURFACE_FULLSCREEN:
-		center_on_output(shsurf->view, shsurf->fullscreen_output);
-		shell_map_fullscreen(shsurf);
-		break;
-	case SHELL_SURFACE_MAXIMIZED:
-		/* use surface configure to set the geometry */
-		panel_height = get_output_panel_height(shell, shsurf->output);
-		surface_subsurfaces_boundingbox(shsurf->surface,
-						&surf_x, &surf_y, NULL, NULL);
-		weston_view_set_position(shsurf->view,
-					 shsurf->output->x - surf_x,
-		                         shsurf->output->y + panel_height - surf_y);
+		if (shsurf->state.fullscreen) {
+			center_on_output(shsurf->view, shsurf->fullscreen_output);
+			shell_map_fullscreen(shsurf);
+		} else if (shsurf->state.maximized) {
+			/* use surface configure to set the geometry */
+			panel_height = get_output_panel_height(shell, shsurf->output);
+			surface_subsurfaces_boundingbox(shsurf->surface,
+							&surf_x, &surf_y, NULL, NULL);
+			weston_view_set_position(shsurf->view,
+						 shsurf->output->x - surf_x,
+						 shsurf->output->y +
+						 panel_height - surf_y);
+		} else {
+			weston_view_set_initial_position(shsurf->view, shell);
+		}
 		break;
 	case SHELL_SURFACE_POPUP:
 		shell_map_popup(shsurf);
@@ -4530,7 +4540,7 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 
 	if (shsurf->type != SHELL_SURFACE_NONE) {
 		weston_view_update_transform(shsurf->view);
-		if (shsurf->type == SHELL_SURFACE_MAXIMIZED) {
+		if (shsurf->state.maximized) {
 			shsurf->surface->output = shsurf->output;
 			shsurf->view->output = shsurf->output;
 		}
@@ -4544,8 +4554,6 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 				WL_SHELL_SURFACE_TRANSIENT_INACTIVE)
 			break;
 	case SHELL_SURFACE_TOPLEVEL:
-	case SHELL_SURFACE_FULLSCREEN:
-	case SHELL_SURFACE_MAXIMIZED:
 		if (!shell->locked) {
 			wl_list_for_each(seat, &compositor->seat_list, link)
 				activate(shell, shsurf->surface, seat);
@@ -4557,7 +4565,8 @@ map(struct desktop_shell *shell, struct shell_surface *shsurf,
 		break;
 	}
 
-	if (shsurf->type == SHELL_SURFACE_TOPLEVEL)
+	if (shsurf->type == SHELL_SURFACE_TOPLEVEL &&
+	    !shsurf->state.maximized && !shsurf->state.fullscreen)
 	{
 		switch (shell->win_animation_type) {
 		case ANIMATION_FADE:
@@ -4577,20 +4586,15 @@ static void
 configure(struct desktop_shell *shell, struct weston_surface *surface,
 	  float x, float y)
 {
-	enum shell_surface_type surface_type = SHELL_SURFACE_NONE;
 	struct shell_surface *shsurf;
 	struct weston_view *view;
 	int32_t mx, my, surf_x, surf_y;
 
 	shsurf = get_shell_surface(surface);
-	if (shsurf)
-		surface_type = shsurf->type;
 
-	switch (surface_type) {
-	case SHELL_SURFACE_FULLSCREEN:
+	if (shsurf->state.fullscreen)
 		shell_configure_fullscreen(shsurf);
-		break;
-	case SHELL_SURFACE_MAXIMIZED:
+	else if (shsurf->state.maximized) {
 		/* setting x, y and using configure to change that geometry */
 		surface_subsurfaces_boundingbox(shsurf->surface, &surf_x, &surf_y,
 		                                                 NULL, NULL);
@@ -4598,15 +4602,8 @@ configure(struct desktop_shell *shell, struct weston_surface *surface,
 		my = shsurf->output->y +
 		     get_output_panel_height(shell,shsurf->output) - surf_y;
 		weston_view_set_position(shsurf->view, mx, my);
-		break;
-	case SHELL_SURFACE_TOPLEVEL:
-	case SHELL_SURFACE_TRANSIENT:
-	case SHELL_SURFACE_POPUP:
-	case SHELL_SURFACE_XWAYLAND:
-	case SHELL_SURFACE_NONE:
-	default:
+	} else {
 		weston_view_set_position(shsurf->view, x, y);
-		break;
 	}
 
 	/* XXX: would a fullscreen surface need the same handling? */
@@ -4614,7 +4611,7 @@ configure(struct desktop_shell *shell, struct weston_surface *surface,
 		wl_list_for_each(view, &surface->views, surface_link)
 			weston_view_update_transform(view);
 
-		if (surface_type == SHELL_SURFACE_MAXIMIZED)
+		if (shsurf->state.maximized)
 			surface->output = shsurf->output;
 	}
 }
@@ -4635,8 +4632,9 @@ shell_surface_configure(struct weston_surface *es, int32_t sx, int32_t sy)
 	if (es->width == 0)
 		return;
 
-	if (shsurf->next_type != SHELL_SURFACE_NONE &&
-	    shsurf->type != shsurf->next_type) {
+	if ((shsurf->next_type != SHELL_SURFACE_NONE &&
+	    shsurf->type != shsurf->next_type) ||
+	    shsurf->state_changed) {
 		set_surface_type(shsurf);
 		type_changed = 1;
 	}
@@ -5074,8 +5072,6 @@ switcher_next(struct switcher *switcher)
 	wl_list_for_each(view, &ws->layer.view_list, layer_link) {
 		switch (get_shell_surface_type(view->surface)) {
 		case SHELL_SURFACE_TOPLEVEL:
-		case SHELL_SURFACE_FULLSCREEN:
-		case SHELL_SURFACE_MAXIMIZED:
 			if (first == NULL)
 				first = view->surface;
 			if (prev == switcher->current)
@@ -5114,7 +5110,7 @@ switcher_next(struct switcher *switcher)
 		view->alpha = 1.0;
 
 	shsurf = get_shell_surface(switcher->current);
-	if (shsurf && shsurf->type ==SHELL_SURFACE_FULLSCREEN)
+	if (shsurf && shsurf->state.fullscreen)
 		shsurf->fullscreen.black_view->alpha = 1.0;
 }
 
