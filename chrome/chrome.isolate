@@ -39,11 +39,11 @@
     ['OS=="mac"', {
       'variables': {
         'command': [
-          '<(PRODUCT_DIR)/Chromium.app/Contents/MacOS/Chromium',
+          '<(PRODUCT_DIR)/<(mac_product_name).app/Contents/MacOS/<(mac_product_name)',
         ],
         'isolate_dependency_untracked': [
-          '<(PRODUCT_DIR)/Chromium Framework.framework/',
-          '<(PRODUCT_DIR)/Chromium.app/',
+          '<(PRODUCT_DIR)/<(mac_product_name) Framework.framework/',
+          '<(PRODUCT_DIR)/<(mac_product_name).app/',
         ],
       },
     }],

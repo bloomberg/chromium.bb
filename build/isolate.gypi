@@ -60,39 +60,34 @@
       'outputs': [
         '<(PRODUCT_DIR)/<(RULE_INPUT_ROOT).isolated',
       ],
+      'action': [
+        'python',
+        '<(DEPTH)/tools/swarming_client/isolate.py',
+        '<(test_isolation_mode)',
+        # Variables should use the -V FOO=<(FOO) form so frequent values,
+        # like '0' or '1', aren't stripped out by GYP.
+        '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR) ',
+        '--variable', 'OS=<(OS)',
+        '--result', '<@(_outputs)',
+        '--isolate', '<(RULE_INPUT_PATH)',
+      ],
       'conditions': [
+        # Note: When gyp merges lists, it appends them to the old value.
+        ['OS=="mac"', {
+          # <(mac_product_name) can contain a space, so don't use FOO=<(FOO)
+          # form.
+          'action': [ '--variable', 'mac_product_name', '<(mac_product_name)' ],
+        }],
         ["test_isolation_outdir==''", {
-          'action': [
-            'python',
-            '<(DEPTH)/tools/swarming_client/isolate.py',
-            '<(test_isolation_mode)',
-            # GYP will eliminate duplicate arguments so '<(PRODUCT_DIR)' cannot
-            # be provided twice. To work around this behavior, append '/'.
-            #
-            # Also have a space after <(PRODUCT_DIR) or visual studio will
-            # escape the argument wrappping " with the \ and merge it into
-            # the following arguments.
-            #
-            # Other variables should use the -V FOO=<(FOO) form so frequent
-            # values, like '0' or '1', aren't stripped out by GYP.
-            '--outdir', '<(PRODUCT_DIR)/ ',
-            '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR) ',
-            '--variable', 'OS=<(OS)',
-            '--result', '<@(_outputs)',
-            '--isolate', '<(RULE_INPUT_PATH)',
-          ],
+          # GYP will eliminate duplicate arguments so '<(PRODUCT_DIR)' cannot
+          # be provided twice. To work around this behavior, append '/'.
+          #
+          # Also have a space after <(PRODUCT_DIR) or visual studio will
+          # escape the argument wrappping " with the \ and merge it into
+          # the following arguments.
+          'action': [ '--outdir', '<(PRODUCT_DIR)/ ' ],
         }, {
-          'action': [
-            'python',
-            '<(DEPTH)/tools/swarming_client/isolate.py',
-            '<(test_isolation_mode)',
-            '--outdir', '<(test_isolation_outdir)',
-            # See comment above.
-            '--variable', 'PRODUCT_DIR', '<(PRODUCT_DIR) ',
-            '--variable', 'OS=<(OS)',
-            '--result', '<@(_outputs)',
-            '--isolate', '<(RULE_INPUT_PATH)',
-          ],
+          'action': [ '--outdir', '<(test_isolation_outdir)' ],
         }],
         ['test_isolation_fail_on_missing == 0', {
             'action': ['--ignore_broken_items'],
