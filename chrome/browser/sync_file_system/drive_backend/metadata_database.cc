@@ -1041,6 +1041,25 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
   WriteToDatabase(batch.Pass(), callback);
 }
 
+bool MetadataDatabase::TryNoSideEffectActivation(
+    int64 tracker_id,
+    const SyncStatusCallback& callback) {
+  DCHECK(ContainsKey(tracker_by_id_, tracker_id));
+  const FileTracker& tracker = *tracker_by_id_[tracker_id];
+  if (tracker.active()) {
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_STATUS_OK));
+    return true;
+  }
+
+  if (!CanActivateTracker(tracker))
+    return false;
+
+  scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
+  MakeTrackerActive(tracker_id, batch.get());
+  WriteToDatabase(batch.Pass(), callback);
+  return true;
+}
+
 void MetadataDatabase::LowerTrackerPriority(int64 tracker_id) {
   TrackerByID::const_iterator found = tracker_by_id_.find(tracker_id);
   if (found == tracker_by_id_.end())
