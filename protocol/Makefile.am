@@ -7,7 +7,8 @@ protocol_sources =				\
 	input-method.xml			\
 	workspaces.xml				\
 	text-cursor-position.xml		\
-	wayland-test.xml
+	wayland-test.xml			\
+	xdg-shell.xml
 
 if HAVE_XMLLINT
 .PHONY: validate
