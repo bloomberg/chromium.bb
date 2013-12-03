@@ -86,12 +86,10 @@ void InputMethodEngineIBus::Initialize(
     const char* engine_name,
     const char* extension_id,
     const char* engine_id,
-    const char* description,
     const std::vector<std::string>& languages,
     const std::vector<std::string>& layouts,
     const GURL& options_page,
-    const GURL& input_view,
-    std::string* error) {
+    const GURL& input_view) {
   DCHECK(observer) << "Observer must not be null.";
 
   observer_ = observer;

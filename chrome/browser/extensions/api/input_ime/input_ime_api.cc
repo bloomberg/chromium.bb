@@ -7,7 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/input_method/input_method_engine.h"
+#include "chrome/browser/chromeos/input_method/input_method_engine_ibus.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -296,7 +296,6 @@ bool InputImeEventRouter::RegisterIme(
   if (engine_ix != engine_map.end())
     return false;
 
-  std::string error;
   chromeos::ImeObserver* observer = new chromeos::ImeObserver(profile,
                                                               extension_id,
                                                               component.id);
@@ -306,18 +305,11 @@ bool InputImeEventRouter::RegisterIme(
   std::vector<std::string> languages;
   languages.assign(component.languages.begin(), component.languages.end());
 
-  chromeos::InputMethodEngine* engine =
-      chromeos::InputMethodEngine::CreateEngine(
-          observer, component.name.c_str(), extension_id.c_str(),
-          component.id.c_str(), component.description.c_str(),
-          languages, layouts, component.options_page_url,
-          component.input_view_url, &error);
-  if (!engine) {
-    delete observer;
-    LOG(ERROR) << "RegisterIme: " << error;
-    return false;
-  }
-
+  chromeos::InputMethodEngineIBus* engine =
+      new chromeos::InputMethodEngineIBus();
+  engine->Initialize(observer, component.name.c_str(), extension_id.c_str(),
+                     component.id.c_str(), languages, layouts,
+                     component.options_page_url, component.input_view_url);
   engine_map[component.id] = engine;
 
   std::map<std::string, chromeos::ImeObserver*>& observer_list =

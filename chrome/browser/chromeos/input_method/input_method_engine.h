@@ -238,19 +238,6 @@ class InputMethodEngine {
                                      int offset,
                                      size_t number_of_chars,
                                      std::string* error) = 0;
-
-  // Create an IME engine.
-  static InputMethodEngine* CreateEngine(
-      InputMethodEngine::Observer* observer,
-      const char* engine_name,
-      const char* extension_id,
-      const char* engine_id,
-      const char* description,
-      const std::vector<std::string>& language,
-      const std::vector<std::string>& layouts,
-      const GURL& options_page,
-      const GURL& input_view,
-      std::string* error);
 };
 
 }  // namespace chromeos

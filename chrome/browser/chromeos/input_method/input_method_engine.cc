@@ -48,31 +48,4 @@ InputMethodEngine::CandidateWindowProperty::~CandidateWindowProperty() {
 
 InputMethodEngine::Observer::~Observer() {
 }
-
-InputMethodEngine* InputMethodEngine::CreateEngine(
-    InputMethodEngine::Observer* observer,
-    const char* engine_name,
-    const char* extension_id,
-    const char* engine_id,
-    const char* description,
-    const std::vector<std::string>& languages,
-    const std::vector<std::string>& layouts,
-    const GURL& options_page,
-    const GURL& input_view,
-    std::string* error) {
-
-  InputMethodEngineIBus* engine = new InputMethodEngineIBus();
-  engine->Initialize(observer,
-                     engine_name,
-                     extension_id,
-                     engine_id,
-                     description,
-                     languages,
-                     layouts,
-                     options_page,
-                     input_view,
-                     error);
-  return engine;
-}
-
 }  // namespace chromeos
