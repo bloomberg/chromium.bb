@@ -68,8 +68,6 @@ LEGACY_REF_COUNTED_CALLBACK_INTERFACES = set([
     'FileSystemCallback',
     'FileWriterCallback',
     'MetadataCallback',
-    # requestAnimationFrame
-    'RequestAnimationFrameCallback',
     # Used everywhere
     'VoidCallback',
 ])
