@@ -61,25 +61,35 @@
     },
     "serveFrom": "static"
   },
+  "cr-native-client": {
+    "chromium": {
+      "dir": "components/nacl/docs/dev"
+    },
+    "serveFrom": "nacl",
+    "supportsTemplates": true
+  },
   "devtools-docs": {
     "github": {
       "owner": "GoogleChrome",
       "repo": "devtools-docs-migration"
     },
-    "serveFrom": "devtools"
+    "serveFrom": "devtools",
+    "supportsTemplates": true
   },
   "multidevice-docs": {
     "github": {
       "owner": "GoogleChrome",
       "repo": "multi-device"
     },
-    "serveFrom": "multidevice"
+    "serveFrom": "multidevice",
+    "supportsTemplates": true
   },
   "webstore-docs": {
     "github": {
       "owner": "GoogleChrome",
       "repo": "webstore-docs"
     },
-    "serveFrom": "webstore"
+    "serveFrom": "webstore",
+    "supportsTemplates": true
   }
 }
