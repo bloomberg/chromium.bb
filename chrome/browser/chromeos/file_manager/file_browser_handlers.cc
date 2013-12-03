@@ -162,7 +162,6 @@ class FileBrowserHandlerExecutor {
  public:
   FileBrowserHandlerExecutor(Profile* profile,
                              const Extension* extension,
-                             int32 tab_id,
                              const std::string& action_id);
 
   // Executes the task for each file. |done| will be run with the result.
@@ -208,7 +207,6 @@ class FileBrowserHandlerExecutor {
 
   Profile* profile_;
   scoped_refptr<const Extension> extension_;
-  int32 tab_id_;
   const std::string action_id_;
   file_tasks::FileTaskFinishedCallback done_;
   base::WeakPtrFactory<FileBrowserHandlerExecutor> weak_ptr_factory_;
@@ -277,11 +275,9 @@ FileBrowserHandlerExecutor::SetupFileAccessPermissions(
 FileBrowserHandlerExecutor::FileBrowserHandlerExecutor(
     Profile* profile,
     const Extension* extension,
-    int32 tab_id,
     const std::string& action_id)
     : profile_(profile),
       extension_(extension),
-      tab_id_(tab_id),
       action_id_(action_id),
       weak_ptr_factory_(this) {
 }
@@ -404,8 +400,6 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
     file_def->SetBoolean("fileIsDirectory", iter->is_directory);
   }
 
-  details->SetInteger("tab_id", tab_id_);
-
   scoped_ptr<extensions::Event> event(new extensions::Event(
       "fileBrowserHandler.onExecute", event_args.Pass()));
   event->restrict_to_browser_context = profile_;
@@ -472,7 +466,6 @@ bool OpenFilesWithBrowser(Profile* profile,
 bool ExecuteFileBrowserHandler(
     Profile* profile,
     const Extension* extension,
-    int32 tab_id,
     const std::string& action_id,
     const std::vector<FileSystemURL>& file_urls,
     const file_tasks::FileTaskFinishedCallback& done) {
@@ -488,7 +481,7 @@ bool ExecuteFileBrowserHandler(
 
   // The executor object will be self deleted on completion.
   (new FileBrowserHandlerExecutor(
-      profile, extension, tab_id, action_id))->Execute(file_urls, done);
+      profile, extension, action_id))->Execute(file_urls, done);
   return true;
 }
 

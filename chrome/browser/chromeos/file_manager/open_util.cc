@@ -98,7 +98,6 @@ void ExecuteFileTaskForUrl(Profile* profile,
       profile,
       source_url,
       kFileManagerAppId,
-      0, // no tab id
       task,
       urls,
       file_tasks::FileTaskFinishedCallback());

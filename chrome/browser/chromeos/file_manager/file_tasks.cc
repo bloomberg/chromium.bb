@@ -266,7 +266,6 @@ bool ParseTaskID(const std::string& task_id, TaskDescriptor* task) {
 bool ExecuteFileTask(Profile* profile,
                      const GURL& source_url,
                      const std::string& app_id,
-                     int32 tab_id,
                      const TaskDescriptor& task,
                      const std::vector<FileSystemURL>& file_urls,
                      const FileTaskFinishedCallback& done) {
@@ -296,7 +295,6 @@ bool ExecuteFileTask(Profile* profile,
     return file_browser_handlers::ExecuteFileBrowserHandler(
         profile,
         extension,
-        tab_id,
         task.action_id,
         file_urls,
         done);

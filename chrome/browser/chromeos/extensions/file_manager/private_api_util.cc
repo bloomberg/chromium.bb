@@ -235,12 +235,6 @@ content::WebContents* GetWebContents(ExtensionFunctionDispatcher* dispatcher) {
   return web_contents;
 }
 
-int32 GetTabId(ExtensionFunctionDispatcher* dispatcher) {
-  content::WebContents* web_contents = GetWebContents(dispatcher);
-  return web_contents ?
-      extensions::ExtensionTabUtil::GetTabId(web_contents) : 0;
-}
-
 base::FilePath GetLocalPathFromURL(
     content::RenderViewHost* render_view_host,
     Profile* profile,

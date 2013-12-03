@@ -89,12 +89,10 @@ bool FileBrowserPrivateExecuteTaskFunction::RunImpl() {
     file_urls.push_back(url);
   }
 
-  const int32 tab_id = file_manager::util::GetTabId(dispatcher());
   return file_manager::file_tasks::ExecuteFileTask(
       GetProfile(),
       source_url(),
       extension_->id(),
-      tab_id,
       task,
       file_urls,
       base::Bind(&FileBrowserPrivateExecuteTaskFunction::OnTaskExecuted, this));

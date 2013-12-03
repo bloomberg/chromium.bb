@@ -48,10 +48,6 @@ void VolumeInfoToVolumeMetadata(
 // NULL on error.
 content::WebContents* GetWebContents(ExtensionFunctionDispatcher* dispatcher);
 
-// Returns the ID of the tab associated with the dispatcher. Returns 0 on
-// error.
-int32 GetTabId(ExtensionFunctionDispatcher* dispatcher);
-
 // Returns the local FilePath associated with |url|. If the file isn't of the
 // type FileSystemBackend handles, returns an empty
 // FilePath. |render_view_host| and |profile| are needed to obtain the
