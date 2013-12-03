@@ -615,11 +615,7 @@ bool RendererWebKitPlatformSupportImpl::canAccelerate2dCanvas() {
   if (!host)
     return false;
 
-  const gpu::GPUInfo& gpu_info = host->gpu_info();
-  if (gpu_info.can_lose_context || gpu_info.software_rendering)
-    return false;
-
-  return true;
+  return host->gpu_info().SupportsAccelerated2dCanvas();
 }
 
 bool RendererWebKitPlatformSupportImpl::isThreadedCompositingEnabled() {

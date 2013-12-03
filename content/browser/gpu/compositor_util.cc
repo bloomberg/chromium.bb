@@ -24,14 +24,6 @@ struct GpuFeatureInfo {
   bool fallback_to_software;
 };
 
-// Determine if accelerated-2d-canvas is supported, which depends on whether
-// lose_context could happen.
-bool SupportsAccelerated2dCanvas() {
-  if (GpuDataManagerImpl::GetInstance()->GetGPUInfo().can_lose_context)
-    return false;
-  return true;
-}
-
 #if defined(OS_CHROMEOS)
 const size_t kNumFeatures = 14;
 #else
@@ -47,7 +39,8 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index) {
           manager->IsFeatureBlacklisted(
               gpu::GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS),
           command_line.HasSwitch(switches::kDisableAccelerated2dCanvas) ||
-          !SupportsAccelerated2dCanvas(),
+          !GpuDataManagerImpl::GetInstance()->
+              GetGPUInfo().SupportsAccelerated2dCanvas(),
           "Accelerated 2D canvas is unavailable: either disabled at the command"
           " line or not supported by the current system.",
           true

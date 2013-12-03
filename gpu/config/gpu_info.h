@@ -44,6 +44,10 @@ struct GPU_EXPORT GPUInfo {
   GPUInfo();
   ~GPUInfo();
 
+  bool SupportsAccelerated2dCanvas() const {
+    return !can_lose_context && !software_rendering;
+  }
+
   // Whether more GPUInfo fields might be collected in the future.
   bool finalized;
 
