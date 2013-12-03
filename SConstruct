@@ -2747,14 +2747,6 @@ nacl_env = MakeArchSpecificEnv().Clone(
     LIST_MAPPINGS_LIBS = ['nacl_list_mappings_private'],
     )
 
-# TODO(mcgrathr): Remove this after the new binutils has settled.
-def IsNewLinker(env):
-  """Return True if using a new-style linker with the new-style layout.
-That means the linker supports the -Trodata-segment switch."""
-  return True
-
-nacl_env.AddMethod(IsNewLinker)
-
 def UsesAbiNote(env):
   """Return True if using a new-style GCC with .note.NaCl.ABI.* notes.
 This means there will always be an RODATA segment, even if just for the note."""
@@ -2769,44 +2761,6 @@ def UnderWindowsCoverage(env):
   return env['TRUSTED_ENV'].Bit('coverage_enabled') and env.Bit('host_windows')
 
 nacl_env.AddMethod(UnderWindowsCoverage)
-
-def RodataSwitch(env, value, via_compiler=True):
-  """Return string of arguments to place the rodata segment at |value|.
-If |via_compiler| is False, this is going directly to the linker, rather
-than via the compiler driver."""
-  if env.IsNewLinker():
-    args = ['-Trodata-segment=' + value]
-  else:
-    # With the --build-id option (which the compiler will pass, but pass it
-    # here to be doubly sure), the rodata segment starts with the
-    # .note.gnu.build-id section; without --build-id it starts with .rodata.
-    if via_compiler:
-      args = ['--build-id', '--section-start', '.note.gnu.build-id=' + value]
-    else:
-      # If file is linked directly then it's probably some kind of low-level
-      # test so don't use build id and move .rodata to the desired position.
-      args = ['--section-start', '.rodata=' + value]
-  if via_compiler:
-    if env.Bit('bitcode'):
-      # The -Wn flag passes arguments to PNaCl's native linker (as opposed
-      # to the bitcode linker, which gets the -Wl arguments)
-      args = ','.join(['-Wn'] + args)
-    else:
-      args = ','.join(['-Wl'] + args)
-  else:
-    args = ' '.join(args)
-  return args
-
-nacl_env.AddMethod(RodataSwitch)
-
-def TextSwitch(env, value):
-  """ Return a string of arguments to place the text segment at |value|.
-Assume the string is going to the compiler driver, rather than directly
-to the linker. """
-  # TODO(dschuff): just replace uses of this with the flag directly.
-  return '-Wl,-Ttext-segment=' + value
-
-nacl_env.AddMethod(TextSwitch)
 
 def AllowNonStableBitcode(env):
   """ This modifies the environment to allow features that aren't part

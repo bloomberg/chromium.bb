@@ -19,8 +19,8 @@ nexe = env.ComponentProgram(
     ['data_below_data_start.c'],
     EXTRA_LIBS=['${NONIRT_LIBS}'],
     EXTRA_LINKFLAGS=['-arch', 'mips32', '--pnacl-allow-native',
-                     env.TextSwitch('0x%x' % text_segment_start),
-                     env.RodataSwitch('0x%x' % rodata_segment_start)])
+                     '-Wl,-Ttext-segment=0x%x' % text_segment_start,
+                     '-Wl,-Trodata-segment=0x%x' % rodata_segment_start])
 
 node = env.CommandSelLdrTestNacl('data_below_data_start.out', nexe,
                                  exit_status=1)

@@ -852,9 +852,8 @@ if env.Bit('target_mips32'):
       unaligned_data_objs,
       LINKFLAGS=['-nostdlib',
                  '--pnacl-allow-native', '-arch', 'mips32',
-                 untrusted_env.TextSwitch('0x%x' % text_region_start_irt),
-                 untrusted_env.RodataSwitch(
-                     '0x%x' % (rodata_region_start_irt))],
+                 '-Wl,-Ttext-segment=0x%x' % text_region_start_irt,
+                 '-Wl,-Trodata-segment=0x%x' % rodata_region_start_irt],
       ASFLAGS=['--pnacl-allow-native', '-arch', 'mips32'])
 else:
   unaligned_data_nexe = env.File(os.path.join(arch_testdata_dir,

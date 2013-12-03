@@ -13,8 +13,8 @@ if env.Bit('pnacl_generate_pexe'):
   Return()
 
 blob_env = env['NACL_IRT_ENV'].Clone()
-blob_env.Append(LINKFLAGS=[blob_env.RodataSwitch('${IRT_BLOB_DATA_START}'),
-                           blob_env.TextSwitch('${IRT_BLOB_CODE_START}')])
+blob_env.Append(LINKFLAGS=['-Wl,-Trodata-segment=${IRT_BLOB_DATA_START}',
+                           '-Wl,-Ttext-segment=${IRT_BLOB_CODE_START}'])
 
 # Build custom IRT library which provides a minimal subset of old
 # interface versions.

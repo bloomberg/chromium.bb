@@ -51,8 +51,7 @@ env.AddNodeToTestSuite(node,
                        # of padding the code segment.  TODO(mcgrathr):
                        # Remove this is_broken= when we the old ncval is no
                        # longer ever built and used for this test.
-                       is_broken=(env.IsNewLinker() and
-                                  env.Bit('target_x86') and
+                       is_broken=(env.Bit('target_x86') and
                                   not env.Bit('validator_ragel')))
 
 
@@ -437,7 +436,7 @@ if env.Bit('nacl_glibc'):
                          ['toolchain_tests', 'small_tests'],
                          'run_byteswap64_test')
 
-if env.Bit('nacl_glibc') or (env.IsNewLinker() and not env.Bit('bitcode')):
+if env.Bit('nacl_glibc') or not env.Bit('bitcode'):
   def AddAlignedCodeTest(name, object_file):
     node = env.CommandTest(name + '.out',
                            ['${PYTHON}', env.File('aligned_code.py'),

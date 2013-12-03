@@ -79,7 +79,7 @@ def NewAsmEnv(env, defines, rodata_address, rwdata_address):
 
   asm_env['TEXT_START'] = '--section-start .text=0x%x' % 0x20000
   if rodata_address:
-    asm_env['RO_START'] = asm_env.RodataSwitch('0x%x' % rodata_address, False)
+    asm_env['RO_START'] = '-Trodata-segment=0x%x' % rodata_address
   if rwdata_address:
     asm_env['RW_START'] = '--section-start .data=0x%x' % rwdata_address
 
@@ -117,9 +117,8 @@ def NaturalRodataStart(text_end):
 
 
 def ExpectedBreak(text_end, rodata_addr, rwdata_addr, rwdata_size):
-  if env.IsNewLinker():
-    # The new linker always pads the text segment out to a page boundary.
-    text_end = RoundUpToAllocSize(text_end)
+  # The new linker always pads the text segment out to a page boundary.
+  text_end = RoundUpToAllocSize(text_end)
   if rwdata_addr is None:
     if rodata_addr is None:
       break_addr = NaturalRodataStart(text_end)
@@ -174,8 +173,7 @@ for text_end, variant in test_specs:
 
     nexe = asm_env.ComponentProgram(base_name, [obj])
 
-    if (env.IsNewLinker() and
-        rodata_address is not None and
+    if (rodata_address is not None and
         rodata_address <= START_OF_TEXT + ALLOCATION_SIZE):
       # With the new linker, the code segment is padded out to
       # ALLOCATION_SIZE with nops, so the rodata segment starts immediately
