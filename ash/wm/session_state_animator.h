@@ -6,7 +6,6 @@
 #define ASH_WM_SESSION_STATE_ANIMATOR_H_
 
 #include "ash/ash_export.h"
-#include "ash/wm/workspace/colored_window_controller.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
@@ -140,12 +139,6 @@ class ASH_EXPORT SessionStateAnimator {
   static void GetContainers(int container_mask,
                             aura::Window::Windows* containers);
 
-  // Create |foreground_| layer if it doesn't already exist, but makes it
-  // completely transparent.
-  void CreateForeground();
-  // Destroy |foreground_| when it is not needed anymore.
-  void DropForeground();
-
   // Apply animation |type| to all containers included in |container_mask| with
   // specified |speed|.
   void StartAnimation(int container_mask,
@@ -177,10 +170,6 @@ class ASH_EXPORT SessionStateAnimator {
                              AnimationType type,
                              AnimationSpeed speed,
                              ui::LayerAnimationObserver* observer);
-
-  // White foreground that is used during shutdown animation to "fade
-  // everything into white".
-  scoped_ptr<ColoredWindowController> foreground_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionStateAnimator);
 };

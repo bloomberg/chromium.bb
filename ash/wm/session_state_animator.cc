@@ -613,22 +613,5 @@ void SessionStateAnimator::RunAnimationForWindow(
   }
 }
 
-void SessionStateAnimator::CreateForeground() {
-  if (foreground_)
-    return;
-  aura::Window* window = Shell::GetContainer(
-      Shell::GetPrimaryRootWindow(),
-      internal::kShellWindowId_PowerButtonAnimationContainer);
-  HideWindowImmediately(window, NULL);
-  foreground_.reset(
-      new ColoredWindowController(window, "SessionStateAnimatorForeground"));
-  foreground_->SetColor(SK_ColorWHITE);
-  foreground_->GetWidget()->Show();
-}
-
-void SessionStateAnimator::DropForeground() {
-  foreground_.reset();
-}
-
 }  // namespace internal
 }  // namespace ash
