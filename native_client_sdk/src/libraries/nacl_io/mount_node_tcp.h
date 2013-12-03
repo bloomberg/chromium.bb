@@ -39,10 +39,18 @@ class MountNodeTCP : public MountNodeSocket {
                        struct sockaddr* addr,
                        socklen_t* len);
   virtual Error Bind(const struct sockaddr* addr, socklen_t len);
-  virtual Error Listen(int backlog);
   virtual Error Connect(const HandleAttr& attr,
                         const struct sockaddr* addr,
                         socklen_t len);
+  virtual Error GetSockOpt(int lvl,
+                           int optname,
+                           void* optval,
+                           socklen_t* len);
+  virtual Error Listen(int backlog);
+  virtual Error SetSockOpt(int lvl,
+                           int optname,
+                           const void* optval,
+                           socklen_t len);
   virtual Error Shutdown(int how);
 
   virtual void SetError_Locked(int pp_error_num);
@@ -50,6 +58,7 @@ class MountNodeTCP : public MountNodeSocket {
   void ConnectFailed_Locked();
 
  protected:
+  Error SetNoDelay_Locked();
   virtual Error Recv_Locked(void* buf,
                             size_t len,
                             PP_Resource* out_addr,
@@ -62,6 +71,7 @@ class MountNodeTCP : public MountNodeSocket {
 
   ScopedEventEmitterTCP emitter_;
   PP_Resource accepted_socket_;
+  bool tcp_nodelay_;
 };
 
 

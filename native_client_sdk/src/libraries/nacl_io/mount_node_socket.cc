@@ -226,6 +226,8 @@ Error MountNodeSocket::GetSockOpt(int lvl,
   if (lvl != SOL_SOCKET)
     return ENOPROTOOPT;
 
+  AUTO_LOCK(node_lock_);
+
   int value = 0;
   socklen_t value_len = 0;
   void* value_ptr = NULL;
@@ -269,6 +271,8 @@ Error MountNodeSocket::SetSockOpt(int lvl,
                                   socklen_t len) {
   if (lvl != SOL_SOCKET)
     return ENOPROTOOPT;
+
+  AUTO_LOCK(node_lock_);
 
   switch (optname) {
     case SO_REUSEADDR: {

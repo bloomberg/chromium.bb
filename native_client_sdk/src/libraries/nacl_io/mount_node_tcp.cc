@@ -272,13 +272,15 @@ class TCPConnectWork : public MountStream::Work {
 
 MountNodeTCP::MountNodeTCP(Mount* mount)
     : MountNodeSocket(mount),
-      emitter_(new EventEmitterTCP(kDefaultFifoSize, kDefaultFifoSize)) {
+      emitter_(new EventEmitterTCP(kDefaultFifoSize, kDefaultFifoSize)),
+      tcp_nodelay_(false) {
   emitter_->AttachStream(this);
 }
 
 MountNodeTCP::MountNodeTCP(Mount* mount, PP_Resource socket)
     : MountNodeSocket(mount, socket),
-      emitter_(new EventEmitterTCP(kDefaultFifoSize, kDefaultFifoSize)) {
+      emitter_(new EventEmitterTCP(kDefaultFifoSize, kDefaultFifoSize)),
+      tcp_nodelay_(false) {
   emitter_->AttachStream(this);
 }
 
@@ -318,6 +320,50 @@ EventEmitter* MountNodeTCP::GetEventEmitter() {
 void MountNodeTCP::SetError_Locked(int pp_error_num) {
   MountNodeSocket::SetError_Locked(pp_error_num);
   emitter_->SetError_Locked();
+}
+
+Error MountNodeTCP::GetSockOpt(int lvl,
+                               int optname,
+                               void* optval,
+                               socklen_t* len) {
+  if (lvl == IPPROTO_TCP && optname == TCP_NODELAY) {
+    AUTO_LOCK(node_lock_);
+    int value = tcp_nodelay_;
+    socklen_t value_len = sizeof(value);
+    int copy_bytes = std::min(value_len, *len);
+    memcpy(optval, &value, copy_bytes);
+    *len = value_len;
+    return 0;
+  }
+
+  return MountNodeSocket::GetSockOpt(lvl, optname, optval, len);
+}
+
+
+Error MountNodeTCP::SetNoDelay_Locked() {
+  if (!IsConnected())
+    return 0;
+
+  int32_t error = TCPInterface()->SetOption(socket_resource_,
+      PP_TCPSOCKET_OPTION_NO_DELAY,
+      PP_MakeBool(tcp_nodelay_ ? PP_TRUE : PP_FALSE),
+      PP_BlockUntilComplete());
+  return PPErrorToErrno(error);
+}
+
+Error MountNodeTCP::SetSockOpt(int lvl,
+                               int optname,
+                               const void* optval,
+                               socklen_t len) {
+  if (lvl == IPPROTO_TCP && optname == TCP_NODELAY) {
+    if (len < sizeof(int))
+      return EINVAL;
+    AUTO_LOCK(node_lock_);
+    tcp_nodelay_ = *static_cast<const int*>(optval) != 0;
+    return SetNoDelay_Locked();
+  }
+
+  return MountNodeSocket::SetSockOpt(lvl, optname, optval, len);
 }
 
 void MountNodeTCP::QueueAccept() {
@@ -463,6 +509,10 @@ void MountNodeTCP::ConnectDone_Locked() {
   SetStreamFlags(SSF_CAN_SEND | SSF_CAN_RECV);
 
   emitter_->ConnectDone_Locked();
+
+  // The NODELAY option cannot be set in PPAPI before the socket
+  // is connected, but setsockopt() might have already set it.
+  SetNoDelay_Locked();
 
   // Begin the input pump
   QueueInput();

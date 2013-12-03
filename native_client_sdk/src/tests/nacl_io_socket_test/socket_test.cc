@@ -344,7 +344,7 @@ TEST_F(SocketTestWithServer, TCPConnect) {
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
 
   ASSERT_EQ(0, ki_connect(sock_, (sockaddr*) &addr, addrlen))
-      << "Failed with " << errno << ": " << strerror(errno) << "\n";
+      << "Failed with " << errno << ": " << strerror(errno);
 
   // Send two different messages to the echo server and verify the
   // response matches.
@@ -376,7 +376,7 @@ TEST_F(SocketTestWithServer, TCPConnectNonBlock) {
   SetNonBlocking(sock_);
   ASSERT_EQ(-1, ki_connect(sock_, (sockaddr*) &addr, addrlen));
   ASSERT_EQ(EINPROGRESS, errno)
-     << "expected EINPROGRESS but got: " << strerror(errno) << "\n";
+     << "expected EINPROGRESS but got: " << strerror(errno);
   ASSERT_EQ(-1, ki_connect(sock_, (sockaddr*) &addr, addrlen));
   ASSERT_EQ(EALREADY, errno);
 
@@ -420,7 +420,29 @@ TEST_F(SocketTest, Setsockopt) {
   ASSERT_EQ(-1, ki_setsockopt(sock1_, SOL_SOCKET, SO_ERROR,
                               &socket_error, len));
   ASSERT_EQ(ENOPROTOOPT, errno);
+}
 
+TEST_F(SocketTest, Sockopt_TCP_NODELAY) {
+  int option = 0;
+  socklen_t len = sizeof(option);
+  // Getting and setting TCP_NODELAY on UDP socket should fail
+  sock1_ = socket(AF_INET, SOCK_DGRAM, 0);
+  ASSERT_EQ(-1, ki_setsockopt(sock1_, IPPROTO_TCP, TCP_NODELAY, &option, len));
+  ASSERT_EQ(ENOPROTOOPT, errno);
+  ASSERT_EQ(-1, ki_getsockopt(sock1_, IPPROTO_TCP, TCP_NODELAY, &option, &len));
+  ASSERT_EQ(ENOPROTOOPT, errno);
+
+  // Getting and setting TCP_NODELAY on TCP socket should preserve value
+  sock2_ = socket(AF_INET, SOCK_STREAM, 0);
+  ASSERT_EQ(0, ki_getsockopt(sock2_, IPPROTO_TCP, TCP_NODELAY, &option, &len));
+  ASSERT_EQ(0, option);
+  ASSERT_EQ(sizeof(option), len);
+
+  option = 1;
+  len = sizeof(option);
+  ASSERT_EQ(0, ki_setsockopt(sock2_, IPPROTO_TCP, TCP_NODELAY, &option, len))
+      << "Failed with " << errno << ": " << strerror(errno);
+  ASSERT_EQ(1, option);
 }
 
 TEST_F(SocketTest, Sockopt_KEEPALIVE) {
@@ -512,7 +534,7 @@ TEST_F(SocketTestWithServer, LargeSend) {
 
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
   ASSERT_EQ(0, ki_connect(sock_, (sockaddr*) &addr, addrlen))
-      << "Failed with " << errno << ": " << strerror(errno) << "\n";
+      << "Failed with " << errno << ": " << strerror(errno);
 
   // Call send an recv until all bytes have been transfered.
   while (bytes_received < LARGE_SEND_BYTES) {
@@ -588,7 +610,7 @@ TEST_F(SocketTestTCP, Listen) {
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
   addrlen = sizeof(addr);
   ASSERT_EQ(0, ki_connect(client_sock, (sockaddr*)&addr, addrlen))
-    << "Failed with " << errno << ": " << strerror(errno) << "\n";
+    << "Failed with " << errno << ": " << strerror(errno);
 
   ASSERT_EQ(greeting_len, ki_send(client_sock, client_greeting,
                                   greeting_len, 0));
@@ -598,7 +620,7 @@ TEST_F(SocketTestTCP, Listen) {
   addrlen = sizeof(addr) + 10;
   int new_socket = accept(server_sock, (sockaddr*)&addr, &addrlen);
   ASSERT_GT(new_socket, -1)
-    << "accept failed with " << errno << ": " << strerror(errno) << "\n";
+    << "accept failed with " << errno << ": " << strerror(errno);
 
   // Verify addr and addrlen were set correctly
   ASSERT_EQ(addrlen, sizeof(sockaddr_in));
@@ -652,7 +674,7 @@ TEST_F(SocketTestTCP, ListenNonBlocking) {
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
   addrlen = sizeof(addr);
   ASSERT_EQ(0, ki_connect(client_sock, (sockaddr*)&addr, addrlen))
-    << "Failed with " << errno << ": " << strerror(errno) << "\n";
+    << "Failed with " << errno << ": " << strerror(errno);
 
   // Not poll again but with an infintie timeout.
   pollfd.fd = server_sock;
@@ -662,7 +684,7 @@ TEST_F(SocketTestTCP, ListenNonBlocking) {
   // Now non-blocking accept should return the new socket
   int new_socket = accept(server_sock, (sockaddr*)&addr, &addrlen);
   ASSERT_NE(-1, new_socket)
-    << "accept failed with: " << strerror(errno) << "\n";
+    << "accept failed with: " << strerror(errno);
   ASSERT_EQ(0, ki_close(new_socket));
 
   // Accept calls should once again fail with EAGAIN
@@ -690,7 +712,7 @@ TEST_F(SocketTestTCP, SendRecvAfterRemoteShutdown) {
   // connect to listening socket
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
   ASSERT_EQ(0, ki_connect(client_sock, (sockaddr*)&addr, addrlen))
-    << "Failed with " << errno << ": " << strerror(errno) << "\n";
+    << "Failed with " << errno << ": " << strerror(errno);
 
   addrlen = sizeof(addr);
   int new_sock = accept(server_sock, (sockaddr*)&addr, &addrlen);
@@ -732,7 +754,7 @@ TEST_F(SocketTestTCP, SendRecvAfterLocalShutdown) {
   // connect to listening socket
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
   ASSERT_EQ(0, ki_connect(client_sock, (sockaddr*)&addr, addrlen))
-    << "Failed with " << errno << ": " << strerror(errno) << "\n";
+    << "Failed with " << errno << ": " << strerror(errno);
 
   addrlen = sizeof(addr);
   int new_sock = accept(server_sock, (sockaddr*)&addr, &addrlen);
@@ -764,7 +786,7 @@ TEST_F(SocketTestTCP, SendBufferedDataAfterShutdown) {
   // connect to listening socket
   IP4ToSockAddr(LOCAL_HOST, PORT1, &addr);
   ASSERT_EQ(0, ki_connect(client_sock, (sockaddr*)&addr, addrlen))
-    << "Failed with " << errno << ": " << strerror(errno) << "\n";
+    << "Failed with " << errno << ": " << strerror(errno);
 
   addrlen = sizeof(addr);
   int new_sock = accept(server_sock, (sockaddr*)&addr, &addrlen);
