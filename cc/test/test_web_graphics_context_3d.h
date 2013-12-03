@@ -158,6 +158,11 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
       blink::WGC3Denum access);
   virtual void unmapImageCHROMIUM(blink::WGC3Duint image_id);
 
+  virtual unsigned insertSyncPoint() OVERRIDE;
+  virtual void waitSyncPoint(unsigned sync_point) OVERRIDE;
+
+  unsigned last_waited_sync_point() const { return last_waited_sync_point_; }
+
   const ContextProvider::Capabilities& test_capabilities() const {
     return test_capabilities_;
   }
@@ -352,6 +357,8 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   TestContextSupport* test_support_;
   gfx::Rect update_rect_;
   UpdateType last_update_type_;
+  unsigned next_insert_sync_point_;
+  unsigned last_waited_sync_point_;
 
   unsigned bound_buffer_;
   TextureTargets texture_targets_;

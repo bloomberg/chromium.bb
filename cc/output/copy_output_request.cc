@@ -14,6 +14,19 @@
 
 namespace cc {
 
+// static
+scoped_ptr<CopyOutputRequest> CopyOutputRequest::CreateRelayRequest(
+    const CopyOutputRequest& original_request,
+    const CopyOutputRequestCallback& result_callback) {
+  scoped_ptr<CopyOutputRequest> relay = CreateRequest(result_callback);
+  relay->force_bitmap_result_ = original_request.force_bitmap_result_;
+  relay->has_area_ = original_request.has_area_;
+  relay->area_ = original_request.area_;
+  relay->has_texture_mailbox_ = original_request.has_texture_mailbox_;
+  relay->texture_mailbox_ = original_request.texture_mailbox_;
+  return relay.Pass();
+}
+
 CopyOutputRequest::CopyOutputRequest() {}
 
 CopyOutputRequest::CopyOutputRequest(
@@ -21,8 +34,8 @@ CopyOutputRequest::CopyOutputRequest(
     const CopyOutputRequestCallback& result_callback)
     : force_bitmap_result_(force_bitmap_result),
       has_area_(false),
-      result_callback_(result_callback) {
-}
+      has_texture_mailbox_(false),
+      result_callback_(result_callback) {}
 
 CopyOutputRequest::~CopyOutputRequest() {
   if (!result_callback_.is_null())
@@ -48,6 +61,14 @@ void CopyOutputRequest::SendTextureResult(
   DCHECK(texture_mailbox.IsTexture());
   SendResult(CopyOutputResult::CreateTextureResult(
       size, texture_mailbox, release_callback.Pass()));
+}
+
+void CopyOutputRequest::SetTextureMailbox(
+    const TextureMailbox& texture_mailbox) {
+  DCHECK(!force_bitmap_result_);
+  DCHECK(texture_mailbox.IsTexture());
+  has_texture_mailbox_ = true;
+  texture_mailbox_ = texture_mailbox;
 }
 
 }  // namespace cc

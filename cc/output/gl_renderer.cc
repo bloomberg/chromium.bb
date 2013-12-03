@@ -2338,36 +2338,62 @@ void GLRenderer::GetFramebufferPixelsAsync(
   gfx::Rect window_rect = MoveFromDrawToWindowSpace(rect);
 
   if (!request->force_bitmap_result()) {
+    bool own_mailbox = !request->has_texture_mailbox();
+
     unsigned int texture_id = context_->createTexture();
-    GLC(context_, context_->bindTexture(GL_TEXTURE_2D, texture_id));
-    GLC(context_, context_->texParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-    GLC(context_, context_->texParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-    GLC(context_, context_->texParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-    GLC(context_, context_->texParameteri(
-        GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
-    GetFramebufferTexture(texture_id, RGBA_8888, window_rect);
 
     gpu::Mailbox mailbox;
-    unsigned sync_point = 0;
-    GLC(context_, context_->genMailboxCHROMIUM(mailbox.name));
-    if (mailbox.IsZero()) {
-      context_->deleteTexture(texture_id);
-      request->SendEmptyResult();
-      return;
+    if (own_mailbox) {
+      GLC(context_, context_->genMailboxCHROMIUM(mailbox.name));
+      if (mailbox.IsZero()) {
+        context_->deleteTexture(texture_id);
+        request->SendEmptyResult();
+        return;
+      }
+    } else {
+      mailbox = request->texture_mailbox().name();
+      DCHECK_EQ(static_cast<unsigned>(GL_TEXTURE_2D),
+                request->texture_mailbox().target());
+      DCHECK(!mailbox.IsZero());
+      unsigned incoming_sync_point = request->texture_mailbox().sync_point();
+      if (incoming_sync_point)
+        GLC(context_, context_->waitSyncPoint(incoming_sync_point));
     }
 
     GLC(context_, context_->bindTexture(GL_TEXTURE_2D, texture_id));
-    GLC(context_, context_->produceTextureCHROMIUM(
-        GL_TEXTURE_2D, mailbox.name));
+    if (own_mailbox) {
+      GLC(context_,
+          context_->texParameteri(
+              GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+      GLC(context_,
+          context_->texParameteri(
+              GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+      GLC(context_,
+          context_->texParameteri(
+              GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+      GLC(context_,
+          context_->texParameteri(
+              GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+      GLC(context_,
+          context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name));
+    } else {
+      GLC(context_,
+          context_->consumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name));
+    }
+    GetFramebufferTexture(texture_id, RGBA_8888, window_rect);
     GLC(context_, context_->bindTexture(GL_TEXTURE_2D, 0));
-    sync_point = context_->insertSyncPoint();
+
+    unsigned sync_point = context_->insertSyncPoint();
     TextureMailbox texture_mailbox(mailbox, GL_TEXTURE_2D, sync_point);
-    scoped_ptr<SingleReleaseCallback> release_callback =
-        texture_mailbox_deleter_->GetReleaseCallback(
-            output_surface_->context_provider(), texture_id);
+
+    scoped_ptr<SingleReleaseCallback> release_callback;
+    if (own_mailbox) {
+      release_callback = texture_mailbox_deleter_->GetReleaseCallback(
+          output_surface_->context_provider(), texture_id);
+    } else {
+      context_->deleteTexture(texture_id);
+    }
+
     request->SendTextureResult(window_rect.size(),
                                texture_mailbox,
                                release_callback.Pass());

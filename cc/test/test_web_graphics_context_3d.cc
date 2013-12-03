@@ -79,6 +79,8 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       scale_factor_(-1.f),
       test_support_(NULL),
       last_update_type_(NoUpdate),
+      next_insert_sync_point_(1),
+      last_waited_sync_point_(0),
       bound_buffer_(0),
       peak_transfer_buffer_memory_used_bytes_(0),
       weak_ptr_factory_(this) {
@@ -603,6 +605,15 @@ void TestWebGraphicsContext3D::unmapImageCHROMIUM(
     blink::WGC3Duint image_id) {
   base::AutoLock lock(namespace_->lock);
   DCHECK_GT(namespace_->images.count(image_id), 0u);
+}
+
+unsigned TestWebGraphicsContext3D::insertSyncPoint() {
+  return next_insert_sync_point_++;
+}
+
+void TestWebGraphicsContext3D::waitSyncPoint(unsigned sync_point) {
+  if (sync_point)
+    last_waited_sync_point_ = sync_point;
 }
 
 size_t TestWebGraphicsContext3D::NumTextures() const {
