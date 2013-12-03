@@ -34,9 +34,10 @@ var WEB_VIEW_ATTRIBUTE_MINWIDTH = 'minwidth';
 
 /** @type {Array.<string>} */
 var WEB_VIEW_ATTRIBUTES = [
+    'allowtransparency',
+    'autosize',
     'name',
     'partition',
-    'autosize',
     WEB_VIEW_ATTRIBUTE_MINHEIGHT,
     WEB_VIEW_ATTRIBUTE_MINWIDTH,
     WEB_VIEW_ATTRIBUTE_MAXHEIGHT,

@@ -60,6 +60,11 @@ class CONTENT_EXPORT BrowserPlugin :
   std::string GetNameAttribute() const;
   // Parse the name attribute value.
   void ParseNameAttribute();
+  // Get the allowtransparency attribute value.
+  bool GetAllowTransparencyAttribute() const;
+  // Parse the allowtransparency attribute and adjust transparency of
+  // BrowserPlugin accordingly.
+  void ParseAllowTransparencyAttribute();
   // Get the src attribute value of the BrowserPlugin instance.
   std::string GetSrcAttribute() const;
   // Parse the src attribute value of the BrowserPlugin instance.
@@ -134,10 +139,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // Notify the plugin about a compositor commit so that frame ACKs could be
   // sent, if needed.
   void DidCommitCompositorFrame();
-
-  // Apply opacity settings on the composited layers in embedder and send a
-  // message to the guest renderer to enable or disable transparent background.
-  void SetContentsOpaque(bool opaque);
 
   // Returns whether a message should be forwarded to BrowserPlugin.
   static bool ShouldForwardToBrowserPlugin(const IPC::Message& message);
@@ -335,9 +336,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // Tracks the visibility of the browser plugin regardless of the whole
   // embedder RenderView's visibility.
   bool visible_;
-  // Tracks the opacity of the compositing helper's layers and the guest
-  // renderer process.
-  bool opaque_;
 
   WebCursor cursor_;
 

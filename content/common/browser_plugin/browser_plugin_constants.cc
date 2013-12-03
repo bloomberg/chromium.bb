@@ -31,6 +31,7 @@ const char kEventInternalInstanceIDAllocated[] = "instanceid-allocated";
 const char kEventInternalTrackedObjectGone[] = "trackedobjectgone";
 
 // Attributes.
+const char kAttributeAllowTransparency[] = "allowtransparency";
 const char kAttributeApi[] = "api";
 const char kAttributeAutoSize[] = "autosize";
 const char kAttributeContentWindow[] = "contentWindow";

@@ -312,6 +312,41 @@ class BrowserPluginPropertyBinding {
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBinding);
 };
 
+class BrowserPluginPropertyBindingAllowTransparency
+    : public BrowserPluginPropertyBinding {
+ public:
+  BrowserPluginPropertyBindingAllowTransparency()
+      : BrowserPluginPropertyBinding(
+          browser_plugin::kAttributeAllowTransparency) {
+  }
+  virtual bool GetProperty(BrowserPluginBindings* bindings,
+                           NPVariant* result) OVERRIDE {
+    bool allow_transparency =
+        bindings->instance()->GetAllowTransparencyAttribute();
+    BOOLEAN_TO_NPVARIANT(allow_transparency, *result);
+    return true;
+  }
+  virtual bool SetProperty(BrowserPluginBindings* bindings,
+                           NPObject* np_obj,
+                           const NPVariant* variant) OVERRIDE {
+    std::string value = StringFromNPVariant(*variant);
+    if (!bindings->instance()->HasDOMAttribute(name())) {
+      UpdateDOMAttribute(bindings, value);
+      bindings->instance()->ParseAllowTransparencyAttribute();
+    } else {
+      UpdateDOMAttribute(bindings, value);
+    }
+    return true;
+  }
+  virtual void RemoveProperty(BrowserPluginBindings* bindings,
+                              NPObject* np_obj) OVERRIDE {
+    bindings->instance()->RemoveDOMAttribute(name());
+    bindings->instance()->ParseAllowTransparencyAttribute();
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserPluginPropertyBindingAllowTransparency);
+};
+
 class BrowserPluginPropertyBindingAutoSize
     : public BrowserPluginPropertyBinding {
  public:
@@ -638,6 +673,8 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
   method_bindings_.push_back(new BrowserPluginBindingAttach);
   method_bindings_.push_back(new BrowserPluginBindingAttachWindowTo);
 
+  property_bindings_.push_back(
+      new BrowserPluginPropertyBindingAllowTransparency);
   property_bindings_.push_back(new BrowserPluginPropertyBindingAutoSize);
   property_bindings_.push_back(new BrowserPluginPropertyBindingContentWindow);
   property_bindings_.push_back(new BrowserPluginPropertyBindingMaxHeight);

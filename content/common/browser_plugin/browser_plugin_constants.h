@@ -31,6 +31,7 @@ extern const char kEventInternalInstanceIDAllocated[];
 extern const char kEventInternalTrackedObjectGone[];
 
 // Attributes.
+extern const char kAttributeAllowTransparency[];
 extern const char kAttributeApi[];
 extern const char kAttributeAutoSize[];
 extern const char kAttributeContentWindow[];
