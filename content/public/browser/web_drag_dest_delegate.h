@@ -55,7 +55,7 @@ class WebDragDestDelegate {
   // drag. Not every drag will trigger these.
   virtual void OnReceiveDataFromGtk(GtkSelectionData* data) = 0;
   virtual void OnReceiveProcessedData(const GURL& url,
-                                      const string16& title) = 0;
+                                      const base::string16& title) = 0;
 #elif defined(USE_AURA)
   // Called at the start of every drag to supply the data associated with the
   // drag.

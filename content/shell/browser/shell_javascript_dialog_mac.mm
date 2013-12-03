@@ -66,7 +66,7 @@
     return;
 
   bool success = returnCode == NSAlertFirstButtonReturn;
-  string16 input;
+  base::string16 input;
   if (textField_)
     input = base::SysNSStringToUTF16([textField_ stringValue]);
 
@@ -89,8 +89,8 @@ ShellJavaScriptDialog::ShellJavaScriptDialog(
     ShellJavaScriptDialogManager* manager,
     gfx::NativeWindow parent_window,
     JavaScriptMessageType message_type,
-    const string16& message_text,
-    const string16& default_prompt_text,
+    const base::string16& message_text,
+    const base::string16& default_prompt_text,
     const JavaScriptDialogManager::DialogClosedCallback& callback)
     : manager_(manager),
       callback_(callback) {

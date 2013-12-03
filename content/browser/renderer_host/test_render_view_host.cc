@@ -269,7 +269,7 @@ TestRenderViewHost::~TestRenderViewHost() {
 }
 
 bool TestRenderViewHost::CreateRenderView(
-    const string16& frame_name,
+    const base::string16& frame_name,
     int opener_route_id,
     int32 max_page_id) {
   DCHECK(!render_view_created_);

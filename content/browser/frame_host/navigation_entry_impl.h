@@ -29,7 +29,7 @@ class CONTENT_EXPORT NavigationEntryImpl
                       int page_id,
                       const GURL& url,
                       const Referrer& referrer,
-                      const string16& title,
+                      const base::string16& title,
                       PageTransition transition_type,
                       bool is_renderer_initiated);
   virtual ~NavigationEntryImpl();
@@ -45,13 +45,13 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual const Referrer& GetReferrer() const OVERRIDE;
   virtual void SetVirtualURL(const GURL& url) OVERRIDE;
   virtual const GURL& GetVirtualURL() const OVERRIDE;
-  virtual void SetTitle(const string16& title) OVERRIDE;
-  virtual const string16& GetTitle() const OVERRIDE;
+  virtual void SetTitle(const base::string16& title) OVERRIDE;
+  virtual const base::string16& GetTitle() const OVERRIDE;
   virtual void SetPageState(const PageState& state) OVERRIDE;
   virtual const PageState& GetPageState() const OVERRIDE;
   virtual void SetPageID(int page_id) OVERRIDE;
   virtual int32 GetPageID() const OVERRIDE;
-  virtual const string16& GetTitleForDisplay(
+  virtual const base::string16& GetTitleForDisplay(
       const std::string& languages) const OVERRIDE;
   virtual bool IsViewSourceMode() const OVERRIDE;
   virtual void SetTransitionType(PageTransition transition_type) OVERRIDE;
@@ -80,9 +80,9 @@ class CONTENT_EXPORT NavigationEntryImpl
   virtual void SetFrameToNavigate(const std::string& frame_name) OVERRIDE;
   virtual const std::string& GetFrameToNavigate() const OVERRIDE;
   virtual void SetExtraData(const std::string& key,
-                            const string16& data) OVERRIDE;
+                            const base::string16& data) OVERRIDE;
   virtual bool GetExtraData(const std::string& key,
-                            string16* data) const OVERRIDE;
+                            base::string16* data) const OVERRIDE;
   virtual void ClearExtraData(const std::string& key) OVERRIDE;
   virtual void SetHttpStatusCode(int http_status_code) OVERRIDE;
   virtual int GetHttpStatusCode() const OVERRIDE;
@@ -243,7 +243,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   Referrer referrer_;
   GURL virtual_url_;
   bool update_virtual_url_with_url_;
-  string16 title_;
+  base::string16 title_;
   FaviconStatus favicon_;
   PageState page_state_;
   int32 page_id_;
@@ -290,7 +290,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   // us from having to do URL formatting on the URL every time the title is
   // displayed. When the URL, virtual URL, or title is set, this should be
   // cleared to force a refresh.
-  mutable string16 cached_display_title_;
+  mutable base::string16 cached_display_title_;
 
   // In case a navigation is transferred to a new RVH but the request has
   // been generated in the renderer already, this identifies the old request so
@@ -342,7 +342,7 @@ class CONTENT_EXPORT NavigationEntryImpl
   // Used to store extra data to support browser features. This member is not
   // persisted, unless specific data is taken out/put back in at save/restore
   // time (see TabNavigation for an example of this).
-  std::map<std::string, string16> extra_data_;
+  std::map<std::string, base::string16> extra_data_;
 
   // Copy and assignment is explicitly allowed for this class.
 };

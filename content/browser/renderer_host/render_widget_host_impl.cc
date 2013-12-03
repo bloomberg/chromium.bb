@@ -1321,7 +1321,7 @@ void RenderWidgetHostImpl::CandidateWindowHidden() {
 }
 
 void RenderWidgetHostImpl::ImeSetComposition(
-    const string16& text,
+    const base::string16& text,
     const std::vector<blink::WebCompositionUnderline>& underlines,
     int selection_start,
     int selection_end) {
@@ -1330,7 +1330,7 @@ void RenderWidgetHostImpl::ImeSetComposition(
 }
 
 void RenderWidgetHostImpl::ImeConfirmComposition(
-    const string16& text,
+    const base::string16& text,
     const gfx::Range& replacement_range,
     bool keep_selection) {
   Send(new ViewMsg_ImeConfirmComposition(
@@ -1338,7 +1338,7 @@ void RenderWidgetHostImpl::ImeConfirmComposition(
 }
 
 void RenderWidgetHostImpl::ImeCancelComposition() {
-  Send(new ViewMsg_ImeSetComposition(GetRoutingID(), string16(),
+  Send(new ViewMsg_ImeSetComposition(GetRoutingID(), base::string16(),
             std::vector<blink::WebCompositionUnderline>(), 0, 0));
 }
 
@@ -1442,7 +1442,7 @@ void RenderWidgetHostImpl::OnClose() {
 }
 
 void RenderWidgetHostImpl::OnSetTooltipText(
-    const string16& tooltip_text,
+    const base::string16& tooltip_text,
     WebTextDirection text_direction_hint) {
   // First, add directionality marks around tooltip text if necessary.
   // A naive solution would be to simply always wrap the text. However, on
@@ -1457,7 +1457,7 @@ void RenderWidgetHostImpl::OnSetTooltipText(
   // trying to detect the directionality from the tooltip text rather than the
   // element direction.  One could argue that would be a preferable solution
   // but we use the current approach to match Fx & IE's behavior.
-  string16 wrapped_tooltip_text = tooltip_text;
+  base::string16 wrapped_tooltip_text = tooltip_text;
   if (!tooltip_text.empty()) {
     if (text_direction_hint == blink::WebTextDirectionLeftToRight) {
       // Force the tooltip to have LTR directionality.
@@ -1935,11 +1935,11 @@ void RenderWidgetHostImpl::ScrollBackingStoreRect(const gfx::Vector2d& delta,
   backing_store->ScrollBackingStore(delta, clip_rect, view_size);
 }
 
-void RenderWidgetHostImpl::Replace(const string16& word) {
+void RenderWidgetHostImpl::Replace(const base::string16& word) {
   Send(new InputMsg_Replace(routing_id_, word));
 }
 
-void RenderWidgetHostImpl::ReplaceMisspelling(const string16& word) {
+void RenderWidgetHostImpl::ReplaceMisspelling(const base::string16& word) {
   Send(new InputMsg_ReplaceMisspelling(routing_id_, word));
 }
 

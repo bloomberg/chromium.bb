@@ -45,7 +45,7 @@ void FakeAccessTokenStore::DefaultLoadAccessTokens(
 }
 
 void FakeAccessTokenStore::DefaultSaveAccessToken(
-    const GURL& server_url, const string16& access_token) {
+    const GURL& server_url, const base::string16& access_token) {
   DCHECK(server_url.is_valid());
   access_token_set_[server_url] = access_token;
 }

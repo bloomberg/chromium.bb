@@ -47,7 +47,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
   // RenderWidgetHostViewPort implementation.
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
-  virtual void SelectionChanged(const string16& text,
+  virtual void SelectionChanged(const base::string16& text,
                                 size_t offset,
                                 const gfx::Range& range) OVERRIDE;
   virtual void SetBackground(const SkBitmap& background) OVERRIDE;
@@ -56,7 +56,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   virtual float GetOverdrawBottomHeight() const OVERRIDE;
   virtual bool IsShowingContextMenu() const OVERRIDE;
   virtual void SetShowingContextMenu(bool showing_menu) OVERRIDE;
-  virtual string16 GetSelectedText() const OVERRIDE;
+  virtual base::string16 GetSelectedText() const OVERRIDE;
   virtual bool IsMouseLocked() OVERRIDE;
   virtual void UnhandledWheelEvent(
       const blink::WebMouseWheelEvent& event) OVERRIDE;
@@ -140,7 +140,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   bool showing_context_menu_;
 
   // A buffer containing the text inside and around the current selection range.
-  string16 selection_text_;
+  base::string16 selection_text_;
 
   // The offset of the text stored in |selection_text_| relative to the start of
   // the web page.

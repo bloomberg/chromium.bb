@@ -94,7 +94,7 @@ bool TestWebContents::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host, int opener_route_id) {
   // This will go to a TestRenderViewHost.
   static_cast<RenderViewHostImpl*>(
-      render_view_host)->CreateRenderView(string16(),
+      render_view_host)->CreateRenderView(base::string16(),
                                           opener_route_id,
                                           -1);
   return true;
@@ -212,7 +212,7 @@ void TestWebContents::TestDidFailLoadWithError(
     const GURL& url,
     bool is_main_frame,
     int error_code,
-    const string16& error_description) {
+    const base::string16& error_description) {
   ViewHostMsg_DidFailLoadWithError msg(
       0, frame_id, url, is_main_frame, error_code, error_description);
   OnMessageReceived(GetRenderViewHost(), msg);

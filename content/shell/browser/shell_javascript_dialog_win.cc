@@ -34,7 +34,7 @@ INT_PTR CALLBACK ShellJavaScriptDialog::DialogProc(HWND dialog,
           GetWindowLongPtr(dialog, DWLP_USER));
       if (owner->dialog_win_) {
         owner->dialog_win_ = 0;
-        owner->callback_.Run(false, string16());
+        owner->callback_.Run(false, base::string16());
         owner->manager_->DialogClosed(owner);
       }
       break;
@@ -42,7 +42,7 @@ INT_PTR CALLBACK ShellJavaScriptDialog::DialogProc(HWND dialog,
     case WM_COMMAND: {
       ShellJavaScriptDialog* owner = reinterpret_cast<ShellJavaScriptDialog*>(
           GetWindowLongPtr(dialog, DWLP_USER));
-      string16 user_input;
+      base::string16 user_input;
       bool finish = false;
       bool result;
       switch (LOWORD(wparam)) {
@@ -79,8 +79,8 @@ ShellJavaScriptDialog::ShellJavaScriptDialog(
     ShellJavaScriptDialogManager* manager,
     gfx::NativeWindow parent_window,
     JavaScriptMessageType message_type,
-    const string16& message_text,
-    const string16& default_prompt_text,
+    const base::string16& message_text,
+    const base::string16& default_prompt_text,
     const JavaScriptDialogManager::DialogClosedCallback& callback)
     : manager_(manager),
       callback_(callback),

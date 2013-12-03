@@ -260,7 +260,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
       contents()->GetRenderManagerForTesting()->current_host());
 
   // Send an update title message and make sure it works.
-  const string16 ntp_title = ASCIIToUTF16("NTP Title");
+  const base::string16 ntp_title = ASCIIToUTF16("NTP Title");
   blink::WebTextDirection direction = blink::WebTextDirectionLeftToRight;
   EXPECT_TRUE(ntp_rvh->OnMessageReceived(
       ViewHostMsg_UpdateTitle(rvh()->GetRoutingID(), 0, ntp_title, direction)));
@@ -288,7 +288,7 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   dest_rvh->SendNavigate(101, kDestUrl);
 
   // The new RVH should be able to update its title.
-  const string16 dest_title = ASCIIToUTF16("Google");
+  const base::string16 dest_title = ASCIIToUTF16("Google");
   EXPECT_TRUE(dest_rvh->OnMessageReceived(
       ViewHostMsg_UpdateTitle(rvh()->GetRoutingID(), 101, dest_title,
                               direction)));
@@ -308,9 +308,9 @@ TEST_F(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   MockRenderProcessHost* ntp_process_host =
       static_cast<MockRenderProcessHost*>(ntp_rvh->GetProcess());
   ntp_process_host->sink().ClearMessages();
-  const string16 msg = ASCIIToUTF16("Message");
+  const base::string16 msg = ASCIIToUTF16("Message");
   bool result = false;
-  string16 unused;
+  base::string16 unused;
   ViewHostMsg_RunBeforeUnloadConfirm before_unload_msg(
       rvh()->GetRoutingID(), kChromeURL, msg, false, &result, &unused);
   // Enable pumping for check in BrowserMessageFilter::CheckCanDispatchOnUI.
@@ -604,7 +604,7 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
   const GURL kUrl1("http://www.google.com/");
   NavigationEntryImpl entry1(
       NULL /* instance */, -1 /* page_id */, kUrl1, Referrer(),
-      string16() /* title */, PAGE_TRANSITION_TYPED,
+      base::string16() /* title */, PAGE_TRANSITION_TYPED,
       false /* is_renderer_init */);
   host = manager.Navigate(entry1);
 
@@ -626,7 +626,7 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
   NavigationEntryImpl entry2(
       NULL /* instance */, -1 /* page_id */, kUrl2,
       Referrer(kUrl1, blink::WebReferrerPolicyDefault),
-      string16() /* title */, PAGE_TRANSITION_LINK,
+      base::string16() /* title */, PAGE_TRANSITION_LINK,
       true /* is_renderer_init */);
   host = manager.Navigate(entry2);
 
@@ -646,7 +646,7 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
   NavigationEntryImpl entry3(
       NULL /* instance */, -1 /* page_id */, kUrl3,
       Referrer(kUrl2, blink::WebReferrerPolicyDefault),
-      string16() /* title */, PAGE_TRANSITION_LINK,
+      base::string16() /* title */, PAGE_TRANSITION_LINK,
       false /* is_renderer_init */);
   host = manager.Navigate(entry3);
 
@@ -693,7 +693,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
   NavigationEntryImpl entry1(NULL /* instance */, -1 /* page_id */, kUrl1,
-                             Referrer(), string16() /* title */,
+                             Referrer(), base::string16() /* title */,
                              PAGE_TRANSITION_TYPED,
                              false /* is_renderer_init */);
   RenderViewHost* host = manager.Navigate(entry1);
@@ -721,7 +721,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
   const GURL kUrl2("http://www.example.com");
   NavigationEntryImpl entry2(
       NULL /* instance */, -1 /* page_id */, kUrl2, Referrer(),
-      string16() /* title */, PAGE_TRANSITION_TYPED,
+      base::string16() /* title */, PAGE_TRANSITION_TYPED,
       false /* is_renderer_init */);
   RenderViewHostImpl* host2 = static_cast<RenderViewHostImpl*>(
       manager.Navigate(entry2));
@@ -772,7 +772,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyReNavigation) {
   // 3) Cross-site navigate to next site before 2) has committed. --------------
   const GURL kUrl3("http://webkit.org/");
   NavigationEntryImpl entry3(NULL /* instance */, -1 /* page_id */, kUrl3,
-                             Referrer(), string16() /* title */,
+                             Referrer(), base::string16() /* title */,
                              PAGE_TRANSITION_TYPED,
                              false /* is_renderer_init */);
   test_process_host->sink().ClearMessages();
@@ -836,7 +836,7 @@ TEST_F(RenderFrameHostManagerTest, WebUI) {
 
   const GURL kUrl("chrome://foo");
   NavigationEntryImpl entry(NULL /* instance */, -1 /* page_id */, kUrl,
-                            Referrer(), string16() /* title */,
+                            Referrer(), base::string16() /* title */,
                             PAGE_TRANSITION_TYPED,
                             false /* is_renderer_init */);
   RenderViewHost* host = manager.Navigate(entry);
@@ -880,12 +880,12 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
   manager1.Init(
       browser_context(), blank_instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
   // Test the case that new RVH is considered live.
-  manager1.current_host()->CreateRenderView(string16(), -1, -1);
+  manager1.current_host()->CreateRenderView(base::string16(), -1, -1);
 
   // Navigate to a WebUI page.
   const GURL kUrl1("chrome://foo");
   NavigationEntryImpl entry1(NULL /* instance */, -1 /* page_id */, kUrl1,
-                             Referrer(), string16() /* title */,
+                             Referrer(), base::string16() /* title */,
                              PAGE_TRANSITION_TYPED,
                              false /* is_renderer_init */);
   RenderViewHost* host1 = manager1.Navigate(entry1);
@@ -911,11 +911,11 @@ TEST_F(RenderFrameHostManagerTest, WebUIInNewTab) {
       browser_context(), webui_instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
   // Make sure the new RVH is considered live.  This is usually done in
   // RenderWidgetHost::Init when opening a new tab from a link.
-  manager2.current_host()->CreateRenderView(string16(), -1, -1);
+  manager2.current_host()->CreateRenderView(base::string16(), -1, -1);
 
   const GURL kUrl2("chrome://foo/bar");
   NavigationEntryImpl entry2(NULL /* instance */, -1 /* page_id */, kUrl2,
-                             Referrer(), string16() /* title */,
+                             Referrer(), base::string16() /* title */,
                              PAGE_TRANSITION_LINK,
                              true /* is_renderer_init */);
   RenderViewHost* host2 = manager2.Navigate(entry2);
@@ -1107,7 +1107,7 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
   contents()->SetOpener(opener1.get());
 
   // Make sure the new opener RVH is considered live.
-  opener1_manager->current_host()->CreateRenderView(string16(), -1, -1);
+  opener1_manager->current_host()->CreateRenderView(base::string16(), -1, -1);
 
   // Use a cross-process navigation in the opener to swap out the old RVH.
   EXPECT_FALSE(opener1_manager->GetSwappedOutRenderViewHost(
@@ -1202,7 +1202,7 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
   const GURL kUrl1("http://www.google.com/");
   NavigationEntryImpl entry1(
       NULL /* instance */, -1 /* page_id */, kUrl1, Referrer(),
-      string16() /* title */, PAGE_TRANSITION_TYPED,
+      base::string16() /* title */, PAGE_TRANSITION_TYPED,
       false /* is_renderer_init */);
   host = manager.Navigate(entry1);
 
@@ -1225,7 +1225,7 @@ TEST_F(RenderFrameHostManagerTest, NoSwapOnGuestNavigations) {
   NavigationEntryImpl entry2(
       NULL /* instance */, -1 /* page_id */, kUrl2,
       Referrer(kUrl1, blink::WebReferrerPolicyDefault),
-      string16() /* title */, PAGE_TRANSITION_LINK,
+      base::string16() /* title */, PAGE_TRANSITION_LINK,
       true /* is_renderer_init */);
   host = manager.Navigate(entry2);
 
@@ -1264,7 +1264,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   // 1) The first navigation. --------------------------
   const GURL kUrl1("http://www.google.com/");
   NavigationEntryImpl entry1(NULL /* instance */, -1 /* page_id */, kUrl1,
-                             Referrer(), string16() /* title */,
+                             Referrer(), base::string16() /* title */,
                              PAGE_TRANSITION_TYPED,
                              false /* is_renderer_init */);
   RenderViewHost* host = manager.Navigate(entry1);
@@ -1291,7 +1291,7 @@ TEST_F(RenderFrameHostManagerTest, NavigateWithEarlyClose) {
   const GURL kUrl2("http://www.example.com");
   NavigationEntryImpl entry2(
       NULL /* instance */, -1 /* page_id */, kUrl2, Referrer(),
-      string16() /* title */, PAGE_TRANSITION_TYPED,
+      base::string16() /* title */, PAGE_TRANSITION_TYPED,
       false /* is_renderer_init */);
   RenderViewHostImpl* host2 = static_cast<RenderViewHostImpl*>(
       manager.Navigate(entry2));

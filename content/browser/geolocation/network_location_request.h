@@ -33,7 +33,7 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
   // server or network error - either no response or a 500 error code.
   typedef base::Callback<void(const Geoposition& /* position */,
                               bool /* server_error */,
-                              const string16& /* access_token */,
+                              const base::string16& /* access_token */,
                               const WifiData& /* wifi_data */)>
       LocationResponseCallback;
 
@@ -45,7 +45,7 @@ class NetworkLocationRequest : private net::URLFetcherDelegate {
 
   // Makes a new request. Returns true if the new request was successfully
   // started. In all cases, any currently pending request will be canceled.
-  bool MakeRequest(const string16& access_token,
+  bool MakeRequest(const base::string16& access_token,
                    const WifiData& wifi_data,
                    const base::Time& timestamp);
 

@@ -14,9 +14,9 @@ namespace content {
 TEST(WebUIMessageHandlerTest, ExtractIntegerValue) {
   ListValue list;
   int value, zero_value = 0, neg_value = -1234, pos_value = 1234;
-  string16 zero_string(UTF8ToUTF16("0"));
-  string16 neg_string(UTF8ToUTF16("-1234"));
-  string16 pos_string(UTF8ToUTF16("1234"));
+  base::string16 zero_string(UTF8ToUTF16("0"));
+  base::string16 neg_string(UTF8ToUTF16("-1234"));
+  base::string16 pos_string(UTF8ToUTF16("1234"));
 
   list.Append(new base::FundamentalValue(zero_value));
   EXPECT_TRUE(WebUIMessageHandler::ExtractIntegerValue(&list, &value));
@@ -51,9 +51,9 @@ TEST(WebUIMessageHandlerTest, ExtractIntegerValue) {
 TEST(WebUIMessageHandlerTest, ExtractDoubleValue) {
   base::ListValue list;
   double value, zero_value = 0.0, neg_value = -1234.5, pos_value = 1234.5;
-  string16 zero_string(UTF8ToUTF16("0"));
-  string16 neg_string(UTF8ToUTF16("-1234.5"));
-  string16 pos_string(UTF8ToUTF16("1234.5"));
+  base::string16 zero_string(UTF8ToUTF16("0"));
+  base::string16 neg_string(UTF8ToUTF16("-1234.5"));
+  base::string16 pos_string(UTF8ToUTF16("1234.5"));
 
   list.Append(new base::FundamentalValue(zero_value));
   EXPECT_TRUE(WebUIMessageHandler::ExtractDoubleValue(&list, &value));
@@ -87,10 +87,10 @@ TEST(WebUIMessageHandlerTest, ExtractDoubleValue) {
 
 TEST(WebUIMessageHandlerTest, ExtractStringValue) {
   base::ListValue list;
-  string16 in_string(UTF8ToUTF16(
+  base::string16 in_string(UTF8ToUTF16(
       "The facts, though interesting, are irrelevant."));
   list.Append(new base::StringValue(in_string));
-  string16 out_string = WebUIMessageHandler::ExtractStringValue(&list);
+  base::string16 out_string = WebUIMessageHandler::ExtractStringValue(&list);
   EXPECT_EQ(in_string, out_string);
 }
 

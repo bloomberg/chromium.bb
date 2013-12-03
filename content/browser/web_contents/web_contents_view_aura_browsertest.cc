@@ -196,14 +196,14 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
     {
       // Do a swipe-right now. That should navigate backwards.
-      string16 expected_title = ASCIIToUTF16("Title: #1");
+      base::string16 expected_title = ASCIIToUTF16("Title: #1");
       content::TitleWatcher title_watcher(web_contents, expected_title);
       generator.GestureScrollSequence(
           gfx::Point(bounds.x() + 2, bounds.y() + 10),
           gfx::Point(bounds.right() - 10, bounds.y() + 10),
           base::TimeDelta::FromMilliseconds(kScrollDurationMs),
           kScrollSteps);
-      string16 actual_title = title_watcher.WaitAndGetTitle();
+      base::string16 actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
       value = content::ExecuteScriptAndGetValue(view_host, "get_current()");
       ASSERT_TRUE(value->GetAsInteger(&index));
@@ -214,14 +214,14 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
     {
       // Do a fling-right now. That should navigate backwards.
-      string16 expected_title = ASCIIToUTF16("Title:");
+      base::string16 expected_title = ASCIIToUTF16("Title:");
       content::TitleWatcher title_watcher(web_contents, expected_title);
       generator.GestureScrollSequence(
           gfx::Point(bounds.x() + 2, bounds.y() + 10),
           gfx::Point(bounds.right() - 10, bounds.y() + 10),
           base::TimeDelta::FromMilliseconds(kScrollDurationMs),
           kScrollSteps);
-      string16 actual_title = title_watcher.WaitAndGetTitle();
+      base::string16 actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
       value = content::ExecuteScriptAndGetValue(view_host, "get_current()");
       ASSERT_TRUE(value->GetAsInteger(&index));
@@ -232,14 +232,14 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
     {
       // Do a swipe-left now. That should navigate forward.
-      string16 expected_title = ASCIIToUTF16("Title: #1");
+      base::string16 expected_title = ASCIIToUTF16("Title: #1");
       content::TitleWatcher title_watcher(web_contents, expected_title);
       generator.GestureScrollSequence(
           gfx::Point(bounds.right() - 10, bounds.y() + 10),
           gfx::Point(bounds.x() + 2, bounds.y() + 10),
           base::TimeDelta::FromMilliseconds(kScrollDurationMs),
           kScrollSteps);
-      string16 actual_title = title_watcher.WaitAndGetTitle();
+      base::string16 actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
       value = content::ExecuteScriptAndGetValue(view_host, "get_current()");
       ASSERT_TRUE(value->GetAsInteger(&index));
@@ -438,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, OverscrollScreenshot) {
   {
     // Now, swipe right to navigate backwards. This should navigate away from
     // index 3 to index 2, and index 3 should have a screenshot.
-    string16 expected_title = ASCIIToUTF16("Title: #2");
+    base::string16 expected_title = ASCIIToUTF16("Title: #2");
     content::TitleWatcher title_watcher(web_contents, expected_title);
     aura::Window* content = web_contents->GetView()->GetContentNativeView();
     gfx::Rect bounds = content->GetBoundsInRootWindow();
@@ -448,7 +448,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, OverscrollScreenshot) {
         gfx::Point(bounds.right() - 10, bounds.y() + 10),
         base::TimeDelta::FromMilliseconds(20),
         1);
-    string16 actual_title = title_watcher.WaitAndGetTitle();
+    base::string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
     EXPECT_EQ(2, GetCurrentIndex());
     screenshot_manager()->WaitUntilScreenshotIsReady();
@@ -469,10 +469,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, OverscrollScreenshot) {
 
   {
     // Navigate back in history.
-    string16 expected_title = ASCIIToUTF16("Title: #3");
+    base::string16 expected_title = ASCIIToUTF16("Title: #3");
     content::TitleWatcher title_watcher(web_contents, expected_title);
     web_contents->GetController().GoBack();
-    string16 actual_title = title_watcher.WaitAndGetTitle();
+    base::string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
     EXPECT_EQ(3, GetCurrentIndex());
     screenshot_manager()->WaitUntilScreenshotIsReady();
@@ -641,7 +641,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
   // Do a swipe left to start a forward navigation. Then quickly do a swipe
   // right.
-  string16 expected_title = ASCIIToUTF16("Title: #2");
+  base::string16 expected_title = ASCIIToUTF16("Title: #2");
   content::TitleWatcher title_watcher(web_contents, expected_title);
   NavigationWatcher nav_watcher(web_contents);
 
@@ -657,7 +657,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       gfx::Point(bounds.right() - 10, bounds.y() + 10),
       base::TimeDelta::FromMilliseconds(2000),
       10);
-  string16 actual_title = title_watcher.WaitAndGetTitle();
+  base::string16 actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
 
   EXPECT_EQ(2, GetCurrentIndex());

@@ -149,7 +149,7 @@ WebContentDecryptionModuleSessionImpl* ReferenceIdAdapter::GetSession(
 //------------------------------------------------------------------------------
 
 WebContentDecryptionModuleImpl*
-WebContentDecryptionModuleImpl::Create(const string16& key_system) {
+WebContentDecryptionModuleImpl::Create(const base::string16& key_system) {
   // TODO(ddorwin): Guard against this in supported types check and remove this.
   // Chromium only supports ASCII key systems.
   if (!IsStringASCII(key_system)) {

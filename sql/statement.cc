@@ -149,7 +149,7 @@ bool Statement::BindString(int col, const std::string& val) {
                                    SQLITE_TRANSIENT));
 }
 
-bool Statement::BindString16(int col, const string16& value) {
+bool Statement::BindString16(int col, const base::string16& value) {
   return BindString(col, UTF16ToUTF8(value));
 }
 
@@ -235,12 +235,12 @@ std::string Statement::ColumnString(int col) const {
   return result;
 }
 
-string16 Statement::ColumnString16(int col) const {
+base::string16 Statement::ColumnString16(int col) const {
   if (!CheckValid())
-    return string16();
+    return base::string16();
 
   std::string s = ColumnString(col);
-  return !s.empty() ? UTF8ToUTF16(s) : string16();
+  return !s.empty() ? UTF8ToUTF16(s) : base::string16();
 }
 
 int Statement::ColumnByteLength(int col) const {
@@ -271,16 +271,16 @@ bool Statement::ColumnBlobAsString(int col, std::string* blob) {
   return true;
 }
 
-bool Statement::ColumnBlobAsString16(int col, string16* val) const {
+bool Statement::ColumnBlobAsString16(int col, base::string16* val) const {
   if (!CheckValid())
     return false;
 
   const void* data = ColumnBlob(col);
-  size_t len = ColumnByteLength(col) / sizeof(char16);
+  size_t len = ColumnByteLength(col) / sizeof(base::char16);
   val->resize(len);
   if (val->size() != len)
     return false;
-  val->assign(reinterpret_cast<const char16*>(data), len);
+  val->assign(reinterpret_cast<const base::char16*>(data), len);
   return true;
 }
 

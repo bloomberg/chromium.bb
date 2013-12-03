@@ -126,22 +126,22 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Simulates IME events for testing purpose.
   void SimulateImeSetComposition(
-      const string16& text,
+      const base::string16& text,
       const std::vector<blink::WebCompositionUnderline>& underlines,
       int selection_start,
       int selection_end);
-  void SimulateImeConfirmComposition(const string16& text,
+  void SimulateImeConfirmComposition(const base::string16& text,
                                      const gfx::Range& replacement_range);
 
   // TODO(jam): remove these once the IPC handler moves from RenderView to
   // RenderFrame.
   void OnImeSetComposition(
-    const string16& text,
+    const base::string16& text,
     const std::vector<blink::WebCompositionUnderline>& underlines,
     int selection_start,
     int selection_end);
  void OnImeConfirmComposition(
-    const string16& text,
+    const base::string16& text,
     const gfx::Range& replacement_range,
     bool keep_selection);
 
@@ -325,7 +325,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Current text input composition text. Empty if no composition is in
   // progress.
-  string16 pepper_composition_text_;
+  base::string16 pepper_composition_text_;
 
   // The plugin instance that received the last mouse event. It is set to NULL
   // if the last mouse event went to elements other than Pepper plugins.

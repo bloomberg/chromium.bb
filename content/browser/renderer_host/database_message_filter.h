@@ -41,15 +41,15 @@ class DatabaseMessageFilter
   void RemoveObserver();
 
   // VFS message handlers (file thread)
-  void OnDatabaseOpenFile(const string16& vfs_file_name,
+  void OnDatabaseOpenFile(const base::string16& vfs_file_name,
                           int desired_flags,
                           IPC::Message* reply_msg);
-  void OnDatabaseDeleteFile(const string16& vfs_file_name,
+  void OnDatabaseDeleteFile(const base::string16& vfs_file_name,
                             const bool& sync_dir,
                             IPC::Message* reply_msg);
-  void OnDatabaseGetFileAttributes(const string16& vfs_file_name,
+  void OnDatabaseGetFileAttributes(const base::string16& vfs_file_name,
                                    IPC::Message* reply_msg);
-  void OnDatabaseGetFileSize(const string16& vfs_file_name,
+  void OnDatabaseGetFileSize(const base::string16& vfs_file_name,
                              IPC::Message* reply_msg);
 
   // Quota message handler (io thread)
@@ -62,26 +62,26 @@ class DatabaseMessageFilter
 
   // Database tracker message handlers (file thread)
   void OnDatabaseOpened(const std::string& origin_identifier,
-                        const string16& database_name,
-                        const string16& description,
+                        const base::string16& database_name,
+                        const base::string16& description,
                         int64 estimated_size);
   void OnDatabaseModified(const std::string& origin_identifier,
-                          const string16& database_name);
+                          const base::string16& database_name);
   void OnDatabaseClosed(const std::string& origin_identifier,
-                        const string16& database_name);
+                        const base::string16& database_name);
   void OnHandleSqliteError(const std::string& origin_identifier,
-                           const string16& database_name,
+                           const base::string16& database_name,
                            int error);
 
   // DatabaseTracker::Observer callbacks (file thread)
   virtual void OnDatabaseSizeChanged(const std::string& origin_identifier,
-                                     const string16& database_name,
+                                     const base::string16& database_name,
                                      int64 database_size) OVERRIDE;
   virtual void OnDatabaseScheduledForDeletion(
       const std::string& origin_identifier,
-      const string16& database_name) OVERRIDE;
+      const base::string16& database_name) OVERRIDE;
 
-  void DatabaseDeleteFile(const string16& vfs_file_name,
+  void DatabaseDeleteFile(const base::string16& vfs_file_name,
                           bool sync_dir,
                           IPC::Message* reply_msg,
                           int reschedule_count);

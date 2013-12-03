@@ -56,17 +56,17 @@ IPC_MESSAGE_CONTROL1(ClipboardHostMsg_Clear,
                      ui::ClipboardType /* type */)
 IPC_SYNC_MESSAGE_CONTROL1_2(ClipboardHostMsg_ReadAvailableTypes,
                             ui::ClipboardType /* type */,
-                            std::vector<string16> /* types */,
+                            std::vector<base::string16> /* types */,
                             bool /* contains filenames */)
 IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadText,
                             ui::ClipboardType /* type */,
-                            string16 /* result */)
+                            base::string16 /* result */)
 IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadAsciiText,
                             ui::ClipboardType /* type */,
                             std::string /* result */)
 IPC_SYNC_MESSAGE_CONTROL1_4(ClipboardHostMsg_ReadHTML,
                             ui::ClipboardType /* type */,
-                            string16 /* markup */,
+                            base::string16 /* markup */,
                             GURL /* url */,
                             uint32 /* fragment start */,
                             uint32 /* fragment end */)
@@ -79,13 +79,13 @@ IPC_SYNC_MESSAGE_CONTROL1_2(ClipboardHostMsg_ReadImage,
                             uint32 /* image size */)
 IPC_SYNC_MESSAGE_CONTROL2_1(ClipboardHostMsg_ReadCustomData,
                             ui::ClipboardType /* type */,
-                            string16 /* type */,
-                            string16 /* result */)
+                            base::string16 /* type */,
+                            base::string16 /* result */)
 IPC_SYNC_MESSAGE_CONTROL1_1(ClipboardHostMsg_ReadData,
                             ui::Clipboard::FormatType /* format */,
                             std::string /* result */)
 
 #if defined(OS_MACOSX)
 IPC_MESSAGE_CONTROL1(ClipboardHostMsg_FindPboardWriteStringAsync,
-                     string16 /* text */)
+                     base::string16 /* text */)
 #endif

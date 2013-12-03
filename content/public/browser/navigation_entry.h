@@ -73,8 +73,8 @@ class NavigationEntry {
   // The caller is responsible for detecting when there is no title and
   // displaying the appropriate "Untitled" label if this is being displayed to
   // the user.
-  virtual void SetTitle(const string16& title) = 0;
-  virtual const string16& GetTitle() const = 0;
+  virtual void SetTitle(const base::string16& title) = 0;
+  virtual const base::string16& GetTitle() const = 0;
 
   // Page state is an opaque blob created by Blink that represents the state of
   // the page. This includes form entries and scroll position for each frame.
@@ -99,7 +99,7 @@ class NavigationEntry {
   // the page if it is available or the URL. |languages| is the list of
   // accpeted languages (e.g., prefs::kAcceptLanguages) or empty if proper
   // URL formatting isn't needed (e.g., unit tests).
-  virtual const string16& GetTitleForDisplay(
+  virtual const base::string16& GetTitleForDisplay(
       const std::string& languages) const = 0;
 
   // Returns true if the current tab is in view source mode. This will be false
@@ -192,9 +192,11 @@ class NavigationEntry {
 
   // Set extra data on this NavigationEntry according to the specified |key|.
   // This data is not persisted by default.
-  virtual void SetExtraData(const std::string& key, const string16& data) = 0;
+  virtual void SetExtraData(const std::string& key,
+                            const base::string16& data) = 0;
   // If present, fills the |data| present at the specified |key|.
-  virtual bool GetExtraData(const std::string& key, string16* data) const = 0;
+  virtual bool GetExtraData(const std::string& key,
+                            base::string16* data) const = 0;
   // Removes the data at the specified |key|.
   virtual void ClearExtraData(const std::string& key) = 0;
 

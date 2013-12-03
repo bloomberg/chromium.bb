@@ -44,8 +44,8 @@ class ContentDetector {
   // if the desired content is found. The start and end positions relative to
   // the input iterators are returned in start_pos and end_pos.
   // The end position is assumed to be non-inclusive.
-  virtual bool FindContent(const string16::const_iterator& begin,
-                           const string16::const_iterator& end,
+  virtual bool FindContent(const base::string16::const_iterator& begin,
+                           const base::string16::const_iterator& end,
                            size_t* start_pos,
                            size_t* end_pos,
                            std::string* content_text) = 0;

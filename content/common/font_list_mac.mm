@@ -21,9 +21,9 @@ scoped_ptr<base::ListValue> GetFontList_SlowBlocking() {
     NSString* localized_family_name =
         [fontManager localizedNameForFamily:family_name face:nil];
     base::ListValue* font_item = new base::ListValue();
-    string16 family = base::SysNSStringToUTF16(family_name);
+    base::string16 family = base::SysNSStringToUTF16(family_name);
     font_item->Append(new base::StringValue(family));
-    string16 loc_family = base::SysNSStringToUTF16(localized_family_name);
+    base::string16 loc_family = base::SysNSStringToUTF16(localized_family_name);
     font_item->Append(new base::StringValue(loc_family));
     font_list->Append(font_item);
   }

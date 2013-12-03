@@ -66,7 +66,8 @@ class RenderViewTest : public testing::Test {
   // |result|.
   // Returns true if the JavaScript was evaluated correctly to an int value,
   // false otherwise.
-  bool ExecuteJavaScriptAndReturnIntValue(const string16& script, int* result);
+  bool ExecuteJavaScriptAndReturnIntValue(const base::string16& script,
+                                          int* result);
 
   // Loads the given HTML into the main frame as a data: URL and blocks until
   // the navigation is committed.

@@ -43,14 +43,14 @@ namespace {
 // undefined reference linker error.
 const char kCommonScript[] = "Zyyy";
 
-string16 GetFontFromMap(
+base::string16 GetFontFromMap(
     const webkit_glue::ScriptFontFamilyMap& map,
     const std::string& script) {
   webkit_glue::ScriptFontFamilyMap::const_iterator it =
       map.find(script);
   if (it != map.end())
     return it->second;
-  return string16();
+  return base::string16();
 }
 
 // Splits a PP_BrowserFont_Trusted_TextRun into a sequence or LTR and RTL
@@ -85,7 +85,7 @@ class TextRunCollection {
       ubidi_close(bidi_);
   }
 
-  const string16& text() const { return text_; }
+  const base::string16& text() const { return text_; }
   int num_runs() const { return num_runs_; }
 
   // Returns a WebTextRun with the info for the run at the given index.
@@ -94,7 +94,7 @@ class TextRunCollection {
     DCHECK(index < num_runs_);
     if (bidi_) {
       bool run_rtl = !!ubidi_getVisualRun(bidi_, index, run_start, run_len);
-      return WebTextRun(string16(&text_[*run_start], *run_len),
+      return WebTextRun(base::string16(&text_[*run_start], *run_len),
                         run_rtl, true);
     }
 
@@ -110,7 +110,7 @@ class TextRunCollection {
   UBiDi* bidi_;
 
   // Text of all the runs.
-  string16 text_;
+  base::string16 text_;
 
   int num_runs_;
 
@@ -167,7 +167,7 @@ WebFontDescription PPFontDescToWebFontDesc(
   StringVar* face_name = StringVar::FromPPVar(font.face);  // Possibly null.
 
   WebFontDescription result;
-  string16 resolved_family;
+  base::string16 resolved_family;
   if (!face_name || face_name->value().empty()) {
     // Resolve the generic family.
     switch (font.family) {

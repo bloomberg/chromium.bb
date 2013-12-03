@@ -650,7 +650,7 @@ void WorkerServiceImpl::NotifyWorkerProcessCreated() {
 
 WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindSharedWorkerInstance(
     const GURL& url,
-    const string16& name,
+    const base::string16& name,
     const WorkerStoragePartition& partition,
     ResourceContext* resource_context) {
   for (WorkerProcessHostIterator iter; !iter.Done(); ++iter) {
@@ -667,7 +667,7 @@ WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindSharedWorkerInstance(
 
 WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindPendingInstance(
     const GURL& url,
-    const string16& name,
+    const base::string16& name,
     const WorkerStoragePartition& partition,
     ResourceContext* resource_context) {
   // Walk the pending instances looking for a matching pending worker.
@@ -684,7 +684,7 @@ WorkerProcessHost::WorkerInstance* WorkerServiceImpl::FindPendingInstance(
 
 void WorkerServiceImpl::RemovePendingInstances(
     const GURL& url,
-    const string16& name,
+    const base::string16& name,
     const WorkerStoragePartition& partition,
     ResourceContext* resource_context) {
   // Walk the pending instances looking for a matching pending worker.
@@ -701,7 +701,7 @@ void WorkerServiceImpl::RemovePendingInstances(
 
 WorkerProcessHost::WorkerInstance* WorkerServiceImpl::CreatePendingInstance(
     const GURL& url,
-    const string16& name,
+    const base::string16& name,
     ResourceContext* resource_context,
     const WorkerStoragePartition& partition) {
   // Look for an existing pending shared worker.

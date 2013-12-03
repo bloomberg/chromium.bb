@@ -43,8 +43,8 @@ struct IssueAdviceInfoEntry {
   IssueAdviceInfoEntry();
   ~IssueAdviceInfoEntry();
 
-  string16 description;
-  std::vector<string16> details;
+  base::string16 description;
+  std::vector<base::string16> details;
 
   bool operator==(const IssueAdviceInfoEntry& rhs) const;
 };

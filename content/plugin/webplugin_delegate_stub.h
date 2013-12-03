@@ -79,15 +79,15 @@ class WebPluginDelegateStub : public IPC::Listener,
                               const std::string& result,
                               bool success,
                               int notify_id);
-  void OnGetFormValue(string16* value, bool* success);
+  void OnGetFormValue(base::string16* value, bool* success);
 
   void OnSetContentAreaFocus(bool has_focus);
 #if defined(OS_WIN) && !defined(USE_AURA)
-  void OnImeCompositionUpdated(const string16& text,
+  void OnImeCompositionUpdated(const base::string16& text,
                                const std::vector<int>& clauses,
                                const std::vector<int>& target,
                                int cursor_position);
-  void OnImeCompositionCompleted(const string16& text);
+  void OnImeCompositionCompleted(const base::string16& text);
 #endif
 #if defined(OS_MACOSX)
   void OnSetWindowFocus(bool has_focus);
@@ -96,7 +96,7 @@ class WebPluginDelegateStub : public IPC::Listener,
                         bool has_focus);
   void OnWindowFrameChanged(const gfx::Rect& window_frame,
                             const gfx::Rect& view_frame);
-  void OnImeCompositionCompleted(const string16& text);
+  void OnImeCompositionCompleted(const base::string16& text);
 #endif
 
   void OnDidReceiveManualResponse(

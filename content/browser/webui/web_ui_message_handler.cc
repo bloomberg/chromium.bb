@@ -36,12 +36,12 @@ bool WebUIMessageHandler::ExtractDoubleValue(const ListValue* value,
   return false;
 }
 
-string16 WebUIMessageHandler::ExtractStringValue(const ListValue* value) {
-  string16 string16_value;
+base::string16 WebUIMessageHandler::ExtractStringValue(const ListValue* value) {
+  base::string16 string16_value;
   if (value->GetString(0, &string16_value))
     return string16_value;
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
 }  // namespace content

@@ -33,8 +33,8 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   virtual WebUIController* GetController() const OVERRIDE;
   virtual void SetController(WebUIController* controller) OVERRIDE;
   virtual ui::ScaleFactor GetDeviceScaleFactor() const OVERRIDE;
-  virtual const string16& GetOverriddenTitle() const OVERRIDE;
-  virtual void OverrideTitle(const string16& title) OVERRIDE;
+  virtual const base::string16& GetOverriddenTitle() const OVERRIDE;
+  virtual void OverrideTitle(const base::string16& title) OVERRIDE;
   virtual PageTransition GetLinkTransitionType() const OVERRIDE;
   virtual void SetLinkTransitionType(PageTransition type) OVERRIDE;
   virtual int GetBindings() const OVERRIDE;
@@ -78,7 +78,7 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
                    const base::ListValue& args);
 
   // Execute a string of raw Javascript on the page.
-  void ExecuteJavascript(const string16& javascript);
+  void ExecuteJavascript(const base::string16& javascript);
 
   // A map of message name -> message handling callback.
   typedef std::map<std::string, MessageCallback> MessageCallbackMap;
@@ -86,7 +86,7 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
 
   // Options that may be overridden by individual Web UI implementations. The
   // bool options default to false. See the public getters for more information.
-  string16 overridden_title_;  // Defaults to empty string.
+  base::string16 overridden_title_;  // Defaults to empty string.
   PageTransition link_transition_type_;  // Defaults to LINK.
   int bindings_;  // The bindings from BindingsPolicy that should be enabled for
                   // this page.

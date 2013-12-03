@@ -130,7 +130,7 @@ void IndexedDBFactory::GetDatabaseNames(
 }
 
 void IndexedDBFactory::DeleteDatabase(
-    const string16& name,
+    const base::string16& name,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     const GURL& origin_url,
     const base::FilePath& data_directory) {
@@ -233,7 +233,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
 }
 
 void IndexedDBFactory::Open(
-    const string16& name,
+    const base::string16& name,
     int64 version,
     int64 transaction_id,
     scoped_refptr<IndexedDBCallbacks> callbacks,

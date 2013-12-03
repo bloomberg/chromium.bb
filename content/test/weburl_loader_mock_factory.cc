@@ -39,7 +39,7 @@ void WebURLLoaderMockFactory::RegisterURL(const WebURL& url,
     response_info.file_path =
         base::FilePath(static_cast<std::string>(file_path.utf8()));
 #elif defined(OS_WIN)
-    string16 file_path_16 = file_path;
+    base::string16 file_path_16 = file_path;
     response_info.file_path = base::FilePath(std::wstring(
         file_path_16.data(), file_path_16.length()));
 #endif

@@ -227,7 +227,7 @@ void WebContentsDragWin::PrepareDragForDownload(
     const GURL& page_url,
     const std::string& page_encoding) {
   // Parse the download metadata.
-  string16 mime_type;
+  base::string16 mime_type;
   base::FilePath file_name;
   GURL download_url;
   if (!ParseDownloadMetadata(drop_data.download_metadata,
@@ -284,7 +284,7 @@ void WebContentsDragWin::PrepareDragForFileContents(
   // Images without ALT text will only have a file extension so we need to
   // synthesize one from the provided extension and URL.
   if (file_name.BaseName().RemoveExtension().empty()) {
-    const string16 extension = file_name.Extension();
+    const base::string16 extension = file_name.Extension();
     // Retrieve the name from the URL.
     file_name = base::FilePath(
         net::GetSuggestedFilename(drop_data.url, "", "", "", "", ""));

@@ -351,11 +351,11 @@ class CONTENT_EXPORT RenderWidget
   void OnCandidateWindowUpdated();
   void OnCandidateWindowHidden();
   virtual void OnImeSetComposition(
-      const string16& text,
+      const base::string16& text,
       const std::vector<blink::WebCompositionUnderline>& underlines,
       int selection_start,
       int selection_end);
-  virtual void OnImeConfirmComposition(const string16& text,
+  virtual void OnImeConfirmComposition(const base::string16& text,
                                        const gfx::Range& replacement_range,
                                        bool keep_selection);
   void OnPaintAtSize(const TransportDIB::Handle& dib_id,

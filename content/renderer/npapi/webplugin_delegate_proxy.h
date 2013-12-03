@@ -64,7 +64,7 @@ class WebPluginDelegateProxy
   virtual void Paint(SkCanvas* canvas, const gfx::Rect& rect) OVERRIDE;
   virtual NPObject* GetPluginScriptableObject() OVERRIDE;
   virtual struct _NPP* GetPluginNPP() OVERRIDE;
-  virtual bool GetFormValue(string16* value) OVERRIDE;
+  virtual bool GetFormValue(base::string16* value) OVERRIDE;
   virtual void DidFinishLoadWithReason(const GURL& url, NPReason reason,
                                        int notify_id) OVERRIDE;
   virtual void SetFocus(bool focused) OVERRIDE;
@@ -78,14 +78,15 @@ class WebPluginDelegateProxy
 #if defined(OS_WIN)
   // Informs the plugin that plugin IME has updated its status.
   virtual void ImeCompositionUpdated(
-      const string16& text,
+      const base::string16& text,
       const std::vector<int>& clauses,
       const std::vector<int>& target,
       int cursor_position,
       int plugin_id);
   // Informs the plugin that plugin IME has completed.
   // If |text| is empty, composition was cancelled.
-  virtual void ImeCompositionCompleted(const string16& text, int plugin_id);
+  virtual void ImeCompositionCompleted(const base::string16& text,
+                                       int plugin_id);
 #endif
 #if defined(OS_MACOSX)
   // Informs the plugin that its enclosing window has gained or lost focus.
@@ -96,7 +97,8 @@ class WebPluginDelegateProxy
   virtual void WindowFrameChanged(gfx::Rect window_frame, gfx::Rect view_frame);
   // Informs the plugin that plugin IME has completed.
   // If |text| is empty, composition was cancelled.
-  virtual void ImeCompositionCompleted(const string16& text, int plugin_id);
+  virtual void ImeCompositionCompleted(const base::string16& text,
+                                       int plugin_id);
 #endif
 
   // IPC::Listener implementation:

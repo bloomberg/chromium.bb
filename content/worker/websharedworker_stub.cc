@@ -19,7 +19,7 @@
 namespace content {
 
 WebSharedWorkerStub::WebSharedWorkerStub(
-    const string16& name,
+    const base::string16& name,
     int route_id,
     const WorkerAppCacheInitInfo& appcache_init_info)
     : route_id_(route_id),
@@ -81,8 +81,9 @@ const GURL& WebSharedWorkerStub::url() {
 }
 
 void WebSharedWorkerStub::OnStartWorkerContext(
-    const GURL& url, const string16& user_agent, const string16& source_code,
-    const string16& content_security_policy,
+    const GURL& url, const base::string16& user_agent,
+    const base::string16& source_code,
+    const base::string16& content_security_policy,
     blink::WebContentSecurityPolicyType policy_type) {
   // Ignore multiple attempts to start this worker (can happen if two pages
   // try to start it simultaneously).

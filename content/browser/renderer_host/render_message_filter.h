@@ -156,7 +156,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
 
 #if defined(OS_WIN)
   void OnPreCacheFontCharacters(const LOGFONT& log_font,
-                                const string16& characters);
+                                const base::string16& characters);
 #endif
 
   void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
@@ -190,7 +190,7 @@ class RenderMessageFilter : public BrowserMessageFilter {
   void OnDownloadUrl(const IPC::Message& message,
                      const GURL& url,
                      const Referrer& referrer,
-                     const string16& suggested_name);
+                     const base::string16& suggested_name);
   void OnCheckNotificationPermission(const GURL& source_origin,
                                      int* permission_level);
 

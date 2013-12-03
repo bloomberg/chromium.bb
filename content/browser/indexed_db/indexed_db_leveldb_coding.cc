@@ -257,7 +257,7 @@ void EncodeVarInt(int64 value, std::string* into) {
   } while (n);
 }
 
-void EncodeString(const string16& value, std::string* into) {
+void EncodeString(const base::string16& value, std::string* into) {
   if (value.empty())
     return;
   // Backing store is UTF-16BE, convert from host endianness.
@@ -277,7 +277,7 @@ void EncodeBinary(const std::string& value, std::string* into) {
   DCHECK(into->size() >= value.size());
 }
 
-void EncodeStringWithLength(const string16& value, std::string* into) {
+void EncodeStringWithLength(const base::string16& value, std::string* into) {
   EncodeVarInt(value.length(), into);
   EncodeString(value, into);
 }
@@ -355,7 +355,7 @@ void EncodeIDBKeyPath(const IndexedDBKeyPath& value, std::string* into) {
       break;
     }
     case WebIDBKeyPathTypeArray: {
-      const std::vector<string16>& array = value.array();
+      const std::vector<base::string16>& array = value.array();
       size_t count = array.size();
       EncodeVarInt(count, into);
       for (size_t i = 0; i < count; ++i) {
@@ -421,7 +421,7 @@ bool DecodeVarInt(StringPiece* slice, int64* value) {
   return true;
 }
 
-bool DecodeString(StringPiece* slice, string16* value) {
+bool DecodeString(StringPiece* slice, base::string16* value) {
   if (slice->empty()) {
     value->clear();
     return true;
@@ -430,7 +430,7 @@ bool DecodeString(StringPiece* slice, string16* value) {
   // Backing store is UTF-16BE, convert to host endianness.
   DCHECK(!(slice->size() % sizeof(char16)));
   size_t length = slice->size() / sizeof(char16);
-  string16 decoded;
+  base::string16 decoded;
   decoded.reserve(length);
   const char16* encoded = reinterpret_cast<const char16*>(slice->begin());
   for (unsigned i = 0; i < length; ++i)
@@ -441,7 +441,7 @@ bool DecodeString(StringPiece* slice, string16* value) {
   return true;
 }
 
-bool DecodeStringWithLength(StringPiece* slice, string16* value) {
+bool DecodeStringWithLength(StringPiece* slice, base::string16* value) {
   if (slice->empty())
     return false;
 
@@ -510,7 +510,7 @@ bool DecodeIDBKey(StringPiece* slice, scoped_ptr<IndexedDBKey>* value) {
       return true;
     }
     case kIndexedDBKeyStringTypeByte: {
-      string16 s;
+      base::string16 s;
       if (!DecodeStringWithLength(slice, &s))
         return false;
       *value = make_scoped_ptr(new IndexedDBKey(s));
@@ -551,7 +551,7 @@ bool DecodeIDBKeyPath(StringPiece* slice, IndexedDBKeyPath* value) {
   // always written as typed.
   if (slice->size() < 3 || (*slice)[0] != kIndexedDBKeyPathTypeCodedByte1 ||
       (*slice)[1] != kIndexedDBKeyPathTypeCodedByte2) {
-    string16 s;
+    base::string16 s;
     if (!DecodeString(slice, &s))
       return false;
     *value = IndexedDBKeyPath(s);
@@ -569,7 +569,7 @@ bool DecodeIDBKeyPath(StringPiece* slice, IndexedDBKeyPath* value) {
       *value = IndexedDBKeyPath();
       return true;
     case WebIDBKeyPathTypeString: {
-      string16 string;
+      base::string16 string;
       if (!DecodeStringWithLength(slice, &string))
         return false;
       DCHECK(slice->empty());
@@ -577,13 +577,13 @@ bool DecodeIDBKeyPath(StringPiece* slice, IndexedDBKeyPath* value) {
       return true;
     }
     case WebIDBKeyPathTypeArray: {
-      std::vector<string16> array;
+      std::vector<base::string16> array;
       int64 count;
       if (!DecodeVarInt(slice, &count))
         return false;
       DCHECK_GE(count, 0);
       while (count--) {
-        string16 string;
+        base::string16 string;
         if (!DecodeStringWithLength(slice, &string))
           return false;
         array.push_back(string);
@@ -1324,7 +1324,7 @@ bool DatabaseNameKey::Decode(StringPiece* slice, DatabaseNameKey* result) {
 }
 
 std::string DatabaseNameKey::Encode(const std::string& origin_identifier,
-                                    const string16& database_name) {
+                                    const base::string16& database_name) {
   std::string ret = KeyPrefix::EncodeEmpty();
   ret.push_back(kDatabaseNameTypeByte);
   EncodeStringWithLength(base::ASCIIToUTF16(origin_identifier), &ret);
@@ -1334,7 +1334,7 @@ std::string DatabaseNameKey::Encode(const std::string& origin_identifier,
 
 std::string DatabaseNameKey::EncodeMinKeyForOrigin(
     const std::string& origin_identifier) {
-  return Encode(origin_identifier, string16());
+  return Encode(origin_identifier, base::string16());
 }
 
 std::string DatabaseNameKey::EncodeStopKeyForOrigin(
@@ -1604,8 +1604,9 @@ bool ObjectStoreNamesKey::Decode(StringPiece* slice,
   return true;
 }
 
-std::string ObjectStoreNamesKey::Encode(int64 database_id,
-                                        const string16& object_store_name) {
+std::string ObjectStoreNamesKey::Encode(
+    int64 database_id,
+    const base::string16& object_store_name) {
   KeyPrefix prefix(database_id);
   std::string ret = prefix.Encode();
   ret.push_back(kObjectStoreNamesTypeByte);
@@ -1641,7 +1642,7 @@ bool IndexNamesKey::Decode(StringPiece* slice, IndexNamesKey* result) {
 
 std::string IndexNamesKey::Encode(int64 database_id,
                                   int64 object_store_id,
-                                  const string16& index_name) {
+                                  const base::string16& index_name) {
   KeyPrefix prefix(database_id);
   std::string ret = prefix.Encode();
   ret.push_back(kIndexNamesKeyTypeByte);

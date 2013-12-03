@@ -198,7 +198,7 @@ void Shell::Close() {
   web_contents_.reset();
 }
 
-void Shell::PlatformSetTitle(const string16& title) {
+void Shell::PlatformSetTitle(const base::string16& title) {
 }
 
 }  // namespace content

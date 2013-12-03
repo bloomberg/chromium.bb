@@ -1019,7 +1019,8 @@ void RenderWidgetHostViewMac::Destroy() {
 // Called from the renderer to tell us what the tooltip text should be. It
 // calls us frequently so we need to cache the value to prevent doing a lot
 // of repeat work.
-void RenderWidgetHostViewMac::SetTooltipText(const string16& tooltip_text) {
+void RenderWidgetHostViewMac::SetTooltipText(
+    const base::string16& tooltip_text) {
   if (tooltip_text != tooltip_text_ && [[cocoa_view_ window] isKeyWindow]) {
     tooltip_text_ = tooltip_text;
 
@@ -1027,7 +1028,7 @@ void RenderWidgetHostViewMac::SetTooltipText(const string16& tooltip_text) {
     // Windows; we're just trying to be polite. Don't persist the trimmed
     // string, as then the comparison above will always fail and we'll try to
     // set it again every single time the mouse moves.
-    string16 display_text = tooltip_text_;
+    base::string16 display_text = tooltip_text_;
     if (tooltip_text_.length() > kMaxTooltipLength)
       display_text = tooltip_text_.substr(0, kMaxTooltipLength);
 
@@ -1060,7 +1061,7 @@ void RenderWidgetHostViewMac::StopSpeaking() {
 // RenderWidgetHostViewCocoa uses the stored selection text,
 // which implements NSServicesRequests protocol.
 //
-void RenderWidgetHostViewMac::SelectionChanged(const string16& text,
+void RenderWidgetHostViewMac::SelectionChanged(const base::string16& text,
                                                size_t offset,
                                                const gfx::Range& range) {
   if (range.is_empty() || text.empty()) {
@@ -1245,7 +1246,7 @@ bool RenderWidgetHostViewMac::PostProcessEventForPluginIme(
 }
 
 void RenderWidgetHostViewMac::PluginImeCompositionCompleted(
-    const string16& text, int plugin_id) {
+    const base::string16& text, int plugin_id) {
   if (render_widget_host_) {
     render_widget_host_->Send(new ViewMsg_PluginImeCompositionCompleted(
         render_widget_host_->GetRoutingID(), text, plugin_id));
@@ -1745,7 +1746,7 @@ bool RenderWidgetHostViewMac::LockMouse() {
   [NSCursor hide];
 
   // Clear the tooltip window.
-  SetTooltipText(string16());
+  SetTooltipText(base::string16());
 
   return true;
 }
@@ -2399,7 +2400,7 @@ void RenderWidgetHostViewMac::FrameSwapped() {
   } else if (oldHasMarkedText && !hasMarkedText_ && !textInserted) {
     if (unmarkTextCalled_) {
       widgetHost->ImeConfirmComposition(
-          string16(), gfx::Range::InvalidRange(), false);
+          base::string16(), gfx::Range::InvalidRange(), false);
     } else {
       widgetHost->ImeCancelComposition();
     }
@@ -3512,7 +3513,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // called in keyEvent: method.
   if (!handlingKeyDown_) {
     renderWidgetHostView_->render_widget_host_->ImeConfirmComposition(
-        string16(), gfx::Range::InvalidRange(), false);
+        base::string16(), gfx::Range::InvalidRange(), false);
   } else {
     unmarkTextCalled_ = YES;
   }
@@ -3750,7 +3751,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
 
   if (renderWidgetHostView_->render_widget_host_)
     renderWidgetHostView_->render_widget_host_->ImeConfirmComposition(
-        string16(), gfx::Range::InvalidRange(), false);
+        base::string16(), gfx::Range::InvalidRange(), false);
 
   [self cancelComposition];
 }
@@ -3763,7 +3764,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   if (!active) {
     [[ComplexTextInputPanel sharedComplexTextInputPanel] cancelComposition];
     renderWidgetHostView_->PluginImeCompositionCompleted(
-        string16(), focusedPluginIdentifier_);
+        base::string16(), focusedPluginIdentifier_);
   }
 }
 
@@ -3798,7 +3799,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   if (pluginImeActive_ &&
       ![[ComplexTextInputPanel sharedComplexTextInputPanel] inComposition]) {
     renderWidgetHostView_->PluginImeCompositionCompleted(
-        string16(), focusedPluginIdentifier_);
+        base::string16(), focusedPluginIdentifier_);
     pluginImeActive_ = NO;
   }
 }

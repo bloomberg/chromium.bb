@@ -126,7 +126,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // this signal without a prior DidStartProvisionalLoadForFrame signal.
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
-      const string16& frame_unique_name,
+      const base::string16& frame_unique_name,
       bool is_main_frame,
       const GURL& url,
       PageTransition transition_type,
@@ -134,11 +134,11 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // This method is invoked when the provisional load failed.
   virtual void DidFailProvisionalLoad(int64 frame_id,
-                                      const string16& frame_unique_name,
+                                      const base::string16& frame_unique_name,
                                       bool is_main_frame,
                                       const GURL& validated_url,
                                       int error_code,
-                                      const string16& error_description,
+                                      const base::string16& error_description,
                                       RenderViewHost* render_view_host) {}
 
   // If the provisional load corresponded to the main frame, this method is
@@ -184,7 +184,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
                            const GURL& validated_url,
                            bool is_main_frame,
                            int error_code,
-                           const string16& error_description,
+                           const base::string16& error_description,
                            RenderViewHost* render_view_host) {}
 
   // This method is invoked when content was loaded from an in-memory cache.

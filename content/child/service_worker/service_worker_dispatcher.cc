@@ -133,7 +133,7 @@ void ServiceWorkerDispatcher::OnRegistrationError(
     int32 thread_id,
     int32 request_id,
     WebServiceWorkerError::ErrorType error_type,
-    const string16& message) {
+    const base::string16& message) {
   WebServiceWorkerProvider::WebServiceWorkerCallbacks* callbacks =
       pending_callbacks_.Lookup(request_id);
   DCHECK(callbacks);

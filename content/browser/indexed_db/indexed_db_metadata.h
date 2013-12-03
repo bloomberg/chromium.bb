@@ -15,7 +15,7 @@ namespace content {
 
 struct IndexedDBIndexMetadata {
   IndexedDBIndexMetadata() {}
-  IndexedDBIndexMetadata(const string16& name,
+  IndexedDBIndexMetadata(const base::string16& name,
                          int64 id,
                          const IndexedDBKeyPath& key_path,
                          bool unique,
@@ -25,7 +25,7 @@ struct IndexedDBIndexMetadata {
         key_path(key_path),
         unique(unique),
         multi_entry(multi_entry) {}
-  string16 name;
+  base::string16 name;
   int64 id;
   IndexedDBKeyPath key_path;
   bool unique;
@@ -36,13 +36,13 @@ struct IndexedDBIndexMetadata {
 
 struct CONTENT_EXPORT IndexedDBObjectStoreMetadata {
   IndexedDBObjectStoreMetadata();
-  IndexedDBObjectStoreMetadata(const string16& name,
+  IndexedDBObjectStoreMetadata(const base::string16& name,
                                int64 id,
                                const IndexedDBKeyPath& key_path,
                                bool auto_increment,
                                int64 max_index_id);
   ~IndexedDBObjectStoreMetadata();
-  string16 name;
+  base::string16 name;
   int64 id;
   IndexedDBKeyPath key_path;
   bool auto_increment;
@@ -64,16 +64,16 @@ struct CONTENT_EXPORT IndexedDBDatabaseMetadata {
   typedef std::map<int64, IndexedDBObjectStoreMetadata> ObjectStoreMap;
 
   IndexedDBDatabaseMetadata();
-  IndexedDBDatabaseMetadata(const string16& name,
+  IndexedDBDatabaseMetadata(const base::string16& name,
                             int64 id,
-                            const string16& version,
+                            const base::string16& version,
                             int64 int_version,
                             int64 max_object_store_id);
   ~IndexedDBDatabaseMetadata();
 
-  string16 name;
+  base::string16 name;
   int64 id;
-  string16 version;
+  base::string16 version;
   int64 int_version;
   int64 max_object_store_id;
 

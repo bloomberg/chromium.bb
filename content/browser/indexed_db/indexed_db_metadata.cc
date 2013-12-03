@@ -7,7 +7,7 @@
 namespace content {
 
 IndexedDBObjectStoreMetadata::IndexedDBObjectStoreMetadata(
-    const string16& name,
+    const base::string16& name,
     int64 id,
     const IndexedDBKeyPath& key_path,
     bool auto_increment,
@@ -23,11 +23,12 @@ IndexedDBObjectStoreMetadata::~IndexedDBObjectStoreMetadata() {}
 
 IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata()
     : int_version(NO_INT_VERSION) {}
-IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata(const string16& name,
-                                                     int64 id,
-                                                     const string16& version,
-                                                     int64 int_version,
-                                                     int64 max_object_store_id)
+IndexedDBDatabaseMetadata::IndexedDBDatabaseMetadata(
+    const base::string16& name,
+    int64 id,
+    const base::string16& version,
+    int64 int_version,
+    int64 max_object_store_id)
     : name(name),
       id(id),
       version(version),

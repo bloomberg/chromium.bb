@@ -25,7 +25,7 @@ class SharedWorkerDevToolsAgent;
 // appropriate WebSharedWorker APIs.
 class WebSharedWorkerStub : public IPC::Listener {
  public:
-  WebSharedWorkerStub(const string16& name, int route_id,
+  WebSharedWorkerStub(const base::string16& name, int route_id,
                       const WorkerAppCacheInitInfo& appcache_init_info);
 
   // IPC::Listener implementation.
@@ -54,8 +54,9 @@ class WebSharedWorkerStub : public IPC::Listener {
 
   void OnConnect(int sent_message_port_id, int routing_id);
   void OnStartWorkerContext(
-      const GURL& url, const string16& user_agent, const string16& source_code,
-      const string16& content_security_policy,
+      const GURL& url, const base::string16& user_agent,
+      const base::string16& source_code,
+      const base::string16& content_security_policy,
       blink::WebContentSecurityPolicyType policy_type);
 
   void OnTerminateWorkerContext();
@@ -70,7 +71,7 @@ class WebSharedWorkerStub : public IPC::Listener {
   WebSharedWorkerClientProxy client_;
 
   blink::WebSharedWorker* impl_;
-  string16 name_;
+  base::string16 name_;
   bool started_;
   GURL url_;
   scoped_ptr<SharedWorkerDevToolsAgent> worker_devtools_agent_;

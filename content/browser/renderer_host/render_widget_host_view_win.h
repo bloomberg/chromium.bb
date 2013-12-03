@@ -202,7 +202,7 @@ class RenderWidgetHostViewWin
   // called by WebContentsImpl before DestroyWindow
   virtual void WillWmDestroy() OVERRIDE;
   virtual void Destroy() OVERRIDE;
-  virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
+  virtual void SetTooltipText(const base::string16& tooltip_text) OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
@@ -270,7 +270,7 @@ class RenderWidgetHostViewWin
       const ui::CompositionText& composition) OVERRIDE;
   virtual void ConfirmCompositionText() OVERRIDE;
   virtual void ClearCompositionText() OVERRIDE;
-  virtual void InsertText(const string16& text) OVERRIDE;
+  virtual void InsertText(const base::string16& text) OVERRIDE;
   virtual void InsertChar(char16 ch, int flags) OVERRIDE;
   virtual gfx::NativeWindow GetAttachedWindow() const OVERRIDE;
   virtual ui::TextInputType GetTextInputType() const OVERRIDE;
@@ -286,7 +286,7 @@ class RenderWidgetHostViewWin
   virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE;
   virtual bool DeleteRange(const gfx::Range& range) OVERRIDE;
   virtual bool GetTextFromRange(const gfx::Range& range,
-                                string16* text) const OVERRIDE;
+                                base::string16* text) const OVERRIDE;
   virtual void OnInputMethodChanged() OVERRIDE;
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE;
@@ -516,7 +516,7 @@ class RenderWidgetHostViewWin
 
   // Tooltips
   // The text to be shown in the tooltip, supplied by the renderer.
-  string16 tooltip_text_;
+  base::string16 tooltip_text_;
   // The tooltip control hwnd
   HWND tooltip_hwnd_;
   // Whether or not a tooltip is currently visible. We use this to track

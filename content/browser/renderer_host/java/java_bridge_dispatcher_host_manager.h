@@ -34,8 +34,8 @@ class JavaBridgeDispatcherHostManager
   // These methods add or remove the object to each JavaBridgeDispatcherHost.
   // Each one holds a reference to the NPObject while the object is bound to
   // the corresponding RenderView. See JavaBridgeDispatcherHost for details.
-  void AddNamedObject(const string16& name, NPObject* object);
-  void RemoveNamedObject(const string16& name);
+  void AddNamedObject(const base::string16& name, NPObject* object);
+  void RemoveNamedObject(const base::string16& name);
 
   void OnGetChannelHandle(RenderViewHost* render_view_host,
                           IPC::Message* reply_msg);
@@ -60,7 +60,7 @@ class JavaBridgeDispatcherHostManager
   typedef std::map<RenderViewHost*, scoped_refptr<JavaBridgeDispatcherHost> >
       InstanceMap;
   InstanceMap instances_;
-  typedef std::map<string16, NPObject*> ObjectMap;
+  typedef std::map<base::string16, NPObject*> ObjectMap;
   ObjectMap objects_;
   JavaObjectWeakGlobalRef retained_object_set_;
 

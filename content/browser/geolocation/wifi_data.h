@@ -19,11 +19,11 @@ struct CONTENT_EXPORT AccessPointData {
   ~AccessPointData();
 
   // MAC address, formatted as per MacAddressAsString16.
-  string16 mac_address;
+  base::string16 mac_address;
   int radio_signal_strength;  // Measured in dBm
   int channel;
   int signal_to_noise;  // Ratio in dB
-  string16 ssid;   // Network identifier
+  base::string16 ssid;   // Network identifier
 };
 
 // This is to allow AccessPointData to be used in std::set. We order

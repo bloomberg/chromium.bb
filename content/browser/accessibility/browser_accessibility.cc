@@ -444,17 +444,17 @@ bool BrowserAccessibility::GetStringAttribute(
   return false;
 }
 
-string16 BrowserAccessibility::GetString16Attribute(
+base::string16 BrowserAccessibility::GetString16Attribute(
     StringAttribute attribute) const {
   std::string value_utf8;
   if (!GetStringAttribute(attribute, &value_utf8))
-    return string16();
+    return base::string16();
   return UTF8ToUTF16(value_utf8);
 }
 
 bool BrowserAccessibility::GetString16Attribute(
     StringAttribute attribute,
-    string16* value) const {
+    base::string16* value) const {
   std::string value_utf8;
   if (!GetStringAttribute(attribute, &value_utf8))
     return false;
@@ -522,7 +522,7 @@ bool BrowserAccessibility::GetHtmlAttribute(
 }
 
 bool BrowserAccessibility::GetHtmlAttribute(
-    const char* html_attr, string16* value) const {
+    const char* html_attr, base::string16* value) const {
   std::string value_utf8;
   if (!GetHtmlAttribute(html_attr, &value_utf8))
     return false;
@@ -537,7 +537,7 @@ bool BrowserAccessibility::GetAriaTristate(
   *is_defined = false;
   *is_mixed = false;
 
-  string16 value;
+  base::string16 value;
   if (!GetHtmlAttribute(html_attr, &value) ||
       value.empty() ||
       EqualsASCII(value, "undefined")) {

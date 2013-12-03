@@ -226,7 +226,7 @@ class AccessibleChecker {
   void CheckAccessibleValue(IAccessible* accessible);
   void CheckAccessibleState(IAccessible* accessible);
   void CheckAccessibleChildren(IAccessible* accessible);
-  string16 RoleVariantToString(const base::win::ScopedVariant& role);
+  base::string16 RoleVariantToString(const base::win::ScopedVariant& role);
 
   // Expected accessible name. Checked against IAccessible::get_accName.
   std::wstring name_;
@@ -403,13 +403,13 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
   }
 }
 
-string16 AccessibleChecker::RoleVariantToString(
+base::string16 AccessibleChecker::RoleVariantToString(
     const base::win::ScopedVariant& role) {
   if (role.type() == VT_I4)
     return IAccessibleRoleToString(V_I4(&role));
   if (role.type() == VT_BSTR)
-    return string16(V_BSTR(&role), SysStringLen(V_BSTR(&role)));
-  return string16();
+    return base::string16(V_BSTR(&role), SysStringLen(V_BSTR(&role)));
+  return base::string16();
 }
 
 }  // namespace

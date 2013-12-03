@@ -43,7 +43,8 @@ class ShellLoginDialog : public ResourceDispatcherHostLoginDelegate {
   // the aforementioned platform specific code may not have access to private
   // members. Not to be called from client code.
   // Threading: UI thread.
-  void UserAcceptedAuth(const string16& username, const string16& password);
+  void UserAcceptedAuth(const base::string16& username,
+                        const base::string16& password);
   void UserCancelledAuth();
 
  protected:
@@ -55,7 +56,7 @@ class ShellLoginDialog : public ResourceDispatcherHostLoginDelegate {
   // platform specific LoginDialog implementation.
   // Creates the dialog.
   // Threading: UI thread.
-  void PlatformCreateDialog(const string16& message);
+  void PlatformCreateDialog(const base::string16& message);
   // Called from the destructor to let each platform do any necessary cleanup.
   // Threading: UI thread.
   void PlatformCleanUp();
@@ -65,13 +66,13 @@ class ShellLoginDialog : public ResourceDispatcherHostLoginDelegate {
 
   // Sets up dialog creation.
   // Threading: UI thread.
-  void PrepDialog(const string16& host, const string16& realm);
+  void PrepDialog(const base::string16& host, const base::string16& realm);
 
   // Sends the authentication to the requester.
   // Threading: IO thread.
   void SendAuthToRequester(bool success,
-                           const string16& username,
-                           const string16& password);
+                           const base::string16& username,
+                           const base::string16& password);
 
   // Who/where/what asked for the authentication.
   // Threading: IO thread.

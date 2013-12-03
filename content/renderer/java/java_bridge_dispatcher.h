@@ -33,15 +33,15 @@ class JavaBridgeDispatcher : public RenderViewObserver {
   virtual void DidClearWindowObject(blink::WebFrame* frame) OVERRIDE;
 
   // Message handlers
-  void OnAddNamedObject(const string16& name,
+  void OnAddNamedObject(const base::string16& name,
                         const NPVariant_Param& variant_param);
-  void OnRemoveNamedObject(const string16& name);
+  void OnRemoveNamedObject(const base::string16& name);
 
   void EnsureChannelIsSetUp();
 
   // Objects that will be bound to the window when the window object is next
   // cleared. We hold a ref to these.
-  typedef std::map<string16, NPVariant> ObjectMap;
+  typedef std::map<base::string16, NPVariant> ObjectMap;
   ObjectMap objects_;
   scoped_refptr<JavaBridgeChannel> channel_;
 };

@@ -323,9 +323,9 @@ JavaScriptDialogManager* Shell::GetJavaScriptDialogManager() {
 
 bool Shell::AddMessageToConsole(WebContents* source,
                                 int32 level,
-                                const string16& message,
+                                const base::string16& message,
                                 int32 line_no,
-                                const string16& source_id) {
+                                const base::string16& source_id) {
   return CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree);
 }
 

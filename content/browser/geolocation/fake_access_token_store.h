@@ -23,12 +23,13 @@ class FakeAccessTokenStore : public AccessTokenStore {
   MOCK_METHOD1(LoadAccessTokens,
                void(const LoadAccessTokensCallbackType& callback));
   MOCK_METHOD2(SaveAccessToken,
-               void(const GURL& server_url, const string16& access_token));
+               void(const GURL& server_url,
+                    const base::string16& access_token));
 
   void DefaultLoadAccessTokens(const LoadAccessTokensCallbackType& callback);
 
   void DefaultSaveAccessToken(const GURL& server_url,
-                              const string16& access_token);
+                              const base::string16& access_token);
 
   AccessTokenSet access_token_set_;
   LoadAccessTokensCallbackType callback_;

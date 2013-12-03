@@ -86,8 +86,8 @@ BrowserAccessibilityWin
 
   // Mappings from roles and states to human readable strings. Initialize
   // with |InitializeStringMaps|.
-  static std::map<int32, string16> role_string_map;
-  static std::map<int32, string16> state_string_map;
+  static std::map<int32, base::string16> role_string_map;
+  static std::map<int32, base::string16> state_string_map;
 
   CONTENT_EXPORT BrowserAccessibilityWin();
 
@@ -765,10 +765,10 @@ BrowserAccessibilityWin
   // Accessors.
   int32 ia_role() const { return ia_role_; }
   int32 ia_state() const { return ia_state_; }
-  const string16& role_name() const { return role_name_; }
+  const base::string16& role_name() const { return role_name_; }
   int32 ia2_role() const { return ia2_role_; }
   int32 ia2_state() const { return ia2_state_; }
-  const std::vector<string16>& ia2_attributes() const {
+  const std::vector<base::string16>& ia2_attributes() const {
     return ia2_attributes_;
   }
 
@@ -813,15 +813,15 @@ BrowserAccessibilityWin
 
   // Get the value text, which might come from the floating-point
   // value for some roles.
-  string16 GetValueText();
+  base::string16 GetValueText();
 
   // Get the text of this node for the purposes of IAccessibleText - it may
   // be the name, it may be the value, etc. depending on the role.
-  string16 TextForIAccessibleText();
+  base::string16 TextForIAccessibleText();
 
   // If offset is a member of IA2TextSpecialOffsets this function updates the
   // value of offset and returns, otherwise offset remains unchanged.
-  void HandleSpecialTextOffset(const string16& text, LONG* offset);
+  void HandleSpecialTextOffset(const base::string16& text, LONG* offset);
 
   // Convert from a IA2TextBoundaryType to a ui::TextBoundaryType.
   ui::TextBoundaryType IA2TextBoundaryToTextBoundary(IA2TextBoundaryType type);
@@ -829,7 +829,7 @@ BrowserAccessibilityWin
   // Search forwards (direction == 1) or backwards (direction == -1)
   // from the given offset until the given boundary is found, and
   // return the offset of that boundary.
-  LONG FindBoundary(const string16& text,
+  LONG FindBoundary(const base::string16& text,
                     IA2TextBoundaryType ia2_boundary,
                     LONG start_offset,
                     ui::TextBoundaryDirection direction);
@@ -846,26 +846,26 @@ BrowserAccessibilityWin
   // IAccessible role and state.
   int32 ia_role_;
   int32 ia_state_;
-  string16 role_name_;
+  base::string16 role_name_;
 
   // IAccessible2 role and state.
   int32 ia2_role_;
   int32 ia2_state_;
 
   // IAccessible2 attributes.
-  std::vector<string16> ia2_attributes_;
+  std::vector<base::string16> ia2_attributes_;
 
   // True in Initialize when the object is first created, and false
   // subsequent times.
   bool first_time_;
 
   // The previous text, before the last update to this object.
-  string16 previous_text_;
+  base::string16 previous_text_;
 
   // The old text to return in IAccessibleText::get_oldText - this is like
   // previous_text_ except that it's NOT updated when the object
   // is initialized again but the text doesn't change.
-  string16 old_text_;
+  base::string16 old_text_;
 
   // The previous state, used to see if there was a state change.
   int32 old_ia_state_;
@@ -874,7 +874,7 @@ BrowserAccessibilityWin
   std::vector<BrowserAccessibilityRelation*> relations_;
 
   // The text of this node including embedded hyperlink characters.
-  string16 hypertext_;
+  base::string16 hypertext_;
 
   // Maps the |hypertext_| embedded character offset to an index in
   // |hyperlinks_|.

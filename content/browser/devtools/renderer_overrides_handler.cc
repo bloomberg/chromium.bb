@@ -293,8 +293,8 @@ RendererOverridesHandler::PageHandleJavaScriptDialog(
   bool accept;
   if (!params || !params->GetBoolean(paramAccept, &accept))
     return command->InvalidParamResponse(paramAccept);
-  string16 prompt_override;
-  string16* prompt_override_ptr = &prompt_override;
+  base::string16 prompt_override;
+  base::string16* prompt_override_ptr = &prompt_override;
   if (!params || !params->GetString(
       devtools::Page::handleJavaScriptDialog::kParamPromptText,
       prompt_override_ptr)) {

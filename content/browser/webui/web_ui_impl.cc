@@ -27,10 +27,10 @@ namespace content {
 const WebUI::TypeID WebUI::kNoWebUI = NULL;
 
 // static
-string16 WebUI::GetJavascriptCall(
+base::string16 WebUI::GetJavascriptCall(
     const std::string& function_name,
     const std::vector<const Value*>& arg_list) {
-  string16 parameters;
+  base::string16 parameters;
   std::string json;
   for (size_t i = 0; i < arg_list.size(); ++i) {
     if (i > 0)
@@ -106,11 +106,11 @@ ui::ScaleFactor WebUIImpl::GetDeviceScaleFactor() const {
   return GetScaleFactorForView(web_contents_->GetRenderWidgetHostView());
 }
 
-const string16& WebUIImpl::GetOverriddenTitle() const {
+const base::string16& WebUIImpl::GetOverriddenTitle() const {
   return overridden_title_;
 }
 
-void WebUIImpl::OverrideTitle(const string16& title) {
+void WebUIImpl::OverrideTitle(const base::string16& title) {
   overridden_title_ = title;
 }
 
@@ -144,7 +144,7 @@ void WebUIImpl::SetController(WebUIController* controller) {
 
 void WebUIImpl::CallJavascriptFunction(const std::string& function_name) {
   DCHECK(IsStringASCII(function_name));
-  string16 javascript = ASCIIToUTF16(function_name + "();");
+  base::string16 javascript = ASCIIToUTF16(function_name + "();");
   ExecuteJavascript(javascript);
 }
 
@@ -230,7 +230,7 @@ void WebUIImpl::AddMessageHandler(WebUIMessageHandler* handler) {
   handlers_.push_back(handler);
 }
 
-void WebUIImpl::ExecuteJavascript(const string16& javascript) {
+void WebUIImpl::ExecuteJavascript(const base::string16& javascript) {
   static_cast<RenderViewHostImpl*>(
       web_contents_->GetRenderViewHost())->ExecuteJavascriptInWebFrame(
       ASCIIToUTF16(frame_xpath_), javascript);

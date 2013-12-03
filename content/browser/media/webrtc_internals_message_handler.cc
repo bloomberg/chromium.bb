@@ -68,11 +68,11 @@ void WebRTCInternalsMessageHandler::OnUpdate(const std::string& command,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   std::vector<const base::Value*> args_vector;
   args_vector.push_back(args);
-  string16 update = WebUI::GetJavascriptCall(command, args_vector);
+  base::string16 update = WebUI::GetJavascriptCall(command, args_vector);
 
   RenderViewHost* host = web_ui()->GetWebContents()->GetRenderViewHost();
   if (host)
-    host->ExecuteJavascriptInWebFrame(string16(), update);
+    host->ExecuteJavascriptInWebFrame(base::string16(), update);
 }
 
 }  // namespace content

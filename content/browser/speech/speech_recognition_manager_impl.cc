@@ -672,7 +672,7 @@ bool SpeechRecognitionManagerImpl::HasAudioInputDevices() {
   return audio_manager_->HasAudioInputDevices();
 }
 
-string16 SpeechRecognitionManagerImpl::GetAudioInputDeviceModel() {
+base::string16 SpeechRecognitionManagerImpl::GetAudioInputDeviceModel() {
   return audio_manager_->GetAudioInputDeviceModel();
 }
 

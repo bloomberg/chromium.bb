@@ -91,7 +91,7 @@ void RenderViewTest::ExecuteJavaScript(const char* js) {
 }
 
 bool RenderViewTest::ExecuteJavaScriptAndReturnIntValue(
-    const string16& script,
+    const base::string16& script,
     int* int_result) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   v8::Handle<v8::Value> result =
@@ -173,7 +173,7 @@ void RenderViewTest::SetUp() {
       kMainFrameRouteId,
       kSurfaceId,
       kInvalidSessionStorageNamespaceId,
-      string16(),
+      base::string16(),
       false, // is_renderer_created
       false, // swapped_out
       false, // hidden

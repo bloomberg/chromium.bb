@@ -217,7 +217,7 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
       new LookingForQuotaErrorMockCallbacks;
   scoped_refptr<IndexedDBDatabaseCallbacks> dummy_database_callbacks =
       new IndexedDBDatabaseCallbacks(NULL, 0, 0);
-  const string16 name(ASCIIToUTF16("name"));
+  const base::string16 name(ASCIIToUTF16("name"));
   factory->Open(name,
                 1, /* version */
                 2, /* transaction_id */

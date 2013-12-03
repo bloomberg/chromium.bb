@@ -38,12 +38,12 @@ void MediaInternalsMessageHandler::OnGetEverything(
   proxy_->GetEverything();
 }
 
-void MediaInternalsMessageHandler::OnUpdate(const string16& update) {
+void MediaInternalsMessageHandler::OnUpdate(const base::string16& update) {
   // Don't try to execute JavaScript in a RenderView that no longer exists nor
   // if the chrome://media-internals page hasn't finished loading.
   RenderViewHost* host = web_ui()->GetWebContents()->GetRenderViewHost();
   if (host && page_load_complete_)
-    host->ExecuteJavascriptInWebFrame(string16(), update);
+    host->ExecuteJavascriptInWebFrame(base::string16(), update);
 }
 
 }  // namespace content

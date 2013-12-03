@@ -116,8 +116,8 @@ void DOMStorageMessageFilter::OnLoadStorageArea(int connection_id,
 }
 
 void DOMStorageMessageFilter::OnSetItem(
-    int connection_id, const string16& key,
-    const string16& value, const GURL& page_url) {
+    int connection_id, const base::string16& key,
+    const base::string16& value, const GURL& page_url) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(0, connection_dispatching_message_for_);
   base::AutoReset<int> auto_reset(&connection_dispatching_message_for_,
@@ -129,20 +129,20 @@ void DOMStorageMessageFilter::OnSetItem(
 }
 
 void DOMStorageMessageFilter::OnLogGetItem(
-    int connection_id, const string16& key,
+    int connection_id, const base::string16& key,
     const base::NullableString16& value) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   host_->LogGetAreaItem(connection_id, key, value);
 }
 
 void DOMStorageMessageFilter::OnRemoveItem(
-    int connection_id, const string16& key,
+    int connection_id, const base::string16& key,
     const GURL& page_url) {
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK_EQ(0, connection_dispatching_message_for_);
   base::AutoReset<int> auto_reset(&connection_dispatching_message_for_,
                             connection_id);
-  string16 not_used;
+  base::string16 not_used;
   host_->RemoveAreaItem(connection_id, key, page_url, &not_used);
   Send(new DOMStorageMsg_AsyncOperationComplete(true));
 }
@@ -163,8 +163,8 @@ void DOMStorageMessageFilter::OnFlushMessages() {
 
 void DOMStorageMessageFilter::OnDOMStorageItemSet(
     const DOMStorageArea* area,
-    const string16& key,
-    const string16& new_value,
+    const base::string16& key,
+    const base::string16& new_value,
     const base::NullableString16& old_value,
     const GURL& page_url) {
   SendDOMStorageEvent(area, page_url,
@@ -175,8 +175,8 @@ void DOMStorageMessageFilter::OnDOMStorageItemSet(
 
 void DOMStorageMessageFilter::OnDOMStorageItemRemoved(
     const DOMStorageArea* area,
-    const string16& key,
-    const string16& old_value,
+    const base::string16& key,
+    const base::string16& old_value,
     const GURL& page_url) {
   SendDOMStorageEvent(area, page_url,
                       base::NullableString16(key, false),

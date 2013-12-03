@@ -13,14 +13,14 @@
 
 namespace content {
 
-CONTENT_EXPORT string16 IAccessibleRoleToString(int32 ia_role);
-CONTENT_EXPORT string16 IAccessible2RoleToString(int32 ia_role);
-CONTENT_EXPORT string16 IAccessibleStateToString(int32 ia_state);
+CONTENT_EXPORT base::string16 IAccessibleRoleToString(int32 ia_role);
+CONTENT_EXPORT base::string16 IAccessible2RoleToString(int32 ia_role);
+CONTENT_EXPORT base::string16 IAccessibleStateToString(int32 ia_state);
 CONTENT_EXPORT void IAccessibleStateToStringVector(
-    int32 ia_state, std::vector<string16>* result);
-CONTENT_EXPORT string16 IAccessible2StateToString(int32 ia2_state);
+    int32 ia_state, std::vector<base::string16>* result);
+CONTENT_EXPORT base::string16 IAccessible2StateToString(int32 ia2_state);
 CONTENT_EXPORT void IAccessible2StateToStringVector(
-  int32 ia_state, std::vector<string16>* result);
+  int32 ia_state, std::vector<base::string16>* result);
 
 }  // namespace content
 

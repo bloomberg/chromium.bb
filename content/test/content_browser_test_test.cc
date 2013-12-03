@@ -31,10 +31,10 @@ class ContentBrowserTestSanityTest : public ContentBrowserTest {
   void Test() {
     GURL url = GetTestUrl(".", "simple_page.html");
 
-    string16 expected_title(ASCIIToUTF16("OK"));
+    base::string16 expected_title(ASCIIToUTF16("OK"));
     TitleWatcher title_watcher(shell()->web_contents(), expected_title);
     NavigateToURL(shell(), url);
-    string16 title = title_watcher.WaitAndGetTitle();
+    base::string16 title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, title);
   }
 };

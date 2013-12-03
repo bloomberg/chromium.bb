@@ -113,13 +113,14 @@ bool DatabaseMessageFilter::OnMessageReceived(
 DatabaseMessageFilter::~DatabaseMessageFilter() {
 }
 
-void DatabaseMessageFilter::OnDatabaseOpenFile(const string16& vfs_file_name,
-                                               int desired_flags,
-                                               IPC::Message* reply_msg) {
+void DatabaseMessageFilter::OnDatabaseOpenFile(
+    const base::string16& vfs_file_name,
+    int desired_flags,
+    IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   base::PlatformFile file_handle = base::kInvalidPlatformFileValue;
   std::string origin_identifier;
-  string16 database_name;
+  base::string16 database_name;
 
   // When in incognito mode, we want to make sure that all DB files are
   // removed when the incognito browser context goes away, so we add the
@@ -162,16 +163,18 @@ void DatabaseMessageFilter::OnDatabaseOpenFile(const string16& vfs_file_name,
   Send(reply_msg);
 }
 
-void DatabaseMessageFilter::OnDatabaseDeleteFile(const string16& vfs_file_name,
-                                                 const bool& sync_dir,
-                                                 IPC::Message* reply_msg) {
+void DatabaseMessageFilter::OnDatabaseDeleteFile(
+    const base::string16& vfs_file_name,
+    const bool& sync_dir,
+    IPC::Message* reply_msg) {
   DatabaseDeleteFile(vfs_file_name, sync_dir, reply_msg, kNumDeleteRetries);
 }
 
-void DatabaseMessageFilter::DatabaseDeleteFile(const string16& vfs_file_name,
-                                               bool sync_dir,
-                                               IPC::Message* reply_msg,
-                                               int reschedule_count) {
+void DatabaseMessageFilter::DatabaseDeleteFile(
+    const base::string16& vfs_file_name,
+    bool sync_dir,
+    IPC::Message* reply_msg,
+    int reschedule_count) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
   // Return an error if the file name is invalid or if the file could not
@@ -183,8 +186,8 @@ void DatabaseMessageFilter::DatabaseDeleteFile(const string16& vfs_file_name,
     // In order to delete a journal file in incognito mode, we only need to
     // close the open handle to it that's stored in the database tracker.
     if (db_tracker_->IsIncognitoProfile()) {
-      const string16 wal_suffix(ASCIIToUTF16("-wal"));
-      string16 sqlite_suffix;
+      const base::string16 wal_suffix(ASCIIToUTF16("-wal"));
+      base::string16 sqlite_suffix;
 
       // WAL files can be deleted without having previously been opened.
       if (!db_tracker_->HasSavedIncognitoFileHandle(vfs_file_name) &&
@@ -215,7 +218,7 @@ void DatabaseMessageFilter::DatabaseDeleteFile(const string16& vfs_file_name,
 }
 
 void DatabaseMessageFilter::OnDatabaseGetFileAttributes(
-    const string16& vfs_file_name,
+    const base::string16& vfs_file_name,
     IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int32 attributes = -1;
@@ -230,7 +233,7 @@ void DatabaseMessageFilter::OnDatabaseGetFileAttributes(
 }
 
 void DatabaseMessageFilter::OnDatabaseGetFileSize(
-    const string16& vfs_file_name, IPC::Message* reply_msg) {
+    const base::string16& vfs_file_name, IPC::Message* reply_msg) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int64 size = 0;
   base::FilePath db_file =
@@ -278,8 +281,8 @@ void DatabaseMessageFilter::OnDatabaseGetUsageAndQuota(
 
 void DatabaseMessageFilter::OnDatabaseOpened(
     const std::string& origin_identifier,
-    const string16& database_name,
-    const string16& description,
+    const base::string16& database_name,
+    const base::string16& description,
     int64 estimated_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
 
@@ -299,7 +302,7 @@ void DatabaseMessageFilter::OnDatabaseOpened(
 
 void DatabaseMessageFilter::OnDatabaseModified(
     const std::string& origin_identifier,
-    const string16& database_name) {
+    const base::string16& database_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!database_connections_.IsDatabaseOpened(
           origin_identifier, database_name)) {
@@ -313,7 +316,7 @@ void DatabaseMessageFilter::OnDatabaseModified(
 
 void DatabaseMessageFilter::OnDatabaseClosed(
     const std::string& origin_identifier,
-    const string16& database_name) {
+    const base::string16& database_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!database_connections_.IsDatabaseOpened(
           origin_identifier, database_name)) {
@@ -328,7 +331,7 @@ void DatabaseMessageFilter::OnDatabaseClosed(
 
 void DatabaseMessageFilter::OnHandleSqliteError(
     const std::string& origin_identifier,
-    const string16& database_name,
+    const base::string16& database_name,
     int error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (!DatabaseUtil::IsValidOriginIdentifier(origin_identifier)) {
@@ -342,7 +345,7 @@ void DatabaseMessageFilter::OnHandleSqliteError(
 
 void DatabaseMessageFilter::OnDatabaseSizeChanged(
     const std::string& origin_identifier,
-    const string16& database_name,
+    const base::string16& database_name,
     int64 database_size) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   if (database_connections_.IsOriginUsed(origin_identifier)) {
@@ -353,7 +356,7 @@ void DatabaseMessageFilter::OnDatabaseSizeChanged(
 
 void DatabaseMessageFilter::OnDatabaseScheduledForDeletion(
     const std::string& origin_identifier,
-    const string16& database_name) {
+    const base::string16& database_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   Send(new DatabaseMsg_CloseImmediately(origin_identifier, database_name));
 }

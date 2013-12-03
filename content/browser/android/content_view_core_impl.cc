@@ -389,7 +389,7 @@ void ContentViewCoreImpl::UpdateFrameInfo(
       overdraw_bottom_height);
 }
 
-void ContentViewCoreImpl::SetTitle(const string16& title) {
+void ContentViewCoreImpl::SetTitle(const base::string16& title) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
@@ -438,7 +438,7 @@ void ContentViewCoreImpl::ShowSelectPopupMenu(
 
   ScopedJavaLocalRef<jintArray> enabled_array(env,
                                               env->NewIntArray(items.size()));
-  std::vector<string16> labels;
+  std::vector<base::string16> labels;
   labels.reserve(items.size());
   for (size_t i = 0; i < items.size(); ++i) {
     labels.push_back(items[i].label);
@@ -1487,7 +1487,7 @@ void ContentViewCoreImpl::EvaluateJavaScript(JNIEnv* env,
 
   if (!callback) {
     // No callback requested.
-    rvh->ExecuteJavascriptInWebFrame(string16(),  // frame_xpath
+    rvh->ExecuteJavascriptInWebFrame(base::string16(),  // frame_xpath
                                      ConvertJavaStringToUTF16(env, script));
     return;
   }
@@ -1500,7 +1500,7 @@ void ContentViewCoreImpl::EvaluateJavaScript(JNIEnv* env,
       base::Bind(&JavaScriptResultCallback, j_callback);
 
   rvh->ExecuteJavascriptInWebFrameCallbackResult(
-      string16(),  // frame_xpath
+      base::string16(),  // frame_xpath
       ConvertJavaStringToUTF16(env, script),
       c_callback);
 }

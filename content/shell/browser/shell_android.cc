@@ -60,7 +60,7 @@ void Shell::PlatformResizeSubViews() {
   // Not needed; subviews are bound.
 }
 
-void Shell::PlatformSetTitle(const string16& title) {
+void Shell::PlatformSetTitle(const base::string16& title) {
   NOTIMPLEMENTED();
 }
 

@@ -169,7 +169,7 @@ void DumpAccessibilityTreeTest::RunTest(
   }
 
   // Load the page.
-  string16 html_contents16;
+  base::string16 html_contents16;
   html_contents16 = UTF8ToUTF16(html_contents);
   GURL url = GetTestUrl("accessibility",
                         html_file.BaseName().MaybeAsASCII().c_str());
@@ -191,7 +191,7 @@ void DumpAccessibilityTreeTest::RunTest(
   formatter.SetFilters(filters);
 
   // Perform a diff (or write the initial baseline).
-  string16 actual_contents_utf16;
+  base::string16 actual_contents_utf16;
   formatter.FormatAccessibilityTree(&actual_contents_utf16);
   std::string actual_contents = UTF16ToUTF8(actual_contents_utf16);
   std::vector<std::string> actual_lines, expected_lines;

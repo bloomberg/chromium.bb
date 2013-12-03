@@ -15,7 +15,7 @@
 // Notifies the child process of the new database size
 IPC_MESSAGE_CONTROL3(DatabaseMsg_UpdateSize,
                      std::string /* the origin */,
-                     string16 /* the database name */,
+                     base::string16 /* the database name */,
                      int64 /* the new database size */)
 
 // Notifies the child process of the new space available
@@ -30,30 +30,30 @@ IPC_MESSAGE_CONTROL1(DatabaseMsg_ResetSpaceAvailable,
 // Asks the child process to close a database immediately
 IPC_MESSAGE_CONTROL2(DatabaseMsg_CloseImmediately,
                      std::string /* the origin */,
-                     string16 /* the database name */)
+                     base::string16 /* the database name */)
 
 // Database messages sent from the renderer to the browser.
 
 // Asks the browser process to open a DB file with the given name.
 IPC_SYNC_MESSAGE_CONTROL2_1(DatabaseHostMsg_OpenFile,
-                            string16 /* vfs file name */,
+                            base::string16 /* vfs file name */,
                             int /* desired flags */,
                             IPC::PlatformFileForTransit /* file_handle */)
 
 // Asks the browser process to delete a DB file
 IPC_SYNC_MESSAGE_CONTROL2_1(DatabaseHostMsg_DeleteFile,
-                            string16 /* vfs file name */,
+                            base::string16 /* vfs file name */,
                             bool /* whether or not to sync the directory */,
                             int /* SQLite error code */)
 
 // Asks the browser process to return the attributes of a DB file
 IPC_SYNC_MESSAGE_CONTROL1_1(DatabaseHostMsg_GetFileAttributes,
-                            string16 /* vfs file name */,
+                            base::string16 /* vfs file name */,
                             int32 /* the attributes for the given DB file */)
 
 // Asks the browser process to return the size of a DB file
 IPC_SYNC_MESSAGE_CONTROL1_1(DatabaseHostMsg_GetFileSize,
-                            string16 /* vfs file name */,
+                            base::string16 /* vfs file name */,
                             int64 /* the size of the given DB file */)
 
 // Asks the browser process for the amount of space available to an origin
@@ -64,22 +64,22 @@ IPC_SYNC_MESSAGE_CONTROL1_1(DatabaseHostMsg_GetSpaceAvailable,
 // Notifies the browser process that a new database has been opened
 IPC_MESSAGE_CONTROL4(DatabaseHostMsg_Opened,
                      std::string /* origin identifier */,
-                     string16 /* database name */,
-                     string16 /* database description */,
+                     base::string16 /* database name */,
+                     base::string16 /* database description */,
                      int64 /* estimated size */)
 
 // Notifies the browser process that a database might have been modified
 IPC_MESSAGE_CONTROL2(DatabaseHostMsg_Modified,
                      std::string /* origin identifier */,
-                     string16 /* database name */)
+                     base::string16 /* database name */)
 
 // Notifies the browser process that a database is about to close
 IPC_MESSAGE_CONTROL2(DatabaseHostMsg_Closed,
                      std::string /* origin identifier */,
-                     string16 /* database name */)
+                     base::string16 /* database name */)
 
 // Sent when a sqlite error indicates the database is corrupt.
 IPC_MESSAGE_CONTROL3(DatabaseHostMsg_HandleSqliteError,
                      std::string /* origin identifier */,
-                     string16 /* database name */,
+                     base::string16 /* database name */,
                      int  /* error */)

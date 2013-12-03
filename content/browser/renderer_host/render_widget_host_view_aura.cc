@@ -990,7 +990,8 @@ void RenderWidgetHostViewAura::Destroy() {
   delete window_;
 }
 
-void RenderWidgetHostViewAura::SetTooltipText(const string16& tooltip_text) {
+void RenderWidgetHostViewAura::SetTooltipText(
+    const base::string16& tooltip_text) {
   tooltip_ = tooltip_text;
   aura::Window* root_window = window_->GetRootWindow();
   aura::client::TooltipClient* tooltip_client =
@@ -1002,7 +1003,7 @@ void RenderWidgetHostViewAura::SetTooltipText(const string16& tooltip_text) {
   }
 }
 
-void RenderWidgetHostViewAura::SelectionChanged(const string16& text,
+void RenderWidgetHostViewAura::SelectionChanged(const base::string16& text,
                                                 size_t offset,
                                                 const gfx::Range& range) {
   RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
@@ -2180,8 +2181,10 @@ void RenderWidgetHostViewAura::SetCompositionText(
 }
 
 void RenderWidgetHostViewAura::ConfirmCompositionText() {
-  if (host_ && has_composition_text_)
-    host_->ImeConfirmComposition(string16(), gfx::Range::InvalidRange(), false);
+  if (host_ && has_composition_text_) {
+    host_->ImeConfirmComposition(base::string16(), gfx::Range::InvalidRange(),
+                                 false);
+  }
   has_composition_text_ = false;
 }
 
@@ -2191,7 +2194,7 @@ void RenderWidgetHostViewAura::ClearCompositionText() {
   has_composition_text_ = false;
 }
 
-void RenderWidgetHostViewAura::InsertText(const string16& text) {
+void RenderWidgetHostViewAura::InsertText(const base::string16& text) {
   DCHECK(text_input_type_ != ui::TEXT_INPUT_TYPE_NONE);
   if (host_)
     host_->ImeConfirmComposition(text, gfx::Range::InvalidRange(), false);
@@ -2326,7 +2329,7 @@ bool RenderWidgetHostViewAura::DeleteRange(const gfx::Range& range) {
 
 bool RenderWidgetHostViewAura::GetTextFromRange(
     const gfx::Range& range,
-    string16* text) const {
+    base::string16* text) const {
   gfx::Range selection_text_range(selection_text_offset_,
       selection_text_offset_ + selection_text_.length());
 
@@ -3252,8 +3255,10 @@ bool RenderWidgetHostViewAura::NeedsInputGrab() {
 void RenderWidgetHostViewAura::FinishImeCompositionSession() {
   if (!has_composition_text_)
     return;
-  if (host_)
-    host_->ImeConfirmComposition(string16(), gfx::Range::InvalidRange(), false);
+  if (host_) {
+    host_->ImeConfirmComposition(base::string16(), gfx::Range::InvalidRange(),
+                                 false);
+  }
   ImeCancelComposition();
 }
 

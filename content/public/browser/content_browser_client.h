@@ -314,8 +314,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called on the IO thread.
   virtual bool AllowWorkerDatabase(
       const GURL& url,
-      const string16& name,
-      const string16& display_name,
+      const base::string16& name,
+      const base::string16& display_name,
       unsigned long estimated_size,
       ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_views);
@@ -333,7 +333,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called on the IO thread.
   virtual bool AllowWorkerIndexedDB(
       const GURL& url,
-      const string16& name,
+      const base::string16& name,
       ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_views);
 

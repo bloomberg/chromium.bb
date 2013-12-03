@@ -108,23 +108,23 @@ class CONTENT_EXPORT WorkerServiceImpl
   // APIs for manipulating our set of pending shared worker instances.
   WorkerProcessHost::WorkerInstance* CreatePendingInstance(
       const GURL& url,
-      const string16& name,
+      const base::string16& name,
       ResourceContext* resource_context,
       const WorkerStoragePartition& worker_partition);
   WorkerProcessHost::WorkerInstance* FindPendingInstance(
       const GURL& url,
-      const string16& name,
+      const base::string16& name,
       const WorkerStoragePartition& worker_partition,
       ResourceContext* resource_context);
   void RemovePendingInstances(
       const GURL& url,
-      const string16& name,
+      const base::string16& name,
       const WorkerStoragePartition& worker_partition,
       ResourceContext* resource_context);
 
   WorkerProcessHost::WorkerInstance* FindSharedWorkerInstance(
       const GURL& url,
-      const string16& name,
+      const base::string16& name,
       const WorkerStoragePartition& worker_partition,
       ResourceContext* resource_context);
 

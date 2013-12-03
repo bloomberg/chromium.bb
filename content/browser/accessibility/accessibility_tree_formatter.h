@@ -52,7 +52,7 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   scoped_ptr<base::DictionaryValue> BuildAccessibilityTree();
 
   // Dumps a BrowserAccessibility tree into a string.
-  void FormatAccessibilityTree(string16* contents);
+  void FormatAccessibilityTree(base::string16* contents);
 
   // A single filter specification. See GetAllowString() and GetDenyString()
   // for more information.
@@ -62,10 +62,10 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
       ALLOW_EMPTY,
       DENY
     };
-    string16 match_str;
+    base::string16 match_str;
     Type type;
 
-    Filter(string16 match_str, Type type)
+    Filter(base::string16 match_str, Type type)
         : match_str(match_str), type(type) {}
   };
 
@@ -100,12 +100,12 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
 
  protected:
   void RecursiveFormatAccessibilityTree(const BrowserAccessibility& node,
-                                        string16* contents,
+                                        base::string16* contents,
                                         int indent);
   void RecursiveBuildAccessibilityTree(const BrowserAccessibility& node,
                                        base::DictionaryValue* tree_node);
   void RecursiveFormatAccessibilityTree(const base::DictionaryValue& tree_node,
-                                        string16* contents,
+                                        base::string16* contents,
                                         int depth = 0);
 
   // Overridden by each platform to add the required attributes for each node
@@ -113,27 +113,28 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   void AddProperties(const BrowserAccessibility& node,
                      base::DictionaryValue* dict);
 
-  string16 FormatCoordinates(const char* name,
-                             const char* x_name,
-                             const char* y_name,
-                             const base::DictionaryValue& value);
+  base::string16 FormatCoordinates(const char* name,
+                                   const char* x_name,
+                                   const char* y_name,
+                                   const base::DictionaryValue& value);
 
   // Returns a platform specific representation of a BrowserAccessibility.
   // Should be zero or more complete lines, each with |prefix| prepended
   // (to indent each line).
-  string16 ToString(const base::DictionaryValue& node, const string16& indent);
+  base::string16 ToString(const base::DictionaryValue& node,
+                          const base::string16& indent);
 
   void Initialize();
 
-  bool MatchesFilters(const string16& text, bool default_result) const;
+  bool MatchesFilters(const base::string16& text, bool default_result) const;
 
   // Writes the given attribute string out to |line| if it matches the filters.
   void WriteAttribute(bool include_by_default,
-                      const string16& attr,
-                      string16* line);
+                      const base::string16& attr,
+                      base::string16* line);
   void WriteAttribute(bool include_by_default,
                       const std::string& attr,
-                      string16* line);
+                      base::string16* line);
 
   BrowserAccessibility* root_;
 

@@ -68,7 +68,7 @@ class CONTENT_EXPORT BrowserChildProcessHost : public IPC::Sender {
       bool known_dead, int* exit_code) = 0;
 
   // Sets the user-visible name of the process.
-  virtual void SetName(const string16& name) = 0;
+  virtual void SetName(const base::string16& name) = 0;
 
   // Set the handle of the process. BrowserChildProcessHost will do this when
   // the Launch method is used to start the process. However if the owner

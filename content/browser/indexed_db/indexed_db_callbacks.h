@@ -51,7 +51,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
   virtual void OnError(const IndexedDBDatabaseError& error);
 
   // IndexedDBFactory::GetDatabaseNames
-  virtual void OnSuccess(const std::vector<string16>& string);
+  virtual void OnSuccess(const std::vector<base::string16>& string);
 
   // IndexedDBFactory::Open / DeleteDatabase
   virtual void OnBlocked(int64 existing_version);

@@ -69,7 +69,7 @@ void MediaInternalsProxy::GetEverything() {
   CallJavaScriptFunctionOnUIThread("media.onReceiveConstants", GetConstants());
 }
 
-void MediaInternalsProxy::OnUpdate(const string16& update) {
+void MediaInternalsProxy::OnUpdate(const base::string16& update) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -140,7 +140,7 @@ void MediaInternalsProxy::GetEverythingOnIOThread() {
   MediaInternals::GetInstance()->SendEverything();
 }
 
-void MediaInternalsProxy::UpdateUIOnUIThread(const string16& update) {
+void MediaInternalsProxy::UpdateUIOnUIThread(const base::string16& update) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Don't forward updates to a destructed UI.
   if (handler_)
@@ -175,7 +175,7 @@ void MediaInternalsProxy::CallJavaScriptFunctionOnUIThread(
   scoped_ptr<base::Value> args_value(args);
   std::vector<const base::Value*> args_vector;
   args_vector.push_back(args_value.get());
-  string16 update = WebUI::GetJavascriptCall(function, args_vector);
+  base::string16 update = WebUI::GetJavascriptCall(function, args_vector);
   UpdateUIOnUIThread(update);
 }
 

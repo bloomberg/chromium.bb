@@ -219,7 +219,7 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   base::win::ScopedBstr name;
   hr = text_accessible->get_accName(childid_self, name.Receive());
   ASSERT_EQ(S_OK, hr);
-  EXPECT_EQ(L"old text", string16(name));
+  EXPECT_EQ(L"old text", base::string16(name));
   name.Reset();
 
   text_dispatch.Release();
@@ -250,7 +250,7 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
 
   hr = text_accessible->get_accName(childid_self, name.Receive());
   ASSERT_EQ(S_OK, hr);
-  EXPECT_EQ(L"new text", string16(name));
+  EXPECT_EQ(L"new text", base::string16(name));
 
   text_dispatch.Release();
   text_accessible.Release();
@@ -354,7 +354,7 @@ TEST_F(BrowserAccessibilityTest, TestTextBoundaries) {
 
   base::win::ScopedBstr text;
   ASSERT_EQ(S_OK, text1_obj->get_text(0, text1_len, text.Receive()));
-  ASSERT_EQ(text1_value, base::UTF16ToUTF8(string16(text)));
+  ASSERT_EQ(text1_value, base::UTF16ToUTF8(base::string16(text)));
   text.Reset();
 
   ASSERT_EQ(S_OK, text1_obj->get_text(0, 4, text.Receive()));
@@ -452,7 +452,7 @@ TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
 
   base::win::ScopedBstr text;
   ASSERT_EQ(S_OK, root_obj->get_text(0, text_len, text.Receive()));
-  EXPECT_EQ(text1_name + text2_name, base::UTF16ToUTF8(string16(text)));
+  EXPECT_EQ(text1_name + text2_name, base::UTF16ToUTF8(base::string16(text)));
 
   long hyperlink_count;
   ASSERT_EQ(S_OK, root_obj->get_nHyperlinks(&hyperlink_count));
@@ -548,7 +548,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   const std::string embed = base::UTF16ToUTF8(
       BrowserAccessibilityWin::kEmbeddedCharacter);
   EXPECT_EQ(text1_name + embed + text2_name + embed,
-            UTF16ToUTF8(string16(text)));
+            UTF16ToUTF8(base::string16(text)));
   text.Reset();
 
   long hyperlink_count;
@@ -566,7 +566,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
             hyperlink.QueryInterface<IAccessibleText>(hypertext.Receive()));
   EXPECT_EQ(S_OK, hypertext->get_text(0, 3, text.Receive()));
   EXPECT_STREQ(button1_text_name.c_str(),
-               base::UTF16ToUTF8(string16(text)).c_str());
+               base::UTF16ToUTF8(base::string16(text)).c_str());
   text.Reset();
   hyperlink.Release();
   hypertext.Release();
@@ -576,7 +576,7 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
             hyperlink.QueryInterface<IAccessibleText>(hypertext.Receive()));
   EXPECT_EQ(S_OK, hypertext->get_text(0, 4, text.Receive()));
   EXPECT_STREQ(link1_text_name.c_str(),
-               base::UTF16ToUTF8(string16(text)).c_str());
+               base::UTF16ToUTF8(base::string16(text)).c_str());
   text.Reset();
   hyperlink.Release();
   hypertext.Release();

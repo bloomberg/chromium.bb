@@ -34,7 +34,7 @@ class IndexWriter {
                        int64 index_id,
                        bool* can_add_keys,
                        const IndexedDBKey& primary_key,
-                       string16* error_message) const WARN_UNUSED_RESULT;
+                       base::string16* error_message) const WARN_UNUSED_RESULT;
 
   void WriteIndexKeys(const IndexedDBBackingStore::RecordIdentifier& record,
                       IndexedDBBackingStore* store,
@@ -68,7 +68,7 @@ bool MakeIndexWriters(
     const std::vector<int64>& index_ids,
     const std::vector<IndexedDBDatabase::IndexKeys>& index_keys,
     ScopedVector<IndexWriter>* index_writers,
-    string16* error_message,
+    base::string16* error_message,
     bool* completed) WARN_UNUSED_RESULT;
 
 }  // namespace content

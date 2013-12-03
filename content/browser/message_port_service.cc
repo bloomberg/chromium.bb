@@ -108,7 +108,7 @@ void MessagePortService::Entangle(int local_message_port_id,
 
 void MessagePortService::PostMessage(
     int sender_message_port_id,
-    const string16& message,
+    const base::string16& message,
     const std::vector<int>& sent_message_port_ids) {
   if (!message_ports_.count(sender_message_port_id)) {
     NOTREACHED();
@@ -130,7 +130,7 @@ void MessagePortService::PostMessage(
 
 void MessagePortService::PostMessageTo(
     int message_port_id,
-    const string16& message,
+    const base::string16& message,
     const std::vector<int>& sent_message_port_ids) {
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();

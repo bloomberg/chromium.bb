@@ -144,7 +144,7 @@ class RenderViewImplTest : public RenderViewTest {
   int SendKeyEvent(MockKeyboard::Layout layout,
                    int key_code,
                    MockKeyboard::Modifiers modifiers,
-                   string16* output) {
+                   base::string16* output) {
 #if defined(OS_WIN)
     // Retrieve the Unicode character for the given tuple (keyboard-layout,
     // key-code, and modifiers).
@@ -1052,7 +1052,7 @@ TEST_F(RenderViewImplTest, ImeComposition) {
 
       case IME_CANCELCOMPOSITION:
         view()->OnImeSetComposition(
-            string16(),
+            base::string16(),
             std::vector<blink::WebCompositionUnderline>(),
             0, 0);
         break;
@@ -1240,7 +1240,7 @@ TEST_F(RenderViewImplTest, MAYBE_OnHandleKeyboardEvent) {
         // driver is installed in a PC and the driver can assign a Unicode
         // charcter for the given tuple (key-code and modifiers).
         int key_code = kKeyCodes[k];
-        string16 char_code;
+        base::string16 char_code;
         if (SendKeyEvent(layout, key_code, modifiers, &char_code) < 0)
           continue;
 
@@ -1487,7 +1487,7 @@ TEST_F(RenderViewImplTest, MAYBE_InsertCharacters) {
         // driver is installed in a PC and the driver can assign a Unicode
         // charcter for the given tuple (layout, key-code, and modifiers).
         int key_code = kKeyCodes[k];
-        string16 char_code;
+        base::string16 char_code;
         if (SendKeyEvent(layout, key_code, modifiers, &char_code) < 0)
           continue;
       }
@@ -1745,7 +1745,7 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   LoadHTML("<div id=pagename>Page A</div>");
   blink::WebHistoryItem page_a_item = GetMainFrame()->currentHistoryItem();
   int was_page_a = -1;
-  string16 check_page_a =
+  base::string16 check_page_a =
       ASCIIToUTF16(
           "Number(document.getElementById('pagename').innerHTML == 'Page A')");
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_a, &was_page_a));
@@ -1753,7 +1753,7 @@ TEST_F(RenderViewImplTest, TestBackForward) {
 
   LoadHTML("<div id=pagename>Page B</div>");
   int was_page_b = -1;
-  string16 check_page_b =
+  base::string16 check_page_b =
       ASCIIToUTF16(
           "Number(document.getElementById('pagename').innerHTML == 'Page B')");
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
@@ -1761,7 +1761,7 @@ TEST_F(RenderViewImplTest, TestBackForward) {
 
   LoadHTML("<div id=pagename>Page C</div>");
   int was_page_c = -1;
-  string16 check_page_c =
+  base::string16 check_page_c =
       ASCIIToUTF16(
           "Number(document.getElementById('pagename').innerHTML == 'Page C')");
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
@@ -1802,14 +1802,14 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
   LoadHTML("<textarea id=\"test\"></textarea>");
   ExecuteJavaScript("document.getElementById('test').focus();");
 
-  const string16 empty_string = UTF8ToUTF16("");
+  const base::string16 empty_string = UTF8ToUTF16("");
   const std::vector<blink::WebCompositionUnderline> empty_underline;
   std::vector<gfx::Rect> bounds;
   view()->OnSetFocus(true);
   view()->OnSetInputMethodActive(true);
 
   // ASCII composition
-  const string16 ascii_composition = UTF8ToUTF16("aiueo");
+  const base::string16 ascii_composition = UTF8ToUTF16("aiueo");
   view()->OnImeSetComposition(ascii_composition, empty_underline, 0, 0);
   view()->GetCompositionCharacterBounds(&bounds);
   ASSERT_EQ(ascii_composition.size(), bounds.size());
@@ -1819,7 +1819,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
       empty_string, gfx::Range::InvalidRange(), false);
 
   // Non surrogate pair unicode character.
-  const string16 unicode_composition = UTF8ToUTF16(
+  const base::string16 unicode_composition = UTF8ToUTF16(
       "\xE3\x81\x82\xE3\x81\x84\xE3\x81\x86\xE3\x81\x88\xE3\x81\x8A");
   view()->OnImeSetComposition(unicode_composition, empty_underline, 0, 0);
   view()->GetCompositionCharacterBounds(&bounds);
@@ -1830,7 +1830,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
       empty_string, gfx::Range::InvalidRange(), false);
 
   // Surrogate pair character.
-  const string16 surrogate_pair_char = UTF8ToUTF16("\xF0\xA0\xAE\x9F");
+  const base::string16 surrogate_pair_char = UTF8ToUTF16("\xF0\xA0\xAE\x9F");
   view()->OnImeSetComposition(surrogate_pair_char,
                               empty_underline,
                               0,
@@ -1843,7 +1843,7 @@ TEST_F(RenderViewImplTest, GetCompositionCharacterBoundsTest) {
       empty_string, gfx::Range::InvalidRange(), false);
 
   // Mixed string.
-  const string16 surrogate_pair_mixed_composition =
+  const base::string16 surrogate_pair_mixed_composition =
       surrogate_pair_char + UTF8ToUTF16("\xE3\x81\x82") + surrogate_pair_char +
       UTF8ToUTF16("b") + surrogate_pair_char;
   const size_t utf16_length = 8UL;
@@ -2045,7 +2045,7 @@ class SuppressErrorPageTest : public RenderViewTest {
         const blink::WebURLError& error,
         const std::string& accept_languages,
         std::string* error_html,
-        string16* error_description) OVERRIDE {
+        base::string16* error_description) OVERRIDE {
       if (error_html)
         *error_html = "A suffusion of yellow.";
     }

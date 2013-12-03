@@ -54,12 +54,12 @@ class NetworkLocationProvider
     // Makes the key for the map of cached positions, using a set of
     // data. Returns true if a good key was generated, false otherwise.
     static bool MakeKey(const WifiData& wifi_data,
-                        string16* key);
+                        base::string16* key);
 
     // The cache of positions. This is stored as a map keyed on a string that
     // represents a set of data, and a list to provide
     // least-recently-added eviction.
-    typedef std::map<string16, Geoposition> CacheMap;
+    typedef std::map<base::string16, Geoposition> CacheMap;
     CacheMap cache_;
     typedef std::list<CacheMap::iterator> CacheAgeList;
     CacheAgeList cache_age_list_;  // Oldest first.
@@ -68,7 +68,7 @@ class NetworkLocationProvider
   NetworkLocationProvider(AccessTokenStore* access_token_store,
                           net::URLRequestContextGetter* context,
                           const GURL& url,
-                          const string16& access_token);
+                          const base::string16& access_token);
   virtual ~NetworkLocationProvider();
 
   // LocationProvider implementation
@@ -92,7 +92,7 @@ class NetworkLocationProvider
 
   void LocationResponseAvailable(const Geoposition& position,
                                  bool server_error,
-                                 const string16& access_token,
+                                 const base::string16& access_token,
                                  const WifiData& wifi_data);
 
   scoped_refptr<AccessTokenStore> access_token_store_;
@@ -111,7 +111,7 @@ class NetworkLocationProvider
 
   // Cached value loaded from the token store or set by a previous server
   // response, and sent in each subsequent network request.
-  string16 access_token_;
+  base::string16 access_token_;
 
   // The current best position estimate.
   Geoposition position_;
@@ -138,7 +138,7 @@ CONTENT_EXPORT LocationProviderBase* NewNetworkLocationProvider(
     AccessTokenStore* access_token_store,
     net::URLRequestContextGetter* context,
     const GURL& url,
-    const string16& access_token);
+    const base::string16& access_token);
 
 }  // namespace content
 

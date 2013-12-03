@@ -48,7 +48,7 @@ namespace address_parser {
 
 using namespace internal;
 
-bool FindAddress(const string16& text, string16* address) {
+bool FindAddress(const base::string16& text, base::string16* address) {
   size_t start, end;
   if (FindAddress(text.begin(), text.end(), &start, &end)) {
     address->assign(text.substr(start, end));
@@ -57,8 +57,8 @@ bool FindAddress(const string16& text, string16* address) {
   return false;
 }
 
-bool FindAddress(const string16::const_iterator& begin,
-                 const string16::const_iterator& end,
+bool FindAddress(const base::string16::const_iterator& begin,
+                 const base::string16::const_iterator& end,
                  size_t* start_pos,
                  size_t* end_pos) {
   HouseNumberParser house_number_parser;
@@ -100,7 +100,7 @@ bool FindAddress(const string16::const_iterator& begin,
 
           // Check the number of address lines.
           if (tokenizer.token_is_delim() && newline_delimiters.find(
-              *tokenizer.token_begin()) != string16::npos) {
+              *tokenizer.token_begin()) != base::string16::npos) {
             ++num_lines;
           }
         } while (tokenizer.token_is_delim());

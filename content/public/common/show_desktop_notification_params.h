@@ -21,15 +21,15 @@ struct CONTENT_EXPORT ShowDesktopNotificationHostMsgParams {
 
   // Contents of the notification if is_html is false.
   GURL icon_url;
-  string16 title;
-  string16 body;
+  base::string16 title;
+  base::string16 body;
 
   // Directionality of the notification.
   blink::WebTextDirection direction;
 
   // ReplaceID if this notification should replace an existing one; may be
   // empty if no replacement is called for.
-  string16 replace_id;
+  base::string16 replace_id;
 
   // Notification ID for sending events back for this notification.
   int notification_id;

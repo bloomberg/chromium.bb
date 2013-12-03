@@ -23,7 +23,8 @@ class ReferenceIdAdapter;
 class WebContentDecryptionModuleImpl
     : public blink::WebContentDecryptionModule {
  public:
-  static WebContentDecryptionModuleImpl* Create(const string16& key_system);
+  static WebContentDecryptionModuleImpl* Create(
+      const base::string16& key_system);
 
   virtual ~WebContentDecryptionModuleImpl();
 

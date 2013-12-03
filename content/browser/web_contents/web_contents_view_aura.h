@@ -118,7 +118,7 @@ class CONTENT_EXPORT WebContentsViewAura
       RenderWidgetHost* render_widget_host) OVERRIDE;
   virtual RenderWidgetHostView* CreateViewForPopupWidget(
       RenderWidgetHost* render_widget_host) OVERRIDE;
-  virtual void SetPageTitle(const string16& title) OVERRIDE;
+  virtual void SetPageTitle(const base::string16& title) OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* host) OVERRIDE;
   virtual void RenderViewSwappedIn(RenderViewHost* host) OVERRIDE;
   virtual void SetOverscrollControllerEnabled(bool enabled) OVERRIDE;

@@ -58,7 +58,7 @@ class WebMessagePortChannelImpl
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
-  void OnMessage(const string16& message,
+  void OnMessage(const base::string16& message,
                  const std::vector<int>& sent_message_port_ids,
                  const std::vector<int>& new_routing_ids);
   void OnMessagesQueued();
@@ -67,7 +67,7 @@ class WebMessagePortChannelImpl
     Message();
     ~Message();
 
-    string16 message;
+    base::string16 message;
     std::vector<WebMessagePortChannelImpl*> ports;
   };
 

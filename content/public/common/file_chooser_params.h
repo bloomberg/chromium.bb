@@ -37,14 +37,14 @@ struct CONTENT_EXPORT FileChooserParams {
 
   // Title to be used for the dialog. This may be empty for the default title,
   // which will be either "Open" or "Save" depending on the mode.
-  string16 title;
+  base::string16 title;
 
   // Default file name to select in the dialog.
   base::FilePath default_file_name;
 
   // A list of valid lower-cased MIME types or file extensions specified in an
   // input element. It is used to restrict selectable files to such types.
-  std::vector<string16> accept_types;
+  std::vector<base::string16> accept_types;
 
 #if defined(OS_ANDROID)
   // See http://www.w3.org/TR/html-media-capture for more information.

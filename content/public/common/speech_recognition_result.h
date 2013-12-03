@@ -14,12 +14,12 @@
 namespace content {
 
 struct SpeechRecognitionHypothesis {
-  string16 utterance;
+  base::string16 utterance;
   double confidence;
 
   SpeechRecognitionHypothesis() : confidence(0.0) {}
 
-  SpeechRecognitionHypothesis(const string16& utterance_value,
+  SpeechRecognitionHypothesis(const base::string16& utterance_value,
                               double confidence_value)
       : utterance(utterance_value),
         confidence(confidence_value) {

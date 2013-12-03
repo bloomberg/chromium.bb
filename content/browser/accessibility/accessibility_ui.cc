@@ -233,7 +233,7 @@ void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {
   }
   scoped_ptr<AccessibilityTreeFormatter> formatter(
       AccessibilityTreeFormatter::Create(rvh));
-  string16 accessibility_contents_utf16;
+  base::string16 accessibility_contents_utf16;
   BrowserAccessibilityManager* manager =
       host_view->GetBrowserAccessibilityManager();
   if (!manager) {

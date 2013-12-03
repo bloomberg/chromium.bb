@@ -19,7 +19,7 @@
 
 namespace content {
 
-void ShellLoginDialog::PlatformCreateDialog(const string16& message) {
+void ShellLoginDialog::PlatformCreateDialog(const base::string16& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   int render_process_id;

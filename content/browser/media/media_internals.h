@@ -37,7 +37,7 @@ class CONTENT_EXPORT MediaInternals
                      const std::vector<media::MediaLogEvent>& events);
 
   // Called with the update string.
-  typedef base::Callback<void(const string16&)> UpdateCallback;
+  typedef base::Callback<void(const base::string16&)> UpdateCallback;
 
   // Add/remove update callbacks (see above).  Must be called on the IO thread.
   void AddUpdateCallback(const UpdateCallback& callback);
@@ -59,7 +59,7 @@ class CONTENT_EXPORT MediaInternals
 
   // Sends |update| to each registered UpdateCallback.  Safe to call from any
   // thread, but will forward to the IO thread.
-  void SendUpdate(const string16& update);
+  void SendUpdate(const base::string16& update);
 
   // Caches |value| under |cache_key| so that future SendEverything() calls will
   // include the current data.  Calls JavaScript |function|(|value|) for each

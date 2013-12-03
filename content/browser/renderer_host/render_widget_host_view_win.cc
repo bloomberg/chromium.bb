@@ -836,14 +836,15 @@ void RenderWidgetHostViewWin::Destroy() {
   DestroyWindow();
 }
 
-void RenderWidgetHostViewWin::SetTooltipText(const string16& tooltip_text) {
+void RenderWidgetHostViewWin::SetTooltipText(
+    const base::string16& tooltip_text) {
   if (!render_widget_host_->is_hidden())
     EnsureTooltip();
 
   // Clamp the tooltip length to kMaxTooltipLength so that we don't
   // accidentally DOS the user with a mega tooltip (since Windows doesn't seem
   // to do this itself).
-  const string16 new_tooltip_text =
+  const base::string16 new_tooltip_text =
       gfx::TruncateString(tooltip_text, kMaxTooltipLength);
 
   if (new_tooltip_text != tooltip_text_) {
@@ -1017,7 +1018,7 @@ void RenderWidgetHostViewWin::ClearCompositionText() {
   NOTIMPLEMENTED();
 }
 
-void RenderWidgetHostViewWin::InsertText(const string16& text) {
+void RenderWidgetHostViewWin::InsertText(const base::string16& text) {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return;
@@ -1153,7 +1154,7 @@ bool RenderWidgetHostViewWin::DeleteRange(const gfx::Range& range) {
 }
 
 bool RenderWidgetHostViewWin::GetTextFromRange(const gfx::Range& range,
-                                               string16* text) const {
+                                               base::string16* text) const {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();
     return false;

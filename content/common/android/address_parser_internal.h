@@ -19,12 +19,12 @@ namespace internal {
 
 // Exposed for tests.
 struct CONTENT_EXPORT Word {
-  string16::const_iterator begin;
-  string16::const_iterator end;
+  base::string16::const_iterator begin;
+  base::string16::const_iterator end;
 
   Word() {}
-  Word(const string16::const_iterator& begin,
-       const string16::const_iterator& end);
+  Word(const base::string16::const_iterator& begin,
+       const base::string16::const_iterator& end);
 };
 
 // Exposed for tests.
@@ -32,8 +32,8 @@ class CONTENT_EXPORT HouseNumberParser {
  public:
   HouseNumberParser() {}
 
-  bool Parse(const string16::const_iterator& begin,
-             const string16::const_iterator& end,
+  bool Parse(const base::string16::const_iterator& begin,
+             const base::string16::const_iterator& end,
              Word* word);
 
  private:
@@ -48,9 +48,9 @@ class CONTENT_EXPORT HouseNumberParser {
 
   // Iterators to the beginning, current position and ending of the string
   // being currently parsed.
-  string16::const_iterator begin_;
-  string16::const_iterator it_;
-  string16::const_iterator end_;
+  base::string16::const_iterator begin_;
+  base::string16::const_iterator it_;
+  base::string16::const_iterator end_;
 
   // Number of digits found in the current result candidate.
   size_t num_digits_;
@@ -63,7 +63,7 @@ class CONTENT_EXPORT HouseNumberParser {
 };
 
 typedef std::vector<Word> WordList;
-typedef base::StringTokenizerT<string16, string16::const_iterator>
+typedef base::StringTokenizerT<base::string16, base::string16::const_iterator>
     String16Tokenizer;
 
 // These are exposed for tests.

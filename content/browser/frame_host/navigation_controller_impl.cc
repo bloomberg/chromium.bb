@@ -163,7 +163,7 @@ NavigationEntry* NavigationController::CreateNavigationEntry(
       -1,
       loaded_url,
       referrer,
-      string16(),
+      base::string16(),
       transition,
       is_renderer_initiated);
   entry->SetVirtualURL(url);
@@ -354,7 +354,7 @@ void NavigationControllerImpl::ReloadInternal(bool check_for_repost,
       // meanwhile, so we need to revert to the default title upon reload and
       // invalidate the previously cached title (SetTitle will do both).
       // See Chromium issue 96041.
-      pending_entry_->SetTitle(string16());
+      pending_entry_->SetTitle(base::string16());
 
       pending_entry_->SetTransitionType(PAGE_TRANSITION_RELOAD);
     }

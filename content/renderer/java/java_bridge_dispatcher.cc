@@ -65,7 +65,7 @@ void JavaBridgeDispatcher::DidClearWindowObject(blink::WebFrame* web_frame) {
 }
 
 void JavaBridgeDispatcher::OnAddNamedObject(
-    const string16& name,
+    const base::string16& name,
     const NPVariant_Param& variant_param) {
   DCHECK_EQ(variant_param.type, NPVARIANT_PARAM_SENDER_OBJECT_ROUTING_ID);
 
@@ -95,7 +95,7 @@ void JavaBridgeDispatcher::OnAddNamedObject(
   objects_[name] = variant;
 }
 
-void JavaBridgeDispatcher::OnRemoveNamedObject(const string16& name) {
+void JavaBridgeDispatcher::OnRemoveNamedObject(const base::string16& name) {
   if (!channel_.get()) {
     DCHECK(objects_.empty());
     return;

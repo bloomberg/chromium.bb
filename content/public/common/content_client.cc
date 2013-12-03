@@ -89,8 +89,8 @@ std::string ContentClient::GetUserAgent() const {
   return std::string();
 }
 
-string16 ContentClient::GetLocalizedString(int message_id) const {
-  return string16();
+base::string16 ContentClient::GetLocalizedString(int message_id) const {
+  return base::string16();
 }
 
 base::StringPiece ContentClient::GetDataResource(

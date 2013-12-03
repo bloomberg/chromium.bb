@@ -27,7 +27,7 @@ struct CONTENT_EXPORT DownloadSaveInfo {
 
   // If non-empty, contains an untrusted filename suggestion. This can't contain
   // a path (only a filename), and is only effective if |file_path| is empty.
-  string16 suggested_name;
+  base::string16 suggested_name;
 
   // If non-NULL, contains the source data stream for the file contents.
   scoped_ptr<net::FileStream> file_stream;

@@ -365,9 +365,9 @@ BrowserPluginGuest::BrowserPluginGuest(
 
 bool BrowserPluginGuest::AddMessageToConsole(WebContents* source,
                                              int32 level,
-                                             const string16& message,
+                                             const base::string16& message,
                                              int32 line_no,
-                                             const string16& source_id) {
+                                             const base::string16& source_id) {
   if (!delegate_)
     return false;
 
@@ -796,7 +796,7 @@ WebContents* BrowserPluginGuest::OpenURLFromTab(WebContents* source,
 
 void BrowserPluginGuest::WebContentsCreated(WebContents* source_contents,
                                             int64 source_frame_id,
-                                            const string16& frame_name,
+                                            const base::string16& frame_name,
                                             const GURL& target_url,
                                             WebContents* new_contents) {
   WebContentsImpl* new_contents_impl =
@@ -1028,7 +1028,7 @@ void BrowserPluginGuest::SendQueuedMessages() {
 
 void BrowserPluginGuest::DidCommitProvisionalLoadForFrame(
     int64 frame_id,
-    const string16& frame_unique_name,
+    const base::string16& frame_unique_name,
     bool is_main_frame,
     const GURL& url,
     PageTransition transition_type,
@@ -1045,7 +1045,7 @@ void BrowserPluginGuest::DidStopLoading(RenderViewHost* render_view_host) {
     const char script[] = "window.addEventListener('dragstart', function() { "
                           "  window.event.preventDefault(); "
                           "});";
-    render_view_host->ExecuteJavascriptInWebFrame(string16(),
+    render_view_host->ExecuteJavascriptInWebFrame(base::string16(),
                                                   ASCIIToUTF16(script));
   }
 }
@@ -1633,8 +1633,8 @@ void BrowserPluginGuest::RunJavaScriptDialog(
     const GURL& origin_url,
     const std::string& accept_lang,
     JavaScriptMessageType javascript_message_type,
-    const string16& message_text,
-    const string16& default_prompt_text,
+    const base::string16& message_text,
+    const base::string16& default_prompt_text,
     const DialogClosedCallback& callback,
     bool* did_suppress_message) {
   base::DictionaryValue request_info;
@@ -1659,18 +1659,18 @@ void BrowserPluginGuest::RunJavaScriptDialog(
 
 void BrowserPluginGuest::RunBeforeUnloadDialog(
     WebContents* web_contents,
-    const string16& message_text,
+    const base::string16& message_text,
     bool is_reload,
     const DialogClosedCallback& callback) {
   // This is called if the guest has a beforeunload event handler.
   // This callback allows navigation to proceed.
-  callback.Run(true, string16());
+  callback.Run(true, base::string16());
 }
 
 bool BrowserPluginGuest::HandleJavaScriptDialog(
     WebContents* web_contents,
     bool accept,
-    const string16* prompt_override) {
+    const base::string16* prompt_override) {
   return false;
 }
 

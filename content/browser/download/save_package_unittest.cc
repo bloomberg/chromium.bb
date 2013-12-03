@@ -346,7 +346,7 @@ TEST_F(SavePackageTest, MAYBE_TestEnsureMimeExtension) {
 
 static const struct SuggestedSaveNameTestCase {
   const char* page_url;
-  const string16 page_title;
+  const base::string16 page_title;
   const base::FilePath::CharType* expected_name;
   bool ensure_html_extension;
 } kSuggestedSaveNames[] = {

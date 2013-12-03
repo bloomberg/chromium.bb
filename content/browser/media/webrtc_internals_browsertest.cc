@@ -145,7 +145,7 @@ class MAYBE_WebRTCInternalsBrowserTest: public ContentBrowserTest {
   }
 
   void ExpectTitle(const std::string& expected_title) const {
-    string16 expected_title16(ASCIIToUTF16(expected_title));
+    base::string16 expected_title16(ASCIIToUTF16(expected_title));
     TitleWatcher title_watcher(shell()->web_contents(), expected_title16);
     EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
   }

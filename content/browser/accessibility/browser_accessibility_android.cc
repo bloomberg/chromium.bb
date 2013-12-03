@@ -40,7 +40,7 @@ bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
     return false;
 
   // Headings with text can drop their children.
-  string16 name = GetText();
+  base::string16 name = GetText();
   if (role() == blink::WebAXRoleHeading && !name.empty())
     return true;
 
@@ -168,15 +168,15 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
   return class_name;
 }
 
-string16 BrowserAccessibilityAndroid::GetText() const {
+base::string16 BrowserAccessibilityAndroid::GetText() const {
   if (IsIframe() ||
       role() == blink::WebAXRoleWebArea) {
-    return string16();
+    return base::string16();
   }
 
-  string16 description = GetString16Attribute(
+  base::string16 description = GetString16Attribute(
       AccessibilityNodeData::ATTR_DESCRIPTION);
-  string16 text;
+  base::string16 text;
   if (!name().empty())
     text = base::UTF8ToUTF16(name());
   else if (!description.empty())
@@ -320,7 +320,7 @@ int BrowserAccessibilityAndroid::GetTextChangeRemovedCount() const {
   return (old_len - left - right);
 }
 
-string16 BrowserAccessibilityAndroid::GetTextChangeBeforeText() const {
+base::string16 BrowserAccessibilityAndroid::GetTextChangeBeforeText() const {
   return old_value_;
 }
 
@@ -365,7 +365,7 @@ bool BrowserAccessibilityAndroid::HasOnlyStaticTextChildren() const {
 }
 
 bool BrowserAccessibilityAndroid::IsIframe() const {
-  string16 html_tag = GetString16Attribute(
+  base::string16 html_tag = GetString16Attribute(
       AccessibilityNodeData::ATTR_HTML_TAG);
   return html_tag == ASCIIToUTF16("iframe");
 }
@@ -383,7 +383,7 @@ void BrowserAccessibilityAndroid::PostInitialize() {
   if (role_ == blink::WebAXRoleAlert && first_time_)
     manager_->NotifyAccessibilityEvent(blink::WebAXEventAlert, this);
 
-  string16 live;
+  base::string16 live;
   if (GetString16Attribute(
       AccessibilityNodeData::ATTR_CONTAINER_LIVE_STATUS, &live)) {
     NotifyLiveRegionUpdate(live);
@@ -392,12 +392,13 @@ void BrowserAccessibilityAndroid::PostInitialize() {
   first_time_ = false;
 }
 
-void BrowserAccessibilityAndroid::NotifyLiveRegionUpdate(string16& aria_live) {
+void BrowserAccessibilityAndroid::NotifyLiveRegionUpdate(
+    base::string16& aria_live) {
   if (!EqualsASCII(aria_live, aria_strings::kAriaLivePolite) &&
       !EqualsASCII(aria_live, aria_strings::kAriaLiveAssertive))
     return;
 
-  string16 text = GetText();
+  base::string16 text = GetText();
   if (cached_text_ != text) {
     if (!text.empty()) {
       manager_->NotifyAccessibilityEvent(blink::WebAXEventShow,

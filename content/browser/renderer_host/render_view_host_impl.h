@@ -133,8 +133,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void DesktopNotificationPermissionRequestDone(
       int callback_context) OVERRIDE;
   virtual void DesktopNotificationPostDisplay(int callback_context) OVERRIDE;
-  virtual void DesktopNotificationPostError(int notification_id,
-                                            const string16& message) OVERRIDE;
+  virtual void DesktopNotificationPostError(
+      int notification_id,
+      const base::string16& message) OVERRIDE;
   virtual void DesktopNotificationPostClose(int notification_id,
                                             bool by_user) OVERRIDE;
   virtual void DesktopNotificationPostClick(int notification_id) OVERRIDE;
@@ -172,17 +173,18 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point& location,
       const blink::WebMediaPlayerAction& action) OVERRIDE;
-  virtual void ExecuteJavascriptInWebFrame(const string16& frame_xpath,
-                                           const string16& jscript) OVERRIDE;
+  virtual void ExecuteJavascriptInWebFrame(
+      const base::string16& frame_xpath,
+      const base::string16& jscript) OVERRIDE;
   virtual void ExecuteJavascriptInWebFrameCallbackResult(
-      const string16& frame_xpath,
-      const string16& jscript,
+      const base::string16& frame_xpath,
+      const base::string16& jscript,
       const JavascriptResultCallback& callback) OVERRIDE;
   virtual void ExecutePluginActionAtLocation(
       const gfx::Point& location,
       const blink::WebPluginAction& action) OVERRIDE;
   virtual void ExitFullscreen() OVERRIDE;
-  virtual void Find(int request_id, const string16& search_text,
+  virtual void Find(int request_id, const base::string16& search_text,
                     const blink::WebFindOptions& options) OVERRIDE;
   virtual void StopFinding(StopFindAction action) OVERRIDE;
   virtual void FirePageBeforeUnload(bool for_cross_site_transition) OVERRIDE;
@@ -192,7 +194,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   virtual RenderViewHostDelegate* GetDelegate() const OVERRIDE;
   virtual int GetEnabledBindings() const OVERRIDE;
   virtual SiteInstance* GetSiteInstance() const OVERRIDE;
-  virtual void InsertCSS(const string16& frame_xpath,
+  virtual void InsertCSS(const base::string16& frame_xpath,
                          const std::string& css) OVERRIDE;
   virtual bool IsRenderViewLive() const OVERRIDE;
   virtual bool IsSubframe() const OVERRIDE;
@@ -233,7 +235,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // The |opener_route_id| parameter indicates which RenderView created this
   // (MSG_ROUTING_NONE if none). If |max_page_id| is larger than -1, the
   // RenderView is told to start issuing page IDs at |max_page_id| + 1.
-  virtual bool CreateRenderView(const string16& frame_name,
+  virtual bool CreateRenderView(const base::string16& frame_name,
                                 int opener_route_id,
                                 int32 max_page_id);
 
@@ -348,7 +350,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // closed by the user.
   void JavaScriptDialogClosed(IPC::Message* reply_msg,
                               bool success,
-                              const string16& user_input);
+                              const base::string16& user_input);
 
   // Tells the renderer view to focus the first (last if reverse is true) node.
   void SetInitialFocus(bool reverse);
@@ -534,7 +536,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnNavigate(const IPC::Message& msg);
   void OnUpdateState(int32 page_id, const PageState& state);
   void OnUpdateTitle(int32 page_id,
-                     const string16& title,
+                     const base::string16& title,
                      blink::WebTextDirection title_direction);
   void OnUpdateEncoding(const std::string& encoding);
   void OnUpdateTargetURL(int32 page_id, const GURL& url);
@@ -556,7 +558,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnDidChangeScrollOffsetPinningForMainFrame(bool is_pinned_to_left,
                                                   bool is_pinned_to_right);
   void OnDidChangeNumWheelEvents(int count);
-  void OnSelectionChanged(const string16& text,
+  void OnSelectionChanged(const base::string16& text,
                           size_t offset,
                           const gfx::Range& range);
   void OnSelectionBoundsChanged(
@@ -564,13 +566,13 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnPasteFromSelectionClipboard();
   void OnRouteCloseEvent();
   void OnRouteMessageEvent(const ViewMsg_PostMessage_Params& params);
-  void OnRunJavaScriptMessage(const string16& message,
-                              const string16& default_prompt,
+  void OnRunJavaScriptMessage(const base::string16& message,
+                              const base::string16& default_prompt,
                               const GURL& frame_url,
                               JavaScriptMessageType type,
                               IPC::Message* reply_msg);
   void OnRunBeforeUnloadConfirm(const GURL& frame_url,
-                                const string16& message,
+                                const base::string16& message,
                                 bool is_reload,
                                 IPC::Message* reply_msg);
   void OnStartDragging(const DropData& drop_data,
@@ -583,9 +585,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnTakeFocus(bool reverse);
   void OnFocusedNodeChanged(bool is_editable_node);
   void OnAddMessageToConsole(int32 level,
-                             const string16& message,
+                             const base::string16& message,
                              int32 line_no,
-                             const string16& source_id);
+                             const base::string16& source_id);
   void OnUpdateInspectorSetting(const std::string& key,
                                 const std::string& value);
   void OnShouldCloseACK(

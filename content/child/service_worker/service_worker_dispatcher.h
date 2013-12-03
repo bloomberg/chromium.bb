@@ -65,7 +65,7 @@ class ServiceWorkerDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
   void OnRegistrationError(int32 thread_id,
                            int32 request_id,
                            blink::WebServiceWorkerError::ErrorType error_type,
-                           const string16& message);
+                           const base::string16& message);
 
   IDMap<blink::WebServiceWorkerProvider::WebServiceWorkerCallbacks,
         IDMapOwnPointer> pending_callbacks_;

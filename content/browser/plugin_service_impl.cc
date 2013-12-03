@@ -547,9 +547,9 @@ bool PluginServiceImpl::GetPluginInfoByPath(const base::FilePath& plugin_path,
   return false;
 }
 
-string16 PluginServiceImpl::GetPluginDisplayNameByPath(
+base::string16 PluginServiceImpl::GetPluginDisplayNameByPath(
     const base::FilePath& path) {
-  string16 plugin_name = path.LossyDisplayName();
+  base::string16 plugin_name = path.LossyDisplayName();
   WebPluginInfo info;
   if (PluginService::GetInstance()->GetPluginInfoByPath(path, &info) &&
       !info.name.empty()) {

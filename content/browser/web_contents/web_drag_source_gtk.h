@@ -92,7 +92,7 @@ class CONTENT_EXPORT WebDragSourceGtk :
   GdkDragContext* drag_context_;
 
   // The file mime type for a drag-out download.
-  string16 wide_download_mime_type_;
+  base::string16 wide_download_mime_type_;
 
   // The file name to be saved to for a drag-out download.
   base::FilePath download_file_name_;

@@ -45,7 +45,7 @@ class MediaInternalsTest
 
  protected:
   // Extracts and deserializes the JSON update data; merges into |update_data_|.
-  void UpdateCallbackImpl(const string16& update) {
+  void UpdateCallbackImpl(const base::string16& update) {
     // Each update string looks like "<JavaScript Function Name>({<JSON>});", to
     // use the JSON reader we need to strip out the JavaScript code.
     std::string utf8_update = base::UTF16ToUTF8(update);

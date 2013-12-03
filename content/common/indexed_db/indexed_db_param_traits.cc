@@ -82,7 +82,7 @@ bool ParamTraits<IndexedDBKey>::Read(const Message* m,
       return true;
     }
     case WebIDBKeyTypeString: {
-      string16 string;
+      base::string16 string;
       if (!ReadParam(m, iter, &string))
         return false;
       *r = IndexedDBKey(string);
@@ -156,14 +156,14 @@ bool ParamTraits<IndexedDBKeyPath>::Read(const Message* m,
 
   switch (type) {
     case WebIDBKeyPathTypeArray: {
-      std::vector<string16> array;
+      std::vector<base::string16> array;
       if (!ReadParam(m, iter, &array))
         return false;
       *r = IndexedDBKeyPath(array);
       return true;
     }
     case WebIDBKeyPathTypeString: {
-      string16 string;
+      base::string16 string;
       if (!ReadParam(m, iter, &string))
         return false;
       *r = IndexedDBKeyPath(string);
@@ -184,7 +184,7 @@ void ParamTraits<IndexedDBKeyPath>::Log(const param_type& p, std::string* l) {
   LogParam(p.string(), l);
   l->append(", ");
   l->append("[");
-  std::vector<string16>::const_iterator it = p.array().begin();
+  std::vector<base::string16>::const_iterator it = p.array().begin();
   while (it != p.array().end()) {
     LogParam(*it, l);
     ++it;

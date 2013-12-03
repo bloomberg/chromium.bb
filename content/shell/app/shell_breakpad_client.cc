@@ -28,8 +28,8 @@ void ShellBreakpadClient::GetProductNameAndVersion(
     base::string16* channel_name) {
   *product_name = ASCIIToUTF16("content_shell");
   *version = ASCIIToUTF16(CONTENT_SHELL_VERSION);
-  *special_build = string16();
-  *channel_name = string16();
+  *special_build = base::string16();
+  *channel_name = base::string16();
 }
 #endif
 

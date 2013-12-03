@@ -10,19 +10,19 @@ namespace content {
 
 IndexedDBFakeBackingStore::~IndexedDBFakeBackingStore() {}
 
-std::vector<string16> IndexedDBFakeBackingStore::GetDatabaseNames() {
-  return std::vector<string16>();
+std::vector<base::string16> IndexedDBFakeBackingStore::GetDatabaseNames() {
+  return std::vector<base::string16>();
 }
 bool IndexedDBFakeBackingStore::GetIDBDatabaseMetaData(
-    const string16& name,
+    const base::string16& name,
     IndexedDBDatabaseMetadata*,
     bool* found) {
   return true;
 }
 
 bool IndexedDBFakeBackingStore::CreateIDBDatabaseMetaData(
-    const string16& name,
-    const string16& version,
+    const base::string16& name,
+    const base::string16& version,
     int64 int_version,
     int64* row_id) {
   return true;
@@ -32,14 +32,14 @@ bool IndexedDBFakeBackingStore::UpdateIDBDatabaseIntVersion(Transaction*,
                                                             int64 version) {
   return false;
 }
-bool IndexedDBFakeBackingStore::DeleteDatabase(const string16& name) {
+bool IndexedDBFakeBackingStore::DeleteDatabase(const base::string16& name) {
   return true;
 }
 
 bool IndexedDBFakeBackingStore::CreateObjectStore(Transaction*,
                                                   int64 database_id,
                                                   int64 object_store_id,
-                                                  const string16& name,
+                                                  const base::string16& name,
                                                   const IndexedDBKeyPath&,
                                                   bool auto_increment) {
   return false;
@@ -85,7 +85,7 @@ bool IndexedDBFakeBackingStore::CreateIndex(Transaction*,
                                             int64 database_id,
                                             int64 object_store_id,
                                             int64 index_id,
-                                            const string16& name,
+                                            const base::string16& name,
                                             const IndexedDBKeyPath&,
                                             bool is_unique,
                                             bool is_multi_entry) {

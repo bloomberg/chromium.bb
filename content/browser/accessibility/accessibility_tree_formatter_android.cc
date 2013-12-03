@@ -77,11 +77,12 @@ void AccessibilityTreeFormatter::AddProperties(
   dict->SetInteger("item_count", android_node->GetItemCount());
 }
 
-string16 AccessibilityTreeFormatter::ToString(const DictionaryValue& dict,
-                                              const string16& indent) {
-  string16 line;
+base::string16 AccessibilityTreeFormatter::ToString(
+    const DictionaryValue& dict,
+    const base::string16& indent) {
+  base::string16 line;
 
-  string16 class_value;
+  base::string16 class_value;
   dict.GetString("class", &class_value);
   WriteAttribute(true, UTF16ToUTF8(class_value), &line);
 

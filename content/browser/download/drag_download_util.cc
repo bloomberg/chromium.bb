@@ -23,18 +23,18 @@ using net::FileStream;
 
 namespace content {
 
-bool ParseDownloadMetadata(const string16& metadata,
-                           string16* mime_type,
+bool ParseDownloadMetadata(const base::string16& metadata,
+                           base::string16* mime_type,
                            base::FilePath* file_name,
                            GURL* url) {
   const char16 separator = L':';
 
   size_t mime_type_end_pos = metadata.find(separator);
-  if (mime_type_end_pos == string16::npos)
+  if (mime_type_end_pos == base::string16::npos)
     return false;
 
   size_t file_name_end_pos = metadata.find(separator, mime_type_end_pos + 1);
-  if (file_name_end_pos == string16::npos)
+  if (file_name_end_pos == base::string16::npos)
     return false;
 
   GURL parsed_url = GURL(metadata.substr(file_name_end_pos + 1));
@@ -44,7 +44,7 @@ bool ParseDownloadMetadata(const string16& metadata,
   if (mime_type)
     *mime_type = metadata.substr(0, mime_type_end_pos);
   if (file_name) {
-    string16 file_name_str = metadata.substr(
+    base::string16 file_name_str = metadata.substr(
         mime_type_end_pos + 1, file_name_end_pos - mime_type_end_pos  - 1);
 #if defined(OS_WIN)
     *file_name = base::FilePath(file_name_str);
@@ -70,7 +70,7 @@ FileStream* CreateFileStreamForDrop(base::FilePath* file_path,
       new_file_path = *file_path;
     } else {
 #if defined(OS_WIN)
-      string16 suffix = ASCIIToUTF16("-") + base::IntToString16(seq);
+      base::string16 suffix = ASCIIToUTF16("-") + base::IntToString16(seq);
 #else
       std::string suffix = std::string("-") + base::IntToString(seq);
 #endif

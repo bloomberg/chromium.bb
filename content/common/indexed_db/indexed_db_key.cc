@@ -76,11 +76,11 @@ IndexedDBKey::IndexedDBKey(const std::string& key)
       size_estimate_(kOverheadSize +
                      (key.length() * sizeof(std::string::value_type))) {}
 
-IndexedDBKey::IndexedDBKey(const string16& key)
+IndexedDBKey::IndexedDBKey(const base::string16& key)
     : type_(WebIDBKeyTypeString),
       string_(key),
       size_estimate_(kOverheadSize +
-                     (key.length() * sizeof(string16::value_type))) {}
+                     (key.length() * sizeof(base::string16::value_type))) {}
 
 IndexedDBKey::~IndexedDBKey() {}
 

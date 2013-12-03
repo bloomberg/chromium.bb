@@ -62,7 +62,7 @@ struct CONTENT_EXPORT ContextMenuParams {
   // The text associated with the link. May be an empty string if the contents
   // of the link are an image.
   // Will be empty if link_url is empty.
-  string16 link_text;
+  base::string16 link_text;
 
   // The link URL to be used ONLY for "copy link address". We don't validate
   // this field in the frontend process.
@@ -99,11 +99,11 @@ struct CONTENT_EXPORT ContextMenuParams {
   int media_flags;
 
   // This is the text of the selection that the context menu was invoked on.
-  string16 selection_text;
+  base::string16 selection_text;
 
   // The misspelled word under the cursor, if any. Used to generate the
   // |dictionary_suggestions| list.
-  string16 misspelled_word;
+  base::string16 misspelled_word;
 
   // The identifier of the misspelling under the cursor, if any.
   uint32 misspelling_hash;
@@ -113,7 +113,7 @@ struct CONTENT_EXPORT ContextMenuParams {
   // by intercepting ViewHostMsg_ContextMenu in ResourceMessageFilter
   // and populating dictionary_suggestions if the type is EDITABLE
   // and the misspelled_word is not empty.
-  std::vector<string16> dictionary_suggestions;
+  std::vector<base::string16> dictionary_suggestions;
 
   // If editable, flag for whether node is speech-input enabled.
   bool speech_input_enabled;

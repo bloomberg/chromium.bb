@@ -372,8 +372,8 @@ void WorkerProcessHost::OnWorkerContextClosed(int worker_route_id) {
 
 void WorkerProcessHost::OnAllowDatabase(int worker_route_id,
                                         const GURL& url,
-                                        const string16& name,
-                                        const string16& display_name,
+                                        const base::string16& name,
+                                        const base::string16& display_name,
                                         unsigned long estimated_size,
                                         bool* result) {
   *result = GetContentClient()->browser()->AllowWorkerDatabase(
@@ -390,7 +390,7 @@ void WorkerProcessHost::OnAllowFileSystem(int worker_route_id,
 
 void WorkerProcessHost::OnAllowIndexedDB(int worker_route_id,
                                          const GURL& url,
-                                         const string16& name,
+                                         const base::string16& name,
                                          bool* result) {
   *result = GetContentClient()->browser()->AllowWorkerIndexedDB(
       url, name, resource_context_, GetRenderViewIDsForWorker(worker_route_id));
@@ -572,7 +572,7 @@ net::URLRequestContext* WorkerProcessHost::GetRequestContext(
 
 WorkerProcessHost::WorkerInstance::WorkerInstance(
     const GURL& url,
-    const string16& name,
+    const base::string16& name,
     int worker_route_id,
     int parent_process_id,
     int64 main_resource_appcache_id,
@@ -593,7 +593,7 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(
 WorkerProcessHost::WorkerInstance::WorkerInstance(
     const GURL& url,
     bool shared,
-    const string16& name,
+    const base::string16& name,
     ResourceContext* resource_context,
     const WorkerStoragePartition& partition)
     : url_(url),
@@ -618,7 +618,7 @@ WorkerProcessHost::WorkerInstance::~WorkerInstance() {
 // b) the names are both empty, and the urls are equal
 bool WorkerProcessHost::WorkerInstance::Matches(
     const GURL& match_url,
-    const string16& match_name,
+    const base::string16& match_name,
     const WorkerStoragePartition& partition,
     ResourceContext* resource_context) const {
   // Only match open shared workers.

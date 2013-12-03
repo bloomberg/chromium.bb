@@ -17,7 +17,7 @@ WebKitPlatformSupportImpl::WebKitPlatformSupportImpl() {
 WebKitPlatformSupportImpl::~WebKitPlatformSupportImpl() {
 }
 
-string16 WebKitPlatformSupportImpl::GetLocalizedString(int message_id) {
+base::string16 WebKitPlatformSupportImpl::GetLocalizedString(int message_id) {
   return GetContentClient()->GetLocalizedString(message_id);
 }
 

@@ -243,7 +243,7 @@ SiteInstance* RenderViewHostImpl::GetSiteInstance() const {
 }
 
 bool RenderViewHostImpl::CreateRenderView(
-    const string16& frame_name,
+    const base::string16& frame_name,
     int opener_route_id,
     int32 max_page_id) {
   TRACE_EVENT0("renderer_host", "RenderViewHostImpl::CreateRenderView");
@@ -948,8 +948,9 @@ void RenderViewHostImpl::DesktopNotificationPostDisplay(int callback_context) {
                                               callback_context));
 }
 
-void RenderViewHostImpl::DesktopNotificationPostError(int notification_id,
-                                                      const string16& message) {
+void RenderViewHostImpl::DesktopNotificationPostError(
+    int notification_id,
+    const base::string16& message) {
   Send(new DesktopNotificationMsg_PostError(
       GetRoutingID(), notification_id, message));
 }
@@ -965,15 +966,15 @@ void RenderViewHostImpl::DesktopNotificationPostClick(int notification_id) {
 }
 
 void RenderViewHostImpl::ExecuteJavascriptInWebFrame(
-    const string16& frame_xpath,
-    const string16& jscript) {
+    const base::string16& frame_xpath,
+    const base::string16& jscript) {
   Send(new ViewMsg_ScriptEvalRequest(GetRoutingID(), frame_xpath, jscript,
                                      0, false));
 }
 
 void RenderViewHostImpl::ExecuteJavascriptInWebFrameCallbackResult(
-     const string16& frame_xpath,
-     const string16& jscript,
+     const base::string16& frame_xpath,
+     const base::string16& jscript,
      const JavascriptResultCallback& callback) {
   static int next_id = 1;
   int key = next_id++;
@@ -982,9 +983,10 @@ void RenderViewHostImpl::ExecuteJavascriptInWebFrameCallbackResult(
   javascript_callbacks_.insert(std::make_pair(key, callback));
 }
 
-void RenderViewHostImpl::JavaScriptDialogClosed(IPC::Message* reply_msg,
-                                                bool success,
-                                                const string16& user_input) {
+void RenderViewHostImpl::JavaScriptDialogClosed(
+    IPC::Message* reply_msg,
+    bool success,
+    const base::string16& user_input) {
   GetProcess()->SetIgnoreInputEvents(false);
   bool is_waiting =
       is_waiting_for_beforeunload_ack_ || is_waiting_for_unload_ack_;
@@ -1535,7 +1537,7 @@ void RenderViewHostImpl::OnUpdateState(int32 page_id, const PageState& state) {
 
 void RenderViewHostImpl::OnUpdateTitle(
     int32 page_id,
-    const string16& title,
+    const base::string16& title,
     blink::WebTextDirection title_direction) {
   if (title.length() > kMaxTitleChars) {
     NOTREACHED() << "Renderer sent too many characters in title.";
@@ -1669,7 +1671,7 @@ void RenderViewHostImpl::OnDidChangeScrollOffsetPinningForMainFrame(
 void RenderViewHostImpl::OnDidChangeNumWheelEvents(int count) {
 }
 
-void RenderViewHostImpl::OnSelectionChanged(const string16& text,
+void RenderViewHostImpl::OnSelectionChanged(const base::string16& text,
                                             size_t offset,
                                             const gfx::Range& range) {
   if (view_)
@@ -1695,8 +1697,8 @@ void RenderViewHostImpl::OnRouteMessageEvent(
 }
 
 void RenderViewHostImpl::OnRunJavaScriptMessage(
-    const string16& message,
-    const string16& default_prompt,
+    const base::string16& message,
+    const base::string16& default_prompt,
     const GURL& frame_url,
     JavaScriptMessageType type,
     IPC::Message* reply_msg) {
@@ -1710,7 +1712,7 @@ void RenderViewHostImpl::OnRunJavaScriptMessage(
 }
 
 void RenderViewHostImpl::OnRunBeforeUnloadConfirm(const GURL& frame_url,
-                                                  const string16& message,
+                                                  const base::string16& message,
                                                   bool is_reload,
                                                   IPC::Message* reply_msg) {
   // While a JS before unload dialog is showing, tabs in the same process
@@ -1789,9 +1791,9 @@ void RenderViewHostImpl::OnFocusedNodeChanged(bool is_editable_node) {
 
 void RenderViewHostImpl::OnAddMessageToConsole(
     int32 level,
-    const string16& message,
+    const base::string16& message,
     int32 line_no,
-    const string16& source_id) {
+    const base::string16& source_id) {
   if (delegate_->AddMessageToConsole(level, message, line_no, source_id))
     return;
 
@@ -2076,12 +2078,12 @@ void RenderViewHostImpl::ReloadFrame() {
 }
 
 void RenderViewHostImpl::Find(int request_id,
-                              const string16& search_text,
+                              const base::string16& search_text,
                               const blink::WebFindOptions& options) {
   Send(new ViewMsg_Find(GetRoutingID(), request_id, search_text, options));
 }
 
-void RenderViewHostImpl::InsertCSS(const string16& frame_xpath,
+void RenderViewHostImpl::InsertCSS(const base::string16& frame_xpath,
                                    const std::string& css) {
   Send(new ViewMsg_CSSInsertRequest(GetRoutingID(), frame_xpath, css));
 }

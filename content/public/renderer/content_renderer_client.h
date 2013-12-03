@@ -119,7 +119,7 @@ class CONTENT_EXPORT ContentRendererClient {
       const blink::WebURLError& error,
       const std::string& accept_languages,
       std::string* error_html,
-      string16* error_description) {}
+      base::string16* error_description) {}
 
   // Allows the embedder to control when media resources are loaded. Embedders
   // can run |closure| immediately if they don't wish to defer media resource

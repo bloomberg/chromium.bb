@@ -45,7 +45,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryOpen_Params)
   // The string id of the origin doing the initiating.
   IPC_STRUCT_MEMBER(std::string, database_identifier)
   // The name of the database.
-  IPC_STRUCT_MEMBER(string16, name)
+  IPC_STRUCT_MEMBER(base::string16, name)
   // The transaction id used if a database upgrade is needed.
   IPC_STRUCT_MEMBER(int64, transaction_id)
   // The requested version of the database.
@@ -60,7 +60,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryDeleteDatabase_Params)
   // The string id of the origin doing the initiating.
   IPC_STRUCT_MEMBER(std::string, database_identifier)
   // The name of the database.
-  IPC_STRUCT_MEMBER(string16, name)
+  IPC_STRUCT_MEMBER(base::string16, name)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateTransaction_Params)
@@ -86,7 +86,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateObjectStore_Params)
   // The storage id of the object store.
   IPC_STRUCT_MEMBER(int64, object_store_id)
   // The name of the object store.
-  IPC_STRUCT_MEMBER(string16, name)
+  IPC_STRUCT_MEMBER(base::string16, name)
   // The keyPath of the object store.
   IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, key_path)
   // Whether the object store created should have a key generator.
@@ -219,7 +219,7 @@ IPC_STRUCT_BEGIN(IndexedDBHostMsg_DatabaseCreateIndex_Params)
   // The storage id of the index.
   IPC_STRUCT_MEMBER(int64, index_id)
   // The name of the index.
-  IPC_STRUCT_MEMBER(string16, name)
+  IPC_STRUCT_MEMBER(base::string16, name)
   // The keyPath of the index.
   IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, key_path)
   // Whether the index created has unique keys.
@@ -257,7 +257,7 @@ IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBIndexMetadata)
   IPC_STRUCT_MEMBER(int64, id)
-  IPC_STRUCT_MEMBER(string16, name)
+  IPC_STRUCT_MEMBER(base::string16, name)
   IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, keyPath)
   IPC_STRUCT_MEMBER(bool, unique)
   IPC_STRUCT_MEMBER(bool, multiEntry)
@@ -265,7 +265,7 @@ IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBObjectStoreMetadata)
   IPC_STRUCT_MEMBER(int64, id)
-  IPC_STRUCT_MEMBER(string16, name)
+  IPC_STRUCT_MEMBER(base::string16, name)
   IPC_STRUCT_MEMBER(content::IndexedDBKeyPath, keyPath)
   IPC_STRUCT_MEMBER(bool, autoIncrement)
   IPC_STRUCT_MEMBER(int64, max_index_id)
@@ -274,8 +274,8 @@ IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(IndexedDBDatabaseMetadata)
   IPC_STRUCT_MEMBER(int64, id)
-  IPC_STRUCT_MEMBER(string16, name)
-  IPC_STRUCT_MEMBER(string16, version)
+  IPC_STRUCT_MEMBER(base::string16, name)
+  IPC_STRUCT_MEMBER(base::string16, version)
   IPC_STRUCT_MEMBER(int64, int_version)
   IPC_STRUCT_MEMBER(int64, max_object_store_id)
   IPC_STRUCT_MEMBER(std::vector<IndexedDBObjectStoreMetadata>, object_stores)
@@ -341,12 +341,12 @@ IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksSuccessUndefined,
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_CallbacksSuccessStringList,
                      int32 /* ipc_thread_id */,
                      int32 /* ipc_callbacks_id */,
-                     std::vector<string16> /* dom_string_list */)
+                     std::vector<base::string16> /* dom_string_list */)
 IPC_MESSAGE_CONTROL4(IndexedDBMsg_CallbacksError,
                      int32 /* ipc_thread_id */,
                      int32 /* ipc_callbacks_id */,
                      int /* code */,
-                     string16 /* message */)
+                     base::string16 /* message */)
 IPC_MESSAGE_CONTROL2(IndexedDBMsg_CallbacksBlocked,
                      int32 /* ipc_thread_id */,
                      int32 /* ipc_callbacks_id */)
@@ -371,7 +371,7 @@ IPC_MESSAGE_CONTROL5(IndexedDBMsg_DatabaseCallbacksAbort,
                      int32, /* ipc_database_callbacks_id */
                      int64, /* transaction_id */
                      int, /* code */
-                     string16) /* message */
+                     base::string16) /* message */
 IPC_MESSAGE_CONTROL3(IndexedDBMsg_DatabaseCallbacksComplete,
                      int32, /* ipc_thread_id */
                      int32, /* ipc_database_callbacks_id */

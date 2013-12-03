@@ -87,7 +87,7 @@ const int kPasswordFieldTag = 2;
 
 namespace content {
 
-void ShellLoginDialog::PlatformCreateDialog(const string16& message) {
+void ShellLoginDialog::PlatformCreateDialog(const base::string16& message) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   helper_ = [[ShellLoginDialogHelper alloc] init];
 

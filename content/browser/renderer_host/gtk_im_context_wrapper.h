@@ -75,7 +75,7 @@ class GtkIMContextWrapper {
   void ProcessInputMethodResult(const GdkEventKey* event, bool filtered);
 
   // Real code of "commit" signal handler.
-  void HandleCommit(const string16& text);
+  void HandleCommit(const base::string16& text);
 
   // Real code of "preedit-start" signal handler.
   void HandlePreeditStart();
@@ -180,7 +180,7 @@ class GtkIMContextWrapper {
 
   // Stores a copy of the most recent commit text received by commit signal
   // handler.
-  string16 commit_text_;
+  base::string16 commit_text_;
 
   // If it's true then the next "commit" signal will be suppressed.
   // It's only used to workaround http://crbug.com/50485.

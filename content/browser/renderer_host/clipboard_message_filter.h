@@ -39,12 +39,12 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
                            bool* result);
   void OnClear(ui::ClipboardType type);
   void OnReadAvailableTypes(ui::ClipboardType type,
-                            std::vector<string16>* types,
+                            std::vector<base::string16>* types,
                             bool* contains_filenames);
-  void OnReadText(ui::ClipboardType type, string16* result);
+  void OnReadText(ui::ClipboardType type, base::string16* result);
   void OnReadAsciiText(ui::ClipboardType type, std::string* result);
   void OnReadHTML(ui::ClipboardType type,
-                  string16* markup,
+                  base::string16* markup,
                   GURL* url,
                   uint32* fragment_start,
                   uint32* fragment_end);
@@ -52,13 +52,13 @@ class ClipboardMessageFilter : public BrowserMessageFilter {
   void OnReadImage(ui::ClipboardType type, IPC::Message* reply_msg);
   void OnReadImageReply(const SkBitmap& bitmap, IPC::Message* reply_msg);
   void OnReadCustomData(ui::ClipboardType clipboard_type,
-                        const string16& type,
-                        string16* result);
+                        const base::string16& type,
+                        base::string16* result);
   void OnReadData(const ui::Clipboard::FormatType& format,
                   std::string* data);
 
 #if defined(OS_MACOSX)
-  void OnFindPboardWriteString(const string16& text);
+  void OnFindPboardWriteString(const base::string16& text);
 #endif
 
   // We have our own clipboard because we want to access the clipboard on the

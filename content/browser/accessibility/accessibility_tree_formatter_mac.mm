@@ -161,9 +161,10 @@ void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
   dict->Set(kSizeDictAttr, PopulateSize(cocoa_node).release());
 }
 
-string16 AccessibilityTreeFormatter::ToString(const base::DictionaryValue& dict,
-                                              const string16& indent) {
-  string16 line;
+base::string16 AccessibilityTreeFormatter::ToString(
+    const base::DictionaryValue& dict,
+    const base::string16& indent) {
+  base::string16 line;
   NSArray* defaultAttributes =
       [NSArray arrayWithObjects:NSAccessibilityTitleAttribute,
                                 NSAccessibilityValueAttribute,

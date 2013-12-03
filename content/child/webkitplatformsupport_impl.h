@@ -22,7 +22,7 @@ class CONTENT_EXPORT WebKitPlatformSupportImpl
   WebKitPlatformSupportImpl();
   virtual ~WebKitPlatformSupportImpl();
 
-  virtual string16 GetLocalizedString(int message_id) OVERRIDE;
+  virtual base::string16 GetLocalizedString(int message_id) OVERRIDE;
   virtual base::StringPiece GetDataResource(
       int resource_id,
       ui::ScaleFactor scale_factor) OVERRIDE;

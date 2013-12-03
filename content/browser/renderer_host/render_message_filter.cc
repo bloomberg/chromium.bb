@@ -843,7 +843,7 @@ void RenderMessageFilter::OnGetMonitorColorProfile(std::vector<char>* profile) {
 void RenderMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                         const GURL& url,
                                         const Referrer& referrer,
-                                        const string16& suggested_name) {
+                                        const base::string16& suggested_name) {
   scoped_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
   save_info->suggested_name = suggested_name;
   scoped_ptr<net::URLRequest> request(
@@ -1112,7 +1112,7 @@ void RenderMessageFilter::OnDidLose3DContext(
 
 #if defined(OS_WIN)
 void RenderMessageFilter::OnPreCacheFontCharacters(const LOGFONT& font,
-                                                   const string16& str) {
+                                                   const base::string16& str) {
   // First, comments from FontCacheDispatcher::OnPreCacheFont do apply here too.
   // Except that for True Type fonts,
   // GetTextMetrics will not load the font in memory.

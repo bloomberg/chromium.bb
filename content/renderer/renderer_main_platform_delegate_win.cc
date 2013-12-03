@@ -38,8 +38,9 @@ void SkiaPreCacheFontCharacters(const LOGFONT& logfont,
                                 unsigned int text_length) {
   RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
   if (render_thread_impl) {
-    render_thread_impl->PreCacheFontCharacters(logfont,
-                                               string16(text, text_length));
+    render_thread_impl->PreCacheFontCharacters(
+        logfont,
+        base::string16(text, text_length));
   }
 }
 

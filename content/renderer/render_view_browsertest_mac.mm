@@ -86,7 +86,7 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
   view->OnUpdateWebPreferences(prefs);
 
   const int kMaxOutputCharacters = 1024;
-  string16 output;
+  base::string16 output;
 
   NSEvent* arrowDownKeyDown = CmdDeadKeyEvent(NSKeyDown, kVK_DownArrow);
   NSEvent* arrowUpKeyDown = CmdDeadKeyEvent(NSKeyDown, kVK_UpArrow);

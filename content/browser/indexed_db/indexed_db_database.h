@@ -52,7 +52,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   static const int64 kMinimumIndexId = 30;
 
   static scoped_refptr<IndexedDBDatabase> Create(
-      const string16& name,
+      const base::string16& name,
       IndexedDBBackingStore* backing_store,
       IndexedDBFactory* factory,
       const Identifier& unique_identifier);
@@ -88,7 +88,7 @@ class CONTENT_EXPORT IndexedDBDatabase
 
   void CreateObjectStore(int64 transaction_id,
                          int64 object_store_id,
-                         const string16& name,
+                         const base::string16& name,
                          const IndexedDBKeyPath& key_path,
                          bool auto_increment);
   void DeleteObjectStore(int64 transaction_id, int64 object_store_id);
@@ -105,7 +105,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   void CreateIndex(int64 transaction_id,
                    int64 object_store_id,
                    int64 index_id,
-                   const string16& name,
+                   const base::string16& name,
                    const IndexedDBKeyPath& key_path,
                    bool unique,
                    bool multi_entry);
@@ -198,7 +198,7 @@ class CONTENT_EXPORT IndexedDBDatabase
                               blink::WebIDBDataLoss data_loss,
                               std::string data_loss_message,
                               IndexedDBTransaction* transaction);
-  void VersionChangeAbortOperation(const string16& previous_version,
+  void VersionChangeAbortOperation(const base::string16& previous_version,
                                    int64 previous_int_version,
                                    IndexedDBTransaction* transaction);
   void CreateIndexOperation(int64 object_store_id,
@@ -243,7 +243,7 @@ class CONTENT_EXPORT IndexedDBDatabase
  private:
   friend class base::RefCounted<IndexedDBDatabase>;
 
-  IndexedDBDatabase(const string16& name,
+  IndexedDBDatabase(const base::string16& name,
                     IndexedDBBackingStore* backing_store,
                     IndexedDBFactory* factory,
                     const Identifier& unique_identifier);

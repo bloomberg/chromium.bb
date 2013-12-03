@@ -31,7 +31,7 @@ class WorkerService {
 
   struct WorkerInfo {
     GURL url;
-    string16 name;
+    base::string16 name;
     int process_id;
     int route_id;
     base::ProcessHandle handle;

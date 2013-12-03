@@ -97,7 +97,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                                 const GURL& url,
                                 bool is_main_frame,
                                 int error_code,
-                                const string16& error_description);
+                                const base::string16& error_description);
 
  protected:
   // The deprecated WebContentsTester still needs to subclass this.

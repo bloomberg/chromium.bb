@@ -136,7 +136,7 @@ TEST_F(NavigationEntryTest, NavigationEntryAccessors) {
   EXPECT_EQ(GURL("from2"), entry2_->GetReferrer().url);
 
   // Title
-  EXPECT_EQ(string16(), entry1_->GetTitle());
+  EXPECT_EQ(base::string16(), entry1_->GetTitle());
   EXPECT_EQ(ASCIIToUTF16("title"), entry2_->GetTitle());
   entry2_->SetTitle(ASCIIToUTF16("title2"));
   EXPECT_EQ(ASCIIToUTF16("title2"), entry2_->GetTitle());
@@ -219,8 +219,8 @@ TEST_F(NavigationEntryTest, NavigationEntryTimestamps) {
 
 // Test extra data stored in the navigation entry.
 TEST_F(NavigationEntryTest, NavigationEntryExtraData) {
-  string16 test_data = ASCIIToUTF16("my search terms");
-  string16 output;
+  base::string16 test_data = ASCIIToUTF16("my search terms");
+  base::string16 output;
   entry1_->SetExtraData("search_terms", test_data);
 
   EXPECT_FALSE(entry1_->GetExtraData("non_existent_key", &output));
@@ -233,7 +233,7 @@ TEST_F(NavigationEntryTest, NavigationEntryExtraData) {
   EXPECT_FALSE(entry1_->GetExtraData("search_terms", &output));
   EXPECT_EQ(test_data, output);
   // Using an empty string shows that the data is not present in the map.
-  string16 output2;
+  base::string16 output2;
   EXPECT_FALSE(entry1_->GetExtraData("search_terms", &output2));
   EXPECT_EQ(ASCIIToUTF16(""), output2);
 }

@@ -213,7 +213,7 @@ void IndexedDBDispatcher::RequestIDBCursorPrefetchReset(int used_prefetches,
 }
 
 void IndexedDBDispatcher::RequestIDBFactoryOpen(
-    const string16& name,
+    const base::string16& name,
     int64 version,
     int64 transaction_id,
     WebIDBCallbacks* callbacks_ptr,
@@ -250,7 +250,7 @@ void IndexedDBDispatcher::RequestIDBFactoryGetDatabaseNames(
 }
 
 void IndexedDBDispatcher::RequestIDBFactoryDeleteDatabase(
-    const string16& name,
+    const base::string16& name,
     WebIDBCallbacks* callbacks_ptr,
     const std::string& database_identifier) {
   ResetCursorPrefetchCaches();
@@ -487,7 +487,7 @@ void IndexedDBDispatcher::OnSuccessIndexedDBKey(int32 ipc_thread_id,
 void IndexedDBDispatcher::OnSuccessStringList(
     int32 ipc_thread_id,
     int32 ipc_callbacks_id,
-    const std::vector<string16>& value) {
+    const std::vector<base::string16>& value) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
   if (!callbacks)
@@ -652,7 +652,7 @@ void IndexedDBDispatcher::OnUpgradeNeeded(
 void IndexedDBDispatcher::OnError(int32 ipc_thread_id,
                                   int32 ipc_callbacks_id,
                                   int code,
-                                  const string16& message) {
+                                  const base::string16& message) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
   if (!callbacks)
@@ -668,7 +668,7 @@ void IndexedDBDispatcher::OnAbort(int32 ipc_thread_id,
                                   int32 ipc_database_callbacks_id,
                                   int64 transaction_id,
                                   int code,
-                                  const string16& message) {
+                                  const base::string16& message) {
   DCHECK_EQ(ipc_thread_id, CurrentWorkerId());
   WebIDBDatabaseCallbacks* callbacks =
       pending_database_callbacks_.Lookup(ipc_database_callbacks_id);

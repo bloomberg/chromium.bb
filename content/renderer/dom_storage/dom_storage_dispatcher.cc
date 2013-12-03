@@ -111,12 +111,12 @@ class DomStorageDispatcher::ProxyImpl : public DOMStorageProxy {
   virtual void LoadArea(int connection_id, DOMStorageValuesMap* values,
                         bool* send_log_get_messages,
                         const CompletionCallback& callback) OVERRIDE;
-  virtual void SetItem(int connection_id, const string16& key,
-                       const string16& value, const GURL& page_url,
+  virtual void SetItem(int connection_id, const base::string16& key,
+                       const base::string16& value, const GURL& page_url,
                        const CompletionCallback& callback) OVERRIDE;
-  virtual void LogGetItem(int connection_id, const string16& key,
+  virtual void LogGetItem(int connection_id, const base::string16& key,
                           const base::NullableString16& value) OVERRIDE;
-  virtual void RemoveItem(int connection_id, const string16& key,
+  virtual void RemoveItem(int connection_id, const base::string16& key,
                           const GURL& page_url,
                           const CompletionCallback& callback) OVERRIDE;
   virtual void ClearArea(int connection_id,
@@ -244,8 +244,8 @@ void DomStorageDispatcher::ProxyImpl::LoadArea(
 }
 
 void DomStorageDispatcher::ProxyImpl::SetItem(
-    int connection_id, const string16& key,
-    const string16& value, const GURL& page_url,
+    int connection_id, const base::string16& key,
+    const base::string16& value, const GURL& page_url,
     const CompletionCallback& callback) {
   PushPendingCallback(callback);
   throttling_filter_->SendThrottled(new DOMStorageHostMsg_SetItem(
@@ -253,13 +253,13 @@ void DomStorageDispatcher::ProxyImpl::SetItem(
 }
 
 void DomStorageDispatcher::ProxyImpl::LogGetItem(
-    int connection_id, const string16& key,
+    int connection_id, const base::string16& key,
     const base::NullableString16& value) {
   sender_->Send(new DOMStorageHostMsg_LogGetItem(connection_id, key, value));
 }
 
 void DomStorageDispatcher::ProxyImpl::RemoveItem(
-    int connection_id, const string16& key,  const GURL& page_url,
+    int connection_id, const base::string16& key,  const GURL& page_url,
     const CompletionCallback& callback) {
   PushPendingCallback(callback);
   throttling_filter_->SendThrottled(new DOMStorageHostMsg_RemoveItem(

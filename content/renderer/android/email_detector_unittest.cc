@@ -13,8 +13,8 @@ class EmailDetectorTest : public testing::Test {
  public:
   static void FindAndCheckEmail(const std::string& content,
                                 const std::string& expected) {
-    string16 content_16 = UTF8ToUTF16(content);
-    string16 result_16;
+    base::string16 content_16 = UTF8ToUTF16(content);
+    base::string16 result_16;
     size_t start, end;
     EmailDetector detector;
     std::string content_text;

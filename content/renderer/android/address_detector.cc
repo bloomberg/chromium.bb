@@ -36,20 +36,23 @@ size_t AddressDetector::GetMaximumContentLength() {
   return kMaxAddressLength;
 }
 
-std::string AddressDetector::GetContentText(const string16& text) {
+std::string AddressDetector::GetContentText(const base::string16& text) {
   // Get the address and replace unicode bullets with commas.
-  string16 address_16 = CollapseWhitespace(text, false);
+  base::string16 address_16 = CollapseWhitespace(text, false);
   std::replace(address_16.begin(), address_16.end(),
       static_cast<char16>(0x2022), static_cast<char16>(','));
   return UTF16ToUTF8(address_16);
 }
 
-bool AddressDetector::FindContent(const string16::const_iterator& begin,
-    const string16::const_iterator& end, size_t* start_pos, size_t* end_pos,
+bool AddressDetector::FindContent(
+    const base::string16::const_iterator& begin,
+    const base::string16::const_iterator& end,
+    size_t* start_pos,
+    size_t* end_pos,
     std::string* content_text) {
   if (address_parser::FindAddress(begin, end, start_pos, end_pos)) {
     content_text->assign(
-        GetContentText(string16(begin + *start_pos, begin + *end_pos)));
+        GetContentText(base::string16(begin + *start_pos, begin + *end_pos)));
     return true;
   }
   return false;

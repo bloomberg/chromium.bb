@@ -569,7 +569,7 @@ NSDictionary* attributeToMethodNameMap = nil;
 }
 
 - (NSString*)invalid {
-  string16 invalidUTF;
+  base::string16 invalidUTF;
   if (!browserAccessibility_->GetHtmlAttribute("aria-invalid", &invalidUTF))
     return NULL;
   NSString* invalid = base::SysUTF16ToNSString(invalidUTF);
@@ -1296,10 +1296,10 @@ NSDictionary* attributeToMethodNameMap = nil;
         nil]];
   } else if ([role isEqualToString:NSAccessibilityRowRole]) {
     if (browserAccessibility_->parent()) {
-      string16 parentRole;
+      base::string16 parentRole;
       browserAccessibility_->parent()->GetHtmlAttribute(
           "role", &parentRole);
-      const string16 treegridRole(ASCIIToUTF16("treegrid"));
+      const base::string16 treegridRole(ASCIIToUTF16("treegrid"));
       if (parentRole == treegridRole) {
         [ret addObjectsFromArray:[NSArray arrayWithObjects:
             NSAccessibilityDisclosingAttribute,

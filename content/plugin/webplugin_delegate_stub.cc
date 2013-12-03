@@ -317,7 +317,8 @@ void WebPluginDelegateStub::OnGetPluginScriptableObject(int* route_id) {
   WebBindings::releaseObject(object);
 }
 
-void WebPluginDelegateStub::OnGetFormValue(string16* value, bool* success) {
+void WebPluginDelegateStub::OnGetFormValue(base::string16* value,
+                                           bool* success) {
   *success = false;
   if (!delegate_)
     return;
@@ -338,7 +339,7 @@ void WebPluginDelegateStub::OnSetContentAreaFocus(bool has_focus) {
 
 #if defined(OS_WIN) && !defined(USE_AURA)
 void WebPluginDelegateStub::OnImeCompositionUpdated(
-    const string16& text,
+    const base::string16& text,
     const std::vector<int>& clauses,
     const std::vector<int>& target,
     int cursor_position) {
@@ -349,7 +350,8 @@ void WebPluginDelegateStub::OnImeCompositionUpdated(
 #endif
 }
 
-void WebPluginDelegateStub::OnImeCompositionCompleted(const string16& text) {
+void WebPluginDelegateStub::OnImeCompositionCompleted(
+    const base::string16& text) {
   if (delegate_)
     delegate_->ImeCompositionCompleted(text);
 }
@@ -382,7 +384,8 @@ void WebPluginDelegateStub::OnWindowFrameChanged(const gfx::Rect& window_frame,
     delegate_->WindowFrameChanged(window_frame, view_frame);
 }
 
-void WebPluginDelegateStub::OnImeCompositionCompleted(const string16& text) {
+void WebPluginDelegateStub::OnImeCompositionCompleted(
+    const base::string16& text) {
   if (delegate_)
     delegate_->ImeCompositionCompleted(text);
 }

@@ -27,7 +27,7 @@ class CONTENT_EXPORT IndexedDBKey {
   IndexedDBKey(blink::WebIDBKeyType);  // must be Null or Invalid
   explicit IndexedDBKey(const KeyArray& array);
   explicit IndexedDBKey(const std::string& binary);
-  explicit IndexedDBKey(const string16& str);
+  explicit IndexedDBKey(const base::string16& str);
   IndexedDBKey(double number,
                blink::WebIDBKeyType type);  // must be date or number
   ~IndexedDBKey();
@@ -41,7 +41,7 @@ class CONTENT_EXPORT IndexedDBKey {
   blink::WebIDBKeyType type() const { return type_; }
   const std::vector<IndexedDBKey>& array() const { return array_; }
   const std::string& binary() const { return binary_; }
-  const string16& string() const { return string_; }
+  const base::string16& string() const { return string_; }
   double date() const { return date_; }
   double number() const { return number_; }
 
@@ -51,7 +51,7 @@ class CONTENT_EXPORT IndexedDBKey {
   blink::WebIDBKeyType type_;
   std::vector<IndexedDBKey> array_;
   std::string binary_;
-  string16 string_;
+  base::string16 string_;
   double date_;
   double number_;
 

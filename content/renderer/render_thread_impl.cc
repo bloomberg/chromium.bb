@@ -1000,7 +1000,7 @@ media::AudioHardwareConfig* RenderThreadImpl::GetAudioHardwareConfig() {
 
 #if defined(OS_WIN)
 void RenderThreadImpl::PreCacheFontCharacters(const LOGFONT& log_font,
-                                              const string16& str) {
+                                              const base::string16& str) {
   Send(new ViewHostMsg_PreCacheFontCharacters(log_font, str));
 }
 

@@ -49,10 +49,10 @@ namespace {
 // |NSURLPboardType|.
 NSString* const kNSURLTitlePboardType = @"public.url-name";
 
-// Converts a string16 into a FilePath. Use this method instead of
+// Converts a base::string16 into a FilePath. Use this method instead of
 // -[NSString fileSystemRepresentation] to prevent exceptions from being thrown.
 // See http://crbug.com/78782 for more info.
-base::FilePath FilePathFromFilename(const string16& filename) {
+base::FilePath FilePathFromFilename(const base::string16& filename) {
   NSString* str = SysUTF16ToNSString(filename);
   char buf[MAXPATHLEN];
   if (![str getFileSystemRepresentation:buf maxLength:sizeof(buf)])
@@ -71,7 +71,7 @@ base::FilePath GetFileNameFromDragData(const DropData& drop_data) {
   // synthesize one from the provided extension and URL.
   if (file_name.empty()) {
     // Retrieve the name from the URL.
-    string16 suggested_filename =
+    base::string16 suggested_filename =
         net::GetSuggestedFilename(drop_data.url, "", "", "", "", "");
     const std::string extension = file_name.Extension();
     file_name = FilePathFromFilename(suggested_filename);
@@ -147,7 +147,7 @@ void PromiseWriterHelper(const DropData& drop_data,
 - (void)lazyWriteToPasteboard:(NSPasteboard*)pboard forType:(NSString*)type {
   // NSHTMLPboardType requires the character set to be declared. Otherwise, it
   // assumes US-ASCII. Awesome.
-  const string16 kHtmlHeader = ASCIIToUTF16(
+  const base::string16 kHtmlHeader = ASCIIToUTF16(
       "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">");
 
   // Be extra paranoid; avoid crashing.
@@ -386,7 +386,7 @@ void PromiseWriterHelper(const DropData& drop_data,
       downloadFileName_ = GetFileNameFromDragData(*dropData_);
       net::GetMimeTypeFromExtension(downloadFileName_.Extension(), &mimeType);
     } else {
-      string16 mimeType16;
+      base::string16 mimeType16;
       base::FilePath fileName;
       if (content::ParseDownloadMetadata(
               dropData_->download_metadata,

@@ -256,11 +256,11 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
 
   // Makes an IPC call to tell webkit to replace the currently selected word
   // or a word around the cursor.
-  virtual void Replace(const string16& word) = 0;
+  virtual void Replace(const base::string16& word) = 0;
 
   // Makes an IPC call to tell webkit to replace the misspelling in the current
   // selection.
-  virtual void ReplaceMisspelling(const string16& word) = 0;
+  virtual void ReplaceMisspelling(const base::string16& word) = 0;
 
   // Called to notify the RenderWidget that the resize rect has changed without
   // the size of the RenderWidget itself changing.

@@ -95,8 +95,8 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
       const blink::WebPluginParams& params) = 0;
 
   // Evaluates a string of JavaScript in a particular frame.
-  virtual void EvaluateScript(const string16& frame_xpath,
-                              const string16& jscript,
+  virtual void EvaluateScript(const base::string16& frame_xpath,
+                              const base::string16& jscript,
                               int id,
                               bool notify_result) = 0;
 

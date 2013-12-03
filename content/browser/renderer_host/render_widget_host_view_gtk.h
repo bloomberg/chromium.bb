@@ -93,8 +93,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGtk
                                  int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) {}
-  virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
-  virtual void SelectionChanged(const string16& text,
+  virtual void SetTooltipText(const base::string16& tooltip_text) OVERRIDE;
+  virtual void SelectionChanged(const base::string16& text,
                                 size_t offset,
                                 const gfx::Range& range) OVERRIDE;
   virtual void SelectionBoundsChanged(

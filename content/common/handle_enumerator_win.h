@@ -31,9 +31,10 @@ enum HandleType {
   OtherHandle
 };
 
-static HandleType StringToHandleType(const string16& type);
+static HandleType StringToHandleType(const base::string16& type);
 
-static string16 GetAccessString(HandleType handle_type, ACCESS_MASK access);
+static base::string16 GetAccessString(HandleType handle_type,
+                                      ACCESS_MASK access);
 
 class HandleEnumerator : public base::RefCountedThreadSafe<HandleEnumerator> {
  public:

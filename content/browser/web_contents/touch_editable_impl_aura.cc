@@ -307,7 +307,7 @@ bool TouchEditableImplAura::IsCommandIdEnabled(int command_id) const {
     case IDS_APP_COPY:
       return has_selection;
     case IDS_APP_PASTE: {
-      string16 result;
+      base::string16 result;
       ui::Clipboard::GetForCurrentThread()->ReadText(
           ui::CLIPBOARD_TYPE_COPY_PASTE, &result);
       return editable && !result.empty();

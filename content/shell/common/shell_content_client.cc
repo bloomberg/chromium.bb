@@ -29,7 +29,7 @@ std::string ShellContentClient::GetUserAgent() const {
   return webkit_glue::BuildUserAgentFromProduct(product);
 }
 
-string16 ShellContentClient::GetLocalizedString(int message_id) const {
+base::string16 ShellContentClient::GetLocalizedString(int message_id) const {
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kDumpRenderTree)) {
     switch (message_id) {
       case IDS_FORM_OTHER_DATE_LABEL:

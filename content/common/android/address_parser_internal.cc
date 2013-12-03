@@ -20,23 +20,23 @@ const size_t kZipPlus4Digits = 9;
 // Maximum number of digits of a house number, including possible hyphens.
 const size_t kMaxHouseDigits = 5;
 
-char16 SafePreviousChar(const string16::const_iterator& it,
-    const string16::const_iterator& begin) {
+char16 SafePreviousChar(const base::string16::const_iterator& it,
+    const base::string16::const_iterator& begin) {
   if (it == begin)
     return ' ';
   return *(it - 1);
 }
 
-char16 SafeNextChar(const string16::const_iterator& it,
-    const string16::const_iterator& end) {
+char16 SafeNextChar(const base::string16::const_iterator& it,
+    const base::string16::const_iterator& end) {
   if (it == end)
     return ' ';
   return *(it + 1);
 }
 
-bool WordLowerCaseEqualsASCII(string16::const_iterator word_begin,
-    string16::const_iterator word_end, const char* ascii_to_match) {
-  for (string16::const_iterator it = word_begin; it != word_end;
+bool WordLowerCaseEqualsASCII(base::string16::const_iterator word_begin,
+    base::string16::const_iterator word_end, const char* ascii_to_match) {
+  for (base::string16::const_iterator it = word_begin; it != word_end;
       ++it, ++ascii_to_match) {
     if (!*ascii_to_match || base::ToLowerASCII(*it) != *ascii_to_match)
       return false;
@@ -44,10 +44,10 @@ bool WordLowerCaseEqualsASCII(string16::const_iterator word_begin,
   return *ascii_to_match == 0 || *ascii_to_match == ' ';
 }
 
-bool LowerCaseEqualsASCIIWithPlural(string16::const_iterator word_begin,
-    string16::const_iterator word_end, const char* ascii_to_match,
+bool LowerCaseEqualsASCIIWithPlural(base::string16::const_iterator word_begin,
+    base::string16::const_iterator word_end, const char* ascii_to_match,
     bool allow_plural) {
-  for (string16::const_iterator it = word_begin; it != word_end;
+  for (base::string16::const_iterator it = word_begin; it != word_end;
       ++it, ++ascii_to_match) {
     if (!*ascii_to_match && allow_plural && *it == 's' && it + 1 == word_end)
       return true;
@@ -66,8 +66,8 @@ namespace address_parser {
 
 namespace internal {
 
-Word::Word(const string16::const_iterator& begin,
-           const string16::const_iterator& end)
+Word::Word(const base::string16::const_iterator& begin,
+           const base::string16::const_iterator& end)
     : begin(begin),
       end(end) {
   DCHECK(begin <= end);
@@ -115,8 +115,8 @@ bool HouseNumberParser::CheckFinished(Word* word) const {
 }
 
 bool HouseNumberParser::Parse(
-    const string16::const_iterator& begin,
-    const string16::const_iterator& end, Word* word) {
+    const base::string16::const_iterator& begin,
+    const base::string16::const_iterator& end, Word* word) {
   it_ = begin_ = begin;
   end_ = end;
   ResetState();
@@ -417,7 +417,7 @@ bool IsZipValid(const Word& word, size_t state_index) {
   if (length != kZipDigits && length != kZipPlus4Digits + 1)
     return false;
 
-  for (string16::const_iterator it = word.begin; it != word.end; ++it) {
+  for (base::string16::const_iterator it = word.begin; it != word.end; ++it) {
     size_t pos = it - word.begin;
     if (IsAsciiDigit(*it) || (*it == '-' && pos == kZipDigits))
       continue;

@@ -19,7 +19,8 @@ class MessagePortMessageFilter;
 
 class MessagePortService {
  public:
-  typedef std::vector<std::pair<string16, std::vector<int> > > QueuedMessages;
+  typedef std::vector<std::pair<base::string16, std::vector<int> > >
+      QueuedMessages;
 
   // Returns the MessagePortService singleton.
   static MessagePortService* GetInstance();
@@ -31,7 +32,7 @@ class MessagePortService {
   void Destroy(int message_port_id);
   void Entangle(int local_message_port_id, int remote_message_port_id);
   void PostMessage(int sender_message_port_id,
-                   const string16& message,
+                   const base::string16& message,
                    const std::vector<int>& sent_message_port_ids);
   void QueueMessages(int message_port_id);
   void SendQueuedMessages(int message_port_id,
@@ -56,7 +57,7 @@ class MessagePortService {
   ~MessagePortService();
 
   void PostMessageTo(int message_port_id,
-                     const string16& message,
+                     const base::string16& message,
                      const std::vector<int>& sent_message_port_ids);
 
   // Handles the details of removing a message port id. Before calling this,

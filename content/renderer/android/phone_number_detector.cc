@@ -54,12 +54,13 @@ GURL PhoneNumberDetector::GetIntentURL(const std::string& content_text) {
       net::EscapeQueryParamValue(content_text, true));
 }
 
-bool PhoneNumberDetector::FindContent(const string16::const_iterator& begin,
-                                      const string16::const_iterator& end,
-                                      size_t* start_pos,
-                                      size_t* end_pos,
-                                      std::string* content_text) {
-  string16 utf16_input = string16(begin, end);
+bool PhoneNumberDetector::FindContent(
+    const base::string16::const_iterator& begin,
+    const base::string16::const_iterator& end,
+    size_t* start_pos,
+    size_t* end_pos,
+    std::string* content_text) {
+  base::string16 utf16_input = base::string16(begin, end);
   std::string utf8_input = UTF16ToUTF8(utf16_input);
 
   PhoneNumberMatcher matcher(utf8_input, region_code_);

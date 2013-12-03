@@ -57,7 +57,7 @@ class ExternalPopupMenuTest : public RenderViewTest {
   }
 
   int GetSelectedIndex() {
-    string16 script(ASCIIToUTF16(kSelectID));
+    base::string16 script(ASCIIToUTF16(kSelectID));
     script.append(ASCIIToUTF16(".selectedIndex"));
     int selected_index = -1;
     ExecuteJavaScriptAndReturnIntValue(script, &selected_index);

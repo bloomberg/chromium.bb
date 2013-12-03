@@ -190,7 +190,7 @@ class CONTENT_EXPORT RenderViewImpl
       int32 main_frame_routing_id,
       int32 surface_id,
       int64 session_storage_namespace_id,
-      const string16& frame_name,
+      const base::string16& frame_name,
       bool is_renderer_created,
       bool swapped_out,
       bool hidden,
@@ -629,8 +629,8 @@ class CONTENT_EXPORT RenderViewImpl
       blink::WebFrame* frame,
       const WebPluginInfo& info,
       const blink::WebPluginParams& params) OVERRIDE;
-  virtual void EvaluateScript(const string16& frame_xpath,
-                              const string16& jscript,
+  virtual void EvaluateScript(const base::string16& frame_xpath,
+                              const base::string16& jscript,
                               int id,
                               bool notify_result) OVERRIDE;
   virtual bool ShouldDisplayScrollbars(int width, int height) const OVERRIDE;
@@ -705,11 +705,11 @@ class CONTENT_EXPORT RenderViewImpl
   virtual GURL GetURLForGraphicsContext3D() OVERRIDE;
   virtual bool ForceCompositingModeEnabled() OVERRIDE;
   virtual void OnImeSetComposition(
-      const string16& text,
+      const base::string16& text,
       const std::vector<blink::WebCompositionUnderline>& underlines,
       int selection_start,
       int selection_end) OVERRIDE;
-  virtual void OnImeConfirmComposition(const string16& text,
+  virtual void OnImeConfirmComposition(const base::string16& text,
                                        const gfx::Range& replacement_range,
                                        bool keep_selection) OVERRIDE;
   virtual void SetDeviceScaleFactor(float device_scale_factor) OVERRIDE;
@@ -819,7 +819,7 @@ class CONTENT_EXPORT RenderViewImpl
       const blink::WebURLResponse& response);
 
   void UpdateURL(blink::WebFrame* frame);
-  void UpdateTitle(blink::WebFrame* frame, const string16& title,
+  void UpdateTitle(blink::WebFrame* frame, const base::string16& title,
                    blink::WebTextDirection title_direction);
   void UpdateSessionHistory(blink::WebFrame* frame);
   void SendUpdateState(const blink::WebHistoryItem& item);
@@ -846,10 +846,10 @@ class CONTENT_EXPORT RenderViewImpl
                blink::WebNavigationPolicy policy);
 
   bool RunJavaScriptMessage(JavaScriptMessageType type,
-                            const string16& message,
-                            const string16& default_value,
+                            const base::string16& message,
+                            const base::string16& default_value,
                             const GURL& frame_url,
-                            string16* result);
+                            base::string16* result);
 
   // Sends a message and runs a nested message loop.
   bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);
@@ -870,8 +870,8 @@ class CONTENT_EXPORT RenderViewImpl
   void OnPaste();
   void OnPasteAndMatchStyle();
   void OnRedo();
-  void OnReplace(const string16& text);
-  void OnReplaceMisspelling(const string16& text);
+  void OnReplace(const base::string16& text);
+  void OnReplaceMisspelling(const base::string16& text);
   void OnScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect);
   void OnSelectAll();
   void OnSelectRange(const gfx::Point& start, const gfx::Point& end);
@@ -886,7 +886,7 @@ class CONTENT_EXPORT RenderViewImpl
   void OnContextMenuClosed(const CustomContextMenuContext& custom_context);
   void OnShowContextMenu(const gfx::Point& location);
   void OnCopyImageAt(int x, int y);
-  void OnCSSInsertRequest(const string16& frame_xpath,
+  void OnCSSInsertRequest(const base::string16& frame_xpath,
                           const std::string& css);
   void OnCustomContextMenuAction(const CustomContextMenuContext& custom_context,
       unsigned action);
@@ -920,7 +920,9 @@ class CONTENT_EXPORT RenderViewImpl
   void OnExtendSelectionAndDelete(int before, int after);
   void OnFileChooserResponse(
       const std::vector<ui::SelectedFileInfo>& files);
-  void OnFind(int request_id, const string16&, const blink::WebFindOptions&);
+  void OnFind(int request_id,
+              const base::string16&,
+              const blink::WebFindOptions&);
   void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
   void OnGetSerializedHtmlDataForCurrentPageWithLocalLinks(
       const std::vector<GURL>& links,
@@ -937,8 +939,8 @@ class CONTENT_EXPORT RenderViewImpl
   void OnReleaseDisambiguationPopupDIB(TransportDIB::Handle dib_handle);
   void OnReloadFrame();
   void OnResetPageEncodingToDefault();
-  void OnScriptEvalRequest(const string16& frame_xpath,
-                           const string16& jscript,
+  void OnScriptEvalRequest(const base::string16& frame_xpath,
+                           const base::string16& jscript,
                            int id,
                            bool notify_result);
   void OnSetAccessibilityMode(AccessibilityMode new_mode);
@@ -985,7 +987,8 @@ class CONTENT_EXPORT RenderViewImpl
 
 #elif defined(OS_MACOSX)
   void OnCopyToFindPboard();
-  void OnPluginImeCompositionCompleted(const string16& text, int plugin_id);
+  void OnPluginImeCompositionCompleted(const base::string16& text,
+                                       int plugin_id);
   void OnSelectPopupMenuItem(int selected_index);
   void OnSetInLiveResize(bool in_live_resize);
   void OnSetWindowVisibility(bool visible);
@@ -1031,7 +1034,7 @@ class CONTENT_EXPORT RenderViewImpl
                                 ErrorPageType error_type);
 
   // Locates a sub frame with given xpath
-  blink::WebFrame* GetChildFrame(const string16& frame_xpath) const;
+  blink::WebFrame* GetChildFrame(const base::string16& frame_xpath) const;
 
   // Returns the URL being loaded by the given frame's request.
   GURL GetLoadingUrl(blink::WebFrame* frame) const;
@@ -1089,7 +1092,7 @@ class CONTENT_EXPORT RenderViewImpl
   // Returns whether |params.selection_text| should be synchronized to the
   // browser before bringing up the context menu. Static for testing.
   static bool ShouldUpdateSelectionTextFromContextMenuParams(
-      const string16& selection_text,
+      const base::string16& selection_text,
       size_t selection_text_offset,
       const gfx::Range& selection_range,
       const ContextMenuParams& params);
@@ -1289,7 +1292,7 @@ class CONTENT_EXPORT RenderViewImpl
   // portion of this string that is the actual selected text starts at index
   // |selection_range_.GetMin() - selection_text_offset_| and has length
   // |selection_range_.length()|.
-  string16 selection_text_;
+  base::string16 selection_text_;
   // The offset corresponding to the start of |selection_text_| in the document.
   size_t selection_text_offset_;
   // Range over the document corresponding to the actual selected text (which

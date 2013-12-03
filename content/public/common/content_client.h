@@ -118,7 +118,7 @@ class CONTENT_EXPORT ContentClient {
   virtual std::string GetUserAgent() const;
 
   // Returns a string resource given its id.
-  virtual string16 GetLocalizedString(int message_id) const;
+  virtual base::string16 GetLocalizedString(int message_id) const;
 
   // Return the contents of a resource in a StringPiece given the resource id.
   virtual base::StringPiece GetDataResource(

@@ -192,7 +192,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   // need to distinguish between the default value and a missing attribute),
   // and another that returns the default value for that type if the
   // attribute is not present. In addition, strings can be returned as
-  // either std::string or string16, for convenience.
+  // either std::string or base::string16, for convenience.
 
   bool HasBoolAttribute(AccessibilityNodeData::BoolAttribute attr) const;
   bool GetBoolAttribute(AccessibilityNodeData::BoolAttribute attr) const;
@@ -217,8 +217,8 @@ class CONTENT_EXPORT BrowserAccessibility {
                           std::string* value) const;
 
   bool GetString16Attribute(AccessibilityNodeData::StringAttribute attribute,
-                            string16* value) const;
-  string16 GetString16Attribute(
+                            base::string16* value) const;
+  base::string16 GetString16Attribute(
       AccessibilityNodeData::StringAttribute attribute) const;
 
   bool HasIntListAttribute(
@@ -234,7 +234,7 @@ class CONTENT_EXPORT BrowserAccessibility {
 
   // Retrieve the value of a html attribute from the attribute map and
   // returns true if found.
-  bool GetHtmlAttribute(const char* attr, string16* value) const;
+  bool GetHtmlAttribute(const char* attr, base::string16* value) const;
   bool GetHtmlAttribute(const char* attr, std::string* value) const;
 
   // Utility method to handle special cases for ARIA booleans, tristates and

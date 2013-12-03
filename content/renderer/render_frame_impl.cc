@@ -335,7 +335,7 @@ void RenderFrameImpl::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
 }
 
 void RenderFrameImpl::SimulateImeSetComposition(
-    const string16& text,
+    const base::string16& text,
     const std::vector<blink::WebCompositionUnderline>& underlines,
     int selection_start,
     int selection_end) {
@@ -344,14 +344,14 @@ void RenderFrameImpl::SimulateImeSetComposition(
 }
 
 void RenderFrameImpl::SimulateImeConfirmComposition(
-    const string16& text,
+    const base::string16& text,
     const gfx::Range& replacement_range) {
   render_view_->OnImeConfirmComposition(text, replacement_range, false);
 }
 
 
 void RenderFrameImpl::OnImeSetComposition(
-    const string16& text,
+    const base::string16& text,
     const std::vector<blink::WebCompositionUnderline>& underlines,
     int selection_start,
     int selection_end) {
@@ -366,10 +366,10 @@ void RenderFrameImpl::OnImeSetComposition(
 
     // Empty -> nonempty: composition started.
     if (pepper_composition_text_.empty() && !text.empty())
-      focused_pepper_plugin_->HandleCompositionStart(string16());
+      focused_pepper_plugin_->HandleCompositionStart(base::string16());
     // Nonempty -> empty: composition canceled.
     if (!pepper_composition_text_.empty() && text.empty())
-      focused_pepper_plugin_->HandleCompositionEnd(string16());
+      focused_pepper_plugin_->HandleCompositionEnd(base::string16());
     pepper_composition_text_ = text;
     // Nonempty: composition is ongoing.
     if (!pepper_composition_text_.empty()) {
@@ -381,14 +381,15 @@ void RenderFrameImpl::OnImeSetComposition(
 }
 
 void RenderFrameImpl::OnImeConfirmComposition(
-    const string16& text,
+    const base::string16& text,
     const gfx::Range& replacement_range,
     bool keep_selection) {
   // When a PPAPI plugin has focus, we bypass WebKit.
   // Here, text.empty() has a special meaning. It means to commit the last
   // update of composition text (see
   // RenderWidgetHost::ImeConfirmComposition()).
-  const string16& last_text = text.empty() ? pepper_composition_text_ : text;
+  const base::string16& last_text = text.empty() ? pepper_composition_text_
+                                                 : text;
 
   // last_text is empty only when both text and pepper_composition_text_ is.
   // Ignore it.

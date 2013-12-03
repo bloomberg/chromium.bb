@@ -69,7 +69,7 @@ class RenderViewHostTester {
   virtual ~RenderViewHostTester() {}
 
   // Gives tests access to RenderViewHostImpl::CreateRenderView.
-  virtual bool CreateRenderView(const string16& frame_name,
+  virtual bool CreateRenderView(const base::string16& frame_name,
                                 int opener_route_id,
                                 int32 max_page_id) = 0;
 

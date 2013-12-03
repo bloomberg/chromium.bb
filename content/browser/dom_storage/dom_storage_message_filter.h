@@ -53,11 +53,11 @@ class DOMStorageMessageFilter
   void OnCloseStorageArea(int connection_id);
   void OnLoadStorageArea(int connection_id, DOMStorageValuesMap* map,
                          bool* send_log_get_messages);
-  void OnSetItem(int connection_id, const string16& key,
-                 const string16& value, const GURL& page_url);
-  void OnLogGetItem(int connection_id, const string16& key,
+  void OnSetItem(int connection_id, const base::string16& key,
+                 const base::string16& value, const GURL& page_url);
+  void OnLogGetItem(int connection_id, const base::string16& key,
                     const base::NullableString16& value);
-  void OnRemoveItem(int connection_id, const string16& key,
+  void OnRemoveItem(int connection_id, const base::string16& key,
                     const GURL& page_url);
   void OnClear(int connection_id, const GURL& page_url);
   void OnFlushMessages();
@@ -66,14 +66,14 @@ class DOMStorageMessageFilter
   // sends events back to our renderer process.
   virtual void OnDOMStorageItemSet(
       const DOMStorageArea* area,
-      const string16& key,
-      const string16& new_value,
+      const base::string16& key,
+      const base::string16& new_value,
       const base::NullableString16& old_value,
       const GURL& page_url) OVERRIDE;
   virtual void OnDOMStorageItemRemoved(
       const DOMStorageArea* area,
-      const string16& key,
-      const string16& old_value,
+      const base::string16& key,
+      const base::string16& old_value,
       const GURL& page_url) OVERRIDE;
   virtual void OnDOMStorageAreaCleared(
       const DOMStorageArea* area,

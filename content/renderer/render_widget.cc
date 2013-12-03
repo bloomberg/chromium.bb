@@ -2105,7 +2105,7 @@ void RenderWidget::OnCandidateWindowHidden() {
 }
 
 void RenderWidget::OnImeSetComposition(
-    const string16& text,
+    const base::string16& text,
     const std::vector<WebCompositionUnderline>& underlines,
     int selection_start, int selection_end) {
   if (!ShouldHandleImeEvent())
@@ -2124,7 +2124,7 @@ void RenderWidget::OnImeSetComposition(
 #endif
 }
 
-void RenderWidget::OnImeConfirmComposition(const string16& text,
+void RenderWidget::OnImeConfirmComposition(const base::string16& text,
                                            const gfx::Range& replacement_range,
                                            bool keep_selection) {
   if (!ShouldHandleImeEvent())

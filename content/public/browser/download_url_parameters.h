@@ -89,7 +89,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   void set_file_path(const base::FilePath& file_path) {
     save_info_.file_path = file_path;
   }
-  void set_suggested_name(const string16& suggested_name) {
+  void set_suggested_name(const base::string16& suggested_name) {
     save_info_.suggested_name = suggested_name;
   }
   void set_offset(int64 offset) { save_info_.offset = offset; }
@@ -126,7 +126,9 @@ class CONTENT_EXPORT DownloadUrlParameters {
     return resource_context_;
   }
   const base::FilePath& file_path() const { return save_info_.file_path; }
-  const string16& suggested_name() const { return save_info_.suggested_name; }
+  const base::string16& suggested_name() const {
+    return save_info_.suggested_name;
+  }
   int64 offset() const { return save_info_.offset; }
   const std::string& hash_state() const { return save_info_.hash_state; }
   bool prompt() const { return save_info_.prompt_for_save_location; }

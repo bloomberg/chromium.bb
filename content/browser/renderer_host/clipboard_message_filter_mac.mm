@@ -40,7 +40,8 @@ class WriteFindPboardWrapper {
 }  // namespace
 
 // Called on the IO thread.
-void ClipboardMessageFilter::OnFindPboardWriteString(const string16& text) {
+void ClipboardMessageFilter::OnFindPboardWriteString(
+    const base::string16& text) {
   if (text.length() <= kMaxFindPboardStringLength) {
     NSString* nsText = base::SysUTF16ToNSString(text);
     if (nsText) {

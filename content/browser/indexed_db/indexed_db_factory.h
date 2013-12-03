@@ -36,7 +36,7 @@ class CONTENT_EXPORT IndexedDBFactory
   void GetDatabaseNames(scoped_refptr<IndexedDBCallbacks> callbacks,
                         const GURL& origin_url,
                         const base::FilePath& data_directory);
-  void Open(const string16& name,
+  void Open(const base::string16& name,
             int64 version,
             int64 transaction_id,
             scoped_refptr<IndexedDBCallbacks> callbacks,
@@ -44,7 +44,7 @@ class CONTENT_EXPORT IndexedDBFactory
             const GURL& origin_url,
             const base::FilePath& data_directory);
 
-  void DeleteDatabase(const string16& name,
+  void DeleteDatabase(const base::string16& name,
                       scoped_refptr<IndexedDBCallbacks> callbacks,
                       const GURL& origin_url,
                       const base::FilePath& data_directory);

@@ -17,8 +17,8 @@ namespace {
 static base::LazyInstance<content::MediaInternals>::Leaky g_media_internals =
     LAZY_INSTANCE_INITIALIZER;
 
-string16 SerializeUpdate(const std::string& function,
-                         const base::Value* value) {
+base::string16 SerializeUpdate(const std::string& function,
+                               const base::Value* value) {
   return content::WebUI::GetJavascriptCall(
       function, std::vector<const base::Value*>(1, value));
 }
@@ -185,7 +185,7 @@ void MediaInternals::RemoveUpdateCallback(const UpdateCallback& callback) {
 }
 
 void MediaInternals::SendEverything() {
-  string16 everything_update;
+  base::string16 everything_update;
   {
     base::AutoLock auto_lock(lock_);
     everything_update = SerializeUpdate(
@@ -194,7 +194,7 @@ void MediaInternals::SendEverything() {
   SendUpdate(everything_update);
 }
 
-void MediaInternals::SendUpdate(const string16& update) {
+void MediaInternals::SendUpdate(const base::string16& update) {
   // SendUpdate() may be called from any thread, but must run on the IO thread.
   // TODO(dalecurtis): This is pretty silly since the update callbacks simply
   // forward the calls to the UI thread.  We should avoid the extra hop.

@@ -30,7 +30,7 @@ class BrowserAccessibilityAndroid : public BrowserAccessibility {
   bool IsVisibleToUser() const;
 
   const char* GetClassName() const;
-  string16 GetText() const;
+  base::string16 GetText() const;
 
   int GetItemIndex() const;
   int GetItemCount() const;
@@ -43,7 +43,7 @@ class BrowserAccessibilityAndroid : public BrowserAccessibility {
   int GetTextChangeFromIndex() const;
   int GetTextChangeAddedCount() const;
   int GetTextChangeRemovedCount() const;
-  string16 GetTextChangeBeforeText() const;
+  base::string16 GetTextChangeBeforeText() const;
 
   int GetSelectionStart() const;
   int GetSelectionEnd() const;
@@ -59,12 +59,12 @@ class BrowserAccessibilityAndroid : public BrowserAccessibility {
   bool HasOnlyStaticTextChildren() const;
   bool IsIframe() const;
 
-  void NotifyLiveRegionUpdate(string16& aria_live);
+  void NotifyLiveRegionUpdate(base::string16& aria_live);
 
-  string16 cached_text_;
+  base::string16 cached_text_;
   bool first_time_;
-  string16 old_value_;
-  string16 new_value_;
+  base::string16 old_value_;
+  base::string16 new_value_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityAndroid);
 };

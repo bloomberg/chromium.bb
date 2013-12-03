@@ -83,12 +83,12 @@ class PluginTest : public ContentBrowserTest {
   }
 
   static void LoadAndWaitInWindow(Shell* window, const GURL& url) {
-    string16 expected_title(ASCIIToUTF16("OK"));
+    base::string16 expected_title(ASCIIToUTF16("OK"));
     TitleWatcher title_watcher(window->web_contents(), expected_title);
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16("plugin_not_found"));
     NavigateToURL(window, url);
-    string16 title = title_watcher.WaitAndGetTitle();
+    base::string16 title = title_watcher.WaitAndGetTitle();
     if (title == ASCIIToUTF16("plugin_not_found")) {
       const testing::TestInfo* const test_info =
           testing::UnitTest::GetInstance()->current_test_info();
@@ -170,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest,
                        MAYBE(SelfDeletePluginInvokeInSynchronousMouseUp)) {
   NavigateToURL(shell(), GetURL("execute_script_delete_in_mouse_up.html"));
 
-  string16 expected_title(ASCIIToUTF16("OK"));
+  base::string16 expected_title(ASCIIToUTF16("OK"));
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
   SimulateMouseClick(shell()->web_contents(), 0,
@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(SelfDeletePluginInvokeAlert)) {
   // race condition where the alert can come up before we start watching for it.
   shell()->LoadURL(GetURL("self_delete_plugin_invoke_alert.html"));
 
-  string16 expected_title(ASCIIToUTF16("OK"));
+  base::string16 expected_title(ASCIIToUTF16("OK"));
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
 
@@ -408,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(PluginTest, DISABLED_PluginConvertPointTest) {
 
   NavigateToURL(shell(), GetURL("convert_point.html"));
 
-  string16 expected_title(ASCIIToUTF16("OK"));
+  base::string16 expected_title(ASCIIToUTF16("OK"));
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
   // TODO(stuartmorgan): When the automation system supports sending clicks,

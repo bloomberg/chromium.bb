@@ -49,7 +49,7 @@ void ShellAccessTokenStore::RespondOnOriginatingThread(
 }
 
 void ShellAccessTokenStore::SaveAccessToken(
-    const GURL& server_url, const string16& access_token) {
+    const GURL& server_url, const base::string16& access_token) {
 }
 
 }  // namespace content

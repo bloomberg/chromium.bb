@@ -249,7 +249,7 @@ void PrepareDragForFileContents(const DropData& drop_data,
   // Images without ALT text will only have a file extension so we need to
   // synthesize one from the provided extension and URL.
   if (file_name.BaseName().RemoveExtension().empty()) {
-    const string16 extension = file_name.Extension();
+    const base::string16 extension = file_name.Extension();
     // Retrieve the name from the URL.
     file_name = base::FilePath(net::GetSuggestedFilename(
         drop_data.url, "", "", "", "", "")).ReplaceExtension(extension);
@@ -296,20 +296,20 @@ void PrepareDragData(const DropData& drop_data,
 
 // Utility to fill a DropData object from ui::OSExchangeData.
 void PrepareDropData(DropData* drop_data, const ui::OSExchangeData& data) {
-  string16 plain_text;
+  base::string16 plain_text;
   data.GetString(&plain_text);
   if (!plain_text.empty())
     drop_data->text = base::NullableString16(plain_text, false);
 
   GURL url;
-  string16 url_title;
+  base::string16 url_title;
   data.GetURLAndTitle(&url, &url_title);
   if (url.is_valid()) {
     drop_data->url = url;
     drop_data->url_title = url_title;
   }
 
-  string16 html;
+  base::string16 html;
   GURL html_base_url;
   data.GetHtml(&html, &html_base_url);
   if (!html.empty())
@@ -1298,7 +1298,7 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForPopupWidget(
   return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
 }
 
-void WebContentsViewAura::SetPageTitle(const string16& title) {
+void WebContentsViewAura::SetPageTitle(const base::string16& title) {
   window_->set_title(title);
 }
 

@@ -57,7 +57,7 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
   class WorkerInstance {
    public:
     WorkerInstance(const GURL& url,
-                   const string16& name,
+                   const base::string16& name,
                    int worker_route_id,
                    int parent_process_id,
                    int64 main_resource_appcache_id,
@@ -66,7 +66,7 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
     // Used for pending instances. Rest of the parameters are ignored.
     WorkerInstance(const GURL& url,
                    bool shared,
-                   const string16& name,
+                   const base::string16& name,
                    ResourceContext* resource_context,
                    const WorkerStoragePartition& partition);
     ~WorkerInstance();
@@ -92,7 +92,7 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
     // applies to shared workers.
     bool Matches(
         const GURL& url,
-        const string16& name,
+        const base::string16& name,
         const WorkerStoragePartition& partition,
         ResourceContext* resource_context) const;
 
@@ -107,7 +107,7 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
     bool closed() const { return closed_; }
     void set_closed(bool closed) { closed_ = closed; }
     const GURL& url() const { return url_; }
-    const string16 name() const { return name_; }
+    const base::string16 name() const { return name_; }
     int worker_route_id() const { return worker_route_id_; }
     int parent_process_id() const { return parent_process_id_; }
     int64 main_resource_appcache_id() const {
@@ -127,7 +127,7 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
     // Set of all filters (clients) associated with this worker.
     GURL url_;
     bool closed_;
-    string16 name_;
+    base::string16 name_;
     int worker_route_id_;
     int parent_process_id_;
     int64 main_resource_appcache_id_;
@@ -196,8 +196,8 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
   void OnWorkerContextClosed(int worker_route_id);
   void OnAllowDatabase(int worker_route_id,
                        const GURL& url,
-                       const string16& name,
-                       const string16& display_name,
+                       const base::string16& name,
+                       const base::string16& display_name,
                        unsigned long estimated_size,
                        bool* result);
   void OnAllowFileSystem(int worker_route_id,
@@ -205,7 +205,7 @@ class WorkerProcessHost : public BrowserChildProcessHostDelegate,
                          bool* result);
   void OnAllowIndexedDB(int worker_route_id,
                         const GURL& url,
-                        const string16& name,
+                        const base::string16& name,
                         bool* result);
   void OnForceKillWorkerProcess();
 

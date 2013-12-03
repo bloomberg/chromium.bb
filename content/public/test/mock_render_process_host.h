@@ -50,7 +50,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual int VisibleWidgetCount() const OVERRIDE;
   virtual bool IsGuest() const OVERRIDE;
   virtual StoragePartition* GetStoragePartition() const OVERRIDE;
-  virtual void AddWord(const string16& word);
+  virtual void AddWord(const base::string16& word);
   virtual bool FastShutdownIfPossible() OVERRIDE;
   virtual bool FastShutdownStarted() const OVERRIDE;
   virtual void DumpHandles() OVERRIDE;

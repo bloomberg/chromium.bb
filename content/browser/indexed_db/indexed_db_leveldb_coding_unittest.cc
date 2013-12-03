@@ -304,7 +304,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeVarInt) {
   }
 }
 
-static std::string WrappedEncodeString(string16 value) {
+static std::string WrappedEncodeString(base::string16 value) {
   std::string buffer;
   EncodeString(value, &buffer);
   return buffer;
@@ -321,24 +321,24 @@ TEST(IndexedDBLevelDBCodingTest, EncodeString) {
   EXPECT_EQ(static_cast<size_t>(6),
             WrappedEncodeString(ASCIIToUTF16("foo")).size());
   EXPECT_EQ(static_cast<size_t>(6),
-            WrappedEncodeString(string16(test_string_a)).size());
+            WrappedEncodeString(base::string16(test_string_a)).size());
   EXPECT_EQ(static_cast<size_t>(4),
-            WrappedEncodeString(string16(test_string_b)).size());
+            WrappedEncodeString(base::string16(test_string_b)).size());
 }
 
 TEST(IndexedDBLevelDBCodingTest, DecodeString) {
   const char16 test_string_a[] = {'f', 'o', 'o', '\0'};
   const char16 test_string_b[] = {0xdead, 0xbeef, '\0'};
 
-  std::vector<string16> test_cases;
-  test_cases.push_back(string16());
+  std::vector<base::string16> test_cases;
+  test_cases.push_back(base::string16());
   test_cases.push_back(ASCIIToUTF16("a"));
   test_cases.push_back(ASCIIToUTF16("foo"));
   test_cases.push_back(test_string_a);
   test_cases.push_back(test_string_b);
 
   for (size_t i = 0; i < test_cases.size(); ++i) {
-    const string16& test_case = test_cases[i];
+    const base::string16& test_case = test_cases[i];
     std::string v = WrappedEncodeString(test_case);
 
     StringPiece slice;
@@ -346,7 +346,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeString) {
       slice = StringPiece(&*v.begin(), v.size());
     }
 
-    string16 result;
+    base::string16 result;
     EXPECT_TRUE(DecodeString(&slice, &result));
     EXPECT_EQ(test_case, result);
     EXPECT_TRUE(slice.empty());
@@ -360,7 +360,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeString) {
   }
 }
 
-static std::string WrappedEncodeStringWithLength(string16 value) {
+static std::string WrappedEncodeStringWithLength(base::string16 value) {
   std::string buffer;
   EncodeStringWithLength(value, &buffer);
   return buffer;
@@ -371,13 +371,15 @@ TEST(IndexedDBLevelDBCodingTest, EncodeStringWithLength) {
   const char16 test_string_b[] = {0xdead, 0xbeef, '\0'};
 
   EXPECT_EQ(static_cast<size_t>(1),
-            WrappedEncodeStringWithLength(string16()).size());
+            WrappedEncodeStringWithLength(base::string16()).size());
   EXPECT_EQ(static_cast<size_t>(3),
             WrappedEncodeStringWithLength(ASCIIToUTF16("a")).size());
   EXPECT_EQ(static_cast<size_t>(7),
-            WrappedEncodeStringWithLength(string16(test_string_a)).size());
+            WrappedEncodeStringWithLength(
+                base::string16(test_string_a)).size());
   EXPECT_EQ(static_cast<size_t>(5),
-            WrappedEncodeStringWithLength(string16(test_string_b)).size());
+            WrappedEncodeStringWithLength(
+                base::string16(test_string_b)).size());
 }
 
 TEST(IndexedDBLevelDBCodingTest, DecodeStringWithLength) {
@@ -390,20 +392,20 @@ TEST(IndexedDBLevelDBCodingTest, DecodeStringWithLength) {
     long_string[i] = i;
   long_string[kLongStringLen] = 0;
 
-  std::vector<string16> test_cases;
+  std::vector<base::string16> test_cases;
   test_cases.push_back(ASCIIToUTF16(""));
   test_cases.push_back(ASCIIToUTF16("a"));
   test_cases.push_back(ASCIIToUTF16("foo"));
-  test_cases.push_back(string16(test_string_a));
-  test_cases.push_back(string16(test_string_b));
-  test_cases.push_back(string16(long_string));
+  test_cases.push_back(base::string16(test_string_a));
+  test_cases.push_back(base::string16(test_string_b));
+  test_cases.push_back(base::string16(long_string));
 
   for (size_t i = 0; i < test_cases.size(); ++i) {
-    string16 s = test_cases[i];
+    base::string16 s = test_cases[i];
     std::string v = WrappedEncodeStringWithLength(s);
     ASSERT_GT(v.size(), static_cast<size_t>(0));
     StringPiece slice(v);
-    string16 res;
+    base::string16 res;
     EXPECT_TRUE(DecodeStringWithLength(&slice, &res));
     EXPECT_EQ(s, res);
     EXPECT_TRUE(slice.empty());
@@ -444,23 +446,23 @@ TEST(IndexedDBLevelDBCodingTest, CompareEncodedStringsWithLength) {
   const char16 test_string_e[] = {0xd834, 0xdd1e, '\0'};
   const char16 test_string_f[] = {0xfffd, '\0'};
 
-  std::vector<string16> test_cases;
+  std::vector<base::string16> test_cases;
   test_cases.push_back(ASCIIToUTF16(""));
   test_cases.push_back(ASCIIToUTF16("a"));
   test_cases.push_back(ASCIIToUTF16("b"));
   test_cases.push_back(ASCIIToUTF16("baaa"));
   test_cases.push_back(ASCIIToUTF16("baab"));
   test_cases.push_back(ASCIIToUTF16("c"));
-  test_cases.push_back(string16(test_string_a));
-  test_cases.push_back(string16(test_string_b));
-  test_cases.push_back(string16(test_string_c));
-  test_cases.push_back(string16(test_string_d));
-  test_cases.push_back(string16(test_string_e));
-  test_cases.push_back(string16(test_string_f));
+  test_cases.push_back(base::string16(test_string_a));
+  test_cases.push_back(base::string16(test_string_b));
+  test_cases.push_back(base::string16(test_string_c));
+  test_cases.push_back(base::string16(test_string_d));
+  test_cases.push_back(base::string16(test_string_e));
+  test_cases.push_back(base::string16(test_string_f));
 
   for (size_t i = 0; i < test_cases.size() - 1; ++i) {
-    string16 a = test_cases[i];
-    string16 b = test_cases[i + 1];
+    base::string16 a = test_cases[i];
+    base::string16 b = test_cases[i + 1];
 
     EXPECT_LT(a.compare(b), 0);
     EXPECT_GT(b.compare(a), 0);
@@ -630,7 +632,7 @@ TEST(IndexedDBLevelDBCodingTest, EncodeDecodeIDBKeyPath) {
   }
 
   {
-    key_paths.push_back(IndexedDBKeyPath(string16()));
+    key_paths.push_back(IndexedDBKeyPath(base::string16()));
     char expected[] = {0, 0,  // Header
                        1,     // Type is string
                        0      // Length is 0
@@ -661,8 +663,8 @@ TEST(IndexedDBLevelDBCodingTest, EncodeDecodeIDBKeyPath) {
   }
 
   {
-    std::vector<string16> array;
-    array.push_back(string16());
+    std::vector<base::string16> array;
+    array.push_back(base::string16());
     array.push_back(ASCIIToUTF16("foo"));
     array.push_back(ASCIIToUTF16("foo.bar"));
 
@@ -700,7 +702,7 @@ TEST(IndexedDBLevelDBCodingTest, DecodeLegacyIDBKeyPath) {
   std::vector<std::string> encoded_paths;
 
   {
-    key_paths.push_back(IndexedDBKeyPath(string16()));
+    key_paths.push_back(IndexedDBKeyPath(base::string16()));
     encoded_paths.push_back(std::string());
   }
   {

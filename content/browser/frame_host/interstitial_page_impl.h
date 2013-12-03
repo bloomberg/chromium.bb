@@ -112,7 +112,7 @@ class CONTENT_EXPORT InterstitialPageImpl
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const string16& title,
+                           const base::string16& title,
                            base::i18n::TextDirection title_direction) OVERRIDE;
   virtual RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const OVERRIDE;
@@ -246,7 +246,7 @@ class CONTENT_EXPORT InterstitialPageImpl
 
   // The original title of the contents that should be reverted to when the
   // interstitial is hidden.
-  string16 original_web_contents_title_;
+  base::string16 original_web_contents_title_;
 
   // Our RenderViewHostViewDelegate, necessary for accelerators to work.
   scoped_ptr<InterstitialPageRVHDelegateView> rvh_delegate_view_;

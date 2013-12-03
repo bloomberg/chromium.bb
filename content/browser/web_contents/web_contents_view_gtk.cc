@@ -246,7 +246,7 @@ RenderWidgetHostView* WebContentsViewGtk::CreateViewForPopupWidget(
   return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
 }
 
-void WebContentsViewGtk::SetPageTitle(const string16& title) {
+void WebContentsViewGtk::SetPageTitle(const base::string16& title) {
   // Set the window name to include the page title so it's easier to spot
   // when debugging (e.g. via xwininfo -tree).
   gfx::NativeView content_view = GetContentNativeView();

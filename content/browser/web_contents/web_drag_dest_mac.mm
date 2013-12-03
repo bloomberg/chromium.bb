@@ -290,7 +290,7 @@ int GetModifierFlags() {
         if (exists) {
           data->filenames.push_back(
               DropData::FileInfo(
-                  base::SysNSStringToUTF16(filename), string16()));
+                  base::SysNSStringToUTF16(filename), base::string16()));
         }
       }
     }

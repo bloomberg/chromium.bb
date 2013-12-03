@@ -1103,7 +1103,7 @@ RenderViewImpl* RenderViewImpl::Create(
     int32 main_frame_routing_id,
     int32 surface_id,
     int64 session_storage_namespace_id,
-    const string16& frame_name,
+    const base::string16& frame_name,
     bool is_renderer_created,
     bool swapped_out,
     bool hidden,
@@ -1697,7 +1697,7 @@ void RenderViewImpl::OnRedo() {
                                             GetFocusedNode());
 }
 
-void RenderViewImpl::OnReplace(const string16& text) {
+void RenderViewImpl::OnReplace(const base::string16& text) {
   if (!webview())
     return;
 
@@ -1708,7 +1708,7 @@ void RenderViewImpl::OnReplace(const string16& text) {
   frame->replaceSelection(text);
 }
 
-void RenderViewImpl::OnReplaceMisspelling(const string16& text) {
+void RenderViewImpl::OnReplaceMisspelling(const base::string16& text) {
   if (!webview())
     return;
 
@@ -1781,7 +1781,7 @@ void RenderViewImpl::OnCopyToFindPboard() {
   // than the |OnCopy()| case.
   WebFrame* frame = webview()->focusedFrame();
   if (frame->hasSelection()) {
-    string16 selection = frame->selectionAsText();
+    base::string16 selection = frame->selectionAsText();
     RenderThread::Get()->Send(
         new ClipboardHostMsg_FindPboardWriteStringAsync(selection));
   }
@@ -1991,7 +1991,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
       params.referrer = GetReferrerFromRequest(frame, original_request);
     }
 
-    string16 method = request.httpMethod();
+    base::string16 method = request.httpMethod();
     if (EqualsASCII(method, "POST")) {
       params.is_post = true;
       params.post_id = ExtractPostId(item);
@@ -2048,7 +2048,7 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
 
 // Tell the embedding application that the title of the active page has changed
 void RenderViewImpl::UpdateTitle(WebFrame* frame,
-                                 const string16& title,
+                                 const base::string16& title,
                                  WebTextDirection title_direction) {
   // Ignore all but top level navigations.
   if (frame->parent())
@@ -2057,7 +2057,7 @@ void RenderViewImpl::UpdateTitle(WebFrame* frame,
   base::debug::TraceLog::GetInstance()->UpdateProcessLabel(
       routing_id_, UTF16ToUTF8(title));
 
-  string16 shortened_title = title.substr(0, kMaxTitleChars);
+  base::string16 shortened_title = title.substr(0, kMaxTitleChars);
   Send(new ViewHostMsg_UpdateTitle(routing_id_, page_id_, shortened_title,
                                    title_direction));
 }
@@ -2169,17 +2169,17 @@ void RenderViewImpl::LoadNavigationErrorPage(
 }
 
 bool RenderViewImpl::RunJavaScriptMessage(JavaScriptMessageType type,
-                                          const string16& message,
-                                          const string16& default_value,
+                                          const base::string16& message,
+                                          const base::string16& default_value,
                                           const GURL& frame_url,
-                                          string16* result) {
+                                          base::string16* result) {
   // Don't allow further dialogs if we are waiting to swap out, since the
   // PageGroupLoadDeferrer in our stack prevents it.
   if (suppress_dialogs_until_swap_out_)
     return false;
 
   bool success = false;
-  string16 result_temp;
+  base::string16 result_temp;
   if (!result)
     result = &result_temp;
 
@@ -2310,7 +2310,7 @@ WebView* RenderViewImpl::createView(
       main_frame_routing_id,
       surface_id,
       cloned_session_storage_namespace_id,
-      string16(),  // WebCore will take care of setting the correct name.
+      base::string16(),  // WebCore will take care of setting the correct name.
       true,  // is_renderer_created
       false, // swapped_out
       params.disposition == NEW_BACKGROUND_TAB, // hidden
@@ -2582,7 +2582,7 @@ void RenderViewImpl::runModalAlertDialog(WebFrame* frame,
                                          const WebString& message) {
   RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_ALERT,
                        message,
-                       string16(),
+                       base::string16(),
                        frame->document().url(),
                        NULL);
 }
@@ -2591,7 +2591,7 @@ bool RenderViewImpl::runModalConfirmDialog(WebFrame* frame,
                                            const WebString& message) {
   return RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_CONFIRM,
                               message,
-                              string16(),
+                              base::string16(),
                               frame->document().url(),
                               NULL);
 }
@@ -2600,7 +2600,7 @@ bool RenderViewImpl::runModalPromptDialog(WebFrame* frame,
                                           const WebString& message,
                                           const WebString& default_value,
                                           WebString* actual_value) {
-  string16 result;
+  base::string16 result;
   bool ok = RunJavaScriptMessage(JAVASCRIPT_MESSAGE_TYPE_PROMPT,
                                  message,
                                  default_value,
@@ -2636,7 +2636,7 @@ bool RenderViewImpl::runModalBeforeUnloadDialog(
   bool success = false;
   // This is an ignored return value, but is included so we can accept the same
   // response as RunJavaScriptMessage.
-  string16 ignored_result;
+  base::string16 ignored_result;
   SendAndRunNestedMessageLoop(new ViewHostMsg_RunBeforeUnloadConfirm(
       routing_id_, frame->document().url(), message, is_reload,
       &success, &ignored_result));
@@ -3806,7 +3806,7 @@ void RenderViewImpl::didFailLoad(WebFrame* frame, const WebURLError& error) {
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, DidFailLoad(frame, error));
 
   const WebURLRequest& failed_request = ds->request();
-  string16 error_description;
+  base::string16 error_description;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
       frame,
       failed_request,
@@ -4108,11 +4108,11 @@ void RenderViewImpl::SendFindReply(int request_id,
 
 // static
 bool RenderViewImpl::ShouldUpdateSelectionTextFromContextMenuParams(
-    const string16& selection_text,
+    const base::string16& selection_text,
     size_t selection_text_offset,
     const gfx::Range& selection_range,
     const ContextMenuParams& params) {
-  string16 trimmed_selection_text;
+  base::string16 trimmed_selection_text;
   if (!selection_text.empty() && !selection_range.is_empty()) {
     const int start = selection_range.GetMin() - selection_text_offset;
     const size_t length = selection_range.length();
@@ -4121,7 +4121,7 @@ bool RenderViewImpl::ShouldUpdateSelectionTextFromContextMenuParams(
                      &trimmed_selection_text);
     }
   }
-  string16 trimmed_params_text;
+  base::string16 trimmed_params_text;
   TrimWhitespace(params.selection_text, TRIM_ALL, &trimmed_params_text);
   return trimmed_params_text != trimmed_selection_text;
 }
@@ -4329,8 +4329,8 @@ blink::WebPlugin* RenderViewImpl::CreatePlugin(
 #endif
 }
 
-void RenderViewImpl::EvaluateScript(const string16& frame_xpath,
-                                    const string16& jscript,
+void RenderViewImpl::EvaluateScript(const base::string16& frame_xpath,
+                                    const base::string16& jscript,
                                     int id,
                                     bool notify_result) {
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
@@ -4444,7 +4444,7 @@ void RenderViewImpl::SyncSelectionIfRequired() {
   if (!frame)
     return;
 
-  string16 text;
+  base::string16 text;
   size_t offset;
   gfx::Range range;
 #if defined(ENABLE_PLUGINS)
@@ -4572,7 +4572,7 @@ blink::WebPlugin* RenderViewImpl::GetWebPluginFromPluginDocument() {
 }
 
 void RenderViewImpl::OnFind(int request_id,
-                            const string16& search_text,
+                            const base::string16& search_text,
                             const WebFindOptions& options) {
   WebFrame* main_frame = webview()->mainFrame();
 
@@ -4858,7 +4858,7 @@ void RenderViewImpl::OnResetPageEncodingToDefault() {
   webview()->setPageEncoding(no_encoding);
 }
 
-WebFrame* RenderViewImpl::GetChildFrame(const string16& xpath) const {
+WebFrame* RenderViewImpl::GetChildFrame(const base::string16& xpath) const {
   if (xpath.empty())
     return webview()->mainFrame();
 
@@ -4867,11 +4867,11 @@ WebFrame* RenderViewImpl::GetChildFrame(const string16& xpath) const {
   // Example, /html/body/table/tbody/tr/td/iframe\n/frameset/frame[0]
   // should break into 2 xpaths
   // /html/body/table/tbody/tr/td/iframe & /frameset/frame[0]
-  std::vector<string16> xpaths;
+  std::vector<base::string16> xpaths;
   base::SplitString(xpath, '\n', &xpaths);
 
   WebFrame* frame = webview()->mainFrame();
-  for (std::vector<string16>::const_iterator i = xpaths.begin();
+  for (std::vector<base::string16>::const_iterator i = xpaths.begin();
        frame && i != xpaths.end(); ++i) {
     frame = frame->findChildByExpression(*i);
   }
@@ -4879,8 +4879,8 @@ WebFrame* RenderViewImpl::GetChildFrame(const string16& xpath) const {
   return frame;
 }
 
-void RenderViewImpl::OnScriptEvalRequest(const string16& frame_xpath,
-                                         const string16& jscript,
+void RenderViewImpl::OnScriptEvalRequest(const base::string16& frame_xpath,
+                                         const base::string16& jscript,
                                          int id,
                                          bool notify_result) {
   TRACE_EVENT_INSTANT0("test_tracing", "OnScriptEvalRequest",
@@ -4933,7 +4933,7 @@ void RenderViewImpl::OnPostMessageEvent(
   frame->dispatchMessageEventWithOriginCheck(target_origin, msg_event);
 }
 
-void RenderViewImpl::OnCSSInsertRequest(const string16& frame_xpath,
+void RenderViewImpl::OnCSSInsertRequest(const base::string16& frame_xpath,
                                         const std::string& css) {
   WebFrame* frame = GetChildFrame(frame_xpath);
   if (!frame)
@@ -5552,7 +5552,7 @@ void RenderViewImpl::OnWindowFrameChanged(const gfx::Rect& window_frame,
 #endif
 }
 
-void RenderViewImpl::OnPluginImeCompositionCompleted(const string16& text,
+void RenderViewImpl::OnPluginImeCompositionCompleted(const base::string16& text,
                                                      int plugin_id) {
   // WebPluginDelegateProxy is responsible for figuring out if this event
   // applies to it or not, so inform all the delegates.
@@ -5709,7 +5709,7 @@ void RenderViewImpl::OnSetFocus(bool enable) {
 }
 
 void RenderViewImpl::OnImeSetComposition(
-    const string16& text,
+    const base::string16& text,
     const std::vector<blink::WebCompositionUnderline>& underlines,
     int selection_start,
     int selection_end) {
@@ -5753,7 +5753,7 @@ void RenderViewImpl::OnImeSetComposition(
 }
 
 void RenderViewImpl::OnImeConfirmComposition(
-    const string16& text,
+    const base::string16& text,
     const gfx::Range& replacement_range,
     bool keep_selection) {
 #if defined(ENABLE_PLUGINS)

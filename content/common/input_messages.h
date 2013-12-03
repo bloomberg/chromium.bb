@@ -131,10 +131,10 @@ IPC_MESSAGE_ROUTED0(InputMsg_PasteAndMatchStyle)
 // Replaces the selected region or a word around the cursor with the
 // specified string.
 IPC_MESSAGE_ROUTED1(InputMsg_Replace,
-                    string16)
+                    base::string16)
 // Replaces the misspelling in the selected region with the specified string.
 IPC_MESSAGE_ROUTED1(InputMsg_ReplaceMisspelling,
-                    string16)
+                    base::string16)
 IPC_MESSAGE_ROUTED0(InputMsg_Delete)
 IPC_MESSAGE_ROUTED0(InputMsg_SelectAll)
 

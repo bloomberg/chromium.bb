@@ -34,8 +34,8 @@ void ShellLoginDialog::OnRequestCancelled() {
       base::Bind(&ShellLoginDialog::PlatformRequestCancelled, this));
 }
 
-void ShellLoginDialog::UserAcceptedAuth(const string16& username,
-                                        const string16& password) {
+void ShellLoginDialog::UserAcceptedAuth(const base::string16& username,
+                                        const base::string16& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -48,7 +48,7 @@ void ShellLoginDialog::UserCancelledAuth() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&ShellLoginDialog::SendAuthToRequester, this,
-                 false, string16(), string16()));
+                 false, base::string16(), base::string16()));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&ShellLoginDialog::PlatformCleanUp, this));
@@ -63,20 +63,20 @@ ShellLoginDialog::~ShellLoginDialog() {
 // Bogus implementations for linking. They are never called because
 // ResourceDispatcherHostDelegate::CreateLoginDelegate returns NULL.
 // TODO: implement ShellLoginDialog for other platforms, drop this #if
-void ShellLoginDialog::PlatformCreateDialog(const string16& message) {}
+void ShellLoginDialog::PlatformCreateDialog(const base::string16& message) {}
 void ShellLoginDialog::PlatformCleanUp() {}
 void ShellLoginDialog::PlatformRequestCancelled() {}
 #endif
 
-void ShellLoginDialog::PrepDialog(const string16& host,
-                                  const string16& realm) {
+void ShellLoginDialog::PrepDialog(const base::string16& host,
+                                  const base::string16& realm) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // The realm is controlled by the remote server, so there is no reason to
   // believe it is of a reasonable length.
-  string16 elided_realm;
+  base::string16 elided_realm;
   gfx::ElideString(realm, 120, &elided_realm);
 
-  string16 explanation =
+  base::string16 explanation =
       ASCIIToUTF16("The server ") + host +
       ASCIIToUTF16(" requires a username and password.");
 
@@ -90,8 +90,8 @@ void ShellLoginDialog::PrepDialog(const string16& host,
 }
 
 void ShellLoginDialog::SendAuthToRequester(bool success,
-                                           const string16& username,
-                                           const string16& password) {
+                                           const base::string16& username,
+                                           const base::string16& password) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (success)
     request_->SetAuth(net::AuthCredentials(username, password));

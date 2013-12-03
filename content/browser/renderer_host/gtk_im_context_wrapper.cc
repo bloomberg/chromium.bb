@@ -477,7 +477,7 @@ void GtkIMContextWrapper::ConfirmComposition() {
     if (host_view_->GetRenderWidgetHost()) {
       RenderWidgetHostImpl::From(
           host_view_->GetRenderWidgetHost())->ImeConfirmComposition(
-              string16(), gfx::Range::InvalidRange(), false);
+              base::string16(), gfx::Range::InvalidRange(), false);
     }
 
     // Reset the input method.
@@ -485,7 +485,7 @@ void GtkIMContextWrapper::ConfirmComposition() {
   }
 }
 
-void GtkIMContextWrapper::HandleCommit(const string16& text) {
+void GtkIMContextWrapper::HandleCommit(const base::string16& text) {
   if (suppress_next_commit_)
     return;
 

@@ -147,7 +147,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   // WebContentsObserver implementation.
   virtual void DidCommitProvisionalLoadForFrame(
       int64 frame_id,
-      const string16& frame_unique_name,
+      const base::string16& frame_unique_name,
       bool is_main_frame,
       const GURL& url,
       PageTransition transition_type,
@@ -161,9 +161,9 @@ class CONTENT_EXPORT BrowserPluginGuest
   // WebContentsDelegate implementation.
   virtual bool AddMessageToConsole(WebContents* source,
                                    int32 level,
-                                   const string16& message,
+                                   const base::string16& message,
                                    int32 line_no,
-                                   const string16& source_id) OVERRIDE;
+                                   const base::string16& source_id) OVERRIDE;
   // If a new window is created with target="_blank" and rel="noreferrer", then
   // this method is called, indicating that the new WebContents is ready to be
   // attached.
@@ -189,7 +189,7 @@ class CONTENT_EXPORT BrowserPluginGuest
                                       const OpenURLParams& params) OVERRIDE;
   virtual void WebContentsCreated(WebContents* source_contents,
                                   int64 source_frame_id,
-                                  const string16& frame_name,
+                                  const base::string16& frame_name,
                                   const GURL& target_url,
                                   WebContents* new_contents) OVERRIDE;
   virtual void RendererUnresponsive(WebContents* source) OVERRIDE;
@@ -208,18 +208,19 @@ class CONTENT_EXPORT BrowserPluginGuest
       const GURL& origin_url,
       const std::string& accept_lang,
       JavaScriptMessageType javascript_message_type,
-      const string16& message_text,
-      const string16& default_prompt_text,
+      const base::string16& message_text,
+      const base::string16& default_prompt_text,
       const DialogClosedCallback& callback,
       bool* did_suppress_message) OVERRIDE;
   virtual void RunBeforeUnloadDialog(
       WebContents* web_contents,
-      const string16& message_text,
+      const base::string16& message_text,
       bool is_reload,
       const DialogClosedCallback& callback) OVERRIDE;
-  virtual bool HandleJavaScriptDialog(WebContents* web_contents,
-                                      bool accept,
-                                      const string16* prompt_override) OVERRIDE;
+  virtual bool HandleJavaScriptDialog(
+      WebContents* web_contents,
+      bool accept,
+      const base::string16* prompt_override) OVERRIDE;
   virtual void CancelActiveAndPendingDialogs(
       WebContents* web_contents) OVERRIDE;
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;

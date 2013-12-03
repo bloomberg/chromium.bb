@@ -62,12 +62,12 @@ class CONTENT_EXPORT AttributedStringCoder {
   // which can be serialized over IPC.
   class EncodedString {
    public:
-    explicit EncodedString(string16 string);
+    explicit EncodedString(base::string16 string);
     EncodedString();
     ~EncodedString();
 
     // Accessors:
-    string16 string() const { return string_; }
+    base::string16 string() const { return string_; }
     const std::vector<FontAttribute>& attributes() const {
       return attributes_;
     }
@@ -75,7 +75,7 @@ class CONTENT_EXPORT AttributedStringCoder {
 
    private:
     // The plain-text string.
-    string16 string_;
+    base::string16 string_;
     // The set of attributes that style |string_|.
     std::vector<FontAttribute> attributes_;
   };

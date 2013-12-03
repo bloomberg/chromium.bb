@@ -46,7 +46,7 @@ class CONTENT_EXPORT WebUIMessageHandler {
                                  double* out_value);
 
   // Extract a string value from a list Value.
-  static string16 ExtractStringValue(const base::ListValue* value);
+  static base::string16 ExtractStringValue(const base::ListValue* value);
 
   // This is where subclasses specify which messages they'd like to handle and
   // perform any additional initialization.. At this point web_ui() will return

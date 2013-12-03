@@ -71,14 +71,14 @@ class CONTENT_EXPORT IndexedDBDispatcher
       const std::string& database_identifier);
 
   void RequestIDBFactoryOpen(
-      const string16& name,
+      const base::string16& name,
       int64 version,
       int64 transaction_id,
       blink::WebIDBCallbacks* callbacks,
       blink::WebIDBDatabaseCallbacks* database_callbacks,
       const std::string& database_identifier);
 
-  void RequestIDBFactoryDeleteDatabase(const string16& name,
+  void RequestIDBFactoryDeleteDatabase(const base::string16& name,
                                        blink::WebIDBCallbacks* callbacks,
                                        const std::string& database_identifier);
 
@@ -192,7 +192,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
       const IndexedDBMsg_CallbacksSuccessCursorPrefetch_Params& p);
   void OnSuccessStringList(int32 ipc_thread_id,
                            int32 ipc_callbacks_id,
-                           const std::vector<string16>& value);
+                           const std::vector<base::string16>& value);
   void OnSuccessValue(int32 ipc_thread_id,
                       int32 ipc_callbacks_id,
                       const std::string& value);
@@ -208,7 +208,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
   void OnError(int32 ipc_thread_id,
                int32 ipc_callbacks_id,
                int code,
-               const string16& message);
+               const base::string16& message);
   void OnIntBlocked(int32 ipc_thread_id,
                     int32 ipc_callbacks_id,
                     int64 existing_version);
@@ -217,7 +217,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
                int32 ipc_database_id,
                int64 transaction_id,
                int code,
-               const string16& message);
+               const base::string16& message);
   void OnComplete(int32 ipc_thread_id,
                   int32 ipc_database_id,
                   int64 transaction_id);

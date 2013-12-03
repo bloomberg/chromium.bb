@@ -222,7 +222,7 @@ class WebContents : public PageNavigator,
   // Returns the current navigation properties, which if a navigation is
   // pending may be provisional (e.g., the navigation could result in a
   // download, in which case the URL would revert to what it was previously).
-  virtual const string16& GetTitle() const = 0;
+  virtual const base::string16& GetTitle() const = 0;
 
   // The max page ID for any page that the current SiteInstance has loaded in
   // this WebContents.  Page IDs are specific to a given SiteInstance and
@@ -250,7 +250,7 @@ class WebContents : public PageNavigator,
 
   // Return the current load state and the URL associated with it.
   virtual const net::LoadStateWithParam& GetLoadState() const = 0;
-  virtual const string16& GetLoadStateHost() const = 0;
+  virtual const base::string16& GetLoadStateHost() const = 0;
 
   // Return the upload progress.
   virtual uint64 GetUploadSize() const = 0;

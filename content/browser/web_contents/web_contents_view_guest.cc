@@ -142,7 +142,7 @@ RenderWidgetHostView* WebContentsViewGuest::CreateViewForPopupWidget(
   return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
 }
 
-void WebContentsViewGuest::SetPageTitle(const string16& title) {
+void WebContentsViewGuest::SetPageTitle(const base::string16& title) {
 }
 
 void WebContentsViewGuest::RenderViewCreated(RenderViewHost* host) {

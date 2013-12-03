@@ -18,7 +18,7 @@
 namespace content {
 
 // Converts a MAC address stored as an array of uint8 to a string.
-string16 MacAddressAsString16(const uint8 mac_as_int[6]);
+base::string16 MacAddressAsString16(const uint8 mac_as_int[6]);
 
 // Base class to promote code sharing between platform specific wifi data
 // providers. It's optional for specific platforms to derive this, but if they

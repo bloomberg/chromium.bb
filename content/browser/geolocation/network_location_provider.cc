@@ -27,7 +27,7 @@ bool NetworkLocationProvider::PositionCache::CachePosition(
     const WifiData& wifi_data,
     const Geoposition& position) {
   // Check that we can generate a valid key for the wifi data.
-  string16 key;
+  base::string16 key;
   if (!MakeKey(wifi_data, &key)) {
     return false;
   }
@@ -57,7 +57,7 @@ bool NetworkLocationProvider::PositionCache::CachePosition(
 // the cached position if available, NULL otherwise.
 const Geoposition* NetworkLocationProvider::PositionCache::FindPosition(
     const WifiData& wifi_data) {
-  string16 key;
+  base::string16 key;
   if (!MakeKey(wifi_data, &key)) {
     return NULL;
   }
@@ -71,13 +71,13 @@ const Geoposition* NetworkLocationProvider::PositionCache::FindPosition(
 // static
 bool NetworkLocationProvider::PositionCache::MakeKey(
     const WifiData& wifi_data,
-    string16* key) {
+    base::string16* key) {
   // Currently we use only WiFi data and base the key only on the MAC addresses.
   DCHECK(key);
   key->clear();
   const size_t kCharsPerMacAddress = 6 * 3 + 1;  // e.g. "11:22:33:44:55:66|"
   key->reserve(wifi_data.access_point_data.size() * kCharsPerMacAddress);
-  const string16 separator(ASCIIToUTF16("|"));
+  const base::string16 separator(ASCIIToUTF16("|"));
   for (WifiData::AccessPointDataSet::const_iterator iter =
        wifi_data.access_point_data.begin();
        iter != wifi_data.access_point_data.end();
@@ -96,7 +96,7 @@ LocationProviderBase* NewNetworkLocationProvider(
     AccessTokenStore* access_token_store,
     net::URLRequestContextGetter* context,
     const GURL& url,
-    const string16& access_token) {
+    const base::string16& access_token) {
   return new NetworkLocationProvider(
       access_token_store, context, url, access_token);
 }
@@ -106,7 +106,7 @@ NetworkLocationProvider::NetworkLocationProvider(
     AccessTokenStore* access_token_store,
     net::URLRequestContextGetter* url_context_getter,
     const GURL& url,
-    const string16& access_token)
+    const base::string16& access_token)
     : access_token_store_(access_token_store),
       wifi_data_provider_(NULL),
       wifi_data_update_callback_(
@@ -163,7 +163,7 @@ void NetworkLocationProvider::WifiDataUpdateAvailable(
 void NetworkLocationProvider::LocationResponseAvailable(
     const Geoposition& position,
     bool server_error,
-    const string16& access_token,
+    const base::string16& access_token,
     const WifiData& wifi_data) {
   DCHECK(CalledOnValidThread());
   // Record the position and update our cache.

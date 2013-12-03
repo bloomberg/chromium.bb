@@ -89,7 +89,7 @@ class PluginService {
   // Returns the display name for the plugin identified by the given path. If
   // the path doesn't identify a plugin, or the plugin has no display name,
   // this will attempt to generate a display name from the path.
-  virtual string16 GetPluginDisplayNameByPath(
+  virtual base::string16 GetPluginDisplayNameByPath(
       const base::FilePath& plugin_path) = 0;
 
   // Asynchronously loads plugins if necessary and then calls back to the

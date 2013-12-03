@@ -282,7 +282,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   media::AudioHardwareConfig* GetAudioHardwareConfig();
 
 #if defined(OS_WIN)
-  void PreCacheFontCharacters(const LOGFONT& log_font, const string16& str);
+  void PreCacheFontCharacters(const LOGFONT& log_font,
+                              const base::string16& str);
 #endif
 
 #if defined(ENABLE_WEBRTC)

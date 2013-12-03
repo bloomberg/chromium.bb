@@ -87,7 +87,7 @@ bool GeolocationDispatcher::lastPosition(WebGeolocationPosition&) {
 void GeolocationDispatcher::requestPermission(
     const WebGeolocationPermissionRequest& permissionRequest) {
   int bridge_id = pending_permissions_->add(permissionRequest);
-  string16 origin = permissionRequest.securityOrigin().toString();
+  base::string16 origin = permissionRequest.securityOrigin().toString();
   Send(new GeolocationHostMsg_RequestPermission(
       routing_id(), bridge_id, GURL(origin)));
 }
@@ -99,7 +99,7 @@ void GeolocationDispatcher::cancelPermissionRequest(
   int bridge_id;
   if (!pending_permissions_->remove(permissionRequest, bridge_id))
     return;
-  string16 origin = permissionRequest.securityOrigin().toString();
+  base::string16 origin = permissionRequest.securityOrigin().toString();
   Send(new GeolocationHostMsg_CancelPermissionRequest(
       routing_id(), bridge_id, GURL(origin)));
 }

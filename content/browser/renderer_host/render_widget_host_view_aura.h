@@ -192,8 +192,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual void RenderProcessGone(base::TerminationStatus status,
                                  int error_code) OVERRIDE;
   virtual void Destroy() OVERRIDE;
-  virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE;
-  virtual void SelectionChanged(const string16& text,
+  virtual void SetTooltipText(const base::string16& tooltip_text) OVERRIDE;
+  virtual void SelectionChanged(const base::string16& text,
                                 size_t offset,
                                 const gfx::Range& range) OVERRIDE;
   virtual void SelectionBoundsChanged(
@@ -258,7 +258,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       const ui::CompositionText& composition) OVERRIDE;
   virtual void ConfirmCompositionText() OVERRIDE;
   virtual void ClearCompositionText() OVERRIDE;
-  virtual void InsertText(const string16& text) OVERRIDE;
+  virtual void InsertText(const base::string16& text) OVERRIDE;
   virtual void InsertChar(char16 ch, int flags) OVERRIDE;
   virtual gfx::NativeWindow GetAttachedWindow() const OVERRIDE;
   virtual ui::TextInputType GetTextInputType() const OVERRIDE;
@@ -274,7 +274,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   virtual bool SetSelectionRange(const gfx::Range& range) OVERRIDE;
   virtual bool DeleteRange(const gfx::Range& range) OVERRIDE;
   virtual bool GetTextFromRange(const gfx::Range& range,
-                                string16* text) const OVERRIDE;
+                                base::string16* text) const OVERRIDE;
   virtual void OnInputMethodChanged() OVERRIDE;
   virtual bool ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection direction) OVERRIDE;
@@ -619,7 +619,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool accept_return_character_;
 
   // Current tooltip text.
-  string16 tooltip_;
+  base::string16 tooltip_;
 
   std::vector<base::Closure> on_compositing_did_commit_callbacks_;
 

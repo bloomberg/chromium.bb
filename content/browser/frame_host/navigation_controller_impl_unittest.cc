@@ -921,7 +921,7 @@ TEST_F(NavigationControllerTest, LoadURL_AbortDoesntCancelPending) {
   params.frame_id = 1;
   params.is_main_frame = true;
   params.error_code = net::ERR_ABORTED;
-  params.error_description = string16();
+  params.error_description = base::string16();
   params.url = kNewURL;
   params.showing_repost_interstitial = false;
   test_rvh()->OnMessageReceived(
@@ -999,7 +999,7 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   params.frame_id = 1;
   params.is_main_frame = true;
   params.error_code = net::ERR_ABORTED;
-  params.error_description = string16();
+  params.error_description = base::string16();
   params.url = kRedirectURL;
   params.showing_repost_interstitial = false;
   test_rvh()->OnMessageReceived(
@@ -2342,7 +2342,7 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
   fail_load_params.frame_id = 1;
   fail_load_params.is_main_frame = true;
   fail_load_params.error_code = net::ERR_ABORTED;
-  fail_load_params.error_description = string16();
+  fail_load_params.error_description = base::string16();
   fail_load_params.url = url;
   fail_load_params.showing_repost_interstitial = false;
   rvh->OnMessageReceived(
@@ -2897,7 +2897,7 @@ TEST_F(NavigationControllerTest, CloneAndGoBack) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
-  const string16 title(ASCIIToUTF16("Title"));
+  const base::string16 title(ASCIIToUTF16("Title"));
 
   NavigateAndCommit(url1);
   controller.GetVisibleEntry()->SetTitle(title);
@@ -2922,7 +2922,7 @@ TEST_F(NavigationControllerTest, CloneAndReload) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
   const GURL url2("http://foo2");
-  const string16 title(ASCIIToUTF16("Title"));
+  const base::string16 title(ASCIIToUTF16("Title"));
 
   NavigateAndCommit(url1);
   controller.GetVisibleEntry()->SetTitle(title);

@@ -52,7 +52,7 @@ class FakeSpeechRecognitionManager : public SpeechRecognitionManager {
   virtual void AbortAllSessionsForRenderView(int render_process_id,
                                              int render_view_id) OVERRIDE;
   virtual bool HasAudioInputDevices() OVERRIDE;
-  virtual string16 GetAudioInputDeviceModel() OVERRIDE;
+  virtual base::string16 GetAudioInputDeviceModel() OVERRIDE;
   virtual void ShowAudioInputSettings() OVERRIDE {}
   virtual int GetSession(int render_process_id,
                          int render_view_id,

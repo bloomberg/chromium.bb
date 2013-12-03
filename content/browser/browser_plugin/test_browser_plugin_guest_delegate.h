@@ -22,9 +22,9 @@ class TestBrowserPluginGuestDelegate : public BrowserPluginGuestDelegate {
  private:
   // Overridden from BrowserPluginGuestDelegate:
   virtual void AddMessageToConsole(int32 level,
-                                   const string16& message,
+                                   const base::string16& message,
                                    int32 line_no,
-                                   const string16& source_id) OVERRIDE;
+                                   const base::string16& source_id) OVERRIDE;
   virtual void Close() OVERRIDE;
   virtual void GuestProcessGone(base::TerminationStatus status) OVERRIDE;
   virtual bool HandleKeyboardEvent(

@@ -59,13 +59,13 @@ void MediaBrowserTest::RunMediaTestPage(
 }
 
 void MediaBrowserTest::RunTest(const GURL& gurl, const char* expected) {
-  const string16 expected_title = ASCIIToUTF16(expected);
+  const base::string16 expected_title = ASCIIToUTF16(expected);
   DVLOG(1) << "Running test URL: " << gurl;
   TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   AddWaitForTitles(&title_watcher);
   NavigateToURL(shell(), gurl);
 
-  string16 final_title = title_watcher.WaitAndGetTitle();
+  base::string16 final_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, final_title);
 }
 

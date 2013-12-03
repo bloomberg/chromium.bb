@@ -28,7 +28,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl
  public:
   // WebUIDataSource implementation:
   virtual void AddString(const std::string& name,
-                         const string16& value) OVERRIDE;
+                         const base::string16& value) OVERRIDE;
   virtual void AddString(const std::string& name,
                          const std::string& value) OVERRIDE;
   virtual void AddLocalizedString(const std::string& name, int ids) OVERRIDE;

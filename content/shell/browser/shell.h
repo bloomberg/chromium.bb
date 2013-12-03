@@ -142,9 +142,9 @@ class Shell : public WebContentsDelegate,
 #endif
   virtual bool AddMessageToConsole(WebContents* source,
                                    int32 level,
-                                   const string16& message,
+                                   const base::string16& message,
                                    int32 line_no,
-                                   const string16& source_id) OVERRIDE;
+                                   const base::string16& source_id) OVERRIDE;
   virtual void RendererUnresponsive(WebContents* source) OVERRIDE;
   virtual void ActivateContents(WebContents* contents) OVERRIDE;
   virtual void DeactivateContents(WebContents* contents) OVERRIDE;
@@ -191,7 +191,7 @@ class Shell : public WebContentsDelegate,
   // Sets whether the spinner is spinning.
   void PlatformSetIsLoading(bool loading);
   // Set the title of shell window
-  void PlatformSetTitle(const string16& title);
+  void PlatformSetTitle(const base::string16& title);
 #if defined(OS_ANDROID)
   void PlatformToggleFullscreenModeForTab(WebContents* web_contents,
                                           bool enter_fullscreen);

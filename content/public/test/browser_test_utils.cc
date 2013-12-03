@@ -539,21 +539,21 @@ bool SetCookie(BrowserContext* browser_context,
 }
 
 TitleWatcher::TitleWatcher(WebContents* web_contents,
-                           const string16& expected_title)
+                           const base::string16& expected_title)
     : WebContentsObserver(web_contents),
       message_loop_runner_(new MessageLoopRunner) {
   EXPECT_TRUE(web_contents != NULL);
   expected_titles_.push_back(expected_title);
 }
 
-void TitleWatcher::AlsoWaitForTitle(const string16& expected_title) {
+void TitleWatcher::AlsoWaitForTitle(const base::string16& expected_title) {
   expected_titles_.push_back(expected_title);
 }
 
 TitleWatcher::~TitleWatcher() {
 }
 
-const string16& TitleWatcher::WaitAndGetTitle() {
+const base::string16& TitleWatcher::WaitAndGetTitle() {
   message_loop_runner_->Run();
   return observed_title_;
 }
@@ -571,7 +571,7 @@ void TitleWatcher::TitleWasSet(NavigationEntry* entry, bool explicit_set) {
 }
 
 void TitleWatcher::TestTitle() {
-  std::vector<string16>::const_iterator it =
+  std::vector<base::string16>::const_iterator it =
       std::find(expected_titles_.begin(),
                 expected_titles_.end(),
                 web_contents()->GetTitle());

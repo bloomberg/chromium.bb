@@ -149,7 +149,7 @@ LocationProvider* LocationArbitratorImpl::NewNetworkLocationProvider(
     AccessTokenStore* access_token_store,
     net::URLRequestContextGetter* context,
     const GURL& url,
-    const string16& access_token) {
+    const base::string16& access_token) {
 #if defined(OS_ANDROID)
   // Android uses its own SystemLocationProvider.
   return NULL;

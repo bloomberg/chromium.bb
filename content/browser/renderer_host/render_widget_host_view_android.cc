@@ -524,11 +524,11 @@ void RenderWidgetHostViewAndroid::Destroy() {
 }
 
 void RenderWidgetHostViewAndroid::SetTooltipText(
-    const string16& tooltip_text) {
+    const base::string16& tooltip_text) {
   // Tooltips don't makes sense on Android.
 }
 
-void RenderWidgetHostViewAndroid::SelectionChanged(const string16& text,
+void RenderWidgetHostViewAndroid::SelectionChanged(const base::string16& text,
                                                    size_t offset,
                                                    const gfx::Range& range) {
   RenderWidgetHostViewBase::SelectionChanged(text, offset, range);

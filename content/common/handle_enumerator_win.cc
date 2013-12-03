@@ -19,7 +19,7 @@
 namespace content {
 namespace {
 
-typedef std::map<const string16, HandleType> HandleTypeMap;
+typedef std::map<const base::string16, HandleType> HandleTypeMap;
 
 HandleTypeMap& MakeHandleTypeMap() {
   HandleTypeMap& handle_types = *(new HandleTypeMap());
@@ -52,7 +52,7 @@ void HandleEnumerator::EnumerateHandles() {
   std::string process_type =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kProcessType);
-  string16 output = ASCIIToUTF16(process_type);
+  base::string16 output = ASCIIToUTF16(process_type);
   output.append(ASCIIToUTF16(" process - Handles at shutdown:\n"));
   for (sandbox::HandleTable::Iterator sys_handle
       = handles.HandlesForProcess(::GetCurrentProcessId());
@@ -78,15 +78,15 @@ void HandleEnumerator::EnumerateHandles() {
   DVLOG(0) << output;
 }
 
-HandleType StringToHandleType(const string16& type) {
+HandleType StringToHandleType(const base::string16& type) {
   static HandleTypeMap handle_types = MakeHandleTypeMap();
   HandleTypeMap::iterator result = handle_types.find(type);
   return result != handle_types.end() ? result->second : OtherHandle;
 }
 
-string16 GetAccessString(HandleType handle_type,
+base::string16 GetAccessString(HandleType handle_type,
                                            ACCESS_MASK access) {
-  string16 output;
+  base::string16 output;
   if (access & GENERIC_READ)
     output.append(ASCIIToUTF16("\tGENERIC_READ\n"));
   if (access & GENERIC_WRITE)

@@ -31,7 +31,7 @@ JavaBridgeDispatcherHostManager::~JavaBridgeDispatcherHostManager() {
   DCHECK_EQ(0U, instances_.size());
 }
 
-void JavaBridgeDispatcherHostManager::AddNamedObject(const string16& name,
+void JavaBridgeDispatcherHostManager::AddNamedObject(const base::string16& name,
                                                      NPObject* object) {
   // Record this object in a map so that we can add it into RenderViewHosts
   // created later. The JavaBridgeDispatcherHost instances will take a
@@ -67,7 +67,8 @@ void JavaBridgeDispatcherHostManager::SetRetainedObjectSet(
   }
 }
 
-void JavaBridgeDispatcherHostManager::RemoveNamedObject(const string16& name) {
+void JavaBridgeDispatcherHostManager::RemoveNamedObject(
+    const base::string16& name) {
   ObjectMap::iterator iter = objects_.find(name);
   if (iter == objects_.end()) {
     return;

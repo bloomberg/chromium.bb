@@ -64,11 +64,11 @@ class PluginLoaderPosixTest : public testing::Test {
  public:
   PluginLoaderPosixTest()
       : plugin1_(ASCIIToUTF16("plugin1"), base::FilePath("/tmp/one.plugin"),
-                 ASCIIToUTF16("1.0"), string16()),
+                 ASCIIToUTF16("1.0"), base::string16()),
         plugin2_(ASCIIToUTF16("plugin2"), base::FilePath("/tmp/two.plugin"),
-                 ASCIIToUTF16("2.0"), string16()),
+                 ASCIIToUTF16("2.0"), base::string16()),
         plugin3_(ASCIIToUTF16("plugin3"), base::FilePath("/tmp/three.plugin"),
-                 ASCIIToUTF16("3.0"), string16()),
+                 ASCIIToUTF16("3.0"), base::string16()),
         file_thread_(BrowserThread::FILE, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_),
         plugin_loader_(new MockPluginLoaderPosix) {

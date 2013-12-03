@@ -117,7 +117,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
                                  int error_code) OVERRIDE;
   virtual void WillDestroyRenderWidget(RenderWidgetHost* rwh) { }
   virtual void Destroy() OVERRIDE;
-  virtual void SetTooltipText(const string16& tooltip_text) OVERRIDE {}
+  virtual void SetTooltipText(const base::string16& tooltip_text) OVERRIDE {}
   virtual void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) OVERRIDE {}
   virtual void ScrollOffsetChanged() OVERRIDE {}
@@ -312,7 +312,7 @@ class TestRenderViewHost
 
   // RenderViewHost overrides --------------------------------------------------
 
-  virtual bool CreateRenderView(const string16& frame_name,
+  virtual bool CreateRenderView(const base::string16& frame_name,
                                 int opener_route_id,
                                 int32 max_page_id) OVERRIDE;
   virtual bool IsRenderViewLive() const OVERRIDE;

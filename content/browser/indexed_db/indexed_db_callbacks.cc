@@ -71,7 +71,7 @@ void IndexedDBCallbacks::OnError(const IndexedDBDatabaseError& error) {
   dispatcher_host_ = NULL;
 }
 
-void IndexedDBCallbacks::OnSuccess(const std::vector<string16>& value) {
+void IndexedDBCallbacks::OnSuccess(const std::vector<base::string16>& value) {
   DCHECK(dispatcher_host_.get());
 
   DCHECK_EQ(kNoCursor, ipc_cursor_id_);
@@ -79,7 +79,7 @@ void IndexedDBCallbacks::OnSuccess(const std::vector<string16>& value) {
   DCHECK_EQ(kNoDatabase, ipc_database_id_);
   DCHECK_EQ(kNoDatabaseCallbacks, ipc_database_callbacks_id_);
 
-  std::vector<string16> list;
+  std::vector<base::string16> list;
   for (unsigned i = 0; i < value.size(); ++i)
     list.push_back(value[i]);
 

@@ -104,7 +104,7 @@ class CppBoundClassTest : public RenderViewTest {
 
   void CheckTrue(const std::string& expression) {
     int was_page_a = -1;
-    string16 check_page_a =
+    base::string16 check_page_a =
         ASCIIToUTF16(std::string("Number(") + expression + ")");
     EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_a, &was_page_a));
     EXPECT_EQ(1, was_page_a);

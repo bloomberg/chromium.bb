@@ -929,14 +929,15 @@ void RenderWidgetHostViewGtk::Destroy() {
   base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
 }
 
-void RenderWidgetHostViewGtk::SetTooltipText(const string16& tooltip_text) {
+void RenderWidgetHostViewGtk::SetTooltipText(
+    const base::string16& tooltip_text) {
   // Maximum number of characters we allow in a tooltip.
   const int kMaxTooltipLength = 8 << 10;
   // Clamp the tooltip length to kMaxTooltipLength so that we don't
   // accidentally DOS the user with a mega tooltip (since GTK doesn't do
   // this itself).
   // I filed https://bugzilla.gnome.org/show_bug.cgi?id=604641 upstream.
-  const string16 clamped_tooltip =
+  const base::string16 clamped_tooltip =
       gfx::TruncateString(tooltip_text, kMaxTooltipLength);
 
   if (clamped_tooltip.empty()) {
@@ -947,7 +948,7 @@ void RenderWidgetHostViewGtk::SetTooltipText(const string16& tooltip_text) {
   }
 }
 
-void RenderWidgetHostViewGtk::SelectionChanged(const string16& text,
+void RenderWidgetHostViewGtk::SelectionChanged(const base::string16& text,
                                                size_t offset,
                                                const gfx::Range& range) {
   RenderWidgetHostViewBase::SelectionChanged(text, offset, range);
@@ -1347,7 +1348,7 @@ bool RenderWidgetHostViewGtk::LockMouse() {
   }
 
   // Clear the tooltip window.
-  SetTooltipText(string16());
+  SetTooltipText(base::string16());
 
   // Ensure that the widget center location will be relevant for this mouse
   // lock session. It is updated whenever the window geometry moves
@@ -1411,7 +1412,7 @@ bool RenderWidgetHostViewGtk::RetrieveSurrounding(std::string* text,
 
   *text = base::UTF16ToUTF8AndAdjustOffset(
       base::StringPiece16(selection_text_), &offset);
-  if (offset == string16::npos) {
+  if (offset == base::string16::npos) {
     NOTREACHED() << "Invalid offset in UTF16 string.";
     return false;
   }

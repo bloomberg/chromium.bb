@@ -108,7 +108,7 @@ class IndexedDBDatabase::PendingDeleteCall {
 };
 
 scoped_refptr<IndexedDBDatabase> IndexedDBDatabase::Create(
-    const string16& name,
+    const base::string16& name,
     IndexedDBBackingStore* backing_store,
     IndexedDBFactory* factory,
     const Identifier& unique_identifier) {
@@ -128,7 +128,7 @@ bool Contains(const T& container, const U& item) {
 }
 }
 
-IndexedDBDatabase::IndexedDBDatabase(const string16& name,
+IndexedDBDatabase::IndexedDBDatabase(const base::string16& name,
                                      IndexedDBBackingStore* backing_store,
                                      IndexedDBFactory* factory,
                                      const Identifier& unique_identifier)
@@ -273,7 +273,7 @@ bool IndexedDBDatabase::ValidateObjectStoreIdAndNewIndexId(
 
 void IndexedDBDatabase::CreateObjectStore(int64 transaction_id,
                                           int64 object_store_id,
-                                          const string16& name,
+                                          const base::string16& name,
                                           const IndexedDBKeyPath& key_path,
                                           bool auto_increment) {
   IDB_TRACE("IndexedDBDatabase::CreateObjectStore");
@@ -351,7 +351,7 @@ void IndexedDBDatabase::DeleteObjectStore(int64 transaction_id,
 void IndexedDBDatabase::CreateIndex(int64 transaction_id,
                                     int64 object_store_id,
                                     int64 index_id,
-                                    const string16& name,
+                                    const base::string16& name,
                                     const IndexedDBKeyPath& key_path,
                                     bool unique,
                                     bool multi_entry) {
@@ -392,8 +392,9 @@ void IndexedDBDatabase::CreateIndexOperation(
                                    index_metadata.key_path,
                                    index_metadata.unique,
                                    index_metadata.multi_entry)) {
-    string16 error_string = ASCIIToUTF16("Internal error creating index '") +
-                            index_metadata.name + ASCIIToUTF16("'.");
+    base::string16 error_string =
+        ASCIIToUTF16("Internal error creating index '") +
+        index_metadata.name + ASCIIToUTF16("'.");
     transaction->Abort(IndexedDBDatabaseError(
         blink::WebIDBDatabaseExceptionUnknownError, error_string));
     return;
@@ -446,8 +447,9 @@ void IndexedDBDatabase::DeleteIndexOperation(
                                         object_store_id,
                                         index_metadata.id);
   if (!ok) {
-    string16 error_string = ASCIIToUTF16("Internal error deleting index '") +
-                            index_metadata.name + ASCIIToUTF16("'.");
+    base::string16 error_string =
+        ASCIIToUTF16("Internal error deleting index '") +
+        index_metadata.name + ASCIIToUTF16("'.");
     transaction->Abort(IndexedDBDatabaseError(
         blink::WebIDBDatabaseExceptionUnknownError, error_string));
   }
@@ -791,7 +793,7 @@ void IndexedDBDatabase::PutOperation(scoped_ptr<PutOperationParams> params,
   }
 
   ScopedVector<IndexWriter> index_writers;
-  string16 error_message;
+  base::string16 error_message;
   bool obeys_constraints = false;
   bool backing_store_success = MakeIndexWriters(transaction,
                                                 backing_store_.get(),
@@ -897,7 +899,7 @@ void IndexedDBDatabase::SetIndexKeys(int64 transaction_id,
   }
 
   ScopedVector<IndexWriter> index_writers;
-  string16 error_message;
+  base::string16 error_message;
   bool obeys_constraints = false;
   DCHECK(metadata_.object_stores.find(object_store_id) !=
          metadata_.object_stores.end());
@@ -1219,7 +1221,7 @@ void IndexedDBDatabase::DeleteObjectStoreOperation(
                                         transaction->database()->id(),
                                         object_store_metadata.id);
   if (!ok) {
-    string16 error_string =
+    base::string16 error_string =
         ASCIIToUTF16("Internal error deleting object store '") +
         object_store_metadata.name + ASCIIToUTF16("'.");
     transaction->Abort(IndexedDBDatabaseError(
@@ -1449,7 +1451,7 @@ void IndexedDBDatabase::OpenConnection(
       DCHECK_EQ(IndexedDBDatabaseMetadata::NO_INT_VERSION,
                 metadata_.int_version);
     } else {
-      string16 message;
+      base::string16 message;
       if (version == IndexedDBDatabaseMetadata::NO_INT_VERSION)
         message = ASCIIToUTF16(
             "Internal error opening database with no version specified.");
@@ -1714,7 +1716,7 @@ void IndexedDBDatabase::DeleteObjectStoreAbortOperation(
 }
 
 void IndexedDBDatabase::VersionChangeAbortOperation(
-    const string16& previous_version,
+    const base::string16& previous_version,
     int64 previous_int_version,
     IndexedDBTransaction* transaction) {
   IDB_TRACE("IndexedDBDatabase::VersionChangeAbortOperation");

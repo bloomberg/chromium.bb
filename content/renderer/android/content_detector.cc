@@ -52,7 +52,7 @@ WebRange ContentDetector::FindContentRange(
   if (surrounding_text.isNull())
     return WebRange();
 
-  string16 content = surrounding_text.textContent();
+  base::string16 content = surrounding_text.textContent();
   if (content.empty())
     return WebRange();
 

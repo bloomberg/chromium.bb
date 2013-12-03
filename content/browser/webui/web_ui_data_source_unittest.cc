@@ -25,10 +25,10 @@ class TestClient : public TestContentClient {
   TestClient() {}
   virtual ~TestClient() {}
 
-  virtual string16 GetLocalizedString(int message_id) const OVERRIDE {
+  virtual base::string16 GetLocalizedString(int message_id) const OVERRIDE {
     if (message_id == kDummyStringId)
       return UTF8ToUTF16(kDummyString);
-    return string16();
+    return base::string16();
 
   }
 

@@ -431,7 +431,7 @@ void InterstitialPageImpl::DidNavigate(
 void InterstitialPageImpl::UpdateTitle(
     RenderViewHost* render_view_host,
     int32 page_id,
-    const string16& title,
+    const base::string16& title,
     base::i18n::TextDirection title_direction) {
   if (!enabled())
     return;
@@ -545,7 +545,7 @@ WebContentsView* InterstitialPageImpl::CreateWebContentsView() {
 
   int32 max_page_id = web_contents()->
       GetMaxPageIDForSiteInstance(render_view_host_->GetSiteInstance());
-  render_view_host_->CreateRenderView(string16(),
+  render_view_host_->CreateRenderView(base::string16(),
                                       MSG_ROUTING_NONE,
                                       max_page_id);
   controller_->delegate()->RenderViewForInterstitialPageCreated(

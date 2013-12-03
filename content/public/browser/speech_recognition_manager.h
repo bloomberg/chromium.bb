@@ -80,7 +80,7 @@ class SpeechRecognitionManager {
 
   // Returns a human readable string for the model/make of the active audio
   // input device for this computer.
-  virtual string16 GetAudioInputDeviceModel() = 0;
+  virtual base::string16 GetAudioInputDeviceModel() = 0;
 
   // Invokes the platform provided microphone settings UI in a non-blocking way,
   // via the BrowserThread::FILE thread.

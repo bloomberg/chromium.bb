@@ -20,7 +20,7 @@ class CONTENT_EXPORT ContentPluginClient {
   virtual void PreSandboxInitialization() {}
 
   // Notifies that a plugin process has started.
-  virtual void PluginProcessStarted(const string16& plugin_name) {}
+  virtual void PluginProcessStarted(const base::string16& plugin_name) {}
 };
 
 }  // namespace content

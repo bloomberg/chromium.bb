@@ -136,7 +136,7 @@ void ImeAdapterAndroid::SetComposingText(JNIEnv* env, jobject, jstring text,
   if (!rwhi)
     return;
 
-  string16 text16 = ConvertJavaStringToUTF16(env, text);
+  base::string16 text16 = ConvertJavaStringToUTF16(env, text);
   std::vector<blink::WebCompositionUnderline> underlines;
   underlines.push_back(
       blink::WebCompositionUnderline(0, text16.length(), SK_ColorBLACK,
@@ -155,7 +155,7 @@ void ImeAdapterAndroid::CommitText(JNIEnv* env, jobject, jstring text) {
   if (!rwhi)
     return;
 
-  string16 text16 = ConvertJavaStringToUTF16(env, text);
+  base::string16 text16 = ConvertJavaStringToUTF16(env, text);
   rwhi->ImeConfirmComposition(text16, gfx::Range::InvalidRange(), false);
 }
 
@@ -164,7 +164,8 @@ void ImeAdapterAndroid::FinishComposingText(JNIEnv* env, jobject) {
   if (!rwhi)
     return;
 
-  rwhi->ImeConfirmComposition(string16(), gfx::Range::InvalidRange(), true);
+  rwhi->ImeConfirmComposition(base::string16(), gfx::Range::InvalidRange(),
+                              true);
 }
 
 void ImeAdapterAndroid::AttachImeAdapter(JNIEnv* env, jobject java_object) {

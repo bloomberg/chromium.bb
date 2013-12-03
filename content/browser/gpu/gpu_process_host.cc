@@ -252,7 +252,7 @@ class GpuSandboxedProcessLauncherDelegate
 #endif
 
     if (cmd_line_->HasSwitch(switches::kEnableLogging)) {
-      string16 log_file_path = logging::GetLogFileFullPath();
+      base::string16 log_file_path = logging::GetLogFileFullPath();
       if (!log_file_path.empty()) {
         result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
                                  sandbox::TargetPolicy::FILES_ALLOW_ANY,

@@ -85,7 +85,7 @@ class TestingLocationArbitrator : public LocationArbitratorImpl {
       AccessTokenStore* access_token_store,
       net::URLRequestContextGetter* context,
       const GURL& url,
-      const string16& access_token) OVERRIDE {
+      const base::string16& access_token) OVERRIDE {
     return new MockLocationProvider(&cell_);
   }
 

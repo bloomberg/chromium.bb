@@ -26,9 +26,9 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
 
   // Add a message to the console.
   virtual void AddMessageToConsole(int32 level,
-                                   const string16& message,
+                                   const base::string16& message,
                                    int32 line_no,
-                                   const string16& source_id) {}
+                                   const base::string16& source_id) {}
 
   // Request the delegate to close this guest, and do whatever cleanup it needs
   // to do.

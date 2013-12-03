@@ -37,9 +37,10 @@ void AccessibilityTreeFormatter::AddProperties(const BrowserAccessibility& node,
   dict->SetInteger("id", node.renderer_id());
 }
 
-string16 AccessibilityTreeFormatter::ToString(const base::DictionaryValue& node,
-                                              const string16& indent) {
-  string16 line;
+base::string16 AccessibilityTreeFormatter::ToString(
+    const base::DictionaryValue& node,
+    const base::string16& indent) {
+  base::string16 line;
   std::string role_value;
   node.GetString("role", &role_value);
   if (!role_value.empty())

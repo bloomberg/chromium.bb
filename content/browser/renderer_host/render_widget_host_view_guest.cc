@@ -169,7 +169,8 @@ void RenderWidgetHostViewGuest::Destroy() {
   platform_view_->Destroy();
 }
 
-void RenderWidgetHostViewGuest::SetTooltipText(const string16& tooltip_text) {
+void RenderWidgetHostViewGuest::SetTooltipText(
+    const base::string16& tooltip_text) {
   platform_view_->SetTooltipText(tooltip_text);
 }
 
@@ -324,7 +325,7 @@ void RenderWidgetHostViewGuest::DidUpdateBackingStore(
   NOTREACHED();
 }
 
-void RenderWidgetHostViewGuest::SelectionChanged(const string16& text,
+void RenderWidgetHostViewGuest::SelectionChanged(const base::string16& text,
                                                  size_t offset,
                                                  const gfx::Range& range) {
   platform_view_->SelectionChanged(text, offset, range);

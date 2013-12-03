@@ -318,7 +318,7 @@ TEST_F(RenderWidgetHostViewMacTest, AcceleratorDestroy) {
 }
 
 TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
-  const string16 kDummyString = UTF8ToUTF16("hogehoge");
+  const base::string16 kDummyString = UTF8ToUTF16("hogehoge");
   const size_t kDummyOffset = 0;
 
   gfx::Rect caret_rect(10, 11, 0, 10);

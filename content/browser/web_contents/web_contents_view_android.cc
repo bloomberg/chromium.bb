@@ -80,7 +80,7 @@ void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {
     *out = rwhv->GetViewBounds();
 }
 
-void WebContentsViewAndroid::SetPageTitle(const string16& title) {
+void WebContentsViewAndroid::SetPageTitle(const base::string16& title) {
   if (content_view_core_)
     content_view_core_->SetTitle(title);
 }

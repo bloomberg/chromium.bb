@@ -26,7 +26,7 @@ MockRenderThread::~MockRenderThread() {
 }
 
 void MockRenderThread::VerifyRunJavaScriptMessageSend(
-    const string16& expected_alert_message) {
+    const base::string16& expected_alert_message) {
   const IPC::Message* alert_msg =
       sink_.GetUniqueMessageMatching(ViewHostMsg_RunJavaScriptMessage::ID);
   ASSERT_TRUE(alert_msg);

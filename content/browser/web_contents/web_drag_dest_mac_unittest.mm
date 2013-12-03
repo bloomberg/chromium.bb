@@ -85,7 +85,7 @@ TEST_F(WebDragDestTest, URL) {
   NSString* url = nil;
   NSString* title = nil;
   GURL result_url;
-  string16 result_title;
+  base::string16 result_title;
 
   // Put a URL on the pasteboard and check it.
   pboard = [NSPasteboard pasteboardWithUniqueName];

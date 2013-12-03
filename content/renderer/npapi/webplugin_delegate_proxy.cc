@@ -749,7 +749,7 @@ NPP WebPluginDelegateProxy::GetPluginNPP() {
   return npp_.get();
 }
 
-bool WebPluginDelegateProxy::GetFormValue(string16* value) {
+bool WebPluginDelegateProxy::GetFormValue(base::string16* value) {
   bool success = false;
   Send(new PluginMsg_GetFormValue(instance_id_, value, &success));
   return success;
@@ -800,7 +800,7 @@ void WebPluginDelegateProxy::SetContentAreaFocus(bool has_focus) {
 
 #if defined(OS_WIN)
 void WebPluginDelegateProxy::ImeCompositionUpdated(
-    const string16& text,
+    const base::string16& text,
     const std::vector<int>& clauses,
     const std::vector<int>& target,
     int cursor_position,
@@ -815,7 +815,7 @@ void WebPluginDelegateProxy::ImeCompositionUpdated(
   Send(msg);
 }
 
-void WebPluginDelegateProxy::ImeCompositionCompleted(const string16& text,
+void WebPluginDelegateProxy::ImeCompositionCompleted(const base::string16& text,
                                                      int plugin_id) {
   // Dispatch the IME text if this plug-in is the focused one.
   if (instance_id_ != plugin_id)
@@ -864,7 +864,7 @@ void WebPluginDelegateProxy::WindowFrameChanged(gfx::Rect window_frame,
   msg->set_unblock(true);
   Send(msg);
 }
-void WebPluginDelegateProxy::ImeCompositionCompleted(const string16& text,
+void WebPluginDelegateProxy::ImeCompositionCompleted(const base::string16& text,
                                                      int plugin_id) {
   // If the message isn't intended for this plugin, there's nothing to do.
   if (instance_id_ != plugin_id)
@@ -1209,7 +1209,8 @@ bool WebPluginDelegateProxy::UseSynchronousGeometryUpdates() {
   // Need to update geometry synchronously with WMP, otherwise if a site
   // scripts the plugin to start playing while it's in the middle of handling
   // an update geometry message, videos don't play.  See urls in bug 20260.
-  if (info_.name.find(ASCIIToUTF16("Windows Media Player")) != string16::npos)
+  if (info_.name.find(ASCIIToUTF16("Windows Media Player")) !=
+      base::string16::npos)
     return true;
 
   // The move networks plugin needs to be informed of geometry updates

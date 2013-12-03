@@ -137,7 +137,7 @@ scoped_ptr<base::Value> ExecuteScriptAndGetValue(
   ScriptCallback observer;
 
   render_view_host->ExecuteJavascriptInWebFrameCallbackResult(
-      string16(),  // frame_xpath,
+      base::string16(),  // frame_xpath,
       UTF8ToUTF16(script),
       base::Bind(&ScriptCallback::ResultCallback, base::Unretained(&observer)));
   base::MessageLoop* loop = base::MessageLoop::current();

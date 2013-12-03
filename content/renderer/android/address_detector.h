@@ -19,15 +19,15 @@ class AddressDetector : public ContentDetector {
 
  private:
   // Implementation of ContentDetector.
-  virtual bool FindContent(const string16::const_iterator& begin,
-                           const string16::const_iterator& end,
+  virtual bool FindContent(const base::string16::const_iterator& begin,
+                           const base::string16::const_iterator& end,
                            size_t* start_pos,
                            size_t* end_pos,
                            std::string* content_text) OVERRIDE;
   virtual GURL GetIntentURL(const std::string& content_text) OVERRIDE;
   virtual size_t GetMaximumContentLength() OVERRIDE;
 
-  std::string GetContentText(const string16& text);
+  std::string GetContentText(const base::string16& text);
 
   DISALLOW_COPY_AND_ASSIGN(AddressDetector);
 };

@@ -111,7 +111,7 @@ StoragePartition* MockRenderProcessHost::GetStoragePartition() const {
   return NULL;
 }
 
-void MockRenderProcessHost::AddWord(const string16& word) {
+void MockRenderProcessHost::AddWord(const base::string16& word) {
 }
 
 bool MockRenderProcessHost::FastShutdownIfPossible() {

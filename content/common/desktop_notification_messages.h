@@ -31,7 +31,7 @@ IPC_MESSAGE_ROUTED1(DesktopNotificationMsg_PostDisplay,
 // trying to display a notification.
 IPC_MESSAGE_ROUTED2(DesktopNotificationMsg_PostError,
                     int /* notification_id */,
-                    string16 /* message */)
+                    base::string16 /* message */)
 
 // Informs the renderer that the one if its notifications has closed.
 IPC_MESSAGE_ROUTED2(DesktopNotificationMsg_PostClose,

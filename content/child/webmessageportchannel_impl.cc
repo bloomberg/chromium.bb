@@ -202,7 +202,7 @@ bool WebMessagePortChannelImpl::OnMessageReceived(const IPC::Message& message) {
 }
 
 void WebMessagePortChannelImpl::OnMessage(
-    const string16& message,
+    const base::string16& message,
     const std::vector<int>& sent_message_port_ids,
     const std::vector<int>& new_routing_ids) {
   base::AutoLock auto_lock(lock_);
@@ -230,7 +230,7 @@ void WebMessagePortChannelImpl::OnMessagesQueued() {
     base::AutoLock auto_lock(lock_);
     queued_messages.reserve(message_queue_.size());
     while (!message_queue_.empty()) {
-      string16 message = message_queue_.front().message;
+      base::string16 message = message_queue_.front().message;
       const std::vector<WebMessagePortChannelImpl*>& channel_array =
           message_queue_.front().ports;
       std::vector<int> port_ids(channel_array.size());

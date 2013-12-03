@@ -146,10 +146,10 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
 
   // Tells the View that the tooltip text for the current mouse position over
   // the page has changed.
-  virtual void SetTooltipText(const string16& tooltip_text) = 0;
+  virtual void SetTooltipText(const base::string16& tooltip_text) = 0;
 
   // Notifies the View that the renderer text selection has changed.
-  virtual void SelectionChanged(const string16& text,
+  virtual void SelectionChanged(const base::string16& text,
                                 size_t offset,
                                 const gfx::Range& range) = 0;
 

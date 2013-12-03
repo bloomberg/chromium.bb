@@ -193,7 +193,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) OVERRIDE;
 #endif
-  virtual const string16& GetTitle() const OVERRIDE;
+  virtual const base::string16& GetTitle() const OVERRIDE;
   virtual int32 GetMaxPageID() OVERRIDE;
   virtual int32 GetMaxPageIDForSiteInstance(
       SiteInstance* site_instance) OVERRIDE;
@@ -202,7 +202,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool IsLoading() const OVERRIDE;
   virtual bool IsWaitingForResponse() const OVERRIDE;
   virtual const net::LoadStateWithParam& GetLoadState() const OVERRIDE;
-  virtual const string16& GetLoadStateHost() const OVERRIDE;
+  virtual const base::string16& GetLoadStateHost() const OVERRIDE;
   virtual uint64 GetUploadSize() const OVERRIDE;
   virtual uint64 GetUploadPosition() const OVERRIDE;
   virtual std::set<GURL> GetSitesInTab() const OVERRIDE;
@@ -318,7 +318,7 @@ class CONTENT_EXPORT WebContentsImpl
                            const PageState& page_state) OVERRIDE;
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const string16& title,
+                           const base::string16& title,
                            base::i18n::TextDirection title_direction) OVERRIDE;
   virtual void UpdateEncoding(RenderViewHost* render_view_host,
                               const std::string& encoding) OVERRIDE;
@@ -359,20 +359,20 @@ class CONTENT_EXPORT WebContentsImpl
       RenderViewHost* rvh,
       const ViewMsg_PostMessage_Params& params) OVERRIDE;
   virtual void RunJavaScriptMessage(RenderViewHost* rvh,
-                                    const string16& message,
-                                    const string16& default_prompt,
+                                    const base::string16& message,
+                                    const base::string16& default_prompt,
                                     const GURL& frame_url,
                                     JavaScriptMessageType type,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message) OVERRIDE;
   virtual void RunBeforeUnloadConfirm(RenderViewHost* rvh,
-                                      const string16& message,
+                                      const base::string16& message,
                                       bool is_reload,
                                       IPC::Message* reply_msg) OVERRIDE;
   virtual bool AddMessageToConsole(int32 level,
-                                   const string16& message,
+                                   const base::string16& message,
                                    int32 line_no,
-                                   const string16& source_id) OVERRIDE;
+                                   const base::string16& source_id) OVERRIDE;
   virtual RendererPreferences GetRendererPrefs(
       BrowserContext* browser_context) const OVERRIDE;
   virtual WebPreferences GetWebkitPrefs() OVERRIDE;
@@ -594,7 +594,7 @@ class CONTENT_EXPORT WebContentsImpl
   void OnDialogClosed(RenderViewHost* rvh,
                       IPC::Message* reply_msg,
                       bool success,
-                      const string16& user_input);
+                      const base::string16& user_input);
 
   // Callback function when requesting permission to access the PPAPI broker.
   // |result| is true if permission was granted.
@@ -617,7 +617,7 @@ class CONTENT_EXPORT WebContentsImpl
                               const GURL& url,
                               bool is_main_frame,
                               int error_code,
-                              const string16& error_description);
+                              const base::string16& error_description);
   void OnGoToEntryAtOffset(int offset);
   void OnUpdateZoomLimits(int minimum_percent,
                           int maximum_percent,
@@ -627,7 +627,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   void OnRegisterProtocolHandler(const std::string& protocol,
                                  const GURL& url,
-                                 const string16& title,
+                                 const base::string16& title,
                                  bool user_gesture);
   void OnFindReply(int request_id,
                    int number_of_matches,
@@ -714,7 +714,7 @@ class CONTENT_EXPORT WebContentsImpl
   // or the dedicated set title message. It returns true if the new title is
   // different and was therefore updated.
   bool UpdateTitleForEntry(NavigationEntryImpl* entry,
-                           const string16& title);
+                           const base::string16& title);
 
   // Causes the WebContentsImpl to navigate in the right renderer to |entry|,
   // which must be already part of the entries in the navigation controller.
@@ -876,7 +876,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   // The current load state and the URL associated with it.
   net::LoadStateWithParam load_state_;
-  string16 load_state_host_;
+  base::string16 load_state_host_;
   // Upload progress, for displaying in the status bar.
   // Set to zero when there is no significant upload happening.
   uint64 upload_size_;
@@ -885,7 +885,7 @@ class CONTENT_EXPORT WebContentsImpl
   // Data for current page -----------------------------------------------------
 
   // When a title cannot be taken from any entry, this title will be used.
-  string16 page_title_when_no_navigation_entry_;
+  base::string16 page_title_when_no_navigation_entry_;
 
   // When a navigation occurs, we record its contents MIME type. It can be
   // used to check whether we can do something for some special contents.

@@ -348,7 +348,7 @@ WebContentsImpl::WebContentsImpl(
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       crashed_error_code_(0),
       waiting_for_response_(false),
-      load_state_(net::LOAD_STATE_IDLE, string16()),
+      load_state_(net::LOAD_STATE_IDLE, base::string16()),
       upload_size_(0),
       upload_position_(0),
       displayed_insecure_content_(false),
@@ -727,7 +727,7 @@ gfx::NativeViewAccessible accessible_parent) {
 }
 #endif
 
-const string16& WebContentsImpl::GetTitle() const {
+const base::string16& WebContentsImpl::GetTitle() const {
   // Transient entries take precedence. They are used for interstitial pages
   // that are shown on top of existing pages.
   NavigationEntry* entry = controller_.GetTransientEntry();
@@ -744,7 +744,7 @@ const string16& WebContentsImpl::GetTitle() const {
     entry = controller_.GetVisibleEntry();
     if (!(entry && entry->IsViewSourceMode())) {
       // Give the Web UI the chance to override our title.
-      const string16& title = our_web_ui->GetOverriddenTitle();
+      const base::string16& title = our_web_ui->GetOverriddenTitle();
       if (!title.empty())
         return title;
     }
@@ -832,7 +832,7 @@ const net::LoadStateWithParam& WebContentsImpl::GetLoadState() const {
   return load_state_;
 }
 
-const string16& WebContentsImpl::GetLoadStateHost() const {
+const base::string16& WebContentsImpl::GetLoadStateHost() const {
   return load_state_host_;
 }
 
@@ -2219,7 +2219,7 @@ void WebContentsImpl::OnDidFailLoadWithError(
     const GURL& url,
     bool is_main_frame,
     int error_code,
-    const string16& error_description) {
+    const base::string16& error_description) {
   GURL validated_url(url);
   RenderProcessHost* render_process_host = message_source_->GetProcess();
   RenderViewHost::FilterURL(render_process_host, false, &validated_url);
@@ -2280,7 +2280,7 @@ void WebContentsImpl::OnJSOutOfMemory() {
 
 void WebContentsImpl::OnRegisterProtocolHandler(const std::string& protocol,
                                                 const GURL& url,
-                                                const string16& title,
+                                                const base::string16& title,
                                                 bool user_gesture) {
   if (!delegate_)
     return;
@@ -2516,7 +2516,8 @@ void WebContentsImpl::SetIsLoading(RenderViewHost* render_view_host,
     return;
 
   if (!is_loading) {
-    load_state_ = net::LoadStateWithParam(net::LOAD_STATE_IDLE, string16());
+    load_state_ = net::LoadStateWithParam(net::LOAD_STATE_IDLE,
+                                          base::string16());
     load_state_host_.clear();
     upload_size_ = 0;
     upload_position_ = 0;
@@ -2618,11 +2619,11 @@ void WebContentsImpl::UpdateMaxPageIDIfNecessary(RenderViewHost* rvh) {
 }
 
 bool WebContentsImpl::UpdateTitleForEntry(NavigationEntryImpl* entry,
-                                          const string16& title) {
+                                          const base::string16& title) {
   // For file URLs without a title, use the pathname instead. In the case of a
   // synthesized title, we don't want the update to count toward the "one set
   // per page of the title to history."
-  string16 final_title;
+  base::string16 final_title;
   bool explicit_set;
   if (entry && entry->GetURL().SchemeIsFile() && title.empty()) {
     final_title = UTF8ToUTF16(entry->GetURL().ExtractFileName());
@@ -2975,7 +2976,7 @@ void WebContentsImpl::UpdateState(RenderViewHost* rvh,
 
 void WebContentsImpl::UpdateTitle(RenderViewHost* rvh,
                                   int32 page_id,
-                                  const string16& title,
+                                  const base::string16& title,
                                   base::i18n::TextDirection title_direction) {
   // If we have a title, that's a pretty good indication that we've started
   // getting useful data.
@@ -3291,8 +3292,8 @@ void WebContentsImpl::RouteMessageEvent(
 
 void WebContentsImpl::RunJavaScriptMessage(
     RenderViewHost* rvh,
-    const string16& message,
-    const string16& default_prompt,
+    const base::string16& message,
+    const base::string16& default_prompt,
     const GURL& frame_url,
     JavaScriptMessageType javascript_message_type,
     IPC::Message* reply_msg,
@@ -3330,7 +3331,7 @@ void WebContentsImpl::RunJavaScriptMessage(
   if (suppress_this_message) {
     // If we are suppressing messages, just reply as if the user immediately
     // pressed "Cancel".
-    OnDialogClosed(rvh, reply_msg, false, string16());
+    OnDialogClosed(rvh, reply_msg, false, base::string16());
   }
 
   // OnDialogClosed (two lines up) may have caused deletion of this object (see
@@ -3338,7 +3339,7 @@ void WebContentsImpl::RunJavaScriptMessage(
 }
 
 void WebContentsImpl::RunBeforeUnloadConfirm(RenderViewHost* rvh,
-                                             const string16& message,
+                                             const base::string16& message,
                                              bool is_reload,
                                              IPC::Message* reply_msg) {
   RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(rvh);
@@ -3352,7 +3353,7 @@ void WebContentsImpl::RunBeforeUnloadConfirm(RenderViewHost* rvh,
       !delegate_->GetJavaScriptDialogManager();
   if (suppress_this_message) {
     // The reply must be sent to the RVH that sent the request.
-    rvhi->JavaScriptDialogClosed(reply_msg, true, string16());
+    rvhi->JavaScriptDialogClosed(reply_msg, true, base::string16());
     return;
   }
 
@@ -3365,9 +3366,9 @@ void WebContentsImpl::RunBeforeUnloadConfirm(RenderViewHost* rvh,
 }
 
 bool WebContentsImpl::AddMessageToConsole(int32 level,
-                                          const string16& message,
+                                          const base::string16& message,
                                           int32 line_no,
-                                          const string16& source_id) {
+                                          const base::string16& source_id) {
   if (!delegate_)
     return false;
   return delegate_->AddMessageToConsole(this, level, message, line_no,
@@ -3590,7 +3591,7 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
       GetMaxPageIDForSiteInstance(render_view_host->GetSiteInstance());
 
   if (!static_cast<RenderViewHostImpl*>(
-          render_view_host)->CreateRenderView(string16(),
+          render_view_host)->CreateRenderView(base::string16(),
                                               opener_route_id,
                                               max_page_id)) {
     return false;
@@ -3618,7 +3619,7 @@ bool WebContentsImpl::CreateRenderViewForInitialEmptyDocument() {
 void WebContentsImpl::OnDialogClosed(RenderViewHost* rvh,
                                      IPC::Message* reply_msg,
                                      bool success,
-                                     const string16& user_input) {
+                                     const base::string16& user_input) {
   if (is_showing_before_unload_dialog_ && !success) {
     // If a beforeunload dialog is canceled, we need to stop the throbber from
     // spinning, since we forced it to start spinning in Navigate.

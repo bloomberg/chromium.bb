@@ -95,7 +95,7 @@ WebUIDataSourceImpl::~WebUIDataSourceImpl() {
 }
 
 void WebUIDataSourceImpl::AddString(const std::string& name,
-                                    const string16& value) {
+                                    const base::string16& value) {
   localized_strings_.SetString(name, value);
 }
 

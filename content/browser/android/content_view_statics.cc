@@ -62,8 +62,8 @@ void ResumeWebkitSharedTimers(const std::vector<int>& suspended_processes) {
 
 // Returns the first substring consisting of the address of a physical location.
 static jstring FindAddress(JNIEnv* env, jclass clazz, jstring addr) {
-  string16 content_16 = ConvertJavaStringToUTF16(env, addr);
-  string16 result_16;
+  base::string16 content_16 = ConvertJavaStringToUTF16(env, addr);
+  base::string16 result_16;
   if (content::address_parser::FindAddress(content_16, &result_16))
     return ConvertUTF16ToJavaString(env, result_16).Release();
   return NULL;

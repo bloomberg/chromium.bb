@@ -42,12 +42,12 @@ GURL EmailDetector::GetIntentURL(const std::string& content_text) {
       net::EscapeQueryParamValue(content_text, true));
 }
 
-bool EmailDetector::FindContent(const string16::const_iterator& begin,
-                                const string16::const_iterator& end,
+bool EmailDetector::FindContent(const base::string16::const_iterator& begin,
+                                const base::string16::const_iterator& end,
                                 size_t* start_pos,
                                 size_t* end_pos,
                                 std::string* content_text) {
-  string16 utf16_input = string16(begin, end);
+  base::string16 utf16_input = base::string16(begin, end);
   icu::UnicodeString pattern(kEmailRegex);
   icu::UnicodeString input(utf16_input.data(), utf16_input.length());
   UErrorCode status = U_ZERO_ERROR;

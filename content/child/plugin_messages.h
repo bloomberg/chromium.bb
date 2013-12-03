@@ -111,7 +111,7 @@ IPC_SYNC_MESSAGE_ROUTED0_1(PluginMsg_GetPluginScriptableObject,
 
 // Gets the form value of the plugin instance synchronously.
 IPC_SYNC_MESSAGE_ROUTED0_2(PluginMsg_GetFormValue,
-                           string16 /* value */,
+                           base::string16 /* value */,
                            bool /* success */)
 
 IPC_MESSAGE_ROUTED3(PluginMsg_DidFinishLoadWithReason,
@@ -197,13 +197,13 @@ IPC_MESSAGE_CONTROL1(PluginHostMsg_DidAbortLoading,
 
 #if defined(OS_WIN)
 IPC_MESSAGE_ROUTED4(PluginMsg_ImeCompositionUpdated,
-                    string16 /* text */,
+                    base::string16 /* text */,
                     std::vector<int> /* clauses */,
                     std::vector<int>, /* target */
                     int /* cursor_position */)
 
 IPC_MESSAGE_ROUTED1(PluginMsg_ImeCompositionCompleted,
-                    string16 /* text */)
+                    base::string16 /* text */)
 #endif
 
 #if defined(OS_MACOSX)
@@ -222,7 +222,7 @@ IPC_MESSAGE_ROUTED2(PluginMsg_WindowFrameChanged,
                     gfx::Rect /* view_frame */)
 
 IPC_MESSAGE_ROUTED1(PluginMsg_ImeCompositionCompleted,
-                    string16 /* text */)
+                    base::string16 /* text */)
 
 // This message, used only on 10.6 and later, transmits the "fake"
 // window handle allocated by the browser on behalf of the renderer

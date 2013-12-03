@@ -195,7 +195,7 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // The page's title was changed and should be updated.
   virtual void UpdateTitle(RenderViewHost* render_view_host,
                            int32 page_id,
-                           const string16& title,
+                           const base::string16& title,
                            base::i18n::TextDirection title_direction) {}
 
   // The page's encoding was changed and should be updated.
@@ -281,23 +281,23 @@ class CONTENT_EXPORT RenderViewHostDelegate {
 
   // A javascript message, confirmation or prompt should be shown.
   virtual void RunJavaScriptMessage(RenderViewHost* rvh,
-                                    const string16& message,
-                                    const string16& default_prompt,
+                                    const base::string16& message,
+                                    const base::string16& default_prompt,
                                     const GURL& frame_url,
                                     JavaScriptMessageType type,
                                     IPC::Message* reply_msg,
                                     bool* did_suppress_message) {}
 
   virtual void RunBeforeUnloadConfirm(RenderViewHost* rvh,
-                                      const string16& message,
+                                      const base::string16& message,
                                       bool is_reload,
                                       IPC::Message* reply_msg) {}
 
   // A message was added to to the console.
   virtual bool AddMessageToConsole(int32 level,
-                                   const string16& message,
+                                   const base::string16& message,
                                    int32 line_no,
-                                   const string16& source_id);
+                                   const base::string16& source_id);
 
   // Return a dummy RendererPreferences object that will be used by the renderer
   // associated with the owning RenderViewHost.

@@ -98,11 +98,11 @@ void WebContentsObserverAndroid::DidStopLoading(
 
 void WebContentsObserverAndroid::DidFailProvisionalLoad(
     int64 frame_id,
-    const string16& frame_unique_name,
+    const base::string16& frame_unique_name,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const string16& error_description,
+    const base::string16& error_description,
     RenderViewHost* render_view_host) {
   DidFailLoadInternal(
         true, is_main_frame, error_code, error_description, validated_url);
@@ -113,7 +113,7 @@ void WebContentsObserverAndroid::DidFailLoad(
     const GURL& validated_url,
     bool is_main_frame,
     int error_code,
-    const string16& error_description,
+    const base::string16& error_description,
     RenderViewHost* render_view_host) {
   DidFailLoadInternal(
         false, is_main_frame, error_code, error_description, validated_url);
@@ -175,7 +175,7 @@ void WebContentsObserverAndroid::DidStartProvisionalLoadForFrame(
 
 void WebContentsObserverAndroid::DidCommitProvisionalLoadForFrame(
       int64 frame_id,
-      const string16& frame_unique_name,
+      const base::string16& frame_unique_name,
       bool is_main_frame,
       const GURL& url,
       PageTransition transition_type,
@@ -251,7 +251,7 @@ void WebContentsObserverAndroid::DidFailLoadInternal(
     bool is_provisional_load,
     bool is_main_frame,
     int error_code,
-    const string16& description,
+    const base::string16& description,
     const GURL& url) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));

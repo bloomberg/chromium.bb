@@ -145,9 +145,10 @@ void ClipboardMessageFilter::OnGetSequenceNumber(ui::ClipboardType type,
   *sequence_number = GetClipboard()->GetSequenceNumber(type);
 }
 
-void ClipboardMessageFilter::OnReadAvailableTypes(ui::ClipboardType type,
-                                                  std::vector<string16>* types,
-                                                  bool* contains_filenames) {
+void ClipboardMessageFilter::OnReadAvailableTypes(
+    ui::ClipboardType type,
+    std::vector<base::string16>* types,
+    bool* contains_filenames) {
   GetClipboard()->ReadAvailableTypes(type, types, contains_filenames);
 }
 
@@ -163,7 +164,7 @@ void ClipboardMessageFilter::OnClear(ui::ClipboardType type) {
 }
 
 void ClipboardMessageFilter::OnReadText(ui::ClipboardType type,
-                                        string16* result) {
+                                        base::string16* result) {
   GetClipboard()->ReadText(type, result);
 }
 
@@ -173,7 +174,7 @@ void ClipboardMessageFilter::OnReadAsciiText(ui::ClipboardType type,
 }
 
 void ClipboardMessageFilter::OnReadHTML(ui::ClipboardType type,
-                                        string16* markup,
+                                        base::string16* markup,
                                         GURL* url,
                                         uint32* fragment_start,
                                         uint32* fragment_end) {
@@ -224,8 +225,8 @@ void ClipboardMessageFilter::OnReadImageReply(
 }
 
 void ClipboardMessageFilter::OnReadCustomData(ui::ClipboardType clipboard_type,
-                                              const string16& type,
-                                              string16* result) {
+                                              const base::string16& type,
+                                              base::string16* result) {
   GetClipboard()->ReadCustomData(clipboard_type, type, result);
 }
 

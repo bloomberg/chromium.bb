@@ -18,7 +18,7 @@ struct ChildProcessData {
 
   // The name of the process.  i.e. for plugins it might be Flash, while for
   // for workers it might be the domain that it's from.
-  string16 name;
+  base::string16 name;
 
   // The unique identifier for this child process. This identifier is NOT a
   // process ID, and will be unique for all types of child process for

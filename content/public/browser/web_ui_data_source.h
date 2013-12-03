@@ -30,7 +30,8 @@ class WebUIDataSource {
                                  WebUIDataSource* source);
 
   // Adds a string keyed to its name to our dictionary.
-  virtual void AddString(const std::string& name, const string16& value) = 0;
+  virtual void AddString(const std::string& name,
+                         const base::string16& value) = 0;
 
   // Adds a string keyed to its name to our dictionary.
   virtual void AddString(const std::string& name, const std::string& value) = 0;

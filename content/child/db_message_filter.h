@@ -23,13 +23,13 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
  private:
   void OnDatabaseUpdateSize(const std::string& origin_identifier,
-                            const string16& database_name,
+                            const base::string16& database_name,
                             int64 database_size);
   void OnDatabaseUpdateSpaceAvailable(const std::string& origin_identifier,
                                       int64 space_available);
   void OnDatabaseResetSpaceAvailable(const std::string& origin_identifier);
   void OnDatabaseCloseImmediately(const std::string& origin_identifier,
-                                  const string16& database_name);
+                                  const base::string16& database_name);
 };
 
 }  // namespace content

@@ -199,7 +199,7 @@ TEST_F(RenderViewHostTest, DragEnteredFileURLsStillBlocked) {
   GURL sensitive_file_url = net::FilePathToFileURL(sensitive_file_path);
   dropped_data.url = highlighted_file_url;
   dropped_data.filenames.push_back(DropData::FileInfo(
-      UTF8ToUTF16(dragged_file_path.AsUTF8Unsafe()), string16()));
+      UTF8ToUTF16(dragged_file_path.AsUTF8Unsafe()), base::string16()));
 
   rvh()->DragTargetDragEnter(dropped_data, client_point, screen_point,
                               blink::WebDragOperationNone, 0);

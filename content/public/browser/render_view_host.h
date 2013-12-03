@@ -102,7 +102,7 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
       int callback_context) = 0;
   virtual void DesktopNotificationPostDisplay(int callback_context) = 0;
   virtual void DesktopNotificationPostError(int notification_id,
-                                    const string16& message) = 0;
+                                    const base::string16& message) = 0;
   virtual void DesktopNotificationPostClose(int notification_id,
                                             bool by_user) = 0;
   virtual void DesktopNotificationPostClick(int notification_id) = 0;
@@ -170,15 +170,15 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
       const blink::WebMediaPlayerAction& action) = 0;
 
   // Runs some javascript within the context of a frame in the page.
-  virtual void ExecuteJavascriptInWebFrame(const string16& frame_xpath,
-                                           const string16& jscript) = 0;
+  virtual void ExecuteJavascriptInWebFrame(const base::string16& frame_xpath,
+                                           const base::string16& jscript) = 0;
 
   // Runs some javascript within the context of a frame in the page. The result
   // is sent back via the provided callback.
   typedef base::Callback<void(const base::Value*)> JavascriptResultCallback;
   virtual void ExecuteJavascriptInWebFrameCallbackResult(
-      const string16& frame_xpath,
-      const string16& jscript,
+      const base::string16& frame_xpath,
+      const base::string16& jscript,
       const JavascriptResultCallback& callback) = 0;
 
   // Tells the renderer to perform the given action on the plugin located at
@@ -190,7 +190,7 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
   virtual void ExitFullscreen() = 0;
 
   // Finds text on a page.
-  virtual void Find(int request_id, const string16& search_text,
+  virtual void Find(int request_id, const base::string16& search_text,
                     const blink::WebFindOptions& options) = 0;
 
   // Notifies the renderer that the user has closed the FindInPage window
@@ -223,7 +223,7 @@ class CONTENT_EXPORT RenderViewHost : virtual public RenderWidgetHost {
 
   // Requests the renderer to evaluate an xpath to a frame and insert css
   // into that frame's document.
-  virtual void InsertCSS(const string16& frame_xpath,
+  virtual void InsertCSS(const base::string16& frame_xpath,
                          const std::string& css) = 0;
 
   // Returns true if the RenderView is active and has not crashed. Virtual

@@ -228,7 +228,7 @@ RenderWidgetHostView* WebContentsViewWin::CreateViewForPopupWidget(
   return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
 }
 
-void WebContentsViewWin::SetPageTitle(const string16& title) {
+void WebContentsViewWin::SetPageTitle(const base::string16& title) {
   // It's possible to get this after the hwnd has been destroyed.
   if (GetNativeView())
     ::SetWindowText(GetNativeView(), title.c_str());

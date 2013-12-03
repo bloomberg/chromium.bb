@@ -57,7 +57,7 @@ class CONTENT_EXPORT LocationArbitratorImpl : public LocationArbitrator {
       AccessTokenStore* access_token_store,
       net::URLRequestContextGetter* context,
       const GURL& url,
-      const string16& access_token);
+      const base::string16& access_token);
   virtual LocationProvider* NewSystemLocationProvider();
   virtual base::Time GetTimeNow() const;
 

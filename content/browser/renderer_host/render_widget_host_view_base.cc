@@ -118,7 +118,7 @@ LRESULT CALLBACK PluginWrapperWindowProc(HWND window, unsigned int message,
 
 bool IsPluginWrapperWindow(HWND window) {
   return gfx::GetClassNameW(window) ==
-      string16(kWrapperNativeWindowClassName);
+      base::string16(kWrapperNativeWindowClassName);
 }
 
 // Create an intermediate window between the given HWND and its parent.
@@ -421,7 +421,7 @@ float RenderWidgetHostViewBase::GetOverdrawBottomHeight() const {
   return 0.f;
 }
 
-void RenderWidgetHostViewBase::SelectionChanged(const string16& text,
+void RenderWidgetHostViewBase::SelectionChanged(const base::string16& text,
                                                 size_t offset,
                                                 const gfx::Range& range) {
   selection_text_ = text;
@@ -439,9 +439,9 @@ void RenderWidgetHostViewBase::SetShowingContextMenu(bool showing) {
   showing_context_menu_ = showing;
 }
 
-string16 RenderWidgetHostViewBase::GetSelectedText() const {
+base::string16 RenderWidgetHostViewBase::GetSelectedText() const {
   if (!selection_range_.IsValid())
-    return string16();
+    return base::string16();
   return selection_text_.substr(
       selection_range_.GetMin() - selection_text_offset_,
       selection_range_.length());

@@ -42,8 +42,8 @@ class JavaBridgeDispatcherHost
   // to |object|, which is manipulated on the background thread. This class
   // holds a reference to |object| for the time that the proxy object is bound
   // to the window object.
-  void AddNamedObject(const string16& name, NPObject* object);
-  void RemoveNamedObject(const string16& name);
+  void AddNamedObject(const base::string16& name, NPObject* object);
+  void RemoveNamedObject(const base::string16& name);
 
   // Since this object is ref-counted, it might outlive render_view_host_.
   void RenderViewDeleted();

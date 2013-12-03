@@ -91,7 +91,7 @@ class CONTENT_EXPORT PluginServiceImpl
                              std::string* actual_mime_type) OVERRIDE;
   virtual bool GetPluginInfoByPath(const base::FilePath& plugin_path,
                                    WebPluginInfo* info) OVERRIDE;
-  virtual string16 GetPluginDisplayNameByPath(
+  virtual base::string16 GetPluginDisplayNameByPath(
       const base::FilePath& path) OVERRIDE;
   virtual void GetPlugins(const GetPluginsCallback& callback) OVERRIDE;
   virtual PepperPluginInfo* GetRegisteredPpapiPluginInfo(

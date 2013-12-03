@@ -71,7 +71,7 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
   prefs->allow_displaying_insecure_content = true;
   prefs->allow_running_insecure_content = true;
   prefs->webgl_errors_to_console_enabled = false;
-  string16 serif;
+  base::string16 serif;
 #if defined(OS_MACOSX)
   prefs->cursive_font_family_map[webkit_glue::kCommonScript] =
       ASCIIToUTF16("Apple Chancery");

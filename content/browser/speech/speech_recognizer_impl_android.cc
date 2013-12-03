@@ -146,7 +146,7 @@ void SpeechRecognizerImplAndroid::OnAudioEnd(JNIEnv* env, jobject obj) {
 void SpeechRecognizerImplAndroid::OnRecognitionResults(JNIEnv* env, jobject obj,
     jobjectArray strings, jfloatArray floats, jboolean provisional) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  std::vector<string16> options;
+  std::vector<base::string16> options;
   AppendJavaStringArrayToStringVector(env, strings, &options);
   std::vector<float> scores(options.size(), 0.0);
   if (floats != NULL)

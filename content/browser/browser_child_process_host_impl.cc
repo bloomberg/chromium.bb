@@ -192,7 +192,7 @@ base::ProcessHandle BrowserChildProcessHostImpl::GetHandle() const {
   return child_process_->GetHandle();
 }
 
-void BrowserChildProcessHostImpl::SetName(const string16& name) {
+void BrowserChildProcessHostImpl::SetName(const base::string16& name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   data_.name = name;
 }

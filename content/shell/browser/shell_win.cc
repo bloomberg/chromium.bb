@@ -278,7 +278,7 @@ LRESULT CALLBACK Shell::EditWndProc(HWND hwnd, UINT message,
                         lParam);
 }
 
-void Shell::PlatformSetTitle(const string16& text) {
+void Shell::PlatformSetTitle(const base::string16& text) {
   ::SetWindowText(window_, text.c_str());
 }
 

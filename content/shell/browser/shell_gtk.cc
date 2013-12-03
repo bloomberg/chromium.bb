@@ -335,7 +335,7 @@ gboolean Shell::OnReloadKeyPressed(GtkAccelGroup* accel_group,
   return TRUE;
 }
 
-void Shell::PlatformSetTitle(const string16& title) {
+void Shell::PlatformSetTitle(const base::string16& title) {
   if (headless_)
     return;
 

@@ -58,7 +58,7 @@ class BrowserAccessibilityRelation
   CONTENT_EXPORT virtual ~BrowserAccessibilityRelation() {}
 
   CONTENT_EXPORT void Initialize(BrowserAccessibilityWin* owner,
-                                 const string16& type);
+                                 const base::string16& type);
   CONTENT_EXPORT void AddTarget(int target_id);
 
   // IAccessibleRelation methods.
@@ -75,13 +75,13 @@ class BrowserAccessibilityRelation
   }
 
  private:
-  string16 type_;
+  base::string16 type_;
   base::win::ScopedComPtr<BrowserAccessibilityWin> owner_;
   std::vector<int> target_ids_;
 };
 
 void BrowserAccessibilityRelation::Initialize(BrowserAccessibilityWin* owner,
-                                              const string16& type) {
+                                              const base::string16& type) {
   owner_ = owner;
   type_ = type;
 }
@@ -564,7 +564,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accValue(VARIANT var_id,
   if (target->ia_role() == ROLE_SYSTEM_PROGRESSBAR ||
       target->ia_role() == ROLE_SYSTEM_SCROLLBAR ||
       target->ia_role() == ROLE_SYSTEM_SLIDER) {
-    string16 value_text = target->GetValueText();
+    base::string16 value_text = target->GetValueText();
     *value = SysAllocString(value_text.c_str());
     DCHECK(*value);
     return S_OK;
@@ -578,7 +578,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accValue(VARIANT var_id,
         AccessibilityNodeData::ATTR_COLOR_VALUE_GREEN);
     int b = target->GetIntAttribute(
         AccessibilityNodeData::ATTR_COLOR_VALUE_BLUE);
-    string16 value_text;
+    base::string16 value_text;
     value_text = base::IntToString16((r * 100) / 255) + L"% red " +
                  base::IntToString16((g * 100) / 255) + L"% green " +
                  base::IntToString16((b * 100) / 255) + L"% blue";
@@ -684,7 +684,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_attributes(BSTR* attributes) {
 
   // The iaccessible2 attributes are a set of key-value pairs
   // separated by semicolons, with a colon between the key and the value.
-  string16 str;
+  base::string16 str;
   for (unsigned int i = 0; i < ia2_attributes_.size(); ++i) {
     if (i != 0)
       str += L';';
@@ -1133,7 +1133,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_columnDescription(long column,
     BrowserAccessibilityWin* cell = static_cast<BrowserAccessibilityWin*>(
         manager_->GetFromRendererID(cell_id));
     if (cell && cell->role_ == blink::WebAXRoleColumnHeader) {
-      string16 cell_name = cell->GetString16Attribute(
+      base::string16 cell_name = cell->GetString16Attribute(
           AccessibilityNodeData::ATTR_NAME);
       if (cell_name.size() > 0) {
         *description = SysAllocString(cell_name.c_str());
@@ -1320,7 +1320,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_rowDescription(long row,
     BrowserAccessibilityWin* cell =
         manager_->GetFromRendererID(cell_id)->ToBrowserAccessibilityWin();
     if (cell && cell->role_ == blink::WebAXRoleRowHeader) {
-      string16 cell_name = cell->GetString16Attribute(
+      base::string16 cell_name = cell->GetString16Attribute(
           AccessibilityNodeData::ATTR_NAME);
       if (cell_name.size() > 0) {
         *description = SysAllocString(cell_name.c_str());
@@ -1926,7 +1926,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_characterExtents(
   if (!out_x || !out_y || !out_width || !out_height)
     return E_INVALIDARG;
 
-  const string16& text_str = TextForIAccessibleText();
+  const base::string16& text_str = TextForIAccessibleText();
   HandleSpecialTextOffset(text_str, &offset);
 
   if (offset < 0 || offset > static_cast<LONG>(text_str.size()))
@@ -2010,7 +2010,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_text(LONG start_offset,
   if (!text)
     return E_INVALIDARG;
 
-  const string16& text_str = TextForIAccessibleText();
+  const base::string16& text_str = TextForIAccessibleText();
 
   // Handle special text offsets.
   HandleSpecialTextOffset(text_str, &start_offset);
@@ -2031,7 +2031,8 @@ STDMETHODIMP BrowserAccessibilityWin::get_text(LONG start_offset,
   if (end_offset > len)
     return E_INVALIDARG;
 
-  string16 substr = text_str.substr(start_offset, end_offset - start_offset);
+  base::string16 substr = text_str.substr(start_offset,
+                                          end_offset - start_offset);
   if (substr.empty())
     return S_FALSE;
 
@@ -2061,7 +2062,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_textAtOffset(
     return S_FALSE;
   }
 
-  const string16& text_str = TextForIAccessibleText();
+  const base::string16& text_str = TextForIAccessibleText();
 
   *start_offset = FindBoundary(
       text_str, boundary_type, offset, ui::BACKWARDS_DIRECTION);
@@ -2091,7 +2092,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_textBeforeOffset(
     return S_FALSE;
   }
 
-  const string16& text_str = TextForIAccessibleText();
+  const base::string16& text_str = TextForIAccessibleText();
 
   *start_offset = FindBoundary(
       text_str, boundary_type, offset, ui::BACKWARDS_DIRECTION);
@@ -2120,7 +2121,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_textAfterOffset(
     return S_FALSE;
   }
 
-  const string16& text_str = TextForIAccessibleText();
+  const base::string16& text_str = TextForIAccessibleText();
 
   *start_offset = offset;
   *end_offset = FindBoundary(
@@ -2135,7 +2136,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_newText(IA2TextSegment* new_text) {
   if (!new_text)
     return E_INVALIDARG;
 
-  string16 text = TextForIAccessibleText();
+  base::string16 text = TextForIAccessibleText();
 
   new_text->text = SysAllocString(text.c_str());
   new_text->start = 0;
@@ -2196,7 +2197,7 @@ STDMETHODIMP BrowserAccessibilityWin::addSelection(LONG start_offset,
   if (!instance_active_)
     return E_FAIL;
 
-  const string16& text_str = TextForIAccessibleText();
+  const base::string16& text_str = TextForIAccessibleText();
   HandleSpecialTextOffset(text_str, &start_offset);
   HandleSpecialTextOffset(text_str, &end_offset);
 
@@ -2219,7 +2220,7 @@ STDMETHODIMP BrowserAccessibilityWin::setCaretOffset(LONG offset) {
   if (!instance_active_)
     return E_FAIL;
 
-  const string16& text_str = TextForIAccessibleText();
+  const base::string16& text_str = TextForIAccessibleText();
   HandleSpecialTextOffset(text_str, &offset);
   manager_->SetTextSelection(*this, offset, offset);
   return S_OK;
@@ -2234,7 +2235,7 @@ STDMETHODIMP BrowserAccessibilityWin::setSelection(LONG selection_index,
   if (selection_index != 0)
     return E_INVALIDARG;
 
-  const string16& text_str = TextForIAccessibleText();
+  const base::string16& text_str = TextForIAccessibleText();
   HandleSpecialTextOffset(text_str, &start_offset);
   HandleSpecialTextOffset(text_str, &end_offset);
 
@@ -2429,7 +2430,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_nodeInfo(
     return E_INVALIDARG;
   }
 
-  string16 tag;
+  base::string16 tag;
   if (GetString16Attribute(AccessibilityNodeData::ATTR_HTML_TAG, &tag))
     *node_name = SysAllocString(tag.c_str());
   else
@@ -2522,7 +2523,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_computedStyle(
 
   // We only cache a single style property for now: DISPLAY
 
-  string16 display;
+  base::string16 display;
   if (max_style_properties == 0 ||
       !GetString16Attribute(AccessibilityNodeData::ATTR_DISPLAY, &display)) {
     *num_style_properties = 0;
@@ -2550,10 +2551,10 @@ STDMETHODIMP BrowserAccessibilityWin::get_computedStyleForProperties(
   // We only cache a single style property for now: DISPLAY
 
   for (unsigned short i = 0; i < num_style_properties; ++i) {
-    string16 name = (LPCWSTR)style_properties[i];
+    base::string16 name = (LPCWSTR)style_properties[i];
     StringToLowerASCII(&name);
     if (name == L"display") {
-      string16 display = GetString16Attribute(
+      base::string16 display = GetString16Attribute(
           AccessibilityNodeData::ATTR_DISPLAY);
       style_values[i] = SysAllocString(display.c_str());
     } else {
@@ -2713,7 +2714,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_unclippedSubstringBounds(
   if (!out_x || !out_y || !out_width || !out_height)
     return E_INVALIDARG;
 
-  const string16& text_str = TextForIAccessibleText();
+  const base::string16& text_str = TextForIAccessibleText();
   if (start_index > text_str.size() ||
       end_index > text_str.size() ||
       start_index > end_index) {
@@ -2738,7 +2739,7 @@ STDMETHODIMP BrowserAccessibilityWin::scrollToSubstring(
   if (!instance_active_)
     return E_FAIL;
 
-  const string16& text_str = TextForIAccessibleText();
+  const base::string16& text_str = TextForIAccessibleText();
   if (start_index > text_str.size() ||
       end_index > text_str.size() ||
       start_index > end_index) {
@@ -2958,7 +2959,7 @@ void BrowserAccessibilityWin::PreInitialize() {
       for (size_t i = 0; i < unique_cell_ids.size(); ++i) {
         if (unique_cell_ids[i] == renderer_id_) {
           ia2_attributes_.push_back(
-              string16(L"table-cell-index:") + base::IntToString16(i));
+              base::string16(L"table-cell-index:") + base::IntToString16(i));
         }
       }
     }
@@ -3097,7 +3098,7 @@ void BrowserAccessibilityWin::PostInitialize() {
     manager_->NotifyAccessibilityEvent(blink::WebAXEventAlert, this);
 
   // Fire events if text has changed.
-  string16 text = TextForIAccessibleText();
+  base::string16 text = TextForIAccessibleText();
   if (previous_text_ != text) {
     if (!previous_text_.empty() && !text.empty()) {
       manager_->NotifyAccessibilityEvent(
@@ -3185,7 +3186,7 @@ BrowserAccessibilityWin* BrowserAccessibilityWin::GetTargetFromChildID(
 HRESULT BrowserAccessibilityWin::GetStringAttributeAsBstr(
     AccessibilityNodeData::StringAttribute attribute,
     BSTR* value_bstr) {
-  string16 str;
+  base::string16 str;
 
   if (!GetString16Attribute(attribute, &str))
     return S_FALSE;
@@ -3202,7 +3203,7 @@ HRESULT BrowserAccessibilityWin::GetStringAttributeAsBstr(
 void BrowserAccessibilityWin::StringAttributeToIA2(
     AccessibilityNodeData::StringAttribute attribute,
     const char* ia2_attr) {
-  string16 value;
+  base::string16 value;
   if (GetString16Attribute(attribute, &value))
     ia2_attributes_.push_back(ASCIIToUTF16(ia2_attr) + L":" + value);
 }
@@ -3227,9 +3228,9 @@ void BrowserAccessibilityWin::IntAttributeToIA2(
   }
 }
 
-string16 BrowserAccessibilityWin::GetValueText() {
+base::string16 BrowserAccessibilityWin::GetValueText() {
   float fval;
-  string16 value = UTF8ToUTF16(value_);
+  base::string16 value = UTF8ToUTF16(value_);
   if (value.empty() &&
       GetFloatAttribute(AccessibilityNodeData::ATTR_VALUE_FOR_RANGE, &fval)) {
     value = UTF8ToUTF16(base::DoubleToString(fval));
@@ -3237,15 +3238,16 @@ string16 BrowserAccessibilityWin::GetValueText() {
   return value;
 }
 
-string16 BrowserAccessibilityWin::TextForIAccessibleText() {
+base::string16 BrowserAccessibilityWin::TextForIAccessibleText() {
   if (IsEditableText())
     return UTF8ToUTF16(value_);
   return (role_ == blink::WebAXRoleStaticText) ?
       UTF8ToUTF16(name_) : hypertext_;
 }
 
-void BrowserAccessibilityWin::HandleSpecialTextOffset(const string16& text,
-                                                      LONG* offset) {
+void BrowserAccessibilityWin::HandleSpecialTextOffset(
+    const base::string16& text,
+    LONG* offset) {
   if (*offset == IA2_TEXT_OFFSET_LENGTH)
     *offset = static_cast<LONG>(text.size());
   else if (*offset == IA2_TEXT_OFFSET_CARET)
@@ -3268,7 +3270,7 @@ ui::TextBoundaryType BrowserAccessibilityWin::IA2TextBoundaryToTextBoundary(
 }
 
 LONG BrowserAccessibilityWin::FindBoundary(
-    const string16& text,
+    const base::string16& text,
     IA2TextBoundaryType ia2_boundary,
     LONG start_offset,
     ui::TextBoundaryDirection direction) {
@@ -3345,7 +3347,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   if (!HasState(blink::WebAXStateReadonly))
     ia2_state_ |= IA2_STATE_EDITABLE;
 
-  string16 invalid;
+  base::string16 invalid;
   if (GetHtmlAttribute("aria-invalid", &invalid))
     ia2_state_ |= IA2_STATE_INVALID_ENTRY;
 
@@ -3355,7 +3357,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
   if (GetBoolAttribute(AccessibilityNodeData::ATTR_CAN_SET_VALUE))
     ia2_state_ |= IA2_STATE_EDITABLE;
 
-  string16 html_tag = GetString16Attribute(
+  base::string16 html_tag = GetString16Attribute(
       AccessibilityNodeData::ATTR_HTML_TAG);
   ia_role_ = 0;
   ia2_role_ = 0;
@@ -3469,7 +3471,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_state_ |= STATE_SYSTEM_READONLY;
       break;
     case blink::WebAXRoleGroup: {
-      string16 aria_role = GetString16Attribute(
+      base::string16 aria_role = GetString16Attribute(
           AccessibilityNodeData::ATTR_ROLE);
       if (aria_role == L"group" || html_tag == L"fieldset") {
         ia_role_ = ROLE_SYSTEM_GROUPING;
@@ -3667,7 +3669,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia_role_ = ROLE_SYSTEM_PAGETAB;
       break;
     case blink::WebAXRoleTable: {
-      string16 aria_role = GetString16Attribute(
+      base::string16 aria_role = GetString16Attribute(
           AccessibilityNodeData::ATTR_ROLE);
       if (aria_role == L"treegrid") {
         ia_role_ = ROLE_SYSTEM_OUTLINE;

@@ -23,7 +23,7 @@ class WebContents;
 class CONTENT_EXPORT JavaScriptDialogManager {
  public:
   typedef base::Callback<void(bool /* success */,
-                              const string16& /* user_input */)>
+                              const base::string16& /* user_input */)>
                                   DialogClosedCallback;
 
   // Displays a JavaScript dialog. |did_suppress_message| will not be nil; if
@@ -33,14 +33,14 @@ class CONTENT_EXPORT JavaScriptDialogManager {
       const GURL& origin_url,
       const std::string& accept_lang,
       JavaScriptMessageType javascript_message_type,
-      const string16& message_text,
-      const string16& default_prompt_text,
+      const base::string16& message_text,
+      const base::string16& default_prompt_text,
       const DialogClosedCallback& callback,
       bool* did_suppress_message) = 0;
 
   // Displays a dialog asking the user if they want to leave a page.
   virtual void RunBeforeUnloadDialog(WebContents* web_contents,
-                                     const string16& message_text,
+                                     const base::string16& message_text,
                                      bool is_reload,
                                      const DialogClosedCallback& callback) = 0;
 
@@ -50,7 +50,7 @@ class CONTENT_EXPORT JavaScriptDialogManager {
   // dialog was handled.
   virtual bool HandleJavaScriptDialog(WebContents* web_contents,
                                       bool accept,
-                                      const string16* prompt_override);
+                                      const base::string16* prompt_override);
 
   // Cancels all active and pending dialogs for the given WebContents.
   virtual void CancelActiveAndPendingDialogs(WebContents* web_contents) = 0;

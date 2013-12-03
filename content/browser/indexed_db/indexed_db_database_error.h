@@ -17,16 +17,16 @@ class IndexedDBDatabaseError {
       : code_(code) {}
   IndexedDBDatabaseError(uint16 code, const char* message)
       : code_(code), message_(ASCIIToUTF16(message)) {}
-  IndexedDBDatabaseError(uint16 code, const string16& message)
+  IndexedDBDatabaseError(uint16 code, const base::string16& message)
       : code_(code), message_(message) {}
   ~IndexedDBDatabaseError() {}
 
   uint16 code() const { return code_; }
-  const string16& message() const { return message_; }
+  const base::string16& message() const { return message_; }
 
  private:
   const uint16 code_;
-  const string16 message_;
+  const base::string16 message_;
 };
 
 }  // namespace content

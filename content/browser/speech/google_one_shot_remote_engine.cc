@@ -121,7 +121,7 @@ bool ParseServerResponse(const std::string& response_body,
 
     const base::DictionaryValue* hypothesis_value =
         static_cast<const base::DictionaryValue*>(hypothesis);
-    string16 utterance;
+    base::string16 utterance;
 
     if (!hypothesis_value->GetString(kUtteranceString, &utterance)) {
       LOG(WARNING) << "ParseServerResponse: Missing utterance value.";

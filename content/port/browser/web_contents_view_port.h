@@ -35,7 +35,7 @@ class CONTENT_EXPORT WebContentsViewPort : public WebContentsView {
   // is not strictly necessary and isn't expected to be displayed anywhere, but
   // can aid certain debugging tools such as Spy++ on Windows where you are
   // trying to find a specific window.
-  virtual void SetPageTitle(const string16& title) = 0;
+  virtual void SetPageTitle(const base::string16& title) = 0;
 
   // Invoked when the WebContents is notified that the RenderView has been
   // fully created.

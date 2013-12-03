@@ -120,15 +120,16 @@ void RendererClipboardClient::Clear(ui::ClipboardType type) {
   RenderThreadImpl::current()->Send(new ClipboardHostMsg_Clear(type));
 }
 
-void RendererClipboardClient::ReadAvailableTypes(ui::ClipboardType type,
-                                                 std::vector<string16>* types,
-                                                 bool* contains_filenames) {
+void RendererClipboardClient::ReadAvailableTypes(
+    ui::ClipboardType type,
+    std::vector<base::string16>* types,
+    bool* contains_filenames) {
   RenderThreadImpl::current()->Send(new ClipboardHostMsg_ReadAvailableTypes(
       type, types, contains_filenames));
 }
 
 void RendererClipboardClient::ReadText(ui::ClipboardType type,
-                                       string16* result) {
+                                       base::string16* result) {
   RenderThreadImpl::current()->Send(
       new ClipboardHostMsg_ReadText(type, result));
 }
@@ -140,7 +141,7 @@ void RendererClipboardClient::ReadAsciiText(ui::ClipboardType type,
 }
 
 void RendererClipboardClient::ReadHTML(ui::ClipboardType type,
-                                       string16* markup,
+                                       base::string16* markup,
                                        GURL* url, uint32* fragment_start,
                                        uint32* fragment_end) {
   RenderThreadImpl::current()->Send(new ClipboardHostMsg_ReadHTML(
@@ -166,8 +167,8 @@ void RendererClipboardClient::ReadImage(ui::ClipboardType type,
 }
 
 void RendererClipboardClient::ReadCustomData(ui::ClipboardType clipboard_type,
-                                             const string16& type,
-                                             string16* data) {
+                                             const base::string16& type,
+                                             base::string16* data) {
   RenderThreadImpl::current()->Send(
       new ClipboardHostMsg_ReadCustomData(clipboard_type, type, data));
 }

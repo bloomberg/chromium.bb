@@ -30,9 +30,9 @@ static content::IndexedDBKey::KeyArray CopyKeyArray(const WebIDBKey& other) {
   return result;
 }
 
-static std::vector<string16> CopyArray(
+static std::vector<base::string16> CopyArray(
     const WebVector<WebString>& array) {
-  std::vector<string16> copy(array.size());
+  std::vector<base::string16> copy(array.size());
   for (size_t i = 0; i < array.size(); ++i)
     copy[i] = array[i];
   return copy;

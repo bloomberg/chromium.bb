@@ -453,11 +453,11 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_EmbedderSameAfterNav) {
   // does not happen and existing embedder doesn't change in web_contents.
   GURL test_url_new(embedded_test_server()->GetURL(
       "/browser_plugin_title_change.html"));
-  const string16 expected_title = ASCIIToUTF16("done");
+  const base::string16 expected_title = ASCIIToUTF16("done");
   content::TitleWatcher title_watcher(shell()->web_contents(), expected_title);
   NavigateToURL(shell(), test_url_new);
   VLOG(0) << "Start waiting for title";
-  string16 actual_title = title_watcher.WaitAndGetTitle();
+  base::string16 actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
   VLOG(0) << "Done navigating to second page";
 
@@ -536,26 +536,26 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, ReloadEmbedder) {
   // the page has successfully reloaded when it goes back to 'embedder'
   // in the next step.
   {
-    const string16 expected_title = ASCIIToUTF16("modified");
+    const base::string16 expected_title = ASCIIToUTF16("modified");
     content::TitleWatcher title_watcher(test_embedder()->web_contents(),
                                         expected_title);
 
     ExecuteSyncJSFunction(rvh,
                           base::StringPrintf("SetTitle('%s');", "modified"));
 
-    string16 actual_title = title_watcher.WaitAndGetTitle();
+    base::string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
   }
 
   // Reload the embedder page, and verify that the reload was successful.
   // Then navigate the guest to verify that the browser process does not crash.
   {
-    const string16 expected_title = ASCIIToUTF16("embedder");
+    const base::string16 expected_title = ASCIIToUTF16("embedder");
     content::TitleWatcher title_watcher(test_embedder()->web_contents(),
                                         expected_title);
 
     test_embedder()->web_contents()->GetController().Reload(false);
-    string16 actual_title = title_watcher.WaitAndGetTitle();
+    base::string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
 
     ExecuteSyncJSFunction(
@@ -618,7 +618,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_AcceptDragEvents) {
   // This should trigger appropriate messages from the embedder to the guest,
   // and end with a drop on the guest. The guest changes title when a drop
   // happens.
-  const string16 expected_title = ASCIIToUTF16("DROPPED");
+  const base::string16 expected_title = ASCIIToUTF16("DROPPED");
   content::TitleWatcher title_watcher(test_guest()->web_contents(),
       expected_title);
 
@@ -628,7 +628,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, MAYBE_AcceptDragEvents) {
       blink::WebDragOperationEvery, 0);
   rvh->DragTargetDrop(gfx::Point(end_x, end_y), gfx::Point(end_x, end_y), 0);
 
-  string16 actual_title = title_watcher.WaitAndGetTitle();
+  base::string16 actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
 }
 
@@ -650,7 +650,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, PostMessage) {
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
   {
-    const string16 expected_title = ASCIIToUTF16("main guest");
+    const base::string16 expected_title = ASCIIToUTF16("main guest");
     content::TitleWatcher title_watcher(test_embedder()->web_contents(),
                                         expected_title);
 
@@ -661,7 +661,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, PostMessage) {
 
     // The title will be updated to "main guest" at the last stage of the
     // process described above.
-    string16 actual_title = title_watcher.WaitAndGetTitle();
+    base::string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
   }
 }
@@ -678,7 +678,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_PostMessageToIFrame) {
   RenderViewHostImpl* rvh = static_cast<RenderViewHostImpl*>(
       test_embedder()->web_contents()->GetRenderViewHost());
   {
-    const string16 expected_title = ASCIIToUTF16("main guest");
+    const base::string16 expected_title = ASCIIToUTF16("main guest");
     content::TitleWatcher title_watcher(test_embedder()->web_contents(),
                                         expected_title);
 
@@ -687,7 +687,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_PostMessageToIFrame) {
 
     // The title will be updated to "main guest" at the last stage of the
     // process described above.
-    string16 actual_title = title_watcher.WaitAndGetTitle();
+    base::string16 actual_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, actual_title);
   }
   {
@@ -703,7 +703,7 @@ IN_PROC_BROWSER_TEST_F(BrowserPluginHostTest, DISABLED_PostMessageToIFrame) {
         base::StringPrintf(
             "CreateChildFrame('%s');", test_url.spec().c_str()));
 
-    string16 actual_title = ready_watcher.WaitAndGetTitle();
+    base::string16 actual_title = ready_watcher.WaitAndGetTitle();
     EXPECT_EQ(ASCIIToUTF16("ready"), actual_title);
 
     content::TitleWatcher iframe_watcher(test_embedder()->web_contents(),

@@ -20,10 +20,10 @@ class AccessibilityRoleStateMap {
  public:
   static AccessibilityRoleStateMap* GetInstance();
 
-  std::map<int32, string16> ia_role_string_map;
-  std::map<int32, string16> ia2_role_string_map;
-  std::map<int32, string16> ia_state_string_map;
-  std::map<int32, string16> ia2_state_string_map;
+  std::map<int32, base::string16> ia_role_string_map;
+  std::map<int32, base::string16> ia2_role_string_map;
+  std::map<int32, base::string16> ia_state_string_map;
+  std::map<int32, base::string16> ia2_state_string_map;
 
  private:
   AccessibilityRoleStateMap();
@@ -220,44 +220,44 @@ AccessibilityRoleStateMap::AccessibilityRoleStateMap() {
 
 }  // namespace.
 
-string16 IAccessibleRoleToString(int32 ia_role) {
+base::string16 IAccessibleRoleToString(int32 ia_role) {
   return AccessibilityRoleStateMap::GetInstance()->ia_role_string_map[ia_role];
 }
 
-string16 IAccessible2RoleToString(int32 ia_role) {
+base::string16 IAccessible2RoleToString(int32 ia_role) {
   return AccessibilityRoleStateMap::GetInstance()->ia2_role_string_map[ia_role];
 }
 
 void IAccessibleStateToStringVector(int32 ia_state,
-                                    std::vector<string16>* result) {
-  const std::map<int32, string16>& state_string_map =
+                                    std::vector<base::string16>* result) {
+  const std::map<int32, base::string16>& state_string_map =
       AccessibilityRoleStateMap::GetInstance()->ia_state_string_map;
-  std::map<int32, string16>::const_iterator it;
+  std::map<int32, base::string16>::const_iterator it;
   for (it = state_string_map.begin(); it != state_string_map.end(); ++it) {
     if (it->first & ia_state)
       result->push_back(it->second);
   }
 }
 
-string16 IAccessibleStateToString(int32 ia_state) {
-  std::vector<string16> strings;
+base::string16 IAccessibleStateToString(int32 ia_state) {
+  std::vector<base::string16> strings;
   IAccessibleStateToStringVector(ia_state, &strings);
   return JoinString(strings, ',');
 }
 
 void IAccessible2StateToStringVector(int32 ia2_state,
-                                     std::vector<string16>* result) {
-  const std::map<int32, string16>& state_string_map =
+                                     std::vector<base::string16>* result) {
+  const std::map<int32, base::string16>& state_string_map =
       AccessibilityRoleStateMap::GetInstance()->ia2_state_string_map;
-  std::map<int32, string16>::const_iterator it;
+  std::map<int32, base::string16>::const_iterator it;
   for (it = state_string_map.begin(); it != state_string_map.end(); ++it) {
     if (it->first & ia2_state)
       result->push_back(it->second);
   }
 }
 
-string16 IAccessible2StateToString(int32 ia2_state) {
-  std::vector<string16> strings;
+base::string16 IAccessible2StateToString(int32 ia2_state) {
+  std::vector<base::string16> strings;
   IAccessible2StateToStringVector(ia2_state, &strings);
   return JoinString(strings, ',');
 }

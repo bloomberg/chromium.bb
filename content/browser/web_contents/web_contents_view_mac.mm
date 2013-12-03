@@ -332,7 +332,7 @@ RenderWidgetHostView* WebContentsViewMac::CreateViewForPopupWidget(
   return RenderWidgetHostViewPort::CreateViewForWidget(render_widget_host);
 }
 
-void WebContentsViewMac::SetPageTitle(const string16& title) {
+void WebContentsViewMac::SetPageTitle(const base::string16& title) {
   // Meaningless on the Mac; widgets don't have a "title" attribute
 }
 
