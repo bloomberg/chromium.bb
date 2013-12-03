@@ -134,7 +134,8 @@ RemoteRootWindowHostWin::RemoteRootWindowHostWin(const gfx::Rect& bounds)
     : remote_window_(NULL),
       host_(NULL),
       ignore_mouse_moves_until_set_cursor_ack_(false),
-      event_flags_(0) {
+      event_flags_(0),
+      window_size_(aura::RootWindowHost::GetNativeScreenSize()) {
   prop_.reset(new ui::ViewProp(NULL, kRootWindowHostWinKey, this));
 }
 
@@ -324,11 +325,11 @@ void RemoteRootWindowHostWin::ToggleFullScreen() {
 }
 
 gfx::Rect RemoteRootWindowHostWin::GetBounds() const {
-  gfx::Rect r(gfx::Point(0, 0), aura::RootWindowHost::GetNativeScreenSize());
-  return r;
+  return gfx::Rect(window_size_);
 }
 
 void RemoteRootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
+  window_size_ = bounds.size();
   delegate_->OnHostResized(bounds.size());
 }
 

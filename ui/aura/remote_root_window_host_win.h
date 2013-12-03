@@ -262,6 +262,9 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   // description of SetEventFlags().
   uint32 event_flags_;
 
+  // Current size of this root window.
+  gfx::Size window_size_;
+
   DISALLOW_COPY_AND_ASSIGN(RemoteRootWindowHostWin);
 };
 
