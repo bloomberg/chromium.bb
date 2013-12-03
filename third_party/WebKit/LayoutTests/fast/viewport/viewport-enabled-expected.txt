@@ -1,0 +1,2 @@
+Width with viewport disabled. (should be 800): 800
+Width from meta viewport (should be 320): 320
