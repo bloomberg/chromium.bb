@@ -180,9 +180,6 @@ void ChromeShellDelegate::RecordUserMetricsAction(
           chromeos::default_pinned_apps_field_trial::APP_LAUNCHER);
 #endif
       break;
-    case ash::UMA_MINIMIZE_PER_KEY:
-      content::RecordAction(content::UserMetricsAction("Minimize_UsingKey"));
-      break;
     case ash::UMA_MOUSE_DOWN:
       content::RecordAction(content::UserMetricsAction("Mouse_Down"));
       break;

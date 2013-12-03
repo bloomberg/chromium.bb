@@ -9,6 +9,7 @@
 #include "ash/wm/window_cycle_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
+#include "content/public/browser/user_metrics.h"
 
 namespace ash {
 namespace accelerators {
@@ -25,8 +26,8 @@ bool ToggleMinimized() {
   wm::WindowState* window_state = wm::GetWindowState(window);
   if (!window_state->CanMinimize())
     return false;
-  ash::Shell::GetInstance()->delegate()->RecordUserMetricsAction(
-      ash::UMA_MINIMIZE_PER_KEY);
+  content::RecordAction(
+      content::UserMetricsAction("Accel_Toggle_Minimized"));
   window_state->Minimize();
   return true;
 }
@@ -35,6 +36,8 @@ void ToggleMaximized() {
   wm::WindowState* window_state = wm::GetActiveWindowState();
   if (!window_state)
     return;
+  content::RecordAction(
+      content::UserMetricsAction("Accel_Toggle_Maximized"));
   // Get out of fullscreen when in fullscreen mode.
   if (window_state->IsFullscreen())
     ToggleFullscreen();
