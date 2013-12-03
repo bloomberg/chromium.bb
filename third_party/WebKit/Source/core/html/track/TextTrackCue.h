@@ -108,8 +108,6 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(enter);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(exit);
 
-    virtual bool isVTTCue() const { return false; }
-
     virtual String toString() const;
 
 protected:

@@ -70,8 +70,6 @@ public:
 
     virtual ~VTTCue();
 
-    virtual bool isVTTCue() const OVERRIDE { return true; }
-
     const String& vertical() const;
     void setVertical(const String&, ExceptionState&);
 
