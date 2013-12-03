@@ -680,7 +680,7 @@ base::FilePath GetExtensionShortcutFilename(const base::FilePath& profile_path,
   file_util::ReplaceIllegalCharactersInPath(&filename, '_');
   // Spaces in filenames break xdg-desktop-menu
   // (see https://bugs.freedesktop.org/show_bug.cgi?id=66605).
-  ReplaceChars(filename, " ", "_", &filename);
+  base::ReplaceChars(filename, " ", "_", &filename);
   return base::FilePath(filename.append(".desktop"));
 }
 
@@ -696,7 +696,7 @@ std::vector<base::FilePath> GetExistingProfileShortcutFilenames(
   file_util::ReplaceIllegalCharactersInPath(&suffix, '_');
   // Spaces in filenames break xdg-desktop-menu
   // (see https://bugs.freedesktop.org/show_bug.cgi?id=66605).
-  ReplaceChars(suffix, " ", "_", &suffix);
+  base::ReplaceChars(suffix, " ", "_", &suffix);
   std::string glob = prefix + "*" + suffix + ".desktop";
 
   base::FileEnumerator files(directory, false, base::FileEnumerator::FILES,

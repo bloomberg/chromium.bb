@@ -178,7 +178,7 @@ MTPDeviceDelegateImplLinux::MTPDeviceDelegateImplLinux(
       weak_ptr_factory_(this) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   DCHECK(!device_path_.empty());
-  RemoveChars(device_location, kRootPath, &storage_name_);
+  base::RemoveChars(device_location, kRootPath, &storage_name_);
   DCHECK(!storage_name_.empty());
 }
 

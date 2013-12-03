@@ -44,7 +44,7 @@ bool GetStorageInfoOnUIThread(const string16& storage_path,
   DCHECK(pnp_device_id);
   DCHECK(storage_object_id);
   string16 storage_device_id;
-  RemoveChars(storage_path, L"\\\\", &storage_device_id);
+  base::RemoveChars(storage_path, L"\\\\", &storage_device_id);
   DCHECK(!storage_device_id.empty());
   // TODO(gbillock): Take the StorageMonitor as an argument.
   StorageMonitor* monitor = StorageMonitor::GetInstance();

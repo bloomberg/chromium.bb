@@ -138,7 +138,7 @@ std::string UrlSafeB64Encode(const std::vector<uint8>& data) {
         break;
     }
   }
-  TrimString(result, "=", &result);
+  base::TrimString(result, "=", &result);
 
   return result;
 }

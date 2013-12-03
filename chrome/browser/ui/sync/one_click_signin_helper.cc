@@ -860,7 +860,7 @@ void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
     const std::string& key = pair.first;
     const std::string& value = pair.second;
     if (key == "email") {
-      TrimString(value, "\"", &email);
+      base::TrimString(value, "\"", &email);
     } else if (key == "sessionindex") {
       session_index = value;
     }

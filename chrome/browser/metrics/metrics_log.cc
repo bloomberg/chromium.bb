@@ -971,7 +971,7 @@ void MetricsLog::WriteBluetoothProto(
       std::string vendor_prefix_str;
       uint64 vendor_prefix;
 
-      RemoveChars(address.substr(0, 9), ":", &vendor_prefix_str);
+      base::RemoveChars(address.substr(0, 9), ":", &vendor_prefix_str);
       DCHECK_EQ(6U, vendor_prefix_str.size());
       base::HexStringToUInt64(vendor_prefix_str, &vendor_prefix);
 

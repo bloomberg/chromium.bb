@@ -30,8 +30,9 @@ bool PhishingUrlFeatureExtractor::ExtractFeatures(const GURL& url,
     if (!features->AddBooleanFeature(features::kUrlHostIsIpAddress))
       return false;
   } else {
+    // Remove any leading/trailing dots.
     std::string host;
-    TrimString(url.host(), ".", &host);  // Remove any leading/trailing dots.
+    base::TrimString(url.host(), ".", &host);
 
     // TODO(bryner): Ensure that the url encoding is consistent with
     // the features in the model.

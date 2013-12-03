@@ -46,7 +46,7 @@ std::string EncodeUint32(uint32 value) {
 #define INIT_INTERPRETER(program_param, escaped_json_param) \
     const char* escaped_json = escaped_json_param; \
     std::string json; \
-    ReplaceChars(escaped_json, "'", "\"", &json); \
+    base::ReplaceChars(escaped_json, "'", "\"", &json); \
     scoped_ptr<Value> json_value(ParseJson(json)); \
     JtlInterpreter interpreter( \
         seed, \

@@ -79,7 +79,7 @@ std::string ReadValue(std::string* data) {
   //
   // If we use TrimWhitespace, we will incorrectly trim the new line
   // and assume that KEY1's value is "KEY2=VALUE" rather than empty.
-  TrimString(*data, " \t", data);
+  base::TrimString(*data, " \t", data);
 
   // If multiline value
   if (StartsWithASCII(*data, std::string(kMultilineQuote), false)) {

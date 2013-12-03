@@ -55,7 +55,7 @@ std::string RemoveWindowsStyleAccelerators(const std::string& label) {
 // underscores doubled, making the string that appears to the user just |x|.
 std::string EscapeWindowsStyleAccelerators(const std::string& label) {
   std::string ret;
-  ReplaceChars(label, "&", "&&", &ret);
+  base::ReplaceChars(label, "&", "&&", &ret);
   return ret;
 }
 

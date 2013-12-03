@@ -64,7 +64,7 @@ bool IframeSource::GetOrigin(
     return false;
   *origin = contents->GetURL().GetOrigin().spec();
   // Origin should not include a trailing slash. That is part of the path.
-  TrimString(*origin, "/", origin);
+  base::TrimString(*origin, "/", origin);
   return true;
 }
 

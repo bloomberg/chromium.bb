@@ -413,7 +413,7 @@ bool Printer::CheckXPrivetTokenHeader(const std::string& token) const {
 const base::DictionaryValue& Printer::GetCapabilities() {
   if (!state_.cdd.get()) {
     std::string cdd_string;
-    ReplaceChars(kCdd, "'", "\"", &cdd_string);
+    base::ReplaceChars(kCdd, "'", "\"", &cdd_string);
     scoped_ptr<base::Value> json_val(base::JSONReader::Read(cdd_string));
     base::DictionaryValue* json = NULL;
     CHECK(json_val->GetAsDictionary(&json));

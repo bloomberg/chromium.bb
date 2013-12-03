@@ -169,16 +169,16 @@ bool FillCreditCardTypeSelectControl(const base::string16& value,
                                      FormFieldData* field) {
   // Try stripping off spaces.
   base::string16 value_stripped;
-  RemoveChars(StringToLowerASCII(value), base::kWhitespaceUTF16,
-              &value_stripped);
+  base::RemoveChars(StringToLowerASCII(value), base::kWhitespaceUTF16,
+                    &value_stripped);
 
   for (size_t i = 0; i < field->option_values.size(); ++i) {
     base::string16 option_value_lowercase;
-    RemoveChars(StringToLowerASCII(field->option_values[i]),
-                base::kWhitespaceUTF16, &option_value_lowercase);
+    base::RemoveChars(StringToLowerASCII(field->option_values[i]),
+                      base::kWhitespaceUTF16, &option_value_lowercase);
     base::string16 option_contents_lowercase;
-    RemoveChars(StringToLowerASCII(field->option_contents[i]),
-                base::kWhitespaceUTF16, &option_contents_lowercase);
+    base::RemoveChars(StringToLowerASCII(field->option_contents[i]),
+                      base::kWhitespaceUTF16, &option_contents_lowercase);
 
     // Perform a case-insensitive comparison; but fill the form with the
     // original text, not the lowercased version.
@@ -292,7 +292,7 @@ void FillStreetAddress(const base::string16& value,
   const char16 kNewline[] = { '\n', 0 };
   const base::string16 separator =
       l10n_util::GetStringUTF16(IDS_AUTOFILL_ADDRESS_LINE_SEPARATOR);
-  ReplaceChars(value, kNewline, separator, &one_line_value);
+  base::ReplaceChars(value, kNewline, separator, &one_line_value);
   field->value = one_line_value;
 }
 

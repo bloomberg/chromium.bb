@@ -56,8 +56,8 @@ std::string LogsToString(const FeedbackData::SystemLogsMap& sys_info) {
     if (FeedbackData::BelowCompressionThreshold(value))
       continue;
 
-    TrimString(key, "\n ", &key);
-    TrimString(value, "\n ", &value);
+    base::TrimString(key, "\n ", &key);
+    base::TrimString(value, "\n ", &value);
 
     if (value.find("\n") != std::string::npos) {
       syslogs_string.append(

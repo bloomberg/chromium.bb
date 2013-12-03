@@ -276,7 +276,7 @@ bool SortIpAddressList(const std::string& ip_address_list,
 
   // Strip all whitespace (mimics IE behavior).
   std::string cleaned_ip_address_list;
-  RemoveChars(ip_address_list, " \t", &cleaned_ip_address_list);
+  base::RemoveChars(ip_address_list, " \t", &cleaned_ip_address_list);
   if (cleaned_ip_address_list.empty())
     return false;
 

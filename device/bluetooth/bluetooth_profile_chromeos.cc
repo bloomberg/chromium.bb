@@ -90,7 +90,7 @@ void BluetoothProfileChromeOS::Init(
   // The object path is relatively meaningless, but has to be unique, so we
   // use the UUID of the profile.
   std::string uuid_path;
-  ReplaceChars(uuid, ":-", "_", &uuid_path);
+  base::ReplaceChars(uuid, ":-", "_", &uuid_path);
 
   object_path_ = dbus::ObjectPath("/org/chromium/bluetooth_profile/" +
                                   uuid_path);

@@ -325,7 +325,7 @@ string16 AutocompleteMatch::SanitizeString(const string16& text) {
   // omnibox_custom_bindings.js.
   string16 result;
   TrimWhitespace(text, TRIM_LEADING, &result);
-  RemoveChars(result, kInvalidChars, &result);
+  base::RemoveChars(result, kInvalidChars, &result);
   return result;
 }
 

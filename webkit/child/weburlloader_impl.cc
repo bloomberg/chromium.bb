@@ -547,7 +547,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
     std::string boundary;
     net::HttpUtil::ParseContentType(content_type, &mime_type, &charset,
                                     &had_charset, &boundary);
-    TrimString(boundary, " \"", &boundary);
+    base::TrimString(boundary, " \"", &boundary);
 
     // If there's no boundary, just handle the request normally.  In the gecko
     // code, nsMultiMixedConv::OnStartRequest throws an exception.

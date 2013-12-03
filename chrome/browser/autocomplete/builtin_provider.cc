@@ -93,7 +93,8 @@ void BuiltinProvider::Start(const AutocompleteInput& input,
         !url.has_query() && !url.has_ref()) {
       // Include the path for sub-pages (e.g. "chrome://settings/browser").
       string16 host_and_path = UTF8ToUTF16(url.host() + url.path());
-      TrimString(host_and_path, ASCIIToUTF16("/").c_str(), &host_and_path);
+      base::TrimString(host_and_path, ASCIIToUTF16("/").c_str(),
+                       &host_and_path);
       size_t match_length = kChrome.length() + host_and_path.length();
       for (Builtins::const_iterator i(builtins_.begin());
           (i != builtins_.end()) && (matches_.size() < kMaxMatches); ++i) {

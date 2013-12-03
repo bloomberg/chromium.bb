@@ -289,9 +289,9 @@ installer::InstallShortcutOperation GetAppLauncherShortcutOperation(
 namespace installer {
 
 void EscapeXmlAttributeValueInSingleQuotes(string16* att_value) {
-  ReplaceChars(*att_value, L"&", L"&amp;", att_value);
-  ReplaceChars(*att_value, L"'", L"&apos;", att_value);
-  ReplaceChars(*att_value, L"<", L"&lt;", att_value);
+  base::ReplaceChars(*att_value, L"&", L"&amp;", att_value);
+  base::ReplaceChars(*att_value, L"'", L"&apos;", att_value);
+  base::ReplaceChars(*att_value, L"<", L"&lt;", att_value);
 }
 
 bool CreateVisualElementsManifest(const base::FilePath& src_path,

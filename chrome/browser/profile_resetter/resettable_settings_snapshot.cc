@@ -138,7 +138,7 @@ std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
          extensions.begin(); i != extensions.end(); ++i) {
       // Replace "\"" to simplify server-side analysis.
       std::string ext_name;
-      ReplaceChars(i->second, "\"", "\'", &ext_name);
+      base::ReplaceChars(i->second, "\"", "\'", &ext_name);
       list->AppendString(i->first + ";" + ext_name);
     }
     dict.Set(kEnabledExtensions, list);

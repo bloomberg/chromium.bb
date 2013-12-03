@@ -116,8 +116,6 @@ const string16& EmptyString16() {
   return EmptyStrings::GetInstance()->s16;
 }
 
-}  // namespace base
-
 template<typename STR>
 bool ReplaceCharsT(const STR& input,
                    const typename STR::value_type replace_chars[],
@@ -230,8 +228,8 @@ void TruncateUTF8ToByteSize(const std::string& input,
     int32 prev = char_index;
     uint32 code_point = 0;
     CBU8_NEXT(data, char_index, truncation_length, code_point);
-    if (!base::IsValidCharacter(code_point) ||
-        !base::IsValidCodepoint(code_point)) {
+    if (!IsValidCharacter(code_point) ||
+        !IsValidCodepoint(code_point)) {
       char_index = prev - 1;
     } else {
       break;
@@ -244,16 +242,18 @@ void TruncateUTF8ToByteSize(const std::string& input,
     output->clear();
 }
 
+}  // namespace base
+
 TrimPositions TrimWhitespace(const base::string16& input,
                              TrimPositions positions,
                              base::string16* output) {
-  return TrimStringT(input, base::kWhitespaceUTF16, positions, output);
+  return base::TrimStringT(input, base::kWhitespaceUTF16, positions, output);
 }
 
 TrimPositions TrimWhitespaceASCII(const std::string& input,
                                   TrimPositions positions,
                                   std::string* output) {
-  return TrimStringT(input, base::kWhitespaceASCII, positions, output);
+  return base::TrimStringT(input, base::kWhitespaceASCII, positions, output);
 }
 
 // This function is only for backward-compatibility.

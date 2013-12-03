@@ -74,7 +74,7 @@ void BookmarkNode::SetTitle(const string16& title) {
   // Replace newlines and other problematic whitespace characters in
   // folder/bookmark names with spaces.
   string16 trimmed_title;
-  ReplaceChars(title, kInvalidChars, ASCIIToUTF16(" "), &trimmed_title);
+  base::ReplaceChars(title, kInvalidChars, ASCIIToUTF16(" "), &trimmed_title);
   ui::TreeNode<BookmarkNode>::SetTitle(trimmed_title);
 }
 

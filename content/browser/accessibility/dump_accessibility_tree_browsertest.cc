@@ -161,7 +161,7 @@ void DumpAccessibilityTreeTest::RunTest(
   // Tolerate Windows-style line endings (\r\n) in the expected file:
   // normalize by deleting all \r from the file (if any) to leave only \n.
   std::string expected_contents;
-  RemoveChars(expected_contents_raw, "\r", &expected_contents);
+  base::RemoveChars(expected_contents_raw, "\r", &expected_contents);
 
   if (!expected_contents.compare(0, strlen(kMarkSkipFile), kMarkSkipFile)) {
     printf("Skipping this test on this platform.\n");

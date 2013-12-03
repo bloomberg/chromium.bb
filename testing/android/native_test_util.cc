@@ -17,7 +17,7 @@ void ParseArgsFromString(const std::string& command_line,
   tokenizer.set_quote_chars("\"");
   while (tokenizer.GetNext()) {
     std::string token;
-    RemoveChars(tokenizer.token(), "\"", &token);
+    base::RemoveChars(tokenizer.token(), "\"", &token);
     args->push_back(token);
   }
 }

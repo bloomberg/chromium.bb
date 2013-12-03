@@ -72,7 +72,7 @@ std::string NinjaScriptTargetWriter::WriteRuleDefinition(
   // there will be only one invocation so we can use a simple name.
   std::string target_label = target_->label().GetUserVisibleName(true);
   std::string custom_rule_name(target_label);
-  ReplaceChars(custom_rule_name, ":/()", "_", &custom_rule_name);
+  base::ReplaceChars(custom_rule_name, ":/()", "_", &custom_rule_name);
   custom_rule_name.append("_rule");
 
   if (settings_->IsWin()) {

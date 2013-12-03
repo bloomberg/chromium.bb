@@ -1377,7 +1377,8 @@ void BrowserPluginGuest::OnNavigateGuest(
   if (scheme_is_blocked || !url.is_valid()) {
     if (delegate_) {
       std::string error_type;
-      RemoveChars(net::ErrorToString(net::ERR_ABORTED), "net::", &error_type);
+      base::RemoveChars(net::ErrorToString(net::ERR_ABORTED), "net::",
+                        &error_type);
       delegate_->LoadAbort(true /* is_top_level */, url, error_type);
     }
     return;

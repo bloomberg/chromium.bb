@@ -128,7 +128,7 @@ bool NetworkingPrivateCrypto::VerifyCredentials(
   std::string subject_name(common_name);
   PORT_Free(common_name);
   std::string translated_mac;
-  RemoveChars(connected_mac, ":", &translated_mac);
+  base::RemoveChars(connected_mac, ":", &translated_mac);
   if (!EndsWith(subject_name, translated_mac, false)) {
     LOG(ERROR) << "MAC addresses don't match.";
     return false;

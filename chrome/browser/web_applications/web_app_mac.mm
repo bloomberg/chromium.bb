@@ -704,8 +704,8 @@ base::FilePath WebAppShortcutCreator::GetAppBundleById(
 std::string WebAppShortcutCreator::GetBundleIdentifier() const {
   // Replace spaces in the profile path with hyphen.
   std::string normalized_profile_path;
-  ReplaceChars(info_.profile_path.BaseName().value(),
-               " ", "-", &normalized_profile_path);
+  base::ReplaceChars(info_.profile_path.BaseName().value(),
+                     " ", "-", &normalized_profile_path);
 
   // This matches APP_MODE_APP_BUNDLE_ID in chrome/chrome.gyp.
   std::string bundle_id =

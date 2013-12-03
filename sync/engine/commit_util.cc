@@ -105,7 +105,7 @@ void BuildCommitItem(
   // Note: Truncation is also performed in WriteNode::SetTitle(..). But this
   // call is still necessary to handle any title changes that might originate
   // elsewhere, or already be persisted in the directory.
-  TruncateUTF8ToByteSize(name, 255, &name);
+  base::TruncateUTF8ToByteSize(name, 255, &name);
   sync_entry->set_name(name);
 
   // Set the non_unique_name.  If we do, the server ignores

@@ -148,22 +148,12 @@ BASE_EXPORT extern const char kWhitespaceASCII[];
 // Null-terminated string representing the UTF-8 byte order mark.
 BASE_EXPORT extern const char kUtf8ByteOrderMark[];
 
-}  // namespace base
-
-#if defined(OS_WIN)
-#include "base/strings/string_util_win.h"
-#elif defined(OS_POSIX)
-#include "base/strings/string_util_posix.h"
-#else
-#error Define string operations appropriately for your platform
-#endif
-
 // Removes characters in |remove_chars| from anywhere in |input|.  Returns true
 // if any characters were removed.  |remove_chars| must be null-terminated.
 // NOTE: Safe to use the same variable for both |input| and |output|.
-BASE_EXPORT bool RemoveChars(const base::string16& input,
-                             const base::char16 remove_chars[],
-                             base::string16* output);
+BASE_EXPORT bool RemoveChars(const string16& input,
+                             const char16 remove_chars[],
+                             string16* output);
 BASE_EXPORT bool RemoveChars(const std::string& input,
                              const char remove_chars[],
                              std::string* output);
@@ -173,10 +163,10 @@ BASE_EXPORT bool RemoveChars(const std::string& input,
 // the |replace_with| string.  Returns true if any characters were replaced.
 // |replace_chars| must be null-terminated.
 // NOTE: Safe to use the same variable for both |input| and |output|.
-BASE_EXPORT bool ReplaceChars(const base::string16& input,
-                              const base::char16 replace_chars[],
-                              const base::string16& replace_with,
-                              base::string16* output);
+BASE_EXPORT bool ReplaceChars(const string16& input,
+                              const char16 replace_chars[],
+                              const string16& replace_with,
+                              string16* output);
 BASE_EXPORT bool ReplaceChars(const std::string& input,
                               const char replace_chars[],
                               const std::string& replace_with,
@@ -185,9 +175,9 @@ BASE_EXPORT bool ReplaceChars(const std::string& input,
 // Removes characters in |trim_chars| from the beginning and end of |input|.
 // |trim_chars| must be null-terminated.
 // NOTE: Safe to use the same variable for both |input| and |output|.
-BASE_EXPORT bool TrimString(const base::string16& input,
-                            const base::char16 trim_chars[],
-                            base::string16* output);
+BASE_EXPORT bool TrimString(const string16& input,
+                            const char16 trim_chars[],
+                            string16* output);
 BASE_EXPORT bool TrimString(const std::string& input,
                             const char trim_chars[],
                             std::string* output);
@@ -197,6 +187,16 @@ BASE_EXPORT bool TrimString(const std::string& input,
 BASE_EXPORT void TruncateUTF8ToByteSize(const std::string& input,
                                         const size_t byte_size,
                                         std::string* output);
+
+}  // namespace base
+
+#if defined(OS_WIN)
+#include "base/strings/string_util_win.h"
+#elif defined(OS_POSIX)
+#include "base/strings/string_util_posix.h"
+#else
+#error Define string operations appropriately for your platform
+#endif
 
 // Trims any whitespace from either end of the input string.  Returns where
 // whitespace was found.

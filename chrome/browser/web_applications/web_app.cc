@@ -231,7 +231,7 @@ void GetIconsInfo(const WebApplicationInfo& app_info,
 #if defined(OS_LINUX)
 std::string GetWMClassFromAppName(std::string app_name) {
   file_util::ReplaceIllegalCharactersInPath(&app_name, '_');
-  TrimString(app_name, "_", &app_name);
+  base::TrimString(app_name, "_", &app_name);
   return app_name;
 }
 #endif

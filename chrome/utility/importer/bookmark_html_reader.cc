@@ -110,7 +110,7 @@ void ImportBookmarksFile(
            (cancellation_callback.is_null() || !cancellation_callback.Run());
        ++i) {
     std::string line;
-    TrimString(lines[i], " ", &line);
+    base::TrimString(lines[i], " ", &line);
 
     // Remove "<HR>" if |line| starts with it. "<HR>" is the bookmark entries
     // separator in Firefox that Chrome does not support. Note that there can be
@@ -119,7 +119,7 @@ void ImportBookmarksFile(
     static const char kHrTag[] = "<HR>";
     while (StartsWithASCII(line, kHrTag, false)) {
       line.erase(0, arraysize(kHrTag) - 1);
-      TrimString(line, " ", &line);
+      base::TrimString(line, " ", &line);
     }
 
     // Get the encoding of the bookmark file.

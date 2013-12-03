@@ -583,7 +583,7 @@ void WebViewGuest::DidFailProvisionalLoad(
     content::RenderViewHost* render_view_host) {
   // Translate the |error_code| into an error string.
   std::string error_type;
-  RemoveChars(net::ErrorToString(error_code), "net::", &error_type);
+  base::RemoveChars(net::ErrorToString(error_code), "net::", &error_type);
   LoadAbort(is_main_frame, validated_url, error_type);
 }
 

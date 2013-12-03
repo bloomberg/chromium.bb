@@ -132,8 +132,8 @@ string16 SuspiciousExtensionBubbleController::GetOverflowText(
   // this string, whereas we should have used $1. It was discovered too late,
   // so we do the substitution by hand in that case.
   if (overflow_string.find(ASCIIToUTF16("#")) != string16::npos) {
-    ReplaceChars(overflow_string, ASCIIToUTF16("#").c_str(),
-                 overflow_count, &new_string);
+    base::ReplaceChars(overflow_string, ASCIIToUTF16("#").c_str(),
+                       overflow_count, &new_string);
   } else {
     new_string = l10n_util::GetStringFUTF16(
             IDS_EXTENSIONS_SUSPICIOUS_DISABLED_AND_N_MORE,

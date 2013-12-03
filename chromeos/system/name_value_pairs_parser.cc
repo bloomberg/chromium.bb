@@ -91,8 +91,8 @@ bool NameValuePairsParser::ParseNameValuePairsWithComments(
 
       std::string key;
       std::string value;
-      TrimString(pair.substr(0, eq_pos), kTrimChars, &key);
-      TrimString(pair.substr(eq_pos + 1, value_size), kTrimChars, &value);
+      base::TrimString(pair.substr(0, eq_pos), kTrimChars, &key);
+      base::TrimString(pair.substr(eq_pos + 1, value_size), kTrimChars, &value);
 
       if (!key.empty()) {
         AddNameValuePair(key, value);

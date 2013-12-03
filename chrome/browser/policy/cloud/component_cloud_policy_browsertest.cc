@@ -88,8 +88,8 @@ const char kTestPolicy2JSON[] = "{\"Another\":\"turn_it_off\"}";
 bool Base64Encode(const std::string& value, std::string* encoded) {
   if (value.empty() || !base::Base64Encode(value, encoded))
     return false;
-  ReplaceChars(*encoded, "+", "-", encoded);
-  ReplaceChars(*encoded, "/", "_", encoded);
+  base::ReplaceChars(*encoded, "+", "-", encoded);
+  base::ReplaceChars(*encoded, "/", "_", encoded);
   return true;
 }
 

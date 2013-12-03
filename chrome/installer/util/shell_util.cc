@@ -1690,7 +1690,7 @@ string16 ShellUtil::BuildAppModelId(
     }
   }
   // No spaces are allowed in the AppUserModelId according to MSDN.
-  ReplaceChars(app_id, L" ", L"_", &app_id);
+  base::ReplaceChars(app_id, L" ", L"_", &app_id);
   return app_id;
 }
 

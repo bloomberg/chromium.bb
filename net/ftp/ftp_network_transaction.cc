@@ -835,7 +835,7 @@ int FtpNetworkTransaction::ProcessResponseSYST(
 
         // Remove all whitespace, to correctly handle cases like fancy "V M S"
         // response instead of "VMS".
-        RemoveChars(line, base::kWhitespaceASCII, &line);
+        base::RemoveChars(line, base::kWhitespaceASCII, &line);
 
         // The "magic" strings we test for below have been gathered by an
         // empirical study. VMS needs to come first because some VMS systems

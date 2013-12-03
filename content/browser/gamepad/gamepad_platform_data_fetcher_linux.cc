@@ -186,7 +186,7 @@ void GamepadPlatformDataFetcherLinux::RefreshDevice(udev_device* dev) {
         mapper ? "STANDARD GAMEPAD " : "",
         vendor_id,
         product_id);
-    TruncateUTF8ToByteSize(id, WebGamepad::idLengthCap - 1, &id);
+    base::TruncateUTF8ToByteSize(id, WebGamepad::idLengthCap - 1, &id);
     base::string16 tmp16 = UTF8ToUTF16(id);
     memset(pad.id, 0, sizeof(pad.id));
     tmp16.copy(pad.id, arraysize(pad.id) - 1);

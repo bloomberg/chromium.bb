@@ -42,7 +42,7 @@ const char kPnaclManifestName[] = "PNaCl Translator";
 // Keep in sync with chrome/browser/nacl_host/nacl_file_host.
 std::string SanitizeForPath(const std::string& input) {
   std::string result;
-  ReplaceChars(input, "-", "_", &result);
+  base::ReplaceChars(input, "-", "_", &result);
   return result;
 }
 

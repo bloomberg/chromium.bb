@@ -190,7 +190,7 @@ bool CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
   int32 model_major = 0, model_minor = 0;
   base::mac::ParseModelIdentifier(base::mac::GetModelIdentifier(),
                                   &model_name, &model_major, &model_minor);
-  ReplaceChars(model_name, " ", "_", &gpu_info->machine_model);
+  base::ReplaceChars(model_name, " ", "_", &gpu_info->machine_model);
   gpu_info->machine_model += " " + base::IntToString(model_major) +
                              "." + base::IntToString(model_minor);
 

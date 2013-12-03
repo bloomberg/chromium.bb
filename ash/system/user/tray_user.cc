@@ -481,12 +481,12 @@ PublicAccountUserDetails::PublicAccountUserDetails(SystemTrayItem* owner,
   // user.
   base::string16 display_name =
       Shell::GetInstance()->session_state_delegate()->GetUserDisplayName(0);
-  RemoveChars(display_name, kDisplayNameMark, &display_name);
+  base::RemoveChars(display_name, kDisplayNameMark, &display_name);
   display_name = kDisplayNameMark[0] + display_name + kDisplayNameMark[0];
   // Retrieve the domain managing the device and wrap it with markers.
   base::string16 domain = UTF8ToUTF16(
       Shell::GetInstance()->system_tray_delegate()->GetEnterpriseDomain());
-  RemoveChars(domain, kDisplayNameMark, &domain);
+  base::RemoveChars(domain, kDisplayNameMark, &domain);
   base::i18n::WrapStringWithLTRFormatting(&domain);
   // Retrieve the label text, inserting the display name and domain.
   text_ = l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_PUBLIC_LABEL,

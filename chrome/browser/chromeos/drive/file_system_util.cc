@@ -304,7 +304,7 @@ std::string NormalizeFileName(const std::string& input) {
   std::string output;
   if (!base::ConvertToUtf8AndNormalize(input, base::kCodepageUTF8, &output))
     output = input;
-  ReplaceChars(output, kSlash, std::string(kEscapedChars), &output);
+  base::ReplaceChars(output, kSlash, std::string(kEscapedChars), &output);
   if (!output.empty() && output.find_first_not_of(kDot, 0) == std::string::npos)
     output = kEscapedChars;
   return output;

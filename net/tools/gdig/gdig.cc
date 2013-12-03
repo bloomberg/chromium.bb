@@ -126,7 +126,7 @@ bool LoadReplayLog(const base::FilePath& file_path, ReplayLog* replay_log) {
   // smarter line splitter, but this particular use does not need to target
   // efficiency.
   std::string replay_log_contents;
-  RemoveChars(original_replay_log_contents, "\r", &replay_log_contents);
+  base::RemoveChars(original_replay_log_contents, "\r", &replay_log_contents);
 
   std::vector<std::string> lines;
   base::SplitString(replay_log_contents, '\n', &lines);

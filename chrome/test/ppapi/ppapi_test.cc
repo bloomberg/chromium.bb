@@ -49,14 +49,12 @@ PPAPITestMessageHandler::PPAPITestMessageHandler() {
 
 TestMessageHandler::MessageResponse PPAPITestMessageHandler::HandleMessage(
     const std::string& json) {
- std::string trimmed;
- TrimString(json, "\"", &trimmed);
- if (trimmed == "...") {
-   return CONTINUE;
- } else {
-   message_ = trimmed;
-   return DONE;
- }
+  std::string trimmed;
+  base::TrimString(json, "\"", &trimmed);
+  if (trimmed == "...")
+    return CONTINUE;
+  message_ = trimmed;
+  return DONE;
 }
 
 void PPAPITestMessageHandler::Reset() {

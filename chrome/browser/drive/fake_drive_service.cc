@@ -83,7 +83,7 @@ bool EntryMatchWithQuery(const ResourceEntry& entry,
     std::string key, value;
     const std::string& token = tokenizer.token();
     if (token.find(':') == std::string::npos) {
-      TrimString(token, "\"'", &value);
+      base::TrimString(token, "\"'", &value);
     } else {
       base::StringTokenizer key_value(token, ":");
       key_value.set_quote_chars("\"'");
@@ -92,7 +92,7 @@ bool EntryMatchWithQuery(const ResourceEntry& entry,
       key = key_value.token();
       if (!key_value.GetNext())
         return false;
-      TrimString(key_value.token(), "\"'", &value);
+      base::TrimString(key_value.token(), "\"'", &value);
     }
 
     // TODO(peria): Deal with other attributes than title.

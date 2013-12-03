@@ -278,7 +278,7 @@ bool IPhotoLibraryParser::Parse(const std::string& library_xml) {
           album = album_info.photo_ids;
           // Strip / from album name and dedupe any collisions.
           std::string name;
-          ReplaceChars(album_info.name, "//", " ", &name);
+          base::ReplaceChars(album_info.name, "//", " ", &name);
           if (!ContainsKey(library_.albums, name)) {
             library_.albums[name] = album;
           } else {

@@ -480,7 +480,7 @@ Status ProcessExtension(const std::string& extension,
   // 'encoded lines be no more than 76 characters long'. Just remove any
   // newlines.
   std::string extension_base64;
-  RemoveChars(extension, "\n", &extension_base64);
+  base::RemoveChars(extension, "\n", &extension_base64);
   std::string decoded_extension;
   if (!base::Base64Decode(extension_base64, &decoded_extension))
     return Status(kUnknownError, "cannot base64 decode");

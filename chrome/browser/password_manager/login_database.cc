@@ -500,12 +500,12 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
     s.Assign(db_.GetUniqueStatement(extended_sql_query.c_str()));
     // We need to escape . in the domain. Since the domain has already been
     // sanitized using GURL, we do not need to escape any other characters.
-    ReplaceChars(registered_domain, ".", "\\.", &registered_domain);
+    base::ReplaceChars(registered_domain, ".", "\\.", &registered_domain);
     std::string scheme = signon_realm.scheme();
     // We need to escape . in the scheme. Since the scheme has already been
     // sanitized using GURL, we do not need to escape any other characters.
     // The scheme soap.beep is an example with '.'.
-    ReplaceChars(scheme, ".", "\\.", &scheme);
+    base::ReplaceChars(scheme, ".", "\\.", &scheme);
     const std::string port = signon_realm.port();
     // For a signon realm such as http://foo.bar/, this regexp will match
     // domains on the form http://foo.bar/, http://www.foo.bar/,

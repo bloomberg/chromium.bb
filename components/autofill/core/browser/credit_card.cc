@@ -133,9 +133,9 @@ CreditCard::~CreditCard() {}
 
 // static
 const base::string16 CreditCard::StripSeparators(const base::string16& number) {
-  const char16 kSeparators[] = {'-', ' ', '\0'};
+  const base::char16 kSeparators[] = {'-', ' ', '\0'};
   base::string16 stripped;
-  RemoveChars(number, kSeparators, &stripped);
+  base::RemoveChars(number, kSeparators, &stripped);
   return stripped;
 }
 

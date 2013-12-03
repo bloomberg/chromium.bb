@@ -208,7 +208,7 @@ class PageStateSerializationTest : public testing::Test {
     }
 
     std::string trimmed_contents;
-    EXPECT_TRUE(RemoveChars(file_contents, "\r\n", &trimmed_contents));
+    EXPECT_TRUE(base::RemoveChars(file_contents, "\r\n", &trimmed_contents));
 
     std::string encoded;
     EXPECT_TRUE(base::Base64Decode(trimmed_contents, &encoded));

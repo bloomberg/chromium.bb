@@ -125,7 +125,7 @@ bool TruncateFileName(base::FilePath* path, size_t limit) {
   base::FilePath::StringType truncated;
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX)
   // UTF-8.
-  TruncateUTF8ToByteSize(name, limit, &truncated);
+  base::TruncateUTF8ToByteSize(name, limit, &truncated);
 #elif defined(OS_WIN)
   // UTF-16.
   DCHECK(name.size() > limit);

@@ -169,7 +169,7 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension) {
   std::string extension_name = extension->name();
   // Ampersands need to be escaped to avoid being treated like
   // mnemonics in the menu.
-  ReplaceChars(extension_name, "&", "&&", &extension_name);
+  base::ReplaceChars(extension_name, "&", "&&", &extension_name);
   AddItem(NAME, UTF8ToUTF16(extension_name));
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(CONFIGURE, IDS_EXTENSIONS_OPTIONS_MENU_ITEM);

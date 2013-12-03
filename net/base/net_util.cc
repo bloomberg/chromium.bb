@@ -773,7 +773,7 @@ void SanitizeGeneratedFileName(base::FilePath::StringType* filename,
     if (trimmed)
       filename->insert(filename->end(), trimmed, kReplace[0]);
   }
-  TrimString(*filename, FILE_PATH_LITERAL("."), filename);
+  base::TrimString(*filename, FILE_PATH_LITERAL("."), filename);
   if (filename->empty())
     return;
   // Replace any path information by changing path separators.

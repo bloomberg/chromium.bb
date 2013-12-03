@@ -23,8 +23,8 @@ bool Base64Encode(const std::string& value, std::string* encoded) {
   DCHECK(!value.empty());
   if (value.empty() || !base::Base64Encode(value, encoded))
     return false;
-  ReplaceChars(*encoded, "+", "-", encoded);
-  ReplaceChars(*encoded, "/", "_", encoded);
+  base::ReplaceChars(*encoded, "+", "-", encoded);
+  base::ReplaceChars(*encoded, "/", "_", encoded);
   return true;
 }
 
@@ -49,8 +49,8 @@ bool Base64Encode(const std::set<std::string>& input,
 // emtpy.
 bool Base64Decode(const std::string& encoded, std::string* value) {
   std::string buffer;
-  ReplaceChars(encoded, "-", "+", &buffer);
-  ReplaceChars(buffer, "_", "/", &buffer);
+  base::ReplaceChars(encoded, "-", "+", &buffer);
+  base::ReplaceChars(buffer, "_", "/", &buffer);
   return base::Base64Decode(buffer, value) && !value->empty();
 }
 

@@ -341,7 +341,7 @@ void CanonicalizeUrl(const GURL& url,
           : std::string();
   const char kCharsToTrim[] = ".";
   std::string host_without_end_dots;
-  TrimString(host, kCharsToTrim, &host_without_end_dots);
+  base::TrimString(host, kCharsToTrim, &host_without_end_dots);
 
   // 4. In hostname, replace consecutive dots with a single dot.
   std::string host_without_consecutive_dots(RemoveConsecutiveChars(

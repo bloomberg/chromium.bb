@@ -138,7 +138,7 @@ bool NaClBrowserDelegateImpl::MapUrlToLocalFilePath(
   if (!use_blocking_api) {
     if (file_url.SchemeIs(extensions::kExtensionScheme)) {
       std::string path = file_url.path();
-      TrimString(path, "/", &path);  // Remove first slash
+      base::TrimString(path, "/", &path);  // Remove first slash
       *file_path = extension->path().AppendASCII(path);
       return true;
     }

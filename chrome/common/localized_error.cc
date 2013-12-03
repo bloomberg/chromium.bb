@@ -574,7 +574,7 @@ void LocalizedError::GetStrings(int error_code,
     // Non-internationalized error string, for debugging Chrome itself.
     std::string ascii_error_string = net::ErrorToString(error_code);
     // Remove the leading "net::" from the returned string.
-    RemoveChars(ascii_error_string, "net:", &ascii_error_string);
+    base::RemoveChars(ascii_error_string, "net:", &ascii_error_string);
     error_string = ASCIIToUTF16(ascii_error_string);
   } else if (error_domain == chrome_common_net::kDnsProbeErrorDomain) {
     std::string ascii_error_string =

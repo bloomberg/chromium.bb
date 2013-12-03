@@ -384,11 +384,11 @@ gfx::Rect ShellWindow::GetClientBounds() const {
   return bounds;
 }
 
-string16 ShellWindow::GetTitle() const {
+base::string16 ShellWindow::GetTitle() const {
   // WebContents::GetTitle() will return the page's URL if there's no <title>
   // specified. However, we'd prefer to show the name of the extension in that
   // case, so we directly inspect the NavigationEntry's title.
-  string16 title;
+  base::string16 title;
   if (!web_contents() ||
       !web_contents()->GetController().GetActiveEntry() ||
       web_contents()->GetController().GetActiveEntry()->GetTitle().empty()) {
@@ -396,8 +396,8 @@ string16 ShellWindow::GetTitle() const {
   } else {
     title = web_contents()->GetTitle();
   }
-  const char16 kBadChars[] = { '\n', 0 };
-  RemoveChars(title, kBadChars, &title);
+  const base::char16 kBadChars[] = { '\n', 0 };
+  base::RemoveChars(title, kBadChars, &title);
   return title;
 }
 

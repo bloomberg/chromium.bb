@@ -76,7 +76,7 @@ bool Base64Decode(const std::string& base64,
   // Some WebDriver client base64 encoders follow RFC 1521, which require that
   // 'encoded lines be no more than 76 characters long'. Just remove any
   // newlines.
-  RemoveChars(copy, "\n", &copy);
+  base::RemoveChars(copy, "\n", &copy);
   return base::Base64Decode(copy, bytes);
 }
 

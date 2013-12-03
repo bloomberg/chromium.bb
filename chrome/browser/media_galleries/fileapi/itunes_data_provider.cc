@@ -31,7 +31,7 @@ namespace {
 // Colon and slash are not allowed in filenames, replace them with underscore.
 std::string EscapeBadCharacters(const std::string& input) {
   std::string result;
-  ReplaceChars(input, ":/", "_", &result);
+  base::ReplaceChars(input, ":/", "_", &result);
   return result;
 }
 

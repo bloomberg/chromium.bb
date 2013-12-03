@@ -172,7 +172,7 @@ std::string Message::ToStringInternal(const std::string& indent,
           output += indent + "string \"" + value + "\"\n";
         } else {
           std::string truncated;
-          TruncateUTF8ToByteSize(value, kTruncateLength, &truncated);
+          base::TruncateUTF8ToByteSize(value, kTruncateLength, &truncated);
           base::StringAppendF(&truncated, "... (%" PRIuS " bytes in total)",
                               value.size());
           output += indent + "string \"" + truncated + "\"\n";

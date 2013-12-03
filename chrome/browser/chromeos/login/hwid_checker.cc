@@ -67,7 +67,7 @@ bool IsCorrectExceptionalHWID(const std::string& hwid) {
   if (bom.length() < 2)
     return false;
   std::string hwid_without_dashes;
-  RemoveChars(hwid, "-", &hwid_without_dashes);
+  base::RemoveChars(hwid, "-", &hwid_without_dashes);
   LOG_ASSERT(hwid_without_dashes.length() >= 2);
   std::string not_checksum =
       hwid_without_dashes.substr(0, hwid_without_dashes.length() - 2);
@@ -95,7 +95,7 @@ bool IsCorrectHWIDv3(const std::string& hwid) {
   std::string not_checksum, checksum;
   if (!RE2::FullMatch(hwid, regex, &not_checksum, &checksum))
     return false;
-  RemoveChars(not_checksum, "-", &not_checksum);
+  base::RemoveChars(not_checksum, "-", &not_checksum);
   return CalculateHWIDv3Checksum(not_checksum) == checksum;
 }
 
