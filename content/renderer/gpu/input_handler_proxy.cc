@@ -21,6 +21,7 @@ using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebPoint;
 using blink::WebTouchEvent;
+using blink::WebTouchPoint;
 
 namespace {
 
@@ -227,9 +228,14 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
   } else if (event.type == WebInputEvent::TouchStart) {
     const WebTouchEvent& touch_event =
         *static_cast<const WebTouchEvent*>(&event);
-    if (!input_handler_->HaveTouchEventHandlersAt(touch_event.touches[0]
-                                                      .position))
-      return DROP_EVENT;
+    for (size_t i = 0; i < touch_event.touchesLength; ++i) {
+      if (touch_event.touches[i].state != WebTouchPoint::StatePressed)
+        continue;
+      if (input_handler_->HaveTouchEventHandlersAt(touch_event.touches[i]
+                                                       .position))
+        return DID_NOT_HANDLE;
+    }
+    return DROP_EVENT;
   } else if (WebInputEvent::isKeyboardEventType(event.type)) {
     CancelCurrentFling();
   } else if (event.type == WebInputEvent::MouseMove) {

@@ -24,6 +24,8 @@ using blink::WebInputEvent;
 using blink::WebMouseWheelEvent;
 using blink::WebPoint;
 using blink::WebSize;
+using blink::WebTouchEvent;
+using blink::WebTouchPoint;
 
 namespace content {
 namespace {
@@ -64,9 +66,8 @@ class MockInputHandler : public cc::InputHandler {
   virtual void NotifyCurrentFlingVelocity(gfx::Vector2dF velocity) OVERRIDE {}
   virtual void MouseMoveAt(gfx::Point mouse_position) OVERRIDE {}
 
-  virtual bool HaveTouchEventHandlersAt(gfx::Point point) OVERRIDE {
-    return false;
-  }
+  MOCK_METHOD1(HaveTouchEventHandlersAt,
+               bool(gfx::Point point));
 
   virtual void SetRootLayerScrollOffsetDelegate(
       cc::LayerScrollOffsetDelegate* root_layer_scroll_offset_delegate)
@@ -1072,6 +1073,76 @@ TEST_F(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
   time += base::TimeDelta::FromMilliseconds(100);
   input_handler_->Animate(time);
   testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+}
+
+TEST_F(InputHandlerProxyTest, MultiTouchPointHitTestNegative) {
+  // None of the three touch points fall in the touch region. So the event
+  // should be dropped.
+  expected_disposition_ = InputHandlerProxy::DROP_EVENT;
+  VERIFY_AND_RESET_MOCKS();
+
+  EXPECT_CALL(mock_input_handler_,
+              HaveTouchEventHandlersAt(
+                  testing::Property(&gfx::Point::x, testing::Gt(0))))
+      .WillOnce(testing::Return(false));
+  EXPECT_CALL(mock_input_handler_,
+              HaveTouchEventHandlersAt(
+                  testing::Property(&gfx::Point::x, testing::Lt(0))))
+      .WillOnce(testing::Return(false));
+
+  WebTouchEvent touch;
+  touch.type = WebInputEvent::TouchStart;
+
+  touch.touchesLength = 3;
+  touch.touches[0].state = WebTouchPoint::StateStationary;
+  touch.touches[0].screenPosition = WebPoint();
+  touch.touches[0].position = WebPoint();
+
+  touch.touches[1].state = WebTouchPoint::StatePressed;
+  touch.touches[1].screenPosition = WebPoint(10, 10);
+  touch.touches[1].position = WebPoint(10, 10);
+
+  touch.touches[2].state = WebTouchPoint::StatePressed;
+  touch.touches[2].screenPosition = WebPoint(-10, 10);
+  touch.touches[2].position = WebPoint(-10, 10);
+
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(touch));
+}
+
+TEST_F(InputHandlerProxyTest, MultiTouchPointHitTestPositive) {
+  // One of the touch points is on a touch-region. So the event should be sent
+  // to the main thread.
+  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
+  VERIFY_AND_RESET_MOCKS();
+
+  EXPECT_CALL(mock_input_handler_,
+              HaveTouchEventHandlersAt(
+                  testing::Property(&gfx::Point::x, testing::Eq(0))))
+      .WillOnce(testing::Return(false));
+  EXPECT_CALL(mock_input_handler_,
+              HaveTouchEventHandlersAt(
+                  testing::Property(&gfx::Point::x, testing::Gt(0))))
+      .WillOnce(testing::Return(true));
+  // Since the second touch point hits a touch-region, there should be no
+  // hit-testing for the third touch point.
+
+  WebTouchEvent touch;
+  touch.type = WebInputEvent::TouchStart;
+
+  touch.touchesLength = 3;
+  touch.touches[0].state = WebTouchPoint::StatePressed;
+  touch.touches[0].screenPosition = WebPoint();
+  touch.touches[0].position = WebPoint();
+
+  touch.touches[1].state = WebTouchPoint::StatePressed;
+  touch.touches[1].screenPosition = WebPoint(10, 10);
+  touch.touches[1].position = WebPoint(10, 10);
+
+  touch.touches[2].state = WebTouchPoint::StatePressed;
+  touch.touches[2].screenPosition = WebPoint(-10, 10);
+  touch.touches[2].position = WebPoint(-10, 10);
+
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(touch));
 }
 
 } // namespace

@@ -97,6 +97,7 @@ using blink::WebScreenInfo;
 using blink::WebSize;
 using blink::WebTextDirection;
 using blink::WebTouchEvent;
+using blink::WebTouchPoint;
 using blink::WebVector;
 using blink::WebWidget;
 
@@ -1119,9 +1120,17 @@ void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
   if (!processed &&  input_event->type == WebInputEvent::TouchStart) {
     const WebTouchEvent& touch_event =
         *static_cast<const WebTouchEvent*>(input_event);
-    ack_result = HasTouchEventHandlersAt(touch_event.touches[0].position) ?
-        INPUT_EVENT_ACK_STATE_NOT_CONSUMED :
-        INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+    // Hit-test for all the pressed touch points. If there is a touch-handler
+    // for any of the touch points, then the renderer should continue to receive
+    // touch events.
+    ack_result = INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS;
+    for (size_t i = 0; i < touch_event.touchesLength; ++i) {
+      if (touch_event.touches[i].state == WebTouchPoint::StatePressed &&
+          HasTouchEventHandlersAt(touch_event.touches[i].position)) {
+        ack_result = INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+        break;
+      }
+    }
   }
 
   IPC::Message* response =
