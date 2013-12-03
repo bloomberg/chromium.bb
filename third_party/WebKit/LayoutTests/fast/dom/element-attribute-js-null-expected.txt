@@ -117,7 +117,7 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLHRElement.color]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLHRElement.size]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLHRElement.width]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLHtmlElement.version]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLHtmlElement.version]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLIFrameElement.align]
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLIFrameElement.frameBorder]
