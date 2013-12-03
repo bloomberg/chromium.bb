@@ -98,12 +98,6 @@ struct WebFloatPoint;
 struct WebLocalizedString;
 struct WebSize;
 
-// FIXME: Remove this typedef once chromium side's switch is over.
-#ifndef WebPlatformDatabaseObserverType
-#define WebPlatformDatabaseObserverType
-typedef WebDatabaseObserver WebPlatformDatabaseObserver;
-#endif
-
 class Platform {
 public:
     // HTML5 Database ------------------------------------------------------
