@@ -59,6 +59,9 @@ TEST_F(MoveOperationTest, MoveFileInSameDirectory) {
 
   EXPECT_EQ(1U, observer()->get_changed_paths().size());
   EXPECT_TRUE(observer()->get_changed_paths().count(src_path.DirName()));
+
+  EXPECT_EQ(1U, observer()->updated_local_ids().size());
+  EXPECT_TRUE(observer()->updated_local_ids().count(src_entry.local_id()));
 }
 
 TEST_F(MoveOperationTest, MoveFileFromRootToSubDirectory) {
@@ -87,6 +90,9 @@ TEST_F(MoveOperationTest, MoveFileFromRootToSubDirectory) {
   EXPECT_EQ(2U, observer()->get_changed_paths().size());
   EXPECT_TRUE(observer()->get_changed_paths().count(src_path.DirName()));
   EXPECT_TRUE(observer()->get_changed_paths().count(dest_path.DirName()));
+
+  EXPECT_EQ(1U, observer()->updated_local_ids().size());
+  EXPECT_TRUE(observer()->updated_local_ids().count(src_entry.local_id()));
 }
 
 TEST_F(MoveOperationTest, MoveFileBetweenSubDirectoriesRenameWithTitle) {
@@ -135,6 +141,9 @@ TEST_F(MoveOperationTest, MoveFileBetweenSubDirectoriesRenameWithTitle) {
   EXPECT_EQ(2U, observer()->get_changed_paths().size());
   EXPECT_TRUE(observer()->get_changed_paths().count(copied_path.DirName()));
   EXPECT_TRUE(observer()->get_changed_paths().count(dest_path.DirName()));
+
+  EXPECT_EQ(1U, observer()->updated_local_ids().size());
+  EXPECT_TRUE(observer()->updated_local_ids().count(copied_entry.local_id()));
 }
 
 TEST_F(MoveOperationTest, MoveNotExistingFile) {
