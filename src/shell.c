@@ -339,6 +339,7 @@ struct shell_surface {
 
 	struct weston_output *fullscreen_output;
 	struct weston_output *output;
+	struct weston_output *recommended_output;
 	struct wl_list link;
 
 	const struct weston_shell_client *client;
@@ -3295,8 +3296,7 @@ xdg_surface_set_output(struct wl_client *client,
 	else
 		output = NULL;
 
-	if (!weston_surface_is_mapped(shsurf->surface))
-		shsurf->output = output;
+	shsurf->recommended_output = output;
 }
 
 static void
@@ -3313,7 +3313,7 @@ xdg_surface_set_fullscreen(struct wl_client *client,
 		shsurf->state_changed = true;
 		set_fullscreen(shsurf,
 			       WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
-			       0, shsurf->output);
+			       0, shsurf->recommended_output);
 	}
 }
 
@@ -3358,7 +3358,7 @@ xdg_surface_set_maximized(struct wl_client *client,
 	if (!shsurf->next_state.maximized) {
 		shsurf->next_state.maximized = true;
 		shsurf->state_changed = true;
-		set_maximized(shsurf, shsurf->output);
+		set_maximized(shsurf, NULL);
 	}
 }
 
