@@ -57,6 +57,8 @@ void ConflictResolver::Run(const SyncStatusCallback& callback) {
     for (TrackerSet::const_iterator itr = trackers.begin();
          itr != trackers.end(); ++itr) {
       const FileTracker& tracker = **itr;
+      if (tracker.active())
+        continue;
 
       FileTracker parent_tracker;
       bool should_success = metadata_database()->FindTrackerByTrackerID(
@@ -99,7 +101,7 @@ void ConflictResolver::DetachFromNonPrimaryParents(
   std::string parent_folder_id = parents_to_remove_.back();
   parents_to_remove_.pop_back();
   drive_service()->RemoveResourceFromDirectory(
-      target_file_id_, parent_folder_id,
+      parent_folder_id, target_file_id_,
       base::Bind(&ConflictResolver::DidDetachFromParent,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));

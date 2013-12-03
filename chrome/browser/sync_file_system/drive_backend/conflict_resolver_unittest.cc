@@ -140,6 +140,31 @@ class ConflictResolverTest : public testing::Test,
     return file_id;
   }
 
+  google_apis::GDataErrorCode AddFileToFolder(
+      const std::string& parent_folder_id,
+      const std::string& file_id) {
+    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+    fake_drive_service_->AddResourceToDirectory(
+        parent_folder_id, file_id,
+        CreateResultReceiver(&error));
+    base::RunLoop().RunUntilIdle();
+    return error;
+  }
+
+  int CountParents(const std::string& file_id) {
+    scoped_ptr<google_apis::ResourceEntry> entry;
+    EXPECT_EQ(google_apis::HTTP_SUCCESS,
+              fake_drive_helper_->GetResourceEntry(file_id, &entry));
+    int count = 0;
+    const ScopedVector<google_apis::Link>& links = entry->links();
+    for (ScopedVector<google_apis::Link>::const_iterator itr = links.begin();
+        itr != links.end(); ++itr) {
+      if ((*itr)->type() == google_apis::Link::LINK_PARENT)
+        ++count;
+    }
+    return count;
+  }
+
   SyncStatusCode RunSyncer() {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     scoped_ptr<RemoteToLocalSyncer> syncer(new RemoteToLocalSyncer(this));
@@ -295,7 +320,59 @@ TEST_F(ConflictResolverTest, ResolveConflict_FilesAndFolders) {
                            google_apis::ENTRY_KIND_FOLDER);
 }
 
-// TODO(nhiroki): Add multi-parent resolution cases.
+TEST_F(ConflictResolverTest, ResolveMultiParents_File) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+  RunSyncerUntilIdle();
+
+  const std::string primary = CreateRemoteFolder(app_root, "primary");
+  const std::string file = CreateRemoteFile(primary, "file", "data");
+  ASSERT_EQ(google_apis::HTTP_SUCCESS,
+            AddFileToFolder(CreateRemoteFolder(app_root, "nonprimary1"), file));
+  ASSERT_EQ(google_apis::HTTP_SUCCESS,
+            AddFileToFolder(CreateRemoteFolder(app_root, "nonprimary2"), file));
+  ASSERT_EQ(google_apis::HTTP_SUCCESS,
+            AddFileToFolder(CreateRemoteFolder(app_root, "nonprimary3"), file));
+
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
+  RunSyncerUntilIdle();
+
+  EXPECT_EQ(4, CountParents(file));
+
+  EXPECT_EQ(SYNC_STATUS_OK, RunConflictResolver());
+
+  EXPECT_EQ(1, CountParents(file));
+}
+
+TEST_F(ConflictResolverTest, ResolveMultiParents_Folder) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+  RunSyncerUntilIdle();
+
+  const std::string primary = CreateRemoteFolder(app_root, "primary");
+  const std::string file = CreateRemoteFolder(primary, "folder");
+  ASSERT_EQ(google_apis::HTTP_SUCCESS,
+            AddFileToFolder(CreateRemoteFolder(app_root, "nonprimary1"), file));
+  ASSERT_EQ(google_apis::HTTP_SUCCESS,
+            AddFileToFolder(CreateRemoteFolder(app_root, "nonprimary2"), file));
+  ASSERT_EQ(google_apis::HTTP_SUCCESS,
+            AddFileToFolder(CreateRemoteFolder(app_root, "nonprimary3"), file));
+
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
+  RunSyncerUntilIdle();
+
+  EXPECT_EQ(4, CountParents(file));
+
+  EXPECT_EQ(SYNC_STATUS_OK, RunConflictResolver());
+
+  EXPECT_EQ(1, CountParents(file));
+}
 
 }  // namespace drive_backend
 }  // namespace sync_file_system
