@@ -182,8 +182,11 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   ExtensionIdList GetToolbarOrder();
   void SetToolbarOrder(const ExtensionIdList& extension_ids);
 
-  // Get/Set the list of known disabled extension IDs.
-  ExtensionIdSet GetKnownDisabled();
+  // Gets the set of known disabled extension IDs into |id_set_out|. Returns
+  // false iff the set of known disabled extension IDs hasn't been set yet.
+  bool GetKnownDisabled(ExtensionIdSet* id_set_out);
+
+  // Sets the set of known disabled extension IDs.
   void SetKnownDisabled(const ExtensionIdSet& extension_ids);
 
   // Called when an extension is installed, so that prefs get created.
@@ -608,10 +611,13 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   bool DoesExtensionHaveState(const std::string& id,
                               Extension::State check_state) const;
 
-  // Reads the list of strings for |pref| from prefs into an
-  // ExtensionIdContainer.
+  // Reads the list of strings for |pref| from user prefs into
+  // |id_container_out|. Returns false if the pref wasn't found in the user
+  // pref store.
   template <class ExtensionIdContainer>
-  ExtensionIdContainer GetExtensionPrefAsContainer(const char* pref);
+  bool GetUserExtensionPrefIntoContainer(
+      const char* pref,
+      ExtensionIdContainer* id_container_out);
 
   // Writes the list of strings contained in |strings| to |pref| in prefs.
   template <class ExtensionIdContainer>

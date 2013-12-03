@@ -1200,16 +1200,18 @@ bool ExtensionPrefs::IsExtensionDisabled(
 }
 
 ExtensionIdList ExtensionPrefs::GetToolbarOrder() {
-  return GetExtensionPrefAsContainer<ExtensionIdList>(prefs::kExtensionToolbar);
+  ExtensionIdList id_list_out;
+  GetUserExtensionPrefIntoContainer(prefs::kExtensionToolbar, &id_list_out);
+  return id_list_out;
 }
 
 void ExtensionPrefs::SetToolbarOrder(const ExtensionIdList& extension_ids) {
   SetExtensionPrefFromContainer(prefs::kExtensionToolbar, extension_ids);
 }
 
-ExtensionIdSet ExtensionPrefs::GetKnownDisabled() {
-  return GetExtensionPrefAsContainer<ExtensionIdSet>(
-      prefs::kExtensionKnownDisabled);
+bool ExtensionPrefs::GetKnownDisabled(ExtensionIdSet* id_set_out) {
+  return GetUserExtensionPrefIntoContainer(prefs::kExtensionKnownDisabled,
+                                           id_set_out);
 }
 
 void ExtensionPrefs::SetKnownDisabled(const ExtensionIdSet& extension_ids) {
@@ -1869,21 +1871,28 @@ void ExtensionPrefs::RegisterProfilePrefs(
 }
 
 template <class ExtensionIdContainer>
-ExtensionIdContainer ExtensionPrefs::GetExtensionPrefAsContainer(
-    const char* pref) {
-  ExtensionIdContainer extension_ids;
-  const ListValue* list_of_values = prefs_->GetList(pref);
-  if (!list_of_values)
-    return extension_ids;
+bool ExtensionPrefs::GetUserExtensionPrefIntoContainer(
+    const char* pref,
+    ExtensionIdContainer* id_container_out) {
+  DCHECK(id_container_out->empty());
+
+  const Value* user_pref_value = prefs_->GetUserPrefValue(pref);
+  const ListValue* user_pref_as_list;
+  if (!user_pref_value || !user_pref_value->GetAsList(&user_pref_as_list))
+    return false;
 
   std::insert_iterator<ExtensionIdContainer> insert_iterator(
-      extension_ids, extension_ids.end());
+      *id_container_out, id_container_out->end());
   std::string extension_id;
-  for (size_t i = 0; i < list_of_values->GetSize(); ++i) {
-    if (list_of_values->GetString(i, &extension_id))
-      insert_iterator = extension_id;
+  for (base::ListValue::const_iterator value_it = user_pref_as_list->begin();
+       value_it != user_pref_as_list->end(); ++value_it) {
+    if (!(*value_it)->GetAsString(&extension_id)) {
+      NOTREACHED();
+      continue;
+    }
+    insert_iterator = extension_id;
   }
-  return extension_ids;
+  return true;
 }
 
 template <class ExtensionIdContainer>

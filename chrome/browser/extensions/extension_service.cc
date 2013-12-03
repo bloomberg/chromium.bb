@@ -1424,9 +1424,8 @@ bool ExtensionService::IsUnacknowledgedExternalExtension(
 }
 
 void ExtensionService::ReconcileKnownDisabled() {
-  const ExtensionIdSet known_disabled_ids =
-      extension_prefs_->GetKnownDisabled();
-  if (known_disabled_ids.empty() && !disabled_extensions_.is_empty()) {
+  ExtensionIdSet known_disabled_ids;
+  if (!extension_prefs_->GetKnownDisabled(&known_disabled_ids)) {
     extension_prefs_->SetKnownDisabled(disabled_extensions_.GetIDs());
     UMA_HISTOGRAM_BOOLEAN("Extensions.KnownDisabledInitialized", true);
     return;
