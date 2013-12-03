@@ -3962,6 +3962,54 @@ move_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *dat
 }
 
 static void
+maximize_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *data)
+{
+	struct weston_surface *focus = seat->pointer->focus->surface;
+	struct weston_surface *surface;
+	struct shell_surface *shsurf;
+
+	surface = weston_surface_get_main_surface(focus);
+	if (surface == NULL)
+		return;
+
+	shsurf = get_shell_surface(surface);
+	if (shsurf == NULL)
+		return;
+
+	if (!shell_surface_is_xdg_surface(shsurf))
+		return;
+
+	if (shsurf->state.maximized)
+		xdg_surface_send_request_unset_maximized(shsurf->resource);
+	else
+		xdg_surface_send_request_set_maximized(shsurf->resource);
+}
+
+static void
+fullscreen_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *data)
+{
+	struct weston_surface *focus = seat->pointer->focus->surface;
+	struct weston_surface *surface;
+	struct shell_surface *shsurf;
+
+	surface = weston_surface_get_main_surface(focus);
+	if (surface == NULL)
+		return;
+
+	shsurf = get_shell_surface(surface);
+	if (shsurf == NULL)
+		return;
+
+	if (!shell_surface_is_xdg_surface(shsurf))
+		return;
+
+	if (shsurf->state.fullscreen)
+		xdg_surface_send_request_unset_fullscreen(shsurf->resource);
+	else
+		xdg_surface_send_request_set_fullscreen(shsurf->resource);
+}
+
+static void
 touch_move_binding(struct weston_seat *seat, uint32_t time, void *data)
 {
 	struct weston_surface *focus = seat->touch->focus->surface;
@@ -6688,6 +6736,10 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 					  zoom_key_binding, NULL);
 	weston_compositor_add_key_binding(ec, KEY_PAGEDOWN, mod,
 					  zoom_key_binding, NULL);
+	weston_compositor_add_key_binding(ec, KEY_M, mod, maximize_binding,
+					  NULL);
+	weston_compositor_add_key_binding(ec, KEY_F, mod, fullscreen_binding,
+					  NULL);
 	weston_compositor_add_button_binding(ec, BTN_LEFT, mod, move_binding,
 					     shell);
 	weston_compositor_add_touch_binding(ec, mod, touch_move_binding, shell);
