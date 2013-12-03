@@ -42,14 +42,15 @@ void MmapTest::TearDown() {
   NaClNrdAllModulesFini();
 }
 
-// These tests are disabled for ARM because the ARM sandbox is
-// zero-based, and sel_addrspace_arm.c does not work when allocating a
+// These tests are disabled for ARM/MIPS because the ARM/MIPS sandboxes are
+// zero-based, and sel_addrspace_(arm/mips).c do not work when allocating a
 // non-zero-based region.
 // TODO(mseaborn): Change sel_addrspace_arm.c to work with this test.
 // However, for now, testing the Linux memory mapping code under
 // x86-32 and x86-64 gives us good coverage of the Linux code in
 // general.
-#if NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm
+#if NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm && \
+    NACL_ARCH(NACL_BUILD_ARCH) != NACL_mips
 
 // Check that the untrusted address space really gets freed by trying
 // to allocate and free a sandbox multiple times.  On a 32-bit system,
