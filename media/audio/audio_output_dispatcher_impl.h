@@ -59,9 +59,6 @@ class MEDIA_EXPORT AudioOutputDispatcherImpl : public AudioOutputDispatcher {
 
   virtual void Shutdown() OVERRIDE;
 
-  virtual void CloseStreamsForWedgeFix() OVERRIDE;
-  virtual void RestartStreamsForWedgeFix() OVERRIDE;
-
  private:
   typedef std::map<AudioOutputProxy*, AudioOutputStream*> AudioStreamMap;
   friend class base::RefCountedThreadSafe<AudioOutputDispatcherImpl>;
