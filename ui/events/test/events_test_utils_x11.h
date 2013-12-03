@@ -60,6 +60,8 @@ class ScopedXI2Event {
  private:
   void Cleanup();
 
+  void SetUpValuators(const std::vector<Valuator>& valuators);
+
   scoped_ptr<XEvent> event_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedXI2Event);
@@ -69,7 +71,7 @@ class ScopedXI2Event {
 void SetUpScrollDeviceForTest(unsigned int deviceid);
 
 // Initializes a list of touchscreen devices for touch events.
-void SetupTouchDevicesForTest(const std::vector<unsigned int>& devices);
+void SetUpTouchDevicesForTest(const std::vector<unsigned int>& devices);
 
 }  // namespace ui
 

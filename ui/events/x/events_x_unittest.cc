@@ -175,7 +175,7 @@ TEST(EventsXTest, ClickCount) {
 TEST(EventsXTest, TouchEventBasic) {
   std::vector<unsigned int> devices;
   devices.push_back(0);
-  ui::SetupTouchDevicesForTest(devices);
+  ui::SetUpTouchDevicesForTest(devices);
   std::vector<Valuator> valuators;
 
   // Init touch begin with tracking id 5, touch id 0.

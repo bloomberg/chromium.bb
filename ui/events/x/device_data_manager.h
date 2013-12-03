@@ -215,23 +215,17 @@ class EVENTS_BASE_EXPORT DeviceDataManager {
                     double* min,
                     double* max);
 
-  // Setups relevant valuator informations for device ids in the list |devices|.
+  // Sets up relevant valuator informations for device ids in the device lists.
   // This function is only for test purpose. It does not query the X server for
   // the actual device info, but rather inits the relevant valuator structures
-  // to have safe default values for testing. |cmt_devices| and |touchpads|
-  // should only contain device ids in |devices|.
-  void SetDeviceListForTest(const std::vector<unsigned int>& devices,
-                            const std::vector<unsigned int>& cmt_devices,
-                            const std::vector<unsigned int>& touchpads);
+  // to have safe default values for testing.
+  void SetDeviceListForTest(const std::vector<unsigned int>& touchscreen,
+                            const std::vector<unsigned int>& cmt_devices);
 
-  // Setups device with |deviceid| to have valuator with type |data_type|,
-  // at index |val_index|, and with |min|/|max| values. This is only for test
-  // purpose.
-  void SetDeviceValuatorForTest(int deviceid,
-                                int val_index,
-                                DataType data_type,
-                                double min,
-                                double max);
+  void SetValuatorDataForTest(XIDeviceEvent* xievent,
+                              DataType type,
+                              double value);
+
  private:
   // Requirement for Singleton.
   friend struct DefaultSingletonTraits<DeviceDataManager>;
@@ -244,6 +238,12 @@ class EVENTS_BASE_EXPORT DeviceDataManager {
 
   // Check if an XI event contains data of the specified type.
   bool HasEventData(const XIDeviceEvent* xiev, const DataType type) const;
+
+  void InitializeValuatorsForTest(int deviceid,
+                                  int start_valuator,
+                                  int end_valuator,
+                                  double min_value,
+                                  double max_value);
 
   static const int kMaxDeviceNum = 128;
   static const int kMaxXIEventType = XI_LASTEVENT + 1;

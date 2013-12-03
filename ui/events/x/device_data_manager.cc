@@ -582,9 +582,8 @@ bool DeviceDataManager::GetDataRange(unsigned int deviceid,
 }
 
 void DeviceDataManager::SetDeviceListForTest(
-    const std::vector<unsigned int>& devices,
-    const std::vector<unsigned int>& cmt_devices,
-    const std::vector<unsigned int>& touchpads) {
+    const std::vector<unsigned int>& touchscreen,
+    const std::vector<unsigned int>& cmt_devices) {
   for (int i = 0; i < kMaxDeviceNum; ++i) {
     valuator_count_[i] = 0;
     valuator_lookup_[i].clear();
@@ -595,44 +594,59 @@ void DeviceDataManager::SetDeviceListForTest(
       last_seen_valuator_[i][j].clear();
   }
 
-  for (size_t i = 0; i < devices.size(); i++) {
-    unsigned int deviceid = devices[i];
-    valuator_lookup_[deviceid].resize(DT_LAST_ENTRY, -1);
-    data_type_lookup_[deviceid].resize(DT_LAST_ENTRY, DT_LAST_ENTRY);
-    valuator_min_[deviceid].resize(DT_LAST_ENTRY, 0);
-    valuator_max_[deviceid].resize(DT_LAST_ENTRY, 0);
-    for (int j = 0; j < kMaxSlotNum; j++)
-      last_seen_valuator_[deviceid][j].resize(DT_LAST_ENTRY, 0);
+  for (size_t i = 0; i < touchscreen.size(); i++) {
+    unsigned int deviceid = touchscreen[i];
+    InitializeValuatorsForTest(deviceid, kTouchDataTypeStart, kTouchDataTypeEnd,
+                               0, 1000);
   }
 
   cmt_devices_.reset();
   for (size_t i = 0; i < cmt_devices.size(); ++i) {
-    unsigned int deviceid = devices[i];
+    unsigned int deviceid = cmt_devices[i];
     cmt_devices_[deviceid] = true;
-  }
-
-  touchpads_.reset();
-  for (size_t i = 0; i < touchpads.size(); ++i) {
-    unsigned int deviceid = devices[i];
     touchpads_[deviceid] = true;
+    InitializeValuatorsForTest(deviceid, kCMTDataTypeStart, kCMTDataTypeEnd,
+                               -1000, 1000);
   }
 }
 
-void DeviceDataManager::SetDeviceValuatorForTest(int deviceid,
-                                                 int val_index,
-                                                 DataType data_type,
-                                                 double min,
-                                                 double max) {
-  valuator_lookup_[deviceid][data_type] = val_index;
-  data_type_lookup_[deviceid][val_index] = data_type;
-  valuator_min_[deviceid][data_type] = min;
-  valuator_max_[deviceid][data_type] = max;
+void DeviceDataManager::SetValuatorDataForTest(XIDeviceEvent* xievent,
+                                               DataType type,
+                                               double value) {
+  int index = valuator_lookup_[xievent->deviceid][type];
+  CHECK(!XIMaskIsSet(xievent->valuators.mask, index));
+  CHECK(index >= 0 && index < valuator_count_[xievent->deviceid]);
+  XISetMask(xievent->valuators.mask, index);
 
-  // Recalulate the number of valuators for the device.
-  valuator_count_[deviceid] = 0;
-  for (size_t i = 0; i < DT_LAST_ENTRY; ++i) {
-    if (valuator_lookup_[deviceid][i] != -1)
-      valuator_count_[deviceid]++;
+  double* valuators = xievent->valuators.values;
+  for (int i = 0; i < index; ++i) {
+    if (XIMaskIsSet(xievent->valuators.mask, i))
+      valuators++;
+  }
+  for (int i = valuators - xievent->valuators.values;
+       i < DT_LAST_ENTRY - 1; ++i)
+    xievent->valuators.values[i + 1] = xievent->valuators.values[i];
+  *valuators = value;
+}
+
+void DeviceDataManager::InitializeValuatorsForTest(int deviceid,
+                                                   int start_valuator,
+                                                   int end_valuator,
+                                                   double min_value,
+                                                   double max_value) {
+  valuator_lookup_[deviceid].resize(DT_LAST_ENTRY, -1);
+  data_type_lookup_[deviceid].resize(DT_LAST_ENTRY, DT_LAST_ENTRY);
+  valuator_min_[deviceid].resize(DT_LAST_ENTRY, 0);
+  valuator_max_[deviceid].resize(DT_LAST_ENTRY, 0);
+  for (int j = 0; j < kMaxSlotNum; j++)
+    last_seen_valuator_[deviceid][j].resize(DT_LAST_ENTRY, 0);
+  for (int j = start_valuator; j <= end_valuator; ++j) {
+    valuator_lookup_[deviceid][j] = valuator_count_[deviceid];
+    data_type_lookup_[deviceid][valuator_count_[deviceid]] = j;
+    valuator_min_[deviceid][j] = min_value;
+    valuator_max_[deviceid][j] = max_value;
+    valuator_count_[deviceid]++;
   }
 }
+
 }  // namespace ui

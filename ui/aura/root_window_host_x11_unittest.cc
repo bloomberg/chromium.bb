@@ -110,7 +110,7 @@ TEST_F(RootWindowHostX11Test, DispatchTouchEventToOneRootWindow) {
 
   std::vector<unsigned int> devices;
   devices.push_back(0);
-  ui::SetupTouchDevicesForTest(devices);
+  ui::SetUpTouchDevicesForTest(devices);
   std::vector<ui::Valuator> valuators;
 
   EXPECT_EQ(ui::ET_UNKNOWN, delegate->last_touch_type());
@@ -182,7 +182,7 @@ TEST_F(RootWindowHostX11Test, DispatchTouchEventToTwoRootWindow) {
 
   std::vector<unsigned int> devices;
   devices.push_back(0);
-  ui::SetupTouchDevicesForTest(devices);
+  ui::SetUpTouchDevicesForTest(devices);
   std::vector<ui::Valuator> valuators;
 
   EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
