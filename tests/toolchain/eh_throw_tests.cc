@@ -472,6 +472,93 @@ void test_exception_spec_bad_throw_from_unexpected_handler() {
 }
 
 
+#if SUPPORTS_CXX11
+
+// Test std::current_exception() and std::rethrow_exception(), which
+// were added in C++11.  The std::exception_ptr type allows capturing
+// a reference to an exception, which can have a lifetime outside a
+// catch() block and so is refcounted.  This is called a "dependent
+// exception" (__cxa_dependent_exception) inside libsupc++/libcxxabi.
+void test_dependent_exception() {
+  assert(!std::current_exception());
+
+  std::exception_ptr exc_ptr;
+  int *ptr_to_value;
+  try {
+    throw MyException(400);
+  } catch (MyException &exc) {
+    ptr_to_value = &exc.value;
+    exc_ptr = std::current_exception();
+  }
+
+  try {
+    std::rethrow_exception(exc_ptr);
+  } catch (MyException &exc) {
+    assert(exc.value == 400);
+    // The exception is refcounted and not copied.
+    assert(&exc.value == ptr_to_value);
+  }
+}
+
+
+__attribute__((noinline))
+void rethrow_through_dtor(bool *ptr) {
+  Dtor dtor(ptr);
+  std::rethrow_exception(std::current_exception());
+}
+
+// Similar to test_dtor(), but testing a dependent exception (i.e. one
+// thrown with std::rethrow_exception()).
+//
+// This tests that the C++ runtime library handles dependent
+// exceptions correctly when the first matching landingpad is a
+// cleanup handler.
+void test_dependent_exception_and_dtor() {
+  try {
+    throw MyException(500);
+  } catch (MyException &exc) {
+    bool caught = false;
+    try {
+      rethrow_through_dtor(&caught);
+    } catch (MyException &exc2) {
+      assert(caught);
+      return;
+    }
+  }
+  assert(false);
+}
+
+
+void throw_dependent_exception() {
+  try {
+    throw RethrowExc();
+  } catch (...) {
+    std::rethrow_exception(std::current_exception());
+  }
+}
+
+// Test the case in which a std::set_unexpected() handler throws an
+// exception using std::rethrow_exception().
+//
+// This tests that __cxa_call_unexpected() handles dependent
+// exceptions correctly.
+void test_dependent_exception_and_exception_spec() {
+  std::unexpected_handler old_unexpected_handler =
+      std::set_unexpected(throw_dependent_exception);
+  bool caught = false;
+  try {
+    func_with_exception_spec();
+  } catch (RethrowExc &) {
+    caught = true;
+  }
+  assert(caught);
+  // Clean up.
+  std::set_unexpected(old_unexpected_handler);
+}
+
+#endif
+
+
 #define RUN_TEST(CALL) printf("Running %s\n", #CALL); CALL;
 
 int main() {
@@ -492,6 +579,11 @@ int main() {
   RUN_TEST(test_exception_spec());
   RUN_TEST(test_exception_spec_rethrow_inside_unexpected_handler());
   RUN_TEST(test_exception_spec_convert_to_bad_exception());
+#if SUPPORTS_CXX11
+  RUN_TEST(test_dependent_exception());
+  RUN_TEST(test_dependent_exception_and_dtor());
+  RUN_TEST(test_dependent_exception_and_exception_spec());
+#endif
   // This leaves behind an active exception because of its use of
   // longjmp() to exit from a std::set_terminate() handler, so put it
   // last, just in case that accidentally affects other tests.

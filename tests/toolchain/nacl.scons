@@ -234,17 +234,25 @@ def MakeEnv(env, use_opts, use_frames):
 
 EH_ENVIRONMENTS_TO_TRY = []
 
+base_eh_env = env.Clone()
+supports_cxx11 = env.Bit('bitcode') or env.Bit('target_arm')
+base_eh_env.Append(CPPDEFINES=[['SUPPORTS_CXX11', str(int(supports_cxx11))]])
+if supports_cxx11:
+  # This flag is necessary for testing std::rethrow_exception(), at
+  # least when using libstdc++.
+  base_eh_env.Append(CXXFLAGS=['-std=gnu++11'])
+
 if env.Bit('bitcode') and env['TOOLCHAIN_FEATURE_VERSION'] >= 1:
-  sjlj_eh_env = env.Clone()
+  sjlj_eh_env = base_eh_env.Clone()
   sjlj_eh_env.Append(LINKFLAGS=['--pnacl-exceptions=sjlj'])
   EH_ENVIRONMENTS_TO_TRY.append(('sjlj', sjlj_eh_env))
 
 if env.Bit('bitcode'):
-  zerocost_eh_env = env.Clone()
+  zerocost_eh_env = base_eh_env.Clone()
   zerocost_eh_env.Append(LINKFLAGS=['--pnacl-allow-exceptions'])
   zerocost_eh_env.Append(TRANSLATEFLAGS=['--pnacl-allow-exceptions'])
 else:
-  zerocost_eh_env = env
+  zerocost_eh_env = base_eh_env
 # Zero-cost C++ exception handling is not currently supported in
 # PNaCl's stable ABI.
 if zerocost_eh_env.AllowNonStableBitcode():
