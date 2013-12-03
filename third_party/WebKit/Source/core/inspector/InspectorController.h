@@ -82,7 +82,6 @@ public:
 
     void dispatchMessageFromFrontend(const String& message);
 
-    bool hasFrontend() const { return m_inspectorFrontend; }
     void connectFrontend(InspectorFrontendChannel*);
     void disconnectFrontend();
     void reconnectFrontend();
