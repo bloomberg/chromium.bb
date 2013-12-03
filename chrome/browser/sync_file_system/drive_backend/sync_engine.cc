@@ -217,7 +217,7 @@ RemoteServiceState SyncEngine::GetCurrentState() const {
 
 void SyncEngine::GetOriginStatusMap(OriginStatusMap* status_map) {
   DCHECK(status_map);
-  if (!extension_service_)
+  if (!extension_service_ || !metadata_database_)
     return;
 
   std::vector<std::string> app_ids;
@@ -234,6 +234,8 @@ void SyncEngine::GetOriginStatusMap(OriginStatusMap* status_map) {
 }
 
 scoped_ptr<base::ListValue> SyncEngine::DumpFiles(const GURL& origin) {
+  if (!metadata_database_)
+    return scoped_ptr<base::ListValue>();
   return metadata_database_->DumpFiles(origin.host());
 }
 
