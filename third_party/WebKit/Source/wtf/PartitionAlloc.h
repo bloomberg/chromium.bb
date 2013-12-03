@@ -159,24 +159,24 @@ struct PartitionFreelistEntry {
     PartitionFreelistEntry* next;
 };
 
-struct PartitionPageHeader {
+struct PartitionPage {
     uintptr_t* guard; // Points to self, used as a fast type of canary.
     PartitionFreelistEntry* freelistHead;
     int numAllocatedSlots; // Deliberately signed.
     unsigned numUnprovisionedSlots;
     PartitionBucket* bucket;
-    PartitionPageHeader* next;
-    PartitionPageHeader* prev;
+    PartitionPage* next;
+    PartitionPage* prev;
 };
 
 struct PartitionFreepagelistEntry {
-    PartitionPageHeader* page;
+    PartitionPage* page;
     PartitionFreepagelistEntry* next;
 };
 
 struct PartitionBucket {
     PartitionRoot* root;
-    PartitionPageHeader* currPage;
+    PartitionPage* currPage;
     PartitionFreepagelistEntry* freePages;
     unsigned numFullPages;
     unsigned pageSize;
@@ -200,7 +200,7 @@ struct PartitionRoot {
     char* nextPartitionPageEnd;
     PartitionSuperPageExtentEntry* currentExtent;
     PartitionSuperPageExtentEntry firstExtent;
-    PartitionPageHeader seedPage;
+    PartitionPage seedPage;
     PartitionBucket seedBucket;
 
     // The PartitionAlloc templated class ensures the following is correct.
@@ -212,7 +212,7 @@ WTF_EXPORT void partitionAllocInit(PartitionRoot*, size_t numBuckets, size_t max
 WTF_EXPORT NEVER_INLINE bool partitionAllocShutdown(PartitionRoot*);
 
 WTF_EXPORT NEVER_INLINE void* partitionAllocSlowPath(PartitionBucket*);
-WTF_EXPORT NEVER_INLINE void partitionFreeSlowPath(PartitionPageHeader*);
+WTF_EXPORT NEVER_INLINE void partitionFreeSlowPath(PartitionPage*);
 WTF_EXPORT NEVER_INLINE void* partitionReallocGeneric(PartitionRoot*, void*, size_t);
 
 // The plan is to eventually remove the SuperPageBitmap.
@@ -319,13 +319,13 @@ ALWAYS_INLINE size_t partitionBucketSize(const PartitionBucket* bucket)
     return size;
 }
 
-ALWAYS_INLINE PartitionPageHeader* partitionPointerToPage(void* ptr)
+ALWAYS_INLINE PartitionPage* partitionPointerToPage(void* ptr)
 {
     uintptr_t pointerAsUint = reinterpret_cast<uintptr_t>(ptr);
     // Checks that the pointer is after the page header. You can't free the
     // page header!
     ASSERT((pointerAsUint & kPartitionPageOffsetMask) >= kPartitionPageHeaderSize);
-    PartitionPageHeader* page = reinterpret_cast<PartitionPageHeader*>(pointerAsUint & kPartitionPageBaseMask);
+    PartitionPage* page = reinterpret_cast<PartitionPage*>(pointerAsUint & kPartitionPageBaseMask);
     // Checks that the pointer is a multiple of bucket size.
     ASSERT(!(((pointerAsUint & kPartitionPageOffsetMask) - kPartitionPageHeaderSize) % partitionBucketSize(page->bucket)));
     return page;
@@ -357,7 +357,7 @@ ALWAYS_INLINE bool partitionPointerIsValid(PartitionRoot* root, void* ptr)
     return false;
 }
 
-ALWAYS_INLINE void partitionValidatePage(PartitionPageHeader* page)
+ALWAYS_INLINE void partitionValidatePage(PartitionPage* page)
 {
     // Force the read by referencing a volatile version of the guard.
     volatile uintptr_t* guard = page->guard;
@@ -367,7 +367,7 @@ ALWAYS_INLINE void partitionValidatePage(PartitionPageHeader* page)
 
 ALWAYS_INLINE void* partitionBucketAlloc(PartitionBucket* bucket)
 {
-    PartitionPageHeader* page = bucket->currPage;
+    PartitionPage* page = bucket->currPage;
     partitionValidatePage(page);
     void* ret = page->freelistHead;
     if (LIKELY(ret != 0)) {
@@ -411,7 +411,7 @@ ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
 #endif // defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 }
 
-ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPageHeader* page)
+ALWAYS_INLINE void partitionFreeWithPage(void* ptr, PartitionPage* page)
 {
     // If these asserts fire, you probably corrupted memory.
     partitionValidatePage(page);
@@ -440,7 +440,7 @@ ALWAYS_INLINE void partitionFree(void* ptr)
     free(ptr);
 #else
     ptr = partitionCookieFreePointerAdjust(ptr);
-    PartitionPageHeader* page = partitionPointerToPage(ptr);
+    PartitionPage* page = partitionPointerToPage(ptr);
     ASSERT(partitionPointerIsValid(page->bucket->root, ptr));
     partitionFreeWithPage(ptr, page);
 #endif
@@ -475,7 +475,7 @@ ALWAYS_INLINE void partitionFreeGeneric(PartitionRoot* root, void* ptr)
     ASSERT(root->initialized);
     if (LIKELY(partitionPointerIsValid(root, ptr))) {
         ptr = partitionCookieFreePointerAdjust(ptr);
-        PartitionPageHeader* page = partitionPointerToPage(ptr);
+        PartitionPage* page = partitionPointerToPage(ptr);
         spinLockLock(&root->lock);
         partitionFreeWithPage(ptr, page);
         spinLockUnlock(&root->lock);
