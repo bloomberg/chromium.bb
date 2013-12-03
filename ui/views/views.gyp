@@ -499,6 +499,7 @@
                 ['include', 'controls/menu/native_menu_win.h'],
                 ['include', 'corewm/tooltip_win.cc'],
                 ['include', 'corewm/tooltip_win.h'],
+                ['include', 'event_utils_win.cc'],
                 ['include', 'widget/desktop_aura/desktop_screen_win.cc'],
                 ['include', 'widget/desktop_aura/desktop_drag_drop_client_win.cc'],
                 ['include', 'widget/desktop_aura/desktop_drop_target_win.cc'],

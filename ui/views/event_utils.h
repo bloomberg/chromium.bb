@@ -20,6 +20,12 @@ namespace views {
 VIEWS_EXPORT bool RepostLocatedEvent(gfx::NativeWindow window,
                                      const ui::LocatedEvent& event);
 
+#if defined(OS_WIN) && defined(USE_AURA)
+// Reposts a located event to the HWND passed in.
+VIEWS_EXPORT bool RepostLocatedEventWin(HWND window,
+                                        const ui::LocatedEvent& event);
+#endif
+
 }  // namespace views
 
 #endif  // UI_VIEWS_EVENT_UTILS_H_
