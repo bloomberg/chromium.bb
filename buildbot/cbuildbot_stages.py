@@ -2470,13 +2470,13 @@ class VMTestStage(ArchivingStage):
     filenames.append(commands.ArchiveFile(test_tarball, self.archive_path))
     self._Upload(filenames)
 
-  def _ArchiveVMDiskImages(self, test_results_dir):
-    vm_disk_images = commands.ArchiveVMDiskImages(
+  def _ArchiveVMFiles(self, test_results_dir):
+    vm_files = commands.ArchiveVMFiles(
         self._build_root, os.path.join(test_results_dir, 'test_harness'),
         self.archive_path)
     # We use paths relative to |self.archive_path|, for prettier
     # formatting on the web page.
-    self._Upload([os.path.basename(image) for image in vm_disk_images])
+    self._Upload([os.path.basename(image) for image in vm_files])
 
   def _Upload(self, filenames):
     cros_build_lib.Info('Uploading artifacts to Google Storage...')
@@ -2485,8 +2485,10 @@ class VMTestStage(ArchivingStage):
         queue.put([filename])
         if filename.endswith('.dmp.txt'):
           prefix = 'crash: '
-        elif constants.VM_IMAGE_PREFIX in os.path.basename(filename):
-          prefix = 'vm_image: '
+        elif constants.VM_DISK_PREFIX in os.path.basename(filename):
+          prefix = 'vm_disk: '
+        elif constants.VM_MEM_PREFIX in os.path.basename(filename):
+          prefix = 'vm_memory: '
         else:
           prefix = ''
         self.PrintDownloadLink(filename, prefix)
@@ -2513,7 +2515,7 @@ class VMTestStage(ArchivingStage):
     except Exception:
       cros_build_lib.Error(_VM_TEST_ERROR_MSG %
                            dict(vm_test_results=test_basename))
-      self._ArchiveVMDiskImages(test_results_dir)
+      self._ArchiveVMFiles(test_results_dir)
       raise
     finally:
       self._ArchiveTestResults(test_results_dir, test_basename)

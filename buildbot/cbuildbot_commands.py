@@ -539,20 +539,25 @@ def ArchiveTestResults(buildroot, test_results_dir, test_basename):
     os.remove(test_tarball)
 
   # Note: to keep the test results tarball small, we exclude VM disk
-  # images from the tarball. Instead, VM disk images are archived via
-  # ArchiveVMDiskImages.
+  # and memory images from the tarball. Instead, they are archived via
+  # ArchiveVMFiles.
   cros_build_lib.CreateTarball(
       test_tarball, results_path, compression=cros_build_lib.COMP_GZIP,
-      chroot=chroot, extra_args=['--exclude=*%s*' % constants.VM_IMAGE_PREFIX])
+      chroot=chroot, extra_args=\
+        ['--exclude=*%s*' % constants.VM_DISK_PREFIX,
+         '--exclude=*%s*' % constants.VM_MEM_PREFIX])
 
   osutils.RmDir(results_path)
   return test_tarball
 
-def ArchiveVMDiskImages(buildroot, test_results_dir, archive_path):
-  """Archives the VM disk images into tarballs.
+def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
+  """Archives the VM memory and disk images into tarballs.
 
-  Note that we generate a separate tar file for each VM image, to make
-  it easy to fetch just the relevant VM disk image.
+  There may be multiple tests (e.g. SimpleTestUpdate and
+  SimpleTestUpdateAndVerify), and multiple files for each test (one
+  for the VM disk, and one for the VM memory). We create a separate
+  tar file for each of these files, so that each can be downloaded
+  independently.
 
   Arguments:
     images_dir: Directory containing the VM disk images.
@@ -565,7 +570,9 @@ def ArchiveVMDiskImages(buildroot, test_results_dir, archive_path):
   images = []
   for path, _, filenames in os.walk(images_dir):
     images.extend([os.path.join(path, filename) for filename in
-                   fnmatch.filter(filenames, constants.VM_IMAGE_PREFIX + '*')])
+                   fnmatch.filter(filenames, constants.VM_DISK_PREFIX + '*')])
+    images.extend([os.path.join(path, filename) for filename in
+                   fnmatch.filter(filenames, constants.VM_MEM_PREFIX + '*')])
 
   tar_files = []
   for image_path in images:
