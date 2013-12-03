@@ -40,9 +40,12 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
         'mojo_system',
       ],
       'sources': [
+        'common/test/multiprocess_test_base.cc',
+        'common/test/multiprocess_test_base.h',
         'common/test/run_all_unittests.cc',
       ],
     },
@@ -183,6 +186,7 @@
         'common/common_similarity_traits_unittest.cc',
         'common/handle_watcher_unittest.cc',
         'common/message_pump_mojo_unittest.cc',
+        'common/test/multiprocess_test_base_unittest.cc',
       ],
       'conditions': [
         ['OS == "win"', {

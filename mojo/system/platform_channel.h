@@ -47,8 +47,8 @@ class PlatformClientChannel;
 //  - That client channel may then be used in-process (e.g., for single process
 //    tests) by getting a |PlatformClientChannel| using |CreateClientChannel()|.
 //  - Or it may be "passed" to a new child process using
-//    |PrepareToPassClientChannelToChildProcess()|, etc. (see below). The child
-//    process would then get a |PlatformClientChannel| by using
+//    |GetDataNeededToPassClientChannelToChildProcess()|, etc. (see below). The
+//    child process would then get a |PlatformClientChannel| by using
 //    |PlatformClientChannel::CreateFromParentProcess()|.
 //  - In both these cases, "ownership" of the client channel is transferred (to
 //    the |PlatformClientChannel| or the child process).
@@ -67,9 +67,9 @@ class MOJO_SYSTEM_EXPORT PlatformServerChannel : public PlatformChannel {
   // using |LaunchProcess()| (from base/launch.h). Modifies |*command_line| and
   // |*file_handle_mapping| as needed. (|file_handle_mapping| may be null on
   // platforms that don't need it, like Windows.)
-  virtual void PrepareToPassClientChannelToChildProcess(
+  virtual void GetDataNeededToPassClientChannelToChildProcess(
       CommandLine* command_line,
-      base::FileHandleMappingVector* file_handle_mapping) = 0;
+      base::FileHandleMappingVector* file_handle_mapping) const = 0;
   // To be called once the child process has been successfully launched, to do
   // any cleanup necessary.
   virtual void ChildProcessLaunched() = 0;
@@ -95,8 +95,8 @@ class MOJO_SYSTEM_EXPORT PlatformClientChannel : public PlatformChannel {
       const PlatformChannelHandle& handle);
 
   // To be called to get a client channel passed from the parent process, using
-  // |PlatformServerChannel::PrepareToPassClientChannelToChildProcess()|, etc.
-  // Returns null on failure.
+  // |PlatformServerChannel::GetDataNeededToPassClientChannelToChildProcess()|,
+  // etc. Returns null on failure.
   static scoped_ptr<PlatformClientChannel> CreateFromParentProcess(
       const CommandLine& command_line);
 

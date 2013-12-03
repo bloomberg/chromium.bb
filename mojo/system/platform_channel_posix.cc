@@ -32,9 +32,9 @@ class PlatformServerChannelPosix : public PlatformServerChannel {
 
   // |PlatformServerChannel| implementation:
   virtual scoped_ptr<PlatformClientChannel> CreateClientChannel() OVERRIDE;
-  virtual void PrepareToPassClientChannelToChildProcess(
+  virtual void GetDataNeededToPassClientChannelToChildProcess(
       CommandLine* command_line,
-      base::FileHandleMappingVector* file_handle_mapping) OVERRIDE;
+      base::FileHandleMappingVector* file_handle_mapping) const OVERRIDE;
   virtual void ChildProcessLaunched() OVERRIDE;
 
  private:
@@ -79,9 +79,9 @@ scoped_ptr<PlatformClientChannel>
   return rv.Pass();
 }
 
-void PlatformServerChannelPosix::PrepareToPassClientChannelToChildProcess(
+void PlatformServerChannelPosix::GetDataNeededToPassClientChannelToChildProcess(
     CommandLine* command_line,
-    base::FileHandleMappingVector* file_handle_mapping) {
+    base::FileHandleMappingVector* file_handle_mapping) const {
   // TODO(vtl)
   NOTIMPLEMENTED();
 }
