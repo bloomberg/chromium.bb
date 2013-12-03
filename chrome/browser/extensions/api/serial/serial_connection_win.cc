@@ -158,12 +158,12 @@ bool SerialConnection::ConfigurePort(
 }
 
 bool SerialConnection::PostOpen() {
-  // Set a very brief read interval timeout. This prevents the asynchronous I/O
-  // system from being way too eager to fire off completion events which would
-  // in turn result in a lot of onReceive events being fired (i.e., one for
-  // every individual byte received on the serial buffer.)
+  // A ReadIntervalTimeout of MAXDWORD will cause async reads to complete
+  // immediately with any data that's available, even if there is none.
+  // This is OK because we never issue a read request until WaitCommEvent
+  // signals that data is available.
   COMMTIMEOUTS timeouts = { 0 };
-  timeouts.ReadIntervalTimeout = 10;
+  timeouts.ReadIntervalTimeout = MAXDWORD;
   if (!::SetCommTimeouts(file_, &timeouts)) {
     return false;
   }
