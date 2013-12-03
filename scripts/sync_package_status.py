@@ -33,6 +33,8 @@ COL_TRACKER = gdata_lib.PrepColNameForSS('Tracker')
 
 ARCHES = ('amd64', 'arm', 'x86')
 
+DISABLING_TRACKER_VALUES = set(['n/a', 'disable', 'disabled'])
+
 oper = operation.Operation('sync_package_status')
 
 
@@ -42,6 +44,10 @@ def _GetPkgSpreadsheetURL(ss_key):
 
 class SyncError(RuntimeError):
   """Extend RuntimeError for use in this module."""
+
+
+class PackageBlacklisted(RuntimeError):
+  """Raised when package has disabled automatic tracker syncing."""
 
 
 class Syncer(object):
@@ -185,6 +191,9 @@ class Syncer(object):
           reason = 'already has issue' if old_issue_id else 'no upgrade needed'
           oper.Notice('Nothing to do for row %d, package %r: %s.' %
                       (rowIx, row[COL_PACKAGE], reason))
+      except PackageBlacklisted:
+        oper.Notice('Tracker sync disabled for row %d, package %r: skipped.' %
+                    (rowIx, row[COL_PACKAGE]))
       except SyncError:
         errors.append('Error processing row %d, pkg: %r.  See above.' %
                       (rowIx, row[COL_PACKAGE]))
@@ -280,10 +289,21 @@ class Syncer(object):
     return issue
 
   def _GetRowTrackerId(self, row):
-    """Get the tracker issue id in |row| if it exists, return None otherwise."""
+    """Get the tracker issue id in |row| if it exists, return None otherwise.
+
+    Raises:
+      PackageBlacklisted if package has Tracker column value to disable syncing.
+    """
     tracker_val = row[COL_TRACKER]
     if tracker_val:
-      return int(tracker_val)
+      try:
+        return int(tracker_val)
+      except ValueError:
+        # See if the unexpected value is one that disables tracker syncing.
+        if tracker_val.replace(' ', '').lower() in DISABLING_TRACKER_VALUES:
+          raise PackageBlacklisted()
+
+        raise
 
     return None
 
