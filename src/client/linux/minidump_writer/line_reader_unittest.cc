@@ -33,7 +33,6 @@
 
 #include "client/linux/minidump_writer/line_reader.h"
 #include "breakpad_googletest_includes.h"
-#include "common/linux/eintr_wrapper.h"
 #include "common/tests/auto_testfile.h"
 
 using namespace google_breakpad;
