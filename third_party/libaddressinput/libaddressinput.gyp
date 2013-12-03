@@ -3,15 +3,11 @@
 # found in the LICENSE file.
 {
   'target_defaults': {
-    'cflags!': [
-      '-fvisibility=hidden',
-    ],
     'conditions': [
       ['OS=="mac" or OS=="ios"', {
         'xcode_settings': {
-          'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
           'GCC_WARN_ABOUT_MISSING_NEWLINE': 'NO',
-        }
+        },
       }],
     ],
   },
