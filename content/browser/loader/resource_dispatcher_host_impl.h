@@ -372,6 +372,18 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                     const ResourceHostMsg_Request& request_data,
                     IPC::Message* sync_result,  // only valid for sync
                     int route_id);  // only valid for async
+
+  // Creates a ResourceHandler to be used by BeginRequest() for normal resource
+  // loading.
+  scoped_ptr<ResourceHandler> CreateResourceHandler(
+      net::URLRequest* request,
+      const ResourceHostMsg_Request& request_data,
+      IPC::Message* sync_result,
+      int route_id,
+      int process_type,
+      int child_id,
+      ResourceContext* resource_context);
+
   void OnDataDownloadedACK(int request_id);
   void OnUploadProgressACK(int request_id);
   void OnCancelRequest(int request_id);
