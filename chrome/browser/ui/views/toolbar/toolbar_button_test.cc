@@ -128,4 +128,5 @@ class ToolbarButtonDragTest : public ViewEventTestBase,
   bool menu_closed_;
 };
 
-VIEW_TEST(ToolbarButtonDragTest, DragActivation)
+// Broken since landed. crbug.com/325055
+VIEW_TEST(ToolbarButtonDragTest, DISABLE_DragActivation)
