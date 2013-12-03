@@ -46,12 +46,12 @@ TEST_F(AutofillNotificationControllerTest, Subviews) {
   EXPECT_TRUE([[[view subviews] objectAtIndex:1] isKindOfClass:
       [NSButton class]]);
   EXPECT_TRUE([[[view subviews] objectAtIndex:2] isKindOfClass:
-      [NSImageView class]]);
+      [NSButton class]]);
   EXPECT_NSEQ([controller_ textview],
               [[view subviews] objectAtIndex:0]);
   EXPECT_NSEQ([controller_ checkbox],
               [[view subviews] objectAtIndex:1]);
-  EXPECT_NSEQ([controller_ tooltipIcon],
+  EXPECT_NSEQ([controller_ tooltipView],
               [[view subviews] objectAtIndex:2]);
 
   // Just to exercise the code path.
@@ -66,7 +66,7 @@ TEST_F(AutofillNotificationControllerTest, TextLabelOnly) {
 
   EXPECT_FALSE([[controller_ textview] isHidden]);
   EXPECT_TRUE([[controller_ checkbox] isHidden]);
-  EXPECT_TRUE([[controller_ tooltipIcon] isHidden]);
+  EXPECT_TRUE([[controller_ tooltipView] isHidden]);
 }
 
 TEST_F(AutofillNotificationControllerTest, CheckboxOnly) {
@@ -78,7 +78,7 @@ TEST_F(AutofillNotificationControllerTest, CheckboxOnly) {
 
   EXPECT_TRUE([[controller_ textview] isHidden]);
   EXPECT_FALSE([[controller_ checkbox] isHidden]);
-  EXPECT_TRUE([[controller_ tooltipIcon] isHidden]);
+  EXPECT_TRUE([[controller_ tooltipView] isHidden]);
 }
 
 TEST_F(AutofillNotificationControllerTest, TextLabelAndTooltip) {
@@ -90,9 +90,7 @@ TEST_F(AutofillNotificationControllerTest, TextLabelAndTooltip) {
 
   EXPECT_FALSE([[controller_ textview] isHidden]);
   EXPECT_TRUE([[controller_ checkbox] isHidden]);
-  EXPECT_FALSE([[controller_ tooltipIcon] isHidden]);
-  EXPECT_NSEQ(@"My very informative tooltip.",
-              [[controller_ tooltipIcon] toolTip]);
+  EXPECT_FALSE([[controller_ tooltipView] isHidden]);
 }
 
 TEST_F(AutofillNotificationControllerTest, CheckboxAndTooltip) {
@@ -105,7 +103,5 @@ TEST_F(AutofillNotificationControllerTest, CheckboxAndTooltip) {
 
   EXPECT_TRUE([[controller_ textview] isHidden]);
   EXPECT_FALSE([[controller_ checkbox] isHidden]);
-  EXPECT_FALSE([[controller_ tooltipIcon] isHidden]);
-  EXPECT_NSEQ(@"My very informative tooltip.",
-              [[controller_ tooltipIcon] toolTip]);
+  EXPECT_FALSE([[controller_ tooltipView] isHidden]);
 }

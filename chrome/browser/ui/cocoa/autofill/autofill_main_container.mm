@@ -15,6 +15,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_details_container.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_notification_container.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_tooltip_controller.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
 #include "grit/generated_resources.h"
@@ -80,14 +81,14 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
   [saveInChromeCheckbox_ sizeToFit];
   [[self view] addSubview:saveInChromeCheckbox_];
 
-  saveInChromeTooltip_.reset([[NSImageView alloc] initWithFrame:NSZeroRect]);
+  saveInChromeTooltip_.reset(
+      [[AutofillTooltipController alloc] init]);
   [saveInChromeTooltip_ setImage:
       ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
           IDR_AUTOFILL_TOOLTIP_ICON).ToNSImage()];
-  [saveInChromeTooltip_ setToolTip:
+  [saveInChromeTooltip_ setMessage:
       base::SysUTF16ToNSString(delegate_->SaveLocallyTooltip())];
-  [saveInChromeTooltip_ setFrameSize:[[saveInChromeTooltip_ image] size]];
-  [[self view] addSubview:saveInChromeTooltip_];
+  [[self view] addSubview:[saveInChromeTooltip_ view]];
   [self updateSaveInChrome];
 
   detailsContainer_.reset(
@@ -184,8 +185,8 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
       NSMakePoint(chrome_style::kHorizontalPadding,
                   NSMidY(buttonFrame) - NSHeight(checkboxFrame) / 2.0)];
 
-  NSRect tooltipFrame = [saveInChromeTooltip_ frame];
-  [saveInChromeTooltip_ setFrameOrigin:
+  NSRect tooltipFrame = [[saveInChromeTooltip_ view] frame];
+  [[saveInChromeTooltip_ view] setFrameOrigin:
       NSMakePoint(NSMaxX([saveInChromeCheckbox_ frame]) + autofill::kButtonGap,
                   NSMidY(buttonFrame) - (NSHeight(tooltipFrame) / 2.0))];
 
@@ -345,7 +346,7 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
 
 - (void)updateSaveInChrome {
   [saveInChromeCheckbox_ setHidden:!delegate_->ShouldOfferToSaveInChrome()];
-  [saveInChromeTooltip_ setHidden:[saveInChromeCheckbox_ isHidden]];
+  [[saveInChromeTooltip_ view] setHidden:[saveInChromeCheckbox_ isHidden]];
   [saveInChromeCheckbox_ setState:
       (delegate_->ShouldSaveInChrome() ? NSOnState : NSOffState)];
 }
@@ -385,8 +386,8 @@ const SkColor kLegalDocumentsTextColor = SkColorSetRGB(102, 102, 102);
   return buttonStripImage_.get();
 }
 
-- (NSImageView*)saveInChromeTooltipForTesting {
-  return saveInChromeTooltip_.get();
+- (NSButton*)saveInChromeTooltipForTesting {
+  return base::mac::ObjCCast<NSButton>([saveInChromeTooltip_ view]);
 }
 
 @end

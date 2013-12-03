@@ -12,7 +12,9 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 #include "url/gurl.h"
 
+@class AutofillTooltipController;
 @class HyperlinkTextView;
+
 namespace autofill {
 class AutofillDialogViewDelegate;
 }
@@ -28,7 +30,7 @@ class AutofillDialogViewDelegate;
   base::scoped_nsobject<NSButton> checkbox_;
 
   // Optional tooltip icon.
-  base::scoped_nsobject<NSImageView> tooltipIcon_;
+  base::scoped_nsobject<AutofillTooltipController> tooltipController_;
 
   // Optional link target.
   GURL linkURL_;
@@ -42,7 +44,7 @@ class AutofillDialogViewDelegate;
 
 @property(nonatomic, readonly) NSTextView* textview;
 @property(nonatomic, readonly) NSButton* checkbox;
-@property(nonatomic, readonly) NSImageView* tooltipIcon;
+@property(nonatomic, readonly) NSView* tooltipView;
 
 // Designated initializer. Initializes the controller as specified by
 // |notification|.

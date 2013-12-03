@@ -555,6 +555,8 @@
         'browser/ui/cocoa/autofill/autofill_suggestion_container.mm',
         'browser/ui/cocoa/autofill/autofill_textfield.h',
         'browser/ui/cocoa/autofill/autofill_textfield.mm',
+        'browser/ui/cocoa/autofill/autofill_tooltip_controller.h',
+        'browser/ui/cocoa/autofill/autofill_tooltip_controller.mm',
         'browser/ui/cocoa/autofill/down_arrow_popup_menu_cell.h',
         'browser/ui/cocoa/autofill/down_arrow_popup_menu_cell.mm',
         'browser/ui/cocoa/autofill/generated_credit_card_bubble_cocoa.h',

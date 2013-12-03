@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/chrome_style.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_tooltip_controller.h"
 #import "chrome/browser/ui/cocoa/hyperlink_text_view.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -141,16 +142,16 @@
     //   (2) this way, the sizing computation can be cached.
     [checkbox_ sizeToFit];
 
-    tooltipIcon_.reset([[NSImageView alloc] initWithFrame:NSZeroRect]);
-    [tooltipIcon_ setImage:
+    tooltipController_.reset([[AutofillTooltipController alloc] init]);
+    [tooltipController_ setImage:
         ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
             IDR_AUTOFILL_TOOLTIP_ICON).ToNSImage()];
-    [tooltipIcon_ setFrameSize:[[tooltipIcon_ image] size]];
-    [tooltipIcon_ setToolTip:
+    [tooltipController_ setMessage:
         base::SysUTF16ToNSString(notification->tooltip_text())];
-    [tooltipIcon_ setHidden:[[tooltipIcon_ toolTip] length] == 0];
+    [[tooltipController_ view] setHidden:
+        [[tooltipController_ message] length] == 0];
 
-    [view setSubviews:@[textview_, checkbox_, tooltipIcon_]];
+    [view setSubviews:@[ textview_, checkbox_, [tooltipController_ view] ]];
   }
   return self;
 }
@@ -176,14 +177,16 @@
   return checkbox_;
 }
 
-- (NSImageView*)tooltipIcon {
-  return tooltipIcon_;
+- (NSView*)tooltipView {
+  return [tooltipController_ view];
 }
 
 - (NSSize)preferredSizeForWidth:(CGFloat)width {
   width -= 2 * chrome_style::kHorizontalPadding;
-  if (![tooltipIcon_ isHidden])
-    width -= [tooltipIcon_ frame].size.width + chrome_style::kHorizontalPadding;
+  if (![[tooltipController_ view] isHidden]) {
+    width -= NSWidth([[tooltipController_ view] frame]) +
+        chrome_style::kHorizontalPadding;
+  }
   // TODO(isherman): Restore the DCHECK below once I figure out why it causes
   // unit tests to fail.
   //DCHECK_GT(width, 0);
@@ -235,20 +238,21 @@
   NSRect labelFrame = NSInsetRect(bounds,
                                  chrome_style::kHorizontalPadding,
                                  autofill::kNotificationPadding);
-  if (![tooltipIcon_ isHidden]) {
+  NSView* tooltipView = [tooltipController_ view];
+  if (![tooltipView isHidden]) {
     labelFrame.size.width -=
-        [tooltipIcon_ frame].size.width + chrome_style::kHorizontalPadding;
+        NSWidth([tooltipView frame]) + chrome_style::kHorizontalPadding;
   }
 
   NSView* label = [checkbox_ isHidden] ? textview_.get() : checkbox_.get();
   [label setFrame:labelFrame];
 
-  if (![tooltipIcon_ isHidden]) {
+  if (![tooltipView isHidden]) {
     NSPoint tooltipOrigin =
         NSMakePoint(
             NSMaxX(labelFrame) + chrome_style::kHorizontalPadding,
-            NSMidY(labelFrame) - (NSHeight([tooltipIcon_ frame]) / 2.0));
-    [tooltipIcon_ setFrameOrigin:tooltipOrigin];
+            NSMidY(labelFrame) - (NSHeight([tooltipView frame]) / 2.0));
+    [tooltipView setFrameOrigin:tooltipOrigin];
   }
 }
 

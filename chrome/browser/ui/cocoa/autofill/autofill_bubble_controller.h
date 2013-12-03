@@ -12,7 +12,9 @@
 
 // Bubble controller for field validation error bubbles.
 @interface AutofillBubbleController : BaseBubbleController {
+ @private
    base::scoped_nsobject<NSTextField> label_;
+   NSSize inset_;  // Amount the label is inset from the window.
 }
 
 // Creates an error bubble with the given |message|. You need to call
@@ -20,6 +22,12 @@
 // user dismisses the bubble.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                    message:(NSString*)message;
+
+// Designated initializer. Creates a bubble with given |message| and insets the
+// text content by |inset|.
+- (id)initWithParentWindow:(NSWindow*)parentWindow
+                   message:(NSString*)message
+                     inset:(NSSize)inset;
 
 // Maximum width that the bubble will occupy, regardless of message size.
 - (CGFloat)maxWidth;

@@ -50,6 +50,8 @@ TEST_F(AutofillMainContainerTest, SubViews) {
     NSArray* subviews = [view subviews];
     if ([view isKindOfClass:[NSScrollView class]]) {
       hasDetailsContainer = true;
+    } else if (view == [container_ saveInChromeTooltipForTesting]) {
+      hasCheckboxTooltip = true;
     } else if ([subviews count] == 2) {
       EXPECT_TRUE(
           [[subviews objectAtIndex:0] isKindOfClass:[NSButton class]]);
@@ -59,8 +61,6 @@ TEST_F(AutofillMainContainerTest, SubViews) {
     } else if ([view isKindOfClass:[NSImageView class]]) {
       if (view == [container_ buttonStripImageForTesting])
         hasButtonStripImage = true;
-      else if (view == [container_ saveInChromeTooltipForTesting])
-        hasCheckboxTooltip = true;
       else
         EXPECT_TRUE(false);  // Unknown image view; should not be reachable.
     } else if ([view isKindOfClass:[NSTextView class]]) {

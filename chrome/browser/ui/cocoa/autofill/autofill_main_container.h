@@ -15,6 +15,7 @@
 @class AutofillDialogWindowController;
 @class AutofillNotificationContainer;
 @class AutofillSectionContainer;
+@class AutofillTooltipController;
 @class GTMWidthBasedTweaker;
 @class HyperlinkTextView;
 
@@ -31,7 +32,7 @@ namespace autofill {
   base::scoped_nsobject<GTMWidthBasedTweaker> buttonContainer_;
   base::scoped_nsobject<NSImageView> buttonStripImage_;
   base::scoped_nsobject<NSButton> saveInChromeCheckbox_;
-  base::scoped_nsobject<NSImageView> saveInChromeTooltip_;
+  base::scoped_nsobject<AutofillTooltipController> saveInChromeTooltip_;
   base::scoped_nsobject<AutofillDetailsContainer> detailsContainer_;
   base::scoped_nsobject<HyperlinkTextView> legalDocumentsView_;
   base::scoped_nsobject<AutofillNotificationContainer> notificationContainer_;

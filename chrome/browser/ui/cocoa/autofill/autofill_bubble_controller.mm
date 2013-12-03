@@ -24,6 +24,14 @@ const CGFloat kMaxLabelWidth =
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                    message:(NSString*)message {
+  return [self initWithParentWindow:parentWindow
+                            message:message
+                              inset:NSMakeSize(kLabelInset, kLabelInset)];
+}
+
+- (id)initWithParentWindow:(NSWindow*)parentWindow
+                   message:(NSString*)message
+                     inset:(NSSize)inset {
   base::scoped_nsobject<InfoBubbleWindow> window(
       [[InfoBubbleWindow alloc] initWithContentRect:NSMakeRect(0, 0, 200, 100)
                                           styleMask:NSBorderlessWindowMask
@@ -33,6 +41,7 @@ const CGFloat kMaxLabelWidth =
   if ((self = [super initWithWindow:window
                        parentWindow:parentWindow
                          anchoredAt:NSZeroPoint])) {
+    inset_ = inset;
     [self setShouldOpenAsKeyWindow:NO];
     [[self bubble] setArrowLocation:info_bubble::kTopCenter];
     [[self bubble] setAlignment:info_bubble::kAlignArrowToAnchor];
@@ -42,7 +51,7 @@ const CGFloat kMaxLabelWidth =
     [label_ setBordered:NO];
     [label_ setDrawsBackground:NO];
     [label_ setStringValue:message];
-    NSRect labelFrame = NSMakeRect(kLabelInset, kLabelInset, 0, 0);
+    NSRect labelFrame = NSMakeRect(inset.width, inset.height, 0, 0);
     labelFrame.size = [[label_ cell] cellSizeForBounds:
         NSMakeRect(0, 0, kMaxLabelWidth, CGFLOAT_MAX)];
     [label_ setFrame:labelFrame];
@@ -52,14 +61,14 @@ const CGFloat kMaxLabelWidth =
     windowFrame.size = NSMakeSize(
         NSMaxX([label_ frame]),
         NSHeight([label_ frame]) + info_bubble::kBubbleArrowHeight);
-    windowFrame = NSInsetRect(windowFrame, -kLabelInset, -kLabelInset);
+    windowFrame = NSInsetRect(windowFrame, -inset.width, -inset.height);
     [[self window] setFrame:windowFrame display:NO];
   }
   return self;
 }
 
 - (CGFloat)maxWidth {
-  return kMaxLabelWidth + 2 * kLabelInset;
+  return kMaxLabelWidth + 2 * inset_.width;
 }
 
 @end
