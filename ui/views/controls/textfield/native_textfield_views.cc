@@ -180,6 +180,11 @@ void NativeTextfieldViews::OnGestureEvent(ui::GestureEvent* event) {
       OnAfterUserAction();
       event->SetHandled();
       break;
+    case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START:
+      CreateTouchSelectionControllerAndNotifyIt();
+      event->SetHandled();
+      break;
     case ui::ET_GESTURE_TAP:
       if (event->details().tap_count() == 1) {
         CreateTouchSelectionControllerAndNotifyIt();

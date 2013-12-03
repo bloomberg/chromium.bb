@@ -99,9 +99,10 @@ class GetTextHelper {
 // Convenience to make constructing a GestureEvent simpler.
 class GestureEventForTest : public ui::GestureEvent {
  public:
-  GestureEventForTest(ui::EventType type, int x, int y, int flags)
-      : GestureEvent(type, x, y, flags, base::TimeDelta(),
-                     ui::GestureEventDetails(type, 0.0f, 0.0f), 0) {
+  GestureEventForTest(ui::EventType type, int x, int y, float delta_x,
+                      float delta_y)
+      : GestureEvent(type, x, y, 0, base::TimeDelta(),
+                     ui::GestureEventDetails(type, delta_x, delta_y), 0) {
   }
 
  private:
@@ -1836,9 +1837,7 @@ TEST_F(NativeTextfieldViewsTest, TouchSelectionAndDraggingTest) {
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableTouchEditing);
 
   // Tapping on the textfield should turn on the TouchSelectionController.
-  ui::GestureEvent tap(ui::ET_GESTURE_TAP, eventX, eventY, 0, base::TimeDelta(),
-                       ui::GestureEventDetails(ui::ET_GESTURE_TAP, 1.0f, 0.0f),
-                       0);
+  GestureEventForTest tap(ui::ET_GESTURE_TAP, eventX, eventY, 1.0f, 0.0f);
   textfield_view_->OnGestureEvent(&tap);
   EXPECT_TRUE(GetTouchSelectionController());
 
@@ -1848,9 +1847,11 @@ TEST_F(NativeTextfieldViewsTest, TouchSelectionAndDraggingTest) {
 
   // With touch editing enabled, long press should not show context menu.
   // Instead, select word and invoke TouchSelectionController.
-  GestureEventForTest tap_down(ui::ET_GESTURE_TAP_DOWN, eventX, eventY, 0);
+  GestureEventForTest tap_down(ui::ET_GESTURE_TAP_DOWN, eventX, eventY, 0.0f,
+      0.0f);
   textfield_view_->OnGestureEvent(&tap_down);
-  GestureEventForTest long_press(ui::ET_GESTURE_LONG_PRESS, eventX, eventY, 0);
+  GestureEventForTest long_press(ui::ET_GESTURE_LONG_PRESS, eventX, eventY,
+      0.0f, 0.0f);
   textfield_view_->OnGestureEvent(&long_press);
   EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
   EXPECT_TRUE(GetTouchSelectionController());
@@ -1870,10 +1871,51 @@ TEST_F(NativeTextfieldViewsTest, TouchSelectionAndDraggingTest) {
   textfield_view_->OnGestureEvent(&tap_down);
 
   // Create a new long press event since the previous one is not marked handled.
-  GestureEventForTest long_press2(ui::ET_GESTURE_LONG_PRESS, eventX, eventY, 0);
+  GestureEventForTest long_press2(ui::ET_GESTURE_LONG_PRESS, eventX, eventY,
+      0.0f, 0.0f);
   textfield_view_->OnGestureEvent(&long_press2);
   EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
   EXPECT_FALSE(GetTouchSelectionController());
+}
+
+TEST_F(NativeTextfieldViewsTest, TouchScrubbingSelection) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  textfield_->SetText(ASCIIToUTF16("hello world"));
+  EXPECT_FALSE(GetTouchSelectionController());
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(switches::kEnableTouchEditing);
+
+  // Simulate touch-scrubbing.
+  int scrubbing_start = GetCursorPositionX(1);
+  int scrubbing_end = GetCursorPositionX(6);
+
+  GestureEventForTest tap_down(ui::ET_GESTURE_TAP_DOWN, scrubbing_start, 0,
+                               0.0f, 0.0f);
+  textfield_view_->OnGestureEvent(&tap_down);
+
+  GestureEventForTest tap_cancel(ui::ET_GESTURE_TAP_CANCEL, scrubbing_start, 0,
+                                 0.0f, 0.0f);
+  textfield_view_->OnGestureEvent(&tap_cancel);
+
+  GestureEventForTest scroll_begin(ui::ET_GESTURE_SCROLL_BEGIN, scrubbing_start,
+                                   0, 0.0f, 0.0f);
+  textfield_view_->OnGestureEvent(&scroll_begin);
+
+  GestureEventForTest scroll_update(ui::ET_GESTURE_SCROLL_UPDATE, scrubbing_end,
+                                    0, scrubbing_end - scrubbing_start, 0.0f);
+  textfield_view_->OnGestureEvent(&scroll_update);
+
+  GestureEventForTest scroll_end(ui::ET_GESTURE_SCROLL_END, scrubbing_end, 0,
+                                 0.0f, 0.0f);
+  textfield_view_->OnGestureEvent(&scroll_end);
+
+  GestureEventForTest end(ui::ET_GESTURE_END, scrubbing_end, 0, 0.0f, 0.0f);
+  textfield_view_->OnGestureEvent(&end);
+
+  // In the end, part of text should have been selected and handles should have
+  // appeared.
+  EXPECT_STR_EQ("ello ", textfield_->GetSelectedText());
+  EXPECT_TRUE(GetTouchSelectionController());
 }
 #endif
 
@@ -1891,8 +1933,8 @@ TEST_F(NativeTextfieldViewsTest, TestLongPressInitiatesDragDrop) {
       switches::kEnableTouchDragDrop);
 
   // Create a long press event in the selected region should start a drag.
-  GestureEventForTest long_press(ui::ET_GESTURE_LONG_PRESS,
-      kStringPoint.x(), kStringPoint.y(), 0);
+  GestureEventForTest long_press(ui::ET_GESTURE_LONG_PRESS, kStringPoint.x(),
+                                 kStringPoint.y(), 0.0f, 0.0f);
   textfield_view_->OnGestureEvent(&long_press);
   EXPECT_TRUE(textfield_view_->CanStartDragForView(NULL,
       kStringPoint, kStringPoint));
