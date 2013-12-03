@@ -101,7 +101,7 @@ body {
 }
 
 #more-info-container {
-  -webkit-transition: all 500ms linear;
+  -webkit-transition: all 200ms;
   height: 0;
   margin-bottom: 0;
   overflow: hidden;
