@@ -52,6 +52,7 @@ static const size_t kSuperPageBaseMask = ~kSuperPageOffsetMask;
 // permissions and commit / decommit at this granularity.
 static const size_t kSystemPageSize = 4096;
 static const size_t kSystemPageOffsetMask = kSystemPageSize - 1;
+static const size_t kSystemPageBaseMask = ~kSystemPageOffsetMask;
 
 static const size_t kNumSystemPagesPerSuperPage = kSuperPageSize / kSystemPageSize;
 

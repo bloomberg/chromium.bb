@@ -37,13 +37,14 @@
 #include <stdio.h>
 #endif
 
-COMPILE_ASSERT(WTF::kPartitionPageSize * 4 <= WTF::kSuperPageSize, ok_partition_page_size);
-COMPILE_ASSERT(!(WTF::kSuperPageSize % WTF::kPartitionPageSize), ok_partition_page_multiple);
-// Four sub-partition pages gives us room to hack out a still-guard-paged piece // of metadata in the middle of a guard partition page.
-COMPILE_ASSERT(WTF::kSubPartitionPageSize * 4 <= WTF::kPartitionPageSize, ok_sub_partition_page_size);
-COMPILE_ASSERT(!(WTF::kPartitionPageSize % WTF::kSubPartitionPageSize), ok_sub_partition_page_multiple);
-COMPILE_ASSERT(sizeof(WTF::PartitionPage) <= WTF::kPartitionPageHeaderSize, PartitionPage_not_too_big);
-COMPILE_ASSERT(!(WTF::kPartitionPageHeaderSize % sizeof(void*)), PartitionPage_size_should_be_multiple_of_pointer_size);
+COMPILE_ASSERT(WTF::kPartitionPageSize * 4 <= WTF::kSuperPageSize, ok_super_page_size);
+COMPILE_ASSERT(!(WTF::kSuperPageSize % WTF::kPartitionPageSize), ok_super_page_multiple);
+// Four system pages gives us room to hack out a still-guard-paged piece
+// of metadata in the middle of a guard partition page.
+COMPILE_ASSERT(WTF::kSystemPageSize * 4 <= WTF::kPartitionPageSize, ok_partition_page_size);
+COMPILE_ASSERT(!(WTF::kPartitionPageSize % WTF::kSystemPageSize), ok_partition_page_multiple);
+COMPILE_ASSERT(sizeof(WTF::PartitionPage) <= WTF::kPartitionPageHeaderSize, PartitionPageHeader_not_too_big);
+COMPILE_ASSERT(!(WTF::kPartitionPageHeaderSize % sizeof(void*)), PartitionPageHeader_size_should_be_multiple_of_pointer_size);
 
 namespace WTF {
 
@@ -51,13 +52,13 @@ static size_t partitionBucketPageSize(size_t size)
 {
     double bestWasteRatio = 1.0f;
     size_t bestPages = 0;
-    for (size_t i = kNumSubPagesPerPartitionPage - 1; i <= kNumSubPagesPerPartitionPage; ++i) {
-        size_t pageSize = kSubPartitionPageSize * i;
+    for (size_t i = kNumSystemPagesPerPartitionPage - 1; i <= kNumSystemPagesPerPartitionPage; ++i) {
+        size_t pageSize = kSystemPageSize * i;
         size_t numSlots = (pageSize - kPartitionPageHeaderSize) / size;
         size_t waste = pageSize - (numSlots * size);
         // Leave a page unfaulted is not free; the page will occupy an empty page table entry.
         // Make a simple attempt to account for that.
-        waste += sizeof(void*) * (kNumSubPagesPerPartitionPage - i);
+        waste += sizeof(void*) * (kNumSystemPagesPerPartitionPage - i);
         double wasteRatio = (double) waste / (double) pageSize;
         if (wasteRatio < bestWasteRatio) {
             bestWasteRatio = wasteRatio;
@@ -65,7 +66,7 @@ static size_t partitionBucketPageSize(size_t size)
         }
     }
     ASSERT(bestPages > 0);
-    return bestPages * kSubPartitionPageSize;
+    return bestPages * kSystemPageSize;
 }
 
 WTF_EXPORT void partitionAllocInit(PartitionRoot* root, size_t numBuckets, size_t maxAllocation)
@@ -210,8 +211,8 @@ static ALWAYS_INLINE PartitionPage* partitionAllocPage(PartitionRoot* root)
     if (needsGuard) {
         // Leave a writeable hole in the middle of the guard partition page.
         // We'll only fault it if we need to create a new super page extent, in which case it will used to maintain a singly linked list of super page extents.
-        setSystemPagesInaccessible(superPage, kSubPartitionPageSize);
-        setSystemPagesInaccessible(superPage + (kPartitionPageSize - kSubPartitionPageSize), kSubPartitionPageSize);
+        setSystemPagesInaccessible(superPage, kSystemPageSize);
+        setSystemPagesInaccessible(superPage + (kPartitionPageSize - kSystemPageSize), kSystemPageSize);
         ret += kPartitionPageSize;
     }
     root->nextPartitionPage = ret + kPartitionPageSize;
@@ -222,7 +223,7 @@ static ALWAYS_INLINE PartitionPage* partitionAllocPage(PartitionRoot* root)
     if (UNLIKELY(needsGuard)) {
         if (currentExtent->superPageBase) {
             // We already have a super page, so need to allocate metadata in the linked list.
-            PartitionSuperPageExtentEntry* newEntry = reinterpret_cast<PartitionSuperPageExtentEntry*>(currentExtent->superPageBase + kSubPartitionPageSize);
+            PartitionSuperPageExtentEntry* newEntry = reinterpret_cast<PartitionSuperPageExtentEntry*>(currentExtent->superPageBase + kSystemPageSize);
             newEntry->next = 0;
             currentExtent->next = newEntry;
             currentExtent = newEntry;
@@ -277,7 +278,7 @@ static ALWAYS_INLINE char* partitionPageAllocAndFillFreelist(PartitionPage* page
     char* base = reinterpret_cast<char*>(page);
     char* returnObject = base + kPartitionPageHeaderSize + (size * page->numAllocatedSlots);
     char* nextFreeObject = returnObject + size;
-    char* subPageLimit = reinterpret_cast<char*>((reinterpret_cast<uintptr_t>(returnObject) + kSubPartitionPageMask) & ~kSubPartitionPageMask);
+    char* subPageLimit = reinterpret_cast<char*>((reinterpret_cast<uintptr_t>(returnObject) + kSystemPageSize) & kSystemPageBaseMask);
 
     size_t numNewFreelistEntries = 0;
     if (LIKELY(subPageLimit > nextFreeObject))
@@ -559,7 +560,7 @@ void partitionDumpStats(const PartitionRoot& root)
                 numActiveBytes += (page->numAllocatedSlots * bucketSlotSize);
                 size_t pageBytesResident = ((bucketNumSlots - page->numUnprovisionedSlots) * bucketSlotSize) + kPartitionPageHeaderSize;
                 // Round up to sub page size.
-                pageBytesResident = (pageBytesResident + kSubPartitionPageMask) & ~kSubPartitionPageMask;
+                pageBytesResident = (pageBytesResident + kSystemPageOffsetMask) & kSystemPageBaseMask;
                 numResidentBytes += pageBytesResident;
                 if (!page->numAllocatedSlots)
                     numFreeableBytes += pageBytesResident;

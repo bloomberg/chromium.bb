@@ -467,7 +467,7 @@ TEST(WTF_PartitionAlloc, PartialPageFreelists)
     TestSetup();
 
     size_t bigSize = allocator.root()->maxAllocation - kExtraAllocSize;
-    EXPECT_EQ(WTF::kSubPartitionPageSize - WTF::kAllocationGranularity, bigSize + kExtraAllocSize);
+    EXPECT_EQ(WTF::kSystemPageSize - WTF::kAllocationGranularity, bigSize + kExtraAllocSize);
     size_t bucketIdx = (bigSize + kExtraAllocSize) >> WTF::kBucketShift;
     WTF::PartitionBucket* bucket = &allocator.root()->buckets()[bucketIdx];
     EXPECT_EQ(0, bucket->freePages);
@@ -511,8 +511,8 @@ TEST(WTF_PartitionAlloc, PartialPageFreelists)
     EXPECT_TRUE(page2->freelistHead);
     EXPECT_EQ(0, page2->numAllocatedSlots);
 
-    // And test a couple of sizes that do not cross kSubPartitionPageSize with a single allocation.
-    size_t mediumSize = WTF::kSubPartitionPageSize / 2;
+    // And test a couple of sizes that do not cross kSystemPageSize with a single allocation.
+    size_t mediumSize = WTF::kSystemPageSize / 2;
     bucketIdx = (mediumSize + kExtraAllocSize) >> WTF::kBucketShift;
     bucket = &allocator.root()->buckets()[bucketIdx];
     EXPECT_EQ(0, bucket->freePages);
@@ -525,7 +525,7 @@ TEST(WTF_PartitionAlloc, PartialPageFreelists)
 
     partitionFree(ptr);
 
-    size_t smallSize = WTF::kSubPartitionPageSize / 4;
+    size_t smallSize = WTF::kSystemPageSize / 4;
     bucketIdx = (smallSize + kExtraAllocSize) >> WTF::kBucketShift;
     bucket = &allocator.root()->buckets()[bucketIdx];
     EXPECT_EQ(0, bucket->freePages);
@@ -535,7 +535,7 @@ TEST(WTF_PartitionAlloc, PartialPageFreelists)
     page = reinterpret_cast<WTF::PartitionPage*>(reinterpret_cast<size_t>(ptr) & WTF::kPartitionPageBaseMask);
     EXPECT_EQ(1, page->numAllocatedSlots);
     size_t totalSlots = (WTF::kPartitionPageSize - WTF::kPartitionPageHeaderSize) / (smallSize + kExtraAllocSize);
-    size_t firstPageSlots = (WTF::kSubPartitionPageSize - WTF::kPartitionPageHeaderSize) / (smallSize + kExtraAllocSize);
+    size_t firstPageSlots = (WTF::kSystemPageSize - WTF::kPartitionPageHeaderSize) / (smallSize + kExtraAllocSize);
     EXPECT_EQ(totalSlots - firstPageSlots, page->numUnprovisionedSlots);
 
     partitionFree(ptr);
@@ -552,7 +552,7 @@ TEST(WTF_PartitionAlloc, PartialPageFreelists)
     page = reinterpret_cast<WTF::PartitionPage*>(reinterpret_cast<size_t>(ptr) & WTF::kPartitionPageBaseMask);
     EXPECT_EQ(1, page->numAllocatedSlots);
     totalSlots = (WTF::kPartitionPageSize - WTF::kPartitionPageHeaderSize) / (verySmallSize + kExtraAllocSize);
-    firstPageSlots = (WTF::kSubPartitionPageSize - WTF::kPartitionPageHeaderSize) / (verySmallSize + kExtraAllocSize);
+    firstPageSlots = (WTF::kSystemPageSize - WTF::kPartitionPageHeaderSize) / (verySmallSize + kExtraAllocSize);
     EXPECT_EQ(totalSlots - firstPageSlots, page->numUnprovisionedSlots);
 
     partitionFree(ptr);

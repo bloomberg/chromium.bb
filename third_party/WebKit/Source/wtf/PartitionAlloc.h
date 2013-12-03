@@ -129,15 +129,12 @@ static const size_t kPartitionPageBaseMask = ~kPartitionPageOffsetMask;
 // to other bucketing allocators such as tcmalloc.
 static const size_t kPartitionPageHeaderSize = 64;
 // To avoid fragmentation via never-used freelist entries, we hand out partition
-// freelist sections gradually, in units that resemble the dominant system page
-// size.
+// freelist sections gradually, in units of the dominant system page size.
 // What we're actually doing is avoiding filling the full partition page
 // (typically 16KB) will freelist pointers right away. Writing freelist
 // pointers will fault and dirty a private page, which is very wasteful if we
 // never actually store objects there.
-static const size_t kSubPartitionPageSize = 1 << 12; // 4KB
-static const size_t kSubPartitionPageMask = kSubPartitionPageSize - 1;
-static const size_t kNumSubPagesPerPartitionPage = kPartitionPageSize / kSubPartitionPageSize;
+static const size_t kNumSystemPagesPerPartitionPage = kPartitionPageSize / kSystemPageSize;
 // Special bucket id for internal metadata.
 static const size_t kInternalMetadataBucket = 0;
 
