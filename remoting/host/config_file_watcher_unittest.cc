@@ -73,6 +73,8 @@ void ConfigFileWatcherTest::StopWatcher() {
 }
 
 void ConfigFileWatcherTest::SetUp() {
+  EXPECT_TRUE(base::CreateTemporaryFile(&config_file_));
+
   // Arrange to run |message_loop_| until no components depend on it.
   scoped_refptr<AutoThreadTaskRunner> task_runner = new AutoThreadTaskRunner(
       message_loop_.message_loop_proxy(), run_loop_.QuitClosure());
@@ -83,7 +85,7 @@ void ConfigFileWatcherTest::SetUp() {
 
   // Create an instance of the config watcher.
   watcher_.reset(
-      new ConfigFileWatcher(task_runner, io_task_runner, &delegate_));
+      new ConfigFileWatcher(task_runner, io_task_runner, config_file_));
 }
 
 void ConfigFileWatcherTest::TearDown() {
@@ -94,8 +96,6 @@ void ConfigFileWatcherTest::TearDown() {
 
 // Verifies that the initial notification is delivered.
 TEST_F(ConfigFileWatcherTest, Basic) {
-  EXPECT_TRUE(base::CreateTemporaryFile(&config_file_));
-
   std::string data("test");
   EXPECT_NE(file_util::WriteFile(config_file_, data.c_str(),
                                  static_cast<int>(data.size())), -1);
@@ -106,7 +106,7 @@ TEST_F(ConfigFileWatcherTest, Basic) {
   EXPECT_CALL(delegate_, OnConfigWatcherError())
       .Times(0);
 
-  watcher_->Watch(config_file_);
+  watcher_->Watch(&delegate_);
   run_loop_.Run();
 }
 
@@ -116,15 +116,13 @@ MATCHER_P(EqualsString, s, "") {
 
 // Verifies that an update notification is sent when the file is changed.
 TEST_F(ConfigFileWatcherTest, Update) {
-  EXPECT_TRUE(base::CreateTemporaryFile(&config_file_));
-
   EXPECT_CALL(delegate_, OnConfigUpdated(EqualsString("test")))
       .Times(1)
       .WillOnce(InvokeWithoutArgs(this, &ConfigFileWatcherTest::StopWatcher));
   EXPECT_CALL(delegate_, OnConfigWatcherError())
       .Times(0);
 
-  watcher_->Watch(config_file_);
+  watcher_->Watch(&delegate_);
 
   // Modify the watched file.
   std::string data("test");

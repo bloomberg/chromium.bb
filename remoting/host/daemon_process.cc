@@ -4,6 +4,9 @@
 
 #include "remoting/host/daemon_process.h"
 
+#include <algorithm>
+#include <string>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -13,8 +16,10 @@
 #include "base/single_thread_task_runner.h"
 #include "net/base/net_util.h"
 #include "remoting/base/auto_thread_task_runner.h"
+#include "remoting/base/url_request_context.h"
 #include "remoting/host/branding.h"
 #include "remoting/host/chromoting_messages.h"
+#include "remoting/host/config_file_watcher.h"
 #include "remoting/host/desktop_session.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_status_observer.h"
@@ -254,20 +259,17 @@ void DaemonProcess::CrashNetworkProcess(
 void DaemonProcess::Initialize() {
   DCHECK(caller_task_runner()->BelongsToCurrentThread());
 
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
   // Get the name of the host configuration file.
   base::FilePath default_config_dir = remoting::GetConfigDir();
-  base::FilePath config_path = default_config_dir.Append(kDefaultHostConfigFile);
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  base::FilePath config_path = default_config_dir.Append(
+      kDefaultHostConfigFile);
   if (command_line->HasSwitch(kHostConfigSwitchName)) {
     config_path = command_line->GetSwitchValuePath(kHostConfigSwitchName);
   }
-
-  // Start watching the host configuration file.
-  config_watcher_.reset(new ConfigFileWatcher(caller_task_runner(),
-                                              io_task_runner(),
-                                              this));
-  config_watcher_->Watch(config_path);
-
+  config_watcher_.reset(new ConfigFileWatcher(
+      caller_task_runner(), io_task_runner(), config_path));
+  config_watcher_->Watch(this);
   host_event_logger_ =
       HostEventLogger::Create(weak_factory_.GetWeakPtr(), kApplicationName);
 

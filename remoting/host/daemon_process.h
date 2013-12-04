@@ -6,6 +6,7 @@
 #define REMOTING_HOST_DAEMON_PROCESS_H_
 
 #include <list>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -17,7 +18,7 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_platform_file.h"
-#include "remoting/host/config_file_watcher.h"
+#include "remoting/host/config_watcher.h"
 #include "remoting/host/host_status_monitor.h"
 #include "remoting/host/worker_process_ipc_delegate.h"
 
@@ -39,7 +40,7 @@ class ScreenResolution;
 // process running at lower privileges and maintains the list of desktop
 // sessions.
 class DaemonProcess
-    : public ConfigFileWatcher::Delegate,
+    : public ConfigWatcher::Delegate,
       public HostStatusMonitor,
       public WorkerProcessIpcDelegate {
  public:
@@ -56,7 +57,7 @@ class DaemonProcess
       scoped_refptr<AutoThreadTaskRunner> io_task_runner,
       const base::Closure& stopped_callback);
 
-  // ConfigFileWatcher::Delegate
+  // ConfigWatcher::Delegate
   virtual void OnConfigUpdated(const std::string& serialized_config) OVERRIDE;
   virtual void OnConfigWatcherError() OVERRIDE;
 
@@ -162,7 +163,7 @@ class DaemonProcess
   // Handles IPC and background I/O tasks.
   scoped_refptr<AutoThreadTaskRunner> io_task_runner_;
 
-  scoped_ptr<ConfigFileWatcher> config_watcher_;
+  scoped_ptr<ConfigWatcher> config_watcher_;
 
   // The configuration file contents.
   std::string serialized_config_;
