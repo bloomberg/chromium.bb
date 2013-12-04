@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/password_manager/password_manager_util.h"
+
 namespace password_manager_util {
 
-bool AuthenticateUser() {
+bool AuthenticateUser(gfx::NativeWindow window) {
   return true;
 }
 

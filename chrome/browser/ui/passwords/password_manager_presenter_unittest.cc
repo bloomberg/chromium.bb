@@ -23,6 +23,9 @@ class MockPasswordUIView : public PasswordUIView {
   }
   virtual ~MockPasswordUIView() {}
   virtual Profile* GetProfile() OVERRIDE;
+#if !defined(OS_ANDROID)
+  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
+#endif
   MOCK_METHOD2(ShowPassword, void(size_t, const string16&));
   MOCK_METHOD2(SetPasswordList,
                void(const ScopedVector<autofill::PasswordForm>&, bool));
@@ -39,6 +42,9 @@ class MockPasswordUIView : public PasswordUIView {
   DISALLOW_COPY_AND_ASSIGN(MockPasswordUIView);
 };
 
+#if !defined(OS_ANDROID)
+gfx::NativeWindow MockPasswordUIView::GetNativeWindow() { return NULL; }
+#endif
 Profile* MockPasswordUIView::GetProfile() { return profile_; }
 
 class PasswordManagerPresenterTest : public testing::Test {

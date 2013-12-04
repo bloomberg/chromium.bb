@@ -37,7 +37,9 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
   virtual void SetPasswordExceptionList(
       const ScopedVector<autofill::PasswordForm>& password_exception_list)
       OVERRIDE;
-
+#if !defined(OS_ANDROID)
+  virtual gfx::NativeWindow GetNativeWindow() OVERRIDE;
+#endif
  private:
   // Clears and then populates the list of passwords and password exceptions.
   // Called when the JS PasswordManager object is initialized.

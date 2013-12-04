@@ -2626,4 +2626,13 @@ const char kNetworkTimeMapping[] = "profile.network_time_mapping";
 const char kPartnerBookmarkMappings[] = "partnerbookmarks.mappings";
 #endif
 
+#if defined(OS_WIN)
+// Whether the password was blank, only valid if OS password was last changed
+// on or before the value contained in kOsPasswordLastChanged.
+const char kOsPasswordBlank[] = "password_manager.os_password_blank";
+
+// The number of seconds since epoch that the OS password was last changed.
+const char kOsPasswordLastChanged[] =
+    "password_manager.os_password_last_changed";
+#endif
 }  // namespace prefs

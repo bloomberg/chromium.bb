@@ -23,6 +23,7 @@
 class PasswordManagerDelegate;
 class PasswordManagerTest;
 class PasswordFormManager;
+class PrefRegistrySimple;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -37,7 +38,9 @@ class PasswordManager : public LoginModel,
                         public content::WebContentsUserData<PasswordManager> {
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-
+#if defined(OS_WIN)
+  static void RegisterLocalPrefs(PrefRegistrySimple* registry);
+#endif
   static void CreateForWebContentsAndDelegate(
       content::WebContents* contents,
       PasswordManagerDelegate* delegate);

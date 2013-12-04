@@ -17,6 +17,8 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/browser/web_ui.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -33,6 +35,12 @@ PasswordManagerHandler::~PasswordManagerHandler() {}
 Profile* PasswordManagerHandler::GetProfile() {
   return Profile::FromWebUI(web_ui());
 }
+
+#if !defined(OS_ANDROID)
+gfx::NativeWindow PasswordManagerHandler::GetNativeWindow() {
+  return web_ui()->GetWebContents()->GetView()->GetTopLevelNativeWindow();
+}
+#endif
 
 void PasswordManagerHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {

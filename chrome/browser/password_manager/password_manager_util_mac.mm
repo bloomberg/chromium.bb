@@ -18,7 +18,7 @@
 
 namespace password_manager_util {
 
-bool AuthenticateUser() {
+bool AuthenticateUser(gfx::NativeWindow window) {
   AuthorizationItem right_items[] = {
     {"com.google.Chrome.show-passwords", 0, NULL, 0}
   };

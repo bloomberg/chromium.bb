@@ -2569,6 +2569,8 @@
               'odbc32.lib',
               'odbccp32.lib',
               'delayimp.lib',
+              'credui.lib',
+              'netapi32.lib',
             ],
           },
         },

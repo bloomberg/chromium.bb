@@ -502,6 +502,11 @@ Chromium is unable to recover your settings.
           Chromium is trying to show passwords.
         </message>
       </if>
+      <if expr="is_win">
+        <message name="IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT" desc="Text for the dialog box that prompts the user for their OS account password before revealing plaintext passwords on the password page.">
+          Chromium is trying to show passwords. Type your Windows password to allow this.
+        </message>
+      </if>
       <message name="IDS_CANT_WRITE_USER_DIRECTORY_EXIT_BUTTON" desc="Text on button of dialog that closes Chrome if we can't create a directory for this user.">
         Exit Chromium
       </message>

@@ -937,6 +937,11 @@ extern const char kNetworkTimeMapping[];
 extern const char kPartnerBookmarkMappings[];
 #endif
 
+#if defined(OS_WIN)
+extern const char kOsPasswordBlank[];
+extern const char kOsPasswordLastChanged[];
+#endif
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_
