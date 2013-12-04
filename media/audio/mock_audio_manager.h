@@ -67,6 +67,9 @@ class MockAudioManager : public media::AudioManager {
   virtual std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) OVERRIDE;
 
+  virtual scoped_ptr<AudioLog> CreateAudioLog(
+      AudioLogFactory::AudioComponent component) OVERRIDE;
+
   virtual void FixWedgedAudio() OVERRIDE;
 
  protected:

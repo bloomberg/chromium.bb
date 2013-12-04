@@ -220,8 +220,9 @@ static AudioDeviceID GetAudioDeviceIdByUId(bool is_input,
   return audio_device_id;
 }
 
-AudioManagerMac::AudioManagerMac()
-    : current_sample_rate_(0) {
+AudioManagerMac::AudioManagerMac(AudioLogFactory* audio_log_factory)
+    : AudioManagerBase(audio_log_factory),
+      current_sample_rate_(0) {
   current_output_device_ = kAudioDeviceUnknown;
 
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
@@ -742,8 +743,8 @@ int AudioManagerMac::ChooseBufferSize(int output_sample_rate) {
   return buffer_size;
 }
 
-AudioManager* CreateAudioManager() {
-  return new AudioManagerMac();
+AudioManager* CreateAudioManager(AudioLogFactory* audio_log_factory) {
+  return new AudioManagerMac(audio_log_factory);
 }
 
 }  // namespace media

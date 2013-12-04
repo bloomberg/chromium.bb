@@ -55,7 +55,7 @@ class AudioInputDeviceManagerTest : public testing::Test {
     message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
-    audio_manager_.reset(media::AudioManager::Create());
+    audio_manager_.reset(media::AudioManager::CreateForTesting());
     manager_ = new AudioInputDeviceManager(audio_manager_.get());
     audio_input_listener_.reset(new MockAudioInputDeviceManagerListener());
     manager_->Register(audio_input_listener_.get(),

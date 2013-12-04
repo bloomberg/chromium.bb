@@ -13,6 +13,10 @@
 #include "content/common/media/media_stream_options.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/audio/fake_audio_log_factory.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
 #if defined(USE_ALSA)
 #include "media/audio/alsa/audio_manager_alsa.h"
 #elif defined(OS_ANDROID)
@@ -24,8 +28,6 @@
 #else
 #include "media/audio/fake_audio_manager.h"
 #endif
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
 
@@ -49,7 +51,7 @@ typedef media::FakeAudioManager AudioManagerPlatform;
 // the buildbots. media::AudioManagerBase
 class MockAudioManager : public AudioManagerPlatform {
  public:
-  MockAudioManager() {}
+  MockAudioManager() : AudioManagerPlatform(&fake_audio_log_factory_) {}
   virtual ~MockAudioManager() {}
 
   virtual void GetAudioInputDeviceNames(
@@ -64,6 +66,7 @@ class MockAudioManager : public AudioManagerPlatform {
   }
 
  private:
+  media::FakeAudioLogFactory fake_audio_log_factory_;
   DISALLOW_COPY_AND_ASSIGN(MockAudioManager);
 };
 

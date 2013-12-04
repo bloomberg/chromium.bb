@@ -42,7 +42,7 @@ class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
 class AudioOutputStreamWrapper {
  public:
   explicit AudioOutputStreamWrapper()
-      : audio_man_(AudioManager::Create()),
+      : audio_man_(AudioManager::CreateForTesting()),
         format_(AudioParameters::AUDIO_PCM_LOW_LATENCY),
         bits_per_sample_(kBitsPerSample) {
     AudioParameters preferred_params =

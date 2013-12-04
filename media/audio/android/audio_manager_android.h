@@ -14,7 +14,7 @@ namespace media {
 // Android implemention of AudioManager.
 class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
  public:
-  AudioManagerAndroid();
+  AudioManagerAndroid(AudioLogFactory* audio_log_factory);
 
   // Implementation of AudioManager.
   virtual bool HasAudioOutputDevices() OVERRIDE;

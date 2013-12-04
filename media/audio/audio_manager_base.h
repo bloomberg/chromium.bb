@@ -115,10 +115,13 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   virtual std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) OVERRIDE;
 
+  virtual scoped_ptr<AudioLog> CreateAudioLog(
+      AudioLogFactory::AudioComponent component) OVERRIDE;
+
   virtual void FixWedgedAudio() OVERRIDE;
 
  protected:
-  AudioManagerBase();
+  AudioManagerBase(AudioLogFactory* audio_log_factory);
 
   // Shuts down the audio thread and releases all the audio output dispatchers
   // on the audio thread.  All audio streams should be freed before Shutdown()
@@ -192,6 +195,9 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   // Map of cached AudioOutputDispatcher instances.  Must only be touched
   // from the audio thread (no locking).
   AudioOutputDispatchers output_dispatchers_;
+
+  // Proxy for creating AudioLog objects.
+  AudioLogFactory* const audio_log_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioManagerBase);
 };

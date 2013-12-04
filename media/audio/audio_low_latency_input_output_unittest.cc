@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/audio/fake_audio_log_factory.h"
 #include "media/base/seekable_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,7 +85,7 @@ struct AudioDelayState {
 // the main thread instead of the audio thread.
 class MockAudioManager : public AudioManagerAnyPlatform {
  public:
-  MockAudioManager() {}
+  MockAudioManager() : AudioManagerAnyPlatform(&fake_audio_log_factory_) {}
   virtual ~MockAudioManager() {}
 
   virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() OVERRIDE {
@@ -92,6 +93,7 @@ class MockAudioManager : public AudioManagerAnyPlatform {
   }
 
  private:
+  FakeAudioLogFactory fake_audio_log_factory_;
   DISALLOW_COPY_AND_ASSIGN(MockAudioManager);
 };
 

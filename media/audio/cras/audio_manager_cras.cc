@@ -38,7 +38,8 @@ bool AudioManagerCras::HasAudioInputDevices() {
   return true;
 }
 
-AudioManagerCras::AudioManagerCras() {
+AudioManagerCras::AudioManagerCras(AudioLogFactory* audio_log_factory)
+    : AudioManagerBase(audio_log_factory) {
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
 }
 

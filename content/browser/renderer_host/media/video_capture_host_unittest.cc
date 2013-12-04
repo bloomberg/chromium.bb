@@ -247,7 +247,7 @@ class VideoCaptureHostTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     SetBrowserClientForTesting(&browser_client_);
     // Create our own MediaStreamManager.
-    audio_manager_.reset(media::AudioManager::Create());
+    audio_manager_.reset(media::AudioManager::CreateForTesting());
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
 #ifndef TEST_REAL_CAPTURE_DEVICE
     media_stream_manager_->UseFakeDevice();

@@ -127,7 +127,8 @@ static int NumberOfWaveOutBuffers() {
   return (base::win::GetVersion() == base::win::VERSION_VISTA) ? 4 : 3;
 }
 
-AudioManagerWin::AudioManagerWin() {
+AudioManagerWin::AudioManagerWin(AudioLogFactory* audio_log_factory)
+    : AudioManagerBase(audio_log_factory) {
   if (!CoreAudioUtil::IsSupported()) {
     // Use the Wave API for device enumeration if XP or lower.
     enumeration_type_ = kWaveEnumeration;
@@ -524,8 +525,8 @@ AudioInputStream* AudioManagerWin::CreatePCMWaveInAudioInputStream(
 }
 
 /// static
-AudioManager* CreateAudioManager() {
-  return new AudioManagerWin();
+AudioManager* CreateAudioManager(AudioLogFactory* audio_log_factory) {
+  return new AudioManagerWin(audio_log_factory);
 }
 
 }  // namespace media

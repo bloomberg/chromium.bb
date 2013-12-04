@@ -80,7 +80,7 @@ TEST_F(AudioInputControllerTest, CreateAndClose) {
   EXPECT_CALL(event_handler, OnCreated(NotNull()))
       .WillOnce(QuitMessageLoop(&message_loop_));
 
-  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   AudioParameters params(AudioParameters::AUDIO_FAKE, kChannelLayout,
                          kSampleRate, kBitsPerSample, kSamplesPerPacket);
 
@@ -118,7 +118,7 @@ TEST_F(AudioInputControllerTest, RecordAndClose) {
       .WillRepeatedly(CheckCountAndPostQuitTask(&count, 10,
           message_loop_.message_loop_proxy()));
 
-  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   AudioParameters params(AudioParameters::AUDIO_FAKE, kChannelLayout,
                          kSampleRate, kBitsPerSample, kSamplesPerPacket);
 
@@ -168,7 +168,7 @@ TEST_F(AudioInputControllerTest, RecordAndError) {
       .Times(Exactly(1))
       .WillOnce(QuitMessageLoop(&message_loop_));
 
-  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   AudioParameters params(AudioParameters::AUDIO_FAKE, kChannelLayout,
                          kSampleRate, kBitsPerSample, kSamplesPerPacket);
 
@@ -205,7 +205,7 @@ TEST_F(AudioInputControllerTest, SamplesPerPacketTooLarge) {
   EXPECT_CALL(event_handler, OnCreated(NotNull()))
     .Times(Exactly(0));
 
-  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   AudioParameters params(AudioParameters::AUDIO_FAKE,
                          kChannelLayout,
                          kSampleRate,
@@ -231,7 +231,7 @@ TEST_F(AudioInputControllerTest, CloseTwice) {
   EXPECT_CALL(event_handler, OnRecording(NotNull()))
       .Times(Exactly(1));
 
-  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   AudioParameters params(AudioParameters::AUDIO_FAKE,
                          kChannelLayout,
                          kSampleRate,

@@ -25,7 +25,7 @@ class AudioStreamHandlerTest : public testing::Test {
   virtual ~AudioStreamHandlerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    audio_manager_.reset(AudioManager::Create());
+    audio_manager_.reset(AudioManager::CreateForTesting());
 
     base::StringPiece data(kTestAudioData, arraysize(kTestAudioData));
     audio_stream_handler_.reset(new AudioStreamHandler(data));

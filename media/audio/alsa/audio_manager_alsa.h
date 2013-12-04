@@ -17,7 +17,7 @@ class AlsaWrapper;
 
 class MEDIA_EXPORT AudioManagerAlsa : public AudioManagerBase {
  public:
-  AudioManagerAlsa();
+  AudioManagerAlsa(AudioLogFactory* audio_log_factory);
 
   static void ShowLinuxAudioInputSettings();
 

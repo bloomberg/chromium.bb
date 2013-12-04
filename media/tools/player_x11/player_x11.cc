@@ -245,7 +245,8 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  scoped_ptr<media::AudioManager> audio_manager(media::AudioManager::Create());
+  scoped_ptr<media::AudioManager> audio_manager(
+      media::AudioManager::CreateForTesting());
   g_audio_manager = audio_manager.get();
 
   logging::LoggingSettings settings;

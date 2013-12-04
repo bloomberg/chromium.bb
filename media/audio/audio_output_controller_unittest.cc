@@ -93,7 +93,7 @@ ACTION(PopulateBuffer) {
 class AudioOutputControllerTest : public testing::Test {
  public:
   AudioOutputControllerTest()
-      : audio_manager_(AudioManager::Create()),
+      : audio_manager_(AudioManager::CreateForTesting()),
         create_event_(false, false),
         play_event_(false, false),
         read_event_(false, false),

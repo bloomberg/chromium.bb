@@ -15,7 +15,7 @@ namespace media {
 
 class MEDIA_EXPORT AudioManagerCras : public AudioManagerBase {
  public:
-  AudioManagerCras();
+  AudioManagerCras(AudioLogFactory* audio_log_factory);
 
   // AudioManager implementation.
   virtual bool HasAudioOutputDevices() OVERRIDE;

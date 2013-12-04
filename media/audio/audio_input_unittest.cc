@@ -77,7 +77,7 @@ static AudioInputStream* CreateTestAudioInputStream(AudioManager* audio_man) {
 
 // Test that AudioInputStream rejects out of range parameters.
 TEST(AudioInputTest, SanityOnMakeParams) {
-  scoped_ptr<AudioManager> audio_man(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
   if (!CanRunAudioTests(audio_man.get()))
     return;
 
@@ -111,7 +111,7 @@ TEST(AudioInputTest, SanityOnMakeParams) {
 
 // Test create and close of an AudioInputStream without recording audio.
 TEST(AudioInputTest, CreateAndClose) {
-  scoped_ptr<AudioManager> audio_man(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
   if (!CanRunAudioTests(audio_man.get()))
     return;
   AudioInputStream* ais = CreateTestAudioInputStream(audio_man.get());
@@ -126,7 +126,7 @@ TEST(AudioInputTest, CreateAndClose) {
 #endif
 // Test create, open and close of an AudioInputStream without recording audio.
 TEST(AudioInputTest, MAYBE_OpenAndClose) {
-  scoped_ptr<AudioManager> audio_man(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
   if (!CanRunAudioTests(audio_man.get()))
     return;
   AudioInputStream* ais = CreateTestAudioInputStream(audio_man.get());
@@ -142,7 +142,7 @@ TEST(AudioInputTest, MAYBE_OpenAndClose) {
 #endif
 // Test create, open, stop and close of an AudioInputStream without recording.
 TEST(AudioInputTest, MAYBE_OpenStopAndClose) {
-  scoped_ptr<AudioManager> audio_man(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
   if (!CanRunAudioTests(audio_man.get()))
     return;
   AudioInputStream* ais = CreateTestAudioInputStream(audio_man.get());
@@ -159,7 +159,7 @@ TEST(AudioInputTest, MAYBE_OpenStopAndClose) {
 #endif
 // Test a normal recording sequence using an AudioInputStream.
 TEST(AudioInputTest, MAYBE_Record) {
-  scoped_ptr<AudioManager> audio_man(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_man(AudioManager::CreateForTesting());
   if (!CanRunAudioTests(audio_man.get()))
     return;
   base::MessageLoop message_loop(base::MessageLoop::TYPE_DEFAULT);

@@ -390,7 +390,7 @@ class AudioAndroidTest : public testing::Test {
 
  protected:
   virtual void SetUp() {
-    audio_manager_.reset(AudioManager::Create());
+    audio_manager_.reset(AudioManager::CreateForTesting());
     loop_.reset(new base::MessageLoopForUI());
   }
 

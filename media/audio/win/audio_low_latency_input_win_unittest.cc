@@ -264,7 +264,7 @@ class ScopedAudioInputStream {
 // Verify that we can retrieve the current hardware/mixing sample rate
 // for all available input devices.
 TEST(WinAudioInputTest, WASAPIAudioInputStreamHardwareSampleRate) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   if (!CanRunAudioTests(audio_manager.get()))
     return;
 
@@ -287,7 +287,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamHardwareSampleRate) {
 
 // Test Create(), Close() calling sequence.
 TEST(WinAudioInputTest, WASAPIAudioInputStreamCreateAndClose) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   if (!CanRunAudioTests(audio_manager.get()))
     return;
   ScopedAudioInputStream ais(
@@ -297,7 +297,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamCreateAndClose) {
 
 // Test Open(), Close() calling sequence.
 TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenAndClose) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   if (!CanRunAudioTests(audio_manager.get()))
     return;
   ScopedAudioInputStream ais(
@@ -308,7 +308,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenAndClose) {
 
 // Test Open(), Start(), Close() calling sequence.
 TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenStartAndClose) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   if (!CanRunAudioTests(audio_manager.get()))
     return;
   ScopedAudioInputStream ais(
@@ -323,7 +323,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenStartAndClose) {
 
 // Test Open(), Start(), Stop(), Close() calling sequence.
 TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenStartStopAndClose) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   if (!CanRunAudioTests(audio_manager.get()))
     return;
   ScopedAudioInputStream ais(
@@ -339,7 +339,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamOpenStartStopAndClose) {
 
 // Test some additional calling sequences.
 TEST(WinAudioInputTest, WASAPIAudioInputStreamMiscCallingSequences) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   if (!CanRunAudioTests(audio_manager.get()))
     return;
   ScopedAudioInputStream ais(
@@ -371,7 +371,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamMiscCallingSequences) {
 }
 
 TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   if (!CanRunAudioTests(audio_manager.get()))
     return;
 
@@ -453,7 +453,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
 
 // Test that we can capture loopback stream.
 TEST(WinAudioInputTest, WASAPIAudioInputStreamLoopback) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   if (!audio_manager->HasAudioOutputDevices() || !CoreAudioUtil::IsSupported())
     return;
 
@@ -487,7 +487,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamLoopback) {
 // with --gtest_also_run_disabled_tests or set the GTEST_ALSO_RUN_DISABLED_TESTS
 // environment variable to a value greater than 0.
 TEST(WinAudioInputTest, DISABLED_WASAPIAudioInputStreamRecordToFile) {
-  scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
+  scoped_ptr<AudioManager> audio_manager(AudioManager::CreateForTesting());
   if (!CanRunAudioTests(audio_manager.get()))
     return;
 

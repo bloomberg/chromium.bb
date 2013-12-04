@@ -24,7 +24,7 @@ class SoundsManagerTest : public testing::Test {
   virtual ~SoundsManagerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    audio_manager_.reset(AudioManager::Create());
+    audio_manager_.reset(AudioManager::CreateForTesting());
     SoundsManager::Create();
 
     std::vector<base::StringPiece> resources;

@@ -7,6 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_manager_base.h"
+#include "media/audio/fake_audio_log_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(USE_ALSA)
@@ -31,7 +32,7 @@ class AudioManagerTest
     : public ::testing::Test {
  protected:
   AudioManagerTest()
-      : audio_manager_(AudioManager::Create())
+      : audio_manager_(AudioManager::CreateForTesting())
 #if defined(OS_WIN)
       , com_init_(base::win::ScopedCOMInitializer::kMTA)
 #endif
@@ -111,6 +112,14 @@ class AudioManagerTest
     return audio_manager_->HasAudioOutputDevices();
   }
 
+#if defined(USE_ALSA) || defined(USE_PULSEAUDIO)
+  template <class T>
+  void CreateAudioManagerForTesting() {
+    audio_manager_.reset(T::Create(&fake_audio_log_factory_));
+  }
+#endif
+
+  FakeAudioLogFactory fake_audio_log_factory_;
   scoped_ptr<AudioManager> audio_manager_;
 
 #if defined(OS_WIN)
@@ -254,7 +263,7 @@ TEST_F(AudioManagerTest, EnumerateInputDevicesPulseaudio) {
   if (!CanRunInputTest())
     return;
 
-  audio_manager_.reset(AudioManagerPulse::Create());
+  CreateAudioManagerForTesting<AudioManagerPulse>();
   if (audio_manager_.get()) {
     AudioDeviceNames device_names;
     audio_manager_->GetAudioInputDeviceNames(&device_names);
@@ -268,7 +277,7 @@ TEST_F(AudioManagerTest, EnumerateOutputDevicesPulseaudio) {
   if (!CanRunOutputTest())
     return;
 
-  audio_manager_.reset(AudioManagerPulse::Create());
+  CreateAudioManagerForTesting<AudioManagerPulse>();
   if (audio_manager_.get()) {
     AudioDeviceNames device_names;
     audio_manager_->GetAudioOutputDeviceNames(&device_names);
@@ -289,7 +298,7 @@ TEST_F(AudioManagerTest, EnumerateInputDevicesAlsa) {
     return;
 
   VLOG(2) << "Testing AudioManagerAlsa.";
-  audio_manager_.reset(new AudioManagerAlsa());
+  CreateAudioManagerForTesting<AudioManagerAlsa>();
   AudioDeviceNames device_names;
   audio_manager_->GetAudioInputDeviceNames(&device_names);
   CheckDeviceNames(device_names);
@@ -300,7 +309,7 @@ TEST_F(AudioManagerTest, EnumerateOutputDevicesAlsa) {
     return;
 
   VLOG(2) << "Testing AudioManagerAlsa.";
-  audio_manager_.reset(new AudioManagerAlsa());
+  CreateAudioManagerForTesting<AudioManagerAlsa>();
   AudioDeviceNames device_names;
   audio_manager_->GetAudioOutputDeviceNames(&device_names);
   CheckDeviceNames(device_names);

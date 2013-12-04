@@ -42,11 +42,12 @@ static const int kAudioModeInCommunication = 0x00000003;
 static const int kDefaultInputBufferSize = 1024;
 static const int kDefaultOutputBufferSize = 2048;
 
-AudioManager* CreateAudioManager() {
-  return new AudioManagerAndroid();
+AudioManager* CreateAudioManager(AudioLogFactory* audio_log_factory) {
+  return new AudioManagerAndroid(audio_log_factory);
 }
 
-AudioManagerAndroid::AudioManagerAndroid() {
+AudioManagerAndroid::AudioManagerAndroid(AudioLogFactory* audio_log_factory)
+    : AudioManagerBase(audio_log_factory) {
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
 
   j_audio_manager_.Reset(

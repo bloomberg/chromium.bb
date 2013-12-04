@@ -77,7 +77,7 @@ class AudioManagerBase::CompareByParams {
   const DispatcherParams* dispatcher_;
 };
 
-AudioManagerBase::AudioManagerBase()
+AudioManagerBase::AudioManagerBase(AudioLogFactory* audio_log_factory)
     : max_num_output_streams_(kDefaultMaxOutputStreams),
       max_num_input_streams_(kDefaultMaxInputStreams),
       num_output_streams_(0),
@@ -86,7 +86,8 @@ AudioManagerBase::AudioManagerBase()
       // block the UI thread when swapping devices.
       output_listeners_(
           ObserverList<AudioDeviceListener>::NOTIFY_EXISTING_ONLY),
-      audio_thread_("AudioThread") {
+      audio_thread_("AudioThread"),
+      audio_log_factory_(audio_log_factory) {
 #if defined(OS_WIN)
   audio_thread_.init_com_with_mta(true);
 #elif defined(OS_MACOSX)
@@ -416,6 +417,12 @@ int AudioManagerBase::GetUserBufferSize() {
     return buffer_size;
 
   return 0;
+}
+
+scoped_ptr<AudioLog> AudioManagerBase::CreateAudioLog(
+    AudioLogFactory::AudioComponent component) {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  return audio_log_factory_->CreateAudioLog(component);
 }
 
 void AudioManagerBase::FixWedgedAudio() {

@@ -154,7 +154,7 @@ class MockAudioRendererHost : public AudioRendererHost {
 class AudioRendererHostTest : public testing::Test {
  public:
   AudioRendererHostTest() {
-    audio_manager_.reset(media::AudioManager::Create());
+    audio_manager_.reset(media::AudioManager::CreateForTesting());
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
     media_stream_manager_->UseFakeDevice();
     host_ = new MockAudioRendererHost(audio_manager_.get(),

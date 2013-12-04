@@ -81,8 +81,9 @@ bool AudioManagerAlsa::HasAudioInputDevices() {
   return HasAnyAlsaAudioDevice(kStreamCapture);
 }
 
-AudioManagerAlsa::AudioManagerAlsa()
-    : wrapper_(new AlsaWrapper()) {
+AudioManagerAlsa::AudioManagerAlsa(AudioLogFactory* audio_log_factory)
+    : AudioManagerBase(audio_log_factory),
+      wrapper_(new AlsaWrapper()) {
   SetMaxOutputStreamsAllowed(kMaxOutputStreams);
 }
 

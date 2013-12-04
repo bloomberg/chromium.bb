@@ -38,8 +38,8 @@ static const base::FilePath::CharType kPulseLib[] =
     FILE_PATH_LITERAL("libpulse.so.0");
 
 // static
-AudioManager* AudioManagerPulse::Create() {
-  scoped_ptr<AudioManagerPulse> ret(new AudioManagerPulse());
+AudioManager* AudioManagerPulse::Create(AudioLogFactory* audio_log_factory) {
+  scoped_ptr<AudioManagerPulse> ret(new AudioManagerPulse(audio_log_factory));
   if (ret->Init())
     return ret.release();
 
@@ -47,8 +47,9 @@ AudioManager* AudioManagerPulse::Create() {
   return NULL;
 }
 
-AudioManagerPulse::AudioManagerPulse()
-    : input_mainloop_(NULL),
+AudioManagerPulse::AudioManagerPulse(AudioLogFactory* audio_log_factory)
+    : AudioManagerBase(audio_log_factory),
+      input_mainloop_(NULL),
       input_context_(NULL),
       devices_(NULL),
       native_input_sample_rate_(0) {

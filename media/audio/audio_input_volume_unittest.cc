@@ -38,7 +38,7 @@ double GetVolumeAfterSetVolumeOnLinux(AudioInputStream* ais,
 class AudioInputVolumeTest : public ::testing::Test {
  protected:
   AudioInputVolumeTest()
-      : audio_manager_(AudioManager::Create())
+      : audio_manager_(AudioManager::CreateForTesting())
 #if defined(OS_WIN)
        , com_init_(base::win::ScopedCOMInitializer::kMTA)
 #endif

@@ -125,6 +125,8 @@
         'audio/fake_audio_consumer.h',
         'audio/fake_audio_input_stream.cc',
         'audio/fake_audio_input_stream.h',
+        'audio/fake_audio_log_factory.h',
+        'audio/fake_audio_log_factory.cc',
         'audio/fake_audio_manager.cc',
         'audio/fake_audio_manager.h',
         'audio/fake_audio_output_stream.cc',

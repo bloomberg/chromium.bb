@@ -15,7 +15,7 @@ namespace media {
 
 class MEDIA_EXPORT FakeAudioManager : public AudioManagerBase {
  public:
-  FakeAudioManager();
+  FakeAudioManager(AudioLogFactory* audio_log_factory);
 
   // Implementation of AudioManager.
   virtual bool HasAudioOutputDevices() OVERRIDE;

@@ -14,7 +14,7 @@ namespace media {
 
 class MEDIA_EXPORT AudioManagerOpenBSD : public AudioManagerBase {
  public:
-  AudioManagerOpenBSD();
+  AudioManagerOpenBSD(AudioLogFactory* audio_log_factory);
 
   // Implementation of AudioManager.
   virtual bool HasAudioOutputDevices() OVERRIDE;

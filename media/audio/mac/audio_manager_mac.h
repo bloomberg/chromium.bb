@@ -22,7 +22,7 @@ namespace media {
 // the AudioManager class.
 class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
  public:
-  AudioManagerMac();
+  AudioManagerMac(AudioLogFactory* audio_log_factory);
 
   // Implementation of AudioManager.
   virtual bool HasAudioOutputDevices() OVERRIDE;

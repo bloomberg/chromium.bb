@@ -16,10 +16,10 @@ namespace media {
 
 class MEDIA_EXPORT AudioManagerPulse : public AudioManagerBase {
  public:
-  AudioManagerPulse();
+  AudioManagerPulse(AudioLogFactory* audio_log_factory);
   virtual ~AudioManagerPulse();
 
-  static AudioManager* Create();
+  static AudioManager* Create(AudioLogFactory* audio_log_factory);
 
   // Implementation of AudioManager.
   virtual bool HasAudioOutputDevices() OVERRIDE;

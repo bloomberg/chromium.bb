@@ -18,7 +18,7 @@ class AudioDeviceListenerWin;
 // the AudioManager class.
 class MEDIA_EXPORT AudioManagerWin : public AudioManagerBase {
  public:
-  AudioManagerWin();
+  AudioManagerWin(AudioLogFactory* audio_log_factory);
 
   // Implementation of AudioManager.
   virtual bool HasAudioOutputDevices() OVERRIDE;

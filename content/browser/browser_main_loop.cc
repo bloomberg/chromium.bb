@@ -34,6 +34,7 @@
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/histogram_synchronizer.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/media/media_internals.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/media/audio_mirroring_manager.h"
@@ -462,7 +463,8 @@ void BrowserMainLoop::MainMessageLoopStart() {
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:AudioMan")
-    audio_manager_.reset(media::AudioManager::Create());
+    audio_manager_.reset(media::AudioManager::Create(
+        MediaInternals::GetInstance()));
   }
   {
     TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:MIDIManager")

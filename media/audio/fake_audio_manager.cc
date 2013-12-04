@@ -6,7 +6,8 @@
 
 namespace media {
 
-FakeAudioManager::FakeAudioManager() {}
+FakeAudioManager::FakeAudioManager(AudioLogFactory* audio_log_factory)
+    : AudioManagerBase(audio_log_factory) {}
 
 FakeAudioManager::~FakeAudioManager() {
   Shutdown();

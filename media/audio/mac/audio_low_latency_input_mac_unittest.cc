@@ -95,7 +95,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
 
 class MacAudioInputTest : public testing::Test {
  protected:
-  MacAudioInputTest() : audio_manager_(AudioManager::Create()) {}
+  MacAudioInputTest() : audio_manager_(AudioManager::CreateForTesting()) {}
   virtual ~MacAudioInputTest() {}
 
   // Convenience method which ensures that we are not running on the build

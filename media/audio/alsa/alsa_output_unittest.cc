@@ -7,6 +7,7 @@
 #include "media/audio/alsa/alsa_output.h"
 #include "media/audio/alsa/alsa_wrapper.h"
 #include "media/audio/alsa/audio_manager_alsa.h"
+#include "media/audio/fake_audio_log_factory.h"
 #include "media/base/data_buffer.h"
 #include "media/base/seekable_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -78,6 +79,7 @@ class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
 
 class MockAudioManagerAlsa : public AudioManagerAlsa {
  public:
+  MockAudioManagerAlsa() : AudioManagerAlsa(&fake_audio_log_factory_) {}
   MOCK_METHOD0(Init, void());
   MOCK_METHOD0(HasAudioOutputDevices, bool());
   MOCK_METHOD0(HasAudioInputDevices, bool());
@@ -104,6 +106,9 @@ class MockAudioManagerAlsa : public AudioManagerAlsa {
   virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() OVERRIDE {
     return base::MessageLoop::current()->message_loop_proxy();
   }
+
+ private:
+  FakeAudioLogFactory fake_audio_log_factory_;
 };
 
 class AlsaPcmOutputStreamTest : public testing::Test {

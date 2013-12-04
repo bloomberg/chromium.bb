@@ -11,6 +11,7 @@
 #include "media/audio/audio_output_dispatcher_impl.h"
 #include "media/audio/audio_output_proxy.h"
 #include "media/audio/audio_output_resampler.h"
+#include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_output_stream.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -87,7 +88,7 @@ class MockAudioOutputStream : public AudioOutputStream {
 
 class MockAudioManager : public AudioManagerBase {
  public:
-  MockAudioManager() {}
+  MockAudioManager() : AudioManagerBase(&fake_audio_log_factory_) {}
   virtual ~MockAudioManager() {
     Shutdown();
   }
@@ -122,6 +123,9 @@ class MockAudioManager : public AudioManagerBase {
       const AudioParameters& params, const std::string& device_id));
   MOCK_METHOD2(GetPreferredOutputStreamParameters, AudioParameters(
       const std::string& device_id, const AudioParameters& params));
+
+ private:
+  media::FakeAudioLogFactory fake_audio_log_factory_;
 };
 
 class MockAudioSourceCallback : public AudioOutputStream::AudioSourceCallback {
