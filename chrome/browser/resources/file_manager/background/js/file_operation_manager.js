@@ -246,9 +246,11 @@ fileOperationUtil.copyTo = function(
  */
 fileOperationUtil.zipSelection = function(
     sources, parent, newName, successCallback, errorCallback) {
+  // TODO(mtomasz): Pass Entries instead of URLs. Entries can be converted to
+  // URLs in custom bindings.
   chrome.fileBrowserPrivate.zipSelection(
       parent.toURL(),
-      sources.map(function(e) { return e.toURL(); }),
+      util.entriesToURLs(sources),
       newName, function(success) {
         if (!success) {
           // Failed to create a zip archive.
@@ -1097,11 +1099,10 @@ FileOperationManager.prototype.requestTaskCancel = function(taskId) {
     task.requestCancel();
     // If the task is not on progress, remove it immediately.
     if (i != 0) {
+      // TODO(mtomasz): Pass Entries instead of URLs.
       this.eventRouter_.sendDeleteEvent(
           'CANCELED',
-          task.entries.map(function(entry) {
-                             return util.makeFilesystemUrl(entry.fullPath);
-                           }),
+          util.entriesToURLs(this.entries),
           task.taskId);
       this.deleteTasks_.splice(i, 1);
     }
@@ -1297,9 +1298,9 @@ FileOperationManager.prototype.deleteEntries = function(entries) {
     taskId: this.generateTaskId_()
   };
   this.deleteTasks_.push(task);
-  this.eventRouter_.sendDeleteEvent('BEGIN', entries.map(function(entry) {
-    return util.makeFilesystemUrl(entry.fullPath);
-  }), task.taskId);
+  // TODO(mtomasz): Use Entries instead of URLs.
+  var urls = getTaskUrls(entries);
+  this.eventRouter_.sendDeleteEvent('BEGIN', urls, task.taskId);
   this.maybeScheduleCloseBackgroundPage_();
   if (this.deleteTasks_.length == 1)
     this.serviceAllDeleteTasks_();
@@ -1314,15 +1315,9 @@ FileOperationManager.prototype.deleteEntries = function(entries) {
  * @private
  */
 FileOperationManager.prototype.serviceAllDeleteTasks_ = function() {
-  // Returns the urls of the given task's entries.
-  var getTaskUrls = function(task) {
-    return task.entries.map(function(entry) {
-      return util.makeFilesystemUrl(entry.fullPath);
-    });
-  };
-
   var onTaskSuccess = function() {
-    var urls = getTaskUrls(this.deleteTasks_[0]);
+    // TODO(mtomasz): Use Entries instead of URLs.
+    var urls = util.entriesToURLs(this.deleteTasks_[0]);
     var taskId = this.deleteTasks_[0].taskId;
     this.deleteTasks_.shift();
     this.eventRouter_.sendDeleteEvent('SUCCESS', urls, taskId);
@@ -1341,7 +1336,8 @@ FileOperationManager.prototype.serviceAllDeleteTasks_ = function() {
   }.bind(this);
 
   var onTaskFailure = function(error) {
-    var urls = getTaskUrls(this.deleteTasks_[0]);
+    // TODO(mtomasz): Use Entries instead of URLs.
+    var urls = util.entriesToURLs(this.deleteTasks_[0]);
     var taskId = this.deleteTasks_[0].taskId;
     this.deleteTasks_ = [];
     this.eventRouter_.sendDeleteEvent('ERROR',

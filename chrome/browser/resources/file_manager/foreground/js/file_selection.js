@@ -16,7 +16,6 @@ function FileSelection(fileManager, indexes) {
   this.computeBytesSequence_ = 0;
   this.indexes = indexes;
   this.entries = [];
-  this.urls = [];
   this.totalCount = 0;
   this.fileCount = 0;
   this.directoryCount = 0;
@@ -35,7 +34,6 @@ function FileSelection(fileManager, indexes) {
       continue;
 
     this.entries.push(entry);
-    this.urls.push(entry.toURL());
 
     if (this.iconType == null) {
       this.iconType = FileType.getIcon(entry);
@@ -65,12 +63,12 @@ function FileSelection(fileManager, indexes) {
  */
 FileSelection.prototype.createTasks = function(callback) {
   if (!this.fileManager_.isOnDrive()) {
-    this.tasks.init(this.urls);
+    this.tasks.init(this.entries);
     callback();
     return;
   }
 
-  this.fileManager_.metadataCache_.get(this.urls, 'drive', function(props) {
+  this.fileManager_.metadataCache_.get(this.entries, 'drive', function(props) {
     var present = props.filter(function(p) { return p && p.availableOffline });
     this.allDriveFilesPresent = present.length == props.length;
 
@@ -79,7 +77,7 @@ FileSelection.prototype.createTasks = function(callback) {
       return (value && value.contentMimeType) || '';
     });
 
-    this.tasks.init(this.urls, this.mimeTypes);
+    this.tasks.init(this.entries, this.mimeTypes);
     callback();
   }.bind(this));
 };

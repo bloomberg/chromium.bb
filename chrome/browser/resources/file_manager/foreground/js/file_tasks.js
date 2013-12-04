@@ -16,6 +16,7 @@ function FileTasks(fileManager, opt_params) {
   this.params_ = opt_params;
   this.tasks_ = null;
   this.defaultTask_ = null;
+  this.entries_ = null;
 
   /**
    * List of invocations to be called once tasks are available.
@@ -77,13 +78,16 @@ FileTasks.createWebStoreLink = function(extension, mimeType) {
 /**
  * Complete the initialization.
  *
- * @param {Array.<string>} urls List of file urls.
+ * @param {Array.<Entry>} entries List of file entries.
  * @param {Array.<string>=} opt_mimeTypes List of MIME types for each
  *     of the files.
  */
-FileTasks.prototype.init = function(urls, opt_mimeTypes) {
-  this.urls_ = urls;
+FileTasks.prototype.init = function(entries, opt_mimeTypes) {
+  this.entries_ = entries;
   this.mimeTypes_ = opt_mimeTypes || [];
+
+  // TODO(mtomasz): Move conversion from entry to url to custom bindings.
+  var urls = util.entriesToURLs(entries);
   if (urls.length > 0) {
     chrome.fileBrowserPrivate.getFileTasks(urls, this.mimeTypes_,
         this.onTasks_.bind(this));
@@ -156,13 +160,13 @@ FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_ = Object.freeze([
 /**
  * Records trial of opening file grouped by extensions.
  *
- * @param {Array.<string>} urls The path to be opened.
+ * @param {Array.<Entry>} entries The entries to be opened.
  * @private
  */
-FileTasks.recordViewingFileTypeUMA_ = function(urls) {
-  for (var i = 0; i < urls.length; i++) {
-    var url = urls[i];
-    var extension = FileType.getExtension(url).toLowerCase();
+FileTasks.recordViewingFileTypeUMA_ = function(entries) {
+  for (var i = 0; i < entries.length; i++) {
+    var entry = entries[i];
+    var extension = FileType.getExtension(entry).toLowerCase();
     if (FileTasks.knownExtensions_.indexOf(extension) < 0) {
       extension = 'other';
     }
@@ -184,12 +188,12 @@ FileTasks.isInternalTask_ = function(taskId) {
   var taskType = taskParts[1];
   var actionId = taskParts[2];
   // The action IDs here should match ones used in executeInternalTask_().
-  return (appId == chrome.runtime.id &&
-          taskType == 'file' &&
-          (actionId == 'play' ||
-           actionId == 'watch' ||
-           actionId == 'mount-archive' ||
-           actionId == 'gallery'));
+  return (appId === chrome.runtime.id &&
+          taskType === 'file' &&
+          (actionId === 'play' ||
+           actionId === 'watch' ||
+           actionId === 'mount-archive' ||
+           actionId === 'gallery'));
 };
 
 /**
@@ -202,8 +206,8 @@ FileTasks.prototype.processTasks_ = function(tasks) {
   this.tasks_ = [];
   var id = chrome.runtime.id;
   var isOnDrive = false;
-  for (var index = 0; index < this.urls_.length; ++index) {
-    if (FileType.isOnDrive(this.urls_[index])) {
+  for (var index = 0; index < this.entries_.length; ++index) {
+    if (FileType.isOnDrive(this.entries_[index])) {
       isOnDrive = true;
       break;
     }
@@ -214,66 +218,66 @@ FileTasks.prototype.processTasks_ = function(tasks) {
     var taskParts = task.taskId.split('|');
 
     // Skip internal Files.app's handlers.
-    if (taskParts[0] == id && (taskParts[2] == 'auto-open' ||
-        taskParts[2] == 'select' || taskParts[2] == 'open')) {
+    if (taskParts[0] === id && (taskParts[2] === 'auto-open' ||
+        taskParts[2] === 'select' || taskParts[2] === 'open')) {
       continue;
     }
 
     // Tweak images, titles of internal tasks.
-    if (taskParts[0] == id && taskParts[1] == 'file') {
-      if (taskParts[2] == 'play') {
+    if (taskParts[0] === id && taskParts[1] === 'file') {
+      if (taskParts[2] === 'play') {
         // TODO(serya): This hack needed until task.iconUrl is working
         //             (see GetFileTasksFileBrowserFunction::RunImpl).
         task.iconType = 'audio';
         task.title = loadTimeData.getString('ACTION_LISTEN');
-      } else if (taskParts[2] == 'mount-archive') {
+      } else if (taskParts[2] === 'mount-archive') {
         task.iconType = 'archive';
         task.title = loadTimeData.getString('MOUNT_ARCHIVE');
-      } else if (taskParts[2] == 'gallery') {
+      } else if (taskParts[2] === 'gallery') {
         task.iconType = 'image';
         task.title = loadTimeData.getString('ACTION_OPEN');
-      } else if (taskParts[2] == 'watch') {
+      } else if (taskParts[2] === 'watch') {
         task.iconType = 'video';
         task.title = loadTimeData.getString('ACTION_WATCH');
-      } else if (taskParts[2] == 'open-hosted-generic') {
-        if (this.urls_.length > 1)
+      } else if (taskParts[2] === 'open-hosted-generic') {
+        if (this.entries_.length > 1)
           task.iconType = 'generic';
         else // Use specific icon.
-          task.iconType = FileType.getIcon(this.urls_[0]);
+          task.iconType = FileType.getIcon(this.entries_[0]);
         task.title = loadTimeData.getString('ACTION_OPEN');
-      } else if (taskParts[2] == 'open-hosted-gdoc') {
+      } else if (taskParts[2] === 'open-hosted-gdoc') {
         task.iconType = 'gdoc';
         task.title = loadTimeData.getString('ACTION_OPEN_GDOC');
-      } else if (taskParts[2] == 'open-hosted-gsheet') {
+      } else if (taskParts[2] === 'open-hosted-gsheet') {
         task.iconType = 'gsheet';
         task.title = loadTimeData.getString('ACTION_OPEN_GSHEET');
-      } else if (taskParts[2] == 'open-hosted-gslides') {
+      } else if (taskParts[2] === 'open-hosted-gslides') {
         task.iconType = 'gslides';
         task.title = loadTimeData.getString('ACTION_OPEN_GSLIDES');
-      } else if (taskParts[2] == 'view-swf') {
+      } else if (taskParts[2] === 'view-swf') {
         // Do not render this task if disabled.
         if (!loadTimeData.getBoolean('SWF_VIEW_ENABLED'))
           continue;
         task.iconType = 'generic';
         task.title = loadTimeData.getString('ACTION_VIEW');
-      } else if (taskParts[2] == 'view-pdf') {
+      } else if (taskParts[2] === 'view-pdf') {
         // Do not render this task if disabled.
         if (!loadTimeData.getBoolean('PDF_VIEW_ENABLED'))
           continue;
         task.iconType = 'pdf';
         task.title = loadTimeData.getString('ACTION_VIEW');
-      } else if (taskParts[2] == 'view-in-browser') {
+      } else if (taskParts[2] === 'view-in-browser') {
         task.iconType = 'generic';
         task.title = loadTimeData.getString('ACTION_VIEW');
       }
     }
 
-    if (!task.iconType && taskParts[1] == 'web-intent') {
+    if (!task.iconType && taskParts[1] === 'web-intent') {
       task.iconType = 'generic';
     }
 
     this.tasks_.push(task);
-    if (this.defaultTask_ == null && task.isDefault) {
+    if (this.defaultTask_ === null && task.isDefault) {
       this.defaultTask_ = task;
     }
   }
@@ -293,51 +297,48 @@ FileTasks.prototype.processTasks_ = function(tasks) {
  * @private
  */
 FileTasks.prototype.executeDefault_ = function(opt_callback) {
-  var urls = this.urls_;
-  FileTasks.recordViewingFileTypeUMA_(urls);
-  this.executeDefaultInternal_(urls, opt_callback);
+  FileTasks.recordViewingFileTypeUMA_(this.entries_);
+  this.executeDefaultInternal_(this.entries_, opt_callback);
 };
 
 /**
  * Executes default task.
  *
- * @param {Array.<string>} urls Urls to execute.
- * @param {function(boolean, Array.<string>)=} opt_callback Called when the
+ * @param {Array.<Entry>} entries Entries to execute.
+ * @param {function(boolean, Array.<Entry>)=} opt_callback Called when the
  *     default task is executed, or the error is occurred.
  * @private
  */
-FileTasks.prototype.executeDefaultInternal_ = function(urls, opt_callback) {
+FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
   var callback = opt_callback || function(arg1, arg2) {};
 
-  if (this.defaultTask_ != null) {
-    this.executeInternal_(this.defaultTask_.taskId, urls);
-    callback(true, urls);
+  if (this.defaultTask_ !== null) {
+    this.executeInternal_(this.defaultTask_.taskId, entries);
+    callback(true, entries);
     return;
   }
 
   // We don't have tasks, so try to show a file in a browser tab.
   // We only do that for single selection to avoid confusion.
-  if (urls.length != 1 || !urls[0])
+  if (entries.length !== 1 || !entries[0])
     return;
 
-  var filename = decodeURIComponent(urls[0]);
-  if (filename.indexOf('/') != -1)
-    filename = filename.substr(filename.lastIndexOf('/') + 1);
-  var extension = filename.lastIndexOf('.') != -1 ?
+  var filename = entries[0].name;
+  var extension = filename.lastIndexOf('.') !== -1 ?
       filename.substr(filename.lastIndexOf('.') + 1) : '';
   var mimeType = this.mimeTypes_[0];
 
   var showAlert = function() {
     var messageString =
-        extension == 'exe' ? 'NO_ACTION_FOR_EXECUTABLE' :
-                             'NO_ACTION_FOR_FILE';
+        extension === 'exe' ? 'NO_ACTION_FOR_EXECUTABLE' :
+                              'NO_ACTION_FOR_FILE';
     var webStoreUrl = FileTasks.createWebStoreLink(extension, mimeType);
     var text = loadTimeData.getStringF(
         messageString,
         webStoreUrl,
         FileTasks.NO_ACTION_FOR_FILE_URL);
     this.fileManager_.alert.showHtml(filename, text, function() {});
-    callback(false, urls);
+    callback(false, entries);
   }.bind(this);
 
   var onViewFilesFailure = function() {
@@ -348,35 +349,37 @@ FileTasks.prototype.executeDefaultInternal_ = function(urls, opt_callback) {
     }
 
     if (!fm.isOnDrive() ||
-        !urls[0] ||
-        FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_.indexOf(extension) != -1) {
+        !entries[0] ||
+        FileTasks.EXTENSIONS_TO_SKIP_SUGGEST_APPS_.indexOf(extension) !== -1) {
       showAlert();
       return;
     }
 
     fm.openSuggestAppsDialog(
-        urls[0],
+        entries[0],
         function() {
           var newTasks = new FileTasks(fm);
-          newTasks.init(urls, this.mimeTypes_);
+          newTasks.init(entries, this.mimeTypes_);
           newTasks.executeDefault();
-          callback(true, urls);
+          callback(true, entries);
         }.bind(this),
         // Cancelled callback.
         function() {
-          callback(false, urls);
+          callback(false, entries);
         },
         showAlert);
   }.bind(this);
 
   var onViewFiles = function(success) {
     if (success)
-      callback(success, urls);
+      callback(success, entries);
     else
       onViewFilesFailure();
   }.bind(this);
 
   this.checkAvailability_(function() {
+    // TODO(mtomasz): Pass entries instead.
+    var urls = util.entriesToURLs(entries);
     util.viewFilesInBrowser(urls, onViewFiles);
   }.bind(this));
 };
@@ -385,28 +388,31 @@ FileTasks.prototype.executeDefaultInternal_ = function(urls, opt_callback) {
  * Executes a single task.
  *
  * @param {string} taskId Task identifier.
- * @param {Array.<string>=} opt_urls Urls to execute on instead of |this.urls_|.
+ * @param {Array.<Entry>=} opt_entries Entries to xecute on instead of
+ *     this.entries_|.
  * @private
  */
-FileTasks.prototype.execute_ = function(taskId, opt_urls) {
-  var urls = opt_urls || this.urls_;
-  FileTasks.recordViewingFileTypeUMA_(urls);
-  this.executeInternal_(taskId, urls);
+FileTasks.prototype.execute_ = function(taskId, opt_entries) {
+  var entries = opt_entries || this.entries_;
+  FileTasks.recordViewingFileTypeUMA_(entries);
+  this.executeInternal_(taskId, entries);
 };
 
 /**
  * The core implementation to execute a single task.
  *
  * @param {string} taskId Task identifier.
- * @param {Array.<string>} urls Urls to execute.
+ * @param {Array.<Entry>} entries Entries to execute.
  * @private
  */
-FileTasks.prototype.executeInternal_ = function(taskId, urls) {
+FileTasks.prototype.executeInternal_ = function(taskId, entries) {
   this.checkAvailability_(function() {
     if (FileTasks.isInternalTask_(taskId)) {
       var taskParts = taskId.split('|');
-      this.executeInternalTask_(taskParts[2], urls);
+      this.executeInternalTask_(taskParts[2], entries);
     } else {
+      // TODO(mtomasz): Pass entries instead.
+      var urls = util.entriesToURLs(entries);
       chrome.fileBrowserPrivate.executeTask(taskId, urls);
     }
   }.bind(this));
@@ -424,14 +430,14 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
       // If got no properties, we safely assume that item is unavailable.
       return e && e[name];
     };
-    return props.filter(isOne).length == props.length;
+    return props.filter(isOne).length === props.length;
   };
 
   var fm = this.fileManager_;
-  var urls = this.urls_;
+  var entries = this.entries_;
 
   if (fm.isOnDrive() && fm.isDriveOffline()) {
-    fm.metadataCache_.get(urls, 'drive', function(props) {
+    fm.metadataCache_.get(entries, 'drive', function(props) {
       if (areAll(props, 'availableOffline')) {
         callback();
         return;
@@ -441,11 +447,11 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
           loadTimeData.getString('OFFLINE_HEADER'),
           props[0].hosted ?
             loadTimeData.getStringF(
-                urls.length == 1 ?
+                entries.length === 1 ?
                     'HOSTED_OFFLINE_MESSAGE' :
                     'HOSTED_OFFLINE_MESSAGE_PLURAL') :
             loadTimeData.getStringF(
-                urls.length == 1 ?
+                entries.length === 1 ?
                     'OFFLINE_MESSAGE' :
                     'OFFLINE_MESSAGE_PLURAL',
                 loadTimeData.getString('OFFLINE_COLUMN_LABEL')));
@@ -454,21 +460,21 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
   }
 
   if (fm.isOnDrive() && fm.isDriveOnMeteredConnection()) {
-    fm.metadataCache_.get(urls, 'drive', function(driveProps) {
+    fm.metadataCache_.get(entries, 'drive', function(driveProps) {
       if (areAll(driveProps, 'availableWhenMetered')) {
         callback();
         return;
       }
 
-      fm.metadataCache_.get(urls, 'filesystem', function(fileProps) {
+      fm.metadataCache_.get(entries, 'filesystem', function(fileProps) {
         var sizeToDownload = 0;
-        for (var i = 0; i != urls.length; i++) {
+        for (var i = 0; i !== entries.length; i++) {
           if (!driveProps[i].availableWhenMetered)
             sizeToDownload += fileProps[i].size;
         }
         fm.confirm.show(
             loadTimeData.getStringF(
-                urls.length == 1 ?
+                entries.length === 1 ?
                     'CONFIRM_MOBILE_DATA_USE' :
                     'CONFIRM_MOBILE_DATA_USE_PLURAL',
                 util.bytesToString(sizeToDownload)),
@@ -485,38 +491,41 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
  * Executes an internal task.
  *
  * @param {string} id The short task id.
- * @param {Array.<string>} urls The urls to execute on.
+ * @param {Array.<Entry>} entries The entries to execute on.
  * @private
  */
-FileTasks.prototype.executeInternalTask_ = function(id, urls) {
+FileTasks.prototype.executeInternalTask_ = function(id, entries) {
   var fm = this.fileManager_;
 
-  if (id == 'play') {
+  if (id === 'play') {
     var position = 0;
-    if (urls.length == 1) {
+    if (entries.length === 1) {
       // If just a single audio file is selected pass along every audio file
       // in the directory.
-      var selectedUrl = urls[0];
-      urls = fm.getAllUrlsInCurrentDirectory().filter(FileType.isAudio);
-      position = urls.indexOf(selectedUrl);
+      var selectedEntries = entries[0];
+      entries = fm.getAllEntriesInCurrentDirectory().filter(FileType.isAudio);
+      position = entries.indexOf(selectedEntries);
     }
-    fm.backgroundPage.launchAudioPlayer({ items: urls, position: position });
+    // TODO(mtomasz): Pass entries instead.
+    var urls = util.entriesToURLs(entries);
+    fm.backgroundPage.launchAudioPlayer({items: urls, position: position});
     return;
   }
 
-  if (id == 'watch') {
-    console.assert(urls.length == 1, 'Cannot open multiple videos');
-    fm.backgroundPage.launchVideoPlayer(urls[0]);
+  if (id === 'watch') {
+    console.assert(entries.length === 1, 'Cannot open multiple videos');
+    // TODO(mtomasz): Pass an entry instead.
+    fm.backgroundPage.launchVideoPlayer(entries[0].toURL());
     return;
   }
 
-  if (id == 'mount-archive') {
-    this.mountArchivesInternal_(urls);
+  if (id === 'mount-archive') {
+    this.mountArchivesInternal_(entries);
     return;
   }
 
-  if (id == 'gallery') {
-    this.openGalleryInternal_(urls);
+  if (id === 'gallery') {
+    this.openGalleryInternal_(entries);
     return;
   }
 
@@ -526,63 +535,64 @@ FileTasks.prototype.executeInternalTask_ = function(id, urls) {
 /**
  * Mounts archives.
  *
- * @param {Array.<string>} urls Mount file urls list.
+ * @param {Array.<Entry>} entries Mount file entries list.
  */
-FileTasks.prototype.mountArchives = function(urls) {
-  FileTasks.recordViewingFileTypeUMA_(urls);
-  this.mountArchivesInternal_(urls);
+FileTasks.prototype.mountArchives = function(entries) {
+  FileTasks.recordViewingFileTypeUMA_(entries);
+  this.mountArchivesInternal_(entries);
 };
 
 /**
  * The core implementation of mounts archives.
  *
- * @param {Array.<string>} urls Mount file urls list.
+ * @param {Array.<Entry>} entries Mount file entries list.
  * @private
  */
-FileTasks.prototype.mountArchivesInternal_ = function(urls) {
+FileTasks.prototype.mountArchivesInternal_ = function(entries) {
   var fm = this.fileManager_;
 
   var tracker = fm.directoryModel_.createDirectoryChangeTracker();
   tracker.start();
 
-  fm.resolveSelectResults_(urls, function(urls) {
-    for (var index = 0; index < urls.length; ++index) {
-      fm.volumeManager_.mountArchive(urls[index], function(mountPath) {
-        tracker.stop();
-        if (!tracker.hasChanged)
-          fm.directoryModel_.changeDirectory(mountPath);
-      }, function(url, error) {
-        var path = util.extractFilePath(url);
-        tracker.stop();
-        var namePos = path.lastIndexOf('/');
-        fm.alert.show(strf('ARCHIVE_MOUNT_FAILED',
-                           path.substr(namePos + 1), error));
-      }.bind(null, urls[index]));
-    }
+  // TODO(mtomasz): Pass Entries instead of URLs.
+  var urls = util.entriesToURLs(entries);
+  fm.resolveSelectResults_(urls, function(entries) {
+    for (var index = 0; index < entries.length; ++index) {
+      // TODO(mtomasz): Pass Entry instead of URL.
+      fm.volumeManager_.mountArchive(entries[index].toURL(),
+        function(mountPath) {
+          tracker.stop();
+          if (!tracker.hasChanged)
+            fm.directoryModel_.changeDirectory(mountPath);
+        }, function(entry, error) {
+          tracker.stop();
+          fm.alert.show(strf('ARCHIVE_MOUNT_FAILED', entry.name, error));
+        }.bind(null, entries[index]));
+      }
   });
 };
 
 /**
  * Open the Gallery.
  *
- * @param {Array.<string>} urls List of selected urls.
+ * @param {Array.<Entry>} entries List of selected entries.
  */
-FileTasks.prototype.openGallery = function(urls) {
-  FileTasks.recordViewingFileTypeUMA_(urls);
-  this.openGalleryInternal_(urls);
+FileTasks.prototype.openGallery = function(entries) {
+  FileTasks.recordViewingFileTypeUMA_(entries);
+  this.openGalleryInternal_(entries);
 };
 
 /**
  * The core implementation to open the Gallery.
  *
- * @param {Array.<string>} urls List of selected urls.
+ * @param {Array.<Entry>} entries List of selected entries.
  * @private
  */
-FileTasks.prototype.openGalleryInternal_ = function(urls) {
+FileTasks.prototype.openGalleryInternal_ = function(entries) {
   var fm = this.fileManager_;
 
-  var allUrls =
-      fm.getAllUrlsInCurrentDirectory().filter(FileType.isImageOrVideo);
+  var allEntries =
+      fm.getAllEntriesInCurrentDirectory().filter(FileType.isImageOrVideo);
 
   var galleryFrame = fm.document_.createElement('iframe');
   galleryFrame.className = 'overlay-pane';
@@ -601,6 +611,7 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
   // changes in the Gallery and popped when the Gallery is closed.
   util.updateAppState();
 
+  // TODO(mtomasz): Pass entries instead of urls.
   var onBack = function(selectedUrls) {
     fm.directoryModel_.selectUrls(selectedUrls);
     fm.closeFilePopup();  // Will call Gallery.unload.
@@ -655,6 +666,9 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
       onAppRegionChanged: onAppRegionChanged,
       displayStringFunction: strf
     };
+    // TODO(mtomasz): Pass entries instead.
+    var allUrls = util.entriesToURLs(allEntries);
+    var urls = util.entriesToURLs(entries);
     galleryFrame.contentWindow.Gallery.open(
         context, fm.volumeManager_, allUrls, urls);
   }.bind(this);
@@ -670,7 +684,7 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
  * @private
  */
 FileTasks.prototype.display_ = function(combobutton) {
-  if (this.tasks_.length == 0) {
+  if (this.tasks_.length === 0) {
     combobutton.hidden = true;
     return;
   }
@@ -686,7 +700,7 @@ FileTasks.prototype.display_ = function(combobutton) {
 
     for (var j = 0; j < items.length; j++) {
       combobutton.addDropDownItem(items[j]);
-      if (items[j].task.taskId == this.defaultTask_.taskId)
+      if (items[j].task.taskId === this.defaultTask_.taskId)
         defaultIdx = j;
     }
 
@@ -712,7 +726,7 @@ FileTasks.prototype.createItems_ = function() {
 
   for (var index = 0; index < this.tasks_.length; index++) {
     var task = this.tasks_[index];
-    if (task != this.defaultTask_)
+    if (task !== this.defaultTask_)
       items.push(this.createCombobuttonItem_(task));
   }
 
@@ -787,7 +801,7 @@ FileTasks.prototype.showTaskPicker = function(actionDialog, title, message,
 
   var defaultIdx = 0;
   for (var j = 0; j < items.length; j++) {
-    if (items[j].task.taskId == this.defaultTask_.taskId)
+    if (items[j].task.taskId === this.defaultTask_.taskId)
       defaultIdx = j;
   }
 

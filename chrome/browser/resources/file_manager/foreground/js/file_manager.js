@@ -1759,7 +1759,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     chrome.fileBrowserPrivate.setDefaultTask(task.taskId,
       selection.urls, selection.mimeTypes);
     selection.tasks = new FileTasks(this);
-    selection.tasks.init(selection.urls, selection.mimeTypes);
+    selection.tasks.init(selection.entries, selection.mimeTypes);
     selection.tasks.display(this.taskItems_);
     this.refreshCurrentDirectoryMetadata_();
     this.selectionHandler_.onFileSelectionChanged();
@@ -1902,13 +1902,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.document_.querySelector('#iframe-drag-area').hidden = !visible;
   };
 
-  FileManager.prototype.getAllUrlsInCurrentDirectory = function() {
-    var urls = [];
-    var fileList = this.directoryModel_.getFileList();
-    for (var i = 0; i != fileList.length; i++) {
-      urls.push(fileList.item(i).toURL());
-    }
-    return urls;
+  /**
+   * @return {Array.<Entry>} List of all entries in the current directory.
+   */
+  FileManager.prototype.getAllEntriesInCurrentDirectory = function() {
+    return this.directoryModel_.getFileList().slice();
   };
 
   FileManager.prototype.isRenamingInProgress = function() {
@@ -2113,27 +2111,26 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   /**
    * Opens the suggest file dialog.
    *
-   * @param {string} url URL of files.
+   * @param {Entry} entry Entry of the file.
    * @param {function()} onSuccess Success callback.
    * @param {function()} onCancelled User-cancelled callback.
    * @param {function()} onFailure Failure callback.
    * @private
    */
   FileManager.prototype.openSuggestAppsDialog =
-      function(url, onSuccess, onCancelled, onFailure) {
+      function(entry, onSuccess, onCancelled, onFailure) {
     if (!url) {
       onFailure();
       return;
     }
 
-    this.metadataCache_.get([url], 'drive', function(props) {
+    this.metadataCache_.get([entry], 'drive', function(props) {
       if (!props || !props[0] || !props[0].contentMimeType) {
         onFailure();
         return;
       }
 
-      var path = util.extractFilePath(url);
-      var basename = PathUtil.basename(path);
+      var basename = entry.name;
       var splitted = PathUtil.splitExtension(basename);
       var filename = splitted[0];
       var extension = splitted[1];
@@ -3454,17 +3451,17 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       return;
     }
 
-    var urls = [entry.toURL()];
+    var entries = [entry];
     var self = this;
 
     // To open a file, first get the mime type.
-    this.metadataCache_.get(urls, 'drive', function(props) {
+    this.metadataCache_.get(entries, 'drive', function(props) {
       var mimeType = props[0].contentMimeType || '';
       var mimeTypes = [mimeType];
       var openIt = function() {
         if (self.dialogType == DialogType.FULL_PAGE) {
           var tasks = new FileTasks(self);
-          tasks.init(urls, mimeTypes);
+          tasks.init(entries, mimeTypes);
           tasks.executeDefault();
         } else {
           self.onOk_();
