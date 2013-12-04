@@ -377,6 +377,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       use_system_default_icon_(false),
       restore_focus_when_enabled_(false),
       restored_enabled_(false),
+      current_cursor_(NULL),
       previous_cursor_(NULL),
       active_mouse_tracking_flags_(0),
       is_right_mouse_pressed_on_caption_(false),
@@ -760,6 +761,7 @@ void HWNDMessageHandler::SetTitle(const string16& title) {
 void HWNDMessageHandler::SetCursor(HCURSOR cursor) {
   if (cursor) {
     previous_cursor_ = ::SetCursor(cursor);
+    current_cursor_ = cursor;
   } else if (previous_cursor_) {
     ::SetCursor(previous_cursor_);
     previous_cursor_ = NULL;
@@ -1956,14 +1958,14 @@ LRESULT HWNDMessageHandler::OnSetCursor(UINT message,
       cursor = IDC_SIZENESW;
       break;
     case HTCLIENT:
-      // Client-area mouse events set the proper cursor from View::GetCursor.
-      return 0;
+      SetCursor(current_cursor_);
+      return 1;
     default:
       // Use the default value, IDC_ARROW.
       break;
   }
-  SetCursor(LoadCursor(NULL, cursor));
-  return 0;
+  ::SetCursor(LoadCursor(NULL, cursor));
+  return 1;
 }
 
 void HWNDMessageHandler::OnSetFocus(HWND last_focused_window) {

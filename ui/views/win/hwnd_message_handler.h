@@ -441,6 +441,9 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // true.
   bool restored_enabled_;
 
+  // The current cursor.
+  HCURSOR current_cursor_;
+
   // The last cursor that was active before the current one was selected. Saved
   // so that we can restore it.
   HCURSOR previous_cursor_;
