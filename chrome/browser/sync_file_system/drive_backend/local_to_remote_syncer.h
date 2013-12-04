@@ -86,9 +86,6 @@ class LocalToRemoteSyncer : public SyncTask {
                         google_apis::GDataErrorCode error,
                         const GURL& upload_location,
                         scoped_ptr<google_apis::ResourceEntry> entry);
-  void DidUpdateDatabaseForUploadNewFile(const SyncStatusCallback& callback,
-                                         const std::string& file_id,
-                                         SyncStatusCode status);
 
   void CreateRemoteFolder(const SyncStatusCallback& callback);
   void DidCreateRemoteFolder(const SyncStatusCallback& callback,

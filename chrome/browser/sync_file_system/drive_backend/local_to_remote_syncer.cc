@@ -43,37 +43,6 @@ void DidUpdateDatabase(const SyncStatusCallback& callback,
   callback.Run(status);
 }
 
-bool FindTrackerByParentAndFileIDForUpload(MetadataDatabase* metadata_database,
-                                           int64 parent_tracker_id,
-                                           const std::string& file_id,
-                                           FileMetadata* file_metadata_out,
-                                           FileTracker* tracker_out) {
-  DCHECK(metadata_database);
-  DCHECK(file_metadata_out);
-  DCHECK(tracker_out);
-
-  FileMetadata file_metadata;
-  if (!metadata_database->FindFileByFileID(file_id, &file_metadata))
-    return false;
-
-  TrackerSet trackers;
-  if (!metadata_database->FindTrackersByFileID(file_id, &trackers))
-    return false;
-
-  // File tracker for |file_id| is just created. |trackers| should not contain
-  // more than one tracker for the file.  In addition, the tracker should not be
-  // active yet.
-  DCHECK_EQ(1u, trackers.size());
-  DCHECK(!trackers.has_active());
-
-  const FileTracker& tracker = **trackers.begin();
-  DCHECK_EQ(parent_tracker_id, tracker.parent_tracker_id());
-
-  *file_metadata_out = file_metadata;
-  *tracker_out = tracker;
-  return true;
-}
-
 }  // namespace
 
 LocalToRemoteSyncer::LocalToRemoteSyncer(SyncEngineContext* sync_context,
@@ -516,42 +485,9 @@ void LocalToRemoteSyncer::DidUploadNewFile(
     return;
   }
 
-  // TODO(tzik): Add a function to update both FileMetadata and FileTracker to
-  // MetadataDatabase.
-  metadata_database()->UpdateByFileResource(
+  metadata_database()->ReplaceActiveTrackerWithNewResource(
+      remote_parent_folder_tracker_->tracker_id(),
       *drive::util::ConvertResourceEntryToFileResource(*entry),
-      base::Bind(&LocalToRemoteSyncer::DidUpdateDatabaseForUploadNewFile,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback, entry->resource_id()));
-}
-
-void LocalToRemoteSyncer::DidUpdateDatabaseForUploadNewFile(
-    const SyncStatusCallback& callback,
-    const std::string& file_id,
-    SyncStatusCode status) {
-  if (status != SYNC_STATUS_OK) {
-    callback.Run(status);
-    return;
-  }
-
-  FileMetadata metadata;
-  FileTracker tracker;
-  bool should_success =
-      FindTrackerByParentAndFileIDForUpload(
-          metadata_database(),
-          remote_parent_folder_tracker_->tracker_id(),
-          file_id,
-          &metadata,
-          &tracker);
-  if (!should_success) {
-    NOTREACHED();
-    callback.Run(SYNC_STATUS_FAILED);
-    return;
-  }
-
-  metadata_database()->UpdateTracker(
-      tracker.tracker_id(),
-      metadata.details(),
       callback);
 }
 
