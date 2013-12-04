@@ -241,9 +241,11 @@ const char RasterTask[] = "RasterTask";
 const char Paint[] = "Paint";
 const char Layer[] = "Layer";
 const char BeginFrame[] = "BeginFrame";
+const char ActivateLayerTree[] = "ActivateLayerTree";
 };
 
 namespace InstrumentationEventArguments {
+const char FrameId[] = "frameId";
 const char LayerId[] = "layerId";
 const char LayerTreeId[] = "layerTreeId";
 const char PageId[] = "pageId";

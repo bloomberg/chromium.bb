@@ -127,9 +127,11 @@ extern const char RasterTask[];
 extern const char Paint[];
 extern const char Layer[];
 extern const char BeginFrame[];
+extern const char ActivateLayerTree[];
 };
 
 namespace InstrumentationEventArguments {
+extern const char FrameId[];
 extern const char LayerId[];
 extern const char LayerTreeId[];
 extern const char PageId[];

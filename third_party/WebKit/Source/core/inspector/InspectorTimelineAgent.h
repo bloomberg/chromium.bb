@@ -81,7 +81,6 @@ class ScriptCallStack;
 class TimelineRecordStack;
 class ExecutionContext;
 class ScriptState;
-class TimelineTraceEventProcessor;
 class WebSocketHandshakeRequest;
 class WebSocketHandshakeResponse;
 class XMLHttpRequest;
@@ -89,10 +88,12 @@ class XMLHttpRequest;
 typedef String ErrorString;
 
 namespace TimelineRecordType {
+extern const char ActivateLayerTree[];
+extern const char BeginFrame[];
 extern const char DecodeImage[];
-extern const char Rasterize[];
-extern const char PaintSetup[];
 extern const char GPUTask[];
+extern const char PaintSetup[];
+extern const char Rasterize[];
 };
 
 class TimelineTimeConverter {
@@ -147,7 +148,6 @@ public:
     virtual void stop(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent> >& events);
 
     void setLayerTreeId(int layerTreeId) { m_layerTreeId = layerTreeId; }
-    int layerTreeId() const { return m_layerTreeId; }
     int id() const { return m_id; }
 
     void didCommitLoad();
@@ -253,6 +253,7 @@ private:
     InspectorTimelineAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorMemoryAgent*, InspectorDOMAgent*, InspectorOverlay*, InspectorCompositeState*, InspectorType, InspectorClient*);
 
     // Trace event handlers
+    void onBeginImplSideFrame(const TraceEventDispatcher::TraceEvent&);
     void onPaintSetupBegin(const TraceEventDispatcher::TraceEvent&);
     void onPaintSetupEnd(const TraceEventDispatcher::TraceEvent&);
     void onRasterTaskBegin(const TraceEventDispatcher::TraceEvent&);
@@ -263,6 +264,7 @@ private:
     void onDrawLazyPixelRef(const TraceEventDispatcher::TraceEvent&);
     void onDecodeLazyPixelRefBegin(const TraceEventDispatcher::TraceEvent&);
     void onDecodeLazyPixelRefEnd(const TraceEventDispatcher::TraceEvent&);
+    void onActivateLayerTree(const TraceEventDispatcher::TraceEvent&);
     void onLazyPixelRefDeleted(const TraceEventDispatcher::TraceEvent&);
 
     void didFinishLoadingResource(unsigned long, bool didFail, double finishTime, Frame*);
@@ -286,6 +288,7 @@ private:
     void addRecordToTimeline(PassRefPtr<JSONObject>);
     void innerAddRecordToTimeline(PassRefPtr<JSONObject>);
     void clearRecordStack();
+    PassRefPtr<JSONObject> createRecordForEvent(const TraceEventDispatcher::TraceEvent&, const String& type, PassRefPtr<JSONObject> data = 0);
 
     void localToPageQuad(const RenderObject& renderer, const LayoutRect&, FloatQuad*);
     long long nodeId(Node*);
@@ -308,7 +311,7 @@ private:
     InspectorType m_inspectorType;
 
     int m_id;
-    int m_layerTreeId;
+    unsigned long long m_layerTreeId;
 
     TimelineTimeConverter m_timeConverter;
     int m_maxCallStackDepth;
