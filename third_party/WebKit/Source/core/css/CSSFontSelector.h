@@ -30,6 +30,7 @@
 #include "core/fetch/ResourcePtr.h"
 #include "platform/Timer.h"
 #include "platform/fonts/FontSelector.h"
+#include "platform/fonts/GenericFontFamilySettings.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -88,6 +89,8 @@ public:
 
     Document* document() const { return m_document; }
 
+    const GenericFontFamilySettings& genericFontFamilySettings() const { return m_genericFontFamilySettings; }
+
     void beginLoadingFontSoon(FontResource*);
     void loadPendingFonts();
 
@@ -102,6 +105,7 @@ private:
     HashSet<FontSelectorClient*> m_clients;
 
     FontLoader m_fontLoader;
+    GenericFontFamilySettings m_genericFontFamilySettings;
 };
 
 } // namespace WebCore

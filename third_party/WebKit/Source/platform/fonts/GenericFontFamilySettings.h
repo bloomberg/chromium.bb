@@ -40,12 +40,14 @@
 namespace WebCore {
 
 class PLATFORM_EXPORT GenericFontFamilySettings {
-    WTF_MAKE_NONCOPYABLE(GenericFontFamilySettings); WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED;
 
 public:
     GenericFontFamilySettings()
     {
     }
+
+    explicit GenericFontFamilySettings(const GenericFontFamilySettings&);
 
     void setStandard(const AtomicString&, UScriptCode = USCRIPT_COMMON);
     const AtomicString& standard(UScriptCode = USCRIPT_COMMON) const;
@@ -72,6 +74,8 @@ public:
     void reset();
 
 private:
+    GenericFontFamilySettings& operator=(const GenericFontFamilySettings&) WTF_DELETED_FUNCTION;
+
     // UScriptCode uses -1 and 0 for UScriptInvalidCode and UScriptCommon.
     // We need to use -2 and -3 for empty value and deleted value.
     struct UScriptCodeHashTraits : WTF::GenericHashTraits<int> {

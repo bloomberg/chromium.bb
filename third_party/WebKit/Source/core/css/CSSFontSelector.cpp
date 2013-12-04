@@ -108,12 +108,14 @@ void FontLoader::clearResourceFetcher()
 CSSFontSelector::CSSFontSelector(Document* document)
     : m_document(document)
     , m_fontLoader(document->fetcher())
+    , m_genericFontFamilySettings(document->frame()->settings()->genericFontFamilySettings())
 {
     // FIXME: An old comment used to say there was no need to hold a reference to m_document
     // because "we are guaranteed to be destroyed before the document". But there does not
     // seem to be any such guarantee.
 
     ASSERT(m_document);
+    ASSERT(m_document->frame());
     fontCache()->addClient(this);
 }
 
@@ -161,47 +163,41 @@ void CSSFontSelector::removeFontFaceRule(const StyleRuleFontFace* fontFaceRule)
     m_cssSegmentedFontFaceCache.removeFontFaceRule(fontFaceRule);
 }
 
-static AtomicString familyNameFromSettings(Settings* settings, const FontDescription& fontDescription, const AtomicString& genericFamilyName)
+static AtomicString familyNameFromSettings(const GenericFontFamilySettings& settings, const FontDescription& fontDescription, const AtomicString& genericFamilyName)
 {
-    if (!settings)
-        return emptyAtom;
-
     UScriptCode script = fontDescription.script();
 
     if (fontDescription.genericFamily() == FontDescription::StandardFamily && !fontDescription.isSpecifiedFont())
-        return settings->genericFontFamilySettings().standard(script);
+        return settings.standard(script);
 
 #if OS(ANDROID)
     return FontCache::getGenericFamilyNameForScript(genericFamilyName, script);
 #else
     if (genericFamilyName == FontFamilyNames::webkit_serif)
-        return settings->genericFontFamilySettings().serif(script);
+        return settings.serif(script);
     if (genericFamilyName == FontFamilyNames::webkit_sans_serif)
-        return settings->genericFontFamilySettings().sansSerif(script);
+        return settings.sansSerif(script);
     if (genericFamilyName == FontFamilyNames::webkit_cursive)
-        return settings->genericFontFamilySettings().cursive(script);
+        return settings.cursive(script);
     if (genericFamilyName == FontFamilyNames::webkit_fantasy)
-        return settings->genericFontFamilySettings().fantasy(script);
+        return settings.fantasy(script);
     if (genericFamilyName == FontFamilyNames::webkit_monospace)
-        return settings->genericFontFamilySettings().fixed(script);
+        return settings.fixed(script);
     if (genericFamilyName == FontFamilyNames::webkit_pictograph)
-        return settings->genericFontFamilySettings().pictograph(script);
+        return settings.pictograph(script);
     if (genericFamilyName == FontFamilyNames::webkit_standard)
-        return settings->genericFontFamilySettings().standard(script);
+        return settings.standard(script);
 #endif
     return emptyAtom;
 }
 
 PassRefPtr<FontData> CSSFontSelector::getFontData(const FontDescription& fontDescription, const AtomicString& familyName)
 {
-    if (!m_document || !m_document->frame())
-        return 0;
-
     if (CSSSegmentedFontFace* face = m_cssSegmentedFontFaceCache.getFontFace(fontDescription, familyName))
         return face->getFontData(fontDescription);
 
     // Try to return the correct font based off our settings, in case we were handed the generic font family name.
-    AtomicString settingsFamilyName = familyNameFromSettings(m_document->frame()->settings(), fontDescription, familyName);
+    AtomicString settingsFamilyName = familyNameFromSettings(m_genericFontFamilySettings, fontDescription, familyName);
     if (settingsFamilyName.isEmpty())
         return 0;
 
