@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_GCM_GCM_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_GCM_GCM_API_H_
 
+#include "chrome/browser/services/gcm/gcm_event_router.h"
 #include "chrome/common/extensions/api/gcm.h"
 #include "extensions/browser/extension_function.h"
 #include "google_apis/gcm/gcm_client.h"
@@ -12,6 +13,8 @@
 namespace gcm {
 class GCMProfileService;
 }  // namespace gcm
+
+class Profile;
 
 namespace extensions {
 
@@ -76,6 +79,27 @@ class GcmSendFunction : public GcmApiFunction {
 
   std::string destination_id_;
   gcm::GCMClient::OutgoingMessage outgoing_message_;
+};
+
+class GcmJsEventRouter : public gcm::GCMEventRouter {
+ public:
+  explicit GcmJsEventRouter(Profile* profile);
+
+  virtual ~GcmJsEventRouter();
+
+  // GCMEventRouter:
+  virtual void OnMessage(
+      const std::string& app_id,
+      const gcm::GCMClient::IncomingMessage& message) OVERRIDE;
+  virtual void OnMessagesDeleted(const std::string& app_id) OVERRIDE;
+  virtual void OnSendError(const std::string& app_id,
+                           const std::string& message_id,
+                           gcm::GCMClient::Result result) OVERRIDE;
+
+ private:
+  // The application we route the event to is running in context of the
+  // |profile_| and the latter outlives the event router.
+  Profile* profile_;
 };
 
 }  // namespace extensions

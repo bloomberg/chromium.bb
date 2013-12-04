@@ -10,9 +10,13 @@
 
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
+#include "chrome/common/extensions/api/gcm.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/common/extension.h"
 
 namespace {
@@ -23,13 +27,43 @@ const size_t kGoogDotPrefixLength = arraysize(kGoogDotRestrictedPrefix) - 1;
 const char kGoogleRestrictedPrefix[] = "google";
 const size_t kGooglePrefixLength = arraysize(kGoogleRestrictedPrefix) - 1;
 
+// Error messages.
+const char kInvalidParameter[] =
+    "Function was called with invalid parameters.";
+const char kAsyncOperationPending[] =
+    "Asynchronous operation is pending.";
+const char kNetworkError[] = "Network error occured.";
+const char kServerError[] = "Server error occured.";
+const char kTtlExceeded[] = "Time-to-live exceeded.";
+const char kUnknownError[] = "Unknown error occured.";
+
 std::string SHA1HashHexString(const std::string& str) {
   std::string hash = base::SHA1HashString(str);
   return base::HexEncode(hash.data(), hash.size());
 }
 
 const char* GcmResultToError(gcm::GCMClient::Result result) {
-  // TODO(fgorski): Add proper error translation with the onSendError event.
+  switch (result) {
+    case gcm::GCMClient::SUCCESS:
+      return "";
+    case gcm::GCMClient::INVALID_PARAMETER:
+      return kInvalidParameter;
+    case gcm::GCMClient::ASYNC_OPERATION_PENDING:
+      return kAsyncOperationPending;
+    case gcm::GCMClient::NETWORK_ERROR:
+      return kNetworkError;
+    case gcm::GCMClient::SERVER_ERROR:
+      return kServerError;
+    case gcm::GCMClient::TTL_EXCEEDED:
+      return kTtlExceeded;
+    case gcm::GCMClient::UNKNOWN_ERROR:
+      return kUnknownError;
+    default:
+      NOTREACHED() << "Unexpected value of result cannot be converted: "
+                   << result;
+  }
+
+  // Never reached, but prevents missing return statement warning.
   return "";
 }
 
@@ -140,6 +174,48 @@ bool GcmSendFunction::ValidateMessageData(
   }
 
   return total_size != 0;
+}
+
+GcmJsEventRouter::GcmJsEventRouter(Profile* profile) : profile_(profile) {}
+
+GcmJsEventRouter::~GcmJsEventRouter() {}
+
+void GcmJsEventRouter::OnMessage(
+    const std::string& app_id,
+    const gcm::GCMClient::IncomingMessage& message) {
+  api::gcm::OnMessage::Message message_arg;
+  message_arg.data.additional_properties = message.data;
+
+  scoped_ptr<Event> event(new Event(
+      api::gcm::OnMessage::kEventName,
+      api::gcm::OnMessage::Create(message_arg).Pass(),
+      profile_));
+  ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
+      app_id, event.Pass());
+}
+
+void GcmJsEventRouter::OnMessagesDeleted(const std::string& app_id) {
+  scoped_ptr<Event> event(new Event(
+      api::gcm::OnMessagesDeleted::kEventName,
+      api::gcm::OnMessagesDeleted::Create().Pass(),
+      profile_));
+  ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
+      app_id, event.Pass());
+}
+
+void GcmJsEventRouter::OnSendError(const std::string& app_id,
+                                   const std::string& message_id,
+                                   gcm::GCMClient::Result result) {
+  api::gcm::OnSendError::Error error;
+  error.message_id.reset(new std::string(message_id));
+  error.error_message = GcmResultToError(result);
+
+  scoped_ptr<Event> event(new Event(
+      api::gcm::OnSendError::kEventName,
+      api::gcm::OnSendError::Create(error).Pass(),
+      profile_));
+  ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
+      app_id, event.Pass());
 }
 
 }  // namespace extensions

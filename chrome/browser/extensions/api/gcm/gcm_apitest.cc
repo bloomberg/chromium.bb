@@ -13,6 +13,7 @@
 namespace {
 
 const char kFunctionsTestExtension[] = "gcm/functions";
+const char kEventsExtension[] = "gcm/events";
 
 }  // namespace
 
@@ -139,6 +140,78 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_SendMessageData) {
 
   EXPECT_TRUE((iter = message.data.find("key2")) != message.data.end());
   EXPECT_EQ("value2", iter->second);
+}
+
+// http://crbug.com/177163 and http://crbug/324982
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_OnMessagesDeleted DISABLED_OnMessagesDeleted
+#else
+#define MAYBE_OnMessagesDeleted OnMessagesDeleted
+#endif
+IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_OnMessagesDeleted) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(profile());
+
+  const extensions::Extension* extension =
+      LoadTestExtension(kEventsExtension, "on_messages_deleted.html");
+  ASSERT_TRUE(extension);
+
+  GcmJsEventRouter router(profile());
+  router.OnMessagesDeleted(extension->id());
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+// http://crbug.com/177163 and http://crbug/324982
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_OnMessage DISABLED_OnMessage
+#else
+#define MAYBE_OnMessage OnMessage
+#endif
+IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_OnMessage) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(profile());
+
+  const extensions::Extension* extension =
+      LoadTestExtension(kEventsExtension, "on_message.html");
+  ASSERT_TRUE(extension);
+
+  GcmJsEventRouter router(profile());
+
+  gcm::GCMClient::IncomingMessage message;
+  message.data["property1"] = "value1";
+  message.data["property2"] = "value2";
+  router.OnMessage(extension->id(), message);
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+// http://crbug.com/177163 and http://crbug/324982
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_OnSendError DISABLED_OnSendError
+#else
+#define MAYBE_OnSendError OnSendError
+#endif
+IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_OnSendError) {
+  ResultCatcher catcher;
+  catcher.RestrictToProfile(profile());
+
+  const extensions::Extension* extension =
+      LoadTestExtension(kEventsExtension, "on_send_error.html");
+  ASSERT_TRUE(extension);
+
+  GcmJsEventRouter router(profile());
+  router.OnSendError(extension->id(), "error_message_1",
+      gcm::GCMClient::ASYNC_OPERATION_PENDING);
+  router.OnSendError(extension->id(), "error_message_2",
+      gcm::GCMClient::SERVER_ERROR);
+  router.OnSendError(extension->id(), "error_message_3",
+      gcm::GCMClient::NETWORK_ERROR);
+  router.OnSendError(extension->id(), "error_message_4",
+      gcm::GCMClient::UNKNOWN_ERROR);
+  router.OnSendError(extension->id(), "error_message_5",
+      gcm::GCMClient::TTL_EXCEEDED);
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 }  // namespace extensions
