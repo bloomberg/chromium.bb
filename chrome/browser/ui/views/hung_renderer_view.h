@@ -149,10 +149,6 @@ class HungRendererDialogView : public views::DialogDelegateView,
   // Initialize the controls in this dialog.
   void Init();
 
-  // Returns the bounds the dialog should be displayed at to be meaningfully
-  // associated with the specified WebContents.
-  gfx::Rect GetDisplayBounds(content::WebContents* contents);
-
   static void InitClass();
 
   // Controls within the dialog box.
