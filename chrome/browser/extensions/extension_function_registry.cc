@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_function_registry.h"
 
-#include "chrome/browser/extensions/api/identity/experimental_identity_api.h"
 #include "chrome/browser/extensions/api/preference/chrome_direct_setting.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
@@ -49,10 +48,6 @@ void ExtensionFunctionRegistry::ResetFunctions() {
   RegisterFunction<extensions::RuntimeReloadFunction>();
   RegisterFunction<extensions::RuntimeRequestUpdateCheckFunction>();
   RegisterFunction<extensions::RuntimeRestartFunction>();
-
-  // ExperimentalIdentity.
-  RegisterFunction<extensions::ExperimentalIdentityGetAuthTokenFunction>();
-  RegisterFunction<extensions::ExperimentalIdentityLaunchWebAuthFlowFunction>();
 
   // Generated APIs
   extensions::api::GeneratedFunctionRegistry::RegisterAll(this);

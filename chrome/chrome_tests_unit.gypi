@@ -844,7 +844,6 @@
         'browser/extensions/api/extension_action/extension_browser_actions_api_unittest.cc',
         'browser/extensions/api/file_system/file_system_api_unittest.cc',
         'browser/extensions/api/identity/account_tracker_unittest.cc',
-        'browser/extensions/api/identity/experimental_web_auth_flow_unittest.cc',
         'browser/extensions/api/identity/extension_token_key_unittest.cc',
         'browser/extensions/api/identity/gaia_web_auth_flow_unittest.cc',
         'browser/extensions/api/identity/identity_mint_queue_unittest.cc',
