@@ -29,7 +29,7 @@
   ],
   'include_dirs': [
     '..',
-    '<(SHARED_INTERMEDIATE_DIR)',  # Needed by key_systems_info.cc.
+    '<(SHARED_INTERMEDIATE_DIR)',  # Needed by key_systems.cc.
   ],
   'sources': [
     'public/renderer/android_content_detection_prefixes.cc',
@@ -225,8 +225,6 @@
     'renderer/media/crypto/content_decryption_module_factory.h',
     'renderer/media/crypto/key_systems.cc',
     'renderer/media/crypto/key_systems.h',
-    'renderer/media/crypto/key_systems_info.cc',
-    'renderer/media/crypto/key_systems_info.h',
     'renderer/media/crypto/ppapi_decryptor.cc',
     'renderer/media/crypto/ppapi_decryptor.h',
     'renderer/media/crypto/proxy_decryptor.cc',
@@ -563,11 +561,6 @@
         'renderer/java/java_bridge_channel.h',
         'renderer/java/java_bridge_dispatcher.cc',
         'renderer/java/java_bridge_dispatcher.h',
-      ],
-    }],
-    ['google_tv == 1', {
-      'sources!': [
-        'renderer/media/crypto/key_systems_info.cc',
       ],
     }],
     # TODO(jrg): remove the OS=="android" section?

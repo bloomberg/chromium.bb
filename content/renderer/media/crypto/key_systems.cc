@@ -5,6 +5,7 @@
 #include "content/renderer/media/crypto/key_systems.h"
 
 #include <map>
+#include <string>
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -12,18 +13,13 @@
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/key_system_info.h"
-#include "content/renderer/media/crypto/key_systems_info.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
-namespace content {
+#include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
 
-// Convert a WebString to ASCII, falling back on an empty string in the case
-// of a non-ASCII string.
-static std::string ToASCIIOrEmpty(const blink::WebString& string) {
-  return IsStringASCII(string) ? UTF16ToASCII(string) : std::string();
-}
+namespace content {
 
 const char kClearKeyKeySystem[] = "webkit-org.w3.clearkey";
 
@@ -38,6 +34,28 @@ const char kVideoMp4[] = "video/mp4";
 const char kMp4a[] = "mp4a";
 const char kMp4aAvc1Avc3[] = "mp4a,avc1,avc3";
 #endif  // defined(USE_PROPRIETARY_CODECS)
+
+#if !defined(GOOGLE_TV)
+inline std::string KeySystemNameForUMAInternal(
+    const blink::WebString& key_system) {
+  if (key_system == kClearKeyKeySystem)
+    return "ClearKey";
+#if defined(WIDEVINE_CDM_AVAILABLE)
+  if (key_system == kWidevineKeySystem)
+    return "Widevine";
+#endif  // WIDEVINE_CDM_AVAILABLE
+  return "Unknown";
+}
+#else
+// Declares the function, which is defined in another file.
+std::string KeySystemNameForUMAInternal(const blink::WebString& key_system);
+#endif  // !defined(GOOGLE_TV)
+
+// Convert a WebString to ASCII, falling back on an empty string in the case
+// of a non-ASCII string.
+static std::string ToASCIIOrEmpty(const blink::WebString& string) {
+  return IsStringASCII(string) ? UTF16ToASCII(string) : std::string();
+}
 
 static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
   KeySystemInfo info(kClearKeyKeySystem);
