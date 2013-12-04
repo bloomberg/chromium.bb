@@ -66,28 +66,35 @@ void HTMLImportsController::clear()
     m_master = 0;
 }
 
-HTMLImportLoader* HTMLImportsController::createLoader(HTMLImport* parent, FetchRequest request)
+HTMLImportLoader* HTMLImportsController::createLoader(const KURL& url, HTMLImport* parent, HTMLImportLoaderClient* client)
+{
+    OwnPtr<HTMLImportLoader> loader = adoptPtr(new HTMLImportLoader(url, client));
+    parent->appendChild(loader.get());
+    m_imports.append(loader.release());
+    return m_imports.last().get();
+}
+
+HTMLImportLoader* HTMLImportsController::load(HTMLImport* parent, HTMLImportLoaderClient* client, FetchRequest request)
 {
     ASSERT(!request.url().isEmpty() && request.url().isValid());
 
-    if (HTMLImportLoader* found = findLinkFor(request.url()))
-        return found;
+    if (HTMLImportLoader* found = findLinkFor(request.url())) {
+        HTMLImportLoader* loader = createLoader(request.url(), parent, client);
+        loader->wasAlreadyLoadedAs(found);
+        return loader;
+    }
 
     request.setCrossOriginAccessControl(securityOrigin(), DoNotAllowStoredCredentials);
     ResourcePtr<RawResource> resource = parent->document()->fetcher()->fetchImport(request);
     if (!resource)
         return 0;
 
-    OwnPtr<HTMLImportLoader> loader = adoptPtr(new HTMLImportLoader(request.url()));
-    HTMLImportLoader* loaderPtr = loader.get();
-    parent->appendChild(loaderPtr);
-    m_imports.append(loader.release());
-
+    HTMLImportLoader* loader = createLoader(request.url(), parent, client);
     // We set resource after the import tree is built since
     // Resource::addClient() immediately calls back to feed the bytes when the resource is cached.
-    loaderPtr->setResource(resource);
+    loader->startLoading(parent->document()->fetcher(), resource);
 
-    return loaderPtr;
+    return loader;
 }
 
 void HTMLImportsController::showSecurityErrorMessage(const String& message)
@@ -139,7 +146,7 @@ bool HTMLImportsController::isProcessing() const
     return m_master->parsing();
 }
 
-void HTMLImportsController::importWasDisposed()
+void HTMLImportsController::blockerGone()
 {
     scheduleUnblock();
 }

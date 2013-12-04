@@ -31,38 +31,40 @@
 #ifndef HTMLImportLoader_h
 #define HTMLImportLoader_h
 
-#include "core/fetch/RawResource.h"
-#include "core/fetch/ResourcePtr.h"
 #include "core/html/HTMLImport.h"
+#include "core/html/HTMLImportDataClient.h"
+#include "core/html/HTMLImportResourceOwner.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
-class DocumentWriter;
+class HTMLImportData;
 class HTMLImportLoaderClient;
 
-class HTMLImportLoader : public HTMLImport, public RawResourceClient {
+//
+// An import tree node subclas to encapsulate imported document
+// lifecycle. This class is owned by LinkStyle. The actual loading
+// is done by HTMLImportData, which can be shared among multiple
+// HTMLImportLoader of same link URL.
+//
+// HTMLImportLoader implements ResourceClient through HTMLImportResourceOwner
+// so that it can speculatively request linked resources while it is unblocked.
+//
+// FIXME: Should be renamed to HTMLImportChild
+//
+class HTMLImportLoader : public HTMLImport, public HTMLImportDataClient, public HTMLImportResourceOwner {
 public:
-    enum State {
-        StateLoading,
-        StateWritten,
-        StateError,
-        StateReady
-    };
-
-    HTMLImportLoader(const KURL&);
+    HTMLImportLoader(const KURL&, HTMLImportLoaderClient*);
     virtual ~HTMLImportLoader();
 
     Document* importedDocument() const;
     const KURL& url() const { return m_url; }
 
-    void setResource(const ResourcePtr<RawResource>&);
-    void addClient(HTMLImportLoaderClient*);
-    void removeClient(HTMLImportLoaderClient*);
+    void wasAlreadyLoadedAs(HTMLImportLoader* found);
+    void startLoading(ResourceFetcher*, const ResourcePtr<RawResource>&);
     void importDestroyed();
-    bool isDone() const { return m_state == StateReady || m_state == StateError; }
-    bool isLoaded() const { return m_state == StateReady; }
+    bool isDone() const;
+    bool isLoaded() const;
 
     // HTMLImport
     virtual HTMLImportRoot* root() OVERRIDE;
@@ -71,26 +73,21 @@ public:
     virtual void didFinishParsing() OVERRIDE;
     virtual bool isProcessing() const OVERRIDE;
 
+    void clearClient() { m_client = 0; }
+
 private:
+    // RawResourceOwner doing nothing.
+    // HTMLImportLoader owns the resource so that the contents of prefetched Resource doesn't go away.
+    virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE { }
+    virtual void dataReceived(Resource*, const char*, int) OVERRIDE { }
+    virtual void notifyFinished(Resource*) OVERRIDE { }
 
-    // RawResourceClient
-    virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE;
-    virtual void dataReceived(Resource*, const char* data, int length) OVERRIDE;
-    virtual void notifyFinished(Resource*) OVERRIDE;
+    // HTMLImportDataClient
+    virtual void didFinish() OVERRIDE;
 
-    State startWritingAndParsing(const ResourceResponse&);
-    State finishWriting();
-    State finishParsing();
-
-    void setState(State);
-    void didFinish();
-
-    Vector<HTMLImportLoaderClient*> m_clients;
-    State m_state;
     KURL m_url;
-    ResourcePtr<RawResource> m_resource;
-    RefPtr<Document> m_importedDocument;
-    RefPtr<DocumentWriter> m_writer;
+    HTMLImportLoaderClient* m_client;
+    RefPtr<HTMLImportData> m_data;
 };
 
 } // namespace WebCore

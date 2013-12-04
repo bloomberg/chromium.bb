@@ -85,21 +85,18 @@ void LinkImport::process()
 
     HTMLImport* parent = m_owner->document().import();
     HTMLImportsController* controller = parent->controller();
-    m_loader = controller->createLoader(parent, builder.build(true));
+    m_loader = controller->load(parent, this, builder.build(true));
     if (!m_loader) {
         didFinish();
         return;
     }
-
-    m_loader->addClient(this);
 }
 
 void LinkImport::clear()
 {
     m_owner = 0;
-
     if (m_loader) {
-        m_loader->removeClient(this);
+        m_loader->clearClient();
         m_loader = 0;
     }
 }

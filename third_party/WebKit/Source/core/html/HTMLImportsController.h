@@ -63,10 +63,10 @@ public:
     virtual void didFinishParsing() OVERRIDE;
     virtual bool isProcessing() const OVERRIDE;
     // HTMLImportRoot
-    virtual void importWasDisposed() OVERRIDE;
-    virtual HTMLImportsController* toController() { return this; }
+    virtual void blockerGone() OVERRIDE;
+    virtual HTMLImportsController* toController() OVERRIDE { return this; }
 
-    HTMLImportLoader* createLoader(HTMLImport* parent, FetchRequest);
+    HTMLImportLoader* load(HTMLImport* parent, HTMLImportLoaderClient*, FetchRequest);
     void showSecurityErrorMessage(const String&);
     HTMLImportLoader* findLinkFor(const KURL&) const;
     SecurityOrigin* securityOrigin() const;
@@ -76,6 +76,7 @@ public:
     void unblockTimerFired(Timer<HTMLImportsController>*);
 
 private:
+    HTMLImportLoader* createLoader(const KURL&, HTMLImport* parent, HTMLImportLoaderClient*);
     void clear();
 
     Document* m_master;

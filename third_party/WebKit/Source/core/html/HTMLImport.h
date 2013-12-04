@@ -42,6 +42,72 @@ class Frame;
 class HTMLImportRoot;
 class HTMLImportsController;
 
+//
+// # Basic Data Structure and Algorithms of HTML Imports implemenation.
+//
+// ## The Import Tree
+//
+// HTML Imports form a tree:
+//
+// * The root of the tree is HTMLImportsController, which is owned by the master
+//   document as a DocumentSupplement. HTMLImportsController has an abstract class called
+//   HTMLImportRoot to deal with cycler dependency.
+//
+// * The non-root nodes are HTMLImportLoader (FIXME: rename to HTMLImportChild),
+//   which is owned by LinkStyle, that is owned by HTMLLinkElement.
+//   LinkStyle is wired into HTMLImportLoader by implementing HTMLImportLoaderClient interface
+//
+// * Both HTMLImportsController and HTMLImportLoader are derived from HTMLImport superclass
+//   that models the tree data structure using WTF::TreeNode and provides a set of
+//   virtual functions.
+//
+// HTMLImportsController also owns all loaders in the tree and manages their lifetime through it.
+// One assumption is that the tree is append-only and nodes are never inserted in the middle of the tree nor removed.
+//
+//
+//    HTMLImport <|- HTMLImportRoot <|- HTMLImportsController <- Document
+//                                      *
+//                                      |
+//               <|-                    HTMLImportLoader <- LinkStyle <- HTMLLinkElement
+//
+//
+// # Import Sharing and HTMLImportData
+//
+// The HTML Imports spec calls for de-dup mechanism to share already loaded imports.
+// To implement this, the actual loading machinery is split out from HTMLImportLoader to
+// HTMLImportData (FIXME: rename HTMLImportLoader),
+// and each loader shares HTMLImportData with other loader if the URL is same.
+// Check around HTMLImportsController::findLink() for more detail.
+//
+// Note that HTMLImportData provides HTMLImportDataClient to hook it up.
+// As it can be shared, HTMLImportData supports multiple clients.
+//
+//    HTMLImportLoader (1)-->(*) HTMLImportData
+//
+//
+// # Script Blocking
+//
+// The HTML parser blocks on <script> when preceding <link>s aren't finish loading imports.
+// Each HTMLImport instance tracks such a blocking state, that is HTMLImport::isBlocked().
+//
+// ## Blocking Imports
+//
+// Each imports can become being blocked when new imports are added to the import tree.
+// For example, the parser of a parent import is blocked when new child import is given.
+// See HTMLImport::appendChild() to see how it is handled. Note that this blocking-ness is
+// transitive. HTMLImport::blockAfter() flips the flags iteratively to fullfill this transitivity.
+//
+// ## Unblocking Imports
+//
+// The state can change when one of the imports finish loading. The Document notices it through
+// HTMLImportRoot::blockerGone(). The blockerGone() triggers HTMLImport::unblock(), which traverses
+// whole import tree and find unblock-able imports and unblock them.
+// Unblocked imported documents are notified through Document::didLoadAllImports() so that
+// it can resume its parser.
+//
+
+// The superclass of HTMLImportsController and HTMLImportLoader
+// This represents the import tree data structure.
 class HTMLImport : public TreeNode<HTMLImport> {
 public:
     static bool unblock(HTMLImport*);
@@ -82,9 +148,10 @@ private:
     bool m_blocked; // If any of decendants or predecessors is in processing, it is blocked.
 };
 
+// An abstract class to decouple its sublcass HTMLImportsController.
 class HTMLImportRoot : public HTMLImport {
 public:
-    virtual void importWasDisposed() = 0;
+    virtual void blockerGone() = 0;
     virtual HTMLImportsController* toController() = 0;
 };
 
