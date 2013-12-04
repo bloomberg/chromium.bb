@@ -992,6 +992,11 @@ void TabStrip::StopAnimating(bool layout) {
     DoLayout();
 }
 
+void TabStrip::FileSupported(const GURL& url, bool supported) {
+  if (drop_info_.get() && drop_info_->url == url)
+    drop_info_->file_supported = supported;
+}
+
 const ui::ListSelectionModel& TabStrip::GetSelectionModel() {
   return controller_->GetSelectionModel();
 }
@@ -1402,10 +1407,28 @@ void TabStrip::OnDragEntered(const DropTargetEvent& event) {
   StopAnimating(true);
 
   UpdateDropIndex(event);
+
+  GURL url;
+  string16 title;
+
+  // Check whether the event data includes supported drop data.
+  if (event.data().GetURLAndTitle(&url, &title) && url.is_valid()) {
+    drop_info_->url = url;
+
+    // For file:// URLs, kick off a MIME type request in case they're dropped.
+    if (url.SchemeIsFile())
+      controller()->CheckFileSupported(url);
+  }
 }
 
 int TabStrip::OnDragUpdated(const DropTargetEvent& event) {
+  // Update the drop index even if the file is unsupported, to allow
+  // dragging a file to the contents of another tab.
   UpdateDropIndex(event);
+
+  if (!drop_info_->file_supported)
+    return ui::DragDropTypes::DRAG_NONE;
+
   return GetDropEffect(event);
 }
 
@@ -1419,13 +1442,17 @@ int TabStrip::OnPerformDrop(const DropTargetEvent& event) {
 
   const int drop_index = drop_info_->drop_index;
   const bool drop_before = drop_info_->drop_before;
+  const bool file_supported = drop_info_->file_supported;
 
   // Hide the drop indicator.
   SetDropIndex(-1, false);
 
+  // Do nothing if the file was unsupported or the URL is invalid. The URL may
+  // have been changed after |drop_info_| was created.
   GURL url;
   string16 title;
-  if (!event.data().GetURLAndTitle(&url, &title) || !url.is_valid())
+  if (!file_supported ||
+      !event.data().GetURLAndTitle(&url, &title) || !url.is_valid())
     return ui::DragDropTypes::DRAG_NONE;
 
   controller()->PerformDrop(drop_before, drop_index, url);
@@ -2434,7 +2461,8 @@ TabStrip::DropInfo::DropInfo(int drop_index,
                              views::Widget* context)
     : drop_index(drop_index),
       drop_before(drop_before),
-      point_down(point_down) {
+      point_down(point_down),
+      file_supported(true) {
   arrow_view = new views::ImageView;
   arrow_view->SetImage(GetDropArrowImage(point_down));
 

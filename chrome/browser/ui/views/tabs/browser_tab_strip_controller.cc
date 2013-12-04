@@ -7,6 +7,8 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
+#include "base/task_runner_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
@@ -29,9 +31,14 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/webplugininfo.h"
+#include "ipc/ipc_message.h"
+#include "net/base/net_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/image/image.h"
@@ -77,6 +84,20 @@ TabStripLayoutType DetermineTabStripLayout(
     default:
       return TAB_STRIP_LAYOUT_SHRINK;
   }
+}
+
+// Get the MIME type of the file pointed to by the url, based on the file's
+// extension. Must be called on a thread that allows IO.
+std::string FindURLMimeType(const GURL& url) {
+  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  base::FilePath full_path;
+  net::FileURLToFilePath(url, &full_path);
+
+  // Get the MIME type based on the filename.
+  std::string mime_type;
+  net::GetMimeTypeFromFile(full_path, &mime_type);
+
+  return mime_type;
 }
 
 }  // namespace
@@ -177,7 +198,8 @@ BrowserTabStripController::BrowserTabStripController(Browser* browser,
     : model_(model),
       tabstrip_(NULL),
       browser_(browser),
-      hover_tab_selector_(model) {
+      hover_tab_selector_(model),
+      weak_ptr_factory_(this) {
   model_->AddObserver(this);
 
   local_pref_registrar_.Init(g_browser_process->local_state());
@@ -401,6 +423,16 @@ void BrowserTabStripController::OnStoppedDraggingTabs() {
   immersive_reveal_lock_.reset();
 }
 
+void BrowserTabStripController::CheckFileSupported(const GURL& url) {
+  base::PostTaskAndReplyWithResult(
+      content::BrowserThread::GetBlockingPool(),
+      FROM_HERE,
+      base::Bind(&FindURLMimeType, url),
+      base::Bind(&BrowserTabStripController::OnFindURLMimeTypeCompleted,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 url));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, TabStripModelObserver implementation:
 
@@ -545,4 +577,24 @@ void BrowserTabStripController::UpdateLayoutType() {
       DetermineTabStripLayout(g_browser_process->local_state(),
                               browser_->host_desktop_type(), &adjust_layout);
   tabstrip_->SetLayoutType(layout_type, adjust_layout);
+}
+
+void BrowserTabStripController::OnFindURLMimeTypeCompleted(
+    const GURL& url,
+    const std::string& mime_type) {
+  // Check whether the mime type, if given, is known to be supported or whether
+  // there is a plugin that supports the mime type (e.g. PDF).
+  // TODO(bauerb): This possibly uses stale information, but it's guaranteed not
+  // to do disk access.
+  content::WebPluginInfo plugin;
+  tabstrip_->FileSupported(
+      url,
+      mime_type.empty() ||
+      net::IsSupportedMimeType(mime_type) ||
+      content::PluginService::GetInstance()->GetPluginInfo(
+          -1,                // process ID
+          MSG_ROUTING_NONE,  // routing ID
+          model_->profile()->GetResourceContext(),
+          url, GURL(), mime_type, false,
+          NULL, &plugin, NULL));
 }

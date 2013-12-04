@@ -112,6 +112,10 @@ class TabStripController {
   // This is also called when the tabs that the user is dragging were detached
   // from this tabstrip but the user is still dragging the tabs.
   virtual void OnStoppedDraggingTabs() = 0;
+
+  // Determines if the file type of the URL is supported. Should invoke
+  // TabStrip::FileSupported to report the result.
+  virtual void CheckFileSupported(const GURL& url) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_STRIP_CONTROLLER_H_

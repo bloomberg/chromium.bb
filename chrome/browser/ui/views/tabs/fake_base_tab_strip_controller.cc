@@ -124,3 +124,7 @@ void FakeBaseTabStripController::OnStartedDraggingTabs() {
 
 void FakeBaseTabStripController::OnStoppedDraggingTabs() {
 }
+
+void FakeBaseTabStripController::CheckFileSupported(const GURL& url) {
+  tab_strip_->FileSupported(url, true);
+}
