@@ -17,6 +17,7 @@ cr.define('options', function() {
   /** @const */ var keyDel = 46;
   /** @const */ var keyDown = 40;
   /** @const */ var keyEnd = 35;
+  /** @const */ var keyEscape = 27;
   /** @const */ var keyHome = 36;
   /** @const */ var keyIns = 45;
   /** @const */ var keyLeft = 37;
@@ -242,7 +243,8 @@ cr.define('options', function() {
       var shortcutNode = node.querySelector('.command-shortcut-text');
       shortcutNode.addEventListener('mouseup',
                                     this.startCapture_.bind(this));
-      shortcutNode.addEventListener('blur', this.endCapture_.bind(this));
+      shortcutNode.addEventListener('focus', this.handleFocus_.bind(this));
+      shortcutNode.addEventListener('blur', this.handleBlur_.bind(this));
       shortcutNode.addEventListener('keydown',
                                     this.handleKeyDown_.bind(this));
       shortcutNode.addEventListener('keyup', this.handleKeyUp_.bind(this));
@@ -337,8 +339,9 @@ cr.define('options', function() {
       // When the capture ends, the user may have not given a complete and valid
       // input (or even no input at all). Only a valid key event followed by a
       // valid key combination will cause a shortcut selection to be activated.
-      // If no valid selection was made, howver, revert back to what the textbox
-      // had before to indicate that the shortcut registration was cancelled.
+      // If no valid selection was made, however, revert back to what the
+      // textbox had before to indicate that the shortcut registration was
+      // canceled.
       if (!this.currentKeyEvent_ || !validChar(this.currentKeyEvent_.keyCode))
         shortcutNode.textContent = this.oldValue_;
 
@@ -357,11 +360,49 @@ cr.define('options', function() {
     },
 
     /**
+     * Handles focus event and adds visual indication for active shortcut.
+     * @param {Event} event to consider.
+     * @private
+     */
+    handleFocus_: function(event) {
+      var commandShortcut = event.target.parentElement;
+      commandShortcut.classList.add('focused');
+    },
+
+    /**
+     * Handles lost focus event and removes visual indication of active shortcut
+     * also stops capturing on focus lost.
+     * @param {Event} event to consider.
+     * @private
+     */
+    handleBlur_: function(event) {
+      this.endCapture_(event);
+      var commandShortcut = event.target.parentElement;
+      commandShortcut.classList.remove('focused');
+    },
+
+    /**
      * The KeyDown handler.
      * @param {Event} event The keyboard event to consider.
      * @private
      */
     handleKeyDown_: function(event) {
+      if (event.keyCode == keyEscape) {
+        // Escape cancels capturing.
+        this.endCapture_(event);
+        var parsed = this.parseElementId_('clear',
+            event.target.parentElement.querySelector('.command-clear').id);
+        chrome.send('setExtensionCommandShortcut',
+            [parsed.extensionId, parsed.commandName, '']);
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+      if (event.keyCode == keyTab) {
+        // Allow tab propagation for keyboard navigation.
+        return;
+      }
+
       if (!this.capturingElement_)
         this.startCapture_(event);
 
@@ -374,6 +415,11 @@ cr.define('options', function() {
      * @private
      */
     handleKeyUp_: function(event) {
+      if (event.keyCode == keyTab) {
+        // Allow tab propagation for keyboard navigation.
+        return;
+      }
+
       // We want to make it easy to change from Ctrl+Shift+ to just Ctrl+ by
       // releasing Shift, but we also don't want it to be easy to lose for
       // example Ctrl+Shift+F to Ctrl+ just because you didn't release Ctrl

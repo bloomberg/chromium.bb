@@ -47,6 +47,10 @@
   outline: none;
 }
 
+.focused {
+  border: solid 1px rgb(140, 147, 255);
+}
+
 .clearable {
   background: white;
 }
