@@ -2688,6 +2688,8 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
             return false;
         if (id == CSSValueAuto)
             validPrimitive = true;
+        else if (id == CSSValueContentBox || id == CSSValuePaddingBox || id == CSSValueBorderBox || id == CSSValueMarginBox)
+            validPrimitive = true;
         else if (propId == CSSPropertyShapeInside && id == CSSValueOutsideShape)
             validPrimitive = true;
         else if (value->unit == CSSParserValue::Function)

@@ -246,4 +246,17 @@ PassOwnPtr<Shape> Shape::createShape(const StyleImage* styleImage, float thresho
     return rasterShape.release();
 }
 
+PassOwnPtr<Shape> Shape::createLayoutBoxShape(const LayoutSize& logicalSize, WritingMode writingMode, const Length& margin, const Length& padding)
+{
+    FloatRect bounds(0, 0, logicalSize.width(), logicalSize.height());
+    FloatSize radii(0, 0);
+
+    OwnPtr<Shape> shape = createRectangleShape(bounds, radii);
+    shape->m_writingMode = writingMode;
+    shape->m_margin = floatValueForLength(margin, 0);
+    shape->m_padding = floatValueForLength(padding, 0);
+
+    return shape.release();
+}
+
 } // namespace WebCore

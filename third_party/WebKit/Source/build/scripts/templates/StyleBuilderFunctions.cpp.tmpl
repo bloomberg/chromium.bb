@@ -491,6 +491,11 @@ namespace WebCore {
         CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
         if (primitiveValue->getValueID() == CSSValueAuto)
             {{ set_value(property) }}(0);
+        else if (primitiveValue->getValueID() == CSSValueMarginBox
+            || primitiveValue->getValueID() == CSSValueBorderBox
+            || primitiveValue->getValueID() == CSSValuePaddingBox
+            || primitiveValue->getValueID() == CSSValueContentBox)
+            {{ set_value(property) }}(ShapeValue::createLayoutBoxValue(LayoutBox(*primitiveValue)));
         else if (primitiveValue->getValueID() == CSSValueOutsideShape)
             {{ set_value(property) }}(ShapeValue::createOutsideValue());
         else if (primitiveValue->isShape()) {

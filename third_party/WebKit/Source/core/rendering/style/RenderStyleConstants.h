@@ -525,6 +525,8 @@ static const float maximumAllowedFontSize = 1000000.0f;
 
 enum TextIndentLine { TextIndentFirstLine, TextIndentEachLine };
 
+enum LayoutBox { MarginBox, BorderBox, PaddingBox, ContentBox };
+
 } // namespace WebCore
 
 #endif // RenderStyleConstants_h

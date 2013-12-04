@@ -2733,6 +2733,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyShapeInside:
             if (!style->shapeInside())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
+            if (style->shapeInside()->type() == ShapeValue::Box)
+                return cssValuePool().createValue(style->shapeInside()->layoutBox());
             if (style->shapeInside()->type() == ShapeValue::Outside)
                 return cssValuePool().createIdentifierValue(CSSValueOutsideShape);
             if (style->shapeInside()->type() == ShapeValue::Image) {
@@ -2745,6 +2747,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyShapeOutside:
             if (!style->shapeOutside())
                 return cssValuePool().createIdentifierValue(CSSValueAuto);
+            if (style->shapeOutside()->type() == ShapeValue::Box)
+                return cssValuePool().createValue(style->shapeOutside()->layoutBox());
             if (style->shapeOutside()->type() == ShapeValue::Image) {
                 if (style->shapeOutside()->image())
                     return style->shapeOutside()->image()->cssValue();

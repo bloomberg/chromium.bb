@@ -20,7 +20,12 @@ var validShapeValues = [
 
     ["polygon(10px 20px, 30px 40px, 40px 50px)", "polygon(nonzero, 10px 20px, 30px 40px, 40px 50px)"],
     ["polygon(evenodd, 10px 20px, 30px 40px, 40px 50px)", "polygon(evenodd, 10px 20px, 30px 40px, 40px 50px)"],
-    ["polygon(nonzero, 10px 20px, 30px 40px, 40px 50px)", "polygon(nonzero, 10px 20px, 30px 40px, 40px 50px)"]
+    ["polygon(nonzero, 10px 20px, 30px 40px, 40px 50px)", "polygon(nonzero, 10px 20px, 30px 40px, 40px 50px)"],
+
+    "content-box",
+    "padding-box",
+    "border-box",
+    "margin-box"
 ];
 
 // Invalid values for both shape-inside and shape-outside. When an invalid shape value is specified, the
