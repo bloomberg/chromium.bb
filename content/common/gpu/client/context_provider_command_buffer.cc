@@ -103,8 +103,6 @@ ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
 }
 
 bool ContextProviderCommandBuffer::BindToCurrentThread() {
-  DCHECK(context3d_);
-
   // This is called on the thread the context will be used.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
@@ -132,7 +130,6 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
 
 WebGraphicsContext3DCommandBufferImpl*
 ContextProviderCommandBuffer::Context3d() {
-  DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
@@ -144,7 +141,6 @@ gpu::ContextSupport* ContextProviderCommandBuffer::ContextSupport() {
 }
 
 class GrContext* ContextProviderCommandBuffer::GrContext() {
-  DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
@@ -158,7 +154,6 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
 
 cc::ContextProvider::Capabilities
 ContextProviderCommandBuffer::ContextCapabilities() {
-  DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
@@ -166,7 +161,6 @@ ContextProviderCommandBuffer::ContextCapabilities() {
 }
 
 bool ContextProviderCommandBuffer::IsContextLost() {
-  DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
@@ -174,7 +168,6 @@ bool ContextProviderCommandBuffer::IsContextLost() {
 }
 
 void ContextProviderCommandBuffer::VerifyContexts() {
-  DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 

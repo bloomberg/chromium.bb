@@ -145,7 +145,6 @@ ContextProviderInProcess::ContextCapabilities() {
 }
 
 blink::WebGraphicsContext3D* ContextProviderInProcess::Context3d() {
-  DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
@@ -153,7 +152,6 @@ blink::WebGraphicsContext3D* ContextProviderInProcess::Context3d() {
 }
 
 ::gpu::ContextSupport* ContextProviderInProcess::ContextSupport() {
-  DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
@@ -161,7 +159,6 @@ blink::WebGraphicsContext3D* ContextProviderInProcess::Context3d() {
 }
 
 class GrContext* ContextProviderInProcess::GrContext() {
-  DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
@@ -174,7 +171,6 @@ class GrContext* ContextProviderInProcess::GrContext() {
 }
 
 bool ContextProviderInProcess::IsContextLost() {
-  DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
@@ -182,7 +178,6 @@ bool ContextProviderInProcess::IsContextLost() {
 }
 
 void ContextProviderInProcess::VerifyContexts() {
-  DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
