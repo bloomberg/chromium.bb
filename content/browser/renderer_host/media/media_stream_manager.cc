@@ -627,10 +627,11 @@ bool MediaStreamManager::TranslateRequestedSourceIdToDeviceId(
                                      ms_request->requested_audio_device_id,
                                      &ms_request->requested_audio_device_id)) {
       // TODO(perkj): gUM should support mandatory and optional constraints.
-      // Ie - if the sourceId is optional but it does not match - gUM should
-      // not fail. For now we treat sourceId as a mandatory constraint.
-      LOG(ERROR) << "Requested device does not exist.";
-      return false;
+      // Ie - if the sourceId is mandatory but it does not match - gUM should
+      // fail. For now we treat sourceId as an optional constraint.
+      LOG(WARNING) << "Requested device does not exist.";
+      ms_request->requested_audio_device_id = "";
+      return true;;
     }
   }
 
@@ -641,11 +642,12 @@ bool MediaStreamManager::TranslateRequestedSourceIdToDeviceId(
                                      ms_request->security_origin,
                                      ms_request->requested_video_device_id,
                                      &ms_request->requested_video_device_id)) {
-      // TODO(perkj): guM should support mandatory and optional constraints.
-      // Ie - if the sourceId is optional but it does not match - guM should
-      // not fail. For now we treat sourceId as a mandatory constraint.
-      LOG(ERROR) << "Requested device does not exist.";
-      return false;
+      // TODO(perkj): gUM should support mandatory and optional constraints.
+      // Ie - if the sourceId is mandatory but it does not match - gUM should
+      // fail. For now we treat sourceId as an optional constraint.
+      LOG(WARNING) << "Requested device does not exist.";
+      ms_request->requested_video_device_id = "";
+      return true;
     }
   }
   DVLOG(3) << "Requested audio device "

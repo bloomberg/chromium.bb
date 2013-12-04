@@ -552,7 +552,9 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithInvalidVideoSourceId) {
                         MEDIA_DEVICE_VIDEO_CAPTURE);
   options.video_device_id = "invalid source id";
 
-  GenerateStreamAndWaitForFailure(kRenderId, kRenderId, options);
+  SetupFakeUI(true);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  EXPECT_NE(host_->video_devices_[0].device.id, options.video_device_id);
 }
 
 // Test that generating a stream with an invalid audio source id fail.
@@ -561,7 +563,9 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithInvalidAudioSourceId) {
                         MEDIA_DEVICE_VIDEO_CAPTURE);
   options.audio_device_id = "invalid source id";
 
-  GenerateStreamAndWaitForFailure(kRenderId, kRenderId, options);
+  SetupFakeUI(true);
+  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, options);
+  EXPECT_NE(host_->audio_devices_[0].device.id, options.audio_device_id);
 }
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsNoAvailableVideoDevice) {
