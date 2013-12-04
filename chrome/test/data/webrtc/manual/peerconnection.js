@@ -44,7 +44,7 @@ function getUserMediaFromHere() {
 }
 
 function connectFromHere() {
-  var server = $('server').value;
+  var server = $('pc-server').value;
   if ($('peer-id').value == '') {
     // Generate a random name to distinguish us from other tabs:
     $('peer-id').value = 'peer_' + Math.floor(Math.random() * 10000);
