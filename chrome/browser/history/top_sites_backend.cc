@@ -85,7 +85,7 @@ TopSitesBackend::~TopSitesBackend() {
 void TopSitesBackend::InitDBOnDBThread(const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (!db_->Init(path)) {
-    NOTREACHED() << "Failed to initialize database.";
+    LOG(ERROR) << "Failed to initialize database.";
     db_.reset();
   }
 }
