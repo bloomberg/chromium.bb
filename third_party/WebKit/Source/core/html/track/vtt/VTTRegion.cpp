@@ -333,9 +333,9 @@ PassRefPtr<HTMLDivElement> VTTRegion::getDisplayTree(Document& document)
     return m_regionDisplayTree;
 }
 
-void VTTRegion::willRemoveTextTrackCueBox(TextTrackCueBox* box)
+void VTTRegion::willRemoveVTTCueBox(VTTCueBox* box)
 {
-    WTF_LOG(Media, "VTTRegion::willRemoveTextTrackCueBox");
+    WTF_LOG(Media, "VTTRegion::willRemoveVTTCueBox");
     ASSERT(m_cueContainer->contains(box));
 
     double boxHeight = box->getBoundingClientRect()->bottom() - box->getBoundingClientRect()->top();
@@ -346,8 +346,7 @@ void VTTRegion::willRemoveTextTrackCueBox(TextTrackCueBox* box)
     m_cueContainer->setInlineStyleProperty(CSSPropertyTop, m_currentTop, CSSPrimitiveValue::CSS_PX);
 }
 
-
-void VTTRegion::appendTextTrackCueBox(PassRefPtr<TextTrackCueBox> displayBox)
+void VTTRegion::appendVTTCueBox(PassRefPtr<VTTCueBox> displayBox)
 {
     ASSERT(m_cueContainer);
 
@@ -355,12 +354,12 @@ void VTTRegion::appendTextTrackCueBox(PassRefPtr<TextTrackCueBox> displayBox)
         return;
 
     m_cueContainer->appendChild(displayBox);
-    displayLastTextTrackCueBox();
+    displayLastVTTCueBox();
 }
 
-void VTTRegion::displayLastTextTrackCueBox()
+void VTTRegion::displayLastVTTCueBox()
 {
-    WTF_LOG(Media, "VTTRegion::displayLastTextTrackCueBox");
+    WTF_LOG(Media, "VTTRegion::displayLastVTTCueBox");
     ASSERT(m_cueContainer);
 
     // FIXME: This should not be causing recalc styles in a loop to set the "top" css
@@ -432,7 +431,6 @@ void VTTRegion::prepareRegionDisplayTree()
         m_viewportAnchor.y() - topOffset,
         CSSPrimitiveValue::CSS_PERCENTAGE);
 
-
     // The cue container is used to wrap the cues and it is the object which is
     // gradually scrolled out as multiple cues are appended to the region.
     m_cueContainer = HTMLDivElement::create(m_regionDisplayTree->document());
@@ -471,7 +469,7 @@ void VTTRegion::scrollTimerFired(Timer<VTTRegion>*)
     WTF_LOG(Media, "VTTRegion::scrollTimerFired");
 
     stopTimer();
-    displayLastTextTrackCueBox();
+    displayLastVTTCueBox();
 }
 
 } // namespace WebCore

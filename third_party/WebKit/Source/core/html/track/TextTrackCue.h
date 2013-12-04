@@ -38,25 +38,7 @@
 
 namespace WebCore {
 
-class Document;
 class ExceptionState;
-class TextTrackCue;
-
-// ----------------------------
-
-class TextTrackCueBox : public HTMLDivElement {
-public:
-    static const AtomicString& textTrackCueBoxShadowPseudoId()
-    {
-        DEFINE_STATIC_LOCAL(const AtomicString, trackDisplayBoxShadowPseudoId, ("-webkit-media-text-track-display", AtomicString::ConstructFromLiteral));
-        return trackDisplayBoxShadowPseudoId;
-    }
-
-protected:
-    TextTrackCueBox(Document&);
-};
-
-// ----------------------------
 
 class TextTrackCue : public RefCounted<TextTrackCue>, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(TextTrackCue);

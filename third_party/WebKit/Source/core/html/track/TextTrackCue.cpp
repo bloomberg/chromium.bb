@@ -42,15 +42,6 @@ namespace WebCore {
 
 static const int invalidCueIndex = -1;
 
-// ----------------------------
-
-TextTrackCueBox::TextTrackCueBox(Document& document)
-    : HTMLDivElement(document)
-{
-}
-
-// ----------------------------
-
 bool TextTrackCue::isInfiniteOrNonNumber(double value, const char* method, ExceptionState& exceptionState)
 {
     if (!std::isfinite(value)) {

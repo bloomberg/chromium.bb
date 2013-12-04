@@ -42,7 +42,7 @@ namespace WebCore {
 
 class ExceptionState;
 class HTMLDivElement;
-class TextTrackCueBox;
+class VTTCueBox;
 
 class VTTRegion : public RefCounted<VTTRegion> {
 public:
@@ -89,9 +89,9 @@ public:
 
     PassRefPtr<HTMLDivElement> getDisplayTree(Document&);
 
-    void appendTextTrackCueBox(PassRefPtr<TextTrackCueBox>);
-    void displayLastTextTrackCueBox();
-    void willRemoveTextTrackCueBox(TextTrackCueBox*);
+    void appendVTTCueBox(PassRefPtr<VTTCueBox>);
+    void displayLastVTTCueBox();
+    void willRemoveVTTCueBox(VTTCueBox*);
 
 private:
     VTTRegion();

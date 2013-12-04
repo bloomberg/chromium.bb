@@ -39,9 +39,7 @@ class Document;
 class ExecutionContext;
 class VTTCue;
 
-// ----------------------------
-
-class VTTCueBox FINAL : public TextTrackCueBox {
+class VTTCueBox FINAL : public HTMLDivElement {
 public:
     static PassRefPtr<VTTCueBox> create(Document& document, VTTCue* cue)
     {
@@ -51,15 +49,13 @@ public:
     VTTCue* getCue() const { return m_cue; }
     void applyCSSProperties(const IntSize& videoSize);
 
-protected:
+private:
     VTTCueBox(Document&, VTTCue*);
 
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;
 
     VTTCue* m_cue;
 };
-
-// ----------------------------
 
 class VTTCue FINAL : public TextTrackCue, public ScriptWrappable {
 public:
@@ -144,7 +140,7 @@ private:
     Document& document() const;
 
     PassRefPtr<VTTCueBox> displayTreeInternal();
-    PassRefPtr<TextTrackCueBox> getDisplayTree(const IntSize& videoSize);
+    PassRefPtr<VTTCueBox> getDisplayTree(const IntSize& videoSize);
 
     virtual void cueDidChange() OVERRIDE;
 

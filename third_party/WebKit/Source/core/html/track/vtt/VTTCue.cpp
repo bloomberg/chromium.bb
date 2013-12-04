@@ -124,13 +124,11 @@ static bool isInvalidPercentage(double value, const char* method, ExceptionState
     return false;
 }
 
-// ----------------------------
-
 VTTCueBox::VTTCueBox(Document& document, VTTCue* cue)
-    : TextTrackCueBox(document)
+    : HTMLDivElement(document)
     , m_cue(cue)
 {
-    setPseudo(textTrackCueBoxShadowPseudoId());
+    setPseudo(AtomicString("-webkit-media-text-track-display", AtomicString::ConstructFromLiteral));
 }
 
 void VTTCueBox::applyCSSProperties(const IntSize&)
@@ -200,8 +198,6 @@ RenderObject* VTTCueBox::createRenderer(RenderStyle*)
 {
     return new RenderVTTCue(this);
 }
-
-// ----------------------------
 
 VTTCue::VTTCue(Document& document, double startTime, double endTime, const String& text)
     : TextTrackCue(startTime, endTime)
@@ -712,7 +708,7 @@ void VTTCue::updateDisplayTree(double movieTime)
     m_cueBackgroundBox->appendChild(referenceTree, ASSERT_NO_EXCEPTION);
 }
 
-PassRefPtr<TextTrackCueBox> VTTCue::getDisplayTree(const IntSize& videoSize)
+PassRefPtr<VTTCueBox> VTTCue::getDisplayTree(const IntSize& videoSize)
 {
     RefPtr<VTTCueBox> displayTree = displayTreeInternal();
     if (!m_displayTreeShouldChange || !track()->isRendered())
@@ -762,7 +758,7 @@ void VTTCue::removeDisplayTree()
         // The region needs to be informed about the cue removal.
         VTTRegion* region = track()->regions()->getRegionById(m_regionId);
         if (region)
-            region->willRemoveTextTrackCueBox(m_displayTree.get());
+            region->willRemoveVTTCueBox(m_displayTree.get());
     }
 
     displayTreeInternal()->remove(ASSERT_NO_EXCEPTION);
@@ -770,7 +766,7 @@ void VTTCue::removeDisplayTree()
 
 void VTTCue::updateDisplay(const IntSize& videoSize, HTMLDivElement& container)
 {
-    RefPtr<TextTrackCueBox> displayBox = getDisplayTree(videoSize);
+    RefPtr<VTTCueBox> displayBox = getDisplayTree(videoSize);
     VTTRegion* region = 0;
     if (track()->regions())
         region = track()->regions()->getRegionById(regionId());
@@ -792,7 +788,7 @@ void VTTCue::updateDisplay(const IntSize& videoSize, HTMLDivElement& container)
         if (!container.contains(regionNode.get()))
             container.appendChild(regionNode);
 
-        region->appendTextTrackCueBox(displayBox);
+        region->appendVTTCueBox(displayBox);
     }
 }
 
