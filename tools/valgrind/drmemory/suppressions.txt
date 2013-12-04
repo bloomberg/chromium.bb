@@ -303,23 +303,6 @@ name=http://crbug.com/106522
 npapi_test_plugin.dll!NPAPIClient::PluginTest::id
 npapi_test_plugin.dll!NPAPIClient::ExecuteGetJavascriptUrlTest::TimerProc
 
-# Bad GDI teardown sequence.
-GDI USAGE ERROR
-name=http://crbug.com/109963 a
-system call NtGdiDeleteObjectApp
-# usually one or two GDI32.dll frames here but sometimes in light mode
-# there are zero.  still pretty narrow b/c of frames on either side.
-...
-*!skia::BitmapPlatformDevice::BitmapPlatformDeviceData::~BitmapPlatformDeviceData
-
-GDI USAGE ERROR
-name=http://crbug.com/109963 b
-system call NtGdiDeleteObjectApp
-# usually one or two GDI32.dll frames here but sometimes in light mode
-# there are zero.  still pretty narrow b/c of frames on either side.
-...
-*!skia::BitmapPlatformDevice::BitmapPlatformDeviceData::ReleaseBitmapDC
-
 GDI USAGE ERROR
 name=http://crbug.com/109963 c
 system call NtGdiDeleteObjectApp
