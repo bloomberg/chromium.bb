@@ -36,6 +36,10 @@ class FileResource;
 class ResourceEntry;
 }
 
+namespace tracked_objects {
+class Location;
+}
+
 namespace sync_file_system {
 namespace drive_backend {
 
@@ -231,9 +235,6 @@ class MetadataDatabase {
                                  FileTracker* tracker,
                                  base::FilePath* path) const;
 
-  void UpdateByFileMetadata(scoped_ptr<FileMetadata> file,
-                            leveldb::WriteBatch* batch);
-
   // Updates database by |changes|.
   // Marks each tracker for modified file as dirty and adds new trackers if
   // needed.
@@ -391,6 +392,10 @@ class MetadataDatabase {
   bool HasActiveTrackerForFileID(const std::string& file_id) const;
   bool HasActiveTrackerForPath(int64 parent_tracker,
                                const std::string& title) const;
+
+  void UpdateByFileMetadata(const tracked_objects::Location& from_where,
+                            scoped_ptr<FileMetadata> file,
+                            leveldb::WriteBatch* batch);
 
   void WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
                        const SyncStatusCallback& callback);
