@@ -230,7 +230,7 @@ class PolicyTestCases {
     delete policy_test_cases_;
   }
 
-  const PolicyTestCase* Get(const std::string& name) {
+  const PolicyTestCase* Get(const std::string& name) const {
     iterator it = policy_test_cases_->find(name);
     return it == end() ? NULL : it->second;
   }
@@ -465,33 +465,6 @@ class TestCaseIterator
   scoped_ptr<Schema::Iterator> it_;
 };
 
-// Base class for tests that change policy and are parameterized with a policy
-// definition.
-class PolicyPrefsTest
-    : public InProcessBrowserTest,
-      public testing::WithParamInterface<const char*> {
- protected:
-  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    EXPECT_CALL(provider_, IsInitializationComplete(_))
-        .WillRepeatedly(Return(true));
-    BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
-  }
-
-  virtual void SetUpOnMainThread() OVERRIDE {
-    ui_test_utils::WaitForTemplateURLServiceToLoad(
-        TemplateURLServiceFactory::GetForProfile(browser()->profile()));
-  }
-
-  void UpdateProviderPolicy(const PolicyMap& policy) {
-    provider_.UpdateChromePolicy(policy);
-    base::RunLoop loop;
-    loop.RunUntilIdle();
-  }
-
-  PolicyTestCases policy_test_cases_;
-  MockConfigurationPolicyProvider provider_;
-};
-
 TEST(PolicyPrefsTestCoverageTest, AllPoliciesHaveATestCase) {
   // Verifies that all known policies have a test case in the JSON file.
   // This test fails when a policy is added to
@@ -508,56 +481,87 @@ TEST(PolicyPrefsTestCoverageTest, AllPoliciesHaveATestCase) {
   }
 }
 
-IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, PolicyToPrefsMapping) {
-  // Verifies that policies make their corresponding preferences become managed,
-  // and that the user can't override that setting.
-  const PolicyTestCase* test_case = policy_test_cases_.Get(GetParam());
-  ASSERT_TRUE(test_case) << "PolicyTestCase not found for " << GetParam();
-  const ScopedVector<PrefMapping>& pref_mappings = test_case->pref_mappings();
-  if (!test_case->IsSupported() || pref_mappings.empty())
-    return;
-  LOG(INFO) << "Testing policy: " << test_case->name();
+// Base class for tests that change policy.
+class PolicyPrefsTest : public InProcessBrowserTest {
+ protected:
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    EXPECT_CALL(provider_, IsInitializationComplete(_))
+        .WillRepeatedly(Return(true));
+    BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+  }
 
-  for (ScopedVector<PrefMapping>::const_iterator
-           pref_mapping = pref_mappings.begin();
-       pref_mapping != pref_mappings.end();
-       ++pref_mapping) {
-    // Skip Chrome OS preferences that use a different backend and cannot be
-    // retrieved through the prefs mechanism.
-    if (StartsWithASCII((*pref_mapping)->pref(), kCrosSettingsPrefix, true))
+  virtual void SetUpOnMainThread() OVERRIDE {
+    ui_test_utils::WaitForTemplateURLServiceToLoad(
+        TemplateURLServiceFactory::GetForProfile(browser()->profile()));
+  }
+
+  void UpdateProviderPolicy(const PolicyMap& policy) {
+    provider_.UpdateChromePolicy(policy);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  MockConfigurationPolicyProvider provider_;
+};
+
+// Verifies that policies make their corresponding preferences become managed,
+// and that the user can't override that setting.
+IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
+  PrefService* local_state = g_browser_process->local_state();
+  PrefService* user_prefs = browser()->profile()->GetPrefs();
+
+  const PolicyTestCases test_cases;
+  for (PolicyTestCases::iterator it = test_cases.begin();
+       it != test_cases.end(); ++it) {
+    const ScopedVector<PrefMapping>& pref_mappings =
+        it->second->pref_mappings();
+    if (!it->second->IsSupported() || pref_mappings.empty())
       continue;
 
-    PrefService* local_state = g_browser_process->local_state();
-    PrefService* user_prefs = browser()->profile()->GetPrefs();
-    PrefService* prefs = (*pref_mapping)->is_local_state() ?
-        local_state : user_prefs;
-    // The preference must have been registered.
-    const PrefService::Preference* pref =
-        prefs->FindPreference((*pref_mapping)->pref().c_str());
-    ASSERT_TRUE(pref);
-    prefs->ClearPref((*pref_mapping)->pref().c_str());
+    LOG(INFO) << "Testing policy: " << it->first;
 
-    // Verify that setting the policy overrides the pref.
-    const PolicyMap kNoPolicies;
-    UpdateProviderPolicy(kNoPolicies);
-    EXPECT_TRUE(pref->IsDefaultValue());
-    EXPECT_TRUE(pref->IsUserModifiable());
-    EXPECT_FALSE(pref->IsUserControlled());
-    EXPECT_FALSE(pref->IsManaged());
+    for (ScopedVector<PrefMapping>::const_iterator
+             pref_mapping = pref_mappings.begin();
+         pref_mapping != pref_mappings.end();
+         ++pref_mapping) {
+      // Skip Chrome OS preferences that use a different backend and cannot be
+      // retrieved through the prefs mechanism.
+      if (StartsWithASCII((*pref_mapping)->pref(), kCrosSettingsPrefix, true))
+        continue;
 
-    UpdateProviderPolicy(test_case->test_policy());
-    EXPECT_FALSE(pref->IsDefaultValue());
-    EXPECT_FALSE(pref->IsUserModifiable());
-    EXPECT_FALSE(pref->IsUserControlled());
-    EXPECT_TRUE(pref->IsManaged());
+      PrefService* prefs = (*pref_mapping)->is_local_state() ?
+          local_state : user_prefs;
+      // The preference must have been registered.
+      const PrefService::Preference* pref =
+          prefs->FindPreference((*pref_mapping)->pref().c_str());
+      ASSERT_TRUE(pref);
+
+      // Verify that setting the policy overrides the pref.
+      UpdateProviderPolicy(PolicyMap());
+      prefs->ClearPref((*pref_mapping)->pref().c_str());
+      EXPECT_TRUE(pref->IsDefaultValue());
+      EXPECT_TRUE(pref->IsUserModifiable());
+      EXPECT_FALSE(pref->IsUserControlled());
+      EXPECT_FALSE(pref->IsManaged());
+
+      UpdateProviderPolicy(it->second->test_policy());
+      EXPECT_FALSE(pref->IsDefaultValue());
+      EXPECT_FALSE(pref->IsUserModifiable());
+      EXPECT_FALSE(pref->IsUserControlled());
+      EXPECT_TRUE(pref->IsManaged());
+    }
   }
 }
 
-IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckPolicyIndicators) {
+class PolicyPrefIndicatorTest
+    : public PolicyPrefsTest,
+      public testing::WithParamInterface<const char*> {
+};
+
+IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
   // Verifies that controlled setting indicators correctly show whether a pref's
   // value is recommended or enforced by a corresponding policy.
-  const PolicyTestCase* policy_test_case =
-      policy_test_cases_.Get(GetParam());
+  const PolicyTestCases test_cases;
+  const PolicyTestCase* policy_test_case = test_cases.Get(GetParam());
   ASSERT_TRUE(policy_test_case) << "PolicyTestCase not found for "
       << GetParam();
   const ScopedVector<PrefMapping>& pref_mappings =
@@ -652,8 +656,8 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckPolicyIndicators) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(PolicyPrefsTestInstance,
-                        PolicyPrefsTest,
+INSTANTIATE_TEST_CASE_P(PolicyPrefIndicatorTestInstance,
+                        PolicyPrefIndicatorTest,
                         testing::ValuesIn(TestCaseIterator::GetBegin(),
                                           TestCaseIterator::GetEnd()));
 
