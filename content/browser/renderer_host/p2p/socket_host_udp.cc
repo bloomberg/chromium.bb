@@ -18,6 +18,8 @@ namespace {
 
 // UDP packets cannot be bigger than 64k.
 const int kReadBufferSize = 65536;
+// Socket receive buffer size.
+const int kRecvSocketBufferSize = 65536;  // 64K
 
 // Defines set of transient errors. These errors are ignored when we get them
 // from sendto() or recvfrom() calls.
@@ -85,6 +87,12 @@ bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address,
     LOG(ERROR) << "bind() failed: " << result;
     OnError();
     return false;
+  }
+
+  // Setting recv socket buffer size.
+  if (!socket_->SetReceiveBufferSize(kRecvSocketBufferSize)) {
+    LOG(WARNING) << "Failed to set socket receive buffer size to "
+                 << kRecvSocketBufferSize;
   }
 
   net::IPEndPoint address;
