@@ -1324,7 +1324,10 @@ lib-cpp-configure() {
 
   if [ ${lib} == ${LIB_CXX_NAME} ]; then
     local srcdir="${TC_SRC_LIBCXX}"
-    local cflags="-g -O2 -mllvm -inline-threshold=5 ${BIASED_BC_CFLAGS}"
+    # HAS_THREAD_LOCAL is used by libc++abi's exception storage, the
+    # fallback is pthread otherwise.
+    local cflags="-g -O2 -mllvm -inline-threshold=5 ${BIASED_BC_CFLAGS} \
+      -DHAS_THREAD_LOCAL=1"
     # LLVM's lit is used to test libc++. run.py serves as a shell that
     # translates pexe->nexe and executes in sel_ldr. The libc++ test
     # suite needs to be told to use pnacl-clang++'s "system library",
