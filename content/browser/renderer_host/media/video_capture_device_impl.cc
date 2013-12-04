@@ -138,10 +138,16 @@ void ThreadSafeCaptureOracle::UpdateCaptureSize(const gfx::Size& source_size) {
   if (!capture_size_updated_ || params_.allow_resolution_change) {
     // The capture resolution should not exceed the source frame size.
     // In other words it should downscale the image but not upscale it.
-    gfx::Rect capture_rect = media::ComputeLetterboxRegion(
-        gfx::Rect(params_.requested_format.frame_size), source_size);
-    capture_size_ = gfx::Size(MakeEven(capture_rect.width()),
-                              MakeEven(capture_rect.height()));
+    if (source_size.width() > params_.requested_format.frame_size.width() ||
+        source_size.height() > params_.requested_format.frame_size.height()) {
+      gfx::Rect capture_rect = media::ComputeLetterboxRegion(
+          gfx::Rect(params_.requested_format.frame_size), source_size);
+      capture_size_ = gfx::Size(MakeEven(capture_rect.width()),
+                                MakeEven(capture_rect.height()));
+    } else {
+      capture_size_ = gfx::Size(MakeEven(source_size.width()),
+                                MakeEven(source_size.height()));
+    }
     capture_size_updated_ = true;
   }
 }
