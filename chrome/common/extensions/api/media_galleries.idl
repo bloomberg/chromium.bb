@@ -50,7 +50,7 @@ namespace mediaGalleries {
     boolean isAvailable;
   };
 
-  callback MediaGalleriesMetadataCallback =
+  callback MediaFileSystemsMetadataCallback =
       void (MediaFileSystemMetadata[] metadata);
 
   interface Functions {
@@ -65,7 +65,7 @@ namespace mediaGalleries {
 
     // Get metadata for all available media galleries.
     static void getAllMediaFileSystemMetadata(
-        MediaGalleriesMetadataCallback callback);
+        MediaFileSystemsMetadataCallback callback);
   };
 
 };
