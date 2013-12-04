@@ -308,7 +308,6 @@
       <structure type="chrome_scaled_image" name="IDR_PANEL_TOP_RIGHT_CORNER" file="panel_top_right_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_BOTTOM_LEFT_CORNER" file="panel_bottom_left_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_BOTTOM_RIGHT_CORNER" file="panel_bottom_right_corner.png" />
-      <structure type="chrome_scaled_image" name="IDR_PASSWORD_UNDO_ARROW" file="common/password_undo_arrow.png" />
       <if expr="is_posix and not is_macosx and not is_ios and not pp_ifdef('use_aura')">
         <structure type="chrome_scaled_image" name="IDR_PROGRESS_BAR" file="linux/linux-progress-bar.png" />
         <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_LEFT" file="linux/linux-progress-border-left.png" />

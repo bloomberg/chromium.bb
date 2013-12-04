@@ -16,7 +16,8 @@ class LabelButton;
 // A custom view for credentials which allows the management of the specific
 // credentials.
 class ManagePasswordItemView : public views::View,
-                               public views::ButtonListener {
+                               public views::ButtonListener,
+                               public views::LinkListener {
  public:
   ManagePasswordItemView(
       ManagePasswordsBubbleModel* manage_passwords_bubble_model,
@@ -36,13 +37,19 @@ class ManagePasswordItemView : public views::View,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  views::Label* label_1_;
-  views::Label* label_2_;
+  // views::LinkListener:
+  virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
 
-  // This button is used to set |delete_password_| and to change the view
-  // accordingly. Clicking on it again will toggle it and restore the original
-  // view.
-  views::LabelButton* delete_or_undo_button_;
+  views::Label* label_1_;
+
+  // This link is used to display the password dots when |delete_password_| is
+  // not set and to display an undo link if it is set. Clicking the undo link
+  // will change the view and unset |delete_password_|.
+  views::Link* label_2_;
+
+  // This button is used to set |delete_password_| and to bring up the the undo
+  // link in |label_2|.
+  views::LabelButton* delete_button_;
 
   ManagePasswordsBubbleModel* manage_passwords_bubble_model_;
   autofill::PasswordForm password_form_;

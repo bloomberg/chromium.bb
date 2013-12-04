@@ -62,25 +62,31 @@ ManagePasswordItemView::ManagePasswordItemView(
   label_1_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   label_2_ =
-      new views::Label(GetPasswordDisplayString(password_form_.password_value));
+      new views::Link(GetPasswordDisplayString(password_form_.password_value));
   label_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label_2_->set_listener(this);
+  label_2_->set_focusable(false);
+  label_2_->SetEnabled(false);
+  label_2_->SetUnderline(false);
 
-  delete_or_undo_button_ = new views::LabelButton(this, string16());
-  delete_or_undo_button_->SetStyle(views::Button::STYLE_TEXTBUTTON);
-  delete_or_undo_button_->SetImage(views::Button::STATE_NORMAL,
-                                   *rb->GetImageSkiaNamed(IDR_CLOSE_2));
-
-  const int button_height = delete_or_undo_button_->GetPreferredSize().height();
+  delete_button_ = new views::LabelButton(this, string16());
+  delete_button_->SetStyle(views::Button::STYLE_TEXTBUTTON);
+  delete_button_->SetImage(views::Button::STATE_NORMAL,
+                           *rb->GetImageSkiaNamed(IDR_CLOSE_2));
+  const int delete_button_height = delete_button_->GetPreferredSize().height();
 
   layout->AddView(label_1_, 1, 1,
                   views::GridLayout::FILL, views::GridLayout::FILL,
-                  -1, button_height);
+                  -1, delete_button_height);
   layout->AddView(label_2_, 1, 1,
                   views::GridLayout::FILL, views::GridLayout::FILL,
-                  -1, button_height);
+                  -1, delete_button_height);
+
   if (manage_passwords_bubble_model_->manage_passwords_bubble_state() !=
       ManagePasswordsBubbleModel::PASSWORD_TO_BE_SAVED) {
-    layout->AddView(delete_or_undo_button_);
+    layout->AddView(delete_button_, 1, 1,
+                    views::GridLayout::FILL, views::GridLayout::FILL,
+                    -1, delete_button_height);
   }
 }
 
@@ -99,28 +105,33 @@ ManagePasswordItemView::~ManagePasswordItemView() {
 }
 
 void ManagePasswordItemView::Refresh() {
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
   if (delete_password_) {
     label_1_->SetText(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_DELETED));
     label_2_->SetText(l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_UNDO));
     label_2_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-    delete_or_undo_button_->SetImage(
-        views::Button::STATE_NORMAL,
-        *rb->GetImageSkiaNamed(IDR_PASSWORD_UNDO_ARROW));
+    label_2_->SetEnabled(true);
+    delete_button_->SetVisible(false);
     manage_passwords_bubble_model_->OnPasswordAction(password_form_, true);
   } else {
     label_1_->SetText(password_form_.username_value);
     label_2_->SetText(GetPasswordDisplayString(password_form_.password_value));
     label_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    delete_or_undo_button_->SetImage(views::Button::STATE_NORMAL,
-                                     *rb->GetImageSkiaNamed(IDR_CLOSE_2));
+    label_2_->SetEnabled(false);
+    delete_button_->SetVisible(true);
     manage_passwords_bubble_model_->OnPasswordAction(password_form_, false);
   }
 }
 
 void ManagePasswordItemView::ButtonPressed(views::Button* sender,
                                            const ui::Event& event) {
-  DCHECK_EQ(delete_or_undo_button_, sender);
-  delete_password_ = !delete_password_;
+  DCHECK_EQ(delete_button_, sender);
+  delete_password_ = true;
+  Refresh();
+}
+
+void ManagePasswordItemView::LinkClicked(views::Link* source,
+                                         int event_flags) {
+  DCHECK_EQ(source, label_2_);
+  delete_password_ = false;
   Refresh();
 }
