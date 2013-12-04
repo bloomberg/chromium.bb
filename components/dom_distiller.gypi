@@ -28,24 +28,6 @@
           ],
         },
         {
-          'target_name': 'dom_distiller_content',
-          'type': 'static_library',
-          'dependencies': [
-            'dom_distiller_core',
-            '../skia/skia.gyp:skia',
-            '../sync/sync.gyp:sync',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'dom_distiller/content/distiller_page_web_contents.h',
-            'dom_distiller/content/distiller_page_web_contents.cc',
-            'dom_distiller/content/dom_distiller_service_factory.h',
-            'dom_distiller/content/dom_distiller_service_factory.cc',
-          ],
-        },
-        {
           'target_name': 'dom_distiller_resources',
           'type': 'none',
           'variables': {
@@ -112,6 +94,30 @@
           },
           'includes': [ '../build/protoc.gypi' ]
         },
+      ],
+      'conditions': [
+        ['OS != "ios"', {
+          'targets': [
+            {
+              'target_name': 'dom_distiller_content',
+              'type': 'static_library',
+              'dependencies': [
+                'dom_distiller_core',
+                '../skia/skia.gyp:skia',
+                '../sync/sync.gyp:sync',
+              ],
+              'include_dirs': [
+                '..',
+              ],
+              'sources': [
+                'dom_distiller/content/distiller_page_web_contents.cc',
+                'dom_distiller/content/distiller_page_web_contents.h',
+                'dom_distiller/content/dom_distiller_service_factory.cc',
+                'dom_distiller/content/dom_distiller_service_factory.h',
+              ],
+            },
+          ],
+        }],
       ],
     }],
   ],

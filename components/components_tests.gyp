@@ -59,19 +59,15 @@
           ],
           'dependencies': [
             '../base/base.gyp:test_support_base',
+            # TODO(blundell): Eliminate the need for this dependency in code
+            # that iOS shares. crbug.com/325243
+            '../content/content_shell_and_tests.gyp:test_support_content',
             '../sync/sync.gyp:sync',
             '../testing/gmock.gyp:gmock',
             '../testing/gtest.gyp:gtest',
 
-            # Dependencies of autofill
-            'components.gyp:autofill_core_browser',
-            'components.gyp:autofill_core_common',
-
             # Dependencies of auto_login_parser
             'components.gyp:auto_login_parser',
-
-            # Dependencies of browser_context_keyed_service
-            'components.gyp:browser_context_keyed_service',
 
             # Dependencies of dom_distiller
             'components.gyp:distilled_page_proto',
@@ -83,11 +79,6 @@
             # Dependencies of json_schema
             'components.gyp:json_schema',
 
-            # Dependencies of intercept_navigation_resource_throttle_unittest.cc
-            '../content/content_shell_and_tests.gyp:test_support_content',
-            '../skia/skia.gyp:skia',
-            'components.gyp:navigation_interception',
-
             # Dependencies of policy
             'components.gyp:policy_component',
 
@@ -95,41 +86,54 @@
             'components.gyp:precache_core',
             'components.gyp:precache_core_proto',
 
-            # Dependencies of sessions
-            '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-            'components.gyp:sessions',
-            'components.gyp:sessions_test_support',
-
             # Dependencies of translate.
             'components.gyp:translate_common',
             'components.gyp:translate_language_detection',
 
             # Dependencies of variations
             'components.gyp:variations',
-
-            # Dependencies of visitedlink
-            'components.gyp:visitedlink_browser',
-            'components.gyp:visitedlink_renderer',
-            '../content/content_resources.gyp:content_resources',
-
-            'components.gyp:web_modal',
-            'components.gyp:web_modal_test_support',
           ],
           'conditions': [
-            ['OS == "ios"', {
+            ['OS != "ios"', {
+              'dependencies': [
+                # Dependencies of autofill
+                'components.gyp:autofill_core_browser',
+                'components.gyp:autofill_core_common',
+
+                # Dependencies of browser_context_keyed_service
+                'components.gyp:browser_context_keyed_service',
+
+                # Dependencies of 
+                # intercept_navigation_resource_throttle_unittest.cc
+                '../skia/skia.gyp:skia',
+                'components.gyp:navigation_interception',
+
+                # Dependencies of sessions
+                '../third_party/protobuf/protobuf.gyp:protobuf_lite',
+                'components.gyp:sessions',
+                'components.gyp:sessions_test_support',
+
+                # Dependencies of visitedlink
+                'components.gyp:visitedlink_browser',
+                'components.gyp:visitedlink_renderer',
+                '../content/content_resources.gyp:content_resources',
+
+                # Dependencies of web_modal
+                'components.gyp:web_modal',
+                'components.gyp:web_modal_test_support',
+              ],
+            }, { # 'OS == "ios"'
               'sources/': [
                 ['exclude', '\\.cc$'],
                 ['include', '^test/run_all_unittests\\.cc$'],
                 # TODO(ios): Include files here as they are made to work, see
                 # http://crbug.com/303011.
-                # TODO(asvitkine): Bring up varations/ unittests on iOS.
-                ['include', '^dom_distiller'],
-                ['include', '^translate'],
-              ],
-              'dependencies!': [
-                'autofill_core_common',
-                'navigation_interception',
-                'visitedlink_renderer',
+                # TODO(asvitkine): Bring up variations/ unittests on iOS.
+                # TODO(blundell): Bring up json_schema/ unittests on iOS.
+                ['include', '^auto_login_parser/'],
+                ['include', '^dom_distiller/'],
+                ['include', '^precache/'],
+                ['include', '^translate/'],
               ],
             }],
             ['disable_nacl==0', {
