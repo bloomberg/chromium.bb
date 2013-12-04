@@ -63,11 +63,6 @@ void WebAudioCapturerSource::Start(
     WebRtcLocalAudioTrack* track, WebRtcAudioCapturer* capturer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(track);
-  // The downstream client should be configured the same as what WebKit
-  // is feeding it.
-  if (params_.IsValid())
-    track->SetCaptureFormat(params_);
-
   base::AutoLock auto_lock(lock_);
   track_ = track;
   capturer_ = capturer;
@@ -89,7 +84,7 @@ void WebAudioCapturerSource::consumeAudio(
 
   // Update the downstream client if the audio format has been changed.
   if (audio_format_changed_) {
-    track_->SetCaptureFormat(params_);
+    track_->OnSetFormat(params_);
     audio_format_changed_ = false;
   }
 

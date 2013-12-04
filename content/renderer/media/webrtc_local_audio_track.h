@@ -10,6 +10,7 @@
 
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "content/renderer/media/media_stream_audio_track_sink.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "content/renderer/media/webrtc_local_audio_source_provider.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
@@ -27,12 +28,14 @@ class AudioBus;
 
 namespace content {
 
+class MediaStreamAudioSink;
+class MediaStreamAudioSinkOwner;
+class PeerConnectionAudioSink;
 class WebAudioCapturerSource;
 class WebRtcAudioCapturer;
-class WebRtcAudioCapturerSinkOwner;
 
 // A WebRtcLocalAudioTrack instance contains the implementations of
-// MediaStreamTrack and WebRtcAudioCapturerSink.
+// MediaStreamTrack and MediaStreamAudioSink.
 // When an instance is created, it will register itself as a track to the
 // WebRtcAudioCapturer to get the captured data, and forward the data to
 // its |sinks_|. The data flow can be stopped by disabling the audio track.
@@ -48,14 +51,20 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
       webrtc::AudioSourceInterface* track_source,
       const webrtc::MediaConstraintsInterface* constraints);
 
-  // Add a sink to the track. This function will trigger a SetCaptureFormat()
+  // Add a sink to the track. This function will trigger a OnSetFormat()
   // call on the |sink|.
   // Called on the main render thread.
-  void AddSink(WebRtcAudioCapturerSink* sink);
+  void AddSink(MediaStreamAudioSink* sink);
 
   // Remove a sink from the track.
   // Called on the main render thread.
-  void RemoveSink(WebRtcAudioCapturerSink* sink);
+  void RemoveSink(MediaStreamAudioSink* sink);
+
+  // Add/remove PeerConnection sink to/from the track.
+  // TODO(xians): Remove these two methods after PeerConnection can use the
+  // same sink interface as MediaStreamAudioSink.
+  void AddSink(PeerConnectionAudioSink* sink);
+  void RemoveSink(PeerConnectionAudioSink* sink);
 
   // Starts the local audio track. Called on the main render thread and
   // should be called only once when audio track is created.
@@ -75,7 +84,7 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   // Method called by the capturer to set the audio parameters used by source
   // of the capture data..
   // Call on the capture audio thread.
-  void SetCaptureFormat(const media::AudioParameters& params);
+  void OnSetFormat(const media::AudioParameters& params);
 
   blink::WebAudioSourceProvider* audio_source_provider() const {
     return source_provider_.get();
@@ -92,7 +101,7 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   virtual ~WebRtcLocalAudioTrack();
 
  private:
-  typedef std::list<scoped_refptr<WebRtcAudioCapturerSinkOwner> > SinkList;
+  typedef std::list<scoped_refptr<MediaStreamAudioTrackSink> > SinkList;
 
   // cricket::AudioCapturer implementation.
   virtual void AddChannel(int channel_id) OVERRIDE;

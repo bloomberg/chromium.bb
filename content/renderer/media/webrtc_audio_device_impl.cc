@@ -50,15 +50,15 @@ int32_t WebRtcAudioDeviceImpl::Release() {
   }
   return ret;
 }
-int WebRtcAudioDeviceImpl::CaptureData(const std::vector<int>& channels,
-                                       const int16* audio_data,
-                                       int sample_rate,
-                                       int number_of_channels,
-                                       int number_of_frames,
-                                       int audio_delay_milliseconds,
-                                       int current_volume,
-                                       bool need_audio_processing,
-                                       bool key_pressed) {
+int WebRtcAudioDeviceImpl::OnData(const int16* audio_data,
+                                  int sample_rate,
+                                  int number_of_channels,
+                                  int number_of_frames,
+                                  const std::vector<int>& channels,
+                                  int audio_delay_milliseconds,
+                                  int current_volume,
+                                  bool need_audio_processing,
+                                  bool key_pressed) {
   int total_delay_ms = 0;
   {
     base::AutoLock auto_lock(lock_);
@@ -106,9 +106,9 @@ int WebRtcAudioDeviceImpl::CaptureData(const std::vector<int>& channels,
   return new_volume;
 }
 
-void WebRtcAudioDeviceImpl::SetCaptureFormat(
+void WebRtcAudioDeviceImpl::OnSetFormat(
     const media::AudioParameters& params) {
-  DVLOG(1) << "WebRtcAudioDeviceImpl::SetCaptureFormat()";
+  DVLOG(1) << "WebRtcAudioDeviceImpl::OnSetFormat()";
 }
 
 void WebRtcAudioDeviceImpl::RenderData(uint8* audio_data,

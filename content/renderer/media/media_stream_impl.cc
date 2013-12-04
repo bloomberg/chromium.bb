@@ -271,7 +271,14 @@ MediaStreamImpl::GetAudioRenderer(const GURL& url) {
 
   if (extra_data->is_local()) {
     // Create the local audio renderer if the stream contains audio tracks.
-    return CreateLocalAudioRenderer(extra_data->stream().get());
+    blink::WebVector<blink::WebMediaStreamTrack> audio_tracks;
+    web_stream.audioTracks(audio_tracks);
+    if (audio_tracks.isEmpty())
+      return NULL;
+
+    // TODO(xians): Add support for the case that the media stream contains
+    // multiple audio tracks.
+    return CreateLocalAudioRenderer(audio_tracks[0]);
   }
 
   webrtc::MediaStreamInterface* stream = extra_data->stream().get();
@@ -799,19 +806,8 @@ scoped_refptr<WebRtcAudioRenderer> MediaStreamImpl::CreateRemoteAudioRenderer(
 
 scoped_refptr<WebRtcLocalAudioRenderer>
 MediaStreamImpl::CreateLocalAudioRenderer(
-    webrtc::MediaStreamInterface* stream) {
-  if (stream->GetAudioTracks().empty())
-    return NULL;
-
-  DVLOG(1) << "MediaStreamImpl::CreateLocalAudioRenderer label:"
-           << stream->label();
-
-  webrtc::AudioTrackVector audio_tracks = stream->GetAudioTracks();
-  DCHECK_EQ(audio_tracks.size(), 1u);
-  webrtc::AudioTrackInterface* audio_track = audio_tracks[0];
-  DVLOG(1) << "audio_track.kind   : " << audio_track->kind()
-           << "audio_track.id     : " << audio_track->id()
-           << "audio_track.enabled: " << audio_track->enabled();
+    const blink::WebMediaStreamTrack& audio_track) {
+  DVLOG(1) << "MediaStreamImpl::CreateLocalAudioRenderer";
 
   int session_id = 0, sample_rate = 0, buffer_size = 0;
   if (!GetAuthorizedDeviceInfoForAudioRenderer(&session_id,
@@ -823,7 +819,7 @@ MediaStreamImpl::CreateLocalAudioRenderer(
   // Create a new WebRtcLocalAudioRenderer instance and connect it to the
   // existing WebRtcAudioCapturer so that the renderer can use it as source.
   return new WebRtcLocalAudioRenderer(
-      static_cast<WebRtcLocalAudioTrack*>(audio_track),
+      audio_track,
       RenderViewObserver::routing_id(),
       session_id,
       buffer_size);

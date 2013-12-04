@@ -20,15 +20,18 @@ namespace content {
 class CONTENT_EXPORT MediaStreamTrackExtraData
     : NON_EXPORTED_BASE(public blink::WebMediaStreamTrack::ExtraData) {
  public:
-  MediaStreamTrackExtraData(webrtc::MediaStreamTrackInterface* track);
+  MediaStreamTrackExtraData(webrtc::MediaStreamTrackInterface* track,
+                            bool is_local_track);
   virtual ~MediaStreamTrackExtraData();
 
   const scoped_refptr<webrtc::MediaStreamTrackInterface>& track() const {
     return track_;
   }
+  bool is_local_track () const { return is_local_track_; }
 
  private:
   scoped_refptr<webrtc::MediaStreamTrackInterface> track_;
+  const bool is_local_track_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamTrackExtraData);
 };

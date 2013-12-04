@@ -189,7 +189,7 @@ class CONTENT_EXPORT MediaStreamImpl
   scoped_refptr<WebRtcAudioRenderer> CreateRemoteAudioRenderer(
       webrtc::MediaStreamInterface* stream);
   scoped_refptr<WebRtcLocalAudioRenderer> CreateLocalAudioRenderer(
-      webrtc::MediaStreamInterface* stream);
+      const blink::WebMediaStreamTrack& audio_track);
 
   // Returns a valid session id if a single capture device is currently open
   // (and then the matching session_id), otherwise -1.

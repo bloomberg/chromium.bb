@@ -148,7 +148,8 @@ class CONTENT_EXPORT MediaStreamDependencyFactory
 
   static void AddNativeTrackToBlinkTrack(
       webrtc::MediaStreamTrackInterface* native_track,
-      const blink::WebMediaStreamTrack& webkit_track);
+      const blink::WebMediaStreamTrack& webkit_track,
+      bool is_local_track);
 
   static webrtc::MediaStreamInterface* GetNativeMediaStream(
       const blink::WebMediaStream& stream);

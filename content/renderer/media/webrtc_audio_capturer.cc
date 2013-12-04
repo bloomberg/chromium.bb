@@ -57,10 +57,10 @@ class WebRtcAudioCapturer::TrackOwner
     }
   }
 
-  void SetCaptureFormat(const media::AudioParameters& params) {
+  void OnSetFormat(const media::AudioParameters& params) {
     base::AutoLock lock(lock_);
     if (delegate_)
-      delegate_->SetCaptureFormat(params);
+      delegate_->OnSetFormat(params);
   }
 
   void Reset() {
@@ -238,7 +238,7 @@ void WebRtcAudioCapturer::AddTrack(WebRtcLocalAudioTrack* track) {
     tracks_.push_back(track_owner);
 
     // Also push the track to |tracks_to_notify_format_| so that we will call
-    // SetCaptureFormat() on the new track.
+    // OnSetFormat() on the new track.
     tracks_to_notify_format_.push_back(track_owner);
   }
 
@@ -450,7 +450,7 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
   // |tracks_to_notify_format| is empty.
   for (TrackList::const_iterator it = tracks_to_notify_format.begin();
        it != tracks_to_notify_format.end(); ++it) {
-    (*it)->SetCaptureFormat(params);
+    (*it)->OnSetFormat(params);
   }
 
   // Feed the data to the tracks.

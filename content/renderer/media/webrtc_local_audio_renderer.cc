@@ -56,21 +56,16 @@ void WebRtcLocalAudioRenderer::OnRenderError() {
   NOTIMPLEMENTED();
 }
 
-// content::WebRtcAudioCapturerSink implementation
-int WebRtcLocalAudioRenderer::CaptureData(const std::vector<int>& channels,
-                                          const int16* audio_data,
-                                          int sample_rate,
-                                          int number_of_channels,
-                                          int number_of_frames,
-                                          int audio_delay_milliseconds,
-                                          int current_volume,
-                                          bool need_audio_processing,
-                                          bool key_pressed) {
+// content::MediaStreamAudioSink implementation
+void WebRtcLocalAudioRenderer::OnData(const int16* audio_data,
+                                      int sample_rate,
+                                      int number_of_channels,
+                                      int number_of_frames) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("audio", "WebRtcLocalAudioRenderer::CaptureData");
   base::AutoLock auto_lock(thread_lock_);
   if (!playing_ || !volume_ || !loopback_fifo_)
-    return 0;
+    return;
 
   // Push captured audio to FIFO so it can be read by a local sink.
   if (loopback_fifo_->frames() + number_of_frames <=
@@ -88,13 +83,11 @@ int WebRtcLocalAudioRenderer::CaptureData(const std::vector<int>& channels,
   } else {
     DVLOG(1) << "FIFO is full";
   }
-
-  return 0;
 }
 
-void WebRtcLocalAudioRenderer::SetCaptureFormat(
+void WebRtcLocalAudioRenderer::OnSetFormat(
     const media::AudioParameters& params) {
-  DVLOG(1) << "WebRtcLocalAudioRenderer::SetCaptureFormat()";
+  DVLOG(1) << "WebRtcLocalAudioRenderer::OnSetFormat()";
   // If the source is restarted, we might have changed to another capture
   // thread.
   capture_thread_checker_.DetachFromThread();
@@ -148,7 +141,7 @@ void WebRtcLocalAudioRenderer::SetCaptureFormat(
 
 // WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer implementation.
 WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer(
-    WebRtcLocalAudioTrack* audio_track,
+    const blink::WebMediaStreamTrack& audio_track,
     int source_render_view_id,
     int session_id,
     int frames_per_buffer)
@@ -160,7 +153,6 @@ WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer(
       frames_per_buffer_(frames_per_buffer),
       volume_(0.0),
       sink_started_(false) {
-  DCHECK(audio_track);
   DVLOG(1) << "WebRtcLocalAudioRenderer::WebRtcLocalAudioRenderer()";
 }
 
@@ -174,11 +166,8 @@ void WebRtcLocalAudioRenderer::Start() {
   DVLOG(1) << "WebRtcLocalAudioRenderer::Start()";
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  if (!audio_track_)
-    return;  // Stop() has been called, so never start again.
-
   // We get audio data from |audio_track_|...
-  audio_track_->AddSink(this);
+  MediaStreamAudioSink::AddToAudioTrack(this, audio_track_);
   // ...and |sink_| will get audio data from us.
   DCHECK(!sink_.get());
   sink_ = AudioDeviceFactory::NewOutputDevice(source_render_view_id_);
@@ -213,12 +202,7 @@ void WebRtcLocalAudioRenderer::Stop() {
   sink_started_ = false;
 
   // Ensure that the capturer stops feeding us with captured audio.
-  // Note that, we do not stop the capturer here since it may still be used by
-  // the WebRTC ADM.
-  if (audio_track_) {
-    audio_track_->RemoveSink(this);
-    audio_track_ = NULL;
-  }
+  MediaStreamAudioSink::RemoveFromAudioTrack(this, audio_track_);
 }
 
 void WebRtcLocalAudioRenderer::Play() {

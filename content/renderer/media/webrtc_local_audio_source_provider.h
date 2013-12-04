@@ -5,12 +5,14 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBRTC_LOCAL_AUDIO_SOURCE_PROVIDER_H_
 #define CONTENT_RENDERER_MEDIA_WEBRTC_LOCAL_AUDIO_SOURCE_PROVIDER_H_
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/renderer/media/webrtc_audio_device_impl.h"
+#include "content/public/renderer/media_stream_audio_sink.h"
 #include "media/base/audio_converter.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -38,26 +40,21 @@ namespace content {
 //
 // All calls are protected by a lock.
 class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
-    : NON_EXPORTED_BASE(public media::AudioConverter::InputCallback),
-      NON_EXPORTED_BASE(public blink::WebAudioSourceProvider),
-      NON_EXPORTED_BASE(public WebRtcAudioCapturerSink) {
+    :  NON_EXPORTED_BASE(public blink::WebAudioSourceProvider),
+       NON_EXPORTED_BASE(public media::AudioConverter::InputCallback),
+       NON_EXPORTED_BASE(public MediaStreamAudioSink) {
  public:
   static const size_t kWebAudioRenderBufferSize;
 
   WebRtcLocalAudioSourceProvider();
   virtual ~WebRtcLocalAudioSourceProvider();
 
-  // WebRtcAudioCapturerSink implementation.
-  virtual int CaptureData(const std::vector<int>& channels,
-                          const int16* audio_data,
-                          int sample_rate,
-                          int number_of_channels,
-                          int number_of_frames,
-                          int audio_delay_milliseconds,
-                          int current_volume,
-                          bool need_audio_processing,
-                          bool key_pressed) OVERRIDE;
-  virtual void SetCaptureFormat(const media::AudioParameters& params) OVERRIDE;
+  // MediaStreamAudioSink implementation.
+  virtual void OnData(const int16* audio_data,
+                      int sample_rate,
+                      int number_of_channels,
+                      int number_of_frames) OVERRIDE;
+  virtual void OnSetFormat(const media::AudioParameters& params) OVERRIDE;
 
   // blink::WebAudioSourceProvider implementation.
   virtual void setClient(blink::WebAudioSourceProviderClient* client) OVERRIDE;

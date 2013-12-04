@@ -65,20 +65,20 @@ class MockCapturerSource : public media::AudioCapturerSource {
   virtual ~MockCapturerSource() {}
 };
 
-class MockWebRtcAudioCapturerSink : public WebRtcAudioCapturerSink {
+class MockPeerConnectionAudioSink : public PeerConnectionAudioSink {
  public:
-  MockWebRtcAudioCapturerSink() {}
-  ~MockWebRtcAudioCapturerSink() {}
-  MOCK_METHOD9(CaptureData, int(const std::vector<int>& channels,
-                                const int16* audio_data,
-                                int sample_rate,
-                                int number_of_channels,
-                                int number_of_frames,
-                                int audio_delay_milliseconds,
-                                int current_volume,
-                                bool need_audio_processing,
-                                bool key_pressed));
-  MOCK_METHOD1(SetCaptureFormat, void(const media::AudioParameters& params));
+  MockPeerConnectionAudioSink() {}
+  ~MockPeerConnectionAudioSink() {}
+  MOCK_METHOD9(OnData, int(const int16* audio_data,
+                           int sample_rate,
+                           int number_of_channels,
+                           int number_of_frames,
+                           const std::vector<int>& channels,
+                           int audio_delay_milliseconds,
+                           int current_volume,
+                           bool need_audio_processing,
+                           bool key_pressed));
+  MOCK_METHOD1(OnSetFormat, void(const media::AudioParameters& params));
 };
 
 }  // namespace
@@ -125,8 +125,8 @@ class WebRtcAudioCapturerTest : public testing::Test {
 // those values should be correctly stored and passed to the track.
 TEST_F(WebRtcAudioCapturerTest, VerifyAudioParams) {
   // Connect a mock sink to the track.
-  scoped_ptr<MockWebRtcAudioCapturerSink> sink(
-      new MockWebRtcAudioCapturerSink());
+  scoped_ptr<MockPeerConnectionAudioSink> sink(
+      new MockPeerConnectionAudioSink());
   track_->AddSink(sink.get());
 
   int delay_ms = 65;
@@ -146,12 +146,12 @@ TEST_F(WebRtcAudioCapturerTest, VerifyAudioParams) {
   media::AudioCapturerSource::CaptureCallback* callback =
       static_cast<media::AudioCapturerSource::CaptureCallback*>(capturer_);
   // Verify the sink is getting the correct values.
-  EXPECT_CALL(*sink, SetCaptureFormat(_));
+  EXPECT_CALL(*sink, OnSetFormat(_));
   EXPECT_CALL(*sink,
-              CaptureData(_, _, params_.sample_rate(), params_.channels(),
-                          expected_buffer_size, delay_ms,
-                          expected_volume_value, expected_need_audio_processing,
-                          key_pressed)).Times(AtLeast(1));
+              OnData(_, params_.sample_rate(), params_.channels(),
+                     expected_buffer_size, _, delay_ms,
+                     expected_volume_value, expected_need_audio_processing,
+                     key_pressed)).Times(AtLeast(1));
   callback->Capture(audio_bus.get(), delay_ms, volume, key_pressed);
 
   // Verify the cached values in the capturer fits what we expect.

@@ -249,7 +249,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
             audio_track_id, capturer, NULL, NULL,
             &audio_constraints));
     MediaStreamDependencyFactory::AddNativeTrackToBlinkTrack(
-        audio_track.get(), audio_tracks[0]);
+        audio_track.get(), audio_tracks[0], true);
     native_stream->AddTrack(audio_track.get());
 
     local_stream.videoTracks(video_tracks);
@@ -259,7 +259,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
         mock_dependency_factory_->CreateLocalVideoTrack(
             video_track_id, source));
     MediaStreamDependencyFactory::AddNativeTrackToBlinkTrack(
-        video_track.get(), video_tracks[0]);
+        video_track.get(), video_tracks[0], true);
     native_stream->AddTrack(video_track.get());
 
     local_stream.setExtraData(

@@ -25,7 +25,7 @@ class WebRtcLocalAudioSourceProviderTest : public testing::Test {
     sink_bus_ = media::AudioBus::Create(sink_params_);
     source_provider_.reset(new WebRtcLocalAudioSourceProvider());
     source_provider_->SetSinkParamsForTesting(sink_params_);
-    source_provider_->SetCaptureFormat(source_params_);
+    source_provider_->OnSetFormat(source_params_);
   }
 
   media::AudioParameters source_params_;
@@ -54,13 +54,10 @@ TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
   std::fill(source_data_.get(), source_data_.get() + length, 1);
 
   // Deliver data to |source_provider_|.
-  std::vector<int> voe_channels;
-  source_provider_->CaptureData(voe_channels,
-                                source_data_.get(),
-                                source_params_.sample_rate(),
-                                source_params_.channels(),
-                                source_params_.frames_per_buffer(),
-                                0, 0, false, false);
+  source_provider_->OnData(source_data_.get(),
+                           source_params_.sample_rate(),
+                           source_params_.channels(),
+                           source_params_.frames_per_buffer());
 
   // Consume the first packet in the resampler, which contains only zero.
   // And the consumption of the data will trigger pulling the real packet from
@@ -77,12 +74,10 @@ TEST_F(WebRtcLocalAudioSourceProviderTest, VerifyDataFlow) {
   }
 
   // Prepare the second packet for featching.
-  source_provider_->CaptureData(voe_channels,
-                                source_data_.get(),
-                                source_params_.sample_rate(),
-                                source_params_.channels(),
-                                source_params_.frames_per_buffer(),
-                                0, 0, false, false);
+  source_provider_->OnData(source_data_.get(),
+                           source_params_.sample_rate(),
+                           source_params_.channels(),
+                           source_params_.frames_per_buffer());
 
   // Verify the packets.
   for (int i = 0; i < source_params_.frames_per_buffer();

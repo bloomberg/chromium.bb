@@ -53,8 +53,8 @@ void InitializeWebkitTrack(webrtc::MediaStreamTrackInterface* track,
 
   webkit_source.initialize(webkit_track_id, type, webkit_track_id);
   webkit_track->initialize(webkit_track_id, webkit_source);
-  content::MediaStreamDependencyFactory::AddNativeTrackToBlinkTrack(track,
-      *webkit_track);
+  content::MediaStreamDependencyFactory::AddNativeTrackToBlinkTrack(
+      track, *webkit_track, false);
 }
 
 content::RemoteMediaStreamTrackObserver* FindTrackObserver(

@@ -43,10 +43,10 @@ WebRtcLocalAudioSourceProvider::~WebRtcLocalAudioSourceProvider() {
     audio_converter_->RemoveInput(this);
 }
 
-void WebRtcLocalAudioSourceProvider::SetCaptureFormat(
+void WebRtcLocalAudioSourceProvider::OnSetFormat(
     const media::AudioParameters& params) {
   // We need detach the thread here because it will be a new capture thread
-  // calling SetCaptureFormat() and CaptureData() if the source is restarted.
+  // calling OnSetFormat() and OnData() if the source is restarted.
   capture_thread_checker_.DetachFromThread();
   DCHECK(capture_thread_checker_.CalledOnValidThread());
   DCHECK(params.IsValid());
@@ -68,20 +68,15 @@ void WebRtcLocalAudioSourceProvider::SetCaptureFormat(
                                        params.frames_per_buffer());
 }
 
-int WebRtcLocalAudioSourceProvider::CaptureData(
-    const std::vector<int>& channels,
+void WebRtcLocalAudioSourceProvider::OnData(
     const int16* audio_data,
     int sample_rate,
     int number_of_channels,
-    int number_of_frames,
-    int audio_delay_milliseconds,
-    int current_volume,
-    bool need_audio_processing,
-    bool key_pressed) {
+    int number_of_frames) {
   DCHECK(capture_thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   if (!is_enabled_)
-    return 0;
+    return;
 
   DCHECK(fifo_.get());
 
@@ -98,8 +93,6 @@ int WebRtcLocalAudioSourceProvider::CaptureData(
     // WebAudio stops consuming data.
     DLOG(WARNING) << "Local source provicer FIFO is full" << fifo_->frames();
   }
-
-  return 0;
 }
 
 void WebRtcLocalAudioSourceProvider::setClient(
