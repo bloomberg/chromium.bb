@@ -75,7 +75,7 @@ cr.define('speech', function() {
 
     if (messageEvent.data == 'audio') {
       if (this.state < PluginState.READY)
-        this.onReady_();
+        this.onReady_(this);
       this.state = PluginState.RECOGNIZING;
     } else if (messageEvent.data == 'stopped') {
       this.state = PluginState.READY;
@@ -133,23 +133,26 @@ cr.define('speech', function() {
    * Asks the plugin to start recognizing the hotword.
    */
   PluginManager.prototype.startRecognizer = function() {
-    $('recognizer').postMessage(pluginCommands.START_RECOGNIZING);
+    if (this.state == PluginState.READY)
+      $('recognizer').postMessage(pluginCommands.START_RECOGNIZING);
   };
 
   /**
    * Asks the plugin to stop recognizing the hotword.
    */
   PluginManager.prototype.stopRecognizer = function() {
-    $('recognizer').postMessage(pluginCommands.STOP_RECOGNIZING);
+    if (this.state == PluginState.RECOGNIZING)
+      $('recognizer').postMessage(pluginCommands.STOP_RECOGNIZING);
   };
 
   /**
    * Sends the actual audio wave data.
    *
-   * @param {ArrayBuffer} data The audio data to be recognized.
+   * @param {cr.event.Event} event The event for the audio data.
    */
-  PluginManager.prototype.sendAudioData = function(data) {
-    $('recognizer').postMessage(data);
+  PluginManager.prototype.sendAudioData = function(event) {
+    if (this.state == PluginState.RECOGNIZING)
+      $('recognizer').postMessage(event.data.buffer);
   };
 
   return {

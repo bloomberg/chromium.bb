@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview The manager of audio streams and interaction with the plugin.
+ * @fileoverview The manager of audio streams.
  */
 
 cr.define('speech', function() {
@@ -15,38 +15,21 @@ cr.define('speech', function() {
    * @enum {number}
    */
   var AudioState = {
-    UNINITIALIZED: 0,
-    READY: 1,
-    RECOGNIZING: 2
+    STOPPED: 0,
+    LISTENING: 1
   };
 
   /**
    * @constructor
+   * @extends {cr.EventTarget}
    */
-  function AudioManager(onReady, onRecognizing, onRecognized) {
-    this.state = AudioState.UNINITIALIZED;
-    if (!speech.isPluginAvailable())
-      return;
-    this.onReady_ = onReady;
-    this.onRecognizing_ = onRecognizing;
-    this.pluginManager_ = new speech.PluginManager(
-        this.onPluginReady_.bind(this), onRecognized);
+  function AudioManager() {
     this.audioContext_ = new window.webkitAudioContext();
     this.audioProc_ = null;
-    this.pluginManager_.scheduleInitialize(
-        this.audioContext_.sampleRate,
-        'chrome://app-list/okgoogle_hotword.config');
+    this.state = AudioState.STOPPED;
   };
 
-  /**
-   * Called when the plugin is ready.
-   *
-   * @private
-   */
-  AudioManager.prototype.onPluginReady_ = function() {
-    this.state = AudioState.READY;
-    this.onReady_();
-  };
+  AudioManager.prototype.__proto__ = cr.EventTarget.prototype;
 
   /**
    * Called when the audio data arrives.
@@ -59,7 +42,9 @@ cr.define('speech', function() {
     var intData = new Int16Array(data.length);
     for (var i = 0; i < data.length; ++i)
       intData[i] = Math.round(data[i] * 32767);
-    this.pluginManager_.sendAudioData(intData.buffer);
+    var event = new Event('audio');
+    event.data = intData;
+    this.dispatchEvent(event);
   };
 
   /**
@@ -76,27 +61,27 @@ cr.define('speech', function() {
 
     audioIn.connect(this.audioProc_);
     this.audioProc_.connect(this.audioContext_.destination);
-    this.state = AudioState.RECOGNIZING;
-    this.onRecognizing_();
+    this.state = AudioState.LISTENING;
   };
 
   /**
-   * Starts the audio recognition with the plugin.
+   * Returns the sampling rate of the current audio context.
+   * @return {number} The sampling rate.
+   */
+  AudioManager.prototype.getSampleRate = function() {
+    return this.audioContext_.sampleRate;
+  };
+
+  /**
+   * Starts the audio processing.
    */
   AudioManager.prototype.start = function() {
-    // Not yet initialized.
-    if (this.state != AudioState.READY)
+    if (this.state == AudioState.LISTENING)
       return;
-    if (this.pluginManager_.state < speech.PluginState.READY)
-      return;
-
-    if (this.pluginManager_.state == speech.PluginState.READY)
-      this.pluginManager_.startRecognizer();
 
     if (this.audioProc_) {
       this.audioProc_.connect(this.audioContext_.destination);
-      this.state = AudioState.RECOGNIZING;
-      this.onRecognizing_();
+      this.state = AudioState.LISTENING;
       return;
     }
 
@@ -107,17 +92,17 @@ cr.define('speech', function() {
   };
 
   /**
-   * Stops the audio recognition.
+   * Stops the audio processing.
    */
   AudioManager.prototype.stop = function() {
-    if (this.state <= AudioState.READY)
+    if (this.state != AudioState.LISTENING)
       return;
     this.audioProc_.disconnect();
-    this.pluginManager_.stopRecognizer();
-    this.state = AudioState.READY;
+    this.state = AudioState.STOPPED;
   };
 
   return {
-    AudioManager: AudioManager
+    AudioManager: AudioManager,
+    AudioState: AudioState
   };
 });

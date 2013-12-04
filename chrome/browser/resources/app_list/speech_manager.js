@@ -19,7 +19,6 @@ cr.define('speech', function() {
    * @enum {string}
    */
   var SpeechState = {
-    UNINITIALIZED: 'UNINITIALIZED',
     READY: 'READY',
     HOTWORD_RECOGNIZING: 'HOTWORD_RECOGNIZING',
     RECOGNIZING: 'RECOGNIZING'
@@ -29,12 +28,18 @@ cr.define('speech', function() {
    * @constructor
    */
   function SpeechManager() {
-    this.audioManager_ = new speech.AudioManager(
-        this.onHotwordRecognizerReady_.bind(this),
-        this.onHotwordRecognizing_.bind(this),
-        this.onHotwordRecognized_.bind(this));
+    this.audioManager_ = new speech.AudioManager();
+    this.audioManager_.addEventListener('audio', this.onAudioLevel_.bind(this));
+    if (speech.isPluginAvailable()) {
+      var pluginManager = new speech.PluginManager(
+          this.onHotwordRecognizerReady_.bind(this),
+          this.onHotwordRecognized_.bind(this));
+      pluginManager.scheduleInitialize(
+          this.audioManager_.getSampleRate(),
+          'chrome://app-list/okgoogle_hotword.config');
+    }
     this.speechRecognitionManager_ = new speech.SpeechRecognitionManager(this);
-    this.setState_(SpeechState.UNINITIALIZED);
+    this.setState_(SpeechState.READY);
   }
 
   /**
@@ -49,11 +54,32 @@ cr.define('speech', function() {
   };
 
   /**
-   * Called when the hotword recognizer is ready.
+   * Called with the mean audio level when audio data arrives.
    *
+   * @param {cr.event.Event} event The event object for the audio data.
    * @private
    */
-  SpeechManager.prototype.onHotwordRecognizerReady_ = function() {
+  SpeechManager.prototype.onAudioLevel_ = function(event) {
+    var data = event.data;
+    var level = 0;
+    for (var i = 0; i < data.length; ++i)
+      level += Math.abs(data[i]);
+    level /= data.length;
+    // TODO(mukai): use the result to make the audio feedback during the speech
+    // recognition.
+  };
+
+  /**
+   * Called when the hotword recognizer is ready.
+   *
+   * @param {PluginManager} pluginManager The hotword plugin manager which gets
+   *   ready.
+   * @private
+   */
+  SpeechManager.prototype.onHotwordRecognizerReady_ = function(pluginManager) {
+    this.pluginManager_ = pluginManager;
+    this.audioManager_.addEventListener(
+        'audio', pluginManager.sendAudioData.bind(pluginManager));
     this.setState_(SpeechState.READY);
   };
 
@@ -66,18 +92,9 @@ cr.define('speech', function() {
   SpeechManager.prototype.onHotwordRecognized_ = function(confidence) {
     if (this.state != SpeechState.HOTWORD_RECOGNIZING)
       return;
-    this.audioManager_.stop();
     this.setState_(SpeechState.READY);
+    this.pluginManager_.stopRecognizer();
     this.speechRecognitionManager_.start();
-  };
-
-  /**
-   * Called when the hotword recognition has started.
-   *
-   * @private
-   */
-  SpeechManager.prototype.onHotwordRecognizing_ = function() {
-    this.setState_(SpeechState.HOTWORD_RECOGNIZING);
   };
 
   /**
@@ -108,7 +125,13 @@ cr.define('speech', function() {
    */
   SpeechManager.prototype.onSpeechRecognitionEnded = function() {
     // Restarts the hotword recognition.
-    this.audioManager_.start();
+    if (this.pluginManager_) {
+      this.pluginManager_.startRecognizer();
+      this.audioManager_.start();
+      this.setState_(SpeechState.HOTWORD_RECOGNIZING);
+    } else {
+      this.audioManager_.stop();
+    }
     chrome.send('setSpeechRecognitionState', [false]);
   };
 
@@ -118,33 +141,32 @@ cr.define('speech', function() {
    * @param {SpeechRecognitionError} e The error object.
    */
   SpeechManager.prototype.onSpeechRecognitionError = function(e) {
-    this.setState_(SpeechState.UNINITIALIZED);
+    this.setState_(SpeechState.READY);
   };
 
   /**
    * Starts the speech recognition session.
    */
   SpeechManager.prototype.start = function() {
-    if (this.state == SpeechState.UNINITIALIZED) {
-      console.warn('hotword recognizer is not yet initialized');
+    if (!this.pluginManager_)
       return;
-    }
 
     if (this.state != SpeechState.READY) {
       console.warn('Already in recognition state...');
       return;
     }
 
+    this.pluginManager_.startRecognizer();
     this.audioManager_.start();
+    this.setState_(SpeechState.HOTWORD_RECOGNIZING);
   };
 
   /**
    * Stops the speech recognition session.
    */
   SpeechManager.prototype.stop = function() {
-    if (this.state == SpeechState.UNINITIALIZED)
-      return;
-
+    if (this.pluginManager_)
+      this.pluginManager_.stopRecognizer();
     this.audioManager_.stop();
     this.speechRecognitionManager_.stop();
     this.setState_(SpeechState.READY);
@@ -155,9 +177,13 @@ cr.define('speech', function() {
    */
   SpeechManager.prototype.toggleSpeechRecognition = function() {
     if (this.state == SpeechState.RECOGNIZING) {
+      this.audioManager_.stop();
       this.speechRecognitionManager_.stop();
     } else {
-      this.audioManager_.stop();
+      if (this.pluginManager_)
+        this.pluginManager_.stopRecognizer();
+      if (this.audioManager_.state == speech.AudioState.STOPPED)
+        this.audioManager_.start();
       this.speechRecognitionManager_.start();
     }
   };
