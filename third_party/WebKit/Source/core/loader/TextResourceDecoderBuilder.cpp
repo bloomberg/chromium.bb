@@ -44,7 +44,7 @@ static inline bool canReferToParentFrameEncoding(const Frame* frame, const Frame
 }
 
 
-TextResourceDecoderBuilder::TextResourceDecoderBuilder(const String& mimeType, const String& encoding, bool encodingUserChoosen)
+TextResourceDecoderBuilder::TextResourceDecoderBuilder(const AtomicString& mimeType, const AtomicString& encoding, bool encodingUserChoosen)
     : m_mimeType(mimeType)
     , m_encoding(encoding)
     , m_encodingWasChosenByUser(encodingUserChoosen)
@@ -72,7 +72,7 @@ inline void TextResourceDecoderBuilder::setupEncoding(TextResourceDecoder* decod
     Frame* parentFrame = frame ? frame->tree().parent() : 0;
 
     if (!m_encoding.isEmpty())
-        decoder->setEncoding(m_encoding, m_encodingWasChosenByUser ? TextResourceDecoder::UserChosenEncoding : TextResourceDecoder::EncodingFromHTTPHeader);
+        decoder->setEncoding(m_encoding.string(), m_encodingWasChosenByUser ? TextResourceDecoder::UserChosenEncoding : TextResourceDecoder::EncodingFromHTTPHeader);
 
     // Set the hint encoding to the parent frame encoding only if
     // the parent and the current frames share the security origin.
@@ -102,7 +102,7 @@ PassOwnPtr<TextResourceDecoder> TextResourceDecoderBuilder::buildFor(Document* d
 void TextResourceDecoderBuilder::clear()
 {
     if (!m_encodingWasChosenByUser)
-        m_encoding = String();
+        m_encoding = nullAtom;
 }
 
 }

@@ -345,7 +345,7 @@ bool DocumentLoader::isRedirectAfterPost(const ResourceRequest& newRequest, cons
 void DocumentLoader::handleSubstituteDataLoadNow(DocumentLoaderTimer*)
 {
     RefPtr<DocumentLoader> protect(this);
-    ResourceResponse response(m_request.url(), m_substituteData.mimeType(), m_substituteData.content()->size(), m_substituteData.textEncoding(), "");
+    ResourceResponse response(m_request.url(), m_substituteData.mimeType(), m_substituteData.content()->size(), m_substituteData.textEncoding(), emptyString());
     responseReceived(0, response);
     if (m_substituteData.content()->size())
         dataReceived(0, m_substituteData.content()->data(), m_substituteData.content()->size());
@@ -563,12 +563,12 @@ void DocumentLoader::ensureWriter()
     ensureWriter(m_response.mimeType());
 }
 
-void DocumentLoader::ensureWriter(const String& mimeType, const KURL& overridingURL)
+void DocumentLoader::ensureWriter(const AtomicString& mimeType, const KURL& overridingURL)
 {
     if (m_writer)
         return;
 
-    const String& encoding = overrideEncoding().isNull() ? response().textEncodingName().string() : overrideEncoding();
+    const AtomicString& encoding = overrideEncoding().isNull() ? response().textEncodingName() : overrideEncoding();
     m_writer = createWriterFor(m_frame, 0, requestURL(), mimeType, encoding, false, false);
     m_writer->setDocumentWasLoadedAsPartOfNavigation();
     // This should be set before receivedFirstData().
@@ -803,7 +803,7 @@ bool DocumentLoader::maybeLoadEmpty()
 
     if (m_request.url().isEmpty() && !frameLoader()->stateMachine()->creatingInitialEmptyDocument())
         m_request.setURL(blankURL());
-    m_response = ResourceResponse(m_request.url(), "text/html", 0, String(), String());
+    m_response = ResourceResponse(m_request.url(), "text/html", 0, nullAtom, String());
     finishedLoading(monotonicallyIncreasingTime());
     return true;
 }
@@ -877,7 +877,7 @@ void DocumentLoader::cancelMainResourceLoad(const ResourceError& resourceError)
     mainReceivedError(error);
 }
 
-DocumentWriter* DocumentLoader::beginWriting(const String& mimeType, const String& encoding, const KURL& url)
+DocumentWriter* DocumentLoader::beginWriting(const AtomicString& mimeType, const AtomicString& encoding, const KURL& url)
 {
     m_writer = createWriterFor(m_frame, 0, url, mimeType, encoding, false, true);
     return m_writer.get();
@@ -890,7 +890,7 @@ void DocumentLoader::endWriting(DocumentWriter* writer)
     m_writer.clear();
 }
 
-PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const Document* ownerDocument, const KURL& url, const String& mimeType, const String& encoding, bool userChosen, bool dispatch)
+PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const Document* ownerDocument, const KURL& url, const AtomicString& mimeType, const AtomicString& encoding, bool userChosen, bool dispatch)
 {
     // Create a new document before clearing the frame, because it may need to
     // inherit an aliased security context.
@@ -928,7 +928,7 @@ PassRefPtr<DocumentWriter> DocumentLoader::createWriterFor(Frame* frame, const D
     return DocumentWriter::create(document.get(), mimeType, encoding, userChosen);
 }
 
-String DocumentLoader::mimeType() const
+const AtomicString& DocumentLoader::mimeType() const
 {
     if (m_writer)
         return m_writer->mimeType();
@@ -947,7 +947,7 @@ void DocumentLoader::setUserChosenEncoding(const String& charset)
 void DocumentLoader::replaceDocument(const String& source, Document* ownerDocument)
 {
     m_frame->loader().stopAllLoaders();
-    m_writer = createWriterFor(m_frame, ownerDocument, m_frame->document()->url(), mimeType(), m_writer ? m_writer->encoding() : "",  m_writer ? m_writer->encodingWasChosenByUser() : false, true);
+    m_writer = createWriterFor(m_frame, ownerDocument, m_frame->document()->url(), mimeType(), m_writer ? m_writer->encoding() : emptyAtom,  m_writer ? m_writer->encodingWasChosenByUser() : false, true);
     if (!source.isNull())
         m_writer->appendReplacingData(source);
     endWriting(m_writer.get());

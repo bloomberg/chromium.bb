@@ -37,7 +37,7 @@ namespace WebCore {
     public:
         SubstituteData() { }
 
-        SubstituteData(PassRefPtr<SharedBuffer> content, const String& mimeType, const String& textEncoding, const KURL& failingURL)
+        SubstituteData(PassRefPtr<SharedBuffer> content, const AtomicString& mimeType, const AtomicString& textEncoding, const KURL& failingURL)
             : m_content(content)
             , m_mimeType(mimeType)
             , m_textEncoding(textEncoding)
@@ -48,14 +48,14 @@ namespace WebCore {
         bool isValid() const { return m_content != 0; }
 
         const SharedBuffer* content() const { return m_content.get(); }
-        const String& mimeType() const { return m_mimeType; }
-        const String& textEncoding() const { return m_textEncoding; }
+        const AtomicString& mimeType() const { return m_mimeType; }
+        const AtomicString& textEncoding() const { return m_textEncoding; }
         const KURL& failingURL() const { return m_failingURL; }
 
     private:
         RefPtr<SharedBuffer> m_content;
-        String m_mimeType;
-        String m_textEncoding;
+        AtomicString m_mimeType;
+        AtomicString m_textEncoding;
         KURL m_failingURL;
         KURL m_responseURL;
     };

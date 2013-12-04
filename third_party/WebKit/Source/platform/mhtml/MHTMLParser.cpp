@@ -260,7 +260,7 @@ PassRefPtr<MHTMLArchive> MHTMLParser::parseArchiveWithHeader(MIMEHeader* header)
 
 void MHTMLParser::addResourceToArchive(ArchiveResource* resource, MHTMLArchive* archive)
 {
-    const String& mimeType = resource->mimeType();
+    const AtomicString& mimeType = resource->mimeType();
     if (!MIMETypeRegistry::isSupportedNonImageMIMEType(mimeType) || MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType) || mimeType == "text/css") {
         m_resources.append(resource);
         return;
@@ -364,7 +364,7 @@ PassRefPtr<ArchiveResource> MHTMLParser::parseNextPart(const MIMEHeader& mimeHea
     // The specs mentions 5 ways to resolve a URL: http://tools.ietf.org/html/rfc2557#section-5
     // IE and Firefox (UNMht) seem to generate only absolute URLs.
     KURL location = KURL(KURL(), mimeHeader.contentLocation());
-    return ArchiveResource::create(contentBuffer, location, mimeHeader.contentType(), mimeHeader.charset(), String());
+    return ArchiveResource::create(contentBuffer, location, AtomicString(mimeHeader.contentType()), AtomicString(mimeHeader.charset()), String());
 }
 
 size_t MHTMLParser::frameCount() const

@@ -42,13 +42,13 @@ class TextResourceDecoder;
 
 class TextResourceDecoderBuilder {
 public:
-    TextResourceDecoderBuilder(const String& mimeType, const String& encoding, bool encodingUserChoosen);
+    TextResourceDecoderBuilder(const AtomicString& mimeType, const AtomicString& encoding, bool encodingUserChoosen);
     ~TextResourceDecoderBuilder();
 
     PassOwnPtr<TextResourceDecoder> buildFor(Document*);
 
-    const String& mimeType() const { return m_mimeType; }
-    const String& encoding() const { return m_encoding; }
+    const AtomicString& mimeType() const { return m_mimeType; }
+    const AtomicString& encoding() const { return m_encoding; }
     bool encodingWasChosenByUser() const { return m_encodingWasChosenByUser; }
 
     void clear();
@@ -57,8 +57,8 @@ private:
     PassOwnPtr<TextResourceDecoder> createDecoderInstance(Document*);
     void setupEncoding(TextResourceDecoder*, Document*);
 
-    String m_mimeType;
-    String m_encoding;
+    AtomicString m_mimeType;
+    AtomicString m_encoding;
     bool m_encodingWasChosenByUser;
 };
 

@@ -81,10 +81,10 @@ namespace WebCore {
         unsigned long mainResourceIdentifier() const;
 
         void replaceDocument(const String& source, Document*);
-        DocumentWriter* beginWriting(const String& mimeType, const String& encoding, const KURL& = KURL());
+        DocumentWriter* beginWriting(const AtomicString& mimeType, const AtomicString& encoding, const KURL& = KURL());
         void endWriting(DocumentWriter*);
 
-        String mimeType() const;
+        const AtomicString& mimeType() const;
 
         void setUserChosenEncoding(const String& charset);
 
@@ -119,7 +119,7 @@ namespace WebCore {
         bool replacesCurrentHistoryItem() const { return m_replacesCurrentHistoryItem; }
         void setReplacesCurrentHistoryItem(bool replacesCurrentHistoryItem) { m_replacesCurrentHistoryItem = replacesCurrentHistoryItem; }
         bool isLoadingInAPISense() const;
-        const String& overrideEncoding() const { return m_overrideEncoding; }
+        const AtomicString& overrideEncoding() const { return m_overrideEncoding; }
 
         bool scheduleArchiveLoad(Resource*, const ResourceRequest&);
         void cancelPendingSubstituteLoad(ResourceLoader*);
@@ -132,7 +132,7 @@ namespace WebCore {
         const NavigationAction& triggeringAction() const { return m_triggeringAction; }
         void setTriggeringAction(const NavigationAction& action) { m_triggeringAction = action; }
 
-        void setOverrideEncoding(const String& encoding) { m_overrideEncoding = encoding; }
+        void setOverrideEncoding(const AtomicString& encoding) { m_overrideEncoding = encoding; }
 
         void setDefersLoading(bool);
 
@@ -165,10 +165,10 @@ namespace WebCore {
         Vector<KURL> m_redirectChain;
 
     private:
-        static PassRefPtr<DocumentWriter> createWriterFor(Frame*, const Document* ownerDocument, const KURL&, const String& mimeType, const String& encoding, bool userChosen, bool dispatch);
+        static PassRefPtr<DocumentWriter> createWriterFor(Frame*, const Document* ownerDocument, const KURL&, const AtomicString& mimeType, const AtomicString& encoding, bool userChosen, bool dispatch);
 
         void ensureWriter();
-        void ensureWriter(const String& mimeType, const KURL& overridingURL = KURL());
+        void ensureWriter(const AtomicString& mimeType, const KURL& overridingURL = KURL());
 
         Document* document() const;
 
@@ -240,7 +240,7 @@ namespace WebCore {
         bool m_isClientRedirect;
         bool m_replacesCurrentHistoryItem;
 
-        String m_overrideEncoding;
+        AtomicString m_overrideEncoding;
 
         // The action that triggered loading - we keep this around for the
         // benefit of the various policy handlers.

@@ -86,7 +86,7 @@ public:
 
     // These functions start a load. All eventually call into loadWithNavigationAction() or loadInSameDocument().
     void load(const FrameLoadRequest&); // The entry point for non-reload, non-history loads.
-    void reload(ReloadPolicy = NormalReload, const KURL& overrideURL = KURL(), const String& overrideEncoding = String());
+    void reload(ReloadPolicy = NormalReload, const KURL& overrideURL = KURL(), const AtomicString& overrideEncoding = nullAtom);
     void loadHistoryItem(HistoryItem*, HistoryLoadType = HistoryDifferentDocumentLoad); // The entry point for all back/forward loads
 
     static void reportLocalLoadFailed(Frame*, const String& url);
@@ -236,7 +236,7 @@ private:
 
     // Calls continueLoadAfterNavigationPolicy
     void loadWithNavigationAction(const NavigationAction&, FrameLoadType, PassRefPtr<FormState>,
-        const SubstituteData&, ClientRedirectPolicy = NotClientRedirect, const String& overrideEncoding = String());
+        const SubstituteData&, ClientRedirectPolicy = NotClientRedirect, const AtomicString& overrideEncoding = nullAtom);
 
     void detachChildren();
     void closeAndRemoveChild(Frame*);

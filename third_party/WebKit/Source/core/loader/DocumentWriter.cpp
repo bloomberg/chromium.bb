@@ -44,12 +44,12 @@
 
 namespace WebCore {
 
-PassRefPtr<DocumentWriter> DocumentWriter::create(Document* document, const String& mimeType, const String& encoding, bool encodingUserChoosen)
+PassRefPtr<DocumentWriter> DocumentWriter::create(Document* document, const AtomicString& mimeType, const AtomicString& encoding, bool encodingUserChoosen)
 {
     return adoptRef(new DocumentWriter(document, mimeType, encoding, encodingUserChoosen));
 }
 
-DocumentWriter::DocumentWriter(Document* document, const String& mimeType, const String& encoding, bool encodingUserChoosen)
+DocumentWriter::DocumentWriter(Document* document, const AtomicString& mimeType, const AtomicString& encoding, bool encodingUserChoosen)
     : m_document(document)
     , m_decoderBuilder(mimeType, encoding, encodingUserChoosen)
     // We grab a reference to the parser so that we'll always send data to the

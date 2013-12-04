@@ -784,7 +784,7 @@ void FrameLoader::reportLocalLoadFailed(Frame* frame, const String& url)
     frame->document()->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Not allowed to load local resource: " + url);
 }
 
-void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, const String& overrideEncoding)
+void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, const AtomicString& overrideEncoding)
 {
     DocumentLoader* documentLoader = activeDocumentLoader();
     if (!documentLoader)
@@ -1340,7 +1340,7 @@ bool FrameLoader::shouldClose()
     return shouldClose;
 }
 
-void FrameLoader::loadWithNavigationAction(const NavigationAction& action, FrameLoadType type, PassRefPtr<FormState> formState, const SubstituteData& substituteData, ClientRedirectPolicy clientRedirect, const String& overrideEncoding)
+void FrameLoader::loadWithNavigationAction(const NavigationAction& action, FrameLoadType type, PassRefPtr<FormState> formState, const SubstituteData& substituteData, ClientRedirectPolicy clientRedirect, const AtomicString& overrideEncoding)
 {
     ASSERT(m_client->hasWebView());
     if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
