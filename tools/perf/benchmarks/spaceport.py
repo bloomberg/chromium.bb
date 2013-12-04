@@ -57,7 +57,8 @@ class Spaceport(test.Test):
   """spaceport.io's PerfMarks benchmark."""
   test = _SpaceportMeasurement
 
-  enabled = sys.platform != 'darwin'
+  # crbug.com/166703: This test frequently times out on Windows.
+  enabled = sys.platform != 'darwin' and not sys.platform.startswith('win')
 
   def CreatePageSet(self, options):
     spaceport_dir = os.path.join(util.GetChromiumSrcDir(), 'chrome', 'test',
