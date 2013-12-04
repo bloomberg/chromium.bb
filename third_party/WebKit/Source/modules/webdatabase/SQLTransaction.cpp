@@ -48,15 +48,15 @@
 
 namespace WebCore {
 
-PassRefPtr<SQLTransaction> SQLTransaction::create(Database* db, PassRefPtr<SQLTransactionCallback> callback,
-    PassRefPtr<SQLVoidCallback> successCallback, PassRefPtr<SQLTransactionErrorCallback> errorCallback,
+PassRefPtr<SQLTransaction> SQLTransaction::create(Database* db, PassOwnPtr<SQLTransactionCallback> callback,
+    PassOwnPtr<SQLVoidCallback> successCallback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback,
     bool readOnly)
 {
     return adoptRef(new SQLTransaction(db, callback, successCallback, errorCallback, readOnly));
 }
 
-SQLTransaction::SQLTransaction(Database* db, PassRefPtr<SQLTransactionCallback> callback,
-    PassRefPtr<SQLVoidCallback> successCallback, PassRefPtr<SQLTransactionErrorCallback> errorCallback,
+SQLTransaction::SQLTransaction(Database* db, PassOwnPtr<SQLTransactionCallback> callback,
+    PassOwnPtr<SQLVoidCallback> successCallback, PassOwnPtr<SQLTransactionErrorCallback> errorCallback,
     bool readOnly)
     : m_database(db)
     , m_callbackWrapper(callback, db->executionContext())
@@ -140,7 +140,7 @@ SQLTransactionState SQLTransaction::deliverTransactionCallback()
     bool shouldDeliverErrorCallback = false;
 
     // Spec 4.3.2 4: Invoke the transaction callback with the new SQLTransaction object
-    RefPtr<SQLTransactionCallback> callback = m_callbackWrapper.unwrap();
+    OwnPtr<SQLTransactionCallback> callback = m_callbackWrapper.unwrap();
     if (callback) {
         m_executeSqlAllowed = true;
         shouldDeliverErrorCallback = !callback->handleEvent(this);
@@ -162,7 +162,7 @@ SQLTransactionState SQLTransaction::deliverTransactionErrorCallback()
 {
     // Spec 4.3.2.10: If exists, invoke error callback with the last
     // error to have occurred in this transaction.
-    RefPtr<SQLTransactionErrorCallback> errorCallback = m_errorCallbackWrapper.unwrap();
+    OwnPtr<SQLTransactionErrorCallback> errorCallback = m_errorCallbackWrapper.unwrap();
     if (errorCallback) {
         // If we get here with an empty m_transactionError, then the backend
         // must be waiting in the idle state waiting for this state to finish.
@@ -218,7 +218,7 @@ SQLTransactionState SQLTransaction::deliverQuotaIncreaseCallback()
 SQLTransactionState SQLTransaction::deliverSuccessCallback()
 {
     // Spec 4.3.2.8: Deliver success callback.
-    RefPtr<SQLVoidCallback> successCallback = m_successCallbackWrapper.unwrap();
+    OwnPtr<SQLVoidCallback> successCallback = m_successCallbackWrapper.unwrap();
     if (successCallback)
         successCallback->handleEvent();
 
@@ -251,7 +251,7 @@ void SQLTransaction::performPendingCallback()
     runStateMachine();
 }
 
-void SQLTransaction::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, PassRefPtr<SQLStatementCallback> callback, PassRefPtr<SQLStatementErrorCallback> callbackError, ExceptionState& exceptionState)
+void SQLTransaction::executeSQL(const String& sqlStatement, const Vector<SQLValue>& arguments, PassOwnPtr<SQLStatementCallback> callback, PassOwnPtr<SQLStatementErrorCallback> callbackError, ExceptionState& exceptionState)
 {
     if (!m_executeSqlAllowed || !m_database->opened()) {
         exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
@@ -297,6 +297,11 @@ void SQLTransaction::clearCallbackWrappers()
     m_callbackWrapper.clear();
     m_successCallbackWrapper.clear();
     m_errorCallbackWrapper.clear();
+}
+
+PassOwnPtr<SQLTransactionErrorCallback> SQLTransaction::releaseErrorCallback()
+{
+    return m_errorCallbackWrapper.unwrap();
 }
 
 } // namespace WebCore

@@ -31,14 +31,12 @@
 #ifndef DatabaseCallback_h
 #define DatabaseCallback_h
 
-#include "wtf/ThreadSafeRefCounted.h"
-
 namespace WebCore {
 
 class Database;
 class DatabaseSync;
 
-class DatabaseCallback : public ThreadSafeRefCounted<DatabaseCallback> {
+class DatabaseCallback {
 public:
     virtual ~DatabaseCallback() { }
     virtual bool handleEvent(Database*) = 0;

@@ -48,7 +48,7 @@ class SQLTransaction;
 class SQLStatement : public AbstractSQLStatement {
 public:
     static PassOwnPtr<SQLStatement> create(Database*,
-        PassRefPtr<SQLStatementCallback>, PassRefPtr<SQLStatementErrorCallback>);
+        PassOwnPtr<SQLStatementCallback>, PassOwnPtr<SQLStatementErrorCallback>);
 
     bool performCallback(SQLTransaction*);
 
@@ -58,7 +58,7 @@ public:
     virtual bool hasErrorCallback();
 
 private:
-    SQLStatement(Database*, PassRefPtr<SQLStatementCallback>, PassRefPtr<SQLStatementErrorCallback>);
+    SQLStatement(Database*, PassOwnPtr<SQLStatementCallback>, PassOwnPtr<SQLStatementErrorCallback>);
 
     // The AbstractSQLStatementBackend owns the SQLStatement. Hence, the backend is
     // guaranteed to be outlive the SQLStatement, and it is safe for us to refer

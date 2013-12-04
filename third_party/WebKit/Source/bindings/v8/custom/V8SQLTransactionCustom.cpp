@@ -90,7 +90,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
 
     ExecutionContext* executionContext = getExecutionContext();
 
-    RefPtr<SQLStatementCallback> callback;
+    OwnPtr<SQLStatementCallback> callback;
     if (info.Length() > 2 && !isUndefinedOrNull(info[2])) {
         if (!info[2]->IsObject()) {
             setDOMException(TypeMismatchError, info.GetIsolate());
@@ -99,7 +99,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
         callback = V8SQLStatementCallback::create(info[2], executionContext);
     }
 
-    RefPtr<SQLStatementErrorCallback> errorCallback;
+    OwnPtr<SQLStatementErrorCallback> errorCallback;
     if (info.Length() > 3 && !isUndefinedOrNull(info[3])) {
         if (!info[3]->IsObject()) {
             setDOMException(TypeMismatchError, info.GetIsolate());
@@ -109,7 +109,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
     }
 
     ExceptionState exceptionState(info.Holder(), info.GetIsolate());
-    transaction->executeSQL(statement, sqlValues, callback, errorCallback, exceptionState);
+    transaction->executeSQL(statement, sqlValues, callback.release(), errorCallback.release(), exceptionState);
     exceptionState.throwIfNeeded();
 }
 

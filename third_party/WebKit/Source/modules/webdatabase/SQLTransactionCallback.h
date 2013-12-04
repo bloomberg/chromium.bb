@@ -29,13 +29,11 @@
 #ifndef SQLTransactionCallback_h
 #define SQLTransactionCallback_h
 
-#include "wtf/ThreadSafeRefCounted.h"
-
 namespace WebCore {
 
 class SQLTransaction;
 
-class SQLTransactionCallback : public ThreadSafeRefCounted<SQLTransactionCallback> {
+class SQLTransactionCallback {
 public:
     virtual ~SQLTransactionCallback() { }
     virtual bool handleEvent(SQLTransaction*) = 0;

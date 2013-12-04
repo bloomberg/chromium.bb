@@ -43,13 +43,13 @@
 namespace WebCore {
 
 PassOwnPtr<SQLStatement> SQLStatement::create(Database* database,
-    PassRefPtr<SQLStatementCallback> callback, PassRefPtr<SQLStatementErrorCallback> errorCallback)
+    PassOwnPtr<SQLStatementCallback> callback, PassOwnPtr<SQLStatementErrorCallback> errorCallback)
 {
     return adoptPtr(new SQLStatement(database, callback, errorCallback));
 }
 
-SQLStatement::SQLStatement(Database* database, PassRefPtr<SQLStatementCallback> callback,
-    PassRefPtr<SQLStatementErrorCallback> errorCallback)
+SQLStatement::SQLStatement(Database* database, PassOwnPtr<SQLStatementCallback> callback,
+    PassOwnPtr<SQLStatementErrorCallback> errorCallback)
     : m_statementCallbackWrapper(callback, database->executionContext())
     , m_statementErrorCallbackWrapper(errorCallback, database->executionContext())
 {
@@ -77,8 +77,8 @@ bool SQLStatement::performCallback(SQLTransaction* transaction)
 
     bool callbackError = false;
 
-    RefPtr<SQLStatementCallback> callback = m_statementCallbackWrapper.unwrap();
-    RefPtr<SQLStatementErrorCallback> errorCallback = m_statementErrorCallbackWrapper.unwrap();
+    OwnPtr<SQLStatementCallback> callback = m_statementCallbackWrapper.unwrap();
+    OwnPtr<SQLStatementErrorCallback> errorCallback = m_statementErrorCallbackWrapper.unwrap();
     RefPtr<SQLError> error = m_backend->sqlError();
 
     // Call the appropriate statement callback and track if it resulted in an error,

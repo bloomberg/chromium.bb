@@ -31,14 +31,12 @@
 #ifndef SQLTransactionSyncCallback_h
 #define SQLTransactionSyncCallback_h
 
-#include "wtf/RefCounted.h"
-
 namespace WebCore {
 
 class SQLTransactionSync;
 
 // Instances of this class should be created and used only on the worker's context thread.
-class SQLTransactionSyncCallback : public RefCounted<SQLTransactionSyncCallback> {
+class SQLTransactionSyncCallback {
 public:
     virtual ~SQLTransactionSyncCallback() { }
     virtual bool handleEvent(SQLTransactionSync*) = 0;

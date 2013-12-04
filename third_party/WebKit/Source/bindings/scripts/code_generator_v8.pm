@@ -6446,14 +6446,6 @@ sub NeedsSpecialWrap
 sub IsLegacyRefCountedCallback
 {
     my $name = shift;
-    # WebSQL
-    return 1 if $name eq "DatabaseCallback";
-    return 1 if $name eq "SQLTransactionCallback";
-    return 1 if $name eq "SQLTransactionErrorCallback";
-    return 1 if $name eq "SQLTransactionSyncCallback";
-    return 1 if $name eq "SQLStatementCallback";
-    return 1 if $name eq "SQLStatementErrorCallback";
-    return 1 if $name eq "SQLVoidCallback";
     # Filesystem
     return 1 if $name eq "EntryCallback";
     return 1 if $name eq "EntriesCallback";

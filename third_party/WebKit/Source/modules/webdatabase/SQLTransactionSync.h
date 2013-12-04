@@ -40,12 +40,12 @@ namespace WebCore {
 // Instances of this class should be created and used only on the worker's context thread.
 class SQLTransactionSync : public SQLTransactionBackendSync, public ScriptWrappable {
 public:
-    static PassRefPtr<SQLTransactionSync> create(DatabaseSync*, PassRefPtr<SQLTransactionSyncCallback>, bool readOnly = false);
+    static PassRefPtr<SQLTransactionSync> create(DatabaseSync*, PassOwnPtr<SQLTransactionSyncCallback>, bool readOnly = false);
 
     static SQLTransactionSync* from(SQLTransactionBackendSync*);
 
 private:
-    SQLTransactionSync(DatabaseSync*, PassRefPtr<SQLTransactionSyncCallback>, bool readOnly);
+    SQLTransactionSync(DatabaseSync*, PassOwnPtr<SQLTransactionSyncCallback>, bool readOnly);
 };
 
 } // namespace WebCore

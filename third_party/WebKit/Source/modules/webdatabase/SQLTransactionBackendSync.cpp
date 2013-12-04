@@ -51,7 +51,7 @@
 
 namespace WebCore {
 
-SQLTransactionBackendSync::SQLTransactionBackendSync(DatabaseSync* db, PassRefPtr<SQLTransactionSyncCallback> callback, bool readOnly)
+SQLTransactionBackendSync::SQLTransactionBackendSync(DatabaseSync* db, PassOwnPtr<SQLTransactionSyncCallback> callback, bool readOnly)
     : m_database(db)
     , m_callback(callback)
     , m_readOnly(readOnly)
@@ -183,12 +183,12 @@ void SQLTransactionBackendSync::execute(ExceptionState& exceptionState)
     if (!m_database->opened() || (m_callback && !m_callback->handleEvent(SQLTransactionSync::from(this)))) {
         if (m_database->lastErrorMessage().isEmpty())
             m_database->setLastErrorMessage("failed to execute transaction callback");
-        m_callback = 0;
+        m_callback.clear();
         exceptionState.throwDOMException(UnknownError, SQLError::unknownErrorMessage);
         return;
     }
 
-    m_callback = 0;
+    m_callback.clear();
 }
 
 void SQLTransactionBackendSync::commit(ExceptionState& exceptionState)

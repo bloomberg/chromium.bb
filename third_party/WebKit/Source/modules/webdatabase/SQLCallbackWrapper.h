@@ -42,7 +42,7 @@ namespace WebCore {
 // - by unwrapping and then dereferencing normally - on context thread only
 template<typename T> class SQLCallbackWrapper {
 public:
-    SQLCallbackWrapper(PassRefPtr<T> callback, ExecutionContext* executionContext)
+    SQLCallbackWrapper(PassOwnPtr<T> callback, ExecutionContext* executionContext)
         : m_callback(callback)
         , m_executionContext(m_callback ? executionContext : 0)
     {
@@ -57,7 +57,7 @@ public:
     void clear()
     {
         ExecutionContext* context;
-        T* callback;
+        OwnPtr<T> callback;
         {
             MutexLocker locker(m_mutex);
             if (!m_callback) {
@@ -65,21 +65,21 @@ public:
                 return;
             }
             if (m_executionContext->isContextThread()) {
-                m_callback = 0;
-                m_executionContext = 0;
+                m_callback.clear();
+                m_executionContext.clear();
                 return;
             }
             context = m_executionContext.release().leakRef();
-            callback = m_callback.release().leakRef();
+            callback = m_callback.release();
         }
-        context->postTask(SafeReleaseTask::create(callback));
+        context->postTask(SafeReleaseTask::create(callback.release()));
     }
 
-    PassRefPtr<T> unwrap()
+    PassOwnPtr<T> unwrap()
     {
         MutexLocker locker(m_mutex);
         ASSERT(!m_callback || m_executionContext->isContextThread());
-        m_executionContext = 0;
+        m_executionContext.clear();
         return m_callback.release();
     }
 
@@ -89,7 +89,7 @@ public:
 private:
     class SafeReleaseTask : public ExecutionContextTask {
     public:
-        static PassOwnPtr<SafeReleaseTask> create(T* callbackToRelease)
+        static PassOwnPtr<SafeReleaseTask> create(PassOwnPtr<T> callbackToRelease)
         {
             return adoptPtr(new SafeReleaseTask(callbackToRelease));
         }
@@ -97,23 +97,23 @@ private:
         virtual void performTask(ExecutionContext* context)
         {
             ASSERT(m_callbackToRelease && context && context->isContextThread());
-            m_callbackToRelease->deref();
+            m_callbackToRelease.clear();
             context->deref();
         }
 
         virtual bool isCleanupTask() const { return true; }
 
     private:
-        explicit SafeReleaseTask(T* callbackToRelease)
+        explicit SafeReleaseTask(PassOwnPtr<T> callbackToRelease)
             : m_callbackToRelease(callbackToRelease)
         {
         }
 
-        T* m_callbackToRelease;
+        OwnPtr<T> m_callbackToRelease;
     };
 
     Mutex m_mutex;
-    RefPtr<T> m_callback;
+    OwnPtr<T> m_callback;
     RefPtr<ExecutionContext> m_executionContext;
 };
 

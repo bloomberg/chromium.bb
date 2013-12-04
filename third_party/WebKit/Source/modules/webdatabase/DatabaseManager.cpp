@@ -70,7 +70,7 @@ DatabaseManager::DatabaseManager()
 
 class DatabaseCreationCallbackTask : public ExecutionContextTask {
 public:
-    static PassOwnPtr<DatabaseCreationCallbackTask> create(PassRefPtr<Database> database, PassRefPtr<DatabaseCallback> creationCallback)
+    static PassOwnPtr<DatabaseCreationCallbackTask> create(PassRefPtr<Database> database, PassOwnPtr<DatabaseCallback> creationCallback)
     {
         return adoptPtr(new DatabaseCreationCallbackTask(database, creationCallback));
     }
@@ -81,14 +81,14 @@ public:
     }
 
 private:
-    DatabaseCreationCallbackTask(PassRefPtr<Database> database, PassRefPtr<DatabaseCallback> callback)
+    DatabaseCreationCallbackTask(PassRefPtr<Database> database, PassOwnPtr<DatabaseCallback> callback)
         : m_database(database)
         , m_creationCallback(callback)
     {
     }
 
     RefPtr<Database> m_database;
-    RefPtr<DatabaseCallback> m_creationCallback;
+    OwnPtr<DatabaseCallback> m_creationCallback;
 };
 
 PassRefPtr<DatabaseContext> DatabaseManager::existingDatabaseContextFor(ExecutionContext* context)
@@ -216,7 +216,7 @@ PassRefPtr<DatabaseBackendBase> DatabaseManager::openDatabaseBackend(ExecutionCo
 
 PassRefPtr<Database> DatabaseManager::openDatabase(ExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
-    unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback,
+    unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback,
     DatabaseError& error, String& errorMessage)
 {
     ASSERT(error == DatabaseError::None);
@@ -244,7 +244,7 @@ PassRefPtr<Database> DatabaseManager::openDatabase(ExecutionContext* context,
 
 PassRefPtr<DatabaseSync> DatabaseManager::openDatabaseSync(ExecutionContext* context,
     const String& name, const String& expectedVersion, const String& displayName,
-    unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback,
+    unsigned long estimatedSize, PassOwnPtr<DatabaseCallback> creationCallback,
     DatabaseError& error, String& errorMessage)
 {
     ASSERT(context->isContextThread());

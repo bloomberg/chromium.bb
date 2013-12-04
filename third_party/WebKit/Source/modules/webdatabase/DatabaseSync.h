@@ -55,9 +55,9 @@ class DatabaseSync : public DatabaseBase, public DatabaseBackendSync, public Scr
 public:
     virtual ~DatabaseSync();
 
-    void changeVersion(const String& oldVersion, const String& newVersion, PassRefPtr<SQLTransactionSyncCallback>, ExceptionState&);
-    void transaction(PassRefPtr<SQLTransactionSyncCallback>, ExceptionState&);
-    void readTransaction(PassRefPtr<SQLTransactionSyncCallback>, ExceptionState&);
+    void changeVersion(const String& oldVersion, const String& newVersion, PassOwnPtr<SQLTransactionSyncCallback>, ExceptionState&);
+    void transaction(PassOwnPtr<SQLTransactionSyncCallback>, ExceptionState&);
+    void readTransaction(PassOwnPtr<SQLTransactionSyncCallback>, ExceptionState&);
 
     virtual void closeImmediately();
 
@@ -78,7 +78,7 @@ private:
     PassRefPtr<DatabaseBackendSync> backend();
     static PassRefPtr<DatabaseSync> create(ExecutionContext*, PassRefPtr<DatabaseBackendBase>);
 
-    void runTransaction(PassRefPtr<SQLTransactionSyncCallback>, bool readOnly, ExceptionState&);
+    void runTransaction(PassOwnPtr<SQLTransactionSyncCallback>, bool readOnly, ExceptionState&);
     void rollbackTransaction(PassRefPtr<SQLTransactionSync>);
 
     String m_lastErrorMessage;

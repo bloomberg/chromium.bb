@@ -26,11 +26,10 @@
 #ifndef SQLVoidCallback_h
 #define SQLVoidCallback_h
 
-#include "wtf/RefCounted.h"
-
 namespace WebCore {
 
-class SQLVoidCallback : public RefCounted<SQLVoidCallback> {
+// FIXME: Replace this with VoidCallback
+class SQLVoidCallback {
 public:
     virtual ~SQLVoidCallback() { }
     virtual bool handleEvent() = 0;
