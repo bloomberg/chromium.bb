@@ -23,10 +23,10 @@ camera.Tracker = function(input) {
   this.input_ = input;
 
   /**
-   * @type {camera.Tracker.Face}
+   * @type {Array.<camera.Tracker.Face>}
    * @private
    */
-  this.face_ = new camera.Tracker.Face(0.5, 0.5, 0.3, 0.3, 1);
+  this.faces_ = [new camera.Tracker.Face(0.5, 0.5, 0.3, 0.3, 1)];
 
   /**
    * @type {boolean}
@@ -266,11 +266,74 @@ camera.Tracker.prototype.detect = function() {
         return a.confidence < b.confidence;
       });
 
-      this.face_.targetX = result[0].x / this.input_.width;
-      this.face_.targetY = result[0].y / this.input_.height;
-      this.face_.targetWidth = result[0].width / this.input_.width;
-      this.face_.targetHeight = result[0].height / this.input_.height;
-      this.face_.targetConfidence = 1;
+      var newFaces = [];
+      for (var index = 0; index < result.length; index++) {
+        var face = new camera.Tracker.Face(
+            result[index].x / this.input_.width,
+            result[index].y / this.input_.height,
+            result[index].width / this.input_.width,
+            result[index].height / this.input_.height,
+            result[index].confidence);
+        newFaces.push(face);
+      }
+
+      // Copy the array, since it will be modified while matching with new
+      // faces.
+      var oldFaces = this.faces_.slice();
+
+      // Try to map the new faces to the previous ones. Map up to the number of
+      // faces detected previously.
+      var mappedFaces = [];
+      while (newFaces.length && oldFaces.length) {
+        var minDistNewFace;
+        var minDistOldFace;
+        var minDist = Number.MAX_VALUE;
+        for (var i = 0; i < newFaces.length; i++) {
+          var newFace = newFaces[i];
+          for (var j = 0; j < oldFaces.length; j++) {
+            var oldFace = oldFaces[j];
+            // Euclidean metric. No need to do a square root for comparison.
+            var distance =
+                Math.pow(oldFace.x - newFace.x, 2) +
+                Math.pow(oldFace.y - newFace.y, 2) +
+                Math.pow(oldFace.width - newFace.width, 2) +
+                Math.pow(oldFace.height - newFace.height, 2);
+            if (distance < minDist) {
+              minDist = distance;
+              minDistNewFace = newFace;
+              minDistOldFace = oldFace;
+            }
+          }
+        }
+        // Update the old face to point to new coordinates.
+        minDistOldFace.targetX = minDistNewFace.x;
+        minDistOldFace.targetY = minDistNewFace.y;
+        minDistOldFace.targetWidth = minDistNewFace.width;
+        minDistOldFace.targetHeight = minDistNewFace.height;
+        minDistOldFace.targetConfidence = minDistNewFace.confidence;
+        mappedFaces.push(minDistOldFace);
+        // Remove the matched faces from both arrays.
+        newFaces.splice(newFaces.indexOf(minDistNewFace), 1);
+        oldFaces.splice(oldFaces.indexOf(minDistOldFace), 1);
+      }
+
+      // If there is more new faces than previous ones, then just append them.
+      for (var index = 0; index < newFaces.length; index++) {
+        mappedFaces.push(newFaces[index]);
+      }
+
+      // Sort the mapped faces, so the best one is first on the list.
+      mappedFaces.sort(function(a, b) {
+        return a.confidence < b.confidence;
+      });
+
+      // Ensure that there is at least one face. If not, then add the best old
+      // one.
+      if (!mappedFaces.length)
+        mappedFaces.push(this.faces_[0]);
+
+      // Swap the container with faces with the new one.
+      this.faces_ = mappedFaces;
     }
     this.busy_ = false;
     finishMeasuring();
@@ -281,31 +344,38 @@ camera.Tracker.prototype.detect = function() {
  * Updates the face by applying some interpolation.
  */
 camera.Tracker.prototype.update = function() {
-  this.face_.update();
+  for (var index = 0; index < this.faces_.length; index++) {
+    this.faces_[index].update();
+  }
 };
 
 /**
  * Returns detected faces by the last call of update(), mapped to the canvas
- * coordinates.
+ * coordinates. Will always return at least one face.
  *
  * @param {Canvas} canvas Canvas used to map the face coordinates onto.
- * @return {camera.Tracker.Face} Detected face object.
+ * @return {Array.<camera.Tracker.Face>} Detected faces' objects.
  */
-camera.Tracker.prototype.getFaceForCanvas = function(canvas) {
-  var inputFace = this.face_;
+camera.Tracker.prototype.getFacesForCanvas = function(canvas) {
+  var result = [];
+  for (var index = 0; index < this.faces_.length; index++) {
+    var inputFace = this.faces_[index];
 
-  var inputAspect = this.input_.width / this.input_.height;
-  var outputAspect = canvas.width / canvas.height;
-  var scaleWidth = inputAspect / outputAspect;
+    var inputAspect = this.input_.width / this.input_.height;
+    var outputAspect = canvas.width / canvas.height;
+    var scaleWidth = inputAspect / outputAspect;
 
-  var outputX = (inputFace.x - 0.5) * scaleWidth + 0.5;
-  var outputWidth = inputFace.width * scaleWidth;
+    var outputX = (inputFace.x - 0.5) * scaleWidth + 0.5;
+    var outputWidth = inputFace.width * scaleWidth;
 
-  var outputFace = new camera.Tracker.Face(outputX,
-                                           inputFace.y,
-                                           outputWidth,
-                                           inputFace.height,
-                                           inputFace.confidence);
-  return outputFace;
+    var outputFace = new camera.Tracker.Face(outputX,
+                                             inputFace.y,
+                                             outputWidth,
+                                             inputFace.height,
+                                             inputFace.confidence);
+    result.push(outputFace);
+  }
+
+  return result;
 };
 

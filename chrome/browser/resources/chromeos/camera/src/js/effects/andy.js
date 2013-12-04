@@ -32,12 +32,14 @@ camera.effects.Andy.prototype = {
  * @override
  */
 camera.effects.Andy.prototype.filterFrame = function(canvas) {
-  var face = this.tracker_.getFaceForCanvas(canvas);
-  x = canvas.width * (face.x + (face.width / 2));
-  y = canvas.height * face.y;
-  var radius = Math.sqrt(Math.pow(face.width * canvas.width, 2) +
-                         Math.pow(face.height * canvas.height, 2));
-  canvas.bulgePinch(x, y - radius, radius, -1);
+  var faces = this.tracker_.getFacesForCanvas(canvas);
+  for (var index = 0; index < faces.length; index++) {
+    x = canvas.width * (faces[index].x + (faces[index].width / 2));
+    y = canvas.height * faces[index].y;
+    var radius = Math.sqrt(Math.pow(faces[index].width * canvas.width, 2) +
+                           Math.pow(faces[index].height * canvas.height, 2));
+    canvas.bulgePinch(x, y - radius, radius, -1);
+  }
 };
 
 /**

@@ -47,21 +47,23 @@ camera.effects.BigEyes.prototype.randomize = function() {
  * @override
  */
 camera.effects.BigEyes.prototype.filterFrame = function(canvas) {
-  var face = this.tracker_.getFaceForCanvas(canvas);
-  var x = canvas.width * (face.x + (face.width / 2));
-  var y = canvas.height * face.y;
+  var faces = this.tracker_.getFacesForCanvas(canvas);
+  for (var index = 0; index < faces.length; index++) {
+    var x = canvas.width * (faces[index].x + (faces[index].width / 2));
+    var y = canvas.height * faces[index].y;
 
-  // Left eye.
-  canvas.bulgePinch(x - (face.width * canvas.width * -0.2),
-                    y + (face.height * canvas.height * 0.35),
-                    face.height * canvas.height * 0.3,
+    // Left eye.
+    canvas.bulgePinch(x - (faces[index].width * canvas.width * -0.2),
+                    y + (faces[index].height * canvas.height * 0.35),
+                    faces[index].height * canvas.height * 0.3,
                     this.amount_);
 
-  // Right eye.
-  canvas.bulgePinch(x - (face.width * canvas.width * 0.2),
-                    y + (face.height * canvas.height * 0.35),
-                    face.height * canvas.height * 0.3,
-                    this.amount_);
+    // Right eye.
+    canvas.bulgePinch(x - (faces[index].width * canvas.width * 0.2),
+                      y + (faces[index].height * canvas.height * 0.35),
+                      faces[index].height * canvas.height * 0.3,
+                      this.amount_);
+  }
 };
 
 /**
