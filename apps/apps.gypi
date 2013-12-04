@@ -108,7 +108,10 @@
           },
           'dependencies': [
             'apps',
+            'chrome_resources.gyp:packed_resources',
+            'test_support_common',
             '../base/base.gyp:base',
+            '../base/base.gyp:base_prefs_test_support',
             '../content/content.gyp:content',
             '../content/content_shell_and_tests.gyp:content_shell_lib',
             '../skia/skia.gyp:skia',
@@ -119,6 +122,8 @@
             '..',
           ],
           'sources': [
+            'shell/app_shell_browser_context.cc',
+            'shell_app_shell_browser_context.h',
             'shell/app_shell_browser_main_parts.cc',
             'shell/app_shell_browser_main_parts.h',
             'shell/app_shell_content_browser_client.cc',

@@ -10,6 +10,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
 
+namespace base {
+class FilePath;
+}
+
 namespace content {
 class ShellBrowserContext;
 struct MainFunctionParams;
@@ -25,6 +29,8 @@ class WMTestHelper;
 
 namespace apps {
 
+class AppShellBrowserContext;
+
 // Handles initialization of AppShell.
 class AppShellBrowserMainParts : public content::BrowserMainParts {
  public:
@@ -32,20 +38,27 @@ class AppShellBrowserMainParts : public content::BrowserMainParts {
       const content::MainFunctionParams& parameters);
   virtual ~AppShellBrowserMainParts();
 
+  AppShellBrowserContext* browser_context() {
+    return browser_context_.get();
+  }
+
+  // Creates the window that hosts the apps.
+  void CreateRootWindow();
+
+  // Launches an application from a directory.
+  void LoadAndLaunchApp(const base::FilePath& app_dir);
+
   // BrowserMainParts overrides.
   virtual void PreEarlyInitialization() OVERRIDE;
   virtual void PreMainMessageLoopStart() OVERRIDE;
   virtual void PostMainMessageLoopStart() OVERRIDE;
+  virtual int PreCreateThreads() OVERRIDE;
   virtual void PreMainMessageLoopRun() OVERRIDE;
   virtual bool MainMessageLoopRun(int* result_code) OVERRIDE;
   virtual void PostMainMessageLoopRun() OVERRIDE;
 
-  content::ShellBrowserContext* browser_context() {
-    return browser_context_.get();
-  }
-
  private:
-  scoped_ptr<content::ShellBrowserContext> browser_context_;
+  scoped_ptr<AppShellBrowserContext> browser_context_;
 
   // Enable a minimal set of views::corewm to be initialized.
   scoped_ptr<wm::WMTestHelper> wm_test_helper_;

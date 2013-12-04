@@ -4,13 +4,23 @@
 
 #include "apps/shell/app_shell_browser_main_parts.h"
 
+#include "apps/app_load_service.h"
+#include "apps/shell/app_shell_browser_context.h"
 #include "apps/shell/web_view_window.h"
+#include "base/command_line.h"
+#include "base/file_util.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
+#include "chrome/common/chrome_paths.h"
+#include "chromeos/chromeos_paths.h"
 #include "content/public/common/result_codes.h"
-#include "content/shell/browser/shell_browser_context.h"
+#include "extensions/common/extension_paths.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_screen.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/screen.h"
 #include "ui/wm/test/wm_test_helper.h"
 
 namespace apps {
@@ -20,6 +30,35 @@ AppShellBrowserMainParts::AppShellBrowserMainParts(
 }
 
 AppShellBrowserMainParts::~AppShellBrowserMainParts() {
+}
+
+void AppShellBrowserMainParts::CreateRootWindow() {
+  // TODO(jamescook): Replace this with a real Screen implementation.
+  gfx::Screen::SetScreenInstance(
+      gfx::SCREEN_TYPE_NATIVE, aura::TestScreen::Create());
+  // Set up basic pieces of views::corewm.
+  wm_test_helper_.reset(new wm::WMTestHelper(gfx::Size(800, 600)));
+  // Ensure the X window gets mapped.
+  wm_test_helper_->root_window()->host()->Show();
+}
+
+void AppShellBrowserMainParts::LoadAndLaunchApp(const base::FilePath& app_dir) {
+  base::FilePath current_dir;
+  CHECK(file_util::GetCurrentDirectory(&current_dir));
+
+  // HACK: This allows us to see how far we can get without crashing.
+  Profile* profile = reinterpret_cast<Profile*>(browser_context_.get());
+  LOG(WARNING) << "-----------------------------------";
+  LOG(WARNING) << "app_shell is expected to crash now.";
+  LOG(WARNING) << "-----------------------------------";
+
+  apps::AppLoadService* app_load_service =
+      apps::AppLoadService::Get(profile);
+  DCHECK(app_load_service);
+  if (!app_load_service->LoadAndLaunch(
+           app_dir, *CommandLine::ForCurrentProcess(), current_dir)) {
+    LOG(ERROR) << "Unable to launch app at \"" << app_dir.value() << "\"";
+  }
 }
 
 void AppShellBrowserMainParts::PreMainMessageLoopStart() {
@@ -32,25 +71,52 @@ void AppShellBrowserMainParts::PostMainMessageLoopStart() {
 void AppShellBrowserMainParts::PreEarlyInitialization() {
 }
 
+int AppShellBrowserMainParts::PreCreateThreads() {
+  // TODO(jamescook): Initialize chromeos::CrosSettings here?
+
+  // Return no error.
+  return 0;
+}
+
 void AppShellBrowserMainParts::PreMainMessageLoopRun() {
-  // TODO(jamescook): Could initialize NetLog here to get logs from the
-  // networking stack.
-  // TODO(jamescook): Should this be an off-the-record context?
-  browser_context_.reset(new content::ShellBrowserContext(false, NULL));
+  // NOTE: Much of this is culled from chrome/test/base/chrome_test_suite.cc
+  // Set up all the paths to load files.
+  chrome::RegisterPathProvider();
+  chromeos::RegisterPathProvider();
+  extensions::RegisterPathProvider();
 
-  // TODO(jamescook): Replace this with a real Screen implementation.
-  gfx::Screen::SetScreenInstance(
-      gfx::SCREEN_TYPE_NATIVE, aura::TestScreen::Create());
-  // Set up basic pieces of views::corewm.
-  wm_test_helper_.reset(new wm::WMTestHelper(gfx::Size(800, 600)));
-  // Ensure the X window gets mapped.
-  wm_test_helper_->root_window()->host()->Show();
+  // The extensions system needs manifest data from the Chrome PAK file.
+  base::FilePath resources_pack_path;
+  PathService::Get(chrome::FILE_RESOURCES_PACK, &resources_pack_path);
+  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      resources_pack_path, ui::SCALE_FACTOR_NONE);
 
-  // TODO(jamescook): Create an apps::ShellWindow here. For now, create a
-  // window with a WebView just to ensure that the content module is properly
-  // initialized.
-  ShowWebViewWindow(browser_context_.get(),
-                    wm_test_helper_->root_window()->window());
+  // TODO(jamescook): Initialize chromeos::UserManager.
+
+  // TODO(jamescook): Initialize ExtensionsClient and ExtensionsBrowserClient.
+
+  // Initialize our "profile" equivalent.
+  browser_context_.reset(new AppShellBrowserContext);
+
+  // TODO(jamescook): Initialize policy::ProfilePolicyConnector.
+  // TODO(jamescook): Initialize ExtensionSystem and InitForRegularProfile.
+  // TODO(jamescook): CreateBrowserContextServices using
+  // BrowserContextDependencyManager.
+
+  CreateRootWindow();
+
+  const std::string kAppSwitch = "app";
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kAppSwitch)) {
+    base::FilePath app_dir(command_line->GetSwitchValueNative(kAppSwitch));
+    LoadAndLaunchApp(app_dir);
+  } else {
+    // TODO(jamescook): Create an apps::ShellWindow here. For now, create a
+    // window with a WebView just to ensure that the content module is properly
+    // initialized.
+    ShowWebViewWindow(browser_context_.get(),
+                      wm_test_helper_->root_window()->window());
+  }
 }
 
 bool AppShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {

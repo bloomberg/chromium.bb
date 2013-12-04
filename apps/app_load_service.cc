@@ -21,6 +21,7 @@
 
 using extensions::Extension;
 using extensions::ExtensionPrefs;
+using extensions::ExtensionSystem;
 
 namespace apps {
 
@@ -52,8 +53,10 @@ void AppLoadService::RestartApplication(const std::string& extension_id) {
 bool AppLoadService::LoadAndLaunch(const base::FilePath& extension_path,
                                    const CommandLine& command_line,
                                    const base::FilePath& current_dir) {
+  ExtensionService* extension_service =
+      ExtensionSystem::GetForBrowserContext(profile_)->extension_service();
   std::string extension_id;
-  if (!extensions::UnpackedInstaller::Create(profile_->GetExtensionService())->
+  if (!extensions::UnpackedInstaller::Create(extension_service)->
           LoadFromCommandLine(base::FilePath(extension_path), &extension_id)) {
     return false;
   }
