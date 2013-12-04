@@ -1000,25 +1000,19 @@ bool NativeTextfieldViews::GetCompositionCharacterBounds(
   if (!HasCompositionText())
     return false;
   const gfx::Range& composition_range = GetRenderText()->GetCompositionRange();
-  const uint32 left_cursor_pos = composition_range.start() + index;
-  const uint32 right_cursor_pos = composition_range.start() + index + 1;
   DCHECK(!composition_range.is_empty());
-  if (composition_range.end() < right_cursor_pos)
-    return false;
-  const gfx::SelectionModel start_position(left_cursor_pos,
-                                           gfx::CURSOR_BACKWARD);
-  const gfx::SelectionModel end_position(right_cursor_pos,
-                                         gfx::CURSOR_BACKWARD);
-  gfx::Rect start_cursor = GetRenderText()->GetCursorBounds(start_position,
-                                                            false);
-  gfx::Rect end_cursor = GetRenderText()->GetCursorBounds(end_position, false);
 
-  // TextInputClient::GetCompositionCharacterBounds is expected to fill |rect|
-  // in screen coordinates and GetCaretBounds returns screen coordinates.
-  *rect = gfx::Rect(start_cursor.x(),
-                    start_cursor.y(),
-                    end_cursor.x() - start_cursor.x(),
-                    start_cursor.height());
+  size_t text_index = composition_range.start() + index;
+  if (composition_range.end() <= text_index)
+    return false;
+  if (!GetRenderText()->IsCursorablePosition(text_index)) {
+    text_index = GetRenderText()->IndexOfAdjacentGrapheme(
+        text_index, gfx::CURSOR_BACKWARD);
+  }
+  if (text_index < composition_range.start())
+    return false;
+  const gfx::SelectionModel caret(text_index, gfx::CURSOR_BACKWARD);
+  *rect = GetRenderText()->GetCursorBounds(caret, false);
   ConvertRectToScreen(this, rect);
 
   return true;

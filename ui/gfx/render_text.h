@@ -354,12 +354,19 @@ class GFX_EXPORT RenderText {
   // Gets the SelectionModel from a visual point in local coordinates.
   virtual SelectionModel FindCursorPosition(const Point& point) = 0;
 
-  // Get the visual bounds of a cursor at |selection|. These bounds typically
-  // represent a vertical line, but if |insert_mode| is true they contain the
-  // bounds of the associated glyph. These bounds are in local coordinates, but
-  // may be outside the visible region if the text is longer than the textfield.
-  // Subsequent text, cursor, or bounds changes may invalidate returned values.
-  Rect GetCursorBounds(const SelectionModel& selection, bool insert_mode);
+  // Return true if cursor can appear in front of the character at |position|,
+  // which means it is a grapheme boundary or the first character in the text.
+  virtual bool IsCursorablePosition(size_t position) = 0;
+
+  // Get the visual bounds of a cursor at |caret|. These bounds typically
+  // represent a vertical line if |insert_mode| is true. Pass false for
+  // |insert_mode| to retrieve the bounds of the associated glyph. These bounds
+  // are in local coordinates, but may be outside the visible region if the text
+  // is longer than the textfield. Subsequent text, cursor, or bounds changes
+  // may invalidate returned values. Note that |caret| must be placed at
+  // grapheme boundary, that is, |IsCursorablePosition(caret.caret_pos())| must
+  // return true.
+  Rect GetCursorBounds(const SelectionModel& caret, bool insert_mode);
 
   // Compute the current cursor bounds, panning the text to show the cursor in
   // the display rect if necessary. These bounds are in local coordinates.
@@ -472,10 +479,6 @@ class GFX_EXPORT RenderText {
   // text is obscured, the character (code point) offsets always match.
   virtual size_t TextIndexToLayoutIndex(size_t index) const = 0;
   virtual size_t LayoutIndexToTextIndex(size_t index) const = 0;
-
-  // Return true if cursor can appear in front of the character at |position|,
-  // which means it is a grapheme boundary or the first character in the text.
-  virtual bool IsCursorablePosition(size_t position) = 0;
 
   // Reset the layout to be invalid.
   virtual void ResetLayout() = 0;

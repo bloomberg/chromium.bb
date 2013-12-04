@@ -1798,6 +1798,41 @@ TEST_F(NativeTextfieldViewsTest, GetCompositionCharacterBoundsTest) {
   EXPECT_FALSE(client->GetCompositionCharacterBounds(char_count + 100, &rect));
 }
 
+TEST_F(NativeTextfieldViewsTest, GetCompositionCharacterBounds_ComplexText) {
+  InitTextfield(Textfield::STYLE_DEFAULT);
+
+  const char16 kUtf16Chars[] = {
+    // U+0020 SPACE
+    0x0020,
+    // U+1F408 (CAT) as surrogate pair
+    0xd83d, 0xdc08,
+    // U+5642 as Ideographic Variation Sequences
+    0x5642, 0xDB40, 0xDD00,
+    // U+260E (BLACK TELEPHONE) as Emoji Variation Sequences
+    0x260E, 0xFE0F,
+    // U+0020 SPACE
+    0x0020,
+  };
+  const size_t kUtf16CharsCount = arraysize(kUtf16Chars);
+
+  ui::CompositionText composition;
+  composition.text.assign(kUtf16Chars, kUtf16Chars + kUtf16CharsCount);
+  ui::TextInputClient* client = textfield_->GetTextInputClient();
+  client->SetCompositionText(composition);
+
+  // Make sure GetCompositionCharacterBounds never fails for index.
+  gfx::Rect rects[kUtf16CharsCount];
+  gfx::Rect prev_cursor = GetCursorBounds();
+  for (uint32 i = 0; i < kUtf16CharsCount; ++i)
+    EXPECT_TRUE(client->GetCompositionCharacterBounds(i, &rects[i]));
+
+  // Here we might expect the following results but it actually depends on how
+  // Uniscribe or HarfBuzz treats them with given font.
+  // - rects[1] == rects[2]
+  // - rects[3] == rects[4] == rects[5]
+  // - rects[6] == rects[7]
+}
+
 // The word we select by double clicking should remain selected regardless of
 // where we drag the mouse afterwards without releasing the left button.
 TEST_F(NativeTextfieldViewsTest, KeepInitiallySelectedWord) {
