@@ -60,7 +60,7 @@ public:
     short cmp(ExecutionContext*, const ScriptValue& first, const ScriptValue& second, ExceptionState&);
 
 private:
-    IDBFactory(IDBFactoryBackendInterface*);
+    explicit IDBFactory(IDBFactoryBackendInterface*);
 
     PassRefPtr<IDBOpenDBRequest> openInternal(ExecutionContext*, const String& name, int64_t version, ExceptionState&);
 

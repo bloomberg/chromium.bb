@@ -48,7 +48,7 @@ public:
     virtual void onComplete(long long transactionId);
 
 private:
-    WebIDBDatabaseCallbacksImpl(PassRefPtr<IDBDatabaseCallbacks>);
+    explicit WebIDBDatabaseCallbacksImpl(PassRefPtr<IDBDatabaseCallbacks>);
 
     RefPtr<IDBDatabaseCallbacks> m_callbacks;
 };

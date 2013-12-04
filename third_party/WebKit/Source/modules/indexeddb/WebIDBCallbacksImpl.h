@@ -69,7 +69,7 @@ public:
     virtual void onUpgradeNeeded(long long oldVersion, blink::WebIDBDatabase*, const blink::WebIDBMetadata&, unsigned short dataLoss, blink::WebString dataLossMessage);
 
 private:
-    WebIDBCallbacksImpl(PassRefPtr<IDBRequest>);
+    explicit WebIDBCallbacksImpl(PassRefPtr<IDBRequest>);
 
     RefPtr<IDBRequest> m_request;
 };
