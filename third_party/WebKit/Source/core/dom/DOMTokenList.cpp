@@ -25,7 +25,6 @@
 #include "config.h"
 #include "core/dom/DOMTokenList.h"
 
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/parser/HTMLParserIdioms.h"
@@ -33,17 +32,17 @@
 
 namespace WebCore {
 
-bool DOMTokenList::validateToken(const AtomicString& token, const char* method, ExceptionState& exceptionState)
+bool DOMTokenList::validateToken(const AtomicString& token, ExceptionState& exceptionState)
 {
     if (token.isEmpty()) {
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute(method, "DOMTokenList", "The token provided must not be empty."));
+        exceptionState.throwDOMException(SyntaxError, "The token provided must not be empty.");
         return false;
     }
 
     unsigned length = token.length();
     for (unsigned i = 0; i < length; ++i) {
         if (isHTMLSpace<UChar>(token[i])) {
-            exceptionState.throwDOMException(InvalidCharacterError, ExceptionMessages::failedToExecute(method, "DOMTokenList", "The token provided ('" + token + "') contains HTML space characters, which are not valid in tokens."));
+            exceptionState.throwDOMException(InvalidCharacterError, "The token provided ('" + token + "') contains HTML space characters, which are not valid in tokens.");
             return false;
         }
     }
@@ -51,10 +50,10 @@ bool DOMTokenList::validateToken(const AtomicString& token, const char* method, 
     return true;
 }
 
-bool DOMTokenList::validateTokens(const Vector<String>& tokens, const char* method, ExceptionState& exceptionState)
+bool DOMTokenList::validateTokens(const Vector<String>& tokens, ExceptionState& exceptionState)
 {
     for (size_t i = 0; i < tokens.size(); ++i) {
-        if (!validateToken(tokens[i], method, exceptionState))
+        if (!validateToken(tokens[i], exceptionState))
             return false;
     }
 
@@ -63,7 +62,7 @@ bool DOMTokenList::validateTokens(const Vector<String>& tokens, const char* meth
 
 bool DOMTokenList::contains(const AtomicString& token, ExceptionState& exceptionState) const
 {
-    if (!validateToken(token, "contains", exceptionState))
+    if (!validateToken(token, exceptionState))
         return false;
     return containsInternal(token);
 }
@@ -80,7 +79,7 @@ void DOMTokenList::add(const Vector<String>& tokens, ExceptionState& exceptionSt
     Vector<String> filteredTokens;
     filteredTokens.reserveCapacity(tokens.size());
     for (size_t i = 0; i < tokens.size(); ++i) {
-        if (!validateToken(tokens[i], "add", exceptionState))
+        if (!validateToken(tokens[i], exceptionState))
             return;
         if (containsInternal(tokens[i]))
             continue;
@@ -104,7 +103,7 @@ void DOMTokenList::remove(const AtomicString& token, ExceptionState& exceptionSt
 
 void DOMTokenList::remove(const Vector<String>& tokens, ExceptionState& exceptionState)
 {
-    if (!validateTokens(tokens, "remove", exceptionState))
+    if (!validateTokens(tokens, exceptionState))
         return;
 
     // Check using containsInternal first since it is a lot faster than going
@@ -123,7 +122,7 @@ void DOMTokenList::remove(const Vector<String>& tokens, ExceptionState& exceptio
 
 bool DOMTokenList::toggle(const AtomicString& token, ExceptionState& exceptionState)
 {
-    if (!validateToken(token, "toggle", exceptionState))
+    if (!validateToken(token, exceptionState))
         return false;
 
     if (containsInternal(token)) {
@@ -136,7 +135,7 @@ bool DOMTokenList::toggle(const AtomicString& token, ExceptionState& exceptionSt
 
 bool DOMTokenList::toggle(const AtomicString& token, bool force, ExceptionState& exceptionState)
 {
-    if (!validateToken(token, "toggle", exceptionState))
+    if (!validateToken(token, exceptionState))
         return false;
 
     if (force)

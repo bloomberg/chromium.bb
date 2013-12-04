@@ -25,7 +25,6 @@
 #include "config.h"
 #include "modules/mediastream/RTCDataChannel.h"
 
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/events/Event.h"
 #include "core/dom/ExceptionCode.h"
@@ -51,7 +50,7 @@ static void throwCouldNotSendDataException(ExceptionState& exceptionState)
 
 static void throwNoBlobSupportException(ExceptionState& exceptionState)
 {
-    exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("send", "RTCDataChannel", "Blob support not implemented yet"));
+    exceptionState.throwDOMException(NotSupportedError, "Blob support not implemented yet");
 }
 
 PassRefPtr<RTCDataChannel> RTCDataChannel::create(ExecutionContext* context, PassOwnPtr<RTCDataChannelHandler> handler)

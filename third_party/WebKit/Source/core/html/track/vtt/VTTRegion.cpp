@@ -70,11 +70,11 @@ static const float scrollTime = 0.433;
 static bool isInfiniteOrNonNumberOrNonPercentage(double value, const char* method, ExceptionState& exceptionState)
 {
     if (!std::isfinite(value)) {
-        exceptionState.throwTypeError(ExceptionMessages::failedToSet(method, "VTTRegion", ExceptionMessages::notAFiniteNumber(value)));
+        exceptionState.throwTypeError(ExceptionMessages::notAFiniteNumber(value));
         return true;
     }
     if (value < 0 || value > 100) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet(method, "VTTRegion", "The value provided (" + String::number(value) + ") is not between 0 and 100."));
+        exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(value) + ") is not between 0 and 100.");
         return true;
     }
     return false;
@@ -118,7 +118,7 @@ void VTTRegion::setWidth(double value, ExceptionState& exceptionState)
 void VTTRegion::setHeight(long value, ExceptionState& exceptionState)
 {
     if (value < 0) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("height", "VTTRegion", "The height provided (" + String::number(value) + ") is negative."));
+        exceptionState.throwDOMException(IndexSizeError, "The height provided (" + String::number(value) + ") is negative.");
         return;
     }
 
@@ -172,7 +172,7 @@ void VTTRegion::setScroll(const AtomicString& value, ExceptionState& exceptionSt
     DEFINE_STATIC_LOCAL(const AtomicString, upScrollValueKeyword, ("up", AtomicString::ConstructFromLiteral));
 
     if (value != emptyString() && value != upScrollValueKeyword) {
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToSet("scroll", "VTTRegion", "The value provided ('" + value + "') is invalid. The 'scroll' property must be either the empty string, or 'up'."));
+        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + value + "') is invalid. The 'scroll' property must be either the empty string, or 'up'.");
         return;
     }
 

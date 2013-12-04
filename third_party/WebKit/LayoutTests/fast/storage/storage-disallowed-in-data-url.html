@@ -15,9 +15,9 @@
             errorsSeen++;
             window.exceptionMessage = e.data;
             if (errorsSeen == 1) {
-                shouldBeEqualToString('exceptionMessage', "Access to 'localStorage' is denied for this document. Storage is disabled inside 'data:' URLs.");
+                shouldBeEqualToString('exceptionMessage', "Failed to read the 'localStorage' property from 'Window': Storage is disabled inside 'data:' URLs.");
             } else {
-                shouldBeEqualToString('exceptionMessage', "Access to 'sessionStorage' is denied for this document. Storage is disabled inside 'data:' URLs.");
+                shouldBeEqualToString('exceptionMessage', "Failed to read the 'sessionStorage' property from 'Window': Storage is disabled inside 'data:' URLs.");
                 finishJSTest();
             }
         });

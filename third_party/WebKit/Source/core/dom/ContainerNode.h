@@ -152,8 +152,8 @@ private:
     void willRemoveChildren();
     void willRemoveChild(Node& child);
 
-    inline bool checkAcceptChildGuaranteedNodeTypes(const Node& newChild, const char* method, ExceptionState&) const;
-    inline bool checkAcceptChild(const Node* newChild, const Node* oldChild, const char* method, ExceptionState&) const;
+    inline bool checkAcceptChildGuaranteedNodeTypes(const Node& newChild, ExceptionState&) const;
+    inline bool checkAcceptChild(const Node* newChild, const Node* oldChild, ExceptionState&) const;
     inline bool containsConsideringHostElements(const Node&) const;
     inline bool isChildTypeAllowed(const Node& child) const;
 

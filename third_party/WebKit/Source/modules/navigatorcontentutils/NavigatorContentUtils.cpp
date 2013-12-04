@@ -29,7 +29,6 @@
 
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
 
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -111,15 +110,15 @@ static bool verifyProtocolHandlerScheme(const String& scheme, const String& meth
         if (scheme.length() >= 5 && isValidProtocol(scheme))
             return true;
         if (!isValidProtocol(scheme))
-            exceptionState.throwSecurityError(ExceptionMessages::failedToExecute(method, "Navigator", "The scheme '" + scheme + "' is not a valid protocol."));
+            exceptionState.throwSecurityError("The scheme '" + scheme + "' is not a valid protocol.");
         else
-            exceptionState.throwSecurityError(ExceptionMessages::failedToExecute(method, "Navigator", "The scheme '" + scheme + "' is less than five characters long."));
+            exceptionState.throwSecurityError("The scheme '" + scheme + "' is less than five characters long.");
         return false;
     }
 
     if (isProtocolWhitelisted(scheme))
         return true;
-    exceptionState.throwSecurityError(ExceptionMessages::failedToExecute(method, "Navigator", "The scheme '" + scheme + "' doesn't belong to the protocol whitelist. Please prefix non-whitelisted schemes with the string 'web+'."));
+    exceptionState.throwSecurityError("The scheme '" + scheme + "' doesn't belong to the protocol whitelist. Please prefix non-whitelisted schemes with the string 'web+'.");
     return false;
 }
 

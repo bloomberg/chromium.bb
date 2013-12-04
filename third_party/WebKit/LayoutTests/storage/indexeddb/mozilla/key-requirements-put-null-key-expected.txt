@@ -13,7 +13,7 @@ Expecting exception from objectStore.put({}, null);
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'DataError'
-Exception message: The parameter is not a valid key.
+Exception message: Failed to execute 'put' on 'IDBObjectStore': The parameter is not a valid key.
 PASS successfullyParsed is true
 
 TEST COMPLETE

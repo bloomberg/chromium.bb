@@ -1552,7 +1552,7 @@ static void callWithExecutionContextAnyAttributeAttributeSetterCallback(v8::Loca
 static void checkSecurityForNodeReadonlyDocumentAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::GetterContext, "checkSecurityForNodeReadonlyDocumentAttribute", "TestObjectPython" ,info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToNode(imp->checkSecurityForNodeReadonlyDocumentAttribute(), exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
@@ -1853,7 +1853,7 @@ static void exposeJSAccessorsLongAttributeAttributeSetterCallback(const v8::Func
 static void getterRaisesExceptionLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::GetterContext, "getterRaisesExceptionLongAttribute", "TestObjectPython" ,info.Holder(), info.GetIsolate());
     int jsValue = imp->getterRaisesExceptionLongAttribute(exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -2378,7 +2378,7 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
 static void raisesExceptionLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    ExceptionState exceptionState(ExceptionState::GetterContext, "raisesExceptionLongAttribute", "TestObjectPython" ,info.Holder(), info.GetIsolate());
     int jsValue = imp->raisesExceptionLongAttribute(exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -2394,9 +2394,9 @@ static void raisesExceptionLongAttributeAttributeGetterCallback(v8::Local<v8::St
 
 static void raisesExceptionLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "raisesExceptionLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     imp->setRaisesExceptionLongAttribute(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
 }
@@ -2873,9 +2873,9 @@ static void setterRaisesExceptionLongAttributeAttributeGetterCallback(v8::Local<
 
 static void setterRaisesExceptionLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "setterRaisesExceptionLongAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     imp->setSetterRaisesExceptionLongAttribute(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
 }
@@ -2902,6 +2902,7 @@ static void strictTypeCheckingFloatAttributeAttributeGetterCallback(v8::Local<v8
 
 static void strictTypeCheckingFloatAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "strictTypeCheckingFloatAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_VOID(float, cppValue, static_cast<float>(jsValue->NumberValue()));
     imp->setStrictTypeCheckingFloatAttribute(cppValue);
@@ -2929,8 +2930,10 @@ static void strictTypeCheckingTestInterfaceAttributeAttributeGetterCallback(v8::
 
 static void strictTypeCheckingTestInterfaceAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
+    ExceptionState exceptionState(ExceptionState::SetterContext, "strictTypeCheckingTestInterfaceAttribute", "TestObjectPython", info.Holder(), info.GetIsolate());
     if (!isUndefinedOrNull(jsValue) && !V8TestInterface::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate()))) {
-        throwTypeError(ExceptionMessages::failedToSet("strictTypeCheckingTestInterfaceAttribute", "TestObjectPython", "The provided value is not of type 'TestInterface'."), info.GetIsolate());
+        exceptionState.throwTypeError("The provided value is not of type 'TestInterface'.");
+        exceptionState.throwIfNeeded();
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -5137,9 +5140,9 @@ static void overloadedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<
 
 static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "addEventListener", "TestObjectPython", info.Holder(), info.GetIsolate());
     EventTarget* impl = V8TestObjectPython::toNative(info.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {
-        ExceptionState exceptionState(info.Holder(), info.GetIsolate());
         if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
@@ -5165,9 +5168,9 @@ static void addEventListenerMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 
 static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "removeEventListener", "TestObjectPython", info.Holder(), info.GetIsolate());
     EventTarget* impl = V8TestObjectPython::toNative(info.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {
-        ExceptionState exceptionState(info.Holder(), info.GetIsolate());
         if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
@@ -5845,8 +5848,8 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallbackForMain
 
 static void raisesExceptionVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionVoidMethod", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     imp->raisesExceptionVoidMethod(exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -5861,8 +5864,8 @@ static void raisesExceptionVoidMethodMethodCallback(const v8::FunctionCallbackIn
 
 static void raisesExceptionVoidMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "raisesExceptionVoidMethodOptionalLongArg", "TestObjectPython", info.Holder(), info.GetIsolate());
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() <= 0)) {
         imp->raisesExceptionVoidMethodOptionalLongArg(exceptionState);
         if (exceptionState.throwIfNeeded())

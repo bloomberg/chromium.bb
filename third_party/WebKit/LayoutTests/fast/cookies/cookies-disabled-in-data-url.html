@@ -12,7 +12,7 @@
         var exceptionMessage;
         window.addEventListener('message', function (e) {
             exceptionMessage = e.data;
-            shouldBeEqualToString('exceptionMessage', "Access to 'cookie' is denied for this document. Cookies are disabled inside 'data:' URLs.");
+            shouldBeEqualToString('exceptionMessage', "Failed to read the 'cookie' property from 'Document': Cookies are disabled inside 'data:' URLs.");
             finishJSTest();
         });
 

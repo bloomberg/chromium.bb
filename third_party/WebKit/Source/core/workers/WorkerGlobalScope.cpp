@@ -204,7 +204,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
     for (Vector<String>::const_iterator it = urls.begin(); it != urlsEnd; ++it) {
         const KURL& url = executionContext()->completeURL(*it);
         if (!url.isValid()) {
-            exceptionState.throwDOMException(SyntaxError, "Failed to execute 'importScripts': the URL '" + *it + "' is invalid.");
+            exceptionState.throwDOMException(SyntaxError, "The URL '" + *it + "' is invalid.");
             return;
         }
         completedURLs.append(url);
@@ -218,7 +218,7 @@ void WorkerGlobalScope::importScripts(const Vector<String>& urls, ExceptionState
 
         // If the fetching attempt failed, throw a NetworkError exception and abort all these steps.
         if (scriptLoader->failed()) {
-            exceptionState.throwDOMException(NetworkError, "Failed to execute 'importScripts': the script at '" + it->elidedString() + "' failed to load.");
+            exceptionState.throwDOMException(NetworkError, "The script at '" + it->elidedString() + "' failed to load.");
             return;
         }
 

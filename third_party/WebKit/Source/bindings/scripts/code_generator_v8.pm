@@ -1276,6 +1276,7 @@ sub GenerateDomainSafeFunctionSetter
 {
     my $interface = shift;
 
+    my $interfaceName = $interface->name();
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
@@ -1288,7 +1289,8 @@ static void ${implClassName}OriginSafeMethodSetter(v8::Local<v8::String> name, v
     if (holder.IsEmpty())
         return;
     ${implClassName}* imp = ${v8ClassName}::toNative(holder);
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    v8::String::Utf8Value attributeName(name);
+    ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "${interfaceName}", info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
@@ -1542,7 +1544,7 @@ END
     if ($useExceptions || $attribute->extendedAttributes->{"CheckSecurity"}) {
         AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
-        $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
+        $code .= "    ExceptionState exceptionState(ExceptionState::GetterContext, \"${attrName}\", \"${interfaceName}\" ,info.Holder(), info.GetIsolate());\n";
     }
 
     # Generate security checks if necessary
@@ -1800,6 +1802,7 @@ sub GenerateReplaceableAttributeSetter
 {
     my $interface = shift;
 
+    my $interfaceName = $interface->name();
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
 
@@ -1812,7 +1815,8 @@ END
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
         $code .= <<END;
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
-    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+    v8::String::Utf8Value attributeName(name);
+    ExceptionState exceptionState(ExceptionState::SetterContext, *attributeName, "${interfaceName}", info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
@@ -1926,6 +1930,18 @@ sub GenerateNormalAttributeSetter
     }
     $code .= "{\n";
 
+    my $raisesException = $attribute->extendedAttributes->{"RaisesException"};
+    my $useExceptions = 1 if $raisesException && ($raisesException eq "VALUE_IS_MISSING" or $raisesException eq "Setter");
+
+    # We throw exceptions using 'ExceptionState' if the attribute explicitly claims that exceptions
+    # may be raised, or if a strict type check might fail, or if we're dealing with SVG, which does
+    # strange things with tearoffs and read-only wrappers.
+    if ($useExceptions or $attribute->extendedAttributes->{"StrictTypeChecking"} or GetSVGTypeNeedingTearOff($interfaceName) or GetSVGTypeNeedingTearOff($attrType)) {
+        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
+        AddToImplIncludes("bindings/v8/ExceptionState.h");
+        $code .= "    ExceptionState exceptionState(ExceptionState::SetterContext, \"${attrName}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
+    }
+
     # If the "StrictTypeChecking" extended attribute is present, and the attribute's type is an
     # interface type, then if the incoming value does not implement that interface, a TypeError is
     # thrown rather than silently passing NULL to the C++ code.
@@ -1935,7 +1951,8 @@ sub GenerateNormalAttributeSetter
         my $argType = $attribute->type;
         if (IsWrapperType($argType)) {
             $code .= "    if (!isUndefinedOrNull(jsValue) && !V8${argType}::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate()))) {\n";
-            $code .= "        throwTypeError(ExceptionMessages::failedToSet(\"${attrName}\", \"${interfaceName}\", \"The provided value is not of type '${argType}'.\"), info.GetIsolate());\n";
+            $code .= "        exceptionState.throwTypeError(\"The provided value is not of type '${argType}'.\");\n";
+            $code .= "        exceptionState.throwIfNeeded();\n";
             $code .= "        return;\n";
             $code .= "    }\n";
         }
@@ -1949,11 +1966,10 @@ sub GenerateNormalAttributeSetter
     $svgNativeType* imp = ${v8ClassName}::toNative(info.Holder());
 END
         } else {
-            AddToImplIncludes("bindings/v8/ExceptionMessages.h");
-            AddToImplIncludes("bindings/v8/ExceptionState.h");
             $code .= "    $svgNativeType* wrapper = ${v8ClassName}::toNative(info.Holder());\n";
             $code .= "    if (wrapper->isReadOnly()) {\n";
-            $code .= "        setDOMException(NoModificationAllowedError, ExceptionMessages::failedToSet(\"${attrName}\", \"${interfaceName}\", \"The attribute is read-only.\"), info.GetIsolate());\n";
+            $code .= "        exceptionState.throwDOMException(NoModificationAllowedError, \"The attribute is read-only.\");\n";
+            $code .= "        exceptionState.throwIfNeeded();\n";
             $code .= "        return;\n";
             $code .= "    }\n";
             $code .= "    $svgWrappedNativeType& impInstance = wrapper->propertyReference();\n";
@@ -2045,20 +2061,12 @@ END
     if ($returnSvgNativeType) {
         $code .= <<END;
     if (!$expression) {
-        throwTypeError(ExceptionMessages::failedToSet(\"${attrName}\", \"${interfaceName}\", \"The provided value is not of type '$returnType'.\"), info.GetIsolate());
+        exceptionState.throwTypeError(\"The provided value is not of type '$returnType'.\");
+        exceptionState.throwIfNeeded();
         return;
     }
 END
         $expression = $expression . "->propertyReference()";
-    }
-
-    my $raisesException = $attribute->extendedAttributes->{"RaisesException"};
-    my $useExceptions = 1 if $raisesException && ($raisesException eq "VALUE_IS_MISSING" or $raisesException eq "Setter");
-
-    if ($useExceptions) {
-        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
-        AddToImplIncludes("bindings/v8/ExceptionState.h");
-        $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
     }
 
     if ($attribute->type eq "EventHandler") {
@@ -2331,6 +2339,7 @@ sub GenerateFunction
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
     my $name = $function->name;
+    my $unoverloadedName = $function->name;
     my $implName = GetImplName($function);
     my $funcExt = $function->extendedAttributes;
 
@@ -2349,19 +2358,30 @@ sub GenerateFunction
     $code .= "static void ${name}Method${forMainWorldSuffix}(const v8::FunctionCallbackInfo<v8::Value>& info)\n";
     $code .= "{\n";
 
-    if ($name eq "addEventListener" || $name eq "removeEventListener") {
+    # We throw exceptions using 'ExceptionState' if the function explicitly claims that exceptions
+    # may be raised, or for event listeners, or for security-checking, and for weird SVG stuff.
+    my $isEventListener = $name eq "addEventListener" || $name eq "removeEventListener";
+    my $isSecurityCheckNecessary = $interface->extendedAttributes->{"CheckSecurity"} && !$function->extendedAttributes->{"DoNotCheckSecurity"};
+    my $raisesExceptions = $function->extendedAttributes->{"RaisesException"};
+    my ($svgPropertyType, $svgListPropertyType, $svgNativeType) = GetSVGPropertyTypes($interfaceName);
+    my $isNonListSVGType = $svgNativeType && !($interfaceName =~ /List$/);
+
+    if ($raisesExceptions || $isEventListener || $isSecurityCheckNecessary || $isNonListSVGType) {
+        AddToImplIncludes("bindings/v8/ExceptionState.h");
+        $code .= "    ExceptionState exceptionState(ExceptionState::ExecutionContext, \"${unoverloadedName}\", \"${interfaceName}\", info.Holder(), info.GetIsolate());\n";
+    }
+
+    if ($isEventListener) {
         my $lookupType = ($name eq "addEventListener") ? "OrCreate" : "Only";
         my $passRefPtrHandling = ($name eq "addEventListener") ? "" : ".get()";
         my $hiddenDependencyAction = ($name eq "addEventListener") ? "create" : "remove";
 
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
-        AddToImplIncludes("bindings/v8/ExceptionState.h");
         AddToImplIncludes("bindings/v8/V8EventListenerList.h");
         AddToImplIncludes("core/frame/DOMWindow.h");
         $code .= <<END;
     EventTarget* impl = ${v8ClassName}::toNative(info.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {
-        ExceptionState exceptionState(info.Holder(), info.GetIsolate());
         if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
@@ -2397,19 +2417,16 @@ END
         return;
     }
 
-    my ($svgPropertyType, $svgListPropertyType, $svgNativeType) = GetSVGPropertyTypes($interfaceName);
-
     if ($svgNativeType) {
         my $nativeClassName = GetNativeType($interfaceName);
         if ($interfaceName =~ /List$/) {
             $code .= "    $nativeClassName imp = ${v8ClassName}::toNative(info.Holder());\n";
         } else {
-            AddToImplIncludes("bindings/v8/ExceptionMessages.h");
-            AddToImplIncludes("bindings/v8/ExceptionState.h");
             AddToImplIncludes("core/dom/ExceptionCode.h");
             $code .= "    $nativeClassName wrapper = ${v8ClassName}::toNative(info.Holder());\n";
             $code .= "    if (wrapper->isReadOnly()) {\n";
-            $code .= "        setDOMException(NoModificationAllowedError, ExceptionMessages::failedToExecute(\"${name}\", \"${interfaceName}\", \"The object is read-only.\"), info.GetIsolate());\n";
+            $code .= "        exceptionState.throwDOMException(NoModificationAllowedError, \"The object is read-only.\");\n";
+            $code .= "        exceptionState.throwIfNeeded();\n";
             $code .= "        return;\n";
             $code .= "    }\n";
             my $svgWrappedNativeType = GetSVGWrappedTypeNeedingTearOff($interfaceName);
@@ -2424,15 +2441,8 @@ END
 
     $code .= GenerateCustomElementInvocationScopeIfNeeded($funcExt);
 
-    my $raisesExceptions = $function->extendedAttributes->{"RaisesException"} || ($interface->extendedAttributes->{"CheckSecurity"} && !$function->extendedAttributes->{"DoNotCheckSecurity"});
-    if ($raisesExceptions) {
-        AddToImplIncludes("bindings/v8/ExceptionMessages.h");
-        AddToImplIncludes("bindings/v8/ExceptionState.h");
-        $code .= "    ExceptionState exceptionState(info.Holder(), info.GetIsolate());\n";
-    }
-
     # Check domain security if needed
-    if ($interface->extendedAttributes->{"CheckSecurity"} && !$function->extendedAttributes->{"DoNotCheckSecurity"}) {
+    if ($isSecurityCheckNecessary) {
         # We have not find real use cases yet.
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
         $code .= <<END;

@@ -3,8 +3,8 @@ This tests that storage methods throw exceptions with reasonable messages inside
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS exceptionMessage is "Access to 'localStorage' is denied for this document. Storage is disabled inside 'data:' URLs."
-PASS exceptionMessage is "Access to 'sessionStorage' is denied for this document. Storage is disabled inside 'data:' URLs."
+PASS exceptionMessage is "Failed to read the 'localStorage' property from 'Window': Storage is disabled inside 'data:' URLs."
+PASS exceptionMessage is "Failed to read the 'sessionStorage' property from 'Window': Storage is disabled inside 'data:' URLs."
 PASS successfullyParsed is true
 
 TEST COMPLETE

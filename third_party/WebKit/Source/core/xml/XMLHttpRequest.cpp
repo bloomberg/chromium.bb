@@ -25,7 +25,6 @@
 
 #include "FetchInitiatorTypeNames.h"
 #include "RuntimeEnabledFeatures.h"
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMImplementation.h"
@@ -236,7 +235,7 @@ ScriptString XMLHttpRequest::responseJSONSource()
 Document* XMLHttpRequest::responseXML(ExceptionState& exceptionState)
 {
     if (m_responseTypeCode != ResponseTypeDefault && m_responseTypeCode != ResponseTypeDocument) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToGet("responseXML", "XMLHttpRequest", "The value is only accessible if the object's 'responseType' is '' or 'document' (was '" + responseType() + "')."));
+        exceptionState.throwDOMException(InvalidStateError, "The value is only accessible if the object's 'responseType' is '' or 'document' (was '" + responseType() + "').");
         return 0;
     }
 
@@ -333,7 +332,7 @@ void XMLHttpRequest::setTimeout(unsigned long timeout, ExceptionState& exception
     // FIXME: Need to trigger or update the timeout Timer here, if needed. http://webkit.org/b/98156
     // XHR2 spec, 4.7.3. "This implies that the timeout attribute can be set while fetching is in progress. If that occurs it will still be measured relative to the start of fetching."
     if (executionContext()->isDocument() && !m_async) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::failedToSet("timeout", "XMLHttpRequest", "Timeouts cannot be set for synchronous requests made from a document."));
+        exceptionState.throwDOMException(InvalidAccessError, "Timeouts cannot be set for synchronous requests made from a document.");
         return;
     }
     m_timeoutMilliseconds = timeout;
@@ -342,7 +341,7 @@ void XMLHttpRequest::setTimeout(unsigned long timeout, ExceptionState& exception
 void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState& exceptionState)
 {
     if (m_state >= LOADING) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToSet("responseType", "XMLHttpRequest", "The response type cannot be set if the object's state is LOADING or DONE."));
+        exceptionState.throwDOMException(InvalidStateError, "The response type cannot be set if the object's state is LOADING or DONE.");
         return;
     }
 
@@ -351,7 +350,7 @@ void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState&
     // We'll only disable this functionality for HTTP(S) requests since sync requests for local protocols
     // such as file: and data: still make sense to allow.
     if (!m_async && executionContext()->isDocument() && m_url.protocolIsInHTTPFamily()) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::failedToSet("responseType", "XMLHttpRequest", "The response type can only be changed for asynchronous HTTP requests made from a document."));
+        exceptionState.throwDOMException(InvalidAccessError, "The response type can only be changed for asynchronous HTTP requests made from a document.");
         return;
     }
 
@@ -462,7 +461,7 @@ void XMLHttpRequest::dispatchReadyStateChangeEvent()
 void XMLHttpRequest::setWithCredentials(bool value, ExceptionState& exceptionState)
 {
     if (m_state > OPENED || m_loader) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToSet("withCredentials", "XMLHttpRequest", "The value may only be set if the object's state is UNSENT or OPENED."));
+        exceptionState.throwDOMException(InvalidStateError,  "The value may only be set if the object's state is UNSENT or OPENED.");
         return;
     }
 
@@ -1082,17 +1081,17 @@ void XMLHttpRequest::overrideMimeType(const AtomicString& override)
 void XMLHttpRequest::setRequestHeader(const AtomicString& name, const AtomicString& value, ExceptionState& exceptionState)
 {
     if (m_state != OPENED || m_loader) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("setRequestHeader", "XMLHttpRequest", "The object's state must be OPENED."));
+        exceptionState.throwDOMException(InvalidStateError, "The object's state must be OPENED.");
         return;
     }
 
     if (!isValidHTTPToken(name)) {
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("setRequestHeader", "XMLHttpRequest", "'" + name + "' is not a valid HTTP header field name."));
+        exceptionState.throwDOMException(SyntaxError, "'" + name + "' is not a valid HTTP header field name.");
         return;
     }
 
     if (!isValidHTTPHeaderValue(value)) {
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("setRequestHeader", "XMLHttpRequest", "'" + value + "' is not a valid HTTP header field value."));
+        exceptionState.throwDOMException(SyntaxError, "'" + value + "' is not a valid HTTP header field value.");
         return;
     }
 

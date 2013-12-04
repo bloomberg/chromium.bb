@@ -26,7 +26,6 @@
 #include "config.h"
 #include "core/html/HTMLDialogElement.h"
 
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/ExceptionCode.h"
@@ -88,7 +87,7 @@ PassRefPtr<HTMLDialogElement> HTMLDialogElement::create(Document& document)
 void HTMLDialogElement::close(const String& returnValue, ExceptionState& exceptionState)
 {
     if (!fastHasAttribute(openAttr)) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("close", "HTMLDialogElement", "The element does not have an 'open' attribute, and therefore cannot be closed."));
+        exceptionState.throwDOMException(InvalidStateError, "The element does not have an 'open' attribute, and therefore cannot be closed.");
         return;
     }
     closeDialog(returnValue);
@@ -130,11 +129,11 @@ void HTMLDialogElement::show()
 void HTMLDialogElement::showModal(ExceptionState& exceptionState)
 {
     if (fastHasAttribute(openAttr)) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("showModal", "HTMLDialogElement", "The element already has an 'open' attribute, and therefore cannot be opened modally."));
+        exceptionState.throwDOMException(InvalidStateError, "The element already has an 'open' attribute, and therefore cannot be opened modally.");
         return;
     }
     if (!inDocument()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("showModal", "HTMLDialogElement", "The element is not in a Document."));
+        exceptionState.throwDOMException(InvalidStateError, "The element is not in a Document.");
         return;
     }
 

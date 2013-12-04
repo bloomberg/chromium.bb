@@ -28,7 +28,6 @@
 
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
@@ -429,7 +428,7 @@ int HTMLTextAreaElement::maxLength() const
 void HTMLTextAreaElement::setMaxLength(int newValue, ExceptionState& exceptionState)
 {
     if (newValue < 0)
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("maxLength", "HTMLTextAreaElement", "The value provided (" + String::number(newValue) + ") is not positive or 0."));
+        exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(newValue) + ") is not positive or 0.");
     else
         setIntegralAttribute(maxlengthAttr, newValue);
 }

@@ -25,7 +25,6 @@
 #include "config.h"
 #include "core/dom/TreeWalker.h"
 
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptState.h"
 #include "core/dom/ContainerNode.h"
@@ -44,7 +43,7 @@ TreeWalker::TreeWalker(PassRefPtr<Node> rootNode, unsigned whatToShow, PassRefPt
 void TreeWalker::setCurrentNode(PassRefPtr<Node> node, ExceptionState& exceptionState)
 {
     if (!node) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("setCurrentNode", "TreeWalker", "The Node provided is invalid."));
+        exceptionState.throwDOMException(NotSupportedError, "The Node provided is invalid.");
         return;
     }
     m_current = node;

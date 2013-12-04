@@ -31,7 +31,7 @@ bazConstructor = document.register('x-baz', { prototype: Object.create(fooConstr
 quxConstructor = document.register('x-qux', { extends: 'input', prototype: Object.create(barConstructor.prototype) });
 
 // Same name, different local name
-shouldThrow('document.register("x-foo", { prototype: Object.create(HTMLDivElement.prototype) })', '"InvalidStateError: Failed to call \'register\' on \'Document\' for type \'x-foo\': a type with that name is already registered."');
+shouldThrow('document.register("x-foo", { prototype: Object.create(HTMLDivElement.prototype) })', '"InvalidStateError: Failed to execute \'register\' on \'Document\': Registration failed for type \'x-foo\'. A type with that name is already registered."');
 
 //
 // Generated constructors

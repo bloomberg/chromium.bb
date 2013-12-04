@@ -7,7 +7,7 @@
     <script>
         description("This tests that 'performance.measure' throws exceptions with reasonable messages.");
 
-        shouldThrow('window.performance.measure("DoesNotExist", "AlsoDoesNotExist")', '"SyntaxError: The mark \'AlsoDoesNotExist\' does not exist."');
+        shouldThrow('window.performance.measure("DoesNotExist", "AlsoDoesNotExist")', '"SyntaxError: Failed to execute \'measure\' on \'Performance\': The mark \'AlsoDoesNotExist\' does not exist."');
 
         window.performance.mark('mark');
 
@@ -25,7 +25,7 @@
             'loadEventEnd',
         ];
         allTheExceptionalThings.forEach(function(name) {
-            shouldThrow('window.performance.measure("measuring", \'' + name + '\', "mark")', '"InvalidAccessError: \'' + name + '\' is empty: either the event hasn\'t happened yet, or it would provide cross-origin timing information."');
+            shouldThrow('window.performance.measure("measuring", \'' + name + '\', "mark")', '"InvalidAccessError: Failed to execute \'measure\' on \'Performance\': \'' + name + '\' is empty: either the event hasn\'t happened yet, or it would provide cross-origin timing information."');
         });
     </script>
 </body>

@@ -79,7 +79,7 @@ double HTMLMeterElement::min() const
 void HTMLMeterElement::setMin(double min, ExceptionState& exceptionState)
 {
     if (!std::isfinite(min)) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToSet("min", "HTMLMeterElement", ExceptionMessages::notAFiniteNumber(min)));
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(min));
         return;
     }
     setFloatingPointAttribute(minAttr, min);
@@ -93,7 +93,7 @@ double HTMLMeterElement::max() const
 void HTMLMeterElement::setMax(double max, ExceptionState& exceptionState)
 {
     if (!std::isfinite(max)) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToSet("max", "HTMLMeterElement", ExceptionMessages::notAFiniteNumber(max)));
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(max));
         return;
     }
     setFloatingPointAttribute(maxAttr, max);
@@ -108,7 +108,7 @@ double HTMLMeterElement::value() const
 void HTMLMeterElement::setValue(double value, ExceptionState& exceptionState)
 {
     if (!std::isfinite(value)) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToSet("value", "HTMLMeterElement", ExceptionMessages::notAFiniteNumber(value)));
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(value));
         return;
     }
     setFloatingPointAttribute(valueAttr, value);
@@ -123,7 +123,7 @@ double HTMLMeterElement::low() const
 void HTMLMeterElement::setLow(double low, ExceptionState& exceptionState)
 {
     if (!std::isfinite(low)) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToSet("low", "HTMLMeterElement", ExceptionMessages::notAFiniteNumber(low)));
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(low));
         return;
     }
     setFloatingPointAttribute(lowAttr, low);
@@ -138,7 +138,7 @@ double HTMLMeterElement::high() const
 void HTMLMeterElement::setHigh(double high, ExceptionState& exceptionState)
 {
     if (!std::isfinite(high)) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToSet("high", "HTMLMeterElement", ExceptionMessages::notAFiniteNumber(high)));
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(high));
         return;
     }
     setFloatingPointAttribute(highAttr, high);
@@ -153,7 +153,7 @@ double HTMLMeterElement::optimum() const
 void HTMLMeterElement::setOptimum(double optimum, ExceptionState& exceptionState)
 {
     if (!std::isfinite(optimum)) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToSet("optimum", "HTMLMeterElement", ExceptionMessages::notAFiniteNumber(optimum)));
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(optimum));
         return;
     }
     setFloatingPointAttribute(optimumAttr, optimum);

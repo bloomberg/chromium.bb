@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/css/CSSGroupingRule.h"
 
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSRuleList.h"
@@ -62,7 +61,7 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
     ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
 
     if (index > m_groupRule->childRules().size()) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("insertRule", "CSSGroupingRule", "the index " + String::number(index) + " must be less than or equal to the length of the rule list."));
+        exceptionState.throwDOMException(IndexSizeError, "the index " + String::number(index) + " must be less than or equal to the length of the rule list.");
         return 0;
     }
 
@@ -70,7 +69,7 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
     CSSParser parser(parserContext(), UseCounter::getFrom(styleSheet));
     RefPtr<StyleRuleBase> newRule = parser.parseRule(styleSheet ? styleSheet->contents() : 0, ruleString);
     if (!newRule) {
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("insertRule", "CSSGroupingRule", "the rule '" + ruleString + "' is invalid and cannot be parsed."));
+        exceptionState.throwDOMException(SyntaxError, "the rule '" + ruleString + "' is invalid and cannot be parsed.");
         return 0;
     }
 
@@ -78,7 +77,7 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
         // FIXME: an HierarchyRequestError should also be thrown for a @charset or a nested
         // @media rule. They are currently not getting parsed, resulting in a SyntaxError
         // to get raised above.
-        exceptionState.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute("insertRule", "CSSGroupingRule", "'@import' rules cannot be inserted inside a group rule."));
+        exceptionState.throwDOMException(HierarchyRequestError, "'@import' rules cannot be inserted inside a group rule.");
         return 0;
     }
     CSSStyleSheet::RuleMutationScope mutationScope(this);
@@ -94,7 +93,7 @@ void CSSGroupingRule::deleteRule(unsigned index, ExceptionState& exceptionState)
     ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
 
     if (index >= m_groupRule->childRules().size()) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("deleteRule", "CSSGroupingRule", "the index " + String::number(index) + " is greated than the length of the rule list."));
+        exceptionState.throwDOMException(IndexSizeError, "the index " + String::number(index) + " is greated than the length of the rule list.");
         return;
     }
 

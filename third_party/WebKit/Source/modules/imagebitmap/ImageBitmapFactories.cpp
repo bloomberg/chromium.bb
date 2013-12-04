@@ -31,7 +31,6 @@
 #include "config.h"
 #include "modules/imagebitmap/ImageBitmapFactories.h"
 
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptScope.h"
 #include "core/fileapi/Blob.h"
@@ -100,12 +99,12 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
         return ScriptPromise();
     }
     if (!image->cachedImage()->image()->currentFrameHasSingleSecurityOrigin()) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("createImageBitmap", "ImageBitmapFactories", "the source image contains cross-origin image data."));
+        exceptionState.throwSecurityError("the source image contains cross-origin image data.");
         return ScriptPromise();
     }
     if (!image->cachedImage()->passesAccessControlCheck(eventTarget->toDOMWindow()->document()->securityOrigin())
     && eventTarget->toDOMWindow()->document()->securityOrigin()->taintsCanvas(image->src())) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("createImageBitmap", "ImageBitmapFactories", "cross-origin access to the source image is denied."));
+        exceptionState.throwSecurityError("cross-origin access to the source image is denied.");
         return ScriptPromise();
     }
     // FIXME: make ImageBitmap creation asynchronous crbug.com/258082
@@ -144,11 +143,11 @@ ScriptPromise ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, 
         return ScriptPromise();
     }
     if (!video->hasSingleSecurityOrigin()) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("createImageBitmap", "ImageBitmapFactories", "the source video contains cross-origin image data."));
+        exceptionState.throwSecurityError("the source video contains cross-origin image data.");
         return ScriptPromise();
     }
     if (!video->player()->didPassCORSAccessCheck() && eventTarget->toDOMWindow()->document()->securityOrigin()->taintsCanvas(video->currentSrc())) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("createImageBitmap", "ImageBitmapFactories", "cross-origin access to the source video is denied."));
+        exceptionState.throwSecurityError("cross-origin access to the source video is denied.");
         return ScriptPromise();
     }
     // FIXME: make ImageBitmap creation asynchronous crbug.com/258082

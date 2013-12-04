@@ -13,7 +13,7 @@ Expecting exception from objectStore.delete(null);
 PASS Exception was thrown.
 PASS code is 0
 PASS ename is 'DataError'
-Exception message: No key or key range specified.
+Exception message: Failed to execute 'delete' on 'IDBObjectStore': No key or key range specified.
 PASS successfullyParsed is true
 
 TEST COMPLETE

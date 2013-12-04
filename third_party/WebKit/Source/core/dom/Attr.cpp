@@ -24,7 +24,6 @@
 #include "core/dom/Attr.h"
 
 #include "XMLNSNames.h"
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Element.h"
@@ -100,12 +99,12 @@ void Attr::setPrefix(const AtomicString& prefix, ExceptionState& exceptionState)
         return;
 
     if (prefix == xmlnsAtom && namespaceURI() != XMLNSNames::xmlnsNamespaceURI) {
-        exceptionState.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Attr", "The prefix '" + xmlnsAtom + "' may not be used on the namespace '" + namespaceURI() + "'."));
+        exceptionState.throwDOMException(NamespaceError, "The prefix '" + xmlnsAtom + "' may not be used on the namespace '" + namespaceURI() + "'.");
         return;
     }
 
     if (this->qualifiedName() == xmlnsAtom) {
-        exceptionState.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Attr", "The prefix '" + prefix + "' may not be used as a namespace prefix for attributes whose qualified name is '" + xmlnsAtom + "'."));
+        exceptionState.throwDOMException(NamespaceError, "The prefix '" + prefix + "' may not be used as a namespace prefix for attributes whose qualified name is '" + xmlnsAtom + "'.");
         return;
     }
 

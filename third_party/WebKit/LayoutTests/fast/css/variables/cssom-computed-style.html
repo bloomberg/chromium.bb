@@ -19,7 +19,7 @@ var computedBodyStyle = getComputedStyle(document.querySelector("body"));
 
 shouldBeEqualToString('computedStyle.var.toString()', '[object CSSVariablesMap]');
 shouldBe('computedStyle.var === computedStyle.var', 'true');
-shouldThrow('computedStyle.var.set("create", "test")', '"NoModificationAllowedError: Failed to set the \'create\' property on a computed \'CSSStyleDeclaration\': computed styles are read-only."');
+shouldThrow('computedStyle.var.set("create", "test")', '"NoModificationAllowedError: Failed to execute \'set\' on \'CSSVariablesMap\': These styles are computed, and therefore the \'create\' property is read-only."');
 shouldBe('computedStyle.var.size', '3');
 shouldBe('computedBodyStyle.var.size', '0');
 shouldBeEqualToString('computedStyle.var.get("stylesheet")', 'pass');
@@ -43,8 +43,8 @@ computedBodyStyle.var.forEach(function(value, name, map) {
 });
 shouldBe('emptyVarForEachIterations.length', '0');
 
-shouldThrow('computedStyle.var.set("inline", "fail")', '"NoModificationAllowedError: Failed to set the \'inline\' property on a computed \'CSSStyleDeclaration\': computed styles are read-only."');
-shouldThrow('computedStyle.var.clear()', '"NoModificationAllowedError: Failed to clear variables from a computed \'CSSStyleDeclaration\': computed styles are read-only."');
+shouldThrow('computedStyle.var.set("inline", "fail")', '"NoModificationAllowedError: Failed to execute \'set\' on \'CSSVariablesMap\': These styles are computed, and therefore the \'inline\' property is read-only."');
+shouldThrow('computedStyle.var.clear()', '"NoModificationAllowedError: Failed to execute \'clear\' on \'CSSVariablesMap\': These styles are computed, and therefore variables may not be cleared."');
 shouldBe('computedStyle.var.delete("inline")', 'false');
 shouldBeEqualToString('computedStyle.var.get("inline")', 'pass');
 </script>

@@ -32,7 +32,6 @@
 
 #include "modules/filesystem/FileWriterSync.h"
 
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/Blob.h"
@@ -46,7 +45,7 @@ void FileWriterSync::write(Blob* data, ExceptionState& exceptionState)
     ASSERT(writer());
     ASSERT(m_complete);
     if (!data) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::failedToExecute("write", "FileReaderSync", FileError::typeMismatchErrorMessage));
+        exceptionState.throwDOMException(TypeMismatchError, FileError::typeMismatchErrorMessage);
         return;
     }
 
@@ -74,7 +73,7 @@ void FileWriterSync::truncate(long long offset, ExceptionState& exceptionState)
     ASSERT(writer());
     ASSERT(m_complete);
     if (offset < 0) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("truncate", "FileWriterSync", FileError::invalidStateErrorMessage));
+        exceptionState.throwDOMException(InvalidStateError, FileError::invalidStateErrorMessage);
         return;
     }
     prepareForWrite();

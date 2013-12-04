@@ -1,6 +1,6 @@
 This file tests the basic functionality and properties of DataTransferItems. This test requires DRT.
 Populating DataTransferItems...
-Caught exception "NotSupportedError: Failed to execute 'add' on 'DataTransferItemList'" as expected.
+Caught exception "NotSupportedError: Failed to execute 'add' on 'DataTransferItemList': An item already exists for type 'text/plain'." as expected.
 Verifying contents of DataTransferItems...
 items.length: 2
 items[0].kind: string

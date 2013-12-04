@@ -28,7 +28,6 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
@@ -213,11 +212,11 @@ void HTMLVideoElement::webkitEnterFullscreen(ExceptionState& exceptionState)
     // Generate an exception if this isn't called in response to a user gesture, or if the
     // element does not support fullscreen.
     if (userGestureRequiredForFullscreen() && !UserGestureIndicator::processingUserGesture()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("enterFullscreen", "HTMLVideoElement", "This element may only enter fullscreen mode in response to a user gesture ('click', for example)."));
+        exceptionState.throwDOMException(InvalidStateError, "This element may only enter fullscreen mode in response to a user gesture ('click', for example).");
         return;
     }
     if (!supportsFullscreen()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("enterFullscreen", "HTMLVideoElement", "This element does not support fullscreen mode."));
+        exceptionState.throwDOMException(InvalidStateError, "This element does not support fullscreen mode.");
         return;
     }
 

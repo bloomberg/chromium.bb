@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DataTransferItem.h"
@@ -100,7 +99,7 @@ PassRefPtr<ChromiumDataObjectItem> ChromiumDataObject::add(const String& data, c
 {
     RefPtr<ChromiumDataObjectItem> item = ChromiumDataObjectItem::createFromString(type, data);
     if (!internalAddStringItem(item)) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("add", "DataTransferItemList"));
+        exceptionState.throwDOMException(NotSupportedError, "An item already exists for type '" + type + "'.");
         return 0;
     }
     return item;

@@ -113,12 +113,12 @@ static const String& verticalGrowingRightKeyword()
     return verticallr;
 }
 
-static bool isInvalidPercentage(double value, const char* method, ExceptionState& exceptionState)
+static bool isInvalidPercentage(double value, ExceptionState& exceptionState)
 {
-    if (TextTrackCue::isInfiniteOrNonNumber(value, method, exceptionState))
+    if (TextTrackCue::isInfiniteOrNonNumber(value, exceptionState))
         return true;
     if (value < 0 || value > 100) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet(method, "TextTrackCue", "The value provided (" + String::number(value) + ") is not between 0 and 100."));
+        exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(value) + ") is not between 0 and 100.");
         return true;
     }
     return false;
@@ -317,7 +317,7 @@ void VTTCue::setPosition(int position, ExceptionState& exceptionState)
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-position
     // On setting, if the new value is negative or greater than 100, then throw an IndexSizeError exception.
     // Otherwise, set the text track cue text position to the new value.
-    if (isInvalidPercentage(position, "line", exceptionState))
+    if (isInvalidPercentage(position, exceptionState))
         return;
 
     // Otherwise, set the text track cue line position to the new value.
@@ -334,7 +334,7 @@ void VTTCue::setSize(int size, ExceptionState& exceptionState)
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-video-element.html#dom-texttrackcue-size
     // On setting, if the new value is negative or greater than 100, then throw an IndexSizeError
     // exception. Otherwise, set the text track cue size to the new value.
-    if (isInvalidPercentage(size, "line", exceptionState))
+    if (isInvalidPercentage(size, exceptionState))
         return;
 
     // Otherwise, set the text track cue line position to the new value.

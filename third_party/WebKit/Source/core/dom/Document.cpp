@@ -3710,13 +3710,12 @@ String Document::cookie(ExceptionState& exceptionState) const
     // browsing context.
 
     if (!securityOrigin()->canAccessCookies()) {
-        String accessDeniedMessage = "Access to 'cookie' is denied for this document.";
         if (isSandboxed(SandboxOrigin))
-            exceptionState.throwSecurityError(accessDeniedMessage + " The document is sandboxed and lacks the 'allow-same-origin' flag.");
+            exceptionState.throwSecurityError("The document is sandboxed and lacks the 'allow-same-origin' flag.");
         else if (url().protocolIs("data"))
-            exceptionState.throwSecurityError(accessDeniedMessage + " Cookies are disabled inside 'data:' URLs.");
+            exceptionState.throwSecurityError("Cookies are disabled inside 'data:' URLs.");
         else
-            exceptionState.throwSecurityError(accessDeniedMessage);
+            exceptionState.throwSecurityError("Access is denied for this document.");
         return String();
     }
 
@@ -3737,13 +3736,12 @@ void Document::setCookie(const String& value, ExceptionState& exceptionState)
     // browsing context.
 
     if (!securityOrigin()->canAccessCookies()) {
-        String accessDeniedMessage = "Access to 'cookie' is denied for this document.";
         if (isSandboxed(SandboxOrigin))
-            exceptionState.throwSecurityError(accessDeniedMessage + " The document is sandboxed and lacks the 'allow-same-origin' flag.");
+            exceptionState.throwSecurityError("The document is sandboxed and lacks the 'allow-same-origin' flag.");
         else if (url().protocolIs("data"))
-            exceptionState.throwSecurityError(accessDeniedMessage + " Cookies are disabled inside 'data:' URLs.");
+            exceptionState.throwSecurityError("Cookies are disabled inside 'data:' URLs.");
         else
-            exceptionState.throwSecurityError(accessDeniedMessage);
+            exceptionState.throwSecurityError("Access is denied for this document.");
         return;
     }
 
@@ -3769,18 +3767,17 @@ String Document::domain() const
 void Document::setDomain(const String& newDomain, ExceptionState& exceptionState)
 {
     if (isSandboxed(SandboxDocumentDomain)) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToSet("domain", "Document", "assignment is forbidden for sandboxed iframes."));
+        exceptionState.throwSecurityError("Assignment is forbidden for sandboxed iframes.");
         return;
     }
 
     if (SchemeRegistry::isDomainRelaxationForbiddenForURLScheme(securityOrigin()->protocol())) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToSet("domain", "Document", "assignment is forbidden for the '" + securityOrigin()->protocol() + "' scheme."));
+        exceptionState.throwSecurityError("Assignment is forbidden for the '" + securityOrigin()->protocol() + "' scheme.");
         return;
     }
 
     if (newDomain.isEmpty()) {
-        String exceptionMessage = ExceptionMessages::failedToSet("domain", "Document", "'" + newDomain + "' is an empty domain.");
-        exceptionState.throwSecurityError(exceptionMessage);
+        exceptionState.throwSecurityError("'" + newDomain + "' is an empty domain.");
         return;
     }
 
@@ -3788,14 +3785,12 @@ void Document::setDomain(const String& newDomain, ExceptionState& exceptionState
     OriginAccessEntry accessEntry(securityOrigin()->protocol(), newDomain, OriginAccessEntry::AllowSubdomains, ipAddressSetting);
     OriginAccessEntry::MatchResult result = accessEntry.matchesOrigin(*securityOrigin());
     if (result == OriginAccessEntry::DoesNotMatchOrigin) {
-        String exceptionMessage = ExceptionMessages::failedToSet("domain", "Document", "'" + newDomain + "' is not a suffix of '" + domain() + "'.");
-        exceptionState.throwSecurityError(exceptionMessage);
+        exceptionState.throwSecurityError("'" + newDomain + "' is not a suffix of '" + domain() + "'.");
         return;
     }
 
     if (result == OriginAccessEntry::MatchesOriginButIsPublicSuffix) {
-        String exceptionMessage = ExceptionMessages::failedToSet("domain", "Document", "'" + newDomain + "' is a top-level domain.");
-        exceptionState.throwSecurityError(exceptionMessage);
+        exceptionState.throwSecurityError("'" + newDomain + "' is a top-level domain.");
         return;
     }
 

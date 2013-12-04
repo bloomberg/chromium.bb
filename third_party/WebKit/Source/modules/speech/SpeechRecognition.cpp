@@ -27,7 +27,6 @@
 
 #include "modules/speech/SpeechRecognition.h"
 
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -49,7 +48,7 @@ void SpeechRecognition::start(ExceptionState& exceptionState)
 {
     ASSERT(m_controller);
     if (m_started) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("start", "SpeechRecognition", "recognition has already started."));
+        exceptionState.throwDOMException(InvalidStateError, "recognition has already started.");
         return;
     }
 

@@ -1260,7 +1260,7 @@ String CSSComputedStyleDeclaration::cssText() const
 
 void CSSComputedStyleDeclaration::setCSSText(const String&, ExceptionState& exceptionState)
 {
-    exceptionState.throwDOMException(NoModificationAllowedError, "Failed to set the 'cssText' property on a computed 'CSSStyleDeclaration': computed styles are read-only.");
+    exceptionState.throwDOMException(NoModificationAllowedError, "These styles are computed, and therefore read-only.");
 }
 
 static CSSValueID cssIdentifierForFontSizeKeyword(int keywordSize)
@@ -3112,12 +3112,12 @@ bool CSSComputedStyleDeclaration::isPropertyImplicit(const String&)
 
 void CSSComputedStyleDeclaration::setProperty(const String& name, const String&, const String&, ExceptionState& exceptionState)
 {
-    exceptionState.throwDOMException(NoModificationAllowedError, "Failed to set the '" + name + "' property on a computed 'CSSStyleDeclaration': computed styles are read-only.");
+    exceptionState.throwDOMException(NoModificationAllowedError, "These styles are computed, and therefore the '" + name + "' property is read-only.");
 }
 
 String CSSComputedStyleDeclaration::removeProperty(const String& name, ExceptionState& exceptionState)
 {
-    exceptionState.throwDOMException(NoModificationAllowedError, "Failed to remove the '" + name + "' property from a computed 'CSSStyleDeclaration': computed styles are read-only.");
+    exceptionState.throwDOMException(NoModificationAllowedError, "These styles are computed, and therefore the '" + name + "' property is read-only.");
     return String();
 }
 
@@ -3133,7 +3133,7 @@ String CSSComputedStyleDeclaration::getPropertyValueInternal(CSSPropertyID prope
 
 void CSSComputedStyleDeclaration::setPropertyInternal(CSSPropertyID id, const String&, bool, ExceptionState& exceptionState)
 {
-    exceptionState.throwDOMException(NoModificationAllowedError, "This object is computed, and therefore read-only.");
+    exceptionState.throwDOMException(NoModificationAllowedError, "These styles are computed, and therefore the '" + getPropertyNameString(id) + "' property is read-only.");
 }
 
 const HashMap<AtomicString, String>* CSSComputedStyleDeclaration::variableMap() const
@@ -3172,7 +3172,7 @@ String CSSComputedStyleDeclaration::variableValue(const AtomicString& name) cons
 bool CSSComputedStyleDeclaration::setVariableValue(const AtomicString& name, const String&, ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    exceptionState.throwDOMException(NoModificationAllowedError, "Failed to set the '" + name + "' property on a computed 'CSSStyleDeclaration': computed styles are read-only.");
+    exceptionState.throwDOMException(NoModificationAllowedError, "These styles are computed, and therefore the '" + name + "' property is read-only.");
     return false;
 }
 
@@ -3185,7 +3185,7 @@ bool CSSComputedStyleDeclaration::removeVariable(const AtomicString&)
 bool CSSComputedStyleDeclaration::clearVariables(ExceptionState& exceptionState)
 {
     ASSERT(RuntimeEnabledFeatures::cssVariablesEnabled());
-    exceptionState.throwDOMException(NoModificationAllowedError, "Failed to clear variables from a computed 'CSSStyleDeclaration': computed styles are read-only.");
+    exceptionState.throwDOMException(NoModificationAllowedError, "These styles are computed, and therefore variables may not be cleared.");
     return false;
 }
 

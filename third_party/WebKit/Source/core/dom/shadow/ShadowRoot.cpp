@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/dom/shadow/ShadowRoot.h"
 
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/css/StyleSheetList.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -128,7 +127,7 @@ bool ShadowRoot::isOldestAuthorShadowRoot() const
 
 PassRefPtr<Node> ShadowRoot::cloneNode(bool, ExceptionState& exceptionState)
 {
-    exceptionState.throwDOMException(DataCloneError, ExceptionMessages::failedToExecute("cloneNode", "ShadowRoot", "ShadowRoot nodes are not clonable."));
+    exceptionState.throwDOMException(DataCloneError, "ShadowRoot nodes are not clonable.");
     return 0;
 }
 
@@ -140,7 +139,7 @@ String ShadowRoot::innerHTML() const
 void ShadowRoot::setInnerHTML(const String& markup, ExceptionState& exceptionState)
 {
     if (isOrphan()) {
-        exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::failedToExecute("setInnerHTML", "ShadowRoot", "The ShadowRoot does not have a host."));
+        exceptionState.throwDOMException(InvalidAccessError, "The ShadowRoot does not have a host.");
         return;
     }
 

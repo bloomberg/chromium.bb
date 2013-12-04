@@ -32,7 +32,6 @@
 
 #include "modules/websockets/WebSocket.h"
 
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
@@ -206,7 +205,7 @@ static unsigned long saturateAdd(unsigned long a, unsigned long b)
 
 static void setInvalidStateErrorForSendMethod(ExceptionState& exceptionState)
 {
-    exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("send", "WebSocket", "Still in CONNECTING state."));
+    exceptionState.throwDOMException(InvalidStateError, "Still in CONNECTING state.");
 }
 
 const char* WebSocket::subProtocolSeperator()
@@ -288,22 +287,22 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
 
     if (!m_url.isValid()) {
         m_state = CLOSED;
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("connect", "WebSocket", "The URL '" + url + "' is invalid."));
+        exceptionState.throwDOMException(SyntaxError, "The URL '" + url + "' is invalid.");
         return;
     }
     if (!m_url.protocolIs("ws") && !m_url.protocolIs("wss")) {
         m_state = CLOSED;
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("connect", "WebSocket", "The URL's scheme must be either 'ws' or 'wss'. '" + m_url.protocol() + "' is not allowed."));
+        exceptionState.throwDOMException(SyntaxError, "The URL's scheme must be either 'ws' or 'wss'. '" + m_url.protocol() + "' is not allowed.");
         return;
     }
     if (m_url.hasFragmentIdentifier()) {
         m_state = CLOSED;
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("connect", "WebSocket", "The URL contains a fragment identifier ('" + m_url.fragmentIdentifier() + "'). Fragment identifiers are not allowed in WebSocket URLs."));
+        exceptionState.throwDOMException(SyntaxError, "The URL contains a fragment identifier ('" + m_url.fragmentIdentifier() + "'). Fragment identifiers are not allowed in WebSocket URLs.");
         return;
     }
     if (!portAllowed(m_url)) {
         m_state = CLOSED;
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("connect", "WebSocket", "The port " + String::number(m_url.port()) + " is not allowed."));
+        exceptionState.throwSecurityError("The port " + String::number(m_url.port()) + " is not allowed.");
         return;
     }
 
@@ -316,7 +315,7 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
     if (!shouldBypassMainWorldContentSecurityPolicy && !executionContext()->contentSecurityPolicy()->allowConnectToSource(m_url)) {
         m_state = CLOSED;
         // The URL is safe to expose to JavaScript, as this check happens synchronously before redirection.
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("connect", "WebSocket", "Refused to connect to '" + m_url.elidedString() + "' because it violates the document's Content Security Policy."));
+        exceptionState.throwSecurityError("Refused to connect to '" + m_url.elidedString() + "' because it violates the document's Content Security Policy.");
         return;
     }
 
@@ -332,7 +331,7 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
     for (size_t i = 0; i < protocols.size(); ++i) {
         if (!isValidProtocolString(protocols[i])) {
             m_state = CLOSED;
-            exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("connect", "WebSocket", "The subprotocol '" + encodeProtocolString(protocols[i]) + "' is invalid."));
+            exceptionState.throwDOMException(SyntaxError, "The subprotocol '" + encodeProtocolString(protocols[i]) + "' is invalid.");
             return;
         }
     }
@@ -340,7 +339,7 @@ void WebSocket::connect(const String& url, const Vector<String>& protocols, Exce
     for (size_t i = 0; i < protocols.size(); ++i) {
         if (!visited.add(protocols[i]).isNewEntry) {
             m_state = CLOSED;
-            exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("connect", "WebSocket", "The subprotocol '" + encodeProtocolString(protocols[i]) + "' is duplicated."));
+            exceptionState.throwDOMException(SyntaxError, "The subprotocol '" + encodeProtocolString(protocols[i]) + "' is duplicated.");
             return;
         }
     }
@@ -356,7 +355,7 @@ void WebSocket::handleSendResult(WebSocketChannel::SendResult result, ExceptionS
 {
     switch (result) {
     case WebSocketChannel::InvalidMessage:
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("send", "WebSocket", "The message contains invalid characters."));
+        exceptionState.throwDOMException(SyntaxError, "The message contains invalid characters.");
         return;
     case WebSocketChannel::SendFail:
         logError("WebSocket send() failed.");
@@ -462,12 +461,12 @@ void WebSocket::closeInternal(int code, const String& reason, ExceptionState& ex
     } else {
         WTF_LOG(Network, "WebSocket %p close() code=%d reason='%s'", this, code, reason.utf8().data());
         if (!(code == WebSocketChannel::CloseEventCodeNormalClosure || (WebSocketChannel::CloseEventCodeMinimumUserDefined <= code && code <= WebSocketChannel::CloseEventCodeMaximumUserDefined))) {
-            exceptionState.throwDOMException(InvalidAccessError, ExceptionMessages::failedToExecute("close", "WebSocket", "The code must be either 1000, or between 3000 and 4999. " + String::number(code) + " is neither."));
+            exceptionState.throwDOMException(InvalidAccessError, "The code must be either 1000, or between 3000 and 4999. " + String::number(code) + " is neither.");
             return;
         }
         CString utf8 = reason.utf8(String::StrictConversionReplacingUnpairedSurrogatesWithFFFD);
         if (utf8.length() > maxReasonSizeInBytes) {
-            exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("close", "WebSocket", "The message must not be greater than " + String::number(maxReasonSizeInBytes) + " bytes."));
+            exceptionState.throwDOMException(SyntaxError, "The message must not be greater than " + String::number(maxReasonSizeInBytes) + " bytes.");
             return;
         }
     }

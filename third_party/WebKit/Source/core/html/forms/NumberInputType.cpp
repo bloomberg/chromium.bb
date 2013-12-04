@@ -34,7 +34,6 @@
 
 #include "HTMLNames.h"
 #include "InputTypeNames.h"
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/KeyboardEvent.h"
@@ -127,7 +126,7 @@ void NumberInputType::setValueAsDouble(double newValue, TextFieldEventBehavior e
     // FIXME: We should use numeric_limits<double>::max for number input type.
     const double floatMax = numeric_limits<float>::max();
     if (newValue < -floatMax || newValue > floatMax) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToSet("valueAsNumber", "HTMLInputElement", "The value provided (" + String::number(newValue) + ") is outside the range (" + String::number(-floatMax) + ", " + String::number(floatMax) + ")."));
+        exceptionState.throwDOMException(InvalidStateError, "The value provided (" + String::number(newValue) + ") is outside the range (" + String::number(-floatMax) + ", " + String::number(floatMax) + ").");
         return;
     }
     element().setValue(serializeForNumberType(newValue), eventBehavior);
@@ -138,7 +137,7 @@ void NumberInputType::setValueAsDecimal(const Decimal& newValue, TextFieldEventB
     // FIXME: We should use numeric_limits<double>::max for number input type.
     const Decimal floatMax = Decimal::fromDouble(numeric_limits<float>::max());
     if (newValue < -floatMax || newValue > floatMax) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToSet("valueAsNumber", "HTMLInputElement", "The value provided (" + newValue.toString() + ") is outside the range (-" + floatMax.toString() + ", " + floatMax.toString() + ")."));
+        exceptionState.throwDOMException(InvalidStateError, "The value provided (" + newValue.toString() + ") is outside the range (-" + floatMax.toString() + ", " + floatMax.toString() + ").");
         return;
     }
     element().setValue(serializeForNumberType(newValue), eventBehavior);

@@ -3,13 +3,13 @@ Tests cypto.subtle.exportKey.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS crypto.subtle.exportKey(3, keys.aesCbcJustDecrypt) threw exception TypeError: Invalid keyFormat argument.
-PASS crypto.subtle.exportKey(null, keys.aesCbcJustDecrypt) threw exception TypeError: Invalid keyFormat argument.
-PASS crypto.subtle.exportKey('invalid', keys.aesCbcJustDecrypt) threw exception TypeError: Invalid keyFormat argument.
-PASS crypto.subtle.exportKey('raw', null) threw exception TypeError: Invalid key argument.
-PASS crypto.subtle.exportKey('raw', 3) threw exception TypeError: Invalid key argument.
+PASS crypto.subtle.exportKey(3, keys.aesCbcJustDecrypt) threw exception TypeError: Failed to execute 'exportKey' on 'SubtleCrypto': Invalid keyFormat argument.
+PASS crypto.subtle.exportKey(null, keys.aesCbcJustDecrypt) threw exception TypeError: Failed to execute 'exportKey' on 'SubtleCrypto': Invalid keyFormat argument.
+PASS crypto.subtle.exportKey('invalid', keys.aesCbcJustDecrypt) threw exception TypeError: Failed to execute 'exportKey' on 'SubtleCrypto': Invalid keyFormat argument.
+PASS crypto.subtle.exportKey('raw', null) threw exception TypeError: Failed to execute 'exportKey' on 'SubtleCrypto': Invalid key argument.
+PASS crypto.subtle.exportKey('raw', 3) threw exception TypeError: Failed to execute 'exportKey' on 'SubtleCrypto': Invalid key argument.
 PASS keys.aesCbcJustDecrypt.extractable is false
-PASS crypto.subtle.exportKey('raw', keys.aesCbcJustDecrypt) threw exception NotSupportedError: key is not extractable.
+PASS crypto.subtle.exportKey('raw', keys.aesCbcJustDecrypt) threw exception NotSupportedError: Failed to execute 'exportKey' on 'SubtleCrypto': key is not extractable.
 PASS successfullyParsed is true
 
 TEST COMPLETE

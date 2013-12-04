@@ -118,7 +118,7 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::PropertyCallbackI
 
     case XMLHttpRequest::ResponseTypeDocument:
         {
-            ExceptionState exceptionState(info.Holder(), info.GetIsolate());
+            ExceptionState exceptionState(ExceptionState::GetterContext, "response", "XMLHttpRequest", info.Holder(), info.GetIsolate());
             Document* document = xmlHttpRequest->responseXML(exceptionState);
             if (exceptionState.throwIfNeeded())
                 return;

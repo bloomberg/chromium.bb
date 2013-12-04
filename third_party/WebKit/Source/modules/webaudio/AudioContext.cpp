@@ -366,10 +366,7 @@ void AudioContext::decodeAudioData(ArrayBuffer* audioData, PassOwnPtr<AudioBuffe
     if (!audioData) {
         exceptionState.throwDOMException(
             SyntaxError,
-            ExceptionMessages::failedToExecute(
-                "decodeAudioData",
-                "AudioContext",
-                "invalid ArrayBuffer for audioData."));
+            "invalid ArrayBuffer for audioData.");
         return;
     }
     m_audioDecoder.decodeAsync(audioData, sampleRate(), successCallback, errorCallback);

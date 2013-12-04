@@ -32,7 +32,6 @@
 #include "modules/crypto/NormalizeAlgorithm.h"
 
 #include "bindings/v8/Dictionary.h"
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/NotImplemented.h"
@@ -226,7 +225,7 @@ public:
             result.append(m_messages[i], strlen(m_messages[i]));
         }
 
-        return ExceptionMessages::failedToExecute(algorithmOperationToName(m_op), "SubtleCrypto", result.toString());
+        return result.toString();
     }
 
     String toString(const char* message) const
@@ -542,37 +541,6 @@ bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::Web
 const char* algorithmIdToName(blink::WebCryptoAlgorithmId id)
 {
     return AlgorithmRegistry::instance().lookupAlgorithmById(id)->algorithmName;
-}
-
-const char* algorithmOperationToName(AlgorithmOperation op)
-{
-    switch (op) {
-    case Encrypt:
-        return "encrypt";
-    case Decrypt:
-        return "decrypt";
-    case Sign:
-        return "sign";
-    case Verify:
-        return "verify";
-    case Digest:
-        return "digest";
-    case GenerateKey:
-        return "generateKey";
-    case ImportKey:
-        return "importKey";
-    case DeriveKey:
-        return "deriveKey";
-    case WrapKey:
-        return "wrapKey";
-    case UnwrapKey:
-        return "unwrapKey";
-    case NumberOfAlgorithmOperations:
-        ASSERT_NOT_REACHED();
-        return "unknown";
-    };
-    ASSERT_NOT_REACHED();
-    return "unknown";
 }
 
 } // namespace WebCore

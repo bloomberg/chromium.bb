@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/page/DOMSelection.h"
 
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
@@ -200,7 +199,7 @@ void DOMSelection::collapse(Node* node, int offset, ExceptionState& exceptionSta
         return;
 
     if (offset < 0) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("collapse", "Selection", String::number(offset) + " is not a valid offset."));
+        exceptionState.throwDOMException(IndexSizeError, String::number(offset) + " is not a valid offset.");
         return;
     }
 
@@ -219,7 +218,7 @@ void DOMSelection::collapseToEnd(ExceptionState& exceptionState)
     const VisibleSelection& selection = m_frame->selection().selection();
 
     if (selection.isNone()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("collapseToEnd", "Selection", "there is no selection."));
+        exceptionState.throwDOMException(InvalidStateError, "there is no selection.");
         return;
     }
 
@@ -234,7 +233,7 @@ void DOMSelection::collapseToStart(ExceptionState& exceptionState)
     const VisibleSelection& selection = m_frame->selection().selection();
 
     if (selection.isNone()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("collapseToStart", "Selection", "there is no selection."));
+        exceptionState.throwDOMException(InvalidStateError, "there is no selection.");
         return;
     }
 
@@ -254,12 +253,12 @@ void DOMSelection::setBaseAndExtent(Node* baseNode, int baseOffset, Node* extent
         return;
 
     if (baseOffset < 0) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("setBaseAndExtent", "Selection", String::number(baseOffset) + " is not a valid base offset."));
+        exceptionState.throwDOMException(IndexSizeError, String::number(baseOffset) + " is not a valid base offset.");
         return;
     }
 
     if (extentOffset < 0) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("setBaseAndExtent", "Selection", String::number(extentOffset) + " is not a valid extent offset."));
+        exceptionState.throwDOMException(IndexSizeError, String::number(extentOffset) + " is not a valid extent offset.");
         return;
     }
 
@@ -278,7 +277,7 @@ void DOMSelection::setPosition(Node* node, int offset, ExceptionState& exception
     if (!m_frame)
         return;
     if (offset < 0) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("setPosition", "Selection", String::number(offset) + " is not a valid offset."));
+        exceptionState.throwDOMException(IndexSizeError, String::number(offset) + " is not a valid offset.");
         return;
     }
 
@@ -345,16 +344,16 @@ void DOMSelection::extend(Node* node, int offset, ExceptionState& exceptionState
         return;
 
     if (!node) {
-        exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::failedToExecute("extend", "Selection", "The node provided is invalid."));
+        exceptionState.throwDOMException(TypeMismatchError, "The node provided is invalid.");
         return;
     }
 
     if (offset < 0) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("extend", "Selection", String::number(offset) + " is not a valid offset."));
+        exceptionState.throwDOMException(IndexSizeError, String::number(offset) + " is not a valid offset.");
         return;
     }
     if (offset > (node->offsetInCharacters() ? caretMaxOffset(node) : (int)node->childNodeCount())) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("extend", "Selection", String::number(offset) + " is larger than the given node's length."));
+        exceptionState.throwDOMException(IndexSizeError, String::number(offset) + " is larger than the given node's length.");
         return;
     }
 
@@ -371,7 +370,7 @@ PassRefPtr<Range> DOMSelection::getRangeAt(int index, ExceptionState& exceptionS
         return 0;
 
     if (index < 0 || index >= rangeCount()) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("getRangeAt", "Selection", String::number(index) + " is not a valid index."));
+        exceptionState.throwDOMException(IndexSizeError, String::number(index) + " is not a valid index.");
         return 0;
     }
 

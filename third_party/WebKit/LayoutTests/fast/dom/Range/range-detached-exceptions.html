@@ -12,8 +12,11 @@
     </div>
 
     <script>
-        function message(method) {
+        function execute(method) {
             return '"InvalidStateError: Failed to execute \'' + method + '\' on \'Range\': The range has no container. Perhaps \'detatch()\' has been invoked on this object?"';
+        }
+        function read(property) {
+            return '"InvalidStateError: Failed to read the \'' + property + '\' property from \'Range\': The range has no container. Perhaps \'detatch()\' has been invoked on this object?"';
         }
 
         description("A variety of Range methods should throw if called on a detached range.");
@@ -21,30 +24,29 @@
         range.selectNode(document.getElementById("a1"));
         range.detach();
 
-        shouldThrow("range.cloneContents()", message("cloneContents"));
-        shouldThrow("range.cloneRange()", message("cloneRange"));
-        shouldThrow("range.collapsed()", message("collapsed"));
-        shouldThrow("range.commonAncestorContainer()", message("commonAncestorContainer"));
-        shouldThrow("range.compareBoundaryPoints(Range.START_TO_END, range)", message("compareBoundaryPoints"));
-        shouldThrow("range.comparePoint(document.getElementById('b1'), 1)", message("comparePoint"));
-        shouldThrow("range.createContextualFragment('p')", message("createContextualFragment"));
-        shouldThrow("range.deleteContents()", message("deleteContents"));
-        shouldThrow("range.detach()", message("detach"));
-        shouldThrow("range.endContainer()", message("endContainer"));
-        shouldThrow("range.endOffset()", message("endOffset"));
-        shouldThrow("range.extractContents()", message("extractContents"));
-        shouldThrow("range.insertNode(document.getElementById('b1'))", message("insertNode"));
-        shouldThrow("range.intersectsNode(document.getElementById('b1'))", message("intersectsNode"));
-        shouldThrow("range.isPointInRange(document.getElementById('b1'))", message("isPointInRange"));
-        shouldThrow("range.selectNode(document.getElementById('b1'))", message("selectNode"));
-        shouldThrow("range.selectNodeContents(document.getElementById('b1'))", message("selectNodeContents"));
-        shouldThrow("range.setEnd(document.getElementById('b1'))", message("setEnd"));
-        shouldThrow("range.setStart(document.getElementById('b1'))", message("setStart"));
-        shouldThrow("range.startContainer()", message("startContainer"));
-        shouldThrow("range.startContainer()", message("startContainer"));
-        shouldThrow("range.startOffset()", message("startOffset"));
-        shouldThrow("range.surroundContents(document.getElementById('b1'))", message("surroundContents"));
-        shouldThrow("range.toString()", message("toString"));
+        shouldThrow("range.cloneContents()", execute("cloneContents"));
+        shouldThrow("range.cloneRange()", execute("cloneRange"));
+        shouldThrow("range.collapsed", read("collapsed"));
+        shouldThrow("range.commonAncestorContainer", read("commonAncestorContainer"));
+        shouldThrow("range.compareBoundaryPoints(Range.START_TO_END, range)", execute("compareBoundaryPoints"));
+        shouldThrow("range.comparePoint(document.getElementById('b1'), 1)", execute("comparePoint"));
+        shouldThrow("range.createContextualFragment('p')", execute("createContextualFragment"));
+        shouldThrow("range.deleteContents()", execute("deleteContents"));
+        shouldThrow("range.detach()", execute("detach"));
+        shouldThrow("range.endContainer", read("endContainer"));
+        shouldThrow("range.endOffset", read("endOffset"));
+        shouldThrow("range.extractContents()", execute("extractContents"));
+        shouldThrow("range.insertNode(document.getElementById('b1'))", execute("insertNode"));
+        shouldThrow("range.intersectsNode(document.getElementById('b1'))", execute("intersectsNode"));
+        shouldThrow("range.isPointInRange(document.getElementById('b1'))", execute("isPointInRange"));
+        shouldThrow("range.selectNode(document.getElementById('b1'))", execute("selectNode"));
+        shouldThrow("range.selectNodeContents(document.getElementById('b1'))", execute("selectNodeContents"));
+        shouldThrow("range.setEnd(document.getElementById('b1'))", execute("setEnd"));
+        shouldThrow("range.setStart(document.getElementById('b1'))", execute("setStart"));
+        shouldThrow("range.startContainer", read("startContainer"));
+        shouldThrow("range.startOffset", read("startOffset"));
+        shouldThrow("range.surroundContents(document.getElementById('b1'))", execute("surroundContents"));
+        shouldThrow("range.toString()", execute("toString"));
     </script>
 </body>
 </html>

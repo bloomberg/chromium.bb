@@ -33,7 +33,6 @@
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
 
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ExecutionContext.h"
@@ -56,13 +55,13 @@ WebKitNotification::WebKitNotification(const String& title, const String& body, 
     ScriptWrappable::init(this);
 
     if (provider->checkPermission() != NotificationClient::PermissionAllowed) {
-        es.throwSecurityError(ExceptionMessages::failedToExecute("createNotification", "NotificationCenter", "Notification permission has not been granted."));
+        es.throwSecurityError("Notification permission has not been granted.");
         return;
     }
 
     KURL icon = iconUrl.isEmpty() ? KURL() : executionContext()->completeURL(iconUrl);
     if (!icon.isEmpty() && !icon.isValid()) {
-        es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("createNotification", "NotificationCenter", "'" + iconUrl + "' is not a valid icon URL."));
+        es.throwDOMException(SyntaxError, "'" + iconUrl + "' is not a valid icon URL.");
         return;
     }
 

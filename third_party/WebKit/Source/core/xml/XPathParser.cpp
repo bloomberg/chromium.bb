@@ -28,7 +28,6 @@
 #include "config.h"
 #include "core/xml/XPathParser.h"
 
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/xml/XPathEvaluator.h"
@@ -498,9 +497,9 @@ Expression* Parser::parseStatement(const String& statement, PassRefPtr<XPathNSRe
         m_topExpr = 0;
 
         if (m_gotNamespaceError)
-            exceptionState.throwDOMException(NamespaceError, ExceptionMessages::failedToExecute("createExpression", "XPathExpression", "The string '" + statement + "' contains unresolvable namespaces."));
+            exceptionState.throwDOMException(NamespaceError, "The string '" + statement + "' contains unresolvable namespaces.");
         else
-            exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("createExpression", "XPathExpression", "The string '" + statement + "' is not a valid XPath expression."));
+            exceptionState.throwDOMException(SyntaxError, "The string '" + statement + "' is not a valid XPath expression.");
         return 0;
     }
 

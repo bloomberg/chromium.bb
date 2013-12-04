@@ -38,22 +38,22 @@ namespace WebCore {
 
 String CustomElementException::preamble(const AtomicString& type)
 {
-    return "Failed to call 'register' on 'Document' for type '" + type + "': ";
+    return "Registration failed for type '" + type + "'. ";
 }
 
 void CustomElementException::throwException(Reason reason, const AtomicString& type, ExceptionState& exceptionState)
 {
     switch (reason) {
     case CannotRegisterFromExtension:
-        exceptionState.throwDOMException(NotSupportedError, preamble(type) + "elements cannot be registered from extensions.");
+        exceptionState.throwDOMException(NotSupportedError, preamble(type) + "Elements cannot be registered from extensions.");
         return;
 
     case ConstructorPropertyNotConfigurable:
-        exceptionState.throwDOMException(NotSupportedError, preamble(type) + "prototype constructor property is not configurable.");
+        exceptionState.throwDOMException(NotSupportedError, preamble(type) + "Prototype constructor property is not configurable.");
         return;
 
     case ContextDestroyedCheckingPrototype:
-        exceptionState.throwDOMException(InvalidStateError, preamble(type) + "the context is no longer valid.");
+        exceptionState.throwDOMException(InvalidStateError, preamble(type) + "The context is no longer valid.");
         return;
 
     case ContextDestroyedCreatingCallbacks:
@@ -65,27 +65,27 @@ void CustomElementException::throwException(Reason reason, const AtomicString& t
         return;
 
     case ExtendsIsInvalidName:
-        exceptionState.throwDOMException(InvalidCharacterError, preamble(type) + ": the tag name specified in 'extends' is not a valid tag name.");
+        exceptionState.throwDOMException(InvalidCharacterError, preamble(type) + "The tag name specified in 'extends' is not a valid tag name.");
         return;
 
     case ExtendsIsCustomElementName:
-        exceptionState.throwDOMException(InvalidCharacterError, preamble(type) + ": the tag name specified in 'extends' is a custom element name. Use inheritance instead.");
+        exceptionState.throwDOMException(InvalidCharacterError, preamble(type) + "The tag name specified in 'extends' is a custom element name. Use inheritance instead.");
         return;
 
     case InvalidName:
-        exceptionState.throwDOMException(InvalidCharacterError, preamble(type) + ": '" + type + "' is not a valid name.");
+        exceptionState.throwDOMException(InvalidCharacterError, preamble(type) + "The type name is invalid.");
         return;
 
     case PrototypeInUse:
-        exceptionState.throwDOMException(NotSupportedError, preamble(type) + "prototype is already in-use as an interface prototype object.");
+        exceptionState.throwDOMException(NotSupportedError, preamble(type) + "The prototype is already in-use as an interface prototype object.");
         return;
 
     case PrototypeNotAnObject:
-        exceptionState.throwDOMException(InvalidStateError, preamble(type) + "the prototype option is not an object.");
+        exceptionState.throwDOMException(InvalidStateError, preamble(type) + "The prototype option is not an object.");
         return;
 
     case TypeAlreadyRegistered:
-        exceptionState.throwDOMException(InvalidStateError, preamble(type) + "a type with that name is already registered.");
+        exceptionState.throwDOMException(InvalidStateError, preamble(type) + "A type with that name is already registered.");
         return;
     }
 

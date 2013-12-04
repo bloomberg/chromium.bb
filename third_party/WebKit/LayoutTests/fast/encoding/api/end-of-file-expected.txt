@@ -3,7 +3,7 @@ Edge cases around non-fatal errors at EOF
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xff])) threw exception EncodingError: The encoded data was not valid..
+PASS new TextDecoder('utf-8', {fatal: true}).decode(new Uint8Array([0xff])) threw exception EncodingError: Failed to execute 'decode' on 'TextDecoder': The encoded data was not valid..
 
 Should not throw or hang:
 new TextDecoder('utf-8').decode(new Uint8Array([0xff]))

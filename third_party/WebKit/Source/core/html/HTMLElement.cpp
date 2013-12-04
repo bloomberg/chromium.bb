@@ -29,7 +29,6 @@
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
 #include "XMLNames.h"
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptEventListener.h"
@@ -362,14 +361,14 @@ PassRefPtr<DocumentFragment> HTMLElement::textToFragment(const String& text, Exc
 void HTMLElement::setInnerText(const String& text, ExceptionState& exceptionState)
 {
     if (ieForbidsInsertHTML()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::failedToSet("innerText", "HTMLElement", "The '" + localName() + "' element does not support text insertion."));
+        exceptionState.throwDOMException(NoModificationAllowedError, "The '" + localName() + "' element does not support text insertion.");
         return;
     }
     if (hasLocalName(colTag) || hasLocalName(colgroupTag) || hasLocalName(framesetTag) ||
         hasLocalName(headTag) || hasLocalName(htmlTag) || hasLocalName(tableTag) ||
         hasLocalName(tbodyTag) || hasLocalName(tfootTag) || hasLocalName(theadTag) ||
         hasLocalName(trTag)) {
-        exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::failedToSet("innerText", "HTMLElement", "The '" + localName() + "' element does not support text insertion."));
+        exceptionState.throwDOMException(NoModificationAllowedError, "The '" + localName() + "' element does not support text insertion.");
         return;
     }
 
@@ -409,20 +408,20 @@ void HTMLElement::setInnerText(const String& text, ExceptionState& exceptionStat
 void HTMLElement::setOuterText(const String &text, ExceptionState& exceptionState)
 {
     if (ieForbidsInsertHTML()) {
-        exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::failedToSet("outerText", "HTMLElement", "The '" + localName() + "' element does not support text insertion."));
+        exceptionState.throwDOMException(NoModificationAllowedError, "The '" + localName() + "' element does not support text insertion.");
         return;
     }
     if (hasLocalName(colTag) || hasLocalName(colgroupTag) || hasLocalName(framesetTag) ||
         hasLocalName(headTag) || hasLocalName(htmlTag) || hasLocalName(tableTag) ||
         hasLocalName(tbodyTag) || hasLocalName(tfootTag) || hasLocalName(theadTag) ||
         hasLocalName(trTag)) {
-        exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::failedToSet("outerText", "HTMLElement", "The '" + localName() + "' element does not support text insertion."));
+        exceptionState.throwDOMException(NoModificationAllowedError, "The '" + localName() + "' element does not support text insertion.");
         return;
     }
 
     ContainerNode* parent = parentNode();
     if (!parent) {
-        exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::failedToSet("outerText", "HTMLElement", "The element has no parent."));
+        exceptionState.throwDOMException(NoModificationAllowedError, "The element has no parent.");
         return;
     }
 
@@ -438,7 +437,7 @@ void HTMLElement::setOuterText(const String &text, ExceptionState& exceptionStat
 
     // textToFragment might cause mutation events.
     if (!this || !parentNode())
-        exceptionState.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToSet("outerText", "HTMLElement", "The element has no parent."));
+        exceptionState.throwDOMException(HierarchyRequestError, "The element has no parent.");
 
     if (exceptionState.hadException())
         return;
@@ -491,7 +490,7 @@ Node* HTMLElement::insertAdjacent(const String& where, Node* newChild, Exception
     }
 
     // IE throws COM Exception E_INVALIDARG; this is the best DOM exception alternative.
-    exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("insertAdjacent", "HTMLElement", "The value provided ('" + where + "') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'."));
+    exceptionState.throwDOMException(SyntaxError, "The value provided ('" + where + "') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.");
     return 0;
 }
 
@@ -499,7 +498,7 @@ Element* HTMLElement::insertAdjacentElement(const String& where, Element* newChi
 {
     if (!newChild) {
         // IE throws COM Exception E_INVALIDARG; this is the best DOM exception alternative.
-        exceptionState.throwTypeError(ExceptionMessages::failedToExecute("insertAdjacentElement", "HTMLElement", "The node provided is null."));
+        exceptionState.throwTypeError("The node provided is null.");
         return 0;
     }
 
@@ -513,14 +512,14 @@ static Element* contextElementForInsertion(const String& where, Element* element
     if (equalIgnoringCase(where, "beforeBegin") || equalIgnoringCase(where, "afterEnd")) {
         ContainerNode* parent = element->parentNode();
         if (parent && !parent->isElementNode()) {
-            exceptionState.throwDOMException(NoModificationAllowedError, ExceptionMessages::failedToExecute("insertAdjacentHTML", "HTMLElement", "The element has no parent."));
+            exceptionState.throwDOMException(NoModificationAllowedError, "The element has no parent.");
             return 0;
         }
         return toElement(parent);
     }
     if (equalIgnoringCase(where, "afterBegin") || equalIgnoringCase(where, "beforeEnd"))
         return element;
-    exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("insertAdjacentHTML", "HTMLElement", "The value provided ('" + where + "') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'."));
+    exceptionState.throwDOMException(SyntaxError, "The value provided ('" + where + "') is not one of 'beforeBegin', 'afterBegin', 'beforeEnd', or 'afterEnd'.");
     return 0;
 }
 
@@ -636,7 +635,7 @@ void HTMLElement::setContentEditable(const String& enabled, ExceptionState& exce
     else if (equalIgnoringCase(enabled, "inherit"))
         removeAttribute(contenteditableAttr);
     else
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToSet("contentEditable", "HTMLElement", "The value provided ('" + enabled + "') is not one of 'true', 'false', 'plaintext-only', or 'inherit'."));
+        exceptionState.throwDOMException(SyntaxError, "The value provided ('" + enabled + "') is not one of 'true', 'false', 'plaintext-only', or 'inherit'.");
 }
 
 bool HTMLElement::draggable() const

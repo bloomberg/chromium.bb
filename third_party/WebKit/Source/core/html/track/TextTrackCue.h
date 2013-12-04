@@ -43,7 +43,7 @@ class ExceptionState;
 class TextTrackCue : public RefCounted<TextTrackCue>, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(TextTrackCue);
 public:
-    static bool isInfiniteOrNonNumber(double value, const char* method, ExceptionState&);
+    static bool isInfiniteOrNonNumber(double value, ExceptionState&);
 
     static const AtomicString& cueShadowPseudoId()
     {

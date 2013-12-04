@@ -28,7 +28,6 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/CSSImageValue.h"
@@ -184,7 +183,7 @@ HTMLTableSectionElement* HTMLTableElement::lastBody() const
 PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& exceptionState)
 {
     if (index < -1) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("insertRow", "HTMLTableElement", "The index provided (" + String::number(index) + ") is less than -1."));
+        exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is less than -1.");
         return 0;
     }
 
@@ -199,7 +198,7 @@ PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& e
             row = HTMLTableRowsCollection::rowAfter(this, lastRow.get());
             if (!row) {
                 if (i != index) {
-                    exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("insertRow", "HTMLTableElement", "The index provided (" + String::number(index) + ") is greater than the number of rows in the table (" + String::number(i) + ")."));
+                    exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is greater than the number of rows in the table (" + String::number(i) + ").");
                     return 0;
                 }
                 break;
@@ -230,7 +229,7 @@ PassRefPtr<HTMLElement> HTMLTableElement::insertRow(int index, ExceptionState& e
 void HTMLTableElement::deleteRow(int index, ExceptionState& exceptionState)
 {
     if (index < -1) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("deleteRow", "HTMLTableElement", "The index provided (" + String::number(index) + ") is less than -1."));
+        exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is less than -1.");
         return;
     }
 
@@ -246,7 +245,7 @@ void HTMLTableElement::deleteRow(int index, ExceptionState& exceptionState)
         }
     }
     if (!row) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("deleteRow", "HTMLTableElement", "The index provided (" + String::number(index) + ") is greater than the number of rows in the table (" + String::number(i) + ")."));
+        exceptionState.throwDOMException(IndexSizeError, "The index provided (" + String::number(index) + ") is greater than the number of rows in the table (" + String::number(i) + ").");
         return;
     }
     row->remove(exceptionState);

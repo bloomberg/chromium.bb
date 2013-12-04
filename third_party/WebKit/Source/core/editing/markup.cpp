@@ -32,7 +32,6 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValue.h"
@@ -955,7 +954,7 @@ PassRefPtr<DocumentFragment> createFragmentForInnerOuterHTML(const String& marku
 
     bool wasValid = fragment->parseXML(markup, contextElement, parserContentPolicy);
     if (!wasValid) {
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute(method, "Node", "The provided markup is invalid XML, and therefore cannot be inserted into an XML document."));
+        exceptionState.throwDOMException(SyntaxError, "The provided markup is invalid XML, and therefore cannot be inserted into an XML document.");
         return 0;
     }
     return fragment.release();
@@ -1001,7 +1000,7 @@ PassRefPtr<DocumentFragment> createContextualFragment(const String& markup, HTML
     ASSERT(element);
     if (element->ieForbidsInsertHTML() || element->hasLocalName(colTag) || element->hasLocalName(colgroupTag) || element->hasLocalName(framesetTag)
         || element->hasLocalName(headTag) || element->hasLocalName(styleTag) || element->hasLocalName(titleTag)) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToExecute("createContextualFragment", "Range", "The range's container is '" + element->localName() + "', which is not supported."));
+        exceptionState.throwDOMException(NotSupportedError, "The range's container is '" + element->localName() + "', which is not supported.");
         return 0;
     }
 

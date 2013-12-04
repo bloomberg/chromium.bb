@@ -156,8 +156,8 @@ private:
     void setDocument(Document&);
 
     Node* checkNodeWOffset(Node*, int offset, ExceptionState&) const;
-    void checkNodeBA(Node*, const String& methodName, ExceptionState&) const;
-    void checkDeleteExtract(const String& methodName, ExceptionState&);
+    void checkNodeBA(Node*, ExceptionState&) const;
+    void checkDeleteExtract(ExceptionState&);
     int maxStartOffset() const;
     int maxEndOffset() const;
 

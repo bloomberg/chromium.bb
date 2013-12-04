@@ -27,7 +27,6 @@
 
 #include "HTMLNames.h"
 #include "XMLNames.h"
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Attr.h"
@@ -454,7 +453,7 @@ void Node::insertBefore(PassRefPtr<Node> newChild, Node* refChild, ExceptionStat
     if (isContainerNode())
         toContainerNode(this)->insertBefore(newChild, refChild, exceptionState);
     else
-        exceptionState.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute("insertBefore", "Node", "This node type does not support this method."));
+        exceptionState.throwDOMException(HierarchyRequestError, "This node type does not support this method.");
 }
 
 void Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionState& exceptionState)
@@ -462,7 +461,7 @@ void Node::replaceChild(PassRefPtr<Node> newChild, Node* oldChild, ExceptionStat
     if (isContainerNode())
         toContainerNode(this)->replaceChild(newChild, oldChild, exceptionState);
     else
-        exceptionState.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute("replaceChild", "Node", "This node type does not support this method."));
+        exceptionState.throwDOMException(HierarchyRequestError,  "This node type does not support this method.");
 }
 
 void Node::removeChild(Node* oldChild, ExceptionState& exceptionState)
@@ -470,7 +469,7 @@ void Node::removeChild(Node* oldChild, ExceptionState& exceptionState)
     if (isContainerNode())
         toContainerNode(this)->removeChild(oldChild, exceptionState);
     else
-        exceptionState.throwDOMException(NotFoundError, ExceptionMessages::failedToExecute("removeChild", "Node", "This node type does not support this method."));
+        exceptionState.throwDOMException(NotFoundError, "This node type does not support this method.");
 }
 
 void Node::appendChild(PassRefPtr<Node> newChild, ExceptionState& exceptionState)
@@ -478,7 +477,7 @@ void Node::appendChild(PassRefPtr<Node> newChild, ExceptionState& exceptionState
     if (isContainerNode())
         toContainerNode(this)->appendChild(newChild, exceptionState);
     else
-        exceptionState.throwDOMException(HierarchyRequestError, ExceptionMessages::failedToExecute("appendChild", "Node", "This node type does not support this method."));
+        exceptionState.throwDOMException(HierarchyRequestError, "This node type does not support this method.");
 }
 
 void Node::remove(ExceptionState& exceptionState)
@@ -521,7 +520,7 @@ void Node::setPrefix(const AtomicString& /*prefix*/, ExceptionState& exceptionSt
     // The spec says that for nodes other than elements and attributes, prefix is always null.
     // It does not say what to do when the user tries to set the prefix on another type of
     // node, however Mozilla throws a NamespaceError exception.
-    exceptionState.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Node", "Prefixes are only supported on element and attribute nodes."));
+    exceptionState.throwDOMException(NamespaceError, "Prefixes are only supported on element and attribute nodes.");
 }
 
 const AtomicString& Node::localName() const
@@ -838,7 +837,7 @@ void Node::checkSetPrefix(const AtomicString& prefix, ExceptionState& exceptionS
     // Element::setPrefix() and Attr::setPrefix()
 
     if (!prefix.isEmpty() && !Document::isValidName(prefix)) {
-        exceptionState.throwDOMException(InvalidCharacterError, ExceptionMessages::failedToSet("prefix", "Node", "The prefix '" + prefix + "' is not a valid name."));
+        exceptionState.throwDOMException(InvalidCharacterError, "The prefix '" + prefix + "' is not a valid name.");
         return;
     }
 
@@ -846,12 +845,12 @@ void Node::checkSetPrefix(const AtomicString& prefix, ExceptionState& exceptionS
 
     const AtomicString& nodeNamespaceURI = namespaceURI();
     if (nodeNamespaceURI.isEmpty() && !prefix.isEmpty()) {
-        exceptionState.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Node", "No namespace is set, so a namespace prefix may not be set."));
+        exceptionState.throwDOMException(NamespaceError, "No namespace is set, so a namespace prefix may not be set.");
         return;
     }
 
     if (prefix == xmlAtom && nodeNamespaceURI != XMLNames::xmlNamespaceURI) {
-        exceptionState.throwDOMException(NamespaceError, ExceptionMessages::failedToSet("prefix", "Node", "The prefix '" + xmlAtom + "' may not be set on namespace '" + nodeNamespaceURI + "'."));
+        exceptionState.throwDOMException(NamespaceError, "The prefix '" + xmlAtom + "' may not be set on namespace '" + nodeNamespaceURI + "'.");
         return;
     }
     // Attribute-specific checks are in Attr::setPrefix().
@@ -1287,7 +1286,7 @@ PassRefPtr<RadioNodeList> Node::radioNodeList(const AtomicString& name)
 PassRefPtr<Element> Node::querySelector(const AtomicString& selectors, ExceptionState& exceptionState)
 {
     if (selectors.isEmpty()) {
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("querySelector", "Node", "The provided selector is empty."));
+        exceptionState.throwDOMException(SyntaxError,  "The provided selector is empty.");
         return 0;
     }
 
@@ -1300,7 +1299,7 @@ PassRefPtr<Element> Node::querySelector(const AtomicString& selectors, Exception
 PassRefPtr<NodeList> Node::querySelectorAll(const AtomicString& selectors, ExceptionState& exceptionState)
 {
     if (selectors.isEmpty()) {
-        exceptionState.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("querySelectorAll", "Node", "The provided selector is empty."));
+        exceptionState.throwDOMException(SyntaxError, "The provided selector is empty.");
         return 0;
     }
 

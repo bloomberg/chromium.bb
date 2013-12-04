@@ -71,7 +71,7 @@ public:
     void didDestructDatabaseContext() { }
 #endif
 
-    static void throwExceptionForDatabaseError(const String& method, const String& context, DatabaseError, const String& errorMessage, ExceptionState&);
+    static void throwExceptionForDatabaseError(DatabaseError, const String& errorMessage, ExceptionState&);
 
     PassRefPtr<Database> openDatabase(ExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback>, DatabaseError&, String& errorMessage);
     PassRefPtr<DatabaseSync> openDatabaseSync(ExecutionContext*, const String& name, const String& expectedVersion, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback>, DatabaseError&, String& errorMessage);

@@ -758,12 +758,12 @@ Storage* DOMWindow::sessionStorage(ExceptionState& exceptionState) const
     if (!document)
         return 0;
 
-    String accessDeniedMessage = "Access to 'sessionStorage' is denied for this document.";
+    String accessDeniedMessage = "Access is denied for this document.";
     if (!document->securityOrigin()->canAccessLocalStorage()) {
         if (document->isSandboxed(SandboxOrigin))
-            exceptionState.throwSecurityError(accessDeniedMessage + " The document is sandboxed and lacks the 'allow-same-origin' flag.");
+            exceptionState.throwSecurityError("The document is sandboxed and lacks the 'allow-same-origin' flag.");
         else if (document->url().protocolIs("data"))
-            exceptionState.throwSecurityError(accessDeniedMessage + " Storage is disabled inside 'data:' URLs.");
+            exceptionState.throwSecurityError("Storage is disabled inside 'data:' URLs.");
         else
             exceptionState.throwSecurityError(accessDeniedMessage);
         return 0;
@@ -800,12 +800,12 @@ Storage* DOMWindow::localStorage(ExceptionState& exceptionState) const
     if (!document)
         return 0;
 
-    String accessDeniedMessage = "Access to 'localStorage' is denied for this document.";
+    String accessDeniedMessage = "Access is denied for this document.";
     if (!document->securityOrigin()->canAccessLocalStorage()) {
         if (document->isSandboxed(SandboxOrigin))
-            exceptionState.throwSecurityError(accessDeniedMessage + " The document is sandboxed and lacks the 'allow-same-origin' flag.");
+            exceptionState.throwSecurityError("The document is sandboxed and lacks the 'allow-same-origin' flag.");
         else if (document->url().protocolIs("data"))
-            exceptionState.throwSecurityError(accessDeniedMessage + " Storage is disabled inside 'data:' URLs.");
+            exceptionState.throwSecurityError("Storage is disabled inside 'data:' URLs.");
         else
             exceptionState.throwSecurityError(accessDeniedMessage);
         return 0;

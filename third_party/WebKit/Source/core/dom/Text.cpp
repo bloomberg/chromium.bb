@@ -23,7 +23,6 @@
 #include "core/dom/Text.h"
 
 #include "SVGNames.h"
-#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -108,7 +107,7 @@ PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionState& exceptionState
     // IndexSizeError: Raised if the specified offset is negative or greater than
     // the number of 16-bit units in data.
     if (offset > length()) {
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToExecute("splitText", "Text", "The offset " + String::number(offset) + " is larger than the Text node's length."));
+        exceptionState.throwDOMException(IndexSizeError, "The offset " + String::number(offset) + " is larger than the Text node's length.");
         return 0;
     }
 

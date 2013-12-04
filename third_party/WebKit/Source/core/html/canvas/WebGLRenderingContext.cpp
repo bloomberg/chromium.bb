@@ -5152,7 +5152,7 @@ bool WebGLRenderingContext::validateHTMLImageElement(const char* functionName, H
         return false;
     }
     if (wouldTaintOrigin(image)) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute(functionName, "WebGLRenderingContext", "The cross-origin image at " + url.elidedString() + " may not be loaded."));
+        exceptionState.throwSecurityError("The cross-origin image at " + url.elidedString() + " may not be loaded.");
         return false;
     }
     return true;
@@ -5165,7 +5165,7 @@ bool WebGLRenderingContext::validateHTMLCanvasElement(const char* functionName, 
         return false;
     }
     if (wouldTaintOrigin(canvas)) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute(functionName, "WebGLRenderingContext", "Tainted canvases may not be loaded."));
+        exceptionState.throwSecurityError("Tainted canvases may not be loaded.");
         return false;
     }
     return true;
@@ -5178,7 +5178,7 @@ bool WebGLRenderingContext::validateHTMLVideoElement(const char* functionName, H
         return false;
     }
     if (wouldTaintOrigin(video)) {
-        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute(functionName, "WebGLRenderingContext", "The video element contains cross-origin data, and may not be loaded."));
+        exceptionState.throwSecurityError("The video element contains cross-origin data, and may not be loaded.");
         return false;
     }
     return true;

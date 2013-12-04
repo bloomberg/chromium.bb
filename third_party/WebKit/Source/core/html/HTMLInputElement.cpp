@@ -522,7 +522,7 @@ bool HTMLInputElement::canHaveSelection() const
 int HTMLInputElement::selectionStartForBinding(ExceptionState& exceptionState) const
 {
     if (!canHaveSelection()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToGet("selectionStart", "HTMLInputElement", "The input element's type ('" + m_inputType->formControlType() + "') does not support selection."));
+        exceptionState.throwDOMException(InvalidStateError, "The input element's type ('" + m_inputType->formControlType() + "') does not support selection.");
         return 0;
     }
     return HTMLTextFormControlElement::selectionStart();
@@ -531,7 +531,7 @@ int HTMLInputElement::selectionStartForBinding(ExceptionState& exceptionState) c
 int HTMLInputElement::selectionEndForBinding(ExceptionState& exceptionState) const
 {
     if (!canHaveSelection()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToGet("selectionEnd", "HTMLInputElement", "The input element's type ('" + m_inputType->formControlType() + "') does not support selection."));
+        exceptionState.throwDOMException(InvalidStateError,  "The input element's type ('" + m_inputType->formControlType() + "') does not support selection.");
         return 0;
     }
     return HTMLTextFormControlElement::selectionEnd();
@@ -540,7 +540,7 @@ int HTMLInputElement::selectionEndForBinding(ExceptionState& exceptionState) con
 String HTMLInputElement::selectionDirectionForBinding(ExceptionState& exceptionState) const
 {
     if (!canHaveSelection()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToGet("selectionDirection", "HTMLInputElement", "The input element's type ('" + m_inputType->formControlType() + "') does not support selection."));
+        exceptionState.throwDOMException(InvalidStateError, "The input element's type ('" + m_inputType->formControlType() + "') does not support selection.");
         return String();
     }
     return HTMLTextFormControlElement::selectionDirection();
@@ -549,7 +549,7 @@ String HTMLInputElement::selectionDirectionForBinding(ExceptionState& exceptionS
 void HTMLInputElement::setSelectionStartForBinding(int start, ExceptionState& exceptionState)
 {
     if (!canHaveSelection()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToSet("selectionStart", "HTMLInputElement", "The input element's type ('" + m_inputType->formControlType() + "') does not support selection."));
+        exceptionState.throwDOMException(InvalidStateError, "The input element's type ('" + m_inputType->formControlType() + "') does not support selection.");
         return;
     }
     HTMLTextFormControlElement::setSelectionStart(start);
@@ -558,7 +558,7 @@ void HTMLInputElement::setSelectionStartForBinding(int start, ExceptionState& ex
 void HTMLInputElement::setSelectionEndForBinding(int end, ExceptionState& exceptionState)
 {
     if (!canHaveSelection()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToSet("selectionEnd", "HTMLInputElement", "The input element's type ('" + m_inputType->formControlType() + "') does not support selection."));
+        exceptionState.throwDOMException(InvalidStateError, "The input element's type ('" + m_inputType->formControlType() + "') does not support selection.");
         return;
     }
     HTMLTextFormControlElement::setSelectionEnd(end);
@@ -567,7 +567,7 @@ void HTMLInputElement::setSelectionEndForBinding(int end, ExceptionState& except
 void HTMLInputElement::setSelectionDirectionForBinding(const String& direction, ExceptionState& exceptionState)
 {
     if (!canHaveSelection()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToSet("selectionDirection", "HTMLInputElement", "The input element's type ('" + m_inputType->formControlType() + "') does not support selection."));
+        exceptionState.throwDOMException(InvalidStateError, "The input element's type ('" + m_inputType->formControlType() + "') does not support selection.");
         return;
     }
     HTMLTextFormControlElement::setSelectionDirection(direction);
@@ -576,7 +576,7 @@ void HTMLInputElement::setSelectionDirectionForBinding(const String& direction, 
 void HTMLInputElement::setSelectionRangeForBinding(int start, int end, ExceptionState& exceptionState)
 {
     if (!canHaveSelection()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToSet("selectionRange", "HTMLInputElement", "The input element's type ('" + m_inputType->formControlType() + "') does not support selection."));
+        exceptionState.throwDOMException(InvalidStateError, "The input element's type ('" + m_inputType->formControlType() + "') does not support selection.");
         return;
     }
     HTMLTextFormControlElement::setSelectionRange(start, end);
@@ -585,7 +585,7 @@ void HTMLInputElement::setSelectionRangeForBinding(int start, int end, Exception
 void HTMLInputElement::setSelectionRangeForBinding(int start, int end, const String& direction, ExceptionState& exceptionState)
 {
     if (!canHaveSelection()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToSet("selectionRange", "HTMLInputElement", "The input element's type ('" + m_inputType->formControlType() + "') does not support selection."));
+        exceptionState.throwDOMException(InvalidStateError, "The input element's type ('" + m_inputType->formControlType() + "') does not support selection.");
         return;
     }
     HTMLTextFormControlElement::setSelectionRange(start, end, direction);
@@ -998,7 +998,7 @@ void HTMLInputElement::setEditingValue(const String& value)
 void HTMLInputElement::setValue(const String& value, ExceptionState& exceptionState, TextFieldEventBehavior eventBehavior)
 {
     if (isFileUpload() && !value.isEmpty()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToSet("value", "HTMLInputElement", "This input element accepts a filename, which may only be programatically set to the empty string."));
+        exceptionState.throwDOMException(InvalidStateError, "This input element accepts a filename, which may only be programatically set to the empty string.");
         return;
     }
     setValue(value, eventBehavior);
@@ -1053,7 +1053,7 @@ double HTMLInputElement::valueAsNumber() const
 void HTMLInputElement::setValueAsNumber(double newValue, ExceptionState& exceptionState, TextFieldEventBehavior eventBehavior)
 {
     if (!std::isfinite(newValue)) {
-        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::failedToSet("valueAsNumber", "HTMLInputElement", ExceptionMessages::notAFiniteNumber(newValue)));
+        exceptionState.throwDOMException(NotSupportedError, ExceptionMessages::notAFiniteNumber(newValue));
         return;
     }
     m_inputType->setValueAsDouble(newValue, eventBehavior, exceptionState);
@@ -1287,7 +1287,7 @@ int HTMLInputElement::maxLength() const
 void HTMLInputElement::setMaxLength(int maxLength, ExceptionState& exceptionState)
 {
     if (maxLength < 0)
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("maxLength", "HTMLInputElement", "The value provided (" + String::number(maxLength) + ") is negative."));
+        exceptionState.throwDOMException(IndexSizeError, "The value provided (" + String::number(maxLength) + ") is negative.");
     else
         setIntegralAttribute(maxlengthAttr, maxLength);
 }
@@ -1305,7 +1305,7 @@ void HTMLInputElement::setSize(unsigned size)
 void HTMLInputElement::setSize(unsigned size, ExceptionState& exceptionState)
 {
     if (!size)
-        exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("size", "HTMLInputElement", "The value provided is 0, which is an invalid size."));
+        exceptionState.throwDOMException(IndexSizeError, "The value provided is 0, which is an invalid size.");
     else
         setSize(size);
 }
@@ -1788,7 +1788,7 @@ void ListAttributeTargetObserver::idTargetChanged()
 void HTMLInputElement::setRangeText(const String& replacement, ExceptionState& exceptionState)
 {
     if (!m_inputType->supportsSelectionAPI()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("setRangeText", "HTMLInputElement", "The input element's type ('" + m_inputType->formControlType() + "') does not support selection."));
+        exceptionState.throwDOMException(InvalidStateError, "The input element's type ('" + m_inputType->formControlType() + "') does not support selection.");
         return;
     }
 
@@ -1798,7 +1798,7 @@ void HTMLInputElement::setRangeText(const String& replacement, ExceptionState& e
 void HTMLInputElement::setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState& exceptionState)
 {
     if (!m_inputType->supportsSelectionAPI()) {
-        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("setRangeText", "HTMLInputElement", "The input element's type ('" + m_inputType->formControlType() + "') does not support selection."));
+        exceptionState.throwDOMException(InvalidStateError, "The input element's type ('" + m_inputType->formControlType() + "') does not support selection.");
         return;
     }
 
