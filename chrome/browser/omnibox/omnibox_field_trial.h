@@ -185,6 +185,24 @@ class OmniboxFieldTrial {
   static int HQPBookmarkValue();
 
   // ---------------------------------------------------------
+  // For the HQPAllowMatchInTLD experiment that's part of the
+  // bundled omnibox field trial.
+
+  // Returns true if HQP should allow an input term to match in the
+  // top level domain (e.g., .com) of a URL.  Returns false if the
+  // allow match in TLD experiment isn't active.
+  static bool HQPAllowMatchInTLDValue();
+
+  // ---------------------------------------------------------
+  // For the HQPAllowMatchInScheme experiment that's part of the
+  // bundled omnibox field trial.
+
+  // Returns true if HQP should allow an input term to match in the
+  // scheme (e.g., http://) of a URL.  Returns false if the allow
+  // match in scheme experiment isn't active.
+  static bool HQPAllowMatchInSchemeValue();
+
+  // ---------------------------------------------------------
   // Exposed publicly for the sake of unittests.
   static const char kBundledExperimentFieldTrialName[];
   // Rule names used by the bundled experiment.
@@ -194,6 +212,8 @@ class OmniboxFieldTrial {
   static const char kUndemotableTopTypeRule[];
   static const char kReorderForLegalDefaultMatchRule[];
   static const char kHQPBookmarkValueRule[];
+  static const char kHQPAllowMatchInTLDRule[];
+  static const char kHQPAllowMatchInSchemeRule[];
   // Rule values.
   static const char kReorderForLegalDefaultMatchRuleEnabled[];
 

@@ -34,6 +34,8 @@ float* ScoredHistoryMatch::raw_term_score_to_topicality_score_ = NULL;
 float* ScoredHistoryMatch::days_ago_to_recency_score_ = NULL;
 bool ScoredHistoryMatch::initialized_ = false;
 int ScoredHistoryMatch::bookmark_value_ = 1;
+bool ScoredHistoryMatch::allow_tld_matches_ = false;
+bool ScoredHistoryMatch::allow_scheme_matches_ = false;
 bool ScoredHistoryMatch::also_do_hup_like_scoring_ = false;
 int ScoredHistoryMatch::max_assigned_score_for_non_inlineable_matches_ = -1;
 
@@ -332,26 +334,33 @@ float ScoredHistoryMatch::GetTopicalityScore(
         (*next_word_starts == iter->offset);
     if ((question_mark_pos != std::string::npos) &&
         (iter->offset > question_mark_pos)) {
-      // match in CGI ?... fragment
+      // The match is in a CGI ?... fragment.
       DCHECK(at_word_boundary);
       term_scores[iter->term_num] += 5;
     } else if ((end_of_hostname_pos != std::string::npos) &&
         (iter->offset > end_of_hostname_pos)) {
-      // match in path
+      // The match is in the path.
       DCHECK(at_word_boundary);
       term_scores[iter->term_num] += 8;
     } else if ((colon_pos == std::string::npos) ||
          (iter->offset > colon_pos)) {
-      // match in hostname
+      // The match is in the hostname.
       if ((last_part_of_hostname_pos == std::string::npos) ||
           (iter->offset < last_part_of_hostname_pos)) {
         // Either there are no dots in the hostname or this match isn't
         // the last dotted component.
         term_scores[iter->term_num] += at_word_boundary ? 10 : 2;
-      } // else: match in the last part of a dotted hostname (usually
-        // this is the top-level domain .com, .net, etc.).  Do not
-        // count this match for scoring.
-    } // else: match in protocol.  Do not count this match for scoring.
+      } else {
+        // The match is in the last part of a dotted hostname (usually this
+        // is the top-level domain .com, .net, etc.).
+        if (allow_tld_matches_)
+          term_scores[iter->term_num] += at_word_boundary ? 10 : 0;
+      }
+    } else {
+      // The match is in the protocol (a.k.a. scheme).
+      if (allow_scheme_matches_)
+        term_scores[iter->term_num] += at_word_boundary ? 10 : 0;
+    }
   }
   // Now do the analogous loop over all matches in the title.
   next_word_starts = word_starts.title_word_starts_.begin();
@@ -562,6 +571,8 @@ void ScoredHistoryMatch::Init() {
         HistoryURLProvider::kScoreForBestInlineableResult - 1;
   }
   bookmark_value_ = OmniboxFieldTrial::HQPBookmarkValue();
+  allow_tld_matches_ = OmniboxFieldTrial::HQPAllowMatchInTLDValue();
+  allow_scheme_matches_ = OmniboxFieldTrial::HQPAllowMatchInSchemeValue();
   initialized_ = true;
 }
 

@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "base/auto_reset.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
@@ -53,9 +54,6 @@ class ScoredHistoryMatchTest : public testing::Test {
   float GetTopicalityScoreOfTermAgainstURLAndTitle(const string16& term,
                                                    const string16& url,
                                                    const string16& title);
-
-  // Set ScoredHistoryMatch::bookmark_value_ to the provided |bookmark_value|.
-  void set_bookmark_value(int bookmark_value);
 };
 
 URLRow ScoredHistoryMatchTest::MakeURLRow(const char* url,
@@ -107,13 +105,6 @@ float ScoredHistoryMatchTest::GetTopicalityScoreOfTermAgainstURLAndTitle(
   String16SetFromString16(url, &word_starts.url_word_starts_);
   String16SetFromString16(title, &word_starts.title_word_starts_);
   return scored_match.GetTopicalityScore(1, url, word_starts);
-}
-
-void ScoredHistoryMatchTest::set_bookmark_value(int bookmark_value) {
-  // Make sure ScoredHistoryMatch::Init() gets called if it hasn't already.
-  ScoredHistoryMatch scored_match;
-
-  scored_match.bookmark_value_ = bookmark_value;
 }
 
 TEST_F(ScoredHistoryMatchTest, Scoring) {
@@ -227,12 +218,62 @@ TEST_F(ScoredHistoryMatchTest, ScoringBookmarks) {
                             ASCIIToUTF16("abc"), Make1Term("abc"),
                             word_starts, now, NULL);
   // Now bookmark that URL and make sure its score increases.
-  set_bookmark_value(5);
+  base::AutoReset<int> reset(&ScoredHistoryMatch::bookmark_value_, 5);
   BookmarkServiceMock bookmark_model_mock(url);
   ScoredHistoryMatch scored_with_bookmark(
       row, visits, std::string(), ASCIIToUTF16("abc"), Make1Term("abc"),
       word_starts, now, &bookmark_model_mock);
   EXPECT_GT(scored_with_bookmark.raw_score(), scored.raw_score());
+}
+
+TEST_F(ScoredHistoryMatchTest, ScoringTLD) {
+  // We use NowFromSystemTime() because MakeURLRow uses the same function
+  // to calculate last visit time when building a row.
+  base::Time now = base::Time::NowFromSystemTime();
+
+  // By default the URL should not be returned for a query that includes "com".
+  std::string url_string("http://fedcba.com/");
+  const GURL url(url_string);
+  URLRow row(MakeURLRow(url_string.c_str(), "", 8, 3, 1));
+  RowWordStarts word_starts;
+  PopulateWordStarts(row, &word_starts);
+  VisitInfoVector visits = CreateVisitInfoVector(8, 3, now);
+  ScoredHistoryMatch scored(row, visits, std::string(),
+                            ASCIIToUTF16("fed com"), Make2Terms("fed", "com"),
+                            word_starts, now, NULL);
+  EXPECT_EQ(0, scored.raw_score());
+
+  // Now allow credit for the match in the TLD.
+  base::AutoReset<bool> reset(&ScoredHistoryMatch::allow_tld_matches_, true);
+  ScoredHistoryMatch scored_with_tld(
+      row, visits, std::string(), ASCIIToUTF16("fed com"),
+      Make2Terms("fed", "com"), word_starts, now, NULL);
+  EXPECT_GT(scored_with_tld.raw_score(), 0);
+}
+
+TEST_F(ScoredHistoryMatchTest, ScoringScheme) {
+  // We use NowFromSystemTime() because MakeURLRow uses the same function
+  // to calculate last visit time when building a row.
+  base::Time now = base::Time::NowFromSystemTime();
+
+  // By default the URL should not be returned for a query that includes "http".
+  std::string url_string("http://fedcba/");
+  const GURL url(url_string);
+  URLRow row(MakeURLRow(url_string.c_str(), "", 8, 3, 1));
+  RowWordStarts word_starts;
+  PopulateWordStarts(row, &word_starts);
+  VisitInfoVector visits = CreateVisitInfoVector(8, 3, now);
+  ScoredHistoryMatch scored(row, visits, std::string(),
+                            ASCIIToUTF16("fed http"), Make2Terms("fed", "http"),
+                            word_starts, now, NULL);
+  EXPECT_EQ(0, scored.raw_score());
+
+  // Now allow credit for the match in the scheme.
+  base::AutoReset<bool> reset(&ScoredHistoryMatch::allow_scheme_matches_, true);
+  ScoredHistoryMatch scored_with_scheme(
+      row, visits, std::string(), ASCIIToUTF16("fed http"),
+      Make2Terms("fed", "http"), word_starts, now, NULL);
+  EXPECT_GT(scored_with_scheme.raw_score(), 0);
 }
 
 TEST_F(ScoredHistoryMatchTest, Inlining) {

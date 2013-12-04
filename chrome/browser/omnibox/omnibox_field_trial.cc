@@ -319,6 +319,20 @@ int OmniboxFieldTrial::HQPBookmarkValue() {
   return bookmark_value;
 }
 
+bool OmniboxFieldTrial::HQPAllowMatchInTLDValue() {
+  std::string allow_match_in_tld_str = chrome_variations::
+      GetVariationParamValue(kBundledExperimentFieldTrialName,
+                             kHQPAllowMatchInTLDRule);
+  return allow_match_in_tld_str == "true";
+}
+
+bool OmniboxFieldTrial::HQPAllowMatchInSchemeValue() {
+  std::string allow_match_in_scheme_str = chrome_variations::
+      GetVariationParamValue(kBundledExperimentFieldTrialName,
+                             kHQPAllowMatchInSchemeRule);
+  return allow_match_in_scheme_str == "true";
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kShortcutsScoringMaxRelevanceRule[] =
@@ -330,6 +344,9 @@ const char OmniboxFieldTrial::kReorderForLegalDefaultMatchRule[] =
     "ReorderForLegalDefaultMatch";
 const char OmniboxFieldTrial::kHQPBookmarkValueRule[] =
     "HQPBookmarkValue";
+const char OmniboxFieldTrial::kHQPAllowMatchInTLDRule[] = "HQPAllowMatchInTLD";
+const char OmniboxFieldTrial::kHQPAllowMatchInSchemeRule[] =
+    "HQPAllowMatchInScheme";
 const char OmniboxFieldTrial::kReorderForLegalDefaultMatchRuleEnabled[] =
     "ReorderForLegalDefaultMatch";
 
