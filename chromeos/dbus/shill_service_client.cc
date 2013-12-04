@@ -251,6 +251,16 @@ class ShillServiceClientImpl : public ShillServiceClient {
     // remove them when they become inactive (no observers and no active method
     // calls).
     dbus::ObjectPath object_path = helper->object_proxy()->object_path();
+    // Make sure we don't release the proxy used by ShillManagerClient ("/").
+    // This shouldn't ever happen, but might if a bug in the code requests
+    // a service with path "/", or a bug in Shill passes "/" as a service path.
+    // Either way this would cause an invalid memory access in
+    // ShillManagerClient, see crbug.com/324849.
+    if (object_path == dbus::ObjectPath(shill::kFlimflamServicePath)) {
+      NET_LOG_ERROR("ShillServiceClient service has invalid path",
+                    shill::kFlimflamServicePath);
+      return;
+    }
     NET_LOG_DEBUG("RemoveShillClientHelper", object_path.value());
     bus_->RemoveObjectProxy(shill::kFlimflamServiceName,
                             object_path, base::Bind(&base::DoNothing));

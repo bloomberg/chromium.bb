@@ -459,8 +459,8 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
        iter != entries.end(); ++iter) {
     std::string path;
     (*iter)->GetAsString(&path);
-    if (path.empty()) {
-      LOG(ERROR) << "Empty path in list";
+    if (path.empty() || path == shill::kFlimflamServicePath) {
+      NET_LOG_ERROR(base::StringPrintf("Bad path in list:%d", type), path);
       continue;
     }
     std::map<std::string, ManagedState*>::iterator found =
@@ -468,7 +468,7 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
     ManagedState* managed;
     if (found == managed_map.end()) {
       if (list_entries.count(path) != 0) {
-        LOG(ERROR) << "Duplicate entry in list: " << path;
+        NET_LOG_ERROR("Duplicate entry in list", path);
         continue;
       }
       managed = ManagedState::Create(type, path);
