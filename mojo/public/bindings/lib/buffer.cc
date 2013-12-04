@@ -13,6 +13,13 @@
 #include "mojo/public/bindings/lib/bindings_serialization.h"
 #include "mojo/public/bindings/lib/bindings_support.h"
 
+// Scrub memory in debug builds to help catch use-after-free bugs.
+#ifdef NDEBUG
+#define DEBUG_SCRUB(address, size) (void) (address), (void) (size)
+#else
+#define DEBUG_SCRUB(address, size) memset(address, 0xCD, size)
+#endif
+
 namespace mojo {
 
 //-----------------------------------------------------------------------------
@@ -22,9 +29,7 @@ Buffer::Buffer() {
 }
 
 Buffer::~Buffer() {
-#ifndef NDEBUG
-  Buffer* buf =
-#endif
+  Buffer* buf MOJO_ALLOW_UNUSED =
       BindingsSupport::Get()->SetCurrentBuffer(previous_);
   assert(buf == this);
 }
@@ -53,8 +58,10 @@ ScratchBuffer::~ScratchBuffer() {
   while (overflow_) {
     Segment* doomed = overflow_;
     overflow_ = overflow_->next;
+    DEBUG_SCRUB(doomed, doomed->end - reinterpret_cast<char*>(doomed));
     free(doomed);
   }
+  DEBUG_SCRUB(fixed_data_, sizeof(fixed_data_));
 }
 
 void* ScratchBuffer::Allocate(size_t delta, Destructor func) {
