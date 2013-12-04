@@ -85,7 +85,21 @@ TEST_F(BindingsTypeConversionTest, String) {
 
 TEST_F(BindingsTypeConversionTest, String_Null) {
   String a;
+  EXPECT_TRUE(a.is_null());
   EXPECT_EQ(std::string(), a.To<std::string>());
+
+  String b(static_cast<const char*>(NULL));
+  EXPECT_TRUE(b.is_null());
+}
+
+TEST_F(BindingsTypeConversionTest, String_Empty) {
+  AllocationScope scope;
+  String a = String::Builder(0).Finish();
+  EXPECT_EQ(std::string(), a.To<std::string>());
+
+  String b = std::string();
+  EXPECT_FALSE(b.is_null());
+  EXPECT_EQ(std::string(), b.To<std::string>());
 }
 
 TEST_F(BindingsTypeConversionTest, String_ShallowCopy) {

@@ -10,21 +10,28 @@ namespace mojo {
 String SimilarityTraits<String, std::string>::CopyFrom(const std::string& input,
                                                        Buffer* buf) {
   String::Builder result(input.size(), buf);
-  memcpy(&result[0], input.data(), input.size());
+  if (!input.empty())
+    memcpy(&result[0], input.data(), input.size());
   return result.Finish();
 }
 // static
 std::string SimilarityTraits<String, std::string>::CopyTo(const String& input) {
-  return input.is_null() ? std::string() :
-                           std::string(&input[0], &input[0] + input.size());
+  if (input.is_null() || input.size() == 0)
+    return std::string();
+
+  return std::string(&input[0], &input[0] + input.size());
 }
 
 // static
 String SimilarityTraits<String, const char*>::CopyFrom(const char* input,
                                                        Buffer* buf) {
+  if (!input)
+    return String();
+
   size_t size = strlen(input);
   String::Builder result(size, buf);
-  memcpy(&result[0], input, size);
+  if (size != 0)
+    memcpy(&result[0], input, size);
   return result.Finish();
 }
 

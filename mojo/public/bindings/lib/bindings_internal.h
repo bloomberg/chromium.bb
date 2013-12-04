@@ -163,10 +163,12 @@ class Array_Data {
   size_t size() const { return header_.num_elements; }
 
   T& at(size_t offset) {
+    assert(offset < static_cast<size_t>(header_.num_elements));
     return Traits::ToRef(storage()[offset]);
   }
 
   const T& at(size_t offset) const {
+    assert(offset < static_cast<size_t>(header_.num_elements));
     return Traits::ToConstRef(storage()[offset]);
   }
 
