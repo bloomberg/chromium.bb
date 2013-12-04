@@ -182,6 +182,7 @@ void ResourceLoader::didDownloadData(blink::WebURLLoader*, int length, int encod
 {
     RefPtr<ResourceLoader> protect(this);
     RELEASE_ASSERT(m_connectionState == ConnectionStateReceivedResponse);
+    m_host->didDownloadData(m_resource, length, encodedDataLength, m_options);
     m_resource->didDownloadData(length);
 }
 

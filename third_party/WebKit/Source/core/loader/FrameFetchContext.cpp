@@ -135,6 +135,13 @@ void FrameFetchContext::dispatchDidReceiveData(DocumentLoader*, unsigned long id
     InspectorInstrumentation::didReceiveData(m_frame, identifier, data, dataLength, encodedDataLength);
 }
 
+void FrameFetchContext::dispatchDidDownloadData(DocumentLoader*, unsigned long identifier, int dataLength, int encodedDataLength)
+{
+    if (Page* page = m_frame->page())
+        page->progress().incrementProgress(identifier, 0, dataLength);
+    InspectorInstrumentation::didReceiveData(m_frame, identifier, 0, dataLength, encodedDataLength);
+}
+
 void FrameFetchContext::dispatchDidFinishLoading(DocumentLoader* loader, unsigned long identifier, double finishTime)
 {
     if (Page* page = m_frame->page())

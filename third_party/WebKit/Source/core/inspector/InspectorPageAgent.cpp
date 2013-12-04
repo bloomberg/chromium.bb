@@ -130,6 +130,9 @@ static bool prepareResourceBuffer(Resource* cachedResource, bool* hasZeroSize)
     if (!cachedResource)
         return false;
 
+    if (cachedResource->dataBufferingPolicy() == DoNotBufferData)
+        return false;
+
     // Zero-sized resources don't have data at all -- so fake the empty buffer, instead of indicating error by returning 0.
     if (!cachedResource->encodedSize()) {
         *hasZeroSize = true;

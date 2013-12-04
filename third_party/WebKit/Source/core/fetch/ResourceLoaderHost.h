@@ -63,6 +63,7 @@ public:
     virtual void willSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const ResourceLoaderOptions&) = 0;
     virtual void didReceiveResponse(const Resource*, const ResourceResponse&, const ResourceLoaderOptions&) = 0;
     virtual void didReceiveData(const Resource*, const char* data, int dataLength, int encodedDataLength, const ResourceLoaderOptions&) = 0;
+    virtual void didDownloadData(const Resource*, int dataLength, int encodedDataLength, const ResourceLoaderOptions&) = 0;
 
     virtual void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*) = 0;
     virtual void didInitializeResourceLoader(ResourceLoader*) = 0;

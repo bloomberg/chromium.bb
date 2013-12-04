@@ -200,6 +200,17 @@ void WorkerThreadableLoader::MainThreadBridge::didReceiveData(const char* data, 
     m_loaderProxy.postTaskForModeToWorkerGlobalScope(createCallbackTask(&workerGlobalScopeDidReceiveData, m_workerClientWrapper, vector.release()), m_taskMode);
 }
 
+static void workerGlobalScopeDidDownloadData(ExecutionContext* context, PassRefPtr<ThreadableLoaderClientWrapper> workerClientWrapper, int dataLength)
+{
+    ASSERT_UNUSED(context, context->isWorkerGlobalScope());
+    workerClientWrapper->didDownloadData(dataLength);
+}
+
+void WorkerThreadableLoader::MainThreadBridge::didDownloadData(int dataLength)
+{
+    m_loaderProxy.postTaskForModeToWorkerGlobalScope(createCallbackTask(&workerGlobalScopeDidDownloadData, m_workerClientWrapper, dataLength), m_taskMode);
+}
+
 static void workerGlobalScopeDidReceiveCachedMetadata(ExecutionContext* context, PassRefPtr<ThreadableLoaderClientWrapper> workerClientWrapper, PassOwnPtr<Vector<char> > vectorData)
 {
     ASSERT_UNUSED(context, context->isWorkerGlobalScope());

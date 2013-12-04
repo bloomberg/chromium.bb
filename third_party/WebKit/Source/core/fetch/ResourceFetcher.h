@@ -150,6 +150,7 @@ public:
     virtual void willSendRequest(unsigned long identifier, ResourceRequest&, const ResourceResponse& redirectResponse, const ResourceLoaderOptions&) OVERRIDE;
     virtual void didReceiveResponse(const Resource*, const ResourceResponse&, const ResourceLoaderOptions&) OVERRIDE;
     virtual void didReceiveData(const Resource*, const char* data, int dataLength, int encodedDataLength, const ResourceLoaderOptions&) OVERRIDE;
+    virtual void didDownloadData(const Resource*, int dataLength, int encodedDataLength, const ResourceLoaderOptions&) OVERRIDE;
     virtual void subresourceLoaderFinishedLoadingOnePart(ResourceLoader*) OVERRIDE;
     virtual void didInitializeResourceLoader(ResourceLoader*) OVERRIDE;
     virtual void willTerminateResourceLoader(ResourceLoader*) OVERRIDE;

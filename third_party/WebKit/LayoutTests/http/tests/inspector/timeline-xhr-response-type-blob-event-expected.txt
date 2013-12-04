@@ -1,0 +1,58 @@
+Tests the Timeline events for XMLHttpReqeust with responseType="blob"
+
+XHRReadyStateChange Properties:
+{
+    children : <object>
+    counters : <object>
+    data : {
+        readyState : 2
+        url : .../inspector/network/resources/resource.php
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    type : "XHRReadyStateChange"
+    usedHeapSize : <number>
+}
+XHRReadyStateChange Properties:
+{
+    children : <object>
+    counters : <object>
+    data : {
+        readyState : 3
+        url : .../inspector/network/resources/resource.php
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    type : "XHRReadyStateChange"
+    usedHeapSize : <number>
+}
+XHRReadyStateChange Properties:
+{
+    children : <object>
+    counters : <object>
+    data : {
+        readyState : 4
+        url : .../inspector/network/resources/resource.php
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    type : "XHRReadyStateChange"
+    usedHeapSize : <number>
+}
+XHRLoad Properties:
+{
+    children : <object>
+    counters : <object>
+    data : {
+        url : .../inspector/network/resources/resource.php
+    }
+    endTime : <number>
+    frameId : <string>
+    startTime : <number>
+    type : "XHRLoad"
+    usedHeapSize : <number>
+}
+

@@ -152,6 +152,9 @@ private:
     virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent);
     virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&);
     virtual void didReceiveData(const char* data, int dataLength);
+    // When "blob" is specified as the responseType attribute, didDownloadData
+    // is called instead of didReceiveData.
+    virtual void didDownloadData(int dataLength);
     virtual void didFinishLoading(unsigned long identifier, double finishTime);
     virtual void didFail(const ResourceError&);
     virtual void didFailRedirectCheck();
@@ -167,6 +170,7 @@ private:
     AtomicString getRequestHeader(const AtomicString& name) const;
     void setRequestHeaderInternal(const AtomicString& name, const AtomicString& value);
 
+    void trackProgress(int dataLength);
     // Changes m_state and dispatches a readyStateChange event if new m_state
     // value is different from last one.
     void changeState(State newState);
@@ -233,6 +237,7 @@ private:
     RefPtr<Document> m_responseDocument;
 
     RefPtr<SharedBuffer> m_binaryResponseBuilder;
+    long long m_downloadedBlobLength;
     RefPtr<ArrayBuffer> m_responseArrayBuffer;
 
     bool m_error;

@@ -1188,6 +1188,15 @@ void ResourceFetcher::didReceiveData(const Resource* resource, const char* data,
     InspectorInstrumentation::didReceiveResourceData(cookie);
 }
 
+void ResourceFetcher::didDownloadData(const Resource* resource, int dataLength, int encodedDataLength, const ResourceLoaderOptions& options)
+{
+    InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceData(frame(), resource->identifier(), encodedDataLength);
+    if (options.sendLoadCallbacks != SendCallbacks)
+        return;
+    context().dispatchDidDownloadData(m_documentLoader, resource->identifier(), dataLength, encodedDataLength);
+    InspectorInstrumentation::didReceiveResourceData(cookie);
+}
+
 void ResourceFetcher::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* loader)
 {
     if (m_multipartLoaders)

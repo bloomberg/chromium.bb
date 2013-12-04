@@ -1,7 +1,7 @@
 <html>
 <head/>
 <body>
-<p> Test case for bug 13596: Implement .onprogress handler on XMLHttpRequest objects to support progressive download content length information </p>
+<p> .onprogress handler on XMLHttpRequest objects with response type "blob" works to support progressive download content length information </p>
 <p> You should see type, bubble, cancelable, eventPhase, target and current target.</p>
 <script type="text/javascript">
 function log (msg)
@@ -33,8 +33,9 @@ if (window.testRunner) {
 }
 
 var req = new XMLHttpRequest();
+req.responseType = "blob";
 req.onprogress = onProgress;
-req.open("GET", "resources/1251.html", true);
+req.open("GET", "resources/get.txt", true);
 req.send(null);
 </script>
 </body>

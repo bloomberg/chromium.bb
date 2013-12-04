@@ -1,0 +1,46 @@
+<html>
+<head>
+<script src="inspector-test.js"></script>
+<script src="timeline-test.js"></script>
+<script src="network-test.js"></script>
+<script>
+
+function performActions()
+{
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "network/resources/resource.php", true);
+    xhr.onload = function () { };  // This is necessary for XHRLoad event.
+    xhr.onreadystatechange = function () { };  // This is necessary for XHRReadyStateChange event.
+    xhr.send(null);
+}
+
+function test()
+{
+    InspectorTest.resetInspectorResourcesData(step1);
+    function step1()
+    {
+        InspectorTest.startTimeline(function() {
+            InspectorTest.evaluateInPage("performActions()");
+        });
+
+        InspectorTest.waitForRecordType("XHRLoad", finish);
+
+        function finish()
+        {
+            InspectorTest.printTimelineRecords("XHRReadyStateChange");
+            InspectorTest.printTimelineRecords("XHRLoad");
+            InspectorTest.completeTest();
+        }
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests the Timeline events for XMLHttpReqeust
+</p>
+
+</body>
+</html>

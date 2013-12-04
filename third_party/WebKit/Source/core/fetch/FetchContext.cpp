@@ -73,6 +73,10 @@ void FetchContext::dispatchDidReceiveData(DocumentLoader*, unsigned long, const 
 {
 }
 
+void FetchContext::dispatchDidDownloadData(DocumentLoader*, unsigned long, int, int)
+{
+}
+
 void FetchContext::dispatchDidFinishLoading(DocumentLoader*, unsigned long, double)
 {
 }
