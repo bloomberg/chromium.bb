@@ -199,4 +199,28 @@ TEST(ChromiumEnv, GetChildrenEmptyDir) {
   EXPECT_EQ(0, result.size());
 }
 
+TEST(ChromiumEnv, GetChildrenPriorResults) {
+  base::ScopedTempDir scoped_temp_dir;
+  scoped_temp_dir.CreateUniqueTempDir();
+  base::FilePath dir = scoped_temp_dir.path();
+
+  base::FilePath new_file_dir = dir.Append(FPL("tmp_file"));
+  FILE* f = fopen(new_file_dir.value().c_str(), "w");
+  if (f) {
+    fputs("Temp file contents", f);
+    fclose(f);
+  }
+
+  Env* env = IDBEnv();
+  std::vector<std::string> result;
+  leveldb::Status status = env->GetChildren(dir.AsUTF8Unsafe(), &result);
+  EXPECT_TRUE(status.ok());
+  EXPECT_EQ(1, result.size());
+
+  // And a second time should also return one result
+  status = env->GetChildren(dir.AsUTF8Unsafe(), &result);
+  EXPECT_TRUE(status.ok());
+  EXPECT_EQ(1, result.size());
+}
+
 int main(int argc, char** argv) { return base::TestSuite(argc, argv).Run(); }

@@ -811,6 +811,7 @@ Status ChromiumEnv::GetChildren(const std::string& dir_string,
     return MakeIOError(
         dir_string, "Could not open/read directory", kGetChildren, error);
   }
+  result->clear();
   for (std::vector<base::FilePath>::iterator it = entries.begin();
        it != entries.end();
        ++it) {
