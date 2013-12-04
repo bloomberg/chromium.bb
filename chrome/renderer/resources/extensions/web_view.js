@@ -788,6 +788,7 @@ WebViewInternal.prototype.handlePermissionEvent_ =
   };
 
   var requestId = event.requestId;
+  var self = this;
 
   var PERMISSION_TYPES = this.getPermissionTypes_().concat(
                              this.maybeGetExperimentalPermissions_());
@@ -803,7 +804,6 @@ WebViewInternal.prototype.handlePermissionEvent_ =
     return;
   }
 
-  var self = this;
   var browserPluginNode = this.browserPluginNode_;
   var webviewNode = this.webviewNode_;
 
