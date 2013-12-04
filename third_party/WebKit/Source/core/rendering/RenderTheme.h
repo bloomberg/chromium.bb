@@ -24,7 +24,7 @@
 #define RenderTheme_h
 
 #if USE(NEW_THEME)
-#include "core/platform/Theme.h"
+#include "platform/Theme.h"
 #else
 #include "platform/ThemeTypes.h"
 #endif

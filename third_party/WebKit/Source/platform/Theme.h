@@ -28,6 +28,7 @@
 
 #include "platform/LengthBox.h"
 #include "platform/LengthSize.h"
+#include "platform/PlatformExport.h"
 #include "platform/ThemeTypes.h"
 #include "platform/fonts/FontDescription.h"
 #include "platform/geometry/IntRect.h"
@@ -40,7 +41,7 @@ class GraphicsContext;
 class ScrollView;
 
 // Unlike other platform classes, Theme does extensively use virtual functions.  This design allows a platform to switch between multiple themes at runtime.
-class Theme {
+class PLATFORM_EXPORT Theme {
 public:
     Theme() { }
     virtual ~Theme() { }

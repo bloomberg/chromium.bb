@@ -111,6 +111,8 @@
       'Supplementable.h',
       'Task.h',
       'ThemeTypes.h',
+      'Theme.cpp',
+      'Theme.h',
       'ThreadTimers.cpp',
       'ThreadTimers.h',
       'Timer.cpp',

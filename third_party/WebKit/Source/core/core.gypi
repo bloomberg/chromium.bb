@@ -2714,7 +2714,6 @@
             'platform/ScrollbarThemeOverlay.h',
             'platform/ScrollbarThemeWin.cpp',
             'platform/ScrollbarThemeWin.h',
-            'platform/Theme.cpp',
             'platform/animation/AnimationTranslationUtil.cpp',
             'platform/animation/AnimationTranslationUtil.h',
             'platform/animation/AnimationValue.h',
