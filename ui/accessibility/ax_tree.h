@@ -5,8 +5,9 @@
 #ifndef UI_ACCESSIBILITY_AX_TREE_H_
 #define UI_ACCESSIBILITY_AX_TREE_H_
 
-#include "base/containers/hash_tables.h"
+#include <set>
 
+#include "base/containers/hash_tables.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -29,15 +30,26 @@ class AX_EXPORT AXTree {
   virtual AXNode* GetRoot() const;
   virtual AXNode* GetFromId(int32 id) const;
 
+  // Returns true on success. If it returns false, it's a fatal error
+  // and this tree should be destroyed, and the source of the tree update
+  // should not be trusted any longer.
   virtual bool Unserialize(const AXTreeUpdate& update);
+
+  // A string describing the error from an unsuccessful Unserialize,
+  // for testing and debugging.
+  const std::string& error() { return error_; }
 
  protected:
   // Subclasses can override this to use a subclass of AXNode.
   virtual AXNode* CreateNode(AXNode* parent, int32 id, int32 index_in_parent);
 
   // This is called from within Unserialize(), it returns true on success.
-  // Subclasses can override this to do additional processing.
-  virtual bool UpdateNode(const AXNodeData& src);
+  // Subclasses can override this to do additional processing. |pending_nodes|
+  // is updated to contain all nodes that have been implicitly referenced
+  // as part of this update, but haven't been updated yet. It's an error if
+  // there are any pending nodes at the end of Unserialize.
+  virtual bool UpdateNode(const AXNodeData& src,
+                          std::set<AXNode*>* pending_nodes);
 
   // Subclasses can override this to do special behavior when the root changes.
   virtual void OnRootChanged();
@@ -61,13 +73,16 @@ class AX_EXPORT AXTree {
   // pointers to child nodes, reusing existing nodes already in the tree
   // if they exist, and creating otherwise. Reparenting is disallowed, so
   // if the id already exists as the child of another node, that's an
-  // error. Returns true on success, false on fatal error.
+  // error. Returns true on success, false on fatal error. See
+  // UpdateNode, above, for an explanation of |pending_nodes|.
   bool CreateNewChildVector(AXNode* node,
                             const std::vector<int32> new_child_ids,
-                            std::vector<AXNode*>* new_children);
+                            std::vector<AXNode*>* new_children,
+                            std::set<AXNode*>* pending_nodes);
 
   AXNode* root_;
   base::hash_map<int32, AXNode*> id_map_;
+  std::string error_;
 };
 
 }  // namespace ui

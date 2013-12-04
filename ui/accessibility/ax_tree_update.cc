@@ -6,7 +6,7 @@
 
 namespace ui {
 
-AXTreeUpdate::AXTreeUpdate() {
+AXTreeUpdate::AXTreeUpdate() : node_id_to_clear(0) {
 }
 
 AXTreeUpdate::~AXTreeUpdate() {

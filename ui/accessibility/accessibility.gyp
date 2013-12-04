@@ -47,6 +47,7 @@
         'accessibility',
       ],
       'sources': [
+        'ax_tree_serializer_unittest.cc',
         'ax_tree_unittest.cc',
       ]
     },

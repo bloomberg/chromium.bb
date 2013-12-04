@@ -21,14 +21,13 @@ template<class AXNodeSource>
 class AX_EXPORT AXTreeSource {
  public:
   virtual ~AXTreeSource() {}
+  virtual AXNodeSource* GetRoot() const = 0;
   virtual AXNodeSource* GetFromId(int32 id) const = 0;
   virtual int32 GetId(const AXNodeSource* node) const = 0;
   virtual int GetChildCount(const AXNodeSource* node) const = 0;
   virtual AXNodeSource* GetChildAtIndex(const AXNodeSource* node, int index)
       const = 0;
-
-  // Returns the id of this node's parent, or 0 if it doesn't have a parent.
-  virtual int32 GetParentId(const AXNodeSource* node) const = 0;
+  virtual AXNodeSource* GetParent(const AXNodeSource* node) const = 0;
 
   // Serialize one node in the tree.
   virtual void SerializeNode(

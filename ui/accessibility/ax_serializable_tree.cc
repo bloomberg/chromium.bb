@@ -20,6 +20,10 @@ class AX_EXPORT AXTreeSourceAdapter : public AXTreeSource<AXNode> {
   virtual ~AXTreeSourceAdapter() {}
 
   // AXTreeSource implementation.
+  virtual AXNode* GetRoot() const OVERRIDE {
+    return tree_->GetRoot();
+  }
+
   virtual AXNode* GetFromId(int32 id) const OVERRIDE {
     return tree_->GetFromId(id);
   }
@@ -37,11 +41,8 @@ class AX_EXPORT AXTreeSourceAdapter : public AXTreeSource<AXNode> {
     return node->ChildAtIndex(index);
   }
 
-  virtual int32 GetParentId(const AXNode* node) const OVERRIDE {
-    if (node->parent())
-      return node->parent()->id();
-    else
-      return 0;
+  virtual AXNode* GetParent(const AXNode* node) const OVERRIDE {
+    return node->parent();
   }
 
   virtual void SerializeNode(
