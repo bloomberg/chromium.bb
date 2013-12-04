@@ -208,6 +208,16 @@ TEST_F(WebNotificationTrayTest, WebNotificationPopupBubble) {
   // Removing the visible notification should hide the popup bubble.
   RemoveNotification("test_id3");
   EXPECT_FALSE(GetTray()->IsPopupVisible());
+
+  // Now test that we can show multiple popups and then show the message center.
+  AddNotification("test_id4");
+  AddNotification("test_id5");
+  EXPECT_TRUE(GetTray()->IsPopupVisible());
+
+  GetTray()->message_center_tray_->ShowMessageCenterBubble();
+  GetTray()->message_center_tray_->HideMessageCenterBubble();
+
+  EXPECT_FALSE(GetTray()->IsPopupVisible());
 }
 
 using message_center::NotificationList;

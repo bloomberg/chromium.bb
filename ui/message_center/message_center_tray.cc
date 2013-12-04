@@ -102,11 +102,8 @@ void MessageCenterTray::HidePopupBubbleInternal() {
   if (!popups_visible_)
     return;
 
-  // This is called before HidePopups so that we don't double-call this when we
-  // see the results of HidePopups via MessageCenterObserver.
-  popups_visible_ = false;
-
   delegate_->HidePopups();
+  popups_visible_ = false;
 }
 
 void MessageCenterTray::ShowNotifierSettingsBubble() {

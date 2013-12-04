@@ -68,6 +68,8 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
                          bool first_item_has_no_margin);
   virtual ~MessagePopupCollection();
 
+  void MarkAllPopupsShown();
+
   // Since these events are really coming from individual toast widgets,
   // it helps to be able to keep track of the sender.
   void OnMouseEntered(ToastContentsView* toast_entered);

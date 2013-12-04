@@ -152,7 +152,12 @@ bool WebNotificationTray::ShowPopups() {
   return true;
 }
 
-void WebNotificationTray::HidePopups() { popup_collection_.reset(); }
+void WebNotificationTray::HidePopups() {
+  DCHECK(popup_collection_.get());
+
+  popup_collection_->MarkAllPopupsShown();
+  popup_collection_.reset();
+}
 
 bool WebNotificationTray::ShowMessageCenter() {
   message_center_delegate_ =

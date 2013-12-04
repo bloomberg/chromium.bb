@@ -416,6 +416,9 @@ bool WebNotificationTray::ShowPopups() {
 }
 
 void WebNotificationTray::HidePopups() {
+  DCHECK(popup_collection_.get());
+
+  popup_collection_->MarkAllPopupsShown();
   popup_collection_.reset();
   work_area_observer_->StopObserving();
 }

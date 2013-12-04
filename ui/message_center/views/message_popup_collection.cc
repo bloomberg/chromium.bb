@@ -101,6 +101,10 @@ MessagePopupCollection::~MessagePopupCollection() {
   screen->RemoveObserver(this);
   message_center_->RemoveObserver(this);
 
+  CloseAllWidgets();
+}
+
+void MessagePopupCollection::MarkAllPopupsShown() {
   std::set<std::string> closed_ids = CloseAllWidgets();
   for (std::set<std::string>::iterator iter = closed_ids.begin();
        iter != closed_ids.end(); iter++) {
