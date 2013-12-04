@@ -192,6 +192,8 @@ bool MediaQueryExp::isViewportDependent() const
         || m_mediaFeature == MediaFeatureNames::orientationMediaFeature
         || m_mediaFeature == MediaFeatureNames::aspectRatioMediaFeature
         || m_mediaFeature == MediaFeatureNames::minAspectRatioMediaFeature
+        || m_mediaFeature == MediaFeatureNames::devicePixelRatioMediaFeature
+        || m_mediaFeature == MediaFeatureNames::resolutionMediaFeature
         || m_mediaFeature == MediaFeatureNames::maxAspectRatioMediaFeature;
 }
 
