@@ -210,3 +210,7 @@ void
 exposay_binding(struct weston_seat *seat,
 		enum weston_keyboard_modifier modifier,
 		void *data);
+int
+input_panel_setup(struct desktop_shell *shell);
+void
+input_panel_destroy(struct desktop_shell *shell);

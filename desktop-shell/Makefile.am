@@ -19,6 +19,7 @@ desktop_shell_la_SOURCES =			\
 	shell.h					\
 	shell.c					\
 	exposay.c				\
+	input-panel.c				\
 	desktop-shell-protocol.c		\
 	desktop-shell-server-protocol.h 	\
 	xdg-shell-protocol.c			\
