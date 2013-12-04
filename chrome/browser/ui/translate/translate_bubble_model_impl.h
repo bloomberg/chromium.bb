@@ -39,6 +39,7 @@ class TranslateBubbleModelImpl : public TranslateBubbleModel {
   virtual void Translate() OVERRIDE;
   virtual void RevertTranslation() OVERRIDE;
   virtual void TranslationDeclined() OVERRIDE;
+  virtual bool IsPageTranslatedInCurrentLanguages() const OVERRIDE;
 
  private:
   scoped_ptr<TranslateUIDelegate> ui_delegate_;

@@ -311,6 +311,8 @@ TranslateBubbleView::TranslateBubbleView(
       source_language_combobox_(NULL),
       target_language_combobox_(NULL),
       always_translate_checkbox_(NULL),
+      advanced_cancel_button_(NULL),
+      advanced_done_button_(NULL),
       model_(model.Pass()),
       is_in_incognito_window_(
           web_contents ?
@@ -356,8 +358,15 @@ void TranslateBubbleView::HandleButtonPressed(
     case BUTTON_ID_DONE: {
       if (always_translate_checkbox_)
         model_->SetAlwaysTranslate(always_translate_checkbox_->checked());
-      translate_executed_ = true;
-      model_->Translate();
+      if (model_->IsPageTranslatedInCurrentLanguages()) {
+        model_->GoBackFromAdvanced();
+        UpdateChildVisibilities();
+        SizeToContents();
+      } else {
+        translate_executed_ = true;
+        model_->Translate();
+        SwitchView(TranslateBubbleModel::VIEW_STATE_TRANSLATING);
+      }
       break;
     }
     case BUTTON_ID_CANCEL: {
@@ -733,13 +742,13 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
   layout->AddView(CreateLink(this,
                              IDS_TRANSLATE_BUBBLE_LEARN_MORE,
                              LINK_ID_LEARN_MORE));
-  views::LabelButton* cancel_button = CreateLabelButton(
+  advanced_cancel_button_ = CreateLabelButton(
       this, l10n_util::GetStringUTF16(IDS_CANCEL), BUTTON_ID_CANCEL);
-  layout->AddView(cancel_button);
-  views::LabelButton* done_button = CreateLabelButton(
+  layout->AddView(advanced_cancel_button_);
+  advanced_done_button_ = CreateLabelButton(
       this, l10n_util::GetStringUTF16(IDS_DONE), BUTTON_ID_DONE);
-  done_button->SetIsDefault(true);
-  layout->AddView(done_button);
+  advanced_done_button_->SetIsDefault(true);
+  layout->AddView(advanced_done_button_);
 
   UpdateAdvancedView();
 
@@ -753,12 +762,15 @@ void TranslateBubbleView::SwitchView(
 
   model_->SetViewState(view_state);
   UpdateChildVisibilities();
+  if (view_state == TranslateBubbleModel::VIEW_STATE_ADVANCED)
+    UpdateAdvancedView();
   SizeToContents();
 }
 
 void TranslateBubbleView::UpdateAdvancedView() {
   DCHECK(source_language_combobox_);
   DCHECK(target_language_combobox_);
+  DCHECK(advanced_done_button_);
 
   string16 source_language_name =
       model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex());
@@ -772,4 +784,11 @@ void TranslateBubbleView::UpdateAdvancedView() {
     always_translate_checkbox_->SetChecked(
         model_->ShouldAlwaysTranslate());
   }
+
+  string16 label;
+  if (model_->IsPageTranslatedInCurrentLanguages())
+    label = l10n_util::GetStringUTF16(IDS_DONE);
+  else
+    label = l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_ACCEPT);
+  advanced_done_button_->SetText(label);
 }

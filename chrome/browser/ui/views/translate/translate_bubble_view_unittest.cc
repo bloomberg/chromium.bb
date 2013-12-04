@@ -28,7 +28,9 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
         set_always_translate_called_count_(0),
         translate_called_(false),
         revert_translation_called_(false),
-        translation_declined_called_(false) {
+        translation_declined_called_(false),
+        original_language_index_on_translation_(-1),
+        target_language_index_on_translation_(-1) {
   }
 
   virtual TranslateBubbleModel::ViewState GetViewState() const OVERRIDE {
@@ -95,6 +97,8 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
 
   virtual void Translate() OVERRIDE {
     translate_called_ = true;
+    original_language_index_on_translation_ = original_language_index_;
+    target_language_index_on_translation_ = target_language_index_;
   }
 
   virtual void RevertTranslation() OVERRIDE {
@@ -103,6 +107,12 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
 
   virtual void TranslationDeclined() OVERRIDE {
     translation_declined_called_ = true;
+  }
+
+  virtual bool IsPageTranslatedInCurrentLanguages() const OVERRIDE {
+    return original_language_index_on_translation_ ==
+        original_language_index_ &&
+        target_language_index_on_translation_ == target_language_index_;
   }
 
   TranslateBubbleViewStateTransition view_state_transition_;
@@ -116,6 +126,8 @@ class MockTranslateBubbleModel : public TranslateBubbleModel {
   bool translate_called_;
   bool revert_translation_called_;
   bool translation_declined_called_;
+  int original_language_index_on_translation_;
+  int target_language_index_on_translation_;
 };
 
 }  // namespace
@@ -244,7 +256,6 @@ TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndDoneButton) {
   EXPECT_EQ(1, mock_model_->set_always_translate_called_count_);
 }
 
-
 TEST_F(TranslateBubbleViewTest, DoneButton) {
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
 
@@ -261,6 +272,33 @@ TEST_F(TranslateBubbleViewTest, DoneButton) {
   EXPECT_TRUE(mock_model_->translate_called_);
   EXPECT_EQ(10, mock_model_->original_language_index_);
   EXPECT_EQ(20, mock_model_->target_language_index_);
+}
+
+TEST_F(TranslateBubbleViewTest, DoneButtonWithoutTranslating) {
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
+            bubble_->GetViewState());
+
+  // Translate the page once.
+  mock_model_->Translate();
+  EXPECT_TRUE(mock_model_->translate_called_);
+
+  // Go back to the initial view.
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
+            bubble_->GetViewState());
+  mock_model_->translate_called_ = false;
+
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
+            bubble_->GetViewState());
+  bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
+
+  // Click the "Done" button with the current language pair. This time,
+  // translation is not performed and the view state will be back to the
+  // previous view.
+  bubble_->HandleButtonPressed(TranslateBubbleView::BUTTON_ID_DONE);
+  EXPECT_FALSE(mock_model_->translate_called_);
+
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE,
+            bubble_->GetViewState());
 }
 
 TEST_F(TranslateBubbleViewTest, CancelButtonReturningBeforeTranslate) {

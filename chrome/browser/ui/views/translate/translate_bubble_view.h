@@ -110,6 +110,8 @@ class TranslateBubbleView : public views::BubbleDelegateView,
                            AlwaysTranslateCheckboxAndDoneButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest, DoneButton);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
+                           DoneButtonWithoutTranslating);
+  FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            CancelButtonReturningBeforeTranslate);
   FRIEND_TEST_ALL_PREFIXES(TranslateBubbleViewTest,
                            CancelButtonReturningAfterTranslate);
@@ -175,6 +177,9 @@ class TranslateBubbleView : public views::BubbleDelegateView,
   views::Combobox* target_language_combobox_;
 
   views::Checkbox* always_translate_checkbox_;
+
+  views::LabelButton* advanced_cancel_button_;
+  views::LabelButton* advanced_done_button_;
 
   scoped_ptr<TranslateBubbleModel> model_;
 
