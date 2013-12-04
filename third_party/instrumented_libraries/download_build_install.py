@@ -53,6 +53,33 @@ def get_library_build_dependencies(library):
   return build_dependencies
 
 
+def shell_call(command, verbose=False, environment=None):
+  """ Wrapper on subprocess.Popen
+  
+  Calls command with specific environment and verbosity using
+  subprocess.Popen
+  
+  Args:
+    command: Command to run in shell.
+    verbose: If False, hides all stdout and stderr in case of successful build.
+        Otherwise, always prints stdout and stderr.
+    environment: Parameter 'env' for subprocess.Popen.
+
+  Returns:
+    None
+
+  Raises:
+    Exception: if return code after call is not zero.
+  """
+  child = subprocess.Popen(command, stdout=subprocess.PIPE,
+      stderr=subprocess.STDOUT, env=environment, shell=True)
+  stdout, stderr = child.communicate()
+  if verbose or child.returncode:
+    print stdout
+  if child.returncode:
+    raise Exception("Failed to run: %s" % command)
+
+
 def download_build_install(parsed_arguments):
   sanitizer_params = SUPPORTED_SANITIZERS[parsed_arguments.sanitizer_type]
   
@@ -78,11 +105,9 @@ def download_build_install(parsed_arguments):
   if not os.path.exists(library_directory):
     os.makedirs(library_directory)
 
-  with ScopedChangeDirectory(library_directory), \
-      open(os.devnull, 'w') as dev_null:
-    if subprocess.call('apt-get source %s' % parsed_arguments.library,
-        stdout=dev_null, stderr=dev_null, shell=True):
-      raise Exception('Failed to download %s' % parsed_arguments.library)
+  with ScopedChangeDirectory(library_directory):
+    shell_call('apt-get source %s' % parsed_arguments.library,
+        parsed_arguments.verbose)
     # There should be exactly one subdirectory after downloading a package.
     subdirectories = [d for d in os.listdir('.') if os.path.isdir(d)]
     if len(subdirectories) != 1:
@@ -92,15 +117,10 @@ def download_build_install(parsed_arguments):
       # Now we are in the package directory.
       configure_command = './configure %s --prefix=%s' % (
           parsed_arguments.custom_configure_flags, install_prefix)
-      if subprocess.call(configure_command, stdout=dev_null, stderr=dev_null,
-          env=environment, shell=True):
-        raise Exception("Failed to configure %s" % parsed_arguments.library)
-      if subprocess.call('make -j%s' % parsed_arguments.jobs,
-          stdout=dev_null, stderr=dev_null, shell=True):
-        raise Exception("Failed to make %s" % parsed_arguments.library)
-      if subprocess.call('make -j%s install' % parsed_arguments.jobs,
-          stdout=dev_null, stderr=dev_null, shell=True):
-        raise Exception("Failed to install %s" % parsed_arguments.library)
+      shell_call(configure_command, parsed_arguments.verbose, environment)
+      shell_call('make -j%s' % parsed_arguments.jobs, parsed_arguments.verbose)
+      shell_call('make -j%s install' % parsed_arguments.jobs,
+          parsed_arguments.verbose)
   
   # Touch a txt file to indicate library is installed.
   open('%s/%s.txt' % (install_prefix, parsed_arguments.library), 'w').close()
@@ -121,12 +141,17 @@ def main():
       help='Relative path to the directory for temporary build files')
   argument_parser.add_argument('-c', '--custom-configure-flags', default='')
   argument_parser.add_argument('-s', '--sanitizer-type', required=True,
-      choices=SUPPORTED_SANITIZERS.keys())
-  
-  parsed_arguments = argument_parser.parse_args()
-  # Ensure current working directory is this script directory
+      choices=SUPPORTED_SANITIZERS.keys()) 
+  argument_parser.add_argument('-v', '--verbose', action='store_true')
+ 
+  # Ignore all empty arguments because in several cases gyp passes them to the
+  # script, but ArgumentParser treats them as positional arguments instead of
+  # ignoring (and doesn't have such options).
+  parsed_arguments = argument_parser.parse_args(
+      [arg for arg in sys.argv[1:] if len(arg) != 0])
+  # Ensure current working directory is this script directory.
   os.chdir(get_script_absolute_path())
-  # Ensure all build dependencies are installed
+  # Ensure all build dependencies are installed.
   build_dependencies = get_library_build_dependencies(parsed_arguments.library)
   if len(build_dependencies):
     print >> sys.stderr, 'Please, install build-dependencies for %s' % \

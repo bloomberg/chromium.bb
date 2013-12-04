@@ -3,12 +3,20 @@
 # found in the LICENSE file.
 
 {
+  'variables': {
+    'verbose_libraries_build%': 0,
+  },
   'conditions': [
     ['asan==1', {
       'sanitizer_type': 'asan',
     }],
     ['msan==1', {
       'sanitizer_type': 'msan',
+    }],
+    ['verbose_libraries_build==1', {
+      'verbose_libraries_build_flag': '--verbose',
+    }, {
+      'verbose_libraries_build_flag': '',
     }],
   ],
   'targets': [

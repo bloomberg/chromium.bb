@@ -21,6 +21,7 @@
         '--library=<(_target_name)',
         '--intermediate-directory=<(INTERMEDIATE_DIR)',
         '--sanitizer-type=<(_sanitizer_type)',
+        '<(_verbose_libraries_build_flag)',
       ],
     },
   ],
