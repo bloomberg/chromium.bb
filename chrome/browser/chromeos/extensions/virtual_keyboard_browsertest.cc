@@ -129,8 +129,39 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, IsKeyboardLoaded) {
   // Catches the regression in crbug.com/308653.
   ASSERT_TRUE(loaded);
 }
-// TODO(rsadam): Add an end to end test to verify that characters typed in the
-// keyboard actually appear in the other window.
+
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, EndToEndTest) {
+  // Get the virtual keyboard's render view host.
+  content::RenderViewHost* keyboard_rvh = GetKeyboardRenderViewHost();
+  ASSERT_TRUE(keyboard_rvh);
+
+  // Get the test page's render view host.
+  content::RenderViewHost* browser_rvh = browser()->tab_strip_model()->
+      GetActiveWebContents()->GetRenderViewHost();
+  ASSERT_TRUE(browser_rvh);
+
+  // Set up the test page.
+  GURL url = ui_test_utils::GetTestUrl(
+      base::FilePath(),
+      base::FilePath(FILE_PATH_LITERAL(
+          "chromeos/virtual_keyboard/end_to_end_test.html")));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Press 'a' on keyboard.
+  base::FilePath path = ui_test_utils::GetTestFilePath(
+      kVirtualKeyboardTestDir,
+      base::FilePath(FILE_PATH_LITERAL("end_to_end_test.js")));
+  std::string script;
+  ASSERT_TRUE(base::ReadFileToString(path, &script));
+  EXPECT_TRUE(content::ExecuteScript(keyboard_rvh, script));
+  // Verify 'a' appeared on test page.
+  bool success = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser_rvh,
+      "success ? verifyInput('a') : waitForInput('a');",
+      &success));
+  ASSERT_TRUE(success);
+}
 
 // TODO(kevers|rsadam|bshe):  Add UI tests for remaining virtual keyboard
 // functionality.
