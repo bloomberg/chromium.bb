@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_POLICY_FORWARDING_POLICY_PROVIDER_H_
-#define CHROME_BROWSER_POLICY_FORWARDING_POLICY_PROVIDER_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_FORWARDING_POLICY_PROVIDER_H_
+#define COMPONENTS_POLICY_CORE_COMMON_FORWARDING_POLICY_PROVIDER_H_
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
 #include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/policy_export.h"
 
 namespace policy {
 
@@ -17,8 +18,9 @@ namespace policy {
 // sure the delegate provider has refreshed its policies with an updated view
 // of the complete schema. It is expected that the delegate's SchemaRegistry
 // is a CombinedSchemaRegistry tracking the forwarding provider's registry.
-class ForwardingPolicyProvider : public ConfigurationPolicyProvider,
-                                 public ConfigurationPolicyProvider::Observer {
+class POLICY_EXPORT ForwardingPolicyProvider
+    : public ConfigurationPolicyProvider,
+      public ConfigurationPolicyProvider::Observer {
  public:
   // The |delegate| must outlive this provider.
   explicit ForwardingPolicyProvider(ConfigurationPolicyProvider* delegate);
@@ -65,4 +67,4 @@ class ForwardingPolicyProvider : public ConfigurationPolicyProvider,
 
 }  // namespace policy
 
-#endif  // CHROME_BROWSER_POLICY_FORWARDING_POLICY_PROVIDER_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_FORWARDING_POLICY_PROVIDER_H_

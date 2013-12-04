@@ -1118,7 +1118,6 @@
         'browser/policy/configuration_policy_pref_store_unittest.cc',
         'browser/policy/configuration_policy_pref_store_unittest.h',
         'browser/policy/file_selection_dialogs_policy_handler_unittest.cc',
-        'browser/policy/forwarding_policy_provider_unittest.cc',
         'browser/policy/generate_policy_source_unittest.cc',
         'browser/policy/javascript_policy_handler_unittest.cc',
         'browser/policy/mock_policy_service.cc',

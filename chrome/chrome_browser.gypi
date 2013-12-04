@@ -1533,8 +1533,6 @@
         'browser/policy/configuration_policy_pref_store.h',
         'browser/policy/file_selection_dialogs_policy_handler.cc',
         'browser/policy/file_selection_dialogs_policy_handler.h',
-        'browser/policy/forwarding_policy_provider.cc',
-        'browser/policy/forwarding_policy_provider.h',
         'browser/policy/javascript_policy_handler.cc',
         'browser/policy/javascript_policy_handler.h',
         'browser/policy/policy_error_map.cc',

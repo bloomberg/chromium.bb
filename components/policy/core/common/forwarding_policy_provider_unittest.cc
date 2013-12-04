@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/forwarding_policy_provider.h"
+#include "components/policy/core/common/forwarding_policy_provider.h"
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"

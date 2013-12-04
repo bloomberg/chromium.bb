@@ -30,6 +30,8 @@
             'policy/core/common/external_data_fetcher.cc',
             'policy/core/common/external_data_fetcher.h',
             'policy/core/common/external_data_manager.h',
+            'policy/core/common/forwarding_policy_provider.cc',
+            'policy/core/common/forwarding_policy_provider.h',
             'policy/core/common/policy_bundle.cc',
             'policy/core/common/policy_bundle.h',
             'policy/core/common/policy_details.h',
