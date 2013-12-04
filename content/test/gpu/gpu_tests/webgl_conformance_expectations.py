@@ -191,6 +191,14 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
     self.Fail('conformance/canvas/drawingbuffer-test.html',
         ['mac', 'amd'], bug=314997)
 
+    # Linux/NVIDIA failures
+    self.Fail('conformance/glsl/misc/empty-main-vert.html',
+        ['linux', 'nvidia'], bug=325884)
+    self.Fail('conformance/glsl/misc/gl-position-unset-vert.html',
+        ['linux', 'nvidia'], bug=325884)
+    self.Fail('conformance/uniforms/uniform-location.html',
+        ['linux', 'nvidia'], bug=325884)
+
     # Android failures
     self.Fail('conformance/textures/texture-npot-video.html',
         ['android'], bug=306485)
