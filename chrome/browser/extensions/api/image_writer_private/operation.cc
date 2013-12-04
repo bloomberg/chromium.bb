@@ -31,7 +31,9 @@ Operation::Operation(base::WeakPtr<OperationManager> manager,
                      const std::string& storage_unit_id)
     : manager_(manager),
       extension_id_(extension_id),
-      storage_unit_id_(storage_unit_id) {
+      storage_unit_id_(storage_unit_id),
+      stage_(image_writer_api::STAGE_UNKNOWN),
+      progress_(0) {
 }
 
 Operation::~Operation() {
@@ -49,6 +51,14 @@ void Operation::Cancel() {
 
 void Operation::Abort() {
   Error(error::kAborted);
+}
+
+int Operation::GetProgress() {
+  return progress_;
+}
+
+image_writer_api::Stage Operation::GetStage() {
+  return stage_;
 }
 
 void Operation::Error(const std::string& error_message) {

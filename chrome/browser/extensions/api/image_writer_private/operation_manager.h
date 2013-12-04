@@ -53,6 +53,7 @@ class OperationManager
 
   // Starts a WriteFromFile operation.
   void StartWriteFromFile(const ExtensionId& extension_id,
+                          const base::FilePath& path,
                           const std::string& storage_unit_id,
                           const Operation::StartWriteCallback& callback);
 
@@ -61,18 +62,17 @@ class OperationManager
                    const Operation::CancelWriteCallback& callback);
 
   // Callback for progress events.
-  void OnProgress(const ExtensionId& extension_id,
-                  image_writer_api::Stage stage,
-                  int progress);
+  virtual void OnProgress(const ExtensionId& extension_id,
+                          image_writer_api::Stage stage,
+                          int progress);
   // Callback for completion events.
-  void OnComplete(const ExtensionId& extension_id);
+  virtual void OnComplete(const ExtensionId& extension_id);
 
   // Callback for error events.
-  // TODO (haven): Add error codes.
-  void OnError(const ExtensionId& extension_id,
-               image_writer_api::Stage stage,
-               int progress,
-               const std::string& error_message);
+  virtual void OnError(const ExtensionId& extension_id,
+                       image_writer_api::Stage stage,
+                       int progress,
+                       const std::string& error_message);
 
   // ProfileKeyedAPI
   static ProfileKeyedAPIFactory<OperationManager>*

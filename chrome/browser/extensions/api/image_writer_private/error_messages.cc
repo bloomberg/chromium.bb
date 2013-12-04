@@ -18,11 +18,14 @@ const char kDownloadHash[] = "Downloaded image had incorrect MD5 sum.";
 const char kDownloadInterrupted[] = "Download interrupted.";
 const char kDownloadMD5[] = "Failed to calculate MD5 sum for download.";
 const char kEmptyUnzip[] = "Unzipped image contained no files.";
-const char kFileOperationsNotImplemented[] = "Write-from file not implemented.";
 const char kImageBurnerError[] = "Error contacting Image Burner process.";
 const char kImageMD5[] = "Failed to calculate MD5 sum for unzipped image.";
 const char kImageNotFound[] = "Unpacked image not found.";
 const char kImageSize[] = "Could not determine image size.";
+const char kInsufficientFilesystemPermissions[] = "Insufficient permissions.";
+const char kInvalidDevice[] = "Invalid device provided.";
+const char kInvalidFileEntry[] = "Invalid file entry.";
+const char kInvalidImage[] = "Invalid image file provided.";
 const char kInvalidUrl[] = "Invalid URL provided.";
 const char kMultiFileZip[] = "More than one file in zip."
                              " Unsure how to proceed.";

@@ -1000,6 +1000,8 @@ void Dispatcher::PopulateSourceMap() {
                              IDR_GCM_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("i18n", IDR_I18N_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("identity", IDR_IDENTITY_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("imageWriterPrivate",
+                             IDR_IMAGE_WRITER_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("input.ime", IDR_INPUT_IME_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("mediaGalleries",
                              IDR_MEDIA_GALLERIES_CUSTOM_BINDINGS_JS);

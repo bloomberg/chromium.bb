@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/render_process_host.h"
 #include "net/base/mime_util.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/common/fileapi/file_system_types.h"
@@ -20,6 +21,9 @@
 namespace extensions {
 
 namespace app_file_handler_util {
+
+const char kInvalidParameters[] = "Invalid parameters";
+const char kSecurityError[] = "Security error";
 
 namespace {
 
@@ -337,6 +341,52 @@ GrantedFileEntry::GrantedFileEntry() {}
 
 bool HasFileSystemWritePermission(const Extension* extension) {
   return extension->HasAPIPermission(APIPermission::kFileSystemWrite);
+}
+
+bool ValidateFileEntryAndGetPath(
+    const std::string& filesystem_name,
+    const std::string& filesystem_path,
+    const content::RenderViewHost* render_view_host,
+    base::FilePath* file_path,
+    std::string* error) {
+  std::string filesystem_id;
+  if (!fileapi::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id)) {
+    *error = kInvalidParameters;
+    return false;
+  }
+
+  // Only return the display path if the process has read access to the
+  // filesystem.
+  content::ChildProcessSecurityPolicy* policy =
+      content::ChildProcessSecurityPolicy::GetInstance();
+  if (!policy->CanReadFileSystem(render_view_host->GetProcess()->GetID(),
+                                 filesystem_id)) {
+    *error = kSecurityError;
+    return false;
+  }
+
+  fileapi::IsolatedContext* context = fileapi::IsolatedContext::GetInstance();
+  base::FilePath relative_path =
+      base::FilePath::FromUTF8Unsafe(filesystem_path);
+  base::FilePath virtual_path = context->CreateVirtualRootPath(filesystem_id)
+      .Append(relative_path);
+  fileapi::FileSystemType type;
+  if (!context->CrackVirtualPath(
+          virtual_path, &filesystem_id, &type, file_path)) {
+    *error = kInvalidParameters;
+    return false;
+  }
+
+  // The file system API is only intended to operate on file entries that
+  // correspond to a native file, selected by the user so only allow file
+  // systems returned by the file system API or from a drag and drop operation.
+  if (type != fileapi::kFileSystemTypeNativeForPlatformApp &&
+      type != fileapi::kFileSystemTypeDragged) {
+    *error = kInvalidParameters;
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace app_file_handler_util

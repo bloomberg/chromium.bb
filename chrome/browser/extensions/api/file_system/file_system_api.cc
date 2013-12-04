@@ -54,8 +54,6 @@ using apps::SavedFilesService;
 using apps::ShellWindow;
 using fileapi::IsolatedContext;
 
-const char kInvalidParameters[] = "Invalid parameters";
-const char kSecurityError[] = "Security error";
 const char kInvalidCallingPage[] = "Invalid calling page. This function can't "
     "be called from a background page.";
 const char kUserCancelled[] = "User cancelled";
@@ -148,52 +146,6 @@ base::FilePath* g_path_to_be_picked_for_test;
 std::vector<base::FilePath>* g_paths_to_be_picked_for_test;
 bool g_skip_directory_confirmation_for_test = false;
 bool g_allow_directory_access_for_test = false;
-
-bool ValidateFileEntryAndGetPath(
-    const std::string& filesystem_name,
-    const std::string& filesystem_path,
-    const content::RenderViewHost* render_view_host,
-    base::FilePath* file_path,
-    std::string* error) {
-  std::string filesystem_id;
-  if (!fileapi::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id)) {
-    *error = kInvalidParameters;
-    return false;
-  }
-
-  // Only return the display path if the process has read access to the
-  // filesystem.
-  content::ChildProcessSecurityPolicy* policy =
-      content::ChildProcessSecurityPolicy::GetInstance();
-  if (!policy->CanReadFileSystem(render_view_host->GetProcess()->GetID(),
-                                 filesystem_id)) {
-    *error = kSecurityError;
-    return false;
-  }
-
-  IsolatedContext* context = IsolatedContext::GetInstance();
-  base::FilePath relative_path =
-      base::FilePath::FromUTF8Unsafe(filesystem_path);
-  base::FilePath virtual_path = context->CreateVirtualRootPath(filesystem_id)
-      .Append(relative_path);
-  fileapi::FileSystemType type;
-  if (!context->CrackVirtualPath(
-          virtual_path, &filesystem_id, &type, file_path)) {
-    *error = kInvalidParameters;
-    return false;
-  }
-
-  // The file system API is only intended to operate on file entries that
-  // correspond to a native file, selected by the user so only allow file
-  // systems returned by the file system API or from a drag and drop operation.
-  if (type != fileapi::kFileSystemTypeNativeForPlatformApp &&
-      type != fileapi::kFileSystemTypeDragged) {
-    *error = kInvalidParameters;
-    return false;
-  }
-
-  return true;
-}
 
 // Expand the mime-types and extensions provided in an AcceptOption, returning
 // them within the passed extension vector. Returns false if no valid types
@@ -308,8 +260,11 @@ bool FileSystemGetDisplayPathFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &filesystem_path));
 
   base::FilePath file_path;
-  if (!ValidateFileEntryAndGetPath(filesystem_name, filesystem_path,
-                                   render_view_host_, &file_path, &error_))
+  if (!app_file_handler_util::ValidateFileEntryAndGetPath(filesystem_name,
+                                                          filesystem_path,
+                                                          render_view_host_,
+                                                          &file_path,
+                                                          &error_))
     return false;
 
   file_path = PrettifyPath(file_path);
@@ -403,8 +358,11 @@ bool FileSystemGetWritableEntryFunction::RunImpl() {
     return false;
   }
 
-  if (!ValidateFileEntryAndGetPath(filesystem_name, filesystem_path,
-                                   render_view_host_, &path_, &error_))
+  if (!app_file_handler_util::ValidateFileEntryAndGetPath(filesystem_name,
+                                                          filesystem_path,
+                                                          render_view_host_,
+                                                          &path_,
+                                                          &error_))
     return false;
 
   content::BrowserThread::PostTaskAndReply(
@@ -446,7 +404,7 @@ bool FileSystemIsWritableEntryFunction::RunImpl() {
 
   std::string filesystem_id;
   if (!fileapi::CrackIsolatedFileSystemName(filesystem_name, &filesystem_id)) {
-    error_ = kInvalidParameters;
+    error_ = app_file_handler_util::kInvalidParameters;
     return false;
   }
 
@@ -939,11 +897,11 @@ bool FileSystemRetainEntryFunction::RunImpl() {
     std::string filesystem_path;
     EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &filesystem_name));
     EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &filesystem_path));
-    if (!ValidateFileEntryAndGetPath(filesystem_name,
-                                     filesystem_path,
-                                     render_view_host_,
-                                     &path_,
-                                     &error_)) {
+    if (!app_file_handler_util::ValidateFileEntryAndGetPath(filesystem_name,
+                                                            filesystem_path,
+                                                            render_view_host_,
+                                                            &path_,
+                                                            &error_)) {
       return false;
     }
 

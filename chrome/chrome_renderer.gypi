@@ -203,6 +203,7 @@
         'renderer/resources/extensions/gcm_custom_bindings.js',
         'renderer/resources/extensions/greasemonkey_api.js',
         'renderer/resources/extensions/identity_custom_bindings.js',
+        'renderer/resources/extensions/image_writer_private_custom_bindings.js',
         'renderer/resources/extensions/input.ime_custom_bindings.js',
         'renderer/resources/extensions/json_schema.js',
         'renderer/resources/extensions/last_error.js',

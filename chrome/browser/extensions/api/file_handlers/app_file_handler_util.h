@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "chrome/common/extensions/api/file_handlers/file_handlers_parser.h"
+#include "content/public/browser/render_view_host.h"
 #include "extensions/common/extension.h"
 
 class Profile;
@@ -20,6 +21,9 @@ class ExtensionPrefs;
 
 // TODO(benwells): move this to platform_apps namespace.
 namespace app_file_handler_util {
+
+extern const char kInvalidParameters[];
+extern const char kSecurityError[];
 
 // A set of pairs of path and its corresponding MIME type.
 typedef std::set<std::pair<base::FilePath, std::string> > PathAndMimeTypeSet;
@@ -74,6 +78,15 @@ void CheckWritableFiles(
 
 // Returns whether |extension| has the fileSystem.write permission.
 bool HasFileSystemWritePermission(const Extension* extension);
+
+// Validates a file entry and populates |file_path| with the absolute path if it
+// is valid.
+bool ValidateFileEntryAndGetPath(
+    const std::string& filesystem_name,
+    const std::string& filesystem_path,
+    const content::RenderViewHost* render_view_host,
+    base::FilePath* file_path,
+    std::string* error);
 
 }  // namespace app_file_handler_util
 

@@ -58,6 +58,11 @@ class Operation
 
   // Aborts the operation, cancelling it and generating an error.
   void Abort();
+
+  // Informational getters.
+  int GetProgress();
+  image_writer_api::Stage GetStage();
+
  protected:
   virtual ~Operation();
 
@@ -69,7 +74,8 @@ class Operation
   // Set |progress_| and send an event.  Progress should be in the interval
   // [0,100]
   void SetProgress(int progress);
-  // Change to a new |stage_| and set |progress_| to zero.
+  // Change to a new |stage_| and set |progress_| to zero.  Triggers a progress
+  // event.
   void SetStage(image_writer_api::Stage stage);
 
   // Can be queried to safely determine if the operation has been cancelled.
@@ -103,6 +109,7 @@ class Operation
 
   base::FilePath image_path_;
   const std::string storage_unit_id_;
+
  private:
   friend class base::RefCountedThreadSafe<Operation>;
 

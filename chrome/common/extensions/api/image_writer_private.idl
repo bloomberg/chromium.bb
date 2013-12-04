@@ -30,7 +30,8 @@
     verifyDownload,
     unzip,
     write,
-    verifyWrite
+    verifyWrite,
+    unknown
   };
 
   // Options for writing an image.
@@ -84,12 +85,11 @@
     // completes, either successfully or on error.
     //
     // |storageUnitId|: The identifier for the storage unit
-    // |options|: If present the imageUrl of the options will be used to
-    // download the image.  Otherwise the user will be prompted for a local
-    // image to burn.
+    // |fileEntry|: The FileEntry object of the image to be burned.
     // |callback|: The callback which signifies that the write operation has
     // been started by the system and provides a unique ID for this operation.
     static void writeFromFile(DOMString storageUnitId,
+                              [instanceOf=FileEntry] object fileEntry,
                               WriteImageCallback callback);
 
     // Cancel a current write operation.

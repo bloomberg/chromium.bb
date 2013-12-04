@@ -21,7 +21,6 @@ class WriteFromFileOperation : public Operation {
 
  private:
   virtual ~WriteFromFileOperation();
-  const base::FilePath path_;
 };
 
 }  // namespace image_writer

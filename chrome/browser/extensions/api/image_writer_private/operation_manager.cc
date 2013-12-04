@@ -67,8 +67,7 @@ void OperationManager::StartWriteFromUrl(
   OperationMap::iterator existing_operation = operations_.find(extension_id);
 
   if (existing_operation != operations_.end()) {
-    return callback.Run(false,
-                        error::kOperationAlreadyInProgress);
+    return callback.Run(false, error::kOperationAlreadyInProgress);
   }
 
   scoped_refptr<Operation> operation(
@@ -92,10 +91,29 @@ void OperationManager::StartWriteFromUrl(
 
 void OperationManager::StartWriteFromFile(
     const ExtensionId& extension_id,
+    const base::FilePath& path,
     const std::string& storage_unit_id,
     const Operation::StartWriteCallback& callback) {
-  // Currently unimplemented.
-  callback.Run(false, error::kFileOperationsNotImplemented);
+  OperationMap::iterator existing_operation = operations_.find(extension_id);
+
+  if (existing_operation != operations_.end()) {
+    return callback.Run(false, error::kOperationAlreadyInProgress);
+  }
+
+  scoped_refptr<Operation> operation(
+      new WriteFromFileOperation(weak_factory_.GetWeakPtr(),
+                                 extension_id,
+                                 path,
+                                 storage_unit_id));
+
+  operations_[extension_id] = operation;
+
+  BrowserThread::PostTask(BrowserThread::FILE,
+                          FROM_HERE,
+                          base::Bind(&Operation::Start,
+                                     operation.get()));
+
+  callback.Run(true, "");
 }
 
 void OperationManager::CancelWrite(

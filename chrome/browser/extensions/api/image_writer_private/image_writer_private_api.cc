@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/image_writer_private_api.h"
 #include "chrome/browser/extensions/api/image_writer_private/operation_manager.h"
@@ -77,13 +78,28 @@ ImageWriterPrivateWriteFromFileFunction::
 }
 
 bool ImageWriterPrivateWriteFromFileFunction::RunImpl() {
-  scoped_ptr<image_writer_api::WriteFromFile::Params> params(
-      image_writer_api::WriteFromFile::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
+  std::string filesystem_name;
+  std::string filesystem_path;
+  std::string storage_unit_id;
+
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &storage_unit_id));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(1, &filesystem_name));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(2, &filesystem_path));
+
+  base::FilePath path;
+
+  if (!extensions::app_file_handler_util::ValidateFileEntryAndGetPath(
+      filesystem_name,
+      filesystem_path,
+      render_view_host_,
+      &path,
+      &error_))
+    return false;
 
   image_writer::OperationManager::Get(GetProfile())->StartWriteFromFile(
       extension_id(),
-      params->storage_unit_id,
+      path,
+      storage_unit_id,
       base::Bind(&ImageWriterPrivateWriteFromFileFunction::OnWriteStarted,
                  this));
   return true;
