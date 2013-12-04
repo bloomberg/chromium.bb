@@ -639,8 +639,7 @@ void XMLHttpRequest::send(Document* document, ExceptionState& exceptionState)
         return;
 
     if (areMethodAndURLValidForSend()) {
-        String contentType = getRequestHeader("Content-Type");
-        if (contentType.isEmpty()) {
+        if (getRequestHeader("Content-Type").isEmpty()) {
             // FIXME: this should include the charset used for encoding.
             setRequestHeaderInternal("Content-Type", "application/xml");
         }
@@ -690,8 +689,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exceptionState)
         return;
 
     if (areMethodAndURLValidForSend()) {
-        const String& contentType = getRequestHeader("Content-Type");
-        if (contentType.isEmpty()) {
+        if (getRequestHeader("Content-Type").isEmpty()) {
             const String& blobType = body->type();
             if (!blobType.isEmpty() && isValidContentType(blobType))
                 setRequestHeaderInternal("Content-Type", AtomicString(blobType));
@@ -1111,7 +1109,7 @@ void XMLHttpRequest::setRequestHeaderInternal(const AtomicString& name, const At
         result.iterator->value = result.iterator->value + ", " + value;
 }
 
-AtomicString XMLHttpRequest::getRequestHeader(const AtomicString& name) const
+const AtomicString& XMLHttpRequest::getRequestHeader(const AtomicString& name) const
 {
     return m_requestHeaders.get(name);
 }
@@ -1150,7 +1148,7 @@ String XMLHttpRequest::getAllResponseHeaders(ExceptionState& exceptionState) con
     return stringBuilder.toString();
 }
 
-AtomicString XMLHttpRequest::getResponseHeader(const AtomicString& name, ExceptionState& exceptionState) const
+const AtomicString& XMLHttpRequest::getResponseHeader(const AtomicString& name, ExceptionState& exceptionState) const
 {
     if (m_state < HEADERS_RECEIVED || m_error)
         return nullAtom;

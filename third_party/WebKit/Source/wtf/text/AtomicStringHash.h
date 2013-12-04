@@ -50,6 +50,12 @@ namespace WTF {
 
     // AtomicStringHash is the default hash for AtomicString
     template<> struct HashTraits<WTF::AtomicString> : GenericHashTraits<WTF::AtomicString> {
+        // Unlike other types, we can return a const reference for AtomicString's empty value (nullAtom).
+        typedef const WTF::AtomicString& PeekType;
+
+        static const WTF::AtomicString& emptyValue() { return nullAtom; }
+        static PeekType peek(const WTF::AtomicString& value) { return value; }
+
         static const bool emptyValueIsZero = true;
         static void constructDeletedValue(WTF::AtomicString& slot) { new (NotNull, &slot) WTF::AtomicString(HashTableDeletedValue); }
         static bool isDeletedValue(const WTF::AtomicString& slot) { return slot.isHashTableDeletedValue(); }

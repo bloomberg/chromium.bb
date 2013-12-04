@@ -3752,7 +3752,7 @@ void Document::setCookie(const String& value, ExceptionState& exceptionState)
     setCookies(this, cookieURL, value);
 }
 
-AtomicString Document::referrer() const
+const AtomicString& Document::referrer() const
 {
     if (loader())
         return loader()->request().httpReferrer();
@@ -3805,12 +3805,12 @@ String Document::lastModified() const
     DateComponents date;
     bool foundDate = false;
     if (m_frame) {
-        String httpLastModified;
-        if (DocumentLoader* documentLoader = loader())
-            httpLastModified = documentLoader->response().httpHeaderField("Last-Modified");
-        if (!httpLastModified.isEmpty()) {
-            date.setMillisecondsSinceEpochForDateTime(parseDate(httpLastModified));
-            foundDate = true;
+        if (DocumentLoader* documentLoader = loader()) {
+            const AtomicString& httpLastModified = documentLoader->response().httpHeaderField("Last-Modified");
+            if (!httpLastModified.isEmpty()) {
+                date.setMillisecondsSinceEpochForDateTime(parseDate(httpLastModified));
+                foundDate = true;
+            }
         }
     }
     // FIXME: If this document came from the file system, the HTML5

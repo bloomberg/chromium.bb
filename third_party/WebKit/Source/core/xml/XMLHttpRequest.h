@@ -113,7 +113,7 @@ public:
     void setRequestHeader(const AtomicString& name, const AtomicString& value, ExceptionState&);
     void overrideMimeType(const AtomicString& override);
     String getAllResponseHeaders(ExceptionState&) const;
-    AtomicString getResponseHeader(const AtomicString& name, ExceptionState&) const;
+    const AtomicString& getResponseHeader(const AtomicString& name, ExceptionState&) const;
     ScriptString responseText(ExceptionState&);
     ScriptString responseJSONSource();
     Document* responseXML(ExceptionState&);
@@ -167,7 +167,7 @@ private:
     bool initSend(ExceptionState&);
     void sendBytesData(const void*, size_t, ExceptionState&);
 
-    AtomicString getRequestHeader(const AtomicString& name) const;
+    const AtomicString& getRequestHeader(const AtomicString& name) const;
     void setRequestHeaderInternal(const AtomicString& name, const AtomicString& value);
 
     void trackProgress(int dataLength);

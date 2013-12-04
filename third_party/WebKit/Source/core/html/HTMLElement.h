@@ -126,7 +126,7 @@ private:
 
     TranslateAttributeMode translateAttributeMode() const;
 
-    AtomicString eventNameForAttributeName(const QualifiedName& attrName) const;
+    const AtomicString& eventNameForAttributeName(const QualifiedName& attrName) const;
 
     void handleKeypressEvent(KeyboardEvent*);
     bool supportsSpatialNavigationFocus() const;

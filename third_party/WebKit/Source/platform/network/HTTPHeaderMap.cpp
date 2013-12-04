@@ -66,7 +66,7 @@ void HTTPHeaderMap::adopt(PassOwnPtr<CrossThreadHTTPHeaderMapData> data)
     }
 }
 
-AtomicString HTTPHeaderMap::get(const AtomicString& name) const
+const AtomicString& HTTPHeaderMap::get(const AtomicString& name) const
 {
     return HashMap<AtomicString, AtomicString, CaseFoldingHash>::get(name);
 }

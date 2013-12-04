@@ -51,7 +51,7 @@ public:
 
     void adopt(PassOwnPtr<CrossThreadHTTPHeaderMapData>);
 
-    AtomicString get(const AtomicString& name) const;
+    const AtomicString& get(const AtomicString& name) const;
 
     AddResult add(const AtomicString& name, const AtomicString& value);
 

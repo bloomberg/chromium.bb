@@ -742,8 +742,8 @@ ResourcePtr<Resource> ResourceFetcher::revalidateResource(const FetchRequest& re
     ResourceRequest revalidatingRequest(resource->resourceRequest());
     addAdditionalRequestHeaders(revalidatingRequest, resource->type());
 
-    const String& lastModified = resource->response().httpHeaderField("Last-Modified");
-    const String& eTag = resource->response().httpHeaderField("ETag");
+    const AtomicString& lastModified = resource->response().httpHeaderField("Last-Modified");
+    const AtomicString& eTag = resource->response().httpHeaderField("ETag");
     if (!lastModified.isEmpty() || !eTag.isEmpty()) {
         ASSERT(context().cachePolicy(resource->type()) != CachePolicyReload);
         if (context().cachePolicy(resource->type()) == CachePolicyRevalidate)

@@ -267,7 +267,7 @@ void ResourceResponse::setHTTPStatusText(const AtomicString& statusText)
     m_httpStatusText = statusText;
 }
 
-AtomicString ResourceResponse::httpHeaderField(const AtomicString& name) const
+const AtomicString& ResourceResponse::httpHeaderField(const AtomicString& name) const
 {
     return m_httpHeaderFields.get(name);
 }
@@ -340,7 +340,7 @@ void ResourceResponse::parseCacheControlDirectives() const
     DEFINE_STATIC_LOCAL(const AtomicString, mustRevalidateDirective, ("must-revalidate", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, maxAgeDirective, ("max-age", AtomicString::ConstructFromLiteral));
 
-    AtomicString cacheControlValue = m_httpHeaderFields.get(cacheControlString);
+    const AtomicString& cacheControlValue = m_httpHeaderFields.get(cacheControlString);
     if (!cacheControlValue.isEmpty()) {
         Vector<pair<String, String> > directives;
         parseCacheHeader(cacheControlValue, directives);
@@ -373,7 +373,7 @@ void ResourceResponse::parseCacheControlDirectives() const
         // This is deprecated and equivalent to Cache-control: no-cache
         // Don't bother tokenizing the value, it is not important
         DEFINE_STATIC_LOCAL(const AtomicString, pragmaHeader, ("pragma", AtomicString::ConstructFromLiteral));
-        String pragmaValue = m_httpHeaderFields.get(pragmaHeader);
+        const AtomicString& pragmaValue = m_httpHeaderFields.get(pragmaHeader);
 
         m_cacheControlContainsNoCache = pragmaValue.lower().contains(noCacheDirective);
     }
@@ -416,7 +416,7 @@ double ResourceResponse::cacheControlMaxAge() const
 
 static double parseDateValueInHeader(const HTTPHeaderMap& headers, const AtomicString& headerName)
 {
-    String headerValue = headers.get(headerName);
+    const AtomicString& headerValue = headers.get(headerName);
     if (headerValue.isEmpty())
         return std::numeric_limits<double>::quiet_NaN();
     // This handles all date formats required by RFC2616:
@@ -443,7 +443,7 @@ double ResourceResponse::age() const
 {
     if (!m_haveParsedAgeHeader) {
         DEFINE_STATIC_LOCAL(const AtomicString, headerName, ("age", AtomicString::ConstructFromLiteral));
-        String headerValue = m_httpHeaderFields.get(headerName);
+        const AtomicString& headerValue = m_httpHeaderFields.get(headerName);
         bool ok;
         m_age = headerValue.toDouble(&ok);
         if (!ok)

@@ -285,10 +285,7 @@ const AtomicString& StyleSheetContents::determineNamespace(const AtomicString& p
         return nullAtom; // No namespace. If an element/attribute has a namespace, we won't match it.
     if (prefix == starAtom)
         return starAtom; // We'll match any namespace.
-    PrefixNamespaceURIMap::const_iterator it = m_namespaces.find(prefix);
-    if (it == m_namespaces.end())
-        return nullAtom;
-    return it->value;
+    return m_namespaces.get(prefix);
 }
 
 void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cachedStyleSheet, const SecurityOrigin* securityOrigin)

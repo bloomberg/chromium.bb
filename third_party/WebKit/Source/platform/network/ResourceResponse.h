@@ -85,7 +85,7 @@ public:
     const AtomicString& httpStatusText() const;
     void setHTTPStatusText(const AtomicString&);
 
-    AtomicString httpHeaderField(const AtomicString& name) const;
+    const AtomicString& httpHeaderField(const AtomicString& name) const;
     const AtomicString& httpHeaderField(const char* name) const;
     void setHTTPHeaderField(const AtomicString& name, const AtomicString& value);
     void addHTTPHeaderField(const AtomicString& name, const AtomicString& value);

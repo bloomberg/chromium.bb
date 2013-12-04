@@ -204,10 +204,10 @@ void HTMLElement::collectStyleForPresentationAttribute(const QualifiedName& name
         Element::collectStyleForPresentationAttribute(name, value, style);
 }
 
-AtomicString HTMLElement::eventNameForAttributeName(const QualifiedName& attrName) const
+const AtomicString& HTMLElement::eventNameForAttributeName(const QualifiedName& attrName) const
 {
     if (!attrName.namespaceURI().isNull())
-        return AtomicString();
+        return nullAtom;
 
     typedef HashMap<AtomicString, AtomicString> StringToStringMap;
     DEFINE_STATIC_LOCAL(StringToStringMap, attributeNameToEventNameMap, ());
@@ -319,7 +319,7 @@ void HTMLElement::parseAttribute(const QualifiedName& name, const AtomicString& 
             setTabIndexExplicitly(max(static_cast<int>(std::numeric_limits<short>::min()), min(tabindex, static_cast<int>(std::numeric_limits<short>::max()))));
         }
     } else {
-        AtomicString eventName = eventNameForAttributeName(name);
+        const AtomicString& eventName = eventNameForAttributeName(name);
         if (!eventName.isNull())
             setAttributeEventListener(eventName, createAttributeEventListener(this, name, value));
     }

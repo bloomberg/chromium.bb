@@ -167,7 +167,7 @@ static bool passesTimingAllowCheck(const ResourceResponse& response, Document* r
     if (resourceOrigin->isSameSchemeHostPort(requestingDocument->securityOrigin()))
         return true;
 
-    const String& timingAllowOriginString = response.httpHeaderField(timingAllowOrigin);
+    const AtomicString& timingAllowOriginString = response.httpHeaderField(timingAllowOrigin);
     if (timingAllowOriginString.isEmpty() || equalIgnoringCase(timingAllowOriginString, "null"))
         return false;
 
@@ -176,7 +176,7 @@ static bool passesTimingAllowCheck(const ResourceResponse& response, Document* r
 
     const String& securityOrigin = requestingDocument->securityOrigin()->toString();
     Vector<String> timingAllowOrigins;
-    timingAllowOriginString.split(" ", timingAllowOrigins);
+    timingAllowOriginString.string().split(" ", timingAllowOrigins);
     for (size_t i = 0; i < timingAllowOrigins.size(); ++i) {
         if (timingAllowOrigins[i] == securityOrigin)
             return true;

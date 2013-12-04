@@ -122,7 +122,7 @@ public:
     void setHTTPMethod(const AtomicString&);
 
     const HTTPHeaderMap& httpHeaderFields() const;
-    AtomicString httpHeaderField(const AtomicString& name) const;
+    const AtomicString& httpHeaderField(const AtomicString& name) const;
     const AtomicString& httpHeaderField(const char* name) const;
     void setHTTPHeaderField(const AtomicString& name, const AtomicString& value);
     void setHTTPHeaderField(const char* name, const AtomicString& value);
@@ -132,23 +132,23 @@ public:
 
     void clearHTTPAuthorization();
 
-    AtomicString httpContentType() const { return httpHeaderField("Content-Type");  }
+    const AtomicString& httpContentType() const { return httpHeaderField("Content-Type");  }
     void setHTTPContentType(const AtomicString& httpContentType) { setHTTPHeaderField("Content-Type", httpContentType); }
     void clearHTTPContentType();
 
-    AtomicString httpReferrer() const { return httpHeaderField("Referer"); }
+    const AtomicString& httpReferrer() const { return httpHeaderField("Referer"); }
     void setHTTPReferrer(const AtomicString& httpReferrer) { setHTTPHeaderField("Referer", httpReferrer); }
     void clearHTTPReferrer();
 
-    AtomicString httpOrigin() const { return httpHeaderField("Origin"); }
+    const AtomicString& httpOrigin() const { return httpHeaderField("Origin"); }
     void setHTTPOrigin(const AtomicString& httpOrigin) { setHTTPHeaderField("Origin", httpOrigin); }
     void clearHTTPOrigin();
 
-    AtomicString httpUserAgent() const { return httpHeaderField("User-Agent"); }
+    const AtomicString& httpUserAgent() const { return httpHeaderField("User-Agent"); }
     void setHTTPUserAgent(const AtomicString& httpUserAgent) { setHTTPHeaderField("User-Agent", httpUserAgent); }
     void clearHTTPUserAgent();
 
-    AtomicString httpAccept() const { return httpHeaderField("Accept"); }
+    const AtomicString& httpAccept() const { return httpHeaderField("Accept"); }
     void setHTTPAccept(const AtomicString& httpAccept) { setHTTPHeaderField("Accept", httpAccept); }
     void clearHTTPAccept();
 

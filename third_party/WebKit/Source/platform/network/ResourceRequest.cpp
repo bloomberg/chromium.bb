@@ -153,7 +153,7 @@ const HTTPHeaderMap& ResourceRequest::httpHeaderFields() const
     return m_httpHeaderFields;
 }
 
-AtomicString ResourceRequest::httpHeaderField(const AtomicString& name) const
+const AtomicString& ResourceRequest::httpHeaderField(const AtomicString& name) const
 {
     return m_httpHeaderFields.get(name);
 }

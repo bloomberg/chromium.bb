@@ -294,7 +294,7 @@ class FormKeyGenerator {
 
 public:
     static PassOwnPtr<FormKeyGenerator> create() { return adoptPtr(new FormKeyGenerator); }
-    AtomicString formKey(const HTMLFormControlElementWithState&);
+    const AtomicString& formKey(const HTMLFormControlElementWithState&);
     void willDeleteForm(HTMLFormElement*);
 
 private:
@@ -342,11 +342,11 @@ static inline String formSignature(const HTMLFormElement& form)
     return builder.toString();
 }
 
-AtomicString FormKeyGenerator::formKey(const HTMLFormControlElementWithState& control)
+const AtomicString& FormKeyGenerator::formKey(const HTMLFormControlElementWithState& control)
 {
     HTMLFormElement* form = ownerFormForState(control);
     if (!form) {
-        DEFINE_STATIC_LOCAL(AtomicString, formKeyForNoOwner, ("No owner", AtomicString::ConstructFromLiteral));
+        DEFINE_STATIC_LOCAL(const AtomicString, formKeyForNoOwner, ("No owner", AtomicString::ConstructFromLiteral));
         return formKeyForNoOwner;
     }
     FormToKeyMap::const_iterator it = m_formToKeyMap.find(form);
@@ -358,13 +358,12 @@ AtomicString FormKeyGenerator::formKey(const HTMLFormControlElementWithState& co
     FormSignatureToNextIndexMap::AddResult result = m_formSignatureToNextIndexMap.add(signature, 0);
     unsigned nextIndex = result.iterator->value++;
 
-    StringBuilder builder;
-    builder.append(signature);
-    builder.appendLiteral(" #");
-    builder.appendNumber(nextIndex);
-    AtomicString formKey = builder.toAtomicString();
-    m_formToKeyMap.add(form, formKey);
-    return formKey;
+    StringBuilder formKeyBuilder;
+    formKeyBuilder.append(signature);
+    formKeyBuilder.appendLiteral(" #");
+    formKeyBuilder.appendNumber(nextIndex);
+    FormToKeyMap::AddResult addFormKeyresult = m_formToKeyMap.add(form, formKeyBuilder.toAtomicString());
+    return addFormKeyresult.iterator->value;
 }
 
 void FormKeyGenerator::willDeleteForm(HTMLFormElement* form)

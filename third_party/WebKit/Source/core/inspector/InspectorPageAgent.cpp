@@ -899,19 +899,19 @@ Frame* InspectorPageAgent::assertFrame(ErrorString* errorString, const String& f
     return frame;
 }
 
-String InspectorPageAgent::resourceSourceMapURL(const String& url)
+const AtomicString& InspectorPageAgent::resourceSourceMapURL(const String& url)
 {
-    DEFINE_STATIC_LOCAL(String, sourceMapHttpHeader, ("SourceMap"));
-    DEFINE_STATIC_LOCAL(String, deprecatedSourceMapHttpHeader, ("X-SourceMap"));
+    DEFINE_STATIC_LOCAL(const AtomicString, sourceMapHttpHeader, ("SourceMap", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(const AtomicString, deprecatedSourceMapHttpHeader, ("X-SourceMap", AtomicString::ConstructFromLiteral));
     if (url.isEmpty())
-        return String();
+        return nullAtom;
     Frame* frame = mainFrame();
     if (!frame)
-        return String();
+        return nullAtom;
     Resource* resource = cachedResource(frame, KURL(ParsedURLString, url));
     if (!resource)
-        return String();
-    String deprecatedHeaderSourceMapURL = resource->response().httpHeaderField(deprecatedSourceMapHttpHeader);
+        return nullAtom;
+    const AtomicString& deprecatedHeaderSourceMapURL = resource->response().httpHeaderField(deprecatedSourceMapHttpHeader);
     if (!deprecatedHeaderSourceMapURL.isEmpty()) {
         // FIXME: add deprecated console message here.
         return deprecatedHeaderSourceMapURL;
