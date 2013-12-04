@@ -48,7 +48,7 @@ FileWatcher.prototype.dispose = function() {
  */
 FileWatcher.prototype.onDirectoryChanged_ = function(event) {
   if (this.watchedDirectoryEntry_ &&
-      event.directoryUrl == this.watchedDirectoryEntry_.toURL()) {
+      event.entry.toURL() === this.watchedDirectoryEntry_.toURL()) {
     var e = new Event('watcher-directory-changed');
     this.dispatchEvent(e);
   }

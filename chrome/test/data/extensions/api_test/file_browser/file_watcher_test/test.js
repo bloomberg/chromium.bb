@@ -22,7 +22,7 @@
  */
 function TestEventListener() {
   /**
-   * Maps expectedEvent.directoryUrl ->
+   * Maps expectedEvent.entry.toURL() ->
    *     {expectedEvent.eventType, expectedEvent.changeType}
    *
    * Set of events that are expected to be triggered during the test. Each
@@ -80,13 +80,13 @@ TestEventListener.prototype = {
   /**
    * Adds expectation for an event that should be encountered during the test.
    *
-   * @param {string} directoryUrl The event's directory URL parameter.
+   * @param {Entry} entry The event's entry argument.
    * @param {string} eventType The event't type.
    * @param {string} changeType The change type for the entry specified in
    *     event.changedEntries[0].
    */
-  addExpectedEvent: function(directoryUrl, eventType, changeType) {
-    this.expectedEvents_[directoryUrl] = {
+  addExpectedEvent: function(entry, eventType, changeType) {
+    this.expectedEvents_[entry.toURL()] = {
         eventType: eventType,
         changeType: changeType,
     };
@@ -156,7 +156,7 @@ TestEventListener.prototype = {
 
   /**
    * Verifies a received event.
-   * It checks that there is an expected event for |event.directoryUrl|.
+   * It checks that there is an expected event for |event.entry.toURL()|.
    * If there is, the event is removed from the set of expected events.
    * It verifies that the recived event matches the expected event parameters.
    * If the received event was the last expected event, onSuccess_ is called.
@@ -165,17 +165,18 @@ TestEventListener.prototype = {
    * @private
    */
   verifyReceivedEvent_: function(event) {
-    var expectedEvent = this.expectedEvents_[event.directoryUrl];
+    var entryURL = event.entry.toURL();
+    var expectedEvent = this.expectedEvents_[entryURL];
     if (!expectedEvent) {
-      this.onError('Event with unexpected dir url: ' + event.directoryUrl);
+      this.onError('Event with unexpected dir url: ' + entryURL);
       return;
     }
 
-    delete this.expectedEvents_[event.directoryUrl];
+    delete this.expectedEvents_[entryURL];
 
     if (expectedEvent.eventType != event.eventType) {
-      this.onError('Unexpected event type for directoryUrl: ' +
-                   event.directoryUrl + '.\n' +
+      this.onError('Unexpected event type for directory Url: ' +
+                   entryURL + '.\n' +
                    'Expected "' + expectedEvent.eventType + '"\n' +
                    'Got: "' + event.eventType + '"');
       return;
@@ -340,7 +341,7 @@ initTests(function(testParams, errorMessage) {
     // directory is created.
     function onCreateDir() {
       var testEventListener = new TestEventListener();
-      testEventListener.addExpectedEvent(testParams.entries.subdir.toURL(),
+      testEventListener.addExpectedEvent(testParams.entries.subdir,
                                          'changed', 'added');
       testEventListener.start();
 
@@ -356,7 +357,7 @@ initTests(function(testParams, errorMessage) {
     // directory is created.
     function onCreateFile() {
       var testEventListener = new TestEventListener();
-      testEventListener.addExpectedEvent(testParams.entries.subdir.toURL(),
+      testEventListener.addExpectedEvent(testParams.entries.subdir,
                                          'changed', 'added');
       testEventListener.start();
 
@@ -372,7 +373,7 @@ initTests(function(testParams, errorMessage) {
     // directory is renamed.
     function onFileUpdated() {
       var testEventListener = new TestEventListener();
-      testEventListener.addExpectedEvent(testParams.entries.subdir.toURL(),
+      testEventListener.addExpectedEvent(testParams.entries.subdir,
                                          'changed', 'updated');
 
       testEventListener.start();
@@ -394,7 +395,7 @@ initTests(function(testParams, errorMessage) {
     // directory is deleted.
     function onDeleteFile() {
       var testEventListener = new TestEventListener();
-      testEventListener.addExpectedEvent(testParams.entries.subdir.toURL(),
+      testEventListener.addExpectedEvent(testParams.entries.subdir,
                                          'changed', 'deleted');
       testEventListener.start();
 
@@ -417,10 +418,10 @@ initTests(function(testParams, errorMessage) {
     // there will be no event for the watched file.
     function onDeleteWatchedFile() {
       var testEventListener = new TestEventListener();
-       testEventListener.addExpectedEvent(testParams.entries.dir.toURL(),
+       testEventListener.addExpectedEvent(testParams.entries.dir,
                                           'changed', 'deleted');
       if (!testParams.isOnDrive) {
-        testEventListener.addExpectedEvent(testParams.entries.file.toURL(),
+        testEventListener.addExpectedEvent(testParams.entries.file,
                                            'changed', 'deleted');
       }
       testEventListener.start();
@@ -442,7 +443,7 @@ initTests(function(testParams, errorMessage) {
     // watched directory is deleted.
     function onDeleteDir() {
       var testEventListener = new TestEventListener();
-      testEventListener.addExpectedEvent(testParams.entries.subdir.toURL(),
+      testEventListener.addExpectedEvent(testParams.entries.subdir,
                                          'changed', 'deleted');
       testEventListener.start();
 
@@ -466,10 +467,10 @@ initTests(function(testParams, errorMessage) {
     function onDeleteWatchedDir() {
       var testEventListener = new TestEventListener();
       if (!testParams.isOnDrive) {
-        testEventListener.addExpectedEvent(testParams.entries.subdir.toURL(),
+        testEventListener.addExpectedEvent(testParams.entries.subdir,
                                            'changed', 'deleted');
       }
-      testEventListener.addExpectedEvent(testParams.entries.dir.toURL(),
+      testEventListener.addExpectedEvent(testParams.entries.dir,
                                          'changed', 'deleted');
       testEventListener.start();
 

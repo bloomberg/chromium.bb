@@ -6,6 +6,7 @@
 
 var binding = require('binding').Binding.create('fileBrowserPrivate');
 
+var eventBindings = require('event_bindings');
 var fileBrowserPrivateNatives = requireNative('file_browser_private');
 var GetFileSystem = fileBrowserPrivateNatives.GetFileSystem;
 
@@ -59,6 +60,13 @@ binding.registerCustomHook(function(bindingsAPI) {
       request.callback(response);
     request.callback = null;
   });
+});
+
+eventBindings.registerArgumentMassager(
+    'fileBrowserPrivate.onDirectoryChanged', function(args, dispatch) {
+  // Convert the entry arguments into a real Entry object.
+  args[0].entry = GetExternalFileEntry(args[0].entry);
+  dispatch(args);
 });
 
 exports.binding = binding.generate();

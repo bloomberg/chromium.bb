@@ -287,10 +287,12 @@
             "enum": ["changed", "error"],
             "description": "Specifies type of event that is raised."
           },
-          "directoryUrl": {
-            "type": "string",
-            "description": "URL of watched directory."
-          }
+          "entry": {
+            "type": "object",
+            "additionalProperties": { "type": "any" },
+            "isInstanceOf": "Entry",
+            "description": "An Entry object which represents a changed directory. The conversion into a kind of FileEntry object is done in file_browser_handler_custom_bindings.cc. For filesystem API's Entry interface, see <a href='http://www.w3.org/TR/file-system-api/#the-entry-interface'>The Entry interface</a>."
+           }
         }
       }
     ],

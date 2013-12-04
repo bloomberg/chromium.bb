@@ -593,17 +593,21 @@ void EventRouter::DispatchDirectoryChangeEvent(
 
     GURL target_origin_url(extensions::Extension::GetBaseURLFromExtensionId(
         extension_id));
-    GURL base_url = fileapi::GetFileSystemRootURI(
-        target_origin_url,
-        fileapi::kFileSystemTypeExternal);
-    GURL target_directory_url = GURL(base_url.spec() + virtual_path.value());
     scoped_ptr<ListValue> args(new ListValue());
     DictionaryValue* watch_info = new DictionaryValue();
     args->Append(watch_info);
-    watch_info->SetString("directoryUrl", target_directory_url.spec());
+
+    // This will be replaced with a real Entry in custom bindings.
+    fileapi::FileSystemInfo info =
+        fileapi::GetFileSystemInfoForChromeOS(target_origin_url.GetOrigin());
+    DictionaryValue* entry = new DictionaryValue();
+    entry->SetString("fileSystemName", info.name);
+    entry->SetString("fileSystemRoot", info.root_url.spec());
+    entry->SetString("fileFullPath", "/" + virtual_path.value());
+    entry->SetBoolean("fileIsDirectory", true);
+    watch_info->Set("entry", entry);
     watch_info->SetString("eventType",
                           got_error ? kPathWatchError : kPathChanged);
-
     scoped_ptr<extensions::Event> event(new extensions::Event(
         extensions::event_names::kOnDirectoryChanged, args.Pass()));
     extensions::ExtensionSystem::Get(profile_)->event_router()->

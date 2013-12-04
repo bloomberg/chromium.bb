@@ -641,12 +641,13 @@ DirectoryTree.prototype.onFilterChanged_ = function() {
  */
 DirectoryTree.prototype.onDirectoryContentChanged_ = function(event) {
   if (event.eventType == 'changed') {
-    var path = util.extractFilePath(event.directoryUrl);
-    if (!DirectoryTreeUtil.isEligiblePathForDirectoryTree(path))
+    // TODO: Use Entry instead of urls. This will stop working once migrating
+    // to separate file systems. See: crbug.com/325052.
+    if (!DirectoryTreeUtil.isEligiblePathForDirectoryTree(event.entry.fullPath))
       return;
 
     var myDriveItem = this.items[0];
-    myDriveItem.updateItemByPath(path);
+    myDriveItem.updateItemByPath(event.entry.fullPath);
   }
 };
 

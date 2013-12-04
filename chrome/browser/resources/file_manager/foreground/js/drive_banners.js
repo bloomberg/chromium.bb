@@ -478,8 +478,7 @@ FileListBannerController.prototype.privateOnDirectoryChanged_ = function(
   var currentDirEntry = this.directoryModel_.getCurrentDirEntry();
   var currentVolume = currentDirEntry &&
       this.volumeManager_.getVolumeInfo(currentDirEntry);
-  var eventVolume = this.volumeManager_.getVolumeInfoByURL(
-      event.directoryUrl);
+  var eventVolume = this.volumeManager_.getVolumeInfo(event.entry);
   if (currentVolume === eventVolume) {
     // The file system we are currently on is changed.
     // So, check the free space.
