@@ -31,6 +31,30 @@
 enum TestEnum {"", "EnumValue1", "EnumValue2", "EnumValue3"};
 
 interface TestObjectPython {
+    // Constants
+    const unsigned short CONST_VALUE_0 = 0;
+    const unsigned short CONST_VALUE_1 = 1;
+    const unsigned short CONST_VALUE_2 = 2;
+    const unsigned short CONST_VALUE_4 = 4;
+    const unsigned short CONST_VALUE_8 = 8;
+    const short CONST_VALUE_9 = -1;
+    const DOMString CONST_VALUE_10 = "my constant string";
+    const unsigned short CONST_VALUE_11 = 0xffffffff;
+    const unsigned short CONST_VALUE_12 = 0x01;
+    const unsigned short CONST_VALUE_13 = 0X20;
+    const unsigned short CONST_VALUE_14 = 0x1abc;
+    const unsigned short CONST_VALUE_15 = 010;
+    const unsigned short CONST_VALUE_16 = -010;
+    const unsigned short CONST_VALUE_16 = -0x1A;
+    const unsigned short CONST_VALUE_17 = -0X1a;
+
+    // Extended attributes
+    [DeprecateAs=Constant] const short DEPRECATED_CONSTANT = 1;
+    [RuntimeEnabled=FeatureName] const short FEATURE_ENABLED_CONST = 1;
+    [Reflect=CONST_IMPL] const short CONST_JAVASCRIPT = 1;
+
+
+    // Attributes
     // TestInterfaceEmpty is used as a stub interface type, for testing behavior
     // that should not depend on particular type (beyond "interface or not").
     // read only
@@ -162,6 +186,7 @@ interface TestObjectPython {
     [Reflect, URL] attribute DOMString urlStringAttribute;
     [Reflect=ReflectUrlAttribute, URL] attribute DOMString urlStringAttribute;
     [Unforgeable] attribute long unforgeableLongAttribute;
+
 
     // Methods
     void voidMethod();

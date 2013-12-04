@@ -29,6 +29,8 @@
  */
 
 [
-    DependentLifetime,
-] interface TestDependentLifetimeInterface {
+    DoNotCheckConstants,
+] interface TestInterfaceDoNotCheckConstants {
+    const unsigned short CONST_VALUE_0 = 0;
+    [Reflect=CONST_CPP] const short CONST_JAVASCRIPT = 1;
 };

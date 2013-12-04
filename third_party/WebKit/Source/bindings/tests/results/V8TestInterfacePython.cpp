@@ -32,24 +32,26 @@
 
 #include "config.h"
 #if ENABLE(CONDITION)
-#include "V8TestConditionalInterface.h"
+#include "V8TestInterfacePython.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8GCController.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "platform/TraceEvent.h"
 #include "wtf/UnusedParam.h"
 
 namespace WebCore {
 
-static void initializeScriptWrappableForInterface(TestConditionalInterface* object)
+static void initializeScriptWrappableForInterface(TestInterfacePython* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-        ScriptWrappable::setTypeInfoInObject(object, &V8TestConditionalInterface::wrapperTypeInfo);
+        ScriptWrappable::setTypeInfoInObject(object, &V8TestInterfacePython::wrapperTypeInfo);
     else
         ASSERT_NOT_REACHED();
 }
@@ -60,26 +62,36 @@ static void initializeScriptWrappableForInterface(TestConditionalInterface* obje
 // the local declaration does not pick up the surrounding namespace. Therefore, we provide this function
 // in the global namespace.
 // (More info on the MSVC bug here: http://connect.microsoft.com/VisualStudio/feedback/details/664619/the-namespace-of-local-function-declarations-in-c)
-void webCoreInitializeScriptWrappableForInterface(WebCore::TestConditionalInterface* object)
+void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterfacePython* object)
 {
     WebCore::initializeScriptWrappableForInterface(object);
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestConditionalInterface::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestConditionalInterface::GetTemplate, V8TestConditionalInterface::derefObject, 0, 0, 0, V8TestConditionalInterface::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestInterfacePython::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfacePython::GetTemplate, V8TestInterfacePython::derefObject, V8TestInterfacePython::toActiveDOMObject, 0, V8TestInterfacePython::visitDOMWrapper, V8TestInterfacePython::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
-namespace TestConditionalInterfaceV8Internal {
+namespace TestInterfacePythonV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-} // namespace TestConditionalInterfaceV8Internal
+} // namespace TestInterfacePythonV8Internal
 
-static v8::Handle<v8::FunctionTemplate> ConfigureV8TestConditionalInterfaceTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+void V8TestInterfacePython::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
+{
+    TestInterfacePython* impl = fromInternalPointer(object);
+    if (Node* owner = impl->ownerNode()) {
+        setObjectGroup(V8GCController::opaqueRootForGC(owner, isolate), wrapper, isolate);
+        return;
+    }
+    setObjectGroup(object, wrapper, isolate);
+}
+
+static v8::Handle<v8::FunctionTemplate> ConfigureV8TestInterfacePythonTemplate(v8::Handle<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     functionTemplate->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestConditionalInterface", v8::Local<v8::FunctionTemplate>(), V8TestConditionalInterface::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::installDOMClassTemplate(functionTemplate, "TestInterfacePython", v8::Local<v8::FunctionTemplate>(), V8TestInterfacePython::internalFieldCount,
         0, 0,
         0, 0,
         0, 0,
@@ -89,13 +101,14 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestConditionalInterfaceTempl
     v8::Local<v8::ObjectTemplate> prototypeTemplate = functionTemplate->PrototypeTemplate();
     UNUSED_PARAM(instanceTemplate);
     UNUSED_PARAM(prototypeTemplate);
+    functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler(V8TestInterfacePython::legacyCallCustom);
 
     // Custom toString template
     functionTemplate->Set(v8::String::NewFromUtf8(isolate, "toString", v8::String::kInternalizedString), V8PerIsolateData::current()->toStringTemplate());
     return functionTemplate;
 }
 
-v8::Handle<v8::FunctionTemplate> V8TestConditionalInterface::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
+v8::Handle<v8::FunctionTemplate> V8TestInterfacePython::GetTemplate(v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     V8PerIsolateData* data = V8PerIsolateData::from(isolate);
     V8PerIsolateData::TemplateMap::iterator result = data->templateMap(currentWorldType).find(&wrapperTypeInfo);
@@ -105,27 +118,32 @@ v8::Handle<v8::FunctionTemplate> V8TestConditionalInterface::GetTemplate(v8::Iso
     TRACE_EVENT_SCOPED_SAMPLING_STATE("Blink", "BuildDOMTemplate");
     v8::EscapableHandleScope handleScope(isolate);
     v8::Local<v8::FunctionTemplate> templ =
-        ConfigureV8TestConditionalInterfaceTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
+        ConfigureV8TestInterfacePythonTemplate(data->rawTemplate(&wrapperTypeInfo, currentWorldType), isolate, currentWorldType);
     data->templateMap(currentWorldType).add(&wrapperTypeInfo, UnsafePersistent<v8::FunctionTemplate>(isolate, templ));
     return handleScope.Escape(templ);
 }
 
-bool V8TestConditionalInterface::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+bool V8TestInterfacePython::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, currentWorldType);
 }
 
-bool V8TestConditionalInterface::hasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
+bool V8TestInterfacePython::hasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, MainWorld)
         || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, IsolatedWorld)
         || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, WorkerWorld);
 }
 
-v8::Handle<v8::Object> V8TestConditionalInterface::createWrapper(PassRefPtr<TestConditionalInterface> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+ActiveDOMObject* V8TestInterfacePython::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
+{
+    return toNative(wrapper);
+}
+
+v8::Handle<v8::Object> V8TestInterfacePython::createWrapper(PassRefPtr<TestInterfacePython> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8TestConditionalInterface>(impl.get(), isolate));
+    ASSERT(!DOMDataStore::containsWrapper<V8TestInterfacePython>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
         // Might be a XXXConstructor::wrapperTypeInfo instead of an XXX::wrapperTypeInfo. These will both have
@@ -138,17 +156,17 @@ v8::Handle<v8::Object> V8TestConditionalInterface::createWrapper(PassRefPtr<Test
         return wrapper;
 
     installPerContextEnabledProperties(wrapper, impl.get(), isolate);
-    V8DOMWrapper::associateObjectWithWrapper<V8TestConditionalInterface>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Independent);
+    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfacePython>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
     return wrapper;
 }
 
-void V8TestConditionalInterface::derefObject(void* object)
+void V8TestInterfacePython::derefObject(void* object)
 {
     fromInternalPointer(object)->deref();
 }
 
 template<>
-v8::Handle<v8::Value> toV8NoInline(TestConditionalInterface* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8NoInline(TestInterfacePython* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl, creationContext, isolate);
 }

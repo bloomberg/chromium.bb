@@ -28,7 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// This is for interface extended attributes that interact with another extended
+// attribute, and thus both cannot be tested at once.
+// The more *minor* extended attribute should be put in this file.
+
 [
-    CustomLegacyCall,
-] interface TestCustomLegacyCallInterface {
+    CustomVisitDOMWrapper, // Conflicts with [GenerateVisitDOMWrapper]
+    DependentLifetime,  // Covered by [ActiveDOMObject]
+] interface TestInterfacePython2 {
 };

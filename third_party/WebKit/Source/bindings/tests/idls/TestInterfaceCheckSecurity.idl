@@ -28,7 +28,7 @@
 
 [
     CheckSecurity=Frame,
-] interface TestCheckSecurityInterface {
+] interface TestInterfaceCheckSecurity {
     readonly attribute long longAttribute;
     void voidMethod();
 

@@ -29,6 +29,10 @@
  */
 
 [
+    ActiveDOMObject,
     Conditional=CONDITION,
-] interface TestConditionalInterface {
+    CustomLegacyCall,
+    CustomWrap,
+    GenerateVisitDOMWrapper=ownerNode,
+] interface TestInterfacePython {
 };
