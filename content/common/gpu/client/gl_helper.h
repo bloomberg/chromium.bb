@@ -288,6 +288,20 @@ class CONTENT_EXPORT GLHelper {
 
   // Simply creates a texture.
   blink::WebGLId CreateTexture();
+  // Deletes a texture.
+  void DeleteTexture(blink::WebGLId texture_id);
+
+  // Insert a sync point into the GL command buffer.
+  uint32 InsertSyncPoint();
+  // Wait for the sync point before executing further GL commands.
+  void WaitSyncPoint(uint32 sync_point);
+
+  // Creates a mailbox that is attached to the given texture id, and a sync
+  // point to wait on before using the mailbox. Returns an empty mailbox on
+  // failure.
+  // Note the texture is assumed to be GL_TEXTURE_2D.
+  gpu::Mailbox ProduceMailboxFromTexture(blink::WebGLId texture_id,
+                                         uint32* sync_point);
 
   // Creates a texture and consumes a mailbox into it. Returns 0 on failure.
   // Note the mailbox is assumed to be GL_TEXTURE_2D.

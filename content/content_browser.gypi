@@ -300,6 +300,8 @@
     'browser/aura/image_transport_factory.h',
     'browser/aura/no_transport_image_transport_factory.cc',
     'browser/aura/no_transport_image_transport_factory.h',
+    'browser/aura/owned_mailbox.h',
+    'browser/aura/owned_mailbox.cc',
     'browser/aura/reflector_impl.cc',
     'browser/aura/reflector_impl.h',
     'browser/aura/resize_lock.cc',

@@ -1083,16 +1083,33 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
     return;
   }
 
+  // Try get a texture to reuse.
+  scoped_refptr<OwnedMailbox> subscriber_texture;
+  if (frame_subscriber_) {
+    if (!idle_frame_subscriber_textures_.empty()) {
+      subscriber_texture = idle_frame_subscriber_textures_.back();
+      idle_frame_subscriber_textures_.pop_back();
+    } else if (GLHelper* helper =
+                   ImageTransportFactory::GetInstance()->GetGLHelper()) {
+      subscriber_texture = new OwnedMailbox(helper);
+    }
+  }
+
   scoped_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateRequest(base::Bind(
           &RenderWidgetHostViewAura::
-              CopyFromCompositingSurfaceHasResultForVideo,
+               CopyFromCompositingSurfaceHasResultForVideo,
           AsWeakPtr(),  // For caching the ReadbackYUVInterface on this class.
+          subscriber_texture,
           target,
           callback));
   gfx::Rect src_subrect_in_pixel =
       ConvertRectToPixel(current_device_scale_factor_, src_subrect);
   request->set_area(src_subrect_in_pixel);
+  if (subscriber_texture) {
+    request->SetTextureMailbox(cc::TextureMailbox(
+        subscriber_texture->mailbox(), subscriber_texture->sync_point()));
+  }
   window_->layer()->RequestCopyOfOutput(request.Pass());
 }
 
@@ -1116,9 +1133,9 @@ void RenderWidgetHostViewAura::BeginFrameSubscription(
 }
 
 void RenderWidgetHostViewAura::EndFrameSubscription() {
+  idle_frame_subscriber_textures_.clear();
   frame_subscriber_.reset();
 }
-
 
 void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
   // Delay processing the state change until we either get a software frame if
@@ -1873,17 +1890,34 @@ void RenderWidgetHostViewAura::PrepareBitmapCopyOutputResult(
   callback.Run(true, bitmap);
 }
 
-static void CopyFromCompositingSurfaceFinishedForVideo(
+void RenderWidgetHostViewAura::CopyFromCompositingSurfaceFinishedForVideo(
+    base::WeakPtr<RenderWidgetHostViewAura> rwhva,
     const base::Callback<void(bool)>& callback,
+    scoped_refptr<OwnedMailbox> subscriber_texture,
     scoped_ptr<cc::SingleReleaseCallback> release_callback,
     bool result) {
-  release_callback->Run(0, false);
   callback.Run(result);
+
+  GLHelper* gl_helper = ImageTransportFactory::GetInstance()->GetGLHelper();
+  uint32 sync_point = gl_helper ? gl_helper->InsertSyncPoint() : 0;
+  if (release_callback) {
+    DCHECK(!subscriber_texture);
+    release_callback->Run(sync_point, false);
+  } else {
+    // If there's no release callback, then the texture is from
+    // idle_frame_subscriber_textures_ and we can put it back there.
+    DCHECK(subscriber_texture);
+    subscriber_texture->UpdateSyncPoint(sync_point);
+    if (rwhva && rwhva->frame_subscriber_ && subscriber_texture->texture_id())
+      rwhva->idle_frame_subscriber_textures_.push_back(subscriber_texture);
+    subscriber_texture = NULL;
+  }
 }
 
 // static
 void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResultForVideo(
     base::WeakPtr<RenderWidgetHostViewAura> rwhva,
+    scoped_refptr<OwnedMailbox> subscriber_texture,
     scoped_refptr<media::VideoFrame> video_frame,
     const base::Callback<void(bool)>& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
@@ -1891,7 +1925,6 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResultForVideo(
 
   if (!rwhva)
     return;
-
   if (result->IsEmpty())
     return;
   if (result->size().IsEmpty())
@@ -1994,8 +2027,10 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceHasResultForVideo(
 
   ignore_result(scoped_callback_runner.Release());
   base::Callback<void(bool result)> finished_callback = base::Bind(
-      &CopyFromCompositingSurfaceFinishedForVideo,
+      &RenderWidgetHostViewAura::CopyFromCompositingSurfaceFinishedForVideo,
+      rwhva->AsWeakPtr(),
       callback,
+      subscriber_texture,
       base::Passed(&release_callback));
   yuv_readback_pipeline->ReadbackYUV(
       texture_mailbox.name(),
@@ -3148,6 +3183,8 @@ void RenderWidgetHostViewAura::FatalAccessibilityTreeError() {
 void RenderWidgetHostViewAura::OnLostResources() {
   current_surface_ = NULL;
   UpdateExternalTexture();
+
+  idle_frame_subscriber_textures_.clear();
 
   // Make sure all ImageTransportClients are deleted now that the context those
   // are using is becoming invalid. This sends pending ACKs and needs to happen

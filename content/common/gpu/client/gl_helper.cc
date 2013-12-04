@@ -696,6 +696,31 @@ blink::WebGLId GLHelper::CreateTexture() {
   return texture;
 }
 
+void GLHelper::DeleteTexture(blink::WebGLId texture_id) {
+  context_->deleteTexture(texture_id);
+}
+
+uint32 GLHelper::InsertSyncPoint() { return context_->insertSyncPoint(); }
+
+void GLHelper::WaitSyncPoint(uint32 sync_point) {
+  context_->waitSyncPoint(sync_point);
+}
+
+gpu::Mailbox GLHelper::ProduceMailboxFromTexture(blink::WebGLId texture_id,
+                                                 uint32* sync_point) {
+  gpu::Mailbox mailbox;
+  context_->genMailboxCHROMIUM(mailbox.name);
+  if (mailbox.IsZero()) {
+    *sync_point = 0;
+    return mailbox;
+  }
+  content::ScopedTextureBinder<GL_TEXTURE_2D> texture_binder(context_,
+                                                             texture_id);
+  context_->produceTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
+  *sync_point = context_->insertSyncPoint();
+  return mailbox;
+}
+
 blink::WebGLId GLHelper::ConsumeMailboxToTexture(const gpu::Mailbox& mailbox,
                                                   uint32 sync_point) {
   if (mailbox.IsZero())
