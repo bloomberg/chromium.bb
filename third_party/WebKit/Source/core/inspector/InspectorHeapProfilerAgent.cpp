@@ -78,13 +78,13 @@ void InspectorHeapProfilerAgent::clearProfiles(ErrorString*)
 {
     m_snapshots.clear();
     m_nextUserInitiatedHeapSnapshotNumber = 1;
+    stopTrackingHeapObjectsInternal();
     resetFrontendProfiles();
     m_injectedScriptManager->injectedScriptHost()->clearInspectedObjects();
 }
 
 void InspectorHeapProfilerAgent::resetFrontendProfiles()
 {
-    stopTrackingHeapObjects(0);
     if (!m_frontend)
         return;
     if (!m_state->getBoolean(HeapProfilerAgentState::heapProfilerEnabled))
@@ -189,13 +189,21 @@ void InspectorHeapProfilerAgent::pushHeapStatsUpdate(const uint32_t* const data,
     m_frontend->heapStatsUpdate(statsDiff.release());
 }
 
-void InspectorHeapProfilerAgent::stopTrackingHeapObjects(ErrorString* error)
+void InspectorHeapProfilerAgent::stopTrackingHeapObjects(ErrorString* error, const bool* reportProgress)
+{
+    if (!m_heapStatsUpdateTask) {
+        *error = "Heap object tracking is not started.";
+        return;
+    }
+    requestHeapStatsUpdate();
+    takeHeapSnapshot(error, reportProgress);
+    stopTrackingHeapObjectsInternal();
+}
+
+void InspectorHeapProfilerAgent::stopTrackingHeapObjectsInternal()
 {
     if (!m_heapStatsUpdateTask)
         return;
-    requestHeapStatsUpdate();
-    const bool reportProgress = true;
-    takeHeapSnapshot(error, &reportProgress);
     ScriptProfiler::stopTrackingHeapObjects();
     m_heapStatsUpdateTask->resetTimer();
     m_heapStatsUpdateTask.clear();
@@ -208,9 +216,7 @@ void InspectorHeapProfilerAgent::enable(ErrorString*)
 
 void InspectorHeapProfilerAgent::disable(ErrorString* error)
 {
-    stopTrackingHeapObjects(error);
-    if (!error->isEmpty())
-        return;
+    stopTrackingHeapObjectsInternal();
     m_state->setBoolean(HeapProfilerAgentState::heapProfilerEnabled, false);
 }
 
