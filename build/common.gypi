@@ -519,6 +519,8 @@
         }],
 
         # Set armv7 for backward compatibility.
+        # TODO(mostynb@opera.com): remove armv7 once all uses are
+        # removed http://crbug.com/234135
         ['arm_version==7', {
           'armv7': 1,
         }, {
