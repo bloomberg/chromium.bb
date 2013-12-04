@@ -487,10 +487,6 @@ bool MediaStreamDevicesController::ShouldAlwaysAllowOrigin() const {
 
 void MediaStreamDevicesController::SetPermission(bool allowed) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-#if defined(OS_ANDROID)
-  // We do not support sticky operations on Android yet.
-  return;
-#endif
   ContentSettingsPattern primary_pattern =
       ContentSettingsPattern::FromURLNoWildcard(request_.security_origin);
   // Check the pattern is valid or not. When the request is from a file access,
