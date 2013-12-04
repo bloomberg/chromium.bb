@@ -49,7 +49,7 @@ struct WebURLError;
 }
 
 namespace content {
-
+class RenderFrame;
 class RenderView;
 class SynchronousCompositor;
 struct KeySystemInfo;
@@ -62,6 +62,9 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Notifies us that the RenderThread has been created.
   virtual void RenderThreadStarted() {}
+
+  // Notifies that a new RenderFrame has been created.
+  virtual void RenderFrameCreated(RenderFrame* render_frame) {}
 
   // Notifies that a new RenderView has been created.
   virtual void RenderViewCreated(RenderView* render_view) {}
@@ -83,7 +86,8 @@ class CONTENT_EXPORT ContentRendererClient {
   // |plugin| will contain the created plugin, although it could be NULL. If it
   // returns false, the content layer will create the plugin.
   virtual bool OverrideCreatePlugin(
-      RenderView* render_view,
+      RenderView* render_view,  // TODO(jam): remove and only have RenderFrame.
+      RenderFrame* render_frame,
       blink::WebFrame* frame,
       const blink::WebPluginParams& params,
       blink::WebPlugin** plugin);
@@ -91,7 +95,8 @@ class CONTENT_EXPORT ContentRendererClient {
   // Creates a replacement plug-in that is shown when the plug-in at |file_path|
   // couldn't be loaded. This allows the embedder to show a custom placeholder.
   virtual blink::WebPlugin* CreatePluginReplacement(
-      RenderView* render_view,
+      RenderView* render_view,  // TODO(jam): remove and only have RenderFrame.
+      RenderFrame* render_frame,
       const base::FilePath& plugin_path);
 
   // Returns true if the embedder has an error page to show for the given http

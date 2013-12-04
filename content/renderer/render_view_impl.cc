@@ -181,7 +181,6 @@
 #include "third_party/WebKit/public/web/WebPluginAction.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebPluginDocument.h"
-#include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebRange.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
@@ -242,11 +241,8 @@
 
 #if defined(ENABLE_PLUGINS)
 #include "content/renderer/npapi/webplugin_delegate_proxy.h"
-#include "content/renderer/npapi/webplugin_impl.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
-#include "content/renderer/pepper/pepper_webplugin_impl.h"
-#include "content/renderer/pepper/plugin_module.h"
 #endif
 
 #if defined(ENABLE_WEBRTC)
@@ -301,7 +297,6 @@ using blink::WebPeerConnectionHandlerClient;
 using blink::WebPluginAction;
 using blink::WebPluginContainer;
 using blink::WebPluginDocument;
-using blink::WebPluginParams;
 using blink::WebPoint;
 using blink::WebPopupMenuInfo;
 using blink::WebRange;
@@ -1152,11 +1147,6 @@ blink::WebView* RenderViewImpl::webview() const {
 }
 
 #if defined(ENABLE_PLUGINS)
-void RenderViewImpl::PepperPluginCreated(RendererPpapiHost* host) {
-  FOR_EACH_OBSERVER(RenderViewObserver, observers_,
-                    DidCreatePepperPlugin(host));
-}
-
 void RenderViewImpl::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
   plugin_delegates_.insert(delegate);
   // If the renderer is visible, set initial visibility and focus state.
@@ -4302,25 +4292,6 @@ bool RenderViewImpl::IsEditableNode(const WebNode& node) const {
   }
 
   return false;
-}
-
-blink::WebPlugin* RenderViewImpl::CreatePlugin(
-    blink::WebFrame* frame,
-    const WebPluginInfo& info,
-    const blink::WebPluginParams& params) {
-#if defined(ENABLE_PLUGINS)
-  bool pepper_plugin_was_registered = false;
-  scoped_refptr<PluginModule> pepper_module(PluginModule::Create(
-      this, info, &pepper_plugin_was_registered));
-  if (pepper_plugin_was_registered) {
-    if (pepper_module.get())
-      return new PepperWebPluginImpl(pepper_module.get(), params, AsWeakPtr());
-  }
-
-  return new WebPluginImpl(frame, params, info.path, AsWeakPtr());
-#else
-  return NULL;
-#endif
 }
 
 void RenderViewImpl::EvaluateScript(const base::string16& frame_xpath,

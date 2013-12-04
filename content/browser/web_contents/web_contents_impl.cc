@@ -514,7 +514,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_EndColorChooser, OnEndColorChooser)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetSelectedColorInColorChooser,
                         OnSetSelectedColorInColorChooser)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PepperPluginHung, OnPepperPluginHung)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
                         OnRequestPpapiBrokerPermission)
@@ -2408,15 +2407,6 @@ void WebContentsImpl::OnSetSelectedColorInColorChooser(int color_chooser_id,
     color_chooser_->SetSelectedColor(color);
 }
 
-void WebContentsImpl::OnPepperPluginHung(int plugin_child_id,
-                                         const base::FilePath& path,
-                                         bool is_hung) {
-  UMA_HISTOGRAM_COUNTS("Pepper.PluginHung", 1);
-
-  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
-                    PluginHungStatusChanged(plugin_child_id, path, is_hung));
-}
-
 // This exists for render views that don't have a WebUI, but do have WebUI
 // bindings enabled.
 void WebContentsImpl::OnWebUISend(const GURL& source_url,
@@ -2737,6 +2727,15 @@ void WebContentsImpl::NotifyNavigationEntryCommitted(
     const LoadCommittedDetails& load_details) {
   FOR_EACH_OBSERVER(
       WebContentsObserver, observers_, NavigationEntryCommitted(load_details));
+}
+
+void WebContentsImpl::PepperPluginHung(int plugin_child_id,
+                                       const base::FilePath& path,
+                                       bool is_hung) {
+  UMA_HISTOGRAM_COUNTS("Pepper.PluginHung", 1);
+
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    PluginHungStatusChanged(plugin_child_id, path, is_hung));
 }
 
 RenderViewHostDelegateView* WebContentsImpl::GetDelegateView() {

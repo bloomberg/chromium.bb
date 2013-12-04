@@ -6,6 +6,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "content/common/content_export.h"
+#include "content/public/common/common_param_traits.h"
 #include "ipc/ipc_message_macros.h"
 
 #undef IPC_MESSAGE_EXPORT
@@ -42,3 +43,11 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_DidStartProvisionalLoadForFrame,
                     bool /* true if it is the main frame */,
                     GURL /* url */)
 
+// Sent to the browser when the renderer detects it is blocked on a pepper
+// plugin message for too long. This is also sent when it becomes unhung
+// (according to the value of is_hung). The browser can give the user the
+// option of killing the plugin.
+IPC_MESSAGE_ROUTED3(FrameHostMsg_PepperPluginHung,
+                    int /* plugin_child_id */,
+                    base::FilePath /* path */,
+                    bool /* is_hung */)

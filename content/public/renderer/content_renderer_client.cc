@@ -20,6 +20,7 @@ std::string ContentRendererClient::GetDefaultEncoding() {
 
 bool ContentRendererClient::OverrideCreatePlugin(
     RenderView* render_view,
+    RenderFrame* render_frame,
     blink::WebFrame* frame,
     const blink::WebPluginParams& params,
     blink::WebPlugin** plugin) {
@@ -28,6 +29,7 @@ bool ContentRendererClient::OverrideCreatePlugin(
 
 blink::WebPlugin* ContentRendererClient::CreatePluginReplacement(
     RenderView* render_view,
+    RenderFrame* render_frame,
     const base::FilePath& plugin_path) {
   return NULL;
 }

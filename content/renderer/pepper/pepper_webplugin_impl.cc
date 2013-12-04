@@ -49,6 +49,7 @@ namespace content {
 struct PepperWebPluginImpl::InitData {
   scoped_refptr<PluginModule> module;
   base::WeakPtr<RenderViewImpl> render_view;
+  RenderFrame* render_frame;
   std::vector<std::string> arg_names;
   std::vector<std::string> arg_values;
   GURL url;
@@ -57,7 +58,8 @@ struct PepperWebPluginImpl::InitData {
 PepperWebPluginImpl::PepperWebPluginImpl(
     PluginModule* plugin_module,
     const WebPluginParams& params,
-    const base::WeakPtr<RenderViewImpl>& render_view)
+    const base::WeakPtr<RenderViewImpl>& render_view,
+    RenderFrame* render_frame)
     : init_data_(new InitData()),
       full_frame_(params.loadManually),
       instance_object_(PP_MakeUndefined()),
@@ -65,6 +67,7 @@ PepperWebPluginImpl::PepperWebPluginImpl(
   DCHECK(plugin_module);
   init_data_->module = plugin_module;
   init_data_->render_view = render_view;
+  init_data_->render_frame = render_frame;
   for (size_t i = 0; i < params.attributeNames.size(); ++i) {
     init_data_->arg_names.push_back(params.attributeNames[i].utf8());
     init_data_->arg_values.push_back(params.attributeValues[i].utf8());
@@ -101,7 +104,8 @@ bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
 
     blink::WebPlugin* replacement_plugin =
         GetContentClient()->renderer()->CreatePluginReplacement(
-            init_data_->render_view.get(), init_data_->module->path());
+            init_data_->render_view.get(), init_data_->render_frame,
+            init_data_->module->path());
     if (!replacement_plugin || !replacement_plugin->initialize(container))
       return false;
 

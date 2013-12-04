@@ -43,7 +43,7 @@ class MultipartResponseDelegate;
 }  // namespace webkit_glue
 
 namespace content {
-
+class RenderFrame;
 class RenderViewImpl;
 class WebPluginDelegate;
 
@@ -58,7 +58,8 @@ class WebPluginImpl : public WebPlugin,
       blink::WebFrame* frame,
       const blink::WebPluginParams& params,
       const base::FilePath& file_path,
-      const base::WeakPtr<RenderViewImpl>& render_view);
+      const base::WeakPtr<RenderViewImpl>& render_view,
+      RenderFrame* render_frame);
   virtual ~WebPluginImpl();
 
   // Helper function for sorting post data.
@@ -286,6 +287,7 @@ class WebPluginImpl : public WebPlugin,
   scoped_ptr<blink::WebLayer> web_layer_;
 #endif
   bool accepts_input_events_;
+  RenderFrame* render_frame_;
   base::WeakPtr<RenderViewImpl> render_view_;
   blink::WebFrame* webframe_;
 

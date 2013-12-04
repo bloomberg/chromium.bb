@@ -65,6 +65,9 @@ class CONTENT_EXPORT RenderFrameImpl
   RenderWidget* GetRenderWidget();
 
 #if defined(ENABLE_PLUGINS)
+  // Notification that a PPAPI plugin has been created.
+  void PepperPluginCreated(RendererPpapiHost* host);
+
   // Indicates that the given instance has been created.
   void PepperInstanceCreated(PepperPluginInstanceImpl* instance);
 
@@ -155,6 +158,12 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // IPC::Listener
   virtual bool OnMessageReceived(const IPC::Message& msg) OVERRIDE;
+
+  // RenderFrame implementation:
+  virtual blink::WebPlugin* CreatePlugin(
+      blink::WebFrame* frame,
+      const WebPluginInfo& info,
+      const blink::WebPluginParams& params) OVERRIDE;
 
   // blink::WebFrameClient implementation -------------------------------------
   virtual blink::WebPlugin* createPlugin(

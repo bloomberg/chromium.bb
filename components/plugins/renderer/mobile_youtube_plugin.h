@@ -17,6 +17,7 @@ namespace plugins {
 class MobileYouTubePlugin : public PluginPlaceholder {
  public:
   MobileYouTubePlugin(content::RenderView* render_view,
+                      content::RenderFrame* render_frame,
                       blink::WebFrame* frame,
                       const blink::WebPluginParams& params,
                       base::StringPiece& template_html,

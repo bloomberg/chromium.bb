@@ -48,11 +48,13 @@ const char ChromePluginPlaceholder::kPluginPlaceholderDataURL[] =
 
 ChromePluginPlaceholder::ChromePluginPlaceholder(
     content::RenderView* render_view,
+    content::RenderFrame* render_frame,
     blink::WebFrame* frame,
     const blink::WebPluginParams& params,
     const std::string& html_data,
     const string16& title)
     : plugins::PluginPlaceholder(render_view,
+                                 render_frame,
                                  frame,
                                  params,
                                  html_data,
@@ -86,6 +88,7 @@ ChromePluginPlaceholder::~ChromePluginPlaceholder() {
 // static
 ChromePluginPlaceholder* ChromePluginPlaceholder::CreateMissingPlugin(
     RenderView* render_view,
+    content::RenderFrame* render_frame,
     WebFrame* frame,
     const WebPluginParams& params) {
   const base::StringPiece template_html(
@@ -104,7 +107,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateMissingPlugin(
 
   // |missing_plugin| will destroy itself when its WebViewPlugin is going away.
   ChromePluginPlaceholder* missing_plugin = new ChromePluginPlaceholder(
-      render_view, frame, params, html_data, params.mimeType);
+      render_view, render_frame, frame, params, html_data, params.mimeType);
   missing_plugin->set_allow_loading(true);
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   RenderThread::Get()->Send(
@@ -118,6 +121,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateMissingPlugin(
 // static
 ChromePluginPlaceholder* ChromePluginPlaceholder::CreateErrorPlugin(
     RenderView* render_view,
+    content::RenderFrame* render_frame,
     const base::FilePath& file_path) {
   base::DictionaryValue values;
   values.SetString("message",
@@ -131,7 +135,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateErrorPlugin(
   WebPluginParams params;
   // |missing_plugin| will destroy itself when its WebViewPlugin is going away.
   ChromePluginPlaceholder* plugin = new ChromePluginPlaceholder(
-      render_view, NULL, params, html_data, params.mimeType);
+      render_view, render_frame, NULL, params, html_data, params.mimeType);
 
   RenderThread::Get()->Send(new ChromeViewHostMsg_CouldNotLoadPlugin(
       plugin->routing_id(), file_path));
@@ -141,6 +145,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateErrorPlugin(
 // static
 ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
     RenderView* render_view,
+    content::RenderFrame* render_frame,
     WebFrame* frame,
     const WebPluginParams& params,
     const content::WebPluginInfo& plugin,
@@ -161,8 +166,8 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
   std::string html_data = webui::GetI18nTemplateHtml(template_html, &values);
 
   // |blocked_plugin| will destroy itself when its WebViewPlugin is going away.
-  ChromePluginPlaceholder* blocked_plugin =
-      new ChromePluginPlaceholder(render_view, frame, params, html_data, name);
+  ChromePluginPlaceholder* blocked_plugin = new ChromePluginPlaceholder(
+      render_view, render_frame, frame, params, html_data, name);
   blocked_plugin->SetPluginInfo(plugin);
   blocked_plugin->SetIdentifier(identifier);
   return blocked_plugin;
@@ -284,7 +289,7 @@ void ChromePluginPlaceholder::PluginListChanged() {
   if (output.status.value == status_->value)
     return;
   WebPlugin* new_plugin = ChromeContentRendererClient::CreatePlugin(
-      render_view(), GetFrame(), GetPluginParams(), output);
+      render_view(), GetRenderFrame(), GetFrame(), GetPluginParams(), output);
   ReplacePlugin(new_plugin);
   if (!new_plugin) {
     PluginUMAReporter::GetInstance()->ReportPluginMissing(

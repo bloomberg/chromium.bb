@@ -57,8 +57,11 @@
 #include "webkit/child/weburlresponse_extradata_impl.h"
 
 #if defined(ENABLE_PLUGINS)
+#include "content/renderer/npapi/webplugin_impl.h"
 #include "content/renderer/pepper/pepper_browser_connection.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
+#include "content/renderer/pepper/pepper_webplugin_impl.h"
+#include "content/renderer/pepper/plugin_module.h"
 #endif
 
 #if defined(ENABLE_WEBRTC)
@@ -132,6 +135,8 @@ RenderFrameImpl::RenderFrameImpl(RenderViewImpl* render_view, int routing_id)
 #if defined(ENABLE_PLUGINS)
   new PepperBrowserConnection(this);
 #endif
+
+  GetContentClient()->renderer()->RenderFrameCreated(this);
 }
 
 RenderFrameImpl::~RenderFrameImpl() {
@@ -145,6 +150,11 @@ RenderWidget* RenderFrameImpl::GetRenderWidget() {
 }
 
 #if defined(ENABLE_PLUGINS)
+void RenderFrameImpl::PepperPluginCreated(RendererPpapiHost* host) {
+  FOR_EACH_OBSERVER(RenderFrameObserver, observers_,
+                    DidCreatePepperPlugin(host));
+}
+
 void RenderFrameImpl::PepperInstanceCreated(
     PepperPluginInstanceImpl* instance) {
   active_pepper_instances_.insert(instance);
@@ -457,14 +467,38 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
   return false;
 }
 
-// blink::WebFrameClient implementation -------------------------------------
+blink::WebPlugin* RenderFrameImpl::CreatePlugin(
+    blink::WebFrame* frame,
+    const WebPluginInfo& info,
+    const blink::WebPluginParams& params) {
+#if defined(ENABLE_PLUGINS)
+  bool pepper_plugin_was_registered = false;
+  scoped_refptr<PluginModule> pepper_module(PluginModule::Create(
+      this, info, &pepper_plugin_was_registered));
+  if (pepper_plugin_was_registered) {
+    if (pepper_module.get()) {
+      // TODO(jam): change to take RenderFrame.
+      return new PepperWebPluginImpl(
+          pepper_module.get(), params, render_view_->AsWeakPtr(), this);
+    }
+  }
+
+  // TODO(jam): change to take RenderFrame.
+  return new WebPluginImpl(frame, params, info.path, render_view_->AsWeakPtr(),
+                           this);
+#else
+  return NULL;
+#endif
+}
+
+// blink::WebFrameClient implementation ----------------------------------------
 
 blink::WebPlugin* RenderFrameImpl::createPlugin(
     blink::WebFrame* frame,
     const blink::WebPluginParams& params) {
   blink::WebPlugin* plugin = NULL;
   if (GetContentClient()->renderer()->OverrideCreatePlugin(
-          render_view_, frame, params, &plugin)) {
+          render_view_, this, frame, params, &plugin)) {
     return plugin;
   }
 
@@ -484,7 +518,7 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 
   WebPluginParams params_to_use = params;
   params_to_use.mimeType = WebString::fromUTF8(mime_type);
-  return render_view_->CreatePlugin(frame, info, params_to_use);
+  return CreatePlugin(frame, info, params_to_use);
 #else
   return NULL;
 #endif  // defined(ENABLE_PLUGINS)

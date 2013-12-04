@@ -2810,7 +2810,7 @@ PP_ExternalPluginResult PepperPluginInstanceImpl::SwitchToOutOfProcessProxy(
 
   RendererPpapiHostImpl* renderer_ppapi_host =
       external_plugin_module->CreateOutOfProcessModule(
-          render_frame_->render_view(),
+          render_frame_,
           file_path,
           permissions,
           channel_handle,

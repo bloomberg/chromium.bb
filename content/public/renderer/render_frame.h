@@ -9,13 +9,28 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 
+namespace blink {
+class WebFrame;
+class WebPlugin;
+struct WebPluginParams;
+}
+
 namespace content {
+struct WebPluginInfo;
 
 // This interface wraps functionality, which is specific to frames, such as
 // navigation. It provides communication with a corresponding RenderFrameHost
 // in the browser process.
 class CONTENT_EXPORT RenderFrame : public IPC::Listener,
                                    public IPC::Sender {
+ public:
+  // Create a new NPAPI/Pepper plugin depending on |info|. Returns NULL if no
+  // plugin was found.
+  virtual blink::WebPlugin* CreatePlugin(
+      blink::WebFrame* frame,
+      const WebPluginInfo& info,
+      const blink::WebPluginParams& params) = 0;
+
  protected:
   virtual ~RenderFrame() {}
 

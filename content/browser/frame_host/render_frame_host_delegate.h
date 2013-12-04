@@ -5,12 +5,20 @@
 #ifndef CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_DELEGATE_H_
 #define CONTENT_BROWSER_FRAME_HOST_RENDER_FRAME_HOST_DELEGATE_H_
 
+namespace base {
+class FilePath;
+}
+
 namespace content {
 
 // An interface implemented by an object interested in knowing about the state
 // of the RenderFrameHost.
 class RenderFrameHostDelegate {
  public:
+  // The given Pepper plugin is not responsive.
+  virtual void PepperPluginHung(int plugin_child_id,
+                                const base::FilePath& path,
+                                bool is_hung) {}
 
  protected:
   virtual ~RenderFrameHostDelegate() {}

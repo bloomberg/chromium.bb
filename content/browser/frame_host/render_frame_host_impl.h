@@ -13,6 +13,10 @@
 
 class GURL;
 
+namespace base {
+class FilePath;
+}
+
 namespace content {
 
 class FrameTree;
@@ -62,6 +66,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost {
                                          int64 parent_frame_id,
                                          bool main_frame,
                                          const GURL& url);
+  void OnPepperPluginHung(int plugin_child_id,
+                          const base::FilePath& path,
+                          bool is_hung);
 
   bool is_swapped_out() { return is_swapped_out_; }
 

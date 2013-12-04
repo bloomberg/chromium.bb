@@ -382,7 +382,7 @@ bool LoadEntryPointsFromLibrary(
   return true;
 }
 
-void CreateHostForInProcessModule(RenderViewImpl* render_view,
+void CreateHostForInProcessModule(RenderFrameImpl* render_frame,
                                   PluginModule* module,
                                   const WebPluginInfo& webplugin_info) {
   // First time an in-process plugin was used, make a host for it.
@@ -394,9 +394,8 @@ void CreateHostForInProcessModule(RenderViewImpl* render_view,
       PepperPluginRegistry::GetInstance()->GetInfoForPlugin(
           webplugin_info)->permissions);
   RendererPpapiHostImpl* host_impl =
-      RendererPpapiHostImpl::CreateOnModuleForInProcess(
-          module, perms);
-  render_view->PepperPluginCreated(host_impl);
+      RendererPpapiHostImpl::CreateOnModuleForInProcess(module, perms);
+  render_frame->PepperPluginCreated(host_impl);
 }
 
 }  // namespace
@@ -630,7 +629,7 @@ PepperBroker* PluginModule::GetBroker() {
 }
 
 RendererPpapiHostImpl* PluginModule::CreateOutOfProcessModule(
-    RenderViewImpl* render_view,
+    RenderFrameImpl* render_frame,
     const base::FilePath& path,
     ppapi::PpapiPermissions permissions,
     const IPC::ChannelHandle& channel_handle,
@@ -638,7 +637,7 @@ RendererPpapiHostImpl* PluginModule::CreateOutOfProcessModule(
     int plugin_child_id,
     bool is_external) {
   scoped_refptr<PepperHungPluginFilter> hung_filter(new PepperHungPluginFilter(
-      path, render_view->GetRoutingID(), plugin_child_id));
+      path, render_frame->routing_id(), plugin_child_id));
   scoped_ptr<HostDispatcherWrapper> dispatcher(
       new HostDispatcherWrapper(this,
                                 peer_pid,
@@ -648,14 +647,14 @@ RendererPpapiHostImpl* PluginModule::CreateOutOfProcessModule(
   if (!dispatcher->Init(
           channel_handle,
           &GetInterface,
-          ppapi::Preferences(render_view->webkit_preferences()),
+          ppapi::Preferences(render_frame->render_view()->webkit_preferences()),
           hung_filter.get()))
     return NULL;
 
   RendererPpapiHostImpl* host_impl =
       RendererPpapiHostImpl::CreateOnModuleForOutOfProcess(
           this, dispatcher->dispatcher(), permissions);
-  render_view->PepperPluginCreated(host_impl);
+  render_frame->PepperPluginCreated(host_impl);
 
   InitAsProxied(dispatcher.release());
   return host_impl;
@@ -680,7 +679,7 @@ bool PluginModule::InitializeModule(
 }
 
 scoped_refptr<PluginModule> PluginModule::Create(
-    RenderViewImpl* render_view,
+    RenderFrameImpl* render_frame,
     const WebPluginInfo& webplugin_info,
     bool* pepper_plugin_was_registered) {
   *pepper_plugin_was_registered = true;
@@ -694,7 +693,7 @@ scoped_refptr<PluginModule> PluginModule::Create(
       // If the module exists and no embedder state was associated with it,
       // then the module was one of the ones preloaded and is an in-process
       // plugin. We need to associate our host state with it.
-      CreateHostForInProcessModule(render_view, module.get(), webplugin_info);
+      CreateHostForInProcessModule(render_frame, module.get(), webplugin_info);
     }
     return module;
   }
@@ -719,7 +718,7 @@ scoped_refptr<PluginModule> PluginModule::Create(
   IPC::ChannelHandle channel_handle;
   base::ProcessId peer_pid;
   int plugin_child_id = 0;
-  render_view->Send(new ViewHostMsg_OpenChannelToPepperPlugin(
+  render_frame->Send(new ViewHostMsg_OpenChannelToPepperPlugin(
       path, &channel_handle, &peer_pid, &plugin_child_id));
   if (channel_handle.name.empty()) {
     // Couldn't be initialized.
@@ -731,7 +730,7 @@ scoped_refptr<PluginModule> PluginModule::Create(
   module = new PluginModule(info->name, path, permissions);
   PepperPluginRegistry::GetInstance()->AddLiveModule(path, module.get());
 
-  if (!module->CreateOutOfProcessModule(render_view,
+  if (!module->CreateOutOfProcessModule(render_frame,
                                         path,
                                         permissions,
                                         channel_handle,

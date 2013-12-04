@@ -251,7 +251,7 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
 
     blink::WebPlugin* replacement_plugin =
         GetContentClient()->renderer()->CreatePluginReplacement(
-            render_view_.get(), file_path_);
+            render_view_.get(), render_frame_, file_path_);
     if (!replacement_plugin)
       return false;
 
@@ -481,10 +481,12 @@ WebPluginImpl::WebPluginImpl(
     WebFrame* webframe,
     const WebPluginParams& params,
     const base::FilePath& file_path,
-    const base::WeakPtr<RenderViewImpl>& render_view)
+    const base::WeakPtr<RenderViewImpl>& render_view,
+    RenderFrame* render_frame)
     : windowless_(false),
       window_(gfx::kNullPluginWindow),
       accepts_input_events_(false),
+      render_frame_(render_frame),
       render_view_(render_view),
       webframe_(webframe),
       delegate_(NULL),

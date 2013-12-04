@@ -67,6 +67,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStartProvisionalLoadForFrame,
                         OnDidStartProvisionalLoadForFrame)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_PepperPluginHung, OnPepperPluginHung)
   IPC_END_MESSAGE_MAP_EX()
 
   return handled;
@@ -101,6 +102,12 @@ void RenderFrameHostImpl::OnDidStartProvisionalLoadForFrame(
     const GURL& url) {
   render_view_host_->OnDidStartProvisionalLoadForFrame(
       frame_id, parent_frame_id, is_main_frame, url);
+}
+
+void RenderFrameHostImpl::OnPepperPluginHung(int plugin_child_id,
+                                             const base::FilePath& path,
+                                             bool is_hung) {
+  delegate_->PepperPluginHung(plugin_child_id, path, is_hung);
 }
 
 }  // namespace content

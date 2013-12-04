@@ -276,6 +276,9 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool Send(IPC::Message* message) OVERRIDE;
 
   // RenderFrameHostDelegate ---------------------------------------------------
+  virtual void PepperPluginHung(int plugin_child_id,
+                                const base::FilePath& path,
+                                bool is_hung) OVERRIDE;
 
   // RenderViewHostDelegate ----------------------------------------------------
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;
@@ -657,9 +660,6 @@ class CONTENT_EXPORT WebContentsImpl
                           const std::vector<ColorSuggestion>& suggestions);
   void OnEndColorChooser(int color_chooser_id);
   void OnSetSelectedColorInColorChooser(int color_chooser_id, SkColor color);
-  void OnPepperPluginHung(int plugin_child_id,
-                          const base::FilePath& path,
-                          bool is_hung);
   void OnWebUISend(const GURL& source_url,
                    const std::string& name,
                    const base::ListValue& args);

@@ -13,6 +13,7 @@
 
 namespace content {
 
+class RendererPpapiHost;
 class RenderFrame;
 class RenderFrameImpl;
 
@@ -24,6 +25,9 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // By default, observers will be deleted when the RenderFrame goes away.  If
   // they want to outlive it, they can override this function.
   virtual void OnDestruct();
+
+  // Called when a Pepper plugin is created.
+  virtual void DidCreatePepperPlugin(RendererPpapiHost* host) {}
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

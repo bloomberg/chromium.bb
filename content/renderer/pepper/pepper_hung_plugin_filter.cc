@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "content/child/child_process.h"
-#include "content/common/view_messages.h"
+#include "content/common/frame_messages.h"
 #include "content/renderer/render_thread_impl.h"
 
 namespace content {
@@ -26,10 +26,10 @@ const int kBlockedHardThresholdSec = kHungThresholdSec * 1.5;
 
 PepperHungPluginFilter::PepperHungPluginFilter(
     const base::FilePath& plugin_path,
-    int view_routing_id,
+    int frame_routing_id,
     int plugin_child_id)
     : plugin_path_(plugin_path),
-      view_routing_id_(view_routing_id),
+      frame_routing_id_(frame_routing_id),
       plugin_child_id_(plugin_child_id),
       filter_(RenderThread::Get()->GetSyncMessageFilter()),
       io_loop_(ChildProcess::current()->io_message_loop_proxy()),
@@ -151,8 +151,8 @@ void PepperHungPluginFilter::OnHangTimer() {
 }
 
 void PepperHungPluginFilter::SendHungMessage(bool is_hung) {
-  filter_->Send(new ViewHostMsg_PepperPluginHung(
-      view_routing_id_, plugin_child_id_, plugin_path_, is_hung));
+  filter_->Send(new FrameHostMsg_PepperPluginHung(
+      frame_routing_id_, plugin_child_id_, plugin_path_, is_hung));
 }
 
 }  // namespace content

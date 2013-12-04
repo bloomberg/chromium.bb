@@ -9,8 +9,8 @@
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "ppapi/host/ppapi_host.h"
 
-PepperHelper::PepperHelper(content::RenderView* render_view)
-    : RenderViewObserver(render_view) {
+PepperHelper::PepperHelper(content::RenderFrame* render_frame)
+    : RenderFrameObserver(render_frame) {
 }
 
 PepperHelper::~PepperHelper() {

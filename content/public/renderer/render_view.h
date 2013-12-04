@@ -21,12 +21,10 @@ struct WebPreferences;
 namespace blink {
 class WebFrame;
 class WebNode;
-class WebPlugin;
 class WebString;
 class WebURLRequest;
 class WebView;
 struct WebContextMenuData;
-struct WebPluginParams;
 }
 
 namespace gfx {
@@ -39,7 +37,6 @@ class ContextMenuClient;
 class RenderViewVisitor;
 struct ContextMenuParams;
 struct SSLStatus;
-struct WebPluginInfo;
 
 class CONTENT_EXPORT RenderView : public IPC::Sender {
  public:
@@ -86,13 +83,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
   // Returns true if the parameter node is a textfield, text area, a content
   // editable div, or has an ARIA role of textbox.
   virtual bool IsEditableNode(const blink::WebNode& node) const = 0;
-
-  // Create a new NPAPI/Pepper plugin depending on |info|. Returns NULL if no
-  // plugin was found.
-  virtual blink::WebPlugin* CreatePlugin(
-      blink::WebFrame* frame,
-      const WebPluginInfo& info,
-      const blink::WebPluginParams& params) = 0;
 
   // Evaluates a string of JavaScript in a particular frame.
   virtual void EvaluateScript(const base::string16& frame_xpath,

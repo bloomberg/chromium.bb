@@ -30,12 +30,12 @@ namespace content {
 class PepperHungPluginFilter
     : public ppapi::proxy::HostDispatcher::SyncMessageStatusReceiver {
  public:
-  // The |view_routing_id| is the ID of the render_view so that this class can
-  // send messages to the browser via that view's route. The |plugin_child_id|
+  // The |frame_routing_id| is the ID of the render_frame so that this class can
+  // send messages to the browser via that frame's route. The |plugin_child_id|
   // is the ID in the browser process of the pepper plugin process host. We use
   // this to identify the proper plugin process to terminate.
   PepperHungPluginFilter(const base::FilePath& plugin_path,
-                         int view_routing_id,
+                         int frame_routing_id,
                          int plugin_child_id);
 
   // SyncMessageStatusReceiver implementation.
@@ -75,7 +75,7 @@ class PepperHungPluginFilter
   base::Lock lock_;
 
   base::FilePath plugin_path_;
-  int view_routing_id_;
+  int frame_routing_id_;
   int plugin_child_id_;
 
   // Used to post messages to the renderer <-> browser message channel from

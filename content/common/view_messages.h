@@ -2211,15 +2211,6 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_DomOperationResponse,
                     std::string  /* json_string */,
                     int  /* automation_id */)
 
-// Sent to the browser when the renderer detects it is blocked on a pepper
-// plugin message for too long. This is also sent when it becomes unhung
-// (according to the value of is_hung). The browser can give the user the
-// option of killing the plugin.
-IPC_MESSAGE_ROUTED3(ViewHostMsg_PepperPluginHung,
-                    int /* plugin_child_id */,
-                    base::FilePath /* path */,
-                    bool /* is_hung */)
-
 // Notifies that multiple touch targets may have been pressed, and to show
 // the disambiguation popup.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_ShowDisambiguationPopup,

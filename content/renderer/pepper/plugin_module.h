@@ -51,7 +51,6 @@ class PepperPluginInstanceImpl;
 class PepperBroker;
 class RendererPpapiHostImpl;
 class RenderFrameImpl;
-class RenderViewImpl;
 struct WebPluginInfo;
 
 // Represents one plugin library loaded into one renderer. This library may
@@ -190,7 +189,7 @@ class CONTENT_EXPORT PluginModule :
   // Create a new HostDispatcher for proxying, hook it to the PluginModule,
   // and perform other common initialization.
   RendererPpapiHostImpl* CreateOutOfProcessModule(
-      RenderViewImpl* render_view,
+      RenderFrameImpl* render_frame,
       const base::FilePath& path,
       ppapi::PpapiPermissions permissions,
       const IPC::ChannelHandle& channel_handle,
@@ -213,7 +212,7 @@ class CONTENT_EXPORT PluginModule :
   // the second is that the plugin failed to initialize. In this case,
   // |*pepper_plugin_was_registered| will be set to true and the caller should
   // not fall back on any other plugin types.
-  static scoped_refptr<PluginModule> Create(RenderViewImpl* render_view,
+  static scoped_refptr<PluginModule> Create(RenderFrameImpl* render_frame,
                                             const WebPluginInfo& webplugin_info,
                                             bool* pepper_plugin_was_registered);
 

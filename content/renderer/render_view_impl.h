@@ -280,9 +280,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Plugin-related functions --------------------------------------------------
 
 #if defined(ENABLE_PLUGINS)
-  // Notification that a PPAPI plugin has been created.
-  void PepperPluginCreated(RendererPpapiHost* host);
-
 #if defined(OS_MACOSX) || defined(OS_WIN)
   // Informs the render view that the given plugin has gained or lost focus.
   void PluginFocusChanged(bool focused, int plugin_id);
@@ -630,10 +627,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual blink::WebNode GetFocusedNode() const OVERRIDE;
   virtual blink::WebNode GetContextMenuNode() const OVERRIDE;
   virtual bool IsEditableNode(const blink::WebNode& node) const OVERRIDE;
-  virtual blink::WebPlugin* CreatePlugin(
-      blink::WebFrame* frame,
-      const WebPluginInfo& info,
-      const blink::WebPluginParams& params) OVERRIDE;
   virtual void EvaluateScript(const base::string16& frame_xpath,
                               const base::string16& jscript,
                               int id,

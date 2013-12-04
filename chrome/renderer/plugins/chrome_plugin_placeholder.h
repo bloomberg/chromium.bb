@@ -17,6 +17,7 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
 
   static ChromePluginPlaceholder* CreateBlockedPlugin(
       content::RenderView* render_view,
+      content::RenderFrame* render_frame,
       blink::WebFrame* frame,
       const blink::WebPluginParams& params,
       const content::WebPluginInfo& info,
@@ -28,11 +29,13 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
   // Creates a new WebViewPlugin with a MissingPlugin as a delegate.
   static ChromePluginPlaceholder* CreateMissingPlugin(
       content::RenderView* render_view,
+      content::RenderFrame* render_frame,
       blink::WebFrame* frame,
       const blink::WebPluginParams& params);
 
   static ChromePluginPlaceholder* CreateErrorPlugin(
       content::RenderView* render_view,
+      content::RenderFrame* render_frame,
       const base::FilePath& plugin_path);
 
   void SetStatus(const ChromeViewHostMsg_GetPluginInfo_Status& status);
@@ -43,6 +46,7 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
 
  private:
   ChromePluginPlaceholder(content::RenderView* render_view,
+                          content::RenderFrame* render_frame,
                           blink::WebFrame* frame,
                           const blink::WebPluginParams& params,
                           const std::string& html_data,

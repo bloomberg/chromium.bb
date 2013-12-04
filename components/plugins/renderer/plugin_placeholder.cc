@@ -13,6 +13,7 @@
 #include "base/values.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/context_menu_params.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -41,11 +42,13 @@ using webkit_glue::CppVariant;
 namespace plugins {
 
 PluginPlaceholder::PluginPlaceholder(content::RenderView* render_view,
+                                     content::RenderFrame* render_frame,
                                      WebFrame* frame,
                                      const WebPluginParams& params,
                                      const std::string& html_data,
                                      GURL placeholderDataUrl)
     : content::RenderViewObserver(render_view),
+      render_frame_(render_frame),
       frame_(frame),
       plugin_params_(params),
       plugin_(WebViewPlugin::Create(this,
@@ -203,7 +206,7 @@ void PluginPlaceholder::LoadPlugin() {
   //                ChromeContentRendererClient::CreatePlugin instead, to
   //                reduce the chance of future regressions.
   WebPlugin* plugin =
-      render_view()->CreatePlugin(frame_, plugin_info_, plugin_params_);
+      render_frame_->CreatePlugin(frame_, plugin_info_, plugin_params_);
   ReplacePlugin(plugin);
 }
 
@@ -237,6 +240,10 @@ const content::WebPluginInfo& PluginPlaceholder::GetPluginInfo() const {
 
 void PluginPlaceholder::SetIdentifier(const std::string& identifier) {
   identifier_ = identifier;
+}
+
+content::RenderFrame* PluginPlaceholder::GetRenderFrame() {
+  return render_frame_;
 }
 
 blink::WebFrame* PluginPlaceholder::GetFrame() { return frame_; }
