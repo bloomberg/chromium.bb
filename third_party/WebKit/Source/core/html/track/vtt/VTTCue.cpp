@@ -223,10 +223,12 @@ VTTCue::~VTTCue()
     displayTreeInternal()->remove(ASSERT_NO_EXCEPTION);
 }
 
+#ifndef NDEBUG
 String VTTCue::toString() const
 {
     return String::format("%p id=%s interval=%f-->%f cue=%s)", this, id().utf8().data(), startTime(), endTime(), text().utf8().data());
 }
+#endif
 
 PassRefPtr<VTTCueBox> VTTCue::displayTreeInternal()
 {

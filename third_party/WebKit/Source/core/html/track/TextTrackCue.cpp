@@ -61,11 +61,6 @@ TextTrackCue::TextTrackCue(double start, double end)
 {
 }
 
-String TextTrackCue::toString() const
-{
-    return String::format("%p id=%s interval=%f-->%f)", this, id().utf8().data(), startTime(), endTime());
-}
-
 void TextTrackCue::cueWillChange()
 {
     if (m_track)

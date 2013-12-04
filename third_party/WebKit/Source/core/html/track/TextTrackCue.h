@@ -81,16 +81,18 @@ public:
 
     // FIXME: Consider refactoring to eliminate or merge the following three members.
     // https://code.google.com/p/chromium/issues/detail?id=322434
-    virtual void updateDisplayTree(double movieTime) { }
-    virtual void removeDisplayTree() { }
-    virtual void notifyRegionWhenRemovingDisplayTree(bool notifyRegion) { }
+    virtual void updateDisplayTree(double movieTime) = 0;
+    virtual void removeDisplayTree() = 0;
+    virtual void notifyRegionWhenRemovingDisplayTree(bool notifyRegion) = 0;
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
+#ifndef NDEBUG
+    virtual String toString() const = 0;
+#endif
+
     DEFINE_ATTRIBUTE_EVENT_LISTENER(enter);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(exit);
-
-    virtual String toString() const;
 
 protected:
     TextTrackCue(double start, double end);

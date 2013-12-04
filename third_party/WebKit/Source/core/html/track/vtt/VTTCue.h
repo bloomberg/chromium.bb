@@ -132,7 +132,9 @@ public:
 
     virtual ExecutionContext* executionContext() const OVERRIDE;
 
-    virtual String toString() const;
+#ifndef NDEBUG
+    virtual String toString() const OVERRIDE;
+#endif
 
 private:
     VTTCue(Document&, double startTime, double endTime, const String& text);
