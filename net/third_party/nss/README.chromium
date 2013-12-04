@@ -109,10 +109,13 @@ Patches:
     libraries at run time.
     patches/aesgcmchromium.patch
 
-  * Prefer to generate SHA-1 signatures for TLS 1.2 client authentication if
-    the client private key is in a CAPI service provider on Windows or if the
-    client private key is a 1024-bit RSA or DSA key.
+  * Support generating SHA-1 signatures for TLS 1.2 client authentication. Use
+    SHA-1 instead of SHA-256 if the server's preferences do not allow for
+    SHA-256 or if the client private key may only support SHA-1 signatures. The
+    latter happens when the key is in a CAPI service provider on Windows or if
+    it is a 1024-bit RSA or DSA key.
     patches/tls12backuphash.patch
+    patches/tls12backuphash2.patch
 
   * Support ChaCha20+Poly1305 ciphersuites
     http://tools.ietf.org/html/draft-agl-tls-chacha20poly1305-01

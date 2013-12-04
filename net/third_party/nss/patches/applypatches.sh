@@ -75,3 +75,5 @@ patch -p4 < $patches_dir/channelid2.patch
 patch -p5 < $patches_dir/signedcertificatetimestamps.patch
 
 patch -p4 < $patches_dir/cipherorder.patch
+
+patch -p5 < $patches_dir/tls12backuphash2.patch
