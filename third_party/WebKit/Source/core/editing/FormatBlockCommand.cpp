@@ -32,6 +32,7 @@
 #include "core/editing/FormatBlockCommand.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/html/HTMLElement.h"
 
 namespace WebCore {
 
@@ -91,6 +92,10 @@ void FormatBlockCommand::formatRange(const Position& start, const Position& end,
     bool wasEndOfParagraph = isEndOfParagraph(lastParagraphInBlockNode);
 
     moveParagraphWithClones(start, end, blockNode.get(), outerBlock.get());
+
+    // Copy the inline style of the original block element to the newly created block-style element.
+    if (outerBlock.get() != nodeAfterInsertionPosition.get() && toHTMLElement(nodeAfterInsertionPosition.get())->hasAttribute(styleAttr))
+        blockNode->setAttribute(styleAttr, toHTMLElement(nodeAfterInsertionPosition.get())->getAttribute(styleAttr));
 
     if (wasEndOfParagraph && !isEndOfParagraph(lastParagraphInBlockNode) && !isStartOfParagraph(lastParagraphInBlockNode))
         insertBlockPlaceholder(lastParagraphInBlockNode);

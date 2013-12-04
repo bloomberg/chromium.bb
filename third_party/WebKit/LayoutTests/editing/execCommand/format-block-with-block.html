@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../resources/dump-as-markup.js"></script>
+<div id="testBlock" contenteditable>
+<div style="color: green">hello</div>
+</div>
+<div id="testBlockWithBR" contenteditable>
+<div style="color: green"><br></div>
+</div>
+<div id="testInline" contenteditable>
+<span style="color: green">hello</span>
+</div>
+<script>
+function verify(id)
+{
+    var testElement = document.getElementById(id);
+    window.getSelection().selectAllChildren(testElement);
+
+    Markup.dump(testElement, 'Before FormatBlock');
+    document.execCommand('FormatBlock', false, 'h1');
+    Markup.dump(testElement, 'After FormatBlock');
+}
+Markup.description("This test verifies that formatBlock adds the containing block element's inline style to the block-style element that replaces it.");
+
+verify("testBlock");
+verify("testBlockWithBR");
+verify("testInline");
+    
+</script>
+</body>
+</html>

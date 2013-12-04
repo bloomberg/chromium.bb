@@ -1,0 +1,56 @@
+This test verifies that formatBlock adds the containing block element's inline style to the block-style element that replaces it.
+
+Before FormatBlock:
+| "
+"
+| <div>
+|   style="color: green"
+|   "<#selection-anchor>hello<#selection-focus>"
+| "
+"
+
+After FormatBlock:
+| "
+"
+| <h1>
+|   style="color: green"
+|   "<#selection-anchor>hello<#selection-focus>"
+| "
+"
+
+Before FormatBlock:
+| "
+"
+| <div>
+|   style="color: green"
+|   <#selection-caret>
+|   <br>
+| "
+"
+
+After FormatBlock:
+| "
+"
+| <h1>
+|   style="color: green"
+|   <#selection-caret>
+|   <br>
+| "
+"
+
+Before FormatBlock:
+| "
+"
+| <span>
+|   style="color: green"
+|   "<#selection-anchor>hello<#selection-focus>"
+| "
+"
+
+After FormatBlock:
+| "
+"
+| <h1>
+|   <span>
+|     style="color: green"
+|     "<#selection-anchor>hello<#selection-focus>"
