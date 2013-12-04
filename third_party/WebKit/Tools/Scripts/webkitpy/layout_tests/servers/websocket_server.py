@@ -93,11 +93,11 @@ class PyWebSocket(http_server.Lighttpd):
         # The port objects are supposed to abstract this.
         if self._root:
             self._layout_tests = self._filesystem.abspath(self._root)
-            self._web_socket_tests = self._filesystem.abspath(self._filesystem.join(self._root, 'http', 'tests', 'websocket', 'tests', 'hybi'))
+            self._web_socket_tests = self._filesystem.abspath(self._filesystem.join(self._root, 'http', 'tests', 'websocket'))
         else:
             try:
                 self._layout_tests = self._port_obj.layout_tests_dir()
-                self._web_socket_tests = self._filesystem.join(self._layout_tests, 'http', 'tests', 'websocket', 'tests', 'hybi')
+                self._web_socket_tests = self._filesystem.join(self._layout_tests, 'http', 'tests', 'websocket')
             except:
                 self._web_socket_tests = None
 

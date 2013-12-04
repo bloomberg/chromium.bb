@@ -1,7 +1,7 @@
 #!/usr/bin/perl -wT
 use strict;
 
-my $originPath = "/websocket/tests/hybi/cookie-http-to-ws.pl";
+my $originPath = "/websocket/cookie-http-to-ws.pl";
 
 if ($ENV{"QUERY_STRING"} eq "clear=1") {
     print "Content-Type: text/plain\r\n";
