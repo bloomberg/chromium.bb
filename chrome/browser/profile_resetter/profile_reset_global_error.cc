@@ -10,18 +10,16 @@
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/profile_reset_bubble.h"
+#include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
-
-// The URL that leads directly to the WebUI reset dialog in the settings page.
-const char kResetProfileSettingsURL[] =
-    "chrome://settings/resetProfileSettings";
 
 base::TimeDelta GetPromptDelayHistogramMaximum() {
   return base::TimeDelta::FromDays(7);
@@ -71,9 +69,7 @@ string16 ProfileResetGlobalError::MenuItemLabel() {
 }
 
 void ProfileResetGlobalError::ExecuteMenuItem(Browser* browser) {
-  browser->OpenURL(content::OpenURLParams(
-      GURL(kResetProfileSettingsURL), content::Referrer(),
-      NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_LINK, false));
+  chrome::ShowSettingsSubPage(browser, chrome::kResetProfileSettingsSubPage);
 }
 
 bool ProfileResetGlobalError::HasBubbleView() { return true; }

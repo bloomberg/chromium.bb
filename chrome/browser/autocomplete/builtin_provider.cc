@@ -24,6 +24,7 @@ const char* const kChromeSettingsSubPages[] = {
   chrome::kImportDataSubPage,
   chrome::kLanguageOptionsSubPage,
   chrome::kPasswordManagerSubPage,
+  chrome::kResetProfileSettingsSubPage,
   chrome::kSearchEnginesSubPage,
   chrome::kSyncSetupSubPage,
 #if defined(OS_CHROMEOS)
