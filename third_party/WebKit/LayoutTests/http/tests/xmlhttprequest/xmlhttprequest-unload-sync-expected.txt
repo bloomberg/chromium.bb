@@ -1,0 +1,5 @@
+frame "ifr" - has 1 onunload handler(s)
+Test behavior of sync XHR during unload
+
+PASS: sync XHR completed successfully
+

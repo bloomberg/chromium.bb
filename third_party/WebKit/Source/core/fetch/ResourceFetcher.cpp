@@ -557,7 +557,9 @@ bool ResourceFetcher::shouldLoadNewResource() const
         return false;
     if (!m_documentLoader)
         return true;
-    return m_documentLoader == frame()->loader().activeDocumentLoader();
+    if (m_documentLoader == frame()->loader().activeDocumentLoader())
+        return true;
+    return document() && document()->pageDismissalEventBeingDispatched() != Document::NoDismissal;
 }
 
 bool ResourceFetcher::resourceNeedsLoad(Resource* resource, const FetchRequest& request, RevalidationPolicy policy)
