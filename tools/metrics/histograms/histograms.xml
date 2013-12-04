@@ -7233,6 +7233,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="MultiProfile.TeleportWindowType"
+    enum="MultiProfileTeleportWindowType">
+  <summary>
+    Counts the number of teleported windows by types in separated desktop mode.
+  </summary>
+</histogram>
+
 <histogram name="MultiProfile.UsersPerSession">
   <summary>
     The number of users simultaneously signed into a multiprofile session on
@@ -26388,6 +26395,16 @@ other types of suffix sets.
   <int value="1" label="Caption context menu"/>
   <int value="2" label="Return by minimize"/>
   <int value="3" label="Return by launcher"/>
+</enum>
+
+<enum name="MultiProfileTeleportWindowType" type="int">
+  <int value="0" label="Tabbed browser"/>
+  <int value="1" label="Tabbed incognito browser"/>
+  <int value="2" label="V1 app"/>
+  <int value="3" label="V2 app"/>
+  <int value="4" label="Panel"/>
+  <int value="5" label="Popup"/>
+  <int value="6" label="Unknown"/>
 </enum>
 
 <enum name="NavigationScheme" type="int">

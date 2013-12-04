@@ -35,6 +35,17 @@ class ASH_EXPORT MultiProfileUMA {
     NUM_SWITCH_ACTIVE_USER_ACTIONS
   };
 
+  enum TeleportWindowType {
+    TELEPORT_WINDOW_BROWSER = 0,
+    TELEPORT_WINDOW_INCOGNITO_BROWSER,
+    TELEPORT_WINDOW_V1_APP,
+    TELEPORT_WINDOW_V2_APP,
+    TELEPORT_WINDOW_PANEL,
+    TELEPORT_WINDOW_POPUP,
+    TELEPORT_WINDOW_UNKNOWN,
+    NUM_TELEPORT_WINDOW_TYPES
+  };
+
   enum TeleportWindowAction {
     TELEPORT_WINDOW_DRAG_AND_DROP = 0,
     TELEPORT_WINDOW_CAPTION_MENU,
@@ -51,6 +62,9 @@ class ASH_EXPORT MultiProfileUMA {
 
   // Record switching the active user and what UI path was taken.
   static void RecordSwitchActiveUser(SwitchActiveUserAction action);
+
+  // Record the type of window which got teleported to another desk.
+  static void RecordTeleportWindowType(TeleportWindowType window_type);
 
   // Record the way and how many times a window got teleported to another desk.
   static void RecordTeleportAction(TeleportWindowAction action);

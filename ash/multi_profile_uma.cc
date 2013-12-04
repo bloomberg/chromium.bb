@@ -30,6 +30,13 @@ void MultiProfileUMA::RecordSwitchActiveUser(SwitchActiveUserAction action) {
 }
 
 // static
+void MultiProfileUMA::RecordTeleportWindowType(TeleportWindowType window_type) {
+  UMA_HISTOGRAM_ENUMERATION("MultiProfile.TeleportWindowType",
+                            window_type,
+                            NUM_TELEPORT_WINDOW_TYPES);
+}
+
+// static
 void MultiProfileUMA::RecordTeleportAction(TeleportWindowAction action) {
   UMA_HISTOGRAM_ENUMERATION("MultiProfile.TeleportWindow",
                             action,

@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/notification_service.h"
@@ -77,6 +78,50 @@ bool IsProcessingUserEvent() {
       return true;
   }
   return false;
+}
+
+// Records the type of window which was transferred to another desktop.
+void RecordUMAForTransferredWindowType(aura::Window* window) {
+  // We need to figure out what kind of window this is to record the transfer.
+  Browser* browser = chrome::FindBrowserWithWindow(window);
+  ash::MultiProfileUMA::TeleportWindowType window_type =
+      ash::MultiProfileUMA::TELEPORT_WINDOW_UNKNOWN;
+  if (browser) {
+    if (browser->profile()->IsOffTheRecord()) {
+      window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_INCOGNITO_BROWSER;
+    } else if (browser->is_app()) {
+      window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_V1_APP;
+    } else if (browser->is_type_popup()) {
+      window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_POPUP;
+    } else {
+      window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_BROWSER;
+    }
+  } else {
+    // Unit tests might come here without a profile manager.
+    if (!g_browser_process->profile_manager())
+      return;
+    // If it is not a browser, it is probably be a V2 application. In that case
+    // one of the ShellWindowRegistries should know about it.
+    apps::ShellWindow* shell_window = NULL;
+    std::vector<Profile*> profiles =
+        g_browser_process->profile_manager()->GetLoadedProfiles();
+    for (std::vector<Profile*>::iterator it = profiles.begin();
+         it != profiles.end() && shell_window == NULL; it++) {
+      shell_window = apps::ShellWindowRegistry::Get(
+          *it)->GetShellWindowForNativeWindow(window);
+    }
+    if (shell_window) {
+      if (shell_window->window_type() ==
+              apps::ShellWindow::WINDOW_TYPE_PANEL ||
+          shell_window->window_type() ==
+              apps::ShellWindow::WINDOW_TYPE_V1_PANEL) {
+        window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_PANEL;
+      } else {
+        window_type = ash::MultiProfileUMA::TELEPORT_WINDOW_V2_APP;
+      }
+    }
+  }
+  ash::MultiProfileUMA::RecordTeleportWindowType(window_type);
 }
 
 }  // namespace
@@ -223,12 +268,20 @@ void MultiUserWindowManagerChromeOS::ShowWindowForUser(
       (owner == user_id && IsWindowOnDesktopOfUser(window, user_id)))
     return;
 
+  bool minimized = ash::wm::GetWindowState(window)->IsMinimized();
   // Check that we are not trying to transfer ownership of a minimized window.
-  if (user_id != owner && ash::wm::GetWindowState(window)->IsMinimized())
+  if (user_id != owner && minimized)
     return;
 
-  ash::MultiProfileUMA::RecordTeleportAction(
-      ash::MultiProfileUMA::TELEPORT_WINDOW_RETURN_BY_MINIMIZE);
+  if (minimized) {
+    // If it is minimized it falls back to the original desktop.
+    ash::MultiProfileUMA::RecordTeleportAction(
+        ash::MultiProfileUMA::TELEPORT_WINDOW_RETURN_BY_MINIMIZE);
+  } else {
+    // If the window was transferred without getting minimized, we should record
+    // the window type.
+    RecordUMAForTransferredWindowType(window);
+  }
 
   WindowToEntryMap::iterator it = window_to_entry_.find(window);
   it->second->set_show_for_user(user_id);
