@@ -425,11 +425,6 @@ void DBusThreadManager::InitializeClients() {
   InitClient(g_dbus_thread_manager->GetImageBurnerClient());
   InitClient(g_dbus_thread_manager->GetIntrospectableClient());
   InitClient(g_dbus_thread_manager->GetModemMessagingClient());
-  // Initialize the NFC clients in the correct order.
-  InitClient(g_dbus_thread_manager->GetNfcAdapterClient());
-  InitClient(g_dbus_thread_manager->GetNfcManagerClient());
-  InitClient(g_dbus_thread_manager->GetNfcDeviceClient());
-  InitClient(g_dbus_thread_manager->GetNfcTagClient());
   InitClient(g_dbus_thread_manager->GetPermissionBrokerClient());
   InitClient(g_dbus_thread_manager->GetPowerManagerClient());
   InitClient(g_dbus_thread_manager->GetSessionManagerClient());
@@ -441,6 +436,15 @@ void DBusThreadManager::InitializeClients() {
   InitClient(g_dbus_thread_manager->GetSMSClient());
   InitClient(g_dbus_thread_manager->GetSystemClockClient());
   InitClient(g_dbus_thread_manager->GetUpdateEngineClient());
+
+  // Initialize the NFC clients in the correct order. The order of
+  // initialization matters due to dependencies that exist between the
+  // client objects.
+  InitClient(g_dbus_thread_manager->GetNfcManagerClient());
+  InitClient(g_dbus_thread_manager->GetNfcAdapterClient());
+  InitClient(g_dbus_thread_manager->GetNfcDeviceClient());
+  InitClient(g_dbus_thread_manager->GetNfcTagClient());
+  InitClient(g_dbus_thread_manager->GetNfcRecordClient());
 
   // PowerPolicyController is dependent on PowerManagerClient, so
   // initialize it after the main list of clients.

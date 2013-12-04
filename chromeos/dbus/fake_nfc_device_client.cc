@@ -62,7 +62,7 @@ FakeNfcDeviceClient::GetProperties(const dbus::ObjectPath& object_path) {
 
 void FakeNfcDeviceClient::Push(
     const dbus::ObjectPath& object_path,
-    const std::map<std::string, std::string>& attributes,
+    const base::DictionaryValue& attributes,
     const base::Closure& callback,
     const nfc_client_helpers::ErrorCallback& error_callback) {
   VLOG(1) << "FakeNfcDeviceClient::Write called. Nothing happened.";

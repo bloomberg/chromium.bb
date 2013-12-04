@@ -72,6 +72,7 @@ class MockNfcRecordObserver : public NfcRecordClient::Observer {
   MOCK_METHOD1(RecordRemoved, void(const dbus::ObjectPath&));
   MOCK_METHOD2(RecordPropertyChanged, void(const dbus::ObjectPath&,
                                            const std::string&));
+  MOCK_METHOD1(RecordPropertiesReceived, void(const dbus::ObjectPath&));
 };
 
 class MockNfcTagObserver : public NfcTagClient::Observer {
@@ -507,8 +508,8 @@ TEST_F(NfcClientTest, TagsAddedAndRemoved) {
   // Invoking methods on tags that haven't been added should fail.
   EXPECT_CALL(*this,
               ErrorCallback(nfc_client_helpers::kUnknownObjectError, _));
-  NfcRecordClient::Attributes write_data;
-  write_data[nfc_record::kTypeProperty] = nfc_record::kTypeText;
+  base::DictionaryValue write_data;
+  write_data.SetString(nfc_record::kTypeProperty, nfc_record::kTypeText);
   tag_client_->Write(dbus::ObjectPath(kTestTagPath0), write_data,
                      base::Bind(&NfcClientTest::SuccessCallback,
                                 base::Unretained(this)),
@@ -636,8 +637,8 @@ TEST_F(NfcClientTest, DevicesAddedAndRemoved) {
   // Invoking methods on devices that haven't been added should fail.
   EXPECT_CALL(*this,
               ErrorCallback(nfc_client_helpers::kUnknownObjectError, _));
-  NfcRecordClient::Attributes write_data;
-  write_data[nfc_record::kTypeProperty] = nfc_record::kTypeText;
+  base::DictionaryValue write_data;
+  write_data.SetString(nfc_record::kTypeProperty, nfc_record::kTypeText);
   device_client_->Push(dbus::ObjectPath(kTestDevicePath0), write_data,
                        base::Bind(&NfcClientTest::SuccessCallback,
                                   base::Unretained(this)),

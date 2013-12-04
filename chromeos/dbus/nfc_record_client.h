@@ -91,12 +91,16 @@ class CHROMEOS_EXPORT NfcRecordClient : public DBusClient {
     // with object path |object_path| has acquired a new value.
     virtual void RecordPropertyChanged(const dbus::ObjectPath& object_path,
                                        const std::string& property_name) {}
-  };
 
-  // NDEF records can be created via the Tag and Device interfaces by passing a
-  // dictionary of strings containing the record properties and their values to
-  // their respective API methods.
-  typedef std::map<std::string, std::string> Attributes;
+    // Called when all properties for the record with object path |object_path|
+    // have been received. This method will be called after
+    // Observer::RecordPropertyChanged has been called for all properties that
+    // were received through the initial property fetch that is done when the
+    // object proxy is first created. Observers can use this method to be
+    // notified when all existing properties of a record are available for use.
+    virtual void RecordPropertiesReceived(
+        const dbus::ObjectPath& object_path) {}
+  };
 
   virtual ~NfcRecordClient();
 

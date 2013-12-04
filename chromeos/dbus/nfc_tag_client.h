@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/values.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/nfc_client_helpers.h"
@@ -101,7 +102,7 @@ class CHROMEOS_EXPORT NfcTagClient : public DBusClient {
   //    etc.
   virtual void Write(
       const dbus::ObjectPath& object_path,
-      const NfcRecordClient::Attributes& attributes,
+      const base::DictionaryValue& attributes,
       const base::Closure& callback,
       const nfc_client_helpers::ErrorCallback& error_callback) = 0;
 

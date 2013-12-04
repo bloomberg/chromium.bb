@@ -41,7 +41,7 @@ class CHROMEOS_EXPORT FakeNfcTagClient : public NfcTagClient {
       const dbus::ObjectPath& object_path) OVERRIDE;
   virtual void Write(
       const dbus::ObjectPath& object_path,
-      const std::map<std::string, std::string>& attributes,
+      const base::DictionaryValue& attributes,
       const base::Closure& callback,
       const nfc_client_helpers::ErrorCallback& error_callback) OVERRIDE;
 

@@ -15,12 +15,20 @@ NfcPropertySet::NfcPropertySet(dbus::ObjectProxy* object_proxy,
     : dbus::PropertySet(object_proxy, interface, callback) {
 }
 
+NfcPropertySet::~NfcPropertySet() {
+}
+
 void NfcPropertySet::ConnectSignals() {
   object_proxy()->ConnectToSignal(
       interface(),
       nfc_common::kPropertyChangedSignal,
       base::Bind(&dbus::PropertySet::ChangedReceived, GetWeakPtr()),
       base::Bind(&dbus::PropertySet::ChangedConnected, GetWeakPtr()));
+}
+
+void NfcPropertySet::SetAllPropertiesReceivedCallback(
+    const base::Closure& callback) {
+  on_get_all_callback_ = callback;
 }
 
 void NfcPropertySet::Get(dbus::PropertyBase* property,
@@ -37,10 +45,28 @@ void NfcPropertySet::GetAll() {
                                       GetWeakPtr()));
 }
 
+void NfcPropertySet::OnGetAll(dbus::Response* response) {
+  // First invoke the superclass implementation. If the call to GetAll was
+  // successful, this will invoke the PropertyChangedCallback passed to the
+  // constructor for each individual property received through the call and
+  // make sure that the values of the properties have been cached. This way,
+  // all received properties will be available when |on_get_all_callback_| is
+  // run.
+  dbus::PropertySet::OnGetAll(response);
+  if (response) {
+    VLOG(2) << "NfcPropertySet::GetAll returned successfully.";
+    if (!on_get_all_callback_.is_null())
+      on_get_all_callback_.Run();
+  }
+}
+
 void NfcPropertySet::Set(dbus::PropertyBase* property,
                          SetCallback callback) {
   dbus::MethodCall method_call(
       interface(), nfc_common::kSetProperty);
+  dbus::MessageWriter writer(&method_call);
+  writer.AppendString(property->name());
+  property->AppendSetValueToWriter(&writer);
   object_proxy()->CallMethod(&method_call,
                            dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                            base::Bind(&dbus::PropertySet::OnSet,

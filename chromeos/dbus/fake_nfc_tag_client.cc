@@ -62,7 +62,7 @@ FakeNfcTagClient::GetProperties(const dbus::ObjectPath& object_path) {
 
 void FakeNfcTagClient::Write(
     const dbus::ObjectPath& object_path,
-    const std::map<std::string, std::string>& attributes,
+    const base::DictionaryValue& attributes,
     const base::Closure& callback,
     const nfc_client_helpers::ErrorCallback& error_callback) {
   VLOG(1) << "FakeNfcTagClient::Write called. Nothing happened.";

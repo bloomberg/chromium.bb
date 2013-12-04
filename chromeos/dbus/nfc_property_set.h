@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "dbus/message.h"
 #include "dbus/object_proxy.h"
 #include "dbus/property.h"
@@ -23,16 +24,29 @@ class NfcPropertySet : public dbus::PropertySet {
                  const std::string& interface,
                  const PropertyChangedCallback& callback);
 
+  // Destructor; we don't hold on to any references or memory that needs
+  // explicit clean-up, but clang thinks we might.
+  virtual ~NfcPropertySet();
+
+  // Caches |callback| so that it will be invoked after a call to GetAll()
+  // has successfully received all existing properties from the remote object.
+  void SetAllPropertiesReceivedCallback(const base::Closure& callback);
+
   // dbus::PropertySet overrides
   virtual void ConnectSignals() OVERRIDE;
   virtual void Get(dbus::PropertyBase* property,
                    GetCallback callback) OVERRIDE;
   virtual void GetAll() OVERRIDE;
+  virtual void OnGetAll(dbus::Response* response) OVERRIDE;
   virtual void Set(dbus::PropertyBase* property,
                    SetCallback callback) OVERRIDE;
   virtual void ChangedReceived(dbus::Signal* signal) OVERRIDE;
 
  private:
+  // Optional callback used to notify clients when all properties were received
+  // after a call to GetAll.
+  base::Closure on_get_all_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(NfcPropertySet);
 };
 
