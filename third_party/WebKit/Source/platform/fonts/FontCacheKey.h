@@ -78,6 +78,11 @@ public:
         return m_fontSize == hashTableDeletedSize();
     }
 
+    static unsigned precisionMultiplier()
+    {
+        return s_fontSizePrecisionMultiplier;
+    }
+
 private:
     static unsigned hashTableDeletedSize()
     {

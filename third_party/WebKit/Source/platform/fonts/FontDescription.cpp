@@ -147,15 +147,13 @@ FontDescription FontDescription::makeNormalFeatureSettings() const
 
 float FontDescription::effectiveFontSize() const
 {
-    // FIXME: Subpixel font scaling doesn't quite work for SVG text on Mac yet.
-    // https://code.google.com/p/chromium/issues/detail?id=324553
-#if OS(MACOSX)
-    return computedPixelSize();
-#else
-    return (RuntimeEnabledFeatures::subpixelFontScalingEnabled())
+    float size = (RuntimeEnabledFeatures::subpixelFontScalingEnabled())
         ? computedSize()
         : computedPixelSize();
-#endif
+
+    // Ensure that the effective precision matches the font-cache precision.
+    // This guarantees that the same precision is used regardless of cache status.
+    return floorf(size * FontCacheKey::precisionMultiplier()) / FontCacheKey::precisionMultiplier();
 }
 
 FontCacheKey FontDescription::cacheKey(const AtomicString& familyName, FontTraitsMask desiredTraits) const
