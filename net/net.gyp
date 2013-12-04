@@ -2733,6 +2733,7 @@
             'tools/balsa/simple_buffer.h',
             'tools/balsa/split.cc',
             'tools/balsa/split.h',
+            'tools/balsa/string_piece_utils.h',
           ],
         },
         {
@@ -2792,7 +2793,6 @@
             'tools/flip_server/spdy_util.h',
             'tools/flip_server/streamer_interface.cc',
             'tools/flip_server/streamer_interface.h',
-            'tools/flip_server/string_piece_utils.h',
           ],
         },
         {
