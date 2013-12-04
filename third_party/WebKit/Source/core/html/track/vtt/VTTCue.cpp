@@ -209,10 +209,10 @@ VTTCue::VTTCue(Document& document, double startTime, double endTime, const Strin
     , m_writingDirection(Horizontal)
     , m_cueAlignment(Middle)
     , m_vttNodeTree(0)
-    , m_snapToLines(true)
     , m_cueBackgroundBox(HTMLDivElement::create(document))
-    , m_displayTreeShouldChange(true)
     , m_displayDirection(CSSValueLtr)
+    , m_snapToLines(true)
+    , m_displayTreeShouldChange(true)
     , m_notifyRegion(true)
 {
     ScriptWrappable::init(this);

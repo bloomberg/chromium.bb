@@ -168,24 +168,20 @@ private:
     int m_textPosition;
     int m_cueSize;
     WritingDirection m_writingDirection;
-
     CueAlignment m_cueAlignment;
+    String m_regionId;
 
     RefPtr<DocumentFragment> m_vttNodeTree;
-    bool m_snapToLines;
-
     RefPtr<HTMLDivElement> m_cueBackgroundBox;
-
-    bool m_displayTreeShouldChange;
     RefPtr<VTTCueBox> m_displayTree;
 
     CSSValueID m_displayDirection;
-
     int m_displaySize;
-
     std::pair<float, float> m_displayPosition;
-    String m_regionId;
-    bool m_notifyRegion;
+
+    bool m_snapToLines : 1;
+    bool m_displayTreeShouldChange : 1;
+    bool m_notifyRegion : 1;
 };
 
 inline VTTCue* toVTTCue(TextTrackCue* cue)

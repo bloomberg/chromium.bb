@@ -106,8 +106,8 @@ private:
 
     TextTrack* m_track;
 
-    bool m_isActive;
-    bool m_pauseOnExit;
+    bool m_isActive : 1;
+    bool m_pauseOnExit : 1;
 };
 
 } // namespace WebCore
