@@ -42,7 +42,6 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -379,7 +378,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if defined(ENABLE_EXTENSIONS)
   TokenCacheServiceFactory::GetInstance();
 #endif
-  TokenServiceFactory::GetInstance();
   WebDataServiceFactory::GetInstance();
 }
 

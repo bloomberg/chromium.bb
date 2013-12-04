@@ -712,29 +712,6 @@ enum NotificationType {
   // are a ChromeCookieDetails object.
   NOTIFICATION_COOKIE_CHANGED,
 
-  // Token Service -----------------------------------------------------------
-
-  // When the token service has a new token available for a service, one of
-  // these notifications is issued per new token.
-  // The source is a TokenService on the Profile. The details are a
-  // TokenAvailableDetails object.
-  NOTIFICATION_TOKEN_AVAILABLE,
-
-  // When there aren't any additional tokens left to load, this notification
-  // is sent.
-  // The source is a TokenService on the profile. There are no details.
-  NOTIFICATION_TOKEN_LOADING_FINISHED,
-
-  // If a token request failed, one of these is issued per failed request.
-  // The source is a TokenService on the Profile. The details are a
-  // TokenRequestFailedDetails object.
-  NOTIFICATION_TOKEN_REQUEST_FAILED,
-
-  // Fired when the TokenService has had all of its tokens removed (such as due
-  // to the user signing out). The source is the TokenService. There are no
-  // details.
-  NOTIFICATION_TOKENS_CLEARED,
-
   // Signin Manager ----------------------------------------------------------
 
   // Sent when a user signs into Google services such as sync.

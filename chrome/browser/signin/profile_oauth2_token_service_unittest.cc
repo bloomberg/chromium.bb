@@ -3,28 +3,30 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "chrome/browser/signin/fake_signin_manager.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service_unittest.h"
-#include "content/public/browser/browser_thread.h"
+#include "chrome/browser/webdata/token_web_data.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_test_util.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::BrowserThread;
+#if defined(OS_MACOSX)
+#include "components/webdata/encryptor/encryptor.h"
+#endif
 
 // Defining constant here to handle backward compatiblity tests, but this
 // constant is no longer used in current versions of chrome.
 static const char kLSOService[] = "lso";
 static const char kEmail[] = "user@gmail.com";
 
-class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
+class ProfileOAuth2TokenServiceTest : public testing::Test,
                                       public OAuth2TokenService::Observer {
  public:
   ProfileOAuth2TokenServiceTest()
@@ -36,8 +38,12 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
   }
 
   virtual void SetUp() OVERRIDE {
-    TokenServiceTestHarness::SetUp();
-    UpdateCredentialsOnService();
+#if defined(OS_MACOSX)
+    Encryptor::UseMockKeychain(true);
+#endif
+
+    profile_.reset(new TestingProfile);
+    profile_->CreateWebDataService();
     factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_revoke_url(),
                              "", net::HTTP_OK, net::URLRequestStatus::SUCCESS);
     oauth2_service_ = ProfileOAuth2TokenServiceFactory::GetForProfile(
@@ -47,13 +53,24 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
     oauth2_service_->AddObserver(this);
   }
 
-  virtual scoped_ptr<TestingProfile> CreateProfile() OVERRIDE {
-    return make_scoped_ptr(new TestingProfile());
-  }
-
   virtual void TearDown() OVERRIDE {
     oauth2_service_->RemoveObserver(this);
-    TokenServiceTestHarness::TearDown();
+    profile_.reset();
+  }
+
+  TestingProfile* profile() { return profile_.get(); }
+
+  void SetupSigninManager(const std::string& username) {
+    SigninManagerFactory::GetForProfile(profile())->
+        SetAuthenticatedUsername(username);
+  }
+
+  void AddAuthTokenManually(const std::string& service,
+                            const std::string& value)  {
+    scoped_refptr<TokenWebData> token_web_data =
+        TokenWebData::FromBrowserContext(profile());
+    if (token_web_data.get())
+      token_web_data->SetTokenForService(service, value);
   }
 
   // OAuth2TokenService::Observer implementation.
@@ -102,6 +119,8 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
   }
 
  protected:
+  content::TestBrowserThreadBundle thread_bundle_;
+  scoped_ptr<TestingProfile> profile_;
   net::FakeURLFetcherFactory factory_;
   ProfileOAuth2TokenService* oauth2_service_;
   TestingOAuth2TokenServiceConsumer consumer_;
@@ -111,20 +130,16 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
 };
 
 TEST_F(ProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
-  CreateSigninManager(kEmail);
+  SetupSigninManager(kEmail);
 
   std::string main_account_id(kEmail);
   std::string main_refresh_token("old_refresh_token");
 
   // Populate DB with legacy tokens.
-  service()->AddAuthTokenManually(GaiaConstants::kSyncService,
-                                  "syncServiceToken");
-  service()->AddAuthTokenManually(kLSOService, "lsoToken");
-  service()->AddAuthTokenManually(
-      GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-      main_refresh_token);
-  // Add a token using the new API.
-  ResetObserverCounts();
+  AddAuthTokenManually(GaiaConstants::kSyncService, "syncServiceToken");
+  AddAuthTokenManually(kLSOService, "lsoToken");
+  AddAuthTokenManually(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+                       main_refresh_token);
 
   // Force LoadCredentials.
   oauth2_service_->LoadCredentials();
@@ -140,11 +155,11 @@ TEST_F(ProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
 
   // Add an old legacy token to the DB, to ensure it will not overwrite existing
   // credentials for main account.
-  service()->AddAuthTokenManually(
+  AddAuthTokenManually(
       GaiaConstants::kGaiaOAuth2LoginRefreshToken,
       "secondOldRefreshToken");
   // Add some other legacy token. (Expected to get discarded).
-  service()->AddAuthTokenManually(kLSOService, "lsoToken");
+  AddAuthTokenManually(kLSOService, "lsoToken");
   // Also add a token using PO2TS.UpdateCredentials and make sure upgrade does
   // not wipe it.
   std::string other_account_id("other_account_id");
@@ -275,7 +290,7 @@ TEST_F(ProfileOAuth2TokenServiceTest, GetAccounts) {
 
 TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-  CreateSigninManager(kEmail);
+  SetupSigninManager(kEmail);
   std::set<std::string> scope_list;
   scope_list.insert("scope");
   oauth2_service_->UpdateCredentials(oauth2_service_->GetPrimaryAccountId(),
@@ -320,7 +335,7 @@ TEST_F(ProfileOAuth2TokenServiceTest, FetchTransientError) {
                            net::URLRequestStatus::FAILED);
 
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-  CreateSigninManager(kEmail);
+  SetupSigninManager(kEmail);
   std::set<std::string> scope_list;
   scope_list.insert("scope");
   oauth2_service_->set_max_authorization_token_fetch_retries_for_testing(0);
