@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/first_run/drive_first_run_controller.h"
 
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray_delegate.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -28,6 +30,13 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/common/extension.h"
+#include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
+#include "ui/message_center/notification_delegate.h"
 #include "url/gurl.h"
 
 namespace chromeos {
@@ -46,7 +55,40 @@ const char kDriveOfflineEndpointUrl[] = "https://drive.google.com/#offline";
 // Google Drive app id.
 const char kDriveHostedAppId[] = "apdfllckaahabafndbhieahigkjlhalf";
 
+// Id of the notification shown when offline mode is enabled.
+const char kDriveOfflineNotificationId[] = "chrome://drive/enable-offline";
+
 }  // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// DriveOfflineNotificationDelegate
+
+// NotificationDelegate for the notification that is displayed when Drive
+// offline mode is enabled automatically. Clicking on the notification button
+// will open the Drive settings page.
+class DriveOfflineNotificationDelegate
+    : public message_center::NotificationDelegate {
+ public:
+  DriveOfflineNotificationDelegate() {}
+
+  // message_center::NotificationDelegate overrides:
+  virtual void Display() OVERRIDE {}
+  virtual void Error() OVERRIDE {}
+  virtual void Close(bool by_user) OVERRIDE {}
+  virtual void Click() OVERRIDE {}
+  virtual void ButtonClick(int button_index) OVERRIDE;
+
+ protected:
+  virtual ~DriveOfflineNotificationDelegate() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(DriveOfflineNotificationDelegate);
+};
+
+void DriveOfflineNotificationDelegate::ButtonClick(int button_index) {
+  DCHECK_EQ(0, button_index);
+  ash::Shell::GetInstance()->system_tray_delegate()->ShowDriveSettings();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // DriveWebContentsManager
@@ -375,12 +417,38 @@ void DriveFirstRunController::CleanUp() {
 
 void DriveFirstRunController::OnOfflineInit(bool success) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (success) {
-    // TODO(tengs): Show non-toast notification that offline files will now
-    // be synced.
-  }
+  if (success)
+    ShowNotification();
   FOR_EACH_OBSERVER(Observer, observer_list_, OnCompletion(success));
   CleanUp();
+}
+
+void DriveFirstRunController::ShowNotification() {
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  DCHECK(service);
+  const extensions::Extension* extension =
+      service->GetExtensionById(drive_hosted_app_id_, false);
+  DCHECK(extension);
+
+  message_center::RichNotificationData data;
+  data.buttons.push_back(message_center::ButtonInfo(
+      l10n_util::GetStringUTF16(IDS_DRIVE_OFFLINE_NOTIFICATION_BUTTON)));
+  ui::ResourceBundle& resource_bundle = ui::ResourceBundle::GetSharedInstance();
+  scoped_ptr<message_center::Notification> notification(
+      new message_center::Notification(
+          message_center::NOTIFICATION_TYPE_SIMPLE,
+          kDriveOfflineNotificationId,
+          base::string16(), // title
+          l10n_util::GetStringUTF16(IDS_DRIVE_OFFLINE_NOTIFICATION_MESSAGE),
+          resource_bundle.GetImageNamed(IDR_NOTIFICATION_DRIVE),
+          base::UTF8ToUTF16(extension->name()),
+          message_center::NotifierId(message_center::NotifierId::APPLICATION,
+                                     kDriveHostedAppId),
+          data,
+          new DriveOfflineNotificationDelegate()));
+  notification->set_priority(message_center::LOW_PRIORITY);
+  message_center::MessageCenter::Get()->AddNotification(notification.Pass());
 }
 
 }  // namespace chromeos

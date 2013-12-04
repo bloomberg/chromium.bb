@@ -58,6 +58,9 @@ class DriveFirstRunController {
   // Called when timed out waiting for offline initialization to complete.
   void OnWebContentsTimedOut();
 
+  // Creates and shows a system notification when enable offline succeeds.
+  void ShowNotification();
+
   // Cleans up internal state and schedules self for deletion.
   void CleanUp();
 

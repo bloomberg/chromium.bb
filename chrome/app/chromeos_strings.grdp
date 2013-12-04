@@ -218,6 +218,12 @@ Press any key to continue exploring.
   <message name="IDS_DOWNLOADING_TIME_LEFT_SMALL" desc="The status text for downloading estimated time left, when estimated time is less than one minute">
     Less than 1 minute left
   </message>
+  <message name="IDS_DRIVE_OFFLINE_NOTIFICATION_MESSAGE" desc="Message shown in notification when Google Drive offline mode is automatically enabled.">
+    Google Drive can now be used offline.
+  </message>
+  <message name="IDS_DRIVE_OFFLINE_NOTIFICATION_BUTTON" desc="Label on button in notification when Google Drive offline mode is automatically enabled.">
+    Change your settings
+  </message>
   <message name="IDS_UPDATE_CANCEL" desc="Message telling to press Escape to cancel update on a non-official build">
     Press ESCAPE to skip (Non-official builds only).
   </message>
