@@ -163,6 +163,9 @@ AudioOutputStream* AudioManagerAndroid::MakeLowLatencyOutputStream(
 
 AudioInputStream* AudioManagerAndroid::MakeLinearInputStream(
     const AudioParameters& params, const std::string& device_id) {
+  // TODO(henrika): add support for device selection if/when any client
+  // needs it.
+  DLOG_IF(ERROR, !device_id.empty()) << "Not implemented!";
   DCHECK_EQ(AudioParameters::AUDIO_PCM_LINEAR, params.format());
   return new OpenSLESInputStream(this, params);
 }

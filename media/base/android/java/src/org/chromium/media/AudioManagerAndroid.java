@@ -19,8 +19,8 @@ import android.os.Build;
 import android.os.Process;
 import android.util.Log;
 
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -114,6 +114,10 @@ class AudioManagerAndroid {
 
     private Integer mAudioDeviceState = STATE_NO_DEVICE_SELECTED;
 
+    // Lock to protect |mAudioDevices| which can be accessed from the main
+    // thread and the audio manager thread.
+    private final Object mLock = new Object();
+
     // Contains a list of currently available audio devices.
     private boolean[] mAudioDevices = new boolean[DEVICE_COUNT];
 
@@ -141,8 +145,10 @@ class AudioManagerAndroid {
         if (mIsInitialized)
             return;
 
-        for (int i = 0; i < DEVICE_COUNT; ++i) {
-            mAudioDevices[i] = false;
+        synchronized (mLock) {
+            for (int i = 0; i < DEVICE_COUNT; ++i) {
+                mAudioDevices[i] = false;
+            }
         }
 
         // Store microphone mute state and speakerphone state so it can
@@ -157,10 +163,12 @@ class AudioManagerAndroid {
         mAudioDeviceState = STATE_SPEAKERPHONE_ON;
 
         // Initialize audio device list with things we know is always available.
-        if (hasEarpiece()) {
-            mAudioDevices[DEVICE_EARPIECE] = true;
+        synchronized (mLock) {
+            if (hasEarpiece()) {
+                mAudioDevices[DEVICE_EARPIECE] = true;
+            }
+            mAudioDevices[DEVICE_SPEAKERPHONE] = true;
         }
-        mAudioDevices[DEVICE_SPEAKERPHONE] = true;
 
         // Register receiver for broadcasted intents related to adding/
         // removing a wired headset (Intent.ACTION_HEADSET_PLUG).
@@ -213,16 +221,20 @@ class AudioManagerAndroid {
      */
     @CalledByNative
     public void setDevice(String deviceId) {
+        boolean devices[] = null;
+        synchronized (mLock) {
+            devices = mAudioDevices.clone();
+        }
         if (deviceId.isEmpty()) {
             logd("setDevice: default");
             // Use a special selection scheme if the default device is selected.
             // The "most unique" device will be selected; Bluetooth first, then
             // wired headset and last the speaker phone.
-            if (mAudioDevices[DEVICE_BLUETOOTH_HEADSET]) {
+            if (devices[DEVICE_BLUETOOTH_HEADSET]) {
                 // TODO(henrika): possibly need improvements here if we are
                 // in a STATE_BLUETOOTH_TURNING_OFF state.
                 setAudioDevice(DEVICE_BLUETOOTH_HEADSET);
-            } else if (mAudioDevices[DEVICE_WIRED_HEADSET]) {
+            } else if (devices[DEVICE_WIRED_HEADSET]) {
                 setAudioDevice(DEVICE_WIRED_HEADSET);
             } else {
                 setAudioDevice(DEVICE_SPEAKERPHONE);
@@ -248,18 +260,20 @@ class AudioManagerAndroid {
      */
     @CalledByNative
     public AudioDeviceName[] getAudioInputDeviceNames() {
-        List<String> devices = new ArrayList<String>();
-        AudioDeviceName[] array = new AudioDeviceName[getNumOfAudioDevices()];
-        int i = 0;
-        for (int id = 0; id < DEVICE_COUNT; ++id ) {
-            if (mAudioDevices[id]) {
-                array[i] = new AudioDeviceName(id, DEVICE_NAMES[id]);
-                devices.add(DEVICE_NAMES[id]);
-                i++;
+        synchronized (mLock) {
+            List<String> devices = new ArrayList<String>();
+            AudioDeviceName[] array = new AudioDeviceName[getNumOfAudioDevicesWithLock()];
+            int i = 0;
+            for (int id = 0; id < DEVICE_COUNT; ++id ) {
+                if (mAudioDevices[id]) {
+                    array[i] = new AudioDeviceName(id, DEVICE_NAMES[id]);
+                    devices.add(DEVICE_NAMES[id]);
+                    i++;
+                }
             }
+            logd("getAudioInputDeviceNames: " + devices);
+            return array;
         }
-        logd("getAudioInputDeviceNames: " + devices);
-        return array;
     }
 
     @CalledByNative
@@ -363,8 +377,7 @@ class AudioManagerAndroid {
      * 'state' value where 0 means unplugged, and 1 means plugged.
      */
     private void registerForWiredHeadsetIntentBroadcast() {
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Intent.ACTION_HEADSET_PLUG);
+        IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
 
         /**
          * Receiver which handles changes in wired headset availablilty.
@@ -378,22 +391,25 @@ class AudioManagerAndroid {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction();
-                if (!action.equals(Intent.ACTION_HEADSET_PLUG))
+                if (!action.equals(Intent.ACTION_HEADSET_PLUG)) {
                     return;
+                }
                 int state = intent.getIntExtra("state", STATE_UNPLUGGED);
                 int microphone = intent.getIntExtra("microphone", HAS_NO_MIC);
                 String name = intent.getStringExtra("name");
                 logd("==> onReceive: s=" + state
                         + ", m=" + microphone
                         + ", n=" + name
-                        + ", s=" + isInitialStickyBroadcast());
+                        + ", sb=" + isInitialStickyBroadcast());
 
                 switch (state) {
                     case STATE_UNPLUGGED:
-                        // Wired headset and earpiece are mutually exclusive.
-                        mAudioDevices[DEVICE_WIRED_HEADSET] = false;
-                        if (hasEarpiece()) {
-                            mAudioDevices[DEVICE_EARPIECE] = true;
+                        synchronized (mLock) {
+                            // Wired headset and earpiece are mutually exclusive.
+                            mAudioDevices[DEVICE_WIRED_HEADSET] = false;
+                            if (hasEarpiece()) {
+                                mAudioDevices[DEVICE_EARPIECE] = true;
+                            }
                         }
                         // If wired headset was used before it was unplugged,
                         // switch to speaker phone. If it was not in use; just
@@ -405,10 +421,12 @@ class AudioManagerAndroid {
                         }
                         break;
                     case STATE_PLUGGED:
-                        // Wired headset and earpiece are mutually exclusive.
-                        mAudioDevices[DEVICE_WIRED_HEADSET] = true;
-                        mAudioDevices[DEVICE_EARPIECE] = false;
-                        setAudioDevice(DEVICE_WIRED_HEADSET);
+                        synchronized (mLock) {
+                            // Wired headset and earpiece are mutually exclusive.
+                            mAudioDevices[DEVICE_WIRED_HEADSET] = true;
+                            mAudioDevices[DEVICE_EARPIECE] = false;
+                            setAudioDevice(DEVICE_WIRED_HEADSET);
+                        }
                         break;
                     default:
                         loge("Invalid state!");
@@ -472,7 +490,9 @@ class AudioManagerAndroid {
             android.bluetooth.BluetoothProfile.STATE_CONNECTED ==
                     btAdapter.getProfileConnectionState(
                             android.bluetooth.BluetoothProfile.HEADSET)) {
-            mAudioDevices[DEVICE_BLUETOOTH_HEADSET] = true;
+            synchronized (mLock) {
+                mAudioDevices[DEVICE_BLUETOOTH_HEADSET] = true;
+            }
             // TODO(henrika): ensure that we set the active audio
             // device to Bluetooth (not trivial).
             setAudioDevice(DEVICE_BLUETOOTH_HEADSET);
@@ -513,7 +533,7 @@ class AudioManagerAndroid {
         reportUpdate();
     }
 
-    private int getNumOfAudioDevices() {
+    private int getNumOfAudioDevicesWithLock() {
         int count = 0;
         for (int i = 0; i < DEVICE_COUNT; ++i) {
             if (mAudioDevices[i])
@@ -524,18 +544,20 @@ class AudioManagerAndroid {
 
     /**
      * For now, just log the state change but the idea is that we should
-     * notifies a registered state change listener (if any) that there has
+     * notify a registered state change listener (if any) that there has
      * been a change in the state.
      * TODO(henrika): add support for state change listener.
      */
     private void reportUpdate() {
-        List<String> devices = new ArrayList<String>();
-        for (int i = 0; i < DEVICE_COUNT; ++i) {
-            if (mAudioDevices[i])
-                devices.add(DEVICE_NAMES[i]);
+        synchronized (mLock) {
+            List<String> devices = new ArrayList<String>();
+            for (int i = 0; i < DEVICE_COUNT; ++i) {
+                if (mAudioDevices[i])
+                    devices.add(DEVICE_NAMES[i]);
+            }
+            logd("reportUpdate: state=" + mAudioDeviceState
+                + ", devices=" + devices);
         }
-        logd("reportUpdate: state=" + mAudioDeviceState
-            + ", devices=" + devices);
     }
 
     private void logDeviceInfo() {
