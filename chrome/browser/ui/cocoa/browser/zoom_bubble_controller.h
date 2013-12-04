@@ -14,21 +14,29 @@ namespace content {
 class WebContents;
 }
 
+// TODO(shess): This helper interface exists to let ZoomBubbleController
+// reach ZoomDecoration.  Since ZoomBubbleController is an implementation
+// detail of ZoomDecoration, it would make more sense to just push it
+// into location_bar/ and directly access ZoomDecoration.
+class ZoomBubbleControllerDelegate {
+ public:
+  // Get the web contents associated with this bubble.
+  virtual content::WebContents* GetWebContents() = 0;
+
+  // Called when the bubble is being closed.
+  virtual void OnClose() = 0;
+};
+
 // The ZoomBubbleController is used to display the current page zoom percent
 // when not at the user's default. It is opened by the ZoomDecoration in the
 // location bar.
 @interface ZoomBubbleController : BaseBubbleController {
  @private
-  // The contents for which the zoom percent is being displayed.
-  content::WebContents* contents_;
+  ZoomBubbleControllerDelegate* delegate_;
 
   // Whether or not the bubble should automatically close itself after being
   // opened.
   BOOL autoClose_;
-
-  // A block that is run when the bubble is being closed. This allows any
-  // weak references to be niled.
-  base::mac::ScopedBlock<void(^)(ZoomBubbleController*)> closeObserver_;
 
   // The text field that displays the current zoom percentage.
   base::scoped_nsobject<NSTextField> zoomPercent_;
@@ -42,15 +50,13 @@ class WebContents;
 
 // Creates the bubble for a parent window but does not show it.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
-             closeObserver:(void(^)(ZoomBubbleController*))closeObserver;
+                  delegate:(ZoomBubbleControllerDelegate*)delegate;
 
-// Shows the bubble for a given contents at an |anchorPoint| in window
-// coordinates. If |autoClose| is YES, then the bubble was opened in response
-// to a zoom change rather than a direct user action, and it will automatically
-// dismiss itself after a few seconds.
-- (void)showForWebContents:(content::WebContents*)contents
-                anchoredAt:(NSPoint)anchorPoint
-                 autoClose:(BOOL)autoClose;
+// Shows the bubble at |anchorPoint| in window coordinates. If
+// |autoClose| is YES, then the bubble was opened in response to a
+// zoom change rather than a direct user action, and it will
+// automatically dismiss itself after a few seconds.
+- (void)showAnchoredAt:(NSPoint)anchorPoint autoClose:(BOOL)autoClose;
 
 // Called by the ZoomDecoration when the zoom percentage changes.
 - (void)onZoomChanged;
@@ -66,9 +72,6 @@ class WebContents;
 
 // Closes the bubble synchronously, bypassing any animations.
 - (void)closeWithoutAnimation;
-
-// TODO(shess): For diagnosing <http://crbug.com/318425>.
-- (content::WebContents*)webContents;
 
 @end
 

@@ -13,65 +13,82 @@
 
 typedef CocoaTest ZoomBubbleControllerTest;
 
-TEST_F(ZoomBubbleControllerTest, CloseObserver) {
-  __block ZoomBubbleController* controller = nil;
-  __block BOOL didObserve = NO;
-  void(^observer)(ZoomBubbleController*) = ^(ZoomBubbleController* bubble) {
-      EXPECT_EQ(controller, bubble);
-      didObserve = YES;
-  };
+namespace {
 
-  controller =
+class TestZoomBubbleControllerDelegate : public ZoomBubbleControllerDelegate {
+ public:
+  TestZoomBubbleControllerDelegate() : did_close_(false) {}
+
+  // Get the web contents associated with this bubble.
+  virtual content::WebContents* GetWebContents() OVERRIDE {
+    return NULL;
+  }
+
+  // Called when the bubble is being closed.
+  virtual void OnClose() OVERRIDE {
+    did_close_ = true;
+  }
+
+  bool did_close() { return did_close_; }
+
+ private:
+  bool did_close_;
+};
+
+}  // namespace
+
+TEST_F(ZoomBubbleControllerTest, CloseObserver) {
+  TestZoomBubbleControllerDelegate test_delegate;
+
+  ZoomBubbleController* controller =
       [[ZoomBubbleController alloc] initWithParentWindow:test_window()
-                                           closeObserver:observer];
-  [controller showForWebContents:NULL anchoredAt:NSZeroPoint autoClose:NO];
+                                                delegate:&test_delegate];
+  [controller showAnchoredAt:NSZeroPoint autoClose:NO];
   [base::mac::ObjCCastStrict<InfoBubbleWindow>([controller window])
       setAllowedAnimations:info_bubble::kAnimateNone];
 
-  EXPECT_FALSE(didObserve);
+  EXPECT_FALSE(test_delegate.did_close());
 
   [controller close];
   chrome::testing::NSRunLoopRunAllPending();
 
-  EXPECT_TRUE(didObserve);
+  EXPECT_TRUE(test_delegate.did_close());
 }
 
 TEST_F(ZoomBubbleControllerTest, AutoClose) {
-  __block BOOL didObserve = NO;
-  ZoomBubbleController* controller = [[ZoomBubbleController alloc]
-      initWithParentWindow:test_window()
-             closeObserver:^(ZoomBubbleController*) {
-                didObserve = YES;
-             }];
+  TestZoomBubbleControllerDelegate test_delegate;
+
+  ZoomBubbleController* controller =
+      [[ZoomBubbleController alloc] initWithParentWindow:test_window()
+                                                delegate:&test_delegate];
   chrome::SetZoomBubbleAutoCloseDelayForTesting(0);
-  [controller showForWebContents:NULL anchoredAt:NSZeroPoint autoClose:YES];
+  [controller showAnchoredAt:NSZeroPoint autoClose:YES];
   [base::mac::ObjCCastStrict<InfoBubbleWindow>([controller window])
       setAllowedAnimations:info_bubble::kAnimateNone];
 
-  EXPECT_FALSE(didObserve);
+  EXPECT_FALSE(test_delegate.did_close());
   chrome::testing::NSRunLoopRunAllPending();
-  EXPECT_TRUE(didObserve);
+  EXPECT_TRUE(test_delegate.did_close());
 }
 
 TEST_F(ZoomBubbleControllerTest, MouseEnteredExited) {
-  __block BOOL didObserve = NO;
-  ZoomBubbleController* controller = [[ZoomBubbleController alloc]
-      initWithParentWindow:test_window()
-             closeObserver:^(ZoomBubbleController*) {
-                didObserve = YES;
-             }];
+  TestZoomBubbleControllerDelegate test_delegate;
+
+  ZoomBubbleController* controller =
+      [[ZoomBubbleController alloc] initWithParentWindow:test_window()
+                                                delegate:&test_delegate];
 
   chrome::SetZoomBubbleAutoCloseDelayForTesting(0);
-  [controller showForWebContents:NULL anchoredAt:NSZeroPoint autoClose:YES];
+  [controller showAnchoredAt:NSZeroPoint autoClose:YES];
   [base::mac::ObjCCastStrict<InfoBubbleWindow>([controller window])
       setAllowedAnimations:info_bubble::kAnimateNone];
 
-  EXPECT_FALSE(didObserve);
+  EXPECT_FALSE(test_delegate.did_close());
   [controller mouseEntered:nil];
   chrome::testing::NSRunLoopRunAllPending();
-  EXPECT_FALSE(didObserve);
+  EXPECT_FALSE(test_delegate.did_close());
 
   [controller mouseExited:nil];
   chrome::testing::NSRunLoopRunAllPending();
-  EXPECT_TRUE(didObserve);
+  EXPECT_TRUE(test_delegate.did_close());
 }
