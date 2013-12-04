@@ -32,7 +32,7 @@ camera.effects.Swirl.prototype = {
  * @override
  */
 camera.effects.Swirl.prototype.filterFrame = function(canvas) {
-  var face = this.tracker_.getFaceForCanvas(canvas);
+  var face = this.tracker_.getFacesForCanvas(canvas)[0];
   var x = canvas.width * (face.x + (face.width / 2));
   var y = canvas.height * face.y;
   var radius = Math.sqrt(Math.pow(face.width * canvas.width, 2) +

@@ -68,15 +68,17 @@ camera.effects.Pinch.prototype.randomize = function() {
  * @override
  */
 camera.effects.Pinch.prototype.filterFrame = function(canvas) {
-  var face = this.tracker_.getFaceForCanvas(canvas);
-  var x = canvas.width * (face.x + (face.width / 2));
-  var y = canvas.height * face.y;
-  var radius = Math.sqrt(Math.pow(face.width * canvas.width, 2) +
-                         Math.pow(face.height * canvas.height, 2));
-  canvas.bulgePinch(x,
-                    y + this.offset_ * face.height * canvas.height,
-                    radius * this.amount_ * this.size_,
-                    0.5 * face.confidence * this.strength_);
+  var faces = this.tracker_.getFacesForCanvas(canvas);
+  for (var index = 0; index < faces.length; index++) {
+    var x = canvas.width * (faces[index].x + (faces[index].width / 2));
+    var y = canvas.height * faces[index].y;
+    var radius = Math.sqrt(Math.pow(faces[index].width * canvas.width, 2) +
+                           Math.pow(faces[index].height * canvas.height, 2));
+    canvas.bulgePinch(x,
+                      y + this.offset_ * faces[index].height * canvas.height,
+                      radius * this.amount_ * this.size_,
+                      0.5 * this.strength_);
+  }
 };
 
 /**

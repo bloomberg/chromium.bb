@@ -48,7 +48,7 @@ camera.effects.Cinema.prototype.randomize = function() {
  * @override
  */
 camera.effects.Cinema.prototype.filterFrame = function(canvas) {
-  var face = this.tracker_.getFaceForCanvas(canvas);
+  var face = this.tracker_.getFacesForCanvas(canvas)[0];
   var x = canvas.width * (face.x + (face.width / 2));
   var y = canvas.height * face.y * 1.5;
   var radius = Math.sqrt(Math.pow(face.width * canvas.width, 2) +
