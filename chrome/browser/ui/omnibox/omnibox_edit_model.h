@@ -319,9 +319,6 @@ class OmniboxEditModel {
   // Called when the current match has changed in the OmniboxController.
   void OnCurrentMatchChanged();
 
-  // Access the current view text.
-  string16 GetViewText() const;
-
   // TODO(beaudoin): We need this to allow OmniboxController access the
   // InstantController via OmniboxEditController, because the only valid pointer
   // to InstantController is kept in Browser. We should try to get rid of this,

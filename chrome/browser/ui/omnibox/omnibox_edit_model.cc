@@ -763,7 +763,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
   }
 
   // Get the current text before we call RevertAll() which will clear it.
-  string16 current_text = GetViewText();
+  string16 current_text = view_->GetText();
 
   if (disposition != NEW_BACKGROUND_TAB) {
     base::AutoReset<bool> tmp(&in_revert_, true);
@@ -1210,10 +1210,6 @@ void OmniboxEditModel::OnCurrentMatchChanged() {
   // its value across the entire call.
   const string16 inline_autocompletion(match.inline_autocompletion);
   OnPopupDataChanged(inline_autocompletion, NULL, keyword, is_keyword_hint);
-}
-
-string16 OmniboxEditModel::GetViewText() const {
-  return view_->GetText();
 }
 
 InstantController* OmniboxEditModel::GetInstantController() const {
