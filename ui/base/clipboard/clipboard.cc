@@ -18,61 +18,12 @@ namespace ui {
 
 namespace {
 
-// Extracts the bitmap size from the passed in params. Since the renderer could
-// send us bad data, explicitly copy the parameters to make sure we go through
-// gfx::Size's sanity checks.
-bool GetBitmapSizeFromParams(const Clipboard::ObjectMapParams& params,
-                             gfx::Size* size) {
-  DCHECK(params.size() == 2);
-  if (params[1].size() != sizeof(gfx::Size))
-    return false;
-  const gfx::Size* size_from_renderer =
-      reinterpret_cast<const gfx::Size*>(&(params[1].front()));
-  size->set_width(size_from_renderer->width());
-  size->set_height(size_from_renderer->height());
-  return true;
-}
-
-// A compromised renderer could send us bad size data, so validate it to verify
-// that calculating the number of bytes in the bitmap won't overflow a uint32.
-//
-// |size| - Clipboard bitmap size to validate.
-// |bitmap_bytes| - On return contains the number of bytes needed to store
-// the bitmap data or -1 if the data is invalid.
-// returns: true if the bitmap size is valid, false otherwise.
-bool IsBitmapSizeSane(const gfx::Size& size, uint32* bitmap_bytes) {
-  DCHECK_GE(size.width(), 0);
-  DCHECK_GE(size.height(), 0);
-
-  *bitmap_bytes = -1;
-  uint32 total_size = size.width();
-  // Limit size to max int so SkBitmap::getSize() calculation won't overflow.
-  // TODO(dcheng): Instead of all this custom validation, we should just use a
-  // combination of SkBitmap's setConfig() and getSize64() to detect this, e.g.:
-  //   SkBitmap bitmap;
-  //   if (!bitmap.setConfig(...))
-  //      return false;
-  //   if (bitmap.getSize64().is64())
-  //      return false;
-  if (std::numeric_limits<int>::max() / size.width() <= size.height())
-    return false;
-  total_size *= size.height();
-  if (std::numeric_limits<int>::max() / total_size <= 4)
-    return false;
-  total_size *= 4;
-  *bitmap_bytes = total_size;
-  return true;
-}
-
 // Valides a shared bitmap on the clipboard.
 // Returns true if the clipboard data makes sense and it's safe to access the
 // bitmap.
-bool ValidateAndMapSharedBitmap(const gfx::Size& size,
+bool ValidateAndMapSharedBitmap(size_t bitmap_bytes,
                                 base::SharedMemory* bitmap_data) {
   using base::SharedMemory;
-  uint32 bitmap_bytes = -1;
-  if (!IsBitmapSizeSane(size, &bitmap_bytes))
-    return false;
 
   if (!bitmap_data || !SharedMemory::IsHandleValid(bitmap_data->handle()))
     return false;
@@ -82,19 +33,6 @@ bool ValidateAndMapSharedBitmap(const gfx::Size& size,
     return false;
   }
   return true;
-}
-
-// Adopts a blob of bytes (assumed to be ARGB pixels) into a SkBitmap. Since the
-// pixel data is not copied, the caller must ensure that |data| is valid as long
-// as the SkBitmap is in use. Note that on little endian machines, each pixel is
-// actually BGRA in memory.
-SkBitmap AdoptBytesIntoSkBitmap(const void* data, const gfx::Size& size) {
-  SkBitmap bitmap;
-  bitmap.setConfig(SkBitmap::kARGB_8888_Config, size.width(), size.height());
-  // Guaranteed not to overflow since it's been validated by IsBitmapSizeSane().
-  DCHECK_EQ(4U * size.width(), bitmap.rowBytes());
-  bitmap.setPixels(const_cast<void*>(data));
-  return bitmap;
 }
 
 // A list of allowed threads. By default, this is empty and no thread checking
@@ -208,26 +146,38 @@ void Clipboard::DispatchObject(ObjectType type, const ObjectMapParams& params) {
       using base::SharedMemory;
       using base::SharedMemoryHandle;
 
-      if (params[0].size() != sizeof(SharedMemory*))
+      if (params[0].size() != sizeof(SharedMemory*) ||
+          params[1].size() != sizeof(gfx::Size)) {
+        return;
+      }
+
+      SkBitmap bitmap;
+      const gfx::Size* unvalidated_size =
+          reinterpret_cast<const gfx::Size*>(&params[1].front());
+      // Let Skia do some sanity checking for us (no negative widths/heights, no
+      // overflows while calculating bytes per row, etc).
+      if (!bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                            unvalidated_size->width(),
+                            unvalidated_size->height())) {
+        return;
+      }
+      // Make sure the size is representable as a signed 32-bit int, so
+      // SkBitmap::getSize() won't be truncated.
+      if (bitmap.getSize64().is64())
         return;
 
       // It's OK to cast away constness here since we map the handle as
       // read-only.
       const char* raw_bitmap_data_const =
-          reinterpret_cast<const char*>(&(params[0].front()));
+          reinterpret_cast<const char*>(&params[0].front());
       char* raw_bitmap_data = const_cast<char*>(raw_bitmap_data_const);
       scoped_ptr<SharedMemory> bitmap_data(
           *reinterpret_cast<SharedMemory**>(raw_bitmap_data));
 
-      gfx::Size size;
-      if (!GetBitmapSizeFromParams(params, &size))
+      if (!ValidateAndMapSharedBitmap(bitmap.getSize(), bitmap_data.get()))
         return;
+      bitmap.setPixels(bitmap_data->memory());
 
-      if (!ValidateAndMapSharedBitmap(size, bitmap_data.get()))
-        return;
-
-      const SkBitmap& bitmap = AdoptBytesIntoSkBitmap(
-          bitmap_data->memory(), size);
       WriteBitmap(bitmap);
       break;
     }

@@ -337,8 +337,7 @@ void DeleteClipboard() {
 class ClipboardDataBuilder {
  public:
   static void CommitToClipboard() {
-    DCHECK(current_data_);
-    GetClipboard()->WriteData(current_data_);
+    GetClipboard()->WriteData(GetCurrentData());
     current_data_ = NULL;
   }
 
