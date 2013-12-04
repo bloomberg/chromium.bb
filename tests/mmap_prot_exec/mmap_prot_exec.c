@@ -82,11 +82,11 @@ unsigned char const test_machine_code[] = {
   0x1e, 0xff, 0x2f, 0xe1,  /* bx lr */
 };
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
-/* this is hand assembled and may not yet satisfy MIPS sandboxing rules */
 unsigned char const test_machine_code[] = {
-  0x01, 0x00, 0x42, 0x20,  /* addi v0, a0, 1 */
+  0x01, 0x00, 0x82, 0x20,  /* addi v0, a0, 1 */
   0x24, 0xf8, 0xee, 0x03,  /* and ra, ra, t6 */
-  0x08, 0x00, 0xe0, 0x23,  /* jr ra */
+  0x08, 0x00, 0xe0, 0x03,  /* jr ra */
+  0x00, 0x00, 0x00, 0x00,  /* nop */
 };
 #else
 # error "What architecture?"
