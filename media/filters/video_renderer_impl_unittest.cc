@@ -530,6 +530,57 @@ TEST_F(VideoRendererImplTest, PlayAfterPreroll) {
   Shutdown();
 }
 
+TEST_F(VideoRendererImplTest, Rebuffer) {
+  Initialize();
+
+  Play();
+
+  // Advance time past prerolled time drain the ready frame queue.
+  AdvanceTimeInMs(5 * kFrameDurationInMs);
+  WaitForPendingRead();
+
+  // Simulate a Pause/Preroll/Play rebuffer sequence.
+  Pause();
+
+  WaitableMessageLoopEvent event;
+  renderer_->Preroll(kNoTimestamp(),
+                     event.GetPipelineStatusCB());
+
+  // Queue enough frames to satisfy preroll.
+  for (int i = 0; i < limits::kMaxVideoFrames; ++i)
+    QueueNextFrame();
+
+  SatisfyPendingRead();
+
+  event.RunAndWaitForStatus(PIPELINE_OK);
+
+  Play();
+
+  Shutdown();
+}
+
+TEST_F(VideoRendererImplTest, Rebuffer_AlreadyHaveEnoughFrames) {
+  Initialize();
+
+  // Queue an extra frame so that we'll have enough frames to satisfy
+  // preroll even after the first frame is painted.
+  QueueNextFrame();
+  Play();
+
+  // Simulate a Pause/Preroll/Play rebuffer sequence.
+  Pause();
+
+  WaitableMessageLoopEvent event;
+  renderer_->Preroll(kNoTimestamp(),
+                     event.GetPipelineStatusCB());
+
+  event.RunAndWaitForStatus(PIPELINE_OK);
+
+  Play();
+
+  Shutdown();
+}
+
 TEST_F(VideoRendererImplTest, GetCurrentFrame_Initialized) {
   Initialize();
   EXPECT_TRUE(GetCurrentFrame().get());  // Due to prerolling.

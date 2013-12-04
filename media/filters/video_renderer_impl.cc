@@ -128,13 +128,27 @@ void VideoRendererImpl::Preroll(base::TimeDelta time,
                                 const PipelineStatusCB& cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   base::AutoLock auto_lock(lock_);
-  DCHECK_EQ(state_, kFlushed) << "Must flush prior to prerolling.";
   DCHECK(!cb.is_null());
   DCHECK(preroll_cb_.is_null());
+  DCHECK(state_ == kFlushed || state_== kPaused) << "state_ " << state_;
+
+  if (state_ == kFlushed) {
+    DCHECK(time != kNoTimestamp());
+    DCHECK(!pending_read_);
+    DCHECK(ready_frames_.empty());
+  } else {
+    DCHECK(time == kNoTimestamp());
+  }
 
   state_ = kPrerolling;
   preroll_cb_ = cb;
   preroll_timestamp_ = time;
+
+  if (ShouldTransitionToPrerolled_Locked()) {
+    TransitionToPrerolled_Locked();
+    return;
+  }
+
   AttemptRead_Locked();
 }
 
@@ -388,24 +402,27 @@ void VideoRendererImpl::FrameReady(VideoFrameStream::Status status,
 
   // Maintain the latest frame decoded so the correct frame is displayed after
   // prerolling has completed.
-  if (state_ == kPrerolling && frame->GetTimestamp() <= preroll_timestamp_) {
+  if (state_ == kPrerolling && preroll_timestamp_ != kNoTimestamp() &&
+      frame->GetTimestamp() <= preroll_timestamp_) {
     ready_frames_.clear();
   }
 
   AddReadyFrame_Locked(frame);
 
-  if (state_ == kPrerolling) {
-    if (!video_frame_stream_.CanReadWithoutStalling() ||
-        ready_frames_.size() >= static_cast<size_t>(limits::kMaxVideoFrames)) {
-      TransitionToPrerolled_Locked();
-    }
-  }
+  if (ShouldTransitionToPrerolled_Locked())
+    TransitionToPrerolled_Locked();
 
   // Always request more decoded video if we have capacity. This serves two
   // purposes:
   //   1) Prerolling while paused
   //   2) Keeps decoding going if video rendering thread starts falling behind
   AttemptRead_Locked();
+}
+
+bool VideoRendererImpl::ShouldTransitionToPrerolled_Locked() {
+  return state_ == kPrerolling &&
+      (!video_frame_stream_.CanReadWithoutStalling() ||
+       ready_frames_.size() >= static_cast<size_t>(limits::kMaxVideoFrames));
 }
 
 void VideoRendererImpl::AddReadyFrame_Locked(

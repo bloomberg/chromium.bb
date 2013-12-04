@@ -74,10 +74,13 @@ class MEDIA_EXPORT VideoRenderer {
   // Discard any video data, executing |callback| when completed.
   virtual void Flush(const base::Closure& callback) = 0;
 
-  // Start prerolling video data for samples starting at |time|, executing
-  // |callback| when completed.
+  // Start prerolling video data. If |time| equals kNoTimestamp() then all
+  // samples delivered to the renderer are used to complete preroll. If |time|
+  // does not equal kNoTimestamp(), then any samples delivered to the renderer
+  // with timestamps less than |time| are silently dropped and not used to
+  // satisfy preroll. |callback| is executed when preroll has completed.
   //
-  // Only valid to call after a successful Initialize() or Flush().
+  // Only valid to call after a successful Initialize(), Pause(), or Flush().
   virtual void Preroll(base::TimeDelta time,
                        const PipelineStatusCB& callback) = 0;
 

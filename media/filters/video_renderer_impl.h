@@ -129,6 +129,10 @@ class MEDIA_EXPORT VideoRendererImpl
 
   void TransitionToPrerolled_Locked();
 
+  // Returns true of all conditions have been met to transition from
+  // kPrerolling to kPrerolled.
+  bool ShouldTransitionToPrerolled_Locked();
+
   // Runs |statistics_cb_| with |frames_decoded_| and |frames_dropped_|, resets
   // them to 0, and then waits on |frame_available_| for up to the
   // |wait_duration|.
