@@ -165,11 +165,14 @@ class CONTENT_EXPORT BrowserAccessibility {
   gfx::Rect location() const { return location_; }
   BrowserAccessibilityManager* manager() const { return manager_; }
   const std::string& name() const { return name_; }
+  const std::string& value() const { return value_; }
   int32 renderer_id() const { return renderer_id_; }
   int32 role() const { return role_; }
   int32 state() const { return state_; }
-  const std::string& value() const { return value_; }
   bool instance_active() const { return instance_active_; }
+
+  void set_name(const std::string& name) { name_ = name; }
+  void set_value(const std::string& value) { value_ = value; }
 
 #if defined(OS_MACOSX) && __OBJC__
   BrowserAccessibilityCocoa* ToBrowserAccessibilityCocoa();
@@ -278,6 +281,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   // The parent of this object, may be NULL if we're the root object.
   BrowserAccessibility* parent_;
 
+ private:
   // The index of this within its parent object.
   int32 index_in_parent_;
 

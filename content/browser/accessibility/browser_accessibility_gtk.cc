@@ -475,7 +475,7 @@ bool BrowserAccessibilityGtk::IsNative() const {
 }
 
 void BrowserAccessibilityGtk::InitRoleAndState() {
-  switch(role_) {
+  switch(role()) {
     case blink::WebAXRoleDocument:
     case blink::WebAXRoleRootWebArea:
     case blink::WebAXRoleWebArea:

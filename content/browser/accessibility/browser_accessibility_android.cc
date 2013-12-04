@@ -374,14 +374,14 @@ void BrowserAccessibilityAndroid::PostInitialize() {
   BrowserAccessibility::PostInitialize();
 
   if (IsEditableText()) {
-    if (base::UTF8ToUTF16(value_) != new_value_) {
+    if (base::UTF8ToUTF16(value()) != new_value_) {
       old_value_ = new_value_;
-      new_value_ = base::UTF8ToUTF16(value_);
+      new_value_ = base::UTF8ToUTF16(value());
     }
   }
 
-  if (role_ == blink::WebAXRoleAlert && first_time_)
-    manager_->NotifyAccessibilityEvent(blink::WebAXEventAlert, this);
+  if (role() == blink::WebAXRoleAlert && first_time_)
+    manager()->NotifyAccessibilityEvent(blink::WebAXEventAlert, this);
 
   base::string16 live;
   if (GetString16Attribute(
@@ -401,7 +401,7 @@ void BrowserAccessibilityAndroid::NotifyLiveRegionUpdate(
   base::string16 text = GetText();
   if (cached_text_ != text) {
     if (!text.empty()) {
-      manager_->NotifyAccessibilityEvent(blink::WebAXEventShow,
+      manager()->NotifyAccessibilityEvent(blink::WebAXEventShow,
                                          this);
     }
     cached_text_ = text;
