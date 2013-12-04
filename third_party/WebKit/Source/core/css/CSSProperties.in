@@ -58,6 +58,7 @@ flex-shrink type_name=float
 flex-wrap
 float type_name=EFloat, name_for_methods=Floating
 font-family custom_all
+font-kerning custom_all
 font-size custom_all
 font-style custom_all
 font-variant custom_all
@@ -188,7 +189,6 @@ column-fill type_name=ColumnFill
 -webkit-column-width type_name=float, custom_all
 -webkit-flow-from type_name=AtomicString, name_for_methods=RegionThread, converter=convertString<CSSValueNone>
 -webkit-flow-into type_name=AtomicString, name_for_methods=FlowThread, converter=convertString<CSSValueNone>
--webkit-font-kerning custom_all
 -webkit-font-smoothing custom_all
 -webkit-font-variant-ligatures custom_all
 -webkit-highlight type_name=AtomicString, converter=convertString<CSSValueNone>

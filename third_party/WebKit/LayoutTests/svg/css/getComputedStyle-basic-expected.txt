@@ -82,6 +82,8 @@ rect: style.getPropertyValue(empty-cells) : show
 rect: style.getPropertyCSSValue(empty-cells) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(float) : none
 rect: style.getPropertyCSSValue(float) : [object CSSPrimitiveValue]
+rect: style.getPropertyValue(font-kerning) : auto
+rect: style.getPropertyCSSValue(font-kerning) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(font-size) : 16px
 rect: style.getPropertyCSSValue(font-size) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(font-style) : normal
@@ -294,8 +296,6 @@ rect: style.getPropertyValue(flex-wrap) : nowrap
 rect: style.getPropertyCSSValue(flex-wrap) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(justify-content) : flex-start
 rect: style.getPropertyCSSValue(justify-content) : [object CSSPrimitiveValue]
-rect: style.getPropertyValue(-webkit-font-kerning) : auto
-rect: style.getPropertyCSSValue(-webkit-font-kerning) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(-webkit-font-smoothing) : auto
 rect: style.getPropertyCSSValue(-webkit-font-smoothing) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(-webkit-font-variant-ligatures) : normal
@@ -556,6 +556,8 @@ g: style.getPropertyValue(empty-cells) : show
 g: style.getPropertyCSSValue(empty-cells) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(float) : none
 g: style.getPropertyCSSValue(float) : [object CSSPrimitiveValue]
+g: style.getPropertyValue(font-kerning) : auto
+g: style.getPropertyCSSValue(font-kerning) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(font-size) : 16px
 g: style.getPropertyCSSValue(font-size) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(font-style) : normal
@@ -768,8 +770,6 @@ g: style.getPropertyValue(flex-wrap) : nowrap
 g: style.getPropertyCSSValue(flex-wrap) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(justify-content) : flex-start
 g: style.getPropertyCSSValue(justify-content) : [object CSSPrimitiveValue]
-g: style.getPropertyValue(-webkit-font-kerning) : auto
-g: style.getPropertyCSSValue(-webkit-font-kerning) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(-webkit-font-smoothing) : auto
 g: style.getPropertyCSSValue(-webkit-font-smoothing) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(-webkit-font-variant-ligatures) : normal

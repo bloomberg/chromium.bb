@@ -91,6 +91,7 @@ floodColor
 floodOpacity
 font
 fontFamily
+fontKerning
 fontSize
 fontStretch
 fontStyle
@@ -273,7 +274,6 @@ webkitColumnWidth
 webkitColumns
 webkitFilter
 webkitFontFeatureSettings
-webkitFontKerning
 webkitFontSizeDelta
 webkitFontSmoothing
 webkitFontVariantLigatures

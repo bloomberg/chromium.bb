@@ -62,7 +62,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyFontWeight: return 10;
     case CSSPropertyTextRendering: return 11;
     case CSSPropertyWebkitFontFeatureSettings: return 12;
-    case CSSPropertyWebkitFontKerning: return 13;
+    case CSSPropertyFontKerning: return 13;
     case CSSPropertyWebkitFontSmoothing: return 14;
     case CSSPropertyWebkitFontVariantLigatures: return 15;
     case CSSPropertyWebkitLocale: return 16;

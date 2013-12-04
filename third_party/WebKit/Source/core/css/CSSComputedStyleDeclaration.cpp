@@ -138,6 +138,7 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyEmptyCells,
     CSSPropertyFloat,
     CSSPropertyFontFamily,
+    CSSPropertyFontKerning,
     CSSPropertyFontSize,
     CSSPropertyFontStyle,
     CSSPropertyFontVariant,
@@ -269,7 +270,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyFlexDirection,
     CSSPropertyFlexWrap,
     CSSPropertyJustifyContent,
-    CSSPropertyWebkitFontKerning,
     CSSPropertyWebkitFontSmoothing,
     CSSPropertyWebkitFontVariantLigatures,
     CSSPropertyGridAutoColumns,
@@ -2373,7 +2373,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return cssValuePool().createValue(style->lineBreak());
         case CSSPropertyResize:
             return cssValuePool().createValue(style->resize());
-        case CSSPropertyWebkitFontKerning:
+        case CSSPropertyFontKerning:
             return cssValuePool().createValue(style->fontDescription().kerning());
         case CSSPropertyWebkitFontSmoothing:
             return cssValuePool().createValue(style->fontDescription().fontSmoothing());
