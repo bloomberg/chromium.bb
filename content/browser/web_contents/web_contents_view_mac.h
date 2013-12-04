@@ -80,6 +80,9 @@ class WebContentsViewMac : public WebContentsViewPort,
   virtual gfx::Rect GetViewBounds() const OVERRIDE;
   virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
   virtual bool GetAllowOverlappingViews() const OVERRIDE;
+  virtual void SetOverlayView(WebContentsView* overlay,
+                              const gfx::Point& offset) OVERRIDE;
+  virtual void RemoveOverlayView() OVERRIDE;
 
   // WebContentsViewPort implementation ----------------------------------------
   virtual void CreateView(
@@ -121,6 +124,9 @@ class WebContentsViewMac : public WebContentsViewPort,
   WebContentsViewDelegate* delegate() { return delegate_.get(); }
 
  private:
+  // Updates overlay view on current RenderWidgetHostView.
+  void UpdateRenderWidgetHostViewOverlay();
+
   // The WebContentsImpl whose contents we display.
   WebContentsImpl* web_contents_;
 
@@ -136,6 +142,17 @@ class WebContentsViewMac : public WebContentsViewPort,
 
   // Whether to allow overlapping views.
   bool allow_overlapping_views_;
+
+  // The overlay view which is rendered above this one.
+  // Overlay view has |underlay_view_| set to this view.
+  WebContentsViewMac* overlay_view_;
+
+  // The offset of overlay view relative to this view.
+  gfx::Point overlay_view_offset_;
+
+  // The underlay view which this view is rendered above.
+  // Underlay view has |overlay_view_| set to this view.
+  WebContentsViewMac* underlay_view_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewMac);
 };

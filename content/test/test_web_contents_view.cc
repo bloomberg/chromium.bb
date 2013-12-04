@@ -87,6 +87,13 @@ void TestWebContentsView::SetAllowOverlappingViews(bool overlapping) {
 bool TestWebContentsView::GetAllowOverlappingViews() const {
   return false;
 }
+
+void TestWebContentsView::SetOverlayView(
+    WebContentsView* overlay, const gfx::Point& offset) {
+}
+
+void TestWebContentsView::RemoveOverlayView() {
+}
 #endif
 
 void TestWebContentsView::CreateView(const gfx::Size& initial_size,

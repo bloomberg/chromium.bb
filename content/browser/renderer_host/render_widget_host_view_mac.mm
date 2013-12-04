@@ -418,6 +418,8 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       weak_factory_(this),
       fullscreen_parent_host_view_(NULL),
       pending_swap_buffers_acks_weak_factory_(this),
+      underlay_view_has_drawn_(false),
+      overlay_view_weak_factory_(this),
       next_swap_ack_time_(base::Time::Now()),
       software_frame_weak_ptr_factory_(this) {
   software_frame_manager_.reset(new SoftwareFrameManager(
@@ -1419,6 +1421,14 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
         forParameter:NSOpenGLCPSurfaceOrder];
   }
 
+  // Instead of drawing, request that underlay view redraws.
+  if (underlay_view_ &&
+      underlay_view_->compositing_iosurface_ &&
+      underlay_view_has_drawn_) {
+    [underlay_view_->cocoa_view() setNeedsDisplay:YES];
+    return true;
+  }
+
   CGLError cgl_error = CGLSetCurrentContext(
       compositing_iosurface_context_->cgl_context());
   if (cgl_error != kCGLNoError) {
@@ -1427,12 +1437,35 @@ bool RenderWidgetHostViewMac::DrawIOSurfaceWithoutCoreAnimation() {
   }
 
   [compositing_iosurface_context_->nsgl_context() setView:cocoa_view_];
-  return compositing_iosurface_->DrawIOSurface(
+  bool has_overlay = overlay_view_ && overlay_view_->compositing_iosurface_;
+
+  gfx::Rect view_rect(NSRectToCGRect([cocoa_view_ frame]));
+  if (!compositing_iosurface_->DrawIOSurface(
       compositing_iosurface_context_,
-      gfx::Rect(NSRectToCGRect([cocoa_view_ frame])),
+      view_rect,
       scale_factor(),
       frame_subscriber(),
-      true);
+      !has_overlay)) {
+    return false;
+  }
+
+  if (has_overlay) {
+    overlay_view_->underlay_view_has_drawn_ = true;
+    gfx::Rect overlay_view_rect(
+        NSRectToCGRect([overlay_view_->cocoa_view() frame]));
+    overlay_view_rect.set_x(overlay_view_offset_.x());
+    overlay_view_rect.set_y(view_rect.height() -
+                            overlay_view_rect.height() -
+                            overlay_view_offset_.y());
+    return overlay_view_->compositing_iosurface_->DrawIOSurface(
+        compositing_iosurface_context_,
+        overlay_view_rect,
+        overlay_view_->scale_factor(),
+        overlay_view_->frame_subscriber(),
+        true);
+  }
+
+  return true;
 }
 
 void RenderWidgetHostViewMac::GotAcceleratedCompositingError() {
@@ -1447,6 +1480,29 @@ void RenderWidgetHostViewMac::GotAcceleratedCompositingError() {
   // TODO(ccameron): It may be a good idea to request that the renderer recreate
   // its GL context as well, and fall back to software if this happens
   // repeatedly.
+}
+
+void RenderWidgetHostViewMac::SetOverlayView(
+    RenderWidgetHostViewMac* overlay, const gfx::Point& offset) {
+  if (overlay_view_)
+    overlay_view_->underlay_view_.reset();
+
+  overlay_view_ = overlay->overlay_view_weak_factory_.GetWeakPtr();
+  overlay_view_offset_ = offset;
+  overlay_view_->underlay_view_ = overlay_view_weak_factory_.GetWeakPtr();
+  overlay_view_->underlay_view_has_drawn_ = false;
+
+  [cocoa_view_ setNeedsDisplay:YES];
+  [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
+}
+
+void RenderWidgetHostViewMac::RemoveOverlayView() {
+  if (overlay_view_) {
+    overlay_view_->underlay_view_.reset();
+    overlay_view_.reset();
+  }
+  [cocoa_view_ setNeedsDisplay:YES];
+  [[cocoa_view_ window] disableScreenUpdatesUntilFlush];
 }
 
 void RenderWidgetHostViewMac::GetVSyncParameters(

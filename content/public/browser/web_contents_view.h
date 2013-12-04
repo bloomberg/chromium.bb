@@ -90,6 +90,15 @@ class CONTENT_EXPORT WebContentsView {
 
   // Returns true if overlapping views are allowed, false otherwise.
   virtual bool GetAllowOverlappingViews() const = 0;
+
+  // To draw two overlapping web contents view, the underlaying one should
+  // know about the overlaying one. Caller must ensure that |overlay| exists
+  // until |RemoveOverlayView| is called.
+  virtual void SetOverlayView(WebContentsView* overlay,
+                              const gfx::Point& offset) = 0;
+
+  // Removes the previously set overlay view.
+  virtual void RemoveOverlayView() = 0;
 #endif
 };
 

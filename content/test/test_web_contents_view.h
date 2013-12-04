@@ -51,6 +51,9 @@ class TestWebContentsView : public WebContentsViewPort,
 #if defined(OS_MACOSX)
   virtual void SetAllowOverlappingViews(bool overlapping) OVERRIDE;
   virtual bool GetAllowOverlappingViews() const OVERRIDE;
+  virtual void SetOverlayView(WebContentsView* overlay,
+                              const gfx::Point& offset) OVERRIDE;
+  virtual void RemoveOverlayView() OVERRIDE;
 #endif
 
   // WebContentsViewPort:

@@ -81,7 +81,9 @@ WebContentsViewMac::WebContentsViewMac(WebContentsImpl* web_contents,
                                        WebContentsViewDelegate* delegate)
     : web_contents_(web_contents),
       delegate_(delegate),
-      allow_overlapping_views_(false) {
+      allow_overlapping_views_(false),
+      overlay_view_(NULL),
+      underlay_view_(NULL) {
 }
 
 WebContentsViewMac::~WebContentsViewMac() {
@@ -277,6 +279,54 @@ bool WebContentsViewMac::GetAllowOverlappingViews() const {
   return allow_overlapping_views_;
 }
 
+void WebContentsViewMac::SetOverlayView(
+    WebContentsView* overlay, const gfx::Point& offset) {
+  DCHECK(!underlay_view_);
+  if (overlay_view_)
+    RemoveOverlayView();
+
+  overlay_view_ = static_cast<WebContentsViewMac*>(overlay);
+  DCHECK(!overlay_view_->overlay_view_);
+  overlay_view_->underlay_view_ = this;
+  overlay_view_offset_ = offset;
+  UpdateRenderWidgetHostViewOverlay();
+}
+
+void WebContentsViewMac::RemoveOverlayView() {
+  DCHECK(overlay_view_);
+
+  RenderWidgetHostViewMac* rwhv = static_cast<RenderWidgetHostViewMac*>(
+      web_contents_->GetRenderWidgetHostView());
+  if (rwhv)
+    rwhv->RemoveOverlayView();
+
+  overlay_view_->underlay_view_ = NULL;
+  overlay_view_ = NULL;
+}
+
+void WebContentsViewMac::UpdateRenderWidgetHostViewOverlay() {
+  RenderWidgetHostViewMac* rwhv = static_cast<RenderWidgetHostViewMac*>(
+      web_contents_->GetRenderWidgetHostView());
+  if (!rwhv)
+    return;
+
+  if (overlay_view_) {
+    RenderWidgetHostViewMac* overlay_rwhv =
+        static_cast<RenderWidgetHostViewMac*>(
+            overlay_view_->web_contents_->GetRenderWidgetHostView());
+    if (overlay_rwhv)
+      rwhv->SetOverlayView(overlay_rwhv, overlay_view_offset_);
+  }
+
+  if (underlay_view_) {
+    RenderWidgetHostViewMac* underlay_rwhv =
+        static_cast<RenderWidgetHostViewMac*>(
+            underlay_view_->web_contents_->GetRenderWidgetHostView());
+    if (underlay_rwhv)
+      underlay_rwhv->SetOverlayView(rwhv, underlay_view_->overlay_view_offset_);
+  }
+}
+
 void WebContentsViewMac::CreateView(
     const gfx::Size& initial_size, gfx::NativeView context) {
   WebContentsViewCocoa* view =
@@ -345,6 +395,7 @@ void WebContentsViewMac::RenderViewCreated(RenderViewHost* host) {
 }
 
 void WebContentsViewMac::RenderViewSwappedIn(RenderViewHost* host) {
+  UpdateRenderWidgetHostViewOverlay();
 }
 
 void WebContentsViewMac::SetOverscrollControllerEnabled(bool enabled) {

@@ -355,6 +355,15 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // Called when a GPU error is detected. Deletes all compositing state.
   void GotAcceleratedCompositingError();
 
+  // Sets the overlay view, which should be drawn in the same IOSurface
+  // atop of this view, if both views are drawing accelerated content.
+  // Overlay is stored as a weak ptr.
+  void SetOverlayView(RenderWidgetHostViewMac* overlay,
+                      const gfx::Point& offset);
+
+  // Removes the previously set overlay view.
+  void RemoveOverlayView();
+
   // Returns true and stores first rectangle for character range if the
   // requested |range| is already cached, otherwise returns false.
   // Exposed for testing.
@@ -550,6 +559,27 @@ class RenderWidgetHostViewMac : public RenderWidgetHostViewBase,
   // Factory used to cancel outstanding throttled AckPendingSwapBuffers calls.
   base::WeakPtrFactory<RenderWidgetHostViewMac>
       pending_swap_buffers_acks_weak_factory_;
+
+  // The overlay view which is rendered above this one in the same
+  // accelerated IOSurface.
+  // Overlay view has |underlay_view_| set to this view.
+  base::WeakPtr<RenderWidgetHostViewMac> overlay_view_;
+
+  // Offset at which overlay view should be rendered.
+  gfx::Point overlay_view_offset_;
+
+  // The underlay view which this view is rendered above in the same
+  // accelerated IOSurface.
+  // Underlay view has |overlay_view_| set to this view.
+  base::WeakPtr<RenderWidgetHostViewMac> underlay_view_;
+
+  // Set to true when |underlay_view_| has drawn this view. After that point,
+  // this view should not draw again until |underlay_view_| is changed.
+  bool underlay_view_has_drawn_;
+
+  // Factory used to safely reference overlay view set in SetOverlayView.
+  base::WeakPtrFactory<RenderWidgetHostViewMac>
+      overlay_view_weak_factory_;
 
   // The earliest time at which the next swap ack may be sent. Only relevant
   // when swaps are not being throttled by the renderer (when threaded
