@@ -34,7 +34,7 @@
 #define V8TestInterfacePython_h
 
 #if ENABLE(CONDITION)
-#include "bindings/tests/idls/TestInterfacePython.h"
+#include "bindings/tests/idls/TestInterfacePythonImplementation.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
 #include "bindings/v8/WrapperTypeInfo.h"
@@ -46,7 +46,7 @@ public:
     static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
     static bool hasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
-    static TestInterfacePython* toNative(v8::Handle<v8::Object> object)
+    static TestInterfacePythonImplementation* toNative(v8::Handle<v8::Object> object)
     {
         return fromInternalPointer(object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex));
     }
@@ -56,32 +56,32 @@ public:
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
     static void legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
-    static inline void* toInternalPointer(TestInterfacePython* impl)
+    static inline void* toInternalPointer(TestInterfacePythonImplementation* impl)
     {
         return impl;
     }
 
-    static inline TestInterfacePython* fromInternalPointer(void* object)
+    static inline TestInterfacePythonImplementation* fromInternalPointer(void* object)
     {
-        return static_cast<TestInterfacePython*>(object);
+        return static_cast<TestInterfacePythonImplementation*>(object);
     }
-    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterfacePython*, v8::Isolate*) { }
+    static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterfacePythonImplementation*, v8::Isolate*) { }
     static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 
 private:
-    friend v8::Handle<v8::Object> wrap(TestInterfacePython*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
-    static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestInterfacePython>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    friend v8::Handle<v8::Object> wrap(TestInterfacePythonImplementation*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestInterfacePythonImplementation>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
 template<>
-class WrapperTypeTraits<TestInterfacePython > {
+class WrapperTypeTraits<TestInterfacePythonImplementation > {
 public:
     static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestInterfacePython::wrapperTypeInfo; }
 };
 
-v8::Handle<v8::Object> wrap(TestInterfacePython* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+v8::Handle<v8::Object> wrap(TestInterfacePythonImplementation* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
-inline v8::Handle<v8::Value> toV8(TestInterfacePython* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+inline v8::Handle<v8::Value> toV8(TestInterfacePythonImplementation* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (UNLIKELY(!impl))
         return v8::Null(isolate);
@@ -92,7 +92,7 @@ inline v8::Handle<v8::Value> toV8(TestInterfacePython* impl, v8::Handle<v8::Obje
 }
 
 template<typename CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfacePython* impl)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfacePythonImplementation* impl)
 {
     if (UNLIKELY(!impl)) {
         v8SetReturnValueNull(callbackInfo);
@@ -105,7 +105,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfacePyth
 }
 
 template<typename CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TestInterfacePython* impl)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TestInterfacePythonImplementation* impl)
 {
     ASSERT(worldType(callbackInfo.GetIsolate()) == MainWorld);
     if (UNLIKELY(!impl)) {
@@ -119,7 +119,7 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TestI
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterfacePython* impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterfacePythonImplementation* impl, Wrappable* wrappable)
 {
     if (UNLIKELY(!impl)) {
         v8SetReturnValueNull(callbackInfo);
@@ -131,25 +131,25 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterface
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
-inline v8::Handle<v8::Value> toV8(PassRefPtr<TestInterfacePython > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+inline v8::Handle<v8::Value> toV8(PassRefPtr<TestInterfacePythonImplementation > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl.get(), creationContext, isolate);
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<TestInterfacePython > impl)
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr<TestInterfacePythonImplementation > impl)
 {
     v8SetReturnValue(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<TestInterfacePython > impl)
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr<TestInterfacePythonImplementation > impl)
 {
     v8SetReturnValueForMainWorld(callbackInfo, impl.get());
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<TestInterfacePython > impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<TestInterfacePythonImplementation > impl, Wrappable* wrappable)
 {
     v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }

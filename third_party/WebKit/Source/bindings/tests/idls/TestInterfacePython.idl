@@ -34,5 +34,6 @@
     CustomLegacyCall,
     CustomWrap,
     GenerateVisitDOMWrapper=ownerNode,
+    ImplementedAs=TestInterfacePythonImplementation,
 ] interface TestInterfacePython {
 };

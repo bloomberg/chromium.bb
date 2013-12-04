@@ -48,7 +48,7 @@
 
 namespace WebCore {
 
-static void initializeScriptWrappableForInterface(TestInterfacePython* object)
+static void initializeScriptWrappableForInterface(TestInterfacePythonImplementation* object)
 {
     if (ScriptWrappable::wrapperCanBeStoredInObject(object))
         ScriptWrappable::setTypeInfoInObject(object, &V8TestInterfacePython::wrapperTypeInfo);
@@ -62,7 +62,7 @@ static void initializeScriptWrappableForInterface(TestInterfacePython* object)
 // the local declaration does not pick up the surrounding namespace. Therefore, we provide this function
 // in the global namespace.
 // (More info on the MSVC bug here: http://connect.microsoft.com/VisualStudio/feedback/details/664619/the-namespace-of-local-function-declarations-in-c)
-void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterfacePython* object)
+void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterfacePythonImplementation* object)
 {
     WebCore::initializeScriptWrappableForInterface(object);
 }
@@ -70,15 +70,15 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestInterfacePython* 
 namespace WebCore {
 const WrapperTypeInfo V8TestInterfacePython::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfacePython::GetTemplate, V8TestInterfacePython::derefObject, V8TestInterfacePython::toActiveDOMObject, 0, V8TestInterfacePython::visitDOMWrapper, V8TestInterfacePython::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
-namespace TestInterfacePythonV8Internal {
+namespace TestInterfacePythonImplementationV8Internal {
 
 template <typename T> void V8_USE(T) { }
 
-} // namespace TestInterfacePythonV8Internal
+} // namespace TestInterfacePythonImplementationV8Internal
 
 void V8TestInterfacePython::visitDOMWrapper(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
-    TestInterfacePython* impl = fromInternalPointer(object);
+    TestInterfacePythonImplementation* impl = fromInternalPointer(object);
     if (Node* owner = impl->ownerNode()) {
         setObjectGroup(V8GCController::opaqueRootForGC(owner, isolate), wrapper, isolate);
         return;
@@ -140,7 +140,7 @@ ActiveDOMObject* V8TestInterfacePython::toActiveDOMObject(v8::Handle<v8::Object>
     return toNative(wrapper);
 }
 
-v8::Handle<v8::Object> V8TestInterfacePython::createWrapper(PassRefPtr<TestInterfacePython> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Object> V8TestInterfacePython::createWrapper(PassRefPtr<TestInterfacePythonImplementation> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
     ASSERT(!DOMDataStore::containsWrapper<V8TestInterfacePython>(impl.get(), isolate));
@@ -166,7 +166,7 @@ void V8TestInterfacePython::derefObject(void* object)
 }
 
 template<>
-v8::Handle<v8::Value> toV8NoInline(TestInterfacePython* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> toV8NoInline(TestInterfacePythonImplementation* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl, creationContext, isolate);
 }
