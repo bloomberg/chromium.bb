@@ -47,7 +47,7 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/TimelineRecordFactory.h"
-#include "core/inspector/TimelineTraceEventProcessor.h"
+#include "core/inspector/TraceEventDispatcher.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/PageConsole.h"
 #include "core/platform/graphics/DeferredImageDecoder.h"
@@ -133,8 +133,84 @@ const char GPUTask[] = "GPUTask";
 
 namespace {
 const char BackendNodeIdGroup[] = "timeline";
-const char InternalEventCategory[] = "instrumentation";
 }
+
+struct TimelineRecordEntry {
+    TimelineRecordEntry(PassRefPtr<JSONObject> record, PassRefPtr<JSONObject> data, PassRefPtr<JSONArray> children, const String& type, size_t usedHeapSizeAtStart)
+        : record(record), data(data), children(children), type(type), usedHeapSizeAtStart(usedHeapSizeAtStart)
+    {
+    }
+    RefPtr<JSONObject> record;
+    RefPtr<JSONObject> data;
+    RefPtr<JSONArray> children;
+    String type;
+    size_t usedHeapSizeAtStart;
+};
+
+class TimelineRecordStack {
+private:
+    struct Entry {
+        Entry(PassRefPtr<JSONObject> record)
+            : record(record)
+            , children(JSONArray::create())
+        {
+        }
+
+        RefPtr<JSONObject> record;
+        RefPtr<JSONArray> children;
+    };
+
+public:
+    TimelineRecordStack() : m_timelineAgent(0) { }
+    TimelineRecordStack(InspectorTimelineAgent*);
+
+    void addScopedRecord(PassRefPtr<JSONObject> record);
+    void closeScopedRecord(double endTime);
+    void addInstantRecord(PassRefPtr<JSONObject> record);
+
+#ifndef NDEBUG
+    bool isOpenRecordOfType(const String& type);
+#endif
+
+private:
+    void send(PassRefPtr<JSONObject>);
+
+    InspectorTimelineAgent* m_timelineAgent;
+    Vector<Entry> m_stack;
+};
+
+struct TimelineThreadState {
+    TimelineThreadState() { }
+
+    TimelineThreadState(InspectorTimelineAgent* timelineAgent)
+        : recordStack(timelineAgent)
+        , inKnownLayerTask(false)
+        , decodedPixelRefId(0)
+    {
+    }
+
+    TimelineRecordStack recordStack;
+    bool inKnownLayerTask;
+    unsigned long long decodedPixelRefId;
+};
+
+struct TimelineGCEvent {
+    TimelineGCEvent(double startTime, double endTime, size_t collectedBytes)
+        : startTime(startTime), endTime(endTime), collectedBytes(collectedBytes)
+    {
+    }
+    double startTime;
+    double endTime;
+    size_t collectedBytes;
+};
+
+struct TimelineImageInfo {
+    int backendNodeId;
+    String url;
+
+    TimelineImageInfo() : backendNodeId(0) { }
+    TimelineImageInfo(int backendNodeId, String url) : backendNodeId(backendNodeId), url(url) { }
+};
 
 static Frame* frameForExecutionContext(ExecutionContext* context)
 {
@@ -182,7 +258,7 @@ void InspectorTimelineAgent::pushGCEventRecords()
 
 void InspectorTimelineAgent::didGC(double startTime, double endTime, size_t collectedBytesCount)
 {
-    m_gcEvents.append(GCEvent(startTime, endTime, collectedBytesCount));
+    m_gcEvents.append(TimelineGCEvent(startTime, endTime, collectedBytesCount));
 }
 
 InspectorTimelineAgent::~InspectorTimelineAgent()
@@ -272,8 +348,20 @@ void InspectorTimelineAgent::innerStart()
     m_timeConverter.reset();
     m_instrumentingAgents->setInspectorTimelineAgent(this);
     ScriptGCEvent::addEventListener(this);
-    if (m_client && m_pageAgent) {
-        m_traceEventProcessor = adoptRef(new TimelineTraceEventProcessor(m_weakFactory.createWeakPtr(), m_client));
+    if (m_client) {
+        TraceEventDispatcher* dispatcher = TraceEventDispatcher::instance();
+        dispatcher->addListener(InstrumentationEvents::PaintSetup, TRACE_EVENT_PHASE_BEGIN, this, &InspectorTimelineAgent::onPaintSetupBegin, m_client);
+        dispatcher->addListener(InstrumentationEvents::PaintSetup, TRACE_EVENT_PHASE_END, this, &InspectorTimelineAgent::onPaintSetupEnd, m_client);
+        dispatcher->addListener(InstrumentationEvents::RasterTask, TRACE_EVENT_PHASE_BEGIN, this, &InspectorTimelineAgent::onRasterTaskBegin, m_client);
+        dispatcher->addListener(InstrumentationEvents::RasterTask, TRACE_EVENT_PHASE_END, this, &InspectorTimelineAgent::onRasterTaskEnd, m_client);
+        dispatcher->addListener(InstrumentationEvents::Layer, TRACE_EVENT_PHASE_DELETE_OBJECT, this, &InspectorTimelineAgent::onLayerDeleted, m_client);
+        dispatcher->addListener(PlatformInstrumentation::ImageDecodeEvent, TRACE_EVENT_PHASE_BEGIN, this, &InspectorTimelineAgent::onImageDecodeBegin, m_client);
+        dispatcher->addListener(PlatformInstrumentation::ImageDecodeEvent, TRACE_EVENT_PHASE_END, this, &InspectorTimelineAgent::onImageDecodeEnd, m_client);
+        dispatcher->addListener(PlatformInstrumentation::DrawLazyPixelRefEvent, TRACE_EVENT_PHASE_INSTANT, this, &InspectorTimelineAgent::onDrawLazyPixelRef, m_client);
+        dispatcher->addListener(PlatformInstrumentation::DecodeLazyPixelRefEvent, TRACE_EVENT_PHASE_BEGIN, this, &InspectorTimelineAgent::onDecodeLazyPixelRefBegin, m_client);
+        dispatcher->addListener(PlatformInstrumentation::DecodeLazyPixelRefEvent, TRACE_EVENT_PHASE_END, this, &InspectorTimelineAgent::onDecodeLazyPixelRefEnd, m_client);
+        dispatcher->addListener(PlatformInstrumentation::LazyPixelRef, TRACE_EVENT_PHASE_DELETE_OBJECT, this, &InspectorTimelineAgent::onLazyPixelRefDeleted, m_client);
+
         if (m_state->getBoolean(TimelineAgentState::includeGPUEvents)) {
             m_pendingGPURecord.clear();
             m_client->startGPUEventsRecording();
@@ -299,18 +387,21 @@ void InspectorTimelineAgent::innerStop(bool fromConsole)
 {
     m_state->setBoolean(TimelineAgentState::started, false);
 
-    if (m_traceEventProcessor) {
-        m_traceEventProcessor->shutdown();
-        m_traceEventProcessor.clear();
+    if (m_client) {
+        TraceEventDispatcher::instance()->removeAllListeners(this, m_client);
+        if (m_state->getBoolean(TimelineAgentState::includeGPUEvents))
+            m_client->stopGPUEventsRecording();
     }
-    if (m_state->getBoolean(TimelineAgentState::includeGPUEvents))
-        m_client->stopGPUEventsRecording();
-    m_weakFactory.revokeAll();
     m_instrumentingAgents->setInspectorTimelineAgent(0);
     ScriptGCEvent::removeEventListener(this);
 
     clearRecordStack();
+    m_threadStates.clear();
     m_gcEvents.clear();
+    m_gpuTask.clear();
+    m_layerToNodeMap.clear();
+    m_pixelRefToImageInfo.clear();
+    m_imageBeingPainted = 0;
 
     for (size_t i = 0; i < m_consoleTimelines.size(); ++i) {
         String message = String::format("Timeline '%s' terminated.", m_consoleTimelines[i].utf8().data());
@@ -319,14 +410,13 @@ void InspectorTimelineAgent::innerStop(bool fromConsole)
     m_consoleTimelines.clear();
 
     m_frontend->stopped(&fromConsole);
-
     if (m_overlay)
         m_overlay->finishedRecordingProfile();
 }
 
 void InspectorTimelineAgent::didBeginFrame(int frameId)
 {
-    TRACE_EVENT_INSTANT0(InternalEventCategory, InstrumentationEvents::BeginFrame);
+    TraceEventDispatcher::instance()->processBackgroundEvents();
     m_pendingFrameRecord = TimelineRecordFactory::createGenericRecord(timestamp(), 0, TimelineRecordType::BeginFrame);
     m_pendingFrameRecord->setObject("data", TimelineRecordFactory::createFrameData(frameId));
 }
@@ -459,10 +549,22 @@ void InspectorTimelineAgent::didRecalculateStyleForElement()
 void InspectorTimelineAgent::willPaint(RenderObject* renderer, const GraphicsLayer* graphicsLayer)
 {
     Frame* frame = renderer->frame();
-    m_nodeBeingPainted = nodeId(renderer);
-    m_layerBeingPainted = graphicsLayer ? graphicsLayer->platformLayer()->id() : 0;
-    TRACE_EVENT_INSTANT1(InternalEventCategory, InstrumentationEvents::Paint,
-        InstrumentationEventArguments::PageId, reinterpret_cast<unsigned long long>(frame->page()));
+
+    TraceEventDispatcher::instance()->processBackgroundEvents();
+    double paintSetupStart = m_paintSetupStart;
+    m_paintSetupStart = 0;
+    if (graphicsLayer) {
+        int layerIdentifier = graphicsLayer->platformLayer()->id();
+        int nodeIdentifier = nodeId(renderer);
+        ASSERT(layerIdentifier && nodeIdentifier);
+        m_layerToNodeMap.set(layerIdentifier, nodeIdentifier);
+        if (paintSetupStart) {
+            RefPtr<JSONObject> paintSetupRecord = TimelineRecordFactory::createGenericRecord(paintSetupStart, 0, TimelineRecordType::PaintSetup);
+            paintSetupRecord->setNumber("endTime", m_paintSetupEnd);
+            paintSetupRecord->setObject("data", TimelineRecordFactory::createLayerData(nodeIdentifier));
+            addRecordToTimeline(paintSetupRecord);
+        }
+    }
     pushCurrentRecord(JSONObject::create(), TimelineRecordType::Paint, true, frame, true);
 }
 
@@ -474,8 +576,6 @@ void InspectorTimelineAgent::didPaint(RenderObject* renderer, const GraphicsLaye
     localToPageQuad(*renderer, clipRect, &quad);
     int graphicsLayerId = graphicsLayer ? graphicsLayer->platformLayer()->id() : 0;
     entry.data = TimelineRecordFactory::createPaintData(quad, nodeId(renderer), graphicsLayerId);
-    m_nodeBeingPainted = 0;
-    m_layerBeingPainted = 0;
     didCompleteCurrentRecord(TimelineRecordType::Paint);
 }
 
@@ -785,6 +885,110 @@ void InspectorTimelineAgent::didCloseWebSocket(Document* document, unsigned long
     appendRecord(TimelineRecordFactory::createGenericWebSocketData(identifier), TimelineRecordType::WebSocketDestroy, true, document->frame());
 }
 
+void InspectorTimelineAgent::onPaintSetupBegin(const TraceEventDispatcher::TraceEvent& event)
+{
+    ASSERT(!m_paintSetupStart);
+    m_paintSetupStart = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp());
+}
+
+void InspectorTimelineAgent::onPaintSetupEnd(const TraceEventDispatcher::TraceEvent& event)
+{
+    ASSERT(m_paintSetupStart);
+    m_paintSetupEnd = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp());
+}
+
+void InspectorTimelineAgent::onRasterTaskBegin(const TraceEventDispatcher::TraceEvent& event)
+{
+    TimelineThreadState& state = threadState(event.threadIdentifier());
+    unsigned long long layerId = event.asUInt(InstrumentationEventArguments::LayerId);
+    ASSERT(layerId);
+    if (!m_layerToNodeMap.contains(layerId))
+        return;
+    ASSERT(!state.inKnownLayerTask);
+    state.inKnownLayerTask = true;
+    double timeestamp = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp());
+    RefPtr<JSONObject> data = TimelineRecordFactory::createLayerData(m_layerToNodeMap.get(layerId));
+    RefPtr<JSONObject> record = TimelineRecordFactory::createBackgroundRecord(timeestamp, String::number(event.threadIdentifier()), TimelineRecordType::Rasterize, data);
+    state.recordStack.addScopedRecord(record);
+}
+
+void InspectorTimelineAgent::onRasterTaskEnd(const TraceEventDispatcher::TraceEvent& event)
+{
+    TimelineThreadState& state = threadState(event.threadIdentifier());
+    if (!state.inKnownLayerTask)
+        return;
+    ASSERT(state.recordStack.isOpenRecordOfType(TimelineRecordType::Rasterize));
+    state.recordStack.closeScopedRecord(m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp()));
+    state.inKnownLayerTask = false;
+}
+
+void InspectorTimelineAgent::onImageDecodeBegin(const TraceEventDispatcher::TraceEvent& event)
+{
+    TimelineThreadState& state = threadState(event.threadIdentifier());
+    if (!state.decodedPixelRefId && !state.inKnownLayerTask)
+        return;
+    TimelineImageInfo imageInfo;
+    if (state.decodedPixelRefId) {
+        PixelRefToImageInfoMap::const_iterator it = m_pixelRefToImageInfo.find(state.decodedPixelRefId);
+        if (it != m_pixelRefToImageInfo.end())
+            imageInfo = it->value;
+        else
+            ASSERT_NOT_REACHED();
+    }
+    RefPtr<JSONObject> data = JSONObject::create();
+    TimelineRecordFactory::appendImageDetails(data.get(), imageInfo.backendNodeId, imageInfo.url);
+    double timeestamp = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp());
+    state.recordStack.addScopedRecord(TimelineRecordFactory::createBackgroundRecord(timeestamp, String::number(event.threadIdentifier()), TimelineRecordType::DecodeImage, data));
+}
+
+void InspectorTimelineAgent::onImageDecodeEnd(const TraceEventDispatcher::TraceEvent& event)
+{
+    TimelineThreadState& state = threadState(event.threadIdentifier());
+    if (!state.decodedPixelRefId)
+        return;
+    ASSERT(state.recordStack.isOpenRecordOfType(TimelineRecordType::DecodeImage));
+    state.recordStack.closeScopedRecord(m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp()));
+}
+
+void InspectorTimelineAgent::onLayerDeleted(const TraceEventDispatcher::TraceEvent& event)
+{
+    unsigned long long id = event.id();
+    ASSERT(id);
+    m_layerToNodeMap.remove(id);
+}
+
+void InspectorTimelineAgent::onDecodeLazyPixelRefBegin(const TraceEventDispatcher::TraceEvent& event)
+{
+    TimelineThreadState& state = threadState(event.threadIdentifier());
+    ASSERT(!state.decodedPixelRefId);
+    unsigned long long pixelRefId = event.asUInt(PlatformInstrumentation::LazyPixelRef);
+    ASSERT(pixelRefId);
+    if (m_pixelRefToImageInfo.contains(pixelRefId))
+        state.decodedPixelRefId = pixelRefId;
+}
+
+void InspectorTimelineAgent::onDecodeLazyPixelRefEnd(const TraceEventDispatcher::TraceEvent& event)
+{
+    threadState(event.threadIdentifier()).decodedPixelRefId = 0;
+}
+
+void InspectorTimelineAgent::onDrawLazyPixelRef(const TraceEventDispatcher::TraceEvent& event)
+{
+    unsigned long long pixelRefId = event.asUInt(PlatformInstrumentation::LazyPixelRef);
+    ASSERT(pixelRefId);
+    if (!m_imageBeingPainted)
+        return;
+    String url;
+    if (const ImageResource* resource = m_imageBeingPainted->cachedImage())
+        url = resource->url().string();
+    m_pixelRefToImageInfo.set(pixelRefId, TimelineImageInfo(nodeId(m_imageBeingPainted->generatingNode()), url));
+}
+
+void InspectorTimelineAgent::onLazyPixelRefDeleted(const TraceEventDispatcher::TraceEvent& event)
+{
+    m_pixelRefToImageInfo.remove(event.id());
+}
+
 void InspectorTimelineAgent::processGPUEvent(const GPUEvent& event)
 {
     double timelineTimestamp = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp);
@@ -896,18 +1100,15 @@ InspectorTimelineAgent::InspectorTimelineAgent(InstrumentingAgents* instrumentin
     , m_memoryAgent(memoryAgent)
     , m_domAgent(domAgent)
     , m_frontend(0)
+    , m_client(client)
+    , m_overlay(overlay)
+    , m_inspectorType(type)
     , m_id(1)
+    , m_layerTreeId(0)
     , m_maxCallStackDepth(5)
     , m_platformInstrumentationClientInstalledAtStackDepth(0)
-    , m_inspectorType(type)
-    , m_client(client)
-    , m_weakFactory(this)
-    , m_styleRecalcElementCounter(0)
-    , m_layerTreeId(0)
     , m_imageBeingPainted(0)
-    , m_nodeBeingPainted(0)
-    , m_layerBeingPainted(0)
-    , m_overlay(overlay)
+    , m_styleRecalcElementCounter(0)
 {
 }
 
@@ -942,6 +1143,14 @@ void InspectorTimelineAgent::pushCurrentRecord(PassRefPtr<JSONObject> data, cons
         m_platformInstrumentationClientInstalledAtStackDepth = m_recordStack.size();
         PlatformInstrumentation::setClient(this);
     }
+}
+
+TimelineThreadState& InspectorTimelineAgent::threadState(ThreadIdentifier thread)
+{
+    ThreadStateMap::iterator it = m_threadStates.find(thread);
+    if (it != m_threadStates.end())
+        return it->value;
+    return m_threadStates.add(thread, TimelineThreadState(this)).iterator->value;
 }
 
 void InspectorTimelineAgent::commitFrameRecord()
@@ -999,6 +1208,44 @@ Page* InspectorTimelineAgent::page()
 {
     return m_pageAgent ? m_pageAgent->page() : 0;
 }
+
+TimelineRecordStack::TimelineRecordStack(InspectorTimelineAgent* timelineAgent)
+    : m_timelineAgent(timelineAgent)
+{
+}
+
+void TimelineRecordStack::addScopedRecord(PassRefPtr<JSONObject> record)
+{
+    m_stack.append(Entry(record));
+}
+
+void TimelineRecordStack::closeScopedRecord(double endTime)
+{
+    if (m_stack.isEmpty())
+        return;
+    Entry last = m_stack.last();
+    m_stack.removeLast();
+    last.record->setNumber("endTime", endTime);
+    if (last.children->length())
+        last.record->setArray("children", last.children);
+    addInstantRecord(last.record);
+}
+
+void TimelineRecordStack::addInstantRecord(PassRefPtr<JSONObject> record)
+{
+    if (m_stack.isEmpty())
+        m_timelineAgent->sendEvent(record);
+    else
+        m_stack.last().children->pushObject(record);
+}
+
+#ifndef NDEBUG
+bool TimelineRecordStack::isOpenRecordOfType(const String& type)
+{
+    String lastRecordType;
+    return m_stack.isEmpty() || (m_stack.last().record->getString("type", &lastRecordType) && type == lastRecordType);
+}
+#endif
 
 } // namespace WebCore
 

@@ -37,6 +37,7 @@
 #include "core/events/EventPath.h"
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/ScriptGCEventListener.h"
+#include "core/inspector/TraceEventDispatcher.h"
 #include "platform/JSONValues.h"
 #include "platform/PlatformInstrumentation.h"
 #include "platform/geometry/LayoutRect.h"
@@ -46,6 +47,11 @@
 
 namespace WebCore {
 struct FetchInitiatorInfo;
+struct TimelineGCEvent;
+struct TimelineImageInfo;
+struct TimelineThreadState;
+struct TimelineRecordEntry;
+
 class DOMWindow;
 class Document;
 class DocumentLoader;
@@ -72,6 +78,7 @@ class ResourceRequest;
 class ResourceResponse;
 class ScriptArguments;
 class ScriptCallStack;
+class TimelineRecordStack;
 class ExecutionContext;
 class ScriptState;
 class TimelineTraceEventProcessor;
@@ -102,10 +109,11 @@ private:
 };
 
 class InspectorTimelineAgent
-    : public InspectorBaseAgent<InspectorTimelineAgent>,
-      public ScriptGCEventListener,
-      public InspectorBackendDispatcher::TimelineCommandHandler,
-      public PlatformInstrumentationClient {
+    : public TraceEventTarget<InspectorTimelineAgent>
+    , public InspectorBaseAgent<InspectorTimelineAgent>
+    , public ScriptGCEventListener
+    , public InspectorBackendDispatcher::TimelineCommandHandler
+    , public PlatformInstrumentationClient {
     WTF_MAKE_NONCOPYABLE(InspectorTimelineAgent);
 public:
     enum InspectorType { PageInspector, WorkerInspector };
@@ -239,28 +247,30 @@ public:
     virtual void didResizeImage() OVERRIDE;
 
 private:
-    friend class TimelineRecordStack;
-    friend class TimelineTraceEventProcessor;
 
-    struct TimelineRecordEntry {
-        TimelineRecordEntry(PassRefPtr<JSONObject> record, PassRefPtr<JSONObject> data, PassRefPtr<JSONArray> children, const String& type, size_t usedHeapSizeAtStart)
-            : record(record), data(data), children(children), type(type), usedHeapSizeAtStart(usedHeapSizeAtStart)
-        {
-        }
-        RefPtr<JSONObject> record;
-        RefPtr<JSONObject> data;
-        RefPtr<JSONArray> children;
-        String type;
-        size_t usedHeapSizeAtStart;
-    };
+    friend class TimelineRecordStack;
 
     InspectorTimelineAgent(InstrumentingAgents*, InspectorPageAgent*, InspectorMemoryAgent*, InspectorDOMAgent*, InspectorOverlay*, InspectorCompositeState*, InspectorType, InspectorClient*);
+
+    // Trace event handlers
+    void onPaintSetupBegin(const TraceEventDispatcher::TraceEvent&);
+    void onPaintSetupEnd(const TraceEventDispatcher::TraceEvent&);
+    void onRasterTaskBegin(const TraceEventDispatcher::TraceEvent&);
+    void onRasterTaskEnd(const TraceEventDispatcher::TraceEvent&);
+    void onImageDecodeBegin(const TraceEventDispatcher::TraceEvent&);
+    void onImageDecodeEnd(const TraceEventDispatcher::TraceEvent&);
+    void onLayerDeleted(const TraceEventDispatcher::TraceEvent&);
+    void onDrawLazyPixelRef(const TraceEventDispatcher::TraceEvent&);
+    void onDecodeLazyPixelRefBegin(const TraceEventDispatcher::TraceEvent&);
+    void onDecodeLazyPixelRefEnd(const TraceEventDispatcher::TraceEvent&);
+    void onLazyPixelRefDeleted(const TraceEventDispatcher::TraceEvent&);
 
     void didFinishLoadingResource(unsigned long, bool didFail, double finishTime, Frame*);
 
     void sendEvent(PassRefPtr<JSONObject>);
     void appendRecord(PassRefPtr<JSONObject> data, const String& type, bool captureCallStack, Frame*);
     void pushCurrentRecord(PassRefPtr<JSONObject>, const String& type, bool captureCallStack, Frame*, bool hasLowLevelDetails = false);
+    TimelineThreadState& threadState(ThreadIdentifier);
 
     void setDOMCounters(TypeBuilder::Timeline::TimelineEvent*);
     void setFrameIdentifier(JSONObject* record, Frame*);
@@ -278,10 +288,6 @@ private:
     void clearRecordStack();
 
     void localToPageQuad(const RenderObject& renderer, const LayoutRect&, FloatQuad*);
-    const TimelineTimeConverter& timeConverter() const { return m_timeConverter; }
-    const RenderImage* imageBeingPainted() const { return m_imageBeingPainted; }
-    int nodeBeingPainted() const { return m_nodeBeingPainted; }
-    int layerBeingPainted() const { return m_layerBeingPainted; }
     long long nodeId(Node*);
     long long nodeId(RenderObject*);
     void releaseNodeIds();
@@ -296,41 +302,36 @@ private:
     InspectorPageAgent* m_pageAgent;
     InspectorMemoryAgent* m_memoryAgent;
     InspectorDOMAgent* m_domAgent;
-    TimelineTimeConverter m_timeConverter;
-
     InspectorFrontend::Timeline* m_frontend;
-    double m_timestampOffset;
-
-    Vector<TimelineRecordEntry> m_recordStack;
+    InspectorClient* m_client;
+    InspectorOverlay* m_overlay;
+    InspectorType m_inspectorType;
 
     int m_id;
-    struct GCEvent {
-        GCEvent(double startTime, double endTime, size_t collectedBytes)
-            : startTime(startTime), endTime(endTime), collectedBytes(collectedBytes)
-        {
-        }
-        double startTime;
-        double endTime;
-        size_t collectedBytes;
-    };
-    typedef Vector<GCEvent> GCEvents;
-    GCEvents m_gcEvents;
+    int m_layerTreeId;
+
+    TimelineTimeConverter m_timeConverter;
     int m_maxCallStackDepth;
+
+    Vector<TimelineRecordEntry> m_recordStack;
+    RefPtr<TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent> > m_bufferedEvents;
+    Vector<String> m_consoleTimelines;
+
+    typedef Vector<TimelineGCEvent> GCEvents;
+    GCEvents m_gcEvents;
     unsigned m_platformInstrumentationClientInstalledAtStackDepth;
     RefPtr<JSONObject> m_pendingFrameRecord;
     RefPtr<JSONObject> m_pendingGPURecord;
-    InspectorType m_inspectorType;
-    InspectorClient* m_client;
-    WeakPtrFactory<InspectorTimelineAgent> m_weakFactory;
-    RefPtr<TimelineTraceEventProcessor> m_traceEventProcessor;
-    unsigned m_styleRecalcElementCounter;
-    int m_layerTreeId;
+    typedef HashMap<unsigned long long, TimelineImageInfo> PixelRefToImageInfoMap;
+    PixelRefToImageInfoMap m_pixelRefToImageInfo;
     RenderImage* m_imageBeingPainted;
-    int m_nodeBeingPainted;
-    int m_layerBeingPainted;
-    Vector<String> m_consoleTimelines;
-    RefPtr<TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent> > m_bufferedEvents;
-    InspectorOverlay* m_overlay;
+    HashMap<unsigned long long, long long> m_layerToNodeMap;
+    double m_paintSetupStart;
+    double m_paintSetupEnd;
+    RefPtr<JSONObject> m_gpuTask;
+    unsigned m_styleRecalcElementCounter;
+    typedef HashMap<ThreadIdentifier, TimelineThreadState> ThreadStateMap;
+    ThreadStateMap m_threadStates;
 };
 
 } // namespace WebCore

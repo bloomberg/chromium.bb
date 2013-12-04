@@ -28,83 +28,29 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#ifndef TimelineTraceEventProcessor_h
-#define TimelineTraceEventProcessor_h
+#ifndef TraceEventDispatcher_h
+#define TraceEventDispatcher_h
 
-#include "core/inspector/InspectorTimelineAgent.h"
-#include "platform/JSONValues.h"
 #include "platform/TraceEvent.h"
 #include "wtf/HashMap.h"
 #include "wtf/Threading.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
-#include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class InspectorClient;
-class InspectorTimelineAgent;
-class Page;
 
-class TimelineRecordStack {
-private:
-    struct Entry {
-        Entry(PassRefPtr<JSONObject> record)
-            : record(record)
-            , children(JSONArray::create())
-        {
-        }
-
-        RefPtr<JSONObject> record;
-        RefPtr<JSONArray> children;
-    };
-
-public:
-    TimelineRecordStack() { }
-    TimelineRecordStack(WeakPtr<InspectorTimelineAgent>);
-
-    void addScopedRecord(PassRefPtr<JSONObject> record);
-    void closeScopedRecord(double endTime);
-    void addInstantRecord(PassRefPtr<JSONObject> record);
-
-#ifndef NDEBUG
-    bool isOpenRecordOfType(const String& type);
-#endif
-
-private:
-    void send(PassRefPtr<JSONObject>);
-
-    WeakPtr<InspectorTimelineAgent> m_timelineAgent;
-    Vector<Entry> m_stack;
+struct TraceEventTargetBase {
+    virtual ~TraceEventTargetBase() { }
 };
 
-class TimelineTraceEventProcessor : public ThreadSafeRefCounted<TimelineTraceEventProcessor> {
+template<typename C> struct TraceEventTarget;
+
+class TraceEventDispatcher {
+    WTF_MAKE_NONCOPYABLE(TraceEventDispatcher);
 public:
-    TimelineTraceEventProcessor(WeakPtr<InspectorTimelineAgent>, InspectorClient*);
-    ~TimelineTraceEventProcessor();
-
-    void shutdown();
-    void processEventOnAnyThread(double timestamp, char, const char* name, unsigned long long id,
-        int numArgs, const char* const* argNames, const unsigned char* argTypes, const unsigned long long* argValues,
-        unsigned char flags);
-
-private:
-    struct TimelineThreadState {
-        TimelineThreadState() { }
-
-        TimelineThreadState(WeakPtr<InspectorTimelineAgent> timelineAgent)
-            : recordStack(timelineAgent)
-            , inKnownLayerTask(false)
-            , decodedPixelRefId(0)
-        {
-        }
-
-        TimelineRecordStack recordStack;
-        bool inKnownLayerTask;
-        unsigned long long decodedPixelRefId;
-    };
-
     class TraceEvent {
     public:
         TraceEvent()
@@ -184,70 +130,63 @@ private:
         unsigned long long m_argumentValues[MaxArguments];
     };
 
-    typedef void (TimelineTraceEventProcessor::*TraceEventHandler)(const TraceEvent&);
+    typedef void (TraceEventTargetBase::*TraceEventHandlerMethod)(const TraceEvent&);
 
-    TimelineThreadState& threadState(ThreadIdentifier thread)
+    static TraceEventDispatcher* instance()
     {
-        ThreadStateMap::iterator it = m_threadStates.find(thread);
-        if (it != m_threadStates.end())
-            return it->value;
-        return m_threadStates.add(thread, TimelineThreadState(m_timelineAgent)).iterator->value;
+        DEFINE_STATIC_LOCAL(TraceEventDispatcher, instance, ());
+        return &instance;
     }
-    bool maybeEnterLayerTask(const TraceEvent&, TimelineThreadState&);
-    void leaveLayerTask(TimelineThreadState&);
 
+    template<typename ListenerClass>
+    void addListener(const char* name, char phase, ListenerClass* instance, typename TraceEventTarget<ListenerClass>::TraceEventHandler handler, InspectorClient* client)
+    {
+        innerAddListener(name, phase, instance, static_cast<TraceEventHandlerMethod>(handler), client);
+    }
+
+    void removeAllListeners(TraceEventTargetBase*, InspectorClient*);
     void processBackgroundEvents();
-    void processBackgroundEventsTask();
-    PassRefPtr<JSONObject> createRecord(const TraceEvent&, const String& recordType, PassRefPtr<JSONObject> data = 0);
 
-    void registerHandler(const char* name, char, TraceEventHandler);
+private:
+    struct BoundTraceEventHandler {
+        TraceEventTargetBase* instance;
+        TraceEventHandlerMethod method;
 
-    void onBeginFrame(const TraceEvent&);
-    void onPaintSetupBegin(const TraceEvent&);
-    void onPaintSetupEnd(const TraceEvent&);
-    void onRasterTaskBegin(const TraceEvent&);
-    void onRasterTaskEnd(const TraceEvent&);
-    void onPaint(const TraceEvent&);
-    void onImageDecodeBegin(const TraceEvent&);
-    void onImageDecodeEnd(const TraceEvent&);
-    void onLayerDeleted(const TraceEvent&);
-    void onDrawLazyPixelRef(const TraceEvent&);
-    void onDecodeLazyPixelRefBegin(const TraceEvent&);
-    void onDecodeLazyPixelRefEnd(const TraceEvent&);
-    void onLazyPixelRefDeleted(const TraceEvent&);
-
-    WeakPtr<InspectorTimelineAgent> m_timelineAgent;
-    TimelineTimeConverter m_timeConverter;
-    InspectorClient* m_inspectorClient;
-    unsigned long long m_pageId;
-    int m_layerTreeId;
-
-    typedef HashMap<std::pair<String, int>, TraceEventHandler> HandlersMap;
-    HandlersMap m_handlersByType;
-    Mutex m_backgroundEventsMutex;
-    Vector<TraceEvent> m_backgroundEvents;
-    double m_lastEventProcessingTime;
-    bool m_processEventsTaskInFlight;
-
-    typedef HashMap<ThreadIdentifier, TimelineThreadState> ThreadStateMap;
-    ThreadStateMap m_threadStates;
-
-    HashMap<unsigned long long, long long> m_layerToNodeMap;
-    double m_paintSetupStart;
-    double m_paintSetupEnd;
-    RefPtr<JSONObject> m_gpuTask;
-
-    struct ImageInfo {
-        int backendNodeId;
-        String url;
-
-        ImageInfo() : backendNodeId(0) { }
-        ImageInfo(int backendNodeId, String url) : backendNodeId(backendNodeId), url(url) { }
+        BoundTraceEventHandler() : instance(0), method(0) { }
+        BoundTraceEventHandler(TraceEventTargetBase* instance, TraceEventHandlerMethod method)
+            : instance(instance)
+            , method(method)
+        {
+        }
     };
-    typedef HashMap<unsigned long long, ImageInfo> PixelRefToImageInfoMap;
-    PixelRefToImageInfoMap m_pixelRefToImageInfo;
+    typedef std::pair<String, int> EventSelector;
+    typedef HashMap<EventSelector, Vector<BoundTraceEventHandler> > HandlersMap;
+
+    TraceEventDispatcher()
+        : m_processEventsTaskInFlight(false)
+        , m_lastEventProcessingTime(0)
+    {
+    }
+
+    static void dispatchEventOnAnyThread(char phase, const unsigned char*, const char* name, unsigned long long id,
+        int numArgs, const char* const* argNames, const unsigned char* argTypes, const unsigned long long* argValues,
+        unsigned char flags, double timestamp);
+
+    void enqueueEvent(const TraceEvent&);
+    void innerAddListener(const char* name, char phase, TraceEventTargetBase*, TraceEventHandlerMethod, InspectorClient*);
+    void processBackgroundEventsTask();
+
+    Mutex m_mutex;
+    HandlersMap m_handlers;
+    Vector<TraceEvent> m_backgroundEvents;
+    bool m_processEventsTaskInFlight;
+    double m_lastEventProcessingTime;
+};
+
+template<typename C> struct TraceEventTarget : public TraceEventTargetBase {
+    typedef void (C::*TraceEventHandler)(const TraceEventDispatcher::TraceEvent&);
 };
 
 } // namespace WebCore
 
-#endif // !defined(TimelineTraceEventProcessor_h)
+#endif // TraceEventDispatcher_h

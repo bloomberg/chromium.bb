@@ -818,6 +818,7 @@ crbug.com/298039 [ Mac ] compositing/overflow/clear-scroll-parent.html [ Failure
 crbug.com/298039 [ Mac ] virtual/gpu/compositedscrolling/overflow/clear-scroll-parent.html [ Failure ]
 
 crbug.com/298188 [ Win ] virtual/implsidepainting/inspector/timeline [ Skip ]
+crbug.com/298188 virtual/implsidepainting/inspector/timeline/timeline-paint.html [ Failure Pass ]
 
 crbug.com/304993 fast/regions/auto-size/autoheight-regions-mark.html [ Failure Pass ]
 
