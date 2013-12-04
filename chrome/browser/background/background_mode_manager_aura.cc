@@ -19,6 +19,6 @@ void BackgroundModeManager::DisplayAppInstalledNotification(
   NOTIMPLEMENTED();
 }
 
-string16 BackgroundModeManager::GetPreferencesMenuLabel() {
+base::string16 BackgroundModeManager::GetPreferencesMenuLabel() {
   return l10n_util::GetStringUTF16(IDS_SETTINGS);
 }

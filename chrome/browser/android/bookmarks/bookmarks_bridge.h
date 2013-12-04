@@ -59,7 +59,7 @@ class BookmarksBridge : public BaseBookmarkModelObserver,
   bool IsEditable(const BookmarkNode* node) const;
   const BookmarkNode* GetParentNode(const BookmarkNode* node);
   int GetBookmarkType(const BookmarkNode* node);
-  string16 GetTitle(const BookmarkNode* node) const;
+  base::string16 GetTitle(const BookmarkNode* node) const;
   bool IsReachable(const BookmarkNode* node) const;
   bool IsLoaded() const;
   bool IsFolderAvailable(const BookmarkNode* folder) const;

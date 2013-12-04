@@ -109,7 +109,7 @@ class SearchProviderTest : public testing::Test,
     ResultInfo(GURL gurl,
                AutocompleteMatch::Type result_type,
                bool allowed_to_be_default_match,
-               string16 fill_into_edit)
+               base::string16 fill_into_edit)
       : gurl(gurl),
         result_type(result_type),
         allowed_to_be_default_match(allowed_to_be_default_match),
@@ -119,11 +119,11 @@ class SearchProviderTest : public testing::Test,
     const GURL gurl;
     const AutocompleteMatch::Type result_type;
     const bool allowed_to_be_default_match;
-    const string16 fill_into_edit;
+    const base::string16 fill_into_edit;
   };
 
   struct TestData {
-    const string16 input;
+    const base::string16 input;
     const size_t num_results;
     const ResultInfo output[3];
   };
@@ -152,11 +152,11 @@ class SearchProviderTest : public testing::Test,
 
   // Adds a search for |term|, using the engine |t_url| to the history, and
   // returns the URL for that search.
-  GURL AddSearchToHistory(TemplateURL* t_url, string16 term, int visit_count);
+  GURL AddSearchToHistory(TemplateURL* t_url, base::string16 term, int visit_count);
 
   // Looks for a match in |provider_| with |contents| equal to |contents|.
   // Sets |match| to it if found.  Returns whether |match| was set.
-  bool FindMatchWithContents(const string16& contents,
+  bool FindMatchWithContents(const base::string16& contents,
                              AutocompleteMatch* match);
 
   // Looks for a match in |provider_| with destination |url|.  Sets |match| to
@@ -172,13 +172,13 @@ class SearchProviderTest : public testing::Test,
   void RunTillProviderDone();
 
   // Invokes Start on provider_, then runs all pending tasks.
-  void QueryForInput(const string16& text,
+  void QueryForInput(const base::string16& text,
                      bool prevent_inline_autocomplete,
                      bool prefer_keyword);
 
   // Calls QueryForInput(), finishes any suggest query, then if |wyt_match| is
   // non-NULL, sets it to the "what you typed" entry for |text|.
-  void QueryForInputAndSetWYTMatch(const string16& text,
+  void QueryForInputAndSetWYTMatch(const base::string16& text,
                                    AutocompleteMatch* wyt_match);
 
   // Notifies the URLFetcher for the suggest query corresponding to the default
@@ -202,10 +202,10 @@ class SearchProviderTest : public testing::Test,
 
   // See description above class for details of these fields.
   TemplateURL* default_t_url_;
-  const string16 term1_;
+  const base::string16 term1_;
   GURL term1_url_;
   TemplateURL* keyword_t_url_;
-  const string16 keyword_term_;
+  const base::string16 keyword_term_;
   GURL keyword_url_;
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -291,13 +291,13 @@ void SearchProviderTest::RunTest(TestData* cases,
                                  bool prefer_keyword) {
   ACMatches matches;
   for (int i = 0; i < num_cases; ++i) {
-    AutocompleteInput input(cases[i].input, string16::npos, string16(), GURL(),
+    AutocompleteInput input(cases[i].input, base::string16::npos, base::string16(), GURL(),
                             AutocompleteInput::INVALID_SPEC, false,
                             prefer_keyword, true,
                             AutocompleteInput::ALL_MATCHES);
     provider_->Start(input, false);
     matches = provider_->matches();
-    string16 diagnostic_details = ASCIIToUTF16("Input was: ") + cases[i].input +
+    base::string16 diagnostic_details = ASCIIToUTF16("Input was: ") + cases[i].input +
         ASCIIToUTF16("; prefer_keyword was: ") +
         (prefer_keyword ? ASCIIToUTF16("true") : ASCIIToUTF16("false"));
     EXPECT_EQ(cases[i].num_results, matches.size()) << diagnostic_details;
@@ -332,11 +332,11 @@ void SearchProviderTest::RunTillProviderDone() {
   run_loop.Run();
 }
 
-void SearchProviderTest::QueryForInput(const string16& text,
+void SearchProviderTest::QueryForInput(const base::string16& text,
                                        bool prevent_inline_autocomplete,
                                        bool prefer_keyword) {
   // Start a query.
-  AutocompleteInput input(text, string16::npos, string16(), GURL(),
+  AutocompleteInput input(text, base::string16::npos, base::string16(), GURL(),
                           AutocompleteInput::INVALID_SPEC,
                           prevent_inline_autocomplete, prefer_keyword, true,
                           AutocompleteInput::ALL_MATCHES);
@@ -348,7 +348,7 @@ void SearchProviderTest::QueryForInput(const string16& text,
 }
 
 void SearchProviderTest::QueryForInputAndSetWYTMatch(
-    const string16& text,
+    const base::string16& text,
     AutocompleteMatch* wyt_match) {
   QueryForInput(text, false, false);
   profile_.BlockUntilHistoryProcessesPendingRequests();
@@ -363,7 +363,7 @@ void SearchProviderTest::QueryForInputAndSetWYTMatch(
 }
 
 GURL SearchProviderTest::AddSearchToHistory(TemplateURL* t_url,
-                                            string16 term,
+                                            base::string16 term,
                                             int visit_count) {
   HistoryService* history =
       HistoryServiceFactory::GetForProfile(&profile_,
@@ -373,13 +373,13 @@ GURL SearchProviderTest::AddSearchToHistory(TemplateURL* t_url,
   static base::Time last_added_time;
   last_added_time = std::max(base::Time::Now(),
       last_added_time + base::TimeDelta::FromMicroseconds(1));
-  history->AddPageWithDetails(search, string16(), visit_count, visit_count,
+  history->AddPageWithDetails(search, base::string16(), visit_count, visit_count,
       last_added_time, false, history::SOURCE_BROWSED);
   history->SetKeywordSearchTermsForURL(search, t_url->id(), term);
   return search;
 }
 
-bool SearchProviderTest::FindMatchWithContents(const string16& contents,
+bool SearchProviderTest::FindMatchWithContents(const base::string16& contents,
                                                AutocompleteMatch* match) {
   for (ACMatches::const_iterator i = provider_->matches().begin();
        i != provider_->matches().end(); ++i) {
@@ -464,7 +464,7 @@ void SearchProviderTest::ClearAllResults() {
 // Make sure we query history for the default provider and a URLFetcher is
 // created for the default provider suggest results.
 TEST_F(SearchProviderTest, QueryDefaultProvider) {
-  string16 term = term1_.substr(0, term1_.length() - 1);
+  base::string16 term = term1_.substr(0, term1_.length() - 1);
   QueryForInput(term, false, false);
 
   // Make sure the default providers suggest service was queried.
@@ -507,7 +507,7 @@ TEST_F(SearchProviderTest, QueryDefaultProvider) {
 }
 
 TEST_F(SearchProviderTest, HonorPreventInlineAutocomplete) {
-  string16 term = term1_.substr(0, term1_.length() - 1);
+  base::string16 term = term1_.substr(0, term1_.length() - 1);
   QueryForInput(term, true, false);
 
   ASSERT_FALSE(provider_->matches().empty());
@@ -519,7 +519,7 @@ TEST_F(SearchProviderTest, HonorPreventInlineAutocomplete) {
 // Issues a query that matches the registered keyword and makes sure history
 // is queried as well as URLFetchers getting created.
 TEST_F(SearchProviderTest, QueryKeywordProvider) {
-  string16 term = keyword_term_.substr(0, keyword_term_.length() - 1);
+  base::string16 term = keyword_term_.substr(0, keyword_term_.length() - 1);
   QueryForInput(keyword_t_url_->keyword() + ASCIIToUTF16(" ") + term,
                 false,
                 false);
@@ -625,7 +625,7 @@ TEST_F(SearchProviderTest, DontAutocompleteURLLikeTerms) {
 
   // Add the term as a url.
   HistoryServiceFactory::GetForProfile(&profile_, Profile::EXPLICIT_ACCESS)->
-      AddPageWithDetails(GURL("http://docs.google.com"), string16(), 1, 1,
+      AddPageWithDetails(GURL("http://docs.google.com"), base::string16(), 1, 1,
                          base::Time::Now(), false, history::SOURCE_BROWSED);
   profile_.BlockUntilHistoryProcessesPendingRequests();
 
@@ -857,7 +857,7 @@ TEST_F(SearchProviderTest, KeywordOrderingAndDescriptions) {
   AutocompleteController controller(&profile_, NULL,
       AutocompleteProvider::TYPE_SEARCH);
   controller.Start(AutocompleteInput(
-      ASCIIToUTF16("k t"), string16::npos, string16(), GURL(),
+      ASCIIToUTF16("k t"), base::string16::npos, base::string16(), GURL(),
       AutocompleteInput::INVALID_SPEC, false, false, true,
       AutocompleteInput::ALL_MATCHES));
   const AutocompleteResult& result = controller.result();
@@ -2642,13 +2642,13 @@ TEST_F(SearchProviderTest, LocalAndRemoteRelevances) {
   // We hardcode the string "term1" below, so ensure that the search term that
   // got added to history already is that string.
   ASSERT_EQ(ASCIIToUTF16("term1"), term1_);
-  string16 term = term1_.substr(0, term1_.length() - 1);
+  base::string16 term = term1_.substr(0, term1_.length() - 1);
 
   AddSearchToHistory(default_t_url_, term + ASCIIToUTF16("2"), 2);
   profile_.BlockUntilHistoryProcessesPendingRequests();
 
   struct {
-    const string16 input;
+    const base::string16 input;
     const std::string json;
     const std::string matches[6];
   } cases[] = {
@@ -3177,7 +3177,7 @@ TEST_F(SearchProviderTest, NavigationInline) {
     QueryForInput(ASCIIToUTF16(cases[i].input), false, false);
     AutocompleteMatch match(
         provider_->NavigationToMatch(SearchProvider::NavigationResult(
-            *provider_.get(), GURL(cases[i].url), string16(), false, 0,
+            *provider_.get(), GURL(cases[i].url), base::string16(), false, 0,
             false)));
     EXPECT_EQ(ASCIIToUTF16(cases[i].inline_autocompletion),
               match.inline_autocompletion);
@@ -3189,10 +3189,10 @@ TEST_F(SearchProviderTest, NavigationInline) {
 
 // Verifies that "http://" is not trimmed for input that is a leading substring.
 TEST_F(SearchProviderTest, NavigationInlineSchemeSubstring) {
-  const string16 input(ASCIIToUTF16("ht"));
-  const string16 url(ASCIIToUTF16("http://a.com"));
+  const base::string16 input(ASCIIToUTF16("ht"));
+  const base::string16 url(ASCIIToUTF16("http://a.com"));
   const SearchProvider::NavigationResult result(
-      *provider_.get(), GURL(url), string16(), false, 0, false);
+      *provider_.get(), GURL(url), base::string16(), false, 0, false);
 
   // Check the offset and strings when inline autocompletion is allowed.
   QueryForInput(input, false, false);
@@ -3216,7 +3216,7 @@ TEST_F(SearchProviderTest, NavigationInlineDomainClassify) {
   QueryForInput(ASCIIToUTF16("w"), false, false);
   AutocompleteMatch match(
       provider_->NavigationToMatch(SearchProvider::NavigationResult(
-          *provider_.get(), GURL("http://www.wow.com"), string16(), false, 0,
+          *provider_.get(), GURL("http://www.wow.com"), base::string16(), false, 0,
           false)));
   EXPECT_EQ(ASCIIToUTF16("ow.com"), match.inline_autocompletion);
   EXPECT_TRUE(match.allowed_to_be_default_match);
@@ -3379,12 +3379,12 @@ TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
       if (cases[i].results[j].is_navigation_result) {
         provider_->default_results_.navigation_results.push_back(
             SearchProvider::NavigationResult(
-                *provider_.get(), GURL(suggestion), string16(), false,
+                *provider_.get(), GURL(suggestion), base::string16(), false,
                 cases[i].results[j].relevance, false));
       } else {
         provider_->default_results_.suggest_results.push_back(
-            SearchProvider::SuggestResult(ASCIIToUTF16(suggestion), string16(),
-                                          string16(), std::string(),
+            SearchProvider::SuggestResult(ASCIIToUTF16(suggestion), base::string16(),
+                                          base::string16(), std::string(),
                                           std::string(), false,
                                           cases[i].results[j].relevance,
                                           false, false));
@@ -3392,7 +3392,7 @@ TEST_F(SearchProviderTest, RemoveStaleResultsTest) {
     }
 
     provider_->input_ = AutocompleteInput(
-        ASCIIToUTF16(cases[i].omnibox_input), string16::npos, string16(),
+        ASCIIToUTF16(cases[i].omnibox_input), base::string16::npos, base::string16(),
         GURL(), AutocompleteInput::INVALID_SPEC, false, false, true,
         AutocompleteInput::ALL_MATCHES);
     provider_->RemoveAllStaleResults();
@@ -3972,7 +3972,7 @@ TEST_F(SearchProviderTest, ParseDeletionUrl) {
 
 TEST_F(SearchProviderTest, ReflectsBookmarkBarState) {
   profile_.GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, false);
-  string16 term = term1_.substr(0, term1_.length() - 1);
+  base::string16 term = term1_.substr(0, term1_.length() - 1);
   QueryForInput(term, true, false);
   ASSERT_FALSE(provider_->matches().empty());
   EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,

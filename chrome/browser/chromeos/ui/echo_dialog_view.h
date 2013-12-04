@@ -35,7 +35,7 @@ class EchoDialogView : public views::DialogDelegateView,
   // url. Service name should be underlined in the dialog, and hovering over its
   // label should display tooltip containing |origin|.
   // The dialog will have both OK and Cancel buttons.
-  void InitForEnabledEcho(const string16& service_name, const string16& origin);
+  void InitForEnabledEcho(const base::string16& service_name, const base::string16& origin);
 
   // Initializes dialog layout that will be shown when echo extension is not
   // allowed to redeem offers. The dialog will be showing a message that the
@@ -52,7 +52,7 @@ class EchoDialogView : public views::DialogDelegateView,
   // views::DialogDelegate overrides.
   virtual int GetDialogButtons() const OVERRIDE;
   virtual int GetDefaultDialogButton() const OVERRIDE;
-  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual base::string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
 

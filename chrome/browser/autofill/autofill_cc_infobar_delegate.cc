@@ -73,11 +73,12 @@ bool AutofillCCInfoBarDelegate::ShouldExpireInternal(
   return false;
 }
 
-string16 AutofillCCInfoBarDelegate::GetMessageText() const {
+base::string16 AutofillCCInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_INFOBAR_TEXT);
 }
 
-string16 AutofillCCInfoBarDelegate::GetButtonLabel(InfoBarButton button) const {
+base::string16 AutofillCCInfoBarDelegate::GetButtonLabel(
+    InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_AUTOFILL_CC_INFOBAR_ACCEPT : IDS_AUTOFILL_CC_INFOBAR_DENY);
 }
@@ -94,7 +95,7 @@ bool AutofillCCInfoBarDelegate::Cancel() {
   return true;
 }
 
-string16 AutofillCCInfoBarDelegate::GetLinkText() const {
+base::string16 AutofillCCInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 

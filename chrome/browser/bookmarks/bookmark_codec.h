@@ -157,7 +157,7 @@ class BookmarkCodec {
 
   // Updates the check-sum with the given string.
   void UpdateChecksum(const std::string& str);
-  void UpdateChecksum(const string16& str);
+  void UpdateChecksum(const base::string16& str);
 
   // Updates the check-sum with the given contents of URL/folder bookmark node.
   // NOTE: These functions take in individual properties of a bookmark node
@@ -166,10 +166,10 @@ class BookmarkCodec {
   // and once for computing the check-sum.
   // The url parameter should be a valid UTF8 string.
   void UpdateChecksumWithUrlNode(const std::string& id,
-                                 const string16& title,
+                                 const base::string16& title,
                                  const std::string& url);
   void UpdateChecksumWithFolderNode(const std::string& id,
-                                    const string16& title);
+                                    const base::string16& title);
 
   // Initializes/Finalizes the checksum.
   void InitializeChecksum();

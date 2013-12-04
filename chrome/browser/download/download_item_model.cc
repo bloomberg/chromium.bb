@@ -177,7 +177,7 @@ string16 InterruptReasonStatusMessage(int reason) {
 
 string16 InterruptReasonMessage(int reason) {
   int string_id = 0;
-  string16 status_text;
+  base::string16 status_text;
 
   switch (reason) {
     case content::DOWNLOAD_INTERRUPT_REASON_FILE_ACCESS_DENIED:
@@ -258,13 +258,13 @@ string16 DownloadItemModel::GetInterruptReasonText() const {
   if (download_->GetState() != DownloadItem::INTERRUPTED ||
       download_->GetLastReason() ==
       content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED) {
-    return string16();
+    return base::string16();
   }
   return InterruptReasonMessage(download_->GetLastReason());
 }
 
 string16 DownloadItemModel::GetStatusText() const {
-  string16 status_text;
+  base::string16 status_text;
   switch (download_->GetState()) {
     case DownloadItem::IN_PROGRESS:
       status_text = GetInProgressStatusString();
@@ -282,7 +282,7 @@ string16 DownloadItemModel::GetStatusText() const {
     case DownloadItem::INTERRUPTED: {
       content::DownloadInterruptReason reason = download_->GetLastReason();
       if (reason != content::DOWNLOAD_INTERRUPT_REASON_USER_CANCELED) {
-        string16 interrupt_reason = InterruptReasonStatusMessage(reason);
+        base::string16 interrupt_reason = InterruptReasonStatusMessage(reason);
         status_text = l10n_util::GetStringFUTF16(
             IDS_DOWNLOAD_STATUS_INTERRUPTED, interrupt_reason);
       } else {
@@ -301,15 +301,15 @@ string16 DownloadItemModel::GetStatusText() const {
 string16 DownloadItemModel::GetTabProgressStatusText() const {
   int64 total = GetTotalBytes();
   int64 size = download_->GetReceivedBytes();
-  string16 received_size = ui::FormatBytes(size);
-  string16 amount = received_size;
+  base::string16 received_size = ui::FormatBytes(size);
+  base::string16 amount = received_size;
 
   // Adjust both strings for the locale direction since we don't yet know which
   // string we'll end up using for constructing the final progress string.
   base::i18n::AdjustStringForLocaleDirection(&amount);
 
   if (total) {
-    string16 total_text = ui::FormatBytes(total);
+    base::string16 total_text = ui::FormatBytes(total);
     base::i18n::AdjustStringForLocaleDirection(&total_text);
 
     base::i18n::AdjustStringForLocaleDirection(&received_size);
@@ -319,11 +319,11 @@ string16 DownloadItemModel::GetTabProgressStatusText() const {
     amount.assign(received_size);
   }
   int64 current_speed = download_->CurrentSpeed();
-  string16 speed_text = ui::FormatSpeed(current_speed);
+  base::string16 speed_text = ui::FormatSpeed(current_speed);
   base::i18n::AdjustStringForLocaleDirection(&speed_text);
 
   base::TimeDelta remaining;
-  string16 time_remaining;
+  base::string16 time_remaining;
   if (download_->IsPaused())
     time_remaining = l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED);
   else if (download_->TimeRemaining(&remaining))
@@ -340,7 +340,7 @@ string16 DownloadItemModel::GetTabProgressStatusText() const {
 
 string16 DownloadItemModel::GetTooltipText(const gfx::FontList& font_list,
                                            int max_width) const {
-  string16 tooltip = gfx::ElideFilename(
+  base::string16 tooltip = gfx::ElideFilename(
       download_->GetFileNameToReportUser(), font_list, max_width);
   content::DownloadInterruptReason reason = download_->GetLastReason();
   if (download_->GetState() == DownloadItem::INTERRUPTED &&
@@ -356,7 +356,7 @@ string16 DownloadItemModel::GetWarningText(const gfx::FontList& font_list,
                                            int base_width) const {
   // Should only be called if IsDangerous().
   DCHECK(IsDangerous());
-  string16 elided_filename =
+  base::string16 elided_filename =
       gfx::ElideFilename(download_->GetFileNameToReportUser(), font_list,
                         base_width);
   switch (download_->GetDangerType()) {
@@ -393,7 +393,7 @@ string16 DownloadItemModel::GetWarningText(const gfx::FontList& font_list,
     }
   }
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
 string16 DownloadItemModel::GetWarningConfirmButtonText() const {
@@ -563,19 +563,19 @@ void DownloadItemModel::SetShouldPreferOpeningInBrowser(bool preference) {
 }
 
 string16 DownloadItemModel::GetProgressSizesString() const {
-  string16 size_ratio;
+  base::string16 size_ratio;
   int64 size = GetCompletedBytes();
   int64 total = GetTotalBytes();
   if (total > 0) {
     ui::DataUnits amount_units = ui::GetByteDisplayUnits(total);
-    string16 simple_size = ui::FormatBytesWithUnits(size, amount_units, false);
+    base::string16 simple_size = ui::FormatBytesWithUnits(size, amount_units, false);
 
     // In RTL locales, we render the text "size/total" in an RTL context. This
     // is problematic since a string such as "123/456 MB" is displayed
     // as "MB 123/456" because it ends with an LTR run. In order to solve this,
     // we mark the total string as an LTR string if the UI layout is
     // right-to-left so that the string "456 MB" is treated as an LTR run.
-    string16 simple_total = base::i18n::GetDisplayStringInLTRDirectionality(
+    base::string16 simple_total = base::i18n::GetDisplayStringInLTRDirectionality(
         ui::FormatBytesWithUnits(total, amount_units, true));
     size_ratio = l10n_util::GetStringFUTF16(IDS_DOWNLOAD_STATUS_SIZES,
                                             simple_size, simple_total);
@@ -594,7 +594,7 @@ string16 DownloadItemModel::GetInProgressStatusString() const {
                                download_->TimeRemaining(&time_remaining));
 
   // Indication of progress. (E.g.:"100/200 MB" or "100MB")
-  string16 size_ratio = GetProgressSizesString();
+  base::string16 size_ratio = GetProgressSizesString();
 
   // The download is a CRX (app, extension, theme, ...) and it is being unpacked
   // and validated.

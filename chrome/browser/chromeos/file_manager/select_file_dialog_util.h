@@ -13,7 +13,7 @@ namespace file_manager {
 namespace util {
 
 // Get file dialog title string from its type.
-string16 GetSelectFileDialogTitle(ui::SelectFileDialog::Type type);
+base::string16 GetSelectFileDialogTitle(ui::SelectFileDialog::Type type);
 
 }  // namespace util
 }  // namespace file_manager

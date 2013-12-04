@@ -60,7 +60,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   int GetSyncId() const;
 
   // Return the tab title.
-  string16 GetTitle() const;
+  base::string16 GetTitle() const;
 
   // Return the tab url.
   GURL GetURL() const;
@@ -79,8 +79,8 @@ class TabAndroid : public CoreTabHelperDelegate,
   virtual void HandlePopupNavigation(chrome::NavigateParams* params) = 0;
 
   virtual void OnReceivedHttpAuthRequest(jobject auth_handler,
-                                         const string16& host,
-                                         const string16& realm) = 0;
+                                         const base::string16& host,
+                                         const base::string16& realm) = 0;
 
   // Called to show the regular context menu that is triggered by a long press.
   virtual void ShowContextMenu(const content::ContextMenuParams& params) = 0;
@@ -93,7 +93,7 @@ class TabAndroid : public CoreTabHelperDelegate,
   // Called when context menu option to create the bookmark shortcut on
   // homescreen is called.
   virtual void AddShortcutToBookmark(
-      const GURL& url, const string16& title, const SkBitmap& skbitmap,
+      const GURL& url, const base::string16& title, const SkBitmap& skbitmap,
       int r_value, int g_value, int b_value) = 0;
 
   // Called when a bookmark node should be edited.

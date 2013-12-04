@@ -45,7 +45,7 @@ class BookmarkIndex {
 
   // Returns up to |max_count| of bookmarks containing the text |query|.
   void GetBookmarksWithTitlesMatching(
-      const string16& query,
+      const base::string16& query,
       size_t max_count,
       std::vector<BookmarkTitleMatch>* results);
 
@@ -90,7 +90,7 @@ class BookmarkIndex {
   // Populates |matches| for the specified term. If |first_term| is true, this
   // is the first term in the query. Returns true if there is at least one node
   // matching the term.
-  bool GetBookmarksWithTitleMatchingTerm(const string16& term,
+  bool GetBookmarksWithTitleMatchingTerm(const base::string16& term,
                                          bool first_term,
                                          Matches* matches);
 
@@ -116,13 +116,13 @@ class BookmarkIndex {
                       Matches* result);
 
   // Returns the set of query words from |query|.
-  std::vector<string16> ExtractQueryWords(const string16& query);
+  std::vector<string16> ExtractQueryWords(const base::string16& query);
 
   // Adds |node| to |index_|.
-  void RegisterNode(const string16& term, const BookmarkNode* node);
+  void RegisterNode(const base::string16& term, const BookmarkNode* node);
 
   // Removes |node| from |index_|.
-  void UnregisterNode(const string16& term, const BookmarkNode* node);
+  void UnregisterNode(const base::string16& term, const BookmarkNode* node);
 
   Index index_;
 

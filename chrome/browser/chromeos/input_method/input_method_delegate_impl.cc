@@ -26,11 +26,12 @@ std::string InputMethodDelegateImpl::GetHardwareKeyboardLayout() const {
   return std::string();
 }
 
-string16 InputMethodDelegateImpl::GetLocalizedString(int resource_id) const {
+base::string16 InputMethodDelegateImpl::GetLocalizedString(
+    int resource_id) const {
   return l10n_util::GetStringUTF16(resource_id);
 }
 
-string16 InputMethodDelegateImpl::GetDisplayLanguageName(
+base::string16 InputMethodDelegateImpl::GetDisplayLanguageName(
     const std::string& language_code) const {
   DCHECK(g_browser_process);
   return l10n_util::GetDisplayNameForLocale(

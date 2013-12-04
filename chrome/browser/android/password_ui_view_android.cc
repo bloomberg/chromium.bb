@@ -26,7 +26,7 @@ Profile* PasswordUIViewAndroid::GetProfile() {
 }
 
 void PasswordUIViewAndroid::ShowPassword(
-    size_t index, const string16& password_value) {
+    size_t index, const base::string16& password_value) {
   NOTIMPLEMENTED();
 }
 

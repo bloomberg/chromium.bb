@@ -27,7 +27,7 @@ typedef InProcessBrowserTest BrowsingDataIndexedDBHelperTest;
 IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedAddIndexedDB) {
   const GURL origin1("http://host1:1/");
   const GURL origin2("http://host2:1/");
-  const string16 description(ASCIIToUTF16("description"));
+  const base::string16 description(ASCIIToUTF16("description"));
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper());
@@ -52,7 +52,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedAddIndexedDB) {
 
 IN_PROC_BROWSER_TEST_F(BrowsingDataIndexedDBHelperTest, CannedUnique) {
   const GURL origin("http://host1:1/");
-  const string16 description(ASCIIToUTF16("description"));
+  const base::string16 description(ASCIIToUTF16("description"));
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper());

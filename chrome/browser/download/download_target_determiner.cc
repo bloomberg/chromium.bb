@@ -601,7 +601,7 @@ DownloadTargetDeterminer::Result
   // Range of the <random> uniquifier.
   const int kUnconfirmedUniquifierRange = 1000000;
 #if defined(OS_WIN)
-  string16 unconfirmed_format =
+  base::string16 unconfirmed_format =
       l10n_util::GetStringUTF16(IDS_DOWNLOAD_UNCONFIRMED_PREFIX);
 #else
   std::string unconfirmed_format =

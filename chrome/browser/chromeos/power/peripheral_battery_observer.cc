@@ -222,7 +222,7 @@ bool PeripheralBatteryObserver::PostNotification(const std::string& address,
       UTF8ToUTF16(battery.name),
       string_text,
       blink::WebTextDirectionDefault,
-      string16(),
+      base::string16(),
       UTF8ToUTF16(address),
       new PeripheralBatteryNotificationDelegate(address));
 

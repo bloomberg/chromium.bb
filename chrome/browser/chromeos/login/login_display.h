@@ -42,7 +42,7 @@ class LoginDisplay : public RemoveUserDelegate {
     virtual void CompleteLogin(const UserContext& user_context) = 0;
 
     // Returns name of the currently connected network.
-    virtual string16 GetConnectedNetworkName() = 0;
+    virtual base::string16 GetConnectedNetworkName() = 0;
 
     // Returns true if sign in is in progress.
     virtual bool IsSigninInProgress() const = 0;

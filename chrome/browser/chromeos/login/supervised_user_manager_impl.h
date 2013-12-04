@@ -26,19 +26,19 @@ class SupervisedUserManagerImpl
       const std::string& manager_id,
       const std::string& local_user_id,
       const std::string& sync_user_id,
-      const string16& display_name) OVERRIDE;
+      const base::string16& display_name) OVERRIDE;
   virtual std::string GenerateUserId() OVERRIDE;
-  virtual const User* FindByDisplayName(const string16& display_name) const
+  virtual const User* FindByDisplayName(const base::string16& display_name) const
       OVERRIDE;
   virtual const User* FindBySyncId(const std::string& sync_id) const OVERRIDE;
   virtual std::string GetUserSyncId(const std::string& user_id) const OVERRIDE;
-  virtual string16 GetManagerDisplayName(const std::string& user_id) const
+  virtual base::string16 GetManagerDisplayName(const std::string& user_id) const
       OVERRIDE;
   virtual std::string GetManagerUserId(const std::string& user_id) const
       OVERRIDE;
   virtual std::string GetManagerDisplayEmail(const std::string& user_id) const
       OVERRIDE;
-  virtual void StartCreationTransaction(const string16& display_name) OVERRIDE;
+  virtual void StartCreationTransaction(const base::string16& display_name) OVERRIDE;
   virtual void SetCreationTransactionUserId(const std::string& user_id)
       OVERRIDE;
   virtual void CommitCreationTransaction() OVERRIDE;
@@ -61,7 +61,7 @@ class SupervisedUserManagerImpl
 
   // Update name if this user is manager of some managed users.
   void UpdateManagerName(const std::string& manager_id,
-                         const string16& new_display_name);
+                         const base::string16& new_display_name);
 
   UserManagerImpl* owner_;
 

@@ -126,9 +126,9 @@ void DownloadStatusUpdater::UpdateAppIconDownloadProgress(
           ::GetProcAddress(metro, "DisplayNotification"));
   DCHECK(display_notification);
   if (display_notification) {
-    string16 title = l10n_util::GetStringUTF16(
+    base::string16 title = l10n_util::GetStringUTF16(
         IDS_METRO_DOWNLOAD_COMPLETE_NOTIFICATION_TITLE);
-    string16 body = l10n_util::GetStringUTF16(
+    base::string16 body = l10n_util::GetStringUTF16(
         IDS_METRO_DOWNLOAD_COMPLETE_NOTIFICATION);
 
     // Dummy notification id. Every metro style notification needs a

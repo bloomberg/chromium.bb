@@ -37,7 +37,7 @@ bool IsDefaultImageUrl(const std::string& url, int* image_id);
 const gfx::ImageSkia& GetDefaultImage(int index);
 
 // Returns a description of a default user image with specified index.
-string16 GetDefaultImageDescription(int index);
+base::string16 GetDefaultImageDescription(int index);
 
 // Resource IDs of default user images.
 extern const int kDefaultImageResourceIDs[];

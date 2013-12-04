@@ -93,7 +93,7 @@ AutocompleteMatch ExtensionAppProvider::CreateAutocompleteMatch(
   match.relevance = CalculateRelevance(
       input.type(),
       input.text().length(),
-      name_match_index != string16::npos ?
+      name_match_index != base::string16::npos ?
           app.name.length() : app.launch_url.length(),
       match.destination_url);
   return match;
@@ -113,25 +113,27 @@ void ExtensionAppProvider::Start(const AutocompleteInput& input,
   for (ExtensionApps::const_iterator app = extension_apps_.begin();
        app != extension_apps_.end(); ++app) {
     // See if the input matches this extension application.
-    const string16& name = app->name;
-    string16::const_iterator name_iter = std::search(name.begin(), name.end(),
-        input.text().begin(), input.text().end(),
-        base::CaseInsensitiveCompare<char16>());
+    const base::string16& name = app->name;
+    base::string16::const_iterator name_iter =
+        std::search(name.begin(), name.end(),
+                    input.text().begin(), input.text().end(),
+                    base::CaseInsensitiveCompare<char16>());
     bool matches_name = name_iter != name.end();
     size_t name_match_index = matches_name ?
-        static_cast<size_t>(name_iter - name.begin()) : string16::npos;
+        static_cast<size_t>(name_iter - name.begin()) : base::string16::npos;
 
     bool matches_url = false;
-    size_t url_match_index = string16::npos;
+    size_t url_match_index = base::string16::npos;
     if (app->should_match_against_launch_url) {
-      const string16& url = app->launch_url;
-      string16::const_iterator url_iter = std::search(url.begin(), url.end(),
-          input.text().begin(), input.text().end(),
-          base::CaseInsensitiveCompare<char16>());
+      const base::string16& url = app->launch_url;
+      base::string16::const_iterator url_iter =
+          std::search(url.begin(), url.end(),
+                      input.text().begin(), input.text().end(),
+                      base::CaseInsensitiveCompare<char16>());
       matches_url = url_iter != url.end() &&
           input.type() != AutocompleteInput::FORCED_QUERY;
       url_match_index = matches_url ?
-          static_cast<size_t>(url_iter - url.begin()) : string16::npos;
+          static_cast<size_t>(url_iter - url.begin()) : base::string16::npos;
     }
 
     if (matches_name || matches_url) {

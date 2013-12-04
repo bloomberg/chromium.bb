@@ -513,9 +513,9 @@ void TestingAutomationProvider::GetTimeInfo(Browser* browser,
       prefs::kUse24HourClock);
   base::HourClockType hour_clock_type =
       use_24hour_clock ? base::k24HourClock : base::k12HourClock;
-  string16 display_time = base::TimeFormatTimeOfDayWithHourClockType(
+  base::string16 display_time = base::TimeFormatTimeOfDayWithHourClockType(
       time, hour_clock_type, base::kDropAmPm);
-  string16 timezone =
+  base::string16 timezone =
       chromeos::system::TimezoneSettings::GetInstance()->GetCurrentTimezoneID();
   return_value->SetString("display_time", display_time);
   return_value->SetString("display_date", base::TimeFormatFriendlyDate(time));

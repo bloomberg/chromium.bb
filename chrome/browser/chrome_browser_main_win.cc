@@ -84,7 +84,7 @@ int GetMinimumFontSize() {
 
 class TranslationDelegate : public installer::TranslationDelegate {
  public:
-  virtual string16 GetLocalizedString(int installer_string_id) OVERRIDE;
+  virtual base::string16 GetLocalizedString(int installer_string_id) OVERRIDE;
 };
 
 bool IsSafeModeStart() {
@@ -178,7 +178,7 @@ ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
         GetProcAddress(base::win::GetMetroModule(),
                        "GetMetroCommandLineSwitches"));
     if (metro_switches_proc) {
-      string16 metro_switches = (*metro_switches_proc)();
+      base::string16 metro_switches = (*metro_switches_proc)();
       if (!metro_switches.empty()) {
         CommandLine extra_switches(CommandLine::NO_PROGRAM);
         extra_switches.ParseFromString(metro_switches);
@@ -274,9 +274,9 @@ void ChromeBrowserMainPartsWin::PrepareRestartOnCrashEnviroment(
   // The encoding we use for the info is "title|context|direction" where
   // direction is either env_vars::kRtlLocale or env_vars::kLtrLocale depending
   // on the current locale.
-  string16 dlg_strings(l10n_util::GetStringUTF16(IDS_CRASH_RECOVERY_TITLE));
+  base::string16 dlg_strings(l10n_util::GetStringUTF16(IDS_CRASH_RECOVERY_TITLE));
   dlg_strings.push_back('|');
-  string16 adjusted_string(
+  base::string16 adjusted_string(
       l10n_util::GetStringUTF16(IDS_CRASH_RECOVERY_CONTENT));
   base::i18n::AdjustStringForLocaleDirection(&adjusted_string);
   dlg_strings.append(adjusted_string);
@@ -326,7 +326,7 @@ void ChromeBrowserMainPartsWin::RegisterApplicationRestart(
 int ChromeBrowserMainPartsWin::HandleIconsCommands(
     const CommandLine& parsed_command_line) {
   if (parsed_command_line.HasSwitch(switches::kHideIcons)) {
-    string16 cp_applet;
+    base::string16 cp_applet;
     base::win::Version version = base::win::GetVersion();
     if (version >= base::win::VERSION_VISTA) {
       cp_applet.assign(L"Programs and Features");  // Windows Vista and later.
@@ -336,9 +336,9 @@ int ChromeBrowserMainPartsWin::HandleIconsCommands(
       return chrome::RESULT_CODE_UNSUPPORTED_PARAM;  // Not supported
     }
 
-    const string16 msg =
+    const base::string16 msg =
         l10n_util::GetStringFUTF16(IDS_HIDE_ICONS_NOT_SUPPORTED, cp_applet);
-    const string16 caption = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+    const base::string16 caption = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
     const UINT flags = MB_OKCANCEL | MB_ICONWARNING | MB_TOPMOST;
     if (IDOK == ui::MessageBox(NULL, msg, caption, flags))
       ShellExecute(NULL, NULL, L"appwiz.cpl", NULL, NULL, SW_SHOWNORMAL);
@@ -369,9 +369,9 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
         // an invisible dialog.
         // TODO (gab): Get rid of this dialog altogether and auto-launch
         // system-level Chrome instead.
-        const string16 text =
+        const base::string16 text =
             l10n_util::GetStringUTF16(IDS_MACHINE_LEVEL_INSTALL_CONFLICT);
-        const string16 caption = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+        const base::string16 caption = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
         const UINT flags = MB_OK | MB_ICONERROR | MB_TOPMOST;
         ui::MessageBox(NULL, text, caption, flags);
       }
@@ -384,7 +384,7 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
             installer::switches::kDoNotRemoveSharedItems);
 
         const base::FilePath setup_exe(uninstall_cmd.GetProgram());
-        const string16 params(uninstall_cmd.GetArgumentsString());
+        const base::string16 params(uninstall_cmd.GetArgumentsString());
 
         SHELLEXECUTEINFO sei = { sizeof(sei) };
         sei.fMask = SEE_MASK_NOASYNC;
@@ -421,7 +421,7 @@ string16 TranslationDelegate::GetLocalizedString(int installer_string_id) {
   }
   if (resource_id)
     return l10n_util::GetStringUTF16(resource_id);
-  return string16();
+  return base::string16();
 }
 
 // static

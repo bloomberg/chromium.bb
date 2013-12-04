@@ -61,7 +61,7 @@ class ScreensaverUnpackerClient
                                const base::DictionaryValue* original_manifest,
                                const Extension* extension,
                                const SkBitmap& install_icon) OVERRIDE;
-  virtual void OnUnpackFailure(const string16& error) OVERRIDE;
+  virtual void OnUnpackFailure(const base::string16& error) OVERRIDE;
 
  protected:
   virtual ~ScreensaverUnpackerClient() {}
@@ -94,7 +94,7 @@ void ScreensaverUnpackerClient::OnUnpackSuccess(
                  extension_root));
 }
 
-void ScreensaverUnpackerClient::OnUnpackFailure(const string16& error) {
+void ScreensaverUnpackerClient::OnUnpackFailure(const base::string16& error) {
   LOG(ERROR) << "Couldn't unpack screensaver extension. Error: " << error;
   NotifyAppPackOfDamagedFile();
 }

@@ -197,7 +197,7 @@ class WorkerObserver
   // content::WorkerServiceObserver overrides:
   virtual void WorkerCreated(
       const GURL& url,
-      const string16& name,
+      const base::string16& name,
       int process_id,
       int route_id) OVERRIDE {
     EnumerateOnIOThread();

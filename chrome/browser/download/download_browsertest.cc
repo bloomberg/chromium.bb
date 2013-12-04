@@ -745,9 +745,9 @@ class DownloadTest : public InProcessBrowserTest {
     // |expected_title_finished| need to be checked.
     base::FilePath filename;
     net::FileURLToFilePath(url, &filename);
-    string16 expected_title_in_progress(
+    base::string16 expected_title_in_progress(
         ASCIIToUTF16(partial_indication) + filename.LossyDisplayName());
-    string16 expected_title_finished(
+    base::string16 expected_title_finished(
         ASCIIToUTF16(total_indication) + filename.LossyDisplayName());
 
     // Download a partial web page in a background tab and wait.
@@ -2382,7 +2382,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   content::RenderViewHost* render_view_host = web_contents->GetRenderViewHost();
   ASSERT_TRUE(render_view_host != NULL);
   render_view_host->ExecuteJavascriptInWebFrame(
-        string16(), ASCIIToUTF16("SubmitForm()"));
+        base::string16(), ASCIIToUTF16("SubmitForm()"));
   observer.Wait();
   EXPECT_EQ(jpeg_url, web_contents->GetURL());
 
@@ -2897,7 +2897,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_CrazyFilenames) {
   ASSERT_TRUE(base::CreateDirectory(DestinationFile(browser(), origin)));
 
   for (size_t index = 0; index < arraysize(kCrazyFilenames); ++index) {
-    string16 crazy16;
+    base::string16 crazy16;
     std::string crazy8;
     const wchar_t* crazy_w = kCrazyFilenames[index];
     ASSERT_TRUE(WideToUTF8(crazy_w, wcslen(crazy_w), &crazy8));

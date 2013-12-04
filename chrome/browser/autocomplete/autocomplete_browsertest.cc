@@ -36,7 +36,7 @@
 
 namespace {
 
-string16 AutocompleteResultAsString(const AutocompleteResult& result) {
+base::string16 AutocompleteResultAsString(const AutocompleteResult& result) {
   std::string output(base::StringPrintf("{%" PRIuS "} ", result.size()));
   for (size_t i = 0; i < result.size(); ++i) {
     AutocompleteMatch match = result.match_at(i);
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
   {
     omnibox_view->model()->SetInputInProgress(true);
     autocomplete_controller->Start(AutocompleteInput(
-        ASCIIToUTF16("chrome"), string16::npos, string16(), GURL(),
+        ASCIIToUTF16("chrome"), base::string16::npos, base::string16(), GURL(),
         AutocompleteInput::NTP, true, false, true,
         AutocompleteInput::SYNCHRONOUS_MATCHES));
 
@@ -179,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, TabAwayRevertSelect) {
   LocationBar* location_bar = GetLocationBar();
   OmniboxView* omnibox_view = location_bar->GetOmniboxView();
   EXPECT_EQ(UTF8ToUTF16(content::kAboutBlankURL), omnibox_view->GetText());
-  omnibox_view->SetUserText(string16());
+  omnibox_view->SetUserText(base::string16());
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());

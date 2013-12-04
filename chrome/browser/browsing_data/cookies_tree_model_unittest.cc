@@ -396,7 +396,7 @@ TEST_F(CookiesTreeModelTest, RemoveAll) {
 
   // Make sure the nodes are also deleted from the model's cache.
   // http://crbug.com/43249
-  cookies_model->UpdateSearchResults(string16());
+  cookies_model->UpdateSearchResults(base::string16());
 
   {
     // 2 nodes - root and app
@@ -1147,7 +1147,7 @@ TEST_F(CookiesTreeModelTest, FileSystemFilter) {
   EXPECT_EQ("http://fshost3:3/",
             GetDisplayedFileSystems(cookies_model.get()));
 
-  cookies_model->UpdateSearchResults(string16());
+  cookies_model->UpdateSearchResults(base::string16());
   EXPECT_EQ("http://fshost1:1/,http://fshost2:2/,http://fshost3:3/",
             GetDisplayedFileSystems(cookies_model.get()));
 }
@@ -1178,16 +1178,16 @@ TEST_F(CookiesTreeModelTest, CookiesFilter) {
   mock_browsing_data_cookie_helper_->Notify();
   EXPECT_EQ("A,B,C,D", GetDisplayedCookies(&cookies_model));
 
-  cookies_model.UpdateSearchResults(string16(ASCIIToUTF16("foo")));
+  cookies_model.UpdateSearchResults(base::string16(ASCIIToUTF16("foo")));
   EXPECT_EQ("B,C,D", GetDisplayedCookies(&cookies_model));
 
-  cookies_model.UpdateSearchResults(string16(ASCIIToUTF16("2")));
+  cookies_model.UpdateSearchResults(base::string16(ASCIIToUTF16("2")));
   EXPECT_EQ("A,C", GetDisplayedCookies(&cookies_model));
 
-  cookies_model.UpdateSearchResults(string16(ASCIIToUTF16("foo3")));
+  cookies_model.UpdateSearchResults(base::string16(ASCIIToUTF16("foo3")));
   EXPECT_EQ("D", GetDisplayedCookies(&cookies_model));
 
-  cookies_model.UpdateSearchResults(string16());
+  cookies_model.UpdateSearchResults(base::string16());
   EXPECT_EQ("A,B,C,D", GetDisplayedCookies(&cookies_model));
 }
 

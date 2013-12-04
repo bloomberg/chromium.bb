@@ -77,8 +77,8 @@ void BackgroundModeManager::DisplayAppInstalledNotification(
   // http://crbug.com/74970
 }
 
-string16 BackgroundModeManager::GetPreferencesMenuLabel() {
-  string16 result = gtk_util::GetStockPreferencesMenuLabel();
+base::string16 BackgroundModeManager::GetPreferencesMenuLabel() {
+  base::string16 result = gtk_util::GetStockPreferencesMenuLabel();
   if (!result.empty())
     return result;
   return l10n_util::GetStringUTF16(IDS_PREFERENCES);

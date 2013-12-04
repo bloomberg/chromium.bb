@@ -158,7 +158,7 @@ class CrashNotificationDelegate : public NotificationDelegate {
 #if defined(ENABLE_NOTIFICATIONS)
 void NotificationImageReady(
     const std::string extension_name,
-    const string16 message,
+    const base::string16 message,
     const GURL extension_url,
     scoped_refptr<CrashNotificationDelegate> delegate,
     Profile* profile,
@@ -168,12 +168,12 @@ void NotificationImageReady(
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     notification_icon = rb.GetImageNamed(IDR_EXTENSION_DEFAULT_ICON);
   }
-  string16 title;  // no notification title
+  base::string16 title;  // no notification title
   DesktopNotificationService::AddIconNotification(extension_url,
                                                   title,
                                                   message,
                                                   notification_icon,
-                                                  string16(),
+                                                  base::string16(),
                                                   delegate.get(),
                                                   profile);
 }
@@ -183,7 +183,7 @@ void NotificationImageReady(
 // extension.
 void ShowBalloon(const Extension* extension, Profile* profile) {
 #if defined(ENABLE_NOTIFICATIONS)
-  const string16 message = l10n_util::GetStringFUTF16(
+  const base::string16 message = l10n_util::GetStringFUTF16(
       extension->is_app() ? IDS_BACKGROUND_CRASHED_APP_BALLOON_MESSAGE :
                             IDS_BACKGROUND_CRASHED_EXTENSION_BALLOON_MESSAGE,
       UTF8ToUTF16(extension->name()));
@@ -362,7 +362,7 @@ void BackgroundContentsService::Observe(
       BackgroundContents* bgcontents =
           content::Details<BackgroundContents>(details).ptr();
       Profile* profile = content::Source<Profile>(source).ptr();
-      const string16& appid = GetParentApplicationId(bgcontents);
+      const base::string16& appid = GetParentApplicationId(bgcontents);
       ExtensionService* extension_service =
           extensions::ExtensionSystem::Get(profile)->extension_service();
       // extension_service can be NULL when running tests.
@@ -573,7 +573,7 @@ void BackgroundContentsService::LoadBackgroundContentsFromDictionary(
       dict == NULL)
     return;
 
-  string16 frame_name;
+  base::string16 frame_name;
   std::string url;
   dict->GetString(kUrlKey, &url);
   dict->GetString(kFrameNameKey, &frame_name);
@@ -603,8 +603,8 @@ void BackgroundContentsService::LoadBackgroundContentsFromManifests(
 void BackgroundContentsService::LoadBackgroundContents(
     Profile* profile,
     const GURL& url,
-    const string16& frame_name,
-    const string16& application_id) {
+    const base::string16& frame_name,
+    const base::string16& application_id) {
   // We are depending on the fact that we will initialize before any user
   // actions or session restore can take place, so no BackgroundContents should
   // be running yet for the passed application_id.
@@ -632,8 +632,8 @@ BackgroundContents* BackgroundContentsService::CreateBackgroundContents(
     SiteInstance* site,
     int routing_id,
     Profile* profile,
-    const string16& frame_name,
-    const string16& application_id,
+    const base::string16& frame_name,
+    const base::string16& application_id,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
   BackgroundContents* contents = new BackgroundContents(
@@ -667,7 +667,7 @@ void BackgroundContentsService::RegisterBackgroundContents(
   // feedback (http://crbug.com/47118).
   DictionaryPrefUpdate update(prefs_, prefs::kRegisteredBackgroundContents);
   DictionaryValue* pref = update.Get();
-  const string16& appid = GetParentApplicationId(background_contents);
+  const base::string16& appid = GetParentApplicationId(background_contents);
   DictionaryValue* current;
   if (pref->GetDictionaryWithoutPathExpansion(UTF16ToUTF8(appid), &current))
     return;
@@ -680,7 +680,7 @@ void BackgroundContentsService::RegisterBackgroundContents(
 }
 
 bool BackgroundContentsService::HasRegisteredBackgroundContents(
-    const string16& app_id) {
+    const base::string16& app_id) {
   if (!prefs_)
     return false;
   std::string app = UTF16ToUTF8(app_id);
@@ -694,13 +694,13 @@ void BackgroundContentsService::UnregisterBackgroundContents(
   if (!prefs_)
     return;
   DCHECK(IsTracked(background_contents));
-  const string16 appid = GetParentApplicationId(background_contents);
+  const base::string16 appid = GetParentApplicationId(background_contents);
   DictionaryPrefUpdate update(prefs_, prefs::kRegisteredBackgroundContents);
   update.Get()->RemoveWithoutPathExpansion(UTF16ToUTF8(appid), NULL);
 }
 
 void BackgroundContentsService::ShutdownAssociatedBackgroundContents(
-    const string16& appid) {
+    const base::string16& appid) {
   BackgroundContents* contents = GetAppBackgroundContents(appid);
   if (contents) {
     UnregisterBackgroundContents(contents);
@@ -731,17 +731,17 @@ void BackgroundContentsService::BackgroundContentsShutdown(
     BackgroundContents* background_contents) {
   // Remove the passed object from our list.
   DCHECK(IsTracked(background_contents));
-  string16 appid = GetParentApplicationId(background_contents);
+  base::string16 appid = GetParentApplicationId(background_contents);
   contents_map_.erase(appid);
 }
 
 BackgroundContents* BackgroundContentsService::GetAppBackgroundContents(
-    const string16& application_id) {
+    const base::string16& application_id) {
   BackgroundContentsMap::const_iterator it = contents_map_.find(application_id);
   return (it != contents_map_.end()) ? it->second.contents : NULL;
 }
 
-const string16& BackgroundContentsService::GetParentApplicationId(
+const base::string16& BackgroundContentsService::GetParentApplicationId(
     BackgroundContents* contents) const {
   for (BackgroundContentsMap::const_iterator it = contents_map_.begin();
        it != contents_map_.end(); ++it) {

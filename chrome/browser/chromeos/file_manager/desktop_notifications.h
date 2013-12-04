@@ -75,7 +75,7 @@ class DesktopNotifications
     return notification_map_.find(id) != notification_map_.end();
   }
 
-  string16 GetNotificationMessageForTest(const std::string& id) const;
+  base::string16 GetNotificationMessageForTest(const std::string& id) const;
 
  private:
   class NotificationMessage;
@@ -87,10 +87,10 @@ class DesktopNotifications
   // Virtual for mock in unittest.
   virtual void ShowNotificationWithMessage(NotificationType type,
                                            const std::string& path,
-                                           const string16& message);
+                                           const base::string16& message);
   void ShowNotificationById(NotificationType type,
                             const std::string& notification_id,
-                            const string16& message);
+                            const base::string16& message);
   void HideNotificationById(const std::string& notification_id);
   void RemoveNotificationById(const std::string& notification_id);
 

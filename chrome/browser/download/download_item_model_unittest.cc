@@ -267,7 +267,7 @@ TEST_F(DownloadItemModelTest, InterruptTooltip) {
     // Check that if the width is small, the returned tooltip only contains
     // lines of the given width or smaller.
     std::vector<string16> lines;
-    string16 truncated_tooltip =
+    base::string16 truncated_tooltip =
         model().GetTooltipText(font_list, kSmallTooltipWidth);
     Tokenize(truncated_tooltip, ASCIIToUTF16("\n"), &lines);
     for (unsigned i = 0; i < lines.size(); ++i)

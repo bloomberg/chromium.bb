@@ -134,8 +134,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   virtual bool AllowSaveLocalState(content::ResourceContext* context) OVERRIDE;
   virtual bool AllowWorkerDatabase(
       const GURL& url,
-      const string16& name,
-      const string16& display_name,
+      const base::string16& name,
+      const base::string16& display_name,
       unsigned long estimated_size,
       content::ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_views) OVERRIDE;
@@ -145,7 +145,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const std::vector<std::pair<int, int> >& render_views) OVERRIDE;
   virtual bool AllowWorkerIndexedDB(
       const GURL& url,
-      const string16& name,
+      const base::string16& name,
       content::ResourceContext* context,
       const std::vector<std::pair<int, int> >& render_views) OVERRIDE;
   virtual net::URLRequestContext* OverrideRequestContextForURL(

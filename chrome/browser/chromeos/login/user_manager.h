@@ -59,17 +59,17 @@ class UserManager {
   // Data retrieved from user account.
   class UserAccountData {
    public:
-    UserAccountData(const string16& display_name,
-                    const string16& given_name,
+    UserAccountData(const base::string16& display_name,
+                    const base::string16& given_name,
                     const std::string& locale);
     ~UserAccountData();
-    const string16& display_name() const { return display_name_; }
-    const string16& given_name() const { return given_name_; }
+    const base::string16& display_name() const { return display_name_; }
+    const base::string16& given_name() const { return given_name_; }
     const std::string& locale() const { return locale_; }
 
    private:
-    const string16 display_name_;
-    const string16 given_name_;
+    const base::string16 display_name_;
+    const base::string16 given_name_;
     const std::string locale_;
 
     DISALLOW_COPY_AND_ASSIGN(UserAccountData);
@@ -228,7 +228,7 @@ class UserManager {
   // Saves user's displayed name in local state preferences.
   // Ignored If there is no such user.
   virtual void SaveUserDisplayName(const std::string& user_id,
-                                   const string16& display_name) = 0;
+                                   const base::string16& display_name) = 0;
 
   // Updates data upon User Account download.
   virtual void UpdateUserAccountData(const std::string& user_id,
@@ -237,7 +237,7 @@ class UserManager {
   // Returns the display name for user |user_id| if it is known (was
   // previously set by a |SaveUserDisplayName| call).
   // Otherwise, returns an empty string.
-  virtual string16 GetUserDisplayName(
+  virtual base::string16 GetUserDisplayName(
       const std::string& user_id) const = 0;
 
   // Saves user's displayed (non-canonical) email in local state preferences.

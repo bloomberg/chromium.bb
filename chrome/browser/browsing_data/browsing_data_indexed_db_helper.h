@@ -55,13 +55,13 @@ class CannedBrowsingDataIndexedDBHelper
  public:
   // Contains information about an indexed database.
   struct PendingIndexedDBInfo {
-    PendingIndexedDBInfo(const GURL& origin, const string16& name);
+    PendingIndexedDBInfo(const GURL& origin, const base::string16& name);
     ~PendingIndexedDBInfo();
 
     bool operator<(const PendingIndexedDBInfo& other) const;
 
     GURL origin;
-    string16 name;
+    base::string16 name;
   };
 
   CannedBrowsingDataIndexedDBHelper();
@@ -74,7 +74,7 @@ class CannedBrowsingDataIndexedDBHelper
   // Add a indexed database to the set of canned indexed databases that is
   // returned by this helper.
   void AddIndexedDB(const GURL& origin,
-                    const string16& name);
+                    const base::string16& name);
 
   // Clear the list of canned indexed databases.
   void Reset();

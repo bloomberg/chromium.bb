@@ -49,7 +49,7 @@ class NativeCallback : public base::RefCounted<NativeCallback> {
 
   void OnMostVisitedURLsAvailable(
       const history::MostVisitedURLList& visited_list) {
-    std::vector<string16> titles;
+    std::vector<base::string16> titles;
     std::vector<std::string> urls;
     ExtractMostVisitedTitlesAndURLs(visited_list, &titles, &urls);
 
@@ -67,7 +67,7 @@ class NativeCallback : public base::RefCounted<NativeCallback> {
 
   void ExtractMostVisitedTitlesAndURLs(
       const history::MostVisitedURLList& visited_list,
-      std::vector<string16>* titles,
+      std::vector<base::string16>* titles,
       std::vector<std::string>* urls) {
     for (size_t i = 0; i < visited_list.size() && i < num_results_; ++i) {
       const history::MostVisitedURL& visited = visited_list[i];

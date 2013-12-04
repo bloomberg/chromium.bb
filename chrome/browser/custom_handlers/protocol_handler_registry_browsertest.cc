@@ -69,7 +69,7 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
 
   void AddProtocolHandler(const std::string& protocol,
                           const GURL& url,
-                          const string16& title) {
+                          const base::string16& title) {
     ProtocolHandler handler = ProtocolHandler::CreateProtocolHandler(
           protocol, url, title);
     ProtocolHandlerRegistry* registry =

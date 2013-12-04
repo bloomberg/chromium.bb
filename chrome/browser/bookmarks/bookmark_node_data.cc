@@ -115,7 +115,7 @@ bool BookmarkNodeData::ReadFromVector(
   return true;
 }
 
-bool BookmarkNodeData::ReadFromTuple(const GURL& url, const string16& title) {
+bool BookmarkNodeData::ReadFromTuple(const GURL& url, const base::string16& title) {
   Clear();
 
   if (!url.is_valid())
@@ -140,7 +140,7 @@ void BookmarkNodeData::WriteToClipboard(ui::ClipboardType type) {
   // If there is only one element and it is a URL, write the URL to the
   // clipboard.
   if (elements.size() == 1 && elements[0].is_url) {
-    const string16& title = elements[0].title;
+    const base::string16& title = elements[0].title;
     const std::string url = elements[0].url.spec();
 
     scw.WriteBookmark(title, url);
@@ -176,7 +176,7 @@ bool BookmarkNodeData::ReadFromClipboard(ui::ClipboardType type) {
       return true;
   }
 
-  string16 title;
+  base::string16 title;
   std::string url;
   clipboard->ReadBookmark(&title, &url);
   if (!url.empty()) {

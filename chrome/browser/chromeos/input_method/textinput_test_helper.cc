@@ -145,7 +145,7 @@ void TextInputTestHelper::WaitForCaretBoundsChanged(
 }
 
 void TextInputTestHelper::WaitForSurroundingTextChanged(
-    const string16& expected_text,
+    const base::string16& expected_text,
     const gfx::Range& expected_selection) {
   waiting_type_ = WAIT_ON_CARET_BOUNDS_CHANGED;
   while (expected_text != surrounding_text_ ||

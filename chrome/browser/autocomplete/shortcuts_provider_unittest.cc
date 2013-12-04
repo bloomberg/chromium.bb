@@ -155,17 +155,17 @@ struct TestShortcutInfo {
 // convenient.
 class ClassifyTest {
  public:
-  ClassifyTest(const string16& text, ACMatchClassifications matches);
+  ClassifyTest(const base::string16& text, ACMatchClassifications matches);
   ~ClassifyTest();
 
-  ACMatchClassifications RunTest(const string16& find_text);
+  ACMatchClassifications RunTest(const base::string16& find_text);
 
  private:
-  const string16 text_;
+  const base::string16 text_;
   const ACMatchClassifications matches_;
 };
 
-ClassifyTest::ClassifyTest(const string16& text, ACMatchClassifications matches)
+ClassifyTest::ClassifyTest(const base::string16& text, ACMatchClassifications matches)
     : text_(text),
       matches_(matches) {
 }
@@ -173,7 +173,7 @@ ClassifyTest::ClassifyTest(const string16& text, ACMatchClassifications matches)
 ClassifyTest::~ClassifyTest() {
 }
 
-ACMatchClassifications ClassifyTest::RunTest(const string16& find_text) {
+ACMatchClassifications ClassifyTest::RunTest(const base::string16& find_text) {
   return ShortcutsProvider::ClassifyAllMatchesInString(find_text,
       ShortcutsProvider::CreateWordMapForString(find_text), text_, matches_);
 }
@@ -215,7 +215,7 @@ class ShortcutsProviderTest : public testing::Test,
   // Runs an autocomplete query on |text| and checks to see that the returned
   // results' destination URLs match those provided. |expected_urls| does not
   // need to be in sorted order.
-  void RunTest(const string16 text,
+  void RunTest(const base::string16 text,
                const URLs& expected_urls,
                std::string expected_top_result);
 
@@ -293,11 +293,11 @@ void ShortcutsProviderTest::SetShouldContain::operator()(
   EXPECT_EQ(1U, matches_.erase(expected));
 }
 
-void ShortcutsProviderTest::RunTest(const string16 text,
+void ShortcutsProviderTest::RunTest(const base::string16 text,
                                     const URLs& expected_urls,
                                     std::string expected_top_result) {
   base::MessageLoop::current()->RunUntilIdle();
-  AutocompleteInput input(text, string16::npos, string16(), GURL(),
+  AutocompleteInput input(text, base::string16::npos, base::string16(), GURL(),
                           AutocompleteInput::INVALID_SPEC, false, false, true,
                           AutocompleteInput::ALL_MATCHES);
   provider_->Start(input, false);
@@ -345,7 +345,7 @@ int ShortcutsProviderTest::CalculateScore(
 // Actual tests ---------------------------------------------------------------
 
 TEST_F(ShortcutsProviderTest, SimpleSingleMatch) {
-  string16 text(ASCIIToUTF16("go"));
+  base::string16 text(ASCIIToUTF16("go"));
   std::string expected_url("http://www.google.com/");
   URLs expected_urls;
   expected_urls.push_back(expected_url);
@@ -353,7 +353,7 @@ TEST_F(ShortcutsProviderTest, SimpleSingleMatch) {
 }
 
 TEST_F(ShortcutsProviderTest, MultiMatch) {
-  string16 text(ASCIIToUTF16("NEWS"));
+  base::string16 text(ASCIIToUTF16("NEWS"));
   URLs expected_urls;
   // Scores high because of completion length.
   expected_urls.push_back("http://slashdot.org/");
@@ -366,7 +366,7 @@ TEST_F(ShortcutsProviderTest, MultiMatch) {
 }
 
 TEST_F(ShortcutsProviderTest, TypedCountMatches) {
-  string16 text(ASCIIToUTF16("just"));
+  base::string16 text(ASCIIToUTF16("just"));
   URLs expected_urls;
   expected_urls.push_back("http://www.testsite.com/b.html");
   expected_urls.push_back("http://www.testsite.com/a.html");
@@ -375,7 +375,7 @@ TEST_F(ShortcutsProviderTest, TypedCountMatches) {
 }
 
 TEST_F(ShortcutsProviderTest, FragmentLengthMatches) {
-  string16 text(ASCIIToUTF16("just a"));
+  base::string16 text(ASCIIToUTF16("just a"));
   URLs expected_urls;
   expected_urls.push_back("http://www.testsite.com/d.html");
   expected_urls.push_back("http://www.testsite.com/e.html");
@@ -384,7 +384,7 @@ TEST_F(ShortcutsProviderTest, FragmentLengthMatches) {
 }
 
 TEST_F(ShortcutsProviderTest, DaysAgoMatches) {
-  string16 text(ASCIIToUTF16("ago"));
+  base::string16 text(ASCIIToUTF16("ago"));
   URLs expected_urls;
   expected_urls.push_back("http://www.daysagotest.com/a.html");
   expected_urls.push_back("http://www.daysagotest.com/b.html");
@@ -496,7 +496,7 @@ TEST_F(ShortcutsProviderTest, CalculateScore) {
           ASCIIToUTF16("A test"),
           AutocompleteMatch::ClassificationsFromString("0,0,2,2"),
           content::PAGE_TRANSITION_TYPED, AutocompleteMatchType::HISTORY_URL,
-          string16()),
+          base::string16()),
       base::Time::Now(), 1);
 
   // Maximal score.
@@ -601,7 +601,7 @@ TEST_F(ShortcutsProviderTest, DeleteMatch) {
 
 TEST_F(ShortcutsProviderTest, Extension) {
   // Try an input string that matches an extension URL.
-  string16 text(ASCIIToUTF16("echo"));
+  base::string16 text(ASCIIToUTF16("echo"));
   std::string expected_url(
       "chrome-extension://cedabbhfglmiikkmdgcpjdkocfcmbkee/?q=echo");
   URLs expected_urls;

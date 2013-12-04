@@ -26,7 +26,7 @@ const int kIdleActionWarningContentWidth = 300;
 
 class FixedWidthLabel : public views::Label {
  public:
-  FixedWidthLabel(const string16& text, int width);
+  FixedWidthLabel(const base::string16& text, int width);
   virtual ~FixedWidthLabel();
 
   virtual gfx::Size GetPreferredSize() OVERRIDE;
@@ -37,7 +37,7 @@ class FixedWidthLabel : public views::Label {
   DISALLOW_COPY_AND_ASSIGN(FixedWidthLabel);
 };
 
-FixedWidthLabel::FixedWidthLabel(const string16& text, int width)
+FixedWidthLabel::FixedWidthLabel(const base::string16& text, int width)
     : Label(text),
       width_(width) {
   SetHorizontalAlignment(gfx::ALIGN_LEFT);

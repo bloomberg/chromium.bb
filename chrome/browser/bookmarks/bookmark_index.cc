@@ -76,7 +76,7 @@ void BookmarkIndex::Remove(const BookmarkNode* node) {
 }
 
 void BookmarkIndex::GetBookmarksWithTitlesMatching(
-    const string16& query,
+    const base::string16& query,
     size_t max_count,
     std::vector<BookmarkTitleMatch>* results) {
   std::vector<string16> terms = ExtractQueryWords(query);
@@ -163,7 +163,7 @@ void BookmarkIndex::AddMatchToResults(
   }
 }
 
-bool BookmarkIndex::GetBookmarksWithTitleMatchingTerm(const string16& term,
+bool BookmarkIndex::GetBookmarksWithTitleMatchingTerm(const base::string16& term,
                                                       bool first_term,
                                                       Matches* matches) {
   Index::const_iterator i = index_.lower_bound(term);
@@ -245,7 +245,7 @@ void BookmarkIndex::CombineMatches(const Index::const_iterator& index_i,
   }
 }
 
-std::vector<string16> BookmarkIndex::ExtractQueryWords(const string16& query) {
+std::vector<string16> BookmarkIndex::ExtractQueryWords(const base::string16& query) {
   std::vector<string16> terms;
   if (query.empty())
     return std::vector<string16>();
@@ -256,12 +256,12 @@ std::vector<string16> BookmarkIndex::ExtractQueryWords(const string16& query) {
   return terms;
 }
 
-void BookmarkIndex::RegisterNode(const string16& term,
+void BookmarkIndex::RegisterNode(const base::string16& term,
                                  const BookmarkNode* node) {
   index_[term].insert(node);
 }
 
-void BookmarkIndex::UnregisterNode(const string16& term,
+void BookmarkIndex::UnregisterNode(const base::string16& term,
                                    const BookmarkNode* node) {
   Index::iterator i = index_.find(term);
   if (i == index_.end()) {

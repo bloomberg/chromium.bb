@@ -50,7 +50,7 @@ void AutocompleteMatchToAssistedQuery(
   // This type indicates a native chrome suggestion.
   *type = 69;
   // Default value, indicating no subtype.
-  *subtype = string16::npos;
+  *subtype = base::string16::npos;
 
   switch (match) {
     case AutocompleteMatchType::SEARCH_SUGGEST: {
@@ -112,7 +112,7 @@ void AppendAvailableAutocompletion(size_t type,
     autocompletions->append("j");
   base::StringAppendF(autocompletions, "%" PRIuS, type);
   // Subtype is optional - string16::npos indicates no subtype.
-  if (subtype != string16::npos)
+  if (subtype != base::string16::npos)
     base::StringAppendF(autocompletions, "i%" PRIuS, subtype);
   if (count > 1)
     base::StringAppendF(autocompletions, "l%d", count);
@@ -215,7 +215,7 @@ AutocompleteController::~AutocompleteController() {
 }
 
 void AutocompleteController::Start(const AutocompleteInput& input) {
-  const string16 old_input_text(input_.text());
+  const base::string16 old_input_text(input_.text());
   const AutocompleteInput::MatchesRequested old_matches_requested =
       input_.matches_requested();
   input_ = input;
@@ -306,7 +306,7 @@ void AutocompleteController::Stop(bool clear_result) {
 void AutocompleteController::StartZeroSuggest(
     const GURL& url,
     AutocompleteInput::PageClassification page_classification,
-    const string16& permanent_text) {
+    const base::string16& permanent_text) {
   if (zero_suggest_provider_ != NULL) {
     DCHECK(!in_start_);  // We should not be already running a query.
     in_zero_suggest_ = true;
@@ -407,7 +407,7 @@ void AutocompleteController::UpdateResult(
   const bool last_default_was_valid = result_.default_match() != result_.end();
   // The following three variables are only set and used if
   // |last_default_was_valid|.
-  string16 last_default_fill_into_edit, last_default_keyword,
+  base::string16 last_default_fill_into_edit, last_default_keyword,
       last_default_associated_keyword;
   if (last_default_was_valid) {
     last_default_fill_into_edit = result_.default_match()->fill_into_edit;
@@ -447,7 +447,7 @@ void AutocompleteController::UpdateResult(
   UpdateAssistedQueryStats(&result_);
 
   const bool default_is_valid = result_.default_match() != result_.end();
-  string16 default_associated_keyword;
+  base::string16 default_associated_keyword;
   if (default_is_valid &&
       (result_.default_match()->associated_keyword != NULL)) {
     default_associated_keyword =
@@ -480,10 +480,11 @@ void AutocompleteController::UpdateAssociatedKeywords(
   if (!keyword_provider_)
     return;
 
-  std::set<string16> keywords;
+  std::set<base::string16> keywords;
   for (ACMatches::iterator match(result->begin()); match != result->end();
        ++match) {
-    string16 keyword(match->GetSubstitutingExplicitlyInvokedKeyword(profile_));
+    base::string16 keyword(
+        match->GetSubstitutingExplicitlyInvokedKeyword(profile_));
     if (!keyword.empty()) {
       keywords.insert(keyword);
       continue;
@@ -509,7 +510,7 @@ void AutocompleteController::UpdateAssociatedKeywords(
 
 void AutocompleteController::UpdateKeywordDescriptions(
     AutocompleteResult* result) {
-  string16 last_keyword;
+  base::string16 last_keyword;
   for (AutocompleteResult::iterator i(result->begin()); i != result->end();
        ++i) {
     if ((i->provider->type() == AutocompleteProvider::TYPE_KEYWORD &&
@@ -549,14 +550,14 @@ void AutocompleteController::UpdateAssistedQueryStats(
   // Build the impressions string (the AQS part after ".").
   std::string autocompletions;
   int count = 0;
-  size_t last_type = string16::npos;
-  size_t last_subtype = string16::npos;
+  size_t last_type = base::string16::npos;
+  size_t last_subtype = base::string16::npos;
   for (ACMatches::iterator match(result->begin()); match != result->end();
        ++match) {
-    size_t type = string16::npos;
-    size_t subtype = string16::npos;
+    size_t type = base::string16::npos;
+    size_t subtype = base::string16::npos;
     AutocompleteMatchToAssistedQuery(match->type, &type, &subtype);
-    if (last_type != string16::npos &&
+    if (last_type != base::string16::npos &&
         (type != last_type || subtype != last_subtype)) {
       AppendAvailableAutocompletion(
           last_type, last_subtype, count, &autocompletions);

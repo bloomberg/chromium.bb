@@ -42,10 +42,10 @@ class DownloadDangerPromptImpl : public DownloadDangerPrompt,
   virtual void OnDownloadUpdated(content::DownloadItem* download) OVERRIDE;
 
   // TabModalConfirmDialogDelegate:
-  virtual string16 GetTitle() OVERRIDE;
-  virtual string16 GetMessage() OVERRIDE;
-  virtual string16 GetAcceptButtonTitle() OVERRIDE;
-  virtual string16 GetCancelButtonTitle() OVERRIDE;
+  virtual base::string16 GetTitle() OVERRIDE;
+  virtual base::string16 GetMessage() OVERRIDE;
+  virtual base::string16 GetAcceptButtonTitle() OVERRIDE;
+  virtual base::string16 GetCancelButtonTitle() OVERRIDE;
   virtual void OnAccepted() OVERRIDE;
   virtual void OnCanceled() OVERRIDE;
   virtual void OnClosed() OVERRIDE;
@@ -169,7 +169,7 @@ string16 DownloadDangerPromptImpl::GetMessage() {
     }
   }
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
 string16 DownloadDangerPromptImpl::GetAcceptButtonTitle() {

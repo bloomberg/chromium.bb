@@ -1334,7 +1334,7 @@ class TestingAutomationProvider : public AutomationProvider,
 
   // Execute Javascript in the context of a specific render view.
   void ExecuteJavascriptInRenderViewFrame(
-      const string16& frame_xpath, const string16& script,
+      const base::string16& frame_xpath, const base::string16& script,
       IPC::Message* reply_message, content::RenderViewHost* render_view_host);
 
   // Selects the given |tab| if not selected already.

@@ -192,7 +192,7 @@ void WebUIScreenLocker::CompleteLogin(const UserContext& user_context) {
   NOTREACHED();
 }
 
-string16 WebUIScreenLocker::GetConnectedNetworkName() {
+base::string16 WebUIScreenLocker::GetConnectedNetworkName() {
   return network_state_helper_->GetCurrentNetworkName();
 }
 

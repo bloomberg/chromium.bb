@@ -148,7 +148,7 @@ string16 GetDefaultImageDescription(int index) {
   if (string_id)
     return l10n_util::GetStringUTF16(string_id);
   else
-    return string16();
+    return base::string16();
 }
 
 // Resource IDs of default user images.

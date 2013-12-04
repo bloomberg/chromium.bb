@@ -40,7 +40,7 @@ class ShortcutsProvider
   friend class ClassifyTest;
   friend class history::ShortcutsProviderTest;
 
-  typedef std::multimap<char16, string16> WordMap;
+  typedef std::multimap<char16, base::string16> WordMap;
 
   virtual ~ShortcutsProvider();
 
@@ -52,14 +52,14 @@ class ShortcutsProvider
 
   AutocompleteMatch ShortcutToACMatch(
       int relevance,
-      const string16& terms,
+      const base::string16& terms,
       const history::ShortcutsBackend::Shortcut& shortcut);
 
   // Returns a map mapping characters to groups of words from |text| that start
   // with those characters, ordered lexicographically descending so that longer
   // words appear before their prefixes (if any) within a particular
   // equal_range().
-  static WordMap CreateWordMapForString(const string16& text);
+  static WordMap CreateWordMapForString(const base::string16& text);
 
   // Given |text| and a corresponding base set of classifications
   // |original_class|, adds ACMatchClassification::MATCH markers for all
@@ -82,19 +82,19 @@ class ShortcutsProvider
   // |find_text| (and thus |find_words|) are expected to be lowercase.  |text|
   // will be lowercased in this function.
   static ACMatchClassifications ClassifyAllMatchesInString(
-      const string16& find_text,
+      const base::string16& find_text,
       const WordMap& find_words,
-      const string16& text,
+      const base::string16& text,
       const ACMatchClassifications& original_class);
 
   // Returns iterator to first item in |shortcuts_map_| matching |keyword|.
   // Returns shortcuts_map_.end() if there are no matches.
   history::ShortcutsBackend::ShortcutMap::const_iterator FindFirstMatch(
-      const string16& keyword,
+      const base::string16& keyword,
       history::ShortcutsBackend* backend);
 
   int CalculateScore(
-      const string16& terms,
+      const base::string16& terms,
       const history::ShortcutsBackend::Shortcut& shortcut,
       int max_relevance);
 

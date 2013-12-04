@@ -85,14 +85,14 @@ class SearchProvider : public AutocompleteProvider,
   static AutocompleteMatch CreateSearchSuggestion(
       AutocompleteProvider* autocomplete_provider,
       const AutocompleteInput& input,
-      const string16& input_text,
+      const base::string16& input_text,
       int relevance,
       AutocompleteMatch::Type type,
       bool is_keyword,
-      const string16& match_contents,
-      const string16& annotation,
+      const base::string16& match_contents,
+      const base::string16& annotation,
       const TemplateURL* template_url,
-      const string16& query_string,
+      const base::string16& query_string,
       const std::string& suggest_query_params,
       int accepted_suggestion,
       int omnibox_start_margin,
@@ -151,22 +151,22 @@ class SearchProvider : public AutocompleteProvider,
 
     // Returns true if the specified providers match the two providers cached
     // by this class.
-    bool equal(const string16& default_provider,
-               const string16& keyword_provider) const {
+    bool equal(const base::string16& default_provider,
+               const base::string16& keyword_provider) const {
       return (default_provider == default_provider_) &&
           (keyword_provider == keyword_provider_);
     }
 
     // Resets the cached providers.
-    void set(const string16& default_provider,
-             const string16& keyword_provider) {
+    void set(const base::string16& default_provider,
+             const base::string16& keyword_provider) {
       default_provider_ = default_provider;
       keyword_provider_ = keyword_provider;
     }
 
     TemplateURLService* template_url_service() { return template_url_service_; }
-    const string16& default_provider() const { return default_provider_; }
-    const string16& keyword_provider() const { return keyword_provider_; }
+    const base::string16& default_provider() const { return default_provider_; }
+    const base::string16& keyword_provider() const { return keyword_provider_; }
 
     // NOTE: These may return NULL even if the provider members are nonempty!
     const TemplateURL* GetDefaultProviderURL() const;
@@ -180,8 +180,8 @@ class SearchProvider : public AutocompleteProvider,
 
     // Cached across the life of a query so we behave consistently even if the
     // user changes their default while the query is running.
-    string16 default_provider_;
-    string16 keyword_provider_;
+    base::string16 default_provider_;
+    base::string16 keyword_provider_;
 
     DISALLOW_COPY_AND_ASSIGN(Providers);
   };
@@ -212,7 +212,7 @@ class SearchProvider : public AutocompleteProvider,
 
     // Returns if this result is inlineable against the current input |input|.
     // Non-inlineable results are stale.
-    virtual bool IsInlineable(const string16& input) const = 0;
+    virtual bool IsInlineable(const base::string16& input) const = 0;
 
     // Returns the default relevance value for this result (which may
     // be left over from a previous omnibox input) given the current
@@ -239,9 +239,9 @@ class SearchProvider : public AutocompleteProvider,
 
   class SuggestResult : public Result {
    public:
-    SuggestResult(const string16& suggestion,
-                  const string16& match_contents,
-                  const string16& annotation,
+    SuggestResult(const base::string16& suggestion,
+                  const base::string16& match_contents,
+                  const base::string16& annotation,
                   const std::string& suggest_query_params,
                   const std::string& deletion_url,
                   bool from_keyword_provider,
@@ -250,9 +250,9 @@ class SearchProvider : public AutocompleteProvider,
                   bool should_prefetch);
     virtual ~SuggestResult();
 
-    const string16& suggestion() const { return suggestion_; }
-    const string16& match_contents() const { return match_contents_; }
-    const string16& annotation() const { return annotation_; }
+    const base::string16& suggestion() const { return suggestion_; }
+    const base::string16& match_contents() const { return match_contents_; }
+    const base::string16& annotation() const { return annotation_; }
     const std::string& suggest_query_params() const {
       return suggest_query_params_;
     }
@@ -260,22 +260,22 @@ class SearchProvider : public AutocompleteProvider,
     bool should_prefetch() const { return should_prefetch_; }
 
     // Result:
-    virtual bool IsInlineable(const string16& input) const OVERRIDE;
+    virtual bool IsInlineable(const base::string16& input) const OVERRIDE;
     virtual int CalculateRelevance(
         const AutocompleteInput& input,
         bool keyword_provider_requested) const OVERRIDE;
 
    private:
     // The search terms to be used for this suggestion.
-    string16 suggestion_;
+    base::string16 suggestion_;
 
     // The contents to be displayed in the autocomplete match.
-    string16 match_contents_;
+    base::string16 match_contents_;
 
     // Optional annotation for the |match_contents_| for disambiguation.
     // This may be displayed in the autocomplete match contents, but is defined
     // separately to facilitate different formatting.
-    string16 annotation_;
+    base::string16 annotation_;
 
     // Optional additional parameters to be added to the search URL.
     std::string suggest_query_params_;
@@ -295,18 +295,18 @@ class SearchProvider : public AutocompleteProvider,
     // compute |formatted_url_|.
     NavigationResult(const AutocompleteProvider& provider,
                      const GURL& url,
-                     const string16& description,
+                     const base::string16& description,
                      bool from_keyword_provider,
                      int relevance,
                      bool relevance_from_server);
     virtual ~NavigationResult();
 
     const GURL& url() const { return url_; }
-    const string16& description() const { return description_; }
-    const string16& formatted_url() const { return formatted_url_; }
+    const base::string16& description() const { return description_; }
+    const base::string16& formatted_url() const { return formatted_url_; }
 
     // Result:
-    virtual bool IsInlineable(const string16& input) const OVERRIDE;
+    virtual bool IsInlineable(const base::string16& input) const OVERRIDE;
     virtual int CalculateRelevance(
         const AutocompleteInput& input,
         bool keyword_provider_requested) const OVERRIDE;
@@ -317,10 +317,10 @@ class SearchProvider : public AutocompleteProvider,
 
     // The properly formatted ("fixed up") URL string with equivalent meaning
     // to the one in |url_|.
-    string16 formatted_url_;
+    base::string16 formatted_url_;
 
     // The suggested navigational result description; generally the site name.
-    string16 description_;
+    base::string16 description_;
   };
 
   class CompareScoredResults;
@@ -369,7 +369,7 @@ class SearchProvider : public AutocompleteProvider,
 
   // Removes non-inlineable results until either the top result can inline
   // autocomplete the current input or verbatim outscores the top result.
-  static void RemoveStaleResults(const string16& input,
+  static void RemoveStaleResults(const base::string16& input,
                                  int verbatim_relevance,
                                  SuggestResults* suggest_results,
                                  NavigationResults* navigation_results);
@@ -493,7 +493,7 @@ class SearchProvider : public AutocompleteProvider,
   SuggestResults ScoreHistoryResults(const HistoryResults& results,
                                      bool base_prevent_inline_autocomplete,
                                      bool input_multiple_words,
-                                     const string16& input_text,
+                                     const base::string16& input_text,
                                      bool is_keyword);
 
   // Adds matches for |results| to |map|.
@@ -540,16 +540,16 @@ class SearchProvider : public AutocompleteProvider,
   // Creates an AutocompleteMatch for "Search <engine> for |query_string|" with
   // the supplied relevance.  Adds this match to |map|; if such a match already
   // exists, whichever one has lower relevance is eliminated.
-  void AddMatchToMap(const string16& input_text,
+  void AddMatchToMap(const base::string16& input_text,
                      int relevance,
                      bool relevance_from_server,
                      bool should_prefetch,
                      const std::string& metadata,
                      AutocompleteMatch::Type type,
                      bool is_keyword,
-                     const string16& match_contents,
-                     const string16& annotation,
-                     const string16& query_string,
+                     const base::string16& match_contents,
+                     const base::string16& annotation,
+                     const base::string16& query_string,
                      int accepted_suggestion,
                      const std::string& suggest_query_params,
                      const std::string& deletion_url,

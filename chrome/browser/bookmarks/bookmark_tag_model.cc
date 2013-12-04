@@ -144,7 +144,7 @@ const gfx::Image& BookmarkTagModel::GetFavicon(const BookmarkNode* bookmark) {
 }
 
 void BookmarkTagModel::SetTitle(const BookmarkNode* bookmark,
-                                const string16& title) {
+                                const base::string16& title) {
   DCHECK(bookmark_model_);
   DCHECK(loaded_);
   bookmark_model_->SetTitle(bookmark, title);
@@ -173,7 +173,7 @@ const BookmarkNode*
 // Tags specific code.
 
 const BookmarkNode* BookmarkTagModel::AddURL(
-    const string16& title,
+    const base::string16& title,
     const GURL& url,
     const std::set<BookmarkTag>& tags) {
   DCHECK(bookmark_model_);

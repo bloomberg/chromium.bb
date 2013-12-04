@@ -56,7 +56,7 @@ ProxySettingsDialog::ProxySettingsDialog(const NetworkState& network,
                                          gfx::NativeWindow window)
     : LoginWebDialog(delegate,
                      window,
-                     string16(),
+                     base::string16(),
                      GetURLForProxySettings(network.path()),
                      LoginWebDialog::STYLE_BUBBLE) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));

@@ -67,7 +67,7 @@ bool MoreRecentlyAdded(const BookmarkNode* n1, const BookmarkNode* n2);
 // the text |text|.  |languages| is user's accept-language setting to decode
 // IDN.
 void GetBookmarksContainingText(BookmarkModel* model,
-                                const string16& text,
+                                const base::string16& text,
                                 size_t max_count,
                                 const std::string& languages,
                                 std::vector<const BookmarkNode*>* nodes);
@@ -90,7 +90,7 @@ void DeleteBookmarkFolders(BookmarkModel* model, const std::vector<int64>& ids);
 // If there are no bookmarks for url, a bookmark is created.
 void AddIfNotBookmarked(BookmarkModel* model,
                         const GURL& url,
-                        const string16& title);
+                        const base::string16& title);
 
 // Removes all bookmarks for the given |url|.
 void RemoveAllBookmarks(BookmarkModel* model, const GURL& url);

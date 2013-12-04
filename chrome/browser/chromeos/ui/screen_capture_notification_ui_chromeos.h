@@ -14,14 +14,14 @@ namespace chromeos {
 class ScreenCaptureNotificationUIChromeOS : public ScreenCaptureNotificationUI {
  public:
   // |text| is used to specify the text for the notification.
-  explicit ScreenCaptureNotificationUIChromeOS(const string16& text);
+  explicit ScreenCaptureNotificationUIChromeOS(const base::string16& text);
   virtual ~ScreenCaptureNotificationUIChromeOS();
 
   // ScreenCaptureNotificationUI overrides.
   virtual void OnStarted(const base::Closure& stop_callback) OVERRIDE;
 
  private:
-  const string16 text_;
+  const base::string16 text_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureNotificationUIChromeOS);
 };

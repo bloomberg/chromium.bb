@@ -59,7 +59,7 @@ class ContactProvider : public AutocompleteProvider,
   // is matched by |input|.  |input_words| is |input.text()| split on word
   // boundaries.
   void AddContactIfMatched(const AutocompleteInput& input,
-                           const std::vector<string16>& input_words,
+                           const std::vector<base::string16>& input_words,
                            const ContactData& contact);
 
   // Returns an AutocompleteMatch object corresponding to the passed-in data.

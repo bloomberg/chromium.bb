@@ -133,9 +133,9 @@ class AutocompleteInput {
   // If |matches_requested| is BEST_MATCH or SYNCHRONOUS_MATCHES the controller
   // asks the providers to only return matches which are synchronously
   // available, which should mean that all providers will be done immediately.
-  AutocompleteInput(const string16& text,
+  AutocompleteInput(const base::string16& text,
                     size_t cursor_position,
-                    const string16& desired_tld,
+                    const base::string16& desired_tld,
                     const GURL& current_url,
                     PageClassification current_page_classification,
                     bool prevent_inline_autocomplete,
@@ -146,7 +146,8 @@ class AutocompleteInput {
 
   // If type is |FORCED_QUERY| and |text| starts with '?', it is removed.
   // Returns number of leading characters removed.
-  static size_t RemoveForcedQueryStringIfNecessary(Type type, string16* text);
+  static size_t RemoveForcedQueryStringIfNecessary(Type type,
+                                                   base::string16* text);
 
   // Converts |type| to a string representation.  Used in logging.
   static std::string TypeToString(Type type);
@@ -156,17 +157,17 @@ class AutocompleteInput {
   // it is non-NULL. The scheme is stored in |scheme| if it is non-NULL. The
   // canonicalized URL is stored in |canonicalized_url|; however, this URL is
   // not guaranteed to be valid, especially if the parsed type is, e.g., QUERY.
-  static Type Parse(const string16& text,
-                    const string16& desired_tld,
+  static Type Parse(const base::string16& text,
+                    const base::string16& desired_tld,
                     url_parse::Parsed* parts,
-                    string16* scheme,
+                    base::string16* scheme,
                     GURL* canonicalized_url);
 
   // Parses |text| and fill |scheme| and |host| by the positions of them.
   // The results are almost as same as the result of Parse(), but if the scheme
   // is view-source, this function returns the positions of scheme and host
   // in the URL qualified by "view-source:" prefix.
-  static void ParseForEmphasizeComponents(const string16& text,
+  static void ParseForEmphasizeComponents(const base::string16& text,
                                           url_parse::Component* scheme,
                                           url_parse::Component* host);
 
@@ -176,18 +177,18 @@ class AutocompleteInput {
   // function with the URL and its formatted string, and it will return a
   // formatted string with the same meaning as the original URL (i.e. it will
   // re-append a slash if necessary).
-  static string16 FormattedStringWithEquivalentMeaning(
+  static base::string16 FormattedStringWithEquivalentMeaning(
       const GURL& url,
-      const string16& formatted_url);
+      const base::string16& formatted_url);
 
   // Returns the number of non-empty components in |parts| besides the host.
   static int NumNonHostComponents(const url_parse::Parsed& parts);
 
   // Returns whether |text| begins "http:" or "view-source:http:".
-  static bool HasHTTPScheme(const string16& text);
+  static bool HasHTTPScheme(const base::string16& text);
 
   // User-provided text to be completed.
-  const string16& text() const { return text_; }
+  const base::string16& text() const { return text_; }
 
   // Returns 0-based cursor position within |text_| or string16::npos if not
   // used.
@@ -196,7 +197,7 @@ class AutocompleteInput {
   // Use of this setter is risky, since no other internal state is updated
   // besides |text_|, |cursor_position_| and |parts_|.  Only callers who know
   // that they're not changing the type/scheme/etc. should use this.
-  void UpdateText(const string16& text,
+  void UpdateText(const base::string16& text,
                   size_t cursor_position,
                   const url_parse::Parsed& parts);
 
@@ -217,7 +218,7 @@ class AutocompleteInput {
 
   // The scheme parsed from the provided text; only meaningful when type_ is
   // URL.
-  const string16& scheme() const { return scheme_; }
+  const base::string16& scheme() const { return scheme_; }
 
   // The input as an URL to navigate to, if possible.
   const GURL& canonicalized_url() const { return canonicalized_url_; }
@@ -247,13 +248,13 @@ class AutocompleteInput {
 
   // NOTE: Whenever adding a new field here, please make sure to update Clear()
   // method.
-  string16 text_;
+  base::string16 text_;
   size_t cursor_position_;
   GURL current_url_;
   AutocompleteInput::PageClassification current_page_classification_;
   Type type_;
   url_parse::Parsed parts_;
-  string16 scheme_;
+  base::string16 scheme_;
   GURL canonicalized_url_;
   bool prevent_inline_autocomplete_;
   bool prefer_keyword_;

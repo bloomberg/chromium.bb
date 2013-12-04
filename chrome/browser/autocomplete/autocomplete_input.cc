@@ -19,7 +19,7 @@ namespace {
 
 void AdjustCursorPositionIfNecessary(size_t num_leading_chars_removed,
                                      size_t* cursor_position) {
-  if (*cursor_position == string16::npos)
+  if (*cursor_position == base::string16::npos)
     return;
   if (num_leading_chars_removed < *cursor_position)
     *cursor_position -= num_leading_chars_removed;
@@ -30,7 +30,7 @@ void AdjustCursorPositionIfNecessary(size_t num_leading_chars_removed,
 }  // namespace
 
 AutocompleteInput::AutocompleteInput()
-    : cursor_position_(string16::npos),
+    : cursor_position_(base::string16::npos),
       current_page_classification_(AutocompleteInput::INVALID_SPEC),
       type_(INVALID),
       prevent_inline_autocomplete_(false),
@@ -40,9 +40,9 @@ AutocompleteInput::AutocompleteInput()
 }
 
 AutocompleteInput::AutocompleteInput(
-    const string16& text,
+    const base::string16& text,
     size_t cursor_position,
-    const string16& desired_tld,
+    const base::string16& desired_tld,
     const GURL& current_url,
     AutocompleteInput::PageClassification current_page_classification,
     bool prevent_inline_autocomplete,
@@ -56,7 +56,8 @@ AutocompleteInput::AutocompleteInput(
       prefer_keyword_(prefer_keyword),
       allow_exact_keyword_match_(allow_exact_keyword_match),
       matches_requested_(matches_requested) {
-  DCHECK(cursor_position <= text.length() || cursor_position == string16::npos)
+  DCHECK(cursor_position <= text.length() ||
+         cursor_position == base::string16::npos)
       << "Text: '" << text << "', cp: " << cursor_position;
   // None of the providers care about leading white space so we always trim it.
   // Providers that care about trailing white space handle trimming themselves.
@@ -81,7 +82,7 @@ AutocompleteInput::AutocompleteInput(
   AdjustCursorPositionIfNecessary(chars_removed, &cursor_position_);
   if (chars_removed) {
     // Remove spaces between opening question mark and first actual character.
-    string16 trimmed_text;
+    base::string16 trimmed_text;
     if ((TrimWhitespace(text_, TRIM_LEADING, &trimmed_text) & TRIM_LEADING) !=
         0) {
       AdjustCursorPositionIfNecessary(text_.length() - trimmed_text.length(),
@@ -95,8 +96,9 @@ AutocompleteInput::~AutocompleteInput() {
 }
 
 // static
-size_t AutocompleteInput::RemoveForcedQueryStringIfNecessary(Type type,
-                                                             string16* text) {
+size_t AutocompleteInput::RemoveForcedQueryStringIfNecessary(
+    Type type,
+    base::string16* text) {
   if (type != FORCED_QUERY || text->empty() || (*text)[0] != L'?')
     return 0;
   // Drop the leading '?'.
@@ -127,7 +129,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     base::string16* scheme,
     GURL* canonicalized_url) {
   size_t first_non_white = text.find_first_not_of(base::kWhitespaceUTF16, 0);
-  if (first_non_white == string16::npos)
+  if (first_non_white == base::string16::npos)
     return INVALID;  // All whitespace.
 
   if (text.at(first_non_white) == L'?') {
@@ -143,7 +145,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   url_parse::Parsed local_parts;
   if (!parts)
     parts = &local_parts;
-  const string16 parsed_scheme(URLFixerUpper::SegmentURL(text, parts));
+  const base::string16 parsed_scheme(URLFixerUpper::SegmentURL(text, parts));
   if (scheme)
     *scheme = parsed_scheme;
   if (canonicalized_url) {
@@ -208,11 +210,11 @@ AutocompleteInput::Type AutocompleteInput::Parse(
       default: {
         // We don't know about this scheme.  It might be that the user typed a
         // URL of the form "username:password@foo.com".
-        const string16 http_scheme_prefix =
+        const base::string16 http_scheme_prefix =
             ASCIIToUTF16(std::string(content::kHttpScheme) +
                          content::kStandardSchemeSeparator);
         url_parse::Parsed http_parts;
-        string16 http_scheme;
+        base::string16 http_scheme;
         GURL http_canonicalized_url;
         Type http_type = Parse(http_scheme_prefix + text, desired_tld,
                                &http_parts, &http_scheme,
@@ -269,7 +271,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
 
   // Likewise, the RCDS can reject certain obviously-invalid hosts.  (We also
   // use the registry length later below.)
-  const string16 host(text.substr(parts->host.begin, parts->host.len));
+  const base::string16 host(text.substr(parts->host.begin, parts->host.len));
   const size_t registry_length =
       net::registry_controlled_domains::GetRegistryLength(
           UTF16ToUTF8(host),
@@ -278,7 +280,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
   if (registry_length == std::string::npos) {
     // Try to append the desired_tld.
     if (!desired_tld.empty()) {
-      string16 host_with_tld(host);
+      base::string16 host_with_tld(host);
       if (host[host.length() - 1] != '.')
         host_with_tld += '.';
       host_with_tld += desired_tld;
@@ -324,8 +326,8 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     //   TLD
     // These are rare, though probably possible in intranets.
     return (parts->scheme.is_nonempty() ||
-           ((registry_length != 0) && (host.find(' ') == string16::npos))) ?
-        UNKNOWN : QUERY;
+           ((registry_length != 0) &&
+            (host.find(' ') == base::string16::npos))) ? UNKNOWN : QUERY;
   }
 
   // A port number is a good indicator that this is a URL.  However, it might
@@ -423,12 +425,12 @@ AutocompleteInput::Type AutocompleteInput::Parse(
 
 // static
 void AutocompleteInput::ParseForEmphasizeComponents(
-    const string16& text,
+    const base::string16& text,
     url_parse::Component* scheme,
     url_parse::Component* host) {
   url_parse::Parsed parts;
-  string16 scheme_str;
-  Parse(text, string16(), &parts, &scheme_str, NULL);
+  base::string16 scheme_str;
+  Parse(text, base::string16(), &parts, &scheme_str, NULL);
 
   *scheme = parts.scheme;
   *host = parts.host;
@@ -439,9 +441,9 @@ void AutocompleteInput::ParseForEmphasizeComponents(
   if (LowerCaseEqualsASCII(scheme_str, content::kViewSourceScheme) &&
       (static_cast<int>(text.length()) > after_scheme_and_colon)) {
     // Obtain the URL prefixed by view-source and parse it.
-    string16 real_url(text.substr(after_scheme_and_colon));
+    base::string16 real_url(text.substr(after_scheme_and_colon));
     url_parse::Parsed real_parts;
-    AutocompleteInput::Parse(real_url, string16(), &real_parts, NULL, NULL);
+    AutocompleteInput::Parse(real_url, base::string16(), &real_parts, NULL, NULL);
     if (real_parts.scheme.is_nonempty() || real_parts.host.is_nonempty()) {
       if (real_parts.scheme.is_nonempty()) {
         *scheme = url_parse::Component(
@@ -465,15 +467,15 @@ void AutocompleteInput::ParseForEmphasizeComponents(
 }
 
 // static
-string16 AutocompleteInput::FormattedStringWithEquivalentMeaning(
+base::string16 AutocompleteInput::FormattedStringWithEquivalentMeaning(
     const GURL& url,
-    const string16& formatted_url) {
+    const base::string16& formatted_url) {
   if (!net::CanStripTrailingSlash(url))
     return formatted_url;
-  const string16 url_with_path(formatted_url + char16('/'));
-  return (AutocompleteInput::Parse(formatted_url, string16(), NULL, NULL,
+  const base::string16 url_with_path(formatted_url + char16('/'));
+  return (AutocompleteInput::Parse(formatted_url, base::string16(), NULL, NULL,
                                    NULL) ==
-          AutocompleteInput::Parse(url_with_path, string16(), NULL, NULL,
+          AutocompleteInput::Parse(url_with_path, base::string16(), NULL, NULL,
                                    NULL)) ?
       formatted_url : url_with_path;
 }
@@ -499,7 +501,7 @@ int AutocompleteInput::NumNonHostComponents(const url_parse::Parsed& parts) {
 }
 
 // static
-bool AutocompleteInput::HasHTTPScheme(const string16& input) {
+bool AutocompleteInput::HasHTTPScheme(const base::string16& input) {
   std::string utf8_input(UTF16ToUTF8(input));
   url_parse::Component scheme;
   if (url_util::FindAndCompareScheme(utf8_input, content::kViewSourceScheme,
@@ -508,10 +510,11 @@ bool AutocompleteInput::HasHTTPScheme(const string16& input) {
   return url_util::FindAndCompareScheme(utf8_input, content::kHttpScheme, NULL);
 }
 
-void AutocompleteInput::UpdateText(const string16& text,
+void AutocompleteInput::UpdateText(const base::string16& text,
                                    size_t cursor_position,
                                    const url_parse::Parsed& parts) {
-  DCHECK(cursor_position <= text.length() || cursor_position == string16::npos)
+  DCHECK(cursor_position <= text.length() ||
+         cursor_position == base::string16::npos)
       << "Text: '" << text << "', cp: " << cursor_position;
   text_ = text;
   cursor_position_ = cursor_position;
@@ -520,7 +523,7 @@ void AutocompleteInput::UpdateText(const string16& text,
 
 void AutocompleteInput::Clear() {
   text_.clear();
-  cursor_position_ = string16::npos;
+  cursor_position_ = base::string16::npos;
   current_url_ = GURL();
   current_page_classification_ = AutocompleteInput::INVALID_SPEC;
   type_ = INVALID;

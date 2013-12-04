@@ -67,9 +67,9 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
   // device-local accounts, the extension can be installed.
   scoped_refptr<const extensions::Extension> extension = CreateHostedApp();
   ASSERT_TRUE(extension);
-  string16 error;
+  base::string16 error;
   EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
-  EXPECT_EQ(string16(), error);
+  EXPECT_EQ(base::string16(), error);
   error.clear();
 
   // Verify that if an extension's ID has been explicitly whitelisted for use in
@@ -77,7 +77,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
   extension = CreateExtension(kWhitelistedId);
   ASSERT_TRUE(extension);
   EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
-  EXPECT_EQ(string16(), error);
+  EXPECT_EQ(base::string16(), error);
   error.clear();
 
   // Verify that if neither the type nor the ID of an extension have been
@@ -86,7 +86,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
   extension = CreateExtension(std::string());
   ASSERT_TRUE(extension);
   EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
-  EXPECT_NE(string16(), error);
+  EXPECT_NE(base::string16(), error);
   error.clear();
 }
 
@@ -97,9 +97,9 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
   // Verify that a platform app can be installed.
   scoped_refptr<const extensions::Extension> extension = CreatePlatformApp();
   ASSERT_TRUE(extension);
-  string16 error;
+  base::string16 error;
   EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
-  EXPECT_EQ(string16(), error);
+  EXPECT_EQ(base::string16(), error);
   error.clear();
 
   // Verify that an extension whose type has been whitelisted for use in other
@@ -108,7 +108,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
   extension = CreateHostedApp();
   ASSERT_TRUE(extension);
   EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
-  EXPECT_NE(string16(), error);
+  EXPECT_NE(base::string16(), error);
   error.clear();
 
   // Verify that an extension whose ID has been whitelisted for use in other
@@ -117,7 +117,7 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
   extension = CreateExtension(kWhitelistedId);
   ASSERT_TRUE(extension);
   EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
-  EXPECT_NE(string16(), error);
+  EXPECT_NE(base::string16(), error);
   error.clear();
 }
 

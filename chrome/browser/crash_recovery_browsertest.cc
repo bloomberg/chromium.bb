@@ -44,8 +44,8 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, Reload) {
       "data:text/html,<script>document.title=new Date().valueOf()</script>");
   ui_test_utils::NavigateToURL(browser(), url);
 
-  string16 title_before_crash;
-  string16 title_after_crash;
+  base::string16 title_before_crash;
+  base::string16 title_after_crash;
 
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_before_crash));
@@ -75,8 +75,8 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, LoadInNewTab) {
                      base::FilePath(base::FilePath::kCurrentDirectory),
                      base::FilePath(kTitle2File)));
 
-  string16 title_before_crash;
-  string16 title_after_crash;
+  base::string16 title_before_crash;
+  base::string16 title_after_crash;
 
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_before_crash));

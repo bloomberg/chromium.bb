@@ -14,6 +14,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using base::string16;
+
 class BuiltinProviderTest : public testing::Test {
  protected:
   template<class ResultType>

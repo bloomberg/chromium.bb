@@ -33,9 +33,9 @@ int kAffinityRelevanceBoost = 200;
 // Returns true if |word_to_find| is a prefix of |name_to_search| and marks the
 // matching text in |classifications| (which corresponds to the contact's full
 // name).  |name_index_in_full_name| contains |name_to_search|'s index within
-// the full name or string16::npos if it doesn't appear in it.
-bool WordIsNamePrefix(const string16& word_to_find,
-                      const string16& name_to_search,
+// the full name or base::string16::npos if it doesn't appear in it.
+bool WordIsNamePrefix(const base::string16& word_to_find,
+                      const base::string16& name_to_search,
                       size_t name_index_in_full_name,
                       size_t full_name_length,
                       ACMatchClassifications* classifications) {
@@ -47,7 +47,7 @@ bool WordIsNamePrefix(const string16& word_to_find,
       name_to_search, &match_index, &match_length) || (match_index != 0))
     return false;
 
-  if (name_index_in_full_name != string16::npos) {
+  if (name_index_in_full_name != base::string16::npos) {
     AutocompleteMatch::ACMatchClassifications new_class;
     AutocompleteMatch::ClassifyLocationInString(name_index_in_full_name,
         match_length, full_name_length, 0, &new_class);
@@ -65,16 +65,16 @@ const char ContactProvider::kMatchContactIdKey[] = "contact_id";
 
 // Cached information about a contact.
 struct ContactProvider::ContactData {
-  ContactData(const string16& full_name,
-              const string16& given_name,
-              const string16& family_name,
+  ContactData(const base::string16& full_name,
+              const base::string16& given_name,
+              const base::string16& family_name,
               const std::string& contact_id,
               float affinity)
       : full_name(full_name),
         given_name(given_name),
         family_name(family_name),
-        given_name_index(string16::npos),
-        family_name_index(string16::npos),
+        given_name_index(base::string16::npos),
+        family_name_index(base::string16::npos),
         contact_id(contact_id),
         affinity(affinity) {
     base::i18n::StringSearchIgnoringCaseAndAccents(
@@ -83,12 +83,12 @@ struct ContactProvider::ContactData {
         family_name, full_name, &family_name_index, NULL);
   }
 
-  string16 full_name;
-  string16 given_name;
-  string16 family_name;
+  base::string16 full_name;
+  base::string16 given_name;
+  base::string16 family_name;
 
   // Indices into |full_name| where |given_name| and |family_name| first appear,
-  // or string16::npos if they don't appear in it.
+  // or base::string16::npos if they don't appear in it.
   size_t given_name_index;
   size_t family_name_index;
 
@@ -121,7 +121,7 @@ void ContactProvider::Start(const AutocompleteInput& input,
       input.type() != AutocompleteInput::FORCED_QUERY)
     return;
 
-  std::vector<string16> input_words;
+  std::vector<base::string16> input_words;
   base::i18n::BreakIterator break_iterator(
       input.text(),
       base::i18n::BreakIterator::BREAK_WORD);
@@ -171,11 +171,11 @@ void ContactProvider::RefreshContacts() {
   for (contacts::ContactPointers::const_iterator it = contacts->begin();
        it != contacts->end(); ++it) {
     const contacts::Contact& contact = **it;
-    string16 full_name =
+    base::string16 full_name =
         AutocompleteMatch::SanitizeString(UTF8ToUTF16(contact.full_name()));
-    string16 given_name =
+    base::string16 given_name =
         AutocompleteMatch::SanitizeString(UTF8ToUTF16(contact.given_name()));
-    string16 family_name =
+    base::string16 family_name =
         AutocompleteMatch::SanitizeString(UTF8ToUTF16(contact.family_name()));
     float affinity =
         contact.has_affinity() ? contact.affinity() : kDefaultAffinity;
@@ -191,7 +191,7 @@ void ContactProvider::RefreshContacts() {
 
 void ContactProvider::AddContactIfMatched(
     const AutocompleteInput& input,
-    const std::vector<string16>& input_words,
+    const std::vector<base::string16>& input_words,
     const ContactData& contact) {
   // First, check if the whole input string is a prefix of the full name.
   // TODO(derat): Consider additionally segmenting the full name so we can match
@@ -209,7 +209,7 @@ void ContactProvider::AddContactIfMatched(
     // don't overlap (e.g. the query "bob b" against a contact with full name
     // "Bob G. Bryson", given name "Bob", and family name "Bryson" should result
     // in classifications "_Bob_ G. _B_ryson" rather than "_Bob_ G. Bryson".
-    for (std::vector<string16>::const_iterator it = input_words.begin();
+    for (std::vector<base::string16>::const_iterator it = input_words.begin();
          it != input_words.end(); ++it) {
       if (!WordIsNamePrefix(*it, contact.given_name, contact.given_name_index,
                             contact.full_name.size(), &classifications) &&

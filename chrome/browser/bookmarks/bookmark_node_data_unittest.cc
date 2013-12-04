@@ -50,7 +50,7 @@ TEST_F(BookmarkNodeDataTest, BogusRead) {
 // read it.
 TEST_F(BookmarkNodeDataTest, JustURL) {
   const GURL url("http://google.com");
-  const string16 title(ASCIIToUTF16("google.com"));
+  const base::string16 title(ASCIIToUTF16("google.com"));
 
   ui::OSExchangeData data;
   data.SetURL(url, title);
@@ -76,7 +76,7 @@ TEST_F(BookmarkNodeDataTest, URL) {
   test::WaitForBookmarkModelToLoad(model);
   const BookmarkNode* root = model->bookmark_bar_node();
   GURL url(GURL("http://foo.com"));
-  const string16 title(ASCIIToUTF16("foo.com"));
+  const base::string16 title(ASCIIToUTF16("foo.com"));
   const BookmarkNode* node = model->AddURL(root, 0, title, url);
   BookmarkNodeData drag_data(node);
   EXPECT_TRUE(drag_data.is_valid());
@@ -109,7 +109,7 @@ TEST_F(BookmarkNodeDataTest, URL) {
 
   // Writing should also put the URL and title on the clipboard.
   GURL read_url;
-  string16 read_title;
+  base::string16 read_title;
   EXPECT_TRUE(data2.GetURLAndTitle(&read_url, &read_title));
   EXPECT_EQ(url, read_url);
   EXPECT_EQ(title, read_title);
@@ -174,7 +174,7 @@ TEST_F(BookmarkNodeDataTest, FolderWithChild) {
   const BookmarkNode* folder = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
 
   GURL url(GURL("http://foo.com"));
-  const string16 title(ASCIIToUTF16("blah2"));
+  const base::string16 title(ASCIIToUTF16("blah2"));
 
   model->AddURL(folder, 0, title, url);
 
@@ -217,7 +217,7 @@ TEST_F(BookmarkNodeDataTest, MultipleNodes) {
   const BookmarkNode* folder = model->AddFolder(root, 0, ASCIIToUTF16("g1"));
 
   GURL url(GURL("http://foo.com"));
-  const string16 title(ASCIIToUTF16("blah2"));
+  const base::string16 title(ASCIIToUTF16("blah2"));
 
   const BookmarkNode* url_node = model->AddURL(folder, 0, title, url);
 

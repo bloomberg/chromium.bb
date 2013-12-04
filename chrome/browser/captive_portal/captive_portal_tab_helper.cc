@@ -98,7 +98,7 @@ void CaptivePortalTabHelper::DidStartProvisionalLoadForFrame(
 
 void CaptivePortalTabHelper::DidCommitProvisionalLoadForFrame(
     int64 frame_id,
-    const string16& frame_unique_name,
+    const base::string16& frame_unique_name,
     bool is_main_frame,
     const GURL& url,
     content::PageTransition transition_type,
@@ -128,11 +128,11 @@ void CaptivePortalTabHelper::DidCommitProvisionalLoadForFrame(
 
 void CaptivePortalTabHelper::DidFailProvisionalLoad(
     int64 frame_id,
-    const string16& frame_unique_name,
+    const base::string16& frame_unique_name,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const string16& error_description,
+    const base::string16& error_description,
     content::RenderViewHost* render_view_host) {
   DCHECK(CalledOnValidThread());
 

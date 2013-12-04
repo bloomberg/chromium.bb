@@ -82,7 +82,7 @@ DownloadFilePicker::DownloadFilePicker(
       NULL;
 
   select_file_dialog_->SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
-                                  string16(),
+                                  base::string16(),
                                   suggested_path_,
                                   &file_type_info,
                                   0,

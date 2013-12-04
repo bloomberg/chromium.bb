@@ -450,15 +450,15 @@ void CandidateView::Init(int shortcut_column_width,
   UpdateLabelBackgroundColors();
 }
 
-void CandidateView::SetCandidateText(const string16& text) {
+void CandidateView::SetCandidateText(const base::string16& text) {
   candidate_label_->SetText(text);
 }
 
-void CandidateView::SetShortcutText(const string16& text) {
+void CandidateView::SetShortcutText(const base::string16& text) {
   shortcut_label_->SetText(text);
 }
 
-void CandidateView::SetAnnotationText(const string16& text) {
+void CandidateView::SetAnnotationText(const base::string16& text) {
   annotation_label_->SetText(text);
 }
 

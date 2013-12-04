@@ -126,7 +126,7 @@ void AppShortcutManager::Observe(int type,
         base::Callback<void(const ShellIntegration::ShortcutInfo&)>
             create_or_update;
         if (installed_info->is_update) {
-          string16 old_title = UTF8ToUTF16(installed_info->old_name);
+          base::string16 old_title = UTF8ToUTF16(installed_info->old_name);
           create_or_update = base::Bind(&web_app::UpdateAllShortcuts,
                                         old_title);
         } else {

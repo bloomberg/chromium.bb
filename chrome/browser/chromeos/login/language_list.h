@@ -25,7 +25,7 @@ class LanguageList {
   int languages_count() const { return static_cast<int>(locale_names_.size()); }
 
   // Returns the language for the given |index|.
-  string16 GetLanguageNameAt(int index) const;
+  base::string16 GetLanguageNameAt(int index) const;
 
   // Return the locale for the given |index|. E.g., may return pt-BR.
   std::string GetLocaleFromIndex(int index) const;
@@ -40,10 +40,10 @@ class LanguageList {
  private:
   struct LocaleData {
     LocaleData() {}
-    LocaleData(const string16& name, const std::string& code)
+    LocaleData(const base::string16& name, const std::string& code)
         : native_name(name), locale_code(code) {}
 
-    string16 native_name;
+    base::string16 native_name;
     std::string locale_code;  // E.g., en-us.
   };
 

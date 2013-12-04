@@ -31,7 +31,7 @@ GURL GetFileManagerMainPageUrl();
 // in the query string section. |file_types| is optional.
 GURL GetFileManagerMainPageUrlWithParams(
     ui::SelectFileDialog::Type type,
-    const string16& title,
+    const base::string16& title,
     const base::FilePath& default_virtual_path,
     const ui::SelectFileDialog::FileTypeInfo* file_types,
     int file_type_index,

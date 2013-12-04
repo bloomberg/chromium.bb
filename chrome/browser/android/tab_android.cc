@@ -175,11 +175,11 @@ int TabAndroid::GetSyncId() const {
   return Java_TabBase_getSyncId(env, obj.obj());
 }
 
-string16 TabAndroid::GetTitle() const {
+base::string16 TabAndroid::GetTitle() const {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_tab_.get(env);
   if (obj.is_null())
-    return string16();
+    return base::string16();
   return base::android::ConvertJavaStringToUTF16(
       Java_TabBase_getTitle(env, obj.obj()));
 }
@@ -385,7 +385,7 @@ void TabAndroid::SetActiveNavigationEntryTitleForUrl(JNIEnv* env,
                                                      jstring jtitle) {
   DCHECK(web_contents());
 
-  string16 title;
+  base::string16 title;
   if (jtitle)
     title = base::android::ConvertJavaStringToUTF16(env, jtitle);
 

@@ -246,8 +246,8 @@ bool DoesInstallSuccessReferToId(const std::string& id,
 bool DoesInstallFailureReferToId(const std::string& id,
                                  const content::NotificationSource& source,
                                  const content::NotificationDetails& details) {
-  return content::Details<const string16>(details)->find(UTF8ToUTF16(id)) !=
-      string16::npos;
+  return content::Details<const base::string16>(details)->find(UTF8ToUTF16(id)) !=
+      base::string16::npos;
 }
 
 scoped_ptr<net::FakeURLFetcher> RunCallbackAndReturnFakeURLFetcher(

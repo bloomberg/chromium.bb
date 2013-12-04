@@ -58,11 +58,11 @@ int DownloadRequestInfoBarDelegate::GetIconID() const {
   return IDR_INFOBAR_MULTIPLE_DOWNLOADS;
 }
 
-string16 DownloadRequestInfoBarDelegate::GetMessageText() const {
+base::string16 DownloadRequestInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(IDS_MULTI_DOWNLOAD_WARNING);
 }
 
-string16 DownloadRequestInfoBarDelegate::GetButtonLabel(
+base::string16 DownloadRequestInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_MULTI_DOWNLOAD_WARNING_ALLOW : IDS_MULTI_DOWNLOAD_WARNING_DENY);

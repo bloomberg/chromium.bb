@@ -61,7 +61,7 @@ struct CustomHomePagesTableModel::Entry {
   GURL url;
 
   // Page title.  If this is empty, we'll display the URL as the entry.
-  string16 title;
+  base::string16 title;
 
   // If non-zero, indicates we're loading the title for the page.
   HistoryService::Handle title_handle;
@@ -211,7 +211,7 @@ string16 CustomHomePagesTableModel::GetText(int row, int column_id) {
 }
 
 string16 CustomHomePagesTableModel::GetTooltip(int row) {
-  return entries_[row].title.empty() ? string16() :
+  return entries_[row].title.empty() ? base::string16() :
       l10n_util::GetStringFUTF16(IDS_OPTIONS_STARTUP_PAGE_TOOLTIP,
                                  entries_[row].title, FormattedURL(row));
 }
@@ -267,7 +267,7 @@ CustomHomePagesTableModel::Entry*
 string16 CustomHomePagesTableModel::FormattedURL(int row) const {
   std::string languages =
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  string16 url = net::FormatUrl(entries_[row].url, languages);
+  base::string16 url = net::FormatUrl(entries_[row].url, languages);
   url = base::i18n::GetDisplayStringInLTRDirectionality(url);
   return url;
 }

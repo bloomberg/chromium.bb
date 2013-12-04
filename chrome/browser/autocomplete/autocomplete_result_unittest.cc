@@ -131,7 +131,8 @@ void AutocompleteResultTest::RunCopyOldMatchesTest(
     const TestData* last, size_t last_size,
     const TestData* current, size_t current_size,
     const TestData* expected, size_t expected_size) {
-  AutocompleteInput input(ASCIIToUTF16("a"), string16::npos, string16(), GURL(),
+  AutocompleteInput input(ASCIIToUTF16("a"), base::string16::npos,
+                          base::string16(), GURL(),
                           AutocompleteInput::INVALID_SPEC, false, false, false,
                           AutocompleteInput::ALL_MATCHES);
 
@@ -166,7 +167,8 @@ TEST_F(AutocompleteResultTest, Swap) {
   AutocompleteMatch match;
   match.relevance = 1;
   match.allowed_to_be_default_match = true;
-  AutocompleteInput input(ASCIIToUTF16("a"), string16::npos, string16(), GURL(),
+  AutocompleteInput input(ASCIIToUTF16("a"), base::string16::npos,
+                          base::string16(), GURL(),
                           AutocompleteInput::INVALID_SPEC, false, false, false,
                           AutocompleteInput::ALL_MATCHES);
   matches.push_back(match);
@@ -248,7 +250,8 @@ TEST_F(AutocompleteResultTest, SortAndCullEmptyDestinationURLs) {
 
   AutocompleteResult result;
   result.AppendMatches(matches);
-  AutocompleteInput input(string16(), string16::npos, string16(), GURL(),
+  AutocompleteInput input(base::string16(), base::string16::npos,
+                          base::string16(), GURL(),
                           AutocompleteInput::INVALID_SPEC, false, false, false,
                           AutocompleteInput::ALL_MATCHES);
   result.SortAndCull(input, test_util_.profile());
@@ -293,7 +296,8 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
 
   AutocompleteResult result;
   result.AppendMatches(matches);
-  AutocompleteInput input(string16(), string16::npos, string16(), GURL(),
+  AutocompleteInput input(base::string16(), base::string16::npos,
+                          base::string16(), GURL(),
                           AutocompleteInput::INVALID_SPEC, false, false, false,
                           AutocompleteInput::ALL_MATCHES);
   result.SortAndCull(input, test_util_.profile());
@@ -360,7 +364,8 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
 
   AutocompleteResult result;
   result.AppendMatches(matches);
-  AutocompleteInput input(string16(), string16::npos, string16(), GURL(),
+  AutocompleteInput input(base::string16(), base::string16::npos,
+                          base::string16(), GURL(),
                           AutocompleteInput::HOME_PAGE, false, false, false,
                           AutocompleteInput::ALL_MATCHES);
   result.SortAndCull(input, test_util_.profile());
@@ -409,7 +414,8 @@ TEST_F(AutocompleteResultTest, SortAndCullWithUndemotableTypes) {
 
   AutocompleteResult result;
   result.AppendMatches(matches);
-  AutocompleteInput input(string16(), string16::npos, string16(), GURL(),
+  AutocompleteInput input(base::string16(), base::string16::npos,
+                          base::string16(), GURL(),
                           AutocompleteInput::HOME_PAGE, false, false, false,
                           AutocompleteInput::ALL_MATCHES);
   result.SortAndCull(input, test_util_.profile());
@@ -452,7 +458,8 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     PopulateAutocompleteMatches(data, arraysize(data), &matches);
     AutocompleteResult result;
     result.AppendMatches(matches);
-    AutocompleteInput input(string16(), string16::npos, string16(), GURL(),
+    AutocompleteInput input(base::string16(), base::string16::npos,
+                            base::string16(), GURL(),
                             AutocompleteInput::HOME_PAGE, false, false, false,
                             AutocompleteInput::ALL_MATCHES);
     result.SortAndCull(input, test_util_.profile());
@@ -467,7 +474,8 @@ TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
     matches[1].allowed_to_be_default_match = false;
     AutocompleteResult result;
     result.AppendMatches(matches);
-    AutocompleteInput input(string16(), string16::npos, string16(), GURL(),
+    AutocompleteInput input(base::string16(), base::string16::npos,
+                            base::string16(), GURL(),
                             AutocompleteInput::HOME_PAGE, false, false, false,
                             AutocompleteInput::ALL_MATCHES);
     result.SortAndCull(input, test_util_.profile());

@@ -551,7 +551,7 @@ TEST_F(LoginUtilsTest, RlzInitialized) {
   EXPECT_EQ(std::string(), local_state_.Get()->GetString(prefs::kRLZBrand));
 
   // RLZ value for homepage access point should have been initialized.
-  string16 rlz_string;
+  base::string16 rlz_string;
   EXPECT_TRUE(RLZTracker::GetAccessPointRlz(
       RLZTracker::CHROME_HOME_PAGE, &rlz_string));
   EXPECT_EQ(string16(), rlz_string);

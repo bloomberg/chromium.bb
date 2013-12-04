@@ -124,14 +124,15 @@ template<> void DownloadQueryTest::AddFilter(
 
 template<> void DownloadQueryTest::AddFilter(
     DownloadQuery::FilterType name, const char16* cpp_value) {
-  scoped_ptr<base::Value> value(Value::CreateStringValue(string16(cpp_value)));
+  scoped_ptr<base::Value> value(
+      Value::CreateStringValue(base::string16(cpp_value)));
   CHECK(query_.AddFilter(name, *value.get()));
 }
 
 template<> void DownloadQueryTest::AddFilter(
-    DownloadQuery::FilterType name, std::vector<string16> cpp_value) {
+    DownloadQuery::FilterType name, std::vector<base::string16> cpp_value) {
   scoped_ptr<base::ListValue> list(new base::ListValue());
-  for (std::vector<string16>::const_iterator it = cpp_value.begin();
+  for (std::vector<base::string16>::const_iterator it = cpp_value.begin();
        it != cpp_value.end(); ++it) {
     list->Append(Value::CreateStringValue(*it));
   }

@@ -445,7 +445,7 @@ class WorkerDevToolsSanityTest : public InProcessBrowserTest {
 
     virtual void WorkerCreated (
         const GURL& url,
-        const string16& name,
+        const base::string16& name,
         int process_id,
         int route_id) OVERRIDE {
       worker_data_->worker_process_id = process_id;

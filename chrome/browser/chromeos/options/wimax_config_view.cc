@@ -114,7 +114,7 @@ void WimaxConfigView::UpdateErrorLabel() {
 }
 
 void WimaxConfigView::ContentsChanged(views::Textfield* sender,
-                                      const string16& new_contents) {
+                                      const base::string16& new_contents) {
   UpdateDialogButtons();
 }
 
@@ -237,7 +237,7 @@ void WimaxConfigView::Init() {
 
   // Identity
   layout->StartRow(0, column_view_set_id);
-  string16 identity_label_text = l10n_util::GetStringUTF16(
+  base::string16 identity_label_text = l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_IDENTITY);
   identity_label_ = new views::Label(identity_label_text);
   layout->AddView(identity_label_);
@@ -252,7 +252,7 @@ void WimaxConfigView::Init() {
 
   // Passphrase input
   layout->StartRow(0, column_view_set_id);
-  string16 passphrase_label_text = l10n_util::GetStringUTF16(
+  base::string16 passphrase_label_text = l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PASSPHRASE);
   passphrase_label_ = new views::Label(passphrase_label_text);
   layout->AddView(passphrase_label_);

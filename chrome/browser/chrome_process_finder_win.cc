@@ -119,7 +119,7 @@ NotifyChromeResult AttemptToNotifyRunningChrome(HWND remote_window,
     // the other chrome must be desktop chrome and this must be a search charm
     // activation. This scenario is unique; other cases should be properly
     // handled by the delegate_execute which will not activate a second chrome.
-    string16 terms;
+    base::string16 terms;
     base::win::MetroLaunchType launch = base::win::GetMetroLaunchParams(&terms);
     if (launch != base::win::METRO_SEARCH) {
       LOG(WARNING) << "In metro mode, but and launch is " << launch;

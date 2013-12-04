@@ -32,7 +32,7 @@ const int kShowingDuration = 500;
 
 ModeIndicatorDelegateView::ModeIndicatorDelegateView(
     const gfx::Rect& cursor_bounds,
-    const string16& label)
+    const base::string16& label)
   : cursor_bounds_(cursor_bounds),
     label_view_(new views::Label(label)) {
   set_use_focusless(true);

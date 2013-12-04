@@ -52,12 +52,12 @@ int ExternalProtocolDialog::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_OK;
 }
 
-string16 ExternalProtocolDialog::GetDialogButtonLabel(
+base::string16 ExternalProtocolDialog::GetDialogButtonLabel(
     ui::DialogButton button) const {
   return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT);
 }
 
-string16 ExternalProtocolDialog::GetWindowTitle() const {
+base::string16 ExternalProtocolDialog::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_TITLE);
 }
 
@@ -94,7 +94,7 @@ ExternalProtocolDialog::ExternalProtocolDialog(WebContents* web_contents,
     : creation_time_(base::TimeTicks::Now()),
       scheme_(url.scheme()) {
   const int kMaxUrlWithoutSchemeSize = 256;
-  string16 elided_url_without_scheme;
+  base::string16 elided_url_without_scheme;
   gfx::ElideString(ASCIIToUTF16(url.possibly_invalid_spec()),
       kMaxUrlWithoutSchemeSize, &elided_url_without_scheme);
 

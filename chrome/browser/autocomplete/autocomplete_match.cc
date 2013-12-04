@@ -196,8 +196,8 @@ bool AutocompleteMatch::DestinationsEqual(const AutocompleteMatch& elem1,
 
 // static
 void AutocompleteMatch::ClassifyMatchInString(
-    const string16& find_text,
-    const string16& text,
+    const base::string16& find_text,
+    const base::string16& text,
     int style,
     ACMatchClassifications* classification) {
   ClassifyLocationInString(text.find(find_text), find_text.length(),
@@ -224,7 +224,7 @@ void AutocompleteMatch::ClassifyLocationInString(
   }
 
   // Mark matching portion of string.
-  if (match_location == string16::npos) {
+  if (match_location == base::string16::npos) {
     // No match, above classification will suffice for whole string.
     return;
   }
@@ -320,10 +320,10 @@ void AutocompleteMatch::AddLastClassificationIfNecessary(
 }
 
 // static
-string16 AutocompleteMatch::SanitizeString(const string16& text) {
+base::string16 AutocompleteMatch::SanitizeString(const base::string16& text) {
   // NOTE: This logic is mirrored by |sanitizeString()| in
   // omnibox_custom_bindings.js.
-  string16 result;
+  base::string16 result;
   TrimWhitespace(text, TRIM_LEADING, &result);
   base::RemoveChars(result, kInvalidChars, &result);
   return result;
@@ -349,7 +349,7 @@ void AutocompleteMatch::ComputeStrippedDestinationURL(Profile* profile) {
   // provider matches.
   TemplateURL* template_url = GetTemplateURL(profile, true);
   if (template_url != NULL && template_url->SupportsReplacement()) {
-    string16 search_terms;
+    base::string16 search_terms;
     if (template_url->ExtractSearchTermsFromURL(stripped_destination_url,
                                                 &search_terms)) {
       stripped_destination_url =
@@ -389,19 +389,19 @@ void AutocompleteMatch::ComputeStrippedDestinationURL(Profile* profile) {
 }
 
 void AutocompleteMatch::GetKeywordUIState(Profile* profile,
-                                          string16* keyword,
+                                          base::string16* keyword,
                                           bool* is_keyword_hint) const {
   *is_keyword_hint = associated_keyword.get() != NULL;
   keyword->assign(*is_keyword_hint ? associated_keyword->keyword :
       GetSubstitutingExplicitlyInvokedKeyword(profile));
 }
 
-string16 AutocompleteMatch::GetSubstitutingExplicitlyInvokedKeyword(
+base::string16 AutocompleteMatch::GetSubstitutingExplicitlyInvokedKeyword(
     Profile* profile) const {
   if (transition != content::PAGE_TRANSITION_KEYWORD)
-    return string16();
+    return base::string16();
   const TemplateURL* t_url = GetTemplateURL(profile, false);
-  return (t_url && t_url->SupportsReplacement()) ? keyword : string16();
+  return (t_url && t_url->SupportsReplacement()) ? keyword : base::string16();
 }
 
 TemplateURL* AutocompleteMatch::GetTemplateURL(
@@ -461,7 +461,7 @@ void AutocompleteMatch::Validate() const {
 }
 
 void AutocompleteMatch::ValidateClassifications(
-    const string16& text,
+    const base::string16& text,
     const ACMatchClassifications& classifications) const {
   if (text.empty()) {
     DCHECK(classifications.empty());

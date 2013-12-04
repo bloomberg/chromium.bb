@@ -70,10 +70,10 @@ BookmarkNode::BookmarkNode(int64 id, const GURL& url)
 BookmarkNode::~BookmarkNode() {
 }
 
-void BookmarkNode::SetTitle(const string16& title) {
+void BookmarkNode::SetTitle(const base::string16& title) {
   // Replace newlines and other problematic whitespace characters in
   // folder/bookmark names with spaces.
-  string16 trimmed_title;
+  base::string16 trimmed_title;
   base::ReplaceChars(title, kInvalidChars, ASCIIToUTF16(" "), &trimmed_title);
   ui::TreeNode<BookmarkNode>::SetTitle(trimmed_title);
 }
@@ -398,7 +398,7 @@ const gfx::Image& BookmarkModel::GetFavicon(const BookmarkNode* node) {
   return node->favicon();
 }
 
-void BookmarkModel::SetTitle(const BookmarkNode* node, const string16& title) {
+void BookmarkModel::SetTitle(const BookmarkNode* node, const base::string16& title) {
   if (!node) {
     NOTREACHED();
     return;
@@ -602,7 +602,7 @@ const BookmarkNode* BookmarkModel::GetNodeByID(int64 id) const {
 
 const BookmarkNode* BookmarkModel::AddFolder(const BookmarkNode* parent,
                                              int index,
-                                             const string16& title) {
+                                             const base::string16& title) {
   if (!loaded_ || is_root_node(parent) || !IsValidIndex(parent, index, true)) {
     // Can't add to the root.
     NOTREACHED();
@@ -620,7 +620,7 @@ const BookmarkNode* BookmarkModel::AddFolder(const BookmarkNode* parent,
 
 const BookmarkNode* BookmarkModel::AddURL(const BookmarkNode* parent,
                                           int index,
-                                          const string16& title,
+                                          const base::string16& title,
                                           const GURL& url) {
   return AddURLWithCreationTime(parent, index,
                                 CollapseWhitespace(title, false),
@@ -630,7 +630,7 @@ const BookmarkNode* BookmarkModel::AddURL(const BookmarkNode* parent,
 const BookmarkNode* BookmarkModel::AddURLWithCreationTime(
     const BookmarkNode* parent,
     int index,
-    const string16& title,
+    const base::string16& title,
     const GURL& url,
     const Time& creation_time) {
   if (!loaded_ || !url.is_valid() || is_root_node(parent) ||
@@ -717,7 +717,7 @@ void BookmarkModel::ResetDateFolderModified(const BookmarkNode* node) {
 }
 
 void BookmarkModel::GetBookmarksWithTitlesMatching(
-    const string16& text,
+    const base::string16& text,
     size_t max_count,
     std::vector<BookmarkTitleMatch>* matches) {
   if (!loaded_)

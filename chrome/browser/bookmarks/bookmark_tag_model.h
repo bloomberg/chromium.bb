@@ -10,7 +10,7 @@
 
 class BookmarkTagModelObserver;
 
-typedef string16 BookmarkTag;
+typedef base::string16 BookmarkTag;
 
 // BookmarTagModel provides a way to access and manipulate bookmarks in a
 // non-hierarchical way. BookmarkTagModel view the bookmarks as a flat list,
@@ -76,7 +76,7 @@ class BookmarkTagModel : public BookmarkModelObserver {
   const gfx::Image& GetFavicon(const BookmarkNode* bookmark);
 
   // Sets the title of |node|.
-  void SetTitle(const BookmarkNode* bookmark, const string16& title);
+  void SetTitle(const BookmarkNode* bookmark, const base::string16& title);
 
   // Sets the URL of |node|.
   void SetURL(const BookmarkNode* bookmark, const GURL& url);
@@ -89,7 +89,7 @@ class BookmarkTagModel : public BookmarkModelObserver {
   const BookmarkNode* GetMostRecentlyAddedBookmarkForURL(const GURL& url);
 
   // Creates a new bookmark.
-  const BookmarkNode* AddURL(const string16& title,
+  const BookmarkNode* AddURL(const base::string16& title,
                              const GURL& url,
                              const std::set<BookmarkTag>& tags);
 

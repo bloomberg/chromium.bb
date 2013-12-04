@@ -410,7 +410,7 @@ void LoginUtilsImpl::PrepareProfile(
       user_manager->GetUserProfileDir(user_context.username),
       base::Bind(&LoginUtilsImpl::OnProfileCreated, AsWeakPtr(),
                  user_context.username),
-      string16(), string16(), std::string());
+      base::string16(), base::string16(), std::string());
 }
 
 void LoginUtilsImpl::DelegateDeleted(LoginUtils::Delegate* delegate) {

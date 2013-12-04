@@ -66,7 +66,7 @@ GURL GetFileManagerMainPageUrl() {
 
 GURL GetFileManagerMainPageUrlWithParams(
     ui::SelectFileDialog::Type type,
-    const string16& title,
+    const base::string16& title,
     const base::FilePath& default_virtual_path,
     const ui::SelectFileDialog::FileTypeInfo* file_types,
     int file_type_index,
@@ -90,7 +90,7 @@ GURL GetFileManagerMainPageUrlWithParams(
       dict->Set("extensions", extensions_list);
 
       if (i < file_types->extension_description_overrides.size()) {
-        string16 desc = file_types->extension_description_overrides[i];
+        base::string16 desc = file_types->extension_description_overrides[i];
         dict->SetString("description", desc);
       }
 

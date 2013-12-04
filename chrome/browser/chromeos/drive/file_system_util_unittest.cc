@@ -39,7 +39,7 @@ TEST(FileSystemUtilTest, FilePathToDriveURL) {
   EXPECT_EQ(path, DriveURLToFilePath(FilePathToDriveURL(path)));
 
   // Path with multi byte characters.
-  string16 utf16_string;
+  base::string16 utf16_string;
   utf16_string.push_back(0x307b);  // HIRAGANA_LETTER_HO
   utf16_string.push_back(0x3052);  // HIRAGANA_LETTER_GE
   path = GetDriveMyDriveRootPath().Append(

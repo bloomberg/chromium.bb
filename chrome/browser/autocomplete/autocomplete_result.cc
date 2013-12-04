@@ -194,10 +194,10 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
   default_match_ = matches_.begin();
 
   if (default_match_ != matches_.end()) {
-    const string16 debug_info = ASCIIToUTF16("fill_into_edit=") +
+    const base::string16 debug_info = ASCIIToUTF16("fill_into_edit=") +
         default_match_->fill_into_edit + ASCIIToUTF16(", provider=") +
         ((default_match_->provider != NULL) ?
-         ASCIIToUTF16(default_match_->provider->GetName()) : string16()) +
+         ASCIIToUTF16(default_match_->provider->GetName()) : base::string16()) +
         ASCIIToUTF16(", input=") + input.text();
     DCHECK(default_match_->allowed_to_be_default_match) << debug_info;
     // We shouldn't get query matches for URL inputs, or non-query matches

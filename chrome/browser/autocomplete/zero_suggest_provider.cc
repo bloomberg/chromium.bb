@@ -147,7 +147,7 @@ void ZeroSuggestProvider::OnURLFetchComplete(const net::URLFetcher* source) {
 void ZeroSuggestProvider::StartZeroSuggest(
     const GURL& current_page_url,
     AutocompleteInput::PageClassification page_classification,
-    const string16& permanent_text) {
+    const base::string16& permanent_text) {
   Stop(true);
   field_trial_triggered_ = false;
   field_trial_triggered_in_session_ = false;
@@ -160,7 +160,7 @@ void ZeroSuggestProvider::StartZeroSuggest(
      template_url_service_->GetDefaultSearchProvider();
   if (default_provider == NULL)
     return;
-  string16 prefix;
+  base::string16 prefix;
   TemplateURLRef::SearchTermsArgs search_term_args(prefix);
   search_term_args.current_page_url = current_query_;
   GURL suggest_url(default_provider->suggestions_url_ref().
@@ -200,7 +200,7 @@ void ZeroSuggestProvider::FillResults(
     int* verbatim_relevance,
     SearchProvider::SuggestResults* suggest_results,
     SearchProvider::NavigationResults* navigation_results) {
-  string16 query;
+  base::string16 query;
   const ListValue* root_list = NULL;
   const ListValue* results = NULL;
   const ListValue* relevances = NULL;
@@ -242,7 +242,7 @@ void ZeroSuggestProvider::FillResults(
   suggest_results->clear();
   navigation_results->clear();
 
-  string16 result, title;
+  base::string16 result, title;
   std::string type;
   for (size_t index = 0; results->GetString(index, &result); ++index) {
     // Google search may return empty suggestions for weird input characters,
@@ -266,7 +266,7 @@ void ZeroSuggestProvider::FillResults(
       }
     } else {
       suggest_results->push_back(SearchProvider::SuggestResult(
-          result, result, string16(), std::string(), std::string(), false,
+          result, result, base::string16(), std::string(), std::string(), false,
           relevance, relevances != NULL, false));
     }
   }
@@ -285,7 +285,7 @@ void ZeroSuggestProvider::AddSuggestResultsToMap(
 void ZeroSuggestProvider::AddMatchToMap(int relevance,
                                         AutocompleteMatch::Type type,
                                         const TemplateURL* template_url,
-                                        const string16& query_string,
+                                        const base::string16& query_string,
                                         int accepted_suggestion,
                                         SearchProvider::MatchMap* map) {
   // Pass in query_string as the input_text since we don't want any bolding.
@@ -293,7 +293,7 @@ void ZeroSuggestProvider::AddMatchToMap(int relevance,
   // of passing in -1.
   AutocompleteMatch match = SearchProvider::CreateSearchSuggestion(
       this, AutocompleteInput(), query_string, relevance, type, false,
-      query_string, string16(), template_url, query_string, std::string(),
+      query_string, base::string16(), template_url, query_string, std::string(),
       accepted_suggestion, -1, true);
   if (!match.destination_url.is_valid())
     return;
@@ -443,7 +443,7 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
 }
 
 AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
-  AutocompleteInput input(permanent_text_, string16::npos, string16(),
+  AutocompleteInput input(permanent_text_, base::string16::npos, base::string16(),
                           GURL(current_query_), current_page_classification_,
                           false, false, true, AutocompleteInput::ALL_MATCHES);
 

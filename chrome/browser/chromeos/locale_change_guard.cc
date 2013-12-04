@@ -219,9 +219,9 @@ void LocaleChangeGuard::PrepareChangingLocale(
     to_locale_ = to_locale;
 
   if (!from_locale_.empty() && !to_locale_.empty()) {
-    string16 from = l10n_util::GetDisplayNameForLocale(
+    base::string16 from = l10n_util::GetDisplayNameForLocale(
         from_locale_, cur_locale, true);
-    string16 to = l10n_util::GetDisplayNameForLocale(
+    base::string16 to = l10n_util::GetDisplayNameForLocale(
         to_locale_, cur_locale, true);
 
     title_text_ = l10n_util::GetStringUTF16(

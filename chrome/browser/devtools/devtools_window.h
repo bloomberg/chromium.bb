@@ -313,7 +313,7 @@ class DevToolsWindow : private content::NotificationObserver,
   void SearchCompleted(int request_id,
                        const std::string& file_system_path,
                        const std::vector<std::string>& file_paths);
-  void ShowDevToolsConfirmInfoBar(const string16& message,
+  void ShowDevToolsConfirmInfoBar(const base::string16& message,
                                   const InfoBarCallback& callback);
 
   void CreateDevToolsBrowser();

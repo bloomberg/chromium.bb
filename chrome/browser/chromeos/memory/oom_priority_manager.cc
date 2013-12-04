@@ -213,14 +213,14 @@ void OomPriorityManager::Stop() {
     low_memory_listener_->Stop();
 }
 
-std::vector<string16> OomPriorityManager::GetTabTitles() {
+std::vector<base::string16> OomPriorityManager::GetTabTitles() {
   TabStatsList stats = GetTabStatsOnUIThread();
   base::AutoLock pid_to_oom_score_autolock(pid_to_oom_score_lock_);
-  std::vector<string16> titles;
+  std::vector<base::string16> titles;
   titles.reserve(stats.size());
   TabStatsList::iterator it = stats.begin();
   for ( ; it != stats.end(); ++it) {
-    string16 str;
+    base::string16 str;
     str.reserve(4096);
     int score = pid_to_oom_score_[it->renderer_handle];
     str += base::IntToString16(score);

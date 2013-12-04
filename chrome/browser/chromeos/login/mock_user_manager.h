@@ -43,10 +43,10 @@ class MockUserManager : public UserManager {
                                          User::OAuthTokenStatus));
   MOCK_CONST_METHOD1(GetProfileByUser, Profile*(const User*));
   MOCK_METHOD2(SaveUserDisplayName, void(const std::string&,
-                                         const string16&));
+                                         const base::string16&));
   MOCK_METHOD2(UpdateUserAccountData,
                void(const std::string&, const UserAccountData&));
-  MOCK_CONST_METHOD1(GetUserDisplayName, string16(const std::string&));
+  MOCK_CONST_METHOD1(GetUserDisplayName, base::string16(const std::string&));
   MOCK_METHOD2(SaveUserDisplayEmail, void(const std::string&,
                                           const std::string&));
   MOCK_CONST_METHOD1(GetUserDisplayEmail, std::string(const std::string&));

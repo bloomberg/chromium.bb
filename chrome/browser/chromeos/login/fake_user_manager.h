@@ -47,7 +47,7 @@ class FakeUserManager : public UserManager {
   virtual User* GetActiveUser() OVERRIDE;
   virtual void SwitchActiveUser(const std::string& email) OVERRIDE;
   virtual void SaveUserDisplayName(const std::string& username,
-      const string16& display_name) OVERRIDE;
+      const base::string16& display_name) OVERRIDE;
 
   // Not implemented.
   virtual void UpdateUserAccountData(
@@ -75,7 +75,7 @@ class FakeUserManager : public UserManager {
   virtual void SaveUserOAuthStatus(
       const std::string& username,
       User::OAuthTokenStatus oauth_token_status) OVERRIDE {}
-  virtual string16 GetUserDisplayName(
+  virtual base::string16 GetUserDisplayName(
       const std::string& username) const OVERRIDE;
   virtual void SaveUserDisplayEmail(const std::string& username,
       const std::string& display_email) OVERRIDE {}

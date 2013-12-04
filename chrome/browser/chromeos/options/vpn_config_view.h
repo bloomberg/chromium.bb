@@ -50,7 +50,7 @@ class VPNConfigView : public ChildNetworkConfigView,
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const ui::KeyEvent& key_event) OVERRIDE;
 
@@ -65,7 +65,7 @@ class VPNConfigView : public ChildNetworkConfigView,
   virtual void OnCertificatesLoaded(bool initial_load) OVERRIDE;
 
   // ChildNetworkConfigView:
-  virtual string16 GetTitle() const OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual bool CanLogin() OVERRIDE;
   virtual bool Login() OVERRIDE;
@@ -132,7 +132,7 @@ class VPNConfigView : public ChildNetworkConfigView,
                           const std::string& key,
                           NetworkPropertyUIData* property_ui_data);
 
-  string16 service_name_from_server_;
+  base::string16 service_name_from_server_;
   bool service_text_modified_;
 
   // Initialized in Init():

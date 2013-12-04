@@ -54,7 +54,8 @@ class NetworkConfigView : public views::DialogDelegateView,
   gfx::NativeWindow GetNativeWindow() const;
 
   // views::DialogDelegate methods.
-  virtual string16 GetDialogButtonLabel(ui::DialogButton button) const OVERRIDE;
+  virtual base::string16 GetDialogButtonLabel(
+      ui::DialogButton button) const OVERRIDE;
   virtual bool IsDialogButtonEnabled(ui::DialogButton button) const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
   virtual bool Accept() OVERRIDE;
@@ -62,7 +63,7 @@ class NetworkConfigView : public views::DialogDelegateView,
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
 
   // views::WidgetDelegate methods.
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
 
   // views::View overrides.
@@ -121,7 +122,7 @@ class ChildNetworkConfigView : public views::View {
   virtual ~ChildNetworkConfigView();
 
   // Get the title to show for the dialog.
-  virtual string16 GetTitle() const = 0;
+  virtual base::string16 GetTitle() const = 0;
 
   // Returns view that should be focused on dialog activation.
   virtual views::View* GetInitiallyFocusedView() = 0;

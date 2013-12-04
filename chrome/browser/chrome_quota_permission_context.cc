@@ -54,7 +54,7 @@ class RequestQuotaInfoBarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   virtual bool ShouldExpireInternal(
       const content::LoadCommittedDetails& details) const OVERRIDE;
-  virtual string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 

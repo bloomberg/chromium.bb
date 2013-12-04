@@ -37,7 +37,7 @@ class BackgroundContentsServiceTest : public testing::Test {
   }
 
   // Returns the stored pref URL for the passed app id.
-  std::string GetPrefURLForApp(Profile* profile, const string16& appid) {
+  std::string GetPrefURLForApp(Profile* profile, const base::string16& appid) {
     const DictionaryValue* pref = GetPrefs(profile);
     EXPECT_TRUE(pref->HasKey(UTF16ToUTF8(appid)));
     const DictionaryValue* value;
@@ -62,7 +62,7 @@ class MockBackgroundContents : public BackgroundContents {
   }
 
   void SendOpenedNotification(BackgroundContentsService* service) {
-    string16 frame_name = ASCIIToUTF16("background");
+    base::string16 frame_name = ASCIIToUTF16("background");
     BackgroundContentsOpenedDetails details = {
         this, frame_name, appid_ };
     service->BackgroundContentsOpened(&details);
@@ -92,13 +92,13 @@ class MockBackgroundContents : public BackgroundContents {
         content::Details<BackgroundContents>(this));
   }
 
-  const string16& appid() { return appid_; }
+  const base::string16& appid() { return appid_; }
 
  private:
   GURL url_;
 
   // The ID of our parent application
-  string16 appid_;
+  base::string16 appid_;
 
   // Parent profile
   Profile* profile_;

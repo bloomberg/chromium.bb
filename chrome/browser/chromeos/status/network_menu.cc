@@ -76,7 +76,7 @@ class NetworkMenuModel : public ui::MenuModel {
           sub_menu_model(NULL),
           flags(0) {
     }
-    MenuItem(ui::MenuModel::ItemType type, string16 label, gfx::ImageSkia icon,
+    MenuItem(ui::MenuModel::ItemType type, base::string16 label, gfx::ImageSkia icon,
              const std::string& service_path, int flags)
         : type(type),
           label(label),
@@ -85,7 +85,7 @@ class NetworkMenuModel : public ui::MenuModel {
           sub_menu_model(NULL),
           flags(flags) {
     }
-    MenuItem(ui::MenuModel::ItemType type, string16 label, gfx::ImageSkia icon,
+    MenuItem(ui::MenuModel::ItemType type, base::string16 label, gfx::ImageSkia icon,
              NetworkMenuModel* sub_menu_model, int flags)
         : type(type),
           label(label),
@@ -95,7 +95,7 @@ class NetworkMenuModel : public ui::MenuModel {
     }
 
     ui::MenuModel::ItemType type;
-    string16 label;
+    base::string16 label;
     gfx::ImageSkia icon;
     std::string service_path;
     NetworkMenuModel* sub_menu_model;  // Weak ptr.
@@ -122,7 +122,7 @@ class NetworkMenuModel : public ui::MenuModel {
   virtual int GetItemCount() const OVERRIDE;
   virtual ui::MenuModel::ItemType GetTypeAt(int index) const OVERRIDE;
   virtual ui::MenuSeparatorType GetSeparatorTypeAt(int index) const OVERRIDE;
-  virtual string16 GetLabelAt(int index) const OVERRIDE;
+  virtual base::string16 GetLabelAt(int index) const OVERRIDE;
   virtual bool IsItemDynamicAt(int index) const OVERRIDE;
   virtual const gfx::Font* GetLabelFontAt(int index) const OVERRIDE;
   virtual bool GetAcceleratorAt(int index,
@@ -201,7 +201,7 @@ class MainMenuModel : public NetworkMenuModel {
 
  private:
   void AddWirelessNetworkMenuItem(const NetworkState* wifi_network, int flag);
-  void AddMessageItem(const string16& msg);
+  void AddMessageItem(const base::string16& msg);
 
   scoped_ptr<MoreMenuModel> more_menu_model_;
 
@@ -346,7 +346,7 @@ void NetworkMenuModel::ShowOther(const std::string& type) const {
 
 void MainMenuModel::AddWirelessNetworkMenuItem(const NetworkState* network,
                                                int flag) {
-  string16 label;
+  base::string16 label;
   // Ampersand is a valid character in an SSID, but menu2 uses it to mark
   // "mnemonics" for keyboard shortcuts.
   std::string wifi_name = EscapeAmpersands(network->name());
@@ -372,7 +372,7 @@ void MainMenuModel::AddWirelessNetworkMenuItem(const NetworkState* network,
                label, icon, network->path(), flag));
 }
 
-void MainMenuModel::AddMessageItem(const string16& msg) {
+void MainMenuModel::AddMessageItem(const base::string16& msg) {
   menu_items_.push_back(MenuItem(
       ui::MenuModel::TYPE_COMMAND, msg,
       gfx::ImageSkia(), std::string(), FLAG_DISABLED));
@@ -384,7 +384,7 @@ void MainMenuModel::InitMenuItems(bool should_open_button_options) {
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
   // Populate our MenuItems with the current list of networks.
-  string16 label;
+  base::string16 label;
 
   // Ethernet
   // Only display an ethernet icon if enabled, and an ethernet network exists.

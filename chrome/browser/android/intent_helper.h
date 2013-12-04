@@ -13,11 +13,11 @@ namespace chrome {
 namespace android {
 
 // Triggers a send email intent.
-void SendEmail(const string16& data_email,
-               const string16& data_subject,
-               const string16& data_body,
-               const string16& data_chooser_title,
-               const string16& data_file_to_attach);
+void SendEmail(const base::string16& data_email,
+               const base::string16& data_subject,
+               const base::string16& data_body,
+               const base::string16& data_chooser_title,
+               const base::string16& data_file_to_attach);
 
 bool RegisterIntentHelper(JNIEnv* env);
 

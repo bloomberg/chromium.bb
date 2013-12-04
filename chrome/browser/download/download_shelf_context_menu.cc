@@ -215,7 +215,8 @@ bool DownloadShelfContextMenu::IsItemForCommandIdDynamic(int command_id) const {
   return command_id == TOGGLE_PAUSE;
 }
 
-string16 DownloadShelfContextMenu::GetLabelForCommandId(int command_id) const {
+base::string16 DownloadShelfContextMenu::GetLabelForCommandId(
+    int command_id) const {
   switch (static_cast<ContextMenuCommands>(command_id)) {
     case SHOW_IN_FOLDER:
       return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_SHOW);
@@ -248,7 +249,7 @@ string16 DownloadShelfContextMenu::GetLabelForCommandId(int command_id) const {
           IDS_DOWNLOAD_MENU_LEARN_MORE_INTERRUPTED);
   }
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
 void DownloadShelfContextMenu::DetachFromDownloadItem() {

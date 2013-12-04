@@ -46,7 +46,7 @@ class IdleLogoutDialogView : public views::DialogDelegateView {
   // views::DialogDelegateView:
   virtual int GetDialogButtons() const OVERRIDE;
   virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual bool Close() OVERRIDE;
 
  private:

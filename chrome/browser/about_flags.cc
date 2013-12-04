@@ -2015,7 +2015,7 @@ std::string Experiment::NameForChoice(int index) const {
          base::IntToString(index);
 }
 
-string16 Experiment::DescriptionForChoice(int index) const {
+base::string16 Experiment::DescriptionForChoice(int index) const {
   DCHECK(type == Experiment::MULTI_VALUE ||
          type == Experiment::ENABLE_DISABLE_VALUE);
   DCHECK_LT(index, num_choices);

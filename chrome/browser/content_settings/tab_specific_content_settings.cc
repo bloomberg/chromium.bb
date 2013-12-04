@@ -133,8 +133,8 @@ void TabSpecificContentSettings::WebDatabaseAccessed(
     int render_process_id,
     int render_view_id,
     const GURL& url,
-    const string16& name,
-    const string16& display_name,
+    const base::string16& name,
+    const base::string16& display_name,
     bool blocked_by_policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
@@ -158,7 +158,7 @@ void TabSpecificContentSettings::DOMStorageAccessed(int render_process_id,
 void TabSpecificContentSettings::IndexedDBAccessed(int render_process_id,
                                                    int render_view_id,
                                                    const GURL& url,
-                                                   const string16& description,
+                                                   const base::string16& description,
                                                    bool blocked_by_policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TabSpecificContentSettings* settings = Get(render_process_id, render_view_id);
@@ -381,7 +381,7 @@ void TabSpecificContentSettings::OnCookieChanged(
 
 void TabSpecificContentSettings::OnIndexedDBAccessed(
     const GURL& url,
-    const string16& description,
+    const base::string16& description,
     bool blocked_by_policy) {
   if (blocked_by_policy) {
     blocked_local_shared_objects_.indexed_dbs()->AddIndexedDB(
@@ -416,8 +416,8 @@ void TabSpecificContentSettings::OnLocalStorageAccessed(
 
 void TabSpecificContentSettings::OnWebDatabaseAccessed(
     const GURL& url,
-    const string16& name,
-    const string16& display_name,
+    const base::string16& name,
+    const base::string16& display_name,
     bool blocked_by_policy) {
   if (blocked_by_policy) {
     blocked_local_shared_objects_.databases()->AddDatabase(

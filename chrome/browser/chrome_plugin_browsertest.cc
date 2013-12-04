@@ -85,7 +85,7 @@ class ChromePluginTest : public InProcessBrowserTest {
   static void LoadAndWait(Browser* window, const GURL& url, bool pass) {
     content::WebContents* web_contents =
         window->tab_strip_model()->GetActiveWebContents();
-    string16 expected_title(ASCIIToUTF16(pass ? "OK" : "plugin_not_found"));
+    base::string16 expected_title(ASCIIToUTF16(pass ? "OK" : "plugin_not_found"));
     content::TitleWatcher title_watcher(web_contents, expected_title);
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16("FAIL"));
     title_watcher.AlsoWaitForTitle(ASCIIToUTF16(

@@ -61,7 +61,7 @@ string16 NetworkStateHelper::GetCurrentNetworkName() const {
       return l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
     return UTF8ToUTF16(network->name());
   }
-  return string16();
+  return base::string16();
 }
 
 bool NetworkStateHelper::IsConnected() const {

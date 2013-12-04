@@ -73,14 +73,14 @@ class LocallyManagedUserCreationController
   // Set up controller for creating new supervised user with |display_name|,
   // |password| and avatar indexed by |avatar_index|. StartCreation() have to
   // be called to actually start creating user.
-  void SetUpCreation(const string16& display_name,
+  void SetUpCreation(const base::string16& display_name,
                      const std::string& password,
                      int avatar_index);
 
   // Configures and initiates importing existing supervised user to this device.
   // Existing user is identified by |sync_id|, has |display_name|, |password|,
   // |avatar_index|. The master key for cryptohome is a |master_key|.
-  void StartImport(const string16& display_name,
+  void StartImport(const base::string16& display_name,
                    const std::string& password,
                    int avatar_index,
                    const std::string& sync_id,
@@ -103,7 +103,7 @@ class LocallyManagedUserCreationController
     UserCreationContext();
     ~UserCreationContext();
 
-    string16 display_name;
+    base::string16 display_name;
     int avatar_index;
     std::string manager_id;
     std::string local_user_id; // Used to identify cryptohome.

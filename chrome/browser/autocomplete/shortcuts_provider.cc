@@ -134,7 +134,7 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
     return;
   // Get the URLs from the shortcuts database with keys that partially or
   // completely match the search term.
-  string16 term_string(base::i18n::ToLower(input.text()));
+  base::string16 term_string(base::i18n::ToLower(input.text()));
   DCHECK(!term_string.empty());
 
   int max_relevance;
@@ -183,7 +183,7 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input) {
 
 AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
     int relevance,
-    const string16& term_string,
+    const base::string16& term_string,
     const history::ShortcutsBackend::Shortcut& shortcut) {
   DCHECK(!term_string.empty());
   AutocompleteMatch match(shortcut.match_core.ToMatch());
@@ -209,7 +209,7 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
 
 // static
 ShortcutsProvider::WordMap ShortcutsProvider::CreateWordMapForString(
-    const string16& text) {
+    const base::string16& text) {
   // First, convert |text| to a vector of the unique words in it.
   WordMap word_map;
   base::i18n::BreakIterator word_iter(text,
@@ -240,9 +240,9 @@ ShortcutsProvider::WordMap ShortcutsProvider::CreateWordMapForString(
 
 // static
 ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
-    const string16& find_text,
+    const base::string16& find_text,
     const WordMap& find_words,
-    const string16& text,
+    const base::string16& text,
     const ACMatchClassifications& original_class) {
   DCHECK(!find_text.empty());
   DCHECK(!find_words.empty());
@@ -256,7 +256,7 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
 
   // First check whether |text| begins with |find_text| and mark that whole
   // section as a match if so.
-  string16 text_lowercase(base::i18n::ToLower(text));
+  base::string16 text_lowercase(base::i18n::ToLower(text));
   ACMatchClassifications match_class;
   size_t last_position = 0;
   if (StartsWith(text_lowercase, find_text, true)) {
@@ -290,7 +290,7 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
         find_words.equal_range(text_lowercase[last_position]));
     size_t next_character = last_position + 1;
     for (WordMap::const_iterator i(range.first); i != range.second; ++i) {
-      const string16& word = i->second;
+      const base::string16& word = i->second;
       size_t word_end = last_position + word.length();
       if ((word_end <= text_lowercase.length()) &&
           !text_lowercase.compare(last_position, word.length(), word)) {
@@ -315,7 +315,7 @@ ACMatchClassifications ShortcutsProvider::ClassifyAllMatchesInString(
 }
 
 history::ShortcutsBackend::ShortcutMap::const_iterator
-    ShortcutsProvider::FindFirstMatch(const string16& keyword,
+    ShortcutsProvider::FindFirstMatch(const base::string16& keyword,
                                       history::ShortcutsBackend* backend) {
   DCHECK(backend);
   history::ShortcutsBackend::ShortcutMap::const_iterator it =
@@ -328,7 +328,7 @@ history::ShortcutsBackend::ShortcutMap::const_iterator
 }
 
 int ShortcutsProvider::CalculateScore(
-    const string16& terms,
+    const base::string16& terms,
     const history::ShortcutsBackend::Shortcut& shortcut,
     int max_relevance) {
   DCHECK(!terms.empty());

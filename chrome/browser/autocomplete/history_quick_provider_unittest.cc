@@ -132,10 +132,10 @@ class HistoryQuickProviderTest : public testing::Test,
   // Runs an autocomplete query on |text| and checks to see that the returned
   // results' destination URLs match those provided. |expected_urls| does not
   // need to be in sorted order.
-  void RunTest(const string16 text,
+  void RunTest(const base::string16 text,
                std::vector<std::string> expected_urls,
                bool can_inline_top_result,
-               string16 expected_fill_into_edit);
+               base::string16 expected_fill_into_edit);
 
   base::MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
@@ -237,15 +237,15 @@ void HistoryQuickProviderTest::SetShouldContain::operator()(
 }
 
 
-void HistoryQuickProviderTest::RunTest(const string16 text,
+void HistoryQuickProviderTest::RunTest(const base::string16 text,
                                        std::vector<std::string> expected_urls,
                                        bool can_inline_top_result,
-                                       string16 expected_fill_into_edit) {
+                                       base::string16 expected_fill_into_edit) {
   SCOPED_TRACE(text);  // Minimal hint to query being run.
   base::MessageLoop::current()->RunUntilIdle();
-  AutocompleteInput input(text, string16::npos, string16(), GURL(),
-                          AutocompleteInput::INVALID_SPEC, false, false, true,
-                          AutocompleteInput::ALL_MATCHES);
+  AutocompleteInput input(text, base::string16::npos, base::string16(),
+                          GURL(), AutocompleteInput::INVALID_SPEC, false,
+                          false, true, AutocompleteInput::ALL_MATCHES);
   provider_->Start(input, false);
   EXPECT_TRUE(provider_->done());
 
@@ -294,7 +294,7 @@ void HistoryQuickProviderTest::RunTest(const string16 text,
         << "fill_into_edit was: '" << ac_matches_[0].fill_into_edit
         << "' but we expected '" << expected_fill_into_edit << "'.";
     size_t text_pos = expected_fill_into_edit.find(text);
-    ASSERT_NE(string16::npos, text_pos);
+    ASSERT_NE(base::string16::npos, text_pos);
     EXPECT_EQ(ac_matches_[0].fill_into_edit.substr(text_pos + text.size()),
               ac_matches_[0].inline_autocompletion);
   } else {
@@ -555,7 +555,7 @@ TEST_F(HistoryQuickProviderTest, CullSearchResults) {
   // A search results page should not be returned when typing a query.
   std::vector<std::string> expected_urls;
   expected_urls.push_back("http://anotherengine.com/?q=thequery");
-  RunTest(ASCIIToUTF16("thequery"), expected_urls, false, string16());
+  RunTest(ASCIIToUTF16("thequery"), expected_urls, false, base::string16());
 
   // A search results page should not be returned when typing the engine URL.
   expected_urls.clear();

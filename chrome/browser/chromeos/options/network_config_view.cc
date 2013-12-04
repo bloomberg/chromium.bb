@@ -156,7 +156,7 @@ gfx::NativeWindow NetworkConfigView::GetNativeWindow() const {
   return GetWidget()->GetNativeWindow();
 }
 
-string16 NetworkConfigView::GetDialogButtonLabel(
+base::string16 NetworkConfigView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK)
     return l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_CONNECT);
@@ -195,7 +195,7 @@ views::View* NetworkConfigView::GetInitiallyFocusedView() {
   return child_config_view_->GetInitiallyFocusedView();
 }
 
-string16 NetworkConfigView::GetWindowTitle() const {
+base::string16 NetworkConfigView::GetWindowTitle() const {
   DCHECK(!child_config_view_->GetTitle().empty());
   return child_config_view_->GetTitle();
 }

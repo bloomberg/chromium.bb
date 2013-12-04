@@ -91,7 +91,7 @@ std::string DeviceLocalAccountManagementPolicyProvider::
 
 bool DeviceLocalAccountManagementPolicyProvider::UserMayLoad(
     const extensions::Extension* extension,
-    string16* error) const {
+    base::string16* error) const {
   if (account_type_ == policy::DeviceLocalAccount::TYPE_KIOSK_APP) {
     // For single-app kiosk sessions, allow only platform apps.
     if (extension->GetType() == extensions::Manifest::TYPE_PLATFORM_APP)

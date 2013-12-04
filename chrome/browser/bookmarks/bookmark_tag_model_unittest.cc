@@ -193,7 +193,7 @@ class BookmarkTagModelTest
   const BookmarkNode* AddURLWithTags(
       const std::string& name,
       const std::set<BookmarkTag>& tags) {
-    const string16 title(ASCIIToUTF16(name));
+    const base::string16 title(ASCIIToUTF16(name));
     const GURL url("http://" + name + ".com");
 
     return tag_model_->AddURL(title, url, tags);

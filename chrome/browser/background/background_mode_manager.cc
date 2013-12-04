@@ -153,7 +153,7 @@ void BackgroundModeManager::BackgroundModeData::BuildProfileMenu(
 }
 
 void BackgroundModeManager::BackgroundModeData::SetName(
-    const string16& new_profile_name) {
+    const base::string16& new_profile_name) {
   name_ = new_profile_name;
 }
 
@@ -268,7 +268,7 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
 
   // Initially set the name for this background mode data.
   size_t index = profile_cache_->GetIndexOfProfileWithPath(profile->GetPath());
-  string16 name = l10n_util::GetStringUTF16(IDS_PROFILES_DEFAULT_NAME);
+  base::string16 name = l10n_util::GetStringUTF16(IDS_PROFILES_DEFAULT_NAME);
   if (index != std::string::npos)
     name = profile_cache_->GetNameOfProfileAtIndex(index);
   bmd->SetName(name);
@@ -431,7 +431,7 @@ void BackgroundModeManager::OnApplicationListChanged(Profile* profile) {
 void BackgroundModeManager::OnProfileAdded(const base::FilePath& profile_path) {
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-  string16 profile_name = cache.GetNameOfProfileAtIndex(
+  base::string16 profile_name = cache.GetNameOfProfileAtIndex(
       cache.GetIndexOfProfileWithPath(profile_path));
   // At this point, the profile should be registered with the background mode
   // manager, but when it's actually added to the cache is when its name is
@@ -452,7 +452,7 @@ void BackgroundModeManager::OnProfileWillBeRemoved(
     const base::FilePath& profile_path) {
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-  string16 profile_name = cache.GetNameOfProfileAtIndex(
+  base::string16 profile_name = cache.GetNameOfProfileAtIndex(
       cache.GetIndexOfProfileWithPath(profile_path));
   // Remove the profile from our map of profiles.
   BackgroundModeInfoMap::iterator it =
@@ -466,10 +466,10 @@ void BackgroundModeManager::OnProfileWillBeRemoved(
 
 void BackgroundModeManager::OnProfileNameChanged(
     const base::FilePath& profile_path,
-    const string16& old_profile_name) {
+    const base::string16& old_profile_name) {
   ProfileInfoCache& cache =
       g_browser_process->profile_manager()->GetProfileInfoCache();
-  string16 new_profile_name = cache.GetNameOfProfileAtIndex(
+  base::string16 new_profile_name = cache.GetNameOfProfileAtIndex(
       cache.GetIndexOfProfileWithPath(profile_path));
   BackgroundModeInfoMap::const_iterator it =
       GetBackgroundModeIterator(old_profile_name);
@@ -803,7 +803,7 @@ BackgroundModeManager::GetBackgroundModeData(Profile* const profile) const {
 
 BackgroundModeManager::BackgroundModeInfoMap::iterator
 BackgroundModeManager::GetBackgroundModeIterator(
-    const string16& profile_name) {
+    const base::string16& profile_name) {
   BackgroundModeInfoMap::iterator profile_it =
       background_mode_data_.end();
   for (BackgroundModeInfoMap::iterator it =

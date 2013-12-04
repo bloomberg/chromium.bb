@@ -65,7 +65,7 @@ void HistoryProvider::DeleteMatchFromMatches(const AutocompleteMatch& match) {
 
 // static
 bool HistoryProvider::FixupUserInput(AutocompleteInput* input) {
-  const string16& input_text = input->text();
+  const base::string16& input_text = input->text();
   // Fixup and canonicalize user input.
   const GURL canonical_gurl(URLFixerUpper::FixupURL(UTF16ToUTF8(input_text),
                                                     std::string()));
@@ -93,7 +93,7 @@ bool HistoryProvider::FixupUserInput(AutocompleteInput* input) {
     canonical_gurl_str.replace(parts.host.begin, parts.host.len,
                                original_hostname);
   }
-  string16 output = UTF8ToUTF16(canonical_gurl_str);
+  base::string16 output = UTF8ToUTF16(canonical_gurl_str);
   // Don't prepend a scheme when the user didn't have one.  Since the fixer
   // upper only prepends the "http" scheme, that's all we need to check for.
   if (!AutocompleteInput::HasHTTPScheme(input_text))
@@ -115,12 +115,13 @@ bool HistoryProvider::FixupUserInput(AutocompleteInput* input) {
   // harm in making sure.
   const size_t last_input_nonslash =
       input_text.find_last_not_of(ASCIIToUTF16("/\\"));
-  const size_t num_input_slashes = (last_input_nonslash == string16::npos) ?
+  const size_t num_input_slashes =
+      (last_input_nonslash == base::string16::npos) ?
       input_text.length() : (input_text.length() - 1 - last_input_nonslash);
   const size_t last_output_nonslash =
       output.find_last_not_of(ASCIIToUTF16("/\\"));
   const size_t num_output_slashes =
-      (last_output_nonslash == string16::npos) ?
+      (last_output_nonslash == base::string16::npos) ?
       output.length() : (output.length() - 1 - last_output_nonslash);
   if (num_output_slashes < num_input_slashes)
     output.append(num_input_slashes - num_output_slashes, '/');
@@ -129,18 +130,18 @@ bool HistoryProvider::FixupUserInput(AutocompleteInput* input) {
 
   url_parse::Parsed parts;
   URLFixerUpper::SegmentURL(output, &parts);
-  input->UpdateText(output, string16::npos, parts);
+  input->UpdateText(output, base::string16::npos, parts);
   return !output.empty();
 }
 
 // static
-size_t HistoryProvider::TrimHttpPrefix(string16* url) {
+size_t HistoryProvider::TrimHttpPrefix(base::string16* url) {
   // Find any "http:".
   if (!AutocompleteInput::HasHTTPScheme(*url))
     return 0;
   size_t scheme_pos =
       url->find(ASCIIToUTF16(content::kHttpScheme) + char16(':'));
-  DCHECK_NE(string16::npos, scheme_pos);
+  DCHECK_NE(base::string16::npos, scheme_pos);
 
   // Erase scheme plus up to two slashes.
   size_t prefix_end = scheme_pos + strlen(content::kHttpScheme) + 1;

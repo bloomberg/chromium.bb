@@ -60,7 +60,7 @@ bool MoreRecentlyModified(const BookmarkNode* n1, const BookmarkNode* n2) {
 
 // Returns true if |text| contains each string in |words|. This is used when
 // searching for bookmarks.
-bool DoesBookmarkTextContainWords(const string16& text,
+bool DoesBookmarkTextContainWords(const base::string16& text,
                                   const std::vector<string16>& words) {
   for (size_t i = 0; i < words.size(); ++i) {
     if (!base::i18n::StringSearchIgnoringCaseAndAccents(
@@ -215,7 +215,7 @@ bool MoreRecentlyAdded(const BookmarkNode* n1, const BookmarkNode* n2) {
 }
 
 void GetBookmarksContainingText(BookmarkModel* model,
-                                const string16& text,
+                                const base::string16& text,
                                 size_t max_count,
                                 const std::string& languages,
                                 std::vector<const BookmarkNode*>* nodes) {
@@ -293,7 +293,7 @@ void DeleteBookmarkFolders(BookmarkModel* model,
 
 void AddIfNotBookmarked(BookmarkModel* model,
                         const GURL& url,
-                        const string16& title) {
+                        const base::string16& title) {
   std::vector<const BookmarkNode*> bookmarks;
   model->GetNodesByURL(url, &bookmarks);
   if (!bookmarks.empty())

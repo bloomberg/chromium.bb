@@ -396,11 +396,11 @@ void WebUILoginView::RequestMediaAccessPermission(
 
 void WebUILoginView::DidFailProvisionalLoad(
     int64 frame_id,
-    const string16& frame_unique_name,
+    const base::string16& frame_unique_name,
     bool is_main_frame,
     const GURL& validated_url,
     int error_code,
-    const string16& error_description,
+    const base::string16& error_description,
     content::RenderViewHost* render_view_host) {
   if (frame_unique_name != UTF8ToUTF16("gaia-frame"))
     return;

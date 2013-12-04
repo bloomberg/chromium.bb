@@ -46,10 +46,10 @@ class ExtensionAppProvider : public AutocompleteProvider,
   // eligible apps.
   struct ExtensionApp {
     // App's name.
-    string16 name;
+    base::string16 name;
     // App's launch URL (for platform apps, which don't have a launch URL, this
     // just points to the app's origin).
-    string16 launch_url;
+    base::string16 launch_url;
     // If false, then the launch_url will not be considered for matching,
     // not shown next to the match, and not displayed as the editable text if
     // the user selects the match with the arrow keys.

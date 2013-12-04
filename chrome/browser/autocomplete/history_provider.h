@@ -46,7 +46,7 @@ class HistoryProvider : public AutocompleteProvider {
   // number of characters that were trimmed.
   // NOTE: For a view-source: URL, this will trim from after "view-source:" and
   // return 0.
-  static size_t TrimHttpPrefix(string16* url);
+  static size_t TrimHttpPrefix(base::string16* url);
 
   // Returns true if inline autocompletion should be prevented. Use this instead
   // of |input.prevent_inline_autocomplete| if the input is passed through

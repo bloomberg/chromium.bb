@@ -139,11 +139,11 @@ class BackgroundModeManager
 
     // Set the name associated with this background mode data for displaying in
     // the status tray.
-    void SetName(const string16& new_profile_name);
+    void SetName(const base::string16& new_profile_name);
 
     // The name associated with this background mode data. This should match
     // the name in the ProfileInfoCache for this profile.
-    string16 name();
+    base::string16 name();
 
     // Used for sorting BackgroundModeData*s.
     static bool BackgroundModeDataCompare(const BackgroundModeData* bmd1,
@@ -151,7 +151,7 @@ class BackgroundModeManager
 
    private:
     // Name associated with this profile which is used to label its submenu.
-    string16 name_;
+    base::string16 name_;
 
     // The profile associated with this background app data.
     Profile* profile_;
@@ -191,8 +191,9 @@ class BackgroundModeManager
   virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE;
   virtual void OnProfileWillBeRemoved(
       const base::FilePath& profile_path) OVERRIDE;
-  virtual void OnProfileNameChanged(const base::FilePath& profile_path,
-                                    const string16& old_profile_name) OVERRIDE;
+  virtual void OnProfileNameChanged(
+      const base::FilePath& profile_path,
+      const base::string16& old_profile_name) OVERRIDE;
 
   // Overrides from StatusIconMenuModel::Delegate implementation.
   virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE;
@@ -242,7 +243,7 @@ class BackgroundModeManager
 
   // Return an appropriate name for a Preferences menu entry.  Preferences is
   // sometimes called Options or Settings.
-  string16 GetPreferencesMenuLabel();
+  base::string16 GetPreferencesMenuLabel();
 
   // Create a status tray icon to allow the user to shutdown Chrome when running
   // in background mode. Virtual to enable testing.
@@ -267,7 +268,7 @@ class BackgroundModeManager
   // This should not be used to iterate over the background mode data. It is
   // used to efficiently delete an item from the background mode data map.
   BackgroundModeInfoMap::iterator GetBackgroundModeIterator(
-      const string16& profile_name);
+      const base::string16& profile_name);
 
   // Returns true if the "Let chrome run in the background" pref is checked.
   // (virtual to allow overriding in tests).

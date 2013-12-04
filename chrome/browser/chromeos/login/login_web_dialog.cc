@@ -41,7 +41,7 @@ void LoginWebDialog::Delegate::OnDialogClosed() {
 
 LoginWebDialog::LoginWebDialog(Delegate* delegate,
                                gfx::NativeWindow parent_window,
-                               const string16& title,
+                               const base::string16& title,
                                const GURL& url,
                                Style style)
     : delegate_(delegate),
@@ -72,7 +72,7 @@ void LoginWebDialog::SetDialogSize(int width, int height) {
   height_ = height;
 }
 
-void LoginWebDialog::SetDialogTitle(const string16& title) {
+void LoginWebDialog::SetDialogTitle(const base::string16& title) {
   title_ = title;
 }
 

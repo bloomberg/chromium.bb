@@ -57,8 +57,8 @@ class BookmarkHTMLWriterTest : public testing::Test {
 
   // Converts an ImportedBookmarkEntry to a string suitable for assertion
   // testing.
-  string16 BookmarkEntryToString(const ImportedBookmarkEntry& entry) {
-    string16 result;
+  base::string16 BookmarkEntryToString(const ImportedBookmarkEntry& entry) {
+    base::string16 result;
     result.append(ASCIIToUTF16("on_toolbar="));
     if (entry.in_toolbar)
       result.append(ASCIIToUTF16("true"));
@@ -83,13 +83,13 @@ class BookmarkHTMLWriterTest : public testing::Test {
   }
 
   // Creates a set of bookmark values to a string for assertion testing.
-  string16 BookmarkValuesToString(bool on_toolbar,
+  base::string16 BookmarkValuesToString(bool on_toolbar,
                                   const GURL& url,
-                                  const string16& title,
+                                  const base::string16& title,
                                   base::Time creation_time,
-                                  const string16& f1,
-                                  const string16& f2,
-                                  const string16& f3) {
+                                  const base::string16& f1,
+                                  const base::string16& f2,
+                                  const base::string16& f3) {
     ImportedBookmarkEntry entry;
     entry.in_toolbar = on_toolbar;
     entry.url = url;
@@ -109,11 +109,11 @@ class BookmarkHTMLWriterTest : public testing::Test {
   void AssertBookmarkEntryEquals(const ImportedBookmarkEntry& entry,
                                  bool on_toolbar,
                                  const GURL& url,
-                                 const string16& title,
+                                 const base::string16& title,
                                  base::Time creation_time,
-                                 const string16& f1,
-                                 const string16& f2,
-                                 const string16& f3) {
+                                 const base::string16& f1,
+                                 const base::string16& f2,
+                                 const base::string16& f3) {
     EXPECT_EQ(BookmarkValuesToString(on_toolbar, url, title, creation_time,
                                      f1, f2, f3),
               BookmarkEntryToString(entry));
@@ -177,15 +177,15 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   // Mobile
   //   url1
   //   <bookmark without a title.>
-  string16 f1_title = ASCIIToUTF16("F\"&;<1\"");
-  string16 f2_title = ASCIIToUTF16("F2");
-  string16 f3_title = ASCIIToUTF16("F 3");
-  string16 f4_title = ASCIIToUTF16("F4");
-  string16 url1_title = ASCIIToUTF16("url 1");
-  string16 url2_title = ASCIIToUTF16("url&2");
-  string16 url3_title = ASCIIToUTF16("url\"3");
-  string16 url4_title = ASCIIToUTF16("url\"&;");
-  string16 unnamed_bookmark_title = ASCIIToUTF16("");
+  base::string16 f1_title = ASCIIToUTF16("F\"&;<1\"");
+  base::string16 f2_title = ASCIIToUTF16("F2");
+  base::string16 f3_title = ASCIIToUTF16("F 3");
+  base::string16 f4_title = ASCIIToUTF16("F4");
+  base::string16 url1_title = ASCIIToUTF16("url 1");
+  base::string16 url2_title = ASCIIToUTF16("url&2");
+  base::string16 url3_title = ASCIIToUTF16("url\"3");
+  base::string16 url4_title = ASCIIToUTF16("url\"&;");
+  base::string16 unnamed_bookmark_title = ASCIIToUTF16("");
   GURL url1("http://url1");
   GURL url1_favicon("http://url1/icon.ico");
   GURL url2("http://url2");
@@ -257,25 +257,31 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   // Verify we got back what we wrote.
   ASSERT_EQ(9U, parsed_bookmarks.size());
   // Windows and ChromeOS builds use Sentence case.
-  string16 bookmark_folder_name =
+  base::string16 bookmark_folder_name =
       l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_FOLDER_NAME);
   AssertBookmarkEntryEquals(parsed_bookmarks[0], true, url1, url1_title, t1,
-                            bookmark_folder_name, f1_title, string16());
+                            bookmark_folder_name, f1_title, base::string16());
   AssertBookmarkEntryEquals(parsed_bookmarks[1], true, url2, url2_title, t2,
                             bookmark_folder_name, f1_title, f2_title);
   AssertBookmarkEntryEquals(parsed_bookmarks[2], true, url3, url3_title, t3,
-                            bookmark_folder_name, string16(), string16());
+                            bookmark_folder_name, base::string16(),
+                            base::string16());
   AssertBookmarkEntryEquals(parsed_bookmarks[3], true, url4, url4_title, t4,
-                            bookmark_folder_name, string16(), string16());
+                            bookmark_folder_name, base::string16(),
+                            base::string16());
   AssertBookmarkEntryEquals(parsed_bookmarks[4], false, url1, url1_title, t1,
-                            string16(), string16(), string16());
+                            base::string16(), base::string16(),
+                            base::string16());
   AssertBookmarkEntryEquals(parsed_bookmarks[5], false, url2, url2_title, t2,
-                            string16(), string16(), string16());
+                            base::string16(), base::string16(),
+                            base::string16());
   AssertBookmarkEntryEquals(parsed_bookmarks[6], false, url1, url1_title, t1,
-                            f3_title, f4_title, string16());
+                            f3_title, f4_title, base::string16());
   AssertBookmarkEntryEquals(parsed_bookmarks[7], false, url1, url1_title, t1,
-                            string16(), string16(), string16());
+                            base::string16(), base::string16(),
+                            base::string16());
   AssertBookmarkEntryEquals(parsed_bookmarks[8], false, unnamed_bookmark_url,
                             unnamed_bookmark_title, t2,
-                            string16(), string16(), string16());
+                            base::string16(), base::string16(),
+                            base::string16());
 }

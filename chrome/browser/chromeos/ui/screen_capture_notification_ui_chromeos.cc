@@ -12,7 +12,7 @@
 namespace chromeos {
 
 ScreenCaptureNotificationUIChromeOS::ScreenCaptureNotificationUIChromeOS(
-    const string16& text)
+    const base::string16& text)
     : text_(text) {
 }
 
@@ -32,7 +32,7 @@ void ScreenCaptureNotificationUIChromeOS::OnStarted(
 
 // static
 scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
-    const string16& text) {
+    const base::string16& text) {
   return scoped_ptr<ScreenCaptureNotificationUI>(
       new chromeos::ScreenCaptureNotificationUIChromeOS(text));
 }

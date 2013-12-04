@@ -64,7 +64,7 @@ string16 GetExemplarCity(const icu::TimeZone& zone) {
   if (!U_FAILURE(status)) {
     city = icu::ures_getUnicodeStringByKey(zone_item.get(), "ec", &status);
     if (U_SUCCESS(status))
-      return string16(city.getBuffer(), city.length());
+      return base::string16(city.getBuffer(), city.length());
   }
 
   // Fallback case in case of failure.
@@ -112,9 +112,9 @@ string16 GetTimezoneName(const icu::TimeZone& timezone) {
   // rules (e.g. US Mountain Time in Denver vs Phoenix).
   icu::UnicodeString name;
   timezone.getDisplayName(dst_offset != 0, icu::TimeZone::LONG, name);
-  string16 result(l10n_util::GetStringFUTF16(
+  base::string16 result(l10n_util::GetStringFUTF16(
       IDS_OPTIONS_SETTINGS_TIMEZONE_DISPLAY_TEMPLATE, ASCIIToUTF16(offset_str),
-      string16(name.getBuffer(), name.length()), GetExemplarCity(timezone)));
+      base::string16(name.getBuffer(), name.length()), GetExemplarCity(timezone)));
   base::i18n::AdjustStringForLocaleDirection(&result);
   return result;
 }

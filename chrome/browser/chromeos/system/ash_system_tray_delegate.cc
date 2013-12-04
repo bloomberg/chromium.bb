@@ -424,9 +424,9 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return enterprise_domain_;
   }
 
-  virtual const string16 GetEnterpriseMessage() const OVERRIDE {
+  virtual const base::string16 GetEnterpriseMessage() const OVERRIDE {
     if (GetEnterpriseDomain().empty())
-        return string16();
+        return base::string16();
     return l10n_util::GetStringFUTF16(IDS_DEVICE_OWNED_BY_NOTICE,
                                       UTF8ToUTF16(GetEnterpriseDomain()));
   }
@@ -439,17 +439,17 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
             chromeos::UserManager::Get()->GetActiveUser()->email());
   }
 
-  virtual const string16 GetLocallyManagedUserManagerName() const OVERRIDE {
+  virtual const base::string16 GetLocallyManagedUserManagerName() const OVERRIDE {
     if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
-      return string16();
+      return base::string16();
     return UserManager::Get()->GetSupervisedUserManager()->
         GetManagerDisplayName(
             chromeos::UserManager::Get()->GetActiveUser()->email());
   }
 
-  virtual const string16 GetLocallyManagedUserMessage() const OVERRIDE {
+  virtual const base::string16 GetLocallyManagedUserMessage() const OVERRIDE {
     if (GetUserLoginStatus() != ash::user::LOGGED_IN_LOCALLY_MANAGED)
-        return string16();
+        return base::string16();
     return l10n_util::GetStringFUTF16(
         IDS_USER_IS_LOCALLY_MANAGED_BY_NOTICE,
         UTF8ToUTF16(GetLocallyManagedUserManager()));

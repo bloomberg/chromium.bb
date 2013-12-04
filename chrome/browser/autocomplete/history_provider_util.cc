@@ -10,7 +10,7 @@ namespace history {
 
 HistoryMatch::HistoryMatch()
     : url_info(),
-      input_location(string16::npos),
+      input_location(base::string16::npos),
       match_in_scheme(false),
       innermost_match(true),
       promoted(false) {

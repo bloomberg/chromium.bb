@@ -29,10 +29,10 @@ class MockNetworkScreenActor : public NetworkScreenActor {
   MOCK_METHOD0(PrepareToShow, void());
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
-  MOCK_METHOD1(ShowError, void(const string16& message));
+  MOCK_METHOD1(ShowError, void(const base::string16& message));
   MOCK_METHOD0(ClearErrors, void());
   MOCK_METHOD2(ShowConnectingStatus,
-               void(bool connecting, const string16& network_id));
+               void(bool connecting, const base::string16& network_id));
   MOCK_METHOD1(EnableContinue, void(bool enabled));
   MOCK_CONST_METHOD0(IsContinueEnabled, bool());
   MOCK_CONST_METHOD0(IsConnecting, bool());

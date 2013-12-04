@@ -232,8 +232,9 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   virtual void OnProfileAdded(const base::FilePath& profile_path) OVERRIDE {
   }
 
-  virtual void OnProfileWasRemoved(const base::FilePath& profile_path,
-                                   const string16& profile_name) OVERRIDE {
+  virtual void OnProfileWasRemoved(
+      const base::FilePath& profile_path,
+      const base::string16& profile_name) OVERRIDE {
     // When a profile is deleted we need to notify the AppController,
     // so it can correctly update its pointer to the last used profile.
     [app_controller_ profileWasRemoved:profile_path];
@@ -243,8 +244,9 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
       const base::FilePath& profile_path) OVERRIDE {
   }
 
-  virtual void OnProfileNameChanged(const base::FilePath& profile_path,
-                                    const string16& old_profile_name) OVERRIDE {
+  virtual void OnProfileNameChanged(
+      const base::FilePath& profile_path,
+      const base::string16& old_profile_name) OVERRIDE {
   }
 
   virtual void OnProfileAvatarChanged(
@@ -1316,8 +1318,8 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
     NSString* printTitle = [[paramList descriptorAtIndex:3] stringValue];
     NSString* printTicket = [[paramList descriptorAtIndex:4] stringValue];
     // Convert the title to UTF 16 as required.
-    string16 title16 = base::SysNSStringToUTF16(printTitle);
-    string16 printTicket16 = base::SysNSStringToUTF16(printTicket);
+    base::string16 title16 = base::SysNSStringToUTF16(printTitle);
+    base::string16 printTicket16 = base::SysNSStringToUTF16(printTicket);
     print_dialog_cloud::CreatePrintDialogForFile(
         ProfileManager::GetDefaultProfile(), NULL,
         base::FilePath([inputPath UTF8String]), title16,

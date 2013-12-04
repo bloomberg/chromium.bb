@@ -37,7 +37,7 @@ void SystemSettingsProvider::DoSet(const std::string& path,
     return;
 
   if (path == kSystemTimezone) {
-    string16 timezone_id;
+    base::string16 timezone_id;
     if (!in_value.GetAsString(&timezone_id))
       return;
     // This will call TimezoneChanged.

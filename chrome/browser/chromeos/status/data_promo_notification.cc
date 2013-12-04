@@ -187,7 +187,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
   if (carrier)
     deal = GetCarrierDeal(carrier);
 
-  string16 message = l10n_util::GetStringUTF16(IDS_3G_NOTIFICATION_MESSAGE);
+  base::string16 message = l10n_util::GetStringUTF16(IDS_3G_NOTIFICATION_MESSAGE);
   std::string info_url;
   if (deal) {
     carrier_deal_promo_pref = GetCarrierDealPromoShown();

@@ -40,7 +40,7 @@ class LoginWebDialog : public ui::WebDialogDelegate,
 
   LoginWebDialog(Delegate* delegate,
                  gfx::NativeWindow parent_window,
-                 const string16& title,
+                 const base::string16& title,
                  const GURL& url,
                  Style style);
   virtual ~LoginWebDialog();
@@ -51,7 +51,7 @@ class LoginWebDialog : public ui::WebDialogDelegate,
   void SetDialogSize(int width, int height);
 
   // Overrides dialog title.
-  void SetDialogTitle(const string16& title);
+  void SetDialogTitle(const base::string16& title);
 
   void set_url(const GURL& url) { url_ = url; }
 
@@ -60,7 +60,7 @@ class LoginWebDialog : public ui::WebDialogDelegate,
  protected:
   // ui::WebDialogDelegate implementation.
   virtual ui::ModalType GetDialogModalType() const OVERRIDE;
-  virtual string16 GetDialogTitle() const OVERRIDE;
+  virtual base::string16 GetDialogTitle() const OVERRIDE;
   virtual GURL GetDialogContentURL() const OVERRIDE;
   virtual void GetWebUIMessageHandlers(
       std::vector<content::WebUIMessageHandler*>* handlers) const OVERRIDE;
@@ -85,7 +85,7 @@ class LoginWebDialog : public ui::WebDialogDelegate,
   Delegate* delegate_;
 
   gfx::NativeWindow parent_window_;
-  string16 title_;
+  base::string16 title_;
   GURL url_;
   Style style_;
   content::NotificationRegistrar notification_registrar_;

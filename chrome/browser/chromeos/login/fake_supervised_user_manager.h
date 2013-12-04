@@ -21,19 +21,19 @@ class FakeSupervisedUserManager : public SupervisedUserManager {
       const std::string& manager_id,
       const std::string& local_user_id,
       const std::string& sync_user_id,
-      const string16& display_name) OVERRIDE;
+      const base::string16& display_name) OVERRIDE;
   virtual std::string GenerateUserId() OVERRIDE;
-  virtual const User* FindByDisplayName(const string16& display_name) const
+  virtual const User* FindByDisplayName(const base::string16& display_name) const
       OVERRIDE;
   virtual const User* FindBySyncId(const std::string& sync_id) const OVERRIDE;
   virtual std::string GetUserSyncId(const std::string& user_id) const OVERRIDE;
-  virtual string16 GetManagerDisplayName(const std::string& user_id) const
+  virtual base::string16 GetManagerDisplayName(const std::string& user_id) const
       OVERRIDE;
   virtual std::string GetManagerUserId(const std::string& user_id) const
       OVERRIDE;
   virtual std::string GetManagerDisplayEmail(const std::string& user_id) const
       OVERRIDE;
-  virtual void StartCreationTransaction(const string16& display_name)
+  virtual void StartCreationTransaction(const base::string16& display_name)
       OVERRIDE {}
   virtual void SetCreationTransactionUserId(const std::string& user_id)
       OVERRIDE {}

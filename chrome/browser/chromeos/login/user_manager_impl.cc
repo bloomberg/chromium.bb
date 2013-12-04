@@ -635,7 +635,7 @@ User::OAuthTokenStatus UserManagerImpl::LoadUserOAuthStatus(
 }
 
 void UserManagerImpl::SaveUserDisplayName(const std::string& user_id,
-                                          const string16& display_name) {
+                                          const base::string16& display_name) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (User* user = FindUserAndModify(user_id)) {
@@ -659,7 +659,7 @@ void UserManagerImpl::SaveUserDisplayName(const std::string& user_id,
 string16 UserManagerImpl::GetUserDisplayName(
     const std::string& user_id) const {
   const User* user = FindUser(user_id);
-  return user ? user->display_name() : string16();
+  return user ? user->display_name() : base::string16();
 }
 
 void UserManagerImpl::SaveUserDisplayEmail(const std::string& user_id,
@@ -699,7 +699,7 @@ void UserManagerImpl::UpdateUserAccountData(
   SaveUserDisplayName(user_id, account_data.display_name());
 
   if (User* user = FindUserAndModify(user_id)) {
-    string16 given_name = account_data.given_name();
+    base::string16 given_name = account_data.given_name();
     user->set_given_name(given_name);
     if (!IsUserNonCryptohomeDataEphemeral(user_id)) {
       PrefService* local_state = g_browser_process->local_state();
@@ -1046,13 +1046,13 @@ void UserManagerImpl::EnsureUsersLoaded() {
     user->set_oauth_token_status(LoadUserOAuthStatus(*it));
     users_.push_back(user);
 
-    string16 display_name;
+    base::string16 display_name;
     if (prefs_display_names->GetStringWithoutPathExpansion(*it,
                                                            &display_name)) {
       user->set_display_name(display_name);
     }
 
-    string16 given_name;
+    base::string16 given_name;
     if (prefs_given_names->GetStringWithoutPathExpansion(*it, &given_name)) {
       user->set_given_name(given_name);
     }

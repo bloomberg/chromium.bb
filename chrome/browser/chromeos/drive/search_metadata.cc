@@ -318,15 +318,15 @@ bool FindAndHighlight(
   DCHECK(highlighted_text);
   highlighted_text->clear();
 
-  string16 text16 = base::UTF8ToUTF16(text);
+  base::string16 text16 = base::UTF8ToUTF16(text);
   size_t match_start = 0;
   size_t match_length = 0;
   if (!query->Search(text16, &match_start, &match_length))
     return false;
 
-  string16 pre = text16.substr(0, match_start);
-  string16 match = text16.substr(match_start, match_length);
-  string16 post = text16.substr(match_start + match_length);
+  base::string16 pre = text16.substr(0, match_start);
+  base::string16 match = text16.substr(match_start, match_length);
+  base::string16 post = text16.substr(match_start + match_length);
   highlighted_text->append(net::EscapeForHTML(base::UTF16ToUTF8(pre)));
   highlighted_text->append("<b>");
   highlighted_text->append(net::EscapeForHTML(base::UTF16ToUTF8(match)));

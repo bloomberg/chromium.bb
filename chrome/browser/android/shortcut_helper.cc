@@ -29,7 +29,7 @@
 #include "url/gurl.h"
 
 ShortcutBuilder::ShortcutBuilder(content::WebContents* web_contents,
-                                 const string16& title,
+                                 const base::string16& title,
                                  int launcher_large_icon_size)
     : launcher_large_icon_size_(launcher_large_icon_size),
       shortcut_type_(BOOKMARK) {
@@ -125,7 +125,7 @@ void ShortcutBuilder::Destroy() {
 }
 
 void ShortcutHelper::AddShortcut(content::WebContents* web_contents,
-                                 const string16& title,
+                                 const base::string16& title,
                                  int launcher_large_icon_size) {
   // The ShortcutBuilder deletes itself when it's done.
   new ShortcutBuilder(web_contents, title, launcher_large_icon_size);
@@ -137,7 +137,7 @@ bool ShortcutHelper::RegisterShortcutHelper(JNIEnv* env) {
 
 void ShortcutHelper::AddShortcutInBackground(
     const GURL& url,
-    const string16& title,
+    const base::string16& title,
     ShortcutBuilder::ShortcutType shortcut_type,
     const chrome::FaviconBitmapResult& bitmap_result) {
   DCHECK(base::WorkerPool::RunsTasksOnCurrentThread());

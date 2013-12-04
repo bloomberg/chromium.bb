@@ -200,7 +200,7 @@ class AutomationProvider
   void SendFindRequest(
       content::WebContents* web_contents,
       bool with_json,
-      const string16& search_string,
+      const base::string16& search_string,
       bool forward,
       bool match_case,
       bool find_next,

@@ -101,7 +101,7 @@ class InputMethodUtilTest : public testing::Test {
                                  GURL());  // input view page url
   }
 
-  static string16 GetDisplayLanguageName(const std::string& language_code) {
+  static base::string16 GetDisplayLanguageName(const std::string& language_code) {
     return l10n_util::GetDisplayNameForLocale(language_code, "en", true);
   }
 
@@ -183,8 +183,8 @@ TEST_F(InputMethodUtilTest, GetInputMethodMediumNameTest) {
     const int len = ARRAYSIZE_UNSAFE(input_method_id);
     for (int i=0; i<len; ++i) {
       InputMethodDescriptor desc = GetDesc(input_method_id[i], "", "");
-      string16 medium_name = util_.GetInputMethodMediumName(desc);
-      string16 short_name = util_.GetInputMethodShortName(desc);
+      base::string16 medium_name = util_.GetInputMethodMediumName(desc);
+      base::string16 short_name = util_.GetInputMethodShortName(desc);
       EXPECT_EQ(medium_name,short_name);
     }
   }
@@ -202,8 +202,8 @@ TEST_F(InputMethodUtilTest, GetInputMethodMediumNameTest) {
     const int len = ARRAYSIZE_UNSAFE(input_method_id);
     for (int i=0; i<len; ++i) {
       InputMethodDescriptor desc = GetDesc(input_method_id[i], "", "");
-      string16 medium_name = util_.GetInputMethodMediumName(desc);
-      string16 short_name = util_.GetInputMethodShortName(desc);
+      base::string16 medium_name = util_.GetInputMethodMediumName(desc);
+      base::string16 short_name = util_.GetInputMethodShortName(desc);
       EXPECT_NE(medium_name,short_name);
     }
   }
@@ -466,7 +466,7 @@ TEST_F(InputMethodUtilTest, TestIBusInputMethodText) {
   for (size_t i = 0; i < util_.supported_input_methods_->size(); ++i) {
     const std::string language_code =
         util_.supported_input_methods_->at(i).language_codes().at(0);
-    const string16 display_name =
+    const base::string16 display_name =
         l10n_util::GetDisplayNameForLocale(language_code, "en", false);
     // Only two formats, like "fr" (lower case) and "en-US" (lower-upper), are
     // allowed. See the text file for details.

@@ -67,7 +67,7 @@ class CertLibrary : public CertLoader::Observer {
   int NumCertificates(CertType type) const;
 
   // Retreives the certificate property for |type| at |index|.
-  string16 GetCertDisplayStringAt(CertType type, int index) const;
+  base::string16 GetCertDisplayStringAt(CertType type, int index) const;
   std::string GetCertPEMAt(CertType type, int index) const;
   std::string GetCertPkcs11IdAt(CertType type, int index) const;
   bool IsCertHardwareBackedAt(CertType type, int index) const;

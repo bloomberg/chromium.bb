@@ -316,7 +316,7 @@ bool BackgroundApplicationListModel::IsBackgroundApp(
 
   BackgroundContentsService* service =
       BackgroundContentsServiceFactory::GetForProfile(profile);
-  string16 app_id = ASCIIToUTF16(extension.id());
+  base::string16 app_id = ASCIIToUTF16(extension.id());
   // If we have an active or registered background contents for this app, then
   // it's a background app. This covers the cases where the app has created its
   // background contents, but it hasn't navigated yet, or the background

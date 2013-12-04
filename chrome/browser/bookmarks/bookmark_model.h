@@ -77,7 +77,7 @@ class BookmarkNode : public ui::TreeNode<BookmarkNode> {
   // Set the node's internal title. Note that this neither invokes observers
   // nor updates any bookmark model this node may be in. For that functionality,
   // BookmarkModel::SetTitle(..) should be used instead.
-  virtual void SetTitle(const string16& title) OVERRIDE;
+  virtual void SetTitle(const base::string16& title) OVERRIDE;
 
   // Returns an unique id for this node.
   // For bookmark nodes that are managed by the bookmark model, the IDs are
@@ -322,7 +322,7 @@ class BookmarkModel : public content::NotificationObserver,
   const gfx::Image& GetFavicon(const BookmarkNode* node);
 
   // Sets the title of |node|.
-  void SetTitle(const BookmarkNode* node, const string16& title);
+  void SetTitle(const BookmarkNode* node, const base::string16& title);
 
   // Sets the URL of |node|.
   void SetURL(const BookmarkNode* node, const GURL& url);
@@ -362,18 +362,18 @@ class BookmarkModel : public content::NotificationObserver,
   // Adds a new folder node at the specified position.
   const BookmarkNode* AddFolder(const BookmarkNode* parent,
                                 int index,
-                                const string16& title);
+                                const base::string16& title);
 
   // Adds a url at the specified position.
   const BookmarkNode* AddURL(const BookmarkNode* parent,
                              int index,
-                             const string16& title,
+                             const base::string16& title,
                              const GURL& url);
 
   // Adds a url with a specific creation date.
   const BookmarkNode* AddURLWithCreationTime(const BookmarkNode* parent,
                                              int index,
-                                             const string16& title,
+                                             const base::string16& title,
                                              const GURL& url,
                                              const base::Time& creation_time);
 
@@ -397,7 +397,7 @@ class BookmarkModel : public content::NotificationObserver,
   void ResetDateFolderModified(const BookmarkNode* node);
 
   void GetBookmarksWithTitlesMatching(
-      const string16& text,
+      const base::string16& text,
       size_t max_count,
       std::vector<BookmarkTitleMatch>* matches);
 

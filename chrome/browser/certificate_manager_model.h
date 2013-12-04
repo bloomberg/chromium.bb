@@ -54,14 +54,14 @@ class CertificateManagerModel {
                                     OrgGroupingMap* map) const;
 
   // Get the data to be displayed in |column| for the given |cert|.
-  string16 GetColumnText(const net::X509Certificate& cert, Column column) const;
+  base::string16 GetColumnText(const net::X509Certificate& cert, Column column) const;
 
   // Import private keys and certificates from PKCS #12 encoded
   // |data|, using the given |password|. If |is_extractable| is false,
   // mark the private key as unextractable from the module.
   // Returns a net error code on failure.
   int ImportFromPKCS12(net::CryptoModule* module, const std::string& data,
-                       const string16& password, bool is_extractable);
+                       const base::string16& password, bool is_extractable);
 
   // Import CA certificates.
   // Tries to import all the certificates given.  The root will be trusted

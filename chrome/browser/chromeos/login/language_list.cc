@@ -36,10 +36,10 @@ string16 LanguageList::GetLanguageNameAt(int index) const {
   // We must add directionality formatting to both the native name and the
   // locale name in order to avoid text rendering problems such as misplaced
   // parentheses or languages appearing in the wrong order.
-  string16 locale_name = locale_names_[index];
+  base::string16 locale_name = locale_names_[index];
   base::i18n::AdjustStringForLocaleDirection(&locale_name);
 
-  string16 native_name = locale_data->second.native_name;
+  base::string16 native_name = locale_data->second.native_name;
   base::i18n::AdjustStringForLocaleDirection(&native_name);
 
   // We used to have a localizable template here, but none of translators
@@ -96,9 +96,9 @@ void LanguageList::InitNativeNames(
     // TODO(jungshik): Even though these strings are used for the UI,
     // the old code does not add an RTL mark for RTL locales. Make sure
     // that it's ok without that.
-    string16 name_in_current_ui =
+    base::string16 name_in_current_ui =
         l10n_util::GetDisplayNameForLocale(locale_code, app_locale, false);
-    string16 name_native =
+    base::string16 name_native =
         l10n_util::GetDisplayNameForLocale(locale_code, locale_code, false);
 
     locale_names_.push_back(name_in_current_ui);

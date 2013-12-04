@@ -280,7 +280,7 @@ int BookmarksBridge::GetBookmarkType(const BookmarkNode* node) {
     return kBookmarkTypeNormal;
 }
 
-string16 BookmarksBridge::GetTitle(const BookmarkNode* node) const {
+base::string16 BookmarksBridge::GetTitle(const BookmarkNode* node) const {
   if (partner_bookmarks_shim_->IsPartnerBookmark(node))
     return partner_bookmarks_shim_->GetTitle(node);
   return node->GetTitle();

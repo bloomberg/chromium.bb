@@ -55,7 +55,7 @@ ui::ModalType BluetoothPairingDialog::GetDialogModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
 
-string16 BluetoothPairingDialog::GetDialogTitle() const {
+base::string16 BluetoothPairingDialog::GetDialogTitle() const {
   return l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE);
 }

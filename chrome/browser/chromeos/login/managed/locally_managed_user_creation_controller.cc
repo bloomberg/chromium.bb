@@ -84,7 +84,7 @@ LocallyManagedUserCreationController::~LocallyManagedUserCreationController() {
 }
 
 void LocallyManagedUserCreationController::SetUpCreation(
-    const string16& display_name,
+    const base::string16& display_name,
     const std::string& password,
     int avatar_index) {
   DCHECK(creation_context_);
@@ -94,7 +94,7 @@ void LocallyManagedUserCreationController::SetUpCreation(
 }
 
 void LocallyManagedUserCreationController::StartImport(
-    const string16& display_name,
+    const base::string16& display_name,
     const std::string& password,
     int avatar_index,
     const std::string& sync_id,

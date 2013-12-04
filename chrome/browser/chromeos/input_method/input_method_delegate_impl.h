@@ -22,8 +22,8 @@ class InputMethodDelegateImpl : public InputMethodDelegate {
 
   // InputMethodDelegate implementation.
   virtual std::string GetHardwareKeyboardLayout() const OVERRIDE;
-  virtual string16 GetLocalizedString(int resource_id) const OVERRIDE;
-  virtual string16 GetDisplayLanguageName(
+  virtual base::string16 GetLocalizedString(int resource_id) const OVERRIDE;
+  virtual base::string16 GetDisplayLanguageName(
       const std::string& language_code) const OVERRIDE;
 
  private:

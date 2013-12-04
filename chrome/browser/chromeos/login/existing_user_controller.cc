@@ -364,7 +364,7 @@ void ExistingUserController::CompleteLoginInternal(
   }
 }
 
-string16 ExistingUserController::GetConnectedNetworkName() {
+base::string16 ExistingUserController::GetConnectedNetworkName() {
   return network_state_helper_->GetCurrentNetworkName();
 }
 

@@ -900,7 +900,7 @@ void TestingAutomationProvider::DragAndDropFilePaths(
   // Emulate drag and drop to set the file paths to the file upload control.
   content::DropData drop_data;
   for (size_t path_index = 0; path_index < paths->GetSize(); ++path_index) {
-    string16 path;
+    base::string16 path;
     if (!paths->GetString(path_index, &path)) {
       AutomationJSONReply(this, reply_message)
           .SendError("'paths' contains a non-string type");
@@ -908,7 +908,7 @@ void TestingAutomationProvider::DragAndDropFilePaths(
     }
 
     drop_data.filenames.push_back(
-        content::DropData::FileInfo(path, string16()));
+        content::DropData::FileInfo(path, base::string16()));
   }
 
   const gfx::Point client(x, y);
@@ -1001,8 +1001,8 @@ void TestingAutomationProvider::GetTabURL(int handle,
 }
 
 void TestingAutomationProvider::ExecuteJavascriptInRenderViewFrame(
-    const string16& frame_xpath,
-    const string16& script,
+    const base::string16& frame_xpath,
+    const base::string16& script,
     IPC::Message* reply_message,
     RenderViewHost* render_view_host) {
   // Set the routing id of this message with the controller.
@@ -1041,7 +1041,7 @@ void TestingAutomationProvider::OpenNewBrowserWindowWithNewProfile(
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   new BrowserOpenedWithNewProfileNotificationObserver(this, reply_message);
   profile_manager->CreateMultiProfileAsync(
-      string16(), string16(), ProfileManager::CreateCallback(), std::string());
+      base::string16(), base::string16(), ProfileManager::CreateCallback(), std::string());
 }
 
 // Sample json input: { "command": "GetMultiProfileInfo" }
@@ -1298,7 +1298,7 @@ void TestingAutomationProvider::AddBookmark(
   AutomationJSONReply reply(this, reply_message);
   Browser* browser;
   std::string error_msg, url;
-  string16 title;
+  base::string16 title;
   int parent_id, index;
   bool folder;
   if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
@@ -1396,7 +1396,7 @@ void TestingAutomationProvider::SetBookmarkTitle(DictionaryValue* args,
   AutomationJSONReply reply(this, reply_message);
   Browser* browser;
   std::string error_msg;
-  string16 title;
+  base::string16 title;
   int id;
   if (!GetBrowserFromJSONArgs(args, &browser, &error_msg)) {
     reply.SendError(error_msg);
@@ -2417,7 +2417,7 @@ void TestingAutomationProvider::GetHistoryInfo(Browser* browser,
                                                IPC::Message* reply_message) {
   consumer_.CancelAllRequests();
 
-  string16 search_text;
+  base::string16 search_text;
   args->GetString("search_text", &search_text);
 
   // Fetch history.
@@ -2706,8 +2706,8 @@ void TestingAutomationProvider::AddOrEditSearchEngine(
     IPC::Message* reply_message) {
   TemplateURLService* url_model =
       TemplateURLServiceFactory::GetForProfile(browser->profile());
-  string16 new_title;
-  string16 new_keyword;
+  base::string16 new_title;
+  base::string16 new_keyword;
   std::string new_url;
   std::string keyword;
   if (!args->GetString("new_title", &new_title) ||
@@ -2923,7 +2923,7 @@ void TestingAutomationProvider::GetOmniboxInfo(Browser* browser,
 void TestingAutomationProvider::SetOmniboxText(Browser* browser,
                                                DictionaryValue* args,
                                                IPC::Message* reply_message) {
-  string16 text;
+  base::string16 text;
   AutomationJSONReply reply(this, reply_message);
   if (!args->GetString("text", &text)) {
     reply.SendError("text missing");
@@ -3162,16 +3162,16 @@ autofill::PasswordForm GetPasswordFormFromDict(
     time = base::Time::FromDoubleT(dt);
 
   std::string signon_realm;
-  string16 username_value;
-  string16 password_value;
-  string16 origin_url_text;
-  string16 username_element;
-  string16 password_element;
-  string16 submit_element;
-  string16 action_target_text;
+  base::string16 username_value;
+  base::string16 password_value;
+  base::string16 origin_url_text;
+  base::string16 username_element;
+  base::string16 password_element;
+  base::string16 submit_element;
+  base::string16 action_target_text;
   bool blacklist;
-  string16 old_password_element;
-  string16 old_password_value;
+  base::string16 old_password_element;
+  base::string16 old_password_value;
 
   // We don't care if any of these fail - they are either optional or checked
   // before this function is called.
@@ -3351,7 +3351,7 @@ void TestingAutomationProvider::FindInPage(
     AutomationJSONReply(this, reply_message).SendError(error_message);
     return;
   }
-  string16 search_string;
+  base::string16 search_string;
   bool forward;
   bool match_case;
   bool find_next;
@@ -4077,7 +4077,7 @@ bool TestingAutomationProvider::BuildWebKeyEventFromArgs(
     NativeWebKeyboardEvent* event) {
   int type, modifiers;
   bool is_system_key;
-  string16 unmodified_text, text;
+  base::string16 unmodified_text, text;
   std::string key_identifier;
   if (!args->GetInteger("type", &type)) {
     *error = "'type' missing or invalid.";
@@ -4129,12 +4129,12 @@ bool TestingAutomationProvider::BuildWebKeyEventFromArgs(
     return false;
   }
 
-  string16 unmodified_text_truncated = unmodified_text.substr(
+  base::string16 unmodified_text_truncated = unmodified_text.substr(
       0, blink::WebKeyboardEvent::textLengthCap - 1);
   memcpy(event->unmodifiedText,
          unmodified_text_truncated.c_str(),
          unmodified_text_truncated.length() + 1);
-  string16 text_truncated = text.substr(
+  base::string16 text_truncated = text.substr(
       0, blink::WebKeyboardEvent::textLengthCap - 1);
   memcpy(event->text, text_truncated.c_str(), text_truncated.length() + 1);
 
@@ -4721,7 +4721,7 @@ void TestingAutomationProvider::ExecuteJavascriptJSON(
   if (SendErrorIfModalDialogActive(this, reply_message))
     return;
 
-  string16 frame_xpath, javascript;
+  base::string16 frame_xpath, javascript;
   std::string error;
   RenderViewHost* render_view;
   if (!GetRenderViewFromJSONArgs(args, profile(), &render_view, &error)) {
@@ -4747,7 +4747,7 @@ void TestingAutomationProvider::ExecuteJavascriptJSON(
 void TestingAutomationProvider::ExecuteJavascriptInRenderView(
     DictionaryValue* args,
     IPC::Message* reply_message) {
-  string16 frame_xpath, javascript, extension_id, url_text;
+  base::string16 frame_xpath, javascript, extension_id, url_text;
   int render_process_id, render_view_id;
   if (!args->GetString("frame_xpath", &frame_xpath)) {
     AutomationJSONReply(this, reply_message)

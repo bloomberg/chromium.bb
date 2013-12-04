@@ -73,16 +73,16 @@ class NetworkScreen : public WizardScreen,
   void UpdateStatus();
 
   // Stops waiting for network to connect.
-  void StopWaitingForConnection(const string16& network_id);
+  void StopWaitingForConnection(const base::string16& network_id);
 
   // Starts waiting for network connection. Shows spinner.
-  void WaitForConnection(const string16& network_id);
+  void WaitForConnection(const base::string16& network_id);
 
   // True if subscribed to network change notification.
   bool is_network_subscribed_;
 
   // ID of the the network that we are waiting for.
-  string16 network_id_;
+  base::string16 network_id_;
 
   // True if user pressed continue button so we should proceed with OOBE
   // as soon as we are connected.

@@ -36,7 +36,7 @@ namespace login {
 
 class MockNetworkStateHelper : public NetworkStateHelper {
  public:
-  MOCK_CONST_METHOD0(GetCurrentNetworkName, string16(void));
+  MOCK_CONST_METHOD0(GetCurrentNetworkName, base::string16(void));
   MOCK_CONST_METHOD0(IsConnected, bool(void));
   MOCK_CONST_METHOD0(IsConnecting, bool(void));
 };
@@ -95,7 +95,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
   void SetDefaultNetworkStateHelperExpectations() {
     EXPECT_CALL(*mock_network_state_helper_, GetCurrentNetworkName())
         .Times(AnyNumber())
-        .WillRepeatedly((Return(string16())));
+        .WillRepeatedly((Return(base::string16())));
     EXPECT_CALL(*mock_network_state_helper_, IsConnected())
         .Times(AnyNumber())
         .WillRepeatedly((Return(false)));

@@ -71,7 +71,7 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual void CancelPasswordChangedFlow() OVERRIDE;
   virtual void CreateAccount() OVERRIDE;
   virtual void CompleteLogin(const UserContext& user_context) OVERRIDE;
-  virtual string16 GetConnectedNetworkName() OVERRIDE;
+  virtual base::string16 GetConnectedNetworkName() OVERRIDE;
   virtual bool IsSigninInProgress() const OVERRIDE;
   virtual void Login(const UserContext& user_context) OVERRIDE;
   virtual void LoginAsRetailModeUser() OVERRIDE;

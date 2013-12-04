@@ -85,8 +85,8 @@ class UserManagerImpl
       const std::string& user_id,
       User::OAuthTokenStatus oauth_token_status) OVERRIDE;
   virtual void SaveUserDisplayName(const std::string& user_id,
-                                   const string16& display_name) OVERRIDE;
-  virtual string16 GetUserDisplayName(
+                                   const base::string16& display_name) OVERRIDE;
+  virtual base::string16 GetUserDisplayName(
       const std::string& user_id) const OVERRIDE;
   virtual void SaveUserDisplayEmail(const std::string& user_id,
                                     const std::string& display_email) OVERRIDE;

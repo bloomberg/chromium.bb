@@ -211,7 +211,7 @@ bool FileSelectorImpl::StartSelectFile(
   allowed_file_info.support_drive = true;
 
   dialog_->SelectFile(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
-                      string16() /* dialog title*/,
+                      base::string16() /* dialog title*/,
                       suggested_name,
                       &allowed_file_info,
                       0 /* file type index */,

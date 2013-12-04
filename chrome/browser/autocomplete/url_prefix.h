@@ -15,22 +15,22 @@ typedef std::vector<URLPrefix> URLPrefixes;
 // A URL prefix; combinations of schemes and (least significant) domain labels
 // that may be inferred from certain URL-like input strings.
 struct URLPrefix {
-  URLPrefix(const string16& prefix, size_t num_components);
+  URLPrefix(const base::string16& prefix, size_t num_components);
 
   // Returns a vector of URL prefixes sorted by descending number of components.
   static const URLPrefixes& GetURLPrefixes();
 
   // Returns if the argument is a valid URL prefix.
-  static bool IsURLPrefix(const string16& prefix);
+  static bool IsURLPrefix(const base::string16& prefix);
 
   // Returns the URL prefix of |text| with the most components, or NULL.
   // |prefix_suffix| (which may be empty) is appended to every attempted prefix,
   // which is useful for finding the innermost match of user input in a URL.
   // Performs case insensitive string comparison.
-  static const URLPrefix* BestURLPrefix(const string16& text,
-                                        const string16& prefix_suffix);
+  static const URLPrefix* BestURLPrefix(const base::string16& text,
+                                        const base::string16& prefix_suffix);
 
-  string16 prefix;
+  base::string16 prefix;
 
   // The number of URL components (scheme, domain label, etc.) in the prefix.
   // For example, "http://foo.com" and "www.bar.com" each have one component,

@@ -210,9 +210,9 @@ class AutocompleteProvider
   // A convenience function to call net::FormatUrl() with the current set of
   // "Accept Languages" when check_accept_lang is true.  Otherwise, it's called
   // with an empty list.
-  string16 StringForURLDisplay(const GURL& url,
-                               bool check_accept_lang,
-                               bool trim_http) const;
+  base::string16 StringForURLDisplay(const GURL& url,
+                                     bool check_accept_lang,
+                                     bool trim_http) const;
 
   // Returns the set of matches for the current query.
   const ACMatches& matches() const { return matches_; }

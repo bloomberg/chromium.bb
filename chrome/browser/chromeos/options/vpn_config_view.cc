@@ -46,7 +46,7 @@ enum ProviderTypeIndex {
   PROVIDER_TYPE_INDEX_MAX = 3,
 };
 
-string16 ProviderTypeIndexToString(int index) {
+base::string16 ProviderTypeIndexToString(int index) {
   switch (index) {
     case PROVIDER_TYPE_INDEX_L2TP_IPSEC_PSK:
       return l10n_util::GetStringUTF16(
@@ -59,7 +59,7 @@ string16 ProviderTypeIndexToString(int index) {
           IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_OPEN_VPN);
   }
   NOTREACHED();
-  return string16();
+  return base::string16();
 }
 
 int ProviderTypeToIndex(const std::string& provider_type,
@@ -113,7 +113,7 @@ class ProviderTypeComboboxModel : public ui::ComboboxModel {
 
   // Overridden from ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE;
-  virtual string16 GetItemAt(int index) OVERRIDE;
+  virtual base::string16 GetItemAt(int index) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProviderTypeComboboxModel);
@@ -126,7 +126,7 @@ class VpnServerCACertComboboxModel : public ui::ComboboxModel {
 
   // Overridden from ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE;
-  virtual string16 GetItemAt(int index) OVERRIDE;
+  virtual base::string16 GetItemAt(int index) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VpnServerCACertComboboxModel);
@@ -139,7 +139,7 @@ class VpnUserCertComboboxModel : public ui::ComboboxModel {
 
   // Overridden from ui::ComboboxModel:
   virtual int GetItemCount() const OVERRIDE;
-  virtual string16 GetItemAt(int index) OVERRIDE;
+  virtual base::string16 GetItemAt(int index) OVERRIDE;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VpnUserCertComboboxModel);
@@ -157,7 +157,7 @@ int ProviderTypeComboboxModel::GetItemCount() const {
   return PROVIDER_TYPE_INDEX_MAX;
 }
 
-string16 ProviderTypeComboboxModel::GetItemAt(int index) {
+base::string16 ProviderTypeComboboxModel::GetItemAt(int index) {
   return ProviderTypeIndexToString(index);
 }
 
@@ -177,7 +177,7 @@ int VpnServerCACertComboboxModel::GetItemCount() const {
       CertLibrary::CERT_TYPE_SERVER_CA) + 1;
 }
 
-string16 VpnServerCACertComboboxModel::GetItemAt(int index) {
+base::string16 VpnServerCACertComboboxModel::GetItemAt(int index) {
   if (CertLibrary::Get()->CertificatesLoading())
     return l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
@@ -207,7 +207,7 @@ int VpnUserCertComboboxModel::GetItemCount() const {
   return num_certs;
 }
 
-string16 VpnUserCertComboboxModel::GetItemAt(int index) {
+base::string16 VpnUserCertComboboxModel::GetItemAt(int index) {
   if (CertLibrary::Get()->CertificatesLoading()) {
     return l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_CERT_LOADING);
@@ -262,7 +262,7 @@ VPNConfigView::~VPNConfigView() {
   CertLibrary::Get()->RemoveObserver(this);
 }
 
-string16 VPNConfigView::GetTitle() const {
+base::string16 VPNConfigView::GetTitle() const {
   DCHECK_NE(title_, 0);
   return l10n_util::GetStringUTF16(title_);
 }
@@ -310,12 +310,12 @@ bool VPNConfigView::CanLogin() {
 }
 
 void VPNConfigView::ContentsChanged(views::Textfield* sender,
-                                    const string16& new_contents) {
+                                    const base::string16& new_contents) {
   if (sender == server_textfield_ && !service_text_modified_) {
     // Set the service name to the server name up to '.', unless it has
     // been explicitly set by the user.
-    string16 server = server_textfield_->text();
-    string16::size_type n = server.find_first_of(L'.');
+    base::string16 server = server_textfield_->text();
+    base::string16::size_type n = server.find_first_of(L'.');
     service_name_from_server_ = server.substr(0, n);
     service_textfield_->SetText(service_name_from_server_);
   }
@@ -971,7 +971,7 @@ void VPNConfigView::UpdateControls() {
 
 void VPNConfigView::UpdateErrorLabel() {
   // Error message.
-  string16 error_msg;
+  base::string16 error_msg;
   bool cert_required =
       GetProviderTypeIndex() == PROVIDER_TYPE_INDEX_L2TP_IPSEC_USER_CERT;
   if (cert_required && CertLibrary::Get()->CertificatesLoaded()) {

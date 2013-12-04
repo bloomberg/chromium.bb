@@ -21,7 +21,7 @@ class IdleActionWarningDialogView : public views::DialogDelegateView {
 
   // views::DialogDelegateView:
   virtual ui::ModalType GetModalType() const OVERRIDE;
-  virtual string16 GetWindowTitle() const OVERRIDE;
+  virtual base::string16 GetWindowTitle() const OVERRIDE;
   virtual int GetDialogButtons() const OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 

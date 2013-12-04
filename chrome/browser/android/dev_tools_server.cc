@@ -89,7 +89,7 @@ class TargetBase : public content::DevToolsTarget {
         last_activity_time_(web_contents->GetLastSelectedTime()) {
   }
 
-  TargetBase(const string16& title, const GURL& url)
+  TargetBase(const base::string16& title, const GURL& url)
       : title_(UTF16ToUTF8(title)),
         url_(url)
   {}
@@ -109,7 +109,7 @@ class TabTarget : public TargetBase {
   }
 
   static TabTarget* CreateForUnloadedTab(int tab_id,
-                                         const string16& title,
+                                         const base::string16& title,
                                          const GURL& url) {
     return new TabTarget(tab_id, title, url);
   }
@@ -174,7 +174,7 @@ class TabTarget : public TargetBase {
         tab_id_(tab_id) {
   }
 
-  TabTarget(int tab_id, const string16& title, const GURL& url)
+  TabTarget(int tab_id, const base::string16& title, const GURL& url)
       : TargetBase(title, url),
         tab_id_(tab_id) {
   }

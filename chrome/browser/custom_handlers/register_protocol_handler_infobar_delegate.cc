@@ -68,7 +68,7 @@ RegisterProtocolHandlerInfoBarDelegate*
   return this;
 }
 
-string16 RegisterProtocolHandlerInfoBarDelegate::GetMessageText() const {
+base::string16 RegisterProtocolHandlerInfoBarDelegate::GetMessageText() const {
   ProtocolHandler old_handler = registry_->GetHandlerFor(handler_.protocol());
   return old_handler.IsEmpty() ?
       l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_CONFIRM,
@@ -79,7 +79,7 @@ string16 RegisterProtocolHandlerInfoBarDelegate::GetMessageText() const {
           GetProtocolName(handler_), old_handler.title());
 }
 
-string16 RegisterProtocolHandlerInfoBarDelegate::GetButtonLabel(
+base::string16 RegisterProtocolHandlerInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return (button == BUTTON_OK) ?
       l10n_util::GetStringFUTF16(IDS_REGISTER_PROTOCOL_HANDLER_ACCEPT,
@@ -106,7 +106,7 @@ bool RegisterProtocolHandlerInfoBarDelegate::Cancel() {
   return true;
 }
 
-string16 RegisterProtocolHandlerInfoBarDelegate::GetLinkText() const {
+base::string16 RegisterProtocolHandlerInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
@@ -121,7 +121,7 @@ bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
   return false;
 }
 
-string16 RegisterProtocolHandlerInfoBarDelegate::GetProtocolName(
+base::string16 RegisterProtocolHandlerInfoBarDelegate::GetProtocolName(
     const ProtocolHandler& handler) const {
   if (handler.protocol() == "mailto")
     return l10n_util::GetStringUTF16(IDS_REGISTER_PROTOCOL_HANDLER_MAILTO_NAME);

@@ -499,10 +499,10 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
   SubmitCreditCard("Jane Doe", "4417-1234-5678-9113", "10", "2013");
 
   ASSERT_EQ(2u, personal_data_manager()->GetCreditCards().size());
-  string16 cc1 = personal_data_manager()->GetCreditCards()[0]->GetRawInfo(
+  base::string16 cc1 = personal_data_manager()->GetCreditCards()[0]->GetRawInfo(
       CREDIT_CARD_NUMBER);
   ASSERT_TRUE(autofill::IsValidCreditCardNumber(cc1));
-  string16 cc2 = personal_data_manager()->GetCreditCards()[1]->GetRawInfo(
+  base::string16 cc2 = personal_data_manager()->GetCreditCards()[1]->GetRawInfo(
       CREDIT_CARD_NUMBER);
   ASSERT_TRUE(autofill::IsValidCreditCardNumber(cc2));
 }
@@ -640,7 +640,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, AppendCountryCodeForAggregatedPhones) {
   FillFormAndSubmit("autofill_test_form.html", data);
 
   ASSERT_EQ(1u, personal_data_manager()->GetProfiles().size());
-  string16 phone = personal_data_manager()->GetProfiles()[0]->GetRawInfo(
+  base::string16 phone = personal_data_manager()->GetProfiles()[0]->GetRawInfo(
       PHONE_HOME_WHOLE_NUMBER);
   ASSERT_TRUE(StartsWith(phone, ASCIIToUTF16("+49"), true));
 }

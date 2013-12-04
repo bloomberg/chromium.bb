@@ -83,7 +83,7 @@ class AutocompleteController : public AutocompleteProviderListener {
   void StartZeroSuggest(
       const GURL& url,
       AutocompleteInput::PageClassification page_classification,
-      const string16& permanent_text);
+      const base::string16& permanent_text);
 
   // Cancels any pending zero-suggest fetch.
   void StopZeroSuggest();

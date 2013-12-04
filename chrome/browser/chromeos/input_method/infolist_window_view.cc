@@ -101,8 +101,8 @@ void InfolistEntryView::Init(const gfx::Font& title_font,
 }
 
 void InfolistEntryView::Relayout(const InfolistWindowView::Entry& entry) {
-  const string16 title = UTF8ToUTF16(entry.title);
-  const string16 description = UTF8ToUTF16(entry.body);
+  const base::string16 title = UTF8ToUTF16(entry.title);
+  const base::string16 description = UTF8ToUTF16(entry.body);
 
   if ((title_label_->text() == title) &&
       (description_label_->text() == description)) {

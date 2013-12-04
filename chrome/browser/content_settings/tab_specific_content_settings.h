@@ -118,8 +118,8 @@ class TabSpecificContentSettings
   static void WebDatabaseAccessed(int render_process_id,
                                   int render_view_id,
                                   const GURL& url,
-                                  const string16& name,
-                                  const string16& display_name,
+                                  const base::string16& name,
+                                  const base::string16& display_name,
                                   bool blocked_by_policy);
 
   // Called when a specific DOM storage area in the current page was
@@ -139,7 +139,7 @@ class TabSpecificContentSettings
   static void IndexedDBAccessed(int render_process_id,
                                 int render_view_id,
                                 const GURL& url,
-                                const string16& description,
+                                const base::string16& description,
                                 bool blocked_by_policy);
 
   // Called when a specific file system in the current page was accessed.
@@ -312,14 +312,14 @@ class TabSpecificContentSettings
   void OnFileSystemAccessed(const GURL& url,
                             bool blocked_by_policy);
   void OnIndexedDBAccessed(const GURL& url,
-                           const string16& description,
+                           const base::string16& description,
                            bool blocked_by_policy);
   void OnLocalStorageAccessed(const GURL& url,
                               bool local,
                               bool blocked_by_policy);
   void OnWebDatabaseAccessed(const GURL& url,
-                             const string16& name,
-                             const string16& display_name,
+                             const base::string16& name,
+                             const base::string16& display_name,
                              bool blocked_by_policy);
   void OnGeolocationPermissionSet(const GURL& requesting_frame,
                                   bool allowed);

@@ -100,7 +100,7 @@ bool ReadWebURLsWithTitlesPboardType(
 
   NSUInteger len = [titlesArr count];
   for (NSUInteger i = 0; i < len; ++i) {
-    string16 title = base::SysNSStringToUTF16([titlesArr objectAtIndex:i]);
+    base::string16 title = base::SysNSStringToUTF16([titlesArr objectAtIndex:i]);
     std::string url = base::SysNSStringToUTF8([urlsArr objectAtIndex:i]);
     if (!url.empty()) {
       BookmarkNodeData::Element element;

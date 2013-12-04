@@ -1680,8 +1680,8 @@ bool ChromeContentBrowserClient::AllowSaveLocalState(
 
 bool ChromeContentBrowserClient::AllowWorkerDatabase(
     const GURL& url,
-    const string16& name,
-    const string16& display_name,
+    const base::string16& name,
+    const base::string16& display_name,
     unsigned long estimated_size,
     content::ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_views) {
@@ -1725,7 +1725,7 @@ bool ChromeContentBrowserClient::AllowWorkerFileSystem(
 
 bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
     const GURL& url,
-    const string16& name,
+    const base::string16& name,
     content::ResourceContext* context,
     const std::vector<std::pair<int, int> >& render_views) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

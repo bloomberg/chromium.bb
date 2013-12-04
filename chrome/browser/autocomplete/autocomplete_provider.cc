@@ -107,7 +107,7 @@ void AutocompleteProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
 void AutocompleteProvider::ResetSession() {
 }
 
-string16 AutocompleteProvider::StringForURLDisplay(const GURL& url,
+base::string16 AutocompleteProvider::StringForURLDisplay(const GURL& url,
                                                    bool check_accept_lang,
                                                    bool trim_http) const {
   std::string languages = (check_accept_lang && profile_) ?

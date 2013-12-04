@@ -252,7 +252,7 @@ void ParseEncodingListSeparatedWithComma(
 
 string16 GetEncodingDisplayName(const std::string& encoding_name,
                                 int category_string_id) {
-  string16 category_name = l10n_util::GetStringUTF16(category_string_id);
+  base::string16 category_name = l10n_util::GetStringUTF16(category_string_id);
   if (category_string_id != IDS_ENCODING_KOREAN &&
       category_string_id != IDS_ENCODING_THAI &&
       category_string_id != IDS_ENCODING_TURKISH) {
@@ -334,7 +334,7 @@ string16 CharacterEncoding::GetCanonicalEncodingDisplayNameByCommandId(
   if (found_name != map->end())
     return GetEncodingDisplayName(found_name->second.first,
                                   found_name->second.second);
-  return string16();
+  return base::string16();
 }
 
 // Static.
@@ -356,7 +356,7 @@ string16 CharacterEncoding::GetCanonicalEncodingDisplayNameByIndex(
   if (index < kCanonicalEncodingNamesLength)
     return GetEncodingDisplayName(kCanonicalEncodingNames[index].name,
         kCanonicalEncodingNames[index].category_string_id);
-  return string16();
+  return base::string16();
 }
 
 // Static.

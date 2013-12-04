@@ -191,7 +191,7 @@ void LocallyManagedUserCreationScreen::AuthenticateManager(
 }
 
 void LocallyManagedUserCreationScreen::CreateManagedUser(
-    const string16& display_name,
+    const base::string16& display_name,
     const std::string& managed_user_password) {
   DCHECK(controller_.get());
   int image;
@@ -214,7 +214,7 @@ void LocallyManagedUserCreationScreen::ImportManagedUser(
     LOG(ERROR) << "Can not import non-existing user " << user_id;
     return;
   }
-  string16 display_name;
+  base::string16 display_name;
   std::string master_key;
   std::string avatar;
   bool exists;
@@ -258,7 +258,7 @@ void LocallyManagedUserCreationScreen::ImportManagedUserWithPassword(
     LOG(ERROR) << "Can not import non-existing user " << user_id;
     return;
   }
-  string16 display_name;
+  base::string16 display_name;
   std::string master_key;
   std::string avatar;
   bool exists;
@@ -333,9 +333,9 @@ void LocallyManagedUserCreationScreen::OnActorDestroyed(
 
 void LocallyManagedUserCreationScreen::OnCreationError(
     LocallyManagedUserCreationController::ErrorCode code) {
-  string16 title;
-  string16 message;
-  string16 button;
+  base::string16 title;
+  base::string16 message;
+  base::string16 button;
   // TODO(antrim) : find out which errors do we really have.
   // We might reuse some error messages from ordinary user flow.
   switch (code) {
@@ -380,7 +380,7 @@ void LocallyManagedUserCreationScreen::OnLongCreationWarning() {
 }
 
 bool LocallyManagedUserCreationScreen::FindUserByDisplayName(
-    const string16& display_name,
+    const base::string16& display_name,
     std::string *out_id) const {
   if (!existing_users_.get())
     return false;
@@ -388,7 +388,7 @@ bool LocallyManagedUserCreationScreen::FindUserByDisplayName(
        !it.IsAtEnd(); it.Advance()) {
     const base::DictionaryValue* user_info =
         static_cast<const base::DictionaryValue*>(&it.value());
-    string16 user_display_name;
+    base::string16 user_display_name;
     if (user_info->GetString(ManagedUserSyncService::kName,
                              &user_display_name)) {
       if (display_name == user_display_name) {
@@ -486,7 +486,7 @@ void LocallyManagedUserCreationScreen::OnGetManagedUsers(
     local_copy->SetBoolean(kUserExists, false);
     ui_copy->SetBoolean(kUserExists, false);
 
-    string16 display_name;
+    base::string16 display_name;
     local_copy->GetString(ManagedUserSyncService::kName, &display_name);
 
     if (supervised_user_manager->FindBySyncId(it.key())) {

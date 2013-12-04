@@ -102,7 +102,7 @@ struct Experiment {
   std::string NameForChoice(int index) const;
 
   // Returns the human readable description for the choice at |index|.
-  string16 DescriptionForChoice(int index) const;
+  base::string16 DescriptionForChoice(int index) const;
 };
 
 // A flag controlling the behavior of the |ConvertFlagsToSwitches| function -

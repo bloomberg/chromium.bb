@@ -20,7 +20,7 @@ namespace input_method {
 class ModeIndicatorDelegateView : public views::BubbleDelegateView {
  public:
   ModeIndicatorDelegateView(const gfx::Rect& cursor_bounds,
-                            const string16& label);
+                            const base::string16& label);
   virtual ~ModeIndicatorDelegateView();
 
   // Show the mode indicator then hide with fading animation.

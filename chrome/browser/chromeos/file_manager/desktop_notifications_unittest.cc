@@ -29,7 +29,7 @@ class RecordedDesktopNotifications : public DesktopNotifications {
   virtual void ShowNotificationWithMessage(
       NotificationType type,
       const std::string& path,
-      const string16& message)  OVERRIDE {
+      const base::string16& message)  OVERRIDE {
     ShowAndHideParams params;
     params.event = SHOW;
     params.type = type;
@@ -58,7 +58,7 @@ class RecordedDesktopNotifications : public DesktopNotifications {
     Event event;
     NotificationType type;
     std::string path;
-    string16 message;  // Empty for HideNotification().
+    base::string16 message;  // Empty for HideNotification().
   };
 
   // Returns parameters passed to ShowNotificationWithMessage() and

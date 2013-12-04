@@ -66,10 +66,10 @@ void CertificateManagerModel::FilterAndBuildOrgGroupingMap(
   }
 }
 
-string16 CertificateManagerModel::GetColumnText(
+base::string16 CertificateManagerModel::GetColumnText(
     const net::X509Certificate& cert,
     Column column) const {
-  string16 rv;
+  base::string16 rv;
   switch (column) {
     case COL_SUBJECT_NAME:
       rv = UTF8ToUTF16(
@@ -103,7 +103,7 @@ string16 CertificateManagerModel::GetColumnText(
 
 int CertificateManagerModel::ImportFromPKCS12(net::CryptoModule* module,
                                               const std::string& data,
-                                              const string16& password,
+                                              const base::string16& password,
                                               bool is_extractable) {
   int result = cert_db_->ImportFromPKCS12(module, data, password,
                                           is_extractable, NULL);

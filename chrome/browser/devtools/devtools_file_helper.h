@@ -48,7 +48,7 @@ class DevToolsFileHelper {
       RequestFileSystemsCallback;
   typedef base::Callback<void(const DevToolsFileHelper::FileSystem&)>
       AddFileSystemCallback;
-  typedef base::Callback<void(const string16&,
+  typedef base::Callback<void(const base::string16&,
                               const base::Callback<void(bool)>&)>
       ShowInfoBarCallback;
 

@@ -25,7 +25,7 @@ class DeviceLocalAccountManagementPolicyProvider
   // extensions::ManagementPolicy::Provider:
   virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
   virtual bool UserMayLoad(const extensions::Extension* extension,
-                           string16* error) const OVERRIDE;
+                           base::string16* error) const OVERRIDE;
 
  private:
   const policy::DeviceLocalAccount::Type account_type_;

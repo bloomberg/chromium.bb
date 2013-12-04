@@ -205,7 +205,7 @@ SavePackageFilePicker::SavePackageFilePicker(
         this, new ChromeSelectFilePolicy(web_contents));
     select_file_dialog_->SelectFile(
         ui::SelectFileDialog::SELECT_SAVEAS_FILE,
-        string16(),
+        base::string16(),
         suggested_path_copy,
         &file_type_info,
         file_type_index,

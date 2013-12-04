@@ -30,13 +30,13 @@ class CandidateView : public views::View {
             int column_height);
 
   // Sets candidate text to the given text.
-  void SetCandidateText(const string16& text);
+  void SetCandidateText(const base::string16& text);
 
   // Sets shortcut text to the given text.
-  void SetShortcutText(const string16& text);
+  void SetShortcutText(const base::string16& text);
 
   // Sets annotation text to the given text.
-  void SetAnnotationText(const string16& text);
+  void SetAnnotationText(const base::string16& text);
 
   // Sets infolist icon.
   void SetInfolistIcon(bool enable);

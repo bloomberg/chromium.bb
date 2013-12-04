@@ -115,8 +115,8 @@ std::string TestBookmarkPositionsAsString(
 
 // Return the positions in |matches| as a formatted string for unit test
 // diagnostic output.
-string16 MatchesAsString16(const ACMatches& matches) {
-  string16 matches_string;
+base::string16 MatchesAsString16(const ACMatches& matches) {
+  base::string16 matches_string;
   for (ACMatches::const_iterator i = matches.begin(); i != matches.end(); ++i) {
     matches_string.append(ASCIIToUTF16("    '"));
     matches_string.append(i->description);
@@ -243,7 +243,7 @@ TEST_F(BookmarkProviderTest, Positions) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(query_data); ++i) {
     AutocompleteInput input(ASCIIToUTF16(query_data[i].query),
-                            string16::npos, string16(), GURL(),
+                            base::string16::npos, base::string16(), GURL(),
                             AutocompleteInput::INVALID_SPEC, false, false,
                             false, AutocompleteInput::ALL_MATCHES);
     provider_->Start(input, false);
@@ -317,7 +317,7 @@ TEST_F(BookmarkProviderTest, Rankings) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(query_data); ++i) {
     AutocompleteInput input(ASCIIToUTF16(query_data[i].query),
-                            string16::npos, string16(), GURL(),
+                            base::string16::npos, base::string16(), GURL(),
                             AutocompleteInput::INVALID_SPEC, false, false,
                             false, AutocompleteInput::ALL_MATCHES);
     provider_->Start(input, false);

@@ -13,10 +13,10 @@
 
 TEST(AutocompleteInputTest, InputType) {
   struct test_data {
-    const string16 input;
+    const base::string16 input;
     const AutocompleteInput::Type type;
   } input_cases[] = {
-    { string16(), AutocompleteInput::INVALID },
+    { base::string16(), AutocompleteInput::INVALID },
     { ASCIIToUTF16("?"), AutocompleteInput::FORCED_QUERY },
     { ASCIIToUTF16("?foo"), AutocompleteInput::FORCED_QUERY },
     { ASCIIToUTF16("?foo bar"), AutocompleteInput::FORCED_QUERY },
@@ -121,16 +121,17 @@ TEST(AutocompleteInputTest, InputType) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
-    AutocompleteInput input(input_cases[i].input, string16::npos, string16(),
-                            GURL(), AutocompleteInput::INVALID_SPEC, true,
-                            false, true, AutocompleteInput::ALL_MATCHES);
+    AutocompleteInput input(input_cases[i].input, base::string16::npos,
+                            base::string16(), GURL(),
+                            AutocompleteInput::INVALID_SPEC, true, false, true,
+                            AutocompleteInput::ALL_MATCHES);
     EXPECT_EQ(input_cases[i].type, input.type());
   }
 }
 
 TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
   struct test_data {
-    const string16 input;
+    const base::string16 input;
     const AutocompleteInput::Type type;
     const std::string spec;  // Unused if not a URL.
   } input_cases[] = {
@@ -149,7 +150,7 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(input_cases); ++i) {
     SCOPED_TRACE(input_cases[i].input);
-    AutocompleteInput input(input_cases[i].input, string16::npos,
+    AutocompleteInput input(input_cases[i].input, base::string16::npos,
                             ASCIIToUTF16("com"), GURL(),
                             AutocompleteInput::INVALID_SPEC, true, false, true,
                             AutocompleteInput::ALL_MATCHES);
@@ -162,8 +163,9 @@ TEST(AutocompleteInputTest, InputTypeWithDesiredTLD) {
 // This tests for a regression where certain input in the omnibox caused us to
 // crash. As long as the test completes without crashing, we're fine.
 TEST(AutocompleteInputTest, InputCrash) {
-  AutocompleteInput input(WideToUTF16(L"\uff65@s"), string16::npos, string16(),
-                          GURL(), AutocompleteInput::INVALID_SPEC, true, false,
+  AutocompleteInput input(WideToUTF16(L"\uff65@s"), base::string16::npos,
+                          base::string16(), GURL(),
+                          AutocompleteInput::INVALID_SPEC, true, false,
                           true, AutocompleteInput::ALL_MATCHES);
 }
 
@@ -171,11 +173,11 @@ TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
   using url_parse::Component;
   Component kInvalidComponent(0, -1);
   struct test_data {
-    const string16 input;
+    const base::string16 input;
     const Component scheme;
     const Component host;
   } input_cases[] = {
-    { string16(), kInvalidComponent, kInvalidComponent },
+    { base::string16(), kInvalidComponent, kInvalidComponent },
     { ASCIIToUTF16("?"), kInvalidComponent, kInvalidComponent },
     { ASCIIToUTF16("?http://foo.com/bar"), kInvalidComponent,
         kInvalidComponent },
@@ -205,8 +207,9 @@ TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
     AutocompleteInput::ParseForEmphasizeComponents(input_cases[i].input,
                                                    &scheme,
                                                    &host);
-    AutocompleteInput input(input_cases[i].input, string16::npos, string16(),
-                            GURL(), AutocompleteInput::INVALID_SPEC, true,
+    AutocompleteInput input(input_cases[i].input, base::string16::npos,
+                            base::string16(), GURL(),
+                            AutocompleteInput::INVALID_SPEC, true,
                             false, true, AutocompleteInput::ALL_MATCHES);
     EXPECT_EQ(input_cases[i].scheme.begin, scheme.begin);
     EXPECT_EQ(input_cases[i].scheme.len, scheme.len);
@@ -217,13 +220,13 @@ TEST(AutocompleteInputTest, ParseForEmphasizeComponent) {
 
 TEST(AutocompleteInputTest, InputTypeWithCursorPosition) {
   struct test_data {
-    const string16 input;
+    const base::string16 input;
     size_t cursor_position;
-    const string16 normalized_input;
+    const base::string16 normalized_input;
     size_t normalized_cursor_position;
   } input_cases[] = {
-    { ASCIIToUTF16("foo bar"), string16::npos,
-      ASCIIToUTF16("foo bar"), string16::npos },
+    { ASCIIToUTF16("foo bar"), base::string16::npos,
+      ASCIIToUTF16("foo bar"), base::string16::npos },
 
     // regular case, no changes.
     { ASCIIToUTF16("foo bar"), 3, ASCIIToUTF16("foo bar"), 3 },
@@ -244,7 +247,8 @@ TEST(AutocompleteInputTest, InputTypeWithCursorPosition) {
     SCOPED_TRACE(input_cases[i].input);
     AutocompleteInput input(input_cases[i].input,
                             input_cases[i].cursor_position,
-                            string16(), GURL(), AutocompleteInput::INVALID_SPEC,
+                            base::string16(), GURL(),
+                            AutocompleteInput::INVALID_SPEC,
                             true, false, true, AutocompleteInput::ALL_MATCHES);
     EXPECT_EQ(input_cases[i].normalized_input, input.text());
     EXPECT_EQ(input_cases[i].normalized_cursor_position,

@@ -37,7 +37,7 @@ class WimaxConfigView : public ChildNetworkConfigView,
 
   // views::TextfieldController:
   virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents) OVERRIDE;
+                               const base::string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const ui::KeyEvent& key_event) OVERRIDE;
 
@@ -46,7 +46,7 @@ class WimaxConfigView : public ChildNetworkConfigView,
                              const ui::Event& event) OVERRIDE;
 
   // ChildNetworkConfigView:
-  virtual string16 GetTitle() const OVERRIDE;
+  virtual base::string16 GetTitle() const OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual bool CanLogin() OVERRIDE;
   virtual bool Login() OVERRIDE;

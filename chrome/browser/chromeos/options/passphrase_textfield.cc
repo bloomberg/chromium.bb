@@ -41,13 +41,14 @@ std::string PassphraseTextfield::GetPassphrase() {
 }
 
 void PassphraseTextfield::SetFakePassphrase() {
-  CR_DEFINE_STATIC_LOCAL(string16, fake_passphrase, (ASCIIToUTF16("********")));
+  CR_DEFINE_STATIC_LOCAL(base::string16, fake_passphrase,
+      (ASCIIToUTF16("********")));
   SetText(fake_passphrase);
   changed_ = false;
 }
 
 void PassphraseTextfield::ClearFakePassphrase() {
-  SetText(string16());
+  SetText(base::string16());
   changed_ = true;
 }
 

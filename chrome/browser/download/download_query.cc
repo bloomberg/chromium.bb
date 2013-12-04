@@ -47,7 +47,7 @@ template<> bool GetAs(const base::Value& in, int* out) {
 template<> bool GetAs(const base::Value& in, std::string* out) {
   return in.GetAsString(out);
 }
-template<> bool GetAs(const base::Value& in, string16* out) {
+template<> bool GetAs(const base::Value& in, base::string16* out) {
   return in.GetAsString(out);
 }
 template<> bool GetAs(const base::Value& in, std::vector<string16>* out) {
@@ -56,7 +56,7 @@ template<> bool GetAs(const base::Value& in, std::vector<string16>* out) {
   if (!in.GetAsList(&list))
     return false;
   for (size_t i = 0; i < list->GetSize(); ++i) {
-    string16 element;
+    base::string16 element;
     if (!list->GetString(i, &element)) {
       out->clear();
       return false;
@@ -73,19 +73,19 @@ static bool MatchesQuery(
     const std::vector<string16>& query_terms,
     const DownloadItem& item) {
   DCHECK(!query_terms.empty());
-  string16 url_raw(UTF8ToUTF16(item.GetOriginalUrl().spec()));
-  string16 url_formatted = url_raw;
+  base::string16 url_raw(UTF8ToUTF16(item.GetOriginalUrl().spec()));
+  base::string16 url_formatted = url_raw;
   if (item.GetBrowserContext()) {
     Profile* profile = Profile::FromBrowserContext(item.GetBrowserContext());
     url_formatted = net::FormatUrl(
         item.GetOriginalUrl(),
         profile->GetPrefs()->GetString(prefs::kAcceptLanguages));
   }
-  string16 path(item.GetTargetFilePath().LossyDisplayName());
+  base::string16 path(item.GetTargetFilePath().LossyDisplayName());
 
   for (std::vector<string16>::const_iterator it = query_terms.begin();
        it != query_terms.end(); ++it) {
-    string16 term = base::i18n::ToLower(*it);
+    base::string16 term = base::i18n::ToLower(*it);
     if (!base::i18n::StringSearchIgnoringCaseAndAccents(
             term, url_raw, NULL, NULL) &&
         !base::i18n::StringSearchIgnoringCaseAndAccents(
@@ -132,7 +132,7 @@ static bool GetExists(const DownloadItem& item) {
   return !item.GetFileExternallyRemoved();
 }
 
-static string16 GetFilename(const DownloadItem& item) {
+static base::string16 GetFilename(const DownloadItem& item) {
   // This filename will be compared with strings that could be passed in by the
   // user, who only sees LossyDisplayNames.
   return item.GetTargetFilePath().LossyDisplayName();

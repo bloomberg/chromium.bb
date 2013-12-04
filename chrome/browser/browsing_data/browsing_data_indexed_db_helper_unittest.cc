@@ -14,7 +14,7 @@ typedef testing::Test CannedBrowsingDataIndexedDBHelperTest;
 
 TEST_F(CannedBrowsingDataIndexedDBHelperTest, Empty) {
   const GURL origin("http://host1:1/");
-  const string16 description(ASCIIToUTF16("description"));
+  const base::string16 description(ASCIIToUTF16("description"));
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper());
@@ -29,7 +29,7 @@ TEST_F(CannedBrowsingDataIndexedDBHelperTest, Empty) {
 TEST_F(CannedBrowsingDataIndexedDBHelperTest, IgnoreExtensionsAndDevTools) {
   const GURL origin1("chrome-extension://abcdefghijklmnopqrstuvwxyz/");
   const GURL origin2("chrome-devtools://abcdefghijklmnopqrstuvwxyz/");
-  const string16 description(ASCIIToUTF16("description"));
+  const base::string16 description(ASCIIToUTF16("description"));
 
   scoped_refptr<CannedBrowsingDataIndexedDBHelper> helper(
       new CannedBrowsingDataIndexedDBHelper());

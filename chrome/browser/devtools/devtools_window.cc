@@ -81,22 +81,22 @@ class DevToolsConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
   // and adds the inofbar to |infobar_service|.
   static void Create(InfoBarService* infobar_service,
                      const DevToolsWindow::InfoBarCallback& callback,
-                     const string16& message);
+                     const base::string16& message);
 
  private:
   DevToolsConfirmInfoBarDelegate(
       InfoBarService* infobar_service,
       const DevToolsWindow::InfoBarCallback& callback,
-      const string16& message);
+      const base::string16& message);
   virtual ~DevToolsConfirmInfoBarDelegate();
 
-  virtual string16 GetMessageText() const OVERRIDE;
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
+  virtual base::string16 GetMessageText() const OVERRIDE;
+  virtual base::string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
   virtual bool Accept() OVERRIDE;
   virtual bool Cancel() OVERRIDE;
 
   DevToolsWindow::InfoBarCallback callback_;
-  const string16 message_;
+  const base::string16 message_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsConfirmInfoBarDelegate);
 };
@@ -104,7 +104,7 @@ class DevToolsConfirmInfoBarDelegate : public ConfirmInfoBarDelegate {
 void DevToolsConfirmInfoBarDelegate::Create(
     InfoBarService* infobar_service,
     const DevToolsWindow::InfoBarCallback& callback,
-    const string16& message) {
+    const base::string16& message) {
   if (!infobar_service) {
     callback.Run(false);
     return;
@@ -117,7 +117,7 @@ void DevToolsConfirmInfoBarDelegate::Create(
 DevToolsConfirmInfoBarDelegate::DevToolsConfirmInfoBarDelegate(
     InfoBarService* infobar_service,
     const DevToolsWindow::InfoBarCallback& callback,
-    const string16& message)
+    const base::string16& message)
     : ConfirmInfoBarDelegate(infobar_service),
       callback_(callback),
       message_(message) {
@@ -128,11 +128,11 @@ DevToolsConfirmInfoBarDelegate::~DevToolsConfirmInfoBarDelegate() {
     callback_.Run(false);
 }
 
-string16 DevToolsConfirmInfoBarDelegate::GetMessageText() const {
+base::string16 DevToolsConfirmInfoBarDelegate::GetMessageText() const {
   return message_;
 }
 
-string16 DevToolsConfirmInfoBarDelegate::GetButtonLabel(
+base::string16 DevToolsConfirmInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_DEV_TOOLS_CONFIRM_ALLOW_BUTTON : IDS_DEV_TOOLS_CONFIRM_DENY_BUTTON);
@@ -1300,7 +1300,7 @@ void DevToolsWindow::SearchCompleted(
 }
 
 void DevToolsWindow::ShowDevToolsConfirmInfoBar(
-    const string16& message,
+    const base::string16& message,
     const InfoBarCallback& callback) {
   DevToolsConfirmInfoBarDelegate::Create(
       IsDocked() ?
@@ -1489,7 +1489,7 @@ void DevToolsWindow::CallClientFunction(const std::string& function_name,
       }
     }
   }
-  string16 javascript = ASCIIToUTF16(function_name + "(" + params + ");");
+  base::string16 javascript = ASCIIToUTF16(function_name + "(" + params + ");");
   web_contents_->GetRenderViewHost()->ExecuteJavascriptInWebFrame(
       base::string16(), javascript);
 }

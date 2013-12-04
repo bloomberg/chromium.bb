@@ -89,7 +89,7 @@ ui::ModalType IdleLogoutDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-string16 IdleLogoutDialogView::GetWindowTitle() const {
+base::string16 IdleLogoutDialogView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_IDLE_LOGOUT_TITLE);
 }
 

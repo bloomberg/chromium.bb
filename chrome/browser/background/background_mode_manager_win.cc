@@ -46,6 +46,6 @@ void BackgroundModeManager::DisplayAppInstalledNotification(
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
 }
 
-string16 BackgroundModeManager::GetPreferencesMenuLabel() {
+base::string16 BackgroundModeManager::GetPreferencesMenuLabel() {
   return l10n_util::GetStringUTF16(IDS_OPTIONS);
 }

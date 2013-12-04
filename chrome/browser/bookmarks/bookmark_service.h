@@ -23,7 +23,7 @@ class BookmarkService {
  public:
   struct URLAndTitle {
     GURL url;
-    string16 title;
+    base::string16 title;
   };
 
   static BookmarkService* FromBrowserContext(

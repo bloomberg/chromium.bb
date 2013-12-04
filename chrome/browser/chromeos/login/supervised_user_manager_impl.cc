@@ -108,7 +108,7 @@ const User* SupervisedUserManagerImpl::CreateUserRecord(
       const std::string& manager_id,
       const std::string& local_user_id,
       const std::string& sync_user_id,
-      const string16& display_name) {
+      const base::string16& display_name) {
   const User* user = FindByDisplayName(display_name);
   DCHECK(!user);
   if (user)
@@ -163,7 +163,7 @@ string16 SupervisedUserManagerImpl::GetManagerDisplayName(
   PrefService* local_state = g_browser_process->local_state();
   const DictionaryValue* manager_names =
       local_state->GetDictionary(kManagedUserManagerNames);
-  string16 result;
+  base::string16 result;
   if (manager_names->GetStringWithoutPathExpansion(user_id, &result) &&
       !result.empty())
     return result;
@@ -194,7 +194,7 @@ std::string SupervisedUserManagerImpl::GetManagerDisplayEmail(
 }
 
 const User* SupervisedUserManagerImpl::FindByDisplayName(
-    const string16& display_name) const {
+    const base::string16& display_name) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   const UserList& users = owner_->GetUsers();
   for (UserList::const_iterator it = users.begin(); it != users.end(); ++it) {
@@ -220,7 +220,7 @@ const User* SupervisedUserManagerImpl::FindBySyncId(
 }
 
 void SupervisedUserManagerImpl::StartCreationTransaction(
-      const string16& display_name) {
+      const base::string16& display_name) {
   g_browser_process->local_state()->
       SetString(kLocallyManagedUserCreationTransactionDisplayName,
            UTF16ToASCII(display_name));
@@ -311,7 +311,7 @@ bool SupervisedUserManagerImpl::CheckForFirstRun(const std::string& user_id) {
 }
 
 void SupervisedUserManagerImpl::UpdateManagerName(const std::string& manager_id,
-    const string16& new_display_name) {
+    const base::string16& new_display_name) {
   PrefService* local_state = g_browser_process->local_state();
 
   const DictionaryValue* manager_ids =

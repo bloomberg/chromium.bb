@@ -281,7 +281,8 @@ bool AccessibilityGetAlertsForTabFunction::RunImpl() {
         infobar_service->infobar_at(i)->AsConfirmInfoBarDelegate();
     if (confirm_infobar_delegate) {
       DictionaryValue* alert_value = new DictionaryValue;
-      const string16 message_text = confirm_infobar_delegate->GetMessageText();
+      const base::string16 message_text =
+          confirm_infobar_delegate->GetMessageText();
       alert_value->SetString(keys::kMessageKey, message_text);
       alerts_value->Append(alert_value);
     }

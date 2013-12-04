@@ -108,7 +108,7 @@ void FakeUserManager::SwitchActiveUser(const std::string& email) {
 
 void FakeUserManager::SaveUserDisplayName(
     const std::string& username,
-    const string16& display_name) {
+    const base::string16& display_name) {
   for (UserList::iterator it = user_list_.begin();
        it != user_list_.end(); ++it) {
     if ((*it)->email() == username) {
@@ -179,7 +179,7 @@ Profile* FakeUserManager::GetProfileByUser(const User* user) const {
 
 string16 FakeUserManager::GetUserDisplayName(
     const std::string& username) const {
-  return string16();
+  return base::string16();
 }
 
 std::string FakeUserManager::GetUserDisplayEmail(

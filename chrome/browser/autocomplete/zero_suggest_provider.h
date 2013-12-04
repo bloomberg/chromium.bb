@@ -76,7 +76,7 @@ class ZeroSuggestProvider : public AutocompleteProvider,
   void StartZeroSuggest(
       const GURL& curent_page_url,
       AutocompleteInput::PageClassification page_classification,
-      const string16& permanent_text);
+      const base::string16& permanent_text);
 
   bool field_trial_triggered_in_session() const {
     return field_trial_triggered_in_session_;
@@ -117,7 +117,7 @@ class ZeroSuggestProvider : public AutocompleteProvider,
   void AddMatchToMap(int relevance,
                      AutocompleteMatch::Type type,
                      const TemplateURL* template_url,
-                     const string16& query_string,
+                     const base::string16& query_string,
                      int accepted_suggestion,
                      SearchProvider::MatchMap* map);
 
@@ -157,7 +157,7 @@ class ZeroSuggestProvider : public AutocompleteProvider,
   AutocompleteInput::PageClassification current_page_classification_;
 
   // Copy of OmniboxEditModel::permanent_text_.
-  string16 permanent_text_;
+  base::string16 permanent_text_;
 
   // Fetcher used to retrieve results.
   scoped_ptr<net::URLFetcher> fetcher_;

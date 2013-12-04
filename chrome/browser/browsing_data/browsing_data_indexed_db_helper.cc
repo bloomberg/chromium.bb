@@ -143,7 +143,7 @@ BrowsingDataIndexedDBHelper* BrowsingDataIndexedDBHelper::Create(
 
 CannedBrowsingDataIndexedDBHelper::
 PendingIndexedDBInfo::PendingIndexedDBInfo(const GURL& origin,
-                                           const string16& name)
+                                           const base::string16& name)
     : origin(origin),
       name(name) {
 }
@@ -176,7 +176,7 @@ CannedBrowsingDataIndexedDBHelper* CannedBrowsingDataIndexedDBHelper::Clone() {
 }
 
 void CannedBrowsingDataIndexedDBHelper::AddIndexedDB(
-    const GURL& origin, const string16& name) {
+    const GURL& origin, const base::string16& name) {
   if (!BrowsingDataHelper::HasWebScheme(origin))
     return;  // Non-websafe state is not considered browsing data.
 

@@ -35,7 +35,7 @@ class NetworkScreenActor {
   virtual void Hide() = 0;
 
   // Shows error message in a bubble.
-  virtual void ShowError(const string16& message) = 0;
+  virtual void ShowError(const base::string16& message) = 0;
 
   // Hides error messages showing no error state.
   virtual void ClearErrors() = 0;
@@ -43,7 +43,7 @@ class NetworkScreenActor {
   // Shows network connecting status or network selection otherwise.
   virtual void ShowConnectingStatus(
       bool connecting,
-      const string16& network_id) = 0;
+      const base::string16& network_id) = 0;
 
   // Sets whether continue control is enabled.
   virtual void EnableContinue(bool enabled) = 0;

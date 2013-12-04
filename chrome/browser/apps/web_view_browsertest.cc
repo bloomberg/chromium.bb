@@ -449,8 +449,8 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   void ExecuteScriptWaitForTitle(content::WebContents* web_contents,
                                  const char* script,
                                  const char* title) {
-    string16 expected_title(ASCIIToUTF16(title));
-    string16 error_title(ASCIIToUTF16("error"));
+    base::string16 expected_title(ASCIIToUTF16(title));
+    base::string16 error_title(ASCIIToUTF16("error"));
 
     content::TitleWatcher title_watcher(web_contents, expected_title);
     title_watcher.AlsoWaitForTitle(error_title);
@@ -1539,8 +1539,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognition) {
   // way that this will trigger clicking on speech recognition input mic.
   SimulateMouseClick(guest_web_contents, 0, blink::WebMouseEvent::ButtonLeft);
 
-  string16 expected_title(ASCIIToUTF16("PASSED"));
-  string16 error_title(ASCIIToUTF16("FAILED"));
+  base::string16 expected_title(ASCIIToUTF16("PASSED"));
+  base::string16 error_title(ASCIIToUTF16("FAILED"));
   content::TitleWatcher title_watcher(guest_web_contents, expected_title);
   title_watcher.AlsoWaitForTitle(error_title);
   EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());

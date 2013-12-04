@@ -1319,7 +1319,7 @@ void CaptivePortalBrowserTest::NavigateLoginTab(Browser* browser,
   // Do the navigation.
   content::RenderViewHost* render_view_host =
       tab_strip_model->GetActiveWebContents()->GetRenderViewHost();
-  render_view_host->ExecuteJavascriptInWebFrame(string16(),
+  render_view_host->ExecuteJavascriptInWebFrame(base::string16(),
                                                 ASCIIToUTF16("submitForm()"));
 
   portal_observer.WaitForResults(1);
@@ -1367,7 +1367,7 @@ void CaptivePortalBrowserTest::Login(Browser* browser,
   // Trigger a navigation.
   content::RenderViewHost* render_view_host =
       tab_strip_model->GetActiveWebContents()->GetRenderViewHost();
-  render_view_host->ExecuteJavascriptInWebFrame(string16(),
+  render_view_host->ExecuteJavascriptInWebFrame(base::string16(),
                                                 ASCIIToUTF16("submitForm()"));
 
   portal_observer.WaitForResults(1);
@@ -1722,7 +1722,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, SSLCertErrorLogin) {
   content::RenderViewHost* render_view_host =
       tab_strip_model->GetActiveWebContents()->GetRenderViewHost();
   render_view_host->ExecuteJavascriptInWebFrame(
-      string16(),
+      base::string16(),
       ASCIIToUTF16("submitForm()"));
 
   // The captive portal tab navigation will trigger a captive portal check,

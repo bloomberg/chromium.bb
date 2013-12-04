@@ -120,7 +120,7 @@ class WebUIScreenLockerTester : public ScreenLockerTester {
 
 void WebUIScreenLockerTester::SetPassword(const std::string& password) {
   RenderViewHost()->ExecuteJavascriptInWebFrame(
-      string16(),
+      base::string16(),
       ASCIIToUTF16(base::StringPrintf(
           "$('pod-row').pods[0].passwordElement.value = '%s';",
           password.c_str())));

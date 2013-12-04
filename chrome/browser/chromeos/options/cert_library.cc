@@ -36,16 +36,16 @@ namespace {
 // Root CA certificates that are built into Chrome use this token name.
 const char kRootCertificateTokenName[] = "Builtin Object Token";
 
-string16 GetDisplayString(net::X509Certificate* cert, bool hardware_backed) {
+base::string16 GetDisplayString(net::X509Certificate* cert, bool hardware_backed) {
   std::string org;
   if (!cert->subject().organization_names.empty())
     org = cert->subject().organization_names[0];
   if (org.empty())
     org = cert->subject().GetDisplayName();
-  string16 issued_by = UTF8ToUTF16(
+  base::string16 issued_by = UTF8ToUTF16(
       x509_certificate_model::GetIssuerCommonName(cert->os_cert_handle(),
                                                   org));  // alternative text
-  string16 issued_to = UTF8ToUTF16(
+  base::string16 issued_to = UTF8ToUTF16(
       x509_certificate_model::GetCertNameOrNickname(cert->os_cert_handle()));
 
   if (hardware_backed) {
@@ -82,8 +82,8 @@ class CertNameComparator {
 
   bool operator()(const scoped_refptr<net::X509Certificate>& lhs,
                   const scoped_refptr<net::X509Certificate>& rhs) const {
-    string16 lhs_name = GetDisplayString(lhs.get(), false);
-    string16 rhs_name = GetDisplayString(rhs.get(), false);
+    base::string16 lhs_name = GetDisplayString(lhs.get(), false);
+    base::string16 rhs_name = GetDisplayString(rhs.get(), false);
     if (collator_ == NULL)
       return lhs_name < rhs_name;
     return base::i18n::CompareString16WithCollator(
