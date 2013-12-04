@@ -66,7 +66,7 @@ class MockFrame(object):
         'args' (a dict with the key 'data').
     This is related to src/base/debug/trace_event.h.
     """
-    event = {'name': 'MainThreadRenderingStats::IssueTraceEvent',
+    event = {'name': 'BenchmarkInstrumentation::MainThreadRenderingStats',
              'tts': self.end,
              'pid': 20978,
              'ts': self.end,
@@ -79,7 +79,7 @@ class MockFrame(object):
 
   def AppendTraceEventForImplThreadStats(self, trace_events):
     """Appends a trace event with the impl thread stat."""
-    event = {'name': 'ImplThreadRenderingStats::IssueTraceEvent',
+    event = {'name': 'BenchmarkInstrumentation::ImplThreadRenderingStats',
              'tts': self.end,
              'pid': 20978,
              'ts': self.end,
@@ -186,7 +186,7 @@ class SmoothnessMetricUnitTest(unittest.TestCase):
     results = PageMeasurementResults()
     p0 = page.Page('http://foo.com/', None)
     results.WillMeasurePage(p0)
-    smoothness_metric = smoothness.SmoothnessMetric(None)
+    smoothness_metric = smoothness.SmoothnessMetric()
     smoothness_metric.SetStats(stats)
     smoothness_metric.AddResults(None, results)
     results.DidMeasurePage()
