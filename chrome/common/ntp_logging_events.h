@@ -28,6 +28,9 @@ enum NTPLoggingEventType {
   // The suggestion is coming from the server.
   NTP_SERVER_SIDE_SUGGESTION = 5,
 
+  // The suggestion is coming from the client.
+  NTP_CLIENT_SIDE_SUGGESTION = 6,
+
   NTP_NUM_EVENT_TYPES
 };
 

@@ -29,7 +29,9 @@ var NTP_LOGGING_EVENT_TYPE = {
   // secondary thumbnail as a fallback.
   NTP_FALLBACK_THUMBNAIL_USED: 4,
   // The suggestion is coming from the server.
-  NTP_SERVER_SIDE_SUGGESTION: 5
+  NTP_SERVER_SIDE_SUGGESTION: 5,
+  // The suggestion is coming from the client.
+  NTP_CLIENT_SIDE_SUGGESTION: 6
 };
 
 /**
@@ -144,6 +146,10 @@ function fillMostVisited(location, fill) {
   params.rid = parseInt(params.rid, 10);
   if (!isFinite(params.rid) && !params.url)
     return;
+  // Log whether the suggestion was obtained from the server or the client.
+  chrome.embeddedSearch.newTabPage.logEvent(params.url ?
+      NTP_LOGGING_EVENT_TYPE.NTP_SERVER_SIDE_SUGGESTION :
+      NTP_LOGGING_EVENT_TYPE.NTP_CLIENT_SIDE_SUGGESTION);
   var data = {};
   if (params.url) {
     // Means that the suggestion data comes from the server. Create data object.
@@ -154,9 +160,6 @@ function fillMostVisited(location, fill) {
     data.direction = params.di || '';
     data.domain = params.dom || '';
     data.ping = params.ping || '';
-    // Log the fact that suggestion was obtained from the server.
-    var ntpApiHandle = chrome.embeddedSearch.newTabPage;
-    ntpApiHandle.logEvent(NTP_LOGGING_EVENT_TYPE.NTP_SERVER_SIDE_SUGGESTION);
   } else {
     var apiHandle = chrome.embeddedSearch.searchBox;
     data = apiHandle.getMostVisitedItemData(params.rid);

@@ -484,7 +484,8 @@ void SearchTabHelper::OnUndoAllMostVisitedDeletions() {
 }
 
 void SearchTabHelper::OnLogEvent(NTPLoggingEventType event) {
-  NTPUserDataLogger* data = NTPUserDataLogger::FromWebContents(web_contents());
+  NTPUserDataLogger* data =
+      NTPUserDataLogger::GetOrCreateFromWebContents(web_contents());
   if (data)
     data->LogEvent(event);
 }

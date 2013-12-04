@@ -34,9 +34,6 @@ void InstantNTP::InitContents(const base::Closure& on_stale_callback) {
   content::WebContents* content = contents();
   SearchTabHelper::FromWebContents(content)->InitForPreloadedNTP();
 
-  NTPUserDataLogger::CreateForWebContents(content);
-  NTPUserDataLogger::FromWebContents(content)->set_ntp_url(instantNTP_url);
-
   loader_.Load();
 }
 

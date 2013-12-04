@@ -95,10 +95,6 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   g_live_new_tabs.Pointer()->insert(this);
   web_ui->OverrideTitle(l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
 
-  NTPUserDataLogger::CreateForWebContents(web_contents());
-  NTPUserDataLogger::FromWebContents(web_contents())->set_ntp_url(
-      GURL(chrome::kChromeUINewTabURL));
-
   // We count all link clicks as AUTO_BOOKMARK, so that site can be ranked more
   // highly. Note this means we're including clicks on not only most visited
   // thumbnails, but also clicks on recently bookmarked.
@@ -242,9 +238,8 @@ void NewTabUI::Observe(int type,
 }
 
 void NewTabUI::EmitMouseoverCount() {
-  NTPUserDataLogger* data = NTPUserDataLogger::FromWebContents(web_contents());
-  if (data->ntp_url() == GURL(chrome::kChromeUINewTabURL))
-    data->EmitMouseoverCount();
+  NTPUserDataLogger::GetOrCreateFromWebContents(
+      web_contents())->EmitMouseoverCount();
 }
 
 void NewTabUI::OnShowBookmarkBarChanged() {

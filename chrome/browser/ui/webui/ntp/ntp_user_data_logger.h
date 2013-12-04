@@ -9,6 +9,9 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+namespace content {
+class WebContents;
+}
 
 // Helper class for logging data from the NTP. Attached to each NTP instance.
 class NTPUserDataLogger
@@ -17,13 +20,8 @@ class NTPUserDataLogger
  public:
   virtual ~NTPUserDataLogger();
 
-  // To be set after initialization of this class. Used to determine whether a
-  // tab visibility change event or navigation event comes from the NTP.
-  void set_ntp_url(const GURL& url) {
-    ntp_url_ = url;
-  }
-
-  const GURL& ntp_url() const { return ntp_url_; }
+  static NTPUserDataLogger* GetOrCreateFromWebContents(
+      content::WebContents* content);
 
   // Logs the error percentage rate when loading thumbnail images for this NTP
   // session to UMA histogram. Called when the user navigates to a URL.

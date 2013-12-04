@@ -116,8 +116,6 @@ void MetricsHandler::HandleLogEventTime(const ListValue* args) {
 }
 
 void MetricsHandler::HandleLogMouseover(const ListValue* args) {
-  NTPUserDataLogger* data = NTPUserDataLogger::FromWebContents(
-      web_ui()->GetWebContents());
-  if (data)
-    data->LogEvent(NTP_MOUSEOVER);
+  NTPUserDataLogger::GetOrCreateFromWebContents(
+      web_ui()->GetWebContents())->LogEvent(NTP_MOUSEOVER);
 }
