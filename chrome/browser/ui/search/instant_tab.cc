@@ -21,11 +21,8 @@ void InstantTab::Init(content::WebContents* contents) {
 }
 
 // static
-void InstantTab::EmitMouseoverCount(content::WebContents* contents) {
-  NTPUserDataLogger* data =
-      NTPUserDataLogger::GetOrCreateFromWebContents(contents);
-  if (data)
-    data->EmitMouseoverCount();
+void InstantTab::EmitNtpStatistics(content::WebContents* contents) {
+  NTPUserDataLogger::GetOrCreateFromWebContents(contents)->EmitNtpStatistics();
 }
 
 bool InstantTab::ShouldProcessAboutToNavigateMainFrame() {

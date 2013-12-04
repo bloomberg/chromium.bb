@@ -123,9 +123,10 @@ class NewTabUI : public content::WebUIController,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // If |web_contents| has an NTP URL, emits the number of NTP mouseovers
-  // associated with |web_contents|, to be logged in UMA histogram.
-  void EmitMouseoverCount();
+  // If |web_contents| has an NTP URL, emits a number of NTP statistics (like
+  // mouseovers counts) associated with |web_contents|, to be logged in UMA
+  // histograms.
+  void EmitNtpStatistics();
 
   void OnShowBookmarkBarChanged();
 

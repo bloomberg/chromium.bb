@@ -31,7 +31,9 @@ var NTP_LOGGING_EVENT_TYPE = {
   // The suggestion is coming from the server.
   NTP_SERVER_SIDE_SUGGESTION: 5,
   // The suggestion is coming from the client.
-  NTP_CLIENT_SIDE_SUGGESTION: 6
+  NTP_CLIENT_SIDE_SUGGESTION: 6,
+  // The visuals of that tile are handled externally by the page itself.
+  NTP_EXTERNAL_TILE: 7
 };
 
 /**
@@ -160,6 +162,9 @@ function fillMostVisited(location, fill) {
     data.direction = params.di || '';
     data.domain = params.dom || '';
     data.ping = params.ping || '';
+    // Log the fact that suggestion was obtained from the server.
+    var ntpApiHandle = chrome.embeddedSearch.newTabPage;
+    ntpApiHandle.logEvent(NTP_LOGGING_EVENT_TYPE.NTP_SERVER_SIDE_SUGGESTION);
   } else {
     var apiHandle = chrome.embeddedSearch.searchBox;
     data = apiHandle.getMostVisitedItemData(params.rid);

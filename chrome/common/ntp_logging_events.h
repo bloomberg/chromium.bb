@@ -31,6 +31,9 @@ enum NTPLoggingEventType {
   // The suggestion is coming from the client.
   NTP_CLIENT_SIDE_SUGGESTION = 6,
 
+  // The visuals of that tile are handled externally by the page itself.
+  NTP_EXTERNAL_TILE = 7,
+
   NTP_NUM_EVENT_TYPES
 };
 

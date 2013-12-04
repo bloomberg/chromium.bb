@@ -24,18 +24,14 @@ class NTPUserDataLogger
       content::WebContents* content);
 
   // Logs the error percentage rate when loading thumbnail images for this NTP
-  // session to UMA histogram. Called when the user navigates to a URL.
+  // session to UMA histogram. Called when the user navigates to a URL. Only
+  // called for the instant NTP.
   void EmitThumbnailErrorRate();
 
-  // Logs the type of the suggestions that were shown on this NTP. Called when
-  // the user navigates to a URL.
-  void EmitSuggestionsType();
-
-  // Logs total number of mouseovers per NTP session to UMA histogram. Called
-  // when an NTP tab is about to be deactivated (be it by switching tabs, losing
-  // focus or closing the tab/shutting down Chrome), or when the user navigates
-  // to a URL.
-  void EmitMouseoverCount();
+  // Logs a number of statistics regarding the NTP. Called when an NTP tab is
+  // about to be deactivated (be it by switching tabs, losing focus or closing
+  // the tab/shutting down Chrome), or when the user navigates to a URL.
+  void EmitNtpStatistics();
 
   // Called each time an event occurs on the NTP that requires a counter to be
   // incremented.
@@ -73,6 +69,10 @@ class NTPUserDataLogger
   // Total number of errors that occurred while trying to load the primary
   // thumbnail image and that caused a fallback to the secondary thumbnail.
   size_t number_of_fallback_thumbnails_used_;
+
+  // Total number of tiles for which the visual appearance is handled externally
+  // by the page itself.
+  size_t number_of_external_tiles_;
 
   // True if at least one iframe came from a server-side suggestion. In
   // practice, either all the iframes are server-side suggestions or none are.

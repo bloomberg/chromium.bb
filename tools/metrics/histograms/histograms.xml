@@ -11305,6 +11305,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.NumberOfExternalTiles">
+  <summary>
+    The number of external tiles that are displayed on the NTP. External tiles
+    are those for which the visuals are handled by the page itself, not by the
+    iframe. Recorded before changing focus away from the NTP, be it by
+    navigating to a URL, switching tabs, changing the active window or closing
+    the tab/shutting down Chrome.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.NumberOfMouseOvers">
   <summary>
     The total number of times the user hovered the mouse over Most Visited tile
@@ -11380,7 +11390,9 @@ other types of suffix sets.
 <histogram name="NewTabPage.SuggestionsType" enum="NtpSuggestionsType">
   <summary>
     Indicate, for each impression of the New Tab Page, whether the suggestions
-    were obtained from the client or server.
+    were obtained from the client or server. Recorded before changing focus away
+    from the NTP, be it by navigating to a URL, switching tabs, changing the
+    active window or closing the tab/shutting down Chrome.
   </summary>
 </histogram>
 

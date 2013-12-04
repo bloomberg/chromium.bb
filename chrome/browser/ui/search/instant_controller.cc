@@ -188,7 +188,7 @@ void InstantController::TabDeactivated(content::WebContents* contents) {
   // If user is deactivating an NTP tab, log the number of mouseovers for this
   // NTP session.
   if (chrome::IsInstantNTP(contents))
-    InstantTab::EmitMouseoverCount(contents);
+    InstantTab::EmitNtpStatistics(contents);
 }
 
 void InstantController::LogDebugEvent(const std::string& info) const {

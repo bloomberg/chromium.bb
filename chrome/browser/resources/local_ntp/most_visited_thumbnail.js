@@ -23,6 +23,14 @@ window.addEventListener('DOMContentLoaded', function() {
       link.appendChild(domain);
       document.body.appendChild(link);
     }
+    // Called on intentionally empty tiles for which the visuals are handled
+    // externally by the page itself.
+    function showEmptyTile() {
+      var link = createMostVisitedLink(
+          params, data.url, data.title, undefined, data.ping);
+      document.body.appendChild(link);
+      logEvent(NTP_LOGGING_EVENT_TYPE.NTP_EXTERNAL_TILE);
+    }
     function createAndAppendThumbnail(isVisible) {
       var image = new Image();
       image.onload = function() {
@@ -78,8 +86,10 @@ window.addEventListener('DOMContentLoaded', function() {
       }
       image.src = data.thumbnailUrl;
       logEvent(NTP_LOGGING_EVENT_TYPE.NTP_THUMBNAIL_ATTEMPT);
-    } else {
+    } else if (data.domain) {
       showDomainElement();
+    } else {
+      showEmptyTile();
     }
   });
 });

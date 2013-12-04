@@ -221,7 +221,7 @@ void NewTabUI::RenderViewReused(RenderViewHost* render_view_host) {
 }
 
 void NewTabUI::WasHidden() {
-  EmitMouseoverCount();
+  EmitNtpStatistics();
 }
 
 void NewTabUI::Observe(int type,
@@ -237,9 +237,9 @@ void NewTabUI::Observe(int type,
   }
 }
 
-void NewTabUI::EmitMouseoverCount() {
+void NewTabUI::EmitNtpStatistics() {
   NTPUserDataLogger::GetOrCreateFromWebContents(
-      web_contents())->EmitMouseoverCount();
+      web_contents())->EmitNtpStatistics();
 }
 
 void NewTabUI::OnShowBookmarkBarChanged() {
