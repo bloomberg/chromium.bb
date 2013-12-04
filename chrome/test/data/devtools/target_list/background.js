@@ -117,6 +117,8 @@ function runNewPageTest(devtoolsUrl, expectedUrl) {
 
 var extensionTargetId;
 var extensionTabId;
+var extensionDevtoolsFrontendUrl;
+var extensionWebSocketDebuggerUrl;
 
 chrome.test.runTests([
   function discoverTargets() {
@@ -135,9 +137,14 @@ chrome.test.runTests([
                   chrome.extension.getURL('_generated_background_page.html'),
                   'background_page',
                   'Remote Debugger Test');
-              extensionTargetId = checkTarget(targets,
+              var target = checkTarget(targets,
                   testPageUrl, 'page', 'Test page',
-                  chrome.extension.getURL('favicon.png')).id;
+                  chrome.extension.getURL('favicon.png'));
+
+              extensionTargetId = target.id;
+              extensionDevtoolsFrontendUrl = target.devtoolsFrontendUrl;
+              extensionWebSocketDebuggerUrl = target.webSocketDebuggerUrl;
+
               chrome.test.succeed();
             });
         });
@@ -173,6 +180,55 @@ chrome.test.runTests([
                 chrome.test.succeed();
               });
         });
+  },
+
+  function checkInspectablePagesUI() {
+    requestUrl("", function(text) {
+      console.log(text);
+      chrome.test.assertTrue(
+          /<html[\s\S]*<head[\s\S]*<title[\s\S]*<script[\s\S]*<body/
+          .test(text));
+      chrome.test.succeed();
+    });
+  },
+
+  function checkDebuggerUI() {
+    requestUrl(extensionDevtoolsFrontendUrl, function(text) {
+      chrome.test.assertTrue(/blink-dev-tools/.test(text));
+      chrome.test.succeed();
+    });
+  },
+
+  function checkWebSocketAPI() {
+   var socket = new WebSocket(extensionWebSocketDebuggerUrl);
+
+    socket.onopen = function () {
+      var command = {
+        method: "Runtime.evaluate",
+        params: {"expression": "1+1"},
+        id: 1
+      }
+
+      socket.send(JSON.stringify(command));
+    };
+
+    socket.onerror = function (error) {
+      chrome.test.fail('WebSocket error ' + error);
+    };
+
+    socket.onmessage = function(e) {
+      var message = JSON.parse(e.data);
+
+      chrome.test.assertEq(1, message.id);
+      chrome.test.assertEq(2, message.result.result.value);
+      chrome.test.assertEq("number", message.result.result.type);
+      chrome.test.assertTrue(typeof message.wasThrown === "undefined");
+      socket.close();
+    };
+
+    socket.onclose = function() {
+      chrome.test.succeed();
+    }
   },
 
   function closePage() {
