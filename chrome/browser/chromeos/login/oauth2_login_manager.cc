@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/oauth2_login_manager.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
@@ -15,6 +17,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -77,7 +80,7 @@ void OAuth2LoginManager::ContinueSessionRestore() {
   if (restore_strategy_ == RESTORE_FROM_PASSED_OAUTH2_REFRESH_TOKEN) {
     DCHECK(!refresh_token_.empty());
     restore_strategy_ = RESTORE_FROM_SAVED_OAUTH2_REFRESH_TOKEN;
-    GetAccountIdOfRefreshToken(refresh_token_);
+    StoreOAuth2Token();
     return;
   }
 
@@ -117,6 +120,17 @@ ProfileOAuth2TokenService* OAuth2LoginManager::GetTokenService() {
   return token_service;
 }
 
+void OAuth2LoginManager::StoreOAuth2Token() {
+  ProfileOAuth2TokenService* token_service = GetTokenService();
+  std::string primary_account_id = token_service->GetPrimaryAccountId();
+  if (primary_account_id.empty()) {
+    GetAccountIdOfRefreshToken(refresh_token_);
+    return;
+  }
+
+  OnGetUserEmailResponse(primary_account_id);
+}
+
 void OAuth2LoginManager::GetAccountIdOfRefreshToken(
     const std::string& refresh_token) {
   gaia::OAuthClientInfo client_info;
@@ -141,7 +155,8 @@ void OAuth2LoginManager::OnGetUserEmailResponse(
     const std::string& user_email)  {
   DCHECK(!refresh_token_.empty());
   account_id_fetcher_.reset();
-  GetTokenService()->UpdateCredentials(user_email, refresh_token_);
+  std::string canonicalized = gaia::CanonicalizeEmail(user_email);
+  GetTokenService()->UpdateCredentials(canonicalized, refresh_token_);
 
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnNewRefreshTokenAvaiable(user_profile_));
@@ -184,7 +199,7 @@ void OAuth2LoginManager::OnOAuth2TokensAvailable(
   VLOG(1) << "OAuth2 tokens fetched";
   DCHECK(refresh_token_.empty());
   refresh_token_.assign(oauth2_tokens.refresh_token);
-  GetAccountIdOfRefreshToken(refresh_token_);
+  StoreOAuth2Token();
 }
 
 void OAuth2LoginManager::OnOAuth2TokensFetchFailed() {
