@@ -1,7 +1,7 @@
 {
   'targets': [
     {
-      'target_name': 'gles2',
+      'target_name': 'mojo_gles2_bindings',
       'type': 'static_library',
       'sources': [
         'services/gles2/gles2.mojom',
@@ -13,7 +13,7 @@
       ],
     },
     {
-      'target_name': 'gles2_impl',
+      'target_name': 'mojo_gles2_service',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
@@ -21,10 +21,10 @@
         '../gpu/gpu.gyp:gles2_implementation',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gl/gl.gyp:gl',
-        'gles2',
+        'mojo_gles2_bindings',
       ],
       'export_dependent_settings': [
-        'gles2',
+        'mojo_gles2_bindings',
       ],
       'sources': [
         'services/gles2/gles2_impl.cc',
@@ -32,7 +32,7 @@
       ],
     },
     {
-      'target_name': 'native_viewport',
+      'target_name': 'mojo_native_viewport_bindings',
       'type': 'static_library',
       'sources': [
         'services/native_viewport/native_viewport.mojom',
@@ -44,17 +44,17 @@
       ],
     },
     {
-      'target_name': 'native_viewport_impl',
+      'target_name': 'mojo_native_viewport_service',
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
         '../ui/events/events.gyp:events',
         '../ui/gfx/gfx.gyp:gfx',
-        'gles2_impl',
-        'native_viewport',
+        'mojo_gles2_service',
+        'mojo_native_viewport_bindings',
       ],
       'export_dependent_settings': [
-        'native_viewport',
+        'mojo_native_viewport_bindings',
       ],
       'sources': [
         'services/native_viewport/android/mojo_viewport.cc',

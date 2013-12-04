@@ -17,7 +17,7 @@
       'target_name': 'mojo',
       'type': 'none',
       'dependencies': [
-        'hello_world_service_impl',
+        'hello_world_service',
         'mojo_bindings',
         'mojo_bindings_unittests',
         'mojo_common_lib',
@@ -140,6 +140,19 @@
       ],
     },
     {
+      'target_name': 'mojo_gles2',
+      'type': '<(component)',
+      'dependencies': [
+        '../gpu/gpu.gyp:gles2_c_lib',
+      ],
+      'defines': [
+        'MOJO_GLES2_IMPLEMENTATION',
+      ],
+      'sources': [
+        'gles2/gles2.cc',
+      ],
+    },
+    {
       'target_name': 'mojo_common_lib',
       'type': '<(component)',
       'defines': [
@@ -207,7 +220,7 @@
         '../url/url.gyp:url_lib',
         'mojo_bindings',
         'mojo_system',
-        'native_viewport_impl',
+        'mojo_native_viewport_service',
       ],
       'sources': [
         'shell/app_container.cc',
@@ -268,7 +281,7 @@
     ['OS=="android"', {
       'targets': [
         {
-          'target_name': 'native_viewport_java',
+          'target_name': 'mojo_native_viewport_java',
           'type': 'none',
           'dependencies': [
             '../base/base.gyp:base_java',
@@ -331,7 +344,7 @@
           'dependencies': [
             '../base/base.gyp:base_java',
             '../net/net.gyp:net_java',
-            'native_viewport_java',
+            'mojo_native_viewport_java',
             'libmojo_shell',
           ],
           'variables': {

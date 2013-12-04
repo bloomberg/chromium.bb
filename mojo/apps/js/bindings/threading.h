@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_APPS_JS_THREADING_H_
-#define MOJO_APPS_JS_THREADING_H_
+#ifndef MOJO_APPS_JS_BINDINGS_THREADING_H_
+#define MOJO_APPS_JS_BINDINGS_THREADING_H_
 
 #include "mojo/public/system/core.h"
 #include "v8/include/v8.h"
@@ -20,4 +20,4 @@ class Threading {
 }  // namespace apps
 }  // namespace mojo
 
-#endif  // MOJO_APPS_JS_THREADING_H_
+#endif  // MOJO_APPS_JS_BINDINGS_THREADING_H_

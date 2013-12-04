@@ -102,20 +102,5 @@
         'sample_service',
       ],
     },
-    {
-      'target_name': 'gles2_client_impl',
-      'type': 'static_library',
-      'dependencies': [
-        '../gpu/gpu.gyp:gles2_c_lib',
-        'gles2',
-      ],
-      'export_dependent_settings': [
-        'gles2',
-      ],
-      'sources': [
-        'public/bindings/gles2_client/gles2_client_impl.cc',
-        'public/bindings/gles2_client/gles2_client_impl.h',
-      ],
-    },
   ],
 }

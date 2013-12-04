@@ -7,24 +7,24 @@
         '../base/base.gyp:base',
         '../gpu/gpu.gyp:gles2_c_lib',
         '../ui/gl/gl.gyp:gl',
-        'gles2',
-        'gles2_client_impl',
         'mojo_common_lib',
+        'mojo_gles2',
+        'mojo_gles2_bindings',
+        'mojo_native_viewport_bindings',
         'mojo_system',
-        'native_viewport',
       ],
       'sources': [
+        'examples/sample_app/gles2_client_impl.cc',
+        'examples/sample_app/gles2_client_impl.cc',
         'examples/sample_app/native_viewport_client_impl.cc',
         'examples/sample_app/native_viewport_client_impl.h',
         'examples/sample_app/sample_app.cc',
-        'examples/sample_app/sample_gles2_delegate.cc',
-        'examples/sample_app/sample_gles2_delegate.h',
         'examples/sample_app/spinning_cube.cc',
         'examples/sample_app/spinning_cube.h',
       ],
     },
     {
-      'target_name': 'hello_world_service',
+      'target_name': 'hello_world_bindings',
       'type': 'static_library',
       'sources': [
         'examples/hello_world_service/hello_world_service.mojom',
@@ -36,18 +36,18 @@
       ],
     },
     {
-      'target_name': 'hello_world_service_impl',
+      'target_name': 'hello_world_service',
       'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'hello_world_bindings',
+      ],
+      'export_dependent_settings': [
+        'hello_world_bindings',
+      ],
       'sources': [
         'examples/hello_world_service/hello_world_service_impl.cc',
         'examples/hello_world_service/hello_world_service_impl.h',
-      ],
-      'export_dependent_settings': [
-        'hello_world_service',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-        'hello_world_service',
       ],
     },
   ],
