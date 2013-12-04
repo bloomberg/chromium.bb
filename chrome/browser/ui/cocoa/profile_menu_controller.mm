@@ -139,6 +139,14 @@ class Observer : public chrome::BrowserListObserver,
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem*)menuItem {
+  // In guest mode, chrome://settings isn't available, so disallow creating
+  // or editing a profile.
+  Profile* activeProfile = ProfileManager::GetLastUsedProfile();
+  if (activeProfile->IsGuestSession()) {
+    return [menuItem action] != @selector(newProfile:) &&
+           [menuItem action] != @selector(editProfile:);
+  }
+
   const AvatarMenu::Item& itemData = menu_->GetItemAt(
       menu_->GetActiveProfileIndex());
   if ([menuItem action] == @selector(switchToProfileFromDock:) ||
@@ -204,14 +212,15 @@ class Observer : public chrome::BrowserListObserver,
   if (!browser)
     return;
 
-  size_t active_profile_index = menu_->GetActiveProfileIndex();
+  // In guest mode, there is no active menu item.
+  size_t activeProfileIndex = browser->profile()->IsGuestSession() ?
+      std::string::npos : menu_->GetActiveProfileIndex();
 
   // Update the state for the menu items.
   for (size_t i = 0; i < menu_->GetNumberOfItems(); ++i) {
     size_t tag = menu_->GetItemAt(i).menu_index;
     [[[self menu] itemWithTag:tag]
-        setState:active_profile_index == tag ? NSOnState
-                                             : NSOffState];
+        setState:activeProfileIndex == tag ? NSOnState : NSOffState];
   }
 }
 

@@ -1246,8 +1246,10 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
 }
 
 void BrowserCommandController::UpdateCommandsForMultipleProfiles() {
+  bool is_regular_or_guest_session =
+      profile()->IsGuestSession() || !profile()->IsOffTheRecord();
   bool enable = IsShowingMainUI() &&
-      !profile()->IsOffTheRecord() &&
+      is_regular_or_guest_session &&
       profile_manager_ &&
       AvatarMenu::ShouldShowAvatarMenu();
   command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU,

@@ -59,9 +59,14 @@ void SetWindowSize(NSWindow* window, NSSize size) {
 }  // namespace
 
 @interface ProfileChooserController (Private)
-// Creates the main profile card for the profile |itemIndex| at the top of
-// the bubble.
-- (NSView*)createCurrentProfileView:(int)itemIndex;
+// Creates the main profile card for the profile |item| at the top of
+// the bubble. |isGuestView| is used to control which links/buttons are
+// displayed.
+- (NSView*)createCurrentProfileView:(const AvatarMenu::Item&)item
+                            isGuest:(BOOL)isGuestView;
+
+// Creates a main profile card for the guest user.
+- (NSView*)createGuestProfileView;
 
 // Creates an item for the profile |itemIndex| that is used in the fast profile
 // switcher in the middle of the bubble.
@@ -145,8 +150,9 @@ void SetWindowSize(NSWindow* window, NSSize size) {
   BOOL isGuestView = YES;
 
   for (size_t i = 0; i < avatarMenu_->GetNumberOfItems(); ++i) {
-    if (avatarMenu_->GetItemAt(i).active) {
-      currentProfileView = [self createCurrentProfileView:i];
+    const AvatarMenu::Item& item = avatarMenu_->GetItemAt(i);
+    if (item.active) {
+      currentProfileView = [self createCurrentProfileView:item isGuest:NO];
       // The avatar menu only contains non-guest profiles, so an active profile
       // implies this is not a guest session browser.
       isGuestView = NO;
@@ -154,7 +160,8 @@ void SetWindowSize(NSWindow* window, NSSize size) {
       [otherProfiles addObject:[self createOtherProfileView:i]];
     }
   }
-
+  if (!currentProfileView)  // Guest windows don't have an active profile.
+    currentProfileView = [self createGuestProfileView];
   CGFloat updatedMenuWidth =
       std::max(kMinMenuWidth, NSWidth([currentProfileView frame]));
 
@@ -199,8 +206,8 @@ void SetWindowSize(NSWindow* window, NSSize size) {
   SetWindowSize([self window], NSMakeSize(updatedMenuWidth, yOffset));
 }
 
-- (NSView*)createCurrentProfileView:(int)itemIndex {
-  const AvatarMenu::Item& item = avatarMenu_->GetItemAt(itemIndex);
+- (NSView*)createCurrentProfileView:(const AvatarMenu::Item&)item
+                            isGuest:(BOOL)isGuestView {
   base::scoped_nsobject<NSView> container([[NSView alloc]
       initWithFrame:NSZeroRect]);
 
@@ -226,11 +233,27 @@ void SetWindowSize(NSWindow* window, NSSize size) {
       NSMaxX([iconView frame]) + kHorizontalSpacing, kVerticalSpacing)];
   [profileName sizeToFit];
 
+  // TODO(noms): Add Sign in/Sign out links, unless the |isGuestView| is true.
+
   [container setSubviews:@[iconView, profileName]];
   [container setFrameSize:NSMakeSize(
       NSMaxX([profileName frame]) + kHorizontalSpacing,
       NSHeight([iconView frame]))];
   return container.autorelease();
+}
+
+- (NSView*)createGuestProfileView {
+  gfx::Image guestIcon =
+      ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          IDR_LOGIN_GUEST);
+  AvatarMenu::Item guestItem(std::string::npos, /* menu_index, not used */
+                             std::string::npos, /* profile_index, not used */
+                             guestIcon);
+  guestItem.active = true;
+  guestItem.name = base::SysNSStringToUTF16(
+      l10n_util::GetNSString(IDS_PROFILES_GUEST_PROFILE_NAME));
+
+  return [self createCurrentProfileView:guestItem isGuest:YES];
 }
 
 - (NSButton*)createOtherProfileView:(int)itemIndex {

@@ -145,12 +145,15 @@ class Observer : public content::NotificationObserver {
                            forAttribute:NSAccessibilityDescriptionAttribute];
 
     Profile* profile = browser_->profile();
-    if (profile->IsOffTheRecord()) {
-      ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
-      NSImage* otrIcon = bundle.GetNativeImageNamed(IDR_OTR_ICON).ToNSImage();
-      [self setImage:[self compositeImageWithShadow:otrIcon]];
-      [self setButtonEnabled:NO];
-    } else {
+
+    if (profile->IsOffTheRecord() || profile->IsGuestSession()) {
+      const int icon_id = profile->IsGuestSession() ? IDR_LOGIN_GUEST :
+                                                      IDR_OTR_ICON;
+      NSImage* icon = ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          icon_id).ToNSImage();
+      [self setImage:[self compositeImageWithShadow:icon]];
+      [self setButtonEnabled:profile->IsGuestSession()];
+   } else {
       [self setButtonEnabled:YES];
       observer_.reset(new AvatarButtonControllerInternal::Observer(self));
       [self updateAvatar];

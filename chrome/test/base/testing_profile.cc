@@ -176,6 +176,7 @@ TestingProfile::TestingProfile()
       incognito_(false),
       force_incognito_(false),
       original_profile_(NULL),
+      guest_session_(false),
       last_session_exited_cleanly_(true),
       browser_context_dependency_manager_(
           BrowserContextDependencyManager::GetInstance()),
@@ -194,6 +195,7 @@ TestingProfile::TestingProfile(const base::FilePath& path)
       incognito_(false),
       force_incognito_(false),
       original_profile_(NULL),
+      guest_session_(false),
       last_session_exited_cleanly_(true),
       profile_path_(path),
       browser_context_dependency_manager_(
@@ -211,6 +213,7 @@ TestingProfile::TestingProfile(const base::FilePath& path,
       incognito_(false),
       force_incognito_(false),
       original_profile_(NULL),
+      guest_session_(false),
       last_session_exited_cleanly_(true),
       profile_path_(path),
       browser_context_dependency_manager_(
@@ -233,6 +236,7 @@ TestingProfile::TestingProfile(
     scoped_refptr<ExtensionSpecialStoragePolicy> extension_policy,
     scoped_ptr<PrefServiceSyncable> prefs,
     bool incognito,
+    bool guest_session,
     const std::string& managed_user_id,
     scoped_ptr<policy::PolicyService> policy_service,
     const TestingFactories& factories)
@@ -242,6 +246,7 @@ TestingProfile::TestingProfile(
       incognito_(incognito),
       force_incognito_(false),
       original_profile_(NULL),
+      guest_session_(guest_session),
       managed_user_id_(managed_user_id),
       last_session_exited_cleanly_(true),
       extension_special_storage_policy_(extension_policy),
@@ -849,7 +854,7 @@ bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {
 }
 
 bool TestingProfile::IsGuestSession() const {
-  return false;
+  return guest_session_;
 }
 
 Profile::ExitType TestingProfile::GetLastSessionExitType() {
@@ -859,7 +864,8 @@ Profile::ExitType TestingProfile::GetLastSessionExitType() {
 TestingProfile::Builder::Builder()
     : build_called_(false),
       delegate_(NULL),
-      incognito_(false) {
+      incognito_(false),
+      guest_session_(false) {
 }
 
 TestingProfile::Builder::~Builder() {
@@ -885,6 +891,10 @@ void TestingProfile::Builder::SetPrefService(
 
 void TestingProfile::Builder::SetIncognito() {
   incognito_ = true;
+}
+
+void TestingProfile::Builder::SetGuestSession() {
+  guest_session_ = true;
 }
 
 void TestingProfile::Builder::SetManagedUserId(
@@ -913,6 +923,7 @@ scoped_ptr<TestingProfile> TestingProfile::Builder::Build() {
       extension_policy_,
       pref_service_.Pass(),
       incognito_,
+      guest_session_,
       managed_user_id_,
       policy_service_.Pass(),
       testing_factories_));
