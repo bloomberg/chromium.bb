@@ -16,7 +16,9 @@ desktop_shell_la_LIBADD = $(COMPOSITOR_LIBS)	\
 	../shared/libshared.la
 desktop_shell_la_CFLAGS = $(GCC_CFLAGS) $(COMPOSITOR_CFLAGS)
 desktop_shell_la_SOURCES =			\
+	shell.h					\
 	shell.c					\
+	exposay.c				\
 	desktop-shell-protocol.c		\
 	desktop-shell-server-protocol.h 	\
 	xdg-shell-protocol.c			\
