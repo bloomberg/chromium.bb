@@ -316,7 +316,6 @@
     'common/one_writer_seqlock.cc',
     'common/one_writer_seqlock.h',
     'common/p2p_messages.h',
-    'common/p2p_sockets.h',
     'common/page_state_serialization.cc',
     'common/page_state_serialization.h',
     'common/page_zoom.cc',

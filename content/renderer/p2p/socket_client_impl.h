@@ -1,14 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_P2P_SOCKET_CLIENT_H_
-#define CONTENT_RENDERER_P2P_SOCKET_CLIENT_H_
+#ifndef CONTENT_RENDERER_P2P_SOCKET_CLIENT_IMPL_H_
+#define CONTENT_RENDERER_P2P_SOCKET_CLIENT_IMPL_H_
 
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "content/common/p2p_sockets.h"
+#include "content/public/common/p2p_socket_type.h"
+#include "content/public/renderer/p2p_socket_client.h"
 #include "net/base/ip_endpoint.h"
 
 namespace base {
@@ -19,55 +20,41 @@ namespace content {
 
 class P2PSocketDispatcher;
 
-// P2P socket that rountes all calls over IPC.
+// P2P socket that routes all calls over IPC.
 //
 // The object runs on two threads: IPC thread and delegate thread. The
 // IPC thread is used to interact with P2PSocketDispatcher. All
 // callbacks to the user of this class are called on the delegate
 // thread which is specified in Init().
-class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
+class P2PSocketClientImpl : public P2PSocketClient {
  public:
-  // Delegate is called on the the same thread on which P2PSocketCLient is
-  // created.
-  class Delegate {
-   public:
-    virtual ~Delegate() { }
-
-    virtual void OnOpen(const net::IPEndPoint& address) = 0;
-    virtual void OnIncomingTcpConnection(const net::IPEndPoint& address,
-                                         P2PSocketClient* client) = 0;
-    virtual void OnSendComplete() = 0;
-    virtual void OnError() = 0;
-    virtual void OnDataReceived(const net::IPEndPoint& address,
-                                const std::vector<char>& data) = 0;
-  };
-
-  explicit P2PSocketClient(P2PSocketDispatcher* dispatcher);
+  explicit P2PSocketClientImpl(P2PSocketDispatcher* dispatcher);
 
   // Initialize socket of the specified |type| and connected to the
   // specified |address|. |address| matters only when |type| is set to
   // P2P_SOCKET_TCP_CLIENT.
-  void Init(P2PSocketType type,
-            const net::IPEndPoint& local_address,
-            const net::IPEndPoint& remote_address,
-            Delegate* delegate);
+  virtual void Init(P2PSocketType type,
+                    const net::IPEndPoint& local_address,
+                    const net::IPEndPoint& remote_address,
+                    P2PSocketClientDelegate* delegate);
 
   // Send the |data| to the |address|.
-  void Send(const net::IPEndPoint& address, const std::vector<char>& data);
+  virtual void Send(const net::IPEndPoint& address,
+                    const std::vector<char>& data) OVERRIDE;
 
   // Send the |data| to the |address| using Differentiated Services Code Point
   // |dscp|.
-  void SendWithDscp(const net::IPEndPoint& address,
-                    const std::vector<char>& data,
-                    net::DiffServCodePoint dscp);
+  virtual void SendWithDscp(const net::IPEndPoint& address,
+                            const std::vector<char>& data,
+                            net::DiffServCodePoint dscp) OVERRIDE;
 
   // Must be called before the socket is destroyed. The delegate may
   // not be called after |closed_task| is executed.
-  void Close();
+  virtual void Close() OVERRIDE;
 
-  int socket_id() const { return socket_id_; }
+  virtual int GetSocketID() const OVERRIDE;
 
-  void set_delegate(Delegate* delegate);
+  virtual void SetDelegate(P2PSocketClientDelegate* delegate) OVERRIDE;
 
  private:
   enum State {
@@ -80,10 +67,7 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
 
   friend class P2PSocketDispatcher;
 
-  // Calls destructor.
-  friend class base::RefCountedThreadSafe<P2PSocketClient>;
-
-  virtual ~P2PSocketClient();
+  virtual ~P2PSocketClientImpl();
 
   // Message handlers that run on IPC thread.
   void OnSocketCreated(const net::IPEndPoint& address);
@@ -119,16 +103,16 @@ class P2PSocketClient : public base::RefCountedThreadSafe<P2PSocketClient> {
   scoped_refptr<base::MessageLoopProxy> ipc_message_loop_;
   scoped_refptr<base::MessageLoopProxy> delegate_message_loop_;
   int socket_id_;
-  Delegate* delegate_;
+  P2PSocketClientDelegate* delegate_;
   State state_;
 
   // These two fields are used to identify packets for tracing.
   uint32 random_socket_id_;
   uint32 next_packet_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(P2PSocketClient);
+  DISALLOW_COPY_AND_ASSIGN(P2PSocketClientImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_P2P_SOCKET_CLIENT_H_
+#endif  // CONTENT_RENDERER_P2P_SOCKET_CLIENT_IMPL_H_

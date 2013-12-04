@@ -6,7 +6,7 @@
 // Multiply-included message file, hence no include guard.
 
 #include "content/common/content_export.h"
-#include "content/common/p2p_sockets.h"
+#include "content/public/common/p2p_socket_type.h"
 #include "ipc/ipc_message_macros.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_util.h"

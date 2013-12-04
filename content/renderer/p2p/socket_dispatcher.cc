@@ -11,7 +11,7 @@
 #include "content/common/p2p_messages.h"
 #include "content/renderer/p2p/host_address_request.h"
 #include "content/renderer/p2p/network_list_observer.h"
-#include "content/renderer/p2p/socket_client.h"
+#include "content/renderer/p2p/socket_client_impl.h"
 #include "content/renderer/render_view_impl.h"
 
 namespace content {
@@ -27,7 +27,7 @@ P2PSocketDispatcher::P2PSocketDispatcher(
 
 P2PSocketDispatcher::~P2PSocketDispatcher() {
   network_list_observers_->AssertEmpty();
-  for (IDMap<P2PSocketClient>::iterator i(&clients_); !i.IsAtEnd();
+  for (IDMap<P2PSocketClientImpl>::iterator i(&clients_); !i.IsAtEnd();
        i.Advance()) {
     i.GetCurrentValue()->Detach();
   }
@@ -88,7 +88,7 @@ base::MessageLoopProxy* P2PSocketDispatcher::message_loop() {
   return message_loop_.get();
 }
 
-int P2PSocketDispatcher::RegisterClient(P2PSocketClient* client) {
+int P2PSocketDispatcher::RegisterClient(P2PSocketClientImpl* client) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   return clients_.Add(client);
 }
@@ -139,7 +139,7 @@ void P2PSocketDispatcher::OnGetHostAddressResult(
 
 void P2PSocketDispatcher::OnSocketCreated(
     int socket_id, const net::IPEndPoint& address) {
-  P2PSocketClient* client = GetClient(socket_id);
+  P2PSocketClientImpl* client = GetClient(socket_id);
   if (client) {
     client->OnSocketCreated(address);
   }
@@ -147,21 +147,21 @@ void P2PSocketDispatcher::OnSocketCreated(
 
 void P2PSocketDispatcher::OnIncomingTcpConnection(
     int socket_id, const net::IPEndPoint& address) {
-  P2PSocketClient* client = GetClient(socket_id);
+  P2PSocketClientImpl* client = GetClient(socket_id);
   if (client) {
     client->OnIncomingTcpConnection(address);
   }
 }
 
 void P2PSocketDispatcher::OnSendComplete(int socket_id) {
-  P2PSocketClient* client = GetClient(socket_id);
+  P2PSocketClientImpl* client = GetClient(socket_id);
   if (client) {
     client->OnSendComplete();
   }
 }
 
 void P2PSocketDispatcher::OnError(int socket_id) {
-  P2PSocketClient* client = GetClient(socket_id);
+  P2PSocketClientImpl* client = GetClient(socket_id);
   if (client) {
     client->OnError();
   }
@@ -170,14 +170,14 @@ void P2PSocketDispatcher::OnError(int socket_id) {
 void P2PSocketDispatcher::OnDataReceived(
     int socket_id, const net::IPEndPoint& address,
     const std::vector<char>& data) {
-  P2PSocketClient* client = GetClient(socket_id);
+  P2PSocketClientImpl* client = GetClient(socket_id);
   if (client) {
     client->OnDataReceived(address, data);
   }
 }
 
-P2PSocketClient* P2PSocketDispatcher::GetClient(int socket_id) {
-  P2PSocketClient* client = clients_.Lookup(socket_id);
+P2PSocketClientImpl* P2PSocketDispatcher::GetClient(int socket_id) {
+  P2PSocketClientImpl* client = clients_.Lookup(socket_id);
   if (client == NULL) {
     // This may happen if the socket was closed, but the browser side
     // hasn't processed the close message by the time it sends the

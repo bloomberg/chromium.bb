@@ -10,8 +10,9 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "content/public/renderer/p2p_socket_client_delegate.h"
 #include "content/renderer/p2p/host_address_request.h"
-#include "content/renderer/p2p/socket_client.h"
+#include "content/renderer/p2p/socket_client_impl.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "jingle/glue/utils.h"
 #include "third_party/libjingle/source/talk/base/asyncpacketsocket.h"
@@ -36,13 +37,13 @@ const size_t kMaximumInFlightBytes = 64 * 1024;  // 64 KB
 // using P2PSocketClient that works over IPC-channel. It must be used
 // on the thread it was created.
 class IpcPacketSocket : public talk_base::AsyncPacketSocket,
-                        public P2PSocketClient::Delegate {
+                        public P2PSocketClientDelegate {
  public:
   IpcPacketSocket();
   virtual ~IpcPacketSocket();
 
   // Always takes ownership of client even if initialization fails.
-  bool Init(P2PSocketType type, P2PSocketClient* client,
+  bool Init(P2PSocketType type, P2PSocketClientImpl* client,
             const talk_base::SocketAddress& local_address,
             const talk_base::SocketAddress& remote_address);
 
@@ -61,10 +62,11 @@ class IpcPacketSocket : public talk_base::AsyncPacketSocket,
   virtual int GetError() const OVERRIDE;
   virtual void SetError(int error) OVERRIDE;
 
-  // P2PSocketClient::Delegate implementation.
+  // P2PSocketClientDelegate implementation.
   virtual void OnOpen(const net::IPEndPoint& address) OVERRIDE;
-  virtual void OnIncomingTcpConnection(const net::IPEndPoint& address,
-                                       P2PSocketClient* client) OVERRIDE;
+  virtual void OnIncomingTcpConnection(
+      const net::IPEndPoint& address,
+      P2PSocketClient* client) OVERRIDE;
   virtual void OnSendComplete() OVERRIDE;
   virtual void OnError() OVERRIDE;
   virtual void OnDataReceived(const net::IPEndPoint& address,
@@ -149,7 +151,8 @@ void IpcPacketSocket::TraceSendThrottlingState() const {
                     in_flight_packet_sizes_.size());
 }
 
-bool IpcPacketSocket::Init(P2PSocketType type, P2PSocketClient* client,
+bool IpcPacketSocket::Init(P2PSocketType type,
+                           P2PSocketClientImpl* client,
                            const talk_base::SocketAddress& local_address,
                            const talk_base::SocketAddress& remote_address) {
   DCHECK_EQ(base::MessageLoop::current(), message_loop_);
@@ -174,7 +177,7 @@ bool IpcPacketSocket::Init(P2PSocketType type, P2PSocketClient* client,
     return false;
   }
 
-  client_->Init(type, local_endpoint, remote_endpoint, this);
+  client->Init(type, local_endpoint, remote_endpoint, this);
 
   return true;
 }
@@ -191,7 +194,7 @@ void IpcPacketSocket::InitAcceptedTcp(
   remote_address_ = remote_address;
   state_ = IS_OPEN;
   TraceSendThrottlingState();
-  client_->set_delegate(this);
+  client_->SetDelegate(this);
 }
 
 // talk_base::AsyncPacketSocket interface.
@@ -238,7 +241,9 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
 
   if (data_size > send_bytes_available_) {
     TRACE_EVENT_INSTANT1("p2p", "MaxPendingBytesWouldBlock",
-                         TRACE_EVENT_SCOPE_THREAD, "id", client_->socket_id());
+                         TRACE_EVENT_SCOPE_THREAD,
+                         "id",
+                         client_->GetSocketID());
     writable_signal_expected_ = true;
     error_ = EWOULDBLOCK;
     return -1;
@@ -403,7 +408,8 @@ IpcPacketSocketFactory::~IpcPacketSocketFactory() {
 talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateUdpSocket(
     const talk_base::SocketAddress& local_address, int min_port, int max_port) {
   talk_base::SocketAddress crome_address;
-  P2PSocketClient* socket_client = new P2PSocketClient(socket_dispatcher_);
+  P2PSocketClientImpl* socket_client =
+      new P2PSocketClientImpl(socket_dispatcher_);
   scoped_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
   // TODO(sergeyu): Respect local_address and port limits here (need
   // to pass them over IPC channel to the browser).
@@ -423,7 +429,8 @@ talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateServerTcpSocket(
 
   P2PSocketType type = (opts & talk_base::PacketSocketFactory::OPT_STUN) ?
       P2P_SOCKET_STUN_TCP_SERVER : P2P_SOCKET_TCP_SERVER;
-  P2PSocketClient* socket_client = new P2PSocketClient(socket_dispatcher_);
+  P2PSocketClientImpl* socket_client =
+      new P2PSocketClientImpl(socket_dispatcher_);
   scoped_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
   if (!socket->Init(type, socket_client, local_address,
                     talk_base::SocketAddress())) {
@@ -448,10 +455,10 @@ talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateClientTcpSocket(
     type = (opts & talk_base::PacketSocketFactory::OPT_STUN) ?
         P2P_SOCKET_STUN_TCP_CLIENT : P2P_SOCKET_TCP_CLIENT;
   }
-  P2PSocketClient* socket_client = new P2PSocketClient(socket_dispatcher_);
+  P2PSocketClientImpl* socket_client =
+      new P2PSocketClientImpl(socket_dispatcher_);
   scoped_ptr<IpcPacketSocket> socket(new IpcPacketSocket());
-  if (!socket->Init(type, socket_client, local_address,
-                    remote_address))
+  if (!socket->Init(type, socket_client, local_address, remote_address))
     return NULL;
   return socket.release();
 }

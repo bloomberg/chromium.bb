@@ -29,7 +29,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/common/p2p_sockets.h"
+#include "content/public/common/p2p_socket_type.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "net/base/net_util.h"
 
@@ -46,7 +46,7 @@ namespace content {
 class NetworkListObserver;
 class RenderViewImpl;
 class P2PHostAddressRequest;
-class P2PSocketClient;
+class P2PSocketClientImpl;
 
 class CONTENT_EXPORT P2PSocketDispatcher
     : public IPC::ChannelProxy::MessageFilter {
@@ -68,7 +68,7 @@ class CONTENT_EXPORT P2PSocketDispatcher
 
  private:
   friend class P2PHostAddressRequest;
-  friend class P2PSocketClient;
+  friend class P2PSocketClientImpl;
 
   // Send a message asynchronously.
   virtual void Send(IPC::Message* message);
@@ -83,7 +83,7 @@ class CONTENT_EXPORT P2PSocketDispatcher
   base::MessageLoopProxy* message_loop();
 
   // Called by P2PSocketClient.
-  int RegisterClient(P2PSocketClient* client);
+  int RegisterClient(P2PSocketClientImpl* client);
   void UnregisterClient(int id);
   void SendP2PMessage(IPC::Message* msg);
 
@@ -102,10 +102,10 @@ class CONTENT_EXPORT P2PSocketDispatcher
   void OnDataReceived(int socket_id, const net::IPEndPoint& address,
                       const std::vector<char>& data);
 
-  P2PSocketClient* GetClient(int socket_id);
+  P2PSocketClientImpl* GetClient(int socket_id);
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
-  IDMap<P2PSocketClient> clients_;
+  IDMap<P2PSocketClientImpl> clients_;
 
   IDMap<P2PHostAddressRequest> host_address_requests_;
 
