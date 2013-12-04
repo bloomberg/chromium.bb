@@ -303,6 +303,9 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
 void TransportSecurityPersister::CompleteLoad(const std::string& state) {
   DCHECK(foreground_runner_->RunsTasksOnCurrentThread());
 
+  if (state.empty())
+    return;
+
   bool dirty = false;
   if (!LoadEntries(state, &dirty)) {
     LOG(ERROR) << "Failed to deserialize state: " << state;
