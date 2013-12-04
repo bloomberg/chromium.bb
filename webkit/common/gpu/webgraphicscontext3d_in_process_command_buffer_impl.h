@@ -18,6 +18,7 @@ namespace gpu {
 class ContextSupport;
 
 namespace gles2 {
+class GLES2Interface;
 class GLES2Implementation;
 }
 }
@@ -553,6 +554,7 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
 
   virtual GrGLInterface* createGrGLInterface();
 
+  ::gpu::gles2::GLES2Interface* GetGLInterface();
   ::gpu::ContextSupport* GetContextSupport();
 
   ::gpu::gles2::GLES2Implementation* GetImplementation() {

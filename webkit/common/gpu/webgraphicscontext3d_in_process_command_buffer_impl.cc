@@ -1136,6 +1136,11 @@ GrGLInterface* WebGraphicsContext3DInProcessCommandBufferImpl::
   return CreateCommandBufferSkiaGLBinding();
 }
 
+::gpu::gles2::GLES2Interface*
+WebGraphicsContext3DInProcessCommandBufferImpl::GetGLInterface() {
+  return gl_;
+}
+
 ::gpu::ContextSupport*
 WebGraphicsContext3DInProcessCommandBufferImpl::GetContextSupport() {
   return gl_;

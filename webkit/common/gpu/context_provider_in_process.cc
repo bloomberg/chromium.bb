@@ -149,6 +149,14 @@ blink::WebGraphicsContext3D* ContextProviderInProcess::Context3d() {
   return context3d_.get();
 }
 
+::gpu::gles2::GLES2Interface* ContextProviderInProcess::ContextGL() {
+  DCHECK(context3d_);
+  DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  return context3d_->GetGLInterface();
+}
+
 ::gpu::ContextSupport* ContextProviderInProcess::ContextSupport() {
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());

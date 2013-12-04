@@ -120,6 +120,14 @@ blink::WebGraphicsContext3D* TestContextProvider::Context3d() {
   return context3d_.get();
 }
 
+gpu::gles2::GLES2Interface* TestContextProvider::ContextGL() {
+  DCHECK(context3d_);
+  DCHECK(bound_);
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  return &context_gl_stub_;
+}
+
 gpu::ContextSupport* TestContextProvider::ContextSupport() {
   DCHECK(bound_);
   DCHECK(context_thread_checker_.CalledOnValidThread());

@@ -31,7 +31,6 @@
       'command_buffer/client/gles2_implementation.h',
       'command_buffer/client/gles2_implementation_impl_autogen.h',
       'command_buffer/client/gles2_interface.h',
-      'command_buffer/client/gles2_interface.cc',
       'command_buffer/client/gles2_trace_implementation_autogen.h',
       'command_buffer/client/gles2_trace_implementation.cc',
       'command_buffer/client/gles2_trace_implementation.h',

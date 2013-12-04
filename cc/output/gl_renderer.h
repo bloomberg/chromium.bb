@@ -27,6 +27,7 @@ namespace blink { class WebGraphicsContext3D; }
 
 namespace cc {
 
+class ContextProvider;
 class GLRendererShaderTest;
 class OutputSurface;
 class PictureDrawQuad;

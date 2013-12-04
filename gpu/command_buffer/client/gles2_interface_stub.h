@@ -5,7 +5,6 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_H_
 
-#include "base/compiler_specific.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
 namespace gpu {

@@ -117,7 +117,7 @@ class VertexArrayObjectManager;
 // GLES2CmdHelper but that entails changing your code to use and deal with
 // shared memory and synchronization issues.
 class GLES2_IMPL_EXPORT GLES2Implementation
-    : public GLES2Interface,
+    : NON_EXPORTED_BASE(public GLES2Interface),
       NON_EXPORTED_BASE(public ContextSupport) {
  public:
   enum MappedMemoryLimit {

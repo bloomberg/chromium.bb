@@ -11,6 +11,7 @@
 #include "base/threading/thread_checker.h"
 #include "cc/output/context_provider.h"
 #include "cc/test/test_context_support.h"
+#include "gpu/command_buffer/client/gles2_interface_stub.h"
 
 namespace blink { class WebGraphicsContext3D; }
 
@@ -29,6 +30,7 @@ class TestContextProvider : public cc::ContextProvider {
   virtual bool BindToCurrentThread() OVERRIDE;
   virtual Capabilities ContextCapabilities() OVERRIDE;
   virtual blink::WebGraphicsContext3D* Context3d() OVERRIDE;
+  virtual gpu::gles2::GLES2Interface* ContextGL() OVERRIDE;
   virtual gpu::ContextSupport* ContextSupport() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;
   virtual bool IsContextLost() OVERRIDE;
@@ -62,6 +64,7 @@ class TestContextProvider : public cc::ContextProvider {
   TestContextSupport support_;
 
   scoped_ptr<TestWebGraphicsContext3D> context3d_;
+  gpu::gles2::GLES2InterfaceStub context_gl_stub_;
   bool bound_;
 
   base::ThreadChecker main_thread_checker_;

@@ -12,7 +12,10 @@
 
 class GrContext;
 namespace blink { class WebGraphicsContext3D; }
-namespace gpu { class ContextSupport; }
+namespace gpu {
+class ContextSupport;
+namespace gles2 { class GLES2Interface; }
+}
 
 namespace cc {
 struct ManagedMemoryPolicy;
@@ -26,6 +29,7 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   virtual bool BindToCurrentThread() = 0;
 
   virtual blink::WebGraphicsContext3D* Context3d() = 0;
+  virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
   virtual gpu::ContextSupport* ContextSupport() = 0;
   virtual class GrContext* GrContext() = 0;
 

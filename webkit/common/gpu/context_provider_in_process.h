@@ -33,6 +33,7 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
   virtual bool BindToCurrentThread() OVERRIDE;
   virtual Capabilities ContextCapabilities() OVERRIDE;
   virtual blink::WebGraphicsContext3D* Context3d() OVERRIDE;
+  virtual ::gpu::gles2::GLES2Interface* ContextGL() OVERRIDE;
   virtual ::gpu::ContextSupport* ContextSupport() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;
   virtual bool IsContextLost() OVERRIDE;
