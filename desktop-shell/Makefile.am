@@ -4,6 +4,7 @@ module_LTLIBRARIES = $(desktop_shell)
 AM_CPPFLAGS =					\
 	-I$(top_srcdir)/shared			\
 	-I$(top_srcdir)/src			\
+	-I$(top_builddir)/src			\
 	-DDATADIR='"$(datadir)"'		\
 	-DMODULEDIR='"$(moduledir)"'		\
 	-DLIBEXECDIR='"$(libexecdir)"'		\
