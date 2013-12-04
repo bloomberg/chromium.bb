@@ -212,8 +212,9 @@ public class OAuth2TokenServiceIntegrationTest extends ChromiumTestShellTestBase
         // Run test.
         mOAuth2TokenService.validateAccounts(mContext);
 
-        // Ensure no calls have been made to the observer.
-        assertEquals(1, mObserver.getAvailableCallCount());
+        // All accounts will be notified. It is up to the observer
+        // to design if any action is needed.
+        assertEquals(2, mObserver.getAvailableCallCount());
         assertEquals(0, mObserver.getRevokedCallCount());
         assertEquals(0, mObserver.getLoadedCallCount());
     }

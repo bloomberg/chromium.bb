@@ -159,7 +159,12 @@ void AndroidProfileOAuth2TokenService::ValidateAccounts(JNIEnv* env,
                                                      accounts,
                                                      &account_ids);
   std::string signed_in_account = ConvertJavaStringToUTF8(env, j_current_acc);
+  ValidateAccounts(signed_in_account, account_ids);
+}
 
+void AndroidProfileOAuth2TokenService::ValidateAccounts(
+    const std::string& signed_in_account,
+    const std::vector<std::string>& account_ids) {
   if (signed_in_account.empty())
     return;
 
@@ -167,7 +172,17 @@ void AndroidProfileOAuth2TokenService::ValidateAccounts(JNIEnv* env,
                 account_ids.end(),
                 signed_in_account) != account_ids.end()) {
     // Currently signed in account still exists among accounts on system.
+    std::vector<std::string> ids = GetAccounts();
+
+    // Always fire the primary signed in account first.
     FireRefreshTokenAvailable(signed_in_account);
+
+    for (std::vector<std::string>::iterator it = ids.begin();
+        it != ids.end(); it++) {
+      if (*it != signed_in_account) {
+        FireRefreshTokenAvailable(*it);
+      }
+    }
   } else {
     // Currently signed in account does not any longer exist among accounts on
     // system.

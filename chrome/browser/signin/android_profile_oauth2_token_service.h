@@ -47,6 +47,11 @@ class AndroidProfileOAuth2TokenService : public ProfileOAuth2TokenService {
                         jobjectArray accounts,
                         jstring current_account);
 
+  // Takes a the signed in sync account as well as all the other
+  // android account ids and check the token status of each.
+  void ValidateAccounts(const std::string& signed_in_account,
+                        const std::vector<std::string>& account_ids);
+
   // Triggers a notification to all observers of the OAuth2TokenService that a
   // refresh token is now available. This may cause observers to retry
   // operations that require authentication.

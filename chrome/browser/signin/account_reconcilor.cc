@@ -24,6 +24,7 @@ AccountReconcilor::AccountReconcilor(Profile* profile)
     : profile_(profile),
       are_gaia_accounts_set_(false),
       requests_(NULL) {
+  DVLOG(1) << "AccountReconcilor::AccountReconcilor";
   RegisterWithSigninManager();
   RegisterWithCookieMonster();
 
@@ -80,6 +81,7 @@ void AccountReconcilor::UnregisterWithSigninManager() {
 }
 
 void AccountReconcilor::RegisterWithTokenService() {
+  DVLOG(1) << "AccountReconcilor::RegisterWithTokenService";
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   token_service->AddObserver(this);

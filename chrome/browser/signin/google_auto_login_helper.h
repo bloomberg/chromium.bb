@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_SIGNIN_GOOGLE_AUTO_LOGIN_HELPER_H_
 #define CHROME_BROWSER_ANDROID_SIGNIN_GOOGLE_AUTO_LOGIN_HELPER_H_
 
+#include <deque>
+
 #include "chrome/browser/signin/ubertoken_fetcher.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
@@ -31,10 +33,15 @@ class GoogleAutoLoginHelper : public GaiaAuthConsumer,
   virtual void OnUbertokenSuccess(const std::string& token) OVERRIDE;
   virtual void OnUbertokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
 
+  // For testing.
+  virtual UbertokenFetcher* CreateNewUbertokenFetcher();
+  virtual GaiaAuthFetcher* CreateNewGaiaAuthFetcher();
+
  private:
   Profile* profile_;
   scoped_ptr<GaiaAuthFetcher> gaia_auth_fetcher_;
   scoped_ptr<UbertokenFetcher> uber_token_fetcher_;
+  std::deque<std::string> accounts_;
 
   DISALLOW_COPY_AND_ASSIGN(GoogleAutoLoginHelper);
 };
