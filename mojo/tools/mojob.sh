@@ -133,8 +133,8 @@ for arg in "$@"; do
       do_gyp
       ;;
     sync)
-      # Note: sync only, no gyp-ing.
-      gclient sync --nohooks
+      # Note: sync only (with hooks, but no gyp-ing).
+      GYP_CHROMIUM_NO_ACTION=1 gclient sync
       ;;
     show-bash-alias)
       # You want to type something like:
