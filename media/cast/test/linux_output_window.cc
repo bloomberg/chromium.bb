@@ -5,7 +5,9 @@
 #include "media/cast/test/linux_output_window.h"
 
 #include "base/logging.h"
+#include "media/base/video_frame.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
+#include "ui/gfx/size.h"
 
 namespace media {
 namespace cast {
@@ -108,22 +110,23 @@ void LinuxOutputWindow::CreateWindow(int x_pos,
   XSync(display_, false);
 }
 
-void LinuxOutputWindow::RenderFrame(const I420VideoFrame& video_frame) {
-  libyuv::I420ToARGB(video_frame.y_plane.data,
-                     video_frame.y_plane.stride,
-                     video_frame.u_plane.data,
-                     video_frame.u_plane.stride,
-                     video_frame.v_plane.data,
-                     video_frame.v_plane.stride,
+void LinuxOutputWindow::RenderFrame(
+    const scoped_refptr<media::VideoFrame>& video_frame) {
+  libyuv::I420ToARGB(video_frame->data(VideoFrame::kYPlane),
+                     video_frame->stride(VideoFrame::kYPlane),
+                     video_frame->data(VideoFrame::kUPlane),
+                     video_frame->stride(VideoFrame::kUPlane),
+                     video_frame->data(VideoFrame::kVPlane),
+                     video_frame->stride(VideoFrame::kVPlane),
                      render_buffer_,
-                     video_frame.width * 4,  // Stride.
-                     video_frame.width,
-                     video_frame.height);
+                     video_frame->coded_size().width() * 4,  // Stride.
+                     video_frame->coded_size().width(),
+                     video_frame->coded_size().height());
 
   // Place image in window.
   XShmPutImage(display_, window_, gc_, image_, 0, 0, 0, 0,
-               video_frame.width,
-               video_frame.height, true);
+               video_frame->coded_size().width(),
+               video_frame->coded_size().height(), true);
 
   // Very important for the image to update properly!
   XSync(display_, false);

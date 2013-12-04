@@ -273,7 +273,7 @@ class TestReceiverVideoCallback :
     expected_frame_.push_back(expected_video_frame);
   }
 
-  void CheckVideoFrame(scoped_ptr<I420VideoFrame> video_frame,
+  void CheckVideoFrame(const scoped_refptr<media::VideoFrame>& video_frame,
                        const base::TimeTicks& render_time) {
     ++num_called_;
 
@@ -290,8 +290,8 @@ class TestReceiverVideoCallback :
         << "time_since_capture - upper_bound == "
         << (time_since_capture - upper_bound).InMicroseconds() << " usec";
     EXPECT_LE(expected_video_frame.capture_time, render_time);
-    EXPECT_EQ(expected_video_frame.width, video_frame->width);
-    EXPECT_EQ(expected_video_frame.height, video_frame->height);
+    EXPECT_EQ(expected_video_frame.width, video_frame->coded_size().width());
+    EXPECT_EQ(expected_video_frame.height, video_frame->coded_size().height());
 
     gfx::Size size(expected_video_frame.width, expected_video_frame.height);
     scoped_refptr<media::VideoFrame> expected_I420_frame =
@@ -299,8 +299,7 @@ class TestReceiverVideoCallback :
         VideoFrame::I420, size, gfx::Rect(size), size, base::TimeDelta());
     PopulateVideoFrame(expected_I420_frame, expected_video_frame.start_value);
 
-    double psnr = I420PSNR(*(expected_I420_frame.get()), *(video_frame.get()));
-    EXPECT_GE(psnr, kVideoAcceptedPSNR);
+    EXPECT_GE(I420PSNR(expected_I420_frame, video_frame), kVideoAcceptedPSNR);
   }
 
   int number_times_called() { return num_called_;}

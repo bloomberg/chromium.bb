@@ -30,8 +30,8 @@ class TestVideoReceiverCallback :
       : num_called_(0) {}
 
   // TODO(mikhal): Set and check expectations.
-  void DecodeComplete(scoped_ptr<I420VideoFrame> video_frame,
-      const base::TimeTicks& render_time) {
+  void DecodeComplete(const scoped_refptr<media::VideoFrame>& video_frame,
+                      const base::TimeTicks& render_time) {
     ++num_called_;
   }
 

@@ -7,7 +7,10 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "media/base/video_frame.h"
+#include "media/base/video_util.h"
 #include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"
+#include "ui/gfx/size.h"
 
 namespace media {
 namespace cast {
@@ -68,31 +71,23 @@ bool Vp8Decoder::Decode(const EncodedVideoFrame* encoded_frame,
     return false;
   }
 
-  scoped_ptr<I420VideoFrame> decoded_frame(new I420VideoFrame());
+  gfx::Size visible_size(img->d_w, img->d_h);
+  gfx::Size full_size(img->stride[VPX_PLANE_Y], img->d_h);
+  DCHECK(VideoFrame::IsValidConfig(VideoFrame::I420, visible_size,
+                                   gfx::Rect(visible_size), full_size));
+  // Temp timing setting - will sort out timing in a follow up cl.
+  scoped_refptr<VideoFrame> decoded_frame =
+      VideoFrame::CreateFrame(VideoFrame::I420, visible_size,
+      gfx::Rect(visible_size), full_size, base::TimeDelta());
 
-  // The img is only valid until the next call to vpx_codec_decode.
-  // Populate the decoded image.
-  decoded_frame->width = img->d_w;
-  decoded_frame->height = img->d_h;
-
-  decoded_frame->y_plane.stride = img->stride[VPX_PLANE_Y];
-  decoded_frame->y_plane.length = img->stride[VPX_PLANE_Y] * img->d_h;
-  decoded_frame->y_plane.data = new uint8[decoded_frame->y_plane.length];
-  memcpy(decoded_frame->y_plane.data, img->planes[VPX_PLANE_Y],
-         decoded_frame->y_plane.length);
-
-  decoded_frame->u_plane.stride = img->stride[VPX_PLANE_U];
-  decoded_frame->u_plane.length = img->stride[VPX_PLANE_U] * (img->d_h + 1) / 2;
-  decoded_frame->u_plane.data = new uint8[decoded_frame->u_plane.length];
-  memcpy(decoded_frame->u_plane.data, img->planes[VPX_PLANE_U],
-         decoded_frame->u_plane.length);
-
-  decoded_frame->v_plane.stride = img->stride[VPX_PLANE_V];
-  decoded_frame->v_plane.length = img->stride[VPX_PLANE_V] * (img->d_h + 1) / 2;
-  decoded_frame->v_plane.data = new uint8[decoded_frame->v_plane.length];
-
-  memcpy(decoded_frame->v_plane.data, img->planes[VPX_PLANE_V],
-         decoded_frame->v_plane.length);
+  // Copy each plane individually (need to account for stride).
+  // TODO(mikhal): Eliminate copy once http://crbug.com/321856 is resolved.
+  CopyPlane(VideoFrame::kYPlane, img->planes[VPX_PLANE_Y],
+            img->stride[VPX_PLANE_Y], img->d_h, decoded_frame.get());
+  CopyPlane(VideoFrame::kUPlane, img->planes[VPX_PLANE_U],
+            img->stride[VPX_PLANE_U], (img->d_h + 1) / 2, decoded_frame.get());
+  CopyPlane(VideoFrame::kVPlane, img->planes[VPX_PLANE_V],
+            img->stride[VPX_PLANE_V], (img->d_h + 1) / 2, decoded_frame.get());
 
   // Log:: Decoding complete (should be called from the main thread).
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, base::Bind(
@@ -101,8 +96,7 @@ bool Vp8Decoder::Decode(const EncodedVideoFrame* encoded_frame,
   VLOG(1) << "Decoded frame " << frame_id_int;
   // Frame decoded - return frame to the user via callback.
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-      base::Bind(frame_decoded_cb, base::Passed(&decoded_frame),
-                 render_time));
+      base::Bind(frame_decoded_cb, decoded_frame, render_time));
 
   return true;
 }

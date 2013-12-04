@@ -14,6 +14,7 @@ namespace media {
 namespace cast {
 
 class Vp8Decoder;
+class VideoFrame;
 
 // This class is not thread safe; it's only called from the cast video decoder
 // thread.

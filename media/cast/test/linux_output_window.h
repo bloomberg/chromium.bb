@@ -11,7 +11,15 @@
 #include <sys/shm.h>
 #include <X11/extensions/XShm.h>
 
-#include "media/cast/cast_config.h"
+#include <string>
+
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+
+namespace media {
+class VideoFrame;
+}
+
 
 namespace media {
 namespace cast {
@@ -26,7 +34,7 @@ class LinuxOutputWindow {
                     const std::string& name);
   virtual ~LinuxOutputWindow();
 
-  void RenderFrame(const I420VideoFrame& video_frame);
+  void RenderFrame(const scoped_refptr<media::VideoFrame>& video_frame);
 
  private:
   void CreateWindow(int x_pos,

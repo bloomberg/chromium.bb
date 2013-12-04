@@ -29,7 +29,7 @@ class DecodeTestFrameCallback :
  public:
   DecodeTestFrameCallback() {}
 
-  void DecodeComplete(scoped_ptr<I420VideoFrame> decoded_frame,
+  void DecodeComplete(const scoped_refptr<media::VideoFrame>& decoded_frame,
                       const base::TimeTicks& render_time) {}
  protected:
   virtual ~DecodeTestFrameCallback() {}

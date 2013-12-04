@@ -140,24 +140,6 @@ struct VideoReceiverConfig {
   std::string aes_iv_mask;  // Binary string of size kAesKeySize.
 };
 
-// DEPRECATED: Do not use in new code.  Please migrate existing code to use
-// media::VideoFrame.
-struct I420VideoPlane {
-  int stride;
-  int length;
-  uint8* data;
-};
-
-// DEPRECATED: Do not use in new code.  Please migrate existing code to use
-// media::VideoFrame.
-struct I420VideoFrame {
-  int width;
-  int height;
-  I420VideoPlane y_plane;
-  I420VideoPlane u_plane;
-  I420VideoPlane v_plane;
-};
-
 struct EncodedVideoFrame {
   EncodedVideoFrame();
   ~EncodedVideoFrame();

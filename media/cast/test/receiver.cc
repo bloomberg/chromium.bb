@@ -15,6 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/time/default_tick_clock.h"
+#include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
@@ -157,10 +158,10 @@ class ReceiveProcess : public base::RefCountedThreadSafe<ReceiveProcess> {
  private:
   friend class base::RefCountedThreadSafe<ReceiveProcess>;
 
-  void DisplayFrame(scoped_ptr<I420VideoFrame> frame,
+  void DisplayFrame(const scoped_refptr<media::VideoFrame>& video_frame,
       const base::TimeTicks& render_time) {
 #ifdef OS_LINUX
-    render_.RenderFrame(*frame);
+    render_.RenderFrame(video_frame);
 #endif // OS_LINUX
     // Print out the delta between frames.
     if (!last_render_time_.is_null()){

@@ -17,6 +17,10 @@
 #include "media/cast/cast_environment.h"
 
 namespace media {
+class VideoFrame;
+}
+
+namespace media {
 namespace cast {
 // Callback in which the raw audio frame and play-out time will be returned
 // once decoding is complete.
@@ -29,7 +33,8 @@ typedef base::Callback<void(scoped_ptr<EncodedAudioFrame>,
 
 // Callback in which the raw frame and render time will be returned once
 // decoding is complete.
-typedef base::Callback<void(scoped_ptr<I420VideoFrame>, const base::TimeTicks&)>
+typedef base::Callback<void(const scoped_refptr<media::VideoFrame>& video_frame,
+                            const base::TimeTicks&)>
     VideoFrameDecodedCallback;
 
 // Callback in which the encoded video frame and render time will be returned.

@@ -5,7 +5,6 @@
 #include <math.h>
 #include <cstdio>
 
-#include "media/base/video_frame.h"
 #include "media/cast/test/video_utility.h"
 #include "third_party/libyuv/include/libyuv/compare.h"
 #include "ui/gfx/size.h"
@@ -13,30 +12,19 @@
 namespace media {
 namespace cast {
 
-double I420PSNR(const I420VideoFrame& frame1, const I420VideoFrame& frame2) {
-  // Frames should have equal resolution.
-  if (frame1.width != frame2.width || frame1.height != frame2.height) return -1;
-  return libyuv::I420Psnr(frame1.y_plane.data, frame1.y_plane.stride,
-                          frame1.u_plane.data, frame1.u_plane.stride,
-                          frame1.v_plane.data, frame1.v_plane.stride,
-                          frame2.y_plane.data, frame2.y_plane.stride,
-                          frame2.u_plane.data, frame2.u_plane.stride,
-                          frame2.v_plane.data, frame2.v_plane.stride,
-                          frame1.width, frame1.height);
-}
-
-double I420PSNR(const VideoFrame& frame1, const I420VideoFrame& frame2) {
-  if (frame1.coded_size().width() != frame2.width ||
-      frame1.coded_size().height() != frame2.height) return -1;
+double I420PSNR(const scoped_refptr<media::VideoFrame>& frame1,
+                const scoped_refptr<media::VideoFrame>& frame2) {
+  if (frame1->coded_size().width() != frame2->coded_size().width() ||
+      frame1->coded_size().height() != frame2->coded_size().height()) return -1;
 
   return libyuv::I420Psnr(
-      frame1.data(VideoFrame::kYPlane), frame1.stride(VideoFrame::kYPlane),
-      frame1.data(VideoFrame::kUPlane), frame1.stride(VideoFrame::kUPlane),
-      frame1.data(VideoFrame::kVPlane), frame1.stride(VideoFrame::kVPlane),
-      frame2.y_plane.data, frame2.y_plane.stride,
-      frame2.u_plane.data, frame2.u_plane.stride,
-      frame2.v_plane.data, frame2.v_plane.stride,
-      frame2.width, frame2.height);
+      frame1->data(VideoFrame::kYPlane), frame1->stride(VideoFrame::kYPlane),
+      frame1->data(VideoFrame::kUPlane), frame1->stride(VideoFrame::kUPlane),
+      frame1->data(VideoFrame::kVPlane), frame1->stride(VideoFrame::kVPlane),
+      frame2->data(VideoFrame::kYPlane), frame2->stride(VideoFrame::kYPlane),
+      frame2->data(VideoFrame::kUPlane), frame2->stride(VideoFrame::kUPlane),
+      frame2->data(VideoFrame::kVPlane), frame2->stride(VideoFrame::kVPlane),
+      frame1->coded_size().width(), frame1->coded_size().height());
 }
 
 void PopulateVideoFrame(VideoFrame* frame, int start_value) {
@@ -61,37 +49,6 @@ void PopulateVideoFrame(VideoFrame* frame, int start_value) {
   // Set V.
   for (int i = 0; i < half_width * half_height; ++i) {
     v_plane[i] = static_cast<uint8>(start_value + i);
-  }
-}
-
-void PopulateVideoFrame(I420VideoFrame* frame, int start_value) {
-  int half_width = (frame->width + 1) / 2;
-  int half_height = (frame->height + 1) / 2;
-  frame->y_plane.stride = frame->width;
-  frame->y_plane.length = frame->width * frame->height;
-  frame->y_plane.data = new uint8[frame->y_plane.length];
-
-  frame->u_plane.stride = half_width;
-  frame->u_plane.length = half_width * half_height;
-  frame->u_plane.data = new uint8[frame->u_plane.length];
-
-  frame->v_plane.stride = half_width;
-  frame->v_plane.length = half_width * half_height;
-  frame->v_plane.data = new uint8[frame->v_plane.length];
-
-  // Set Y.
-  for (int i = 0; i < frame->y_plane.length; ++i) {
-    frame->y_plane.data[i] = static_cast<uint8>(start_value + i);
-  }
-
-  // Set U.
-  for (int i = 0; i < frame->u_plane.length; ++i) {
-    frame->u_plane.data[i] = static_cast<uint8>(start_value + i);
-  }
-
-  // Set V.
-  for (int i = 0; i < frame->v_plane.length; ++i) {
-    frame->v_plane.data[i] = static_cast<uint8>(start_value + i);
   }
 }
 

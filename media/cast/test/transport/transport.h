@@ -9,7 +9,6 @@
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "net/udp/udp_server_socket.h"
-#include "net/udp/udp_socket.h"
 
 
 namespace media {
@@ -42,7 +41,7 @@ class Transport {
   void StopReceiving();
 
  private:
-  scoped_ptr<net::DatagramServerSocket> udp_socket_;
+  scoped_ptr<net::UDPServerSocket> udp_socket_;
   scoped_refptr<LocalPacketSender> packet_sender_;
   scoped_refptr<LocalUdpTransportData> local_udp_transport_data_;
   scoped_refptr<base::TaskRunner> io_thread_proxy_;

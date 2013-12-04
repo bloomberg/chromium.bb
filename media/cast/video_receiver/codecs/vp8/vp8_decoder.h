@@ -14,6 +14,7 @@
 
 typedef struct vpx_codec_ctx vpx_dec_ctx_t;
 
+// TODO(mikhal): Look into reusing VpxVideoDecoder.
 namespace media {
 namespace cast {
 

@@ -43,14 +43,16 @@ class EncodeDecodeTestFrameCallback :
     PopulateVideoFrame(original_frame_.get(), start_value);
   }
 
-  void DecodeComplete(scoped_ptr<I420VideoFrame> decoded_frame,
+  void DecodeComplete(const scoped_refptr<media::VideoFrame>& decoded_frame,
                       const base::TimeTicks& render_time) {
     ++num_called_;
     // Compare resolution.
-    EXPECT_EQ(original_frame_->coded_size().width(), decoded_frame->width);
-    EXPECT_EQ(original_frame_->coded_size().height(), decoded_frame->height);
+    EXPECT_EQ(original_frame_->coded_size().width(),
+              decoded_frame->coded_size().width());
+    EXPECT_EQ(original_frame_->coded_size().height(),
+              decoded_frame->coded_size().height());
     // Compare data.
-    EXPECT_GT(I420PSNR(*(original_frame_.get()), *(decoded_frame.get())), 40.0);
+    EXPECT_GT(I420PSNR(original_frame_, decoded_frame), 40.0);
   }
 
   int num_called() const {
