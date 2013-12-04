@@ -306,11 +306,11 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(EXTENSIONS, {
           'channel': 'beta'
         }
       }),
-      'idle.json': '{}',
-      'input_ime.json': '{}',
-      'menus.json': '{}',
-      'tabs.json': '{}',
-      'windows.json': '{}'
+      'idle.json': json.dumps([{'namespace': 'idle'}]),
+      'input_ime.json': json.dumps([{'namespace': 'input.ime'}]),
+      'menus.json': json.dumps([{'namespace': 'menus'}]),
+      'tabs.json': json.dumps([{'namespace': 'tabs'}]),
+      'windows.json': json.dumps([{'namespace': 'windows'}])
     }
   },
   '1453': {
@@ -374,11 +374,11 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(EXTENSIONS, {
           'channel': 'dev'
         }
       }),
-      'idle.json': '{}',
-      'input_ime.json': '{}',
-      'menus.json': '{}',
-      'tabs.json': '{}',
-      'windows.json': '{}'
+      'idle.json': json.dumps([{'namespace': 'idle'}]),
+      'input_ime.json': json.dumps([{'namespace': 'input.ime'}]),
+      'menus.json': json.dumps([{'namespace': 'menus'}]),
+      'tabs.json': json.dumps([{'namespace': 'tabs'}]),
+      'windows.json': json.dumps([{'namespace': 'windows'}])
     }
   },
   '1410': {
@@ -425,11 +425,11 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(EXTENSIONS, {
           'channel': 'stable'
         }
       }),
-      'idle.json': '{}',
-      'input_ime.json': '{}',
-      'menus.json': '{}',
-      'tabs.json': '{}',
-      'windows.json': '{}'
+      'idle.json': json.dumps([{'namespace': 'idle'}]),
+      'input_ime.json': json.dumps([{'namespace': 'input.ime'}]),
+      'menus.json': json.dumps([{'namespace': 'menus'}]),
+      'tabs.json': json.dumps([{'namespace': 'tabs'}]),
+      'windows.json': json.dumps([{'namespace': 'windows'}])
     }
   },
   '1364': {
@@ -456,11 +456,11 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(EXTENSIONS, {
           'channel': 'stable'
         }
       }),
-      'idle.json': '{}',
-      'input_ime.json': '{}',
-      'menus.json': '{}',
-      'tabs.json': '{}',
-      'windows.json': '{}'
+      'idle.json': json.dumps([{'namespace': 'idle'}]),
+      'input_ime.json': json.dumps([{'namespace': 'input.ime'}]),
+      'menus.json': json.dumps([{'namespace': 'menus'}]),
+      'tabs.json': json.dumps([{'namespace': 'tabs'}]),
+      'windows.json': json.dumps([{'namespace': 'windows'}])
     }
   },
   '1312': {
@@ -487,11 +487,11 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(EXTENSIONS, {
           'channel': 'stable'
         }
       }),
-      'idle.json': '{}',
-      'input_ime.json': '{}',
-      'menus.json': '{}',
-      'tabs.json': '{}',
-      'windows.json': '{}'
+      'idle.json': json.dumps([{'namespace': 'idle'}]),
+      'input_ime.json': json.dumps([{'namespace': 'input.ime'}]),
+      'menus.json': json.dumps([{'namespace': 'menus'}]),
+      'tabs.json': json.dumps([{'namespace': 'tabs'}]),
+      'windows.json': json.dumps([{'namespace': 'windows'}])
     }
   },
   '1271': {
@@ -518,12 +518,12 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(EXTENSIONS, {
           'channel': 'stable'
         }
       }),
-      'alarms.idl': '{}',
-      'idle.json': '{}',
-      'input_ime.json': '{}',
-      'menus.json': '{}',
-      'tabs.json': '{}',
-      'windows.json': '{}'
+      'alarms.idl': '//copy\n\n//desc\nnamespace alarms {}',
+      'idle.json': json.dumps([{'namespace': 'idle'}]),
+      'input_ime.json': json.dumps([{'namespace': 'input.ime'}]),
+      'menus.json': json.dumps([{'namespace': 'menus'}]),
+      'tabs.json': json.dumps([{'namespace': 'tabs'}]),
+      'windows.json': json.dumps([{'namespace': 'windows'}])
     }
   },
   '1229': {
@@ -547,12 +547,11 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(EXTENSIONS, {
           'channel': 'beta'
         }
       }),
-      'alarms.idl': '{}',
-      'idle.json': '{}',
-      'input_ime.json': '{}',
-      'menus.json': '{}',
-      'system_info_display.idl': '{}',
-      'tabs.json': '{}'
+      'alarms.idl': '//copy\n\n//desc\nnamespace alarms {}',
+      'idle.json': json.dumps([{'namespace': 'idle'}]),
+      'input_ime.json': json.dumps([{'namespace': 'input.ime'}]),
+      'menus.json': json.dumps([{'namespace': 'menus'}]),
+      'tabs.json': json.dumps([{'namespace': 'tabs'}]),
     }
   },
   '1180': {
@@ -573,11 +572,11 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(EXTENSIONS, {
           'channel': 'stable'
         }
       }),
-      'bookmarks.json': '{}',
-      'idle.json': '{}',
-      'input_ime.json': '{}',
-      'menus.json': '{}',
-      'tabs.json': '{}'
+      'bookmarks.json': json.dumps([{'namespace': 'bookmarks'}]),
+      'idle.json': json.dumps([{'namespace': 'idle'}]),
+      'input_ime.json': json.dumps([{'namespace': 'input.ime'}]),
+      'menus.json': json.dumps([{'namespace': 'menus'}]),
+      'tabs.json': json.dumps([{'namespace': 'tabs'}]),
     }
   },
   '1132': {
@@ -595,11 +594,11 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(EXTENSIONS, {
           'channel': 'stable'
         }
       }),
-      'bookmarks.json': '{}',
-      'idle.json': '{}',
-      'input.ime.json': '{}',
-      'menus.json': '{}',
-      'tabs.json': '{}'
+      'bookmarks.json': json.dumps([{'namespace': 'bookmarks'}]),
+      'idle.json': json.dumps([{'namespace': 'idle'}]),
+      'input.ime.json': json.dumps([{'namespace': 'input.ime'}]),
+      'menus.json': json.dumps([{'namespace': 'menus'}]),
+      'tabs.json': json.dumps([{'namespace': 'tabs'}]),
     }
   },
   '1084': {
@@ -607,22 +606,24 @@ CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(EXTENSIONS, {
       '_manifest_features.json': json.dumps({
         'contents': 'nothing of interest here,really'
       }),
-      'idle.json': '{}',
-      'input.ime.json': '{}',
-      'menus.json': '{}',
-      'pageAction.json': '{}',
-      'tabs.json': '{}',
-      'webRequest.json': '{}'
+      'bookmarks.json': json.dumps([{'namespace': 'bookmarks'}]),
+      'idle.json': json.dumps([{'namespace': 'idle'}]),
+      'input.ime.json': json.dumps([{'namespace': 'input.ime'}]),
+      'menus.json': json.dumps([{'namespace': 'menus'}]),
+      'tabs.json': json.dumps([{'namespace': 'tabs'}]),
+      'pageAction.json': json.dumps([{'namespace': 'pageAction'}]),
+      'webRequest.json': json.dumps([{'namespace': 'webRequest'}])
     }
   },
   '1025': {
     'api': {
-      'idle.json': '{}',
-      'input.ime.json': '{}',
-      'menus.json': '{}',
-      'pageAction.json': '{}',
-      'tabs.json': '{}',
-      'webRequest.json': '{}'
+      'bookmarks.json': json.dumps([{'namespace': 'bookmarks'}]),
+      'idle.json': json.dumps([{'namespace': 'idle'}]),
+      'input.ime.json': json.dumps([{'namespace': 'input.ime'}]),
+      'menus.json': json.dumps([{'namespace': 'menus'}]),
+      'tabs.json': json.dumps([{'namespace': 'tabs'}]),
+      'pageAction.json': json.dumps([{'namespace': 'pageAction'}]),
+      'webRequest.json': json.dumps([{'namespace': 'webRequest'}])
     }
   },
   '963': {

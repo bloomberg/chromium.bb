@@ -16,9 +16,7 @@ from third_party.json_schema_compiler.model import Namespace, UnixName
 
 @SingleFile
 def _CreateAPIModel(path, data):
-  schema = ProcessSchema(path, data)
-  if os.path.splitext(path)[1] == '.json':
-    schema = schema[0]
+  schema = ProcessSchema(path, data)[0]
   if not schema: return None
   return Namespace(schema, schema['namespace'])
 

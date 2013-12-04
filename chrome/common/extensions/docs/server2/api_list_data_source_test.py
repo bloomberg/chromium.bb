@@ -127,6 +127,7 @@ class APIListDataSourceTest(unittest.TestCase):
         server_instance.api_models,
         server_instance.availability_finder,
         server_instance.api_categorizer)
+    self.maxDiff = None
 
   def testApps(self):
     api_list = self._factory.Create()
@@ -141,7 +142,10 @@ class APIListDataSourceTest(unittest.TestCase):
           {
             'name': 'app.window',
             'platforms': ['apps'],
-            'version': 5,
+            # Availability logic will look for a camelCase format filename
+            # (i.e. 'app.window.html') at version 20 and below, but the
+            # unix_name format above won't be found at these versions.
+            'version': 21,
             'description': u'<code>app.window</code>'
           },
           {
@@ -190,7 +194,8 @@ class APIListDataSourceTest(unittest.TestCase):
           {
             'name': 'browserAction',
             'platforms': ['extensions'],
-            'version': 5,
+            # See comment above for 'app.window'.
+            'version': 21,
             'description': u'<code>browserAction</code>'
           },
           {

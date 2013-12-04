@@ -108,7 +108,8 @@ def ProcessSchema(path, file_data):
 
   if path.endswith('.idl'):
     idl = idl_schema.IDLSchema(idl_parser.IDLParser().ParseData(file_data))
-    return trim_and_inline(idl.process()[0], is_idl=True)
+    # Wrap the result in a list so that it behaves like JSON API data.
+    return [trim_and_inline(idl.process()[0], is_idl=True)]
 
   schemas = json_parse.Parse(file_data)
   for schema in schemas:
