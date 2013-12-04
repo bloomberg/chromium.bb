@@ -623,9 +623,9 @@ void DeviceDataManager::SetValuatorDataForTest(XIDeviceEvent* xievent,
     if (XIMaskIsSet(xievent->valuators.mask, i))
       valuators++;
   }
-  for (int i = valuators - xievent->valuators.values;
-       i < DT_LAST_ENTRY - 1; ++i)
-    xievent->valuators.values[i + 1] = xievent->valuators.values[i];
+  for (int i = DT_LAST_ENTRY - 1; i > valuators - xievent->valuators.values;
+       --i)
+    xievent->valuators.values[i] = xievent->valuators.values[i - 1];
   *valuators = value;
 }
 

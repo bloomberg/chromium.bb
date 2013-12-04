@@ -189,8 +189,6 @@ void ScopedXI2Event::InitScrollEvent(int deviceid,
   Cleanup();
   event_.reset(CreateXInput2Event(deviceid, XI_Motion, 0, gfx::Point()));
 
-  // Note: Ensure that the order of the valuators in the array matches the
-  // order of the definition in DeviceDataManager.
   Valuator valuators[] = {
     Valuator(DeviceDataManager::DT_CMT_SCROLL_X, x_offset),
     Valuator(DeviceDataManager::DT_CMT_SCROLL_Y, y_offset),
@@ -211,14 +209,12 @@ void ScopedXI2Event::InitFlingScrollEvent(int deviceid,
   Cleanup();
   event_.reset(CreateXInput2Event(deviceid, XI_Motion, deviceid, gfx::Point()));
 
-  // Note: Ensure that the order of the valuators in the array matches the
-  // order of the definition in DeviceDataManager.
   Valuator valuators[] = {
-    Valuator(DeviceDataManager::DT_CMT_ORDINAL_X, x_velocity_ordinal),
+    Valuator(DeviceDataManager::DT_CMT_FLING_STATE, is_cancel ? 1 : 0),
+    Valuator(DeviceDataManager::DT_CMT_FLING_Y, y_velocity),
     Valuator(DeviceDataManager::DT_CMT_ORDINAL_Y, y_velocity_ordinal),
     Valuator(DeviceDataManager::DT_CMT_FLING_X, x_velocity),
-    Valuator(DeviceDataManager::DT_CMT_FLING_Y, y_velocity),
-    Valuator(DeviceDataManager::DT_CMT_FLING_STATE, is_cancel ? 1 : 0)
+    Valuator(DeviceDataManager::DT_CMT_ORDINAL_X, x_velocity_ordinal)
   };
 
   SetUpValuators(
