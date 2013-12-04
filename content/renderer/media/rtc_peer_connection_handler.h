@@ -112,11 +112,17 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
       OVERRIDE;
   virtual blink::WebRTCSessionDescription remoteDescription()
       OVERRIDE;
+
   virtual bool updateICE(
       const blink::WebRTCConfiguration& server_configuration,
       const blink::WebMediaConstraints& options) OVERRIDE;
   virtual bool addICECandidate(
       const blink::WebRTCICECandidate& candidate) OVERRIDE;
+  virtual bool addICECandidate(
+      const blink::WebRTCVoidRequest& request,
+      const blink::WebRTCICECandidate& candidate) OVERRIDE;
+  virtual void OnaddICECandidateResult(const blink::WebRTCVoidRequest& request,
+                                       bool result);
 
   virtual bool addStream(
       const blink::WebMediaStream& stream,

@@ -490,6 +490,20 @@ bool RTCPeerConnectionHandler::updateICE(
 }
 
 bool RTCPeerConnectionHandler::addICECandidate(
+  const blink::WebRTCVoidRequest& request,
+  const blink::WebRTCICECandidate& candidate) {
+  // Libjingle currently does not accept callbacks for addICECandidate.
+  // For that reason we are going to call callbacks from here.
+  bool result = addICECandidate(candidate);
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&RTCPeerConnectionHandler::OnaddICECandidateResult,
+                 base::Unretained(this), request, result));
+  // On failure callback will be triggered.
+  return true;
+}
+
+bool RTCPeerConnectionHandler::addICECandidate(
     const blink::WebRTCICECandidate& candidate) {
   scoped_ptr<webrtc::IceCandidateInterface> native_candidate(
       dependency_factory_->CreateIceCandidate(
@@ -510,6 +524,18 @@ bool RTCPeerConnectionHandler::addICECandidate(
         this, candidate, PeerConnectionTracker::SOURCE_REMOTE);
 
   return return_value;
+}
+
+void RTCPeerConnectionHandler::OnaddICECandidateResult(
+    const blink::WebRTCVoidRequest& webkit_request, bool result) {
+  if (!result) {
+    // We don't have the actual error code from the libjingle, so for now
+    // using a generic error string.
+    return webkit_request.requestFailed(
+        UTF8ToUTF16("Error processing ICE candidate"));
+  }
+
+  return webkit_request.requestSucceeded();
 }
 
 bool RTCPeerConnectionHandler::addStream(
