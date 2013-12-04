@@ -66,13 +66,25 @@ const Extension* GcmApiTest::LoadTestExtension(
   return extension;
 }
 
-IN_PROC_BROWSER_TEST_F(GcmApiTest, RegisterValidation) {
+// http://crbug.com/177163 and http://crbug.com/324982
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_RegisterValidation DISABLED_RegisterValidation
+#else
+#define MAYBE_RegisterValidation RegisterValidation
+#endif
+IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_RegisterValidation) {
   SetUpFakeService(false);
   EXPECT_TRUE(RunExtensionSubtest(kFunctionsTestExtension,
                                   "register_validation.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(GcmApiTest, Register) {
+// http://crbug.com/177163 and http://crbug.com/324982
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_Register DISABLED_Register
+#else
+#define MAYBE_Register Register
+#endif
+IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_Register) {
   SetUpFakeService(true);
   const extensions::Extension* extension =
       LoadTestExtension(kFunctionsTestExtension, "register.html");
@@ -92,12 +104,24 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, Register) {
                   sender_ids.end());
 }
 
-IN_PROC_BROWSER_TEST_F(GcmApiTest, SendValidation) {
+// http://crbug.com/177163 and http://crbug.com/324982
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_SendValidation DISABLED_SendValidation
+#else
+#define MAYBE_SendValidation SendValidation
+#endif
+IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_SendValidation) {
   SetUpFakeService(false);
   EXPECT_TRUE(RunExtensionSubtest(kFunctionsTestExtension, "send.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(GcmApiTest, SendMessageData) {
+// http://crbug.com/177163 and http://crbug.com/324982
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_SendMessageData DISABLED_SendMessageData
+#else
+#define MAYBE_SendMessageData SendMessageData
+#endif
+IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_SendMessageData) {
   SetUpFakeService(true);
   const extensions::Extension* extension =
       LoadTestExtension(kFunctionsTestExtension, "send_message_data.html");
