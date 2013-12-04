@@ -91,8 +91,13 @@ message ResourceEntry {
   // server. Deleted entries won't be stored in ResourceMetadata.
   optional bool deleted = 11;
 
-  // True if the entry is labeled with "shared-with-me".
+  // True if the entry is labeled with "shared-with-me", i.e., owned by someone
+  // else initially and later shared to the current user.
   optional bool shared_with_me = 14;
+
+  // True if the entry is labeled "shared". Either the entry itself or its
+  // ancestor is shared (to the user from / by the user to) other accounts.
+  optional bool shared = 17;
 
   // File specific information, such as MD5.
   optional FileSpecificInfo file_specific_info = 9;
