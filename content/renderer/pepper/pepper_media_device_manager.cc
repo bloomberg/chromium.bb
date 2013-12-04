@@ -59,9 +59,10 @@ int PepperMediaDeviceManager::EnumerateDevices(
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(
-          &PepperMediaDeviceManager::OnDevicesEnumerationFailed,
+          &PepperMediaDeviceManager::OnDevicesEnumerated,
           AsWeakPtr(),
-          request_id));
+          request_id,
+          StreamDeviceInfoArray()));
 #endif
 
   return request_id;
