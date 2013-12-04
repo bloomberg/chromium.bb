@@ -639,13 +639,13 @@ cr.define('options', function() {
       var sectionTop = section.offsetTop;
       if (pageTop + sectionBottom > document.body.scrollHeight ||
           pageTop + sectionTop < 0) {
-        pageContainer.oldScrollTop = -pageTop;
         // Currently not all layout updates are guaranteed to precede the
         // initializationComplete event (for example 'set-as-default-browser'
         // button) leaving some uncertainty in the optimal scroll position.
         // The section is placed approximately in the middle of the screen.
-        pageContainer.style.top = document.body.scrollHeight / 2 -
-            sectionBottom + 'px';
+        var top = Math.min(0, document.body.scrollHeight / 2 - sectionBottom);
+        pageContainer.style.top = top + 'px';
+        pageContainer.oldScrollTop = -top;
       }
     },
 
