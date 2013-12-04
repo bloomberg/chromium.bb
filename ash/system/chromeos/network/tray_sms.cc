@@ -234,7 +234,7 @@ class TraySms::SmsDetailedView : public TrayDetailsView,
   // Overridden from ViewClickListener.
   virtual void OnViewClicked(views::View* sender) OVERRIDE {
     if (sender == footer()->content())
-      owner()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+      TransitionToDefaultView();
   }
 
   DISALLOW_COPY_AND_ASSIGN(SmsDetailedView);

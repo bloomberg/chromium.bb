@@ -101,11 +101,11 @@ class SystemBubbleWrapper {
     }
     is_persistent_ = is_persistent;
 
-    // If ChromeVox is enabled, focus the default item.
-    AccessibilityDelegate* delegate =
-        Shell::GetInstance()->accessibility_delegate();
-    if (delegate->IsSpokenFeedbackEnabled())
-      bubble_->FocusDefault();
+    // If ChromeVox is enabled, focus the default item if no item is focused.
+    if (Shell::GetInstance()->accessibility_delegate()->
+        IsSpokenFeedbackEnabled()) {
+      bubble_->FocusDefaultIfNeeded();
+    }
   }
 
   // Convenience accessors:
@@ -461,11 +461,11 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
   notification_bubble_.reset();
   if (system_bubble_.get() && creation_type == BUBBLE_USE_EXISTING) {
     system_bubble_->bubble()->UpdateView(items, bubble_type);
-    // If ChromeVox is enabled, focus the default item.
-    AccessibilityDelegate* delegate =
-        Shell::GetInstance()->accessibility_delegate();
-    if (delegate->IsSpokenFeedbackEnabled())
-      system_bubble_->bubble()->FocusDefault();
+    // If ChromeVox is enabled, focus the default item if no item is focused.
+    if (Shell::GetInstance()->accessibility_delegate()->
+        IsSpokenFeedbackEnabled()) {
+      system_bubble_->bubble()->FocusDefaultIfNeeded();
+    }
   } else {
     // Remember if the menu is a single property (like e.g. volume) or the
     // full tray menu. Note that in case of the |BUBBLE_USE_EXISTING| case

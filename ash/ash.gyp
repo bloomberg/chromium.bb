@@ -812,6 +812,7 @@
         'system/chromeos/tray_display_unittest.cc',
         'system/date/date_view_unittest.cc',
         'system/tray/system_tray_unittest.cc',
+        'system/tray/tray_details_view_unittest.cc',
         'system/user/tray_user_unittest.cc',
         'system/web_notification/web_notification_tray_unittest.cc',
         'test/ash_test_helper_unittest.cc',

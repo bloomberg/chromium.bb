@@ -5,6 +5,7 @@
 #include "ash/system/tray/tray_details_view.h"
 
 #include "ash/system/tray/fixed_sized_scroll_view.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ui/gfx/canvas.h"
@@ -112,6 +113,16 @@ void TrayDetailsView::Reset() {
   footer_ = NULL;
   scroller_ = NULL;
   scroll_content_ = NULL;
+}
+
+void TrayDetailsView::TransitionToDefaultView() {
+  // Cache pointer to owner in this function scope. TrayDetailsView will be
+  // deleted after called ShowDefaultView.
+  SystemTrayItem* owner = owner_;
+  if (footer_ && footer_->content() && footer_->content()->HasFocus())
+    owner->set_restore_focus(true);
+  owner->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  owner->set_restore_focus(false);
 }
 
 void TrayDetailsView::Layout() {

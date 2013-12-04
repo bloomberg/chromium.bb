@@ -108,8 +108,14 @@ class ASH_EXPORT SystemTrayItem {
   // Returns the system tray that this item belongs to.
   SystemTray* system_tray() const { return system_tray_; }
 
+  bool restore_focus() const { return restore_focus_; }
+  void set_restore_focus(bool restore_focus) {
+    restore_focus_ = restore_focus;
+  }
+
  private:
   SystemTray* system_tray_;
+  bool restore_focus_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayItem);
 };

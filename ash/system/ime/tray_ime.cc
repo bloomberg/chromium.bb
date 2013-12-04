@@ -147,7 +147,7 @@ class IMEDetailedView : public TrayDetailsView,
   virtual void OnViewClicked(views::View* sender) OVERRIDE {
     SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
     if (sender == footer()->content()) {
-      owner()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+      TransitionToDefaultView();
     } else if (sender == settings_) {
       delegate->ShowIMESettings();
     } else {

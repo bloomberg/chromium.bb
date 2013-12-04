@@ -518,7 +518,7 @@ class AudioDetailedView : public TrayDetailsView,
   // Overridden from ViewClickListener.
   virtual void OnViewClicked(views::View* sender) OVERRIDE {
     if (sender == footer()->content()) {
-      owner()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+      TransitionToDefaultView();
     } else {
       AudioDeviceMap::iterator iter = device_map_.find(sender);
       if (iter == device_map_.end())

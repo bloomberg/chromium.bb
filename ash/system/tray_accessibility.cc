@@ -229,7 +229,7 @@ void AccessibilityDetailedView::OnViewClicked(views::View* sender) {
   AccessibilityDelegate* delegate =
       Shell::GetInstance()->accessibility_delegate();
   if (sender == footer()->content()) {
-    owner()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+    TransitionToDefaultView();
   } else if (sender == spoken_feedback_view_) {
     delegate->ToggleSpokenFeedback(ash::A11Y_NOTIFICATION_NONE);
   } else if (sender == high_contrast_view_) {

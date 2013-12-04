@@ -299,8 +299,7 @@ void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
   ResetInfoBubble();
 
   if (sender == footer()->content()) {
-    RootWindowController::ForWindow(GetWidget()->GetNativeView())->
-        GetSystemTray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+    TransitionToDefaultView();
     return;
   }
 

@@ -353,7 +353,7 @@ class BluetoothDetailedView : public TrayDetailsView,
     ash::SystemTrayDelegate* delegate =
         ash::Shell::GetInstance()->system_tray_delegate();
     if (sender == footer()->content()) {
-      owner()->system_tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+      TransitionToDefaultView();
     } else if (sender == manage_devices_) {
       delegate->ManageBluetoothDevices();
     } else if (sender == enable_bluetooth_) {
