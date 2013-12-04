@@ -18,8 +18,7 @@ VideoDecoder::VideoDecoder(const VideoReceiverConfig& video_config,
       vp8_decoder_() {
   switch (video_config.codec) {
     case kVp8:
-      // Initializing to use one core.
-      vp8_decoder_.reset(new Vp8Decoder(1, cast_environment));
+      vp8_decoder_.reset(new Vp8Decoder(cast_environment));
       break;
     case kH264:
       NOTIMPLEMENTED();

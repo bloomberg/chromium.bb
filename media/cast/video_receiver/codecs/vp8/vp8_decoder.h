@@ -21,8 +21,7 @@ namespace cast {
 // thread.
 class Vp8Decoder : public base::NonThreadSafe {
  public:
-  Vp8Decoder(int number_of_cores,
-             scoped_refptr<CastEnvironment> cast_environment);
+  explicit Vp8Decoder(scoped_refptr<CastEnvironment> cast_environment);
   ~Vp8Decoder();
 
   // Decode frame - The decoded frame will be passed via the callback.
@@ -35,8 +34,7 @@ class Vp8Decoder : public base::NonThreadSafe {
 
  private:
   // Initialize the decoder.
-  void InitDecode(int number_of_cores);
-
+  void InitDecoder();
   scoped_ptr<vpx_dec_ctx_t> decoder_;
   scoped_refptr<CastEnvironment> cast_environment_;
 };

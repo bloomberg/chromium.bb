@@ -90,7 +90,7 @@ class EncodeDecodeTest : public ::testing::Test {
     int max_unacked_frames = 1;
     encoder_.reset(new Vp8Encoder(encoder_config_, max_unacked_frames));
     // Initialize to use one core.
-    decoder_.reset(new Vp8Decoder(1, cast_environment_));
+    decoder_.reset(new Vp8Decoder(cast_environment_));
   }
 
   virtual ~EncodeDecodeTest() {}
