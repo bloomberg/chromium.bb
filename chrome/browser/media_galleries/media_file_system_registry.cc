@@ -572,8 +572,8 @@ class MediaFileSystemRegistry::MediaFileSystemContextImpl
     CHECK(MediaStorageUtil::CanCreateFileSystem(device_id, path));
     std::string fs_name(extension_misc::kMediaFileSystemPathPart);
     const std::string fsid =
-        IsolatedContext::GetInstance()->RegisterFileSystemForVirtualPath(
-            fileapi::kFileSystemTypeDeviceMedia, fs_name, path);
+        IsolatedContext::GetInstance()->RegisterFileSystemForPath(
+            fileapi::kFileSystemTypeDeviceMedia, path, &fs_name);
     CHECK(!fsid.empty());
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE, base::Bind(
