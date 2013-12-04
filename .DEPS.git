@@ -86,7 +86,7 @@ deps = {
     'src/third_party/mesa/src':
         Var('git_url') + '/chromium/deps/mesa.git@e740c825b11773ebe636675977e5f79de253c745',
     'src/third_party/openmax_dl':
-        Var('git_url') + '/external/webrtc/deps/third_party/openmax.git@160311f8f0a09062f4360709d2965e71d3f3d749',
+        Var('git_url') + '/external/webrtc/deps/third_party/openmax.git@5ba24265199de911cd6a6a43867586068a5e34b5',
     'src/third_party/opus/src':
         Var('git_url') + '/chromium/deps/opus.git@dd52457296df1ef41bae8e28dc321d6798509172',
     'src/third_party/ots':
