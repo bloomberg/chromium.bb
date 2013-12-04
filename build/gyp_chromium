@@ -131,9 +131,8 @@ def RunGN(supplemental_includes):
   if sys.platform == 'win32':
     gnpath += 'win/gn.exe'
   elif sys.platform.startswith('linux'):
-    # On Linux we have 32-bit and 64-bit versions. Checking /sbin/init avoids
-    # uname's confusion when running a 32-bit userland on a 64-bit kernel.
-    if subprocess.check_output(["file", "/sbin/init"]).find("ELF 64-bit") >= 0:
+    # On Linux we have 32-bit and 64-bit versions.
+    if subprocess.check_output(["getconf", "LONG_BIT"]).find("64") >= 0:
       gnpath += 'linux/gn'
     else:
       gnpath += 'linux/gn32'
