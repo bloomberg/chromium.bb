@@ -55,12 +55,12 @@ void ExtensionKeybindingRegistry::RemoveExtensionKeybinding(
       // Let each platform-specific implementation get a chance to clean up.
       RemoveExtensionKeybindingImpl(old->first, command_name);
       event_targets_.erase(old);
-    }
 
-    // If a specific command_name was requested, it has now been deleted so no
-    // further work is required.
-    if (!command_name.empty())
-      break;
+      // If a specific command_name was requested, it has now been deleted so no
+      // further work is required.
+      if (!command_name.empty())
+        break;
+    }
   }
 }
 

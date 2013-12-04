@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
+#include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -285,6 +286,57 @@ IN_PROC_BROWSER_TEST_F(CommandsApiTest, MAYBE_AllowDuplicatedMediaKeys) {
   // We should get two success result.
   ASSERT_TRUE(catcher.GetNextResult());
   ASSERT_TRUE(catcher.GetNextResult());
+}
+
+// This test validates that update (including removal) of keybinding preferences
+// works correctly.
+IN_PROC_BROWSER_TEST_F(CommandsApiTest, UpdateKeybindingPrefsTest) {
+#if defined(OS_MACOSX)
+  // Send "Tab" on OS X to move the focus, otherwise the omnibox will intercept
+  // the key presses we send below.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_TAB, false, false, false, false));
+#endif
+  ResultCatcher catcher;
+  ASSERT_TRUE(RunExtensionTest("keybinding/command_update"));
+  ASSERT_TRUE(catcher.GetNextResult());
+  const Extension* extension = GetSingleLoadedExtension();
+
+  CommandService* command_service = CommandService::Get(browser()->profile());
+  extensions::CommandMap named_commands;
+  command_service->GetNamedCommands(extension->id(),
+                                    extensions::CommandService::ACTIVE_ONLY,
+                                    extensions::CommandService::ANY_SCOPE,
+                                    &named_commands);
+  EXPECT_EQ(3u, named_commands.size());
+
+  const char kCommandNameC[] = "command_C";
+  command_service->RemoveKeybindingPrefs(extension->id(), kCommandNameC);
+  command_service->GetNamedCommands(extension->id(),
+                                    extensions::CommandService::ACTIVE_ONLY,
+                                    extensions::CommandService::ANY_SCOPE,
+                                    &named_commands);
+  EXPECT_EQ(2u, named_commands.size());
+
+  // Send "Alt+C", it shouldn't work because it has been removed.
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_C, false, false, true, false));
+
+  const char kCommandNameB[] = "command_B";
+  const char kKeyStroke[] = "Alt+A";
+  command_service->UpdateKeybindingPrefs(extension->id(),
+                                         kCommandNameB,
+                                         kKeyStroke);
+  command_service->GetNamedCommands(extension->id(),
+                                    extensions::CommandService::ACTIVE_ONLY,
+                                    extensions::CommandService::ANY_SCOPE,
+                                    &named_commands);
+  EXPECT_EQ(1u, named_commands.size());
+
+  // Activate the shortcut (Alt+A).
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
+      browser(), ui::VKEY_A, false, false, true, false));
+  ASSERT_TRUE(catcher.GetNextResult()) << message_;
 }
 
 }  // namespace extensions

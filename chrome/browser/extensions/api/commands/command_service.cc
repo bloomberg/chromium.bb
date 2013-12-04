@@ -230,8 +230,21 @@ bool CommandService::AddKeybindingPref(
   std::string key = GetPlatformKeybindingKeyForAccelerator(accelerator,
                                                            extension_id);
 
-  if (!allow_overrides && bindings->HasKey(key))
-    return false;  // Already taken.
+  if (bindings->HasKey(key)) {
+    if (!allow_overrides)
+      return false;  // Already taken.
+
+    // If the shortcut has been assigned to another command, it should be
+    // removed before overriding, so that |ExtensionKeybindingRegistry| can get
+    // a chance to do clean-up.
+    const base::DictionaryValue* item = NULL;
+    bindings->GetDictionary(key, &item);
+    std::string old_extension_id;
+    std::string old_command_name;
+    item->GetString(kExtension, &old_extension_id);
+    item->GetString(kCommandName, &old_command_name);
+    RemoveKeybindingPrefs(old_extension_id, old_command_name);
+  }
 
   base::DictionaryValue* keybinding = new base::DictionaryValue();
   keybinding->SetString(kExtension, extension_id);
