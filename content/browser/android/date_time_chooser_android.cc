@@ -40,25 +40,7 @@ void DateTimeChooserAndroid::InitializeDateInputTypes(
 
 void DateTimeChooserAndroid::ReplaceDateTime(JNIEnv* env,
                                              jobject,
-                                             int dialog_type,
-                                             int year,
-                                             int month,
-                                             int day,
-                                             int hour,
-                                             int minute,
-                                             int second,
-                                             int milli,
-                                             int week) {
-  ViewHostMsg_DateTimeDialogValue_Params value;
-  value.year = year;
-  value.month = month;
-  value.day = day;
-  value.hour = hour;
-  value.minute = minute;
-  value.second = second;
-  value.milli = milli;
-  value.week = week;
-  value.dialog_type = dialog_type;
+                                             jdouble value) {
   host_->Send(new ViewMsg_ReplaceDateTime(host_->GetRoutingID(), value));
 }
 
@@ -66,20 +48,14 @@ void DateTimeChooserAndroid::CancelDialog(JNIEnv* env, jobject) {
   host_->Send(new ViewMsg_CancelDateTimeDialog(host_->GetRoutingID()));
 }
 
-void DateTimeChooserAndroid::ShowDialog(ContentViewCore* content,
-                                        RenderViewHost* host,
-                                        int type,
-                                        int year,
-                                        int month,
-                                        int day,
-                                        int hour,
-                                        int minute,
-                                        int second,
-                                        int milli,
-                                        int week,
-                                        double min,
-                                        double max,
-                                        double step) {
+void DateTimeChooserAndroid::ShowDialog(
+    ContentViewCore* content,
+    RenderViewHost* host,
+    ui::TextInputType dialog_type,
+    double dialog_value,
+    double min,
+    double max,
+    double step) {
   host_ = host;
 
   JNIEnv* env = AttachCurrentThread();
@@ -87,15 +63,8 @@ void DateTimeChooserAndroid::ShowDialog(ContentViewCore* content,
       env,
       content->GetJavaObject().obj(),
       reinterpret_cast<intptr_t>(this),
-      type,
-      year,
-      month,
-      day,
-      hour,
-      minute,
-      second,
-      milli,
-      week,
+      dialog_type,
+      dialog_value,
       min,
       max,
       step));

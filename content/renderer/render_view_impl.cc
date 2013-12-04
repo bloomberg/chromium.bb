@@ -112,7 +112,6 @@
 #include "content/renderer/render_view_impl_params.h"
 #include "content/renderer/render_view_mouse_lock_dispatcher.h"
 #include "content/renderer/render_widget_fullscreen_pepper.h"
-#include "content/renderer/renderer_date_time_picker.h"
 #include "content/renderer/renderer_webapplicationcachehost_impl.h"
 #include "content/renderer/renderer_webcolorchooser_impl.h"
 #include "content/renderer/resizing_mode_selector.h"
@@ -6150,10 +6149,20 @@ void RenderViewImpl::LaunchAndroidContentIntent(const GURL& intent,
 bool RenderViewImpl::openDateTimeChooser(
     const blink::WebDateTimeChooserParams& params,
     blink::WebDateTimeChooserCompletion* completion) {
+  // JavaScript may try to open a date time chooser while one is already open.
+  if (date_time_picker_client_)
+    return false;
   date_time_picker_client_.reset(
       new RendererDateTimePicker(this, params, completion));
   return date_time_picker_client_->Open();
 }
+
+#if defined(OS_ANDROID)
+void RenderViewImpl::DismissDateTimeDialog() {
+  DCHECK(date_time_picker_client_);
+  date_time_picker_client_.reset(NULL);
+}
+#endif
 
 WebMediaPlayer* RenderViewImpl::CreateAndroidWebMediaPlayer(
       WebFrame* frame,

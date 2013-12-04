@@ -399,15 +399,8 @@ IPC_STRUCT_BEGIN(ViewHostMsg_CreateWorker_Params)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewHostMsg_DateTimeDialogValue_Params)
-  IPC_STRUCT_MEMBER(int, dialog_type)
-  IPC_STRUCT_MEMBER(int, year)
-  IPC_STRUCT_MEMBER(int, month)
-  IPC_STRUCT_MEMBER(int, day)
-  IPC_STRUCT_MEMBER(int, hour)
-  IPC_STRUCT_MEMBER(int, minute)
-  IPC_STRUCT_MEMBER(int, second)
-  IPC_STRUCT_MEMBER(int, milli)
-  IPC_STRUCT_MEMBER(int, week)
+  IPC_STRUCT_MEMBER(ui::TextInputType, dialog_type)
+  IPC_STRUCT_MEMBER(double, dialog_value)
   IPC_STRUCT_MEMBER(double, minimum)
   IPC_STRUCT_MEMBER(double, maximum)
   IPC_STRUCT_MEMBER(double, step)
@@ -976,7 +969,7 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetBrowserRenderingStats,
 
 // Replaces a date time input field.
 IPC_MESSAGE_ROUTED1(ViewMsg_ReplaceDateTime,
-                    ViewHostMsg_DateTimeDialogValue_Params /* value */)
+                    double /* dialog_value */)
 
 // Copies the image at location x, y to the clipboard (if there indeed is an
 // image at that location).

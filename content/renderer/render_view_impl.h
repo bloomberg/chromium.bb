@@ -39,6 +39,7 @@
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_widget.h"
+#include "content/renderer/renderer_date_time_picker.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
 #include "content/renderer/stats_collection_observer.h"
 #include "ipc/ipc_platform_file.h"
@@ -271,6 +272,10 @@ class CONTENT_EXPORT RenderViewImpl
       const blink::WebURLError& error,
       const std::string& html,
       bool replace);
+
+#if defined(OS_ANDROID)
+  void DismissDateTimeDialog();
+#endif
 
   // Plugin-related functions --------------------------------------------------
 

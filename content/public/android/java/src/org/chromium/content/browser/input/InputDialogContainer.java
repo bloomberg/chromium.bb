@@ -21,33 +21,17 @@ import org.chromium.content.browser.input.DateTimePickerDialog.OnDateTimeSetList
 import org.chromium.content.browser.input.MultiFieldTimePickerDialog.OnMultiFieldTimeSetListener;
 
 import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 public class InputDialogContainer {
 
     interface InputActionDelegate {
         void cancelDateTimeDialog();
-        void replaceDateTime(int dialogType,
-            int year, int month, int day, int hour, int minute, int second, int milli, int week);
+        void replaceDateTime(double value);
     }
-
-    // Default values used in Time representations of selected date/time before formatting.
-    // They are never displayed to the user.
-    private static final int YEAR_DEFAULT = 1970;
-    private static final int MONTH_DEFAULT = 0;
-    private static final int MONTHDAY_DEFAULT = 1;
-    private static final int HOUR_DEFAULT = 0;
-    private static final int MINUTE_DEFAULT = 0;
-    private static final int WEEK_DEFAULT = 0;
-
-    // Date formats as accepted by Time.format.
-    private static final String HTML_DATE_FORMAT = "%Y-%m-%d";
-    private static final String HTML_TIME_FORMAT = "%H:%M";
-    // For datetime we always send selected time as UTC, as we have no timezone selector.
-    // This is consistent with other browsers.
-    private static final String HTML_DATE_TIME_FORMAT = "%Y-%m-%dT%H:%MZ";
-    private static final String HTML_DATE_TIME_LOCAL_FORMAT = "%Y-%m-%dT%H:%M";
-    private static final String HTML_MONTH_FORMAT = "%Y-%m";
-    private static final String HTML_WEEK_FORMAT = "%Y-%w";
 
     private static int sTextInputTypeDate;
     private static int sTextInputTypeDateTime;
@@ -87,73 +71,103 @@ public class InputDialogContainer {
         mInputActionDelegate = inputActionDelegate;
     }
 
-    private Time normalizeTime(int year, int month, int monthDay,
-                               int hour, int minute, int second) {
-        Time result = new Time();
-        if (year == 0 && month == 0 && monthDay == 0 && hour == 0 &&
-                minute == 0 && second == 0) {
-            Calendar cal = Calendar.getInstance();
-            result.set(cal.get(Calendar.SECOND), cal.get(Calendar.MINUTE),
-                    cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.DATE),
-                    cal.get(Calendar.MONTH), cal.get(Calendar.YEAR));
+    void showDialog(final int dialogType, double dialogValue,
+        double min, double max, double step) {
+        Calendar cal;
+        // |dialogValue|, |min|, |max| mean different things depending on the |dialogType|.
+        // For input type=month is the number of months since 1970.
+        // For input type=time it is milliseconds since midnight.
+        // For other types they are just milliseconds since 1970.
+        // If |dialogValue| is NaN it means an empty value. We will show the current time.
+        if (Double.isNaN(dialogValue)) {
+            cal = Calendar.getInstance();
+            cal.set(Calendar.MILLISECOND, 0);
         } else {
-            result.set(second, minute, hour, monthDay, month, year);
+            if (dialogType == sTextInputTypeMonth) {
+                cal = MonthPicker.createDateFromValue(dialogValue);
+            } else if (dialogType == sTextInputTypeWeek) {
+                cal = WeekPicker.createDateFromValue(dialogValue);
+            } else {
+                GregorianCalendar gregorianCalendar =
+                        new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+                // According to the HTML spec we only use the Gregorian calendar
+                // so we ignore the Julian/Gregorian transition.
+                gregorianCalendar.setGregorianChange(new Date(Long.MIN_VALUE));
+                gregorianCalendar.setTimeInMillis((long) dialogValue);
+                cal =  gregorianCalendar;
+            }
         }
-        return result;
+        if (dialogType == sTextInputTypeDate) {
+            showDialog(dialogType,
+                    cal.get(Calendar.YEAR),
+                    cal.get(Calendar.MONTH),
+                    cal.get(Calendar.DAY_OF_MONTH),
+                    0, 0, 0, 0, 0, min, max, step);
+        } else if (dialogType == sTextInputTypeTime) {
+            showDialog(dialogType, 0, 0, 0,
+                    cal.get(Calendar.HOUR_OF_DAY),
+                    cal.get(Calendar.MINUTE),
+                    0, 0, 0, min, max, step);
+        } else if (dialogType == sTextInputTypeDateTime ||
+                dialogType == sTextInputTypeDateTimeLocal) {
+            showDialog(dialogType,
+                    cal.get(Calendar.YEAR),
+                    cal.get(Calendar.MONTH),
+                    cal.get(Calendar.DAY_OF_MONTH),
+                    cal.get(Calendar.HOUR_OF_DAY),
+                    cal.get(Calendar.MINUTE),
+                    cal.get(Calendar.SECOND),
+                    cal.get(Calendar.MILLISECOND),
+                    0, min, max, step);
+        } else if (dialogType == sTextInputTypeMonth) {
+            showDialog(dialogType, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), 0,
+                    0, 0, 0, 0, 0, min, max, step);
+        } else if (dialogType == sTextInputTypeWeek) {
+            int year = WeekPicker.getISOWeekYearForDate(cal);
+            int week = WeekPicker.getWeekForDate(cal);
+            showDialog(dialogType, year, 0, 0, 0, 0, 0, 0, week, min, max, step);
+        }
     }
 
-    void showDialog(final int dialogType, int year, int month, int monthDay,
-                    int hour, int minute, int second, int milli, int week,
-                    double min, double max, double step) {
+    void showDialog(final int dialogType,
+            int year, int month, int monthDay,
+            int hourOfDay, int minute, int second, int millis, int week,
+            double min, double max, double step) {
         if (isDialogShowing()) mDialog.dismiss();
 
-        // Java Date dialogs like longs but Blink prefers doubles..
-        // Both parameters mean different things depending on the type
-        // For input type=month min and max come as number on months since 1970
-        // For other types (including type=time) they are just milliseconds since 1970
-        // In any case the cast here is safe given the above restrictions.
-        long minTime = (long) min;
-        long maxTime = (long) max;
         int stepTime = (int) step;
 
-        if (milli > 1000) {
-            second += milli / 1000;
-            milli %= 1000;
-        }
-        Time time = normalizeTime(year, month, monthDay, hour, minute, second);
         if (dialogType == sTextInputTypeDate) {
             DatePickerDialog dialog = new DatePickerDialog(mContext,
-                    new DateListener(dialogType), time.year, time.month, time.monthDay);
+                    new DateListener(dialogType),
+                    year, month, monthDay);
             DateDialogNormalizer.normalize(dialog.getDatePicker(), dialog,
-                    time.year, time.month, time.monthDay, 0, 0, minTime, maxTime);
+                    year, month, monthDay,
+                    0, 0,
+                    (long) min, (long) max);
 
             dialog.setTitle(mContext.getText(R.string.date_picker_dialog_title));
             mDialog = dialog;
         } else if (dialogType == sTextInputTypeTime) {
             mDialog = new MultiFieldTimePickerDialog(
                 mContext, 0 /* theme */ ,
-                time.hour, time.minute, time.second, milli,
-                (int) minTime, (int) maxTime, stepTime,
+                hourOfDay, minute, second, millis,
+                (int) min, (int) max, stepTime,
                 DateFormat.is24HourFormat(mContext),
                 new FullTimeListener(dialogType));
         } else if (dialogType == sTextInputTypeDateTime ||
                 dialogType == sTextInputTypeDateTimeLocal) {
             mDialog = new DateTimePickerDialog(mContext,
                     new DateTimeListener(dialogType),
-                    time.year, time.month, time.monthDay,
-                    time.hour, time.minute, DateFormat.is24HourFormat(mContext),
-                    minTime, maxTime);
+                    year, month, monthDay,
+                    hourOfDay, minute,
+                    DateFormat.is24HourFormat(mContext), min, max);
         } else if (dialogType == sTextInputTypeMonth) {
             mDialog = new MonthPickerDialog(mContext, new MonthOrWeekListener(dialogType),
-                    time.year, time.month, minTime, maxTime);
+                    year, month, min, max);
         } else if (dialogType == sTextInputTypeWeek) {
-            if (week == 0) {
-                Calendar cal = Calendar.getInstance();
-                year = WeekPicker.getISOWeekYearForDate(cal);
-                week = WeekPicker.getWeekForDate(cal);
-            }
             mDialog = new WeekPickerDialog(mContext, new MonthOrWeekListener(dialogType),
-                    year, week, minTime, maxTime);
+                    year, week, min, max);
         }
 
         mDialog.setButton(DialogInterface.BUTTON_POSITIVE,
@@ -170,7 +184,7 @@ public class InputDialogContainer {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         mDialogAlreadyDismissed = true;
-                        mInputActionDelegate.replaceDateTime(dialogType, 0, 0, 0, 0, 0, 0, 0, 0);
+                        mInputActionDelegate.replaceDateTime(Double.NaN);
                     }
                 });
 
@@ -206,29 +220,7 @@ public class InputDialogContainer {
 
         @Override
         public void onDateSet(DatePicker view, int year, int month, int monthDay) {
-            if (!mDialogAlreadyDismissed) {
-                setFieldDateTimeValue(mDialogType,
-                        year, month, monthDay,
-                        HOUR_DEFAULT, MINUTE_DEFAULT, WEEK_DEFAULT,
-                        HTML_DATE_FORMAT);
-            }
-        }
-    }
-
-    private class TimeListener implements OnTimeSetListener {
-        private final int mDialogType;
-
-        TimeListener(int dialogType) {
-            mDialogType = dialogType;
-        }
-
-        @Override
-        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-            if (!mDialogAlreadyDismissed) {
-                setFieldDateTimeValue(mDialogType,
-                        YEAR_DEFAULT, MONTH_DEFAULT, MONTHDAY_DEFAULT,
-                        hourOfDay, minute, WEEK_DEFAULT, HTML_TIME_FORMAT);
-            }
+            setFieldDateTimeValue(mDialogType, year, month, monthDay, 0, 0, 0, 0, 0);
         }
     }
 
@@ -240,11 +232,7 @@ public class InputDialogContainer {
 
         @Override
         public void onTimeSet(int hourOfDay, int minute, int second, int milli) {
-            if (!mDialogAlreadyDismissed) {
-                setFieldDateTimeValue(mDialogType,
-                        YEAR_DEFAULT, MONTH_DEFAULT, MONTHDAY_DEFAULT,
-                        hourOfDay, minute, second, milli, WEEK_DEFAULT, HTML_TIME_FORMAT);
-            }
+            setFieldDateTimeValue(mDialogType, 0, 0, 0, hourOfDay, minute, second, milli, 0);
         }
     }
 
@@ -261,11 +249,7 @@ public class InputDialogContainer {
         public void onDateTimeSet(DatePicker dateView, TimePicker timeView,
                 int year, int month, int monthDay,
                 int hourOfDay, int minute) {
-            if (!mDialogAlreadyDismissed) {
-                setFieldDateTimeValue(mDialogType, year, month, monthDay,
-                        hourOfDay, minute, WEEK_DEFAULT,
-                        mLocal ? HTML_DATE_TIME_LOCAL_FORMAT : HTML_DATE_TIME_FORMAT);
-            }
+            setFieldDateTimeValue(mDialogType, year, month, monthDay, hourOfDay, minute, 0, 0, 0);
         }
     }
 
@@ -278,38 +262,46 @@ public class InputDialogContainer {
 
         @Override
         public void onValueSet(int year, int positionInYear) {
-            if (!mDialogAlreadyDismissed) {
-                if (mDialogType == sTextInputTypeMonth) {
-                    setFieldDateTimeValue(mDialogType, year, positionInYear, MONTHDAY_DEFAULT,
-                            HOUR_DEFAULT, MINUTE_DEFAULT, WEEK_DEFAULT,
-                            HTML_MONTH_FORMAT);
-                } else {
-                    setFieldDateTimeValue(mDialogType, year, MONTH_DEFAULT, MONTHDAY_DEFAULT,
-                            HOUR_DEFAULT, MINUTE_DEFAULT, positionInYear, HTML_WEEK_FORMAT);
-                }
+            if (mDialogType == sTextInputTypeMonth) {
+                setFieldDateTimeValue(mDialogType, year, positionInYear, 0, 0, 0, 0, 0, 0);
+            } else {
+                setFieldDateTimeValue(mDialogType, year, 0, 0, 0, 0, 0, 0, positionInYear);
             }
         }
     }
 
-    private void setFieldDateTimeValue(int dialogType,
-            int year, int month, int monthDay, int hourOfDay,
-            int minute, int week, String dateFormat) {
+    protected void setFieldDateTimeValue(int dialogType,
+                                       int year, int month, int monthDay,
+                                       int hourOfDay, int minute, int second, int millis,
+                                       int week) {
         // Prevents more than one callback being sent to the native
         // side when the dialog triggers multiple events.
+        if (mDialogAlreadyDismissed)
+            return;
         mDialogAlreadyDismissed = true;
 
-        mInputActionDelegate.replaceDateTime(dialogType,
-            year, month, monthDay, hourOfDay, minute, 0 /* second */, 0 /* milli */, week);
-    }
-
-    private void setFieldDateTimeValue(int dialogType,
-            int year, int month, int monthDay, int hourOfDay,
-            int minute, int second, int milli, int week, String dateFormat) {
-        // Prevents more than one callback being sent to the native
-        // side when the dialog triggers multiple events.
-        mDialogAlreadyDismissed = true;
-
-        mInputActionDelegate.replaceDateTime(
-            dialogType, year, month, monthDay, hourOfDay, minute, second, milli, week);
+        double value = 0;
+        if (dialogType == sTextInputTypeMonth) {
+            mInputActionDelegate.replaceDateTime((year - 1970) * 12 + month);
+        } else if (dialogType == sTextInputTypeWeek) {
+            mInputActionDelegate.replaceDateTime(
+                  WeekPicker.createDateFromWeek(year, week).getTimeInMillis());
+        } else if (dialogType == sTextInputTypeTime) {
+            mInputActionDelegate.replaceDateTime(TimeUnit.HOURS.toMillis(hourOfDay) +
+                                                 TimeUnit.MINUTES.toMillis(minute) +
+                                                 TimeUnit.SECONDS.toMillis(second) +
+                                                 millis);
+        } else {
+            Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+                cal.clear();
+                cal.set(Calendar.YEAR, year);
+                cal.set(Calendar.MONTH, month);
+                cal.set(Calendar.DAY_OF_MONTH, monthDay);
+                cal.set(Calendar.HOUR_OF_DAY, hourOfDay);
+                cal.set(Calendar.MINUTE, minute);
+                cal.set(Calendar.SECOND, second);
+                cal.set(Calendar.MILLISECOND, millis);
+            mInputActionDelegate.replaceDateTime((double) cal.getTimeInMillis());
+        }
     }
 }

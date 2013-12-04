@@ -29,7 +29,7 @@ class RendererDateTimePicker : public RenderViewObserver {
   bool Open();
 
  private:
-  void OnReplaceDateTime(const ViewHostMsg_DateTimeDialogValue_Params& value);
+  void OnReplaceDateTime(double value);
   void OnCancel();
 
   // RenderViewObserver

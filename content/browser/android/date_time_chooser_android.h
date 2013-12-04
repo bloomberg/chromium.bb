@@ -9,6 +9,7 @@
 
 #include "base/android/jni_helper.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/base/ime/text_input_type.h"
 
 namespace content {
 
@@ -22,33 +23,18 @@ class DateTimeChooserAndroid {
   ~DateTimeChooserAndroid();
 
   // DateTimeChooser implementation:
+  // Shows the dialog. |dialog_value| is the date/time value converted to a
+  // number as defined in HTML. (See blink::InputType::parseToNumber())
   void ShowDialog(ContentViewCore* content,
                   RenderViewHost* host,
-                  int type,
-                  int year,
-                  int month,
-                  int day,
-                  int hour,
-                  int minute,
-                  int second,
-                  int milli,
-                  int week,
+                  ui::TextInputType dialog_type,
+                  double dialog_value,
                   double min,
                   double max,
                   double step);
 
-  // Replaces the current value with the one passed the different fields
-  void ReplaceDateTime(JNIEnv* env,
-                       jobject,
-                       jint dialog_type,
-                       jint year,
-                       jint month,
-                       jint day,
-                       jint hour,
-                       jint minute,
-                       jint second,
-                       jint milli,
-                       jint week);
+  // Replaces the current value
+  void ReplaceDateTime(JNIEnv* env, jobject, jdouble value);
 
   // Closes the dialog without propagating any changes.
   void CancelDialog(JNIEnv* env, jobject);

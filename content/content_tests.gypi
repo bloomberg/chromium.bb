@@ -512,7 +512,6 @@
         'renderer/android/email_detector_unittest.cc',
         'renderer/android/phone_number_detector_unittest.cc',
         'renderer/bmp_image_decoder_unittest.cc',
-        'renderer/date_time_formatter_unittest.cc',
         'renderer/device_orientation/device_motion_event_pump_unittest.cc',
         'renderer/device_orientation/device_orientation_event_pump_unittest.cc',
         'renderer/disambiguation_popup_helper_unittest.cc',

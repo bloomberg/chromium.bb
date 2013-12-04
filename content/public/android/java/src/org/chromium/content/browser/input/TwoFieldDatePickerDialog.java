@@ -29,8 +29,7 @@ public abstract class TwoFieldDatePickerDialog extends AlertDialog implements On
 
         /**
          * @param year The year that was set.
-         * @param positionInYear The week in year.
-         *  with {@link java.util.Calendar}.
+         * @param positionInYear The position in the year that was set.
          */
         void onValueSet(int year, int positionInYear);
     }
@@ -45,8 +44,8 @@ public abstract class TwoFieldDatePickerDialog extends AlertDialog implements On
              OnValueSetListener callBack,
             int year,
             int positionInYear,
-            long minValue,
-            long maxValue) {
+            double minValue,
+            double maxValue) {
         this(context, 0, callBack, year, positionInYear, minValue, maxValue);
     }
 
@@ -62,8 +61,8 @@ public abstract class TwoFieldDatePickerDialog extends AlertDialog implements On
              OnValueSetListener callBack,
             int year,
             int positionInYear,
-            long minValue,
-            long maxValue) {
+            double minValue,
+            double maxValue) {
         super(context, theme);
 
         mCallBack = callBack;
@@ -79,7 +78,7 @@ public abstract class TwoFieldDatePickerDialog extends AlertDialog implements On
         mPicker.init(year, positionInYear, this);
     }
 
-    protected TwoFieldDatePicker createPicker(Context context, long minValue, long maxValue) {
+    protected TwoFieldDatePicker createPicker(Context context, double minValue, double maxValue) {
         return null;
     }
 
@@ -91,7 +90,12 @@ public abstract class TwoFieldDatePickerDialog extends AlertDialog implements On
     /**
      * Notifies the listener, if such, that a date has been set.
      */
-    protected abstract void tryNotifyDateSet();
+    protected void tryNotifyDateSet() {
+        if (mCallBack != null) {
+            mPicker.clearFocus();
+            mCallBack.onValueSet(mPicker.getYear(), mPicker.getPositionInYear());
+        }
+    }
 
     @Override
     protected void onStop() {

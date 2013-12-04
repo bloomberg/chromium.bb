@@ -60,11 +60,11 @@ class DateTimePickerDialog extends AlertDialog implements OnClickListener,
             int monthOfYear,
             int dayOfMonth,
             int hourOfDay, int minute, boolean is24HourView,
-            long min, long max) {
+            double min, double max) {
         super(context, 0);
 
-        mMinTimeMillis = min;
-        mMaxTimeMillis = max;
+        mMinTimeMillis = (long) min;
+        mMaxTimeMillis = (long) max;
 
         mCallBack = callBack;
 
@@ -81,7 +81,7 @@ class DateTimePickerDialog extends AlertDialog implements OnClickListener,
         setView(view);
         mDatePicker = (DatePicker) view.findViewById(R.id.date_picker);
         DateDialogNormalizer.normalize(mDatePicker, this,
-                year, monthOfYear, dayOfMonth, hourOfDay, minute, min, max);
+                year, monthOfYear, dayOfMonth, hourOfDay, minute, mMinTimeMillis, mMaxTimeMillis);
 
         mTimePicker = (TimePicker) view.findViewById(R.id.time_picker);
         mTimePicker.setIs24HourView(is24HourView);
