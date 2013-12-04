@@ -1,6 +1,8 @@
 AM_CPPFLAGS =					\
 	-I$(top_srcdir)/shared			\
+	-I$(top_srcdir)/src			\
 	-I$(top_builddir)/src			\
+	-I$(top_builddir)/xwayland		\
 	-DDATADIR='"$(datadir)"'		\
 	-DMODULEDIR='"$(moduledir)"'		\
 	-DLIBEXECDIR='"$(libexecdir)"'		\

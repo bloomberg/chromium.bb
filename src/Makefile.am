@@ -75,13 +75,6 @@ git-version.h : .FORCE
 
 .FORCE :
 
-if ENABLE_XWAYLAND
-SUBDIRS = xwayland
-endif
-
-DIST_SUBDIRS = xwayland
-
-
 if BUILD_WESTON_LAUNCH
 weston_launch = weston-launch
 weston_launch_SOURCES = weston-launch.c weston-launch.h
