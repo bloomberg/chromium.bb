@@ -249,9 +249,7 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
   if (iter->second.fill_data.wait_for_username)
     return false;
 
-  if (!IsElementEditable(element) ||
-      !element.isText() ||
-      !element.autoComplete()) {
+  if (!IsElementEditable(element) || !element.isText()) {
     return false;
   }
 
@@ -639,17 +637,13 @@ void PasswordAutofillAgent::FillFormOnPasswordRecieved(
   if (password_element.document().frame()->parent())
     return;
 
-  if (!username_element.form().autoComplete())
-    return;
-
   // If we can't modify the password, don't try to set the username
-  if (!IsElementEditable(password_element) || !password_element.autoComplete())
+  if (!IsElementEditable(password_element))
     return;
 
   // Try to set the username to the preferred name, but only if the field
   // can be set and isn't prefilled.
   if (IsElementEditable(username_element) &&
-      username_element.autoComplete() &&
       username_element.value().isEmpty()) {
     // TODO(tkent): Check maxlength and pattern.
     username_element.setValue(fill_data.basic_data.fields[0].value);
@@ -717,14 +711,11 @@ bool PasswordAutofillAgent::FillUserNameAndPassword(
   // fields.
 
   // Don't fill username if password can't be set.
-  if (!IsElementEditable(*password_element) ||
-      !password_element->autoComplete()) {
+  if (!IsElementEditable(*password_element))
     return false;
-  }
 
   // Input matches the username, fill in required values.
-  if (IsElementEditable(*username_element) &&
-      username_element->autoComplete()) {
+  if (IsElementEditable(*username_element)) {
     username_element->setValue(username);
     SetElementAutofilled(username_element, true);
 
