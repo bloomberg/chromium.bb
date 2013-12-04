@@ -280,24 +280,29 @@ void AppListServiceMac::FindAnchorPoint(const gfx::Size& window_size,
                                         NSPoint* target_origin,
                                         NSPoint* start_origin) {
   AppListPositioner positioner(display, window_size, 0);
-  AppListPositioner::ScreenEdge dock_location =
-      AppListPositioner::SCREEN_EDGE_UNKNOWN;
+  AppListPositioner::ScreenEdge dock_location = DockLocationInDisplay(display);
+
   gfx::Point anchor;
-  if (!cursor_is_visible) {
+  // Snap to the dock edge. If the cursor is greater than the window
+  // width/height away or not visible, anchor to the center of the dock.
+  // Otherwise, anchor to the cursor position.
+  if (dock_location == AppListPositioner::SCREEN_EDGE_UNKNOWN) {
     anchor = positioner.GetAnchorPointForScreenCorner(
         AppListPositioner::SCREEN_CORNER_BOTTOM_LEFT);
   } else {
-    dock_location = DockLocationInDisplay(display);
-
-    // Snap to the dock edge, anchored to the cursor position.
-    if (dock_location == AppListPositioner::SCREEN_EDGE_UNKNOWN) {
-      anchor = positioner.GetAnchorPointForScreenCorner(
-          AppListPositioner::SCREEN_CORNER_BOTTOM_LEFT);
+    int snap_distance =
+        dock_location == AppListPositioner::SCREEN_EDGE_BOTTOM ||
+                dock_location == AppListPositioner::SCREEN_EDGE_TOP ?
+            window_size.height() :
+            window_size.width();
+    // Subtract the dock area since the display's default work_area will not
+    // subtract it if the dock is set to auto-hide, and the app list should
+    // never overlap the dock.
+    AdjustWorkAreaForDock(display, &positioner, dock_location);
+    if (!cursor_is_visible || positioner.GetCursorDistanceFromShelf(
+                                  dock_location, cursor) > snap_distance) {
+      anchor = positioner.GetAnchorPointForShelfCenter(dock_location);
     } else {
-      // Subtract the dock area since the display's default work_area will not
-      // subtract it if the dock is set to auto-hide, and the app list should
-      // never overlap the dock.
-      AdjustWorkAreaForDock(display, &positioner, dock_location);
       anchor = positioner.GetAnchorPointForShelfCursor(dock_location, cursor);
     }
   }
@@ -307,6 +312,8 @@ void AppListServiceMac::FindAnchorPoint(const gfx::Size& window_size,
       primary_display_height - anchor.y() - window_size.height() / 2);
   *start_origin = *target_origin;
 
+  // If the launcher is anchored to the dock (regardless of whether the cursor
+  // is visible), animate in inwards from the edge of screen
   switch (dock_location) {
     case AppListPositioner::SCREEN_EDGE_UNKNOWN:
       break;

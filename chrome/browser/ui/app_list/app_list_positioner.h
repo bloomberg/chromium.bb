@@ -68,6 +68,12 @@ class AppListPositioner {
   // Returns the intended coordinates for the center of the window.
   gfx::Point GetAnchorPointForShelfCorner(ScreenEdge shelf_edge) const;
 
+  // Finds the position for a window to anchor it to the center of the shelf.
+  // |shelf_edge| specifies the location of the shelf. It must not be
+  // SCREEN_EDGE_UNKNOWN. Returns the intended coordinates for the center of the
+  // window.
+  gfx::Point GetAnchorPointForShelfCenter(ScreenEdge shelf_edge) const;
+
   // Finds the position for a window to anchor it to the shelf at a point
   // closest to the user's mouse cursor. |shelf_edge| specifies the location of
   // the shelf; |cursor| specifies the location of the user's mouse cursor.

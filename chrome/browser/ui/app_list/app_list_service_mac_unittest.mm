@@ -33,10 +33,14 @@ const int kExtraDistance = 50;
 
 // A cursor position that is within the dock. This must be < kDockSize.
 const int kCursorOnDock = kDockSize / 2;
-// A cursor position that is within 50 pixels of the dock.
-const int kCursorNearDock = kDockSize + 50;
-// A cursor position that is more than 50 pixels away from the dock.
-const int kCursorAwayFromDock = kCursorNearDock + 1;
+// A cursor position that is within kWindowWidth pixels of the dock.
+const int kCursorNearDockX = kDockSize + kWindowWidth;
+// A cursor position that is more than kWindowWidth pixels away from the dock.
+const int kCursorAwayFromDockX = kCursorNearDockX + 1;
+// A cursor position that is within kWindowHeight pixels of the dock.
+const int kCursorNearDockY = kDockSize + kWindowHeight;
+// A cursor position that is more than kWindowHeight pixels away from the dock.
+const int kCursorAwayFromDockY = kCursorNearDockY + 1;
 
 // A position for the center of the window that causes the window to overlap the
 // edge of the screen. This must be < kWindowWidth / 2 and < kWindowHeight / 2.
@@ -131,25 +135,34 @@ TEST_F(AppListServiceMacUnitTest, FindAnchorPointNoCursor) {
   NSPoint target_origin;
   NSPoint start_origin;
 
-  // Bottom dock. Expect the app list to be in the bottom-left corner, above the
-  // dock.
+  // Bottom dock. Expect the app list to be centered on the dock.
   PlaceDock(DOCK_LOCATION_BOTTOM, false);
   DoFindAnchorPoint(&target_origin, &start_origin);
-  EXPECT_TRUE(NSEqualPoints(NSMakePoint(0, kDockSize), target_origin));
-  EXPECT_TRUE(NSEqualPoints(target_origin, start_origin));
+  EXPECT_TRUE(
+      NSEqualPoints(NSMakePoint(kScreenWidth / 2 - kWindowWidth / 2, kDockSize),
+                    target_origin));
+  EXPECT_TRUE(NSEqualPoints(OffsetPoint(target_origin, 0, -kAnimationOffset),
+                            start_origin));
 
-  // Left dock. Expect the app list to be in the bottom-left corner, beside the
-  // dock.
+  // Left dock. Expect the app list to be centered on the dock.
   PlaceDock(DOCK_LOCATION_LEFT, false);
   DoFindAnchorPoint(&target_origin, &start_origin);
-  EXPECT_TRUE(NSEqualPoints(NSMakePoint(kDockSize, 0), target_origin));
-  EXPECT_TRUE(NSEqualPoints(target_origin, start_origin));
+  EXPECT_TRUE(NSEqualPoints(
+      NSMakePoint(kDockSize,
+                  (kScreenHeight - kMenuBarSize) / 2 - kWindowHeight / 2),
+      target_origin));
+  EXPECT_TRUE(NSEqualPoints(OffsetPoint(target_origin, -kAnimationOffset, 0),
+                            start_origin));
 
-  // Right dock. Expect the app list to be in the bottom-left corner.
+  // Right dock. Expect the app list to be centered on the dock.
   PlaceDock(DOCK_LOCATION_RIGHT, false);
   DoFindAnchorPoint(&target_origin, &start_origin);
-  EXPECT_TRUE(NSEqualPoints(NSMakePoint(0, 0), target_origin));
-  EXPECT_TRUE(NSEqualPoints(target_origin, start_origin));
+  EXPECT_TRUE(NSEqualPoints(
+      NSMakePoint(kScreenWidth - kDockSize - kWindowWidth,
+                  (kScreenHeight - kMenuBarSize) / 2 - kWindowHeight / 2),
+      target_origin));
+  EXPECT_TRUE(NSEqualPoints(OffsetPoint(target_origin, kAnimationOffset, 0),
+                            start_origin));
 }
 
 // Tests positioning the app list when there is no dock on the display.
@@ -163,46 +176,48 @@ TEST_F(AppListServiceMacUnitTest, FindAnchorPointNoDock) {
   DoFindAnchorPoint(&target_origin, &start_origin);
   EXPECT_TRUE(NSEqualPoints(NSMakePoint(0, 0), target_origin));
   EXPECT_TRUE(NSEqualPoints(target_origin, start_origin));
+
+  // No mouse cursor. This should have no effect.
+  SetCursorVisible(false);
+  DoFindAnchorPoint(&target_origin, &start_origin);
+  EXPECT_TRUE(NSEqualPoints(NSMakePoint(0, 0), target_origin));
+  EXPECT_TRUE(NSEqualPoints(target_origin, start_origin));
 }
 
 // Tests positioning the app list when the mouse is away from the dock.
 TEST_F(AppListServiceMacUnitTest, FindAnchorPointMouseOffDock) {
-  // On Mac, this is currently no different from having the mouse on the dock.
   SetCursorVisible(true);
   NSPoint target_origin;
   NSPoint start_origin;
 
-  // Bottom dock. Expect the app list to be at the bottom centered on the mouse
-  // X coordinate.
+  // Bottom dock. Expect the app list to be centered on the dock.
   PlaceDock(DOCK_LOCATION_BOTTOM, false);
-  PlaceCursor(kWindowAwayFromEdge, kScreenHeight - kCursorAwayFromDock);
+  PlaceCursor(kWindowAwayFromEdge, kScreenHeight - kCursorAwayFromDockY);
   DoFindAnchorPoint(&target_origin, &start_origin);
-  EXPECT_TRUE(NSEqualPoints(
-      NSMakePoint(kWindowAwayFromEdge - kWindowWidth / 2, kDockSize),
-      target_origin));
+  EXPECT_TRUE(
+      NSEqualPoints(NSMakePoint(kScreenWidth / 2 - kWindowWidth / 2, kDockSize),
+                    target_origin));
   EXPECT_TRUE(NSEqualPoints(OffsetPoint(target_origin, 0, -kAnimationOffset),
                             start_origin));
 
-  // Left dock. Expect the app list to be at the left centered on the mouse Y
-  // coordinate.
+  // Left dock. Expect the app list to be centered on the dock.
   PlaceDock(DOCK_LOCATION_LEFT, false);
-  PlaceCursor(kCursorAwayFromDock, kWindowAwayFromEdge);
+  PlaceCursor(kCursorAwayFromDockX, kWindowAwayFromEdge);
   DoFindAnchorPoint(&target_origin, &start_origin);
   EXPECT_TRUE(NSEqualPoints(
       NSMakePoint(kDockSize,
-                  kScreenHeight - kWindowAwayFromEdge - kWindowHeight / 2),
+                  (kScreenHeight - kMenuBarSize) / 2 - kWindowHeight / 2),
       target_origin));
   EXPECT_TRUE(NSEqualPoints(OffsetPoint(target_origin, -kAnimationOffset, 0),
                             start_origin));
 
-  // Right dock. Expect the app list to be at the right centered on the mouse Y
-  // coordinate.
+  // Right dock. Expect the app list to be centered on the dock.
   PlaceDock(DOCK_LOCATION_RIGHT, false);
-  PlaceCursor(kScreenWidth - kCursorAwayFromDock, kWindowAwayFromEdge);
+  PlaceCursor(kScreenWidth - kCursorAwayFromDockX, kWindowAwayFromEdge);
   DoFindAnchorPoint(&target_origin, &start_origin);
   EXPECT_TRUE(NSEqualPoints(
       NSMakePoint(kScreenWidth - kDockSize - kWindowWidth,
-                  kScreenHeight - kWindowAwayFromEdge - kWindowHeight / 2),
+                  (kScreenHeight - kMenuBarSize) / 2 - kWindowHeight / 2),
       target_origin));
   EXPECT_TRUE(NSEqualPoints(OffsetPoint(target_origin, kAnimationOffset, 0),
                             start_origin));
@@ -217,7 +232,7 @@ TEST_F(AppListServiceMacUnitTest, FindAnchorPointHiddenDock) {
   // Bottom dock. Expect the app list to be kExtraDistance pixels from the dock
   // centered on the mouse X coordinate.
   PlaceDock(DOCK_LOCATION_BOTTOM, true);
-  PlaceCursor(kWindowAwayFromEdge, kScreenHeight - kCursorAwayFromDock);
+  PlaceCursor(kWindowAwayFromEdge, kScreenHeight - kCursorAwayFromDockY);
   DoFindAnchorPoint(&target_origin, &start_origin);
   EXPECT_TRUE(NSEqualPoints(NSMakePoint(kWindowAwayFromEdge - kWindowWidth / 2,
                                         kHiddenDockSize + kExtraDistance),
@@ -228,7 +243,7 @@ TEST_F(AppListServiceMacUnitTest, FindAnchorPointHiddenDock) {
   // Left dock. Expect the app list to be kExtraDistance pixels from the dock
   // centered on the mouse Y coordinate.
   PlaceDock(DOCK_LOCATION_LEFT, true);
-  PlaceCursor(kCursorAwayFromDock, kWindowAwayFromEdge);
+  PlaceCursor(kCursorAwayFromDockX, kWindowAwayFromEdge);
   DoFindAnchorPoint(&target_origin, &start_origin);
   EXPECT_TRUE(NSEqualPoints(
       NSMakePoint(kHiddenDockSize + kExtraDistance,
@@ -240,7 +255,7 @@ TEST_F(AppListServiceMacUnitTest, FindAnchorPointHiddenDock) {
   // Right dock. Expect the app list to be kExtraDistance pixels from the dock
   // centered on the mouse Y coordinate.
   PlaceDock(DOCK_LOCATION_RIGHT, true);
-  PlaceCursor(kScreenWidth - kCursorAwayFromDock, kWindowAwayFromEdge);
+  PlaceCursor(kScreenWidth - kCursorAwayFromDockX, kWindowAwayFromEdge);
   DoFindAnchorPoint(&target_origin, &start_origin);
   EXPECT_TRUE(NSEqualPoints(
       NSMakePoint(
@@ -271,7 +286,7 @@ TEST_F(AppListServiceMacUnitTest, FindAnchorPointMouseOnDock) {
   // Bottom dock (outside the dock but still close enough). Expect the app list
   // to be at the bottom centered on the mouse X coordinate.
   PlaceDock(DOCK_LOCATION_BOTTOM, false);
-  PlaceCursor(kWindowAwayFromEdge, kScreenHeight - kCursorNearDock);
+  PlaceCursor(kWindowAwayFromEdge, kScreenHeight - kCursorNearDockY);
   DoFindAnchorPoint(&target_origin, &start_origin);
   EXPECT_TRUE(NSEqualPoints(
       NSMakePoint(kWindowAwayFromEdge - kWindowWidth / 2, kDockSize),
@@ -282,7 +297,7 @@ TEST_F(AppListServiceMacUnitTest, FindAnchorPointMouseOnDock) {
   // Left dock. Expect the app list to be at the left centered on the mouse Y
   // coordinate.
   PlaceDock(DOCK_LOCATION_LEFT, false);
-  PlaceCursor(kCursorNearDock, kWindowAwayFromEdge);
+  PlaceCursor(kCursorNearDockX, kWindowAwayFromEdge);
   DoFindAnchorPoint(&target_origin, &start_origin);
   EXPECT_TRUE(NSEqualPoints(
       NSMakePoint(kDockSize,
@@ -294,7 +309,7 @@ TEST_F(AppListServiceMacUnitTest, FindAnchorPointMouseOnDock) {
   // Right dock. Expect the app list to be at the right centered on the mouse Y
   // coordinate.
   PlaceDock(DOCK_LOCATION_RIGHT, false);
-  PlaceCursor(kScreenWidth - kCursorNearDock, kWindowAwayFromEdge);
+  PlaceCursor(kScreenWidth - kCursorNearDockX, kWindowAwayFromEdge);
   DoFindAnchorPoint(&target_origin, &start_origin);
   EXPECT_TRUE(NSEqualPoints(
       NSMakePoint(kScreenWidth - kDockSize - kWindowWidth,

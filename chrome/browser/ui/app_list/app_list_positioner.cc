@@ -81,6 +81,33 @@ gfx::Point AppListPositioner::GetAnchorPointForShelfCorner(
   return ClampAnchorPoint(anchor);
 }
 
+gfx::Point AppListPositioner::GetAnchorPointForShelfCenter(
+    ScreenEdge shelf_edge) const {
+  const gfx::Rect& work_area = display_.work_area();
+  gfx::Point anchor;
+  switch (shelf_edge) {
+    case SCREEN_EDGE_LEFT:
+      anchor =
+          gfx::Point(work_area.x(), work_area.y() + work_area.height() / 2);
+      break;
+    case SCREEN_EDGE_RIGHT:
+      anchor =
+          gfx::Point(work_area.right(), work_area.y() + work_area.height() / 2);
+      break;
+    case SCREEN_EDGE_TOP:
+      anchor = gfx::Point(work_area.x() + work_area.width() / 2, work_area.y());
+      break;
+    case SCREEN_EDGE_BOTTOM:
+      anchor =
+          gfx::Point(work_area.x() + work_area.width() / 2, work_area.bottom());
+      break;
+    default:
+      NOTREACHED();
+      anchor = gfx::Point();
+  }
+  return ClampAnchorPoint(anchor);
+}
+
 gfx::Point AppListPositioner::GetAnchorPointForShelfCursor(
     ScreenEdge shelf_edge,
     const gfx::Point& cursor) const {

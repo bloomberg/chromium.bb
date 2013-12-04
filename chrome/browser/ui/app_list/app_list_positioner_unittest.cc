@@ -93,6 +93,11 @@ class AppListPositionerUnitTest : public testing::Test {
     return positioner_->GetAnchorPointForShelfCorner(shelf_edge);
   }
 
+  gfx::Point DoGetAnchorPointForShelfCenter(
+      AppListPositioner::ScreenEdge shelf_edge) const {
+    return positioner_->GetAnchorPointForShelfCenter(shelf_edge);
+  }
+
   gfx::Point DoGetAnchorPointForShelfCursor(
       AppListPositioner::ScreenEdge shelf_edge) const {
     return positioner_->GetAnchorPointForShelfCursor(shelf_edge, cursor_);
@@ -174,6 +179,39 @@ TEST_F(AppListPositionerUnitTest, ShelfCorner) {
                  kScreenHeight - kShelfSize - kWindowHeight / 2 -
                      kMinDistanceFromEdge),
       DoGetAnchorPointForShelfCorner(AppListPositioner::SCREEN_EDGE_BOTTOM));
+}
+
+TEST_F(AppListPositionerUnitTest, ShelfCenter) {
+  // Position the app list on the shelf, aligned with the shelf center.
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_LEFT);
+  // Shelf on left. Expect app list to be center-left.
+  EXPECT_EQ(
+      gfx::Point(kShelfSize + kWindowWidth / 2 + kMinDistanceFromEdge,
+                 (kMenuBarSize + kScreenHeight) / 2),
+      DoGetAnchorPointForShelfCenter(AppListPositioner::SCREEN_EDGE_LEFT));
+
+  // Shelf on right. Expect app list to be center-right.
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_RIGHT);
+  EXPECT_EQ(
+      gfx::Point(
+          kScreenWidth - kShelfSize - kWindowWidth / 2 - kMinDistanceFromEdge,
+          (kMenuBarSize + kScreenHeight) / 2),
+      DoGetAnchorPointForShelfCenter(AppListPositioner::SCREEN_EDGE_RIGHT));
+
+  // Shelf on top. Expect app list to be top-center.
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_TOP);
+  EXPECT_EQ(gfx::Point(kScreenWidth / 2,
+                       kMenuBarSize + kShelfSize + kWindowHeight / 2 +
+                           kMinDistanceFromEdge),
+            DoGetAnchorPointForShelfCenter(AppListPositioner::SCREEN_EDGE_TOP));
+
+  // Shelf on bottom. Expect app list to be bottom-center.
+  PlaceShelf(AppListPositioner::SCREEN_EDGE_BOTTOM);
+  EXPECT_EQ(
+      gfx::Point(kScreenWidth / 2,
+                 kScreenHeight - kShelfSize - kWindowHeight / 2 -
+                     kMinDistanceFromEdge),
+      DoGetAnchorPointForShelfCenter(AppListPositioner::SCREEN_EDGE_BOTTOM));
 }
 
 TEST_F(AppListPositionerUnitTest, ShelfCursor) {
