@@ -45,7 +45,7 @@ namespace blink {
 #if ENABLE(LEGACY_NOTIFICATIONS)
 class VoidCallbackClient : public WebNotificationPermissionCallback {
 public:
-    explicit VoidCallbackClient(PassRefPtr<VoidCallback> callback)
+    explicit VoidCallbackClient(PassOwnPtr<VoidCallback> callback)
         : m_callback(callback)
     {
     }
@@ -60,7 +60,7 @@ public:
 private:
     virtual ~VoidCallbackClient() { }
 
-    RefPtr<VoidCallback> m_callback;
+    OwnPtr<VoidCallback> m_callback;
 };
 #endif // ENABLE(LEGACY_NOTIFICATIONS)
 
@@ -124,7 +124,7 @@ NotificationClient::Permission NotificationPresenterImpl::checkPermission(Execut
 }
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
-void NotificationPresenterImpl::requestPermission(ExecutionContext* context, PassRefPtr<VoidCallback> callback)
+void NotificationPresenterImpl::requestPermission(ExecutionContext* context, PassOwnPtr<VoidCallback> callback)
 {
     m_presenter->requestPermission(WebSecurityOrigin(context->securityOrigin()), new VoidCallbackClient(callback));
 }

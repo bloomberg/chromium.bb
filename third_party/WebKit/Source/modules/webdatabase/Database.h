@@ -46,7 +46,7 @@ class SQLTransaction;
 class SQLTransactionBackend;
 class SQLTransactionCallback;
 class SQLTransactionErrorCallback;
-class VoidCallback;
+class SQLVoidCallback;
 
 class Database : public DatabaseBase, public DatabaseBackend, public ScriptWrappable {
 public:
@@ -54,10 +54,9 @@ public:
 
     // Direct support for the DOM API
     virtual String version() const;
-    void changeVersion(const String& oldVersion, const String& newVersion, PassRefPtr<SQLTransactionCallback>,
-                       PassRefPtr<SQLTransactionErrorCallback>, PassRefPtr<VoidCallback> successCallback);
-    void transaction(PassRefPtr<SQLTransactionCallback>, PassRefPtr<SQLTransactionErrorCallback>, PassRefPtr<VoidCallback> successCallback);
-    void readTransaction(PassRefPtr<SQLTransactionCallback>, PassRefPtr<SQLTransactionErrorCallback>, PassRefPtr<VoidCallback> successCallback);
+    void changeVersion(const String& oldVersion, const String& newVersion, PassRefPtr<SQLTransactionCallback>, PassRefPtr<SQLTransactionErrorCallback>, PassRefPtr<SQLVoidCallback> successCallback);
+    void transaction(PassRefPtr<SQLTransactionCallback>, PassRefPtr<SQLTransactionErrorCallback>, PassRefPtr<SQLVoidCallback> successCallback);
+    void readTransaction(PassRefPtr<SQLTransactionCallback>, PassRefPtr<SQLTransactionErrorCallback>, PassRefPtr<SQLVoidCallback> successCallback);
 
     // Internal engine support
     static Database* from(DatabaseBackend*);
@@ -78,7 +77,7 @@ private:
     static PassRefPtr<Database> create(ExecutionContext*, PassRefPtr<DatabaseBackendBase>);
 
     void runTransaction(PassRefPtr<SQLTransactionCallback>, PassRefPtr<SQLTransactionErrorCallback>,
-        PassRefPtr<VoidCallback> successCallback, bool readOnly, const ChangeVersionData* = 0);
+        PassRefPtr<SQLVoidCallback> successCallback, bool readOnly, const ChangeVersionData* = 0);
 
     Vector<String> performGetTableNames();
 

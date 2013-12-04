@@ -51,7 +51,7 @@ class FileWriterBase;
 class FileWriterBaseCallback;
 class MetadataCallback;
 class ExecutionContext;
-class VoidCallback;
+class FileSystemVoidCallback;
 
 class FileSystemCallbacksBase : public AsyncFileSystemCallbacks {
 public:
@@ -142,12 +142,12 @@ private:
 
 class VoidCallbacks : public FileSystemCallbacksBase {
 public:
-    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtr<VoidCallback>, PassRefPtr<ErrorCallback>, DOMFileSystemBase*);
+    static PassOwnPtr<AsyncFileSystemCallbacks> create(PassRefPtr<FileSystemVoidCallback>, PassRefPtr<ErrorCallback>, DOMFileSystemBase*);
     virtual void didSucceed();
 
 private:
-    VoidCallbacks(PassRefPtr<VoidCallback>, PassRefPtr<ErrorCallback>, DOMFileSystemBase*);
-    RefPtr<VoidCallback> m_successCallback;
+    VoidCallbacks(PassRefPtr<FileSystemVoidCallback>, PassRefPtr<ErrorCallback>, DOMFileSystemBase*);
+    RefPtr<FileSystemVoidCallback> m_successCallback;
 };
 
 } // namespace

@@ -48,12 +48,12 @@ class SQLStatementErrorCallback;
 class SQLTransactionCallback;
 class SQLTransactionErrorCallback;
 class SQLValue;
-class VoidCallback;
+class SQLVoidCallback;
 
 class SQLTransaction : public SQLTransactionStateMachine<SQLTransaction>, public AbstractSQLTransaction, public ScriptWrappable {
 public:
     static PassRefPtr<SQLTransaction> create(Database*, PassRefPtr<SQLTransactionCallback>,
-        PassRefPtr<VoidCallback> successCallback, PassRefPtr<SQLTransactionErrorCallback>,
+        PassRefPtr<SQLVoidCallback> successCallback, PassRefPtr<SQLTransactionErrorCallback>,
         bool readOnly);
 
     void performPendingCallback();
@@ -65,7 +65,7 @@ public:
 
 private:
     SQLTransaction(Database*, PassRefPtr<SQLTransactionCallback>,
-        PassRefPtr<VoidCallback> successCallback, PassRefPtr<SQLTransactionErrorCallback>,
+        PassRefPtr<SQLVoidCallback> successCallback, PassRefPtr<SQLTransactionErrorCallback>,
         bool readOnly);
 
     void clearCallbackWrappers();
@@ -96,7 +96,7 @@ private:
     RefPtr<Database> m_database;
     RefPtr<AbstractSQLTransactionBackend> m_backend;
     SQLCallbackWrapper<SQLTransactionCallback> m_callbackWrapper;
-    SQLCallbackWrapper<VoidCallback> m_successCallbackWrapper;
+    SQLCallbackWrapper<SQLVoidCallback> m_successCallbackWrapper;
     SQLCallbackWrapper<SQLTransactionErrorCallback> m_errorCallbackWrapper;
 
     bool m_executeSqlAllowed;

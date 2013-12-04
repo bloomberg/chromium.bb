@@ -66,10 +66,10 @@ public:
 
     void createAnswer(PassOwnPtr<RTCSessionDescriptionCallback>, PassOwnPtr<RTCErrorCallback>, const Dictionary& mediaConstraints, ExceptionState&);
 
-    void setLocalDescription(PassRefPtr<RTCSessionDescription>, PassRefPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>, ExceptionState&);
+    void setLocalDescription(PassRefPtr<RTCSessionDescription>, PassOwnPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>, ExceptionState&);
     PassRefPtr<RTCSessionDescription> localDescription(ExceptionState&);
 
-    void setRemoteDescription(PassRefPtr<RTCSessionDescription>, PassRefPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>, ExceptionState&);
+    void setRemoteDescription(PassRefPtr<RTCSessionDescription>, PassOwnPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>, ExceptionState&);
     PassRefPtr<RTCSessionDescription> remoteDescription(ExceptionState&);
 
     String signalingState() const;
@@ -79,7 +79,7 @@ public:
     // DEPRECATED
     void addIceCandidate(RTCIceCandidate*, ExceptionState&);
 
-    void addIceCandidate(RTCIceCandidate*, PassRefPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>, ExceptionState&);
+    void addIceCandidate(RTCIceCandidate*, PassOwnPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>, ExceptionState&);
 
     String iceGatheringState() const;
 

@@ -43,7 +43,7 @@ class DOMFileSystemBase;
 class DirectoryReader;
 class EntryCallback;
 class ErrorCallback;
-class VoidCallback;
+class FileSystemVoidCallback;
 
 class DirectoryEntry : public Entry {
 public:
@@ -56,7 +56,7 @@ public:
     PassRefPtr<DirectoryReader> createReader();
     void getFile(const String& path, const Dictionary&, PassRefPtr<EntryCallback> = 0, PassRefPtr<ErrorCallback> = 0);
     void getDirectory(const String& path, const Dictionary&, PassRefPtr<EntryCallback> = 0, PassRefPtr<ErrorCallback> = 0);
-    void removeRecursively(PassRefPtr<VoidCallback> successCallback = 0, PassRefPtr<ErrorCallback> = 0) const;
+    void removeRecursively(PassRefPtr<FileSystemVoidCallback> successCallback = 0, PassRefPtr<ErrorCallback> = 0) const;
 
 private:
     DirectoryEntry(PassRefPtr<DOMFileSystemBase>, const String& fullPath);

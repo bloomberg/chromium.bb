@@ -6440,16 +6440,16 @@ sub IsLegacyRefCountedCallback
     return 1 if $name eq "SQLTransactionSyncCallback";
     return 1 if $name eq "SQLStatementCallback";
     return 1 if $name eq "SQLStatementErrorCallback";
+    return 1 if $name eq "SQLVoidCallback";
     # Filesystem
     return 1 if $name eq "EntryCallback";
     return 1 if $name eq "EntriesCallback";
     return 1 if $name eq "ErrorCallback";
     return 1 if $name eq "FileCallback";
     return 1 if $name eq "FileSystemCallback";
+    return 1 if $name eq "FileSystemVoidCallback";
     return 1 if $name eq "FileWriterCallback";
     return 1 if $name eq "MetadataCallback";
-    # Used everywhere
-    return 1 if $name eq "VoidCallback";
     return 0;
 }
 

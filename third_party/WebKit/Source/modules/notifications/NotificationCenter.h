@@ -68,7 +68,7 @@ public:
     NotificationClient* client() const { return m_client; }
 
     int checkPermission();
-    void requestPermission(PassRefPtr<VoidCallback> = 0);
+    void requestPermission(PassOwnPtr<VoidCallback> = nullptr);
 
     virtual void stop() OVERRIDE;
 
@@ -77,15 +77,15 @@ private:
 
     class NotificationRequestCallback : public RefCounted<NotificationRequestCallback> {
     public:
-        static PassRefPtr<NotificationRequestCallback> createAndStartTimer(NotificationCenter*, PassRefPtr<VoidCallback>);
+        static PassRefPtr<NotificationRequestCallback> createAndStartTimer(NotificationCenter*, PassOwnPtr<VoidCallback>);
         void startTimer();
         void timerFired(Timer<NotificationRequestCallback>*);
     private:
-        NotificationRequestCallback(NotificationCenter*, PassRefPtr<VoidCallback>);
+        NotificationRequestCallback(NotificationCenter*, PassOwnPtr<VoidCallback>);
 
         RefPtr<NotificationCenter> m_notificationCenter;
         Timer<NotificationRequestCallback> m_timer;
-        RefPtr<VoidCallback> m_callback;
+        OwnPtr<VoidCallback> m_callback;
     };
 
     void requestTimedOut(NotificationRequestCallback*);

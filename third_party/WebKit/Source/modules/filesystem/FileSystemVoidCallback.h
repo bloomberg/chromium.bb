@@ -23,14 +23,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef VoidCallback_h
-#define VoidCallback_h
+#ifndef FileSystemVoidCallback_h
+#define FileSystemVoidCallback_h
+
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class VoidCallback {
+class FileSystemVoidCallback : public RefCounted<FileSystemVoidCallback> {
 public:
-    virtual ~VoidCallback() { }
+    virtual ~FileSystemVoidCallback() { }
     virtual bool handleEvent() = 0;
 };
 

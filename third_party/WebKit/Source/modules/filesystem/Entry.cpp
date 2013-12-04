@@ -32,11 +32,11 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileError.h"
-#include "core/html/VoidCallback.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileSystemCallbacks.h"
+#include "modules/filesystem/FileSystemVoidCallback.h"
 #include "modules/filesystem/MetadataCallback.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
@@ -64,7 +64,7 @@ void Entry::copyTo(PassRefPtr<DirectoryEntry> parent, const String& name, PassRe
     m_fileSystem->copy(this, parent.get(), name, successCallback, errorCallback);
 }
 
-void Entry::remove(PassRefPtr<VoidCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback) const
+void Entry::remove(PassRefPtr<FileSystemVoidCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback) const
 {
     m_fileSystem->remove(this, successCallback, errorCallback);
 }

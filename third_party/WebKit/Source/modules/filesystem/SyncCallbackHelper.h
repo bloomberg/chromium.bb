@@ -34,7 +34,6 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "core/fileapi/FileError.h"
-#include "core/html/VoidCallback.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryReaderSync.h"
 #include "modules/filesystem/EntriesCallback.h"
@@ -43,6 +42,7 @@
 #include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemCallback.h"
+#include "modules/filesystem/FileSystemVoidCallback.h"
 #include "modules/filesystem/MetadataCallback.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -187,7 +187,7 @@ struct EmptyType : public RefCounted<EmptyType> {
 typedef SyncCallbackHelper<EntryCallback, Entry*, EntrySync> EntrySyncCallbackHelper;
 typedef SyncCallbackHelper<EntriesCallback, const EntryVector&, EntrySyncVector> EntriesSyncCallbackHelper;
 typedef SyncCallbackHelper<MetadataCallback, Metadata*, Metadata> MetadataSyncCallbackHelper;
-typedef SyncCallbackHelper<VoidCallback, EmptyType*, EmptyType> VoidSyncCallbackHelper;
+typedef SyncCallbackHelper<FileSystemVoidCallback, EmptyType*, EmptyType> VoidSyncCallbackHelper;
 typedef SyncCallbackHelper<FileSystemCallback, DOMFileSystem*, DOMFileSystemSync> FileSystemSyncCallbackHelper;
 
 } // namespace WebCore

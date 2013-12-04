@@ -41,7 +41,7 @@ class VoidCallback;
 
 class RTCVoidRequestImpl : public RTCVoidRequest, public ActiveDOMObject {
 public:
-    static PassRefPtr<RTCVoidRequestImpl> create(ExecutionContext*, PassRefPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>);
+    static PassRefPtr<RTCVoidRequestImpl> create(ExecutionContext*, PassOwnPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>);
     virtual ~RTCVoidRequestImpl();
 
     virtual void requestSucceeded();
@@ -51,11 +51,11 @@ public:
     virtual void stop() OVERRIDE;
 
 private:
-    RTCVoidRequestImpl(ExecutionContext*, PassRefPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>);
+    RTCVoidRequestImpl(ExecutionContext*, PassOwnPtr<VoidCallback>, PassOwnPtr<RTCErrorCallback>);
 
     void clear();
 
-    RefPtr<VoidCallback> m_successCallback;
+    OwnPtr<VoidCallback> m_successCallback;
     OwnPtr<RTCErrorCallback> m_errorCallback;
 };
 

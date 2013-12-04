@@ -674,7 +674,7 @@ bool Dictionary::get(const String& key, RefPtr<DOMError>& value) const
     return true;
 }
 
-bool Dictionary::get(const String& key, RefPtr<VoidCallback>& value) const
+bool Dictionary::get(const String& key, OwnPtr<VoidCallback>& value) const
 {
     v8::Local<v8::Value> v8Value;
     if (!getKey(key, v8Value))

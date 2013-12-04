@@ -75,7 +75,7 @@ public:
     // Requests user permission to show desktop notifications from a particular
     // script context. The callback parameter should be run when the user has
     // made a decision.
-    virtual void requestPermission(ExecutionContext*, PassRefPtr<VoidCallback>) = 0;
+    virtual void requestPermission(ExecutionContext*, PassOwnPtr<VoidCallback>) = 0;
 #endif
     virtual void requestPermission(ExecutionContext*, PassOwnPtr<NotificationPermissionCallback>) = 0;
 

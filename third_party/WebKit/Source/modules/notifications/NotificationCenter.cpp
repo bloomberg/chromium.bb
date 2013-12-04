@@ -74,7 +74,7 @@ int NotificationCenter::checkPermission()
     return m_client->checkPermission(executionContext());
 }
 
-void NotificationCenter::requestPermission(PassRefPtr<VoidCallback> callback)
+void NotificationCenter::requestPermission(PassOwnPtr<VoidCallback> callback)
 {
     if (!client() || !executionContext())
         return;
@@ -107,14 +107,14 @@ void NotificationCenter::requestTimedOut(NotificationCenter::NotificationRequest
     m_callbacks.remove(request);
 }
 
-PassRefPtr<NotificationCenter::NotificationRequestCallback> NotificationCenter::NotificationRequestCallback::createAndStartTimer(NotificationCenter* center, PassRefPtr<VoidCallback> callback)
+PassRefPtr<NotificationCenter::NotificationRequestCallback> NotificationCenter::NotificationRequestCallback::createAndStartTimer(NotificationCenter* center, PassOwnPtr<VoidCallback> callback)
 {
     RefPtr<NotificationCenter::NotificationRequestCallback> requestCallback = adoptRef(new NotificationCenter::NotificationRequestCallback(center, callback));
     requestCallback->startTimer();
     return requestCallback.release();
 }
 
-NotificationCenter::NotificationRequestCallback::NotificationRequestCallback(NotificationCenter* center, PassRefPtr<VoidCallback> callback)
+NotificationCenter::NotificationRequestCallback::NotificationRequestCallback(NotificationCenter* center, PassOwnPtr<VoidCallback> callback)
     : m_notificationCenter(center)
     , m_timer(this, &NotificationCenter::NotificationRequestCallback::timerFired)
     , m_callback(callback)

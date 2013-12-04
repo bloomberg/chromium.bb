@@ -55,7 +55,7 @@ public:
     virtual void notificationControllerDestroyed();
     virtual WebCore::NotificationClient::Permission checkPermission(WebCore::ExecutionContext*);
 #if ENABLE(LEGACY_NOTIFICATIONS)
-    virtual void requestPermission(WebCore::ExecutionContext*, WTF::PassRefPtr<WebCore::VoidCallback>);
+    virtual void requestPermission(WebCore::ExecutionContext*, WTF::PassOwnPtr<WebCore::VoidCallback>);
 #endif
     virtual void requestPermission(WebCore::ExecutionContext*, WTF::PassOwnPtr<WebCore::NotificationPermissionCallback>);
     virtual void cancelRequestsForPermission(WebCore::ExecutionContext*) { }
