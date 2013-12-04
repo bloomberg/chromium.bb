@@ -539,7 +539,9 @@ def GypNinjaBuild(arch, gyp_py_script, gyp_file, targets,
     if arch == 'arm':
       gyp_defines += ['armv7=1', 'arm_thumb=0', 'arm_neon=1']
       if force_arm_gcc:
-        gyp_defines += ['nacl_enable_arm_gcc=1']
+        gyp_defines.append('nacl_enable_arm_gcc=1')
+  if getos.GetPlatform() == 'mac':
+    gyp_defines.append('clang=1')
 
   gyp_env['GYP_DEFINES'] = ' '.join(gyp_defines)
   for key in ['GYP_GENERATORS', 'GYP_DEFINES']:
