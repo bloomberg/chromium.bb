@@ -35,17 +35,17 @@ class UserWallpaperDelegate : public ash::UserWallpaperDelegate {
   }
 
   virtual void UpdateWallpaper() OVERRIDE {
-  }
-
-  virtual void InitializeWallpaper() OVERRIDE {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);
     bitmap.allocPixels();
     bitmap.eraseARGB(255, kBackgroundRed, kBackgroundGreen, kBackgroundBlue);
-    gfx::ImageSkia wallpaper =
-        gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+    gfx::ImageSkia wallpaper = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
     ash::Shell::GetInstance()->desktop_background_controller()->
         SetCustomWallpaper(wallpaper, ash::WALLPAPER_LAYOUT_TILE);
+  }
+
+  virtual void InitializeWallpaper() OVERRIDE {
+    UpdateWallpaper();
   }
 
   virtual void OpenSetWallpaperPage() OVERRIDE {

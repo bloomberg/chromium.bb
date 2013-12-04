@@ -98,6 +98,8 @@ bool MetroViewerProcessHost::OnMessageReceived(
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetTargetSurface, OnSetTargetSurface)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SearchRequest, OnHandleSearchRequest)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_WindowSizeChanged,
+                        OnWindowSizeChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled ? true :

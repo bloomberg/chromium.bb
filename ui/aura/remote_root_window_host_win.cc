@@ -182,8 +182,6 @@ bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
                         OnSelectFolderDone)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SetCursorPosAck,
                         OnSetCursorPosAck)
-    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_WindowSizeChanged,
-                        OnWindowSizeChanged)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_ActivateDesktopDone,
                         OnDesktopActivated)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -293,6 +291,11 @@ void RemoteRootWindowHostWin::HandleSelectFolder(
   failure_callback_ = on_failure;
 
   host_->Send(new MetroViewerHostMsg_DisplaySelectFolder(title));
+}
+
+void RemoteRootWindowHostWin::HandleWindowSizeChanged(uint32 width,
+                                                      uint32 height) {
+  SetBounds(gfx::Rect(0, 0, width, height));
 }
 
 bool RemoteRootWindowHostWin::IsForegroundWindow() {
@@ -570,10 +573,6 @@ void RemoteRootWindowHostWin::OnSelectFolderDone(
 void RemoteRootWindowHostWin::OnSetCursorPosAck() {
   DCHECK(ignore_mouse_moves_until_set_cursor_ack_);
   ignore_mouse_moves_until_set_cursor_ack_ = false;
-}
-
-void RemoteRootWindowHostWin::OnWindowSizeChanged(uint32 width, uint32 height) {
-  SetBounds(gfx::Rect(0, 0, width, height));
 }
 
 void RemoteRootWindowHostWin::OnDesktopActivated() {

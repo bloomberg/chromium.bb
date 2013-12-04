@@ -139,6 +139,8 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
                           const SelectFolderCompletion& on_success,
                           const FileSelectionCanceled& on_failure);
 
+  void HandleWindowSizeChanged(uint32 width, uint32 height);
+
   // Returns the active ASH root window.
   Window* GetAshWindow();
 
@@ -181,7 +183,6 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
                            const std::vector<base::FilePath>& files);
   void OnSelectFolderDone(bool success, const base::FilePath& folder);
   void OnSetCursorPosAck();
-  void OnWindowSizeChanged(uint32 width, uint32 height);
   void OnDesktopActivated();
 
   // RootWindowHost overrides:

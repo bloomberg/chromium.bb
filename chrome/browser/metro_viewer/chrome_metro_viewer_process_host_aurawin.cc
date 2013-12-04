@@ -4,10 +4,13 @@
 
 #include "chrome/browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.h"
 
+#include "ash/display/display_info.h"
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/wm/window_positioner.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_aurawin.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -140,4 +143,15 @@ void ChromeMetroViewerProcessHost::OnHandleSearchRequest(
       ProfileManager::GetDefaultProfileOrOffTheRecord(), search_string));
   if (url.is_valid())
     OpenURL(url);
+}
+
+void ChromeMetroViewerProcessHost::OnWindowSizeChanged(uint32 width,
+                                                       uint32 height) {
+  std::vector<ash::internal::DisplayInfo> info_list;
+  info_list.push_back(ash::internal::DisplayInfo::CreateFromSpec(
+      base::StringPrintf("%dx%d", width, height)));
+  ash::Shell::GetInstance()->display_manager()->OnNativeDisplaysChanged(
+      info_list);
+  aura::RemoteRootWindowHostWin::Instance()->HandleWindowSizeChanged(width,
+                                                                     height);
 }

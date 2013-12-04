@@ -42,5 +42,9 @@ void TestMetroViewerProcessHost::OnHandleSearchRequest(
     const string16& search_string) {
 }
 
+void TestMetroViewerProcessHost::OnWindowSizeChanged(uint32 width,
+                                                     uint32 height) {
+}
+
 }  // namespace test
 }  // namespace ash

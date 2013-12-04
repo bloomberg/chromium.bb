@@ -76,6 +76,9 @@ class MetroViewerProcessHost : public IPC::Listener,
   // performed.
   virtual void OnHandleSearchRequest(const string16& search_string) = 0;
 
+  // Called over IPC by the viewer process when the window size has changed.
+  virtual void OnWindowSizeChanged(uint32 width, uint32 height) = 0;
+
   void NotifyChannelConnected();
 
   // Inner message filter used to handle connection event on the IPC channel

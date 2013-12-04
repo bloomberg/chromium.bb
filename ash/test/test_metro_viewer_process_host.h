@@ -26,6 +26,7 @@ class TestMetroViewerProcessHost : public win8::MetroViewerProcessHost {
   virtual void OnSetTargetSurface(gfx::NativeViewId target_surface) OVERRIDE;
   virtual void OnOpenURL(const string16& url) OVERRIDE;
   virtual void OnHandleSearchRequest(const string16& search_string) OVERRIDE;
+  virtual void OnWindowSizeChanged(uint32 width, uint32 height) OVERRIDE;
 
   scoped_ptr<AcceleratedSurface> backing_surface_;
 
