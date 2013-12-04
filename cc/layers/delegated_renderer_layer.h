@@ -16,12 +16,10 @@
 
 namespace cc {
 class BlockingTaskRunner;
-class DelegatedRendererLayerClient;
 
 class CC_EXPORT DelegatedRendererLayer : public Layer {
  public:
   static scoped_refptr<DelegatedRendererLayer> Create(
-      DelegatedRendererLayerClient* client,
       const scoped_refptr<DelegatedFrameProvider>& frame_provider);
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
@@ -43,12 +41,10 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
 
  protected:
   DelegatedRendererLayer(
-      DelegatedRendererLayerClient* client,
       const scoped_refptr<DelegatedFrameProvider>& frame_provider);
   virtual ~DelegatedRendererLayer();
 
  private:
-  DelegatedRendererLayerClient* client_;
   scoped_refptr<DelegatedFrameProvider> frame_provider_;
 
   bool should_collect_new_frame_;

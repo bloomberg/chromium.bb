@@ -395,7 +395,7 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
     if (delegated_layer_.get())
       delegated_layer_->RemoveFromParent();
     delegated_layer_ =
-        cc::DelegatedRendererLayer::Create(NULL, frame_provider_.get());
+        cc::DelegatedRendererLayer::Create(frame_provider_.get());
     delegated_layer_->SetIsDrawable(true);
     SetContentsOpaque(opaque_);
     background_layer_->AddChild(delegated_layer_);

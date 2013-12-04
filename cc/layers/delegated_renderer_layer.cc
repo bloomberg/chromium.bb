@@ -4,7 +4,6 @@
 
 #include "cc/layers/delegated_renderer_layer.h"
 
-#include "cc/layers/delegated_renderer_layer_client.h"
 #include "cc/layers/delegated_renderer_layer_impl.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -14,17 +13,14 @@
 namespace cc {
 
 scoped_refptr<DelegatedRendererLayer> DelegatedRendererLayer::Create(
-    DelegatedRendererLayerClient* client,
     const scoped_refptr<DelegatedFrameProvider>& frame_provider) {
   return scoped_refptr<DelegatedRendererLayer>(
-      new DelegatedRendererLayer(client, frame_provider));
+      new DelegatedRendererLayer(frame_provider));
 }
 
 DelegatedRendererLayer::DelegatedRendererLayer(
-    DelegatedRendererLayerClient* client,
     const scoped_refptr<DelegatedFrameProvider>& frame_provider)
     : Layer(),
-      client_(client),
       frame_provider_(frame_provider),
       should_collect_new_frame_(true),
       frame_data_(NULL),
@@ -81,14 +77,8 @@ void DelegatedRendererLayer::PushPropertiesTo(LayerImpl* impl) {
   frame_data_ = NULL;
   frame_damage_ = gfx::RectF();
 
-  // The ResourceProvider will have the new frame as soon as we push it to the
-  // pending tree. So resources no longer in use will be returned as well.
-  if (client_)
-    client_->DidCommitFrameData();
-
-  // TODO(danakj): The DidCommitFrameData() notification requires a push
-  // properties to happen in order to notify about resources returned
-  // from the parent compositor that are no longer in use. crbug.com/259090
+  // TODO(danakj): The following line needs to be removed. Currently, removal
+  // breaks unit tests.  crbug.com/259090
   needs_push_properties_ = true;
 }
 

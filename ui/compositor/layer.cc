@@ -528,7 +528,7 @@ void Layer::SetShowDelegatedContent(cc::DelegatedFrameProvider* frame_provider,
   DCHECK_EQ(type_, LAYER_TEXTURED);
 
   scoped_refptr<cc::DelegatedRendererLayer> new_layer =
-      cc::DelegatedRendererLayer::Create(NULL, frame_provider);
+      cc::DelegatedRendererLayer::Create(frame_provider);
   SwitchToLayer(new_layer);
   delegated_renderer_layer_ = new_layer;
   layer_updated_externally_ = true;

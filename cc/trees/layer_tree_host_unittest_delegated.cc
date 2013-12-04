@@ -14,7 +14,6 @@
 #include "cc/layers/delegated_frame_provider.h"
 #include "cc/layers/delegated_frame_resource_collection.h"
 #include "cc/layers/delegated_renderer_layer.h"
-#include "cc/layers/delegated_renderer_layer_client.h"
 #include "cc/layers/delegated_renderer_layer_impl.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
@@ -238,7 +237,6 @@ class LayerTreeHostDelegatedTest : public LayerTreeTest {
 
 class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
     : public LayerTreeHostDelegatedTest,
-      public DelegatedRendererLayerClient,
       public DelegatedFrameResourceCollectionClient {
  public:
   LayerTreeHostDelegatedTestCaseSingleDelegatedLayer()
@@ -285,7 +283,7 @@ class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
   scoped_refptr<DelegatedRendererLayer> CreateDelegatedLayer(
       DelegatedFrameProvider* frame_provider) {
     scoped_refptr<DelegatedRendererLayer> delegated =
-        FakeDelegatedRendererLayer::Create(this, frame_provider);
+        FakeDelegatedRendererLayer::Create(frame_provider);
     delegated->SetAnchorPoint(gfx::PointF());
     delegated->SetBounds(gfx::Size(10, 10));
     delegated->SetIsDrawable(true);
@@ -295,9 +293,6 @@ class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
   }
 
   virtual void AfterTest() OVERRIDE { resource_collection_->SetClient(NULL); }
-
-  // DelegatedRendererLayerClient implementation.
-  virtual void DidCommitFrameData() OVERRIDE {}
 
   // DelegatedFrameProviderClient implementation.
   virtual void UnusedResourcesAreAvailable() OVERRIDE { available_ = true; }
@@ -315,37 +310,6 @@ class LayerTreeHostDelegatedTestCaseSingleDelegatedLayer
   scoped_refptr<DelegatedRendererLayer> delegated_;
   bool available_;
 };
-
-class LayerTreeHostDelegatedTestClientDidCommitCallback
-    : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {
- public:
-  LayerTreeHostDelegatedTestClientDidCommitCallback()
-      : LayerTreeHostDelegatedTestCaseSingleDelegatedLayer(),
-        num_did_commit_frame_data_(0) {}
-
-  virtual void DidCommit() OVERRIDE {
-    if (TestEnded())
-      return;
-
-    EXPECT_EQ(1, num_did_commit_frame_data_);
-    EndTest();
-  }
-
-  virtual void BeginTest() OVERRIDE {
-    SetFrameData(CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1)));
-    PostSetNeedsCommitToMainThread();
-  }
-
-  virtual void DidCommitFrameData() OVERRIDE {
-    num_did_commit_frame_data_++;
-  }
-
- protected:
-  int num_did_commit_frame_data_;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostDelegatedTestClientDidCommitCallback);
 
 class LayerTreeHostDelegatedTestCreateChildId
     : public LayerTreeHostDelegatedTestCaseSingleDelegatedLayer {

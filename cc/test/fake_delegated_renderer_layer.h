@@ -12,18 +12,16 @@ namespace cc {
 class FakeDelegatedRendererLayer : public DelegatedRendererLayer {
  public:
   static scoped_refptr<FakeDelegatedRendererLayer> Create(
-      DelegatedRendererLayerClient* client,
       DelegatedFrameProvider* frame_provider) {
     return make_scoped_refptr(
-        new FakeDelegatedRendererLayer(client, frame_provider));
+        new FakeDelegatedRendererLayer(frame_provider));
   }
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
 
  protected:
-  explicit FakeDelegatedRendererLayer(DelegatedRendererLayerClient* client,
-                                      DelegatedFrameProvider* frame_provider);
+  explicit FakeDelegatedRendererLayer(DelegatedFrameProvider* frame_provider);
   virtual ~FakeDelegatedRendererLayer();
 };
 

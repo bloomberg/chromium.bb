@@ -693,7 +693,7 @@ void RenderWidgetHostViewAndroid::SwapDelegatedFrame(
       frame_provider_ = new cc::DelegatedFrameProvider(
           resource_collection_.get(), frame_data.Pass());
       delegated_renderer_layer_ =
-          cc::DelegatedRendererLayer::Create(NULL, frame_provider_);
+          cc::DelegatedRendererLayer::Create(frame_provider_);
       layer_ = delegated_renderer_layer_;
       if (are_layers_attached_)
         AttachLayers();

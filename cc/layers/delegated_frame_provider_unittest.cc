@@ -150,9 +150,9 @@ TEST_F(DelegatedFrameProviderTest, RefResources) {
   SetFrameProvider(frame.Pass());
 
   scoped_refptr<DelegatedRendererLayer> observer1 =
-      DelegatedRendererLayer::Create(NULL, frame_provider_);
+      DelegatedRendererLayer::Create(frame_provider_);
   scoped_refptr<DelegatedRendererLayer> observer2 =
-      DelegatedRendererLayer::Create(NULL, frame_provider_);
+      DelegatedRendererLayer::Create(frame_provider_);
 
   gfx::RectF damage;
 
@@ -208,9 +208,9 @@ TEST_F(DelegatedFrameProviderTest, RefResourcesInFrameProvider) {
   SetFrameProvider(frame.Pass());
 
   scoped_refptr<DelegatedRendererLayer> observer1 =
-      DelegatedRendererLayer::Create(NULL, frame_provider_);
+      DelegatedRendererLayer::Create(frame_provider_);
   scoped_refptr<DelegatedRendererLayer> observer2 =
-      DelegatedRendererLayer::Create(NULL, frame_provider_);
+      DelegatedRendererLayer::Create(frame_provider_);
 
   gfx::RectF damage;
 
@@ -250,9 +250,9 @@ TEST_F(DelegatedFrameProviderTest, RefResourcesInFrameProviderUntilDestroy) {
   SetFrameProvider(frame.Pass());
 
   scoped_refptr<DelegatedRendererLayer> observer1 =
-      DelegatedRendererLayer::Create(NULL, frame_provider_);
+      DelegatedRendererLayer::Create(frame_provider_);
   scoped_refptr<DelegatedRendererLayer> observer2 =
-      DelegatedRendererLayer::Create(NULL, frame_provider_);
+      DelegatedRendererLayer::Create(frame_provider_);
 
   gfx::RectF damage;
 
@@ -294,9 +294,9 @@ TEST_F(DelegatedFrameProviderTest, Damage) {
   SetFrameProvider(frame.Pass());
 
   scoped_refptr<DelegatedRendererLayer> observer1 =
-      DelegatedRendererLayer::Create(NULL, frame_provider_);
+      DelegatedRendererLayer::Create(frame_provider_);
   scoped_refptr<DelegatedRendererLayer> observer2 =
-      DelegatedRendererLayer::Create(NULL, frame_provider_);
+      DelegatedRendererLayer::Create(frame_provider_);
 
   gfx::RectF damage;
 

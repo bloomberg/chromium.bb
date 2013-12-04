@@ -136,7 +136,6 @@
         'layers/delegated_frame_resource_collection.h',
         'layers/delegated_renderer_layer.cc',
         'layers/delegated_renderer_layer.h',
-        'layers/delegated_renderer_layer_client.h',
         'layers/delegated_renderer_layer_impl.cc',
         'layers/delegated_renderer_layer_impl.h',
         'layers/draw_properties.h',
