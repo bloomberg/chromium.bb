@@ -6395,10 +6395,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enable or disable a feature which allows the user to select username/password combinations for domains that match the same public suffix registry domain.
       </message>
       <message name="IDS_FLAGS_PASSWORD_MANAGER_REAUTHENTICATION_NAME" desc="Name of the flag for the password manager reauthentication option.">
-        Password Manager Reauthentication
+        Disable Password Manager Reauthentication
       </message>
       <message name="IDS_FLAGS_PASSWORD_MANAGER_REAUTHENTICATION_DESCRIPTION" desc="Description of the flag for the password manager reauthentication option.">
-        Prompt the user for their OS password before revealing passwords on the passwords page.
+        Disable prompting the user for their OS password before revealing passwords on the passwords page.
       </message>
       <message name="IDS_FLAGS_PERFORMANCE_MONITOR_GATHERING_NAME" desc="Name for the flag to enable Performance Monitor.">
         Enable performance monitoring
