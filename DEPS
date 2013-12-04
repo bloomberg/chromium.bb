@@ -166,9 +166,8 @@ deps = {
   "src/third_party/bidichecker":
     (Var("googlecode_url") % "bidichecker") + "/trunk/lib@4",
 
-  "src/third_party/webgl/src":
-    Var("chromium_git") +
-    "/external/khronosgroup/webgl.git@159f31dd34842c871032d97d360a9dce5153f585",
+  "src/third_party/webgl_conformance":
+    "/trunk/deps/third_party/webgl/sdk/tests@230853",
 
   "src/third_party/swig/Lib":
     "/trunk/deps/third_party/swig/Lib@" + Var("swig_revision"),
@@ -389,7 +388,7 @@ deps_os = {
     "src/third_party/usrsctp/usrsctplib": None,
     "src/third_party/v8-i18n": None,
     "src/third_party/webdriver/pylib": None,
-    "src/third_party/webgl": None,
+    "src/third_party/webgl_conformance": None,
     "src/third_party/webpagereplay": None,
     "src/third_party/webrtc": None,
     "src/third_party/yasm/source/patched-yasm": None,

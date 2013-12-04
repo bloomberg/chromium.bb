@@ -14,8 +14,7 @@ from telemetry.page import page_set
 from telemetry.page import page_test
 
 conformance_path = os.path.join(
-    util.GetChromiumSrcDir(),
-    'third_party', 'webgl', 'src', 'sdk', 'tests')
+    util.GetChromiumSrcDir(), 'third_party', 'webgl_conformance')
 
 conformance_harness_script = r"""
   var testHarness = {};
