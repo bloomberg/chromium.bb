@@ -25,6 +25,9 @@ static void signal_catch(int sig) {
 int NaClQualifySandboxInstrs(void) {
   struct sigaction old_sigaction_trap;
   struct sigaction old_sigaction_ill;
+#if NACL_ANDROID
+  struct sigaction old_sigaction_bus;
+#endif
   struct sigaction try_sigaction;
   volatile int fell_through = 0;
 
@@ -34,6 +37,13 @@ int NaClQualifySandboxInstrs(void) {
 
   (void) sigaction(SIGTRAP, &try_sigaction, &old_sigaction_trap);
   (void) sigaction(SIGILL, &try_sigaction, &old_sigaction_ill);
+#if NACL_ANDROID
+  /*
+   * Android yields a SIGBUS for the breakpoint instruction used to mark
+   * literal pools heads.
+   */
+  (void) sigaction(SIGBUS, &try_sigaction, &old_sigaction_bus);
+#endif
 
   /* Each of the following should trap, successively executing
      each else clause, never the fallthrough. */
@@ -54,6 +64,9 @@ int NaClQualifySandboxInstrs(void) {
     fell_through = 1;
   }
 
+#if NACL_ANDROID
+  (void) sigaction(SIGBUS, &old_sigaction_bus, NULL);
+#endif
   (void) sigaction(SIGILL, &old_sigaction_ill, NULL);
   (void) sigaction(SIGTRAP, &old_sigaction_trap, NULL);
 
