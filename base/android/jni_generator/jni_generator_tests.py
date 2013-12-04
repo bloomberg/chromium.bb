@@ -22,6 +22,9 @@ from jni_generator import CalledByNative, JniParams, NativeMethod, Param
 
 SCRIPT_NAME = 'base/android/jni_generator/jni_generator.py'
 
+# Set this environment variable in order to regenerate the golden text
+# files.
+REBASELINE_ENV = 'REBASELINE'
 
 class TestOptions(object):
   """The mock options object which is passed to the jni_generator.py script."""
@@ -83,15 +86,25 @@ class TestGenerator(unittest.TestCase):
 
   def assertGoldenTextEquals(self, generated_text):
     script_dir = os.path.dirname(sys.argv[0])
+    # This is the caller test method.
     caller = inspect.stack()[1][3]
+    self.assertTrue(caller.startswith('test'),
+                    'assertGoldenTextEquals can only be called from a '
+                    'test* method, not %s' % caller)
     golden_file = os.path.join(script_dir, caller + '.golden')
     golden_text = self._ReadGoldenFile(golden_file)
-    if os.environ.get('REBASELINE'):
+    if os.environ.get(REBASELINE_ENV):
       if golden_text != generated_text:
         with file(golden_file, 'w') as f:
           f.write(generated_text)
       return
     self.assertTextEquals(golden_text, generated_text)
+
+  def testInspectCaller(self):
+    def willRaise():
+      # This function can only be called from a test* method.
+      self.assertGoldenTextEquals('')
+    self.assertRaises(AssertionError, willRaise)
 
   def testNatives(self):
     test_data = """"
