@@ -14,8 +14,7 @@ namespace test {
 TestAuraInitializer::TestAuraInitializer() {
   base::FilePath pak_file;
   PathService::Get(base::DIR_MODULE, &pak_file);
-  pak_file = pak_file.Append(FILE_PATH_LITERAL(
-      "aura_test_support_resources.pak"));
+  pak_file = pak_file.AppendASCII("ui_test.pak");
   ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
 }
 

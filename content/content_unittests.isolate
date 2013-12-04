@@ -68,9 +68,9 @@
           '--test-launcher-bot-mode',
         ],
         'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/aura_test_support_resources.pak',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
           '<(PRODUCT_DIR)/icudt.dll',
+          '<(PRODUCT_DIR)/ui_test.pak',
         ],
       },
     }],
