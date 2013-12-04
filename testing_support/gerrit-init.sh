@@ -77,22 +77,22 @@ import re
 import sys
 
 requested_version = sys.argv[1] if len(sys.argv) > 1 else None
-gerrit_re = re.compile('gerrit(?:-full)?-([0-9.]+(?:-rc[0-9]+)?)[.]war')
+gerrit_re = re.compile('gerrit(?:-full)?-([0-9.]+)(-rc[0-9]+)?[.]war')
 j = json.load(sys.stdin)
 items = [(x, gerrit_re.match(x['name'])) for x in j['items']]
-items = [(x, m.group(1)) for x, m in items if m]
+items = [(x, m.group(1), m.group(2)) for x, m in items if m]
 def _cmp(a, b):
-  an = a[1].replace('-rc', '.rc').split('.')
-  bn = b[1].replace('-rc', '.rc').split('.')
+  an = a[1].split('.')
+  bn = b[1].split('.')
   while len(an) < len(bn):
     an.append('0')
   while len(bn) < len(an):
     bn.append('0')
+  an.append(a[2][3:] if a[2] else '1000')
+  bn.append(b[2][3:] if b[2] else '1000')
   for i in range(len(an)):
-    ai = int(an[i][2:]) if 'rc' in an[i] else 1000 + int(an[i])
-    bi = int(bn[i][2:]) if 'rc' in bn[i] else 1000 + int(bn[i])
-    if ai != bi:
-      return -1 if ai > bi else 1
+    if an[i] != bn[i]:
+      return -1 if int(an[i]) > int(bn[i]) else 1
   return 0
 
 if requested_version:
@@ -105,9 +105,8 @@ if requested_version:
 
 items.sort(cmp=_cmp)
 for x in items:
-  if 'rc' not in x[0]['name']:
-    print '"%s" "%s"' % (x[0]['name'], x[0]['md5Hash'])
-    sys.exit(0)
+  print '"%s" "%s"' % (x[0]['name'], x[0]['md5Hash'])
+  sys.exit(0)
 EOF
 ) "$version" | xargs | while read name md5; do
   # Download the requested gerrit version if necessary, and verify the md5sum.
@@ -162,7 +161,7 @@ cat <<EOF > "${rundir}/etc/gerrit.config"
 EOF
 
 # Initialize the gerrit instance.
-java -jar "$gerrit_exe" init --no-auto-start --batch -d "${rundir}"
+java -jar "$gerrit_exe" init --no-auto-start --batch --install-plugin=download-commands -d "${rundir}"
 
 # Create SSH key pair for the first user.
 mkdir -p "${rundir}/tmp"
