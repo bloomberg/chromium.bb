@@ -35,7 +35,7 @@ typedef void *EGLDisplay;
 typedef void *EGLSurface;
 typedef intptr_t EGLNativeDisplayType;
 typedef intptr_t EGLNativeWindowType;
-#define EGL_DEFAULT_DISPLAY NULL
+#define EGL_DEFAULT_DISPLAY ((EGLNativeDisplayType)0)
 
 #endif
 
