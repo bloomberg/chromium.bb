@@ -378,11 +378,6 @@ void UserManagerImpl::UserLoggedIn(const std::string& user_id,
   UMA_HISTOGRAM_ENUMERATION("UserManager.LoginUserType",
                             active_user_->GetType(), User::NUM_USER_TYPES);
 
-  if (IsMultipleProfilesAllowed()) {
-    UMA_HISTOGRAM_COUNTS_100("MultiProfile.UserCount",
-                             GetLoggedInUsers().size());
-  }
-
   g_browser_process->local_state()->SetString(kLastLoggedInRegularUser,
     (active_user_->GetType() == User::USER_TYPE_REGULAR) ? user_id : "");
 

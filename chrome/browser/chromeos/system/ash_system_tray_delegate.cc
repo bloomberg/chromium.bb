@@ -598,7 +598,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowUserLogin() OVERRIDE {
-    if (!ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled())
+    ash::Shell* shell = ash::Shell::GetInstance();
+    if (!shell->delegate()->IsMultiProfilesEnabled())
       return;
 
     // Only regular users could add other users to current session.
@@ -607,12 +608,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       return;
     }
 
-    // TODO(nkostylev): Show some UI messages why no more users could be added
-    // to this session. http://crbug.com/230863
-    // We limit list of logged in users to 3 due to memory constraints.
-    // TODO(nkostylev): Adjust this limitation based on device capabilites.
-    // http://crbug.com/230865
-    if (UserManager::Get()->GetLoggedInUsers().size() >= 3)
+    if (static_cast<int>(UserManager::Get()->GetLoggedInUsers().size()) >=
+            shell->session_state_delegate()->GetMaximumNumberOfLoggedInUsers())
       return;
 
     // Launch sign in screen to add another user to current session.

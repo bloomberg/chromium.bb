@@ -36,4 +36,9 @@ void MultiProfileUMA::RecordTeleportAction(TeleportWindowAction action) {
                             NUM_TELEPORT_WINDOW_ACTIONS);
 }
 
+// static
+void MultiProfileUMA::RecordUserCount(int number_of_users) {
+  UMA_HISTOGRAM_COUNTS_100("MultiProfile.UsersPerSession", number_of_users);
+}
+
 }  // namespace ash
