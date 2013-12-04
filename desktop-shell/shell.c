@@ -2399,6 +2399,7 @@ set_surface_type(struct shell_surface *shsurf)
 						 pev->geometry.x + shsurf->transient.x,
 						 pev->geometry.y + shsurf->transient.y);
 		}
+		break;
 
 	case SHELL_SURFACE_XWAYLAND:
 		weston_view_set_position(shsurf->view, shsurf->transient.x,
