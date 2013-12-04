@@ -1,6 +1,8 @@
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+import sys
+
 from telemetry import test
 
 from measurements import page_cycler
@@ -103,6 +105,8 @@ class PageCyclerToughLayoutCases(test.Test):
 
 
 class PageCyclerTypical25(test.Test):
+  # crbug.com/273986: This test is really flakey on xp.
+  enabled = not sys.platform.startswith('win')
   test = page_cycler.PageCycler
   page_set = 'page_sets/typical_25.json'
   options = {'pageset_repeat_iters': 10}
