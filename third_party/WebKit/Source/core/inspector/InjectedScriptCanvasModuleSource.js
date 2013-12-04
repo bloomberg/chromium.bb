@@ -4292,9 +4292,9 @@ InjectedCanvasModule.prototype = {
         var alive = this._manager.capturing() && this._manager.lastTraceLog() === traceLog;
         var result = {
             id: id,
-            /** @type {!Array.<CanvasAgent.Call>} */
+            /** @type {!Array.<!CanvasAgent.Call>} */
             calls: [],
-            /** @type {!Array.<CanvasAgent.CallArgument>} */
+            /** @type {!Array.<!CanvasAgent.CallArgument>} */
             contexts: [],
             alive: alive,
             startOffset: fromIndex,
