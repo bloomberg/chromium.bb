@@ -192,12 +192,14 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['mac', 'amd'], bug=314997)
 
     # Linux/NVIDIA failures
+    # Unfortunately these Linux/NVIDIA bots have a Matrox as primary gpu,
+    # so linux+nvidia does not apply.  Specify as all linux.
     self.Fail('conformance/glsl/misc/empty-main-vert.html',
-        ['linux', 'nvidia'], bug=325884)
+        ['linux'], bug=325884)
     self.Fail('conformance/glsl/misc/gl-position-unset-vert.html',
-        ['linux', 'nvidia'], bug=325884)
+        ['linux'], bug=325884)
     self.Fail('conformance/uniforms/uniform-location.html',
-        ['linux', 'nvidia'], bug=325884)
+        ['linux'], bug=325884)
 
     # Android failures
     self.Fail('conformance/textures/texture-npot-video.html',
