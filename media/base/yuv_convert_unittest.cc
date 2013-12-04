@@ -51,7 +51,7 @@ static void ReadData(const base::FilePath::CharType* filename,
 
   // Verify file size is correct.
   int64 actual_size = 0;
-  file_util::GetFileSize(path, &actual_size);
+  base::GetFileSize(path, &actual_size);
   CHECK_EQ(actual_size, expected_size);
 
   // Verify bytes read are correct.

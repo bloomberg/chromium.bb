@@ -149,7 +149,7 @@ class PrefixSetTest : public PlatformTest {
   void ModifyAndCleanChecksum(const base::FilePath& filename, long offset,
                               int inc) {
     int64 size_64;
-    ASSERT_TRUE(file_util::GetFileSize(filename, &size_64));
+    ASSERT_TRUE(base::GetFileSize(filename, &size_64));
 
     file_util::ScopedFILE file(file_util::OpenFile(filename, "r+b"));
     IncrementIntAt(file.get(), offset, inc);
@@ -157,7 +157,7 @@ class PrefixSetTest : public PlatformTest {
     file.reset();
 
     int64 new_size_64;
-    ASSERT_TRUE(file_util::GetFileSize(filename, &new_size_64));
+    ASSERT_TRUE(base::GetFileSize(filename, &new_size_64));
     ASSERT_EQ(new_size_64, size_64);
   }
 
@@ -457,7 +457,7 @@ TEST_F(PrefixSetTest, CorruptionDigest) {
   ASSERT_TRUE(GetPrefixSetFile(&filename));
 
   int64 size_64;
-  ASSERT_TRUE(file_util::GetFileSize(filename, &size_64));
+  ASSERT_TRUE(base::GetFileSize(filename, &size_64));
   file_util::ScopedFILE file(file_util::OpenFile(filename, "r+b"));
   long digest_offset = static_cast<long>(size_64 - sizeof(base::MD5Digest));
   ASSERT_NO_FATAL_FAILURE(IncrementIntAt(file.get(), digest_offset, 1));

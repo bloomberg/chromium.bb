@@ -758,12 +758,12 @@ IN_PROC_BROWSER_TEST_F(PerformanceMonitorBrowserTest, NetworkBytesRead) {
   PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
 
   int64 page1_size = 0;
-  ASSERT_TRUE(file_util::GetFileSize(test_dir.AppendASCII("title1.html"),
-                                     &page1_size));
+  ASSERT_TRUE(base::GetFileSize(test_dir.AppendASCII("title1.html"),
+                                &page1_size));
 
   int64 page2_size = 0;
-  ASSERT_TRUE(file_util::GetFileSize(test_dir.AppendASCII("title2.html"),
-                                     &page2_size));
+  ASSERT_TRUE(base::GetFileSize(test_dir.AppendASCII("title2.html"),
+                                &page2_size));
 
   ASSERT_TRUE(test_server()->Start());
 

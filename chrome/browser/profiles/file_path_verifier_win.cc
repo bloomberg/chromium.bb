@@ -28,7 +28,7 @@ FileVerificationResult VerifyFileAtPath(const base::FilePath& file) {
   FileVerificationResult file_verification_result =
       FILE_VERIFICATION_FAILED_UNKNOWN;
   base::FilePath normalized_path;
-  if (!file_util::NormalizeFilePath(file, &normalized_path)) {
+  if (!base::NormalizeFilePath(file, &normalized_path)) {
     if (::GetLastError() == ERROR_FILE_NOT_FOUND)
       file_verification_result = FILE_VERIFICATION_FILE_NOT_FOUND;
     else

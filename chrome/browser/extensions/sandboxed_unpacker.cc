@@ -72,7 +72,7 @@ void RecordSuccessfulUnpackTimeHistograms(
   // To get a sense of how CRX size impacts unpack time, record unpack
   // time for several increments of CRX size.
   int64 crx_file_size;
-  if (!file_util::GetFileSize(crx_path, &crx_file_size)) {
+  if (!base::GetFileSize(crx_path, &crx_file_size)) {
     UMA_HISTOGRAM_COUNTS("Extensions.SandboxUnpackSuccessCantGetCrxSize", 1);
     return;
   }
@@ -135,8 +135,7 @@ bool VerifyJunctionFreeLocation(base::FilePath* temp_dir) {
     return false;
 
   base::FilePath normalized_temp_file;
-  bool normalized =
-      file_util::NormalizeFilePath(temp_file, &normalized_temp_file);
+  bool normalized = base::NormalizeFilePath(temp_file, &normalized_temp_file);
   if (!normalized) {
     // If |temp_file| contains a link, the sandbox will block al file system
     // operations, and the install will fail.
@@ -293,7 +292,7 @@ void SandboxedUnpacker::Start() {
   // will cause file system access outside the sandbox path, and the sandbox
   // will deny the operation.
   base::FilePath link_free_crx_path;
-  if (!file_util::NormalizeFilePath(temp_crx_path, &link_free_crx_path)) {
+  if (!base::NormalizeFilePath(temp_crx_path, &link_free_crx_path)) {
     LOG(ERROR) << "Could not get the normalized path of "
                << temp_crx_path.value();
     ReportFailure(

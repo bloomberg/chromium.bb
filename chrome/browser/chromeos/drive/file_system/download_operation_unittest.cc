@@ -356,7 +356,7 @@ TEST_F(DownloadOperationTest,
     // The content is available from the cache file.
     EXPECT_TRUE(get_content_callback.data().empty());
     int64 local_file_size = 0;
-    file_util::GetFileSize(local_path, &local_file_size);
+    base::GetFileSize(local_path, &local_file_size);
     EXPECT_EQ(entry->file_info().size(), local_file_size);
     EXPECT_EQ(FILE_ERROR_OK, completion_error);
   }

@@ -789,7 +789,7 @@ IN_PROC_BROWSER_TEST_F(SavePageAsMHTMLBrowserTest, SavePageAsMHTML) {
 
   ASSERT_TRUE(base::PathExists(full_file_name));
   int64 actual_file_size = -1;
-  EXPECT_TRUE(file_util::GetFileSize(full_file_name, &actual_file_size));
+  EXPECT_TRUE(base::GetFileSize(full_file_name, &actual_file_size));
   EXPECT_LE(kFileSizeMin, actual_file_size);
 }
 

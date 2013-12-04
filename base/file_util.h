@@ -261,14 +261,8 @@ BASE_EXPORT bool CreateDirectoryAndGetError(const FilePath& full_path,
 // Backward-compatible convenience method for the above.
 BASE_EXPORT bool CreateDirectory(const FilePath& full_path);
 
-}  // namespace base
-
-// -----------------------------------------------------------------------------
-
-namespace file_util {
-
 // Returns the file size. Returns true on success.
-BASE_EXPORT bool GetFileSize(const base::FilePath& file_path, int64* file_size);
+BASE_EXPORT bool GetFileSize(const FilePath& file_path, int64* file_size);
 
 // Sets |real_path| to |path| with symbolic links and junctions expanded.
 // On windows, make sure the path starts with a lettered drive.
@@ -276,8 +270,13 @@ BASE_EXPORT bool GetFileSize(const base::FilePath& file_path, int64* file_size);
 // a directory or to a nonexistent path.  On windows, this function will
 // fail if |path| is a junction or symlink that points to an empty file,
 // or if |real_path| would be longer than MAX_PATH characters.
-BASE_EXPORT bool NormalizeFilePath(const base::FilePath& path,
-                                   base::FilePath* real_path);
+BASE_EXPORT bool NormalizeFilePath(const FilePath& path, FilePath* real_path);
+
+}  // namespace base
+
+// -----------------------------------------------------------------------------
+
+namespace file_util {
 
 #if defined(OS_WIN)
 

@@ -165,6 +165,14 @@ bool CreateDirectory(const FilePath& full_path) {
   return CreateDirectoryAndGetError(full_path, NULL);
 }
 
+bool GetFileSize(const FilePath& file_path, int64* file_size) {
+  PlatformFileInfo info;
+  if (!file_util::GetFileInfo(file_path, &info))
+    return false;
+  *file_size = info.size;
+  return true;
+}
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
@@ -174,14 +182,6 @@ namespace file_util {
 using base::FileEnumerator;
 using base::FilePath;
 using base::kMaxUniqueFiles;
-
-bool GetFileSize(const FilePath& file_path, int64* file_size) {
-  base::PlatformFileInfo info;
-  if (!GetFileInfo(file_path, &info))
-    return false;
-  *file_size = info.size;
-  return true;
-}
 
 bool TouchFile(const FilePath& path,
                const base::Time& last_accessed,

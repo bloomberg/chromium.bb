@@ -161,7 +161,7 @@ uint32 VfsBackend::GetFileAttributes(const base::FilePath& file_path) {
 // static
 int64 VfsBackend::GetFileSize(const base::FilePath& file_path) {
   int64 size = 0;
-  return (file_util::GetFileSize(file_path, &size) ? size : 0);
+  return (base::GetFileSize(file_path, &size) ? size : 0);
 }
 
 } // namespace webkit_database

@@ -228,7 +228,7 @@ std::vector<base::FilePath> FindPrivateKeyFiles(
 bool ValidateFilePath(const base::FilePath& path) {
   int64 size = 0;
   if (!base::PathExists(path) ||
-      !file_util::GetFileSize(path, &size) ||
+      !base::GetFileSize(path, &size) ||
       size == 0) {
     return false;
   }

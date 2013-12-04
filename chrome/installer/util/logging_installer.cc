@@ -34,7 +34,7 @@ TruncateResult TruncateLogFileIfNeeded(const base::FilePath& log_file) {
   TruncateResult result = LOGFILE_UNTOUCHED;
 
   int64 log_size = 0;
-  if (file_util::GetFileSize(log_file, &log_size) &&
+  if (base::GetFileSize(log_file, &log_size) &&
       log_size > kMaxInstallerLogFileSize) {
     // Cause the old log file to be deleted when we are done with it.
     const int file_flags = base::PLATFORM_FILE_OPEN |

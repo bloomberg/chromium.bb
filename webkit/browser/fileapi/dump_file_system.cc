@@ -116,7 +116,7 @@ static void DumpDirectoryTree(const std::string& origin_name,
       if (info.is_directory()) {
         size = static_cast<int64>(children.size());
       } else {
-        file_util::GetFileSize(origin_dir.Append(info.data_path), &size);
+        base::GetFileSize(origin_dir.Append(info.data_path), &size);
       }
       // TODO(hamaji): Modification time?
       printf("%s%s %"PRId64" %"PRId64" %s\n",

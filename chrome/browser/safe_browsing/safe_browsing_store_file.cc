@@ -135,7 +135,7 @@ void DeleteChunksFromSet(const base::hash_set<int32>& deleted,
 bool FileHeaderSanityCheck(const base::FilePath& filename,
                            const FileHeader& header) {
   int64 size = 0;
-  if (!file_util::GetFileSize(filename, &size))
+  if (!base::GetFileSize(filename, &size))
     return false;
 
   int64 expected_size = sizeof(FileHeader);
@@ -181,7 +181,7 @@ void SafeBrowsingStoreFile::CheckForOriginalAndDelete(
       current_filename.DirName().AppendASCII("Safe Browsing"));
   if (base::PathExists(original_filename)) {
     int64 size = 0;
-    if (file_util::GetFileSize(original_filename, &size)) {
+    if (base::GetFileSize(original_filename, &size)) {
       UMA_HISTOGRAM_COUNTS("SB2.OldDatabaseKilobytes",
                            static_cast<int>(size / 1024));
     }
@@ -230,7 +230,7 @@ bool SafeBrowsingStoreFile::CheckValidity() {
     return OnCorruptDatabase();
 
   int64 size = 0;
-  if (!file_util::GetFileSize(filename_, &size))
+  if (!base::GetFileSize(filename_, &size))
     return OnCorruptDatabase();
 
   base::MD5Context context;
@@ -547,7 +547,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
 
   // Get chunk file's size for validating counts.
   int64 size = 0;
-  if (!file_util::GetFileSize(TemporaryFileForFilename(filename_), &size))
+  if (!base::GetFileSize(TemporaryFileForFilename(filename_), &size))
     return OnCorruptDatabase();
 
   // Track update size to answer questions at http://crbug.com/72216 .

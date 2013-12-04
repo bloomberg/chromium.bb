@@ -24,13 +24,13 @@ TEST(LoggingInstallerTest, TestTruncate) {
   ASSERT_TRUE(base::PathExists(temp_file));
 
   int64 file_size = 0;
-  EXPECT_TRUE(file_util::GetFileSize(temp_file, &file_size));
+  EXPECT_TRUE(base::GetFileSize(temp_file, &file_size));
   EXPECT_EQ(test_data.size(), file_size);
 
   EXPECT_EQ(installer::LOGFILE_TRUNCATED,
             installer::TruncateLogFileIfNeeded(temp_file));
 
-  EXPECT_TRUE(file_util::GetFileSize(temp_file, &file_size));
+  EXPECT_TRUE(base::GetFileSize(temp_file, &file_size));
   EXPECT_EQ(installer::kTruncatedInstallerLogFileSize , file_size);
 
   // Check that the temporary file was deleted.
@@ -49,13 +49,13 @@ TEST(LoggingInstallerTest, TestTruncationNotNeeded) {
   ASSERT_TRUE(base::PathExists(temp_file));
 
   int64 file_size = 0;
-  EXPECT_TRUE(file_util::GetFileSize(temp_file, &file_size));
+  EXPECT_TRUE(base::GetFileSize(temp_file, &file_size));
   EXPECT_EQ(test_data.size(), file_size);
 
   EXPECT_EQ(installer::LOGFILE_UNTOUCHED,
             installer::TruncateLogFileIfNeeded(temp_file));
   EXPECT_TRUE(base::PathExists(temp_file));
-  EXPECT_TRUE(file_util::GetFileSize(temp_file, &file_size));
+  EXPECT_TRUE(base::GetFileSize(temp_file, &file_size));
   EXPECT_EQ(test_data.size(), file_size);
 }
 
@@ -70,7 +70,7 @@ TEST(LoggingInstallerTest, TestInUseNeedsTruncation) {
             file_util::WriteFile(temp_file, &test_data[0], test_data.size()));
   ASSERT_TRUE(base::PathExists(temp_file));
   int64 file_size = 0;
-  EXPECT_TRUE(file_util::GetFileSize(temp_file, &file_size));
+  EXPECT_TRUE(base::GetFileSize(temp_file, &file_size));
   EXPECT_EQ(test_data.size(), file_size);
 
   // Prevent the log file from being moved or deleted.
@@ -84,7 +84,7 @@ TEST(LoggingInstallerTest, TestInUseNeedsTruncation) {
   EXPECT_EQ(installer::LOGFILE_UNTOUCHED,
             installer::TruncateLogFileIfNeeded(temp_file));
   EXPECT_TRUE(base::PathExists(temp_file));
-  EXPECT_TRUE(file_util::GetFileSize(temp_file, &file_size));
+  EXPECT_TRUE(base::GetFileSize(temp_file, &file_size));
   EXPECT_EQ(test_data.size(), file_size);
 }
 
@@ -99,7 +99,7 @@ TEST(LoggingInstallerTest, TestMoveFailsNeedsTruncation) {
             file_util::WriteFile(temp_file, &test_data[0], test_data.size()));
   ASSERT_TRUE(base::PathExists(temp_file));
   int64 file_size = 0;
-  EXPECT_TRUE(file_util::GetFileSize(temp_file, &file_size));
+  EXPECT_TRUE(base::GetFileSize(temp_file, &file_size));
   EXPECT_EQ(test_data.size(), file_size);
 
   // Create an inconvenient, non-deletable file in the location that

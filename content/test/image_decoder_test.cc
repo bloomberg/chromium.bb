@@ -31,7 +31,7 @@ bool ShouldSkipFile(const base::FilePath& path,
     return false;
 
   int64 image_size = 0;
-  file_util::GetFileSize(path, &image_size);
+  base::GetFileSize(path, &image_size);
   return (file_selection == TEST_SMALLER) == (image_size > threshold);
 }
 

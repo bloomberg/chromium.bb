@@ -44,7 +44,7 @@ bool FileExists(const base::FilePath& path) {
 
 int64 GetSize(const base::FilePath& path) {
   int64 size;
-  EXPECT_TRUE(file_util::GetFileSize(path, &size));
+  EXPECT_TRUE(base::GetFileSize(path, &size));
   return size;
 }
 

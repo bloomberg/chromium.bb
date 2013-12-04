@@ -158,7 +158,7 @@ TEST(File, ReadWrite) {
 
   // Make sure the file was extended.
   int64 file_size = 0;
-  EXPECT_TRUE(file_util::GetFileSize(file_path, &file_size));
+  EXPECT_TRUE(GetFileSize(file_path, &file_size));
   EXPECT_EQ(kOffsetBeyondEndOfFile + kPartialWriteLength, file_size);
 
   // Make sure the file was zero-padded.
@@ -240,7 +240,7 @@ TEST(File, Truncate) {
   const int kExtendedFileLength = 10;
   int64 file_size = 0;
   EXPECT_TRUE(file.Truncate(kExtendedFileLength));
-  EXPECT_TRUE(file_util::GetFileSize(file_path, &file_size));
+  EXPECT_TRUE(GetFileSize(file_path, &file_size));
   EXPECT_EQ(kExtendedFileLength, file_size);
 
   // Make sure the file was zero-padded.
@@ -255,7 +255,7 @@ TEST(File, Truncate) {
   // Truncate the file.
   const int kTruncatedFileLength = 2;
   EXPECT_TRUE(file.Truncate(kTruncatedFileLength));
-  EXPECT_TRUE(file_util::GetFileSize(file_path, &file_size));
+  EXPECT_TRUE(GetFileSize(file_path, &file_size));
   EXPECT_EQ(kTruncatedFileLength, file_size);
 
   // Make sure the file was truncated.

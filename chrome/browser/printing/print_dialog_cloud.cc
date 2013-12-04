@@ -644,7 +644,7 @@ void CreateDialogForFileImpl(content::BrowserContext* browser_context,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   scoped_refptr<base::RefCountedMemory> data;
   int64 file_size = 0;
-  if (file_util::GetFileSize(path_to_file, &file_size) && file_size != 0) {
+  if (base::GetFileSize(path_to_file, &file_size) && file_size != 0) {
     std::string file_data;
     if (file_size < kuint32max) {
       file_data.reserve(static_cast<unsigned int>(file_size));

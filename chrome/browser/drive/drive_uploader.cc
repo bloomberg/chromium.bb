@@ -214,7 +214,7 @@ CancelCallback DriveUploader::StartUploadFile(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&file_util::GetFileSize,
+      base::Bind(&base::GetFileSize,
                  info_ptr->file_path,
                  &info_ptr->content_length),
       base::Bind(&DriveUploader::StartUploadFileAfterGetFileSize,

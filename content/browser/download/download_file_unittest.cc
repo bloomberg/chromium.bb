@@ -195,7 +195,7 @@ class DownloadFileTest : public testing::Test {
   void VerifyStreamAndSize() {
     ::testing::Mock::VerifyAndClearExpectations(input_stream_);
     int64 size;
-    EXPECT_TRUE(file_util::GetFileSize(download_file_->FullPath(), &size));
+    EXPECT_TRUE(base::GetFileSize(download_file_->FullPath(), &size));
     EXPECT_EQ(expected_data_.size(), static_cast<size_t>(size));
   }
 

@@ -155,8 +155,8 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
                                write_path.AppendASCII("test.txt")));
 
     int64 file_size;
-    ASSERT_TRUE(file_util::GetFileSize(test_data_path.AppendASCII("test.jpg"),
-                                       &file_size));
+    ASSERT_TRUE(base::GetFileSize(test_data_path.AppendASCII("test.jpg"),
+                                  &file_size));
     test_jpg_size_ = base::checked_numeric_cast<int>(file_size);
   }
 

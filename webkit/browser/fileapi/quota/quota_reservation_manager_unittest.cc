@@ -112,7 +112,7 @@ class QuotaReservationManagerTest : public testing::Test {
 
   int64 GetFileSize() {
     int64 size = 0;
-    file_util::GetFileSize(file_path_, &size);
+    base::GetFileSize(file_path_, &size);
     return size;
   }
 

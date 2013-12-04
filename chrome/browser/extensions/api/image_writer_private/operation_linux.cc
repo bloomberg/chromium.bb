@@ -173,7 +173,7 @@ void Operation::VerifyWriteStage2(
   int64 image_size;
   scoped_ptr<base::FilePath> device_path(new base::FilePath(storage_unit_id_));
 
-  if (!file_util::GetFileSize(image_path_, &image_size)){
+  if (!base::GetFileSize(image_path_, &image_size)){
     Error(error::kImageSize);
     return;
   }

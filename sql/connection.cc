@@ -213,7 +213,7 @@ Connection::~Connection() {
 bool Connection::Open(const base::FilePath& path) {
   if (!histogram_tag_.empty()) {
     int64 size_64 = 0;
-    if (file_util::GetFileSize(path, &size_64)) {
+    if (base::GetFileSize(path, &size_64)) {
       size_t sample = static_cast<size_t>(size_64 / 1024);
       std::string full_histogram_name = "Sqlite.SizeKB." + histogram_tag_;
       base::HistogramBase* histogram =

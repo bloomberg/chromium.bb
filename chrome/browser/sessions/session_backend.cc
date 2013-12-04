@@ -278,7 +278,7 @@ void SessionBackend::MoveCurrentSessionToLastSession() {
     base::DeleteFile(last_session_path, false);
   if (base::PathExists(current_session_path)) {
     int64 file_size;
-    if (file_util::GetFileSize(current_session_path, &file_size)) {
+    if (base::GetFileSize(current_session_path, &file_size)) {
       if (type_ == BaseSessionService::TAB_RESTORE) {
         UMA_HISTOGRAM_COUNTS("TabRestore.last_session_file_size",
                              static_cast<int>(file_size / 1024));

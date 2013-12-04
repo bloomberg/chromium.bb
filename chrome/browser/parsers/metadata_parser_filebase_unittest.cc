@@ -40,7 +40,7 @@ class FileMetaDataParserTest : public testing::Test {
 
   std::string test_file_size() {
     int64 size;
-    EXPECT_TRUE(file_util::GetFileSize(test_file_, &size));
+    EXPECT_TRUE(base::GetFileSize(test_file_, &size));
 
     return base::Int64ToString(size);
   }

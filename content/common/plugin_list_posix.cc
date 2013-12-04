@@ -108,7 +108,7 @@ bool IsBlacklistedBySha1sumAndQuirks(const base::FilePath& path) {
   };
 
   int64 size;
-  if (!file_util::GetFileSize(path, &size))
+  if (!base::GetFileSize(path, &size))
     return false;
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(bad_entries); i++) {
     if (bad_entries[i].size != size)

@@ -623,6 +623,22 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
   return true;
 }
 
+bool NormalizeFilePath(const FilePath& path, FilePath* normalized_path) {
+  FilePath real_path_result;
+  if (!RealPath(path, &real_path_result))
+    return false;
+
+  // To be consistant with windows, fail if |real_path_result| is a
+  // directory.
+  stat_wrapper_t file_info;
+  if (CallStat(real_path_result.value().c_str(), &file_info) != 0 ||
+      S_ISDIR(file_info.st_mode))
+    return false;
+
+  *normalized_path = real_path_result;
+  return true;
+}
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
@@ -637,7 +653,6 @@ using base::DirectoryExists;
 using base::FileEnumerator;
 using base::FilePath;
 using base::MakeAbsoluteFilePath;
-using base::RealPath;
 using base::VerifySpecificPathControlledByUser;
 
 base::FilePath MakeUniqueDirectory(const base::FilePath& path) {
@@ -802,22 +817,6 @@ bool SetCurrentDirectory(const FilePath& path) {
   base::ThreadRestrictions::AssertIOAllowed();
   int ret = chdir(path.value().c_str());
   return !ret;
-}
-
-bool NormalizeFilePath(const FilePath& path, FilePath* normalized_path) {
-  FilePath real_path_result;
-  if (!RealPath(path, &real_path_result))
-    return false;
-
-  // To be consistant with windows, fail if |real_path_result| is a
-  // directory.
-  stat_wrapper_t file_info;
-  if (CallStat(real_path_result.value().c_str(), &file_info) != 0 ||
-      S_ISDIR(file_info.st_mode))
-    return false;
-
-  *normalized_path = real_path_result;
-  return true;
 }
 
 bool VerifyPathControlledByUser(const FilePath& base,

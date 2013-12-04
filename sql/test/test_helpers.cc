@@ -65,7 +65,7 @@ bool CorruptSizeInHeader(const base::FilePath& db_path) {
     return false;
 
   int64 db_size = 0;
-  if (!file_util::GetFileSize(db_path, &db_size))
+  if (!base::GetFileSize(db_path, &db_size))
     return false;
 
   const unsigned page_size = ReadBigEndian(header + kPageSizeOffset, 2);

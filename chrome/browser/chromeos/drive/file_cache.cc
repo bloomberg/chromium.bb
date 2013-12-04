@@ -494,7 +494,7 @@ FileError FileCache::StoreInternal(const std::string& id,
 
   int64 file_size = 0;
   if (file_operation_type == FILE_OPERATION_COPY) {
-    if (!file_util::GetFileSize(source_path, &file_size)) {
+    if (!base::GetFileSize(source_path, &file_size)) {
       LOG(WARNING) << "Couldn't get file size for: " << source_path.value();
       return FILE_ERROR_FAILED;
     }

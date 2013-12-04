@@ -112,7 +112,7 @@ void PredictorDatabaseInternal::LogDatabaseStats() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
 
   int64 db_size;
-  bool success = file_util::GetFileSize(db_path_, &db_size);
+  bool success = base::GetFileSize(db_path_, &db_size);
   DCHECK(success) << "Failed to get file size for " << db_path_.value();
   UMA_HISTOGRAM_MEMORY_KB("PredictorDatabase.DatabaseSizeKB",
                           static_cast<int>(db_size / 1024));

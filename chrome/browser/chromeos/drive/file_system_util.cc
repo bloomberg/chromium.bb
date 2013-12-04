@@ -72,7 +72,7 @@ std::string ReadStringFromGDocFile(const base::FilePath& file_path,
                                    const std::string& key) {
   const int64 kMaxGDocSize = 4096;
   int64 file_size = 0;
-  if (!file_util::GetFileSize(file_path, &file_size) ||
+  if (!base::GetFileSize(file_path, &file_size) ||
       file_size > kMaxGDocSize) {
     LOG(WARNING) << "File too large to be a GDoc file " << file_path.value();
     return std::string();

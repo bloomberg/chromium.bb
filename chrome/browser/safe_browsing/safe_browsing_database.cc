@@ -330,7 +330,7 @@ bool SBAddFullHashPrefixLess(const SBAddFullHash& a, const SBAddFullHash& b) {
 // that less verbose.
 int64 GetFileSizeOrZero(const base::FilePath& file_path) {
   int64 size_64;
-  if (!file_util::GetFileSize(file_path, &size_64))
+  if (!base::GetFileSize(file_path, &size_64))
     return 0;
   return size_64;
 }

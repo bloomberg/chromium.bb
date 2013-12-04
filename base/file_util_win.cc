@@ -390,6 +390,18 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
   }
 }
 
+bool NormalizeFilePath(const FilePath& path, FilePath* real_path) {
+  ThreadRestrictions::AssertIOAllowed();
+  FilePath mapped_file;
+  if (!file_util::NormalizeToNativeFilePath(path, &mapped_file))
+    return false;
+  // NormalizeToNativeFilePath() will return a path that starts with
+  // "\Device\Harddisk...".  Helper DevicePathToDriveLetterPath()
+  // will find a drive letter which maps to the path's device, so
+  // that we return a path starting with a drive letter.
+  return file_util::DevicePathToDriveLetterPath(mapped_file, real_path);
+}
+
 }  // namespace base
 
 // -----------------------------------------------------------------------------
@@ -545,18 +557,6 @@ bool SetCurrentDirectory(const FilePath& directory) {
   base::ThreadRestrictions::AssertIOAllowed();
   BOOL ret = ::SetCurrentDirectory(directory.value().c_str());
   return ret != 0;
-}
-
-bool NormalizeFilePath(const FilePath& path, FilePath* real_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  FilePath mapped_file;
-  if (!NormalizeToNativeFilePath(path, &mapped_file))
-    return false;
-  // NormalizeToNativeFilePath() will return a path that starts with
-  // "\Device\Harddisk...".  Helper DevicePathToDriveLetterPath()
-  // will find a drive letter which maps to the path's device, so
-  // that we return a path starting with a drive letter.
-  return DevicePathToDriveLetterPath(mapped_file, real_path);
 }
 
 bool DevicePathToDriveLetterPath(const FilePath& nt_device_path,

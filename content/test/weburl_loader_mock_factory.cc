@@ -176,7 +176,7 @@ bool WebURLLoaderMockFactory::IsPending(WebURLLoaderMock* loader) {
 bool WebURLLoaderMockFactory::ReadFile(const base::FilePath& file_path,
                                        WebData* data) {
   int64 file_size = 0;
-  if (!file_util::GetFileSize(file_path, &file_size))
+  if (!base::GetFileSize(file_path, &file_size))
     return false;
 
   int size = static_cast<int>(file_size);

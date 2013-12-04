@@ -54,7 +54,7 @@ FileError PrepareCopy(internal::ResourceMetadata* metadata,
 
 int64 GetFileSize(const base::FilePath& file_path) {
   int64 file_size;
-  if (!file_util::GetFileSize(file_path, &file_size))
+  if (!base::GetFileSize(file_path, &file_size))
     return -1;
   return file_size;
 }

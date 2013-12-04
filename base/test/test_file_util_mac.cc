@@ -20,7 +20,7 @@ bool EvictFileFromSystemCache(const base::FilePath& file) {
   // open should then have to load the file from disk.
 
   int64 length;
-  if (!file_util::GetFileSize(file, &length)) {
+  if (!base::GetFileSize(file, &length)) {
     DLOG(ERROR) << "failed to get size of " << file.value();
     return false;
   }

@@ -499,7 +499,7 @@ void UserCloudPolicyStoreChromeOS::LoadPolicyKey(const base::FilePath& path,
   }
 
   int64 size;
-  if (!file_util::GetFileSize(path, &size)) {
+  if (!base::GetFileSize(path, &size)) {
     LOG(ERROR) << "Could not get size of " << path.value();
   } else if (size == 0 || size > kKeySizeLimit) {
     LOG(ERROR) << "Key at " << path.value() << " has bad size " << size;

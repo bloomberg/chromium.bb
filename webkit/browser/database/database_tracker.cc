@@ -574,7 +574,7 @@ int64 DatabaseTracker::GetDBFileSize(const std::string& origin_identifier,
   base::FilePath db_file_name = GetFullDBFilePath(origin_identifier,
                                                   database_name);
   int64 db_file_size = 0;
-  if (!file_util::GetFileSize(db_file_name, &db_file_size))
+  if (!base::GetFileSize(db_file_name, &db_file_size))
     db_file_size = 0;
   return db_file_size;
 }

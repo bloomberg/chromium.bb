@@ -342,7 +342,7 @@ IN_PROC_BROWSER_TEST_F(IndexedDBBrowserTest, LevelDBLogFileTest) {
   base::FilePath log_file_path =
       GetContext()->data_path().Append(leveldb_dir).Append(log_file);
   int64 size;
-  EXPECT_TRUE(file_util::GetFileSize(log_file_path, &size));
+  EXPECT_TRUE(base::GetFileSize(log_file_path, &size));
   EXPECT_GT(size, 0);
 }
 

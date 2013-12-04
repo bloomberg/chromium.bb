@@ -225,7 +225,7 @@ TEST_F(FileStreamTest, UseClosedStream) {
 
 TEST_F(FileStreamTest, BasicRead) {
   int64 file_size;
-  bool ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  bool ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
 
   FileStream stream(NULL, base::MessageLoopProxy::current());
@@ -255,7 +255,7 @@ TEST_F(FileStreamTest, BasicRead) {
 
 TEST_F(FileStreamTest, AsyncRead) {
   int64 file_size;
-  bool ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  bool ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
 
   FileStream stream(NULL, base::MessageLoopProxy::current());
@@ -290,7 +290,7 @@ TEST_F(FileStreamTest, AsyncRead) {
 
 TEST_F(FileStreamTest, AsyncRead_EarlyDelete) {
   int64 file_size;
-  bool ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  bool ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
 
   scoped_ptr<FileStream> stream(
@@ -321,7 +321,7 @@ TEST_F(FileStreamTest, AsyncRead_EarlyDelete) {
 
 TEST_F(FileStreamTest, BasicRead_FromOffset) {
   int64 file_size;
-  bool ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  bool ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
 
   FileStream stream(NULL, base::MessageLoopProxy::current());
@@ -356,7 +356,7 @@ TEST_F(FileStreamTest, BasicRead_FromOffset) {
 
 TEST_F(FileStreamTest, AsyncRead_FromOffset) {
   int64 file_size;
-  bool ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  bool ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
 
   FileStream stream(NULL, base::MessageLoopProxy::current());
@@ -464,7 +464,7 @@ TEST_F(FileStreamTest, BasicWrite) {
   EXPECT_EQ(OK, rv);
 
   int64 file_size;
-  bool ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  bool ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
   EXPECT_EQ(0, file_size);
 
@@ -472,7 +472,7 @@ TEST_F(FileStreamTest, BasicWrite) {
   EXPECT_EQ(kTestDataSize, rv);
   stream.reset();
 
-  ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
   EXPECT_EQ(kTestDataSize, file_size);
 }
@@ -488,7 +488,7 @@ TEST_F(FileStreamTest, AsyncWrite) {
   EXPECT_EQ(OK, callback.WaitForResult());
 
   int64 file_size;
-  bool ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  bool ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
   EXPECT_EQ(0, file_size);
 
@@ -508,7 +508,7 @@ TEST_F(FileStreamTest, AsyncWrite) {
     drainable->DidConsume(rv);
     total_bytes_written += rv;
   }
-  ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
   EXPECT_EQ(file_size, total_bytes_written);
 }
@@ -525,7 +525,7 @@ TEST_F(FileStreamTest, AsyncWrite_EarlyDelete) {
   EXPECT_EQ(OK, callback.WaitForResult());
 
   int64 file_size;
-  bool ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  bool ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
   EXPECT_EQ(0, file_size);
 
@@ -538,7 +538,7 @@ TEST_F(FileStreamTest, AsyncWrite_EarlyDelete) {
     base::RunLoop().RunUntilIdle();
     EXPECT_FALSE(callback.have_result());
   } else {
-    ok = file_util::GetFileSize(temp_file_path(), &file_size);
+    ok = base::GetFileSize(temp_file_path(), &file_size);
     EXPECT_TRUE(ok);
     EXPECT_EQ(file_size, rv);
   }
@@ -553,7 +553,7 @@ TEST_F(FileStreamTest, BasicWrite_FromOffset) {
   EXPECT_EQ(OK, rv);
 
   int64 file_size;
-  bool ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  bool ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
   EXPECT_EQ(kTestDataSize, file_size);
 
@@ -565,14 +565,14 @@ TEST_F(FileStreamTest, BasicWrite_FromOffset) {
   EXPECT_EQ(kTestDataSize, rv);
   stream.reset();
 
-  ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
   EXPECT_EQ(kTestDataSize * 2, file_size);
 }
 
 TEST_F(FileStreamTest, AsyncWrite_FromOffset) {
   int64 file_size;
-  bool ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  bool ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
 
   FileStream stream(NULL, base::MessageLoopProxy::current());
@@ -607,14 +607,14 @@ TEST_F(FileStreamTest, AsyncWrite_FromOffset) {
     drainable->DidConsume(rv);
     total_bytes_written += rv;
   }
-  ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
   EXPECT_EQ(file_size, kTestDataSize * 2);
 }
 
 TEST_F(FileStreamTest, BasicReadWrite) {
   int64 file_size;
-  bool ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  bool ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
 
   scoped_ptr<FileStream> stream(
@@ -647,14 +647,14 @@ TEST_F(FileStreamTest, BasicReadWrite) {
   EXPECT_EQ(kTestDataSize, rv);
   stream.reset();
 
-  ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
   EXPECT_EQ(kTestDataSize * 2, file_size);
 }
 
 TEST_F(FileStreamTest, BasicWriteRead) {
   int64 file_size;
-  bool ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  bool ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
 
   scoped_ptr<FileStream> stream(
@@ -691,7 +691,7 @@ TEST_F(FileStreamTest, BasicWriteRead) {
   }
   stream.reset();
 
-  ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
   EXPECT_EQ(kTestDataSize * 2, file_size);
   EXPECT_EQ(kTestDataSize * 2, total_bytes_read);
@@ -703,7 +703,7 @@ TEST_F(FileStreamTest, BasicWriteRead) {
 
 TEST_F(FileStreamTest, BasicAsyncReadWrite) {
   int64 file_size;
-  bool ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  bool ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
 
   scoped_ptr<FileStream> stream(
@@ -756,14 +756,14 @@ TEST_F(FileStreamTest, BasicAsyncReadWrite) {
 
   stream.reset();
 
-  ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
   EXPECT_EQ(kTestDataSize * 2, file_size);
 }
 
 TEST_F(FileStreamTest, BasicAsyncWriteRead) {
   int64 file_size;
-  bool ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  bool ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
 
   scoped_ptr<FileStream> stream(
@@ -826,7 +826,7 @@ TEST_F(FileStreamTest, BasicAsyncWriteRead) {
   }
   stream.reset();
 
-  ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
   EXPECT_EQ(kTestDataSize * 2, file_size);
 
@@ -930,7 +930,7 @@ class TestWriteReadCompletionCallback {
 
 TEST_F(FileStreamTest, AsyncWriteRead) {
   int64 file_size;
-  bool ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  bool ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
 
   scoped_ptr<FileStream> stream(
@@ -965,7 +965,7 @@ TEST_F(FileStreamTest, AsyncWriteRead) {
 
   stream.reset();
 
-  ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
   EXPECT_EQ(kTestDataSize * 2, file_size);
 
@@ -1040,7 +1040,7 @@ class TestWriteCloseCompletionCallback {
 
 TEST_F(FileStreamTest, AsyncWriteClose) {
   int64 file_size;
-  bool ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  bool ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
 
   scoped_ptr<FileStream> stream(
@@ -1072,7 +1072,7 @@ TEST_F(FileStreamTest, AsyncWriteClose) {
 
   stream.reset();
 
-  ok = file_util::GetFileSize(temp_file_path(), &file_size);
+  ok = base::GetFileSize(temp_file_path(), &file_size);
   EXPECT_TRUE(ok);
   EXPECT_EQ(kTestDataSize * 2, file_size);
 }
@@ -1193,7 +1193,7 @@ TEST_F(FileStreamTest, ContentUriAsyncRead) {
   EXPECT_TRUE(path.IsContentUri());
   EXPECT_TRUE(base::PathExists(path));
   int64 file_size;
-  EXPECT_TRUE(file_util::GetFileSize(path, &file_size));
+  EXPECT_TRUE(base::GetFileSize(path, &file_size));
   EXPECT_LT(0, file_size);
 
   FileStream stream(NULL, base::MessageLoopProxy::current());

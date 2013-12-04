@@ -18,7 +18,7 @@ FileMetadataParser::~FileMetadataParser() {}
 bool FileMetadataParser::Parse() {
   std::string value;
   int64 size;
-  if (file_util::GetFileSize(path_, &size)) {
+  if (base::GetFileSize(path_, &size)) {
     properties_[MetadataParser::kPropertyFilesize] = base::Int64ToString(size);
   }
 #if defined(OS_WIN)

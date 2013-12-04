@@ -46,7 +46,7 @@ int InitInternal(const base::FilePath& path,
   }
 
   int64 length = 0;
-  if (!file_util::GetFileSize(path, &length)) {
+  if (!base::GetFileSize(path, &length)) {
     DLOG(WARNING) << "Failed to get file size of \"" << path.value() << "\"";
     return ERR_FILE_NOT_FOUND;
   }

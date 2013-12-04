@@ -549,7 +549,7 @@ bool SQLitePersistentCookieStore::Backend::InitializeDatabase() {
   }
 
   int64 db_size = 0;
-  if (file_util::GetFileSize(path_, &db_size))
+  if (base::GetFileSize(path_, &db_size))
     UMA_HISTOGRAM_COUNTS("Cookie.DBSizeInKB", db_size / 1024 );
 
   db_.reset(new sql::Connection);

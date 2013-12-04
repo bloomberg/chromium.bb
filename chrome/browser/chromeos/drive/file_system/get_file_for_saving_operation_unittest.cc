@@ -136,7 +136,7 @@ TEST_F(GetFileForSavingOperationTest, GetFileForSaving_NotExist) {
   EXPECT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(drive_path, &src_entry));
   int64 size = -1;
-  EXPECT_TRUE(file_util::GetFileSize(local_path, &size));
+  EXPECT_TRUE(base::GetFileSize(local_path, &size));
   EXPECT_EQ(0, size);
 }
 

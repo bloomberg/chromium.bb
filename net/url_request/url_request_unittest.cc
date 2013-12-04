@@ -704,7 +704,7 @@ TEST_F(URLRequestTest, FileTest) {
     base::RunLoop().Run();
 
     int64 file_size = -1;
-    EXPECT_TRUE(file_util::GetFileSize(app_path, &file_size));
+    EXPECT_TRUE(base::GetFileSize(app_path, &file_size));
 
     EXPECT_TRUE(!r.is_pending());
     EXPECT_EQ(1, d.response_started_count());
@@ -747,7 +747,7 @@ TEST_F(URLRequestTest, FileTestFullSpecifiedRange) {
   EXPECT_TRUE(file_util::WriteFile(temp_path, buffer.get(), buffer_size));
 
   int64 file_size;
-  EXPECT_TRUE(file_util::GetFileSize(temp_path, &file_size));
+  EXPECT_TRUE(base::GetFileSize(temp_path, &file_size));
 
   const size_t first_byte_position = 500;
   const size_t last_byte_position = buffer_size - first_byte_position;
@@ -791,7 +791,7 @@ TEST_F(URLRequestTest, FileTestHalfSpecifiedRange) {
   EXPECT_TRUE(file_util::WriteFile(temp_path, buffer.get(), buffer_size));
 
   int64 file_size;
-  EXPECT_TRUE(file_util::GetFileSize(temp_path, &file_size));
+  EXPECT_TRUE(base::GetFileSize(temp_path, &file_size));
 
   const size_t first_byte_position = 500;
   const size_t last_byte_position = buffer_size - 1;
@@ -834,7 +834,7 @@ TEST_F(URLRequestTest, FileTestMultipleRanges) {
   EXPECT_TRUE(file_util::WriteFile(temp_path, buffer.get(), buffer_size));
 
   int64 file_size;
-  EXPECT_TRUE(file_util::GetFileSize(temp_path, &file_size));
+  EXPECT_TRUE(base::GetFileSize(temp_path, &file_size));
 
   TestDelegate d;
   {
@@ -4726,7 +4726,7 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
     base::RunLoop().Run();
 
     int64 size = 0;
-    ASSERT_EQ(true, file_util::GetFileSize(path, &size));
+    ASSERT_EQ(true, base::GetFileSize(path, &size));
     scoped_ptr<char[]> buf(new char[size]);
 
     ASSERT_EQ(size, file_util::ReadFile(path, buf.get(), size));
@@ -7068,7 +7068,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPGetTestAnonymous) {
     base::RunLoop().Run();
 
     int64 file_size = 0;
-    file_util::GetFileSize(app_path, &file_size);
+    base::GetFileSize(app_path, &file_size);
 
     EXPECT_FALSE(r.is_pending());
     EXPECT_EQ(1, d.response_started_count());
@@ -7101,7 +7101,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPGetTest) {
     base::RunLoop().Run();
 
     int64 file_size = 0;
-    file_util::GetFileSize(app_path, &file_size);
+    base::GetFileSize(app_path, &file_size);
 
     EXPECT_FALSE(r.is_pending());
     EXPECT_EQ(test_server_.host_port_pair().host(),
@@ -7138,7 +7138,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPCheckWrongPassword) {
     base::RunLoop().Run();
 
     int64 file_size = 0;
-    file_util::GetFileSize(app_path, &file_size);
+    base::GetFileSize(app_path, &file_size);
 
     EXPECT_FALSE(r.is_pending());
     EXPECT_EQ(1, d.response_started_count());
@@ -7170,7 +7170,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPCheckWrongPasswordRestart) {
     base::RunLoop().Run();
 
     int64 file_size = 0;
-    file_util::GetFileSize(app_path, &file_size);
+    base::GetFileSize(app_path, &file_size);
 
     EXPECT_FALSE(r.is_pending());
     EXPECT_EQ(1, d.response_started_count());
@@ -7199,7 +7199,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPCheckWrongUser) {
     base::RunLoop().Run();
 
     int64 file_size = 0;
-    file_util::GetFileSize(app_path, &file_size);
+    base::GetFileSize(app_path, &file_size);
 
     EXPECT_FALSE(r.is_pending());
     EXPECT_EQ(1, d.response_started_count());
@@ -7231,7 +7231,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPCheckWrongUserRestart) {
     base::RunLoop().Run();
 
     int64 file_size = 0;
-    file_util::GetFileSize(app_path, &file_size);
+    base::GetFileSize(app_path, &file_size);
 
     EXPECT_FALSE(r.is_pending());
     EXPECT_EQ(1, d.response_started_count());
@@ -7262,7 +7262,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPCacheURLCredentials) {
     base::RunLoop().Run();
 
     int64 file_size = 0;
-    file_util::GetFileSize(app_path, &file_size);
+    base::GetFileSize(app_path, &file_size);
 
     EXPECT_FALSE(r.is_pending());
     EXPECT_EQ(1, d->response_started_count());
@@ -7283,7 +7283,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPCacheURLCredentials) {
     base::RunLoop().Run();
 
     int64 file_size = 0;
-    file_util::GetFileSize(app_path, &file_size);
+    base::GetFileSize(app_path, &file_size);
 
     EXPECT_FALSE(r.is_pending());
     EXPECT_EQ(1, d->response_started_count());
@@ -7316,7 +7316,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPCacheLoginBoxCredentials) {
     base::RunLoop().Run();
 
     int64 file_size = 0;
-    file_util::GetFileSize(app_path, &file_size);
+    base::GetFileSize(app_path, &file_size);
 
     EXPECT_FALSE(r.is_pending());
     EXPECT_EQ(1, d->response_started_count());
@@ -7340,7 +7340,7 @@ TEST_F(URLRequestTestFTP, DISABLED_FTPCacheLoginBoxCredentials) {
     base::RunLoop().Run();
 
     int64 file_size = 0;
-    file_util::GetFileSize(app_path, &file_size);
+    base::GetFileSize(app_path, &file_size);
 
     EXPECT_FALSE(r.is_pending());
     EXPECT_EQ(1, d->response_started_count());

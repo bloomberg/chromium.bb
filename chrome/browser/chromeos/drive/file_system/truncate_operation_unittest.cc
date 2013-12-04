@@ -60,7 +60,7 @@ TEST_F(TruncateOperationTest, Truncate) {
 
   // The local file should be truncated.
   int64 local_file_size = 0;
-  file_util::GetFileSize(local_path, &local_file_size);
+  base::GetFileSize(local_path, &local_file_size);
   EXPECT_EQ(1, local_file_size);
 }
 

@@ -86,7 +86,7 @@ void CrashDumpManager::ProcessMinidump(const base::FilePath& minidump_path,
                                        base::ProcessHandle pid) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   int64 file_size = 0;
-  int r = file_util::GetFileSize(minidump_path, &file_size);
+  int r = base::GetFileSize(minidump_path, &file_size);
   DCHECK(r) << "Failed to retrieve size for minidump "
             << minidump_path.value();
 

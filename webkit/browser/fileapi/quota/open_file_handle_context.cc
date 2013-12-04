@@ -18,7 +18,7 @@ OpenFileHandleContext::OpenFileHandleContext(
       reservation_buffer_(reservation_buffer) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 
-  file_util::GetFileSize(platform_path, &initial_file_size_);
+  base::GetFileSize(platform_path, &initial_file_size_);
   maximum_written_offset_ = initial_file_size_;
 }
 
@@ -43,7 +43,7 @@ OpenFileHandleContext::~OpenFileHandleContext() {
   // TODO(tzik): Optimize this for single operation.
 
   int64 file_size = 0;
-  file_util::GetFileSize(platform_path_, &file_size);
+  base::GetFileSize(platform_path_, &file_size);
   int64 usage_delta = file_size - initial_file_size_;
 
   // |quota_consumption| may be greater than the recorded file growth when a

@@ -106,7 +106,7 @@ void HistoryDatabase::ComputeDatabaseMetrics(
     const base::FilePath& history_name) {
     base::TimeTicks start_time = base::TimeTicks::Now();
   int64 file_size = 0;
-  if (!file_util::GetFileSize(history_name, &file_size))
+  if (!base::GetFileSize(history_name, &file_size))
     return;
   int file_mb = static_cast<int>(file_size / (1024 * 1024));
   UMA_HISTOGRAM_MEMORY_MB("History.DatabaseFileMB", file_mb);

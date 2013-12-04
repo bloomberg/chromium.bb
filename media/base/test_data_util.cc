@@ -30,7 +30,7 @@ scoped_refptr<DecoderBuffer> ReadTestDataFile(const std::string& name) {
       .AppendASCII(name);
 
   int64 tmp = 0;
-  CHECK(file_util::GetFileSize(file_path, &tmp))
+  CHECK(base::GetFileSize(file_path, &tmp))
       << "Failed to get file size for '" << name << "'";
 
   int file_size = static_cast<int>(tmp);

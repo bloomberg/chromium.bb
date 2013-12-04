@@ -124,7 +124,7 @@ void FontLoader::LoadFont(const FontDescriptor& font,
 
   // Load file into shared memory buffer.
   int64 font_file_size_64 = -1;
-  if (!file_util::GetFileSize(font_path, &font_file_size_64)) {
+  if (!base::GetFileSize(font_path, &font_file_size_64)) {
     DLOG(ERROR) << "Couldn't get font file size for " << font_path.value();
     return;
   }

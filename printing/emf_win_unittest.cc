@@ -189,7 +189,7 @@ TEST(EmfTest, FileBackedEmf) {
     EXPECT_EQ(data.size(), size);
   }
   int64 file_size = 0;
-  file_util::GetFileSize(metafile_path, &file_size);
+  base::GetFileSize(metafile_path, &file_size);
   EXPECT_EQ(size, file_size);
 
   // Playback the data.

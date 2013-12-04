@@ -677,7 +677,7 @@ class DownloadTest : public InProcessBrowserTest {
       return false;
 
     int64 origin_file_size = 0;
-    EXPECT_TRUE(file_util::GetFileSize(origin_file, &origin_file_size));
+    EXPECT_TRUE(base::GetFileSize(origin_file, &origin_file_size));
     std::string original_file_contents;
     EXPECT_TRUE(base::ReadFileToString(origin_file, &original_file_contents));
     EXPECT_TRUE(
@@ -1470,7 +1470,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_IncognitoRegular) {
       "downloads/a_zip_file.zip"))));
   ASSERT_TRUE(base::PathExists(origin));
   int64 origin_file_size = 0;
-  EXPECT_TRUE(file_util::GetFileSize(origin, &origin_file_size));
+  EXPECT_TRUE(base::GetFileSize(origin, &origin_file_size));
   std::string original_contents;
   EXPECT_TRUE(base::ReadFileToString(origin, &original_contents));
 
@@ -3046,7 +3046,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_PercentComplete) {
   // Check that the file downloaded correctly.
   ASSERT_TRUE(base::PathExists(download_items[0]->GetTargetFilePath()));
   int64 downloaded_size = 0;
-  ASSERT_TRUE(file_util::GetFileSize(
+  ASSERT_TRUE(base::GetFileSize(
       download_items[0]->GetTargetFilePath(), &downloaded_size));
 #if defined(OS_WIN)
   ASSERT_EQ(1, downloaded_size);

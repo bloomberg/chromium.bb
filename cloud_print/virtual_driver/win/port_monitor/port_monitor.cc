@@ -482,7 +482,7 @@ BOOL WINAPI Monitor2EndDocPort(HANDLE port_handle) {
     port_data->file = NULL;
     bool delete_file = true;
     int64 file_size = 0;
-    file_util::GetFileSize(port_data->file_path, &file_size);
+    base::GetFileSize(port_data->file_path, &file_size);
     if (file_size > 0) {
       string16 job_title;
       if (port_data->printer_handle != NULL) {

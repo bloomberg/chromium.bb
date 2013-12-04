@@ -863,7 +863,7 @@ Status ChromiumEnv::DeleteDir(const std::string& name) {
 Status ChromiumEnv::GetFileSize(const std::string& fname, uint64_t* size) {
   Status s;
   int64_t signed_size;
-  if (!::file_util::GetFileSize(CreateFilePath(fname), &signed_size)) {
+  if (!::base::GetFileSize(CreateFilePath(fname), &signed_size)) {
     *size = 0;
     s = MakeIOError(fname, "Could not determine file size.", kGetFileSize);
     RecordErrorAt(kGetFileSize);

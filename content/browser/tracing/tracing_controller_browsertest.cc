@@ -51,7 +51,7 @@ class TracingControllerTest : public ContentBrowserTest {
     disable_recording_done_callback_count_++;
     EXPECT_TRUE(PathExists(file_path));
     int64 file_size;
-    file_util::GetFileSize(file_path, &file_size);
+    base::GetFileSize(file_path, &file_size);
     EXPECT_TRUE(file_size > 0);
     quit_callback.Run();
     last_actual_recording_file_path_ = file_path;
@@ -72,7 +72,7 @@ class TracingControllerTest : public ContentBrowserTest {
     capture_monitoring_snapshot_done_callback_count_++;
     EXPECT_TRUE(PathExists(file_path));
     int64 file_size;
-    file_util::GetFileSize(file_path, &file_size);
+    base::GetFileSize(file_path, &file_size);
     EXPECT_TRUE(file_size > 0);
     quit_callback.Run();
     last_actual_monitoring_file_path_ = file_path;

@@ -66,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
 
   // Make sure the actual generated file has some contents.
   int64 file_size;
-  ASSERT_TRUE(file_util::GetFileSize(path, &file_size));
+  ASSERT_TRUE(base::GetFileSize(path, &file_size));
   EXPECT_GT(file_size, 100);
 }
 

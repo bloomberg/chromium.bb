@@ -452,7 +452,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   size_t favicon_bitmaps_rows_recovered = 0;
   size_t icon_mapping_rows_recovered = 0;
   int64 original_size = 0;
-  file_util::GetFileSize(db_path, &original_size);
+  base::GetFileSize(db_path, &original_size);
 
   scoped_ptr<sql::Recovery> recovery = sql::Recovery::Begin(db, db_path);
   if (!recovery) {
@@ -524,7 +524,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
     // percentage results are very low, something is awry.
     int64 final_size = 0;
     if (original_size > 0 &&
-        file_util::GetFileSize(db_path, &final_size) &&
+        base::GetFileSize(db_path, &final_size) &&
         final_size > 0) {
       int percentage = static_cast<int>(original_size * 100 / final_size);
       UMA_HISTOGRAM_PERCENTAGE("History.FaviconsRecoveredPercentage",
@@ -627,7 +627,7 @@ void RecoverDatabaseOrRaze(sql::Connection* db, const base::FilePath& db_path) {
   // percentage results are very low, something is awry.
   int64 final_size = 0;
   if (original_size > 0 &&
-      file_util::GetFileSize(db_path, &final_size) &&
+      base::GetFileSize(db_path, &final_size) &&
       final_size > 0) {
     int percentage = static_cast<int>(original_size * 100 / final_size);
     UMA_HISTOGRAM_PERCENTAGE("History.FaviconsRecoveredPercentage",
@@ -1241,7 +1241,7 @@ sql::InitStatus ThumbnailDatabase::OpenDatabase(sql::Connection* db,
                                                 const base::FilePath& db_name) {
   size_t startup_kb = 0;
   int64 size_64;
-  if (file_util::GetFileSize(db_name, &size_64))
+  if (base::GetFileSize(db_name, &size_64))
     startup_kb = static_cast<size_t>(size_64 / 1024);
 
   db->set_histogram_tag("Thumbnail");

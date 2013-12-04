@@ -25,7 +25,7 @@ int64 GetFileSizeOnBlockingPool(const base::FilePath& file) {
   // Get file size. In case of error, sets 0 as file size to let the installer
   // run and fail.
   int64 size;
-  return file_util::GetFileSize(file, &size) ? size : 0;
+  return base::GetFileSize(file, &size) ? size : 0;
 }
 
 }  // namespace

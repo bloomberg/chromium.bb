@@ -191,7 +191,7 @@ class JSONTest : public DiagnosticsTest {
       return true;
     }
     int64 file_size;
-    if (!file_util::GetFileSize(path_, &file_size)) {
+    if (!base::GetFileSize(path_, &file_size)) {
       RecordFailure(DIAG_RECON_CANNOT_OBTAIN_FILE_SIZE,
                     "Cannot obtain file size");
       return true;
@@ -312,7 +312,7 @@ class PathTest : public DiagnosticsTest {
     if (path_info_.is_directory) {
       dir_or_file_size = base::ComputeDirectorySize(dir_or_file);
     } else {
-      file_util::GetFileSize(dir_or_file, &dir_or_file_size);
+      base::GetFileSize(dir_or_file, &dir_or_file_size);
     }
     if (!dir_or_file_size && !path_info_.is_optional) {
       RecordFailure(DIAG_RECON_CANNOT_OBTAIN_SIZE,

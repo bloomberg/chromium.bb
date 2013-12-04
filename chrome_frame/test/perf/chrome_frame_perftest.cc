@@ -959,7 +959,7 @@ TEST(ImagePreReader, PreReadImage) {
   ASSERT_TRUE(PathService::Get(base::FILE_EXE, &current_exe));
 
   int64 file_size_64 = 0;
-  ASSERT_TRUE(file_util::GetFileSize(current_exe, &file_size_64));
+  ASSERT_TRUE(base::GetFileSize(current_exe, &file_size_64));
   ASSERT_TRUE(file_size_64 < std::numeric_limits<std::size_t>::max());
   size_t file_size = static_cast<size_t>(file_size_64);
 

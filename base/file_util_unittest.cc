@@ -250,7 +250,7 @@ TEST_F(FileUtilTest, FileAndDirectorySize) {
   FilePath file_01 = temp_dir_.path().Append(FPL("The file 01.txt"));
   CreateTextFile(file_01, L"12345678901234567890");
   int64 size_f1 = 0;
-  ASSERT_TRUE(file_util::GetFileSize(file_01, &size_f1));
+  ASSERT_TRUE(GetFileSize(file_01, &size_f1));
   EXPECT_EQ(20ll, size_f1);
 
   FilePath subdir_path = temp_dir_.path().Append(FPL("Level2"));
@@ -259,7 +259,7 @@ TEST_F(FileUtilTest, FileAndDirectorySize) {
   FilePath file_02 = subdir_path.Append(FPL("The file 02.txt"));
   CreateTextFile(file_02, L"123456789012345678901234567890");
   int64 size_f2 = 0;
-  ASSERT_TRUE(file_util::GetFileSize(file_02, &size_f2));
+  ASSERT_TRUE(GetFileSize(file_02, &size_f2));
   EXPECT_EQ(30ll, size_f2);
 
   FilePath subsubdir_path = subdir_path.Append(FPL("Level3"));
@@ -282,19 +282,16 @@ TEST_F(FileUtilTest, NormalizeFilePathBasic) {
 
   FilePath normalized_file_a_path, normalized_file_b_path;
   ASSERT_FALSE(PathExists(file_a_path));
-  ASSERT_FALSE(file_util::NormalizeFilePath(file_a_path,
-                                            &normalized_file_a_path))
+  ASSERT_FALSE(NormalizeFilePath(file_a_path, &normalized_file_a_path))
     << "NormalizeFilePath() should fail on nonexistent paths.";
 
   CreateTextFile(file_a_path, bogus_content);
   ASSERT_TRUE(PathExists(file_a_path));
-  ASSERT_TRUE(file_util::NormalizeFilePath(file_a_path,
-                                           &normalized_file_a_path));
+  ASSERT_TRUE(NormalizeFilePath(file_a_path, &normalized_file_a_path));
 
   CreateTextFile(file_b_path, bogus_content);
   ASSERT_TRUE(PathExists(file_b_path));
-  ASSERT_TRUE(file_util::NormalizeFilePath(file_b_path,
-                                           &normalized_file_b_path));
+  ASSERT_TRUE(NormalizeFilePath(file_b_path, &normalized_file_b_path));
 
   // Beacuse this test created |dir_path|, we know it is not a link
   // or junction.  So, the real path of the directory holding file a
@@ -376,18 +373,18 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
     ASSERT_TRUE(reparse_to_sub_long.IsValid());
 
     // Normalize a junction free path: base_a\sub_a\file.txt .
-    ASSERT_TRUE(file_util::NormalizeFilePath(file_txt, &normalized_path));
+    ASSERT_TRUE(NormalizeFilePath(file_txt, &normalized_path));
     ASSERT_STREQ(file_txt.value().c_str(), normalized_path.value().c_str());
 
     // Check that the path base_b\to_sub_a\file.txt can be normalized to exclude
     // the junction to_sub_a.
-    ASSERT_TRUE(file_util::NormalizeFilePath(to_sub_a.Append(FPL("file.txt")),
+    ASSERT_TRUE(NormalizeFilePath(to_sub_a.Append(FPL("file.txt")),
                                              &normalized_path));
     ASSERT_STREQ(file_txt.value().c_str(), normalized_path.value().c_str());
 
     // Check that the path base_b\to_base_b\to_base_b\to_sub_a\file.txt can be
     // normalized to exclude junctions to_base_b and to_sub_a .
-    ASSERT_TRUE(file_util::NormalizeFilePath(base_b.Append(FPL("to_base_b"))
+    ASSERT_TRUE(NormalizeFilePath(base_b.Append(FPL("to_base_b"))
                                                    .Append(FPL("to_base_b"))
                                                    .Append(FPL("to_sub_a"))
                                                    .Append(FPL("file.txt")),
@@ -405,18 +402,18 @@ TEST_F(FileUtilTest, NormalizeFilePathReparsePoints) {
     long_path = long_path.Append(FPL("to_sub_a"))
                          .Append(FPL("file.txt"));
 
-    ASSERT_FALSE(file_util::NormalizeFilePath(long_path, &normalized_path));
+    ASSERT_FALSE(NormalizeFilePath(long_path, &normalized_path));
 
     // Normalizing the junction to deep.txt should fail, because the expanded
     // path to deep.txt is longer than MAX_PATH.
-    ASSERT_FALSE(file_util::NormalizeFilePath(to_sub_long.Append(deep_txt),
+    ASSERT_FALSE(NormalizeFilePath(to_sub_long.Append(deep_txt),
                                               &normalized_path));
 
     // Delete the reparse points, and see that NormalizeFilePath() fails
     // to traverse them.
   }
 
-  ASSERT_FALSE(file_util::NormalizeFilePath(to_sub_a.Append(FPL("file.txt")),
+  ASSERT_FALSE(NormalizeFilePath(to_sub_a.Append(FPL("file.txt")),
                                             &normalized_path));
 }
 
@@ -610,7 +607,7 @@ TEST_F(FileUtilTest, NormalizeFilePathSymlinks) {
 
   // Check that NormalizeFilePath sees the link.
   FilePath normalized_path;
-  ASSERT_TRUE(file_util::NormalizeFilePath(link_from, &normalized_path));
+  ASSERT_TRUE(NormalizeFilePath(link_from, &normalized_path));
   EXPECT_NE(link_from, link_to);
   EXPECT_EQ(link_to.BaseName().value(), normalized_path.BaseName().value());
   EXPECT_EQ(link_to.BaseName().value(), normalized_path.BaseName().value());
@@ -622,7 +619,7 @@ TEST_F(FileUtilTest, NormalizeFilePathSymlinks) {
   ASSERT_TRUE(CreateSymbolicLink(link_to, link_from))
     << "Failed to create directory symlink.";
 
-  EXPECT_FALSE(file_util::NormalizeFilePath(link_from, &normalized_path))
+  EXPECT_FALSE(NormalizeFilePath(link_from, &normalized_path))
     << "Links to directories should return false.";
 
   // Test that a loop in the links causes NormalizeFilePath() to return false.
@@ -634,7 +631,7 @@ TEST_F(FileUtilTest, NormalizeFilePathSymlinks) {
     << "Failed to create loop symlink b.";
 
   // Infinite loop!
-  EXPECT_FALSE(file_util::NormalizeFilePath(link_from, &normalized_path));
+  EXPECT_FALSE(NormalizeFilePath(link_from, &normalized_path));
 }
 #endif  // defined(OS_POSIX)
 
@@ -2318,7 +2315,7 @@ TEST_F(FileUtilTest, ValidContentUriTest) {
   ASSERT_TRUE(PathExists(data_dir));
   FilePath image_file = data_dir.Append(FILE_PATH_LITERAL("red.png"));
   int64 image_size;
-  file_util::GetFileSize(image_file, &image_size);
+  GetFileSize(image_file, &image_size);
   EXPECT_LT(0, image_size);
 
   // Insert the image into MediaStore. MediaStore will do some conversions, and
@@ -2329,7 +2326,7 @@ TEST_F(FileUtilTest, ValidContentUriTest) {
   // The file size may not equal to the input image as MediaStore may convert
   // the image.
   int64 content_uri_size;
-  file_util::GetFileSize(path, &content_uri_size);
+  GetFileSize(path, &content_uri_size);
   EXPECT_EQ(image_size, content_uri_size);
 
   // We should be able to read the file.
@@ -2346,7 +2343,7 @@ TEST_F(FileUtilTest, NonExistentContentUriTest) {
   EXPECT_FALSE(PathExists(path));
   // Size should be smaller than 0.
   int64 size;
-  EXPECT_FALSE(file_util::GetFileSize(path, &size));
+  EXPECT_FALSE(GetFileSize(path, &size));
 
   // We should not be able to read the file.
   int fd = OpenContentUriForRead(path);
