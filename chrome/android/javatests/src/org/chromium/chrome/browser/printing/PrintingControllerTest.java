@@ -1,0 +1,245 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.printing;
+
+import android.os.CancellationSignal;
+import android.os.ParcelFileDescriptor;
+import android.print.PageRange;
+import android.print.PrintAttributes;
+import android.print.PrintDocumentAdapter;
+import android.print.PrintDocumentInfo;
+
+import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.TestFileUtil;
+import org.chromium.base.test.util.UrlUtils;
+import org.chromium.chrome.browser.printing.TabPrinter;
+import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
+import org.chromium.chrome.testshell.TestShellTab;
+import org.chromium.printing.PrintDocumentAdapterWrapper;
+import org.chromium.printing.PrintManagerDelegate;
+import org.chromium.printing.Printable;
+import org.chromium.printing.PrintingControllerImpl;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+
+import android.test.suitebuilder.annotation.LargeTest;
+
+/**
+ * Tests Android printing.
+ * TODO(cimamoglu): Add a test with cancellation.
+ * TODO(cimamoglu): Add a test with multiple, stacked onLayout/onWrite calls.
+ * TODO(cimamoglu): Add a test which emulates Chromium failing to generate a PDF.
+ */
+public class PrintingControllerTest extends ChromiumTestShellTestBase {
+
+    private static final String TEMP_FILE_NAME = "temp_print";
+    private static final String TEMP_FILE_EXTENSION = ".pdf";
+    private static final String PRINT_JOB_NAME = "foo";
+    private static final String URL = UrlUtils.encodeHtmlDataUri(
+            "<html><head></head><body>foo</body></html>");
+    private static final String PDF_PREAMBLE = "%PDF-1";
+    private static long TEST_TIMEOUT = 20000L;
+
+    private static class LayoutResultCallbackWrapperMock implements
+            PrintDocumentAdapterWrapper.LayoutResultCallbackWrapper {
+        @Override
+        public void onLayoutFinished(PrintDocumentInfo info, boolean changed) {}
+
+        @Override
+        public void onLayoutFailed(CharSequence error) {}
+
+        @Override
+        public void onLayoutCancelled() {}
+    }
+
+    private static class WriteResultCallbackWrapperMock implements
+            PrintDocumentAdapterWrapper.WriteResultCallbackWrapper {
+        @Override
+        public void onWriteFinished(PageRange[] pages) {}
+
+        @Override
+        public void onWriteFailed(CharSequence error) {}
+
+        @Override
+        public void onWriteCancelled() {}
+    }
+
+    /**
+     * Test a basic printing flow by emulating the corresponding system calls to the printing
+     * controller: onStart, onLayout, onWrite, onFinish.  Each one is called once, and in this
+     * order, in the UI thread.
+     */
+    @LargeTest
+    @Feature({"Printing"})
+    public void testNormalPrintingFlow() throws Throwable {
+        if (!ApiCompatibilityUtils.isPrintingSupported()) return;
+
+        final TestShellTab currentTab = launchChromiumTestShellWithUrl(URL).getActiveTab();
+        assertTrue(waitForActiveShellToBeDoneLoading());
+
+        final PrintManagerDelegate mockPrintManagerDelegate = new PrintManagerDelegate() {
+            @Override
+            public void print(String printJobName,
+                    PrintDocumentAdapter documentAdapter,
+                    PrintAttributes attributes) {
+                // Do nothing, as we will emulate the framework call sequence within the test.
+            }
+        };
+        final PrintingControllerImpl printingController =
+                (PrintingControllerImpl) PrintingControllerImpl.create(mockPrintManagerDelegate,
+                        new PrintDocumentAdapterWrapper(), PRINT_JOB_NAME);
+
+        startController(printingController, currentTab);
+        // {@link PrintDocumentAdapter#onStart} is always called first.
+        callStartOnUiThread(printingController);
+
+        // Create a temporary file to save the PDF.
+        final File cacheDir = getInstrumentation().getTargetContext().getCacheDir();
+        final File tempFile = File.createTempFile(TEMP_FILE_NAME, TEMP_FILE_EXTENSION, cacheDir);
+        final ParcelFileDescriptor fileDescriptor =
+                ParcelFileDescriptor.open(tempFile, (ParcelFileDescriptor.MODE_CREATE |
+                                                     ParcelFileDescriptor.MODE_READ_WRITE));
+
+        PrintAttributes attributes = new PrintAttributes.Builder()
+                .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
+                .setResolution(new PrintAttributes.Resolution("foo", "bar", 300, 300))
+                .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
+                .build();
+
+        // Use this to wait for PDF generation to complete, as it will happen asynchronously.
+        final FutureTask<Boolean> result =
+                new FutureTask<Boolean>(new Callable<Boolean>() {
+                            @Override
+                            public Boolean call() {
+                                return true;
+                            }
+                        });
+
+        callLayoutOnUiThread(
+                printingController,
+                null,
+                attributes,
+                new LayoutResultCallbackWrapperMock() {
+            // Called on UI thread
+            @Override
+            public void onLayoutFinished(PrintDocumentInfo info, boolean changed) {
+                callWriteOnUiThread(printingController, fileDescriptor, result);
+            }
+        });
+
+        FileInputStream in = null;
+        try {
+            // This blocks until the PDF is generated.
+            result.get(TEST_TIMEOUT, TimeUnit.MILLISECONDS);
+            assertTrue(tempFile.length() > 0);
+            in = new FileInputStream(tempFile);
+            byte[] b = new byte[PDF_PREAMBLE.length()];
+            in.read(b);
+            String preamble = new String(b);
+            assertEquals(PDF_PREAMBLE, preamble);
+        } finally {
+            callFinishOnUiThread(printingController);
+            if (in != null) in.close();
+            // Close the descriptor, if not closed already.
+            fileDescriptor.close();
+            TestFileUtil.deleteFile(tempFile.getAbsolutePath());
+        }
+
+    }
+
+    private void startController(final PrintingControllerImpl controller, final TestShellTab tab) {
+        try {
+            runTestOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    controller.startPrint(new TabPrinter(tab));
+                }
+            });
+        } catch (Throwable e) {
+            fail("Error on calling startPrint of PrintingControllerImpl " + e);
+        }
+    }
+
+    private void callStartOnUiThread(final PrintingControllerImpl controller) {
+        try {
+            runTestOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    controller.onStart();
+                }
+            });
+        } catch (Throwable e) {
+            fail("Error on calling onStart of PrintingControllerImpl " + e);
+        }
+    }
+
+    private void callLayoutOnUiThread(
+            final PrintingControllerImpl controller,
+            final PrintAttributes oldAttributes,
+            final PrintAttributes newAttributes,
+            final PrintDocumentAdapterWrapper.LayoutResultCallbackWrapper layoutResultCallback) {
+        try {
+            runTestOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    controller.onLayout(
+                            oldAttributes,
+                            newAttributes,
+                            new CancellationSignal(),
+                            layoutResultCallback,
+                            null);
+                }
+            });
+        } catch (Throwable e) {
+            fail("Error on calling onLayout of PrintingControllerImpl " + e);
+        }
+    }
+
+    private void callWriteOnUiThread(
+            final PrintingControllerImpl controller,
+            final ParcelFileDescriptor descriptor,
+            final FutureTask<Boolean> result) {
+        try {
+            controller.onWrite(
+                    new PageRange[] {PageRange.ALL_PAGES},
+                    descriptor,
+                    new CancellationSignal(),
+                    new WriteResultCallbackWrapperMock() {
+                        @Override
+                        public void onWriteFinished(PageRange[] pages) {
+                            try {
+                                descriptor.close();
+                                // Result is ready, signal to continue.
+                                result.run();
+                            } catch (IOException ex) {
+                                fail("Failed file operation: " + ex.toString());
+                            }
+                        }
+                    }
+            );
+        } catch (Throwable e) {
+            fail("Error on calling onWriteInternal of PrintingControllerImpl " + e);
+        }
+    }
+
+    private void callFinishOnUiThread(final PrintingControllerImpl controller) {
+        try {
+            runTestOnUiThread( new Runnable() {
+                @Override
+                public void run() {
+                    controller.onFinish();
+                }
+            });
+        } catch (Throwable e) {
+            fail("Error on calling onFinish of PrintingControllerImpl " + e);
+        }
+    }
+}

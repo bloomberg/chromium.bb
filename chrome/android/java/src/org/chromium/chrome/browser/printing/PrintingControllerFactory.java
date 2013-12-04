@@ -10,6 +10,7 @@ import android.print.PrintManager;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.printing.PrintDocumentAdapterWrapper;
 import org.chromium.printing.PrintManagerDelegateImpl;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
@@ -28,8 +29,8 @@ public class PrintingControllerFactory {
             PrintManager printManager =
                     (PrintManager) activity.getSystemService(Context.PRINT_SERVICE);
             String errorText = activity.getResources().getString(R.string.error_printing_failed);
-            return PrintingControllerImpl.create(
-                    new PrintManagerDelegateImpl(printManager), errorText);
+            return PrintingControllerImpl.create(new PrintManagerDelegateImpl(printManager),
+                    new PrintDocumentAdapterWrapper(), errorText);
         }
         return null;
     }

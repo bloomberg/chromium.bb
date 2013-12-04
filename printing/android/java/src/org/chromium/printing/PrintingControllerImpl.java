@@ -5,6 +5,7 @@
 package org.chromium.printing;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.printing.PrintDocumentAdapterWrapper.PdfGenerator;;
 
 import android.os.Bundle;
 import android.os.CancellationSignal;
@@ -14,8 +15,6 @@ import android.print.PrintAttributes;
 import android.print.PrintAttributes.MediaSize;
 import android.print.PrintAttributes.Resolution;
 import android.print.PrintDocumentAdapter;
-import android.print.PrintDocumentAdapter.LayoutResultCallback;
-import android.print.PrintDocumentAdapter.WriteResultCallback;
 import android.print.PrintDocumentInfo;
 
 import java.io.IOException;
@@ -30,7 +29,7 @@ import java.util.Iterator;
  * print button. The singleton object lives in UI thread. Interaction with the native side is
  * carried through PrintingContext class.
  */
-public class PrintingControllerImpl extends PrintDocumentAdapter implements PrintingController {
+public class PrintingControllerImpl implements PrintingController, PdfGenerator {
 
     private static final String LOG_TAG = "PrintingControllerImpl";
 
@@ -66,7 +65,7 @@ public class PrintingControllerImpl extends PrintDocumentAdapter implements Prin
     private int[] mPages;
 
     /** The callback function to inform the result of PDF generation to the framework. */
-    private PrintDocumentAdapter.WriteResultCallback mOnWriteCallback;
+    private PrintDocumentAdapterWrapper.WriteResultCallbackWrapper mOnWriteCallback;
 
     /**
      * The callback function to inform the result of layout to the framework.  We save the callback
@@ -74,10 +73,13 @@ public class PrintingControllerImpl extends PrintDocumentAdapter implements Prin
      * number of expected pages back to the framework through this callback once the native side
      * has that information.
      */
-    private PrintDocumentAdapter.LayoutResultCallback mOnLayoutCallback;
+    private PrintDocumentAdapterWrapper.LayoutResultCallbackWrapper mOnLayoutCallback;
 
     /** The object through which native PDF generation process is initiated. */
     private Printable mPrintable;
+
+    /** The object through which the framework will make calls for generating PDF. */
+    private PrintDocumentAdapterWrapper mPrintDocumentAdapterWrapper;
 
     private int mPrintingState = PRINTING_STATE_READY;
 
@@ -87,9 +89,13 @@ public class PrintingControllerImpl extends PrintDocumentAdapter implements Prin
     /** Total number of pages to print with initial print dialog settings. */
     private int mLastKnownMaxPages = PrintDocumentInfo.PAGE_COUNT_UNKNOWN;
 
-    private PrintingControllerImpl(PrintManagerDelegate printManager, String errorText) {
+    private PrintingControllerImpl(PrintManagerDelegate printManager,
+                                   PrintDocumentAdapterWrapper printDocumentAdapterWrapper,
+                                   String errorText) {
         mPrintManager = printManager;
         mErrorMessage = errorText;
+        mPrintDocumentAdapterWrapper = printDocumentAdapterWrapper;
+        mPrintDocumentAdapterWrapper.setPdfGenerator(this);
     }
 
     /**
@@ -97,17 +103,20 @@ public class PrintingControllerImpl extends PrintDocumentAdapter implements Prin
      *
      * The controller is a singleton, since there can be only one printing action at any time.
      *
+     * @param printDocumentAdapterWrapper The object through which the framework will make calls
+     *                                    for generating PDF.
      * @param errorText The error message to be shown to user in case something goes wrong in PDF
      *                  generation in Chromium. We pass it here as a string so src/printing/android
      *                  doesn't need any string dependency.
      * @return The resulting PrintingController.
      */
     public static PrintingController create(PrintManagerDelegate printManager,
-           String errorText) {
+            PrintDocumentAdapterWrapper printDocumentAdapterWrapper, String errorText) {
         ThreadUtils.assertOnUiThread();
 
         if (sInstance == null) {
-            sInstance = new PrintingControllerImpl(printManager, errorText);
+            sInstance = new PrintingControllerImpl(printManager,
+                    printDocumentAdapterWrapper, errorText);
         }
         return sInstance;
     }
@@ -162,7 +171,7 @@ public class PrintingControllerImpl extends PrintDocumentAdapter implements Prin
     @Override
     public void startPrint(final Printable printable) {
         mPrintable = printable;
-        mPrintManager.print(printable.getTitle(), this, null);
+        mPrintDocumentAdapterWrapper.print(mPrintManager, printable.getTitle());
     }
 
     @Override
@@ -186,9 +195,12 @@ public class PrintingControllerImpl extends PrintDocumentAdapter implements Prin
     }
 
     @Override
-    public void onLayout(PrintAttributes oldAttributes,
-            PrintAttributes newAttributes, CancellationSignal cancellationSignal,
-            LayoutResultCallback callback, Bundle metadata) {
+    public void onLayout(
+            PrintAttributes oldAttributes,
+            PrintAttributes newAttributes,
+            CancellationSignal cancellationSignal,
+            PrintDocumentAdapterWrapper.LayoutResultCallbackWrapper callback,
+            Bundle metadata) {
         // NOTE: Chrome printing just supports one DPI, whereas Android has both vertical and
         // horizontal.  These two values are most of the time same, so we just pass one of them.
         mDpi = newAttributes.getResolution().getHorizontalDpi();
@@ -248,7 +260,7 @@ public class PrintingControllerImpl extends PrintDocumentAdapter implements Prin
             final PageRange[] ranges,
             final ParcelFileDescriptor destination,
             final CancellationSignal cancellationSignal,
-            final WriteResultCallback callback) {
+            final PrintDocumentAdapterWrapper.WriteResultCallbackWrapper callback) {
         if (mPrintingContext == null) {
             callback.onWriteFailed(mErrorMessage);
             resetCallbacks();
@@ -290,7 +302,6 @@ public class PrintingControllerImpl extends PrintDocumentAdapter implements Prin
 
     @Override
     public void onFinish() {
-        super.onFinish();
         mLastKnownMaxPages = PrintDocumentInfo.PAGE_COUNT_UNKNOWN;
         mPages = null;
 
