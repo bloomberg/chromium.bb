@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/threading/thread.h"
 #include "media/midi/midi_manager.h"
 #include "media/midi/midi_port_info.h"
 
@@ -24,10 +25,10 @@ class MEDIA_EXPORT MIDIManagerMac : public MIDIManager {
 
   // MIDIManager implementation.
   virtual bool Initialize() OVERRIDE;
-  virtual void SendMIDIData(MIDIManagerClient* client,
-                            uint32 port_index,
-                            const std::vector<uint8>& data,
-                            double timestamp) OVERRIDE;
+  virtual void DispatchSendMIDIData(MIDIManagerClient* client,
+                                    uint32 port_index,
+                                    const std::vector<uint8>& data,
+                                    double timestamp) OVERRIDE;
 
  private:
   // CoreMIDI callback for MIDI data.
@@ -38,6 +39,12 @@ class MEDIA_EXPORT MIDIManagerMac : public MIDIManager {
       void *read_proc_refcon,
       void *src_conn_refcon);
   virtual void ReadMIDI(MIDIEndpointRef source, const MIDIPacketList *pktlist);
+
+  // An internal callback that runs on MIDISendThread.
+  void SendMIDIData(MIDIManagerClient* client,
+                    uint32 port_index,
+                    const std::vector<uint8>& data,
+                    double timestamp);
 
   // Helper
   static media::MIDIPortInfo GetPortInfoFromEndpoint(MIDIEndpointRef endpoint);
@@ -61,6 +68,9 @@ class MEDIA_EXPORT MIDIManagerMac : public MIDIManager {
 
   // Keeps track of all destinations.
   std::vector<MIDIEndpointRef> destinations_;
+
+  // |send_thread_| is used to send MIDI data.
+  base::Thread send_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(MIDIManagerMac);
 };

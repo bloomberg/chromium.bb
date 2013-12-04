@@ -6,8 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
-#include "base/threading/thread.h"
 
 namespace media {
 
@@ -22,7 +20,8 @@ MIDIManager::MIDIManager()
     : initialized_(false) {
 }
 
-MIDIManager::~MIDIManager() {}
+MIDIManager::~MIDIManager() {
+}
 
 bool MIDIManager::StartSession(MIDIManagerClient* client) {
   // Lazily initialize the MIDI back-end.
@@ -61,27 +60,6 @@ void MIDIManager::ReceiveMIDIData(
 
   for (ClientList::iterator i = clients_.begin(); i != clients_.end(); ++i)
     (*i)->ReceiveMIDIData(port_index, data, length, timestamp);
-}
-
-bool MIDIManager::CurrentlyOnMIDISendThread() {
-  return send_thread_->message_loop() == base::MessageLoop::current();
-}
-
-void MIDIManager::DispatchSendMIDIData(MIDIManagerClient* client,
-                                       uint32 port_index,
-                                       const std::vector<uint8>& data,
-                                       double timestamp) {
-  // Lazily create the thread when first needed.
-  if (!send_thread_) {
-    send_thread_.reset(new base::Thread("MIDISendThread"));
-    send_thread_->Start();
-    send_message_loop_ = send_thread_->message_loop_proxy();
-  }
-
-  send_message_loop_->PostTask(
-     FROM_HERE,
-     base::Bind(&MIDIManager::SendMIDIData, base::Unretained(this),
-         client, port_index, data, timestamp));
 }
 
 }  // namespace media
