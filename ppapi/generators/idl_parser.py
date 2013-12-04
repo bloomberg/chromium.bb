@@ -976,7 +976,7 @@ class IDLParser(IDLLexer):
 def FlattenTree(node):
   add_self = False
   out = []
-  for child in node.children:
+  for child in node.GetChildren():
     if child.IsA('Comment'):
       add_self = True
     else:

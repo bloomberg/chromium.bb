@@ -568,28 +568,22 @@ class CGen(object):
       if len(build_list) != 1:
         node.Error('Can not support multiple versions of node.')
       assert len(build_list) == 1
-
+      out = self.DefineStructInternals(node, build_list[-1],
+                                       include_version=False, comment=True)
 
     if node.IsA('Interface'):
       # Build the most recent one versioned, with comments
       out = self.DefineStructInternals(node, build_list[-1],
                                        include_version=True, comment=True)
-
       # Define an unversioned typedef for the most recent version
       out += '\ntypedef struct %s %s;\n' % (
           self.GetStructName(node, build_list[-1], include_version=True),
           self.GetStructName(node, build_list[-1], include_version=False))
-    else:
-      # Build the most recent one versioned, with comments
-      out = self.DefineStructInternals(node, build_list[-1],
-                                       include_version=False, comment=True)
-
-
-    # Build the rest without comments and with the version number appended
-    for rel in build_list[0:-1]:
-      out += '\n' + self.DefineStructInternals(node, rel,
-                                               include_version=True,
-                                               comment=False)
+      # Build the rest without comments and with the version number appended
+      for rel in build_list[0:-1]:
+        out += '\n' + self.DefineStructInternals(node, rel,
+                                                 include_version=True,
+                                                 comment=False)
 
     self.LogExit('Exit DefineStruct')
     return out
@@ -752,7 +746,7 @@ def main(args):
       print 'Skipping %s' % f.GetName()
       continue
     for node in f.GetChildren()[2:]:
-      print cgen.Define(node, comment=True, prefix='tst_')
+      print cgen.Define(node, ast.releases, comment=True, prefix='tst_')
 
 
 if __name__ == '__main__':

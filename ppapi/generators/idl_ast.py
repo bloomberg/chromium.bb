@@ -11,15 +11,6 @@ from idl_visitor import IDLVisitor
 from idl_release import IDLReleaseMap
 
 #
-# IDL Predefined types
-#
-BuiltIn = set(['int8_t', 'int16_t', 'int32_t', 'int64_t', 'uint8_t',
-               'uint16_t', 'uint32_t', 'uint64_t', 'double_t', 'float_t',
-               'handle_t', 'interface_t', 'char', 'mem_t', 'mem_ptr_t',
-               'str_t', 'void'])
-
-
-#
 # IDLLabelResolver
 #
 # A specialized visitor which traverses the AST, building a mapping of
@@ -78,7 +69,7 @@ class IDLNamespaceVersionResolver(IDLVisitor):
       node.namespace = parent_namespace
     else:
     # otherwise create one.
-      node.namespace = IDLNamespace(parent_namespace, node.GetName())
+      node.namespace = IDLNamespace(parent_namespace)
 
     # If this node is named, place it in its parent's namespace
     if parent_namespace and node.cls in IDLNode.NamedSet:
@@ -124,7 +115,7 @@ class IDLFileTypeResolver(IDLVisitor):
         node.SetMinRange(file_min)
 
     # If this node has a TYPEREF, resolve it to a version list
-    typeref = node.property_node.GetPropertyLocal('TYPEREF')
+    typeref = node.GetPropertyLocal('TYPEREF')
     if typeref:
       node.typelist = node.parent.namespace.FindList(typeref)
       if not node.typelist:
@@ -164,7 +155,7 @@ class IDLAst(IDLNode):
     IDLLabelResolver().Visit(self, None)
 
     # Generate the Namesapce Tree
-    self.namespace = IDLNamespace(None, 'AST')
+    self.namespace = IDLNamespace(None)
     IDLNamespaceVersionResolver().Visit(self, self.namespace)
 
     # Using the namespace, resolve type references

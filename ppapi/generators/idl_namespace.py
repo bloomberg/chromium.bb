@@ -28,10 +28,9 @@ Option('namespace_debug', 'Use the specified release')
 # one or more IDLNodes based on a release or range of releases.
 #
 class IDLNamespace(object):
-  def __init__(self, parent, name):
+  def __init__(self, parent):
     self._name_to_releases = {}
     self._parent = parent
-    self._name = name
 
   def Dump(self):
     for name in self._name_to_releases:
@@ -71,7 +70,6 @@ class IDLNamespace(object):
     if GetOption('namespace_debug'):
         print "Adding to namespace: %s" % node
     return verlist.AddNode(node)
-
 
 
 #

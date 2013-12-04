@@ -30,6 +30,10 @@ def main(args):
   assert errors == 0
   errors += TestIDL('idl_gen_pnacl.py', ['--wnone', '--test'])
   assert errors == 0
+  errors += TestIDL('idl_namespace.py', [])
+  assert errors == 0
+  errors += TestIDL('idl_node.py', [])
+  assert errors == 0
 
   if errors:
     print '\nFailed tests.'

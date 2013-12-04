@@ -107,7 +107,7 @@ class Callspec(object):
       # TODO(asargent): fix the IDL parser to support optional return types.
       if return_type.get('type') == 'object' or '$ref' in return_type:
         return_type['optional'] = True
-    for node in self.node.children:
+    for node in self.node.GetChildren():
       parameter = Param(node).process(callbacks)
       if parameter['name'] in self.comment:
         parameter['description'] = self.comment[parameter['name']]
@@ -139,7 +139,7 @@ class Dictionary(object):
 
   def process(self, callbacks):
     properties = OrderedDict()
-    for node in self.node.children:
+    for node in self.node.GetChildren():
       if node.cls == 'Member':
         k, v = Member(node).process(callbacks)
         properties[k] = v
@@ -181,7 +181,7 @@ class Member(object):
           option_name))
     is_function = False
     parameter_comments = OrderedDict()
-    for node in self.node.children:
+    for node in self.node.GetChildren():
       if node.cls == 'Comment':
         (parent_comment, parameter_comments) = ProcessComment(node.GetName())
         properties['description'] = parent_comment
@@ -290,10 +290,10 @@ class Enum(object):
 
   def process(self, callbacks):
     enum = []
-    for node in self.node.children:
+    for node in self.node.GetChildren():
       if node.cls == 'EnumItem':
         enum_value = {'name': node.GetName()}
-        for child in node.children:
+        for child in node.GetChildren():
           if child.cls == 'Comment':
             enum_value['description'] = ProcessComment(child.GetName())[0]
           else:
@@ -338,7 +338,7 @@ class Namespace(object):
     self.description = description
 
   def process(self):
-    for node in self.namespace.children:
+    for node in self.namespace.GetChildren():
       if node.cls == 'Dictionary':
         self.types.append(Dictionary(node).process(self.callbacks))
       elif node.cls == 'Callback':
@@ -368,7 +368,7 @@ class Namespace(object):
 
   def process_interface(self, node):
     members = []
-    for member in node.children:
+    for member in node.GetChildren():
       if member.cls == 'Member':
         name, properties = Member(member).process(self.callbacks)
         members.append(properties)

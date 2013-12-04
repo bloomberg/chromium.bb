@@ -4,54 +4,49 @@
 
 """ Error and information logging for IDL """
 
-#
-# IDL Log
-#
-# And IDLLog object provides a mechanism for capturing logging output
-# and/or sending out via a file handle (usually stdout or stderr).
-#
 import sys
 
 
 class IDLLog(object):
+  """Captures and routes logging output.
+
+  Caputres logging output and/or sends out via a file handle, typically
+  stdout or stderr.
+  """
   def __init__(self, name, out):
     if name:
-      self.name = '%s : ' % name
+      self._name = '%s : ' % name
     else:
-      self.name = ''
+      self._name = ''
 
-    self.out = out
-    self.capture = False
-    self.console = True
-    self.log = []
+    self._out = out
+    self._capture = False
+    self._console = True
+    self._log = []
 
   def Log(self, msg):
-    line = "%s\n" % (msg)
-    if self.console: self.out.write(line)
-    if self.capture:
-      self.log.append(msg)
-
-  def LogTag(self, msg):
-    line = "%s%s\n" % (self.name, msg)
-    if self.console: self.out.write(line)
-    if self.capture:
-      self.log.append(msg)
+    if self._console:
+      line = "%s\n" % (msg)
+      self._out.write(line)
+    if self._capture:
+      self._log.append(msg)
 
   def LogLine(self, filename, lineno, pos, msg):
-    line = "%s(%d) : %s%s\n" % (filename, lineno, self.name, msg)
-    if self.console: self.out.write(line)
-    if self.capture: self.log.append(msg)
+    if self._console:
+      line = "%s(%d) : %s%s\n" % (filename, lineno, self._name, msg)
+      self._out.write(line)
+    if self._capture:
+      self._log.append(msg)
 
-  def SetConsole(self, enable, out = None):
-    self.console = enable
-    if out: self.out = out
+  def SetConsole(self, enable):
+    self._console = enable
 
   def SetCapture(self, enable):
-    self.capture = enable
+    self._capture = enable
 
   def DrainLog(self):
-    out = self.log
-    self.log = []
+    out = self._log
+    self._log = []
     return out
 
 ErrOut  = IDLLog('Error', sys.stderr)

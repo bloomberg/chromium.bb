@@ -58,15 +58,14 @@ class IDLNode(IDLRelease):
     self.cls = cls
     self.lineno = lineno
     self.pos = pos
-    self.filename = filename
-    self.filenode = None
-    self.deps = {}
+    self._filename = filename
+    self._deps = {}
     self.errors = 0
     self.namespace = None
     self.typelist = None
     self.parent = None
-    self.property_node = IDLPropertyNode()
-    self.unique_releases = None
+    self._property_node = IDLPropertyNode()
+    self._unique_releases = None
 
     # A list of unique releases for this node
     self.releases = None
@@ -74,8 +73,8 @@ class IDLNode(IDLRelease):
     # A map from any release, to the first unique release
     self.first_release = None
 
-    # self.children is a list of children ordered as defined
-    self.children = []
+    # self._children is a list of children ordered as defined
+    self._children = []
     # Process the passed in list of children, placing ExtAttributes into the
     # property dictionary, and nodes into the local child list in order.  In
     # addition, add nodes to the namespace if the class is in the NamedSet.
@@ -86,43 +85,38 @@ class IDLNode(IDLRelease):
         else:
           self.AddChild(child)
 
-#
-# String related functions
-#
-#
-
-  # Return a string representation of this node
   def __str__(self):
     name = self.GetName()
     if name is None:
       name = ''
     return '%s(%s)' % (self.cls, name)
 
-  # Return file and line number for where node was defined
   def Location(self):
-    return '%s(%d)' % (self.filename, self.lineno)
+    """Return a file and line number for where this node was defined."""
+    return '%s(%d)' % (self._filename, self.lineno)
 
-  # Log an error for this object
   def Error(self, msg):
+    """Log an error for this object."""
     self.errors += 1
-    ErrOut.LogLine(self.filename, self.lineno, 0, ' %s %s' %
+    ErrOut.LogLine(self._filename, self.lineno, 0, ' %s %s' %
                    (str(self), msg))
-    if self.filenode:
-      errcnt = self.filenode.GetProperty('ERRORS')
+    filenode = self.GetProperty('FILE')
+    if filenode:
+      errcnt = filenode.GetProperty('ERRORS')
       if not errcnt:
         errcnt = 0
-      self.filenode.SetProperty('ERRORS', errcnt + 1)
+      filenode.SetProperty('ERRORS', errcnt + 1)
 
-  # Log a warning for this object
   def Warning(self, msg):
-    WarnOut.LogLine(self.filename, self.lineno, 0, ' %s %s' %
+    """Log a warning for this object."""
+    WarnOut.LogLine(self._filename, self.lineno, 0, ' %s %s' %
                     (str(self), msg))
 
   def GetName(self):
     return self.GetProperty('NAME')
 
-  # Dump this object and its children
   def Dump(self, depth=0, comments=False, out=sys.stdout):
+    """Dump this object and its children"""
     if self.cls in ['Comment', 'Copyright']:
       is_comment = True
     else:
@@ -146,7 +140,7 @@ class IDLNode(IDLRelease):
       out.write('%s%s%s%s\n' % (tab, self, ver, release_list))
     if self.typelist:
       out.write('%s  Typelist: %s\n' % (tab, self.typelist.GetReleases()[0]))
-    properties = self.property_node.GetPropertyList()
+    properties = self._property_node.GetPropertyList()
     if properties:
       out.write('%s  Properties\n' % tab)
       for p in properties:
@@ -154,41 +148,39 @@ class IDLNode(IDLRelease):
           # Skip printing the name for comments, since we printed above already
           continue
         out.write('%s    %s : %s\n' % (tab, p, self.GetProperty(p)))
-    for child in self.children:
+    for child in self._children:
       child.Dump(depth+1, comments=comments, out=out)
 
-#
-# Search related functions
-#
-  # Check if node is of a given type
   def IsA(self, *typelist):
+    """Check if node is of a given type."""
     return self.cls in typelist
 
-  # Get a list of objects for this key
   def GetListOf(self, *keys):
+    """Get a list of objects for the given key(s)."""
     out = []
-    for child in self.children:
+    for child in self._children:
       if child.cls in keys:
         out.append(child)
     return out
 
   def GetOneOf(self, *keys):
+    """Get an object for the given key(s)."""
     out = self.GetListOf(*keys)
     if out:
       return out[0]
     return None
 
   def SetParent(self, parent):
-    self.property_node.AddParent(parent)
+    self._property_node.AddParent(parent)
     self.parent = parent
 
   def AddChild(self, node):
     node.SetParent(self)
-    self.children.append(node)
+    self._children.append(node)
 
   # Get a list of all children
   def GetChildren(self):
-    return self.children
+    return self._children
 
   def GetType(self, release):
     if not self.typelist:
@@ -203,7 +195,7 @@ class IDLNode(IDLRelease):
       return set([])
 
     # If we have cached the info for this release, return the cached value
-    deps = self.deps.get(release, None)
+    deps = self._deps.get(release, None)
     if deps is not None:
       return deps
 
@@ -225,7 +217,7 @@ class IDLNode(IDLRelease):
     if typeref:
       deps |= typeref.GetDeps(release, visited)
 
-    self.deps[release] = deps
+    self._deps[release] = deps
     return deps
 
   def GetVersion(self, release):
@@ -251,13 +243,13 @@ class IDLNode(IDLRelease):
       out |= set([remapped])
 
     # Cache the most recent set of unique_releases
-    self.unique_releases = sorted(out)
-    return self.unique_releases
+    self._unique_releases = sorted(out)
+    return self._unique_releases
 
   def LastRelease(self, release):
     # Get the most recent release from the most recently generated set of
     # cached unique releases.
-    if self.unique_releases and self.unique_releases[-1] > release:
+    if self._unique_releases and self._unique_releases[-1] > release:
       return False
     return True
 
@@ -300,7 +292,7 @@ class IDLNode(IDLRelease):
       # Exclude sibling results from parent visited set
       cur_visits = visited
 
-      for child in self.children:
+      for child in self._children:
         child_releases |= set(child._GetReleaseList(releases, cur_visits))
         visited |= set(child_releases)
 
@@ -315,16 +307,13 @@ class IDLNode(IDLRelease):
         if my_min < type_release_list[0]:
           type_node = type_list[0]
           self.Error('requires %s in %s which is undefined at %s.' % (
-              type_node, type_node.filename, my_min))
+              type_node, type_node._filename, my_min))
 
       for rel in child_releases | type_releases:
         if rel >= my_min and rel <= my_max:
           my_releases |= set([rel])
 
       self.releases = sorted(my_releases)
-    return self.releases
-
-  def GetReleaseList(self):
     return self.releases
 
   def BuildReleaseMap(self, releases):
@@ -341,11 +330,13 @@ class IDLNode(IDLRelease):
         last_rel = None
 
   def SetProperty(self, name, val):
-    self.property_node.SetProperty(name, val)
+    self._property_node.SetProperty(name, val)
 
   def GetProperty(self, name):
-    return self.property_node.GetProperty(name)
+    return self._property_node.GetProperty(name)
 
+  def GetPropertyLocal(self, name):
+    return self._property_node.GetPropertyLocal(name)
 
 #
 # IDLFile
