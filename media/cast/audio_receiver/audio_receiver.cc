@@ -222,16 +222,29 @@ void AudioReceiver::DecodeAudioFrameThread(
     return;
   }
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
-  base::TimeTicks playout_time;
-  playout_time = GetPlayoutTime(now, rtp_timestamp);
+
+  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
+      base::Bind(&AudioReceiver::ReturnDecodedFrameWithPlayoutDelay,
+      base::Unretained(this), base::Passed(&audio_frame), rtp_timestamp,
+      callback));
+}
+
+void AudioReceiver::ReturnDecodedFrameWithPlayoutDelay(
+    scoped_ptr<PcmAudioFrame> audio_frame, uint32 rtp_timestamp,
+    const AudioFrameDecodedCallback callback) {
+  DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::MAIN));
+  cast_environment_->Logging()->InsertFrameEvent(kAudioFrameDecoded,
+      rtp_timestamp, kFrameIdUnknown);
+
+  base::TimeTicks now = cast_environment_->Clock()->NowTicks();
+  base::TimeTicks playout_time = GetPlayoutTime(now, rtp_timestamp);
 
   cast_environment_->Logging()->InsertFrameEventWithDelay(kAudioPlayoutDelay,
       rtp_timestamp, kFrameIdUnknown, playout_time - now);
 
-  // Frame is ready - Send back to the main thread.
+  // Frame is ready - Send back to the caller.
   cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-      base::Bind(callback,
-      base::Passed(&audio_frame), playout_time));
+      base::Bind(callback, base::Passed(&audio_frame), playout_time));
 }
 
 void AudioReceiver::PlayoutTimeout() {

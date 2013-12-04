@@ -81,6 +81,9 @@ class AudioReceiver : public base::NonThreadSafe,
   void DecodeAudioFrameThread(int number_of_10ms_blocks,
                               int desired_frequency,
                               const AudioFrameDecodedCallback callback);
+  void ReturnDecodedFrameWithPlayoutDelay(
+      scoped_ptr<PcmAudioFrame> audio_frame, uint32 rtp_timestamp,
+      const AudioFrameDecodedCallback callback);
 
   // Return the playout time based on the current time and rtp timestamp.
   base::TimeTicks GetPlayoutTime(base::TimeTicks now, uint32 rtp_timestamp);
