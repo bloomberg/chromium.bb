@@ -81,6 +81,10 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
   // It's only stored here in order to lazy-create the DC (below).
   HBITMAP hbitmap_;
 
+  // Previous bitmap held by the DC. This will be selected back before the
+  // DC is destroyed.
+  HBITMAP old_hbitmap_;
+
   // Lazily-created DC used to draw into the bitmap; see GetBitmapDC().
   HDC hdc_;
 

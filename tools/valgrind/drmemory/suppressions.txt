@@ -445,21 +445,3 @@ skia.dll!SkScalerContext::getImage
 skia.dll!SkGlyphCache::findImage
 skia.dll!D1G_NoBounder_RectClip
 skia.dll!SkDraw::drawText
-
-GDI USAGE ERROR
-name=http://crbug.com/110783
-system call NtGdiDeleteObjectApp
-GDI32.dll!DeleteDC
-GDI32.dll!DeleteDC
-skia.dll!skia::BitmapPlatformDevice::ReleaseBitmapDC
-skia.dll!skia::BitmapPlatformDevice::~BitmapPlatformDevice
-skia.dll!skia::BitmapPlatformDevice::`vector deleting destructor'
-skia.dll!SkRefCntBase::internal_dispose
-skia.dll!SkRefCntBase::unref
-skia.dll!DeviceCM::~DeviceCM
-skia.dll!DeviceCM::`scalar deleting destructor'
-skia.dll!SkCanvas::internalRestore
-skia.dll!SkCanvas::restore
-*!skia::`anonymous namespace'::LayerSaver::~LayerSaver
-*!skia::PlatformCanvas_FillLayer_Test::TestBody
-*!testing::internal::HandleExceptionsInMethodIfSupported<testing::Test,void>

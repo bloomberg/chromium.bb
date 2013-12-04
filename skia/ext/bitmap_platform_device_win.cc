@@ -147,11 +147,7 @@ HDC BitmapPlatformDevice::GetBitmapDC() {
   if (!hdc_) {
     hdc_ = CreateCompatibleDC(NULL);
     InitializeDC(hdc_);
-    HGDIOBJ old_bitmap = SelectObject(hdc_, hbitmap_);
-    // When the memory DC is created, its display surface is exactly one
-    // monochrome pixel wide and one monochrome pixel high. Since we select our
-    // own bitmap, we must delete the previous one.
-    DeleteObject(old_bitmap);
+    old_hbitmap_ = static_cast<HBITMAP>(SelectObject(hdc_, hbitmap_));
   }
 
   LoadConfig();
@@ -160,8 +156,10 @@ HDC BitmapPlatformDevice::GetBitmapDC() {
 
 void BitmapPlatformDevice::ReleaseBitmapDC() {
   SkASSERT(hdc_);
+  SelectObject(hdc_, old_hbitmap_);
   DeleteDC(hdc_);
   hdc_ = NULL;
+  old_hbitmap_ = NULL;
 }
 
 bool BitmapPlatformDevice::IsBitmapDCCreated()
@@ -248,6 +246,7 @@ BitmapPlatformDevice::BitmapPlatformDevice(
     const SkBitmap& bitmap)
     : SkBitmapDevice(bitmap),
       hbitmap_(hbitmap),
+      old_hbitmap_(NULL),
       hdc_(NULL),
       config_dirty_(true),  // Want to load the config next time.
       transform_(SkMatrix::I()) {
