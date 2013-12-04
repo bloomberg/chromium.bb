@@ -68,7 +68,7 @@ const Extension* GcmApiTest::LoadTestExtension(
 }
 
 // http://crbug.com/177163 and http://crbug.com/324982
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if defined(OS_WIN)
 #define MAYBE_RegisterValidation DISABLED_RegisterValidation
 #else
 #define MAYBE_RegisterValidation RegisterValidation
@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_RegisterValidation) {
 }
 
 // http://crbug.com/177163 and http://crbug.com/324982
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if defined(OS_WIN)
 #define MAYBE_Register DISABLED_Register
 #else
 #define MAYBE_Register Register
@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_Register) {
 }
 
 // http://crbug.com/177163 and http://crbug.com/324982
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if defined(OS_WIN)
 #define MAYBE_SendValidation DISABLED_SendValidation
 #else
 #define MAYBE_SendValidation SendValidation
@@ -117,7 +117,7 @@ IN_PROC_BROWSER_TEST_F(GcmApiTest, MAYBE_SendValidation) {
 }
 
 // http://crbug.com/177163 and http://crbug.com/324982
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if defined(OS_WIN)
 #define MAYBE_SendMessageData DISABLED_SendMessageData
 #else
 #define MAYBE_SendMessageData SendMessageData
