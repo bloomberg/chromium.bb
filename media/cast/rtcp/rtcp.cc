@@ -179,7 +179,7 @@ void Rtcp::IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length) {
 }
 
 void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
-                                   const RtcpReceiverLogMessage* receiver_log) {
+                                   RtcpReceiverLogMessage* receiver_log) {
   uint32 packet_type_flags = 0;
 
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
@@ -239,15 +239,15 @@ void Rtcp::SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
 }
 
 void Rtcp::SendRtcpFromRtpSender(
-    const RtcpSenderLogMessage* sender_log_message) {
+    RtcpSenderLogMessage* sender_log_message) {
   uint32 packet_type_flags = RtcpSender::kRtcpSr;
   base::TimeTicks now = cast_environment_->Clock()->NowTicks();
 
+  if (sender_log_message) {
+    packet_type_flags |= RtcpSender::kRtcpSenderLog;
+  }
+
   RtcpSenderInfo sender_info;
-  RtcpDlrrReportBlock dlrr;
-
-  if (sender_log_message) packet_type_flags |= RtcpSender::kRtcpSenderLog;
-
   if (rtp_sender_statistics_) {
     rtp_sender_statistics_->GetStatistics(now, &sender_info);
   } else {
@@ -255,6 +255,7 @@ void Rtcp::SendRtcpFromRtpSender(
   }
   SaveLastSentNtpTime(now, sender_info.ntp_seconds, sender_info.ntp_fraction);
 
+  RtcpDlrrReportBlock dlrr;
   if (!time_last_report_received_.is_null()) {
     packet_type_flags |= RtcpSender::kRtcpDlrr;
     dlrr.last_rr = last_report_received_;

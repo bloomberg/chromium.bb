@@ -92,15 +92,20 @@ class Rtcp {
   // |sender_log_message| is optional; without it no log messages will be
   // attached to the RTCP report; instead a normal RTCP send report will be
   // sent.
-  void SendRtcpFromRtpSender(const RtcpSenderLogMessage* sender_log_message);
+  // Additionally if all messages in |sender_log_message| does
+  // not fit in the packet the |sender_log_message| will contain the remaining
+  // unsent messages.
+  void SendRtcpFromRtpSender(RtcpSenderLogMessage* sender_log_message);
 
   // |cast_message| and |receiver_log| is optional; if |cast_message| is
   // provided the RTCP receiver report will append a Cast message containing
   // Acks and Nacks; if |receiver_log| is provided the RTCP receiver report will
   // append the log messages. If no argument is set a normal RTCP receiver
-  // report will be sent.
+  // report will be sent. Additionally if all messages in |receiver_log| does
+  // not fit in the packet the |receiver_log| will contain the remaining unsent
+  // messages.
   void SendRtcpFromRtpReceiver(const RtcpCastMessage* cast_message,
-                               const RtcpReceiverLogMessage* receiver_log);
+                               RtcpReceiverLogMessage* receiver_log);
 
   void IncomingRtcpPacket(const uint8* rtcp_buffer, size_t length);
   bool Rtt(base::TimeDelta* rtt, base::TimeDelta* avg_rtt,

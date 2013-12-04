@@ -28,13 +28,13 @@ class RtcpSender {
   void SendRtcpFromRtpSender(uint32 packet_type_flags,
                              const RtcpSenderInfo* sender_info,
                              const RtcpDlrrReportBlock* dlrr,
-                             const RtcpSenderLogMessage* sender_log);
+                             RtcpSenderLogMessage* sender_log);
 
   void SendRtcpFromRtpReceiver(uint32 packet_type_flags,
                                const RtcpReportBlock* report_block,
                                const RtcpReceiverReferenceTimeReport* rrtr,
                                const RtcpCastMessage* cast_message,
-                               const RtcpReceiverLogMessage* receiver_log);
+                               RtcpReceiverLogMessage* receiver_log);
 
   enum RtcpPacketType {
     kRtcpSr     = 0x0002,
@@ -89,10 +89,10 @@ class RtcpSender {
   void BuildCast(const RtcpCastMessage* cast_message,
                  std::vector<uint8>* packet) const;
 
-  void BuildSenderLog(const RtcpSenderLogMessage* sender_log_message,
+  void BuildSenderLog(RtcpSenderLogMessage* sender_log_message,
                       std::vector<uint8>* packet) const;
 
-  void BuildReceiverLog(const RtcpReceiverLogMessage* receiver_log_message,
+  void BuildReceiverLog(RtcpReceiverLogMessage* receiver_log_message,
                         std::vector<uint8>* packet) const;
 
   inline void BitrateToRembExponentBitrate(uint32 bitrate,

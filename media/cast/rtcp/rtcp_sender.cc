@@ -13,6 +13,113 @@
 #include "media/cast/rtcp/rtcp_utility.h"
 #include "net/base/big_endian.h"
 
+static const size_t kRtcpCastLogHeaderSize = 12;
+static const size_t kRtcpSenderFrameLogSize = 4;
+static const size_t kRtcpReceiverFrameLogSize = 8;
+static const size_t kRtcpReceiverEventLogSize = 4;
+
+namespace {
+uint16 MergeEventTypeAndTimestampForWireFormat(
+    const media::cast::CastLoggingEvent& event,
+    const base::TimeDelta& time_delta) {
+  int64 time_delta_ms = time_delta.InMilliseconds();
+  // Max delta is 4096 milliseconds.
+  DCHECK_GE(GG_INT64_C(0xfff), time_delta_ms);
+
+  uint16 event_type_and_timestamp_delta =
+      static_cast<uint16>(time_delta_ms & 0xfff);
+
+  uint16 event_type = 0;
+  switch (event) {
+    case media::cast::kAckSent:
+      event_type = 1;
+      break;
+    case media::cast::kAudioPlayoutDelay:
+      event_type = 2;
+      break;
+    case media::cast::kAudioFrameDecoded:
+      event_type = 3;
+      break;
+    case media::cast::kVideoFrameDecoded:
+      event_type = 4;
+      break;
+    case media::cast::kVideoRenderDelay:
+      event_type = 5;
+      break;
+    case media::cast::kPacketReceived:
+      event_type = 6;
+      break;
+    default:
+      NOTREACHED();
+  }
+  DCHECK(!(event_type & 0xfff0));
+  return (event_type << 12) + event_type_and_timestamp_delta;
+}
+
+bool ScanRtcpReceiverLogMessage(
+    const media::cast::RtcpReceiverLogMessage& receiver_log_message,
+    size_t start_size,
+    size_t* number_of_frames,
+    size_t* total_number_of_messages_to_send,
+    size_t* rtcp_log_size) {
+  if (receiver_log_message.empty()) return false;
+
+  size_t remaining_space = media::cast::kIpPacketSize - start_size;
+
+  // We must have space for at least one message
+  DCHECK_GE(remaining_space, kRtcpCastLogHeaderSize +
+      kRtcpReceiverFrameLogSize + kRtcpReceiverEventLogSize)
+      << "Not enough buffer space";
+
+  if (remaining_space < kRtcpCastLogHeaderSize + kRtcpReceiverFrameLogSize +
+      kRtcpReceiverEventLogSize) {
+    return false;
+  }
+  // Account for the RTCP header for an application-defined packet.
+  remaining_space -= kRtcpCastLogHeaderSize;
+
+  media::cast::RtcpReceiverLogMessage::const_iterator frame_it =
+      receiver_log_message.begin();
+  for (; frame_it != receiver_log_message.end(); ++frame_it) {
+    (*number_of_frames)++;
+
+    remaining_space -= kRtcpReceiverFrameLogSize;
+
+    size_t messages_in_frame = frame_it->event_log_messages_.size();
+    size_t remaining_space_in_messages =
+        remaining_space / kRtcpReceiverEventLogSize;
+    size_t messages_to_send = std::min(messages_in_frame,
+                                       remaining_space_in_messages);
+    if (messages_to_send > media::cast::kRtcpMaxReceiverLogMessages) {
+      // We can't send more than 256 messages.
+      remaining_space -= media::cast::kRtcpMaxReceiverLogMessages *
+          kRtcpReceiverEventLogSize;
+      *total_number_of_messages_to_send +=
+          media::cast::kRtcpMaxReceiverLogMessages;
+      break;
+    }
+    remaining_space -= messages_to_send * kRtcpReceiverEventLogSize;
+    *total_number_of_messages_to_send += messages_to_send;
+
+    if (remaining_space <
+        kRtcpReceiverFrameLogSize + kRtcpReceiverEventLogSize) {
+      // Make sure that we have room for at least one more message.
+      break;
+    }
+  }
+  *rtcp_log_size = kRtcpCastLogHeaderSize +
+      *number_of_frames * kRtcpReceiverFrameLogSize +
+      *total_number_of_messages_to_send * kRtcpReceiverEventLogSize;
+  DCHECK_GE(media::cast::kIpPacketSize,
+            start_size + *rtcp_log_size) << "Not enough buffer space";
+
+  VLOG(1) << "number of frames " << *number_of_frames;
+  VLOG(1) << "total messages to send " << *total_number_of_messages_to_send;
+  VLOG(1) << "rtcp log size " << *rtcp_log_size;
+  return true;
+}
+}  // namespace
+
 namespace media {
 namespace cast {
 
@@ -32,7 +139,7 @@ RtcpSender::~RtcpSender() {}
 void RtcpSender::SendRtcpFromRtpSender(uint32 packet_type_flags,
                                        const RtcpSenderInfo* sender_info,
                                        const RtcpDlrrReportBlock* dlrr,
-                                       const RtcpSenderLogMessage* sender_log) {
+                                       RtcpSenderLogMessage* sender_log) {
   if (packet_type_flags & kRtcpRr ||
       packet_type_flags & kRtcpPli ||
       packet_type_flags & kRtcpRrtr ||
@@ -73,7 +180,7 @@ void RtcpSender::SendRtcpFromRtpReceiver(
     const RtcpReportBlock* report_block,
     const RtcpReceiverReferenceTimeReport* rrtr,
     const RtcpCastMessage* cast_message,
-    const RtcpReceiverLogMessage* receiver_log) {
+    RtcpReceiverLogMessage* receiver_log) {
   if (packet_type_flags & kRtcpSr ||
       packet_type_flags & kRtcpDlrr ||
       packet_type_flags & kRtcpSenderLog) {
@@ -128,7 +235,7 @@ void RtcpSender::BuildSR(const RtcpSenderInfo& sender_info,
 
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 28);
   big_endian_writer.WriteU8(0x80 + (report_block ? 1 : 0));
-  big_endian_writer.WriteU8(200);
+  big_endian_writer.WriteU8(kPacketTypeSenderReport);
   big_endian_writer.WriteU16(number_of_rows);
   big_endian_writer.WriteU32(ssrc_);
   big_endian_writer.WriteU32(sender_info.ntp_seconds);
@@ -153,7 +260,7 @@ void RtcpSender::BuildRR(const RtcpReportBlock* report_block,
 
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 8);
   big_endian_writer.WriteU8(0x80 + (report_block ? 1 : 0));
-  big_endian_writer.WriteU8(201);
+  big_endian_writer.WriteU8(kPacketTypeReceiverReport);
   big_endian_writer.WriteU16(number_of_rows);
   big_endian_writer.WriteU32(ssrc_);
 
@@ -202,7 +309,7 @@ void RtcpSender::BuildSdec(std::vector<uint8>* packet) const {
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 10);
   // We always need to add one SDES CNAME.
   big_endian_writer.WriteU8(0x80 + 1);
-  big_endian_writer.WriteU8(202);
+  big_endian_writer.WriteU8(kPacketTypeSdes);
 
   // Handle SDES length later on.
   uint32 sdes_length_position = static_cast<uint32>(start_size) + 3;
@@ -244,7 +351,7 @@ void RtcpSender::BuildPli(uint32 remote_ssrc,
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 12);
   uint8 FMT = 1;  // Picture loss indicator.
   big_endian_writer.WriteU8(0x80 + FMT);
-  big_endian_writer.WriteU8(206);
+  big_endian_writer.WriteU8(kPacketTypePayloadSpecific);
   big_endian_writer.WriteU16(2);  // Used fixed length of 2.
   big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
   big_endian_writer.WriteU32(remote_ssrc);  // Add the remote SSRC.
@@ -270,7 +377,7 @@ void RtcpSender::BuildRpsi(const RtcpRpsiMessage* rpsi,
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 24);
   uint8 FMT = 3;  // Reference Picture Selection Indication.
   big_endian_writer.WriteU8(0x80 + FMT);
-  big_endian_writer.WriteU8(206);
+  big_endian_writer.WriteU8(kPacketTypePayloadSpecific);
 
   // Calculate length.
   uint32 bits_required = 7;
@@ -327,7 +434,7 @@ void RtcpSender::BuildRemb(const RtcpRembMessage* remb,
   // Add application layer feedback.
   uint8 FMT = 15;
   big_endian_writer.WriteU8(0x80 + FMT);
-  big_endian_writer.WriteU8(206);
+  big_endian_writer.WriteU8(kPacketTypePayloadSpecific);
   big_endian_writer.WriteU8(0);
   big_endian_writer.WriteU8(static_cast<uint8>(remb->remb_ssrcs.size() + 4));
   big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
@@ -367,7 +474,7 @@ void RtcpSender::BuildNack(const RtcpNackMessage* nack,
 
   uint8 FMT = 1;
   big_endian_writer.WriteU8(0x80 + FMT);
-  big_endian_writer.WriteU8(205);
+  big_endian_writer.WriteU8(kPacketTypeGenericRtpFeedback);
   big_endian_writer.WriteU8(0);
   size_t nack_size_pos = start_size + 3;
   big_endian_writer.WriteU8(3);
@@ -419,7 +526,7 @@ void RtcpSender::BuildBye(std::vector<uint8>* packet) const {
 
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 8);
   big_endian_writer.WriteU8(0x80 + 1);
-  big_endian_writer.WriteU8(203);
+  big_endian_writer.WriteU8(kPacketTypeBye);
   big_endian_writer.WriteU16(1);  // Length.
   big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
 }
@@ -451,7 +558,7 @@ void RtcpSender::BuildDlrrRb(const RtcpDlrrReportBlock* dlrr,
 
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 24);
   big_endian_writer.WriteU8(0x80);
-  big_endian_writer.WriteU8(207);
+  big_endian_writer.WriteU8(kPacketTypeXr);
   big_endian_writer.WriteU16(5);  // Length.
   big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
   big_endian_writer.WriteU8(5);  // Add block type.
@@ -473,7 +580,7 @@ void RtcpSender::BuildRrtr(const RtcpReceiverReferenceTimeReport* rrtr,
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 20);
 
   big_endian_writer.WriteU8(0x80);
-  big_endian_writer.WriteU8(207);
+  big_endian_writer.WriteU8(kPacketTypeXr);
   big_endian_writer.WriteU16(4);  // Length.
   big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
   big_endian_writer.WriteU8(4);  // Add block type.
@@ -496,7 +603,7 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast,
   net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), 20);
   uint8 FMT = 15;  // Application layer feedback.
   big_endian_writer.WriteU8(0x80 + FMT);
-  big_endian_writer.WriteU8(206);
+  big_endian_writer.WriteU8(kPacketTypePayloadSpecific);
   big_endian_writer.WriteU8(0);
   size_t cast_size_pos = start_size + 3; // Save length position.
   big_endian_writer.WriteU8(4);
@@ -563,17 +670,129 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast,
   (*packet)[cast_loss_field_pos] = static_cast<uint8>(number_of_loss_fields);
 }
 
-void RtcpSender::BuildSenderLog(const RtcpSenderLogMessage* sender_log_message,
+void RtcpSender::BuildSenderLog(RtcpSenderLogMessage* sender_log_message,
                                 std::vector<uint8>* packet) const {
-  // TODO(pwestin): Implement.
-  NOTIMPLEMENTED();
+  DCHECK(sender_log_message);
+  DCHECK(packet);
+  size_t start_size = packet->size();
+  size_t remaining_space = kIpPacketSize - start_size;
+  DCHECK_GE(remaining_space, kRtcpCastLogHeaderSize + kRtcpSenderFrameLogSize)
+       << "Not enough buffer space";
+  if (remaining_space < kRtcpCastLogHeaderSize + kRtcpSenderFrameLogSize)
+    return;
+
+  size_t space_for_x_messages =
+      (remaining_space - kRtcpCastLogHeaderSize) / kRtcpSenderFrameLogSize;
+  size_t number_of_messages = std::min(space_for_x_messages,
+                                       sender_log_message->size());
+
+  size_t log_size = kRtcpCastLogHeaderSize +
+      number_of_messages * kRtcpSenderFrameLogSize;
+  packet->resize(start_size + log_size);
+
+  net::BigEndianWriter big_endian_writer(&((*packet)[start_size]), log_size);
+  big_endian_writer.WriteU8(0x80 + kSenderLogSubtype);
+  big_endian_writer.WriteU8(kPacketTypeApplicationDefined);
+  big_endian_writer.WriteU16(static_cast<uint16>(2 + number_of_messages));
+  big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
+  big_endian_writer.WriteU32(kCast);
+
+  for (; number_of_messages > 0; --number_of_messages) {
+    DCHECK(!sender_log_message->empty());
+    const RtcpSenderFrameLogMessage& message = sender_log_message->front();
+    big_endian_writer.WriteU8(static_cast<uint8>(message.frame_status));
+    // We send the 24 east significant bits of the RTP timestamp.
+    big_endian_writer.WriteU8(static_cast<uint8>(message.rtp_timestamp >> 16));
+    big_endian_writer.WriteU8(static_cast<uint8>(message.rtp_timestamp >> 8));
+    big_endian_writer.WriteU8(static_cast<uint8>(message.rtp_timestamp));
+    sender_log_message->pop_front();
+  }
 }
 
-void RtcpSender::BuildReceiverLog(
-    const RtcpReceiverLogMessage* receiver_log_message,
-    std::vector<uint8>* packet) const {
-  // TODO(pwestin): Implement.
-  NOTIMPLEMENTED();
+void RtcpSender::BuildReceiverLog(RtcpReceiverLogMessage* receiver_log_message,
+                                  std::vector<uint8>* packet) const {
+  DCHECK(receiver_log_message);
+  const size_t packet_start_size = packet->size();
+  size_t number_of_frames = 0;
+  size_t total_number_of_messages_to_send = 0;
+  size_t rtcp_log_size = 0;
+
+  if (!ScanRtcpReceiverLogMessage(*receiver_log_message,
+                                  packet_start_size,
+                                  &number_of_frames,
+                                  &total_number_of_messages_to_send,
+                                  &rtcp_log_size)) {
+    return;
+  }
+  packet->resize(packet_start_size + rtcp_log_size);
+
+  net::BigEndianWriter big_endian_writer(&((*packet)[packet_start_size]),
+                                         rtcp_log_size);
+  big_endian_writer.WriteU8(0x80 + kReceiverLogSubtype);
+  big_endian_writer.WriteU8(kPacketTypeApplicationDefined);
+  big_endian_writer.WriteU16(static_cast<uint16>(2 + 2 * number_of_frames +
+                             total_number_of_messages_to_send));
+  big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
+  big_endian_writer.WriteU32(kCast);
+
+  while (!receiver_log_message->empty() &&
+         total_number_of_messages_to_send > 0) {
+    RtcpReceiverFrameLogMessage& frame_log_messages =
+        receiver_log_message->front();
+    // Add our frame header.
+    big_endian_writer.WriteU32(frame_log_messages.rtp_timestamp_);
+    size_t messages_in_frame = frame_log_messages.event_log_messages_.size();
+    if (messages_in_frame > total_number_of_messages_to_send) {
+      // We are running out of space.
+      messages_in_frame = total_number_of_messages_to_send;
+    }
+    // Keep track of how many messages we have left to send.
+    total_number_of_messages_to_send -= messages_in_frame;
+
+    // On the wire format is number of messages - 1.
+    big_endian_writer.WriteU8(static_cast<uint8>(messages_in_frame - 1));
+
+    base::TimeTicks event_timestamp_base =
+        frame_log_messages.event_log_messages_.front().event_timestamp;
+    uint32 base_timestamp_ms =
+        (event_timestamp_base - base::TimeTicks()).InMilliseconds();
+    big_endian_writer.WriteU8(static_cast<uint8>(base_timestamp_ms >> 16));
+    big_endian_writer.WriteU8(static_cast<uint8>(base_timestamp_ms >> 8));
+    big_endian_writer.WriteU8(static_cast<uint8>(base_timestamp_ms));
+
+    while (!frame_log_messages.event_log_messages_.empty() &&
+           messages_in_frame > 0) {
+      const RtcpReceiverEventLogMessage& event_message =
+          frame_log_messages.event_log_messages_.front();
+      uint16 event_type_and_timestamp_delta =
+          MergeEventTypeAndTimestampForWireFormat(event_message.type,
+          event_message.event_timestamp - event_timestamp_base);
+      switch (event_message.type) {
+        case kAckSent:
+        case kAudioPlayoutDelay:
+        case kAudioFrameDecoded:
+        case kVideoFrameDecoded:
+        case kVideoRenderDelay:
+          big_endian_writer.WriteU16(static_cast<uint16>(
+              event_message.delay_delta.InMilliseconds()));
+          big_endian_writer.WriteU16(event_type_and_timestamp_delta);
+          break;
+        case kPacketReceived:
+          big_endian_writer.WriteU16(event_message.packet_id);
+          big_endian_writer.WriteU16(event_type_and_timestamp_delta);
+          break;
+        default:
+          NOTREACHED();
+      }
+      messages_in_frame--;
+      frame_log_messages.event_log_messages_.pop_front();
+    }
+    if (frame_log_messages.event_log_messages_.empty()) {
+      // We sent all messages on this frame; pop the frame header.
+      receiver_log_message->pop_front();
+    }
+  }
+  DCHECK_EQ(total_number_of_messages_to_send, 0);
 }
 
 }  // namespace cast
