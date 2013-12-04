@@ -237,6 +237,9 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle
     }
     {% endfilter %}
     {% endfor %}
+    {% if constants %}
+    {{install_constants() | indent}}
+    {% endif %}
     {% for method in methods if not method.do_not_check_signature %}
     {% if method.custom_signature and not method.overload_index %}
     {# No custom signature needed for overloaded methods;
@@ -286,9 +289,6 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class}}Template(v8::Handle
            (interface_name, attribute.name) %}
     functionTemplate->SetNativeDataProperty(v8::String::NewFromUtf8(isolate, "{{attribute.name}}", v8::String::kInternalizedString), {{getter_callback}}, {{attribute.setter_callback}}, v8::External::New(isolate, 0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     {% endfor %}
-    {% if constants %}
-    {{install_constants() | indent}}
-    {% endif %}
     {% if has_custom_legacy_call %}
     functionTemplate->InstanceTemplate()->SetCallAsFunctionHandler({{v8_class}}::legacyCallCustom);
     {% endif %}
