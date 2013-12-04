@@ -12,7 +12,6 @@ import android.webkit.WebChromeClient;
 
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentVideoViewClient;
-import org.chromium.content.browser.ContentVideoViewControls;
 import org.chromium.content.browser.ContentViewClient;
 
 /**
@@ -42,11 +41,6 @@ public class AwContentViewClient extends ContentViewClient {
         @Override
         public View getVideoLoadingProgressView() {
             return mAwContentsClient.getVideoLoadingProgressView();
-        }
-
-        @Override
-        public ContentVideoViewControls createControls() {
-            return null;
         }
     }
 

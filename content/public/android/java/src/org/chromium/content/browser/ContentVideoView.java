@@ -29,9 +29,7 @@ import org.chromium.base.JNINamespace;
 import org.chromium.base.ThreadUtils;
 
 @JNINamespace("content")
-public class ContentVideoView
-        extends FrameLayout
-        implements ContentVideoViewControls.Delegate,
+public class ContentVideoView extends FrameLayout implements MediaController.MediaPlayerControl,
         SurfaceHolder.Callback, View.OnTouchListener, View.OnKeyListener {
 
     private static final String TAG = "ContentVideoView";
@@ -67,7 +65,7 @@ public class ContentVideoView
     private int mVideoHeight;
     private int mCurrentBufferPercentage;
     private int mDuration;
-    private ContentVideoViewControls mControls;
+    private MediaController mMediaController;
     private boolean mCanPause;
     private boolean mCanSeekBack;
     private boolean mCanSeekForward;
@@ -135,27 +133,21 @@ public class ContentVideoView
         }
     }
 
-    private static class FullScreenControls implements ContentVideoViewControls {
+    private static class FullScreenMediaController extends MediaController {
 
         View mVideoView;
-        MediaController mMediaController;
 
-        public FullScreenControls(Context context, View video) {
-            mMediaController = new MediaController(context);
+        public FullScreenMediaController(Context context, View video) {
+            super(context);
             mVideoView = video;
         }
 
         @Override
         public void show() {
-            mMediaController.show();
+            super.show();
             if (mVideoView != null) {
                 mVideoView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
             }
-        }
-
-        @Override
-        public void show(int timeoutMs) {
-            mMediaController.show(timeoutMs);
         }
 
         @Override
@@ -163,27 +155,7 @@ public class ContentVideoView
             if (mVideoView != null) {
                 mVideoView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE);
             }
-            mMediaController.hide();
-        }
-
-        @Override
-        public boolean isShowing() {
-            return mMediaController.isShowing();
-        }
-
-        @Override
-        public void setEnabled(boolean enabled) {
-            mMediaController.setEnabled(enabled);
-        }
-
-        @Override
-        public void setDelegate(Delegate delegate) {
-            mMediaController.setMediaPlayer(delegate);
-        }
-
-        @Override
-        public void setAnchorView(View view) {
-            mMediaController.setAnchorView(view);
+            super.hide();
         }
     }
 
@@ -260,8 +232,8 @@ public class ContentVideoView
         }
 
         mCurrentState = STATE_ERROR;
-        if (mControls != null) {
-            mControls.hide();
+        if (mMediaController != null) {
+            mMediaController.hide();
         }
 
         /* Pop up an error dialog so the user knows that
@@ -334,13 +306,13 @@ public class ContentVideoView
         mCanSeekBack = canSeekBack;
         mCanSeekForward = canSeekForward;
         mCurrentState = isPlaying() ? STATE_PLAYING : STATE_PAUSED;
-        if (mControls != null) {
-            mControls.setEnabled(true);
+        if (mMediaController != null) {
+            mMediaController.setEnabled(true);
             // If paused , should show the controller for ever.
             if (isPlaying())
-                mControls.show();
+                mMediaController.show();
             else
-                mControls.show(0);
+                mMediaController.show(0);
         }
 
         onVideoSizeChanged(videoWidth, videoHeight);
@@ -350,8 +322,8 @@ public class ContentVideoView
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         mVideoSurfaceView.setFocusable(true);
         mVideoSurfaceView.setFocusableInTouchMode(true);
-        if (isInPlaybackState() && mControls != null) {
-            mControls.show();
+        if (isInPlaybackState() && mMediaController != null) {
+            mMediaController.show();
         }
     }
 
@@ -370,19 +342,19 @@ public class ContentVideoView
         post(mExitFullscreenRunnable);
     }
 
-    private void setControls(ContentVideoViewControls controls) {
-        if (mControls != null) {
-            mControls.hide();
+    private void setMediaController(MediaController controller) {
+        if (mMediaController != null) {
+            mMediaController.hide();
         }
-        mControls = controls;
-        attachControls();
+        mMediaController = controller;
+        attachMediaController();
     }
 
-    private void attachControls() {
-        if (mControls != null) {
-            mControls.setDelegate(this);
-            mControls.setAnchorView(mVideoSurfaceView);
-            mControls.setEnabled(false);
+    private void attachMediaController() {
+        if (mMediaController != null) {
+            mMediaController.setMediaPlayer(this);
+            mMediaController.setAnchorView(mVideoSurfaceView);
+            mMediaController.setEnabled(false);
         }
     }
 
@@ -391,11 +363,7 @@ public class ContentVideoView
         if (mSurfaceHolder != null) {
             mCurrentState = STATE_IDLE;
             mCurrentBufferPercentage = 0;
-            ContentVideoViewControls controls = mClient.createControls();
-            if (controls == null) {
-                controls = new FullScreenControls(getContext(), this);
-            }
-            setControls(controls);
+            setMediaController(new FullScreenMediaController(getContext(), this));
             if (mNativeContentVideoView != 0) {
                 nativeUpdateMediaMetadata(mNativeContentVideoView);
                 nativeSetSurface(mNativeContentVideoView,
@@ -406,14 +374,14 @@ public class ContentVideoView
 
     private void onCompletion() {
         mCurrentState = STATE_PLAYBACK_COMPLETED;
-        if (mControls != null) {
-            mControls.hide();
+        if (mMediaController != null) {
+            mMediaController.hide();
         }
     }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
-        if (isInPlaybackState() && mControls != null &&
+        if (isInPlaybackState() && mMediaController != null &&
                 event.getAction() == MotionEvent.ACTION_DOWN) {
             toggleMediaControlsVisiblity();
         }
@@ -422,7 +390,7 @@ public class ContentVideoView
 
     @Override
     public boolean onTrackballEvent(MotionEvent ev) {
-        if (isInPlaybackState() && mControls != null) {
+        if (isInPlaybackState() && mMediaController != null) {
             toggleMediaControlsVisiblity();
         }
         return false;
@@ -438,28 +406,28 @@ public class ContentVideoView
                                      keyCode != KeyEvent.KEYCODE_MENU &&
                                      keyCode != KeyEvent.KEYCODE_SEARCH &&
                                      keyCode != KeyEvent.KEYCODE_ENDCALL;
-        if (isInPlaybackState() && isKeyCodeSupported && mControls != null) {
+        if (isInPlaybackState() && isKeyCodeSupported && mMediaController != null) {
             if (keyCode == KeyEvent.KEYCODE_HEADSETHOOK ||
                     keyCode == KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE) {
                 if (isPlaying()) {
                     pause();
-                    mControls.show();
+                    mMediaController.show();
                 } else {
                     start();
-                    mControls.hide();
+                    mMediaController.hide();
                 }
                 return true;
             } else if (keyCode == KeyEvent.KEYCODE_MEDIA_PLAY) {
                 if (!isPlaying()) {
                     start();
-                    mControls.hide();
+                    mMediaController.hide();
                 }
                 return true;
             } else if (keyCode == KeyEvent.KEYCODE_MEDIA_STOP
                     || keyCode == KeyEvent.KEYCODE_MEDIA_PAUSE) {
                 if (isPlaying()) {
                     pause();
-                    mControls.show();
+                    mMediaController.show();
                 }
                 return true;
             } else {
@@ -475,10 +443,10 @@ public class ContentVideoView
     }
 
     private void toggleMediaControlsVisiblity() {
-        if (mControls.isShowing()) {
-            mControls.hide();
+        if (mMediaController.isShowing()) {
+            mMediaController.hide();
         } else {
-            mControls.show();
+            mMediaController.show();
         }
     }
 
@@ -583,11 +551,11 @@ public class ContentVideoView
         return new ContentVideoView(context, nativeContentVideoView, client);
     }
 
-    private void removeControls() {
-        if (mControls != null) {
-            mControls.setEnabled(false);
-            mControls.hide();
-            mControls = null;
+    private void removeMediaController() {
+        if (mMediaController != null) {
+            mMediaController.setEnabled(false);
+            mMediaController.hide();
+            mMediaController = null;
         }
     }
 
@@ -613,7 +581,7 @@ public class ContentVideoView
     @CalledByNative
     private void destroyContentVideoView(boolean nativeViewDestroyed) {
         if (mVideoSurfaceView != null) {
-            removeControls();
+            removeMediaController();
             removeSurfaceView();
             setVisibility(View.GONE);
 
