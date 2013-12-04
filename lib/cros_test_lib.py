@@ -30,7 +30,6 @@ from chromite.buildbot import constants
 from chromite.buildbot import repository
 import cros_build_lib
 import git
-import gs
 import gob_util
 import osutils
 import terminal
@@ -1062,11 +1061,12 @@ class GerritTestCase(TempDirTestCase):
         'chromite.lib.gob_util.GERRIT_PROTOCOL', 'http')
     cls.protocol_patcher.start()
 
-    # Some of the chromite code requires read access to refs/meta/config.  Typically,
-    # that access should require http authentication.  However, because we use plain
-    # http to communicate with the test server, libcurl (and by extension git commands
-    # that use it) will not add the Authorization header to git transactions.  So, we
-    # just allow anonymous read access to refs/meta/config for the test code.
+    # Some of the chromite code requires read access to refs/meta/config.
+    # Typically, that access should require http authentication.  However,
+    # because we use plain http to communicate with the test server, libcurl
+    # (and by extension git commands that use it) will not add the
+    # Authorization header to git transactions.  So, we just allow anonymous
+    # read access to refs/meta/config for the test code.
     clone_path = os.path.join(gi.gerrit_dir, 'tmp', 'All-Projects')
     cls._CloneProject('All-Projects', clone_path)
     project_config = os.path.join(clone_path, 'project.config')
@@ -1380,14 +1380,6 @@ class RepoTestCase(GerritTestCase):
     })
     cls.repo_patcher.start()
 
-    # Download and use the canonical version of gsutil.
-    cache_dir = os.path.join(
-        cros_build_lib.FindDepotTools(), 'testing_support')
-    cls.gs_patcher = mock.patch(
-        'chromite.lib.gs.GSContext.DEFAULT_GSUTIL_BIN',
-        gs.GSContext.Cached(cache_dir).gsutil_bin)
-    cls.gs_patcher.start()
-
     # Create local mirror of repo tool repository.
     mirror_path = '%s.git' % (
         os.path.join(cls.gerrit_instance.git_dir, constants.REPO_PROJECT))
@@ -1448,7 +1440,6 @@ class RepoTestCase(GerritTestCase):
   @classmethod
   def tearDownClass(cls):
     cls.repo_patcher.stop()
-    cls.gs_patcher.stop()
     GerritTestCase.tearDownClass()
 
   def uploadChange(self, clone_path, branch='master', remote='origin'):
