@@ -145,9 +145,13 @@ SyncStatusCode PlatformFileErrorToSyncStatusCode(
       return SYNC_FILE_ERROR_INVALID_URL;
     case base::PLATFORM_FILE_ERROR_IO:
       return SYNC_FILE_ERROR_IO;
-    default:
+    case base::PLATFORM_FILE_ERROR_MAX:
+      NOTREACHED();
       return SYNC_FILE_ERROR_FAILED;
   }
+  // Return the value as is, so the value converted by
+  // SyncStatusCodeToPlatformFileError could be restored.
+  return static_cast<SyncStatusCode>(file_error);
 }
 
 base::PlatformFileError SyncStatusCodeToPlatformFileError(
@@ -188,7 +192,9 @@ base::PlatformFileError SyncStatusCodeToPlatformFileError(
     case SYNC_FILE_ERROR_IO:
       return base::PLATFORM_FILE_ERROR_IO;
     default:
-      return base::PLATFORM_FILE_ERROR_FAILED;
+      // Return the value as is, so that caller may be able to
+      // restore the information.
+      return static_cast<base::PlatformFileError>(status);
   }
 }
 
