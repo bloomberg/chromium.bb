@@ -101,6 +101,8 @@ Combobox::Combobox(ui::ComboboxModel* model)
   model_->AddObserver(this);
   UpdateFromModel();
   set_focusable(true);
+  // |text_border_| draws focus.
+  set_focus_border(NULL);
   set_border(text_border_);
 }
 
@@ -324,6 +326,8 @@ void Combobox::OnFocus() {
   GetInputMethod()->OnFocus();
   text_border_->set_has_focus(true);
   View::OnFocus();
+  // Border renders differently when focused.
+  SchedulePaint();
 }
 
 void Combobox::OnBlur() {
@@ -331,6 +335,8 @@ void Combobox::OnBlur() {
   if (selector_)
     selector_->OnViewBlur();
   text_border_->set_has_focus(false);
+  // Border renders differently when focused.
+  SchedulePaint();
 }
 
 void Combobox::GetAccessibleState(ui::AccessibleViewState* state) {

@@ -74,6 +74,10 @@ class VIEWS_EXPORT LabelButton : public CustomButton,
    ImageView* image() const { return image_; }
    Label* label() const { return label_; }
 
+  // Overridden from View:
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
+
   // Fill |params| with information about the button.
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
 

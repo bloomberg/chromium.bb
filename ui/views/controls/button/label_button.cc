@@ -254,6 +254,18 @@ const char* LabelButton::GetClassName() const {
   return kViewClassName;
 }
 
+void LabelButton::OnFocus() {
+  View::OnFocus();
+  // Typically the border renders differently when focused.
+  SchedulePaint();
+}
+
+void LabelButton::OnBlur() {
+  View::OnBlur();
+  // Typically the border renders differently when focused.
+  SchedulePaint();
+}
+
 void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
   params->button.checked = false;
   params->button.indeterminate = false;

@@ -479,11 +479,17 @@ void Textfield::OnFocus() {
     // keyboard messages.
     View::OnFocus();
   }
+
+  // Border typically draws focus indicator.
+  SchedulePaint();
 }
 
 void Textfield::OnBlur() {
   if (native_wrapper_)
     native_wrapper_->HandleBlur();
+
+  // Border typically draws focus indicator.
+  SchedulePaint();
 }
 
 void Textfield::GetAccessibleState(ui::AccessibleViewState* state) {
