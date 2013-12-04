@@ -975,10 +975,6 @@ void LayerTreeHost::PaintMasksForRenderSurface(Layer* render_surface_layer,
 
   Layer* mask_layer = render_surface_layer->mask_layer();
   if (mask_layer) {
-    devtools_instrumentation::ScopedLayerTreeTask
-        update_layer(devtools_instrumentation::kUpdateLayer,
-                     mask_layer->id(),
-                     id());
     *did_paint_content |= mask_layer->Update(queue, NULL);
     *need_more_updates |= mask_layer->NeedMoreUpdates();
   }
@@ -987,10 +983,6 @@ void LayerTreeHost::PaintMasksForRenderSurface(Layer* render_surface_layer,
       render_surface_layer->replica_layer() ?
       render_surface_layer->replica_layer()->mask_layer() : NULL;
   if (replica_mask_layer) {
-    devtools_instrumentation::ScopedLayerTreeTask
-        update_layer(devtools_instrumentation::kUpdateLayer,
-                     replica_mask_layer->id(),
-                     id());
     *did_paint_content |= replica_mask_layer->Update(queue, NULL);
     *need_more_updates |= replica_mask_layer->NeedMoreUpdates();
   }
@@ -1033,8 +1025,6 @@ void LayerTreeHost::PaintLayerContents(
       PaintMasksForRenderSurface(
           *it, queue, did_paint_content, need_more_updates);
     } else if (it.represents_itself() && it->DrawsContent()) {
-      devtools_instrumentation::ScopedLayerTreeTask
-          update_layer(devtools_instrumentation::kUpdateLayer, it->id(), id());
       DCHECK(!it->paint_properties().bounds.IsEmpty());
       *did_paint_content |= it->Update(queue, &occlusion_tracker);
       *need_more_updates |= it->NeedMoreUpdates();

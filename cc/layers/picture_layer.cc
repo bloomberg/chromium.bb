@@ -4,7 +4,6 @@
 
 #include "cc/layers/picture_layer.h"
 
-#include "cc/debug/devtools_instrumentation.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -84,10 +83,6 @@ void PictureLayer::SetNeedsDisplayRect(const gfx::RectF& layer_rect) {
 
 bool PictureLayer::Update(ResourceUpdateQueue* queue,
                           const OcclusionTracker* occlusion) {
-  TRACE_EVENT1("cc", "PictureLayer::Update",
-               "source_frame_number",
-               layer_tree_host()->source_frame_number());
-
   update_source_frame_number_ = layer_tree_host()->source_frame_number();
   bool updated = Layer::Update(queue, occlusion);
 
@@ -97,6 +92,10 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
     // Only early out if the visible content rect of this layer hasn't changed.
     return updated;
   }
+
+  TRACE_EVENT1("cc", "PictureLayer::Update",
+               "source_frame_number",
+               layer_tree_host()->source_frame_number());
 
   pile_->Resize(paint_properties().bounds);
 
@@ -112,8 +111,6 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
     // the full page content must always be provided in the picture layer.
     visible_layer_rect = gfx::Rect(bounds());
   }
-  devtools_instrumentation::ScopedLayerTask paint_layer(
-      devtools_instrumentation::kPaintLayer, id());
   updated |= pile_->Update(client_,
                            SafeOpaqueBackgroundColor(),
                            contents_opaque(),
