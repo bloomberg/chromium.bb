@@ -61,6 +61,9 @@ class MAYBE_WebrtcBrowserTest : public WebRtcTestBase {
 
     // The video playback will not work without a GPU, so force its use here.
     command_line->AppendSwitch(switches::kUseGpuInTests);
+
+    // Flag used by TestWebAudioMediaStream to force garbage collection.
+    command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
   }
 
   // Ensures we didn't get any errors asynchronously (e.g. while no javascript
@@ -356,4 +359,16 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest,
   AssertNoAsynchronousErrors(right_tab);
 
   ASSERT_TRUE(peerconnection_server_.Stop());
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebrtcBrowserTest, TestWebAudioMediaStream) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  GURL url(embedded_test_server()->GetURL("/webrtc/webaudio_crash.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  // A sleep is necessary to be able to detect the crash.
+  SleepInJavascript(tab, 1000);
+
+  ASSERT_FALSE(tab->IsCrashed());
 }
