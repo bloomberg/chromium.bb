@@ -1212,6 +1212,10 @@
     # IPC fuzzer is disabled by default.
     'enable_ipc_fuzzer%': 0,
 
+    # Whether or not to use "icu*.dat" file for ICU data.
+    # Do not use it by default.
+    'icu_use_data_file_flag%': 0,
+
     'conditions': [
       # The version of GCC in use, set later in platforms that use GCC and have
       # not explicitly chosen to build with clang. Currently, this means all
@@ -2151,6 +2155,17 @@
       }],
       ['use_udev==1', {
         'defines': ['USE_UDEV'],
+      }],
+      ['icu_use_data_file_flag==1', {
+        'defines': ['ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_FILE'],
+      }, { # else icu_use_data_file_flag !=1
+        'conditions': [
+          ['OS=="win"', {
+            'defines': ['ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_SHARED'],
+          }, {
+            'defines': ['ICU_UTIL_DATA_IMPL=ICU_UTIL_DATA_STATIC'],
+          }],
+        ],
       }],
       ['fastbuild!=0', {
         'xcode_settings': {

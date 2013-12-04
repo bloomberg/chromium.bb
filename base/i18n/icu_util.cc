@@ -29,18 +29,6 @@
 #define ICU_UTIL_DATA_SHARED 1
 #define ICU_UTIL_DATA_STATIC 2
 
-#ifndef ICU_UTIL_DATA_IMPL
-
-#if defined(OS_WIN)
-#define ICU_UTIL_DATA_IMPL ICU_UTIL_DATA_SHARED
-#elif defined(OS_IOS)
-#define ICU_UTIL_DATA_IMPL ICU_UTIL_DATA_FILE
-#else
-#define ICU_UTIL_DATA_IMPL ICU_UTIL_DATA_STATIC
-#endif
-
-#endif  // ICU_UTIL_DATA_IMPL
-
 #if ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE
 #define ICU_UTIL_DATA_FILE_NAME "icudt" U_ICU_VERSION_SHORT "l.dat"
 #elif ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_SHARED
@@ -86,26 +74,12 @@ bool InitializeICU() {
   udata_setCommonData(reinterpret_cast<void*>(addr), &err);
   return err == U_ZERO_ERROR;
 #elif (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_STATIC)
-  // Mac/Linux bundle the ICU data in.
+  // The ICU data is statically linked.
   return true;
 #elif (ICU_UTIL_DATA_IMPL == ICU_UTIL_DATA_FILE)
-#if !defined(OS_MACOSX)
-  // For now, expect the data file to be alongside the executable.
-  // This is sufficient while we work on unit tests, but will eventually
-  // likely live in a data directory.
-  FilePath data_path;
-  bool path_ok = PathService::Get(base::DIR_EXE, &data_path);
-  DCHECK(path_ok);
-  u_setDataDirectory(data_path.value().c_str());
-  // Only look for the packaged data file;
-  // the default behavior is to look for individual files.
-  UErrorCode err = U_ZERO_ERROR;
-  udata_setFileAccess(UDATA_ONLY_PACKAGES, &err);
-  return err == U_ZERO_ERROR;
-#else
   // If the ICU data directory is set, ICU won't actually load the data until
   // it is needed.  This can fail if the process is sandboxed at that time.
-  // Instead, Mac maps the file in and hands off the data so the sandbox won't
+  // Instead, we map the file in and hand off the data so the sandbox won't
   // cause any problems.
 
   // Chrome doesn't normally shut down ICU, so the mapped data shouldn't ever
@@ -113,12 +87,22 @@ bool InitializeICU() {
   CR_DEFINE_STATIC_LOCAL(base::MemoryMappedFile, mapped_file, ());
   if (!mapped_file.IsValid()) {
     // Assume it is in the framework bundle's Resources directory.
+#if !defined(OS_MACOSX)
+    // For now, expect the data file to be alongside the executable.
+    // This is sufficient while we work on unit tests, but will eventually
+    // likely live in a data directory.
+    FilePath data_path;
+    bool path_ok = PathService::Get(base::DIR_EXE, &data_path);
+    DCHECK(path_ok);
+    data_path = data_path.AppendASCII(ICU_UTIL_DATA_FILE_NAME);
+#else
     FilePath data_path =
       base::mac::PathForFrameworkBundleResource(CFSTR(ICU_UTIL_DATA_FILE_NAME));
     if (data_path.empty()) {
       DLOG(ERROR) << ICU_UTIL_DATA_FILE_NAME << " not found in bundle";
       return false;
     }
+#endif  // OS check
     if (!mapped_file.Initialize(data_path)) {
       DLOG(ERROR) << "Couldn't mmap " << data_path.value();
       return false;
@@ -127,7 +111,6 @@ bool InitializeICU() {
   UErrorCode err = U_ZERO_ERROR;
   udata_setCommonData(const_cast<uint8*>(mapped_file.data()), &err);
   return err == U_ZERO_ERROR;
-#endif  // OS check
 #endif
 }
 
