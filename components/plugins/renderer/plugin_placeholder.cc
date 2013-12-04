@@ -25,6 +25,7 @@
 #include "third_party/re2/re2/re2.h"
 
 using content::RenderThread;
+using content::UserMetricsAction;
 using blink::WebElement;
 using blink::WebFrame;
 using blink::WebMouseEvent;
@@ -176,7 +177,7 @@ void PluginPlaceholder::OnLoadBlockedPlugins(const std::string& identifier) {
   if (!identifier.empty() && identifier != identifier_)
     return;
 
-  RenderThread::Get()->RecordUserMetrics("Plugin_Load_UI");
+  RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Load_UI"));
   LoadPlugin();
 }
 
@@ -208,13 +209,13 @@ void PluginPlaceholder::LoadPlugin() {
 
 void PluginPlaceholder::LoadCallback(const CppArgumentList& args,
                                      CppVariant* result) {
-  RenderThread::Get()->RecordUserMetrics("Plugin_Load_Click");
+  RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Load_Click"));
   LoadPlugin();
 }
 
 void PluginPlaceholder::HideCallback(const CppArgumentList& args,
                                      CppVariant* result) {
-  RenderThread::Get()->RecordUserMetrics("Plugin_Hide_Click");
+  RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Hide_Click"));
   HidePlugin();
 }
 

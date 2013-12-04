@@ -734,7 +734,11 @@ void RenderThreadImpl::RegisterSchemes() {
   WebSecurityPolicy::registerURLSchemeAsEmptyDocument(swappedout_scheme);
 }
 
-void RenderThreadImpl::RecordUserMetrics(const std::string& action) {
+void RenderThreadImpl::RecordAction(const UserMetricsAction& action) {
+  Send(new ViewHostMsg_UserMetricsRecordAction(action.str_));
+}
+
+void RenderThreadImpl::RecordComputedAction(const std::string& action) {
   Send(new ViewHostMsg_UserMetricsRecordAction(action));
 }
 

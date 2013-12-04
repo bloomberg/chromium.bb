@@ -219,7 +219,7 @@ int32_t PepperPDFHost::OnHostMsgUserMetricsRecordAction(
     NOTREACHED();
     return PP_ERROR_FAILED;
   }
-  content::RenderThread::Get()->RecordUserMetrics(action);
+  content::RenderThread::Get()->RecordComputedAction(action);
   return PP_OK;
 }
 

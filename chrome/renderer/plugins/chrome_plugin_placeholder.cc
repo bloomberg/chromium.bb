@@ -27,6 +27,7 @@
 
 using content::RenderThread;
 using content::RenderView;
+using content::UserMetricsAction;
 using blink::WebDocument;
 using blink::WebElement;
 using blink::WebFrame;
@@ -297,12 +298,12 @@ void ChromePluginPlaceholder::OnMenuAction(int request_id, unsigned action) {
     return;
   switch (action) {
     case chrome::MENU_COMMAND_PLUGIN_RUN: {
-      RenderThread::Get()->RecordUserMetrics("Plugin_Load_Menu");
+      RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Load_Menu"));
       LoadPlugin();
       break;
     }
     case chrome::MENU_COMMAND_PLUGIN_HIDE: {
-      RenderThread::Get()->RecordUserMetrics("Plugin_Hide_Menu");
+      RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Hide_Menu"));
       HidePlugin();
       break;
     }

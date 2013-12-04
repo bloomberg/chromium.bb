@@ -112,6 +112,7 @@ using blink::WebVector;
 using blink::WebView;
 using content::RenderThread;
 using content::RenderView;
+using content::UserMetricsAction;
 
 namespace extensions {
 
@@ -1097,7 +1098,8 @@ void Dispatcher::DidCreateScriptContext(
     // "invalid". This isn't interesting.
     if (extension_id != "invalid") {
       LOG(ERROR) << "Extension \"" << extension_id << "\" not found";
-      RenderThread::Get()->RecordUserMetrics("ExtensionNotFound_ED");
+      RenderThread::Get()->RecordAction(
+          UserMetricsAction("ExtensionNotFound_ED"));
     }
 
     extension_id = "";

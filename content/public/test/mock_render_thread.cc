@@ -144,7 +144,10 @@ void MockRenderThread::WidgetRestored() {
 void MockRenderThread::EnsureWebKitInitialized() {
 }
 
-void MockRenderThread::RecordUserMetrics(const std::string& action) {
+void MockRenderThread::RecordAction(const UserMetricsAction& action) {
+}
+
+void MockRenderThread::RecordComputedAction(const std::string& action) {
 }
 
 scoped_ptr<base::SharedMemory>

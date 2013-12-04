@@ -9,20 +9,12 @@
 
 #include "base/callback.h"
 #include "content/common/content_export.h"
+#include "content/public/common/user_metrics_action.h"
 
 namespace content {
 
 // This module provides some helper functions for logging actions tracked by
 // the user metrics system.
-
-
-// UserMetricsAction exist purely to standardize on the paramters passed to
-// UserMetrics. That way, our toolset can scan the sourcecode reliable for
-// constructors and extract the associated string constants
-struct UserMetricsAction {
-  const char* str_;
-  explicit UserMetricsAction(const char* str) : str_(str) {}
-};
 
 // Record that the user performed an action.
 // "Action" here means a user-generated event:

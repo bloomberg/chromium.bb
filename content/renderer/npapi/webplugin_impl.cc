@@ -968,7 +968,8 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
                                                    &upper_bound,
                                                    &instance_size);
     } else if (response.httpStatusCode() == kHttpResponseSuccessStatusCode) {
-      RenderThreadImpl::current()->RecordUserMetrics("Plugin_200ForByteRange");
+      RenderThreadImpl::current()->RecordAction(
+          UserMetricsAction("Plugin_200ForByteRange"));
       // If the client issued a byte range request and the server responds with
       // HTTP 200 OK, it indicates that the server does not support byte range
       // requests.

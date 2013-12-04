@@ -115,6 +115,7 @@ using autofill::AutofillAgent;
 using autofill::PasswordAutofillAgent;
 using autofill::PasswordGenerationAgent;
 using content::RenderThread;
+using content::UserMetricsAction;
 using content::WebPluginInfo;
 using extensions::Extension;
 using blink::WebCache;
@@ -663,7 +664,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         return render_view->CreatePlugin(frame, plugin, params);
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported: {
-        RenderThread::Get()->RecordUserMetrics("Plugin_NPAPINotSupported");
+        RenderThread::Get()->RecordAction(
+            UserMetricsAction("Plugin_NPAPINotSupported"));
         placeholder = ChromePluginPlaceholder::CreateBlockedPlugin(
             render_view,
             frame,
@@ -751,7 +753,8 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_CLICK_TO_PLAY_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_LOAD, group_name));
         placeholder->set_allow_loading(true);
-        RenderThread::Get()->RecordUserMetrics("Plugin_ClickToPlay");
+        RenderThread::Get()->RecordAction(
+            UserMetricsAction("Plugin_ClickToPlay"));
         observer->DidBlockContentType(content_type, identifier);
         break;
       }
@@ -766,7 +769,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED, group_name));
         placeholder->set_allow_loading(true);
-        RenderThread::Get()->RecordUserMetrics("Plugin_Blocked");
+        RenderThread::Get()->RecordAction(UserMetricsAction("Plugin_Blocked"));
         observer->DidBlockContentType(content_type, identifier);
         break;
       }

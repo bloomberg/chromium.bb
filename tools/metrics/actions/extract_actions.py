@@ -47,7 +47,13 @@ KNOWN_COMPUTED_USERS = (
   'about_flags.cc', # do not generate a warning; see AddAboutFlagsActions()
   'external_metrics.cc',  # see AddChromeOSActions()
   'core_options_handler.cc',  # see AddWebUIActions()
-  'browser_render_process_host.cc'  # see AddRendererActions()
+  'browser_render_process_host.cc',  # see AddRendererActions()
+  'render_thread_impl.cc',  # impl of RenderThread::RecordComputedAction()
+  'render_process_host_impl.cc',  # browser side impl for
+                                  # RenderThread::RecordComputedAction()
+  'mock_render_thread.cc',  # mock of RenderThread::RecordComputedAction()
+  'ppb_pdf_impl.cc',  # see AddClosedSourceActions()
+  'pepper_pdf_host.cc',  # see AddClosedSourceActions()
 )
 
 # Language codes used in Chrome. The list should be updated when a new
@@ -486,28 +492,6 @@ def WalkDirectory(root_path, actions, extensions, callback):
       if ext in extensions:
         callback(os.path.join(path, file), actions)
 
-def GrepForRendererActions(path, actions):
-  """Grep a source file for calls to RenderThread::RecordUserMetrics.
-
-  Arguments:
-    path: path to the file
-    actions: set of actions to add to
-  """
-  # We look for the ViewHostMsg_UserMetricsRecordAction constructor.
-  # This should be on one line.
-  action_re = re.compile(
-      r'[^a-zA-Z]RenderThread::Get\(\)->RecordUserMetrics\("([^"]*)')
-  action_re2 = re.compile(
-      r'[^a-zA-Z]RenderThreadImpl::current\(\)->RecordUserMetrics\("([^"]*)')
-  for line in open(path):
-    match = action_re.search(line)
-    if match:  # Call to RecordUserMetrics through Content API
-      actions.add(match.group(1))
-      continue
-    match = action_re2.search(line)
-    if match:  # Call to RecordUserMetrics inside Content
-      actions.add(match.group(1))
-
 def AddLiteralActions(actions):
   """Add literal actions specified via calls to UserMetrics functions.
 
@@ -536,21 +520,6 @@ def AddWebUIActions(actions):
   resources_root = os.path.join(REPOSITORY_ROOT, 'chrome', 'browser',
                                 'resources')
   WalkDirectory(resources_root, actions, ('.html'), GrepForWebUIActions)
-
-def AddRendererActions(actions):
-  """Add user actions sent via calls to RenderThread::RecordUserMetrics.
-
-  Arguments:
-    actions: set of actions to add to.
-  """
-  EXTENSIONS = ('.cc', '.mm', '.c', '.m')
-
-  chrome_renderer_root = os.path.join(REPOSITORY_ROOT, 'chrome', 'renderer')
-  content_renderer_root = os.path.join(REPOSITORY_ROOT, 'content', 'renderer')
-  WalkDirectory(chrome_renderer_root, actions, EXTENSIONS,
-                GrepForRendererActions)
-  WalkDirectory(content_renderer_root, actions, EXTENSIONS,
-                GrepForRendererActions)
 
 def AddHistoryPageActions(actions):
   """Add actions that are used in History page.
@@ -601,7 +570,6 @@ def main(argv):
   # AddWebKitEditorActions(actions)
   AddAboutFlagsActions(actions)
   AddWebUIActions(actions)
-  AddRendererActions(actions)
 
   AddLiteralActions(actions)
 

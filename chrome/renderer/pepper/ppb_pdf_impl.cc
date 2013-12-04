@@ -321,7 +321,7 @@ void UserMetricsRecordAction(PP_Instance instance, PP_Var action) {
   scoped_refptr<ppapi::StringVar> action_str(
       ppapi::StringVar::FromPPVar(action));
   if (action_str.get())
-    RenderThread::Get()->RecordUserMetrics(action_str->value());
+    RenderThread::Get()->RecordComputedAction(action_str->value());
 }
 
 void HasUnsupportedFeature(PP_Instance instance_id) {

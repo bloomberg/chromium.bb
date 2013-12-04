@@ -2501,7 +2501,7 @@ void RenderViewImpl::didExecuteCommand(const WebString& command_name) {
       StartsWithASCII(name, "Insert", true) ||
       StartsWithASCII(name, "Delete", true))
     return;
-  RenderThreadImpl::current()->RecordUserMetrics(name);
+  RenderThreadImpl::current()->RecordComputedAction(name);
 }
 
 bool RenderViewImpl::handleCurrentKeyboardEvent() {

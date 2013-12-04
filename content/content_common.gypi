@@ -101,6 +101,7 @@
     'public/common/url_fetcher.h',
     'public/common/url_utils.cc',
     'public/common/url_utils.h',
+    'public/common/user_metrics_action.h',
     'public/common/webplugininfo.cc',
     'public/common/webplugininfo.h',
     'public/common/zygote_fork_delegate_linux.h',

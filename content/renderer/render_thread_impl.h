@@ -140,7 +140,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   virtual void WidgetHidden() OVERRIDE;
   virtual void WidgetRestored() OVERRIDE;
   virtual void EnsureWebKitInitialized() OVERRIDE;
-  virtual void RecordUserMetrics(const std::string& action) OVERRIDE;
+  virtual void RecordAction(const UserMetricsAction& action) OVERRIDE;
+  virtual void RecordComputedAction(const std::string& action) OVERRIDE;
   virtual scoped_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       size_t buffer_size) OVERRIDE;
   virtual void RegisterExtension(v8::Extension* extension) OVERRIDE;
