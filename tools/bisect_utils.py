@@ -7,6 +7,7 @@ outputting annotations on the buildbot waterfall. These are intended to be
 used by the bisection scripts."""
 
 import errno
+import imp
 import os
 import shutil
 import stat
@@ -100,6 +101,23 @@ def OutputAnnotationStepLink(label, url):
   print '@@@STEP_LINK@%s@%s@@@' % (label, url)
   print
   sys.stdout.flush()
+
+
+def LoadExtraSrc(path_to_file):
+  """Attempts to load an extra source file. If this is successful, uses the
+  new module to override some global values, such as gclient spec data.
+
+  Returns:
+    The loaded src module, or None."""
+  try:
+    global GCLIENT_SPEC_DATA
+    global GCLIENT_SPEC_ANDROID
+    extra_src = imp.load_source('data', path_to_file)
+    GCLIENT_SPEC_DATA = extra_src.GetGClientSpec()
+    GCLIENT_SPEC_ANDROID = extra_src.GetGClientSpecExtraParams()
+    return extra_src
+  except ImportError, e:
+    return None
 
 
 def IsTelemetryCommand(command):
@@ -209,7 +227,7 @@ def RunGClientAndCreateConfig(opts, custom_deps=None, cwd=None):
   spec = 'solutions =' + str(spec)
   spec = ''.join([l for l in spec.splitlines()])
 
-  if opts.target_platform == 'android':
+  if 'android' in opts.target_platform:
     spec += GCLIENT_SPEC_ANDROID
 
   return_code = RunGClient(
@@ -435,6 +453,7 @@ def SetupAndroidBuildEnvironment(opts, path_to_src=None):
   for line in out.splitlines():
     (k, _, v) = line.partition('=')
     os.environ[k] = v
+
   return not proc.returncode
 
 
@@ -447,7 +466,7 @@ def SetupPlatformBuildEnvironment(opts):
   Returns:
     True if successful.
   """
-  if opts.target_platform == 'android':
+  if 'android' in opts.target_platform:
     CopyAndSaveOriginalEnvironmentVars()
     return SetupAndroidBuildEnvironment(opts)
   elif opts.target_platform == 'cros':

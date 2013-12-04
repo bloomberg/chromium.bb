@@ -66,17 +66,17 @@ import bisect_utils
 # from: Parent depot that must be bisected before this is bisected.
 DEPOT_DEPS_NAME = {
   'chromium' : {
-    "src" : "src/",
+    "src" : "src",
     "recurse" : True,
     "depends" : None,
-    "from" : 'cros',
+    "from" : ['cros', 'android-chrome'],
     'viewvc': 'http://src.chromium.org/viewvc/chrome?view=revision&revision='
   },
   'webkit' : {
     "src" : "src/third_party/WebKit",
     "recurse" : True,
     "depends" : None,
-    "from" : 'chromium',
+    "from" : ['chromium'],
     'viewvc': 'http://src.chromium.org/viewvc/blink?view=revision&revision='
   },
   'angle' : {
@@ -84,14 +84,14 @@ DEPOT_DEPS_NAME = {
     "src_old" : "src/third_party/angle",
     "recurse" : True,
     "depends" : None,
-    "from" : 'chromium',
+    "from" : ['chromium'],
     "platform": 'nt',
   },
   'v8' : {
     "src" : "src/v8",
     "recurse" : True,
     "depends" : None,
-    "from" : 'chromium',
+    "from" : ['chromium'],
     "custom_deps": bisect_utils.GCLIENT_CUSTOM_DEPS_V8,
     'viewvc': 'https://code.google.com/p/v8/source/detail?r=',
   },
@@ -100,7 +100,7 @@ DEPOT_DEPS_NAME = {
     "recurse" : True,
     "depends" : None,
     "svn": "https://v8.googlecode.com/svn/branches/bleeding_edge",
-    "from" : 'v8',
+    "from" : ['v8'],
     'viewvc': 'https://code.google.com/p/v8/source/detail?r=',
   },
   'skia/src' : {
@@ -108,7 +108,7 @@ DEPOT_DEPS_NAME = {
     "recurse" : True,
     "svn" : "http://skia.googlecode.com/svn/trunk/src",
     "depends" : ['skia/include', 'skia/gyp'],
-    "from" : 'chromium',
+    "from" : ['chromium'],
     'viewvc': 'https://code.google.com/p/skia/source/detail?r=',
   },
   'skia/include' : {
@@ -116,7 +116,7 @@ DEPOT_DEPS_NAME = {
     "recurse" : False,
     "svn" : "http://skia.googlecode.com/svn/trunk/include",
     "depends" : None,
-    "from" : 'chromium',
+    "from" : ['chromium'],
     'viewvc': 'https://code.google.com/p/skia/source/detail?r=',
   },
   'skia/gyp' : {
@@ -124,9 +124,9 @@ DEPOT_DEPS_NAME = {
     "recurse" : False,
     "svn" : "http://skia.googlecode.com/svn/trunk/gyp",
     "depends" : None,
-    "from" : 'chromium',
+    "from" : ['chromium'],
     'viewvc': 'https://code.google.com/p/skia/source/detail?r=',
-  }
+  },
 }
 
 DEPOT_NAMES = DEPOT_DEPS_NAME.keys()
@@ -142,6 +142,16 @@ CROS_SCRIPT_KEY_PATH = os.path.join('..', 'cros', 'src', 'scripts',
 BUILD_RESULT_SUCCEED = 0
 BUILD_RESULT_FAIL = 1
 BUILD_RESULT_SKIPPED = 2
+
+
+def _AddAdditionalDepotInfo(depot_info):
+  """Adds additional depot info to the global depot variables."""
+  global DEPOT_DEPS_NAME
+  global DEPOT_NAMES
+  DEPOT_DEPS_NAME = dict(DEPOT_DEPS_NAME.items() +
+      depot_info.items())
+  DEPOT_NAMES = DEPOT_DEPS_NAME.keys()
+
 
 def CalculateTruncatedMean(data_set, truncate_percent):
   """Calculates the truncated mean of a set of values.
@@ -436,6 +446,8 @@ class Builder(object):
       builder = CrosBuilder(opts)
     elif opts.target_platform == 'android':
       builder = AndroidBuilder(opts)
+    elif opts.target_platform == 'android-chrome':
+      builder = AndroidChromeBuilder(opts)
     else:
       builder = DesktopBuilder(opts)
     return builder
@@ -484,21 +496,8 @@ class AndroidBuilder(Builder):
   def __init__(self, opts):
     super(AndroidBuilder, self).__init__(opts)
 
-  def InstallAPK(self, opts):
-    """Installs apk to device.
-
-    Args:
-        opts: The options parsed from the command line.
-
-    Returns:
-        True if successful.
-    """
-    path_to_tool = os.path.join('build', 'android', 'adb_install_apk.py')
-    cmd = [path_to_tool, '--apk', 'ChromiumTestShell.apk', '--apk_package',
-           'org.chromium.chrome.testshell', '--release']
-    return_code = RunProcess(cmd)
-
-    return not return_code
+  def _GetTargets(self):
+    return ['chromium_testshell', 'cc_perftests_apk', 'android_tools']
 
   def Build(self, depot, opts):
     """Builds the android content shell and other necessary tools using options
@@ -511,22 +510,26 @@ class AndroidBuilder(Builder):
     Returns:
         True if build was successful.
     """
-    targets = ['chromium_testshell', 'cc_perftests_apk', 'android_tools']
-
     threads = None
     if opts.use_goma:
       threads = 64
 
     build_success = False
     if opts.build_preference == 'ninja':
-      build_success = BuildWithNinja(threads, targets)
+      build_success = BuildWithNinja(threads, self._GetTargets())
     else:
       assert False, 'No build system defined.'
 
-    if build_success:
-      build_success = self.InstallAPK(opts)
-
     return build_success
+
+
+class AndroidChromeBuilder(AndroidBuilder):
+  """AndroidBuilder is used to build on android's chrome."""
+  def __init__(self, opts):
+    super(AndroidChromeBuilder, self).__init__(opts)
+
+  def _GetTargets(self):
+    return AndroidBuilder._GetTargets(self) + ['chrome_apk']
 
 
 class CrosBuilder(Builder):
@@ -671,7 +674,7 @@ class GitSourceControl(SourceControl):
   def IsGit(self):
     return True
 
-  def GetRevisionList(self, revision_range_end, revision_range_start):
+  def GetRevisionList(self, revision_range_end, revision_range_start, cwd=None):
     """Retrieves a list of revisions between |revision_range_start| and
     |revision_range_end|.
 
@@ -685,7 +688,7 @@ class GitSourceControl(SourceControl):
     """
     revision_range = '%s..%s' % (revision_range_start, revision_range_end)
     cmd = ['log', '--format=%H', '-10000', '--first-parent', revision_range]
-    log_output = CheckRunGit(cmd)
+    log_output = CheckRunGit(cmd, cwd=cwd)
 
     revision_hash_list = log_output.split()
     revision_hash_list.append(revision_range_start)
@@ -727,6 +730,10 @@ class GitSourceControl(SourceControl):
     Returns:
       A string containing a git SHA1 hash, otherwise None.
     """
+    # Android-chrome is git only, so no need to resolve this to anything else.
+    if depot == 'android-chrome':
+      return revision_to_check
+
     if depot != 'cros':
       if not IsStringInt(revision_to_check):
         return revision_to_check
@@ -844,13 +851,13 @@ class GitSourceControl(SourceControl):
 
     return commit_info
 
-  def CheckoutFileAtRevision(self, file_name, revision):
+  def CheckoutFileAtRevision(self, file_name, revision, cwd=None):
     """Performs a checkout on a file at the given revision.
 
     Returns:
       True if successful.
     """
-    return not RunGit(['checkout', revision, file_name])[1]
+    return not RunGit(['checkout', revision, file_name], cwd=cwd)[1]
 
   def RevertFileToHead(self, file_name):
     """Unstages a file and returns it to HEAD.
@@ -947,8 +954,9 @@ class BisectPerformanceMetrics(object):
           [int(o) for o in output.split('\n') if IsStringInt(o)]))
       revision_work_list = sorted(revision_work_list, reverse=True)
     else:
+      cwd = self._GetDepotDirectory(depot)
       revision_work_list = self.source_control.GetRevisionList(bad_revision,
-                                                               good_revision)
+          good_revision, cwd=cwd)
 
     return revision_work_list
 
@@ -1029,7 +1037,7 @@ class BisectPerformanceMetrics(object):
 
     results = {}
 
-    if depot == 'chromium':
+    if depot == 'chromium' or depot == 'android-chrome':
       locals = {'Var': lambda _: locals["vars"][_],
                 'From': lambda *args: None}
       execfile(bisect_utils.FILE_DEPS_GIT, {}, locals)
@@ -1043,8 +1051,8 @@ class BisectPerformanceMetrics(object):
           if DEPOT_DEPS_NAME[d]['platform'] != os.name:
             continue
 
-        if DEPOT_DEPS_NAME[d]['recurse'] and\
-           DEPOT_DEPS_NAME[d]['from'] == depot:
+        if (DEPOT_DEPS_NAME[d]['recurse'] and
+            depot in DEPOT_DEPS_NAME[d]['from']):
           if (locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src']) or
               locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src_old'])):
             if locals['deps'].has_key(DEPOT_DEPS_NAME[d]['src']):
@@ -1137,7 +1145,7 @@ class BisectPerformanceMetrics(object):
     if self.opts.debug_ignore_build:
       return True
 
-    return not bisect_utils.RunGClient(['runhooks'])
+    return not bisect_utils.RunGClient(['runhooks'], cwd=self.src_cwd)
 
   def TryParseHistogramValuesFromOutput(self, metric, text):
     """Attempts to parse a metric in the format HISTOGRAM <graph: <trace>.
@@ -1394,7 +1402,8 @@ class BisectPerformanceMetrics(object):
     """
     revisions_to_sync = [[depot, revision]]
 
-    is_base = (depot == 'chromium') or (depot == 'cros')
+    is_base = ((depot == 'chromium') or (depot == 'cros') or
+        (depot == 'android-chrome'))
 
     # Some SVN depots were split into multiple git depots, so we need to
     # figure out for each mirror which git revision to grab. There's no
@@ -1445,7 +1454,7 @@ class BisectPerformanceMetrics(object):
       True if successful.
     """
     if not self.source_control.CheckoutFileAtRevision(
-        bisect_utils.FILE_DEPS_GIT, revision):
+        bisect_utils.FILE_DEPS_GIT, revision, cwd=self.src_cwd):
       return False
 
     cwd = os.getcwd()
@@ -1559,7 +1568,7 @@ class BisectPerformanceMetrics(object):
       Otherwise, a tuple with the error message.
     """
     sync_client = None
-    if depot == 'chromium':
+    if depot == 'chromium' or depot == 'android-chrome':
       sync_client = 'gclient'
     elif depot == 'cros':
       sync_client = 'repo'
@@ -1581,7 +1590,15 @@ class BisectPerformanceMetrics(object):
         if sync_client:
           self.PerformPreBuildCleanup()
 
-        if not self.source_control.SyncToRevision(r[1], sync_client):
+        # If you're using gclient to sync, you need to specify the depot you
+        # want so that all the dependencies sync properly as well.
+        # ie. gclient sync src@<SHA1>
+        current_revision = r[1]
+        if sync_client == 'gclient':
+          current_revision = '%s@%s' % (DEPOT_DEPS_NAME[depot]['src'],
+              current_revision)
+        if not self.source_control.SyncToRevision(current_revision,
+            sync_client):
           success = False
 
           break
@@ -1698,8 +1715,7 @@ class BisectPerformanceMetrics(object):
           continue
 
       if not (DEPOT_DEPS_NAME[next_depot]["recurse"] and
-          DEPOT_DEPS_NAME[next_depot]['from'] ==
-          min_revision_data['depot']):
+          min_revision_data['depot'] in DEPOT_DEPS_NAME[next_depot]['from']):
         continue
 
       if current_depot == 'v8':
@@ -1908,11 +1924,13 @@ class BisectPerformanceMetrics(object):
     """
     if self.source_control.IsGit() and target_depot != 'cros':
       cmd = ['log', '--format=%ct', '-1', good_revision]
-      output = CheckRunGit(cmd)
+      cwd = self._GetDepotDirectory(target_depot)
+
+      output = CheckRunGit(cmd, cwd=cwd)
       good_commit_time = int(output)
 
       cmd = ['log', '--format=%ct', '-1', bad_revision]
-      output = CheckRunGit(cmd)
+      output = CheckRunGit(cmd, cwd=cwd)
       bad_commit_time = int(output)
 
       return good_commit_time <= bad_commit_time
@@ -1971,6 +1989,8 @@ class BisectPerformanceMetrics(object):
     target_depot = 'chromium'
     if self.opts.target_platform == 'cros':
       target_depot = 'cros'
+    elif self.opts.target_platform == 'android-chrome':
+      target_depot = 'android-chrome'
 
     cwd = os.getcwd()
     self.ChangeToDepotWorkingDirectory(target_depot)
@@ -2110,7 +2130,7 @@ class BisectPerformanceMetrics(object):
             next_revision_index = min_revision
           elif max_revision_data['passed'] == '?':
             next_revision_index = max_revision
-          elif current_depot in ['cros', 'chromium', 'v8']:
+          elif current_depot in ['android-chrome', 'cros', 'chromium', 'v8']:
             previous_revision = revision_list[min_revision]
             # If there were changes to any of the external libraries we track,
             # should bisect the changes there as well.
@@ -2657,6 +2677,7 @@ class BisectOptions(object):
     self.output_buildbot_annotations = None
     self.no_custom_deps = False
     self.working_directory = None
+    self.extra_src = None
     self.debug_ignore_build = None
     self.debug_ignore_sync = None
     self.debug_ignore_perf_test = None
@@ -2733,7 +2754,7 @@ class BisectOptions(object):
                      'are msvs/ninja.')
     group.add_option('--target_platform',
                      type='choice',
-                     choices=['chromium', 'cros', 'android'],
+                     choices=['chromium', 'cros', 'android', 'android-chrome'],
                      default='chromium',
                      help='The target platform. Choices are "chromium" '
                      '(current platform), "cros", or "android". If you '
@@ -2744,6 +2765,10 @@ class BisectOptions(object):
                      action="store_true",
                      default=False,
                      help='Run the script with custom_deps or not.')
+    group.add_option('--extra_src',
+                     type='str',
+                     help='Path to a script which can be used to modify '
+                     'the bisect script\'s behavior.')
     group.add_option('--cros_board',
                      type='str',
                      help='The cros board type to build.')
@@ -2863,6 +2888,12 @@ def main():
     opts = BisectOptions()
     parse_results = opts.ParseCommandLine()
 
+    if opts.extra_src:
+      extra_src = bisect_utils.LoadExtraSrc(opts.extra_src)
+      if not extra_src:
+        raise RuntimeError("Invalid or missing --extra_src.")
+      _AddAdditionalDepotInfo(extra_src.GetAdditionalDepotInfo())
+
     if opts.working_directory:
       custom_deps = bisect_utils.DEFAULT_GCLIENT_CUSTOM_DEPS
       if opts.no_custom_deps:
@@ -2886,7 +2917,9 @@ def main():
           "moment.")
 
     # gClient sync seems to fail if you're not in master branch.
-    if not source_control.IsInProperBranch() and not opts.debug_ignore_sync:
+    if (not source_control.IsInProperBranch() and
+        not opts.debug_ignore_sync and
+        not opts.working_directory):
       raise RuntimeError("You must switch to master branch to run bisection.")
 
     bisect_test = BisectPerformanceMetrics(source_control, opts)

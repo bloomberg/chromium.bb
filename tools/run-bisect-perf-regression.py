@@ -153,7 +153,10 @@ def _CreateBisectOptionsFromConfig(config):
       raise RuntimeError('Cros build selected, but BISECT_CROS_IP or'
           'BISECT_CROS_BOARD undefined.')
   elif 'android' in config['command']:
-    opts_dict['target_platform'] = 'android'
+    if 'android-chrome' in config['command']:
+      opts_dict['target_platform'] = 'android-chrome'
+    else:
+      opts_dict['target_platform'] = 'android'
 
   return bisect.BisectOptions.FromDict(opts_dict)
 
@@ -267,7 +270,7 @@ def _SetupAndRunPerformanceTest(config, path_to_file, path_to_goma):
 
 
 def _RunBisectionScript(config, working_directory, path_to_file, path_to_goma,
-    dry_run):
+    path_to_extra_src, dry_run):
   """Attempts to execute src/tools/bisect-perf-regression.py with the parameters
   passed in.
 
@@ -278,6 +281,7 @@ def _RunBisectionScript(config, working_directory, path_to_file, path_to_goma,
       the depot.
     path_to_file: Path to the bisect-perf-regression.py script.
     path_to_goma: Path to goma directory.
+    path_to_extra_src: Path to extra source file.
     dry_run: Do a dry run, skipping sync, build, and performance testing steps.
 
   Returns:
@@ -322,10 +326,16 @@ def _RunBisectionScript(config, working_directory, path_to_file, path_to_goma,
       return 1
 
   if 'android' in config['command']:
-    cmd.extend(['--target_platform', 'android'])
+    if 'android-chrome' in config['command']:
+      cmd.extend(['--target_platform', 'android-chrome'])
+    else:
+      cmd.extend(['--target_platform', 'android'])
 
   if path_to_goma:
     cmd.append('--use_goma')
+
+  if path_to_extra_src:
+    cmd.extend(['--extra_src', path_to_extra_src])
 
   if dry_run:
     cmd.extend(['--debug_ignore_build', '--debug_ignore_sync',
@@ -359,6 +369,10 @@ def main():
                     type='str',
                     help='Path to goma directory. If this is supplied, goma '
                     'builds will be enabled.')
+  parser.add_option('--extra_src',
+                    type='str',
+                    help='Path to extra source file. If this is supplied, '
+                    'bisect script will use this to override default behavior.')
   parser.add_option('--dry_run',
                     action="store_true",
                     help='The script will perform the full bisect, but '
@@ -383,7 +397,8 @@ def main():
       return 1
 
     return _RunBisectionScript(config, opts.working_directory,
-        path_to_current_directory, opts.path_to_goma, opts.dry_run)
+        path_to_current_directory, opts.path_to_goma, opts.extra_src,
+        opts.dry_run)
   else:
     perf_cfg_files = ['run-perf-test.cfg', os.path.join('..', 'third_party',
         'WebKit', 'Tools', 'run-perf-test.cfg')]
