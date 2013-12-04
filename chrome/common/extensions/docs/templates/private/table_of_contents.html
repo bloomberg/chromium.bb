@@ -1,16 +1,3 @@
 <div id="toc">
-  <ol>
-    {{#i:items}}
-    <li {{?i.separator}}class="separator"{{/}}>
-      <a href="#{{i.link}}">{{{i.title}}}</a>
-      {{?i.subheadings}}
-      <ol>
-        {{#sh:i.subheadings}}
-        <li><a href="#{{sh.link}}">{{{sh.title}}}</a></li>
-        {{/i.subheadings}}
-      </ol>
-      {{/i.subheadings}}
-    </li>
-    {{/items}}
-  </ol>
+  {{+partials.table_of_contents_items items:items /}}
 </div>

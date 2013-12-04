@@ -93,7 +93,7 @@ def RemoveTitle(document):
   return (document[:title_start] + document[title_end + 4:], None)
 
 
-_HEADER_TAGS = ['h2', 'h3']
+_HEADER_TAGS = ['h2', 'h3', 'h4']
 
 
 class _DocumentParser(HTMLParser):
@@ -139,8 +139,10 @@ class _DocumentParser(HTMLParser):
       belongs_to = self._processing_section.structure
       for header in _HEADER_TAGS[:_HEADER_TAGS.index(tag)]:
         if len(belongs_to) == 0:
-          self._WarnWithPosition('Found <%s> without any preceding <%s>' %
-                                 (tag, header))
+          # TODO(kalman): Re-enable this warning once the reference pages have
+          # their references fixed.
+          #self._WarnWithPosition('Found <%s> without any preceding <%s>' %
+          #                       (tag, header))
           break
         belongs_to = belongs_to[-1].entries
       belongs_to.append(self._processing_entry)

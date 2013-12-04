@@ -67,10 +67,6 @@ class ServerInstance(object):
     assert base_path.startswith('/') and base_path.endswith('/')
     self.base_path = base_path
 
-    self.document_renderer = DocumentRenderer(TableOfContentsRenderer(
-        host_fs_at_trunk,
-        compiled_fs_factory))
-
     self.host_file_system_iterator = HostFileSystemIterator(
         host_file_system_provider,
         branch_utility)
@@ -152,6 +148,14 @@ class ServerInstance(object):
     # then factor out the DataSource creation into a factory method, so that
     # the entire ServerInstance doesn't need to be passed in here.
     self.template_renderer = TemplateRenderer(self)
+
+    # TODO(kalman): It may be better for |document_renderer| to construct a
+    # TemplateDataSource itself rather than depending on template_renderer, but
+    # for that the above todo should be addressed.
+    self.document_renderer = DocumentRenderer(TableOfContentsRenderer(
+        host_fs_at_trunk,
+        compiled_fs_factory,
+        self.template_renderer))
 
   @staticmethod
   def ForTest(file_system=None, file_system_provider=None, base_path='/'):

@@ -16,13 +16,18 @@ class TemplateRenderer(object):
   def __init__(self, server_instance):
     self._server_instance = server_instance
 
-  def Render(self, template, request, data_sources=None, warn=True):
+  def Render(self,
+             template,
+             request,
+             data_sources=None,
+             additional_context=None):
     '''Renders |template| using |request|.
+
     Specify |data_sources| to only include the DataSources with the given names
     when rendering the template.
-    Specify |warn| whether to warn (e.g. logging.warning) if there are template
-    rendering errors. It may be useful to disable this when errors are expected,
-    for example when doing an initial page render to determine document title.
+
+    Specify |additional_context| to inject additional template context when
+    rendering the template.
     '''
     assert isinstance(template, Handlebar), type(template)
     render_context = self._CreateDataSources(request)
@@ -35,11 +40,10 @@ class TemplateRenderer(object):
       'extensions_samples_url': EXTENSIONS_SAMPLES,
       'static': self._server_instance.base_path + 'static',
     })
+    if additional_context:
+      render_context.update(additional_context)
     render_data = template.Render(render_context)
-    if warn and render_data.errors:
-      logging.error('Handlebar error(s) rendering %s:\n%s' %
-          (template._name, '  \n'.join(render_data.errors)))
-    return render_data.text
+    return render_data.text, render_data.errors
 
   def _CreateDataSources(self, request):
     server_instance = self._server_instance

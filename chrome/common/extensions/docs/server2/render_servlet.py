@@ -98,10 +98,13 @@ class RenderServlet(Servlet):
 
     content = content_and_type.content
     if isinstance(content, Handlebar):
+      template_content, template_warnings = (
+          server_instance.template_renderer.Render(content, self._request))
       # HACK: the Google ID thing (google2ed...) doesn't have a title.
-      content, warnings = server_instance.document_renderer.Render(
-          server_instance.template_renderer.Render(content, self._request),
+      content, doc_warnings = server_instance.document_renderer.Render(
+          template_content,
           render_title=path != 'google2ed1af765c529f57.html')
+      warnings = template_warnings + doc_warnings
       if warnings:
         sep = '\n - '
         logging.warning('Rendering %s:%s%s' % (path, sep, sep.join(warnings)))

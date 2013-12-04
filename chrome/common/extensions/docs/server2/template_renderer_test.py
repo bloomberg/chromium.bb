@@ -21,8 +21,9 @@ class TemplateRendererTest(unittest.TestCase):
 
   def testSimpleWiring(self):
     template = Handlebar('hello {{?true}}{{strings.extension}}{{/}}')
-    self.assertEqual('hello extension',
-                     self._template_renderer.Render(template, None))
+    text, warnings = self._template_renderer.Render(template, None)
+    self.assertEqual('hello extension', text)
+    self.assertEqual([], warnings)
 
 
 if __name__ == '__main__':

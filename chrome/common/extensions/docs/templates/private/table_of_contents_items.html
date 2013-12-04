@@ -1,0 +1,8 @@
+<ol>
+  {{#i:items}}
+  <li {{?i.separator}}class="separator"{{/}}>
+    <a href="#{{i.link}}">{{{i.title}}}</a>
+    {{?i.subheadings +partials.table_of_contents_items items:i.subheadings /}}
+  </li>
+  {{/items}}
+</ol>

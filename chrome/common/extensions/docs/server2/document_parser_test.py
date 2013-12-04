@@ -36,10 +36,16 @@ But it should still show up in the TOC as though it were an h2.
 The embedded h3 should be ignored.
 
 <h4>It's a h4</h4>
-h4 are not considered part of the document structure.
+h4 are part of the document structure, but this is not inside a h3.
 
 <h3>Plantains</h3>
 Now I'm just getting lazy.
+
+<h4>Another h4</h4>
+This h4 is inside a h3 so will show up.
+
+<h5>Header 5</h5>
+Header 5s are not parsed.
 '''
 
 
@@ -71,10 +77,16 @@ But it should still show up in the TOC as though it were an h2.
 The embedded h3 should be ignored.
 
 <h4>It's a h4</h4>
-h4 are not considered part of the document structure.
+h4 are part of the document structure, but this is not inside a h3.
 
 <h3>Plantains</h3>
 Now I'm just getting lazy.
+
+<h4>Another h4</h4>
+This h4 is inside a h3 so will show up.
+
+<h5>Header 5</h5>
+Header 5s are not parsed.
 '''
 
 
@@ -144,6 +156,9 @@ class DocumentParserUnittest(unittest.TestCase):
       'Found multiple <h1> tags. Subsequent <h1> tags will be classified as '
           '<h2> for the purpose of the structure (line 22, column 1)',
       'Found <h3> in the middle of processing a <h2> (line 25, column 9)',
+      # TODO(kalman): Re-enable this warning once the reference pages have
+      # their references fixed.
+      #'Found <h4> without any preceding <h3> (line 28, column 1)',
     ], result.warnings)
 
     # The non-trivial table of contents assertions...
@@ -179,12 +194,21 @@ class DocumentParserUnittest(unittest.TestCase):
 
     self.assertEqual('Not a banana', entry4.name)
     self.assertEqual({}, entry4.attributes)
-    self.assertEqual(1, len(entry4.entries))
-    entry4_1, = entry4.entries
+    self.assertEqual(2, len(entry4.entries))
+    entry4_1, entry4_2 = entry4.entries
 
-    self.assertEqual('Plantains', entry4_1.name)
+    self.assertEqual('It\'s a h4', entry4_1.name)
     self.assertEqual({}, entry4_1.attributes)
     self.assertEqual([], entry4_1.entries)
+
+    self.assertEqual('Plantains', entry4_2.name)
+    self.assertEqual({}, entry4_2.attributes)
+    self.assertEqual(1, len(entry4_2.entries))
+    entry4_2_1, = entry4_2.entries
+
+    self.assertEqual('Another h4', entry4_2_1.name)
+    self.assertEqual({}, entry4_2_1.attributes)
+    self.assertEqual([], entry4_2_1.entries)
 
   def testSingleExplicitSection(self):
     def test(document):

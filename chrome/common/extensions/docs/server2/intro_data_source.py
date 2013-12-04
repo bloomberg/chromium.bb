@@ -24,7 +24,6 @@ class IntroDataSource(DataSource):
   '''
 
   def __init__(self, server_instance, request):
-    self._template_renderer = server_instance.template_renderer
     self._request = request
     self._cache = server_instance.compiled_fs_factory.Create(
         server_instance.host_file_system_provider.GetTrunk(),
