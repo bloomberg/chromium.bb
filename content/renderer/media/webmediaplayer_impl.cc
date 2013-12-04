@@ -652,7 +652,7 @@ bool WebMediaPlayerImpl::copyVideoTextureToPlatformTexture(
     DCHECK_EQ(static_cast<GLuint>(bound_texture), texture);
   }
 
-  scoped_refptr<media::VideoFrame::MailboxHolder> mailbox_holder =
+  media::VideoFrame::MailboxHolder* mailbox_holder =
       video_frame->texture_mailbox();
 
   uint32 source_texture = web_graphics_context->createTexture();

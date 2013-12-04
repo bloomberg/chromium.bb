@@ -91,7 +91,7 @@ bool VideoFrame::IsValidConfig(VideoFrame::Format format,
 
 // static
 scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
-    const scoped_refptr<MailboxHolder>& mailbox_holder,
+    scoped_ptr<MailboxHolder> mailbox_holder,
     uint32 texture_target,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
@@ -105,7 +105,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
                                                  natural_size,
                                                  timestamp,
                                                  false));
-  frame->texture_mailbox_holder_ = mailbox_holder;
+  frame->texture_mailbox_holder_ = mailbox_holder.Pass();
   frame->texture_target_ = texture_target;
   frame->read_pixels_cb_ = read_pixels_cb;
   frame->no_longer_needed_cb_ = no_longer_needed_cb;
@@ -470,10 +470,9 @@ uint8* VideoFrame::data(size_t plane) const {
   return data_[plane];
 }
 
-const scoped_refptr<VideoFrame::MailboxHolder>& VideoFrame::texture_mailbox()
-    const {
+VideoFrame::MailboxHolder* VideoFrame::texture_mailbox() const {
   DCHECK_EQ(format_, NATIVE_TEXTURE);
-  return texture_mailbox_holder_;
+  return texture_mailbox_holder_.get();
 }
 
 uint32 VideoFrame::texture_target() const {

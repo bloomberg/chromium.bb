@@ -990,12 +990,12 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackIcon() {
   unsigned texture_mailbox_sync_point = context->insertSyncPoint();
 
   scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
-      new VideoFrame::MailboxHolder(
+      make_scoped_ptr(new VideoFrame::MailboxHolder(
           texture_mailbox,
           texture_mailbox_sync_point,
           base::Bind(&WebMediaPlayerAndroid::OnReleaseRemotePlaybackTexture,
                      main_loop_,
-                     weak_factory_.GetWeakPtr())),
+                     weak_factory_.GetWeakPtr()))),
       texture_target,
       canvas_size /* coded_size */,
       gfx::Rect(canvas_size) /* visible_rect */,
@@ -1022,12 +1022,15 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
 #endif
   } else if (!is_remote_ && texture_id_) {
     scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
-        new VideoFrame::MailboxHolder(
+        make_scoped_ptr(new VideoFrame::MailboxHolder(
             texture_mailbox_,
             texture_mailbox_sync_point_,
-            VideoFrame::MailboxHolder::TextureNoLongerNeededCallback()),
-        kGLTextureExternalOES, natural_size_,
-        gfx::Rect(natural_size_), natural_size_, base::TimeDelta(),
+            VideoFrame::MailboxHolder::TextureNoLongerNeededCallback())),
+        kGLTextureExternalOES,
+        natural_size_,
+        gfx::Rect(natural_size_),
+        natural_size_,
+        base::TimeDelta(),
         VideoFrame::ReadPixelsCB(),
         base::Closure());
     SetCurrentFrameInternal(new_frame);

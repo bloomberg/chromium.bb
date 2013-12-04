@@ -441,12 +441,12 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
   DCHECK(decoder_texture_target_);
 
   scoped_refptr<VideoFrame> frame(VideoFrame::WrapNativeTexture(
-      new VideoFrame::MailboxHolder(
+      make_scoped_ptr(new VideoFrame::MailboxHolder(
           pb.texture_mailbox(),
           0,  // sync_point
           BindToCurrentLoop(base::Bind(&GpuVideoDecoder::ReusePictureBuffer,
                                        weak_this_,
-                                       picture.picture_buffer_id()))),
+                                       picture.picture_buffer_id())))),
       decoder_texture_target_,
       pb.size(),
       visible_rect,

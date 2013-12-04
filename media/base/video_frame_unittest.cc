@@ -223,17 +223,17 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
 
   {
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
-        new VideoFrame::MailboxHolder(
+        make_scoped_ptr(new VideoFrame::MailboxHolder(
             gpu::Mailbox(),
             sync_point,
-            base::Bind(&TextureCallback, &called_sync_point)),
-        5,  // texture_target
-        gfx::Size(10, 10),  // coded_size
-        gfx::Rect(10, 10),  // visible_rect
-        gfx::Size(10, 10),  // natural_size
-        base::TimeDelta(),  // timestamp
+            base::Bind(&TextureCallback, &called_sync_point))),
+        5,                                        // texture_target
+        gfx::Size(10, 10),                        // coded_size
+        gfx::Rect(10, 10),                        // visible_rect
+        gfx::Size(10, 10),                        // natural_size
+        base::TimeDelta(),                        // timestamp
         base::Callback<void(const SkBitmap&)>(),  // read_pixels_cb
-        base::Closure());  // no_longer_needed_cb
+        base::Closure());                         // no_longer_needed_cb
 
     EXPECT_EQ(0u, called_sync_point);
   }
@@ -241,7 +241,7 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackIsCalled) {
 }
 
 // Verify the TextureNoLongerNeededCallback is called when VideoFrame is
-// destroyed with the new sync point, when the mailbox is taken by a caller.
+// destroyed with the new sync point, when the mailbox is accessed by a caller.
 TEST(VideoFrame, TextureNoLongerNeededCallbackAfterTakingAndReleasingMailbox) {
   uint32 called_sync_point = 0;
 
@@ -252,173 +252,28 @@ TEST(VideoFrame, TextureNoLongerNeededCallbackAfterTakingAndReleasingMailbox) {
 
   {
     scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
-        new VideoFrame::MailboxHolder(
+        make_scoped_ptr(new VideoFrame::MailboxHolder(
             mailbox,
             sync_point,
-            base::Bind(&TextureCallback, &called_sync_point)),
+            base::Bind(&TextureCallback, &called_sync_point))),
         target,
-        gfx::Size(10, 10),  // coded_size
-        gfx::Rect(10, 10),  // visible_rect
-        gfx::Size(10, 10),  // natural_size
-        base::TimeDelta(),  // timestamp
+        gfx::Size(10, 10),                        // coded_size
+        gfx::Rect(10, 10),                        // visible_rect
+        gfx::Size(10, 10),                        // natural_size
+        base::TimeDelta(),                        // timestamp
         base::Callback<void(const SkBitmap&)>(),  // read_pixels_cb
-        base::Closure());  // no_longer_needed_cb
+        base::Closure());                         // no_longer_needed_cb
 
-    {
-      scoped_refptr<VideoFrame::MailboxHolder> mailbox_holder =
-          frame->texture_mailbox();
-
-      EXPECT_EQ(mailbox.name[0], mailbox_holder->mailbox().name[0]);
-      EXPECT_EQ(sync_point, mailbox_holder->sync_point());
-      EXPECT_EQ(target, frame->texture_target());
-
-      // Misuse the callback.
-      sync_point = 12;
-      mailbox_holder->Return(sync_point);
-      EXPECT_EQ(0u, called_sync_point);
-
-      // Finish using the mailbox_holder and drop our reference.
-      sync_point = 10;
-      mailbox_holder->Return(sync_point);
-    }
-    EXPECT_EQ(0u, called_sync_point);
-  }
-  EXPECT_EQ(sync_point, called_sync_point);
-}
-
-// If a caller has taken ownership of the texture mailbox, it should
-// not be released when the VideoFrame is destroyed, but should when
-// the TextureNoLongerNeededCallback is called.
-TEST(VideoFrame,
-     TextureNoLongerNeededCallbackAfterTakingMailboxWithDestroyedFrame) {
-  uint32 called_sync_point = 0;
-
-  gpu::Mailbox mailbox;
-  mailbox.name[0] = 50;
-  uint32 sync_point = 7;
-  uint32 target = 9;
-
-  {
-    scoped_refptr<VideoFrame::MailboxHolder> mailbox_holder;
-
-    {
-      scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
-          new VideoFrame::MailboxHolder(
-              mailbox,
-              sync_point,
-              base::Bind(&TextureCallback, &called_sync_point)),
-          target,
-          gfx::Size(10, 10),  // coded_size
-          gfx::Rect(10, 10),  // visible_rect
-          gfx::Size(10, 10),  // natural_size
-          base::TimeDelta(),  // timestamp
-          base::Callback<void(const SkBitmap&)>(),  // read_pixels_cb
-          base::Closure());  // no_longer_needed_cb
-
-      mailbox_holder = frame->texture_mailbox();
-
-      EXPECT_EQ(mailbox.name[0], mailbox_holder->mailbox().name[0]);
-      EXPECT_EQ(sync_point, mailbox_holder->sync_point());
-      EXPECT_EQ(target, frame->texture_target());
-
-      // Keep a ref on the mailbox_holder after the VideoFrame is dropped.
-    }
-    EXPECT_EQ(0u, called_sync_point);
-
-    // Misuse the callback.
-    sync_point = 12;
-    mailbox_holder->Return(sync_point);
-    EXPECT_EQ(0u, called_sync_point);
-
-    // Finish using the mailbox_holder and drop our ref.
-    sync_point = 10;
-    mailbox_holder->Return(sync_point);
-  }
-  EXPECT_EQ(sync_point, called_sync_point);
-}
-
-// If a caller has taken ownership of the texture mailbox, but does
-// not call the callback, it should still happen with the original
-// sync point.
-TEST(VideoFrame,
-     TextureNoLongerNeededCallbackWhenNotCallingAndFrameDestroyed) {
-  uint32 called_sync_point = 0;
-
-  gpu::Mailbox mailbox;
-  mailbox.name[0] = 50;
-  uint32 sync_point = 7;
-  uint32 target = 9;
-
-  {
-    scoped_refptr<VideoFrame::MailboxHolder> mailbox_holder;
-
-    {
-      scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
-          new VideoFrame::MailboxHolder(
-              mailbox,
-              sync_point,
-              base::Bind(&TextureCallback, &called_sync_point)),
-          target,
-          gfx::Size(10, 10),  // coded_size
-          gfx::Rect(10, 10),  // visible_rect
-          gfx::Size(10, 10),  // natural_size
-          base::TimeDelta(),  // timestamp
-          base::Callback<void(const SkBitmap&)>(),  // read_pixels_cb
-          base::Closure());  // no_longer_needed_cb
-
-      mailbox_holder = frame->texture_mailbox();
-
-      EXPECT_EQ(mailbox.name[0], mailbox_holder->mailbox().name[0]);
-      EXPECT_EQ(sync_point, mailbox_holder->sync_point());
-      EXPECT_EQ(target, frame->texture_target());
-
-      // Destroy the video frame.
-    }
-    EXPECT_EQ(0u, called_sync_point);
-
-    // Drop the reference on the mailbox without using it at all.
-  }
-  EXPECT_EQ(sync_point, called_sync_point);
-}
-
-// If a caller has taken ownership of the texture mailbox, but does
-// not call the callback, it should still happen with the original
-// sync point.
-TEST(VideoFrame,
-     TextureNoLongerNeededCallbackAfterTakingMailboxAndNotCalling) {
-  uint32 called_sync_point = 0;
-
-  gpu::Mailbox mailbox;
-  mailbox.name[0] = 50;
-  uint32 sync_point = 7;
-  uint32 target = 9;
-
-  {
-    scoped_refptr<VideoFrame> frame = VideoFrame::WrapNativeTexture(
-        new VideoFrame::MailboxHolder(
-            mailbox,
-            sync_point,
-            base::Bind(&TextureCallback, &called_sync_point)),
-        target,
-        gfx::Size(10, 10),  // coded_size
-        gfx::Rect(10, 10),  // visible_rect
-        gfx::Size(10, 10),  // natural_size
-        base::TimeDelta(),  // timestamp
-        base::Callback<void(const SkBitmap&)>(),  // read_pixels_cb
-        base::Closure());  // no_longer_needed_cb
-
-    scoped_refptr<VideoFrame::MailboxHolder> mailbox_holder =
-        frame->texture_mailbox();
+    VideoFrame::MailboxHolder* mailbox_holder = frame->texture_mailbox();
 
     EXPECT_EQ(mailbox.name[0], mailbox_holder->mailbox().name[0]);
     EXPECT_EQ(sync_point, mailbox_holder->sync_point());
     EXPECT_EQ(target, frame->texture_target());
 
-    EXPECT_EQ(0u, called_sync_point);
-
-    // Don't use the mailbox at all and drop our ref on it.
+    // Finish using the mailbox_holder and drop our reference.
+    sync_point = 10;
+    mailbox_holder->Resync(sync_point);
   }
-  // The VideoFrame is destroyed, it should call the callback.
   EXPECT_EQ(sync_point, called_sync_point);
 }
 

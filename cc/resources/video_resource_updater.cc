@@ -324,11 +324,10 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   return external_resources;
 }
 
-static void ReturnTexture(
-    scoped_refptr<media::VideoFrame::MailboxHolder> mailbox_holder,
-    unsigned sync_point,
-    bool lost_resource) {
-  mailbox_holder->Return(sync_point);
+static void ReturnTexture(const scoped_refptr<media::VideoFrame>& frame,
+                          unsigned sync_point,
+                          bool lost_resource) {
+  frame->texture_mailbox()->Resync(sync_point);
 }
 
 VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
@@ -359,7 +358,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       return VideoFrameExternalResources();
   }
 
-  scoped_refptr<media::VideoFrame::MailboxHolder> mailbox_holder =
+  media::VideoFrame::MailboxHolder* mailbox_holder =
       video_frame->texture_mailbox();
 
   external_resources.mailboxes.push_back(
@@ -367,7 +366,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
                      video_frame->texture_target(),
                      mailbox_holder->sync_point()));
   external_resources.release_callbacks.push_back(
-      base::Bind(&ReturnTexture, mailbox_holder));
+      base::Bind(&ReturnTexture, video_frame));
   return external_resources;
 }
 

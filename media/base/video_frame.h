@@ -55,14 +55,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns the name of a Format as a string.
   static std::string FormatToString(Format format);
 
-  // This class calls the TextureNoLongerNeededCallback when the last reference
-  // on the class is destroyed. The VideoFrame holds a reference to the mailbox
-  // but anyone else who queries the mailbox should also hold a reference while
-  // it is uses the mailbox, to ensure it remains valid. When finished with the
-  // mailbox, call Return() with a new sync point, to ensure the mailbox remains
+  // This class calls the TextureNoLongerNeededCallback when this class is
+  // destroyed.  Users can query the current sync point associated with this
+  // mailbox with sync_point(), and should call Resync() with a new sync point
+  // to ensure the mailbox remains valid for the issued commands.
   // valid for the issued commands.
-  class MEDIA_EXPORT MailboxHolder
-      : public base::RefCountedThreadSafe<MailboxHolder> {
+  class MEDIA_EXPORT MailboxHolder {
    public:
     typedef base::Callback<void(uint32 sync_point)>
         TextureNoLongerNeededCallback;
@@ -70,15 +68,14 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     MailboxHolder(const gpu::Mailbox& mailbox,
                   unsigned sync_point,
                   const TextureNoLongerNeededCallback& release_callback);
+    ~MailboxHolder();
 
     const gpu::Mailbox& mailbox() const { return mailbox_; }
     unsigned sync_point() const { return sync_point_; }
 
-    void Return(unsigned sync_point) { sync_point_ = sync_point; }
+    void Resync(unsigned sync_point) { sync_point_ = sync_point; }
 
    private:
-    friend class base::RefCountedThreadSafe<MailboxHolder>;
-    ~MailboxHolder();
 
     gpu::Mailbox mailbox_;
     unsigned sync_point_;
@@ -122,7 +119,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // |read_pixels_cb| may be used to do (slow!) readbacks from the
   // texture to main memory.
   static scoped_refptr<VideoFrame> WrapNativeTexture(
-      const scoped_refptr<MailboxHolder>& mailbox_holder,
+      scoped_ptr<MailboxHolder> mailbox_holder,
       uint32 texture_target,
       const gfx::Size& coded_size,
       const gfx::Rect& visible_rect,
@@ -224,7 +221,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Returns the mailbox of the native texture wrapped by this frame. Only
   // valid to call if this is a NATIVE_TEXTURE frame. Before using the
   // mailbox, the caller must wait for the included sync point.
-  const scoped_refptr<MailboxHolder>& texture_mailbox() const;
+  MailboxHolder* texture_mailbox() const;
 
   // Returns the texture target. Only valid for NATIVE_TEXTURE frames.
   uint32 texture_target() const;
@@ -284,7 +281,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   uint8* data_[kMaxPlanes];
 
   // Native texture mailbox, if this is a NATIVE_TEXTURE frame.
-  scoped_refptr<MailboxHolder> texture_mailbox_holder_;
+  scoped_ptr<MailboxHolder> texture_mailbox_holder_;
   uint32 texture_target_;
   ReadPixelsCB read_pixels_cb_;
 

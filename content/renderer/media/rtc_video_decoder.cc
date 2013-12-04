@@ -421,13 +421,13 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
   base::TimeDelta timestamp_ms = base::TimeDelta::FromInternalValue(
       base::checked_numeric_cast<uint64_t>(timestamp) * 1000 / 90);
   return media::VideoFrame::WrapNativeTexture(
-      new media::VideoFrame::MailboxHolder(
+      make_scoped_ptr(new media::VideoFrame::MailboxHolder(
           pb.texture_mailbox(),
           0,  // sync_point
           media::BindToCurrentLoop(
               base::Bind(&RTCVideoDecoder::ReusePictureBuffer,
                          weak_this_,
-                         picture.picture_buffer_id()))),
+                         picture.picture_buffer_id())))),
       decoder_texture_target_,
       pb.size(),
       visible_rect,

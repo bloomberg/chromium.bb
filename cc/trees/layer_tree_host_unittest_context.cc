@@ -1206,22 +1206,26 @@ class LayerTreeHostContextTestDontUseLostResources
     color_video_frame_ = VideoFrame::CreateColorFrame(
         gfx::Size(4, 4), 0x80, 0x80, 0x80, base::TimeDelta());
     hw_video_frame_ = VideoFrame::WrapNativeTexture(
-        new VideoFrame::MailboxHolder(
+        make_scoped_ptr(new VideoFrame::MailboxHolder(
             mailbox,
             sync_point,
-            VideoFrame::MailboxHolder::TextureNoLongerNeededCallback()),
+            VideoFrame::MailboxHolder::TextureNoLongerNeededCallback())),
         GL_TEXTURE_2D,
-        gfx::Size(4, 4), gfx::Rect(0, 0, 4, 4), gfx::Size(4, 4),
+        gfx::Size(4, 4),
+        gfx::Rect(0, 0, 4, 4),
+        gfx::Size(4, 4),
         base::TimeDelta(),
         VideoFrame::ReadPixelsCB(),
         base::Closure());
     scaled_hw_video_frame_ = VideoFrame::WrapNativeTexture(
-        new VideoFrame::MailboxHolder(
+        make_scoped_ptr(new VideoFrame::MailboxHolder(
             mailbox,
             sync_point,
-            VideoFrame::MailboxHolder::TextureNoLongerNeededCallback()),
+            VideoFrame::MailboxHolder::TextureNoLongerNeededCallback())),
         GL_TEXTURE_2D,
-        gfx::Size(4, 4), gfx::Rect(0, 0, 3, 2), gfx::Size(4, 4),
+        gfx::Size(4, 4),
+        gfx::Rect(0, 0, 3, 2),
+        gfx::Size(4, 4),
         base::TimeDelta(),
         VideoFrame::ReadPixelsCB(),
         base::Closure());
