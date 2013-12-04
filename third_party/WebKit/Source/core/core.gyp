@@ -362,7 +362,7 @@
         '../platform/blink_platform.gyp:blink_platform',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
-        '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
+        '<(angle_path)/src/build_angle.gyp:translator',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
         '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
@@ -382,7 +382,7 @@
         '../config.gyp:config',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
-        '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
+        '<(angle_path)/src/build_angle.gyp:translator',
         '<(DEPTH)/third_party/iccjpeg/iccjpeg.gyp:iccjpeg',
         '<(DEPTH)/third_party/libpng/libpng.gyp:libpng',
         '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
@@ -405,7 +405,7 @@
         'include_dirs': [
           '<@(webcore_include_dirs)',
           '<(DEPTH)/gpu',
-          '<(DEPTH)/third_party/angle_dx11/include',
+          '<(angle_path)/include',
         ],
         'xcode_settings': {
           # Some Mac-specific parts of WebKit won't compile without having this

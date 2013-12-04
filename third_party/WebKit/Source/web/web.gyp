@@ -50,7 +50,7 @@
                 '../core/core.gyp:webcore',
                 '../modules/modules.gyp:modules',
                 '<(DEPTH)/skia/skia.gyp:skia',
-                '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
+                '<(angle_path)/src/build_angle.gyp:translator',
                 '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
                 '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
                 '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
@@ -64,7 +64,7 @@
             'include_dirs': [
                 '../../public/web',
                 '../web',
-                '<(DEPTH)/third_party/angle_dx11/include',
+                '<(angle_path)/include',
                 '<(DEPTH)/third_party/skia/include/utils',
             ],
             'defines': [
