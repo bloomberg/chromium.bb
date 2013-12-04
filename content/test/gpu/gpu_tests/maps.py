@@ -132,7 +132,7 @@ class MapsValidator(page_test.PageTest):
     if not os.path.exists(output_dir):
       os.makedirs(output_dir)
 
-    screenshot.WriteFile(image_path)
+    screenshot.WritePngFile(image_path)
 
 class Maps(test.Test):
   """Google Maps pixel tests."""

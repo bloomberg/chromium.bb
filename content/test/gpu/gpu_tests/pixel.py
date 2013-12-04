@@ -145,7 +145,7 @@ class PixelValidator(page_test.PageTest):
     if not os.path.exists(output_dir):
       os.makedirs(output_dir)
 
-    png_image.WriteFile(image_path)
+    png_image.WritePngFile(image_path)
 
 class Pixel(test.Test):
   test = PixelValidator
