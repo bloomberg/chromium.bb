@@ -9,12 +9,15 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
+#include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_uploader.h"
 #include "chrome/browser/drive/fake_drive_service.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_test_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/list_changes_task.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
+#include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
+#include "chrome/browser/sync_file_system/drive_backend/remote_to_local_syncer.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_initializer.h"
 #include "chrome/browser/sync_file_system/drive_backend_v1/fake_drive_service_helper.h"
@@ -23,6 +26,7 @@
 #include "chrome/browser/sync_file_system/sync_file_system_test_util.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/gdata_errorcode.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -142,7 +146,12 @@ class LocalToRemoteSyncerTest : public testing::Test,
     return file_id;
   }
 
-  SyncStatusCode RunSyncer(FileChange file_change,
+  void RemoveResource(const std::string& file_id) {
+    EXPECT_EQ(google_apis::HTTP_SUCCESS,
+              fake_drive_helper_->RemoveResource(file_id));
+  }
+
+  SyncStatusCode RunLocalToRemoteSyncer(FileChange file_change,
                            const fileapi::FileSystemURL& url) {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     base::FilePath local_path = base::FilePath::FromUTF8Unsafe("dummy");
@@ -157,6 +166,14 @@ class LocalToRemoteSyncerTest : public testing::Test,
     ListChangesTask list_changes(this);
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     list_changes.Run(CreateResultReceiver(&status));
+    base::RunLoop().RunUntilIdle();
+    return status;
+  }
+
+  SyncStatusCode RunRemoteToLocalSyncer() {
+    SyncStatusCode status = SYNC_STATUS_UNKNOWN;
+    scoped_ptr<RemoteToLocalSyncer> syncer(new RemoteToLocalSyncer(this));
+    syncer->Run(CreateResultReceiver(&status));
     base::RunLoop().RunUntilIdle();
     return status;
   }
@@ -220,15 +237,15 @@ TEST_F(LocalToRemoteSyncerTest, CreateFile) {
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
 
-  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+  EXPECT_EQ(SYNC_STATUS_OK, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_FILE),
       URL(kOrigin, "file1")));
-  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+  EXPECT_EQ(SYNC_STATUS_OK, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_DIRECTORY),
       URL(kOrigin, "folder")));
-  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+  EXPECT_EQ(SYNC_STATUS_OK, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_FILE),
       URL(kOrigin, "folder/file2")));
@@ -249,15 +266,15 @@ TEST_F(LocalToRemoteSyncerTest, CreateFileOnMissingPath) {
   RegisterApp(kOrigin.host(), app_root);
 
   // Run the syncer 3 times to create missing folder1 and folder2.
-  EXPECT_EQ(SYNC_STATUS_RETRY, RunSyncer(
+  EXPECT_EQ(SYNC_STATUS_RETRY, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_FILE),
       URL(kOrigin, "folder1/folder2/file")));
-  EXPECT_EQ(SYNC_STATUS_RETRY, RunSyncer(
+  EXPECT_EQ(SYNC_STATUS_RETRY, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_FILE),
       URL(kOrigin, "folder1/folder2/file")));
-  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+  EXPECT_EQ(SYNC_STATUS_OK, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_FILE),
       URL(kOrigin, "folder1/folder2/file")));
@@ -279,11 +296,11 @@ TEST_F(LocalToRemoteSyncerTest, DeleteFile) {
   InitializeMetadataDatabase();
   RegisterApp(kOrigin.host(), app_root);
 
-  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+  EXPECT_EQ(SYNC_STATUS_OK, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_FILE),
       URL(kOrigin, "file")));
-  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+  EXPECT_EQ(SYNC_STATUS_OK, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_DIRECTORY),
       URL(kOrigin, "folder")));
@@ -291,11 +308,11 @@ TEST_F(LocalToRemoteSyncerTest, DeleteFile) {
   VerifyTitleUniqueness(app_root, "file", google_apis::ENTRY_KIND_FILE);
   VerifyTitleUniqueness(app_root, "folder", google_apis::ENTRY_KIND_FOLDER);
 
-  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+  EXPECT_EQ(SYNC_STATUS_OK, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_DELETE,
                  SYNC_FILE_TYPE_FILE),
       URL(kOrigin, "file")));
-  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+  EXPECT_EQ(SYNC_STATUS_OK, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_DELETE,
                  SYNC_FILE_TYPE_DIRECTORY),
       URL(kOrigin, "folder")));
@@ -313,7 +330,7 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFileOnFolder) {
 
   CreateRemoteFolder(app_root, "foo");
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
-  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+  EXPECT_EQ(SYNC_STATUS_OK, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_FILE),
       URL(kOrigin, "foo")));
@@ -336,7 +353,7 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFolderOnFile) {
   CreateRemoteFile(app_root, "foo", "data");
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
 
-  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+  EXPECT_EQ(SYNC_STATUS_OK, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_DIRECTORY),
       URL(kOrigin, "foo")));
@@ -359,7 +376,7 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFileOnFile) {
   CreateRemoteFile(app_root, "foo", "data");
   EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
 
-  EXPECT_EQ(SYNC_STATUS_OK, RunSyncer(
+  EXPECT_EQ(SYNC_STATUS_OK, RunLocalToRemoteSyncer(
       FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
                  SYNC_FILE_TYPE_FILE),
       URL(kOrigin, "foo")));
@@ -370,6 +387,43 @@ TEST_F(LocalToRemoteSyncerTest, Conflict_CreateFileOnFile) {
   ASSERT_EQ(2u, entries.size());
   EXPECT_EQ(google_apis::ENTRY_KIND_FILE, entries[0]->kind());
   EXPECT_EQ(google_apis::ENTRY_KIND_FILE, entries[1]->kind());
+}
+
+TEST_F(LocalToRemoteSyncerTest, Conflict_UpdateDeleteOnFile) {
+  const GURL kOrigin("chrome-extension://example");
+  const std::string sync_root = CreateSyncRoot();
+  const std::string app_root = CreateRemoteFolder(sync_root, kOrigin.host());
+  InitializeMetadataDatabase();
+  RegisterApp(kOrigin.host(), app_root);
+
+  const std::string file_id = CreateRemoteFile(app_root, "foo", "data");
+  EXPECT_EQ(SYNC_STATUS_OK, ListChanges());
+
+  SyncStatusCode status;
+  do {
+    status = RunRemoteToLocalSyncer();
+    EXPECT_TRUE(status == SYNC_STATUS_OK ||
+                status == SYNC_STATUS_RETRY ||
+                status == SYNC_STATUS_NO_CHANGE_TO_SYNC);
+  } while (status != SYNC_STATUS_NO_CHANGE_TO_SYNC);
+
+  RemoveResource(file_id);
+
+  EXPECT_EQ(SYNC_STATUS_RETRY, RunLocalToRemoteSyncer(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_FILE),
+      URL(kOrigin, "foo")));
+  EXPECT_EQ(SYNC_STATUS_OK, RunLocalToRemoteSyncer(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_FILE),
+      URL(kOrigin, "foo")));
+
+  ScopedVector<google_apis::ResourceEntry> entries =
+      GetResourceEntriesForParentAndTitle(app_root, "foo");
+  ASSERT_EQ(1u, entries.size());
+  EXPECT_EQ(google_apis::ENTRY_KIND_FILE, entries[0]->kind());
+  EXPECT_TRUE(!entries[0]->deleted());
+  EXPECT_NE(file_id, entries[0]->resource_id());
 }
 
 // TODO(nhiroki): Add folder-folder conflict (reusing remote folder) case.

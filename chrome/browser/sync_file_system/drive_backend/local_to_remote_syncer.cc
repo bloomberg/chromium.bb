@@ -421,10 +421,21 @@ void LocalToRemoteSyncer::DidUpdateDatabaseForUploadExistingFile(
     return;
   }
 
-  metadata_database()->UpdateTracker(
-      remote_file_tracker_->tracker_id(),
-      file.details(),
-      callback);
+  const FileDetails& details = file.details();
+  base::FilePath title = fileapi::VirtualPath::BaseName(target_path_);
+  if (!details.missing() &&
+      details.file_kind() == FILE_KIND_FILE &&
+      details.title() == title.AsUTF8Unsafe() &&
+      HasFileAsParent(details,
+                      remote_parent_folder_tracker_->file_id())) {
+    metadata_database()->UpdateTracker(
+        remote_file_tracker_->tracker_id(),
+        file.details(),
+        callback);
+    return;
+  }
+
+  callback.Run(SYNC_STATUS_RETRY);
 }
 
 void LocalToRemoteSyncer::UpdateRemoteMetadata(
