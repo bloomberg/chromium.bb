@@ -39,6 +39,9 @@ class ScreenLockerDelegate {
   // Enable/disable password input.
   virtual void SetInputEnabled(bool enabled) = 0;
 
+  // Displays a banner containing |message| on the lock screen.
+  virtual void ShowBannerMessage(const std::string& message) = 0;
+
   // Disables all UI needed and shows error bubble with |message|.
   // If |sign_out_only| is true then all other input except "Sign Out"
   // button is blocked.

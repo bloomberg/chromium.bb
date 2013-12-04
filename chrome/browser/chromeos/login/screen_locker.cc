@@ -308,6 +308,10 @@ void ScreenLocker::Signout() {
   // briefly.
 }
 
+void ScreenLocker::ShowBannerMessage(const std::string& message) {
+  delegate_->ShowBannerMessage(message);
+}
+
 void ScreenLocker::ShowErrorMessage(int error_msg_id,
                                     HelpAppLauncher::HelpTopic help_topic_id,
                                     bool sign_out_only) {

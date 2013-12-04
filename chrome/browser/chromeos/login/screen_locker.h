@@ -75,6 +75,9 @@ class ScreenLocker : public LoginStatusConsumer {
   // Exit the chrome, which will sign out the current session.
   void Signout();
 
+  // Displays |message| in a banner on the lock screen.
+  void ShowBannerMessage(const std::string& message);
+
   // Disables all UI needed and shows error bubble with |message|.
   // If |sign_out_only| is true then all other input except "Sign Out"
   // button is blocked.

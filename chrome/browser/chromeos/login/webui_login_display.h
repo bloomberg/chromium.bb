@@ -41,6 +41,7 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual void OnLoginSuccess(const std::string& username) OVERRIDE;
   virtual void SetUIEnabled(bool is_enabled) OVERRIDE;
   virtual void SelectPod(int index) OVERRIDE;
+  virtual void ShowBannerMessage(const std::string& message) OVERRIDE;
   virtual void ShowError(int error_msg_id,
                          int login_attempts,
                          HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;

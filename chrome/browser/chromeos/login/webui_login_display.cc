@@ -126,6 +126,12 @@ void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
 void WebUILoginDisplay::SelectPod(int index) {
 }
 
+void WebUILoginDisplay::ShowBannerMessage(const std::string& message) {
+  if (!webui_handler_)
+    return;
+  webui_handler_->ShowBannerMessage(message);
+}
+
 void WebUILoginDisplay::ShowError(int error_msg_id,
                                   int login_attempts,
                                   HelpAppLauncher::HelpTopic help_topic_id) {

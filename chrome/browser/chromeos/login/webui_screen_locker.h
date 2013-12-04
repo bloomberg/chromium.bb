@@ -57,6 +57,7 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual void ScreenLockReady() OVERRIDE;
   virtual void OnAuthenticate() OVERRIDE;
   virtual void SetInputEnabled(bool enabled) OVERRIDE;
+  virtual void ShowBannerMessage(const std::string& message) OVERRIDE;
   virtual void ShowErrorMessage(
       int error_msg_id,
       HelpAppLauncher::HelpTopic help_topic_id) OVERRIDE;

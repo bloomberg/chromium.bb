@@ -29,6 +29,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'forceLockedUserPodFocus',
       'onWallpaperLoaded',
       'removeUser',
+      'showBannerMessage',
     ],
 
     preferredWidth_: 0,
@@ -227,6 +228,18 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
     removeUser: function(username) {
       $('pod-row').removeUserPod(username);
     },
+
+    /**
+     * Displays a banner containing |message|. If the banner is already present
+     * this function updates the message in the banner. This function is used
+     * by the chrome.screenlockPrivate.showMessage API.
+     * @param {string} message Text to be displayed
+     */
+    showBannerMessage: function(message) {
+      var banner = $('signin-banner');
+      banner.textContent = message;
+      banner.classList.toggle('message-set', true);
+    }
   };
 });
 

@@ -414,7 +414,7 @@ void SigninScreenHandler::DeclareLocalizedValues(
           IDS_DISABLED_ADD_USER_TOOLTIP);
   builder->Add("supervisedUserExpiredTokenWarning",
                IDS_SUPERVISED_USER_EXPIRED_TOKEN_WARNING);
-  builder->Add("multiple-signin-banner-text", IDS_LOGIN_USER_ADDING_BANNER);
+  builder->Add("signinBannerText", IDS_LOGIN_USER_ADDING_BANNER);
 
   // Strings used by password changed dialog.
   builder->Add("passwordChangedTitle", IDS_LOGIN_PASSWORD_CHANGED_TITLE);
@@ -864,6 +864,10 @@ void SigninScreenHandler::OnPreferencesChanged() {
 
 void SigninScreenHandler::ResetSigninScreenHandlerDelegate() {
   SetDelegate(NULL);
+}
+
+void SigninScreenHandler::ShowBannerMessage(const std::string& message) {
+  CallJS("login.AccountPickerScreen.showBannerMessage", message);
 }
 
 void SigninScreenHandler::ShowError(int login_attempts,

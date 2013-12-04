@@ -24,6 +24,7 @@ class MockLoginDisplay : public LoginDisplay {
   MOCK_METHOD1(OnLoginSuccess, void(const std::string&));
   MOCK_METHOD1(SetUIEnabled, void(bool));
   MOCK_METHOD1(SelectPod, void(int));
+  MOCK_METHOD1(ShowBannerMessage, void(const std::string&));
   MOCK_METHOD3(ShowError, void(int, int, HelpAppLauncher::HelpTopic));
   MOCK_METHOD1(ShowErrorScreen, void(LoginDisplay::SigninError));
   MOCK_METHOD1(ShowGaiaPasswordChanged, void(const std::string&));

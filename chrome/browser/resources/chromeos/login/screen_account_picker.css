@@ -8,20 +8,20 @@
                       height 180ms ease;
 }
 
-#multiple-signin-banner-container1 {
+#signin-banner-container1 {
   bottom: 100%;
   margin-bottom: 10px;
   position: absolute;
   width: 100%;
 }
 
-#multiple-signin-banner-container2 {
+#signin-banner-container2 {
   display: inline-block;
   position: relative;
   right: -50%;
 }
 
-#multiple-signin-banner {
+#signin-banner {
   background-color: rgba(0, 0, 0, 0.75);
   border-radius: 4px;
   color: whitesmoke;
@@ -33,6 +33,18 @@
   white-space: nowrap;
 }
 
-html[screen=user-adding] #multiple-signin-banner {
+html[screen=user-adding] #signin-banner {
   display: inline-block;
+}
+
+html[screen=lock] #signin-banner {
+  display: inline-block;
+  opacity: 0;
+  visibility: hidden;
+}
+
+html[screen=lock] #signin-banner.message-set {
+  -webkit-transition: opacity 1s;
+  opacity: 1;
+  visibility: visible;
 }

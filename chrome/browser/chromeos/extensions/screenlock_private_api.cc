@@ -58,8 +58,8 @@ ScreenlockPrivateShowMessageFunction::ScreenlockPrivateShowMessageFunction() {}
 ScreenlockPrivateShowMessageFunction::~ScreenlockPrivateShowMessageFunction() {}
 
 bool ScreenlockPrivateShowMessageFunction::RunImpl() {
-  scoped_ptr<screenlock::SetLocked::Params> params(
-      screenlock::SetLocked::Params::Create(*args_));
+  scoped_ptr<screenlock::ShowMessage::Params> params(
+      screenlock::ShowMessage::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   chromeos::ScreenLocker* locker =
       chromeos::ScreenLocker::default_screen_locker();
@@ -67,7 +67,7 @@ bool ScreenlockPrivateShowMessageFunction::RunImpl() {
     SendResponse(error_.empty());
     return true;
   }
-  // TODO locker->ShowMessage(params->message);
+  locker->ShowBannerMessage(params->message);
   SendResponse(error_.empty());
   return true;
 }
