@@ -271,9 +271,7 @@ bool DesktopScreenX11::Dispatch(const base::NativeEvent& event) {
   } else if (event->type - xrandr_event_base_ == RRNotify) {
     // There's some sort of observer dispatch going on here, but I don't think
     // it's the screen's?
-    DLOG(ERROR) << "DesktopScreenX11::Dispatch() -> RRNotify";
-
-    if (configure_timer_.get()) {
+    if (configure_timer_.get() && configure_timer_->IsRunning()) {
       configure_timer_->Reset();
     } else {
       configure_timer_.reset(new base::OneShotTimer<DesktopScreenX11>());
