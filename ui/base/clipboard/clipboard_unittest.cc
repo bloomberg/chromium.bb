@@ -89,11 +89,13 @@ TEST_F(ClipboardTest, TextTest) {
 
 TEST_F(ClipboardTest, HTMLTest) {
   string16 markup(ASCIIToUTF16("<string>Hi!</string>")), markup_result;
+  string16 plain(ASCIIToUTF16("Hi!")), plain_result;
   std::string url("http://www.example.com/"), url_result;
 
   {
     ScopedClipboardWriter clipboard_writer(&clipboard(),
                                            CLIPBOARD_TYPE_COPY_PASTE);
+    clipboard_writer.WriteText(plain);
     clipboard_writer.WriteHTML(markup, url);
   }
 
@@ -175,10 +177,12 @@ TEST_F(ClipboardTest, TrickyHTMLTest) {
   string16 markup(ASCIIToUTF16("<em>Bye!<!--EndFragment --></em>")),
       markup_result;
   std::string url, url_result;
+  string16 plain(ASCIIToUTF16("Bye!")), plain_result;
 
   {
     ScopedClipboardWriter clipboard_writer(&clipboard(),
                                            CLIPBOARD_TYPE_COPY_PASTE);
+    clipboard_writer.WriteText(plain);
     clipboard_writer.WriteHTML(markup, url);
   }
 

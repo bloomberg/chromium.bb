@@ -4,6 +4,7 @@
 
 package org.chromium.ui.base;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
@@ -77,6 +78,23 @@ public class Clipboard {
     }
 
     /**
+     * Gets the HTML text of top item on the primary clip on the Android clipboard.
+     *
+     * @return a Java string with the html text if any, or null if there is no html
+     *         text or no entries on the primary clip.
+     */
+    @CalledByNative
+    private String getHTMLText() {
+        if (isHTMLClipboardSupported()) {
+            final ClipData clip = mClipboardManager.getPrimaryClip();
+            if (clip != null && clip.getItemCount() > 0) {
+                return clip.getItemAt(0).getHtmlText();
+            }
+        }
+        return null;
+    }
+
+    /**
      * Emulates the behavior of the now-deprecated
      * {@link android.text.ClipboardManager#setText(CharSequence)}, setting the
      * clipboard's current primary clip to a plain-text clip that consists of
@@ -100,29 +118,14 @@ public class Clipboard {
      */
     @CalledByNative
     private void setHTMLText(final String html, final String text) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        if (isHTMLClipboardSupported()) {
             mClipboardManager.setPrimaryClip(
                     ClipData.newHtmlText(null, text, html));
         }
     }
 
-    /**
-     * Approximates the behavior of the now-deprecated
-     * {@link android.text.ClipboardManager#hasText()}, returning true if and
-     * only if the clipboard has a primary clip and that clip contains a plain
-     * non-empty text entry (without attempting coercion - URLs and intents
-     * will cause this method to return false).
-     *
-     * @return as described above
-     */
-    @SuppressWarnings("javadoc")
     @CalledByNative
-    private boolean hasPlainText() {
-        final ClipData clip = mClipboardManager.getPrimaryClip();
-        if (clip != null && clip.getItemCount() > 0) {
-            final CharSequence text = clip.getItemAt(0).getText();
-            return !TextUtils.isEmpty(text);
-        }
-        return false;
+    private static boolean isHTMLClipboardSupported() {
+        return ApiCompatibilityUtils.isHTMLClipboardSupported();
     }
 }
