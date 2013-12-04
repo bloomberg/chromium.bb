@@ -67,6 +67,8 @@ class MockAudioManager : public media::AudioManager {
   virtual std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) OVERRIDE;
 
+  virtual void FixWedgedAudio() OVERRIDE;
+
  protected:
   virtual ~MockAudioManager();
 

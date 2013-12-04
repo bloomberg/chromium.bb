@@ -59,6 +59,8 @@ bool AudioOutputDispatcherImpl::StartStream(
     AudioOutputStream::AudioSourceCallback* callback,
     AudioOutputProxy* stream_proxy) {
   DCHECK(message_loop_->BelongsToCurrentThread());
+  DCHECK(proxy_to_physical_map_.find(stream_proxy) ==
+         proxy_to_physical_map_.end());
 
   if (idle_streams_.empty() && !CreateAndOpenStream())
     return false;
@@ -184,6 +186,23 @@ void AudioOutputDispatcherImpl::ClosePendingStreams() {
     idle_streams_.back()->Close();
     idle_streams_.pop_back();
   }
+}
+
+void AudioOutputDispatcherImpl::CloseStreamsForWedgeFix() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  while (!pausing_streams_.empty()) {
+    idle_streams_.push_back(pausing_streams_.back());
+    pausing_streams_.pop_back();
+  }
+  ClosePendingStreams();
+}
+
+void AudioOutputDispatcherImpl::RestartStreamsForWedgeFix() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+
+  // Should only be called when the dispatcher is used with fake streams which
+  // don't need to be shutdown or restarted.
+  CHECK_EQ(params_.format(), AudioParameters::AUDIO_FAKE);
 }
 
 }  // namespace media

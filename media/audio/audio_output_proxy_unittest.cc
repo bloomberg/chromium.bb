@@ -748,4 +748,64 @@ TEST_F(AudioOutputResamplerTest, LowLatencyOpenEventuallyFails) {
   EXPECT_FALSE(stream3.start_called());
 }
 
+// Ensures the methods used to fix audio output wedges are working correctly.
+TEST_F(AudioOutputResamplerTest, WedgeFix) {
+  MockAudioOutputStream stream1(&manager_, params_);
+  MockAudioOutputStream stream2(&manager_, params_);
+  MockAudioOutputStream stream3(&manager_, params_);
+
+  // Setup the mock such that all three streams are successfully created.
+  EXPECT_CALL(manager(), MakeAudioOutputStream(_, _, _))
+      .WillOnce(Return(&stream1))
+      .WillOnce(Return(&stream2))
+      .WillOnce(Return(&stream3));
+
+  // Stream1 should be able to successfully open and start.
+  EXPECT_CALL(stream1, Open())
+      .WillOnce(Return(true));
+  EXPECT_CALL(stream1, Close());
+  EXPECT_CALL(stream1, SetVolume(_));
+  EXPECT_CALL(stream2, Open())
+      .WillOnce(Return(true));
+  EXPECT_CALL(stream2, Close());
+
+  // Open and start the first proxy and stream.
+  AudioOutputProxy* proxy1 = new AudioOutputProxy(resampler_.get());
+  EXPECT_TRUE(proxy1->Open());
+  proxy1->Start(&callback_);
+  OnStart();
+
+  // Open, but do not start the second proxy.
+  AudioOutputProxy* proxy2 = new AudioOutputProxy(resampler_.get());
+  EXPECT_TRUE(proxy2->Open());
+
+  // Wait for stream to timeout and shutdown.
+  WaitForCloseTimer(kTestCloseDelayMs);
+
+  resampler_->CloseStreamsForWedgeFix();
+
+  // Stream3 should take Stream1's place after RestartStreamsForWedgeFix().
+  EXPECT_CALL(stream3, Open())
+      .WillOnce(Return(true));
+  EXPECT_CALL(stream3, Close());
+  EXPECT_CALL(stream3, SetVolume(_));
+
+  resampler_->RestartStreamsForWedgeFix();
+  OnStart();
+
+  // Perform the required Stop()/Close() shutdown dance for each proxy.
+  proxy2->Close();
+  proxy1->Stop();
+  proxy1->Close();
+
+  // Wait for all of the messages to fly and then verify stream behavior.
+  WaitForCloseTimer(kTestCloseDelayMs);
+  EXPECT_TRUE(stream1.stop_called());
+  EXPECT_TRUE(stream1.start_called());
+  EXPECT_FALSE(stream2.stop_called());
+  EXPECT_FALSE(stream2.start_called());
+  EXPECT_TRUE(stream3.stop_called());
+  EXPECT_TRUE(stream3.start_called());
+}
+
 }  // namespace media
