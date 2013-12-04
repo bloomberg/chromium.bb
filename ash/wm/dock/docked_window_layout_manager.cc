@@ -483,6 +483,12 @@ void DockedWindowLayoutManager::SetChildBounds(
     const gfx::Rect& requested_bounds) {
   // Whenever one of our windows is moved or resized enforce layout.
   SetChildBoundsDirect(child, requested_bounds);
+  if (IsPopupOrTransient(child))
+    return;
+  ShelfLayoutManager* shelf_layout = internal::ShelfLayoutManager::ForLauncher(
+      dock_container_);
+  if (shelf_layout)
+    shelf_layout->UpdateVisibilityState();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

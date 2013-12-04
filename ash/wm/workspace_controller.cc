@@ -58,27 +58,37 @@ WorkspaceWindowState WorkspaceController::GetWindowState() const {
   if (!shelf_)
     return WORKSPACE_WINDOW_STATE_DEFAULT;
 
+  // These are the container ids of containers which may contain windows that
+  // may overlap the launcher shelf and affect its transparency.
+  const int kWindowContainerIds[] = {
+      internal::kShellWindowId_DefaultContainer,
+      internal::kShellWindowId_DockedContainer,
+  };
   const gfx::Rect shelf_bounds(shelf_->GetIdealBounds());
-  const aura::Window::Windows& windows(viewport_->children());
   bool window_overlaps_launcher = false;
   bool has_maximized_window = false;
-  for (aura::Window::Windows::const_iterator i = windows.begin();
-       i != windows.end(); ++i) {
-    wm::WindowState* window_state = wm::GetWindowState(*i);
-    if (window_state->ignored_by_shelf())
-      continue;
-    ui::Layer* layer = (*i)->layer();
-    if (!layer->GetTargetVisibility() || layer->GetTargetOpacity() == 0.0f)
-      continue;
-    if (window_state->IsMaximized()) {
-      // An untracked window may still be fullscreen so we keep iterating when
-      // we hit a maximized window.
-      has_maximized_window = true;
-    } else if (window_state->IsFullscreen()) {
-      return WORKSPACE_WINDOW_STATE_FULL_SCREEN;
+  for (size_t idx = 0; idx < arraysize(kWindowContainerIds); idx++) {
+    const aura::Window* container = Shell::GetContainer(
+        viewport_->GetRootWindow(), kWindowContainerIds[idx]);
+    const aura::Window::Windows& windows(container->children());
+    for (aura::Window::Windows::const_iterator i = windows.begin();
+         i != windows.end(); ++i) {
+      wm::WindowState* window_state = wm::GetWindowState(*i);
+      if (window_state->ignored_by_shelf())
+        continue;
+      ui::Layer* layer = (*i)->layer();
+      if (!layer->GetTargetVisibility() || layer->GetTargetOpacity() == 0.0f)
+        continue;
+      if (window_state->IsMaximized()) {
+        // An untracked window may still be fullscreen so we keep iterating when
+        // we hit a maximized window.
+        has_maximized_window = true;
+      } else if (window_state->IsFullscreen()) {
+        return WORKSPACE_WINDOW_STATE_FULL_SCREEN;
+      }
+      if (!window_overlaps_launcher && (*i)->bounds().Intersects(shelf_bounds))
+        window_overlaps_launcher = true;
     }
-    if (!window_overlaps_launcher && (*i)->bounds().Intersects(shelf_bounds))
-      window_overlaps_launcher = true;
   }
   if (has_maximized_window)
     return WORKSPACE_WINDOW_STATE_MAXIMIZED;

@@ -1389,5 +1389,64 @@ TEST_F(WorkspaceControllerTest, SwitchFromModal) {
   EXPECT_TRUE(maximized_window->IsVisible());
 }
 
+namespace {
+
+// Subclass of WorkspaceControllerTest that runs tests with docked windows
+// enabled and disabled.
+class WorkspaceControllerTestDragging
+    : public WorkspaceControllerTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  WorkspaceControllerTestDragging() {}
+  virtual ~WorkspaceControllerTestDragging() {}
+
+  // testing::Test:
+  virtual void SetUp() OVERRIDE {
+    WorkspaceControllerTest::SetUp();
+    if (!docked_windows_enabled()) {
+      CommandLine::ForCurrentProcess()->AppendSwitch(
+          ash::switches::kAshDisableDockedWindows);
+    }
+  }
+
+  bool docked_windows_enabled() const { return GetParam(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceControllerTestDragging);
+};
+
+}  // namespace
+
+// Verifies that when dragging a window over the shelf overlap is detected
+// during and after the drag.
+TEST_P(WorkspaceControllerTestDragging, DragWindowOverlapShelf) {
+  aura::test::TestWindowDelegate delegate;
+  delegate.set_window_component(HTCAPTION);
+  scoped_ptr<Window> w1(
+      aura::test::CreateTestWindowWithDelegate(&delegate,
+                                               aura::client::WINDOW_TYPE_NORMAL,
+                                               gfx::Rect(5, 5, 100, 50),
+                                               NULL));
+  ParentWindowInPrimaryRootWindow(w1.get());
+
+  ShelfLayoutManager* shelf = shelf_layout_manager();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+
+  // Drag near the shelf
+  aura::test::EventGenerator generator(
+      Shell::GetPrimaryRootWindow(), gfx::Point());
+  generator.MoveMouseTo(10, 10);
+  generator.PressLeftButton();
+  generator.MoveMouseTo(100, shelf->GetIdealBounds().y() - 20);
+
+  // Shelf should detect overlap. Overlap state stays after mouse is released.
+  EXPECT_TRUE(GetWindowOverlapsShelf());
+  generator.ReleaseLeftButton();
+  EXPECT_TRUE(GetWindowOverlapsShelf());
+}
+
+INSTANTIATE_TEST_CASE_P(DockedOrNot, WorkspaceControllerTestDragging,
+                        ::testing::Bool());
+
 }  // namespace internal
 }  // namespace ash
