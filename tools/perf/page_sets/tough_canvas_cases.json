@@ -42,11 +42,9 @@
     { "url": "file://tough_canvas_cases/canvas2d_balls_common/bouncing_balls.html?ball=text&back=white&ball_count=15" },
     { "url": "file://tough_canvas_cases/canvas-animation-no-clear.html" },
     {
-      "disabled": "Trace event buffer overflow on Android. crbug.com/314380",
       "url": "file://../../../chrome/test/data/perf/canvas_bench/single_image.html"
     },
     {
-      "disabled": "Trace event buffer overflow on Android. crbug.com/314380",
       "url": "file://../../../chrome/test/data/perf/canvas_bench/many_images.html"
     }
   ]
