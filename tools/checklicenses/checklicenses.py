@@ -66,6 +66,7 @@ WHITELISTED_LICENSES = [
     'LGPL (v2.1 or later)',
     'LGPL (v3 or later)',
     'MIT/X11 (BSD like)',
+    'MIT/X11 (BSD like) LGPL (v2.1 or later)',
     'MPL (v1.0) LGPL (v2 or later)',
     'MPL (v1.1)',
     'MPL (v1.1) BSD (3 clause) GPL (v2) LGPL (v2.1 or later)',
@@ -330,6 +331,13 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/webdriver': [  # http://crbug.com/98590
         'UNKNOWN',
     ],
+
+    # https://github.com/html5lib/html5lib-python/issues/125
+    # https://github.com/KhronosGroup/WebGL/issues/435
+    'third_party/webgl/src': [
+        'UNKNOWN',
+    ],
+
     'third_party/webrtc': [  # http://crbug.com/98592
         'UNKNOWN',
     ],
