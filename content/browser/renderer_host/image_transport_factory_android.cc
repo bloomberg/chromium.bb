@@ -48,7 +48,7 @@ class CmdBufferImageTransportFactory : public ImageTransportFactoryAndroid {
   }
   virtual GLHelper* GetGLHelper() OVERRIDE;
   virtual uint32 GetChannelID() OVERRIDE {
-    return context_->GetChannelID();
+    return BrowserGpuChannelHostFactory::instance()->GetGpuChannelId();
   }
 
  private:

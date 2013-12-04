@@ -88,12 +88,6 @@ class WebGraphicsContext3DCommandBufferImpl
   // Gets the GPU process ID for this context.
   int GetGPUProcessID();
 
-  // Gets the channel ID for this context.
-  int GetChannelID();
-
-  // Gets the context ID (relative to the channel).
-  int GetContextID();
-
   CommandBufferProxyImpl* GetCommandBufferProxy() {
     return command_buffer_.get();
   }

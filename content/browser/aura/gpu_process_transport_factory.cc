@@ -294,7 +294,8 @@ gfx::GLSurfaceHandle GpuProcessTransportFactory::CreateSharedSurfaceHandle() {
   gfx::GLSurfaceHandle handle = gfx::GLSurfaceHandle(
       gfx::kNullPluginWindow, gfx::TEXTURE_TRANSPORT);
   handle.parent_gpu_process_id = context->GetGPUProcessID();
-  handle.parent_client_id = context->GetChannelID();
+  handle.parent_client_id =
+      BrowserGpuChannelHostFactory::instance()->GetGpuChannelId();
   return handle;
 }
 

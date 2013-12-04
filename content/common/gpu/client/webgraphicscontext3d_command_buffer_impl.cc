@@ -486,14 +486,6 @@ int WebGraphicsContext3DCommandBufferImpl::GetGPUProcessID() {
   return host_.get() ? host_->gpu_host_id() : 0;
 }
 
-int WebGraphicsContext3DCommandBufferImpl::GetChannelID() {
-  return host_.get() ? host_->client_id() : 0;
-}
-
-int WebGraphicsContext3DCommandBufferImpl::GetContextID() {
-  return command_buffer_->GetRouteID();
-}
-
 gpu::ContextSupport*
 WebGraphicsContext3DCommandBufferImpl::GetContextSupport() {
   return real_gl_.get();

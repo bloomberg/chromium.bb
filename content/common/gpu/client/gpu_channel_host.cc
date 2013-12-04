@@ -36,12 +36,11 @@ GpuListenerInfo::~GpuListenerInfo() {}
 scoped_refptr<GpuChannelHost> GpuChannelHost::Create(
     GpuChannelHostFactory* factory,
     int gpu_host_id,
-    int client_id,
     const gpu::GPUInfo& gpu_info,
     const IPC::ChannelHandle& channel_handle) {
   DCHECK(factory->IsMainThread());
   scoped_refptr<GpuChannelHost> host = new GpuChannelHost(
-      factory, gpu_host_id, client_id, gpu_info);
+      factory, gpu_host_id, gpu_info);
   host->Connect(channel_handle);
   return host;
 }
@@ -59,10 +58,8 @@ bool GpuChannelHost::IsValidGpuMemoryBuffer(
 
 GpuChannelHost::GpuChannelHost(GpuChannelHostFactory* factory,
                                int gpu_host_id,
-                               int client_id,
                                const gpu::GPUInfo& gpu_info)
     : factory_(factory),
-      client_id_(client_id),
       gpu_host_id_(gpu_host_id),
       gpu_info_(gpu_info) {
   next_transfer_buffer_id_.GetNext();

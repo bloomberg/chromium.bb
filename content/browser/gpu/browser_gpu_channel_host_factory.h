@@ -57,6 +57,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
   void EstablishGpuChannel(CauseForGpuLaunch cause_for_gpu_launch,
                            const base::Closure& callback);
   GpuChannelHost* GetGpuChannel();
+  int GetGpuChannelId() { return gpu_client_id_; }
 
  private:
   struct CreateRequest {
@@ -90,7 +91,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
 
     base::WaitableEvent event_;
     CauseForGpuLaunch cause_for_gpu_launch_;
-    int gpu_client_id_;
+    const int gpu_client_id_;
     int gpu_host_id_;
     bool reused_gpu_process_;
     IPC::ChannelHandle channel_handle_;
@@ -121,7 +122,7 @@ class CONTENT_EXPORT BrowserGpuChannelHostFactory
       int gpu_host_id,
       scoped_refptr<IPC::ChannelProxy::MessageFilter> filter);
 
-  int gpu_client_id_;
+  const int gpu_client_id_;
   scoped_ptr<base::WaitableEvent> shutdown_event_;
   scoped_refptr<GpuChannelHost> gpu_channel_;
   int gpu_host_id_;
