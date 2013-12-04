@@ -263,9 +263,11 @@ class FakeDriveService : public DriveServiceInterface {
   // <num> is a monotonically increasing number starting from 1.
   std::string GetNewResourceId();
 
-  // Increments |largest_changestamp_| and adds the new changestamp and ETag to
-  // |entry|.
-  void AddNewChangestampAndETag(base::DictionaryValue* entry);
+  // Increments |largest_changestamp_| and adds the new changestamp.
+  void AddNewChangestamp(base::DictionaryValue* entry);
+
+  // Update ETag of |entry| based on |largest_changestamp_|.
+  void UpdateETag(base::DictionaryValue* entry);
 
   // Adds a new entry based on the given parameters. |entry_kind| should be
   // "file" or "folder". Returns a pointer to the newly added entry, or NULL
