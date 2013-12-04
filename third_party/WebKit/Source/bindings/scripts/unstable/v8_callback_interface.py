@@ -60,16 +60,16 @@ LEGACY_REF_COUNTED_CALLBACK_INTERFACES = set([
     'SQLTransactionSyncCallback',
     'SQLStatementCallback',
     'SQLStatementErrorCallback',
+    'SQLVoidCallback',
     # Filesystem
     'EntryCallback',
     'EntriesCallback',
     'ErrorCallback',
     'FileCallback',
     'FileSystemCallback',
+    'FileSystemVoidCallback',
     'FileWriterCallback',
     'MetadataCallback',
-    # Used everywhere
-    'VoidCallback',
 ])
 
 
