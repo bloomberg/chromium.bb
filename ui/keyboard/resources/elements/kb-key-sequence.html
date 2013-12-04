@@ -58,6 +58,7 @@
               var state = getKeyCodeAndModifiers(keyCodeIndex);
               if (state) {
                 key.keyCode = state.keyCode;
+                key.keyName = state.keyName;
                 key.shiftModifier = state.shiftModifier;
               }
               replacement.appendChild(key);

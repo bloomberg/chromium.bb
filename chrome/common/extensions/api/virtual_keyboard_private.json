@@ -18,6 +18,7 @@
           "type": {"type": "string", "description": "One of keyup or keydown.", "enum": ["keyup", "keydown"]},
           "charValue": {"type": "integer", "description": "Unicode value of the key."},
           "keyCode": {"type": "integer", "description": "Virtual key code, which is independent of the keyboard layout or modifier state."},
+          "keyName": {"type": "string", "description": "Name of the key, which is independent of modifier state."},
           "modifiers": {"type": "integer", "optional": true, "description": "Flag for modifiers that are active. None = 0, Shift = 2, Control = 4, Alt = 8."}
         }
       }

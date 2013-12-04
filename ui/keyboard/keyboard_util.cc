@@ -110,6 +110,7 @@ bool MoveCursor(int swipe_direction,
 bool SendKeyEvent(const std::string type,
                   int key_value,
                   int key_code,
+                  std::string key_name,
                   int modifiers,
                   aura::WindowEventDispatcher* dispatcher) {
   ui::EventType event_type = ui::ET_UNKNOWN;
@@ -153,7 +154,7 @@ bool SendKeyEvent(const std::string type,
       }
     }
 
-    ui::KeyEvent event(event_type, code, modifiers, false);
+    ui::KeyEvent event(event_type, code, key_name, modifiers, false);
     dispatcher->AsRootWindowHostDelegate()->OnHostKeyEvent(&event);
   }
   return true;

@@ -5,7 +5,7 @@
   -->
 
 <polymer-element name="kb-key" extends="kb-key-base"
-    attributes="image imageSize keyCode shiftModifier weight">
+    attributes="image imageSize keyCode keyName shiftModifier weight">
   <template>
     <style>
       :host {
@@ -88,6 +88,15 @@
        * @type {number|undefined}
        */
       keyCode: undefined,
+
+      /**
+       * Name of the key as defined in the DOM3 specification for key events.
+       * Like the keyCode, the keyName is independent of the state of the
+       * modifier keys.
+       * @type {string|undefined}
+       */
+      keyName: undefined,
+
       /**
        * Whether the shift key is pressed when producing the key value.
        * @type {boolean}
@@ -130,6 +139,7 @@
       populateDetails: function(caller) {
         var details = this.super([caller]);
         details.keyCode = this.keyCode;
+        details.keyName = this.keyName;
         details.shiftModifier = this.shiftModifier;
         return details;
       },

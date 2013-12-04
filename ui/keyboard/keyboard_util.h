@@ -53,12 +53,14 @@ KEYBOARD_EXPORT bool MoveCursor(int swipe_direction,
 
 // Sends a fabricated key event, where |type| is the event type, |key_value|
 // is the unicode value of the character, |key_code| is the legacy key code
-// value, and |modifier| indicates if any modifier keys are being virtually
-// pressed. The event is dispatched to the active TextInputClient associated
-// with |root_window|. The type may be "keydown" or "keyup".
+// value, |key_name| is the name of the key as defined in the DOM3 key event
+// specification, and |modifier| indicates if any modifier keys are being
+// virtually pressed. The event is dispatched to the active TextInputClient
+// associated with |root_window|. The type may be "keydown" or "keyup".
 KEYBOARD_EXPORT bool SendKeyEvent(std::string type,
                                    int key_value,
                                    int key_code,
+                                   std::string key_name,
                                    int modifiers,
                                    aura::WindowEventDispatcher* dispatcher);
 
