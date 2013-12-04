@@ -49,8 +49,9 @@ std::vector<uint8> MakeJsonVector(const base::DictionaryValue& dict) {
   return MakeJsonVector(json);
 }
 
-// Helper for ImportJwkBadJwk; restores JWK JSON dictionary to a good state
-void RestoreDictionaryForImportBadJwkTest(base::DictionaryValue* dict) {
+// Helper for ImportJwkFailures and ImportJwkOctFailures. Restores the JWK JSON
+// dictionary to a good state
+void RestoreJwkOctDictionary(base::DictionaryValue* dict) {
   dict->Clear();
   dict->SetString("kty", "oct");
   dict->SetString("alg", "A128CBC");
@@ -58,7 +59,23 @@ void RestoreDictionaryForImportBadJwkTest(base::DictionaryValue* dict) {
   dict->SetBoolean("extractable", false);
   dict->SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
 }
+
 #if !defined(USE_OPENSSL)
+
+// Helper for ImportJwkRsaFailures. Restores the JWK JSON
+// dictionary to a good state
+void RestoreJwkRsaDictionary(base::DictionaryValue* dict) {
+  dict->Clear();
+  dict->SetString("kty", "RSA");
+  dict->SetString("alg", "RSA1_5");
+  dict->SetString("use", "enc");
+  dict->SetBoolean("extractable", false);
+  dict->SetString("n",
+      "qLOyhK-OtQs4cDSoYPFGxJGfMYdjzWxVmMiuSBGh4KvEx-CwgtaTpef87Wdc9GaFEncsDLxk"
+      "p0LGxjD1M8jMcvYq6DPEC_JYQumEu3i9v5fAEH1VvbZi9cTg-rmEXLUUjvc5LdOq_5OuHmtm"
+      "e7PUJHYW1PW6ENTP0ibeiNOfFvs");
+  dict->SetString("e", "AQAB");
+}
 
 blink::WebCryptoAlgorithm CreateRsaKeyGenAlgorithm(
     blink::WebCryptoAlgorithmId algorithm_id,
@@ -707,7 +724,7 @@ TEST_F(WebCryptoImplTest, ImportSecretKeyNoAlgorithm) {
 
 #endif  //#if !defined(USE_OPENSSL)
 
-TEST_F(WebCryptoImplTest, ImportJwkBadJwk) {
+TEST_F(WebCryptoImplTest, ImportJwkFailures) {
 
   blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
   blink::WebCryptoAlgorithm algorithm =
@@ -719,13 +736,13 @@ TEST_F(WebCryptoImplTest, ImportJwkBadJwk) {
   // Each breaking subtest below resets the dictionary to this passing case when
   // complete.
   base::DictionaryValue dict;
-  RestoreDictionaryForImportBadJwkTest(&dict);
-  std::vector<uint8> json_vec = MakeJsonVector(dict);
-  EXPECT_TRUE(ImportKeyJwk(json_vec, algorithm, false, usage_mask, &key));
+  RestoreJwkOctDictionary(&dict);
+  EXPECT_TRUE(ImportKeyJwk(
+      MakeJsonVector(dict), algorithm, false, usage_mask, &key));
 
   // Fail on empty JSON.
-  EXPECT_FALSE(
-      ImportKeyJwk(MakeJsonVector(""), algorithm, false, usage_mask, &key));
+  EXPECT_FALSE(ImportKeyJwk(
+      MakeJsonVector(""), algorithm, false, usage_mask, &key));
 
   // Fail on invalid JSON.
   const std::vector<uint8> bad_json_vec = MakeJsonVector(
@@ -738,69 +755,142 @@ TEST_F(WebCryptoImplTest, ImportJwkBadJwk) {
 
   // Fail on JWK alg present but unrecognized.
   dict.SetString("alg", "A127CBC");
-  json_vec = MakeJsonVector(dict);
-  EXPECT_FALSE(ImportKeyJwk(json_vec, algorithm, false, usage_mask, &key));
-  RestoreDictionaryForImportBadJwkTest(&dict);
+  EXPECT_FALSE(ImportKeyJwk(
+      MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  RestoreJwkOctDictionary(&dict);
 
   // Fail on both JWK and input algorithm missing.
   dict.Remove("alg", NULL);
-  json_vec = MakeJsonVector(dict);
-  EXPECT_FALSE(ImportKeyJwk(json_vec,
+  EXPECT_FALSE(ImportKeyJwk(MakeJsonVector(dict),
                             blink::WebCryptoAlgorithm::createNull(),
                             false,
                             usage_mask,
                             &key));
-  RestoreDictionaryForImportBadJwkTest(&dict);
+  RestoreJwkOctDictionary(&dict);
 
   // Fail on invalid kty.
   dict.SetString("kty", "foo");
-  json_vec = MakeJsonVector(dict);
-  EXPECT_FALSE(ImportKeyJwk(json_vec, algorithm, false, usage_mask, &key));
-  RestoreDictionaryForImportBadJwkTest(&dict);
+  EXPECT_FALSE(ImportKeyJwk(
+      MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  RestoreJwkOctDictionary(&dict);
 
   // Fail on missing kty.
   dict.Remove("kty", NULL);
-  json_vec = MakeJsonVector(dict);
-  EXPECT_FALSE(ImportKeyJwk(json_vec, algorithm, false, usage_mask, &key));
-  RestoreDictionaryForImportBadJwkTest(&dict);
+  EXPECT_FALSE(ImportKeyJwk(
+      MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  RestoreJwkOctDictionary(&dict);
 
   // Fail on invalid use.
   dict.SetString("use", "foo");
-  json_vec = MakeJsonVector(dict);
-  EXPECT_FALSE(ImportKeyJwk(json_vec, algorithm, false, usage_mask, &key));
-  RestoreDictionaryForImportBadJwkTest(&dict);
+  EXPECT_FALSE(ImportKeyJwk(
+      MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  RestoreJwkOctDictionary(&dict);
+}
 
-  // Fail on missing k when kty = "oct".
+TEST_F(WebCryptoImplTest, ImportJwkOctFailures) {
+
+  base::DictionaryValue dict;
+  RestoreJwkOctDictionary(&dict);
+  blink::WebCryptoAlgorithm algorithm =
+      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc);
+  blink::WebCryptoKeyUsageMask usage_mask = blink::WebCryptoKeyUsageEncrypt;
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+
+  // Baseline pass.
+  EXPECT_TRUE(ImportKeyJwk(
+      MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  EXPECT_EQ(algorithm.id(), key.algorithm().id());
+  EXPECT_FALSE(key.extractable());
+  EXPECT_EQ(blink::WebCryptoKeyUsageEncrypt, key.usages());
+  EXPECT_EQ(blink::WebCryptoKeyTypeSecret, key.type());
+
+  // The following are specific failure cases for when kty = "oct".
+
+  // Fail on missing k.
   dict.Remove("k", NULL);
-  json_vec = MakeJsonVector(dict);
-  EXPECT_FALSE(ImportKeyJwk(json_vec, algorithm, false, usage_mask, &key));
-  RestoreDictionaryForImportBadJwkTest(&dict);
+  EXPECT_FALSE(ImportKeyJwk(
+      MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  RestoreJwkOctDictionary(&dict);
 
   // Fail on bad b64 encoding for k.
   dict.SetString("k", "Qk3f0DsytU8lfza2au #$% Htaw2xpop9GYyTuH0p5GghxTI=");
-  json_vec = MakeJsonVector(dict);
-  EXPECT_FALSE(ImportKeyJwk(json_vec, algorithm, false, usage_mask, &key));
-  RestoreDictionaryForImportBadJwkTest(&dict);
+  EXPECT_FALSE(ImportKeyJwk(
+      MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  RestoreJwkOctDictionary(&dict);
 
   // Fail on empty k.
   dict.SetString("k", "");
-  json_vec = MakeJsonVector(dict);
-  EXPECT_FALSE(ImportKeyJwk(json_vec, algorithm, false, usage_mask, &key));
-  RestoreDictionaryForImportBadJwkTest(&dict);
+  EXPECT_FALSE(ImportKeyJwk(
+      MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  RestoreJwkOctDictionary(&dict);
 
   // Fail on k actual length (120 bits) inconsistent with the embedded JWK alg
   // value (128) for an AES key.
   dict.SetString("k", "AVj42h0Y5aqGtE3yluKL");
-  json_vec = MakeJsonVector(dict);
-  EXPECT_FALSE(ImportKeyJwk(json_vec, algorithm, false, usage_mask, &key));
-  RestoreDictionaryForImportBadJwkTest(&dict);
-
-  // TODO(padolph) RSA public key bad data:
-  // Missing n or e when kty = "RSA"
-  // Bad encoding for n or e
-  // Size check on n??
-  // Value check on e??
+  EXPECT_FALSE(ImportKeyJwk(
+      MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  RestoreJwkOctDictionary(&dict);
 }
+
+#if !defined(USE_OPENSSL)
+
+TEST_F(WebCryptoImplTest, ImportJwkRsaFailures) {
+
+  base::DictionaryValue dict;
+  RestoreJwkRsaDictionary(&dict);
+  blink::WebCryptoAlgorithm algorithm =
+      webcrypto::CreateAlgorithm(blink::WebCryptoAlgorithmIdRsaEsPkcs1v1_5);
+  blink::WebCryptoKeyUsageMask usage_mask = blink::WebCryptoKeyUsageEncrypt;
+  blink::WebCryptoKey key = blink::WebCryptoKey::createNull();
+
+  // An RSA public key JWK _must_ have an "n" (modulus) and an "e" (exponent)
+  // entry, while an RSA private key must have those plus at least a "d"
+  // (private exponent) entry.
+  // See http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-18,
+  // section 6.3.
+
+  // Baseline pass.
+  EXPECT_TRUE(ImportKeyJwk(
+      MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  EXPECT_EQ(algorithm.id(), key.algorithm().id());
+  EXPECT_FALSE(key.extractable());
+  EXPECT_EQ(blink::WebCryptoKeyUsageEncrypt, key.usages());
+  EXPECT_EQ(blink::WebCryptoKeyTypePublic, key.type());
+
+  // The following are specific failure cases for when kty = "RSA".
+
+  // Fail if either "n" or "e" is not present or malformed.
+  const std::string kKtyParmName[] = {"n", "e"};
+  for (size_t idx = 0; idx < ARRAYSIZE_UNSAFE(kKtyParmName); ++idx) {
+
+    // Fail on missing parameter.
+    dict.Remove(kKtyParmName[idx], NULL);
+    EXPECT_FALSE(ImportKeyJwk(
+        MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+    RestoreJwkRsaDictionary(&dict);
+
+    // Fail on bad b64 parameter encoding.
+    dict.SetString(kKtyParmName[idx], "Qk3f0DsytU8lfza2au #$% Htaw2xpop9yTuH0");
+    EXPECT_FALSE(ImportKeyJwk(
+        MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+    RestoreJwkRsaDictionary(&dict);
+
+    // Fail on empty parameter.
+    dict.SetString(kKtyParmName[idx], "");
+    EXPECT_FALSE(ImportKeyJwk(
+        MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+    RestoreJwkRsaDictionary(&dict);
+  }
+
+  // Fail if "d" parameter is present, implying the JWK is a private key, which
+  // is not supported.
+  dict.SetString("d", "Qk3f0Dsyt");
+  EXPECT_FALSE(ImportKeyJwk(
+      MakeJsonVector(dict), algorithm, false, usage_mask, &key));
+  RestoreJwkRsaDictionary(&dict);
+}
+
+#endif  // #if !defined(USE_OPENSSL)
 
 TEST_F(WebCryptoImplTest, ImportJwkInputConsistency) {
   // The Web Crypto spec says that if a JWK value is present, but is
@@ -904,6 +994,11 @@ TEST_F(WebCryptoImplTest, ImportJwkInputConsistency) {
   EXPECT_FALSE(
       ImportKeyJwk(json_vec, algorithm, extractable, usage_mask, &key));
   usage_mask = blink::WebCryptoKeyUsageSign | blink::WebCryptoKeyUsageVerify;
+
+  // TODO(padolph): kty vs alg consistency tests: Depending on the kty value,
+  // only certain alg values are permitted. For example, when kty = "RSA" alg
+  // must be of the RSA family, or when kty = "oct" alg must be symmetric
+  // algorithm.
 }
 
 TEST_F(WebCryptoImplTest, ImportJwkHappy) {
@@ -945,8 +1040,7 @@ TEST_F(WebCryptoImplTest, ImportJwkHappy) {
 
   ExpectArrayBufferMatchesHex(mac_raw, output);
 
-  // TODO(padolph)
-  // Import an RSA public key JWK and use it
+  // TODO(padolph): Import an RSA public key JWK and use it
 }
 
 #if !defined(USE_OPENSSL)

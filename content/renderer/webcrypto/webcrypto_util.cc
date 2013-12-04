@@ -50,6 +50,11 @@ void ShrinkBuffer(blink::WebArrayBuffer* buffer, unsigned new_size) {
   *buffer = new_buffer;
 }
 
+// This function decodes unpadded 'base64url' encoded data, as described in
+// RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5. To do this, first
+// change the incoming data to 'base64' encoding by applying the appropriate
+// transformation including adding padding if required, and then call a base64
+// decoder.
 bool Base64DecodeUrlSafe(const std::string& input, std::string* output) {
   std::string base64EncodedText(input);
   std::replace(base64EncodedText.begin(), base64EncodedText.end(), '-', '+');

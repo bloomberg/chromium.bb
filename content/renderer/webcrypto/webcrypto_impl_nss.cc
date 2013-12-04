@@ -936,4 +936,62 @@ bool WebCryptoImpl::VerifySignatureInternal(
   return true;
 }
 
+bool WebCryptoImpl::ImportRsaPublicKeyInternal(
+    const unsigned char* modulus_data,
+    unsigned modulus_size,
+    const unsigned char* exponent_data,
+    unsigned exponent_size,
+    const blink::WebCryptoAlgorithm& algorithm,
+    bool extractable,
+    blink::WebCryptoKeyUsageMask usage_mask,
+    blink::WebCryptoKey* key) {
+
+  if (!modulus_size || !exponent_size)
+    return false;
+  DCHECK(modulus_data);
+  DCHECK(exponent_data);
+
+  // NSS does not provide a way to create an RSA public key directly from the
+  // modulus and exponent values, but it can import an DER-encoded ASN.1 blob
+  // with these values and create the public key from that. The code below
+  // follows the recommendation described in
+  // https://developer.mozilla.org/en-US/docs/NSS/NSS_Tech_Notes/nss_tech_note7
+
+  // Pack the input values into a struct compatible with NSS ASN.1 encoding, and
+  // set up an ASN.1 encoder template for it.
+  struct RsaPublicKeyData {
+    SECItem modulus;
+    SECItem exponent;
+  };
+  const RsaPublicKeyData pubkey_in = {
+      {siUnsignedInteger, const_cast<unsigned char*>(modulus_data),
+       modulus_size},
+      {siUnsignedInteger, const_cast<unsigned char*>(exponent_data),
+       exponent_size}};
+  const SEC_ASN1Template rsa_public_key_template[] = {
+      {SEC_ASN1_SEQUENCE, 0, NULL, sizeof(RsaPublicKeyData)},
+      {SEC_ASN1_INTEGER, offsetof(RsaPublicKeyData, modulus), },
+      {SEC_ASN1_INTEGER, offsetof(RsaPublicKeyData, exponent), },
+      {0, }};
+
+  // DER-encode the public key.
+  crypto::ScopedSECItem pubkey_der(SEC_ASN1EncodeItem(
+      NULL, NULL, &pubkey_in, rsa_public_key_template));
+  if (!pubkey_der)
+    return false;
+
+  // Import the DER-encoded public key to create an RSA SECKEYPublicKey.
+  crypto::ScopedSECKEYPublicKey pubkey(
+      SECKEY_ImportDERPublicKey(pubkey_der.get(), CKK_RSA));
+  if (!pubkey)
+    return false;
+
+  *key = blink::WebCryptoKey::create(new PublicKeyHandle(pubkey.Pass()),
+                                     blink::WebCryptoKeyTypePublic,
+                                     extractable,
+                                     algorithm,
+                                     usage_mask);
+  return true;
+}
+
 }  // namespace content

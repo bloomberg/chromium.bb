@@ -148,6 +148,19 @@ bool WebCryptoAlgorithmsConsistent(const blink::WebCryptoAlgorithm& alg1,
   return false;
 }
 
+bool GetDecodedUrl64ValueByKey(
+    const base::DictionaryValue& dict,
+    const std::string& key,
+    std::string* decoded) {
+  std::string value_url64;
+  if (!dict.GetString(key, &value_url64) ||
+      !webcrypto::Base64DecodeUrlSafe(value_url64, decoded) ||
+      !decoded->size()) {
+    return false;
+  }
+  return true;
+}
+
 }  // namespace
 
 WebCryptoImpl::WebCryptoImpl() {
@@ -511,6 +524,10 @@ bool WebCryptoImpl::ImportKeyJwk(
   std::string jwk_alg_value;
   if (dict_value->GetString("alg", &jwk_alg_value)) {
     // JWK alg present
+
+    // TODO(padolph): Validate alg vs kty. For example kty="RSA" implies alg can
+    // only be from the RSA family.
+
     const blink::WebCryptoAlgorithm jwk_algorithm =
         jwk_alg_factory.Get().CreateAlgorithmFromName(jwk_alg_value);
     if (jwk_algorithm.isNull()) {
@@ -559,14 +576,10 @@ bool WebCryptoImpl::ImportKeyJwk(
 
   // JWK keying material --> ImportKeyInternal()
   if (jwk_kty_value == "oct") {
-    std::string jwk_k_value_url64;
-    if (!dict_value->GetString("k", &jwk_k_value_url64))
-      return false;
+
     std::string jwk_k_value;
-    if (!webcrypto::Base64DecodeUrlSafe(jwk_k_value_url64, &jwk_k_value) ||
-        !jwk_k_value.size()) {
+    if (!GetDecodedUrl64ValueByKey(*dict_value, "k", &jwk_k_value))
       return false;
-    }
 
     // TODO(padolph): Some JWK alg ID's embed information about the key length
     // in the alg ID string. For example "A128" implies the JWK carries 128 bits
@@ -582,8 +595,36 @@ bool WebCryptoImpl::ImportKeyJwk(
                              usage_mask,
                              key);
   } else if (jwk_kty_value == "RSA") {
-    // TODO(padolph): JWK import RSA public key
-    return false;
+
+    // An RSA public key must have an "n" (modulus) and an "e" (exponent) entry
+    // in the JWK, while an RSA private key must have those, plus at least a "d"
+    // (private exponent) entry.
+    // See http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-18,
+    // section 6.3.
+
+    // RSA private key import is not currently supported, so fail here if a "d"
+    // entry is found.
+    // TODO(padolph): Support RSA private key import.
+    if (dict_value->HasKey("d"))
+      return false;
+
+    std::string jwk_n_value;
+    if (!GetDecodedUrl64ValueByKey(*dict_value, "n", &jwk_n_value))
+      return false;
+    std::string jwk_e_value;
+    if (!GetDecodedUrl64ValueByKey(*dict_value, "e", &jwk_e_value))
+      return false;
+
+    return ImportRsaPublicKeyInternal(
+        reinterpret_cast<const uint8*>(jwk_n_value.data()),
+        jwk_n_value.size(),
+        reinterpret_cast<const uint8*>(jwk_e_value.data()),
+        jwk_e_value.size(),
+        algorithm,
+        extractable,
+        usage_mask,
+        key);
+
   } else {
     return false;
   }

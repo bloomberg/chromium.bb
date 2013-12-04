@@ -496,4 +496,18 @@ bool WebCryptoImpl::VerifySignatureInternal(
   return true;
 }
 
+bool WebCryptoImpl::ImportRsaPublicKeyInternal(
+    const unsigned char* modulus_data,
+    unsigned modulus_size,
+    const unsigned char* exponent_data,
+    unsigned exponent_size,
+    const blink::WebCryptoAlgorithm& algorithm,
+    bool extractable,
+    blink::WebCryptoKeyUsageMask usage_mask,
+    blink::WebCryptoKey* key) {
+  // TODO(padolph): Placeholder for OpenSSL implementation.
+  // Issue http://crbug.com/267888.
+  return false;
+}
+
 }  // namespace content

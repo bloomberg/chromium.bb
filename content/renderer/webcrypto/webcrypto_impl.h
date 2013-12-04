@@ -134,6 +134,15 @@ class CONTENT_EXPORT WebCryptoImpl
       bool extractable,
       blink::WebCryptoKeyUsageMask usage_mask,
       blink::WebCryptoKey* key);
+  bool ImportRsaPublicKeyInternal(
+      const unsigned char* modulus_data,
+      unsigned modulus_size,
+      const unsigned char* exponent_data,
+      unsigned exponent_size,
+      const blink::WebCryptoAlgorithm& algorithm,
+      bool extractable,
+      blink::WebCryptoKeyUsageMask usage_mask,
+      blink::WebCryptoKey* key);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebCryptoImpl);

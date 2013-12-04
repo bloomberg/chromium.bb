@@ -1,4 +1,4 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,10 +28,7 @@ CONTENT_EXPORT const uint8* Uint8VectorStart(const std::vector<uint8>& data);
 void ShrinkBuffer(blink::WebArrayBuffer* buffer, unsigned new_size);
 
 // This function decodes unpadded 'base64url' encoded data, as described in
-// RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5. To do this, first
-// change the incoming data to 'base64' encoding by applying the appropriate
-// transformation including adding padding if required, and then call a base64
-// decoder.
+// RFC4648 (http://www.ietf.org/rfc/rfc4648.txt) Section 5.
 // In Web Crypto, this type of encoding is only used inside JWK.
 bool Base64DecodeUrlSafe(const std::string& input, std::string* output);
 
