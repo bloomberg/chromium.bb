@@ -31,9 +31,9 @@ static base::LazyInstance<WebContentsGuestViewMap> webcontents_guestview_map =
 
 }  // namespace
 
-GuestView::Event::Event(const std::string& event_name,
+GuestView::Event::Event(const std::string& name,
                         scoped_ptr<DictionaryValue> args)
-    : event_name_(event_name),
+    : name_(name),
       args_(args.Pass()) {
 }
 
@@ -200,7 +200,7 @@ void GuestView::DispatchEvent(Event* event) {
 
   extensions::EventRouter::DispatchEvent(
       embedder_web_contents_, profile, extension_id_,
-      event->event_name(), args.Pass(),
+      event->name(), args.Pass(),
       extensions::EventRouter::USER_GESTURE_UNKNOWN, info);
 
   delete event;

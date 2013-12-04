@@ -29,15 +29,15 @@ class GuestView : public content::BrowserPluginGuestDelegate {
 
   class Event {
    public:
-     Event(const std::string& event_name, scoped_ptr<DictionaryValue> args);
+     Event(const std::string& name, scoped_ptr<DictionaryValue> args);
      ~Event();
 
-    const std::string& event_name() const { return event_name_; }
+    const std::string& name() const { return name_; }
 
     scoped_ptr<DictionaryValue> GetArguments();
 
    private:
-    const std::string event_name_;
+    const std::string name_;
     scoped_ptr<DictionaryValue> args_;
   };
 
