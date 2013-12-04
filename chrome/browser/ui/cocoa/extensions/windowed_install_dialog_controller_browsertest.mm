@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/extensions/windowed_install_dialog_controller.h"
 
 #include "base/run_loop.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
