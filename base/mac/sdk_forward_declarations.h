@@ -31,6 +31,15 @@ enum {
 };
 typedef NSUInteger NSEventSwipeTrackingOptions;
 
+enum {
+  NSWindowAnimationBehaviorDefault = 0,
+  NSWindowAnimationBehaviorNone = 2,
+  NSWindowAnimationBehaviorDocumentWindow = 3,
+  NSWindowAnimationBehaviorUtilityWindow = 4,
+  NSWindowAnimationBehaviorAlertPanel = 5
+};
+typedef NSInteger NSWindowAnimationBehavior;
+
 @interface NSEvent (LionSDK)
 + (BOOL)isSwipeTrackingFromScrollEventsEnabled;
 
@@ -61,6 +70,8 @@ typedef NSUInteger NSEventSwipeTrackingOptions;
 
 @interface NSWindow (LionSDK)
 - (CGFloat)backingScaleFactor;
+- (NSWindowAnimationBehavior)animationBehavior;
+- (void)setAnimationBehavior:(NSWindowAnimationBehavior)newAnimationBehavior;
 @end
 #endif  // MAC_OS_X_VERSION_10_7
 

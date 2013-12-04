@@ -30,7 +30,12 @@ class MockExtensionInstallPromptDelegate
   int abort_count_;
 };
 
-// Loads the install prompt test extension.
+// Loads the test extension from the given test directory and manifest file.
+scoped_refptr<extensions::Extension> LoadInstallPromptExtension(
+    const char* extension_dir_name,
+    const char* manifest_file);
+
+// Loads the default install_prompt test extension.
 scoped_refptr<extensions::Extension> LoadInstallPromptExtension();
 
 // Loads the icon for the install prompt extension.

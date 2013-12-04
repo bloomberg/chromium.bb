@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
+#import "base/mac/sdk_forward_declarations.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/sys_string_conversions.h"
@@ -66,26 +67,6 @@
 using content::NativeWebKeyboardEvent;
 using content::SSLStatus;
 using content::WebContents;
-
-// Replicate specific 10.7 SDK declarations for building with prior SDKs.
-#if !defined(MAC_OS_X_VERSION_10_7) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
-
-enum {
-  NSWindowAnimationBehaviorDefault = 0,
-  NSWindowAnimationBehaviorNone = 2,
-  NSWindowAnimationBehaviorDocumentWindow = 3,
-  NSWindowAnimationBehaviorUtilityWindow = 4,
-  NSWindowAnimationBehaviorAlertPanel = 5
-};
-typedef NSInteger NSWindowAnimationBehavior;
-
-@interface NSWindow (LionSDKDeclarations)
-- (NSWindowAnimationBehavior)animationBehavior;
-- (void)setAnimationBehavior:(NSWindowAnimationBehavior)newAnimationBehavior;
-@end
-
-#endif  // MAC_OS_X_VERSION_10_7
 
 namespace {
 

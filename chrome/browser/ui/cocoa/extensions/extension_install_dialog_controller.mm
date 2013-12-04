@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
+#import "chrome/browser/ui/cocoa/extensions/windowed_install_dialog_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
 
@@ -21,13 +22,12 @@ void ShowExtensionInstallDialogImpl(
     const ExtensionInstallPrompt::ShowParams& show_params,
     ExtensionInstallPrompt::Delegate* delegate,
     const ExtensionInstallPrompt::Prompt& prompt) {
+  // These objects will delete themselves when the dialog closes.
   if (!show_params.parent_web_contents) {
-    // TODO(sail): Add support for showing the dialog without a parent window.
-    NOTIMPLEMENTED();
+    new WindowedInstallDialogController(show_params, delegate, prompt);
     return;
   }
 
-  // This object will delete itself when the dialog closes.
   new ExtensionInstallDialogController(show_params, delegate, prompt);
 }
 

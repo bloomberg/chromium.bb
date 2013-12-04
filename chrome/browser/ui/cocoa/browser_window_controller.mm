@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
+#import "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"  // IDC_*
@@ -181,15 +182,6 @@ using web_modal::WebContentsModalDialogManager;
     MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
 
 enum {
-  NSWindowAnimationBehaviorDefault = 0,
-  NSWindowAnimationBehaviorNone = 2,
-  NSWindowAnimationBehaviorDocumentWindow = 3,
-  NSWindowAnimationBehaviorUtilityWindow = 4,
-  NSWindowAnimationBehaviorAlertPanel = 5
-};
-typedef NSInteger NSWindowAnimationBehavior;
-
-enum {
   NSWindowCollectionBehaviorFullScreenPrimary = 1 << 7,
   NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8
 };
@@ -200,7 +192,6 @@ enum {
 
 @interface NSWindow (LionSDKDeclarations)
 - (void)setRestorable:(BOOL)flag;
-- (void)setAnimationBehavior:(NSWindowAnimationBehavior)newAnimationBehavior;
 @end
 
 #endif  // MAC_OS_X_VERSION_10_7

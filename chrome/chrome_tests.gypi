@@ -1411,6 +1411,7 @@
         'browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h',
         'browser/ui/cocoa/extensions/extension_install_prompt_test_utils.mm',
         'browser/ui/cocoa/extensions/media_galleries_dialog_cocoa_browsertest.mm',
+        'browser/ui/cocoa/extensions/windowed_install_dialog_controller_browsertest.mm',
         'browser/ui/cocoa/find_bar/find_bar_browsertest.mm',
         'browser/ui/cocoa/location_bar/zoom_decoration_browsertest.mm',
         'browser/ui/cocoa/omnibox/omnibox_view_mac_browsertest.mm',

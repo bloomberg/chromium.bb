@@ -762,6 +762,8 @@
         'browser/ui/cocoa/extensions/extension_view_mac.mm',
         'browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.h',
         'browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.mm',
+        'browser/ui/cocoa/extensions/windowed_install_dialog_controller.h',
+        'browser/ui/cocoa/extensions/windowed_install_dialog_controller.mm',
         'browser/ui/cocoa/external_protocol_dialog.h',
         'browser/ui/cocoa/external_protocol_dialog.mm',
         'browser/ui/cocoa/fast_resize_view.h',

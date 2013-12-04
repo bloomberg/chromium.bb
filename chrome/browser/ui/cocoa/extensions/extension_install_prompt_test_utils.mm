@@ -23,14 +23,16 @@ void MockExtensionInstallPromptDelegate::InstallUIAbort(bool user_initiated) {
   ++abort_count_;
 }
 
-scoped_refptr<Extension> LoadInstallPromptExtension() {
+scoped_refptr<extensions::Extension> LoadInstallPromptExtension(
+    const char* extension_dir_name,
+    const char* manifest_file) {
   scoped_refptr<Extension> extension;
 
   base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions")
-             .AppendASCII("install_prompt")
-             .AppendASCII("extension.json");
+             .AppendASCII(extension_dir_name)
+             .AppendASCII(manifest_file);
 
   std::string error;
   JSONFileValueSerializer serializer(path);
@@ -48,6 +50,10 @@ scoped_refptr<Extension> LoadInstallPromptExtension() {
     LOG(ERROR) << error;
 
   return extension;
+}
+
+scoped_refptr<Extension> LoadInstallPromptExtension() {
+  return LoadInstallPromptExtension("install_prompt", "extension.json");
 }
 
 gfx::Image LoadInstallPromptIcon() {
