@@ -13,6 +13,7 @@
 #include "base/atomicops.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_checker.h"
 #include "media/video/capture/video_capture_device.h"
 
 namespace media {
@@ -37,31 +38,30 @@ class MEDIA_EXPORT FakeVideoCaptureDevice : public VideoCaptureDevice {
   virtual void StopAndDeAllocate() OVERRIDE;
 
  private:
-  // Flag indicating the internal state.
-  enum InternalState {
-    kIdle,
-    kCapturing,
-    kError
-  };
   FakeVideoCaptureDevice();
 
-  // Called on the capture_thread_.
+  // Called on the |capture_thread_| only.
+  void OnAllocateAndStart(const VideoCaptureParams& params,
+                          scoped_ptr<Client> client);
+  void OnStopAndDeAllocate();
   void OnCaptureTask();
-
-  // EXPERIMENTAL, similar to allocate, but changes resolution and calls
-  // client->OnFrameInfoChanged(VideoCaptureCapability&)
   void Reallocate();
   void PopulateFormatRoster();
 
-  scoped_ptr<VideoCaptureDevice::Client> client_;
-  InternalState state_;
+  // |thread_checker_| is used to check that destructor, AllocateAndStart() and
+  // StopAndDeAllocate() are called in the correct thread that owns the object.
+  base::ThreadChecker thread_checker_;
+
   base::Thread capture_thread_;
+  // The following members are only used on the |capture_thread_|.
+  scoped_ptr<VideoCaptureDevice::Client> client_;
   scoped_ptr<uint8[]> fake_frame_;
   int frame_count_;
   VideoCaptureFormat capture_format_;
 
-  // When the device is configured as mutating video captures, this vector
-  // holds the available ones which are used in sequence, restarting at the end.
+  // When the device is allowed to change resolution, this vector holds the
+  // available ones which are used in sequence, restarting at the end. These
+  // two members belong to and are only used in |capture_thread_|.
   std::vector<VideoCaptureFormat> format_roster_;
   int format_roster_index_;
 

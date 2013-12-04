@@ -75,74 +75,71 @@ void FakeVideoCaptureDevice::SetNumberOfFakeDevices(size_t number_of_devices) {
 }
 
 FakeVideoCaptureDevice::FakeVideoCaptureDevice()
-    : state_(kIdle),
-      capture_thread_("CaptureThread"),
+    : capture_thread_("CaptureThread"),
       frame_count_(0),
       format_roster_index_(0) {}
 
 FakeVideoCaptureDevice::~FakeVideoCaptureDevice() {
-  // Check if the thread is running.
-  // This means that the device have not been DeAllocated properly.
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!capture_thread_.IsRunning());
 }
 
 void FakeVideoCaptureDevice::AllocateAndStart(
     const VideoCaptureParams& params,
     scoped_ptr<VideoCaptureDevice::Client> client) {
-  if (params.allow_resolution_change)
-    PopulateFormatRoster();
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!capture_thread_.IsRunning());
 
-  if (state_ != kIdle) {
-    return;  // Wrong state.
-  }
+  capture_thread_.Start();
+  capture_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeVideoCaptureDevice::OnAllocateAndStart,
+                 base::Unretained(this),
+                 params,
+                 base::Passed(&client)));
+}
 
+void FakeVideoCaptureDevice::StopAndDeAllocate() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(capture_thread_.IsRunning());
+  capture_thread_.message_loop()->PostTask(
+      FROM_HERE,
+      base::Bind(&FakeVideoCaptureDevice::OnStopAndDeAllocate,
+                 base::Unretained(this)));
+  capture_thread_.Stop();
+}
+
+void FakeVideoCaptureDevice::OnAllocateAndStart(
+    const VideoCaptureParams& params,
+    scoped_ptr<VideoCaptureDevice::Client> client) {
+  DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
   client_ = client.Pass();
   capture_format_.pixel_format = PIXEL_FORMAT_I420;
-  if (params.requested_format.frame_size.width() > 320) {  // VGA
+  capture_format_.frame_rate = 30;
+  if (params.requested_format.frame_size.width() > 320)
     capture_format_.frame_size.SetSize(640, 480);
-    capture_format_.frame_rate = 30;
-  } else {  // QVGA
+  else
     capture_format_.frame_size.SetSize(320, 240);
-    capture_format_.frame_rate = 30;
-  }
-
+  if (params.allow_resolution_change)
+    PopulateFormatRoster();
   const size_t fake_frame_size =
       VideoFrame::AllocationSize(VideoFrame::I420, capture_format_.frame_size);
   fake_frame_.reset(new uint8[fake_frame_size]);
 
-  state_ = kCapturing;
-  capture_thread_.Start();
   capture_thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&FakeVideoCaptureDevice::OnCaptureTask,
                  base::Unretained(this)));
 }
 
-void FakeVideoCaptureDevice::Reallocate() {
-  DCHECK_EQ(state_, kCapturing);
-  capture_format_ =
-      format_roster_.at(++format_roster_index_ % format_roster_.size());
-  DCHECK_EQ(capture_format_.pixel_format, PIXEL_FORMAT_I420);
-  DVLOG(3) << "Reallocating FakeVideoCaptureDevice, new capture resolution "
-           << capture_format_.frame_size.ToString();
-
-  const size_t fake_frame_size =
-      VideoFrame::AllocationSize(VideoFrame::I420, capture_format_.frame_size);
-  fake_frame_.reset(new uint8[fake_frame_size]);
-}
-
-void FakeVideoCaptureDevice::StopAndDeAllocate() {
-  if (state_ != kCapturing) {
-    return;  // Wrong state.
-  }
-  capture_thread_.Stop();
-  state_ = kIdle;
+void FakeVideoCaptureDevice::OnStopAndDeAllocate() {
+  DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
+  client_.reset();
 }
 
 void FakeVideoCaptureDevice::OnCaptureTask() {
-  if (state_ != kCapturing) {
+  if (!client_)
     return;
-  }
 
   const size_t frame_size =
       VideoFrame::AllocationSize(VideoFrame::I420, capture_format_.frame_size);
@@ -222,7 +219,21 @@ void FakeVideoCaptureDevice::OnCaptureTask() {
       base::TimeDelta::FromMilliseconds(kFakeCaptureTimeoutMs));
 }
 
+void FakeVideoCaptureDevice::Reallocate() {
+  DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
+  capture_format_ =
+      format_roster_.at(++format_roster_index_ % format_roster_.size());
+  DCHECK_EQ(capture_format_.pixel_format, PIXEL_FORMAT_I420);
+  DVLOG(3) << "Reallocating FakeVideoCaptureDevice, new capture resolution "
+           << capture_format_.frame_size.ToString();
+
+  const size_t fake_frame_size =
+      VideoFrame::AllocationSize(VideoFrame::I420, capture_format_.frame_size);
+  fake_frame_.reset(new uint8[fake_frame_size]);
+}
+
 void FakeVideoCaptureDevice::PopulateFormatRoster() {
+  DCHECK_EQ(capture_thread_.message_loop(), base::MessageLoop::current());
   format_roster_.push_back(
       media::VideoCaptureFormat(gfx::Size(320, 240), 30, PIXEL_FORMAT_I420));
   format_roster_.push_back(
