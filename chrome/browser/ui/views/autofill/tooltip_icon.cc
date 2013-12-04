@@ -69,7 +69,6 @@ const char* TooltipIcon::GetClassName() const {
 }
 
 void TooltipIcon::OnMouseEntered(const ui::MouseEvent& event) {
-  mouse_watcher_.reset();
   mouse_inside_ = true;
   show_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(150), this,
                     &TooltipIcon::ShowBubble);
@@ -77,15 +76,6 @@ void TooltipIcon::OnMouseEntered(const ui::MouseEvent& event) {
 
 void TooltipIcon::OnMouseExited(const ui::MouseEvent& event) {
   show_timer_.Stop();
-
-  if (!bubble_)
-    return;
-
-  scoped_ptr<views::MouseWatcherHost> host;
-  views::View* frame = bubble_->GetWidget()->non_client_view()->frame_view();
-  host.reset(new views::MouseWatcherViewHost(frame, gfx::Insets()));
-  mouse_watcher_.reset(new views::MouseWatcher(host.release(), this));
-  mouse_watcher_->Start();
 }
 
 void TooltipIcon::OnBoundsChanged(const gfx::Rect& prev_bounds) {
@@ -103,6 +93,11 @@ void TooltipIcon::OnBlur() {
 }
 
 void TooltipIcon::MouseMovedOutOfHost() {
+  if (IsMouseHovered()) {
+    mouse_watcher_->Start();
+    return;
+  }
+
   mouse_inside_ = false;
   HideBubble();
 }
@@ -122,6 +117,14 @@ void TooltipIcon::ShowBubble() {
 
   bubble_ = new TooltipBubble(this, tooltip_);
   bubble_->Show();
+
+  if (mouse_inside_) {
+    views::View* frame = bubble_->GetWidget()->non_client_view()->frame_view();
+    scoped_ptr<views::MouseWatcherHost> host(
+        new views::MouseWatcherViewHost(frame, gfx::Insets()));
+    mouse_watcher_.reset(new views::MouseWatcher(host.release(), this));
+    mouse_watcher_->Start();
+  }
 }
 
 void TooltipIcon::HideBubble() {
@@ -130,6 +133,7 @@ void TooltipIcon::HideBubble() {
 
   ChangeImageTo(IDR_AUTOFILL_TOOLTIP_ICON);
 
+  mouse_watcher_.reset();
   bubble_->Hide();
   bubble_ = NULL;
 }
