@@ -19896,6 +19896,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="UMA.InitSequence" enum="UmaInitSequence">
+  <summary>
+    Logged during MetricsService initialization whether the init task or the
+    initial log timer completed first. The expectation is the vast majority of
+    the time, the init task should complete first. If metrics show otherwise,
+    then it may indicate there's a bug in the MetricsService init sequence and
+    that it should be investigated.
+  </summary>
+</histogram>
+
 <histogram name="UMA.Large Accumulated Log Not Persisted" units="bytes">
   <summary>
     Number of bytes in an excessively large log that was discarded at shutdown
@@ -29815,6 +29825,11 @@ other types of suffix sets.
   <int value="27" label="Gesture scroll update (4+ fingers)"/>
   <int value="28" label="Gesture pinch update (3 fingers)"/>
   <int value="29" label="Gesture pinch update (4+ fingers)"/>
+</enum>
+
+<enum name="UmaInitSequence" type="int">
+  <int value="0" label="Timer fired first"/>
+  <int value="1" label="Init task completed first"/>
 </enum>
 
 <enum name="UmaUploadResponseStatus" type="int">

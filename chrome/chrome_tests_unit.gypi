@@ -1027,6 +1027,7 @@
         'browser/metrics/compression_utils_unittest.cc',
         'browser/metrics/metrics_log_unittest.cc',
         'browser/metrics/metrics_log_serializer_unittest.cc',
+        'browser/metrics/metrics_reporting_scheduler_unittest.cc',
         'browser/metrics/metrics_service_unittest.cc',
         'browser/metrics/thread_watcher_unittest.cc',
         'browser/metrics/time_ticks_experiment_unittest.cc',

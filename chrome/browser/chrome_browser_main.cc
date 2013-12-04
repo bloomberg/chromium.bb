@@ -644,16 +644,9 @@ void ChromeBrowserMainParts::StartMetricsRecording() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::StartMetricsRecording");
   MetricsService* metrics = g_browser_process->metrics_service();
 
-  // TODO(miu): Metrics reporting is disabled in DEBUG builds until ill-fired
-  // DCHECKs are fixed, and/or we reconsider whether metrics reporting should
-  // really ever be enabled for debug builds.  http://crbug.com/156979
-#if defined(NDEBUG)
   const bool only_do_metrics_recording =
       parsed_command_line_.HasSwitch(switches::kMetricsRecordingOnly) ||
       parsed_command_line_.HasSwitch(switches::kEnableBenchmarking);
-#else
-  const bool only_do_metrics_recording = true;
-#endif
   if (only_do_metrics_recording) {
     // If we're testing then we don't care what the user preference is, we turn
     // on recording, but not reporting, otherwise tests fail.

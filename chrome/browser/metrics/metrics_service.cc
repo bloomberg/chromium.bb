@@ -1096,6 +1096,7 @@ void MetricsService::ReceivedProfilerData(
 void MetricsService::FinishedReceivingProfilerData() {
   DCHECK_EQ(INIT_TASK_SCHEDULED, state_);
   state_ = INIT_TASK_DONE;
+  scheduler_->InitTaskComplete();
 }
 
 base::TimeDelta MetricsService::GetIncrementalUptime(PrefService* pref) {

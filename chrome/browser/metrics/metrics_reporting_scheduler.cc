@@ -46,6 +46,17 @@ const double kBackoffMultiplier = 1.1;
 // The maximum backoff multiplier.
 const int kMaxBackoffMultiplier = 10;
 
+enum InitSequence {
+  TIMER_FIRED_FIRST,
+  INIT_TASK_COMPLETED_FIRST,
+  INIT_SEQUENCE_ENUM_SIZE,
+};
+
+void LogMetricsInitSequence(InitSequence sequence) {
+  UMA_HISTOGRAM_ENUMERATION("UMA.InitSequence", sequence,
+                            INIT_SEQUENCE_ENUM_SIZE);
+}
+
 }  // anonymous namespace
 
 MetricsReportingScheduler::MetricsReportingScheduler(
@@ -53,7 +64,9 @@ MetricsReportingScheduler::MetricsReportingScheduler(
     : upload_callback_(upload_callback),
       upload_interval_(TimeDelta::FromSeconds(kInitialUploadIntervalSeconds)),
       running_(false),
-      callback_pending_(false) {
+      callback_pending_(false),
+      init_task_complete_(false),
+      waiting_for_init_task_complete_(false) {
 }
 
 MetricsReportingScheduler::~MetricsReportingScheduler() {}
@@ -67,6 +80,18 @@ void MetricsReportingScheduler::Stop() {
   running_ = false;
   if (upload_timer_.IsRunning())
     upload_timer_.Stop();
+}
+
+// Callback from MetricsService when the startup init task has completed.
+void MetricsReportingScheduler::InitTaskComplete() {
+  DCHECK(!init_task_complete_);
+  init_task_complete_ = true;
+  if (waiting_for_init_task_complete_) {
+    waiting_for_init_task_complete_ = false;
+    TriggerUpload();
+  } else {
+    LogMetricsInitSequence(INIT_TASK_COMPLETED_FIRST);
+  }
 }
 
 void MetricsReportingScheduler::UploadFinished(bool server_is_healthy,
@@ -95,7 +120,19 @@ void MetricsReportingScheduler::UploadCancelled() {
     ScheduleNextUpload();
 }
 
+void MetricsReportingScheduler::SetUploadIntervalForTesting(
+    base::TimeDelta interval) {
+  upload_interval_ = interval;
+}
+
 void MetricsReportingScheduler::TriggerUpload() {
+  // If the timer fired before the init task has completed, don't trigger the
+  // upload yet - wait for the init task to complete and do it then.
+  if (!init_task_complete_) {
+    LogMetricsInitSequence(TIMER_FIRED_FIRST);
+    waiting_for_init_task_complete_ = true;
+    return;
+  }
   callback_pending_ = true;
   upload_callback_.Run();
 }
