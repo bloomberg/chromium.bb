@@ -354,7 +354,11 @@ base::DictionaryValue* NinePatchLayerImpl::LayerTreeAsJson() const {
   list->AppendInteger(image_aperture_.size().height());
   result->Set("ImageAperture", list);
 
-  result->Set("ImageBounds", MathUtil::AsValue(image_bounds_).release());
+  list = new base::ListValue;
+  list->AppendInteger(image_bounds_.width());
+  list->AppendInteger(image_bounds_.height());
+  result->Set("ImageBounds", list);
+
   result->Set("Border", MathUtil::AsValue(border_).release());
 
   base::FundamentalValue* fill_center =
