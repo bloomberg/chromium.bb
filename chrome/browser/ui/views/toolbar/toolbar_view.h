@@ -25,7 +25,6 @@ class BrowserActionsContainer;
 class Browser;
 class HomeButton;
 class ReloadButton;
-class SiteChipView;
 class ToolbarButton;
 class WrenchMenu;
 class WrenchMenuModel;
@@ -87,7 +86,6 @@ class ToolbarView : public views::AccessiblePaneView,
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
   ReloadButton* reload_button() const { return reload_; }
   LocationBarView* location_bar() const { return location_bar_; }
-  SiteChipView* site_chip() const { return site_chip_view_; }
   views::MenuButton* app_menu() const;
 
   // Overridden from AccessiblePaneView
@@ -219,7 +217,6 @@ class ToolbarView : public views::AccessiblePaneView,
   ReloadButton* reload_;
   HomeButton* home_;
   LocationBarView* location_bar_;
-  SiteChipView* site_chip_view_;
   BrowserActionsContainer* browser_actions_;
   WrenchToolbarButton* app_menu_;
   Browser* browser_;

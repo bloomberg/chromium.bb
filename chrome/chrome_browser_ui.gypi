@@ -2120,8 +2120,6 @@
         'browser/ui/views/toolbar/home_button.h',
         'browser/ui/views/toolbar/reload_button.cc',
         'browser/ui/views/toolbar/reload_button.h',
-        'browser/ui/views/toolbar/site_chip_view.cc',
-        'browser/ui/views/toolbar/site_chip_view.h',
         'browser/ui/views/toolbar/toolbar_button.cc',
         'browser/ui/views/toolbar/toolbar_button.h',
         'browser/ui/views/toolbar/toolbar_view.cc',
