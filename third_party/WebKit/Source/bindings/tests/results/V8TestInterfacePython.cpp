@@ -35,7 +35,6 @@
 #include "V8TestInterfacePython.h"
 
 #include "RuntimeEnabledFeatures.h"
-#include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
@@ -138,26 +137,6 @@ bool V8TestInterfacePython::hasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue,
 ActiveDOMObject* V8TestInterfacePython::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
 {
     return toNative(wrapper);
-}
-
-v8::Handle<v8::Object> V8TestInterfacePython::createWrapper(PassRefPtr<TestInterfacePythonImplementation> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8TestInterfacePython>(impl.get(), isolate));
-    if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
-        const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
-        // Might be a XXXConstructor::wrapperTypeInfo instead of an XXX::wrapperTypeInfo. These will both have
-        // the same object de-ref functions, though, so use that as the basis of the check.
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(actualInfo->derefObjectFunction == wrapperTypeInfo.derefObjectFunction);
-    }
-
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, toInternalPointer(impl.get()), isolate);
-    if (UNLIKELY(wrapper.IsEmpty()))
-        return wrapper;
-
-    installPerContextEnabledProperties(wrapper, impl.get(), isolate);
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfacePython>(impl, &wrapperTypeInfo, wrapper, isolate, WrapperConfiguration::Dependent);
-    return wrapper;
 }
 
 void V8TestInterfacePython::derefObject(void* object)

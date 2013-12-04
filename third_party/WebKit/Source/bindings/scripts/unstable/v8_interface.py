@@ -50,7 +50,6 @@ INTERFACE_H_INCLUDES = set([
 ])
 INTERFACE_CPP_INCLUDES = set([
     'RuntimeEnabledFeatures.h',
-    'bindings/v8/ScriptController.h',
     'bindings/v8/V8Binding.h',
     'bindings/v8/V8DOMConfiguration.h',  # FIXME: necessary?
     'bindings/v8/V8DOMWrapper.h',  # FIXME: necessary?
@@ -84,6 +83,7 @@ def generate_interface(interface):
         'cpp_class': cpp_name(interface),
         'generate_visit_dom_wrapper_function': generate_visit_dom_wrapper_function,
         'has_custom_legacy_call': 'CustomLegacyCall' in extended_attributes,  # [CustomLegacyCall]
+        'has_custom_to_v8': 'CustomToV8' in extended_attributes,  # [CustomToV8]
         'has_custom_wrap': 'CustomWrap' in extended_attributes,  # [CustomWrap]
         'has_visit_dom_wrapper': has_extended_attribute(interface,
             ['CustomVisitDOMWrapper', 'GenerateVisitDOMWrapper']),

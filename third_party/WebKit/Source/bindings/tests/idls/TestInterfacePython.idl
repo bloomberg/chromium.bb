@@ -32,7 +32,7 @@
     ActiveDOMObject,
     Conditional=CONDITION,
     CustomLegacyCall,
-    CustomWrap,
+    CustomToV8,
     GenerateVisitDOMWrapper=ownerNode,
     ImplementedAs=TestInterfacePythonImplementation,
 ] interface TestInterfacePython {

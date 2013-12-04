@@ -69,8 +69,6 @@ public:
     static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 
 private:
-    friend v8::Handle<v8::Object> wrap(TestInterfacePythonImplementation*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
-    static v8::Handle<v8::Object> createWrapper(PassRefPtr<TestInterfacePythonImplementation>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 };
 
 template<>
@@ -79,56 +77,25 @@ public:
     static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestInterfacePython::wrapperTypeInfo; }
 };
 
-v8::Handle<v8::Object> wrap(TestInterfacePythonImplementation* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+class TestInterfacePythonImplementation;
+v8::Handle<v8::Value> toV8(TestInterfacePythonImplementation*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
-inline v8::Handle<v8::Value> toV8(TestInterfacePythonImplementation* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    if (UNLIKELY(!impl))
-        return v8::Null(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper<V8TestInterfacePython>(impl, isolate);
-    if (!wrapper.IsEmpty())
-        return wrapper;
-    return wrap(impl, creationContext, isolate);
-}
-
-template<typename CallbackInfo>
+template<class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfacePythonImplementation* impl)
 {
-    if (UNLIKELY(!impl)) {
-        v8SetReturnValueNull(callbackInfo);
-        return;
-    }
-    if (DOMDataStore::setReturnValueFromWrapper<V8TestInterfacePython>(callbackInfo.GetReturnValue(), impl))
-        return;
-    v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-    v8SetReturnValue(callbackInfo, wrapper);
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
-template<typename CallbackInfo>
+template<class CallbackInfo>
 inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TestInterfacePythonImplementation* impl)
 {
-    ASSERT(worldType(callbackInfo.GetIsolate()) == MainWorld);
-    if (UNLIKELY(!impl)) {
-        v8SetReturnValueNull(callbackInfo);
-        return;
-    }
-    if (DOMDataStore::setReturnValueFromWrapperForMainWorld<V8TestInterfacePython>(callbackInfo.GetReturnValue(), impl))
-        return;
-    v8::Handle<v8::Value> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-    v8SetReturnValue(callbackInfo, wrapper);
+     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template<class CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterfacePythonImplementation* impl, Wrappable* wrappable)
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterfacePythonImplementation* impl, Wrappable*)
 {
-    if (UNLIKELY(!impl)) {
-        v8SetReturnValueNull(callbackInfo);
-        return;
-    }
-    if (DOMDataStore::setReturnValueFromWrapperFast<V8TestInterfacePython>(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
-        return;
-    v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-    v8SetReturnValue(callbackInfo, wrapper);
+     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 inline v8::Handle<v8::Value> toV8(PassRefPtr<TestInterfacePythonImplementation > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

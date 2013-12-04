@@ -97,8 +97,10 @@ public:
     {% endif %}
 
 private:
+    {% if not has_custom_to_v8 %}
     friend v8::Handle<v8::Object> wrap({{cpp_class}}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
     static v8::Handle<v8::Object> createWrapper(PassRefPtr<{{cpp_class}}>, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+    {% endif %}
 };
 
 template<>
@@ -107,6 +109,28 @@ public:
     static const WrapperTypeInfo* wrapperTypeInfo() { return &{{v8_class}}::wrapperTypeInfo; }
 };
 
+{% if has_custom_to_v8 %}
+class {{cpp_class}};
+v8::Handle<v8::Value> toV8({{cpp_class}}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+
+template<class CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}* impl)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
+template<class CallbackInfo>
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, {{cpp_class}}* impl)
+{
+     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
+template<class CallbackInfo, class Wrappable>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{cpp_class}}* impl, Wrappable*)
+{
+     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+{% else %}{# has_custom_to_v8 #}
 {% if has_custom_wrap %}
 v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 {% else %}
@@ -167,6 +191,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{cpp_class}}
     v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
 }
+{% endif %}{# has_custom_to_v8 #}
 
 inline v8::Handle<v8::Value> toV8(PassRefPtr<{{cpp_class}} > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

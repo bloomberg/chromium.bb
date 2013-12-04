@@ -76,12 +76,7 @@ public:
     static const WrapperTypeInfo* wrapperTypeInfo() { return &V8TestInterfacePython2::wrapperTypeInfo; }
 };
 
-inline v8::Handle<v8::Object> wrap(TestInterfacePython2* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8TestInterfacePython2>(impl, isolate));
-    return V8TestInterfacePython2::createWrapper(impl, creationContext, isolate);
-}
+v8::Handle<v8::Object> wrap(TestInterfacePython2* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 inline v8::Handle<v8::Value> toV8(TestInterfacePython2* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

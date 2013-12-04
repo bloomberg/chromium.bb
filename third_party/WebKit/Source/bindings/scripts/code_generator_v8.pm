@@ -907,6 +907,7 @@ END
         die "Can't suppress toV8 for subclass\n" if $interface->parent;
     } elsif ($noWrap) {
         $header{nameSpaceWebCore}->add(<<END);
+
 class ${nativeType};
 v8::Handle<v8::Value> toV8(${nativeType}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
@@ -927,7 +928,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, ${nativeType}
 {
      v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
-
 END
     } else {
         if ($customWrap) {
@@ -5058,6 +5058,7 @@ END
     v8::Handle<v8::Object> wrapper = ${v8ClassName}::createWrapper(impl, creationContext, isolate);
 END
     if ($isDocument) {
+        AddToImplIncludes("bindings/v8/ScriptController.h");
         AddToImplIncludes("bindings/v8/V8WindowShell.h");
         $code .= <<END;
     if (wrapper.IsEmpty())
@@ -5086,8 +5087,6 @@ sub GenerateToV8Converters
     if ($interface->extendedAttributes->{"CustomToV8"} || $interface->extendedAttributes->{"DoNotGenerateToV8"}) {
         return;
     }
-
-    AddToImplIncludes("bindings/v8/ScriptController.h");
 
     GenerateSpecialWrap($interface, $v8ClassName, $nativeType);
 
@@ -5122,6 +5121,7 @@ END
 END
 
     if (InheritsInterface($interface, "Document")) {
+        AddToImplIncludes("bindings/v8/ScriptController.h");
         AddToImplIncludes("core/frame/Frame.h");
         $code .= <<END;
     if (Frame* frame = impl->frame()) {

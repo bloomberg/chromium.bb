@@ -449,7 +449,8 @@ ActiveDOMObject* {{v8_class}}::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
 
 
 {##############################################################################}
-{% block create_wrapper_and_deref_object %}
+{% block create_wrapper %}
+{% if not has_custom_to_v8 %}
 v8::Handle<v8::Object> {{v8_class}}::createWrapper(PassRefPtr<{{cpp_class}}> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
@@ -475,6 +476,12 @@ v8::Handle<v8::Object> {{v8_class}}::createWrapper(PassRefPtr<{{cpp_class}}> imp
     return wrapper;
 }
 
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block deref_object_and_to_v8_no_inline %}
 void {{v8_class}}::derefObject(void* object)
 {
     fromInternalPointer(object)->deref();

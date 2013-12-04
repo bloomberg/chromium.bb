@@ -38,7 +38,6 @@
 #include "V8TestEvent.h"
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionMessages.h"
-#include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
 #include "bindings/v8/V8DOMWrapper.h"
