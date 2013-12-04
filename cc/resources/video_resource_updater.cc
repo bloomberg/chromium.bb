@@ -69,6 +69,7 @@ bool VideoResourceUpdater::VerifyFrame(
     case media::VideoFrame::YV12:
     case media::VideoFrame::YV12A:
     case media::VideoFrame::YV16:
+    case media::VideoFrame::YV12J:
     case media::VideoFrame::NATIVE_TEXTURE:
 #if defined(GOOGLE_TV)
     case media::VideoFrame::HOLE:
@@ -99,6 +100,7 @@ static gfx::Size SoftwarePlaneDimension(
     switch (input_frame_format) {
       case media::VideoFrame::YV12:
       case media::VideoFrame::YV12A:
+      case media::VideoFrame::YV12J:
         return gfx::ToFlooredSize(gfx::ScaleSize(coded_size, 0.5f, 0.5f));
       case media::VideoFrame::YV16:
         return gfx::ToFlooredSize(gfx::ScaleSize(coded_size, 0.5f, 1.f));
@@ -133,9 +135,11 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   // Only YUV software video frames are supported.
   DCHECK(input_frame_format == media::VideoFrame::YV12 ||
          input_frame_format == media::VideoFrame::YV12A ||
+         input_frame_format == media::VideoFrame::YV12J ||
          input_frame_format == media::VideoFrame::YV16);
   if (input_frame_format != media::VideoFrame::YV12 &&
       input_frame_format != media::VideoFrame::YV12A &&
+      input_frame_format != media::VideoFrame::YV12J &&
       input_frame_format != media::VideoFrame::YV16)
     return VideoFrameExternalResources();
 

@@ -13,7 +13,9 @@
 namespace media {
 
 static bool IsEitherYV12OrYV16(media::VideoFrame::Format format) {
-  return format == media::VideoFrame::YV12 || format == media::VideoFrame::YV16;
+  return format == media::VideoFrame::YV12 ||
+         format == media::VideoFrame::YV16 ||
+         format == media::VideoFrame::YV12J;
 }
 
 static bool IsEitherYV12OrYV16OrNative(media::VideoFrame::Format format) {
@@ -83,6 +85,11 @@ static void FastPaint(
   int y_shift = 0;
   if (video_frame->format() == media::VideoFrame::YV12 ||
       video_frame->format() == media::VideoFrame::YV12A) {
+    yuv_type = media::YV12;
+    y_shift = 1;
+  }
+
+  if (video_frame->format() == media::VideoFrame::YV12J) {
     yuv_type = media::YV12;
     y_shift = 1;
   }
@@ -217,8 +224,10 @@ static void ConvertVideoFrameToBitmap(
                 (video_frame->visible_rect().y() >> y_shift)) +
                 (video_frame->visible_rect().x() >> 1);
   }
+
   switch (video_frame->format()) {
     case media::VideoFrame::YV12:
+    case media::VideoFrame::YV12J:
       media::ConvertYUVToRGB32(
           video_frame->data(media::VideoFrame::kYPlane) + y_offset,
           video_frame->data(media::VideoFrame::kUPlane) + uv_offset,

@@ -32,6 +32,7 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
     case VideoFrame::YV12A:
     case VideoFrame::YV16:
     case VideoFrame::I420:
+    case VideoFrame::YV12J:
       frame->AllocateYUV();
       break;
     default:
@@ -59,6 +60,8 @@ std::string VideoFrame::FormatToString(VideoFrame::Format format) {
 #endif
     case VideoFrame::YV12A:
       return "YV12A";
+    case VideoFrame::YV12J:
+      return "YV12J";
     case VideoFrame::HISTOGRAM_MAX:
       return "HISTOGRAM_MAX";
   }
@@ -236,6 +239,7 @@ size_t VideoFrame::NumPlanes(Format format) {
     case VideoFrame::YV12:
     case VideoFrame::YV16:
     case VideoFrame::I420:
+    case VideoFrame::YV12J:
       return 3;
     case VideoFrame::YV12A:
       return 4;
@@ -269,6 +273,7 @@ size_t VideoFrame::PlaneAllocationSize(Format format,
       RoundUp(coded_size.width(), 2) * RoundUp(coded_size.height(), 2);
   switch (format) {
     case VideoFrame::YV12:
+    case VideoFrame::YV12J:
     case VideoFrame::I420: {
       switch (plane) {
         case VideoFrame::kYPlane:
@@ -324,7 +329,8 @@ static void ReleaseData(uint8* data) {
 
 void VideoFrame::AllocateYUV() {
   DCHECK(format_ == VideoFrame::YV12 || format_ == VideoFrame::YV16 ||
-         format_ == VideoFrame::YV12A || format_ == VideoFrame::I420);
+         format_ == VideoFrame::YV12A || format_ == VideoFrame::I420 ||
+         format_ == VideoFrame::YV12J);
   // Align Y rows at least at 16 byte boundaries.  The stride for both
   // YV12 and YV16 is 1/2 of the stride of Y.  For YV12, every row of bytes for
   // U and V applies to two rows of Y (one byte of UV for 4 bytes of Y), so in
@@ -419,6 +425,7 @@ int VideoFrame::row_bytes(size_t plane) const {
     case YV12:
     case YV16:
     case I420:
+    case YV12J:
       if (plane == kYPlane)
         return width;
       return RoundUp(width, 2) / 2;

@@ -71,7 +71,8 @@ int FFmpegVideoDecoder::GetVideoBuffer(AVCodecContext* codec_context,
   VideoFrame::Format format = PixelFormatToVideoFormat(codec_context->pix_fmt);
   if (format == VideoFrame::UNKNOWN)
     return AVERROR(EINVAL);
-  DCHECK(format == VideoFrame::YV12 || format == VideoFrame::YV16);
+  DCHECK(format == VideoFrame::YV12 || format == VideoFrame::YV16 ||
+         format == VideoFrame::YV12J);
 
   gfx::Size size(codec_context->width, codec_context->height);
   int ret;

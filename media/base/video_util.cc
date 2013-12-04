@@ -144,6 +144,7 @@ void LetterboxYUV(VideoFrame* frame, const gfx::Rect& view_area) {
   DCHECK(!(view_area.width() & 1));
   DCHECK(!(view_area.height() & 1));
   DCHECK(frame->format() == VideoFrame::YV12 ||
+         frame->format() == VideoFrame::YV12J ||
          frame->format() == VideoFrame::I420);
   LetterboxPlane(frame, VideoFrame::kYPlane, view_area, 0x00);
   gfx::Rect half_view_area(view_area.x() / 2,

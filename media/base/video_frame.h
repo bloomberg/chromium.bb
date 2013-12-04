@@ -48,6 +48,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     HOLE = 5,  // Hole frame.
 #endif
     NATIVE_TEXTURE = 6,  // Native texture.  Pixel-format agnostic.
+    YV12J = 7,  // JPEG color range version of YV12
     HISTOGRAM_MAX,  // Must always be greatest.
   };
 
