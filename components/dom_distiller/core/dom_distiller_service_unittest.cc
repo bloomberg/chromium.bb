@@ -51,6 +51,28 @@ class FakeDomDistillerStore : public DomDistillerStoreInterface {
     return true;
   }
 
+  virtual bool RemoveEntry(const ArticleEntry& entry) OVERRIDE {
+    if (!IsEntryValid(entry)) {
+      return false;
+    }
+
+    if (!model_.GetEntryById(entry.entry_id(), NULL)) {
+      return false;
+    }
+
+    syncer::SyncChangeList changes_to_apply;
+    syncer::SyncChangeList changes_applied;
+    syncer::SyncChangeList changes_missing;
+
+    changes_to_apply.push_back(syncer::SyncChange(
+        FROM_HERE, syncer::SyncChange::ACTION_DELETE, CreateLocalData(entry)));
+
+    model_.ApplyChangesToModel(
+        changes_to_apply, &changes_applied, &changes_missing);
+
+    return true;
+  }
+
   virtual bool GetEntryById(const std::string& entry_id,
                             ArticleEntry* entry) OVERRIDE {
     return model_.GetEntryById(entry_id, entry);
@@ -207,7 +229,7 @@ TEST_F(DomDistillerServiceTest, TestViewUrlCancelled) {
   EXPECT_TRUE(distiller_destroyed);
 }
 
-TEST_F(DomDistillerServiceTest, TestAddEntry) {
+TEST_F(DomDistillerServiceTest, TestAddAndRemoveEntry) {
   FakeDistiller* distiller = new FakeDistiller();
   EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
       .WillOnce(Return(distiller));
@@ -222,8 +244,14 @@ TEST_F(DomDistillerServiceTest, TestAddEntry) {
   scoped_ptr<DistilledPageProto> proto(new DistilledPageProto);
   distiller->RunDistillerCallback(proto.Pass());
 
-  EXPECT_TRUE(store_->GetEntryByUrl(url, NULL));
+  ArticleEntry entry;
+  EXPECT_TRUE(store_->GetEntryByUrl(url, &entry));
+  EXPECT_EQ(1u, store_->GetEntries().size());
+  store_->RemoveEntry(entry);
+  EXPECT_EQ(0u, store_->GetEntries().size());
+
 }
+
 
 }  // namespace test
 }  // namespace dom_distiller

@@ -62,15 +62,21 @@ class FakeDB : public DomDistillerDatabaseInterface {
     init_callback_ = callback;
   }
 
-  virtual void SaveEntries(
+  virtual void UpdateEntries(
       scoped_ptr<EntryVector> entries_to_save,
-      DomDistillerDatabaseInterface::SaveCallback callback) OVERRIDE {
+      scoped_ptr<EntryVector> entries_to_remove,
+      DomDistillerDatabaseInterface::UpdateCallback callback) OVERRIDE {
     for (EntryVector::iterator it = entries_to_save->begin();
          it != entries_to_save->end();
          ++it) {
       (*db_)[it->entry_id()] = *it;
     }
-    save_callback_ = callback;
+    for (EntryVector::iterator it = entries_to_remove->begin();
+        it != entries_to_remove->end();
+        ++it) {
+      (*db_).erase(it->entry_id());
+    }
+    update_callback_ = callback;
   }
 
   virtual void LoadEntries(
@@ -95,9 +101,9 @@ class FakeDB : public DomDistillerDatabaseInterface {
     load_callback_.Reset();
   }
 
-  void SaveCallback(bool success) {
-    save_callback_.Run(success);
-    save_callback_.Reset();
+  void UpdateCallback(bool success) {
+    update_callback_.Run(success);
+    update_callback_.Reset();
   }
 
  private:
@@ -113,7 +119,7 @@ class FakeDB : public DomDistillerDatabaseInterface {
 
   Callback init_callback_;
   Callback load_callback_;
-  Callback save_callback_;
+  Callback update_callback_;
 };
 
 class FakeSyncErrorFactory : public syncer::SyncErrorFactory {
@@ -319,7 +325,7 @@ TEST_F(DomDistillerStoreTest, TestDatabaseLoadMerge) {
   EXPECT_TRUE(AreEntryMapsEqual(db_model_, expected_model));
 }
 
-TEST_F(DomDistillerStoreTest, TestAddEntry) {
+TEST_F(DomDistillerStoreTest, TestAddAndRemoveEntry) {
   CreateStore();
   fake_db_->InitCallback(true);
   fake_db_->LoadCallback(true);
@@ -331,6 +337,12 @@ TEST_F(DomDistillerStoreTest, TestAddEntry) {
 
   EntryMap expected_model;
   AddEntry(GetSampleEntry(0), &expected_model);
+
+  EXPECT_TRUE(AreEntriesEqual(store_->GetEntries(), expected_model));
+  EXPECT_TRUE(AreEntryMapsEqual(db_model_, expected_model));
+
+  store_->RemoveEntry(GetSampleEntry(0));
+  expected_model.clear();
 
   EXPECT_TRUE(AreEntriesEqual(store_->GetEntries(), expected_model));
   EXPECT_TRUE(AreEntryMapsEqual(db_model_, expected_model));

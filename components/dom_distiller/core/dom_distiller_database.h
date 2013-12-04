@@ -36,7 +36,7 @@ class DomDistillerDatabaseInterface {
  public:
   typedef std::vector<std::string> ArticleEntryIds;
   typedef base::Callback<void(bool success)> InitCallback;
-  typedef base::Callback<void(bool success)> SaveCallback;
+  typedef base::Callback<void(bool success)> UpdateCallback;
   typedef base::Callback<void(bool success, scoped_ptr<EntryVector>)>
       LoadCallback;
 
@@ -47,10 +47,12 @@ class DomDistillerDatabaseInterface {
   virtual void Init(const base::FilePath& database_dir,
                     InitCallback callback) = 0;
 
-  // Asynchronously saves |entries_to_save| database. |callback| will be invoked
-  // on the UI thread when complete.
-  virtual void SaveEntries(scoped_ptr<EntryVector> entries_to_save,
-                           SaveCallback callback) = 0;
+  // Asynchronously saves |entries_to_save| and deletes entries from
+  // |entries_to_remove| from the database. |callback| will be invoked on the UI
+  // thread when complete.
+  virtual void UpdateEntries(scoped_ptr<EntryVector> entries_to_save,
+                             scoped_ptr<EntryVector> entries_to_remove,
+                             UpdateCallback callback) = 0;
 
   // Asynchronously loads all entries from the database and invokes |callback|
   // when complete.
@@ -66,7 +68,8 @@ class DomDistillerDatabase
   class Database {
    public:
     virtual bool Init(const base::FilePath& database_dir) = 0;
-    virtual bool Save(const EntryVector& entries) = 0;
+    virtual bool Save(const EntryVector& entries_to_save,
+                      const EntryVector& entries_to_remove) = 0;
     virtual bool Load(EntryVector* entries) = 0;
     virtual ~Database() {}
   };
@@ -78,7 +81,8 @@ class DomDistillerDatabase
     LevelDB();
     virtual ~LevelDB();
     virtual bool Init(const base::FilePath& database_dir) OVERRIDE;
-    virtual bool Save(const EntryVector& entries) OVERRIDE;
+    virtual bool Save(const EntryVector& entries_to_save,
+                      const EntryVector& entries_to_remove) OVERRIDE;
     virtual bool Load(EntryVector* entries) OVERRIDE;
 
    private:
@@ -93,8 +97,9 @@ class DomDistillerDatabase
   // DomDistillerDatabaseInterface implementation.
   virtual void Init(const base::FilePath& database_dir,
                     InitCallback callback) OVERRIDE;
-  virtual void SaveEntries(scoped_ptr<EntryVector> entries_to_save,
-                           SaveCallback callback) OVERRIDE;
+  virtual void UpdateEntries(scoped_ptr<EntryVector> entries_to_save,
+                           scoped_ptr<EntryVector> entries_to_remove,
+                           UpdateCallback callback) OVERRIDE;
   virtual void LoadEntries(LoadCallback callback) OVERRIDE;
 
   // Allow callers to provide their own Database implementation.

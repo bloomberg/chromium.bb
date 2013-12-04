@@ -56,14 +56,21 @@ bool DomDistillerDatabase::LevelDB::Init(const base::FilePath& database_dir) {
   return false;
 }
 
-bool DomDistillerDatabase::LevelDB::Save(const EntryVector& entries) {
+bool DomDistillerDatabase::LevelDB::Save(const EntryVector& entries_to_save,
+                                         const EntryVector& entries_to_remove) {
   DFAKE_SCOPED_LOCK(thread_checker_);
 
   leveldb::WriteBatch updates;
-  for (EntryVector::const_iterator it = entries.begin(); it != entries.end();
+  for (EntryVector::const_iterator it = entries_to_save.begin();
+       it != entries_to_save.end();
        ++it) {
     updates.Put(leveldb::Slice(it->entry_id()),
                 leveldb::Slice(it->SerializeAsString()));
+  }
+  for (EntryVector::const_iterator it = entries_to_remove.begin();
+       it != entries_to_remove.end();
+       ++it) {
+    updates.Delete(leveldb::Slice(it->entry_id()));
   }
 
   leveldb::WriteOptions options;
@@ -103,7 +110,7 @@ void RunInitCallback(DomDistillerDatabaseInterface::InitCallback callback,
   callback.Run(*success);
 }
 
-void RunSaveCallback(DomDistillerDatabaseInterface::SaveCallback callback,
+void RunUpdateCallback(DomDistillerDatabaseInterface::UpdateCallback callback,
                      const bool* success) {
   callback.Run(*success);
 }
@@ -123,11 +130,12 @@ void InitFromTaskRunner(DomDistillerDatabase::Database* database,
   *success = database->Init(database_dir);
 }
 
-void SaveEntriesFromTaskRunner(DomDistillerDatabase::Database* database,
-                               scoped_ptr<EntryVector> entries,
+void UpdateEntriesFromTaskRunner(DomDistillerDatabase::Database* database,
+                               scoped_ptr<EntryVector> entries_to_save,
+                               scoped_ptr<EntryVector> entries_to_remove,
                                bool* success) {
   DCHECK(success);
-  *success = database->Save(*entries);
+  *success = database->Save(*entries_to_save, *entries_to_remove);
 }
 
 void LoadEntriesFromTaskRunner(DomDistillerDatabase::Database* database,
@@ -170,17 +178,20 @@ void DomDistillerDatabase::InitWithDatabase(scoped_ptr<Database> database,
       base::Bind(RunInitCallback, callback, base::Owned(success)));
 }
 
-void DomDistillerDatabase::SaveEntries(scoped_ptr<EntryVector> entries,
-                                       SaveCallback callback) {
+void DomDistillerDatabase::UpdateEntries(
+    scoped_ptr<EntryVector> entries_to_save,
+    scoped_ptr<EntryVector> entries_to_remove,
+    UpdateCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool* success = new bool(false);
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(SaveEntriesFromTaskRunner,
+      base::Bind(UpdateEntriesFromTaskRunner,
                  base::Unretained(db_.get()),
-                 base::Passed(&entries),
+                 base::Passed(&entries_to_save),
+                 base::Passed(&entries_to_remove),
                  success),
-      base::Bind(RunSaveCallback, callback, base::Owned(success)));
+      base::Bind(RunUpdateCallback, callback, base::Owned(success)));
 }
 
 void DomDistillerDatabase::LoadEntries(LoadCallback callback) {

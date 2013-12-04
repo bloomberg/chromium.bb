@@ -30,12 +30,12 @@ typedef std::map<std::string, ArticleEntry> EntryMap;
 class MockDB : public DomDistillerDatabase::Database {
  public:
   MOCK_METHOD1(Init, bool(const base::FilePath&));
-  MOCK_METHOD1(Save, bool(const EntryVector&));
+  MOCK_METHOD2(Save, bool(const EntryVector&, const EntryVector&));
   MOCK_METHOD1(Load, bool(EntryVector*));
 
   MockDB() {
     ON_CALL(*this, Init(_)).WillByDefault(Return(true));
-    ON_CALL(*this, Save(_)).WillByDefault(Return(true));
+    ON_CALL(*this, Save(_, _)).WillByDefault(Return(true));
     ON_CALL(*this, Load(_)).WillByDefault(Return(true));
   }
 
@@ -198,7 +198,7 @@ TEST_F(DomDistillerDatabaseTest, TestDBLoadFailure) {
   base::RunLoop().RunUntilIdle();
 }
 
-ACTION_P(VerifySaveEntries, expected) {
+ACTION_P(VerifyUpdateEntries, expected) {
   const EntryVector& actual = arg0;
   ExpectEntryPointersEquals(expected, actual);
   return true;
@@ -225,11 +225,13 @@ TEST_F(DomDistillerDatabaseTest, TestDBSaveSuccess) {
   for (EntryMap::iterator it = model.begin(); it != model.end(); ++it) {
     entries->push_back(it->second);
   }
+  scoped_ptr<EntryVector> entries_to_remove(new EntryVector());
 
-  EXPECT_CALL(*mock_db, Save(_)).WillOnce(VerifySaveEntries(model));
+  EXPECT_CALL(*mock_db, Save(_, _)).WillOnce(VerifyUpdateEntries(model));
   EXPECT_CALL(caller, SaveCallback(true));
-  db_->SaveEntries(
+  db_->UpdateEntries(
       entries.Pass(),
+      entries_to_remove.Pass(),
       base::Bind(&MockDatabaseCaller::SaveCallback, base::Unretained(&caller)));
 
   base::RunLoop().RunUntilIdle();
@@ -241,6 +243,7 @@ TEST_F(DomDistillerDatabaseTest, TestDBSaveFailure) {
   MockDB* mock_db = new MockDB();
   MockDatabaseCaller caller;
   scoped_ptr<EntryVector> entries(new EntryVector());
+  scoped_ptr<EntryVector> entries_to_remove(new EntryVector());
 
   EXPECT_CALL(*mock_db, Init(_));
   EXPECT_CALL(caller, InitCallback(_));
@@ -249,14 +252,80 @@ TEST_F(DomDistillerDatabaseTest, TestDBSaveFailure) {
       base::FilePath(path),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
 
-  EXPECT_CALL(*mock_db, Save(_)).WillOnce(Return(false));
+  EXPECT_CALL(*mock_db, Save(_, _)).WillOnce(Return(false));
   EXPECT_CALL(caller, SaveCallback(false));
-  db_->SaveEntries(
+  db_->UpdateEntries(
       entries.Pass(),
+      entries_to_remove.Pass(),
       base::Bind(&MockDatabaseCaller::SaveCallback, base::Unretained(&caller)));
 
   base::RunLoop().RunUntilIdle();
 }
+
+ACTION_P(VerifyRemoveEntries, expected) {
+  const EntryVector& actual = arg1;
+  ExpectEntryPointersEquals(expected, actual);
+  return true;
+}
+
+// Test that DomDistillerDatabase calls Save on the underlying database with the
+// correct entries to delete and that the caller's SaveCallback is called with
+// the correct success value.
+TEST_F(DomDistillerDatabaseTest, TestDBRemoveSuccess) {
+  base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
+
+  MockDB* mock_db = new MockDB();
+  MockDatabaseCaller caller;
+  EntryMap model = GetSmallModel();
+
+  EXPECT_CALL(*mock_db, Init(_));
+  EXPECT_CALL(caller, InitCallback(_));
+  db_->InitWithDatabase(
+      scoped_ptr<DomDistillerDatabase::Database>(mock_db),
+      base::FilePath(path),
+      base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
+
+  scoped_ptr<EntryVector> entries(new EntryVector());
+  scoped_ptr<EntryVector> entries_to_remove(new EntryVector());
+  for (EntryMap::iterator it = model.begin(); it != model.end(); ++it) {
+    entries_to_remove->push_back(it->second);
+  }
+
+  EXPECT_CALL(*mock_db, Save(_, _)).WillOnce(VerifyRemoveEntries(model));
+  EXPECT_CALL(caller, SaveCallback(true));
+  db_->UpdateEntries(
+      entries.Pass(),
+      entries_to_remove.Pass(),
+      base::Bind(&MockDatabaseCaller::SaveCallback, base::Unretained(&caller)));
+
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(DomDistillerDatabaseTest, TestDBRemoveFailure) {
+  base::FilePath path(FILE_PATH_LITERAL("/fake/path"));
+
+  MockDB* mock_db = new MockDB();
+  MockDatabaseCaller caller;
+  scoped_ptr<EntryVector> entries(new EntryVector());
+  scoped_ptr<EntryVector> entries_to_remove(new EntryVector());
+
+  EXPECT_CALL(*mock_db, Init(_));
+  EXPECT_CALL(caller, InitCallback(_));
+  db_->InitWithDatabase(
+      scoped_ptr<DomDistillerDatabase::Database>(mock_db),
+      base::FilePath(path),
+      base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
+
+  EXPECT_CALL(*mock_db, Save(_, _)).WillOnce(Return(false));
+  EXPECT_CALL(caller, SaveCallback(false));
+  db_->UpdateEntries(
+      entries.Pass(),
+      entries_to_remove.Pass(),
+      base::Bind(&MockDatabaseCaller::SaveCallback, base::Unretained(&caller)));
+
+  base::RunLoop().RunUntilIdle();
+}
+
 
 // This tests that normal usage of the real database does not cause any
 // threading violations.
@@ -296,6 +365,7 @@ void TestLevelDBSaveAndLoad(bool close_after_save) {
   EntryMap model = GetSmallModel();
   EntryVector save_entries;
   EntryVector load_entries;
+  EntryVector remove_entries;
 
   for (EntryMap::iterator it = model.begin(); it != model.end(); ++it) {
     save_entries.push_back(it->second);
@@ -304,7 +374,7 @@ void TestLevelDBSaveAndLoad(bool close_after_save) {
   scoped_ptr<DomDistillerDatabase::LevelDB> db(
       new DomDistillerDatabase::LevelDB());
   EXPECT_TRUE(db->Init(temp_dir.path()));
-  EXPECT_TRUE(db->Save(save_entries));
+  EXPECT_TRUE(db->Save(save_entries, remove_entries));
 
   if (close_after_save) {
     db.reset(new DomDistillerDatabase::LevelDB());

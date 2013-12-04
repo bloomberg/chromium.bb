@@ -71,6 +71,7 @@ bool DomDistillerStore::AddEntry(const ArticleEntry& entry) {
   }
 
   if (model_.GetEntryById(entry.entry_id(), NULL)) {
+    DVLOG(1) << "Already have entry with id " << entry.entry_id() << ".";
     return false;
   }
 
@@ -81,10 +82,35 @@ bool DomDistillerStore::AddEntry(const ArticleEntry& entry) {
   SyncChangeList changes_applied;
   SyncChangeList changes_missing;
 
-  if (!ApplyChangesToModel(
-           changes_to_apply, &changes_applied, &changes_missing)) {
+  ApplyChangesToModel(changes_to_apply, &changes_applied, &changes_missing);
+
+  DCHECK_EQ(size_t(0), changes_missing.size());
+  DCHECK_EQ(size_t(1), changes_applied.size());
+
+  ApplyChangesToSync(FROM_HERE, changes_applied);
+  ApplyChangesToDatabase(changes_applied);
+
+  return true;
+}
+
+bool DomDistillerStore::RemoveEntry(const ArticleEntry& entry) {
+  if (!database_loaded_) {
     return false;
   }
+
+  if (!model_.GetEntryById(entry.entry_id(), NULL)) {
+    DVLOG(1) << "No entry with id " << entry.entry_id() << " found.";
+    return false;
+  }
+
+  SyncChangeList changes_to_apply;
+  changes_to_apply.push_back(
+      SyncChange(FROM_HERE, SyncChange::ACTION_DELETE, CreateLocalData(entry)));
+
+  SyncChangeList changes_applied;
+  SyncChangeList changes_missing;
+
+  ApplyChangesToModel(changes_to_apply, &changes_applied, &changes_missing);
 
   DCHECK_EQ(size_t(0), changes_missing.size());
   DCHECK_EQ(size_t(1), changes_applied.size());
@@ -136,39 +162,22 @@ SyncError DomDistillerStore::ProcessSyncChanges(
   DCHECK(database_loaded_);
   SyncChangeList database_changes;
   SyncChangeList sync_changes;
-  if (!ApplyChangesToModel(change_list, &database_changes, &sync_changes)) {
-    return SyncError(FROM_HERE,
-                     SyncError::DATATYPE_ERROR,
-                     "Applying changes to the DOM distiller model failed",
-                     syncer::ARTICLES);
-  }
+  ApplyChangesToModel(change_list, &database_changes, &sync_changes);
   ApplyChangesToDatabase(database_changes);
   DCHECK_EQ(size_t(0), sync_changes.size());
   return SyncError();
 }
 
-bool DomDistillerStore::ApplyChangesToModel(
+void DomDistillerStore::ApplyChangesToModel(
     const SyncChangeList& changes,
     SyncChangeList* changes_applied,
     SyncChangeList* changes_missing) {
-  DomDistillerModel::ChangeResult change_result =
-      model_.ApplyChangesToModel(changes, changes_applied, changes_missing);
-  if (change_result == DomDistillerModel::SUCCESS) {
-    return true;
-  }
-
-  LOG(WARNING) << "Applying changes to DOM distiller model failed with error "
-               << change_result;
-
-  database_.reset();
-  database_loaded_ = false;
-  StopSyncing(syncer::ARTICLES);
-  return false;
+  model_.ApplyChangesToModel(changes, changes_applied, changes_missing);
 }
 
 void DomDistillerStore::OnDatabaseInit(bool success) {
   if (!success) {
-    LOG(INFO) << "DOM Distiller database init failed.";
+    DVLOG(1) << "DOM Distiller database init failed.";
     database_.reset();
     return;
   }
@@ -179,7 +188,7 @@ void DomDistillerStore::OnDatabaseInit(bool success) {
 void DomDistillerStore::OnDatabaseLoad(bool success,
                                        scoped_ptr<EntryVector> entries) {
   if (!success) {
-    LOG(INFO) << "DOM Distiller database load failed.";
+    DVLOG(1) << "DOM Distiller database load failed.";
     database_.reset();
     return;
   }
@@ -198,8 +207,8 @@ void DomDistillerStore::OnDatabaseLoad(bool success,
 
 void DomDistillerStore::OnDatabaseSave(bool success) {
   if (!success) {
-    LOG(INFO) << "DOM Distiller database save failed."
-              << " Disabling modifications and sync.";
+    DVLOG(1) << "DOM Distiller database save failed."
+             << " Disabling modifications and sync.";
     database_.reset();
     database_loaded_ = false;
     StopSyncing(syncer::ARTICLES);
@@ -233,15 +242,20 @@ bool DomDistillerStore::ApplyChangesToDatabase(
     return true;
   }
   scoped_ptr<EntryVector> entries_to_save(new EntryVector());
+  scoped_ptr<EntryVector> entries_to_remove(new EntryVector());
 
   for (SyncChangeList::const_iterator it = change_list.begin();
        it != change_list.end();
        ++it) {
-    entries_to_save->push_back(GetEntryFromChange(*it));
+    if (it->change_type() == SyncChange::ACTION_DELETE)
+      entries_to_remove->push_back(GetEntryFromChange(*it));
+    else
+      entries_to_save->push_back(GetEntryFromChange(*it));
   }
-  database_->SaveEntries(entries_to_save.Pass(),
-                         base::Bind(&DomDistillerStore::OnDatabaseSave,
-                                    weak_ptr_factory_.GetWeakPtr()));
+  database_->UpdateEntries(entries_to_save.Pass(),
+                           entries_to_remove.Pass(),
+                           base::Bind(&DomDistillerStore::OnDatabaseSave,
+                                      weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
 
@@ -258,13 +272,7 @@ SyncMergeResult DomDistillerStore::MergeDataWithModel(
   SyncChangeList changes_to_apply;
   model_.CalculateChangesForMerge(data, &changes_to_apply, changes_missing);
   SyncError error;
-  if (!ApplyChangesToModel(
-           changes_to_apply, changes_applied, changes_missing)) {
-    error = SyncError(FROM_HERE,
-                      SyncError::DATATYPE_ERROR,
-                      "Applying changes to the DOM distiller model failed",
-                      syncer::ARTICLES);
-  }
+  ApplyChangesToModel(changes_to_apply, changes_applied, changes_missing);
 
   int num_added = 0;
   int num_modified = 0;

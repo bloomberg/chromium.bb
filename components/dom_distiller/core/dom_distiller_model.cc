@@ -127,23 +127,17 @@ void DomDistillerModel::CalculateChangesForMerge(
   }
 }
 
-DomDistillerModel::ChangeResult DomDistillerModel::ApplyChangesToModel(
+void DomDistillerModel::ApplyChangesToModel(
     const SyncChangeList& changes,
     SyncChangeList* changes_applied,
     SyncChangeList* changes_missing) {
   DCHECK(changes_applied);
   DCHECK(changes_missing);
 
-  ChangeResult result = SUCCESS;
-
   for (SyncChangeList::const_iterator it = changes.begin(); it != changes.end();
        ++it) {
-    result = ApplyChangeToModel(*it, changes_applied, changes_missing);
-    if (result != SUCCESS) {
-      break;
-    }
+    ApplyChangeToModel(*it, changes_applied, changes_missing);
   }
-  return result;
 }
 
 void DomDistillerModel::AddEntry(const ArticleEntry& entry) {
@@ -170,7 +164,7 @@ void DomDistillerModel::RemoveEntry(const ArticleEntry& entry) {
   }
 }
 
-DomDistillerModel::ChangeResult DomDistillerModel::ApplyChangeToModel(
+void DomDistillerModel::ApplyChangeToModel(
     const SyncChange& change,
     SyncChangeList* changes_applied,
     SyncChangeList* changes_missing) {
@@ -181,9 +175,15 @@ DomDistillerModel::ChangeResult DomDistillerModel::ApplyChangeToModel(
   const std::string& entry_id = GetEntryIdFromSyncData(change.sync_data());
 
   if (change.change_type() == SyncChange::ACTION_DELETE) {
-    // TODO(cjhopman): Support delete.
-    NOTIMPLEMENTED();
-    return DELETE_NOT_SUPPORTED;
+    ArticleEntry current_entry;
+    if (GetEntryById(entry_id, &current_entry)) {
+      RemoveEntry(current_entry);
+      changes_applied->push_back(SyncChange(
+          change.location(), SyncChange::ACTION_DELETE, change.sync_data()));
+    }
+    // If we couldn't find in sync db, we were deleting anyway so swallow the
+    // error.
+    return;
   }
 
   ArticleEntry entry = GetEntryFromChange(change);
@@ -202,7 +202,6 @@ DomDistillerModel::ChangeResult DomDistillerModel::ApplyChangeToModel(
           change.location(), SyncChange::ACTION_UPDATE, change.sync_data()));
     }
   }
-  return SUCCESS;
 }
 
 }  // namespace dom_distiller

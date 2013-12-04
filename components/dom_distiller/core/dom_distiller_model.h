@@ -23,11 +23,6 @@ namespace dom_distiller {
 // assumption is broken, lookup by URL may return unexpected results.
 class DomDistillerModel {
  public:
-  enum ChangeResult {
-    SUCCESS = 0,
-    DELETE_NOT_SUPPORTED,
-  };
-
   DomDistillerModel();
   explicit DomDistillerModel(const std::vector<ArticleEntry>& initial_data);
 
@@ -56,9 +51,9 @@ class DomDistillerModel {
   // was actually applied to |changes_missing|.
   // Note: Currently conflicts are resolved by just applying the requested
   // change. This means nothing will be added to |changes_missing|.
-  ChangeResult ApplyChangesToModel(const syncer::SyncChangeList& change_list,
-                                   syncer::SyncChangeList* changes_applied,
-                                   syncer::SyncChangeList* changes_missing);
+  void ApplyChangesToModel(const syncer::SyncChangeList& change_list,
+                           syncer::SyncChangeList* changes_applied,
+                           syncer::SyncChangeList* changes_missing);
 
  private:
   typedef int32 KeyType;
@@ -77,9 +72,9 @@ class DomDistillerModel {
   // to an entry in |entries_|.
   void GetEntryByKey(KeyType key, ArticleEntry* entry) const;
 
-  ChangeResult ApplyChangeToModel(const syncer::SyncChange& change,
-                                  syncer::SyncChangeList* changes_applied,
-                                  syncer::SyncChangeList* changes_missing);
+  void ApplyChangeToModel(const syncer::SyncChange& change,
+                          syncer::SyncChangeList* changes_applied,
+                          syncer::SyncChangeList* changes_missing);
 
   KeyType next_key_;
   EntryMap entries_;

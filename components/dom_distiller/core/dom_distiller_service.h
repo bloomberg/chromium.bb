@@ -41,6 +41,9 @@ class DomDistillerService {
   // Gets the full list of entries.
   std::vector<ArticleEntry> GetEntries() const;
 
+  // Removes the specified entry from the dom distiller store.
+  void RemoveEntry(const std::string& entry_id);
+
   // Request to view an article by entry id. Returns a null pointer if no entry
   // with |entry_id| exists. The ViewerHandle should be destroyed before the
   // ViewRequestDelegate. The request will be cancelled when the handle is

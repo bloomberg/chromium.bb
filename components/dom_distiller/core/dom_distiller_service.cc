@@ -51,6 +51,15 @@ std::vector<ArticleEntry> DomDistillerService::GetEntries() const {
   return store_->GetEntries();
 }
 
+void DomDistillerService::RemoveEntry(
+    const std::string& entry_id) {
+  ArticleEntry entry;
+  if (!store_->GetEntryById(entry_id, &entry)) {
+    return;
+  }
+  store_->RemoveEntry(entry);
+}
+
 scoped_ptr<ViewerHandle> DomDistillerService::ViewEntry(
     ViewRequestDelegate* delegate,
     const std::string& entry_id) {
