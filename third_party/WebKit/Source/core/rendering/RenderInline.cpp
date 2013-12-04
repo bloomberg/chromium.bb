@@ -316,7 +316,7 @@ void RenderInline::addChildIgnoringContinuation(RenderObject* newChild, RenderOb
         if (RenderObject* positionedAncestor = inFlowPositionedInlineAncestor(this))
             newStyle->setPosition(positionedAncestor->style()->position());
 
-        RenderBlockFlow* newBox = RenderBlockFlow::createAnonymous(&document());
+        RenderBlock* newBox = RenderBlock::createAnonymous(&document());
         newBox->setStyle(newStyle.release());
         RenderBoxModelObject* oldContinuation = continuation();
         setContinuation(newBox);

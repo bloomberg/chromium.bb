@@ -158,18 +158,6 @@ RenderBlockFlow::~RenderBlockFlow()
 {
 }
 
-RenderBlockFlow* RenderBlockFlow::createAnonymous(Document* document)
-{
-    RenderBlockFlow* renderer = new RenderBlockFlow(0);
-    renderer->setDocumentForAnonymous(document);
-    return renderer;
-}
-
-RenderBlockFlow* RenderBlockFlow::createAnonymousBlockFlow() const
-{
-    return toRenderBlockFlow(createAnonymousWithParentRendererAndDisplay(this, BLOCK));
-}
-
 void RenderBlockFlow::willBeDestroyed()
 {
     if (lineGridBox())

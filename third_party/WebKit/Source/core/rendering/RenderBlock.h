@@ -83,6 +83,8 @@ protected:
     virtual ~RenderBlock();
 
 public:
+    static RenderBlock* createAnonymous(Document*);
+
     RenderObject* firstChild() const { ASSERT(children() == virtualChildren()); return children()->firstChild(); }
     RenderObject* lastChild() const { ASSERT(children() == virtualChildren()); return children()->lastChild(); }
 
@@ -262,11 +264,11 @@ public:
     using RenderBoxModelObject::setContinuation;
 
     static RenderBlock* createAnonymousWithParentRendererAndDisplay(const RenderObject*, EDisplay = BLOCK);
-    static RenderBlockFlow* createAnonymousColumnsWithParentRenderer(const RenderObject*);
-    static RenderBlockFlow* createAnonymousColumnSpanWithParentRenderer(const RenderObject*);
+    static RenderBlock* createAnonymousColumnsWithParentRenderer(const RenderObject*);
+    static RenderBlock* createAnonymousColumnSpanWithParentRenderer(const RenderObject*);
     RenderBlock* createAnonymousBlock(EDisplay display = BLOCK) const { return createAnonymousWithParentRendererAndDisplay(this, display); }
-    RenderBlockFlow* createAnonymousColumnsBlock() const { return createAnonymousColumnsWithParentRenderer(this); }
-    RenderBlockFlow* createAnonymousColumnSpanBlock() const { return createAnonymousColumnSpanWithParentRenderer(this); }
+    RenderBlock* createAnonymousColumnsBlock() const { return createAnonymousColumnsWithParentRenderer(this); }
+    RenderBlock* createAnonymousColumnSpanBlock() const { return createAnonymousColumnSpanWithParentRenderer(this); }
 
     virtual RenderBox* createAnonymousBoxWithSameTypeAs(const RenderObject* parent) const OVERRIDE;
 
@@ -598,7 +600,7 @@ private:
     PositionWithAffinity positionForPointWithInlineChildren(const LayoutPoint&);
 
     virtual void calcColumnWidth();
-    void makeChildrenAnonymousColumnBlocks(RenderObject* beforeChild, RenderBlockFlow* newBlockBox, RenderObject* newChild);
+    void makeChildrenAnonymousColumnBlocks(RenderObject* beforeChild, RenderBlock* newBlockBox, RenderObject* newChild);
 
     bool expandsToEncloseOverhangingFloats() const;
 
@@ -608,8 +610,8 @@ private:
                    RenderObject* newChild, RenderBoxModelObject* oldCont);
     RenderBlock* clone() const;
     RenderBlock* continuationBefore(RenderObject* beforeChild);
-    RenderBlockFlow* containingColumnsBlock(bool allowAnonymousColumnBlock = true);
-    RenderBlockFlow* columnsBlockForSpanningElement(RenderObject* newChild);
+    RenderBlock* containingColumnsBlock(bool allowAnonymousColumnBlock = true);
+    RenderBlock* columnsBlockForSpanningElement(RenderObject* newChild);
 
     // End helper functions and structs used by layoutBlockChildren.
 
